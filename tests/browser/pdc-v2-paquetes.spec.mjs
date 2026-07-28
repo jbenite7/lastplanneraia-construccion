@@ -80,6 +80,23 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
     await expect(page.locator('[data-testid="pdc-wiz"]')).toBeVisible({ timeout: 15000 });
     const card = page.locator('[data-testid="pdc-wiz-card"]');
     if (await card.count() > 0) {
+      // La propuesta del motor llega puesta en el desplegable: es lo que convierte el recorrido en
+      // «revisar y confirmar» en vez de buscar el paquete a mano entre más de 200.
+      const sugerencia = page.locator('[data-testid="pdc-wiz-sugerencia"]');
+      const texto = await sugerencia.innerText();
+      const select = page.locator('[data-testid="pdc-wiz-paquete"]');
+      if (!texto.includes('Sin propuesta')) {
+        const valor = await select.inputValue();
+        expect(valor, 'con propuesta, el destino llega preseleccionado').not.toBe('');
+        const elegido = await select.locator('option:checked').innerText();
+        expect(texto).toContain(elegido.split(' — ')[0]);
+      } else {
+        expect(await select.inputValue(), 'sin propuesta el destino queda vacío').toBe('');
+      }
+      // El botón duplicado se retiró: queda un solo camino.
+      await expect(page.locator('[data-testid="pdc-wiz-aceptar-sugerido"]')).toHaveCount(0);
+      await expect(page.locator('[data-testid="pdc-wiz-filtro-sin"]')).toBeVisible();
+
       await page.locator('[data-testid="pdc-wiz-saltar"]').click();
       await expect(page.locator('[data-testid="pdc-wiz"]')).toBeVisible();
     }

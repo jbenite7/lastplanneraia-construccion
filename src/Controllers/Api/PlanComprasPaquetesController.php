@@ -200,7 +200,7 @@ class PlanComprasPaquetesController
         $this->ok(['asignados' => $r['asignados']]);
     }
 
-    /** POST /plan-compras/api/paquetes/omitir  {insumos:[{descripcionNorm,unidad}]} */
+    /** POST /plan-compras/api/paquetes/omitir  {insumos:[{descripcionNorm,unidad}], procedencia?} */
     public function omitir(): void
     {
         $projectId = $this->guardEscritura();
@@ -209,7 +209,10 @@ class PlanComprasPaquetesController
         }
         $body = $this->body();
         $insumos = is_array($body['insumos'] ?? null) ? $body['insumos'] : [];
-        $r = $this->service->omitir($projectId, $insumos, $this->usuario());
+        // Omitir sobre una propuesta del motor es rechazarla: la procedencia trae qué proponía, para
+        // que ese fallo cuente igual que mandarlo a otro paquete.
+        $procedencia = is_array($body['procedencia'] ?? null) ? $body['procedencia'] : [];
+        $r = $this->service->omitir($projectId, $insumos, $this->usuario(), $procedencia);
         $this->ok(['omitidos' => $r['omitidos']]);
     }
 

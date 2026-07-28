@@ -1,46 +1,53 @@
 {
-    "fuente": "A3.3 — overrides destilados: lo generalizable pasó a REGLAS_SEMBRADO; aquí solo queda lo que el motor no puede deducir (2026-07-26)",
-    "total": 8,
-    "overrides": {
-        "EQUIPO DE ENCOFRADO PARA LOSAS@@M2": {
-            "paquete": "Suministro ENCOFRADO Y OBRA FALSA",
-            "alcance": "global",
-            "nota": "AIA separa el alquiler de encofrado de la formaleta de muros y contención."
-        },
-        "INSTALACIONES ELECTRICAS Y TELECOMUNICACIONES@@SG": {
-            "paquete": "Sum + Inst RED ELECTRICA",
-            "alcance": "global",
-            "nota": "RED ELECTRICA e INSTALACIONES ELÉCTRICAS se solapan: AIA contrata este alcance como red."
-        },
-        "LAVAESCOBAS PREFABRICADO EN GRANO@@UN": {
-            "paquete": "Suministro LAVADERO PREFABRICADO",
-            "alcance": "global",
-            "nota": "El prefabricado se suministra; su instalación es otro paquete."
-        },
-        "M.O. INSTALACION ELECTRODOMESTICO@@UN": {
-            "paquete": "Sum + Inst RED ELECTRICA",
-            "alcance": "global",
-            "nota": "La instalación del electrodoméstico la hace el eléctrico, no el de calentamiento de agua."
-        },
-        "MADERA ESTRUCTURA@@SG": {
-            "paquete": "Suministro ENCOFRADO Y OBRA FALSA",
-            "alcance": "global",
-            "nota": "AIA separa el alquiler de encofrado de la formaleta de muros y contención."
-        },
-        "MADERA PROVISIONALES@@SG": {
-            "paquete": "Ferretería y consumibles de obra",
-            "alcance": "global",
-            "nota": "Consumible de obra contra almacén, no una provisión presupuestal."
-        },
-        "PLUMA GRUA. COMPRA EQUIPO@@UN": {
-            "paquete": "Suministro EQUIPOS TRANSPORTE VERTICAL",
-            "alcance": "global",
-            "nota": "Una compra de equipo es suministro, no un contrato de montaje."
-        },
-        "SUBCONTRATO INSTALACIONES ELECTRICAS@@SG": {
-            "paquete": "Sum + Inst RED ELECTRICA",
-            "alcance": "global",
-            "nota": "RED ELECTRICA e INSTALACIONES ELÉCTRICAS se solapan: AIA contrata este alcance como red."
-        }
+  "fuente": "A3.3 — overrides destilados: lo generalizable pasó a REGLAS_SEMBRADO; aquí solo queda lo que el motor no puede deducir. A3.5 añade 2 de alcance proyecto por errores del propio presupuesto de DAPORTO (2026-07-27)",
+  "total": 9,
+  "overrides": {
+    "EQUIPO DE ENCOFRADO PARA LOSAS@@M2": {
+      "paquete": "Suministro ENCOFRADO Y OBRA FALSA",
+      "alcance": "global",
+      "nota": "AIA separa el alquiler de encofrado de la formaleta de muros y contención."
+    },
+    "INSTALACIONES ELECTRICAS Y TELECOMUNICACIONES@@SG": {
+      "paquete": "Sum + Inst RED ELECTRICA",
+      "alcance": "global",
+      "nota": "RED ELECTRICA e INSTALACIONES ELÉCTRICAS se solapan: AIA contrata este alcance como red."
+    },
+    "LAVAESCOBAS PREFABRICADO EN GRANO@@UN": {
+      "paquete": "Suministro LAVADERO PREFABRICADO",
+      "alcance": "global",
+      "nota": "El prefabricado se suministra; su instalación es otro paquete."
+    },
+    "M.O. INSTALACION ELECTRODOMESTICO@@UN": {
+      "paquete": "Sum + Inst DOTACIÓN COCINAS Y LAVADEROS",
+      "alcance": "proyecto",
+      "nota": "Nombre genérico: en DAPORTO es la instalación del calentador de agua a gas y la hace quien monta la cocina. Se reparte entre 3 actividades, así que la rama tampoco lo resuelve.",
+      "projectId": 73
+    },
+    "MADERA ESTRUCTURA@@SG": {
+      "paquete": "Suministro ENCOFRADO Y OBRA FALSA",
+      "alcance": "global",
+      "nota": "AIA separa el alquiler de encofrado de la formaleta de muros y contención."
+    },
+    "MADERA PROVISIONALES@@SG": {
+      "paquete": "Ferretería y consumibles de obra",
+      "alcance": "global",
+      "nota": "Consumible de obra contra almacén, no una provisión presupuestal."
+    },
+    "PLUMA GRUA. COMPRA EQUIPO@@UN": {
+      "paquete": "Suministro EQUIPOS TRANSPORTE VERTICAL",
+      "alcance": "global",
+      "nota": "Una compra de equipo es suministro, no un contrato de montaje."
+    },
+    "SUBCONTRATO INSTALACIONES ELECTRICAS@@SG": {
+      "paquete": "Sum + Inst RED ELECTRICA",
+      "alcance": "global",
+      "nota": "RED ELECTRICA e INSTALACIONES ELÉCTRICAS se solapan: AIA contrata este alcance como red."
+    },
+    "RED DE GAS DOMICILIAR@@SG": {
+      "paquete": "Sum + Inst RED CONTRA INCENDIO, DETECCIÓN Y EXTINCIÓN",
+      "alcance": "proyecto",
+      "nota": "El presupuesto de DAPORTO lo nombra mal: su actividad es «RED CONTRA INCENDIO TODO COSTO» y corresponde a la red de extinción, no a la de gas. Verificado en obra el 2026-07-27.",
+      "projectId": 73
     }
+  }
 }

@@ -40,11 +40,18 @@ $mamposteriaId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion
 $indirectosId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ?", [\App\Services\Pdc\MaestroInsumosService::normalizar(PaquetesService::PAQUETE_INDIRECTOS)])->fetchColumn() ?: 0);
 $ceramicosId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACIÓN DE PISOS CERÁMICOS')])->fetchColumn() ?: 0);
 $maderaId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACIÓN DE PISOS EN MADERA')])->fetchColumn() ?: 0);
-$enchapesId = (int) ($db->query("SELECT id FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O ENCHAPES CERÁMICOS')])->fetchColumn() ?: 0);
+// A3.5 · Cuatro paquetes se retiraron tras la revisión en obra: su alcance se fusionó con otro.
+$retirados = ['M. de O ENCHAPES CERÁMICOS', 'M. de O TOPOGRAFÍA',
+              'Sum + Inst PUERTAS EN MADERA', 'Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR'];
+foreach ($retirados as $nom) {
+    $vivo = (int) ($db->query("SELECT COUNT(*) FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1",
+        [\App\Services\Pdc\MaestroInsumosService::normalizar($nom)])->fetchColumn() ?: 0);
+    $assert($vivo === 0, "«{$nom}» está retirado del catálogo (activo=0).");
+}
 // El cajón de sastre debe estar retirado (su alcance se repartió por oficio).
 $cajonActivo = (int) ($db->query("SELECT COUNT(*) FROM general_paquetes_contratacion WHERE nombre_norm = ? AND activo = 1", [\App\Services\Pdc\MaestroInsumosService::normalizar('M. de O INSTALACION DE PISOS')])->fetchColumn() ?: 0);
 $assert($concretoId > 0 && $mamposteriaId > 0 && $indirectosId > 0, 'Catálogo con Suministro CONCRETO, M. de O MAMPOSTERÍA e Indirectos (seeds aplicados).');
-$assert($ceramicosId > 0 && $maderaId > 0 && $enchapesId > 0, 'Catálogo con los paquetes de piso por oficio (cerámicos, madera) y enchapes de muro.');
+$assert($ceramicosId > 0 && $maderaId > 0, 'Catálogo con los paquetes de piso por oficio (cerámicos, madera).');
 $assert($cajonActivo === 0, 'El cajón de sastre «M. de O INSTALACION DE PISOS» está retirado (activo=0).');
 
 // Maestro (tipo_recurso) para los insumos de prueba.
@@ -89,10 +96,31 @@ foreach ($maestro as $m) {
         [$P1, $vid, $m[0], $m[1], $m[0], $mid($m[0], $m[1])],
     );
 }
+// JERARQUÍA REAL del presupuesto: hasta A3.3 los fixtures insertaban actividades con codigo_padre
+// NULL, así que cualquier lógica que suba por los ancestros no habría encontrado cadena y los tests
+// habrían dado un falso verde. Aquí se construye el árbol completo, como lo deja el importador.
+$item = static function (string $codigo, ?string $padre, int $nivel, string $tipo, string $desc, ?string $und = null, float $cant = 0) use ($db, $P1, $vid): int {
+    $db->query(
+        "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [$P1, $vid, $codigo, $padre, $nivel, $tipo, $desc, $und, $cant],
+    );
+    return (int) $db->lastInsertId();
+};
+$item('01', null, 1, 'capitulo', 'COSTO DIRECTO');
+$item('02', null, 1, 'capitulo', 'COSTO INDIRECTO');
+$item('01.05', '01', 2, 'subcapitulo', 'MAMPOSTERIA Y REVOQUE');
+$item('01.05.01', '01.05', 3, 'grupo', 'MUROS Y CHAPAS');
+$item('01.14', '01', 2, 'subcapitulo', 'PISOS Y ENCHAPES');
+$item('01.14.02', '01.14', 3, 'grupo', 'PISOS EN ZONAS PRIVADAS');
+$item('01.14.04', '01.14', 3, 'grupo', 'ZOCALOS Y GUARDAESCOBAS');
+$item('02.01', '02', 2, 'subcapitulo', 'ADMINISTRACION DE OBRA');
+$item('02.01.01', '02.01', 3, 'grupo', 'PERSONAL Y GASTOS GENERALES');
+
 // Actividad dominante de 'M.O. GENERICO PRUEBA A3' = un muro en ladrillo (para la regla por actividad).
 $db->query(
     "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
-     VALUES (?, ?, '01.05.01.01', NULL, 4, 'actividad', 'MURO EN LADRILLO CATALAN INTERIOR', 'M2', 100)",
+     VALUES (?, ?, '01.05.01.01', '01.05.01', 4, 'actividad', 'MURO EN LADRILLO CATALAN INTERIOR', 'M2', 100)",
     [$P1, $vid],
 );
 $itemMuro = (int) $db->lastInsertId();
@@ -105,7 +133,7 @@ $db->query(
 // da la actividad padre, no el nombre del insumo (caso real DAPORTO 01.14.04.02).
 $db->query(
     "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
-     VALUES (?, ?, '01.14.04.02', NULL, 4, 'actividad', 'ZOCALO EN MADERA', 'M', 100)",
+     VALUES (?, ?, '01.14.04.02', '01.14.04', 4, 'actividad', 'ZOCALO EN MADERA', 'M', 100)",
     [$P1, $vid],
 );
 $itemZocalo = (int) $db->lastInsertId();
@@ -119,7 +147,7 @@ $db->query(
 // el oficio lo debe aportar la actividad (pasada 2).
 $db->query(
     "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
-     VALUES (?, ?, '01.14.02.09', NULL, 4, 'actividad', 'PISO EN TABLETA DE GRES SAHARA', 'M2', 50)",
+     VALUES (?, ?, '01.14.02.09', '01.14.02', 4, 'actividad', 'PISO EN TABLETA DE GRES SAHARA', 'M2', 50)",
     [$P1, $vid],
 );
 $itemMudo = (int) $db->lastInsertId();
@@ -153,7 +181,6 @@ $assert($sMuro !== null && $sMuro['capa'] === 'reglas' && (int) $sMuro['paqueteI
 // (ZOCALO), aunque su actividad dominante sea «ZOCALO EN MADERA»: gana la descripción.
 $sZoc = $byNorm['M.O. ZOCALO PORCELANATO PRUEBA A3'] ?? null;
 $assert($sZoc !== null && (int) $sZoc['paqueteId'] === $ceramicosId, 'M.O.: el material explícito de la descripción («PORCELANATO») manda sobre la actividad («ZOCALO EN MADERA»).');
-$assert($sZoc !== null && (int) $sZoc['paqueteId'] !== $enchapesId, 'El zócalo de piso NO cae en Enchapes cerámicos (que es enchape de muro).');
 $assert($sZoc !== null && (int) $sZoc['paqueteId'] !== $maderaId, 'El zócalo de porcelanato NO cae en el paquete de pisos en madera.');
 $assert($sZoc !== null && str_contains($sZoc['evidencia'], 'descripcion del insumo'), 'La evidencia indica que se decidió por la descripción.');
 
@@ -304,7 +331,6 @@ $colaLarga = [
     ['SERVICIO SOFTWARE ASSEMBLE A3', 'MES', 'EQUIPO', 'Tecnología y software de obra'],
     ['ACARREOS A3', 'UN', 'TRANSPORTE', 'Transporte y acarreos'],
     ['PARTIDA PRESUPUESTAL PORTERIA A3', 'SG', 'SUBCONTRATO', 'Provisiones y partidas globales'],
-    ['RESANES APARTAMENTO A3', 'UN', 'SUBCONTRATO', 'Provisiones y partidas globales'],
     ['SUMINISTRO E INSTALACION DE ARBOLES A3', 'UN', 'SUBCONTRATO', 'Sum + Inst PAISAJISMO Y ZONAS VERDES'],
     // Destinos que ya existían en el catálogo y el motor no usaba.
     ['LOCALIZACION Y REPLANTEO A3', 'M2', 'SUBCONTRATO', 'Sum + Inst TOPOGRAFÍA'],
@@ -365,6 +391,142 @@ $assert($concretoDur !== null && $concretoDur['diasTotales'] > 0, 'La fila trae 
 $assert($concretoDur !== null && array_key_exists('elaboracionPliegos', $concretoDur['pasos']), 'Las duraciones vienen desglosadas por paso.');
 // Un paquete nuevo, sin equivalente legacy, no inventa duraciones: devuelve null y A4 decidirá.
 $assert($svc->duracionesDePaquete($pisosId) === null, 'Un paquete sin fila legacy devuelve null (no se inventan días).');
+
+// --- A3.4 · La regla sube por la cadena de ancestros ------------------------------------------
+// Caso que lo motivó: «RESANES APARTAMENTO» no dice el oficio, pero su rama sí. Igual que
+// «REBANCO COCINA», que no dice «piso» y cuelga del grupo «PISOS EN ZONAS PRIVADAS».
+$nuevoInsumo = static function (string $desc, string $und, string $tipoRecurso, int $itemId, float $valor) use ($db, $P1, $vid, $mid): void {
+    $db->query(
+        "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+         VALUES (?, ?, ?, 'X', ?, 1, 'test-a3', NOW())",
+        [$desc, $desc, $und, $tipoRecurso],
+    );
+    $db->query(
+        "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+         VALUES (?, ?, ?, ?, ?, 'X', 1, ?, 1, ?, 'pendiente')",
+        [$P1, $vid, $desc, $und, $desc, $valor, $mid($desc, $und)],
+    );
+    $db->query(
+        "INSERT INTO pdc_presupuesto_apu_insumos (project_id, version_id, item_id, descripcion, tipo_insumo, unidad, cant_apu, rendimiento, cantidad_total, valor_unitario, valor_total, iva)
+         VALUES (?, ?, ?, ?, 'X', ?, 1, 1, 1, ?, ?, 0)",
+        [$P1, $vid, $itemId, $desc, $und, $valor, $valor],
+    );
+};
+
+// El insumo calla Y su actividad también: el único que nombra el oficio es el GRUPO. Es el caso que
+// motivó el cambio — hasta ahora la señal se perdía porque el motor solo miraba la actividad.
+$item('01.20', '01', 2, 'subcapitulo', 'CUBIERTAS Y TERRAZAS');
+$item('01.20.03', '01.20', 3, 'grupo', 'IMPERMEABILIZACION DE CUBIERTAS');
+$itemMudoTotal = $item('01.20.03.01', '01.20.03', 4, 'actividad', 'TRABAJOS VARIOS ZONA A', 'M2', 30);
+$nuevoInsumo('M.O. CUADRILLA TIPO 7 A3', 'M', 'MANO DE OBRA', $itemMudoTotal, 900000);
+
+// Bajo COSTO INDIRECTO: no es un contrato de obra por más que la palabra suene a oficio.
+$itemAdmin = $item('02.01.01.05', '02.01.01', 4, 'actividad', 'PAPELERIA Y UTILES DE OFICINA', 'MES', 12);
+$nuevoInsumo('GASTO GENERICO INDIRECTO A3', 'MES', 'SUBCONTRATO', $itemAdmin, 400000);
+
+// Un MATERIAL con regla propia se decide por su nombre, pase lo que pase en su rama.
+$nuevoInsumo('CONCRETO CON RAMA AJENA A3', 'M3', 'MATERIAL', $itemMudoTotal, 700000);
+
+// El caso que motivó el cambio: el insumo dice «RESANES», que no es ningún oficio del catálogo, y
+// quien lo identifica es el grupo del que cuelga.
+$item('01.16', '01', 2, 'subcapitulo', 'ACABADOS DE MUROS');
+$item('01.16.02', '01.16', 3, 'grupo', 'ESTUCO Y CAL');
+$itemEstuco = $item('01.16.02.04', '01.16.02', 4, 'actividad', 'DETALLADA PARA ENTREGA', 'UN', 10);
+$nuevoInsumo('RESANES APARTAMENTO A3', 'UN', 'SUBCONTRATO', $itemEstuco, 800000);
+
+$svc->materializarActividades($P1, $vid);
+$sugA = $svc->sugerencias($P1);
+$byA = [];
+foreach ($sugA['sugerencias'] as $s) { $byA[$s['descripcionNorm']] = $s; }
+
+$sReb = $byA['M.O. CUADRILLA TIPO 7 A3'] ?? null;
+$assert($sReb !== null, 'El insumo cuya actividad calla igual recibe propuesta.');
+$assert($sReb !== null && (int) $sReb['paqueteId'] !== 0, 'La cadena de ancestros aporta un destino.');
+$assert($sReb !== null && str_contains(mb_strtoupper($sReb['paqueteNombre'] ?? ''), 'IMPERMEABILIZ'), 'El oficio sale del grupo, no de la actividad ni del insumo: ' . ($sReb['paqueteNombre'] ?? 'sin propuesta'));
+$assert($sReb !== null && str_contains(mb_strtolower($sReb['evidencia']), 'grupo'), 'La evidencia dice de qué nivel salió, no un genérico «actividad padre».');
+$assert($sReb !== null && $sReb['confianza'] === 'media', 'Un acierto en un ancestro vale igual que en la actividad: confianza media.');
+
+$sInd = $byA['GASTO GENERICO INDIRECTO A3'] ?? null;
+$assert($sInd !== null && in_array($sInd['capa'], ['indirectos', 'reglas'], true), 'Lo que cuelga de COSTO INDIRECTO no se propone como contrato de obra (capa: ' . ($sInd['capa'] ?? 'sin propuesta') . ', evidencia: ' . mb_substr($sInd['evidencia'] ?? '', 0, 90) . ').');
+$assert($sInd !== null && (int) $sInd['paqueteId'] === $indirectosId, 'Va al bucket administrativo: ' . ($sInd['paqueteNombre'] ?? ''));
+
+$sRes = $byA['RESANES APARTAMENTO A3'] ?? null;
+$assert($sRes !== null && str_contains(mb_strtoupper($sRes['paqueteNombre'] ?? ''), 'ESTUCO'), 'RESANES lo resuelve su grupo «ESTUCO Y CAL», no una bolsa de presupuesto: ' . ($sRes['paqueteNombre'] ?? 'sin propuesta'));
+
+$sMat = $byA['CONCRETO CON RAMA AJENA A3'] ?? null;
+$assert($sMat !== null && (int) $sMat['paqueteId'] === $concretoId, 'Un MATERIAL con regla propia ignora la rama y va por su descripción.');
+$assert($sMat !== null && $sMat['confianza'] === 'alta', 'Y conserva la confianza alta de la descripción.');
+
+// La búsqueda NO llega al capítulo: «COSTO DIRECTO» no puede decidir ningún oficio.
+$itemHuerfano = $item('01.99.01.01', '01.99.01', 4, 'actividad', 'ITEM SIN OFICIO RECONOCIBLE A3', 'UN', 1);
+$item('01.99', '01', 2, 'subcapitulo', 'SIN OFICIO RECONOCIBLE');
+$item('01.99.01', '01.99', 3, 'grupo', 'TAMPOCO AQUI');
+$nuevoInsumo('MO SIN RAMA UTIL A3', 'UN', 'MANO DE OBRA', $itemHuerfano, 100000);
+$db->query('DELETE FROM pdc_insumo_actividades WHERE project_id = ? AND version_id = ?', [$P1, $vid]);
+$svc->materializarActividades($P1, $vid);
+$sugB = $svc->sugerencias($P1);
+$byB = [];
+foreach ($sugB['sugerencias'] as $s) { $byB[$s['descripcionNorm']] = $s; }
+$sHuerf = $byB['MO SIN RAMA UTIL A3'] ?? null;
+$assert($sHuerf === null || $sHuerf['capa'] !== 'reglas', 'Sin oficio en toda la rama, ninguna regla lo resuelve (el capítulo no cuenta).');
+
+// --- A3.4 · Suministro y mano de obra van a paquetes distintos --------------------------------
+// Doctrina de la dirección de obra: la carpintería son dos contratos, uno de fabricación y
+// suministro (IVA pleno) y otro de instalación (IVA de servicios). El motor tiene que saber cuál
+// de los dos le toca a cada insumo según su tipo de recurso.
+$partidos = [
+    ['SUMINISTRO PUERTA MADERA P22 A3', 'UN', 'MATERIAL', 'Suministro PUERTAS EN MADERA'],
+    ['M.O. INSTALACION PUERTA MADERA A3', 'UN', 'MANO DE OBRA', 'M. de O CARPINTERÍA DE MADERA'],
+    ['SUMINISTRO PUERTA METALICA PM9 A3', 'UN', 'MATERIAL', 'Suministro PUERTAS METÁLICAS'],
+    ['EPOXICO ESTRUCTURAL A3', 'UN', 'MATERIAL', 'Suministro ANCLAJES'],
+    ['CAMPANA EXTRACTORA A3', 'UN', 'MATERIAL', 'Suministro DOTACIÓN COCINAS Y LAVADEROS'],
+    ['COMISION TOPOGRAFIA A3', 'MES', 'MANO DE OBRA', 'Sum + Inst TOPOGRAFÍA'],
+    ['M.O. INSTALACION TOPELLANTAS A3', 'UN', 'MANO DE OBRA', 'M. de O TOPELLANTAS'],
+    ['ALQUILER BUSETA PERSONAL A3', 'MES', 'TRANSPORTE', 'Alquiler de transporte de personal'],
+    // A3.5 · Fusiones de la revisión en obra. La puerta de madera es producto de catálogo: aunque
+    // el presupuesto la traiga como subcontrato, se compra, no se contrata a todo costo.
+    ['SUM PUERTA MADERA SUBCONTRATO A3', 'UN', 'SUBCONTRATO', 'Suministro PUERTAS EN MADERA'],
+    // «Pisos y enchapes son el mismo contrato»: el enchape de muro deja de tener paquete propio.
+    ['M.O. ENCHAPE CERAMICO MURO A3', 'M2', 'MANO DE OBRA', 'M. de O INSTALACIÓN DE PISOS CERÁMICOS'],
+    // El foso de ascensor lo hace el mismo impermeabilizador que el resto de la obra.
+    ['IMPERMEABILIZACION FOSO DE ASCENSOR A3', 'M2', 'SUBCONTRATO', 'Sum + Inst IMPERMEABILIZACIONES'],
+];
+foreach ($partidos as [$desc, $und, $tipo, $_]) {
+    $db->query(
+        "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+         VALUES (?, ?, ?, 'X', ?, 1, 'test-a3', NOW())",
+        [$desc, $desc, $und, $tipo],
+    );
+    $db->query(
+        "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+         VALUES (?, ?, ?, ?, ?, 'X', 1, 100, 1, ?, 'pendiente')",
+        [$P1, $vid, $desc, $und, $desc, $mid($desc, $und)],
+    );
+}
+$sugP = $svc->sugerencias($P1);
+$byP = [];
+foreach ($sugP['sugerencias'] as $s) { $byP[$s['descripcionNorm']] = $s; }
+foreach ($partidos as [$desc, $und, $tipo, $destino]) {
+    $s = $byP[$desc] ?? null;
+    $ok = $s !== null && mb_strtoupper($s['paqueteNombre']) === mb_strtoupper($destino);
+    $assert($ok, sprintf('%s (%s) → %s%s', mb_substr($desc, 0, 34), $tipo, $destino, $ok ? '' : ' [dio: ' . ($s['paqueteNombre'] ?? 'sin propuesta') . ']'));
+}
+
+// El aseo permanente de obra es un gasto recurrente de nómina, no el hito de entrega.
+$db->query(
+    "INSERT INTO general_maestro_insumos (descripcion, descripcion_norm, unidad, tipo_insumo, tipo_recurso, activo, creado_por, created_at)
+     VALUES ('ASEO PERMANENTE DE OBRA A3', 'ASEO PERMANENTE DE OBRA A3', 'MES', 'X', 'SUBCONTRATO', 1, 'test-a3', NOW())",
+);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones, maestro_id, estado)
+     VALUES (?, ?, 'ASEO PERMANENTE DE OBRA A3', 'MES', 'ASEO PERMANENTE DE OBRA A3', 'X', 1, 100, 1, ?, 'pendiente')",
+    [$P1, $vid, $mid('ASEO PERMANENTE DE OBRA A3', 'MES')],
+);
+$sugAseo = $svc->sugerencias($P1);
+$byAseo = [];
+foreach ($sugAseo['sugerencias'] as $s) { $byAseo[$s['descripcionNorm']] = $s; }
+$sAseo = $byAseo['ASEO PERMANENTE DE OBRA A3'] ?? null;
+$assert($sAseo !== null && (int) $sAseo['paqueteId'] === $indirectosId, 'El aseo permanente es un indirecto, no el contrato de aseo final: ' . ($sAseo['paqueteNombre'] ?? 'sin propuesta'));
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

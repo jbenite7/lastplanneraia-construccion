@@ -106,6 +106,66 @@ final class PaquetesService
      * Orden = prioridad: gana la PRIMERA regla que casa.
      */
     private const REGLAS_SEMBRADO = [
+        // ── A3.5 · Correcciones medidas contra el estado canónico de DAPORTO. Van primero porque
+        // todas resuelven un choque con una regla más genérica que las capturaba mal.
+
+        // El nombre comercial del producto le ganaba al oficio: «SILLAS PLÁSTICA … VARILLADA» caía en
+        // acero de refuerzo porque contiene «VARILLA». Son sillas de coworking.
+        ['kw' => ['SILLA PLASTICA', 'SILLAS PLASTICA', 'MOBILIARIO'], 'paq' => 'Sum + Inst DOTACIÓN ZONAS COMUNES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // El pasamanos de vidrio templado lo hace el vidriero, no el de barandas metálicas.
+        ['kw' => ['PASAMANO', 'BARANDA'], 'ctx' => ['VIDRIO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
+        ['kw' => ['PASAMANO', 'BARANDA'], 'paq' => 'Sum + Inst BARANDAS Y PASAMANOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
+        // Alquilar un equipo es una negociación de alquiler, no del oficio que lo usa: la retro no se
+        // contrata con el movimiento de tierra ni el andamio con la fachada.
+        ['kw' => ['BANOS PORTATILES', 'BANO PORTATIL'], 'paq' => 'Sum + Inst ALQUILER BAÑOS PORTATILES', 'tipos' => ['EQUIPO', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ANDAMIO', 'BOBCAT', 'VIBROCOMPACTADOR', 'RETROEXCAVADORA', 'MINICARGADOR', 'COMPRESOR', 'CANGURO'], 'paq' => 'Equipos y maquinaria de obra', 'tipos' => ['EQUIPO'], 'descPrimero' => true],
+        // Instalar un aparato prefabricado es del instalador de aparatos, no de quien monta la cocina.
+        ['kw' => ['INSTALACION LAVADERO', 'INSTALACION LAVAESCOBAS', 'INSTALACION CAJA', 'INSTALACION REJILLA', 'INSTALACION SIFON'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // El electrodoméstico lo instala quien monta la cocina (revisión en obra: es el calentador).
+        ['kw' => ['INSTALACION ELECTRODOMESTICO', 'ELECTRODOMESTICO'], 'paq' => 'Sum + Inst DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Accesorios del desagüe: los pone el proveedor de aparatos, no el de la red.
+        ['kw' => ['REJILLA', 'VALVULA DE REGULACION', 'CAJA PLASTICA'], 'paq' => 'Suministro APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // La provisional de agua es del hidrosanitario aunque comparta el prefijo «RED PROVISIONAL».
+        ['kw' => ['RED PROVISIONAL'], 'ctx' => ['AGUA', 'HIDRO', 'SANITARI'], 'paq' => 'Sum + Inst PROVISIONAL HIDROSANITARIA', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'descPrimero' => true],
+        // El material del mesón lo suministra el marmolero; el «Sum + Inst MESONES» es el alcance completo.
+        ['kw' => ['SALPICADERO'], 'paq' => 'Suministro MESONES Y ENCIMERAS DE COCINA (granito/cuarzo/acero/otros)', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['QUARZTONE', 'CUARZO', 'ENCIMERA'], 'paq' => 'Suministro MESONES Y ENCIMERAS DE COCINA (granito/cuarzo/acero/otros)', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // El bloque de concreto tiene proveedor propio: no es el ladrillero.
+        ['kw' => ['BLOQUE DE CONCRETO', 'BLOQUE CONCRETO'], 'paq' => 'Suministro BLOQUE DE CONCRETO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // La línea de vida es un anclaje estructural certificado.
+        ['kw' => ['LINEA DE VIDA'], 'paq' => 'Sum + Inst ANCLAJES', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Nomenclatura y señalización del proyecto: el mismo señalizador.
+        ['kw' => ['NOMENCLATURA', 'SENALIZACION VIAL'], 'paq' => 'Sum + Inst SEÑALIZACIÓN', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Seguridad industrial de obra con cuantía propia (mamparas, protocolos, señalización
+        // preventiva): es gasto de administración de obra, no ferretería contra almacén.
+        ['kw' => ['MAMPARA', 'BIOSEGURIDAD', 'SENALIZACION PREVENTIVA'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => ['MATERIAL', 'EQUIPO', 'SUBCONTRATO'], 'descPrimero' => true],
+        // La cubierta liviana es techo; «CUBIERTA A GAS» es una estufa y la resuelve su propia regla.
+        ['kw' => ['CUBIERTA LIVIANA', 'CUBIERTA METALICA', 'TEJA'], 'paq' => 'Sum + Inst CUBIERTAS METÁLICAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Gárgolas y rejillas de desagüe: red hidrosanitaria.
+        ['kw' => ['GARGOLA', 'TUBERIA PARA FILTRO'], 'paq' => 'Sum + Inst INSTALACIONES HIDROSANITARIAS', 'tipos' => ['MATERIAL', 'MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // Una impermeabilización es del impermeabilizador aunque la actividad nombre el jacuzzi.
+        ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'descPrimero' => true],
+
+        // ── A3.4 · Oficios que AIA contrata partidos: el suministro y la instalación van a paquetes
+        // distintos, así que el TIPO DE RECURSO del insumo decide cuál de los dos le toca. Doctrina
+        // de la dirección de obra: «tengo 2 contratos, uno por fabricación y suministro y otro por
+        // mano de obra… ellos tienen 2 razones sociales». Van primero porque son más específicas que
+        // las reglas de alcance a todo costo que vienen después.
+        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA MADERA', 'PUERTA EN MADERA', 'CARPINTERIA MADERA', 'CARPINTERIA EN MADERA', 'CLOSET', 'ALACENA', 'VESTIER'], 'paq' => 'M. de O CARPINTERÍA DE MADERA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PUERTA CORTAFUEGO', 'PUERTA CORTA FUEGO'], 'paq' => 'Suministro PUERTAS CORTAFUEGO', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['CORTAFUEGO', 'CORTA FUEGO'], 'paq' => 'M. de O PUERTAS CORTAFUEGO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA', 'PUERTA EN LAMINA'], 'paq' => 'Suministro PUERTAS METÁLICAS', 'tipos' => ['MATERIAL', 'SUBCONTRATO'], 'soloDesc' => true, 'descPrimero' => true],
+        ['kw' => ['PUERTA METALICA', 'PUERTA METALIVA'], 'paq' => 'M. de O PUERTAS METÁLICAS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
+        // El epóxico es el consumible del anclaje químico, no un aditivo de concreto.
+        ['kw' => ['EPOXICO', 'ANCLAJE QUIMICO', 'ANCLAJES QUIMICOS'], 'paq' => 'Suministro ANCLAJES', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // «Suministro solo. La MO la ejecutan los de la carpintería de madera.»
+        ['kw' => ['CAMPANA EXTRACTORA', 'ASADOR', 'ESTUFA', 'HORNO EMPOTRA', 'CUBIERTA A GAS'], 'paq' => 'Suministro DOTACIÓN COCINAS Y LAVADEROS', 'tipos' => ['MATERIAL'], 'soloDesc' => true, 'descPrimero' => true],
+        // «Aparte del urbanismo, y el suministro por aparte también.»
+        ['kw' => ['TOPELLANTA'], 'paq' => 'M. de O TOPELLANTAS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
+        // El transporte de personal es un contrato distinto del acarreo de materiales.
+        ['kw' => ['BUSETA', 'BUS DE PERSONAL', 'TRANSPORTE DE PERSONAL'], 'paq' => 'Alquiler de transporte de personal', 'tipos' => [], 'soloDesc' => true, 'descPrimero' => true],
+
         // ── A3.3 · Overrides destilados a conocimiento generalizable ────────────────────────────
         // Estas reglas nacen de revisar las 158 entradas curadas a mano para DAPORTO: 89 eran
         // redundantes (la regla ya acertaba) y las otras 69 tapaban huecos que, sin ellas, el motor
@@ -166,12 +226,14 @@ final class PaquetesService
         // y pertenece a la cuadrilla de estructura (regla más abajo); por eso aquí se filtra por tipo.
         ['kw' => ['ACARREO', 'FLETE', 'BUSETA', 'TRANSPORTE INTERNO', 'TRANSPORTE DE MATERIAL'], 'paq' => 'Transporte y acarreos', 'tipos' => ['TRANSPORTE'], 'soloDesc' => true],
         // Bolsas de presupuesto sin alcance definido: no se le compran a nadie todavía.
-        ['kw' => ['PARTIDA PRESUPUESTAL', 'RESANE', 'DETALLE CASAS', 'DETALLE APARTAMENTO'], 'paq' => 'Provisiones y partidas globales', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'soloDesc' => true],
+        ['kw' => ['PARTIDA PRESUPUESTAL', 'DETALLE CASAS', 'DETALLE APARTAMENTO'], 'paq' => 'Provisiones y partidas globales', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL'], 'soloDesc' => true],
         // Zonas verdes: la grama tiene contrato propio y gana por específica; el resto del oficio
         // (arborización, especies vegetales, jardinería) va a paisajismo.
         ['kw' => ['GRAMA', 'ENGRAMADO'], 'paq' => 'Sum + Inst ENGRAMADO', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['ARBOL', 'ESPECIE VEGETAL', 'ESPECIES VEGETALES', 'JARDINERIA', 'PAISAJISMO', 'SIEMBRA'], 'paq' => 'Sum + Inst PAISAJISMO Y ZONAS VERDES', 'tipos' => ['SUBCONTRATO', 'MATERIAL', 'MANO DE OBRA'], 'descPrimero' => true],
         // Servicios y obras menores con paquete propio ya en el catálogo, que el motor no usaba.
+        // Toda la topografía en un solo paquete (revisión en obra 2026-07-27): la comisión y el
+        // replanteo los hace el mismo topógrafo, con o sin equipos propios.
         ['kw' => ['LOCALIZACION Y REPLANTEO', 'TOPOGRAFIA', 'COMISION TOPOGRAFICA'], 'paq' => 'Sum + Inst TOPOGRAFÍA', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['LECHO FILTRANTE', 'MATERIAL FILTRANTE', 'FILTRO'], 'paq' => 'M. de O FILTROS', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['CUNETA'], 'paq' => 'M. de O CUNETA TALUD', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
@@ -208,6 +270,7 @@ final class PaquetesService
         // ── Trámites y servicios: tienen su propio proceso de contratación, no son «indirectos» ──
         ['kw' => ['RETILAP', 'CERTIFICACION RETIE', 'INSPECCION RETIE'], 'paq' => 'Sum + Inst CERTIFICACION RETILAP Y RETIE', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['VIGILANCIA'], 'paq' => 'Sum + Inst SERVICIO DE VIGILANCIA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
+        ['kw' => ['ASEO PERMANENTE', 'ASEO DE OBRA', 'ASEO MENSUAL'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => [], 'descPrimero' => true],
         ['kw' => ['ASEO'], 'paq' => 'Sum + Inst ASEO FINAL DE OBRA', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['LAVADA', 'HIDROFUG'], 'ctx' => ['FACHADA'], 'paq' => 'Sum + Inst LAVADA E HIDROFUGADA DE FACHADAS', 'tipos' => ['SUBCONTRATO'], 'descPrimero' => true],
         ['kw' => ['DEMARCACION', 'NUMERACION'], 'ctx' => ['PARQUEADERO', 'VIAL', 'CELDA'], 'paq' => 'Sum + Inst PINTURA DEMARCACIÓN, NUMERACIÓN Y FLECHAS DE PARQUEADEROS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA'], 'descPrimero' => true],
@@ -215,8 +278,8 @@ final class PaquetesService
         ['kw' => ['POLISOMBRA', 'INVERNADERO', 'PROTECCION TEMPORAL', 'PROTECCION CON PLASTICO'], 'paq' => self::PAQUETE_INDIRECTOS, 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
 
         // ── Instalaciones (subcontrato / a todo costo) ──
-        // Impermeabilización antes que ascensores: el ascensorista no impermeabiliza el foso.
-        ['kw' => ['IMPERMEABILIZ'], 'ctx' => ['FOSO', 'ASCENSOR'], 'paq' => 'Sum + Inst IMPERMEABILIZACIÓN FOSO DE ASCENSOR', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
+        // Impermeabilización antes que ascensores: el ascensorista no impermeabiliza el foso — pero
+        // tampoco necesita paquete aparte, lo hace el mismo impermeabilizador (revisión en obra).
         ['kw' => ['IMPERMEABILIZ'], 'paq' => 'Sum + Inst IMPERMEABILIZACIONES', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA', 'MATERIAL']],
         // Aparatos sanitarios en M.O. antes que la red hidrosanitaria: es el instalador de aparatos.
         ['kw' => ['REJILLA DE PISO', 'REJILLA PARA DUCHA', 'SIFON', 'CROMAD', 'GRIFERIA', 'LAVAMANOS', 'LAVAPLATOS', 'ORINAL', 'APARATO SANITARIO'], 'paq' => 'M. de O APARATOS SANITARIOS Y GRIFERÍA', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
@@ -229,8 +292,10 @@ final class PaquetesService
         // Cielos rasos ANTES de pintura y ventanería: el drywallero entrega el cielo pintado.
         ['kw' => ['CIELO', 'DRYWALL', 'SUPERBOARD', 'CIELORRASO', 'FALSO'], 'paq' => 'Sum + Inst CIELOS RASOS', 'tipos' => ['SUBCONTRATO', 'MANO DE OBRA']],
         ['kw' => ['CLOSET', 'MUEBLE', 'COCINA INTEGRAL', 'MOBILIARIO', 'VESTIER', 'ALACENA', 'LINO'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
-        // La puerta de madera es producto de catálogo; el closet es medida y despiece: gremios distintos.
-        ['kw' => ['PUERTA EN MADERA', 'PUERTA MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Sum + Inst PUERTAS EN MADERA', 'tipos' => ['SUBCONTRATO']],
+        // La puerta de madera es producto de catálogo; el closet es medida y despiece: gremios
+        // distintos. Y por ser producto se COMPRA: aunque el presupuesto la traiga como subcontrato,
+        // su destino es el suministro, no un alcance a todo costo (revisión en obra 2026-07-27).
+        ['kw' => ['PUERTA EN MADERA', 'PUERTA MADERA', 'PUERTA CORREDIZA MADERA'], 'paq' => 'Suministro PUERTAS EN MADERA', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['CARPINTERIA MADERA'], 'paq' => 'Sum + Inst CARPINTERÍA DE MADERA', 'tipos' => ['SUBCONTRATO']],
         ['kw' => ['CABINA', 'DIVISION DE DUCHA', 'DIVISIONES DE BANO', 'ESPEJO'], 'ctx' => ['BANO', 'DUCHA', 'APTO', 'VIDRIO TEMPLADO'], 'paq' => 'Sum + Inst CABINAS Y ESPEJOS DE BAÑOS', 'tipos' => ['SUBCONTRATO', 'MATERIAL'], 'descPrimero' => true],
         ['kw' => ['VENTAN', 'VIDRIO', 'VIDRIER', 'FACHADA FLOTANTE', 'ALUMINIO'], 'paq' => 'Sum + Inst VENTANERÍA', 'tipos' => ['SUBCONTRATO']],
@@ -271,8 +336,9 @@ final class PaquetesService
         ['kw' => ['PORCELANATO', 'CERAMIC', 'GRES', 'TABLETA', 'BALDOSA', 'ADOQUIN'], 'ctx' => ['PISO', 'ZOCALO', 'GUARDAESCOBA', 'PIRLAN', 'ADOQUIN'], 'paq' => 'M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO'], 'descPrimero' => true],
         // Mediacaña sin contexto de cubierta: pendiente explícito (no la rellenan tokens/agrupación).
         ['kw' => ['MEDIA CANA', 'MEDIACANA'], 'paq' => self::SIN_PROPUESTA, 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
-        // Enchape de MURO (el de piso ya se resolvió arriba).
-        ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O ENCHAPES CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
+        // Enchape de MURO. «Pisos y enchapes son el mismo contrato» (revisión en obra 2026-07-27):
+        // lo instala el mismo enchapador, así que comparte paquete con el piso.
+        ['kw' => ['ENCHAPE', 'CERAMIC', 'PORCELANATO', 'BALDOSA', 'GRES', 'PUENTE ADHERENCIA'], 'paq' => 'M. de O INSTALACIÓN DE PISOS CERÁMICOS', 'tipos' => ['MANO DE OBRA', 'SUBCONTRATO']],
         ['kw' => ['TRANSPORTE INTERNO DE CONCRETO', 'TRANSPORTE INTERNO DE ACERO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA'], 'descPrimero' => true],
         ['kw' => ['PREPARACION MEZCLA', 'TRANSPORTE INTERNO', 'MEZCLA', 'PREPARACION DE CONCRETO'], 'paq' => 'M. de O ESTRUCTURA EN CONCRETO', 'tipos' => ['MANO DE OBRA']],
 
@@ -332,11 +398,12 @@ final class PaquetesService
             $params[] = '%' . addcslashes(MaestroInsumosService::normalizar($busqueda), '\\%_') . '%';
         }
         $rows = $this->db->query(
-            "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, COUNT(a.id) AS insumos_global
+            "SELECT p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales,
+                    COUNT(a.id) AS insumos_global
              FROM general_paquetes_contratacion p
              LEFT JOIN pdc_insumo_paquete a ON a.paquete_id = p.id
              WHERE {$where}
-             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion
+             GROUP BY p.id, p.nombre, p.tipo_negociacion, p.modalidad_contratacion, p.admite_materiales
              ORDER BY p.nombre ASC",
             $params,
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -345,6 +412,9 @@ final class PaquetesService
             'nombre' => $r['nombre'],
             'tipoNegociacion' => $r['tipo_negociacion'],
             'modalidad' => $r['modalidad_contratacion'],
+            // La UI lo necesita para avisar del doble conteo al elegir destino a mano, sin replicar
+            // el cuadro de compatibilidad tipo_recurso ↔ tipo_negociacion en el cliente.
+            'admiteMateriales' => (int) $r['admite_materiales'] === 1,
             'insumosGlobal' => (int) $r['insumos_global'],
         ], $rows);
     }
@@ -459,6 +529,9 @@ final class PaquetesService
         // ese par (sugerido → elegido) es la señal más valiosa que tenemos sobre dónde falla.
         if (!$delMotor) {
             $this->registrarCorrecciones($projectId, $validos, $paqueteId, $usuario);
+            // En el asistente el insumo llega SIN asignar, así que no hay destino previo del que
+            // deducir el par: la propuesta descartada viaja en la petición.
+            $this->registrarCorreccionSugerida($projectId, $validos, $paqueteId, $procedencia, $usuario);
         }
 
         // Lotes multi-fila (patrón generarVinculos): evita un round-trip por insumo.
@@ -512,10 +585,58 @@ final class PaquetesService
         }
     }
 
-    /** Marca insumos como omitidos (no van al plan de compras): paquete_id NULL, omitido=1. */
-    public function omitir(int $projectId, array $insumos, string $usuario): array
+    /**
+     * Registra la propuesta que un humano descartó cuando el insumo no tenía destino previo.
+     *
+     * `registrarCorrecciones()` deduce el par leyendo lo que ya había en `pdc_insumo_paquete`, pero
+     * en el asistente el insumo llega sin asignar: no hay nada que leer. Aquí el par viaja explícito
+     * en `$procedencia` y se escribe tal cual. `$paqueteElegido` es NULL cuando la decisión fue
+     * omitir — rechazar hacia fuera del plan también es corregir al motor.
+     */
+    private function registrarCorreccionSugerida(
+        int $projectId,
+        array $validos,
+        ?int $paqueteElegido,
+        array $procedencia,
+        string $usuario,
+    ): void {
+        $sugerido = filter_var($procedencia['sugeridoPaqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $capa = $procedencia['sugeridaCapa'] ?? null;
+        if ($sugerido === false || $sugerido === null || !in_array($capa, self::ORIGENES_MOTOR, true)) {
+            return;
+        }
+        if ($paqueteElegido !== null && $paqueteElegido === $sugerido) {
+            return; // el humano aceptó la propuesta: eso es un acierto, no una corrección
+        }
+        if ($validos === []) {
+            return;
+        }
+        foreach (array_chunk($validos, 200) as $lote) {
+            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, ?, ?, ?, NOW())'));
+            $params = [];
+            foreach ($lote as $u) {
+                array_push($params, $projectId, $u['norm'], $u['unidad'], $sugerido, $paqueteElegido, $capa, $usuario);
+            }
+            $this->db->query(
+                "INSERT INTO pdc_correcciones_motor
+                    (project_id, descripcion_norm, unidad, paquete_sugerido, paquete_elegido, capa_sugerida, usuario, created_at)
+                 VALUES {$valores}",
+                $params,
+            );
+        }
+    }
+
+    /**
+     * Marca insumos como omitidos (no van al plan de compras): paquete_id NULL, omitido=1.
+     *
+     * `$procedencia` puede traer la propuesta que el humano rechazó (`sugeridoPaqueteId` +
+     * `sugeridaCapa`): omitir lo que el motor proponía es un fallo suyo y se registra igual que
+     * mandarlo a otro paquete, con el destino elegido en NULL.
+     */
+    public function omitir(int $projectId, array $insumos, string $usuario, array $procedencia = []): array
     {
         $validos = self::insumosValidos($insumos);
+        $this->registrarCorreccionSugerida($projectId, $validos, null, $procedencia, $usuario);
         foreach (array_chunk($validos, 200) as $lote) {
             $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, NULL, 1, ?, NOW())'));
             $params = [];
@@ -735,19 +856,30 @@ final class PaquetesService
         $propuestas = [];
         foreach ($ins['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
-            // Un MATERIAL se compra por lo que es, no por dónde se usa: la actividad no debe influir
-            // en su destino (A3.3). Solo mano de obra y subcontrato dependen del frente de obra.
-            $actividad = self::mandaLaActividad($insumo['tipoRecurso'] ?? null) ? ($actMap[$clave] ?? '') : '';
+            $rama = $actMap[$clave] ?? ['actividad' => '', 'cadena' => [], 'esIndirecto' => false];
+            // Un MATERIAL se compra por lo que es, no por dónde se usa: su rama no debe influir en el
+            // destino (A3.3). Solo mano de obra y subcontrato dependen del frente de obra.
+            $mandaRama = self::mandaLaActividad($insumo['tipoRecurso'] ?? null);
+            $cadena = $mandaRama ? $rama['cadena'] : [];
+            $actividad = $mandaRama ? $rama['actividad'] : '';
             // El veto de reglas corta la cascada: ni tokens ni agrupacion deben rellenar un pendiente.
             $porReglas = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
                 ?? $this->sugerirExacta($projectId, $insumo)
-                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+                ?? $this->sugerirPorReglas($insumo, $cadena, $catalogo);
             if (($porReglas['veto'] ?? false) === true) {
                 $p = null;
             } else {
                 $p = $porReglas
+                    // Si el propio presupuesto lo cuelga del capítulo de costos indirectos, esa
+                    // clasificación estructural pesa más que parecerse a un insumo de otra obra:
+                    // se adelanta a la similitud de texto (A3.4).
+                    ?? ($rama['esIndirecto'] === true ? $this->sugerirIndirectos($insumo, $catalogo, $rama) : null)
                     ?? $this->sugerirPorTokens($projectId, $insumo)
-                    ?? $this->sugerirIndirectos($insumo, $catalogo)
+                    ?? $this->sugerirIndirectos($insumo, $catalogo, $rama)
+                    // Último recurso para los MATERIALES que ninguna regla reconoce por su nombre: la
+                    // rama es mejor pista que la familia contable de SINCO, que es la que mandaba el
+                    // asador a gas a hidrosanitarias. Confianza baja: nunca se auto-asigna.
+                    ?? $this->sugerirPorRamaDeMaterial($insumo, $rama['cadena'], $catalogo)
                     ?? $this->sugerirPorAgrupacion($insumo);
             }
             // Si la propuesta se apoyó en una actividad que apenas concentra valor, el motor lo dice
@@ -934,19 +1066,22 @@ final class PaquetesService
         $vid = (int) $version['id'];
         $rows = $this->db->query(
             "SELECT ai.descripcion, ai.unidad, ai.cantidad_total, ai.valor_total,
-                    it.codigo, it.descripcion AS actividad
+                    it.codigo, it.descripcion AS actividad, ai.item_id
              FROM pdc_presupuesto_apu_insumos ai
              JOIN pdc_presupuesto_items it ON it.id = ai.item_id
              WHERE ai.project_id = ? AND ai.version_id = ?
              ORDER BY ai.valor_total DESC",
             [$projectId, $vid],
         )->fetchAll(\PDO::FETCH_ASSOC);
+        $rutas = $this->rutasDeItems($projectId, $vid);
 
         $mapa = [];
         foreach ($rows as $r) {
             $clave = MaestroInsumosService::normalizar((string) $r['descripcion']) . '@@' . mb_strtoupper(trim((string) $r['unidad']));
             if (!isset($mapa[$clave])) {
-                $mapa[$clave] = ['total' => 0, 'items' => []];
+                // El ORDER BY es por valor: la primera fila de cada insumo es su actividad dominante,
+                // y su ruta es la que explica una propuesta decidida por la rama y no por el nombre.
+                $mapa[$clave] = ['total' => 0, 'items' => [], 'ruta' => $rutas[(int) $r['item_id']] ?? ''];
             }
             $mapa[$clave]['total']++;
             if (count($mapa[$clave]['items']) < $tope) {
@@ -959,6 +1094,39 @@ final class PaquetesService
             }
         }
         return ['version' => ['id' => $vid, 'label' => $version['version_label']], 'mapa' => $mapa];
+    }
+
+    /**
+     * Ruta legible de cada ítem de una versión: «CAPÍTULO › subcapítulo › grupo › actividad».
+     *
+     * Un solo SELECT y la cadena se arma en memoria, igual que en actividadDominantePorInsumo():
+     * son ~500 filas por versión y resolverlas nivel a nivel serían miles de round-trips.
+     */
+    private function rutasDeItems(int $projectId, int $versionId): array
+    {
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, descripcion FROM pdc_presupuesto_items
+             WHERE project_id = ? AND version_id = ?',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porCodigo = [];
+        foreach ($items as $it) {
+            $porCodigo[(string) $it['codigo']] = $it;
+        }
+
+        $rutas = [];
+        foreach ($items as $it) {
+            $cadena = [];
+            $actual = $it;
+            $guard = 0;
+            while ($actual !== null && $guard++ < 12) {
+                $cadena[] = (string) $actual['descripcion'];
+                $padre = $actual['codigo_padre'];
+                $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
+            }
+            $rutas[(int) $it['id']] = implode(' › ', array_reverse($cadena));
+        }
+        return $rutas;
     }
 
     /** Catálogo activo indexado por nombre_norm → {id, nombre, tipoNegociacion} (una consulta). */
@@ -1015,17 +1183,123 @@ final class PaquetesService
     }
 
     /** Actividad dominante (mayor valor) por insumo de la versión: NORMA@@UNIDAD → texto de la actividad. */
+    /**
+     * Actividad dominante de cada insumo + su CADENA DE ANCESTROS, de la actividad hacia arriba.
+     *
+     * Hasta A3.3 esto devolvía solo el texto de la actividad, y con eso se perdía la señal cuando el
+     * oficio no estaba en su nombre: «REBANCO COCINA» no dice «piso» pero cuelga del grupo «PISOS EN
+     * ZONAS PRIVADAS». Ahora se devuelve la rama entera para que las reglas puedan subir (A3.4).
+     *
+     * El capítulo queda FUERA de la cadena a propósito: solo toma dos valores (COSTO DIRECTO /
+     * INDIRECTO), así que no puede identificar ningún oficio. Su información viaja aparte, en
+     * `esIndirecto`, porque sí dice algo: lo que cuelga de indirectos no se contrata como obra.
+     *
+     * @return array<string, array{actividad: string, cadena: list<array{descripcion: string, tipoFila: string}>, esIndirecto: bool}>
+     */
     private function actividadDominantePorInsumo(int $projectId, ?int $versionId): array
     {
-        $act = $this->actividadesPorInsumo($projectId, $versionId, 1);
-        if ($act === null) {
+        $version = $this->versionDe($projectId, $versionId);
+        if ($version === null) {
             return [];
         }
+        $vid = (int) $version['id'];
+
+        // Un solo SELECT de los ítems y la rama se arma en memoria: son ~500 filas por versión y
+        // resolverlas con una consulta por nivel serían miles de round-trips.
+        $items = $this->db->query(
+            'SELECT id, codigo, codigo_padre, tipo_fila, descripcion
+             FROM pdc_presupuesto_items WHERE project_id = ? AND version_id = ?',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $porId = [];
+        $porCodigo = [];
+        foreach ($items as $it) {
+            $porId[(int) $it['id']] = $it;
+            $porCodigo[(string) $it['codigo']] = $it;
+        }
+
+        // Actividad de mayor valor por insumo. Se lee de los APU y no de `pdc_insumo_actividades`
+        // a propósito: esa tabla se materializa perezosamente y podría ir por detrás de los datos.
+        // Aquí la fuente de verdad manda.
+        $filas = $this->db->query(
+            'SELECT ai.descripcion, ai.unidad, ai.item_id, it.descripcion AS actividad,
+                    SUM(ai.valor_total) AS valor
+             FROM pdc_presupuesto_apu_insumos ai
+             JOIN pdc_presupuesto_items it ON it.id = ai.item_id
+             WHERE ai.project_id = ? AND ai.version_id = ?
+             GROUP BY ai.descripcion, ai.unidad, ai.item_id, it.descripcion
+             ORDER BY valor DESC',
+            [$projectId, $vid],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
         $mapa = [];
-        foreach ($act['mapa'] as $clave => $info) {
-            $mapa[$clave] = (string) ($info['items'][0]['actividad'] ?? '');
+        $cacheRama = [];
+        foreach ($filas as $f) {
+            $clave = MaestroInsumosService::normalizar((string) $f['descripcion'])
+                . '@@' . mb_strtoupper(trim((string) $f['unidad']));
+            if (isset($mapa[$clave])) {
+                continue; // ya tenemos la de mayor valor: el ORDER BY garantiza que es la primera
+            }
+            $itemId = (int) $f['item_id'];
+            if (!isset($cacheRama[$itemId])) {
+                $cadena = [];
+                $esIndirecto = false;
+                $actual = $porId[$itemId] ?? null;
+                while ($actual !== null) {
+                    if ($actual['tipo_fila'] === 'capitulo') {
+                        // Tope: el capítulo no nombra oficios, solo naturaleza.
+                        $esIndirecto = str_contains(mb_strtoupper((string) $actual['descripcion']), 'INDIRECTO');
+                        break;
+                    }
+                    $cadena[] = ['descripcion' => (string) $actual['descripcion'], 'tipoFila' => (string) $actual['tipo_fila']];
+                    $padre = $actual['codigo_padre'];
+                    $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
+                }
+                $cacheRama[$itemId] = ['cadena' => $cadena, 'esIndirecto' => $esIndirecto];
+            }
+            $mapa[$clave] = [
+                'actividad' => (string) $f['actividad'],
+                'cadena' => $cacheRama[$itemId]['cadena'],
+                'esIndirecto' => $cacheRama[$itemId]['esIndirecto'],
+            ];
         }
         return $mapa;
+    }
+
+    /**
+     * Último recurso para un MATERIAL que ninguna regla reconoce por su nombre (A3.4).
+     *
+     * La doctrina no cambia: un material se compra por lo que es, y por eso su rama no entra en la
+     * pasada normal de reglas. Pero cuando el nombre no dice nada, el frente donde se consume es
+     * mejor pista que la familia contable de SINCO — que es la capa que mandaba el asador a gas a
+     * instalaciones hidrosanitarias. Siempre confianza baja: esto no se auto-asigna nunca.
+     *
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena
+     */
+    private function sugerirPorRamaDeMaterial(array $insumo, array $cadena, array $catalogo): ?array
+    {
+        if ($cadena === [] || self::mandaLaActividad($insumo['tipoRecurso'] ?? null)) {
+            return null; // la mano de obra ya usó la rama en la pasada de reglas
+        }
+        $p = $this->sugerirPorReglas($insumo, $cadena, $catalogo);
+        if ($p === null || ($p['veto'] ?? false) === true) {
+            return null;
+        }
+        $p['confianza'] = 'baja';
+        $p['evidencia'] = rtrim($p['evidencia'], '.')
+            . '. Ningún criterio reconoce este material por su nombre: el destino sale del frente donde se consume.';
+        return $p;
+    }
+
+    /** Etiqueta legible del nivel jerárquico, para que la evidencia diga de dónde salió el acierto. */
+    private static function etiquetaNivel(string $tipoFila): string
+    {
+        return match ($tipoFila) {
+            'actividad' => 'actividad padre',
+            'grupo' => 'grupo',
+            'subcapitulo' => 'subcapítulo',
+            default => 'rama',
+        };
     }
 
     /**
@@ -1355,10 +1629,13 @@ final class PaquetesService
     }
 
     /** Capa reglas (media): diccionario de dominio sobre descripción + actividad dominante, filtrado por tipo_recurso. */
-    private function sugerirPorReglas(array $insumo, string $actividad, array $catalogo): ?array
+    /**
+     * @param list<array{descripcion: string, tipoFila: string}> $cadena rama de la actividad hacia
+     *        arriba (actividad → grupo → subcapítulo), sin el capítulo.
+     */
+    private function sugerirPorReglas(array $insumo, array $cadena, array $catalogo): ?array
     {
         $desc = self::henoParaReglas($insumo['descripcionNorm']);
-        $act = $actividad !== '' ? self::henoParaReglas(MaestroInsumosService::normalizar($actividad)) : '';
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
 
         // Doctrina de precedencia (feedback del usuario 2026-07-25):
@@ -1367,11 +1644,29 @@ final class PaquetesService
         //  2) Si la descripcion calla, el material/trabajo lo aporta la ACTIVIDAD PADRE dominante.
         //  3) Respaldo: el resto de reglas sobre la descripcion.
         // Las reglas de material (`soloDesc`) nunca miran la actividad: el nombre identifica el producto.
-        $pasadas = [
-            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => true],
-            ['heno' => $act, 'origen' => 'actividad', 'soloDescPrimero' => false],
-            ['heno' => $desc, 'origen' => 'descripcion', 'soloDescPrimero' => false],
+        // Orden de pasadas (A3.4). Los ancestros se recorren de abajo arriba —gana el nivel más
+        // cercano, que es el que mejor describe lo que se ejecuta—, pero la descripción del propio
+        // insumo se agota ANTES de subir más allá de la actividad directa. Sin eso, un paraguas como
+        // «MAMPOSTERIA Y REVOQUE» se lleva un «M.O. ENCHAPE CERAMICA» que su propio nombre resolvía:
+        // el subcapítulo agrupa oficios distintos y no puede pisar al insumo.
+        $eslabonPasada = static fn (array $e): array => [
+            'heno' => self::henoParaReglas(MaestroInsumosService::normalizar($e['descripcion'])),
+            'origen' => 'actividad',
+            'nivel' => $e['tipoFila'],
+            'texto' => $e['descripcion'],
+            'soloDescPrimero' => false,
         ];
+        $actividadDirecta = ($cadena[0]['tipoFila'] ?? '') === 'actividad' ? array_slice($cadena, 0, 1) : [];
+        $ancestros = array_slice($cadena, count($actividadDirecta));
+
+        $pasadas = [['heno' => $desc, 'origen' => 'descripcion', 'nivel' => '', 'soloDescPrimero' => true]];
+        foreach ($actividadDirecta as $e) {
+            $pasadas[] = $eslabonPasada($e);
+        }
+        $pasadas[] = ['heno' => $desc, 'origen' => 'descripcion', 'nivel' => '', 'soloDescPrimero' => false];
+        foreach ($ancestros as $e) {
+            $pasadas[] = $eslabonPasada($e);
+        }
 
         foreach ($pasadas as $pasada) {
             if (trim($pasada['heno']) === '') {
@@ -1405,7 +1700,7 @@ final class PaquetesService
                         }
                     }
                     $donde = $pasada['origen'] === 'actividad'
-                        ? "en su actividad padre «{$actividad}»"
+                        ? 'en su ' . self::etiquetaNivel((string) $pasada['nivel']) . " «{$pasada['texto']}»"
                         : 'en la descripcion del insumo';
                     // Veto explicito: sin senal suficiente es preferible dejarlo pendiente que inventar.
                     if ($regla['paq'] === self::SIN_PROPUESTA) {
@@ -1486,10 +1781,20 @@ final class PaquetesService
     }
 
     /** Capa indirectos (media): admin/nómina/dotación → paquete «Indirectos / Administración». */
-    private function sugerirIndirectos(array $insumo, array $catalogo): ?array
+    /**
+     * @param array{actividad: string, cadena: list<array{descripcion: string, tipoFila: string}>, esIndirecto: bool} $rama
+     */
+    private function sugerirIndirectos(array $insumo, array $catalogo, array $rama = ['actividad' => '', 'cadena' => [], 'esIndirecto' => false]): ?array
     {
         $tipoRecurso = mb_strtoupper((string) ($insumo['tipoRecurso'] ?? ''));
-        $desc = ' ' . $insumo['descripcionNorm'] . ' ';
+        // La rama cuenta aquí aunque el insumo sea un material: lo que cuelga del capítulo de costos
+        // indirectos no se le compra a un contratista de alcance, sea lo que sea (A3.4). Y el nombre
+        // del frente («PAPELERIA Y UTILES») suele decirlo cuando el del insumo calla.
+        $heno = $insumo['descripcionNorm'];
+        foreach ($rama['cadena'] as $eslabon) {
+            $heno .= ' ' . MaestroInsumosService::normalizar($eslabon['descripcion']);
+        }
+        $desc = ' ' . $heno . ' ';
         $casa = static function (array $kws) use ($desc): ?string {
             foreach ($kws as $kw) {
                 if (self::casaKeyword($desc, $kw)) { return $kw; }
@@ -1515,6 +1820,9 @@ final class PaquetesService
         } elseif (($kw = $casa(self::KEYWORDS_INDIRECTOS)) !== null) {
             $destino = self::PAQUETE_INDIRECTOS;
             $motivo = "«{$kw}» en la descripcion";
+        } elseif ($rama['esIndirecto'] === true) {
+            $destino = self::PAQUETE_INDIRECTOS;
+            $motivo = 'cuelga del capitulo de costos indirectos del presupuesto';
         }
         if ($destino === null) {
             return null;
@@ -1577,7 +1885,8 @@ final class PaquetesService
         $salida = [];
         foreach ($sin['insumos'] as $insumo) {
             $clave = $insumo['descripcionNorm'] . '@@' . mb_strtoupper((string) $insumo['unidad']);
-            $actividad = $actMap[$clave] ?? '';
+            $rama = $actMap[$clave] ?? ['actividad' => '', 'cadena' => [], 'esIndirecto' => false];
+            $actividad = (string) $rama['actividad'];
             $tokIns = self::tokens($insumo['descripcionNorm']);
             $tokAct = $actividad !== '' ? self::tokens(MaestroInsumosService::normalizar($actividad)) : [];
             $agrup = (string) ($insumo['agrupacion'] ?? '');
@@ -1608,7 +1917,7 @@ final class PaquetesService
 
             // La propuesta del motor (regla/override) encabeza siempre, con confianza alta.
             $delMotor = $this->sugerirOverrideIA($insumo, $overrides, $catalogo)
-                ?? $this->sugerirPorReglas($insumo, $actividad, $catalogo);
+                ?? $this->sugerirPorReglas($insumo, $rama['cadena'], $catalogo);
             if ($delMotor !== null && ($delMotor['veto'] ?? false) !== true) {
                 $cands = array_values(array_filter($cands, static fn (array $c): bool => $c['paquete'] !== $delMotor['paqueteNombre']));
                 array_unshift($cands, [

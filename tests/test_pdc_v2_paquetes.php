@@ -23,7 +23,7 @@ $P1 = 999901; $P2 = 999902;
 $limpiar = static function () use ($db, $P1, $P2): void {
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_correcciones_motor WHERE project_id IN (?, ?)', [$P1, $P2]);
-    $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a3'");
+    $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por IN ('test-a3', 'test-a36')");
     $db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P1, $P2]);
     $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P1, $P2]);
@@ -62,12 +62,27 @@ foreach ($insumosP1 as $i) {
     );
 }
 
-// Fixture para actividadesPorInsumo: 2 actividades cuyo APU usa PISO CERAMICO 30X30.
-foreach ([['01.01.01.01', 'MURO EN LADRILLO'], ['01.02.03.04', 'ENCHAPE DE PISOS']] as $it) {
+// Fixture para actividadesPorInsumo: 2 actividades cuyo APU usa PISO CERAMICO 30X30, colgadas de
+// una jerarquía real (capítulo → subcapítulo → grupo). Sin padres, cualquier aserto sobre la ruta
+// del presupuesto daría verde por accidente.
+foreach ([
+    ['01', null, 1, 'capitulo', 'COSTO DIRECTO'],
+    ['01.01', '01', 2, 'subcapitulo', 'MAMPOSTERIA Y REVOQUE'],
+    ['01.01.01', '01.01', 3, 'grupo', 'MUROS Y CHAPAS'],
+    ['01.02', '01', 2, 'subcapitulo', 'PISOS Y ENCHAPES'],
+    ['01.02.03', '01.02', 3, 'grupo', 'PISOS ZONAS PRIVADAS'],
+] as $r) {
     $db->query(
         "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
-         VALUES (?, ?, ?, NULL, 4, 'actividad', ?, 'M2', 100)",
-        [$P1, $vid1, $it[0], $it[1]],
+         VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0)",
+        [$P1, $vid1, $r[0], $r[1], $r[2], $r[3], $r[4]],
+    );
+}
+foreach ([['01.01.01.01', '01.01.01', 'MURO EN LADRILLO'], ['01.02.03.04', '01.02.03', 'ENCHAPE DE PISOS']] as $it) {
+    $db->query(
+        "INSERT INTO pdc_presupuesto_items (project_id, version_id, codigo, codigo_padre, nivel, tipo_fila, descripcion, unidad, cantidad)
+         VALUES (?, ?, ?, ?, 4, 'actividad', ?, 'M2', 100)",
+        [$P1, $vid1, $it[0], $it[1], $it[2]],
     );
     $itemId = (int) $db->lastInsertId();
     $db->query(
@@ -184,6 +199,14 @@ $ceram = $act['mapa']['PISO CERAMICO 30X30@@M2'];
 $assert($ceram['total'] === 2 && count($ceram['items']) === 2, 'PISO CERAMICO lo requieren 2 actividades.');
 $codigos = array_column($ceram['items'], 'codigo');
 $assert(in_array('01.01.01.01', $codigos, true) && in_array('01.02.03.04', $codigos, true), 'El tooltip trae los códigos de actividad (amarre al cronograma A4).');
+// La ruta de la actividad de mayor valor: es lo que explica de dónde salió la propuesta del motor
+// cuando la decidió la rama y no el nombre del insumo.
+$assert(isset($ceram['ruta']), 'Cada insumo trae la ruta de su actividad dominante.');
+$assert(
+    $ceram['ruta'] === 'COSTO DIRECTO › MAMPOSTERIA Y REVOQUE › MUROS Y CHAPAS › MURO EN LADRILLO'
+    || $ceram['ruta'] === 'COSTO DIRECTO › PISOS Y ENCHAPES › PISOS ZONAS PRIVADAS › ENCHAPE DE PISOS',
+    'La ruta va del capítulo a la actividad, separada por «›»: ' . ($ceram['ruta'] ?? 'sin ruta'),
+);
 $assert($svc->actividadesPorInsumo($P2) === null, 'Proyecto sin versión → null.');
 
 // --- Herencia en re-import ---
@@ -320,6 +343,68 @@ $svc->asignar($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad'
 $plan2 = $svc->planAutoAsignacion($P1, null, 1000000);
 $claves = array_map(static fn ($a) => $a['descripcionNorm'], array_merge($plan2['auto'], $plan2['revision']));
 $assert(!in_array('ACERO DE REFUERZO 60000PSI', $claves, true), 'Un insumo con decisión humana no vuelve a proponerse.');
+
+// --- A3.6 · Corrección explícita desde el asistente -------------------------------------------
+// En el asistente el insumo llega SIN asignar, así que no hay destino previo del que deducir el par
+// sugerido→elegido. La propuesta viaja en la petición y el servicio la registra igual.
+$destinoB = (int) $svc->crearPaquete('TEST A3.6 Destino B', 'suministro', 'test-a36')['paquete']['id'];
+
+// (a) El humano descarta la propuesta y elige otro destino.
+$svc->desasignar($P1, [['descripcionNorm' => 'PISO PORCELANATO 60X60', 'unidad' => 'M2']]);
+$svc->asignar($P1, [['descripcionNorm' => 'PISO PORCELANATO 60X60', 'unidad' => 'M2']], $destinoB, 'test-a36', [
+    'sugeridoPaqueteId' => $pisosId, 'sugeridaCapa' => 'reglas',
+]);
+$fila = $db->query(
+    'SELECT origen, confirmado_humano FROM pdc_insumo_paquete
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'PISO PORCELANATO 60X60', 'M2'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($fila['origen'] === 'humano' && (int) $fila['confirmado_humano'] === 1, 'Descartar la propuesta sigue siendo una decisión humana confirmada.');
+$cd = $db->query(
+    'SELECT paquete_sugerido, paquete_elegido, capa_sugerida FROM pdc_correcciones_motor
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'PISO PORCELANATO 60X60', 'M2'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($cd !== false, 'Descartar la propuesta del asistente deja registro, aunque no hubiera destino previo.');
+$assert((int) $cd['paquete_sugerido'] === $pisosId && (int) $cd['paquete_elegido'] === $destinoB, 'La corrección guarda el par que venía en la petición.');
+$assert($cd['capa_sugerida'] === 'reglas', 'La corrección recuerda la capa que propuso.');
+
+// (b) Aceptar la propuesta tal cual NO es una corrección, aunque llegue el campo.
+$svc->desasignar($P1, [['descripcionNorm' => 'AYUDANTE DE OBRA', 'unidad' => 'HC']]);
+$svc->asignar($P1, [['descripcionNorm' => 'AYUDANTE DE OBRA', 'unidad' => 'HC']], $pisosId, 'test-a36', [
+    'origen' => 'reglas', 'confianza' => 'alta', 'evidencia' => 'Aceptada tal cual.', 'confirmado' => true,
+    'sugeridoPaqueteId' => $pisosId, 'sugeridaCapa' => 'reglas',
+]);
+$sinCorr = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_correcciones_motor WHERE project_id = ? AND descripcion_norm = ?',
+    [$P1, 'AYUDANTE DE OBRA'],
+)->fetchColumn();
+$assert($sinCorr === 0, 'Aceptar la propuesta tal cual no es una corrección: el motor acertó.');
+
+// (c) Omitir sobre una propuesta también es un fallo del motor: se registra con destino NULL.
+$svc->omitir($P1, [['descripcionNorm' => 'ACERO DE REFUERZO 60000PSI', 'unidad' => 'KG']], 'test-a36', [
+    'sugeridoPaqueteId' => $pisosId, 'sugeridaCapa' => 'tokens',
+]);
+$co = $db->query(
+    'SELECT paquete_sugerido, paquete_elegido, capa_sugerida FROM pdc_correcciones_motor
+     WHERE project_id = ? AND descripcion_norm = ? AND unidad = ?',
+    [$P1, 'ACERO DE REFUERZO 60000PSI', 'KG'],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($co !== false, 'Omitir lo que el motor proponía deja registro: rechazar hacia fuera del plan también es corregirlo.');
+$assert($co['paquete_elegido'] === null, 'Al omitir no hay destino elegido: la columna queda NULL.');
+$assert((int) $co['paquete_sugerido'] === $pisosId && $co['capa_sugerida'] === 'tokens', 'La omisión guarda qué proponía el motor y desde qué capa.');
+
+// (d) Sin el par explícito nada cambia: el modo masivo no debe verse afectado.
+$antesMasivo = (int) $db->query('SELECT COUNT(*) FROM pdc_correcciones_motor WHERE project_id = ?', [$P1])->fetchColumn();
+$svc->omitir($P1, [['descripcionNorm' => 'INSUMO NUEVO A3', 'unidad' => 'UN']], 'test-a36');
+$despuesMasivo = (int) $db->query('SELECT COUNT(*) FROM pdc_correcciones_motor WHERE project_id = ?', [$P1])->fetchColumn();
+$assert($antesMasivo === $despuesMasivo, 'Omitir sin propuesta previa no inventa una corrección.');
+
+// El catálogo expone si el paquete admite materiales: la SPA lo necesita para avisar del doble
+// conteo sin replicar la doctrina de compatibilidad en el cliente.
+$catA36 = $svc->catalogo();
+$assert($catA36 !== [] && array_key_exists('admiteMateriales', $catA36[0]), 'El catálogo expone admiteMateriales para cada paquete.');
+$assert(is_bool($catA36[0]['admiteMateriales']), 'admiteMateriales llega como booleano, no como 0/1.');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
