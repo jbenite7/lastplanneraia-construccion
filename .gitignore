@@ -139,6 +139,7 @@ tests/browser/*
 !tests/browser/programa-general-runtime-requests.mjs
 !tests/browser/programa-general.visual.mjs
 !tests/browser/programa-general-legend-hue.mjs
+!tests/browser/programa-general-legend-modal-dark.mjs
 !tests/browser/state-tint-ladder.mjs
 !tests/browser/pdc-chips-dark.mjs
 !tests/browser/modales-dark-homologacion.mjs
