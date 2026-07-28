@@ -58,7 +58,13 @@ export default function PlanFechas() {
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
-      .then((d) => { setPlan(d.plan); setAmarres(d.amarres) })
+      .then((d) => {
+        setPlan(d.plan)
+        setAmarres(d.amarres)
+        // Cuando se recargan los datos del servidor (la verdad), limpiar el overlay de correcciones
+        // pendientes: si un guardado falló y dejó un responsable revertido, este nuevo dato lo supera.
+        setResponsableOverride({})
+      })
       .catch((e) => { setPlan([]); setAmarres({}); dispatch({ type: 'FALLO', mensaje: mensajeError(e) }) })
     apiGet<{ frentes: FrenteDisponible[] }>('/plan-compras/api/plan/frentes')
       .then((d) => setFrentes(d.frentes))

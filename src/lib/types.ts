@@ -360,9 +360,9 @@ export type Desfase = {
 
 export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
 
-// `origen`/`confianza` del amarre son propios de A4 ('similitud'|'rama'; 'alta'|'media'), distintos
-// del enum de capas del sembrado de insumos (SugerenciaPaquete['capa']) — de ahí que sean string
-// libre y no se reutilice ese tipo, aunque el criterio de "aceptar la propuesta = acierto" sí se
+// Propuesta de amarre a frente del motor A4. `origen`/`confianza` son uniones literales ('similitud'|'rama'
+// y 'alta'|'media'|'baja'), distintos del enum de capas del sembrado de insumos (SugerenciaPaquete['capa'])
+// — de ahí que no se reutilice ese tipo, aunque el criterio de "aceptar la propuesta = acierto" sí se
 // reutiliza (ver procedenciaDeAmarre en planFechas.ts).
 export type SugerenciaFrente = {
   uniqueId: number
