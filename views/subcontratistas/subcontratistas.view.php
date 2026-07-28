@@ -122,10 +122,16 @@
         #hot-container td.htMiddle,
         #hot-container th.htMiddle { vertical-align: middle !important; }
 
-        /* 3. Ensure headers look premium AND centered */
+        /* 3. Ensure headers look premium AND centered.
+           NOTA: estas dos declaraciones son INERTES. Llevan !important sin capa,
+           y handsontable-module.css declara el mismo par con !important desde
+           layer(vendor); en el cascade !important el orden de capas se invierte,
+           asi que lo sin capa pierde. Lo que se renderiza hoy es el par del
+           modulo, ya oscuro. Se tokenizan al mismo par para que la fuente diga
+           la verdad y no quede un literal claro latente. */
         #hot-container th {
-            background-color: #f8f9fa !important;
-            color: #495057 !important;
+            background-color: var(--ds-active-surface-raised) !important;
+            color: var(--ds-active-text-primary) !important;
             font-weight: 600 !important;
             vertical-align: middle !important;
             text-align: center !important;
