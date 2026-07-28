@@ -146,6 +146,28 @@ test('/programa-general-actualizar: modales de auto-asociacion y exito legibles'
   expect(inlineColors, 'quedan style= de color en el markup').toBe(0);
 });
 
+test('/programacion-semanal #modal_change_monitor: cuerpo y pie legibles', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/programacion-semanal');
+  // La ruta auto-dispara save/auto-program al cargar; medir durante ese
+  // repintado da valores de un estado intermedio.
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await installContrastProbe(page);
+  await openModal(page, 'modal_change_monitor');
+
+  for (const selector of [
+    '#modal_change_monitor .cm-modal-body',
+    '#modal_change_monitor .cm-modal-footer',
+    '#modal_change_monitor .cm-close-btn',
+  ]) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+});
+
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
 // y esta inerte— puede repetirse en el propio arreglo.

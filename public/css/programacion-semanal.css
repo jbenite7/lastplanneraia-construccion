@@ -3011,7 +3011,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-modal-body {
-    background: var(--ds-color-bg-parchment);
+    background: var(--ds-active-surface);
     padding: 1.25rem 1.75rem;
 }
 
@@ -3023,9 +3023,9 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-refresh-btn {
-    background: var(--ds-color-text-inverse);
-    border: 1px solid var(--ds-color-border-default);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-surface-raised);
+    border: 1px solid var(--ds-active-border);
+    color: var(--ds-active-text-secondary);
     font-size: 0.78rem;
     padding: 0.3rem 0.75rem;
     border-radius: var(--ds-radius-xs);
@@ -3034,8 +3034,8 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-refresh-btn:hover {
-    background: var(--ds-color-surface-tint);
-    border-color: var(--ds-color-border-strong);
+    background: var(--ds-active-surface-glass);
+    border-color: color-mix(in srgb, var(--ds-active-border) 100%, var(--ds-active-text-secondary) 25%);
 }
 
 .cm-guidance {
@@ -3043,8 +3043,8 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     align-items: flex-start;
     gap: 0.5rem;
     font-size: 0.8rem;
-    color: var(--ds-color-text-secondary);
-    background: var(--ds-color-surface-tint);
+    color: var(--ds-active-text-secondary);
+    background: var(--ds-active-surface-raised);
     padding: 0.6rem 0.85rem;
     border-radius: var(--ds-radius-xs);
     margin-bottom: 1rem;
@@ -3056,10 +3056,10 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table-shell {
-    background: var(--ds-color-text-inverse);
+    background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
     overflow: hidden;
-    border: 1px solid var(--ds-color-border-subtle);
+    border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
 }
 
 .cm-table {
@@ -3068,21 +3068,21 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table thead th {
-    background: var(--ds-color-bg-page);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
-    border-bottom: 2px solid var(--ds-color-border-subtle);
+    border-bottom: 2px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
     white-space: nowrap;
 }
 
 .cm-table tbody td {
     font-size: 0.82rem;
-    color: var(--ds-color-text-primary);
+    color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--ds-color-bg-page);
+    border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
     vertical-align: middle;
 }
 
@@ -3091,21 +3091,25 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table tbody tr:hover {
-    background: var(--ds-color-bg-page);
+    background: var(--ds-active-surface-glass);
 }
 
 /* El tipo de cambio se codifica con un tinte de fondo de fila (sin stripes
-   laterales); el color semántico se mezcla sobre la superficie activa. */
+   laterales); el color semántico se mezcla sobre la superficie activa.
+   Se mezcla la mitad con matiz del par de estado, no la clara: la clara es casi
+   blanca y sobre oscuro deja los tres tintes a 2-4 puntos de distancia entre sí,
+   indistinguibles justo donde tienen que distinguirse. El 45% es el escalón
+   medido que separa los tres pares y los despega del fondo. */
 .cm-row-comprometer {
-    background: color-mix(in srgb, var(--ds-color-state-success-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-success-text) 45%, transparent);
 }
 
 .cm-row-descomprometer {
-    background: color-mix(in srgb, var(--ds-color-state-critical-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-critical-text) 45%, transparent);
 }
 
 .cm-row-insert_cnp {
-    background: color-mix(in srgb, var(--ds-color-state-warning-text) 10%, transparent);
+    background: color-mix(in srgb, var(--ds-color-state-warning-text) 45%, transparent);
 }
 
 .cm-detail-cell {
@@ -3116,23 +3120,23 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
 .cm-empty-state {
     text-align: center;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     font-style: italic;
     padding: 2rem !important;
 }
 
 .cm-modal-footer {
-    background: var(--ds-color-bg-page);
-    border-top: 1px solid var(--ds-color-border-default);
+    background: var(--ds-active-surface-raised);
+    border-top: 1px solid var(--ds-active-border);
     padding: 0.75rem 1.75rem;
     display: flex;
     justify-content: flex-end;
 }
 
 .cm-close-btn {
-    background: var(--ds-color-border-default);
+    background: var(--ds-active-surface-glass);
     border: 0;
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-active-text-primary);
     font-size: 0.82rem;
     padding: 0.4rem 1.25rem;
     border-radius: var(--ds-radius-xs);
@@ -3140,7 +3144,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-close-btn:hover {
-    background: var(--ds-color-border-default);
+    background: var(--ds-active-surface-raised);
 }
 
 .cm-badge-btn {
