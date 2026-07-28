@@ -1820,28 +1820,55 @@ table.dataTable {
   table-layout: fixed;
 }
 
-/* Headers: Clean & Logical */
+/* Headers: Clean & Logical.
+   F1 Task 5e: retokenizado EN EL SITIO. Fondo, tinta y borde se reasignan
+   juntos -eran la superficie gris clara de iOS, un casi-negro y un gris de
+   separacion- a la terna elevada del tema. Es el mismo trio de tokens que ya
+   declara `html.aia-theme-dark body.ps-page #dt_cliente_wrapper
+   table.dataTable thead th` en programacion-semanal.css, asi que el remapeo
+   es 1:1 y ademas hace que las dos hojas digan lo mismo.
+   AVISO medido, no razonado: en las tres unicas rutas del producto con una
+   DataTable viva (/programacion-semanal/{cic,cnc,cnp}; el resto de las
+   grillas son Handsontable) esta regla YA estaba anulada. Esa hoja de modulo
+   entra sin capa y, entre declaraciones !important, lo sin capa gana a
+   cualquier @layer; ademas su selector lleva un id. Medido a 1180x820 dark en
+   las tres rutas: 28+14+16 celdas de cabecera calculan la superficie elevada
+   del tema y el texto primario antes y despues de este cambio (13,64:1). El
+   cambio es defensivo -deja de haber piel clara latente si esa hoja deja de
+   ganar- y no mueve un pixel hoy. */
 table.dataTable thead th {
-  background-color: #f2f2f7 !important; /* iOS Light Gray Surface */
-  color: #1d1d1f !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
   font-weight: 600 !important;
   font-size: 0.8rem !important;
   padding: 8px 4px !important;
   text-align: center !important;
   vertical-align: middle !important;
-  border: 1px solid #d1d1d6 !important;
+  border: 1px solid var(--ds-active-border) !important;
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: normal !important; /* FIXED: Don't break mid-letter */
 }
 
-/* Data Cells: Airy yet Compact */
+/* Data Cells: Airy yet Compact.
+   F1 Task 5e: retokenizado EN EL SITIO. Borde y tinta van juntos: el gris de
+   separacion pasa al borde del tema y el gris oscuro de texto al texto
+   primario, la misma pareja que declara `... table.dataTable tbody td` en
+   programacion-semanal.css. Medido igual que la cabecera: 14 celdas en
+   /programacion-semanal/cic y la celda de "sin datos" en cnc y cnp calculan
+   ya el texto primario del tema (15,29:1 y 11,96:1), antes y despues.
+   Esta es la tinta que el tramo 5a documenta como el competidor que impidio
+   mover `table.dataTable tbody tr:hover td` al adaptador (ver la nota de la
+   linea 191). Con la tinta tokenizada el obstaculo desaparece: el competidor
+   pasa a declarar exactamente el mismo token que el hover, asi que perder la
+   especificidad ya no cambia el color. Se deja constancia y no se mueve nada:
+   el movimiento pertenece a quien lleve el hover. */
 table.dataTable tbody td {
   font-size: 0.85rem !important;
   padding: 6px 6px !important;
   vertical-align: middle !important;
-  border: 1px solid #e5e5ea !important;
-  color: #3a3a3c !important;
+  border: 1px solid var(--ds-active-border) !important;
+  color: var(--ds-active-text-primary) !important;
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: normal !important;
@@ -1866,13 +1893,41 @@ table.dataTable tbody td {
   }
 }
 
-/* Filter Row (Secondary Header): Slim & Discreet */
+/* Filter Row (Secondary Header): Slim & Discreet.
+   F1 Task 5e: el blanco puro pasa a la superficie base del tema, no a la
+   elevada: en el diseno claro esta fila era el plano llano y la cabecera de
+   arriba el gris elevado, y esa relacion se conserva invertida. Es la unica
+   declaracion de color de la regla, pero no queda tinta huerfana: la fila
+   hereda la del `thead th` de arriba, que se tokeniza en el mismo commit.
+   Medido: hoy ninguna de las tres DataTables vivas emite una segunda fila de
+   cabecera (0 elementos en las tres). Con una fila sintetica inyectada en el
+   thead de cada una, el fondo calculado sigue siendo el de la cabecera, sin
+   rastro del blanco, porque programacion-semanal.css gana igual que arriba. */
 table.dataTable thead tr:nth-child(2) th {
-  background-color: #ffffff !important;
+  background-color: var(--ds-active-surface) !important;
   padding: 2px 4px !important;
 }
 
-/* Compact Inputs inside Tables */
+/* Compact Inputs inside Tables.
+   F1 Task 5e: ESTA regla si estaba viva, al contrario que el resto del
+   bloque, y pintaba un defecto real de contraste. El brief la daba por inerte
+   sobre la medicion en reposo del tramo 5d (cero controles dentro de una
+   DataTable en las ocho rutas con grilla), pero la medicion en reposo no ve
+   el estado de edicion: `obtener_data_editar()` de CNC y CNP inyecta en
+   caliente un select y un textarea con clase `.form-control` dentro de un
+   `td` (CNC.view.php:292-345, CNP.view.php). Ahi el fondo casi blanco de esta
+   regla, con !important, le ganaba al fondo oscuro que `.form-control`
+   declara sin !important unas lineas mas arriba, mientras que la tinta se
+   quedaba en el texto primario claro de esa misma regla base. Reproducido a
+   1180x820 dark en cic, cnc y cnp inyectando el markup exacto que inyecta la
+   vista: select, textarea e input median 1,02:1, es decir texto claro sobre
+   fondo claro, ilegible.
+   Fondo y borde se reasignan juntos a la superficie base y al borde del tema,
+   los mismos tokens y el mismo patron que `.aia-modal .form-control` unas
+   lineas mas arriba. NO se anade una declaracion de tinta: `.form-control` ya
+   la fija al texto primario y anadirla aqui seria un !important nuevo. Tras
+   el cambio los tres controles miden 15,14:1 en cic y 14,87:1 en cnc y cnp
+   (la diferencia es el tinte de fila que llevan las celdas de esas dos). */
 table.dataTable input,
 table.dataTable select,
 table.dataTable textarea {
@@ -1883,8 +1938,8 @@ table.dataTable textarea {
   font-size: 0.75rem !important;
   padding: 2px 6px !important;
   border-radius: 6px !important;
-  border: 1px solid #d1d1d6 !important;
-  background-color: #fbfbfd !important;
+  border: 1px solid var(--ds-active-border) !important;
+  background-color: var(--ds-active-surface) !important;
   box-sizing: border-box !important;
   margin: 0 !important;
   box-shadow: none !important;
@@ -1901,8 +1956,19 @@ table.dataTable select {
   width: 8px;
   height: 8px;
 }
+/* F1 Task 5e: el pulgar era un gris claro fijo. Un pseudoelemento de scrollbar
+   no tiene estilo calculado que leer, asi que se midio por sustitucion: un
+   elemento sonda dentro de `.dataTables_scrollBody` con el valor viejo y con
+   el nuevo, contra el fondo real de ese contenedor en las tres rutas vivas.
+   El pulgar no es texto sino un componente de interfaz, asi que el criterio es
+   el 3:1 de WCAG 1.4.11 y lo que hay que conservar es que siga viendose: el
+   gris viejo daba 9,87:1 y el token elegido da 11,60:1. Se remapea al texto
+   secundario del tema y no al borde, que a su alfa se hunde a 1,88:1 y dejaria
+   el pulgar practicamente invisible. Es el neutro claro del tema, la misma
+   familia que ya usan los pulgares de bi-control-tower y de la leyenda de
+   /pdc; no se elige matiz nuevo. */
 .dataTables_scrollBody::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--ds-active-text-secondary);
   border-radius: 10px;
 }
 /* Dynamic Column Widths & Legibility for DataTables */
