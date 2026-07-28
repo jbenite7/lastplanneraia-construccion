@@ -215,6 +215,16 @@ $router->post('/plan-compras/api/paquetes/desasignar', [\App\Controllers\Api\Pla
 // A3.3 — auto-asignación acotada: preview de qué despacharía el motor solo y qué deja al humano.
 $router->get('/plan-compras/api/paquetes/plan-auto', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'planAuto']);
 $router->post('/plan-compras/api/paquetes/auto-asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'autoAsignar']);
+// Api/Plan de Compras v2 — plan de compras con fechas (A4). El bare "/plan" va después de los
+// sufijados a propósito (ver brief de la Task 8): aunque FastRoute resuelve rutas estáticas por
+// hashmap exacto y el orden no cambia el resultado, se preserva el orden pedido por consistencia.
+$router->get('/plan-compras/api/plan/frentes', [\App\Controllers\Api\PlanComprasPlanController::class, 'frentes']);
+$router->get('/plan-compras/api/plan/sugerencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'sugerencias']);
+$router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
+$router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
+$router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
+$router->post('/plan-compras/api/plan/calcular', [\App\Controllers\Api\PlanComprasPlanController::class, 'calcular']);
+$router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsable']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
