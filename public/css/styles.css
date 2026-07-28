@@ -858,11 +858,17 @@ table.dataTable tbody tr:hover td {
      una decision de diseno en un tramo acotado a tokenizar: revertido por
      decision del usuario (2026-07-27). Queda como el ultimo literal de este
      bloque, a proposito y documentado.
+     El tramo 5l volvio a moverlo, esta vez a --aia-blue-primary (declarado en
+     tokens.css:25): conserva el angulo de matiz pero le quita mas de la mitad
+     de la saturacion, asi que NO es equivalencia exacta y reincide en la misma
+     decision ya revertida. Restaurado el literal. Ese mismo literal se conserva
+     como excepcion en --tipo-brand (linea 1446): su tratamiento es uno solo en
+     toda la hoja.
      Ojo: esta regla entera es INERTE. public/css/pdc.css:249-265 la duplica y
      entra por <link> sin capa desde views/pdc/pdc.view.php:14, y una hoja sin
      capa gana a cualquier @layer. El toast de /pdc sigue saliendo blanco en una
      app dark-only, y su arreglo real vive en pdc.css, no aqui. */
-  border-left: 5px solid var(--aia-blue-primary); /* Accent color */
+  border-left: 5px solid #007bff; /* Accent color */
   font-family: var(--ds-font-body);
   font-size: 14px;
   display: none; /* Hidden by default */
@@ -1672,8 +1678,11 @@ table.dataTable tbody tr:hover td {
   border-color: var(--ds-active-border) !important;
 }
 
-/* Superficie legada de cabecera de bloque: un lima fuera de paleta. Se deja
-   intacta en el resto de la aplicacion y se reencamina solo dentro del modal. */
+/* Superficie legada de cabecera de bloque: un lima fuera de paleta. El tramo 5l
+   reencamino tambien la regla base (linea 218) a estos mismos dos tokens, asi
+   que este override ya no diferencia el modal del resto de la aplicacion: se
+   conserva solo por especificidad, frente a hojas de modulo que aun apunten
+   `.form_eval` dentro del modal. */
 .aia-modal .form_eval {
   border-color: var(--ds-active-border);
   background: var(--ds-active-surface-raised);
