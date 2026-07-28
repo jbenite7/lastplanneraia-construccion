@@ -188,17 +188,45 @@ Extender el escáner de `tests/design-system/state-token-pairing.test.mjs` para 
 de indirección: si una custom property se define con `var(--ds-color-state-X-bg)`, sus consumidores
 cuentan como usos de ese token. Clasificar los que aparezcan igual que en la Task 1.
 
-- [ ] **Step 0b: Resolver las 6 entradas `at-risk`**
+- [ ] **Step 0b: Aplicar las decisiones tomadas sobre las entradas `at-risk`**
 
-El inventario marca 6 entradas como `at-risk` con un campo `revisit`, pero **nada obliga a esta
-tarea a leerlo**. Son decisiones de color que la Task 1 no podía tomar:
+**CORRECCIÓN, medido el 2026-07-28: no son 6, son 14.** El inventario creció con el arreglo del
+guard (`ccd6f70`), que destapó ocho cruces más, y esta cifra se quedó vieja. Cuentan 14 entradas con
+`kind: "at-risk"`.
 
-- Sustituir `--ds-color-brand-architecture` (`#2a5a8f`) o `--ds-color-brand-aqua` (`#00a499`) por su
-  `-text` pareado mata un acento de marca.
-- `.bi-chip` **ya incumple AA hoy**: 2,83:1 a 12 px con peso 700, donde el umbral es 4,5:1.
+**Las tres decisiones de color YA ESTÁN TOMADAS (usuario, 2026-07-28). No volver a preguntar:**
 
-Medir cada una en su superficie real, proponer el valor y **parar a preguntar** antes de decidir por
-tu cuenta. Un acento de marca no se cambia dentro de un refactor de tokens.
+1. **Acentos de marca → gana el color del sistema.** Los cuatro sitios que fijan el texto en
+   `--ds-color-brand-architecture` (`#2a5a8f`) o `--ds-color-brand-aqua` (`#00a499`) pasan al
+   `-text` pareado de su fondo. Se acepta perder el acento de marca a cambio de legibilidad.
+   Afecta: `programacion-semanal.css:361`, `:1293`, `:2931` (las dos primeras son la MISMA regla
+   duplicada en la misma hoja: aprovechar para dejar una) y `bi-control-tower.css:118`.
+   Sin esto caen a 1,46:1; `.bi-chip` además **ya incumple AA hoy** a 2,83:1 y con esto pasa a
+   cumplir.
+
+2. **Variantes «solid» → se les da la vuelta al par normal.** Los seis bloques que usan el token de
+   TEXTO como relleno con `--ds-color-text-inverse` encima pasan a usar el `-bg` (que con la
+   inversión ya es oscuro) como relleno y el `-text` claro pareado encima. Afecta: `lab.css:717`,
+   `:722`, `:727`, `:850`, `:855` y **`pdc.css:235` (`.pdc-row-action--delete`, RUTA DE
+   PRODUCCIÓN)**. Sin esto van de 8,89:1 a 1,42:1.
+
+3. **El icono del login se corrige aquí.** `login.view.php:131` pinta un `icon: 'warning'` con el
+   token de `success`. Es un desajuste semántico anterior a este trabajo; se arregla de paso porque
+   es una línea y evita leer un aviso como «todo bien».
+
+**Las cuatro restantes no son decisiones de gusto: tienen una sola respuesta correcta.**
+
+- `lab.css:1143` `.ds-vendor-alert__signal` va en dirección CONTRARIA: hoy incumple a 1,90:1 y la
+  inversión lo **arregla** a 14,11:1. Después hay que **retirar su entrada** del inventario, porque
+  una entrada fantasma también hace fallar el guard.
+- `styles.css:4238` `.ct-overplanning-alert` usa el `-bg` como TINTA y hoy funciona por accidente
+  (14,96:1, porque `#fff8e1` es crema). **Trampa de orden:** emparejarlo HOY con `warning-text`
+  también lo rompe (~1,4:1). Solo es correcto tocarlo en el MISMO commit que la inversión.
+- `programacion-semanal.css:643` `.ops-state-ready` vive sobre un panel que declara
+  `background: var(--ds-color-surface)` — el token claro SIN indirección de tema. El `success-text`
+  invertido (claro) sobre una superficie clara no se lee. La causa es el panel, no la etiqueta.
+- Las dos entradas `out-of-scope-mobile` de `listado-actividades.css` siguen fuera: `AGENTS.md`
+  prohíbe CSS móvil en esta línea de trabajo.
 
 - [ ] **Step 1: Derivar y medir el texto de `info`**
 
