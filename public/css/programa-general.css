@@ -19,6 +19,16 @@
   --pg-alert-bg: var(--ds-color-state-warning-bg);
   --pg-alert-text: var(--ds-color-state-warning-text);
   --pg-alert-border: var(--ds-color-state-warning-text);
+  /* Acento cromatico del punto de la leyenda. Deliberadamente separado de
+     `--pg-*-border`: ese token pinta ~50 bordes de fila, celda y box-shadow
+     dentro de la grilla, donde se busca una hairline discreta sobre un fondo ya
+     tintado. El punto es el caso opuesto -8px solidos sobre un chip neutro- y
+     necesita el matiz entero. Sobre claro el tono de texto ya sirve tal cual. */
+  --pg-dot-alert: var(--ds-color-state-warning-text);
+  --pg-dot-due: var(--ds-color-state-warning-text);
+  --pg-dot-future: var(--ds-color-state-success-text);
+  --pg-dot-progress: var(--ds-color-state-info-text);
+  --pg-dot-delayed: var(--ds-color-state-critical-text);
   max-inline-size: 100%;
   overflow-x: clip;
   background: var(--ds-active-bg-page);
@@ -44,6 +54,20 @@ html.aia-theme-dark .pg-page {
   --pg-alert-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 48%, var(--ds-active-surface-raised) 52%);
   --pg-alert-text: var(--ds-active-text-primary);
   --pg-alert-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 58%, var(--ds-active-border) 42%);
+  /* Los `--pg-*-border` de arriba mezclan `--ds-color-state-*-bg`, que son los
+     pasteles casi blancos del tema claro: sobre oscuro esa mezcla da una
+     hairline correcta para una fila tintada, pero deja el punto de la leyenda
+     en gris (2-11 % de saturacion; «Atrasada», el urgent del modulo, caia en
+     #9c9c98). El punto se deriva por tanto del unico token del par que conserva
+     croma -`--ds-color-state-*-text`- subiendo la luminosidad en OKLCH para
+     hacerlo visible sobre oscuro sin desplazar el tono, que es lo que pasaria
+     al aclarar mezclando con blanco en sRGB.
+     Guard: tests/browser/programa-general-legend-hue.mjs mide el pixel real. */
+  --pg-dot-alert: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-due: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-progress: oklch(from var(--ds-color-state-info-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-delayed: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.4) h);
   --pg-restr-0-bg: var(--pg-due-bg);
   --pg-restr-0-text: var(--pg-due-text);
   --pg-restr-0-border: var(--pg-due-border);
@@ -191,11 +215,11 @@ html.aia-theme-dark .pg-page {
   background: var(--ds-active-border);
 }
 
-.pg-page #pgLegend .pg-filter-chip.alerta-restricciones .indicator { background: var(--pg-alert-border); }
-.pg-page #pgLegend .pg-filter-chip.debe-iniciar .indicator { background: var(--pg-due-border); }
-.pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-future-border); }
-.pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-progress-border); }
-.pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-delayed-border); }
+.pg-page #pgLegend .pg-filter-chip.alerta-restricciones .indicator { background: var(--pg-dot-alert); }
+.pg-page #pgLegend .pg-filter-chip.debe-iniciar .indicator { background: var(--pg-dot-due); }
+.pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-dot-future); }
+.pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-dot-progress); }
+.pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-dot-delayed); }
 
 .pg-page #pgLegend .pg-filter-chip[aria-pressed="true"] {
   border-color: var(--ds-active-text-secondary);
