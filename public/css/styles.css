@@ -862,8 +862,9 @@ table.dataTable tbody tr:hover td {
      tokens.css:25): conserva el angulo de matiz pero le quita mas de la mitad
      de la saturacion, asi que NO es equivalencia exacta y reincide en la misma
      decision ya revertida. Restaurado el literal. Ese mismo literal se conserva
-     como excepcion en --tipo-brand (linea 1446): su tratamiento es uno solo en
-     toda la hoja.
+     como excepcion en el --tipo-brand de `.aia-tipo-pill--si`: su tratamiento es
+     uno solo en toda la hoja. (Referencia por selector y no por linea: la cita
+     por numero ya se desactualizo dos veces en este mismo bloque.)
      Ojo: esta regla entera es INERTE. public/css/pdc.css:249-265 la duplica y
      entra por <link> sin capa desde views/pdc/pdc.view.php:14, y una hoja sin
      capa gana a cualquier @layer. El toast de /pdc sigue saliendo blanco en una
