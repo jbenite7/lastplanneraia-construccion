@@ -94,8 +94,22 @@
         #hot-container th {
             display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
             padding: 0 !important; /* HOT handles padding internally */
-            border-right: 1px solid #EDEDED !important;
-            border-bottom: 1px solid #EDEDED !important;
+            border-right: 1px solid var(--ds-active-border) !important;
+            border-bottom: 1px solid var(--ds-active-border) !important;
+        }
+
+        /* Par fondo/tinta de la celda. El vendor de Handsontable pinta
+           `.handsontable td, .handsontable th` con fondo blanco: aqui la tinta
+           heredada ya era casi blanca (texto de datos invisible sobre celda
+           blanca antes de este cambio). Se reasignan LOS DOS a la vez, como en
+           contratos.css:227-232.
+           SIN !important a proposito: la especificidad de id ya gana al vendor
+           (0,1,1), y un !important sin capa perderia igualmente contra
+           handsontable-module.css porque en el cascade !important el orden de
+           capas se invierte y lo sin capa queda por debajo. */
+        #hot-container td {
+            background: var(--ds-active-surface);
+            color: var(--ds-active-text-primary);
         }
 
         /* Enforce HOT alignment classes */
