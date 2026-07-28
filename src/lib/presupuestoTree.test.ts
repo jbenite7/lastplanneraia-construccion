@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filasVisibles, totalesPorItem } from './presupuestoTree'
+import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles, totalesPorItem } from './presupuestoTree'
 import type { ArbolInsumo, ArbolItem } from './types'
 
 const items: ArbolItem[] = [
@@ -129,5 +129,35 @@ describe('modo tabla (plano)', () => {
   it('en plano el filtro deja solo las coincidencias, sin ancestros', () => {
     const filas = filasVisibles(items, insumos, new Set(), { plano: true, texto: 'teja' })
     expect(filas.map((f) => f.descripcion)).toEqual(['TEJA'])
+  })
+})
+
+describe('expandirHastaNivel', () => {
+  it('con nivel 2, se ven capítulos y subcapítulos, no lo de más abajo', () => {
+    const filas = filasVisibles(items, insumos, expandirHastaNivel(items, 2))
+    expect(filas.map((f) => f.codigo)).toEqual(['01', '01.01', '02'])
+  })
+
+  it('con nivel 1 no se abre nada: solo los capítulos', () => {
+    expect(expandirHastaNivel(items, 1).size).toBe(0)
+  })
+
+  it('con nivel «insumo», se ve todo el árbol abierto', () => {
+    const filas = filasVisibles(items, insumos, expandirHastaNivel(items, NIVEL_INSUMO))
+    expect(filas.map((f) => f.descripcion)).toEqual([
+      'PRELIMINARES', 'CAMPAMENTO', 'INSTALACIONES', 'CASETA', 'TEJA', 'AYUDANTE', 'ESTRUCTURA',
+    ])
+  })
+
+  it('el conjunto que devuelve es el que el árbol ya sabe consumir', () => {
+    // No inventa una estructura nueva: son códigos, igual que los que produce hacer clic.
+    // '02' entra aunque no tenga hijos — marcar como abierta una rama vacía no cambia nada de lo
+    // que se ve, y filtrarlas costaría recorrer la jerarquía entera para nada.
+    expect(expandirHastaNivel(items, 3)).toEqual(new Set(['01', '01.01', '02']))
+  })
+
+  it('los cinco niveles del presupuesto tienen nombre, y el último es el insumo', () => {
+    expect(NIVELES_PRESUPUESTO.map((n) => n.valor)).toEqual([1, 2, 3, 4, 5])
+    expect(NIVELES_PRESUPUESTO[NIVELES_PRESUPUESTO.length - 1].valor).toBe(NIVEL_INSUMO)
   })
 })

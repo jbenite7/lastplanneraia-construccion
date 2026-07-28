@@ -9,6 +9,7 @@ import {
 import { PdcApiError, apiGet } from '../lib/api'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
+import { NIVELES_PRESUPUESTO, expandirHastaNivel } from '../lib/presupuestoTree'
 import type { Comparativo, InsumoDiff, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
 
@@ -21,6 +22,11 @@ ModuleRegistry.registerModules([
 
 const signo = (v: number) => (v > 0 ? '+' : '') + v.toLocaleString('es-CO')
 
+// Mismo vocabulario de niveles que el visor, menos el insumo: el diff jerárquico llega hasta la
+// actividad. Ofrecer un nivel que esta pantalla no tiene sería prometer algo que no va a pasar.
+const NIVELES_COMPARATIVO = NIVELES_PRESUPUESTO.filter((n) => n.etiqueta !== 'Insumo')
+const NIVEL_ACTIVIDAD = NIVELES_COMPARATIVO[NIVELES_COMPARATIVO.length - 1].valor
+
 export default function ComparativoPresupuesto() {
   const [versiones, setVersiones] = useState<VersionPresupuesto[]>([])
   const [idA, setIdA] = useState<number | null>(null)
@@ -28,6 +34,9 @@ export default function ComparativoPresupuesto() {
   const [data, setData] = useState<Comparativo | null>(null)
   const [eje, setEje] = useState<'actividades' | 'insumos'>('insumos')
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
+  // Igual que el visor: abre desplegado y con selector de nivel, para que moverse entre las dos
+  // pantallas no obligue a cambiar de idioma.
+  const [nivel, setNivel] = useState<number>(NIVEL_ACTIVIDAD)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -49,12 +58,16 @@ export default function ComparativoPresupuesto() {
     if (idA == null || idB == null || idA === idB) { setData(null); return }
     setError(null)
     apiGet<Comparativo>(`/plan-compras/api/presupuesto/comparar?versionA=${idA}&versionB=${idB}`)
-      .then((d) => { setData(d); setExpandidos(new Set()) })
+      .then((d) => setData(d))
       .catch((e) => {
         setData(null)
         setError(e instanceof PdcApiError ? e.message : e instanceof Error ? e.message : String(e))
       })
   }, [idA, idB])
+
+  useEffect(() => {
+    if (data) setExpandidos(expandirHastaNivel(data.actividades, nivel))
+  }, [data, nivel])
 
   const filasAct = useMemo(
     () => (data ? filasComparativoVisibles(data.actividades, expandidos) : []),
@@ -147,6 +160,17 @@ export default function ComparativoPresupuesto() {
           <div className="pdc-cmp-toggle">
             <button type="button" className={eje === 'insumos' ? 'activo' : ''} onClick={() => setEje('insumos')} data-testid="pdc-cmp-eje-insumos">Insumos</button>
             <button type="button" className={eje === 'actividades' ? 'activo' : ''} onClick={() => setEje('actividades')} data-testid="pdc-cmp-eje-actividades">Actividades</button>
+            {/* Solo en el eje jerárquico: la lista de insumos es plana y no tiene ramas que abrir. */}
+            {eje === 'actividades' && (
+              <label className="pdc-selector">
+                Ver hasta{' '}
+                <select data-testid="pdc-cmp-nivel" value={nivel} onChange={(e) => setNivel(Number(e.target.value))}>
+                  {NIVELES_COMPARATIVO.map((n) => (
+                    <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
 
           <div style={{ height: 520 }} data-testid="pdc-cmp-grid">

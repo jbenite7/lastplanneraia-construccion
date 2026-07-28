@@ -9,7 +9,7 @@ import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme,
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
-import { filasVisibles } from '../lib/presupuestoTree'
+import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
@@ -32,6 +32,10 @@ export default function VisorPresupuesto() {
   const [versionId, setVersionId] = useState<number | null>(null)
   const [arbol, setArbol] = useState<ArbolPresupuesto | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
+  // Hasta qué nivel se ve. Arranca en «Insumo» —el árbol abría colapsado en dos filas y había que
+  // ir abriendo carpetas a mano para llegar a lo que se venía a mirar. Son ~1.343 filas en la
+  // versión activa de Da Porto y AG Grid las virtualiza sin despeinarse (medido).
+  const [nivel, setNivel] = useState<number>(NIVEL_INSUMO)
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [texto, setTexto] = useState('')
@@ -53,7 +57,6 @@ export default function VisorPresupuesto() {
       .then((a) => {
         setArbol(a)
         setSinPresupuesto(false)
-        setExpandidos(new Set())
       })
       .catch((e) => {
         if (e instanceof PdcApiError && e.code === 'NO_VERSION') {
@@ -65,6 +68,13 @@ export default function VisorPresupuesto() {
         }
       })
   }, [versionId])
+
+  // Elegir un nivel siembra el conjunto de ramas abiertas; a partir de ahí el clic manual manda,
+  // hasta que se elija otro nivel o llegue otro árbol. Los dos gestos hablan el mismo idioma
+  // (códigos), así que no se estorban.
+  useEffect(() => {
+    if (arbol) setExpandidos(expandirHastaNivel(arbol.items, nivel))
+  }, [arbol, nivel])
 
   const filtro = useMemo(
     () => ({ texto, tipoInsumo, unidad, plano }),
@@ -138,7 +148,7 @@ export default function VisorPresupuesto() {
       <header className="pdc-header pdc-header-fila">
         <div>
           <h1>Presupuesto</h1>
-          <p>Vista del presupuesto importado. Haz clic en una fila para expandirla.</p>
+          <p>Vista del presupuesto importado. Elige hasta qué nivel verlo, o haz clic en una fila para abrirla.</p>
         </div>
         {versiones.length > 0 && (
           <label className="pdc-selector">
@@ -191,6 +201,21 @@ export default function VisorPresupuesto() {
                 {unidades.map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
             </label>
+            {/* El nivel solo tiene sentido con jerarquía: en modo tabla no hay ramas que abrir. */}
+            {!plano && (
+              <label className="pdc-selector">
+                Ver hasta{' '}
+                <select
+                  data-testid="pdc-visor-nivel"
+                  value={nivel}
+                  onChange={(e) => setNivel(Number(e.target.value))}
+                >
+                  {NIVELES_PRESUPUESTO.map((n) => (
+                    <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="pdc-visor-modo">
               <input
                 type="checkbox"

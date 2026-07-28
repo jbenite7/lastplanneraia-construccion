@@ -29,6 +29,40 @@ export type FiltroVisor = {
   plano?: boolean
 }
 
+/**
+ * Los cinco niveles del presupuesto, con el nombre que usa el equipo (ver el glosario del dominio:
+ * capítulos > subcapítulos > grupos > actividades, y el APU de cada actividad la descompone en
+ * insumos). El número es la profundidad: `nivel` de cada fila cuenta segmentos del código.
+ */
+export const NIVELES_PRESUPUESTO = [
+  { valor: 1, etiqueta: 'Capítulo' },
+  { valor: 2, etiqueta: 'Subcapítulo' },
+  { valor: 3, etiqueta: 'Grupo' },
+  { valor: 4, etiqueta: 'Actividad' },
+  { valor: 5, etiqueta: 'Insumo' },
+] as const
+
+/** El nivel más profundo: el insumo, que cuelga de la actividad y no de un código propio. */
+export const NIVEL_INSUMO = 5
+
+/**
+ * Qué hay que tener abierto para ver el árbol hasta un nivel dado.
+ *
+ * Devuelve el mismo `Set<string>` de códigos que produce hacer clic a mano —lo que `filasVisibles`
+ * ya sabe consumir—, así que el selector de nivel y el clic conviven sin estorbarse: elegir un
+ * nivel siembra el conjunto, y a partir de ahí se puede seguir abriendo o cerrando ramas sueltas.
+ *
+ * Una fila es visible cuando todos sus ancestros están abiertos, así que para ver el nivel N hay
+ * que abrir todo lo que esté por encima: los ítems con `nivel < N`. Con N = insumo eso incluye a
+ * las actividades, que es de donde cuelgan.
+ */
+export function expandirHastaNivel(
+  items: Array<{ codigo: string; nivel: number }>,
+  nivel: number,
+): Set<string> {
+  return new Set(items.filter((i) => i.nivel < nivel).map((i) => i.codigo))
+}
+
 /** Normaliza para buscar como busca la gente: sin tildes y sin importar mayúsculas. */
 const norm = (s: string): string =>
   s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
