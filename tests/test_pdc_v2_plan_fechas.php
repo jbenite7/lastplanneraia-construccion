@@ -660,6 +660,67 @@ $assert($dEfimero !== null && $dEfimero['fechaActual'] === null, 'Sin frente act
 $assert($dEfimero !== null && $dEfimero['diasMovidos'] === null, 'Sin frente actual, diasMovidos queda en null: no es un número de días.');
 $assert($dEfimero !== null && $dEfimero['fechaGuardada'] === '2026-10-01', 'La fecha guardada se conserva aunque el frente ya no exista.');
 
+// --- Importante 1 (review final A4): reamarrar a OTRO frente invalida el plan viejo ---
+// Antes de este fix, `plan()` unía la cabecera de `pdc_plan_paquete` con el `frente_nombre` VIGENTE
+// de `pdc_paquete_frente` solo por `paquete_id` — sin comparar `unique_id`: la fila mostraba el
+// nombre del frente nuevo junto a un arranque calculado contra el frente viejo, sin que nada lo
+// avisara (ni `desfases()`, porque el amarre ya estaba al día).
+$frentesVigentes = $svc->frentesDisponibles($P);
+$frenteA = $frentesVigentes[0]; // el que tenga la fecha más temprana, cualquiera sirve
+$frenteB = null;
+foreach ($frentesVigentes as $f) {
+    if ($f['uniqueId'] !== $frenteA['uniqueId']) { $frenteB = $f; break; }
+}
+$assert($frenteB !== null, 'Importante 1: el fixture tiene al menos dos frentes distintos para reamarrar.');
+
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, duracion_ref, activo, creado_por, created_at)
+     VALUES ('TEST A4 REAMARRE INVALIDA', 'TEST A4 REAMARRE INVALIDA', 'mano_obra', 'contrato', ?, 1, 'test-a4', NOW())",
+    [$durCortaId],
+);
+$paqReamarre = (int) $db->lastInsertId();
+
+$svc->amarrar($P, $paqReamarre, $frenteA['uniqueId'], 'test-a4');
+$svc->calcular($P, 'test-a4');
+
+$cabeceraAntes = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$pasosAntes = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($cabeceraAntes === 1 && $pasosAntes === 7, 'Importante 1: el plan queda calculado contra el frente A antes de reamarrar.');
+
+// Reamarre a un frente DISTINTO: el plan viejo (calculado contra A) debe desaparecer entero.
+$svc->amarrar($P, $paqReamarre, $frenteB['uniqueId'], 'test-a4');
+
+$cabeceraDespues = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$pasosDespues = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($cabeceraDespues === 0, 'Importante 1: reamarrar a otro frente borra la cabecera vieja del plan.');
+$assert($pasosDespues === 0, 'Importante 1: reamarrar a otro frente borra los pasos viejos del plan.');
+
+$planTrasReamarre = $svc->plan($P);
+$sigueEnPlan = false;
+foreach ($planTrasReamarre as $f) { if ($f['paqueteId'] === $paqReamarre) { $sigueEnPlan = true; } }
+$assert(!$sigueEnPlan, 'Importante 1: plan() ya no muestra el paquete con una fecha calculada contra el frente viejo.');
+
+$amarreTrasReamarre = $svc->amarres($P);
+$assert($amarreTrasReamarre[$paqReamarre]['uniqueId'] === $frenteB['uniqueId'],
+    'Importante 1: el amarre sí quedó actualizado al frente B (solo se invalida el plan, no el amarre).');
+
+// Reamarrar al MISMO frente (no-op de contenido) no debe invalidar nada: no hay nada viejo que purgar.
+$svc->amarrar($P, $paqReamarre, $frenteB['uniqueId'], 'test-a4');
+$svc->calcular($P, 'test-a4');
+$svc->amarrar($P, $paqReamarre, $frenteB['uniqueId'], 'test-a4');
+$cabeceraMismoFrente = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($cabeceraMismoFrente === 1, 'Importante 1: reamarrar al mismo frente no invalida un plan que sigue siendo válido.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);

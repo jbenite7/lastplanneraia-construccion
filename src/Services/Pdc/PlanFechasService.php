@@ -385,25 +385,54 @@ class PlanFechasService
         $delMotor = $origen !== 'humano';
         $semana = (int) $this->db->query('SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?', [$projectId])->fetchColumn();
 
-        $this->db->query(
-            'INSERT INTO pdc_paquete_frente
-                (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
-                 origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-             ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), frente_nombre = VALUES(frente_nombre),
-                fecha_ancla = VALUES(fecha_ancla), semana_origen = VALUES(semana_origen),
-                origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
-                confirmado_humano = VALUES(confirmado_humano), asignado_por = VALUES(asignado_por),
-                updated_at = NOW()',
-            [
-                $projectId, $paqueteId, $uniqueId, $frente['nombre'], $frente['fechaInicio'], $semana,
-                $origen,
-                $delMotor && in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true) ? $procedencia['confianza'] : null,
-                $delMotor ? mb_substr((string) ($procedencia['evidencia'] ?? ''), 0, 500) : '',
-                (!$delMotor || ($procedencia['confirmado'] ?? false) === true) ? 1 : 0,
-                $usuario,
-            ],
-        );
+        // Importante 1 del review final: si el paquete ya estaba amarrado a OTRO frente, el plan
+        // calculado (cabecera + pasos) se restó hacia atrás desde la fecha de ESE frente anterior.
+        // Guardar solo el amarre nuevo y dejar la fila vieja de `pdc_plan_paquete` intacta produce
+        // una fila que dice «Frente: X» junto a un arranque calculado contra Y — y ni `plan()` ni
+        // `desfases()` lo detectan, porque el amarre ya quedó al día con el cronograma. Se detecta
+        // ANTES del upsert, porque después ya no queda registro de cuál era el unique_id anterior.
+        $anterior = $this->db->query(
+            'SELECT unique_id FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+            [$projectId, $paqueteId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        $reamarreDistinto = $anterior !== false && (int) $anterior['unique_id'] !== $uniqueId;
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->query(
+                'INSERT INTO pdc_paquete_frente
+                    (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
+                     origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), frente_nombre = VALUES(frente_nombre),
+                    fecha_ancla = VALUES(fecha_ancla), semana_origen = VALUES(semana_origen),
+                    origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
+                    confirmado_humano = VALUES(confirmado_humano), asignado_por = VALUES(asignado_por),
+                    updated_at = NOW()',
+                [
+                    $projectId, $paqueteId, $uniqueId, $frente['nombre'], $frente['fechaInicio'], $semana,
+                    $origen,
+                    $delMotor && in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true) ? $procedencia['confianza'] : null,
+                    $delMotor ? mb_substr((string) ($procedencia['evidencia'] ?? ''), 0, 500) : '',
+                    (!$delMotor || ($procedencia['confirmado'] ?? false) === true) ? 1 : 0,
+                    $usuario,
+                ],
+            );
+
+            if ($reamarreDistinto) {
+                // El plan viejo quedó calculado contra un frente que ya no es el amarrado: se
+                // invalida entero (pasos primero, por la FK conceptual con la cabecera). El paquete
+                // cae a "amarrado, pendiente de calcular" — bloque que la SPA ya distingue de "sin
+                // frente" — hasta el próximo «Recalcular», que es un acto explícito de quien lo vea.
+                $this->db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+                $this->db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$projectId, $paqueteId]);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
         return ['ok' => true];
     }
 
