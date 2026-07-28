@@ -94,6 +94,8 @@
         #hot-container th {
             display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
             padding: 0 !important; /* HOT handles padding internally */
+            /* INERTES: handsontable-module.css ya declara esta rejilla con !important
+               desde @layer vendor, y para !important el orden de capas se invierte. */
             border-right: 1px solid var(--ds-active-border) !important;
             border-bottom: 1px solid var(--ds-active-border) !important;
         }
@@ -106,7 +108,11 @@
            SIN !important a proposito: la especificidad de id ya gana al vendor
            (0,1,1), y un !important sin capa perderia igualmente contra
            handsontable-module.css porque en el cascade !important el orden de
-           capas se invierte y lo sin capa queda por debajo. */
+           capas se invierte y lo sin capa queda por debajo.
+           EFECTO DECLARADO: por especificidad de id esta regla gana tambien a
+           `.handsontable .htDimmed` del vendor, asi que las celdas de solo lectura
+           dejan de verse atenuadas. Mismo comportamiento que contratos.css, que
+           enumera `td.htDimmed` con la tinta primaria. */
         #hot-container td {
             background: var(--ds-active-surface);
             color: var(--ds-active-text-primary);
