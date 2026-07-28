@@ -236,3 +236,88 @@ test('la tinta que gana en los botones del pie es la del tema activo, no el verd
   expect(winner.file).toContain('/css/styles.css');
   expect(winner.layers, 'la regla debe seguir en la capa module').toContain('module');
 });
+
+// La bandeja de #formulario_nuevo solo existe con filas: en reposo el <tbody>
+// trae un unico "Cargando actividades..." y ningun barrido la ve. Con filas
+// reales medidas el 2026-07-28, el boton "Usar" daba 2,03:1 y dos de los tres
+// chips de motivo caian bajo AA (3,80 y 3,59), y ninguna suite lo detectaba.
+// Las filas se inyectan con las mismas clases que emite
+// public/js/modules/programacion_semanal/hot.js (renderBandeja): lo que se
+// verifica es la piel CSS, no el render de datos.
+const BANDEJA_ROWS = `
+  <tr class="ps-row-excepcion" data-id="A-101">
+    <td class="ps-excepcion-id">A-101</td>
+    <td class="ps-excepcion-actividad">Vaciado placa</td>
+    <td><span class="ps-motivo-chip"><span class="ps-motivo-restriction">MdeO</span>pendientes</span></td>
+    <td class="text-right"><button type="button" class="btn btn-sm btn-outline-secondary btn_usar_excepcion">Usar</button></td>
+  </tr>
+  <tr class="ps-row-excepcion ps-row-selected" data-id="A-102">
+    <td class="ps-excepcion-id">A-102</td>
+    <td class="ps-excepcion-actividad">Instalacion ductos</td>
+    <td><span class="ps-motivo-chip ps-motivo-chip--clean">Lista</span></td>
+    <td class="text-right"><button type="button" class="btn btn-sm btn-outline-secondary btn_usar_excepcion">Usar</button></td>
+  </tr>
+  <tr class="ps-row-excepcion" data-id="A-103">
+    <td class="ps-excepcion-id">A-103</td>
+    <td class="ps-excepcion-actividad">Pintura fachada</td>
+    <td><span class="ps-motivo-chip is-empty">No autoprogramada</span></td>
+    <td class="text-right"><button type="button" class="btn btn-sm btn-outline-secondary btn_usar_excepcion">Usar</button></td>
+  </tr>`;
+
+test('/programacion-semanal #formulario_nuevo: la bandeja con filas es legible sobre oscuro', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  await page.goto('/programacion-semanal');
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await installContrastProbe(page);
+  await openModal(page, 'formulario_nuevo');
+  await page.evaluate((html) => {
+    document.getElementById('tbody_excepciones_no_autoprogramadas').innerHTML = html;
+  }, BANDEJA_ROWS);
+  // El puntero fuera de la tabla: con el raton encima, `.ps-row-excepcion:hover`
+  // desplaza a `.ps-row-selected` y se mediria otro estado del que se cree.
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(300);
+
+  for (const selector of [
+    '#tabla_excepciones_no_autoprogramadas .btn_usar_excepcion',
+    '#tabla_excepciones_no_autoprogramadas .ps-motivo-chip',
+    '#tabla_excepciones_no_autoprogramadas .ps-motivo-chip--clean',
+    '#tabla_excepciones_no_autoprogramadas .ps-motivo-chip.is-empty',
+    '#tabla_excepciones_no_autoprogramadas .ps-motivo-restriction',
+    '#tabla_excepciones_no_autoprogramadas .ps-excepcion-id',
+  ]) {
+    const result = await measure(page, selector);
+    expect(result, `${selector} no existe`).not.toBeNull();
+    expect
+      .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+      .toBeGreaterThanOrEqual(AA);
+  }
+
+  // 1.4.11: el boton "Usar" no tiene relleno propio en reposo, asi que su unica
+  // frontera es el borde. Se mide contra el fondo compuesto de su celda.
+  const borderRatio = await page.evaluate(() => {
+    const el = document.querySelector('#tabla_excepciones_no_autoprogramadas .btn_usar_excepcion');
+    const probe = window.__aiaContrast;
+    const cs = getComputedStyle(el);
+    // Se reusa la sonda: se pinta el color del borde como tinta de un nodo
+    // temporal dentro de la misma celda para componer sobre los mismos ancestros.
+    const ghost = document.createElement('span');
+    ghost.id = 'aia-ghost-border';
+    ghost.style.color = cs.borderTopColor;
+    el.parentElement.appendChild(ghost);
+    const out = probe('#aia-ghost-border');
+    ghost.remove();
+    return out;
+  });
+  expect
+    .soft(borderRatio.ratio, `borde del boton Usar — ${borderRatio.fg} sobre ${borderRatio.bg}`)
+    .toBeGreaterThanOrEqual(3);
+
+  // El estado con el raton encima tambien: antes daba 4,01:1 (bajo AA).
+  await page.locator('#tabla_excepciones_no_autoprogramadas .btn_usar_excepcion').first().hover();
+  await page.waitForTimeout(250);
+  const hovered = await measure(page, '#tabla_excepciones_no_autoprogramadas .btn_usar_excepcion');
+  expect
+    .soft(hovered.ratio, `boton Usar en hover — ${hovered.fg} sobre ${hovered.bg}`)
+    .toBeGreaterThanOrEqual(AA);
+});

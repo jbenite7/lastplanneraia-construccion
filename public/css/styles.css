@@ -2125,68 +2125,14 @@ table.dataTable td.dt-min-width-300,
   margin: 0.0625rem;
 }
 
-#dt_cliente .celdaBotones {
-  width: 56px;
-  min-width: 56px;
-  padding: 0.45rem 0.3rem;
-  text-align: center;
-  vertical-align: middle;
-}
-
-#dt_cliente .celdaBotones .pdc-row-actions {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.38rem;
-}
-
-#dt_cliente .celdaBotones .pdc-ready-icon {
-  margin: 0 0 0.08rem;
-  font-size: 0.95rem;
-}
-
-#dt_cliente .celdaBotones .pdc-row-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.35rem;
-  height: 2.35rem;
-  padding: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  border-radius: 0.65rem;
-  box-shadow: 0 8px 16px rgba(36, 49, 58, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
-}
-
-#dt_cliente .celdaBotones .pdc-row-action i {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  font-size: 0.92rem;
-  line-height: 1;
-}
-
-#dt_cliente .celdaBotones .pdc-row-action--edit {
-  background: #14532d;
-  color: #ffffff;
-}
-
-#dt_cliente .celdaBotones .pdc-row-action--delete {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-#dt_cliente .celdaBotones .pdc-row-action:hover,
-#dt_cliente .celdaBotones .pdc-row-action:focus {
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(36, 49, 58, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  filter: brightness(1.04);
-}
-
-#dt_cliente .celdaBotones .pdc-row-action:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.28);
-  outline-offset: 2px;
-}
+/* Aqui vivia la botonera `#dt_cliente .celdaBotones .pdc-row-action*`. No era de
+   Programacion Semanal: `.pdc-row-action` solo lo emite public/js/modules/pdc/hot.js
+   y `#dt_cliente` en /pdc es la grilla Handsontable. Medido a 1180x820 dark:
+   `#dt_cliente .pdc-row-action` = 41 nodos, `#dt_cliente .celdaBotones .pdc-row-action--edit`
+   = 0. `.celdaBotones` no lo produce ningun PHP ni JS del repo, asi que la familia
+   entera no encajaba con nada. La piel viva de esos botones es public/css/pdc.css
+   (`.pdc-row-action*`, hoja sin capa), que ya nombra --ds-color-brand-primary-dark,
+   --ds-color-state-critical-text y --ds-color-text-inverse. */
 
 .ps-form-wide {
   inline-size: 37.5rem;
@@ -2202,7 +2148,7 @@ table.dataTable td.dt-min-width-300,
 
 #formulario_nuevo .modal-content {
   border: 0;
-  background: #f4f1ea;
+  background: var(--ds-active-surface);
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 1rem);
@@ -2211,7 +2157,7 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .modal-header {
   padding-block: 1rem;
   padding-inline: 1.25rem;
-  background: linear-gradient(135deg, var(--aia-green-dark, #1a3c2a) 0%, var(--aia-green-primary, #1a5633) 100%);
+  background: linear-gradient(135deg, var(--ds-color-brand-primary-dark) 0%, var(--ds-color-brand-primary) 100%);
 }
 
 #formulario_nuevo .modal-title {
@@ -2219,7 +2165,7 @@ table.dataTable td.dt-min-width-300,
   line-height: 1.1;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: #fafafa;
+  color: var(--ds-color-text-inverse);
 }
 
 #formulario_nuevo .modal-body {
@@ -2255,7 +2201,7 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .ps-card-excepciones {
   border: 1px solid var(--ds-active-border);
   border-radius: 0.95rem;
-  box-shadow: 0 10px 22px rgb(15 23 42 / 10%);
+  box-shadow: var(--ds-shadow-md);
   overflow: hidden;
 }
 
@@ -2333,25 +2279,36 @@ table.dataTable td.dt-min-width-300,
   line-height: 1.4;
 }
 
+/* Hover y seleccion de fila: el matiz azul se conserva, cambia el tramo de la
+   escalera. `--ds-state-tint-blue-3` (croma bajo) para el hover pasajero y
+   `--ds-state-tint-blue-1` (croma pleno) para la fila elegida, que es el estado
+   con mas enfasis. Ojo: las `td` de esta tabla llevan `background` !important en
+   @layer components desde programacion-semanal.css, y esa capa gana a
+   module.components por la inversion de capas de !important; como su alfa es
+   0,92, de estos fondos de `tr` solo se ve un 8%. */
 #tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover {
-  background: oklch(95.5% 0.024 241 / 0.6);
+  background: var(--ds-state-tint-blue-3);
 }
 
 #tabla_excepciones_no_autoprogramadas .ps-row-selected {
-  background: oklch(92% 0.04 241 / 0.55);
+  background: var(--ds-state-tint-blue-1);
 }
 
+/* El boton "Usar" media 2,03:1 en reposo: tinta azul oscura pensada para fondo
+   claro sobre la celda oscura. Conserva el matiz azul y pasa a la familia
+   `--pdc-active-*` (compartida con /pdc y las cabeceras de programa general
+   segun tokens.css). */
 #tabla_excepciones_no_autoprogramadas .btn_usar_excepcion {
-  border-color: oklch(76% 0.1 246);
-  color: oklch(44% 0.11 253);
+  border-color: var(--pdc-active-border);
+  color: var(--pdc-active-text);
   font-weight: 600;
 }
 
 #tabla_excepciones_no_autoprogramadas .btn_usar_excepcion:hover,
 #tabla_excepciones_no_autoprogramadas .btn_usar_excepcion:focus-visible {
-  background: oklch(59% 0.15 253);
-  color: oklch(99% 0.002 255);
-  border-color: oklch(59% 0.15 253);
+  background: var(--pdc-active-bg);
+  color: var(--pdc-active-text);
+  border-color: var(--pdc-active-border);
 }
 
 #formulario_nuevo .ps-motivo-chip {
@@ -2359,8 +2316,8 @@ table.dataTable td.dt-min-width-300,
   align-items: center;
   padding: 0.18rem 0.55rem;
   border-radius: var(--ds-radius-pill);
-  background: oklch(95% 0.03 85 / 0.7);
-  color: oklch(43% 0.08 72);
+  background: var(--pdc-delayed-bg);
+  color: var(--pdc-delayed-text);
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.3;
@@ -2375,28 +2332,31 @@ table.dataTable td.dt-min-width-300,
   text-align: left;
   border-radius: var(--ds-radius-xs);
   padding: 0.22rem 0.5rem;
-  background: oklch(94% 0.04 65 / 0.65);
-  color: oklch(36% 0.1 55);
+  background: var(--ds-state-tint-orange-2);
+  color: var(--pdc-delayed-text);
   font-size: 0.72rem;
   line-height: 1.35;
   cursor: help;
 }
 /* Actividad sin restricciones duras pendientes — lista para autoprogramar */
 #tabla_excepciones_no_autoprogramadas .ps-motivo-chip--clean {
-  background: oklch(94% 0.04 145 / 0.55);
-  color: oklch(33% 0.08 145);
+  background: var(--pdc-completed-ontime-bg);
+  color: var(--pdc-completed-ontime-text);
 }
 #tabla_excepciones_no_autoprogramadas .ps-motivo-chip.is-empty {
-  background: oklch(96% 0.01 250 / 0.7);
-  color: oklch(45% 0.02 250);
+  background: var(--pdc-not-started-bg);
+  color: var(--pdc-not-started-text);
   font-style: italic;
 }
+/* La pildora interna era, en claro, un paso mas saturada que el chip que la
+   contiene. En oscuro se conserva esa relacion invirtiendo el tramo: el chip
+   toma el escalon de croma reducido y la pildora el ancla de croma pleno. */
 #tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction {
   display: inline-block;
   margin: 1px 4px 1px 0;
   padding: 0 5px;
   border-radius: var(--ds-radius-xs);
-  background: oklch(90% 0.06 55 / 0.7);
+  background: var(--ds-state-tint-orange-1);
   font-weight: 700;
 }
 
@@ -2436,7 +2396,7 @@ table.dataTable td.dt-min-width-300,
   inline-size: 100%;
   max-inline-size: 100%;
   margin-bottom: 0.15rem;
-  color: oklch(31% 0.025 255);
+  color: var(--ds-active-text-secondary);
   font-weight: 600;
   letter-spacing: -0.01em;
   font-size: 0.85rem;
@@ -2452,16 +2412,16 @@ table.dataTable td.dt-min-width-300,
 
 #formulario_nuevo .ps-modal-form .form-control {
   min-height: 2.15rem;
-  border-color: oklch(86.5% 0.016 250);
-  background-color: oklch(99.6% 0.002 240);
+  border-color: var(--ds-active-border);
+  background-color: var(--ds-active-surface);
   font-size: 0.9rem;
   padding: 0.25rem 0.6rem;
 }
 
 #formulario_nuevo .ps-modal-form .form-control:focus,
 #formulario_nuevo .ps-modal-form .form-control:focus-visible {
-  border-color: oklch(63% 0.13 250);
-  box-shadow: 0 0 0 0.2rem oklch(70% 0.1 250 / 0.2);
+  border-color: var(--pdc-active-border);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--pdc-active-border) 20%, transparent);
 }
 
 #formulario_nuevo .select2-container {
@@ -2471,7 +2431,7 @@ table.dataTable td.dt-min-width-300,
 #formulario_nuevo .select2-container--default .select2-selection--single {
   min-height: 2.15rem;
   border-radius: 0.72rem;
-  border-color: oklch(86.5% 0.016 250);
+  border-color: var(--ds-active-border);
 }
 
 #formulario_nuevo
@@ -2486,23 +2446,12 @@ table.dataTable td.dt-min-width-300,
   height: 2.05rem;
 }
 
-#formulario_nuevo .ps-modal-form .form-group.mt-3 {
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
-  margin-top: 0.4rem !important;
-  padding-block: 0.45rem 0.15rem;
-  background: linear-gradient(180deg, oklch(98.5% 0.004 250 / 0), oklch(98.8% 0.006 250) 35%);
-  border-top: 1px solid oklch(89% 0.013 250 / 0.8);
-}
-
-#formulario_nuevo .ps-modal-form .form-group.mt-3 > div {
-  max-inline-size: 100%;
-  padding-inline: 0;
-  display: flex;
-  gap: 0.58rem;
-  flex-wrap: wrap;
-}
+/* Aqui vivia el pie pegajoso `#formulario_nuevo .ps-modal-form .form-group.mt-3`
+   con su degradado claro. El unico `#formulario_nuevo` del producto esta en
+   views/programacion-semanal/programacion_semanal.view.php y su fila de acciones
+   es `.ps-form-actions`, no `.form-group.mt-3`: medido con el modal abierto a
+   1180x820 dark, el selector encaja con 0 nodos. Quien maqueta esa fila hoy es
+   programacion-semanal.css (`#formulario_nuevo .ps-form-actions`). */
 
 #formulario_nuevo #btn_guardar_nueva_actividad,
 #formulario_nuevo #btn_listar {
@@ -2527,28 +2476,35 @@ table.dataTable td.dt-min-width-300,
   display: none;
 }
 
-/* Field-level validation error highlight */
+/* Field-level validation error highlight.
+   AVISO: el `border-color` de esta regla NO PINTA. programacion-semanal.css fija
+   `border-color` con !important sobre `:is(.form-control, .custom-select, textarea,
+   select)` dentro de este modal en @layer components, y para las declaraciones
+   !important el orden de capas se invierte, asi que gana a module.components por
+   mucho id que se le ponga. Medido con el campo en estado de error: el borde sigue
+   siendo --ds-active-border y lo unico que senala el error es el halo de abajo.
+   Corregirlo es un cambio de propiedad de la regla, no de tokenizacion. */
 #formulario_nuevo .ps-field-error {
-  border-color: #dc3545 !important;
-  box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.25);
+  border-color: var(--pdc-critical-border) !important;
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--pdc-critical-border) 25%, transparent);
 }
 
 /* Id display readonly — se llena desde la Bandeja de No Autoprogramadas */
 #formulario_nuevo #idNuevoDisplay[readonly] {
-  background-color: oklch(97% 0.005 250);
-  color: oklch(31% 0.025 255);
+  background-color: var(--ds-active-bg-page);
+  color: var(--ds-active-text-secondary);
   cursor: not-allowed;
   font-weight: 600;
 }
 #formulario_nuevo #idNuevoDisplay[readonly]::placeholder {
-  color: oklch(60% 0.02 250);
+  color: var(--ds-active-text-secondary);
   font-style: italic;
   font-weight: 400;
 }
 #formulario_nuevo .ps-id-source-hint {
   display: block;
   margin-top: 0.3rem;
-  color: oklch(45% 0.02 250);
+  color: var(--ds-active-text-secondary);
   font-size: 0.75rem;
   line-height: 1.35;
 }
