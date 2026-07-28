@@ -5263,13 +5263,24 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.5;
   white-space: nowrap;
 }
+/* Los dos indicadores de desviacion conservan su familia de matiz y solo cambian
+   de tema: `--delay` era rojo claro y pasa al rojo oscuro de /pdc, `--ahead` era
+   naranja claro y pasa al naranja oscuro. Cada fondo viaja con el texto con el
+   que se midio su contraste al tokenizar la paleta a dark (10,99:1 y 9,77:1).
+
+   AVISO de semantica, no de tema: en /pdc el naranja significa «atrasada», asi
+   que usarlo para «dias de adelanto» es una colision de significado. Es PREVIA
+   -el #fbead9 original ya era la version clara de ese mismo naranja- y se
+   conserva a proposito: reasignar el matiz de «adelanto» es un juicio de diseno
+   y no entra en un cambio de tema.
+   Guard: tests/browser/pdc-chips-dark.mjs. */
 .pdc-delta--ahead {
-  background-color: #fbead9;
-  color: #8b4011;
+  background-color: var(--ds-state-tint-orange-pdc);
+  color: var(--pdc-delayed-text);
 }
 .pdc-delta--delay {
-  background-color: #fdecea;
-  color: #a92828;
+  background-color: var(--ds-state-tint-red-pdc);
+  color: var(--pdc-critical-text);
 }
 
 .pdc-ready-icon {
@@ -5401,13 +5412,16 @@ html body #pdc-hot-shell .pdc-legend .pdc-legend-item {
   gap: 0.5rem;
 }
 
+/* Badge de fecha de corte que el modulo crea en JS. No lleva matiz: es
+   informativo, asi que toma la superficie elevada neutra del tema en vez de un
+   tinte de estado -el mismo tratamiento que `.count-badge` en las leyendas-. */
 #ctxPdcCalcDate {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  background-color: #e2e8f0;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  background-color: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
+  border: 1px solid var(--ds-active-border);
   font-size: 0.85rem;
   font-weight: 500;
   border-radius: 0.5rem;
