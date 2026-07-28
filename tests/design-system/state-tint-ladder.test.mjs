@@ -71,6 +71,26 @@ for (const sheet of ['public/css/programacion-intermedia.css', 'public/css/progr
   });
 }
 
+// El eje de matiz necesita una primitiva que lo pinte, o `data-aia-hue` es un
+// atributo decorativo. `.aia-chip` ya cubre el chip y esta aprobada; lo que
+// faltaba era que la capa de componentes supiera traducir un matiz a su tinte.
+test('la capa de componentes traduce data-aia-hue a su tinte', async () => {
+  const css = await read('public/css/design-system/components/states-feedback.css');
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  for (const { id, tint } of semantics.hues) {
+    const rule = css.match(new RegExp(`\\[data-aia-hue="${id}"\\][^{]*\\{([^}]*)\\}`))?.[1];
+    assert.ok(rule, `states-feedback.css no traduce [data-aia-hue="${id}"]`);
+    assert.match(
+      rule,
+      new RegExp(tint.replace(/[-]/g, '\\-')),
+      `[data-aia-hue="${id}"] deberia usar ${tint}, que es el que declara el contrato`,
+    );
+  }
+  // El selector de urgencia no se toca: es el que asierta states-feedback.test.mjs
+  // y el que sostiene la regla «urgencia now siempre usa critical».
+  assert.match(css, /\[data-aia-severity="high"\]\[data-aia-urgency="now"\]/);
+});
+
 // /pdc no duplicaba la formula -sus siete estados eran hex literales-, asi que
 // el guard de duplicacion no lo alcanza. Lo que hay que garantizar aqui es lo
 // contrario: que los alias del modulo apunten a la escalera en vez de repetir
