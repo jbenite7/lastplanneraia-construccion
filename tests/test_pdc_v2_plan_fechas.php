@@ -15,19 +15,23 @@ $assert = static function (bool $c, string $m) use (&$failures): void {
 
 $db = Database::getInstance();
 $P = 999903;
+// Segundo proyecto de pruebas — solo para el hallazgo 4 (aislamiento entre proyectos): su propio
+// cronograma mínimo (semana activa + un frente), reusando el catálogo global `test-a4` (los
+// paquetes no llevan project_id, así que el mismo paqueteId puede amarrarse en los dos proyectos).
+$P2 = 999904;
 
-$limpiar = static function () use ($db, $P): void {
-    $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$P]);
+$limpiar = static function () use ($db, $P, $P2): void {
+    $db->query('DELETE FROM pdc_plan_paso WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM pdc_plan_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM pdc_paquete_frente WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a4'");
-    $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM programa_consolidado WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM programa WHERE project_id = ?', [$P]);
-    $db->query('DELETE FROM semanas_activas WHERE project_id = ?', [$P]);
+    $db->query('DELETE FROM pdc_presupuesto_apu_insumos WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM pdc_presupuesto_items WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM programa_consolidado WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM programa WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM semanas_activas WHERE project_id IN (?, ?)', [$P, $P2]);
 };
 $limpiar();
 
@@ -261,6 +265,73 @@ $assert($a2[$paqEstructura]['origen'] === 'humano', 'Elegir a mano es una decisi
 // Un frente que no existe en la semana activa se rechaza.
 $mal = $svc->amarrar($P, $paqEstructura, 999999, 'test-a4');
 $assert(($mal['ok'] ?? true) === false && ($mal['code'] ?? '') === 'FRENTE_INVALIDO', 'Frente inexistente rechazado.');
+
+// --- hueco 1: PAQUETE_INVALIDO por los dos caminos ---
+// El uniqueId (9001) es un frente válido: si no lo fuera, amarrar() saldría por FRENTE_INVALIDO
+// antes de llegar siquiera a mirar el paquete, y este test no probaría lo que dice probar.
+$malPaquete = $svc->amarrar($P, 999999999, 9001, 'test-a4');
+$assert(($malPaquete['ok'] ?? true) === false && ($malPaquete['code'] ?? '') === 'PAQUETE_INVALIDO',
+    'Paquete inexistente: PAQUETE_INVALIDO.');
+
+$db->query(
+    "INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, modalidad_contratacion, activo, creado_por, created_at)
+     VALUES ('TEST A4 INACTIVO', 'TEST A4 INACTIVO', 'suministro', 'contrato', 0, 'test-a4', NOW())",
+);
+$paqInactivo = (int) $db->lastInsertId();
+$malInactivo = $svc->amarrar($P, $paqInactivo, 9001, 'test-a4');
+$assert(($malInactivo['ok'] ?? true) === false && ($malInactivo['code'] ?? '') === 'PAQUETE_INVALIDO',
+    'Paquete existente pero activo=0: también PAQUETE_INVALIDO.');
+
+// --- hueco 2: origen del motor sin confirmar humano queda confirmado_humano = 0 ---
+// Caso contrario al ya cubierto (propuesta aceptada y confirmada): una sugerencia aplicada que
+// todavía nadie revisó. $paqRaro está en la fixture, activo, y sin amarre previo.
+$svc->amarrar($P, $paqRaro, 9002, 'test-a4', ['origen' => 'similitud', 'confianza' => 'media', 'evidencia' => 'Sugerencia sin revisar.']);
+$aRaro = $svc->amarres($P);
+$assert($aRaro[$paqRaro]['origen'] === 'similitud', 'Origen del motor se conserva aunque nadie lo confirme.');
+$assert($aRaro[$paqRaro]['confirmadoHumano'] === false,
+    'Hueco 2: sugerencia del motor sin `confirmado` (ni true) deja confirmado_humano = 0.');
+
+// --- hueco 3: semana_origen se llena con la semana ACTIVA (MAX de semanas_activas), no otra ---
+// La única semana activa del fixture es la 2 (MAX de {1,2}); si el código guardara otra cosa
+// (la primera fila, o una constante), esta consulta directa lo delataría.
+$semOrigen = (int) $db->query(
+    'SELECT semana_origen FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqEstructura],
+)->fetchColumn();
+$assert($semOrigen === 2, 'Hueco 3: semana_origen guarda la semana activa (2), no otra: ' . $semOrigen);
+
+// --- hueco 4: amarres() no filtra entre proyectos — un segundo proyecto con su propio cronograma ---
+// Cronograma mínimo de $P2: una sola semana activa (1) y un solo frente (uid 9101). Se reusa
+// $paqEstructura (el catálogo global no lleva project_id) para demostrar que el aislamiento lo da
+// `project_id` en `pdc_paquete_frente`, no el paqueteId.
+$db->query('INSERT INTO semanas_activas (project_id, Id, Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem) VALUES (?, 1, 1, ?, ?)',
+    [$P2, '2026-07-27', '2026-08-02']);
+$db->query(
+    "INSERT INTO programa (project_id, Consecutivo, unique_id, Actividad, Titulo, Fecha_Inicio)
+     VALUES (?, 1, 9101, '<b>CIMENTACIÓN, </b> <small>[Capítulo: TORRE 2]</small>', 1, '2026-08-05')",
+    [$P2],
+);
+$db->query(
+    'INSERT INTO programa_consolidado (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa,
+         Actividad, Titulo, Fecha_Inicio, Estado_Restricciones, D_y_E, Materiales, MdeO, Equipos,
+         Predecesora, Pdto_Cons, Modelo, Activa, alerta_crisis, reprogramaciones_acumuladas)
+     VALUES (?, 201, 1, 9101, 1, ?, 1, ?, 0, "", "", "", "", "", "", "", 1, 0, 0)',
+    [$P2, '<b>CIMENTACIÓN, </b> <small>[Capítulo: TORRE 2]</small>', '2026-08-05'],
+);
+
+$rP2 = $svc->amarrar($P2, $paqEstructura, 9101, 'test-a4');
+$assert(($rP2['ok'] ?? false) === true, 'Hueco 4: amarrar en el segundo proyecto funciona con su propio cronograma.');
+
+$aP2 = $svc->amarres($P2);
+$assert(count($aP2) === 1 && isset($aP2[$paqEstructura]) && $aP2[$paqEstructura]['uniqueId'] === 9101,
+    'Hueco 4: amarres($P2) solo trae el amarre de $P2.');
+
+$aP1 = $svc->amarres($P);
+$assert($aP1[$paqEstructura]['uniqueId'] === 9002,
+    'Hueco 4: amarres($P) no se contamina con el amarre de $P2 al mismo paqueteId: ' . $aP1[$paqEstructura]['uniqueId']);
+$uidsEnP1 = array_column($aP1, 'uniqueId');
+$assert(!in_array(9101, $uidsEnP1, true),
+    'Hueco 4: el frente de $P2 (9101) no aparece colgado de ningún paquete de $P.');
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
