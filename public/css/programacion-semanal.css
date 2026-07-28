@@ -37,20 +37,20 @@ html.aia-theme-dark body.ps-page {
        nivel de los otros modulos la tabla se vuelve ilegible.
        Los dos salen del mismo ancla, asi que comparten matiz: lo que la leyenda
        promete es la familia, no el valor. */
-    --ps-critical-chip: color-mix(in srgb, var(--ds-state-tint-red-pdc) 88%, var(--ds-active-surface) 12%);
-    --ps-critical-bg: color-mix(in srgb, var(--ds-state-tint-red-pdc) 46%, var(--ds-active-surface) 54%);
+    --ps-critical-chip: color-mix(in srgb, var(--ds-state-tint-red-1) 88%, var(--ds-active-surface) 12%);
+    --ps-critical-bg: color-mix(in srgb, var(--ds-state-tint-red-1) 46%, var(--ds-active-surface) 54%);
     --ps-critical-text: var(--ds-active-text-primary);
-    --ps-high-chip: color-mix(in srgb, var(--ds-state-tint-orange-pdc) 88%, var(--ds-active-surface) 12%);
-    --ps-high-bg: color-mix(in srgb, var(--ds-state-tint-orange-pdc) 46%, var(--ds-active-surface) 54%);
+    --ps-high-chip: color-mix(in srgb, var(--ds-state-tint-orange-1) 88%, var(--ds-active-surface) 12%);
+    --ps-high-bg: color-mix(in srgb, var(--ds-state-tint-orange-1) 46%, var(--ds-active-surface) 54%);
     --ps-high-text: var(--ds-active-text-primary);
-    --ps-medium-chip: color-mix(in srgb, var(--ds-state-tint-amber-pdc) 88%, var(--ds-active-surface) 12%);
-    --ps-medium-bg: color-mix(in srgb, var(--ds-state-tint-amber-pdc) 46%, var(--ds-active-surface) 54%);
+    --ps-medium-chip: color-mix(in srgb, var(--ds-state-tint-amber-1) 88%, var(--ds-active-surface) 12%);
+    --ps-medium-bg: color-mix(in srgb, var(--ds-state-tint-amber-1) 46%, var(--ds-active-surface) 54%);
     --ps-medium-text: var(--ds-active-text-primary);
-    --ps-info-chip: color-mix(in srgb, var(--ds-state-tint-blue-pdc) 88%, var(--ds-active-surface) 12%);
-    --ps-info-bg: color-mix(in srgb, var(--ds-state-tint-blue-pdc) 46%, var(--ds-active-surface) 54%);
+    --ps-info-chip: color-mix(in srgb, var(--ds-state-tint-blue-1) 88%, var(--ds-active-surface) 12%);
+    --ps-info-bg: color-mix(in srgb, var(--ds-state-tint-blue-1) 46%, var(--ds-active-surface) 54%);
     --ps-info-text: var(--ds-active-text-primary);
-    --ps-control-chip: color-mix(in srgb, var(--ds-state-tint-green-pdc) 88%, var(--ds-active-surface) 12%);
-    --ps-control-bg: color-mix(in srgb, var(--ds-state-tint-green-pdc) 46%, var(--ds-active-surface) 54%);
+    --ps-control-chip: color-mix(in srgb, var(--ds-state-tint-green-1) 88%, var(--ds-active-surface) 12%);
+    --ps-control-bg: color-mix(in srgb, var(--ds-state-tint-green-1) 46%, var(--ds-active-surface) 54%);
     --ps-control-text: var(--ds-active-text-primary);
     --ps-neutral-bg: var(--ds-active-surface);
     --ps-neutral-text: var(--ds-active-text-secondary);

@@ -36,9 +36,16 @@
 }
 
 /* Los fondos de estado consumen la escalera compartida
-   (public/css/tokens.css, `--ds-state-tint-*`). El valor no cambia: la escalera
-   se promovio con estos mismos porcentajes, que este modulo y
-   /programacion-intermedia venian escribiendo por duplicado.
+   (public/css/tokens.css, `--ds-state-tint-*`), reconstruida sobre las anclas
+   que /pdc habia medido a mano. Los tintes de este modulo cambian de valor: la
+   derivacion anterior mezclaba contra una superficie con alfa y devolvia
+   pardos.
+
+   La escalera publica tres pasos por familia y este modulo tenia cuatro
+   usuarios ambar, asi que `restr-1` y `restr-2-3` caen los dos en amber-3. No
+   se pierde informacion visual: en la escalera vieja distaban dE-OK 0,008, o
+   sea eran el mismo color en pantalla. Lo que los separa en la tabla es el
+   borde y la etiqueta, no el fondo.
 
    Los bordes usan otra receta -`--ds-color-state-*-bg` contra
    `--ds-active-border`- y se quedan aqui: una hairline sobre una fila ya
@@ -47,16 +54,16 @@ html.aia-theme-dark .pg-page {
   --pg-critical-bg: var(--ds-state-tint-red-1);
   --pg-critical-text: var(--ds-active-text-primary);
   --pg-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
-  --pg-delayed-bg: var(--ds-state-tint-red-3);
+  --pg-delayed-bg: var(--ds-state-tint-red-2);
   --pg-delayed-text: var(--ds-active-text-primary);
   --pg-delayed-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 46%, var(--ds-active-border) 54%);
   --pg-due-bg: var(--ds-state-tint-amber-2);
   --pg-due-text: var(--ds-active-text-primary);
   --pg-due-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 54%, var(--ds-active-border) 46%);
-  --pg-future-bg: var(--ds-state-tint-green-2);
+  --pg-future-bg: var(--ds-state-tint-green-1);
   --pg-future-text: var(--ds-active-text-primary);
   --pg-future-border: color-mix(in srgb, var(--ds-color-state-success-bg) 54%, var(--ds-active-border) 46%);
-  --pg-progress-bg: var(--ds-state-tint-teal-2);
+  --pg-progress-bg: var(--ds-state-tint-teal-1);
   --pg-progress-text: var(--ds-active-text-primary);
   --pg-progress-border: color-mix(in srgb, var(--ds-color-state-info-bg) 54%, var(--ds-active-border) 46%);
   --pg-alert-bg: var(--ds-state-tint-amber-1);
@@ -79,25 +86,25 @@ html.aia-theme-dark .pg-page {
   --pg-restr-0-bg: var(--pg-due-bg);
   --pg-restr-0-text: var(--pg-due-text);
   --pg-restr-0-border: var(--pg-due-border);
-  --pg-restr-1-bg: var(--ds-state-tint-amber-4);
+  --pg-restr-1-bg: var(--ds-state-tint-amber-3);
   --pg-restr-1-text: var(--ds-active-text-primary);
   --pg-restr-1-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 50%, var(--ds-active-border) 50%);
-  --pg-restr-2-3-bg: var(--ds-state-tint-amber-5);
+  --pg-restr-2-3-bg: var(--ds-state-tint-amber-3);
   --pg-restr-2-3-text: var(--ds-active-text-primary);
   --pg-restr-2-3-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 46%, var(--ds-active-border) 54%);
-  --pg-restr-4-6-bg: var(--ds-state-tint-green-5);
+  --pg-restr-4-6-bg: var(--ds-state-tint-green-2);
   --pg-restr-4-6-text: var(--ds-active-text-primary);
   --pg-restr-4-6-border: color-mix(in srgb, var(--ds-color-state-success-bg) 46%, var(--ds-active-border) 54%);
   --pg-ontime-bg: var(--pg-progress-bg);
   --pg-ontime-text: var(--pg-progress-text);
   --pg-ontime-border: var(--pg-progress-border);
-  --pg-done-bg: var(--ds-state-tint-neutral-flat);
+  --pg-done-bg: var(--ds-state-tint-neutral-3);
   --pg-done-text: var(--ds-active-text-secondary);
   --pg-done-border: var(--ds-active-border);
-  --pg-notrequired-bg: var(--ds-state-tint-neutral-flat);
+  --pg-notrequired-bg: var(--ds-state-tint-neutral-3);
   --pg-notrequired-text: var(--ds-active-text-secondary);
   --pg-notrequired-border: var(--ds-active-border);
-  --pg-nodata-bg: var(--ds-state-tint-neutral-quiet);
+  --pg-nodata-bg: var(--ds-state-tint-neutral-2);
   --pg-nodata-text: var(--ds-active-text-secondary);
   --pg-nodata-border: var(--ds-active-border);
 }

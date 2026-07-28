@@ -205,49 +205,65 @@
      entre si y la regla del contrato -«urgencia now siempre usa critical»- se
      cumple igual, porque vive en el acento.
 
-     La escalera NO se invento aqui: /programacion-intermedia y
-     /programa-general ya la usaban, con la misma formula y los mismos
-     porcentajes, escrita entera dos veces (siete de los ocho tintes de
-     Intermedia eran el mismo hex que los de General). Esto es promocion, no
-     rediseno: los valores son los que la aplicacion ya pintaba.
+     ANCLAS. Los ocho pasos 1 son los siete tonos que /pdc eligio y midio a
+     mano mas `#134841` para teal. Antes la escalera se derivaba mezclando el
+     tono semantico (`--ds-color-state-*-text`) contra
+     `--ds-active-surface-raised`, y esa superficie lleva alfa: la mezcla se
+     comia el color contra el gris del canvas y devolvia tintes pardos
+     -`--ds-state-tint-red-1` valia #562522, un rojo agrisado, frente al
+     #431414 limpio de /pdc-. Las anclas de /pdc ganan y la escalera se
+     reconstruye desde ellas.
 
-     Los pasos van del 1 (mas intenso) al 6 (mas tenue) sobre una escala
-     compartida; los huecos son informativos -ninguna familia usa los seis-.
-     Guard del valor resuelto: tests/browser/state-tint-ladder.mjs. */
-    --ds-state-tint-red-1: color-mix(in srgb, var(--ds-color-state-critical-text) 48%, var(--ds-active-surface-raised) 52%);
-    --ds-state-tint-red-3: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-surface-raised) 62%);
-    --ds-state-tint-red-5: color-mix(in srgb, var(--ds-color-state-critical-text) 30%, var(--ds-active-surface-raised) 70%);
-    --ds-state-tint-red-6: color-mix(in srgb, var(--ds-color-state-critical-text) 26%, var(--ds-active-surface-raised) 74%);
-    --ds-state-tint-amber-1: color-mix(in srgb, var(--ds-color-state-warning-text) 48%, var(--ds-active-surface-raised) 52%);
-    --ds-state-tint-amber-2: color-mix(in srgb, var(--ds-color-state-warning-text) 42%, var(--ds-active-surface-raised) 58%);
-    --ds-state-tint-amber-4: color-mix(in srgb, var(--ds-color-state-warning-text) 36%, var(--ds-active-surface-raised) 64%);
-    --ds-state-tint-amber-5: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-surface-raised) 70%);
-    --ds-state-tint-green-2: color-mix(in srgb, var(--ds-color-state-success-text) 42%, var(--ds-active-surface-raised) 58%);
-    --ds-state-tint-green-5: color-mix(in srgb, var(--ds-color-state-success-text) 30%, var(--ds-active-surface-raised) 70%);
-    --ds-state-tint-green-6: color-mix(in srgb, var(--ds-color-state-success-text) 26%, var(--ds-active-surface-raised) 74%);
-    --ds-state-tint-teal-2: color-mix(in srgb, var(--ds-color-state-info-text) 42%, var(--ds-active-surface-raised) 58%);
-    --ds-state-tint-teal-5: color-mix(in srgb, var(--ds-color-state-info-text) 30%, var(--ds-active-surface-raised) 70%);
+     EJE. Los pasos 2 y 3 bajan CROMA con la luminosidad FIJA
+     (`oklch(from ... l calc(c * k) h)`, k = 0,6 y 0,3). Bajar luminosidad no
+     sirve: #431414 esta en L=0,268 (OKLCH) y el fondo de pagina #111a15 en
+     L=0,193, o sea 0,075 de margen, y al tercer paso el tinte se pierde dentro
+     del canvas. Sobre oscuro el margen esta en el croma, que va de C=0,073 a 0
+     sin tocar el fondo. Medido antes de escribir la escalera; no cambiar el eje
+     sin volver a medirlo.
 
-    /* Superficies silenciosas: los estados que no compiten por atencion
-       (`Sin Datos`, `Terminada`). No llevan matiz a proposito. */
-    --ds-state-tint-neutral-quiet: color-mix(in srgb, var(--ds-active-surface-raised) 72%, var(--ds-active-bg-page) 28%);
-    --ds-state-tint-neutral-flat: var(--ds-active-surface);
+     Ocho familias x tres pasos = 24 tokens, sin huecos. La escalera vieja
+     numeraba del 1 al 6 con huecos y repartia hasta cuatro pasos por familia,
+     pero sus rungs distaban dE-OK 0,008 entre si: eran el mismo color en
+     pantalla. Los modulos que tenian mas usuarios que pasos colapsan de forma
+     explicita (ver los comentarios de programacion-intermedia.css y
+     programa-general.css).
 
-    /* Matices promovidos desde /pdc. Entran con su hex exacto, no con la
-       formula `color-mix` de arriba, por dos razones: son mas profundos y
-       saturados que cualquier paso de la escalera, y ya venian verificados en
-       contraste (8,88-10,99:1 sobre canvas oscuro) al tokenizarse a dark.
-       Violeta, naranja y azul solo existian en /pdc; con ellos el design system
-       pasa a tener las ocho familias que el producto usa de verdad.
-       Unificar su derivacion con la de los pasos numerados es trabajo aparte:
-       lo que se unifica aqui es el vocabulario. */
-    --ds-state-tint-violet-pdc: #33204a;
-    --ds-state-tint-red-pdc: #431414;
-    --ds-state-tint-orange-pdc: #452a0d;
-    --ds-state-tint-amber-pdc: #3a3a0f;
-    --ds-state-tint-green-pdc: #173d26;
-    --ds-state-tint-blue-pdc: #17334f;
-    --ds-state-tint-neutral-pdc: #2b2f2d;
+     Guard del valor resuelto, de la separacion y del matiz:
+     tests/browser/state-tint-ladder.mjs. */
+    --ds-state-tint-violet-1: #33204a;
+    --ds-state-tint-violet-2: oklch(from var(--ds-state-tint-violet-1) l calc(c * 0.6) h);
+    --ds-state-tint-violet-3: oklch(from var(--ds-state-tint-violet-1) l calc(c * 0.3) h);
+    --ds-state-tint-red-1: #431414;
+    --ds-state-tint-red-2: oklch(from var(--ds-state-tint-red-1) l calc(c * 0.6) h);
+    --ds-state-tint-red-3: oklch(from var(--ds-state-tint-red-1) l calc(c * 0.3) h);
+    --ds-state-tint-orange-1: #452a0d;
+    --ds-state-tint-orange-2: oklch(from var(--ds-state-tint-orange-1) l calc(c * 0.6) h);
+    --ds-state-tint-orange-3: oklch(from var(--ds-state-tint-orange-1) l calc(c * 0.3) h);
+    --ds-state-tint-amber-1: #3a3a0f;
+    --ds-state-tint-amber-2: oklch(from var(--ds-state-tint-amber-1) l calc(c * 0.6) h);
+    --ds-state-tint-amber-3: oklch(from var(--ds-state-tint-amber-1) l calc(c * 0.3) h);
+    --ds-state-tint-green-1: #173d26;
+    --ds-state-tint-green-2: oklch(from var(--ds-state-tint-green-1) l calc(c * 0.6) h);
+    --ds-state-tint-green-3: oklch(from var(--ds-state-tint-green-1) l calc(c * 0.3) h);
+    --ds-state-tint-blue-1: #17334f;
+    --ds-state-tint-blue-2: oklch(from var(--ds-state-tint-blue-1) l calc(c * 0.6) h);
+    --ds-state-tint-blue-3: oklch(from var(--ds-state-tint-blue-1) l calc(c * 0.3) h);
+    --ds-state-tint-teal-1: #134841;
+    --ds-state-tint-teal-2: oklch(from var(--ds-state-tint-teal-1) l calc(c * 0.6) h);
+    --ds-state-tint-teal-3: oklch(from var(--ds-state-tint-teal-1) l calc(c * 0.3) h);
+
+    /* La familia neutral es la excepcion declarada del eje: su ancla tiene
+       C=0,007, o sea no hay croma que gastar. Multiplicarlo por 0,6 y 0,3 daria
+       tres grises indistinguibles (dE-OK 0,002). Una familia acromatica solo
+       tiene la luminosidad como eje, asi que sus tres pasos la bajan, y lo hacen
+       conservando los tres grises que el producto ya pintaba: `not-started` de
+       /pdc, `Sin Datos` y `Terminada` de /programa-general. Estos dos ultimos
+       eran `--ds-state-tint-neutral-quiet` y `-flat`; el valor no se movio, solo
+       entran a la familia en vez de vivir sueltos. */
+    --ds-state-tint-neutral-1: #2b2f2d;
+    --ds-state-tint-neutral-2: color-mix(in srgb, var(--ds-active-surface-raised) 72%, var(--ds-active-bg-page) 28%);
+    --ds-state-tint-neutral-3: var(--ds-active-surface);
 
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
@@ -284,25 +300,25 @@
        aqui-, pero /pdc deja de ser un sistema de color paralelo y pasa a
        compartir vocabulario con los otros tres modulos.
        Guard: tests/design-system/state-tint-ladder.test.mjs. */
-    --pdc-missing-bg: var(--ds-state-tint-violet-pdc);
+    --pdc-missing-bg: var(--ds-state-tint-violet-1);
     --pdc-missing-border: #c084fc;
     --pdc-missing-text: #e0cdfa;
-    --pdc-critical-bg: var(--ds-state-tint-red-pdc);
+    --pdc-critical-bg: var(--ds-state-tint-red-1);
     --pdc-critical-border: #dc2626;
     --pdc-critical-text: #ffcdc8;
-    --pdc-delayed-bg: var(--ds-state-tint-orange-pdc);
+    --pdc-delayed-bg: var(--ds-state-tint-orange-1);
     --pdc-delayed-border: #e87722;
     --pdc-delayed-text: #ffd7a8;
-    --pdc-completed-late-bg: var(--ds-state-tint-amber-pdc);
+    --pdc-completed-late-bg: var(--ds-state-tint-amber-1);
     --pdc-completed-late-border: #d4a017;
     --pdc-completed-late-text: #f2e79c;
-    --pdc-completed-ontime-bg: var(--ds-state-tint-green-pdc);
+    --pdc-completed-ontime-bg: var(--ds-state-tint-green-1);
     --pdc-completed-ontime-border: #69b578;
     --pdc-completed-ontime-text: #b7e8c6;
-    --pdc-active-bg: var(--ds-state-tint-blue-pdc);
+    --pdc-active-bg: var(--ds-state-tint-blue-1);
     --pdc-active-border: #4a81bd;
     --pdc-active-text: #bbdcfb;
-    --pdc-not-started-bg: var(--ds-state-tint-neutral-pdc);
+    --pdc-not-started-bg: var(--ds-state-tint-neutral-1);
     --pdc-not-started-border: #c7cdd4;
     --pdc-not-started-text: #d4dad6;
 

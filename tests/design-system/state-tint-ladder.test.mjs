@@ -13,39 +13,49 @@ const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8
 // escribian la misma escalera con los mismos porcentajes en dos hojas, y siete
 // de los ocho tintes de Intermedia eran el mismo hex que los de General.
 
-const LADDER_STEPS = [
-  '--ds-state-tint-red-1',
-  '--ds-state-tint-red-3',
-  '--ds-state-tint-red-5',
-  '--ds-state-tint-red-6',
-  '--ds-state-tint-amber-1',
-  '--ds-state-tint-amber-2',
-  '--ds-state-tint-amber-4',
-  '--ds-state-tint-amber-5',
-  '--ds-state-tint-green-2',
-  '--ds-state-tint-green-5',
-  '--ds-state-tint-green-6',
-  '--ds-state-tint-teal-2',
-  '--ds-state-tint-teal-5',
-  '--ds-state-tint-neutral-quiet',
-  '--ds-state-tint-neutral-flat',
-  '--ds-state-tint-violet-pdc',
-  '--ds-state-tint-red-pdc',
-  '--ds-state-tint-orange-pdc',
-  '--ds-state-tint-amber-pdc',
-  '--ds-state-tint-green-pdc',
-  '--ds-state-tint-blue-pdc',
-  '--ds-state-tint-neutral-pdc',
-];
+// Ocho familias por tres pasos, sin huecos. La numeracion vieja iba del 1 al 6
+// con saltos y hasta cuatro pasos por familia; desde que las anclas de /pdc
+// mandan, cada familia publica exactamente tres.
+const FAMILIES = ['violet', 'red', 'orange', 'amber', 'green', 'blue', 'teal', 'neutral'];
+const LADDER_STEPS = FAMILIES.flatMap((family) => [1, 2, 3].map((step) => `--ds-state-tint-${family}-${step}`));
 
 test('la escalera de tintes vive en la capa de tokens', async () => {
   const tokens = await read('public/css/tokens.css');
+  assert.equal(LADDER_STEPS.length, 24, 'ocho familias por tres pasos');
   for (const step of LADDER_STEPS) {
     assert.match(
       tokens,
       new RegExp(`${step}:`),
       `la escalera no declara ${step} en public/css/tokens.css`,
     );
+  }
+  // La numeracion vieja tiene que desaparecer del CSS, no convivir: un consumidor
+  // que se quedara apuntando a `--ds-state-tint-red-6` recibiria la cadena vacia
+  // y pintaria transparente sin que nadie se entere.
+  const retired = tokens.match(/--ds-state-tint-(?:\w+-pdc|neutral-(?:quiet|flat)|\w+-[4-9])\b(?!`)/g) ?? [];
+  assert.deepEqual(retired, [], `nombres retirados que siguen en tokens.css: ${retired.join(', ')}`);
+});
+
+// El eje de la escalera es el croma con la luminosidad fija. Escrito en CSS eso
+// es una sola forma -`oklch(from <ancla> l calc(c * k) h)`-, y es lo que hay que
+// impedir que se sustituya por una mezcla en sRGB, que fue justo el defecto que
+// agrisaba la escalera anterior.
+test('los pasos 2 y 3 se derivan del ancla bajando croma en OKLCH', async () => {
+  const tokens = await read('public/css/tokens.css');
+  const chromatic = FAMILIES.filter((family) => family !== 'neutral');
+  assert.equal(chromatic.length, 7, 'siete familias cromaticas');
+  for (const family of chromatic) {
+    const anchor = tokens.match(new RegExp(`--ds-state-tint-${family}-1:\\s*(#[0-9a-f]{6});`))?.[1];
+    assert.ok(anchor, `--ds-state-tint-${family}-1 deberia ser el hex del ancla`);
+    for (const step of [2, 3]) {
+      const declaration = tokens.match(new RegExp(`--ds-state-tint-${family}-${step}:\\s*([^;]+);`))?.[1]?.trim();
+      assert.ok(declaration, `tokens.css no declara --ds-state-tint-${family}-${step}`);
+      assert.match(
+        declaration,
+        new RegExp(`^oklch\\(from var\\(--ds-state-tint-${family}-1\\) l calc\\(c \\* 0\\.\\d+\\) h\\)$`),
+        `--ds-state-tint-${family}-${step} deberia derivarse del ancla bajando croma, y vale: ${declaration}`,
+      );
+    }
   }
 });
 

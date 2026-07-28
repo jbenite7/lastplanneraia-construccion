@@ -73,37 +73,37 @@
     {
       "id": "neutral",
       "label": "Silencio",
-      "tint": "--ds-state-tint-neutral-pdc"
+      "tint": "--ds-state-tint-neutral-1"
     },
     {
       "id": "teal",
       "label": "Contexto",
-      "tint": "--ds-state-tint-teal-2"
+      "tint": "--ds-state-tint-teal-1"
     },
     {
       "id": "blue",
       "label": "En marcha",
-      "tint": "--ds-state-tint-blue-pdc"
+      "tint": "--ds-state-tint-blue-1"
     },
     {
       "id": "violet",
       "label": "Sin datos suficientes",
-      "tint": "--ds-state-tint-violet-pdc"
+      "tint": "--ds-state-tint-violet-1"
     },
     {
       "id": "green",
       "label": "Controlado",
-      "tint": "--ds-state-tint-green-2"
+      "tint": "--ds-state-tint-green-1"
     },
     {
       "id": "amber",
       "label": "Por resolver",
-      "tint": "--ds-state-tint-amber-2"
+      "tint": "--ds-state-tint-amber-1"
     },
     {
       "id": "orange",
       "label": "Fuera de plazo",
-      "tint": "--ds-state-tint-orange-pdc"
+      "tint": "--ds-state-tint-orange-1"
     },
     {
       "id": "red",

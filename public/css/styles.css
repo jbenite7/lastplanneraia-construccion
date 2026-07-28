@@ -5333,11 +5333,11 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
    y no entra en un cambio de tema.
    Guard: tests/browser/pdc-chips-dark.mjs. */
 .pdc-delta--ahead {
-  background-color: var(--ds-state-tint-orange-pdc);
+  background-color: var(--ds-state-tint-orange-1);
   color: var(--pdc-delayed-text);
 }
 .pdc-delta--delay {
-  background-color: var(--ds-state-tint-red-pdc);
+  background-color: var(--ds-state-tint-red-1);
   color: var(--pdc-critical-text);
 }
 

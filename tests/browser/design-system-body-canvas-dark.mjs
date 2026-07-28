@@ -61,21 +61,26 @@ const EXPECTED_BODY_BACKGROUND = {
 const EXPECTED_STATE_TOKEN = {
   '/programa-general': {
     property: '--pg-critical-bg',
-    // public/css/programa-general.css:29, bajo `html.aia-theme-dark .pg-page`
-    value: 'color-mix(in srgb, #8f1d1d 48%, rgba(35, 48, 41, 0.86) 52%)',
+    // public/css/programa-general.css, bajo `html.aia-theme-dark .pg-page`.
+    // Consume `--ds-state-tint-red-1`, que desde la reconstruccion de la
+    // escalera es el ancla de /pdc en vez de una mezcla contra una superficie
+    // con alfa (antes: color-mix(in srgb, #8f1d1d 48%, rgba(35, 48, 41, 0.86) 52%)).
+    value: '#431414',
   },
   '/programacion-semanal': {
     property: '--ps-critical-bg',
-    // public/css/programacion-semanal.css:41, bajo `html.aia-theme-dark body.ps-page`.
-    // El commit 9f6de25 movio este tinte a la escalera compartida
-    // --ds-state-tint-red-pdc y no actualizo esta expectativa, que quedo obsoleta.
-    // El valor de abajo es el que declara hoy la hoja, no una relajacion del test.
+    // public/css/programacion-semanal.css, bajo `html.aia-theme-dark body.ps-page`.
+    // El commit 9f6de25 movio este tinte a la escalera compartida y no actualizo
+    // esta expectativa, que quedo obsoleta. El valor de abajo es el que declara
+    // hoy la hoja, no una relajacion del test. La reconstruccion de la escalera
+    // no lo movio: el ancla roja ya era este #431414.
     value: 'color-mix(in srgb, #431414 46%, rgba(28, 36, 31, 0.92) 54%)',
   },
   '/programacion-intermedia': {
     property: '--pi-critical-bg',
-    // public/css/programacion-intermedia.css:46, bajo `html.aia-theme-dark .pi-page`
-    value: 'color-mix(in srgb, #8f1d1d 48%, rgba(35, 48, 41, 0.86) 52%)',
+    // public/css/programacion-intermedia.css, bajo `html.aia-theme-dark .pi-page`.
+    // Mismo ancla que /programa-general.
+    value: '#431414',
   },
 };
 

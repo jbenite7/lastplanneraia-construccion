@@ -45,8 +45,14 @@
 /* Los fondos de estado consumen la escalera compartida
    (public/css/tokens.css, `--ds-state-tint-*`); antes reescribian aqui la misma
    formula y los mismos porcentajes que /programa-general, hasta el punto de que
-   siete de los ocho tintes eran el mismo hex en las dos hojas. El valor no
-   cambia: la escalera se promovio con estos valores exactos.
+   siete de los ocho tintes eran el mismo hex en las dos hojas.
+
+   Los valores SI cambian desde que la escalera se reconstruyo sobre las anclas
+   de /pdc: la derivacion anterior mezclaba contra una superficie con alfa y
+   devolvia tintes pardos. Con tres pasos por familia, dos pares de este modulo
+   colapsan a proposito -`exec-blocked` con `danger-soft` en red-3, y `alert1`
+   con `alert23` en amber-3-. En la escalera vieja esos pares distaban dE-OK
+   0,008: eran el mismo color en pantalla.
 
    Los bordes NO entran en la escalera: usan otra receta -mezclan
    `--ds-color-state-*-bg` contra `--ds-active-border`, no el tono contra la
@@ -56,31 +62,31 @@ html.aia-theme-dark .pi-page {
     --pi-critical-bg: var(--ds-state-tint-red-1);
     --pi-critical-text: var(--ds-active-text-primary);
     --pi-critical-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 54%, var(--ds-active-border) 46%);
-    --pi-overdue-bg: var(--ds-state-tint-red-3);
+    --pi-overdue-bg: var(--ds-state-tint-red-2);
     --pi-overdue-text: var(--ds-active-text-primary);
     --pi-overdue-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 46%, var(--ds-active-border) 54%);
     --pi-due-bg: var(--ds-state-tint-amber-2);
     --pi-due-text: var(--ds-active-text-primary);
     --pi-due-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 54%, var(--ds-active-border) 46%);
-    --pi-alert1-bg: var(--ds-state-tint-amber-4);
+    --pi-alert1-bg: var(--ds-state-tint-amber-3);
     --pi-alert1-text: var(--ds-active-text-primary);
     --pi-alert1-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 50%, var(--ds-active-border) 50%);
-    --pi-alert23-bg: var(--ds-state-tint-amber-5);
+    --pi-alert23-bg: var(--ds-state-tint-amber-3);
     --pi-alert23-text: var(--ds-active-text-primary);
     --pi-alert23-border: color-mix(in srgb, var(--ds-color-state-warning-bg) 46%, var(--ds-active-border) 54%);
-    --pi-alert46-bg: var(--ds-state-tint-green-5);
+    --pi-alert46-bg: var(--ds-state-tint-green-2);
     --pi-alert46-text: var(--ds-active-text-primary);
     --pi-alert46-border: color-mix(in srgb, var(--ds-color-state-success-bg) 46%, var(--ds-active-border) 54%);
-    --pi-exec-blocked-bg: var(--ds-state-tint-red-6);
+    --pi-exec-blocked-bg: var(--ds-state-tint-red-3);
     --pi-exec-blocked-text: var(--ds-active-text-primary);
     --pi-exec-blocked-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 40%, var(--ds-active-border) 60%);
-    --pi-control-bg: var(--ds-state-tint-teal-2);
+    --pi-control-bg: var(--ds-state-tint-teal-1);
     --pi-control-text: var(--ds-active-text-primary);
     --pi-control-border: color-mix(in srgb, var(--ds-color-state-info-bg) 54%, var(--ds-active-border) 46%);
-    --pi-ok-soft-bg: var(--ds-state-tint-green-6);
+    --pi-ok-soft-bg: var(--ds-state-tint-green-3);
     --pi-ok-text: var(--ds-active-text-primary);
     --pi-ok-border: color-mix(in srgb, var(--ds-color-state-success-bg) 40%, var(--ds-active-border) 60%);
-    --pi-danger-soft-bg: var(--ds-state-tint-red-5);
+    --pi-danger-soft-bg: var(--ds-state-tint-red-3);
     --pi-danger-text: var(--ds-active-text-primary);
     --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
 }
@@ -1530,7 +1536,7 @@ border: 1px solid var(--pi-due-border);
 }
 
 html.aia-theme-dark .pi-page .pi-legend-window-label--info {
-    background: var(--ds-state-tint-teal-5);
+    background: var(--ds-state-tint-teal-2);
     color: var(--ds-active-text-primary);
 }
 
