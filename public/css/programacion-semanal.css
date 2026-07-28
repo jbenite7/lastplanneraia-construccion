@@ -1526,7 +1526,10 @@ body.ps-page #modal_cnc_hot .modal-footer {
 
 .ps-modal-copy strong,
 .ps-required {
-    color: var(--ds-color-brand-primary);
+    /* El par on-dark del verde corporativo se queda en 4,46:1 sobre la superficie
+       del modal, cuatro centesimas por debajo de AA. Se levanta hacia la tinta
+       primaria conservando el matiz, en vez de renunciar al acento. */
+    color: color-mix(in srgb, var(--ds-active-action-primary) 70%, var(--ds-active-text-primary));
 }
 
 .ps-modal-label {
@@ -1693,6 +1696,13 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 }
 
 @layer components {
+    /* Sustituye a text-muted de Bootstrap: su gris de modo claro lleva !important
+       desde @layer vendor y, al invertirse el orden de capas para !important,
+       ninguna @layer posterior puede vencerlo. Habia que retirarlo del markup. */
+    .ps-muted {
+        color: var(--ds-active-text-secondary);
+    }
+
     html body.ps-page #hot-container .handsontable thead th {
         border-color: var(--ds-active-border) !important;
         background: var(--ds-active-surface-raised) !important;

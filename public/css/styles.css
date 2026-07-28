@@ -1663,6 +1663,61 @@ table.dataTable tbody tr:hover td {
   color: var(--ds-active-text-primary);
 }
 
+/* Los botones outline que no viven en el pie —la bandeja de no autoprogramadas
+   y su Cancelar— los pintaba buttons.css desde @layer components, que pierde
+   ante module pero solo si hay una regla que la alcance. El selector del pie no
+   llegaba a ellos. */
+.aia-modal .btn.btn-outline-secondary,
+.aia-modal .btn.btn-outline-primary {
+  background: transparent;
+  border: 1px solid var(--ds-active-border);
+  color: var(--ds-active-text-primary);
+}
+
+.aia-modal .btn.btn-outline-secondary:hover,
+.aia-modal .btn.btn-outline-secondary:focus,
+.aia-modal .btn.btn-outline-primary:hover,
+.aia-modal .btn.btn-outline-primary:focus {
+  background: var(--ds-active-surface-glass);
+  color: var(--ds-active-text-primary);
+}
+
+/* .btn-secondary y .btn-danger los fija una regla global de este mismo archivo
+   con !important, unos cientos de lineas mas arriba, y por eso el bloque de
+   arriba resultaba inerte en ellos: .btn-secondary dejaba una losa blanca sobre
+   el pie oscuro. Se le gana solo dentro del modal; la regla global sigue
+   sirviendo al resto de la aplicacion sin cambios. */
+.aia-modal .btn.btn-secondary,
+.aia-modal .btn.btn-danger {
+  background: transparent !important;
+  border: 1px solid var(--ds-active-border) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.aia-modal .btn.btn-secondary:hover,
+.aia-modal .btn.btn-secondary:focus,
+.aia-modal .btn.btn-danger:hover,
+.aia-modal .btn.btn-danger:focus {
+  background: var(--ds-active-surface-glass) !important;
+  border-color: var(--ds-active-border) !important;
+}
+
+/* Superficie legada de cabecera de bloque: un lima fuera de paleta. Se deja
+   intacta en el resto de la aplicacion y se reencamina solo dentro del modal. */
+.aia-modal .form_eval {
+  border-color: var(--ds-active-border);
+  background: var(--ds-active-surface-raised);
+}
+
+/* Un boton deshabilitado debe retroceder, no aclararse: en claro el verde claro
+   funcionaba, sobre oscuro se convierte en la pieza mas luminosa del pie. */
+.aia-modal .btn-auto-green:disabled,
+.aia-modal .btn-auto-green.disabled {
+  background-color: var(--ds-active-surface-raised);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-secondary);
+}
+
 .aia-modal__message,
 .aia-modal .mensaje,
 .aia-modal .mensajeModalContrato,
@@ -2115,7 +2170,7 @@ table.dataTable td.dt-min-width-300,
 }
 
 #formulario_nuevo .ps-card-excepciones {
-  border: 1px solid oklch(88% 0.013 250);
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.95rem;
   box-shadow: 0 10px 22px rgb(15 23 42 / 10%);
   overflow: hidden;
@@ -2123,12 +2178,12 @@ table.dataTable td.dt-min-width-300,
 
 #formulario_nuevo .ps-card-excepciones__header {
   padding: 0.75rem;
-  background: linear-gradient(180deg, oklch(98.2% 0.007 250), oklch(96.8% 0.01 250));
-  border-bottom: 1px solid oklch(89% 0.012 250);
+  background: var(--ds-active-surface-raised);
+  border-bottom: 1px solid var(--ds-active-border);
 }
 
 #formulario_nuevo .ps-card-excepciones__header strong {
-  color: oklch(32% 0.03 257);
+  color: var(--ds-active-text-primary);
   font-size: 1.02rem;
   letter-spacing: -0.01em;
 }
@@ -2139,14 +2194,14 @@ table.dataTable td.dt-min-width-300,
 
 #formulario_nuevo #filtro_excepciones_no_autoprogramadas {
   min-height: 2.35rem;
-  border-color: oklch(86% 0.015 252);
+  border-color: var(--ds-active-border);
 }
 
 #formulario_nuevo .ps-excepciones-scroll {
   max-height: min(21.75rem, 45dvh);
-  border: 1px solid oklch(90% 0.01 250);
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.72rem;
-  background: oklch(99.6% 0.002 250);
+  background: var(--ds-active-surface);
 }
 
 #tabla_excepciones_no_autoprogramadas {
@@ -2158,20 +2213,20 @@ table.dataTable td.dt-min-width-300,
   position: sticky;
   top: 0;
   z-index: 1;
-  background: oklch(96.8% 0.011 250);
-  color: oklch(34% 0.024 255);
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-text-primary);
   font-size: 0.83rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   border-top: 0;
-  border-bottom-color: oklch(88% 0.014 250);
+  border-bottom-color: var(--ds-active-border);
 }
 
 #tabla_excepciones_no_autoprogramadas tbody td {
   font-size: 0.91rem;
   vertical-align: top;
-  border-top-color: oklch(91% 0.01 250);
-  color: oklch(30% 0.02 252);
+  border-top-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 #tabla_excepciones_no_autoprogramadas td::before {
@@ -2186,7 +2241,7 @@ table.dataTable td.dt-min-width-300,
 
 #tabla_excepciones_no_autoprogramadas .ps-excepcion-id {
   font-weight: 620;
-  color: oklch(28% 0.03 255);
+  color: var(--ds-active-text-primary);
   inline-size: 5.6rem;
 }
 
@@ -3366,14 +3421,14 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   display: grid;
   gap: 0.45rem;
   padding: 0.72rem 0.8rem;
-  border: 1px solid #dde5ef;
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.65rem;
-  background: linear-gradient(145deg, #eff6ff 0%, #f8fafc 100%);
+  background: var(--ds-active-surface-raised);
 }
 
 .ps-legend-quick-intro {
   margin: 0;
-  color: #1e293b;
+  color: var(--ds-active-text-primary);
   font-size: 0.92rem;
   line-height: 1.35;
 }
@@ -4884,7 +4939,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-modal-content {
   border: 0;
   border-radius: 1.25rem;
-  background: #f4f1ea;
+  background: var(--ds-active-surface);
   box-shadow: var(--shadow-glass, 0 8px 32px rgba(30, 30, 30, 0.12));
 }
 
@@ -4927,7 +4982,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-modal-body {
   padding: 1.5rem 1.75rem 1.75rem;
-  background: #f4f1ea;
+  background: var(--ds-active-surface);
 }
 
 #formularioEditarContratos.ct-contract-form {
@@ -4941,9 +4996,9 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   inline-size: 100%;
   margin: 0;
   padding: 1.1rem 1.15rem 1.2rem;
-  border: 1px solid rgba(26, 86, 51, 0.18);
+  border: 1px solid var(--ds-active-border);
   border-radius: 1rem;
-  background: rgba(250, 250, 250, 0.94);
+  background: var(--ds-active-surface-raised);
   box-shadow: 0 10px 24px rgba(36, 49, 58, 0.06);
   text-align: initial;
 }
@@ -4956,9 +5011,9 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-contract-section__banner {
   margin-bottom: 1rem;
-  border: 1px solid rgba(26, 86, 51, 0.18);
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.9rem;
-  background: linear-gradient(180deg, #eef5f1 0%, #f4f1ea 100%);
+  background: var(--ds-active-surface-raised);
   overflow: hidden;
 }
 
@@ -4970,7 +5025,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   line-height: 1.2;
   font-weight: 700;
   text-align: left;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
 #modalEditarContratos .ct-contract-header,
@@ -4990,7 +5045,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 0.85rem;
   font-weight: 700;
   text-align: center;
-  color: #1a3c2a;
+  color: var(--ds-active-text-primary);
 }
 
 #modalEditarContratos .ct-contract-list {
@@ -5006,7 +5061,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   font-size: 1rem;
   font-weight: 600;
   text-align: center;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
 #modalEditarContratos .ct-contract-field {
@@ -5019,7 +5074,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 
 #modalEditarContratos .ct-overplanning-alert {
   margin: 0.7rem 0.75rem 0;
-  color: #8a5a00;
+  color: var(--ds-color-state-warning-bg);
   font-size: 0.84rem;
   font-weight: 600;
 }
@@ -5029,21 +5084,21 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   margin: 0 0 0.25rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--aia-text-secondary, #4a4a4d);
+  color: var(--ds-active-text-secondary);
 }
 
 #modalEditarContratos .ct-contract-field .form-control {
   inline-size: 100%;
   min-block-size: 3rem;
-  border: 1px solid rgba(104, 116, 125, 0.24);
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.8rem;
-  background: #fff;
+  background: var(--ds-active-surface);
   box-shadow: none;
 }
 
 #modalEditarContratos .ct-contract-field .form-control:focus,
 #modalEditarContratos .ct-contract-field .form-control:focus-visible {
-  border-color: rgba(26, 86, 51, 0.5);
+  border-color: var(--ds-active-action-primary);
   box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
 }
 
@@ -5055,9 +5110,9 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--single,
 #modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--multiple {
   min-block-size: 3rem;
-  border: 1px solid rgba(104, 116, 125, 0.24);
+  border: 1px solid var(--ds-active-border);
   border-radius: 0.8rem;
-  background: #fff;
+  background: var(--ds-active-surface);
   padding: 0.32rem 0.7rem;
 }
 
@@ -5065,7 +5120,7 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   padding-left: 0;
   padding-right: 1.4rem;
   line-height: 2.2rem;
-  color: #24313a;
+  color: var(--ds-active-text-primary);
 }
 
 #modalEditarContratos .ct-contract-field .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -5095,8 +5150,8 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
   margin-top: 0 !important;
   border: none;
   border-radius: 999px;
-  background: rgba(26, 86, 51, 0.12);
-  color: #1a3c2a;
+  background: var(--ds-active-surface-glass);
+  color: var(--ds-active-text-primary);
   padding: 0.18rem 0.55rem 0.18rem 0.4rem;
   font-size: 0.82rem;
 }
@@ -5110,12 +5165,12 @@ table.dt_programacionSemanal.dataTable tbody tr.ps-row-state.ps-alert-neutral td
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--focus .select2-selection--multiple,
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--single,
 #modalEditarContratos .ct-contract-field .select2-container--default.select2-container--open .select2-selection--multiple {
-  border-color: rgba(26, 86, 51, 0.5);
+  border-color: var(--ds-active-action-primary);
   box-shadow: 0 0 0 0.2rem rgba(26, 86, 51, 0.18);
 }
 
 #modalEditarContratos .select2-dropdown {
-  border-color: rgba(104, 116, 125, 0.24);
+  border-color: var(--ds-active-border);
   border-radius: 0.8rem;
   box-shadow: 0 10px 24px rgba(36, 49, 58, 0.14);
 }

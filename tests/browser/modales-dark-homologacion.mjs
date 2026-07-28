@@ -168,6 +168,47 @@ test('/programacion-semanal #modal_change_monitor: cuerpo y pie legibles', async
   }
 });
 
+// El barrido ciego de los 56 modales .aia-modal de las siete rutas destapo seis
+// modales mas con el mismo defecto que los seis del encargo: piel clara bajo un
+// shell que ya es oscuro. Ninguno figuraba en 5.7 del informe de origen.
+const EXTRA = [
+  ['/contratos', 'modalEditarContratos', [
+    '#modalEditarContratos .ct-modalidad-label',
+    '#modalEditarContratos .ct-checkbox-item',
+    '#modalEditarContratos .ct-contract-header__cell',
+  ]],
+  // #btnAutoGenListadoAplicar queda fuera: nace deshabilitado y WCAG 1.4.3 exime
+  // los controles inactivos. Su tinta pasa de 1,61:1 a 4,28:1 con el resto del
+  // cambio; asertarlo a 4,5 obligaria a pintar un deshabilitado que no parece
+  // deshabilitado.
+  ['/listado-actividades', 'modalAutoGenerarListado', ['#modalAutoGenerarListado .modal-footer .btn.btn-secondary']],
+  ['/programa-general-actualizar', 'modalCargarExcel', ['#modalCargarExcel h3#form_general']],
+  ['/programacion-semanal', 'modal_leyenda_colores_ps', ['.ps-legend-quick-intro']],
+  ['/programacion-semanal', 'formulario_nuevo', [
+    '#btn_recargar_bandeja_no_autoprogramadas',
+    '#btn_listar',
+  ]],
+  ['/programacion-semanal', 'modal_cnc_hot', ['#modal_cnc_hot .ps-required']],
+];
+
+for (const [route, modalId, selectors] of EXTRA) {
+  test(`${route} #${modalId}: piel legible sobre oscuro`, async ({ page }) => {
+    await loginAndSelectProject(page, project);
+    await page.goto(route);
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await installContrastProbe(page);
+    await openModal(page, modalId);
+
+    for (const selector of selectors) {
+      const result = await measure(page, selector);
+      expect(result, `${selector} no existe`).not.toBeNull();
+      expect
+        .soft(result.ratio, `${selector} — ${result.fg} sobre ${result.bg}`)
+        .toBeGreaterThanOrEqual(AA);
+    }
+  });
+}
+
 // El valor COMPUTADO es la unica prueba de quien gano la cascada. Este bloque
 // existe porque el mismo defecto que ataca el tramo —una regla que parece ganar
 // y esta inerte— puede repetirse en el propio arreglo.
