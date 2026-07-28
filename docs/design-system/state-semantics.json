@@ -126,51 +126,61 @@
       "states": [
         {
           "label": "RC con restricciones",
+          "key": "prog-bloqueo-critico-sin-compromiso",
           "level": "urgent",
           "hue": "red"
         },
         {
           "label": "Ejecución con restricciones",
+          "key": "prog-ejecucion-con-restricciones",
           "level": "urgent",
           "hue": "orange"
         },
         {
           "label": "Condiciones Pendientes",
+          "key": "prog-condiciones-pendientes",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Por Comprometer",
+          "key": "prog-sin-compromiso",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Lista para Confirmar",
+          "key": "prog-lista-para-confirmar",
           "level": "healthy",
           "hue": "green"
         },
         {
           "label": "Incumplida (RC)",
+          "key": "cal-incumplida-critica",
           "level": "urgent",
           "hue": "red"
         },
         {
           "label": "Incumplida",
+          "key": "cal-incumplida",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Sin Calificar",
+          "key": "cal-sin-calificar",
           "level": "attention",
           "hue": "amber"
         },
         {
           "label": "Cumplida Control",
+          "key": "cal-cumplida-control",
           "level": "healthy",
           "hue": "green"
         },
         {
           "label": "Trabajo No Planificado",
+          "key": "cal-tnp",
           "level": "neutral",
           "hue": "blue"
         }

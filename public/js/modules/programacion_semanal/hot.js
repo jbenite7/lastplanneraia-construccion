@@ -165,6 +165,49 @@
     ],
   };
 
+  // Presentacion de cada estado, con las claves de
+  // docs/design-system/state-semantics.json (modulo `programacion-semanal`).
+  // El chip declara QUE estado es -matiz para la identidad, severity+urgency
+  // para la prioridad- y la capa de componentes lo pinta. Antes el nivel se
+  // pintaba en `.ops-state-zoom` por bucket (critical/pending/ready) y el
+  // matiz del chip no existia como dato.
+  //
+  // El nivel no sale del `priority` (p1/p2/p3) de WEEKLY_ALERT_MODEL: p3 agrupa
+  // 'Lista para Confirmar'/'Cumplida Control' (healthy) con 'Trabajo No
+  // Planificado' (neutral), que no es el mismo nivel pese a compartir prioridad
+  // de fila. El nivel es el que declara el contrato por ETIQUETA.
+  //
+  // Guard de que esta tabla no se desvie del contrato:
+  // tests/design-system/ops-state-contract.test.mjs
+  var LEVEL_ATTRS = {
+    neutral: { severity: 'none', urgency: 'none' },
+    healthy: { severity: 'low', urgency: 'none' },
+    attention: { severity: 'medium', urgency: 'soon' },
+    urgent: { severity: 'high', urgency: 'now' },
+  };
+
+  var statePresentation = {
+    'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red' },
+    'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange' },
+    'prog-condiciones-pendientes': { level: 'attention', hue: 'amber' },
+    'prog-sin-compromiso': { level: 'attention', hue: 'amber' },
+    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green' },
+    'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
+    'cal-incumplida': { level: 'attention', hue: 'amber' },
+    'cal-sin-calificar': { level: 'attention', hue: 'amber' },
+    'cal-cumplida-control': { level: 'healthy', hue: 'green' },
+    'cal-tnp': { level: 'neutral', hue: 'blue' },
+    neutral: { level: 'neutral', hue: 'neutral' },
+  };
+
+  function stateChipAttrs(state) {
+    var presentation = statePresentation[state] || statePresentation.neutral;
+    var pair = LEVEL_ATTRS[presentation.level];
+    return ' data-aia-hue="' + presentation.hue + '"'
+      + ' data-aia-severity="' + pair.severity + '"'
+      + ' data-aia-urgency="' + pair.urgency + '"';
+  }
+
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';
   }
@@ -905,7 +948,7 @@
     return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + '" aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
       + '<span class="ops-state-topline">'
       + '<span class="ops-state-dot" aria-hidden="true"></span>'
-      + '<span class="ops-state-chip">' + escapeHtml(stateLabel) + '</span>'
+      + '<span class="ops-state-chip"' + stateChipAttrs(view.state) + '>' + escapeHtml(stateLabel) + '</span>'
       + '</span>'
       + '<span class="ops-state-summary">'
       + '<span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span>'
@@ -937,7 +980,8 @@
     var id = view.id ? ('<span class="ops-state-activity-id">' + escapeHtml(view.id) + '</span>') : '';
     var actionTitle = view.phase === 'calificacion' ? 'Acciones de calificación' : 'Acciones de habilitación';
     var summary = getOperationalStateSummary(view || {});
-    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip">' + escapeHtml(view.label) + '</span>';
+    var html = '<div class="ops-state-drawer-state"><span class="ops-state-chip"'
+      + stateChipAttrs(view.state) + '>' + escapeHtml(view.label) + '</span>';
     html += '<span class="ops-state-count">' + escapeHtml(summary.countText) + '</span>';
     html += '</div>';
     html += '<div class="ops-state-activity">' + id + '<strong>' + escapeHtml(activity) + '</strong></div>';

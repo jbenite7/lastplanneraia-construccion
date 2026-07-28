@@ -458,7 +458,12 @@ body.ps-page .ps-hot-toolbar-shell {
     max-width: 100%;
     border: 0;
     border-radius: var(--ds-radius-none);
-    background: transparent;
+    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
+       componentes desde `data-aia-hue`. Esta hoja no esta en @layer module -es
+       CSS suelto que llega por un <link> propio, fuera de cualquier @layer- asi
+       que aunque declarara `transparent` seguia ganando siempre por ser
+       unlayered, y la primitiva del design system era inerte sobre esta
+       superficie. */
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
     font-weight: 900;
     font-size: 0.72rem;

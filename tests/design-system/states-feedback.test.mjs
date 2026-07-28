@@ -143,16 +143,19 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
   // modulo tenia antes de pasar a dark, que es la que dice la intencion:
   // `--aia-orange-very-light` y `--aia-blue-very-light`. Con `high` en ambar era
   // indistinguible de `medium`.
+  // `key` es el vocabulario con el que el modulo nombra sus estados -las
+  // claves de `WEEKLY_ALERT_MODEL` en hot.js-, igual que en Intermedia: sin
+  // el, unir el renderer con el contrato exige comparar etiquetas.
   assert.deepEqual(weekly.states, [
-    { label: 'RC con restricciones', level: 'urgent', hue: 'red' },
-    { label: 'Ejecución con restricciones', level: 'urgent', hue: 'orange' },
-    { label: 'Condiciones Pendientes', level: 'attention', hue: 'amber' },
-    { label: 'Por Comprometer', level: 'attention', hue: 'amber' },
-    { label: 'Lista para Confirmar', level: 'healthy', hue: 'green' },
-    { label: 'Incumplida (RC)', level: 'urgent', hue: 'red' },
-    { label: 'Incumplida', level: 'attention', hue: 'amber' },
-    { label: 'Sin Calificar', level: 'attention', hue: 'amber' },
-    { label: 'Cumplida Control', level: 'healthy', hue: 'green' },
-    { label: 'Trabajo No Planificado', level: 'neutral', hue: 'blue' },
+    { label: 'RC con restricciones', key: 'prog-bloqueo-critico-sin-compromiso', level: 'urgent', hue: 'red' },
+    { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange' },
+    { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber' },
+    { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'amber' },
+    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green' },
+    { label: 'Incumplida (RC)', key: 'cal-incumplida-critica', level: 'urgent', hue: 'red' },
+    { label: 'Incumplida', key: 'cal-incumplida', level: 'attention', hue: 'amber' },
+    { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'amber' },
+    { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green' },
+    { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue' },
   ]);
 });

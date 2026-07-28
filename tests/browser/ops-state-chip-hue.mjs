@@ -122,3 +122,49 @@ test('la celda de estado de Intermedia declara matiz y nivel', async ({ page }) 
     ).toBeLessThanOrEqual(2);
   }
 });
+
+// Misma migracion, ahora para /programacion-semanal: la celda de estado
+// coloreaba `.ops-state-zoom` por tres buckets de nivel (critical/pending/ready)
+// y el chip interior no declaraba matiz. El chip sigue anidado dentro del
+// boton -el nivel del boton no se toca en esta tarea-, pero ahora tambien
+// declara su propio matiz e identidad y la capa de componentes lo pinta.
+test('la celda de estado de Semanal declara matiz y nivel', async ({ page }) => {
+  const { states, hues } = await contractStates('programacion-semanal');
+  const byHue = new Map(states.map((s) => [s.hue, s]));
+
+  await page.setViewportSize(VIEWPORT);
+  await loginAndSelectProject(page, project);
+  await page.goto('/programacion-semanal', { waitUntil: 'domcontentloaded' });
+  // A diferencia de Intermedia, la columna «Estado Operativo» de Semanal (una
+  // de 24) puede caer bajo el umbral de 120px que oculta el label del chip
+  // (@container max-width:120px en programacion-semanal.css) y dejar solo el
+  // punto + contador. `getComputedStyle` sigue resolviendo el color del chip
+  // aunque este oculto -no es una propiedad de layout-, asi que se verifica
+  // con `toBeAttached` en vez de `toBeVisible`.
+  await expect(page.locator('.ops-state-td .ops-state-chip').first())
+    .toBeAttached({ timeout: 45000 });
+
+  const chips = await readChips(page);
+  expect(chips.length, 'la grilla no renderizó ninguna celda de estado').toBeGreaterThan(0);
+
+  const known = new Set(states.map((s) => s.hue));
+  for (const chip of chips) {
+    expect(chip.hue, `el chip «${chip.label}» no declara data-aia-hue`).toBeTruthy();
+    expect(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
+      .toContain(chip.hue);
+
+    const level = byHue.get(chip.hue).level;
+    const expectedPair = SEVERITY_BY_LEVEL[level];
+    expect(
+      { severity: chip.severity, urgency: chip.urgency },
+      `«${chip.label}» (matiz ${chip.hue}) debería declarar el par de ${level}`,
+    ).toEqual(expectedPair);
+
+    const tint = await resolveTint(page, hues[chip.hue]);
+    expect(
+      separation(chip.painted, tint),
+      `«${chip.label}» pinta ${toHex(chip.painted)} pero la escalera da `
+      + `${toHex(tint)} para ${chip.hue} (${hues[chip.hue]})`,
+    ).toBeLessThanOrEqual(2);
+  }
+});
