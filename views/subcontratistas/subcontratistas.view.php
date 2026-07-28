@@ -54,7 +54,7 @@
             width: 100%;
             overflow: hidden;
             position: relative;
-            background: #fff; /* Ensure it has a background */
+            background: var(--ds-active-bg-page); /* Superficie de la grilla en el tema activo */
         }
 
         /* Custom Renderers */
@@ -73,7 +73,7 @@
         #hot-container {
             width: 100%;
             height: calc(100vh - 180px); /* Fill available vertical space */
-            background: #fff;
+            background: var(--ds-active-bg-page);
             box-shadow: var(--shadow-sm);
             border-radius: var(--radius-sm);
             overflow: hidden;
