@@ -721,6 +721,38 @@ $cabeceraMismoFrente = (int) $db->query(
 )->fetchColumn();
 $assert($cabeceraMismoFrente === 1, 'Importante 1: reamarrar al mismo frente no invalida un plan que sigue siendo válido.');
 
+// --- Importante 2 (review final de A4): reamarrar al MISMO frente DESPUÉS de que el cronograma lo
+// movió sí debe invalidar el plan viejo. El caso de arriba reamarra al mismo frente con el
+// cronograma quieto (unique_id igual, fecha_ancla igual) y por eso no detecta este hallazgo: aquí
+// el frente sí se mueve entre el primer y el segundo amarre, así que unique_id sigue igual pero la
+// fecha_ancla ya no coincide con la que el plan calculado tiene guardada.
+$db->query(
+    'UPDATE programa_consolidado SET Fecha_Inicio = "2027-01-15" WHERE project_id = ? AND unique_id = ? AND Semana = 2',
+    [$P, $frenteB['uniqueId']],
+);
+
+$cabeceraAntesDeMover = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($cabeceraAntesDeMover === 1, 'Importante 2: el plan sigue calculado antes de reamarrar al mismo frente ya movido.');
+
+$svc->amarrar($P, $paqReamarre, $frenteB['uniqueId'], 'test-a4');
+
+$cabeceraTrasMoverYReamarrar = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($cabeceraTrasMoverYReamarrar === 0,
+    'Importante 2: reamarrar al MISMO frente después de que el cronograma lo movió SÍ invalida el plan viejo (unique_id igual, fecha_ancla distinta).');
+
+$pasosTrasMoverYReamarrar = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?', [$P, $paqReamarre],
+)->fetchColumn();
+$assert($pasosTrasMoverYReamarrar === 0, 'Importante 2: los pasos viejos del plan también se purgan.');
+
+$amarreTrasMover = $svc->amarres($P);
+$assert(($amarreTrasMover[$paqReamarre]['fechaAncla'] ?? null) === '2027-01-15',
+    'Importante 2: el amarre sí guarda la fecha ancla nueva del frente movido.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);
