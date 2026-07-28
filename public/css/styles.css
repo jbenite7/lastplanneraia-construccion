@@ -307,11 +307,16 @@ table.dataTable tbody tr:hover td {
   margin-top: 10px;
 }
 
+/* F1 Task 5l: los cinco bordes grises de este formulario de contratacion (aqui
+   y en las cuatro reglas de mas abajo) solo se emiten en views/pdc/pdc.view.php.
+   Medidos en /pdc sobre TODOS los nodos: ninguno pinta el literal --pdc.css y
+   los adaptadores ya resuelven --ds-active-border o borde de ancho cero--, asi
+   que reapuntarlos al token es un no-op medido, no un cambio de color. */
 .informacionAdjudicacionProveedor,
 .informacionAdjudicacionContrato,
 .seguimientoContrato {
   padding: 10px;
-  border-bottom: 1px solid #ced4da;
+  border-bottom: 1px solid var(--ds-active-border);
   text-align: initial;
 }
 
@@ -397,7 +402,7 @@ table.dataTable tbody tr:hover td {
 .pasoProcesoContratacion {
   background: white;
   align-items: center;
-  border-bottom: 1px solid #ced4da;
+  border-bottom: 1px solid var(--ds-active-border);
   width: 100%;
   margin: auto;
   padding: 10px 2px;
@@ -406,7 +411,7 @@ table.dataTable tbody tr:hover td {
 .filaEncabezado {
   background: white;
   align-items: center;
-  border-bottom: 2px solid #ced4da;
+  border-bottom: 2px solid var(--ds-active-border);
   width: 100%;
   margin: auto;
   padding: 10px 2px;
@@ -421,13 +426,13 @@ table.dataTable tbody tr:hover td {
   width: 400px;
   max-width: 35%;
   margin: auto 3px;
-  border-right: 2px solid #ced4da;
+  border-right: 2px solid var(--ds-active-border);
   height: auto;
 }
 
 .inputFormularioContratos {
   background: white;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--ds-active-border);
   border-radius: 3px;
   display: inline-block;
   padding: 0;
