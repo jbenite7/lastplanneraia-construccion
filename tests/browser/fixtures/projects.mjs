@@ -186,6 +186,28 @@ const ALL_PROJECTS = [
   },
 ];
 
+/**
+ * Proyecto sacrificable para los e2e del Plan de Compras v2.
+ *
+ * Deliberadamente FUERA de `ALL_PROJECTS`/`PROJECTS`: media docena de specs usan `PROJECTS[0]` o
+ * iteran la lista completa, y el sandbox no es un proyecto que valga la pena recorrer — es un
+ * destino de escritura. Lo siembra `database/seeds/pdc_e2e_sandbox_project.php`, que además lo
+ * resetea en cada corrida (ver `tests/browser/support/pdc-sandbox.mjs`).
+ */
+export const PDC_SANDBOX_PROJECT = {
+  key: 'pdc-sandbox',
+  name: 'PDC Sandbox E2E',
+  projectId: 990100,
+  dbPrefix: 'pdc_sandbox_e2e',
+  area: 'Construccion',
+  maxWeek: 1,
+  operationalWeek: 1,
+  purchasingWeek: 1,
+  purchasingCapabilities: ['pdc'],
+  enabledModules: ['pdc'],
+  constructionOnly: true,
+};
+
 const requestedProjectKeys = (process.env.E2E_PROJECT_KEYS || '')
   .split(',')
   .map((key) => key.trim())

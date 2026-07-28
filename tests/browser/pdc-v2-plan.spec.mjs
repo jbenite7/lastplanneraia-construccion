@@ -1,35 +1,23 @@
-import { execFileSync } from 'node:child_process';
 import { test, expect } from '@playwright/test';
-import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject, logout } from './support/session.mjs';
+import { PDC_SANDBOX_PROJECT, sqlEnApp, usarSandboxPdc } from './support/pdc-sandbox.mjs';
 
-const project = PROJECTS.find(({ key }) => key === 'construction');
+const project = PDC_SANDBOX_PROJECT;
+const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
+// Debe coincidir con `PDC_SANDBOX_FRENTE_PLAN` en database/seeds/pdc_e2e_sandbox_project.php.
+const PAQUETE_PLAN = 'ZZTEST PAQUETE PLAN';
 
-// La captura/restauración de abajo (phpEval) hablan con el MySQL local vía `docker compose exec`,
-// mientras el navegador de Playwright ataca `E2E_BASE_URL`. Si alguien corre esto apuntando a otro
-// entorno (staging, otro stack), el navegador mutaría allá y esta función solo sabe leer/restaurar
-// aquí — la mutación remota quedaría sin deshacer. Por eso el segundo test (el mutante) exige que
-// el navegador y el `docker compose exec` sean el mismo host.
-const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8081';
-const BASE_URL_ES_LOCAL = /^https?:\/\/localhost(:|\/|$)/.test(BASE_URL);
-
-// Acceso directo a MySQL vía el contenedor `app` (reusa la conexión ya configurada de Database.php,
-// igual que los tests PHP autoejecutables): solo para capturar/restaurar el estado del proyecto
-// real alrededor del segundo test (mutante), no para el primero (solo lectura).
-function phpEval(code) {
-  return execFileSync('docker', ['compose', 'exec', '-T', 'app', 'php', '-r', code], {
-    cwd: process.cwd(), encoding: 'utf8', timeout: 30_000,
-  });
-}
+// El segundo test crea un amarre real. Va contra el proyecto sacrificable «PDC Sandbox E2E», que el
+// seed resetea antes de cada test y siembra con lo mínimo que necesita esta pestaña: una semana
+// activa, dos frentes de cronograma y un paquete del proyecto con insumos asignados (sin eso,
+// `sugerirFrentes()` no tiene ni frentes ni paquetes que proponer).
+usarSandboxPdc();
 
 function paquetesAmarradosDelProyecto(projectId) {
-  const out = phpEval(`
-    require '/var/www/html/vendor/autoload.php';
-    require '/var/www/html/src/Core/Database.php';
-    $db = Database::getInstance();
-    $rows = $db->query('SELECT paquete_id FROM pdc_paquete_frente WHERE project_id = ?', [${projectId}])->fetchAll(PDO::FETCH_COLUMN);
-    echo implode(',', $rows);
-  `).trim();
+  const out = sqlEnApp(
+    `$rows = $db->query('SELECT paquete_id FROM pdc_paquete_frente WHERE project_id = ?', [${projectId}])`
+    + `->fetchAll(PDO::FETCH_COLUMN); echo implode(',', $rows);`,
+  );
   return out === '' ? [] : out.split(',').map(Number);
 }
 
@@ -38,40 +26,16 @@ function paquetesAmarradosDelProyecto(projectId) {
 // ortogonales (ver PlanFechasService::amarrar()). Antes del fix esto era inalcanzable desde la UI:
 // el <select> nunca disparaba el POST, así que ninguna fila con estas señas podía existir.
 function detalleAmarre(projectId, paqueteId) {
-  const out = phpEval(`
-    require '/var/www/html/vendor/autoload.php';
-    require '/var/www/html/src/Core/Database.php';
-    $db = Database::getInstance();
-    $row = $db->query('SELECT origen, confirmado_humano FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?', [${projectId}, ${paqueteId}])->fetch(PDO::FETCH_ASSOC);
-    echo json_encode($row);
-  `).trim();
-  return JSON.parse(out);
+  return JSON.parse(sqlEnApp(
+    `$row = $db->query('SELECT origen, confirmado_humano FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?', `
+    + `[${projectId}, ${paqueteId}])->fetch(PDO::FETCH_ASSOC); echo json_encode($row);`,
+  ));
 }
 
-// Borra SOLO los paquetes indicados (los que este test creó) de las tres tablas de A4 — nunca las
-// filas que ya existían antes de correr el test. Así el test queda no destructivo por construcción:
-// deja el proyecto real exactamente como lo encontró, gane o pierda la prueba.
-function restaurarPlanDe(projectId, paqueteIds) {
-  if (paqueteIds.length === 0) return;
-  const lista = paqueteIds.map(Number).join(',');
-  phpEval(`
-    require '/var/www/html/vendor/autoload.php';
-    require '/var/www/html/src/Core/Database.php';
-    $db = Database::getInstance();
-    $db->query('DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id IN (${lista})', [${projectId}]);
-    $db->query('DELETE FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id IN (${lista})', [${projectId}]);
-    $db->query('DELETE FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id IN (${lista})', [${projectId}]);
-    echo 'ok';
-  `);
-}
-
-// Solo lectura: no amarra paquetes ni recalcula — a diferencia de pdc-v2-paquetes.spec.mjs (que SÍ
-// importa un presupuesto de juguete y es destructivo), esta prueba solo navega y lee la pestaña
-// «Plan» (A4). Verifica que la tabla trae filas, que los vencidos se ven primero y en rojo, que un
-// paquete se puede expandir a sus pasos, y que existen los bloques «Sin frente» y «Desfases».
+// Solo lectura: no amarra paquetes ni recalcula, solo navega y lee la pestaña «Plan» (A4).
+// Verifica que la tabla trae filas, que los vencidos se ven primero y en rojo, que un paquete se
+// puede expandir a sus pasos, y que existen los bloques «Sin frente» y «Desfases».
 test('plan: la pestaña Plan carga el plan calculado con vencidos primero', async ({ page }) => {
-  test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
-
   await loginAndSelectProject(page, project);
   try {
     await page.goto('/plan-compras#/ensamble/plan', { waitUntil: 'domcontentloaded' });
@@ -121,49 +85,64 @@ test('plan: la pestaña Plan carga el plan calculado con vencidos primero', asyn
 
 // Crítico del review final A4: el <select> preseleccionaba la propuesta del motor pero solo el
 // `onChange` disparaba el amarre — elegir la opción ya elegida no emite `change`, así que aceptar
-// la propuesta tal cual era imposible desde la interfaz. Este test SÍ muta: acepta UNA propuesta real
-// con su botón «Amarrar» individual y comprueba que el amarre se guarda. No es destructivo por
-// construcción: solo borra, al final, el paquete que ESTE test amarró (nunca los que ya existían), así
-// que el proyecto real queda exactamente como lo encontró, gane o pierda la prueba.
+// la propuesta tal cual era imposible desde la interfaz. Este test SÍ muta: acepta UNA propuesta con
+// su botón «Amarrar» individual y comprueba que el amarre se guarda.
 //
-// Importante 3 del review final (cierre de este mismo test):
-// - Acepta UNA propuesta, no todas: el botón masivo «Aceptar N sugerida(s)» amarraría de golpe cada
-//   paquete sugerido — hoy son decenas en Da Porto. Basta una para probar el fix; se usa el botón
-//   individual de esa fila («Amarrar»), igual que un humano aceptando una sola propuesta.
-// - Nunca pulsa «Recalcular»: ese botón recalcula TODOS los amarres del proyecto (no solo el que
-//   crea este test) y aplica en silencio cualquier desfase pendiente que ya hubiera — precisamente lo
-//   que este módulo, por diseño, no hace sin que alguien lo vea. Si el proyecto tuviera desfases
-//   pendientes de otros amarres, pulsarlo aquí los aplicaría como efecto colateral de un test que no
-//   tiene por qué tocarlos, y ese efecto no lo deshace el `finally` (que solo borra lo que este test
-//   amarró). No pulsarlo nunca es lo que hace innecesario depender del `finally` para no hacer daño.
-// - Exige `PDC_E2E_DESTRUCTIVO=1`, igual que `pdc-v2-paquetes.spec.mjs`: sigue siendo mutante sobre
-//   el proyecto real aunque el radio de acción ahora sea uno solo, no cincuenta.
+// El sandbox arranca sin ningún amarre (lo resetea el seed), así que ya no hace falta fotografiar el
+// estado previo ni restaurarlo en un `finally`: cualquier fila de `pdc_paquete_frente` que exista al
+// terminar la creó este test, y desaparece en el siguiente reseteo.
+//
+// Sigue sin pulsarse «Recalcular», por fidelidad al recorrido que prueba: ese botón recalcula TODOS
+// los amarres del proyecto y aplica en silencio los desfases pendientes — justo lo que este módulo,
+// por diseño, no hace sin que alguien lo vea. Lo que se asierta abajo es el estado intermedio
+// «amarrado, pendiente de calcular».
 test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular todo el plan)', async ({ page }) => {
-  test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
-  test.skip(
-    process.env.PDC_E2E_DESTRUCTIVO !== '1',
-    'Test mutante: crea un amarre real en el proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
-  );
-  test.skip(
-    !BASE_URL_ES_LOCAL,
-    `La captura/restauración van contra el MySQL local vía Docker; E2E_BASE_URL (${BASE_URL}) no apunta a localhost, así que restaurar aquí no deshace lo que el navegador mutó allá.`,
-  );
-
-  const antes = paquetesAmarradosDelProyecto(project.projectId);
+  expect(
+    paquetesAmarradosDelProyecto(project.projectId),
+    'el sandbox debe empezar sin amarres',
+  ).toEqual([]);
 
   await loginAndSelectProject(page, project);
   try {
+    // Montaje por la interfaz, no por SQL: el bloque «Sin frente» se alimenta del resumen de
+    // paquetes, que solo cuenta insumos de la VERSIÓN ACTIVA. Hacen falta las tres cosas —
+    // presupuesto importado, vínculos del maestro generados y un insumo asignado a un paquete—
+    // para que exista un paquete del proyecto al que el motor pueda proponerle un frente.
+    await page.goto('/plan-compras', { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-testid="pdc-import-file"]').setInputFiles(FIXTURE);
+    await expect(page.locator('[data-testid="pdc-import-resumen"]')).toContainText('PI_TEST_1', { timeout: 20000 });
+    await page.locator('[data-testid="pdc-import-confirmar"]').click();
+    await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
+
+    await page.locator('nav >> text=Maestro').click();
+    await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
+
+    await page.locator('nav >> text=Paquetes').click();
+    await expect(page.locator('h1')).toContainText('Paquetes de contratación', { timeout: 15000 });
+    // El nombre debe coincidir con el frente que siembra el seed (PDC_SANDBOX_FRENTE_PLAN): eso es
+    // lo que hace que la propuesta por similitud salga con confianza alta.
+    await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill(PAQUETE_PLAN);
+    await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('a_todo_costo');
+    await page.locator('[data-testid="pdc-paq-crear"]').click();
+    await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 15000 });
+
+    const gridPaquetes = page.locator('[data-testid="pdc-paq-grid"]');
+    await page.locator('[data-testid="pdc-paq-filtro"]').selectOption('sin_asignar');
+    await expect(gridPaquetes.locator('.ag-row').first()).toBeVisible({ timeout: 15000 });
+    await gridPaquetes.locator('.ag-row').first().click();
+    await page.locator('[data-testid="pdc-paq-asignar"]').click();
+    await expect(page.locator('.pdc-info')).toContainText('asignado', { timeout: 15000 });
+
     await page.goto('/plan-compras#/ensamble/plan', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h1')).toContainText('Plan de compras', { timeout: 15000 });
     await expect(page.locator('[data-testid="pdc-plan-sin-frente"]')).toBeVisible({ timeout: 20000 });
 
-    // Una sola fila con propuesta del motor (el chip «origen · confianza»), no todas. `isVisible()`
-    // no reintenta: las sugerencias llegan por un GET aparte del que ya esperamos arriba, así que hay
-    // que darle margen antes de concluir que de verdad no hay ninguna — si no, el test se autoengaña
-    // con un skip por una carrera, no por falta real de datos.
+    // La fila con propuesta del motor (el chip «origen · confianza»). `isVisible()` no reintenta:
+    // las sugerencias llegan por un GET aparte del que ya esperamos arriba, así que hay que darle
+    // margen antes de concluir que de verdad no hay ninguna.
     const filaConSugerencia = page.locator('[data-testid="pdc-plan-sin-frente"] li:has(.pdc-paq-tag)').first();
-    const hayPropuestas = await filaConSugerencia.waitFor({ state: 'visible', timeout: 10000 }).then(() => true).catch(() => false);
-    test.skip(!hayPropuestas, 'No hay ninguna propuesta del motor pendiente ahora mismo (todo ya amarrado o sin señales).');
+    await expect(filaConSugerencia, 'el motor debe proponer un frente para el paquete recién creado')
+      .toBeVisible({ timeout: 15000 });
 
     // El botón individual de esa fila: ya viene preseleccionado con la propuesta del motor (fix del
     // Bloqueante), así que un solo clic basta — sin tocar el <select> ni el botón masivo.
@@ -174,8 +153,7 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
     // distingue un éxito real de un fallo silenciado.
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 20000 });
 
-    const despues = paquetesAmarradosDelProyecto(project.projectId);
-    const nuevos = despues.filter((id) => !antes.includes(id));
+    const nuevos = paquetesAmarradosDelProyecto(project.projectId);
     expect(nuevos.length, `amarrar un paquete debió crear exactamente un amarre nuevo (nuevos: ${JSON.stringify(nuevos)})`).toBe(1);
 
     // La demostración directa del Crítico: el amarre recién creado lleva la procedencia del motor
@@ -192,16 +170,6 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
   } finally {
-    // Restauración incondicional (gane o pierda la prueba arriba): solo el paquete que este test
-    // amarró, nunca los que ya estaban amarrados antes de correrlo. Como nunca se pulsó «Recalcular»,
-    // lo único que hay que deshacer es ese amarre (no hay filas de `pdc_plan_paquete`/`pdc_plan_paso`
-    // propias que purgar aparte de las que ya cubre `restaurarPlanDe`).
-    try {
-      const finalConteo = paquetesAmarradosDelProyecto(project.projectId);
-      const propios = finalConteo.filter((id) => !antes.includes(id));
-      restaurarPlanDe(project.projectId, propios);
-    } finally {
-      await logout(page).catch(() => {});
-    }
+    await logout(page).catch(() => {});
   }
 });

@@ -1,21 +1,15 @@
 import { test, expect } from '@playwright/test';
-import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject, logout } from './support/session.mjs';
+import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
 
-const project = PROJECTS.find(({ key }) => key === 'construction');
+const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx'; // el que usa pdc-v2-import.spec.mjs
 
-test('versionamiento inteligente: re-cargue idéntico avisa sin cambios', async ({ page }) => {
-  test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
-  // DESTRUCTIVO: el primer cargue confirma el presupuesto de juguete en el proyecto real y lo deja
-  // como versión activa, desactivando el de DAPORTO sin restaurarlo (la aserción del segundo cargue
-  // depende justamente de esa postcondición). Corre solo con la variable puesta:
-  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-versionado.spec.mjs
-  test.skip(
-    process.env.PDC_E2E_DESTRUCTIVO !== '1',
-    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
-  );
+// El primer cargue deja el presupuesto de juguete como versión activa: va contra el proyecto
+// sacrificable «PDC Sandbox E2E», que se resetea antes de cada test.
+usarSandboxPdc();
 
+test('versionamiento inteligente: re-cargue idéntico avisa sin cambios', async ({ page }) => {
   await loginAndSelectProject(page, project);
   try {
     await page.goto('/plan-compras#/ensamble/importar', { waitUntil: 'domcontentloaded' });
@@ -27,26 +21,19 @@ test('versionamiento inteligente: re-cargue idéntico avisa sin cambios', async 
     const confirmar = page.locator('[data-testid="pdc-import-confirmar"]');
     const confirmado = page.locator('[data-testid="pdc-import-confirmado"]');
 
-    // Primer cargue del fixture. El proyecto Da Porto es compartido entre specs e2e y
-    // puede acumular versiones de corridas previas, así que NO se asume su estado: si el
-    // fixture ya coincide con la versión activa, el preview avisa "sin cambios" desde este
-    // primer intento (estado válido: el auto-comparativo/versionado ya lo tenía al día).
-    // Si no coincide, se crea una versión nueva. Ambos casos dejan la MISMA postcondición
-    // (versión activa == contenido del fixture), que es lo que habilita la aserción clave
-    // del segundo cargue más abajo — por eso basta con branchear aquí sin duplicar specs.
+    // Primer cargue del fixture. El sandbox arranca sin ninguna versión (lo resetea el seed antes
+    // de cada test), así que este cargue SIEMPRE crea la versión 1: no hay con qué comparar todavía
+    // y el aviso «sin cambios» no debe aparecer. Antes este bloque tenía que branchear porque el
+    // spec escribía en Da Porto, compartido con el resto de specs y con estado impredecible.
     await fileInput.setInputFiles(FIXTURE);
     await expect(resumen).toBeVisible({ timeout: 20000 });
-    const yaEstabaActiva = await sinCambios.isVisible();
+    await expect(sinCambios).toHaveCount(0);
     await confirmar.click();
     await expect(confirmado).toBeVisible({ timeout: 20000 });
-    if (yaEstabaActiva) {
-      await expect(confirmado).toContainText('Sin cambios');
-    }
+    await expect(confirmado).not.toContainText('Sin cambios');
 
-    // Segundo cargue del MISMO archivo: tras el primer confirmar (sin cambios o recién
-    // creada), la versión activa del proyecto YA es el contenido del fixture en cualquiera
-    // de los dos casos anteriores. Esta es la aserción clave, robusta al estado previo del
-    // proyecto compartido: el aviso "sin cambios" debe disparar aquí siempre.
+    // Segundo cargue del MISMO archivo: la versión activa ya es el contenido del fixture, así que
+    // el aviso «sin cambios» debe dispararse y no debe crearse una versión nueva.
     await fileInput.setInputFiles(FIXTURE);
     await expect(sinCambios).toBeVisible({ timeout: 20000 });
     await confirmar.click();

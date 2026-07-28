@@ -1,21 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject, logout } from './support/session.mjs';
+import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
 
-const project = PROJECTS.find(({ key }) => key === 'construction');
+const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
-test('importar presupuesto: preview, confirmación y versión activa', async ({ page }) => {
-  test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
-  // DESTRUCTIVO: confirma la importación del presupuesto de juguete en el proyecto real, lo que crea
-  // una versión nueva y la deja activa, desactivando el presupuesto de DAPORTO sin restaurarlo.
-  // Corre solo con la variable puesta:
-  //   PDC_E2E_DESTRUCTIVO=1 npx playwright test tests/browser/pdc-v2-import.spec.mjs
-  test.skip(
-    process.env.PDC_E2E_DESTRUCTIVO !== '1',
-    'Test destructivo: reemplaza la versión activa del proyecto. Exporta PDC_E2E_DESTRUCTIVO=1 para correrlo.',
-  );
+// Confirmar la importación deja el presupuesto de juguete como versión activa. Contra un proyecto
+// real eso desactiva su presupuesto sin restaurarlo, así que el spec escribe en el proyecto
+// sacrificable «PDC Sandbox E2E», que se resetea antes de cada test.
+usarSandboxPdc();
 
+test('importar presupuesto: preview, confirmación y versión activa', async ({ page }) => {
   await loginAndSelectProject(page, project);
   try {
     await page.goto('/plan-compras', { waitUntil: 'domcontentloaded' });
