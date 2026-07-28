@@ -35,7 +35,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
     <!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
-    <link rel="stylesheet" href="/public/vendor/select2/select2.min.css" />
+    <!-- select2.min.css llega vía aia-design-system.css (layer vendor); sin capa ganaba al adaptador y dejaba el desplegable claro. -->
     <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
