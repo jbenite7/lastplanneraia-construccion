@@ -22,13 +22,21 @@ const TRIGGER = '.filaBotones .la-toolbar-switcher .aia-info-nav__trigger';
 // pinta ningun indicador de foco. Media regla viva suprimiendo el anillo sin
 // poner nada en su lugar.
 //
-// Lo que este test guarda es lo que la poda OWNS: que el conmutador no vuelva a
-// suprimir su propio outline. No guarda que el anillo se vea, y la diferencia
-// importa: medido, el trigger sigue SIN marca de foco despues de la poda, porque
-// su `outline-style` es `none` desde antes -un `<button>` desnudo en esta pagina
-// ya computa `none`, asi que lo suprime un reset global de botones-. Ese defecto
-// de WCAG 2.4.7 es anterior y mas ancho que este bloque, y esta reportado como
-// hallazgo aparte; afirmarlo aqui como si esta poda lo resolviera seria falso.
+// Lo que este test guarda es lo que la poda OWNS, que NO es que el anillo se
+// vea. Medido tras podar: `outline-width: 3px` con `outline-style: none`. Esos
+// 3px son solo `medium` -el ancho inicial que el atajo `outline: none` deja al
+// resetear-, asi que no pintan nada. Aserta `outlineWidth > 0` seria un test
+// que pasa estando roto.
+//
+// Quien lo suprime ahora esta medido y es `styles.css:2739`, una copia hermana
+// de este mismo bloque muerto en la hoja compartida, que le gana por
+// especificidad al `button:focus` de Bootstrap. El conmutador no es `.btn`.
+// Ese defecto de WCAG 2.4.7 alcanza tambien a /contratos y /pdc y esta
+// reportado aparte.
+//
+// Lo que si es propio de la poda: la hoja de MODULO ya no declara `outline`
+// sobre el trigger. Importa porque lo hacia con `!important`, y eso habria
+// derrotado al arreglo cuando se haga en `styles.css`. Eso es lo que se guarda.
 async function focusIndicator(page) {
   return page.evaluate((selector) => {
     const el = document.querySelector(selector);
@@ -52,7 +60,7 @@ test.describe('conmutador de vista de /listado-actividades', () => {
     await expect(page.locator(TRIGGER)).toBeVisible({ timeout: 45000 });
   });
 
-  test('el conmutador no aplasta su propio outline al enfocarse', async ({ page }) => {
+  test('la hoja de módulo no vuelve a suprimir el outline del conmutador', async ({ page }) => {
     const before = await focusIndicator(page);
     expect(before, 'no se encontró el conmutador').toBeTruthy();
 
@@ -71,13 +79,44 @@ test.describe('conmutador de vista de /listado-actividades', () => {
     const focused = await focusIndicator(page);
     expect(focused.focusVisible, 'el foco de teclado debería activar :focus-visible').toBe(true);
 
-    // Antes de la poda esto valía 0px: el `outline: 0 !important` del bloque
-    // muerto lo aplastaba. Es la mitad del problema que esta poda sí resuelve.
+    // Se recorren las reglas que casan con el trigger y se queda con las que
+    // declaran `outline` desde `listado-actividades.css`. Antes de la poda habia
+    // una (`outline: 0 !important`); ahora no debe haber ninguna.
+    const culprits = await page.evaluate((selector) => {
+      const node = document.querySelector(selector);
+      const found = [];
+      for (const sheet of document.styleSheets) {
+        let rules;
+        try { rules = sheet.cssRules; } catch { continue; }
+        const walk = (list, href) => {
+          for (const rule of list) {
+            if (rule.styleSheet) {
+              try { walk(rule.styleSheet.cssRules, rule.href || href); } catch { /* CORS */ }
+              continue;
+            }
+            if (rule.cssRules && !rule.selectorText) { walk(rule.cssRules, href); continue; }
+            if (!rule.selectorText) continue;
+            const decl = rule.style?.cssText || '';
+            // `outline-offset` no suprime nada: solo separa el anillo del borde.
+            if (!/(^|[^-])outline(-width|-style|-color)?\s*:/.test(decl)) continue;
+            try {
+              if (!node.matches(rule.selectorText.replace(/:focus-visible/g, ':focus'))) continue;
+            } catch { continue; }
+            found.push({ file: (href || 'inline').split('/').pop().split('?')[0], sel: rule.selectorText, decl });
+          }
+        };
+        walk(rules, sheet.href);
+      }
+      return found;
+    }, TRIGGER);
+
+    const fromModule = culprits.filter(({ file }) => file === 'listado-actividades.css');
     expect(
-      Number.parseFloat(focused.outlineWidth),
-      `el conmutador vuelve a aplastar su propio outline (${focused.outlineWidth}); `
-      + 'alguien reintrodujo un `outline: 0` en su cascada',
-    ).toBeGreaterThan(0);
+      fromModule,
+      'la hoja de módulo volvió a declarar `outline` sobre el conmutador: '
+      + `${JSON.stringify(fromModule)}. Esa era exactamente la regla podada, y con `
+      + '`!important` derrotaría al arreglo que toca hacer en styles.css:2739.',
+    ).toEqual([]);
   });
 
   test('el reposo y el hover conservan su aspecto', async ({ page }) => {

@@ -210,13 +210,18 @@ body .navbar-aia .navbar-brand.aia-brand .aia-brand-mark {
    -`box-shadow: var(--ds-shadow-focus)`- si lo pisaba el override. O sea que
    suprimia el anillo de foco sin poner nada en su lugar.
 
-   AVISO, medido: retirarlo devuelve el ancho del outline (0px -> 3px) pero el
-   conmutador SIGUE sin marca de foco visible, porque su `outline-style` es
-   `none` desde antes: un `<button>` desnudo en esta pagina ya computa `none`,
-   asi que lo suprime un reset global de botones y no este bloque. Es un defecto
-   de WCAG 2.4.7 anterior a esta poda y mas ancho que ella -afecta a cualquier
-   boton sin `:focus-visible` propio-, y arreglarlo aqui seria parchear en un
-   modulo algo que es del sistema.
+   AVISO, medido: retirarlo NO devuelve la marca de foco. El computado pasa a
+   `outline-width: 3px` con `outline-style: none`, y esos 3px son solo `medium`
+   -el ancho inicial que el atajo `outline: none` deja al resetear-, asi que no
+   pintan nada.
+
+   Quien lo suprime ahora esta medido y es `styles.css:2739`:
+   `.filaBotones .aia-info-nav__trigger:hover, ...:focus { outline: none; }`,
+   una copia hermana de este mismo bloque muerto en la hoja compartida, que le
+   gana por especificidad al `button:focus` de Bootstrap. El conmutador NO es
+   `.btn`, asi que `buttons.css` no interviene. Como vive en `styles.css`, el
+   mismo defecto de WCAG 2.4.7 alcanza a /contratos y /pdc, y arreglarlo aqui
+   seria parchear en un modulo algo que es de la hoja compartida.
    Guard: tests/browser/listado-actividades-switcher-focus.mjs. */
 .filaBotones .la-toolbar-switcher .aia-info-nav__trigger {
   border-width: thin !important;
