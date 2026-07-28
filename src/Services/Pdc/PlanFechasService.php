@@ -863,6 +863,7 @@ class PlanFechasService
       *     duracionProvisional: bool,
       *     responsableUserId: int|null,
       *     responsableNombre: string,
+      *     responsableCargo: string,
       *     responsableHuerfano: bool,
       *     diasRetraso: int,
       *     pasos: list<array{
@@ -880,8 +881,8 @@ class PlanFechasService
             "SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
                     pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre,
-                    u.nombre AS responsable_nombre, u.activo AS responsable_activo,
-                    pm.user_id AS responsable_miembro
+                    u.nombre AS responsable_nombre, u.cargo AS responsable_cargo,
+                    u.activo AS responsable_activo, pm.user_id AS responsable_miembro
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
              JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
@@ -923,6 +924,7 @@ class PlanFechasService
                 'duracionProvisional' => (int) $r['duracion_provisional'] === 1,
                 'responsableUserId' => $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'],
                 'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),
+                'responsableCargo' => (string) ($r['responsable_cargo'] ?? ''),
                 // Huérfano = tiene responsable, pero ya no es miembro del proyecto o está inactivo.
                 // Sin responsable no hay nadie a quien marcar, así que es false, no true.
                 'responsableHuerfano' => $r['responsable_user_id'] !== null
@@ -939,6 +941,88 @@ class PlanFechasService
             return strcmp($a['fechaArranque'], $b['fechaArranque']);
         });
         return $out;
+    }
+
+    /**
+     * Usuarios que pueden ser responsables de un paquete en este proyecto.
+     *
+     * La FK `fk_ppp_responsable` solo garantiza que el usuario EXISTE, no que pertenezca a este
+     * proyecto: sin este filtro, un id de otra obra pasaría la restricción de la base sin que nada
+     * lo notara. Esta lista es, por tanto, la definición de «elegible» que usan tanto el selector de
+     * la pantalla como la validación de `asignarResponsable()` — deliberadamente una sola.
+     *
+     * @return list<array{id: int, nombre: string, cargo: string}>
+     */
+    public function responsablesElegibles(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT u.id, u.nombre, u.cargo
+             FROM project_members pm
+             JOIN general_usuarios u ON u.id = pm.user_id
+             WHERE pm.project_id = ? AND u.activo = 1
+             ORDER BY u.nombre',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'id' => (int) $r['id'],
+                'nombre' => (string) $r['nombre'],
+                'cargo' => (string) $r['cargo'],
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Asigna (o retira, con `$responsableUserId = null`) el responsable de un paquete.
+     *
+     * No se usa `rowCount()` del UPDATE para decidir si la fila existe: este repo no activa
+     * PDO::MYSQL_ATTR_FOUND_ROWS (ver Database.php), así que MySQL reporta filas MODIFICADAS, no
+     * coincidentes — guardar el mismo responsable dos veces seguidas daría 0 y parecería que el
+     * paquete no tiene plan. La existencia se confirma con un SELECT explícito.
+     *
+     * @return array{ok: bool, code?: string}
+     */
+    public function asignarResponsable(
+        int $projectId,
+        int $paqueteId,
+        ?int $responsableUserId,
+        string $usuario
+    ): array {
+        $existe = $this->db->query(
+            'SELECT 1 FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+            [$projectId, $paqueteId],
+        )->fetchColumn();
+        if ($existe === false) {
+            return ['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'];
+        }
+
+        if ($responsableUserId !== null) {
+            $elegible = false;
+            foreach ($this->responsablesElegibles($projectId) as $e) {
+                if ($e['id'] === $responsableUserId) {
+                    $elegible = true;
+                    break;
+                }
+            }
+            if (!$elegible) {
+                return ['ok' => false, 'code' => 'RESPONSABLE_NO_ELEGIBLE'];
+            }
+        }
+
+        // `responsable_asignado_por` se escribe también al vaciar: la columna registra quién tocó
+        // la asignación por última vez, y quitar a alguien es justo el movimiento que más interesa
+        // poder rastrear después.
+        $this->db->query(
+            'UPDATE pdc_plan_paquete
+                SET responsable_user_id = ?, responsable_asignado_por = ?, responsable_asignado_at = NOW()
+              WHERE project_id = ? AND paquete_id = ?',
+            [$responsableUserId, mb_substr($usuario, 0, 100), $projectId, $paqueteId],
+        );
+
+        return ['ok' => true];
     }
 
     /**

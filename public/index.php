@@ -221,6 +221,7 @@ $router->post('/plan-compras/api/paquetes/auto-asignar', [\App\Controllers\Api\P
 $router->get('/plan-compras/api/plan/frentes', [\App\Controllers\Api\PlanComprasPlanController::class, 'frentes']);
 $router->get('/plan-compras/api/plan/sugerencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'sugerencias']);
 $router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
+$router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
 $router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
 $router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
 $router->post('/plan-compras/api/plan/calcular', [\App\Controllers\Api\PlanComprasPlanController::class, 'calcular']);

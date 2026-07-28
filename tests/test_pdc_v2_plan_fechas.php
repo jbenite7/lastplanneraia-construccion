@@ -25,6 +25,11 @@ $limpiar = static function () use ($db, $P, $P2): void {
     $db->query('DELETE FROM pdc_plan_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_paquete_frente WHERE project_id IN (?, ?)', [$P, $P2]);
     $db->query('DELETE FROM pdc_insumo_paquete WHERE project_id IN (?, ?)', [$P, $P2]);
+    $db->query('DELETE FROM project_members WHERE project_id IN (?, ?)', [$P, $P2]);
+    // Usuarios sintéticos del bloque «responsable»: se borran DESPUÉS de project_members y de
+    // pdc_plan_paquete (la FK fk_ppp_responsable es ON DELETE SET NULL, así que el orden no rompe,
+    // pero borrarlos al final deja el rastro más fácil de leer si algo falla a media corrida).
+    $db->query("DELETE FROM general_usuarios WHERE usuario LIKE 'zztest-a4-%'");
     $db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'test-a4'");
     // LIKE en vez de la lista exacta: cada bloque de este archivo añade su propia fila de duración
     // sintética («TEST A4 DURACION», «... CORTA», «... SUMINISTRO COMPLETO», etc.) y todas comparten
@@ -569,14 +574,98 @@ $paqLejos = (int) $db->lastInsertId();
 $svc->amarrar($P, $paqLejos, 9006, 'test-a4');
 
 // --- Responsable como usuario del proyecto ---
-// Antes era texto libre y el test escribía 'Juan Pérez' con un UPDATE directo. Ahora es un enlace
-// a general_usuarios, así que el test necesita un usuario de verdad y un miembro de verdad.
-$uid = (int) $db->query('SELECT id FROM general_usuarios ORDER BY id LIMIT 1')->fetchColumn();
-$assert($uid > 0, 'Responsable: hay al menos un usuario en general_usuarios para la prueba. Dio ' . $uid);
+// Tres usuarios sintéticos en vez de tomar «el primero que haya» en general_usuarios: hacen falta
+// los tres casos de elegibilidad (miembro activo / ajeno al proyecto / miembro dado de baja) y
+// tomarlos de datos reales dejaría el test a merced de qué haya sembrado en la base.
+$crearUsuario = static function (string $sufijo, string $nombre, string $cargo, int $activo) use ($db): int {
+    $db->query(
+        'INSERT INTO general_usuarios (nombre, email, cargo, usuario, password, activo)
+         VALUES (?, ?, ?, ?, ?, ?)',
+        [$nombre, "zztest-a4-{$sufijo}@example.test", $cargo, "zztest-a4-{$sufijo}", 'x', $activo],
+    );
+    return (int) $db->lastInsertId();
+};
+$uid = $crearUsuario('miembro', 'ZZ Test Residente', 'Residente de Obra', 1);
+$uidExterno = $crearUsuario('externo', 'ZZ Test Externo', 'Ajeno al proyecto', 1);
+$uidBaja = $crearUsuario('baja', 'ZZ Test De Baja', 'Dado de baja', 0);
 
-$db->query('INSERT IGNORE INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uid, 'U']);
+$db->query('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uid, 'U']);
+$db->query('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $uidBaja, 'U']);
+
+$elegibles = $svc->responsablesElegibles($P);
+$idsElegibles = array_column($elegibles, 'id');
+
+$assert(in_array($uid, $idsElegibles, true),
+    'Elegibles: el miembro activo del proyecto aparece en la lista. Dio ' . json_encode($idsElegibles));
+$assert(!in_array($uidExterno, $idsElegibles, true),
+    'Elegibles: quien NO es miembro del proyecto queda fuera de la lista.');
+$assert(!in_array($uidBaja, $idsElegibles, true),
+    'Elegibles: un miembro con activo = 0 queda fuera de la lista.');
+
+$elegido = null;
+foreach ($elegibles as $e) { if ($e['id'] === $uid) { $elegido = $e; } }
+$assert($elegido !== null && $elegido['nombre'] === 'ZZ Test Residente' && $elegido['cargo'] === 'Residente de Obra',
+    'Elegibles: cada fila trae id, nombre y cargo. Dio ' . json_encode($elegido));
+
+$nombresElegibles = array_column($elegibles, 'nombre');
+$ordenados = $nombresElegibles;
+sort($ordenados, SORT_STRING);
+$assert($nombresElegibles === $ordenados,
+    'Elegibles: la lista sale ordenada por nombre. Dio ' . json_encode($nombresElegibles));
+
 $db->query('UPDATE pdc_plan_paquete SET responsable_user_id = ? WHERE project_id = ? AND paquete_id = ?',
     [$uid, $P, $paqEstructura]);
+
+// --- Asignar responsable (lo que el endpoint roto hacía contra la columna eliminada) ---
+$leerResponsable = static function () use ($db, $P, $paqEstructura): array {
+    $r = $db->query(
+        'SELECT responsable_user_id, responsable_asignado_por, responsable_asignado_at
+         FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+        [$P, $paqEstructura],
+    )->fetch(\PDO::FETCH_ASSOC);
+    return $r === false ? [] : $r;
+};
+
+$r = $svc->asignarResponsable($P, $paqEstructura, $uid, 'jefa-compras');
+$assert(($r['ok'] ?? false) === true, 'Asignar: asignar a un miembro activo funciona. Dio ' . json_encode($r));
+
+$guardado = $leerResponsable();
+$assert((int) ($guardado['responsable_user_id'] ?? 0) === $uid,
+    'Asignar: se guarda el id del usuario. Dio ' . var_export($guardado['responsable_user_id'] ?? null, true));
+$assert(($guardado['responsable_asignado_por'] ?? '') === 'jefa-compras',
+    'Asignar: se guarda QUIÉN asignó. Dio ' . var_export($guardado['responsable_asignado_por'] ?? null, true));
+$assert(($guardado['responsable_asignado_at'] ?? null) !== null,
+    'Asignar: se guarda CUÁNDO se asignó. Dio ' . var_export($guardado['responsable_asignado_at'] ?? null, true));
+
+// Alguien de otro proyecto: la FK lo aceptaría (el usuario existe), así que esta es la única
+// defensa real contra asignar un paquete a quien no trabaja en esta obra.
+$r = $svc->asignarResponsable($P, $paqEstructura, $uidExterno, 'jefa-compras');
+$assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE',
+    'Asignar: un usuario ajeno al proyecto se rechaza con RESPONSABLE_NO_ELEGIBLE. Dio ' . json_encode($r));
+$assert((int) ($leerResponsable()['responsable_user_id'] ?? 0) === $uid,
+    'Asignar: un rechazo NO pisa el responsable que ya estaba guardado.');
+
+$r = $svc->asignarResponsable($P, $paqEstructura, $uidBaja, 'jefa-compras');
+$assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE',
+    'Asignar: un miembro dado de baja también se rechaza. Dio ' . json_encode($r));
+
+// Vaciar: se conserva el rastro de quién lo quitó — la columna es «quién tocó la asignación»,
+// no «quién puso a alguien», y perder eso deja un paquete sin dueño sin saber quién lo dejó así.
+$r = $svc->asignarResponsable($P, $paqEstructura, null, 'auditor');
+$assert(($r['ok'] ?? false) === true, 'Asignar: vaciar el responsable funciona. Dio ' . json_encode($r));
+$vaciado = $leerResponsable();
+$assert($vaciado['responsable_user_id'] === null,
+    'Asignar: vaciar deja responsable_user_id en NULL. Dio ' . var_export($vaciado['responsable_user_id'], true));
+$assert(($vaciado['responsable_asignado_por'] ?? '') === 'auditor',
+    'Asignar: vaciar deja constancia de quién lo quitó. Dio ' . var_export($vaciado['responsable_asignado_por'] ?? null, true));
+
+// Paquete sin plan calculado: el id 987654321 no existe en pdc_plan_paquete de este proyecto.
+$r = $svc->asignarResponsable($P, 987654321, $uid, 'jefa-compras');
+$assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'PAQUETE_SIN_PLAN',
+    'Asignar: un paquete sin plan calculado da PAQUETE_SIN_PLAN. Dio ' . json_encode($r));
+
+// Se deja asignado para las comprobaciones de plan() que vienen después.
+$svc->asignarResponsable($P, $paqEstructura, $uid, 'jefa-compras');
 
 $svc->calcular($P, 'test-a4');
 $plan4 = $svc->plan($P);
@@ -617,6 +706,9 @@ $assert(($filaR['responsableNombre'] ?? '') !== '',
     'Responsable: un responsable vigente trae su nombre resuelto. Dio ' . var_export($filaR['responsableNombre'] ?? null, true));
 $assert(($filaR['responsableHuerfano'] ?? null) === false,
     'Responsable: un miembro vigente NO es huérfano.');
+$assert(($porIdR[$paqEstructura]['responsableCargo'] ?? null) === 'Residente de Obra',
+    'Plan: la fila trae el cargo del responsable (desempata nombres parecidos en el selector). Dio '
+    . var_export($porIdR[$paqEstructura]['responsableCargo'] ?? null, true));
 
 // Sacarlo del proyecto (sin borrar su ficha) debe marcarlo huérfano, no borrarlo.
 $db->query('DELETE FROM project_members WHERE project_id = ? AND user_id = ?', [$P, $uid]);

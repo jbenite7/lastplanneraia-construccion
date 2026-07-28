@@ -103,7 +103,7 @@ class PlanComprasPlanController
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
-    /** POST /plan-compras/api/plan/responsable  {paqueteId, responsable} */
+    /** POST /plan-compras/api/plan/responsable  {paqueteId, responsableUserId} — null lo deja sin responsable */
     public function responsable(): void
     {
         $projectId = $this->guardEscritura();
@@ -116,32 +116,41 @@ class PlanComprasPlanController
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $responsable = is_string($body['responsable'] ?? null) ? mb_substr($body['responsable'], 0, 100) : '';
 
-        // No usar rowCount() del UPDATE para decidir si la fila existe: este repo no activa
-        // PDO::MYSQL_ATTR_FOUND_ROWS (ver Database.php), así que MySQL reporta filas MODIFICADAS,
-        // no coincidentes. Guardar el mismo responsable dos veces seguidas (algo normal: abrir la
-        // vista y guardar sin cambiar nada) da rowCount=0 aunque la fila exista, y el controlador
-        // respondía por error PAQUETE_SIN_PLAN. Se confirma la existencia con un SELECT explícito.
-        $existe = $this->db->query(
-            'SELECT 1 FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-            [$projectId, (int) $paqueteId],
-        )->fetchColumn();
-        if ($existe === false) {
-            $this->fail(
-                'PAQUETE_SIN_PLAN',
-                'Este paquete todavía no tiene plan de compras calculado. Calcula el plan antes de asignar responsable.',
-                422
-            );
+        // Ausente y null significan lo mismo —dejar el paquete sin responsable— y hay que
+        // distinguirlos de un id con basura dentro: `filter_var(null, FILTER_VALIDATE_INT)` también
+        // devuelve false, así que sin este orden «vaciar» se respondería como error de formato.
+        $crudo = $body['responsableUserId'] ?? null;
+        $responsableUserId = null;
+        if ($crudo !== null) {
+            $validado = filter_var($crudo, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($validado === false) {
+                $this->fail('RESPONSABLE_INVALIDO', 'responsableUserId inválido.', 422);
+                return;
+            }
+            $responsableUserId = (int) $validado;
+        }
+
+        $r = $this->service->asignarResponsable($projectId, (int) $paqueteId, $responsableUserId, $this->usuario());
+        if (!$r['ok']) {
+            $mensaje = ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE'
+                ? 'Esa persona no pertenece al equipo activo de este proyecto.'
+                : 'Este paquete todavía no tiene plan de compras calculado. Calcula el plan antes de asignar responsable.';
+            $this->fail($r['code'] ?? 'PAQUETE_SIN_PLAN', $mensaje, 422);
             return;
         }
 
-        $this->db->query(
-            'UPDATE pdc_plan_paquete SET responsable = ? WHERE project_id = ? AND paquete_id = ?',
-            [$responsable, $projectId, (int) $paqueteId],
-        );
-
         $this->ok(['ok' => true]);
+    }
+
+    /** GET /plan-compras/api/plan/responsables — quién puede ser responsable en este proyecto */
+    public function responsables(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['responsables' => $this->service->responsablesElegibles($projectId)]);
     }
 
     // ── guards ──────────────────────────────────────────────
