@@ -626,7 +626,7 @@ $leerResponsable = static function () use ($db, $P, $paqEstructura): array {
     return $r === false ? [] : $r;
 };
 
-$r = $svc->asignarResponsable($P, $paqEstructura, $uid, 'jefa-compras');
+$r = $svc->asignarResponsable($P, [$paqEstructura], $uid, 'jefa-compras');
 $assert(($r['ok'] ?? false) === true, 'Asignar: asignar a un miembro activo funciona. Dio ' . json_encode($r));
 
 $guardado = $leerResponsable();
@@ -639,19 +639,19 @@ $assert(($guardado['responsable_asignado_at'] ?? null) !== null,
 
 // Alguien de otro proyecto: la FK lo aceptaría (el usuario existe), así que esta es la única
 // defensa real contra asignar un paquete a quien no trabaja en esta obra.
-$r = $svc->asignarResponsable($P, $paqEstructura, $uidExterno, 'jefa-compras');
+$r = $svc->asignarResponsable($P, [$paqEstructura], $uidExterno, 'jefa-compras');
 $assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE',
     'Asignar: un usuario ajeno al proyecto se rechaza con RESPONSABLE_NO_ELEGIBLE. Dio ' . json_encode($r));
 $assert((int) ($leerResponsable()['responsable_user_id'] ?? 0) === $uid,
     'Asignar: un rechazo NO pisa el responsable que ya estaba guardado.');
 
-$r = $svc->asignarResponsable($P, $paqEstructura, $uidBaja, 'jefa-compras');
+$r = $svc->asignarResponsable($P, [$paqEstructura], $uidBaja, 'jefa-compras');
 $assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE',
     'Asignar: un miembro dado de baja también se rechaza. Dio ' . json_encode($r));
 
 // Vaciar: se conserva el rastro de quién lo quitó — la columna es «quién tocó la asignación»,
 // no «quién puso a alguien», y perder eso deja un paquete sin dueño sin saber quién lo dejó así.
-$r = $svc->asignarResponsable($P, $paqEstructura, null, 'auditor');
+$r = $svc->asignarResponsable($P, [$paqEstructura], null, 'auditor');
 $assert(($r['ok'] ?? false) === true, 'Asignar: vaciar el responsable funciona. Dio ' . json_encode($r));
 $vaciado = $leerResponsable();
 $assert($vaciado['responsable_user_id'] === null,
@@ -660,12 +660,12 @@ $assert(($vaciado['responsable_asignado_por'] ?? '') === 'auditor',
     'Asignar: vaciar deja constancia de quién lo quitó. Dio ' . var_export($vaciado['responsable_asignado_por'] ?? null, true));
 
 // Paquete sin plan calculado: el id 987654321 no existe en pdc_plan_paquete de este proyecto.
-$r = $svc->asignarResponsable($P, 987654321, $uid, 'jefa-compras');
+$r = $svc->asignarResponsable($P, [987654321], $uid, 'jefa-compras');
 $assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'PAQUETE_SIN_PLAN',
     'Asignar: un paquete sin plan calculado da PAQUETE_SIN_PLAN. Dio ' . json_encode($r));
 
 // Se deja asignado para las comprobaciones de plan() que vienen después.
-$svc->asignarResponsable($P, $paqEstructura, $uid, 'jefa-compras');
+$svc->asignarResponsable($P, [$paqEstructura], $uid, 'jefa-compras');
 
 $svc->calcular($P, 'test-a4');
 $plan4 = $svc->plan($P);
@@ -1094,6 +1094,47 @@ $assert($filaSinDuracion !== null && array_column($filaSinDuracion['pasos'], 'di
 $assert($filaSinDuracion !== null && $filaSinDuracion['diasTotales'] === $medianaAhora,
     'El plazo total de un paquete provisional sigue siendo la mediana exacta de su tipo: ' . $medianaAhora
     . ' vs ' . ($filaSinDuracion['diasTotales'] ?? 'null'));
+
+// --- Asignación en masa ---
+// El grilleo la pidió explícitamente: con más de 100 paquetes por proyecto, repartir de uno en uno
+// es la diferencia entre cinco minutos y una hora.
+//
+// `$otro` es un usuario propio de este bloque (no se reutiliza `$uidExterno`/`$uidBaja`, que ya
+// tienen su propio historial de estados más arriba en el archivo): se agrega como miembro activo
+// del proyecto para que el DELETE de más abajo represente algo real —alguien elegible que deja de
+// serlo a mitad de la prueba—, no un no-op contra una fila que nunca existió.
+$otro = $crearUsuario('masa', 'ZZ Test Masa', 'Miembro para prueba de masa', 1);
+$db->query('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', [$P, $otro, 'U']);
+
+$idsMasa = array_slice(array_map(static fn (array $f): int => $f['paqueteId'], $svc->plan($P)), 0, 2);
+$assert(count($idsMasa) === 2, 'Masa: hay al menos 2 paquetes con plan para la prueba.');
+
+$rMasa = $svc->asignarResponsable($P, $idsMasa, $uid, 'test-a4');
+$assert(($rMasa['ok'] ?? false) === true, 'Masa: la asignación múltiple responde ok. Dio ' . var_export($rMasa, true));
+$assert(($rMasa['asignados'] ?? 0) === 2, 'Masa: informa 2 asignados. Dio ' . var_export($rMasa['asignados'] ?? null, true));
+
+$marcasM = implode(',', array_fill(0, count($idsMasa), '?'));
+$conResp = (int) $db->query(
+    "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND responsable_user_id = ? AND paquete_id IN ($marcasM)",
+    array_merge([$P, $uid], $idsMasa),
+)->fetchColumn();
+$assert($conResp === 2, 'Masa: los 2 paquetes quedaron con el responsable en la base. Dio ' . $conResp);
+
+// Un no elegible dentro de una asignación múltiple la rechaza ENTERA: dejar la mitad hecha sería
+// peor que no hacer nada, porque nadie sabría qué mitad.
+$db->query('DELETE FROM project_members WHERE project_id = ? AND user_id = ?', [$P, $otro]);
+$rNo = $svc->asignarResponsable($P, $idsMasa, $otro, 'test-a4');
+$assert(($rNo['ok'] ?? true) === false, 'Masa: se rechaza si el responsable no es elegible.');
+$sigueM = (int) $db->query(
+    "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND responsable_user_id = ? AND paquete_id IN ($marcasM)",
+    array_merge([$P, $uid], $idsMasa),
+)->fetchColumn();
+$assert($sigueM === 2, 'Masa: un rechazo no deja la asignación a medias. Dio ' . $sigueM);
+
+// Un paquete sin plan dentro del lote también rechaza el lote entero.
+$rSinPlan = $svc->asignarResponsable($P, array_merge($idsMasa, [999999]), $uid, 'test-a4');
+$assert(($rSinPlan['ok'] ?? true) === false && ($rSinPlan['code'] ?? '') === 'PAQUETE_SIN_PLAN',
+    'Masa: un paquete sin plan en el lote rechaza el lote. Dio ' . var_export($rSinPlan, true));
 
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();

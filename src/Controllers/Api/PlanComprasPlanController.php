@@ -103,7 +103,7 @@ class PlanComprasPlanController
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
-    /** POST /plan-compras/api/plan/responsable  {paqueteId, responsableUserId} — null lo deja sin responsable */
+    /** POST /plan-compras/api/plan/responsable  {paqueteId|paqueteIds, responsableUserId} — null lo deja sin responsable */
     public function responsable(): void
     {
         $projectId = $this->guardEscritura();
@@ -111,9 +111,13 @@ class PlanComprasPlanController
             return;
         }
         $body = $this->body();
-        $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false) {
-            $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
+
+        // Acepta `paqueteIds` (lista, asignación en masa) o `paqueteId` (singular). El singular se
+        // conserva porque el e2e ya commiteado lo usa; los dos caminos acaban en la misma llamada.
+        $entrada = $body['paqueteIds'] ?? $body['paqueteId'] ?? null;
+        $paqueteIds = is_array($entrada) ? $entrada : ($entrada === null ? [] : [$entrada]);
+        if ($paqueteIds === []) {
+            $this->fail('PAQUETE_INVALIDO', 'No se recibió ningún paquete.', 422);
             return;
         }
 
@@ -131,12 +135,15 @@ class PlanComprasPlanController
             $responsableUserId = (int) $validado;
         }
 
-        $r = $this->service->asignarResponsable($projectId, (int) $paqueteId, $responsableUserId, $this->usuario());
+        $r = $this->service->asignarResponsable($projectId, $paqueteIds, $responsableUserId, $this->usuario());
         if (!$r['ok']) {
-            $mensaje = ($r['code'] ?? '') === 'RESPONSABLE_NO_ELEGIBLE'
+            // `asignarResponsable()` ya devuelve `code` siempre que `ok` es false (tipo discriminado
+            // en su docblock): a diferencia del resto del archivo, aquí el acceso directo es seguro y
+            // PHPStan lo exige (con `?? ''` marca el offset como redundante, nivel 6).
+            $mensaje = $r['code'] === 'RESPONSABLE_NO_ELEGIBLE'
                 ? 'Esa persona no pertenece al equipo activo de este proyecto.'
                 : 'Este paquete todavía no tiene plan de compras calculado. Calcula el plan antes de asignar responsable.';
-            $this->fail($r['code'] ?? 'PAQUETE_SIN_PLAN', $mensaje, 422);
+            $this->fail($r['code'], $mensaje, 422);
             return;
         }
 

@@ -976,26 +976,45 @@ class PlanFechasService
     }
 
     /**
-     * Asigna (o retira, con `$responsableUserId = null`) el responsable de un paquete.
+     * Asigna (o quita, con null) el responsable de uno o varios paquetes.
      *
-     * No se usa `rowCount()` del UPDATE para decidir si la fila existe: este repo no activa
+     * Todo o nada: si cualquier paquete del lote no tiene plan, o el responsable no es elegible, no
+     * se escribe ninguno. Dejar la mitad asignada sería peor que no hacer nada, porque nadie sabría
+     * qué mitad quedó hecha. Por eso ambas validaciones van antes del UPDATE.
+     *
+     * No se usa `rowCount()` del UPDATE para decidir si las filas existen: este repo no activa
      * PDO::MYSQL_ATTR_FOUND_ROWS (ver Database.php), así que MySQL reporta filas MODIFICADAS, no
      * coincidentes — guardar el mismo responsable dos veces seguidas daría 0 y parecería que el
-     * paquete no tiene plan. La existencia se confirma con un SELECT explícito.
+     * paquete no tiene plan. La existencia se confirma contando cuántos de los ids pedidos aparecen
+     * en `pdc_plan_paquete` y comparando contra el tamaño del lote.
      *
-     * @return array{ok: bool, code?: string}
+     * @param list<int> $paqueteIds
+     * @return array{ok: true, asignados: int}|array{ok: false, code: string}
      */
     public function asignarResponsable(
         int $projectId,
-        int $paqueteId,
+        array $paqueteIds,
         ?int $responsableUserId,
         string $usuario
     ): array {
-        $existe = $this->db->query(
-            'SELECT 1 FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-            [$projectId, $paqueteId],
+        $ids = [];
+        foreach ($paqueteIds as $id) {
+            $n = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($n !== false) {
+                $ids[] = (int) $n;
+            }
+        }
+        $ids = array_values(array_unique($ids));
+        if ($ids === []) {
+            return ['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'];
+        }
+
+        $marcas = implode(',', array_fill(0, count($ids), '?'));
+        $conPlan = (int) $this->db->query(
+            "SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id IN ($marcas)",
+            array_merge([$projectId], $ids),
         )->fetchColumn();
-        if ($existe === false) {
+        if ($conPlan !== count($ids)) {
             return ['ok' => false, 'code' => 'PAQUETE_SIN_PLAN'];
         }
 
@@ -1016,13 +1035,13 @@ class PlanFechasService
         // la asignación por última vez, y quitar a alguien es justo el movimiento que más interesa
         // poder rastrear después.
         $this->db->query(
-            'UPDATE pdc_plan_paquete
+            "UPDATE pdc_plan_paquete
                 SET responsable_user_id = ?, responsable_asignado_por = ?, responsable_asignado_at = NOW()
-              WHERE project_id = ? AND paquete_id = ?',
-            [$responsableUserId, mb_substr($usuario, 0, 100), $projectId, $paqueteId],
+              WHERE project_id = ? AND paquete_id IN ($marcas)",
+            array_merge([$responsableUserId, mb_substr($usuario, 0, 100), $projectId], $ids),
         );
 
-        return ['ok' => true];
+        return ['ok' => true, 'asignados' => count($ids)];
     }
 
     /**
