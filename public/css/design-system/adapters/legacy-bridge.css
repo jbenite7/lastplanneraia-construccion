@@ -652,3 +652,77 @@
     display: inline-block;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   F1 5k: lo que sobrevive del «UNLAYERED OVERRIDE BRIDGE» de styles.css. El
+   nombre de aquella seccion enganaba: styles.css entra con `layer(module)`, asi
+   que el bloque no estaba fuera de toda capa, sino fuera de las SUBCAPAS
+   internas de styles.css — o sea, en `module` a secas.
+
+   Medido con un experimento controlado en el navegador (tres pares de reglas
+   `!important` con la misma especificidad, la segunda siempre declarada
+   despues): gana `@layer module` frente a una hoja sin capa, gana
+   `module.components` frente a `module` a secas, y gana `components` frente a
+   `module`. Es decir, para `!important` el orden de capas se invierte Y lo no
+   capado queda lo mas debil de todo. Este bloque no estaba en la cima de la
+   cascada: solo le ganaba a `legacy-overrides` y a las hojas sin capa.
+
+   Por eso el destino es `@layer module` SIN subcapa, que reproduce exactamente
+   su posicion de origen. `module.components` lo REFORZARIA y voltearia empates
+   que hoy pierde (p. ej. el borde izquierdo del primer th de la rejilla en
+   /programacion-semanal, que hoy lo gana el token de borde del DS).
+   `legacy-overrides` lo debilitaria. Este archivo lo importan los dos mismos
+   entrypoints que styles.css, asi que el alcance no cambia.
+   Detalle y mediciones en .superpowers/sdd/task-5k-report.md. */
+@layer module {
+  /* Sostiene el alto de los botones pequenos. Sin ella caen a 28-30 px en
+     /pdc, /contratos, /listado-actividades, /profesionales, /subcontratistas,
+     /programa-general-actualizar y /control-cambios (medido). */
+  .btn-sm,
+  .btn-pdc-modern {
+    min-height: 32px !important;
+    height: clamp(32px, 2rem, 40px) !important;
+    padding-top: clamp(6px, 0.5vw, 10px) !important;
+    padding-bottom: clamp(6px, 0.5vw, 10px) !important;
+  }
+
+  /* Portante solo para el elemento `table.dataTable` de /programacion-semanal/
+     {cic,cnc,cnp}; sobre th y td la pisa programacion-semanal.css desde
+     `@layer components`. Se conserva la lista completa de sujetos porque las
+     tablas legacy que solo existen dentro de modales no se han censado. Los
+     cinco sujetos son los del original; solo cambia el orden dentro de la
+     lista, que no influye en la cascada, para no dejar especificidad
+     descendente. */
+  table.dataTable,
+  .table-bordered th,
+  .table-bordered td,
+  table.dataTable th,
+  table.dataTable td {
+    border-right-color: #cbd5e1 !important;
+    border-bottom-color: #cbd5e1 !important;
+    border-left-color: #cbd5e1 !important;
+    border-top-color: #cbd5e1 !important;
+    border-width: 1px !important;
+  }
+
+  /* Unica declaracion viva del bloque de filas de estado de cic/cnc/cnp: el
+     fondo y la tinta los gana programacion-semanal.css desde
+     `@layer components`, y el peso de fuente no lo declara nadie mas. */
+  table.dataTable tbody tr.row-critical-delay td {
+    font-weight: 600;
+  }
+
+  /* Marco exterior de la rejilla HOT. handsontable-module.css solo declara el
+     borde derecho y el inferior de cada celda, asi que el izquierdo de la
+     primera columna y el superior de la primera fila viven aqui, con el mismo
+     literal que usa ese modulo para que el marco no quede a dos tintas. */
+  #hot-container .handsontable th:first-child,
+  #hot-container .handsontable td:first-child {
+    border-left: 1px solid #cbd5e1 !important;
+  }
+
+  #hot-container .handsontable tr:first-child th,
+  #hot-container .handsontable tr:first-child td {
+    border-top: 1px solid #cbd5e1 !important;
+  }
+}
