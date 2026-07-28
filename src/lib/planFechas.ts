@@ -1,12 +1,18 @@
 import type { Desfase, FilaPlan, FrenteDisponible, ProcedenciaAmarre, ResumenPaquetes, SugerenciaFrente } from './types'
 
-export type EstadoFila = { clave: 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
+export type EstadoFila = { clave: 'desfasado' | 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
 
 /**
- * El estado que se pinta en cada fila. Lo vencido manda sobre lo provisional: un plazo aproximado
- * importa, pero una contratación que debió arrancar hace dos meses importa más.
+ * El estado que se pinta en cada fila. Un desfase manda sobre todo lo demás: si el cronograma se
+ * reprogramó después de amarrar, el arranque calculado ya no corresponde al frente vigente — ni
+ * "vencido" ni "en plazo" son verdad, porque las fechas mostradas están calculadas contra un frente
+ * que ya no existe con esa fecha. Debajo de eso, lo vencido manda sobre lo provisional: un plazo
+ * aproximado importa, pero una contratación que debió arrancar hace dos meses importa más.
  */
-export function estadoFila(f: FilaPlan): EstadoFila {
+export function estadoFila(f: FilaPlan, desfase?: Desfase): EstadoFila {
+  if (desfase) {
+    return { clave: 'desfasado', etiqueta: `Desactualizado: ${etiquetaDesfase(desfase)}` }
+  }
   if (f.diasRetraso > 0) {
     return { clave: 'vencido', etiqueta: `${f.diasRetraso} días de retraso` }
   }
@@ -68,6 +74,24 @@ export function paquetesSinFrente(
 ): PaquetePorProyecto[] {
   return porPaquete
     .filter((p) => generaProceso(p.modalidad) && !(p.paqueteId in amarres))
+    .sort((a, b) => b.subtotal - a.subtotal)
+}
+
+/**
+ * Paquetes que ya tienen frente pero todavía no tienen plan calculado: acaban de amarrarse (o se
+ * reamarraron a un frente distinto, que invalida el plan viejo — ver PlanFechasService::amarrar())
+ * y nadie ha pulsado «Recalcular» todavía. Sin esta lista, un paquete así sale de «Sin frente»
+ * (porque ya está en `amarres`) y no aparece en la grilla (que solo lee `plan`, el calculado):
+ * queda invisible en las dos partes de la pantalla a la vez.
+ */
+export function paquetesAmarradosSinCalcular(
+  porPaquete: PaquetePorProyecto[],
+  amarres: Record<number, unknown>,
+  plan: FilaPlan[],
+): PaquetePorProyecto[] {
+  const calculados = new Set(plan.map((f) => f.paqueteId))
+  return porPaquete
+    .filter((p) => generaProceso(p.modalidad) && p.paqueteId in amarres && !calculados.has(p.paqueteId))
     .sort((a, b) => b.subtotal - a.subtotal)
 }
 

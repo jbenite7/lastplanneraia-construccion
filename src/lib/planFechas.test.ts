@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  estadoFila, etiquetaDesfase, generaProceso, mensajeCalculo, opcionFrente, paquetesSinFrente, procedenciaDeAmarre,
-  resumenPlan, trasGuardarEdicion, valorResponsableMostrado,
+  estadoFila, etiquetaDesfase, generaProceso, mensajeCalculo, opcionFrente, paquetesAmarradosSinCalcular,
+  paquetesSinFrente, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion, valorResponsableMostrado,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
@@ -27,6 +27,33 @@ describe('estadoFila', () => {
 
   it('vencido manda sobre provisional: es lo urgente', () => {
     expect(estadoFila(fila({ diasRetraso: 10, duracionProvisional: true })).clave).toBe('vencido')
+  })
+
+  // Importante 3 del review final A4: sin cruzar los desfases, una fila reprogramada se veía «en
+  // plazo» en verde con su fecha vieja. El desfase debe mandar sobre vencido y provisional.
+  const desfase: Desfase = {
+    paqueteId: 1, nombre: 'Suministro CONCRETO', frenteNombre: 'ESTRUCTURA',
+    fechaGuardada: '2026-05-23', fechaActual: '2026-06-10', diasMovidos: 18,
+  }
+
+  it('un desfase manda sobre "en plazo": la fecha calculada ya no es de fiar', () => {
+    expect(estadoFila(fila(), desfase).clave).toBe('desfasado')
+  })
+
+  it('un desfase manda incluso sobre vencido', () => {
+    expect(estadoFila(fila({ diasRetraso: 10 }), desfase).clave).toBe('desfasado')
+  })
+
+  it('un desfase manda incluso sobre provisional', () => {
+    expect(estadoFila(fila({ duracionProvisional: true }), desfase).clave).toBe('desfasado')
+  })
+
+  it('la etiqueta del desfase explica qué pasó, no solo que pasó algo', () => {
+    expect(estadoFila(fila(), desfase).etiqueta).toBe(`Desactualizado: ${etiquetaDesfase(desfase)}`)
+  })
+
+  it('sin desfase para esta fila, el estado es el de siempre', () => {
+    expect(estadoFila(fila()).clave).toBe('en-plazo')
   })
 })
 
@@ -98,6 +125,49 @@ describe('paquetesSinFrente', () => {
     ]
     const amarres = { 1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' } }
     expect(paquetesSinFrente(porPaquete, amarres).map((p) => p.paqueteId)).toEqual([2])
+  })
+})
+
+describe('paquetesAmarradosSinCalcular', () => {
+  const base = { paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'contrato', insumos: 3, subtotal: 100 }
+  const filaPlan = (paqueteId: number): FilaPlan => ({
+    paqueteId, nombre: 'x', tipoNegociacion: 'suministro', modalidad: 'contrato', frenteNombre: 'ESTRUCTURA',
+    uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23', diasTotales: 87,
+    duracionProvisional: false, responsable: '', diasRetraso: 0, pasos: [],
+  })
+
+  // Importante 2 del review final A4: amarrar sin recalcular dejaba el paquete invisible en las
+  // dos secciones (ya no está «sin frente», y la grilla solo lee el plan calculado).
+  it('un paquete amarrado que todavía no tiene fila en el plan calculado aparece aquí', () => {
+    const porPaquete = [{ ...base, paqueteId: 1 }]
+    const amarres = { 1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' } }
+    expect(paquetesAmarradosSinCalcular(porPaquete, amarres, []).map((p) => p.paqueteId)).toEqual([1])
+  })
+
+  it('en cuanto el plan lo trae calculado, deja de aparecer', () => {
+    const porPaquete = [{ ...base, paqueteId: 1 }]
+    const amarres = { 1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' } }
+    expect(paquetesAmarradosSinCalcular(porPaquete, amarres, [filaPlan(1)])).toEqual([])
+  })
+
+  it('sin amarre, no aparece aquí (eso es "Sin frente")', () => {
+    const porPaquete = [{ ...base, paqueteId: 1 }]
+    expect(paquetesAmarradosSinCalcular(porPaquete, {}, [])).toEqual([])
+  })
+
+  it('una modalidad que no genera proceso nunca aparece, aunque quede sin calcular', () => {
+    const porPaquete = [{ ...base, paqueteId: 1, modalidad: 'consumo_directo' }]
+    const amarres = { 1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' } }
+    expect(paquetesAmarradosSinCalcular(porPaquete, amarres, [])).toEqual([])
+  })
+
+  it('ordena por cuantía descendente, igual que el resto del sembrado', () => {
+    const porPaquete = [{ ...base, paqueteId: 1, subtotal: 100 }, { ...base, paqueteId: 2, subtotal: 500 }]
+    const amarres = {
+      1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' },
+      2: { uniqueId: 9002, nombre: 'PRELIMINARES', fechaInicio: '2026-05-25' },
+    }
+    expect(paquetesAmarradosSinCalcular(porPaquete, amarres, []).map((p) => p.paqueteId)).toEqual([2, 1])
   })
 })
 

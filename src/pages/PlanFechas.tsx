@@ -9,6 +9,7 @@ import {
   etiquetaDesfase,
   mensajeCalculo,
   opcionFrente,
+  paquetesAmarradosSinCalcular,
   paquetesSinFrente,
   planUiReducer,
   procedenciaDeAmarre,
@@ -84,6 +85,12 @@ export default function PlanFechas() {
 
   const resumen = useMemo(() => resumenPlan(plan), [plan])
   const sinFrente = useMemo(() => paquetesSinFrente(porPaquete, amarres), [porPaquete, amarres])
+  // Importante 2 del review final: un paquete recién amarrado sale de «Sin frente» pero no entra a
+  // la grilla (que solo lee el plan calculado) hasta que alguien pulsa «Recalcular». Sin este
+  // bloque queda invisible en las dos partes de la pantalla a la vez.
+  const sinCalcular = useMemo(() => paquetesAmarradosSinCalcular(porPaquete, amarres, plan), [porPaquete, amarres, plan])
+  // Importante 3: qué fila tiene un desfase, para que ese estado mande sobre vencido/provisional/en-plazo.
+  const desfasePorPaquete = useMemo(() => new Map(desfases.map((d) => [d.paqueteId, d])), [desfases])
 
   // Preselección con la propuesta del motor (mismo criterio que el asistente de insumos de A3.6):
   // solo la primera vez que aparece cada paquete, para no pisar lo que el usuario ya cambió a mano.
@@ -143,10 +150,55 @@ export default function PlanFechas() {
       cargar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
-      // El <select> ya mostraba la opción elegida (edición optimista): si el amarre no se guardó,
-      // vuelve a lo que había antes de este intento, no se queda en algo que nunca se aplicó.
+      // El <select> queda con lo que el usuario eligió (no hay edición optimista que revertir: el
+      // amarre solo se dispara al pulsar «Amarrar», no al elegir), así que esto es un no-op salvo
+      // que el helper reciba un valor distinto — se conserva por si algún día vuelve a hacer falta.
       setDestinos((prev) => trasGuardarEdicion(prev, paqueteId, { ok: false, anterior }))
     }
+  }
+
+  // Crítico del review final: el <select> ya NO dispara el amarre en su onChange — solo elige. Este
+  // botón explícito es el único disparador, igual que «Asignar a paquete» en PaquetesContratacion.
+  const onAmarrarClick = (paqueteId: number) => {
+    const valor = destinos[paqueteId]
+    if (valor === undefined || valor === '') return
+    void onAmarrar(paqueteId, valor, valor)
+  }
+
+  // Acción masiva: acepta de golpe la propuesta del motor para todos los «sin frente» que la
+  // tienen, tal como quedó preseleccionada — mismo patrón que «Aceptar sugeridos» en
+  // PaquetesContratacion. Sin este botón, aceptar 50 propuestas exige 50 clics uno por uno.
+  const sugeridosPendientes = useMemo(
+    () => sinFrente.filter((p) => sugerencias[p.paqueteId] !== undefined),
+    [sinFrente, sugerencias],
+  )
+
+  const onAceptarSugeridos = async () => {
+    if (sugeridosPendientes.length === 0) return
+    dispatch({ type: 'OCUPADO' })
+    let total = 0
+    let algunFallo = false
+    for (const p of sugeridosPendientes) {
+      const s = sugerencias[p.paqueteId]
+      if (!s) continue
+      try {
+        await apiPost('/plan-compras/api/plan/amarrar', {
+          paqueteId: p.paqueteId,
+          uniqueId: s.uniqueId,
+          procedencia: procedenciaDeAmarre(s, s.uniqueId),
+        })
+        total++
+      } catch {
+        algunFallo = true // un fallo puntual no debe frenar a los demás paquetes del lote
+      }
+    }
+    dispatch({
+      type: 'LISTO',
+      mensaje: algunFallo
+        ? `${total} de ${sugeridosPendientes.length} paquete(s) amarrado(s); alguno falló.`
+        : `${total} paquete(s) amarrado(s) por sugerencia del motor.`,
+    })
+    cargar()
   }
 
   const cols = useMemo<ColDef<FilaPlan>[]>(() => [
@@ -165,10 +217,10 @@ export default function PlanFechas() {
     },
     {
       headerName: 'Estado', flex: 1, minWidth: 160, sortable: false,
-      valueGetter: (p) => (p.data ? estadoFila(p.data).etiqueta : ''),
-      cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data).clave}` : undefined),
+      valueGetter: (p) => (p.data ? estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).etiqueta : ''),
+      cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).clave}` : undefined),
     },
-  ], [responsableOverride])
+  ], [responsableOverride, desfasePorPaquete])
 
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
@@ -206,7 +258,13 @@ export default function PlanFechas() {
             const id = e.data.paqueteId
             setExpandido((prev) => (prev === id ? null : id))
           }}
-          getRowClass={(p) => (p.data && estadoFila(p.data).clave === 'vencido' ? 'pdc-plan-fila-vencida' : undefined)}
+          getRowClass={(p) => {
+            if (!p.data) return undefined
+            const clave = estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).clave
+            if (clave === 'desfasado') return 'pdc-plan-fila-desfasada'
+            if (clave === 'vencido') return 'pdc-plan-fila-vencida'
+            return undefined
+          }}
         />
       </div>
       {plan.length === 0 && <p className="pdc-vacio">Todavía no hay paquetes con plan calculado.</p>}
@@ -231,6 +289,19 @@ export default function PlanFechas() {
 
       <h2>Sin frente</h2>
       <p className="pdc-sub">Paquetes que generan proceso de contratación y todavía no están amarrados a un frente del cronograma.</p>
+      {sugeridosPendientes.length > 0 && (
+        <div className="pdc-paq-toolbar">
+          <button
+            type="button"
+            data-testid="pdc-plan-aceptar-sugeridos"
+            className="pdc-paq-primario"
+            disabled={ui.ocupado}
+            onClick={onAceptarSugeridos}
+          >
+            Aceptar {sugeridosPendientes.length} sugerida(s)
+          </button>
+        </div>
+      )}
       <ul className="pdc-paq-lista" data-testid="pdc-plan-sin-frente">
         {sinFrente.map((p) => {
           const sugerencia = sugerencias[p.paqueteId]
@@ -245,9 +316,7 @@ export default function PlanFechas() {
                 value={destino}
                 onChange={(e) => {
                   const valor = e.target.value === '' ? '' : Number(e.target.value)
-                  const anterior = destino // lo que había antes de esta elección: a eso se revierte si falla
                   setDestinos((prev) => ({ ...prev, [p.paqueteId]: valor }))
-                  if (valor !== '') void onAmarrar(p.paqueteId, valor, anterior)
                 }}
               >
                 <option value="">Elegir frente…</option>
@@ -257,6 +326,18 @@ export default function PlanFechas() {
                   <option key={f.uniqueId} value={f.uniqueId}>{opcionFrente(f)}</option>
                 ))}
               </select>
+              {/* Único disparador del amarre (Crítico del review final): elegir en el <select> ya no
+                  basta — la opción preseleccionada con la propuesta del motor no emite `change`, así
+                  que sin este botón aceptarla tal cual era imposible desde la interfaz. */}
+              <button
+                type="button"
+                data-testid={`pdc-plan-amarrar-${p.paqueteId}`}
+                className="pdc-paq-primario"
+                disabled={ui.ocupado || destino === ''}
+                onClick={() => onAmarrarClick(p.paqueteId)}
+              >
+                Amarrar
+              </button>
               {sugerencia && (
                 <span className={`pdc-paq-tag conf-${sugerencia.confianza}`}>
                   {sugerencia.origen} · confianza {sugerencia.confianza}
@@ -266,6 +347,19 @@ export default function PlanFechas() {
           )
         })}
         {sinFrente.length === 0 && <li className="pdc-vacio">Todos los paquetes que generan proceso ya tienen frente.</li>}
+      </ul>
+
+      <h2>Amarrados, pendientes de calcular</h2>
+      <p className="pdc-sub">Ya tienen frente pero el plan todavía no se ha recalculado con ese amarre — no aparecen en la grilla de arriba.</p>
+      <ul className="pdc-paq-lista" data-testid="pdc-plan-sin-calcular">
+        {sinCalcular.map((p) => (
+          <li key={p.paqueteId}>
+            <strong>{p.nombre}</strong>
+            <span className="pdc-paq-meta">{moneda(p.subtotal)}</span>
+            <button type="button" disabled={ui.ocupado} onClick={onRecalcular}>Recalcular todo el plan</button>
+          </li>
+        ))}
+        {sinCalcular.length === 0 && <li className="pdc-vacio">Todo lo amarrado ya está calculado.</li>}
       </ul>
 
       <h2>Desfases</h2>
