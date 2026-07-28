@@ -12,6 +12,7 @@ import {
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
   planUiReducer,
+  preseleccionDestinos,
   procedenciaDeAmarre,
   resumenPlan,
   trasGuardarEdicion,
@@ -46,6 +47,10 @@ export default function PlanFechas() {
   const [amarres, setAmarres] = useState<PlanResultado['amarres']>({})
   const [frentes, setFrentes] = useState<FrenteDisponible[]>([])
   const [sugerencias, setSugerencias] = useState<Record<number, SugerenciaFrente>>({})
+  // Bloqueante del review final A4: true solo cuando la petición de sugerencias ya resolvió (con
+  // éxito o sin él). Sin esto, el efecto de preselección de abajo no puede distinguir «todavía no
+  // sabemos si hay propuesta» de «ya sabemos que no la hay» — ver preseleccionDestinos().
+  const [sugerenciasCargadas, setSugerenciasCargadas] = useState(false)
   const [desfases, setDesfases] = useState<Desfase[]>([])
   const [porPaquete, setPorPaquete] = useState<ResumenPaquetes['porPaquete']>([])
   const [expandido, setExpandido] = useState<number | null>(null)
@@ -70,9 +75,13 @@ export default function PlanFechas() {
     apiGet<{ frentes: FrenteDisponible[] }>('/plan-compras/api/plan/frentes')
       .then((d) => setFrentes(d.frentes))
       .catch(() => setFrentes([]))
+    // Se marca "no cargadas" al empezar cada carga (no solo en el montaje inicial): si `cargar()` se
+    // vuelve a invocar (recalcular, amarrar), una `sinFrente` que cambie antes de que esta respuesta
+    // nueva llegue no debe sembrar con las sugerencias todavía viejas.
+    setSugerenciasCargadas(false)
     apiGet<{ sugerencias: Record<number, SugerenciaFrente> }>('/plan-compras/api/plan/sugerencias')
-      .then((d) => setSugerencias(d.sugerencias))
-      .catch(() => setSugerencias({}))
+      .then((d) => { setSugerencias(d.sugerencias); setSugerenciasCargadas(true) })
+      .catch(() => { setSugerencias({}); setSugerenciasCargadas(true) })
     apiGet<{ desfases: Desfase[] }>('/plan-compras/api/plan/desfases')
       .then((d) => setDesfases(d.desfases))
       .catch(() => setDesfases([]))
@@ -94,20 +103,12 @@ export default function PlanFechas() {
 
   // Preselección con la propuesta del motor (mismo criterio que el asistente de insumos de A3.6):
   // solo la primera vez que aparece cada paquete, para no pisar lo que el usuario ya cambió a mano.
+  // Ver preseleccionDestinos() para el porqué de esperar a `sugerenciasCargadas` (bloqueante del
+  // review final A4: sin esa espera, una carrera entre `sinFrente` y `sugerencias` perdía la
+  // propuesta para siempre en esa carga).
   useEffect(() => {
-    setDestinos((prev) => {
-      let cambio = false
-      const next = { ...prev }
-      for (const p of sinFrente) {
-        if (next[p.paqueteId] === undefined) {
-          const s = sugerencias[p.paqueteId]
-          next[p.paqueteId] = s ? s.uniqueId : ''
-          cambio = true
-        }
-      }
-      return cambio ? next : prev
-    })
-  }, [sinFrente, sugerencias])
+    setDestinos((prev) => preseleccionDestinos(prev, sinFrente, sugerencias, sugerenciasCargadas))
+  }, [sinFrente, sugerencias, sugerenciasCargadas])
 
   const onResponsable = async (paqueteId: number, responsable: string, anterior: string) => {
     // AG Grid ya mutó data.responsable a `responsable` (valueSetter por defecto, corrió antes de
@@ -179,13 +180,22 @@ export default function PlanFechas() {
     let total = 0
     let algunFallo = false
     for (const p of sugeridosPendientes) {
+      // Importante 1 del review final A4: el botón masivo mandaba siempre `s.uniqueId` (la propuesta
+      // cruda del motor), ignorando lo que el usuario tuviera elegido en el <select> de esa fila. Si
+      // alguien cambiaba el frente a mano y luego pulsaba este botón, se amarraba al frente del motor
+      // —no al que se veía en pantalla— y encima quedaba con procedencia de motor y
+      // `confirmado_humano = 1`: un acierto falso que corrompe la métrica. `destinos` es la fuente de
+      // verdad de lo que está en pantalla (arranca en la propuesta, pero el usuario puede cambiarlo);
+      // `procedenciaDeAmarre` ya sabe no acreditar al motor cuando el destino elegido no coincide con
+      // su propuesta — mismo criterio que el amarre individual (onAmarrar).
+      const destino = destinos[p.paqueteId]
+      if (destino === undefined || destino === '') continue // el usuario lo dejó sin elegir
       const s = sugerencias[p.paqueteId]
-      if (!s) continue
       try {
         await apiPost('/plan-compras/api/plan/amarrar', {
           paqueteId: p.paqueteId,
-          uniqueId: s.uniqueId,
-          procedencia: procedenciaDeAmarre(s, s.uniqueId),
+          uniqueId: destino,
+          procedencia: procedenciaDeAmarre(s, destino),
         })
         total++
       } catch {
@@ -238,7 +248,10 @@ export default function PlanFechas() {
         </div>
       </header>
 
-      {ui.mensaje && <div className="pdc-info" role="status">{ui.mensaje}</div>}
+      {/* Menor del review final A4: `.pdc-info` pintaba igual un éxito que un fallo, así que una
+          aserción de e2e sobre ese selector pasaba aunque el amarre hubiera fallado — `ui.tipo`
+          distingue cuál de los dos fue. */}
+      {ui.mensaje && <div className={ui.tipo === 'error' ? 'pdc-error' : 'pdc-info'} role="status">{ui.mensaje}</div>}
 
       <div className="pdc-paq-toolbar">
         <button type="button" className="pdc-paq-primario" data-testid="pdc-plan-recalcular" disabled={ui.ocupado} onClick={onRecalcular}>

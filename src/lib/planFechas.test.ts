@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   estadoFila, etiquetaDesfase, generaProceso, mensajeCalculo, opcionFrente, paquetesAmarradosSinCalcular,
-  paquetesSinFrente, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion, valorResponsableMostrado,
+  paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
+  valorResponsableMostrado,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
@@ -171,6 +172,48 @@ describe('paquetesAmarradosSinCalcular', () => {
   })
 })
 
+describe('preseleccionDestinos', () => {
+  const sugerencia: SugerenciaFrente = {
+    uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18', origen: 'similitud', confianza: 'alta', evidencia: 'coincide por código',
+  }
+
+  // Bloqueante del review final A4: si `sinFrente` llega antes que `sugerencias` (carrera entre las
+  // dos peticiones), no debe sembrar '' a ciegas — hay que esperar a que las sugerencias resuelvan.
+  it('sin sugerencias cargadas todavía, no siembra nada (evita fijar \'\' por una carrera)', () => {
+    const resultado = preseleccionDestinos({}, [{ paqueteId: 1 }], {}, false)
+    expect(resultado).toEqual({})
+  })
+
+  it('en cuanto las sugerencias cargan, siembra con la propuesta del motor', () => {
+    const resultado = preseleccionDestinos({}, [{ paqueteId: 1 }], { 1: sugerencia }, true)
+    expect(resultado).toEqual({ 1: 9001 })
+  })
+
+  it('sin propuesta para ese paquete (pero ya cargadas las sugerencias), siembra vacío', () => {
+    const resultado = preseleccionDestinos({}, [{ paqueteId: 1 }], {}, true)
+    expect(resultado).toEqual({ 1: '' })
+  })
+
+  it('no pisa lo que el usuario ya eligió a mano', () => {
+    const resultado = preseleccionDestinos({ 1: 9002 }, [{ paqueteId: 1 }], { 1: sugerencia }, true)
+    expect(resultado).toEqual({ 1: 9002 })
+  })
+
+  it('sin cambios, devuelve la misma referencia (sin re-render de balde)', () => {
+    const prev = { 1: 9002 }
+    expect(preseleccionDestinos(prev, [{ paqueteId: 1 }], { 1: sugerencia }, true)).toBe(prev)
+  })
+
+  // Caso central del bloqueante: la carrera se resuelve reprocesando cuando `sugerenciasCargadas`
+  // pasa a true, aunque `sinFrente` ya tuviera contenido desde antes.
+  it('lo que quedó pendiente por la carrera se siembra en cuanto sugerenciasCargadas pasa a true', () => {
+    const trasCarrera = preseleccionDestinos({}, [{ paqueteId: 1 }], {}, false) // sinFrente llegó primero
+    expect(trasCarrera).toEqual({})
+    const trasSugerencias = preseleccionDestinos(trasCarrera, [{ paqueteId: 1 }], { 1: sugerencia }, true)
+    expect(trasSugerencias).toEqual({ 1: 9001 })
+  })
+})
+
 describe('etiquetaDesfase', () => {
   it('describe el movimiento cuando el frente sigue existiendo', () => {
     const d: Desfase = { paqueteId: 1, nombre: 'Suministro CONCRETO', frenteNombre: 'ESTRUCTURA', fechaGuardada: '2026-05-23', fechaActual: '2026-06-10', diasMovidos: 18 }
@@ -211,6 +254,30 @@ describe('trasGuardarEdicion', () => {
     const primero = trasGuardarEdicion({}, 1, { ok: false, anterior: 'Ana' })
     const segundo = trasGuardarEdicion(primero, 1, { ok: false, anterior: 'Ana' })
     expect(segundo).toEqual({ 1: 'Ana' })
+  })
+})
+
+describe('planUiReducer — tipo del mensaje', () => {
+  // Menor del review final A4: `.pdc-info` pintaba igual un éxito que un fallo — una aserción de
+  // e2e sobre ese selector pasaba aunque el amarre hubiera fallado. `tipo` es lo que distingue cuál fue.
+  it('FALLO marca tipo error', () => {
+    expect(planUiReducer({ ocupado: true, mensaje: null, tipo: null }, { type: 'FALLO', mensaje: 'algo salió mal' }))
+      .toEqual({ ocupado: false, mensaje: 'algo salió mal', tipo: 'error' })
+  })
+
+  it('LISTO con mensaje marca tipo éxito', () => {
+    expect(planUiReducer({ ocupado: true, mensaje: null, tipo: null }, { type: 'LISTO', mensaje: 'listo' }))
+      .toEqual({ ocupado: false, mensaje: 'listo', tipo: 'exito' })
+  })
+
+  it('LISTO sin mensaje no deja tipo', () => {
+    expect(planUiReducer({ ocupado: true, mensaje: null, tipo: null }, { type: 'LISTO' }))
+      .toEqual({ ocupado: false, mensaje: null, tipo: null })
+  })
+
+  it('OCUPADO limpia el tipo anterior', () => {
+    expect(planUiReducer({ ocupado: false, mensaje: 'algo salió mal', tipo: 'error' }, { type: 'OCUPADO' }))
+      .toEqual({ ocupado: true, mensaje: null, tipo: null })
   })
 })
 

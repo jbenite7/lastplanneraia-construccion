@@ -193,7 +193,11 @@
    distinto del vencido (ámbar, no rojo) porque no es lo mismo "esto se retrasó" que "esto miente". */
 .pdc-plan-fila-desfasada { background: #2c2513 !important; }
 .pdc-plan-estado { font-size: 12px; }
-.pdc-plan-estado--desfasado { color: #e8c98a; font-weight: 600; }
+/* Menor del review final A4: desfasado y provisional compartían el mismo #e8c98a y solo se
+   distinguían por el fondo de la fila (que "provisional" ni siquiera tiene). Ámbar más saturado
+   para desfasado — sigue sin ser rojo (no es lo mismo "esto se retrasó" que "esto miente") pero ya
+   no es indistinguible del amarillo pálido de "plazo estimado". */
+.pdc-plan-estado--desfasado { color: #e0a530; font-weight: 600; }
 .pdc-plan-estado--vencido { color: #eaa898; font-weight: 600; }
 .pdc-plan-estado--provisional { color: #e8c98a; }
 .pdc-plan-estado--en-plazo { color: #9fd3ae; }

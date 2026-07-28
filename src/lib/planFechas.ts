@@ -96,6 +96,35 @@ export function paquetesAmarradosSinCalcular(
 }
 
 /**
+ * Semilla de `destinos` (lo elegido en cada <select> de "sin frente") con la propuesta del motor.
+ *
+ * Bloqueante del review final A4: `sinFrente` y `sugerencias` llegan de dos peticiones HTTP
+ * independientes. Si `sinFrente` tiene contenido antes de que lleguen las sugerencias, sembrar cada
+ * paquete con `''` deja esa clave fijada para siempre — cuando las sugerencias sí llegan, ya no es
+ * `undefined` y el efecto no la vuelve a tocar, así que la propuesta se pierde para esa carga. La
+ * espera a `sugerenciasCargadas` (true solo cuando la petición de sugerencias ya resolvió, con éxito
+ * o sin él) evita sembrar a ciegas antes de saber si hay o no propuesta para cada paquete.
+ */
+export function preseleccionDestinos(
+  prev: Record<number, number | ''>,
+  sinFrente: { paqueteId: number }[],
+  sugerencias: Record<number, SugerenciaFrente>,
+  sugerenciasCargadas: boolean,
+): Record<number, number | ''> {
+  if (!sugerenciasCargadas) return prev
+  let cambio = false
+  const next = { ...prev }
+  for (const p of sinFrente) {
+    if (next[p.paqueteId] === undefined) {
+      const s = sugerencias[p.paqueteId]
+      next[p.paqueteId] = s ? s.uniqueId : ''
+      cambio = true
+    }
+  }
+  return cambio ? next : prev
+}
+
+/**
  * El mensaje del desfase. `fechaActual`/`diasMovidos` en null es un caso distinto de «se movió»: el
  * frente amarrado desapareció del cronograma (se borró o se renombró la actividad), y hay que
  * decirlo así en vez de imprimir "null" o reventar.
@@ -149,22 +178,25 @@ export function valorResponsableMostrado(fila: Pick<FilaPlan, 'paqueteId' | 'res
   return overrides[fila.paqueteId] ?? fila.responsable
 }
 
-export type PlanUiState = { ocupado: boolean; mensaje: string | null }
+// Menor del review final A4: `.pdc-info` pintaba también los mensajes de FALLO con el mismo verde
+// de éxito, así que una aserción de e2e sobre ese selector pasaba aunque el amarre hubiera fallado.
+// `tipo` es lo que permite a la vista pintar (y a un test verificar) cuál de los dos fue.
+export type PlanUiState = { ocupado: boolean; mensaje: string | null; tipo: 'exito' | 'error' | null }
 
 export type PlanUiAction =
   | { type: 'OCUPADO' }
   | { type: 'LISTO'; mensaje?: string }
   | { type: 'FALLO'; mensaje: string }
 
-export const estadoInicialPlanUi: PlanUiState = { ocupado: false, mensaje: null }
+export const estadoInicialPlanUi: PlanUiState = { ocupado: false, mensaje: null, tipo: null }
 
 export function planUiReducer(state: PlanUiState, action: PlanUiAction): PlanUiState {
   switch (action.type) {
     case 'OCUPADO':
-      return { ocupado: true, mensaje: null }
+      return { ocupado: true, mensaje: null, tipo: null }
     case 'LISTO':
-      return { ocupado: false, mensaje: action.mensaje ?? null }
+      return { ocupado: false, mensaje: action.mensaje ?? null, tipo: action.mensaje ? 'exito' : null }
     case 'FALLO':
-      return { ocupado: false, mensaje: action.mensaje }
+      return { ocupado: false, mensaje: action.mensaje, tipo: 'error' }
   }
 }
