@@ -161,6 +161,7 @@ tests/browser/*
 !tests/browser/cic-role-disciplines.mjs
 !tests/browser/listado-actividades-handsontable.mjs
 !tests/browser/listado-actividades-switcher-focus.mjs
+!tests/browser/info-nav-focus-visible.mjs
 !tests/browser/fixtures/
 !tests/browser/fixtures/*.mjs
 !tests/browser/support/

@@ -163,6 +163,28 @@
     color: var(--ds-active-text-secondary);
   }
 
+  /* WCAG 2.4.7: el design system reclama el anillo de foco de la barra
+     «Informacion General». `styles.css:2739` y `:2829` apagaban el anillo con
+     `outline: none` en `:focus` sin sustituto, y ganaban por especificidad al
+     `button:focus` de Bootstrap (vendor), asi que el teclado se quedaba sin
+     marca en las tres rutas que montan `info_general_nav.js`:
+     /listado-actividades, /contratos y /pdc.
+
+     No hace falta `!important` ni subir especificidad: esta hoja vive en
+     `@layer legacy-overrides`, la ultima del orden de `aia-design-system.css:1`,
+     y `styles.css` entra en `module`. La capa decide.
+
+     Se declara sobre `:focus-visible`, no sobre `:focus`, a proposito: asi el
+     `outline: none` de `styles.css` conserva su unica funcion legitima -matar
+     el anillo del navegador tras un clic de raton- y el teclado recupera la
+     suya. Los tres valores son los del contrato de `core.css:104`, sin
+     inventar nada local. */
+  :where(.aia-info-nav__trigger, .aia-info-nav__item):focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
   /* F1 Task 5a: absorbido desde public/css/styles.css:319-323
      (module.components). Neutraliza las gutters negativas de `.row` de
      Bootstrap (vendor: margin-inline: -15px), que empujaban contenido fuera
