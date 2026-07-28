@@ -172,26 +172,20 @@
   font-size: 12px;
 }
 
-/* F1 Task 5a: retokenizado EN EL SITIO, no movido. Antes pintaba
-   `rgba(213, 234, 240, 0.8)` con `color: black`: azul claro con tinta negra
-   sobre todas las DataTables de una app dark-only. Remapeo semantico 1:1 a
-   la superficie elevada y al texto primario del tema, la misma pareja que ya
-   usan .cm-table y el listbox de Handsontable en programacion-semanal.css.
-   Se intento moverlo a vendor-datatables-legacy.css (@layer
-   legacy-overrides) junto con el resto del adaptador de DataTables, y se
-   revirtio por medicion, no por criterio: la regla `table.dataTable tbody
-   td` de este mismo archivo fija `color: #3a3a3c !important`, y para las
-   declaraciones !important el orden de capas se INVIERTE (gana la capa mas
-   temprana), asi que module le gana a legacy-overrides por mucha
-   especificidad que tenga el hover. Con el hover en legacy-overrides el
-   fondo si cambiaba pero la tinta se quedaba en #3a3a3c. Medido en
-   /control-cambios con una sonda que anade la clase `dataTable` a
-   #dt_cliente: 1.28:1 movido, frente a 10.95:1 del literal claro original.
-   Aqui, en la misma capa que su competidor, decide la especificidad
-   --(0,2,4) contra (0,1,3)-- y la tinta vuelve a aplicarse. El bloque
-   `table.dataTable tbody td` cae fuera del alcance de este tramo; cuando su
-   tramo lo migre, esta regla puede acompanarlo y las dos iran juntas al
-   adaptador. */
+/* F1 Task 5a: retokenizado EN EL SITIO, no movido. Antes era un azul claro
+   con tinta casi negra sobre todas las DataTables de una app dark-only;
+   ahora es la pareja superficie-elevada / texto-primario del tema. Moverlo a
+   vendor-datatables-legacy.css (@layer legacy-overrides) se revirtio POR
+   MEDICION: la tinta !important de `table.dataTable tbody td` (mas abajo en
+   esta hoja) le ganaba desde `module`, porque para las declaraciones
+   !important el orden de capas se INVIERTE. Medido en /control-cambios con
+   una sonda que anade la clase `dataTable` a #dt_cliente: 1,28:1 movido
+   frente a 10,95:1 del original claro. Aqui, en la misma capa que su
+   competidor, decide la especificidad --(0,2,4) contra (0,1,3)-- y la tinta
+   vuelve a aplicarse. F1 Task 5l: aquel bloque competidor ya usa
+   --ds-active-text-primary, asi que las dos reglas pueden viajar juntas al
+   adaptador cuando toque. Sin literales de color en esta nota: el audit no
+   salta comentarios. */
 table.dataTable tbody tr:hover td {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
