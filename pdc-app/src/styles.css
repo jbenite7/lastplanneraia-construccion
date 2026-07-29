@@ -41,6 +41,7 @@
   --pdc-ok-borde: color-mix(in srgb, var(--pdc-accent) 60%, var(--pdc-border));
   --pdc-aviso-bg: var(--ds-state-tint-amber, #3a3a0f);
   --pdc-aviso-borde: color-mix(in srgb, var(--ds-color-state-warning-text, #5d4200) 60%, var(--pdc-border));
+  --pdc-info-bg: var(--ds-state-tint-blue, #17334f);
   --pdc-error-bg: var(--ds-state-tint-red, #431414);
   --pdc-error-borde: color-mix(in srgb, var(--ds-color-state-critical-text, #8f1d1d) 60%, var(--pdc-border));
   /* Los textos de estado del catálogo son para tema claro (#8f1d1d sobre blanco). Aquí se aclaran
@@ -388,8 +389,8 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Modalidad de contratación: solo se pinta cuando NO es «contrato» (el default), para que salte a la
    vista lo que no lleva proceso completo de contratación ni entra al plan de fechas. */
 .pdc-paq-modalidad { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: var(--pdc-radio-pill); border: 1px solid transparent; }
-.pdc-paq-modalidad--orden_compra { background: var(--ds-state-tint-blue, #17334f); color: var(--pdc-ink); border-color: color-mix(in srgb, var(--ds-state-tint-blue, #17334f) 60%, var(--pdc-border)); }
-.pdc-paq-modalidad--consumo_directo { background: var(--ds-state-tint-amber, #3a3a0f); color: var(--pdc-ink); border-color: var(--pdc-aviso-borde); }
+.pdc-paq-modalidad--orden_compra { background: var(--pdc-info-bg); color: var(--pdc-ink); border-color: color-mix(in srgb, var(--pdc-info-bg) 60%, var(--pdc-border)); }
+.pdc-paq-modalidad--consumo_directo { background: var(--pdc-aviso-bg); color: var(--pdc-ink); border-color: var(--pdc-aviso-borde); }
 .pdc-paq-modalidad--no_contratable { background: var(--pdc-border-control); color: var(--pdc-ink-muted); border-color: var(--pdc-border-control); }
 .pdc-paq-meta { margin-left: auto; opacity: 0.8; font-size: var(--pdc-fs-md); }
 
@@ -441,7 +442,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-wiz-fin h3 { margin: 0 0 6px; }
 
 /* Tooltip de actividades que requieren un insumo */
-.pdc-tt { background: var(--pdc-ok-bg); border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja); padding: 10px 12px; max-width: 440px; color: var(--pdc-ink); box-shadow: 0 8px 24px rgba(0,0,0,.5); font-size: var(--pdc-fs-sm); }
+.pdc-tt { background: var(--pdc-ok-bg); border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja); padding: 10px 12px; max-width: 440px; color: var(--pdc-ink); box-shadow: var(--ds-shadow-lg, 0 16px 48px rgba(20, 28, 24, 0.5)); font-size: var(--pdc-fs-sm); }
 .pdc-tt-cab { font-weight: 600; color: var(--pdc-accent-texto); margin-bottom: 6px; }
 .pdc-tt-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .pdc-tt-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
