@@ -29,7 +29,7 @@ que es peor que no tener este archivo.
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | PENDIENTE | | |
+| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
@@ -77,5 +77,7 @@ triage del piloto real.** Si Tomás reporta después, entra por la Ola 2 y no re
 - **Dos e2e de Da Porto (`pdc-v2-modalidades`, `pdc-v2-sin-scroll-x`) alternan verde y rojo según lo
   que la obra haya cargado ese día.** Si los ves rojos, es el hallazgo H1, no una regresión.
 
-**El nº 1 y el nº 3 se rozan en un punto:** los 25 paquetes sin `duracion_ref` los resuelve la sesión del
-tablero, no la del cierre. Si eres la del cierre, sáltate ese punto.
+**El nº 1 y el nº 3 se rozaban en un punto, y ya está resuelto.** Los paquetes sin `duracion_ref` eran de
+la nº 1, no de la nº 3. **Cerrado el 2026-07-29:** no eran 25 sino 42, y ya recibían fechas solos por la
+mediana de su tipo — ver [`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md).
+El «25» venía del spec y era una cifra vieja: quien lo lea allí, que se fíe de esta medición.

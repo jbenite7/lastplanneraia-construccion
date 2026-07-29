@@ -42,6 +42,7 @@ import {
   valorResponsableMostrado,
 } from '../lib/planFechas'
 import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
+import { claseCorte, etiquetaCorte } from '../lib/vencimientos'
 import { filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -721,12 +722,19 @@ export default function PlanFechas() {
                   frontera con el paso siguiente, no su último día trabajado (ver la convención en
                   PlanFechasService::calcular()). Con «Fin», «7 días · 23 may → 30 may» se lee como
                   ocho días y como si dos pasos compartieran uno; «Hasta» dice lo que el dato es. */}
-              <tr><th>Paso</th><th>Días</th><th>Inicio</th><th>Hasta</th></tr>
+              <tr><th>Paso</th><th>Días</th><th>Inicio</th><th>Hasta</th><th>Estado</th></tr>
             </thead>
             <tbody>
               {filaExpandida.pasos.map((p) => (
                 <tr key={p.orden}>
                   <td>{p.paso}</td><td>{p.dias}</td><td>{p.fechaInicio}</td><td>{p.fechaFin}</td>
+                  {/* El corte lo decide el servidor con la misma función que la pestaña de
+                      Vencimientos: aquí solo se le pone color y palabra. Calcularlo en el navegador
+                      sería la forma más fácil de que la lista y el color acaben diciendo cosas
+                      distintas sobre el mismo paso. */}
+                  <td className={claseCorte(p.vencimiento)} data-testid={`pdc-plan-paso-estado-${p.orden}`}>
+                    {etiquetaCorte(p.vencimiento)}
+                  </td>
                 </tr>
               ))}
             </tbody>
