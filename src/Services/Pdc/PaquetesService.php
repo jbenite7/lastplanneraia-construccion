@@ -66,7 +66,15 @@ namespace App\Services\Pdc;
  */
 final class PaquetesService
 {
-    public const TIPOS = ['a_todo_costo', 'mano_obra', 'suministro', 'consumibles'];
+    /**
+     * Tipo de negociación — QUÉ se compra. `no_aplica` es el quinto y último, y es distinto de los
+     * otros cuatro: no describe una compra sino su ausencia. Existe porque los buckets que no se le
+     * compran a nadie (nómina propia, imprevistos, provisiones) arrastraban el tipo `consumibles`,
+     * que era falso — a la nómina no se le compran consumibles. Ver la migración
+     * `20260728_pdc_v2_tipo_no_aplica.php`, que también explica por qué el cambio es inerte para el
+     * motor: los dos puntos que leen este campo salen antes por `MODALIDADES_SIN_PROCESO`.
+     */
+    public const TIPOS = ['a_todo_costo', 'mano_obra', 'suministro', 'consumibles', 'no_aplica'];
 
     /**
      * Modalidad de contratación — dimensión ORTOGONAL a tipo_negociacion: `tipo_negociacion` dice QUÉ
@@ -1840,8 +1848,12 @@ final class PaquetesService
     /**
      * tipo_negociacion compatibles con un tipo_recurso SINCO (evita ubicar material en paquete de mano de obra).
      *
-     * @return list<'a_todo_costo'|'mano_obra'|'suministro'|'consumibles'> tipos de negociación que
-     *         admiten ese tipo de recurso; sin coincidencia, todos
+     * Ninguna rama nombra `no_aplica`: ese tipo no compite por insumos, se llega a él por su bucket.
+     * Solo aparece vía el `default`, que significa «no sé filtrar, no filtro» — y aun ahí los dos
+     * únicos consumidores ya salieron antes por `MODALIDADES_SIN_PROCESO`.
+     *
+     * @return list<'a_todo_costo'|'mano_obra'|'suministro'|'consumibles'|'no_aplica'> tipos de
+     *         negociación que admiten ese tipo de recurso; sin coincidencia, todos
      */
     private static function tiposCompatibles(?string $tipoRecurso): array
     {
