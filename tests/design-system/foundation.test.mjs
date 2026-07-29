@@ -311,9 +311,13 @@ test('the laboratory document explicitly enables vertical scrolling', async () =
 test('legacy common-head views render the static head component', async () => {
   const inventory = JSON.parse(await read('docs/design-system/manifests/inventory.json'));
   const views = inventory.sharedHeadConsumers;
-  assert.equal(views.length, 15);
+  // 11 desde que las cuatro vistas de programacion-semanal pasaron al head
+  // segmentado (`renderForModule`). `render` es prefijo de `renderForModule`,
+  // así que se asierta la llamada exacta: si no, una vista migrada seguiría
+  // colando en esta lista sin que nada lo note.
+  assert.equal(views.length, 11);
   for (const view of views) {
-    assert.match(await read(view), /DesignSystemHeadComponent::render/);
+    assert.match(await read(view), /DesignSystemHeadComponent::render\((?:true)?\)/);
   }
 });
 

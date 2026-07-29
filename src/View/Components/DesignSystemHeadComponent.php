@@ -37,13 +37,24 @@ final class DesignSystemHeadComponent
     /** Vendors ya cubiertos por el core; declararlos no añade adjuntos. */
     public const CORE_VENDORS = ['bootstrap', 'jquery', 'font-awesome', 'aia-fonts'];
 
-    /** Adjuntos por vendor, en el orden canónico del agregador. */
+    /**
+     * Adjuntos por vendor, en el orden canónico del agregador.
+     *
+     * `datatables` es el único que NO es un `attach-*` de la partición: su CSS
+     * nunca estuvo dentro de `aia-design-system.css`. `render()` lo emite como
+     * hoja hermana del agregador, y el adjunto reproduce eso apuntando a la
+     * misma hoja. Por eso va al final: en `render()` también se emite después
+     * del agregador. Meterlo en CORE_VENDORS sería mentir —el core no lleva
+     * DataTables— y dejaría a /programacion-semanal/{cnc,cic,cnp} sin la única
+     * hoja que estiliza sus tablas.
+     */
     public const VENDOR_ATTACHMENTS = [
         'jquery-ui' => '/css/design-system/entrypoints/attach-jquery-ui.css',
         'anychart' => '/css/design-system/entrypoints/attach-anychart.css',
         'select2' => '/css/design-system/entrypoints/attach-select2.css',
         'sweetalert2' => '/css/design-system/entrypoints/attach-sweetalert2.css',
         'handsontable' => '/css/design-system/entrypoints/attach-handsontable.css',
+        'datatables' => '/css/design-system/vendor-datatables-legacy.css',
     ];
 
     private const CORE_ENTRYPOINT = '/css/design-system/entrypoints/core.css';

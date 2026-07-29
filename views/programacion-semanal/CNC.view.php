@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('programacion-semanal') ?>
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
     <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">

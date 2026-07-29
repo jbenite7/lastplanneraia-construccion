@@ -46,7 +46,9 @@
     "bootstrap",
     "handsontable",
     "datatables",
+    "anychart",
     "select2",
+    "sweetalert2",
     "font-awesome",
     "aia-fonts"
   ],

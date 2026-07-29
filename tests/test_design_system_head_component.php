@@ -42,6 +42,55 @@ foreach (DesignSystemHeadComponent::VENDOR_ATTACHMENTS as $vendor => $url) {
     $check(is_file($root . '/public' . $url), "attachment $vendor: no existe $url");
 }
 
+// 5. Ningún manifiesto usado por una vista puede degradar al agregador. Un
+//    vendor declarado que PHP no conozca hace `null` en moduleVendors() y cae a
+//    render() dejando solo un error_log: la ruta más pesada de la app estuvo así
+//    sin que ninguna suite lo viera. Se asierta por la salida, no por el
+//    registro, porque lo que rompe es el head emitido.
+$manifestDir = $root . '/docs/design-system/manifests';
+foreach (glob($manifestDir . '/*.json') as $manifestFile) {
+    $manifest = json_decode((string) file_get_contents($manifestFile), true);
+    $moduleId = is_array($manifest) ? ($manifest['moduleId'] ?? null) : null;
+    if (!is_string($moduleId)) {
+        continue; // inventory.json y goal-provenance.json no son manifiestos de módulo
+    }
+    $used = false;
+    foreach (glob($root . '/views/*/*.php') as $view) {
+        if (str_contains((string) file_get_contents($view), "renderForModule('$moduleId')")) {
+            $used = true;
+            break;
+        }
+    }
+    if (!$used) {
+        continue;
+    }
+    $head = DesignSystemHeadComponent::renderForModule($moduleId);
+    $check(
+        !str_contains($head, 'aia-design-system.css'),
+        "$moduleId: degrada al agregador (algún vendor del manifiesto no existe en PHP)",
+    );
+}
+
+// 6. /programacion-semanal y sus tres subvistas: el head segmentado debe traer
+//    TODO lo que la ruta usa de verdad. Medido en las vistas: la padre carga
+//    Handsontable + select2 + jquery-ui; CNC/CIC/CNP cargan DataTables +
+//    AnyChart + select2 + jquery-ui; las cuatro cargan sweetalert2 vía
+//    linksComunesHead2.js. Declarar de menos aquí es perder el adaptador oscuro
+//    del vendor, que es la regresión que dba703b acaba de cerrar.
+$weekly = DesignSystemHeadComponent::renderForModule('programacion-semanal');
+foreach ([
+    'entrypoints/core.css' => 'core segmentado',
+    'attach-jquery-ui.css' => 'jquery-ui',
+    'attach-anychart.css' => 'anychart',
+    'attach-select2.css' => 'select2',
+    'attach-sweetalert2.css' => 'sweetalert2',
+    'attach-handsontable.css' => 'handsontable',
+    'vendor-datatables-legacy.css' => 'datatables',
+    'tokens.css' => 'tokens',
+] as $needle => $label) {
+    $check(str_contains($weekly, $needle), "programacion-semanal: falta $label ($needle)");
+}
+
 if ($failures !== []) {
     fwrite(STDERR, "DesignSystemHeadComponent: FAIL\n- " . implode("\n- ", $failures) . "\n");
     exit(1);

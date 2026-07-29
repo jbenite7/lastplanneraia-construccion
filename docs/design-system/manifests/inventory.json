@@ -22,10 +22,6 @@
     "views/programa-general-actualizar/programaGeneralActualizar.view.php",
     "views/programa-general/programa_general.view.php",
     "views/programacion-intermedia/programacion_intermedia.view.php",
-    "views/programacion-semanal/CIC.view.php",
-    "views/programacion-semanal/CNC.view.php",
-    "views/programacion-semanal/CNP.view.php",
-    "views/programacion-semanal/programacion_semanal.view.php",
     "views/subcontratistas/subcontratistas.view.php"
   ],
   "modules": [

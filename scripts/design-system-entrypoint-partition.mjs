@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/design-system-entrypoint-partition.mjs
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
@@ -16,6 +16,17 @@ export const ENTRYPOINT_FILES = {
     sweetalert2: 'public/css/design-system/entrypoints/attach-sweetalert2.css',
     handsontable: 'public/css/design-system/entrypoints/attach-handsontable.css',
   },
+};
+
+// Adjuntos que NO son miembros de la partición porque su CSS nunca estuvo en el
+// agregador: `render()` los emite como hojas hermanas de `aia-design-system.css`.
+// Exigirles que sumen al agregador daría `extra-in-partition` sobre algo que es
+// correcto por diseño, así que quedan fuera de `partitionFailures` y se validan
+// aquí: existen en disco y son destino legítimo de un adjunto de PHP. La lista
+// es cerrada a propósito — cualquier otra URL fuera de la partición sigue siendo
+// `attachment-url-drift`.
+export const STANDALONE_ATTACHMENTS = {
+  datatables: 'public/css/design-system/vendor-datatables-legacy.css',
 };
 
 // Import propio de la partición, ausente del agregador por diseño.
@@ -185,9 +196,16 @@ export function coherenceFailures({ root, viewsOverride = null, manifestsOverrid
   }
   const known = new Set([...coreVendors, ...attachments.map(({ vendor }) => vendor)]);
 
-  // 1. Todo adjunto PHP apunta a un archivo de la partición y existe.
+  // 1. Todo adjunto PHP apunta a un archivo de la partición (o a un standalone
+  //    declarado) y existe.
+  for (const [vendor, file] of Object.entries(STANDALONE_ATTACHMENTS)) {
+    if (!existsSync(join(root, file))) {
+      failures.push(`standalone-attachment-missing: ${vendor} → ${file}`);
+    }
+  }
   const partitionUrls = new Set(
-    Object.values(ENTRYPOINT_FILES.attachments).map((file) => file.replace('public', '')),
+    [...Object.values(ENTRYPOINT_FILES.attachments), ...Object.values(STANDALONE_ATTACHMENTS)]
+      .map((file) => file.replace('public', '')),
   );
   for (const { vendor, url } of attachments) {
     if (!partitionUrls.has(url)) failures.push(`attachment-url-drift: ${vendor} → ${url}`);
