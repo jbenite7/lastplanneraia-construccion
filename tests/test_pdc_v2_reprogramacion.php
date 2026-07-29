@@ -181,6 +181,26 @@ $otro = $db->query(
 )->fetchColumn();
 $assert($otro === '2026-09-11', 'El paquete cuyo frente no se movió sigue igual: ' . (string) $otro);
 
+// ── El tablero de vencimientos sabe que sus fechas son de un cronograma viejo ─
+// Se mueve otra vez el mismo frente para volver a desincronizar el plan que se acaba de aplicar.
+echo "\n--- aviso en el tablero de vencimientos ---\n";
+$db->query("UPDATE programa SET Fecha_Inicio = '2026-10-13' WHERE project_id = ? AND unique_id = 8801", [$P]);
+$db->query("UPDATE programa_consolidado SET Fecha_Inicio = '2026-10-13' WHERE project_id = ? AND unique_id = 8801", [$P]);
+
+$seg = new App\Services\Pdc\SeguimientoService($db);
+$desact = $seg->paquetesDesactualizados($P);
+$assert(
+    in_array($paq, $desact, true),
+    'El tablero sabe que este paquete se calculó contra un cronograma que ya cambió.',
+);
+$assert(
+    !in_array($paqQuieto, $desact, true),
+    'Un paquete cuyo frente no se movió no aparece como desactualizado.',
+);
+
+$svc->aplicarReprogramacion($P, [$paq], 'test-b2');
+$assert($seg->paquetesDesactualizados($P) === [], 'Aplicado el delta, el tablero deja de avisar.');
+
 // ── Un frente borrado deja el paquete huérfano y NUNCA se reamarra solo ──────
 echo "\n--- frente borrado ---\n";
 $db->query('DELETE FROM programa_consolidado WHERE project_id = ? AND unique_id = 8802', [$P]);

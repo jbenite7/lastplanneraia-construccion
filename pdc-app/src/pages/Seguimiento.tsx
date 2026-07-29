@@ -29,12 +29,18 @@ export default function Seguimiento() {
   // y el usuario de otra escritura.
   const [guardando, setGuardando] = useState<number | null>(null)
   const [error, setError] = useState('')
+  // B2 · los paquetes cuyo plan se calculó contra un cronograma que ya cambió. Las fechas que esta
+  // pestaña muestra para ellos son viejas, y callarlo las hace pasar por buenas.
+  const [desactualizados, setDesactualizados] = useState<number[]>([])
 
   const cargar = useCallback(async () => {
     setCargando(true)
     try {
-      const d = await apiGet<{ resumen: FilaSeguimiento[] }>('/plan-compras/api/seguimiento')
+      const d = await apiGet<{ resumen: FilaSeguimiento[]; desactualizados: number[] }>(
+        '/plan-compras/api/seguimiento',
+      )
       setFilas(d.resumen)
+      setDesactualizados(d.desactualizados ?? [])
       setError('')
     } catch (e) {
       setError(mensajeError(e))
@@ -132,6 +138,16 @@ export default function Seguimiento() {
       </header>
 
       {error !== '' && <p className="pdc-error" role="alert">{error}</p>}
+
+      {/* Sin esto, quien mira «qué se me vence» ve fechas calculadas contra un cronograma que ya
+          cambió, presentadas igual que las buenas. El aviso no bloquea nada: dice dónde arreglarlo. */}
+      {desactualizados.length > 0 && (
+        <p className="pdc-plan-aviso-recalcular" data-testid="pdc-seg-aviso-cronograma" role="status">
+          {plural(desactualizados.length, 'paquete')}{' '}
+          {desactualizados.length === 1 ? 'se calculó' : 'se calcularon'} contra un cronograma que ya
+          cambió: las fechas de aquí abajo pueden estar viejas. Revísalo en «Plan» → «Desfases».
+        </p>
+      )}
 
       <div className="pdc-seg-filtros">
         <label>

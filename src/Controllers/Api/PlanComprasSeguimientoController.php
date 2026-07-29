@@ -36,7 +36,12 @@ class PlanComprasSeguimientoController
         if ($projectId === null) {
             return;
         }
-        $this->ok(['resumen' => $this->service->resumen($projectId)]);
+        $this->ok([
+            'resumen' => $this->service->resumen($projectId),
+            // El tablero necesita poder decir «esto se calculó contra un cronograma viejo». Va como
+            // lista aparte y no como columna del resumen: es una propiedad del amarre, no del avance.
+            'desactualizados' => $this->service->paquetesDesactualizados($projectId),
+        ]);
     }
 
     /** GET /plan-compras/api/seguimiento/paquete?paqueteId=N */

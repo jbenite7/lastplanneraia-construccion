@@ -18,6 +18,27 @@ class SeguimientoService
     }
 
     /**
+     * Que paquetes del tablero se calcularon contra un cronograma que ya cambio.
+     *
+     * Se delega en `PlanFechasService::desfases()` en vez de repetir la comparacion aqui: si algun
+     * dia cambia que cuenta como desfase, el tablero de vencimientos y la pantalla del plan no
+     * pueden discrepar. Sin columna de estado que mantener al dia — se deduce comparando la fecha
+     * guardada en el amarre contra la del cronograma en vivo, que es lo que decidio el diseño B2.
+     *
+     * Va como lista aparte y no como columna del resumen: es una propiedad del AMARRE, no del
+     * avance, y mezclarla haria pensar que un paquete «esta desactualizado» en su seguimiento.
+     *
+     * @return list<int>
+     */
+    public function paquetesDesactualizados(int $projectId): array
+    {
+        return array_values(array_map(
+            static fn (array $d): int => $d['paqueteId'],
+            (new PlanFechasService($this->db))->desfases($projectId),
+        ));
+    }
+
+    /**
      * Proyeccion: cuando terminara cada paso si lo pendiente dura lo previsto.
      *
      * Es aritmetica pura, sin base de datos, para poder probarla con casos escritos a mano en vez de
