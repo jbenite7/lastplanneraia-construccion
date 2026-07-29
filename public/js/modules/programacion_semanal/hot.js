@@ -3535,7 +3535,51 @@
     $('#btn_confirmar_compromisos_semana').prop('disabled', hasBlocking).toggleClass('disabled', hasBlocking);
   }
 
+  // El borde rojo y el aviso global de #formulario_nuevo ya existian, pero nada ataba
+  // el aviso al campo concreto: `aria-invalid` y `aria-describedby` venian a null, asi
+  // que quien recorra el formulario campo por campo con lector de pantalla oye el aviso
+  // una vez y despues no se entera de cual esta mal al posarse en el (WCAG 3.3.1 y
+  // 4.1.2). Cada campo apunta a su propia ancla sr-only, siguiendo la receta del DS
+  // (`aria-invalid` + `aria-describedby` a un mensaje por campo).
+  //
+  // #idNuevo NO esta en la lista a proposito: es type="hidden", el UA lo trata como
+  // display:none y no lo expone en el arbol de accesibilidad, asi que marcarlo seria
+  // ruido inerte. El que lleva la etiqueta "Id *", el borde rojo y la exposicion al
+  // lector es #idNuevoDisplay (readonly y tabindex="-1", pero alcanzable en modo
+  // exploracion), y por eso es el unico del par que se marca.
+  var NEW_ACTIVITY_ERROR_ANCHORS = {
+    '#idNuevoDisplay': 'ps-error-idNuevo',
+    '#Actividad': 'ps-error-Actividad',
+    '#Sub_Contratista': 'ps-error-Sub_Contratista',
+    '#Responsable_AIA': 'ps-error-Responsable_AIA',
+    '#Compromiso': 'ps-error-Compromiso',
+  };
+
+  function setNewActivityErrorText(errorId, message) {
+    var anchor = document.getElementById(errorId);
+    if (anchor) { anchor.textContent = message; }
+  }
+
+  function flagNewActivityField(selector, message) {
+    var errorId = NEW_ACTIVITY_ERROR_ANCHORS[selector];
+    $(selector).addClass('ps-field-error').attr('aria-invalid', 'true').attr('aria-describedby', errorId);
+    setNewActivityErrorText(errorId, message);
+  }
+
+  // Poner la marca sin retirarla dejaria el campo anunciado como invalido para siempre,
+  // que es peor que no marcarlo. Por eso limpiar es un solo camino, y corre tanto al
+  // revalidar como al normalizar el formulario (abrir el modal y guardar con exito).
+  function clearNewActivityFieldErrors() {
+    var selectors = Object.keys(NEW_ACTIVITY_ERROR_ANCHORS);
+    var i;
+    for (i = 0; i < selectors.length; i += 1) {
+      $(selectors[i]).removeClass('ps-field-error').removeAttr('aria-invalid').removeAttr('aria-describedby');
+      setNewActivityErrorText(NEW_ACTIVITY_ERROR_ANCHORS[selectors[i]], '');
+    }
+  }
+
   function normalizeNewActivityForm() {
+    clearNewActivityFieldErrors();
     $('#idNuevo').val('');
     $('#idNuevoDisplay').val('');
     $('#Actividad').val('');
@@ -3559,18 +3603,14 @@
 
     // Field-level validation with visual highlighting
     var missing = [];
-    var $idNuevo = $('#idNuevo'), $idNuevoDisplay = $('#idNuevoDisplay');
-    var $Actividad = $('#Actividad');
-    var $Sub = $('#Sub_Contratista'), $Resp = $('#Responsable_AIA');
-    var $Comp = $('#Compromiso');
 
-    // Clear previous error highlights
-    $idNuevo.add($idNuevoDisplay).add($Actividad).add($Sub).add($Resp).add($Comp).removeClass('ps-field-error');
+    // Clear previous error highlights (clase, aria-invalid y el mensaje por campo)
+    clearNewActivityFieldErrors();
 
-    if (!idNuevo) { missing.push('Id'); $idNuevoDisplay.addClass('ps-field-error'); }
-    if (!actividad) { missing.push('Actividad'); $Actividad.addClass('ps-field-error'); }
-    if (!sub) { missing.push('Sub-Contratista'); $Sub.addClass('ps-field-error'); }
-    if (!resp) { missing.push('Profesional AIA'); $Resp.addClass('ps-field-error'); }
+    if (!idNuevo) { missing.push('Id'); flagNewActivityField('#idNuevoDisplay', 'Falta el Id: selecciona una actividad de la Bandeja de No Autoprogramadas.'); }
+    if (!actividad) { missing.push('Actividad'); flagNewActivityField('#Actividad', 'Campo obligatorio: falta completarlo.'); }
+    if (!sub) { missing.push('Sub-Contratista'); flagNewActivityField('#Sub_Contratista', 'Campo obligatorio: falta elegir una opción.'); }
+    if (!resp) { missing.push('Profesional AIA'); flagNewActivityField('#Responsable_AIA', 'Campo obligatorio: falta elegir una opción.'); }
 
     if (missing.length > 0) {
       showFeedback('error', 'Complete los campos: ' + missing.join(', '));
@@ -3578,7 +3618,7 @@
     }
 
     if (compromiso === null) {
-      $Comp.addClass('ps-field-error');
+      flagNewActivityField('#Compromiso', 'Cantidad inválida: escribe un número mayor que 0.');
       showFeedback('error', 'Compromiso inválido (debe ser > 0)');
       return;
     }

@@ -155,6 +155,7 @@ tests/browser/*
 !tests/browser/programacion-semanal-dark-density.mjs
 !tests/browser/programacion-semanal-legend-honesty.mjs
 !tests/browser/programacion-semanal-hot-height.mjs
+!tests/browser/programacion-semanal-nueva-actividad-a11y.mjs
 !tests/browser/programacion-intermedia-mobile-runtime.mjs
 !tests/browser/programacion-intermedia.visual.mjs
 !tests/browser/ops-state-chip-hue.mjs

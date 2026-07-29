@@ -202,10 +202,15 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                     <input type="hidden" id="idNuevo" name="idNuevo" value="" aria-required="true" required>
                                     <input type="text" id="idNuevoDisplay" class="form-control" value="" placeholder="Selecciona una actividad de la Bandeja" readonly aria-readonly="true" tabindex="-1">
                                     <small class="form-text ps-id-source-hint">Selecciona una actividad de la <strong>Bandeja de No Autoprogramadas</strong> a la izquierda.</small>
+                                    <!-- Ancla del mensaje de error por campo. Nace vacia a proposito: un texto
+                                         permanente aqui lo leeria el lector de pantalla en modo exploracion
+                                         incluso con el campo correcto. Lo rellena y lo vacia submitNewActivity()
+                                         a la vez que pone y quita `aria-invalid`. -->
+                                    <small class="sr-only ps-field-error-message" id="ps-error-idNuevo"></small>
                                 </div>
                                 <div class="form-group ps-form-col">
                                     <label for="Actividad" class="control-label">Actividad *</label>
-                                    <div><input id="Actividad" name="Actividad" class="form-control" value="" type="text" aria-required="true" required></div>
+                                    <div><input id="Actividad" name="Actividad" class="form-control" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Actividad"></small></div>
                                 </div>
                                 <div class="form-group ps-form-col">
                                     <label for="Descripcion" class="control-label">Descripción</label>
@@ -228,6 +233,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         }
         ?>
                                         </select>
+                                        <small class="sr-only ps-field-error-message" id="ps-error-Sub_Contratista"></small>
                                     </div>
                                 </div>
                                 <div class="form-group ps-form-col-6">
@@ -246,6 +252,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         }
         ?>
                                         </select>
+                                        <small class="sr-only ps-field-error-message" id="ps-error-Responsable_AIA"></small>
                                     </div>
                                 </div>
                                 <input id="Empresa" name="Empresa" class="form-control" value="" type="hidden">
@@ -259,7 +266,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                 </div>
                                 <div class="form-group ps-form-col-4">
                                     <label for="Compromiso" class="control-label">Cantidad *</label>
-                                    <div><input id="Compromiso" name="Compromiso" class="form-control" value="" type="text" aria-required="true" required></div>
+                                    <div><input id="Compromiso" name="Compromiso" class="form-control" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Compromiso"></small></div>
                                 </div>
                                 <input id="Real" name="Real" class="form-control" value="" type="hidden">
                                 <input type="hidden" id="opcion" name="opcion" value="nuevo">
