@@ -5,19 +5,60 @@
   --ds-font-body: "Inter", system-ui, sans-serif;
 }
 
+/*
+ * Puente con el sistema de diseño de lps-aia. Los `--ds-active-*` los resuelve
+ * aia-design-system.css según el tema; el segundo valor es el color que el módulo usaba suelto y
+ * que sigue haciendo falta con `npm run dev`, donde ese CSS no está.
+ *
+ * Se nombran `--pdc-*` a propósito, en vez de redefinir los `--ds-active-*`: el sistema los declara
+ * dentro de `@layer theme`, y una declaración sin capa —como la de esta hoja— le gana a cualquier
+ * capa. Redefinirlos aquí habría congelado el tema del módulo en el oscuro de hoy.
+ */
+:root {
+  --pdc-bg: var(--ds-active-bg-canvas, #1c1c1e);
+  --pdc-surface: var(--ds-active-surface, #2c2c2e);
+  --pdc-ink: var(--ds-active-text-primary, #f4f1ea);
+  --pdc-ink-muted: var(--ds-active-text-secondary, #c7d4cc);
+  --pdc-border: var(--ds-active-border, #3a3a3c);
+  --pdc-accent: var(--ds-active-action-primary, #69b578);
+  --pdc-focus: var(--ds-active-focus-ring, #69b578);
+}
+
 .pdc-shell {
   min-height: 100vh;
   padding: 16px;
-  background: #1c1c1e; /* dark: contrato design system lps-aia */
-  color: #f4f1ea;
+  background: var(--pdc-bg);
+  color: var(--pdc-ink);
   font-family: var(--ds-font-body);
 }
 
-.pdc-nav { display: flex; align-items: center; gap: 16px; max-width: 1180px; margin: 0 auto 20px; padding-bottom: 12px; border-bottom: 1px solid #2c2c2e; }
-.pdc-nav-title { font-weight: 600; margin-right: 8px; }
-.pdc-nav-link { color: #f4f1ea; text-decoration: none; opacity: 0.75; padding: 4px 2px; }
-.pdc-nav-link.active { opacity: 1; border-bottom: 2px solid #69b578; }
-.pdc-nav-disabled { opacity: 0.35; cursor: not-allowed; }
+/* Pestañas del módulo. El nombre del módulo ya lo dice la barra de contexto del shell: repetirlo
+   aquí era la mitad del hallazgo «dos sistemas de navegación conviviendo». */
+.pdc-nav {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 1180px;
+  margin: 0 auto 20px;
+  border-bottom: 1px solid var(--pdc-border);
+}
+.pdc-nav-link {
+  color: var(--pdc-ink-muted);
+  text-decoration: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  transition: color 160ms ease-out, background-color 160ms ease-out, border-color 160ms ease-out;
+}
+.pdc-nav-link:hover { color: var(--pdc-ink); background: color-mix(in srgb, var(--pdc-ink) 8%, transparent); }
+.pdc-nav-link.active { color: var(--pdc-ink); border-bottom-color: var(--pdc-accent); }
+.pdc-nav-link:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: -2px; }
+/* Sin acento y sin hover: una pestaña que todavía no existe no debe parecer pulsable. */
+.pdc-nav-disabled { color: var(--pdc-ink-muted); opacity: 0.45; cursor: not-allowed; }
+.pdc-nav-disabled:hover { color: var(--pdc-ink-muted); background: none; }
 
 .pdc-page { max-width: 1180px; margin: 0 auto; }
 .pdc-header { display: flex; flex-direction: column; }
@@ -229,3 +270,9 @@
 .pdc-plan-pasos { width: 100%; border-collapse: collapse; font-size: 13px; }
 .pdc-plan-pasos th, .pdc-plan-pasos td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #2c2c2e; }
 .pdc-plan-pasos th { opacity: 0.65; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Las transiciones del módulo son de estado (foco, activo, hover), no coreografía: con
+   prefers-reduced-motion el cambio ocurre igual, solo que sin interpolar. */
+@media (prefers-reduced-motion: reduce) {
+  .pdc-nav-link { transition: none; }
+}

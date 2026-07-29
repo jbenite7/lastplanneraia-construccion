@@ -1,4 +1,5 @@
 import { HashRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { PANTALLAS } from './lib/navegacion'
 import MaestroInsumos from './pages/MaestroInsumos'
 import ImportarPresupuesto from './pages/ImportarPresupuesto'
 import VisorPresupuesto from './pages/VisorPresupuesto'
@@ -10,14 +11,17 @@ export default function App() {
   return (
     <HashRouter>
       <div className="pdc-shell">
+        {/* Pestañas del módulo, no una segunda barra de navegación del sistema. La barra lateral
+            del shell aporta UNA entrada al módulo y el nombre del módulo ya lo dice su barra de
+            contexto; repetirlo aquí era parte del problema («dos sistemas de navegación
+            conviviendo»). Son enlaces con `aria-current="page"` —lo que NavLink pone solo— y no
+            role="tab": estas pestañas navegan entre rutas, y el patrón ARIA de pestañas describe
+            paneles que se muestran y esconden dentro de una misma página. Ese sí se usa, tal cual,
+            dentro de Maestro, Paquetes y Plan. */}
         <nav className="pdc-nav" aria-label="Submódulos del plan de compras">
-          <span className="pdc-nav-title">Plan de Compras</span>
-          <NavLink to="/ensamble/importar" className="pdc-nav-link">Ensamble</NavLink>
-          <NavLink to="/ensamble/maestro" className="pdc-nav-link">Maestro</NavLink>
-          <NavLink to="/ensamble/presupuesto" className="pdc-nav-link">Presupuesto</NavLink>
-          <NavLink to="/ensamble/comparar" className="pdc-nav-link">Comparar</NavLink>
-          <NavLink to="/ensamble/paquetes" className="pdc-nav-link">Paquetes</NavLink>
-          <NavLink to="/ensamble/plan" className="pdc-nav-link">Plan</NavLink>
+          {PANTALLAS.map((p) => (
+            <NavLink key={p.ruta} to={p.ruta} className="pdc-nav-link">{p.etiqueta}</NavLink>
+          ))}
           <span className="pdc-nav-link pdc-nav-disabled" aria-disabled="true" title="Disponible en la fase B">
             Seguimiento
           </span>
