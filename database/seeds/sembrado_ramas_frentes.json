@@ -1,0 +1,141 @@
+{
+  "fuente": "B1 · amarre insumo↔cronograma. Mapa rama del presupuesto → frente del cronograma, confirmado en obra el 2026-07-28. Solo están las ramas que el emparejamiento automático por nombre NO resuelve: las otras ocho (PRELIMINARES, ESTRUCTURA, MAMPOSTERIA Y REVOQUE, RED HIDROSANITARIA, RED DE GAS, RED ELECTRICA, PISOS Y ENCHAPES, CARPINTERIA DE MADERA) casan solas y no se sembraron para no confundir memoria con conocimiento.",
+  "clave": "descripción normalizada de la rama (subcapítulo o grupo del presupuesto)",
+  "valor": "nombre del nodo del cronograma que le sirve de ancla",
+  "total": 26,
+  "reglas": {
+    "EXCAVACIONES Y LLENOS": {
+      "frente": "MOVIMIENTO DE TIERRA",
+      "alcance": "global",
+      "nota": "El presupuesto dice «excavaciones», el cronograma dice «movimiento de tierra». Es el único frente de excavación."
+    },
+    "SUBESTRUCTURA": {
+      "frente": "ESTRUCTURA",
+      "alcance": "global",
+      "nota": "El cronograma no separa sub de superestructura: micropilotes, triturado de cabezotes y losa de cimentación cuelgan de ESTRUCTURA."
+    },
+    "CUBIERTA": {
+      "frente": "LOSA AÉREA CUBIERTA",
+      "alcance": "global",
+      "nota": "No hay frente de cubierta. Se ancla a la losa de cubierta —una hoja, no un frente— porque la cubierta liviana y la línea de vida no pueden ir antes de ella. Colgarlo de ESTRUCTURA daría once meses de adelanto."
+    },
+    "IMPERMEABILIZACIONES": {
+      "frente": "LOSA AÉREA CUBIERTA",
+      "alcance": "global",
+      "nota": "Sin frente propio. El grueso es la impermeabilización de losa cubierta-terraza, que sigue a esa losa. Los filtros van aparte (ver IMPERMEABILIZACION FILTROS)."
+    },
+    "IMPERMEABILIZACION FILTROS": {
+      "frente": "ESTRUCTURA",
+      "alcance": "global",
+      "nota": "Grupo 01.06.02: geodrén, lecho filtrante y muro de contención se instalan contra la estructura enterrada, casi un año antes que la impermeabilización de cubierta."
+    },
+    "REVOQUES": {
+      "frente": "REVOQUE TRADICIONAL",
+      "alcance": "global",
+      "nota": "Grupo 01.05.06. Sin esta regla heredaría MAMPOSTERÍA de su subcapítulo y arrancaría un mes antes. El plural impide el emparejamiento automático."
+    },
+    "ENCHAPES DE MUROS": {
+      "frente": "PISOS Y ENCHAPES",
+      "alcance": "global",
+      "nota": "Grupo 01.05.07. Cuelga de «MAMPOSTERIA Y REVOQUE» pero se ejecuta con los enchapes, tres meses después."
+    },
+    "RED CONTRA INCENDIOS": {
+      "frente": "REDES",
+      "alcance": "global",
+      "nota": "No tiene frente propio; REDES es el padre que la contiene."
+    },
+    "TELECOMUNICACIONES": {
+      "frente": "RED ELÉCTRICA",
+      "alcance": "global",
+      "nota": "Las canalizaciones de telecomunicaciones se tienden con la eléctrica."
+    },
+    "RED DE EXTRACCIÓN": {
+      "frente": "REDES",
+      "alcance": "global",
+      "nota": "Sin frente propio."
+    },
+    "CIELOS": {
+      "frente": "REVOQUES, ESTUCO Y PINTURA",
+      "alcance": "global",
+      "nota": "Todo el subcapítulo es cielo raso en drywall: se instala en esa rama, entre el revoque y el estuco, aunque no tenga frente propio."
+    },
+    "PINTURAS": {
+      "frente": "PINTURA",
+      "alcance": "global",
+      "nota": "Solo falla por el plural del presupuesto contra el singular del cronograma."
+    },
+    "MESONES Y APARATOS SANITARIOS": {
+      "frente": "RED HIDROSANITARIA Y DE GAS",
+      "alcance": "global",
+      "nota": "El subcapítulo mezcla dos compras. Los aparatos —griferías, sanitarios, lavamanos, rejillas, espejos— se instalan con la red hidrosanitaria; los mesones van aparte (ver MESONES y SALPICADERO)."
+    },
+    "MESONES": {
+      "frente": "MESONES DE COCINA",
+      "alcance": "global",
+      "nota": "Grupo 01.17.03: el marmolero es otro proveedor y otro frente."
+    },
+    "SALPICADERO": {
+      "frente": "MESONES DE COCINA",
+      "alcance": "global",
+      "nota": "Grupo 01.17.04: mismo quarztone y mismo proveedor que los mesones."
+    },
+    "CARPINTERIA METALICA": {
+      "frente": "VENTANERÍA",
+      "alcance": "global",
+      "nota": "La ventanería del proyecto ES la carpintería metálica. No hay coincidencia léxica pero sí de oficio."
+    },
+    "DETALLADA FINAL Y ASEO": {
+      "frente": "ASEO DE APARTAMENTOS",
+      "alcance": "global",
+      "nota": "Aseo, detallada de entrega y nomenclatura van con el aseo de apartamentos."
+    },
+    "URBANISMO Y OBRAS EXTERIORES": {
+      "frente": "URBANISMO",
+      "alcance": "global",
+      "nota": "Solo falla por el sufijo del presupuesto."
+    },
+    "VIAS Y PAVIMENTO": {
+      "frente": "VIAS INTERNAS",
+      "alcance": "global",
+      "nota": "Grupo 01.21.03. Sin esta regla heredaría URBANISMO y arrancaría dos meses antes."
+    },
+    "EQUIPOS ESPECIALES": {
+      "frente": "INSTALACIÓN DE ASCENSORES",
+      "alcance": "global",
+      "nota": "Ascensores, shute de basura, calentador, campana y cubierta a gas: equipos que se montan al final, en la misma ventana que los ascensores. El frente ASCENSORES no sirve porque marca la mampostería del foso, siete meses antes."
+    },
+    "ZONAS COMUNES - DOTACIONES": {
+      "frente": "ENTREGA INTERNA DE APTOS",
+      "alcance": "global",
+      "nota": "Jacuzzi, pérgola y mobiliario de zonas comunes: dotación que entra justo antes de entregar. Sin frente propio."
+    },
+    "HERRAMIENTA MENOR Y CONSUMBLES": {
+      "frente": "PRELIMINARES",
+      "alcance": "global",
+      "nota": "Herramienta de obra: se necesita desde el arranque. El nombre lleva la errata «CONSUMBLES» del presupuesto de origen."
+    },
+    "MADERA CONSUMIBLE": {
+      "frente": "ESTRUCTURA",
+      "alcance": "global",
+      "nota": "Grupo 01.24.02: es el encofrado y la obra falsa de la estructura, no herramienta menor. Sin esta regla heredaría PRELIMINARES."
+    },
+    "EQUIPOS": {
+      "frente": "ESTRUCTURA",
+      "alcance": "global",
+      "nota": "Torre-grúa, malacate y andamios —el grueso del subcapítulo— se montan para la estructura y viven con ella. El bobcat se usa antes, en excavación, pero es alquiler puntual que no necesita proceso anticipado."
+    },
+    "SEGURIDAD INDUSTRIAL": {
+      "frente": "PRELIMINARES",
+      "alcance": "global",
+      "nota": "Los elementos de protección se necesitan desde el primer día de obra."
+    },
+    "GASTOS GENERALES": {
+      "frente": "PRELIMINARES",
+      "alcance": "global",
+      "nota": "Casi todo es nómina y no entra al plan de fechas por modalidad, pero vigilancia, laboratorio y acarreos sí se contratan y corren desde el arranque."
+    }
+  },
+  "sin_regla": {
+    "IMPREVISTOS": "No se ancla a nada a propósito: son provisiones, no las consume ninguna actividad del cronograma. Sus filas quedan en NULL con motivo."
+  }
+}
