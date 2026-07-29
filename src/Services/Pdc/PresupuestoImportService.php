@@ -398,6 +398,8 @@ final class PresupuestoImportService
      *     totalInsumos: int,
      *     costoTotal: float,
      *     activa: int,
+     *     obsoleta: int,
+     *     obsoletaMotivo: mixed,
      *     importadoPor: mixed,
      *     createdAt: mixed
      * }>
@@ -405,7 +407,8 @@ final class PresupuestoImportService
     public function versiones(int $projectId): array
     {
         $rows = $this->db->query(
-            'SELECT id, version_label, version_numero, archivo_nombre, total_actividades, total_insumos, costo_total, activa, importado_por, created_at
+            'SELECT id, version_label, version_numero, archivo_nombre, total_actividades, total_insumos, costo_total, activa,
+                    obsoleta, obsoleta_motivo, importado_por, created_at
              FROM pdc_presupuesto_versiones WHERE project_id = ? ORDER BY created_at DESC, id DESC',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -422,6 +425,9 @@ final class PresupuestoImportService
             // y renderiza checkbox ignorando el valueFormatter ("Activa" desaparecería).
             // El tipo SPA (VersionPresupuesto.activa: number) está alineado a esto.
             'activa' => (int) $r['activa'],
+            // Misma razón que `activa` para el int 1/0: esta columna también se pinta en la grilla.
+            'obsoleta' => (int) $r['obsoleta'],
+            'obsoletaMotivo' => $r['obsoleta_motivo'],
             'importadoPor' => $r['importado_por'],
             'createdAt' => $r['created_at'],
         ], $rows);
@@ -520,8 +526,8 @@ final class PresupuestoImportService
      * fuerza a 100.
      *
      * @return array{
-     *     versionA: array{id: int, label: mixed},
-     *     versionB: array{id: int, label: mixed},
+     *     versionA: array{id: int, label: mixed, obsoleta: int, obsoletaMotivo: mixed},
+     *     versionB: array{id: int, label: mixed, obsoleta: int, obsoletaMotivo: mixed},
      *     resumen: array{
      *         costoA: float,
      *         costoB: float,
@@ -628,8 +634,17 @@ final class PresupuestoImportService
         usort($actividades, fn ($x, $y) => $this->compararCodigos($x['codigo'], $y['codigo']));
 
         return [
-            'versionA' => ['id' => (int) $va['id'], 'label' => $va['version_label']],
-            'versionB' => ['id' => (int) $vb['id'], 'label' => $vb['version_label']],
+            // `obsoleta` viaja con cada lado para que el comparativo pueda advertir que lo que se
+            // está viendo no son cambios del presupuesto, sino el rastro de un import defectuoso
+            // (ver database/migrations/20260728_pdc_v2_versiones_obsoletas.php).
+            'versionA' => [
+                'id' => (int) $va['id'], 'label' => $va['version_label'],
+                'obsoleta' => (int) $va['obsoleta'], 'obsoletaMotivo' => $va['obsoleta_motivo'],
+            ],
+            'versionB' => [
+                'id' => (int) $vb['id'], 'label' => $vb['version_label'],
+                'obsoleta' => (int) $vb['obsoleta'], 'obsoletaMotivo' => $vb['obsoleta_motivo'],
+            ],
             'resumen' => [
                 'costoA' => round($costoA, 2), 'costoB' => round($costoB, 2),
                 'delta' => round($costoB - $costoA, 2),
@@ -649,7 +664,8 @@ final class PresupuestoImportService
     private function versionMeta(int $projectId, int $versionId): ?array
     {
         $row = $this->db->query(
-            'SELECT id, version_label FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?',
+            'SELECT id, version_label, obsoleta, obsoleta_motivo
+             FROM pdc_presupuesto_versiones WHERE project_id = ? AND id = ?',
             [$projectId, $versionId],
         )->fetch(\PDO::FETCH_ASSOC);
         return $row === false ? null : $row;
