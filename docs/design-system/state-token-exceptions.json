@@ -272,7 +272,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 2931,
+      "line": 2947,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -281,15 +281,15 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 2592,
+      "line": 2593,
       "selector": ".cic-text-dark",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
-      "reason": "Rama escalada de \"Falta Calificar\" en CIC, documentada en el comentario de las lineas 2585-2590: mezcla el critical-text con --ds-active-text-primary via color-mix al 55/45, sin fondo asociado. Se ancla al texto primario claro, igual que el remapeo de .text-danger."
+      "reason": "Rama escalada de \"Falta Calificar\" en CIC, documentada en el comentario de las lineas 2586-2591: mezcla el critical-text con --ds-active-text-primary via color-mix al 55/45, sin fondo asociado. Se ancla al texto primario claro, igual que el remapeo de .text-danger."
     },
     {
       "file": "public/css/styles.css",
-      "line": 4234,
+      "line": 4235,
       "selector": "#modalEditarContratos .ct-overplanning-alert",
       "token": "--ds-color-state-warning-bg",
       "kind": "at-risk",

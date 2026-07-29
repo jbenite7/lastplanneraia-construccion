@@ -2476,13 +2476,14 @@ table.dataTable td.dt-min-width-300,
 }
 
 /* Field-level validation error highlight.
-   AVISO: el `border-color` de esta regla NO PINTA. programacion-semanal.css fija
+   El `border-color` de esta regla estuvo INERTE: programacion-semanal.css fijaba
    `border-color` con !important sobre `:is(.form-control, .custom-select, textarea,
-   select)` dentro de este modal en @layer components, y para las declaraciones
-   !important el orden de capas se invierte, asi que gana a module.components por
-   mucho id que se le ponga. Medido con el campo en estado de error: el borde sigue
-   siendo --ds-active-border y lo unico que senala el error es el halo de abajo.
-   Corregirlo es un cambio de propiedad de la regla, no de tokenizacion. */
+   select)` dentro de este modal desde un @layer components de nivel superior, y
+   para las declaraciones !important el orden de capas se invierte, asi que ganaba
+   a module.components por mucho id que se le pusiera. Se corrigio retirando aquel
+   !important (no anadiendo otro aqui). El !important de abajo sigue haciendo falta:
+   la regla de reposo `#formulario_nuevo .ps-modal-form .form-control` vive en esta
+   misma capa y tiene mas especificidad (1 id + 2 clases contra 1 id + 1 clase). */
 #formulario_nuevo .ps-field-error {
   border-color: var(--pdc-critical-border) !important;
   box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--pdc-critical-border) 25%, transparent);

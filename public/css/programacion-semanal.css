@@ -2738,10 +2738,26 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         background: var(--ds-active-bg-page) !important;
     }
 
+    /* `border-color` va SIN !important A PROPOSITO — no se le vuelva a poner.
+       Esta hoja llega por un <link> propio y abre un @layer components de nivel
+       superior; styles.css entra con layer(module) y anida components dentro,
+       o sea resuelve en module.components. Para las declaraciones !important el
+       orden de capas se INVIERTE (gana la capa mas temprana), asi que un
+       !important aqui vence a todo module.components por mucha especificidad
+       que tenga el otro lado. Con !important esta linea dejaba inertes los dos
+       estados de borde que styles.css declara SIN !important para estos mismos
+       campos —`#formulario_nuevo .ps-field-error` (rojo) y
+       `#formulario_nuevo .ps-modal-form .form-control:focus` (foco)—: medido en
+       navegador con el estado provocado, los dos computaban --ds-active-border.
+       Sin !important el reposo no cambia (esta capa sigue venciendo a Bootstrap,
+       que declara su borde en @layer vendor y sin !important) y los dos estados
+       vuelven a pintar. `background` y `color` SI necesitan la marca: ahi
+       module.components declara otro valor (`background-color: --ds-active-surface`)
+       y sin ella se perderia la homologacion oscura. */
     body.ps-page :is(#formulario_nuevo, #modal_eliminar_actividad,
         #modalDatosFaltantes, #modalRestriccionesFaltantes,
         #modalcic_mdo, #modalcic_si) :is(.form-control, .custom-select, textarea, select) {
-        border-color: var(--ds-active-border) !important;
+        border-color: var(--ds-active-border);
         background: var(--ds-active-surface-raised) !important;
         color: var(--ds-active-text-primary) !important;
     }
