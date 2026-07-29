@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
-import type { PasoCatalogo, RespuestaPasos } from '../lib/types'
+import type { OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -73,6 +73,55 @@ export default function PasosContratacion() {
     }
   }
 
+  // ── Copiar de otra obra (A4.1 · diferido nº 2) ────────────────────────────
+  // Copia puntual, no vínculo vivo: una vez copiada, editar esta obra no toca la de origen.
+  const [origenes, setOrigenes] = useState<OrigenCopia[]>([])
+  const [origenElegido, setOrigenElegido] = useState<number | ''>('')
+  // `null` = no hay nada previsualizado. El diseño exige enseñar QUÉ se copia antes de copiarlo,
+  // porque una obra origen a medias contagia su hueco.
+  const [preview, setPreview] = useState<PreviewCopia | null>(null)
+
+  useEffect(() => {
+    // Un 403 aquí es normal y no es un error que mostrar: significa que este usuario no tiene el
+    // permiso de reglas, así que el bloque de copia sencillamente no aparece.
+    void apiGet<{ origenes: OrigenCopia[] }>('/plan-compras/api/plan/pasos/origenes')
+      .then((d) => setOrigenes(d.origenes))
+      .catch(() => setOrigenes([]))
+  }, [])
+
+  const onPrevisualizarCopia = async () => {
+    if (origenElegido === '') return
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      setPreview(await apiGet<PreviewCopia>(`/plan-compras/api/plan/pasos/copia-preview?origenId=${origenElegido}`))
+    } catch (e) {
+      setError((e as PdcApiError).message)
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  const onCopiar = async () => {
+    if (origenElegido === '') return
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      const r = await apiPost<{ pasos: number; calculados: number }>('/plan-compras/api/plan/pasos/copiar', {
+        origenId: origenElegido,
+      })
+      setPreview(null)
+      await cargar()
+      setMensaje(`Copiados ${r.pasos} pasos. Se recalcularon ${r.calculados} paquetes.`)
+    } catch (e) {
+      setError((e as PdcApiError).message)
+    } finally {
+      setOcupado(false)
+    }
+  }
+
   const onRestablecer = async () => {
     setOcupado(true)
     setError('')
@@ -114,6 +163,84 @@ export default function PasosContratacion() {
       )}
       {error !== '' && <div className="pdc-error" role="status">{error}</div>}
       {mensaje !== '' && <div className="pdc-info" role="status">{mensaje}</div>}
+
+      {/* Montar la segunda obra empieza por querer partir de lo que ya funcionó en la primera. El
+          bloque no aparece si no hay ninguna obra configurada que este usuario pueda ver. */}
+      {origenes.length > 0 && (
+        <details className="pdc-pasos-copiar" data-testid="pdc-pasos-copiar">
+          <summary>Copiar la configuración de otra obra</summary>
+          <p className="pdc-sub">
+            Se copia una vez y se queda quieta: después puedes editarla aquí sin que la obra de
+            origen se entere, y sin que lo que hagas allá vuelva a esta.
+          </p>
+          <label>
+            Obra de origen{' '}
+            <select
+              data-testid="pdc-pasos-copiar-origen"
+              value={origenElegido}
+              onChange={(e) => {
+                setOrigenElegido(e.target.value === '' ? '' : Number(e.target.value))
+                setPreview(null)
+              }}
+            >
+              <option value="">Elige una obra…</option>
+              {origenes.map((o) => (
+                <option key={o.projectId} value={o.projectId}>
+                  {o.nombre} ({o.pasos} pasos)
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            data-testid="pdc-pasos-copiar-preview"
+            disabled={ocupado || origenElegido === ''}
+            onClick={() => void onPrevisualizarCopia()}
+          >
+            Ver qué se copiaría
+          </button>
+
+          {preview !== null && (
+            <div className="pdc-panel" data-testid="pdc-pasos-preview-copia">
+              <p>
+                Se copiarían estos {preview.pasos.length} pasos, reemplazando el proceso actual de
+                esta obra:
+              </p>
+              <ol data-testid="pdc-pasos-preview-lista">
+                {preview.pasos.map((p) => (
+                  <li key={p.clave}>
+                    {p.alias !== '' ? `${p.alias} (${p.nombre})` : p.nombre}
+                    {p.diasFijos !== null && (
+                      <span className="pdc-paq-meta">{p.diasFijos} día(s) fijos</span>
+                    )}
+                    {!p.tieneCatalogo && p.diasFijos === null && (
+                      <span className="pdc-paq-meta">sin duración definida</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+              {preview.incompleta && (
+                <p role="status" data-testid="pdc-pasos-preview-incompleta">
+                  Ojo: esa obra tiene algún paso sin duración definida. Al copiarla, esta obra hereda
+                  ese hueco y sus fechas saldrán estimadas hasta que lo llenes.
+                </p>
+              )}
+              <button
+                type="button"
+                className="pdc-paq-primario"
+                data-testid="pdc-pasos-copiar-confirmar"
+                disabled={ocupado}
+                onClick={() => void onCopiar()}
+              >
+                Copiar a esta obra
+              </button>
+              <button type="button" data-testid="pdc-pasos-copiar-cancelar" onClick={() => setPreview(null)}>
+                Cancelar
+              </button>
+            </div>
+          )}
+        </details>
+      )}
 
       <ol className="pdc-pasos-lista" data-testid="pdc-pasos-lista">
         {pasos.map((p, i) => (

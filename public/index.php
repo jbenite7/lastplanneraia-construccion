@@ -239,6 +239,10 @@ $router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanCo
 // desnuda por consistencia con el resto del bloque (FastRoute resuelve estáticas por hashmap exacto).
 $router->get('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'pasos']);
 $router->post('/plan-compras/api/plan/pasos/restablecer', [\App\Controllers\Api\PlanComprasPlanController::class, 'restablecerPasos']);
+// A4.1 · diferido nº 2 — copiar la configuración de otra obra. Copia puntual, no vínculo vivo.
+$router->get('/plan-compras/api/plan/pasos/origenes', [\App\Controllers\Api\PlanComprasPlanController::class, 'origenesPasos']);
+$router->get('/plan-compras/api/plan/pasos/copia-preview', [\App\Controllers\Api\PlanComprasPlanController::class, 'previewCopiaPasos']);
+$router->post('/plan-compras/api/plan/pasos/copiar', [\App\Controllers\Api\PlanComprasPlanController::class, 'copiarPasos']);
 $router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
 // PDC v2 · Fase B1 — Seguimiento. Las rutas con segmento van antes que la desnuda, igual que en el
 // bloque del plan, para no depender de como resuelva el router los prefijos.

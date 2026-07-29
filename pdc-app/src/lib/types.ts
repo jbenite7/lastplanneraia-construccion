@@ -419,6 +419,21 @@ export type SimulacionReprogramacion = {
   huerfanos: HuerfanoReprogramacion[]
 }
 
+// A4.1 · diferido nº 2 — copiar la configuración de pasos de otra obra.
+export type OrigenCopia = { projectId: number; nombre: string; pasos: number }
+
+export type PasoPreviewCopia = {
+  clave: string
+  nombre: string
+  alias: string
+  diasFijos: number | null
+  tieneCatalogo: boolean
+}
+
+// `incompleta` = la obra origen tiene algún paso sin duración. La copia hereda ese hueco, así que
+// hay que decirlo ANTES de copiar.
+export type PreviewCopia = { pasos: PasoPreviewCopia[]; incompleta: boolean }
+
 export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
 
 // Propuesta de amarre a frente del motor A4. `origen`/`confianza` son uniones literales ('similitud'|'rama'

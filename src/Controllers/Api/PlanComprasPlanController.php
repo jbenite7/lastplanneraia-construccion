@@ -6,6 +6,7 @@ use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
+use App\Support\SesionUsuario;
 
 /**
  * Plan de compras con fechas (PDC v2 / Fase A4).
@@ -351,6 +352,91 @@ class PlanComprasPlanController
         $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
     }
 
+    /** GET /plan-compras/api/plan/pasos/origenes — de qué obras puede copiar QUIEN pregunta. */
+    public function origenesPasos(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $userId = SesionUsuario::resolverId($this->db);
+        if ($userId === null) {
+            $this->fail('SIN_USUARIO', 'No se pudo identificar al usuario de la sesión.', 409);
+            return;
+        }
+        $this->ok(['origenes' => (new PasosContratacionService($this->db))->origenesDisponibles($projectId, $userId)]);
+    }
+
+    /**
+     * GET /plan-compras/api/plan/pasos/copia-preview?origenId=N — qué se copiaría.
+     *
+     * El origen se revalida contra `origenesDisponibles()` y no solo contra el `<select>`: el
+     * parámetro llega del cliente, y sin esta comprobación la pantalla sería una forma de leer cómo
+     * trabaja una obra a la que no se tiene acceso.
+     */
+    public function previewCopiaPasos(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $origenId = filter_var($_GET['origenId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($origenId === false) {
+            $this->fail('ORIGEN_INVALIDO', 'origenId inválido.', 422);
+            return;
+        }
+        $svc = new PasosContratacionService($this->db);
+        if (!$this->origenPermitido($svc, $projectId, $origenId)) {
+            return;
+        }
+        $this->ok($svc->previsualizarCopia($origenId));
+    }
+
+    /**
+     * POST /plan-compras/api/plan/pasos/copiar  {origenId}
+     *
+     * Recalcula después de copiar, por la misma razón que `guardarPasos()`: la configuración nueva
+     * conviviendo con el plan viejo pondría en pantalla unas fechas que ya no son las que produce
+     * esa configuración.
+     */
+    public function copiarPasos(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        $origenId = filter_var($this->body()['origenId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($origenId === false) {
+            $this->fail('ORIGEN_INVALIDO', 'Falta la obra de la que copiar.', 422);
+            return;
+        }
+        $svc = new PasosContratacionService($this->db);
+        if (!$this->origenPermitido($svc, $projectId, $origenId)) {
+            return;
+        }
+        $r = $svc->copiarDesde($origenId, $projectId, $this->usuario());
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'COPIA_INVALIDA', $r['mensaje'] ?? 'No se pudo copiar.', 422);
+            return;
+        }
+        $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
+    }
+
+    /** Responde el 403 y devuelve false si el origen no es una obra que este usuario pueda copiar. */
+    private function origenPermitido(PasosContratacionService $svc, int $projectId, int $origenId): bool
+    {
+        $userId = SesionUsuario::resolverId($this->db);
+        if ($userId === null) {
+            $this->fail('SIN_USUARIO', 'No se pudo identificar al usuario de la sesión.', 409);
+            return false;
+        }
+        if (!in_array($origenId, array_column($svc->origenesDisponibles($projectId, $userId), 'projectId'), true)) {
+            $this->fail('ORIGEN_NO_DISPONIBLE', 'No tienes acceso a esa obra o no tiene un proceso propio.', 403);
+            return false;
+        }
+        return true;
+    }
+
     /** POST /plan-compras/api/plan/pasos/restablecer — la obra vuelve al proceso por defecto. */
     public function restablecerPasos(): void
     {
@@ -402,7 +488,16 @@ class PlanComprasPlanController
      * con poder asignar insumos: exige el mismo permiso con el que A3.3 aprueba reglas globales del
      * motor (Oficina Técnica / Compras y Director de Obra).
      */
-    private function guardReglas(): ?int
+    /**
+     * El permiso de reglas y el proyecto, SIN CSRF: para los GET que solo preparan una decisión
+     * (de qué obras se puede copiar, qué traería esa copia).
+     *
+     * Existe porque CSRF protege mutaciones y estas no lo son, y porque el cliente solo adjunta el
+     * token en POST (ver `apiPost()` en pdc-app/src/lib/api.ts): exigirlo en un GET deja la pantalla
+     * sin poder leer nada. El permiso sí es el de reglas, no el de lectura — quien no puede copiar
+     * tampoco necesita ver el catálogo de configuraciones ajenas.
+     */
+    private function guardReglasLectura(): ?int
     {
         if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.reglas')) {
             $this->fail('FORBIDDEN', 'No autorizado para cambiar los pasos del proceso de contratación.', 403);
@@ -411,6 +506,15 @@ class PlanComprasPlanController
         $projectId = (int) ($_SESSION['project_id'] ?? 0);
         if ($projectId <= 0) {
             $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return null;
+        }
+        return $projectId;
+    }
+
+    private function guardReglas(): ?int
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
             return null;
         }
         $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
