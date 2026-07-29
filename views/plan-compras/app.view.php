@@ -4,7 +4,7 @@
  *
  * Variables: $bootstrapJson (JSON seguro), $assetVersion (int cache-busting del bundle),
  * $tokensVersion (int cache-busting propio de tokens.css), $shellActive (id del ítem del sidebar).
- * El bundle NO se edita aquí: se compila en el repo `plan-de-compras` y llega a public/pdc-app/.
+ * El bundle NO se edita a mano: lo genera `npm run build` desde `pdc-app/` sobre public/pdc-app/.
  *
  * Desde la revisión de UX de julio de 2026 la página vive dentro del shell con barra lateral, como
  * el resto de módulos. Mismo patrón que Control Tower (views/bi/_layout.php): la lateral aporta UNA

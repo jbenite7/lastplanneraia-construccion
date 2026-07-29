@@ -7,8 +7,8 @@ use App\Security\CsrfTokenManager;
 
 /**
  * Shell de la isla React del Plan de Compras v2.
- * El bundle se compila en el repo hermano `plan-de-compras` (npm run sync)
- * y se sirve desde public/pdc-app/ (ver docs/superpowers/specs/ de ese repo).
+ * El bundle se compila desde `pdc-app/` (`npm run build`) directo a public/pdc-app/,
+ * de donde se sirve. Ver docs/pdc-v2.md.
  */
 class PlanComprasController extends BaseController
 {
