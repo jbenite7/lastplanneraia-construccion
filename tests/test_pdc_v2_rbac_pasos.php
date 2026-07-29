@@ -61,6 +61,17 @@ $copiarFn = substr($copiarFn, 0, (int) strpos($copiarFn, "\n    /**", 10));
 $assert(str_contains($copiarFn, '$this->guardReglas()'),
     'copiarPasos() sí exige CSRF: escribe la configuración de la obra.');
 
+// ── A4.1 · diferido nº 4 — duraciones del catálogo editables ─────────────────
+// Son de la EMPRESA: cambiar un número mueve las fechas de todas las obras que usen esa fila, así
+// que van con el permiso de reglas, no con el de editar el plan.
+$assert(str_contains($rutas, '/plan-compras/api/plan/duraciones'), 'La ruta de duraciones está registrada.');
+$durFn = substr($ctrl, (int) strpos($ctrl, 'public function guardarDuracion'));
+$durFn = substr($durFn, 0, (int) strpos($durFn, "\n    /**", 10));
+$assert(str_contains($durFn, '$this->guardReglas()'),
+    'guardarDuracion() exige el permiso de reglas y CSRF.');
+$assert(str_contains($durFn, 'DURACION_NO_DISPONIBLE'),
+    'Y revalida que la fila sea una de las que esta obra usa: el id llega del cliente.');
+
 // Rol permitido y rol denegado, como exige AGENTS.md para toda ruta protegida nueva.
 $rbac = new App\Security\RbacService($db);
 $assert($rbac->can('lps.paquetes_contratacion.reglas', 'D'), 'Rol permitido: D puede copiar la configuración.');

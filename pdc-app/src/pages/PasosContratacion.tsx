@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
-import type { OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
+import type { DuracionCatalogo, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -122,6 +122,44 @@ export default function PasosContratacion() {
     }
   }
 
+  // ── Duraciones del catálogo (A4.1 · diferido nº 4) ─────────────────────────
+  // Hasta ahora había que entrar a la base para cambiar un número que mueve las fechas de toda la
+  // obra. Solo se ofrecen las filas que los paquetes de ESTA obra usan.
+  const [duraciones, setDuraciones] = useState<DuracionCatalogo[]>([])
+
+  const cargarDuraciones = async () => {
+    // Igual que los orígenes de copia: un 403 solo significa que este usuario no tiene el permiso
+    // de reglas, y entonces el bloque no aparece. No es un error que mostrar.
+    await apiGet<{ duraciones: DuracionCatalogo[] }>('/plan-compras/api/plan/duraciones')
+      .then((d) => setDuraciones(d.duraciones))
+      .catch(() => setDuraciones([]))
+  }
+
+  useEffect(() => {
+    void cargarDuraciones()
+  }, [])
+
+  const onGuardarDuracion = async (ref: number, columna: string, valor: number) => {
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      const r = await apiPost<{ calculados: number }>('/plan-compras/api/plan/duraciones', {
+        duracionRef: ref,
+        dias: { [columna]: valor },
+      })
+      await cargarDuraciones()
+      setMensaje(`Duración guardada. Se recalcularon ${r.calculados} paquetes de esta obra.`)
+    } catch (e) {
+      setError((e as PdcApiError).message)
+      // La pantalla vuelve a lo que hay guardado: dejar el número tecleado sobre un guardado que
+      // falló haría creer que la fecha del plan ya se movió.
+      await cargarDuraciones()
+    } finally {
+      setOcupado(false)
+    }
+  }
+
   const onRestablecer = async () => {
     setOcupado(true)
     setError('')
@@ -163,6 +201,65 @@ export default function PasosContratacion() {
       )}
       {error !== '' && <div className="pdc-error" role="status">{error}</div>}
       {mensaje !== '' && <div className="pdc-info" role="status">{mensaje}</div>}
+
+      {/* Cambiar un número de aquí mueve las fechas de todas las obras que usen esa fila, no solo
+          de esta. El aviso es permanente a propósito: es la advertencia, no una decoración. */}
+      {duraciones.length > 0 && (
+        <details className="pdc-pasos-duraciones" data-testid="pdc-duraciones">
+          <summary>Duraciones del catálogo de la empresa</summary>
+          <p className="pdc-sub" data-testid="pdc-duraciones-aviso">
+            Estas duraciones son de la empresa, no de esta obra: cambiarlas mueve las fechas de todas
+            las obras cuyos paquetes las usen. Aquí ves {duraciones.length} porque son las que usan
+            los paquetes de esta obra.
+          </p>
+          <table className="pdc-duraciones-tabla">
+            <thead>
+              <tr>
+                <th scope="col">Paquete del catálogo</th>
+                {pasos
+                  .filter((p) => p.colLegacy !== null)
+                  .map((p) => <th scope="col" key={p.clave}>{p.nombre}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {duraciones.map((d) => (
+                <tr key={d.duracionRef} data-testid={`pdc-duracion-${d.duracionRef}`}>
+                  <th scope="row">
+                    {d.paqueteContratacion}
+                    <span className="pdc-paq-meta">
+                      {d.paquetesQueLaUsan === 1
+                        ? '1 paquete de esta obra la usa'
+                        : `${d.paquetesQueLaUsan} paquetes de esta obra la usan`}
+                    </span>
+                  </th>
+                  {pasos
+                    .filter((p) => p.colLegacy !== null)
+                    .map((p) => (
+                      <td key={p.clave}>
+                        <input
+                          type="number"
+                          min={0}
+                          aria-label={`${p.nombre} de ${d.paqueteContratacion}`}
+                          data-testid={`pdc-duracion-${d.duracionRef}-${p.colLegacy}`}
+                          disabled={ocupado}
+                          defaultValue={d.dias[p.colLegacy as string] ?? ''}
+                          // Se guarda al salir del campo y no en cada tecla: cada guardado recalcula
+                          // el plan de la obra entera.
+                          onBlur={(e) => {
+                            const n = Number(e.target.value)
+                            if (e.target.value === '' || !Number.isInteger(n) || n < 0) return
+                            if (n === d.dias[p.colLegacy as string]) return
+                            void onGuardarDuracion(d.duracionRef, p.colLegacy as string, n)
+                          }}
+                        />
+                      </td>
+                    ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      )}
 
       {/* Montar la segunda obra empieza por querer partir de lo que ya funcionó en la primera. El
           bloque no aparece si no hay ninguna obra configurada que este usuario pueda ver. */}

@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
+use App\Services\Pdc\DuracionesCatalogoService;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
 use App\Support\SesionUsuario;
@@ -420,6 +421,56 @@ class PlanComprasPlanController
             return;
         }
         $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
+    }
+
+    /** GET /plan-compras/api/plan/duraciones — las duraciones del catálogo que esta obra usa. */
+    public function duraciones(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['duraciones' => (new DuracionesCatalogoService($this->db))->deProyecto($projectId)]);
+    }
+
+    /**
+     * POST /plan-compras/api/plan/duraciones  {duracionRef, dias:{columna: dias}}
+     *
+     * Recalcula el plan de ESTA obra después de guardar, por la misma razón que `guardarPasos()`.
+     * Las demás obras que usen la misma fila del catálogo verán el cambio cuando recalculen: no se
+     * recalculan aquí porque un cambio hecho desde una obra no debe reescribir el plan de otras a
+     * sus espaldas — para eso tienen sus desfases y su «Recalcular».
+     */
+    public function guardarDuracion(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $ref = filter_var($body['duracionRef'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($ref === false) {
+            $this->fail('DURACION_INVALIDA', 'Falta la fila del catálogo que se quiere cambiar.', 422);
+            return;
+        }
+        $dias = is_array($body['dias'] ?? null) ? $body['dias'] : null;
+        if ($dias === null) {
+            $this->fail('DIAS_INVALIDOS', 'Falta el detalle de días.', 422);
+            return;
+        }
+        // La fila tiene que ser una de las que esta obra usa: `duracionRef` llega del cliente, y sin
+        // esta comprobación la pantalla de una obra podría reescribir duraciones que no le tocan.
+        $svc = new DuracionesCatalogoService($this->db);
+        if (!in_array($ref, array_column($svc->deProyecto($projectId), 'duracionRef'), true)) {
+            $this->fail('DURACION_NO_DISPONIBLE', 'Esa duración no la usa ningún paquete de esta obra.', 403);
+            return;
+        }
+        $r = $svc->actualizar($ref, $dias, $this->usuario());
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'DIAS_INVALIDOS', $r['mensaje'] ?? 'No se pudo guardar.', 422);
+            return;
+        }
+        $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
     /** Responde el 403 y devuelve false si el origen no es una obra que este usuario pueda copiar. */

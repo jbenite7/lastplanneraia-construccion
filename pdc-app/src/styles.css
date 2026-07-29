@@ -660,6 +660,27 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Los días de estos pasos cambian con cada paquete, así que no hay un número que enseñar: se dice
    por qué, en vez de dejar el hueco vacío y que parezca un error. */
 .pdc-pasos-dias-catalogo { color: var(--pdc-ink-muted); font-size: var(--pdc-fs-sm); }
+/* A4.1 · los dos bloques plegados de la pantalla de pasos: copiar de otra obra y las duraciones del
+   catálogo. Plegados porque son operaciones de montaje, no del día a día. */
+.pdc-pasos-copiar, .pdc-pasos-duraciones {
+  margin: 12px 0; padding: 10px 14px;
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-caja);
+}
+.pdc-pasos-copiar > summary, .pdc-pasos-duraciones > summary { cursor: pointer; font-weight: 600; }
+.pdc-pasos-copiar label, .pdc-pasos-copiar button { margin-right: 8px; }
+.pdc-pasos-copiar select { background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: var(--pdc-control-pad); }
+/* La tabla puede pasarse de ancho con siete pasos: scrollea ella, nunca la página. */
+.pdc-pasos-duraciones { overflow-x: auto; }
+.pdc-duraciones-tabla { border-collapse: collapse; width: 100%; font-size: var(--pdc-fs-md); }
+.pdc-duraciones-tabla th, .pdc-duraciones-tabla td {
+  border-bottom: 1px solid var(--pdc-border); padding: 8px 10px; text-align: left; vertical-align: top;
+}
+.pdc-duraciones-tabla thead th { color: var(--pdc-ink-muted); font-weight: 600; white-space: nowrap; }
+.pdc-duraciones-tabla tbody th { font-weight: 600; }
+.pdc-duraciones-tabla tbody th .pdc-paq-meta { display: block; }
+.pdc-duraciones-tabla input { width: 4.5rem; }
 /* Seguimiento del plan de compras (fase B1).
    Barra de filtros y panel de detalle. Se apoyan en los tokens `--pdc-*` y en los mismos valores que
    ya usan el resto de barras y tarjetas del modulo: nada de paleta propia. */

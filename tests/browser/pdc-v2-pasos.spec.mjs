@@ -44,6 +44,72 @@ test('una obra agrega un paso propio y vuelve al proceso por defecto', async ({ 
   await logout(page);
 });
 
+// A4.1 · diferido nº 4 — las duraciones del catálogo, editables sin entrar a la base.
+//
+// Hasta ahora había que abrir MySQL para cambiar un número que mueve las fechas de toda la obra.
+// Lo que este test defiende es el «y solo esa» del hecho nº 2 del spec: cambiar una duración mueve
+// el paquete que la usa y no toca al que usa otra.
+test('cambiar una duración del catálogo mueve la fecha que dependía de ella, y solo esa', async ({ page }) => {
+  const montaje = JSON.parse(sqlEnApp(
+    `$crear = function (string $n, array $d) use ($db) { `
+    + `$db->query("INSERT INTO general_dias_procesos_contratacion (paqueteContratacion, tipoPaquete, `
+    + `diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, diasCuadrosComparativos, `
+    + `diasLegalizacionContrato, diasFabricacion, diasInsumosObra) VALUES (?, 'a_todo_costo', ?, ?, ?, ?, ?, ?, ?)", `
+    + `array_merge([$n], $d)); $ref = (int) $db->lastInsertId(); `
+    + `$db->query("INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, `
+    + `modalidad_contratacion, duracion_ref, activo, creado_por, created_at) `
+    + `VALUES (?, ?, 'a_todo_costo', 'contrato', ?, 1, 'e2e-dur', NOW())", [$n, $n, $ref]); `
+    + `return ['paquete' => (int) $db->lastInsertId(), 'ref' => $ref]; }; `
+    + `$a = $crear('ZZTEST DUR A', [3, 2, 7, 4, 5, 10, 2]); `
+    + `$b = $crear('ZZTEST DUR B', [2, 2, 4, 2, 4, 4, 2]); `
+    + `$uid = (int) $db->query('SELECT unique_id FROM programa WHERE project_id = ? AND Titulo = 1 ORDER BY Consecutivo LIMIT 1', `
+    + `[${project.projectId}])->fetchColumn(); `
+    + `$s = new App\\Services\\Pdc\\PlanFechasService($db); `
+    + `$s->amarrar(${project.projectId}, $a['paquete'], $uid, 'e2e-dur'); `
+    + `$s->amarrar(${project.projectId}, $b['paquete'], $uid, 'e2e-dur'); `
+    + `$s->calcular(${project.projectId}, 'e2e-dur'); `
+    + `echo json_encode(['a' => $a, 'b' => $b]);`,
+  ));
+
+  const totales = (paqueteId) => Number(sqlEnApp(
+    `echo (int) $db->query('SELECT dias_totales FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+    + `[${project.projectId}, ${paqueteId}])->fetchColumn();`,
+  ));
+
+  try {
+    expect(totales(montaje.a.paquete), 'punto de partida A').toBe(33);
+    const totalBAntes = totales(montaje.b.paquete);
+
+    await loginAndSelectProject(page, project);
+    await page.goto('/plan-compras#/ensamble/plan');
+    await page.getByTestId('pdc-plan-configurar-pasos').click();
+
+    await page.getByTestId('pdc-duraciones').locator('summary').click();
+    // El aviso de que estas duraciones son de la empresa no es opcional: es la advertencia.
+    await expect(page.getByTestId('pdc-duraciones-aviso')).toContainText('son de la empresa');
+
+    const campo = page.getByTestId(`pdc-duracion-${montaje.a.ref}-diasFabricacion`);
+    await expect(campo).toHaveValue('10', { timeout: 15000 });
+    await campo.fill('15');
+    await campo.blur();
+    await expect(page.getByText(/Duración guardada/)).toBeVisible({ timeout: 15000 });
+
+    expect(totales(montaje.a.paquete), 'el paquete que usa esa duración se movió cinco días').toBe(38);
+    expect(totales(montaje.b.paquete), 'y el que usa otra no se movió').toBe(totalBAntes);
+
+    expect(await page.locator('body').innerText()).not.toContain('Fatal error');
+  } finally {
+    sqlEnApp(
+      `$db->query("DELETE FROM pdc_plan_paso WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_plan_paquete WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_paquete_frente WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'e2e-dur'"); `
+      + `$db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion LIKE 'ZZTEST DUR%'"); echo 'ok';`,
+    );
+    await logout(page).catch(() => {});
+  }
+});
+
 // A4.1 · diferido nº 2 — copiar la configuración de otra obra.
 //
 // Lo primero que hace quien monta la segunda obra es querer partir de lo que ya funcionó en la

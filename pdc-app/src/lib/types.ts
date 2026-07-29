@@ -434,6 +434,16 @@ export type PasoPreviewCopia = {
 // hay que decirlo ANTES de copiar.
 export type PreviewCopia = { pasos: PasoPreviewCopia[]; incompleta: boolean }
 
+// A4.1 · diferido nº 4 — una fila del catálogo legacy de duraciones. Es de la EMPRESA: cambiarla
+// mueve las fechas de todas las obras cuyos paquetes la usen, de ahí `paquetesQueLaUsan`.
+export type DuracionCatalogo = {
+  duracionRef: number
+  paqueteContratacion: string
+  tipoPaquete: string
+  dias: Record<string, number | null>
+  paquetesQueLaUsan: number
+}
+
 export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
 
 // Propuesta de amarre a frente del motor A4. `origen`/`confianza` son uniones literales ('similitud'|'rama'

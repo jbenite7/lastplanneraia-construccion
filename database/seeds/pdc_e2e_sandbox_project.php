@@ -63,6 +63,10 @@ function pdcSandboxLimpiarDatos(Database $db, int $projectId): void
         'pdc_insumo_actividades',
         'pdc_correcciones_motor',
         'pdc_presupuesto_versiones',
+        // A4.1: si la obra queda con un proceso propio, el siguiente test la encuentra con la
+        // configuración del anterior y no con los siete por defecto. No se notaba mientras el único
+        // test que configuraba terminaba pulsando «Restablecer»; el de copiar entre obras no puede.
+        'pdc_proyecto_pasos',
     ] as $tabla) {
         $db->query("DELETE FROM {$tabla} WHERE project_id = ?", [$projectId]);
     }
