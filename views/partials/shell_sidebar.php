@@ -87,8 +87,17 @@ $shellObra = array_values(array_filter([
 ]));
 
 $shellCompras = array_values(array_filter([
-    $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'list'),
-    $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'package'),
+    // «Familias de Actividades» (/listado-actividades) y «Paquetes de Contratación» (/contratos)
+    // se retiran del rail el 2026-07-29: son la interfaz del PDC VIEJO, el modelo de familias que
+    // el submódulo A reemplaza —el propio CLAUDE.md dice que «el concepto de familias queda
+    // eliminado»—. Dejarlas visibles junto a la entrada nueva ofrece dos caminos para la misma
+    // tarea y el usuario no puede saber cuál es el vigente.
+    //
+    // Se ocultan, no se borran: las rutas, sus controladores y sus datos siguen servidos y
+    // accesibles escribiendo la dirección, porque el apagado real del PDC viejo es la fase C1 del
+    // roadmap y exige decidir antes qué pasa con el histórico. Esto es solo la puerta de entrada.
+    // Sus ids siguen en $shellHiddenByRole a propósito: si C1 se revierte, vuelven con su RBAC.
+    //
     // Apunta al módulo NUEVO (la isla React en /plan-compras). Hasta la revisión de UX de julio de
     // 2026 llevaba al módulo viejo de Handsontable (/pdc) y a la SPA no llegaba ningún enlace de la
     // interfaz: solo se entraba escribiendo la dirección.
