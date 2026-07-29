@@ -4,6 +4,7 @@ export type Bootstrap = {
   rol: string
   csrfToken: string
   usuario: string
+  usuarioId: number | null
 }
 
 export type ApiError = { code: string; message: string }
@@ -15,6 +16,7 @@ export type Contexto = {
   projectId: number
   proyectoNombre: string
   usuario: string
+  usuarioId: number | null
   rol: string
   csrfToken: string
 }

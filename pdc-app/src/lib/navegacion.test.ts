@@ -12,7 +12,7 @@ describe('PANTALLAS', () => {
     expect(PANTALLAS.map((p) => p.etiqueta)).not.toContain('Ensamble')
   })
 
-  it('son las seis pantallas del ensamble, en el orden del flujo', () => {
+  it('son las seis pantallas del ensamble mas Seguimiento, en el orden del flujo', () => {
     expect(PANTALLAS.map((p) => p.ruta)).toEqual([
       '/ensamble/importar',
       '/ensamble/maestro',
@@ -20,6 +20,7 @@ describe('PANTALLAS', () => {
       '/ensamble/comparar',
       '/ensamble/paquetes',
       '/ensamble/plan',
+      '/seguimiento/avance',
     ])
   })
 

@@ -9,17 +9,18 @@ afterEach(() => {
 
 const contextoOk = {
   ok: true,
-  data: { projectId: 3, proyectoNombre: 'DAPORTO', usuario: 'pipe', rol: 'D', csrfToken: 'tok-2' },
+  data: { projectId: 3, proyectoNombre: 'DAPORTO', usuario: 'pipe', usuarioId: 42, rol: 'D', csrfToken: 'tok-2' },
 }
 
 describe('getBootstrap', () => {
   it('usa window.__PDC_BOOTSTRAP__ cuando el shell PHP lo inyecta', async () => {
     ;(globalThis as Record<string, unknown>).__PDC_BOOTSTRAP__ = {
-      projectId: 7, proyectoNombre: 'DAPORTO', rol: 'D', csrfToken: 'tok-1', usuario: 'pipe',
+      projectId: 7, proyectoNombre: 'DAPORTO', rol: 'D', csrfToken: 'tok-1', usuario: 'pipe', usuarioId: 42,
     }
     const b = await getBootstrap()
     expect(b.projectId).toBe(7)
     expect(b.csrfToken).toBe('tok-1')
+    expect(b.usuarioId).toBe(42)
   })
 
   it('en dev (sin inyección) obtiene el contexto por fetch con X-AIA-Expect-Json y cookies same-origin', async () => {
@@ -30,7 +31,9 @@ describe('getBootstrap', () => {
     expect(url).toBe('/plan-compras/api/contexto')
     expect(init.headers['X-AIA-Expect-Json']).toBe('1')
     expect(init.credentials).toBe('same-origin')
-    expect(b).toEqual({ projectId: 3, proyectoNombre: 'DAPORTO', rol: 'D', csrfToken: 'tok-2', usuario: 'pipe' })
+    expect(b).toEqual({
+      projectId: 3, proyectoNombre: 'DAPORTO', rol: 'D', csrfToken: 'tok-2', usuario: 'pipe', usuarioId: 42,
+    })
   })
 
   it('cachea el resultado (no repite el fetch)', async () => {

@@ -18,4 +18,5 @@ export const PANTALLAS: EntradaNav[] = [
   { ruta: '/ensamble/comparar', etiqueta: 'Comparar' },
   { ruta: '/ensamble/paquetes', etiqueta: 'Paquetes' },
   { ruta: '/ensamble/plan', etiqueta: 'Plan' },
+  { ruta: '/seguimiento/avance', etiqueta: 'Seguimiento' },
 ]

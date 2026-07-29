@@ -28,6 +28,7 @@ class PlanComprasController extends BaseController
             'projectId' => $projectId,
             'proyectoNombre' => (string) ($_SESSION['proyecto'] ?? ''),
             'usuario' => (string) ($_SESSION['nombreUsuario'] ?? ($_SESSION['usuario'] ?? '')),
+            'usuarioId' => $this->resolverUsuarioId(),
             'rol' => (string) ($_SESSION['permiso_canonico'] ?? ($_SESSION['permiso'] ?? '')),
             'csrfToken' => CsrfTokenManager::generate('plan_compras_v2'),
         ];
@@ -51,5 +52,23 @@ class PlanComprasController extends BaseController
         $tokensVersion = is_file($tokensPath) ? (int) filemtime($tokensPath) : 0;
 
         require PROJECT_ROOT . '/views/plan-compras/app.view.php';
+    }
+
+    /**
+     * La sesión solo guarda el login (`$_SESSION['usuario']`), no el id numérico: hay que
+     * resolverlo contra general_usuarios. Sin coincidencia devuelve null en vez de romper.
+     */
+    private function resolverUsuarioId(): ?int
+    {
+        $login = (string) ($_SESSION['usuario'] ?? '');
+        if ($login === '') {
+            return null;
+        }
+
+        $stmt = $this->db->prepare('SELECT id FROM general_usuarios WHERE usuario = ? LIMIT 1');
+        $stmt->execute([$login]);
+        $id = $stmt->fetchColumn();
+
+        return $id !== false ? (int) $id : null;
     }
 }

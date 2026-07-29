@@ -14,13 +14,22 @@ function fromInjected(raw: unknown): Bootstrap | null {
     rol: String(r.rol ?? ''),
     csrfToken: r.csrfToken,
     usuario: String(r.usuario ?? ''),
+    // Si el blob inyectado no trae el id (versión vieja cacheada, etc.) cae a null en vez de romper.
+    usuarioId: typeof r.usuarioId === 'number' ? r.usuarioId : null,
   }
 }
 
 async function fetchContexto(): Promise<Bootstrap> {
   // apiGet centraliza credentials, headers, envelope y mapeo de errores.
   const c = await apiGet<Contexto>('/plan-compras/api/contexto')
-  return { projectId: c.projectId, proyectoNombre: c.proyectoNombre, rol: c.rol, csrfToken: c.csrfToken, usuario: c.usuario }
+  return {
+    projectId: c.projectId,
+    proyectoNombre: c.proyectoNombre,
+    rol: c.rol,
+    csrfToken: c.csrfToken,
+    usuario: c.usuario,
+    usuarioId: c.usuarioId ?? null,
+  }
 }
 
 export async function getBootstrap(): Promise<Bootstrap> {
