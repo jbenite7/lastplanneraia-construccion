@@ -201,18 +201,32 @@
     white-space: nowrap;
   }
 
-  /* Bordes. El color va a token; el ancho es geometria del markup. */
+  /*
+   * Bordes. El color va a token; el ancho es geometria del markup.
+   *
+   * El `border-style` es explicito y NO sobra: en Tailwind lo ponia el
+   * preflight con `*{border-style:solid;border-width:0}`, asi que la utilidad
+   * solo declaraba el ancho. Sin ese reset global, `border-style` vuelve a su
+   * valor inicial `none` y un ancho sin estilo computa 0px. Medido al retirar
+   * el CDN: la cabecera y el pie de /bi/* perdian su linea (w=0px,
+   * style=none) aunque el color del token si llegaba. Declararlo aqui da el
+   * mismo resultado que el reset, pero solo en los elementos que usan la
+   * clase, en vez de en todo el documento.
+   */
   .rounded {
     border-radius: 0.25rem;
   }
   .border-b {
     border-bottom-width: 1px;
+    border-bottom-style: solid;
   }
   .border-l-4 {
     border-left-width: 4px;
+    border-left-style: solid;
   }
   .border-t {
     border-top-width: 1px;
+    border-top-style: solid;
   }
   .border-gray-200 {
     border-color: var(--ds-active-border);
@@ -392,5 +406,74 @@
     .xl\:grid-cols-3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+  }
+}
+
+/*
+ * Encabezados de la superficie: sin tamano propio.
+ *
+ * El markup de /bi/* dimensiona sus encabezados con la utilidad que lleven
+ * puesta (`.text-xl` en el titulo de vista, `.text-2xl` en las cifras) y deja
+ * al resto al tamano del cuerpo; ningun `<h2>`/`<h3>` de estas 8 rutas pide un
+ * tamano de elemento. Eso funcionaba porque el preflight de Tailwind traia
+ * `h1..h6{font-size:inherit}` sin capa y tapaba a Bootstrap.
+ *
+ * Al retirar el CDN, quien pasa a mandar es `bootstrap.min.css` en
+ * `@layer vendor` (`h3{1.75rem}`, `h2{2rem}`), porque el design system fija
+ * weight, color y tracking de `h1..h6` en `foundation.css` pero NO su tamano.
+ * Medido en /bi/control-tower: los `<h3 class="font-semibold text-gray-800">`
+ * de las tarjetas saltaban de 14px a 28px y los `<h2>` de drilldown a 32px.
+ * Eso no es el design system aplicandose: es Bootstrap legacy tomando el
+ * control de una superficie que nunca lo tuvo.
+ *
+ * Va en `@layer base` —la misma capa donde `foundation.css` normaliza
+ * `h1..h6`— y no en `utilities`, porque es normalizacion de elemento y no una
+ * utilidad. La capa importa: `base` gana a `vendor` y pierde ante
+ * `components`, que es justo lo que hace falta para que el `<h3>` de 12px del
+ * shell sidebar (declarado en `shell-sidebar.css`, `@layer components`) siga
+ * mandando en su propio rail. Solo se neutraliza `font-size`: el weight 600 y
+ * el color siguen viniendo del design system.
+ */
+@layer base {
+  .bi-control-tower-page :is(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+  }
+
+  /*
+   * Botones de la superficie: sin el estilo nativo del navegador.
+   *
+   * Un `<button>` sin fondo ni borde de autor cae a la hoja de usuario-agente:
+   * `2px outset` y `background-color: ButtonFace`. En /bi/* eso no se veia
+   * porque el preflight de Tailwind lo neutralizaba
+   * (`button{background-color:transparent;background-image:none}` mas
+   * `*{border-width:0}`), y el repo nunca escribio ese reset porque nunca le
+   * hizo falta.
+   *
+   * Censado A/B sobre las 8 rutas (5 180 nodos comparados): al retirar el CDN
+   * exactamente 13 elementos caian al estilo nativo —las 8 pestanas
+   * `.nav-item` de `_nav.php`, las 4 de progreso/radar de control-tower y un
+   * `.aia-sidebar__link`—, todos `<button>` sin fondo ni borde declarados. Los
+   * otros 96 elementos que ganan borde lo ganan con tokens `--ds-active-*`:
+   * ese es el shell reparandose y convergiendo con las otras 21 rutas, y se
+   * deja tal cual.
+   *
+   * Va en `@layer base` para que `components` (`.aia-btn`,
+   * `.aia-sidebar__link`, `.shell-week-flyout__item`) y `utilities` (el
+   * `px-4 py-2` de las pestanas) sigan mandando: esto solo alcanza a los
+   * botones que nadie estiliza. No lleva `appearance`, que el preflight si
+   * forzaba y aqui no hace falta.
+   */
+  .bi-control-tower-page button {
+    border-width: 0;
+    border-style: solid;
+    background-color: transparent;
+    background-image: none;
+    padding: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
   }
 }

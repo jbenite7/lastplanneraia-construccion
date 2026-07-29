@@ -10,7 +10,7 @@
         <div id="project-checkbox-list" class="bi-project-list hidden" role="listbox" aria-multiselectable="true"></div>
     </div>
 
-    <hr>
+    <hr class="border-gray-200">
 
     <!-- Filtros Dinámicos -->
     <div id="dynamic-filters" class="bi-filter-grid">
