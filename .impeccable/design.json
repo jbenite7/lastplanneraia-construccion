@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-24T00:00:00Z",
+  "generatedAt": "2026-07-29T00:00:00Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -8,108 +8,277 @@
         "role": "primary",
         "displayName": "Verde Corporativo",
         "canonical": "oklch(32% 0.07 148.5)",
-        "tonalRamp": ["#1a3c2a", "#1a5633", "#4a7c64", "#8cb4a1", "#d5e5db"]
+        "tonalRamp": [
+          "#1a3c2a",
+          "#1a5633",
+          "#4a7c64",
+          "#8cb4a1",
+          "#d5e5db"
+        ]
       },
       "corporate-on-dark": {
         "role": "primary",
         "displayName": "Verde Corporativo (on-dark)",
         "canonical": "#6c9077",
         "note": "Mezcla 64% marca + 36% blanco. Texto #141c18 encima = 4.87:1 AA.",
-        "tonalRamp": ["#1a5633", "#4a7c64", "#6c9077", "#8cb4a1", "#d5e5db"]
+        "tonalRamp": [
+          "#1a5633",
+          "#4a7c64",
+          "#6c9077",
+          "#8cb4a1",
+          "#d5e5db"
+        ]
       },
       "construction": {
         "role": "secondary",
         "displayName": "Naranja Construcción",
         "canonical": "oklch(45% 0.16 46.2)",
-        "tonalRamp": ["#8b4011", "#b55211", "#e87722", "#f6c79b", "#fbead9"]
+        "tonalRamp": [
+          "#8b4011",
+          "#b55211",
+          "#e87722",
+          "#f6c79b",
+          "#fbead9"
+        ]
       },
       "construction-on-dark": {
         "role": "secondary",
         "displayName": "Naranja Construcción (on-dark)",
         "canonical": "#c57247",
         "note": "Mezcla 82% marca + 18% blanco. Texto #141c18 encima = 4.86:1 AA.",
-        "tonalRamp": ["#8b4011", "#b55211", "#c57247", "#e87722", "#f6c79b"]
+        "tonalRamp": [
+          "#8b4011",
+          "#b55211",
+          "#c57247",
+          "#e87722",
+          "#f6c79b"
+        ]
       },
       "real-estate": {
         "role": "tertiary",
         "displayName": "Aqua Inmobiliario",
         "canonical": "oklch(61% 0.13 189)",
-        "tonalRamp": ["#007a71", "#00a499", "#5ec9bd", "#ace5e0", "#e3f9f7"]
+        "tonalRamp": [
+          "#007a71",
+          "#00a499",
+          "#5ec9bd",
+          "#ace5e0",
+          "#e3f9f7"
+        ]
       },
       "real-estate-on-dark": {
         "role": "tertiary",
         "displayName": "Aqua Inmobiliario (on-dark)",
         "canonical": "#2caa9f",
         "note": "Mezcla 94% marca + 6% blanco. Texto #141c18 encima = 6.09:1 AA.",
-        "tonalRamp": ["#007a71", "#00a499", "#2caa9f", "#5ec9bd", "#ace5e0"]
+        "tonalRamp": [
+          "#007a71",
+          "#00a499",
+          "#2caa9f",
+          "#5ec9bd",
+          "#ace5e0"
+        ]
       },
       "architecture": {
         "role": "tertiary",
         "displayName": "Violeta Arquitectura",
         "canonical": "#6752bf",
-        "tonalRamp": ["#3f2f80", "#6752bf", "#877cd1", "#b3ace4", "#e5e1f5"]
+        "tonalRamp": [
+          "#3f2f80",
+          "#6752bf",
+          "#877cd1",
+          "#b3ace4",
+          "#e5e1f5"
+        ]
       },
       "architecture-on-dark": {
         "role": "tertiary",
         "displayName": "Violeta Arquitectura (on-dark)",
         "canonical": "#877cd1",
         "note": "Mezcla 76% marca + 24% blanco. Texto #141c18 encima = 4.83:1 AA.",
-        "tonalRamp": ["#3f2f80", "#6752bf", "#877cd1", "#b3ace4", "#e5e1f5"]
+        "tonalRamp": [
+          "#3f2f80",
+          "#6752bf",
+          "#877cd1",
+          "#b3ace4",
+          "#e5e1f5"
+        ]
       },
       "bg-canvas-dark": {
         "role": "neutral",
         "displayName": "Lienzo Dark",
         "canonical": "#0b100d",
-        "tonalRamp": ["#0b100d", "#111a15", "#1c241f", "#233029", "#52645a"]
+        "tonalRamp": [
+          "#0b100d",
+          "#111a15",
+          "#1c241f",
+          "#233029",
+          "#52645a"
+        ]
       },
       "surface-dark": {
         "role": "neutral",
         "displayName": "Superficie Dark",
         "canonical": "rgba(28,36,31,0.92)",
         "note": "Semitranslúcida; sobre lienzo dark rinde ~#1c241f.",
-        "tonalRamp": ["#111a15", "#1c241f", "#233029", "#2f3d35", "#3b4c42"]
+        "tonalRamp": [
+          "#111a15",
+          "#1c241f",
+          "#233029",
+          "#2f3d35",
+          "#3b4c42"
+        ]
       },
       "text-primary-dark": {
         "role": "neutral",
         "displayName": "Tinta Dark",
         "canonical": "#f7faf8",
-        "tonalRamp": ["#52645a", "#72857a", "#c7d4cc", "#e3ece7", "#f7faf8"]
+        "tonalRamp": [
+          "#52645a",
+          "#72857a",
+          "#c7d4cc",
+          "#e3ece7",
+          "#f7faf8"
+        ]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Montserrat 700. Título de página y valores KPI (.aia-title, .aia-kpi-value)." },
-      "headline": { "displayName": "Headline", "purpose": "Montserrat 700. Encabezados de sección de alto impacto." },
-      "title": { "displayName": "Title", "purpose": "Montserrat 600. Títulos de card, panel y modal." },
-      "body": { "displayName": "Body", "purpose": "Inter 400. Cuerpo operativo; prosa a 65–75ch, datos densos pueden correr más." },
-      "label": { "displayName": "Label", "purpose": "Inter 500, sin uppercase. Etiquetas de control y ayudas." },
-      "mono": { "displayName": "Mono", "purpose": "ui-monospace. Cifras y datos técnicos puntuales." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Montserrat 700. Título de página y valores KPI (.aia-title, .aia-kpi-value)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Montserrat 700. Encabezados de sección de alto impacto."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Montserrat 600. Títulos de card, panel y modal."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Inter 400. Cuerpo operativo; prosa a 65–75ch, datos densos pueden correr más."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Inter 500, sin uppercase. Etiquetas de control y ayudas."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "ui-monospace. Cifras y datos técnicos puntuales."
+      }
     },
     "shadows": [
-      { "name": "xs", "value": "0 1px 2px rgba(20,28,24,0.06)", "purpose": "Reposo de cards, paneles, toolbars y tablas — casi plano." },
-      { "name": "sm", "value": "0 2px 6px rgba(20,28,24,0.08)", "purpose": "Hover discreto y controles elevados." },
-      { "name": "md", "value": "0 8px 24px rgba(20,28,24,0.10)", "purpose": "Material glass y navegación." },
-      { "name": "lg", "value": "0 16px 48px rgba(20,28,24,0.14)", "purpose": "Popovers y menús." },
-      { "name": "xl", "value": "0 24px 72px rgba(20,28,24,0.18)", "purpose": "Modales y capas superiores." },
-      { "name": "focus", "value": "0 0 0 4px var(--ds-active-focus-ring)", "purpose": "Anillo de foco visible de 4px sobre el color de foco del tema activo." }
+      {
+        "name": "xs",
+        "value": "0 1px 2px rgba(20,28,24,0.06)",
+        "purpose": "Reposo de cards, paneles, toolbars y tablas — casi plano."
+      },
+      {
+        "name": "sm",
+        "value": "0 2px 6px rgba(20,28,24,0.08)",
+        "purpose": "Hover discreto y controles elevados."
+      },
+      {
+        "name": "md",
+        "value": "0 8px 24px rgba(20,28,24,0.10)",
+        "purpose": "Material glass y navegación."
+      },
+      {
+        "name": "lg",
+        "value": "0 16px 48px rgba(20,28,24,0.14)",
+        "purpose": "Popovers y menús."
+      },
+      {
+        "name": "xl",
+        "value": "0 24px 72px rgba(20,28,24,0.18)",
+        "purpose": "Modales y capas superiores."
+      },
+      {
+        "name": "focus",
+        "value": "0 0 0 4px var(--ds-active-focus-ring)",
+        "purpose": "Anillo de foco visible de 4px sobre el color de foco del tema activo."
+      }
     ],
     "motion": [
-      { "name": "fast", "value": "140ms ease", "purpose": "Feedback inmediato: hover, foco, cambios de estado de control." },
-      { "name": "standard", "value": "220ms ease", "purpose": "Transiciones estándar de superficie y revelado." },
-      { "name": "slow", "value": "360ms ease", "purpose": "Movimientos mayores, uso puntual." },
-      { "name": "reduced", "value": "1ms linear", "purpose": "Alternativa prefers-reduced-motion; crossfade/instantáneo." }
+      {
+        "name": "fast",
+        "value": "140ms ease",
+        "purpose": "Feedback inmediato: hover, foco, cambios de estado de control."
+      },
+      {
+        "name": "standard",
+        "value": "220ms ease",
+        "purpose": "Transiciones estándar de superficie y revelado."
+      },
+      {
+        "name": "slow",
+        "value": "360ms ease",
+        "purpose": "Movimientos mayores, uso puntual."
+      },
+      {
+        "name": "reduced",
+        "value": "1ms linear",
+        "purpose": "Alternativa prefers-reduced-motion; crossfade/instantáneo."
+      }
     ],
     "breakpoints": [
-      { "name": "compact", "value": "0px" },
-      { "name": "mobile", "value": "390px" },
-      { "name": "tablet", "value": "768px" },
-      { "name": "desktop", "value": "1200px" },
-      { "name": "wide", "value": "1440px" }
+      {
+        "name": "compact",
+        "value": "0px"
+      },
+      {
+        "name": "mobile",
+        "value": "390px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "desktop",
+        "value": "1200px"
+      },
+      {
+        "name": "wide",
+        "value": "1440px"
+      }
     ],
     "scope": {
       "operativeTheme": "dark",
       "validation": "desktop dark únicamente — 1180x820 canónico, 1440x900 secundario",
-      "outOfScope": ["mobile", "tablet", "tema linen (shipped-but-ungated)"],
-      "density": "Compacta desde 1200px; Táctil por debajo. Target táctil mínimo 44px."
+      "outOfScope": [
+        "mobile",
+        "tablet",
+        "tema linen (shipped-but-ungated)"
+      ],
+      "density": "Compacta desde 1200px; Táctil por debajo. Target táctil mínimo 44px. Excepción registrada (2026-07-29, DESIGN.md §5 bis): en superficies de datos densas operadas con ratón en desktop y sin equivalente móvil —hoy solo /plan-compras— el alto de control es 28px y la fila de tabla 28px con encabezado 32px.",
+      "densityException": {
+        "surfaces": [
+          "/plan-compras"
+        ],
+        "controlHeight": "28px",
+        "tableRowHeight": "28px",
+        "tableHeaderHeight": "32px",
+        "typeScale": {
+          "xs": "11px",
+          "sm": "12px",
+          "md": "13px",
+          "lg": "15px",
+          "xl": "18px",
+          "figure": "22px"
+        },
+        "floor": "11px",
+        "notRelaxed": [
+          "contraste AA",
+          "foco visible 4px",
+          "orden de foco",
+          "teclado",
+          "prefers-reduced-motion"
+        ],
+        "expiresIf": "la superficie se abre a táctil",
+        "source": "DESIGN.md §5 bis / PRODUCT.md §Accesibilidad"
+      }
     }
   },
   "components": [
@@ -199,13 +368,46 @@
       "Densidad adaptativa: Compacta desde 1200 px, Táctil por debajo."
     ],
     "rules": [
-      { "name": "La Regla On-Dark", "body": "Toda submarca tiene una variante on-dark derivada por mezcla perceptual OKLCH con blanco, con el matiz oficial preservado y contraste ≥4.5:1 del texto #141c18 encima (DS-008). En dark los fondos retroceden y los acentos suben en luminosidad; nunca se invierte el color mecánicamente.", "section": "colors" },
-      { "name": "La Regla del Color que Refuerza", "body": "El color nunca es el único canal. La gravedad y la urgencia se expresan con data-aia-severity y data-aia-urgency y el texto siempre nombra el significado. Los estados now usan siempre critical; un estado sin datos no escala a warning por sí solo.", "section": "colors" },
-      { "name": "La Regla del Acento Escaso", "body": "El acento es para acción primaria, selección actual e indicadores de estado. Prohibido a plena saturación en estados inactivos y prohibido como relleno decorativo.", "section": "colors" },
-      { "name": "La Regla de Escala Fija", "body": "Los tamaños son rem fijos, nunca clamp() fluido en UI de producto. Un h1 que encoge dentro de un sidebar se ve peor, no mejor. El fluido queda para la marca, no para la operación.", "section": "typography" },
-      { "name": "La Regla de Palabra Íntegra", "body": "El texto de estados y chips envuelve entre palabras y nunca fragmenta una palabra (DS-001/DS-015): overflow-wrap: normal, word-break: normal, hyphens: none.", "section": "typography" },
-      { "name": "La Regla del Vidrio Jerárquico", "body": "El glass (backdrop-filter: blur(18px), .aia-glass) se usa solo para jerarquía: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad con superficies opacas — nunca glass detrás de datos.", "section": "elevation" },
-      { "name": "La Regla Plana por Defecto", "body": "Las superficies están planas en reposo (xs). Una sombra mayor es respuesta a un estado (flotar, elevarse, enfocar), no decoración fija.", "section": "elevation" }
+      {
+        "name": "La Regla On-Dark",
+        "body": "Toda submarca tiene una variante on-dark derivada por mezcla perceptual OKLCH con blanco, con el matiz oficial preservado y contraste ≥4.5:1 del texto #141c18 encima (DS-008). En dark los fondos retroceden y los acentos suben en luminosidad; nunca se invierte el color mecánicamente.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Color que Refuerza",
+        "body": "El color nunca es el único canal. La gravedad y la urgencia se expresan con data-aia-severity y data-aia-urgency y el texto siempre nombra el significado. Los estados now usan siempre critical; un estado sin datos no escala a warning por sí solo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Acento Escaso",
+        "body": "El acento es para acción primaria, selección actual e indicadores de estado. Prohibido a plena saturación en estados inactivos y prohibido como relleno decorativo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla de Escala Fija",
+        "body": "Los tamaños son rem fijos, nunca clamp() fluido en UI de producto. Un h1 que encoge dentro de un sidebar se ve peor, no mejor. El fluido queda para la marca, no para la operación.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de Palabra Íntegra",
+        "body": "El texto de estados y chips envuelve entre palabras y nunca fragmenta una palabra (DS-001/DS-015): overflow-wrap: normal, word-break: normal, hyphens: none.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Vidrio Jerárquico",
+        "body": "El glass (backdrop-filter: blur(18px), .aia-glass) se usa solo para jerarquía: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad con superficies opacas — nunca glass detrás de datos.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla Plana por Defecto",
+        "body": "Las superficies están planas en reposo (xs). Una sombra mayor es respuesta a un estado (flotar, elevarse, enfocar), no decoración fija.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla de la Densidad de Datos",
+        "body": "Una superficie de hoja de cálculo no se comprime encogiendo la letra, se comprime quitando aire: la fila baja a 28px y el encabezado a 32px, pero el cuerpo se queda en 13px y nada baja de 11px. El alto de control de 28px es una excepción registrada al mínimo táctil de 44px, limitada a desktop con ratón y sin equivalente móvil; el contraste AA, el foco visible y el teclado no se relajan nunca.",
+        "section": "layout"
+      }
     ],
     "dos": [
       "Usa tokens --ds-*/--aia-* y primitivas aia-*. Cambia primero tokens, componentes o capas canónicas.",

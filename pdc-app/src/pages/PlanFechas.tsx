@@ -492,14 +492,14 @@ export default function PlanFechas() {
     },
   ], [responsableOverride, desfasePorPaquete, elegibles, frentes])
 
-  // Nueve columnas no caben legibles en el ancho que deja el shell, y la primera en salirse era
-  // «Estado», que es justo el semáforo de la pantalla. «Días» es la que sobra: sale de restar las
-  // dos fechas que quedan a la vista.
+  // Nueve columnas no caben legibles en el ancho que deja el shell. «Días» sale de restar las dos
+  // fechas que quedan a la vista; el responsable se consulta al abrir la fila. «Estado» va al final
+  // de la lista a propósito: es el semáforo por el que se abre esta pantalla.
   const [refGrid, anchoGrid] = usaAnchoContenedor()
   const colsVisibles = useMemo(
     // 44 px: la columna de casillas de selección múltiple, que la pone `rowSelection` y no está en
     // `cols`.
-    () => columnasQueCaben(cols, anchoGrid, ['dias', 'estado', 'responsable'], 44),
+    () => columnasQueCaben(cols, anchoGrid, ['dias', 'responsable', 'estado'], 44),
     [cols, anchoGrid],
   )
 

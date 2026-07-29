@@ -23,10 +23,17 @@ export const MODULOS_TABLA = [ClientSideRowModelModule, ColumnAutoSizeModule, Ro
  * cualquier retoque del aspecto había que hacerlo seis veces o quedaba a medias.
  */
 export const pdcTheme = themeQuartz.withParams({
-  backgroundColor: '#1c1c1e',
-  foregroundColor: '#f4f1ea',
-  accentColor: '#69b578',
-  headerBackgroundColor: '#1a3c2a',
+  /*
+   * Los colores salen de los tokens del sistema, no de hex propios: AG Grid emite estos parámetros
+   * como custom properties, así que un `var()` se resuelve igual que en cualquier hoja y la tabla
+   * cambia de tema con el resto de la aplicación. El segundo valor es el respaldo de `npm run dev`,
+   * donde aia-design-system.css no está cargado.
+   */
+  backgroundColor: 'var(--ds-active-bg-canvas, #0b100d)',
+  foregroundColor: 'var(--ds-active-text-primary, #f7faf8)',
+  accentColor: 'var(--ds-active-action-primary, #6c9077)',
+  headerBackgroundColor: 'var(--ds-state-tint-green, #173d26)',
+  borderColor: 'var(--ds-active-border, #ddefe638)',
   /*
    * Densidad de hoja de cálculo (decisión del dueño del producto, 2026-07-29). La fila venía en
    * 42 px y el encabezado en 48 con celdas de 14 px: 17 filas del presupuesto en toda la pantalla,

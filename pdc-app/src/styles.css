@@ -7,21 +7,53 @@
 
 /*
  * Puente con el sistema de diseño de lps-aia. Los `--ds-active-*` los resuelve
- * aia-design-system.css según el tema; el segundo valor es el color que el módulo usaba suelto y
- * que sigue haciendo falta con `npm run dev`, donde ese CSS no está.
+ * aia-design-system.css según el tema; el segundo valor de cada `var()` es solo el respaldo para
+ * `npm run dev`, donde ese CSS no está cargado.
  *
  * Se nombran `--pdc-*` a propósito, en vez de redefinir los `--ds-active-*`: el sistema los declara
  * dentro de `@layer theme`, y una declaración sin capa —como la de esta hoja— le gana a cualquier
  * capa. Redefinirlos aquí habría congelado el tema del módulo en el oscuro de hoy.
+ *
+ * Migración de julio de 2026: el módulo tenía cuarenta colores sueltos en una escala gris neutra
+ * propia (#1c1c1e, #2c2c2e, #f4f1ea) que no era la del producto. Ahora cada uno sale del token que
+ * le corresponde, así que el PDC cambia de tema con el resto de la aplicación en vez de quedarse
+ * en su propio gris.
  */
 :root {
-  --pdc-bg: var(--ds-active-bg-canvas, #1c1c1e);
-  --pdc-surface: var(--ds-active-surface, #2c2c2e);
-  --pdc-ink: var(--ds-active-text-primary, #f4f1ea);
+  --pdc-bg: var(--ds-active-bg-canvas, #0b100d);
+  --pdc-surface: var(--ds-active-surface, #1c241f);
+  --pdc-surface-raised: var(--ds-active-surface-raised, #233029);
+  --pdc-ink: var(--ds-active-text-primary, #f7faf8);
   --pdc-ink-muted: var(--ds-active-text-secondary, #c7d4cc);
-  --pdc-border: var(--ds-active-border, #3a3a3c);
-  --pdc-accent: var(--ds-active-action-primary, #69b578);
-  --pdc-focus: var(--ds-active-focus-ring, #69b578);
+  --pdc-border: var(--ds-active-border, #ddefe638);
+  --pdc-border-control: var(--ds-active-border-control, #ddefe666);
+  --pdc-accent: var(--ds-active-action-primary, #6c9077);
+  --pdc-accent-hover: var(--ds-active-action-primary-hover, #8cb4a1);
+  --pdc-accent-ink: var(--ds-active-action-text, #141c18);
+  --pdc-focus: var(--ds-active-focus-ring, #2caa9f);
+  /* El acento como TEXTO sobre el lienzo: #6c9077 se queda en 3,8:1 y la norma pide 4,5. La
+     variante clara del propio token (la de hover) llega a 7:1 sin cambiar de matiz. */
+  --pdc-accent-texto: var(--ds-active-action-primary-hover, #8cb4a1);
+
+  /* Estados: fondo del catálogo de tintes + texto del tema. El borde se mezcla con el color del
+     estado para que se lea como marco sin gritar (mismo patrón que design-system/lab.css). */
+  --pdc-ok-bg: var(--ds-state-tint-green, #173d26);
+  --pdc-ok-borde: color-mix(in srgb, var(--pdc-accent) 60%, var(--pdc-border));
+  --pdc-aviso-bg: var(--ds-state-tint-amber, #3a3a0f);
+  --pdc-aviso-borde: color-mix(in srgb, var(--ds-color-state-warning-text, #5d4200) 60%, var(--pdc-border));
+  --pdc-error-bg: var(--ds-state-tint-red, #431414);
+  --pdc-error-borde: color-mix(in srgb, var(--ds-color-state-critical-text, #8f1d1d) 60%, var(--pdc-border));
+  /* Los textos de estado del catálogo son para tema claro (#8f1d1d sobre blanco). Aquí se aclaran
+     contra el texto del tema hasta pasar AA, conservando el matiz que los identifica. */
+  --pdc-error-ink: color-mix(in srgb, var(--ds-color-state-critical-text, #8f1d1d) 34%, var(--pdc-ink));
+  --pdc-aviso-ink: color-mix(in srgb, var(--ds-color-state-warning-text, #5d4200) 30%, var(--pdc-ink));
+  --pdc-ok-ink: var(--pdc-accent-texto);
+
+  /* Radios del catálogo: el módulo traía 6px a mano en cada control. */
+  --pdc-radio-control: var(--ds-radius-control-sm, 0.5rem);
+  --pdc-radio-caja: var(--ds-radius-md, 0.75rem);
+  --pdc-radio-panel: var(--ds-radius-lg, 1rem);
+  --pdc-radio-pill: var(--ds-radius-pill, 9999px);
 }
 
 /*
@@ -127,7 +159,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
   font-size: var(--pdc-fs-md);
   font-weight: 500;
   border-bottom: 2px solid transparent;
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--pdc-radio-control) var(--pdc-radio-control) 0 0;
   transition: color 160ms ease-out, background-color 160ms ease-out, border-color 160ms ease-out;
 }
 .pdc-nav-link:hover { color: var(--pdc-ink); background: color-mix(in srgb, var(--pdc-ink) 8%, transparent); }
@@ -148,7 +180,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-header-fila { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .pdc-header h1 { font-size: var(--pdc-fs-xl); margin: 0 0 2px; }
 .pdc-header p { margin: 0 0 10px; opacity: 0.8; }
-.pdc-error { padding: 16px; border: 1px solid #dc2626; background: #2c1618; color: #fecaca; border-radius: 8px; }
+.pdc-error { padding: 16px; border: 1px solid var(--pdc-error-borde); background: var(--pdc-error-bg); color: var(--pdc-ink); border-radius: var(--pdc-radio-caja); }
 
 /* Fuera de la vista pero dentro del DOM y del árbol de accesibilidad. `display:none` lo dejaría
    inservible: es este input el que abre el diálogo del sistema al pulsar la etiqueta, y el que
@@ -160,15 +192,15 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-dropzone {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   margin: 4px 0 8px; padding: 18px 20px;
-  border: 1px dashed #3a3a3c; border-radius: 10px;
+  border: 1px dashed var(--pdc-border-control); border-radius: var(--pdc-radio-caja);
   transition: border-color .15s ease, background .15s ease;
 }
-.pdc-dropzone.is-arrastrando { border-color: #69b578; background: #17251c; }
+.pdc-dropzone.is-arrastrando { border-color: var(--pdc-accent); background: var(--pdc-ok-bg); }
 .pdc-dropzone-boton {
-  background: #1a5633; color: #f4f1ea; border: 1px solid #69b578;
-  border-radius: 6px; padding: 6px 16px; cursor: pointer; font-size: var(--pdc-fs-md);
+  background: var(--pdc-accent); color: var(--pdc-accent-ink); border: 1px solid var(--pdc-accent);
+  border-radius: var(--pdc-radio-control); padding: 6px 16px; cursor: pointer; font-size: var(--pdc-fs-md);
 }
-.pdc-dropzone-boton:hover { background: #206b3f; }
+.pdc-dropzone-boton:hover { background: var(--pdc-accent-hover); }
 /* El input escondido sigue recibiendo el foco del teclado: sin esto, tabular hasta él no se vería. */
 .pdc-sr-only:focus-visible + .pdc-dropzone-boton { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
 .pdc-dropzone-texto { opacity: 0.75; font-size: var(--pdc-fs-md); }
@@ -199,18 +231,28 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
    importador y el historial), se lo reparten. */
 .pdc-grid-corta { height: auto; }
 .pdc-selector { display: flex; align-items: center; gap: 8px; }
-.pdc-selector select { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); }
+.pdc-selector select { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); }
 
 .pdc-bloque { margin-top: 20px; }
 /* Cuando `.pdc-bloque` es la pantalla entera (Paquetes, Plan, Pasos) ese margen es sangría muerta
    arriba del todo. */
 .pdc-shell > section.pdc-bloque { margin-top: 0; }
-.pdc-vacio { padding: 24px; border: 1px dashed #3a3a3c; border-radius: 8px; opacity: 0.85; }
+.pdc-vacio { padding: 24px; border: 1px dashed var(--pdc-border-control); border-radius: var(--pdc-radio-caja); opacity: 0.85; }
 .pdc-bloque h2 { font-size: var(--pdc-fs-lg); margin: 0 0 8px; }
-.pdc-advertencia { color: #ffca28; }
-.pdc-exito { padding: 12px 16px; border: 1px solid #69b578; background: #17251c; color: #b7e4c4; border-radius: 8px; }
-.pdc-bloque button { background: #1a5633; color: #f4f1ea; border: 1px solid #69b578; border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer; }
-.pdc-bloque button:disabled { opacity: 0.72; cursor: wait; }
+.pdc-advertencia { color: var(--pdc-aviso-ink); }
+.pdc-exito { padding: 12px 16px; border: 1px solid var(--pdc-accent); background: var(--pdc-ok-bg); color: var(--pdc-ink); border-radius: var(--pdc-radio-caja); }
+.pdc-bloque button { background: var(--pdc-accent); color: var(--pdc-accent-ink); border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer; }
+/* Apagado sin difuminar: a plena opacidad el par verde/oscuro se queda en 4:1, así que el estado
+   inactivo se dice vaciando el botón —superficie y texto del tema, borde apagado— en vez de bajar
+   la opacidad de un texto que ya iba justo. */
+.pdc-bloque button:disabled,
+.pdc-plan-masa button:disabled {
+  background: var(--pdc-surface);
+  color: var(--pdc-ink-muted);
+  border-color: var(--pdc-border);
+  opacity: 1;
+  cursor: not-allowed;
+}
 /* `pre-wrap`, no `pre`: la sangría del árbol se dibuja con espacios y hay que conservarla, pero una
    descripción larga tiene que poder envolver en vez de recortarse. Dos clases para ganarle en
    especificidad a `.ag-cell-wrap-text`, que impone `white-space: normal` y se comería la sangría. */
@@ -224,29 +266,29 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 
 .pdc-fila-acciones { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pdc-ayuda { opacity: 0.6; font-size: var(--pdc-fs-sm); margin: 4px 0 8px; }
-.pdc-cobertura { font-weight: 600; color: #9fd3ae; }
-.pdc-panel { border: 1px solid #69b578; border-radius: 8px; padding: 12px 16px; }
+.pdc-cobertura { font-weight: 600; color: var(--pdc-accent-texto); }
+.pdc-panel { border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja); padding: 12px 16px; }
 .pdc-panel ul { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
-.pdc-fila-acciones input[type='search'] { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); min-width: 240px; }
+.pdc-fila-acciones input[type='search'] { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); min-width: 240px; }
 .pdc-check { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pdc-fs-md); opacity: 0.85; cursor: pointer; white-space: nowrap; }
-.pdc-check input { accent-color: #69b578; }
-.pdc-celda-accion { color: #9fd3ae; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.pdc-check input { accent-color: var(--pdc-accent); }
+.pdc-celda-accion { color: var(--pdc-accent-texto); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .pdc-fila-retirada { opacity: 0.55; }
-.pdc-maestro-import { border-bottom: 1px solid #2c2c2e; padding-bottom: 16px; }
+.pdc-maestro-import { border-bottom: 1px solid var(--pdc-surface); padding-bottom: 16px; }
 
 /* Ámbar, no rojo: la versión obsoleta no es un error de la app sino un dato en el que no hay que
    confiar. Mismo tono que `.pdc-advertencia` para que el usuario lo lea como la misma señal. */
 .pdc-aviso-obsoleta {
   padding: 10px 14px; margin-bottom: 4px;
-  border: 1px solid #ffca28; border-radius: 8px;
-  background: #2a2312; color: #ffe9a8; font-size: var(--pdc-fs-md); line-height: 1.45;
+  border: 1px solid var(--pdc-aviso-borde); border-radius: var(--pdc-radio-caja);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-md); line-height: 1.45;
 }
 /* El motivo son dos párrafos de seis renglones cada uno: dicho una vez ya se entendió, y repetido
    en cada visita se lleva un tercio de la pantalla. El titular —lo accionable— queda siempre a la
    vista; el porqué se despliega. */
 .pdc-aviso-obsoleta > summary { cursor: pointer; list-style-position: outside; }
-.pdc-aviso-obsoleta > summary::marker { color: #ffca28; }
-.pdc-aviso-obsoleta strong { color: #ffca28; }
+.pdc-aviso-obsoleta > summary::marker { color: var(--pdc-aviso-ink); }
+.pdc-aviso-obsoleta strong { color: var(--pdc-aviso-ink); }
 .pdc-aviso-obsoleta > summary strong { display: inline; }
 .pdc-aviso-obsoleta[open] > summary { margin-bottom: 6px; }
 .pdc-aviso-obsoleta > p:first-of-type { margin-top: 6px; }
@@ -256,14 +298,14 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-cmp-selectores { display: flex; gap: 16px; flex-wrap: wrap; }
 .pdc-cmp-resumen { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 8px 0; font-size: var(--pdc-fs-md); }
 .pdc-cmp-toggle { display: flex; gap: 8px; margin: 6px 0 8px; align-items: center; }
-.pdc-cmp-toggle button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer; }
-.pdc-cmp-toggle button.activo { background: #1a3c2a; border-color: #69b578; }
-.pdc-cmp-sobrecosto { color: #ff6b6b; }
-.pdc-cmp-ahorro { color: #69b578; }
+.pdc-cmp-toggle button { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer; }
+.pdc-cmp-toggle button.activo { background: var(--pdc-ok-bg); border-color: var(--pdc-accent); }
+.pdc-cmp-sobrecosto { color: var(--pdc-error-ink); }
+.pdc-cmp-ahorro { color: var(--pdc-ok-ink); }
 
 /* Paquetes de contratación (Fase A3) */
 .pdc-sub { margin: 2px 0 0; opacity: 0.75; font-size: var(--pdc-fs-sm); }
-.pdc-info { padding: 10px 14px; border: 1px solid #69b578; background: #17251c; color: #b7e4c4; border-radius: 8px; margin: 10px 0; }
+.pdc-info { padding: 10px 14px; border: 1px solid var(--pdc-accent); background: var(--pdc-ok-bg); color: var(--pdc-ink); border-radius: var(--pdc-radio-caja); margin: 10px 0; }
 
 /* `center` y no `flex-start`: el bloque de cobertura es el doble de alto que el título, y alineados
    arriba dejaban un hueco muerto del alto de la barra de pestañas justo encima de ellas. */
@@ -272,14 +314,14 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-paq-header { padding-bottom: 4px; }
 
 /* Botones: por defecto secundarios (muted); el primario resalta en verde AIA. */
-.pdc-paquetes button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); font-size: var(--pdc-fs-md); cursor: pointer; }
-.pdc-paquetes button:hover:not(:disabled) { border-color: #69b578; }
+.pdc-paquetes button { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); font-size: var(--pdc-fs-md); cursor: pointer; }
+.pdc-paquetes button:hover:not(:disabled) { border-color: var(--pdc-accent); }
 .pdc-paquetes button:disabled { opacity: 0.62; cursor: not-allowed; }
-.pdc-paquetes .pdc-paq-primario:not(:disabled) { background: #1a5633; border-color: #69b578; }
-.pdc-paquetes select, .pdc-paquetes input { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); font-size: var(--pdc-fs-md); }
+.pdc-paquetes .pdc-paq-primario:not(:disabled) { background: var(--pdc-accent); border-color: var(--pdc-accent); color: var(--pdc-accent-ink); }
+.pdc-paquetes select, .pdc-paquetes input { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); font-size: var(--pdc-fs-md); }
 
 .pdc-paq-modos { display: flex; gap: 8px; margin: 14px 0 6px; }
-.pdc-paq-modos button.is-activo { background: #1a3c2a; border-color: #69b578; }
+.pdc-paq-modos button.is-activo { background: var(--pdc-ok-bg); border-color: var(--pdc-accent); }
 
 /* El bloque de cobertura era una columna de cuatro pisos —número, detalle, barra, indicadores— y
    se llevaba 140 px de alto en la pantalla donde el trabajo está en la tabla. Ahora es una rejilla
@@ -296,42 +338,42 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
   grid-column: 1 / -1; font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em;
   opacity: 0.6; line-height: 1; margin-bottom: 2px;
 }
-.pdc-paq-cobertura-num { grid-row: 2 / 4; font-size: var(--pdc-fs-cifra); font-weight: 700; color: #9fd3ae; line-height: 1; }
+.pdc-paq-cobertura-num { grid-row: 2 / 4; font-size: var(--pdc-fs-cifra); font-weight: 700; color: var(--pdc-accent-texto); line-height: 1; }
 .pdc-paq-cobertura-detalle { font-size: var(--pdc-fs-sm); opacity: 0.8; }
-.pdc-paq-barra { height: 6px; background: #2c2c2e; border-radius: 3px; overflow: hidden; }
-.pdc-paq-barra-fill { height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #1a5633, #69b578); transition: transform .35s ease; }
+.pdc-paq-barra { height: 6px; background: var(--pdc-surface); border-radius: var(--pdc-radio-control); overflow: hidden; }
+.pdc-paq-barra-fill { height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, var(--pdc-accent), var(--pdc-accent)); transition: transform .35s ease; }
 
 .pdc-paq-toolbar, .pdc-paq-acciones, .pdc-paq-crear { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
 
 /* Siempre visible, no un tooltip: la duda («¿pierdo lo avanzado?») aparece antes de pulsar, y una
    ayuda que exige pasar el ratón por encima llega tarde. */
 .pdc-plan-recalcular-nota { flex: 1 1 320px; min-width: 260px; opacity: 0.75; font-size: var(--pdc-fs-md); line-height: 1.35; }
-.pdc-paq-sembrado { border: 1px solid #69b578; background: #17251c; border-radius: 8px; padding: 10px 14px; margin: 4px 0 12px; font-size: var(--pdc-fs-md); }
+.pdc-paq-sembrado { border: 1px solid var(--pdc-accent); background: var(--pdc-ok-bg); border-radius: var(--pdc-radio-caja); padding: 10px 14px; margin: 4px 0 12px; font-size: var(--pdc-fs-md); }
 .pdc-paq-fuentes { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
 .pdc-paq-fuente { display: inline-flex; align-items: center; gap: 6px; opacity: 0.9; }
 .pdc-paq-punto { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.pdc-fuente-reglas { background: #69b578; }
-.pdc-fuente-ia { background: #4aa3d6; }
-.pdc-fuente-indirectos { background: #8e8e93; }
-.pdc-fuente-exacta { background: #1a5633; }
-.pdc-fuente-tokens { background: #ffca28; }
-.pdc-fuente-agrupacion { background: #b07cc9; }
-.pdc-paq-acciones { border-top: 1px solid #2c2c2e; border-bottom: 1px solid #2c2c2e; padding: 6px 0; }
+.pdc-fuente-reglas { background: var(--pdc-accent); }
+.pdc-fuente-ia { background: var(--ds-color-domain-architecture-on-dark, #877cd1); }
+.pdc-fuente-indirectos { background: var(--pdc-ink-muted); }
+.pdc-fuente-exacta { background: var(--pdc-accent); }
+.pdc-fuente-tokens { background: var(--pdc-aviso-borde); }
+.pdc-fuente-agrupacion { background: var(--ds-color-domain-real-estate-on-dark, #2caa9f); }
+.pdc-paq-acciones { border-top: 1px solid var(--pdc-surface); border-bottom: 1px solid var(--pdc-surface); padding: 6px 0; }
 .pdc-paq-crear-plegable { margin: 8px 0 0; }
 .pdc-paq-crear-plegable > summary { cursor: pointer; font-size: var(--pdc-fs-md); opacity: 0.75; }
 .pdc-paq-crear-plegable > .pdc-paq-crear { margin-top: 8px; }
-.pdc-paq-sel { color: #9fd3ae; font-size: var(--pdc-fs-md); min-width: 120px; }
-.pdc-paq-check { text-align: center; color: #69b578; }
-.pdc-paq-fila-omitida { opacity: 0.5; font-style: italic; }
+.pdc-paq-sel { color: var(--pdc-accent-texto); font-size: var(--pdc-fs-md); min-width: 120px; }
+.pdc-paq-check { text-align: center; color: var(--pdc-accent); }
+.pdc-paq-fila-omitida { opacity: 0.55; font-style: italic; }
 
 .pdc-paq-lista { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
-.pdc-paq-lista li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #232325; border: 1px solid #2c2c2e; border-radius: 6px; }
-.pdc-paq-tag { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; background: #1a3c2a; color: #b7e4c4; }
+.pdc-paq-lista li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--pdc-surface-raised); border: 1px solid var(--pdc-surface); border-radius: var(--pdc-radio-control); }
+.pdc-paq-tag { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: var(--pdc-radio-pill); background: var(--pdc-ok-bg); color: var(--pdc-ink); }
 /* Barra de búsqueda y filtros del visor del presupuesto. */
 .pdc-visor-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
-.pdc-visor-buscar { min-width: 280px; flex: 1 1 280px; background: #2c2c2e; color: #f4f1ea;
-  border: 1px solid #3a3a3c; border-radius: 6px; padding: 7px 11px; font-size: var(--pdc-fs-md); }
-.pdc-visor-buscar::placeholder { color: #8a8a8e; }
+.pdc-visor-buscar { min-width: 280px; flex: 1 1 280px; background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: 7px 11px; font-size: var(--pdc-fs-md); }
+.pdc-visor-buscar::placeholder { color: var(--pdc-ink-muted); }
 .pdc-visor-modo { display: flex; align-items: center; gap: 6px; font-size: var(--pdc-fs-md); white-space: nowrap; }
 .pdc-visor-conteo { margin-left: auto; font-size: var(--pdc-fs-md); opacity: 0.75; font-variant-numeric: tabular-nums; }
 
@@ -345,10 +387,10 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 
 /* Modalidad de contratación: solo se pinta cuando NO es «contrato» (el default), para que salte a la
    vista lo que no lleva proceso completo de contratación ni entra al plan de fechas. */
-.pdc-paq-modalidad { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; border: 1px solid transparent; }
-.pdc-paq-modalidad--orden_compra { background: #2a3550; color: #bcd0f5; border-color: #3d4d75; }
-.pdc-paq-modalidad--consumo_directo { background: #4a3a1c; color: #f0d9a8; border-color: #6b552b; }
-.pdc-paq-modalidad--no_contratable { background: #3a3a3c; color: #c8c8ca; border-color: #545456; }
+.pdc-paq-modalidad { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: var(--pdc-radio-pill); border: 1px solid transparent; }
+.pdc-paq-modalidad--orden_compra { background: var(--ds-state-tint-blue, #17334f); color: var(--pdc-ink); border-color: color-mix(in srgb, var(--ds-state-tint-blue, #17334f) 60%, var(--pdc-border)); }
+.pdc-paq-modalidad--consumo_directo { background: var(--ds-state-tint-amber, #3a3a0f); color: var(--pdc-ink); border-color: var(--pdc-aviso-borde); }
+.pdc-paq-modalidad--no_contratable { background: var(--pdc-border-control); color: var(--pdc-ink-muted); border-color: var(--pdc-border-control); }
 .pdc-paq-meta { margin-left: auto; opacity: 0.8; font-size: var(--pdc-fs-md); }
 
 /* Asistente paso a paso (wizard) */
@@ -357,60 +399,60 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Ensanchada y compactada: a 720 px dejaba media pantalla vacía a la derecha y los botones de
    decidir caían justo bajo el pliegue en 900 px de alto. Quien usa el asistente decide cientos de
    veces seguidas, y bajar la vista en cada una cansa. */
-.pdc-wiz-card { border: 1px solid #3a3a3c; border-radius: 12px; padding: 14px 20px; background: #202022; max-width: 980px; }
+.pdc-wiz-card { border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-panel); padding: 14px 20px; background: var(--pdc-surface-raised); max-width: 980px; }
 .pdc-wiz-card > header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .pdc-wiz-card h3 { margin: 0; font-size: var(--pdc-fs-xl); }
-.pdc-wiz-valor { font-weight: 700; color: #9fd3ae; white-space: nowrap; }
+.pdc-wiz-valor { font-weight: 700; color: var(--pdc-accent-texto); white-space: nowrap; }
 .pdc-wiz-atributos { display: flex; gap: 24px; margin: 8px 0 0; flex-wrap: wrap; }
 .pdc-wiz-atributos dt { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; opacity: 0.6; }
 .pdc-wiz-atributos dd { margin: 2px 0 0; font-size: var(--pdc-fs-md); }
-.pdc-wiz-sugerencia { margin: 10px 0; padding: 10px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
+.pdc-wiz-sugerencia { margin: 10px 0; padding: 10px 14px; border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja); background: var(--pdc-ok-bg); }
 .pdc-wiz-sugerencia .pdc-sub { margin-top: 4px; }
 /* Sin propuesta el bloque sigue ahí, pero apagado: el hueco también es información. */
-.pdc-wiz-sugerencia.es-vacia { border-color: #3a3a3c; background: #202022; }
-.pdc-paq-tag.conf-media { background: #3a2f18; color: #e8c98a; }
-.pdc-paq-tag.conf-baja { background: #3a1f1a; color: #eaa898; }
+.pdc-wiz-sugerencia.es-vacia { border-color: var(--pdc-border-control); background: var(--pdc-surface-raised); }
+.pdc-paq-tag.conf-media { background: var(--pdc-aviso-bg); color: var(--pdc-ink); }
+.pdc-paq-tag.conf-baja { background: var(--pdc-error-bg); color: var(--pdc-ink); }
 /* La ruta del presupuesto: de dónde salió la propuesta cuando la decidió la rama y no el nombre. */
-.pdc-wiz-ruta { margin: 6px 0 0; font-size: var(--pdc-fs-sm); color: #a9a9ae; line-height: 1.45; }
+.pdc-wiz-ruta { margin: 6px 0 0; font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); line-height: 1.45; }
 .pdc-wiz-filtro { display: inline-flex; gap: 6px; margin-left: 12px; }
-.pdc-wiz-filtro button { background: transparent; color: #c9c9ce; border: 1px solid #3a3a3c; border-radius: 999px; padding: 3px 11px; font-size: var(--pdc-fs-sm); cursor: pointer; }
-.pdc-wiz-filtro button.is-activo { background: #1a3c2a; border-color: #69b578; color: #b7e4c4; }
-.pdc-wiz-deshacer { margin-left: 12px; background: transparent; border: 1px solid #3a3a3c; color: #c9c9ce; border-radius: 6px; padding: 2px 10px; font-size: var(--pdc-fs-sm); cursor: pointer; }
+.pdc-wiz-filtro button { background: transparent; color: var(--pdc-ink-muted); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-pill); padding: 3px 11px; font-size: var(--pdc-fs-sm); cursor: pointer; }
+.pdc-wiz-filtro button.is-activo { background: var(--pdc-ok-bg); border-color: var(--pdc-accent); color: var(--pdc-ink); }
+.pdc-wiz-deshacer { margin-left: 12px; background: transparent; border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted); border-radius: var(--pdc-radio-control); padding: 2px 10px; font-size: var(--pdc-fs-sm); cursor: pointer; }
 /* Cuantía por encima del umbral de auto-asignación: un error ahí se paga distinto. */
-.pdc-wiz-valor.es-caro { color: #e8c98a; }
+.pdc-wiz-valor.es-caro { color: var(--pdc-ink); }
 .pdc-wiz-caro-nota { display: block; font-size: var(--pdc-fs-xs); text-transform: none; letter-spacing: 0; opacity: 0.8; }
-.pdc-wiz-aviso { margin: 0; padding: 9px 12px; border: 1px solid #b8863b; border-radius: 6px; background: #2b2416; color: #e8c98a; font-size: var(--pdc-fs-sm); line-height: 1.45; }
-.pdc-wiz-card kbd { font: inherit; font-size: var(--pdc-fs-xs); opacity: 0.7; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; margin-left: 6px; }
+.pdc-wiz-aviso { margin: 0; padding: 9px 12px; border: 1px solid var(--pdc-aviso-borde); border-radius: var(--pdc-radio-control); background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); line-height: 1.45; }
+.pdc-wiz-card kbd { font: inherit; font-size: var(--pdc-fs-xs); opacity: 0.7; border: 1px solid currentColor; border-radius: var(--pdc-radio-control); padding: 0 4px; margin-left: 6px; }
 .pdc-wiz-manual { margin-top: 14px; display: grid; gap: 10px; }
 .pdc-wiz-fila { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
 .pdc-wiz-fila label { display: flex; flex-direction: column; gap: 4px; font-size: var(--pdc-fs-sm); opacity: 0.85; }
 .pdc-wiz-fila input { flex: 1; min-width: 220px; }
 .pdc-wiz-acciones { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-.pdc-wiz-card button, .pdc-wiz-candidatos button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer; }
+.pdc-wiz-card button, .pdc-wiz-candidatos button { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer; }
 .pdc-wiz-card button:disabled, .pdc-wiz-candidatos button:disabled { opacity: 0.62; cursor: not-allowed; }
-.pdc-wiz-card .pdc-paq-primario:not(:disabled), .pdc-wiz-candidatos .pdc-paq-primario:not(:disabled) { background: #1a5633; border-color: #69b578; }
-.pdc-wiz-candidatos { border: 1px solid #3a3a3c; border-radius: 12px; padding: 14px 20px; background: #202022; max-width: 980px; }
+.pdc-wiz-card .pdc-paq-primario:not(:disabled), .pdc-wiz-candidatos .pdc-paq-primario:not(:disabled) { background: var(--pdc-accent); border-color: var(--pdc-accent); color: var(--pdc-accent-ink); }
+.pdc-wiz-candidatos { border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-panel); padding: 14px 20px; background: var(--pdc-surface-raised); max-width: 980px; }
 .pdc-wiz-cand-lista { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 4px; }
-.pdc-wiz-cand-lista label { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
-.pdc-wiz-cand-lista label:hover { background: #232325; }
-.pdc-wiz-cand-lista input { accent-color: #69b578; }
+.pdc-wiz-cand-lista label { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--pdc-radio-control); cursor: pointer; }
+.pdc-wiz-cand-lista label:hover { background: var(--pdc-surface-raised); }
+.pdc-wiz-cand-lista input { accent-color: var(--pdc-accent); }
 .pdc-wiz-cand-meta { margin-left: auto; opacity: 0.7; font-size: var(--pdc-fs-md); }
-.pdc-wiz-fin { border: 1px dashed #3a3a3c; border-radius: 12px; padding: 24px; text-align: center; max-width: 720px; }
+.pdc-wiz-fin { border: 1px dashed var(--pdc-border-control); border-radius: var(--pdc-radio-panel); padding: 24px; text-align: center; max-width: 720px; }
 .pdc-wiz-fin h3 { margin: 0 0 6px; }
 
 /* Tooltip de actividades que requieren un insumo */
-.pdc-tt { background: #17251c; border: 1px solid #69b578; border-radius: 8px; padding: 10px 12px; max-width: 440px; color: #f4f1ea; box-shadow: 0 8px 24px rgba(0,0,0,.5); font-size: var(--pdc-fs-sm); }
-.pdc-tt-cab { font-weight: 600; color: #9fd3ae; margin-bottom: 6px; }
+.pdc-tt { background: var(--pdc-ok-bg); border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja); padding: 10px 12px; max-width: 440px; color: var(--pdc-ink); box-shadow: 0 8px 24px rgba(0,0,0,.5); font-size: var(--pdc-fs-sm); }
+.pdc-tt-cab { font-weight: 600; color: var(--pdc-accent-texto); margin-bottom: 6px; }
 .pdc-tt-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .pdc-tt-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
-.pdc-tt-cod { font-family: ui-monospace, monospace; color: #69b578; white-space: nowrap; }
+.pdc-tt-cod { font-family: ui-monospace, monospace; color: var(--pdc-accent-texto); white-space: nowrap; }
 .pdc-tt-act { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pdc-tt-cant { color: #8e8e93; white-space: nowrap; }
-.pdc-tt-mas { margin-top: 6px; color: #8e8e93; font-style: italic; }
+.pdc-tt-cant { color: var(--pdc-ink-muted); white-space: nowrap; }
+.pdc-tt-mas { margin-top: 6px; color: var(--pdc-ink-muted); font-style: italic; }
 
 /* Actividades del insumo dentro del asistente (inline, plegable) */
-.pdc-wiz-actividades { margin: 14px 0; border: 1px solid #2c2c2e; border-radius: 8px; padding: 8px 12px; background: #1a1a1c; }
-.pdc-wiz-actividades summary { cursor: pointer; color: #9fd3ae; font-size: var(--pdc-fs-md); font-weight: 600; }
+.pdc-wiz-actividades { margin: 14px 0; border: 1px solid var(--pdc-surface); border-radius: var(--pdc-radio-caja); padding: 8px 12px; background: var(--pdc-surface); }
+.pdc-wiz-actividades summary { cursor: pointer; color: var(--pdc-accent-texto); font-size: var(--pdc-fs-md); font-weight: 600; }
 .pdc-wiz-act-lista { list-style: none; margin: 10px 0 2px; padding: 0; display: grid; gap: 4px; max-height: 220px; overflow-y: auto; font-size: var(--pdc-fs-sm); }
 .pdc-wiz-act-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; }
 
@@ -423,19 +465,19 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-plan-franja {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   margin: 0 0 8px; padding: 6px 12px;
-  border: 1px solid #dc2626; border-radius: 8px;
-  background: #2c1618; color: #fecaca; font-size: var(--pdc-fs-md);
+  border: 1px solid var(--pdc-error-borde); border-radius: var(--pdc-radio-caja);
+  background: var(--pdc-error-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-md);
 }
 .pdc-plan-franja-texto { flex: 1 1 auto; }
-.pdc-plan-franja strong { color: #fff; }
+.pdc-plan-franja strong { color: var(--pdc-ink); }
 .pdc-plan-franja-accion {
-  background: transparent; color: #fecaca; border: 1px solid #dc2626;
-  border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer; font-size: var(--pdc-fs-sm);
+  background: transparent; color: var(--pdc-ink); border: 1px solid var(--pdc-error-borde);
+  border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer; font-size: var(--pdc-fs-sm);
 }
-.pdc-plan-franja-accion:hover { background: #3a1f1a; }
+.pdc-plan-franja-accion:hover { background: var(--pdc-error-bg); }
 .pdc-plan-franja-cerrar {
-  background: none; border: none; color: #fecaca; cursor: pointer;
-  font-size: var(--pdc-fs-xl); line-height: 1; padding: 0 4px; opacity: 0.7;
+  background: none; border: none; color: var(--pdc-ink); cursor: pointer;
+  font-size: var(--pdc-fs-xl); line-height: 1; padding: 0 4px; opacity: 1;
 }
 .pdc-plan-franja-cerrar:hover { opacity: 1; }
 
@@ -443,7 +485,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
    decisión esconda trabajo que está a un botón de distancia. */
 .pdc-plan-aviso-recalcular {
   margin: 10px 0 0; padding: 8px 12px; font-size: var(--pdc-fs-md);
-  border: 1px solid #b8863b; border-radius: 6px; background: #2b2416; color: #e8c98a;
+  border: 1px solid var(--pdc-aviso-borde); border-radius: var(--pdc-radio-control); background: var(--pdc-aviso-bg); color: var(--pdc-ink);
 }
 
 /* Las tres confianzas y sus dos botones, en una sola línea que se parte si no cabe. */
@@ -452,42 +494,42 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Secundario a la vista, no solo por su nombre: la acción arriesgada no debe competir con la
    segura. Mismo tamaño para que siga siendo cómodo de pulsar. */
 .pdc-paq-secundario {
-  background: transparent; color: #f4f1ea; border: 1px solid #3a3a3c;
-  border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer;
+  background: transparent; color: var(--pdc-ink); border: 1px solid var(--pdc-border-control);
+  border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer;
 }
-.pdc-paq-secundario:hover:not(:disabled) { border-color: #69b578; }
+.pdc-paq-secundario:hover:not(:disabled) { border-color: var(--pdc-accent); }
 .pdc-plan-lista-previa { margin: 8px 0; font-size: var(--pdc-fs-md); }
 .pdc-plan-lista-previa summary { cursor: pointer; opacity: 0.85; }
 .pdc-plan-lista-previa ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 5px; max-height: 260px; overflow-y: auto; }
 
 .pdc-plan-resumen { display: flex; gap: 18px; font-size: var(--pdc-fs-md); opacity: 0.85; flex-wrap: wrap; align-items: center; }
 .pdc-plan-resumen strong { font-size: var(--pdc-fs-lg); opacity: 1; }
-.pdc-plan-resumen-vencidos strong { color: #eaa898; }
+.pdc-plan-resumen-vencidos strong { color: var(--pdc-error-ink); }
 /* Fila vencida: el mismo rojo apagado del chip de confianza baja, para que la urgencia salte sin
    gritar por encima del resto de la grilla. */
-.pdc-plan-fila-vencida { background: #2b1a17 !important; }
+.pdc-plan-fila-vencida { background: color-mix(in srgb, var(--pdc-error-bg) 38%, transparent) !important; }
 /* Fila desfasada: el cronograma se reprogramó y el arranque calculado ya no es de fiar — un tono
    distinto del vencido (ámbar, no rojo) porque no es lo mismo "esto se retrasó" que "esto miente". */
-.pdc-plan-fila-desfasada { background: #2c2513 !important; }
+.pdc-plan-fila-desfasada { background: color-mix(in srgb, var(--pdc-aviso-bg) 38%, transparent) !important; }
 .pdc-plan-estado { font-size: var(--pdc-fs-sm); }
-/* Menor del review final A4: desfasado y provisional compartían el mismo #e8c98a y solo se
+/* Menor del review final A4: desfasado y provisional compartían el mismo var(--pdc-ink) y solo se
    distinguían por el fondo de la fila (que "provisional" ni siquiera tiene). Ámbar más saturado
    para desfasado — sigue sin ser rojo (no es lo mismo "esto se retrasó" que "esto miente") pero ya
    no es indistinguible del amarillo pálido de "plazo estimado". */
-.pdc-plan-estado--desfasado { color: #e0a530; font-weight: 600; }
-.pdc-plan-estado--vencido { color: #eaa898; font-weight: 600; }
-.pdc-plan-estado--provisional { color: #e8c98a; }
-.pdc-plan-estado--en-plazo { color: #9fd3ae; }
+.pdc-plan-estado--desfasado { color: var(--pdc-aviso-ink); font-weight: 600; }
+.pdc-plan-estado--vencido { color: var(--pdc-error-ink); font-weight: 600; }
+.pdc-plan-estado--provisional { color: var(--pdc-aviso-ink); }
+.pdc-plan-estado--en-plazo { color: var(--pdc-accent-texto); }
 /* Menor del review final A4: un responsable huérfano (cuenta desactivada, o salió del proyecto)
    solo se distinguía por el texto « (ya no está disponible)» añadido a la etiqueta — mismo ámbar de
    aviso que "plazo estimado" (no bloquea, pero hay que reasignarlo) y cursiva además del color, para
    que se note aun si el tono no se distingue bien. */
-.pdc-plan-responsable-huerfano { color: #e8c98a; font-style: italic; }
+.pdc-plan-responsable-huerfano { color: var(--pdc-aviso-ink); font-style: italic; }
 /* Barra de asignación en masa (Task 5): contador de "sin responsable" + selector de persona +
    botón, agrupados porque el contador es el motivo por el que existe el control. */
 /* Una línea, no tres: el contador, la persona y el botón son un solo gesto, y apilados se comían
    el alto de cuatro filas de la tabla. */
-.pdc-plan-masa { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; margin: 4px 0 8px; padding: 6px 12px; border: 1px solid #3a3a3c; border-radius: 8px; background: #202022; }
+.pdc-plan-masa { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap; margin: 4px 0 8px; padding: 6px 12px; border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-caja); background: var(--pdc-surface-raised); }
 .pdc-plan-masa select { flex: 1 1 auto; min-width: 0; }
 /* El botón no se parte en dos renglones: con `nowrap` en la fila era él quien cedía ancho, y una
    acción de dos líneas dentro de una barra de una parece un error de maquetación. */
@@ -496,14 +538,14 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-plan-sin-responsable strong { font-size: var(--pdc-fs-lg); opacity: 1; }
 /* Solo se pinta de alerta cuando hay algo pendiente — con cero, el tono neutro no compite por
    atención (mismo criterio que pdc-plan-resumen-vencidos). */
-.pdc-plan-sin-responsable.es-pendiente strong { color: #eaa898; }
-.pdc-plan-masa select { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: var(--pdc-control-pad); }
-.pdc-plan-masa button { background: #1a5633; color: #f4f1ea; border: 1px solid #69b578; border-radius: 6px; padding: var(--pdc-control-pad); cursor: pointer; }
-.pdc-plan-masa button:disabled { opacity: 0.72; cursor: not-allowed; }
-.pdc-plan-detalle { margin: 14px 0; border: 1px solid #3a3a3c; border-radius: 8px; padding: 12px 14px; background: #202022; max-width: 640px; }
+.pdc-plan-sin-responsable.es-pendiente strong { color: var(--pdc-error-ink); }
+.pdc-plan-masa select { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); }
+.pdc-plan-masa button { background: var(--pdc-accent); color: var(--pdc-accent-ink); border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); cursor: pointer; }
+
+.pdc-plan-detalle { margin: 14px 0; border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-caja); padding: 12px 14px; background: var(--pdc-surface-raised); max-width: 640px; }
 .pdc-plan-detalle h3 { margin: 0 0 8px; font-size: var(--pdc-fs-lg); }
 .pdc-plan-pasos { width: 100%; border-collapse: collapse; font-size: var(--pdc-fs-md); }
-.pdc-plan-pasos th, .pdc-plan-pasos td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #2c2c2e; }
+.pdc-plan-pasos th, .pdc-plan-pasos td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--pdc-surface); }
 .pdc-plan-pasos th { opacity: 0.65; font-weight: 600; font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em; }
 
 /* Las transiciones del módulo son de estado (foco, activo, hover), no coreografía: con
@@ -529,7 +571,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--pdc-radio-control) var(--pdc-radio-control) 0 0;
   color: var(--pdc-ink-muted);
   font-size: var(--pdc-fs-md);
   font-weight: 500;
@@ -557,8 +599,8 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 
 /* El aparato de asignar, plegado cuando ya no hay valor que asignar. */
 .pdc-paq-cierre {
-  margin: 12px 0; padding: 10px 14px; border: 1px solid #69b578; border-radius: 8px;
-  background: #17251c; color: #b7e4c4; font-size: var(--pdc-fs-md);
+  margin: 12px 0; padding: 10px 14px; border: 1px solid var(--pdc-accent); border-radius: var(--pdc-radio-caja);
+  background: var(--pdc-ok-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-md);
 }
 .pdc-paq-herramientas > summary { cursor: pointer; font-size: var(--pdc-fs-sm); opacity: 0.7; margin-bottom: 4px; }
 .pdc-paq-herramientas[open] > summary { margin-bottom: 4px; }
@@ -567,10 +609,10 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Buscador de lista, con el mismo aspecto que el del catálogo del maestro. */
 .pdc-buscador {
   display: block; width: 100%; max-width: 320px; margin: 10px 0;
-  background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c;
-  border-radius: 6px; padding: 7px 12px; font-size: var(--pdc-fs-md);
+  background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control);
+  border-radius: var(--pdc-radio-control); padding: 7px 12px; font-size: var(--pdc-fs-md);
 }
-.pdc-buscador::placeholder { color: #8b8b90; }
+.pdc-buscador::placeholder { color: var(--pdc-ink-muted); }
 .pdc-buscador:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: -1px; }
 
 /* «Sin frente» no era una tabla sino filas montadas a mano, y los anchos bailaban de una a otra:

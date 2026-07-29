@@ -11,26 +11,6 @@
         ],
         "createdAt": "2026-07-22T23:07:53.911Z",
         "reason": "Usuario confirm\u00f3: el colapso del rail anima padding-left como el patr\u00f3n aprobado del project-selector; solo corre al accionar el toggle y reduced-motion la anula"
-      },
-      {
-        "rule": "design-system-color",
-        "value": "*",
-        "files": [
-          "pdc-app/src/lib/agGrid.ts",
-          "pdc-app/src/pages/*.tsx",
-          "pdc-app/src/styles.css"
-        ],
-        "createdAt": "2026-07-29T18:09:07.513Z"
-      },
-      {
-        "rule": "design-system-radius",
-        "value": "*",
-        "files": [
-          "pdc-app/src/lib/agGrid.ts",
-          "pdc-app/src/pages/*.tsx",
-          "pdc-app/src/styles.css"
-        ],
-        "createdAt": "2026-07-29T18:09:17.945Z"
       }
     ]
   }
