@@ -38,6 +38,30 @@ final class DesignSystemHeadComponent
     public const CORE_VENDORS = ['bootstrap', 'jquery', 'font-awesome', 'aia-fonts'];
 
     /**
+     * Vendors cuyo CSS enlaza la propia vista, no este head.
+     *
+     * Ni el agregador ni la partición los importan: `programa_general.view.php`
+     * pone su `<link>` a `/public/vendor/toastr.min.css` y
+     * `programacion_intermedia.view.php` el suyo a
+     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`. Medido: no hay
+     * una sola regla `toastr` en `public/css/`, y de Tom Select solo el
+     * `border-radius` de `.ts-control`/`.ts-dropdown` en `theme-overrides.css`,
+     * que ya viaja dentro de `core.css`.
+     *
+     * Por eso no son `VENDOR_ATTACHMENTS`: darles un `attach-*` obligaría a
+     * meter sus hojas en `aia-design-system.css` —`partitionFailures()` exige
+     * igualdad exacta— y eso las cargaría en las ~14 vistas que siguen en
+     * `render()`, un cambio visual global que nadie pidió. Tampoco son
+     * `STANDALONE_ATTACHMENTS`: `render()` no emite esas hojas, así que emitirlas
+     * aquí haría que la vía segmentada cargara MÁS que la actual, y duplicado
+     * sobre el `<link>` que la vista ya trae.
+     *
+     * Declararlos aquí es lo que hace que `renderForModule()` los reconozca y
+     * emita exactamente lo mismo que `render()` para ellos: nada.
+     */
+    public const VIEW_OWNED_VENDORS = ['toastr', 'tom-select'];
+
+    /**
      * Adjuntos por vendor, en el orden canónico del agregador.
      *
      * `datatables` es el único que NO es un `attach-*` de la partición: su CSS
@@ -114,6 +138,7 @@ final class DesignSystemHeadComponent
         foreach ($vendors as $vendor) {
             if (!is_string($vendor)
                 || (!in_array($vendor, self::CORE_VENDORS, true)
+                    && !in_array($vendor, self::VIEW_OWNED_VENDORS, true)
                     && !isset(self::VENDOR_ATTACHMENTS[$vendor]))
             ) {
                 error_log("design-system: vendor desconocido '" . var_export($vendor, true) . "' en '$moduleId', fallback al agregador");

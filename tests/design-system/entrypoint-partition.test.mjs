@@ -4,7 +4,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { partitionFailures } from '../../scripts/design-system-entrypoint-partition.mjs';
-import { coherenceFailures } from '../../scripts/design-system-entrypoint-partition.mjs';
+import {
+  coherenceFailures,
+  manifestVendorFailures,
+} from '../../scripts/design-system-entrypoint-partition.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -96,4 +99,40 @@ test('coherencia: un vendor no resoluble contra PHP falla', () => {
     manifestsOverride: [{ moduleId: 'fake', vendors: ['definitely-not-a-vendor'] }],
   });
   assert.ok(failures.some((f) => f.includes('unknown-vendor: definitely-not-a-vendor')));
+});
+
+// El gate anterior solo mira los manifiestos que una vista usa hoy. Por ese
+// hueco entraron tres vendors fantasma que nadie veía porque sus módulos siguen
+// en render()/renderLaboratory(): se volverían un fallback silencioso al
+// agregador el día que se migren. Estos tres cubren el directorio completo.
+test('todo vendor de TODO manifiesto resuelve contra el registro de PHP', () => {
+  assert.deepEqual(manifestVendorFailures({ root }), []);
+});
+
+test('un vendor fantasma en un manifiesto NO cableado a renderForModule falla', () => {
+  const failures = manifestVendorFailures({
+    root,
+    manifestsOverride: [{
+      file: 'docs/design-system/manifests/nunca-cableado.json',
+      manifest: { moduleId: 'nunca-cableado', vendors: ['bootstrap', 'vendor-fantasma'] },
+    }],
+  });
+  assert.deepEqual(failures, [
+    'unresolvable-vendor: "vendor-fantasma" en docs/design-system/manifests/nunca-cableado.json',
+  ]);
+});
+
+test('los manifiestos sin moduleId (inventory, goal-provenance) no son de módulo', () => {
+  const failures = manifestVendorFailures({
+    root,
+    manifestsOverride: [
+      { file: 'docs/design-system/manifests/inventory.json', manifest: { manifests: [] } },
+      { file: 'docs/design-system/manifests/roto.json', manifest: null },
+      { file: 'docs/design-system/manifests/sin-vendors.json', manifest: { moduleId: 'x' } },
+    ],
+  });
+  assert.deepEqual(failures, [
+    'manifest-unparseable: docs/design-system/manifests/roto.json',
+    'manifest-vendors-missing: docs/design-system/manifests/sin-vendors.json',
+  ]);
 });

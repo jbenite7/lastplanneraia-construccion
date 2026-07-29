@@ -167,11 +167,75 @@ const HEAD_COMPONENT = 'src/View/Components/DesignSystemHeadComponent.php';
 export function phpVendorRegistry(root) {
   const php = readFileSync(join(root, HEAD_COMPONENT), 'utf8');
   const coreBlock = php.match(/const CORE_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
+  const viewOwnedBlock = php.match(/const VIEW_OWNED_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
   const attachmentsBlock = php.match(/const VENDOR_ATTACHMENTS = \[([^\]]*)\]/s)?.[1] ?? '';
   const coreVendors = [...coreBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
+  const viewOwnedVendors = [...viewOwnedBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
   const attachments = [...attachmentsBlock.matchAll(/'([a-z0-9-]+)' => '([^']+)'/g)]
     .map(([, vendor, url]) => ({ vendor, url }));
-  return { coreVendors, attachments };
+  return { coreVendors, viewOwnedVendors, attachments };
+}
+
+const MANIFEST_DIR = 'docs/design-system/manifests';
+
+function moduleManifests(root) {
+  const dir = join(root, MANIFEST_DIR);
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => {
+      const file = `${MANIFEST_DIR}/${name}`;
+      try {
+        return { file, manifest: JSON.parse(readFileSync(join(dir, name), 'utf8')) };
+      } catch {
+        return { file, manifest: null };
+      }
+    });
+}
+
+/**
+ * Todo vendor de TODO manifiesto de módulo debe resolver contra el registro de
+ * PHP, esté o no su vista cableada a `renderForModule`.
+ *
+ * `coherenceFailures` solo mira los manifiestos que alguna vista usa hoy, y por
+ * ese hueco entraron `toastr` (programa-general), `tom-select`
+ * (programacion-intermedia, laboratory) y `adminlte` (laboratory): quedan
+ * latentes hasta que alguien migra el módulo, y entonces `moduleVendors()`
+ * devuelve `null` y `renderForModule()` degrada al agregador completo dejando
+ * solo un `error_log`. Se recorre el directorio, no las vistas, precisamente
+ * para cubrir los manifiestos aún no cableados.
+ */
+export function manifestVendorFailures({ root, manifestsOverride = null }) {
+  const failures = [];
+  const { coreVendors, viewOwnedVendors, attachments } = phpVendorRegistry(root);
+  if (coreVendors.length === 0 || attachments.length === 0) {
+    return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
+  }
+  const known = new Set([
+    ...coreVendors,
+    ...viewOwnedVendors,
+    ...attachments.map(({ vendor }) => vendor),
+  ]);
+
+  for (const { file, manifest } of manifestsOverride ?? moduleManifests(root)) {
+    if (manifest === null || typeof manifest !== 'object') {
+      failures.push(`manifest-unparseable: ${file}`);
+      continue;
+    }
+    // inventory.json y goal-provenance.json no son manifiestos de módulo.
+    if (typeof manifest.moduleId !== 'string') continue;
+    if (!Array.isArray(manifest.vendors)) {
+      failures.push(`manifest-vendors-missing: ${file}`);
+      continue;
+    }
+    for (const vendor of manifest.vendors) {
+      if (typeof vendor !== 'string' || !known.has(vendor)) {
+        failures.push(`unresolvable-vendor: ${JSON.stringify(vendor)} en ${file}`);
+      }
+    }
+  }
+
+  return failures;
 }
 
 function* phpViews(root) {
@@ -190,11 +254,15 @@ function* phpViews(root) {
 
 export function coherenceFailures({ root, viewsOverride = null, manifestsOverride = null }) {
   const failures = [];
-  const { coreVendors, attachments } = phpVendorRegistry(root);
+  const { coreVendors, viewOwnedVendors, attachments } = phpVendorRegistry(root);
   if (coreVendors.length === 0 || attachments.length === 0) {
     return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
   }
-  const known = new Set([...coreVendors, ...attachments.map(({ vendor }) => vendor)]);
+  const known = new Set([
+    ...coreVendors,
+    ...viewOwnedVendors,
+    ...attachments.map(({ vendor }) => vendor),
+  ]);
 
   // 1. Todo adjunto PHP apunta a un archivo de la partición (o a un standalone
   //    declarado) y existe.
@@ -248,7 +316,11 @@ export function coherenceFailures({ root, viewsOverride = null, manifestsOverrid
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd();
-  const failures = [...partitionFailures({ root }), ...coherenceFailures({ root })];
+  const failures = [
+    ...partitionFailures({ root }),
+    ...coherenceFailures({ root }),
+    ...manifestVendorFailures({ root }),
+  ];
   if (failures.length) {
     console.error('Design system entrypoint partition: FAIL');
     failures.forEach((failure) => console.error(`- ${failure}`));
