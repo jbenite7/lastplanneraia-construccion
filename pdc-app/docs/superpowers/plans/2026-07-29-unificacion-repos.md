@@ -24,7 +24,7 @@
 
 **Files:**
 - Create: `pdc-app/**` (118 archivos, vía subtree)
-- Test: `git log --follow pdc-app/src/lib/planFechas.ts`
+- Test: `git blame pdc-app/src/lib/planFechas.ts` (NO `--follow`: no cruza el merge de subtree)
 
 **Interfaces:**
 - Consumes: el repo local `/Volumes/Crucial X6/Developer/plan-de-compras`, rama `main`.
@@ -94,12 +94,18 @@ Esperado: termina con `Added dir 'pdc-app'`. Crea un commit de merge automática
 
 ```bash
 cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
-git log --oneline --follow pdc-app/src/lib/planFechas.ts | wc -l
+git blame pdc-app/src/lib/planFechas.ts | awk '{print $1}' | sort -u | wc -l
 ls pdc-app/package.json pdc-app/vite.config.ts pdc-app/index.html
 git log --oneline -1
 ```
 
-Esperado: el conteo de `--follow` es **mayor que 1** (si diera 1, la historia no viajó y hay que deshacer con `git reset --hard origin/main` y revisar). Los tres archivos existen.
+Esperado: `git blame` atribuye las líneas a **más de un commit** (11 en el momento de escribir esto).
+Los tres archivos existen.
+
+**No uses `git log --follow`**: devuelve 0 sobre una ruta prefijada por `subtree`, porque su
+detección de renombrados no cruza el commit de merge. Eso NO significa que la historia se haya
+perdido — `git blame` la ve, y `git log --oneline <base>..HEAD` lista los 114 commites importados.
+Para navegar la historia previa por ruta sin prefijo: `git log 6e48664^2 -- src/lib/planFechas.ts`.
 
 - [ ] **Step 7: Devolver el archivo ajeno**
 
@@ -527,10 +533,11 @@ Esperado: `302` (redirección al login, igual que antes de la mudanza).
 
 ```bash
 cd "/Volumes/Crucial X6/Developer/lps-aia-pdc"
-git log --oneline --follow pdc-app/src/pages/PlanFechas.tsx | tail -3
+git blame --line-porcelain pdc-app/src/pages/PlanFechas.tsx | grep "^summary" | sort -u | head -5
 ```
 
-Esperado: aparecen commits anteriores a la mudanza, con sus mensajes originales.
+Esperado: aparecen mensajes de commits anteriores a la mudanza, con su texto original. (Ver la nota
+del Step 6 de la Task 1: `--follow` no sirve aquí, `git blame` sí.)
 
 - [ ] **Step 4: Integrar a main**
 
