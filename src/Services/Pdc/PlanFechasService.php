@@ -1737,6 +1737,163 @@ class PlanFechasService
       * }> `fechaActual` y `diasMovidos` van en null —y no en '' ni en 0— cuando el amarre quedó
       *    huérfano: no hay fecha nueva que comparar, que es distinto de «se movió 0 días»
       */
+    /**
+     * El antes/después de aplicar al plan la reprogramación del cronograma. NO escribe nada.
+     *
+     * Es la mitad «mirar» de la operación que más daño puede hacer del módulo; la mitad «escribir»
+     * es `aplicarReprogramacion()`, y solo corre si el usuario confirma. Se proyecta con el ancla
+     * NUEVA y se compara contra lo que hay guardado, sin tocar la base: por eso cancelar no puede
+     * dejar nada a medias, no hay nada que deshacer.
+     *
+     * Los huérfanos —amarres a un frente que ya no está en el cronograma— van en su propia lista y
+     * NUNCA en `movidos`: no hay fecha nueva contra la que proyectar, y elegirles otro frente es
+     * una decisión humana que este módulo no toma por nadie.
+     *
+     * @return array{
+     *     movidos: list<array{paqueteId:int,nombre:string,frenteNombre:string,anclaActual:string,
+     *         anclaNueva:string,diasMovidos:int,arranqueActual:?string,arranqueNuevo:string,
+     *         pasosQueSeMueven:int,pasosConFechaReal:int}>,
+     *     huerfanos: list<array{paqueteId:int,nombre:string,frenteNombre:string,anclaActual:string}>
+     * }
+     */
+    public function simularReprogramacion(int $projectId): array
+    {
+        $desfases = $this->desfases($projectId);
+        if ($desfases === []) {
+            return ['movidos' => [], 'huerfanos' => []];
+        }
+
+        $medianas = $this->medianasPorTipo();
+        $pasos = $this->pasos->deProyecto($projectId);
+        self::exigirIdentidad($pasos);
+        $cols = [];
+        foreach ($pasos as $p) {
+            if ($p['colLegacy'] !== null && in_array($p['colLegacy'], PasosContratacionService::columnasLegacy(), true)) {
+                $cols[$p['colLegacy']] = true;
+            }
+        }
+        $selectCols = $cols === []
+            ? ''
+            : ', ' . implode(', ', array_map(static fn (string $c): string => 'd.' . $c, array_keys($cols)));
+
+        $movidos = [];
+        $huerfanos = [];
+        foreach ($desfases as $d) {
+            if ($d['fechaActual'] === null) {
+                $huerfanos[] = [
+                    'paqueteId' => $d['paqueteId'],
+                    'nombre' => $d['nombre'],
+                    'frenteNombre' => $d['frenteNombre'],
+                    'anclaActual' => $d['fechaGuardada'],
+                ];
+                continue;
+            }
+            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols);
+            if ($pr === null) {
+                // Inactivo o sin proceso de contratación: `calcular()` tampoco lo tocaría, así que
+                // prometer un delta que luego no se aplicaría sería mentir en pantalla.
+                continue;
+            }
+            $cab = $this->db->query(
+                'SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+                [$projectId, $d['paqueteId']],
+            )->fetch(\PDO::FETCH_ASSOC);
+            // Los pasos que ya ocurrieron se cuentan aparte y se dicen en pantalla: son justo los
+            // que NO se van a mover, y es la garantía que hace segura esta operación.
+            $conReal = (int) $this->db->query(
+                'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL',
+                [$projectId, $d['paqueteId']],
+            )->fetchColumn();
+
+            $movidos[] = [
+                'paqueteId' => $d['paqueteId'],
+                'nombre' => $d['nombre'],
+                'frenteNombre' => $d['frenteNombre'],
+                'anclaActual' => $d['fechaGuardada'],
+                'anclaNueva' => $d['fechaActual'],
+                'diasMovidos' => (int) $d['diasMovidos'],
+                'arranqueActual' => $cab === false ? null : (string) $cab['fecha_arranque'],
+                'arranqueNuevo' => $pr['arranque'],
+                'pasosQueSeMueven' => count($pasos),
+                'pasosConFechaReal' => $conReal,
+            ];
+        }
+        return ['movidos' => $movidos, 'huerfanos' => $huerfanos];
+    }
+
+    /**
+     * Aplica la reprogramación del cronograma SOLO a los paquetes que el usuario confirmó.
+     *
+     * Refresca la `fecha_ancla` del amarre desde el cronograma en vivo y recalcula. Ese refresco es
+     * el punto: sin él, `calcular()` vuelve a proyectar contra la copia congelada del ancla y el
+     * desfase no se va nunca — el bug que midió B2, ver
+     * `goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29.md`.
+     *
+     * Un amarre cuyo frente ya no está en el cronograma se IGNORA y se cuenta: no hay fecha nueva a
+     * la que moverlo, y elegirle otro frente es una decisión humana. Se devuelve en `ignorados` para
+     * que la pantalla pueda decir cuántos quedaron pendientes en vez de callarlo.
+     *
+     * `fecha_real` no corre peligro: `calcular()` hace upsert de `pdc_plan_paso` listando solo las
+     * columnas programadas, y lo que no se lista MySQL lo conserva.
+     *
+     * @param list<int> $paqueteIds los confirmados en pantalla; una lista vacía no escribe nada
+     * @return array{ok:true,aplicados:int,ignorados:int}
+     */
+    public function aplicarReprogramacion(int $projectId, array $paqueteIds, string $usuario): array
+    {
+        $pedidos = array_values(array_unique(array_map('intval', $paqueteIds)));
+        if ($pedidos === []) {
+            return ['ok' => true, 'aplicados' => 0, 'ignorados' => 0];
+        }
+
+        $frentes = [];
+        foreach ($this->frentesDisponibles($projectId) as $f) {
+            $frentes[$f['uniqueId']] = $f;
+        }
+
+        $aplicados = 0;
+        $ignorados = 0;
+        $this->db->beginTransaction();
+        try {
+            foreach ($pedidos as $paqueteId) {
+                $r = $this->db->query(
+                    'SELECT unique_id, fecha_ancla FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+                    [$projectId, $paqueteId],
+                )->fetch(\PDO::FETCH_ASSOC);
+                if ($r === false) {
+                    $ignorados++;
+                    continue;
+                }
+                $f = $frentes[(int) $r['unique_id']] ?? null;
+                if ($f === null) {
+                    $ignorados++; // huérfano: sin frente vivo no hay reprogramación que aplicar
+                    continue;
+                }
+                if ($f['fechaInicio'] === (string) $r['fecha_ancla']) {
+                    $ignorados++; // ya estaba al día; nada que mover
+                    continue;
+                }
+                $this->db->query(
+                    'UPDATE pdc_paquete_frente SET fecha_ancla = ? WHERE project_id = ? AND paquete_id = ?',
+                    [$f['fechaInicio'], $projectId, $paqueteId],
+                );
+                $aplicados++;
+            }
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+
+        if ($aplicados > 0) {
+            // `calcular()` abre su propia transacción por paquete, así que corre FUERA de la de
+            // arriba: PDO no anida transacciones de verdad, y un rollback interno se llevaría por
+            // delante el refresco de las anclas ya confirmadas.
+            $this->calcular($projectId, $usuario);
+        }
+        return ['ok' => true, 'aplicados' => $aplicados, 'ignorados' => $ignorados];
+    }
+
     public function desfases(int $projectId): array
     {
         $actual = [];
