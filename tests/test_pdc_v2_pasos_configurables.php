@@ -163,6 +163,22 @@ $base = $db->query('SELECT fecha_arranque, dias_totales FROM pdc_plan_paquete WH
     [$P, $paqPrueba])->fetch(PDO::FETCH_ASSOC);
 $assert((int) $base['dias_totales'] === 70, 'Sin configurar, los siete pasos de 10 días suman 70. Dio ' . $base['dias_totales']);
 
+// ── Recalcular no acumula filas ─────────────────────────────────────────────
+// La clave única de pdc_plan_paso es (project_id, paquete_id, paso_id), así que el upsert cae siempre
+// en la misma fila. Se afirma explícitamente porque es el contrato del que cuelga todo: si `paso_id`
+// llegara NULL, en un índice único NULL nunca iguala a NULL, el ON DUPLICATE KEY no encontraría nada
+// y cada recálculo duplicaría los pasos en silencio.
+$svcPlan->calcular($P, 'test-a41');
+$filasUna = (int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqPrueba])->fetchColumn();
+$svcPlan->calcular($P, 'test-a41');
+$filasDos = (int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+    [$P, $paqPrueba])->fetchColumn();
+$assert($filasUna === 7 && $filasDos === 7,
+    "Recalcular dos veces deja 7 filas, no 14: {$filasUna} → {$filasDos}");
+$assert((int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND paso_id IS NULL',
+    [$P, $paqPrueba])->fetchColumn() === 0, 'Y ninguna fila queda sin identidad de paso.');
+
 // ── Con un paso nuevo, el proceso se ALARGA exactamente lo que dura el paso ──
 $svc->guardar($P, [
     ['clave' => 'elaboracion_pliegos'], ['clave' => 'entrega_pliegos'], ['clave' => 'recibo_propuestas'],
@@ -233,6 +249,35 @@ $assert((int) $db->query('SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = 
     [$P, $paqPrueba])->fetchColumn() === 9, 'Nueve pasos: nada asume siete.');
 $assert((int) $db->query('SELECT dias_totales FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
     [$P, $paqPrueba])->fetchColumn() === 86, 'Los 70 del catálogo + 1 de Licify + 15 de aprobación = 86.');
+
+// ── Un paso sin identidad no se escribe a medias: se para en seco ───────────
+// El agujero que cubre esto: si el catálogo no estuviera sembrado, todos los pasos llegarían con
+// `pasoId` NULL, `$idsVigentes` quedaría vacío y el DELETE de sobrantes —que sin ids no lleva
+// condición— borraría las filas recién insertadas. El paquete acabaría con una cabecera que dice
+// «85 días» y CERO pasos, sin que nada fallara. Antes de escribir, se exige identidad.
+echo "=== identidad obligatoria ===\n";
+$sinIdentidad = [
+    ['pasoId' => 1, 'clave' => 'elaboracion_pliegos', 'nombre' => 'x', 'colLegacy' => 'diasElaboracionPliegos', 'diasFijos' => null, 'peso' => 0.1],
+    ['pasoId' => null, 'clave' => 'fabricacion', 'nombre' => 'y', 'colLegacy' => 'diasFabricacion', 'diasFijos' => null, 'peso' => 0.2],
+];
+$lanzo = false;
+$mensaje = '';
+try {
+    PlanFechasService::exigirIdentidad($sinIdentidad);
+} catch (RuntimeException $e) {
+    $lanzo = true;
+    $mensaje = $e->getMessage();
+}
+$assert($lanzo, 'Un paso sin identidad detiene el cálculo en vez de escribir un plan a medias.');
+$assert(str_contains($mensaje, 'fabricacion'), 'El error nombra el paso culpable: ' . $mensaje);
+$assert(str_contains($mensaje, '20260728_pdc_v2_pasos_configurables'),
+    'Y dice qué migración lo arregla: ' . $mensaje);
+
+$todosConId = [
+    ['pasoId' => 1, 'clave' => 'elaboracion_pliegos', 'nombre' => 'x', 'colLegacy' => 'diasElaboracionPliegos', 'diasFijos' => null, 'peso' => 0.1],
+];
+PlanFechasService::exigirIdentidad($todosConId);
+$assert(true, 'Con todos los pasos identificados, no estorba.');
 
 // ── Reparto de la mediana con días fijos aparte ─────────────────────────────
 echo "=== reparto ===\n";

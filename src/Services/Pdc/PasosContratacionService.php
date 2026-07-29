@@ -104,11 +104,15 @@ class PasosContratacionService
     }
 
     /**
-     * Los siete de la constante de código, con su id del catálogo cuando existe.
+     * Los siete de la constante de código, con su id del catálogo.
      *
-     * El id se busca, pero NO se exige: si el catálogo estuviera vacío el plan se sigue calculando
-     * igual (columnas y pesos salen de la constante) y las filas quedan sin identidad de paso. Las
-     * fechas nunca dependen de que la semilla esté puesta.
+     * Las **duraciones** no dependen de la semilla: columnas y pesos salen de la constante, así que
+     * una obra sin configurar da las mismas fechas aunque el catálogo cambie. La **identidad** sí:
+     * `pdc_plan_paso` se indexa por `paso_id` desde A4.1, y un id que falte deja el plan sin poder
+     * escribirse de forma idempotente. Por eso `PlanFechasService::exigirIdentidad()` para el cálculo
+     * en seco si algún id no aparece, en vez de escribir un plan a medias que nadie notaría. Aquí se
+     * devuelve el null tal cual —resolver o inventar un id sería esconder el problema— y quien decide
+     * qué hacer con él es el llamador.
      *
      * @return list<array{pasoId:?int,clave:string,nombre:string,colLegacy:?string,diasFijos:?int,peso:?float}>
      */

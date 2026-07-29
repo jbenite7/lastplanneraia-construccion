@@ -695,6 +695,8 @@ class PlanFechasService
             ? ''
             : ', ' . implode(', ', array_map(static fn (string $c): string => 'd.' . $c, array_keys($cols)));
 
+        self::exigirIdentidad($pasos);
+
         $calculados = 0;
         $sinDuracion = 0;
 
@@ -945,6 +947,40 @@ class PlanFechasService
         // pero se normaliza igual para que el error de coma flotante no se cuele en el reparto.
         $t = array_sum($pesos);
         return $t > 0 ? array_map(static fn (float $w): float => $w / $t, $pesos) : self::PESOS_REPARTO;
+    }
+
+    /**
+     * Exige que todo paso efectivo traiga su identidad (`paso_id`) antes de escribir nada.
+     *
+     * Desde A4.1 la identidad no es un adorno: es la clave única de `pdc_plan_paso`
+     * `(project_id, paquete_id, paso_id)`, y de ella dependen dos cosas a la vez. Sin identidad,
+     * (1) en un índice único NULL nunca iguala a NULL, así que el `ON DUPLICATE KEY` del upsert no
+     * encontraría la fila y cada recálculo duplicaría los pasos; y (2) `$idsVigentes` quedaría vacío,
+     * con lo que el DELETE de sobrantes se quedaría SIN condición y borraría las filas recién
+     * insertadas — dejando una cabecera que dice «85 días» y cero pasos, sin que nada fallara.
+     *
+     * Se para en seco en vez de degradar: un plan a medias es peor que no calcularlo, porque nadie
+     * lo nota. El único modo de llegar aquí es un catálogo `general_pasos_contratacion` sin sembrar,
+     * que es exactamente lo que arregla la migración que nombra el mensaje.
+     *
+     * @param list<array{pasoId:int|null, clave:string, nombre:string, colLegacy:string|null, diasFijos:int|null, peso:float|null}> $pasos
+     */
+    public static function exigirIdentidad(array $pasos): void
+    {
+        $sinId = [];
+        foreach ($pasos as $p) {
+            if ($p['pasoId'] === null) {
+                $sinId[] = $p['clave'];
+            }
+        }
+        if ($sinId === []) {
+            return;
+        }
+        throw new \RuntimeException(
+            'No se puede calcular el plan: estos pasos no existen en el catálogo '
+            . 'general_pasos_contratacion (' . implode(', ', $sinId) . '). '
+            . 'Aplica la migración 20260728_pdc_v2_pasos_configurables.php.',
+        );
     }
 
     /**
