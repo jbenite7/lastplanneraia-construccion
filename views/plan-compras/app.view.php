@@ -34,6 +34,10 @@
 		window.__AIA_SHELL_SIDEBAR__ = true;
 	</script>
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
+	<?php /* theme.js es el que publica `window.AiaDesignSystem` y conserva el tema elegido; sin él
+	         el gate del shell se queda esperando ese global y la página no comparte el conmutador
+	         de tema con el resto de módulos. */ ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme.js') ?>
 	<script type="module" src="/pdc-app/assets/pdc.js?v=<?php echo (int) $assetVersion; ?>"></script>
 </body>
 </html>

@@ -70,6 +70,11 @@
       "manifest": null
     },
     {
+      "moduleId": "plan-compras-v2",
+      "status": "inventory-only",
+      "manifest": null
+    },
+    {
       "moduleId": "bi-runtime",
       "status": "deferred-last",
       "manifest": null
