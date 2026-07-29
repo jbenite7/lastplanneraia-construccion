@@ -31,7 +31,6 @@
       "sites": [
         "views/contratos/contratos.view.php",
         "views/listado-actividades/listadoActividades.view.php",
-        "views/pdc/pdc.view.php",
         "views/profesionales/profesionales.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php",
         "views/programacion-semanal/programacion_semanal.view.php",
@@ -56,14 +55,6 @@
         "views/auth/password-reset.view.php"
       ],
       "case": "7-login-brand-unified"
-    },
-    {
-      "sheet": "/css/pdc.css",
-      "via": "view-link",
-      "unlayeredRules": 124,
-      "sites": [
-        "views/pdc/pdc.view.php"
-      ]
     },
     {
       "sheet": "/css/programacion-semanal.css",
@@ -127,8 +118,7 @@
       "unlayeredRules": 364,
       "sites": [
         "views/contratos/contratos.view.php",
-        "views/listado-actividades/listadoActividades.view.php",
-        "views/pdc/pdc.view.php"
+        "views/listado-actividades/listadoActividades.view.php"
       ],
       "case": "2/5-handsontable-doble-carga"
     },
@@ -352,22 +342,6 @@
           "sheet": "https://fonts.googleapis.com/css2",
           "via": "cross-origin-opaque",
           "unlayeredRules": null
-        },
-        {
-          "sheet": "/vendor/handsontable/handsontable.full.min.css",
-          "via": "link",
-          "unlayeredRules": 364,
-          "case": "2/5-handsontable-doble-carga"
-        },
-        {
-          "sheet": "/css/handsontable-header-global.css",
-          "via": "link",
-          "unlayeredRules": 8
-        },
-        {
-          "sheet": "/css/pdc.css",
-          "via": "link",
-          "unlayeredRules": 124
         }
       ]
     },

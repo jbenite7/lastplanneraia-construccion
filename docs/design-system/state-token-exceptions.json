@@ -154,28 +154,19 @@
     },
     {
       "file": "public/css/pdc.css",
-      "line": 7,
+      "line": 43,
       "selector": ".pdc-message-success",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",
-      "reason": "Mensaje de texto suelto con fallback a --aia-green-primary, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par."
+      "reason": "Mensaje de texto suelto, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par. Actualizado el 2026-07-29 al cerrar F2: ya no es una sustitucion cruda del token con fallback --aia-*, sino una elevacion por color relativo -oklch(from ... 0.68 calc(c * 1.4) h)-, el mismo recurso de programa-general-actualizar.css:30-33. La sustitucion cruda pintaba verde muy oscuro sobre el canvas oscuro."
     },
     {
       "file": "public/css/pdc.css",
-      "line": 11,
+      "line": 47,
       "selector": ".pdc-message-error",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
-      "reason": "Mensaje de texto suelto con fallback a --aia-alert-critical, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par."
-    },
-    {
-      "file": "public/css/pdc.css",
-      "line": 235,
-      "selector": ".pdc-row-action--delete",
-      "token": "--ds-color-state-critical-text",
-      "kind": "at-risk",
-      "reason": "Boton de borrar fila en /pdc, RUTA DE PRODUCCION, no laboratorio. Usa el token de texto como relleno solido con --ds-color-text-inverse encima, igual que las variantes solid del lab. Medido hoy: #8f1d1d contra #ffffff = 8,89:1, conforme.",
-      "revisit": "Tras invertir, el relleno pasa a #ffcdc8 y contra #ffffff cae a 1,42:1: un boton destructivo ilegible en produccion. Es el mas urgente de los ocho cruces. Lo desbloquea la Task 2, que debe darle un relleno de accion destructiva en vez del token de texto del par."
+      "reason": "Mensaje de texto suelto, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par. Actualizado el 2026-07-29 al cerrar F2: ya no es una sustitucion cruda del token con fallback --aia-*, sino una elevacion por color relativo -oklch(from ... 0.68 calc(c * 1.4) h)-, el mismo recurso de programa-general-actualizar.css:30-33. La sustitucion cruda pintaba rojo muy oscuro sobre el canvas oscuro."
     },
     {
       "file": "public/css/programa-general-actualizar.css",

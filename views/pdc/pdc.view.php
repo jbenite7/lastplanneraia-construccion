@@ -4,12 +4,14 @@
 	<meta charset="UTF-8">
 	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="/vendor/handsontable/handsontable.full.min.css?v=14.6.1" />
-	<!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
-	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
+	<!-- Los <link> crudos a handsontable.full.min.css y handsontable-header-global.css
+	     se retiraron al migrar el head: attach-handsontable.css importa las dos con
+	     layer(vendor), mas handsontable-module.css y los adaptadores. El link crudo
+	     era la segunda carga del vendor que documenta unlayered-delivery-inventory.json
+	     como caso "2-handsontable-doble-carga", y entraba sin capa. -->
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<script>window.__AIA_HANDSONTABLE_ONLY__ = true;</script>
-	<?= \App\View\Components\DesignSystemHeadComponent::render(true) ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('pdc') ?>
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation7" charset="utf-8"></script>
 	<link rel="stylesheet" href="/css/pdc.css?v=20260711handsontableMobile10" />
 </head>

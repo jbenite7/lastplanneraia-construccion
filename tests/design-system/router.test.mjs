@@ -19,9 +19,12 @@ test('editar tokens/core del design system exige también el gate runtime', () =
   assert.ok(r.commands.includes('npm run test:design-system:runtime'));
 });
 
+// `views/pdc/pdc.view.php` era el ejemplo de superficie sin declarar hasta que
+// F2 le dio manifiesto (2026-07-29). Se cambia por una de las dos vistas
+// deprecadas que quedan fuera del plan del goal y por tanto sin manifiesto.
 test('editar una superficie UI no declarada advierte pero no bloquea', () => {
-  const r = routeChanges(['views/pdc/pdc.view.php']);
-  assert.deepEqual(r.undeclared, ['views/pdc/pdc.view.php']);
+  const r = routeChanges(['views/contratos/contratos.view.php']);
+  assert.deepEqual(r.undeclared, ['views/contratos/contratos.view.php']);
   assert.ok(r.warnings.some((w) => /audit-baseline/.test(w)));
   assert.ok(r.commands.includes('npm run test:design-system:static'));
 });

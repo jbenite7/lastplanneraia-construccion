@@ -1,0 +1,42 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "pdc",
+  "routes": ["/pdc"],
+  "sources": [
+    "views/pdc/pdc.view.php",
+    "public/css/pdc.css",
+    "public/js/modules/pdc/hot.js"
+  ],
+  "components": [
+    "shell", "page-header", "toolbar", "button", "icon",
+    "table-shell", "handsontable-adapter", "modal", "form-control", "state", "feedback"
+  ],
+  "vendors": [
+    "bootstrap", "jquery", "font-awesome", "aia-fonts",
+    "handsontable", "jquery-ui", "anychart", "select2"
+  ],
+  "layouts": ["desktop"],
+  "states": ["normal"],
+  "roles": ["authenticated-project-member"],
+  "persistence": { "session": "authenticated project selection" },
+  "exceptions": [],
+  "tests": ["tests/browser/shell-sidebar-rollout.mjs"],
+  "evidence": ["tests/browser/__screenshots__/pdc/"],
+  "scenarios": [
+    {
+      "id": "pdc-dark-1180x820",
+      "family": "page-structure",
+      "route": "/pdc",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": { "width": 1180, "height": 820 },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/pdc/pdc-dark-1180x820.png",
+      "sha256": "ec509b52c3bc37db2eb088867b653851915590095f024cd7bd55f1dd82e4e1cb"
+    }
+  ]
+}

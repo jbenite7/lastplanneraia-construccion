@@ -1446,3 +1446,102 @@ porque no hubo cambio que verificar.
   5.15.4): las dos de `admin/views/pages/dashboard.php` y el modificador `fa-m` en Listado de
   Actividades y `cargarDatosGeneralesPagina2.js`. Fuera del alcance de F4; corregirlas es un cambio
   cosmético independiente.
+
+---
+
+## F2 · Séptima superficie: `/pdc` (2026-07-29)
+
+Cierra F2. Era la última de las siete que colgaba del agregador.
+
+### Corrección de partida: `/pdc` NO se pintaba en claro
+
+El plan arrancó con esa premisa, heredada de una nota vieja, y **es falsa**. Medido a 1180×820 dark
+sobre el contenedor servido, revirtiendo los cambios para obtener el antes:
+
+| | antes | después |
+|---|---|---|
+| `data-aia-theme` | `dark` | `dark` |
+| fondo de `body` | `rgb(11, 16, 13)` | igual |
+| fondo de la grilla | `rgba(28, 36, 31, 0.92)` | igual |
+| overflow horizontal | no | no |
+| `.pdc-message-neutral` | **`rgb(20, 28, 24)`** | `rgb(247, 250, 248)` |
+| `.pdc-row-action--delete` | `rgb(143, 29, 29)` | `oklch(0.42 0.187 26.35)` |
+
+La página ya estaba oscura porque el grueso de `pdc.css` ya usaba `--ds-active-*`; lo que quedaba
+sin tokenizar eran sombras, bordes y acentos, que no dominan la superficie. **El único defecto
+visible de verdad era `.pdc-message-neutral`: tinta casi negra sobre canvas oscuro**, invisible.
+
+Comparadas las dos capturas, las filas naranja y violeta de la grilla son tintes de estado
+preexistentes (las siete anclas que /pdc eligió y midió), no un efecto de este cambio.
+
+### Qué se hizo
+
+1. **`public/css/pdc.css` entra en `@layer module`.** Eran **124 reglas sin capa**, que le ganaban a
+   todo el design system. El cuerpo no se reindenta a propósito: son ~900 líneas y el sangrado
+   habría enterrado el cambio real bajo un diff de fichero completo.
+2. **22 de los 23 `rgba()` tokenizados.** Sombras → `--ds-shadow-*` (esto además deja
+   `off-scale-shadow` en 0, de 9); bordes y superficies → `--ds-active-*`; transparencias →
+   `color-mix()`. También 7 de 9 `raw-token-in-module`.
+3. **`.pdc-row-action--delete`**, el cruce `at-risk` que `state-token-exceptions.json` marcaba como
+   el más urgente de los ocho. Usaba el token de TEXTO del par critical como relleno sólido y ese
+   par no tiene inversión dark: al invertir caía a 1,42:1.
+   - Primer intento: `--ds-state-tint-red`, el ancla de /pdc para crítico. Sobrevive la inversión,
+     pero **medido en pantalla el botón retrocedía** contra los tintes de fila: es un tono de fondo,
+     no de acción.
+   - Solución: `oklch(from var(--ds-color-state-critical-text) 0.42 calc(c * 1.25) h)`, que **fija**
+     la luminosidad. El relleno es el mismo rojo pase lo que pase con el par. La entrada del
+     inventario se retiró: al dejar de ser sustitución cruda, el escáner deja de verla.
+4. **`.pdc-message-*`** elevados con el mismo recurso de color relativo de
+   `programa-general-actualizar.css:30-33`.
+5. **Head a `renderForModule('pdc')`** con 8 vendors declarados. Se retiraron los dos `<link>` crudos
+   a Handsontable (caso `2/5-handsontable-doble-carga`): `attach-handsontable.css` los importa con
+   `layer(vendor)`. Verificado que las hojas servidas pasan del agregador a `core.css` + 4 adjuntos
+   **sin ninguna diferencia en las métricas visuales**.
+6. Manifiesto, golden, presupuesto, inventario y los **cuatro censos cerrados** que había que tocar.
+
+### Trampas que costaron una vuelta
+
+- **El audit ve los hex y los `rgba()` dentro de los comentarios.** Documentar el cambio citando los
+  valores puso el gate en rojo tres veces. Los comentarios describen el color con palabras.
+- **`renderForModule` degrada en silencio.** La primera medición mostraba el agregador entero: el
+  manifiesto aún no existía. La lista de hojas servidas es la única prueba de que la migración
+  surtió efecto; el aspecto de la página no lo demuestra.
+- **`escalamientos` perdió su drawer al migrar, aquí no aplica.** `attach-handsontable.css` sí
+  importa `handsontable-module.css`, y además `/pdc` no tiene Cajón Contextual (verificado en el DOM).
+- Cuatro censos cerrados rompen si se añade un manifiesto: `contracts.test.mjs:249`,
+  `foundation.test.mjs` (`sharedHeadConsumers`, 5 → 4), `router.test.mjs` (usaba `/pdc` como ejemplo
+  de superficie sin declarar) y el propio `inventory.json` por partida doble.
+
+### Verificado
+
+- Navegador, 1180×820 dark, contenedor servido: dark, sin overflow horizontal, grilla 1062×635,
+  **consola limpia**, modal de contrato íntegramente en oscuro (superficie, secciones, inputs,
+  labels, badge de bloqueo y botón de guardar medidos uno a uno).
+- `design-system-audit` PASS — presupuesto `pdc` en 0/0/0/0/0 y **1** en `hardcoded-color-function`.
+- `design-system-entrypoint-partition` PASS · `design-system-unlayered-delivery` (estático) PASS ·
+  `state-token-pairing` 3/3.
+- `npm run test:design-system:static`: el **único** rojo es
+  `activation: worktree and index must be clean`, el falso rojo conocido con trabajo sin commitear.
+
+### Queda abierto
+
+- **`hardcoded-color-function` en 1, no en 0.** El borde en verde de marca dentro de
+  `@media (max-width: 767.98px)`. `AGENTS.md` prohíbe implementar y validar móvil en esta línea de
+  trabajo. Deuda contada, no presupuesto laxo: cualquier función de color nueva en escritorio pone
+  el gate en rojo igual que con cero.
+- **Las 9 librerías por CDN de la vista** (jQuery, popper, Bootstrap, jQuery UI ×2, Google Charts,
+  AnyChart, select2, numeral) **más Google Fonts**, por decisión explícita del usuario: F2 es
+  normalización de color y contrato, no de dependencias. Es lo que impide declarar
+  `consumerContract: "v1"`, que prohíbe URL externas.
+- **El skin de select2 se tokenizó tal cual y T6.3 lo rehará** al sustituirlo por Tom Select,
+  también por decisión explícita. No se pudo ejercitar un widget select2 vivo: no se instancia en el
+  estado vacío del modal.
+- **`!important` (84), `off-scale-spacing` (54) y `off-scale-typography` (26)** en `pdc.css`, intactos:
+  son otras reglas del audit, fuera del presupuesto de esta tanda.
+- **Deriva preexistente del gate de runtime, AJENA a `/pdc`.** `design-system-unlayered-delivery`
+  (runtime) da 13 hallazgos, ninguno de `/pdc`: `/dashboard/escalamientos`, `/profesionales`,
+  `/subcontratistas` y `/programa-general-actualizar` declaran un bloque `<style>` que ya no existe
+  (lo retiraron al migrar en F2 sin actualizar el inventario de runtime), `/listado-actividades` y
+  `/subcontratistas` declaran hojas de CDN que ya no cargan, y `/plan-compras` declara 16 bloques
+  donde hay 19. Es deuda de las seis superficies hermanas; no se tocó para no mezclar.
+
