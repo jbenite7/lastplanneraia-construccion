@@ -53,6 +53,15 @@ export type ImportErrorFila = {
   motivo: string
 }
 
+/**
+ * Qué queda afectado al cambiar cuál versión es la oficial. Solo los vínculos del maestro llevan
+ * `version_id`; los paquetes y el plan de fechas viven a nivel de proyecto y sobreviven al cambio.
+ */
+export type ImpactoVersion = {
+  vinculosAfectados: number
+  versionActual: { id: number; label: string } | null
+}
+
 export type VersionPresupuesto = {
   id: number
   versionNumero: number

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
@@ -28,9 +29,15 @@ const NIVELES_COMPARATIVO = NIVELES_PRESUPUESTO.filter((n) => n.etiqueta !== 'In
 const NIVEL_ACTIVIDAD = NIVELES_COMPARATIVO[NIVELES_COMPARATIVO.length - 1].valor
 
 export default function ComparativoPresupuesto() {
+  // `?a=N&b=M` los pone el historial al pulsar «Comparar» con dos versiones marcadas: se llega con
+  // las dos ya enfrentadas. Sin parámetros vale la preselección de siempre (activa vs anterior).
+  const [params] = useSearchParams()
+  const aDeLaRuta = Number(params.get('a')) || null
+  const bDeLaRuta = Number(params.get('b')) || null
+
   const [versiones, setVersiones] = useState<VersionPresupuesto[]>([])
-  const [idA, setIdA] = useState<number | null>(null)
-  const [idB, setIdB] = useState<number | null>(null)
+  const [idA, setIdA] = useState<number | null>(aDeLaRuta)
+  const [idB, setIdB] = useState<number | null>(bDeLaRuta)
   const [data, setData] = useState<Comparativo | null>(null)
   const [eje, setEje] = useState<'actividades' | 'insumos'>('insumos')
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
@@ -43,7 +50,10 @@ export default function ComparativoPresupuesto() {
     apiGet<{ versiones: VersionPresupuesto[] }>('/plan-compras/api/presupuesto/versiones')
       .then((d) => {
         setVersiones(d.versiones)
-        // Preselección: B = activa (o la más reciente), A = la inmediatamente anterior.
+        // Preselección: B = activa (o la más reciente), A = la inmediatamente anterior. Solo
+        // cuando no vinieron dos versiones por la ruta: si el usuario las eligió en el historial,
+        // pisarlas con la preselección le borraría la elección delante de los ojos.
+        if (aDeLaRuta !== null && bDeLaRuta !== null) return
         if (d.versiones.length >= 2) {
           const activa = d.versiones.find((v) => v.activa === 1) ?? d.versiones[0]
           const anterior = d.versiones.find((v) => v.id !== activa.id) ?? d.versiones[1]

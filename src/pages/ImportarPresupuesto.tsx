@@ -1,20 +1,23 @@
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
-import { ModuleRegistry, ValidationModule } from 'ag-grid-community'
-import type { ColDef } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
+import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
   defaultColDef, moneda, pdcTheme,
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
+import { alternarSeleccion, puedeMarcar, rutaComparar, rutaVisor } from '../lib/historialVersiones'
 import { estadoInicial, importReducer } from '../lib/importState'
 import { etiquetaVersion } from '../lib/versionLabel'
-import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, ResumenDiff, VersionPresupuesto } from '../lib/types'
+import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
 ModuleRegistry.registerModules([
   ...MODULOS_TABLA,
+  CellStyleModule, // cellClass de la casilla de comparar y de la acción de fijar como oficial
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
@@ -24,7 +27,19 @@ const colsErrores: ColDef<ImportErrorFila>[] = [
   columnaTexto('motivo', 'Motivo', 240),
 ]
 
-const colsVersiones: ColDef<VersionPresupuesto>[] = [
+/**
+ * Columnas del historial. La casilla y la acción se identifican por `colId` porque el clic hace
+ * tres cosas distintas según dónde caiga: marcar para comparar, fijar como oficial, o —en el resto
+ * de la fila— abrir esa versión en el visor.
+ */
+const colsVersiones = (seleccion: number[]): ColDef<VersionPresupuesto>[] => [
+  {
+    colId: 'comparar', headerName: '⇄', width: 52, sortable: false, suppressAutoSize: true,
+    cellClass: 'pdc-celda-accion',
+    valueGetter: (p) => (p.data && seleccion.includes(p.data.id) ? 1 : 0),
+    valueFormatter: (p) => (p.value === 1 ? '☑' : '☐'),
+    headerTooltip: 'Marca hasta dos versiones para compararlas',
+  },
   // El nombre de la versión y el del archivo son los dos que la revisión encontró recortados
   // («102 DAPORTO RIONEGRO PI_Version…», «Import Da Po…»): envuelven en vez de cortarse.
   {
@@ -37,13 +52,25 @@ const colsVersiones: ColDef<VersionPresupuesto>[] = [
   columnaMoneda('costoTotal', 'Costo total'),
   { field: 'importadoPor', headerName: 'Importó' },
   { field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
+  {
+    colId: 'oficial', headerName: '', width: 150, sortable: false, suppressAutoSize: true,
+    cellClass: (p) => (p.data?.activa ? undefined : 'pdc-celda-accion'),
+    valueGetter: (p) => (p.data?.activa ? '' : 'Fijar como oficial'),
+  },
 ]
 
 export default function ImportarPresupuesto() {
   const [state, dispatch] = useReducer(importReducer, estadoInicial)
   const [versiones, setVersiones] = useState<VersionPresupuesto[]>([])
   const [cmp, setCmp] = useState<ResumenDiff | null>(null)
+  // Versiones marcadas para comparar (máximo dos) y la que está esperando confirmación para
+  // volverse oficial. Ver historialVersiones.ts.
+  const [seleccion, setSeleccion] = useState<number[]>([])
+  const [porFijar, setPorFijar] = useState<VersionPresupuesto | null>(null)
+  const [impacto, setImpacto] = useState<ImpactoVersion | null>(null)
+  const [avisoOficial, setAvisoOficial] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   const cargarVersiones = () => {
     apiGet<{ versiones: VersionPresupuesto[] }>('/plan-compras/api/presupuesto/versiones')
@@ -51,6 +78,65 @@ export default function ImportarPresupuesto() {
       .catch(() => setVersiones([]))
   }
   useEffect(cargarVersiones, [])
+
+  const cols = useMemo(() => colsVersiones(seleccion), [seleccion])
+  const destinoComparar = rutaComparar(seleccion)
+
+  /**
+   * Un clic hace tres cosas distintas según la columna: marcar para comparar, empezar a fijar como
+   * oficial, o abrir esa versión en el visor. El resto de la fila navega directo, sin modal — que
+   * es lo que se pidió: ver un presupuesto no cambia nada, así que no hay nada que confirmar.
+   */
+  const onVersionClick = (e: CellClickedEvent<VersionPresupuesto>) => {
+    if (!e.data) return
+    const col = e.column?.getColId()
+    if (col === 'comparar') {
+      if (!puedeMarcar(seleccion, e.data.id)) {
+        setAvisoOficial('Solo se pueden comparar dos versiones a la vez: desmarca una para elegir otra.')
+        return
+      }
+      setAvisoOficial(null)
+      setSeleccion((prev) => alternarSeleccion(prev, e.data!.id))
+      return
+    }
+    if (col === 'oficial') {
+      if (e.data.activa) return // ya es la oficial: no hay nada que fijar
+      pedirConfirmacionOficial(e.data)
+      return
+    }
+    navigate(rutaVisor(e.data.id))
+  }
+
+  /**
+   * Antes de cambiar la versión oficial se pregunta, y se dice qué queda afectado con un número
+   * real. Se avisa, no se bloquea: las asignaciones a paquete y el plan de fechas no dependen de la
+   * versión y sobreviven solos — lo único atado a una versión concreta son los vínculos del maestro.
+   */
+  const pedirConfirmacionOficial = (v: VersionPresupuesto) => {
+    setPorFijar(v)
+    setImpacto(null)
+    setAvisoOficial(null)
+    apiGet<ImpactoVersion>('/plan-compras/api/presupuesto/impacto-version')
+      .then(setImpacto)
+      .catch(() => setImpacto(null))
+  }
+
+  const onFijarOficial = async () => {
+    if (!porFijar) return
+    try {
+      await apiPost('/plan-compras/api/presupuesto/activar', { versionId: porFijar.id })
+      setAvisoOficial(`Ahora rige la ${etiquetaVersion(porFijar)}.`)
+      setPorFijar(null)
+      setImpacto(null)
+      cargarVersiones()
+    } catch (e) {
+      const mensaje = e instanceof PdcApiError && e.code === 'FORBIDDEN'
+        ? 'No tienes permiso para cambiar cuál presupuesto rige (hace falta el mismo permiso que para importar).'
+        : e instanceof Error ? e.message : String(e)
+      setAvisoOficial(mensaje)
+      setPorFijar(null)
+    }
+  }
 
   const onArchivo = async (file: File | undefined) => {
     if (!file) return
@@ -175,14 +261,58 @@ export default function ImportarPresupuesto() {
       )}
 
       <div className="pdc-bloque" data-testid="pdc-import-versiones">
-        <h2>Historial de versiones</h2>
+        <div className="pdc-fila-acciones">
+          <h2>Historial de versiones</h2>
+          <div className="pdc-selector">
+            <span className="pdc-ayuda">
+              Clic en una fila para verla · marca hasta dos para comparar
+            </span>
+            <button
+              type="button"
+              data-testid="pdc-import-comparar"
+              disabled={destinoComparar === null}
+              onClick={() => destinoComparar && navigate(destinoComparar)}
+            >
+              Comparar {seleccion.length}/2
+            </button>
+          </div>
+        </div>
+
+        {avisoOficial && <div className="pdc-info" role="status" data-testid="pdc-import-aviso">{avisoOficial}</div>}
+
+        {porFijar && (
+          <div className="pdc-panel" data-testid="pdc-import-confirmar-oficial">
+            <p>
+              ¿Fijar la <strong>{etiquetaVersion(porFijar)}</strong> como el presupuesto oficial del
+              proyecto? Es la base del visor, del maestro y del Pareto.
+            </p>
+            <p className="pdc-ayuda">
+              {impacto === null
+                ? 'Comprobando qué queda afectado…'
+                : impacto.vinculosAfectados === 0
+                  ? 'No hay vínculos del maestro hechos sobre la versión que se abandona.'
+                  : `${impacto.vinculosAfectados} vínculo(s) del maestro quedarán apuntando a la versión que se abandona`
+                    + `${impacto.versionActual ? ` (${impacto.versionActual.label})` : ''}.`}
+              {' '}Los paquetes y el plan de fechas no dependen de la versión: se conservan.
+            </p>
+            <button type="button" data-testid="pdc-import-oficial-confirmar" onClick={onFijarOficial}>
+              Sí, que rija esta
+            </button>{' '}
+            <button type="button" data-testid="pdc-import-oficial-cancelar" onClick={() => { setPorFijar(null); setImpacto(null) }}>
+              Cancelar
+            </button>
+          </div>
+        )}
+
         <div style={{ height: 260 }}>
           <AgGridReact<VersionPresupuesto>
             theme={pdcTheme}
             rowData={versiones}
-            columnDefs={colsVersiones}
+            columnDefs={cols}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
+            getRowId={(p) => String(p.data.id)}
+            onCellClicked={onVersionClick}
           />
         </div>
       </div>

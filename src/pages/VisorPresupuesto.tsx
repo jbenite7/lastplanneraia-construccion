@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import {
   ModuleRegistry, NumberFilterModule, TextFilterModule,
@@ -28,8 +29,13 @@ ModuleRegistry.registerModules([
 ])
 
 export default function VisorPresupuesto() {
+  // `?version=N` lo pone el historial al hacer clic en una fila: se llega aquí con esa versión ya
+  // cargada, sin tener que volver a elegirla en el selector. Sin parámetro manda la activa.
+  const [params] = useSearchParams()
+  const versionDeLaRuta = Number(params.get('version')) || null
+
   const [versiones, setVersiones] = useState<VersionPresupuesto[]>([])
-  const [versionId, setVersionId] = useState<number | null>(null)
+  const [versionId, setVersionId] = useState<number | null>(versionDeLaRuta)
   const [arbol, setArbol] = useState<ArbolPresupuesto | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
   // Hasta qué nivel se ve. Arranca en «Insumo» —el árbol abría colapsado en dos filas y había que
