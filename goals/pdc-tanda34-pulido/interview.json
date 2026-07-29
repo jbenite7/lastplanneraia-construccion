@@ -1,0 +1,201 @@
+{
+  "stage": "interview",
+  "title": "Tandas 3 y 4 — la primera impresión y el pulido",
+  "goalSlug": "pdc-tanda34-pulido",
+  "questions": [
+    {
+      "id": "cargador-excel",
+      "prompt": "La primera pantalla del módulo enseña «Choose File · No file chosen»: el control del navegador, en inglés y sin estilo. ¿Hasta dónde lo cambiamos?",
+      "description": "Es lo primero que ve alguien que entra al Plan de Compras. Un botón propio es media hora; añadir arrastrar-y-soltar es un rato más, pero es como la gente espera subir un Excel hoy.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Botón propio en español, zona para arrastrar el archivo, y el nombre del archivo elegido a la vista. Los tres juntos son lo que hace que parezca una aplicación y no un formulario de 1998.",
+      "recommendedOptionIds": ["completo"],
+      "options": [
+        { "id": "completo", "label": "Botón propio + arrastrar y soltar + nombre del archivo (recomendado)" },
+        { "id": "boton", "label": "Solo botón propio en español, sin arrastrar" },
+        { "id": "nada", "label": "Dejarlo: funciona y no vale la pena" }
+      ],
+      "required": true
+    },
+    {
+      "id": "maestro-pestana",
+      "prompt": "El Maestro abre por «Pendientes por vincular (0)» — una tabla vacía, justo cuando la noticia es buena (100 % vinculado). ¿Debe abrir por otro sitio cuando no hay pendientes?",
+      "description": "Es la misma idea que ya aplicaste en Paquetes («abrir por el trabajo que falta»), pero al revés: cuando no falta nada, abrir por el vacío es enseñar una pared en blanco.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí: con 0 pendientes abre en «Catálogo global», que es lo único que se puede hacer ahí. Con pendientes, sigue abriendo por ellos.",
+      "recommendedOptionIds": ["catalogo"],
+      "options": [
+        { "id": "catalogo", "label": "Con 0 pendientes abre en «Catálogo global» (recomendado)" },
+        { "id": "siempre-pendientes", "label": "Siempre por pendientes, pero con un mensaje de enhorabuena" },
+        { "id": "como-esta", "label": "Dejarlo como está" }
+      ],
+      "required": true
+    },
+    {
+      "id": "paquetes-cierre",
+      "prompt": "En Paquetes, con el 100 % del valor ya asignado, la pantalla abre con tres barras de controles y once botones para mostrar UN insumo de $ 0. ¿Qué debería enseñar?",
+      "description": "El indicador ya dice «99,7 % · POR VALOR 100 %». Lo que sobra es el aparato de trabajo cuando ya no hay trabajo que valga la pena.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Un mensaje de cierre arriba («Por valor está todo asignado; queda 1 insumo de $ 0») y las barras de controles plegadas, que se abren si alguien quiere seguir.",
+      "recommendedOptionIds": ["cierre-plegado"],
+      "options": [
+        { "id": "cierre-plegado", "label": "Mensaje de cierre + controles plegados, desplegables (recomendado)" },
+        { "id": "solo-mensaje", "label": "Solo añadir el mensaje; dejar los controles como están" },
+        { "id": "otra-pestana", "label": "Que abra por «Paquetes con insumos» cuando ya no falte valor" }
+      ],
+      "required": true
+    },
+    {
+      "id": "vacio-aggrid",
+      "prompt": "Las tablas vacías dicen «No Rows To Show», el texto de fábrica de la librería, en inglés. ¿Un texto para todas o uno por pantalla?",
+      "description": "Uno genérico se arregla en un sitio. Uno por pantalla dice además qué hacer («no hay pendientes: todo está vinculado»), que es más útil pero hay que escribir seis.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Uno por pantalla. Un vacío es el mejor momento para explicar, y ya tienes ejemplos buenos escritos a mano («Ningún amarre quedó desactualizado»).",
+      "recommendedOptionIds": ["por-pantalla"],
+      "options": [
+        { "id": "por-pantalla", "label": "Uno por pantalla, que diga qué significa el vacío (recomendado)" },
+        { "id": "generico", "label": "Uno genérico en español para todas: «No hay filas que mostrar»" }
+      ],
+      "required": true
+    },
+    {
+      "id": "plurales",
+      "prompt": "«11 paquete(s)», «0 seleccionado(s)», «1343 fila(s)»: hay 24 sitios así. ¿Los arreglamos todos?",
+      "description": "El «(s)» es la marca de que nadie se ocupó del detalle. Arreglarlos todos pide una función pequeña que elija singular o plural, y tocar 24 líneas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Todos, con una función común. Media hora, y de paso deja el separador de miles puesto («1.343 filas», no «1343 fila(s)»).",
+      "recommendedOptionIds": ["todos"],
+      "options": [
+        { "id": "todos", "label": "Los 24, con una función común + separador de miles (recomendado)" },
+        { "id": "visibles", "label": "Solo los que están siempre a la vista; los de mensajes pueden esperar" },
+        { "id": "nada", "label": "Dejarlo: nadie se queja de esto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "tres-numeros",
+      "prompt": "Hay tres cifras de insumos que no cuadran entre sí: 820 (en el historial), 396 (cobertura del maestro) y 3.079 (catálogo). ¿Las explicamos?",
+      "description": "Cuentan cosas distintas —filas del presupuesto, insumos únicos del proyecto, e insumos de toda la empresa— pero nada lo dice, y quien las ve seguidas piensa que algo está mal.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Una línea pequeña donde aparece cada número, diciendo qué cuenta. No un texto de ayuda aparte que nadie va a abrir.",
+      "recommendedOptionIds": ["linea"],
+      "options": [
+        { "id": "linea", "label": "Una línea junto a cada número (recomendado)" },
+        { "id": "tooltip", "label": "Al pasar el ratón por encima" },
+        { "id": "renombrar", "label": "Mejor cambiar los rótulos para que se distingan solos" }
+      ],
+      "required": true
+    },
+    {
+      "id": "badges-nomina",
+      "prompt": "«Nómina de obra» e «Imprevistos y provisiones» llevan la etiqueta CONSUMIBLES, que es falsa. ¿Corregimos el dato o dejamos de mostrarlo?",
+      "description": "Esa etiqueta sale de un campo guardado en la base de datos, en un catálogo que comparten todos los proyectos. Corregirlo de verdad es una migración y toca el servidor; esconderlo es solo pantalla. La etiqueta que sí importa (NO CONTRATABLE) ya se muestra al lado y es correcta.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Dejar de mostrar el tipo cuando la modalidad es «no contratable» o «consumo directo»: en esos paquetes el tipo no aporta nada y encima miente. Y anotar el dato para revisarlo aparte, sin migración a la carrera.",
+      "recommendedOptionIds": ["esconder"],
+      "options": [
+        { "id": "esconder", "label": "Esconder el tipo cuando la modalidad lo hace irrelevante (recomendado, solo pantalla)" },
+        { "id": "migracion", "label": "Corregir el dato en la base con una migración (toca servidor y otros proyectos)" },
+        { "id": "nada", "label": "Dejarlo; quien lo usa ya sabe interpretarlo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "retirar",
+      "prompt": "En el catálogo, «Retirar» un insumo es un enlace en cada fila, sin confirmación y bajo una cabecera de columna vacía. ¿Le ponemos red?",
+      "description": "Retirar revierte vínculos automáticos en todos los proyectos, así que un clic de más se nota. Hoy no pregunta nada.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Confirmación como la de «desamarrar», diciendo cuántos vínculos se van a revertir, y cabecera «Acción» en la columna.",
+      "recommendedOptionIds": ["confirmar"],
+      "options": [
+        { "id": "confirmar", "label": "Confirmación que diga el impacto + cabecera en la columna (recomendado)" },
+        { "id": "deshacer", "label": "Sin confirmación, pero con un «deshacer» durante unos segundos" },
+        { "id": "cabecera", "label": "Solo la cabecera; la confirmación estorba a quien limpia el catálogo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "buscadores",
+      "prompt": "Hay tres listas largas sin buscador: «Paquetes con insumos» (102), «Sin frente» (85) y el comparador. ¿En cuáles lo ponemos?",
+      "description": "El visor y el catálogo ya tienen buscador, así que es una función que ya sabes cómo se ve en este módulo.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "En las tres. Son las tres listas donde hay que encontrar algo concreto, y ya existe el patrón.",
+      "recommendedOptionIds": ["paquetes", "sinfrente", "comparador"],
+      "options": [
+        { "id": "paquetes", "label": "Paquetes con insumos (102 filas)" },
+        { "id": "sinfrente", "label": "Sin frente (85 filas)" },
+        { "id": "comparador", "label": "Comparador de versiones" }
+      ],
+      "required": true
+    },
+    {
+      "id": "nota-recalcular",
+      "prompt": "La nota larga de «Recalcular» («Conserva los responsables, los amarres…») se repite en las cuatro pestañas del Plan, en cada visita. ¿La dejamos siempre visible?",
+      "description": "Se escribió porque preguntaste si perdías lo avanzado antes de atreverte a pulsar. Esa duda se tiene una vez; el párrafo se lee cien.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Plegarla tras un «¿qué conserva?» que se abre al pulsarlo. La respuesta sigue estando a un clic para quien duda, y no pesa para quien ya lo sabe.",
+      "recommendedOptionIds": ["plegable"],
+      "options": [
+        { "id": "plegable", "label": "Plegada tras «¿qué conserva?» (recomendado)" },
+        { "id": "tooltip", "label": "Al pasar el ratón por el botón" },
+        { "id": "siempre", "label": "Dejarla siempre visible: es una garantía, no un adorno" }
+      ],
+      "required": true
+    },
+    {
+      "id": "sin-frente-tabla",
+      "prompt": "La lista «Sin frente» no es una tabla: son filas montadas a mano y las columnas bailan de una a otra. ¿La convertimos?",
+      "description": "Es el cambio más grande que queda. Pasarla a la misma librería de tablas del resto daría orden y buscador gratis, pero cada fila lleva un desplegable y un botón dentro, y eso en esa librería es más delicado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Alinear las columnas con CSS sin cambiar de tecnología. Se gana el orden visual, que es el problema real, sin arriesgar los controles que ya funcionan.",
+      "recommendedOptionIds": ["css"],
+      "options": [
+        { "id": "css", "label": "Alinear con CSS, sin cambiar de tecnología (recomendado)" },
+        { "id": "aggrid", "label": "Convertirla a tabla de verdad, con sus controles dentro" },
+        { "id": "diferir", "label": "Dejarla para otra sesión" }
+      ],
+      "required": true
+    },
+    {
+      "id": "asistente-pliegue",
+      "prompt": "En el asistente paso a paso, los botones de decidir («Omitir», «Saltar por ahora») caen justo por debajo del borde de la pantalla, y la tarjeta ocupa media pantalla con la otra media vacía.",
+      "description": "Quien usa el asistente decide cientos de veces seguidas; tener que bajar la vista en cada una cansa.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Compactar la tarjeta (menos aire entre bloques) y ensancharla para aprovechar el hueco de la derecha. Así los botones suben solos.",
+      "recommendedOptionIds": ["compactar"],
+      "options": [
+        { "id": "compactar", "label": "Compactar y ensanchar la tarjeta (recomendado)" },
+        { "id": "mover", "label": "Mover los botones arriba, junto al nombre del insumo" },
+        { "id": "fijar", "label": "Dejar los botones fijos abajo, siempre a la vista" }
+      ],
+      "required": true
+    },
+    {
+      "id": "acierto-motor",
+      "prompt": "«ACIERTO DEL MOTOR 100 %» no dice sobre cuántos casos se mide. ¿Lo explicamos a la vista?",
+      "description": "Hoy la explicación existe pero solo al pasar el ratón. Un 100 % sobre tres decisiones y un 100 % sobre trescientas no significan lo mismo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Poner la base debajo del número, en pequeño: «sobre N decisiones». Es el dato que convierte el porcentaje en información.",
+      "recommendedOptionIds": ["base"],
+      "options": [
+        { "id": "base", "label": "«sobre N decisiones» debajo del número (recomendado)" },
+        { "id": "tooltip", "label": "Dejarlo en el texto que aparece al pasar el ratón" },
+        { "id": "ocultar", "label": "Esconder el indicador mientras la base sea pequeña" }
+      ],
+      "required": true
+    },
+    {
+      "id": "alcance",
+      "prompt": "¿Todo esto se queda otra vez solo en la pantalla, sin tocar el servidor?",
+      "description": "Solo un punto pediría servidor: corregir de verdad la etiqueta de nómina e imprevistos en la base de datos. Si eliges esconderla, no hace falta nada más.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo la pantalla. Así estas dos tandas se pueden verificar y desplegar igual que las anteriores.",
+      "recommendedOptionIds": ["solo-spa"],
+      "options": [
+        { "id": "solo-spa", "label": "Solo la SPA (recomendado)" },
+        { "id": "con-php", "label": "Incluir la migración del dato de nómina e imprevistos" }
+      ],
+      "required": true
+    }
+  ]
+}

@@ -46,9 +46,13 @@ Severidad: **P0** rompe la lectura del dato · **P1** cuesta trabajo o induce er
   scroll visible ni pista de que hay más a la derecha.
 - **H7 · «Ahorros $ -46.629.280.886,6»** — un ahorro con signo negativo, en verde, junto a un Δ
   también negativo. Se lee como si ahorrar restara.
-- **H8 · «Aceptar 40 sugerida(s)» escribe 40 amarres de un clic**, y en pantalla la mayoría son
-  `CONFIANZA MEDIA`. No hay previsualización ni desglose por confianza, y el badge de MEDIA y el de
-  ALTA son del mismo verde: el nivel no se distingue.
+- **H8 · «Aceptar 40 sugerida(s)» escribe 40 amarres de un clic**, sin previsualización ni desglose
+  por confianza. Medido en el navegador el 2026-07-29: de las 40, **37 son de confianza media y
+  solo 3 de confianza alta**.
+  *Corrección al informe original:* dije que el badge de MEDIA y el de ALTA eran del mismo verde.
+  **Es falso** — lo leí de una captura a tamaño reducido. Los colores computados sí difieren:
+  media `rgb(58,47,24)` sobre ámbar, alta `rgb(26,60,42)` sobre verde, baja rojiza. Lo que falta no
+  es color, es la **proporción**: nada en pantalla dice que 37 de 40 son medias antes de pulsar.
 - **H9 · Paquetes abre por el residuo.** Con `POR VALOR 100 %`, la pestaña inicial muestra **un solo
   insumo de $ 0** precedido de **tres barras de controles y once botones**, casi todos inertes. El
   acierto de f06 («abrir por lo que falta») se vuelve en contra cuando ya no falta nada que importe.
@@ -87,7 +91,12 @@ Severidad: **P0** rompe la lectura del dato · **P1** cuesta trabajo o induce er
 
 ## Plan de corrección y mejora
 
-### Tanda 1 — «media hora, tres líneas» (P0)
+### Tanda 1 — «media hora, tres líneas» (P0) ✅ **hecha el 2026-07-29**
+
+Verificada contra Da Porto en `:8091`: los tres encabezados a margen 0 del contenedor, 0 cifras con
+decimales en el visor y en el comparador, el catálogo de 5,5 filas a 12, y la tabla acabando 84 px
+sobre el pliegue en 768/900/1200/1440 px de alto. Vitest 184/184 (3 nuevos), build y los 14 e2e
+`pdc-v2-*` en verde. Detalle de lo que se tocó, abajo.
 
 | Paso | Cambio | Archivo |
 |---|---|---|
@@ -95,10 +104,26 @@ Severidad: **P0** rompe la lectura del dato · **P1** cuesta trabajo o induce er
 | 2 | `moneda()` → `toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })`. En obra los pesos no se leen con centavos; si se quieren, que sean **siempre** dos. | `src/lib/agGrid.ts:38` |
 | 3 | `.pdc-grid` de altura fija a altura fluida (`height: clamp(320px, calc(100vh - 340px), 780px)`), con `.pdc-grid--corta` para las tablas que sí deben ser bajas. | `src/styles.css:69` |
 
+**Corrección sobre el diagnóstico del punto 3:** `.pdc-grid { height: 320px }` era **CSS muerto** —
+ninguna página lo usaba. Las alturas reales estaban en `style` en línea, una por tabla: 260 y 280 en
+Importar, 300 y **280 en el catálogo de 3.079 filas**, 520 en Comparar, 560 en el Visor. Paquetes y
+Plan no entran: usan `domLayout="autoHeight"` y crecen con sus filas. El arreglo fue reutilizar
+`.pdc-grid` —ahora fluida— en las cuatro tablas largas y `.pdc-grid-corta` en las dos cortas,
+borrando los seis números escritos a mano.
+
+También se ajustó `signo()` en `ComparativoPresupuesto.tsx:24`, que formateaba la columna Δ con el
+mismo problema de decimales variables y vive justo al lado de las dos columnas de dinero.
+
 Verificación: un test de `moneda()` en `agGrid.test.ts` que fije los decimales, y volver a correr este
 mismo recorrido comparando capturas. **Ganancia desproporcionada respecto al costo — empezar aquí.**
 
-### Tanda 2 — que el Plan diga la verdad (P1, lo que decide el producto)
+### Tanda 2 — que el Plan diga la verdad (P1) ✅ **hecha el 2026-07-29**
+
+Grillada (14 preguntas), planificada y aprobada en el gate: `goals/pdc-tanda2-plan-verdad/`.
+Verificada en Da Porto: cobertura 54 % por valor · «11 de 96 paquetes con fecha»; franja de
+vencidos que filtra a 3 filas; desglose «3 ALTA · 37 MEDIA · 0 BAJA» con dos botones y confirmación
+de $ 5.790.756.244; ahorros sin signo; 0 palabras partidas a 1440 y 1024. Vitest 197/197, build y
+14/14 e2e en verde.
 
 4. **Cobertura del Plan en el encabezado**: «11 de 96 paquetes con fecha · 85 sin frente», con la
    misma barra que ya usa Paquetes. Hoy el número grande miente por omisión (H4).
@@ -110,7 +135,11 @@ mismo recorrido comparando capturas. **Ganancia desproporcionada respecto al cos
    envueltas, y scroll horizontal visible por debajo de 1200 px (H5, H6).
 8. **Arreglar «Ahorros»**: valor absoluto y rótulo explícito, o un único Δ con signo (H7).
 
-### Tanda 3 — la primera impresión (P1/P2)
+### Tanda 3 — la primera impresión (P1/P2) ✅ **hecha el 2026-07-29**
+
+Grillada, planificada y aprobada: `goals/pdc-tanda34-pulido/`. Verificado en Da Porto: cargador
+propio con arrastre, el Maestro abre en «Catálogo global» con 0 pendientes, Paquetes muestra el
+cierre por valor con los controles plegados, y **0 apariciones** de «No Rows To Show» y de «(s)».
 
 9. **Abrir por donde hay trabajo, de verdad**: Maestro entra al Catálogo si hay 0 pendientes;
    Paquetes muestra el estado de cierre («100 % por valor · queda 1 insumo de $ 0») en vez de tres
@@ -119,7 +148,11 @@ mismo recorrido comparando capturas. **Ganancia desproporcionada respecto al cos
 11. **Plurales sin `(s)`** y separador de miles en todos los conteos, de una sola pasada (H14, H15).
 12. **Una línea que explique los tres números de insumos** (820 / 396 / 3.079) donde aparecen (H16).
 
-### Tanda 4 — cuando haya aire (P2)
+### Tanda 4 — cuando haya aire (P2) ✅ **hecha el 2026-07-29**
+
+Mismo goal. Verificado: buscadores en las tres listas (con acentos), «Retirar» con confirmación y
+cabecera, nota de «Recalcular» plegada, «Nómina de obra · NO CONTRATABLE» sin el CONSUMIBLES falso,
+«acierto del motor 100 % sobre 2 decisiones», «Sin frente» alineada y el asistente sobre el pliegue.
 
 13. Buscador en las tres listas largas (H22); «Retirar» con cabecera y confirmación (H18); la nota de
     «Recalcular» como ayuda contextual y no como párrafo permanente (H23); revisar los badges de
