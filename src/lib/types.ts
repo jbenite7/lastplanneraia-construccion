@@ -442,3 +442,40 @@ export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
  * Cuando esa constante incluya `no_aplica`, esta lista puede volver a ser `TIPOS_NEGOCIACION`.
  */
 export const TIPOS_NEGOCIACION_CREABLES = TIPOS_NEGOCIACION.filter((t) => t.value !== 'no_aplica')
+
+/**
+ * A4.1 — un paso del catálogo de pasos de contratación de la empresa.
+ *
+ * `colLegacy` dice de qué columna del catálogo legacy de duraciones salen sus días **por paquete**
+ * (concreto no tarda lo mismo que unas puertas). Cuando es null, el paso no tiene respaldo ahí y su
+ * duración la fija la obra: son los casos de Licify y la aprobación del cliente, que el sistema viejo
+ * nunca guardó en columnas propias.
+ */
+export type PasoCatalogo = {
+  id: number
+  clave: string
+  nombre: string
+  colLegacy: string | null
+  diasSugeridos: number | null
+  peso: number | null
+  ordenDefault: number
+}
+
+/** Un paso tal como lo usa una obra: con su alias y sus días fijos ya resueltos. */
+export type PasoProyecto = {
+  pasoId: number | null
+  clave: string
+  nombre: string
+  colLegacy: string | null
+  diasFijos: number | null
+  peso: number | null
+}
+
+export type RespuestaPasos = {
+  catalogo: PasoCatalogo[]
+  /** Los pasos efectivos: si la obra no configuró nada, son los siete por defecto de la empresa. */
+  proyecto: PasoProyecto[]
+  configurado: boolean
+  /** Cuántos paquetes tienen plan calculado: quitar un paso borra una fila por cada uno. */
+  paquetesConPlan: number
+}
