@@ -38,7 +38,10 @@ test('una obra agrega un paso propio y vuelve al proceso por defecto', async ({ 
 
   // Y la vuelta atrás, que es lo que hace seguro probar esto en cualquier obra.
   await page.getByTestId('pdc-pasos-restablecer').click();
-  await expect(page.getByText('proceso por defecto')).toBeVisible();
+  // El mensaje de éxito concreto, no un `getByText` suelto: «proceso por defecto» aparece también
+  // en el botón y en las entradas del historial (A4.1 · diferido nº 3), y ahí la aserción laxa deja
+  // de distinguir el éxito de la propia etiqueta que se acaba de pulsar.
+  await expect(page.getByText('La obra vuelve al proceso por defecto de la empresa')).toBeVisible();
   await expect(lista.locator('li')).toHaveCount(7);
 
   await logout(page);
