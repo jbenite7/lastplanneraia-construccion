@@ -298,7 +298,7 @@
     },
     {
       "file": "views/auth/login.view.php",
-      "line": 131,
+      "line": 130,
       "selector": "AIA.Notice.dialog({ ..., iconColor })",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
