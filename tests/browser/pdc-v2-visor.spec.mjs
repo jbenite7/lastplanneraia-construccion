@@ -33,23 +33,31 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     await expect(page.locator('h1')).toContainText('Presupuesto', { timeout: 15000 });
     const arbol = page.locator('[data-testid="pdc-visor-arbol"]');
 
-    // Colapsado: capítulos con total roll-up.
+    // Abre DESPLEGADO hasta insumos (f21 de la revisión de UX): antes arrancaba colapsado en dos
+    // filas y había que ir abriendo carpetas a mano para llegar a lo que se venía a mirar.
     const cap = arbol.locator('.ag-cell', { hasText: 'PRELIMINARES' }).first();
     await expect(cap).toBeVisible({ timeout: 15000 });
-    await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' })).toHaveCount(0);
-
-    // Expandir cadena: 01 → 01.01 → 01.01.01 → actividad → insumos.
-    await cap.click();
-    await arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO' }).first().click();
-    await arbol.locator('.ag-cell', { hasText: 'INSTALACIONES' }).first().click();
-    await arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' }).first().click();
+    await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' }).first()).toBeVisible();
     await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' }).first()).toBeVisible();
     // Total del insumo = cant_apu × rendimiento × cantidad de la actividad × VrUnit:
     // 1,05 × 1,2 × 18 m2 = 22,68 m2 × $ 25.000 = $ 567.000. (El valor anterior, «$ 540.000», no
     // corresponde a este fixture y nunca llegó a comprobarse: el spec vivía apagado tras el gate.)
     await expect(arbol.locator('.ag-cell', { hasText: '$ 567.000' }).first()).toBeVisible();
 
-    // Colapsar el capítulo: toda la rama desaparece.
+    // El selector de nivel (f20) recorta la profundidad: con «Capítulo» no se ve nada por debajo.
+    const nivel = page.locator('[data-testid="pdc-visor-nivel"]');
+    await expect(nivel).toBeVisible();
+    await nivel.selectOption({ label: 'Capítulo' });
+    await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' })).toHaveCount(0);
+    await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' })).toHaveCount(0);
+    await expect(cap).toBeVisible();
+
+    // Y volver a «Insumo» lo devuelve todo, sin tener que abrir carpeta por carpeta.
+    await nivel.selectOption({ label: 'Insumo' });
+    await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' }).first()).toBeVisible();
+
+    // El clic manual sigue mandando por encima del nivel sembrado: colapsar el capítulo esconde
+    // toda su rama.
     await cap.click();
     await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' })).toHaveCount(0);
     await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' })).toHaveCount(0);

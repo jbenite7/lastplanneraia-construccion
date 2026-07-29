@@ -173,6 +173,7 @@ tests/browser/*
 !tests/browser/test-pdc.mjs
 !tests/browser/pdc-handsontable.mjs
 !tests/browser/pdc-v2-responsable.spec.mjs
+!tests/browser/pdc-v2-historial.spec.mjs
 !tests/browser/entrypoint-segmentation-dryrun.mjs
 !tests/browser/shell-week-admin.mjs
 !tests/browser/shell-sidebar-rollout.mjs
