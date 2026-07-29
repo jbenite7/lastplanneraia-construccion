@@ -45,7 +45,8 @@
     --ds-active-surface-glass: var(--ds-color-surface-glass-dark);
     --ds-active-text-primary: var(--ds-color-text-primary-dark);
     --ds-active-text-secondary: var(--ds-color-text-secondary-dark);
-    --ds-active-border: var(--ds-color-border-dark);
+    --ds-active-border: var(--ds-color-border-separator-dark);
+    --ds-active-border-control: var(--ds-color-border-control-dark);
     --ds-active-focus-ring: var(--ds-color-focus-ring-dark);
     --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
     --ds-active-action-primary-hover: var(--aia-green-light);

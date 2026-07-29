@@ -1,4 +1,103 @@
 @layer components {
+  /* FRONTERA DE CONTROL (WCAG 1.4.11) — punto unico donde el sistema declara QUE
+     elementos son un componente de interfaz y por tanto necesitan un borde a 3:1.
+     Re-vincula la variable en el propio elemento, asi que cualquier regla que ya
+     diga `border-color: var(--ds-active-border)` sobre un control resuelve al
+     token de control sin tener que tocar sus 400+ puntos de llamada, y sin que
+     importe en que archivo o capa viva ni si lleva !important.
+     Lo que NO entra es deliberado: tarjetas, paneles, chips de conteo y filetes
+     de separacion siguen leyendo el token decorativo. Ver el par declarado en
+     tokens.css. `:where()` mantiene la especificidad en cero: cualquier regla que
+     fije la variable explicitamente sobre un elemento sigue ganando.
+
+     Las dos reglas van en este orden A PROPOSITO. Las propiedades personalizadas
+     heredan, asi que sin la primera un `.count-badge` dentro de un chip accionable
+     heredaria el token de control y se saldria del alcance acordado (medido: 22
+     elementos no-control lo cogian asi). La primera devuelve el token decorativo a
+     todo descendiente; la segunda vuelve a poner el de control sobre el elemento
+     que de verdad es un control, y como ambas tienen especificidad cero gana la
+     ultima, de modo que un control anidado dentro de otro sigue resolviendo bien. */
+  :where(
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      button,
+      summary,
+      a[href],
+      [role="button"],
+      [role="checkbox"],
+      [role="radio"],
+      [role="combobox"],
+      [role="switch"],
+      [role="textbox"],
+      [role="searchbox"],
+      [role="listbox"],
+      [role="option"],
+      [role="slider"],
+      [role="spinbutton"],
+      [role="menuitem"],
+      [role="tab"],
+      [contenteditable="true"],
+      [tabindex]:not([tabindex="-1"]),
+      .btn,
+      .form-control,
+      .form-select,
+      .custom-select,
+      .select2-selection,
+      .aia-btn,
+      .aia-input,
+      .aia-select,
+      .ds-btn,
+      .ds-input,
+      .btn-pdc-modern,
+      .changeType,
+      .dropdown-toggle,
+      .input-group-text
+    )
+    :where(*) {
+    --ds-active-border: var(--ds-color-border-separator-dark);
+  }
+
+  :where(
+    input:not([type="hidden"]),
+    select,
+    textarea,
+    button,
+    summary,
+    a[href],
+    [role="button"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="combobox"],
+    [role="switch"],
+    [role="textbox"],
+    [role="searchbox"],
+    [role="listbox"],
+    [role="option"],
+    [role="slider"],
+    [role="spinbutton"],
+    [role="menuitem"],
+    [role="tab"],
+    [contenteditable="true"],
+    [tabindex]:not([tabindex="-1"]),
+    .btn,
+    .form-control,
+    .form-select,
+    .custom-select,
+    .select2-selection,
+    .aia-btn,
+    .aia-input,
+    .aia-select,
+    .ds-btn,
+    .ds-input,
+    .btn-pdc-modern,
+    .changeType,
+    .dropdown-toggle,
+    .input-group-text
+  ) {
+    --ds-active-border: var(--ds-active-border-control);
+  }
+
   .aia-shell {
     min-height: 100vh;
     /* El shorthand `background` resetea background-color a su initial

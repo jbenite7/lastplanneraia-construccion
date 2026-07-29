@@ -19,9 +19,13 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
   assert.doesNotMatch(view, /DesignSystemHeadComponent::render\(true\)/);
   assert.doesNotMatch(view, /data-lab-theme|\/js\/modules\/aia_ui\/theme\.js/);
 
+  // El corte termina en CORE_VENDORS, la primera declaración tras el método:
+  // cortar en `renderScript` se tragaba también VENDOR_ATTACHMENTS y
+  // renderForModule(), así que registrar el adjunto de datatables —que el
+  // laboratorio no emite— disparaba este assert desde otro método.
   const laboratoryMethod = head.slice(
     head.indexOf('public static function renderLaboratory'),
-    head.indexOf('public static function renderScript'),
+    head.indexOf('public const CORE_VENDORS'),
   );
   assert.match(laboratoryMethod, /theme-bootstrap\.js/);
   assert.match(laboratoryMethod, /\/css\/tokens\.css/);
@@ -146,7 +150,13 @@ test('the shared core and production dark mapping resolve visual values through 
     '--ds-color-surface-glass-dark',
     '--ds-color-text-primary-dark',
     '--ds-color-text-secondary-dark',
-    '--ds-color-border-dark',
+    // Par de bordes de WCAG 1.4.11 (decision del usuario, 2026-07-29). Antes se
+    // exigia --ds-color-border-dark; ahora el tema consume los dos tokens por su
+    // ROL: separator (alias de border-dark, mismo valor) y control (0,4, el
+    // primero que alcanza 3:1 sobre los quince fondos oscuros medidos). Se exigen
+    // AMBOS a proposito: si alguien retirara el de control, este guard lo caza.
+    '--ds-color-border-separator-dark',
+    '--ds-color-border-control-dark',
   ]) assert.match(darkTheme, new RegExp(`var\\(${token.replaceAll('-', '\\-')}\\)`));
 });
 

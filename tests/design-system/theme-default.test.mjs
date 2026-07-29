@@ -27,7 +27,17 @@ const EXPECTED_DARK_DECLARATIONS = {
   '--ds-active-surface-glass': 'var(--ds-color-surface-glass-dark)',
   '--ds-active-text-primary': 'var(--ds-color-text-primary-dark)',
   '--ds-active-text-secondary': 'var(--ds-color-text-secondary-dark)',
-  '--ds-active-border': 'var(--ds-color-border-dark)',
+  // Par de bordes de WCAG 1.4.11 (decision del usuario, 2026-07-29). El alias
+  // decorativo pasa a nombrarse por su ROL (separator) en vez de por su tema, y
+  // aparece el de frontera de control. `--ds-color-border-separator-dark` es un
+  // alias de `--ds-color-border-dark`, o sea que el valor decorativo NO cambia:
+  // lo que cambia es que ahora el sistema distingue los dos roles por nombre.
+  // El de control sube a 0,4 porque a 0,22 rendia 1,90:1 y 1.4.11 pide 3:1;
+  // medido en navegador a 1180x820 sobre los quince fondos oscuros reales, la
+  // banda resultante es 3,15-3,40:1. Se añade a este mapa (y no se relaja la
+  // comprobacion de conteo exacto) para que el guard exija tambien el token nuevo.
+  '--ds-active-border': 'var(--ds-color-border-separator-dark)',
+  '--ds-active-border-control': 'var(--ds-color-border-control-dark)',
   '--ds-active-focus-ring': 'var(--ds-color-focus-ring-dark)',
   '--ds-active-action-primary': 'var(--ds-color-domain-corporate-on-dark)',
   '--ds-active-action-primary-hover': 'var(--aia-green-light)',

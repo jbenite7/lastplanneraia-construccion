@@ -154,7 +154,12 @@ test.describe('conmutador de vista de /listado-actividades', () => {
     // Y estos vienen del override de dark, no de la regla clara.
     expect(geometry.backgroundColor).toBe('rgba(35, 48, 41, 0.86)');
     expect(geometry.color).toBe('rgb(247, 250, 248)');
-    expect(geometry.borderTopColor).toBe('rgba(221, 239, 230, 0.22)');
+    // El conmutador es un CONTROL: su borde resuelve por --ds-active-border-control
+    // desde que se declaro el par de bordes de WCAG 1.4.11. Antes 0,22 (1,90:1,
+    // bajo el umbral de 3:1); ahora 0,4. Decision del usuario, medida en navegador.
+    // Se conserva el valor exacto: lo que este guard vigila es que gane el override
+    // de dark y no la regla clara, y para eso el numero tiene que ser el del token.
+    expect(geometry.borderTopColor).toBe('rgba(221, 239, 230, 0.4)');
 
     await page.locator(TRIGGER).hover();
     await page.waitForTimeout(200);

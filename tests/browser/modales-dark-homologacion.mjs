@@ -267,9 +267,17 @@ test('la tinta que gana en los botones del pie es la del tema activo, no el verd
     '#modalEliminar .modal-footer .btn.btn-default',
     'border-top-color',
   );
-  // --ds-active-border resuelve a rgba(221, 239, 230, 0.22).
+  // Este boton es un CONTROL, asi que su borde resuelve por
+  // --ds-active-border-control (--ds-color-border-control-dark), no por el token
+  // decorativo. Valor esperado actualizado de 0,22 a 0,4 al declarar el par de
+  // bordes de WCAG 1.4.11: a 0,22 el borde rendia 1,91:1 y la norma pide 3:1;
+  // a 0,4 mide 3,33:1 sobre esta superficie. Decision del usuario, medida en
+  // navegador a 1180x820 sobre los quince fondos oscuros reales.
+  // La asercion sigue siendo el valor EXACTO a proposito: este guard existe para
+  // detectar reglas que parecen ganar y estan inertes, y un rango ancho o un
+  // toBeTruthy lo convertiria en adorno.
   expect(border.computed, `candidatas:\n      ${explainRules(border)}`)
-    .toBe('rgba(221, 239, 230, 0.22)');
+    .toBe('rgba(221, 239, 230, 0.4)');
 
   const winner = ink.rules.find((r) => r.value === 'var(--ds-active-text-primary)');
   expect(winner, 'la regla escrita no aparece entre las candidatas').toBeTruthy();

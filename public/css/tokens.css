@@ -183,6 +183,23 @@
     --ds-color-border-default: rgba(26, 86, 51, 0.2);
     --ds-color-border-strong: rgba(26, 86, 51, 0.36);
     --ds-color-border-dark: rgba(221, 239, 230, 0.22);
+
+    /* PAR DE BORDES SOBRE OSCURO — la distincion que hace WCAG 1.4.11 y que el
+       sistema no declaraba:
+       · CONTROL   = frontera de un componente de interfaz (campo, boton, selector,
+                     chip accionable). Tiene que alcanzar 3:1 contra las DOS
+                     superficies que toca. Medido en navegador a 1180x820 sobre los
+                     quince fondos oscuros reales de la app: la banda queda en
+                     3,14-3,39:1, con el minimo estricto en alfa 0,385.
+       · SEPARATOR = filete decorativo entre regiones cuyos rellenos ya difieren
+                     (divisores de sidebar, cabeceras de drawer, bordes de tarjeta,
+                     chips de conteo). 1.4.11 NO lo gobierna: se mantiene discreto
+                     a proposito y se queda en el valor historico.
+       Regla de uso: si delimita algo con lo que el usuario interactua, CONTROL.
+       Si solo separa dos zonas, SEPARATOR. Nunca uses SEPARATOR para un control. */
+    --ds-color-border-control-dark: rgba(221, 239, 230, 0.4);
+    --ds-color-border-separator-dark: var(--ds-color-border-dark);
+
     --ds-color-focus-ring: rgba(46, 125, 87, 0.28);
     --ds-color-focus-ring-light: #006d66;
     --ds-color-focus-ring-dark: #2caa9f;
