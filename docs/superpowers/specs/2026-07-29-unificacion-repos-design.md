@@ -76,7 +76,8 @@ solo al final, con todo verificado, y comprobando antes que `origin/main` no se 
 ## Verificación
 
 La prueba central es de **equivalencia, no de funcionamiento**: reconstruir desde el código ya mudado
-y exigir que el bundle salga **byte a byte idéntico** al publicado hoy (`md5 3b51ff54a8523fb8ddda…`).
+y exigir que el bundle salga **byte a byte idéntico** al publicado hoy
+(`md5 3b51ff54a8523fb8ddda5c881568dd80`).
 Si cambia un byte, algo se movió que no debía, y se sabe antes de tocar `main`.
 
 Además: los 242 tests de Vitest corriendo desde `pdc-app/`; las seis suites PHP del PDC; los dos
