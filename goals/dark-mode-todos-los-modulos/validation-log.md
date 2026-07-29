@@ -1410,3 +1410,39 @@ tanda anterior reportaba en rojo por `adapters/admin-lte.css`, **ya pasa**: lo c
 - **Otra sesión dejó conflictos de merge sin resolver en el worktree** durante esta tanda
   (`pdc-app/src/styles.css`, `public/pdc-app/assets/pdc.css`, `public/pdc-app/assets/pdc.js`, en
   estado `UU`), además de varios archivos del PDC en el índice. **No se tocaron.**
+
+## Auditoría de cobertura de iconos tras la vendorización FA de F4 (2026-07-29)
+
+F4 dejó `admin/` consumiendo la copia local `public/vendor/font-awesome/css/all.css`, que es
+**Font Awesome Free 5.11.2**, en lugar del CDN 5.15.4. Se auditó si algún icono usado en el repo
+existe solo en 5.15 y por tanto quedaría vacío.
+
+**Comandos (salida real de esta sesión):**
+
+- Clases usadas: `grep -rhoE '\bfa-[a-z0-9]+(-[a-z0-9]+)*' admin/views views public/js src
+  --include='*.php' --include='*.js' --include='*.html' | sort -u` → **104** clases distintas.
+- Clases declaradas por el vendor: `grep -ohE '\.fa-[a-z0-9]+(-[a-z0-9]+)*'
+  public/vendor/font-awesome/css/all.css | sed 's/^\.//' | sort -u` → **1425**.
+- Diferencia (`comm -23`) → **3** clases no declaradas por 5.11.2:
+  - `fa-arrow-circle-bottom` — `admin/views/pages/dashboard.php:74`
+  - `fa-check-shield` — `admin/views/pages/dashboard.php:253`
+  - `fa-m` — `views/listado-actividades/listadoActividades.view.php:763-764`,
+    `public/js/cargarDatosGeneralesPagina2.js:333,403`
+
+**Las tres tampoco existen en 5.15.4** (verificado contra
+`https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css`: los tres selectores
+devuelven «no»). No son nombres de FA5: lo correcto sería `fa-arrow-circle-down`, `fa-shield-alt`, y
+`fa-m` no es una clase de tamaño de FA5 (las válidas son `fa-xs`/`fa-sm`/`fa-lg`/`fa-2x`…; `fa-m`
+solo existe como icono-letra en FA6).
+
+**Conclusión: no falta ningún icono por el downgrade 5.15.4 → 5.11.2.** No hace falta actualizar
+`public/vendor/font-awesome/`, y por tanto no se tocó el paquete que consume toda la app vía
+`public/css/design-system/entrypoints/core.css` (`layer(vendor)`). No se corrieron los gates del DS
+porque no hubo cambio que verificar.
+
+### Queda abierto (de esta auditoría)
+
+- **Tres clases de icono inválidas, preexistentes y ajenas a F4** (no renderizaban nada ni con el CDN
+  5.15.4): las dos de `admin/views/pages/dashboard.php` y el modificador `fa-m` en Listado de
+  Actividades y `cargarDatosGeneralesPagina2.js`. Fuera del alcance de F4; corregirlas es un cambio
+  cosmético independiente.
