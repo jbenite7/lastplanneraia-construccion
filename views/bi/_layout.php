@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/css/bi-control-tower.css?v=<?= filemtime(__DIR__ . '/../../public/css/bi-control-tower.css') ?>">
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/bi-filter-drawer.css') ?>
 </head>
-<body class="aia-shell aia-shell--sidebar bi-control-tower-page antialiased text-sm">
+<body class="aia-shell aia-shell--sidebar bi-control-tower-page antialiased">
 
     <?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
