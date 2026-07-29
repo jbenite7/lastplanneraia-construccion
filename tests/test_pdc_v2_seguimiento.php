@@ -183,6 +183,50 @@ $assert($trasCalculo[0]['fechaReal'] === '2026-04-15',
 $assert($trasCalculo[0]['registradoPor'] === 'test-b1',
     'Recalculo: y su auditoria tambien.');
 
+// --- El avance sobrevive a un reamarre ---
+// Desamarrar invalida el plan: las fechas se calcularon contra un frente que ya no es el suyo. Pero
+// una propuesta ya recibida no deja de haberse recibido porque la obra se reprograme, asi que la
+// fila con avance se conserva —sin fechas programadas— y el siguiente calculo se las repone.
+$plan = new \App\Services\Pdc\PlanFechasService($db);
+$amarreOriginal = $db->query(
+    'SELECT unique_id FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+    [P, $paquete],
+)->fetchColumn();
+$assert($amarreOriginal !== false, 'El paquete de prueba esta amarrado a un frente (precondicion del reamarre).');
+
+$plan->desamarrar(P, $paquete);
+$trasDesamarrar = $db->query(
+    'SELECT fecha_real, fecha_inicio, fecha_fin, registrado_por FROM pdc_plan_paso
+      WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL',
+    [P, $paquete],
+)->fetchAll(\PDO::FETCH_ASSOC);
+$assert(count($trasDesamarrar) === 1,
+    'Reamarre: la fila con avance real sobrevive al desamarre. Quedaron ' . count($trasDesamarrar));
+$assert(($trasDesamarrar[0]['fecha_real'] ?? null) === '2026-04-15',
+    'Reamarre: con su fecha real intacta.');
+$assert(($trasDesamarrar[0]['registrado_por'] ?? '') === 'test-b1',
+    'Reamarre: y con su auditoria intacta.');
+$assert($trasDesamarrar[0]['fecha_inicio'] === null && $trasDesamarrar[0]['fecha_fin'] === null,
+    'Reamarre: lo programado si se limpia — se calculo contra un frente que ya no vale.');
+
+$sinAvance = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL',
+    [P, $paquete],
+)->fetchColumn();
+$assert($sinAvance === 0,
+    'Reamarre: las filas SIN avance si se borran, como siempre. Quedaron ' . $sinAvance);
+
+// Se devuelve al estado anterior y se recalcula: las programadas vuelven, el avance sigue ahi.
+$plan->amarrar(P, $paquete, (int) $amarreOriginal, 'test-b1');
+$plan->calcular(P, 'test-b1');
+$restaurado = $svc->pasosDePaquete(P, $paquete);
+$assert(count($restaurado) === count($detalle),
+    'Reamarre: recalcular repone todos los pasos. Dio ' . count($restaurado) . ' de ' . count($detalle));
+$assert($restaurado[0]['fechaReal'] === '2026-04-15',
+    'Reamarre: el avance sigue ahi tras recalcular.');
+$assert($restaurado[0]['fechaFin'] !== null,
+    'Reamarre: y las fechas programadas volvieron.');
+
 $assert($fallos === 0, 'Sin fallos');
 echo $fallos === 0 ? "=== OK ===\n" : "=== {$fallos} FALLOS ===\n";
 exit($fallos === 0 ? 0 : 1);

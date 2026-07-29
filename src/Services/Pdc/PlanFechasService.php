@@ -962,8 +962,19 @@ class PlanFechasService
      */
     private function limpiarPlanCalculado(int $projectId, int $paqueteId): void
     {
+        // Las filas SIN avance se borran: son solo fechas calculadas contra un frente que ya no vale.
         $this->db->query(
-            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL',
+            [$projectId, $paqueteId],
+        );
+        // Las que SI llevan avance se conservan y se les vacian las fechas programadas. Una propuesta
+        // ya recibida no deja de haberse recibido porque la obra se reprograme, y borrar la fila se
+        // llevaria por delante trabajo que ocurrio de verdad — la deuda que A4 dejo anotada aqui.
+        // Quedan con fecha_real y sin programadas, que es exactamente lo que significan: «esto se
+        // hizo, pero el plan todavia no se ha recalculado». El siguiente calcular() las repone.
+        $this->db->query(
+            'UPDATE pdc_plan_paso SET fecha_inicio = NULL, fecha_fin = NULL
+              WHERE project_id = ? AND paquete_id = ?',
             [$projectId, $paqueteId],
         );
         $this->db->query(
