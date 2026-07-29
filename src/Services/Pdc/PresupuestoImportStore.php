@@ -25,6 +25,13 @@ final class PresupuestoImportStore
         }
     }
 
+    /**
+     * El store es genérico y cada importador guarda su propia forma —el de presupuesto añade
+     * hashes y proyecto, el de maestro Sinco sólo nombre y usuario—, así que la clave es string
+     * pero el valor no se puede estrechar sin mentir sobre uno de los dos.
+     *
+     * @param array<string, mixed> $meta
+     */
     public function guardar(string $origen, array $meta): string
     {
         $this->limpiar();
@@ -48,6 +55,10 @@ final class PresupuestoImportStore
         return $ruta;
     }
 
+    /**
+     * @return array<string, mixed>|null lo mismo que guardó `guardar()`, o null si el token no
+     *                                   existe, caducó o el JSON quedó ilegible
+     */
     public function meta(string $token): ?array
     {
         if ($this->ruta($token) === null) {

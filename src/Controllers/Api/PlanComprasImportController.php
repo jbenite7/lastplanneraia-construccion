@@ -138,6 +138,53 @@ class PlanComprasImportController
         $this->ok(['versiones' => $this->service->versiones($projectId)]);
     }
 
+    /**
+     * POST /plan-compras/api/presupuesto/activar  {versionId}
+     *
+     * Fija a mano cuál versión rige. Guard `lps.pdc.importar` (f18): el mismo que carga
+     * presupuestos, no el de ver. Eso deja fuera al rol de Planeación, que sí puede amarrar y
+     * calcular — es intencional: cambiar la versión oficial mueve la base de todo lo demás.
+     */
+    public function activar(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $body = json_decode((string) file_get_contents('php://input'), true) ?: [];
+        $versionId = filter_var($body['versionId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($versionId === false) {
+            $this->fail('VERSION_INVALIDA', 'versionId inválido.', 422);
+            return;
+        }
+        $r = $this->service->activar($projectId, (int) $versionId);
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'VERSION_INVALIDA', 'Esa versión no existe en este proyecto.', 422);
+            return;
+        }
+        $this->ok(['ok' => true]);
+    }
+
+    /**
+     * GET /plan-compras/api/presupuesto/impacto-version — solo lectura.
+     *
+     * Qué queda afectado si se cambia la versión oficial. Se consulta ANTES de confirmar, para que
+     * el aviso diga un número real y no una advertencia genérica.
+     */
+    public function impactoVersion(): void
+    {
+        if (!(new RbacService($this->db))->can('lps.pdc.ver')) {
+            $this->fail('FORBIDDEN', 'No autorizado para consultar el plan de compras.', 403);
+            return;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return;
+        }
+        $this->ok($this->service->impactoDeCambiarVersion($projectId));
+    }
+
     /** GET /plan-compras/api/presupuesto/arbol[?versionId=N] — solo lectura. */
     public function arbol(): void
     {
@@ -173,7 +220,7 @@ class PlanComprasImportController
         }
         $va = filter_var($_GET['versionA'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $vb = filter_var($_GET['versionB'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($va === false || $va === null || $vb === false || $vb === null || $va === $vb) {
+        if ($va === false || $vb === false || $va === $vb) {
             $this->fail('PARAMS_INVALIDOS', 'Debes elegir dos versiones distintas para comparar.', 422);
             return;
         }

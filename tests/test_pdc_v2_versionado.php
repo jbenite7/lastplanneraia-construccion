@@ -128,6 +128,57 @@ $vers = $service->versiones(PDC_VER_A);
 $assert(isset($vers[0]['versionNumero']) && $vers[0]['versionNumero'] === 3, 'versiones() trae versionNumero (la más reciente = 3).');
 $assert($service->versiones(PDC_VER_B) === [], 'Aislamiento: proyecto B sin versiones.');
 
+// --- Elegir a mano la versión oficial (f15-f19 de la revisión de UX) ---
+// Hasta ahora la marca «Activa» se la llevaba siempre la última importación, sin forma de volver
+// a una anterior: si alguien cargaba un presupuesto equivocado, el proyecto entero quedaba
+// colgando de él.
+$idV1 = $c1['versionId'];
+$idV3 = $c4['versionId'];
+
+$r = $service->activar(PDC_VER_A, $idV1);
+$assert(($r['ok'] ?? false) === true, 'Activar: responde ok. Dio ' . var_export($r, true));
+
+$activas = (int) $db->query('SELECT COUNT(*) FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1', [PDC_VER_A])->fetchColumn();
+$assert($activas === 1, 'Activar: queda exactamente una versión activa. Dio ' . $activas);
+
+$cual = (int) $db->query('SELECT id FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1', [PDC_VER_A])->fetchColumn();
+$assert($cual === $idV1, 'Activar: la activa es la que se eligió, no la última cargada. Dio ' . $cual);
+
+// f17: volver a una versión NUEVA sigue siendo posible; esto no es un camino de una sola dirección.
+$service->activar(PDC_VER_A, $idV3);
+$cual = (int) $db->query('SELECT id FROM pdc_presupuesto_versiones WHERE project_id = ? AND activa = 1', [PDC_VER_A])->fetchColumn();
+$assert($cual === $idV3, 'Activar: se puede volver a una versión más reciente. Dio ' . $cual);
+
+// Activar la que ya está activa es un no-op, no un error ni una violación del índice único.
+$rMismo = $service->activar(PDC_VER_A, $idV3);
+$assert(($rMismo['ok'] ?? false) === true, 'Activar la que ya estaba activa no rompe. Dio ' . var_export($rMismo, true));
+
+// Una versión de OTRO proyecto no se puede activar aquí.
+$rAjena = $service->activar(PDC_VER_B, $idV1);
+$assert(($rAjena['ok'] ?? true) === false && ($rAjena['code'] ?? '') === 'VERSION_INVALIDA',
+    'Activar: una versión de otro proyecto se rechaza. Dio ' . var_export($rAjena, true));
+
+// f16: el aviso cuenta lo ÚNICO que está atado a una versión concreta — los vínculos del maestro.
+$db->query(
+    'INSERT INTO pdc_insumo_vinculos (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo, cantidad_total, valor_total, apariciones)
+     VALUES (?, ?, ?, ?, ?, ?, 1, 1000, 1), (?, ?, ?, ?, ?, ?, 1, 2000, 1)',
+    [PDC_VER_A, $idV3, 'TEJA DE ZINC', 'M2', 'TEJA DE ZINC', 'MAT-CUBIERTAS',
+     PDC_VER_A, $idV3, 'AYUDANTE', 'HC', 'AYUDANTE', 'MANO DE OBRA'],
+);
+$impacto = $service->impactoDeCambiarVersion(PDC_VER_A);
+$assert(($impacto['vinculosAfectados'] ?? -1) === 2,
+    'Impacto: cuenta los vínculos del maestro hechos sobre la versión que se abandona. Dio ' . var_export($impacto['vinculosAfectados'] ?? null, true));
+$assert(($impacto['versionActual']['id'] ?? null) === $idV3,
+    'Impacto: dice de qué versión se está saliendo. Dio ' . var_export($impacto['versionActual'] ?? null, true));
+
+// Un proyecto sin versión activa no rompe el aviso: informa cero y sin versión.
+$impactoVacio = $service->impactoDeCambiarVersion(PDC_VER_B);
+// Ojo con `??` aquí: null es justo lo que se espera, y `?? 'x'` lo convertiría en 'x'.
+$assert(($impactoVacio['vinculosAfectados'] ?? -1) === 0 && $impactoVacio['versionActual'] === null,
+    'Impacto: sin versión activa informa cero, no revienta. Dio ' . var_export($impactoVacio, true));
+
+$db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [PDC_VER_A]);
+
 foreach ([$v1, $v1b, $v2, $v3] as $f) { @unlink($f); }
 $limpiar();
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";

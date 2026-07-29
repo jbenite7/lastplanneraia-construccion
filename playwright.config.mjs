@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { BASE_URL } from './tests/browser/fixtures/base-url.mjs';
 
 export default defineConfig({
   testDir: './tests/browser',
@@ -22,7 +23,9 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:8081',
+    // Mismo origen que usan los helpers de sesión (login/logout con URL absoluta): si divergen, el
+    // login entra en un stack y las rutas relativas de `page.goto` aterrizan en otro, sin sesión.
+    baseURL: BASE_URL,
     headless: true,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

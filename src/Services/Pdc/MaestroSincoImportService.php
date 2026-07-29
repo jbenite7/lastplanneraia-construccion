@@ -5,6 +5,9 @@ namespace App\Services\Pdc;
 /**
  * Import del maestro SINCO: preview (parsear + guardar temporal) y confirmar
  * (upsert transaccional por codigo_sinco, con enriquecimiento de filas de A2).
+ *
+ * @phpstan-import-type SincoErrorFila from MaestroSincoParser
+ * @phpstan-import-type SincoResumen from MaestroSincoParser
  */
 final class MaestroSincoImportService
 {
@@ -15,6 +18,13 @@ final class MaestroSincoImportService
     ) {
     }
 
+    /**
+     * @return array{ok: false, errores: list<SincoErrorFila>}|array{
+     *     ok: true,
+     *     importToken: string,
+     *     resumen: SincoResumen
+     * }
+     */
     public function preview(string $rutaArchivo, string $nombre, string $usuario): array
     {
         $r = $this->parser->parse($rutaArchivo);
@@ -25,6 +35,18 @@ final class MaestroSincoImportService
         return ['ok' => true, 'importToken' => $token, 'resumen' => $r['resumen']];
     }
 
+    /**
+     * `conflictos` recoge los insumos que comparten descripción normalizada y unidad con otro que
+     * YA tiene código SINCO: no se pisan, se reportan.
+     *
+     * @return array{ok: false, code: 'TOKEN_EXPIRED'|'INVALID_FILE'}|array{
+     *     ok: true,
+     *     creados: int,
+     *     actualizados: int,
+     *     enriquecidos: int,
+     *     conflictos: list<array{codigoSinco: string, descripcion: string, chocaCon: mixed}>
+     * }
+     */
     public function confirmar(string $token): array
     {
         $ruta = $this->store->ruta($token);

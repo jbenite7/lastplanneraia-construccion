@@ -10,6 +10,41 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * actividad vigente; fila jerárquica = actividad cuando tiene "ID APU" no vacío,
  * o cuando tiene CANTIDAD numérica en nivel >= 3; validación todo-o-nada con
  * reporte por fila/columna (tope 200 errores).
+ *
+ * Los campos numéricos del insumo no son nullables aunque `numero()` sí lo sea: la fila que no
+ * los trae completos se descarta antes de acumularse. `iva` es la excepción, es opcional.
+ *
+ * @phpstan-type PresupuestoItem array{
+ *     codigo: string,
+ *     codigo_padre: string|null,
+ *     nivel: int,
+ *     tipo_fila: 'capitulo'|'subcapitulo'|'grupo'|'actividad',
+ *     descripcion: string,
+ *     unidad: string|null,
+ *     cantidad: float|null,
+ *     id_apu: string|null
+ * }
+ * @phpstan-type PresupuestoInsumo array{
+ *     codigo_actividad: string,
+ *     descripcion: string,
+ *     tipo_insumo: string,
+ *     unidad: string,
+ *     cant_apu: float,
+ *     rendimiento: float,
+ *     cantidad_total: float,
+ *     valor_unitario: float,
+ *     valor_total: float,
+ *     iva: float|null
+ * }
+ * @phpstan-type PresupuestoErrorFila array{fila: int, columna: string, motivo: string}
+ * @phpstan-type PresupuestoResumen array{
+ *     capitulos: int,
+ *     subcapitulos: int,
+ *     grupos: int,
+ *     actividades: int,
+ *     insumos: int,
+ *     costoTotal: float
+ * }
  */
 final class PresupuestoExcelParser
 {
@@ -19,6 +54,18 @@ final class PresupuestoExcelParser
     /** columnas requeridas → clave normalizada */
     private const REQUERIDAS = ['CODIGO', 'DESCRIPCION', 'UM', 'CANTIDAD', 'VERSION', 'ID APU', 'CANT APU', 'REND', 'VRUNIT', 'TIPO INSUMO'];
 
+    /**
+     * @return array{
+     *     valido: bool,
+     *     versionLabel: string|null,
+     *     resumen: PresupuestoResumen,
+     *     items: list<PresupuestoItem>,
+     *     insumos: list<PresupuestoInsumo>,
+     *     errores: list<PresupuestoErrorFila>
+     * }
+     *
+     * @throws \RuntimeException si falta la hoja, está vacía o le faltan columnas requeridas
+     */
     public function parse(string $filePath): array
     {
         $reader = IOFactory::createReaderForFile($filePath);
@@ -191,6 +238,11 @@ final class PresupuestoExcelParser
         ];
     }
 
+    /**
+     * @param array<int, mixed> $headerRow la fila 0 tal cual la entrega PhpSpreadsheet
+     *
+     * @return array<string, int> título normalizado → índice de columna
+     */
     private function mapearEncabezados(array $headerRow): array
     {
         $mapa = [];
@@ -224,6 +276,9 @@ final class PresupuestoExcelParser
         return is_numeric($v) ? (float) $v : null;
     }
 
+    /**
+     * @param array<int, mixed> $row
+     */
     private function filaVacia(array $row): bool
     {
         foreach ($row as $v) {

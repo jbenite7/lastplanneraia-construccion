@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
+require_once __DIR__ . '/support/familias_revision_obligatoria.php';
 
 $failed = 0;
 
@@ -55,12 +56,8 @@ try {
         hdmAssert(str_contains($matrix, '| ' . $name . ' |'), "la matriz cubre {$name}");
     }
 
-    $pending = (int) $db->query(
-        'SELECT COUNT(*) FROM general_pdc_familias
-         WHERE COALESCE(activa, 1) = 1
-           AND COALESCE(siempre_revision, 0) = 1',
-    )->fetchColumn();
-    hdmAssert($pending === 0, 'la aprobacion humana cerro los pendientes globales');
+    $pending = familiasConRevisionObligatoria($db);
+    hdmAssert($pending === FAMILIAS_REVISION_OBLIGATORIA, 'el catalogo mantiene exactamente las familias con revision obligatoria vigentes');
 
     foreach (['Pasar a Contratos', 'Mantener en revision', 'Aprobar como familias operativas'] as $section) {
         hdmAssert(str_contains($matrix, $section), "la matriz incluye seccion {$section}");

@@ -186,6 +186,8 @@ $router->get('/plan-compras/api/contexto', [\App\Controllers\Api\PlanComprasApiC
 $router->post('/plan-compras/api/presupuesto/preview', [\App\Controllers\Api\PlanComprasImportController::class, 'preview']);
 $router->post('/plan-compras/api/presupuesto/confirmar', [\App\Controllers\Api\PlanComprasImportController::class, 'confirmar']);
 $router->get('/plan-compras/api/presupuesto/versiones', [\App\Controllers\Api\PlanComprasImportController::class, 'versiones']);
+$router->post('/plan-compras/api/presupuesto/activar', [\App\Controllers\Api\PlanComprasImportController::class, 'activar']);
+$router->get('/plan-compras/api/presupuesto/impacto-version', [\App\Controllers\Api\PlanComprasImportController::class, 'impactoVersion']);
 $router->get('/plan-compras/api/presupuesto/arbol', [\App\Controllers\Api\PlanComprasImportController::class, 'arbol']);
 $router->get('/plan-compras/api/presupuesto/comparar', [\App\Controllers\Api\PlanComprasImportController::class, 'comparar']);
 
@@ -215,6 +217,26 @@ $router->post('/plan-compras/api/paquetes/desasignar', [\App\Controllers\Api\Pla
 // A3.3 — auto-asignación acotada: preview de qué despacharía el motor solo y qué deja al humano.
 $router->get('/plan-compras/api/paquetes/plan-auto', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'planAuto']);
 $router->post('/plan-compras/api/paquetes/auto-asignar', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'autoAsignar']);
+// Api/Plan de Compras v2 — plan de compras con fechas (A4). El bare "/plan" va después de los
+// sufijados a propósito (ver brief de la Task 8): aunque FastRoute resuelve rutas estáticas por
+// hashmap exacto y el orden no cambia el resultado, se preserva el orden pedido por consistencia.
+$router->get('/plan-compras/api/plan/frentes', [\App\Controllers\Api\PlanComprasPlanController::class, 'frentes']);
+$router->get('/plan-compras/api/plan/sugerencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'sugerencias']);
+$router->get('/plan-compras/api/plan/anclas', [\App\Controllers\Api\PlanComprasPlanController::class, 'anclas']);
+$router->get('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'correspondencias']);
+$router->post('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarCorrespondencia']);
+$router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
+$router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
+$router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
+$router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
+$router->post('/plan-compras/api/plan/desamarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'desamarrar']);
+$router->post('/plan-compras/api/plan/calcular', [\App\Controllers\Api\PlanComprasPlanController::class, 'calcular']);
+$router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsable']);
+// A4.1 — pasos del proceso de contratación configurables por proyecto. La sufijada va antes que la
+// desnuda por consistencia con el resto del bloque (FastRoute resuelve estáticas por hashmap exacto).
+$router->get('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'pasos']);
+$router->post('/plan-compras/api/plan/pasos/restablecer', [\App\Controllers\Api\PlanComprasPlanController::class, 'restablecerPasos']);
+$router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);

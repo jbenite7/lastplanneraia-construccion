@@ -14,7 +14,7 @@ class PlanComprasApiController
 {
     use PlanComprasJsonRespuestas;
 
-    private $db;
+    private \Database $db;
 
     public function __construct()
     {

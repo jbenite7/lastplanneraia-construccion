@@ -333,7 +333,7 @@ $stage = function_exists('mb_substr') ? mb_substr($stage, 0, 24, 'UTF-8') : subs
 
 cncAssertScenario($failures, $bi, $db, 'canonical empty week', [$projectId], (string) ((int) $week + 100), []);
 cncAssertScenario($failures, $bi, $db, 'canonical CNC context', [$projectId], $week, []);
-cncAssertScenario($failures, $bi, $db, 'CNC multi-project range', [73, 75], '', ['desde' => '2026-07-06', 'hasta' => '2026-07-26']);
+cncAssertScenario($failures, $bi, $db, 'CNC multi-project range', [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B], '', ['desde' => '2026-07-06', 'hasta' => '2026-07-26']);
 if (($weekRange['Fecha_Inicio_Sem'] ?? '') !== '' && ($weekRange['Fecha_Fin_Sem'] ?? '') !== '') {
     cncAssertScenario($failures, $bi, $db, 'canonical CNC date range', [$projectId], '', ['desde' => $weekRange['Fecha_Inicio_Sem'], 'hasta' => $weekRange['Fecha_Fin_Sem']]);
 }

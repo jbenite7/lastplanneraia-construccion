@@ -1,0 +1,26 @@
+# Nivel 6 exigido SOLO al módulo PDC, que es donde está el desarrollo activo.
+#
+# El resto del repo se queda en el nivel 5 de `phpstan.neon`: subirlo entero al 6 produce 1850
+# hallazgos, 1750 de ellos `missingType.*` repartidos por toda la app madura, y congelarlos
+# enterraría la señal real. El PDC en cambio son pocos archivos, bien probados y en movimiento,
+# así que ahí el tipado sí se sostiene.
+#
+# Deliberadamente NO incluye `phpstan.neon`: este gate no debe heredar ni el nivel 5 ni la línea
+# base global (que además no tiene ninguna entrada del PDC). Es un análisis independiente.
+#
+# Se ejecuta aparte del gate global:
+#     docker compose exec -T app vendor/bin/phpstan analyse -c phpstan-pdc.neon
+
+parameters:
+    level: 6
+    paths:
+        - src/Services/Pdc
+        - src/Controllers/Api/PlanComprasApiController.php
+        - src/Controllers/Api/PlanComprasImportController.php
+        - src/Controllers/Api/PlanComprasJsonRespuestas.php
+        - src/Controllers/Api/PlanComprasMaestroController.php
+        - src/Controllers/Api/PlanComprasMaestroImportController.php
+        - src/Controllers/Api/PlanComprasPaquetesController.php
+        - src/Controllers/Api/PlanComprasPlanController.php
+    bootstrapFiles:
+        - scripts/phpstan/constantes-entrypoint.php

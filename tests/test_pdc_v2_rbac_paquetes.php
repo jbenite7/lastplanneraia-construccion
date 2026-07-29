@@ -31,5 +31,19 @@ $assert($rbac->can('lps.paquetes_contratacion.editar', 'P'), 'P edita paquetes.'
 $assert($rbac->can('lps.paquetes_contratacion.ver', 'R'), 'R ve paquetes.');
 $assert(!$rbac->can('lps.paquetes_contratacion.editar', 'R'), 'R NO edita paquetes.');
 
+// f13 de la revisión de UX: desamarrar lo puede hacer exactamente quien puede amarrar. Un permiso
+// aparte dejaría a gente capaz de crear un amarre equivocado sin poder corregirlo.
+$assert(!in_array('lps.paquetes_contratacion.desamarrar', RbacCatalog::permissionKeys(), true),
+    'Desamarrar NO estrena permiso propio: usa el mismo .editar que amarrar.');
+
+$controlador = file_get_contents(__DIR__ . '/../src/Controllers/Api/PlanComprasPlanController.php') ?: '';
+$rutas = file_get_contents(__DIR__ . '/../public/index.php') ?: '';
+$assert(str_contains($rutas, "/plan-compras/api/plan/desamarrar"),
+    'La ruta POST de desamarrar está registrada.');
+$desamarrarFn = substr($controlador, (int) strpos($controlador, 'public function desamarrar'));
+$desamarrarFn = substr($desamarrarFn, 0, (int) strpos($desamarrarFn, 'public function calcular'));
+$assert(str_contains($desamarrarFn, 'guardEscritura()'),
+    'desamarrar() pasa por el mismo guard de escritura que amarrar (permiso + CSRF).');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

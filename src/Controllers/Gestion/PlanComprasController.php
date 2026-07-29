@@ -37,6 +37,12 @@ class PlanComprasController extends BaseController
             JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
         );
 
+        // Ítem del sidebar que queda marcado como activo. Si no casara con ningún id declarado en
+        // shell_sidebar.php, `sidebarNavigation()` lanza InvalidArgumentException y la página
+        // entera truena — no se degrada solo la marca.
+        $shellActive = 'plan-compras';
+        $shellModuleLabel = 'Plan de Compras';
+
         $bundlePath = PROJECT_ROOT . '/public/pdc-app/assets/pdc.js';
         $assetVersion = is_file($bundlePath) ? (int) filemtime($bundlePath) : 0;
 

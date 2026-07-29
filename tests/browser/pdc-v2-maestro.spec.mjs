@@ -1,13 +1,20 @@
 import { test, expect } from '@playwright/test';
-import { PROJECTS } from './fixtures/projects.mjs';
 import { loginAndSelectProject, logout } from './support/session.mjs';
+import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
 
-const project = PROJECTS.find(({ key }) => key === 'construction');
+const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
 
-test('maestro: cold start masivo y re-import con auto-match', async ({ page }) => {
-  test.skip(!project, 'Se requiere el proyecto de construcción (Da Porto)');
+// El presupuesto de juguete queda como versión activa: va contra el proyecto sacrificable
+// «PDC Sandbox E2E», que se resetea antes de cada test.
+//
+// «Crear masivo» además da de alta los insumos del fixture en `general_maestro_insumos`, catálogo
+// GLOBAL sin project_id que ningún proyecto sacrificable puede aislar. Por eso el fixture los llama
+// `ZZTEST ...`: la marca los hace imposibles de confundir con un insumo real (ni al crearlos ni al
+// retirarlos desde el catálogo) y el reseteo del sandbox los borra al empezar la corrida siguiente.
+usarSandboxPdc();
 
+test('maestro: cold start masivo y re-import con auto-match', async ({ page }) => {
   await loginAndSelectProject(page, project);
   try {
     // Import fresco para tener versión activa con vínculos regenerables.
@@ -18,7 +25,7 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
 
     // Maestro: la carga genera vínculos.
-    await page.locator('nav >> text=Maestro').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Maestro').click();
     await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
     await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
 
@@ -33,25 +40,35 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     }
     await expect(cobertura).toContainText('0 pendientes', { timeout: 15000 });
 
-    // El catálogo global contiene los insumos del fixture.
+    // El catálogo global contiene los insumos del fixture. Siempre se busca antes de asertar: el
+    // catálogo es el de toda la empresa (miles de insumos) y el grid no los muestra todos. Y la
+    // búsqueda se hace por la marca ZZTEST, no por un término genérico: «concreto» o «bombeo»
+    // devuelven además insumos REALES, y el retiro de más abajo caería sobre uno de ellos.
+    // El catálogo global es una pestaña desde la revisión de UX (f28): tapaba la cola de pendientes.
+    await page.getByRole('tab', { name: /Catálogo global/ }).click();
     const catalogo = page.locator('[data-testid="pdc-maestro-catalogo"]');
-    await expect(catalogo.locator('.ag-cell', { hasText: 'TEJA DE ZINC' }).first()).toBeVisible({ timeout: 15000 });
+    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('zztest teja');
+    await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' }).first()).toBeVisible({ timeout: 15000 });
 
     // Búsqueda del catálogo.
-    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('concreto');
-    await expect(catalogo.locator('.ag-cell', { hasText: 'CONCRETO 4000PSI' }).first()).toBeVisible({ timeout: 15000 });
+    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('zztest concreto');
+    await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST CONCRETO 4000PSI' }).first()).toBeVisible({ timeout: 15000 });
 
     // Retiro desde el catálogo: la fila desaparece de la vista activa.
-    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('bombeo');
-    const filaBombeo = catalogo.locator('.ag-row', { hasText: 'SERVICIO BOMBEO' }).first();
+    await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('zztest servicio bombeo');
+    const filaBombeo = catalogo.locator('.ag-row', { hasText: 'ZZTEST SERVICIO BOMBEO' }).first();
     await expect(filaBombeo).toBeVisible({ timeout: 15000 });
     await filaBombeo.locator('.pdc-celda-accion').click();
+    // Retirar revierte los vínculos automáticos del insumo en TODOS los proyectos, así que desde la
+    // tanda 4 pregunta antes de escribir. «Reactivar» sigue yendo directo: no destruye nada.
+    await expect(page.locator('[data-testid="pdc-maestro-confirmar-retirar"]')).toBeVisible({ timeout: 15000 });
+    await page.locator('[data-testid="pdc-maestro-retirar-confirmar"]').click();
     await expect(page.locator('.pdc-exito')).toContainText('retirado', { timeout: 15000 });
-    await expect(catalogo.locator('.ag-cell', { hasText: 'SERVICIO BOMBEO' })).toHaveCount(0, { timeout: 15000 });
+    await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST SERVICIO BOMBEO' })).toHaveCount(0, { timeout: 15000 });
 
     // Ver retirados → reaparece con acción Reactivar.
     await page.locator('[data-testid="pdc-maestro-ver-retirados"]').check();
-    const filaRetirada = catalogo.locator('.ag-row', { hasText: 'SERVICIO BOMBEO' }).first();
+    const filaRetirada = catalogo.locator('.ag-row', { hasText: 'ZZTEST SERVICIO BOMBEO' }).first();
     await expect(filaRetirada.locator('.pdc-celda-accion')).toHaveText('Reactivar', { timeout: 15000 });
     await filaRetirada.locator('.pdc-celda-accion').click();
     await expect(page.locator('.pdc-exito')).toContainText('reactivado', { timeout: 15000 });

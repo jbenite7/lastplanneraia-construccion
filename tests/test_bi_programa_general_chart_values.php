@@ -1879,12 +1879,12 @@ biValidateProgramaGeneral($db, $bi, $failures, [(int) $context['project_id']], (
     'resp' => (string) $context['responsable_aia'],
 ], 'single-project-week-sub-resp');
 
-biValidateProgramaGeneral($db, $bi, $failures, [73, 75], '', [
+biValidateProgramaGeneral($db, $bi, $failures, [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B], '', [
     'desde' => '2026-07-06',
     'hasta' => '2026-07-27',
 ], 'canonical-multi-project-date-range');
 
-biValidateProgramaGeneral($db, $bi, $failures, [73, 75], '', [
+biValidateProgramaGeneral($db, $bi, $failures, [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B], '', [
     'desde' => '2026-07-06',
     'hasta' => '2026-07-27',
 ], 'multi-project-date-range');
@@ -1946,11 +1946,11 @@ if ($multiFiltered) {
     ], 'multi-project-date-range-sub-resp');
 }
 
-biValidateProgramaGeneral($db, $bi, $failures, [73], '3', [
+biValidateProgramaGeneral($db, $bi, $failures, [BiContractFixture::PROYECTO_A], '3', [
     'sub' => 'Proveedor CI Nuevo',
 ], 'mutable-subcontractor-cohort-canonical-fixture');
 
-$staleFilterProjectIds = [73];
+$staleFilterProjectIds = [BiContractFixture::PROYECTO_A];
 $staleFilterWeek = '3';
 $staleFilterFilters = ['sub' => 'Proveedor CI Construccion'];
 $staleCurrentRows = biFetchPg($db, $staleFilterProjectIds, $staleFilterWeek, $staleFilterFilters, false);
@@ -1969,7 +1969,7 @@ if ($staleCurrentRows !== [] || $staleHistoricalRows === []) {
     }
 }
 
-$missingFilteredProjectIds = [73, 75];
+$missingFilteredProjectIds = [BiContractFixture::PROYECTO_A, BiContractFixture::PROYECTO_B];
 $missingFilteredWeek = '3';
 $missingFilteredFilters = ['sub' => 'Proveedor CI Nuevo'];
 $missingFilteredRows = biFetchPg(

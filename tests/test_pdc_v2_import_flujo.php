@@ -84,16 +84,36 @@ $cInventado = $service->confirmar(str_repeat('f', 32), PDC_TEST_PROJECT_A);
 $assert($cInventado['ok'] === false && $cInventado['code'] === 'TOKEN_EXPIRED', 'Token desconocido → TOKEN_EXPIRED.');
 
 // Segundo import con contenido idéntico → anti-duplicado (A1.7): sin cambios, NO crea versión nueva.
-$tmp2 = sys_get_temp_dir() . '/pdc_flujo_valido2.xlsx';
-pdcFixturePresupuestoValido($tmp2);
-$p2 = $service->previewDesdeArchivo($tmp2, 'presupuesto-v2.xlsx', PDC_TEST_PROJECT_A, 'tester');
-$assert($p2['advertencias'] !== [], 'Re-import de contenido idéntico advierte.');
+//
+// El aviso de «ya lo importaste» compara `archivo_hash`, el hash de los BYTES, así que hay que
+// reimportar el mismo archivo. Antes se regeneraba uno nuevo con `pdcFixturePresupuestoValido()`
+// dando por hecho que saldría idéntico, y solo salía idéntico si las dos generaciones caían en el
+// mismo segundo: el XLSX fija sus propiedades (`setCreated(0)`) pero el contenedor ZIP se sella con
+// la hora del sistema. Corriendo el test suelto pasaba; dentro de la suite completa, con la máquina
+// cargada, pasaba más de un segundo entre ambas generaciones y el aviso no saltaba. De ahí el falso
+// rojo intermitente.
+$p2 = $service->previewDesdeArchivo($tmp, 'presupuesto-v2.xlsx', PDC_TEST_PROJECT_A, 'tester');
+$assert($p2['advertencias'] !== [], 'Re-import del mismo archivo advierte (hash de archivo).');
 $c3 = $service->confirmar($p2['importToken'], PDC_TEST_PROJECT_A);
 $assert($c3['ok'] === true && $c3['sinCambios'] === true && $c3['versionId'] === $c1['versionId'], 'Confirmar contenido idéntico: sin cambios, NO crea versión nueva.');
 $versiones = $service->versiones(PDC_TEST_PROJECT_A);
 $assert(count($versiones) === 1, 'Sigue habiendo 1 sola versión (el anti-duplicado no crea una 2ª).');
 $activas = array_values(array_filter($versiones, fn ($x) => (int) $x['activa'] === 1));
 $assert(count($activas) === 1 && $activas[0]['id'] === $c1['versionId'], 'La única versión sigue activa.');
+
+// Y ahora la otra mitad del anti-duplicado, la que de verdad importa: un archivo con BYTES
+// distintos pero el mismo contenido tampoco crea versión. `sinCambios` sale de `contenido_hash`
+// —construido desde los items y los insumos parseados—, así que no depende de la hora a la que se
+// generó el .xlsx y se puede comprobar sin depender del reloj.
+$tmp2 = sys_get_temp_dir() . '/pdc_flujo_valido2.xlsx';
+pdcFixturePresupuestoValido($tmp2);
+$p2b = $service->previewDesdeArchivo($tmp2, 'presupuesto-v3.xlsx', PDC_TEST_PROJECT_A, 'tester');
+$c3b = $service->confirmar($p2b['importToken'], PDC_TEST_PROJECT_A);
+$assert(
+    $c3b['ok'] === true && $c3b['sinCambios'] === true && $c3b['versionId'] === $c1['versionId'],
+    'Archivo distinto con el mismo contenido: sin cambios, NO crea versión nueva.',
+);
+$assert(count($service->versiones(PDC_TEST_PROJECT_A)) === 1, 'Sigue habiendo 1 sola versión tras el re-import equivalente.');
 
 // Aislamiento por proyecto: B no ve nada.
 $assert($service->versiones(PDC_TEST_PROJECT_B) === [], 'Proyecto B no ve versiones de A.');

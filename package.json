@@ -8,6 +8,7 @@
     "test:design-system:static": "node scripts/design-system-entrypoint-partition.mjs && node scripts/design-system-unlayered-delivery.mjs && node scripts/design-system-bi-utilities.mjs && node --test tests/design-system/*.test.mjs tests/scripts/design-system-audit.test.mjs && node scripts/design-system-contracts.mjs && node scripts/design-system-consumer-contract.mjs && node scripts/design-system-audit.mjs",
     "test:design-system:consumers": "node scripts/design-system-consumer-contract.mjs",
     "test:design-system:phpstan": "node scripts/design-system-phpstan-baseline.mjs",
+    "test:pdc:phpstan": "docker compose exec -T app vendor/bin/phpstan analyse -c phpstan-pdc.neon --memory-limit=1G --no-progress",
     "test:design-system:runtime": "playwright test tests/browser/design-system-lab.mjs tests/browser/design-system-body-canvas-dark.mjs tests/browser/design-system-unlayered-delivery.mjs --workers=1 && npm run test:a11y:lab && npm run test:visual:lab && npm run test:performance:lab",
     "test:design-system:evidence": "playwright test tests/browser/design-system-lab-keyboard.mjs tests/browser/design-system-lab-desktop-layout.mjs --workers=1",
     "test:a11y:lab": "playwright test tests/browser/design-system-lab.a11y.mjs --workers=1",
