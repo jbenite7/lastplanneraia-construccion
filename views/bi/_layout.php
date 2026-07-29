@@ -9,26 +9,6 @@
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
 
-    <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        aia: {
-                            corp: { main: 'var(--ds-color-brand-primary)', med: 'var(--aia-green-medium)', light: 'var(--aia-green-light)', ext: 'var(--aia-green-very-light)' },
-                            const: { main: 'var(--ds-color-brand-construction)', med: 'var(--aia-orange-medium)', light: 'var(--aia-orange-light)', ext: 'var(--aia-orange-very-light)' },
-                            proj: { main: 'var(--ds-color-brand-aqua)', med: 'var(--aia-aqua-medium)', light: 'var(--aia-aqua-light)', ext: 'var(--aia-aqua-very-light)' },
-                            alert: { crit: 'var(--aia-alert-critical)', high: 'var(--aia-alert-high)', med: 'var(--aia-alert-medium)', bg: 'var(--aia-alert-background)' },
-                            warn: { crit: 'var(--aia-warning-critical)', high: 'var(--aia-warning-high)', med: 'var(--aia-warning-medium)', bg: 'var(--aia-warning-background)' },
-                            neutral: { bg: 'var(--ds-color-bg-canvas)', border: 'var(--ds-color-border-default)', text: 'var(--ds-color-text-primary)' }
-                        }
-                    },
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/vendor/chart.js/chart.umd.min.js?v=4.4.1"></script>

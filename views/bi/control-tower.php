@@ -6,30 +6,30 @@
     </section>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-row">
-        <div class="card p-5 flex items-center gap-4 border-l-4 border-l-aia-const-main" aria-label="KPI: Porcentaje Plan Cumplido">
-            <i data-lucide="target" class="w-10 h-10 text-aia-const-main" aria-hidden="true"></i>
+        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Porcentaje Plan Cumplido">
+            <i data-lucide="target" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">PPC</p>
                 <p id="kpi-ppc" class="text-2xl font-bold text-gray-900">--%</p>
                 <p id="kpi-ppc-delta" class="text-xs text-gray-400">vs semana anterior</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4 border-l-aia-proj-main" aria-label="KPI: Actividades Programadas">
-            <i data-lucide="clipboard-list" class="w-10 h-10 text-aia-proj-main" aria-hidden="true"></i>
+        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Actividades Programadas">
+            <i data-lucide="clipboard-list" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Programadas</p>
                 <p id="kpi-programadas" class="text-2xl font-bold text-gray-900">--</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4 border-l-aia-corp-main" aria-label="KPI: Actividades Ejecutadas">
-            <i data-lucide="check-circle" class="w-10 h-10 text-aia-corp-main" aria-hidden="true"></i>
+        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Actividades Ejecutadas">
+            <i data-lucide="check-circle" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Ejecutadas</p>
                 <p id="kpi-ejecutadas" class="text-2xl font-bold text-gray-900">--</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4 border-l-aia-const-main" aria-label="KPI: Brecha vs Programado">
-            <i data-lucide="alert-triangle" class="w-10 h-10 text-aia-const-main" aria-hidden="true"></i>
+        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Brecha vs Programado">
+            <i data-lucide="alert-triangle" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Brecha</p>
                 <p id="kpi-brecha" class="text-2xl font-bold text-gray-900">--</p>
@@ -40,14 +40,14 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="card p-5" aria-label="Gráfico PPC semanal">
             <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="pie-chart" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+                <i data-lucide="pie-chart" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">PPC por Semana</h3>
             </div>
             <canvas id="chart-ppc-semanal" height="220" aria-label="Gráfico de barras PPC por semana"></canvas>
         </div>
         <div class="card p-5" aria-label="Gráfico PAC vs Programado">
             <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+                <i data-lucide="bar-chart-3" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">PAC vs Programado</h3>
             </div>
             <canvas id="chart-pac-prog" height="220" aria-label="Gráfico de barras PAC vs Programado"></canvas>
@@ -56,7 +56,7 @@
 
     <section class="card p-5">
         <div class="flex items-center gap-2 mb-3">
-            <i data-lucide="list-checks" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+            <i data-lucide="list-checks" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Acciones recomendadas</h3>
         </div>
         <div id="recommended-actions" class="text-sm text-gray-600">Sin recomendaciones.</div>
@@ -251,7 +251,7 @@
         <div class="card p-5">
             <div class="bi-chart-card-header mb-3">
                 <div class="flex items-center gap-2">
-                    <i data-lucide="trending-up" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+                    <i data-lucide="trending-up" class="w-5 h-5" aria-hidden="true"></i>
                     <h3 class="font-semibold text-gray-800">Curva S Ejecución</h3>
                 </div>
                 <label class="bi-switch" for="toggle-programa-projections">
@@ -267,7 +267,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <div id="programa-gauge-card" class="card p-5 bi-gauge-card">
             <div class="bi-section-heading mb-3">
-                <i data-lucide="gauge" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+                <i data-lucide="gauge" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="bi-section-heading__title">% Avance de Obra</h3>
             </div>
             <div class="bi-gauge-panel">
@@ -302,7 +302,7 @@
         </div>
         <div id="programa-compliance-card" class="card p-5 bi-compliance-card">
             <div class="bi-section-heading mb-3">
-                <i data-lucide="check-check" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
+                <i data-lucide="check-check" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="bi-section-heading__title">% Cumplimiento Cronograma</h3>
             </div>
             <div class="bi-gauge-panel">
@@ -336,7 +336,7 @@
         </div>
         <div id="programa-delay-card" class="card p-5 bi-delay-card">
             <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="calendar-clock" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+                <i data-lucide="calendar-clock" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">Variación probable de fecha final</h3>
             </div>
             <canvas id="programa-dias-retraso" height="170" aria-label="Variación probable de la fecha final en días"></canvas>
@@ -361,7 +361,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div id="programa-cnp-card" class="card p-5 bi-cause-card" aria-label="Causas de No Programación">
             <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="pie-chart" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+                <i data-lucide="pie-chart" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">Causas de No Programación</h3>
             </div>
             <canvas id="programa-cnp" height="220" aria-label="Causas de no programación"></canvas>
@@ -375,7 +375,7 @@
         </div>
         <div id="programa-cnc-card" class="card p-5 bi-cause-card" aria-label="Causas de No Cumplimiento">
             <div class="flex items-center gap-2 mb-3">
-                <i data-lucide="pie-chart" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+                <i data-lucide="pie-chart" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">Causas de No Cumplimiento</h3>
             </div>
             <canvas id="programa-cnc" height="220" aria-label="Causas de no cumplimiento"></canvas>
@@ -390,7 +390,7 @@
         <div id="programa-radar-card" class="card p-5 bi-radar-card xl:col-span-2" aria-label="Radar de Programa General">
             <div class="bi-chart-card-header mb-3">
                 <div class="flex items-center gap-2">
-                <i data-lucide="radar" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
+                <i data-lucide="radar" class="w-5 h-5" aria-hidden="true"></i>
                     <h3 class="font-semibold text-gray-800">Radar de Programa General</h3>
                 </div>
                 <span class="bi-radar-card__caption">Resumen secundario</span>
@@ -408,7 +408,7 @@
     <div class="card p-5 bi-programa-activities">
         <div class="bi-programa-activities__header">
             <div class="flex items-center gap-2">
-                <i data-lucide="list-tree" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
+                <i data-lucide="list-tree" class="w-5 h-5" aria-hidden="true"></i>
                 <h3 class="font-semibold text-gray-800">Cronograma de actividades que explica el corte</h3>
             </div>
             <span id="programa-activity-cutoff" class="aia-chip bi-programa-activity-cutoff">Corte --</span>
@@ -505,7 +505,7 @@
 <section id="view-curva-s" class="view-section w-full hidden" aria-label="Curva S" role="tabpanel" aria-labelledby="nav-curva-s">
     <div class="card p-5">
         <div class="flex items-center gap-2 mb-3">
-            <i data-lucide="trending-up" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+            <i data-lucide="trending-up" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Curva S — Programado vs Ejecutado</h3>
         </div>
         <canvas id="chart-curva-s" height="280" aria-label="Gráfico de curva S, programado vs ejecutado"></canvas>
@@ -516,7 +516,7 @@
 <section id="view-intermedia" class="view-section w-full hidden" aria-label="Programación Intermedia 6 Semanas" role="tabpanel" aria-labelledby="nav-intermedia">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
-            <i data-lucide="filter" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
+            <i data-lucide="filter" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Programación Intermedia (6 Semanas)</h3>
         </div>
         <div id="intermedia-content" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -537,7 +537,7 @@
 <section id="view-semanal" class="view-section w-full hidden" aria-label="Programación Semanal" role="tabpanel" aria-labelledby="nav-semanal">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
-            <i data-lucide="calendar-check" class="w-5 h-5 text-aia-corp-main" aria-hidden="true"></i>
+            <i data-lucide="calendar-check" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Programación Semanal</h3>
         </div>
         <div id="semanal-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -560,7 +560,7 @@
 <section id="view-pdc" class="view-section w-full hidden" aria-label="Plan de Compras" role="tabpanel" aria-labelledby="nav-pdc">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
-            <i data-lucide="shopping-cart" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+            <i data-lucide="shopping-cart" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Plan de Compras (PDC)</h3>
         </div>
         <div id="pdc-table-wrapper" class="bi-table-container">
@@ -576,7 +576,7 @@
 <section id="view-cic" class="view-section w-full hidden" aria-label="Proveedores CIC" role="tabpanel" aria-labelledby="nav-cic">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
-            <i data-lucide="hard-hat" class="w-5 h-5 text-aia-proj-main" aria-hidden="true"></i>
+            <i data-lucide="hard-hat" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Proveedores (CIC)</h3>
         </div>
         <div id="cic-table-wrapper" class="bi-table-container">
@@ -592,7 +592,7 @@
 <section id="view-cip" class="view-section w-full hidden" aria-label="Responsables CIP" role="tabpanel" aria-labelledby="nav-cip">
     <div class="card p-5 flex flex-col gap-4">
         <div class="flex items-center gap-2">
-            <i data-lucide="users" class="w-5 h-5 text-aia-const-main" aria-hidden="true"></i>
+            <i data-lucide="users" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Responsables (CIP)</h3>
         </div>
         <div id="cip-table-wrapper" class="bi-table-container">

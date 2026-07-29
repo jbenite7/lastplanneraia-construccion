@@ -10,7 +10,7 @@
         <div id="project-checkbox-list" class="bi-project-list hidden" role="listbox" aria-multiselectable="true"></div>
     </div>
 
-    <hr class="border-aia-corp-med">
+    <hr>
 
     <!-- Filtros Dinámicos -->
     <div id="dynamic-filters" class="bi-filter-grid">
@@ -22,7 +22,7 @@
             <select id="filter-semana" class="aia-select" disabled>
                 <option value="">Seleccione proyecto(s) primero</option>
             </select>
-            <p id="helper-semana" class="text-[10px] mt-1 text-aia-const-light hidden">Bloqueado. Múltiples proyectos seleccionados.</p>
+            <p id="helper-semana" class="text-[10px] mt-1 hidden">Bloqueado. Múltiples proyectos seleccionados.</p>
         </div>
 
         <div class="bi-date-range opacity-50 pointer-events-none transition-opacity" id="container-rangos">

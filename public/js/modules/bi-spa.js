@@ -2997,7 +2997,7 @@ function renderProjectList(projects) {
     const row = document.createElement('label');
     const checked = BI.filters.projects.includes(value);
     row.className = 'bi-project-option';
-    row.innerHTML = `<input type=\"checkbox\" value=\"${escapeHtml(value)}\" class=\"accent-aia-const-main rounded flex-shrink-0\" ${checked ? 'checked' : ''}><span class=\"truncate\">${escapeHtml(label)}</span>`;
+    row.innerHTML = `<input type=\"checkbox\" value=\"${escapeHtml(value)}\" class=\"rounded flex-shrink-0\" ${checked ? 'checked' : ''}><span class=\"truncate\">${escapeHtml(label)}</span>`;
     const input = row.querySelector('input');
     if (input) input.addEventListener('change', updateProjectSelection);
     container.appendChild(row);
@@ -3620,9 +3620,9 @@ function valueWithUnit(item) {
 }
 
 function renderProgressBadge(value) {
-  if (value >= 80) return '<span class=\"inline-flex items-center rounded bg-aia-proj-ext text-aia-proj-main px-2 py-0.5 text-xs font-semibold\">OK</span>';
-  if (value >= 50) return '<span class=\"inline-flex items-center rounded bg-aia-warn-bg text-aia-warn-high px-2 py-0.5 text-xs font-semibold\">Medio</span>';
-  return '<span class=\"inline-flex items-center rounded bg-aia-alert-bg text-aia-alert-crit px-2 py-0.5 text-xs font-semibold\">Alto</span>';
+  if (value >= 80) return '<span class=\"inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold\">OK</span>';
+  if (value >= 50) return '<span class=\"inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold\">Medio</span>';
+  return '<span class=\"inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold\">Alto</span>';
 }
 
 function statusPill(status) {
@@ -3632,8 +3632,8 @@ function statusPill(status) {
 function statusBadgeClass(status) {
   if (!status) return 'bg-gray-100 text-gray-500';
   const lower = String(status).toLowerCase();
-  if (['completa', 'activo', 'completada'].includes(lower)) return 'bg-aia-proj-ext text-aia-proj-main';
-  if (['pendiente', 'riesgo', 'baja'].includes(lower)) return 'bg-aia-alert-bg text-aia-alert-crit';
+  if (['completa', 'activo', 'completada'].includes(lower)) return '';
+  if (['pendiente', 'riesgo', 'baja'].includes(lower)) return '';
   return 'bg-gray-100 text-gray-500';
 }
 
