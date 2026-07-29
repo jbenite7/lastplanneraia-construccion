@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
+import Pestanas, { PanelPestana } from '../components/Pestanas'
 import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaNumero, columnaTexto, defaultColDef,
   moneda, pdcTheme,
@@ -78,6 +79,9 @@ export default function PlanFechas() {
   const [masaEtiqueta, setMasaEtiqueta] = useState('')
   // Fila esperando confirmación para desamarrarse: borra fechas, así que se pregunta antes.
   const [porDesamarrar, setPorDesamarrar] = useState<FilaPlan | null>(null)
+  // Las cuatro secciones de esta pantalla vivían apiladas: «Sin frente» y sus 40 sugerencias solo
+  // aparecían al bajar rodando por debajo de la grilla.
+  const [seccion, setSeccion] = useState('plan')
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -452,6 +456,21 @@ export default function PlanFechas() {
         </span>
       </div>
 
+      <Pestanas
+        idBase="pdc-plan"
+        etiquetaLista="Secciones del plan de compras"
+        activa={seccion}
+        onCambiar={setSeccion}
+        pestanas={[
+          { id: 'plan', etiqueta: 'Plan', conteo: plan.length },
+          { id: 'sin-frente', etiqueta: 'Sin frente', conteo: sinFrente.length },
+          { id: 'sin-calcular', etiqueta: 'Pendientes de calcular', conteo: sinCalcular.length },
+          { id: 'desfases', etiqueta: 'Desfases', conteo: desfases.length },
+        ]}
+      />
+
+      {seccion === 'plan' && (
+      <PanelPestana idBase="pdc-plan" id="plan">
       {/* Asignación en masa (Task 5): más de cien paquetes por proyecto hacen que asignar de uno en
           uno sea una hora de clics — con selección múltiple son cinco minutos. El contador de "sin
           responsable" vive aquí, junto al control que resuelve el problema, no solo porque se pueda
@@ -564,8 +583,11 @@ export default function PlanFechas() {
           </table>
         </div>
       )}
+      </PanelPestana>
+      )}
 
-      <h2>Sin frente</h2>
+      {seccion === 'sin-frente' && (
+      <PanelPestana idBase="pdc-plan" id="sin-frente">
       <p className="pdc-sub">Paquetes que generan proceso de contratación y todavía no están amarrados a un frente del cronograma.</p>
       {sugeridosPendientes.length > 0 && (
         <div className="pdc-paq-toolbar">
@@ -626,9 +648,12 @@ export default function PlanFechas() {
         })}
         {sinFrente.length === 0 && <li className="pdc-vacio">Todos los paquetes que generan proceso ya tienen frente.</li>}
       </ul>
+      </PanelPestana>
+      )}
 
-      <h2>Amarrados, pendientes de calcular</h2>
-      <p className="pdc-sub">Ya tienen frente pero el plan todavía no se ha recalculado con ese amarre — no aparecen en la grilla de arriba.</p>
+      {seccion === 'sin-calcular' && (
+      <PanelPestana idBase="pdc-plan" id="sin-calcular">
+      <p className="pdc-sub">Ya tienen frente pero el plan todavía no se ha recalculado con ese amarre — no aparecen en la pestaña «Plan».</p>
       <ul className="pdc-paq-lista" data-testid="pdc-plan-sin-calcular">
         {sinCalcular.map((p) => (
           <li key={p.paqueteId}>
@@ -639,8 +664,11 @@ export default function PlanFechas() {
         ))}
         {sinCalcular.length === 0 && <li className="pdc-vacio">Todo lo amarrado ya está calculado.</li>}
       </ul>
+      </PanelPestana>
+      )}
 
-      <h2>Desfases</h2>
+      {seccion === 'desfases' && (
+      <PanelPestana idBase="pdc-plan" id="desfases">
       <p className="pdc-sub">El cronograma se reprogramó después de amarrar estos paquetes. No se aplica solo.</p>
       <ul className="pdc-paq-lista" data-testid="pdc-plan-desfases">
         {desfases.map((d) => (
@@ -654,6 +682,8 @@ export default function PlanFechas() {
         ))}
         {desfases.length === 0 && <li className="pdc-vacio">Ningún amarre quedó desactualizado.</li>}
       </ul>
+      </PanelPestana>
+      )}
     </section>
   )
 }

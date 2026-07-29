@@ -6,6 +6,7 @@ import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
   moneda, pdcTheme,
 } from '../lib/agGrid'
+import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from '../lib/paquetesState'
 import type { FiltroPaquetes } from '../lib/paquetesState'
@@ -58,7 +59,7 @@ const FUENTE_LABEL: Record<string, string> = {
 const FUENTES_ORDEN = ['reglas', 'ia', 'indirectos', 'exacta', 'tokens', 'agrupacion']
 
 type Filtro = FiltroPaquetes
-type Modo = 'masivo' | 'asistente'
+type Modo = 'masivo' | 'asistente' | 'paquetes'
 
 export default function PaquetesContratacion() {
   const [modo, setModo] = useState<Modo>('masivo')
@@ -99,7 +100,8 @@ export default function PaquetesContratacion() {
       .then((d) => setActividadesMap(d.mapa))
       .catch(() => setActividadesMap({}))
   }, [])
-  useEffect(() => { if (modo === 'masivo') cargar(filtro) }, [cargar, filtro, modo])
+  // El asistente trae sus propios datos; las otras dos pestañas leen de la misma carga.
+  useEffect(() => { if (modo !== 'asistente') cargar(filtro) }, [cargar, filtro, modo])
 
   const agrupaciones = useMemo(
     () => [...new Set(insumos.map((i) => i.agrupacion).filter((a): a is string => !!a))].sort(),
@@ -272,15 +274,20 @@ export default function PaquetesContratacion() {
     }
   }
 
+  // Las secciones de la pantalla, incluidos los dos modos de trabajo: antes los modos eran una
+  // barra propia y la lista de paquetes vivía al final, solo alcanzable bajando rodando.
   const barra = (
-    <div className="pdc-paq-modos" role="tablist">
-      <button type="button" role="tab" aria-selected={modo === 'masivo'} className={modo === 'masivo' ? 'is-activo' : ''} onClick={() => setModo('masivo')}>
-        Modo masivo
-      </button>
-      <button type="button" role="tab" aria-selected={modo === 'asistente'} className={modo === 'asistente' ? 'is-activo' : ''} onClick={() => setModo('asistente')}>
-        Asistente paso a paso
-      </button>
-    </div>
+    <Pestanas
+      idBase="pdc-paq"
+      etiquetaLista="Secciones de paquetes de contratación"
+      activa={modo}
+      onCambiar={(id) => setModo(id as Modo)}
+      pestanas={[
+        { id: 'masivo', etiqueta: 'Insumos', conteo: visibles.length },
+        { id: 'asistente', etiqueta: 'Asistente paso a paso' },
+        { id: 'paquetes', etiqueta: 'Paquetes con insumos', conteo: (resumen?.porPaquete ?? []).length },
+      ]}
+    />
   )
 
   if (sinVersion) {
@@ -288,22 +295,6 @@ export default function PaquetesContratacion() {
       <section className="pdc-bloque">
         <h1>Paquetes de contratación</h1>
         <p className="pdc-vacio">El proyecto no tiene un presupuesto importado. Importa un presupuesto para empezar a empaquetar.</p>
-      </section>
-    )
-  }
-
-  if (modo === 'asistente') {
-    return (
-      <section className="pdc-bloque pdc-paquetes">
-        <header className="pdc-paq-header">
-          <div>
-            <h1>Paquetes de contratación</h1>
-            <p className="pdc-sub">Agrupa los insumos del presupuesto activo. Meta: 100% asignado u omitido.</p>
-          </div>
-          {resumen && <Cobertura resumen={resumen} />}
-        </header>
-        {barra}
-        <PaquetesAsistente onCambio={() => cargar(filtro)} actividadesMap={actividadesMap} usadosEnProyecto={usadosEnProyecto} />
       </section>
     )
   }
@@ -320,6 +311,14 @@ export default function PaquetesContratacion() {
 
       {barra}
 
+      {modo === 'asistente' && (
+        <PanelPestana idBase="pdc-paq" id="asistente">
+          <PaquetesAsistente onCambio={() => cargar(filtro)} actividadesMap={actividadesMap} usadosEnProyecto={usadosEnProyecto} />
+        </PanelPestana>
+      )}
+
+      {modo === 'masivo' && (
+      <PanelPestana idBase="pdc-paq" id="masivo">
       {state.mensaje && <div className="pdc-info" role="status">{state.mensaje}</div>}
 
       <div className="pdc-paq-toolbar">
@@ -419,8 +418,11 @@ export default function PaquetesContratacion() {
           getRowClass={(p) => (p.data?.omitido === 1 ? 'pdc-paq-fila-omitida' : undefined)}
         />
       </div>
+      </PanelPestana>
+      )}
 
-      <h2>Paquetes con insumos</h2>
+      {modo === 'paquetes' && (
+      <PanelPestana idBase="pdc-paq" id="paquetes">
       <ul data-testid="pdc-paq-paquetes" className="pdc-paq-lista">
         {(resumen?.porPaquete ?? []).map((p) => (
           <li key={p.paqueteId}>
@@ -439,6 +441,8 @@ export default function PaquetesContratacion() {
         ))}
         {(resumen?.porPaquete ?? []).length === 0 && <li className="pdc-vacio">Aún no hay insumos asignados a ningún paquete.</li>}
       </ul>
+      </PanelPestana>
+      )}
     </section>
   )
 }

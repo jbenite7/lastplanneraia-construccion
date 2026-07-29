@@ -5,6 +5,7 @@ import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-co
 import {
   MODULOS_TABLA, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme,
 } from '../lib/agGrid'
+import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
@@ -29,6 +30,9 @@ export default function MaestroInsumos() {
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
   const [verRetirados, setVerRetirados] = useState(false)
   const [imp, dispatchImp] = useReducer(maestroImportReducer, estadoInicialMaestroImport)
+  // Las tres tablas de esta pantalla vivían apiladas y el catálogo global (3.079 insumos) tapaba
+  // la cola de pendientes, que es el trabajo que de verdad falta. Abre por ahí.
+  const [seccion, setSeccion] = useState('pendientes')
   const impFileRef = useRef<HTMLInputElement>(null)
 
   const cargar = useCallback(async () => {
@@ -216,6 +220,20 @@ export default function MaestroInsumos() {
 
       {state.mensaje && <div className="pdc-exito" role="status">{state.mensaje}</div>}
 
+      <Pestanas
+        idBase="pdc-maestro"
+        etiquetaLista="Secciones del maestro de insumos"
+        activa={seccion}
+        onCambiar={setSeccion}
+        pestanas={[
+          { id: 'pendientes', etiqueta: 'Pendientes por vincular', conteo: pendientes.length },
+          { id: 'catalogo', etiqueta: 'Catálogo global', conteo: catalogo.length },
+          { id: 'importar', etiqueta: 'Importar SINCO' },
+        ]}
+      />
+
+      {seccion === 'importar' && (
+      <PanelPestana idBase="pdc-maestro" id="importar">
       <section className="pdc-bloque pdc-maestro-import">
         <h2>Importar maestro (SINCO)</h2>
         <p>Sube el Excel del maestro de insumos exportado de SINCO (hoja «Maestro Insumos», máx. 10MB).</p>
@@ -259,7 +277,11 @@ export default function MaestroInsumos() {
           </div>
         )}
       </section>
+      </PanelPestana>
+      )}
 
+      {seccion === 'pendientes' && (
+      <PanelPestana idBase="pdc-maestro" id="pendientes">
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
           <h2>Pendientes por vincular ({pendientes.length})</h2>
@@ -312,6 +334,11 @@ export default function MaestroInsumos() {
         </div>
       )}
 
+      </PanelPestana>
+      )}
+
+      {seccion === 'catalogo' && (
+      <PanelPestana idBase="pdc-maestro" id="catalogo">
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
           <h2>Catálogo global ({catalogo.length.toLocaleString('es-CO')}{busqueda.trim() ? ' resultados' : ' insumos'})</h2>
@@ -347,6 +374,8 @@ export default function MaestroInsumos() {
           />
         </div>
       </div>
+      </PanelPestana>
+      )}
     </section>
   )
 }

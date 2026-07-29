@@ -276,3 +276,39 @@
 @media (prefers-reduced-motion: reduce) {
   .pdc-nav-link { transition: none; }
 }
+
+/* Pestañas dentro de una pantalla (Maestro, Paquetes, Plan). Mismo lenguaje que la barra del
+   módulo —subrayado de acento sobre la pestaña activa— pero un escalón por debajo en jerarquía:
+   más pequeñas y sobre superficie, para que no compitan con la navegación del módulo. */
+.pdc-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 16px 0 0;
+  border-bottom: 1px solid var(--pdc-border);
+}
+/* Dos clases, no una: `.pdc-bloque button` y `.pdc-paquetes button` pintan los botones del módulo
+   en verde y le ganaban en especificidad a una regla de clase suelta — las pestañas salían como
+   píldoras rellenas. */
+.pdc-pestanas .pdc-pestana {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  color: var(--pdc-ink-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: color 160ms ease-out, background-color 160ms ease-out, border-color 160ms ease-out;
+}
+.pdc-pestanas .pdc-pestana:hover { color: var(--pdc-ink); background: color-mix(in srgb, var(--pdc-ink) 8%, transparent); }
+.pdc-pestanas .pdc-pestana.is-activa { color: var(--pdc-ink); border-bottom-color: var(--pdc-accent); }
+.pdc-pestanas .pdc-pestana:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: -2px; }
+/* El panel recibe foco al entrar con teclado; el anillo del navegador dentro del contenido estorba
+   más de lo que ayuda, así que se marca con un desplazamiento hacia dentro. */
+[role='tabpanel']:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: -3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pdc-pestanas .pdc-pestana { transition: none; }
+}
