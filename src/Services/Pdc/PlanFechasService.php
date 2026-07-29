@@ -52,8 +52,16 @@ class PlanFechasService
      */
     private const DURACION_FALLBACK_DIAS = 90;
 
-    public function __construct(private readonly \Database $db)
+    private readonly PasosContratacionService $pasos;
+
+    /**
+     * El servicio de pasos es opcional en la firma para no romper a los llamadores existentes
+     * (el controlador y los tests construyen `new PlanFechasService($db)` a secas), pero nunca es
+     * null dentro de la clase.
+     */
+    public function __construct(private readonly \Database $db, ?PasosContratacionService $pasos = null)
     {
+        $this->pasos = $pasos ?? new PasosContratacionService($db);
     }
 
     /**
@@ -674,14 +682,25 @@ class PlanFechasService
             return ['ok' => true, 'calculados' => 0, 'sinDuracion' => 0];
         }
         $medianas = $this->medianasPorTipo();
+        $pasos = $this->pasos->deProyecto($projectId);
+        // Las columnas legacy que ESTA obra necesita, no las siete siempre. `columnasLegacy()` es la
+        // lista blanca: `colLegacy` viene de la base y aquí se interpola como nombre de columna.
+        $cols = [];
+        foreach ($pasos as $p) {
+            if ($p['colLegacy'] !== null && in_array($p['colLegacy'], PasosContratacionService::columnasLegacy(), true)) {
+                $cols[$p['colLegacy']] = true;
+            }
+        }
+        $selectCols = $cols === []
+            ? ''
+            : ', ' . implode(', ', array_map(static fn (string $c): string => 'd.' . $c, array_keys($cols)));
+
         $calculados = 0;
         $sinDuracion = 0;
 
         foreach ($amarres as $paqueteId => $a) {
             $paq = $this->db->query(
-                "SELECT p.id, p.tipo_negociacion, p.duracion_ref, d.diasElaboracionPliegos, d.diasEntregaPliegos,
-                        d.diasReciboPropuestas, d.diasCuadrosComparativos, d.diasLegalizacionContrato,
-                        d.diasFabricacion, d.diasInsumosObra
+                "SELECT p.id, p.tipo_negociacion, p.duracion_ref{$selectCols}
                  FROM general_paquetes_contratacion p
                  LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
                  WHERE p.id = ? AND p.activo = 1
@@ -695,14 +714,14 @@ class PlanFechasService
                 continue;
             }
 
-            // «Sin duración» se decide por las columnas del desglose, no por `duracion_ref`: así
-            // se cubren de una sola vez los tres casos silenciosos (duracion_ref NULL, apuntando a
-            // una fila borrada, o a una fila con algún `dias*` NULL) porque los tres producen el
-            // mismo resultado en el LEFT JOIN — al menos una columna NULL — sin necesidad de
-            // distinguirlos.
+            // «Sin duración» se decide por las columnas del desglose que ESTA obra usa, no por
+            // `duracion_ref`: así se cubren de una sola vez los tres casos silenciosos (duracion_ref
+            // NULL, apuntando a una fila borrada, o a una fila con algún `dias*` NULL) porque los tres
+            // producen el mismo resultado en el LEFT JOIN — al menos una columna NULL.
+            // Un paso de días fijos siempre aporta su número y nunca vuelve provisional a un paquete.
             $desgloseCompleto = true;
-            foreach (self::PASOS as $p) {
-                if ($paq[$p['col']] === null) {
+            foreach ($pasos as $p) {
+                if ($p['colLegacy'] !== null && ($paq[$p['colLegacy']] ?? null) === null) {
                     $desgloseCompleto = false;
                     break;
                 }
@@ -711,14 +730,32 @@ class PlanFechasService
 
             if ($provisional) {
                 $sinDuracion++;
-                $total = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
-                // Sin desglose real, la mediana se reparte con los pesos medidos sobre el catálogo
-                // (`PESOS_REPARTO`), no con una intuición del reparto típico.
-                $dias = self::repartirMediana($total);
+                $mediana = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
+                // Los pasos de días fijos se respetan y el RESTO de la mediana se reparte entre los
+                // que tienen peso, re-normalizados sobre los activos. La mediana es la duración del
+                // proceso COMPLETO para ese tipo —ya incluye el tiempo administrativo real de esas
+                // obras—, así que aquí es el sobre entero y no una base a la que sumar. En un paquete
+                // CON desglose sí se suma: allí cada número es una medición de su propio paso.
+                $fijos = 0;
+                $pesos = [];
+                foreach ($pasos as $p) {
+                    $esFijo = $p['colLegacy'] === null;
+                    $fijos += $esFijo ? (int) ($p['diasFijos'] ?? 0) : 0;
+                    $pesos[] = $esFijo ? 0.0 : ($p['peso'] ?? 0.0);
+                }
+                // Si los días fijos ya suman más que la mediana, el resto se topa en cero: el total
+                // pasa a ser la suma de los fijos. Nunca un total negativo ni pasos en negativo.
+                $reparto = self::repartirMediana(max(0, $mediana - $fijos), $pesos);
+                $dias = [];
+                foreach ($pasos as $i => $p) {
+                    $dias[] = $p['colLegacy'] === null ? (int) ($p['diasFijos'] ?? 0) : $reparto[$i];
+                }
             } else {
                 $dias = [];
-                foreach (self::PASOS as $p) {
-                    $dias[] = (int) $paq[$p['col']];
+                foreach ($pasos as $p) {
+                    $dias[] = $p['colLegacy'] === null
+                        ? (int) ($p['diasFijos'] ?? 0)
+                        : (int) $paq[$p['colLegacy']];
                 }
             }
             $total = array_sum($dias);
@@ -761,26 +798,40 @@ class PlanFechasService
                 // se lista, MySQL lo conserva. Es la misma garantía que protege `responsable` en
                 // pdc_plan_paquete, y es lo que hace que las columnas que añada B1 sobrevivan sin
                 // volver a tocar este servicio. No añadir aquí ninguna columna de seguimiento.
-                foreach (self::PASOS as $i => $p) {
+                // Upsert por (project_id, paquete_id, paso_id) desde A4.1: la fila sigue al PASO, no a
+                // la posición. Por eso reordenar mueve `orden` dentro de la fila del paso en lugar de
+                // sobrescribir la del vecino — que es lo que protegerá el avance real de B1.
+                $idsVigentes = [];
+                foreach ($pasos as $i => $p) {
                     $ini = $cursor;
                     $cursor = $cursor->modify(sprintf('+%d days', $dias[$i]));
+                    if ($p['pasoId'] !== null) {
+                        $idsVigentes[] = (int) $p['pasoId'];
+                    }
                     $this->db->query(
-                        'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)
-                         ON DUPLICATE KEY UPDATE paso = VALUES(paso), dias = VALUES(dias),
+                        'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso_id, paso, dias, fecha_inicio, fecha_fin)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                         ON DUPLICATE KEY UPDATE orden = VALUES(orden), paso = VALUES(paso), dias = VALUES(dias),
                             fecha_inicio = VALUES(fecha_inicio), fecha_fin = VALUES(fecha_fin)',
-                        [$projectId, $paqueteId, $i, $p['paso'], $dias[$i], $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
+                        [$projectId, $paqueteId, $i, $p['pasoId'], $p['nombre'], $dias[$i],
+                            $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
                     );
                 }
 
-                // Sobrantes: si el proceso se acortara (PASOS pasa de 7 a 5), las filas de los
-                // órdenes que ya no existen quedarían huérfanas y `plan()` las seguiría devolviendo.
-                // Los órdenes son el índice del foreach, contiguos desde 0, así que todo lo que esté
-                // en el último válido o por encima sobra. Se borra DESPUÉS del upsert para no dejar
-                // ni un instante al paquete sin sus pasos dentro de la transacción.
+                // Sobrantes: filas de pasos que la obra ya no usa. Se filtran por identidad y no por
+                // `orden >= N`, que es lo único que funciona cuando la lista se reordena o crece por
+                // encima de siete. Se borra DESPUÉS del upsert para no dejar ni un instante al
+                // paquete sin sus pasos dentro de la transacción.
+                //
+                // El `paso_id IS NULL` NO es decorativo: en SQL, `NULL NOT IN (...)` vale NULL —ni
+                // verdadero ni falso—, así que sin él una fila sin identidad sobreviviría para siempre
+                // a todos los recálculos, invisible. Es además lo que limpia las filas que dejó
+                // cualquier cálculo hecho con el esquema anterior.
+                $marcas = $idsVigentes === [] ? '' : implode(',', array_fill(0, count($idsVigentes), '?'));
                 $this->db->query(
-                    'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND orden >= ?',
-                    [$projectId, $paqueteId, count(self::PASOS)],
+                    'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?'
+                        . ($marcas === '' ? '' : " AND (paso_id IS NULL OR paso_id NOT IN ({$marcas}))"),
+                    array_merge([$projectId, $paqueteId], $idsVigentes),
                 );
                 $this->db->commit();
             } catch (\Throwable $t) {
@@ -800,6 +851,10 @@ class PlanFechasService
      * vale 0, así que sin este filtro un cero fantasma se colaba en la muestra y bajaba la mediana
      * de todo el tipo. El `IS NOT NULL` de cada columna se construye desde `self::PASOS` para no
      * duplicar la lista de columnas ni poder desalinearse con `calcular()`.
+     *
+     * Desde A4.1 esto NO depende de la lista de pasos de ninguna obra: es una estadística de la
+     * EMPRESA, medida sobre las siete columnas del catálogo. Si dependiera del proyecto que pregunta,
+     * la mediana de «a todo costo» valdría una cosa u otra según quién la consultara.
       *
       * @return array<string, int> tipo de negociación → mediana del proceso completo, en días
       */
@@ -862,6 +917,11 @@ class PlanFechasService
      * proceso la define el catálogo, y cruzarlo con `general_paquetes_contratacion` haría que los
      * pesos dependieran además de qué paquetes están activos, que es otra pieza móvil.
      *
+     * Desde A4.1 esto NO depende de la lista de pasos de ninguna obra: es una estadística de la
+     * EMPRESA, medida sobre las siete columnas del catálogo. Los pasos que una obra agregue (Licify,
+     * aprobación del cliente) no tienen columna ahí y llevan días fijos, así que no entran a esta
+     * medición ni la desplazan.
+     *
      * @return list<float> siete pesos que suman 1
      */
     public function pesosDelCatalogo(): array
@@ -888,7 +948,11 @@ class PlanFechasService
     }
 
     /**
-     * Reparte una duración total entre los siete pasos según `PESOS_REPARTO`.
+     * Reparte una duración total entre pasos según sus pesos. Sin pesos explícitos, `PESOS_REPARTO`
+     * —el proceso por defecto—, para que los llamadores anteriores a A4.1 den el mismo resultado.
+     *
+     * Un peso de cero significa «este paso no entra al reparto» (los pasos de días fijos, que traen
+     * su número puesto): ni recibe su parte proporcional ni puede recibir un día del residuo.
      *
      * El residuo de redondeo se asigna por resto mayor (los pasos cuya parte fraccionaria quedó más
      * cerca del día siguiente reciben el día suelto), no cargándoselo entero al último paso: así la
@@ -899,31 +963,36 @@ class PlanFechasService
      * Pura y pública a propósito: es una regla del dominio, sin estado ni base de datos, y tanto los
      * tests como cualquier consumidor futuro deben poder reproducir el reparto sin recalcular.
      *
+     * @param list<float>|null $pesos
      * @return list<int>
      */
-    public static function repartirMediana(int $total): array
+    public static function repartirMediana(int $total, ?array $pesos = null): array
     {
-        $n = count(self::PASOS);
-        if ($total <= 0) {
-            return array_fill(0, $n, 0);
+        $pesos = $pesos ?? self::PESOS_REPARTO;
+        $n = count($pesos);
+        $dias = array_fill(0, $n, 0);
+        $sumaPesos = array_sum($pesos);
+        // Sin total que repartir, sin pasos, o con todos los pesos en cero (una obra cuyos pasos son
+        // todos de días fijos): nada que hacer, y sobre todo ninguna división por cero.
+        if ($total <= 0 || $n === 0 || $sumaPesos <= 0) {
+            return $dias;
         }
-        $sumaPesos = array_sum(self::PESOS_REPARTO);
-        $dias = [];
         $restos = [];
         $acum = 0;
-        foreach (self::PESOS_REPARTO as $i => $w) {
+        foreach ($pesos as $i => $w) {
             $exacto = $total * $w / $sumaPesos;
             $piso = (int) floor($exacto);
             $dias[$i] = $piso;
-            $restos[$i] = $exacto - $piso;
+            $restos[$i] = $w > 0 ? $exacto - $piso : -1.0; // peso cero: fuera del residuo
             $acum += $piso;
         }
         // Los días que dejó el redondeo hacia abajo van a los restos mayores; entre restos iguales
         // gana el paso más temprano, para que el reparto sea determinista.
-        $orden = array_keys($restos);
+        $orden = array_values(array_filter(array_keys($restos), static fn (int $i): bool => $restos[$i] >= 0));
         usort($orden, static fn (int $a, int $b): int => $restos[$b] <=> $restos[$a] ?: $a <=> $b);
-        for ($k = 0; $k < $total - $acum; $k++) {
-            $dias[$orden[$k % $n]]++;
+        $m = count($orden);
+        for ($k = 0; $m > 0 && $k < $total - $acum; $k++) {
+            $dias[$orden[$k % $m]]++;
         }
         return $dias;
     }
@@ -958,7 +1027,8 @@ class PlanFechasService
       *         paso: string,
       *         dias: int,
       *         fechaInicio: string,
-      *         fechaFin: string
+      *         fechaFin: string,
+      *         clave: string
       *     }>
       * }> los vencidos primero
       */
@@ -987,13 +1057,18 @@ class PlanFechasService
 
         $pasos = [];
         foreach ($this->db->query(
-            'SELECT paquete_id, orden, paso, dias, fecha_inicio, fecha_fin FROM pdc_plan_paso
-             WHERE project_id = ? ORDER BY paquete_id, orden',
+            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin, g.clave
+             FROM pdc_plan_paso pp
+             LEFT JOIN general_pasos_contratacion g ON g.id = pp.paso_id
+             WHERE pp.project_id = ? ORDER BY pp.paquete_id, pp.orden',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC) as $p) {
             $pasos[(int) $p['paquete_id']][] = [
                 'orden' => (int) $p['orden'], 'paso' => (string) $p['paso'], 'dias' => (int) $p['dias'],
                 'fechaInicio' => (string) $p['fecha_inicio'], 'fechaFin' => (string) $p['fecha_fin'],
+                // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
+                // obra puede haber renombrado con su alias.
+                'clave' => (string) ($p['clave'] ?? ''),
             ];
         }
 

@@ -792,21 +792,23 @@ $finDespues = $db->query(
 $assert($finDespues === '2026-10-15',
     'B1: el upsert sigue reescribiendo las fechas programadas — el último paso termina en la fecha nueva del frente. Dio ' . var_export($finDespues, true));
 
-// Los pasos sobrantes se retiran si el proceso se acortara. No se puede cambiar la constante PASOS
-// desde el test, así que se simula el residuo insertando a mano una fila con un `orden` por encima
-// del último válido y comprobando que el siguiente recálculo la barre.
+// Los pasos sobrantes se retiran si el proceso se acortara. Desde A4.1 el borrado es por IDENTIDAD
+// del paso (`paso_id`), no por posición: es lo único que funciona cuando la obra reordena su proceso
+// o lo hace más largo de siete. Una fila sin `paso_id` —residuo de un cálculo hecho con el esquema
+// anterior— también sobra, y por eso el DELETE lleva `paso_id IS NULL OR ...`: sin esa mitad,
+// `NULL NOT IN (...)` vale NULL y la fila sobreviviría a todos los recálculos, invisible.
 $db->query(
-    'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso, dias, fecha_inicio, fecha_fin)
-     VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [$P, $paqEstructura, count(PlanFechasService::PASOS), 'PASO FANTASMA', 5, '2026-01-01', '2026-01-06'],
+    'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso_id, paso, dias, fecha_inicio, fecha_fin)
+     VALUES (?, ?, ?, NULL, ?, ?, ?, ?)',
+    [$P, $paqEstructura, 99, 'PASO FANTASMA', 5, '2026-01-01', '2026-01-06'],
 );
 $svc->calcular($P, 'test-a4');
 $sobrantes = (int) $db->query(
-    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND orden >= ?',
-    [$P, $paqEstructura, count(PlanFechasService::PASOS)],
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND paso = ?',
+    [$P, $paqEstructura, 'PASO FANTASMA'],
 )->fetchColumn();
 $assert($sobrantes === 0,
-    'B1: un paso sobrante (orden por encima del último válido) se borra en el siguiente recálculo. Quedaron ' . $sobrantes);
+    'B1: una fila sin identidad de paso se borra en el siguiente recálculo. Quedaron ' . $sobrantes);
 
 // Este bloque movió el frente 9001 y reamarró paqEstructura: se deja el estado como estaba para que
 // los bloques de abajo (desfases, aislamiento entre proyectos) sigan midiendo contra el ancla
