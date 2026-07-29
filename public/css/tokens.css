@@ -145,6 +145,14 @@
     --ds-color-domain-construction: #b55211;
     --ds-color-domain-real-estate: #00a499;
     --ds-color-domain-architecture: #6752bf;
+    /* Parada PROFUNDA del corporativo: el extremo oscuro del degradado de las
+       cabeceras de modal, hermana de --ds-color-domain-corporate. No es lo
+       mismo que -on-dark: aquella es la variante del dominio PARA superficies
+       oscuras y es mas CLARA que la base; esta es mas OSCURA. Tampoco la
+       sustituye --ds-color-brand-primary-dark: encadena a --aia-green-dark,
+       declarado en OKLCH, y esas coordenadas pintan #162f19 (medido en
+       Chromium, tramo 5c), no este hex. */
+    --ds-color-domain-corporate-deep: #1a3c2a;
     --ds-color-domain-corporate-on-dark: #6c9077;
     --ds-color-domain-construction-on-dark: #c57247;
     --ds-color-domain-real-estate-on-dark: #2caa9f;

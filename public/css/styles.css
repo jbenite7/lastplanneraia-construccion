@@ -1057,18 +1057,17 @@ table.dataTable tbody tr:hover td {
 
 /* AIA Modal Shell */
 .aia-modal {
-  /* El verde oscuro se queda como literal A PROPOSITO: su unico alias --ds- es
-     --ds-color-brand-primary-dark, que encadena a --aia-green-dark, declarado en
-     coordenadas OKLCH. Medido en Chromium, esas coordenadas NO pintan el hex que
-     el comentario de tokens.css les atribuye: se van varios puntos por canal, y
-     lo mismo le pasa al par claro. Sustituirlo cambiaria el color de la
-     cabecera. El primario si tiene equivalente exacto y verificado:
-     --ds-color-domain-corporate esta declarado como ese mismo hex.
-     Estas dos custom properties las consume tambien el bloque de botones de mas
-     abajo (tramo 5d), por eso se conservan; las otras tres se han retirado
-     porque solo se usaban aqui y ahora apuntan a tokens --ds- en el punto de
-     uso. */
-  --aia-modal-green-dark: #1a3c2a;
+  /* Las dos paradas del degradado de cabecera son primitivas del design system:
+     --ds-color-domain-corporate y su parada profunda
+     --ds-color-domain-corporate-deep. Ya no queda ningun literal aqui.
+     Estas dos custom properties se conservan porque estan ACOTADAS a
+     .aia-modal -las consume tambien el bloque de botones de mas abajo (tramo
+     5d)-, no porque anadan color propio; las otras tres se retiraron porque
+     solo se usaban aqui.
+     OJO al elegir la parada profunda: --ds-color-brand-primary-dark NO vale.
+     Encadena a --aia-green-dark, declarado en OKLCH, y esas coordenadas pintan
+     #162f19 (medido en Chromium, tramo 5c), no el verde de esta cabecera. */
+  --aia-modal-green-dark: var(--ds-color-domain-corporate-deep);
   --aia-modal-green-primary: var(--ds-color-domain-corporate);
   color: var(--ds-active-text-primary);
 }
