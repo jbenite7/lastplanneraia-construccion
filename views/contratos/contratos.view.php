@@ -155,6 +155,7 @@
 													<div class="ct-contract-field ct-contract-field--quantity">
 														<label for="<?php echo $quantityId; ?>" class="ct-contract-mobile-label">Cantidad de contratos</label>
 								<input id="<?php echo $quantityId; ?>" name="<?php echo $quantityId; ?>" type="number" class="form-control ct-contract-control ct-contract-quantity" min="1" step="1" value="1" inputmode="numeric" aria-label="Cantidad de contratos <?php echo $section['resourceLabel'] . ' ' . $i; ?>">
+														<small class="sr-only ct-field-error-message" id="ct-error-<?php echo $quantityId; ?>"></small>
 														<small class="ct-contract-mobile-help">Número de contratos separados para este paquete.</small>
 													</div>
 													<div class="ct-contract-field">
@@ -596,18 +597,62 @@
 			reloadContractOptionsForModal();
 		});
 
+		// El borde y el aviso global (`.mensaje`) ya existian, pero nada ataba el aviso al
+		// campo concreto: `aria-describedby` venia a null. Medido en el arbol de
+		// accesibilidad de Chromium antes de tocar nada, `setCustomValidity()` NO cubre ese
+		// hueco: el nodo del campo invalido llegaba con `description: null` aunque
+		// `element.validationMessage` no estuviera vacio y `validity.customError` fuera
+		// true. Y como #btn_guardar_contratos es `type="button"`, no hay submit nativo ni
+		// `reportValidity()`, asi que tampoco sale la burbuja del UA. Quien recorra el
+		// formulario campo por campo con lector de pantalla oye el aviso una vez y despues
+		// no se entera de cual esta mal al posarse en el (WCAG 3.3.1 y 4.1.2). Misma receta
+		// que Programacion Semanal: `aria-invalid` + `aria-describedby` a un ancla sr-only
+		// por campo. `setCustomValidity()` se conserva — no estorba y deja el campo en
+		// `:invalid` — pero deja de ser el unico portador del mensaje.
+		function contractQuantityErrorId(input) {
+			return input && input.id ? 'ct-error-' + input.id : '';
+		}
+
+		function setContractQuantityErrorText(errorId, message) {
+			var anchor = errorId ? document.getElementById(errorId) : null;
+			if (anchor) anchor.textContent = message;
+		}
+
+		function flagContractQuantity($quantity, message) {
+			var input = $quantity.get(0);
+			var errorId = contractQuantityErrorId(input);
+			$quantity.attr('aria-invalid', 'true');
+			if (errorId) $quantity.attr('aria-describedby', errorId);
+			setContractQuantityErrorText(errorId, message);
+			if (input) input.setCustomValidity(message);
+		}
+
+		// Poner la marca sin retirarla dejaria el campo anunciado como invalido para
+		// siempre, que es peor que no marcarlo. Un solo camino de limpieza, y barre las 20
+		// cantidades, no solo las visibles: una fila marcada que despues se oculte al
+		// cambiar de modalidad se quedaria con la marca puesta.
+		function clearContractQuantityErrors() {
+			$('#formularioEditarContratos .ct-contract-quantity').each(function() {
+				$(this).removeAttr('aria-invalid').removeAttr('aria-describedby');
+				setContractQuantityErrorText(contractQuantityErrorId(this), '');
+				this.setCustomValidity('');
+			});
+		}
+		// hot.js normaliza el modal al abrirlo y necesita el mismo camino de limpieza.
+		window.clearContractQuantityErrors = clearContractQuantityErrors;
+
 		/* Ejecuta la funcion guardar, solo cuando se presiona el botón guardar. La función guardar busca la informacion registrada en el formulario de registro de usuarios y lo envia por medio de AJAX para que se ejecute la funcion modificar en guardar.php */
 		function validatePackageQuantities() {
 			var valid = true;
+			clearContractQuantityErrors();
 			$('#formularioEditarContratos .ct-contract-row:visible').each(function() {
 				var packageValue = String($(this).find('.ct-package-select').val() || '').trim();
 				var $quantity = $(this).find('.ct-contract-quantity');
-				$quantity.removeAttr('aria-invalid').get(0).setCustomValidity('');
 				if (!packageValue) return;
 				var raw = String($quantity.val() || '').trim();
 				if (!/^[1-9]\d*$/.test(raw)) {
 					valid = false;
-					$quantity.attr('aria-invalid', 'true').get(0).setCustomValidity('Ingresa un entero mayor o igual a 1.');
+					flagContractQuantity($quantity, 'Ingresa un entero mayor o igual a 1.');
 				}
 			});
 			if (!valid) {
@@ -690,9 +735,7 @@
 				pendingContractSavePayload = null;
 				$('#btn_guardar_contratos').prop('disabled', false);
 				$('.mensaje').stop(true, true).text('').removeClass('ct-message-error').show();
-				$('#formularioEditarContratos .ct-contract-quantity').removeAttr('aria-invalid').each(function() {
-					this.setCustomValidity('');
-				});
+				clearContractQuantityErrors();
 				resetProgressivePackageSlots();
 			});
 

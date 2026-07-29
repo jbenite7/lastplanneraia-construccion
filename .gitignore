@@ -170,6 +170,7 @@ tests/browser/*
 !tests/browser/auto-definir-contratos.mjs
 !tests/browser/contratos-handsontable.mjs
 !tests/browser/contratos-slot-quantities.mjs
+!tests/browser/contratos-cantidad-a11y.mjs
 !tests/browser/preconstruccion-full-cycle.mjs
 !tests/browser/test-pdc.mjs
 !tests/browser/pdc-handsontable.mjs

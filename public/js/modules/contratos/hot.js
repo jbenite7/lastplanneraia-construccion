@@ -458,9 +458,14 @@
 
     $('#formularioEditarContratos .ct-package-select, #formularioEditarContratos .ct-contract-control--multiple')
       .val(null).trigger('change');
-    $('#formularioEditarContratos .ct-contract-quantity').val('1').removeAttr('aria-invalid').each(function () {
-      this.setCustomValidity('');
-    });
+    // El estado de error de la cantidad son cuatro cosas a la vez (aria-invalid,
+    // aria-describedby, el texto del ancla sr-only y el customValidity). Retirar solo
+    // algunas dejaria el campo atado a un mensaje que ya no aplica, asi que este camino
+    // reusa el mismo limpiador que la revalidacion y el cierre del modal, en vez de
+    // repetir aqui una version que puede quedarse corta. Declarado en el <script> de
+    // contratos.view.php, que carga antes que este archivo.
+    $('#formularioEditarContratos .ct-contract-quantity').val('1');
+    if (typeof window.clearContractQuantityErrors === 'function') window.clearContractQuantityErrors();
     $('.mensaje').stop(true, true).text('').removeClass('ct-message-error').show();
     if (typeof window.updateSections === 'function') window.updateSections();
     if (typeof window.updateCheckboxState === 'function') window.updateCheckboxState();
