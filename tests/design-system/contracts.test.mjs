@@ -284,7 +284,7 @@ test('manifest sources and scenario matrices fail closed when stale', () => {
   });
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /design-system-laboratory: missing source views\/design-system\/missing-specimen\.php/);
+  assert.match(result.stderr, /laboratory: missing source views\/design-system\/missing-specimen\.php/);
   assert.match(result.stderr, /programa-general: missing scenario dark\/390x844/);
 });
 

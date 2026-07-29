@@ -244,7 +244,7 @@ const manifests = [
   documents.get('docs/design-system/manifests/project-selector.json'),
 ].filter(Boolean);
 const programManifest = manifests.find(({ moduleId }) => moduleId === 'programa-general');
-const laboratoryManifest = manifests.find(({ moduleId }) => moduleId === 'design-system-laboratory');
+const laboratoryManifest = manifests.find(({ moduleId }) => moduleId === 'laboratory');
 for (const manifest of manifests) {
   for (const field of manifestSchema?.required || []) {
     if (!Object.hasOwn(manifest, field)) {
@@ -345,7 +345,7 @@ for (const familyId of governedFamilies) {
   const keys = new Set(familyScenarios.map(scenarioKey));
   for (const viewport of laboratoryViewportKeys) {
     if (!keys.has(`dark/${viewport}`)) {
-      failures.push(`design-system-laboratory: missing scenario ${familyId}/dark/${viewport}`);
+      failures.push(`laboratory: missing scenario ${familyId}/dark/${viewport}`);
     }
   }
 }

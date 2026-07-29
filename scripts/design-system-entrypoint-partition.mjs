@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scripts/design-system-entrypoint-partition.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
@@ -238,6 +238,36 @@ export function manifestVendorFailures({ root, manifestsOverride = null }) {
   return failures;
 }
 
+/**
+ * `moduleVendors()` en PHP resuelve el manifiesto como
+ * `docs/design-system/manifests/{moduleId}.json`: si el nombre del archivo no
+ * coincide con su `moduleId`, `renderForModule($moduleId)` no lo encuentra
+ * nunca y degrada silenciosamente al agregador completo con un `error_log`.
+ * El defecto queda latente hasta que alguien cablea la vista, así que se
+ * recorre el directorio entero y no las vistas.
+ *
+ * Los archivos sin `moduleId` (inventory.json, goal-provenance.json) no son
+ * manifiestos de módulo: se excluyen por ausencia del campo, nunca por lista
+ * fija de nombres.
+ */
+export function manifestIdentityFailures({ root, manifestsOverride = null }) {
+  const failures = [];
+
+  for (const { file, manifest } of manifestsOverride ?? moduleManifests(root)) {
+    if (manifest === null || typeof manifest !== 'object') continue;
+    if (typeof manifest.moduleId !== 'string') continue;
+    const expected = basename(file, '.json');
+    if (manifest.moduleId !== expected) {
+      failures.push(
+        `manifest-id-mismatch: ${file} declara moduleId="${manifest.moduleId}" `
+        + `(renderForModule('${manifest.moduleId}') buscaría ${MANIFEST_DIR}/${manifest.moduleId}.json)`,
+      );
+    }
+  }
+
+  return failures;
+}
+
 function* phpViews(root) {
   const stack = [join(root, 'views')];
   while (stack.length) {
@@ -320,6 +350,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     ...partitionFailures({ root }),
     ...coherenceFailures({ root }),
     ...manifestVendorFailures({ root }),
+    ...manifestIdentityFailures({ root }),
   ];
   if (failures.length) {
     console.error('Design system entrypoint partition: FAIL');

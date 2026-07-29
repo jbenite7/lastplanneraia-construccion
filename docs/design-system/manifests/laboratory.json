@@ -2,7 +2,7 @@
   "$schema": "../module-manifest.schema.json",
   "schemaVersion": 2,
   "designSystemVersion": "1.0.0",
-  "moduleId": "design-system-laboratory",
+  "moduleId": "laboratory",
   "routes": [
     "/internal/design-system"
   ],

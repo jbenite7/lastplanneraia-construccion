@@ -6,6 +6,7 @@ import test from 'node:test';
 import { partitionFailures } from '../../scripts/design-system-entrypoint-partition.mjs';
 import {
   coherenceFailures,
+  manifestIdentityFailures,
   manifestVendorFailures,
 } from '../../scripts/design-system-entrypoint-partition.mjs';
 
@@ -120,6 +121,40 @@ test('un vendor fantasma en un manifiesto NO cableado a renderForModule falla', 
   assert.deepEqual(failures, [
     'unresolvable-vendor: "vendor-fantasma" en docs/design-system/manifests/nunca-cableado.json',
   ]);
+});
+
+// `moduleVendors()` resuelve `manifests/{moduleId}.json`: un manifiesto cuyo
+// nombre de archivo no coincide con su moduleId es un fallback silencioso al
+// agregador esperando a que alguien cablee la vista.
+test('el nombre de archivo de todo manifiesto de módulo coincide con su moduleId', () => {
+  assert.deepEqual(manifestIdentityFailures({ root }), []);
+});
+
+test('un manifiesto cuyo moduleId no coincide con su archivo falla', () => {
+  const failures = manifestIdentityFailures({
+    root,
+    manifestsOverride: [{
+      file: 'docs/design-system/manifests/laboratorio.json',
+      manifest: { moduleId: 'design-system-laboratorio', vendors: [] },
+    }],
+  });
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /manifest-id-mismatch: docs\/design-system\/manifests\/laboratorio\.json/);
+  assert.match(failures[0], /design-system-laboratorio/);
+});
+
+test('los archivos sin moduleId no disparan el gate de identidad', () => {
+  assert.deepEqual(
+    manifestIdentityFailures({
+      root,
+      manifestsOverride: [
+        { file: 'docs/design-system/manifests/inventory.json', manifest: { manifests: [] } },
+        { file: 'docs/design-system/manifests/goal-provenance.json', manifest: { goals: [] } },
+        { file: 'docs/design-system/manifests/roto.json', manifest: null },
+      ],
+    }),
+    [],
+  );
 });
 
 test('los manifiestos sin moduleId (inventory, goal-provenance) no son de módulo', () => {
