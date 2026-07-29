@@ -51,8 +51,13 @@ foreach ($sugerencias as $paqueteId => $s) {
         $amarrados++;
         continue;
     }
+    // El origen se pasa TAL CUAL lo devolvio el motor. Mandar aqui una etiqueta inventada
+    // («sugerencia») no la reconocia `amarrar()`, que caia a 'humano' y marcaba
+    // `confirmado_humano = 1`: 48 amarres del motor quedaban firmados como decision de una persona,
+    // que es justo la bandera con la que B2 decidira que no puede pisar al reprogramar.
     $r = $svc->amarrar(PROYECTO, (int) $paqueteId, (int) $s['uniqueId'], USUARIO, [
-        'origen' => 'sugerencia',
+        'origen' => $s['origen'],
+        'confianza' => $s['confianza'] ?? null,
         'evidencia' => $s['evidencia'] ?? '',
     ]);
     if (($r['ok'] ?? false) === true) {
