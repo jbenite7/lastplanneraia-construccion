@@ -1,0 +1,43 @@
+{
+  "name": "plan-de-compras",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest run",
+    "sync": "bash scripts/sync-to-lps.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbenite7/plan-de-compras.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jbenite7/plan-de-compras/issues"
+  },
+  "homepage": "https://github.com/jbenite7/plan-de-compras#readme",
+  "dependencies": {
+    "ag-grid-community": "^36.0.2",
+    "ag-grid-react": "^36.0.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
+}

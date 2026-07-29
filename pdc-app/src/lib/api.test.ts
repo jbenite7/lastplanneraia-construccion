@@ -1,0 +1,123 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { apiGet, apiPost, apiUpload, PdcApiError } from './api'
+import { __resetBootstrapForTests } from './bootstrap'
+
+function stubBootstrap() {
+  ;(globalThis as Record<string, unknown>).__PDC_BOOTSTRAP__ = {
+    projectId: 7, proyectoNombre: 'DAPORTO', rol: 'D', csrfToken: 'tok-csrf', usuario: 'pipe',
+  }
+}
+
+afterEach(() => {
+  __resetBootstrapForTests()
+  delete (globalThis as Record<string, unknown>).__PDC_BOOTSTRAP__
+  vi.unstubAllGlobals()
+})
+
+describe('apiGet', () => {
+  it('desenvuelve data del envelope y manda X-AIA-Expect-Json', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ ok: true, data: { x: 1 } }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(apiGet<{ x: number }>('/plan-compras/api/algo')).resolves.toEqual({ x: 1 })
+    const [, init] = fetchMock.mock.calls[0]
+    expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect(init.credentials).toBe('same-origin')
+  })
+
+  it('lanza PdcApiError con code del envelope de error', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true, status: 403,
+      json: async () => ({ ok: false, error: { code: 'FORBIDDEN', message: 'Sin permiso' } }),
+    }))
+    const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
+    expect(err).toBeInstanceOf(PdcApiError)
+    expect((err as PdcApiError).code).toBe('FORBIDDEN')
+  })
+
+  it('mapea HTTP 401 a SESSION_EXPIRED', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 401, json: async () => ({ success: false, sessionExpired: true }),
+    }))
+    const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
+    expect((err as PdcApiError).code).toBe('SESSION_EXPIRED')
+  })
+
+  it('mapea payload sin envelope a BAD_RESPONSE', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 500, json: async () => { throw new Error('not json') },
+    }))
+    const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
+    expect((err as PdcApiError).code).toBe('BAD_RESPONSE')
+  })
+
+  it('mapea HTTP 200 con JSON válido pero sin envelope a BAD_RESPONSE', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ resultado: 'html-login-o-legacy' }),
+    }))
+    const err = await apiGet('/plan-compras/api/algo').catch((e) => e)
+    expect(err).toBeInstanceOf(PdcApiError)
+    expect((err as PdcApiError).code).toBe('BAD_RESPONSE')
+    expect((err as PdcApiError).message).toContain('HTTP 200')
+  })
+})
+
+describe('apiPost', () => {
+  it('envía JSON con X-CSRF-Token del bootstrap', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ ok: true, data: null }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    await apiPost('/plan-compras/api/algo', { a: 1 })
+    const [, init] = fetchMock.mock.calls[0]
+    expect(init.method).toBe('POST')
+    expect(init.headers['X-CSRF-Token']).toBe('tok-csrf')
+    expect(init.headers['Content-Type']).toBe('application/json')
+    expect(init.body).toBe(JSON.stringify({ a: 1 }))
+  })
+})
+
+describe('apiUpload', () => {
+  it('envía FormData con X-CSRF-Token y sin Content-Type manual', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => ({ ok: true, data: { importToken: 't' } }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const file = new File(['x'], 'p.xlsx')
+    await apiUpload('/plan-compras/api/presupuesto/preview', file)
+    const [, init] = fetchMock.mock.calls[0]
+    expect(init.method).toBe('POST')
+    expect(init.body).toBeInstanceOf(FormData)
+    expect((init.body as FormData).get('archivo')).toBe(file)
+    expect(init.headers['X-CSRF-Token']).toBe('tok-csrf')
+    expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect('Content-Type' in init.headers).toBe(false)
+  })
+
+  it('propaga PdcApiError con details del envelope (errores de validación)', async () => {
+    stubBootstrap()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 422,
+      json: async () => ({ ok: false, error: { code: 'VALIDATION_FAILED', message: 'Con errores', errores: [{ fila: 2, columna: 'UM', motivo: 'vacía' }] } }),
+    }))
+    const err = await apiUpload('/plan-compras/api/presupuesto/preview', new File(['x'], 'p.xlsx')).catch((e) => e)
+    expect((err as PdcApiError).code).toBe('VALIDATION_FAILED')
+    expect(((err as PdcApiError).details as { errores: unknown[] }).errores).toHaveLength(1)
+  })
+
+  it('permite cambiar el nombre del campo', async () => {
+    stubBootstrap()
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: true, data: null }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await apiUpload('/x', new File(['x'], 'f.bin'), 'adjunto')
+    expect(((fetchMock.mock.calls[0][1] as RequestInit).body as FormData).get('adjunto')).not.toBeNull()
+  })
+})

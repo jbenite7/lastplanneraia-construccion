@@ -1,0 +1,150 @@
+{
+  "stage": "interview",
+  "title": "Resolver los 15 hallazgos de la revisión del módulo",
+  "goalSlug": "pdc-revision-ux",
+  "questions": [
+    {
+      "id": "particion",
+      "prompt": "¿Te sirve este corte en tres planes, en este orden?",
+      "description": "Pediste partirlo. Propongo: (1) ARREGLOS DE TABLA — ajuste de línea, anchos, un clic para editar, señalar lo que falta, y los textos de los botones confusos. Todo visual, sin tocar base de datos, sin decisiones nuevas. (2) LO QUE FALTA PODER HACER — deshacer un amarre, elegir la versión oficial, el selector de nivel del presupuesto y del comparador, y los atajos del historial. Toca base de datos y reglas. (3) REDISEÑO — la sidebar y acabar con las tablas apiladas. Es el más grande y el que más cambia lo que ya funciona. RECOMENDADO: este orden — el 1 se nota enseguida y no puede romper nada; el 2 resuelve el hueco más serio (hoy un amarre equivocado no tiene vuelta atrás); el 3 va último porque toca todo lo demás y conviene hacerlo cuando lo otro ya esté firme.",
+      "answerMode": "single-custom",
+      "recommendedOptionIds": ["tres_asi"],
+      "options": [
+        { "id": "tres_asi", "label": "Sí, tres planes en ese orden", "description": "Lo visible primero, el hueco funcional después, el rediseño al final." },
+        { "id": "amarre_primero", "label": "Igual, pero deshacer el amarre va de primero", "description": "Es el único hallazgo que hoy te puede dejar atrapado con un dato equivocado. Si te urge, se saca del plan 2 y va solo, antes que todo." },
+        { "id": "dos_planes", "label": "Solo dos: junta el 1 y el 2", "description": "Menos ceremonia, una entrega grande en vez de dos. A cambio, tardas más en ver el primer resultado." }
+      ],
+      "required": true
+    },
+    {
+      "id": "wrap_columnas",
+      "prompt": "Con el ajuste de línea: ¿qué columnas NUNCA deberían partirse en dos renglones?",
+      "description": "Si una columna envuelve el texto, la fila crece de alto. En cifras y fechas eso estorba más que ayuda — un importe partido en dos renglones se lee peor. RECOMENDADO: que las cifras, fechas y unidades se queden siempre en un renglón (y la columna se ensanche lo necesario), y que envuelvan solo los textos largos: nombres de insumo, de paquete y de archivo.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["cifras_no"],
+      "options": [
+        { "id": "cifras_no", "label": "Cifras, fechas y unidades en un renglón; los textos largos sí envuelven", "description": "Lo mejor de ambos: los números se leen de un vistazo y los nombres largos no se cortan." },
+        { "id": "todo_envuelve", "label": "Que todo envuelva", "description": "Más simple de construir, pero las filas quedan de alturas desiguales y las columnas de dinero se leen peor." },
+        { "id": "nada_envuelve", "label": "Que nada envuelva, solo ensanchar columnas", "description": "Filas todas iguales, pero con nombres muy largos la tabla se vuelve anchísima y toca desplazarse en horizontal." }
+      ],
+      "required": true
+    },
+    {
+      "id": "clic_plan",
+      "prompt": "En la tabla del Plan, el clic sencillo hoy abre el detalle de la fila (los siete pasos). Si ahora el clic sirve para editar, ¿qué hacemos con el detalle?",
+      "description": "Pediste que un clic baste para editar. En la tabla del Plan ese gesto ya está ocupado. RECOMENDADO: que el clic edite solo en las columnas que se pueden editar (responsable, frente) y siga abriendo el detalle en el resto de la fila. Es lo que la gente espera sin que nadie se lo explique.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["por_columna"],
+      "options": [
+        { "id": "por_columna", "label": "Depende de dónde hagas clic", "description": "En una casilla editable, edita. En el resto de la fila, abre el detalle. Sin gestos nuevos que aprender." },
+        { "id": "boton_detalle", "label": "El clic siempre edita; el detalle se abre con un botón", "description": "Regla única y sin sorpresas, pero añade un botón por fila y el detalle queda más escondido." },
+        { "id": "detalle_flecha", "label": "El clic siempre edita; el detalle se abre con una flechita al inicio de la fila", "description": "Como se abren las carpetas en el presupuesto. Coherente con el resto del módulo." }
+      ],
+      "required": true
+    },
+    {
+      "id": "modal_atajos",
+      "prompt": "Pediste que al hacer clic en una versión del historial salga un modal preguntando si quieres verla. ¿Seguro que quieres el paso intermedio?",
+      "description": "Un modal que solo pregunta «¿sí o no?» antes de una acción que no rompe nada (ir a mirar) suele sentirse como un estorbo a la tercera vez. RECOMENDADO: sin modal para VER (el clic te lleva directo, y volver es un clic), pero SÍ dejar la confirmación cuando la acción cambie algo de verdad, como fijar la versión oficial.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["sin_modal_ver"],
+      "options": [
+        { "id": "sin_modal_ver", "label": "Sin modal para ver; sí para lo que cambia datos", "description": "Menos fricción en lo que solo mira, y protección donde de verdad importa." },
+        { "id": "con_modal", "label": "Con modal siempre, como lo pedí", "description": "Nunca te mueve de pantalla sin avisarte. A cambio, un clic de más cada vez." },
+        { "id": "modal_recordable", "label": "Con modal, pero con casilla de «no volver a preguntar»", "description": "Protege la primera vez y desaparece cuando ya sabes qué hace." }
+      ],
+      "required": true
+    },
+    {
+      "id": "señalar_faltantes",
+      "prompt": "En Paquetes, ¿cómo quieres que salte a la vista lo que falta por asignar?",
+      "description": "Hoy la pantalla abre mostrando los 396 insumos y el único que falta se pierde. RECOMENDADO: que la pantalla abra directamente en «Sin asignar» cuando quede algo pendiente, y en «Todos» cuando ya esté todo. Así lo primero que ves siempre es tu trabajo pendiente, y cuando no hay, ves el resultado completo.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["abre_pendientes"],
+      "options": [
+        { "id": "abre_pendientes", "label": "Que abra en «Sin asignar» si queda algo pendiente", "description": "Lo pendiente primero, sin que tengas que saber que existe el filtro." },
+        { "id": "resaltar", "label": "Mostrar todo, pero pintar los pendientes de un color", "description": "Ves el conjunto completo y lo que falta destaca. Con 396 filas puede que aún tengas que buscar." },
+        { "id": "aviso_arriba", "label": "Un aviso arriba: «falta 1 insumo» con un enlace que filtra", "description": "No cambia lo que ves por defecto, y da un camino de un clic hacia lo pendiente." }
+      ],
+      "required": true
+    },
+    {
+      "id": "acceso_tablas",
+      "prompt": "Para que las tablas dejen de estar una debajo de otra, ¿qué forma prefieres?",
+      "description": "Hoy en Maestro, Paquetes y Plan hay que bajar rodando para descubrir que había más tablas. RECOMENDADO: pestañas dentro de cada pantalla — ves de entrada cuántas secciones hay y saltas a cualquiera sin desplazarte, que es justo lo que pediste.",
+      "answerMode": "single-custom",
+      "recommendedOptionIds": ["pestanas"],
+      "options": [
+        { "id": "pestanas", "label": "Pestañas dentro de la pantalla", "description": "Ves todas las secciones de entrada y saltas directo. Ya existe algo así en Paquetes («Modo masivo» / «Asistente»)." },
+        { "id": "acordeon", "label": "Secciones plegables, con la que usas abierta", "description": "Todo sigue en una columna pero cerrado, así ves el índice completo de un vistazo." },
+        { "id": "que_decida_diseno", "label": "Que lo decida la revisión de diseño", "description": "Dejas la forma abierta y que salga del trabajo con las skills de diseño. Más lento, probablemente mejor resultado." }
+      ],
+      "required": true
+    },
+    {
+      "id": "quien_cambia_version",
+      "prompt": "¿Quién puede cambiar cuál presupuesto es el oficial?",
+      "description": "Es una decisión con consecuencias: de esa versión cuelgan el maestro, los paquetes y las fechas. RECOMENDADO: solo quien ya tiene permiso para importar presupuestos — es la misma responsabilidad, y no hay que inventar un permiso nuevo ni pedirle a nadie que reparta permisos otra vez.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["mismo_importar"],
+      "options": [
+        { "id": "mismo_importar", "label": "Quien puede importar presupuestos", "description": "Ya son las personas de confianza para esto. Cero configuración nueva." },
+        { "id": "permiso_nuevo", "label": "Un permiso nuevo y aparte", "description": "Control más fino, pero hay que crearlo y que alguien lo asigne a mano a cada persona." },
+        { "id": "solo_director", "label": "Solo el director de obra", "description": "Máximo control. Riesgo: si esa persona no está, nadie puede corregir una versión mal marcada." }
+      ],
+      "required": true
+    },
+    {
+      "id": "aviso_recalcular",
+      "prompt": "¿Cómo te aviso de lo que hace «Recalcular» antes de que lo pulses?",
+      "description": "Preguntaste si perdías lo avanzado. La respuesta es que no: conserva responsables, amarres y el avance; solo mueve fechas. Pero eso no está dicho en ninguna parte. RECOMENDADO: una línea de texto fija junto al botón. Se lee sin hacer nada y no añade clics.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["texto_fijo"],
+      "options": [
+        { "id": "texto_fijo", "label": "Una línea de texto junto al botón", "description": "Siempre visible, cero fricción. Por ejemplo: «Actualiza las fechas contra el cronograma. Conserva responsables y amarres»." },
+        { "id": "modal_confirma", "label": "Un modal que lo explique y pida confirmar", "description": "Imposible de pasar por alto la primera vez, pero molesta cuando ya lo sabes y recalculas seguido." },
+        { "id": "modal_si_desfase", "label": "Texto fijo, y modal solo si hay fechas que se van a mover", "description": "Callado cuando no cambia nada, y te avisa justo cuando sí — que es cuando importa." }
+      ],
+      "required": true
+    },
+    {
+      "id": "nombre_importador",
+      "prompt": "Con la sidebar puesta, ¿cómo debería llamarse la pantalla del cargue de Excel?",
+      "description": "Hoy se llama «Ensamble», que es el nombre de la etapa completa (y por tanto también de Maestro, Presupuesto, Paquetes y Plan). RECOMENDADO: «Importar» — dice exactamente lo que se hace ahí y libera la palabra Ensamble para la etapa.",
+      "answerMode": "single-custom",
+      "recommendedOptionIds": ["importar"],
+      "options": [
+        { "id": "importar", "label": "Importar", "description": "Corto y literal. Deja «Ensamble» libre para nombrar la etapa que agrupa a las demás." },
+        { "id": "cargue", "label": "Cargue", "description": "Más cercano al hablar de obra en Colombia." },
+        { "id": "presupuesto_origen", "label": "Cargar presupuesto", "description": "No deja ninguna duda de qué se carga, a costa de ser más largo en la barra." }
+      ],
+      "required": true
+    },
+    {
+      "id": "permiso_desamarrar",
+      "prompt": "¿Quién puede deshacer un amarre?",
+      "description": "Dijiste que al desamarrar el paquete vuelve a «Sin frente» y conserva su responsable. Falta decidir quién puede hacerlo. RECOMENDADO: cualquiera que pueda amarrar — si le confías la decisión, debes confiarle también la corrección; lo contrario es lo que nos trajo aquí.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["mismo_amarrar"],
+      "options": [
+        { "id": "mismo_amarrar", "label": "Quien puede amarrar", "description": "Simétrico y sin permisos nuevos. Quien se equivoca puede arreglarlo." },
+        { "id": "con_confirmacion", "label": "Quien puede amarrar, pero confirmando", "description": "Mismo permiso, con un aviso de que se van a descartar las fechas calculadas de ese paquete." },
+        { "id": "solo_responsable", "label": "Solo el responsable del paquete o quien pueda editar el plan", "description": "Más control, pero deja atrapado a quien no sea el responsable si ve un error." }
+      ],
+      "required": true
+    },
+    {
+      "id": "fechas_al_desamarrar",
+      "prompt": "Al desamarrar, dijiste que el paquete vuelve a «Sin frente» y conserva el responsable. ¿Qué pasa con las fechas que ya tenía calculadas?",
+      "description": "Un paquete sin frente no tiene de dónde sacar fechas: se calculan hacia atrás desde la fecha de la actividad del cronograma. RECOMENDADO: borrarlas. Conservar unas fechas huérfanas, calculadas desde un frente que ya no está, es peor que no tener ninguna — nadie sabría que están viejas.",
+      "answerMode": "single",
+      "recommendedOptionIds": ["borrar_fechas"],
+      "options": [
+        { "id": "borrar_fechas", "label": "Se borran; el paquete queda sin fechas hasta reamarrarlo", "description": "Honesto: sin frente no hay fecha que valga. Evita que alguien lea una fecha muerta como buena." },
+        { "id": "conservar_marcadas", "label": "Se conservan, pero marcadas como «sin frente»", "description": "No pierdes el histórico de lo que se había planeado, a riesgo de que alguien las tome por vigentes." },
+        { "id": "conservar_tal_cual", "label": "Se conservan tal cual", "description": "Lo más simple de construir y lo más peligroso: fechas viejas indistinguibles de las buenas." }
+      ],
+      "required": true
+    }
+  ]
+}

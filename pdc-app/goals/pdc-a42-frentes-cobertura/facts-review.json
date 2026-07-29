@@ -1,0 +1,172 @@
+{
+  "stage": "facts",
+  "title": "A4.2 — Que el plan de compras sepa a qué frente va cada paquete",
+  "goalSlug": "pdc-a42-frentes-cobertura",
+  "facts": [
+    {
+      "id": "f01",
+      "text": "Existe una tabla de correspondencias que dice, para cada subcapítulo del presupuesto, a qué frente del cronograma corresponde. Ejemplo: MAMPOSTERIA Y REVOQUE → MAMPOSTERÍA.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f02",
+      "text": "Las correspondencias son globales: sirven para todos los proyectos de AIA, no solo para Da Porto.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f03",
+      "text": "Una obra puede tener una excepción propia que gana sobre la correspondencia global, sin modificarla para los demás proyectos.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f04",
+      "text": "El motor propone las correspondencias que faltan comparando el nombre del subcapítulo con el de los frentes; nunca las inventa a partir de nada.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f05",
+      "text": "Una correspondencia que una persona ya revisó queda marcada como confirmada, y se distingue de una que el motor solo dedujo.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f06",
+      "text": "Un paquete cuyo subcapítulo tiene una correspondencia CONFIRMADA recibe propuesta de frente con confianza ALTA.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f07",
+      "text": "Un paquete cuyo subcapítulo tiene una correspondencia deducida pero NO confirmada recibe propuesta con confianza MEDIA.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f08",
+      "text": "El subcapítulo acota a un grupo pequeño de frentes candidatos y el nombre del paquete desempata dentro de ese grupo. Los paquetes «M. de O MAMPOSTERÍA» y «Sum + Inst REVOQUE SECO», que comparten subcapítulo, pueden así proponerse a frentes distintos.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f09",
+      "text": "Cuando el nombre del paquete señala un frente que está fuera del grupo que acotó el subcapítulo, la propuesta baja a confianza MEDIA y la evidencia dice que las dos señales no coinciden.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f10",
+      "text": "Un paquete con insumos en varios subcapítulos se propone al frente que arranca antes, no al del subcapítulo con más plata.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f11",
+      "text": "Cada propuesta explica en palabras de dónde salió, nombrando el subcapítulo y el frente concretos.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f12",
+      "text": "El parecido mínimo de nombres sigue en 0,33: no se baja para fabricar cobertura.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f13",
+      "text": "Al comparar nombres se ignoran las palabras sin significado (DE, Y, EN, LA, EL, POR, CON). Las propuestas que ya existían antes del cambio siguen existiendo después.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f14",
+      "text": "El motor nunca propone una actividad suelta del cronograma: sus propuestas son siempre frentes.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f15",
+      "text": "Una persona sí puede amarrar un paquete a mano a cualquier actividad del cronograma, no solo a los 31 encabezados.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f16",
+      "text": "Un amarre hecho a mano a una actividad suelta calcula fechas igual que uno hecho a un frente, tomando la fecha de arranque de esa actividad.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f17",
+      "text": "La pestaña «Sin frente» tiene un panel plegable donde se revisan y corrigen las correspondencias subcapítulo → frente. Está cerrado por defecto.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": false, "automatedVerification": false
+    },
+    {
+      "id": "f18",
+      "text": "El panel dice cuántas correspondencias están confirmadas y cuántas están pendientes de revisar.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f19",
+      "text": "Cambiar una correspondencia en el panel no escribe ningún amarre: solo cambia lo que el motor propone a partir de ese momento.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f20",
+      "text": "Un paquete cuyo subcapítulo todavía no tiene correspondencia aparece sin propuesta, pero diciendo el motivo: «su subcapítulo X todavía no tiene frente asignado».",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f21",
+      "text": "Esa fila ofrece un atajo que abre el panel en la correspondencia que le falta, para resolverla sin buscarla.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": false, "automatedVerification": false
+    },
+    {
+      "id": "f22",
+      "text": "El botón principal sigue aceptando solo las de confianza ALTA, y ahora incluye las que vienen de correspondencias confirmadas.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f23",
+      "text": "Las de confianza MEDIA siguen pasando por la confirmación que muestra el importe y la lista de qué paquete va a qué frente, y cancelar no escribe nada.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f24",
+      "text": "Cuando una persona amarra un paquete a un frente distinto del propuesto, queda registrado el par: lo que el motor sugirió y lo que la persona eligió.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f25",
+      "text": "Aceptar una propuesta tal cual conserva la capa que la produjo, para que el acierto se le acredite al motor y no aparezca como decisión humana.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f26",
+      "text": "Medido con la misma consulta antes y después en Da Porto: los paquetes sin ninguna propuesta bajan de 45 a 10 o menos.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f27",
+      "text": "Medido igual: las propuestas de confianza ALTA suben de 3 a 30 o más.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f28",
+      "text": "Los 11 amarres que ya existían siguen intactos: nada de esto los reescribe ni los mueve.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f29",
+      "text": "Ningún amarre se escribe solo: los 85 los confirma una persona en pantalla.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f30",
+      "text": "No se toca el cálculo de fechas, los pasos de contratación ni la pestaña «Plan», que son de la tarea que corre en paralelo.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f31",
+      "text": "No se arreglan los 25 paquetes que siguen sin duración de referencia: es un asunto distinto y queda anotado.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": false, "automatedVerification": false
+    },
+    {
+      "id": "f32",
+      "text": "El motor no lee pdc_insumo_actividades.unique_id, que hoy está vacío y que otra sesión va a poblar: esta tanda no depende de ese trabajo ni lo estorba.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    },
+    {
+      "id": "f33",
+      "text": "Sigue en verde lo que ya estaba: los tests de Vitest, la compilación de la SPA y los tests de plan de fechas contra la base real.",
+      "accepted": false, "removed": false, "recommendedAutomatedVerification": true, "automatedVerification": true
+    }
+  ]
+}

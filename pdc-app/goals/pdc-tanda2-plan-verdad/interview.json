@@ -1,0 +1,206 @@
+{
+  "stage": "interview",
+  "title": "Tanda 2 — que el Plan de compras diga la verdad",
+  "goalSlug": "pdc-tanda2-plan-verdad",
+  "questions": [
+    {
+      "id": "medida-cobertura",
+      "prompt": "El Plan va a mostrar «cuánto le falta». ¿Con qué número lo medimos?",
+      "description": "Hoy el encabezado dice «11 paquete(s)» y parece que están todos, pero hay 85 esperando frente. Medido en Da Porto: 11 con fecha de 96 que sí necesitan una. Contar paquetes es fácil de entender; contar plata dice mejor cuánto riesgo queda suelto (un paquete de acero pesa muchísimo más que uno de ferretería).",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Las dos: el número grande en plata y, debajo, «11 de 96 paquetes». Es lo mismo que ya hace Paquetes de contratación, así las dos pantallas se leen igual.",
+      "recommendedOptionIds": ["ambas"],
+      "options": [
+        { "id": "ambas", "label": "Las dos: plata como número grande + conteo debajo (recomendado)" },
+        { "id": "conteo", "label": "Solo el conteo de paquetes — más simple de entender" },
+        { "id": "valor", "label": "Solo la plata — es lo que importa para comprar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "denominador",
+      "prompt": "¿Sobre qué total se calcula ese porcentaje?",
+      "description": "No todos los paquetes llevan fecha: los de nómina, imprevistos y ferretería no se le contratan a nadie (en el sistema son «no contratable» y «consumo directo»). Si los metemos en el total, el plan parecerá eternamente incompleto por paquetes que nunca van a tener fecha.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo los que generan proceso de contratación (contrato y orden de compra). Es lo que ya filtra el código para armar la lista «Sin frente», así que los dos números serán coherentes.",
+      "recommendedOptionIds": ["con-proceso"],
+      "options": [
+        { "id": "con-proceso", "label": "Solo los que generan proceso: contrato y orden de compra (recomendado)" },
+        { "id": "todos", "label": "Todos los paquetes del proyecto, aunque nunca lleven fecha" },
+        { "id": "todos-nota", "label": "Todos, pero con una nota que descuente los que no aplican" }
+      ],
+      "required": true
+    },
+    {
+      "id": "amarrados-sin-calcular",
+      "prompt": "Un paquete que ya tiene frente pero al que nadie le ha dado a «Recalcular», ¿cuenta como cubierto?",
+      "description": "Es un estado intermedio: la decisión difícil (a qué parte de la obra pertenece) ya está tomada, pero todavía no tiene fechas escritas. Hoy Da Porto tiene 0 así, pero pasa cada vez que se amarra algo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí cuenta como cubierto, pero la franja avisa «hay N esperando Recalcular». Lo difícil ya está hecho; lo que falta es pulsar un botón.",
+      "recommendedOptionIds": ["cuenta-avisa"],
+      "options": [
+        { "id": "cuenta-avisa", "label": "Cuenta como cubierto, con aviso aparte de que falta recalcular (recomendado)" },
+        { "id": "no-cuenta", "label": "No cuenta hasta que tenga fechas de verdad" },
+        { "id": "tercer-estado", "label": "Ni una cosa ni la otra: un tercer color en la barra" }
+      ],
+      "required": true
+    },
+    {
+      "id": "que-hace-franja",
+      "prompt": "La franja roja de arriba avisará «3 paquetes debieron arrancar hace hasta 98 días». ¿Qué debe poder hacer quien la lea?",
+      "description": "Un aviso que solo informa obliga a buscar a mano las filas afectadas. Uno que además actúa ahorra ese paso. Esto decide si la franja es un cartel o una herramienta.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Que filtre la tabla para dejar solo los vencidos, y que se pueda quitar el filtro. Es un clic y responde a «enséñame cuáles son».",
+      "recommendedOptionIds": ["filtrar"],
+      "options": [
+        { "id": "filtrar", "label": "Filtrar la tabla a solo los vencidos, con un clic para deshacerlo (recomendado)" },
+        { "id": "saltar", "label": "Saltar a la primera fila vencida sin filtrar nada" },
+        { "id": "solo-avisar", "label": "Solo avisar; que el usuario mire la tabla, que ya los pone primero" },
+        { "id": "responsable", "label": "Además, poder asignarles responsable de golpe" }
+      ],
+      "required": true
+    },
+    {
+      "id": "franja-cerrable",
+      "prompt": "¿Se puede cerrar esa franja?",
+      "description": "Si se cierra y no vuelve, alguien puede olvidar el problema durante semanas. Si no se cierra nunca, estorba a quien ya lo sabe y está trabajando en otra cosa.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Que se pueda cerrar, pero que vuelva al recargar la página. Es una alerta de obra, no un anuncio: molestar un poco es parte de su trabajo.",
+      "recommendedOptionIds": ["cierra-vuelve"],
+      "options": [
+        { "id": "cierra-vuelve", "label": "Se cierra, pero vuelve al recargar (recomendado)" },
+        { "id": "no-cierra", "label": "No se puede cerrar mientras haya vencidos" },
+        { "id": "cierra-recuerda", "label": "Se cierra y se queda cerrada para ese usuario" }
+      ],
+      "required": true
+    },
+    {
+      "id": "boton-aceptar",
+      "prompt": "Hoy un botón acepta las 40 propuestas del motor de una vez. Medido: 37 son de confianza media y solo 3 de confianza alta. ¿Cómo lo partimos?",
+      "description": "Esto es lo más delicado de la tanda. «Confianza media» significa que el motor lo dedujo de la actividad padre, no de la descripción del insumo: acierta a menudo, pero no siempre. Aceptar 37 de golpe escribe 37 amarres que luego hay que revisar uno por uno si algo salió mal.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Dos botones: el principal acepta solo las de confianza alta (las 3), y un segundo, más discreto, acepta las medias tras confirmar. La opción segura queda a un clic y la arriesgada pide un paso más.",
+      "recommendedOptionIds": ["dos-botones"],
+      "options": [
+        { "id": "dos-botones", "label": "Dos botones: «alta» directo, «media» tras confirmar (recomendado)" },
+        { "id": "uno-confirma", "label": "Un solo botón, pero siempre pide confirmación con el desglose" },
+        { "id": "selector", "label": "Un botón con un selector de hasta qué confianza aceptar" },
+        { "id": "como-esta", "label": "Dejarlo como está y solo añadir el desglose en pantalla" }
+      ],
+      "required": true
+    },
+    {
+      "id": "previsualizacion",
+      "prompt": "Antes de escribir esos amarres, ¿qué hay que enseñar?",
+      "description": "«Previsualizar» puede ser un resumen de dos líneas o la lista completa de qué paquete va a qué frente. La lista da más control pero es más larga de leer, y aquí son 37 filas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Un resumen con los conteos y la plata en juego, y debajo la lista completa plegada, que se abre si alguien quiere revisarla.",
+      "recommendedOptionIds": ["resumen-lista"],
+      "options": [
+        { "id": "resumen-lista", "label": "Resumen + lista completa plegable (recomendado)" },
+        { "id": "solo-resumen", "label": "Solo el resumen: cuántas, de qué confianza y cuánta plata" },
+        { "id": "lista", "label": "La lista completa, sin plegar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "confianza-baja",
+      "prompt": "¿Se pueden aceptar en masa las propuestas de confianza baja?",
+      "description": "Confianza baja significa que el motor repartió sin encontrar una actividad dominante: es poco más que una corazonada. En Da Porto ahora mismo no hay ninguna, pero el botón las aceptaría igual si aparecieran.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No en masa: que se acepten solo una a una desde su fila. Es la opción segura y no quita nada, porque hoy no hay ninguna.",
+      "recommendedOptionIds": ["una-a-una"],
+      "options": [
+        { "id": "una-a-una", "label": "Solo una a una, nunca en masa (recomendado)" },
+        { "id": "masa-confirma", "label": "En masa, pero con una confirmación más dura" },
+        { "id": "igual-media", "label": "Igual que las medias, sin distinción" }
+      ],
+      "required": true
+    },
+    {
+      "id": "ahorros-signo",
+      "prompt": "El comparador dice «Ahorros $ -46.629.280.887». Un ahorro con signo menos se lee al revés. ¿Cómo lo arreglamos?",
+      "description": "Hoy hay tres números en esa línea: el Δ total (con signo), los sobrecostos (lo que subió) y los ahorros (lo que bajó). El problema es solo el signo del tercero.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Quitarle el signo a «Ahorros» y dejarlo en verde: la palabra ya dice la dirección. El Δ de arriba conserva su signo, que ahí sí significa algo.",
+      "recommendedOptionIds": ["absoluto"],
+      "options": [
+        { "id": "absoluto", "label": "«Ahorros $ 46.629.280.887», sin signo, en verde (recomendado)" },
+        { "id": "solo-delta", "label": "Quitar sobrecostos y ahorros; dejar solo el Δ con signo" },
+        { "id": "flechas", "label": "Con flechas: ↑ sobrecostos, ↓ ahorros, ambos sin signo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "explicar-delta",
+      "prompt": "¿Hace falta explicar de dónde sale el Δ?",
+      "description": "El Δ es exactamente los sobrecostos menos los ahorros, pero eso hoy no se dice y quien mira tres números grandes no lo deduce solo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, una línea pequeña: «Δ = sobrecostos − ahorros». Cuesta un renglón y evita que alguien sume mal.",
+      "recommendedOptionIds": ["linea"],
+      "options": [
+        { "id": "linea", "label": "Una línea pequeña que lo explique (recomendado)" },
+        { "id": "tooltip", "label": "En una ayuda que aparezca al pasar el ratón" },
+        { "id": "nada", "label": "No hace falta: quien usa esta pantalla ya lo sabe" }
+      ],
+      "required": false
+    },
+    {
+      "id": "texto-cortado",
+      "prompt": "«SUBCONTRATACION PERSONAL» se parte por la mitad de la palabra. ¿Ensanchamos o envolvemos?",
+      "description": "Pasa porque la columna «Agrupación» tiene un mínimo de 130 píxeles y la palabra más larga necesita unos 150. Ensanchar quita sitio a las demás columnas; envolver por palabras hace la fila más alta.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Las dos cosas a la vez: subir el mínimo para que la palabra más larga quepa, y prohibir que se rompan palabras. Si aun así no cabe, baja de renglón entera.",
+      "recommendedOptionIds": ["ambas"],
+      "options": [
+        { "id": "ambas", "label": "Mínimo más ancho + nunca romper palabras (recomendado)" },
+        { "id": "envolver", "label": "Solo envolver por palabras; filas más altas si hace falta" },
+        { "id": "abreviar", "label": "Abreviar con «…» y el texto completo al pasar el ratón" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pantalla-angosta",
+      "prompt": "En un portátil de 1024 px, las columnas «Destino» y «Sugerencia» se salen de la pantalla sin avisar. ¿Qué hacemos?",
+      "description": "O se deja mover la tabla a los lados (con una pista visual de que hay más), o se esconden las columnas menos importantes en pantallas pequeñas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Scroll lateral con una sombra en el borde que indique que hay más. Esconder columnas es peor: «Sugerencia» es justo lo que se viene a mirar en esa pantalla.",
+      "recommendedOptionIds": ["scroll"],
+      "options": [
+        { "id": "scroll", "label": "Scroll lateral con sombra que lo indique (recomendado)" },
+        { "id": "esconder", "label": "Esconder columnas secundarias por debajo de 1200 px" },
+        { "id": "apilar", "label": "En pantallas pequeñas, mostrar cada fila como una tarjeta" }
+      ],
+      "required": true
+    },
+    {
+      "id": "alcance-backend",
+      "prompt": "¿Hace falta tocar el servidor (PHP) o basta con la pantalla?",
+      "description": "Todos los datos que necesita la cobertura ya llegan al navegador en peticiones que la pantalla hace hoy. Calcularlo en el servidor sería más «correcto» pero añade endpoint, migración y despliegue.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo la pantalla. Los números ya están todos en el navegador; meter servidor multiplicaría el trabajo sin cambiar lo que ve el usuario.",
+      "recommendedOptionIds": ["solo-spa"],
+      "options": [
+        { "id": "solo-spa", "label": "Solo la SPA, sin tocar PHP (recomendado)" },
+        { "id": "endpoint", "label": "Endpoint nuevo que devuelva la cobertura ya calculada" }
+      ],
+      "required": true
+    },
+    {
+      "id": "fuera-de-alcance",
+      "prompt": "¿Algo de esta lista se queda fuera de esta tanda?",
+      "description": "Cuanto más entre, más tarda y más superficie hay que verificar. Si algo te parece que puede esperar, márcalo ahora y lo dejo anotado para otra sesión.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Nada: los cinco puntos son pequeños y se verifican con la misma pasada del navegador.",
+      "recommendedOptionIds": [],
+      "options": [
+        { "id": "h4", "label": "Cobertura del plan (H4)" },
+        { "id": "h12", "label": "Franja de vencidos (H12)" },
+        { "id": "h8", "label": "Aceptar por confianza (H8)" },
+        { "id": "h7", "label": "Signo de los ahorros (H7)" },
+        { "id": "h5h6", "label": "Texto cortado y pantalla angosta (H5/H6)" }
+      ],
+      "required": false
+    }
+  ]
+}

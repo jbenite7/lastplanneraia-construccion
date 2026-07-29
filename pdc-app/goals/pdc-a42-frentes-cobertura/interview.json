@@ -1,0 +1,202 @@
+{
+  "stage": "interview",
+  "title": "A4.2 — Que el plan de compras sepa a qué frente va cada paquete",
+  "goalSlug": "pdc-a42-frentes-cobertura",
+  "questions": [
+    {
+      "id": "puente-quien",
+      "prompt": "Medí que 25 correspondencias del tipo «subcapítulo del presupuesto → frente del cronograma» alcanzan para cubrir los 85 paquetes sin fecha. ¿Quién arma esa tabla de correspondencias?",
+      "description": "Ejemplo de correspondencia: el subcapítulo MAMPOSTERIA Y REVOQUE del presupuesto corresponde al frente MAMPOSTERÍA del cronograma. Hoy el motor intenta adivinar comparando palabras del nombre del paquete contra los 31 frentes, y falla en 45 de 85 porque los paquetes hablan de oficios (CIELOS RASOS, CEMENTO) y los frentes de fases de obra (ACABADOS, ESTRUCTURA): no comparten ninguna palabra.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El motor propone la tabla completa y una persona la revisa de una sentada. Es lo más rápido y lo más seguro: son ~25 filas, se revisan en minutos, y a partir de ahí el motor explica cada propuesta diciendo de qué correspondencia salió.",
+      "recommendedOptionIds": ["motor-propone-humano-confirma"],
+      "options": [
+        { "id": "motor-propone-humano-confirma", "label": "El motor propone las 25 y una persona las revisa una vez (recomendado)" },
+        { "id": "humano-desde-cero", "label": "Una persona las escribe desde cero, el motor no propone nada" },
+        { "id": "motor-solo", "label": "El motor las decide solo, sin que nadie las confirme" }
+      ],
+      "required": true
+    },
+    {
+      "id": "puente-alcance",
+      "prompt": "Esa tabla de correspondencias, ¿sirve solo para Da Porto o para todos los proyectos de AIA?",
+      "description": "Los subcapítulos del presupuesto (ESTRUCTURA, MAMPOSTERIA Y REVOQUE, PISOS Y ENCHAPES) se repiten obra tras obra; los nombres de los frentes del cronograma también. Si la tabla es global, el próximo proyecto arranca con la mayoría del trabajo hecho. Es el mismo camino que ya se recorrió en A3.3 con los overrides, que se destilaron de 158 a 8 reglas.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Global, con la posibilidad de una excepción puntual para un proyecto concreto. Así el conocimiento se acumula entre obras sin quedar preso de una.",
+      "recommendedOptionIds": ["global-con-excepciones"],
+      "options": [
+        { "id": "global-con-excepciones", "label": "Global, y si una obra necesita una excepción se anota aparte (recomendado)" },
+        { "id": "solo-proyecto", "label": "Solo de este proyecto; cada obra arma la suya" },
+        { "id": "global-estricta", "label": "Global y sin excepciones: una sola tabla para todos" }
+      ],
+      "required": true
+    },
+    {
+      "id": "confianza-correspondencia",
+      "prompt": "Una propuesta que sale de una correspondencia que YA revisó una persona, ¿con qué confianza aparece?",
+      "description": "Importa porque el botón principal de la pantalla acepta solo las de confianza ALTA, en bloque. Si estas propuestas salen como MEDIA, hay que revisarlas de a una y la sesión de amarre no se acorta. Ya está decidido que la confianza la da la evidencia, no la capa que la produjo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "ALTA. La evidencia es que un humano ya dijo «este subcapítulo va a este frente»; es más fuerte que un parecido de palabras del 70 %, que hoy sí califica como ALTA.",
+      "recommendedOptionIds": ["alta"],
+      "options": [
+        { "id": "alta", "label": "ALTA — entra al botón que acepta en bloque (recomendado)" },
+        { "id": "media", "label": "MEDIA — pasa por la confirmación con importe y lista" },
+        { "id": "depende-nombre", "label": "ALTA solo si además el nombre del paquete no contradice; si contradice, MEDIA" }
+      ],
+      "required": true
+    },
+    {
+      "id": "confianza-sin-confirmar",
+      "prompt": "¿Y una propuesta que sale de una correspondencia que el motor dedujo pero que nadie revisó todavía?",
+      "description": "Puede pasar si aparece un subcapítulo nuevo en una obra futura y nadie ha pasado por la pantalla de correspondencias.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "MEDIA. Se ve en la pantalla, se puede aceptar, pero pasa por la confirmación que muestra el importe y la lista antes de escribir.",
+      "recommendedOptionIds": ["media"],
+      "options": [
+        { "id": "media", "label": "MEDIA — visible y aceptable, pero con confirmación (recomendado)" },
+        { "id": "baja", "label": "BAJA — solo se acepta de a una" },
+        { "id": "no-mostrar", "label": "No se muestra hasta que alguien revise la correspondencia" }
+      ],
+      "required": true
+    },
+    {
+      "id": "choque-nombre-subcapitulo",
+      "prompt": "Cuando el subcapítulo apunta a un frente y el nombre del paquete apunta a otro distinto, ¿cuál gana?",
+      "description": "Pasa de verdad: los paquetes «M. de O MAMPOSTERÍA» y «Sum + Inst REVOQUE SECO» están los dos en el subcapítulo MAMPOSTERIA Y REVOQUE, pero una persona los amarró a frentes distintos (MAMPOSTERÍA y REVOQUES, ESTUCO Y PINTURA). Lo que los separa es el nombre. O sea: el subcapítulo dice el barrio, el nombre dice la casa.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El subcapítulo acota a un grupo pequeño de frentes y el nombre desempata dentro de ese grupo. Si el nombre señala un frente que está fuera del grupo, la propuesta baja a MEDIA y la pantalla explica el desacuerdo en vez de esconderlo.",
+      "recommendedOptionIds": ["subcapitulo-acota-nombre-desempata"],
+      "options": [
+        { "id": "subcapitulo-acota-nombre-desempata", "label": "El subcapítulo acota, el nombre desempata dentro; si chocan, baja a MEDIA y se explica (recomendado)" },
+        { "id": "gana-nombre", "label": "Gana siempre el nombre del paquete" },
+        { "id": "gana-subcapitulo", "label": "Gana siempre el subcapítulo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "varios-subcapitulos",
+      "prompt": "Un paquete con insumos repartidos en varios subcapítulos (por ejemplo, concreto que aparece en ESTRUCTURA y también en URBANISMO), ¿a qué frente va?",
+      "description": "El concreto se compra una vez pero se usa a lo largo de toda la obra. La pregunta es qué fecha manda: la del primer uso o la del uso más caro.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El que arranca antes. El contrato tiene que estar firmado para el primer uso, no para el más caro; si llega tarde, la obra para igual. Es el mismo criterio que ya se fijó en A3.3, donde se guardan todas las actividades de un insumo justamente porque hace falta la fecha de la primera.",
+      "recommendedOptionIds": ["mas-temprano"],
+      "options": [
+        { "id": "mas-temprano", "label": "El frente que arranca antes (recomendado)" },
+        { "id": "mas-plata", "label": "El subcapítulo donde el paquete tiene más plata" },
+        { "id": "mas-insumos", "label": "El subcapítulo donde tiene más insumos" }
+      ],
+      "required": true
+    },
+    {
+      "id": "umbral-nombres",
+      "prompt": "El parecido mínimo de nombres para proponer algo está hoy en 0,33. ¿Lo bajamos para que salgan más propuestas?",
+      "description": "Medí los 24 paquetes que se quedan justo por debajo. Sus «frentes más cercanos» son falsos: CIMENTACIÓN PROFUNDA EN CONCRETO casaría con CARPINTERIA EN MADERA porque comparten la palabra «EN»; LABORATORIO DE MATERIALES con MOVIMIENTO DE TIERRA por la palabra «DE». Bajarlo sube el número de propuestas y hunde su calidad.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No lo bajamos. La cobertura tiene que venir de una señal mejor, no de aflojar el filtro.",
+      "recommendedOptionIds": ["no-bajar"],
+      "options": [
+        { "id": "no-bajar", "label": "No bajarlo (recomendado)" },
+        { "id": "bajar-como-baja", "label": "Bajarlo, pero marcando esas propuestas como confianza BAJA" },
+        { "id": "bajar", "label": "Bajarlo sin más" }
+      ],
+      "required": true
+    },
+    {
+      "id": "palabras-vacias",
+      "prompt": "¿Ignoramos las palabras sin significado («DE», «Y», «EN», «LA») al comparar nombres?",
+      "description": "Comprobé que hoy no hacen daño: las 28 propuestas por nombre que existen se sostienen todas en una palabra con significado. Pero el filtro las cuenta como si valieran, y eso es una trampa esperando: cualquier ajuste futuro del umbral empieza a colar basura.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, ignorarlas. No cambia ninguna propuesta de hoy y quita el riesgo. Es limpieza barata y sin efectos secundarios.",
+      "recommendedOptionIds": ["si"],
+      "options": [
+        { "id": "si", "label": "Sí, ignorarlas (recomendado — no cambia nada hoy y evita falsos mañana)" },
+        { "id": "no", "label": "No, dejarlo como está" }
+      ],
+      "required": true
+    },
+    {
+      "id": "hojas-cronograma",
+      "prompt": "¿Permitimos amarrar un paquete a una actividad suelta del cronograma, y no solo a un frente?",
+      "description": "Hoy solo se puede amarrar a los 31 encabezados (frentes). Debajo hay 242 actividades de detalle. Medí si servirían como propuesta automática: no sirven — ninguno de los 45 paquetes llega a parecerse a una, y las tres que rozan son disparates (CIMENTACIÓN PROFUNDA casaría con una actividad colgada de SKATE PARK, con fecha de 2028; la cimentación va al principio de la obra). La pregunta que queda es si una persona debería poder elegirlas a mano.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No, dejarlo en frentes. El motor no las propondría nunca y abrir 242 opciones más en el selector hace más lenta la sesión de amarre. Si más adelante hace falta, se abre entonces.",
+      "recommendedOptionIds": ["solo-frentes"],
+      "options": [
+        { "id": "solo-frentes", "label": "No: seguimos solo con los 31 frentes (recomendado)" },
+        { "id": "permitir-manual", "label": "Sí, pero solo a mano: el motor nunca las propone" },
+        { "id": "permitir-todo", "label": "Sí, y que el motor también las pueda proponer" }
+      ],
+      "required": true
+    },
+    {
+      "id": "donde-se-edita",
+      "prompt": "¿Dónde se revisan y corrigen las correspondencias subcapítulo → frente?",
+      "description": "Hay otra sesión trabajando en esta misma pantalla, así que conviene no reorganizarla.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Dentro de la pestaña «Sin frente», en un panel que se abre y se cierra. No mueve nada de lo que ya existe y deja la revisión al lado del trabajo que la necesita.",
+      "recommendedOptionIds": ["panel-en-sin-frente"],
+      "options": [
+        { "id": "panel-en-sin-frente", "label": "Un panel plegable dentro de la pestaña «Sin frente» (recomendado)" },
+        { "id": "pantalla-nueva", "label": "Una pantalla nueva aparte" },
+        { "id": "no-editable", "label": "No se editan en pantalla: se corrigen amarrando paquetes y el motor aprende de eso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "sin-correspondencia",
+      "prompt": "Un paquete cuyo subcapítulo no tiene ninguna correspondencia todavía, ¿qué muestra?",
+      "description": "Ya está decidido que no hay escrituras a ciegas. La pregunta es qué ve la persona en esa fila.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sigue sin propuesta, pero diciendo por qué: «su subcapítulo X todavía no tiene frente asignado», con un atajo para asignarlo ahí mismo. Convierte una fila muda en una acción concreta.",
+      "recommendedOptionIds": ["explica-y-atajo"],
+      "options": [
+        { "id": "explica-y-atajo", "label": "Sin propuesta, pero explicando el motivo y con atajo para resolverlo (recomendado)" },
+        { "id": "solo-vacio", "label": "Sin propuesta y sin explicación, como hoy" },
+        { "id": "fallback", "label": "Se propone igual el frente más temprano, marcado como confianza BAJA" }
+      ],
+      "required": true
+    },
+    {
+      "id": "registrar-correcciones",
+      "prompt": "Cuando una persona cambia el frente que propuso el motor, ¿lo registramos?",
+      "description": "Es lo que ya se hace con los insumos: se guarda el par «lo que sugerí → lo que elegiste» para poder medir si el motor acierta y destilar reglas después. Sin esto, el acierto del motor no se puede medir nunca.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, igual que con los insumos. Es barato ahora y es la única forma de saber después si esto funcionó.",
+      "recommendedOptionIds": ["si"],
+      "options": [
+        { "id": "si", "label": "Sí, se registra el par sugerido → elegido (recomendado)" },
+        { "id": "no", "label": "No hace falta por ahora" }
+      ],
+      "required": true
+    },
+    {
+      "id": "meta-medible",
+      "prompt": "¿Con qué números decimos que esto quedó hecho?",
+      "description": "Hoy: de 85 paquetes sin frente, 45 no reciben ninguna propuesta, y de las 40 que sí, solo 3 son de confianza ALTA. La misma consulta se corre antes y después.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Que los 45 sin propuesta bajen a 10 o menos, y que las de confianza ALTA suban de 3 a 30 o más. Es exigente pero alcanzable: 15 correspondencias ya cubren el 86 % de los paquetes.",
+      "recommendedOptionIds": ["exigente"],
+      "options": [
+        { "id": "exigente", "label": "≤10 sin propuesta y ≥30 de confianza ALTA (recomendado)" },
+        { "id": "moderada", "label": "≤20 sin propuesta y ≥20 de confianza ALTA" },
+        { "id": "total", "label": "0 sin propuesta: todos los paquetes con alguna propuesta" }
+      ],
+      "required": true
+    },
+    {
+      "id": "fuera-de-alcance",
+      "prompt": "Para confirmar qué NO se toca en esta tanda.",
+      "description": "Hay otra sesión trabajando en los pasos de contratación configurables por proyecto, sobre el mismo archivo. Y quedan 25 paquetes sin duración de referencia, que es un asunto distinto (Task 5 del plan A4).",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "No tocar el cálculo de fechas ni los pasos, no tocar la pestaña «Plan», y no arreglar las duraciones que faltan. Esta tanda es solo la propuesta de frente y la pestaña «Sin frente».",
+      "recommendedOptionIds": ["no-pasos", "no-pestana-plan", "no-duraciones", "no-amarrar-yo"],
+      "options": [
+        { "id": "no-pasos", "label": "No tocar el cálculo de fechas ni los pasos de contratación (es de la otra sesión)" },
+        { "id": "no-pestana-plan", "label": "No tocar la pestaña «Plan»" },
+        { "id": "no-duraciones", "label": "No arreglar los 25 paquetes sin duración de referencia" },
+        { "id": "no-amarrar-yo", "label": "No escribir yo los amarres: los confirma una persona en pantalla" }
+      ],
+      "required": true
+    }
+  ]
+}

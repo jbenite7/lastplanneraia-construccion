@@ -1,0 +1,172 @@
+{
+  "stage": "interview",
+  "title": "A4.1 — Pasos del proceso de contratación configurables por proyecto",
+  "goalSlug": "pdc-a41-pasos-configurables",
+  "questions": [
+    {
+      "id": "modelo",
+      "prompt": "¿De dónde salen los pasos que puede usar un proyecto?",
+      "description": "Hoy los siete pasos están escritos en el código. Hay dos formas de abrirlos. (A) Lista maestra de la empresa: existe un catálogo de pasos posibles (los siete de hoy + Licify + Aprobación cliente + los que se agreguen), y cada obra elige cuáles usa y en qué orden. (B) Lista libre: cada obra escribe los nombres que quiera, sin lista común. La (A) hace que 'Cuadros comparativos' signifique lo mismo en todas las obras, que es lo que Seguimiento (B1) y la Torre de Control van a necesitar para comparar. La (B) es más libre pero cada obra inventa su vocabulario y luego nada se puede sumar entre obras. Ambas son reversibles.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "A — lista maestra de la empresa; la obra elige, ordena y renombra si quiere.",
+      "recommendedOptionIds": ["maestra"],
+      "options": [
+        { "id": "maestra", "label": "A — Lista maestra de la empresa, la obra elige y ordena" },
+        { "id": "libre", "label": "B — Cada obra escribe su propia lista, libre" },
+        { "id": "mixto", "label": "Mixto — lista maestra, pero la obra puede inventar pasos propios que no salen de ella" }
+      ],
+      "required": true
+    },
+    {
+      "id": "daporto",
+      "prompt": "Da Porto ya tiene 11 paquetes con fechas calculadas. ¿Qué debe pasarle el día que esto entre?",
+      "description": "Verificado ahora en la base: 11 filas de plan y 77 de pasos (11 × 7). La opción segura es que una obra que nadie configuró siga usando los siete pasos de siempre y dé exactamente las mismas fechas — cero cambio, y quien quiera cambiar algo lo hace a propósito. La otra opción es sembrarle a cada obra una copia editable de los siete pasos desde el arranque: se ve más 'explícito' en la pantalla, pero significa escribir filas en la base para obras que nadie pidió tocar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sin configuración = los siete de siempre, mismas fechas. Nada se siembra hasta que alguien configure.",
+      "recommendedOptionIds": ["default_codigo"],
+      "options": [
+        { "id": "default_codigo", "label": "Sin configurar = siete pasos de siempre (nada se escribe en la base)" },
+        { "id": "sembrar", "label": "Sembrar a cada obra una copia editable de los siete" },
+        { "id": "sembrar_daporto", "label": "Sembrar solo a Da Porto y dejar el resto sin configurar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "duracion_nuevos",
+      "prompt": "Un paso nuevo (Licify, Aprobación cliente) no tiene columna en el catálogo viejo de duraciones. ¿De dónde saca sus días?",
+      "description": "El catálogo viejo 'general_dias_procesos_contratacion' tiene exactamente siete columnas de días, una por paso, y las trae por paquete (concreto tarda distinto que puertas). Un paso nuevo no tiene columna ahí y no se la vamos a agregar (es una tabla legacy compartida). Opciones: (A) un número fijo de días escrito en la configuración de la obra, igual para todos los paquetes — simple y suficiente para pasos administrativos como 'Aprobación cliente'. (B) un porcentaje del proceso, que se estira según el paquete. (C) días distintos según el tipo de negociación. La (A) es lo más simple de entender y de auditar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "A — un número fijo de días por paso nuevo, escrito en la configuración de la obra.",
+      "recommendedOptionIds": ["fijo"],
+      "options": [
+        { "id": "fijo", "label": "A — Días fijos por paso, iguales para todos los paquetes de la obra" },
+        { "id": "porcentaje", "label": "B — Un porcentaje del proceso total" },
+        { "id": "por_tipo", "label": "C — Días distintos según el tipo de negociación del paquete" }
+      ],
+      "required": true
+    },
+    {
+      "id": "suma_o_reparte",
+      "prompt": "Al agregar un paso, ¿el proceso se alarga o se reparte lo que ya había?",
+      "description": "La fecha final está clavada: es el día que el insumo se necesita en obra. Si se agrega 'Aprobación cliente: 15 días', o bien (A) el proceso dura 15 días más y hay que arrancar 15 días antes — que es la verdad operativa: aprobar toma tiempo real; o bien (B) los 15 días se le quitan a los otros pasos para que el total no se mueva, lo cual maquilla el plazo y hace que las fechas se vean mejor de lo que son. La (A) es honesta pero puede dejar arranques en el pasado (ya hay 3 paquetes de Da Porto en esa situación) — eso el plan ya lo pinta como 'vencido'.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "A — el proceso se alarga y la fecha de arranque se corre hacia atrás.",
+      "recommendedOptionIds": ["alarga"],
+      "options": [
+        { "id": "alarga", "label": "A — Se alarga el proceso; se arranca antes" },
+        { "id": "reparte", "label": "B — Se reparte dentro del plazo actual; el total no cambia" }
+      ],
+      "required": true
+    },
+    {
+      "id": "desactivar",
+      "prompt": "¿Se puede apagar un paso de los siete actuales, además de reordenar y agregar?",
+      "description": "Ejemplo real: una orden de compra de cemento no tiene 'Fabricación'. Si se puede apagar, esos días dejan de contar y el proceso se acorta (la obra arranca más tarde). Riesgo: apagar un paso borra las filas de ese paso en el plan ya calculado, y mañana Seguimiento tendrá ahí el avance real registrado. Recomiendo permitirlo con un aviso claro de cuántas filas se van a perder, no prohibirlo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí: reordenar, apagar y agregar, con aviso de qué se pierde al apagar.",
+      "recommendedOptionIds": ["todo_con_aviso"],
+      "options": [
+        { "id": "todo_con_aviso", "label": "Reordenar + apagar + agregar, con aviso al apagar" },
+        { "id": "solo_agregar", "label": "Solo agregar y reordenar; los siete de siempre nunca se apagan" },
+        { "id": "todo_sin_aviso", "label": "Todo, sin avisos (más ágil, más riesgo)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "renombrar",
+      "prompt": "¿Una obra puede ponerle otro nombre a un paso de la lista maestra?",
+      "description": "Por ejemplo llamar 'Envío de pliegos' a lo que la lista maestra llama 'Entrega de pliegos'. Por dentro seguiría siendo el mismo paso (para poder comparar entre obras), pero en pantalla y en los informes de esa obra se leería como ella lo llama. Cuesta una columna más; el beneficio es que la obra reconoce su vocabulario y nadie inventa un paso duplicado solo por el nombre.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, alias opcional por obra; por dentro sigue siendo el mismo paso.",
+      "recommendedOptionIds": ["alias"],
+      "options": [
+        { "id": "alias", "label": "Sí — alias opcional por obra" },
+        { "id": "no_alias", "label": "No — el nombre de la lista maestra manda en todas partes" }
+      ],
+      "required": true
+    },
+    {
+      "id": "provisional",
+      "prompt": "Tres paquetes de Da Porto no tienen desglose de días y hoy se reparten un promedio entre los siete pasos. Con pasos configurados, ¿cómo se reparte?",
+      "description": "Esos tres usan hoy una tabla de pesos medida sobre el catálogo real (Fabricación pesa 25 %, Cuadros 19 %, etc.). Si la obra pone 5 pasos en vez de 7, esa tabla ya no calza. Opciones: (A) a los pasos nuevos se les respetan sus días fijos, y el promedio restante se reparte entre los pasos de siempre que sigan encendidos, re-normalizando sus pesos — mantiene el peso medido y respeta lo configurado. (B) repartir todo en partes iguales entre los pasos que haya — más simple de explicar, pero tira a la basura la medición. (C) cada paso de la lista maestra declara su peso y se re-normaliza.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "A — días fijos de los nuevos aparte, y el resto se reparte con los pesos medidos re-normalizados.",
+      "recommendedOptionIds": ["renormaliza"],
+      "options": [
+        { "id": "renormaliza", "label": "A — Días fijos aparte + pesos medidos re-normalizados" },
+        { "id": "iguales", "label": "B — Partes iguales entre los pasos activos" },
+        { "id": "peso_declarado", "label": "C — Cada paso de la lista maestra declara su peso" }
+      ],
+      "required": true
+    },
+    {
+      "id": "identidad_paso",
+      "prompt": "Hoy cada paso guardado se identifica por su POSICIÓN (1, 2, 3…). Si mañana se reordenan, ¿qué?",
+      "description": "Esto es contrato con Seguimiento (B1), que va a colgar de esas mismas filas la fecha real de cada paso. Si el paso se identifica solo por su posición y alguien mete un paso nuevo en medio, la fecha real de 'Cuadros' pasa a leerse como si fuera de otro paso, en silencio. Guardar además a QUÉ paso de la lista maestra corresponde cada fila lo evita. Cuesta una columna y una migración pequeña ahora; después de B1 costaría muchísimo más.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Guardar también la identidad del paso (no solo la posición) ahora, antes de que B1 escriba datos reales.",
+      "recommendedOptionIds": ["guardar_id"],
+      "options": [
+        { "id": "guardar_id", "label": "Guardar la identidad del paso ahora (columna nueva + migración)" },
+        { "id": "solo_posicion", "label": "Dejarlo por posición; que B1 lo resuelva cuando llegue" }
+      ],
+      "required": true
+    },
+    {
+      "id": "permiso",
+      "prompt": "¿Quién puede cambiar los pasos de una obra?",
+      "description": "Cambiar los pasos mueve las fechas de TODOS los paquetes de la obra a la vez, así que no debería poder hacerlo cualquiera que asigne insumos. Ya existe un permiso hecho para esto: 'lps.paquetes_contratacion.reglas' (Oficina Técnica / Compras y Director de Obra), creado en A3.3 justo para aprobar reglas del motor. Reusarlo evita inventar un permiso más que alguien tenga que asignar a mano en producción.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Reusar 'lps.paquetes_contratacion.reglas' (Oficina Técnica / Compras y Director de Obra).",
+      "recommendedOptionIds": ["reglas"],
+      "options": [
+        { "id": "reglas", "label": "Reusar el permiso de reglas de A3.3" },
+        { "id": "editar", "label": "Que baste con el permiso de editar paquetes" },
+        { "id": "nuevo", "label": "Crear un permiso nuevo solo para pasos" }
+      ],
+      "required": true
+    },
+    {
+      "id": "recalculo",
+      "prompt": "Al guardar la configuración, ¿el plan se recalcula solo o hay que apretar 'Recalcular'?",
+      "description": "Si se recalcula solo, guardar y ver las fechas nuevas es un solo acto y no queda ninguna obra con una configuración que no se refleja en pantalla. Si hay botón aparte, se puede preparar la configuración y aplicarla después, pero mientras tanto el plan que se ve en pantalla es mentira. Recomiendo recalcular al guardar y decir en el mismo mensaje cuántos paquetes cambiaron.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Recalcular al guardar y reportar cuántos paquetes se recalcularon.",
+      "recommendedOptionIds": ["auto"],
+      "options": [
+        { "id": "auto", "label": "Recalcular al guardar" },
+        { "id": "boton", "label": "Guardar y recalcular por separado" },
+        { "id": "preview", "label": "Mostrar antes/después y pedir confirmación para aplicar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pantalla",
+      "prompt": "¿Dónde vive la pantalla de configuración?",
+      "description": "El módulo tiene pestañas dentro de 'Ensamble'. Opción (A): una pestaña más, al lado de Plan de fechas. Opción (B): un panel que se abre desde un enlace 'Configurar pasos' dentro de la pantalla de Plan de fechas — menos ruido en la barra, y aparece justo donde se necesita. Se configura una vez por obra y casi no se vuelve a tocar, así que ocupar una pestaña permanente para eso es caro.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "B — panel/pantalla abierta desde un enlace en Plan de fechas, sin pestaña permanente nueva.",
+      "recommendedOptionIds": ["desde_plan"],
+      "options": [
+        { "id": "desde_plan", "label": "B — Se abre desde Plan de fechas" },
+        { "id": "pestana", "label": "A — Pestaña propia en Ensamble" }
+      ],
+      "required": true
+    },
+    {
+      "id": "alcance_fuera",
+      "prompt": "¿Qué NO entra en esta tanda?",
+      "description": "Para que no se estire. Lo que propongo dejar fuera: configuraciones distintas por tipo de negociación o por modalidad dentro de la misma obra (una sola lista por obra); copiar la configuración de una obra a otra; historial de versiones de la configuración; y editar las duraciones del catálogo viejo desde esta pantalla. Marca lo que SÍ quieras que entre igual.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Todo eso queda fuera de A4.1.",
+      "recommendedOptionIds": [],
+      "options": [
+        { "id": "por_modalidad", "label": "Sí quiero: listas distintas por modalidad (contrato vs orden de compra)" },
+        { "id": "copiar", "label": "Sí quiero: copiar la configuración de otra obra" },
+        { "id": "historial", "label": "Sí quiero: historial de cambios de la configuración" },
+        { "id": "editar_catalogo", "label": "Sí quiero: editar las duraciones del catálogo viejo desde aquí" }
+      ],
+      "required": false
+    }
+  ]
+}

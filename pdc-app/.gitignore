@@ -1,0 +1,8 @@
+.DS_Store
+.omo/
+docs/*
+!docs/superpowers/
+*.mp4
+node_modules/
+dist/
+.claude/
