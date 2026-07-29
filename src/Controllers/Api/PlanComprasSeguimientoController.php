@@ -47,11 +47,11 @@ class PlanComprasSeguimientoController
             return;
         }
         $paqueteId = filter_var($_GET['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null) {
+        if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $this->ok(['pasos' => $this->service->pasosDePaquete($projectId, (int) $paqueteId)]);
+        $this->ok(['pasos' => $this->service->pasosDePaquete($projectId, $paqueteId)]);
     }
 
     /** POST /plan-compras/api/seguimiento/paso  {paqueteId, pasoId, fechaReal} — null deshace el registro */
@@ -64,12 +64,12 @@ class PlanComprasSeguimientoController
         $body = $this->body();
 
         $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($paqueteId === false || $paqueteId === null) {
+        if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
         $pasoId = filter_var($body['pasoId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($pasoId === false || $pasoId === null) {
+        if ($pasoId === false) {
             $this->fail('PASO_INVALIDO', 'pasoId inválido.', 422);
             return;
         }
@@ -87,9 +87,9 @@ class PlanComprasSeguimientoController
             return;
         }
 
-        $r = $this->service->registrarPaso($projectId, (int) $paqueteId, (int) $pasoId, $fechaReal, $this->usuario());
-        if (($r['ok'] ?? false) !== true) {
-            $this->fail((string) ($r['code'] ?? 'ERROR'), (string) ($r['mensaje'] ?? 'No se pudo registrar el avance.'), 422);
+        $r = $this->service->registrarPaso($projectId, $paqueteId, $pasoId, $fechaReal, $this->usuario());
+        if ($r['ok'] !== true) {
+            $this->fail($r['code'] ?? 'ERROR', $r['mensaje'] ?? 'No se pudo registrar el avance.', 422);
             return;
         }
 
