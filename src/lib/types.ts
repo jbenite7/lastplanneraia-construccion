@@ -420,6 +420,10 @@ export type PlanResultado = {
   amarres: Record<number, AmarrePlan>
 }
 
+/**
+ * Todas las etiquetas conocidas: sirve para PINTAR y FILTRAR cualquier tipo que venga del catálogo.
+ * No es la lista de lo que se puede crear — para eso está `TIPOS_NEGOCIACION_CREABLES`.
+ */
 export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
   { value: 'a_todo_costo', label: 'A todo costo (Sum. + Inst.)' },
   { value: 'suministro', label: 'Suministro' },
@@ -429,3 +433,12 @@ export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
   // cuatro tipos de arriba los describe. Ver 20260728_pdc_v2_tipo_no_aplica.php.
   { value: 'no_aplica', label: 'No aplica' },
 ]
+
+/**
+ * Lo que el backend acepta hoy al crear un paquete: `PaquetesService::crearPaquete()` valida contra
+ * su constante `TIPOS`, que todavía no lista `no_aplica`. Ofrecerlo en el formulario devolvería
+ * `PAQUETE_INVALIDO` al enviar, así que se ofrece solo para pintar y filtrar, no para crear.
+ *
+ * Cuando esa constante incluya `no_aplica`, esta lista puede volver a ser `TIPOS_NEGOCIACION`.
+ */
+export const TIPOS_NEGOCIACION_CREABLES = TIPOS_NEGOCIACION.filter((t) => t.value !== 'no_aplica')

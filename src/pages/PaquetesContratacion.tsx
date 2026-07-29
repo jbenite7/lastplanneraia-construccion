@@ -10,7 +10,7 @@ import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { ACCION_PROPONER, claveInsumo, estaCerradoPorValor, estadoInicialPaquetes, filtroInicial, muestraTipoNegociacion, paquetesReducer } from '../lib/paquetesState'
 import type { FiltroPaquetes } from '../lib/paquetesState'
-import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
+import { MODALIDADES, TIPOS_NEGOCIACION, TIPOS_NEGOCIACION_CREABLES } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 import { filtraPorTexto, plural } from '../lib/texto'
@@ -74,7 +74,7 @@ export default function PaquetesContratacion() {
   const [sinVersion, setSinVersion] = useState(false)
   const [paqueteDestino, setPaqueteDestino] = useState<number | ''>('')
   const [nuevoNombre, setNuevoNombre] = useState('')
-  const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
+  const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION_CREABLES[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
   const [buscaPaquete, setBuscaPaquete] = useState('')
   // El filtro de apertura se decide una sola vez, cuando llega el primer resumen: en el primer
@@ -420,7 +420,8 @@ export default function PaquetesContratacion() {
       <div className="pdc-paq-crear">
         <input data-testid="pdc-paq-crear-nombre" placeholder="Crear paquete nuevo…" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} />
         <select data-testid="pdc-paq-crear-tipo" aria-label="Tipo de negociación" value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)}>
-          {TIPOS_NEGOCIACION.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          {/* CREABLES, no todas: `crearPaquete()` rechaza `no_aplica` mientras su constante no lo liste. */}
+          {TIPOS_NEGOCIACION_CREABLES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <select
           data-testid="pdc-paq-crear-modalidad"
