@@ -145,6 +145,17 @@
 .pdc-fila-retirada { opacity: 0.55; }
 .pdc-maestro-import { border-bottom: 1px solid #2c2c2e; padding-bottom: 16px; }
 
+/* Ámbar, no rojo: la versión obsoleta no es un error de la app sino un dato en el que no hay que
+   confiar. Mismo tono que `.pdc-advertencia` para que el usuario lo lea como la misma señal. */
+.pdc-aviso-obsoleta {
+  padding: 14px 16px; margin-bottom: 4px;
+  border: 1px solid #ffca28; border-radius: 8px;
+  background: #2a2312; color: #ffe9a8; font-size: 14px; line-height: 1.5;
+}
+.pdc-aviso-obsoleta strong { display: block; margin-bottom: 6px; color: #ffca28; }
+.pdc-aviso-obsoleta p { margin: 0 0 6px; }
+.pdc-aviso-obsoleta p:last-child { margin-bottom: 0; }
+
 .pdc-cmp-selectores { display: flex; gap: 16px; flex-wrap: wrap; }
 .pdc-cmp-resumen { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 12px 0; font-size: 14px; }
 .pdc-cmp-toggle { display: flex; gap: 8px; margin: 8px 0; }

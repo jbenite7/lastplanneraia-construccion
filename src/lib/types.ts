@@ -73,6 +73,10 @@ export type VersionPresupuesto = {
   // 1|0 deliberado (no boolean): AG Grid inferiría cellDataType boolean y
   // renderizaría checkbox ignorando el valueFormatter "Activa" del historial.
   activa: number
+  /** 1 si la importó un parser defectuoso: sus cifras no son comparables. Mismo 1|0 que `activa`. */
+  obsoleta: number
+  /** Explicación de por qué no es confiable; se muestra tal cual al usuario. */
+  obsoletaMotivo: string | null
   importadoPor: string
   createdAt: string
 }
@@ -210,9 +214,17 @@ export type ResumenDiff = {
   modificados: number
 }
 
+/** Un lado del comparativo. `obsoleta` viaja aquí para poder advertir antes de que alguien lea el diff. */
+export type LadoComparativo = {
+  id: number
+  label: string
+  obsoleta: number
+  obsoletaMotivo: string | null
+}
+
 export type Comparativo = {
-  versionA: { id: number; label: string }
-  versionB: { id: number; label: string }
+  versionA: LadoComparativo
+  versionB: LadoComparativo
   resumen: ResumenDiff
   actividades: ActividadDiff[]
   insumos: InsumoDiff[]
@@ -413,4 +425,7 @@ export const TIPOS_NEGOCIACION: { value: string; label: string }[] = [
   { value: 'suministro', label: 'Suministro' },
   { value: 'mano_obra', label: 'Mano de obra' },
   { value: 'consumibles', label: 'Consumibles' },
+  // Los buckets no contratables (nómina, imprevistos, provisiones) no compran nada: ninguno de los
+  // cuatro tipos de arriba los describe. Ver 20260728_pdc_v2_tipo_no_aplica.php.
+  { value: 'no_aplica', label: 'No aplica' },
 ]

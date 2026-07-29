@@ -12,7 +12,7 @@ import { filtraPorTexto } from '../lib/texto'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
 import { NIVELES_PRESUPUESTO, expandirHastaNivel } from '../lib/presupuestoTree'
-import type { Comparativo, InsumoDiff, VersionPresupuesto } from '../lib/types'
+import type { Comparativo, InsumoDiff, LadoComparativo, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
@@ -136,11 +136,28 @@ export default function ComparativoPresupuesto() {
   const selectorVersion = (value: number | null, on: (id: number | null) => void, testid: string) => (
     <select data-testid={testid} value={value ?? ''} onChange={(e) => on(e.target.value === '' ? null : Number(e.target.value))}>
       <option value="">—</option>
+      {/* «(obsoleta)» va en la opción para que la advertencia empiece antes de elegir, no después. */}
       {versiones.map((v) => (
-        <option key={v.id} value={v.id}>{etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}</option>
+        <option key={v.id} value={v.id}>
+          {etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}{v.obsoleta ? ' (obsoleta)' : ''}
+        </option>
       ))}
     </select>
   )
+
+  /**
+   * Versiones elegidas que no son confiables. Se calcula sobre `data` (no sobre los selectores) para
+   * que el aviso corresponda siempre al diff que se está viendo.
+   */
+  const ladosObsoletos = data
+    ? [data.versionA, data.versionB].filter((l) => l.obsoleta === 1)
+    : []
+
+  /** Misma etiqueta que el selector, para que el aviso nombre la versión como el usuario la eligió. */
+  const etiquetaLado = (lado: LadoComparativo): string => {
+    const v = versiones.find((x) => x.id === lado.id)
+    return v ? etiquetaVersion(v) : (lado.label || `Versión #${lado.id}`)
+  }
 
   return (
     <section className="pdc-page">
@@ -158,6 +175,24 @@ export default function ComparativoPresupuesto() {
       {error && <div className="pdc-error" role="alert">{error}</div>}
       {versiones.length < 2 && (
         <div className="pdc-bloque pdc-vacio">Necesitas al menos dos versiones importadas para comparar.</div>
+      )}
+
+      {/* Antes del resumen a propósito: el Δ de DAPORTO es de −$45 mil millones y se lee como una
+          caída del presupuesto, cuando en realidad es el rastro de un import defectuoso. */}
+      {ladosObsoletos.length > 0 && (
+        <div className="pdc-aviso-obsoleta" role="alert" data-testid="pdc-cmp-aviso-obsoleta">
+          <strong>
+            {ladosObsoletos.length === 1
+              ? `La versión «${etiquetaLado(ladosObsoletos[0])}» no es confiable.`
+              : 'Las dos versiones que estás comparando no son confiables.'}
+          </strong>
+          {ladosObsoletos.map((l) => (
+            <p key={l.id}>
+              {ladosObsoletos.length > 1 && <b>{etiquetaLado(l)}: </b>}
+              {l.obsoletaMotivo}
+            </p>
+          ))}
+        </div>
       )}
 
       {data && (

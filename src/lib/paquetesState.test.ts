@@ -95,17 +95,23 @@ describe('estaCerradoPorValor', () => {
 })
 
 describe('muestraTipoNegociacion', () => {
-  it('en nómina e imprevistos el tipo miente y no se enseña', () => {
-    expect(muestraTipoNegociacion('no_contratable')).toBe(false)
-    expect(muestraTipoNegociacion('consumo_directo')).toBe(false)
+  it('«no aplica» no se enseña: al lado de la modalidad no dice nada', () => {
+    expect(muestraTipoNegociacion('no_aplica')).toBe(false)
   })
 
-  it('donde sí se contrata, el tipo se mantiene', () => {
-    expect(muestraTipoNegociacion('contrato')).toBe(true)
-    expect(muestraTipoNegociacion('orden_compra')).toBe(true)
+  it('los cuatro tipos que sí describen una compra se mantienen', () => {
+    expect(muestraTipoNegociacion('a_todo_costo')).toBe(true)
+    expect(muestraTipoNegociacion('mano_obra')).toBe(true)
+    expect(muestraTipoNegociacion('suministro')).toBe(true)
+    expect(muestraTipoNegociacion('consumibles')).toBe(true)
   })
 
-  it('sin modalidad se enseña: el default del catálogo es «contrato»', () => {
+  it('el suministro a demanda recupera su badge: era cierto y el parche viejo lo escondía', () => {
+    // «Ferretería y consumibles de obra» es consumo_directo, pero se suministra de verdad.
+    expect(muestraTipoNegociacion('suministro')).toBe(true)
+  })
+
+  it('sin tipo se enseña: el default del catálogo es «a todo costo»', () => {
     expect(muestraTipoNegociacion(undefined)).toBe(true)
   })
 })

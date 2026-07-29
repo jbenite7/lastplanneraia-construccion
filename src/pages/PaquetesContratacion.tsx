@@ -470,10 +470,9 @@ export default function PaquetesContratacion() {
         {filtraPorTexto(resumen?.porPaquete ?? [], buscaPaquete, (x) => x.nombre).map((p) => (
           <li key={p.paqueteId}>
             <strong>{p.nombre}</strong>
-            {/* «Nómina de obra · CONSUMIBLES» era falso: a la nómina no se le compran consumibles.
-                El dato vive en el catálogo global y corregirlo es otra conversación; aquí se deja
-                de enseñar donde miente. La modalidad, que sí es cierta, se mantiene. */}
-            {muestraTipoNegociacion(p.modalidad) && (
+            {/* Los buckets no contratables ya no mienten (su tipo es `no_aplica`): se omite el badge
+                porque no aporta nada al lado de la modalidad, no porque el dato sea falso. */}
+            {muestraTipoNegociacion(p.tipoNegociacion) && (
               <span className="pdc-paq-tag">{tipoNegLabel(p.tipoNegociacion)}</span>
             )}
             {p.modalidad && p.modalidad !== 'contrato' && (

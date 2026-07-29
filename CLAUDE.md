@@ -62,6 +62,33 @@ obra). A3.3 convierte esa memoria en conocimiento y hace el motor auditable.
 - **Gobernanza:** permiso `lps.paquetes_contratacion.reglas` (Oficina Técnica / Compras y Director de Obra) para
   aprobar reglas y overrides globales, distinto de asignar insumos en un proyecto.
 
+### Dos deudas de datos saldadas (2026-07-28)
+
+**`tipo_negociacion` de los buckets no contratables.** Los cuatro paquetes que no se le compran a nadie
+(Nómina de obra, Imprevistos y provisiones, Indirectos / Administración, Provisiones y partidas globales)
+arrastraban el tipo `consumibles`, heredado al partir el bucket de A3.1. Ninguno de los cuatro valores del enum
+los describía, así que se agregó un quinto —**`no_aplica`**— y los cuatro pasaron ahí
+(`20260728_pdc_v2_tipo_no_aplica.php`, regla por `modalidad_contratacion = 'no_contratable'`, no por lista de
+nombres). Cero regresión medida: los dos únicos puntos que leen ese campo (`PaquetesService::tipoRecursoAdmitido()`
+y `::resolverPaquete()`) hacen bypass antes por `MODALIDADES_SIN_PROCESO`, y el plan de fechas excluye lo no
+contratable por modalidad. Con el dato honesto, el parche de UI que escondía el badge dejó de decidir por
+modalidad y pasa a decidir por tipo (`muestraTipoNegociacion`): «Ferretería y consumibles de obra» recupera su
+badge SUMINISTRO, que siempre fue cierto. **Pendiente deliberado:** `PaquetesService::TIPOS` todavía no lista
+`no_aplica`, así que el formulario de crear paquete no lo ofrece; se dejó fuera porque ese archivo estaba en
+manos de otra tarea en curso.
+
+**La V1 del presupuesto de Da Porto es un artefacto del bug A1.8.** Confirmado con datos, no por hipótesis: de
+las 323 filas cuya `cantidad_total` permite distinguir las dos fórmulas, **las 323 cuadran con la defectuosa
+(`Rend × cantidad`) y ninguna con la correcta** (`Cant APU × Rend × cantidad`); el factor por fila es exactamente
+`1/Cant APU` (un insumo con coeficiente 0,002 quedó ×500). Por eso el mismo archivo aparece dos veces con 403
+actividades y 820 insumos pero $74.974.013.394,31 contra $29.492.804.353,65. La versión **no se borra**: se marca
+(`obsoleta`, `obsoleta_motivo`, `obsoleta_marcada_at` en `pdc_presupuesto_versiones`) y el comparativo advierte
+**antes del resumen**, porque su Δ de −$45 mil millones se lee como una caída del presupuesto que nunca ocurrió.
+La detección de `20260728_pdc_v2_versiones_obsoletas.php` no usa ids fijos: recalcula ambas fórmulas por fila, así
+que sirve para cualquier proyecto de AIA con el mismo problema. Solo cuentan las filas donde las dos fórmulas se
+separan más que la tolerancia — sin ese filtro, las 442 de coeficiente 1 y las 53 de actividades con cantidad 0
+hacían pasar por «ambigua» una versión que no lo es.
+
 ⚠️ El e2e `tests/browser/pdc-v2-paquetes.spec.mjs` es **destructivo** (importa un presupuesto de juguete en el
 proyecto real): exige `PDC_E2E_DESTRUCTIVO=1`. Y el stack del worktree publica **8091**, no 8081.
 

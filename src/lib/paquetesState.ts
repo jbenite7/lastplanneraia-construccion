@@ -99,13 +99,18 @@ export function estaCerradoPorValor(coberturaValor: number | undefined): boolean
 }
 
 /**
- * Modalidades en las que el tipo de negociación no dice nada útil.
+ * ¿Vale la pena enseñar el tipo de negociación de un paquete?
  *
- * «Nómina de obra» e «Imprevistos y provisiones» salían etiquetados como CONSUMIBLES, que es falso:
- * a la nómina no se le compran consumibles ni nada. El dato vive en un catálogo compartido por
- * todos los proyectos y corregirlo es otra conversación (ver facts.md de la tanda 3/4); mientras
- * tanto, no se enseña donde miente. La modalidad —que sí es correcta— se sigue viendo.
+ * Antes esto se decidía por la modalidad, para tapar un dato falso: «Nómina de obra» salía como
+ * CONSUMIBLES porque el catálogo no tenía ningún valor que describiera «no se le compra a nadie».
+ * Corregido ese dato en el catálogo (los cuatro buckets no contratables pasaron a `no_aplica`, ver
+ * 20260728_pdc_v2_tipo_no_aplica.php), la regla vuelve a ser la simple: se esconde el tipo que no
+ * aporta, no la modalidad.
+ *
+ * El cambio recupera un badge que el parche escondía de más: «Ferretería y consumibles de obra» es
+ * `consumo_directo` pero su tipo `suministro` siempre fue cierto —sí se suministra, solo que a
+ * demanda— y ahora se vuelve a ver.
  */
-export function muestraTipoNegociacion(modalidad?: string): boolean {
-  return modalidad !== 'no_contratable' && modalidad !== 'consumo_directo'
+export function muestraTipoNegociacion(tipoNegociacion?: string): boolean {
+  return tipoNegociacion !== 'no_aplica'
 }
