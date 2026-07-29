@@ -66,7 +66,9 @@ test('plan: la pestaña Plan carga el plan calculado con vencidos primero', asyn
       await expect(page.locator('[data-testid="pdc-plan-detalle"]')).toBeVisible({ timeout: 15000 });
       await expect(page.locator('[data-testid="pdc-plan-detalle"] table tbody tr')).toHaveCount(7);
     } else {
-      await expect(page.locator('.pdc-vacio').first()).toBeVisible();
+      // El vacío lo dice la propia tabla (`vacioTabla`), no un párrafo debajo: el mensaje estaba
+      // duplicado y se leía dos veces seguidas.
+      await expect(page.locator('.pdc-tabla-vacia').first()).toBeVisible();
     }
 
     // «Sin frente» y «Desfases» son pestañas de la vista, con o sin datos: desde la revisión de UX
@@ -129,6 +131,9 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
     await expect(page.locator('h1')).toContainText('Paquetes de contratación', { timeout: 15000 });
     // El nombre debe coincidir con el frente que siembra el seed (PDC_SANDBOX_FRENTE_PLAN): eso es
     // lo que hace que la propuesta por similitud salga con confianza alta.
+    // El bloque de crear paquete vive plegado desde julio de 2026 (le costaba una barra de alto
+    // a la tabla): hay que desplegarlo antes de usarlo.
+    await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill(PAQUETE_PLAN);
     await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('a_todo_costo');
     await page.locator('[data-testid="pdc-paq-crear"]').click();

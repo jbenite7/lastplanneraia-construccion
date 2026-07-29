@@ -38,3 +38,5 @@ No debe verse decorativa, saturada de alertas ni exigir lectura innecesaria ante
 ## Accessibility & Inclusion
 
 WCAG AA como mínimo, foco visible, objetivos de interacción de al menos 44 px y respeto por `prefers-reduced-motion`.
+
+**Excepción registrada (2026-07-29): superficies de datos densas.** En pantallas de hoja de cálculo operadas con ratón en desktop y sin equivalente móvil —hoy solo `/plan-compras`— el alto de control es de 28 px y el cuerpo de texto de 13 px, con un piso duro de 11 px. Se decidió midiendo: la métrica anterior dejaba 17 filas de presupuesto en pantalla cuando el trabajo consiste en recorrer cientos. El mínimo de 44 px protege el acierto del dedo sobre un cristal, y esta superficie está fuera del alcance móvil del producto por contrato. Contraste AA, foco visible, orden de foco, teclado y `prefers-reduced-motion` no se relajan. Detalle y escala completa en DESIGN.md §5 bis.

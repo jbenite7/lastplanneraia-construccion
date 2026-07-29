@@ -52,6 +52,9 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
 
     await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Paquetes').click();
     await expect(page.locator('h1')).toContainText('Paquetes de contratación', { timeout: 15000 });
+    // El bloque de crear paquete vive plegado desde julio de 2026 (le costaba una barra de alto
+    // a la tabla): hay que desplegarlo antes de usarlo.
+    await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill(PAQUETE_PLAN);
     await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('a_todo_costo');
     await page.locator('[data-testid="pdc-paq-crear"]').click();

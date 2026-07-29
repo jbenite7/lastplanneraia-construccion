@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
-  CIFRA, MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
+  CIFRA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
   moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
@@ -103,24 +103,30 @@ export default function ComparativoPresupuesto() {
     columnaMoneda('valorA', 'Versión A'),
     columnaMoneda('valorB', 'Versión B'),
     {
-      ...CIFRA, field: 'deltaValor', headerName: 'Δ', valueFormatter: (p) => signo(p.value),
+      ...CIFRA, field: 'deltaValor', headerName: 'Diferencia', valueFormatter: (p) => signo(p.value),
       cellClass: (p) => claseDelta(p.value, (p.data as FilaComparativo).estado),
     },
-    { field: 'estado', headerName: 'Estado' },
+    { colId: 'estado', field: 'estado', headerName: 'Estado' },
   ], [])
 
   const colsIns: ColDef<InsumoDiff>[] = useMemo(() => [
     columnaTexto('descripcion', 'Insumo', 280),
-    { field: 'tipoInsumo', headerName: 'Tipo' },
-    { field: 'unidad', headerName: 'Und' },
+    { colId: 'tipo', field: 'tipoInsumo', headerName: 'Tipo' },
+    { colId: 'unidad', field: 'unidad', headerName: 'Und' },
     columnaMoneda('valorA', 'Versión A'),
     columnaMoneda('valorB', 'Versión B'),
     {
-      ...CIFRA, field: 'deltaValor', headerName: 'Δ', valueFormatter: (p) => signo(p.value),
+      ...CIFRA, field: 'deltaValor', headerName: 'Diferencia', valueFormatter: (p) => signo(p.value),
       cellClass: (p) => claseDelta(p.value, (p.data as InsumoDiff).estado),
     },
-    { field: 'estado', headerName: 'Estado' },
+    { colId: 'estado', field: 'estado', headerName: 'Estado' },
   ], [])
+
+  // «Estado» repite lo que ya dice la diferencia (0 = igual, y el color marca sobrecosto o ahorro),
+  // así que es lo primero que sobra; «Tipo» y «Und» describen el insumo, no el cambio.
+  const [refGrid, anchoGrid] = usaAnchoContenedor()
+  const visiblesAct = useMemo(() => columnasQueCaben(colsAct, anchoGrid, ['estado', 'tipo', 'unidad']), [colsAct, anchoGrid])
+  const visiblesIns = useMemo(() => columnasQueCaben(colsIns, anchoGrid, ['estado', 'tipo', 'unidad']), [colsIns, anchoGrid])
 
   const onCellClickedAct = (e: CellClickedEvent<FilaComparativo>) => {
     const f = e.data
@@ -179,20 +185,26 @@ export default function ComparativoPresupuesto() {
 
       {/* Antes del resumen a propósito: el Δ de DAPORTO es de −$45 mil millones y se lee como una
           caída del presupuesto, cuando en realidad es el rastro de un import defectuoso. */}
+      {/* Plegable: el titular —lo accionable, «no te fíes de esta comparación»— sigue a la vista y
+          se anuncia igual, pero el motivo son dos párrafos de seis renglones que no cambian entre
+          visitas y empujaban la tabla fuera de la pantalla. */}
       {ladosObsoletos.length > 0 && (
-        <div className="pdc-aviso-obsoleta" role="alert" data-testid="pdc-cmp-aviso-obsoleta">
-          <strong>
-            {ladosObsoletos.length === 1
-              ? `La versión «${etiquetaLado(ladosObsoletos[0])}» no es confiable.`
-              : 'Las dos versiones que estás comparando no son confiables.'}
-          </strong>
+        <details className="pdc-aviso-obsoleta" role="alert" data-testid="pdc-cmp-aviso-obsoleta">
+          <summary>
+            <strong>
+              {ladosObsoletos.length === 1
+                ? `La versión «${etiquetaLado(ladosObsoletos[0])}» no es confiable.`
+                : 'Las dos versiones que estás comparando no son confiables.'}
+            </strong>{' '}
+            <span className="pdc-ayuda">Ver por qué</span>
+          </summary>
           {ladosObsoletos.map((l) => (
             <p key={l.id}>
               {ladosObsoletos.length > 1 && <b>{etiquetaLado(l)}: </b>}
               {l.obsoletaMotivo}
             </p>
           ))}
-        </div>
+        </details>
       )}
 
       {data && (
@@ -200,7 +212,7 @@ export default function ComparativoPresupuesto() {
           <div className="pdc-cmp-resumen" data-testid="pdc-cmp-resumen">
             <span>{moneda(data.resumen.costoA)} → {moneda(data.resumen.costoB)}</span>
             <span className={claseDelta(data.resumen.delta, 'modificado')}>
-              Δ {signo(data.resumen.delta)}
+              Diferencia {signo(data.resumen.delta)}
             </span>
             <span className="pdc-cmp-sobrecosto">Sobrecostos {moneda(data.resumen.sobrecostos)}</span>
             {/* Sin signo: «Ahorros $ -46.629.280.887» se lee al revés de lo que significa. La
@@ -209,7 +221,7 @@ export default function ComparativoPresupuesto() {
             <span className="pdc-cmp-ahorro">Ahorros {moneda(Math.abs(data.resumen.ahorros))}</span>
             <span>{data.resumen.nuevos} nuevos · {data.resumen.eliminados} eliminados · {data.resumen.modificados} modificados</span>
           </div>
-          <p className="pdc-ayuda" data-testid="pdc-cmp-formula">Δ = sobrecostos − ahorros</p>
+          <p className="pdc-ayuda" data-testid="pdc-cmp-formula">La diferencia es lo que subió menos lo que bajó.</p>
 
           <div className="pdc-cmp-toggle">
             <button type="button" className={eje === 'insumos' ? 'activo' : ''} onClick={() => setEje('insumos')} data-testid="pdc-cmp-eje-insumos">Insumos</button>
@@ -235,20 +247,22 @@ export default function ComparativoPresupuesto() {
             )}
           </div>
 
-          <div className="pdc-grid" data-testid="pdc-cmp-grid">
+          <div className="pdc-grid" data-testid="pdc-cmp-grid" ref={refGrid}>
             {eje === 'actividades' ? (
               <AgGridReact<FilaComparativo>
-                theme={pdcTheme} rowData={filtraPorTexto(filasAct, busca, (f) => f.descripcion)} columnDefs={colsAct} getRowId={(p) => p.data.key}
+                theme={pdcTheme} rowData={filtraPorTexto(filasAct, busca, (f) => f.descripcion)} columnDefs={visiblesAct} getRowId={(p) => p.data.key}
                 overlayNoRowsTemplate={vacioTabla("Estas dos versiones no cambiaron ninguna actividad.")}
                 onCellClicked={onCellClickedAct}
                 defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
               />
             ) : (
               <AgGridReact<InsumoDiff>
-                theme={pdcTheme} rowData={filtraPorTexto(data.insumos, busca, (i) => i.descripcion)} columnDefs={colsIns}
+                theme={pdcTheme} rowData={filtraPorTexto(data.insumos, busca, (i) => i.descripcion)} columnDefs={visiblesIns}
                 overlayNoRowsTemplate={vacioTabla("Estas dos versiones no cambiaron ningún insumo.")}
                 getRowId={(p) => `${p.data.descripcionNorm}|${p.data.unidad}`}
                 defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
               />
             )}
           </div>

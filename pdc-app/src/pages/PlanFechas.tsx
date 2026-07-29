@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import {
-  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaNumero, columnaTexto, defaultColDef,
+  COLUMNA_FECHA, MODULOS_TABLA, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaNumero, columnaTexto,
+  columnasQueCaben, defaultColDef, usaAnchoContenedor,
   moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
@@ -401,7 +402,7 @@ export default function PlanFechas() {
   }
 
   const cols = useMemo<ColDef<FilaPlan>[]>(() => [
-    { ...TEXTO_LARGO, headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 220 },
+    { ...TEXTO_LARGO, headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 172 },
     {
       // Cambiar de frente desde la propia tabla: hasta la revisión de UX esta columna era texto
       // plano y el selector solo existía en «Sin frente», donde un paquete ya amarrado no aparece.
@@ -437,12 +438,14 @@ export default function PlanFechas() {
     },
     // Las fechas nunca envuelven y toman su ancho del contenido: partir «2026-07-28» en dos
     // renglones no ahorra nada y descuadra la fila.
-    { headerName: 'Arranque', field: 'fechaArranque' },
-    { headerName: 'Necesidad en obra', field: 'fechaAncla' },
-    columnaNumero('diasTotales', 'Días'),
+    { ...COLUMNA_FECHA, headerName: 'Arranque', field: 'fechaArranque' },
+    // «Necesidad en obra» no cabía en el encabezado y salía «Necesidad …»; la columna de al lado ya
+    // dice «Arranque», así que el contexto lo pone la pareja.
+    { ...COLUMNA_FECHA, headerName: 'Necesidad', field: 'fechaAncla' },
+    { ...columnaNumero('diasTotales', 'Días'), colId: 'dias' },
     {
       headerName: 'Responsable', colId: 'responsable', field: 'responsableNombre',
-      flex: 1, minWidth: 220, editable: true,
+      flex: 1, minWidth: 160, editable: true,
       cellEditor: 'agSelectCellEditor',
       // Las opciones se calculan por fila, no una sola vez para la tabla: una fila con responsable
       // huérfano necesita su propia opción extra (ver opcionesResponsable) o AG Grid no podría
@@ -473,18 +476,32 @@ export default function PlanFechas() {
       },
     },
     {
-      headerName: 'Estado', flex: 1, minWidth: 160, sortable: false,
+      // Envuelve: «172 días de retraso» no cabe de una línea en lo que deja el shell, y recortado
+      // a «172 d…» pierde justo la unidad que lo hace legible.
+      headerName: 'Estado', colId: 'estado', flex: 1, minWidth: 132, sortable: false,
+      wrapText: true, autoHeight: true,
       valueGetter: (p) => (p.data ? estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).etiqueta : ''),
       cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).clave}` : undefined),
     },
     {
       // Deshacer el amarre. Era el hallazgo más serio de la revisión: una vez amarrado no había
       // forma de volver atrás desde la interfaz.
-      colId: 'desamarrar', headerName: '', width: 120, sortable: false, suppressAutoSize: true,
+      colId: 'desamarrar', headerName: '', width: 116, maxWidth: 116, sortable: false, suppressAutoSize: true,
       cellClass: 'pdc-celda-accion',
       valueGetter: () => 'Desamarrar',
     },
   ], [responsableOverride, desfasePorPaquete, elegibles, frentes])
+
+  // Nueve columnas no caben legibles en el ancho que deja el shell, y la primera en salirse era
+  // «Estado», que es justo el semáforo de la pantalla. «Días» es la que sobra: sale de restar las
+  // dos fechas que quedan a la vista.
+  const [refGrid, anchoGrid] = usaAnchoContenedor()
+  const colsVisibles = useMemo(
+    // 44 px: la columna de casillas de selección múltiple, que la pone `rowSelection` y no está en
+    // `cols`.
+    () => columnasQueCaben(cols, anchoGrid, ['dias', 'estado', 'responsable'], 44),
+    [cols, anchoGrid],
+  )
 
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
@@ -656,15 +673,17 @@ export default function PlanFechas() {
         </div>
       )}
 
-      <div data-testid="pdc-plan-grid" className="pdc-grid-wrap">
+      <div data-testid="pdc-plan-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
           rowData={planVisible}
           overlayNoRowsTemplate={vacioTabla("Todavía no hay paquetes con plan calculado. Amarra un paquete a un frente y pulsa «Recalcular».")}
-          columnDefs={cols}
+          columnDefs={colsVisibles}
           defaultColDef={defaultColDef}
           autoSizeStrategy={autoSizeStrategy}
-          domLayout="autoHeight"
+          {...ajusteDeAncho}
+          // Igual que en Paquetes: sin `autoHeight`, la grilla scrollea por dentro en vez de
+          // estirar la página y dejar la barra de acciones fuera de la pantalla.
           suppressCellFocus
           // Selección múltiple (Community — ver RowSelectionModule) solo por checkbox:
           // enableClickSelection: false deja que clicar una fila siga abriendo su detalle
@@ -692,7 +711,6 @@ export default function PlanFechas() {
           }}
         />
       </div>
-      {plan.length === 0 && <p className="pdc-vacio">Todavía no hay paquetes con plan calculado.</p>}
 
       {filaExpandida && (
         <div className="pdc-plan-detalle" data-testid="pdc-plan-detalle">

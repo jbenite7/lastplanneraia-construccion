@@ -197,6 +197,7 @@ desaparecer dentro de la tarea.
 - Elevación mínima con tintes fríos; **glass reservado para jerarquía** (shell, nav, modales, paneles, cards).
 - Montserrat para jerarquía de decisión; Inter para todo lo operativo. Sin Roboto.
 - Objetivos táctiles de `44px`, foco visible de 4px, `prefers-reduced-motion` respetado.
+  **Excepción registrada — superficies de datos densas:** ver §Densidad de datos.
 - Densidad adaptativa: Compacta desde 1200 px, Táctil por debajo.
 
 ## 2. Colors — Submarcas sobre penumbra
@@ -425,6 +426,55 @@ compartida real es CI (`.github/workflows/design-system.yml`) más los gates en
 `scripts/`; el hook local `PostToolUse` es solo una ayuda temprana y vive en
 configuración por máquina (`.claude/settings.json` / `.codex/hooks.json`, en `.gitignore`).
 
+## 5 bis. Densidad de datos — superficies de hoja de cálculo
+
+Decisión del dueño del producto (2026-07-29), tomada sobre medición en `/plan-compras`:
+una tabla de 42 px de fila y 48 px de encabezado dejaba **17 filas del presupuesto** en
+un viewport de 1180×820, y el módulo convivía con **trece tamaños de letra distintos**
+(11 a 26 px) más treinta y cuatro elementos sin regla que heredaban el 16 px del
+navegador. La referencia es Excel: **la letra no se encoge, el aire alrededor sí**
+(Excel usa 11 pt ≈ 14,7 px con filas de 20 px).
+
+### Escala tipográfica de superficie densa
+
+| Paso | Valor | Uso |
+|---|---|---|
+| `xs` | 11 px | rótulos en versalitas |
+| `sm` | 12 px | ayudas, notas al pie de un dato, encabezado de tabla |
+| `md` | 13 px | **cuerpo**: controles, celdas, navegación |
+| `lg` | 15 px | subtítulos de sección |
+| `xl` | 18 px | título de pantalla |
+| cifra | 22 px | el único número que manda en la pantalla |
+
+Piso duro: **11 px**. Nada por debajo, y el contraste AA (4,5:1) se verifica medido,
+no estimado.
+
+### Métrica de tabla
+
+Fila `28px`, encabezado `32px`, celda `13px`, padding horizontal `10px`. Las filas que
+envuelven texto (`autoHeight`) crecen lo que necesiten. Resultado medido: 25 filas donde
+había 17.
+
+### Excepción al mínimo de 44 px
+
+En una superficie de datos densa, **operada con ratón en desktop y sin equivalente
+móvil**, los controles miden `28px` de alto con `4px 10px` de padding. Es la métrica de
+Excel, Figma y cualquier herramienta de este tipo, y es lo que hace posible la densidad
+que el trabajo pide.
+
+- **Alcance:** `/plan-compras` (PDC v2). No se extiende a ninguna otra superficie sin
+  la misma decisión explícita.
+- **Lo que NO se relaja:** contraste AA, foco visible de 4px, orden de foco, navegación
+  por teclado y `prefers-reduced-motion` siguen siendo obligatorios y verificados.
+- **Por qué es admisible:** el criterio de 44 px protege el acierto del dedo sobre un
+  cristal. Esta superficie está fuera del alcance móvil del producto por contrato
+  (`AGENTS.md` §Routing: desktop ≥1180 px, dark, sin mobile ni tablet), así que el
+  riesgo que el mínimo previene no existe aquí.
+- **Si alguna vez se abre a táctil:** esta excepción caduca y los controles vuelven a
+  `44px` antes de exponer la superficie.
+
+---
+
 ## 6. Do's and Don'ts
 
 ### Do:
@@ -432,6 +482,7 @@ configuración por máquina (`.claude/settings.json` / `.codex/hooks.json`, en `
 - **Usa** Montserrat para títulos, métricas y jerarquía de decisión; Inter para cuerpo, navegación, formularios, tablas y ayudas.
 - **Diseña y valida solo en desktop dark** de al menos 1180 px. Viewport canónico `1180x820`; secundario `1440x900`.
 - **Mantén** WCAG AA, foco visible de 4px, objetivos táctiles de `44px` y una alternativa `prefers-reduced-motion` en toda animación.
+  En superficies de datos densas el alto de control es `28px` por excepción registrada (§5 bis); el resto no se relaja.
 - **Reserva** el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.
 - **Expresa** el estado con superficie + borde + texto del tema destino; anima solo `transform` y `box-shadow`, nunca `color`/`background` (DS-023/DS-025).
 - **Registra** en `exceptions.json` cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.

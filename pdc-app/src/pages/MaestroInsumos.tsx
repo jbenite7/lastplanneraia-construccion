@@ -3,7 +3,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme, vacioTabla
+  COLUMNA_CATEGORIA, COLUMNA_CORTA, MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
@@ -123,16 +123,16 @@ export default function MaestroInsumos() {
       valueFormatter: (p) => (state.seleccion.has(p.value as number) ? '●' : ''),
     },
     columnaTexto('descripcionOriginal', 'Insumo', 260),
-    { field: 'tipoInsumo', headerName: 'Tipo' },
-    { field: 'unidad', headerName: 'Und' },
+    { ...COLUMNA_CATEGORIA, field: 'tipoInsumo', headerName: 'Tipo' },
+    { ...COLUMNA_CORTA, field: 'unidad', headerName: 'Und' },
     columnaNumero('apariciones', 'Usos'),
     columnaMoneda('valorTotal', 'Valor total'),
   ], [state.seleccion])
 
   const colsCatalogo: ColDef<MaestroInsumo>[] = useMemo(() => [
     columnaTexto('descripcion', 'Insumo', 280),
-    { field: 'unidad', headerName: 'Und' },
-    { field: 'tipoInsumo', headerName: 'Tipo' },
+    { ...COLUMNA_CORTA, field: 'unidad', headerName: 'Und' },
+    { ...COLUMNA_CATEGORIA, field: 'tipoInsumo', headerName: 'Tipo' },
     ...(verRetirados
       ? [{
           field: 'activo', headerName: 'Estado',
@@ -327,6 +327,7 @@ export default function MaestroInsumos() {
             columnDefs={colsPendientes}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
             getRowId={(p) => String(p.data.id)}
             onCellClicked={onPendienteClick}
             onRowDoubleClicked={onPendienteDoble}
@@ -409,6 +410,7 @@ export default function MaestroInsumos() {
             columnDefs={colsCatalogo}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
             getRowId={(p) => String(p.data.id)}
             onCellClicked={onCatalogoClick}
             rowClassRules={{ 'pdc-fila-retirada': (p) => p.data?.activo === 0 }}

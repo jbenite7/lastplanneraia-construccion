@@ -73,6 +73,9 @@ test('comparativo: una versión obsoleta se advierte antes del resumen', async (
     const aviso = page.locator('[data-testid="pdc-cmp-aviso-obsoleta"]');
     await expect(aviso).toBeVisible({ timeout: 15000 });
     await expect(aviso).toContainText('no es confiable');
+    // El motivo vive plegado desde julio de 2026: son dos párrafos que no cambian entre visitas y
+    // dejaban la tabla bajo el pliegue. El titular sigue a la vista; el porqué se abre.
+    await aviso.locator('summary').click();
     await expect(aviso).toContainText(motivo);
     await expect(aviso).toHaveAttribute('role', 'alert');
 

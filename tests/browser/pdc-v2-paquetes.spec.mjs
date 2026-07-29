@@ -45,6 +45,9 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
     }
 
     // 4) Crear paquete (idempotente: si existe, el backend devuelve el existente; queda seleccionado como destino).
+    // El bloque de crear paquete vive plegado desde julio de 2026 (le costaba una barra de alto
+    // a la tabla): hay que desplegarlo antes de usarlo.
+    await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill('E2E Paquete Pisos');
     await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('suministro');
     await page.locator('[data-testid="pdc-paq-crear"]').click();

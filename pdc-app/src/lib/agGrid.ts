@@ -4,7 +4,7 @@ import {
   RowAutoHeightModule,
   themeQuartz,
 } from 'ag-grid-community'
-import type { ColDef, ColDefField, SizeColumnsToContentStrategy } from 'ag-grid-community'
+import type { ColDef, ColDefField, SizeColumnsToFitGridStrategy } from 'ag-grid-community'
 import { useEffect, useState } from 'react'
 
 /**
@@ -27,6 +27,18 @@ export const pdcTheme = themeQuartz.withParams({
   foregroundColor: '#f4f1ea',
   accentColor: '#69b578',
   headerBackgroundColor: '#1a3c2a',
+  /*
+   * Densidad de hoja de cálculo (decisión del dueño del producto, 2026-07-29). La fila venía en
+   * 42 px y el encabezado en 48 con celdas de 14 px: 17 filas del presupuesto en toda la pantalla,
+   * cuando Excel —con la misma letra de 11 pt ≈ 14,7 px— pone la fila en 20. La letra no era el
+   * problema; el aire alrededor sí. Con 28/32 se ven ~26 filas sin encoger el texto por debajo del
+   * mínimo legible. Las filas que envuelven (`autoHeight`) siguen creciendo lo que necesiten.
+   */
+  fontSize: 13,
+  rowHeight: 28,
+  headerHeight: 32,
+  headerFontSize: 12,
+  cellHorizontalPadding: 10,
 })
 
 /**
@@ -50,13 +62,57 @@ export function moneda(v: number | null | undefined): string {
 export const defaultColDef = { resizable: true, sortable: true } satisfies ColDef
 
 /**
+ * Ancho mínimo de una columna de cifra. Medido sobre el importe más ancho que aparece hoy en obra
+ * —«$ 70.912.032.642», el costo directo de Da Porto: catorce caracteres— con el tipo de la tabla y
+ * el padding de la celda. Por debajo de esto, el reparto de `fitGridWidth` vuelve a recortar el
+ * dinero, que es el dato por el que existen estas tablas.
+ */
+export const MIN_WIDTH_CIFRA = 168
+
+/**
+ * Ancho mínimo para una columna de texto que puede traer una palabra larga sin espacios.
+ *
+ * AG Grid envuelve con `overflow-wrap: break-word`, que solo parte una palabra cuando esa palabra
+ * no cabe **entera** en un renglón. Con la columna «Agrupación» a 130 px, «SUBCONTRATACION» no
+ * cabía y salía «SUBCONTRATACIO / N PERSONAL». Subir el mínimo es lo que quita la causa; prohibir
+ * el corte en CSS (ver `.ag-cell-wrap-text` en styles.css) es el cinturón por si aparece una
+ * palabra aún más larga.
+ */
+export const MIN_WIDTH_PALABRA_LARGA = 170
+
+/**
  * Columnas de cifra: nunca envuelven. Un importe partido en dos renglones se lee peor y descuadra
  * la altura de la fila. Si no cabe, la columna se ensancha — para eso está el autoSizeStrategy.
  *
  * Se exporta como objeto además de las funciones porque varias columnas no salen de un `field`
  * directo (llevan `valueGetter`) y necesitan las mismas propiedades sin repetirlas a mano.
  */
-export const CIFRA = { type: 'rightAligned', wrapText: false } satisfies ColDef
+export const CIFRA = { type: 'rightAligned', wrapText: false, minWidth: MIN_WIDTH_CIFRA } satisfies ColDef
+
+/**
+ * Columnas cortas por naturaleza —unidad, tipo de insumo de una letra, conteos— con techo: en el
+ * reparto de `fitGridWidth` una columna sin límite se lleva ancho que necesita el texto de al lado.
+ * «Und» con 200 px de ancho para escribir «M2» era ancho robado a «Tipo».
+ */
+export const COLUMNA_CORTA = { minWidth: 70, maxWidth: 104 } satisfies ColDef
+
+/**
+ * Fecha ISO (`2026-05-25`). Diez caracteres que no admiten recorte: «2026-…» no dice nada, y en el
+ * plan de compras la fecha ES la decisión.
+ */
+export const COLUMNA_FECHA = { minWidth: 124, maxWidth: 148 } satisfies ColDef
+
+/**
+ * Categoría o agrupación: texto medio (más que una unidad, menos que una descripción). Envuelve en
+ * vez de recortarse, porque «MAT-ELECTRICOS Y AFI…» y «MAT-ELECTRICOS Y AFINES» se distinguen mal
+ * de otra categoría que empiece igual.
+ */
+export const COLUMNA_CATEGORIA = {
+  flex: 1,
+  minWidth: MIN_WIDTH_PALABRA_LARGA,
+  wrapText: true,
+  autoHeight: true,
+} satisfies ColDef
 
 /**
  * Texto largo: envuelve y la fila crece en vez de recortar con «…».
@@ -82,9 +138,12 @@ export function columnaMoneda<TData>(field: ColDefField<TData>, headerName: stri
  * Columnas numéricas que no son dinero (cantidades, días, conteos). Alinean a la derecha y no
  * envuelven, pero **no reformatean el valor**: las cantidades del APU llevan decimales pequeños y
  * redondearlas aquí cambiaría lo que el usuario lee del presupuesto.
+ *
+ * El mínimo es la mitad que el de dinero: «1542» o «107 días» no necesitan el ancho de
+ * «$ 70.912.032.642», y reservárselo se lo quitaba a las columnas que sí lo necesitan.
  */
 export function columnaNumero<TData>(field: ColDefField<TData>, headerName: string): ColDef<TData> {
-  return { ...CIFRA, field, headerName }
+  return { ...CIFRA, field, headerName, minWidth: 92 }
 }
 
 /** Columna de texto largo a partir de un campo. */
@@ -96,33 +155,59 @@ export function columnaTexto<TData>(
   return { ...TEXTO_LARGO, field, headerName, minWidth }
 }
 
+/** Lo que AG Grid da a una columna que no pide nada (`defaultMinWidth` de la estrategia de ancho). */
+export const ANCHO_COLUMNA_POR_DEFECTO = 90
 /**
- * Ancho mínimo para una columna de texto que puede traer una palabra larga sin espacios.
- *
- * AG Grid envuelve con `overflow-wrap: break-word`, que solo parte una palabra cuando esa palabra
- * no cabe **entera** en un renglón. Con la columna «Agrupación» a 130 px, «SUBCONTRATACION» no
- * cabía y salía «SUBCONTRATACIO / N PERSONAL». Subir el mínimo es lo que quita la causa; prohibir
- * el corte en CSS (ver `.ag-cell-wrap-text` en styles.css) es el cinturón por si aparece una
- * palabra aún más larga.
+ * Lo que hay que reservar además de las columnas: la barra de scroll vertical (16 px), que aparece
+ * en cuanto hay más filas que hueco y no la descuenta nadie, más 4 px de colchón para el redondeo
+ * del reparto entre columnas con `flex` — medido: el Plan se pasaba por exactamente 4 px.
  */
-export const MIN_WIDTH_PALABRA_LARGA = 170
+export const ANCHO_BARRA_SCROLL = 20
+/** El filete que AG Grid dibuja entre columnas. Uno por columna: seis columnas son seis píxeles, y
+ *  seis píxeles bastan para que aparezca la barra horizontal que veníamos a quitar. */
+export const ANCHO_BORDE_COLUMNA = 1
 
 /**
- * Esconde las columnas secundarias cuando la pantalla es angosta.
+ * Esconde columnas hasta que la tabla quepa sin scroll horizontal.
  *
- * Decisión del dueño del producto (grilleo 2026-07-29): por debajo de 1200 px se esconden columnas
- * en vez de ofrecer scroll lateral. Cuáles son «secundarias» lo decide cada página, porque lo
- * prescindible depende de a qué se va a esa pantalla — en Paquetes, «Destino» y «Sugerencia» son
- * justo lo que se viene a mirar y no se esconden nunca.
+ * La versión anterior decidía por el ancho de la **ventana** (`max-width: 1199px`), y ese número no
+ * es el ancho de la tabla: la barra lateral del shell expandida se lleva 208 px, así que a 1180 la
+ * grilla trabaja con 820 y nadie se enteraba — hasta 142 px de scroll lateral en Presupuesto con la
+ * lateral abierta. Aquí se mide el hueco real y se esconden las prescindibles **en el orden que
+ * declara cada página**, una a una, solo mientras haga falta: con la lateral cerrada no se esconde
+ * nada, y al colapsarla vuelven a aparecer.
+ *
+ * `prescindibles` va de más a menos sacrificable. Lo que se viene a mirar a esa pantalla no entra en
+ * la lista: en Paquetes, «Destino» y «Sugerencia» no se esconden nunca.
+ *
+ * `anchoNoDeclarado` es para las columnas que AG Grid añade por su cuenta y no están en
+ * `columnDefs` — hoy solo la de casillas de selección múltiple del Plan, 44 px que no aparecían en
+ * la cuenta y dejaban 4 px de scroll lateral justo por ese hueco.
+ *
+ * El cálculo solo es tan bueno como los mínimos declarados: **una columna sin `minWidth` se estima
+ * en {@link ANCHO_COLUMNA_POR_DEFECTO}** aunque en pantalla ocupe el doble. Si una tabla nueva
+ * desborda, empieza por ahí.
  */
-export function columnasVisibles<T extends { colId?: string }>(
+export function columnasQueCaben<T extends { colId?: string; minWidth?: number | null; width?: number | null; hide?: boolean | null }>(
   columnas: T[],
-  angosta: boolean,
-  secundarias: string[],
-): (T & { hide?: boolean })[] {
-  if (!angosta) return columnas.map((c) => ({ ...c, hide: false }))
-  return columnas.map((c) => ({ ...c, hide: c.colId !== undefined && secundarias.includes(c.colId) }))
+  anchoDisponible: number,
+  prescindibles: string[],
+  anchoNoDeclarado = 0,
+): T[] {
+  // 0 = todavía no se ha medido el contenedor (primer render): no esconder nada a ciegas.
+  if (anchoDisponible <= 0) return columnas.map((c) => ({ ...c, hide: false }))
+  const pide = (c: T) => c.minWidth ?? c.width ?? ANCHO_COLUMNA_POR_DEFECTO
+  const ocultas = new Set<string>()
+  const suma = () => anchoNoDeclarado + columnas
+    .filter((c) => !(c.colId !== undefined && ocultas.has(c.colId)))
+    .reduce((a, c) => a + pide(c) + ANCHO_BORDE_COLUMNA, 0)
+  for (const id of prescindibles) {
+    if (suma() + ANCHO_BARRA_SCROLL <= anchoDisponible) break
+    if (columnas.some((c) => c.colId === id)) ocultas.add(id)
+  }
+  return columnas.map((c) => ({ ...c, hide: c.colId !== undefined && ocultas.has(c.colId) }))
 }
+
 
 /**
  * Mensaje de tabla vacía, en español y con el estilo del módulo.
@@ -138,31 +223,64 @@ export function vacioTabla(mensaje: string): string {
   return `<span class="pdc-tabla-vacia">${escapado}</span>`
 }
 
-/** Umbral de «pantalla angosta»: por debajo de esto, un portátil de 1024 px ya perdía columnas. */
-export const ANCHO_ANGOSTO = 1200
-
 /**
- * `true` mientras la ventana esté por debajo de {@link ANCHO_ANGOSTO}, y reacciona al redimensionar
- * — no solo al montar: alguien que arrastra la ventana o gira la tableta debe ver las columnas
- * aparecer y desaparecer, no quedarse con la decisión que se tomó al abrir la página.
+ * Ancho real del contenedor de la tabla, en píxeles, medido con `ResizeObserver`.
+ *
+ * Sustituye a la media query de ventana: reacciona a lo que de verdad cambia el hueco —colapsar o
+ * abrir la barra lateral del shell, redimensionar la ventana— y no a una suposición sobre cuánto
+ * cromo hay alrededor. Devuelve 0 hasta la primera medición, y {@link columnasQueCaben} interpreta
+ * ese 0 como «todavía no sé, no escondas nada».
+ *
+ * Devuelve un **callback ref**, no un objeto ref: varias tablas del módulo viven dentro de un
+ * render condicional (`{data && <tabla/>}`), así que en el momento en que corre el efecto el
+ * `ref.current` de un `useRef` todavía es `null` y el observador no llegaba a engancharse nunca —
+ * el ancho se quedaba en 0 y no se escondía ninguna columna. El callback se dispara cuando el nodo
+ * entra en el DOM, sea cuando sea.
  */
-export function usaPantallaAngosta(): boolean {
-  const consulta = `(max-width: ${ANCHO_ANGOSTO - 1}px)`
-  const [angosta, setAngosta] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia(consulta).matches,
-  )
+export function usaAnchoContenedor(): [(el: HTMLElement | null) => void, number] {
+  const [nodo, setNodo] = useState<HTMLElement | null>(null)
+  const [ancho, setAncho] = useState(0)
   useEffect(() => {
-    const mq = window.matchMedia(consulta)
-    const alCambiar = (e: MediaQueryListEvent) => setAngosta(e.matches)
-    setAngosta(mq.matches)
-    mq.addEventListener('change', alCambiar)
-    return () => mq.removeEventListener('change', alCambiar)
-  }, [consulta])
-  return angosta
+    if (!nodo || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver((entradas) => {
+      setAncho(Math.round(entradas[0]?.contentRect.width ?? 0))
+    })
+    ro.observe(nodo)
+    return () => ro.disconnect()
+  }, [nodo])
+  return [setNodo, ancho]
 }
 
 /**
- * El ancho sale del contenido, no de un número escrito a mano: es lo que evita el «102 DAPORTO
- * RIONEGRO PI_Version…» y el «$ 29.492.804.3…» que la revisión encontró recortados.
+ * El ancho se reparte dentro de la grilla, no lo pide el contenido.
+ *
+ * `fitCellContents` —lo que había— mide cada columna por su celda más ancha y suma sin mirar el
+ * ancho disponible: en Presupuesto la suma se pasaba y «Vr. unitario» quedaba cortada por el borde
+ * derecho mostrando «$ 70.91». No es un recorte con «…», que se ve: es una cifra que parece
+ * completa y no lo está, que es el peor fallo posible en la columna del dinero.
+ *
+ * `fitGridWidth` reparte el ancho real entre las columnas, así que nada se sale. El mínimo de
+ * `CIFRA` (ver `MIN_WIDTH_CIFRA`) es lo que garantiza que un importe de miles de millones siga
+ * cabiendo entero después del reparto.
  */
-export const autoSizeStrategy: SizeColumnsToContentStrategy = { type: 'fitCellContents' }
+export const autoSizeStrategy: SizeColumnsToFitGridStrategy = {
+  type: 'fitGridWidth',
+  defaultMinWidth: ANCHO_COLUMNA_POR_DEFECTO,
+}
+
+/**
+ * Reajuste del ancho de columnas después de pintar.
+ *
+ * `fitGridWidth` reparte contra el ancho que la grilla tiene en el primer render, y la barra de
+ * scroll vertical aparece **después**, cuando ya hay filas: se lleva 16 px que nadie descontó y la
+ * última columna —siempre la del dinero— queda medio tapada por el borde. Volver a ajustar cuando
+ * ya se conoce el tamaño real cierra ese desfase, y `onGridSizeChanged` lo mantiene cerrado si
+ * cambia el ancho (colapsar la barra lateral, redimensionar la ventana).
+ *
+ * Se exporta como objeto para esparcirlo (`{...ajusteDeAncho}`) en cada `<AgGridReact>`: son siete
+ * tablas y la alternativa era repetir dos handlers idénticos en cada una.
+ */
+export const ajusteDeAncho = {
+  onFirstDataRendered: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
+  onGridSizeChanged: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
+}

@@ -3,8 +3,8 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
 import {
-  MIN_WIDTH_PALABRA_LARGA, MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto,
-  columnasVisibles, defaultColDef, moneda, pdcTheme, usaPantallaAngosta, vacioTabla
+  COLUMNA_CORTA, MIN_WIDTH_PALABRA_LARGA, MODULOS_TABLA, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaTexto,
+  columnasQueCaben, defaultColDef, moneda, pdcTheme, usaAnchoContenedor, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
@@ -135,8 +135,8 @@ export default function PaquetesContratacion() {
       tooltipComponent: TooltipActividades,
     },
     { ...columnaTexto('agrupacion', 'Agrupación', MIN_WIDTH_PALABRA_LARGA), colId: 'agrupacion', valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Recurso', field: 'tipoRecurso', colId: 'recurso', valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Und', field: 'unidad' },
+    { ...COLUMNA_CORTA, headerName: 'Recurso', field: 'tipoRecurso', colId: 'recurso', minWidth: 96, valueFormatter: (p) => p.value ?? '—' },
+    { ...COLUMNA_CORTA, colId: 'unidad', headerName: 'Und', field: 'unidad' },
     columnaMoneda('valorTotal', 'Valor total'),
     {
       ...TEXTO_LARGO,
@@ -160,10 +160,10 @@ export default function PaquetesContratacion() {
 
   // Por debajo de 1200 px se esconden «Agrupación» y «Recurso» — lo prescindible de esta pantalla.
   // «Destino» y «Sugerencia» nunca: son el motivo por el que se entra aquí.
-  const angosta = usaPantallaAngosta()
+  const [refGrid, anchoGrid] = usaAnchoContenedor()
   const colsVisibles = useMemo(
-    () => columnasVisibles(cols, angosta, ['agrupacion', 'recurso']),
-    [cols, angosta],
+    () => columnasQueCaben(cols, anchoGrid, ['agrupacion', 'recurso', 'unidad']),
+    [cols, anchoGrid],
   )
 
   const onRowClicked = (e: RowClickedEvent<InsumoPaquete>) => {
@@ -176,6 +176,12 @@ export default function PaquetesContratacion() {
     [visibles, state.seleccion],
   )
   const insumosPayload = (lista: InsumoPaquete[]) => lista.map((i) => ({ descripcionNorm: i.descripcionNorm, unidad: i.unidad }))
+
+  // Por qué está apagado un botón. Vacío cuando está encendido: un `title` que sobra estorba.
+  const faltaSeleccion = seleccionados.length === 0 ? 'Marca al menos un insumo de la tabla.' : ''
+  const faltaParaAsignar = seleccionados.length === 0
+    ? 'Marca al menos un insumo de la tabla y elige el paquete destino.'
+    : paqueteDestino === '' ? 'Elige el paquete destino.' : ''
 
   // Qué paquetes usa ya este proyecto y por cuánto: el asistente los pone arriba del desplegable,
   // porque al corregir una propuesta el destino correcto casi siempre es uno que la obra ya usa.
@@ -406,17 +412,24 @@ export default function PaquetesContratacion() {
           <option value="">Paquete destino…</option>
           {paquetes.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
         </select>
-        <button type="button" data-testid="pdc-paq-asignar" className="pdc-paq-primario" disabled={state.ocupado || paqueteDestino === '' || seleccionados.length === 0} onClick={onAsignar}>
+        {/* `title` en los tres: apagados sin explicación, obligaban a probar combinaciones para
+            descubrir qué faltaba. Ahora el propio botón dice qué le falta para encenderse. */}
+        <button type="button" data-testid="pdc-paq-asignar" className="pdc-paq-primario" title={faltaParaAsignar} disabled={state.ocupado || paqueteDestino === '' || seleccionados.length === 0} onClick={onAsignar}>
           Asignar a paquete
         </button>
-        <button type="button" data-testid="pdc-paq-omitir" disabled={state.ocupado || seleccionados.length === 0} onClick={onOmitir}>
+        <button type="button" data-testid="pdc-paq-omitir" title={faltaSeleccion} disabled={state.ocupado || seleccionados.length === 0} onClick={onOmitir}>
           Omitir
         </button>
-        <button type="button" data-testid="pdc-paq-desasignar" disabled={state.ocupado || seleccionados.length === 0} onClick={onDesasignar}>
+        <button type="button" data-testid="pdc-paq-desasignar" title={faltaSeleccion} disabled={state.ocupado || seleccionados.length === 0} onClick={onDesasignar}>
           Devolver a sin asignar
         </button>
       </div>
 
+      {/* Plegado: crear un paquete se hace un puñado de veces por obra, mientras que asignar se
+          repite cientos. Tenerlo siempre desplegado costaba una barra entera de alto a la tabla,
+          que es donde vive el trabajo. */}
+      <details className="pdc-paq-crear-plegable">
+        <summary>Crear un paquete nuevo</summary>
       <div className="pdc-paq-crear">
         <input data-testid="pdc-paq-crear-nombre" placeholder="Crear paquete nuevo…" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} />
         <select data-testid="pdc-paq-crear-tipo" aria-label="Tipo de negociación" value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)}>
@@ -436,8 +449,9 @@ export default function PaquetesContratacion() {
         </button>
       </div>
       </details>
+      </details>
 
-      <div data-testid="pdc-paq-grid" className="pdc-grid-wrap">
+      <div data-testid="pdc-paq-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<InsumoPaquete>
           theme={pdcTheme}
           rowData={visibles}
@@ -445,10 +459,14 @@ export default function PaquetesContratacion() {
           columnDefs={colsVisibles}
           defaultColDef={defaultColDef}
           autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
           context={{ actividadesMap }}
           tooltipShowDelay={350}
           onRowClicked={onRowClicked}
-          domLayout="autoHeight"
+          // Sin `domLayout="autoHeight"`: con 263 insumos la tabla medía miles de píxeles y
+          // arrastraba la página entera, así que la grilla nunca llegaba a tener scroll propio.
+          // Ahora la envoltura tiene alto (`.pdc-grid-wrap` crece con el hueco libre) y scrollea
+          // por dentro, con el encabezado de columnas siempre a la vista.
           suppressCellFocus
           getRowClass={(p) => (p.data?.omitido === 1 ? 'pdc-paq-fila-omitida' : undefined)}
         />
@@ -503,6 +521,10 @@ function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
   const acierto = resumen.acierto
   return (
     <div data-testid="pdc-paq-cobertura" className="pdc-paq-cobertura">
+      {/* Tres porcentajes juntos sin decir de qué era el hallazgo de la revisión de usabilidad:
+          «33,6 %» al lado de «1 %» y «100 %» obligaba a parar y adivinar cuál es la meta. El grande
+          lleva ahora su nombre encima; los otros dos ya llevaban el suyo. */}
+      <div className="pdc-paq-cobertura-titulo">Insumos con destino</div>
       <div className="pdc-paq-cobertura-num">{resumen.cobertura}%</div>
       <div className="pdc-paq-cobertura-detalle">
         {resumen.asignados} asignados + {resumen.omitidos} omitidos de {resumen.total} insumos distintos
@@ -511,7 +533,7 @@ function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
       <dl className="pdc-paq-indicadores">
         {resumen.coberturaValor !== undefined && (
           <div data-testid="pdc-paq-cobertura-valor">
-            <dt>Por valor</dt>
+            <dt>Del valor, con destino</dt>
             <dd>{resumen.coberturaValor}%</dd>
           </div>
         )}

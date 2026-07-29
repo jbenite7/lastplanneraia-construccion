@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  MIN_WIDTH_CIFRA,
   MIN_WIDTH_PALABRA_LARGA,
   autoSizeStrategy,
   columnaMoneda,
   columnaNumero,
   columnaTexto,
-  columnasVisibles,
+  columnasQueCaben,
   defaultColDef,
   moneda,
 } from './agGrid'
@@ -55,30 +56,48 @@ describe('MIN_WIDTH_PALABRA_LARGA', () => {
   })
 })
 
-describe('columnasVisibles', () => {
+describe('columnasQueCaben', () => {
+  // Cinco columnas de 100 px = 500, más los 16 de la barra de scroll vertical.
   const cols = [
-    { colId: 'insumo', headerName: 'Insumo' },
-    { colId: 'agrupacion', headerName: 'Agrupación' },
-    { colId: 'recurso', headerName: 'Recurso' },
-    { colId: 'destino', headerName: 'Destino' },
-    { colId: 'sugerencia', headerName: 'Sugerencia' },
+    { colId: 'insumo', minWidth: 100 },
+    { colId: 'agrupacion', minWidth: 100 },
+    { colId: 'recurso', minWidth: 100 },
+    { colId: 'destino', minWidth: 100 },
+    { colId: 'sugerencia', minWidth: 100 },
   ]
+  const escondidas = (r: { colId?: string; hide?: boolean }[]) => r.filter((c) => c.hide).map((c) => c.colId)
 
-  it('en pantalla ancha no esconde nada', () => {
-    expect(columnasVisibles(cols, false, ['agrupacion', 'recurso']).filter((c) => c.hide)).toEqual([])
+  it('con hueco de sobra no esconde nada', () => {
+    expect(escondidas(columnasQueCaben(cols, 900, ['agrupacion', 'recurso']))).toEqual([])
   })
 
-  it('en pantalla angosta esconde solo las secundarias', () => {
-    const r = columnasVisibles(cols, true, ['agrupacion', 'recurso'])
-    expect(r.filter((c) => c.hide).map((c) => c.colId)).toEqual(['agrupacion', 'recurso'])
+  it('esconde de una en una, solo mientras haga falta', () => {
+    // 460 px: cabe quitando una sola columna (400 + 16 ≤ 460), así que la segunda se queda.
+    expect(escondidas(columnasQueCaben(cols, 460, ['agrupacion', 'recurso']))).toEqual(['agrupacion'])
+  })
+
+  it('esconde en el orden declarado cuando falta más hueco', () => {
+    expect(escondidas(columnasQueCaben(cols, 330, ['agrupacion', 'recurso']))).toEqual(['agrupacion', 'recurso'])
   })
 
   it('nunca esconde lo que se viene a mirar a esa pantalla', () => {
-    // Decisión del grilleo (f30): «Destino» y «Sugerencia» son el motivo de abrir Paquetes.
-    const r = columnasVisibles(cols, true, ['agrupacion', 'recurso'])
-    const escondidas = r.filter((c) => c.hide).map((c) => c.colId)
-    expect(escondidas).not.toContain('destino')
-    expect(escondidas).not.toContain('sugerencia')
+    // Decisión del grilleo (f30): «Destino» y «Sugerencia» son el motivo de abrir Paquetes, así que
+    // no están en la lista de prescindibles ni con el hueco más apretado.
+    const r = escondidas(columnasQueCaben(cols, 120, ['agrupacion', 'recurso']))
+    expect(r).not.toContain('destino')
+    expect(r).not.toContain('sugerencia')
+  })
+
+  it('cuenta el ancho de las columnas que AG Grid añade por su cuenta', () => {
+    // La casilla de selección múltiple del Plan no vive en `columnDefs`: son 44 px invisibles para
+    // el cálculo que dejaban 4 px de scroll lateral.
+    expect(escondidas(columnasQueCaben(cols, 560, ['agrupacion', 'recurso']))).toEqual([])
+    expect(escondidas(columnasQueCaben(cols, 560, ['agrupacion', 'recurso'], 120))).toEqual(['agrupacion'])
+  })
+
+  it('sin medir todavía el contenedor no esconde nada', () => {
+    // El primer render no conoce el ancho; esconder a ciegas haría parpadear las columnas.
+    expect(escondidas(columnasQueCaben(cols, 0, ['agrupacion', 'recurso']))).toEqual([])
   })
 })
 
@@ -124,8 +143,14 @@ describe('columnaTexto', () => {
 })
 
 describe('autoSizeStrategy', () => {
-  it('el módulo expone una estrategia de ancho que se ajusta al contenido', () => {
+  // `fitCellContents` sumaba anchos sin mirar el hueco disponible y sacaba la columna del dinero
+  // fuera del borde: la cifra se cortaba sin puntos suspensivos y parecía completa.
+  it('el módulo reparte el ancho disponible en vez de pedirlo por contenido', () => {
     expect(autoSizeStrategy).toBeDefined()
-    expect(autoSizeStrategy.type).toBe('fitCellContents')
+    expect(autoSizeStrategy.type).toBe('fitGridWidth')
+  })
+
+  it('una columna de cifra reserva lo que mide el importe más ancho de obra', () => {
+    expect(columnaMoneda('valorTotal', 'Valor total').minWidth).toBe(MIN_WIDTH_CIFRA)
   })
 })

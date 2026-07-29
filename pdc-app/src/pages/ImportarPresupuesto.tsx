@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
-import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-community'
+import { CellStyleModule, ModuleRegistry, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
+  COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
   defaultColDef, moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
@@ -19,6 +19,7 @@ import { plural } from '../lib/texto'
 ModuleRegistry.registerModules([
   ...MODULOS_TABLA,
   CellStyleModule, // cellClass de la casilla de comparar y de la acción de fijar como oficial
+  TooltipModule, // el nombre completo del archivo, que en la celda va recortado
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
@@ -44,17 +45,25 @@ const colsVersiones = (seleccion: number[]): ColDef<VersionPresupuesto>[] => [
   // El nombre de la versión y el del archivo son los dos que la revisión encontró recortados
   // («102 DAPORTO RIONEGRO PI_Version…», «Import Da Po…»): envuelven en vez de cortarse.
   {
-    ...TEXTO_LARGO, colId: 'version', headerName: 'Versión', minWidth: 240,
+    ...TEXTO_LARGO, colId: 'version', headerName: 'Versión', minWidth: 210,
     valueGetter: (p) => (p.data ? etiquetaVersion(p.data) : ''),
   },
-  columnaTexto('archivoNombre', 'Archivo', 220),
-  columnaNumero('totalActividades', 'Actividades'),
-  { ...columnaNumero('totalInsumos', 'Insumos'), headerTooltip: 'Filas de insumo del presupuesto: un mismo insumo cuenta una vez por cada actividad que lo usa.' },
-  columnaMoneda('costoTotal', 'Costo total'),
-  { field: 'importadoPor', headerName: 'Importó' },
-  { field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
   {
-    colId: 'oficial', headerName: '', width: 150, sortable: false, suppressAutoSize: true,
+    // Una línea con «…» y el nombre entero en el tooltip. Envolviendo, «102 - 2026 09 DAPORTO -
+    // RIONEGRO - PI_Version_3 (4).xlsx» ocupaba cuatro renglones y dejaba tres versiones a la vista
+    // en toda la pantalla. Aquí el recorte no esconde un dato de negocio: la versión y la fecha, que
+    // es con lo que se identifica una importación, están enteras en la columna de al lado.
+    field: 'archivoNombre', headerName: 'Archivo', flex: 1, minWidth: 150,
+    tooltipValueGetter: (p) => String(p.value ?? ''),
+  },
+  { ...columnaNumero('totalActividades', 'Actividades'), colId: 'actividades', headerName: 'Activ.', headerTooltip: 'Actividades del presupuesto' },
+  { ...columnaNumero('totalInsumos', 'Insumos'), colId: 'insumos', headerTooltip: 'Filas de insumo del presupuesto: un mismo insumo cuenta una vez por cada actividad que lo usa.' },
+  columnaMoneda('costoTotal', 'Costo total'),
+  { ...COLUMNA_CORTA, colId: 'importadoPor', field: 'importadoPor', headerName: 'Importó', minWidth: 110, maxWidth: 150, wrapText: true, autoHeight: true },
+  { ...COLUMNA_CORTA, colId: 'estado', field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
+  {
+    colId: 'oficial', headerName: '', width: 152, maxWidth: 152, sortable: false, suppressAutoSize: true,
+    wrapText: true, autoHeight: true,
     cellClass: (p) => (p.data?.activa ? undefined : 'pdc-celda-accion'),
     valueGetter: (p) => (p.data?.activa ? '' : 'Fijar como oficial'),
   },
@@ -83,6 +92,13 @@ export default function ImportarPresupuesto() {
   useEffect(cargarVersiones, [])
 
   const cols = useMemo(() => colsVersiones(seleccion), [seleccion])
+  // Los dos conteos y quién importó son contexto; lo que identifica una versión es su fecha, su
+  // archivo, su costo y si está activa. Ese es el orden en que se sacrifican si falta hueco.
+  const [refGrid, anchoGrid] = usaAnchoContenedor()
+  const colsVisibles = useMemo(
+    () => columnasQueCaben(cols, anchoGrid, ['actividades', 'insumos', 'importadoPor', 'estado']),
+    [cols, anchoGrid],
+  )
   const destinoComparar = rutaComparar(seleccion)
 
   /**
@@ -236,6 +252,7 @@ export default function ImportarPresupuesto() {
               columnDefs={colsErrores}
               defaultColDef={defaultColDef}
               autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
             />
           </div>
         </div>
@@ -333,13 +350,14 @@ export default function ImportarPresupuesto() {
           </div>
         )}
 
-        <div className="pdc-grid-corta">
+        <div className="pdc-grid-corta" ref={refGrid}>
           <AgGridReact<VersionPresupuesto>
             theme={pdcTheme}
             rowData={versiones}
-            columnDefs={cols}
+            columnDefs={colsVisibles}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
             getRowId={(p) => String(p.data.id)}
             overlayNoRowsTemplate={vacioTabla("Todavía no se ha importado ningún presupuesto en este proyecto.")}
             onCellClicked={onVersionClick}

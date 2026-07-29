@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import {
@@ -7,7 +7,7 @@ import {
 } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme, vacioTabla
+  COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles } from '../lib/presupuestoTree'
@@ -105,7 +105,9 @@ export default function VisorPresupuesto() {
   )
 
   const cols: ColDef<FilaVisor>[] = useMemo(() => [
-    { field: 'codigo', headerName: 'Código', filter: plano, sortable: plano },
+    // `minWidth`: el código de un insumo de cuarto nivel («01.01.01.01») es la referencia con la
+    // que se busca la partida en el presupuesto de origen; recortado a «01.01.0…» no sirve.
+    { field: 'codigo', headerName: 'Código', filter: plano, sortable: plano, minWidth: 116 },
     ...(plano ? [{
       ...TEXTO_LARGO, field: 'ruta', headerName: 'Dónde está', minWidth: 240, filter: true, sortable: true,
       tooltipValueGetter: (p) => String(p.value ?? ''),
@@ -126,11 +128,13 @@ export default function VisorPresupuesto() {
         return `${sangria}${marca}${f.descripcion}`
       },
     },
-    { field: 'tipoInsumo', headerName: 'Tipo insumo', filter: plano, sortable: plano },
-    { field: 'unidad', headerName: 'Und', filter: plano, sortable: plano },
-    { ...columnaNumero('cantidad', 'Cantidad'), filter: plano ? 'agNumberColumnFilter' : false, sortable: plano },
+    // «Tipo» a secas: el dato es una letra («S», «M») y el rótulo largo pedía el triple de ancho
+    // del que necesita, se lo quitaba a la descripción y aun así salía recortado.
+    { ...COLUMNA_CORTA, colId: 'tipo', field: 'tipoInsumo', headerName: 'Tipo', headerTooltip: 'Tipo de insumo', filter: plano, sortable: plano },
+    { ...COLUMNA_CORTA, colId: 'unidad', field: 'unidad', headerName: 'Und', filter: plano, sortable: plano },
+    { ...columnaNumero('cantidad', 'Cantidad'), colId: 'cantidad', filter: plano ? 'agNumberColumnFilter' : false, sortable: plano },
     {
-      ...columnaMoneda('valorUnitario', 'Vr. unitario'),
+      ...columnaMoneda('valorUnitario', 'Vr. unitario'), colId: 'vrUnitario',
       filter: plano ? 'agNumberColumnFilter' : false, sortable: plano,
     },
     {
@@ -138,6 +142,15 @@ export default function VisorPresupuesto() {
       filter: plano ? 'agNumberColumnFilter' : false, sortable: plano,
     },
   ], [plano])
+
+  // Qué se sacrifica primero cuando el hueco no da: «Tipo» y «Und» tienen su propio filtro arriba,
+  // y el valor unitario se deduce del total y la cantidad. El código, la descripción y el valor
+  // total no se esconden nunca: son la fila.
+  const [refGrid, anchoGrid] = usaAnchoContenedor()
+  const colsVisibles = useMemo(
+    () => columnasQueCaben(cols, anchoGrid, ['tipo', 'unidad', 'vrUnitario', 'cantidad']),
+    [cols, anchoGrid],
+  )
 
   const onCellClicked = (e: CellClickedEvent<FilaVisor>) => {
     const f = e.data
@@ -246,7 +259,7 @@ export default function VisorPresupuesto() {
             </span>
           </div>
 
-          <div className="pdc-grid" data-testid="pdc-visor-arbol">
+          <div className="pdc-grid" data-testid="pdc-visor-arbol" ref={refGrid}>
             <AgGridReact<FilaVisor>
               // Remontar al cambiar de modo: si no, AG Grid reutiliza las celdas ya pintadas y
               // arrastra la sangría del árbol a la tabla en las filas que ya estaban en pantalla.
@@ -254,13 +267,14 @@ export default function VisorPresupuesto() {
               theme={pdcTheme}
               rowData={filas}
               overlayNoRowsTemplate={vacioTabla("Ninguna fila del presupuesto coincide con los filtros puestos.")}
-              columnDefs={cols}
+              columnDefs={colsVisibles}
               getRowId={(p) => p.data.key}
               onCellClicked={onCellClicked}
               // Los filtros por columna solo tienen sentido sin jerarquía: en el árbol ordenarían y
               // esconderían filas dejando hijos sin su padre.
               defaultColDef={{ ...defaultColDef, floatingFilter: plano }}
               autoSizeStrategy={autoSizeStrategy}
+          {...ajusteDeAncho}
               tooltipShowDelay={350}
             />
           </div>

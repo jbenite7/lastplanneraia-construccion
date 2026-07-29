@@ -18,7 +18,16 @@ test('paquetes: la modalidad de contratación se ve en el resumen y en el select
     // Da Porto está al 100 % por valor, así que desde la tanda 3 el aparato de asignar arranca
     // plegado tras «Asignar insumos» (el trabajo que importa ya está hecho). Se despliega para
     // llegar al formulario de creación; lo que este spec comprueba no cambia.
-    await page.locator('.pdc-paq-herramientas > summary').click();
+    // Idempotente a propósito: el bloque arranca abierto o cerrado según la cobertura del proyecto,
+    // y un click a ciegas lo cerraba justo cuando ya estaba abierto.
+    const abrir = async (selector) => {
+      const det = page.locator(selector);
+      if (await det.evaluate((el) => !el.open)) await det.locator('> summary').click();
+    };
+    await abrir('.pdc-paq-herramientas');
+    // El bloque de crear paquete vive plegado desde julio de 2026: le costaba una barra de alto a
+    // la tabla, y crear paquetes es una acción ocasional frente a asignar.
+    await abrir('.pdc-paq-crear-plegable');
 
     // El formulario de creación ofrece las 4 modalidades y arranca en «contrato».
     const selModalidad = page.locator('[data-testid="pdc-paq-crear-modalidad"]');
