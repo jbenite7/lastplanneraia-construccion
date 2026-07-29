@@ -113,6 +113,25 @@ printf(
     100 * $valorDif / max(1.0, $valorTotal),
 );
 
+// Los paquetes del sandbox e2e viven en el catálogo GLOBAL (`general_paquetes_contratacion` no
+// lleva project_id), y el motor aprende de lo asignado en otros proyectos. El seed los limpia al
+// EMPEZAR cada test, así que la última corrida de Playwright deja residuo y esta medición se
+// inflaba con un «motor: ZZTEST …» que no tiene nada que ver con las reglas. Costó un rato
+// entender el falso positivo la primera vez; que lo diga el propio test.
+$residuo = array_filter(
+    $difs,
+    static fn (array $x): bool => str_starts_with(mb_strtoupper((string) $x['motor']), 'ZZTEST')
+        || str_starts_with(mb_strtoupper((string) $x['motor']), 'E2E '),
+);
+if ($residuo !== []) {
+    fwrite(STDERR, sprintf(
+        "AVISO: %d diferencia(s) apuntan a paquetes del sandbox e2e, no a las reglas.\n"
+        . "       Limpia el residuo y vuelve a medir:\n"
+        . "       docker compose exec -T app php database/seeds/pdc_e2e_sandbox_project.php\n",
+        count($residuo),
+    ));
+}
+
 if (count($difs) > BRECHA_MAXIMA) {
     fwrite(STDERR, sprintf("FAIL: %d diferencias, el techo es %d.\n", count($difs), BRECHA_MAXIMA));
     exit(1);
