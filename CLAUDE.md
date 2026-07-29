@@ -46,7 +46,8 @@ obra). A3.3 convierte esa memoria en conocimiento y hace el motor auditable.
 - **Desempate por tipo de recurso:** un MATERIAL se decide solo por su descripción (la actividad deja de influir);
   MO y subcontrato siguen el frente, y si la actividad dominante concentra <60 % (`DOMINANCIA_MINIMA`) la
   sugerencia baja a confianza baja. `pdc_insumo_actividades` persiste **todas** las actividades de cada insumo
-  (`unique_id` NULL hasta A4) porque Seguimiento necesita la fecha de la **primera**, no la de mayor cuantía.
+  porque Seguimiento necesita la fecha de la **primera**, no la de mayor cuantía. (Su `unique_id` decía «NULL
+  hasta A4»; A4 no lo llenó y B1 lo resolvió por otra vía — ver abajo.)
 - **Doble conteo:** un MATERIAL ya no cae en un paquete `a_todo_costo` salvo `admite_materiales = 1` (dotación,
   planta eléctrica, tanques…). Y prohibir no es redirigir: si el destino correcto queda vetado, el insumo va a
   revisión con la explicación, en vez de caer en el primer fallback.
@@ -88,6 +89,42 @@ La detección de `20260728_pdc_v2_versiones_obsoletas.php` no usa ids fijos: rec
 que sirve para cualquier proyecto de AIA con el mismo problema. Solo cuentan las filas donde las dos fórmulas se
 separan más que la tolerancia — sin ese filtro, las 442 de coeficiente 1 y las 53 de actividades con cantidad 0
 hacían pasar por «ambigua» una versión que no lo es.
+
+### B1 — El amarre al cronograma es por RAMA, no por actividad (2026-07-28)
+
+`pdc_insumo_actividades.unique_id` llegó a B1 con **820 de 820 filas en NULL** en Da Porto. La nota que decía
+«NULL hasta A4» daba por hecho un emparejamiento 1:1 que **no existe en los datos**: de las 820 filas, **UNA**
+casa por nombre con una actividad del cronograma (`RED DE GAS TODO COSTO` → `RED DE GAS`), y ninguna por código
+—`programa_consolidado.codigo_actividad` está vacío en las 273 filas de las 4 semanas—. No es un problema de
+tildes: presupuesto y cronograma hablan idiomas distintos y a distinta granularidad. El presupuesto (401
+actividades) dice lo que se mide y se paga (`ACERO ESTRUCTURA`); el cronograma (242 hojas) dice la secuencia
+constructiva (`COLUMNAS PISO 5`, `LOSA AÉREA SÓTANO 2`). `ACERO ESTRUCTURA` alimenta ~30 actividades: la
+relación es muchos-a-muchos.
+
+Lo que se amarra es la **rama**: el subcapítulo (o el grupo) del presupuesto contra el frente del cronograma
+donde esa rama se construye — la misma ruta que A4 ya usaba para los paquetes en `pdc_paquete_frente`
+(`origen = 'rama'`), un nivel más abajo. **`unique_id` NO significa «la actividad que consume el insumo»**, sino
+«el nodo que marca cuándo arranca la rama que lo consume». Como la `Fecha_Inicio` de un frente es la mínima de
+sus hijos, esa fecha ES la del primer consumo, que es justo lo que Seguimiento pide para la primera entrega.
+
+- **Resultado medido: 820 → 2 NULL.** Las 2 restantes son IMPREVISTOS ($1.272M): provisiones que ninguna
+  actividad consume, y quedan NULL **con motivo escrito**, no mudas.
+- **Orden de resolución** (`AmarreCronogramaService`): override de grupo → override de subcapítulo → nombre
+  exacto → similitud de palabras (Jaccard ≥ 0,33, el mismo umbral de `PlanFechasService`). El capítulo queda
+  fuera: solo dice «COSTO DIRECTO»/«COSTO INDIRECTO». Los overrides van **antes** que lo automático porque el
+  texto engaña: `CARPINTERIA METALICA` se parece a `CARPINTERIA EN MADERA` pero su frente real es `VENTANERÍA`.
+- **Mapa curado de 25 reglas** (`database/seeds/sembrado_ramas_frentes.json`), confirmado en obra. Se podó con
+  la disciplina de A3.3 —correr el motor con y sin el mapa (`new AmarreCronogramaService($db, false)`)—: las 25
+  cambian el destino de su rama; se borró `URBANISMO Y OBRAS EXTERIORES` porque el motor llega solo. Reparto
+  final: 372 filas por override, 260 exactas, 186 por similitud.
+- **Trazabilidad:** `origen_amarre`, `evidencia_amarre` y `semana_amarre`, el mismo trío de A3.3/A4. Un NULL
+  mudo es indistinguible de un cálculo que nunca corrió — así se llegó a las 820.
+- **Nace amarrado:** `PaquetesService::materializarActividades()` resuelve el `unique_id` al escribir, con la
+  **misma rutina** que el backfill (`amarrarVersion()`). Si divergieran, una reimportación reabriría la deuda.
+- Migración `20260729_pdc_v2_amarre_cronograma.php` (dry-run → `--apply`, idempotente: la segunda corrida
+  escribe 0). Test `tests/test_pdc_v2_amarre_cronograma.php`.
+- **Nota para B2:** el re-matching al reprogramar funciona porque `unique_id` es estable; lo que se mueve es la
+  `Fecha_Inicio` del frente. Un amarre más fino exigiría que planeación llene `codigo_actividad` en el programa.
 
 ⚠️ El e2e `tests/browser/pdc-v2-paquetes.spec.mjs` es **destructivo** (importa un presupuesto de juguete en el
 proyecto real): exige `PDC_E2E_DESTRUCTIVO=1`. Y el stack del worktree publica **8091**, no 8081.
