@@ -3,12 +3,30 @@ import {
   AVISO_DESAMARRAR,
   accionDeClic,
   agruparPorConfianza,
+  anclasOrdenadas,
   coberturaPlan,
-  contarSinResponsable, estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
-  opcionesResponsable, paquetesAmarradosSinCalcular,
-  paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, resumenVencidos,
-  sumaValor, trasGuardarEdicion,
+  contarSinResponsable,
+  estadoFila,
+  etiquetaDesfase,
+  etiquetaElegible,
+  generaProceso,
+  idPorEtiqueta,
+  mensajeCalculo,
+  opcionAncla,
+  opcionFrente,
   opcionesFrente,
+  opcionesResponsable,
+  paquetesAmarradosSinCalcular,
+  paquetesSinFrente,
+  planUiReducer,
+  preseleccionDestinos,
+  procedenciaConSugerencia,
+  procedenciaDeAmarre,
+  resumenCorrespondencias,
+  resumenPlan,
+  resumenVencidos,
+  sumaValor,
+  trasGuardarEdicion,
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from './planFechas'
@@ -583,5 +601,54 @@ describe('AVISO_DESAMARRAR', () => {
     expect(AVISO_DESAMARRAR).toContain('fechas')
     expect(AVISO_DESAMARRAR).toContain('responsable')
     expect(AVISO_DESAMARRAR).toContain('Sin frente')
+  })
+})
+
+describe('A4.2 · correspondencias y anclas', () => {
+  const frente = (uniqueId: number, nombre: string, fechaInicio: string) => ({
+    uniqueId, nombre, capitulo: '', fechaInicio, esFrente: true,
+  })
+  const hoja = (uniqueId: number, nombre: string, fechaInicio: string) => ({
+    uniqueId, nombre, capitulo: '', fechaInicio, esFrente: false,
+  })
+
+  it('marca las actividades y deja los frentes sin marca', () => {
+    expect(opcionAncla(frente(1, 'ESTRUCTURA', '2026-08-18'))).not.toContain('actividad')
+    expect(opcionAncla(hoja(2, 'LOSA AÉREA CUBIERTA', '2027-07-27'))).toContain('· actividad')
+  })
+
+  it('pone los frentes antes que las actividades aunque arranquen después', () => {
+    const orden = anclasOrdenadas([
+      hoja(2, 'LOSA AÉREA CUBIERTA', '2026-01-01'),
+      frente(1, 'ESTRUCTURA', '2027-12-31'),
+    ])
+    expect(orden.map((a) => a.uniqueId)).toEqual([1, 2])
+  })
+
+  it('el resumen no habla de pendientes cuando no queda ninguna rama sin asignar', () => {
+    const r = resumenCorrespondencias({ correspondencias: [], pendientes: [], confirmadas: 33, sinConfirmar: 0 })
+    expect(r).toContain('33 confirmadas')
+    expect(r).toContain('ninguna rama pendiente')
+    expect(r).not.toContain('sin confirmar')
+  })
+
+  it('el resumen cuenta las ramas que dejan paquetes sin fecha', () => {
+    const r = resumenCorrespondencias({ correspondencias: [], pendientes: ['OBRA CIVIL'], confirmadas: 33, sinConfirmar: 2 })
+    expect(r).toContain('2 sin confirmar')
+    expect(r).toContain('1 rama sin asignar')
+  })
+
+  it('manda sugeridoUniqueId para que la corrección quede registrada', () => {
+    const sug = {
+      uniqueId: 1475, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18',
+      origen: 'correspondencia', confianza: 'alta', evidencia: 'x',
+    } as never
+    const p = procedenciaConSugerencia(sug, 1508)
+    expect(p?.sugeridoUniqueId).toBe(1475)
+    expect(p?.origenSugerido).toBe('correspondencia')
+  })
+
+  it('sin propuesta previa no inventa una sugerencia que corregir', () => {
+    expect(procedenciaConSugerencia(undefined, 1508)?.sugeridoUniqueId).toBeUndefined()
   })
 })

@@ -1,4 +1,4 @@
-import type { Desfase, FilaPlan, FrenteDisponible, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from './types'
+import type { AnclaDisponible, Desfase, FilaPlan, FrenteDisponible, PanelCorrespondencias, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from './types'
 
 export type EstadoFila = { clave: 'desfasado' | 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
 
@@ -392,4 +392,65 @@ export function opcionesFrente(
 /** Traduce lo elegido en el desplegable de frente al uniqueId que espera el servidor. */
 export function uniqueIdPorEtiquetaFrente(frentes: FrenteDisponible[], etiqueta: string): number | null {
   return frentes.find((f) => opcionFrente(f) === etiqueta)?.uniqueId ?? null
+}
+
+/**
+ * Etiqueta de un nodo del cronograma para el desplegable.
+ *
+ * Se marcan las actividades («· actividad») y no los encabezados: la lista pasó de 31 a 273 al
+ * permitir amarrar a una actividad concreta, y sin la marca no hay forma de distinguir un frente de
+ * obra de una tarea suelta que se llama parecido. La fecha va siempre porque el cronograma repite
+ * nombres en fechas distintas.
+ */
+export function opcionAncla(a: AnclaDisponible): string {
+  return a.esFrente ? opcionFrente(a) : `${opcionFrente(a)} · actividad`
+}
+
+/**
+ * Anclas ordenadas para el desplegable: primero los frentes, después las actividades.
+ *
+ * Los 31 frentes resuelven la enorme mayoría de los casos; las 242 actividades son la excepción
+ * (CUBIERTA y las impermeabilizaciones). Ponerlas detrás evita que la lista larga entierre lo que
+ * casi siempre se busca.
+ */
+export function anclasOrdenadas(anclas: AnclaDisponible[]): AnclaDisponible[] {
+  return [...anclas].sort((a, b) =>
+    a.esFrente === b.esFrente ? a.fechaInicio.localeCompare(b.fechaInicio) : a.esFrente ? -1 : 1,
+  )
+}
+
+/**
+ * Resumen del panel de correspondencias.
+ *
+ * «Pendiente» es solo la rama que hoy deja a algún paquete sin fecha, no cualquier rama sin regla
+ * propia: un grupo fino cuyo subcapítulo padre ya está resuelto no es trabajo por hacer. Contarlas
+ * todas daba 66 pendientes cuando los paquetes huérfanos eran 4.
+ */
+export function resumenCorrespondencias(p: PanelCorrespondencias): string {
+  const partes = [`${p.confirmadas} confirmada${p.confirmadas === 1 ? '' : 's'}`]
+  if (p.sinConfirmar > 0) partes.push(`${p.sinConfirmar} sin confirmar`)
+  partes.push(
+    p.pendientes.length === 0
+      ? 'ninguna rama pendiente'
+      : `${p.pendientes.length} rama${p.pendientes.length === 1 ? '' : 's'} sin asignar`,
+  )
+  return partes.join(' · ')
+}
+
+/**
+ * Procedencia que se manda al amarrar, incluyendo qué proponía el motor.
+ *
+ * `sugeridoUniqueId` es lo que permite registrar la corrección cuando la persona elige otro destino:
+ * sin él, el servidor no tiene con qué comparar y el acierto del motor nunca se puede medir.
+ */
+export function procedenciaConSugerencia(
+  sugerencia: SugerenciaFrente | undefined,
+  uniqueIdElegido: number,
+): Record<string, unknown> | undefined {
+  const base = procedenciaDeAmarre(sugerencia, uniqueIdElegido)
+  if (sugerencia === undefined) return base
+  // `base` viene undefined justamente cuando la persona eligió un destino distinto del propuesto,
+  // que es el caso que MÁS interesa registrar: es una corrección al motor. Se manda el sugerido sin
+  // la capa, para que el amarre quede como «humano» y a la vez el par sugerido→elegido se guarde.
+  return { ...(base ?? {}), sugeridoUniqueId: sugerencia.uniqueId, origenSugerido: sugerencia.origen }
 }

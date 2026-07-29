@@ -23,6 +23,10 @@ import {
   mensajeCalculo,
   opcionFrente,
   opcionesFrente,
+  opcionAncla,
+  anclasOrdenadas,
+  resumenCorrespondencias,
+  procedenciaConSugerencia,
   opcionesResponsable,
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
@@ -36,7 +40,7 @@ import {
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from '../lib/planFechas'
-import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
+import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
 import { filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -65,6 +69,13 @@ export default function PlanFechas() {
   const [amarres, setAmarres] = useState<PlanResultado['amarres']>({})
   const [frentes, setFrentes] = useState<FrenteDisponible[]>([])
   const [sugerencias, setSugerencias] = useState<Record<number, SugerenciaFrente>>({})
+  // El motivo por el que un paquete no recibió propuesta, y el panel de correspondencias que lo
+  // resuelve. Van juntos: la fila sin propuesta ofrece el atajo que abre el panel en su rama.
+  const [motivos, setMotivos] = useState<Record<number, MotivoSinPropuesta>>({})
+  const [panel, setPanel] = useState<PanelCorrespondencias | null>(null)
+  const [panelAbierto, setPanelAbierto] = useState(false)
+  const [ramaFoco, setRamaFoco] = useState<string | null>(null)
+  const [anclas, setAnclas] = useState<AnclaDisponible[]>([])
   // Bloqueante del review final A4: true solo cuando la petición de sugerencias ya resolvió (con
   // éxito o sin él). Sin esto, el efecto de preselección de abajo no puede distinguir «todavía no
   // sabemos si hay propuesta» de «ya sabemos que no la hay» — ver preseleccionDestinos().
@@ -101,13 +112,21 @@ export default function PlanFechas() {
       .catch((e) => { setPlan([]); setAmarres({}); dispatch({ type: 'FALLO', mensaje: mensajeError(e) }) })
     apiGet<{ frentes: FrenteDisponible[] }>('/plan-compras/api/plan/frentes')
       .then((d) => setFrentes(d.frentes))
+    // Las anclas incluyen las 242 actividades: hay ramas sin frente propio cuyo hito real es una
+    // actividad concreta (CUBIERTA ancla en «LOSA AÉREA CUBIERTA»).
+    apiGet<{ anclas: AnclaDisponible[] }>('/plan-compras/api/plan/anclas')
+      .then((d) => setAnclas(d.anclas))
+      .catch(() => setAnclas([]))
+    apiGet<PanelCorrespondencias>('/plan-compras/api/plan/correspondencias')
+      .then((d) => setPanel(d))
+      .catch(() => setPanel(null))
       .catch(() => setFrentes([]))
     // Se marca "no cargadas" al empezar cada carga (no solo en el montaje inicial): si `cargar()` se
     // vuelve a invocar (recalcular, amarrar), una `sinFrente` que cambie antes de que esta respuesta
     // nueva llegue no debe sembrar con las sugerencias todavía viejas.
     setSugerenciasCargadas(false)
-    apiGet<{ sugerencias: Record<number, SugerenciaFrente> }>('/plan-compras/api/plan/sugerencias')
-      .then((d) => { setSugerencias(d.sugerencias); setSugerenciasCargadas(true) })
+    apiGet<{ sugerencias: Record<number, SugerenciaFrente>; motivos: Record<number, MotivoSinPropuesta> }>('/plan-compras/api/plan/sugerencias')
+      .then((d) => { setSugerencias(d.sugerencias); setMotivos(d.motivos ?? {}); setSugerenciasCargadas(true) })
       .catch(() => { setSugerencias({}); setSugerenciasCargadas(true) })
     apiGet<{ desfases: Desfase[] }>('/plan-compras/api/plan/desfases')
       .then((d) => setDesfases(d.desfases))
@@ -278,7 +297,7 @@ export default function PlanFechas() {
       await apiPost('/plan-compras/api/plan/amarrar', {
         paqueteId,
         uniqueId,
-        procedencia: procedenciaDeAmarre(sugerencias[paqueteId], uniqueId),
+        procedencia: procedenciaConSugerencia(sugerencias[paqueteId], uniqueId),
       })
       // El aviso de recalcular no es un adorno: cambiar de frente invalida el plan viejo, así que
       // la fila desaparece de la grilla y cae en «Amarrados, pendientes de calcular». Sin decirlo,
@@ -301,6 +320,28 @@ export default function PlanFechas() {
 
   // Crítico del review final: el <select> ya NO dispara el amarre en su onChange — solo elige. Este
   // botón explícito es el único disparador, igual que «Asignar a paquete» en PaquetesContratacion.
+  /**
+   * Guarda una correspondencia rama → nodo del cronograma. NO amarra nada: solo cambia lo que el
+   * motor propondrá. Por eso recarga las sugerencias al terminar en vez de escribir amarres.
+   */
+  const onGuardarCorrespondencia = async (rama: string, ancla: string, alcance: 'global' | 'proyecto') => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      await apiPost('/plan-compras/api/plan/correspondencias', { rama, ancla, alcance })
+      const [c, sug] = await Promise.all([
+        apiGet<PanelCorrespondencias>('/plan-compras/api/plan/correspondencias'),
+        apiGet<{ sugerencias: Record<number, SugerenciaFrente>; motivos: Record<number, MotivoSinPropuesta> }>('/plan-compras/api/plan/sugerencias'),
+      ])
+      setPanel(c)
+      setSugerencias(sug.sugerencias)
+      setMotivos(sug.motivos ?? {})
+      setRamaFoco(null)
+      dispatch({ type: 'LISTO', mensaje: `«${rama}» ahora apunta a «${ancla}». No se amarró ningún paquete: solo cambió lo que se propone.` })
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : 'No se pudo guardar la correspondencia.' })
+    }
+  }
+
   const onAmarrarClick = (paqueteId: number) => {
     const valor = destinos[paqueteId]
     if (valor === undefined || valor === '') return
@@ -757,6 +798,68 @@ export default function PlanFechas() {
           </button>
         </div>
       )}
+      {/* Panel de correspondencias: cerrado por defecto. Es donde se resuelve la causa de que un
+          paquete no reciba propuesta, en vez de amarrarlo a mano uno por uno. */}
+      {panel && (
+        <section className="pdc-plan-panel-corresp" data-testid="pdc-plan-panel-correspondencias">
+          <button
+            type="button"
+            className="pdc-plan-panel-toggle"
+            data-testid="pdc-plan-panel-toggle"
+            aria-expanded={panelAbierto}
+            onClick={() => setPanelAbierto((v) => !v)}
+          >
+            {panelAbierto ? '▾' : '▸'} Correspondencias del presupuesto con el cronograma
+            <span className="pdc-plan-panel-resumen">{resumenCorrespondencias(panel)}</span>
+          </button>
+          {panelAbierto && (
+            <div className="pdc-plan-panel-cuerpo">
+              <p className="pdc-nota">
+                Dicen a qué parte del cronograma corresponde cada rama del presupuesto. Cambiarlas no
+                amarra ningún paquete: solo cambia lo que se propone de aquí en adelante.
+              </p>
+              {panel.pendientes.length > 0 && (
+                <div data-testid="pdc-plan-panel-pendientes">
+                  <h4>Ramas sin asignar ({panel.pendientes.length})</h4>
+                  <p className="pdc-nota">Son las que hoy dejan paquetes sin fecha.</p>
+                  <ul className="pdc-paq-lista">
+                    {panel.pendientes.map((rama) => (
+                      <li key={rama} className={ramaFoco === rama ? 'pdc-destacado' : undefined}>
+                        <strong>{rama}</strong>
+                        <select
+                          aria-label={`Nodo del cronograma para ${rama}`}
+                          disabled={ui.ocupado}
+                          defaultValue=""
+                          onChange={(e) => {
+                            const a = anclas.find((x) => String(x.uniqueId) === e.target.value)
+                            if (a) void onGuardarCorrespondencia(rama, a.nombre, 'proyecto')
+                          }}
+                        >
+                          <option value="">Elegir nodo del cronograma…</option>
+                          {anclasOrdenadas(anclas).map((a) => (
+                            <option key={a.uniqueId} value={a.uniqueId}>{opcionAncla(a)}</option>
+                          ))}
+                        </select>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <h4>Ya resueltas ({panel.correspondencias.length})</h4>
+              <ul className="pdc-paq-lista" data-testid="pdc-plan-panel-resueltas">
+                {panel.correspondencias.map((c) => (
+                  <li key={c.rama}>
+                    <strong>{c.rama}</strong>
+                    <span className="pdc-paq-meta">→ {c.ancla}</span>
+                    {c.alcance !== 'global' && <span className="pdc-paq-tag">{c.alcance}</span>}
+                    {c.nota && <span className="pdc-nota">{c.nota}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
       <input
         className="pdc-buscador"
         data-testid="pdc-plan-buscar-sin-frente"
@@ -784,9 +887,11 @@ export default function PlanFechas() {
               >
                 <option value="">Elegir frente…</option>
                 {/* La fecha siempre va en la etiqueta: el cronograma repite nombres de frente en
-                    fechas distintas y sin la fecha las opciones son indistinguibles. */}
-                {frentes.map((f) => (
-                  <option key={f.uniqueId} value={f.uniqueId}>{opcionFrente(f)}</option>
+                    fechas distintas y sin la fecha las opciones son indistinguibles. Los frentes van
+                    primero y las actividades después, marcadas: son 242 y enterrarían a los 31
+                    frentes, que es lo que casi siempre se busca. */}
+                {(anclas.length > 0 ? anclasOrdenadas(anclas) : frentes.map((f) => ({ ...f, esFrente: true }))).map((f) => (
+                  <option key={f.uniqueId} value={f.uniqueId}>{opcionAncla(f)}</option>
                 ))}
               </select>
               {/* Único disparador del amarre (Crítico del review final): elegir en el <select> ya no
@@ -804,6 +909,22 @@ export default function PlanFechas() {
               {sugerencia && (
                 <span className={`pdc-paq-tag conf-${sugerencia.confianza}`}>
                   {sugerencia.origen} · confianza {sugerencia.confianza}
+                </span>
+              )}
+              {/* Sin propuesta ya no es una fila muda: dice qué rama falta y ofrece resolverla. */}
+              {!sugerencia && motivos[p.paqueteId] && (
+                <span className="pdc-paq-motivo" data-testid={`pdc-plan-motivo-${p.paqueteId}`}>
+                  {motivos[p.paqueteId].texto}
+                  {motivos[p.paqueteId].rama && (
+                    <button
+                      type="button"
+                      className="pdc-enlace"
+                      data-testid={`pdc-plan-atajo-${p.paqueteId}`}
+                      onClick={() => { setRamaFoco(motivos[p.paqueteId].rama); setPanelAbierto(true) }}
+                    >
+                      Asignarla
+                    </button>
+                  )}
                 </span>
               )}
             </li>
