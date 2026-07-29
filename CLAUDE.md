@@ -150,7 +150,10 @@ invariancia aunque el catálogo estuviera vacío.
   se leería como si fuera de otro paso. El borrado de sobrantes es por identidad y lleva
   `paso_id IS NULL OR ...` a propósito: `NULL NOT IN (...)` vale NULL y dejaría vivas para siempre las
   filas sin identidad (es además lo que sanó las 77 filas que dejó el `calcular()` viejo contra el
-  esquema nuevo).
+  esquema nuevo). `exigirIdentidad()` **para el cálculo en seco** si algún paso no está en el catálogo:
+  sin ids, el upsert duplicaría filas *y* el DELETE de sobrantes se quedaría sin condición borrando lo
+  recién insertado — cabecera de N días con cero pasos, en silencio. Cubierto por un test que recalcula
+  dos veces y exige 7 filas, no 14.
 - **De dónde salen los días:** un paso con `col_legacy` los saca del catálogo legacy **por paquete**; uno
   sin ella lleva **días fijos por obra** (no se le agregan columnas a la tabla legacy compartida, y las
   de Licify se dropearon a propósito en jun-2026). `col_legacy` se filtra contra una lista blanca
