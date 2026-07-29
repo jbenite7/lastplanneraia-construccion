@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  MIN_WIDTH_PALABRA_LARGA,
   autoSizeStrategy,
   columnaMoneda,
   columnaNumero,
   columnaTexto,
+  columnasVisibles,
   defaultColDef,
   moneda,
 } from './agGrid'
@@ -41,6 +43,42 @@ describe('moneda', () => {
 
   it('los negativos conservan el signo', () => {
     expect(moneda(-46629280886.6)).toBe('$ -46.629.280.887')
+  })
+})
+
+describe('MIN_WIDTH_PALABRA_LARGA', () => {
+  it('deja sitio para la palabra más larga que aparece en el módulo', () => {
+    // «SUBCONTRATACION» (15 caracteres) se partía como «SUBCONTRATACIO / N PERSONAL» porque su
+    // columna tenía un mínimo de 130 px. A ~9,5 px por carácter en mayúsculas más el padding de la
+    // celda, no baja de 165.
+    expect(MIN_WIDTH_PALABRA_LARGA).toBeGreaterThanOrEqual(165)
+  })
+})
+
+describe('columnasVisibles', () => {
+  const cols = [
+    { colId: 'insumo', headerName: 'Insumo' },
+    { colId: 'agrupacion', headerName: 'Agrupación' },
+    { colId: 'recurso', headerName: 'Recurso' },
+    { colId: 'destino', headerName: 'Destino' },
+    { colId: 'sugerencia', headerName: 'Sugerencia' },
+  ]
+
+  it('en pantalla ancha no esconde nada', () => {
+    expect(columnasVisibles(cols, false, ['agrupacion', 'recurso']).filter((c) => c.hide)).toEqual([])
+  })
+
+  it('en pantalla angosta esconde solo las secundarias', () => {
+    const r = columnasVisibles(cols, true, ['agrupacion', 'recurso'])
+    expect(r.filter((c) => c.hide).map((c) => c.colId)).toEqual(['agrupacion', 'recurso'])
+  })
+
+  it('nunca esconde lo que se viene a mirar a esa pantalla', () => {
+    // Decisión del grilleo (f30): «Destino» y «Sugerencia» son el motivo de abrir Paquetes.
+    const r = columnasVisibles(cols, true, ['agrupacion', 'recurso'])
+    const escondidas = r.filter((c) => c.hide).map((c) => c.colId)
+    expect(escondidas).not.toContain('destino')
+    expect(escondidas).not.toContain('sugerencia')
   })
 })
 

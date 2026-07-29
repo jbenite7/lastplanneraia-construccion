@@ -22,6 +22,86 @@ export function estadoFila(f: FilaPlan, desfase?: Desfase): EstadoFila {
   return { clave: 'en-plazo', etiqueta: 'en plazo' }
 }
 
+/**
+ * Cuánto del plan está hecho. El encabezado decía «11 paquete(s)» y parecía el total, pero al lado
+ * vivían 85 esperando frente: el entregable final era el único sitio del módulo sin indicador de
+ * cobertura, justo donde más falta hace.
+ *
+ * Se mide **por valor y por conteo** (decisión del grilleo) porque no dicen lo mismo: un paquete de
+ * acero pesa lo que cincuenta de ferretería, y el porcentaje por conteo esconde exactamente eso.
+ *
+ * El denominador son **solo los paquetes que generan proceso**. Nómina, imprevistos y consumo
+ * directo no se le compran a nadie y nunca van a tener fecha; contarlos dejaría el plan en un
+ * porcentaje que no puede llegar a 100 ni haciéndolo todo bien.
+ */
+export function coberturaPlan(
+  porPaquete: PaquetePorProyecto[],
+  amarres: Record<number, unknown>,
+): {
+  conFecha: number; total: number; porcentajeConteo: number
+  valorConFecha: number; valorTotal: number; porcentajeValor: number
+} {
+  const conProceso = porPaquete.filter((p) => generaProceso(p.modalidad))
+  // Amarrado cuenta como cubierto aunque no tenga plan calculado: la decisión difícil ya se tomó y
+  // lo que falta es pulsar «Recalcular». Lo vigila el aviso aparte de `paquetesAmarradosSinCalcular`.
+  const cubiertos = conProceso.filter((p) => p.paqueteId in amarres)
+  const valorTotal = sumaValor(conProceso)
+  const valorConFecha = sumaValor(cubiertos)
+  return {
+    conFecha: cubiertos.length,
+    total: conProceso.length,
+    porcentajeConteo: porcentaje(cubiertos.length, conProceso.length),
+    valorConFecha,
+    valorTotal,
+    porcentajeValor: porcentaje(valorConFecha, valorTotal),
+  }
+}
+
+/** Suma la cuantía de un grupo de paquetes. Es lo que se arriesga al aceptar propuestas en masa. */
+export function sumaValor(paquetes: PaquetePorProyecto[]): number {
+  return paquetes.reduce((acc, p) => acc + p.subtotal, 0)
+}
+
+/** Un total de cero devuelve 0 %, no NaN ni 100 %: hay paquetes reales que valen $ 0. */
+function porcentaje(parte: number, total: number): number {
+  if (total <= 0) return 0
+  return Math.round((parte / total) * 100)
+}
+
+/**
+ * Lo vencido, resumido para la franja de alerta. Tres paquetes con 98, 83 y 66 días de retraso
+ * eran hasta ahora texto pequeño dentro de su fila: lo más grave del proyecto, contado en voz baja.
+ */
+export function resumenVencidos(filas: FilaPlan[]): { cuantos: number; diasMaximo: number } {
+  const vencidas = filas.filter((f) => f.diasRetraso > 0)
+  return {
+    cuantos: vencidas.length,
+    diasMaximo: vencidas.reduce((max, f) => Math.max(max, f.diasRetraso), 0),
+  }
+}
+
+/**
+ * Las propuestas del motor, partidas por confianza. Sin esto, el botón masivo aceptaba las 40 de
+ * una vez sin decir que 37 eran de confianza media —deducidas de la actividad padre, no de la
+ * descripción del insumo— y solo 3 de confianza alta.
+ *
+ * Las de confianza **baja** salen agrupadas para poder contarlas, pero ningún botón masivo las
+ * consume: se aceptan una a una desde su fila.
+ */
+export function agruparPorConfianza(
+  sinFrente: PaquetePorProyecto[],
+  sugerencias: Record<number, SugerenciaFrente>,
+): { alta: PaquetePorProyecto[]; media: PaquetePorProyecto[]; baja: PaquetePorProyecto[] } {
+  const grupos = { alta: [], media: [], baja: [] } as Record<
+    SugerenciaFrente['confianza'], PaquetePorProyecto[]
+  >
+  for (const p of sinFrente) {
+    const s = sugerencias[p.paqueteId]
+    if (s) grupos[s.confianza].push(p)
+  }
+  return grupos
+}
+
 export function resumenPlan(filas: FilaPlan[]): { total: number; vencidos: number; provisionales: number } {
   return {
     total: filas.length,

@@ -43,3 +43,15 @@ export function maestroReducer(state: MaestroState, action: MaestroAction): Maes
       return { ...state, ocupado: false, mensaje: action.mensaje }
   }
 }
+
+/**
+ * Por qué pestaña abre el Maestro.
+ *
+ * Abría siempre por «Pendientes por vincular», y con 0 pendientes eso era una tabla vacía justo
+ * cuando la noticia es buena (100 % vinculado). Es el mismo criterio que Paquetes —abrir por el
+ * trabajo que falta— aplicado al caso en que no falta nada: entonces lo único que se puede hacer
+ * ahí es mirar el catálogo.
+ */
+export function pestanaInicialMaestro(pendientes: number): 'pendientes' | 'catalogo' {
+  return pendientes > 0 ? 'pendientes' : 'catalogo'
+}

@@ -5,13 +5,14 @@ import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-commu
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
-  defaultColDef, moneda, pdcTheme,
+  defaultColDef, moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { alternarSeleccion, puedeMarcar, rutaComparar, rutaVisor } from '../lib/historialVersiones'
 import { estadoInicial, importReducer } from '../lib/importState'
 import { etiquetaVersion } from '../lib/versionLabel'
 import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
+import { plural } from '../lib/texto'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -48,7 +49,7 @@ const colsVersiones = (seleccion: number[]): ColDef<VersionPresupuesto>[] => [
   },
   columnaTexto('archivoNombre', 'Archivo', 220),
   columnaNumero('totalActividades', 'Actividades'),
-  columnaNumero('totalInsumos', 'Insumos'),
+  { ...columnaNumero('totalInsumos', 'Insumos'), headerTooltip: 'Filas de insumo del presupuesto: un mismo insumo cuenta una vez por cada actividad que lo usa.' },
   columnaMoneda('costoTotal', 'Costo total'),
   { field: 'importadoPor', headerName: 'Importó' },
   { field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
@@ -70,6 +71,8 @@ export default function ImportarPresupuesto() {
   const [impacto, setImpacto] = useState<ImpactoVersion | null>(null)
   const [avisoOficial, setAvisoOficial] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [arrastrando, setArrastrando] = useState(false)
+  const [nombreArchivo, setNombreArchivo] = useState('')
   const navigate = useNavigate()
 
   const cargarVersiones = () => {
@@ -183,14 +186,40 @@ export default function ImportarPresupuesto() {
         <p>Sube el Excel exportado del software de presupuestos (hoja «Presupuesto», máx. 10MB).</p>
       </header>
 
-      <input
-        ref={fileRef}
-        data-testid="pdc-import-file"
-        type="file"
-        accept=".xlsx"
-        disabled={state.fase === 'subiendo' || state.fase === 'confirmando'}
-        onChange={(e) => onArchivo(e.target.files?.[0])}
-      />
+      {/* El control nativo del navegador decía «Choose File · No file chosen» —en inglés y sin
+          estilo— en la primera pantalla del módulo. Se queda en el DOM porque es él quien abre el
+          diálogo del sistema y quien recibe el `setInputFiles` de los e2e; solo se saca de la vista
+          con `pdc-sr-only`, nunca con `display:none`, que lo dejaría inservible para las dos cosas. */}
+      <div
+        className={`pdc-dropzone${arrastrando ? ' is-arrastrando' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setArrastrando(true) }}
+        onDragLeave={() => setArrastrando(false)}
+        onDrop={(e) => {
+          e.preventDefault()
+          setArrastrando(false)
+          const f = e.dataTransfer.files?.[0]
+          if (f) { setNombreArchivo(f.name); void onArchivo(f) }
+        }}
+      >
+        <input
+          ref={fileRef}
+          data-testid="pdc-import-file"
+          id="pdc-import-file"
+          className="pdc-sr-only"
+          type="file"
+          accept=".xlsx"
+          disabled={state.fase === 'subiendo' || state.fase === 'confirmando'}
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            setNombreArchivo(f?.name ?? '')
+            void onArchivo(f)
+          }}
+        />
+        <label htmlFor="pdc-import-file" className="pdc-dropzone-boton">Elegir archivo…</label>
+        <span className="pdc-dropzone-texto">
+          {nombreArchivo === '' ? 'o suelta aquí el Excel' : nombreArchivo}
+        </span>
+      </div>
 
       {state.fase === 'subiendo' && <p>Analizando el archivo…</p>}
       {state.mensajeError && <div className="pdc-error" role="alert">{state.mensajeError}</div>}
@@ -198,7 +227,7 @@ export default function ImportarPresupuesto() {
       {state.fase === 'previewErrores' && (
         <div className="pdc-bloque">
           <div className="pdc-error" role="alert">
-            El archivo tiene {state.errores.length} error(es); no se importó nada. Corrige el Excel y vuelve a subirlo.
+            El archivo tiene {plural(state.errores.length, 'error', 'errores')}; no se importó nada. Corrige el Excel y vuelve a subirlo.
           </div>
           <div className="pdc-grid-corta">
             <AgGridReact<ImportErrorFila>
@@ -291,7 +320,7 @@ export default function ImportarPresupuesto() {
                 ? 'Comprobando qué queda afectado…'
                 : impacto.vinculosAfectados === 0
                   ? 'No hay vínculos del maestro hechos sobre la versión que se abandona.'
-                  : `${impacto.vinculosAfectados} vínculo(s) del maestro quedarán apuntando a la versión que se abandona`
+                  : `${plural(impacto.vinculosAfectados, 'vínculo', 'vínculos')} del maestro quedarán apuntando a la versión que se abandona`
                     + `${impacto.versionActual ? ` (${impacto.versionActual.label})` : ''}.`}
               {' '}Los paquetes y el plan de fechas no dependen de la versión: se conservan.
             </p>
@@ -312,6 +341,7 @@ export default function ImportarPresupuesto() {
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
             getRowId={(p) => String(p.data.id)}
+            overlayNoRowsTemplate={vacioTabla("Todavía no se ha importado ningún presupuesto en este proyecto.")}
             onCellClicked={onVersionClick}
           />
         </div>

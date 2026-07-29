@@ -7,13 +7,14 @@ import {
 } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme,
+  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
+import { plural } from '../lib/texto'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -241,7 +242,7 @@ export default function VisorPresupuesto() {
               </button>
             )}
             <span data-testid="pdc-visor-conteo" className="pdc-visor-conteo">
-              {filas.length} fila(s)
+              {plural(filas.length, 'fila')}
             </span>
           </div>
 
@@ -252,6 +253,7 @@ export default function VisorPresupuesto() {
               key={plano ? 'tabla' : 'arbol'}
               theme={pdcTheme}
               rowData={filas}
+              overlayNoRowsTemplate={vacioTabla("Ninguna fila del presupuesto coincide con los filtros puestos.")}
               columnDefs={cols}
               getRowId={(p) => p.data.key}
               onCellClicked={onCellClicked}

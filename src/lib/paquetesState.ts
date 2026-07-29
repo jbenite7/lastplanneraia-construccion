@@ -86,3 +86,26 @@ export function paquetesReducer(state: PaquetesState, action: PaquetesAction): P
       return { ...state, ocupado: false, mensaje: action.mensaje }
   }
 }
+
+/**
+ * ¿Ya no queda valor que asignar?
+ *
+ * Con el 100 % del valor asignado, la pantalla seguía abriendo con tres barras de controles y once
+ * botones para enseñar un insumo de $ 0. El trabajo que importa está hecho; el aparato para hacerlo
+ * puede plegarse.
+ */
+export function estaCerradoPorValor(coberturaValor: number | undefined): boolean {
+  return coberturaValor === 100
+}
+
+/**
+ * Modalidades en las que el tipo de negociación no dice nada útil.
+ *
+ * «Nómina de obra» e «Imprevistos y provisiones» salían etiquetados como CONSUMIBLES, que es falso:
+ * a la nómina no se le compran consumibles ni nada. El dato vive en un catálogo compartido por
+ * todos los proyectos y corregirlo es otra conversación (ver facts.md de la tanda 3/4); mientras
+ * tanto, no se enseña donde miente. La modalidad —que sí es correcta— se sigue viendo.
+ */
+export function muestraTipoNegociacion(modalidad?: string): boolean {
+  return modalidad !== 'no_contratable' && modalidad !== 'consumo_directo'
+}

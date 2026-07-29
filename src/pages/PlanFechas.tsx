@@ -5,12 +5,14 @@ import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-co
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import {
   MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaNumero, columnaTexto, defaultColDef,
-  moneda, pdcTheme,
+  moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
   AVISO_DESAMARRAR,
   accionDeClic,
+  agruparPorConfianza,
+  coberturaPlan,
   contarSinResponsable,
   estadoFila,
   estadoInicialPlanUi,
@@ -27,11 +29,14 @@ import {
   preseleccionDestinos,
   procedenciaDeAmarre,
   resumenPlan,
+  resumenVencidos,
+  sumaValor,
   trasGuardarEdicion,
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from '../lib/planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
+import { filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 // TextEditorModule: la columna Responsable es `editable: true`; sin este módulo AG Grid rechaza la
@@ -117,6 +122,18 @@ export default function PlanFechas() {
   useEffect(() => { cargar() }, [cargar])
 
   const resumen = useMemo(() => resumenPlan(plan), [plan])
+  const cobertura = useMemo(() => coberturaPlan(porPaquete, amarres), [porPaquete, amarres])
+  const vencidos = useMemo(() => resumenVencidos(plan), [plan])
+  // Ninguno de los dos se persiste: cerrar la franja dura lo que dure la visita (decisión del
+  // grilleo), y el filtro es una lupa momentánea, no una preferencia.
+  const [soloVencidos, setSoloVencidos] = useState(false)
+  const [franjaCerrada, setFranjaCerrada] = useState(false)
+  // Filtra, no reordena: lo vencido ya venía primero del servidor y cambiar el orden aquí haría
+  // que quitar el filtro devolviera la tabla distinta de como estaba.
+  const planVisible = useMemo(
+    () => (soloVencidos ? plan.filter((f) => f.diasRetraso > 0) : plan),
+    [plan, soloVencidos],
+  )
   // Cuántos paquetes del plan siguen sin dueño (incluye huérfanos): la decisión de producto es que
   // dejarlo sin asignar es válido, pero tiene que verse de un vistazo — ver contarSinResponsable.
   // Importante del review final: sin memo, a propósito. AG Grid muta las filas de `plan` in-place
@@ -193,7 +210,7 @@ export default function PlanFechas() {
     })
     try {
       await apiPost('/plan-compras/api/plan/responsable', { paqueteIds, responsableUserId: userId })
-      dispatch({ type: 'LISTO', mensaje: `Responsable asignado a ${paqueteIds.length} paquete(s).` })
+      dispatch({ type: 'LISTO', mensaje: `Responsable asignado a ${plural(paqueteIds.length, 'paquete')}.` })
       // El lote se guardó: limpiar la selección y la persona elegida, para no repetir el mismo
       // envío por accidente sobre un lote que ya quedó asignado.
       setSeleccionados([])
@@ -296,13 +313,20 @@ export default function PlanFechas() {
     () => sinFrente.filter((p) => sugerencias[p.paqueteId] !== undefined),
     [sinFrente, sugerencias],
   )
+  const porConfianza = useMemo(() => agruparPorConfianza(sinFrente, sugerencias), [sinFrente, sugerencias])
+  const [confirmarMedia, setConfirmarMedia] = useState(false)
+  const [buscaSinFrente, setBuscaSinFrente] = useState('')
 
-  const onAceptarSugeridos = async () => {
-    if (sugeridosPendientes.length === 0) return
+  // Recibe qué lote aceptar en vez de leerlo del cierre: los dos botones (confianza alta directo,
+  // confianza media tras confirmar) comparten este cuerpo, y con él todas las garantías que ya
+  // costaron un review — respetar el <select> de la fila y no acreditar al motor cuando el destino
+  // elegido no coincide con su propuesta.
+  const onAceptarSugeridos = async (lote: typeof sugeridosPendientes) => {
+    if (lote.length === 0) return
     dispatch({ type: 'OCUPADO' })
     let total = 0
     let algunFallo = false
-    for (const p of sugeridosPendientes) {
+    for (const p of lote) {
       // Importante 1 del review final A4: el botón masivo mandaba siempre `s.uniqueId` (la propuesta
       // cruda del motor), ignorando lo que el usuario tuviera elegido en el <select> de esa fila. Si
       // alguien cambiaba el frente a mano y luego pulsaba este botón, se amarraba al frente del motor
@@ -328,8 +352,8 @@ export default function PlanFechas() {
     dispatch({
       type: 'LISTO',
       mensaje: algunFallo
-        ? `${total} de ${sugeridosPendientes.length} paquete(s) amarrado(s); alguno falló.`
-        : `${total} paquete(s) amarrado(s) por sugerencia del motor.`,
+        ? `${total} de ${plural(lote.length, 'paquete')} amarrado${total === 1 ? '' : 's'}; alguno falló.`
+        : `${plural(total, 'paquete')} amarrado${total === 1 ? '' : 's'} por sugerencia del motor.`,
     })
     cargar()
   }
@@ -429,12 +453,35 @@ export default function PlanFechas() {
           <h1>Plan de compras</h1>
           <p className="pdc-sub">Qué hay que empezar a contratar y cuándo — lo vencido va primero.</p>
         </div>
-        <div className="pdc-plan-resumen" data-testid="pdc-plan-resumen">
-          <span><strong>{resumen.total}</strong> paquete(s)</span>
-          <span className="pdc-plan-resumen-vencidos"><strong>{resumen.vencidos}</strong> vencido(s)</span>
-          <span><strong>{resumen.provisionales}</strong> con duración estimada</span>
+        {/* Misma forma que la cobertura de Paquetes de contratación, a propósito: quien pasa de una
+            pantalla a otra reconoce el indicador sin releerlo. El número grande es la plata, no el
+            conteo — un paquete de acero pesa lo que cincuenta de ferretería, y el porcentaje por
+            conteo esconde justo eso. */}
+        <div data-testid="pdc-plan-cobertura" className="pdc-paq-cobertura">
+          <div className="pdc-paq-cobertura-num">{cobertura.porcentajeValor}%</div>
+          <div className="pdc-paq-cobertura-detalle">
+            {cobertura.conFecha} de {cobertura.total} paquetes con fecha
+          </div>
+          <div className="pdc-paq-barra">
+            <div className="pdc-paq-barra-fill" style={{ transform: `scaleX(${cobertura.porcentajeValor / 100})` }} />
+          </div>
+          <div className="pdc-plan-resumen" data-testid="pdc-plan-resumen">
+            <span><strong>{resumen.total}</strong> {resumen.total === 1 ? 'paquete' : 'paquetes'}</span>
+            <span className="pdc-plan-resumen-vencidos"><strong>{resumen.vencidos}</strong> {resumen.vencidos === 1 ? 'vencido' : 'vencidos'}</span>
+            <span><strong>{resumen.provisionales}</strong> con duración estimada</span>
+          </div>
         </div>
       </header>
+
+      {/* Un amarrado sin recalcular cuenta como cubierto arriba (la decisión difícil ya se tomó),
+          así que sin este aviso la cobertura escondería trabajo pendiente de un solo botón. */}
+      {sinCalcular.length > 0 && (
+        <p className="pdc-plan-aviso-recalcular" data-testid="pdc-plan-aviso-recalcular" role="status">
+          {sinCalcular.length === 1
+            ? '1 paquete ya tiene frente pero le faltan las fechas: pulsa «Recalcular».'
+            : `${sinCalcular.length} paquetes ya tienen frente pero les faltan las fechas: pulsa «Recalcular».`}
+        </p>
+      )}
 
       {/* Menor del review final A4: `.pdc-info` pintaba igual un éxito que un fallo, así que una
           aserción de e2e sobre ese selector pasaba aunque el amarre hubiera fallado — `ui.tipo`
@@ -450,10 +497,16 @@ export default function PlanFechas() {
         <button type="button" className="pdc-paq-primario" data-testid="pdc-plan-recalcular" disabled={ui.ocupado} onClick={onRecalcular}>
           Recalcular
         </button>
-        <span className="pdc-plan-recalcular-nota" data-testid="pdc-plan-recalcular-nota">
-          Recalcula las fechas contra el cronograma vigente. Conserva los responsables, los amarres
-          a frentes y lo ya registrado en cada paso: lo único que cambia son las fechas.
-        </span>
+        {/* La duda («¿pierdo lo avanzado?») se tiene una vez; el párrafo se leía en cada visita a
+            las cuatro pestañas. Plegado, la respuesta sigue a un clic. El texto NO cambia: es la
+            garantía que vigilan los tests de PlanFechasService. */}
+        <details className="pdc-plan-recalcular-ayuda">
+          <summary>¿qué conserva?</summary>
+          <span className="pdc-plan-recalcular-nota" data-testid="pdc-plan-recalcular-nota">
+            Recalcula las fechas contra el cronograma vigente. Conserva los responsables, los amarres
+            a frentes y lo ya registrado en cada paso: lo único que cambia son las fechas.
+          </span>
+        </details>
       </div>
 
       <Pestanas
@@ -525,10 +578,42 @@ export default function PlanFechas() {
         </div>
       )}
 
+      {/* Lo más grave del proyecto se contaba en voz baja: tres paquetes con 98, 83 y 66 días de
+          retraso, en texto pequeño dentro de su fila. La franja lo dice arriba y además lleva a
+          verlos, que es lo que se pregunta a continuación. Se puede cerrar, pero vuelve al recargar:
+          es una alerta de obra, no un anuncio. */}
+      {vencidos.cuantos > 0 && !franjaCerrada && (
+        <div className="pdc-plan-franja" data-testid="pdc-plan-franja-vencidos" role="status">
+          <span className="pdc-plan-franja-texto">
+            <strong>{vencidos.cuantos}</strong>
+            {vencidos.cuantos === 1 ? ' paquete debió arrancar' : ' paquetes debieron arrancar'}
+            {' '}hace hasta <strong>{vencidos.diasMaximo}</strong> días.
+          </span>
+          <button
+            type="button"
+            className="pdc-plan-franja-accion"
+            data-testid="pdc-plan-franja-filtrar"
+            onClick={() => setSoloVencidos((v) => !v)}
+          >
+            {soloVencidos ? 'Ver todos' : 'Ver solo los vencidos'}
+          </button>
+          <button
+            type="button"
+            className="pdc-plan-franja-cerrar"
+            data-testid="pdc-plan-franja-cerrar"
+            aria-label="Cerrar el aviso de vencidos"
+            onClick={() => setFranjaCerrada(true)}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap">
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
-          rowData={plan}
+          rowData={planVisible}
+          overlayNoRowsTemplate={vacioTabla("Todavía no hay paquetes con plan calculado. Amarra un paquete a un frente y pulsa «Recalcular».")}
           columnDefs={cols}
           defaultColDef={defaultColDef}
           autoSizeStrategy={autoSizeStrategy}
@@ -589,21 +674,93 @@ export default function PlanFechas() {
       {seccion === 'sin-frente' && (
       <PanelPestana idBase="pdc-plan" id="sin-frente">
       <p className="pdc-sub">Paquetes que generan proceso de contratación y todavía no están amarrados a un frente del cronograma.</p>
+      {/* Antes había un solo botón que escribía las 40 propuestas de un clic. Medido en Da Porto:
+          37 eran de confianza media —deducidas de la actividad padre, no de la descripción del
+          insumo— y solo 3 de confianza alta. El desglose lo dice antes de pulsar, el botón primario
+          solo toca las seguras, y las medias pasan por una confirmación. Las bajas no las acepta
+          ningún botón masivo: se aceptan una a una desde su fila. */}
       {sugeridosPendientes.length > 0 && (
-        <div className="pdc-paq-toolbar">
+        <div className="pdc-paq-toolbar pdc-plan-propuestas">
+          <span className="pdc-plan-desglose" data-testid="pdc-plan-desglose-confianza">
+            Propuestas del motor:{' '}
+            <span className="pdc-paq-tag conf-alta">{porConfianza.alta.length} alta</span>{' '}
+            <span className="pdc-paq-tag conf-media">{porConfianza.media.length} media</span>{' '}
+            <span className="pdc-paq-tag conf-baja">{porConfianza.baja.length} baja</span>
+          </span>
           <button
             type="button"
-            data-testid="pdc-plan-aceptar-sugeridos"
+            data-testid="pdc-plan-aceptar-alta"
             className="pdc-paq-primario"
-            disabled={ui.ocupado}
-            onClick={onAceptarSugeridos}
+            disabled={ui.ocupado || porConfianza.alta.length === 0}
+            onClick={() => void onAceptarSugeridos(porConfianza.alta)}
           >
-            Aceptar {sugeridosPendientes.length} sugerida(s)
+            Aceptar {porConfianza.alta.length} de confianza alta
+          </button>
+          {porConfianza.media.length > 0 && (
+            <button
+              type="button"
+              data-testid="pdc-plan-aceptar-media"
+              className="pdc-paq-secundario"
+              disabled={ui.ocupado}
+              onClick={() => setConfirmarMedia(true)}
+            >
+              Revisar {porConfianza.media.length} de confianza media
+            </button>
+          )}
+        </div>
+      )}
+
+      {confirmarMedia && (
+        <div className="pdc-panel" data-testid="pdc-plan-confirmar-media">
+          <p>
+            Vas a amarrar <strong>{porConfianza.media.length}</strong> paquetes por propuestas de
+            confianza <strong>media</strong>, que suman <strong>{moneda(sumaValor(porConfianza.media))}</strong>.
+          </p>
+          <p className="pdc-ayuda">
+            Confianza media significa que el motor dedujo el frente de la actividad padre, no de la
+            descripción del insumo. Acierta a menudo, pero no siempre: revisa la lista si algo te
+            suena raro. Cada fila respeta el frente que hayas cambiado a mano.
+          </p>
+          <details className="pdc-plan-lista-previa">
+            <summary>Ver los {porConfianza.media.length} amarres</summary>
+            <ul>
+              {porConfianza.media.map((p) => {
+                // El destino que se va a escribir es el del `<select>` de la fila, no la propuesta
+                // cruda del motor: si alguien lo cambió a mano, la lista debe enseñar ese.
+                const elegido = destinos[p.paqueteId]
+                const frente = frentes.find((f) => f.uniqueId === elegido)
+                return (
+                  <li key={p.paqueteId}>
+                    <strong>{p.nombre}</strong> → {frente ? opcionFrente(frente) : 'sin frente elegido'}
+                    <span className="pdc-paq-meta">{moneda(p.subtotal)}</span>
+                  </li>
+                )
+              })}
+            </ul>
+          </details>
+          <button
+            type="button"
+            data-testid="pdc-plan-confirmar-media-si"
+            disabled={ui.ocupado}
+            onClick={() => { setConfirmarMedia(false); void onAceptarSugeridos(porConfianza.media) }}
+          >
+            Sí, amarrar los {porConfianza.media.length}
+          </button>{' '}
+          <button type="button" data-testid="pdc-plan-confirmar-media-no" onClick={() => setConfirmarMedia(false)}>
+            Cancelar
           </button>
         </div>
       )}
-      <ul className="pdc-paq-lista" data-testid="pdc-plan-sin-frente">
-        {sinFrente.map((p) => {
+      <input
+        className="pdc-buscador"
+        data-testid="pdc-plan-buscar-sin-frente"
+        placeholder="Buscar paquete…"
+        aria-label="Buscar paquete sin frente"
+        value={buscaSinFrente}
+        onChange={(e) => setBuscaSinFrente(e.target.value)}
+      />
+      <ul className="pdc-paq-lista pdc-plan-sinfrente-lista" data-testid="pdc-plan-sin-frente">
+        {filtraPorTexto(sinFrente, buscaSinFrente, (x) => x.nombre).map((p) => {
           const sugerencia = sugerencias[p.paqueteId]
           const destino = destinos[p.paqueteId] ?? ''
           return (

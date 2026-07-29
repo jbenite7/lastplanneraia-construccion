@@ -10,6 +10,7 @@ import {
 } from '../lib/paqueteWizardState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
+import { plural } from '../lib/texto'
 
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
 const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''
@@ -209,7 +210,7 @@ export default function PaquetesAsistente({
       })
       onCambio()
       await recargar()
-      dispatch({ type: 'LISTO', mensaje: `${lista.length} insumo(s) más a ${panel.paquete.nombre}.` })
+      dispatch({ type: 'LISTO', mensaje: `${plural(lista.length, 'insumo')} más a ${panel.paquete.nombre}.` })
       setPanel(null)
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
@@ -282,7 +283,7 @@ export default function PaquetesAsistente({
       )}
 
       <div className="pdc-wiz-progreso">
-        Quedan <strong>{restantes}</strong> insumo(s) sin asignar, <strong>{conPropuesta}</strong> con propuesta del motor.
+        Quedan <strong>{plural(restantes, 'insumo')}</strong> sin asignar, <strong>{conPropuesta}</strong> con propuesta del motor.
         <span className="pdc-wiz-filtro" role="group" aria-label="Filtrar la cola">
           {([['todos', 'Todos'], ['con', 'Con propuesta'], ['sin', 'Sin propuesta']] as [FiltroCola, string][]).map(([v, l]) => (
             <button key={v} type="button" data-testid={`pdc-wiz-filtro-${v}`} className={filtro === v ? 'is-activo' : ''}
@@ -313,7 +314,7 @@ export default function PaquetesAsistente({
 
         {actividades && actividades.total > 0 && (
           <details className="pdc-wiz-actividades" data-testid="pdc-wiz-actividades">
-            <summary>Requerido por {actividades.total} actividad(es) del presupuesto</summary>
+            <summary>Requerido por {plural(actividades.total, 'actividad', 'actividades')} del presupuesto</summary>
             <ul className="pdc-wiz-act-lista">
               {actividades.items.map((a, i) => (
                 <li key={`${a.codigo}-${i}`}>

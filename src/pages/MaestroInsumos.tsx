@@ -3,13 +3,14 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme,
+  MODULOS_TABLA, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
-import { estadoInicialMaestro, maestroReducer } from '../lib/maestroState'
+import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
 import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
+import { plural } from '../lib/texto'
 
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -29,10 +30,15 @@ export default function MaestroInsumos() {
   const [sugerencias, setSugerencias] = useState<SugerenciaMaestro[]>([])
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
   const [verRetirados, setVerRetirados] = useState(false)
+  const [porRetirar, setPorRetirar] = useState<MaestroInsumo | null>(null)
   const [imp, dispatchImp] = useReducer(maestroImportReducer, estadoInicialMaestroImport)
   // Las tres tablas de esta pantalla vivían apiladas y el catálogo global (3.079 insumos) tapaba
-  // la cola de pendientes, que es el trabajo que de verdad falta. Abre por ahí.
+  // la cola de pendientes, que es el trabajo que de verdad falta. Abre por ahí — salvo que no haya
+  // pendientes, y entonces abrir por una tabla vacía sería enseñar una pared en blanco.
   const [seccion, setSeccion] = useState('pendientes')
+  // Se decide una sola vez, cuando llega el primer resumen: en el primer render todavía no se sabe
+  // cuántos pendientes hay. A partir de ahí manda el usuario, igual que el filtro de Paquetes.
+  const seccionDecidida = useRef(false)
   const impFileRef = useRef<HTMLInputElement>(null)
 
   const cargar = useCallback(async () => {
@@ -43,6 +49,10 @@ export default function MaestroInsumos() {
       setResumen(v.resumen)
       setVinculos(v.vinculos)
       setSinPresupuesto(false)
+      if (!seccionDecidida.current) {
+        seccionDecidida.current = true
+        setSeccion(pestanaInicialMaestro(v.resumen.pendientes))
+      }
     } catch (e) {
       if (e instanceof PdcApiError && e.code === 'NO_VERSION') setSinPresupuesto(true)
       else if (e instanceof PdcApiError && e.code === 'FORBIDDEN') {
@@ -130,7 +140,7 @@ export default function MaestroInsumos() {
         } satisfies ColDef<MaestroInsumo>]
       : []),
     {
-      colId: 'accion', headerName: '', width: 110, sortable: false, suppressAutoSize: true,
+      colId: 'accion', headerName: 'Acción', width: 110, sortable: false, suppressAutoSize: true,
       cellClass: 'pdc-celda-accion',
       valueGetter: (p) => (p.data?.activo === 0 ? 'Reactivar' : 'Retirar'),
     },
@@ -167,7 +177,7 @@ export default function MaestroInsumos() {
         const r = await apiPost<{ revertidos: number }>('/plan-compras/api/maestro/desactivar', { maestroId: insumo.id })
         dispatch({
           type: 'LISTO',
-          mensaje: `«${insumo.descripcion}» retirado del catálogo. ${r.revertidos} vínculo(s) automático(s) vuelven a pendientes.`,
+          mensaje: `«${insumo.descripcion}» retirado del catálogo. ${plural(r.revertidos, 'vínculo automático', 'vínculos automáticos')} vuelven a pendientes.`,
         })
       }
       await cargar()
@@ -178,7 +188,11 @@ export default function MaestroInsumos() {
   }
 
   const onCatalogoClick = (e: CellClickedEvent<MaestroInsumo>) => {
-    if (e.colDef.colId === 'accion' && e.data && !state.ocupado) void cambiarEstadoMaestro(e.data)
+    if (e.colDef.colId !== 'accion' || !e.data || state.ocupado) return
+    // Reactivar no destruye nada y va directo. Retirar revierte los vínculos automáticos de ESTE
+    // insumo en todos los proyectos, así que pregunta antes.
+    if (e.data.activo === 0) { void cambiarEstadoMaestro(e.data); return }
+    setPorRetirar(e.data)
   }
 
   const vincularA = async (maestroId: number) => {
@@ -214,6 +228,7 @@ export default function MaestroInsumos() {
         {resumen && (
           <p data-testid="pdc-maestro-cobertura" className="pdc-cobertura">
             Cobertura: {resumen.cobertura}% · {resumen.pendientes} pendientes de {resumen.total}
+            <span className="pdc-cifra-nota">insumos distintos de este presupuesto</span>
           </p>
         )}
       </header>
@@ -224,7 +239,11 @@ export default function MaestroInsumos() {
         idBase="pdc-maestro"
         etiquetaLista="Secciones del maestro de insumos"
         activa={seccion}
-        onCambiar={setSeccion}
+        // Elegir pestaña a mano cierra la decisión automática. El primer resumen tarda (un POST y
+        // un GET encadenados) y sin esto llegaba DESPUÉS del clic del usuario y lo devolvía a la
+        // pestaña de apertura: quien entra y va rápido a «Importar SINCO» se veía rebotado a
+        // «Pendientes». Lo cazó el e2e del import SINCO.
+        onCambiar={(s) => { seccionDecidida.current = true; setSeccion(s) }}
         pestanas={[
           { id: 'pendientes', etiqueta: 'Pendientes por vincular', conteo: pendientes.length },
           { id: 'catalogo', etiqueta: 'Catálogo global', conteo: catalogo.length },
@@ -248,7 +267,7 @@ export default function MaestroInsumos() {
         {imp.fase === 'subiendo' && <p>Analizando el archivo…</p>}
         {imp.mensajeError && <div className="pdc-error" role="alert">{imp.mensajeError}</div>}
         {imp.fase === 'previewErrores' && (
-          <div className="pdc-error" role="alert">El archivo tiene {imp.errores.length} error(es); no se importó nada.</div>
+          <div className="pdc-error" role="alert">El archivo tiene {plural(imp.errores.length, 'error', 'errores')}; no se importó nada.</div>
         )}
         {(imp.fase === 'previewOk' || imp.fase === 'confirmando') && imp.preview && (
           <div data-testid="pdc-maestro-import-resumen">
@@ -266,7 +285,7 @@ export default function MaestroInsumos() {
         {imp.fase === 'confirmado' && imp.resultado && imp.resultado.conflictos.length > 0 && (
           <div className="pdc-error" role="alert" data-testid="pdc-maestro-import-conflictos">
             <div>
-              {imp.resultado.conflictos.length} conflicto(s): ya existe otro insumo con la misma descripción y unidad — revísalos manualmente:
+              {plural(imp.resultado.conflictos.length, 'conflicto')}: ya existe otro insumo con la misma descripción y unidad — revísalos manualmente:
             </div>
             {imp.resultado.conflictos.slice(0, 20).map((c, i) => (
               <div key={`${c.codigoSinco}-${i}`}>
@@ -304,6 +323,7 @@ export default function MaestroInsumos() {
           <AgGridReact<VinculoInsumo>
             theme={pdcTheme}
             rowData={pendientes}
+            overlayNoRowsTemplate={vacioTabla("Nada pendiente: todos los insumos de este presupuesto ya están en el maestro.")}
             columnDefs={colsPendientes}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}
@@ -341,7 +361,7 @@ export default function MaestroInsumos() {
       <PanelPestana idBase="pdc-maestro" id="catalogo">
       <div className="pdc-bloque">
         <div className="pdc-fila-acciones">
-          <h2>Catálogo global ({catalogo.length.toLocaleString('es-CO')}{busqueda.trim() ? ' resultados' : ' insumos'})</h2>
+          <h2>Catálogo global ({catalogo.length.toLocaleString('es-CO')}{busqueda.trim() ? ' resultados' : ' insumos'})<span className="pdc-cifra-nota">insumos de toda la empresa, no solo de este proyecto</span></h2>
           <div className="pdc-selector">
             <label className="pdc-check">
               <input
@@ -361,10 +381,31 @@ export default function MaestroInsumos() {
             />
           </div>
         </div>
+        {porRetirar && (
+          <div className="pdc-panel" data-testid="pdc-maestro-confirmar-retirar">
+            <p>¿Retirar <strong>{porRetirar.descripcion}</strong> del catálogo?</p>
+            <p className="pdc-ayuda">
+              Deja de estar disponible para vincular y sus vínculos automáticos vuelven a pendientes
+              en <strong>todos los proyectos</strong>, no solo en este. Se puede reactivar después.
+            </p>
+            <button
+              type="button"
+              data-testid="pdc-maestro-retirar-confirmar"
+              disabled={state.ocupado}
+              onClick={() => { const i = porRetirar; setPorRetirar(null); void cambiarEstadoMaestro(i) }}
+            >
+              Sí, retirarlo
+            </button>{' '}
+            <button type="button" data-testid="pdc-maestro-retirar-cancelar" onClick={() => setPorRetirar(null)}>
+              Cancelar
+            </button>
+          </div>
+        )}
         <div className="pdc-grid" data-testid="pdc-maestro-catalogo">
           <AgGridReact<MaestroInsumo>
             theme={pdcTheme}
             rowData={catalogo}
+            overlayNoRowsTemplate={vacioTabla("Ningún insumo del catálogo coincide con la búsqueda.")}
             columnDefs={colsCatalogo}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}

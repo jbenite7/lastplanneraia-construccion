@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { estadoInicialMaestro, maestroReducer } from './maestroState'
+import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from './maestroState'
 import type { VinculoInsumo } from './types'
 
 const vinculo: VinculoInsumo = {
@@ -42,5 +42,15 @@ describe('maestroReducer', () => {
     s = maestroReducer(s, { type: 'FALLO', mensaje: 'Error X' })
     expect(s.mensaje).toBe('Error X')
     expect(s.ocupado).toBe(false)
+  })
+})
+
+describe('pestanaInicialMaestro', () => {
+  it('con pendientes abre por ellos, que es el trabajo que falta', () => {
+    expect(pestanaInicialMaestro(12)).toBe('pendientes')
+  })
+
+  it('sin pendientes abre por el catálogo, no por una tabla vacía', () => {
+    expect(pestanaInicialMaestro(0)).toBe('catalogo')
   })
 })

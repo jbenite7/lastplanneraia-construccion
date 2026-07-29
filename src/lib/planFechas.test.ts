@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   AVISO_DESAMARRAR,
   accionDeClic,
+  agruparPorConfianza,
+  coberturaPlan,
   contarSinResponsable, estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
   opcionesResponsable, paquetesAmarradosSinCalcular,
-  paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
+  paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, resumenVencidos,
+  sumaValor, trasGuardarEdicion,
   opcionesFrente,
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
@@ -133,6 +136,95 @@ describe('paquetesSinFrente', () => {
     ]
     const amarres = { 1: { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' } }
     expect(paquetesSinFrente(porPaquete, amarres).map((p) => p.paqueteId)).toEqual([2])
+  })
+})
+
+describe('coberturaPlan', () => {
+  const base = { paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'contrato', insumos: 3, subtotal: 100 }
+  const amarre = { uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18' }
+
+  it('mide sobre los paquetes que generan proceso, no sobre todos', () => {
+    // Nómina, imprevistos y ferretería no se le contratan a nadie: si entran al total, el plan
+    // parece eternamente incompleto por paquetes que nunca van a tener fecha.
+    const porPaquete = [
+      { ...base, paqueteId: 1, subtotal: 300 },
+      { ...base, paqueteId: 2, subtotal: 100 },
+      { ...base, paqueteId: 3, modalidad: 'no_contratable', subtotal: 5000 },
+      { ...base, paqueteId: 4, modalidad: 'consumo_directo', subtotal: 5000 },
+    ]
+    const c = coberturaPlan(porPaquete, { 1: amarre })
+    expect(c.total).toBe(2)
+    expect(c.conFecha).toBe(1)
+    expect(c.valorTotal).toBe(400)
+    expect(c.valorConFecha).toBe(300)
+    expect(c.porcentajeConteo).toBe(50)
+    expect(c.porcentajeValor).toBe(75) // la plata no reparte igual que el conteo: ese es el punto
+  })
+
+  it('un paquete amarrado cuenta como cubierto aunque nadie haya recalculado', () => {
+    // Decisión del grilleo (f04): lo difícil —a qué parte de la obra pertenece— ya está hecho.
+    const porPaquete = [{ ...base, paqueteId: 1, subtotal: 100 }]
+    expect(coberturaPlan(porPaquete, { 1: amarre }).conFecha).toBe(1)
+  })
+
+  it('sin paquetes que generen proceso no divide por cero', () => {
+    expect(coberturaPlan([], {})).toEqual({
+      conFecha: 0, total: 0, porcentajeConteo: 0, valorConFecha: 0, valorTotal: 0, porcentajeValor: 0,
+    })
+    const soloNoContratables = [{ ...base, modalidad: 'no_contratable', subtotal: 900 }]
+    expect(coberturaPlan(soloNoContratables, {}).porcentajeValor).toBe(0)
+  })
+
+  it('un total con valor cero no inventa un 100 %', () => {
+    // Pasa de verdad: en Da Porto hay un paquete de $ 0. Si todos valieran cero, dividir daría NaN.
+    const porPaquete = [{ ...base, paqueteId: 1, subtotal: 0 }]
+    expect(coberturaPlan(porPaquete, { 1: amarre }).porcentajeValor).toBe(0)
+  })
+})
+
+describe('resumenVencidos', () => {
+  it('cuenta los vencidos y se queda con el más atrasado', () => {
+    const filas = [fila({ diasRetraso: 98 }), fila({ diasRetraso: 66 }), fila({ diasRetraso: 0 })]
+    expect(resumenVencidos(filas)).toEqual({ cuantos: 2, diasMaximo: 98 })
+  })
+
+  it('sin vencidos no hay franja que mostrar', () => {
+    expect(resumenVencidos([fila({ diasRetraso: 0 })])).toEqual({ cuantos: 0, diasMaximo: 0 })
+  })
+})
+
+describe('agruparPorConfianza', () => {
+  const base = { paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'contrato', insumos: 3, subtotal: 100 }
+  const sug = (confianza: SugerenciaFrente['confianza']): SugerenciaFrente => ({
+    uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18', origen: 'similitud', confianza, evidencia: 'x',
+  })
+
+  it('separa las tres confianzas y deja fuera lo que no tiene propuesta', () => {
+    const sinFrente = [
+      { ...base, paqueteId: 1, subtotal: 500 },
+      { ...base, paqueteId: 2, subtotal: 300 },
+      { ...base, paqueteId: 3, subtotal: 100 },
+      { ...base, paqueteId: 4, subtotal: 999 }, // sin propuesta del motor
+    ]
+    const sugerencias = { 1: sug('alta'), 2: sug('media'), 3: sug('baja') }
+    const g = agruparPorConfianza(sinFrente, sugerencias)
+    expect(g.alta.map((p) => p.paqueteId)).toEqual([1])
+    expect(g.media.map((p) => p.paqueteId)).toEqual([2])
+    expect(g.baja.map((p) => p.paqueteId)).toEqual([3])
+  })
+
+  it('suma la plata de cada grupo, que es lo que se arriesga al aceptar en masa', () => {
+    const sinFrente = [
+      { ...base, paqueteId: 1, subtotal: 500 },
+      { ...base, paqueteId: 2, subtotal: 300 },
+    ]
+    const g = agruparPorConfianza(sinFrente, { 1: sug('media'), 2: sug('media') })
+    expect(sumaValor(g.media)).toBe(800)
+  })
+
+  it('sin propuestas los tres grupos quedan vacíos', () => {
+    const g = agruparPorConfianza([{ ...base }], {})
+    expect(g).toEqual({ alta: [], media: [], baja: [] })
   })
 })
 

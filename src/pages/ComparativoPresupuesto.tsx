@@ -5,9 +5,10 @@ import { CellStyleModule, ModuleRegistry, ValidationModule } from 'ag-grid-commu
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
   CIFRA, MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
-  moneda, pdcTheme,
+  moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
+import { filtraPorTexto } from '../lib/texto'
 import { claseDelta, filasComparativoVisibles } from '../lib/comparativo'
 import type { FilaComparativo } from '../lib/comparativo'
 import { NIVELES_PRESUPUESTO, expandirHastaNivel } from '../lib/presupuestoTree'
@@ -48,6 +49,7 @@ export default function ComparativoPresupuesto() {
   // pantallas no obligue a cambiar de idioma.
   const [nivel, setNivel] = useState<number>(NIVEL_ACTIVIDAD)
   const [error, setError] = useState<string | null>(null)
+  const [busca, setBusca] = useState('')
 
   useEffect(() => {
     apiGet<{ versiones: VersionPresupuesto[] }>('/plan-compras/api/presupuesto/versiones')
@@ -166,14 +168,26 @@ export default function ComparativoPresupuesto() {
               Δ {signo(data.resumen.delta)}
             </span>
             <span className="pdc-cmp-sobrecosto">Sobrecostos {moneda(data.resumen.sobrecostos)}</span>
-            <span className="pdc-cmp-ahorro">Ahorros {moneda(data.resumen.ahorros)}</span>
+            {/* Sin signo: «Ahorros $ -46.629.280.887» se lee al revés de lo que significa. La
+                palabra ya dice la dirección; el menos solo la contradecía. El Δ de al lado sí lo
+                conserva, porque ahí el signo es la información. */}
+            <span className="pdc-cmp-ahorro">Ahorros {moneda(Math.abs(data.resumen.ahorros))}</span>
             <span>{data.resumen.nuevos} nuevos · {data.resumen.eliminados} eliminados · {data.resumen.modificados} modificados</span>
           </div>
+          <p className="pdc-ayuda" data-testid="pdc-cmp-formula">Δ = sobrecostos − ahorros</p>
 
           <div className="pdc-cmp-toggle">
             <button type="button" className={eje === 'insumos' ? 'activo' : ''} onClick={() => setEje('insumos')} data-testid="pdc-cmp-eje-insumos">Insumos</button>
             <button type="button" className={eje === 'actividades' ? 'activo' : ''} onClick={() => setEje('actividades')} data-testid="pdc-cmp-eje-actividades">Actividades</button>
             {/* Solo en el eje jerárquico: la lista de insumos es plana y no tiene ramas que abrir. */}
+            <input
+              className="pdc-buscador"
+              data-testid="pdc-cmp-buscar"
+              placeholder={eje === 'insumos' ? 'Buscar insumo…' : 'Buscar actividad…'}
+              aria-label="Buscar en el comparativo"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
             {eje === 'actividades' && (
               <label className="pdc-selector">
                 Ver hasta{' '}
@@ -189,13 +203,15 @@ export default function ComparativoPresupuesto() {
           <div className="pdc-grid" data-testid="pdc-cmp-grid">
             {eje === 'actividades' ? (
               <AgGridReact<FilaComparativo>
-                theme={pdcTheme} rowData={filasAct} columnDefs={colsAct} getRowId={(p) => p.data.key}
+                theme={pdcTheme} rowData={filtraPorTexto(filasAct, busca, (f) => f.descripcion)} columnDefs={colsAct} getRowId={(p) => p.data.key}
+                overlayNoRowsTemplate={vacioTabla("Estas dos versiones no cambiaron ninguna actividad.")}
                 onCellClicked={onCellClickedAct}
                 defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
               />
             ) : (
               <AgGridReact<InsumoDiff>
-                theme={pdcTheme} rowData={data.insumos} columnDefs={colsIns}
+                theme={pdcTheme} rowData={filtraPorTexto(data.insumos, busca, (i) => i.descripcion)} columnDefs={colsIns}
+                overlayNoRowsTemplate={vacioTabla("Estas dos versiones no cambiaron ningún insumo.")}
                 getRowId={(p) => `${p.data.descripcionNorm}|${p.data.unidad}`}
                 defaultColDef={defaultColDef} autoSizeStrategy={autoSizeStrategy}
               />

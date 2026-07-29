@@ -5,6 +5,7 @@ import {
   themeQuartz,
 } from 'ag-grid-community'
 import type { ColDef, ColDefField, SizeColumnsToContentStrategy } from 'ag-grid-community'
+import { useEffect, useState } from 'react'
 
 /**
  * Módulos que necesita cualquier tabla del módulo. El registro sigue siendo selectivo (nada de
@@ -93,6 +94,71 @@ export function columnaTexto<TData>(
   minWidth = 200,
 ): ColDef<TData> {
   return { ...TEXTO_LARGO, field, headerName, minWidth }
+}
+
+/**
+ * Ancho mínimo para una columna de texto que puede traer una palabra larga sin espacios.
+ *
+ * AG Grid envuelve con `overflow-wrap: break-word`, que solo parte una palabra cuando esa palabra
+ * no cabe **entera** en un renglón. Con la columna «Agrupación» a 130 px, «SUBCONTRATACION» no
+ * cabía y salía «SUBCONTRATACIO / N PERSONAL». Subir el mínimo es lo que quita la causa; prohibir
+ * el corte en CSS (ver `.ag-cell-wrap-text` en styles.css) es el cinturón por si aparece una
+ * palabra aún más larga.
+ */
+export const MIN_WIDTH_PALABRA_LARGA = 170
+
+/**
+ * Esconde las columnas secundarias cuando la pantalla es angosta.
+ *
+ * Decisión del dueño del producto (grilleo 2026-07-29): por debajo de 1200 px se esconden columnas
+ * en vez de ofrecer scroll lateral. Cuáles son «secundarias» lo decide cada página, porque lo
+ * prescindible depende de a qué se va a esa pantalla — en Paquetes, «Destino» y «Sugerencia» son
+ * justo lo que se viene a mirar y no se esconden nunca.
+ */
+export function columnasVisibles<T extends { colId?: string }>(
+  columnas: T[],
+  angosta: boolean,
+  secundarias: string[],
+): (T & { hide?: boolean })[] {
+  if (!angosta) return columnas.map((c) => ({ ...c, hide: false }))
+  return columnas.map((c) => ({ ...c, hide: c.colId !== undefined && secundarias.includes(c.colId) }))
+}
+
+/**
+ * Mensaje de tabla vacía, en español y con el estilo del módulo.
+ *
+ * Sin esto AG Grid pinta «No Rows To Show» —su texto de fábrica, en inglés— y lo hacía justo donde
+ * el vacío era una buena noticia: el Maestro con 0 pendientes enseñaba una pared en blanco en vez
+ * de decir que ya estaba todo vinculado. Un vacío es el mejor momento para explicar, así que cada
+ * tabla trae el suyo en vez de compartir uno genérico.
+ */
+export function vacioTabla(mensaje: string): string {
+  const escapado = mensaje
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return `<span class="pdc-tabla-vacia">${escapado}</span>`
+}
+
+/** Umbral de «pantalla angosta»: por debajo de esto, un portátil de 1024 px ya perdía columnas. */
+export const ANCHO_ANGOSTO = 1200
+
+/**
+ * `true` mientras la ventana esté por debajo de {@link ANCHO_ANGOSTO}, y reacciona al redimensionar
+ * — no solo al montar: alguien que arrastra la ventana o gira la tableta debe ver las columnas
+ * aparecer y desaparecer, no quedarse con la decisión que se tomó al abrir la página.
+ */
+export function usaPantallaAngosta(): boolean {
+  const consulta = `(max-width: ${ANCHO_ANGOSTO - 1}px)`
+  const [angosta, setAngosta] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(consulta).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(consulta)
+    const alCambiar = (e: MediaQueryListEvent) => setAngosta(e.matches)
+    setAngosta(mq.matches)
+    mq.addEventListener('change', alCambiar)
+    return () => mq.removeEventListener('change', alCambiar)
+  }, [consulta])
+  return angosta
 }
 
 /**

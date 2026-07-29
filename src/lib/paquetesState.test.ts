@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from './paquetesState'
+import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer, estaCerradoPorValor, muestraTipoNegociacion } from './paquetesState'
 import type { SugerenciaPaquete } from './types'
 
 const sug: SugerenciaPaquete = {
@@ -78,5 +78,34 @@ describe('ACCION_PROPONER — el botón único de propuestas', () => {
     expect(etiqueta).not.toContain('sembrar')
     expect(etiqueta).not.toContain('iteración')
     expect(etiqueta).toContain('proponer')
+  })
+})
+
+describe('estaCerradoPorValor', () => {
+  it('el 100 % por valor cierra la pantalla', () => {
+    expect(estaCerradoPorValor(100)).toBe(true)
+  })
+
+  it('cualquier otra cosa no', () => {
+    expect(estaCerradoPorValor(99)).toBe(false)
+    expect(estaCerradoPorValor(0)).toBe(false)
+    // Sin dato no se decide que está cerrado: el endpoint puede no traerlo.
+    expect(estaCerradoPorValor(undefined)).toBe(false)
+  })
+})
+
+describe('muestraTipoNegociacion', () => {
+  it('en nómina e imprevistos el tipo miente y no se enseña', () => {
+    expect(muestraTipoNegociacion('no_contratable')).toBe(false)
+    expect(muestraTipoNegociacion('consumo_directo')).toBe(false)
+  })
+
+  it('donde sí se contrata, el tipo se mantiene', () => {
+    expect(muestraTipoNegociacion('contrato')).toBe(true)
+    expect(muestraTipoNegociacion('orden_compra')).toBe(true)
+  })
+
+  it('sin modalidad se enseña: el default del catálogo es «contrato»', () => {
+    expect(muestraTipoNegociacion(undefined)).toBe(true)
   })
 })

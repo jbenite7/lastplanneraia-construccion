@@ -3,16 +3,17 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
 import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
 import {
-  MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto, defaultColDef,
-  moneda, pdcTheme,
+  MIN_WIDTH_PALABRA_LARGA, MODULOS_TABLA, TEXTO_LARGO, autoSizeStrategy, columnaMoneda, columnaTexto,
+  columnasVisibles, defaultColDef, moneda, pdcTheme, usaPantallaAngosta, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
-import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer } from '../lib/paquetesState'
+import { ACCION_PROPONER, claveInsumo, estaCerradoPorValor, estadoInicialPaquetes, filtroInicial, muestraTipoNegociacion, paquetesReducer } from '../lib/paquetesState'
 import type { FiltroPaquetes } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
+import { filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
@@ -34,7 +35,7 @@ function TooltipActividades(params: ITooltipParams<InsumoPaquete>) {
   const ocultas = info.total - info.items.length
   return (
     <div className="pdc-tt">
-      <div className="pdc-tt-cab">Requerido por {info.total} actividad(es):</div>
+      <div className="pdc-tt-cab">Requerido por {plural(info.total, 'actividad', 'actividades')}:</div>
       <ul className="pdc-tt-lista">
         {info.items.map((a, i) => (
           <li key={`${a.codigo}-${i}`}>
@@ -75,6 +76,7 @@ export default function PaquetesContratacion() {
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
+  const [buscaPaquete, setBuscaPaquete] = useState('')
   // El filtro de apertura se decide una sola vez, cuando llega el primer resumen: en el primer
   // render todavía no se sabe cuántos insumos faltan. A partir de ahí manda el usuario — volver a
   // aplicarlo en cada recarga le pisaría el filtro que acabara de elegir a mano.
@@ -112,6 +114,13 @@ export default function PaquetesContratacion() {
     [insumos, agrupacion],
   )
 
+  const cerradoPorValor = estaCerradoPorValor(resumen?.coberturaValor)
+  // Lo que sigue sin destino pese al 100 % por valor: son los insumos de $ 0, que existen.
+  const sueltos = useMemo(() => {
+    const libres = insumos.filter((i) => i.omitido !== 1 && i.paqueteNombre == null)
+    return { cuantos: libres.length, valor: libres.reduce((a, i) => a + i.valorTotal, 0) }
+  }, [insumos])
+
   const cols = useMemo<ColDef<InsumoPaquete>[]>(() => [
     {
       headerName: '', width: 46, cellClass: 'pdc-paq-check', sortable: false, suppressAutoSize: true,
@@ -125,8 +134,8 @@ export default function PaquetesContratacion() {
       tooltipValueGetter: (p) => (p.data ? p.data.descripcion : ''),
       tooltipComponent: TooltipActividades,
     },
-    { ...columnaTexto('agrupacion', 'Agrupación', 130), valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Recurso', field: 'tipoRecurso', valueFormatter: (p) => p.value ?? '—' },
+    { ...columnaTexto('agrupacion', 'Agrupación', MIN_WIDTH_PALABRA_LARGA), colId: 'agrupacion', valueFormatter: (p) => p.value ?? '—' },
+    { headerName: 'Recurso', field: 'tipoRecurso', colId: 'recurso', valueFormatter: (p) => p.value ?? '—' },
     { headerName: 'Und', field: 'unidad' },
     columnaMoneda('valorTotal', 'Valor total'),
     {
@@ -148,6 +157,14 @@ export default function PaquetesContratacion() {
       },
     },
   ], [state.seleccion, state.sugerencias])
+
+  // Por debajo de 1200 px se esconden «Agrupación» y «Recurso» — lo prescindible de esta pantalla.
+  // «Destino» y «Sugerencia» nunca: son el motivo por el que se entra aquí.
+  const angosta = usaPantallaAngosta()
+  const colsVisibles = useMemo(
+    () => columnasVisibles(cols, angosta, ['agrupacion', 'recurso']),
+    [cols, angosta],
+  )
 
   const onRowClicked = (e: RowClickedEvent<InsumoPaquete>) => {
     if (!e.data) return
@@ -213,7 +230,7 @@ export default function PaquetesContratacion() {
         total += r.asignados
       }
       dispatch({ type: 'LIMPIAR_SUGERENCIAS' })
-      dispatch({ type: 'LISTO', mensaje: `${total} sugerencia(s) aceptada(s).` })
+      dispatch({ type: 'LISTO', mensaje: `${plural(total, 'sugerencia')} aceptada${total === 1 ? '' : 's'}.` })
       refrescar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
@@ -227,7 +244,7 @@ export default function PaquetesContratacion() {
       const r = await apiPost<{ asignados: number }>('/plan-compras/api/paquetes/asignar', {
         insumos: insumosPayload(seleccionados), paqueteId: paqueteDestino,
       })
-      dispatch({ type: 'LISTO', mensaje: `${r.asignados} insumo(s) asignado(s).` })
+      dispatch({ type: 'LISTO', mensaje: `${plural(r.asignados, 'insumo')} asignado${r.asignados === 1 ? '' : 's'}.` })
       refrescar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
@@ -239,7 +256,7 @@ export default function PaquetesContratacion() {
     dispatch({ type: 'OCUPADO' })
     try {
       const r = await apiPost<{ omitidos: number }>('/plan-compras/api/paquetes/omitir', { insumos: insumosPayload(seleccionados) })
-      dispatch({ type: 'LISTO', mensaje: `${r.omitidos} insumo(s) omitido(s).` })
+      dispatch({ type: 'LISTO', mensaje: `${plural(r.omitidos, 'insumo')} omitido${r.omitidos === 1 ? '' : 's'}.` })
       refrescar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
@@ -251,7 +268,7 @@ export default function PaquetesContratacion() {
     dispatch({ type: 'OCUPADO' })
     try {
       const r = await apiPost<{ desasignados: number }>('/plan-compras/api/paquetes/desasignar', { insumos: insumosPayload(seleccionados) })
-      dispatch({ type: 'LISTO', mensaje: `${r.desasignados} insumo(s) devuelto(s) a sin asignar.` })
+      dispatch({ type: 'LISTO', mensaje: `${plural(r.desasignados, 'insumo')} devuelto${r.desasignados === 1 ? '' : 's'} a sin asignar.` })
       refrescar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
@@ -321,6 +338,22 @@ export default function PaquetesContratacion() {
       <PanelPestana idBase="pdc-paq" id="masivo">
       {state.mensaje && <div className="pdc-info" role="status">{state.mensaje}</div>}
 
+      {/* Con el 100 % del valor asignado, esta pantalla enseñaba tres barras de controles y once
+          botones para una fila de $ 0. El trabajo que importa está hecho: se dice, y el aparato de
+          trabajo se pliega. Lo que quede suelto sigue contándose, porque «100 % por valor» no es
+          «100 %». */}
+      {cerradoPorValor && (
+        <div className="pdc-paq-cierre" data-testid="pdc-paq-cierre" role="status">
+          <strong>Por valor está todo asignado.</strong>{' '}
+          {sueltos.cuantos === 0
+            ? 'No queda ningún insumo sin destino.'
+            : `Queda ${plural(sueltos.cuantos, 'insumo')} sin destino, de ${moneda(sueltos.valor)}.`}
+        </div>
+      )}
+
+      <details className="pdc-paq-herramientas" open={!cerradoPorValor}>
+        <summary>Asignar insumos</summary>
+
       <div className="pdc-paq-toolbar">
         <select data-testid="pdc-paq-filtro" aria-label="Filtrar por estado" value={filtro} onChange={(e) => setFiltro(e.target.value as Filtro)}>
           <option value="todos">Todos</option>
@@ -344,14 +377,14 @@ export default function PaquetesContratacion() {
         </button>
         {state.sugerencias.size > 0 && (
           <button type="button" data-testid="pdc-paq-aceptar-sugeridos" className="pdc-paq-primario" disabled={state.ocupado} onClick={onAceptarSugeridos}>
-            Aceptar {state.sugerencias.size} sugerida(s)
+            Aceptar {plural(state.sugerencias.size, 'sugerida')}
           </button>
         )}
       </div>
 
       {resumenSembrado.total > 0 && (
         <div data-testid="pdc-paq-sembrado-resumen" className="pdc-paq-sembrado">
-          <strong>Propuesta del motor: {resumenSembrado.total} insumo(s)</strong> — nada se ha guardado. Revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
+          <strong>Propuesta del motor: {plural(resumenSembrado.total, 'insumo')}</strong> — nada se ha guardado. Revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
           <div className="pdc-paq-fuentes">
             {FUENTES_ORDEN.filter((f) => resumenSembrado.porFuente[f]).map((f) => (
               <span key={f} className="pdc-paq-fuente"><span className={`pdc-paq-punto pdc-fuente-${f}`} />{FUENTE_LABEL[f]}: {resumenSembrado.porFuente[f]}</span>
@@ -368,7 +401,7 @@ export default function PaquetesContratacion() {
         <button type="button" data-testid="pdc-paq-limpiar-sel" disabled={seleccionados.length === 0} onClick={() => dispatch({ type: 'LIMPIAR_SEL' })}>
           Limpiar
         </button>
-        <span className="pdc-paq-sel">{seleccionados.length} seleccionado(s)</span>
+        <span className="pdc-paq-sel">{plural(seleccionados.length, 'seleccionado')}</span>
         <select data-testid="pdc-paq-select-paquete" aria-label="Paquete destino" value={paqueteDestino} onChange={(e) => setPaqueteDestino(e.target.value === '' ? '' : Number(e.target.value))}>
           <option value="">Paquete destino…</option>
           {paquetes.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
@@ -402,12 +435,14 @@ export default function PaquetesContratacion() {
           Crear paquete
         </button>
       </div>
+      </details>
 
       <div data-testid="pdc-paq-grid" className="pdc-grid-wrap">
         <AgGridReact<InsumoPaquete>
           theme={pdcTheme}
           rowData={visibles}
-          columnDefs={cols}
+          overlayNoRowsTemplate={vacioTabla("No queda ningún insumo con este filtro.")}
+          columnDefs={colsVisibles}
           defaultColDef={defaultColDef}
           autoSizeStrategy={autoSizeStrategy}
           context={{ actividadesMap }}
@@ -423,11 +458,24 @@ export default function PaquetesContratacion() {
 
       {modo === 'paquetes' && (
       <PanelPestana idBase="pdc-paq" id="paquetes">
+      <input
+        className="pdc-buscador"
+        data-testid="pdc-paq-buscar-paquete"
+        placeholder="Buscar paquete…"
+        aria-label="Buscar paquete"
+        value={buscaPaquete}
+        onChange={(e) => setBuscaPaquete(e.target.value)}
+      />
       <ul data-testid="pdc-paq-paquetes" className="pdc-paq-lista">
-        {(resumen?.porPaquete ?? []).map((p) => (
+        {filtraPorTexto(resumen?.porPaquete ?? [], buscaPaquete, (x) => x.nombre).map((p) => (
           <li key={p.paqueteId}>
             <strong>{p.nombre}</strong>
-            <span className="pdc-paq-tag">{tipoNegLabel(p.tipoNegociacion)}</span>
+            {/* «Nómina de obra · CONSUMIBLES» era falso: a la nómina no se le compran consumibles.
+                El dato vive en el catálogo global y corregirlo es otra conversación; aquí se deja
+                de enseñar donde miente. La modalidad, que sí es cierta, se mantiene. */}
+            {muestraTipoNegociacion(p.modalidad) && (
+              <span className="pdc-paq-tag">{tipoNegLabel(p.tipoNegociacion)}</span>
+            )}
             {p.modalidad && p.modalidad !== 'contrato' && (
               <span
                 className={`pdc-paq-modalidad pdc-paq-modalidad--${p.modalidad}`}
@@ -436,7 +484,7 @@ export default function PaquetesContratacion() {
                 {modalidadLabel(p.modalidad)}
               </span>
             )}
-            <span className="pdc-paq-meta">{p.insumos} insumo(s) · {moneda(p.subtotal)}</span>
+            <span className="pdc-paq-meta">{plural(p.insumos, 'insumo')} · {moneda(p.subtotal)}</span>
           </li>
         ))}
         {(resumen?.porPaquete ?? []).length === 0 && <li className="pdc-vacio">Aún no hay insumos asignados a ningún paquete.</li>}
@@ -458,7 +506,7 @@ function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
     <div data-testid="pdc-paq-cobertura" className="pdc-paq-cobertura">
       <div className="pdc-paq-cobertura-num">{resumen.cobertura}%</div>
       <div className="pdc-paq-cobertura-detalle">
-        {resumen.asignados} asignados + {resumen.omitidos} omitidos de {resumen.total}
+        {resumen.asignados} asignados + {resumen.omitidos} omitidos de {resumen.total} insumos distintos
       </div>
       <div className="pdc-paq-barra"><div className="pdc-paq-barra-fill" style={{ transform: `scaleX(${resumen.cobertura / 100})` }} /></div>
       <dl className="pdc-paq-indicadores">
@@ -473,10 +521,15 @@ function Cobertura({ resumen }: { resumen: ResumenPaquetes }) {
             data-testid="pdc-paq-acierto"
             title={acierto.tasa === null
               ? 'Aún no se ha aplicado ninguna sugerencia del motor.'
-              : `${acierto.correcciones} corrección(es) sobre ${acierto.sugerenciasAplicadas} decisión(es) del motor.`}
+              : `${plural(acierto.correcciones, 'corrección', 'correcciones')} sobre ${plural(acierto.sugerenciasAplicadas, 'decisión', 'decisiones')} del motor.`}
           >
             <dt>Acierto del motor</dt>
             <dd>{acierto.tasa === null ? 'sin datos' : `${acierto.tasa}%`}</dd>
+            {/* Un 100 % sobre tres decisiones y un 100 % sobre trescientas no significan lo mismo,
+                y la base solo estaba en el texto que aparece al pasar el ratón. */}
+            {acierto.tasa !== null && (
+              <dd className="pdc-paq-indicador-base">sobre {plural(acierto.sugerenciasAplicadas, 'decisión', 'decisiones')}</dd>
+            )}
           </div>
         )}
       </dl>

@@ -70,16 +70,48 @@
 .pdc-header h1 { font-size: 20px; margin: 0 0 4px; }
 .pdc-header p { margin: 0 0 16px; opacity: 0.8; }
 .pdc-error { padding: 16px; border: 1px solid #dc2626; background: #2c1618; color: #fecaca; border-radius: 8px; }
+
+/* Fuera de la vista pero dentro del DOM y del árbol de accesibilidad. `display:none` lo dejaría
+   inservible: es este input el que abre el diálogo del sistema al pulsar la etiqueta, y el que
+   recibe `setInputFiles` en los e2e. */
+.pdc-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.pdc-dropzone {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 4px 0 8px; padding: 18px 20px;
+  border: 1px dashed #3a3a3c; border-radius: 10px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.pdc-dropzone.is-arrastrando { border-color: #69b578; background: #17251c; }
+.pdc-dropzone-boton {
+  background: #1a5633; color: #f4f1ea; border: 1px solid #69b578;
+  border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 14px;
+}
+.pdc-dropzone-boton:hover { background: #206b3f; }
+/* El input escondido sigue recibiendo el foco del teclado: sin esto, tabular hasta él no se vería. */
+.pdc-sr-only:focus-visible + .pdc-dropzone-boton { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+.pdc-dropzone-texto { opacity: 0.75; font-size: 13px; }
+
+/* Vacío de tabla: el texto de AG Grid en español, con el aire suficiente para que no parezca error. */
+.pdc-tabla-vacia { display: block; max-width: 420px; padding: 0 20px; opacity: 0.7; font-size: 13px; line-height: 1.5; text-align: center; }
 /* Alto de las tablas: lo manda el viewport, no un número escrito a mano.
    Cada página traía el suyo en un `style` en línea (280, 300, 520, 560…), así que el catálogo
    mostraba 5 filas y media de 3.079 con el 45 % inferior de la pantalla en negro. El `clamp` deja
    un mínimo usable en pantallas bajas y un techo para que la tabla no se despegue del pie.
    El sustraendo es el alto del cromo por encima: barra de contexto, pestañas, encabezado y filtros.
-   No aplica a Paquetes ni al Plan, que usan `domLayout="autoHeight"` y crecen con sus filas. */
-.pdc-grid { height: clamp(320px, calc(100vh - 340px), 780px); }
+   No aplica a Paquetes ni al Plan, que usan `domLayout="autoHeight"` y crecen con sus filas.
+   El techo son 1100 px: es justo lo que pide un monitor de 1440 de alto, y por encima de eso una
+   tabla más larga que la pantalla ya no se recorre de un vistazo. Medido: 768→428, 900→560,
+   1200→780, 1440→1100, y siempre acaba 84 px por encima del pliegue. */
+.pdc-grid { height: clamp(320px, calc(100vh - 340px), 1100px); }
 /* Listas cortas por naturaleza —los errores del importador y el historial de versiones— sobre una
-   pantalla que además lleva el cargador de archivo encima. */
-.pdc-grid-corta { height: clamp(240px, calc(100vh - 520px), 420px); }
+   pantalla que además lleva el cargador de archivo encima, y que en el caso de error apila las dos.
+   Crece con el viewport, pero mucho menos: el historial de un proyecto recién importado tiene dos
+   filas, y una tabla de 560 px para dos filas se ve más vacía que corta. Al techo de 420 px se
+   llega con una veintena de versiones, que es cuando la altura empieza a hacer falta. */
+.pdc-grid-corta { height: clamp(280px, calc(100vh - 560px), 420px); }
 .pdc-selector { display: flex; align-items: center; gap: 8px; }
 .pdc-selector select { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 6px 10px; }
 
@@ -94,6 +126,12 @@
    descripción larga tiene que poder envolver en vez de recortarse. Dos clases para ganarle en
    especificidad a `.ag-cell-wrap-text`, que impone `white-space: normal` y se comería la sangría. */
 .ag-cell.pdc-visor-descripcion { white-space: pre-wrap; }
+/* AG Grid trae `overflow-wrap: break-word` en las celdas envueltas, que parte una palabra por la
+   mitad en cuanto no cabe entera en el renglón: «SUBCONTRATACIO / N PERSONAL». Preferimos que la
+   palabra baje entera aunque sobre hueco — una palabra rota se lee como un error de datos. El
+   ancho mínimo de la columna (MIN_WIDTH_PALABRA_LARGA) es lo que evita el caso normal; esto es el
+   cinturón para la palabra que nadie previó. */
+.ag-cell-wrap-text { overflow-wrap: normal; word-break: normal; }
 
 .pdc-fila-acciones { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pdc-ayuda { opacity: 0.6; font-size: 12px; margin: 4px 0 8px; }
@@ -186,21 +224,24 @@
 /* Asistente paso a paso (wizard) */
 .pdc-wiz { margin-top: 8px; }
 .pdc-wiz-progreso { font-size: 13px; opacity: 0.8; margin-bottom: 10px; }
-.pdc-wiz-card { border: 1px solid #3a3a3c; border-radius: 12px; padding: 18px 20px; background: #202022; max-width: 720px; }
+/* Ensanchada y compactada: a 720 px dejaba media pantalla vacía a la derecha y los botones de
+   decidir caían justo bajo el pliegue en 900 px de alto. Quien usa el asistente decide cientos de
+   veces seguidas, y bajar la vista en cada una cansa. */
+.pdc-wiz-card { border: 1px solid #3a3a3c; border-radius: 12px; padding: 14px 20px; background: #202022; max-width: 980px; }
 .pdc-wiz-card > header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .pdc-wiz-card h3 { margin: 0; font-size: 18px; }
 .pdc-wiz-valor { font-weight: 700; color: #9fd3ae; white-space: nowrap; }
-.pdc-wiz-atributos { display: flex; gap: 24px; margin: 12px 0 0; flex-wrap: wrap; }
+.pdc-wiz-atributos { display: flex; gap: 24px; margin: 8px 0 0; flex-wrap: wrap; }
 .pdc-wiz-atributos dt { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: 0.6; }
 .pdc-wiz-atributos dd { margin: 2px 0 0; font-size: 14px; }
-.pdc-wiz-sugerencia { margin: 16px 0; padding: 12px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
+.pdc-wiz-sugerencia { margin: 10px 0; padding: 10px 14px; border: 1px solid #69b578; border-radius: 8px; background: #17251c; }
 .pdc-wiz-sugerencia .pdc-sub { margin-top: 4px; }
 /* Sin propuesta el bloque sigue ahí, pero apagado: el hueco también es información. */
 .pdc-wiz-sugerencia.es-vacia { border-color: #3a3a3c; background: #202022; }
 .pdc-paq-tag.conf-media { background: #3a2f18; color: #e8c98a; }
 .pdc-paq-tag.conf-baja { background: #3a1f1a; color: #eaa898; }
 /* La ruta del presupuesto: de dónde salió la propuesta cuando la decidió la rama y no el nombre. */
-.pdc-wiz-ruta { margin: 10px 0 0; font-size: 12px; color: #a9a9ae; line-height: 1.45; }
+.pdc-wiz-ruta { margin: 6px 0 0; font-size: 12px; color: #a9a9ae; line-height: 1.45; }
 .pdc-wiz-filtro { display: inline-flex; gap: 6px; margin-left: 12px; }
 .pdc-wiz-filtro button { background: transparent; color: #c9c9ce; border: 1px solid #3a3a3c; border-radius: 999px; padding: 3px 11px; font-size: 12px; cursor: pointer; }
 .pdc-wiz-filtro button.is-activo { background: #1a3c2a; border-color: #69b578; color: #b7e4c4; }
@@ -218,7 +259,7 @@
 .pdc-wiz-card button, .pdc-wiz-candidatos button { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
 .pdc-wiz-card button:disabled, .pdc-wiz-candidatos button:disabled { opacity: 0.45; cursor: not-allowed; }
 .pdc-wiz-card .pdc-paq-primario:not(:disabled), .pdc-wiz-candidatos .pdc-paq-primario:not(:disabled) { background: #1a5633; border-color: #69b578; }
-.pdc-wiz-candidatos { border: 1px solid #3a3a3c; border-radius: 12px; padding: 18px 20px; background: #202022; max-width: 720px; }
+.pdc-wiz-candidatos { border: 1px solid #3a3a3c; border-radius: 12px; padding: 14px 20px; background: #202022; max-width: 980px; }
 .pdc-wiz-cand-lista { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 4px; }
 .pdc-wiz-cand-lista label { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
 .pdc-wiz-cand-lista label:hover { background: #232325; }
@@ -244,6 +285,51 @@
 .pdc-wiz-act-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; }
 
 /* Plan de fechas (A4) */
+/* Los tres contadores viven ahora bajo la barra de cobertura, así que se alinean con ella. */
+.pdc-paq-cobertura .pdc-plan-resumen { justify-content: flex-end; margin-top: 8px; }
+
+/* La franja de vencidos: roja de verdad, ancho completo y por encima de la tabla. Lo que la hace
+   útil es el botón de filtrar — sin él sería un cartel que obliga a buscar las filas a mano. */
+.pdc-plan-franja {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 12px 0; padding: 10px 14px;
+  border: 1px solid #dc2626; border-radius: 8px;
+  background: #2c1618; color: #fecaca; font-size: 13.5px;
+}
+.pdc-plan-franja-texto { flex: 1 1 auto; }
+.pdc-plan-franja strong { color: #fff; }
+.pdc-plan-franja-accion {
+  background: transparent; color: #fecaca; border: 1px solid #dc2626;
+  border-radius: 6px; padding: 5px 12px; cursor: pointer; font-size: 12.5px;
+}
+.pdc-plan-franja-accion:hover { background: #3a1f1a; }
+.pdc-plan-franja-cerrar {
+  background: none; border: none; color: #fecaca; cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 0 4px; opacity: 0.7;
+}
+.pdc-plan-franja-cerrar:hover { opacity: 1; }
+
+/* Un amarrado sin recalcular cuenta como cubierto arriba; este aviso es lo que impide que esa
+   decisión esconda trabajo que está a un botón de distancia. */
+.pdc-plan-aviso-recalcular {
+  margin: 10px 0 0; padding: 8px 12px; font-size: 13px;
+  border: 1px solid #b8863b; border-radius: 6px; background: #2b2416; color: #e8c98a;
+}
+
+/* Las tres confianzas y sus dos botones, en una sola línea que se parte si no cabe. */
+.pdc-plan-propuestas { align-items: center; flex-wrap: wrap; gap: 10px; }
+.pdc-plan-desglose { font-size: 12.5px; opacity: 0.85; margin-right: auto; }
+/* Secundario a la vista, no solo por su nombre: la acción arriesgada no debe competir con la
+   segura. Mismo tamaño para que siga siendo cómodo de pulsar. */
+.pdc-paq-secundario {
+  background: transparent; color: #f4f1ea; border: 1px solid #3a3a3c;
+  border-radius: 6px; padding: 8px 16px; cursor: pointer;
+}
+.pdc-paq-secundario:hover:not(:disabled) { border-color: #69b578; }
+.pdc-plan-lista-previa { margin: 8px 0; font-size: 13px; }
+.pdc-plan-lista-previa summary { cursor: pointer; opacity: 0.85; }
+.pdc-plan-lista-previa ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 5px; max-height: 260px; overflow-y: auto; }
+
 .pdc-plan-resumen { display: flex; gap: 18px; font-size: 13px; opacity: 0.85; flex-wrap: wrap; align-items: center; }
 .pdc-plan-resumen strong { font-size: 16px; opacity: 1; }
 .pdc-plan-resumen-vencidos strong { color: #eaa898; }
@@ -325,3 +411,47 @@
 @media (prefers-reduced-motion: reduce) {
   .pdc-pestanas .pdc-pestana { transition: none; }
 }
+
+/* Las tres cifras de insumos del módulo —820 en el historial, 396 en la cobertura del maestro y
+   3.079 en el catálogo— cuentan cosas distintas, y verlas seguidas sin explicación hacía pensar que
+   algo estaba mal. Cada una lleva ahora al lado qué es lo que cuenta. */
+.pdc-cifra-nota { display: block; font-size: 11.5px; font-weight: 400; opacity: 0.55; margin-top: 2px; }
+
+/* El aparato de asignar, plegado cuando ya no hay valor que asignar. */
+.pdc-paq-cierre {
+  margin: 12px 0; padding: 10px 14px; border: 1px solid #69b578; border-radius: 8px;
+  background: #17251c; color: #b7e4c4; font-size: 13.5px;
+}
+.pdc-paq-herramientas > summary { cursor: pointer; font-size: 13px; opacity: 0.75; margin-bottom: 8px; }
+.pdc-paq-herramientas[open] > summary { margin-bottom: 4px; }
+.pdc-paq-indicador-base { font-size: 11px; opacity: 0.6; font-weight: 400; }
+
+/* Buscador de lista, con el mismo aspecto que el del catálogo del maestro. */
+.pdc-buscador {
+  display: block; width: 100%; max-width: 320px; margin: 10px 0;
+  background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c;
+  border-radius: 6px; padding: 7px 12px; font-size: 13px;
+}
+.pdc-buscador::placeholder { color: #8b8b90; }
+.pdc-buscador:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: -1px; }
+
+/* «Sin frente» no era una tabla sino filas montadas a mano, y los anchos bailaban de una a otra:
+   una cifra larga saltaba de renglón y desplazaba su desplegable. Una rejilla con columnas fijas
+   deja nombre, cuantía, selector, botón y badge siempre en la misma posición, sin cambiar de
+   tecnología ni tocar los controles que ya funcionan. */
+.pdc-plan-sinfrente-lista > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 320px 110px 190px;
+  align-items: center;
+  gap: 12px;
+}
+.pdc-plan-sinfrente-lista > li > select { width: 100%; min-width: 0; }
+.pdc-plan-sinfrente-lista > li > .pdc-paq-meta { text-align: right; white-space: nowrap; }
+@media (max-width: 1100px) {
+  .pdc-plan-sinfrente-lista > li { grid-template-columns: minmax(0, 1fr) 140px; grid-auto-rows: auto; }
+  .pdc-plan-sinfrente-lista > li > select { grid-column: 1 / -1; }
+}
+
+.pdc-plan-recalcular-ayuda { flex: 1 1 320px; min-width: 260px; font-size: 13px; }
+.pdc-plan-recalcular-ayuda > summary { cursor: pointer; opacity: 0.7; }
+.pdc-plan-recalcular-ayuda[open] > summary { margin-bottom: 4px; }
