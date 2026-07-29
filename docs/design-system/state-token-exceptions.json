@@ -281,15 +281,15 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 2593,
+      "line": 2584,
       "selector": ".cic-text-dark",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
-      "reason": "Rama escalada de \"Falta Calificar\" en CIC, documentada en el comentario de las lineas 2586-2591: mezcla el critical-text con --ds-active-text-primary via color-mix al 55/45, sin fondo asociado. Se ancla al texto primario claro, igual que el remapeo de .text-danger."
+      "reason": "Rama escalada de \"Falta Calificar\" en CIC, documentada en el comentario de las lineas 2577-2582: mezcla el critical-text con --ds-active-text-primary via color-mix al 55/45, sin fondo asociado. Se ancla al texto primario claro, igual que el remapeo de .text-danger."
     },
     {
       "file": "public/css/styles.css",
-      "line": 4235,
+      "line": 4226,
       "selector": "#modalEditarContratos .ct-overplanning-alert",
       "token": "--ds-color-state-warning-bg",
       "kind": "at-risk",

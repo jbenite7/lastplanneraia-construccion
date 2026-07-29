@@ -87,6 +87,28 @@
     color: var(--ds-color-state-info-text);
   }
 
+  /* La opcion que sigue al cursor y al teclado. Sin esta regla el adaptador no
+     declaraba nada para ella y en /programacion-semanal, /contratos y /pdc se
+     navegaba el desplegable a ciegas: medido con el panel abierto y el
+     resaltado movido fuera de la opcion ya seleccionada, la opcion senalada
+     daba exactamente el mismo par fondo/tinta que sus vecinas sin senalar.
+
+     El par verde corporativo + tinta inversa (8,67:1) se trae tal cual de
+     public/css/styles.css, donde vivia acotado a #modalNuevaActividad y solo
+     surtia efecto en /listado-actividades. Aqui, sin ese ambito, cubre las
+     cuatro rutas por igual.
+
+     Va DESPUES de la regla [aria-selected="true"] y con su misma especificidad
+     (0,1,1): el resaltado gana sobre la seleccion cuando coinciden, que es lo
+     que ya hacia la regla del modal. No hace falta !important ni subir
+     especificidad porque `@layer components` va despues de `vendor`, que es
+     donde entra el azul propio de select2.min.css; ni `:where()`, que al
+     dejarla en 0,0,0 la haria perder contra la regla de arriba. */
+  .select2-results__option--highlighted[aria-selected] {
+    background: var(--ds-color-domain-corporate);
+    color: var(--ds-color-text-inverse);
+  }
+
   :where(.select2-container--focus .select2-selection) {
     border-color: var(--ds-color-brand-primary);
     box-shadow: var(--ds-shadow-focus);

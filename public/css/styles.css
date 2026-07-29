@@ -1540,11 +1540,6 @@ table.dataTable tbody tr:hover td {
   word-break: break-word;
 }
 
-#modalNuevaActividad .select2-results__option--highlighted[aria-selected] {
-  background: var(--ds-color-domain-corporate);
-  color: var(--ds-color-text-inverse);
-}
-
 .aia-modal__actions {
   display: flex;
   align-items: center;
