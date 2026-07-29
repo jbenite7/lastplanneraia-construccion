@@ -29,7 +29,7 @@ que es peor que no tener este archivo.
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | PENDIENTE | | |
+| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `035f1db` | 2026-07-29 |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | PENDIENTE | | |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
@@ -58,5 +58,6 @@ que es peor que no tener este archivo.
 despliegue necesita que el comunicado haya salido y que el usuario lo autorice en el momento; el retiro
 necesita una obra trabajando de verdad. Que su predecesora diga `HECHO` **no basta** para arrancarlos.
 
-**El nº 1 y el nº 3 se rozan en un punto:** los 25 paquetes sin `duracion_ref` los resuelve la sesión del
-tablero, no la del cierre. Si eres la del cierre, sáltate ese punto.
+**El nº 1 y el nº 3 se rozan en un punto:** los paquetes sin `duracion_ref` los resuelve la sesión del
+tablero, no la del cierre. Si eres la del cierre, sáltate ese punto. **Cerrado el 2026-07-29:** no eran 25
+sino 42, y ya recibían fechas solos por la mediana de su tipo — ver `evidence/paquetes-sin-duracion-ref.md`.

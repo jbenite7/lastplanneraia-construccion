@@ -39,6 +39,37 @@ class PlanComprasSeguimientoController
         $this->ok(['resumen' => $this->service->resumen($projectId)]);
     }
 
+    /** GET /plan-compras/api/seguimiento/vencimientos?paso=<clave>&responsable=<id|sin> */
+    public function vencimientos(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+
+        $paso = $_GET['paso'] ?? '';
+        // `responsable=sin` es una opción de primera clase, no la ausencia del parámetro: «los que no
+        // tienen dueño» es una pregunta que se hace a propósito, y sin este valor no habría cómo
+        // distinguirla de «no filtres por responsable».
+        $crudo = $_GET['responsable'] ?? '';
+        $soloSinResponsable = $crudo === 'sin';
+        $responsableUserId = null;
+        if (!$soloSinResponsable && $crudo !== '') {
+            $id = filter_var($crudo, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($id === false) {
+                $this->fail('RESPONSABLE_INVALIDO', 'responsable inválido.', 422);
+                return;
+            }
+            $responsableUserId = $id;
+        }
+
+        $this->ok($this->service->vencimientos($projectId, [
+            'pasoClave' => is_string($paso) ? $paso : '',
+            'responsableUserId' => $responsableUserId,
+            'soloSinResponsable' => $soloSinResponsable,
+        ]));
+    }
+
     /** GET /plan-compras/api/seguimiento/paquete?paqueteId=N */
     public function paquete(): void
     {

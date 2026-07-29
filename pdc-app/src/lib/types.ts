@@ -354,7 +354,19 @@ export type ResumenPaquetes = {
 }
 
 // Tipos del plan de fechas (Fase A4)
-export type PasoPlan = { orden: number; paso: string; dias: number; fechaInicio: string; fechaFin: string }
+// `vencimiento` lo resuelve el servidor con la misma regla que el tablero de Vencimientos (B2):
+// 'cumplido' | 'vencido' | 'sem1' | 'sem2' | 'sem3' | 'sem6' | 'adelante' | 'sin_fecha'. Se recibe como
+// string y no como unión literal a propósito: si el servidor añadiera un corte, la pantalla lo mostraría
+// crudo (ver etiquetaCorte) en vez de romper el build o esconder la fila.
+export type PasoPlan = {
+  orden: number
+  paso: string
+  dias: number
+  fechaInicio: string
+  fechaFin: string
+  fechaReal: string | null
+  vencimiento: string
+}
 
 export type FilaPlan = {
   paqueteId: number
@@ -554,4 +566,29 @@ export type FiltrosSeguimiento = {
   frente: string
   estado: '' | 'sin_empezar' | 'en_curso' | 'terminado'
   soloAtrasados: boolean
+}
+
+// Tablero de vencimientos (Fase B2, primera mitad). Una fila por PASO pendiente, no por paquete.
+export type FilaVencimiento = {
+  paqueteId: number
+  paquete: string
+  frenteNombre: string
+  pasoId: number | null
+  orden: number
+  paso: string
+  clave: string
+  fechaFin: string | null
+  responsableUserId: number | null
+  responsableNombre: string
+  estado: string
+  diasDesfase: number | null
+}
+
+export type RespuestaVencimientos = {
+  hoy: string
+  filas: FilaVencimiento[]
+  conteos: Record<string, number>
+  totalPendientes: number
+  pasos: { clave: string; paso: string }[]
+  sinFechas: { paquetes: number; sinFrente: number; sinCalcular: number }
 }

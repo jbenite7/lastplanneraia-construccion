@@ -695,3 +695,25 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Mientras el POST vuela el campo se bloquea: el cursor de espera es la unica senal de que la fecha
    todavia no esta guardada. */
 .pdc-seg-panel-tabla input[type='date']:disabled { opacity: 0.55; cursor: wait; }
+
+/* Tablero de vencimientos (B2). Los niveles del semáforo salen de los tokens que ya usa el estado del
+   plan, para que el mismo grado de urgencia se vea igual en las dos pantallas. */
+.pdc-venc-ciego { margin: 8px 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+.pdc-venc-conteos { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.pdc-venc-chip { font-size: var(--pdc-fs-sm); padding: 4px 11px; border-radius: var(--pdc-radio-pill);
+  border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted); }
+.pdc-venc-grupo { margin-top: 20px; }
+.pdc-venc-titulo { font-size: var(--pdc-fs-md); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.pdc-venc-num { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+.pdc-venc--vencido { color: var(--pdc-error-ink); font-weight: 600; }
+.pdc-venc--sem1 { color: var(--pdc-aviso-ink); font-weight: 600; }
+.pdc-venc--sem2 { color: var(--pdc-aviso-ink); }
+.pdc-venc--sem3 { color: var(--pdc-accent-texto); }
+.pdc-venc--sem6 { color: var(--pdc-accent-texto); }
+/* Un paso ya cumplido no vence: se ve tranquilo, y en el tablero de vencimientos ni aparece. */
+.pdc-venc--cumplido { color: var(--pdc-accent-texto); }
+/* Lo lejano y lo que no tiene fecha comparten el gris apagado: ninguno de los dos es trabajo de esta
+   semana, y darles color propio los pondría a competir con lo que sí lo es. */
+.pdc-venc--adelante,
+.pdc-venc--sin_fecha { color: var(--pdc-ink-muted); }
