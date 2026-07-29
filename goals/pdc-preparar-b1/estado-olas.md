@@ -29,7 +29,7 @@ que es peor que no tener este archivo.
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `035f1db` | 2026-07-29 |
+| 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | PENDIENTE | | |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
