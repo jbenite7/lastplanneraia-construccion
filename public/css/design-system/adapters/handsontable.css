@@ -19,6 +19,16 @@
     background: transparent !important;
     box-shadow: none !important;
   }
+  /* El vendor pinta `.handsontable tr` de blanco opaco y aqui solo se neutralizaba
+     la fila del cuerpo. La fila de cabecera seguia blanca, y como el `th` usa
+     `--ds-active-surface-raised` (translucido al 86 %) ese blanco se colaba por
+     debajo: la cabecera componia un gris verdoso muy por encima del token, y era
+     la superficie mas clara de la app en dark. Se neutraliza solo el fondo; el
+     resto del reset de fila no aplica a la cabecera. */
+  .handsontable thead tr {
+    background: transparent !important;
+  }
+
   .handsontable :where(th, td) {
     display: table-cell !important;
     width: auto !important;
