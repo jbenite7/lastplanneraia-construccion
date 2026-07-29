@@ -16,6 +16,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
 use App\Services\Pdc\AmarreCronogramaService;
+use App\Services\Pdc\PlanFechasService;
 
 $failures = [];
 $assert = static function (bool $c, string $m) use (&$failures): void {
@@ -216,9 +217,24 @@ if ($daporto === 0) {
                 $sostienen[$m[1]] = true;
             }
         }
+        // El seed tiene DOS consumidores desde el merge de A4.2 (2026-07-29): este servicio, que
+        // amarra el insumo a su rama, y `PlanFechasService`, que propone el frente del paquete.
+        // Medir la poda contra uno solo declara muerta una regla que el otro sí está usando: fue lo
+        // que pasó con URBANISMO Y OBRAS EXTERIORES, redundante aquí (el automático llega solo tras
+        // ganar las PALABRAS_VACIAS de A4.2, Jaccard 1/3 = 0,3333 contra el umbral 0,33) y viva
+        // allá, donde sostiene la propuesta de 9 paquetes con confianza ALTA. Sin la regla caen a
+        // similitud, y 0,3333 < 0,7 los deja en MEDIA: el botón que acepta solo las altas dejaría
+        // de cubrirlos. Una regla está viva si sostiene a CUALQUIERA de los dos.
+        foreach ((new PlanFechasService($db))->sugerirFrentes(73) as $s) {
+            if (($s['origen'] ?? '') === 'correspondencia'
+                && preg_match('/^Sus insumos están en «(.+?)»/u', (string) ($s['evidencia'] ?? ''), $mp) === 1) {
+                $sostienen[$mp[1]] = true;
+            }
+        }
         $muertas = array_diff(array_keys($seed['reglas'] ?? []), array_keys($sostienen));
         $assert($muertas === [],
-            'Ninguna regla sembrada es redundante en DAPORTO. Sobran: ' . (implode(', ', $muertas) ?: '—'));
+            'Ninguna regla sembrada es redundante en DAPORTO (medido contra los dos motores). Sobran: '
+            . (implode(', ', $muertas) ?: '—'));
     }
 }
 

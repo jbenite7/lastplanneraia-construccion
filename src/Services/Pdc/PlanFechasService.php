@@ -113,9 +113,9 @@ class PlanFechasService
      * cambiaba en medio (inalcanzable en la práctica: sin semanas no hay frentes y `amarrar()` sale
      * antes con FRENTE_INVALIDO). Devolverlas juntas quita el segundo viaje y la incoherencia.
      *
-     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}>}
+     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>}
      */
-    private function semanaYFrentes(int $projectId): array
+    private function semanaYFrentes(int $projectId, bool $soloEncabezados = true): array
     {
         $semana = $this->db->query(
             'SELECT MAX(Semana) FROM semanas_activas WHERE project_id = ?',
@@ -124,11 +124,14 @@ class PlanFechasService
         if ($semana === false || $semana === null) {
             return ['semana' => null, 'frentes' => []];
         }
+        // `Titulo = 1` son los encabezados —los 31 frentes de obra—; con `$soloEncabezados = false`
+        // entran también las 242 hojas. Ver anclasDisponibles() para por qué hacen falta.
+        $filtroTitulo = $soloEncabezados ? ' AND Titulo = 1' : '';
         $rows = $this->db->query(
-            'SELECT unique_id, Actividad, Fecha_Inicio FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ? AND Titulo = 1 AND unique_id IS NOT NULL
+            "SELECT unique_id, Actividad, Fecha_Inicio, Titulo FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ?{$filtroTitulo} AND unique_id IS NOT NULL
                AND Fecha_Inicio IS NOT NULL
-             ORDER BY Fecha_Inicio ASC, unique_id ASC',
+             ORDER BY Fecha_Inicio ASC, unique_id ASC",
             [$projectId, (int) $semana],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -141,20 +144,64 @@ class PlanFechasService
                     'nombre' => $l['nombre'],
                     'capitulo' => $l['capitulo'],
                     'fechaInicio' => (string) $r['Fecha_Inicio'],
+                    'esFrente' => (int) $r['Titulo'] === 1,
                 ];
             }, $rows),
         ];
     }
 
     /**
-     * Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio).
+     * Todos los nodos del cronograma a los que se puede amarrar un paquete: los 31 encabezados y
+     * también las 242 hojas.
+     *
+     * Las hojas hacen falta por una razón de obra, no de comodidad: hay ramas del presupuesto que no
+     * tienen frente propio y cuyo hito real es una actividad concreta. El subcapítulo CUBIERTA ancla
+     * en la hoja «LOSA AÉREA CUBIERTA» (2027-07-27); colgarlo del frente ESTRUCTURA (2026-08-18)
+     * adelantaría la contratación 11 meses y 9 días, porque pondría la cubierta casi un año antes de
+     * que exista la losa sobre la que va.
+     *
+     * Ojo con la asimetría, que es deliberada: `sugerirFrentes()` consume `frentesDisponibles()`
+     * (solo encabezados) y nunca compara nombres contra esta lista larga. Está medido que hacerlo
+     * produce disparates —«IMPERMEABILIZACION LOSA CUBIERTA» casa con «LOSA DE CIMENTACIÓN SÓTANO 3»
+     * porque comparten «LOSA»—. Una hoja solo llega a proponerse cuando una correspondencia curada
+     * por una persona la nombra.
+     *
+     * @return list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>
+     */
+    public function anclasDisponibles(int $projectId): array
+    {
+        return $this->semanaYFrentes($projectId, false)['frentes'];
+    }
+
+    /**
+     * Palabras que no dicen nada del oficio y que, contadas como aciertos, fabrican parecidos falsos.
+     * Medido en Da Porto: sin este filtro «CIMENTACIÓN PROFUNDA EN CONCRETO» y «CARPINTERIA EN
+     * MADERA» comparten «EN», y «LABORATORIO DE MATERIALES» y «MOVIMIENTO DE TIERRA» comparten «DE».
+     * Ninguna propuesta viva depende hoy de ellas —las 28 por similitud se sostienen todas en una
+     * palabra con significado y el umbral de 0,33 filtra el resto—, así que quitarlas no cambia
+     * ninguna propuesta existente: es prevención para el día que alguien toque el umbral.
+     *
+     * @var list<string>
+     */
+    private const PALABRAS_VACIAS = [
+        'DE', 'DEL', 'LA', 'EL', 'LOS', 'LAS', 'Y', 'E', 'EN', 'A', 'AL',
+        'CON', 'PARA', 'POR', 'SIN', 'SOBRE', 'U', 'O',
+    ];
+
+    /**
+     * Palabras normalizadas de un nombre, sin el prefijo de tipo de negociación (no dice el oficio)
+     * ni las palabras vacías (ver PALABRAS_VACIAS).
      *
      * @return list<string>
      */
     private static function tokens(string $s): array
     {
         $limpio = preg_replace('/^(Sum \+ Inst|Suministro|M\. de O)\s*/u', '', $s);
-        return array_values(array_filter(explode(' ', MaestroInsumosService::normalizar((string) $limpio))));
+        $bruto = array_filter(explode(' ', MaestroInsumosService::normalizar((string) $limpio)));
+        return array_values(array_filter(
+            $bruto,
+            static fn (string $w): bool => !in_array($w, self::PALABRAS_VACIAS, true),
+        ));
     }
 
     /**
@@ -272,24 +319,66 @@ class PlanFechasService
                 continue; // el insumo asignado no aparece en esta versión del presupuesto
             }
             $actual = $porId[$itemId] ?? null;
-            $sub = null;
             $guard = 0;
+            // Se recogen TODAS las ramas del camino —grupos y subcapítulos—, de la más específica a
+            // la más general, en vez de parar en el primer subcapítulo. El nivel `grupo` no es un
+            // detalle: REVOQUES es el grupo 01.05.06 y ancla en «REVOQUE TRADICIONAL», mientras su
+            // subcapítulo padre (MAMPOSTERIA Y REVOQUE) ancla un mes antes; IMPERMEABILIZACION
+            // FILTROS (grupo 01.06.02) ancla en ESTRUCTURA, casi un año antes que su subcapítulo
+            // hermano. Quedarse con el subcapítulo se saltaría los dos casos y daría fechas falsas.
+            // El orden importa: quien consume esto prefiere la rama más específica que tenga
+            // correspondencia (ver correspondenciaDeRamas()).
             while ($actual !== null && $guard++ < 12) {
-                if ($actual['tipo_fila'] === 'subcapitulo') {
-                    $sub = (string) $actual['descripcion'];
-                    break;
-                }
                 if ($actual['tipo_fila'] === 'capitulo') {
-                    break; // se llegó al capítulo sin pasar por un subcapítulo
+                    break; // el capítulo (COSTO DIRECTO / INDIRECTO) no dice nada del oficio
+                }
+                if (in_array($actual['tipo_fila'], ['grupo', 'subcapitulo'], true)) {
+                    $subcapPorPaquete[(int) $asig['paquete_id']][(string) $actual['descripcion']] = true;
                 }
                 $padre = $actual['codigo_padre'];
                 $actual = $padre !== null ? ($porCodigo[(string) $padre] ?? null) : null;
             }
-            if ($sub !== null) {
-                $subcapPorPaquete[(int) $asig['paquete_id']][$sub] = true;
-            }
         }
         return array_map('array_keys', $subcapPorPaquete);
+    }
+
+    /**
+     * Correspondencias rama del presupuesto → nombre del nodo del cronograma, ya resueltas para este
+     * proyecto: el catálogo global más las excepciones de la obra, que ganan.
+     *
+     * Se guarda el NOMBRE del nodo, no su `unique_id`, porque el unique_id pertenece a una obra
+     * concreta mientras que el nombre («ESTRUCTURA», «MAMPOSTERÍA») se repite entre obras. Ese es el
+     * detalle que permite que el catálogo sea global y que el próximo proyecto arranque con el
+     * trabajo hecho.
+     *
+     * @return array<string, array{ancla: string, confirmado: bool, nota: string, alcance: string}>
+     *         indexado por rama normalizada
+     */
+    private function correspondenciasEfectivas(int $projectId): array
+    {
+        $out = [];
+        foreach ($this->db->query(
+            'SELECT rama_norm, ancla_nombre, confirmado_humano, nota FROM general_rama_frente',
+        )->fetchAll(\PDO::FETCH_ASSOC) as $r) {
+            $out[MaestroInsumosService::normalizar((string) $r['rama_norm'])] = [
+                'ancla' => (string) $r['ancla_nombre'],
+                'confirmado' => (int) $r['confirmado_humano'] === 1,
+                'nota' => (string) $r['nota'],
+                'alcance' => 'global',
+            ];
+        }
+        foreach ($this->db->query(
+            'SELECT rama_norm, ancla_nombre, confirmado_humano, nota FROM pdc_rama_frente WHERE project_id = ?',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC) as $r) {
+            $out[MaestroInsumosService::normalizar((string) $r['rama_norm'])] = [
+                'ancla' => (string) $r['ancla_nombre'],
+                'confirmado' => (int) $r['confirmado_humano'] === 1,
+                'nota' => (string) $r['nota'],
+                'alcance' => 'proyecto',
+            ];
+        }
+        return $out;
     }
 
     /**
@@ -314,10 +403,42 @@ class PlanFechasService
       */
     public function sugerirFrentes(int $projectId, ?int $versionId = null): array
     {
+        return $this->analizarFrentes($projectId, $versionId)['sugerencias'];
+    }
+
+    /**
+     * Igual que `sugerirFrentes()` pero devolviendo también, para cada paquete que se queda sin
+     * propuesta, el motivo en palabras. Una fila muda no le dice a nadie qué hacer; «su rama X
+     * todavía no tiene nodo asignado» sí, y además nombra exactamente lo que hay que resolver.
+     *
+     * @return array{sugerencias: array<int, array<string, mixed>>, motivos: array<int, array{texto: string, rama: string|null}>}
+     */
+    public function sugerenciasYMotivos(int $projectId, ?int $versionId = null): array
+    {
+        return $this->analizarFrentes($projectId, $versionId);
+    }
+
+    /**
+     * @return array{sugerencias: array<int, array<string, mixed>>, motivos: array<int, array{texto: string, rama: string|null}>}
+     */
+    private function analizarFrentes(int $projectId, ?int $versionId = null): array
+    {
         $frentes = $this->frentesDisponibles($projectId);
         if ($frentes === []) {
-            return [];
+            return ['sugerencias' => [], 'motivos' => []];
         }
+        // Las anclas incluyen las hojas: una correspondencia curada puede apuntar a una (CUBIERTA →
+        // «LOSA AÉREA CUBIERTA»). Se indexan por nombre normalizado porque eso es lo que guarda el
+        // catálogo global, que no puede conocer los unique_id de esta obra.
+        $anclaPorNombre = [];
+        foreach ($this->anclasDisponibles($projectId) as $a) {
+            $k = MaestroInsumosService::normalizar($a['nombre']);
+            // Ante nombres repetidos gana el que arranca antes: es el que marca la fecha límite.
+            if (!isset($anclaPorNombre[$k]) || $a['fechaInicio'] < $anclaPorNombre[$k]['fechaInicio']) {
+                $anclaPorNombre[$k] = $a;
+            }
+        }
+        $correspondencias = $this->correspondenciasEfectivas($projectId);
         $paquetes = $this->db->query(
             'SELECT DISTINCT p.id, p.nombre
              FROM general_paquetes_contratacion p
@@ -333,78 +454,314 @@ class PlanFechasService
         }
 
         $out = [];
-        foreach ($paquetes as $p) {
-            $tp = self::tokens((string) $p['nombre']);
-            if ($tp === []) {
-                continue;
-            }
-            $m = $this->mejorFrente($tp, $frentesTok);
-            if ($m === null) {
-                continue;
-            }
-            $mejor = $m['frente'];
-            $out[(int) $p['id']] = [
-                'uniqueId' => $mejor['uniqueId'],
-                'nombre' => $mejor['nombre'],
-                'fechaInicio' => $mejor['fechaInicio'],
-                'origen' => 'similitud',
-                'confianza' => $m['punt'] >= 0.7 ? 'alta' : 'media',
-                'evidencia' => sprintf(
-                    'El nombre del paquete coincide con el frente «%s» del cronograma (arranca %s).',
-                    $mejor['nombre'],
-                    $mejor['fechaInicio'],
-                ),
-            ];
-        }
-
-        // Señal 2: la rama, solo para los que el nombre no resolvió.
-        $sinMatch = array_values(array_diff(
-            array_map(static fn (array $p): int => (int) $p['id'], $paquetes),
-            array_keys($out),
-        ));
+        $motivos = [];
+        $ids = array_map(static fn (array $p): int => (int) $p['id'], $paquetes);
         $vid = $this->versionActivaId($projectId, $versionId);
-        if ($sinMatch !== [] && $vid !== null) {
-            $subcapPorPaquete = $this->subcapitulosDePaquete($projectId, $vid, $sinMatch);
-            foreach ($sinMatch as $paqueteId) {
-                $subs = $subcapPorPaquete[$paqueteId] ?? [];
-                if ($subs === []) {
-                    continue; // sin insumos vinculados en esta versión: la señal no aplica
+        $ramasPorPaquete = $vid !== null ? $this->subcapitulosDePaquete($projectId, $vid, $ids) : [];
+
+        foreach ($paquetes as $p) {
+            $paqueteId = (int) $p['id'];
+            $tp = self::tokens((string) $p['nombre']);
+            $ramas = $ramasPorPaquete[$paqueteId] ?? [];
+
+            // ---- Señal 1: la rama, vía correspondencia. Es la que sabe que CIELOS RASOS pertenece
+            // a ACABADOS aunque no compartan ninguna palabra.
+            $candidatos = $this->anclasDeRamas($ramas, $correspondencias, $anclaPorNombre, $frentes);
+
+            if ($candidatos !== []) {
+                // El subcapítulo acota, el nombre desempata dentro del grupo: "M. de O MAMPOSTERÍA" y
+                // "Sum + Inst REVOQUE SECO" comparten rama y una persona los amarró a frentes
+                // distintos, y lo que los separa es el nombre.
+                $elegido = null;
+                $puntNombre = 0.0;
+                foreach ($candidatos as $c) {
+                    $punt = $tp === [] ? 0.0 : $this->parecido($tp, self::tokens($c['ancla']['nombre']));
+                    if ($punt > $puntNombre) {
+                        $puntNombre = $punt;
+                        $elegido = $c;
+                    }
                 }
-                $mejorGlobal = null;
-                $mejorSub = null;
-                foreach ($subs as $sub) {
-                    $tp = self::tokens($sub);
-                    if ($tp === []) {
-                        continue;
-                    }
-                    $m = $this->mejorFrente($tp, $frentesTok);
-                    if ($m === null) {
-                        continue;
-                    }
-                    // Entre varios subcapítulos con frente candidato, gana el que arranca antes.
-                    if ($mejorGlobal === null || $m['frente']['fechaInicio'] < $mejorGlobal['frente']['fechaInicio']) {
-                        $mejorGlobal = $m;
-                        $mejorSub = $sub;
-                    }
+                // Sin desempate por nombre gana el que arranca antes: el contrato tiene que estar
+                // listo para el primer uso, no para el más caro (mismo criterio que A3.3).
+                if ($elegido === null) {
+                    usort($candidatos, static fn (array $a, array $b): int => $a['ancla']['fechaInicio'] <=> $b['ancla']['fechaInicio']);
+                    $elegido = $candidatos[0];
                 }
-                if ($mejorGlobal === null) {
-                    continue;
+
+                // ¿El nombre del paquete apunta a un frente que NO está entre los candidatos? Se
+                // respeta la rama —es la señal fuerte— pero baja a media y se dice el desacuerdo en
+                // vez de esconderlo.
+                $porNombre = $tp === [] ? null : $this->mejorFrente($tp, $frentesTok);
+                $nombresCandidatos = array_map(static fn (array $c): int => $c['ancla']['uniqueId'], $candidatos);
+                $discrepa = $porNombre !== null && !in_array($porNombre['frente']['uniqueId'], $nombresCandidatos, true);
+
+                $confianza = $elegido['confirmado'] && !$discrepa ? 'alta' : 'media';
+                $evidencia = sprintf(
+                    'Sus insumos están en «%s», que según %s corresponde a «%s» del cronograma (arranca %s).',
+                    $elegido['rama'],
+                    $elegido['confirmado'] ? 'una correspondencia confirmada' : 'una correspondencia aún sin confirmar',
+                    $elegido['ancla']['nombre'],
+                    $elegido['ancla']['fechaInicio'],
+                );
+                if ($discrepa) {
+                    $evidencia .= sprintf(
+                        ' Ojo: por su nombre parecería «%s»; se respeta la rama, revísalo.',
+                        $porNombre['frente']['nombre'],
+                    );
                 }
                 $out[$paqueteId] = [
-                    'uniqueId' => $mejorGlobal['frente']['uniqueId'],
-                    'nombre' => $mejorGlobal['frente']['nombre'],
-                    'fechaInicio' => $mejorGlobal['frente']['fechaInicio'],
-                    'origen' => 'rama',
-                    'confianza' => 'media',
-                    'evidencia' => sprintf(
-                        'Sus insumos están en el subcapítulo «%s», que en el cronograma arranca el %s.',
-                        $mejorSub,
-                        $mejorGlobal['frente']['fechaInicio'],
-                    ),
+                    'uniqueId' => $elegido['ancla']['uniqueId'],
+                    'nombre' => $elegido['ancla']['nombre'],
+                    'fechaInicio' => $elegido['ancla']['fechaInicio'],
+                    'origen' => 'correspondencia',
+                    'confianza' => $confianza,
+                    'evidencia' => mb_substr($evidencia, 0, 500),
                 ];
+                continue;
+            }
+
+            // ---- Señal 2 (respaldo): el nombre contra los encabezados, la capa de A4. Solo actúa
+            // cuando la rama no resolvió, y sigue con el umbral de 0,33 intacto.
+            if ($tp !== []) {
+                $m = $this->mejorFrente($tp, $frentesTok);
+                if ($m !== null) {
+                    $mejor = $m['frente'];
+                    $out[$paqueteId] = [
+                        'uniqueId' => $mejor['uniqueId'],
+                        'nombre' => $mejor['nombre'],
+                        'fechaInicio' => $mejor['fechaInicio'],
+                        'origen' => 'similitud',
+                        'confianza' => $m['punt'] >= 0.7 ? 'alta' : 'media',
+                        'evidencia' => sprintf(
+                            'El nombre del paquete coincide con el frente «%s» del cronograma (arranca %s).',
+                            $mejor['nombre'],
+                            $mejor['fechaInicio'],
+                        ),
+                    ];
+                    continue;
+                }
+            }
+
+            // ---- Sin propuesta: se dice por qué, nombrando la rama que falta por resolver.
+            $motivos[$paqueteId] = $ramas === []
+                ? ['texto' => 'No tiene insumos localizados en el presupuesto de esta versión.', 'rama' => null]
+                : [
+                    'texto' => sprintf('Su rama «%s» todavía no tiene nodo del cronograma asignado.', $ramas[0]),
+                    'rama' => $ramas[0],
+                ];
+        }
+
+        return ['sugerencias' => $out, 'motivos' => $motivos];
+    }
+
+    /**
+     * Las correspondencias que este proyecto usa, y las ramas que todavía no tienen ninguna.
+     *
+     * Se devuelven juntas a propósito: el panel no sirve para admirar lo resuelto sino para cerrar
+     * lo que falta, y las ramas pendientes son exactamente las que dejan paquetes sin propuesta.
+     * Solo se listan las ramas que el proyecto usa de verdad; el catálogo entero sería ruido.
+     *
+     * @return array{
+     *     correspondencias: list<array{rama: string, ancla: string, confirmado: bool, alcance: string, nota: string}>,
+     *     pendientes: list<string>, confirmadas: int, sinConfirmar: int
+     * }
+     */
+    public function correspondencias(int $projectId, ?int $versionId = null): array
+    {
+        $efectivas = $this->correspondenciasEfectivas($projectId);
+        $anclas = [];
+        foreach ($this->anclasDisponibles($projectId) as $a) {
+            $anclas[MaestroInsumosService::normalizar($a['nombre'])] = true;
+        }
+
+        $vid = $this->versionActivaId($projectId, $versionId);
+        $ramasUsadas = [];
+        if ($vid !== null) {
+            $ids = $this->db->query(
+                'SELECT DISTINCT p.id FROM general_paquetes_contratacion p
+                 JOIN pdc_insumo_paquete ip ON ip.paquete_id = p.id
+                 WHERE p.activo = 1 AND ip.project_id = ?
+                   AND p.modalidad_contratacion IN (\'contrato\', \'orden_compra\')',
+                [$projectId],
+            )->fetchAll(\PDO::FETCH_COLUMN);
+            foreach ($this->subcapitulosDePaquete($projectId, $vid, array_map('intval', $ids)) as $ramas) {
+                foreach ($ramas as $r) {
+                    $ramasUsadas[MaestroInsumosService::normalizar($r)] = $r;
+                }
             }
         }
 
+        $out = [];
+        $pendientes = [];
+        $confirmadas = 0;
+        $sinConfirmar = 0;
+        foreach ($ramasUsadas as $norm => $original) {
+            if (isset($efectivas[$norm])) {
+                $e = $efectivas[$norm];
+                $e['confirmado'] ? $confirmadas++ : $sinConfirmar++;
+                $out[] = [
+                    'rama' => $original,
+                    'ancla' => $e['ancla'],
+                    'confirmado' => $e['confirmado'],
+                    'alcance' => $e['alcance'],
+                    'nota' => $e['nota'],
+                ];
+                continue;
+            }
+            // Coincidencia exacta con un nodo del cronograma: se resuelve sola, no es un pendiente.
+            if (isset($anclas[$norm])) {
+                $confirmadas++;
+                $out[] = [
+                    'rama' => $original,
+                    'ancla' => $original,
+                    'confirmado' => true,
+                    'alcance' => 'automatica',
+                    'nota' => 'La rama y el nodo del cronograma se llaman igual.',
+                ];
+                continue;
+            }
+            $pendientes[] = $original;
+        }
+        usort($out, static fn (array $a, array $b): int => [$a['confirmado'], $a['rama']] <=> [$b['confirmado'], $b['rama']]);
+
+        // Una rama sin correspondencia propia NO es un pendiente si el paquete igual recibió
+        // propuesta por otra de sus ramas —lo normal: un grupo fino cuyo subcapítulo padre ya está
+        // resuelto—. Listarlas todas daba 66 «pendientes» cuando los paquetes realmente huérfanos
+        // son 4, y un panel que grita 66 cosas por hacer no ayuda a cerrar ninguna. Pendiente es
+        // solo lo que hoy deja a un paquete sin fecha.
+        $bloquean = [];
+        foreach ($this->analizarFrentes($projectId, $versionId)['motivos'] as $m) {
+            if ($m['rama'] !== null) {
+                $bloquean[MaestroInsumosService::normalizar($m['rama'])] = $m['rama'];
+            }
+        }
+        $pendientes = array_values($bloquean);
+        sort($pendientes);
+
+        return [
+            'correspondencias' => $out,
+            'pendientes' => $pendientes,
+            'confirmadas' => $confirmadas,
+            'sinConfirmar' => $sinConfirmar,
+        ];
+    }
+
+    /**
+     * Guarda una correspondencia. `alcance = 'proyecto'` escribe la excepción de esta obra; cualquier
+     * otro valor toca el catálogo global, conocimiento de la empresa, que por eso pide otro permiso.
+     *
+     * Guardar una correspondencia NO amarra ningún paquete: solo cambia lo que el motor propone de
+     * aquí en adelante. Es deliberado — el amarre sigue siendo un acto humano y esto no puede
+     * convertirse en una escritura masiva encubierta.
+     *
+     * @return array{ok: true}|array{ok: false, code: 'DATOS_INVALIDOS'|'ANCLA_INVALIDA'}
+     */
+    public function guardarCorrespondencia(
+        int $projectId,
+        string $rama,
+        string $ancla,
+        string $alcance,
+        string $usuario,
+    ): array {
+        $ramaNorm = MaestroInsumosService::normalizar($rama);
+        if ($ramaNorm === '' || trim($ancla) === '') {
+            return ['ok' => false, 'code' => 'DATOS_INVALIDOS'];
+        }
+        // El ancla tiene que existir en el cronograma de esta obra. Una correspondencia hacia un
+        // nombre inventado no falla al guardarse: falla meses después, dejando paquetes sin fecha.
+        $existe = false;
+        foreach ($this->anclasDisponibles($projectId) as $a) {
+            if (MaestroInsumosService::normalizar($a['nombre']) === MaestroInsumosService::normalizar($ancla)) {
+                $existe = true;
+                break;
+            }
+        }
+        if (!$existe) {
+            return ['ok' => false, 'code' => 'ANCLA_INVALIDA'];
+        }
+
+        if ($alcance === 'proyecto') {
+            $this->db->query(
+                'INSERT INTO pdc_rama_frente (project_id, rama_norm, ancla_nombre, confirmado_humano, asignado_por)
+                 VALUES (?, ?, ?, 1, ?)
+                 ON DUPLICATE KEY UPDATE ancla_nombre = VALUES(ancla_nombre), confirmado_humano = 1,
+                    asignado_por = VALUES(asignado_por)',
+                [$projectId, $ramaNorm, trim($ancla), $usuario],
+            );
+        } else {
+            $this->db->query(
+                'INSERT INTO general_rama_frente (rama_norm, ancla_nombre, confirmado_humano, creado_por, actualizado_por)
+                 VALUES (?, ?, 1, ?, ?)
+                 ON DUPLICATE KEY UPDATE ancla_nombre = VALUES(ancla_nombre), confirmado_humano = 1,
+                    actualizado_por = VALUES(actualizado_por)',
+                [$ramaNorm, trim($ancla), $usuario, $usuario],
+            );
+        }
+        return ['ok' => true];
+    }
+
+    /**
+     * Parecido Jaccard entre dos conjuntos de palabras. 0 si no comparten ninguna.
+     *
+     * @param list<string> $a
+     * @param list<string> $b
+     */
+    private function parecido(array $a, array $b): float
+    {
+        $a = array_unique($a);
+        $b = array_unique($b);
+        if ($a === [] || $b === []) {
+            return 0.0;
+        }
+        $comunes = count(array_intersect($a, $b));
+        return $comunes === 0 ? 0.0 : $comunes / count(array_unique(array_merge($a, $b)));
+    }
+
+    /**
+     * Anclas candidatas para las ramas de un paquete, de la rama más específica a la más general.
+     *
+     * Dos fuentes, ambas con confirmación humana detrás:
+     *  1. La tabla de correspondencias (curada en obra).
+     *  2. La coincidencia exacta de nombre entre la rama y un encabezado del cronograma —ESTRUCTURA
+     *     con ESTRUCTURA—. No se siembran en la tabla a propósito: guardar lo que se deduce solo es
+     *     confundir memoria con conocimiento.
+     *
+     * @param list<string>                                                                    $ramas
+     * @param array<string, array{ancla: string, confirmado: bool, nota: string, alcance: string}> $correspondencias
+     * @param array<string, array{uniqueId: int, nombre: string, fechaInicio: string, esFrente: bool, capitulo: string}> $anclaPorNombre
+     * @param list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}>  $frentes
+     *
+     * @return list<array{rama: string, ancla: array<string, mixed>, confirmado: bool}>
+     */
+    private function anclasDeRamas(array $ramas, array $correspondencias, array $anclaPorNombre, array $frentes): array
+    {
+        $out = [];
+        $vistas = [];
+        foreach ($ramas as $rama) {
+            $k = MaestroInsumosService::normalizar($rama);
+            $ancla = null;
+            $confirmado = false;
+            if (isset($correspondencias[$k])) {
+                $destino = MaestroInsumosService::normalizar($correspondencias[$k]['ancla']);
+                $ancla = $anclaPorNombre[$destino] ?? null;
+                $confirmado = $correspondencias[$k]['confirmado'];
+            }
+            if ($ancla === null) {
+                // Coincidencia exacta con un encabezado: evidencia tan buena como la curada.
+                foreach ($frentes as $f) {
+                    if (MaestroInsumosService::normalizar($f['nombre']) === $k) {
+                        $ancla = $f + ['esFrente' => true];
+                        $confirmado = true;
+                        break;
+                    }
+                }
+            }
+            if ($ancla === null || isset($vistas[$ancla['uniqueId']])) {
+                continue;
+            }
+            $vistas[$ancla['uniqueId']] = true;
+            $out[] = ['rama' => $rama, 'ancla' => $ancla, 'confirmado' => $confirmado];
+        }
         return $out;
     }
 
@@ -427,7 +784,10 @@ class PlanFechasService
     {
         // Una sola lectura del cronograma para las dos cosas que hacen falta aquí: el frente destino
         // y la semana activa que se guarda en `semana_origen` (ver semanaYFrentes()).
-        ['semana' => $semana, 'frentes' => $frentes] = $this->semanaYFrentes($projectId);
+        // `false` = también las hojas. Un paquete puede amarrarse a una actividad concreta y no solo
+        // a un encabezado: el subcapítulo CUBIERTA ancla en «LOSA AÉREA CUBIERTA», y exigir un
+        // encabezado obligaría a colgarlo de ESTRUCTURA, 11 meses antes de que exista la losa.
+        ['semana' => $semana, 'frentes' => $frentes] = $this->semanaYFrentes($projectId, false);
         $frente = null;
         foreach ($frentes as $f) {
             if ($f['uniqueId'] === $uniqueId) {
@@ -455,8 +815,29 @@ class PlanFechasService
             return ['ok' => false, 'code' => 'MODALIDAD_NO_CONTRATABLE'];
         }
 
-        $origen = in_array($procedencia['origen'] ?? '', ['similitud', 'rama'], true) ? $procedencia['origen'] : 'humano';
+        $origen = in_array($procedencia['origen'] ?? '', ['similitud', 'rama', 'correspondencia'], true)
+            ? $procedencia['origen']
+            : 'humano';
         $delMotor = $origen !== 'humano';
+
+        // Corregir al motor es información, no ruido: sin este registro nunca se puede medir si
+        // acierta. Se escribe solo cuando había una propuesta y la persona eligió otra cosa —aceptar
+        // tal cual no es una corrección—. Mismo criterio que `pdc_correcciones_motor` con los
+        // insumos, en su tabla propia porque aquélla está atada a (descripcion_norm, unidad).
+        $sugerido = filter_var($procedencia['sugeridoUniqueId'] ?? null, FILTER_VALIDATE_INT);
+        if ($sugerido !== false && $sugerido !== $uniqueId) {
+            $this->db->query(
+                'INSERT INTO pdc_correcciones_frente
+                    (project_id, paquete_id, unique_id_sugerido, unique_id_elegido, capa_sugerida, confianza_sugerida, usuario)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [
+                    $projectId, $paqueteId, $sugerido, $uniqueId,
+                    mb_substr((string) ($procedencia['origenSugerido'] ?? $procedencia['origen'] ?? ''), 0, 20),
+                    in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true) ? $procedencia['confianza'] : null,
+                    $usuario,
+                ],
+            );
+        }
 
         $this->db->beginTransaction();
         try {

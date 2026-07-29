@@ -222,6 +222,9 @@ $router->post('/plan-compras/api/paquetes/auto-asignar', [\App\Controllers\Api\P
 // hashmap exacto y el orden no cambia el resultado, se preserva el orden pedido por consistencia.
 $router->get('/plan-compras/api/plan/frentes', [\App\Controllers\Api\PlanComprasPlanController::class, 'frentes']);
 $router->get('/plan-compras/api/plan/sugerencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'sugerencias']);
+$router->get('/plan-compras/api/plan/anclas', [\App\Controllers\Api\PlanComprasPlanController::class, 'anclas']);
+$router->get('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'correspondencias']);
+$router->post('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarCorrespondencia']);
 $router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
 $router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
 $router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);

@@ -2,8 +2,8 @@
   "fuente": "B1 · amarre insumo↔cronograma. Mapa rama del presupuesto → frente del cronograma, confirmado en obra el 2026-07-28. Solo están las ramas que el emparejamiento automático por nombre NO resuelve: las otras ocho (PRELIMINARES, ESTRUCTURA, MAMPOSTERIA Y REVOQUE, RED HIDROSANITARIA, RED DE GAS, RED ELECTRICA, PISOS Y ENCHAPES, CARPINTERIA DE MADERA) casan solas y no se sembraron para no confundir memoria con conocimiento.",
   "clave": "descripción normalizada de la rama (subcapítulo o grupo del presupuesto)",
   "valor": "nombre del nodo del cronograma que le sirve de ancla",
-  "total": 25,
-  "poda": "Se midió cada regla corriendo el motor con y sin el mapa (`new AmarreCronogramaService($db, false)`), como en A3.3. Las 25 que quedan cambian el destino de su rama; «URBANISMO Y OBRAS EXTERIORES» se borró porque el motor llega solo al frente URBANISMO (Jaccard 0,3333, justo en el umbral).",
+  "total": 26,
+  "conflicto_resuelto_2026_07_29": "Las dos ramas que cierran el submódulo A crearon este archivo por separado: `pdc-b1-amarre-cronograma` con 25 reglas y `pdc-a42-frentes` con 26. La única diferencia era URBANISMO Y OBRAS EXTERIORES, que B1 podó por redundante midiendo Jaccard 0,3333 contra el umbral 0,33. Se conservan las 26 porque esa redundancia NO es propiedad del dato sino de la tokenización de A4.2: con PALABRAS_VACIAS (la «Y» no cuenta) los tokens son 3 y Jaccard da 1/3 = 0,3333, que pasa por 0,0033; sin esa lista —el estado de B1 y el de origin/main— los tokens son 4 y Jaccard da 0,25, que NO alcanza el umbral. Verificado en código: `PlanFechasService::PALABRAS_VACIAS` solo existe en la rama de A4.2 y `SIMILITUD_MINIMA` es 0.33 en ambas. Una regla que solo sobra gracias a un cambio sin integrar no sobra: si mañana se toca la lista de palabras vacías o el umbral, URBANISMO se queda sin frente en silencio. Dos migraciones leen este archivo (20260729_pdc_v2_amarre_cronograma.php y 20260728_pdc_v2_rama_frente.php), así que la versión que quede aquí las gobierna a las dos.",
   "reglas": {
     "EXCAVACIONES Y LLENOS": {
       "frente": "MOVIMIENTO DE TIERRA",
@@ -89,6 +89,11 @@
       "frente": "ASEO DE APARTAMENTOS",
       "alcance": "global",
       "nota": "Aseo, detallada de entrega y nomenclatura van con el aseo de apartamentos."
+    },
+    "URBANISMO Y OBRAS EXTERIORES": {
+      "frente": "URBANISMO",
+      "alcance": "global",
+      "nota": "Solo falla por el sufijo del presupuesto."
     },
     "VIAS Y PAVIMENTO": {
       "frente": "VIAS INTERNAS",

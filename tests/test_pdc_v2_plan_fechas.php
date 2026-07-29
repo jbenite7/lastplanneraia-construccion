@@ -229,7 +229,10 @@ $sug = $svc->sugerirFrentes($P);
 
 $s = $sug[$paqEstructura] ?? null;
 $assert($s !== null && $s['uniqueId'] === 9001, 'El paquete «TEST A4 ESTRUCTURA» se propone al frente ESTRUCTURA.');
-$assert($s !== null && $s['origen'] === 'similitud', 'La propuesta por nombre se marca como «similitud».');
+// A4.2: la rama, vía correspondencia, resuelve ANTES que el nombre. La capa 'similitud' quedó como
+// respaldo para cuando ninguna rama del paquete tiene correspondencia, así que aquí basta con que la
+// propuesta exista y venga de una de las dos capas del motor.
+$assert($s !== null && in_array($s['origen'], ['correspondencia', 'similitud'], true), 'La propuesta por nombre viene de una capa del motor. Dio ' . ($s['origen'] ?? 'nada'));
 $assert($s !== null && str_contains($s['evidencia'], 'ESTRUCTURA'), 'La evidencia nombra el frente: ' . ($s['evidencia'] ?? ''));
 
 $assert(!isset($sug[$paqRaro]), 'Sin señal, no hay propuesta: el paquete queda pendiente.');
@@ -242,14 +245,20 @@ $assert(!isset($sug[$paqConsumoDirecto]), 'Hallazgo 2: modalidad consumo_directo
 
 $rm = $sug[$paqRamaMulti] ?? null;
 $assert($rm !== null, 'Hallazgo 4: la señal de rama sí produce una propuesta cuando el nombre no basta.');
-$assert($rm !== null && $rm['origen'] === 'rama', 'El origen de esa propuesta es «rama».');
+// A4.2: la capa 'rama' pasó a llamarse 'correspondencia'. No es un renombre cosmético: antes
+// comparaba el nombre del subcapítulo contra los frentes, y ahora consulta el puente curado
+// rama → nodo del cronograma, que es lo que permite que CIELOS RASOS llegue a ACABADOS.
+$assert($rm !== null && $rm['origen'] === 'correspondencia', 'El origen de esa propuesta es «correspondencia». Dio ' . ($rm['origen'] ?? 'nada'));
 $assert($rm !== null && $rm['uniqueId'] === 9002, 'Hallazgo 3: elige PRELIMINARES (mayor valor), no ESTRUCTURA (primera fila).');
-$assert($rm !== null && $rm['confianza'] === 'media', 'La propuesta por rama nunca es de confianza alta: hay un salto.');
+// A4.2: una correspondencia CONFIRMADA por una persona sí da confianza alta (f06). El salto que este
+// assert protegía era el de la vieja capa 'rama', que deducía por parecido de nombres y nunca tenía
+// evidencia humana detrás. La confianza la da la evidencia, no la capa.
+$assert($rm !== null && in_array($rm['confianza'], ['alta', 'media'], true), 'La propuesta por rama declara su confianza. Dio ' . ($rm['confianza'] ?? 'nada'));
 $assert($rm !== null && str_contains($rm['evidencia'], 'PRELIMINARES'), 'La evidencia por rama nombra el subcapítulo: ' . ($rm['evidencia'] ?? ''));
 
-// Ningún origen fuera de {similitud, rama}.
+// Ningún origen fuera de {correspondencia, similitud} (A4.2 sustituyó 'rama' por 'correspondencia').
 foreach ($sug as $pid => $s2) {
-    $assert(in_array($s2['origen'], ['similitud', 'rama'], true), "Origen válido en el paquete $pid: {$s2['origen']}");
+    $assert(in_array($s2['origen'], ['correspondencia', 'similitud'], true), "Origen válido en el paquete $pid: {$s2['origen']}");
 }
 
 // --- amarrar ---
