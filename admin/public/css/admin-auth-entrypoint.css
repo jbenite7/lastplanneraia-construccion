@@ -1,0 +1,30 @@
+/* admin/public/css/admin-auth-entrypoint.css
+ *
+ * Entrypoint de las tres vistas de autenticacion de `admin/` con `<html>` propio
+ * (`login.php`, `password-forgot.php`, `password-reset.php`). Mismo criterio y
+ * mismo orden de capas que `admin-entrypoint.css`, con el set minimo de vendors
+ * que esas paginas usan.
+ *
+ * CIERRA UNA DEUDA MEDIDA EN EL SPEC F4: `public/css/login-brand-unified.css`
+ * consume `--ds-active-*`, pero estas paginas no cargaban ninguna hoja que los
+ * definiera, asi que esas declaraciones eran invalidas en tiempo de computo. Al
+ * importar `tokens.css` + `theme-overrides.css` aqui, pasan a resolver.
+ *
+ * `login-brand-unified.css` NO se importa aqui: las vistas lo siguen enlazando
+ * con su propio `<link>`, sin capa, tal como hacen las de `views/auth/`. Es
+ * deliberado — sin capa gana a todo, que es lo que hace que la piel de login
+ * mande sobre AdminLTE — y mantiene identico el comportamiento actual.
+ */
+
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+
+@import url("/public/vendor/admin-lte/css/adminlte.min.css") layer(vendor);
+@import url("/public/vendor/font-awesome/css/all.css") layer(vendor);
+@import url("/public/vendor/icheck-bootstrap/icheck-bootstrap.min.css") layer(vendor);
+
+@import url("/css/design-system/fonts.css?v=1.0.0");
+
+@import url("/css/tokens.css?v=1.0.0");
+@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.0.0");
+
+@import url("/css/design-system/adapters/admin-lte.css?v=1.0.0");

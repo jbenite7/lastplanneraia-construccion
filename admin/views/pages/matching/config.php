@@ -111,7 +111,7 @@
         </div>
 
         <div class="card-footer">
-          <button type="submit" class="btn" style="background-color: #1a5633; color: #fff;">
+          <button type="submit" class="btn btn-primary">
             <i class="fas fa-save mr-1"></i> Guardar Configuración
           </button>
         </div>

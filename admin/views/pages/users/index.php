@@ -21,19 +21,19 @@ use Admin\Core\RoleManager;
     </div>
   </div>
   <!-- /.card-header -->
-  <div class="card-body p-0" style="max-height: 700px; overflow-y: auto;">
-    <table id="usersTable" class="table table-bordered table-striped table-sm" style="width: 100%; font-size: 0.8rem; border-collapse: separate; border-spacing: 0;">
+  <div class="card-body p-0 admin-table-scroll">
+    <table id="usersTable" class="table table-bordered table-striped table-sm admin-table-dense">
       <thead>
         <tr>
-          <th style="width: 40px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">ID</th>
-          <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Nombre</th>
-          <th style="width: 100px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Usuario</th>
-          <th style="width: 150px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Email</th>
-           <th style="position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Cargo</th>
-           <th style="width: 160px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">Rol Principal</th>
-           <th style="width: 150px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Estado</th>
-           <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Proyectos</th>
-           <th style="width: 90px; position: sticky; top: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;" class="text-center">Acciones</th>
+          <th class="admin-col-3xs">ID</th>
+          <th>Nombre</th>
+          <th class="admin-col-xs">Usuario</th>
+          <th class="admin-col-sm">Email</th>
+           <th>Cargo</th>
+           <th class="admin-col-md">Rol Principal</th>
+           <th class="admin-col-sm text-center">Estado</th>
+           <th class="admin-col-2xs text-center">Proyectos</th>
+           <th class="admin-col-2xs text-center">Acciones</th>
          </tr>
        </thead>
        <tbody>
@@ -103,25 +103,6 @@ use Admin\Core\RoleManager;
   <!-- /.card-body -->
 </div>
 
-<style>
-    /* Ajustes para maximizar el espacio horizontal y permitir sticky header */
-    .text-break {
-        word-break: break-all !important;
-    }
-    #usersTable td, #usersTable th {
-        vertical-align: middle;
-        padding: 4px 6px;
-        font-size: 0.8rem;
-    }
-    .user-row-inactive {
-        opacity: 0.7;
-        background: #f8f9fa;
-    }
-    /* Sombra suave para el header sticky */
-    thead th {
-        box-shadow: inset 0 -1px 0 #dee2e6;
-    }
-</style>
 
 <script>
 $(function () {

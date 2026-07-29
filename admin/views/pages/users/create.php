@@ -18,25 +18,7 @@ foreach (($roles ?? []) as $code => $role) {
 }
 ?>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap4-theme/1.5.2/select2-bootstrap4.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-
-<style>
-  .select2-container--bootstrap4 .select2-selection--single {
-    height: calc(2.25rem + 2px) !important;
-    border: 1px solid #ced4da !important;
-    border-radius: .25rem !important;
-  }
-
-  .assignment-row {
-    border: 1px solid #d7dbe0;
-    border-radius: .35rem;
-    padding: .75rem;
-    margin-bottom: .75rem;
-    background: #fbfcfe;
-  }
-</style>
+<script src="/public/vendor/select2/select2.min.js"></script>
 
 <div class="card card-primary">
   <div class="card-header">
@@ -52,18 +34,18 @@ foreach (($roles ?? []) as $code => $role) {
           <div class="form-group">
             <label for="nombre">Nombre Completo</label>
             <input type="text" name="nombre" class="form-control" id="nombre" placeholder="Nombre completo" required>
-            <span id="nombre-error" class="text-danger" style="display:none; font-size: 0.8rem;">Este nombre ya esta registrado.</span>
+            <span id="nombre-error" class="text-danger admin-field-error">Este nombre ya esta registrado.</span>
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
             <input type="email" name="email" class="form-control" id="email" placeholder="Email">
-            <span id="email-error" class="text-danger" style="display:none; font-size: 0.8rem;">Este email ya esta registrado.</span>
+            <span id="email-error" class="text-danger admin-field-error">Este email ya esta registrado.</span>
           </div>
 
           <div class="form-group">
             <label for="cargo">Cargo</label>
-            <select name="cargo" class="form-control select2" id="cargo" style="width: 100%;">
+            <select name="cargo" class="form-control select2 w-full" id="cargo">
               <option value=""></option>
             </select>
           </div>
@@ -363,7 +345,7 @@ $(document).ready(function () {
             html:
               '<div class="text-left mt-3">' +
                 '<p>Comparte estos datos de forma segura:</p>' +
-                '<div class="p-3 bg-light border rounded mb-3" style="background: rgba(255,255,255,0.05) !important; color: inherit;">' +
+                '<div class="admin-credentials-block mb-3">' +
                   '<strong>Usuario:</strong> <code>' + usuario + '</code><br>' +
                   '<strong>Contrasena:</strong> <code>' + password + '</code>' +
                 '</div>' +

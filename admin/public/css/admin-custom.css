@@ -1,280 +1,252 @@
-@layer reset, base, components, utilities;
+/* admin/public/css/admin-custom.css
+ *
+ * Piezas propias del panel admin: lo que NO es AdminLTE y por tanto no cabe en
+ * `public/css/design-system/adapters/admin-lte.css`.
+ *
+ * Se carga SIEMPRE desde `admin-entrypoint.css`, que declara el orden de capas
+ * canonico. Este archivo no vuelve a declararlo: dos declaraciones `@layer`
+ * distintas en el mismo documento no reordenan nada, pero la duplicidad invita
+ * a que alguien cambie una sola y crea que cambio las dos.
+ *
+ * Lo que se fue de aqui en F4, y a donde:
+ *   - Overrides de AdminLTE/Bootstrap (botones, tarjetas, sidebar, tooltip)
+ *     -> `adapters/admin-lte.css`, que es su sitio y no necesita `!important`.
+ *   - `.btn-aia` de la pagina de login -> ya lo declaraba entero
+ *     `public/css/login-brand-unified.css`; aqui era una copia divergente.
+ *   - `.badge-aia--*`, `.text-break` y utilidades duplicadas de Bootstrap ->
+ *     borradas por falta de consumidor (verificado sobre `admin/`, `views/`,
+ *     `public/js/` y `src/`).
+ *   - Los 37 hex de `admin/public/css/tokens.css` -> `public/css/tokens.css`,
+ *     que es el canonico y ya los contenia todos. El archivo local se elimino.
+ */
 
-@import "tokens.css";
-@import "utilities.css";
-
-/* ========================================
-   RESET & BASE
-   ======================================== */
-
-@layer base {
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--aia-bg-alabaster);
-    color: var(--aia-text-primary);
-  }
-
-  /* ========================================
-     ADMINLTE BRAND OVERRIDES
-     ======================================== */
-  :root {
-    --primary: var(--aia-blue-primary);
-  }
-  
-  /* Buttons & Backgrounds */
-  .bg-primary { background-color: var(--aia-blue-primary) !important; color: white !important; }
-  .btn-primary { background-color: var(--aia-blue-primary); border-color: var(--aia-blue-dark); color: white; }
-  .btn-primary:hover, .btn-primary:first-child:active { background-color: var(--aia-blue-dark); border-color: var(--aia-blue-dark); color: white; }
-  
-  /* Cards */
-  .card-primary.card-outline { border-top-color: var(--aia-blue-primary); }
-  
-  /* Sidebar Branding */
-  .sidebar-dark-primary { background-color: var(--aia-text-primary) !important; }
-  .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
-      background-color: var(--aia-blue-primary) !important;
-      color: white !important;
-  }
-}
-
-/* ========================================
-   COMPONENTS
-   ======================================== */
 @layer components {
-  /* Dashboard Widgets with Container Queries */
+  /* Identidad del usuario en la navbar (antes tres `style="…"` en main.php). */
+  .admin-user-chip {
+    display: inline-block;
+    line-height: var(--ds-type-line-compact);
+    text-align: right;
+  }
+
+  .admin-user-role {
+    display: block;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+  }
+
+  .admin-brand-mark {
+    opacity: 0.8;
+  }
+
+  /* Widgets del dashboard. */
   .dashboard-widget {
     container-type: inline-size;
-    background: white;
-    border-radius: var(--radius-md);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background-color: var(--ds-active-surface);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
   }
 
   .dashboard-widget__body {
     overflow-y: auto;
-    /* Logic property for height */
-    block-size: 15.625rem; /* ~250px */
-    max-block-size: 25rem; /* ~400px */
+    block-size: 15.625rem;
+    max-block-size: 25rem;
   }
 
-  /* Sticky Table Headers */
+  /* Cabecera fija en tablas largas del panel. */
   .table-sticky-header th {
     position: sticky;
     top: 0;
-    background: white;
-    z-index: 10;
-    border-top: 1px solid var(--aia-separators);
-  }
-
-  /* Word Break Utility (Mobile First Shield) */
-  .text-break {
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    hyphens: auto;
+    z-index: var(--ds-z-sticky);
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
   }
 
   .table-responsive table {
-    table-layout: auto; /* Allow flexible wrapping */
+    table-layout: auto;
   }
 
-  /* Status Badges using OKLCH */
-  .badge-aia {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  
-  .badge-aia--success {
-    background-color: var(--aia-green-very-light);
-    color: var(--aia-green-dark);
-  }
-  
-  .badge-aia--warning {
-    background-color: var(--aia-warning-background);
-    color: var(--aia-warning-critical);
-  }
-  
-  .badge-aia--danger {
-    background-color: var(--aia-alert-background);
-    color: var(--aia-alert-critical);
-  }
-
-  /* ========================================
-     APPLE-STYLE BUTTONS (Admin)
-     ======================================== */
-
-  /* Admin Button Radius System */
-  .btn {
-    border-radius: 14px !important;
-  }
-
-  .btn-sm {
-    border-radius: 10px !important;
-  }
-
-  .btn-xs {
-    border-radius: 10px !important;
-  }
-
-  .btn-lg {
-    border-radius: 18px !important;
-  }
-
-  /* Primary - AIA Architecture Blue (for admin) */
-  .btn-primary {
-    background-color: var(--aia-blue-primary) !important;
-    border-color: var(--aia-blue-dark) !important;
-    color: white !important;
-    border-radius: 14px !important;
-  }
-  .btn-primary:hover,
-  .btn-primary:first-child:active {
-    background-color: var(--aia-blue-dark) !important;
-    border-color: var(--aia-blue-dark) !important;
-    color: white !important;
-  }
-
-  /* Success - AIA Green */
-  .btn-success {
-    background-color: var(--aia-green-medium) !important;
-    border-color: var(--aia-green-primary) !important;
-    color: white !important;
-  }
-  .btn-success:hover {
-    background-color: var(--aia-green-primary) !important;
-  }
-
-  /* Danger - Alert Red */
-  .btn-danger {
-    background-color: var(--aia-alert-high) !important;
-    border-color: var(--aia-alert-critical) !important;
-    color: white !important;
-  }
-  .btn-danger:hover {
-    background-color: var(--aia-alert-critical) !important;
-  }
-
-  /* Warning - Yellow */
-  .btn-warning {
-    background-color: var(--aia-warning-high) !important;
-    border-color: var(--aia-warning-critical) !important;
-    color: var(--aia-text-primary) !important;
-  }
-
-  /* Info - Blue */
-  .btn-info {
-    background-color: var(--aia-blue-primary) !important;
-    border-color: var(--aia-blue-dark) !important;
-    color: white !important;
-  }
-  .btn-info:hover {
-    background-color: var(--aia-blue-dark) !important;
-  }
-
-  /* Secondary / Default */
-  .btn-default {
-    background-color: #ffffff !important;
-    border: 1px solid var(--aia-separators) !important;
-    color: var(--aia-text-primary) !important;
-  }
-  .btn-default:hover {
-    background-color: var(--aia-bg-secondary) !important;
-  }
-
-  /* Outline variants */
-  .btn-outline-primary {
-    border: 1.5px solid var(--aia-blue-primary) !important;
-    color: var(--aia-blue-primary) !important;
-    background-color: transparent !important;
-  }
-  .btn-outline-primary:hover {
-    background-color: var(--aia-blue-primary) !important;
-    color: white !important;
-  }
-
-  .btn-outline-secondary {
-    border: 1.5px solid var(--aia-separators) !important;
-    color: var(--aia-text-secondary) !important;
-  }
-  .btn-outline-secondary:hover {
-    background-color: var(--aia-bg-secondary) !important;
-    color: var(--aia-text-primary) !important;
-  }
-
-  .btn-outline-danger {
-    border: 1.5px solid var(--aia-alert-high) !important;
-    color: var(--aia-alert-high) !important;
-  }
-  .btn-outline-danger:hover {
-    background-color: var(--aia-alert-high) !important;
-    color: white !important;
-  }
-
-  /* Login button (.btn-aia) - AIA Green */
-  body.login-brand-page .btn-aia,
-  body.login-brand-page .btn-primary {
-    min-height: 3rem;
-    border-radius: 14px !important;
-    border: 1px solid var(--aia-green-primary);
-    background: var(--aia-green-primary);
-    color: oklch(99% 0 0) !important;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  }
-  body.login-brand-page .btn-aia:hover,
-  body.login-brand-page .btn-primary:hover {
-    border-color: var(--aia-green-dark);
-    background: var(--aia-green-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px oklch(35% 0.08 152 / 0.22);
-  }
-
-  /* Dashboard Specifics */
-  .tooltip-inner {
-    max-width: 350px !important;
-    text-align: left !important;
-    padding: var(--spacing-md);
-    background-color: rgba(0,0,0,0.9);
-    box-shadow: var(--shadow-md);
-  }
-
+  /* Lista de integridad del dashboard. */
   .integrity-item:hover {
-    background-color: var(--aia-bg-secondary);
+    background-color: var(--ds-active-surface-raised);
   }
 
   .info-icon {
-    font-size: 0.9rem;
-    color: var(--aia-text-tertiary); /* fallback/default */
+    margin-left: var(--ds-space-1);
+    color: var(--ds-active-text-secondary);
     cursor: help;
-    margin-left: 5px;
+    font-size: var(--ds-type-size-sm);
   }
-  .bg-info .info-icon, .bg-success .info-icon, .bg-danger .info-icon {
-    color: rgba(255,255,255,0.8);
+
+  /* Bitacora del dashboard: la severidad se lee por el filete lateral ademas
+     del tinte de fondo, para no dejar el color como unico canal.
+     Los tintes son los OSCUROS (`--ds-state-tint-*`), no el par pastel de
+     `critical`/`info`: estas filas son superficies de una lista densa dentro
+     del panel oscuro, y con fondo pastel cualquier texto heredado del tema
+     (la marca de tiempo, que es secundaria) caia a 1.4:1. Medido. */
+  .log-row-error {
+    border-left: var(--ds-space-1) solid var(--ds-color-state-critical-text);
+    background-color: var(--ds-state-tint-red);
   }
-  
-  /* Log Rows */
-  .log-row-error { 
-    background-color: var(--aia-alert-background) !important; 
-    border-left: 4px solid var(--aia-alert-critical); 
+
+  .log-row-route {
+    border-left: var(--ds-space-1) solid var(--ds-color-state-info-text);
+    background-color: var(--ds-state-tint-blue);
   }
-  .log-row-route { 
-    background-color: var(--aia-blue-very-light) !important; 
-    border-left: 4px solid var(--aia-blue-primary); 
+
+  .log-row-default {
+    border-left: var(--ds-space-1) solid var(--ds-active-border);
   }
-  .log-row-default { 
-    border-left: 4px solid var(--aia-text-secondary); 
+
+  .log-row-error,
+  .log-row-route,
+  .log-row-default {
+    color: var(--ds-active-text-primary);
   }
-  
-  .log-timestamp { 
-    color: var(--aia-text-secondary); 
-    font-size: 0.7rem; 
-    font-weight: bold; 
+
+  .log-timestamp {
+    color: inherit;
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-bold);
   }
-  
-  .log-message { 
-    font-family: 'Courier New', Courier, monospace; 
-    font-size: 0.75rem; 
+
+  .log-message {
+    color: inherit;
+    font-family: var(--ds-font-mono);
+    font-size: var(--ds-type-size-xs);
   }
+
+  /* ── Piezas que en F4 dejaron de ser `<style>` o `style="…"` ───────── */
+
+  /* Aviso de validacion junto a un campo. Arranca oculto por hoja; jQuery
+     `.show()`/`.hide()` siguen mandando porque escriben `display` en linea. */
+  .admin-field-error {
+    display: none;
+    font-size: var(--ds-type-size-sm);
+  }
+
+  /* Contenedor con scroll propio para tablas largas (users/index). */
+  .admin-table-scroll {
+    overflow-y: auto;
+    max-block-size: 43.75rem;
+  }
+
+  /* Tabla densa del listado de usuarios. `border-collapse: separate` es lo que
+     permite que el `thead` sticky no pierda su filete al desplazar. */
+  .admin-table-dense {
+    inline-size: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .admin-table-dense td,
+  .admin-table-dense th {
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: var(--ds-type-size-sm);
+    vertical-align: middle;
+  }
+
+  .admin-table-dense thead th {
+    position: sticky;
+    top: 0;
+    z-index: var(--ds-z-sticky);
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
+  }
+
+  .user-row-inactive {
+    background-color: var(--ds-active-surface-raised);
+    opacity: 0.7;
+  }
+
+  /* Fila de asignacion proyecto/rol en alta y edicion de usuario. */
+  .assignment-row {
+    margin-bottom: var(--ds-space-3);
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-active-surface-raised);
+  }
+
+  /* Bloque de credenciales dentro del dialogo de alta de usuario. */
+  .admin-credentials-block {
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Oculto de partida. Todo consumidor lo revela escribiendo `display` en
+     linea (jQuery `.show()` o `el.style.display = 'block'`), que gana a la
+     hoja; por eso sustituye sin cambiar comportamiento. */
+  .admin-hidden {
+    display: none;
+  }
+
+  /* Campos que solo aplican al area Pre-Construccion. */
+  .pc-restriction-fields {
+    display: none;
+  }
+
+  .pc-restriction-fields.is-visible {
+    display: block;
+  }
+
+  .admin-table-scroll--sm {
+    overflow-y: auto;
+    max-block-size: 32.5rem;
+  }
+
+  .admin-table-scroll--xs {
+    overflow-y: auto;
+    max-block-size: 30rem;
+  }
+
+  /* Barra de progreso de la consolidacion del dashboard. */
+  .admin-progress-slim {
+    block-size: var(--ds-space-4);
+  }
+
+  .admin-progress-bar-start {
+    inline-size: 0;
+  }
+
+  .admin-progress-steps {
+    overflow-y: auto;
+    max-block-size: 11.25rem;
+    font-size: var(--ds-type-size-xs);
+  }
+
+  /* Detalle por proyecto que arma el JS del dashboard. */
+  .admin-detail-title,
+  .admin-detail-module {
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .admin-detail-line {
+    padding-left: var(--ds-space-4);
+    font-size: var(--ds-type-size-xs);
+  }
+
+  .admin-detail-subline {
+    padding-left: var(--ds-space-8);
+    font-size: var(--ds-type-size-xs);
+  }
+
+  /* Insignia de rol en la lista de miembros de un proyecto. */
+  .admin-role-badge {
+    display: inline-block;
+    min-inline-size: 7.5rem;
+  }
+
+  /* Anchos fijos de columna, en lugar de `style="width: …"` por celda. */
+  .admin-col-3xs { inline-size: 2.5rem; }
+  .admin-col-2xs { inline-size: 5.625rem; }
+  .admin-col-xs { inline-size: 6.25rem; }
+  .admin-col-sm { inline-size: 9.375rem; }
+  .admin-col-md { inline-size: 10rem; }
 }

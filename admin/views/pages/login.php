@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-aia-theme="dark" class="aia-theme-dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,14 +7,10 @@
   <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title; ?></title>
 
-  <!-- Google Fonts: Montserrat & Inter -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icheck-bootstrap/3.0.1/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <!-- Tema dark del design system, antes de pintar (sin flash) -->
+  <script src="/public/js/modules/aia_ui/theme-bootstrap.js?v=1.0.0"></script>
+  <!-- Entrypoint de auth: AdminLTE, Font Awesome, icheck y tokens, todo local y capado -->
+  <link rel="stylesheet" href="/admin/public/css/admin-auth-entrypoint.css?v=2.0.0">
   <link rel="stylesheet" href="/public/css/login-brand-unified.css?v=1.2">
 </head>
 <body class="hold-transition login-page login-brand-page">
@@ -84,11 +80,11 @@
 <!-- /.login-box -->
 
 <!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/public/vendor/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+<script src="/public/vendor/admin-lte/plugins/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="/public/vendor/admin-lte/js/adminlte.min.js"></script>
 
 <script>
 $(function() {

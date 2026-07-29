@@ -23,15 +23,15 @@
                         </select>
                     </div>
 
-                    <div class="form-group pc-restriction-fields" style="display:none;">
+                    <div class="form-group pc-restriction-fields">
                         <label for="pc_restr_2_nombre">Nombre Restricción #2</label>
                         <input type="text" class="form-control" id="pc_restr_2_nombre" name="pc_restr_2_nombre" placeholder="Ej: Permisos Ambientales">
                     </div>
-                    <div class="form-group pc-restriction-fields" style="display:none;">
+                    <div class="form-group pc-restriction-fields">
                         <label for="pc_restr_3_nombre">Nombre Restricción #3</label>
                         <input type="text" class="form-control" id="pc_restr_3_nombre" name="pc_restr_3_nombre" placeholder="Ej: Diseños">
                     </div>
-                    <div class="form-group pc-restriction-fields" style="display:none;">
+                    <div class="form-group pc-restriction-fields">
                         <label for="pc_restr_4_nombre">Nombre Restricción #4</label>
                         <input type="text" class="form-control" id="pc_restr_4_nombre" name="pc_restr_4_nombre" placeholder="Ej: Apropiación Presupuestal">
                     </div>
@@ -101,7 +101,7 @@
 <script>
 document.getElementById('area').addEventListener('change', function() {
     document.querySelectorAll('.pc-restriction-fields').forEach(function(el) {
-        el.style.display = this.value === 'Pre-Construccion' ? 'block' : 'none';
+        el.classList.toggle('is-visible', this.value === 'Pre-Construccion');
     }.bind(this));
 });
 </script>

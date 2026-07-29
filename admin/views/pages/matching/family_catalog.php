@@ -235,7 +235,7 @@ $statusDetail = static function (array $status) use ($h): string {
   <div class="col-lg-7">
     <div class="card">
       <div class="card-header"><h3 class="card-title">Catálogo actual</h3></div>
-      <div class="card-body table-responsive p-0" style="max-height: 520px;">
+      <div class="card-body table-responsive p-0 admin-table-scroll--sm">
         <table class="table table-sm table-hover mb-0">
           <thead><tr><th>Familia</th><th>Categoría</th><th>Reglas</th><th>Aliases</th><th>Contratos</th><th>Estado</th><th></th></tr></thead>
           <tbody>
@@ -275,7 +275,7 @@ $statusDetail = static function (array $status) use ($h): string {
         <span class="mr-2"><?php echo $statusBadge(['status_key' => 'needs_decision', 'label' => 'Necesita decisión']); ?></span>
         <span><?php echo $statusBadge(['status_key' => 'do_not_use', 'label' => 'No usar']); ?></span>
       </div>
-      <div class="card-body table-responsive p-0" style="max-height: 480px;">
+      <div class="card-body table-responsive p-0 admin-table-scroll--xs">
         <table class="table table-sm table-hover mb-0">
           <thead><tr><th>Elemento</th><th>Tipo</th><th>Estado</th><th>Motivo</th><th>Siguiente acción</th></tr></thead>
           <tbody>

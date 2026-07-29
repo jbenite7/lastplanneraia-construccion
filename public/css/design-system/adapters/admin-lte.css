@@ -1,0 +1,685 @@
+/* public/css/design-system/adapters/admin-lte.css
+ *
+ * Adaptador dark de AdminLTE 3.2 para el mini-app `admin/`.
+ *
+ * ALCANCE DECLARADO (F4 del goal dark-mode-todos-los-modulos, decision 11 del
+ * grilleo): AdminLTE permanece como framework de `admin/`. Este archivo SOLO
+ * reasigna variables y superficies del vendor a `--ds-active-*`. NO introduce
+ * primitivas `aia-*`, no reescribe markup y no migra las 14 vistas al design
+ * system. Si un ajuste exige mas que reasignar una superficie, se escala al
+ * usuario en vez de ampliar este archivo en silencio.
+ *
+ * POR QUE FUNCIONA SIN `!important`: `admin/public/css/admin-entrypoint.css`
+ * importa `adminlte.min.css` con `layer(vendor)`. Sin esa capa, la hoja del
+ * vendor entraria sin capa y ganaria a TODAS las capas en declaraciones
+ * normales (DS-006), y este adaptador no pintaria nada. Capado el vendor, la
+ * capa `components` gana por orden de capa y basta con declaraciones normales.
+ *
+ * LIMITE CONOCIDO: las utilidades de color de Bootstrap 4 (`.text-warning`,
+ * `.bg-white`, ...) llevan `!important` propio dentro de `layer(vendor)`. Para
+ * `!important` el orden de capas se invierte, asi que una capa posterior NO
+ * puede ganarles; solo una anterior a `vendor`. Lo que de verdad lo necesita
+ * vive al final, en `@layer reset`, medido y acotado.
+ */
+
+@layer components {
+  /* ── Armazon ────────────────────────────────────────────────────────── */
+
+  /* Bootstrap deja el `body` en blanco. Lo tapan `.wrapper` y
+     `.content-wrapper`, pero asoma en el rebote del scroll y en cualquier
+     hueco del layout, asi que se corrige en la raiz. Este archivo puede tocar
+     `body` porque vive bajo `public/css/design-system/`; las hojas de `admin/`
+     no, y por eso el arreglo esta aqui. */
+  body {
+    background-color: var(--ds-active-bg-canvas);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Bootstrap pinta `code` en rosa: 4.2:1 sobre la superficie del
+     panel, por debajo de AA. */
+  :where(code, kbd, samp) {
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Enlace por defecto. El azul de Bootstrap da 3.98:1 sobre la
+     tarjeta oscura del login. Va ANTES que las reglas de navbar y sidebar a
+     proposito: todas usan `:where()`, especificidad cero, asi que decide el
+     orden de aparicion y las de mas abajo deben poder afinarlo. */
+  :where(a) {
+    color: var(--ds-active-action-primary);
+  }
+
+  :where(a):hover,
+  :where(a):focus {
+    color: var(--ds-active-action-primary-hover);
+  }
+
+  :where(.wrapper) {
+    background-color: var(--ds-active-bg-canvas);
+  }
+
+  :where(.content-wrapper) {
+    background-color: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.content-header) h1 {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-2xl);
+    font-weight: var(--ds-type-weight-bold);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.main-footer) {
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.main-footer) a {
+    color: var(--ds-active-action-primary);
+  }
+
+  /* ── Navbar superior ────────────────────────────────────────────────── */
+
+  :where(.main-header.navbar) {
+    border-bottom: var(--ds-nav-border-width) solid var(--ds-active-nav-border);
+    background-color: var(--ds-active-nav-bg);
+    color: var(--ds-active-nav-text);
+  }
+
+  :where(.main-header.navbar) .nav-link {
+    color: var(--ds-active-nav-text);
+  }
+
+  :where(.main-header.navbar) .nav-link:hover,
+  :where(.main-header.navbar) .nav-link:focus {
+    color: var(--ds-active-action-primary-hover);
+  }
+
+  /* ── Sidebar ────────────────────────────────────────────────────────── */
+
+  :where(.main-sidebar) {
+    background-color: var(--ds-active-surface);
+  }
+
+  :where(.main-sidebar) .brand-link {
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.main-sidebar) .brand-text {
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  :where(.main-sidebar) .nav-sidebar .nav-link {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.main-sidebar) .nav-sidebar .nav-link:hover,
+  :where(.main-sidebar) .nav-sidebar .nav-link:focus {
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.main-sidebar) .nav-sidebar .nav-link.active {
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.main-sidebar) .nav-header {
+    background-color: transparent;
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+    letter-spacing: 0;
+  }
+
+  /* ── Migas ──────────────────────────────────────────────────────────── */
+
+  :where(.breadcrumb) {
+    background-color: transparent;
+  }
+
+  :where(.breadcrumb) .breadcrumb-item,
+  :where(.breadcrumb) .breadcrumb-item.active {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.breadcrumb) .breadcrumb-item a {
+    color: var(--ds-active-action-primary);
+  }
+
+  :where(.breadcrumb) .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--ds-active-text-secondary);
+  }
+
+  /* ── Tarjetas ───────────────────────────────────────────────────────── */
+
+  :where(.card) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background-color: var(--ds-active-surface);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.card) > .card-header {
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.card) > .card-footer {
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.card) .card-title {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    font-weight: var(--ds-type-weight-semibold);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.card.card-outline) {
+    border-top-color: var(--ds-active-action-primary);
+  }
+
+  :where(.card) .card-tools .btn-tool {
+    color: var(--ds-active-text-secondary);
+  }
+
+  /* Cajas de resumen del dashboard. Esta regla solo fija forma, borde y sombra:
+     el color de cada caja lo decide su propia `.bg-*`, remapeada mas abajo en
+     `@layer reset` a los acentos on-dark. La superficie elevada de aqui es el
+     reposo, para las cajas que no traen `.bg-*`. */
+  :where(.small-box),
+  :where(.info-box) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background-color: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.small-box) .icon > i,
+  :where(.info-box) .info-box-icon {
+    color: var(--ds-active-text-secondary);
+    background-color: transparent;
+  }
+
+  /* AdminLTE oscurece el pie con un velo negro al 10% y le pone tinta propia. Esa
+     capa baja el acento medio lo justo para romper AA (medido 2.8–3.48:1): el
+     par acento-on-dark + `--ds-color-text-on-domain-dark` esta calibrado a
+     >=4.5:1 (DS-008) sobre el acento PURO, no sobre el acento apagado. Se
+     retira el velo y el pie hereda la tinta que ya fijo su propia `.bg-*`, que
+     es la correcta para cada caja — incluida la roja, que va en tinta clara. */
+  :where(.small-box) > .small-box-footer {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  /* Pestanas de filtro dentro del contenido (bitacora del dashboard).
+     El gris 600 de Bootstrap sobre superficie elevada da 3:1, y el activo usa el azul de
+     Bootstrap con blanco encima, 3.98:1. */
+  :where(.content-wrapper) .nav-pills .nav-link {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.content-wrapper) .nav-pills .nav-link.active {
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  /* ── Tablas ─────────────────────────────────────────────────────────── */
+
+  :where(.table) {
+    color: var(--ds-active-text-primary);
+    border-color: var(--ds-active-border);
+  }
+
+  :where(.table) thead th {
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  :where(.table) td,
+  :where(.table) th {
+    border-top-color: var(--ds-active-border);
+  }
+
+  :where(.table-striped) tbody tr:nth-of-type(odd) {
+    background-color: color-mix(in srgb, var(--ds-active-surface-raised) 45%, transparent);
+  }
+
+  :where(.table-hover) tbody tr:hover {
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.table-bordered),
+  :where(.table-bordered) td,
+  :where(.table-bordered) th {
+    border-color: var(--ds-active-border);
+  }
+
+  /* ── Formularios ────────────────────────────────────────────────────── */
+
+  :where(.form-control),
+  :where(.custom-select),
+  :where(.custom-file-label) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.form-control):focus,
+  :where(.custom-select):focus {
+    border-color: var(--ds-active-focus-ring);
+    background-color: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-focus);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.form-control)::placeholder {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.form-control):disabled,
+  :where(.form-control)[readonly] {
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.input-group-text) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(label),
+  :where(.col-form-label) {
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-medium);
+  }
+
+  :where(.form-text) {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.custom-control-label)::before {
+    border-color: var(--ds-active-border-control);
+    background-color: var(--ds-active-surface-raised);
+  }
+
+  /* Foco visible de 4px sobre cualquier control del panel. AdminLTE lo suprime
+     en varios sitios con `outline: none`. */
+  :where(.content-wrapper, .main-sidebar, .main-header, .modal) :focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+  }
+
+  /* ── Botones ────────────────────────────────────────────────────────── */
+
+  :where(.btn) {
+    border-radius: var(--ds-radius-control);
+  }
+
+  :where(.btn-primary) {
+    border-color: var(--ds-active-action-primary);
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.btn-primary):hover,
+  :where(.btn-primary):focus {
+    border-color: var(--ds-active-action-primary-hover);
+    background-color: var(--ds-active-action-primary-hover);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.btn-secondary),
+  :where(.btn-default) {
+    border-color: var(--ds-active-border-control);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-secondary):hover,
+  :where(.btn-default):hover {
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-success) {
+    border-color: var(--ds-active-action-primary);
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.btn-info) {
+    border-color: var(--ds-active-data-plan);
+    background-color: var(--ds-active-data-plan);
+    color: var(--ds-color-text-on-domain-dark);
+  }
+
+  :where(.btn-warning) {
+    border-color: var(--ds-active-domain-construction);
+    background-color: var(--ds-active-domain-construction);
+    color: var(--ds-active-domain-construction-text);
+  }
+
+  :where(.btn-danger) {
+    border-color: var(--ds-color-state-critical-text);
+    background-color: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  :where(.btn-outline-primary) {
+    border-color: var(--ds-active-action-primary);
+    background-color: transparent;
+    color: var(--ds-active-action-primary);
+  }
+
+  :where(.btn-outline-primary):hover {
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.btn-outline-secondary) {
+    border-color: var(--ds-active-border-control);
+    background-color: transparent;
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-outline-secondary):hover {
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-outline-danger) {
+    border-color: var(--ds-color-state-critical-text);
+    background-color: transparent;
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-outline-danger):hover {
+    background-color: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  :where(.btn-link) {
+    color: var(--ds-active-action-primary);
+  }
+
+  /* ── Menus, modales y avisos ────────────────────────────────────────── */
+
+  :where(.dropdown-menu) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-popover);
+    background-color: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-lg);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.dropdown-item) {
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.dropdown-item):hover,
+  :where(.dropdown-item):focus {
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.dropdown-divider) {
+    border-top-color: var(--ds-active-border);
+  }
+
+  :where(.modal-content) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-modal);
+    background-color: var(--ds-active-surface);
+    box-shadow: var(--ds-shadow-xl);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.modal-header),
+  :where(.modal-footer) {
+    border-color: var(--ds-active-border);
+  }
+
+  :where(.modal-title) {
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  :where(.modal-header) .close {
+    color: var(--ds-active-text-primary);
+    text-shadow: none;
+    opacity: 1;
+  }
+
+  :where(.alert) {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-panel);
+  }
+
+  :where(.alert-success) {
+    background-color: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+
+  :where(.alert-info) {
+    background-color: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
+
+  :where(.alert-warning) {
+    background-color: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  :where(.alert-danger) {
+    background-color: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
+
+  :where(.tooltip-inner) {
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.tooltip) .arrow::before {
+    border-top-color: var(--ds-active-surface-raised);
+    border-bottom-color: var(--ds-active-surface-raised);
+  }
+
+  /* ── Paginacion y DataTables ────────────────────────────────────────── */
+
+  :where(.page-link) {
+    border-color: var(--ds-active-border);
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.page-item.active) .page-link {
+    border-color: var(--ds-active-action-primary);
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.page-item.disabled) .page-link {
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.dataTables_wrapper) {
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.dataTables_wrapper) .dataTables_info,
+  :where(.dataTables_wrapper) .dataTables_length,
+  :where(.dataTables_wrapper) .dataTables_filter,
+  :where(.dataTables_wrapper) .dataTables_paginate {
+    color: var(--ds-active-text-secondary);
+  }
+
+  :where(.dataTables_wrapper) .dataTables_filter input,
+  :where(.dataTables_wrapper) .dataTables_length select {
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(table.dataTable) thead .sorting::before,
+  :where(table.dataTable) thead .sorting::after,
+  :where(table.dataTable) thead .sorting_asc::before,
+  :where(table.dataTable) thead .sorting_asc::after,
+  :where(table.dataTable) thead .sorting_desc::before,
+  :where(table.dataTable) thead .sorting_desc::after {
+    color: var(--ds-active-text-secondary);
+  }
+
+  /* ── Toastr ─────────────────────────────────────────────────────────── */
+
+  :where(.toast-title),
+  :where(.toast-message) {
+    color: var(--ds-color-text-inverse);
+  }
+}
+
+/* ── Utilidades de color de Bootstrap ──────────────────────────────────
+ *
+ * Unico bloque con `!important` del adaptador, y esta en `reset` A PROPOSITO:
+ * las utilidades de Bootstrap declaran su color con `!important` dentro de
+ * `layer(vendor)`, y para `!important` el orden de capas se invierte, asi que
+ * solo una capa ANTERIOR a `vendor` puede ganarles. `components` no puede.
+ *
+ * ALCANCE DELIBERADAMENTE CORTO. La lista NO incluye `.text-warning`,
+ * `.text-danger`, `.text-success`, `.text-info` ni `.text-primary`: los 22
+ * fallos que F4 midio en `/admin/` eran de esos colores sobre BLANCO
+ * (el amarillo de warning sobre blanco = 1.63:1). Sobre la superficie oscura del panel
+ * los mismos colores cumplen AA sin tocarlos, y remapearlos solo desplazaria
+ * su significado (warning es naranja de dominio, no construccion). Lo que si
+ * entra es lo que se vuelve ilegible al invertir el fondo: tinta oscura,
+ * gris apagado y fondos blancos.
+ */
+@layer reset {
+  .text-muted {
+    color: var(--ds-active-text-secondary) !important;
+  }
+
+  /* El pie de `.small-box` es un `<a>` en tres de las cinco cajas, y AdminLTE
+     colorea los enlaces de una superficie `.bg-*` con `!important` (65 reglas
+     de ese tipo en el vendor). La version en `components` solo alcanza a los
+     `<div>`; el enlace necesita ganar desde `reset`. Medido: sin esta regla,
+     2.85:1 sobre el acento aqua y 3.91:1 sobre el naranja. */
+  .small-box > .small-box-footer {
+    color: inherit !important;
+  }
+
+  .text-dark,
+  .text-body,
+  .text-black-50 {
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  /* Excepcion medida a la regla de arriba. `.text-danger` da 4.24:1
+     sobre el lienzo del panel: falla AA por poco, y el unico sitio donde se usa
+     como texto suelto es el enlace «Salir» de la navbar. No hay token de rojo
+     pensado para texto sobre oscuro —el vocabulario `critical` del DS es un par
+     fondo-pastel/texto-oscuro para chips—, asi que se compone aclarando el
+     texto critico contra la tinta primaria: conserva el matiz rojo y sube a
+     ~8:1. Se deriva de tokens, no se inventa un hex. */
+  .text-danger {
+    color: color-mix(in srgb, var(--ds-color-state-critical-text) 35%, var(--ds-active-text-primary)) !important;
+  }
+
+  .bg-white,
+  .bg-light {
+    background-color: var(--ds-active-surface) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  .bg-dark {
+    background-color: var(--ds-active-bg-canvas) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  .bg-primary,
+  .bg-info {
+    background-color: var(--ds-active-data-plan) !important;
+    color: var(--ds-color-text-on-domain-dark) !important;
+  }
+
+  .bg-success,
+  .bg-teal {
+    background-color: var(--ds-active-action-primary) !important;
+    color: var(--ds-active-action-text) !important;
+  }
+
+  .bg-warning {
+    background-color: var(--ds-active-domain-construction) !important;
+    color: var(--ds-active-domain-construction-text) !important;
+  }
+
+  /* Solida y oscura, no la pastilla pastel del par `critical`: estas utilidades
+     pintan superficies grandes (las `small-box` del dashboard) junto a
+     `.bg-info`/`.bg-success`/`.bg-warning`, que ya resuelven a acento solido.
+     El par pastel se reserva para chips y avisos, donde si es la primitiva
+     correcta (`.badge-danger`, `.alert-danger`). */
+  .bg-danger {
+    background-color: var(--ds-state-tint-red) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+
+  /* `.bg-maroon` y `.bg-teal` son de AdminLTE, no de Bootstrap, y sin remapeo
+     se quedan a plena saturacion contra la Regla del Acento Escaso. */
+  .bg-maroon {
+    background-color: var(--ds-color-domain-architecture-on-dark) !important;
+    color: var(--ds-color-text-on-domain-dark) !important;
+  }
+
+  .bg-teal {
+    background-color: var(--ds-active-data-plan) !important;
+    color: var(--ds-color-text-on-domain-dark) !important;
+  }
+
+  .badge-success {
+    background-color: var(--ds-color-state-success-bg) !important;
+    color: var(--ds-color-state-success-text) !important;
+  }
+
+  .badge-warning {
+    background-color: var(--ds-color-state-warning-bg) !important;
+    color: var(--ds-color-state-warning-text) !important;
+  }
+
+  .badge-danger {
+    background-color: var(--ds-color-state-critical-bg) !important;
+    color: var(--ds-color-state-critical-text) !important;
+  }
+
+  .badge-info,
+  .badge-primary {
+    background-color: var(--ds-color-state-info-bg) !important;
+    color: var(--ds-color-state-info-text) !important;
+  }
+
+  .badge-secondary,
+  .badge-light {
+    background-color: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+}

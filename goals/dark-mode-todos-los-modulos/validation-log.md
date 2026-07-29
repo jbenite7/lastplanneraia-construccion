@@ -569,3 +569,118 @@ es idéntico antes y después. Desde ahí, ningún commit lo ha vuelto a tocar.
 
 **Corrección a la tabla de métricas del plan:** decía **4.369** y el archivo tiene **4.382**. El
 valor bueno es el medido; la tabla queda corregida en `plans/F1-styles-css.plan.md`.
+
+## F4 · Panel admin — 2026-07-29
+
+### Alcance ejercido
+
+Se respetó la decisión vinculante: **AdminLTE permanece como framework de `admin/`**. No se
+reescribió ninguna de las 14 vistas sobre el shell canónico ni se migró nada a primitivas `aia-*`.
+`admin/` queda **en dark y tokenizado pero NO migrado al design system**, que es la desviación
+deliberada ya registrada en el spec y en `goal.md`.
+
+### Qué se hizo
+
+- **T4.1 Vendorizar.** `main.php` y las tres vistas de auth pasan de CDN a `/public/vendor`, con
+  versión fija: AdminLTE 3.2.0 (que ya trae Bootstrap 4.6.1 dentro), Bootstrap 4.6.1 bundle,
+  DataTables 1.10.21 + responsive 2.2.7 + buttons 1.7.0, jszip 3.5.0, pdfmake 0.1.70,
+  icheck-bootstrap 3.0.1, Select2 4.0.13. Se reutilizan los ya servidos (jQuery 3.6.0, Font Awesome,
+  Toastr 2.1.3, SweetAlert2) y las fuentes locales vía `design-system/fonts.css`, con lo que `admin/`
+  entra en el contrato DS-007. Todos los `url()` de AdminLTE son `data:`; no hay assets colgando.
+- **T4.2 Unificar tokens.** `admin/public/css/tokens.css` **eliminado**. El canónico
+  `public/css/tokens.css` ya era un superconjunto de sus 37 hex, verificado token a token. Con él
+  desaparece por construcción el `--aia-bg-linen` que F0 dejó suelto.
+- **T4.3 Aplicar el tema.** Las cuatro vistas con `<html>` propio cargan `theme-bootstrap.js` y
+  además llevan `data-aia-theme="dark"` escrito en el `<html>` (cinturón y tirantes, sin flash).
+  `navbar-white navbar-light` → `navbar-dark`.
+- **T4.4 Adaptador.** Nuevo `public/css/design-system/adapters/admin-lte.css`, y dos entrypoints
+  propios de `admin/` (`admin-entrypoint.css`, `admin-auth-entrypoint.css`) que importan cada vendor
+  con `layer(vendor)` y luego tokens, tema y adaptadores.
+- **T4.5 Limpiar vistas.** Cero `<style>` y cero `style="…"` en `admin/views/`.
+- **T4.6 Presupuesto.** Presupuesto de ruta `admin` en `exceptions.json` con **cero** en las seis
+  reglas, cubriendo también el adaptador.
+
+### Decisiones que conviene no volver a discutir
+
+- **Por qué `admin/` tiene entrypoint propio y no `renderForModule('admin')`.**
+  `DesignSystemHeadComponent::VIEW_OWNED_VENDORS` declara `adminlte` con un candado explícito: ningún
+  miembro de esa lista puede tener `attach-<vendor>.css` en la partición. Crear
+  `entrypoints/attach-admin-lte.css` habría roto el gate de partición. El aislamiento que AGENTS.md
+  exige para `admin/` es de PHP, no de CSS, así que lo que sí se comparte son tokens, tema y
+  adaptadores.
+- **Estado en `inventory.json`: `observed-frozen` → `inventory-only`.** No es cosmético.
+  `observed-frozen` significa por definición del README «sin presupuesto de rutas — el contador solo
+  puede bajar», y T4.6 declara presupuesto, así que dejaba de ser cierto. `inventory-only` describe
+  lo que `admin/` es: catalogado, con presupuesto, **sin manifiesto ni cobertura golden, y sin
+  intención de tenerlos**. La razón queda escrita en el propio `note` del módulo.
+- **La `hardcoded-radius` que el spec preveía excepcionar no hizo falta.** Los radios de AdminLTE
+  viven en `public/vendor/`, que no está en `scanRoots`, y el adaptador solo usa `var(--ds-radius-*)`.
+  Se declara cero y no se registra excepción.
+- **Los `!important` del adaptador están en `@layer reset` a propósito.** Las utilidades de color de
+  Bootstrap declaran `!important` dentro de `layer(vendor)`, y para `!important` el orden de capas se
+  invierte: solo una capa **anterior** a `vendor` puede ganarles. `components` no puede. Son 29
+  declaraciones, frente a las 83 que `admin/` tenía antes: saldo neto negativo.
+- **No se remapearon `.text-warning`, `.text-success`, `.text-info` ni `.text-primary`.** Los 22
+  fallos medidos al abrir F4 eran de esos colores **sobre blanco**. Sobre superficie oscura cumplen
+  AA sin tocarlos, y remapearlos solo habría desplazado su significado.
+
+### Verificación (salida real de esta sesión)
+
+- `node scripts/design-system-audit.mjs` → **PASS**. Hallazgos totales **5 613 → 5 239 (−374)**.
+  `admin/` pasa de 271 hallazgos a **cero en todas las reglas**; el presupuesto `admin` marca 0/0 en
+  las seis. Bajaron 13 reglas, ninguna subió.
+- `node scripts/design-system-unlayered-delivery.mjs` → **PASS** (16 entregas declaradas, sin cambios:
+  el gate solo escanea `views/` y `public/js/`, así que `admin/` nunca entró en su inventario).
+- `npm run test:design-system:static` → **358 pass / 1 fail**. El único rojo es
+  `contracts.test.mjs` por «worktree and index must be clean», que es el rojo esperado con trabajo sin
+  commitear. `entrypoint partition`, `unlayered delivery` y `BI utilities` en PASS.
+- `docker compose exec app vendor/bin/phpstan analyse src admin/src --memory-limit=1G` → **No errors**.
+- `docker compose exec app php tests/test_design_system_head_component.php` → **PASS**.
+- `docker compose exec app php tests/test_global_table_safety.php` → **OK**.
+- **Navegador**, Playwright contra el contenedor, 1180×820 dark, **las 13 rutas de `admin/`**
+  (las 14 vistas: `layouts/main.php` se ejerce en las diez autenticadas):
+  **5 163 elementos de texto medidos, 0 fallos de contraste**; peor ratio por ruta entre 4,50 y 5,39.
+  **Cero peticiones a dominios externos**, consola limpia y **cero respuestas ≥400** en las 13.
+  `body` en `rgb(11, 16, 13)`. Ninguna ruta desborda horizontalmente.
+  Punto de partida para comparar: `/admin/` **1,63:1 con 22 fallos → 0 fallos**; `/admin/usuarios`
+  2,13:1 con 99 fallos → 0; `/admin/proyectos` 3,13:1 con 15 fallos → 0.
+- **Foco visible**: `#nombre` en `/admin/usuarios/crear` da `outline: 2px solid rgb(44, 170, 159)`
+  más `box-shadow` de 4px del mismo anillo.
+- **Control de acceso**: sin sesión, `/admin/usuarios` redirige a `/admin/login`; usuario activo entra
+  a `/admin/`; usuario inactivo es rechazado («Tu cuenta está inactiva»). **No hay ruta con
+  restricción por rol en `admin/`**: `AdminController::userCan()` existe pero no se invoca en ningún
+  sitio, así que la única puerta es sesión + `activo=1`. No se tocaron rutas, RBAC, sesión ni modelos.
+- **Evidencia**: 13 capturas en `evidence/F4/`.
+
+### Datos tocados y restaurados
+
+Para el QA se creó un usuario temporal (`f4_qa_admin`, activo, rol `A` en el proyecto 22) y uno
+inactivo (`f4_qa_off`). **Ambos, y su fila en `project_members`, fueron eliminados al terminar**;
+verificado con `SELECT COUNT(*)` = 0 en las dos tablas. No se modificó ninguna fila preexistente.
+
+### Hallazgos de paso (no eran del alcance, pero estaban rotos)
+
+- **Dos `<link>`/`<script>` a CDN devolvían 404 en producción hoy mismo**, comprobado con `curl`:
+  `datatables.net-buttons-bs4/1.7.0/js/buttons.bootstrap4.min.js` y
+  `select2-bootstrap4-theme/1.5.2/select2-bootstrap4.min.css`. El primero se vendorizó desde jsdelivr
+  y ahora sí carga. El segundo **no se vendorizó**: llevaba tiempo sin cargar, es una piel clara que
+  el adaptador del design system sobrescribiría igualmente, y traerlo habría sido un cambio visual
+  nuevo fuera del alcance de F4. Se retiró el `<link>` muerto y se conservó `theme:'bootstrap4'` en
+  el JS; Select2 lo estiliza ahora `adapters/select2.css`.
+
+### Queda abierto
+
+- **Font Awesome local es 5.11.2 y el CDN retirado servía 5.15.4.** Se reutilizó el ya vendorizado,
+  como pedía T4.1 («apuntar a los que ya están servidos»). Los iconos que usa `admin/` son básicos y
+  ninguno salió vacío en las 13 capturas, pero un icono introducido entre 5.11 y 5.15 no existiría.
+  Actualizar el paquete compartido excede F4 porque lo consume toda la app.
+- **`views/auth/*` sigue cargando AdminLTE por CDN.** Ahora existe la copia local en
+  `/public/vendor/admin-lte/`, así que apuntarlas es trivial, pero son del grupo A y no de F4.
+- **Los iconos gigantes de `.small-box`** siguen siendo las manchas claras de AdminLTE sobre el
+  acento (`.small-box .icon`, decorativo). No afecta contraste de texto y no se tocó para no ampliar
+  el adaptador.
+- **Los interruptores de Bootstrap** (`custom-control-label::before`) siguen con el borde de
+  separador en vez del de control. Es el límite conocido que `DESIGN.md` ya documenta: el mecanismo
+  del par de bordes actúa sobre elementos y no alcanza pseudo-elementos. Deuda compartida, no de F4.
+
+---

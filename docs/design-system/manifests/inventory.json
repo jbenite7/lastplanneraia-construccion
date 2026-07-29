@@ -77,8 +77,9 @@
     },
     {
       "moduleId": "admin",
-      "status": "observed-frozen",
-      "manifest": null
+      "status": "inventory-only",
+      "manifest": null,
+      "note": "F4 del goal dark-mode-todos-los-modulos (2026-07-29). Deja de ser 'observed-frozen' porque ese estado significa, por definicion del README, 'sin presupuesto de rutas — el contador solo puede bajar', y admin ya declara el presupuesto 'admin' en exceptions.json con cero en las seis reglas. Sigue SIN manifiesto y SIN cobertura golden, y eso es deliberado y vinculante: por decision explicita del usuario AdminLTE permanece como framework de admin/, no se reescriben las 14 vistas sobre el shell canonico ni se migran a primitivas aia-*. admin/ queda en dark y tokenizado pero NO migrado al design system; es la unica desviacion asumida del criterio del resto del goal y no debe leerse como un olvido."
     }
   ]
 }

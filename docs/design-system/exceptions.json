@@ -494,6 +494,22 @@
         "forbidden-font-roboto": 0,
         "hardcoded-radius": 0
       }
+    },
+    {
+      "name": "admin",
+      "paths": [
+        "admin/views/",
+        "admin/public/css/",
+        "public/css/design-system/adapters/admin-lte.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
     }
   ],
   "legacyAllowedPaths": [
@@ -512,6 +528,7 @@
     "Baseline inicial: el repo contiene deuda visual legacy. El gate debe endurecerse por modulo cuando se declare migrado.",
     "Login, project-selector, aia-theme, programa-general, pdc, contratos y listado-actividades tienen presupuesto cero para deuda visual auditada.",
     "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer.",
-    "audit-baseline.json.totalViolations es el tope monotónico del agregado (Task 11, F0): las fases F1-F6 del goal dark-mode-todos-los-modulos solo pueden bajarlo, nunca subirlo, tal como ya ocurre por regla. Subirlo es la excepción, no la rutina, y exige las tres cosas juntas: (1) justificación escrita de por qué el total crece de forma legítima, (2) aprobación explícita del usuario, y (3) un archivo nuevo en docs/design-system/baseline-approvals/ cuyo afterHash coincida con el nuevo baseline y cuyo approvalRef cite esa aprobación. Sin las tres, el audit debe fallar."
+    "audit-baseline.json.totalViolations es el tope monotónico del agregado (Task 11, F0): las fases F1-F6 del goal dark-mode-todos-los-modulos solo pueden bajarlo, nunca subirlo, tal como ya ocurre por regla. Subirlo es la excepción, no la rutina, y exige las tres cosas juntas: (1) justificación escrita de por qué el total crece de forma legítima, (2) aprobación explícita del usuario, y (3) un archivo nuevo en docs/design-system/baseline-approvals/ cuyo afterHash coincida con el nuevo baseline y cuyo approvalRef cite esa aprobación. Sin las tres, el audit debe fallar.",
+    "F4 (2026-07-29): admin/ pasa de baseline congelado a presupuesto de ruta con cero en las seis reglas, incluida hardcoded-radius. El spec preveia una excepcion para esa regla porque AdminLTE trae sus propios radios; no hace falta: el vendor vive en public/vendor/, que no esta en scanRoots, y el adaptador solo usa var(--ds-radius-*). El presupuesto cubre tambien adapters/admin-lte.css para que el conteo no se pueda esconder moviendo CSS del panel al adaptador. Ese adaptador concentra 29 unauthorized-important, unica regla fuera del presupuesto: son remapeos de las utilidades de color de Bootstrap, que declaran !important dentro de layer(vendor), y para !important el orden de capas se invierte, asi que solo una capa ANTERIOR a vendor puede ganarles. Sustituyen a los 83 !important que tenia admin/, con saldo neto negativo."
   ]
 }

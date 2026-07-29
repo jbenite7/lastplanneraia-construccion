@@ -1,33 +1,24 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-aia-theme="dark" class="aia-theme-dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title ?? 'Panel Administrativo - AIA'; ?></title>
 
-  <!-- Google Font: Inter (AIA Corporate Font) -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="/public/vendor/sweetalert2.min.css?v=11.4.24">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-  <!-- DataTables -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive-bs4/2.2.7/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons-bs4/1.7.0/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <!-- AIA Custom Styles (Modern 2026) -->
-  <link rel="stylesheet" href="/admin/public/css/admin-custom.css">
+  <!-- Tema dark del design system, antes de pintar (sin flash) -->
+  <script src="/public/js/modules/aia_ui/theme-bootstrap.js?v=1.0.0"></script>
+  <!--
+    Entrypoint unico del panel: importa AdminLTE, Font Awesome, DataTables,
+    Toastr y SweetAlert2 desde /public/vendor con `layer(vendor)`, mas los
+    tokens canonicos y el adaptador dark. Cero peticiones a dominios externos.
+  -->
+  <link rel="stylesheet" href="/admin/public/css/admin-entrypoint.css?v=2.0.0">
 
-
-  <!-- jQuery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <!-- Bootstrap 4 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery 3.6.0 -->
+  <script src="/public/vendor/jquery.min.js"></script>
+  <!-- Bootstrap 4.6.1 (bundle con Popper) -->
+  <script src="/public/vendor/admin-lte/plugins/bootstrap.bundle.min.js"></script>
   <!-- SweetAlert2 + AIA Notice -->
   <script src="/public/vendor/sweetalert2.all.min.js?v=11.4.24"></script>
   <script src="/runtime/frontend-config.js?v=20260325a"></script>
@@ -37,7 +28,7 @@
 <!-- Site wrapper -->
 <div class="wrapper">
   <!-- Navbar -->
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+  <nav class="main-header navbar navbar-expand navbar-dark">
     <!-- Left navbar links -->
     <ul class="navbar-nav">
       <li class="nav-item">
@@ -57,9 +48,9 @@
           $adminRoleName = class_exists('\App\Security\RbacCatalog') ? \App\Security\RbacCatalog::getRoleName($adminRole) : 'Admin';
           ?>
         <li class="nav-item d-flex align-items-center mr-3">
-          <span class="text-muted" style="line-height:1.2;text-align:right">
+          <span class="text-muted admin-user-chip">
             <?php echo htmlspecialchars($adminName); ?>
-            <br><small style="opacity:.65;font-size:.8em"><?php echo htmlspecialchars($adminRoleName); ?></small>
+            <br><small class="admin-user-role"><?php echo htmlspecialchars($adminRoleName); ?></small>
           </span>
         </li>
       <?php endif; ?>
@@ -76,7 +67,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/admin/dashboard" class="brand-link">
-      <img src="/public/img/florAIA.png" alt="AIA Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <img src="/public/img/florAIA.png" alt="AIA Logo" class="brand-image img-circle elevation-3 admin-brand-mark">
       <span class="brand-text font-weight-light">AIA Panel</span>
     </a>
 
@@ -162,23 +153,23 @@
 </div>
 <!-- ./wrapper -->
 
-<!-- Scripts Finales (Plugins) -->
-<!-- DataTables & Plugins -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-responsive/2.2.7/dataTables.responsive.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/1.7.0/js/dataTables.buttons.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons-bs4/1.7.0/js/buttons.bootstrap4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/1.7.0/js/buttons.html5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/1.7.0/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/1.7.0/js/buttons.colVis.min.js"></script>
-<!-- Toastr -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- Scripts Finales (Plugins) — todos locales, version fija, cero CDN -->
+<!-- DataTables 1.10.21 + responsive 2.2.7 + buttons 1.7.0 -->
+<script src="/public/vendor/datatables/js/jquery.dataTables.min.js"></script>
+<script src="/public/vendor/datatables/js/dataTables.bootstrap4.min.js"></script>
+<script src="/public/vendor/datatables/js/dataTables.responsive.min.js"></script>
+<script src="/public/vendor/datatables/js/dataTables.buttons.min.js"></script>
+<script src="/public/vendor/datatables/js/buttons.bootstrap4.min.js"></script>
+<script src="/public/vendor/jszip/jszip.min.js"></script>
+<script src="/public/vendor/pdfmake/pdfmake.min.js"></script>
+<script src="/public/vendor/pdfmake/vfs_fonts.js"></script>
+<script src="/public/vendor/datatables/js/buttons.html5.min.js"></script>
+<script src="/public/vendor/datatables/js/buttons.print.min.js"></script>
+<script src="/public/vendor/datatables/js/buttons.colVis.min.js"></script>
+<!-- Toastr 2.1.3 -->
+<script src="/public/vendor/toastr.min.js"></script>
+<!-- AdminLTE 3.2.0 -->
+<script src="/public/vendor/admin-lte/js/adminlte.min.js"></script>
 
 <script>
 $(function() {

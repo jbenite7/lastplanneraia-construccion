@@ -7,8 +7,8 @@
                     </a>
                 </div>
             </div>
-            <div class="card-body p-0 dashboard-widget__body h-auto" style="max-height: 700px;">
-                <table id="projectsTable" class="table table-bordered table-striped table-sm table-sticky-header w-full text-sm" style="border-collapse: separate; border-spacing: 0;">
+            <div class="card-body p-0 dashboard-widget__body h-auto admin-table-scroll">
+                <table id="projectsTable" class="table table-bordered table-striped table-sm table-sticky-header admin-table-dense">
                                 <thead>
                                     <tr>
                                         <th class="z-sticky bg-white border-top">ID</th>
@@ -101,22 +101,6 @@
     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
     <input type="hidden" name="id" id="deleteProjectId">
 </form>
-
-<style>
-    /* Ajustes para maximizar el espacio horizontal y permitir sticky header */
-    .text-break {
-        word-break: break-all !important;
-    }
-    #projectsTable td, #projectsTable th {
-        vertical-align: middle;
-        padding: 4px 6px;
-        font-size: 0.8rem;
-    }
-    
-    #projectsTable_wrapper {
-        margin-bottom: 20px;
-    }
-</style>
 
 <!-- DataTables Scripts -->
 <script>

@@ -168,8 +168,7 @@
               <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
             </div>
             <span id="consoleLogsStatusBadge"
-                  class="badge badge-sm <?php echo $stats['console_logs_enabled'] ? 'badge-success' : 'badge-secondary'; ?>"
-                  style="font-size:0.72rem;">
+                  class="badge badge-sm admin-detail-line <?php echo $stats['console_logs_enabled'] ? 'badge-success' : 'badge-secondary'; ?>">
               <?php echo $stats['console_logs_enabled'] ? 'Activos' : 'Ocultos'; ?>
             </span>
           </div>
@@ -203,14 +202,14 @@
           </button>
         </div>
 
-        <div id="consolidation-progress" style="display:none;">
-          <div class="progress" style="height:16px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width:0%;">0%</div>
+        <div id="consolidation-progress" class="admin-hidden">
+          <div class="progress admin-progress-slim">
+            <div class="progress-bar progress-bar-striped progress-bar-animated admin-progress-bar-start" id="progressBar">0%</div>
           </div>
           <div id="currentProgressStep" class="small text-muted mt-1"></div>
-          <div id="progressStepsList" class="mt-1 small" style="max-height:180px;overflow-y:auto;font-size:12px;"></div>
-          <div id="progressError" class="small text-danger mt-1" style="display:none;"></div>
-          <button class="btn btn-sm btn-outline-secondary mt-1" id="btnCloseProgress" style="display:none;">
+          <div id="progressStepsList" class="mt-1 small admin-progress-steps"></div>
+          <div id="progressError" class="small text-danger mt-1 admin-hidden"></div>
+          <button class="btn btn-sm btn-outline-secondary mt-1 admin-hidden" id="btnCloseProgress">
             <i class="fas fa-times mr-1"></i> Cerrar
           </button>
         </div>
@@ -667,17 +666,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!spGroups[key]) spGroups[key] = [];
             spGroups[key].push(sp);
         });
-        let html = '<div class="font-weight-bold mb-1" style="font-size:0.85rem;">Detalle por proyecto</div>';
+        let html = '<div class="font-weight-bold mb-1 admin-detail-title">Detalle por proyecto</div>';
         MODULE_ORDER.forEach(function(moduleName) {
             const entries = groups[moduleName];
             if (!entries || entries.length === 0) return;
-            html += '<div class="font-weight-bold mt-1" style="font-size:0.8rem;">' + moduleName + '</div>';
+            html += '<div class="font-weight-bold mt-1 admin-detail-module">' + moduleName + '</div>';
             entries.forEach(function(entry) {
                 const icon = entry.status === 'ok' ? '✓' : (entry.status === 'error' ? '✗' : (entry.status === 'skip' ? '–' : '⟳'));
                 const cls = entry.status === 'ok' ? 'text-success' : (entry.status === 'error' ? 'text-danger' : 'text-muted');
                 let line = icon + ' ' + entry.project;
                 if (entry.message) line += ' — ' + entry.message;
-                html += '<div class="' + cls + '" style="padding-left:1rem;font-size:0.78rem;">' + line + '</div>';
+                html += '<div class="' + cls + ' admin-detail-line">' + line + '</div>';
                 // Render subprocesses for this project & step
                 var spKey = moduleName + '||' + entry.project;
                 var spEntries = spGroups[spKey];
@@ -687,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         var spCls = sp.status === 'ok' ? 'text-success' : (sp.status === 'error' ? 'text-danger' : 'text-muted');
                         var spLine = '&nbsp;&nbsp;' + spIcon + ' ' + sp.subprocess;
                         if (sp.message) spLine += ' — ' + sp.message;
-                        html += '<div class="' + spCls + '" style="padding-left:2rem;font-size:0.72rem;">' + spLine + '</div>';
+                        html += '<div class="' + spCls + ' admin-detail-subline">' + spLine + '</div>';
                     });
                 }
             });
@@ -791,7 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
         AIA.Notice.success(msg || 'Consolidación completada exitosamente.');
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
         if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
-        btnCloseProgress.style.display = '';
+        btnCloseProgress.style.display = 'inline-block';
         progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
         currentStepEl.textContent = 'Completado ✓';
     }
@@ -800,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
         AIA.Notice.error(msg || 'La consolidación finalizó con errores.');
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
         if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
-        btnCloseProgress.style.display = '';
+        btnCloseProgress.style.display = 'inline-block';
         progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
         currentStepEl.textContent = 'Finalizado con errores';
     }
@@ -812,7 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressError.style.display = 'block';
         progressError.textContent = 'Sin actualización desde hace más de 15 min. El proceso pudo detenerse.';
         currentStepEl.textContent = 'Conexión perdida';
-        btnCloseProgress.style.display = '';
+        btnCloseProgress.style.display = 'inline-block';
     }
 
     function pollProgress(token) {

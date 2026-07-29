@@ -39,7 +39,7 @@
                                             $roleName = RoleManager::getRoleName($member['role']);
                                 $roleColor = RoleManager::getRoleColor($member['role']);
                                 ?>
-                                        <span class="badge bg-<?php echo $roleColor; ?> p-2" title="<?php echo $member['role']; ?>" style="min-width: 120px; display: inline-block;">
+                                        <span class="badge bg-<?php echo $roleColor; ?> p-2 admin-role-badge" title="<?php echo $member['role']; ?>">
                                             <?php echo htmlspecialchars($roleName); ?>
                                         </span>
                                     </td>
@@ -82,7 +82,7 @@
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <div id="cargoSuggestion" class="mt-1 small text-info" style="display:none;">
+                        <div id="cargoSuggestion" class="mt-1 small text-info admin-hidden">
                             <i class="fas fa-lightbulb"></i> Cargo detectado: <span id="cargoText"></span>
                         </div>
                     </div>
@@ -118,7 +118,7 @@
 </div>
 
 <!-- Formulario oculto para eliminar miembros -->
-<form id="removeMemberForm" action="/admin/proyectos/miembros/quitar" method="POST" style="display:none;">
+<form id="removeMemberForm" action="/admin/proyectos/miembros/quitar" method="POST" class="admin-hidden">
     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
     <input type="hidden" name="project_id" value="<?php echo $project['Id']; ?>">
     <input type="hidden" name="user_id" id="removeUserId">

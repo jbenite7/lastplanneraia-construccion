@@ -128,16 +128,6 @@ $forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
   </form>
 </div>
 
-<style>
-  .assignment-row {
-    border: 1px solid #d7dbe0;
-    border-radius: .35rem;
-    padding: .75rem;
-    margin-bottom: .75rem;
-    background: #fbfcfe;
-  }
-</style>
-
 <script>
 $(function () {
   const $assignmentsContainer = $('#assignmentsContainer');

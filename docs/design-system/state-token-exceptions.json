@@ -304,6 +304,14 @@
       "kind": "at-risk",
       "reason": "Uso del token fuera de las hojas: entra como opcion `iconColor` de SweetAlert2 en el modal de cambio obligatorio de contrasena, sin ningun fondo que emparejar. Ademas el icono declarado es `icon: 'warning'` y se pinta con el token de success, una mezcla semantica que ya esta mal hoy.",
       "revisit": "Decidir el token correcto para un icono de aviso -warning-text, no success-text- y, de paso, si un color de design system debe seguir viajando en una opcion de JS en vez de una clase. La inversion no rompe este uso, pero es el unico consumidor del par fuera de public/css y conviene resolverlo antes de multiplicarlo."
+    },
+    {
+      "file": "public/css/design-system/adapters/admin-lte.css",
+      "line": 606,
+      "selector": ".text-danger",
+      "token": "--ds-color-state-critical-text",
+      "kind": "by-design",
+      "reason": "Es media pareja a proposito: .text-danger es una utilidad de SOLO texto de Bootstrap, no pinta fondo, asi que no existe la otra mitad que declarar. El critical-text no se usa como tinta directa sino como matiz: se mezcla al 35% contra --ds-active-text-primary para obtener un rojo claro legible sobre oscuro. Medido en /admin/: el #dc3545 original daba 4,24:1 sobre el lienzo del panel y fallaba AA; la mezcla sube a ~8:1 conservando el matiz rojo."
     }
   ]
 }
