@@ -14,6 +14,7 @@
     <script src="/vendor/chart.js/chart.umd.min.js?v=4.4.1"></script>
 
     <link rel="stylesheet" href="/css/access.css">
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/design-system/adapters/bi-utilities.css') ?>
     <link rel="stylesheet" href="/css/bi-control-tower.css?v=<?= filemtime(__DIR__ . '/../../public/css/bi-control-tower.css') ?>">
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/bi-filter-drawer.css') ?>
 </head>

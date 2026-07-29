@@ -1,0 +1,396 @@
+/*
+ * Adaptador de utilidades para /bi/* — sustituye al Play CDN de Tailwind.
+ *
+ * POR QUE EXISTE
+ * `views/bi/_layout.php` cargaba `https://cdn.tailwindcss.com`, un `<script>`
+ * que compila en el navegador e inyecta su salida en un `<style>` SIN CAPA. Sin
+ * capa gana a las nueve capas de DS-006 en declaraciones normales, asi que
+ * derrotaba al design system entero en las 8 rutas /bi/*. Medido: las 5
+ * primitivas `aia-*` de la superficie estaban rotas por el PREFLIGHT que ese
+ * mismo blob traia (`*{border-width:0}`, `button{background-color:transparent}`,
+ * `input{padding:0}`, `h1..h6{font-size:inherit;font-weight:inherit}`).
+ *
+ * QUE ES ESTA HOJA
+ * Las 97 utilidades que el JIT generaba de verdad para las 8 rutas —volcado
+ * literal de `document.styleSheets` en /bi/semanal, que es la union de las
+ * ocho—, transcritas dentro de `@layer utilities`. Los COLORES pasan a tokens
+ * `--ds-active-*`; la GEOMETRIA conserva el valor del vendor porque es lo que
+ * el markup asume y cambiarla seria un rediseno, no una migracion.
+ *
+ * QUE NO ES
+ * - No trae el preflight. Ese reset es el dano que este caso viene a quitar.
+ * - No trae el bloque de variables `--tw-*`: solo lo necesitan utilidades de
+ *   opacidad/sombra/transform/ring que esta superficie no usa.
+ * - No es un destino. Deja /bi/* con 97 utilidades ajenas al vocabulario
+ *   `aia-*`. Sustituirlas por primitivas del DS son 252 sitios de edicion y
+ *   exige inventar una capa de layout que el DS hoy no tiene; es deuda legitima
+ *   y separable, no un bloqueo para cerrar una violacion de capas.
+ *
+ * ORDEN
+ * Se respeta el orden del volcado. Importa de verdad en el grupo `display`:
+ * `.flex`, `.inline-flex`, `.grid` y `.hidden` comparten especificidad (0,1,0),
+ * asi que gana la ultima declarada. `.hidden` va la ultima a proposito: es la
+ * API de mostrar/ocultar de la SPA (`showView()`, drilldowns, empty states,
+ * 60 usos), no decoracion. Si deja de ganar, /bi/* deja de FUNCIONAR.
+ *
+ * CANDADO
+ * `scripts/design-system-bi-utilities.mjs` falla si `views/bi/**` o
+ * `public/js/modules/bi-spa.js` usan una utilidad con forma de Tailwind que no
+ * este aqui. Sin el, este archivo se pudre en silencio: antes el CDN generaba
+ * al vuelo cualquier clase nueva y ahora no hay nadie compilando.
+ */
+
+@layer utilities {
+  /* Posicion y apilado */
+  .pointer-events-none {
+    pointer-events: none;
+  }
+  .relative {
+    position: relative;
+  }
+  .z-10 {
+    z-index: 10;
+  }
+  .col-span-full {
+    grid-column: 1 / -1;
+  }
+
+  /* Margenes */
+  .mb-1 {
+    margin-bottom: 0.25rem;
+  }
+  .mb-2 {
+    margin-bottom: 0.5rem;
+  }
+  .mb-3 {
+    margin-bottom: 0.75rem;
+  }
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
+  .mb-6 {
+    margin-bottom: 1.5rem;
+  }
+  .mt-1 {
+    margin-top: 0.25rem;
+  }
+
+  /* Display. El orden es contractual: `.hidden` gana a las tres anteriores. */
+  .flex {
+    display: flex;
+  }
+  .inline-flex {
+    display: inline-flex;
+  }
+  .grid {
+    display: grid;
+  }
+  .hidden {
+    display: none;
+  }
+
+  /* Alto */
+  .h-10 {
+    height: 2.5rem;
+  }
+  .h-16 {
+    height: 4rem;
+  }
+  .h-4 {
+    height: 1rem;
+  }
+  .h-5 {
+    height: 1.25rem;
+  }
+  .h-56 {
+    height: 14rem;
+  }
+  .h-full {
+    height: 100%;
+  }
+  .h-3 {
+    height: 0.75rem;
+  }
+  .min-h-0 {
+    min-height: 0;
+  }
+  .min-h-\[24px\] {
+    min-height: 24px;
+  }
+  .min-h-\[72px\] {
+    min-height: 72px;
+  }
+
+  /* Ancho */
+  .w-10 {
+    width: 2.5rem;
+  }
+  .w-16 {
+    width: 4rem;
+  }
+  .w-4 {
+    width: 1rem;
+  }
+  .w-5 {
+    width: 1.25rem;
+  }
+  .w-full {
+    width: 100%;
+  }
+  .w-3 {
+    width: 0.75rem;
+  }
+  .max-w-md {
+    max-width: 28rem;
+  }
+
+  /* Flex y grid */
+  .flex-1 {
+    flex: 1 1 0%;
+  }
+  .flex-shrink-0 {
+    flex-shrink: 0;
+  }
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .flex-col {
+    flex-direction: column;
+  }
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .gap-1 {
+    gap: 0.25rem;
+  }
+  .gap-2 {
+    gap: 0.5rem;
+  }
+  .gap-4 {
+    gap: 1rem;
+  }
+  .gap-6 {
+    gap: 1.5rem;
+  }
+
+  /* Desbordamiento */
+  .overflow-hidden {
+    overflow: hidden;
+  }
+  .overflow-x-auto {
+    overflow-x: auto;
+  }
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+
+  /* Bordes. El color va a token; el ancho es geometria del markup. */
+  .rounded {
+    border-radius: 0.25rem;
+  }
+  .border-b {
+    border-bottom-width: 1px;
+  }
+  .border-l-4 {
+    border-left-width: 4px;
+  }
+  .border-t {
+    border-top-width: 1px;
+  }
+  .border-gray-200 {
+    border-color: var(--ds-active-border);
+  }
+
+  /* Superficie */
+  .bg-gray-100 {
+    background-color: var(--ds-active-surface);
+  }
+
+  /* Relleno */
+  .p-2 {
+    padding: 0.5rem;
+  }
+  .p-4 {
+    padding: 1rem;
+  }
+  .p-5 {
+    padding: 1.25rem;
+  }
+  .p-6 {
+    padding: 1.5rem;
+  }
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  .px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .py-0\.5 {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  /* Tipografia */
+  .text-left {
+    text-align: left;
+  }
+  .text-center {
+    text-align: center;
+  }
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  .text-\[10px\] {
+    font-size: 10px;
+  }
+  .text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  .text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .font-bold {
+    font-weight: 700;
+  }
+  .font-medium {
+    font-weight: 500;
+  }
+  .font-semibold {
+    font-weight: 600;
+  }
+  .uppercase {
+    text-transform: uppercase;
+  }
+  .leading-none {
+    line-height: 1;
+  }
+  .leading-relaxed {
+    line-height: 1.625;
+  }
+  .tracking-tight {
+    letter-spacing: -0.025em;
+  }
+  .tracking-wider {
+    letter-spacing: 0.05em;
+  }
+
+  /*
+   * Grises de la paleta clara de Tailwind, mapeados al par de texto del tema
+   * activo. Es el mismo reparto que `bi-control-tower.css` venia forzando con
+   * `!important` (900/800/700 -> primario, 600/500/400 -> secundario); aqui se
+   * declara una sola vez, en la capa que le toca y sin `!important`. El 300 no
+   * estaba mapeado y se suma al secundario: es el icono apagado del empty
+   * state, la misma intencion que el 400.
+   */
+  .text-gray-300 {
+    color: var(--ds-active-text-secondary);
+  }
+  .text-gray-400 {
+    color: var(--ds-active-text-secondary);
+  }
+  .text-gray-500 {
+    color: var(--ds-active-text-secondary);
+  }
+  .text-gray-600 {
+    color: var(--ds-active-text-secondary);
+  }
+  .text-gray-700 {
+    color: var(--ds-active-text-primary);
+  }
+  .text-gray-800 {
+    color: var(--ds-active-text-primary);
+  }
+  .text-gray-900 {
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Render y transicion */
+  .antialiased {
+    -webkit-font-smoothing: antialiased;
+  }
+  .opacity-50 {
+    opacity: 0.5;
+  }
+  .transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /*
+   * Variantes responsive. NO se colapsan: el alcance permitido es desktop
+   * >=1180px, que incluye 1280+, asi que `xl:` (>=1280) si es condicional
+   * dentro del rango y colapsarla cambiaria el layout de las pantallas anchas.
+   * `md:` y `lg:` se conservan con su media por fidelidad al volcado.
+   */
+  @media (min-width: 768px) {
+    .md\:w-auto {
+      width: auto;
+    }
+    .md\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .lg\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .xl\:col-span-2 {
+      grid-column: span 2 / span 2;
+    }
+    .xl\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .xl\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
