@@ -570,6 +570,647 @@ es idéntico antes y después. Desde ahí, ningún commit lo ha vuelto a tocar.
 **Corrección a la tabla de métricas del plan:** decía **4.369** y el archivo tiene **4.382**. El
 valor bueno es el medido; la tabla queda corregida en `plans/F1-styles-css.plan.md`.
 
+---
+
+## 2026-07-29 · F2 · Paso 1 del patrón: manifiestos de las superficies del agregador
+
+**Entregado: 6 manifiestos de 7.** Falta `pdc`, deliberadamente fuera de esta tanda. Las otras
+dos superficies que el spec contaba —`/listado-actividades` y `/contratos`— dejaron de existir
+para el plan el mismo día: ver más abajo.
+
+### Lo que cambió
+
+- Seis manifiestos nuevos en `docs/design-system/manifests/`: `profesionales.json`,
+  `subcontratistas.json`, `control-cambios.json`, `programa-general-actualizar.json`,
+  `indicadores.json`, `escalamientos.json`.
+- Seis goldens dark 1180×820 capturados contra el contenedor, en
+  `tests/browser/__screenshots__/<moduleId>/`, con su sha256 en el escenario del manifiesto.
+- `inventory.json`: los seis quedan en `manifests[]` y en `modules[]` con estado `pilot`.
+- `tests/design-system/contracts.test.mjs:249`: el censo cerrado de manifiestos pasa de 7 a 13.
+
+**No se tocó el agregador.** Ninguna vista cambió: `DesignSystemHeadComponent::render()` sigue
+sirviendo las seis. La migración a `renderForModule()` es el paso 2 del patrón y va aparte.
+
+### Corrección al spec F2: el paso 1 no se puede hacer «en seco»
+
+El spec ordena manifiesto (1) primero y evidencia visual (6) al final. **No es posible.**
+`module-manifest.schema.json` exige `scenarios` con `minItems: 1`, y cada escenario exige un
+`golden` que exista en disco y un `sha256` que case con él (verificado en
+`design-system-contracts.mjs:314-336` y `design-system-consumer-contract.mjs:90-98`). Un
+manifiesto sin captura no es un manifiesto válido. Los pasos 1 y 6 son un solo paso.
+
+**Decisión del usuario sobre dónde viven los goldens:** `tests/browser/__screenshots__/<moduleId>/`,
+donde ya viven los de los siete manifiestos existentes, y no `evidence/F2/` como pedía el spec.
+Un solo sitio, y el sha256 del manifiesto apunta al mismo archivo que sirve de evidencia.
+
+**`consumerContract` se omite a propósito en los seis.** El contrato v1 exige que la vista no
+tenga `<style>`, ni `style=`, ni hex, y que `exceptions[]` esté vacío — es exactamente el
+estado al que llega la superficie *después* del paso 3. Declararlo hoy pondría los seis en
+rojo el mismo día de nacer. Se añade al cerrar cada vista.
+
+### Resuelto por decisión, no por arreglo: `/listado-actividades` y `/contratos` salen del plan
+
+**Decisión del usuario, mismo día:** las dos páginas están **deprecadas** y se retiran del plan
+entero. No reciben manifiesto, presupuesto ni evidencia. El grupo B del goal pasa de 9 superficies
+a 7, y el criterio de cierre de F2 pasa de nueve manifiestos a siete.
+
+Actualizado en consecuencia: `goal.md` (§Fuera de alcance), `specs/F2-superficies-agregador.md`
+(cabecera, tabla, notas y criterio de cierre), `specs/F6-vendors.md` (T6.3.c retirado, T6.3.b y
+T6.3.d corregidos) e `inventory.json` (las dos pasan a estado `deprecated`, que no es lo mismo
+que pendiente).
+
+**Retirada real abierta como goal propio:** `goals/retiro-listado-contratos/goal.md`, con el radio
+de impacto medido y cuatro etapas. Resumen de por qué no cabía aquí: `SemiAutoService` (~3000
+líneas) tiene ramas por módulo intercaladas y lo comparte `/pdc`; el RBAC está repartido por una
+docena de arrays de roles; y `docs/pdc-v2.md:44` pone el apagado del modelo de familias en la fase
+**C1**, que depende de que A+B estén validados en producción. Este goal es de capa visual y no
+podía ejecutar nada de eso.
+
+**Lo que NO se hizo, a propósito:** no se tocaron sus `pathBudgets` de `exceptions.json`. Las
+rutas siguen servidas y sus archivos siguen vivos; aflojar un gate no es parte de deprecar. Y no
+se corrigió el 500 descrito abajo — con las páginas fuera del plan deja de bloquear nada, pero
+sigue siendo un 500 en producción hasta que alguien decida borrarlas de verdad.
+
+**F6 hereda dos preguntas abiertas** (anotadas en su spec): T6.3 se queda sin el punto de partida
+que tenía designado, y **retirar Select2 no se abarata** — deprecar una página no borra su código,
+así que los 16 usos de Select2 de estas dos vistas seguirán impidiendo borrar `public/vendor/select2/`.
+
+### El 500 que lo motivó, para el registro
+
+No tienen manifiesto porque **hoy no renderizan**. Las dos rutas mueren a media página con
+«Error Interno del Servidor».
+
+Causa, medida en el log de Apache y no supuesta: `views/partials/shell_sidebar.php:88-110`
+retiró del rail los ítems `listado-actividades` y `contratos` el 2026-07-29 (son la interfaz del
+PDC viejo). Pero las dos vistas siguen pasando su `$shellActive`, y
+`DesignSystemComponent.php:393` lanza `InvalidArgumentException: unknown active sidebar
+destination` cuando el activo no está entre los ítems. El `http_response_code(500)` de
+`public/index.php:386` ni siquiera llega a aplicarse — las cabeceras ya salieron, así que la
+respuesta es un 200 con media página.
+
+**Contradice su propio comentario:** el docblock de `shell_sidebar.php` dice que las rutas «siguen
+servidas y accesibles escribiendo la dirección». No lo están. La guarda «nunca ocultar el módulo
+en el que el usuario ya está» (línea 61) sólo cubre el ocultamiento por rol y área, no esta
+retirada incondicional.
+
+No se corrigió: es del frente de PDC V2 y la retirada fue deliberada. Queda como decisión
+pendiente del usuario.
+
+### Fuera de esta tanda por decisión del usuario
+
+`/pdc` — se cruza con PDC V2, que está moviendo las fuentes que el manifiesto tendría que
+declarar. Sigue `inventory-only` hasta que ese frente fije dónde viven.
+
+### Hallazgos de las capturas, no corregidos
+
+- **`/dashboard/escalamientos` se pinta en claro** con `data-aia-theme="dark"` aplicado. Su
+  `<style>` embebido hardcodea una paleta OKLCH clara que gana a los tokens. Es la superficie
+  con más distancia al dark de las nueve. El golden congela ese estado real, no el deseado.
+- **Desbordamiento horizontal a 1180 px** en `/profesionales` y `/programa-general-actualizar`:
+  el contenido arranca recortado por la izquierda. Persiste tras forzar `scrollTo(0,0)`, así que
+  es de layout, no de scroll heredado de Handsontable.
+- **El golden de `/indicadores` congela el iframe de Power BI cargando** (spinner). Es contenido
+  de otro origen y no determinista; el manifiesto lo declara como excepción permanente
+  `indicadores-powerbi-iframe`.
+
+### Verificación
+
+- **Comandos:** `node scripts/design-system-audit.mjs` · `node scripts/design-system-entrypoint-partition.mjs`
+  · `node scripts/design-system-consumer-contract.mjs` · `npm run test:design-system:static`
+- **Resultado:** audit **pasa contra baseline**; partición de entrypoint **PASS**; contratos de
+  consumidor **PASS (1 manifiesto v1)**; estática **358/359**.
+- **El único rojo** es `contracts.test.mjs:55` con `activation: worktree and index must be clean`
+  (`design-system-activation-git.mjs:42`): exige árbol limpio, así que es imposible verlo verde
+  con trabajo sin commitear. Ya estaba rojo al abrir la sesión por un archivo sin seguimiento en
+  `docs/superpowers/specs/`. No es regresión de este cambio.
+- **Navegador:** las ocho rutas recorridas autenticadas contra `localhost:8081` a 1180×820 dark,
+  con `data-aia-theme=dark` confirmado en las ocho.
+
+---
+
+## 2026-07-29 · F2 · Pasos 2-4 del patrón: las cinco superficies restantes
+
+**Entregado: las cinco.** `escalamientos`, `profesionales`, `subcontratistas`, `control-cambios` e
+`indicadores` migraron su head, vaciaron su vista y declararon presupuesto cero. Con
+`programa-general-actualizar`, ya cerrada, son seis de las siete de F2; sigue faltando `pdc`,
+fuera de esta tanda por la misma razón de siempre.
+
+### Lo que cambió, por superficie
+
+| Superficie | Head | Vista | Hoja del módulo |
+|---|---|---|---|
+| `escalamientos` | `renderForModule` | −1 `<style>` (33 `rgba()`, 7 radios), −3 `style=` | `public/css/escalamientos.css` (nueva) |
+| `profesionales` | `renderForModule` | −1 `<style>`, −todos los `style=` | `public/css/profesionales.css` (nueva) |
+| `subcontratistas` | `renderForModule` | −1 `<style>`, −todos los `style=`, −CDN de Handsontable | `public/css/subcontratistas.css` (nueva) |
+| `control-cambios` | `renderForModule` | −1 `<style>` vacío, −8 `style="resize: none"` | `public/css/control-cambios.css` (existente) |
+| `indicadores` | `renderForModule` | −4 `style=` (2 de markup, 2 de plantillas JS) | `public/css/indicadores.css` (nueva) |
+
+Cinco entradas nuevas en `pathBudgets` de `exceptions.json`, con cero en las seis reglas duras.
+`inventory.sharedHeadConsumers` baja de 10 a **5**, y `foundation.test.mjs` con ella.
+
+**`escalamientos` dejó de pintarse en claro.** Su `<style>` embebido hardcodeaba una paleta OKLCH
+clara que, al entrar sin capa, ganaba a todos los tokens. Verificado tras el cambio: `data-aia-theme=dark`
+y `body background: rgb(17, 26, 21)`.
+
+**`profesionales` dejó de desbordar horizontalmente.** Causa confirmada, idéntica a la de
+`programa-general-actualizar`: el `padding: 0` sobre `html, body` del bloque embebido le ganaba al
+`padding-inline-start` con que el shell reserva el rail. `scrollWidth - clientWidth = 0` en las cinco.
+
+### Decisión del usuario: la vista de tarjetas móvil se retira
+
+`profesionales` y `subcontratistas` traían un `#mobile-card-view` con su renderer, sus helpers y
+parches al navbar legacy —que ya no se monta, desde que ambas usan el shell sidebar—. Era la mitad
+del `<style>` y casi todos los `style=`, y no se podía tokenizar sin diseñar para móvil, que
+`AGENTS.md` prohíbe. **El usuario autorizó retirarla entera**, por ser código que a 1180 px nunca se
+muestra. Se borró el contenedor, `renderMobileCards`, `updateMobileRow`, `createMobileRow`,
+`deleteMobileRow`, `addMobileSubcontratista` y `buildCargoOptionsHtml`, más las media queries de
+móvil/tablet del bloque embebido. Es lo único que permitió el presupuesto cero real en las dos.
+
+### Verificado, contra la hipótesis del spec: el bloque de neutralización SÍ era innecesario
+
+El spec pedía comprobarlo antes de reescribirlo. Retirado por completo de `profesionales`, la grilla
+renderiza igual y el `wtHider` ocupa el ancho del contenedor (1061 de 1062 px a 1180×820). Sus reglas
+apuntaban a `mobile-table-fix.js`, que ya no existe; el par fondo/tinta de celda, la rejilla y
+`.status-active`/`.status-inactive` los declara `handsontable-module.css` desde `layer(vendor)`; y los
+propios comentarios de la vista daban por INERTES la mitad de las demás.
+
+### El fallo que el head segmentado destapó: el drawer vive en la hoja equivocada
+
+Al pasar `escalamientos` a `renderForModule`, el Cajón Contextual LPS perdió su `position: fixed` y
+cayó al flujo del documento, debajo del tablero. Causa medida: **toda la geometría de `.lps-drawer` y
+su overlay vive dentro de `public/css/handsontable-module.css`** (líneas 377+), que el agregador
+importaba y `core.css` no. La vista no monta ninguna grilla —emula Handsontable con un objeto dummy—,
+así que declara el vendor `handsontable` sólo para recuperar esa hoja, con la excepción
+`escalamientos-drawer-en-hoja-de-handsontable` en su manifiesto explicándolo.
+
+**La deuda real es la ubicación de esas reglas, no la declaración:** pertenecen a
+`adapters/lps-drawer.css`, que ya está en `core.css`. Mover ~250 líneas entre capas
+(`vendor` → `components`) altera la cascada de todas las vistas que hoy cargan ambas hojas y excede
+F2. Queda abierto.
+
+### Entrega sin capa cerrada de paso
+
+`subcontratistas` servía Handsontable por la CDN de jsdelivr (`@14.6.1`), **la misma versión que ya
+está vendorizada** en `public/vendor/handsontable/`. Se cambió CSS y JS al vendor local, y con el head
+segmentado la hoja llega por `attach-handsontable.css` en `layer(vendor)`: la entrega sin capa
+desaparece. Retirada su entrada de `unlayered-delivery-inventory.json` y anotado en el caso
+`2-handsontable-doble-carga`, que sigue ABIERTO para las demás vistas —`/profesionales` incluida, que
+conserva su `<link>` crudo al vendor local—.
+
+### Regresiones abiertas y límites
+
+- **La grilla de `profesionales` y `subcontratistas` no ocupa todo el ancho del contenedor.** Medido:
+  contenedor 1062 px, `wtHider` 1061, pero el `table.htCore` del master 631. **Es preexistente y ajeno
+  a este cambio**: `subcontratistas` con su bloque `<style>` intacto exhibía el mismo patrón (1134 /
+  1134 / 827). Antes lo tapaba el desbordamiento horizontal. Se intentaron dos arreglos —reinyectar
+  `colWidths` por `updateSettings` tras el primer render, y forzar `width: 100%` + `table-layout:
+  fixed` sobre `table.htCore`— y **ninguno cambió nada**; ambos revertidos para no dejar código que no
+  arregla. Es virtualización de Handsontable y merece diagnóstico propio.
+- **`/dashboard/escalamientos` lanza `hot.addHook is not a function`** en consola al iniciar el
+  drawer: su `dummyHot` no implementa `addHook`. Preexistente, ningún cambio de esta tanda toca ese
+  JS. Es el único ruido de consola de las cinco.
+- **Las tarjetas de crisis de `escalamientos` no son alcanzables por teclado**: son `<div onclick>`
+  sin `tabindex` ni `role`. Añadir foco sin activación por teclado empeora la situación, así que no se
+  tocó. Necesita convertirlas en botones, que es cambio de markup y de alcance.
+- **`escalamientos` pasa a cuatro columnas fijas.** Su tablero era mobile-first y sólo llegaba a
+  cuatro desde `min-width: 1200px`, de modo que en el viewport canónico (1180) mostraba **dos**. Las
+  media queries se retiraron y el tablero declara su forma real. Es un cambio visible a 1180, y va
+  dicho aquí a propósito.
+- **`consumerContract: "v1"` sigue sin declararse en las seis.** Las vistas ya están limpias, pero
+  `escalamientos` tiene `exceptions[]` no vacío y v1 lo prohíbe; declararlo en las otras cinco es una
+  decisión de contrato que merece su propia pasada.
+
+### Verificación
+
+- **Comandos:** `node scripts/design-system-audit.mjs` · `node scripts/design-system-entrypoint-partition.mjs`
+  · `node scripts/design-system-consumer-contract.mjs` · `npm run test:design-system:static`
+- **Resultado:** audit **pasa contra baseline**; partición **PASS**; contrato de consumidor **PASS
+  (1 manifiesto v1)**; entregas sin capa **PASS (17 declaradas)**; estática **358/359**.
+- **El único rojo** vuelve a ser `contracts.test.mjs:55` con `activation: worktree and index must be
+  clean`: exige árbol limpio y es imposible verlo verde con trabajo sin commitear. No es regresión.
+- **Dos gates atraparon errores míos, y conviene que conste:** `state-token-pairing.test.mjs` rechazó
+  un uso invertido del par `critical` (fondo con el token de texto) en el botón de borrado de
+  `subcontratistas`; y `design-system-unlayered-delivery.mjs` detectó la entrada obsoleta del
+  inventario en cuanto retiré la CDN.
+- **Navegador:** las cinco rutas recorridas autenticadas contra `localhost:8081` a 1180×820 dark,
+  sobre la ruta afectada. En las cinco se comprobó en `document.styleSheets` que la lista de hojas es
+  la reducida y **el agregador no aparece** —la única prueba de que `renderForModule` no degradó—,
+  más `data-aia-theme=dark`, cero desbordamiento horizontal, red sin 404 y consola limpia salvo el
+  `hot.addHook` anotado arriba.
+
+### Goldens recapturados
+
+Los seis del paso 1 retrataban el estado ANTERIOR. Se recapturaron los cinco de esta tanda a 1180×820
+dark contra el contenedor y se actualizó su `sha256` en el manifiesto. **No es una regeneración para
+forzar verde:** el gate visual del laboratorio no consume estos goldens, y su cambio es exactamente el
+efecto buscado (dark real en `escalamientos`, layout sin recorte en `profesionales`).
+
+| Superficie | sha256 anterior → nuevo |
+|---|---|
+| `escalamientos` | `8a352eaa…` → `b71ba043…` |
+| `profesionales` | `cf7bf667…` → `c0318ee3…` |
+| `subcontratistas` | `bd84eae8…` → `1e3c6fab…` |
+| `control-cambios` | `84136b41…` → `f493f453…` |
+| `indicadores` | `d50cdc9f…` → `29d308f6…` |
+
+El de `indicadores` sigue congelando el iframe de Power BI cargando: contenido de otro origen, no
+determinista, declarado como excepción permanente `indicadores-powerbi-iframe`.
+
+---
+
+## 2026-07-29 · F2 · Arreglado: la grilla no ocupaba el ancho del contenedor
+
+Quedaba anotado como regresión abierta en la entrada anterior, con dos intentos fallidos y la
+conclusión de que era «virtualización de Handsontable». **Esa conclusión era incorrecta.** La causa
+real, medida:
+
+### Causa raíz
+
+`public/css/handsontable-module.css:127-131` fuerza `table-layout: auto !important` sobre
+`#hot-container table` desde `layer(vendor)`, **anulando el `table-layout: fixed` que el propio
+vendor declara** en `.handsontable table.htCore`. Con `auto`, el navegador trata los `<col width>`
+del colgroup como sugerencias y colapsa la tabla al ancho de su contenido. El `width: 100%
+!important` de esa misma regla no lo compensa: el padre directo de la tabla es `.wtSpreader`, que
+Handsontable mantiene a `width: 0`, así que el 100% resuelve a cero.
+
+Por eso el `wtHider` medía lo correcto (1061 px) y la tabla de dentro no (631).
+
+**Por qué mis dos intentos anteriores fallaron, y por qué eso mismo era la pista:** ninguno podía
+funcionar. Para declaraciones `!important` el orden de capas se **invierte**, así que
+`layer(vendor)` gana a `layer(module)` y a cualquier hoja sin capa. La regla
+`table-layout: fixed !important` que el bloque `<style>` embebido traía tampoco alcanzaba —era
+inerte, como sus propios comentarios sospechaban de otras—. **El estrechamiento era de origen y
+llevaba ahí desde siempre**, no lo introdujo F2: lo tapaba el desbordamiento horizontal.
+
+### El escape ya existía en el repo
+
+`handsontable-module.css:134-138` devuelve `table-layout: fixed !important` y el ancho de
+`--hot-table-width` cuando `#hot-container` lleva la clase `hot-fixed-columns`. **Cinco módulos ya
+lo aplican** (programa-general, programacion-intermedia, programacion-semanal, listado-actividades,
+contratos). Los tres que no lo hacían —`profesionales`, `subcontratistas`,
+`programa-general-actualizar`— eran exactamente los tres que se veían estrechos.
+
+### Lo que se hizo
+
+- **`public/js/modules/aia_ui/hot_table_width.js`** (nuevo): `window.AIA.sincronizarAnchoTabla()`
+  aplica la clase y publica `--hot-table-width` con la suma real del colgroup que Handsontable acaba
+  de escribir. Lee la cifra medida en vez de reconstruirla desde las constantes de cada vista, que
+  es lo que hacen los otros cinco. Idempotente.
+- Invocado desde las tres superficies, **antes** del render final: al fijar el ancho cambian los
+  saltos de línea y con ellos la altura de las filas.
+- **`handsontable-module.css:134`**: el selector pasa de `.handsontable table.htCore` a
+  `.ht_master table.htCore, .ht_clone_top table.htCore`. Ver abajo.
+
+### Un efecto colateral, encontrado y corregido
+
+Al activar `hot-fixed-columns` en `/profesionales` **desaparecieron los encabezados y los números de
+fila**. La regla alcanzaba a los cuatro clones, incluidos `ht_clone_left` y
+`ht_clone_top_left_corner`, que cubren sólo las columnas congeladas: con `rowHeaders: true` tienen
+una única columna, y forzarle el ancho total la estiraba de 50 a 1061 px hasta tapar la grilla.
+
+No se había notado nunca porque **las cinco vistas que ya activaban la clase tienen el clon
+izquierdo vacío** — verificado una por una antes de tocar el selector compartido, para medir el
+radio del cambio. El arreglo del selector no altera ninguna de las cinco, y sus anchos siguen
+idénticos (1020 y 1290 px).
+
+### Verificación
+
+- **Test nuevo:** `tests/browser/handsontable-ancho-tabla.mjs` compara `table.htCore` contra su
+  `wtHider` en las cinco rutas con grilla. Escrito **antes** del arreglo: **2/5 en rojo**
+  (profesionales 631/1061, subcontratistas 828/1059, programa-general-actualizar 361/989). Tras el
+  arreglo, **5/5 con desfase 0 px**. Añadido a la allowlist de `.gitignore`.
+- **Gates:** audit pasa contra baseline; partición PASS; contrato de consumidor PASS; entregas sin
+  capa PASS; estática **358/359** con el único rojo esperado (árbol sucio).
+- **Navegador:** las tres rutas a 1180×820 dark, `overflowX = 0`, sin errores de página ni 404.
+  Capturas de control de `/programa-general` y `/programacion-intermedia` revisadas: sin cambios.
+- **Goldens** de las tres superficies recapturados y su `sha256` actualizado.
+
+### Sigue abierto: el clon de números de fila desalinea
+
+`ht_clone_left` dibuja sus filas más altas que las del master —en `/profesionales`, +16 px
+constantes por fila—, así que los números no coinciden con sus filas.
+
+**No lo introdujo este arreglo:** medido con el helper neutralizado y con él activo, las alturas de
+`/profesionales` son idénticas en ambos casos (`master [60,41,59,41…]` vs `left [76,57,75,57…]`).
+Tampoco es CSS: tipografía, `line-height`, `padding` y bordes son idénticos en las celdas de ambos
+(`13px / 21px / 8px 12px / 1px`). Es Handsontable dibujando el clon con alturas propias. En
+`/subcontratistas` el desajuste **se hace más visible** tras el arreglo, porque al ensanchar la tabla
+el master deja de envolver texto y sus filas encogen mientras el clon conserva las suyas.
+
+Se detuvo la investigación aquí a propósito: son dos hipótesis descartadas con medición, el defecto
+es preexistente y del vendor, y excede lo que este arreglo perseguía. Merece diagnóstico propio.
+
+---
+
+## 2026-07-29 · F2 · Alineación del clon de encabezados de fila — a la raíz
+
+Continuación del arreglo de ancho. Quedaba anotado que el clon desalineaba y que era «defecto propio
+del vendor». **También esa conclusión era incorrecta: es CSS del design system.**
+
+### Causa raíz
+
+Handsontable calcula la altura de cada fila y la escribe como `height` **inline** en las celdas de
+sus clones. Ese número no contempla el relleno vertical que
+`public/css/design-system/adapters/handsontable.css` añadía a todas las celdas
+(`padding: var(--ds-space-2) var(--ds-space-3) !important`, desde `@layer reset`). El master crecía
+con el relleno; los clones, que llevan la altura fija, no. Resultado: **16 px de desvío por fila,
+acumulativos** — 111 px a la octava fila de `/profesionales`, medido a 1180×820.
+
+Diagnosticado con `CSS.getMatchedStylesForNode` por CDP, que señaló la regla exacta y su capa. Los
+`8px 12px` computados eran literalmente `--ds-space-2` y `--ds-space-3`.
+
+**Por qué ganaba a todo:** `@layer reset` es la capa más temprana, y para declaraciones `!important`
+el orden de capas se **invierte**. Vencía al `padding: 0 !important` que `handsontable-module.css`
+declara desde `layer(vendor)`.
+
+### La corrección
+
+**La densidad de una grilla no se expresa con relleno de celda**, porque el vendor mide la altura de
+fila y no lo ve. El adaptador pasa a declarar sólo relleno horizontal (`padding-block: 0` +
+`padding-inline: var(--ds-space-3)`), que no participa del cálculo de altura. Alinea los cuatro
+clones por construcción, y de paso compacta la grilla —la dirección que `DESIGN.md` pide para
+superficies de datos densas—.
+
+### Resultado, medido a 1180×820
+
+| Ruta | Desvío antes | Después | Cabecera antes → después |
+|---|---|---|---|
+| `/programa-general` | 0 px | **0 px** | 48 → 32 px (una fila visible más: 5 → 6) |
+| `/programacion-intermedia` | 0 px | **0 px** | 162 → 146 px |
+| `/profesionales` | **111 px** | **1 px** | 56 → 24 px |
+| `/subcontratistas` | 35 px | **13 px** | 32 → 22 px |
+| `/programa-general-actualizar` | 0 px | **0 px** | 207 → 175 px |
+
+Capturas antes/después de las cinco revisadas: ninguna empeora, todas ganan densidad sin perder
+legibilidad. Los 14 números de fila de `/profesionales` quedan exactamente sobre sus filas.
+
+### Cinco hipótesis descartadas con medición, para que nadie las repita
+
+1. **Acotar el relleno al cuerpo del clon** (`tbody th`): bajó de 111 a 17 px, pero la cabecera del
+   clon quedaba 16 px descuadrada por la misma razón. Insuficiente.
+2. **Retirar `box-sizing: content-box` de `.ht_clone_left`** (`handsontable-module.css:197`), para
+   igualar el modelo de caja de los cuatro clones: **empeora** —18 px frente a 13—. Probado y
+   revertido; la regla se queda, con nota.
+3. **`hot.refreshDimensions()` al final del render:** sin efecto.
+4. **`recalculateAllRowsHeight()` en un `requestAnimationFrame` posterior**, por si medía el ancho
+   antes del reflujo: sin efecto. Revertido.
+5. **Antes de todo esto**, se había descartado que fuera tipografía: `font-size`, `line-height`,
+   `padding` y bordes son idénticos en las celdas del master y del clon.
+
+### Sigue abierto: 13 px en `/subcontratistas`
+
+Handsontable escribe en el clon alturas que no corresponden a las del master **en esa vista**: 28, 42
+y 21 px para filas que renderizan a 44, 43 y 29. Sólo la segunda coincide. Es su `autoRowSize`
+midiendo mal con `wordWrap` y contenido que envuelve; ya no es CSS ni orden de llamadas.
+
+Se detuvo aquí a propósito, tras cinco hipótesis descartadas: el skill de depuración marca ese punto
+como señal de que el problema es de otra naturaleza. Visualmente los tres números caen ya casi sobre
+sus filas.
+
+### Verificación
+
+- **`tests/browser/handsontable-ancho-tabla.mjs`** amplía su aserción a la alineación del clon.
+  **Se deja deliberadamente ROJO en `/subcontratistas`** (umbral 2 px, desvío 13): `AGENTS.md`
+  prohíbe adaptar una prueba para ocultar un defecto, y un rojo que documenta un defecto real vale
+  más que un umbral inflado. Las otras cuatro pasan.
+- **Gates:** audit pasa contra baseline; contrato de consumidor PASS; entregas sin capa PASS.
+- **Goldens** de las tres superficies recapturados y su `sha256` actualizado.
+
+### Aviso: dos rojos de la suite NO son de este trabajo
+
+Al cerrar, `npm run test:design-system:static` falla por trabajo de otras dos sesiones activas en
+este mismo worktree:
+
+- `inventory: missing manifest bi-runtime.json` — `views/bi/_layout.php` ya está migrado a
+  `renderForModule('bi-runtime')` pero su manifiesto aún no existe (F3/T3.1 en curso).
+- `state-token-pairing`: tres usos descompensados en
+  `public/css/design-system/adapters/admin-lte.css` (F4 en curso).
+
+Ninguno se tocó.
+
+### Pendiente de decisión: dos goldens quedan retratando el estado anterior
+
+El cambio del adaptador es compartido, así que `/programa-general` y `/programacion-intermedia`
+también se ven más compactas. **Sus goldens NO se recapturaron**: `DESIGN.md` prohíbe tocar Programa
+General y sus archivos desde la migración de otra superficie, y regenerar una baseline ajena exige
+aprobación explícita. Sus `sha256` siguen casando porque los PNG no se tocaron, pero ya no
+corresponden a lo que se sirve. Requiere decisión.
+
+---
+
+## 2026-07-29 · F6 · T6.1 y T6.2: las dos islas de color sin tokens
+
+`change-monitor.css` y `tom-select-premium-aia.css` no usaban una sola variable del sistema (23 y
+16 hex, cero `var(--ds-*)`). Quedan tokenizadas, cada una en su capa, y la primera entra ya por el
+head canónico. **T6.3 no se tocó**, por decisión del usuario.
+
+### `change-monitor.css` — T6.1
+
+- Pasa a `@layer module`, junto a `styles.css` y a las hojas de superficie de F2, y declara el orden
+  canónico de capas antes de abrirla. Entraba **sin capa**, que gana a todas las capas en
+  declaraciones normales: por eso su paleta clara derrotaba al design system con el documento en
+  dark.
+- `programacion_semanal.view.php:42` la enlaza con `DesignSystemHeadComponent::renderStylesheet`, no
+  con un `<link>` de `?v=` escrito a pulso. Verificado servido: `?v=1785349991` (mtime).
+- Retiradas sus **dos** entradas de `unlayered-delivery-inventory.json` —la estática y la de runtime
+  de `/programacion-semanal`—: dejarlas habría hecho fallar el gate por `stale-inventory-entry`.
+- Los acentos ámbar (indicador de filtro, badge de restricciones) y el rojo del icono «solo
+  restricciones» se derivan en OKLCH desde `--ds-color-state-warning-text` /
+  `--ds-color-state-critical-text` preservando su matiz. El par `--ds-color-state-*` es claro y como
+  tinta sobre penumbra no se leería. Mismo patrón que `escalamientos.css` y
+  `programa-general-actualizar.css`. **No se inventó ningún color.**
+- Los custom properties se declaran **en la regla que los usa**, no en `:root`: un selector global
+  desde una hoja de módulo dispara `global-module-selector`, y los modales de SweetAlert2 cuelgan de
+  `<body>`, fuera de cualquier contenedor de la vista.
+- Añadido foco visible al toggle «Solo restricciones», que era un `<label>` clicable sin ninguno.
+
+### `tom-select-premium-aia.css` — T6.2
+
+- Pasa de `@layer components` a **`@layer vendor`**, que es donde entran los demás skins de librería,
+  y declara el orden canónico. Antes abría capas sin fijar el orden y se lo imponía a quien la
+  cargara.
+- Colores contra `--ds-active-domain-construction` (el naranja de dominio en su variante on-dark),
+  `--ds-state-tint-orange`, `--ds-active-bg-canvas`, `--ds-active-text-primary` y
+  `--ds-active-border`. Radios, tipografía, espaciado, sombras, motion y `z-index` a la escala
+  semántica. Los `-1px` de solape pasan a `calc(var(--ds-border-width) * -1)`.
+
+#### Hallazgo: tres bloques de reglas llevaban tiempo sin casar con nada
+
+Medido en `/programa-general-actualizar` con Tom Select montado de verdad: la librería marca cada
+opción como **`div.option`**, no `.ts-option`, y la de crear como `div.create`, no `.ts-create-option`.
+Los tres bloques del skin eran **selectores muertos**, y la consecuencia en dark era visible: las
+opciones conservaban el skin claro de `tom-select.bootstrap4.min.css` y la opción activa se pintaba
+**blanca sobre desplegable oscuro**. Se añaden las clases reales conservando las antiguas.
+
+Dos correcciones de contraste al hacerlo, medidas y no estimadas: el naranja de dominio sobre
+`--ds-state-tint-orange` da **3.6:1**, por debajo del piso 4.5:1, y lo llevaban el texto del chip
+(0.75 rem) y el de la opción activa. En ambos la tinta pasa a `--ds-active-text-primary`; el naranja
+se queda en el borde y en el tinte, que son decorativos.
+
+#### Límite conocido, dicho a propósito
+
+El botón «Limpiar selección» mantiene `--ds-active-domain-construction` sobre
+`--ds-active-surface-raised`: **3.7:1**. Es el uso que el propio token declara para on-dark, así que
+no se corrigió aquí — subirlo es una decisión del sistema de tokens, no de este skin.
+
+### Presupuestos de ruta
+
+Dos entradas nuevas en `pathBudgets` de `exceptions.json`, con cero en las seis reglas duras:
+`change-monitor` (hoja + `programacion_semanal.view.php`) y `tom-select-skin` (la hoja). Ambas en
+cero real, no por excepción.
+
+### De paso
+
+`programaGeneralActualizar.view.php` enlazaba `tom-select-premium-aia.css` **dos veces** (líneas 22
+y 25). Retirado el duplicado; verificado en el navegador que ahora aparece una sola vez en
+`document.styleSheets`.
+
+### Verificación
+
+- **Comandos:** `node scripts/design-system-audit.mjs` · `…-entrypoint-partition.mjs` ·
+  `…-consumer-contract.mjs` · `…-unlayered-delivery.mjs` · `npm run test:design-system:static`.
+- **Resultado:** audit **pasa contra baseline** (total 5483 → 5481); partición **PASS**; contrato de
+  consumidor **PASS (1 manifiesto v1)**; entregas sin capa **PASS (17 → 16 declaradas)**; estática
+  **357/359**.
+- **Los dos rojos no son de esta tanda.** Uno es el de siempre, `contracts.test.mjs` con
+  `activation: worktree and index must be clean`, imposible de ver verde con trabajo sin commitear.
+  El otro es `state-token-pairing.test.mjs` señalando tres usos descompensados en
+  `public/css/design-system/adapters/admin-lte.css`, un archivo **sin versionar de otra sesión** que
+  no toca este trabajo.
+- **Navegador:** `/programacion-semanal` y `/programa-general-actualizar` autenticadas contra
+  `localhost:8081`, a 1180×820 dark. En las dos: `data-aia-theme=dark`, `body` en `rgb(17, 26, 21)`,
+  `scrollWidth - clientWidth = 0`, **consola sin errores** y **red sin respuestas ≥ 400**.
+  `change-monitor.css` ya no figura entre las hojas sin capa de `/programacion-semanal`.
+- **Modal real del Change Monitor** abierto con `window.ChangeMonitor.openModal()`: cabecera, toggle,
+  badge, indicador y footer coherentes con el tema; foco del toggle con anillo visible
+  (`2px solid rgb(44, 170, 159)`); filtro activado y re-renderizado sin ruido.
+- **Tom Select real** montado en `/programa-general-actualizar` con el `TomSelect` de la página
+  dentro de un `.htTomSelectWrapper`, para leer el DOM que produce la librería y no una imitación.
+
+### Queda abierto
+
+- **No se pudo abrir el editor Tom Select desde una celda de Handsontable**: la grilla de
+  `/programa-general-actualizar` tiene **cero filas** en Da Porto, el único proyecto sembrado, y el
+  skin sólo aplica dentro de `.htTomSelectWrapper`. La verificación se hizo montando la librería de
+  verdad sobre la página servida; falta el paso por el ciclo de vida del editor de la grilla, que
+  pide un proyecto con cronograma cargado.
+- `listado-actividades` sigue enlazando el skin con `?v=` a pulso. Es vista **deprecada** y fuera del
+  plan del goal, así que no se tocó.
+- `handsontable-module.css` —que el spec numera como T6.2— **sigue con sus 54 hex y 35 `rgba()`**.
+  Esta tanda ejecutó lo que pidió el usuario: `change-monitor.css` y `tom-select-premium-aia.css`.
+  La numeración del spec y el alcance real de la sesión no coinciden, y conviene reconciliarlos antes
+  de dar F6 por cerrado.
+
+---
+
+## 2026-07-29 · F3 · T3.1: head canónico de las ocho rutas `/bi/*`
+
+**Entregado.** `views/bi/_layout.php` pasa de `renderStylesheet` crudo (tokens + agregador) a
+`DesignSystemHeadComponent::renderForModule('bi-runtime')`. `bi-runtime` deja de ser
+`deferred-last` y entra como `pilot` con manifiesto propio, presupuesto de ruta y tres goldens.
+T3.2 (Tailwind) y T3.3 (lucide vendorizado) ya estaban hechas y no se tocaron.
+
+### Lo que cambió
+
+| Archivo | Cambio |
+|---|---|
+| `views/bi/_layout.php` | `renderForModule('bi-runtime')`; retirado el `<link>` crudo a `access.css` (ya viaja en `core.css`, `@layer utilities`) |
+| `docs/design-system/manifests/bi-runtime.json` | nuevo: 8 rutas, 3 escenarios con golden y sha256 |
+| `docs/design-system/manifests/inventory.json` | `deferred-last` → `pilot`, y `bi-runtime.json` añadido a `manifests[]` |
+| `docs/design-system/exceptions.json` | dos `pathBudgets` nuevos y una nota |
+| `public/css/bi-control-tower.css` | la caja a pantalla completa, que venía prestada (ver abajo) |
+| `src/View/Components/DesignSystemHeadComponent.php` | nueva categoría `SCRIPT_ONLY_VENDORS` |
+| `scripts/design-system-entrypoint-partition.mjs` | candado de esa categoría |
+| `tests/design-system/contracts.test.mjs` | censo `deepEqual` de `inventory.manifests`: 13 → 14 |
+
+`sharedHeadConsumers` **no cambia**: sigue en 5 y `views/bi/_layout.php` nunca estuvo en la lista,
+así que `foundation.test.mjs` no se toca.
+
+### `chartjs` no cabía en ninguna categoría del registro, y el silencio se paga caro
+
+El gate de infra-declaración exige que el manifiesto declare `chartjs` (la vista carga
+`/vendor/chart.js/chart.umd.min.js`), pero `moduleVendors()` en PHP sólo conoce `CORE_VENDORS`,
+`VIEW_OWNED_VENDORS` y `VENDOR_ATTACHMENTS`: un vendor fuera de las tres **degrada al agregador con
+un `error_log` y nada más**. Meterlo en `CORE_VENDORS` sería mentir sobre lo que importa `core.css`,
+y `VIEW_OWNED_VENDORS` exige que alguna vista enlace su hoja —Chart.js pinta en Canvas y no tiene
+una sola regla en `public/css/`—.
+
+Se añadió `SCRIPT_ONLY_VENDORS = ['chartjs']`: vendors sin CSS, de los que el head emite exactamente
+nada. Con candado verificable en el gate de partición, como el que F2 puso a `VIEW_OWNED_VENDORS`:
+ningún miembro puede tener adjunto ni asset `.css` en `vendors.json`, y alguna vista debe cargar su
+script.
+
+### La trampa del adjunto ausente, otra vez: BI vivía de una hoja de Handsontable
+
+Igual que el drawer de `escalamientos`. **La caja a pantalla completa de `/bi/*` la daba
+`html, body { height: 100%; overflow: hidden; display: flex }` de
+`public/css/handsontable-module.css`**, que sólo llegaba por el agregador. BI no monta ninguna
+grilla. Medido tras el cambio: el shell colapsaba a la altura del contenido y el pie quedaba a media
+página, con el lienzo vacío debajo. La geometría se declara ahora en `bi-control-tower.css`, en
+`@layer components` y acotada a `.bi-control-tower-page` — que es donde pertenece, en vez de
+declarar un vendor que la vista no usa.
+
+**Efecto lateral visible y deliberado:** con la hoja del vendor se colaban también las variables
+`--lps-rail-*`, que dejaban una franja muerta de unos 46 px a la derecha del shell. Ahora el
+contenido llega al borde del viewport a 1180 px. Es un cambio visible y va dicho a propósito.
+
+### La excepción de los charts es permanente, no deuda
+
+`bi_chart_theme.js` conserva **15 hex y 3 `rgba()`** — `SERIES_FALLBACKS` y `TEXT_FALLBACKS`. El
+camino vivo ya lee tokens (`getComputedStyle` sobre `--ds-active-*` y las seis series); el hex sólo
+entra si el token no resuelve, caso en que Chart.js pintaría transparente. Van en un `pathBudget`
+propio (`bi-chart-theme-fallbacks`) que los **congela** en su conteo auditado, con la razón escrita
+en `notes` y en `exceptions[]` del manifiesto. La superficie (`bi-runtime`) queda en **cero en las
+seis reglas duras**. Nota de mecánica: `exceptions[]` de `exceptions.json` exige `selector` no vacío
+y las violaciones `hardcoded-hex` no lo llevan, así que documenta pero no suprime; quien pone el
+techo es el presupuesto.
+
+### Verificación
+
+- **Comandos:** `node scripts/design-system-audit.mjs` · `node scripts/design-system-entrypoint-partition.mjs`
+  · `node scripts/design-system-consumer-contract.mjs` · `node scripts/design-system-unlayered-delivery.mjs`
+  · `npm run test:design-system:static` · `npx playwright test tests/browser/bi_control_tower.spec.mjs tests/browser/bi_control_tower_access.spec.mjs --workers=1`
+- **Resultado:** audit **pasa contra baseline**; partición **PASS**; contrato de consumidor **PASS
+  (1 manifiesto v1)**; entregas sin capa **PASS (16 declaradas, una menos: se fue el `<link>` crudo
+  a `access.css`)**; estática **357/359**; Playwright **39 pasan, 9 fallan**, el mismo número de
+  rojos preexistentes que traía BI antes de esta tanda —entre ellos el de *landscape tablet*, que
+  `AGENTS.md` prohíbe tocar—.
+- **Los dos rojos de la estática, ninguno de esta tanda:**
+  - `contracts.test.mjs` con `activation: worktree and index must be clean` — el de siempre, imposible
+    de ver verde sin commitear. Comprobado aparte que el resto del gate pasa: se copió el árbol a un
+    repo temporal con estos cambios commiteados y las únicas quejas restantes son los `sourceRef`
+    del propio repo de prueba. Ahí se destapó que `inventory.manifests[]` también hay que declararlo
+    (no basta con cambiar el estado del módulo), y se corrigió.
+  - `state-token-pairing.test.mjs` por tres usos sin declarar en
+    `public/css/design-system/adapters/admin-lte.css`, **archivo sin versionar de otra sesión** (F6).
+    Lo de esta tanda en ese inventario sí quedó bien: las dos anclas de `bi-control-tower.css`
+    apuntaban a líneas equivocadas —ya lo estaban antes— y ahora apuntan a la línea real del token.
+- **Navegador**, autenticado contra `localhost:8081`, 1180×820 dark, **las ocho rutas `/bi/*`**:
+  en las ocho, `document.styleSheets` da la lista reducida (`core.css`, `tokens.css`,
+  `bi-utilities.css`, `bi-control-tower.css`, `bi-filter-drawer.css`) y **el agregador no aparece**;
+  `data-aia-theme=dark`, fondo `rgb(11, 16, 13)`, cero desbordamiento horizontal, **consola limpia**
+  y **cero respuestas ≥400**. Foco del disparador de filtros con anillo visible
+  (`2px solid rgb(44, 170, 159)`). Charts pintados y cajón de filtros operativo.
+- **Goldens** (`tests/browser/__screenshots__/bi-runtime/`): `control-tower` con el cajón abierto,
+  `curva-s` y `semanal` con sus charts. Capturados contra el contenedor; no se reconcilió ninguna
+  baseline previa porque el módulo no tenía.
+
+### Queda abierto
+
+- **`lucide` no está en `docs/design-system/vendors.json`.** La vista carga
+  `/vendor/lucide/lucide.min.js?v=1.27.0` (vendorizado y con pin por T3.3), pero al no tener entrada
+  en el catálogo tampoco tiene huella, así que ningún gate lo ve y el manifiesto no lo declara.
+  Registrarlo arrastra decidir su categoría (`SCRIPT_ONLY_VENDORS`, previsiblemente) y toca el
+  catálogo compartido; excede T3.1.
+- **`consumerContract: "v1"` sigue sin declararse.** `bi-runtime` tiene `exceptions[]` no vacío, que
+  v1 prohíbe; y en todo caso es la misma decisión de contrato aparte que dejó abierta F2.
+- **El markup de BI conserva nombres de utilidad de estilo Tailwind** (`flex`, `text-xl`,
+  `text-gray-800`…). Los sirve `bi-utilities.css` desde `@layer utilities` con tokens, así que no hay
+  deuda de color, pero el vocabulario del markup sigue sin ser el de las primitivas `aia-*`. Es
+  cosmética de nombres y no bloquea nada.
+- **Los avisos del hook de Impeccable sobre `bi-control-tower.css`** (18 `font-size` fuera de la
+  rampa) son **preexistentes**: ninguna de las líneas añadidas aquí declara tipografía.
+
 ## F4 · Panel admin — 2026-07-29
 
 ### Alcance ejercido
@@ -684,3 +1325,88 @@ verificado con `SELECT COUNT(*)` = 0 en las dos tablas. No se modificó ninguna 
   del par de bordes actúa sobre elementos y no alcanza pseudo-elementos. Deuda compartida, no de F4.
 
 ---
+
+## 2026-07-29 · F2 · Reconciliación de seis goldens tras el cambio del adaptador de Handsontable
+
+**Aprobación explícita del usuario, 2026-07-29.** `DESIGN.md` exige aprobación humana antes de
+reconciliar goldens y `AGENTS.md` prohíbe regenerar baselines para forzar verde. Esa aprobación
+existe y es el motivo de esta tanda: se registra aquí como la autorización que la habilita.
+
+### Por qué
+
+`public/css/design-system/adapters/handsontable.css` dejó de aplicar relleno vertical a las celdas
+(`padding-block: 0` + `padding-inline`, donde había `padding: var(--ds-space-2) var(--ds-space-3)`).
+Ver la entrada «Alineación del clon de encabezados de fila — a la raíz» de este mismo día para la
+causa raíz. Efecto secundario buscado y aceptado: **las grillas se compactan** —cabecera de
+`/programa-general` de 48 a 32 px, una fila visible más; `/programacion-intermedia` de 162 a 146 px—.
+Los tres goldens de `profesionales`, `subcontratistas` y `programa-general-actualizar` ya se habían
+recapturado entonces; quedaban estos seis, que la entrada anterior dejó anotados como «pendiente de
+decisión».
+
+### Los seis, con su sha256 antes y después
+
+| Escenario | sha256 antes | sha256 ahora |
+|---|---|---|
+| `programa-general-dark-1180x820` | `5c9ce074…80a3b0a2` | `35e79cff…166182b3` |
+| `programa-general-dark-1440x900` | `2af6f19e…15c378f8` | `7fae2a38…218f59d58` |
+| `programacion-intermedia-dark-1180x820` | `3aa6cca9…cb9ec5bd` | `b2d8174b…898c8ee45f` |
+| `programacion-intermedia-dark-1440x900` | `7385d0a6…3813da6c` | `1e8a6805…0395acdb` |
+| `programacion-semanal-dark-1180x820` | `c11bc8fb…175e53dd` | `d31cc841…977a8c78` |
+| `programacion-semanal-dark-1440x900` | `a667c670…5920c7fd0` | `36f91822…0d985bea4477` |
+
+`1440×900` es el viewport desktop secundario que `DESIGN.md` permite; entra en alcance.
+
+### Cómo se capturaron
+
+- **`programa-general` y `programacion-intermedia`:** con sus propias specs y
+  `--update-snapshots`, para que el golden sea byte a byte el que la prueba compara (mismo
+  `deviceScaleFactor`, mismos mocks deterministas, misma espera de `#save-status`). No se tocó
+  ninguna aserción ni umbral.
+- **`programacion-semanal` no tiene spec visual** —sus goldens son evidencia del manifiesto, no
+  baseline de Playwright—, así que se capturó con un script temporal en la raíz del repo, borrado al
+  terminar: login `test.A`, proyecto Da Porto, semana 4 (la misma del golden anterior), dark,
+  `#loading` oculto y `ht_master` montado. **El POST de autoprogramación que la vista dispara al
+  cargar se interceptó** (`**/api/semanal/auto-program**` → `{success:true, log:[]}`) para no
+  escribir datos y para que la captura fuera estable: no quedó dato alterado.
+- Las seis capturas se **revisaron una a una**: grilla compacta, encabezados de fila sobre sus filas,
+  sin spinner y sin tabla a media anchura. `overflowX = 0` en las dos de semanal.
+
+### El séptimo escenario NO se tocó: `programa-general-dark-390x844`
+
+`programa-general.json` declara un tercer escenario a **390×844, que es mobile**. `AGENTS.md`
+prohíbe de forma explícita trabajar, validar o generar evidencia para mobile o tablet, así que
+**quedó intacto** —su PNG no se abrió y su `sha256` sigue casando—. Pero eso deja el manifiesto
+retratando en ese escenario un estado que ya no se sirve.
+
+**Que un manifiesto del design system declare un escenario mobile contradice el alcance visual
+vigente** (desktop ≥1180 px, dark). No es un olvido: es una decisión pendiente del usuario. Las
+salidas son retirar el escenario del manifiesto, o levantar la restricción para ese caso. Hasta que
+se decida, ese golden envejece.
+
+### Verificación, con salida real
+
+- `node scripts/design-system-audit.mjs` → **pasa contra baseline**.
+- `node scripts/design-system-consumer-contract.mjs` → **PASS (1 manifiesto v1)**. Es la comprobación
+  que importa aquí: valida que cada `golden` exista y que su `sha256` case.
+- `node scripts/design-system-entrypoint-partition.mjs` → **PASS**.
+- `npm run test:design-system:static` → **358/359**.
+- `npx playwright test …/handsontable-ancho-tabla.mjs` → **4/5**.
+- Las dos specs visuales re-corridas **sin** `--update-snapshots` contra los goldens nuevos:
+  **4/4 verdes**.
+
+**Los dos rojos son los ya documentados y no son de esta tanda:** `contracts.test.mjs` con
+`activation: worktree and index must be clean`, imposible de ver verde con trabajo sin commitear; y
+`handsontable-ancho-tabla.mjs` en `/subcontratistas` (13 px de desvío), defecto abierto del
+`autoRowSize` del vendor. Ninguno se persiguió ni se tapó. `state-token-pairing.test.mjs`, que la
+tanda anterior reportaba en rojo por `adapters/admin-lte.css`, **ya pasa**: lo cerró F4.
+
+### Queda abierto
+
+- **T6.3 de F6 sigue abierto** (consolidar Select2 en Tom Select), y `programacion-semanal` es hoy su
+  candidato de arranque. Cuando se ejecute, este golden vuelve a quedar obsoleto.
+- **En `/programacion-semanal` el botón «Ver Secciones» de la barra queda recortado** por el riel
+  «CONCURRENCIA LPS» a 1180 px; a 1440 px cabe entero. Es del shell con sidebar, no del adaptador de
+  Handsontable, y es anterior a esta tanda. La captura lo congela porque retrata lo que se sirve.
+- **Otra sesión dejó conflictos de merge sin resolver en el worktree** durante esta tanda
+  (`pdc-app/src/styles.css`, `public/pdc-app/assets/pdc.css`, `public/pdc-app/assets/pdc.js`, en
+  estado `UU`), además de varios archivos del PDC en el índice. **No se tocaron.**

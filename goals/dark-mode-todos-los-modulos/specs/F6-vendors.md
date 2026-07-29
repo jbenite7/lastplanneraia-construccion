@@ -62,8 +62,24 @@ Vistas con Select2: `listado-actividades` (12 usos), `contratos` (4),
 Vistas con Tom Select: `programa-general-actualizar` (9), `listado-actividades` (4),
 `programacion-intermedia` (3). Más el laboratorio.
 
-`listado-actividades` usa **las dos**: es el mejor punto de partida, porque permite migrar sus
+`listado-actividades` usa **las dos**: era el mejor punto de partida, porque permitía migrar sus
 12 usos de Select2 contra un Tom Select ya presente en la misma página.
+
+> **Revisión del 2026-07-29 — `listado-actividades` y `contratos` están deprecadas** y salen del
+> plan del goal (ver `goal.md` §Fuera de alcance). Esto **afecta a T6.3 de tres maneras, y dos
+> siguen abiertas**:
+>
+> 1. **T6.3.c desaparece** — sus 12 usos de Select2 ya no se migran. F6 pierde su punto de partida
+>    designado; el siguiente candidato natural es `programacion-semanal`, que es también el más
+>    difícil (T6.3.e). **Decidir por dónde empieza T6.3 antes de escribir su sub-plan.**
+> 2. **T6.3.d cambia de forma** — `semi_auto_review.js` lo comparten Listado, Contratos y PDC.
+>    Con dos de los tres deprecados, la verificación del flujo semi-automático se reduce a PDC…
+>    que a su vez está siendo reemplazado por PDC V2. **Confirmar con ese frente qué queda vivo
+>    del contrato `auto/*` antes de tocar el archivo.**
+> 3. **T6.3.f (retirar Select2) NO se abarata sola.** Deprecar la página no borra el código: los
+>    16 usos de Select2 de esas dos vistas siguen en el repo y seguirán impidiendo borrar
+>    `public/vendor/select2/`. Retirar Select2 exige borrar esas vistas o migrarlas igual. Es una
+>    decisión de producto, no de estilos, y este goal no la toma.
 
 ### Integraciones que no son un `<select>` cualquiera
 
@@ -136,19 +152,20 @@ detenga después.**
 
 #### T6.3.b — Migrar los usos simples
 
-`indicadores` (1), `control-cambios` (1), `pdc` (2), CIC/CNC/CNP (1 cada una), `contratos` (4).
-Son inicializaciones directas sobre `<select>`. Uno o dos commits, verificando cada módulo.
+`indicadores` (1), `control-cambios` (1), `pdc` (2), CIC/CNC/CNP (1 cada una). Los 4 de
+`contratos` salen: vista deprecada. Son inicializaciones directas sobre `<select>`. Uno o dos commits, verificando cada módulo.
 
-#### T6.3.c — Migrar `listado-actividades`
+#### T6.3.c — ~~Migrar `listado-actividades`~~ · retirado el 2026-07-29
 
-Sus 12 usos, contra el Tom Select que la vista ya carga. Es la de mayor volumen y la que
-valida el patrón.
+La vista está deprecada. Sus 12 usos de Select2 no se migran. Ver el aviso de arriba: el tramo
+que valida el patrón hay que reasignarlo antes de escribir el sub-plan de T6.3.
 
 #### T6.3.d — Migrar `semi_auto_review.js`
 
 Commit propio. Verificación funcional del flujo semi-automático completo —`preview`, `apply`,
-`undo`, `feedback`, `metrics`— en **los tres** módulos que lo comparten: Listado de
-Actividades, Contratos y PDC. Sin esa verificación el tramo no cierra.
+`undo`, `feedback`, `metrics`—. El spec original exigía los **tres** módulos que lo comparten
+(Listado de Actividades, Contratos y PDC); con los dos primeros deprecados, queda por confirmar
+con el frente de PDC V2 qué sigue vivo. Sin esa confirmación el tramo no cierra.
 
 #### T6.3.e — Migrar la integración con Handsontable de Semanal
 

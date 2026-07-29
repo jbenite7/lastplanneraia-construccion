@@ -9,7 +9,7 @@
   "exceptions": [
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 106,
+      "line": 115,
       "selector": ".bi-chip",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -18,7 +18,7 @@
     },
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 304,
+      "line": 313,
       "selector": ".bi-switch-input:checked + .bi-switch-track",
       "token": "--ds-color-state-info-bg",
       "kind": "by-design",
@@ -179,15 +179,15 @@
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "line": 25,
+      "line": 340,
       "selector": ".pga-success-badge",
       "token": "--ds-color-state-success-bg",
       "kind": "by-design",
-      "reason": "El par si esta completo, solo repartido entre padre e hijo: el circulo lleva el success-bg y su unico contenido -el icono .pga-success-badge i- lleva el success-text. El guard es block-scoped y por eso los ve como dos mitades sueltas. El comentario de las lineas 21-23 declara este par como constante entre temas (8,7:1)."
+      "reason": "El par si esta completo, solo repartido entre padre e hijo: el circulo lleva el success-bg y su unico contenido -el icono .pga-success-badge i- lleva el success-text. El guard es block-scoped y por eso los ve como dos mitades sueltas. El comentario inmediatamente anterior a la regla declara este par como constante entre temas (8,7:1)."
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "line": 29,
+      "line": 344,
       "selector": ".pga-success-badge i",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",

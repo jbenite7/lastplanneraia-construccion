@@ -17,14 +17,6 @@
   ],
   "static": [
     {
-      "sheet": "/css/change-monitor.css",
-      "via": "view-link",
-      "unlayeredRules": 14,
-      "sites": [
-        "views/programacion-semanal/programacion_semanal.view.php"
-      ]
-    },
-    {
       "sheet": "/css/contratos.css",
       "via": "view-link",
       "unlayeredRules": 62,
@@ -150,15 +142,6 @@
         "views/auth/password-reset.view.php"
       ],
       "case": "6-adminlte-login"
-    },
-    {
-      "sheet": "https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css",
-      "via": "view-link-external",
-      "unlayeredRules": null,
-      "sites": [
-        "views/subcontratistas/subcontratistas.view.php"
-      ],
-      "case": "2-handsontable-doble-carga"
     },
     {
       "sheet": "https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css",
@@ -526,11 +509,6 @@
           "sheet": "/css/handsontable-header-global.css",
           "via": "link",
           "unlayeredRules": 8
-        },
-        {
-          "sheet": "/css/change-monitor.css",
-          "via": "link",
-          "unlayeredRules": 14
         }
       ]
     },

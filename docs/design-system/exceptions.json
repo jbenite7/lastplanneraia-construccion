@@ -435,6 +435,125 @@
       }
     },
     {
+      "name": "programa-general-actualizar",
+      "paths": [
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+        "public/css/programa-general-actualizar.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "escalamientos",
+      "paths": [
+        "views/dashboard/escalamientos.php",
+        "public/css/escalamientos.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "change-monitor",
+      "paths": [
+        "public/css/change-monitor.css",
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "tom-select-skin",
+      "paths": [
+        "public/css/tom-select-premium-aia.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "profesionales",
+      "paths": [
+        "views/profesionales/profesionales.view.php",
+        "public/css/profesionales.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "subcontratistas",
+      "paths": [
+        "views/subcontratistas/subcontratistas.view.php",
+        "public/css/subcontratistas.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "control-cambios",
+      "paths": [
+        "views/control-cambios/controlCambios.view.php",
+        "public/css/control-cambios.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "indicadores",
+      "paths": [
+        "views/indicadores/indicadores.view.php",
+        "public/css/indicadores.css"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
       "name": "contratos",
       "paths": [
         "views/contratos/contratos.view.php",
@@ -496,6 +615,39 @@
       }
     },
     {
+      "name": "bi-runtime",
+      "paths": [
+        "views/bi/",
+        "public/css/bi-control-tower.css",
+        "public/css/bi-filter-drawer.css",
+        "public/css/design-system/adapters/bi-utilities.css",
+        "public/js/modules/bi-spa.js",
+        "public/js/modules/bi_filter_drawer.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 0,
+        "hardcoded-color-function": 0,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
+      "name": "bi-chart-theme-fallbacks",
+      "paths": [
+        "public/js/modules/bi_chart_theme.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 15,
+        "hardcoded-color-function": 3,
+        "inline-style": 0,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 0
+      }
+    },
+    {
       "name": "admin",
       "paths": [
         "admin/views/",
@@ -529,6 +681,7 @@
     "Login, project-selector, aia-theme, programa-general, pdc, contratos y listado-actividades tienen presupuesto cero para deuda visual auditada.",
     "Foundation/Shell conserva un presupuesto explícito y cerrado sobre deuda legacy; cada regla queda limitada al conteo auditado del Sprint 02 y no puede crecer.",
     "audit-baseline.json.totalViolations es el tope monotónico del agregado (Task 11, F0): las fases F1-F6 del goal dark-mode-todos-los-modulos solo pueden bajarlo, nunca subirlo, tal como ya ocurre por regla. Subirlo es la excepción, no la rutina, y exige las tres cosas juntas: (1) justificación escrita de por qué el total crece de forma legítima, (2) aprobación explícita del usuario, y (3) un archivo nuevo en docs/design-system/baseline-approvals/ cuyo afterHash coincida con el nuevo baseline y cuyo approvalRef cite esa aprobación. Sin las tres, el audit debe fallar.",
+    "bi-chart-theme-fallbacks es una excepcion permanente, no deuda: los 15 hex y los 3 rgba() de public/js/modules/bi_chart_theme.js son los FALLBACKS de SERIES_FALLBACKS/TEXT_FALLBACKS, el valor realmente pintado por Canvas cuando getComputedStyle no resuelve el token (--aia-*/--ds-active-*). Su procedencia esta documentada en el propio archivo y validada para dark con scripts/validate_palette.js. El presupuesto los congela en su conteo auditado: no pueden crecer, y tokenizarlos no aplica porque el camino vivo YA lee tokens. La superficie /bi/* (presupuesto bi-runtime) queda en cero en las seis reglas duras.",
     "F4 (2026-07-29): admin/ pasa de baseline congelado a presupuesto de ruta con cero en las seis reglas, incluida hardcoded-radius. El spec preveia una excepcion para esa regla porque AdminLTE trae sus propios radios; no hace falta: el vendor vive en public/vendor/, que no esta en scanRoots, y el adaptador solo usa var(--ds-radius-*). El presupuesto cubre tambien adapters/admin-lte.css para que el conteo no se pueda esconder moviendo CSS del panel al adaptador. Ese adaptador concentra 29 unauthorized-important, unica regla fuera del presupuesto: son remapeos de las utilidades de color de Bootstrap, que declaran !important dentro de layer(vendor), y para !important el orden de capas se invierte, asi que solo una capa ANTERIOR a vendor puede ganarles. Sustituyen a los 83 !important que tenia admin/, con saldo neto negativo."
   ]
 }
