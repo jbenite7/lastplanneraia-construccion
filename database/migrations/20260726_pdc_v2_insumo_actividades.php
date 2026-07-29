@@ -18,6 +18,12 @@
 // `unique_id` nace NULL: es el amarre a `programa_consolidado` que llenará A4. Se deja la columna
 // desde ya para que A4 solo tenga que rellenarla, no migrar de nuevo.
 //
+// ACTUALIZACIÓN (B1, 2026-07-29): A4 no la rellenó, y al medirlo se vio que el emparejamiento 1:1
+// que esta nota daba por hecho no existe (1 de 820 filas casa por nombre). El amarre real es por
+// RAMA del presupuesto contra el frente del cronograma: ver `20260729_pdc_v2_amarre_cronograma.php`
+// y el encabezado de `AmarreCronogramaService`. Ya no queda NULL «hasta A4»: nace resuelto, o NULL
+// con el motivo escrito en `evidencia_amarre`.
+//
 // Uso:  php database/migrations/20260726_pdc_v2_insumo_actividades.php [--apply]
 
 declare(strict_types=1);

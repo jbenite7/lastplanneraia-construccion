@@ -247,11 +247,15 @@ $filasOtraVez = (int) $db->query(
     [$P1, $vid],
 )->fetchColumn();
 $assert($filasOtraVez === $filasMapa, 'Materializar dos veces no duplica (idempotente).');
-$sinAmarre = (int) $db->query(
-    'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND unique_id IS NOT NULL',
+// B1: el amarre ya no «lo llena A4» — lo resuelve `materializarActividades()` al escribir. Este
+// proyecto de prueba no tiene cronograma, así que el `unique_id` queda NULL; lo que se exige es que
+// no quede MUDO: sin `origen_amarre` no habría cómo distinguir «no hay frente» de «nunca se calculó»,
+// que es exactamente cómo DAPORTO llegó a 820 filas vacías.
+$mudas = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_insumo_actividades WHERE project_id = ? AND unique_id IS NULL AND origen_amarre IS NOT NULL',
     [$P1],
 )->fetchColumn();
-$assert($sinAmarre === 0, 'El amarre al cronograma (unique_id) nace vacío: lo llena A4.');
+$assert($mudas === 0, 'Sin cronograma el amarre queda NULL y sin marcar: no se inventa un origen.');
 
 // --- A3.3 · Desempate por tipo de recurso -----------------------------------------------------
 // Un MATERIAL se compra por lo que es, no por dónde se usa: la actividad deja de influir. En DAPORTO

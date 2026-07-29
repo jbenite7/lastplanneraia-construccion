@@ -1596,8 +1596,13 @@ final class PaquetesService
      * Materializa el mapa insumo↔actividades de una versión (idempotente: reemplaza el de esa versión).
      *
      * Seguimiento necesita la fecha de la PRIMERA actividad que consume cada insumo —para una orden
-     * de compra el plan garantiza la primera entrega—, y eso no se puede sacar de la dominante. En
-     * A4 cada fila recibirá su `unique_id` de `programa_consolidado`.
+     * de compra el plan garantiza la primera entrega—, y eso no se puede sacar de la dominante.
+     *
+     * El `unique_id` se resuelve aquí mismo, al final: las filas nacen amarradas al cronograma en vez
+     * de esperar a un backfill posterior. Así se cerró la deuda de B1 —la tabla llevaba 820 filas en
+     * NULL porque A3.3 delegó el amarre a A4 y A4 no lo hizo—, y así una reimportación no vuelve a
+     * abrirla. Si el proyecto no tiene semana activa en `programa_consolidado`, las filas quedan en
+     * NULL con su motivo escrito en `evidencia_amarre`; no es un error, es un proyecto sin cronograma.
      */
     /**
      * @return array{versionId: int, filas: int}|null
@@ -1645,6 +1650,11 @@ final class PaquetesService
             );
             $filas += count($lote);
         }
+
+        // El amarre va después del INSERT porque se resuelve por rama del presupuesto y necesita las
+        // filas ya escritas. Es la misma rutina del backfill, a propósito (ver `amarrarVersion()`).
+        (new AmarreCronogramaService($this->db))->amarrarVersion($projectId, $vid);
+
         return ['versionId' => $vid, 'filas' => $filas];
     }
 
