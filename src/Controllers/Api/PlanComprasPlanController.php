@@ -200,14 +200,23 @@ class PlanComprasPlanController
     /**
      * GET /plan-compras/api/plan/reprogramacion/simular — el antes/después, sin escribir nada.
      *
-     * Va con el guard de ESCRITURA aunque no escriba: simular es el primer paso de aplicar, y
-     * enseñarle el delta completo a quien no puede aplicarlo solo produce una pantalla que promete
-     * un botón que va a responderle 403.
+     * Exige el permiso de EDITAR aunque solo lea: simular es el primer paso de aplicar, y enseñarle
+     * el delta completo a quien no puede aplicarlo solo produce una pantalla que promete un botón
+     * que va a responderle 403.
+     *
+     * Lo que NO exige es CSRF, y por eso no reutiliza `guardEscritura()`: CSRF protege mutaciones,
+     * y esta no lo es. Pedirlo en un GET además rompe el cliente, que solo adjunta el token en
+     * POST (ver `apiPost()` en pdc-app/src/lib/api.ts).
      */
     public function simularReprogramacion(): void
     {
-        $projectId = $this->guardEscritura();
-        if ($projectId === null) {
+        if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.editar')) {
+            $this->fail('FORBIDDEN', 'No autorizado para reprogramar el plan de compras.', 403);
+            return;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
             return;
         }
         $this->ok($this->service->simularReprogramacion($projectId));

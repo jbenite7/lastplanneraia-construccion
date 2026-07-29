@@ -390,6 +390,35 @@ export type Desfase = {
   diasMovidos: number | null
 }
 
+// B2 · el delta de una reprogramación, antes de aplicarla. `arranqueActual` es null cuando el
+// paquete todavía no tenía plan calculado: no hay un «desde» que enseñar, y fingir uno mentiría.
+export type DeltaPaquete = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  anclaActual: string
+  anclaNueva: string
+  diasMovidos: number
+  arranqueActual: string | null
+  arranqueNuevo: string
+  pasosQueSeMueven: number
+  pasosConFechaReal: number
+}
+
+// Un amarre a un frente que ya no está en el cronograma. Va aparte de `movidos` porque no tiene
+// delta que aplicar: lo resuelve una persona amarrándolo a mano.
+export type HuerfanoReprogramacion = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  anclaActual: string
+}
+
+export type SimulacionReprogramacion = {
+  movidos: DeltaPaquete[]
+  huerfanos: HuerfanoReprogramacion[]
+}
+
 export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
 
 // Propuesta de amarre a frente del motor A4. `origen`/`confianza` son uniones literales ('similitud'|'rama'

@@ -188,3 +188,107 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
     await logout(page).catch(() => {});
   }
 });
+
+// PDC v2 · fase B2 — el desfase se mira antes de aplicarse.
+//
+// Antes de esto la pestaña «Desfases» ofrecía «Recalcular todo el plan», y ese botón no arreglaba
+// el desfase que la propia pestaña denunciaba: `calcular()` proyecta contra la fecha guardada en el
+// amarre, que es una copia congelada del cronograma (medición del 2026-07-29, en
+// goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29.md). Este test cubre el recorrido
+// que lo reemplaza y, sobre todo, que CANCELAR no escribe nada.
+test('plan: mover un frente ofrece el delta, y cancelar no toca el plan', async ({ page }) => {
+  await loginAndSelectProject(page, project);
+  try {
+    // Montaje mínimo por SQL —este test no prueba el amarre, que ya cubre el de arriba—: un paquete
+    // amarrado al frente principal del seed y su plan calculado contra la fecha original.
+    const paqueteId = Number(sqlEnApp(
+      `$db->query("INSERT INTO general_dias_procesos_contratacion `
+      + `(paqueteContratacion, tipoPaquete, diasElaboracionPliegos, diasEntregaPliegos, diasReciboPropuestas, `
+      + `diasCuadrosComparativos, diasLegalizacionContrato, diasFabricacion, diasInsumosObra) `
+      + `VALUES ('ZZTEST B2 DUR', 'a_todo_costo', 3, 2, 7, 4, 5, 10, 2)"); `
+      + `$ref = (int) $db->lastInsertId(); `
+      + `$db->query("INSERT INTO general_paquetes_contratacion (nombre, nombre_norm, tipo_negociacion, `
+      + `modalidad_contratacion, duracion_ref, activo, creado_por, created_at) `
+      + `VALUES ('ZZTEST B2 REPROGRAMABLE', 'ZZTEST B2 REPROGRAMABLE', 'a_todo_costo', 'contrato', ?, 1, 'e2e-b2', NOW())", [$ref]); `
+      + `echo (int) $db->lastInsertId();`,
+    ));
+    const uniqueId = Number(sqlEnApp(
+      `echo (int) $db->query('SELECT unique_id FROM programa WHERE project_id = ? AND Titulo = 1 ORDER BY Consecutivo LIMIT 1', `
+      + `[${project.projectId}])->fetchColumn();`,
+    ));
+    const arranqueOriginal = sqlEnApp(
+      // `execFileSync` no pasa por shell: lo que se escriba aquí llega tal cual a `php -r`, así que
+      // el namespace lleva UNA barra invertida por separador (en JS, `\\` produce una sola).
+      `$s = new App\\Services\\Pdc\\PlanFechasService($db); `
+      + `$s->amarrar(${project.projectId}, ${paqueteId}, ${uniqueId}, 'e2e-b2'); `
+      + `$s->calcular(${project.projectId}, 'e2e-b2'); `
+      + `echo (string) $db->query('SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+      + `[${project.projectId}, ${paqueteId}])->fetchColumn();`,
+    );
+    expect(arranqueOriginal, 'el montaje debe dejar el paquete con plan calculado').toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    // La obra se reprograma: el frente se corre 21 días.
+    sqlEnApp(
+      `$db->query("UPDATE programa SET Fecha_Inicio = DATE_ADD(Fecha_Inicio, INTERVAL 21 DAY) WHERE project_id = ? AND unique_id = ?", `
+      + `[${project.projectId}, ${uniqueId}]); `
+      + `$db->query("UPDATE programa_consolidado SET Fecha_Inicio = DATE_ADD(Fecha_Inicio, INTERVAL 21 DAY) WHERE project_id = ? AND unique_id = ?", `
+      + `[${project.projectId}, ${uniqueId}]); echo 'ok';`,
+    );
+
+    await page.goto('/plan-compras#/ensamble/plan', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('h1')).toContainText('Plan de compras', { timeout: 15000 });
+    await page.getByRole('tab', { name: /Desfases/ }).click();
+    await expect(page.locator('[data-testid="pdc-plan-desfases"]'))
+      .toContainText('ZZTEST B2 REPROGRAMABLE', { timeout: 20000 });
+
+    // Simular: enseña el delta y NO escribe.
+    await page.locator('[data-testid="pdc-plan-simular-reprogramacion"]').click();
+    const delta = page.locator('[data-testid="pdc-plan-delta-reprogramacion"]');
+    await expect(delta).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('[data-testid="pdc-plan-delta-resumen"]')).toContainText('Se moverían');
+    await expect(delta).toContainText('se atrasa 21 días');
+
+    const arranqueTrasSimular = sqlEnApp(
+      `echo (string) $db->query('SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+      + `[${project.projectId}, ${paqueteId}])->fetchColumn();`,
+    );
+    expect(arranqueTrasSimular, 'simular no puede escribir en el plan').toBe(arranqueOriginal);
+
+    // Cancelar: cierra el panel y sigue sin escribir. Es la garantía que hace segura la operación.
+    await page.locator('[data-testid="pdc-plan-cancelar-reprogramacion"]').click();
+    await expect(delta).toBeHidden({ timeout: 10000 });
+    const arranqueTrasCancelar = sqlEnApp(
+      `echo (string) $db->query('SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+      + `[${project.projectId}, ${paqueteId}])->fetchColumn();`,
+    );
+    expect(arranqueTrasCancelar, 'cancelar no puede escribir en el plan').toBe(arranqueOriginal);
+
+    // Y ahora sí: aplicar mueve las fechas y el aviso desaparece.
+    await page.locator('[data-testid="pdc-plan-simular-reprogramacion"]').click();
+    await expect(delta).toBeVisible({ timeout: 20000 });
+    await page.locator('[data-testid="pdc-plan-aplicar-reprogramacion"]').click();
+    await expect(page.locator('.pdc-info')).toContainText('Reprogramados', { timeout: 20000 });
+
+    const arranqueFinal = sqlEnApp(
+      `echo (string) $db->query('SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?', `
+      + `[${project.projectId}, ${paqueteId}])->fetchColumn();`,
+    );
+    const corrimiento = (new Date(arranqueFinal) - new Date(arranqueOriginal)) / 86400000;
+    expect(corrimiento, `arranque ${arranqueOriginal} → ${arranqueFinal}`).toBe(21);
+
+    await expect(page.getByRole('tab', { name: /Desfases \(0\)/ })).toBeVisible({ timeout: 20000 });
+
+    expect(await page.locator('body').innerText()).not.toContain('Fatal error');
+  } finally {
+    // El paquete y su duración son globales (no llevan project_id): el reseteo del sandbox no los
+    // alcanza, así que este test recoge lo suyo.
+    sqlEnApp(
+      `$db->query("DELETE FROM pdc_plan_paso WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_plan_paquete WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM pdc_paquete_frente WHERE project_id = ${project.projectId}"); `
+      + `$db->query("DELETE FROM general_paquetes_contratacion WHERE creado_por = 'e2e-b2'"); `
+      + `$db->query("DELETE FROM general_dias_procesos_contratacion WHERE paqueteContratacion = 'ZZTEST B2 DUR'"); echo 'ok';`,
+    );
+    await logout(page).catch(() => {});
+  }
+});

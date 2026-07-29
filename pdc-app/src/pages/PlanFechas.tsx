@@ -41,7 +41,8 @@ import {
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from '../lib/planFechas'
-import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
+import { etiquetaMovimiento, resumenDelta } from '../lib/reprogramacion'
+import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SimulacionReprogramacion, SugerenciaFrente } from '../lib/types'
 import { filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
@@ -285,6 +286,49 @@ export default function PlanFechas() {
     try {
       const r = await apiPost<{ calculados: number; sinDuracion: number }>('/plan-compras/api/plan/calcular', {})
       dispatch({ type: 'LISTO', mensaje: mensajeCalculo(r) })
+      cargar()
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+    }
+  }
+
+  // B2 · reprogramación. `null` = no hay nada simulado en pantalla. La simulación vive solo aquí:
+  // no la escribió nadie en la base, así que cancelar es tirarla y ya — no hay nada que deshacer.
+  const [simulacion, setSimulacion] = useState<SimulacionReprogramacion | null>(null)
+  // El titular del panel. Se memoriza en vez de recalcularlo en cada trozo del JSX: son cuatro
+  // cifras del mismo recorrido y pintarlas por separado invitaba a que discreparan entre sí.
+  const delta = useMemo(() => resumenDelta(simulacion?.movidos ?? []), [simulacion])
+
+  const onSimularReprogramacion = async () => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      const s = await apiGet<SimulacionReprogramacion>('/plan-compras/api/plan/reprogramacion/simular')
+      setSimulacion(s)
+      dispatch({ type: 'LISTO', mensaje: '' })
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+    }
+  }
+
+  const onAplicarReprogramacion = async () => {
+    if (simulacion === null) return
+    // Se manda la lista explícita de lo que se enseñó, no un «aplica todo»: si el cronograma
+    // cambiara entre mirar y confirmar, el backend ignora lo que ya no cuadra en vez de mover
+    // paquetes que el usuario nunca vio en el delta.
+    const ids = simulacion.movidos.map((m) => m.paqueteId)
+    dispatch({ type: 'OCUPADO' })
+    try {
+      const r = await apiPost<{ aplicados: number; ignorados: number }>(
+        '/plan-compras/api/plan/reprogramacion/aplicar',
+        { paqueteIds: ids },
+      )
+      setSimulacion(null)
+      dispatch({
+        type: 'LISTO',
+        mensaje: r.ignorados > 0
+          ? `Reprogramados ${r.aplicados} ${plural(r.aplicados, 'paquete', 'paquetes')}. ${r.ignorados} quedaron sin aplicar por no tener frente vivo.`
+          : `Reprogramados ${r.aplicados} ${plural(r.aplicados, 'paquete', 'paquetes')}.`,
+      })
       cargar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
@@ -971,19 +1015,81 @@ export default function PlanFechas() {
 
       {seccion === 'desfases' && (
       <PanelPestana idBase="pdc-plan" id="desfases">
-      <p className="pdc-sub">El cronograma se reprogramó después de amarrar estos paquetes. No se aplica solo.</p>
+      <p className="pdc-sub">
+        El cronograma se reprogramó después de amarrar estos paquetes. No se aplica solo: primero
+        mira qué cambia y luego decides.
+      </p>
       <ul className="pdc-paq-lista" data-testid="pdc-plan-desfases">
         {desfases.map((d) => (
           <li key={d.paqueteId}>
             <strong>{d.nombre}</strong>
             <span className="pdc-paq-meta">{etiquetaDesfase(d)}</span>
-            {/* No hay recálculo por paquete en el backend: este botón dispara el mismo recálculo
-                global que el de la barra superior, y el texto debe decirlo así. */}
-            <button type="button" disabled={ui.ocupado} onClick={onRecalcular}>Recalcular todo el plan</button>
           </li>
         ))}
         {desfases.length === 0 && <li className="pdc-vacio">Ningún amarre quedó desactualizado.</li>}
       </ul>
+
+      {/* Antes había aquí un «Recalcular todo el plan» por fila. No arreglaba nada: `calcular()`
+          proyecta contra la fecha del amarre, que es una copia congelada del cronograma, así que
+          el aviso seguía ahí después de pulsarlo (medición del 2026-07-29). Lo reemplaza el par
+          simular → aplicar, que sí refresca esa fecha y solo sobre lo que el usuario confirmó. */}
+      {desfases.length > 0 && simulacion === null && (
+        <button
+          type="button"
+          className="pdc-paq-primario"
+          data-testid="pdc-plan-simular-reprogramacion"
+          disabled={ui.ocupado}
+          onClick={() => void onSimularReprogramacion()}
+        >
+          Ver qué cambia
+        </button>
+      )}
+
+      {simulacion !== null && (
+        <div className="pdc-panel" data-testid="pdc-plan-delta-reprogramacion">
+          <p data-testid="pdc-plan-delta-resumen">
+            Se moverían <strong>{plural(delta.paquetes, 'paquete')}</strong> — {delta.atrasan} se
+            atrasan y {delta.adelantan} se adelantan.{' '}
+            <strong>{plural(delta.pasosProtegidos, 'paso')}</strong> ya{' '}
+            {delta.pasosProtegidos === 1 ? 'ocurrió y conserva' : 'ocurrieron y conservan'} su fecha
+            real.
+          </p>
+          <ul className="pdc-paq-lista">
+            {simulacion.movidos.map((m) => (
+              <li key={m.paqueteId}>
+                <strong>{m.nombre}</strong>
+                <span className="pdc-paq-meta">{etiquetaMovimiento(m)}</span>
+              </li>
+            ))}
+            {simulacion.movidos.length === 0 && (
+              <li className="pdc-vacio">Ningún paquete tiene un frente vivo al que moverse.</li>
+            )}
+          </ul>
+          {simulacion.huerfanos.length > 0 && (
+            <p data-testid="pdc-plan-delta-huerfanos">
+              {plural(simulacion.huerfanos.length, 'paquete')}{' '}
+              {simulacion.huerfanos.length === 1 ? 'apunta' : 'apuntan'} a un frente que ya no está
+              en el cronograma. No se reamarran solos: amárralos a mano desde la grilla.
+            </p>
+          )}
+          <button
+            type="button"
+            className="pdc-paq-primario"
+            data-testid="pdc-plan-aplicar-reprogramacion"
+            disabled={ui.ocupado || simulacion.movidos.length === 0}
+            onClick={() => void onAplicarReprogramacion()}
+          >
+            Aplicar a {plural(simulacion.movidos.length, 'paquete')}
+          </button>
+          <button
+            type="button"
+            data-testid="pdc-plan-cancelar-reprogramacion"
+            onClick={() => setSimulacion(null)}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
       </PanelPestana>
       )}
     </section>
