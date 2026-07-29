@@ -40,7 +40,31 @@ que es peor que no tener este archivo.
 |---|---|---|---|---|---|
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
-| 7 | Configuración de pasos + re-matching | 1 (comparten `PlanFechasService`) | PENDIENTE | | |
+| 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3` | 2026-07-29 |
+| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | EN CURSO | | |
+
+### Nota sobre 7a — la medición recortó el spec a la mitad
+
+El primer entregable era medir, no construir, y cambió el alcance:
+[`evidence/medicion-rematching-2026-07-29.md`](evidence/medicion-rematching-2026-07-29.md).
+
+**Ya existía** (retirado del alcance, conservado como regresión): detectar el desfase
+(`PlanFechasService::desfases()`), avisarlo en la pantalla del plan, no recalcular solo, conservar
+`fecha_real` al recalcular, y no reamarrar solo un frente borrado.
+
+**Apareció un bug que el spec no preveía:** «Recalcular» no recogía la fecha nueva del frente
+—`amarres()` lee una copia congelada del ancla—, así que el desfase no se podía aplicar nunca y el
+botón que la pestaña «Desfases» ofrecía no arreglaba lo que esa misma pestaña denunciaba. Corregido
+en `13e6e31`.
+
+**Construido:** simular la reprogramación sin escribir, aplicarla solo sobre lo confirmado, el panel
+de delta con «Aplicar»/«Cancelar», y el aviso en el tablero de vencimientos.
+
+**Verificado:** `tests/test_pdc_v2_reprogramacion.php` (nuevo), la regresión de la zona (9 tests PHP),
+phpstan limpio, 267 tests de vitest, y el e2e `tests/browser/pdc-v2-plan.spec.mjs` con el recorrido
+completo en navegador (simular no escribe · cancelar no escribe · aplicar corre 21 días · el conteo
+de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también sobre `1a75b19`:
+`tests/browser/pdc-v2-sin-scroll-x.spec.mjs`.
 
 ## Ola 3 — lo grande
 
