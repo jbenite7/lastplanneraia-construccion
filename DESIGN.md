@@ -327,11 +327,37 @@ spacing o estado local.
 - **Corner Style:** `--ds-radius-card` = `--ds-radius-lg` (`1rem`); paneles y modales a `--ds-radius-2xl`.
 - **Background:** superficie del tema activo (`--ds-active-surface`), semitranslúcida en dark.
 - **Shadow Strategy:** `--ds-shadow-xs` en reposo (ver Elevation).
-- **Border:** `1px` del borde activo (`--ds-active-border`).
+- **Border:** `1px` del borde activo (`--ds-active-border`). Aquí resuelve al **separador**: una
+  tarjeta no es un control y WCAG 1.4.11 no la gobierna (ver «El par de bordes»).
 - **Internal Padding:** `--ds-card-padding` (`clamp(0.875rem, 1.8vw, 1.25rem)`).
 
+### El par de bordes — control contra separador
+
+`--ds-active-border` **significa dos cosas distintas según el elemento**, y no hace falta que elijas:
+el design system lo re-vincula solo.
+
+- **CONTROL** — frontera de algo con lo que el usuario interactúa (campo, botón, selector, chip
+  accionable). Debe alcanzar **3:1** contra las dos superficies que toca (WCAG 1.4.11). Medido sobre
+  los quince fondos oscuros reales de la app: **3,14–3,39:1**.
+- **SEPARADOR** — filete decorativo entre regiones cuyos rellenos ya difieren (divisores, cabeceras
+  de drawer, bordes de tarjeta, chips de conteo). 1.4.11 **no** lo gobierna: se mantiene discreto a
+  propósito.
+
+**Regla de uso:** si delimita algo con lo que se interactúa, es CONTROL; si sólo separa dos zonas, es
+SEPARADOR. **Nunca uses el separador para un control.**
+
+En la práctica escribes `var(--ds-active-border)` como siempre: `core.css` re-vincula la variable
+sobre el propio elemento, así que sobre un control resuelve al valor de control **sin importar el
+archivo, la capa o el `!important`** desde donde lo declares. Los descendientes de un control vuelven
+al separador, para que un contador dentro de un chip no herede la frontera del chip.
+
+**Límite conocido:** el mecanismo actúa sobre elementos, así que **no alcanza los controles cuyo
+borde se pinta en un pseudo-elemento** — el caso de los interruptores de Bootstrap, que dibujan su
+frontera en `label::before`. Ésos siguen en el valor de separador y son deuda aparte.
+
 ### Inputs / Fields
-- **Style:** ancho completo, altura mínima `44px`, radio de control, superficie del tema, borde activo `1px`.
+- **Style:** ancho completo, altura mínima `44px`, radio de control, superficie del tema, borde activo
+  `1px` — que aquí resuelve al **control**, a 3:1 (ver «El par de bordes»).
 - **Focus:** `outline` sólido del anillo activo + `box-shadow` de foco de 4px; sin glow decorativo.
 - **Vocabulario:** `.aia-input`, `.aia-select`, `.aia-textarea` comparten un mismo contrato.
 
