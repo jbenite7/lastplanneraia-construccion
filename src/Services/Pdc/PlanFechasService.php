@@ -626,17 +626,24 @@ class PlanFechasService
     }
 
     /**
-     * Los siete pasos del proceso de contratación, en orden, con la columna del catálogo legacy que
-     * guarda su duración. El último termina en la fecha en que el paquete se necesita en obra.
+     * El proceso de contratación POR DEFECTO de la empresa, en orden, con la columna del catálogo
+     * legacy que guarda la duración de cada paso y la clave que lo identifica en
+     * `general_pasos_contratacion`. El último termina en la fecha en que el paquete se necesita en obra.
+     *
+     * Desde A4.1 esto es *el proceso por defecto*, no *el proceso*: una obra puede definir el suyo en
+     * `pdc_proyecto_pasos` y entonces manda el suyo (ver `PasosContratacionService::deProyecto()`).
+     * Esta constante se conserva como respaldo en código a propósito: es lo que garantiza que una obra
+     * sin configurar —Da Porto— dé exactamente las mismas fechas aunque el catálogo de la base
+     * estuviera vacío o a medio sembrar.
      */
     public const PASOS = [
-        ['paso' => 'Elaboración de pliegos', 'col' => 'diasElaboracionPliegos'],
-        ['paso' => 'Entrega de pliegos', 'col' => 'diasEntregaPliegos'],
-        ['paso' => 'Recibo de propuestas', 'col' => 'diasReciboPropuestas'],
-        ['paso' => 'Cuadros comparativos', 'col' => 'diasCuadrosComparativos'],
-        ['paso' => 'Legalización', 'col' => 'diasLegalizacionContrato'],
-        ['paso' => 'Fabricación', 'col' => 'diasFabricacion'],
-        ['paso' => 'Insumos en obra', 'col' => 'diasInsumosObra'],
+        ['paso' => 'Elaboración de pliegos', 'col' => 'diasElaboracionPliegos', 'clave' => 'elaboracion_pliegos'],
+        ['paso' => 'Entrega de pliegos', 'col' => 'diasEntregaPliegos', 'clave' => 'entrega_pliegos'],
+        ['paso' => 'Recibo de propuestas', 'col' => 'diasReciboPropuestas', 'clave' => 'recibo_propuestas'],
+        ['paso' => 'Cuadros comparativos', 'col' => 'diasCuadrosComparativos', 'clave' => 'cuadros_comparativos'],
+        ['paso' => 'Legalización', 'col' => 'diasLegalizacionContrato', 'clave' => 'legalizacion'],
+        ['paso' => 'Fabricación', 'col' => 'diasFabricacion', 'clave' => 'fabricacion'],
+        ['paso' => 'Insumos en obra', 'col' => 'diasInsumosObra', 'clave' => 'insumos_obra'],
     ];
 
     /**
