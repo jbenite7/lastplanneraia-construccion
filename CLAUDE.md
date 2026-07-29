@@ -3,7 +3,9 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 @AGENTS.md is the authoritative contract for this repo (permissions, RBAC, global-tables architecture,
-design-system scope, verification routing) — read it in full. GEMINI.md and README.md carry the same
+design-system scope, verification routing) — read it in full. **`AGENTS.md` is not versioned** (it is
+in `.gitignore`, unlike this file since 2026-07-29), so a fresh clone will not have it: ask for a copy,
+or read `GEMINI.md` / `README.md`, which are tracked and restate the same rules. GEMINI.md and README.md carry the same
 rules restated for other assistants/humans; where they overlap, `AGENTS.md` wins. Everything below is
 additional orientation that isn't already in those files: commands and where things actually live in
 the code.

@@ -84,6 +84,13 @@ goals/validar-migracion-handsontable/evidence/contratos-native/*
 goals/validar-migracion-handsontable/evidence/pdc-native/*
 !goals/validar-migracion-handsontable/evidence/pdc-native/*.png
 
+# Vite emite un index.html junto al bundle del PDC; en producción la página la sirve el
+# shell PHP (views/plan-compras/app.view.php), que es quien inyecta __PDC_BOOTSTRAP__.
+# El script `npm run build` lo borra, pero eso solo protege a quien pase por él: quien
+# corra `npx vite build` a mano lo dejaría ahí. Publicado, Apache serviría un shell sin
+# contexto de proyecto ni sesión. Esta línea es la segunda barrera.
+public/pdc-app/index.html
+
 # Goals del PDC, llegados con la unificación de repos del 2026-07-29. En
 # `plan-de-compras` la carpeta `goals/` se versionaba entera; aquí se permite carpeta
 # por carpeta, así que sin estas líneas los archivos YA movidos siguen versionados

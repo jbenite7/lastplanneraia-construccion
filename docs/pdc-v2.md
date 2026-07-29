@@ -202,7 +202,7 @@ No existe una vista de Pareto en este desarrollo.
 - **Última semana activa** = `MAX(Semana)` de `semanas_activas` (no hay flag).
 - El programa se versiona por semana: `programa` (viva) vs **`programa_consolidado`** (snapshot semanal). El matching de v2 va contra `programa_consolidado WHERE Semana = MAX` y persiste **`unique_id`** (identidad de actividad estable ante reprogramaciones).
 - **Fechas:** programación hacia atrás desde `Fecha_Inicio` de la actividad ancla, con duraciones por paso del catálogo global `general_dias_procesos_contratacion` (pasos configurables por proyecto). **No usar** `general_pdc_plantillas` (dropeada).
-- Tablas nuevas: operativas con `project_id int NOT NULL` + índice liderado por `project_id` + `utf8mb4_unicode_ci`; catálogos `general_*` sin `project_id`; migraciones en `lps-aia/database/migrations/` (DDL `.sql`; backfills `.php` dry-run→`--apply`).
+- Tablas nuevas: operativas con `project_id int NOT NULL` + índice liderado por `project_id` + `utf8mb4_unicode_ci`; catálogos `general_*` sin `project_id`; migraciones en `database/migrations/` (DDL `.sql`; backfills `.php` dry-run→`--apply`).
 - **Verificación de BD por fase sobre el MySQL real de Docker (nunca mocks):** migraciones aplicadas, asserts de integridad en tests PHP, y gates `test_global_table_safety` + `test_global_table_reconciliation` en verde.
 
 ## Propósito del proyecto
@@ -274,9 +274,15 @@ npm run build   # tsc + vite build → ../public/pdc-app/assets/{pdc.js,pdc.css}
 npm run test    # Vitest
 ```
 
-## Materiales de referencia (locales, no versionados)
+## Materiales de referencia (locales, no versionados) — van en `docs/pdc/`
 
-`docs/` está en `.gitignore`; son insumos de trabajo, no artefactos del repo:
+**Ojo, cambió con la unificación de repos del 2026-07-29.** En `plan-de-compras` la carpeta `docs/`
+entera estaba ignorada y estos archivos se dejaban ahí sin riesgo. **Aquí `docs/` SÍ se versiona** —
+este mismo archivo lo está—, y lo ignorado es `docs/pdc/` (`.gitignore:121`). Deja los materiales
+ahí: el presupuesto fuente lleva datos del cliente y la grabación pesa cientos de megas, y en `docs/`
+a secas se commitean sin que nadie lo note.
+
+Son insumos de trabajo, no artefactos del repo:
 
 - `102 - 2026 09 DAPORTO - RIONEGRO - PI_Version_3 (4).xlsx` — **presupuesto fuente**. Hoja `Presupuesto`; columnas clave: `Código, Descripción, Padre, UM, CANTIDAD, SUBCAPITULO, ID PROYECTO, VERSION, ID APU, Cant APU, Rend, IVA, VrUnit, Tipo Insumo, Agrupacion, ...`. Jerarquía por código (`01`, `01.01`, `01.01.01.01`).
 - `pareto-insumos-...-DAPORTO-RIONEGRO-...xlsx` — **Pareto de insumos** ya procesado. Hoja `Insumos`; columnas: `Insumo, Unidad, Valor Total`. Es el punto de partida para armar los paquetes.
@@ -285,5 +291,5 @@ npm run test    # Vitest
 ## Convenciones
 
 - **Idioma:** el proyecto y su dominio son en español. Documentación y comentarios en español; identificadores de código, rutas y comandos en su idioma original.
-- Preserva la terminología de dominio del equipo (confírmala en `lps-aia/GLOSARIO.md`): *maestro de insumos*, *Pareto de insumos*, *paquetes de contratación*, *APU*, *plan de compras (PDC)*.
-- `.omo/` (continuaciones de sesión), `.claude/`, `docs/`, `.DS_Store` y `*.mp4` están ignorados y no deben versionarse.
+- Preserva la terminología de dominio del equipo (confírmala en `GLOSARIO.md`, en la raíz): *maestro de insumos*, *Pareto de insumos*, *paquetes de contratación*, *APU*, *plan de compras (PDC)*.
+- `.omo/` (continuaciones de sesión), `.claude/`, `docs/pdc/` y `.DS_Store` están ignorados y no deben versionarse. `docs/` **no** lo está: ver el aviso de «Materiales de referencia» más arriba.
