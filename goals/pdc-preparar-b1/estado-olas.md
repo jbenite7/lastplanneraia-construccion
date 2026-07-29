@@ -78,6 +78,8 @@ de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también
 |---|---|---|
 | 2 | Copiar la configuración entre obras | **Hecho** (`efe8d5e`). Copia puntual, no vínculo vivo; la pantalla enseña qué trae y marca si el origen está a medias |
 | 4 | Duraciones del catálogo editables | **Hecho** (`20d6acf`). Solo las filas que la obra usa, con aviso permanente de que son de la empresa. Recorte: el upsert ya existía en `/contratos`; lo que faltaba era llegar desde el PDC v2, con el permiso de reglas y recalculando |
+| 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
+| 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
 
 **Límite conocido del nº 4, y su relación con los 42 paquetes sin `duracion_ref`**
 ([`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md)): la pantalla lista
@@ -86,8 +88,6 @@ catálogo no aparece y su duración no se puede editar desde aquí. No es un des
 editar — esos 42 reciben fechas por la mediana de su tipo, y darles un campo editable inventaría una
 fila del catálogo de la empresa desde la pantalla de una obra. Cuando alguien mida uno de esos
 procesos, hay que crear su fila y apuntar el paquete a ella; a partir de ahí sí es editable aquí.
-| 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
-| 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
 
 **Verificado:** 14 tests PHP en verde (3 nuevos), phpstan limpio, 267 de vitest, y 3 e2e en
 `tests/browser/pdc-v2-pasos.spec.mjs` (2 nuevos, en navegador contra el contenedor servido).
