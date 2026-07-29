@@ -68,6 +68,7 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
     await expect(page.locator('h1')).toContainText('Plan de compras', { timeout: 15000 });
 
     // Amarrar el primero de «Sin frente» y recalcular, para tener una fila real en la grilla.
+    await page.getByRole('tab', { name: /Sin frente/ }).click();
     const sinFrente = page.locator('[data-testid="pdc-plan-sin-frente"]');
     await expect(sinFrente).toBeVisible({ timeout: 20000 });
     const primero = sinFrente.locator('li:has(select)').first();
@@ -79,6 +80,7 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
     await page.locator('[data-testid="pdc-plan-recalcular"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 30000 });
 
+    await page.getByRole('tab', { name: /^Plan/ }).click();
     const grid = page.locator('[data-testid="pdc-plan-grid"]');
     const fila = grid.locator('.ag-row').first();
     await expect(fila).toBeVisible({ timeout: 20000 });
