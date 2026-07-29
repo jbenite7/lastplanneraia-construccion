@@ -505,3 +505,51 @@ export type PanelCorrespondencias = {
   confirmadas: number
   sinConfirmar: number
 }
+
+// --- PDC v2 · Fase B1 (Seguimiento) ---
+
+/** Una fila de `GET /plan-compras/api/seguimiento`: el estado de un paquete de un vistazo. */
+export type FilaSeguimiento = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  responsableUserId: number | null
+  responsableNombre: string
+  responsableHuerfano: boolean
+  pasoActual: string
+  cumplidos: number
+  total: number
+  estado: 'sin_empezar' | 'en_curso' | 'terminado'
+  atrasado: boolean
+  finProgramado: string | null
+  finProyectado: string
+}
+
+/**
+ * Un paso en el panel de detalle, con sus tres fechas.
+ *
+ * `fechaInicio`/`fechaFin` en null significan «este paso lleva avance pero el plan aun no se ha
+ * recalculado tras un reamarre» — no es un error, y la pantalla lo muestra tal cual.
+ */
+export type PasoSeguimiento = {
+  pasoId: number | null
+  orden: number
+  paso: string
+  dias: number
+  fechaInicio: string | null
+  fechaFin: string | null
+  fechaReal: string | null
+  proyectadoInicio: string
+  proyectadoFin: string
+  desfaseDias: number | null
+  registradoPor: string
+  registradoAt: string | null
+}
+
+/** Los cuatro filtros de la lista. `''` y `false` significan «no filtrar por esto». */
+export type FiltrosSeguimiento = {
+  soloMios: boolean
+  frente: string
+  estado: '' | 'sin_empezar' | 'en_curso' | 'terminado'
+  soloAtrasados: boolean
+}
