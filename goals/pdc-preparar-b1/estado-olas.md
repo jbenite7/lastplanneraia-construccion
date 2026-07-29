@@ -31,7 +31,7 @@ que es peor que no tener este archivo.
 |---|---|---|---|---|---|
 | 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | PENDIENTE | | |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
-| 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `1c9f01c` | 2026-07-29 |
+| 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
 
 ## Ola 2 — lo que el uso va a exigir
