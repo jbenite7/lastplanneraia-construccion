@@ -89,7 +89,16 @@ $shellObra = array_values(array_filter([
 $shellCompras = array_values(array_filter([
     $shellItem('listado-actividades', 'Familias de Actividades', '/listado-actividades', 'list'),
     $shellItem('contratos', 'Paquetes de Contratación', '/contratos', 'package'),
-    $shellItem('plan-compras', 'Plan de Compras', '/pdc', 'clipboard'),
+    // Apunta al módulo NUEVO (la isla React en /plan-compras). Hasta la revisión de UX de julio de
+    // 2026 llevaba al módulo viejo de Handsontable (/pdc) y a la SPA no llegaba ningún enlace de la
+    // interfaz: solo se entraba escribiendo la dirección.
+    //
+    // Una sola entrada, no dos: el rail tiene un presupuesto de altura y el gate
+    // `shell-sidebar-rollout.mjs` exige que el nav no haga scroll interno en ningún estado. Con un
+    // ítem más, ese gate cae en las 22 rutas migradas — medido, no supuesto. El id se conserva
+    // ('plan-compras') para que el $shellActive del controlador viejo siga casando; /pdc sigue
+    // servido y accesible por su dirección mientras siga en producción.
+    $shellItem('plan-compras', 'Plan de Compras', '/plan-compras', 'clipboard'),
 ]));
 
 $shellGroups = array_values(array_filter([

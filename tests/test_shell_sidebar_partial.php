@@ -36,6 +36,19 @@ $check = function (bool $ok, string $name) use (&$fails): void {
     }
 };
 
+// El módulo nuevo de Plan de Compras (la isla React en /plan-compras) no tenía entrada propia: el
+// único enlace «Plan de Compras» del sidebar llevaba al módulo viejo de Handsontable (/pdc), así
+// que a la SPA solo se llegaba escribiendo la dirección. Hallazgo de la revisión de UX de julio 2026.
+$adminNav = renderShellPartial('A');
+$check(str_contains($adminNav, 'href="/plan-compras"'), 'A: hay enlace al módulo nuevo de plan de compras');
+$check(!str_contains($adminNav, 'href="/pdc"'), 'A: la entrada ya no lleva al módulo viejo de Handsontable');
+
+// La visibilidad por rol del módulo nuevo es la misma que la del viejo: son los mismos datos.
+foreach (['G', 'S', 'SG', 'C'] as $rolSinCompras) {
+    $html = renderShellPartial($rolSinCompras);
+    $check(!str_contains($html, 'href="/plan-compras"'), $rolSinCompras . ': no ve el módulo nuevo de plan de compras');
+}
+
 $admin = renderShellPartial('A');
 $check(str_contains($admin, 'data-destination-id="semanas-proyecto"'), 'A: ítem Semanas presente');
 $check(str_contains($admin, 'data-sidebar-action'), 'A: ítem Semanas es action (botón)');

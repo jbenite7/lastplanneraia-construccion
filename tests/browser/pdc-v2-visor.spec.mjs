@@ -29,7 +29,7 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     }
 
     // Ir al visor.
-    await page.locator('nav >> text=Presupuesto').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Presupuesto').click();
     await expect(page.locator('h1')).toContainText('Presupuesto', { timeout: 15000 });
     const arbol = page.locator('[data-testid="pdc-visor-arbol"]');
 

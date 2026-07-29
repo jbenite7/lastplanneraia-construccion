@@ -25,7 +25,7 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
 
     // Maestro: la carga genera vínculos.
-    await page.locator('nav >> text=Maestro').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Maestro').click();
     await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
     await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
 

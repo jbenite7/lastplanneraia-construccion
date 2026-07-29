@@ -47,10 +47,10 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
     await page.locator('[data-testid="pdc-import-confirmar"]').click();
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
 
-    await page.locator('nav >> text=Maestro').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Maestro').click();
     await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
 
-    await page.locator('nav >> text=Paquetes').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Paquetes').click();
     await expect(page.locator('h1')).toContainText('Paquetes de contratación', { timeout: 15000 });
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill(PAQUETE_PLAN);
     await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('a_todo_costo');

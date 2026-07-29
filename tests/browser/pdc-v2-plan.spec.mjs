@@ -114,10 +114,10 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
     await page.locator('[data-testid="pdc-import-confirmar"]').click();
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
 
-    await page.locator('nav >> text=Maestro').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Maestro').click();
     await expect(page.locator('[data-testid="pdc-maestro-cobertura"]')).toBeVisible({ timeout: 15000 });
 
-    await page.locator('nav >> text=Paquetes').click();
+    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Paquetes').click();
     await expect(page.locator('h1')).toContainText('Paquetes de contratación', { timeout: 15000 });
     // El nombre debe coincidir con el frente que siembra el seed (PDC_SANDBOX_FRENTE_PLAN): eso es
     // lo que hace que la propuesta por similitud salga con confianza alta.
