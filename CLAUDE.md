@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual
 
-Rama en curso: **Fases A1, A1.5, A1.6, A1.7, A2, A2.5, A3, A3.1, A3.2 y A3.3 implementadas** (+ fix **A1.8**: el importador ignoraba `Cant APU` e inflaba el valor de los insumos → corregido a `Cant APU × Rend × cantidad`) — importador de presupuesto, visor en árbol; comparativo de versiones (`#/ensamble/comparar`): diff por actividad (jerárquico) e insumo (Pareto), sobrecostos vs ahorros; endpoint `GET /plan-compras/api/presupuesto/comparar`, sin migraciones; versionamiento inteligente del importador (`#/ensamble/importar`): auto-numeración (Versión N · fecha) por proyecto, anti-duplicado por hash de contenido vs la versión activa, y resumen del auto-comparativo tras cargar (reusa A1.6); maestro de insumos global (auto-match + cola de pendientes) y **importador del maestro SINCO** (siembra `general_maestro_insumos` con 3.088 insumos: código, agrupación, tipo de recurso, valor), y **paquetes de contratación** (`#/ensamble/paquetes`): catálogo global `general_paquetes_contratacion` **sembrado con los 188 paquetes reales de AIA** (extraídos del bundle de la app de Tomás; 107 a-todo-costo / 53 suministro / 28 mano-de-obra) + asignación por proyecto `pdc_insumo_paquete` (un insumo un destino — paquete u **omitido**; herencia en re-import), con motor de sugerencias cross-proyecto (exacta/tokens/agrupación SINCO + candidatos filtrados por tipo de recurso, confirmación humana), **grilla masiva y asistente paso a paso** (orden Pareto), y cobertura hacia el 100%; RBAC `lps.paquetes_contratacion.ver/editar`. Todo bajo la navegación Ensamble | Seguimiento. Verificado con Vitest, tests PHP autoejecutables y e2e Playwright. En detalle: importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia con RBAC `lps.pdc.importar`, visor del presupuesto en árbol jerárquico con selector de versión (`#/ensamble/presupuesto`), y maestro de insumos global (`#/ensamble/maestro`) con RBAC `lps.pdc.maestro`: cola de vínculos pendientes por versión con selección múltiple y creación masiva (cold start), vinculación individual con sugerencias por similitud, y catálogo único de insumos (`general_maestro_insumos`) con búsqueda — auto-match idempotente en cada re-import. Follow-ups del review final A2 aplicados: tolerancia a errno 1062 (carrera/colisión de prefijo → vincula al existente), upsert de vínculos en lotes multi-fila, comodines LIKE escapados, y retiro/reactivación de insumos del catálogo (`activo=0` con reversión global del auto-match, auditoría `actualizado_por`/`updated_at` y UI en el catálogo). Verificado con Vitest (28 tests), tests PHP autoejecutables (RBAC, parser, flujo BD, árbol, maestro, import SINCO) y e2e Playwright (import, fundación, visor, maestro e import del maestro SINCO).
+Rama en curso: **Fases A1, A1.5, A1.6, A1.7, A2, A2.5, A3, A3.1, A3.2, A3.3 y A4.1 implementadas** (+ fix **A1.8**: el importador ignoraba `Cant APU` e inflaba el valor de los insumos → corregido a `Cant APU × Rend × cantidad`) — importador de presupuesto, visor en árbol; comparativo de versiones (`#/ensamble/comparar`): diff por actividad (jerárquico) e insumo (Pareto), sobrecostos vs ahorros; endpoint `GET /plan-compras/api/presupuesto/comparar`, sin migraciones; versionamiento inteligente del importador (`#/ensamble/importar`): auto-numeración (Versión N · fecha) por proyecto, anti-duplicado por hash de contenido vs la versión activa, y resumen del auto-comparativo tras cargar (reusa A1.6); maestro de insumos global (auto-match + cola de pendientes) y **importador del maestro SINCO** (siembra `general_maestro_insumos` con 3.088 insumos: código, agrupación, tipo de recurso, valor), y **paquetes de contratación** (`#/ensamble/paquetes`): catálogo global `general_paquetes_contratacion` **sembrado con los 188 paquetes reales de AIA** (extraídos del bundle de la app de Tomás; 107 a-todo-costo / 53 suministro / 28 mano-de-obra) + asignación por proyecto `pdc_insumo_paquete` (un insumo un destino — paquete u **omitido**; herencia en re-import), con motor de sugerencias cross-proyecto (exacta/tokens/agrupación SINCO + candidatos filtrados por tipo de recurso, confirmación humana), **grilla masiva y asistente paso a paso** (orden Pareto), y cobertura hacia el 100%; RBAC `lps.paquetes_contratacion.ver/editar`. Todo bajo la navegación Ensamble | Seguimiento. Verificado con Vitest, tests PHP autoejecutables y e2e Playwright. En detalle: importador de presupuesto (preview→confirmar, versionado con única activa, todo-o-nada) sobre 3 tablas `pdc_presupuesto_*` en lps-aia con RBAC `lps.pdc.importar`, visor del presupuesto en árbol jerárquico con selector de versión (`#/ensamble/presupuesto`), y maestro de insumos global (`#/ensamble/maestro`) con RBAC `lps.pdc.maestro`: cola de vínculos pendientes por versión con selección múltiple y creación masiva (cold start), vinculación individual con sugerencias por similitud, y catálogo único de insumos (`general_maestro_insumos`) con búsqueda — auto-match idempotente en cada re-import. Follow-ups del review final A2 aplicados: tolerancia a errno 1062 (carrera/colisión de prefijo → vincula al existente), upsert de vínculos en lotes multi-fila, comodines LIKE escapados, y retiro/reactivación de insumos del catálogo (`activo=0` con reversión global del auto-match, auditoría `actualizado_por`/`updated_at` y UI en el catálogo). Verificado con Vitest (28 tests), tests PHP autoejecutables (RBAC, parser, flujo BD, árbol, maestro, import SINCO) y e2e Playwright (import, fundación, visor, maestro e import del maestro SINCO).
 
 ### A3.2 — Modalidad de contratación (4 modalidades)
 
@@ -133,8 +133,52 @@ sus hijos, esa fecha ES la del primer consumo, que es justo lo que Seguimiento p
 - **Nota para B2:** el re-matching al reprogramar funciona porque `unique_id` es estable; lo que se mueve es la
   `Fecha_Inicio` del frente. Un amarre más fino exigiría que planeación llene `codigo_actividad` en el programa.
 
+### A4.1 — Pasos del proceso de contratación configurables por proyecto
+
+Los siete pasos dejaron de estar escritos en el código. Catálogo global `general_pasos_contratacion`
+(9 pasos: los siete de siempre + `licify` + `aprobacion_cliente`) y configuración por obra
+`pdc_proyecto_pasos` (orden, alias, días fijos). **Cero filas para un proyecto = los siete de siempre**:
+DAPORTO no recibió configuración y sus 11 paquetes dan las mismas fechas — verificado comparando las 11
+cabeceras y las 77 filas de paso contra una foto con marca de tiempo
+(`goals/pdc-a41-pasos-configurables/linea-base.txt`) y, dentro de cada corrida del test, antes/después de
+recalcular. `PlanFechasService::PASOS` se conserva como **respaldo en código**: es lo que garantiza esa
+invariancia aunque el catálogo estuviera vacío.
+
+- **Identidad, no posición:** `pdc_plan_paso` gana `paso_id` y su clave única pasa de
+  `(project_id, paquete_id, orden)` a `(project_id, paquete_id, paso_id)`. Sin esto, meter un paso en
+  medio haría que el upsert escribiera encima de la fila del vecino y el avance real que B1 cuelgue ahí
+  se leería como si fuera de otro paso. El borrado de sobrantes es por identidad y lleva
+  `paso_id IS NULL OR ...` a propósito: `NULL NOT IN (...)` vale NULL y dejaría vivas para siempre las
+  filas sin identidad (es además lo que sanó las 77 filas que dejó el `calcular()` viejo contra el
+  esquema nuevo).
+- **De dónde salen los días:** un paso con `col_legacy` los saca del catálogo legacy **por paquete**; uno
+  sin ella lleva **días fijos por obra** (no se le agregan columnas a la tabla legacy compartida, y las
+  de Licify se dropearon a propósito en jun-2026). `col_legacy` se filtra contra una lista blanca
+  derivada de `PASOS` antes de interpolarse en el SQL.
+- **Con desglose real el proceso se alarga** (cada número legacy es una medición de su paso); en los
+  **provisionales** la mediana es el sobre completo: los días fijos se respetan y el resto se reparte
+  entre los pasos con peso, re-normalizados. `total = max(mediana, Σ días fijos)`, nunca días negativos.
+- `medianasPorTipo()` y `pesosDelCatalogo()` siguen midiéndose sobre las siete columnas legacy: son
+  estadísticas de la **empresa**, no de una obra.
+- `orden_default` va **de diez en diez** (elaboración 0 · Licify 5 · entrega 10 · … · aprobación 35 ·
+  legalización 40 · … · insumos 60): la pantalla lo usa para insertar un paso donde le toca en el proceso
+  canónico. Con numeración compacta, «Aprobación del cliente» aterrizaba al final y había que subirla a
+  mano cuatro veces. Las dos posiciones salen del histórico real: Licify era el paso 2 de la «Variante A»
+  y la aprobación del cliente iba entre cuadros y legalización en la «Variante B» (2 de 6 proyectos).
+- RBAC `lps.paquetes_contratacion.reglas` (el de A3.3) para cambiar los pasos — mueve las fechas de toda
+  la obra, así que no basta con poder asignar insumos. Pantalla en `#/ensamble/plan/pasos`, **fuera de la
+  barra de pestañas**, accesible desde «Configurar pasos» en el Plan de compras.
+- Migración `20260728_pdc_v2_pasos_configurables.php` (dry-run → `--apply`, convergente e idempotente).
+  Tests `tests/test_pdc_v2_pasos_configurables.php` y `tests/test_pdc_v2_rbac_pasos.php`; e2e
+  `tests/browser/pdc-v2-pasos.spec.mjs` (contra el **sandbox**, no destructivo).
+
 ⚠️ El e2e `tests/browser/pdc-v2-paquetes.spec.mjs` es **destructivo** (importa un presupuesto de juguete en el
 proyecto real): exige `PDC_E2E_DESTRUCTIVO=1`. Y el stack del worktree publica **8091**, no 8081.
+
+⚠️ Los nombres de **FOREIGN KEY son únicos en todo el esquema**, no por tabla: `fk_pps_paso` en
+`pdc_proyecto_pasos` hizo fallar con un 1826 al `fk_pps_paso` que iba a llevar `pdc_plan_paso`. Al
+comprobar si una constraint existe, mirar `information_schema.TABLE_CONSTRAINTS` (global), no
+`STATISTICS` de una tabla.
 
 El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
 
