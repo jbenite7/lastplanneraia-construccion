@@ -84,6 +84,18 @@ goals/validar-migracion-handsontable/evidence/contratos-native/*
 goals/validar-migracion-handsontable/evidence/pdc-native/*
 !goals/validar-migracion-handsontable/evidence/pdc-native/*.png
 
+# Dark mode: se versiona lo que se lee (goal, bitácora, specs y planes), no `evidence/`,
+# que son 3,8 MB de capturas. Entra al repo para que la rutina de vigilancia en la nube
+# —que trabaja sobre un checkout de GitHub, no sobre el disco local— pueda juzgar si el
+# frente cerró; sin esto es ciega a dark mode.
+!goals/dark-mode-todos-los-modulos/
+goals/dark-mode-todos-los-modulos/*
+!goals/dark-mode-todos-los-modulos/goal.md
+!goals/dark-mode-todos-los-modulos/facts.md
+!goals/dark-mode-todos-los-modulos/validation-log.md
+!goals/dark-mode-todos-los-modulos/specs/
+!goals/dark-mode-todos-los-modulos/plans/
+
 # Vite emite un index.html junto al bundle del PDC; en producción la página la sirve el
 # shell PHP (views/plan-compras/app.view.php), que es quien inyecta __PDC_BOOTSTRAP__.
 # El script `npm run build` lo borra, pero eso solo protege a quien pase por él: quien
