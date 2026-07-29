@@ -386,6 +386,29 @@ legacy-overrides` (DS-006). El tema por defecto lo aplica
 de forma incondicional y sin conmutador, y el manejo de `prefers-reduced-motion`
 vive en `public/js/modules/aia_ui/theme.js`.
 
+#### Entregas sin capa
+
+Una hoja que entra al documento **sin capa** gana a **todas** las capas en
+declaraciones normales, así que derrota al design system por mucho que éste
+declare lo correcto (para `!important` el orden se invierte y lo no capado pasa a
+ser lo más débil; el gate razona sobre lo primero). El audit veta
+`css-outside-layer` **dentro** de los archivos del repo; quien vigila **cómo
+llegan** las hojas al documento es el gate de entregas sin capa, en dos carriles
+contra un mismo inventario (`docs/design-system/unlayered-delivery-inventory.json`):
+
+- **Estático** — `scripts/design-system-unlayered-delivery.mjs`: cada
+  `<link rel="stylesheet">` escrito a mano en `views/` y cada hoja que `public/js/`
+  monta con `rel = 'stylesheet'`.
+- **Runtime** — `tests/browser/design-system-unlayered-delivery.mjs`: recorre
+  `document.styleSheets` por ruta, incluidas las hojas que un vendor inyecta en un
+  `<style>` y que no existen como archivo del repo.
+
+La vía sancionada para un vendor es `entrypoints/attach-*.css`, que lo importa con
+`layer(vendor)` y luego su adaptador. La salida por defecto ante un hallazgo es
+**eliminar la entrega sin capa**, no declararla: añadir `!important` o CSS fuera de
+capa para ganar la partida está vetado por el audit. `admin/` queda fuera de alcance
+por `AGENTS.md` (AdminLTE no se migra).
+
 ### Flujo obligatorio antes de editar una superficie declarada
 
 1. Ejecutar `$impeccable audit <superficie>` y revisar su manifiesto.

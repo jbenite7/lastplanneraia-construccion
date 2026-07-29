@@ -1,0 +1,593 @@
+{
+  "contract": "unlayered-delivery-v1",
+  "policy": "Una hoja de autor que entra al documento sin capa gana a TODAS las capas en declaraciones normales, asi que derrota al design system por mucho que este declare lo correcto. Toda entrega sin capa debe estar declarada aqui; la salida por defecto es eliminarla, no declararla. La via sancionada para un vendor es public/css/design-system/entrypoints/attach-*.css, que lo importa con layer(vendor) y luego su adaptador. Anadir !important o CSS fuera de capa para ganar la partida esta vetado por scripts/design-system-audit.mjs.",
+  "outOfScope": {
+    "paths": [
+      "admin/"
+    ],
+    "reason": "AGENTS.md excluye el panel Admin del design system (AdminLTE no se migra). Sus <link> crudos no son hallazgos y ninguna de sus rutas se audita."
+  },
+  "gates": {
+    "static": "scripts/design-system-unlayered-delivery.mjs (npm run test:design-system:static)",
+    "runtime": "tests/browser/design-system-unlayered-delivery.mjs (npm run test:design-system:runtime)"
+  },
+  "notes": [
+    "unlayeredRules es el censo medido, informativo: el gate compara el CONJUNTO de hojas, no el numero de reglas.",
+    "cross-origin-opaque: el navegador no expone cssRules de una hoja remota. Un <link> no admite layer, asi que una hoja remota solo estaria capada si se envolviera a si misma; se declara explicitamente."
+  ],
+  "static": [
+    {
+      "sheet": "/css/change-monitor.css",
+      "via": "view-link",
+      "unlayeredRules": 14,
+      "sites": [
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ]
+    },
+    {
+      "sheet": "/css/contratos.css",
+      "via": "view-link",
+      "unlayeredRules": 62,
+      "sites": [
+        "views/contratos/contratos.view.php"
+      ]
+    },
+    {
+      "sheet": "/css/handsontable-header-global.css",
+      "via": "view-link",
+      "unlayeredRules": 8,
+      "sites": [
+        "views/contratos/contratos.view.php",
+        "views/listado-actividades/listadoActividades.view.php",
+        "views/pdc/pdc.view.php",
+        "views/profesionales/profesionales.view.php",
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+        "views/programacion-semanal/programacion_semanal.view.php",
+        "views/subcontratistas/subcontratistas.view.php"
+      ]
+    },
+    {
+      "sheet": "/css/listado-actividades.css",
+      "via": "view-link",
+      "unlayeredRules": 124,
+      "sites": [
+        "views/listado-actividades/listadoActividades.view.php"
+      ]
+    },
+    {
+      "sheet": "/css/login-brand-unified.css",
+      "via": "view-link",
+      "unlayeredRules": 50,
+      "sites": [
+        "views/auth/login.view.php",
+        "views/auth/password-forgot.view.php",
+        "views/auth/password-reset.view.php"
+      ],
+      "case": "7-login-brand-unified"
+    },
+    {
+      "sheet": "/css/pdc.css",
+      "via": "view-link",
+      "unlayeredRules": 124,
+      "sites": [
+        "views/pdc/pdc.view.php"
+      ]
+    },
+    {
+      "sheet": "/css/programacion-semanal.css",
+      "via": "view-link",
+      "unlayeredRules": 343,
+      "sites": [
+        "views/programacion-semanal/CIC.view.php",
+        "views/programacion-semanal/CNC.view.php",
+        "views/programacion-semanal/CNP.view.php",
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ]
+    },
+    {
+      "sheet": "/pdc-app/assets/pdc.css",
+      "via": "view-link",
+      "unlayeredRules": 140,
+      "sites": [
+        "views/plan-compras/app.view.php"
+      ]
+    },
+    {
+      "sheet": "/public/vendor/font-awesome/css/all.css",
+      "via": "js-link",
+      "unlayeredRules": 1436,
+      "sites": [
+        "public/js/cargarDatosGeneralesPagina2.js"
+      ],
+      "case": "8-font-awesome-inyectado"
+    },
+    {
+      "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
+      "via": "view-link",
+      "unlayeredRules": 364,
+      "sites": [
+        "views/profesionales/profesionales.view.php",
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+        "views/programacion-semanal/programacion_semanal.view.php"
+      ],
+      "case": "2-handsontable-doble-carga"
+    },
+    {
+      "sheet": "/public/vendor/toastr.min.css",
+      "via": "view-link",
+      "unlayeredRules": 43,
+      "sites": [
+        "views/programa-general/programa_general.view.php"
+      ]
+    },
+    {
+      "sheet": "/public/vendor/tom-select/tom-select.bootstrap4.min.css",
+      "via": "view-link",
+      "unlayeredRules": 108,
+      "sites": [
+        "views/programacion-intermedia/programacion_intermedia.view.php"
+      ]
+    },
+    {
+      "sheet": "/vendor/handsontable/handsontable.full.min.css",
+      "via": "view-link",
+      "unlayeredRules": 364,
+      "sites": [
+        "views/contratos/contratos.view.php",
+        "views/listado-actividades/listadoActividades.view.php",
+        "views/pdc/pdc.view.php"
+      ],
+      "case": "2/5-handsontable-doble-carga"
+    },
+    {
+      "sheet": "https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css",
+      "via": "view-link-external",
+      "unlayeredRules": null,
+      "sites": [
+        "views/auth/login.view.php",
+        "views/auth/password-forgot.view.php",
+        "views/auth/password-reset.view.php"
+      ],
+      "case": "6-adminlte-login"
+    },
+    {
+      "sheet": "https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css",
+      "via": "view-link-external",
+      "unlayeredRules": null,
+      "sites": [
+        "views/subcontratistas/subcontratistas.view.php"
+      ],
+      "case": "2-handsontable-doble-carga"
+    },
+    {
+      "sheet": "https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css",
+      "via": "view-link-external",
+      "unlayeredRules": null,
+      "sites": [
+        "views/listado-actividades/listadoActividades.view.php",
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php"
+      ]
+    },
+    {
+      "sheet": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+      "via": "view-link-external",
+      "unlayeredRules": null,
+      "sites": [
+        "views/auth/login.view.php",
+        "views/auth/password-forgot.view.php",
+        "views/auth/password-reset.view.php"
+      ]
+    },
+    {
+      "sheet": "https://fonts.googleapis.com/css2",
+      "via": "view-link-external",
+      "unlayeredRules": null,
+      "sites": [
+        "views/auth/login.view.php",
+        "views/auth/password-forgot.view.php",
+        "views/auth/password-reset.view.php",
+        "views/contratos/contratos.view.php",
+        "views/listado-actividades/listadoActividades.view.php",
+        "views/pdc/pdc.view.php",
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php"
+      ]
+    }
+  ],
+  "runtime": {
+    "/login": {
+      "authenticated": false,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null,
+          "case": "6-adminlte-login"
+        },
+        {
+          "sheet": "/css/login-brand-unified.css",
+          "via": "link",
+          "unlayeredRules": 50,
+          "case": "7-login-brand-unified"
+        }
+      ]
+    },
+    "/password/forgot": {
+      "authenticated": false,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null,
+          "case": "6-adminlte-login"
+        },
+        {
+          "sheet": "/css/login-brand-unified.css",
+          "via": "link",
+          "unlayeredRules": 50,
+          "case": "7-login-brand-unified"
+        }
+      ]
+    },
+    "/password/reset": {
+      "authenticated": false,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null,
+          "case": "6-adminlte-login"
+        },
+        {
+          "sheet": "/css/login-brand-unified.css",
+          "via": "link",
+          "unlayeredRules": 50,
+          "case": "7-login-brand-unified"
+        }
+      ]
+    },
+    "/proyectos": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/css/project-selector.css",
+          "via": "link",
+          "unlayeredRules": 21
+        }
+      ]
+    },
+    "/contratos": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2/5-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "/css/contratos.css",
+          "via": "link",
+          "unlayeredRules": 62
+        }
+      ]
+    },
+    "/control-cambios": {
+      "authenticated": true,
+      "unlayered": []
+    },
+    "/dashboard/escalamientos": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 29,
+          "blocks": 1
+        }
+      ]
+    },
+    "/indicadores": {
+      "authenticated": true,
+      "unlayered": []
+    },
+    "/listado-actividades": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2/5-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "/css/listado-actividades.css",
+          "via": "link",
+          "unlayeredRules": 124
+        },
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        }
+      ]
+    },
+    "/pdc": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2/5-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "/css/pdc.css",
+          "via": "link",
+          "unlayeredRules": 124
+        }
+      ]
+    },
+    "/plan-compras": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/pdc-app/assets/pdc.css",
+          "via": "link",
+          "unlayeredRules": 140
+        },
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 336,
+          "blocks": 16
+        }
+      ]
+    },
+    "/profesionales": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 46,
+          "blocks": 1
+        }
+      ]
+    },
+    "/programa-general-actualizar": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2-handsontable-doble-carga"
+        },
+        {
+          "sheet": "https://fonts.googleapis.com/css2",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 85,
+          "blocks": 1
+        }
+      ]
+    },
+    "/programa-general": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/public/vendor/toastr.min.css",
+          "via": "link",
+          "unlayeredRules": 43
+        }
+      ]
+    },
+    "/programacion-intermedia": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/public/vendor/tom-select/tom-select.bootstrap4.min.css",
+          "via": "link",
+          "unlayeredRules": 106
+        }
+      ]
+    },
+    "/programacion-semanal/cic": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/css/programacion-semanal.css",
+          "via": "link",
+          "unlayeredRules": 342
+        },
+        {
+          "sheet": "/public/vendor/font-awesome/css/all.css",
+          "via": "link",
+          "unlayeredRules": 1436,
+          "case": "8-font-awesome-inyectado"
+        }
+      ]
+    },
+    "/programacion-semanal/cnc": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/css/programacion-semanal.css",
+          "via": "link",
+          "unlayeredRules": 342
+        },
+        {
+          "sheet": "/public/vendor/font-awesome/css/all.css",
+          "via": "link",
+          "unlayeredRules": 1436,
+          "case": "8-font-awesome-inyectado"
+        }
+      ]
+    },
+    "/programacion-semanal/cnp": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/css/programacion-semanal.css",
+          "via": "link",
+          "unlayeredRules": 342
+        },
+        {
+          "sheet": "/public/vendor/font-awesome/css/all.css",
+          "via": "link",
+          "unlayeredRules": 1436,
+          "case": "8-font-awesome-inyectado"
+        }
+      ]
+    },
+    "/programacion-semanal": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
+          "via": "link",
+          "unlayeredRules": 364,
+          "case": "2-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/programacion-semanal.css",
+          "via": "link",
+          "unlayeredRules": 342
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "/css/change-monitor.css",
+          "via": "link",
+          "unlayeredRules": 14
+        },
+        {
+          "sheet": "/public/vendor/font-awesome/css/all.css",
+          "via": "link",
+          "unlayeredRules": 1436,
+          "case": "8-font-awesome-inyectado"
+        }
+      ]
+    },
+    "/subcontratistas": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css",
+          "via": "cross-origin-opaque",
+          "unlayeredRules": null,
+          "case": "2-handsontable-doble-carga"
+        },
+        {
+          "sheet": "/css/handsontable-header-global.css",
+          "via": "link",
+          "unlayeredRules": 8
+        },
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 46,
+          "blocks": 1
+        }
+      ]
+    }
+  },
+  "knownCases": {
+    "1-select2": "CERRADO 40d402c: <link> crudo al vendor en Programacion Semanal.",
+    "2-handsontable-doble-carga": "ABIERTO: el vendor se carga una SEGUNDA vez por <link> crudo en /contratos, /listado-actividades, /profesionales (y /pdc, /programa-general-actualizar, /programacion-semanal). Obligo a poner el arreglo en @layer reset con !important (53d55c5).",
+    "3-sweetalert2-login": "CERRADO 91de784: <link> crudo al vendor en /login.",
+    "4-sweetalert2-runtime": "CERRADO dba703b: sweetalert2.all.min.js lleva el CSS embebido y lo inyecta en un <style> creado en runtime. No estaba en ningun archivo del repo. Hoy sale limpio del probe porque va envuelto en @layer vendor.",
+    "5-handsontable-pdc": "ABIERTO: /vendor/handsontable/handsontable.full.min.css en /pdc. Su th es opaco del vendor y no lee ningun token.",
+    "6-adminlte-login": "ABIERTO: AdminLTE desde CDN en /login, /password/forgot, /password/reset. Deja .h1..h6 { color: inherit } ganando al adaptador de sweetalert2.",
+    "7-login-brand-unified": "ABIERTO (censado): /css/login-brand-unified.css sin capa y cargado despues del design system. No toca el popup, pero gana a todo lo capado.",
+    "8-font-awesome-inyectado": "ABIERTO (NUEVO, hallado por este gate): public/js/cargarDatosGeneralesPagina2.js:18-25 inyecta un <link> a /public/vendor/font-awesome/css/all.css cuando no encuentra ni link[href*=font-awesome] ni link[href*=aia-design-system]. Las cuatro rutas de /programacion-semanal ya usan el head segmentado (core.css, sin la palabra aia-design-system en el href), asi que el guard falla y entra una SEGUNDA copia de Font Awesome con 1436 reglas sin capa. core.css ya lo importa con layer(vendor)."
+  }
+}
