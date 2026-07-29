@@ -57,6 +57,8 @@ test('plan: el responsable se elige de la gente del proyecto y se guarda', async
     await page.goto('/plan-compras#/ensamble/plan', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h1')).toContainText('Plan de compras', { timeout: 15000 });
 
+    // «Sin frente» es una pestaña desde la revisión de UX (f28).
+    await page.getByRole('tab', { name: /Sin frente/ }).click();
     const filaConSugerencia = page.locator('[data-testid="pdc-plan-sin-frente"] li:has(.pdc-paq-tag)').first();
     await expect(filaConSugerencia).toBeVisible({ timeout: 20000 });
     await filaConSugerencia.locator('button[data-testid^="pdc-plan-amarrar-"]').click();
@@ -67,6 +69,7 @@ test('plan: el responsable se elige de la gente del proyecto y se guarda', async
     await page.locator('[data-testid="pdc-plan-recalcular"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 30000 });
 
+    await page.getByRole('tab', { name: /^Plan/ }).click();
     const grid = page.locator('[data-testid="pdc-plan-grid"]');
     const celda = grid.locator('.ag-row').first().locator('[col-id="responsable"]');
     await expect(celda).toBeVisible({ timeout: 20000 });

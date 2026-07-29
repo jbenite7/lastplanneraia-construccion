@@ -22,6 +22,7 @@ test('paquetes: la modalidad de contratación se ve en el resumen y en el select
     await expect(selModalidad.locator('option')).toHaveCount(4);
 
     // La lista de paquetes marca las modalidades sin proceso de contratación completo.
+    await page.getByRole('tab', { name: /Paquetes con insumos/ }).click();
     const lista = page.locator('[data-testid="pdc-paq-paquetes"]');
     await expect(lista).toContainText('Orden de compra', { timeout: 20000 });
     for (const clase of ['orden_compra', 'consumo_directo', 'no_contratable']) {

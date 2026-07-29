@@ -60,9 +60,12 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
 
     // Cobertura ya no es 0 y el paquete aparece en la lista con subtotal.
     await expect(page.locator('[data-testid="pdc-paq-cobertura"]')).not.toContainText('0 asignados', { timeout: 15000 });
+    // La lista de paquetes es una pestaña desde la revisión de UX (f28): ya no vive al final.
+    await page.getByRole('tab', { name: /Paquetes con insumos/ }).click();
     await expect(page.locator('[data-testid="pdc-paq-paquetes"]')).toContainText('E2E Paquete Pisos', { timeout: 15000 });
 
-    // 6) Omitir el siguiente insumo sin asignar.
+    // 6) Omitir el siguiente insumo sin asignar (de vuelta a la pestaña de la grilla).
+    await page.getByRole('tab', { name: /^Insumos/ }).click();
     await filtro.selectOption('sin_asignar');
     await page.waitForTimeout(400);
     if (await grid.locator('.ag-row').count() > 0) {

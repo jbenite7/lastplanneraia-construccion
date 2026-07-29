@@ -44,6 +44,8 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     // catálogo es el de toda la empresa (miles de insumos) y el grid no los muestra todos. Y la
     // búsqueda se hace por la marca ZZTEST, no por un término genérico: «concreto» o «bombeo»
     // devuelven además insumos REALES, y el retiro de más abajo caería sobre uno de ellos.
+    // El catálogo global es una pestaña desde la revisión de UX (f28): tapaba la cola de pendientes.
+    await page.getByRole('tab', { name: /Catálogo global/ }).click();
     const catalogo = page.locator('[data-testid="pdc-maestro-catalogo"]');
     await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('zztest teja');
     await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' }).first()).toBeVisible({ timeout: 15000 });

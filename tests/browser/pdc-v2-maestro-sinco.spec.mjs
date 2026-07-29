@@ -44,6 +44,7 @@ test('importar maestro SINCO: preview, confirmación y catálogo poblado', async
     await page.goto('/plan-compras#/ensamble/maestro', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
 
+    await page.getByRole('tab', { name: /Importar SINCO/ }).click();
     await page.locator('[data-testid="pdc-maestro-import-file"]').setInputFiles(FIXTURE);
     const resumen = page.locator('[data-testid="pdc-maestro-import-resumen"]');
     await expect(resumen).toContainText('5 insumos activos', { timeout: 20000 });
@@ -52,6 +53,7 @@ test('importar maestro SINCO: preview, confirmación y catálogo poblado', async
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
 
     // El catálogo global muestra un insumo del fixture (idempotente ante re-corridas).
+    await page.getByRole('tab', { name: /Catálogo global/ }).click();
     const catalogo = page.locator('[data-testid="pdc-maestro-catalogo"]');
     await page.locator('[data-testid="pdc-maestro-busqueda"]').fill('ZZTEST PISO CERAMICO');
     await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST PISO CERAMICO 30X30' }).first()).toBeVisible({ timeout: 15000 });

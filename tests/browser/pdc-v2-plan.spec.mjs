@@ -69,9 +69,17 @@ test('plan: la pestaña Plan carga el plan calculado con vencidos primero', asyn
       await expect(page.locator('.pdc-vacio').first()).toBeVisible();
     }
 
-    // «Sin frente» y «Desfases» son secciones fijas de la vista, con o sin datos.
+    // «Sin frente» y «Desfases» son pestañas de la vista, con o sin datos: desde la revisión de UX
+    // ya no cuelgan una debajo de otra al final de la página (f28/f29).
+    await page.getByRole('tab', { name: /Sin frente/ }).click();
     await expect(page.locator('[data-testid="pdc-plan-sin-frente"]')).toBeVisible();
+    await page.getByRole('tab', { name: /Desfases/ }).click();
     await expect(page.locator('[data-testid="pdc-plan-desfases"]')).toBeVisible();
+    // La pestaña abierta se anuncia como tal, y las otras no: es lo que hace que la sección activa
+    // se pueda saber sin mirar el color.
+    await expect(page.getByRole('tab', { name: /Desfases/ })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: /^Plan/ })).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('[data-testid="pdc-plan-sin-frente"]')).toHaveCount(0);
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
 
@@ -135,6 +143,7 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
 
     await page.goto('/plan-compras#/ensamble/plan', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('h1')).toContainText('Plan de compras', { timeout: 15000 });
+    await page.getByRole('tab', { name: /Sin frente/ }).click();
     await expect(page.locator('[data-testid="pdc-plan-sin-frente"]')).toBeVisible({ timeout: 20000 });
 
     // La fila con propuesta del motor (el chip «origen · confianza»). `isVisible()` no reintenta:
@@ -166,6 +175,7 @@ test('plan: aceptar una propuesta del motor amarra el paquete (sin recalcular to
     // Importante 2 del review final: recién amarrado y sin recalcular, el paquete debe verse en el
     // bloque «Amarrados, pendientes de calcular» — nunca desaparecer de la pantalla en silencio. No se
     // recalcula el plan en este test (ver nota arriba), así que se queda justo en este estado.
+    await page.getByRole('tab', { name: /Pendientes de calcular/ }).click();
     await expect(page.locator('[data-testid="pdc-plan-sin-calcular"]')).not.toContainText('Todo lo amarrado ya está calculado', { timeout: 15000 });
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
