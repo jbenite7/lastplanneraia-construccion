@@ -39,6 +39,43 @@ class SeguimientoService
     }
 
     /**
+     * El corte de vencimiento de una fecha programada contra hoy.
+     *
+     * Estatica y pura a proposito: es la UNICA regla del modulo que dice si algo esta vencido, y la
+     * consumen dos sitios —la pestaña de vencimientos y el semaforo del plan—. Si viviera en la SPA,
+     * o duplicada en cada consumidor, el color y la lista podrian contradecirse sin que nada fallara.
+     *
+     * Los cortes son los que nombro el dueño del producto —vencido, 1, 2, 3 y 6 semanas— y ninguno
+     * mas. `sin_fecha` no es un corte inventado: es el hueco de un paso que el plan aun no fecho, y
+     * tiene nombre propio para que se pueda contar y enseñar en vez de desaparecer.
+     *
+     * @return array{estado: string, diasDesfase: ?int}
+     */
+    public static function clasificarVencimiento(?string $fechaFin, string $hoy): array
+    {
+        if ($fechaFin === null || $fechaFin === '') {
+            return ['estado' => 'sin_fecha', 'diasDesfase' => null];
+        }
+        $fin = new \DateTimeImmutable($fechaFin);
+        $ref = new \DateTimeImmutable($hoy);
+        // Dias completos entre las dos fechas, con signo: negativo = ya paso.
+        $dias = (int) $ref->diff($fin)->format('%r%a');
+        if ($dias < 0) {
+            return ['estado' => 'vencido', 'diasDesfase' => -$dias];
+        }
+        // Intervalos medio abiertos [inicio, fin), en el mismo orden en que se leen: hoy entra en la
+        // primera semana, no en «vencido». Lo de hoy todavia se puede hacer hoy.
+        $estado = match (true) {
+            $dias < 7 => 'sem1',
+            $dias < 14 => 'sem2',
+            $dias < 21 => 'sem3',
+            $dias < 42 => 'sem6',
+            default => 'adelante',
+        };
+        return ['estado' => $estado, 'diasDesfase' => null];
+    }
+
+    /**
      * Proyeccion: cuando terminara cada paso si lo pendiente dura lo previsto.
      *
      * Es aritmetica pura, sin base de datos, para poder probarla con casos escritos a mano en vez de
@@ -305,5 +342,156 @@ class SeguimientoService
         }
 
         return $out;
+    }
+
+    /**
+     * El look-ahead de contratacion: que pasos pendientes vencen y cuando.
+     *
+     * Una fila por PASO pendiente, no por paquete: un paquete con tres pasos abiertos aparece tres
+     * veces, y agregarlo a una sola fila es justo lo que esconde los atrasos que se pidio ver.
+     *
+     * Los filtros se aplican AQUI y no en la SPA, para que los conteos por corte describan siempre
+     * exactamente lo que hay en la tabla de al lado. Sin filtros, la suma de los conteos es el total
+     * de pasos pendientes del proyecto — es la invariante que vigila el gate.
+     *
+     * @param array{pasoClave?: string, responsableUserId?: ?int, soloSinResponsable?: bool} $filtros
+     * @return array<string, mixed>
+     */
+    public function vencimientos(int $projectId, array $filtros = [], ?string $hoy = null): array
+    {
+        $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
+
+        $rows = $this->db->query(
+            'SELECT ps.paquete_id, ps.paso_id, ps.orden, ps.paso, ps.fecha_fin,
+                    COALESCE(g.clave, ps.paso) AS clave,
+                    p.nombre AS paquete, f.frente_nombre,
+                    pp.responsable_user_id, u.nombre AS responsable_nombre
+             FROM pdc_plan_paso ps
+             JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
+             JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
+             LEFT JOIN general_pasos_contratacion g ON g.id = ps.paso_id
+             LEFT JOIN pdc_paquete_frente f ON f.project_id = ps.project_id AND f.paquete_id = ps.paquete_id
+             LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
+             WHERE ps.project_id = ? AND ps.fecha_real IS NULL AND p.activo = 1
+             ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, p.nombre ASC, ps.orden ASC',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $pasoClave = (string) ($filtros['pasoClave'] ?? '');
+        $responsable = $filtros['responsableUserId'] ?? null;
+        $soloSinResponsable = ($filtros['soloSinResponsable'] ?? false) === true;
+
+        $conteos = ['vencido' => 0, 'sem1' => 0, 'sem2' => 0, 'sem3' => 0, 'sem6' => 0, 'adelante' => 0, 'sin_fecha' => 0];
+        $filas = [];
+        $total = 0;
+        $pasos = [];
+        foreach ($rows as $r) {
+            $clave = (string) $r['clave'];
+            // El catalogo del desplegable se arma con TODO lo pendiente, antes de filtrar: si se
+            // armara con lo filtrado, elegir un paso vaciaria la lista y no habria como volver.
+            $pasos[$clave] = (string) $r['paso'];
+
+            $responsableId = $r['responsable_user_id'] === null ? null : (int) $r['responsable_user_id'];
+            if ($pasoClave !== '' && $clave !== $pasoClave) {
+                continue;
+            }
+            if ($soloSinResponsable && $responsableId !== null) {
+                continue;
+            }
+            if (!$soloSinResponsable && $responsable !== null && $responsableId !== (int) $responsable) {
+                continue;
+            }
+
+            $fechaFin = $r['fecha_fin'] === null ? null : (string) $r['fecha_fin'];
+            $c = self::clasificarVencimiento($fechaFin, $hoy);
+            $conteos[$c['estado']]++;
+            $total++;
+            if ($c['estado'] === 'adelante') {
+                // Se cuenta y no se lista: Da Porto puede llegar a 96 paquetes por hasta 9 pasos, y
+                // la cola lejana es la mitad del peso de la tabla sin ser el trabajo de esta semana.
+                continue;
+            }
+            $filas[] = [
+                'paqueteId' => (int) $r['paquete_id'],
+                'paquete' => (string) $r['paquete'],
+                'frenteNombre' => (string) ($r['frente_nombre'] ?? ''),
+                'pasoId' => $r['paso_id'] === null ? null : (int) $r['paso_id'],
+                'orden' => (int) $r['orden'],
+                'paso' => (string) $r['paso'],
+                'clave' => $clave,
+                'fechaFin' => $fechaFin,
+                'responsableUserId' => $responsableId,
+                'responsableNombre' => (string) ($r['responsable_nombre'] ?? ''),
+                'estado' => $c['estado'],
+                'diasDesfase' => $c['diasDesfase'],
+            ];
+        }
+
+        $catalogo = [];
+        foreach ($pasos as $clave => $etiqueta) {
+            $catalogo[] = ['clave' => (string) $clave, 'paso' => $etiqueta];
+        }
+
+        return [
+            'hoy' => $hoy,
+            'filas' => $filas,
+            'conteos' => $conteos,
+            'totalPendientes' => $total,
+            'pasos' => $catalogo,
+            'sinFechas' => $this->paquetesSinFechas($projectId),
+        ];
+    }
+
+    /**
+     * Cuantos paquetes del proyecto NO puede ver el tablero, y por que.
+     *
+     * Un plan que calla lo que no sabe es peor que uno incompleto que lo declara: sin este numero, un
+     * tablero vacio se lee igual que «no hay nada vencido».
+     *
+     * El denominador son solo los paquetes que generan proceso de contratacion. Nomina, imprevistos y
+     * consumo directo no se le compran a nadie y nunca van a tener fecha; contarlos seria una alarma
+     * que no se puede apagar haciendo las cosas bien.
+     *
+     * Falta `duracion_ref` NO entra aqui a proposito: `PlanFechasService::calcular()` ya le da fechas
+     * a esos paquetes por la mediana de su tipo (`duracion_provisional = 1`), asi que aparecen en el
+     * tablero como cualquier otro. Lo que deja a un paquete fuera es no tener plan.
+     *
+     * @return array{paquetes: int, sinFrente: int, sinCalcular: int}
+     */
+    private function paquetesSinFechas(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT (f.paquete_id IS NOT NULL) AS amarrado,
+                    (pp.fecha_arranque IS NOT NULL) AS con_plan
+             FROM (SELECT DISTINCT paquete_id FROM pdc_insumo_paquete
+                    WHERE project_id = ? AND paquete_id IS NOT NULL) a
+             JOIN general_paquetes_contratacion p ON p.id = a.paquete_id
+             LEFT JOIN pdc_paquete_frente f ON f.project_id = ? AND f.paquete_id = p.id
+             LEFT JOIN pdc_plan_paquete pp ON pp.project_id = ? AND pp.paquete_id = p.id
+             WHERE p.activo = 1
+               AND p.modalidad_contratacion IN (' . PlanFechasService::modalidadesConProcesoSql() . ')',
+            [$projectId, $projectId, $projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $sinFrente = 0;
+        $sinCalcular = 0;
+        foreach ($rows as $r) {
+            if ((int) $r['con_plan'] === 1) {
+                continue;
+            }
+            // Amarrado sin recalcular es un caso distinto de sin amarrar: el primero se arregla con
+            // un boton y el segundo exige decidir a que frente pertenece.
+            if ((int) $r['amarrado'] === 1) {
+                $sinCalcular++;
+            } else {
+                $sinFrente++;
+            }
+        }
+
+        return [
+            'paquetes' => $sinFrente + $sinCalcular,
+            'sinFrente' => $sinFrente,
+            'sinCalcular' => $sinCalcular,
+        ];
     }
 }

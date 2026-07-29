@@ -70,8 +70,12 @@ class PlanFechasService
      * usuario en el valor, así que interpolarlos directo en la consulta es seguro; se centraliza
      * aquí para que `calcular()` y `plan()` no dupliquen el literal ni puedan divergir de
      * `MODALIDADES_CON_PROCESO`.
+     *
+     * Pública desde B2: el tablero de vencimientos necesita el mismo denominador que el plan para
+     * contar los paquetes sin fecha. Duplicar la lista allí haría que nómina o imprevistos contaran
+     * como «paquetes que el tablero no está mirando», una alarma que nadie podría apagar.
      */
-    private static function modalidadesConProcesoSql(): string
+    public static function modalidadesConProcesoSql(): string
     {
         return "'" . implode("','", self::MODALIDADES_CON_PROCESO) . "'";
     }
@@ -1552,20 +1556,34 @@ class PlanFechasService
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        $hoyStr = (new \DateTimeImmutable('today'))->format('Y-m-d');
         $pasos = [];
         foreach ($this->db->query(
-            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin, g.clave
+            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin,
+                    pp.fecha_real, g.clave
              FROM pdc_plan_paso pp
              LEFT JOIN general_pasos_contratacion g ON g.id = pp.paso_id
              WHERE pp.project_id = ? ORDER BY pp.paquete_id, pp.orden',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC) as $p) {
+            $fechaReal = $p['fecha_real'] === null ? null : (string) $p['fecha_real'];
             $pasos[(int) $p['paquete_id']][] = [
                 'orden' => (int) $p['orden'], 'paso' => (string) $p['paso'], 'dias' => (int) $p['dias'],
                 'fechaInicio' => (string) $p['fecha_inicio'], 'fechaFin' => (string) $p['fecha_fin'],
                 // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
                 // obra puede haber renombrado con su alias.
                 'clave' => (string) ($p['clave'] ?? ''),
+                'fechaReal' => $fechaReal,
+                // El semáforo lo resuelve la MISMA función que el tablero de vencimientos. Es lo único
+                // que garantiza que el color de esta tabla y la lista de la pestaña no se contradigan:
+                // si algún día cambian los cortes, cambian en los dos sitios a la vez o en ninguno.
+                // Un paso ya cumplido no vence: sale del semáforo, igual que sale del tablero.
+                'vencimiento' => $fechaReal !== null
+                    ? 'cumplido'
+                    : SeguimientoService::clasificarVencimiento(
+                        $p['fecha_fin'] === null ? null : (string) $p['fecha_fin'],
+                        $hoyStr,
+                    )['estado'],
             ];
         }
 

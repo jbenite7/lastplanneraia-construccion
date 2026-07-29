@@ -22,5 +22,6 @@ parameters:
         - src/Controllers/Api/PlanComprasMaestroImportController.php
         - src/Controllers/Api/PlanComprasPaquetesController.php
         - src/Controllers/Api/PlanComprasPlanController.php
+        - src/Controllers/Api/PlanComprasSeguimientoController.php
     bootstrapFiles:
         - scripts/phpstan/constantes-entrypoint.php

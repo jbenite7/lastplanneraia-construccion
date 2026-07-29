@@ -492,6 +492,11 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Las tres confianzas y sus dos botones, en una sola línea que se parte si no cabe. */
 .pdc-plan-propuestas { align-items: center; flex-wrap: wrap; gap: 10px; }
 .pdc-plan-desglose { font-size: var(--pdc-fs-sm); opacity: 0.85; margin-right: auto; }
+/* El toggle del panel de correspondencias es «▸ etiqueta + resumen» en un solo botón. Sin estas dos
+   reglas los dos textos salían pegados —«…con el cronograma4 confirmadas»—, que es lo que se vio al
+   fotografiar el panel por primera vez (cierre pre-lanzamiento, 2026-07-29). */
+.pdc-plan-panel-toggle { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pdc-plan-panel-resumen { font-size: var(--pdc-fs-sm); opacity: 0.85; }
 /* Secundario a la vista, no solo por su nombre: la acción arriesgada no debe competir con la
    segura. Mismo tamaño para que siga siendo cómodo de pulsar. */
 .pdc-paq-secundario {
@@ -725,3 +730,25 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-pasos-historial > summary { cursor: pointer; font-weight: 600; }
 .pdc-pasos-historial li { padding: 6px 0; border-bottom: 1px solid var(--pdc-border); }
 .pdc-pasos-historial li:last-child { border-bottom: none; }
+
+/* Tablero de vencimientos (B2). Los niveles del semáforo salen de los tokens que ya usa el estado del
+   plan, para que el mismo grado de urgencia se vea igual en las dos pantallas. */
+.pdc-venc-ciego { margin: 8px 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+.pdc-venc-conteos { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.pdc-venc-chip { font-size: var(--pdc-fs-sm); padding: 4px 11px; border-radius: var(--pdc-radio-pill);
+  border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted); }
+.pdc-venc-grupo { margin-top: 20px; }
+.pdc-venc-titulo { font-size: var(--pdc-fs-md); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.pdc-venc-num { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+.pdc-venc--vencido { color: var(--pdc-error-ink); font-weight: 600; }
+.pdc-venc--sem1 { color: var(--pdc-aviso-ink); font-weight: 600; }
+.pdc-venc--sem2 { color: var(--pdc-aviso-ink); }
+.pdc-venc--sem3 { color: var(--pdc-accent-texto); }
+.pdc-venc--sem6 { color: var(--pdc-accent-texto); }
+/* Un paso ya cumplido no vence: se ve tranquilo, y en el tablero de vencimientos ni aparece. */
+.pdc-venc--cumplido { color: var(--pdc-accent-texto); }
+/* Lo lejano y lo que no tiene fecha comparten el gris apagado: ninguno de los dos es trabajo de esta
+   semana, y darles color propio los pondría a competir con lo que sí lo es. */
+.pdc-venc--adelante,
+.pdc-venc--sin_fecha { color: var(--pdc-ink-muted); }

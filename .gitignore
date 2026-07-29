@@ -225,6 +225,7 @@ tests/browser/*
 !tests/browser/pdc-v2-desamarrar.spec.mjs
 !tests/browser/pdc-v2-pasos.spec.mjs
 !tests/browser/pdc-v2-sin-scroll-x.spec.mjs
+!tests/browser/pdc-v2-vencimientos.spec.mjs
 !tests/browser/entrypoint-segmentation-dryrun.mjs
 !tests/browser/shell-week-admin.mjs
 !tests/browser/shell-sidebar-rollout.mjs

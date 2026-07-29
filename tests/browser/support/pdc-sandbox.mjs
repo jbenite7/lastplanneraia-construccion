@@ -100,8 +100,21 @@ function avisarUnaVez(razon) {
 }
 
 /**
- * Registra el ciclo de vida del sandbox para un spec del PDC v2: resetea antes de cada test y
- * salta con un motivo claro si el entorno no permite sembrarlo.
+ * Cuando está a `1`, el sandbox se deja tal cual al terminar el spec. Para diagnosticar un fallo
+ * mirando la BD: sin esto, `afterAll` borra justo la evidencia que se quiere leer.
+ */
+const CONSERVAR = process.env.PDC_E2E_CONSERVAR_SANDBOX === '1';
+
+/**
+ * Registra el ciclo de vida del sandbox para un spec del PDC v2: resetea antes de cada test, deja
+ * limpio al terminar, y salta con un motivo claro si el entorno no permite sembrarlo.
+ *
+ * Por qué limpia AL TERMINAR y no solo al empezar: `general_paquetes_contratacion` y
+ * `general_maestro_insumos` son catálogos GLOBALES sin `project_id`, y el motor de sugerencias
+ * aprende de lo asignado en TODOS los proyectos. Limpiando solo en `beforeEach`, lo que crea el
+ * último test del último spec sobrevive a la corrida y contamina cualquier medición posterior: medir
+ * la brecha del motor justo después de los e2e daba 8 en vez de 7 (`goals/pdc-revision-ux/
+ * validation-log.md`). El residuo no era del test que fallaba, era del que terminó bien.
  *
  * Llamar en el cuerpo del módulo, antes de los `test(...)`.
  */
@@ -113,6 +126,15 @@ export function usarSandboxPdc() {
     // `--reporter=line`: sin esto el salto sería mudo y el guardarraíl no ahorraría el diagnóstico.
     avisarUnaVez(razon);
     test.skip(razon !== null, razon ?? '');
+    resetearSandboxPdc();
+  });
+
+  test.afterAll(() => {
+    // Mismos guardarraíles que al sembrar: si el entorno no era sembrable, aquí no hay nada que
+    // limpiar y `docker compose exec` fallaría con un error que no es el del test.
+    if (!SANDBOX_LOCAL || razonStackDistinto() !== null || CONSERVAR) {
+      return;
+    }
     resetearSandboxPdc();
   });
 }

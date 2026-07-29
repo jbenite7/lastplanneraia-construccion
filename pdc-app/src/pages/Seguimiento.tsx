@@ -6,7 +6,9 @@ import { MODULOS_TABLA, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme,
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { getBootstrap } from '../lib/bootstrap'
 import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSeguimiento } from '../lib/seguimiento'
-import type { FilaSeguimiento, FiltrosSeguimiento, PasoSeguimiento } from '../lib/types'
+import Pestanas, { PanelPestana } from '../components/Pestanas'
+import { CORTES, claseCorte, etiquetaCorte, textoDesfase, textoSinFechas } from '../lib/vencimientos'
+import type { FilaSeguimiento, FiltrosSeguimiento, FilaVencimiento, PasoSeguimiento, RespuestaVencimientos } from '../lib/types'
 import { plural } from '../lib/texto'
 
 // Solo lectura en la grilla: el avance se registra en el panel de detalle, no en la celda. Por eso
@@ -32,6 +34,13 @@ export default function Seguimiento() {
   // B2 · los paquetes cuyo plan se calculó contra un cronograma que ya cambió. Las fechas que esta
   // pestaña muestra para ellos son viejas, y callarlo las hace pasar por buenas.
   const [desactualizados, setDesactualizados] = useState<number[]>([])
+  // La pestaña de vencimientos es la vista de un lunes por la mañana; la de paquetes es donde se
+  // registra el avance. Son dos preguntas distintas sobre los mismos datos y por eso conviven aquí en
+  // vez de en dos pantallas — igual que las cuatro secciones del Plan.
+  const [seccion, setSeccion] = useState('paquetes')
+  const [venc, setVenc] = useState<RespuestaVencimientos | null>(null)
+  const [filtroPaso, setFiltroPaso] = useState('')
+  const [filtroResp, setFiltroResp] = useState('')
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -48,6 +57,26 @@ export default function Seguimiento() {
       setCargando(false)
     }
   }, [])
+
+  // Los filtros se resuelven en el servidor, no aquí: los conteos de cada corte tienen que describir
+  // exactamente lo que hay en la tabla, y filtrar en el cliente dejaría los números contando otra cosa
+  // que la lista.
+  const cargarVencimientos = useCallback(async () => {
+    const q = new URLSearchParams()
+    if (filtroPaso !== '') q.set('paso', filtroPaso)
+    if (filtroResp !== '') q.set('responsable', filtroResp)
+    const sufijo = q.toString() === '' ? '' : `?${q.toString()}`
+    try {
+      setVenc(await apiGet<RespuestaVencimientos>(`/plan-compras/api/seguimiento/vencimientos${sufijo}`))
+      setError('')
+    } catch (e) {
+      setError(mensajeError(e))
+    }
+  }, [filtroPaso, filtroResp])
+
+  useEffect(() => {
+    if (seccion === 'vencimientos') void cargarVencimientos()
+  }, [seccion, cargarVencimientos])
 
   useEffect(() => {
     void cargar()
@@ -132,8 +161,9 @@ export default function Seguimiento() {
       <header className="pdc-header">
         <h1>Seguimiento del plan de compras</h1>
         <p className="pdc-sub">
-          {plural(visibles.length, 'paquete', 'paquetes')} de {filas.length}. Haz clic en una fila para
-          registrar cuándo ocurrió cada paso.
+          {seccion === 'paquetes'
+            ? `${plural(visibles.length, 'paquete', 'paquetes')} de ${filas.length}. Haz clic en una fila para registrar cuándo ocurrió cada paso.`
+            : 'Qué se vence, por paso y por responsable.'}
         </p>
       </header>
 
@@ -149,6 +179,121 @@ export default function Seguimiento() {
         </p>
       )}
 
+      <Pestanas
+        idBase="pdc-seg"
+        etiquetaLista="Secciones del seguimiento"
+        activa={seccion}
+        onCambiar={setSeccion}
+        pestanas={[
+          { id: 'paquetes', etiqueta: 'Paquetes', conteo: filas.length },
+          { id: 'vencimientos', etiqueta: 'Vencimientos', conteo: venc?.conteos.vencido },
+        ]}
+      />
+
+      {seccion === 'vencimientos' && (
+        <PanelPestana idBase="pdc-seg" id="vencimientos">
+          <p className="pdc-sub">
+            Pasos pendientes de contratación, agrupados por cuándo vencen.{' '}
+            {venc && <>Hoy es <strong>{venc.hoy}</strong> según el servidor.</>}
+          </p>
+
+          {/* La declaración de lo que NO se está mirando va arriba del todo y antes de los filtros: un
+              tablero vacío y un tablero ciego se ven igual, y quien lo lea tiene que poder
+              distinguirlos sin bajar. */}
+          {venc && textoSinFechas(venc.sinFechas) !== '' && (
+            <p className="pdc-venc-ciego" data-testid="pdc-venc-sin-fechas" role="status">
+              {textoSinFechas(venc.sinFechas)}
+            </p>
+          )}
+
+          <div className="pdc-seg-filtros">
+            <label>
+              Paso{' '}
+              <select
+                data-testid="pdc-venc-filtro-paso"
+                value={filtroPaso}
+                onChange={(e) => setFiltroPaso(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {(venc?.pasos ?? []).map((p) => (
+                  <option key={p.clave} value={p.clave}>{p.paso}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Responsable{' '}
+              <select
+                data-testid="pdc-venc-filtro-responsable"
+                value={filtroResp}
+                onChange={(e) => setFiltroResp(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {usuarioId !== null && <option value={String(usuarioId)}>Los míos</option>}
+                <option value="sin">Sin responsable</option>
+              </select>
+            </label>
+          </div>
+
+          {venc && (
+            <div className="pdc-venc-conteos" data-testid="pdc-venc-conteos">
+              {CORTES.map((c) => (
+                <span key={c.id} className={`pdc-venc-chip ${claseCorte(c.id)}`} data-corte={c.id}>
+                  <strong>{venc.conteos[c.id] ?? 0}</strong> {c.etiqueta}
+                </span>
+              ))}
+              {/* «Más adelante» se cuenta y no se lista. Enseñar el número es lo que hace que la suma
+                  de los cortes cuadre con el total, sin cargar la tabla con la cola lejana. */}
+              <span className="pdc-venc-chip pdc-venc--adelante" data-corte="adelante">
+                <strong>{venc.conteos.adelante ?? 0}</strong> {etiquetaCorte('adelante')}
+              </span>
+            </div>
+          )}
+
+          {venc && CORTES.map((c) => {
+            const delCorte = venc.filas.filter((f) => f.estado === c.id)
+            if (delCorte.length === 0) return null
+            return (
+              <section key={c.id} className="pdc-venc-grupo" data-testid={`pdc-venc-grupo-${c.id}`}>
+                <h3 className={`pdc-venc-titulo ${claseCorte(c.id)}`}>
+                  {c.etiqueta} <span className="pdc-venc-num">{delCorte.length}</span>
+                </h3>
+                <table className="pdc-seg-panel-tabla">
+                  <thead>
+                    <tr>
+                      <th scope="col">Paquete</th>
+                      <th scope="col">Paso</th>
+                      <th scope="col">Programado</th>
+                      <th scope="col">Responsable</th>
+                      <th scope="col">Desfase</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {delCorte.map((f: FilaVencimiento) => (
+                      <tr key={`${f.paqueteId}-${f.pasoId ?? f.orden}`}>
+                        <th scope="row">{f.paquete}</th>
+                        <td>{f.paso}</td>
+                        {/* El guion no es adorno: distingue «no tiene fecha» de un cero. */}
+                        <td>{f.fechaFin ?? '—'}</td>
+                        <td>{f.responsableNombre === '' ? '— sin asignar —' : f.responsableNombre}</td>
+                        <td>{textoDesfase(f.diasDesfase)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )
+          })}
+
+          {venc && venc.filas.length === 0 && (
+            <p className="pdc-vacio" data-testid="pdc-venc-vacio">
+              No hay pasos pendientes que venzan en las próximas seis semanas.
+            </p>
+          )}
+        </PanelPestana>
+      )}
+
+      {seccion === 'paquetes' && (
+      <PanelPestana idBase="pdc-seg" id="paquetes">
       <div className="pdc-seg-filtros">
         <label>
           <input
@@ -197,6 +342,8 @@ export default function Seguimiento() {
           onRowClicked={(e: RowClickedEvent<FilaSeguimiento>) => { if (e.data) void abrir(e.data) }}
         />
       </div>
+      </PanelPestana>
+      )}
 
       {abierto && (
         <aside className="pdc-seg-panel" aria-label={`Avance de ${abierto.nombre}`}>
