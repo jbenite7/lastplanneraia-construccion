@@ -24,27 +24,15 @@
     background-color: var(--ds-active-surface) !important;
   }
 
-  .bi-control-tower-page .text-gray-900,
-  .bi-control-tower-page .text-gray-800,
-  .bi-control-tower-page .text-gray-700 {
-    color: var(--ds-active-text-primary) !important;
-  }
-
-  .bi-control-tower-page .text-gray-600,
-  .bi-control-tower-page .text-gray-500,
-  .bi-control-tower-page .text-gray-400 {
-    color: var(--ds-active-text-secondary) !important;
-  }
-
-  .bi-control-tower-page .bg-white,
-  .bi-control-tower-page .bg-gray-50,
-  .bi-control-tower-page .bg-gray-100 {
-    background-color: var(--ds-active-surface) !important;
-  }
-
-  .bi-control-tower-page .border-gray-200 {
-    border-color: var(--ds-active-border) !important;
-  }
+  /* Los cuatro bloques que repintaban aqui la paleta clara de Tailwind
+     (`.text-gray-*`, `.bg-*`, `.border-gray-200`) se retiraron al cerrar el
+     caso 9-tailwind-cdn-bi. Existian solo porque el Play CDN entregaba esas
+     utilidades SIN CAPA, y contra eso la unica arma era `!important`. Ahora las
+     sirve `public/css/design-system/adapters/bi-utilities.css` dentro de
+     `@layer utilities`, ya mapeadas a `--ds-active-*`: mismo resultado, una
+     sola fuente y sin `!important`. `.bg-white` y `.bg-gray-50` se fueron sin
+     sustituto porque no las usa ni el markup ni `bi-spa.js` (0 ocurrencias);
+     el JIT nunca llego a generarlas. */
 
   .bi-control-tower-page {
     --bi-chart-brand-primary: var(--aia-green-primary);

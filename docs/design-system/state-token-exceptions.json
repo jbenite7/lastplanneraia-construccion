@@ -9,7 +9,7 @@
   "exceptions": [
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 118,
+      "line": 106,
       "selector": ".bi-chip",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -18,7 +18,7 @@
     },
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 316,
+      "line": 304,
       "selector": ".bi-switch-input:checked + .bi-switch-track",
       "token": "--ds-color-state-info-bg",
       "kind": "by-design",
