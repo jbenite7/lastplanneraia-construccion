@@ -64,14 +64,14 @@ repos `main` va por detrás y ramificar desde ahí habría dejado fuera todo A4.
 | f29 ninguna tabla escondida | el panel inactivo **no se monta**: el e2e comprueba `toHaveCount(0)` |
 | f30 nada roto | la tabla de gates de arriba |
 
-## Tres cosas que hay que decidir o saber
+## Tres cosas que saber
 
-1. **La barra lateral tiene UNA entrada, no dos.** El plan decía que el módulo nuevo y el viejo
-   convivieran con etiquetas distintas. No cabe: el rail tiene un presupuesto de altura y el gate
-   exige que su nav no haga scroll interno. Medido: con el ítem extra caen 22 comprobaciones; sin
-   él, 0. Así que la entrada «Plan de Compras» **pasa a apuntar al módulo nuevo** y el viejo sigue
-   servido en `/pdc` por su dirección. Si se prefiere lo contrario, es una línea en
-   `shell_sidebar.php` — pero conviene decidirlo antes de mergear.
+1. **La barra lateral tiene UNA entrada, no dos** — *decidido por el dueño del producto el
+   2026-07-28: así se queda.* El plan decía que el módulo nuevo y el viejo convivieran con
+   etiquetas distintas. No cabe: el rail tiene un presupuesto de altura y el gate exige que su nav
+   no haga scroll interno. Medido: con el ítem extra caen 22 comprobaciones; sin él, 0. La entrada
+   «Plan de Compras» apunta al módulo nuevo y el viejo sigue servido en `/pdc` por su dirección,
+   sin aparecer en el menú.
 2. **El indicador del motor se contamina con el sandbox de los e2e.** Los paquetes que crean los
    specs viven en el catálogo global y el motor aprende de lo asignado en otros proyectos, así que
    medir la brecha justo después de correr Playwright da 8 en vez de 7. El seed limpia al empezar
