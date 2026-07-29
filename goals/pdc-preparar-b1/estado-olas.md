@@ -41,7 +41,7 @@ que es peor que no tener este archivo.
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3` | 2026-07-29 |
-| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | EN CURSO | | |
+| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO (3 de 4)** | `efe8d5e`, `20d6acf`, `c725fc7` | 2026-07-29 |
 
 ### Nota sobre 7a — la medición recortó el spec a la mitad
 
@@ -65,6 +65,20 @@ phpstan limpio, 267 tests de vitest, y el e2e `tests/browser/pdc-v2-plan.spec.mj
 completo en navegador (simular no escribe · cancelar no escribe · aplicar corre 21 días · el conteo
 de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también sobre `1a75b19`:
 `tests/browser/pdc-v2-sin-scroll-x.spec.mjs`.
+
+### Nota sobre 7b — tres de cuatro diferidos
+
+| # | Diferido | Estado |
+|---|---|---|
+| 2 | Copiar la configuración entre obras | **Hecho** (`efe8d5e`). Copia puntual, no vínculo vivo; la pantalla enseña qué trae y marca si el origen está a medias |
+| 4 | Duraciones del catálogo editables | **Hecho** (`20d6acf`). Solo las filas que la obra usa, con aviso permanente de que son de la empresa. Recorte: el upsert ya existía en `/contratos`; lo que faltaba era llegar desde el PDC v2, con el permiso de reglas y recalculando |
+| 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
+| 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
+
+**Verificado:** 14 tests PHP en verde (3 nuevos), phpstan limpio, 267 de vitest, y 3 e2e en
+`tests/browser/pdc-v2-pasos.spec.mjs` (2 nuevos, en navegador contra el contenedor servido).
+Cero regresión comprobada sobre Da Porto: sigue sin configurar y con los siete pasos por defecto.
+De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pasos`.
 
 ## Ola 3 — lo grande
 
