@@ -8,7 +8,7 @@ import {
   procedenciaDeAsignacion,
   wizardReducer,
 } from '../lib/paqueteWizardState'
-import { MODALIDADES, TIPOS_NEGOCIACION, TIPOS_NEGOCIACION_CREABLES } from '../lib/types'
+import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
 import { plural } from '../lib/texto'
 
@@ -128,11 +128,8 @@ export default function PaquetesAsistente({
     if (nuevoNombre.trim() === '') return
     dispatch({ type: 'OCUPADO' })
     try {
-      // El selector de arriba filtra el catálogo y a la vez decide el tipo del paquete nuevo, así que
-      // puede traer un tipo que no se puede crear (`no_aplica`): en ese caso se cae al default.
-      const creable = TIPOS_NEGOCIACION_CREABLES.some((t) => t.value === tipoNeg)
       const r = await apiPost<{ paquete: PaqueteCatalogo & { existente: number } }>('/plan-compras/api/paquetes', {
-        nombre: nuevoNombre, tipoNegociacion: creable ? tipoNeg : TIPOS_NEGOCIACION_CREABLES[0].value,
+        nombre: nuevoNombre, tipoNegociacion: tipoNeg || TIPOS_NEGOCIACION[0].value,
       })
       await asignarA(r.paquete.id, r.paquete.nombre)
     } catch (e) {

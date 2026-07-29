@@ -479,3 +479,29 @@ export type RespuestaPasos = {
   /** Cuántos paquetes tienen plan calculado: quitar un paso borra una fila por cada uno. */
   paquetesConPlan: number
 }
+
+
+/**
+ * Un nodo del cronograma al que se puede amarrar. `esFrente` distingue los encabezados de las
+ * actividades: ambos son destinos válidos, pero el motor solo propone encabezados salvo que una
+ * correspondencia curada nombre una actividad (el caso CUBIERTA → LOSA AÉREA CUBIERTA).
+ */
+export type AnclaDisponible = FrenteDisponible & { esFrente: boolean }
+
+/** Por qué un paquete no recibió propuesta, y qué rama hay que resolver para que la reciba. */
+export type MotivoSinPropuesta = { texto: string; rama: string | null }
+
+export type Correspondencia = {
+  rama: string
+  ancla: string
+  confirmado: boolean
+  alcance: string
+  nota: string
+}
+
+export type PanelCorrespondencias = {
+  correspondencias: Correspondencia[]
+  pendientes: string[]
+  confirmadas: number
+  sinConfirmar: number
+}

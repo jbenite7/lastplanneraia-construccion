@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ACCION_PROPONER, claveInsumo, estadoInicialPaquetes, filtroInicial, paquetesReducer, estaCerradoPorValor, muestraTipoNegociacion } from './paquetesState'
-import { TIPOS_NEGOCIACION, TIPOS_NEGOCIACION_CREABLES } from './types'
+import { TIPOS_NEGOCIACION } from './types'
 import type { SugerenciaPaquete } from './types'
 
 const sug: SugerenciaPaquete = {
@@ -117,19 +117,24 @@ describe('muestraTipoNegociacion', () => {
   })
 })
 
-describe('TIPOS_NEGOCIACION_CREABLES', () => {
-  // `PaquetesService::crearPaquete()` valida contra su constante `TIPOS`, que no lista `no_aplica`:
-  // ofrecerlo en un formulario de creación devuelve PAQUETE_INVALIDO al enviar.
-  it('no ofrece «no aplica»: el backend todavía lo rechaza al crear', () => {
-    expect(TIPOS_NEGOCIACION_CREABLES.map((t) => t.value)).not.toContain('no_aplica')
+describe('TIPOS_NEGOCIACION', () => {
+  /*
+   * Esta lista alimenta a la vez las etiquetas, los filtros y los formularios de creación, así que
+   * tiene que coincidir EXACTAMENTE con `PaquetesService::TIPOS` (src/Services/Pdc/PaquetesService.php
+   * en lps-aia): `crearPaquete()` valida contra esa constante y devuelve PAQUETE_INVALIDO —sin
+   * explicar nada— ante cualquier valor que aquí sobre. Ya pasó una vez, al agregar `no_aplica` a la
+   * SPA antes que al PHP; costó partir la lista en dos hasta que el backend se puso al día.
+   */
+  it('son exactamente los cinco tipos que el backend acepta', () => {
+    expect(TIPOS_NEGOCIACION.map((t) => t.value)).toEqual([
+      'a_todo_costo', 'suministro', 'mano_obra', 'consumibles', 'no_aplica',
+    ])
   })
 
-  it('es un subconjunto de las etiquetas conocidas, para que nunca falte un label', () => {
-    const conocidos = TIPOS_NEGOCIACION.map((t) => t.value)
-    for (const t of TIPOS_NEGOCIACION_CREABLES) expect(conocidos).toContain(t.value)
-  })
-
-  it('pintar sigue conociendo «no aplica», aunque no se pueda crear', () => {
-    expect(TIPOS_NEGOCIACION.map((t) => t.value)).toContain('no_aplica')
+  it('todos tienen etiqueta en español: un badge nunca debe mostrar el valor crudo', () => {
+    for (const t of TIPOS_NEGOCIACION) {
+      expect(t.label.trim()).not.toBe('')
+      expect(t.label).not.toContain('_')
+    }
   })
 })
