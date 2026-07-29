@@ -76,14 +76,14 @@ contratable por modalidad. Con el dato honesto, el parche de UI que escondía el
 modalidad y pasa a decidir por tipo (`muestraTipoNegociacion`): «Ferretería y consumibles de obra» recupera su
 badge SUMINISTRO, que siempre fue cierto.
 
-⚠️ **La SPA tiene dos listas de tipos, a propósito y temporalmente.** `PaquetesService::TIPOS` todavía no lista
-`no_aplica` (ese archivo estaba en manos de otra tarea en curso), y `crearPaquete()` valida contra esa constante.
-Como una sola lista alimentaba a la vez las etiquetas y los desplegables de creación, el formulario ofrecía un
-tipo que el backend rechaza con `PAQUETE_INVALIDO` — y en el asistente era peor, porque ahí el selector de tipo
-filtra el catálogo *y* decide el tipo del paquete nuevo. Por eso `types.ts` expone **`TIPOS_NEGOCIACION`** (todas
-las etiquetas: pintar y filtrar) y **`TIPOS_NEGOCIACION_CREABLES`** (lo que el backend acepta hoy: formularios).
-Cuando el PHP acepte `no_aplica`, las dos vuelven a ser una; tres tests en `paquetesState.test.ts` fijan la
-invariante mientras tanto.
+**`PaquetesService::TIPOS` y `TIPOS_NEGOCIACION` (`types.ts`) tienen que coincidir exactamente** — hoy, los cinco.
+`crearPaquete()` valida contra la constante PHP, así que un valor que sobre en la SPA no rompe nada visible hasta
+que alguien intenta crear un paquete, y entonces falla con `PAQUETE_INVALIDO` sin explicar por qué. Ya pasó al
+agregar `no_aplica`: el enum y la SPA lo tuvieron antes que el PHP (ese archivo estaba en manos de otra tarea),
+y hubo que partir la lista de la SPA en dos —`TIPOS_NEGOCIACION_CREABLES`— hasta que el backend se puso al día.
+Ahora vuelve a ser una sola, y un test en `paquetesState.test.ts` fija los cinco valores exactos para que la
+divergencia no se repita en silencio. Ninguna rama de `tiposCompatibles()` nombra `no_aplica` a propósito: a un
+bucket sin proceso no se llega compitiendo por insumos sino por su modalidad.
 
 **La V1 del presupuesto de Da Porto es un artefacto del bug A1.8.** Confirmado con datos, no por hipótesis: de
 las 323 filas cuya `cantidad_total` permite distinguir las dos fórmulas, **las 323 cuadran con la defectuosa
