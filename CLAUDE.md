@@ -74,9 +74,16 @@ nombres). Cero regresión medida: los dos únicos puntos que leen ese campo (`Pa
 y `::resolverPaquete()`) hacen bypass antes por `MODALIDADES_SIN_PROCESO`, y el plan de fechas excluye lo no
 contratable por modalidad. Con el dato honesto, el parche de UI que escondía el badge dejó de decidir por
 modalidad y pasa a decidir por tipo (`muestraTipoNegociacion`): «Ferretería y consumibles de obra» recupera su
-badge SUMINISTRO, que siempre fue cierto. **Pendiente deliberado:** `PaquetesService::TIPOS` todavía no lista
-`no_aplica`, así que el formulario de crear paquete no lo ofrece; se dejó fuera porque ese archivo estaba en
-manos de otra tarea en curso.
+badge SUMINISTRO, que siempre fue cierto.
+
+⚠️ **La SPA tiene dos listas de tipos, a propósito y temporalmente.** `PaquetesService::TIPOS` todavía no lista
+`no_aplica` (ese archivo estaba en manos de otra tarea en curso), y `crearPaquete()` valida contra esa constante.
+Como una sola lista alimentaba a la vez las etiquetas y los desplegables de creación, el formulario ofrecía un
+tipo que el backend rechaza con `PAQUETE_INVALIDO` — y en el asistente era peor, porque ahí el selector de tipo
+filtra el catálogo *y* decide el tipo del paquete nuevo. Por eso `types.ts` expone **`TIPOS_NEGOCIACION`** (todas
+las etiquetas: pintar y filtrar) y **`TIPOS_NEGOCIACION_CREABLES`** (lo que el backend acepta hoy: formularios).
+Cuando el PHP acepte `no_aplica`, las dos vuelven a ser una; tres tests en `paquetesState.test.ts` fijan la
+invariante mientras tanto.
 
 **La V1 del presupuesto de Da Porto es un artefacto del bug A1.8.** Confirmado con datos, no por hipótesis: de
 las 323 filas cuya `cantidad_total` permite distinguir las dos fórmulas, **las 323 cuadran con la defectuosa
