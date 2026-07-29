@@ -202,6 +202,22 @@
   }
 
   /*
+   * `space-y-1` NO estaba en el volcado del CDN, y no por descuido: la emite
+   * `renderRecommendedActions()` solo cuando `data.recommended_actions` trae
+   * filas, y el proyecto con el que se midio no tenia ninguna, asi que el JIT
+   * nunca llego a generarla. Es alcanzable en produccion —con datos, la lista
+   * de acciones recomendadas se quedaria sin separacion— y la encontro el gate
+   * estatico, que lee el codigo en vez de esperar a que una rama se ejecute.
+   * Es exactamente el agujero que ese gate existe para tapar.
+   *
+   * Se transcribe sin las variables `--tw-space-y-reverse`, que solo sirven
+   * para la variante `space-y-reverse` y aqui no se usa.
+   */
+  .space-y-1 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.25rem;
+  }
+
+  /*
    * Bordes. El color va a token; el ancho es geometria del markup.
    *
    * El `border-style` es explicito y NO sobra: en Tailwind lo ponia el
