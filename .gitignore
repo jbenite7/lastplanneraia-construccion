@@ -113,6 +113,10 @@ public/pdc-app/index.html
 !goals/pdc-a41-pasos-configurables/**
 !goals/pdc-a42-frentes-cobertura/
 !goals/pdc-a42-frentes-cobertura/**
+!goals/pdc-preparar-b1/
+!goals/pdc-preparar-b1/**
+!goals/pdc-responsable-usuario/
+!goals/pdc-responsable-usuario/**
 !goals/pdc-revision-ux/
 !goals/pdc-revision-ux/**
 !goals/pdc-tanda2-plan-verdad/

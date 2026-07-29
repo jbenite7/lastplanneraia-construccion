@@ -1,0 +1,166 @@
+{
+  "stage": "interview",
+  "title": "Responsable de paquete: arreglar el guardado y darle un selector de personas",
+  "goalSlug": "pdc-responsable-usuario",
+  "questions": [
+    {
+      "id": "nombre-en-grilla",
+      "prompt": "¿De dónde saca la pantalla el NOMBRE de la persona responsable?",
+      "description": "Hoy la base guarda solo un número (el id del usuario), no su nombre. Se decide quién traduce ese número a «Ana Gómez». Importa porque de ello depende que la columna muestre algo o se vea vacía. Opción A: el servidor manda ya el nombre junto al plan. Opción B: la pantalla se descarga aparte la lista de personas y busca el nombre ella misma. RECOMENDADO: A — es la segura: si mañana sacan a esa persona del proyecto, el nombre se sigue viendo (con B desaparecería y la celda quedaría en blanco sin explicación).",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "A — el servidor manda el nombre junto al plan.",
+      "recommendedOptionIds": ["servidor"],
+      "options": [
+        { "id": "servidor", "label": "A · El servidor manda el nombre junto al plan (recomendado, más robusto)" },
+        { "id": "spa", "label": "B · La pantalla lo busca en la lista de personas que ya se descargó" }
+      ],
+      "required": true
+    },
+    {
+      "id": "desasignar",
+      "prompt": "¿Se puede DEJAR SIN responsable un paquete que ya tenía uno?",
+      "description": "Es decir, si alguien se equivocó de persona, ¿puede vaciar la casilla en vez de verse obligado a poner a otro? Importa porque si no lo permitimos, un error de asignación no tiene marcha atrás desde la pantalla. RECOMENDADO: sí — es reversible y gratis de implementar (la columna ya admite «vacío»).",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, se puede vaciar.",
+      "recommendedOptionIds": ["si"],
+      "options": [
+        { "id": "si", "label": "Sí · se puede vaciar y el paquete queda sin responsable (recomendado)" },
+        { "id": "no", "label": "No · una vez asignado, solo se puede cambiar por otra persona" }
+      ],
+      "required": true
+    },
+    {
+      "id": "quien-asigno",
+      "prompt": "La base tiene una casilla «quién hizo la asignación». ¿Qué escribimos ahí?",
+      "description": "Sirve para saber después quién puso a quién (rastro de auditoría). Importa poco para el usuario final pero mucho cuando haya que aclarar un malentendido en obra. RECOMENDADO: el nombre de quien está usando el sistema en ese momento, exactamente igual que ya se hace al «amarrar» y al «recalcular» — así todo el módulo deja el mismo rastro.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El nombre de la sesión de quien asigna, igual que amarrar/calcular.",
+      "recommendedOptionIds": ["sesion"],
+      "options": [
+        { "id": "sesion", "label": "El nombre de quien está usando el sistema (igual que el resto del módulo) (recomendado)" },
+        { "id": "id", "label": "El id numérico de quien asigna, no su nombre" }
+      ],
+      "required": true
+    },
+    {
+      "id": "huerfano",
+      "prompt": "Si asignan a alguien y después lo SACAN del proyecto, ¿avisamos en pantalla?",
+      "description": "Ejemplo: pones a Ana de responsable, luego a Ana la quitan del equipo del proyecto. Su nombre se queda pegado al paquete. Se decide si la pantalla lo señala («Ana — ya no está en el proyecto») o se queda callada. Importa porque callado significa que nadie se entera de que ese paquete quedó huérfano. El comentario de la migración ya dice que esto «lo resuelve la lectura marcando al responsable como huérfano», pero eso todavía NO está hecho. RECOMENDADO: marcarlo ahora — es barato y evita un paquete sin dueño real.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, marcarlo ahora.",
+      "recommendedOptionIds": ["ahora"],
+      "options": [
+        { "id": "ahora", "label": "Sí · marcarlo ahora, en esta tarea (recomendado)" },
+        { "id": "b1", "label": "No · dejarlo para más adelante (fase B1 · Seguimiento)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "validacion",
+      "prompt": "Si alguien intenta asignar a una persona que NO es del proyecto, ¿qué hace el servidor?",
+      "description": "La base solo garantiza que esa persona existe en el sistema; no que pertenezca a ESTE proyecto. Sin un control extra, se podría asignar por error a alguien de otra obra. Importa porque es la única defensa real contra esa mezcla. RECOMENDADO: rechazarlo con un mensaje claro («esa persona no pertenece al proyecto»).",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Rechazar con mensaje claro.",
+      "recommendedOptionIds": ["rechazar"],
+      "options": [
+        { "id": "rechazar", "label": "Rechazarlo y explicar por qué (recomendado)" },
+        { "id": "aceptar", "label": "Aceptarlo igual, confiando en que la pantalla solo ofrezca gente válida" }
+      ],
+      "required": true
+    },
+    {
+      "id": "activos",
+      "prompt": "¿Quién aparece en el desplegable de personas?",
+      "description": "Se decide a quién puede elegir el usuario. «Activo» = la ficha de esa persona no está dada de baja en el sistema. En DAPORTO hay 17 personas que cumplen «es del proyecto Y está activa». RECOMENDADO: solo esas — ofrecer gente dada de baja invita a asignar a alguien que ya no trabaja ahí.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo miembros del proyecto que estén activos.",
+      "recommendedOptionIds": ["activos"],
+      "options": [
+        { "id": "activos", "label": "Solo los del proyecto que están activos — 17 en DAPORTO (recomendado)" },
+        { "id": "todos", "label": "Todos los del proyecto, incluidos los dados de baja" }
+      ],
+      "required": true
+    },
+    {
+      "id": "campos-lista",
+      "prompt": "¿Qué datos de cada persona muestra el desplegable?",
+      "description": "Importa para poder distinguir a dos personas con nombre parecido. RECOMENDADO: nombre y cargo — el cargo desempata sin exponer datos de contacto.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Nombre y cargo.",
+      "recommendedOptionIds": ["nombre-cargo"],
+      "options": [
+        { "id": "nombre-cargo", "label": "Nombre y cargo (recomendado)" },
+        { "id": "solo-nombre", "label": "Solo el nombre" },
+        { "id": "con-email", "label": "Nombre, cargo y correo electrónico" }
+      ],
+      "required": true
+    },
+    {
+      "id": "permiso-lista",
+      "prompt": "¿Qué permiso hace falta para VER la lista de personas del proyecto?",
+      "description": "El módulo distingue «ver el plan» de «editar el plan». Se decide cuál exige este listado nuevo. Importa porque con el permiso de edición, quien solo puede mirar no vería ni los nombres. RECOMENDADO: el de ver — es solo una lista de nombres del propio equipo, y así la columna se lee bien aunque no puedas editarla.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "El permiso de ver.",
+      "recommendedOptionIds": ["ver"],
+      "options": [
+        { "id": "ver", "label": "El de VER el plan (recomendado)" },
+        { "id": "editar", "label": "El de EDITAR el plan (más restrictivo)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "celda",
+      "prompt": "¿Cómo se elige la persona en la tabla del plan?",
+      "description": "Hoy la casilla es texto libre: escribes lo que quieras. Con el cambio ya no vale, porque hay que elegir a alguien concreto. RECOMENDADO: un desplegable con las personas del proyecto — es lo único coherente con guardar un identificador y no un texto.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Un desplegable con las personas del proyecto.",
+      "recommendedOptionIds": ["desplegable"],
+      "options": [
+        { "id": "desplegable", "label": "Desplegable con las personas del proyecto (recomendado)" },
+        { "id": "buscador", "label": "Un buscador que filtra según escribes (más trabajo)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "alcance",
+      "prompt": "¿Qué entra en ESTA sesión de trabajo?",
+      "description": "Son dos proyectos distintos en el disco: el servidor (lps-aia-pdc) y la pantalla (plan-de-compras). Importa porque si solo arreglamos el servidor, la pantalla sigue rota igual y no se nota la mejora. Ojo: la pantalla está MÁS rota de lo que decía el encargo — no solo manda el dato viejo al guardar, sino que además lee un campo `responsable` que el servidor ya no devuelve, así que la columna se ve vacía. RECOMENDADO: los dos.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Los dos: servidor y pantalla.",
+      "recommendedOptionIds": ["ambos"],
+      "options": [
+        { "id": "ambos", "label": "Los dos — servidor y pantalla (recomendado)" },
+        { "id": "backend", "label": "Solo el servidor; la pantalla en otra sesión" }
+      ],
+      "required": true
+    },
+    {
+      "id": "e2e",
+      "prompt": "¿Hay que tocar también las pruebas de navegador (las que abren la página de verdad)?",
+      "description": "Existen pruebas que simulan a una persona usando la pantalla. Si alguna escribe un responsable como texto, se romperá con el desplegable nuevo. Importa para no dejar una prueba en rojo. RECOMENDADO: mirar si existe alguna y arreglarla solo si la hay — no inventar pruebas nuevas de navegador en esta tarea.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo arreglar las que ya existan y se rompan.",
+      "recommendedOptionIds": ["solo-rotas"],
+      "options": [
+        { "id": "solo-rotas", "label": "Solo arreglar las existentes que se rompan (recomendado)" },
+        { "id": "nuevas", "label": "Además, añadir una prueba de navegador nueva para el desplegable" },
+        { "id": "ninguna", "label": "No tocar nada de navegador en esta tarea" }
+      ],
+      "required": true
+    },
+    {
+      "id": "commits",
+      "prompt": "¿Cómo quieres los commits (los «puntos de guardado» del historial)?",
+      "description": "Son dos proyectos separados, así que como mínimo van dos commits. Se decide si dentro de cada uno se separa el arreglo del añadido. Importa para poder deshacer una parte sin perder la otra. RECOMENDADO: un commit por proyecto — el trabajo es una sola unidad y separarlo dejaría el servidor a medias en un punto del historial.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Un commit en cada proyecto.",
+      "recommendedOptionIds": ["uno-por-repo"],
+      "options": [
+        { "id": "uno-por-repo", "label": "Un commit en cada proyecto (recomendado)" },
+        { "id": "granular", "label": "Separar por pasos: primero el arreglo, luego el desplegable" },
+        { "id": "no-commit", "label": "No hagas commit — déjalo todo sin guardar para revisarlo yo" }
+      ],
+      "required": true
+    }
+  ]
+}

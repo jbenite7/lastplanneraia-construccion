@@ -1,0 +1,214 @@
+{
+  "stage": "interview",
+  "title": "PDC A4 → preparar B1: upsert de pasos y responsable como usuario",
+  "goalSlug": "pdc-preparar-b1",
+  "questions": [
+    {
+      "id": "upsert-sobrantes",
+      "prompt": "En el upsert de `pdc_plan_paso`, ¿cómo se borran los pasos sobrantes si el número de pasos cambiara?",
+      "description": "Hoy `calcular()` hace DELETE de los 7 pasos y 7 INSERT. Los órdenes son contiguos 0..6 (índice del foreach sobre PASOS). Si mañana PASOS pasara de 7 a 5, sobrarían las filas con orden 5 y 6.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "DELETE ... WHERE orden >= count(PASOS), después de los upserts.",
+      "recommendedOptionIds": ["ge-count"],
+      "options": [
+        { "id": "ge-count", "label": "DELETE WHERE orden >= count(PASOS) tras los upserts — simple y correcto porque los órdenes son contiguos desde 0" },
+        { "id": "not-in", "label": "DELETE WHERE orden NOT IN (lista de órdenes que se acaban de escribir) — no asume contigüidad" },
+        { "id": "ninguno", "label": "No borrar nada: PASOS es una constante de 7 y no va a cambiar" }
+      ],
+      "required": true
+    },
+    {
+      "id": "upsert-columnas",
+      "prompt": "¿El ON DUPLICATE KEY UPDATE de `pdc_plan_paso` debe listar explícitamente solo las columnas programadas (paso, dias, fecha_inicio, fecha_fin)?",
+      "description": "Es el mismo patrón que ya protege `responsable` en `pdc_plan_paquete`: lo que no se lista, MySQL lo conserva. Si B1 añade `fecha_real`, `responsable_paso`, `observacion`, etc., quedan a salvo automáticamente sin tocar este servicio.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, lista explícita + comentario advirtiendo que no se añadan columnas de B1 ahí.",
+      "recommendedOptionIds": ["explicita"],
+      "options": [
+        { "id": "explicita", "label": "Lista explícita de las 4 columnas programadas, con comentario de advertencia (igual que `responsable`)" },
+        { "id": "values-todas", "label": "VALUES() de todas las columnas del INSERT y que B1 se preocupe cuando añada las suyas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "test-invariante",
+      "prompt": "Sin la columna `fecha_real` (que es de B1), ¿qué invariante prueba el test de que el recálculo ya no destruye la fila?",
+      "description": "TDD: el test tiene que fallar antes del cambio y pasar después. No se puede escribir en una columna que aún no existe.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Que los `id` de las 7 filas de pdc_plan_paso son los MISMOS antes y después de recalcular. Es el invariante observable equivalente: si el id sobrevive, la fila sobrevive, y con ella cualquier columna que B1 le cuelgue.",
+      "recommendedOptionIds": ["ids-estables"],
+      "options": [
+        { "id": "ids-estables", "label": "Los `id` de las filas no cambian tras un recálculo (la fila es la misma, no una nueva)" },
+        { "id": "columna-temporal", "label": "El test añade una columna de prueba a pdc_plan_paso, escribe en ella y verifica que sobrevive (y la quita al final)" },
+        { "id": "ambos", "label": "Ambos: ids estables + una columna de prueba efímera" }
+      ],
+      "required": true
+    },
+    {
+      "id": "reamarre-borra",
+      "prompt": "`amarrar()` borra `pdc_plan_paso` entero cuando un reamarre invalida el plan. Con `fecha_real` de B1, eso también borraría avance real. ¿Qué hacemos ahora?",
+      "description": "Ahí el borrado es intencional: el plan viejo se calculó contra otro frente y ya no vale. Pero el avance real (una propuesta ya recibida) no deja de ser cierto porque el frente se movió. Es exactamente el mismo problema del cambio 1, en otro método.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Dejarlo como está y documentarlo con un comentario que marque la decisión pendiente para B1 — resolverlo bien exige saber qué significa 'avance real' contra un plan invalidado, y eso es diseño de B1, no de A4.",
+      "recommendedOptionIds": ["documentar"],
+      "options": [
+        { "id": "documentar", "label": "Dejarlo, documentar la tensión con un comentario dirigido a B1 (fuera de alcance ahora)" },
+        { "id": "resolver-ahora", "label": "Resolverlo ahora también: que el reamarre conserve las filas y solo reescriba las fechas programadas" },
+        { "id": "chip", "label": "Dejarlo y abrir un chip de tarea aparte para que B1 lo decida con contexto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "columna-responsable",
+      "prompt": "¿Cómo queda la columna del responsable en `pdc_plan_paquete`?",
+      "description": "Hoy: `responsable VARCHAR(100) NOT NULL DEFAULT ''`. Está vacía en toda la base (0 filas en la tabla, en cualquier proyecto).",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Se reemplaza por `responsable_id INT NULL` (NULL = sin asignar) y se elimina la columna de texto. Sin filas que migrar, conservar la vieja solo deja dos fuentes de verdad.",
+      "recommendedOptionIds": ["reemplazar"],
+      "options": [
+        { "id": "reemplazar", "label": "DROP `responsable`, ADD `responsable_id INT NULL` — reemplazo limpio" },
+        { "id": "convivir", "label": "ADD `responsable_id INT NULL` y conservar `responsable` como texto histórico" },
+        { "id": "renombrar", "label": "Conservar el nombre `responsable` cambiándole el tipo a INT (menos cambios aguas arriba, pero el nombre miente sobre el tipo)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "fk-borrado",
+      "prompt": "¿FK real a `general_usuarios(id)`, y con qué comportamiento al borrar?",
+      "description": "El resto de tablas PDC usa ON DELETE RESTRICT contra su catálogo padre. Los usuarios en este sistema se desactivan (`activo = 0`), no se borran: hay 393 usuarios y la tabla no tiene borrado lógico en el código que se ve.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "FK con ON DELETE RESTRICT, igual que fk_ppp_paquete. Coherente con el repo y previene un borrado que dejaría planes apuntando al vacío.",
+      "recommendedOptionIds": ["restrict"],
+      "options": [
+        { "id": "restrict", "label": "FK ON DELETE RESTRICT (igual que el resto de PDC)" },
+        { "id": "set-null", "label": "FK ON DELETE SET NULL — si un usuario se borra, el paquete queda sin responsable en vez de bloquear el borrado" },
+        { "id": "sin-fk", "label": "Sin FK, solo un índice — `general_usuarios` es utf8mb3 y podría dar guerra al crear la constraint" }
+      ],
+      "required": true
+    },
+    {
+      "id": "universo-selector",
+      "prompt": "¿Qué usuarios ofrece el selector?",
+      "description": "`project_members` tiene 17 usuarios para DAPORTO (project_id 73). `general_usuarios` tiene 393 en total, con `activo`. El diseño aprobado decía 'de los usuarios del proyecto'.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "project_members del proyecto activo, JOIN general_usuarios con activo = 1, ordenados por nombre. 17 opciones es una lista manejable y es literalmente 'los usuarios del proyecto'.",
+      "recommendedOptionIds": ["miembros-activos"],
+      "options": [
+        { "id": "miembros-activos", "label": "project_members del proyecto activo ∩ general_usuarios.activo = 1" },
+        { "id": "miembros-todos", "label": "project_members del proyecto activo, incluidos los desactivados" },
+        { "id": "todos-activos", "label": "Todos los general_usuarios activos (393) — un responsable podría ser alguien de oficina no asignado al proyecto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "responsable-fuera",
+      "prompt": "Si un usuario ya asignado como responsable sale del proyecto o se desactiva, ¿qué ve la grilla?",
+      "description": "La FK garantiza que el id existe, pero no que siga siendo miembro del proyecto ni que esté activo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Se conserva el id y la celda muestra el nombre con una marca de que ya no está disponible. Nunca borrar el dato en silencio: quien mire el plan tiene que saber que ese paquete se quedó sin doliente.",
+      "recommendedOptionIds": ["marcar"],
+      "options": [
+        { "id": "marcar", "label": "Conservar el id y mostrar el nombre marcado (p. ej. «Nombre (ya no está en el proyecto)»)" },
+        { "id": "mostrar-plano", "label": "Mostrar el nombre sin marca — el selector simplemente no lo ofrece para nuevas asignaciones" },
+        { "id": "limpiar", "label": "Limpiar la asignación (responsable_id = NULL) cuando el usuario deja de ser elegible" }
+      ],
+      "required": true
+    },
+    {
+      "id": "migracion-forma",
+      "prompt": "Con 0 filas en `pdc_plan_paquete` en toda la base, ¿hace falta script de backfill .php con dry-run/--apply?",
+      "description": "La norma del repo es DDL en .sql y backfills en .php con dry-run. Pero A4 no está en main, así que ningún entorno tiene datos en esta tabla. Un backfill de texto→id (por nombre exacto contra general_usuarios) sería código sin nada que migrar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Solo .sql, con una guardia que ABORTE si encuentra alguna fila con `responsable` no vacío. Así el archivo es seguro incluso si aparece un entorno con datos: no adivina, se planta y avisa. Sin filas que traducir, un .php de backfill es código muerto.",
+      "recommendedOptionIds": ["sql-guardia"],
+      "options": [
+        { "id": "sql-guardia", "label": "Solo .sql, con guardia que aborta si hay `responsable` no vacío (y lo dice)" },
+        { "id": "sql-mas-php", "label": ".sql + .php de backfill por nombre exacto, dry-run → --apply, aunque hoy migre 0 filas" },
+        { "id": "sql-simple", "label": "Solo .sql, sin guardia: la tabla está vacía y punto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "contrato-api",
+      "prompt": "¿El POST /plan-compras/api/plan/responsable cambia de contrato de golpe?",
+      "description": "Hoy recibe `{paqueteId, responsable: string}`. La SPA es el único consumidor y vive en el repo hermano, que se despliega junto. No hay clientes externos.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cambio limpio a `{paqueteId, responsableId: number|null}`, sin capa de compatibilidad. Único consumidor, mismo despliegue; aceptar ambos formatos solo deja una rama muerta que nadie retirará.",
+      "recommendedOptionIds": ["limpio"],
+      "options": [
+        { "id": "limpio", "label": "Cambio limpio a responsableId (number | null), rechazando un id que no sea miembro elegible" },
+        { "id": "compatible", "label": "Aceptar ambos: si llega `responsable` string, resolverlo por nombre contra general_usuarios" }
+      ],
+      "required": true
+    },
+    {
+      "id": "payload-get",
+      "prompt": "¿Qué devuelve GET /plan-compras/api/plan para cada fila?",
+      "description": "La grilla necesita pintar un nombre, no un número. Puede venir denormalizado del servidor o resolverse en la SPA contra la lista de usuarios.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "`responsableId: number | null` y `responsableNombre: string` (vacío si no hay). La grilla pinta sin depender de que la lista de usuarios haya cargado, y el JOIN ya está hecho en el servidor.",
+      "recommendedOptionIds": ["ambos"],
+      "options": [
+        { "id": "ambos", "label": "responsableId + responsableNombre (denormalizado por el servidor)" },
+        { "id": "solo-id", "label": "Solo responsableId; la SPA resuelve el nombre contra la lista de usuarios" }
+      ],
+      "required": true
+    },
+    {
+      "id": "endpoint-usuarios",
+      "prompt": "¿De dónde saca la SPA la lista de usuarios elegibles?",
+      "description": "Existe GET /plan-compras/api/contexto (projectId, usuario, rol, csrfToken) y los endpoints /plan/*. La SPA ya hace 4 peticiones al cargar la vista.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Endpoint nuevo GET /plan-compras/api/plan/usuarios en el mismo controlador, con guardLectura. Es un dato de la vista del plan, cambia con el proyecto activo y no tiene por qué inflar `contexto`, que se pide en todas las páginas de la SPA.",
+      "recommendedOptionIds": ["endpoint-nuevo"],
+      "options": [
+        { "id": "endpoint-nuevo", "label": "GET /plan-compras/api/plan/usuarios (nuevo, guardLectura)" },
+        { "id": "en-contexto", "label": "Añadirlo al payload de /contexto, que la SPA ya pide" },
+        { "id": "en-plan", "label": "Incluirlo en la respuesta de GET /plan, junto a plan y amarres" }
+      ],
+      "required": true
+    },
+    {
+      "id": "widget-celda",
+      "prompt": "¿Cómo se edita la celda «Responsable» en AG Grid?",
+      "description": "Hoy es `editable: true` con TextEditorModule. Con 17 usuarios en DAPORTO, un desplegable simple basta; con 393 haría falta búsqueda.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "agSelectCellEditor (registrando SelectEditorModule), con una opción vacía para «sin asignar». Simple, nativo del módulo y suficiente para una lista de miembros de proyecto.",
+      "recommendedOptionIds": ["select"],
+      "options": [
+        { "id": "select", "label": "agSelectCellEditor + SelectEditorModule, con opción «— sin asignar —»" },
+        { "id": "rich-select", "label": "Editor con búsqueda (custom), por si algún proyecto tiene muchos miembros" }
+      ],
+      "required": true
+    },
+    {
+      "id": "alcance-auditoria",
+      "prompt": "¿`calculado_por` y `asignado_por` (también VARCHAR(100) con el nombre del usuario) entran en este cambio?",
+      "description": "Guardan quién calculó el plan y quién hizo el amarre. Son campos de auditoría, no de gestión: B1 no va a unir ni notificar contra ellos.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No. Son rastro de auditoría, no un dato con el que B1 vaya a trabajar; migrarlos amplía el alcance sin resolver ningún problema declarado.",
+      "recommendedOptionIds": ["fuera"],
+      "options": [
+        { "id": "fuera", "label": "Fuera de alcance — se quedan como texto" },
+        { "id": "dentro", "label": "Dentro: si tocamos la tabla, dejar toda la referencia a usuarios normalizada de una vez" }
+      ],
+      "required": true
+    },
+    {
+      "id": "verificacion",
+      "prompt": "¿Qué verificación cierra el trabajo, además de los tests?",
+      "description": "Gates disponibles: tests/test_pdc_v2_plan_fechas.php, tests/test_pdc_v2_brecha_daporto.php (debe seguir en 7 diferencias), `npx vitest run` y `npm run build` en la SPA, y el navegador integrado contra el stack en :8091.",
+      "answerMode": "multi-custom",
+      "recommendedAnswer": "Los cuatro gates + verificación visual de la celda en el navegador + recuento de DAPORTO antes/después.",
+      "recommendedOptionIds": ["php", "brecha", "spa", "navegador", "daporto"],
+      "options": [
+        { "id": "php", "label": "tests/test_pdc_v2_plan_fechas.php en verde" },
+        { "id": "brecha", "label": "tests/test_pdc_v2_brecha_daporto.php sigue en 7 diferencias" },
+        { "id": "spa", "label": "npx vitest run + npm run build en plan-de-compras" },
+        { "id": "navegador", "label": "Navegador integrado en :8091 sobre la vista del plan, viendo el selector funcionando" },
+        { "id": "daporto", "label": "Recuento de las tablas de DAPORTO antes/después, idéntico" }
+      ],
+      "required": true
+    }
+  ]
+}
