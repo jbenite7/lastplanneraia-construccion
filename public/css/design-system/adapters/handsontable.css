@@ -29,11 +29,27 @@
     background: transparent !important;
   }
 
+  /* Relleno SOLO horizontal.
+
+     Handsontable calcula la altura de cada fila y la escribe como `height`
+     INLINE en las celdas de sus clones. Ese numero no contempla el relleno
+     vertical que aqui se añadia, asi que el master crecia con el relleno y los
+     clones no: los encabezados de fila se despegaban de sus filas y el desvio
+     se acumulaba hacia abajo (111 px a la octava fila de /profesionales,
+     medido a 1180x820).
+
+     La densidad de una grilla NO se expresa con relleno de celda, porque el
+     vendor mide la altura de fila y no lo ve. Se expresa con la altura de fila,
+     que es su propio mecanismo. Quitar el eje vertical alinea los cuatro clones
+     por construccion. El eje horizontal se conserva: no participa del calculo
+     de altura. */
   .handsontable :where(th, td) {
     display: table-cell !important;
     width: auto !important;
-    padding: var(--ds-space-2) var(--ds-space-3) !important;
+    padding-block: 0 !important;
+    padding-inline: var(--ds-space-3) !important;
   }
+
 }
 
 @layer components {
@@ -80,8 +96,10 @@
   .handsontable :where(th, td) {
     display: table-cell !important;
     width: auto !important;
-    padding: var(--ds-space-2) var(--ds-space-3) !important;
+    padding-block: 0 !important;
+    padding-inline: var(--ds-space-3) !important;
   }
+
 
   :where(.handsontable .current, .handsontable .area) {
     box-shadow: inset 0 0 0 var(--ds-border-width) var(--ds-color-brand-primary);

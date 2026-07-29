@@ -132,7 +132,21 @@ body {
   table-layout: auto !important;
 }
 
-#hot-container.hot-fixed-columns .handsontable table.htCore {
+/* Solo el master y el clon de cabecera: son los dos que abarcan TODAS las
+   columnas y deben medir el ancho total.
+
+   `ht_clone_left` y `ht_clone_top_left_corner` cubren unicamente las columnas
+   congeladas a la izquierda —con `rowHeaders: true`, exactamente una—, asi que
+   imponerles el ancho total con `table-layout: fixed` estira esa unica columna
+   hasta tapar la grilla: los encabezados y los numeros de fila desaparecen.
+   Medido a 1180x820 en /profesionales, donde el `th` del clon pasaba de 50 a
+   1061 px. El selector anterior decia `.handsontable table.htCore` y alcanzaba
+   a los cuatro clones; no se habia notado porque las cinco vistas que activan
+   `hot-fixed-columns` tienen el clon izquierdo vacio (verificado en
+   programa-general, programacion-intermedia, programacion-semanal,
+   listado-actividades y contratos), asi que no habia nada que estirar. */
+#hot-container.hot-fixed-columns .ht_master table.htCore,
+#hot-container.hot-fixed-columns .ht_clone_top table.htCore {
   width: var(--hot-table-width, 100%) !important;
   min-width: var(--hot-table-width, 100%) !important;
   table-layout: fixed !important;
@@ -179,7 +193,11 @@ body {
   overflow-wrap: break-word !important;
 }
 
-/* 6. Row headers */
+/* 6. Row headers
+
+   El `box-sizing: content-box` NO sobra, aunque el clon izquierdo sea el unico
+   que lo lleva: retirarlo empeora la alineacion (18 px de desvio frente a 13 en
+   /subcontratistas, medido). Probado y revertido. */
 .ht_clone_left tr th,
 .ht_clone_left tr td {
   box-sizing: content-box !important;

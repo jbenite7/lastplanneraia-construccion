@@ -102,7 +102,7 @@
       "state": "normal",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-semanal/programacion-semanal-dark-1180x820.png",
-      "sha256": "c11bc8fb6f8f0825e63b4baff76588c8486ab5079b944846d2cf4d14175e53dd"
+      "sha256": "d31cc841706918eafd574bb8fe5590ec1a05338317852c780604b379977a8c78"
     },
     {
       "id": "programacion-semanal-dark-1440x900",
@@ -118,7 +118,7 @@
       "state": "normal",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-semanal/programacion-semanal-dark-1440x900.png",
-      "sha256": "a667c670ae94273a7aa9ca460c681eff1dd6ceb404e6f75bbfde9fb5920c7fd0"
+      "sha256": "36f918227240bfcc6be5cd702acc34a163a8b2f93a727aef2a7a0d985bea4477"
     }
   ]
 }

@@ -39,7 +39,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <?php $psCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-semanal.css') ?: 'ps1'; ?>
     <link rel="stylesheet" href="/css/programacion-semanal.css?v=<?= urlencode((string) $psCssVersion) ?>">
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
-    <link rel="stylesheet" href="/css/change-monitor.css?v=20260602a" />
+    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/change-monitor.css') ?>
 </head>
 <body class="aia-shell aia-shell--sidebar ps-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>

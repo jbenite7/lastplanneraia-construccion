@@ -182,6 +182,14 @@ window.HOTActualizarModule = (function() {
             if (typeof hot.refreshDimensions === 'function') {
                 hot.refreshDimensions();
             }
+
+            // Sin esto la tabla se queda al ancho de su contenido —361 px de los
+            // 989 del wtHider, medido a 1180x820— porque handsontable-module.css
+            // fuerza `table-layout: auto !important` desde layer(vendor). Ver
+            // public/js/modules/aia_ui/hot_table_width.js.
+            if (window.AIA && window.AIA.sincronizarAnchoTabla) {
+                window.AIA.sincronizarAnchoTabla(document.getElementById('hot-container'));
+            }
         }, Number.isFinite(delay) ? delay : 0);
     }
 
