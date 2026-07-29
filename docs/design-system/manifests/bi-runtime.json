@@ -1,0 +1,128 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "bi-runtime",
+  "routes": [
+    "/bi/control-tower",
+    "/bi/programa-general",
+    "/bi/intermedia",
+    "/bi/semanal",
+    "/bi/pdc",
+    "/bi/contratistas",
+    "/bi/responsables",
+    "/bi/curva-s"
+  ],
+  "sources": [
+    "views/bi/_layout.php",
+    "views/bi/_nav.php",
+    "views/bi/_filters.php",
+    "views/bi/control-tower.php",
+    "views/bi/index.php",
+    "public/css/bi-control-tower.css",
+    "public/css/bi-filter-drawer.css",
+    "public/css/design-system/adapters/bi-utilities.css",
+    "public/js/modules/bi-spa.js",
+    "public/js/modules/bi_filter_drawer.js",
+    "public/js/modules/bi_chart_theme.js"
+  ],
+  "components": [
+    "shell",
+    "bi-shell",
+    "navigation",
+    "page-header",
+    "card",
+    "section",
+    "state",
+    "feedback",
+    "filter",
+    "overlay",
+    "bi-chart",
+    "bi-legend",
+    "icon",
+    "button"
+  ],
+  "vendors": [
+    "font-awesome",
+    "aia-fonts",
+    "chartjs"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection",
+    "localStorage": "aia-sidebar-state"
+  },
+  "exceptions": [
+    {
+      "id": "bi-chart-theme-fallbacks",
+      "reason": "public/js/modules/bi_chart_theme.js conserva SERIES_FALLBACKS y TEXT_FALLBACKS en hex. No son deuda por tokenizar: el modulo lee los tokens vivos con getComputedStyle(document.documentElement) (--ds-active-text-primary, --ds-active-border, --ds-active-surface, --ds-active-surface-raised y las seis series) y el hex solo entra si el token no resuelve, caso en que Chart.js pintaria transparente. Su procedencia esta documentada y validada para dark con scripts/validate_palette.js. Queda registrado como excepcion permanente en docs/design-system/exceptions.json (presupuesto bi-chart-theme-fallbacks), no como pendiente.",
+      "scope": "public/js/modules/bi_chart_theme.js",
+      "status": "permanent"
+    }
+  ],
+  "tests": [
+    "tests/browser/bi_control_tower.spec.mjs",
+    "tests/browser/bi_control_tower_access.spec.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/bi-runtime/"
+  ],
+  "scenarios": [
+    {
+      "id": "bi-runtime-control-tower-dark-1180x820",
+      "family": "page-structure",
+      "route": "/bi/control-tower",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/bi-runtime/bi-runtime-control-tower-dark-1180x820.png",
+      "sha256": "ee0dee9a4207fee767b94563bc46febd4a2441f39cc4f528bdb68d9d849136e1"
+    },
+    {
+      "id": "bi-runtime-curva-s-dark-1180x820",
+      "family": "page-structure",
+      "route": "/bi/curva-s",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/bi-runtime/bi-runtime-curva-s-dark-1180x820.png",
+      "sha256": "9724ce9d034f3c66a0f98c32708d9efc28d3c3e7393697f1b1e8b4071010da53"
+    },
+    {
+      "id": "bi-runtime-semanal-dark-1180x820",
+      "family": "page-structure",
+      "route": "/bi/semanal",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/bi-runtime/bi-runtime-semanal-dark-1180x820.png",
+      "sha256": "ee553e40198992b33d38dcced7e0ede622d7827c99d04c321a557f4d09736cba"
+    }
+  ]
+}

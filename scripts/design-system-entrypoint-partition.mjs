@@ -168,12 +168,14 @@ export function phpVendorRegistry(root) {
   const php = readFileSync(join(root, HEAD_COMPONENT), 'utf8');
   const coreBlock = php.match(/const CORE_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
   const viewOwnedBlock = php.match(/const VIEW_OWNED_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
+  const scriptOnlyBlock = php.match(/const SCRIPT_ONLY_VENDORS = \[([^\]]*)\]/s)?.[1] ?? '';
   const attachmentsBlock = php.match(/const VENDOR_ATTACHMENTS = \[([^\]]*)\]/s)?.[1] ?? '';
   const coreVendors = [...coreBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
   const viewOwnedVendors = [...viewOwnedBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
+  const scriptOnlyVendors = [...scriptOnlyBlock.matchAll(/'([a-z0-9-]+)'/g)].map(([, v]) => v);
   const attachments = [...attachmentsBlock.matchAll(/'([a-z0-9-]+)' => '([^']+)'/g)]
     .map(([, vendor, url]) => ({ vendor, url }));
-  return { coreVendors, viewOwnedVendors, attachments };
+  return { coreVendors, viewOwnedVendors, scriptOnlyVendors, attachments };
 }
 
 const MANIFEST_DIR = 'docs/design-system/manifests';
@@ -222,13 +224,16 @@ export function manifestVendorFailures({
   footprintsOverride = null,
 }) {
   const failures = [];
-  const { coreVendors, viewOwnedVendors, attachments } = registryOverride ?? phpVendorRegistry(root);
+  const {
+    coreVendors, viewOwnedVendors, scriptOnlyVendors = [], attachments,
+  } = registryOverride ?? phpVendorRegistry(root);
   if (coreVendors.length === 0 || attachments.length === 0) {
     return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
   }
   const known = new Set([
     ...coreVendors,
     ...viewOwnedVendors,
+    ...scriptOnlyVendors,
     ...attachments.map(({ vendor }) => vendor),
   ]);
 
@@ -257,6 +262,42 @@ export function manifestVendorFailures({
         failures.push(
           `view-owned-without-link: ${vendor} está en VIEW_OWNED_VENDORS pero ninguna vista `
           + 'enlaza su hoja (huellas conocidas: ' + (needles.join(', ') || 'ninguna') + ')',
+        );
+      }
+    }
+  }
+
+  // Un `SCRIPT_ONLY_VENDORS` es un vendor sin CSS: no puede tener adjunto ni
+  // hoja declarada en vendors.json, y alguna vista debe cargar su script. Sin
+  // este candado, mover ahí un vendor con hoja lo dejaría sin adaptador oscuro
+  // por la misma puerta que ya se cerró para VIEW_OWNED_VENDORS.
+  if (scriptOnlyVendors.length) {
+    const catalog = JSON.parse(readFileSync(join(root, VENDORS_CATALOG), 'utf8'));
+    const views = viewsOverride ?? [...phpViews(root)];
+    for (const vendor of scriptOnlyVendors) {
+      if (attachmentVendors.has(vendor)) {
+        failures.push(
+          `script-only-with-attachment: ${vendor} está en SCRIPT_ONLY_VENDORS pero tiene adjunto`,
+        );
+        continue;
+      }
+      const assets = (catalog.vendors ?? []).find(({ id }) => id === vendor)?.assets ?? [];
+      const sheets = assets.filter((asset) => asset.endsWith('.css'));
+      if (sheets.length) {
+        failures.push(
+          `script-only-with-stylesheet: ${vendor} está en SCRIPT_ONLY_VENDORS pero vendors.json `
+          + `le declara hoja(s) (${sheets.join(', ')})`,
+        );
+        continue;
+      }
+      const needles = assets
+        .filter((asset) => asset.startsWith('public/') && asset.endsWith('.js'))
+        .map((asset) => `/${asset.slice('public/'.length)}`);
+      const scriptTags = views.flatMap(({ content }) => content.match(/<script\b[^>]*>/g) ?? []);
+      if (!scriptTags.some((tag) => needles.some((needle) => tag.includes(needle)))) {
+        failures.push(
+          `script-only-without-script: ${vendor} está en SCRIPT_ONLY_VENDORS pero ninguna vista `
+          + 'carga su script (huellas conocidas: ' + (needles.join(', ') || 'ninguna') + ')',
         );
       }
     }
@@ -459,13 +500,16 @@ function* phpViews(root) {
 
 export function coherenceFailures({ root, viewsOverride = null, manifestsOverride = null }) {
   const failures = [];
-  const { coreVendors, viewOwnedVendors, attachments } = phpVendorRegistry(root);
+  const {
+    coreVendors, viewOwnedVendors, scriptOnlyVendors = [], attachments,
+  } = phpVendorRegistry(root);
   if (coreVendors.length === 0 || attachments.length === 0) {
     return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
   }
   const known = new Set([
     ...coreVendors,
     ...viewOwnedVendors,
+    ...scriptOnlyVendors,
     ...attachments.map(({ vendor }) => vendor),
   ]);
 

@@ -72,6 +72,25 @@ final class DesignSystemHeadComponent
     public const VIEW_OWNED_VENDORS = ['toastr', 'tom-select', 'adminlte'];
 
     /**
+     * Vendors sin CSS: la vista carga su `<script>` y no hay hoja que emitir.
+     *
+     * `chartjs` es el caso: `vendors.json` sólo le declara
+     * `public/vendor/chart.js/chart.umd.min.js`, y no existe una sola regla
+     * suya en `public/css/` —Chart.js pinta en Canvas, no en DOM—. No es
+     * `CORE_VENDORS` (el core no lo lleva, y decir que sí es mentir sobre lo
+     * que importa `core.css`) ni `VIEW_OWNED_VENDORS` (esa categoría exige que
+     * alguna vista enlace su hoja, y aquí no hay hoja que enlazar).
+     *
+     * Declararlo aquí es lo que evita que `renderForModule()` lo trate como
+     * vendor desconocido y degrade al agregador: emite exactamente lo mismo
+     * que para un vendor core, es decir nada. El candado lo ejerce
+     * `scripts/design-system-entrypoint-partition.mjs`: ningún miembro puede
+     * tener adjunto ni asset `.css` en `vendors.json`, y alguna vista debe
+     * cargar su script.
+     */
+    public const SCRIPT_ONLY_VENDORS = ['chartjs'];
+
+    /**
      * Adjuntos por vendor, en el orden canónico del agregador.
      *
      * `datatables` es el único que NO es un `attach-*` de la partición: su CSS
@@ -149,6 +168,7 @@ final class DesignSystemHeadComponent
             if (!is_string($vendor)
                 || (!in_array($vendor, self::CORE_VENDORS, true)
                     && !in_array($vendor, self::VIEW_OWNED_VENDORS, true)
+                    && !in_array($vendor, self::SCRIPT_ONLY_VENDORS, true)
                     && !isset(self::VENDOR_ATTACHMENTS[$vendor]))
             ) {
                 error_log("design-system: vendor desconocido '" . var_export($vendor, true) . "' en '$moduleId', fallback al agregador");

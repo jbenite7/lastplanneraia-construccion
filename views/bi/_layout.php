@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BI Control Tower — LPS AIA</title>
-    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme-bootstrap.js') ?>
-
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
-    <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('bi-runtime') ?>
 
     <script src="/vendor/lucide/lucide.min.js?v=1.27.0"></script>
     <script src="/vendor/chart.js/chart.umd.min.js?v=4.4.1"></script>
 
-    <link rel="stylesheet" href="/css/access.css">
+    <?php /* access.css ya viaja dentro de core.css en @layer utilities; el <link> crudo lo duplicaba. */ ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/design-system/adapters/bi-utilities.css') ?>
     <link rel="stylesheet" href="/css/bi-control-tower.css?v=<?= filemtime(__DIR__ . '/../../public/css/bi-control-tower.css') ?>">
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/bi-filter-drawer.css') ?>

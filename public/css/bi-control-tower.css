@@ -3,6 +3,15 @@
     background-color: var(--ds-active-bg-canvas) !important;
     color: var(--ds-active-text-primary) !important;
     overflow: hidden;
+    /* La caja a pantalla completa la daba `html, body { height: 100%;
+       display: flex }` de public/css/handsontable-module.css, que solo llegaba
+       por el agregador. BI no monta ninguna grilla, asi que al pasar a
+       renderForModule('bi-runtime') esa hoja deja de cargarse y el shell
+       colapsaba a la altura del contenido (footer a media pagina). La
+       geometria se declara aqui, que es donde pertenece. */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
   }
 
   .bi-control-tower-page,
