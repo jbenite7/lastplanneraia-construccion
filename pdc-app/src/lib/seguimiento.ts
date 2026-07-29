@@ -44,7 +44,13 @@ export function filtrarSeguimiento(
   })
 }
 
-/** Los frentes que de verdad aparecen en los datos, para poblar el desplegable sin inventar opciones. */
+/**
+ * Los frentes que de verdad aparecen en los datos, para poblar el desplegable sin inventar opciones.
+ *
+ * El orden va con `localeCompare('es')`, no con el `.sort()` por punto de codigo: los frentes reales
+ * llevan tildes y enes, y ahi «ACABADOS» y «ACAB. ÑANDU» acaban donde nadie los busca.
+ */
 export function frentesDeSeguimiento(filas: FilaSeguimiento[]): string[] {
-  return [...new Set(filas.map((f) => f.frenteNombre).filter((n) => n !== ''))].sort()
+  return [...new Set(filas.map((f) => f.frenteNombre).filter((n) => n !== ''))]
+    .sort((a, b) => a.localeCompare(b, 'es'))
 }

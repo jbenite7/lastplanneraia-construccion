@@ -24,6 +24,10 @@ export default function Seguimiento() {
   const [abierto, setAbierto] = useState<FilaSeguimiento | null>(null)
   const [pasos, setPasos] = useState<PasoSeguimiento[]>([])
   const [cargando, setCargando] = useState(true)
+  // Que paso tiene un POST en vuelo. Sin esto, dos clics seguidos en el mismo calendario mandan dos
+  // peticiones y la segunda pisa la auditoria de la primera: queda registrada una fecha con la hora
+  // y el usuario de otra escritura.
+  const [guardando, setGuardando] = useState<number | null>(null)
   const [error, setError] = useState('')
 
   const cargar = useCallback(async () => {
@@ -60,7 +64,8 @@ export default function Seguimiento() {
   }, [])
 
   const registrar = useCallback(async (paso: PasoSeguimiento, valor: string) => {
-    if (!abierto || paso.pasoId === null) return
+    if (!abierto || paso.pasoId === null || guardando !== null) return
+    setGuardando(paso.pasoId)
     try {
       await apiPost('/plan-compras/api/seguimiento/paso', {
         paqueteId: abierto.paqueteId,
@@ -77,8 +82,10 @@ export default function Seguimiento() {
       setError('')
     } catch (e) {
       setError(e instanceof PdcApiError ? e.message : mensajeError(e))
+    } finally {
+      setGuardando(null)
     }
-  }, [abierto, cargar])
+  }, [abierto, cargar, guardando])
 
   const visibles = useMemo(
     () => filtrarSeguimiento(filas, filtros, usuarioId),
@@ -115,8 +122,8 @@ export default function Seguimiento() {
   ], [])
 
   return (
-    <section className="pdc-pagina">
-      <header className="pdc-encabezado">
+    <section className="pdc-page">
+      <header className="pdc-header">
         <h1>Seguimiento del plan de compras</h1>
         <p className="pdc-sub">
           {plural(visibles.length, 'paquete', 'paquetes')} de {filas.length}. Haz clic en una fila para
@@ -126,7 +133,7 @@ export default function Seguimiento() {
 
       {error !== '' && <p className="pdc-error" role="alert">{error}</p>}
 
-      <div className="pdc-filtros">
+      <div className="pdc-seg-filtros">
         <label>
           <input
             type="checkbox" checked={filtros.soloMios}
@@ -162,7 +169,7 @@ export default function Seguimiento() {
         </label>
       </div>
 
-      <div className="pdc-tabla">
+      <div className="pdc-grid">
         <AgGridReact<FilaSeguimiento>
           theme={pdcTheme}
           rowData={visibles}
@@ -176,12 +183,12 @@ export default function Seguimiento() {
       </div>
 
       {abierto && (
-        <aside className="pdc-panel" aria-label={`Avance de ${abierto.nombre}`}>
-          <header className="pdc-panel-cabecera">
+        <aside className="pdc-seg-panel" aria-label={`Avance de ${abierto.nombre}`}>
+          <header className="pdc-seg-panel-cabecera">
             <h2>{abierto.nombre}</h2>
             <button type="button" onClick={() => setAbierto(null)}>Cerrar</button>
           </header>
-          <table className="pdc-panel-tabla">
+          <table className="pdc-seg-panel-tabla">
             <thead>
               <tr>
                 <th scope="col">Paso</th>
@@ -193,7 +200,10 @@ export default function Seguimiento() {
             </thead>
             <tbody>
               {pasos.map((p) => (
-                <tr key={`${p.orden}-${p.paso}`}>
+                // La identidad del paso desde A4.1 es `pasoId`: la fila sigue al paso aunque se
+                // reordene el proceso. `orden` es el recurso para las filas heredadas, que no la
+                // tienen.
+                <tr key={p.pasoId ?? `orden-${p.orden}`}>
                   <th scope="row">{p.paso}</th>
                   {/* Sin fecha programada = el plan aun no se ha recalculado tras un reamarre. Se
                       muestra el hueco con un guion en vez de esconderlo: el usuario tiene que poder
@@ -204,6 +214,7 @@ export default function Seguimiento() {
                       type="date"
                       value={p.fechaReal ?? ''}
                       onChange={(e) => void registrar(p, e.target.value)}
+                      disabled={guardando !== null}
                       aria-label={`Fecha real de ${p.paso}`}
                     />
                   </td>

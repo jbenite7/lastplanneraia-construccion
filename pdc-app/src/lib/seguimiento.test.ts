@@ -87,6 +87,19 @@ describe('frentesDeSeguimiento', () => {
     expect(frentesDeSeguimiento(filas)).toEqual(['ACABADOS', 'ESTRUCTURA'])
   })
 
+  it('ordena en espanol: las tildes y la ene no se van al final', () => {
+    const filas = [
+      fila({ frenteNombre: 'ZAPATAS' }),
+      fila({ frenteNombre: 'ÑANDU' }),
+      fila({ frenteNombre: 'MUROS' }),
+      fila({ frenteNombre: 'MAMPOSTERÍA' }),
+      fila({ frenteNombre: 'MAMPOSTERIA EXTERIOR' }),
+    ]
+    expect(frentesDeSeguimiento(filas)).toEqual([
+      'MAMPOSTERÍA', 'MAMPOSTERIA EXTERIOR', 'MUROS', 'ÑANDU', 'ZAPATAS',
+    ])
+  })
+
   it('ignora los vacios: un frente sin nombre no es una opcion que se pueda elegir', () => {
     expect(frentesDeSeguimiento([fila({ frenteNombre: '' })])).toEqual([])
   })
