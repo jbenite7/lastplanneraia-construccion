@@ -5,7 +5,7 @@
   "description": "SPA del módulo Plan de Compras (PDC v2) de lps-aia",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && rm -f ../public/pdc-app/index.html",
+    "build": "tsc && tsc -p tsconfig.node.json && vite build && rm -f ../public/pdc-app/index.html",
     "test": "vitest run"
   },
   "type": "module",

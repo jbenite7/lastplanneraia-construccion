@@ -7,7 +7,10 @@
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    // Sin esto, `@types/node` (que necesita vite.config.ts) quedaría visible para el código de
+    // navegador de `src/`. La configuración de Vite se comprueba aparte, en tsconfig.node.json.
+    "types": []
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"]
 }
