@@ -492,6 +492,11 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Las tres confianzas y sus dos botones, en una sola línea que se parte si no cabe. */
 .pdc-plan-propuestas { align-items: center; flex-wrap: wrap; gap: 10px; }
 .pdc-plan-desglose { font-size: var(--pdc-fs-sm); opacity: 0.85; margin-right: auto; }
+/* El toggle del panel de correspondencias es «▸ etiqueta + resumen» en un solo botón. Sin estas dos
+   reglas los dos textos salían pegados —«…con el cronograma4 confirmadas»—, que es lo que se vio al
+   fotografiar el panel por primera vez (cierre pre-lanzamiento, 2026-07-29). */
+.pdc-plan-panel-toggle { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pdc-plan-panel-resumen { font-size: var(--pdc-fs-sm); opacity: 0.85; }
 /* Secundario a la vista, no solo por su nombre: la acción arriesgada no debe competir con la
    segura. Mismo tamaño para que siga siendo cómodo de pulsar. */
 .pdc-paq-secundario {
