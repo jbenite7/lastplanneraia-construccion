@@ -29,6 +29,11 @@ $assert = static function (bool $cond, string $msg) use (&$fallos): void {
 // —y no al terminar— es lo que hace que una corrida interrumpida no envenene la siguiente.
 $db->query("UPDATE pdc_plan_paso SET fecha_real = NULL, registrado_por = '', registrado_at = NULL
             WHERE project_id = ? AND registrado_por LIKE 'test-b1%'", [P]);
+// Rastro de las pruebas del recalculo: la fila heredada sin paso_id y la configuracion propia de
+// pasos de la obra. Ambas se retiran al empezar por lo mismo que las fechas: una corrida cortada a
+// mitad no puede cambiar el resultado de la siguiente.
+$db->query("DELETE FROM pdc_plan_paso WHERE project_id = ? AND paso_id IS NULL AND paso LIKE 'test-b1%'", [P]);
+(new \App\Services\Pdc\PasosContratacionService($db))->restablecer(P);
 
 $svc = new SeguimientoService($db);
 
@@ -188,11 +193,31 @@ $assert($trasCalculo[0]['registradoPor'] === 'test-b1',
 // una propuesta ya recibida no deja de haberse recibido porque la obra se reprograme, asi que la
 // fila con avance se conserva —sin fechas programadas— y el siguiente calculo se las repone.
 $plan = new \App\Services\Pdc\PlanFechasService($db);
-$amarreOriginal = $db->query(
-    'SELECT unique_id FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+// Se guarda la fila ENTERA, no solo el unique_id: volver a amarrar sin procedencia deja el amarre
+// como decision humana (`origen = 'humano'`, `confirmado_humano = 1`), y esa bandera es la que B2
+// leera para no pisar lo que decidio una persona. Un test no puede firmar amarres en nombre de
+// nadie, asi que al final se repone tal cual estaba.
+$amarreFila = $db->query(
+    'SELECT unique_id, origen, confianza, evidencia, confirmado_humano, asignado_por
+       FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
     [P, $paquete],
-)->fetchColumn();
+)->fetch(\PDO::FETCH_ASSOC);
+$amarreOriginal = $amarreFila === false ? false : $amarreFila['unique_id'];
 $assert($amarreOriginal !== false, 'El paquete de prueba esta amarrado a un frente (precondicion del reamarre).');
+$reponerAmarre = static function () use ($db, $amarreFila, $paquete): void {
+    if ($amarreFila === false) {
+        return;
+    }
+    $db->query(
+        'UPDATE pdc_paquete_frente
+            SET origen = ?, confianza = ?, evidencia = ?, confirmado_humano = ?, asignado_por = ?
+          WHERE project_id = ? AND paquete_id = ?',
+        [
+            $amarreFila['origen'], $amarreFila['confianza'], $amarreFila['evidencia'],
+            $amarreFila['confirmado_humano'], $amarreFila['asignado_por'], P, $paquete,
+        ],
+    );
+};
 
 $plan->desamarrar(P, $paquete);
 $trasDesamarrar = $db->query(
@@ -226,6 +251,134 @@ $assert($restaurado[0]['fechaReal'] === '2026-04-15',
     'Reamarre: el avance sigue ahi tras recalcular.');
 $assert($restaurado[0]['fechaFin'] !== null,
     'Reamarre: y las fechas programadas volvieron.');
+
+// --- El avance sobrevive a que el paso salga del proceso de la obra ---
+// Quien configura los Pasos de contratacion puede quitar uno. El recalculo retira entonces esa fila
+// del plan por sobrante — y si dentro habia una fecha real, se llevaria por delante trabajo que
+// ocurrio de verdad, sin aviso ni auditoria. La fila con avance se conserva; lo que se limpia son
+// sus fechas programadas, que ya no las calcula nadie (mismo criterio que el reamarre).
+$pasosSvc = new \App\Services\Pdc\PasosContratacionService($db);
+$configOriginal = $pasosSvc->deProyecto(P);
+$assert(count($configOriginal) > 1, 'La obra tiene mas de un paso configurado (precondicion).');
+
+$reducida = [];
+foreach ($configOriginal as $i => $p) {
+    if ($i === 0) {
+        continue; // justo el paso que lleva el avance registrado
+    }
+    $reducida[] = ['clave' => $p['clave'], 'diasFijos' => $p['diasFijos'] ?? 1];
+}
+$g = $pasosSvc->guardar(P, $reducida, 'test-b1');
+$assert(($g['ok'] ?? false) === true, 'Configuracion: la obra acepta un proceso sin el primer paso. Dio ' . json_encode($g));
+
+$plan->calcular(P, 'test-b1');
+$huerfano = $db->query(
+    'SELECT fecha_real, registrado_por, fecha_inicio, fecha_fin FROM pdc_plan_paso
+      WHERE project_id = ? AND paquete_id = ? AND paso_id = ?',
+    [P, $paquete, (int) $pasoId],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($huerfano !== false,
+    'Sobrantes: quitar un paso del proceso NO borra la fila que llevaba avance registrado.');
+$assert(($huerfano['fecha_real'] ?? null) === '2026-04-15' && ($huerfano['registrado_por'] ?? '') === 'test-b1',
+    'Sobrantes: la fila conservada mantiene su fecha real y su auditoria. Dio ' . json_encode($huerfano));
+$assert(($huerfano['fecha_inicio'] ?? null) === null && ($huerfano['fecha_fin'] ?? null) === null,
+    'Sobrantes: y se queda sin fechas programadas, porque ya nadie las calcula. Dio ' . json_encode($huerfano));
+
+// El resto del proceso si se recalculo con normalidad.
+$vigentes = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_fin IS NOT NULL',
+    [P, $paquete],
+)->fetchColumn();
+$assert($vigentes === count($reducida),
+    'Sobrantes: los pasos que siguen en el proceso conservan sus fechas. Dio ' . $vigentes . ' de ' . count($reducida));
+
+$pasosSvc->restablecer(P);
+$plan->calcular(P, 'test-b1');
+$assert($svc->pasosDePaquete(P, $paquete)[0]['fechaFin'] !== null,
+    'Sobrantes: devolver el paso al proceso le repone sus fechas programadas.');
+
+// --- Una fila heredada, sin identidad de paso, tampoco pierde su avance ---
+// Los calculos anteriores a A4.1 dejaron filas sin `paso_id`. El recalculo las limpia a proposito
+// —sin identidad no se pueden direccionar—, pero limpiar no puede significar borrar una fecha real.
+$db->query(
+    "INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso_id, paso, dias, fecha_inicio, fecha_fin,
+                                fecha_real, registrado_por, registrado_at)
+     VALUES (?, ?, 90, NULL, 'test-b1 heredado con avance', 3, NULL, NULL, '2026-04-20', 'test-b1', NOW()),
+            (?, ?, 91, NULL, 'test-b1 heredado sin avance', 3, NULL, NULL, NULL, '', NULL)",
+    [P, $paquete, P, $paquete],
+);
+$plan->calcular(P, 'test-b1');
+$heredados = $db->query(
+    "SELECT orden, fecha_real FROM pdc_plan_paso
+      WHERE project_id = ? AND paquete_id = ? AND paso_id IS NULL AND paso LIKE 'test-b1%' ORDER BY orden",
+    [P, $paquete],
+)->fetchAll(\PDO::FETCH_ASSOC);
+$assert(count($heredados) === 1 && (int) $heredados[0]['orden'] === 90,
+    'Heredadas: la fila sin paso_id CON avance sobrevive y la que no lo tiene se limpia. Dio ' . json_encode($heredados));
+$db->query("DELETE FROM pdc_plan_paso WHERE project_id = ? AND paso_id IS NULL AND paso LIKE 'test-b1%'", [P]);
+
+// --- Un paquete sin responsable con avance no pierde su cabecera al desamarrarse ---
+// `limpiarPlanCalculado()` borra la cabecera cuando no hay responsable que conservar. Con avance
+// registrado eso deja filas de paso sin cabecera: no hay clave foranea entre las dos tablas, asi que
+// nadie lo impide, y el resultado es un avance escrito que ninguna pantalla puede ya mostrar ni
+// editar (el resumen une por cabecera y el detalle necesita su fecha de arranque).
+$responsableOriginal = $db->query(
+    'SELECT responsable_user_id FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+    [P, $paquete],
+)->fetchColumn();
+$db->query(
+    'UPDATE pdc_plan_paquete SET responsable_user_id = NULL WHERE project_id = ? AND paquete_id = ?',
+    [P, $paquete],
+);
+$plan->desamarrar(P, $paquete);
+$cabecera = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+    [P, $paquete],
+)->fetchColumn();
+$assert($cabecera === 1,
+    'Cabecera: un paquete sin responsable pero CON avance conserva su cabecera al desamarrarse. Dio ' . $cabecera);
+$conAvance = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL',
+    [P, $paquete],
+)->fetchColumn();
+$assert($conAvance === 1, 'Cabecera: y el avance sigue ahi. Dio ' . $conAvance);
+
+$plan->amarrar(P, $paquete, (int) $amarreOriginal, 'test-b1');
+$plan->calcular(P, 'test-b1');
+$db->query(
+    'UPDATE pdc_plan_paquete SET responsable_user_id = ? WHERE project_id = ? AND paquete_id = ?',
+    [$responsableOriginal === false ? null : $responsableOriginal, P, $paquete],
+);
+
+// --- «Fin programado» es el fin del ULTIMO paso, no la ultima fecha que haya ---
+// Un paso conservado sin fechas programadas (reamarre o paso retirado) deja huecos en la columna. Si
+// se toma «la ultima no nula» al recorrer, la pantalla anuncia como fin del proceso la fecha de un
+// paso intermedio, que es una fecha real de la obra y por eso nadie la lee como error.
+$ultimo = $svc->pasosDePaquete(P, $paquete);
+$ultimoOrden = (int) $ultimo[count($ultimo) - 1]['orden'];
+$db->query(
+    'UPDATE pdc_plan_paso SET fecha_fin = NULL WHERE project_id = ? AND paquete_id = ? AND orden = ?',
+    [P, $paquete, $ultimoOrden],
+);
+$filaFin = null;
+foreach ($svc->resumen(P) as $x) {
+    if ($x['paqueteId'] === $paquete) {
+        $filaFin = $x;
+    }
+}
+$assert($filaFin !== null && $filaFin['finProgramado'] === null,
+    'Fin programado: sin fecha en el ultimo paso no hay fin programado que anunciar, no la del anterior. Dio '
+    . var_export($filaFin['finProgramado'] ?? null, true));
+$plan->calcular(P, 'test-b1');
+
+$reponerAmarre();
+$amarreFinal = $db->query(
+    'SELECT origen, confirmado_humano FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+    [P, $paquete],
+)->fetch(\PDO::FETCH_ASSOC);
+$assert($amarreFinal !== false && $amarreFinal['origen'] === $amarreFila['origen']
+    && (int) $amarreFinal['confirmado_humano'] === (int) $amarreFila['confirmado_humano'],
+    'El test devuelve el amarre a su procedencia original: no deja firmado como humano lo que decidio el motor.');
 
 $assert($fallos === 0, 'Sin fallos');
 echo $fallos === 0 ? "=== OK ===\n" : "=== {$fallos} FALLOS ===\n";
