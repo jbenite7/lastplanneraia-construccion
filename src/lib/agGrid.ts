@@ -32,10 +32,15 @@ export const pdcTheme = themeQuartz.withParams({
  * Dinero. Un 0 se muestra como «$ 0» y solo la ausencia deja la celda vacía: hasta ahora el visor
  * y el comparador dejaban en blanco un valor que sí existía y valía cero, que es información
  * distinta de «no hay dato».
+ *
+ * **Siempre sin decimales.** `toLocaleString` sin opciones devuelve los decimales que traiga el
+ * número —0, 1 o 2—, y en una misma tabla convivían «$ 3.144.138», «$ 102.290.635,8» y
+ * «$ 25.430.823.601,77»: las columnas de dinero no alineaban y comparar magnitudes de un vistazo
+ * era imposible. En obra los pesos se leen sin centavos, así que el redondeo es al peso.
  */
 export function moneda(v: number | null | undefined): string {
   if (v === null || v === undefined) return ''
-  return `$ ${Number(v).toLocaleString('es-CO')}`
+  return `$ ${Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
 
 // `satisfies` y no `: ColDef`: anotarlo como ColDef lo vuelve ColDef<any>, y esparcirlo dentro de

@@ -245,7 +245,7 @@ export default function VisorPresupuesto() {
             </span>
           </div>
 
-          <div style={{ height: 560 }} data-testid="pdc-visor-arbol">
+          <div className="pdc-grid" data-testid="pdc-visor-arbol">
             <AgGridReact<FilaVisor>
               // Remontar al cambiar de modo: si no, AG Grid reutiliza las celdas ya pintadas y
               // arrastra la sangría del árbol a la tabla en las filas que ya estaban en pantalla.

@@ -21,7 +21,10 @@ ModuleRegistry.registerModules([
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
-const signo = (v: number) => (v > 0 ? '+' : '') + v.toLocaleString('es-CO')
+// Sin decimales, igual que `moneda`: la columna Δ vive al lado de las dos de dinero y con decimales
+// variables las tres se leían desalineadas entre sí.
+const signo = (v: number) => (v > 0 ? '+' : '')
+  + v.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
 // Mismo vocabulario de niveles que el visor, menos el insumo: el diff jerárquico llega hasta la
 // actividad. Ofrecer un nivel que esta pantalla no tiene sería prometer algo que no va a pasar.
@@ -183,7 +186,7 @@ export default function ComparativoPresupuesto() {
             )}
           </div>
 
-          <div style={{ height: 520 }} data-testid="pdc-cmp-grid">
+          <div className="pdc-grid" data-testid="pdc-cmp-grid">
             {eje === 'actividades' ? (
               <AgGridReact<FilaComparativo>
                 theme={pdcTheme} rowData={filasAct} columnDefs={colsAct} getRowId={(p) => p.data.key}

@@ -300,7 +300,7 @@ export default function MaestroInsumos() {
           </div>
         </div>
         <p className="pdc-ayuda">Clic = seleccionar · doble clic = vincular a un insumo existente.</p>
-        <div style={{ height: 300 }} data-testid="pdc-maestro-pendientes">
+        <div className="pdc-grid" data-testid="pdc-maestro-pendientes">
           <AgGridReact<VinculoInsumo>
             theme={pdcTheme}
             rowData={pendientes}
@@ -361,7 +361,7 @@ export default function MaestroInsumos() {
             />
           </div>
         </div>
-        <div style={{ height: 280 }} data-testid="pdc-maestro-catalogo">
+        <div className="pdc-grid" data-testid="pdc-maestro-catalogo">
           <AgGridReact<MaestroInsumo>
             theme={pdcTheme}
             rowData={catalogo}

@@ -23,6 +23,25 @@ describe('moneda', () => {
   it('usa separador de miles colombiano', () => {
     expect(moneda(2109795800)).toContain('.')
   })
+
+  it('nunca muestra decimales, cualesquiera que traiga el valor', () => {
+    // El recorrido de usuario encontró estas cuatro cifras en la MISMA tabla: «$ 3.144.138»,
+    // «$ 102.290.635,8», «$ 25.430.823.601,77», «$ 1.866.977.292». `toLocaleString` sin opciones
+    // da 0, 1 o 2 decimales según el número, así que las columnas de dinero no alineaban y
+    // comparar magnitudes de un vistazo era imposible.
+    expect(moneda(3144138)).toBe('$ 3.144.138')
+    expect(moneda(102290635.8)).toBe('$ 102.290.636')
+    expect(moneda(25430823601.77)).toBe('$ 25.430.823.602')
+  })
+
+  it('redondea, no trunca', () => {
+    expect(moneda(1.5)).toBe('$ 2')
+    expect(moneda(1.4)).toBe('$ 1')
+  })
+
+  it('los negativos conservan el signo', () => {
+    expect(moneda(-46629280886.6)).toBe('$ -46.629.280.887')
+  })
 })
 
 describe('defaultColDef', () => {

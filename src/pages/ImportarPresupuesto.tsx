@@ -200,7 +200,7 @@ export default function ImportarPresupuesto() {
           <div className="pdc-error" role="alert">
             El archivo tiene {state.errores.length} error(es); no se importó nada. Corrige el Excel y vuelve a subirlo.
           </div>
-          <div style={{ height: 280 }}>
+          <div className="pdc-grid-corta">
             <AgGridReact<ImportErrorFila>
               theme={pdcTheme}
               rowData={state.errores}
@@ -304,7 +304,7 @@ export default function ImportarPresupuesto() {
           </div>
         )}
 
-        <div style={{ height: 260 }}>
+        <div className="pdc-grid-corta">
           <AgGridReact<VersionPresupuesto>
             theme={pdcTheme}
             rowData={versiones}

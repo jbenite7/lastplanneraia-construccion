@@ -62,11 +62,24 @@
 
 .pdc-page { max-width: 1180px; margin: 0 auto; }
 .pdc-header { display: flex; flex-direction: column; }
-.pdc-header-fila { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+/* `flex-direction: row` explícito y no heredado: `.pdc-header` fija `column`, y como esta regla no
+   la sobreescribía, las tres pantallas que llevan las dos clases (Maestro, Presupuesto y Comparar)
+   quedaban en columna con `align-items: flex-end` — o sea, el encabezado entero pegado al borde
+   derecho, mientras Importar y Paquetes lo tenían a la izquierda. Parecían dos aplicaciones. */
+.pdc-header-fila { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .pdc-header h1 { font-size: 20px; margin: 0 0 4px; }
 .pdc-header p { margin: 0 0 16px; opacity: 0.8; }
 .pdc-error { padding: 16px; border: 1px solid #dc2626; background: #2c1618; color: #fecaca; border-radius: 8px; }
-.pdc-grid { height: 320px; }
+/* Alto de las tablas: lo manda el viewport, no un número escrito a mano.
+   Cada página traía el suyo en un `style` en línea (280, 300, 520, 560…), así que el catálogo
+   mostraba 5 filas y media de 3.079 con el 45 % inferior de la pantalla en negro. El `clamp` deja
+   un mínimo usable en pantallas bajas y un techo para que la tabla no se despegue del pie.
+   El sustraendo es el alto del cromo por encima: barra de contexto, pestañas, encabezado y filtros.
+   No aplica a Paquetes ni al Plan, que usan `domLayout="autoHeight"` y crecen con sus filas. */
+.pdc-grid { height: clamp(320px, calc(100vh - 340px), 780px); }
+/* Listas cortas por naturaleza —los errores del importador y el historial de versiones— sobre una
+   pantalla que además lleva el cargador de archivo encima. */
+.pdc-grid-corta { height: clamp(240px, calc(100vh - 520px), 420px); }
 .pdc-selector { display: flex; align-items: center; gap: 8px; }
 .pdc-selector select { background: #2c2c2e; color: #f4f1ea; border: 1px solid #3a3a3c; border-radius: 6px; padding: 6px 10px; }
 
