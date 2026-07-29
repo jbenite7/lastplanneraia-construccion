@@ -241,13 +241,6 @@ body.login-brand-page > .login-box {
     color: var(--ds-color-state-critical-text);
   }
 
-  [data-aia-theme='dark'] body.login-brand-page .alert-danger,
-  .aia-theme-dark body.login-brand-page .alert-danger {
-    border-color: color-mix(in srgb, var(--ds-color-state-critical-text) 72%, var(--ds-active-border));
-    background: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface-raised));
-    color: var(--ds-active-text-primary);
-  }
-
   body.login-brand-page .alert-success {
     border-color: var(--ds-color-state-success-text);
     background: var(--ds-color-state-success-bg);
@@ -258,6 +251,57 @@ body.login-brand-page > .login-box {
     border-color: var(--ds-color-state-info-text);
     background: var(--ds-color-state-info-bg);
     color: var(--ds-color-state-info-text);
+  }
+
+  body.login-brand-page .alert-warning {
+    border-color: var(--ds-color-state-warning-text);
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  /* TRATAMIENTO DARK DE LOS AVISOS DEL LOGIN.
+     Las cuatro reglas de arriba son el par pastel del design system, y en el
+     panel `admin/` ese par es la primitiva correcta para un aviso. Aqui no: el
+     aviso vive DENTRO de la tarjeta oscura de marca, y un bloque pastel del
+     ancho de la tarjeta la parte en dos. Por eso `.alert-danger` ya tenia este
+     tratamiento propio desde el commit 3a13949.
+
+     Lo que estaba mal no era la receta sino su alcance: se escribio cuando aun
+     habia tema claro y solo cubrio `danger`, asi que un error salia en rojo
+     oscuro integrado y el aviso de cuenta inactiva, en amarillo pastel, en la
+     misma pantalla. Se extiende la MISMA formula a los cuatro estados -misma
+     mezcla, mismos porcentajes- para que la consistencia no dependa de cual de
+     los cuatro se dispare.
+
+     Se conservan las reglas pastel de arriba y el selector de tema: mientras
+     `tokens.css` siga trayendo el tema claro como base, quitarlas dejaria los
+     avisos sin fondo si alguien reactiva el tema. */
+  [data-aia-theme='dark'] body.login-brand-page .alert-danger,
+  .aia-theme-dark body.login-brand-page .alert-danger {
+    border-color: color-mix(in srgb, var(--ds-color-state-critical-text) 72%, var(--ds-active-border));
+    background: color-mix(in srgb, var(--ds-color-state-critical-text) 24%, var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-theme='dark'] body.login-brand-page .alert-success,
+  .aia-theme-dark body.login-brand-page .alert-success {
+    border-color: color-mix(in srgb, var(--ds-color-state-success-text) 72%, var(--ds-active-border));
+    background: color-mix(in srgb, var(--ds-color-state-success-text) 24%, var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-theme='dark'] body.login-brand-page .alert-info,
+  .aia-theme-dark body.login-brand-page .alert-info {
+    border-color: color-mix(in srgb, var(--ds-color-state-info-text) 72%, var(--ds-active-border));
+    background: color-mix(in srgb, var(--ds-color-state-info-text) 24%, var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
+  }
+
+  [data-aia-theme='dark'] body.login-brand-page .alert-warning,
+  .aia-theme-dark body.login-brand-page .alert-warning {
+    border-color: color-mix(in srgb, var(--ds-color-state-warning-text) 72%, var(--ds-active-border));
+    background: color-mix(in srgb, var(--ds-color-state-warning-text) 24%, var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
   }
 
 body.login-brand-page .form-control:focus {

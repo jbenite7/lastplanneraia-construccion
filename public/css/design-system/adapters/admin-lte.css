@@ -493,6 +493,46 @@
     color: var(--ds-color-state-critical-text);
   }
 
+  /* ISLA CLARA: descendientes dentro de `.alert`.
+     Las cuatro reglas de arriba pintan a proposito el par pastel del DS (fondo
+     claro + tinta oscura), y su texto propio cumple AA holgado: medido en el
+     panel, 5.67:1 info, 7.25:1 success, 8.81:1 warning, 7.79:1 danger. El
+     problema no es la isla, es que el resto del adaptador asume canvas OSCURO y
+     aclara la tinta de `code` y de los enlaces; dentro de la alerta esa tinta
+     clara cae sobre fondo claro. Medido antes de este bloque: `code` 1.01-1.14:1
+     y los enlaces por debajo de 3:1.
+
+     Se resuelve con `currentColor` y no repitiendo el token de cada estado: el
+     color heredado YA es la tinta correcta del estado, asi que una sola regla
+     sirve para los cuatro y no puede desincronizarse de ellos. */
+  .alert :where(code, kbd, samp) {
+    color: currentColor;
+  }
+
+  .alert :where(a),
+  .alert :where(a):hover,
+  .alert :where(a):focus {
+    color: currentColor;
+  }
+
+  /* La `×` de `.alert-dismissible` (la usan matching/config y family_catalog).
+     El vendor la deja en negro con `opacity: .2`, que sobre el pastel medía
+     1.59:1: el peor contraste de la isla y ademas es un control, no adorno.
+     Con la tinta del estado a opacidad plena sube al mismo nivel que el texto.
+     Especificidad 0-2-0 contra el 0-1-0 de `.close`, y `components` gana a
+     `vendor`: no hace falta `!important`. */
+  .alert .close {
+    color: currentColor;
+    opacity: 1;
+    text-shadow: none;
+  }
+
+  .alert .close:hover,
+  .alert .close:focus {
+    color: currentColor;
+    opacity: 0.7;
+  }
+
   :where(.tooltip-inner) {
     border-radius: var(--ds-radius-md);
     background-color: var(--ds-active-surface-raised);
@@ -578,6 +618,26 @@
 @layer reset {
   .text-muted {
     color: var(--ds-active-text-secondary) !important;
+  }
+
+  /* Excepcion de la regla de arriba dentro de la isla clara de `.alert`. La
+     tinta secundaria del tema (#c7d4cc) esta calculada contra el canvas oscuro;
+     sobre el fondo pastel de una alerta daba 1.28-1.44:1, el peor contraste
+     medido en todo el panel. Atenuar es correcto -es texto secundario-, pero
+     hay que atenuar hacia el fondo de ESTA superficie, no hacia el del tema:
+     `currentColor` con alfa conserva el matiz del estado y lo aclara contra su
+     propio pastel.
+
+     EL 90% ESTA MEDIDO, no elegido a ojo. Barrido en el panel del alfa contra
+     los cuatro fondos, peor caso (info, el pastel mas claro): 72% -> 3.27:1,
+     80% -> 3.82:1, 85% -> 4.21:1, 90% -> 4.65:1. El 90% es el primer escalon
+     donde los cuatro pasan AA (info 4.65, success 5.72, danger 6.40,
+     warning 6.73) y sigue distinguiendose del texto pleno.
+
+     Vive en `reset` y no en `components` porque el `.text-muted` de Bootstrap
+     trae `!important` propio. */
+  .alert .text-muted {
+    color: color-mix(in srgb, currentColor 90%, transparent) !important;
   }
 
   /* El pie de `.small-box` es un `<a>` en tres de las cinco cajas, y AdminLTE

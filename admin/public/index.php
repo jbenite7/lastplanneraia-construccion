@@ -132,6 +132,11 @@ $router->add('POST', '/matching/family-catalog/resolve-decision', 'FamilyCatalog
 $router->add('POST', '/matching/family-catalog/import', 'FamilyCatalogController@importCatalog');
 $router->add('GET', '/matching/family-catalog/export', 'FamilyCatalogController@exportCatalog');
 
+// Mantenimiento del Plan de Compras
+$router->add('GET', '/pdc/limpieza', 'PdcMaintenanceController@index');
+$router->add('GET', '/pdc/limpieza/conteos', 'PdcMaintenanceController@counts');
+$router->add('POST', '/pdc/limpieza/ejecutar', 'PdcMaintenanceController@run');
+
 
 // Ejecutar el ruteo
 

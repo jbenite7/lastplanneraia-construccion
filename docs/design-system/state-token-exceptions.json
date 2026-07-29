@@ -307,7 +307,7 @@
     },
     {
       "file": "public/css/design-system/adapters/admin-lte.css",
-      "line": 606,
+      "line": 666,
       "selector": ".text-danger",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
