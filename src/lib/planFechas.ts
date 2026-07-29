@@ -263,14 +263,53 @@ export function planUiReducer(state: PlanUiState, action: PlanUiAction): PlanUiS
   }
 }
 
+/** Columnas que se editan en la propia grilla del plan. */
+const COLUMNAS_EDITABLES = new Set(['responsable', 'frente'])
+
+/** Columnas que disparan una acción con confirmación en vez de editar o abrir el detalle. */
+const COLUMNAS_ACCION = new Set(['desamarrar'])
+
 /**
  * Qué hace un clic sencillo según la columna donde cayó.
  *
  * En la tabla del Plan el clic sencillo ya estaba ocupado: abre el detalle de los siete pasos. Al
  * pedir que un solo clic baste para editar hubo que repartir el gesto por columna — edita donde se
- * puede editar (hoy solo «Responsable») y abre el detalle en el resto. Sin columna identificada
- * abre el detalle, que es lo que no toca ningún dato.
+ * puede editar, dispara la acción donde hay una, y abre el detalle en todo lo demás. Sin columna
+ * identificada abre el detalle, que es lo que no toca ningún dato.
  */
-export function accionDeClic(colId: string | undefined): 'editar' | 'detalle' {
-  return colId === 'responsable' ? 'editar' : 'detalle'
+export function accionDeClic(colId: string | undefined): 'editar' | 'accion' | 'detalle' {
+  if (colId !== undefined && COLUMNAS_EDITABLES.has(colId)) return 'editar'
+  if (colId !== undefined && COLUMNAS_ACCION.has(colId)) return 'accion'
+  return 'detalle'
+}
+
+/**
+ * Lo que dice la confirmación de desamarrar. Vive aquí, y no suelto en la vista, porque tiene que
+ * ser verdad verificable: el servicio borra los pasos y vacía las fechas, y conserva las tres
+ * columnas del responsable (ver PlanFechasService::limpiarPlanCalculado). Un mensaje tranquilizador
+ * que prometiera conservar las fechas sería mentira, y uno que amenazara con perder el responsable
+ * haría que nadie se atreviera a corregir un frente mal elegido.
+ */
+export const AVISO_DESAMARRAR =
+  'Se borran las fechas calculadas de este paquete y vuelve a «Sin frente». El responsable se conserva.'
+
+/**
+ * Opciones del desplegable de frente de una fila del plan.
+ *
+ * Incluye el frente que la fila tiene puesto aunque ya no esté entre los disponibles: el cronograma
+ * se reprograma y una actividad puede desaparecer, y sin su propia opción AG Grid no podría ni
+ * mostrar el valor actual de la celda. Mismo criterio que `opcionesResponsable` con los huérfanos.
+ */
+export function opcionesFrente(
+  frentes: FrenteDisponible[],
+  fila: Pick<FilaPlan, 'frenteNombre' | 'fechaAncla'>,
+): string[] {
+  const opciones = frentes.map(opcionFrente)
+  const actual = `${fila.frenteNombre} — ${fila.fechaAncla}`
+  return fila.frenteNombre !== '' && !opciones.includes(actual) ? [...opciones, actual] : opciones
+}
+
+/** Traduce lo elegido en el desplegable de frente al uniqueId que espera el servidor. */
+export function uniqueIdPorEtiquetaFrente(frentes: FrenteDisponible[], etiqueta: string): number | null {
+  return frentes.find((f) => opcionFrente(f) === etiqueta)?.uniqueId ?? null
 }

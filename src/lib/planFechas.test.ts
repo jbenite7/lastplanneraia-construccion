@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  AVISO_DESAMARRAR,
   accionDeClic,
   contarSinResponsable, estadoFila, etiquetaDesfase, etiquetaElegible, generaProceso, idPorEtiqueta, mensajeCalculo, opcionFrente,
   opcionesResponsable, paquetesAmarradosSinCalcular,
   paquetesSinFrente, planUiReducer, preseleccionDestinos, procedenciaDeAmarre, resumenPlan, trasGuardarEdicion,
+  opcionesFrente,
+  uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
@@ -426,6 +429,14 @@ describe('accionDeClic', () => {
     expect(accionDeClic('responsable')).toBe('editar')
   })
 
+  it('en la columna de frente también edita: cambiar de frente se hace desde la tabla', () => {
+    expect(accionDeClic('frente')).toBe('editar')
+  })
+
+  it('en la columna de desamarrar dispara la acción, no el detalle', () => {
+    expect(accionDeClic('desamarrar')).toBe('accion')
+  })
+
   it('en cualquier otra columna, el clic abre el detalle', () => {
     expect(accionDeClic('nombre')).toBe('detalle')
     expect(accionDeClic('estado')).toBe('detalle')
@@ -433,5 +444,52 @@ describe('accionDeClic', () => {
 
   it('sin columna identificada, abre el detalle: es lo que no destruye nada', () => {
     expect(accionDeClic(undefined)).toBe('detalle')
+  })
+})
+
+describe('opcionesFrente', () => {
+  const frentes: FrenteDisponible[] = [
+    { uniqueId: 9001, nombre: 'ESTRUCTURA', capitulo: '02', fechaInicio: '2026-08-18' },
+    { uniqueId: 9002, nombre: 'PISOS Y ENCHAPES', capitulo: '05', fechaInicio: '2027-05-12' },
+  ]
+
+  it('ofrece los frentes disponibles del cronograma', () => {
+    expect(opcionesFrente(frentes, fila())).toEqual([
+      'ESTRUCTURA — 2026-08-18', 'PISOS Y ENCHAPES — 2027-05-12',
+    ])
+  })
+
+  it('conserva el frente que la fila tiene puesto aunque ya no exista en el cronograma', () => {
+    // Si el frente desapareció al reprogramar, sin su propia opción la celda no podría ni mostrar
+    // lo que la fila tiene guardado.
+    const huerfana = fila({ frenteNombre: 'CUBIERTA', fechaAncla: '2026-03-01' })
+    expect(opcionesFrente(frentes, huerfana)).toContain('CUBIERTA — 2026-03-01')
+  })
+
+  it('no duplica el frente actual cuando sí sigue disponible', () => {
+    const puesta = fila({ frenteNombre: 'ESTRUCTURA', fechaAncla: '2026-08-18' })
+    expect(opcionesFrente(frentes, puesta).filter((o) => o.startsWith('ESTRUCTURA'))).toHaveLength(1)
+  })
+})
+
+describe('uniqueIdPorEtiquetaFrente', () => {
+  const frentes: FrenteDisponible[] = [
+    { uniqueId: 9001, nombre: 'ESTRUCTURA', capitulo: '02', fechaInicio: '2026-08-18' },
+  ]
+
+  it('traduce la etiqueta elegida al uniqueId que espera el servidor', () => {
+    expect(uniqueIdPorEtiquetaFrente(frentes, 'ESTRUCTURA — 2026-08-18')).toBe(9001)
+  })
+
+  it('una etiqueta que ya no corresponde a ningún frente no inventa un id', () => {
+    expect(uniqueIdPorEtiquetaFrente(frentes, 'CUBIERTA — 2026-03-01')).toBeNull()
+  })
+})
+
+describe('AVISO_DESAMARRAR', () => {
+  it('dice las dos verdades: se pierden las fechas, se conserva el responsable', () => {
+    expect(AVISO_DESAMARRAR).toContain('fechas')
+    expect(AVISO_DESAMARRAR).toContain('responsable')
+    expect(AVISO_DESAMARRAR).toContain('Sin frente')
   })
 })

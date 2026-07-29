@@ -8,6 +8,7 @@ import {
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
+  AVISO_DESAMARRAR,
   accionDeClic,
   contarSinResponsable,
   estadoFila,
@@ -17,6 +18,7 @@ import {
   idPorEtiqueta,
   mensajeCalculo,
   opcionFrente,
+  opcionesFrente,
   opcionesResponsable,
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
@@ -25,6 +27,7 @@ import {
   procedenciaDeAmarre,
   resumenPlan,
   trasGuardarEdicion,
+  uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
 } from '../lib/planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from '../lib/types'
@@ -73,6 +76,8 @@ export default function PlanFechas() {
   // Filas marcadas con el checkbox de la grilla, para la asignación en masa (Task 5).
   const [seleccionados, setSeleccionados] = useState<number[]>([])
   const [masaEtiqueta, setMasaEtiqueta] = useState('')
+  // Fila esperando confirmación para desamarrarse: borra fechas, así que se pregunta antes.
+  const [porDesamarrar, setPorDesamarrar] = useState<FilaPlan | null>(null)
 
   const cargar = useCallback(() => {
     apiGet<PlanResultado>('/plan-compras/api/plan')
@@ -211,6 +216,28 @@ export default function PlanFechas() {
     }
   }
 
+  /**
+   * Deshace el amarre. Se pregunta antes porque destruye las fechas calculadas —que es
+   * justamente lo que alguien puede haberle comunicado ya a un proveedor—, y la pregunta dice la
+   * verdad completa: también dice lo que NO se pierde, para que corregir un frente mal elegido no
+   * dé más miedo del que merece.
+   */
+  const onDesamarrar = async (fila: FilaPlan) => {
+    dispatch({ type: 'OCUPADO' })
+    try {
+      await apiPost('/plan-compras/api/plan/desamarrar', { paqueteId: fila.paqueteId })
+      dispatch({ type: 'LISTO', mensaje: `«${fila.nombre}» vuelve a «Sin frente».` })
+      setPorDesamarrar(null)
+      // Recargar entero, no solo el plan: la lista «Sin frente» se calcula en el cliente cruzando
+      // el resumen de paquetes con los amarres, así que refrescar uno solo dejaría el paquete
+      // invisible en las dos partes de la pantalla a la vez.
+      cargar()
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+      setPorDesamarrar(null)
+    }
+  }
+
   const onRecalcular = async () => {
     dispatch({ type: 'OCUPADO' })
     try {
@@ -231,7 +258,15 @@ export default function PlanFechas() {
         uniqueId,
         procedencia: procedenciaDeAmarre(sugerencias[paqueteId], uniqueId),
       })
-      dispatch({ type: 'LISTO', mensaje: frente ? `Amarrado a «${frente.nombre}».` : 'Amarrado.' })
+      // El aviso de recalcular no es un adorno: cambiar de frente invalida el plan viejo, así que
+      // la fila desaparece de la grilla y cae en «Amarrados, pendientes de calcular». Sin decirlo,
+      // parece que el paquete se perdió.
+      dispatch({
+        type: 'LISTO',
+        mensaje: frente
+          ? `Amarrado a «${frente.nombre}». Recalcula para ver sus fechas.`
+          : 'Amarrado. Recalcula para ver sus fechas.',
+      })
       cargar()
     } catch (e) {
       dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
@@ -297,7 +332,39 @@ export default function PlanFechas() {
 
   const cols = useMemo<ColDef<FilaPlan>[]>(() => [
     { ...TEXTO_LARGO, headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 220 },
-    columnaTexto('frenteNombre', 'Frente', 160),
+    {
+      // Cambiar de frente desde la propia tabla: hasta la revisión de UX esta columna era texto
+      // plano y el selector solo existía en «Sin frente», donde un paquete ya amarrado no aparece.
+      // El servidor ya sabía reamarrar (amarrar() hace ON DUPLICATE KEY UPDATE); solo faltaba
+      // exponerlo.
+      ...columnaTexto('frenteNombre', 'Frente', 160),
+      colId: 'frente', editable: true, cellEditor: 'agSelectCellEditor',
+      cellEditorParams: (p: { data?: FilaPlan }) => ({
+        values: p.data ? opcionesFrente(frentes, p.data) : [],
+      }),
+      valueGetter: (p) => (p.data ? `${p.data.frenteNombre} — ${p.data.fechaAncla}` : ''),
+      // valueSetter explícito: el de por defecto escribiría la etiqueta entera («ESTRUCTURA —
+      // 2026-08-18») dentro de `frenteNombre` y dejaría la fila incoherente si el POST fallara.
+      // Aquí se actualizan los tres campos a la vez, hasta que `cargar()` traiga la verdad.
+      valueSetter: (p) => {
+        const destino = frentes.find((f) => opcionFrente(f) === (p.newValue ?? '').trim())
+        if (destino === undefined) return false
+        p.data.uniqueId = destino.uniqueId
+        p.data.frenteNombre = destino.nombre
+        p.data.fechaAncla = destino.fechaInicio
+        return true
+      },
+      onCellValueChanged: (p) => {
+        if (!p.data) return
+        const destino = uniqueIdPorEtiquetaFrente(frentes, (p.newValue ?? '').trim())
+        // El anterior sale de `oldValue` y no de la fila: el valueSetter ya la actualizó, así que
+        // compararla consigo misma nunca detectaría un cambio. Elegir la misma opción que ya estaba
+        // no dispara reamarre — no habría nada que cambiar y sí un plan calculado que invalidar.
+        const anterior = uniqueIdPorEtiquetaFrente(frentes, (p.oldValue ?? '').trim())
+        if (destino === null || destino === anterior) return
+        void onAmarrar(p.data.paqueteId, destino, anterior ?? '')
+      },
+    },
     // Las fechas nunca envuelven y toman su ancho del contenido: partir «2026-07-28» en dos
     // renglones no ahorra nada y descuadra la fila.
     { headerName: 'Arranque', field: 'fechaArranque' },
@@ -340,7 +407,14 @@ export default function PlanFechas() {
       valueGetter: (p) => (p.data ? estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).etiqueta : ''),
       cellClass: (p) => (p.data ? `pdc-plan-estado pdc-plan-estado--${estadoFila(p.data, desfasePorPaquete.get(p.data.paqueteId)).clave}` : undefined),
     },
-  ], [responsableOverride, desfasePorPaquete, elegibles])
+    {
+      // Deshacer el amarre. Era el hallazgo más serio de la revisión: una vez amarrado no había
+      // forma de volver atrás desde la interfaz.
+      colId: 'desamarrar', headerName: '', width: 120, sortable: false, suppressAutoSize: true,
+      cellClass: 'pdc-celda-accion',
+      valueGetter: () => 'Desamarrar',
+    },
+  ], [responsableOverride, desfasePorPaquete, elegibles, frentes])
 
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
@@ -419,6 +493,19 @@ export default function PlanFechas() {
         </button>
       </div>
 
+      {porDesamarrar && (
+        <div className="pdc-panel" data-testid="pdc-plan-confirmar-desamarrar">
+          <p>¿Quitarle el frente a <strong>{porDesamarrar.nombre}</strong>?</p>
+          <p className="pdc-ayuda">{AVISO_DESAMARRAR}</p>
+          <button type="button" data-testid="pdc-plan-desamarrar-confirmar" disabled={ui.ocupado} onClick={() => void onDesamarrar(porDesamarrar)}>
+            Sí, quitarle el frente
+          </button>{' '}
+          <button type="button" data-testid="pdc-plan-desamarrar-cancelar" onClick={() => setPorDesamarrar(null)}>
+            Cancelar
+          </button>
+        </div>
+      )}
+
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap">
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
@@ -438,7 +525,10 @@ export default function PlanFechas() {
           // Un solo clic abre el desplegable de responsable; hasta ahora hacía falta un doble clic.
           singleClickEdit
           onCellClicked={(e: CellClickedEvent<FilaPlan>) => {
-            if (!e.data || accionDeClic(e.column?.getColId()) === 'editar') return
+            if (!e.data) return
+            const accion = accionDeClic(e.column?.getColId())
+            if (accion === 'editar') return
+            if (accion === 'accion') { setPorDesamarrar(e.data); return }
             const id = e.data.paqueteId
             setExpandido((prev) => (prev === id ? null : id))
           }}
