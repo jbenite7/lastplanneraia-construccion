@@ -369,7 +369,7 @@
             <div id="programa-cnp-insight" class="bi-cause-insight" aria-live="polite" hidden></div>
             <button id="programa-cnp-drilldown-trigger" type="button" class="aia-btn aia-btn--secondary bi-cause-detail-trigger"
                 aria-controls="programa-causal-drilldown" aria-expanded="false">
-                <i data-lucide="list-search" class="w-4 h-4" aria-hidden="true"></i>
+                <i data-lucide="list-filter" class="w-4 h-4" aria-hidden="true"></i>
                 <span>Ver detalle de CNP</span>
             </button>
         </div>
@@ -383,7 +383,7 @@
             <div id="programa-cnc-insight" class="bi-cause-insight" aria-live="polite" hidden></div>
             <button id="programa-cnc-drilldown-trigger" type="button" class="aia-btn aia-btn--secondary bi-cause-detail-trigger"
                 aria-controls="programa-causal-drilldown" aria-expanded="false">
-                <i data-lucide="list-search" class="w-4 h-4" aria-hidden="true"></i>
+                <i data-lucide="list-filter" class="w-4 h-4" aria-hidden="true"></i>
                 <span>Ver detalle de CNC</span>
             </button>
         </div>
@@ -400,7 +400,7 @@
             <div id="programa-radar-axes" class="bi-radar-axis-list" aria-live="polite"></div>
             <button id="programa-radar-detail-trigger" type="button" class="aia-btn aia-btn--secondary bi-radar-detail-trigger"
                 aria-controls="programa-radar-drilldown" aria-expanded="false">
-                <i data-lucide="list-search" class="w-4 h-4" aria-hidden="true"></i>
+                <i data-lucide="list-filter" class="w-4 h-4" aria-hidden="true"></i>
                 <span>Ver registros que explican el radar</span>
             </button>
         </div>
@@ -442,7 +442,7 @@
             </button>
             <button id="programa-activity-analysis-trigger" type="button" class="aia-btn aia-btn--secondary w-full md:w-auto justify-center"
                 aria-controls="programa-gauge-drilldown" aria-expanded="false">
-                <i data-lucide="list-search" class="w-4 h-4" aria-hidden="true"></i>
+                <i data-lucide="list-filter" class="w-4 h-4" aria-hidden="true"></i>
                 <span>Analizar composición del avance</span>
             </button>
         </div>

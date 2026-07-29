@@ -9,7 +9,7 @@
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/tokens.css') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/vendor/lucide/lucide.min.js?v=1.27.0"></script>
     <script src="/vendor/chart.js/chart.umd.min.js?v=4.4.1"></script>
 
     <link rel="stylesheet" href="/css/access.css">
