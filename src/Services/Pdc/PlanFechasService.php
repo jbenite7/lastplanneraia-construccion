@@ -962,8 +962,19 @@ class PlanFechasService
      */
     private function limpiarPlanCalculado(int $projectId, int $paqueteId): void
     {
+        // Las filas SIN avance se borran: son solo fechas calculadas contra un frente que ya no vale.
         $this->db->query(
-            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?',
+            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL',
+            [$projectId, $paqueteId],
+        );
+        // Las que SI llevan avance se conservan y se les vacian las fechas programadas. Una propuesta
+        // ya recibida no deja de haberse recibido porque la obra se reprograme, y borrar la fila se
+        // llevaria por delante trabajo que ocurrio de verdad — la deuda que A4 dejo anotada aqui.
+        // Quedan con fecha_real y sin programadas, que es exactamente lo que significan: «esto se
+        // hizo, pero el plan todavia no se ha recalculado». El siguiente calcular() las repone.
+        $this->db->query(
+            'UPDATE pdc_plan_paso SET fecha_inicio = NULL, fecha_fin = NULL
+              WHERE project_id = ? AND paquete_id = ?',
             [$projectId, $paqueteId],
         );
         $this->db->query(
@@ -974,10 +985,18 @@ class PlanFechasService
               WHERE project_id = ? AND paquete_id = ?',
             [$projectId, $paqueteId],
         );
+        // La cabecera se retira solo si no queda nada que sostener: ni responsable ni avance. No hay
+        // clave foránea entre `pdc_plan_paso` y `pdc_plan_paquete`, así que borrarla con pasos vivos
+        // no falla — deja el avance escrito y fuera del alcance de las dos pantallas, porque el
+        // resumen une por cabecera y el detalle necesita su `fecha_arranque`.
         $this->db->query(
             'DELETE FROM pdc_plan_paquete
-              WHERE project_id = ? AND paquete_id = ? AND responsable_user_id IS NULL',
-            [$projectId, $paqueteId],
+              WHERE project_id = ? AND paquete_id = ? AND responsable_user_id IS NULL
+                AND NOT EXISTS (
+                    SELECT 1 FROM pdc_plan_paso s
+                     WHERE s.project_id = ? AND s.paquete_id = ? AND s.fecha_real IS NOT NULL
+                )',
+            [$projectId, $paqueteId, $projectId, $paqueteId],
         );
     }
 
@@ -1210,11 +1229,39 @@ class PlanFechasService
                 // verdadero ni falso—, así que sin él una fila sin identidad sobreviviría para siempre
                 // a todos los recálculos, invisible. Es además lo que limpia las filas que dejó
                 // cualquier cálculo hecho con el esquema anterior.
-                $marcas = $idsVigentes === [] ? '' : implode(',', array_fill(0, count($idsVigentes), '?'));
+                //
+                // Sin `$idsVigentes` no queda ninguna condición de identidad y el DELETE arrasaba el
+                // paquete entero, incluidas las filas recién escritas. Solo puede pasar con pasos sin
+                // identidad —`exigirIdentidad()` aborta antes en el camino normal—, y para ese caso la
+                // identidad es la posición: sobra lo que tenga `paso_id` o un `orden` por encima de
+                // los que se acaban de escribir.
+                if ($idsVigentes !== []) {
+                    $marcas = implode(',', array_fill(0, count($idsVigentes), '?'));
+                    $sobrante = "(paso_id IS NULL OR paso_id NOT IN ({$marcas}))";
+                    $argsSobrante = $idsVigentes;
+                } else {
+                    $sobrante = '(paso_id IS NOT NULL OR orden >= ?)';
+                    $argsSobrante = [count($pasos)];
+                }
+
+                // Y sobrar no puede costar el avance. Quitar un paso desde «Pasos de contratación»
+                // llegaba hasta aquí y borraba la fila con su `fecha_real` dentro, sin aviso ni
+                // rastro: la promesa del upsert de arriba cubría el recálculo, no este DELETE. Una
+                // propuesta recibida no deja de haberse recibido porque la obra cambie su proceso.
                 $this->db->query(
-                    'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ?'
-                        . ($marcas === '' ? '' : " AND (paso_id IS NULL OR paso_id NOT IN ({$marcas}))"),
-                    array_merge([$projectId, $paqueteId], $idsVigentes),
+                    "DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL
+                       AND {$sobrante}",
+                    array_merge([$projectId, $paqueteId], $argsSobrante),
+                );
+                // Las que se quedan por llevar avance pierden lo programado: son pasos que ya no están
+                // en el proceso, así que nadie va a recalcular esas fechas y dejarlas ahí las haría
+                // pasar por vigentes. Mismo estado que deja `limpiarPlanCalculado()` tras un reamarre
+                // —«esto se hizo, pero el plan ya no lo contempla»—, que la pantalla pinta con un
+                // guion en la columna de programado.
+                $this->db->query(
+                    "UPDATE pdc_plan_paso SET fecha_inicio = NULL, fecha_fin = NULL
+                      WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL AND {$sobrante}",
+                    array_merge([$projectId, $paqueteId], $argsSobrante),
                 );
                 $this->db->commit();
             } catch (\Throwable $t) {

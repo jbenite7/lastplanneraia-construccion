@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
+use App\Support\SesionUsuario;
 
 /**
  * API JSON del Plan de Compras v2 (isla React).
@@ -39,6 +40,7 @@ class PlanComprasApiController
             'projectId' => $projectId,
             'proyectoNombre' => (string) ($_SESSION['proyecto'] ?? ''),
             'usuario' => (string) ($_SESSION['nombreUsuario'] ?? ($_SESSION['usuario'] ?? '')),
+            'usuarioId' => SesionUsuario::resolverId($this->db),
             'rol' => (string) ($_SESSION['permiso_canonico'] ?? ($_SESSION['permiso'] ?? '')),
             'csrfToken' => CsrfTokenManager::generate('plan_compras_v2'),
         ]);

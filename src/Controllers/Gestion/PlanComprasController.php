@@ -4,6 +4,7 @@ namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
 use App\Security\CsrfTokenManager;
+use App\Support\SesionUsuario;
 
 /**
  * Shell de la isla React del Plan de Compras v2.
@@ -28,6 +29,7 @@ class PlanComprasController extends BaseController
             'projectId' => $projectId,
             'proyectoNombre' => (string) ($_SESSION['proyecto'] ?? ''),
             'usuario' => (string) ($_SESSION['nombreUsuario'] ?? ($_SESSION['usuario'] ?? '')),
+            'usuarioId' => SesionUsuario::resolverId($this->db),
             'rol' => (string) ($_SESSION['permiso_canonico'] ?? ($_SESSION['permiso'] ?? '')),
             'csrfToken' => CsrfTokenManager::generate('plan_compras_v2'),
         ];

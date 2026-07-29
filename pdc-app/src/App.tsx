@@ -7,6 +7,7 @@ import ComparativoPresupuesto from './pages/ComparativoPresupuesto'
 import PaquetesContratacion from './pages/PaquetesContratacion'
 import PlanFechas from './pages/PlanFechas'
 import PasosContratacion from './pages/PasosContratacion'
+import Seguimiento from './pages/Seguimiento'
 
 export default function App() {
   return (
@@ -23,9 +24,6 @@ export default function App() {
           {PANTALLAS.map((p) => (
             <NavLink key={p.ruta} to={p.ruta} className="pdc-nav-link">{p.etiqueta}</NavLink>
           ))}
-          <span className="pdc-nav-link pdc-nav-disabled" aria-disabled="true" title="Disponible en la fase B">
-            Seguimiento
-          </span>
         </nav>
         <Routes>
           <Route path="/" element={<Navigate to="/ensamble/importar" replace />} />
@@ -38,6 +36,7 @@ export default function App() {
           {/* Fuera de PANTALLAS a propósito: se configura una vez por obra, y se llega desde el
               Plan de compras. Una pestaña permanente para eso sería ruido en la barra. */}
           <Route path="/ensamble/plan/pasos" element={<PasosContratacion />} />
+          <Route path="/seguimiento/avance" element={<Seguimiento />} />
           <Route path="/maestro" element={<Navigate to="/ensamble/maestro" replace />} />
         </Routes>
       </div>

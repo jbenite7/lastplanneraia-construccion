@@ -237,6 +237,11 @@ $router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanCo
 $router->get('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'pasos']);
 $router->post('/plan-compras/api/plan/pasos/restablecer', [\App\Controllers\Api\PlanComprasPlanController::class, 'restablecerPasos']);
 $router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
+// PDC v2 · Fase B1 — Seguimiento. Las rutas con segmento van antes que la desnuda, igual que en el
+// bloque del plan, para no depender de como resuelva el router los prefijos.
+$router->get('/plan-compras/api/seguimiento/paquete', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paquete']);
+$router->post('/plan-compras/api/seguimiento/paso', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paso']);
+$router->get('/plan-compras/api/seguimiento', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'resumen']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
