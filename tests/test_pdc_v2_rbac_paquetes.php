@@ -45,5 +45,25 @@ $desamarrarFn = substr($desamarrarFn, 0, (int) strpos($desamarrarFn, 'public fun
 $assert(str_contains($desamarrarFn, 'guardEscritura()'),
     'desamarrar() pasa por el mismo guard de escritura que amarrar (permiso + CSRF).');
 
+// B2 · reprogramación. Simular NO escribe, pero va con el guard de escritura a propósito: enseñar
+// el delta a quien no puede aplicarlo produce una pantalla que promete un botón que dará 403.
+$assert(str_contains($rutas, '/plan-compras/api/plan/reprogramacion/simular'),
+    'La ruta GET de simular la reprogramación está registrada.');
+$assert(str_contains($rutas, '/plan-compras/api/plan/reprogramacion/aplicar'),
+    'La ruta POST de aplicar la reprogramación está registrada.');
+foreach (['simularReprogramacion', 'aplicarReprogramacion'] as $fn) {
+    $cuerpo = substr($controlador, (int) strpos($controlador, "public function {$fn}"));
+    $cuerpo = substr($cuerpo, 0, (int) strpos($cuerpo, "\n    /**", 10));
+    $assert(str_contains($cuerpo, 'guardEscritura()'),
+        "{$fn}() pasa por el guard de escritura (permiso + CSRF).");
+}
+// Rol permitido y rol denegado, que es lo que exige AGENTS.md para toda ruta protegida nueva.
+$assert($rbac->can('lps.paquetes_contratacion.editar', 'D'),
+    'Rol permitido: D puede aplicar una reprogramación.');
+$assert(!$rbac->can('lps.paquetes_contratacion.editar', 'V'),
+    'Rol denegado: V (Visualizador) no puede aplicar una reprogramación.');
+$assert(!$rbac->can('lps.paquetes_contratacion.editar', 'R'),
+    'Rol denegado: R tampoco, aunque vea el plan.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

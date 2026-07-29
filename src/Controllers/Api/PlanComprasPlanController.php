@@ -197,6 +197,46 @@ class PlanComprasPlanController
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
+    /**
+     * GET /plan-compras/api/plan/reprogramacion/simular — el antes/después, sin escribir nada.
+     *
+     * Va con el guard de ESCRITURA aunque no escriba: simular es el primer paso de aplicar, y
+     * enseñarle el delta completo a quien no puede aplicarlo solo produce una pantalla que promete
+     * un botón que va a responderle 403.
+     */
+    public function simularReprogramacion(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok($this->service->simularReprogramacion($projectId));
+    }
+
+    /** POST /plan-compras/api/plan/reprogramacion/aplicar  {paqueteIds:[int]} */
+    public function aplicarReprogramacion(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $ids = $this->body()['paqueteIds'] ?? null;
+        if (!is_array($ids)) {
+            $this->fail('PAQUETES_INVALIDOS', 'Falta la lista de paquetes a reprogramar.', 422);
+            return;
+        }
+        $limpios = [];
+        foreach ($ids as $id) {
+            $n = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($n === false) {
+                $this->fail('PAQUETES_INVALIDOS', 'Hay un paquete inválido en la lista.', 422);
+                return;
+            }
+            $limpios[] = $n;
+        }
+        $this->ok($this->service->aplicarReprogramacion($projectId, $limpios, $this->usuario()));
+    }
+
     /** POST /plan-compras/api/plan/responsable  {paqueteId|paqueteIds, responsableUserId} — null lo deja sin responsable */
     public function responsable(): void
     {

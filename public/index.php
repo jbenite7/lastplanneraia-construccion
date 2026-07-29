@@ -226,6 +226,9 @@ $router->get('/plan-compras/api/plan/anclas', [\App\Controllers\Api\PlanComprasP
 $router->get('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'correspondencias']);
 $router->post('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarCorrespondencia']);
 $router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
+// B2 — el desfase se mira antes de aplicarse: simular no escribe, aplicar solo lo confirmado.
+$router->get('/plan-compras/api/plan/reprogramacion/simular', [\App\Controllers\Api\PlanComprasPlanController::class, 'simularReprogramacion']);
+$router->post('/plan-compras/api/plan/reprogramacion/aplicar', [\App\Controllers\Api\PlanComprasPlanController::class, 'aplicarReprogramacion']);
 $router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
 $router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
 $router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
