@@ -2481,9 +2481,13 @@ table.dataTable td.dt-min-width-300,
    select)` dentro de este modal desde un @layer components de nivel superior, y
    para las declaraciones !important el orden de capas se invierte, asi que ganaba
    a module.components por mucho id que se le pusiera. Se corrigio retirando aquel
-   !important (no anadiendo otro aqui). El !important de abajo sigue haciendo falta:
-   la regla de reposo `#formulario_nuevo .ps-modal-form .form-control` vive en esta
-   misma capa y tiene mas especificidad (1 id + 2 clases contra 1 id + 1 clase). */
+   !important (no anadiendo otro aqui). El !important de abajo sigue haciendo falta,
+   y por DOS motivos, no uno: la regla de reposo
+   `#formulario_nuevo .ps-modal-form .form-control` vive en esta misma capa y tiene
+   mas especificidad (1 id + 2 clases contra 1 id + 1 clase), pero el vinculante es
+   que styles.css:1289-1294 declara `border` con !important en la misma capa, asi
+   que sin la marca esta regla no competiria siquiera; con ella gana por 1 id
+   contra 2 clases. Lo señalo la review midiendo. */
 #formulario_nuevo .ps-field-error {
   border-color: var(--pdc-critical-border) !important;
   box-shadow: 0 0 0 0.18rem color-mix(in srgb, var(--pdc-critical-border) 25%, transparent);

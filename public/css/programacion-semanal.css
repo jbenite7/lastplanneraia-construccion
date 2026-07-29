@@ -2745,10 +2745,13 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
        orden de capas se INVIERTE (gana la capa mas temprana), asi que un
        !important aqui vence a todo module.components por mucha especificidad
        que tenga el otro lado. Con !important esta linea dejaba inertes los dos
-       estados de borde que styles.css declara SIN !important para estos mismos
-       campos —`#formulario_nuevo .ps-field-error` (rojo) y
-       `#formulario_nuevo .ps-modal-form .form-control:focus` (foco)—: medido en
-       navegador con el estado provocado, los dos computaban --ds-active-border.
+       estados de borde de estos mismos campos: el rojo de error y el de foco.
+       Medido con el estado provocado, los dos computaban --ds-active-border.
+       OJO al reponer: el foco que revive NO lo pinta
+       `#formulario_nuevo .ps-modal-form .form-control:focus` (styles.css:2420-2423),
+       que sigue INERTE, sino styles.css:1314-1320 (`.aia-modal .form-control:focus`,
+       --ds-active-action-primary, verde) porque lleva !important en la misma capa.
+       La atribucion la corrigio la review midiendo; no busques en la regla obvia.
        Sin !important el reposo no cambia (esta capa sigue venciendo a Bootstrap,
        que declara su borde en @layer vendor y sin !important) y los dos estados
        vuelven a pintar. `background` y `color` SI necesitan la marca: ahi

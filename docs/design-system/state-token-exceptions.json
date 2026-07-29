@@ -272,7 +272,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 2947,
+      "line": 2950,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -281,7 +281,7 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 2593,
+      "line": 2597,
       "selector": ".cic-text-dark",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -289,7 +289,7 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 4235,
+      "line": 4239,
       "selector": "#modalEditarContratos .ct-overplanning-alert",
       "token": "--ds-color-state-warning-bg",
       "kind": "at-risk",
