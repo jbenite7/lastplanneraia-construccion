@@ -40,8 +40,14 @@ que es peor que no tener este archivo.
 |---|---|---|---|---|---|
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
-| 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3` | 2026-07-29 |
-| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO (3 de 4)** | `efe8d5e`, `20d6acf`, `c725fc7` | 2026-07-29 |
+| 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
+| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO (3 de 4)** | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
+
+`3a0da33` es el merge de la fila 1 (`9d90663`) dentro de esta rama, verificado después de integrar:
+16 tests PHP en verde —incluidos `test_pdc_v2_vencimientos` y `test_pdc_v2_maestro_gobernado`, que
+llegaron con la fila 1—, phpstan limpio, 278 de vitest y 11 e2e de navegador. El bundle
+`public/pdc-app/assets/*` se **recompiló** desde la fuente ya mezclada, no se eligió una de las dos
+versiones. La rama queda lista para que la integre quien lleva el ciclo; no se empujó desde aquí.
 
 ### Nota sobre 7a — la medición recortó el spec a la mitad
 
@@ -72,6 +78,14 @@ de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también
 |---|---|---|
 | 2 | Copiar la configuración entre obras | **Hecho** (`efe8d5e`). Copia puntual, no vínculo vivo; la pantalla enseña qué trae y marca si el origen está a medias |
 | 4 | Duraciones del catálogo editables | **Hecho** (`20d6acf`). Solo las filas que la obra usa, con aviso permanente de que son de la empresa. Recorte: el upsert ya existía en `/contratos`; lo que faltaba era llegar desde el PDC v2, con el permiso de reglas y recalculando |
+
+**Límite conocido del nº 4, y su relación con los 42 paquetes sin `duracion_ref`**
+([`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md)): la pantalla lista
+las filas del catálogo por `JOIN … ON d.id = p.duracion_ref`, así que un paquete **sin** fila de
+catálogo no aparece y su duración no se puede editar desde aquí. No es un descuido: no hay número que
+editar — esos 42 reciben fechas por la mediana de su tipo, y darles un campo editable inventaría una
+fila del catálogo de la empresa desde la pantalla de una obra. Cuando alguien mida uno de esos
+procesos, hay que crear su fila y apuntar el paquete a ella; a partir de ahí sí es editable aquí.
 | 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
 | 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
 
