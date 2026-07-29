@@ -112,6 +112,77 @@ $assert(($fila['cumplidos'] ?? -1) === 0 && ($fila['total'] ?? 0) === count($det
 $assert(($fila['pasoActual'] ?? '') === $detalle[0]['paso'],
     'Resumen: el paso actual es el primero sin fecha real. Dio ' . ($fila['pasoActual'] ?? 'null'));
 
+// --- Registro del avance ---
+$pasoId = $detalle[0]['pasoId'];
+$assert($pasoId !== null, 'El paso de prueba tiene identidad (paso_id). Sin ella el registro no puede direccionarse.');
+
+$r = $svc->registrarPaso(P, $paquete, (int) $pasoId, '2026-04-15', 'test-b1');
+$assert(($r['ok'] ?? false) === true, 'Registro: guardar una fecha real responde ok. Dio ' . json_encode($r));
+
+$tras = $svc->pasosDePaquete(P, $paquete);
+$assert($tras[0]['fechaReal'] === '2026-04-15',
+    'Registro: la fecha real queda guardada. Dio ' . var_export($tras[0]['fechaReal'], true));
+$assert($tras[0]['registradoPor'] === 'test-b1',
+    'Registro: queda constancia de quien la puso. Dio ' . $tras[0]['registradoPor']);
+$assert($tras[0]['registradoAt'] !== null,
+    'Registro: y de cuando la puso.');
+$assert($tras[0]['proyectadoFin'] === '2026-04-15',
+    'Registro: la proyectada del paso pasa a ser la real.');
+
+// El paquete deja de estar «sin empezar» sin que nadie guarde ningun estado.
+$fila2 = null;
+foreach ($svc->resumen(P) as $x) {
+    if ($x['paqueteId'] === $paquete) {
+        $fila2 = $x;
+    }
+}
+$assert(($fila2['estado'] ?? '') === 'en_curso',
+    'Registro: con un paso cumplido de varios, el paquete pasa a «en curso». Dio ' . ($fila2['estado'] ?? 'null'));
+$assert(($fila2['cumplidos'] ?? 0) === 1, 'Registro: el resumen cuenta un paso cumplido.');
+
+// Un paso que no es de este paquete se rechaza. La FK garantiza que el paso existe en el catalogo,
+// no que pertenezca a este plan: sin esta comprobacion, un cliente podria escribir en el paquete de
+// otro pasandole el paso_id correcto y el paquete_id equivocado.
+$otroPaquete = (int) $db->query(
+    'SELECT paquete_id FROM pdc_plan_paso WHERE project_id = ? AND paquete_id <> ? LIMIT 1',
+    [P, $paquete],
+)->fetchColumn();
+if ($otroPaquete > 0) {
+    $r = $svc->registrarPaso(P, $otroPaquete, 999999, '2026-04-15', 'test-b1');
+    $assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'PASO_INVALIDO',
+        'Registro: un paso que no pertenece al plan del paquete se rechaza. Dio ' . json_encode($r));
+}
+
+// Fecha con formato invalido: se rechaza en vez de guardar basura que luego reviente al proyectar.
+$r = $svc->registrarPaso(P, $paquete, (int) $pasoId, '15/04/2026', 'test-b1');
+$assert(($r['ok'] ?? true) === false && ($r['code'] ?? '') === 'FECHA_INVALIDA',
+    'Registro: una fecha mal formada se rechaza. Dio ' . json_encode($r));
+
+// Otro proyecto no puede tocar los pasos de este.
+$r = $svc->registrarPaso(999999, $paquete, (int) $pasoId, '2026-04-15', 'test-b1');
+$assert(($r['ok'] ?? true) === false,
+    'Registro: el aislamiento por project_id se respeta. Dio ' . json_encode($r));
+$assert($svc->pasosDePaquete(P, $paquete)[0]['fechaReal'] === '2026-04-15',
+    'Registro: y el intento del otro proyecto no altero el dato de este.');
+
+// Deshacer: null borra el registro y su auditoria.
+$r = $svc->registrarPaso(P, $paquete, (int) $pasoId, null, 'test-b1');
+$assert(($r['ok'] ?? false) === true, 'Registro: borrar una fecha responde ok.');
+$borrado = $svc->pasosDePaquete(P, $paquete);
+$assert($borrado[0]['fechaReal'] === null && $borrado[0]['registradoAt'] === null,
+    'Registro: deshacer deja el paso como si nunca se hubiera registrado.');
+
+// Y se vuelve a poner, porque la Task 4 necesita un paso con avance.
+$svc->registrarPaso(P, $paquete, (int) $pasoId, '2026-04-15', 'test-b1');
+
+// --- El avance sobrevive a un recalculo ---
+(new \App\Services\Pdc\PlanFechasService($db))->calcular(P, 'test-b1');
+$trasCalculo = $svc->pasosDePaquete(P, $paquete);
+$assert($trasCalculo[0]['fechaReal'] === '2026-04-15',
+    'Recalculo: la fecha real sobrevive (el upsert de calcular() no lista esa columna). Dio ' . var_export($trasCalculo[0]['fechaReal'], true));
+$assert($trasCalculo[0]['registradoPor'] === 'test-b1',
+    'Recalculo: y su auditoria tambien.');
+
 $assert($fallos === 0, 'Sin fallos');
 echo $fallos === 0 ? "=== OK ===\n" : "=== {$fallos} FALLOS ===\n";
 exit($fallos === 0 ? 0 : 1);

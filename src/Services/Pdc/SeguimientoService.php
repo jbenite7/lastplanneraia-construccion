@@ -125,6 +125,65 @@ class SeguimientoService
     }
 
     /**
+     * Registra (o borra, con null) la fecha en que ocurrio de verdad un paso.
+     *
+     * No hay regla de orden entre pasos a proposito. En obra la orden de compra se firma a veces
+     * antes de que alguien archive el acta del paso anterior, y bloquear el registro fuera de orden
+     * no produce disciplina: produce fechas inventadas para desbloquear la pantalla.
+     *
+     * @return array{ok: bool, code?: string, mensaje?: string}
+     */
+    public function registrarPaso(
+        int $projectId,
+        int $paqueteId,
+        int $pasoId,
+        ?string $fechaReal,
+        string $usuario,
+    ): array {
+        if ($fechaReal !== null) {
+            // Formato estricto: `strtotime` aceptaria '15/04/2026' y lo interpretaria al reves, y esa
+            // fecha silenciosamente equivocada no la detecta nadie hasta que la proyeccion sale rara.
+            $d = \DateTimeImmutable::createFromFormat('!Y-m-d', $fechaReal);
+            if ($d === false || $d->format('Y-m-d') !== $fechaReal) {
+                return ['ok' => false, 'code' => 'FECHA_INVALIDA', 'mensaje' => 'La fecha debe venir como AAAA-MM-DD.'];
+            }
+        }
+
+        // La terna (proyecto, paquete, paso) se comprueba junta. Que el paso exista en el catalogo no
+        // dice nada: lo que hay que garantizar es que ESE paso pertenece al plan de ESE paquete en
+        // ESTE proyecto. Sin esto, un paquete_id equivocado escribiria en el plan de otro.
+        $existe = $this->db->query(
+            'SELECT 1 FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND paso_id = ?',
+            [$projectId, $paqueteId, $pasoId],
+        )->fetchColumn();
+        if ($existe === false) {
+            return [
+                'ok' => false,
+                'code' => 'PASO_INVALIDO',
+                'mensaje' => 'Ese paso no pertenece al plan de este paquete.',
+            ];
+        }
+
+        // Borrar la fecha borra tambien su auditoria: dejar «lo registro Fulano» sobre una casilla
+        // vacia solo genera preguntas sin respuesta.
+        $this->db->query(
+            'UPDATE pdc_plan_paso
+                SET fecha_real = ?,
+                    registrado_por = ?,
+                    registrado_at = ?
+              WHERE project_id = ? AND paquete_id = ? AND paso_id = ?',
+            [
+                $fechaReal,
+                $fechaReal === null ? '' : $usuario,
+                $fechaReal === null ? null : (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                $projectId, $paqueteId, $pasoId,
+            ],
+        );
+
+        return ['ok' => true];
+    }
+
+    /**
      * Una fila por paquete con plan: en que paso va, cuanto lleva, si esta atrasado.
      *
      * Todos los derivados se calculan aqui y ninguno se guarda. Un estado persistido se
