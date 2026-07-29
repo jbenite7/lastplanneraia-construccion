@@ -1,1 +1,6 @@
-*-err.txt
+# Los goals del PDC guardan el stderr de sus entrevistas en *-err.txt: ruido de proceso,
+# no registro. La regla venía de `plan-de-compras`, donde `goals/` era solo del PDC.
+#
+# Va acotada a `pdc-*/` a propósito: aquí `goals/` lo comparten design-system, BI y el PDC,
+# y una regla sin prefijo les impondría en silencio un ignore que nadie les pidió.
+pdc-*/*-err.txt
