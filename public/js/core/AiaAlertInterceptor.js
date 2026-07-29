@@ -9,6 +9,31 @@
 window.AIA = window.AIA || {};
 
 (function() {
+    /**
+     * SweetAlert2 se sirve con el bundle `.all.min.js`, que al ejecutarse inyecta
+     * su hoja completa en un <style> SIN capa. Una hoja sin capa gana a todas las
+     * capas en declaraciones normales, así que el fondo blanco que el vendor le
+     * pone a `.swal2-popup` dejaba inerte al adaptador (`adapters/sweetalert2.css`,
+     * layer components) y los diálogos salían claros sobre la app oscura.
+     *
+     * Mismo defecto que 40d402c resolvió quitando el <link> crudo de select2, pero
+     * aquí el duplicado no es un <link> que se pueda borrar de una vista: solo
+     * existe en runtime. Lo capamos envolviéndolo en la capa que le corresponde.
+     * El texto inyectado es byte a byte el mismo /public/vendor/sweetalert2.min.css
+     * que el design system ya importa con layer(vendor), así que envolverlo en esa
+     * capa no pierde ninguna regla ni cambia nada dentro del propio vendor.
+     */
+    const VENDOR_MARKER = '.swal2-popup';
+    for (const style of document.querySelectorAll('head > style')) {
+        // El vendor crea un <style> pelado; el atributo que ponemos abajo evita
+        // reprocesarlo y descarta de paso cualquier <style> con dueño conocido.
+        if (style.attributes.length > 0) continue;
+        const css = style.textContent || '';
+        if (!css.includes(VENDOR_MARKER)) continue;
+        style.setAttribute('data-aia-capado', 'vendor');
+        style.textContent = `@layer vendor {${css}}`;
+    }
+
     // Interceptor de window.alert
     const nativeAlert = window.alert;
     window.alert = function(message) {

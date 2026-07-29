@@ -55,7 +55,7 @@
 
   loadScript('/runtime/frontend-config.js?v=20260325a');
   loadScript('/public/vendor/sweetalert2.all.min.js?v=11.4.24');
-  loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260722a');
+  loadScript('/public/js/core/AiaAlertInterceptor.js?v=20260728a');
   loadScript('/public/js/core/SessionTimeoutManager.js?v=20260328a');
   loadScript('/public/js/modules/aia_ui/theme.js?v=20260711foundation5');
   loadScript('/public/js/modules/aia_ui/nav_drawer.js?v=20260711foundation5');
