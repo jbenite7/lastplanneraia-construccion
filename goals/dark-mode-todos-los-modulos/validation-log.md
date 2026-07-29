@@ -1545,3 +1545,94 @@ preexistentes (las siete anclas que /pdc eligió y midió), no un efecto de este
   `/subcontratistas` declaran hojas de CDN que ya no cargan, y `/plan-compras` declara 16 bloques
   donde hay 19. Es deuda de las seis superficies hermanas; no se tocó para no mezclar.
 
+---
+
+## Deriva del inventario de entregas sin capa — y dos rutas caídas (2026-07-29)
+
+Encargo: sanear los 13 hallazgos del gate de runtime, deriva contable heredada de F2. Lo que
+apareció por el camino es más importante que el encargo.
+
+### `/listado-actividades` y `/contratos` devolvían «Error Interno del Servidor»
+
+**Causa raíz.** El 2026-07-29 se retiraron «Familias de Actividades» y «Paquetes de Contratación»
+del rail del sidebar —decisión deliberada y documentada en `views/partials/shell_sidebar.php:90-105`,
+por ser la interfaz del PDC viejo—, dejando las rutas servidas y accesibles por su dirección. Pero
+`ListadoActividadesController` y `ContratosController` seguían pidiendo `$shellActive =
+'listado-actividades'` / `'contratos'`, y `DesignSystemComponent.php:392` **lanza**
+`InvalidArgumentException` cuando el ítem activo no está entre los renderizados.
+
+El propio comentario del rail previó el problema para `/pdc` («El id se conserva ('plan-compras')
+para que el `$shellActive` del controlador viejo siga casando») pero no para estas dos.
+
+**Por qué nadie lo vio.** Tres capas de camuflaje a la vez:
+
+1. **El error sale con status 200.** `public/index.php:391` hace `http_response_code(500)`, pero el
+   `<head>` de la vista ya se emitió, así que PHP avisa «headers already sent» y la respuesta se
+   queda en 200 con `<h1>Error Interno del Servidor</h1>` en el cuerpo. Un monitor por código de
+   estado no lo ve.
+2. **El gate de entregas sin capa las daba por limpias.** Una página que muere justo después del
+   `<head>` entrega exactamente las hojas declaradas y ninguna de más. Su censo era el de la
+   cabecera, no el de la página.
+3. **`shell-sidebar-rollout.mjs` moría antes de llegar.** Reventaba por timeout esperando el
+   sidebar en `/listado-actividades`, que es la ruta 12 de 23, así que **las 11 siguientes nunca se
+   probaron** — incluida `/pdc`.
+
+**Arreglo** (autorizado explícitamente): `$shellActive = ''` en los dos controladores. Una ruta que a
+propósito no tiene entrada en el rail no debe marcar ninguna como actual, y la excepción solo salta
+con `$active !== ''`. Medido después: 107 201 y 103 278 bytes (venían de 1 277 y 1 175), sidebar
+presente, sin overflow horizontal, ningún ítem marcado.
+
+**Red de seguridad** (autorizada): el gate de runtime ahora asierta que el cuerpo no contiene
+«Error Interno del Servidor». Convierte un fallo invisible en uno ruidoso, en las 25 rutas que
+recorre.
+
+**Consecuencia para el encargo original:** la entrada de tom-select en `/listado-actividades`
+**no estaba obsoleta**. Solo lo parecía porque la página moría antes del `<link>`, que vive en el
+cuerpo. Al resucitar la ruta, el CDN vuelve a cargar y la entrada es correcta. **No se tocó.**
+
+### La contabilidad que sí era contabilidad
+
+Medido con el propio gate, que persiste lo observado en
+`test-results/design-system-unlayered-delivery-authenticated.json`:
+
+- `/dashboard/escalamientos`, `/profesionales`, `/programa-general-actualizar`, `/subcontratistas`:
+  declaraban un bloque `<style>` sin capa que **ya no existe** (0 medidos). Lo retiraron al migrar en
+  F2 sin actualizar la sección `runtime`. Entradas eliminadas.
+- `/subcontratistas` declaraba además el CDN de Handsontable, que ya no está en la vista. Eliminada.
+- `/pdc` sale **OK**: valida el cierre de F2 de esta misma jornada.
+
+### `/plan-compras`: 19 bloques, y ninguno es de autor
+
+La única deriva **al alza**, y por eso la única que podía esconder una regresión. Enumerados los 19
+bloques uno a uno en el navegador: **los 19 son AG Grid 36.0.2**, cada uno autoidentificado con
+`data-ag-css` (`shared`, `core`, diez `module-*`, `component-sb` y siete `ag-theme-*`). **Cero
+bloques de CSS propio.** El salto 16 → 19 es registro de módulos del vendor, que sube y baja con las
+funciones de grilla que active la SPA: ese número es frágil por construcción y así queda anotado.
+
+También creció, sin que ningún gate lo vigile, `/pdc-app/assets/pdc.css`: **140 → 268 reglas sin
+capa**. El gate compara el conjunto de hojas y el número de bloques, no el de reglas.
+
+**Que AG Grid entre sin capa sí es un hallazgo real** —derrota al design system en esa ruta, que es
+exactamente la clase de problema para la que existe el gate—, pero es **alcance de F5**, que además
+se implementa en el repositorio externo `plan-de-compras`. `specs/F5-plan-compras.md` documenta que
+el CSS de la SPA está fuera del alcance de los gates, pero **no menciona la inyección de AG Grid**:
+conviene que F5 la absorba.
+
+### Verificado
+
+- `npx playwright test tests/browser/design-system-unlayered-delivery.mjs --workers=1` → **2 passed**
+  (de 13 hallazgos a 0).
+- `node tests/browser/shell-sidebar-rollout.mjs` → **141/141 checks OK**, y por primera vez recorre
+  las 23 rutas enteras. Se corrigieron dos expectativas caducas del propio harness: exigía
+  `aria-current` en las dos rutas que ya no tienen ítem en el rail. Ahora `active: null` asierta lo
+  contrario —que no haya ninguno marcado—, que es el fallo real que las tumbó.
+- `npm run test:design-system:static`: único rojo `activation: worktree and index must be clean`, el
+  falso rojo conocido con trabajo sin commitear.
+
+### Queda abierto
+
+- **AG Grid sin capa en `/plan-compras`** (19 bloques, 347 reglas) y **`pdc.css` de la SPA** (268
+  reglas sin capa). Alcance F5, repositorio externo.
+- **El gate no compara número de reglas**, solo hojas y bloques. Por eso `pdc.css` pudo casi doblar
+  su deuda sin poner nada en rojo. Es una decisión consciente documentada en el propio test
+  (el conteo de reglas sube con cualquier edición), pero conviene saberlo.

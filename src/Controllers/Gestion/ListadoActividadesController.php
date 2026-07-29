@@ -39,7 +39,17 @@ class ListadoActividadesController extends BaseController
                 error_log('Error cargando semanas para el shell Listado de Actividades: ' . $e->getMessage());
             }
         }
-        $shellActive = 'listado-actividades';
+        // Sin item activo en el rail, a proposito. El 2026-07-29 se retiraron
+        // «Familias de Actividades» y «Paquetes de Contratacion» del sidebar
+        // (son la interfaz del PDC viejo; ver views/partials/shell_sidebar.php),
+        // pero la ruta se dejo servida y accesible por su direccion. Este
+        // controlador seguia pidiendo 'listado-actividades' como item activo, y
+        // DesignSystemComponent lanza InvalidArgumentException cuando el activo
+        // no esta entre los items renderizados: la ruta devolvia «Error Interno
+        // del Servidor» con status 200 —el error sale despues del <head>, asi
+        // que las cabeceras ya estaban enviadas—. Una ruta sin entrada en el
+        // rail no debe marcar ninguna como actual.
+        $shellActive = '';
         $shellModuleLabel = 'Familias de Actividades';
 
         // Cargar vista Listado de Actividades

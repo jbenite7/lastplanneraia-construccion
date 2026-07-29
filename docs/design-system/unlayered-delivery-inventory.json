@@ -291,14 +291,7 @@
     },
     "/dashboard/escalamientos": {
       "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "style:*",
-          "via": "style",
-          "unlayeredRules": 29,
-          "blocks": 1
-        }
-      ]
+      "unlayered": []
     },
     "/indicadores": {
       "authenticated": true,
@@ -351,13 +344,14 @@
         {
           "sheet": "/pdc-app/assets/pdc.css",
           "via": "link",
-          "unlayeredRules": 140
+          "unlayeredRules": 268
         },
         {
           "sheet": "style:*",
           "via": "style",
-          "unlayeredRules": 336,
-          "blocks": 16
+          "unlayeredRules": 347,
+          "blocks": 19,
+          "note": "Los 19 bloques son AG Grid 36.0.2 y NINGUNO es CSS de autor: cada uno se autoidentifica con data-ag-css (shared, core, 10 module-*, component-sb y 7 ag-theme-*). Medido bloque a bloque el 2026-07-29. El salto 16 -> 19 es registro de modulos del vendor, no una regresion del codigo del repo: sube y baja con las funciones de grilla que la SPA active, asi que este numero es fragil por construccion. Que AG Grid entre sin capa SI es un hallazgo real -derrota al design system en esta ruta-, pero es alcance de F5, que ademas se implementa en el repositorio externo plan-de-compras."
         }
       ]
     },
@@ -374,12 +368,6 @@
           "sheet": "/css/handsontable-header-global.css",
           "via": "link",
           "unlayeredRules": 8
-        },
-        {
-          "sheet": "style:*",
-          "via": "style",
-          "unlayeredRules": 46,
-          "blocks": 1
         }
       ]
     },
@@ -406,12 +394,6 @@
           "sheet": "/css/handsontable-header-global.css",
           "via": "link",
           "unlayeredRules": 8
-        },
-        {
-          "sheet": "style:*",
-          "via": "style",
-          "unlayeredRules": 85,
-          "blocks": 1
         }
       ]
     },
@@ -490,21 +472,9 @@
       "authenticated": true,
       "unlayered": [
         {
-          "sheet": "https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css",
-          "via": "cross-origin-opaque",
-          "unlayeredRules": null,
-          "case": "2-handsontable-doble-carga"
-        },
-        {
           "sheet": "/css/handsontable-header-global.css",
           "via": "link",
           "unlayeredRules": 8
-        },
-        {
-          "sheet": "style:*",
-          "via": "style",
-          "unlayeredRules": 46,
-          "blocks": 1
         }
       ]
     },

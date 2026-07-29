@@ -24,8 +24,8 @@ const ALL_ROUTES = [
   { route: '/programacion-semanal/cnc', active: 'programacion-semanal', label: 'CNC' },
   { route: '/programacion-semanal/cnp', active: 'programacion-semanal', label: 'CNP' },
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
-  { route: '/listado-actividades', active: 'listado-actividades', label: 'Familias de Actividades' },
-  { route: '/contratos', active: 'contratos', label: 'Paquetes de Contratación' },
+  { route: '/listado-actividades', active: null, label: 'Familias de Actividades' },
+  { route: '/contratos', active: null, label: 'Paquetes de Contratación' },
   { route: '/pdc', active: 'plan-compras', label: 'Plan de Compras (clásico)' },
   { route: '/plan-compras', active: 'plan-compras', label: 'Plan de Compras' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
@@ -167,11 +167,23 @@ for (const r of ALL_ROUTES) {
     overflowExpanded && overflowCollapsed,
     `expanded=${overflowExpanded} collapsed=${overflowCollapsed}`);
 
-  // 5) Ítem activo
-  const activeOk = await page.evaluate((activeId) => (
-    !!document.querySelector(`[data-shell-pattern="sidebar"] [data-destination-id="${activeId}"][aria-current="page"]`)
-  ), r.active);
-  check(`[${r.label}] ítem activo con aria-current`, activeOk, `active=${r.active} found=${activeOk}`);
+  // 5) Ítem activo. `active: null` = la ruta se sirve a propósito SIN entrada en
+  // el rail (Familias de Actividades y Paquetes de Contratación, retiradas el
+  // 2026-07-29 por ser la interfaz del PDC viejo). Ahí lo correcto es que NADIE
+  // quede marcado: se asierta lo contrario, que es justamente el fallo que dejó
+  // ambas rutas en «Error Interno del Servidor» hasta que se corrigió su
+  // $shellActive.
+  if (r.active === null) {
+    const noneMarked = await page.evaluate(() => (
+      document.querySelectorAll('[data-shell-pattern="sidebar"] [aria-current="page"]').length === 0
+    ));
+    check(`[${r.label}] sin ítem marcado (ruta fuera del rail)`, noneMarked, `marcados=${!noneMarked}`);
+  } else {
+    const activeOk = await page.evaluate((activeId) => (
+      !!document.querySelector(`[data-shell-pattern="sidebar"] [data-destination-id="${activeId}"][aria-current="page"]`)
+    ), r.active);
+    check(`[${r.label}] ítem activo con aria-current`, activeOk, `active=${r.active} found=${activeOk}`);
+  }
 
   // 6) [Control Tower] Cajón derecho de filtros (CT-2): trigger existe, click abre, Escape cierra.
   if (r.route === '/bi/control-tower') {

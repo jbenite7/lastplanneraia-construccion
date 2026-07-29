@@ -45,7 +45,12 @@ class ContratosController extends BaseController
                 error_log('Error cargando semanas para el shell Contratos: ' . $e->getMessage());
             }
         }
-        $shellActive = 'contratos';
+        // Sin item activo en el rail, a proposito: mismo caso que
+        // ListadoActividadesController. El ítem 'contratos' se retiro del
+        // sidebar el 2026-07-29 y pedirlo como activo hacia que
+        // DesignSystemComponent lanzara y la ruta devolviera «Error Interno del
+        // Servidor» con status 200.
+        $shellActive = '';
         $shellModuleLabel = 'Paquetes de Contratación';
 
         // Cargar vista Contratos

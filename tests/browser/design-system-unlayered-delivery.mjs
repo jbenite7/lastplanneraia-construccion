@@ -107,6 +107,19 @@ const PROBE = () => {
 async function probe(page, route) {
   const response = await page.goto(route, { waitUntil: 'networkidle' });
   expect(response?.status(), `${route} debe responder`).toBeLessThan(400);
+  // El status NO basta. `public/index.php` captura la excepcion y escribe
+  // «Error Interno del Servidor» en el cuerpo, pero para entonces el <head> ya
+  // salio, asi que `http_response_code(500)` falla con «headers already sent» y
+  // la respuesta se queda en 200. Medido el 2026-07-29: /listado-actividades y
+  // /contratos llevaban asi desde que se las retiro del rail del sidebar, y
+  // este gate las daba por limpias —una pagina que muere tras el <head> entrega
+  // exactamente las hojas declaradas y ninguna de mas—. Sin esta comprobacion,
+  // el censo de entregas sin capa de una ruta rota es el de su cabecera, no el
+  // de la pagina.
+  const body = await page.evaluate(() => document.body?.innerText || '');
+  expect(body, `${route} devuelve la pagina de error del front controller (status ${response?.status()}; `
+    + 'el 500 no llega al status porque las cabeceras ya se enviaron)')
+    .not.toContain('Error Interno del Servidor');
   // Los vendors que inyectan su CSS en runtime lo hacen al primer uso o al
   // cargar su bundle; se deja un margen tras networkidle.
   await page.waitForTimeout(500);
