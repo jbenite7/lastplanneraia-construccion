@@ -6,7 +6,7 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('programa-general-actualizar') ?>
 	<link rel="stylesheet" href="/css/programa-general-actualizar.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/programa-general-actualizar.css') ?: 'pga1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
@@ -21,415 +21,7 @@
 	<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
 
-	<!-- Custom CSS for 2026 Guidelines -->
-	<style>
-		/* Estilos Core 2026 para Handsontable Full Bleed */
-		body.pg-page { padding: 0; margin: 0; overflow: hidden !important; background: #f8fafc; }
-		/* Shell sidebar (DS-027): la altura ya no resta el navbar legacy (80px).
-		   #encabezado solo aloja inputs ocultos (0px); el único elemento con
-		   altura real entre el body y este contenedor es la context-bar sticky
-		   del shell (#shellContextBar), medida en runtime a 1180x820 dark = 49px
-		   (chip de semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
-		   goals/sidebar-todos-modulos/reports/task-6-report.md. */
-		body.aia-shell--sidebar .hot-full-bleed { height: calc(100vh - 49px); }
-		.hot-full-bleed { display: flex; flex-direction: column; height: calc(100vh - 80px); --hot-gutter: 8px; width: 100%; max-width: 100%; margin: 0; padding-left: var(--hot-gutter); padding-right: var(--hot-gutter); box-sizing: border-box; overflow: hidden; }
-		#hot-container { flex: 1 1 auto; min-height: 0; min-width: 0; position: relative; width: 100% !important; overflow: hidden; z-index: 1; }
-		/* Utilidades para celdas Handsontable */
-		.pg-page #hot-container td.force-wrap, .pg-page #hot-container th.force-wrap { white-space: pre-wrap !important; word-break: normal !important; overflow-wrap: break-word !important; hyphens: none !important; }
-		/* Changetypes UI */
-		.pg-page #hot-container .handsontable thead th { position: relative !important; text-align: center !important; }
-		.pg-page #hot-container .handsontable thead th .relative { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 2px; width: 100%; padding: 0 1px; box-sizing: border-box; }
-		.pg-page #hot-container .handsontable thead th .relative > .colHeader { order: 1; width: 100%; }
-		.pg-page #hot-container .handsontable thead th .relative > .changeType { order: 2; align-self: flex-end; margin: 0 !important; margin-top: 1px !important; }
-		.pg-page #hot-container .handsontable thead th .colHeader { display: block; padding: 0 !important; line-height: 1.15; white-space: normal; overflow: visible; text-overflow: clip; word-break: break-word; text-align: center !important; }
-		.pg-page #hot-container .handsontable thead th .changeType { float: none !important; position: static !important; transform: none; width: 13px; height: 13px; border: 1px solid #cfd8e3; border-radius: 4px; background: #f4f7fb; color: #5c6b7a; display: inline-flex; align-items: center; justify-content: center; z-index: 2; font-size: 9px; }
-		.pg-page #hot-container .handsontable .changeType:before { content: "\f0b0"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
-		.pg-page #hot-container .handsontable thead th .changeType:hover { border-color: #7ea7d8; background: #eaf3ff; color: #1e5ea8; cursor: pointer; }
-
-		/* Overrides de Z-index */
-		.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable) { z-index: 1085; }
-
-		/* Celdas Handsontable AIA 2026 */
-		.pg-page #hot-container td.pg-cell-editable:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
-			box-shadow: inset 0 0 0 9999px rgba(34, 197, 94, 0.06);
-			cursor: text;
-		}
-
-		.pg-page #hot-container td.pg-cell-editable.pg-state-atrasado,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-atrasada,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-restr-0,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-debe-iniciar,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-actividad-futura,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-en-curso,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-a-tiempo-en-curso,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-terminada,
-		.pg-page #hot-container td.pg-cell-editable.pg-state-sin-datos {
-			cursor: text;
-		}
-
-		.pg-page #hot-container td.pg-cell-readonly:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(.pg-state-debe-iniciar):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(.pg-state-terminada):not(.pg-state-sin-datos) {
-			box-shadow: inset 0 0 0 9999px rgba(148, 163, 184, 0.08);
-			cursor: not-allowed;
-		}
-
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-atrasado,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-atrasada,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-restr-0,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-debe-iniciar,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-actividad-futura,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-en-curso,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-a-tiempo-en-curso,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-terminada,
-		.pg-page #hot-container td.pg-cell-readonly.pg-state-sin-datos {
-			cursor: not-allowed;
-		}
-
-		/* Botones Filtro UI */
-		.pg-actions-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-
-		@media (max-width: 991px) { .hot-full-bleed { height: calc(100vh - 250px); } }
-
-		/* Matching confidence tiers for Cronograma Actualizar */
-		.pg-page #hot-container td.pg-match-auto {
-			background: rgba(26, 86, 51, 0.12) !important;
-		}
-		.pg-page #hot-container td.pg-match-auto::after {
-			content: " ✓";
-			color: #1a5633;
-			margin-left: 4px;
-			pointer-events: none;
-		}
-
-		.pg-page #hot-container td.pg-match-review {
-			background: rgba(255, 193, 7, 0.15) !important;
-		}
-		.pg-page #hot-container td.pg-match-review::after {
-			content: " ⚠";
-			color: #b8860b;
-			margin-left: 4px;
-			pointer-events: none;
-		}
-
-		.pg-page #hot-container td.pg-match-new {
-			background: rgba(108, 117, 125, 0.12) !important;
-		}
-		.pg-page #hot-container td.pg-match-new::after {
-			content: " NUEVA";
-			color: #6c757d;
-			font-weight: bold;
-			margin-left: 4px;
-			pointer-events: none;
-		}
-
-		/* ========================================
-		   Modal Auto-Asociación — Estilos de revisión
-		   ======================================== */
-		.match-stats {
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-			gap: var(--spacing-md, 1rem);
-			margin-bottom: var(--spacing-lg, 1.5rem);
-		}
-		.match-stats .match-stat-card {
-			background: var(--ds-active-surface-raised);
-			border: 1px solid var(--ds-active-border);
-			border-radius: var(--radius-md, 0.5rem);
-			padding: var(--spacing-md, 1rem);
-			text-align: center;
-		}
-		.match-stats .match-stat-card .match-stat-value {
-			font-family: 'Montserrat', sans-serif;
-			font-size: 1.75rem;
-			font-weight: 700;
-			color: var(--ds-active-action-primary);
-			line-height: 1.2;
-		}
-		.match-stats .match-stat-card .match-stat-label {
-			font-family: 'Inter', sans-serif;
-			font-size: 0.75rem;
-			color: var(--ds-active-text-secondary);
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			margin-top: var(--spacing-xs, 0.25rem);
-		}
-		.match-stats .match-stat-card.match-stat-none .match-stat-value {
-			color: var(--ds-active-text-secondary);
-		}
-
-		#review-list {
-			max-height: 400px;
-			overflow-y: auto;
-			padding-right: var(--spacing-sm, 0.5rem);
-		}
-		#review-list::-webkit-scrollbar {
-			width: 6px;
-		}
-		#review-list::-webkit-scrollbar-thumb {
-			background: var(--aia-separators, #d1d1d1);
-			border-radius: 3px;
-		}
-
-		.match-item {
-			background: var(--aia-bg-alabaster, #fafafa);
-			border: 1px solid var(--aia-separators, #d1d1d1);
-			border-radius: var(--radius-md, 0.5rem);
-			padding: var(--spacing-md, 1rem);
-			margin-bottom: var(--spacing-md, 1rem);
-			transition: opacity 0.3s ease, border-color 0.3s ease;
-		}
-		.match-item:last-child {
-			margin-bottom: 0;
-		}
-		.match-item-resolved {
-			opacity: 0.7;
-		}
-		.match-item-accepted {
-			border-color: var(--aia-green-primary, #1a5633);
-		}
-		.match-item-skipped {
-			border-color: #6c757d;
-		}
-
-		.match-item-header {
-			margin-bottom: var(--spacing-sm, 0.5rem);
-		}
-		.match-item-body {
-			padding-top: var(--spacing-sm, 0.5rem);
-			border-top: 1px solid var(--aia-separators, #d1d1d1);
-		}
-
-		.match-label {
-			display: inline-block;
-			font-family: 'Inter', sans-serif;
-			font-size: 0.7rem;
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			padding: 2px 8px;
-			border-radius: 4px;
-			margin-bottom: var(--spacing-xs, 0.25rem);
-		}
-		.match-label-target {
-			background: rgba(181, 82, 17, 0.1);
-			color: #8b4011;
-		}
-		.match-label-source {
-			background: rgba(26, 86, 51, 0.1);
-			color: var(--aia-green-primary, #1a5633);
-		}
-
-		.match-item .match-activity-name {
-			font-family: 'Montserrat', sans-serif;
-			font-weight: 600;
-			font-size: 0.95rem;
-			color: var(--aia-text-primary, #1c1c1e);
-		}
-
-		.match-source-label {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			margin-bottom: var(--spacing-sm, 0.5rem);
-		}
-
-		.match-candidates-list {
-			margin-top: var(--spacing-sm, 0.5rem);
-		}
-
-		.match-candidate {
-			display: flex;
-			align-items: center;
-			gap: var(--spacing-md, 1rem);
-			padding: var(--spacing-sm, 0.5rem) var(--spacing-sm, 0.5rem);
-			border-radius: var(--radius-sm, 0.25rem);
-			transition: background 0.2s ease, opacity 0.3s ease;
-		}
-		.match-candidate:hover {
-			background: rgba(0, 0, 0, 0.03);
-		}
-		.match-candidate + .match-candidate {
-			border-top: 1px solid rgba(0, 0, 0, 0.05);
-		}
-		.match-candidate-info {
-			flex: 1;
-			min-width: 0;
-		}
-		.match-candidate .match-candidate-name {
-			font-family: 'Inter', sans-serif;
-			font-size: 0.875rem;
-			color: var(--aia-text-primary, #1c1c1e);
-			font-weight: 500;
-			margin-bottom: 2px;
-		}
-		.match-candidate .match-candidate-bar-wrap {
-			display: flex;
-			align-items: center;
-			gap: var(--spacing-sm, 0.5rem);
-		}
-		.match-candidate .match-candidate-bar {
-			flex: 1;
-			height: 6px;
-			background: var(--aia-bg-gray-light, #eaeaea);
-			border-radius: 3px;
-			overflow: hidden;
-		}
-		.match-candidate .match-candidate-bar-fill {
-			height: 100%;
-			border-radius: 3px;
-			transition: width var(--transition-normal, 0.3s ease-in-out);
-		}
-		.match-candidate .match-candidate-pct {
-			font-family: 'Inter', sans-serif;
-			font-size: 0.7rem;
-			font-weight: 600;
-			min-width: 32px;
-			text-align: right;
-		}
-		.match-candidate .match-candidate-actions {
-			display: flex;
-			gap: var(--spacing-xs, 0.25rem);
-			flex-shrink: 0;
-		}
-
-		/* Confidence tier colors */
-		.match-confidence-high .match-candidate-bar-fill {
-			background: var(--aia-green-primary, #1a5633);
-		}
-		.match-confidence-high .match-candidate-pct {
-			color: var(--aia-green-primary, #1a5633);
-		}
-		.match-confidence-medium .match-candidate-bar-fill {
-			background: #b8860b;
-		}
-		.match-confidence-medium .match-candidate-pct {
-			color: #b8860b;
-		}
-		.match-confidence-none .match-candidate-bar-fill {
-			background: #6c757d;
-		}
-		.match-confidence-none .match-candidate-pct {
-			color: #6c757d;
-		}
-
-		.match-item-status {
-			margin-top: var(--spacing-sm, 0.5rem);
-			padding-top: var(--spacing-sm, 0.5rem);
-			border-top: 1px solid var(--aia-separators, #d1d1d1);
-		}
-		.match-resolved-badge {
-			display: flex;
-			align-items: center;
-			gap: var(--spacing-xs, 0.25rem);
-			font-family: 'Inter', sans-serif;
-			font-size: 0.85rem;
-			font-weight: 500;
-			padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
-			border-radius: var(--radius-sm, 0.25rem);
-		}
-		.match-resolved-accepted {
-			background: rgba(26, 86, 51, 0.1);
-			color: var(--aia-green-primary, #1a5633);
-		}
-		.match-resolved-accepted i {
-			color: var(--aia-green-primary, #1a5633);
-		}
-		.match-resolved-skipped {
-			background: rgba(108, 117, 125, 0.1);
-			color: #6c757d;
-		}
-		.match-resolved-skipped i {
-			color: #6c757d;
-		}
-
-		/* ========================================
-		   Opción C: Split view tabs + Cambiar + Guardar
-		   ======================================== */
-		.review-tabs {
-			border-bottom: 2px solid var(--ds-active-border);
-			margin-bottom: var(--spacing-md, 1rem);
-		}
-		.review-tabs .nav-link {
-			font-family: 'Inter', sans-serif;
-			font-weight: 600;
-			font-size: 0.85rem;
-			color: var(--ds-active-text-secondary);
-			border: none;
-			padding: 0.5rem 1rem;
-			transition: color 0.2s ease, border-color 0.2s ease;
-		}
-		.review-tabs .nav-link.active {
-			color: var(--ds-active-text-primary);
-			border-bottom: 2px solid var(--ds-active-action-primary);
-			background: transparent;
-		}
-		.review-tabs .nav-link:hover {
-			color: var(--ds-active-action-primary);
-			border-color: transparent;
-		}
-		.review-tab-content {
-			max-height: 400px;
-			overflow-y: auto;
-			padding-right: var(--spacing-sm, 0.5rem);
-		}
-		.review-tab-content::-webkit-scrollbar {
-			width: 6px;
-		}
-		.review-tab-content::-webkit-scrollbar-thumb {
-			background: var(--aia-separators, #d1d1d1);
-			border-radius: 3px;
-		}
-		.review-tab-content .match-item:last-child {
-			margin-bottom: 0;
-		}
-
-		/* Botón Cambiar en ítems procesados */
-		.js-change-decision {
-			font-family: 'Inter', sans-serif;
-			font-size: 0.8rem;
-			font-weight: 500;
-			transition: all 0.2s ease;
-		}
-		.js-change-decision:hover {
-			background: var(--aia-green-primary, #1a5633);
-			color: white;
-			border-color: var(--aia-green-primary, #1a5633);
-		}
-
-		/* Botón Guardar Cambios */
-		#btn-guardar-cambios {
-			font-family: 'Montserrat', sans-serif;
-			font-weight: 600;
-			font-size: 0.85rem;
-			padding: 0.4rem 1.2rem;
-			transition: all 0.2s ease;
-		}
-		#btn-guardar-cambios:not(:disabled):hover {
-			transform: translateY(-1px);
-			box-shadow: 0 2px 8px rgba(26, 86, 51, 0.3);
-		}
-		#btn-guardar-cambios .guardar-count {
-			font-size: 0.75rem;
-			opacity: 0.8;
-		}
-
-		/* Badges en tabs */
-		.review-tabs .badge {
-			font-size: 0.7rem;
-			font-weight: 600;
-			padding: 0.2em 0.5em;
-			border-radius: 10px;
-		}
-		.review-tabs .badge-warning {
-			background: #ffc107;
-			color: #1c1c1e;
-		}
-		.review-tabs .badge-success {
-			background: var(--aia-green-primary, #1a5633);
-			color: white;
-		}
-	</style>
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
-	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
 	<script>
 		window.getCsrfToken = window.getCsrfToken || function() {
 			var meta = document.querySelector('meta[name="csrf-token"]');
@@ -496,13 +88,13 @@
 	</div>
 
 	<div class="hot-full-bleed">
-		<div class="row direccionSeccion" style="margin:0;">
+		<div class="row direccionSeccion">
 			<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
 		</div>
 
-		<div class="header-actions action-bar" style="margin-bottom: 8px;">
+		<div class="header-actions action-bar">
 			<div class="pg-actions-row">
-				<div class="d-flex flex-wrap align-items-center" style="gap:6px;">
+				<div class="d-flex flex-wrap align-items-center pga-actions-group">
 					<button id="btn_cargarCronogramaExcel" type="button" class="btn-pdc-modern" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_eliminarActualizacion" type="button" class="btn-pdc-modern" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_toggleFiltroMapeo" type="button" class="btn-pdc-modern" title="Alternar visualización de actividades" aria-label="Alternar visualización">Ver Programa Completo <i class="fas fa-filter fa-lg"></i></button>
@@ -516,7 +108,7 @@
 
 		<!-- Contenedor Handsontable -->
 		<div id="hot-container"></div>
-		<div id="mobile-card-view" style="display:none;"></div>
+		<div id="mobile-card-view" hidden></div>
 
 		<!-- Data para Dropdowns (Hidden context) -->
 		<script id="historicoData" type="application/json"><?php echo $opcionesDropdownJSON; ?></script>
@@ -540,7 +132,7 @@
 		        <div class="row">
 		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
 		            <form enctype="multipart/form-data" class="form form-horizontal" id="formCargarExcel" name="formCargarExcel" action="" method="POST">
-		              <div class="form-group parametro_cargarExcel" style="padding: 1px 5px 10px 5px; margin-bottom: 10px; border:none">
+		              <div class="form-group parametro_cargarExcel">
 		                <!-- <div class="form_eval form-group">
 													<h3 id='form_general'>
 														Descargar Archivo Base
@@ -549,7 +141,7 @@
 		                <label for="descargarArchivoBase" class="control-label">En el siguiente enlace puede descargar el archivo base para cargar una actualización del cronograma desde Excel:</label>
 		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="actualizacionCronogramaLPS.xlsx" href="/archivosBase/actualizacionCronogramaLPS.xlsx">Descargar Archivo Base</a>
 		              </div>
-		              <div class="form-group parametro_cargarExcel" style="padding: 1px 5px 15px 5px; margin-bottom: 10px">
+		              <div class="form-group parametro_cargarExcel">
 		                <div class="form_eval form-group">
 		                  <h3 id='form_general'> Cargar Cronograma en Excel </h3>
 		                </div>
@@ -565,10 +157,10 @@
 		              </div>
 
 		              <!-- Campo de Fecha de Inicio para Proyectos Nuevos -->
-		              <div id="container_f_inicio_importar" class="form-group parametro_cargarExcel" style="padding: 1px 5px 15px 5px; margin-bottom: 10px; display: none;">
+		              <div id="container_f_inicio_importar" class="form-group parametro_cargarExcel" hidden>
 		                <div class="col-sm-12">
 		                  <label for="f_inicio_importar" class="control-label"><b>Fecha de Inicio de la Primera Semana:</b></label>
-		                  <input type="text" name="f_inicio_importar" id="f_inicio_importar" class="form-control" readonly style="background: white; cursor: pointer;" placeholder="YYYY-MM-DD">
+		                  <input type="text" name="f_inicio_importar" id="f_inicio_importar" class="form-control pga-datepicker-input" readonly placeholder="YYYY-MM-DD">
 		                  <small class="text-muted">Como este es un proyecto nuevo, por favor define cuándo inicia la primera semana.</small>
 		                </div>
 		              </div>
@@ -605,7 +197,7 @@
 		        <div class="row">
 		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
 		            <form enctype="multipart/form-data" class="form form-horizontal" id="formEliminarActualizacion" name="formEliminarActualizacion" action="" method="POST">
-		              <div class="form-group parametro_cargarExcel" style="padding: 1px 5px 10px 5px; margin-bottom: 10px; border:none">
+		              <div class="form-group parametro_cargarExcel">
 										<p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'>¿Desea eliminar esta actualización del cronograma del proyecto?</p>
 		              </div>
 		              <div class="form-group">
@@ -630,13 +222,13 @@
 		<!-- Modal de Éxito - Marca AIA corporativa -->
 		<div class="modal fade aia-modal" id="modalImportacionExitosa" role="dialog" data-backdrop="static">
 		  <div class="modal-dialog modal-dialog-centered">
-		    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-		      <div class="modal-body text-center" style="padding: 40px 20px;">
-		        <div class="pga-success-badge" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-		          <i class="fas fa-check" style="font-size: 40px;"></i>
+		    <div class="modal-content">
+		      <div class="modal-body text-center pga-success-body">
+		        <div class="pga-success-badge">
+		          <i class="fas fa-check"></i>
 		        </div>
-		        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 10px;">¡Carga Exitosa!</h3>
-		        <p class="pga-success-copy" style="font-family: 'Inter', sans-serif; font-size: 16px; margin-bottom: 25px;">
+		        <h3 class="pga-success-title">¡Carga Exitosa!</h3>
+		        <p class="pga-success-copy">
 		          El cronograma y la primera semana han sido creados correctamente. <br>
 		          Hemos preparado todo para que inicies tu seguimiento.
 		        </p>
@@ -658,9 +250,9 @@
 		        <h4 class='modal-title' id='modal_Ejecutado_Teorico_Label'>Ejecutado Teórico</h4><button type='button' class='close' data-dismiss='modal'>&times;</button>
 		      </div>
 		      <div class='modal-body'>
-		        <ul style='padding:0% 5%; margin:0'>
+		        <ul class='pga-formula-list'>
 		          <p>Requerimiento lineal (en cantidad) del tiempo transcurrido de la actividad sobre la duración total de la misma.</p>
-		          <div><img src='/img/formula_ejecutado_teorico.png' style='width:90%; margin:0 5% 0 5%' class='d-inline-block align-top' alt=''></div>
+		          <div><img src='/img/formula_ejecutado_teorico.png' class='pga-formula-img d-inline-block align-top' alt=''></div>
 		        </ul>
 		      </div>
 		      <div class='modal-footer'><button type='button' class='btn btn-default btn-primary' data-dismiss='modal' >Close</button></div>
@@ -678,9 +270,9 @@
 						<h4 class="modal-title" id="modal_cantidad_ejecutada_error_Label"><b>Cantidad Ejecutada Mayor</b></h4>
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
 					</div>
-					<div class="modal-body" style="margin: auto; clear: none; display: flex; align-items: center; justify-content: center">
-						<i class="fas fa-exclamation-circle fa-5x" style="color:red;width:20%; height:100%; text-align:center"></i>
-						<div class="texto_cantidad_ejecutada_error" style="width:79%; float:left"></div>
+					<div class="modal-body pga-alert-body">
+						<i class="fas fa-exclamation-circle fa-5x pga-alert-icon" aria-hidden="true"></i>
+						<div class="texto_cantidad_ejecutada_error pga-alert-copy"></div>
 					</div>
 					<div class="modal-footer">
 						<!-- <button type="button" class="btn btn-default btn-primary" id="cambiar_compromiso">Si</button>
@@ -700,9 +292,9 @@
 							<h4 class="modal-title" id="modal_semanal_confirmada_Label"><b>Programa General Bloqueado</b></h4>
 							<button type="button" class="close" data-dismiss="modal">&times;</button>
 						</div>
-						<div class="modal-body iconoAlertaSemanalConfirmada" style="margin: auto; clear: none; display: flex; align-items: center; justify-content: center">
-							<i class="fas fa-exclamation-circle fa-5x" style="color:red;width:20%; height:100%; text-align:center"></i>
-							<div class="texto_semanal_confirmada" style="width:79%; float:left"></div>
+						<div class="modal-body iconoAlertaSemanalConfirmada pga-alert-body">
+							<i class="fas fa-exclamation-circle fa-5x pga-alert-icon" aria-hidden="true"></i>
+							<div class="texto_semanal_confirmada pga-alert-copy"></div>
 						</div>
 						<div class="modal-footer">
 							<!-- <button type="button" class="btn btn-default btn-primary" id="cambiar_compromiso">Si</button>
@@ -775,7 +367,7 @@
 						</div>
 
 						<!-- Fallback single list (sin split) cuando no hay ítems -->
-						<div id="review-list" style="display:none;"></div>
+						<div id="review-list" hidden></div>
 					</div>
 					<div class="modal-footer">
 						<div>
@@ -808,6 +400,7 @@
 		window.__AIA_SHELL_SIDEBAR__ = true;
 	</script>
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/hot_table_width.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
 	<script type="text/javascript" src="/js/funcionesGenerales6.js" charset="utf-8"></script>
 

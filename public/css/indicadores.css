@@ -1,0 +1,42 @@
+/* ===========================================================================
+   Indicadores LPS — piel de la superficie.
+
+   Recibe los cuatro atributos style= de la vista: dos del markup y dos de las
+   plantillas que el JS inyecta al montar o al denegar el informe.
+
+   ALCANCE: el marco alrededor del iframe, y nada mas. El informe de Power BI
+   se embebe por publish-to-web desde otro origen; su contenido no es
+   tematizable ni auditable desde el design system, y asi queda declarado como
+   excepcion permanente `indicadores-powerbi-iframe` en el manifiesto del
+   modulo. Las medidas del iframe las escribe `ajustarInformePowerBI()` en
+   runtime —son dimensionado, no estilo— y siguen viviendo en el JS.
+
+   Va en @layer module, junto a styles.css.
+   =========================================================================== */
+
+@layer module {
+  .ind-section-title {
+    text-align: start;
+  }
+
+  #contenedorInformePowerBI {
+    text-align: center;
+    margin-top: var(--ds-space-1);
+    margin-bottom: var(--ds-space-3);
+  }
+
+  /* El iframe ajeno: solo se le retira el borde del navegador y se centra.
+     Su ancho y alto los fija el script segun la altura libre. */
+  .ind-powerbi-frame {
+    border: 0;
+    display: block;
+    margin-inline: auto;
+  }
+
+  /* Mensaje cuando el perfil no tiene acceso al informe. */
+  .ind-powerbi-denied {
+    padding: var(--ds-space-6);
+    text-align: center;
+    color: var(--ds-active-text-secondary);
+  }
+}

@@ -1,35 +1,767 @@
 /* ===========================================================================
-   Programa General · Actualizar — piel de los dos modales que la traian en
-   atributos style= del markup.
+   Programa General · Actualizar — piel completa de la superficie.
 
-   Los style= ganan a cualquier hoja, asi que mientras estuvieran ahi ningun
-   cambio de CSS podia alcanzar a estos modales. Se retiran del markup y lo que
-   no aporta el shell .aia-modal se declara aqui.
+   Recibe lo que vivia en el bloque <style> de la vista y en sus atributos
+   style=. Los style= ganan a cualquier hoja, asi que mientras estuvieran ahi
+   ningun cambio de CSS podia alcanzar a estos modales.
 
    Va en @layer module para sentarse junto a styles.css. Entrar sin capa —como
    hace pdc.css— le ganaria a todo el design system.
+
+   Sobre los `!important`: `handsontable.full.min.css` entra al documento SIN
+   capa (link crudo en la vista), y una declaracion normal sin capa gana a
+   TODAS las capas. Contra el vendor no basta la especificidad: hace falta
+   `!important`, que invierte ese orden. Estan acotados a las reglas que
+   chocan con el vendor y no se usan en ningun otro sitio de esta hoja.
    =========================================================================== */
 
 @layer module {
-  /* El pie reparte sus dos grupos de botones a los extremos. Es geometria, no
-     color: la traia el style= junto al fondo y hay que conservarla. */
-  #modalAutoAsociar .modal-footer {
-    justify-content: space-between;
+  .pg-page {
+    /* Velos de celda. Misma receta que el piloto
+       (public/css/programa-general.css): un tinte del token de estado sobre
+       transparente, no un rgba suelto. */
+    --pga-cell-editable-overlay: color-mix(in srgb, var(--ds-color-state-success-text) 6%, transparent);
+    --pga-cell-readonly-overlay: color-mix(in srgb, var(--ds-color-text-tertiary) 8%, transparent);
+    /* Acentos de confianza del emparejado. Los tokens `--ds-color-state-*-text`
+       son los tonos profundos del par semantico y sobre penumbra quedan casi
+       negros; se suben en luminosidad en OKLCH para hacerlos visibles sin
+       desplazar el matiz —la misma derivacion que usan los puntos de la
+       leyenda del piloto. */
+    --pga-match-auto-accent: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.4) h);
+    --pga-match-review-accent: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
+    --pga-match-new-accent: var(--ds-active-text-secondary);
+    --pga-alert-icon: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.4) h);
+
+    /* Sin `padding: 0`. Era lo que traia el bloque <style> y, al entrar sin
+       capa, ganaba al `padding-inline-start` con que el shell sidebar reserva
+       el rail (72px): la pagina arrancaba debajo del rail y su contenido salia
+       recortado por la izquierda a 1180 px, el desborde horizontal que
+       AGENTS.md prohibe. El relleno del body lo declara el shell. */
+    margin: 0;
+    max-inline-size: 100%;
+    overflow: hidden !important;
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Las `.row` de Bootstrap a nivel de pagina traen `margin-inline: -15px`.
+     Con el body en `overflow: hidden` eso no da scroll: recorta el contenido
+     por la izquierda, que es el desborde horizontal que AGENTS.md prohibe a
+     1180 px. La vista lo neutralizaba con un `style="margin:0"` en una sola
+     de las tres filas. */
+  .pg-page > .row,
+  .pg-page .hot-full-bleed > .row {
+    margin-inline: 0;
+  }
+
+  /* Shell sidebar (DS-027): la altura ya no resta el navbar legacy (80px).
+     #encabezado solo aloja inputs ocultos (0px); el unico elemento con altura
+     real entre el body y este contenedor es la context-bar sticky del shell
+     (#shellContextBar), medida en runtime a 1180x820 dark = 49px (chip de
+     semana 2rem + padding-block 2*0.5rem + borde 1px). Ver
+     goals/sidebar-todos-modulos/reports/task-6-report.md. */
+  body.aia-shell--sidebar .hot-full-bleed {
+    height: calc(100vh - 49px);
+  }
+
+  /* Patron flex sin numeros magicos: la barra de acciones refluye y
+     #hot-container se queda con lo que sobra. La altura real la sincroniza
+     syncContainerHeight() en JS; aqui solo se declara el reparto. */
+  .hot-full-bleed {
+    --hot-gutter: var(--ds-space-2);
+
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-left: var(--hot-gutter);
+    padding-right: var(--hot-gutter);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  #hot-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    position: relative;
+    /* Handsontable escribe el ancho en el atributo style del contenedor. */
+    width: 100% !important;
+    overflow: hidden;
+    z-index: var(--ds-z-base);
+  }
+
+  /* ---------------------------------------------------------------------
+     Celdas y cabeceras de Handsontable
+     --------------------------------------------------------------------- */
+
+  .pg-page #hot-container td.force-wrap,
+  .pg-page #hot-container th.force-wrap {
+    white-space: pre-wrap !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
+  }
+
+  .pg-page #hot-container thead th {
+    position: relative !important;
+    text-align: center !important;
+  }
+
+  .pg-page #hot-container thead th .relative {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    /* Filete sub-escala dentro de una cabecera de 13px: la escala semantica
+       empieza en 4px y aqui duplicaria el alto de la cabecera. */
+    gap: 2px;
+    width: 100%;
+    padding: 0 1px;
+    box-sizing: border-box;
+  }
+
+  .pg-page #hot-container thead th .relative > .colHeader {
+    order: 1;
+    width: 100%;
+  }
+
+  .pg-page #hot-container thead th .relative > .changeType {
+    order: 2;
+    align-self: flex-end;
+    margin: 0 !important;
+    margin-top: 1px !important;
+  }
+
+  .pg-page #hot-container thead th .colHeader {
+    display: block;
+    padding: 0 !important;
+    line-height: 1.15;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+    text-align: center !important;
+  }
+
+  .pg-page #hot-container thead th .changeType {
+    float: none !important;
+    position: static !important;
+    transform: none;
+    width: 13px;
+    height: 13px;
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-xs);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    z-index: var(--ds-z-dropdown);
+    /* Glifo dentro de un boton de 13px del vendor: la escala de texto del DS
+       empieza en 12px y no cabe con el borde. */
+    font-size: 9px;
+  }
+
+  .pg-page #hot-container .changeType::before {
+    content: "\f0b0";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+  }
+
+  .pg-page #hot-container thead th .changeType:hover {
+    border-color: var(--ds-active-action-primary);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-action-primary);
+    cursor: pointer;
+  }
+
+  .pg-page .htDropdownMenu:not(.htGhostTable),
+  .pg-page .htFiltersConditionsMenu:not(.htGhostTable) {
+    z-index: var(--ds-z-dropdown);
+  }
+
+  .pg-page
+    #hot-container
+    td.pg-cell-editable:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(
+      .pg-state-debe-iniciar
+    ):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(
+      .pg-state-terminada
+    ):not(.pg-state-sin-datos) {
+    box-shadow: inset 0 0 0 9999px var(--pga-cell-editable-overlay);
+    cursor: text;
+  }
+
+  .pg-page #hot-container td.pg-cell-editable.pg-state-atrasado,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-atrasada,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-restr-0,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-debe-iniciar,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-actividad-futura,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-en-curso,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-a-tiempo-en-curso,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-terminada,
+  .pg-page #hot-container td.pg-cell-editable.pg-state-sin-datos {
+    cursor: text;
+  }
+
+  .pg-page
+    #hot-container
+    td.pg-cell-readonly:not(.pg-state-atrasado):not(.pg-state-atrasada):not(.pg-state-restr-0):not(
+      .pg-state-debe-iniciar
+    ):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(
+      .pg-state-terminada
+    ):not(.pg-state-sin-datos) {
+    box-shadow: inset 0 0 0 9999px var(--pga-cell-readonly-overlay);
+    cursor: not-allowed;
+  }
+
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-atrasado,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-atrasada,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-restr-0,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-debe-iniciar,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-actividad-futura,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-en-curso,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-a-tiempo-en-curso,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-terminada,
+  .pg-page #hot-container td.pg-cell-readonly.pg-state-sin-datos {
+    cursor: not-allowed;
+  }
+
+  /* Niveles de confianza del emparejado, sobre la grilla. */
+  .pg-page #hot-container td.pg-match-auto {
+    background: var(--ds-state-tint-green) !important;
+  }
+
+  .pg-page #hot-container td.pg-match-auto::after {
+    content: " ✓";
+    color: var(--pga-match-auto-accent);
+    margin-left: var(--ds-space-1);
+    pointer-events: none;
+  }
+
+  .pg-page #hot-container td.pg-match-review {
+    background: var(--ds-state-tint-amber) !important;
+  }
+
+  .pg-page #hot-container td.pg-match-review::after {
+    content: " ⚠";
+    color: var(--pga-match-review-accent);
+    margin-left: var(--ds-space-1);
+    pointer-events: none;
+  }
+
+  .pg-page #hot-container td.pg-match-new {
+    background: var(--ds-state-tint-neutral) !important;
+  }
+
+  .pg-page #hot-container td.pg-match-new::after {
+    content: " NUEVA";
+    color: var(--pga-match-new-accent);
+    font-weight: var(--ds-type-weight-bold);
+    margin-left: var(--ds-space-1);
+    pointer-events: none;
+  }
+
+  /* ---------------------------------------------------------------------
+     Barra de acciones
+     --------------------------------------------------------------------- */
+
+  .pg-page .header-actions.action-bar {
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .pg-page .pg-actions-row {
+    display: flex;
+    gap: var(--ds-space-2);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pg-page .pga-actions-group {
+    gap: var(--ds-space-2);
+  }
+
+  /* ---------------------------------------------------------------------
+     Modales de carga / eliminacion
+     --------------------------------------------------------------------- */
+
+  .pg-page .parametro_cargarExcel {
+    padding: var(--ds-space-1) var(--ds-space-2) var(--ds-space-3);
+    margin-bottom: var(--ds-space-3);
+    border: none;
+  }
+
+  .pg-page .pga-datepicker-input {
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    cursor: pointer;
+  }
+
+  .pg-page .pga-formula-list {
+    padding: 0% 5%;
+    margin: 0;
+  }
+
+  .pg-page .pga-formula-img {
+    width: 90%;
+    margin: 0 5%;
+  }
+
+  /* ---------------------------------------------------------------------
+     Modal de exito de importacion
+     --------------------------------------------------------------------- */
+
+  #modalImportacionExitosa .modal-content {
+    border-radius: var(--ds-radius-modal);
+    border: none;
+    box-shadow: var(--ds-shadow-xl);
+  }
+
+  #modalImportacionExitosa .pga-success-body {
+    padding: var(--ds-space-8) var(--ds-space-6);
   }
 
   /* Sello de exito. Es un par de estado semantico, que DESIGN.md declara
      constante entre temas: conserva su color y su ratio exactos (8,7:1) y solo
      deja de estar escrito como hex suelto. */
   .pga-success-badge {
+    width: var(--ds-space-8);
+    height: var(--ds-space-8);
+    aspect-ratio: 1;
+    padding: var(--ds-space-4);
+    border-radius: var(--ds-radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--ds-space-6);
     background: var(--ds-color-state-success-bg);
   }
 
   .pga-success-badge i {
     color: var(--ds-color-state-success-text);
+    font-size: var(--ds-type-size-3xl);
+  }
+
+  .pga-success-title {
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-bold);
+    margin-bottom: var(--ds-space-2);
   }
 
   .pga-success-copy {
     color: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-md);
+    margin-bottom: var(--ds-space-6);
+  }
+
+  /* ---------------------------------------------------------------------
+     Modales de alerta (cantidad ejecutada / semanal confirmada)
+     --------------------------------------------------------------------- */
+
+  .pg-page .pga-alert-body {
+    margin: auto;
+    clear: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-4);
+  }
+
+  .pg-page .pga-alert-icon {
+    color: var(--pga-alert-icon);
+    width: 20%;
+    text-align: center;
+    flex: 0 0 auto;
+  }
+
+  .pg-page .pga-alert-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* ---------------------------------------------------------------------
+     Modal Auto-Asociacion — resumen estadistico
+     --------------------------------------------------------------------- */
+
+  .match-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--ds-space-4);
+    margin-bottom: var(--ds-space-6);
+  }
+
+  .match-stats .match-stat-card {
+    background: var(--ds-active-surface-raised);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    padding: var(--ds-space-4);
+    text-align: center;
+  }
+
+  .match-stats .match-stat-card .match-stat-value {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-3xl);
+    font-weight: var(--ds-type-weight-bold);
+    color: var(--ds-active-action-primary);
+    line-height: var(--ds-type-line-compact);
+  }
+
+  .match-stats .match-stat-card .match-stat-label {
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-xs);
+    color: var(--ds-active-text-secondary);
+    text-transform: uppercase;
+    margin-top: var(--ds-space-1);
+  }
+
+  .match-stats .match-stat-card.match-stat-none .match-stat-value {
+    color: var(--ds-active-text-secondary);
+  }
+
+  /* ---------------------------------------------------------------------
+     Modal Auto-Asociacion — lista de revision
+     --------------------------------------------------------------------- */
+
+  #review-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: var(--ds-space-2);
+  }
+
+  #review-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #review-list::-webkit-scrollbar-thumb {
+    background: var(--ds-active-border);
+    border-radius: var(--ds-radius-pill);
+  }
+
+  .match-item {
+    background: var(--ds-active-surface);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    padding: var(--ds-space-4);
+    margin-bottom: var(--ds-space-4);
+    transition:
+      opacity var(--ds-motion-standard),
+      border-color var(--ds-motion-standard);
+  }
+
+  .match-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .match-item-resolved {
+    opacity: 0.7;
+  }
+
+  .match-item-accepted {
+    border-color: var(--ds-active-action-primary);
+  }
+
+  .match-item-skipped {
+    border-color: var(--ds-active-text-tertiary);
+  }
+
+  .match-item-header {
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .match-item-body {
+    padding-top: var(--ds-space-2);
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .match-label {
+    display: inline-block;
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+    text-transform: uppercase;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border-radius: var(--ds-radius-xs);
+    margin-bottom: var(--ds-space-1);
+  }
+
+  .match-label-target {
+    background: var(--ds-state-tint-orange);
+    color: var(--ds-active-domain-construction);
+  }
+
+  .match-label-source {
+    background: var(--ds-state-tint-green);
+    color: var(--ds-active-action-primary);
+  }
+
+  .match-item .match-activity-name {
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-type-size-md);
+    color: var(--ds-active-text-primary);
+  }
+
+  .match-source-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .match-candidates-list {
+    margin-top: var(--ds-space-2);
+  }
+
+  .match-candidate {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-4);
+    padding: var(--ds-space-2);
+    border-radius: var(--ds-radius-control-sm);
+    transition:
+      background var(--ds-motion-fast),
+      opacity var(--ds-motion-standard);
+  }
+
+  .match-candidate:hover {
+    background: var(--ds-active-surface-raised);
+  }
+
+  .match-candidate + .match-candidate {
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .match-candidate-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .match-candidate .match-candidate-name {
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-sm);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-medium);
+    margin-bottom: var(--ds-space-1);
+  }
+
+  .match-candidate .match-candidate-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+
+  .match-candidate .match-candidate-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--ds-active-surface-raised);
+    border-radius: var(--ds-radius-progress);
+    overflow: hidden;
+  }
+
+  /* La barra no lleva transición, y no por la advertencia de rendimiento: la declaración estaba
+     muerta. `hot_actualizar.js:1021,1055` escribe el ancho una sola vez en el markup al construir
+     el panel de revisión, y nadie lo vuelve a tocar — no hay cambio de estado que animar, así que
+     la transición nunca llegaba a dispararse. Venía así desde antes de F2; se retira al
+     transcribir la regla en vez de arrastrar código inerte. */
+  .match-candidate .match-candidate-bar-fill {
+    height: 100%;
+    border-radius: var(--ds-radius-progress);
+  }
+
+  .match-candidate .match-candidate-pct {
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  .match-candidate .match-candidate-actions {
+    display: flex;
+    gap: var(--ds-space-1);
+    flex-shrink: 0;
+  }
+
+  .match-confidence-high .match-candidate-bar-fill {
+    background: var(--ds-active-action-primary);
+  }
+
+  .match-confidence-high .match-candidate-pct {
+    color: var(--ds-active-action-primary);
+  }
+
+  .match-confidence-medium .match-candidate-bar-fill {
+    background: var(--pga-match-review-accent);
+  }
+
+  .match-confidence-medium .match-candidate-pct {
+    color: var(--pga-match-review-accent);
+  }
+
+  .match-confidence-none .match-candidate-bar-fill {
+    background: var(--ds-active-text-tertiary);
+  }
+
+  .match-confidence-none .match-candidate-pct {
+    color: var(--ds-active-text-secondary);
+  }
+
+  .match-item-status {
+    margin-top: var(--ds-space-2);
+    padding-top: var(--ds-space-2);
+    border-top: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .match-resolved-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-1);
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-sm);
+    font-weight: var(--ds-type-weight-medium);
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border-radius: var(--ds-radius-control-sm);
+  }
+
+  .match-resolved-accepted,
+  .match-resolved-accepted i {
+    color: var(--ds-active-action-primary);
+  }
+
+  .match-resolved-accepted {
+    background: var(--ds-state-tint-green);
+  }
+
+  .match-resolved-skipped,
+  .match-resolved-skipped i {
+    color: var(--ds-active-text-secondary);
+  }
+
+  .match-resolved-skipped {
+    background: var(--ds-state-tint-neutral);
+  }
+
+  /* ---------------------------------------------------------------------
+     Modal Auto-Asociacion — pestañas y pie
+     --------------------------------------------------------------------- */
+
+  .review-tabs {
+    border-bottom: calc(var(--ds-border-width) * 2) solid var(--ds-active-border);
+    margin-bottom: var(--ds-space-4);
+  }
+
+  .review-tabs .nav-link {
+    font-family: var(--ds-font-body);
+    font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-type-size-sm);
+    color: var(--ds-active-text-secondary);
+    border: none;
+    padding: var(--ds-space-2) var(--ds-space-4);
+    transition:
+      color var(--ds-motion-fast),
+      border-color var(--ds-motion-fast);
+  }
+
+  .review-tabs .nav-link.active {
+    color: var(--ds-active-text-primary);
+    border-bottom: calc(var(--ds-border-width) * 2) solid var(--ds-active-action-primary);
+    background: transparent;
+  }
+
+  .review-tabs .nav-link:hover {
+    color: var(--ds-active-action-primary);
+    border-color: transparent;
+  }
+
+  .review-tab-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: var(--ds-space-2);
+  }
+
+  .review-tab-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .review-tab-content::-webkit-scrollbar-thumb {
+    background: var(--ds-active-border);
+    border-radius: var(--ds-radius-pill);
+  }
+
+  .review-tab-content .match-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .js-change-decision {
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-medium);
+    transition:
+      background var(--ds-motion-fast),
+      color var(--ds-motion-fast),
+      border-color var(--ds-motion-fast);
+  }
+
+  .js-change-decision:hover {
+    background: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+    border-color: var(--ds-active-action-primary);
+  }
+
+  #btn-guardar-cambios {
+    font-family: var(--ds-font-display);
+    font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-type-size-sm);
+    padding: var(--ds-space-2) var(--ds-space-4);
+    transition:
+      transform var(--ds-motion-fast),
+      box-shadow var(--ds-motion-fast);
+  }
+
+  #btn-guardar-cambios:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  #btn-guardar-cambios .guardar-count {
+    font-size: var(--ds-type-size-xs);
+    opacity: 0.8;
+  }
+
+  #modalAutoAsociar .modal-footer {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .review-tabs .badge {
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border-radius: var(--ds-radius-pill);
+  }
+
+  .review-tabs .badge-warning {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  .review-tabs .badge-success {
+    background: var(--ds-color-state-success-bg);
+    color: var(--ds-color-state-success-text);
+  }
+}
+
+/* Fuera del alcance visual vigente (desktop >= 1180 px, dark). Se conserva
+   verbatim desde el bloque <style> original: AGENTS.md prohibe trabajar
+   mobile/tablet, y borrarlo seria trabajarlo. */
+@layer module {
+  @media (max-width: 991px) {
+    .hot-full-bleed {
+      height: calc(100vh - 250px);
+    }
   }
 }

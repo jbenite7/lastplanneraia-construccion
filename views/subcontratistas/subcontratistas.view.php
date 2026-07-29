@@ -6,329 +6,15 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Common Head Resources (Nav, CSS, etc) -->
-    <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('subcontratistas') ?>
+    <link rel="stylesheet" href="/css/subcontratistas.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/subcontratistas.css') ?: 'sub1')) ?>" />
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
     <!-- Handsontable CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css" />
 
-    <style>
-        /* Mobile First & Full Height */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Handsontable handles scrolls on Desktop */
-        }
-
-        /* Allow scroll on Mobile */
-        @media (max-width: 768px) {
-            html, body {
-                overflow: auto !important;
-                height: auto !important;
-            }
-        }
-
-        /* Flex layout to handle dynamic header height */
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #encabezado, .direccionSeccion {
-            flex: 0 0 auto; /* Don't shrink */
-        }
-
-        .header-actions {
-            flex: 0 0 auto;
-            padding: 10px;
-            background: var(--ds-active-surface-raised); /* F1 Task 3c: antes literal claro tipo Bootstrap light */
-            border-bottom: 1px solid var(--ds-active-border); /* F1 Task 3d: antes #ddd, literal claro invisible sobre la barra dark */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #hot-container {
-            flex: 1 1 auto; /* Take remaining space */
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            background: var(--ds-active-bg-page); /* Superficie de la grilla en el tema activo */
-        }
-
-        /* Custom Renderers */
-        .status-active { color: green; font-weight: bold; }
-        .status-inactive { color: red; }
-
-        /* Loading overlay */
-        #loading {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent); /* Velo a pantalla completa en el tema activo; se conserva la opacidad original */
-            z-index: 10000; /* Higher than anything else */
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        /* RESET & PROTECTION: Prevent global styles.css from breaking Handsontable's premium layout */
-        #hot-container {
-            width: 100%;
-            height: calc(100vh - 180px); /* Fill available vertical space */
-            background: var(--ds-active-bg-page);
-            box-shadow: var(--shadow-sm);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        /* Neutralize Mobile-First "Card View" overrides from styles.css */
-
-        /* 1. Hide the injected labels from mobile-table-fix.js */
-        #hot-container td::before,
-        #hot-container th::before {
-            content: none !important;
-            display: none !important;
-        }
-
-        /* 2. Restore standard table display properties for Handsontable components */
-        #hot-container td,
-        #hot-container th {
-            display: table-cell !important; /* Force back from 'flex' used in mobile-fix */
-            padding: 0 !important; /* HOT handles padding internally */
-            /* INERTES: handsontable-module.css ya declara esta rejilla con !important
-               desde @layer vendor, y para !important el orden de capas se invierte. */
-            border-right: 1px solid var(--ds-active-border) !important;
-            border-bottom: 1px solid var(--ds-active-border) !important;
-        }
-
-        /* Par fondo/tinta de la celda. El vendor de Handsontable pinta
-           `.handsontable td, .handsontable th` con fondo blanco: aqui la tinta
-           heredada ya era casi blanca (texto de datos invisible sobre celda
-           blanca antes de este cambio). Se reasignan LOS DOS a la vez, como en
-           contratos.css:227-232.
-           SIN !important a proposito: la especificidad de id ya gana al vendor
-           (0,1,1), y un !important sin capa perderia igualmente contra
-           handsontable-module.css porque en el cascade !important el orden de
-           capas se invierte y lo sin capa queda por debajo.
-           EFECTO DECLARADO: por especificidad de id esta regla gana tambien a
-           `.handsontable .htDimmed` del vendor, asi que las celdas de solo lectura
-           dejan de verse atenuadas. Mismo comportamiento que contratos.css, que
-           enumera `td.htDimmed` con la tinta primaria. */
-        #hot-container td {
-            background: var(--ds-active-surface);
-            color: var(--ds-active-text-primary);
-        }
-
-        /* Enforce HOT alignment classes */
-        #hot-container td.htCenter,
-        #hot-container th.htCenter { text-align: center !important; }
-        #hot-container td.htLeft,
-        #hot-container th.htLeft { text-align: left !important; }
-        #hot-container td.htRight,
-        #hot-container th.htRight { text-align: right !important; }
-        #hot-container td.htMiddle,
-        #hot-container th.htMiddle { vertical-align: middle !important; }
-
-        /* 3. Ensure headers look premium AND centered.
-           NOTA: estas dos declaraciones son INERTES. Llevan !important sin capa,
-           y handsontable-module.css declara el mismo par con !important desde
-           layer(vendor); en el cascade !important el orden de capas se invierte,
-           asi que lo sin capa pierde. Lo que se renderiza hoy es el par del
-           modulo, ya oscuro. Se tokenizan al mismo par para que la fuente diga
-           la verdad y no quede un literal claro latente. */
-        #hot-container th {
-            background-color: var(--ds-active-surface-raised) !important;
-            color: var(--ds-active-text-primary) !important;
-            font-weight: 600 !important;
-            vertical-align: middle !important;
-            text-align: center !important;
-        }
-
-        /* 4. Perfect Circular Delete Button */
-        .btn-delete {
-            border-radius: 50% !important;
-            width: 28px !important;
-            height: 28px !important;
-            padding: 0 !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            line-height: 1 !important;
-            border: none !important;
-            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
-            transition: all 0.2s ease;
-        }
-
-        .btn-delete:hover {
-            transform: scale(1.1);
-            background-color: #c82333 !important;
-        }
-
-        #hot-container {
-            box-sizing: border-box !important;
-        }
-        #hot-container * {
-            box-sizing: content-box !important;
-        }
-
-        .btn-delete i {
-            font-size: 12px !important;
-        }
-
-        /* 5. Fix row height and display */
-        #hot-container {
-            width: 100% !important;
-            max-width: 100vw !important;
-            overflow: hidden !important; /* Prevent ANY overflow */
-        }
-
-        /* DYNAMIC FONT SIZE - Scales with viewport */
-        #hot-container td,
-        #hot-container th {
-            font-size: clamp(10px, 1.1vw, 14px) !important; /* Min 10px, scales with viewport, max 14px */
-        }
-
-        /* Force table to ALWAYS fit container width */
-        #hot-container .wtHider,
-        #hot-container .wtHolder {
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        #hot-container table.htCore {
-            width: 100% !important;
-            table-layout: fixed !important; /* Forces columns to respect widths */
-        }
-
-        .force-wrap {
-            white-space: pre-wrap !important;
-            word-wrap: break-word !important;
-            word-break: break-word !important;
-            overflow-wrap: break-word !important;
-            overflow: hidden !important;
-        }
-
-        /* Force row headers to behave */
-        .ht_clone_left tr th, .ht_clone_left tr td {
-             box-sizing: content-box !important;
-             vertical-align: middle !important;
-        }
-
-        /* 5. Fix row height and display */
-        #hot-container tr {
-            display: table-row !important;
-        }
-
-        /* 5. Fix internal Table element */
-        #hot-container table {
-            width: 100% !important;
-            border-collapse: separate !important;
-            max-width: 100% !important;
-        }
-
-        /*
-           CRITICAL MOBILE OVERRIDES - VERTICAL CARD VIEW
-        */
-        @media (max-width: 768px) {
-            #hot-container {
-                display: none !important;
-            }
-            #mobile-card-view {
-                display: block !important;
-                padding: 10px;
-                padding-bottom: 80px; /* Space for scrolling */
-            }
-        }
-
-        @media (min-width: 769px) {
-            #mobile-card-view {
-                display: none !important;
-            }
-        }
-
-        /* Mobile Card Styling */
-        .mobile-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Apple-like shadow */
-            border: 1px solid #f0f0f0;
-            position: relative;
-        }
-
-        .mobile-card-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f9f9f9;
-        }
-
-        .mobile-card-row:last-child {
-            border-bottom: none;
-        }
-
-        .mobile-label {
-            font-weight: 600;
-            color: #8c8c8c;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            min-width: 80px; /* Fixed width for alignment */
-            display: inline-block;
-        }
-
-        .mobile-value {
-            font-weight: 500;
-            color: #333;
-            text-align: right;
-            max-width: 60%;
-            word-break: break-word;
-        }
-
-        .mobile-actions {
-            margin-top: 10px;
-            text-align: right;
-            padding-top: 10px;
-            border-top: 1px dashed #eee;
-        }
-
-        /* NAVBAR FIXES FROM REFERENCE */
-         @media (max-width: 1199px) {
-             #navbarSupportedContent {
-                position: fixed; top: 0; left: 0; height: 100vh; width: 85%; max-width: 320px;
-                background-color: #ffffff !important; z-index: 99999 !important;
-                padding-top: 0; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-                transform: translateX(-100%); transition: transform 0.3s ease-in-out;
-                display: block !important;
-            }
-            #navbarSupportedContent.show { transform: translateX(0) !important; }
-            #navbarSupportedContent.show::before {
-                content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-                background: rgba(0,0,0,0.5); z-index: -1;
-            }
-        }
-
-        /* DESKTOP NAV OPTIMIZATION (XL Screens) - Prevents nav from being cut off */
-        @media (min-width: 1200px) {
-            .navbar-nav .nav-link {
-                font-size: 0.85rem !important; /* Scaled down from 1rem */
-                padding-left: 8px !important;
-                padding-right: 8px !important;
-                white-space: nowrap;
-            }
-            .navbar-brand {
-                font-size: 1rem !important;
-                margin-right: 5px !important;
-            }
-            /* Adjust spacing between sections */
-            .navbar-nav.ml-4 {
-                margin-left: 10px !important;
-            }
-        }
-    </style>
     <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
 </head>
-<body class="aia-shell aia-shell--sidebar">
+<body class="aia-shell aia-shell--sidebar sub-page">
 <?php $isPreConstruccion = (($area ?? $_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion'); ?>
 
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>
@@ -340,7 +26,7 @@
         <input type="hidden" name="seccion" id="seccion" value="info_subcontratistas">
     </div>
 
-    <div class="row direccionSeccion" style="margin:0;">
+    <div class="row direccionSeccion">
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
@@ -354,8 +40,8 @@
             <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
         <?php endif; ?>
         <div>
-            <span id="save-status" class="badge badge-success" style="display:none;">Guardado</span>
-            <span id="save-error" class="badge badge-danger" style="display:none;">Error al guardar</span>
+            <span id="save-status" class="badge badge-success sub-save-flag">Guardado</span>
+            <span id="save-error" class="badge badge-danger sub-save-flag">Error al guardar</span>
             <button id="btn-export" class="btn-pdc-modern" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
             <?= \App\View\Components\BiAccessComponent::renderLink('subcontratistas', $isPreConstruccion ? 'BI Interesados' : 'BI Contratistas') ?>
         </div>
@@ -364,9 +50,6 @@
     <!-- Handsontable Container (Desktop) -->
     <div id="hot-container"></div>
 
-    <!-- Custom Mobile Card View (Hidden on Desktop) -->
-    <div id="mobile-card-view" style="display:none;">
-        <!-- JS will populate cards here -->
     </div>
 
     <!-- Bootstrap Dependencies (Required for Navbar Dropdowns) -->
@@ -381,13 +64,14 @@
     </script>
     <?= \App\View\Components\BiAccessComponent::renderBootConfig('subcontratistas') ?>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/hot_table_width.js') ?>
 	<script type="text/javascript" src="/js/cargarDatosGeneralesPagina2.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/modules/bi-access.js" charset="utf-8"></script>
 
     <!-- Handsontable Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
+    <script src="/public/vendor/handsontable/handsontable.full.min.js"></script>
     <!-- Languages -->
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/languages/es-MX.js"></script>
+    <script src="/public/vendor/handsontable/es-MX.js"></script>
 
     <script>
         const container = document.getElementById('hot-container');
@@ -474,15 +158,17 @@
                                     activo: row.activo ? 1 : 0,
                                 }));
 
-                            // Dual View Init
                             updateOrInitHandsontable(data);
-                            renderMobileCards(data);
 
-                            // Force render after container is visible and layout settled (Desktop)
+                            // Force render after container is visible and layout settled.
                             // Double render with delay to allow wordWrap + stretchH to settle
                             setTimeout(() => {
-                                if(hot && window.innerWidth > 768) {
+                                if (hot) {
                                      hot.render();
+                                     // Sincronizar ANTES de recalcular alturas:
+                                     // al fijar el ancho cambian los saltos de
+                                     // linea. Ver hot_table_width.js.
+                                     window.AIA.sincronizarAnchoTabla(document.getElementById('hot-container'));
                                      hot.getPlugin('autoRowSize').recalculateAllRowsHeight();
                                      hot.render();
                                 }
@@ -898,159 +584,6 @@
              }
         }
 
-        // ==========================================
-        // MOBILE CARD VIEW RENDERER
-        // ==========================================
-        function renderMobileCards(data) {
-            const container = document.getElementById('mobile-card-view');
-            container.innerHTML = '';
-
-            // Generate Card Form for New Entry
-            let html = `
-                <div class="mobile-card" style="border: 2px dashed #007aff; background: #f9faff;">
-                    <h5 style="color:#007aff; text-align:center; margin-bottom:15px; font-weight:bold;">
-                        <i class="fas fa-plus-circle"></i> Agregar Nuevo
-                    </h5>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-subcontratista" placeholder="<?php echo $isPreConstruccion ? 'Nombre Interesado' : 'Nombre Subcontratista'; ?>"></div>
-                     <div class="form-group"><input type="email" class="form-control" id="new-mobile-correo" placeholder="Correo electrónico"></div>
-                     <div class="form-group"><input type="text" class="form-control" id="new-mobile-nit" placeholder="<?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?>"></div>
-                     <div class="form-group"><textarea class="form-control" id="new-mobile-alcance" placeholder="<?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?>"></textarea></div>
-                     <div class="form-group">
-                        <select class="form-control" id="new-mobile-tipo">
-                            <option value="">Seleccione Tipo...</option>
-                            ${providerTypes.map(t => `<option value="${t}">${t}</option>`).join('')}
-                        </select>
-                     </div>
-                    <button class="btn btn-primary btn-block shadow-sm" onclick="addMobileSubcontratista()">
-                        Guardar Nuevo
-                    </button>
-                </div>
-            `;
-
-            data.forEach(row => {
-               // Subcontratistas uses 'Id'
-               let id = row.Id || row.id;
-               if(!id) return;
-
-               let isChecked = (row.activo == 1 || row.activo == '1') ? 'checked' : '';
-
-                html += `
-                <div class="mobile-card">
-                    <div class="mobile-card-row">
-                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Interesado' : 'Nombre'; ?></span>
-                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
-                               value="${row.subcontratista || ''}"
-                               onchange="updateMobileRow(${id}, 'subcontratista', this.value)">
-                    </div>
-                    <div class="mobile-card-row">
-                        <span class="mobile-label">Correo</span>
-                        <input type="email" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
-                               value="${row.correo_contacto || ''}"
-                               onchange="updateMobileRow(${id}, 'correo_contacto', this.value)">
-                    </div>
-                    <div class="mobile-card-row">
-                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Identificación' : 'NIT'; ?></span>
-                        <input type="text" class="form-control" style="flex:1; margin-left:20px; text-align:right;"
-                               value="${row.NIT || ''}"
-                               onchange="updateMobileRow(${id}, 'NIT', this.value)">
-                    </div>
-                    <div class="mobile-card-row" style="flex-direction:column; align-items:flex-start;">
-                        <span class="mobile-label" style="margin-bottom:5px;"><?php echo $isPreConstruccion ? 'Rol/Interés' : 'Alcance'; ?></span>
-                        <textarea class="form-control" style="width:100%;"
-                                  onchange="updateMobileRow(${id}, 'alcance', this.value)">${row.alcance || ''}</textarea>
-                    </div>
-                    <div class="mobile-card-row">
-                        <span class="mobile-label"><?php echo $isPreConstruccion ? 'Tipo de Interesado' : 'Tipo'; ?></span>
-                        <select class="form-control" style="flex:1; margin-left:20px;"
-                                onchange="updateMobileRow(${id}, 'tipo_proveedor', this.value)">
-                            ${providerTypes.map(t => `<option value="${t}" ${row.tipo_proveedor == t ? 'selected' : ''}>${t}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="mobile-card-row">
-                        <span class="mobile-label">Activo</span>
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="switch-${id}" ${isChecked}
-                                   onchange="updateMobileRow(${id}, 'activo', this.checked ? 1 : 0)">
-                            <label class="custom-control-label" for="switch-${id}"></label>
-                        </div>
-                    </div>
-
-                    <div class="mobile-actions">
-                        <button class="btn btn-outline-danger btn-sm" onclick="deleteMobileRow(${id}, '${row.subcontratista}')"><i class="fas fa-trash"></i> Eliminar</button>
-                    </div>
-                </div>
-               `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function addMobileSubcontratista() {
-            const nombre = $('#new-mobile-subcontratista').val();
-            const correo = $('#new-mobile-correo').val();
-            const nit = $('#new-mobile-nit').val();
-            const alcance = $('#new-mobile-alcance').val();
-            const tipo = $('#new-mobile-tipo').val();
-
-            const payload = buildSubcontratistaPayload({
-                subcontratista: nombre,
-                correo_contacto: correo,
-                NIT: nit,
-                alcance: alcance,
-                tipo_proveedor: tipo,
-                activo: 1
-            });
-
-            const errors = collectSubcontratistaValidationErrors(payload, {});
-            if (errors.length) {
-                showValidationMessage(errors, 'warning');
-                return;
-            }
-
-            const db = document.getElementById('baseDatos').value;
-
-            $.ajax({
-                url: '/api/subcontratistas/save?db=' + db,
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    opcion: 'crear',
-                    Subcontratista: payload.subcontratista,
-                    Correo: payload.correo_contacto,
-                    NIT: payload.NIT,
-                    alcance: payload.alcance,
-                    tipo_proveedor: payload.tipo_proveedor
-                },
-                success: function(res) {
-                    if (res.status === 'success') {
-                        loadData();
-                        if (window.AIA && window.AIA.Notice) window.AIA.Notice.badge('success', "<?php echo $isPreConstruccion ? 'Interesado registrado correctamente' : 'Subcontratista registrado correctamente'; ?>");
-                        $('#new-mobile-subcontratista').val('');
-                        $('#new-mobile-correo').val('');
-                        $('#new-mobile-nit').val('');
-                        $('#new-mobile-alcance').val('');
-                        $('#new-mobile-tipo').val('');
-                    } else {
-                        showValidationMessage(res.errors || [res.message || res.respuesta || '<?php echo $isPreConstruccion ? 'No se pudo crear el interesado.' : 'No se pudo crear el subcontratista.'; ?>'], 'warning');
-                    }
-                },
-                error: function() {
-                    if (window.AIA && window.AIA.Notice) window.AIA.Notice.error('<?php echo $isPreConstruccion ? 'Error de red al crear interesado.' : 'Error de red al crear subcontratista.'; ?>');
-                }
-            });
-        }
-
-        function updateMobileRow(id, prop, value) {
-            autosave(id, prop, value);
-        }
-
-        function deleteMobileRow(id, nombre) {
-            if (window.AIA && window.AIA.Notice) {
-                window.AIA.Notice.confirm('¿Seguro que desea eliminar a ' + (nombre || 'este registro') + '?', '<?php echo $isPreConstruccion ? 'Eliminar Interesado' : 'Eliminar Subcontratista'; ?>').then((confirmed) => {
-                    if (confirmed) deleteRow(id);
-                });
-            }
-        }
     </script>
 </body>
 </html>

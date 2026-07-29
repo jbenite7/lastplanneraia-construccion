@@ -1,0 +1,164 @@
+/* ===========================================================================
+   Subcontratistas — piel completa de la superficie.
+
+   Recibe lo que vivia en el bloque <style> de la vista y en sus atributos
+   style=. Va en @layer module, junto a styles.css: entrar sin capa le ganaria
+   a todo el design system, que es lo que hacia el bloque embebido.
+
+   Esta hoja es hermana de public/css/profesionales.css: las dos vistas
+   compartian un bloque <style> casi identico. Se mantienen separadas porque
+   cada una es la piel de su modulo y su manifiesto la declara como fuente
+   propia; lo comun entre ambas ya vive en el design system.
+
+   DOS COSAS QUE NO SE TRASLADAN, y por que:
+
+   1. `padding: 0` sobre `html, body`. Era la causa del desbordamiento
+      horizontal: al entrar sin capa le ganaba al `padding-inline-start` con
+      que el shell sidebar reserva su rail (72px). El relleno lo declara el
+      shell.
+
+   2. El bloque de neutralizacion de `styles.css` sobre las celdas de
+      Handsontable ("RESET & PROTECTION" / "Neutralize Mobile-First Card
+      View"). El spec F2 lo daba por innecesario tras F1 y pedia verificarlo
+      antes de reescribirlo. Verificado en /profesionales, que traia el mismo
+      bloque: retirado por completo la grilla renderiza igual y el `wtHider`
+      sigue ocupando el ancho del contenedor. Ojo: el `wtHider` estaba bien,
+      pero la `table.htCore` de dentro NO — defecto propio, con causa y arreglo
+      aparte, en public/js/modules/aia_ui/hot_table_width.js. Sus reglas apuntaban a
+      `mobile-table-fix.js`, que ya no existe; el par fondo/tinta de celda y la
+      rejilla los declara `handsontable-module.css` desde layer(vendor); y sus
+      propios comentarios daban por INERTES la mitad de las demas, porque
+      llevaban `!important` sin capa y en el cascade `!important` el orden de
+      capas se invierte.
+   =========================================================================== */
+
+@layer module {
+  html:has(> body.sub-page),
+  body.sub-page {
+    block-size: 100%;
+    margin: 0;
+    /* Handsontable resuelve su propio scroll. */
+    overflow: hidden;
+  }
+
+  body.sub-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Las `.row` de Bootstrap a nivel de pagina traen `margin-inline: -15px`.
+     Con el body en `overflow: hidden` eso no da scroll: recorta el contenido
+     por la izquierda. La vista lo neutralizaba con un `style="margin:0"`. */
+  .sub-page > .row {
+    margin-inline: 0;
+  }
+
+  .sub-page #encabezado,
+  .sub-page .direccionSeccion {
+    flex: 0 0 auto;
+  }
+
+  .sub-page .header-actions {
+    flex: 0 0 auto;
+    padding: var(--ds-space-3);
+    background: var(--ds-active-surface-raised);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+
+  .sub-page .header-actions h4 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    line-height: var(--ds-type-line-compact);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Una sola declaracion: la vista repartia la geometria del contenedor en
+     cuatro bloques que se pisaban entre si. La altura se deja al reparto flex
+     en vez del `calc(100vh - 180px)` original, un numero magico que no
+     corresponde a ninguna altura real desde que la vista monta el shell
+     sidebar y no el navbar legacy. */
+  .sub-page #hot-container {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--ds-space-3);
+    background: var(--ds-active-bg-page);
+    box-shadow: var(--ds-shadow-xs);
+    border-radius: var(--ds-radius-table);
+  }
+
+  .sub-page #loading {
+    position: fixed;
+    inset: 0;
+    /* Velo a pantalla completa en el tema activo; conserva la opacidad
+       original. */
+    background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent);
+    z-index: var(--ds-z-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Los dos distintivos de guardado viven ocultos hasta que el JS los muestra.
+     Era un `style="display:none"` en cada uno. */
+  .sub-page .sub-save-flag {
+    display: none;
+  }
+
+  /* Ajuste de texto dentro de celda, aplicado por el renderer de la grilla. */
+  .sub-page .force-wrap {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+  }
+
+  /* Boton circular de borrado dentro de la celda de acciones. Esta hoja
+     declara solo su geometria: el tinte lo sigue poniendo `.btn-danger` de
+     Bootstrap, como hasta ahora. Lo que desaparece es el rojo literal de Bootstrap que
+     el bloque embebido metia en el hover, que era un segundo rojo distinto del
+     de reposo; el hover se resuelve con elevacion, que es ademas lo que pide
+     DESIGN.md (animar `transform` y `box-shadow`, nunca `background`). */
+  .sub-page .btn-delete {
+    border-radius: var(--ds-radius-pill);
+    inline-size: 28px;
+    block-size: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border: none;
+    box-shadow: var(--ds-shadow-xs);
+    transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+  }
+
+  .sub-page .btn-delete:hover {
+    transform: scale(1.1);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  .sub-page .btn-delete i {
+    font-size: var(--ds-type-size-xs);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sub-page .btn-delete {
+      transition-duration: var(--ds-motion-reduced-duration);
+    }
+
+    .sub-page .btn-delete:hover {
+      transform: none;
+    }
+  }
+
+}

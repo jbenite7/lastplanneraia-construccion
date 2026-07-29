@@ -1,0 +1,69 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "subcontratistas",
+  "routes": [
+    "/subcontratistas"
+  ],
+  "sources": [
+    "views/subcontratistas/subcontratistas.view.php",
+    "public/css/subcontratistas.css",
+    "public/css/handsontable-header-global.css"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "icon",
+    "table-shell",
+    "handsontable-adapter",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts",
+    "handsontable"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/shell-sidebar-rollout.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/subcontratistas/"
+  ],
+  "scenarios": [
+    {
+      "id": "subcontratistas-dark-1180x820",
+      "family": "page-structure",
+      "route": "/subcontratistas",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/subcontratistas/subcontratistas-dark-1180x820.png",
+      "sha256": "e4617325174953b608ff186faffe8697a01db67f87469eb45df7893436dbef05"
+    }
+  ]
+}

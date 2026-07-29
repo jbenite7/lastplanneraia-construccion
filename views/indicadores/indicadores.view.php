@@ -3,7 +3,8 @@
 <head id="head">
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('indicadores') ?>
+	<link rel="stylesheet" href="/css/indicadores.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/indicadores.css') ?: 'ind1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 </head>
 
@@ -20,7 +21,7 @@
 	</div>
 
 	<div class="row direccionSeccion">
-		<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto" id="textoDireccionSeccion" style="text-align:left">
+		<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto" class="ind-section-title" id="textoDireccionSeccion">
 		</div>
 	</div>
 
@@ -29,7 +30,7 @@
 	</div> -->
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="tabla" id="contenedorInformePowerBI" style="text-align:center; margin-top:2px; margin-bottom:10px;">
+	<div class="tabla" id="contenedorInformePowerBI">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
@@ -148,10 +149,10 @@
 
 			var permiso = document.getElementById('permiso_canonico').value;
 			if (ROLES_SIN_INFORME_INDICADORES.includes(permiso)) {
-				contenedor.innerHTML = '<p style="padding:24px; text-align:center;">El informe de indicadores no está disponible para tu perfil.</p>';
+				contenedor.innerHTML = '<p class="ind-powerbi-denied">El informe de indicadores no está disponible para tu perfil.</p>';
 				return;
 			}
-			contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" style="border:0; display:block; margin:0 auto;"></iframe>';
+			contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" class="ind-powerbi-frame"></iframe>';
 			ajustarInformePowerBI();
 		}
 

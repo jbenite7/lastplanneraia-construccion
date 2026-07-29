@@ -9,246 +9,22 @@
     <title>Dashboard de Escalamientos AIA</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
-    <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+    <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('escalamientos') ?>
+    <link rel="stylesheet" href="/css/escalamientos.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/escalamientos.css') ?: 'esc1')) ?>" />
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
-    
-    <!-- CSS 2026 Moderno e Interfaz Mobile-First -->
-    <style>
-        :root {
-            --color-director: oklch(0.60 0.16 230);
-            --color-coordinador: oklch(0.55 0.20 280);
-            --color-gerente-c: oklch(0.65 0.18 45);
-            --color-gerente-g: oklch(0.62 0.22 18);
-            
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-card: rgba(0, 0, 0, 0.06);
-            --text-main: oklch(0.25 0.04 120);
-        }
-
-        body {
-            font-family: 'Outfit', 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, oklch(0.98 0.01 150), oklch(0.96 0.02 120));
-            margin: 0;
-            padding: 0;
-            color: var(--text-main);
-            min-height: 100vh;
-        }
-
-        .lps-dashboard-container {
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .dashboard-header {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(26, 60, 42, 0.1);
-            padding-bottom: 16px;
-        }
-
-        .dashboard-header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            color: oklch(0.30 0.08 140);
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .dashboard-header p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: oklch(0.50 0.03 140);
-        }
-
-        /* Grid Kanban Jerárquico - Mobile First */
-        .kanban-board {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .kanban-board {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .kanban-board {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        /* Columnas */
-        .kanban-column {
-            background: rgba(26, 60, 42, 0.03);
-            border-radius: 16px;
-            padding: 16px;
-            border: 1px solid rgba(26, 60, 42, 0.06);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 400px;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .kanban-column:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(26, 60, 42, 0.04);
-        }
-
-        .column-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 2px solid currentColor;
-            margin-bottom: 8px;
-        }
-
-        .column-header h2 {
-            margin: 0;
-            font-size: 1.05rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .column-counter {
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: currentColor;
-            color: #ffffff !important;
-        }
-
-        /* Tarjeta de Crisis */
-        .kanban-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .kanban-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--card-accent, oklch(0.5 0.1 140));
-        }
-
-        .kanban-card:hover {
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            border-color: rgba(26, 60, 42, 0.15);
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: oklch(0.50 0.02 120);
-        }
-
-        .card-title {
-            margin: 0;
-            font-size: 0.92rem;
-            font-weight: 800;
-            color: oklch(0.20 0.04 140);
-            line-height: 1.3;
-        }
-
-        .card-restriction {
-            font-size: 0.8rem;
-            color: oklch(0.40 0.08 30);
-            background: oklch(0.97 0.01 45);
-            padding: 6px 8px;
-            border-radius: 6px;
-            border-left: 2px solid oklch(0.65 0.18 45);
-            margin: 2px 0;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.72rem;
-            margin-top: 4px;
-            border-top: 1px solid rgba(0,0,0,0.04);
-            padding-top: 8px;
-        }
-
-        .badge-trigger {
-            background: rgba(0,0,0,0.05);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        /* Clases de colores según nivel */
-        .col-director { color: var(--color-director); }
-        .col-coordinador { color: var(--color-coordinador); }
-        .col-gerente-c { color: var(--color-gerente-c); }
-        .col-gerente-g { color: var(--color-gerente-g); }
-
-        /* Estilo sutil de Drawers */
-        .lps-drawer-open-btn {
-            background: none;
-            border: none;
-            color: oklch(0.5 0.1 140);
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            padding: 0;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .lps-drawer-open-btn:hover {
-            text-decoration: underline;
-        }
-
-        .no-crisis-placeholder {
-            text-align: center;
-            color: oklch(0.6 0.02 140);
-            font-size: 0.82rem;
-            padding: 30px 10px;
-            border: 1px dashed rgba(26, 60, 42, 0.1);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.4);
-        }
-    </style>
     
     <!-- El CSS del drawer llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
 </head>
-<body class="pi-page">
+<body class="esc-page">
 
     <div class="lps-dashboard-container">
         <div class="dashboard-header">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="dashboard-header__row">
                 <div>
                     <h1>Dashboard Corporativo de Escalamientos AIA</h1>
                     <p>Monitoreo en tiempo real de frentes de obra bloqueados y progresión jerárquica de crisis.</p>
                 </div>
-                <a href="/programa-general" style="text-decoration: none; padding: 10px 16px; background: oklch(0.35 0.08 140); color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(26, 60, 42, 0.15);">
+                <a href="/programa-general" class="aia-btn esc-back-link">
                     ← Volver a Planificación
                 </a>
             </div>
@@ -257,10 +33,14 @@
         <?php
         // Agrupar crisis por nivel
         $columnas = [
-            2 => ['titulo' => 'Director de Obra', 'clase' => 'col-director', 'color' => 'var(--color-director)', 'items' => []],
-            3 => ['titulo' => 'Coordinador Integración', 'clase' => 'col-coordinador', 'color' => 'var(--color-coordinador)', 'items' => []],
-            4 => ['titulo' => 'Gerente de Construcción', 'clase' => 'col-gerente-c', 'color' => 'var(--color-gerente-c)', 'items' => []],
-            5 => ['titulo' => 'Gerente General', 'clase' => 'col-gerente-g', 'color' => 'var(--color-gerente-g)', 'items' => []],
+            // `clase` viaja a la columna, no a la cabecera: el acento de nivel
+            // se declara una vez ahi y lo heredan cabecera y tarjetas. Antes
+            // cada tarjeta lo recibia por `style="--card-accent: …"`, un estilo
+            // inline que ninguna hoja podia alcanzar.
+            2 => ['titulo' => 'Director de Obra', 'clase' => 'col-director', 'items' => []],
+            3 => ['titulo' => 'Coordinador Integración', 'clase' => 'col-coordinador', 'items' => []],
+            4 => ['titulo' => 'Gerente de Construcción', 'clase' => 'col-gerente-c', 'items' => []],
+            5 => ['titulo' => 'Gerente General', 'clase' => 'col-gerente-g', 'items' => []],
         ];
 
 foreach ($crisis as $c) {
@@ -275,8 +55,8 @@ foreach ($crisis as $c) {
 
         <div class="kanban-board">
             <?php foreach ($columnas as $nivelId => $col): ?>
-                <div class="kanban-column">
-                    <div class="column-header <?= $col['clase'] ?>">
+                <div class="kanban-column <?= $col['clase'] ?>">
+                    <div class="column-header">
                         <h2><?= htmlspecialchars($col['titulo']) ?></h2>
                         <span class="column-counter"><?= count($col['items']) ?></span>
                     </div>
@@ -287,8 +67,7 @@ foreach ($crisis as $c) {
                         </div>
                     <?php else: ?>
                         <?php foreach ($col['items'] as $item): ?>
-                            <div class="kanban-card" 
-                                 style="--card-accent: <?= $col['color'] ?>" 
+                            <div class="kanban-card"
                                  onclick="openLpsDrawer(<?= htmlspecialchars(json_encode($item, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP)) ?>)">
                                 
                                 <div class="card-meta">

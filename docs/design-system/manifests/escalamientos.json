@@ -1,0 +1,72 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "escalamientos",
+  "routes": [
+    "/dashboard/escalamientos"
+  ],
+  "sources": [
+    "views/dashboard/escalamientos.php",
+    "public/css/escalamientos.css",
+    "public/js/modules/lps_drawer.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "card",
+    "section",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts",
+    "jquery-ui",
+    "handsontable"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection"
+  },
+  "exceptions": [
+    {
+      "id": "escalamientos-drawer-en-hoja-de-handsontable",
+      "reason": "Esta vista no monta ninguna grilla: emula Handsontable con un objeto dummy. Declara el vendor `handsontable` porque la geometria completa del Cajon Contextual LPS (.lps-drawer y su overlay) vive dentro de public/css/handsontable-module.css, que solo llega por attach-handsontable.css. Sin declararlo, el drawer pierde su `position: fixed` y cae al flujo del documento debajo del tablero. La deuda real es la ubicacion de esas reglas, no esta declaracion: pertenecen a adapters/lps-drawer.css, ya en core.css. Mover ~250 lineas entre capas (vendor -> components) altera la cascada de todas las vistas que hoy cargan ambas hojas y excede F2.",
+      "scope": "docs/design-system/manifests/escalamientos.json",
+      "status": "temporary"
+    }
+  ],
+  "tests": [],
+  "evidence": [
+    "tests/browser/__screenshots__/escalamientos/"
+  ],
+  "scenarios": [
+    {
+      "id": "escalamientos-dark-1180x820",
+      "family": "page-structure",
+      "route": "/dashboard/escalamientos",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/escalamientos/escalamientos-dark-1180x820.png",
+      "sha256": "b71ba04336400f4f95b7be8638ed62ec1fd041a20b404efa7788f7087edd4e41"
+    }
+  ]
+}

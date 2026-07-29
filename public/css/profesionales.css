@@ -1,0 +1,120 @@
+/* ===========================================================================
+   Profesionales — piel completa de la superficie.
+
+   Recibe lo que vivia en el bloque <style> de la vista y en sus atributos
+   style=. Va en @layer module, junto a styles.css: entrar sin capa le ganaria
+   a todo el design system, que es lo que hacia el bloque embebido.
+
+   DOS COSAS QUE NO SE TRASLADAN, y por que:
+
+   1. `padding: 0` sobre `html, body`. Era la causa del desbordamiento
+      horizontal a 1180 px: al entrar sin capa le ganaba al
+      `padding-inline-start` con que el shell sidebar reserva su rail (72px),
+      la pagina arrancaba debajo del rail y el contenido salia recortado por
+      la izquierda. Mismo defecto y misma causa que en
+      public/css/programa-general-actualizar.css. El relleno lo declara el
+      shell.
+
+   2. El bloque de neutralizacion de `styles.css` sobre las celdas de
+      Handsontable ("RESET & PROTECTION" / "Neutralize Mobile-First Card
+      View"). El spec F2 lo daba por innecesario tras F1 y pedia verificarlo
+      antes de reescribirlo. Verificado, y la hipotesis se sostiene:
+
+      - Sus reglas contra `mobile-table-fix.js` (`td::before { content: none }`,
+        `display: table-cell`) apuntaban a un script que ya no existe.
+      - El par fondo/tinta de celda, la rejilla y `.status-active` /
+        `.status-inactive` los declara `handsontable-module.css`, que llega por
+        attach-handsontable.css en layer(vendor).
+      - Los propios comentarios de la vista daban por INERTES la mitad de las
+        demas: llevaban `!important` sin capa, y en el cascade `!important` el
+        orden de capas se invierte, asi que perdian contra el modulo.
+
+      Medido tras retirarlo: la grilla renderiza igual, y el `wtHider` ocupa el
+      ancho completo del contenedor (1061 de 1062 px a 1180x820). Ojo: el
+      `wtHider` estaba bien, pero la `table.htCore` de dentro NO — ese es un
+      defecto propio, con causa y arreglo aparte, en
+      public/js/modules/aia_ui/hot_table_width.js.
+   =========================================================================== */
+
+@layer module {
+  html:has(> body.prof-page),
+  body.prof-page {
+    block-size: 100%;
+    margin: 0;
+    /* Handsontable resuelve su propio scroll. */
+    overflow: hidden;
+  }
+
+  body.prof-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Las `.row` de Bootstrap a nivel de pagina traen `margin-inline: -15px`.
+     Con el body en `overflow: hidden` eso no da scroll: recorta el contenido
+     por la izquierda. La vista lo neutralizaba con un `style="margin:0"`. */
+  .prof-page > .row {
+    margin-inline: 0;
+  }
+
+  .prof-page #encabezado,
+  .prof-page .direccionSeccion {
+    flex: 0 0 auto;
+  }
+
+  .prof-page .header-actions {
+    flex: 0 0 auto;
+    padding: var(--ds-space-3);
+    background: var(--ds-active-surface-raised);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+
+  .prof-page .header-actions h4 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    line-height: var(--ds-type-line-compact);
+    color: var(--ds-active-text-primary);
+  }
+
+  /* Una sola declaracion: la vista repartia la geometria del contenedor en
+     tres bloques que se pisaban entre si. `height` se deja al reparto flex en
+     vez del `calc(100vh - 180px)` original, un numero magico que no
+     corresponde a ninguna altura real desde que la vista monta el shell
+     sidebar y no el navbar legacy. */
+  .prof-page #hot-container {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--ds-space-3);
+    background: var(--ds-active-bg-page);
+    box-shadow: var(--ds-shadow-xs);
+    border-radius: var(--ds-radius-table);
+  }
+
+  .prof-page #loading {
+    position: fixed;
+    inset: 0;
+    /* Velo a pantalla completa en el tema activo; conserva la opacidad
+       original. */
+    background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent);
+    z-index: var(--ds-z-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Los dos distintivos de guardado viven ocultos hasta que el JS los muestra.
+     Era un `style="display:none"` en cada uno. */
+  .prof-page .prof-save-flag {
+    display: none;
+  }
+}
+

@@ -3,7 +3,7 @@
 <head id="head">
 	<meta charset="UTF-8">
 	<!--Script cque va al archivo linksComunesHead2.js-->
-	<?= \App\View\Components\DesignSystemHeadComponent::render() ?>
+	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('control-cambios') ?>
 	<link rel="stylesheet" href="/css/control-cambios.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/control-cambios.css') ?: 'cc1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 </head>
@@ -139,8 +139,6 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 
-		<style>
-	</style>
 	<div class="modal_ordenDeCambio modal fade aia-modal" id="modalordenDeCambio" role="dialog" aria-labelledby="modal_ordenDeCambioLabel" data-keyboard="false">
 				<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 					<div class="modal-content" id="modalordenDeCambioContent">
@@ -299,7 +297,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputJustificacion">Justificación</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputJustificacion" id="inputJustificacion" rows="3" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputJustificacion" id="inputJustificacion" rows="3" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorJustificacion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -310,7 +308,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputDescripcion">Descripción <br>del Cambio</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputDescripcion" id="inputDescripcion" rows="3" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputDescripcion" id="inputDescripcion" rows="3" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorDescripcion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -321,7 +319,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaAlcance">Incidencia en <br>el Alcance</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaAlcance" id="inputIncidenciaAlcance" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaAlcance" id="inputIncidenciaAlcance" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaAlcance" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -361,7 +359,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaCronograma">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
-													<textarea class="form-control border-0 rounded-0" name="inputIncidenciaCronograma" id="inputIncidenciaCronograma" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off" style="resize: none;"></textarea>
+													<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaCronograma" id="inputIncidenciaCronograma" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off"></textarea>
 												</div>
 											</div>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
@@ -427,7 +425,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaPresupuesto">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
-													<textarea class="form-control border-0 rounded-0" name="inputIncidenciaPresupuesto" id="inputIncidenciaPresupuesto" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off" style="resize: none;"></textarea>
+													<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaPresupuesto" id="inputIncidenciaPresupuesto" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off"></textarea>
 												</div>
 											</div>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
@@ -440,7 +438,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaCalidad">Incidencia <br>en la <br>Calidad</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaCalidad" id="inputIncidenciaCalidad" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaCalidad" id="inputIncidenciaCalidad" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaCalidad" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -451,7 +449,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRiesgo">Incidencia <br>en el <br>Riesgo</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaRiesgo" id="inputIncidenciaRiesgo" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaRiesgo" id="inputIncidenciaRiesgo" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaRiesgo" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -462,7 +460,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRecurso">Incidencia <br>en el <br>Recurso</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0" name="inputIncidenciaRecurso" id="inputIncidenciaRecurso" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off" style="resize: none;"></textarea>
+											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaRecurso" id="inputIncidenciaRecurso" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaRecurso" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>

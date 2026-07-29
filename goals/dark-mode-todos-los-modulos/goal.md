@@ -16,14 +16,17 @@ Las 31 superficies servidas por la app, en cuatro grupos:
 
 - **A — migradas con manifiesto y presupuesto** (6): auth, project-selector, programa-general,
   programacion-intermedia, programacion-semanal (+CIC/CNC/CNP), laboratorio.
-- **B — consumidores del agregador sin manifiesto** (9): listado-actividades, contratos, pdc,
-  profesionales, subcontratistas, control-cambios, programa-general-actualizar, indicadores,
-  dashboard/escalamientos.
+- **B — consumidores del agregador sin manifiesto** (7): pdc, profesionales, subcontratistas,
+  control-cambios, programa-general-actualizar, indicadores, dashboard/escalamientos.
 - **C — fuera del contrato del head** (9 rutas): las 8 rutas `/bi/*` y `/plan-compras`.
 - **D — sin design system** (14 vistas): el mini-app `admin/`.
 
 ## Fuera de alcance
 
+- **`/listado-actividades` y `/contratos`** — deprecadas. Decisión del usuario del 2026-07-29:
+  salen del plan entero, no se les hace manifiesto, presupuesto ni evidencia. Son la interfaz del
+  PDC viejo, y el mismo día `views/partials/shell_sidebar.php` retiró sus entradas del rail. El
+  grupo B pasa de 9 superficies a 7. Consecuencias abiertas anotadas en `specs/F6-vendors.md`.
 - Mobile, tablet y cualquier viewport bajo 1180 px (AGENTS.md).
 - Reescribir las 14 vistas de `admin/` sobre el shell canónico. Decisión explícita del
   usuario: AdminLTE permanece como framework de `admin/` en este goal.

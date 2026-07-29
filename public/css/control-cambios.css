@@ -50,4 +50,10 @@
     border-top: 1px solid var(--ds-active-border);
     color: var(--ds-active-text-secondary);
   }
+
+  /* Las ocho areas de texto del formulario no se redimensionan a mano: era un
+     `style="resize: none;"` repetido en cada una. */
+  .cc-textarea-fixed {
+    resize: none;
+  }
 }

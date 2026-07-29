@@ -1,0 +1,73 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "control-cambios",
+  "routes": [
+    "/control-cambios"
+  ],
+  "sources": [
+    "views/control-cambios/controlCambios.view.php",
+    "public/css/control-cambios.css"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "filter",
+    "field",
+    "button",
+    "icon",
+    "table-shell",
+    "datatables-adapter",
+    "select-adapter",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts",
+    "datatables",
+    "select2",
+    "jquery-ui",
+    "anychart"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/shell-sidebar-rollout.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/control-cambios/"
+  ],
+  "scenarios": [
+    {
+      "id": "control-cambios-dark-1180x820",
+      "family": "page-structure",
+      "route": "/control-cambios",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/control-cambios/control-cambios-dark-1180x820.png",
+      "sha256": "f493f453c961c6cd5a268a86e99f4b3450cf9d58d1399cb73bb7b82ace7b1ff5"
+    }
+  ]
+}

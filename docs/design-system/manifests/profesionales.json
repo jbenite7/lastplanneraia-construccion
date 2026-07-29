@@ -1,0 +1,69 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "profesionales",
+  "routes": [
+    "/profesionales"
+  ],
+  "sources": [
+    "views/profesionales/profesionales.view.php",
+    "public/css/profesionales.css",
+    "public/css/handsontable-header-global.css"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "toolbar",
+    "button",
+    "icon",
+    "table-shell",
+    "handsontable-adapter",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts",
+    "handsontable"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/shell-sidebar-rollout.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/profesionales/"
+  ],
+  "scenarios": [
+    {
+      "id": "profesionales-dark-1180x820",
+      "family": "page-structure",
+      "route": "/profesionales",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/profesionales/profesionales-dark-1180x820.png",
+      "sha256": "8bf3cf287545a3b4f50d9304af239744b84ac5a2fb347ac5c4bda453e2f009ce"
+    }
+  ]
+}

@@ -11,6 +11,18 @@
         ],
         "createdAt": "2026-07-22T23:07:53.911Z",
         "reason": "Usuario confirm\u00f3: el colapso del rail anima padding-left como el patr\u00f3n aprobado del project-selector; solo corre al accionar el toggle y reduced-motion la anula"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "font awesome 5 free",
+        "createdAt": "2026-07-29T17:22:01.724Z",
+        "reason": "Fuente de iconos con content:\\f0b0, no tipografia de texto; usuario lo confirmo intencional"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "9px",
+        "createdAt": "2026-07-29T17:22:01.757Z",
+        "reason": "Glifo dentro de un boton de 13px de Handsontable; la rampa del DS empieza en 12px y no hay token de tamano de icono; usuario lo confirmo intencional"
       }
     ]
   }

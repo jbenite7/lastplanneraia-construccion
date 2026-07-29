@@ -1,0 +1,76 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "indicadores",
+  "routes": [
+    "/indicadores"
+  ],
+  "sources": [
+    "views/indicadores/indicadores.view.php",
+    "public/css/indicadores.css",
+    "public/js/modules/bi-access.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "section",
+    "state",
+    "feedback"
+  ],
+  "vendors": [
+    "bootstrap",
+    "jquery",
+    "font-awesome",
+    "aia-fonts",
+    "anychart",
+    "select2",
+    "jquery-ui",
+    "datatables"
+  ],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "normal"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection"
+  },
+  "exceptions": [
+    {
+      "id": "indicadores-powerbi-iframe",
+      "rule": "third-party-embed",
+      "scope": "views/indicadores/indicadores.view.php",
+      "reason": "El informe de Power BI se embebe por publish-to-web en un iframe de otro origen. Su contenido no es tematizable ni auditable desde el design system: el alcance del modulo es el marco alrededor del iframe.",
+      "permanent": true
+    }
+  ],
+  "tests": [
+    "tests/browser/shell-sidebar-rollout.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/indicadores/"
+  ],
+  "scenarios": [
+    {
+      "id": "indicadores-dark-1180x820",
+      "family": "page-structure",
+      "route": "/indicadores",
+      "fixture": "authenticated-project-member",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "normal",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/indicadores/indicadores-dark-1180x820.png",
+      "sha256": "29d308f6ce34c8b8fd33bfbab0a9ea06988fca766cc4eded501d74e63fed0df9"
+    }
+  ]
+}
