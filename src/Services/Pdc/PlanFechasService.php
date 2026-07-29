@@ -105,7 +105,7 @@ class PlanFechasService
      * cambiaba en medio (inalcanzable en la práctica: sin semanas no hay frentes y `amarrar()` sale
      * antes con FRENTE_INVALIDO). Devolverlas juntas quita el segundo viaje y la incoherencia.
      *
-     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string}>}
+     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>}
      */
     private function semanaYFrentes(int $projectId, bool $soloEncabezados = true): array
     {
@@ -547,6 +547,152 @@ class PlanFechasService
     }
 
     /**
+     * Las correspondencias que este proyecto usa, y las ramas que todavía no tienen ninguna.
+     *
+     * Se devuelven juntas a propósito: el panel no sirve para admirar lo resuelto sino para cerrar
+     * lo que falta, y las ramas pendientes son exactamente las que dejan paquetes sin propuesta.
+     * Solo se listan las ramas que el proyecto usa de verdad; el catálogo entero sería ruido.
+     *
+     * @return array{
+     *     correspondencias: list<array{rama: string, ancla: string, confirmado: bool, alcance: string, nota: string}>,
+     *     pendientes: list<string>, confirmadas: int, sinConfirmar: int
+     * }
+     */
+    public function correspondencias(int $projectId, ?int $versionId = null): array
+    {
+        $efectivas = $this->correspondenciasEfectivas($projectId);
+        $anclas = [];
+        foreach ($this->anclasDisponibles($projectId) as $a) {
+            $anclas[MaestroInsumosService::normalizar($a['nombre'])] = true;
+        }
+
+        $vid = $this->versionActivaId($projectId, $versionId);
+        $ramasUsadas = [];
+        if ($vid !== null) {
+            $ids = $this->db->query(
+                'SELECT DISTINCT p.id FROM general_paquetes_contratacion p
+                 JOIN pdc_insumo_paquete ip ON ip.paquete_id = p.id
+                 WHERE p.activo = 1 AND ip.project_id = ?
+                   AND p.modalidad_contratacion IN (\'contrato\', \'orden_compra\')',
+                [$projectId],
+            )->fetchAll(\PDO::FETCH_COLUMN);
+            foreach ($this->subcapitulosDePaquete($projectId, $vid, array_map('intval', $ids)) as $ramas) {
+                foreach ($ramas as $r) {
+                    $ramasUsadas[MaestroInsumosService::normalizar($r)] = $r;
+                }
+            }
+        }
+
+        $out = [];
+        $pendientes = [];
+        $confirmadas = 0;
+        $sinConfirmar = 0;
+        foreach ($ramasUsadas as $norm => $original) {
+            if (isset($efectivas[$norm])) {
+                $e = $efectivas[$norm];
+                $e['confirmado'] ? $confirmadas++ : $sinConfirmar++;
+                $out[] = [
+                    'rama' => $original,
+                    'ancla' => $e['ancla'],
+                    'confirmado' => $e['confirmado'],
+                    'alcance' => $e['alcance'],
+                    'nota' => $e['nota'],
+                ];
+                continue;
+            }
+            // Coincidencia exacta con un nodo del cronograma: se resuelve sola, no es un pendiente.
+            if (isset($anclas[$norm])) {
+                $confirmadas++;
+                $out[] = [
+                    'rama' => $original,
+                    'ancla' => $original,
+                    'confirmado' => true,
+                    'alcance' => 'automatica',
+                    'nota' => 'La rama y el nodo del cronograma se llaman igual.',
+                ];
+                continue;
+            }
+            $pendientes[] = $original;
+        }
+        usort($out, static fn (array $a, array $b): int => [$a['confirmado'], $a['rama']] <=> [$b['confirmado'], $b['rama']]);
+
+        // Una rama sin correspondencia propia NO es un pendiente si el paquete igual recibió
+        // propuesta por otra de sus ramas —lo normal: un grupo fino cuyo subcapítulo padre ya está
+        // resuelto—. Listarlas todas daba 66 «pendientes» cuando los paquetes realmente huérfanos
+        // son 4, y un panel que grita 66 cosas por hacer no ayuda a cerrar ninguna. Pendiente es
+        // solo lo que hoy deja a un paquete sin fecha.
+        $bloquean = [];
+        foreach ($this->analizarFrentes($projectId, $versionId)['motivos'] as $m) {
+            if ($m['rama'] !== null) {
+                $bloquean[MaestroInsumosService::normalizar($m['rama'])] = $m['rama'];
+            }
+        }
+        $pendientes = array_values($bloquean);
+        sort($pendientes);
+
+        return [
+            'correspondencias' => $out,
+            'pendientes' => $pendientes,
+            'confirmadas' => $confirmadas,
+            'sinConfirmar' => $sinConfirmar,
+        ];
+    }
+
+    /**
+     * Guarda una correspondencia. `alcance = 'proyecto'` escribe la excepción de esta obra; cualquier
+     * otro valor toca el catálogo global, conocimiento de la empresa, que por eso pide otro permiso.
+     *
+     * Guardar una correspondencia NO amarra ningún paquete: solo cambia lo que el motor propone de
+     * aquí en adelante. Es deliberado — el amarre sigue siendo un acto humano y esto no puede
+     * convertirse en una escritura masiva encubierta.
+     *
+     * @return array{ok: true}|array{ok: false, code: 'DATOS_INVALIDOS'|'ANCLA_INVALIDA'}
+     */
+    public function guardarCorrespondencia(
+        int $projectId,
+        string $rama,
+        string $ancla,
+        string $alcance,
+        string $usuario,
+    ): array {
+        $ramaNorm = MaestroInsumosService::normalizar($rama);
+        if ($ramaNorm === '' || trim($ancla) === '') {
+            return ['ok' => false, 'code' => 'DATOS_INVALIDOS'];
+        }
+        // El ancla tiene que existir en el cronograma de esta obra. Una correspondencia hacia un
+        // nombre inventado no falla al guardarse: falla meses después, dejando paquetes sin fecha.
+        $existe = false;
+        foreach ($this->anclasDisponibles($projectId) as $a) {
+            if (MaestroInsumosService::normalizar($a['nombre']) === MaestroInsumosService::normalizar($ancla)) {
+                $existe = true;
+                break;
+            }
+        }
+        if (!$existe) {
+            return ['ok' => false, 'code' => 'ANCLA_INVALIDA'];
+        }
+
+        if ($alcance === 'proyecto') {
+            $this->db->query(
+                'INSERT INTO pdc_rama_frente (project_id, rama_norm, ancla_nombre, confirmado_humano, asignado_por)
+                 VALUES (?, ?, ?, 1, ?)
+                 ON DUPLICATE KEY UPDATE ancla_nombre = VALUES(ancla_nombre), confirmado_humano = 1,
+                    asignado_por = VALUES(asignado_por)',
+                [$projectId, $ramaNorm, trim($ancla), $usuario],
+            );
+        } else {
+            $this->db->query(
+                'INSERT INTO general_rama_frente (rama_norm, ancla_nombre, confirmado_humano, creado_por, actualizado_por)
+                 VALUES (?, ?, 1, ?, ?)
+                 ON DUPLICATE KEY UPDATE ancla_nombre = VALUES(ancla_nombre), confirmado_humano = 1,
+                    actualizado_por = VALUES(actualizado_por)',
+                [$ramaNorm, trim($ancla), $usuario, $usuario],
+            );
+        }
+        return ['ok' => true];
+    }
+
+    /**
      * Parecido Jaccard entre dos conjuntos de palabras. 0 si no comparten ninguna.
      *
      * @param list<string> $a
@@ -671,7 +817,7 @@ class PlanFechasService
         // tal cual no es una corrección—. Mismo criterio que `pdc_correcciones_motor` con los
         // insumos, en su tabla propia porque aquélla está atada a (descripcion_norm, unidad).
         $sugerido = filter_var($procedencia['sugeridoUniqueId'] ?? null, FILTER_VALIDATE_INT);
-        if ($sugerido !== false && $sugerido !== null && $sugerido !== $uniqueId) {
+        if ($sugerido !== false && $sugerido !== $uniqueId) {
             $this->db->query(
                 'INSERT INTO pdc_correcciones_frente
                     (project_id, paquete_id, unique_id_sugerido, unique_id_elegido, capa_sugerida, confianza_sugerida, usuario)

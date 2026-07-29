@@ -34,6 +34,21 @@ class PlanComprasPlanController
         $this->ok(['frentes' => $this->service->frentesDisponibles($projectId)]);
     }
 
+    /**
+     * GET /plan-compras/api/plan/anclas
+     *
+     * Todos los nodos a los que se puede amarrar: los encabezados y también las actividades. Va
+     * aparte de `frentes` para no cambiarle la forma a lo que ya consume la pestaña «Plan».
+     */
+    public function anclas(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['anclas' => $this->service->anclasDisponibles($projectId)]);
+    }
+
     /** GET /plan-compras/api/plan/sugerencias */
     public function sugerencias(): void
     {
@@ -41,7 +56,64 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
-        $this->ok(['sugerencias' => $this->service->sugerirFrentes($projectId)]);
+        // `motivos` explica, para cada paquete sin propuesta, qué rama falta por resolver. Sin eso la
+        // fila queda muda y quien la mira no sabe qué hacer con ella.
+        $r = $this->service->sugerenciasYMotivos($projectId);
+        $this->ok(['sugerencias' => $r['sugerencias'], 'motivos' => $r['motivos']]);
+    }
+
+    /** GET /plan-compras/api/plan/correspondencias */
+    public function correspondencias(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok($this->service->correspondencias($projectId));
+    }
+
+    /**
+     * POST /plan-compras/api/plan/correspondencias  {rama, ancla, alcance?}
+     *
+     * Tocar el catálogo GLOBAL es gobernanza: cambia lo que el motor propondrá en todas las obras de
+     * AIA, así que exige `lps.paquetes_contratacion.reglas`, el permiso que A3.3 creó para aprobar
+     * reglas y overrides globales. La excepción de una obra concreta se conforma con el permiso de
+     * editar el plan, porque su efecto no sale de ese proyecto.
+     */
+    public function guardarCorrespondencia(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $alcance = ($body['alcance'] ?? 'global') === 'proyecto' ? 'proyecto' : 'global';
+        if ($alcance === 'global' && !(new RbacService($this->db))->can('lps.paquetes_contratacion.reglas')) {
+            $this->fail(
+                'FORBIDDEN',
+                'Cambiar una correspondencia para todas las obras necesita el permiso de reglas. Puedes guardarla solo para este proyecto.',
+                403,
+            );
+            return;
+        }
+        $r = $this->service->guardarCorrespondencia(
+            $projectId,
+            (string) ($body['rama'] ?? ''),
+            (string) ($body['ancla'] ?? ''),
+            $alcance,
+            $this->usuario(),
+        );
+        if (!$r['ok']) {
+            $this->fail(
+                $r['code'],
+                $r['code'] === 'ANCLA_INVALIDA'
+                    ? 'Ese nodo no existe en el cronograma de esta obra.'
+                    : 'La rama y el nodo del cronograma son obligatorios.',
+                422,
+            );
+            return;
+        }
+        $this->ok(['ok' => true]);
     }
 
     /** GET /plan-compras/api/plan */
