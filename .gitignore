@@ -175,6 +175,7 @@ tests/browser/*
 !tests/browser/pdc-v2-responsable.spec.mjs
 !tests/browser/pdc-v2-historial.spec.mjs
 !tests/browser/pdc-v2-desamarrar.spec.mjs
+!tests/browser/pdc-v2-pasos.spec.mjs
 !tests/browser/entrypoint-segmentation-dryrun.mjs
 !tests/browser/shell-week-admin.mjs
 !tests/browser/shell-sidebar-rollout.mjs

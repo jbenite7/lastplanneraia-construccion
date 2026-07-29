@@ -56,20 +56,25 @@ $existeConstraint = static fn (Database $db, string $c): bool => (int) $db->quer
 // clave, nombre, col_legacy, dias_sugeridos, peso_reparto, orden_default.
 // Los siete primeros son copia literal de PlanFechasService::PASOS y PESOS_REPARTO: si divergen, el
 // test test_pdc_v2_pasos_configurables.php falla a propósito.
+// `orden_default` va de diez en diez, no de uno en uno: es el orden CANÓNICO del proceso, y la
+// pantalla lo usa para decidir dónde cae un paso al agregarlo. Con numeración compacta, un paso nuevo
+// que pertenece a la mitad del proceso no tendría hueco donde entrar y aterrizaría al final, obligando
+// a subirlo a mano. Los huecos son para eso, y para que un paso futuro entre sin renumerar el resto.
 $semilla = [
     ['elaboracion_pliegos', 'Elaboración de pliegos', 'diasElaboracionPliegos', null, 0.087872, 0],
-    ['entrega_pliegos', 'Entrega de pliegos', 'diasEntregaPliegos', null, 0.121115, 1],
-    ['recibo_propuestas', 'Recibo de propuestas', 'diasReciboPropuestas', null, 0.054079, 2],
-    ['cuadros_comparativos', 'Cuadros comparativos', 'diasCuadrosComparativos', null, 0.189065, 3],
-    ['legalizacion', 'Legalización', 'diasLegalizacionContrato', null, 0.178996, 4],
-    ['fabricacion', 'Fabricación', 'diasFabricacion', null, 0.248792, 5],
-    ['insumos_obra', 'Insumos en obra', 'diasInsumosObra', null, 0.120081, 6],
-    // Los dos sin respaldo legacy. Licify: el histórico dice 0-2 días (docs/pdca-automatizacion-plan-compras.md:76),
-    // y sus columnas se dropearon a propósito en jun-2026, así que no hay de dónde leerlos.
-    // Aprobación del cliente va entre Cuadros y Legalización, que es donde la tenían los dos proyectos
-    // de la Variante B (2021-2 y 2024).
-    ['licify', 'Ingreso a plataforma Licify', null, 1, null, 7],
-    ['aprobacion_cliente', 'Aprobación del cliente', null, 15, null, 8],
+    // Licify: en la «Variante A» del histórico era el paso 2, justo después de elaborar los pliegos
+    // (docs/pdca-automatizacion-plan-compras.md:105). Duraba 0-2 días y sus columnas se dropearon a
+    // propósito en jun-2026, así que no hay de dónde leer su duración: la pone la obra.
+    ['licify', 'Ingreso a plataforma Licify', null, 1, null, 5],
+    ['entrega_pliegos', 'Entrega de pliegos', 'diasEntregaPliegos', null, 0.121115, 10],
+    ['recibo_propuestas', 'Recibo de propuestas', 'diasReciboPropuestas', null, 0.054079, 20],
+    ['cuadros_comparativos', 'Cuadros comparativos', 'diasCuadrosComparativos', null, 0.189065, 30],
+    // «Variante B»: entre cuadros comparativos y legalización, que es donde la tenían los dos de los
+    // seis proyectos históricos que la usaban (2021-2 y 2024).
+    ['aprobacion_cliente', 'Aprobación del cliente', null, 15, null, 35],
+    ['legalizacion', 'Legalización', 'diasLegalizacionContrato', null, 0.178996, 40],
+    ['fabricacion', 'Fabricación', 'diasFabricacion', null, 0.248792, 50],
+    ['insumos_obra', 'Insumos en obra', 'diasInsumosObra', null, 0.120081, 60],
 ];
 
 /** Las siete claves por defecto, en el orden del proceso. El backfill mapea orden 0..6 a estas. */
