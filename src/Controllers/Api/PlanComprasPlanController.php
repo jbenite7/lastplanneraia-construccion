@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
+use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
 
 /**
@@ -181,6 +182,65 @@ class PlanComprasPlanController
         $this->ok(['responsables' => $this->service->responsablesElegibles($projectId)]);
     }
 
+    /** GET /plan-compras/api/plan/pasos — el catálogo de la empresa y el proceso de esta obra. */
+    public function pasos(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $svc = new PasosContratacionService($this->db);
+        $this->ok([
+            'catalogo' => $svc->catalogo(),
+            'proyecto' => $svc->deProyecto($projectId),
+            'configurado' => $svc->configurado($projectId),
+            // Para que el aviso de quitar un paso pueda decir un número y no un «se borrarán filas»
+            // genérico: quitar un paso borra exactamente una fila por paquete con plan.
+            'paquetesConPlan' => (int) $this->db->query(
+                'SELECT COUNT(*) FROM pdc_plan_paquete WHERE project_id = ? AND fecha_arranque IS NOT NULL',
+                [$projectId],
+            )->fetchColumn(),
+        ]);
+    }
+
+    /**
+     * POST /plan-compras/api/plan/pasos  {pasos:[{clave, alias?, diasFijos?}]}
+     *
+     * Guarda y recalcula en la misma llamada: cambiar los pasos mueve las fechas de todos los
+     * paquetes de la obra, y dejar la configuración nueva conviviendo con el plan viejo pondría en
+     * pantalla unas fechas que ya no son las que produce esa configuración.
+     */
+    public function guardarPasos(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $pasos = is_array($body['pasos'] ?? null) ? array_values($body['pasos']) : null;
+        if ($pasos === null) {
+            $this->fail('PASOS_INVALIDOS', 'Falta la lista de pasos.', 422);
+            return;
+        }
+        $r = (new PasosContratacionService($this->db))->guardar($projectId, $pasos, $this->usuario());
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'PASOS_INVALIDOS', $r['mensaje'] ?? 'Configuración de pasos inválida.', 422);
+            return;
+        }
+        $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
+    }
+
+    /** POST /plan-compras/api/plan/pasos/restablecer — la obra vuelve al proceso por defecto. */
+    public function restablecerPasos(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        (new PasosContratacionService($this->db))->restablecer($projectId);
+        $this->ok($this->service->calcular($projectId, $this->usuario()));
+    }
+
     // ── guards ──────────────────────────────────────────────
 
     private function guardLectura(): ?int
@@ -201,6 +261,30 @@ class PlanComprasPlanController
     {
         if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.editar')) {
             $this->fail('FORBIDDEN', 'No autorizado para editar el plan de compras.', 403);
+            return null;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return null;
+        }
+        $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
+        if (!CsrfTokenManager::validate(is_string($csrf) ? $csrf : '', 'plan_compras_v2')) {
+            $this->fail('CSRF_INVALID', 'Token CSRF inválido o ausente.', 403);
+            return null;
+        }
+        return $projectId;
+    }
+
+    /**
+     * Cambiar los pasos mueve las fechas de TODOS los paquetes de la obra a la vez, así que no basta
+     * con poder asignar insumos: exige el mismo permiso con el que A3.3 aprueba reglas globales del
+     * motor (Oficina Técnica / Compras y Director de Obra).
+     */
+    private function guardReglas(): ?int
+    {
+        if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.reglas')) {
+            $this->fail('FORBIDDEN', 'No autorizado para cambiar los pasos del proceso de contratación.', 403);
             return null;
         }
         $projectId = (int) ($_SESSION['project_id'] ?? 0);

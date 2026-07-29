@@ -135,7 +135,12 @@ class PasosContratacionService
     /**
      * Reemplaza la configuración de la obra. Todo o nada.
      *
-     * @param list<array{clave:string,alias?:string,diasFijos?:int|null}> $pasos en el orden deseado
+     * El tipo es deliberadamente flojo: esto llega de un JSON del cliente, así que ni las claves
+     * están garantizadas ni los índices tienen por qué ser contiguos. Prometer
+     * `list<array{clave:string,...}>` haría que el análisis estático diera por ciertas unas garantías
+     * que el cliente no da, y marcaría como redundantes justo las comprobaciones que hacen falta.
+     *
+     * @param array<int, array<string, mixed>> $pasos en el orden deseado
      * @return array{ok:bool,code?:string,mensaje?:string,pasos?:int}
      */
     public function guardar(int $projectId, array $pasos, string $usuario): array

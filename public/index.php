@@ -229,6 +229,11 @@ $router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanCompra
 $router->post('/plan-compras/api/plan/desamarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'desamarrar']);
 $router->post('/plan-compras/api/plan/calcular', [\App\Controllers\Api\PlanComprasPlanController::class, 'calcular']);
 $router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsable']);
+// A4.1 — pasos del proceso de contratación configurables por proyecto. La sufijada va antes que la
+// desnuda por consistencia con el resto del bloque (FastRoute resuelve estáticas por hashmap exacto).
+$router->get('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'pasos']);
+$router->post('/plan-compras/api/plan/pasos/restablecer', [\App\Controllers\Api\PlanComprasPlanController::class, 'restablecerPasos']);
+$router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
