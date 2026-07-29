@@ -240,9 +240,14 @@ class SeguimientoService
             $cumplidos = 0;
             $pasoActual = '';
             $atrasado = false;
-            $finProgramado = null;
+            // El fin programado es el del ULTIMO paso, y punto. Arrastrar «la ultima fecha no nula»
+            // parecia mas tolerante con los huecos, pero un paso conservado sin fechas programadas
+            // —reamarre pendiente, o paso retirado del proceso— hacia que la columna anunciara como
+            // fin del proceso la fecha de un paso intermedio: una fecha plausible, que nadie lee
+            // como error. Sin fecha en el ultimo paso no hay fin que anunciar: null.
+            $ultimo = $pasos[count($pasos) - 1];
+            $finProgramado = $ultimo['fecha_fin'] === null ? null : (string) $ultimo['fecha_fin'];
             foreach ($pasos as $i => $r) {
-                $finProgramado = $r['fecha_fin'] === null ? $finProgramado : (string) $r['fecha_fin'];
                 if ($r['fecha_real'] !== null) {
                     $cumplidos++;
                     if (($proyeccion[$i]['desfaseDias'] ?? 0) > 0) {
