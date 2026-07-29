@@ -99,7 +99,8 @@
       "sites": [
         "public/js/cargarDatosGeneralesPagina2.js"
       ],
-      "case": "8-font-awesome-inyectado"
+      "case": "8-font-awesome-inyectado",
+      "note": "La rama de inyeccion se conserva a proposito para las vistas que cargan este script sin ningun head del design system. Tras cerrar el caso 8 ya no se dispara en ninguna ruta del inventario de runtime: medido, la inyeccion para en las 4 de /programacion-semanal y Font Awesome sigue aplicandose."
     },
     {
       "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
@@ -484,12 +485,6 @@
           "sheet": "/css/programacion-semanal.css",
           "via": "link",
           "unlayeredRules": 342
-        },
-        {
-          "sheet": "/public/vendor/font-awesome/css/all.css",
-          "via": "link",
-          "unlayeredRules": 1436,
-          "case": "8-font-awesome-inyectado"
         }
       ]
     },
@@ -500,12 +495,6 @@
           "sheet": "/css/programacion-semanal.css",
           "via": "link",
           "unlayeredRules": 342
-        },
-        {
-          "sheet": "/public/vendor/font-awesome/css/all.css",
-          "via": "link",
-          "unlayeredRules": 1436,
-          "case": "8-font-awesome-inyectado"
         }
       ]
     },
@@ -516,12 +505,6 @@
           "sheet": "/css/programacion-semanal.css",
           "via": "link",
           "unlayeredRules": 342
-        },
-        {
-          "sheet": "/public/vendor/font-awesome/css/all.css",
-          "via": "link",
-          "unlayeredRules": 1436,
-          "case": "8-font-awesome-inyectado"
         }
       ]
     },
@@ -548,12 +531,6 @@
           "sheet": "/css/change-monitor.css",
           "via": "link",
           "unlayeredRules": 14
-        },
-        {
-          "sheet": "/public/vendor/font-awesome/css/all.css",
-          "via": "link",
-          "unlayeredRules": 1436,
-          "case": "8-font-awesome-inyectado"
         }
       ]
     },
@@ -578,6 +555,102 @@
           "blocks": 1
         }
       ]
+    },
+    "/bi/control-tower": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 132,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/programa-general": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 132,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/intermedia": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 135,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/semanal": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 135,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/pdc": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 135,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/contratistas": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 135,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/responsables": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 135,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
+    },
+    "/bi/curva-s": {
+      "authenticated": true,
+      "unlayered": [
+        {
+          "sheet": "style:*",
+          "via": "style",
+          "unlayeredRules": 132,
+          "blocks": 1,
+          "case": "9-tailwind-cdn-bi"
+        }
+      ]
     }
   },
   "knownCases": {
@@ -588,6 +661,7 @@
     "5-handsontable-pdc": "ABIERTO: /vendor/handsontable/handsontable.full.min.css en /pdc. Su th es opaco del vendor y no lee ningun token.",
     "6-adminlte-login": "ABIERTO: AdminLTE desde CDN en /login, /password/forgot, /password/reset. Deja .h1..h6 { color: inherit } ganando al adaptador de sweetalert2.",
     "7-login-brand-unified": "ABIERTO (censado): /css/login-brand-unified.css sin capa y cargado despues del design system. No toca el popup, pero gana a todo lo capado.",
-    "8-font-awesome-inyectado": "ABIERTO (NUEVO, hallado por este gate): public/js/cargarDatosGeneralesPagina2.js:18-25 inyecta un <link> a /public/vendor/font-awesome/css/all.css cuando no encuentra ni link[href*=font-awesome] ni link[href*=aia-design-system]. Las cuatro rutas de /programacion-semanal ya usan el head segmentado (core.css, sin la palabra aia-design-system en el href), asi que el guard falla y entra una SEGUNDA copia de Font Awesome con 1436 reglas sin capa. core.css ya lo importa con layer(vendor)."
+    "8-font-awesome-inyectado": "CERRADO en esta tanda: public/js/cargarDatosGeneralesPagina2.js inyectaba un <link> a /public/vendor/font-awesome/css/all.css porque su guard solo reconocia link[href*=aia-design-system] y c0dd9a4 movio las cuatro rutas de /programacion-semanal al head segmentado (core.css). Entraba una SEGUNDA copia con 1436 reglas sin capa. El guard ahora reconoce LOS DOS heads; medido antes/despues, la inyeccion para en las 4 rutas y Font Awesome sigue aplicandose en las 16 rutas medidas (::before real del icono), incluidas las 12 que siguen en render().",
+    "9-tailwind-cdn-bi": "ABIERTO (NUEVO, hallado al ampliar el gate a /bi/*): views/bi/_layout.php carga https://cdn.tailwindcss.com, el Play CDN de Tailwind, que es un <script> que GENERA el CSS en runtime y lo inyecta en un <style> sin capa. 132-135 reglas segun las clases que use cada ruta, en las 8 rutas /bi/*. Sus tres <link> propios (access.css, bi-control-tower.css, bi-filter-drawer.css) si estan capados."
   }
 }

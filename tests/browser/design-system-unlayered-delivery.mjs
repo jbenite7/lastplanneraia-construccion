@@ -124,11 +124,29 @@ async function assertRoutes(page, entries, observedReport) {
   for (const { route, spec } of entries) {
     const findings = await probe(page, route);
     observedReport[route] = findings;
+    const declared = spec.unlayered ?? [];
     failures.push(...compareDeliveries({
       scope: route,
       observed: findings.map(({ sheet }) => sheet),
-      declared: (spec.unlayered ?? []).map(({ sheet }) => sheet),
+      declared: declared.map(({ sheet }) => sheet),
     }));
+
+    // Los `<style>` van colapsados en una entrada por ruta, asi que comparar
+    // solo el conjunto de hojas dejaria pasar un `<style>` sin capa NUEVO en las
+    // rutas que ya declaran alguno — justo lo que el gate existe para cazar. Se
+    // compara tambien el NUMERO de bloques: medido en 8 rutas x 5 cargas
+    // (incluidas las 16 de /plan-compras y el <style> que genera el CDN de
+    // Tailwind en /bi/*), el conteo no varia, asi que no introduce falsos rojos.
+    // No se compara el numero de REGLAS: ese sube con cualquier edicion de la
+    // vista, y la deuda dentro de una entrega ya declarada la vigila el audit.
+    const observedBlocks = findings.find(({ sheet }) => sheet === 'style:*')?.blocks ?? 0;
+    const declaredBlocks = declared.find(({ sheet }) => sheet === 'style:*')?.blocks ?? 0;
+    if (observedBlocks !== declaredBlocks) {
+      failures.push(
+        `style-block-count-drift: ${route} -> ${observedBlocks} bloque/s <style> sin capa, `
+        + `el inventario declara ${declaredBlocks}`,
+      );
+    }
   }
   return failures;
 }

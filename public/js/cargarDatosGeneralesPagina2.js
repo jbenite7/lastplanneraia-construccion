@@ -14,9 +14,25 @@
 // entrypoint del design system (que lo importa como vendor). Antes se traía
 // 5.15.4 de cdnjs duplicando la copia local: todos los iconos usados en el
 // código existen en el vendor local.
+//
+// El design system tiene DOS entrypoints y hay que reconocer los dos: el
+// agregador (`aia-design-system.css`) que sirve a las vistas en `render()`, y
+// el core segmentado (`design-system/entrypoints/core.css`) que sirve a las
+// migradas vía `renderForModule()`. `font-awesome` está en CORE_VENDORS, así
+// que ambos lo importan con `layer(vendor)`.
+//
+// Mirar solo el agregador dejó a las cuatro rutas de /programación semanal
+// —movidas al head segmentado en c0dd9a4— inyectando una SEGUNDA copia de
+// Font Awesome, con 1436 reglas que entraban SIN CAPA y por tanto ganaban a
+// todas las capas del design system en declaraciones normales. Lo cazó
+// tests/browser/design-system-unlayered-delivery.mjs.
+//
+// La rama de inyección se conserva: hay vistas que cargan este script sin
+// ningún head del design system y se quedarían sin iconos si se retirara.
 if (
   !document.querySelector('link[href*="font-awesome"]') &&
-  !document.querySelector('link[href*="aia-design-system"]')
+  !document.querySelector('link[href*="aia-design-system"]') &&
+  !document.querySelector('link[href*="design-system/entrypoints/core.css"]')
 ) {
   var faLink = document.createElement('link');
   faLink.href = '/public/vendor/font-awesome/css/all.css';
