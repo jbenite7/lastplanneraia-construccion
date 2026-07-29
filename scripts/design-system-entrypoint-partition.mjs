@@ -204,10 +204,25 @@ function moduleManifests(root) {
  * devuelve `null` y `renderForModule()` degrada al agregador completo dejando
  * solo un `error_log`. Se recorre el directorio, no las vistas, precisamente
  * para cubrir los manifiestos aún no cableados.
+ *
+ * Valida además el criterio de pertenencia a `VIEW_OWNED_VENDORS`, que hasta
+ * ahora era prosa en el docblock de PHP y nada más. Sin candado, mover ahí un
+ * vendor que sí tiene adjunto —se comprobó con `select2`— dejaba los tres gates
+ * en verde mientras `renderForModule()` dejaba de emitir su `attach-*.css`:
+ * "cargar de menos" entrando por la categoría nueva. La debilidad es del diseño
+ * del registro y no de esta categoría (meter `select2` en `CORE_VENDORS` da el
+ * mismo verde), así que este candado cierra la puerta que puede cerrarse, no el
+ * patrón entero: `CORE_VENDORS` sigue sin criterio verificable.
  */
-export function manifestVendorFailures({ root, manifestsOverride = null }) {
+export function manifestVendorFailures({
+  root,
+  manifestsOverride = null,
+  viewsOverride = null,
+  registryOverride = null,
+  footprintsOverride = null,
+}) {
   const failures = [];
-  const { coreVendors, viewOwnedVendors, attachments } = phpVendorRegistry(root);
+  const { coreVendors, viewOwnedVendors, attachments } = registryOverride ?? phpVendorRegistry(root);
   if (coreVendors.length === 0 || attachments.length === 0) {
     return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS/VENDOR_ATTACHMENTS'];
   }
@@ -216,6 +231,36 @@ export function manifestVendorFailures({ root, manifestsOverride = null }) {
     ...viewOwnedVendors,
     ...attachments.map(({ vendor }) => vendor),
   ]);
+
+  // Un `VIEW_OWNED_VENDORS` es, por definición, un vendor cuya hoja enlaza la
+  // propia vista y del que este head no emite nada. Se verifican las dos mitades:
+  // que no exista adjunto alguno para él, y que alguna vista lo enlace de verdad.
+  const attachmentVendors = new Set([
+    ...Object.keys(ENTRYPOINT_FILES.attachments),
+    ...Object.keys(STANDALONE_ATTACHMENTS),
+    ...attachments.map(({ vendor }) => vendor),
+  ]);
+  if (viewOwnedVendors.length) {
+    const footprints = footprintsOverride ?? vendorViewFootprints(root);
+    const linkTags = (viewsOverride ?? [...phpViews(root)])
+      .flatMap(({ content }) => content.match(/<link\b[^>]*>/g) ?? []);
+    for (const vendor of viewOwnedVendors) {
+      if (attachmentVendors.has(vendor)) {
+        failures.push(
+          `view-owned-with-attachment: ${vendor} está en VIEW_OWNED_VENDORS pero tiene adjunto; `
+          + 'renderForModule() dejaría de emitir su adaptador oscuro',
+        );
+        continue;
+      }
+      const needles = footprints[vendor] ?? [];
+      if (!linkTags.some((tag) => needles.some((needle) => tag.includes(needle)))) {
+        failures.push(
+          `view-owned-without-link: ${vendor} está en VIEW_OWNED_VENDORS pero ninguna vista `
+          + 'enlaza su hoja (huellas conocidas: ' + (needles.join(', ') || 'ninguna') + ')',
+        );
+      }
+    }
+  }
 
   for (const { file, manifest } of manifestsOverride ?? moduleManifests(root)) {
     if (manifest === null || typeof manifest !== 'object') {
@@ -261,6 +306,136 @@ export function manifestIdentityFailures({ root, manifestsOverride = null }) {
       failures.push(
         `manifest-id-mismatch: ${file} declara moduleId="${manifest.moduleId}" `
         + `(renderForModule('${manifest.moduleId}') buscaría ${MANIFEST_DIR}/${manifest.moduleId}.json)`,
+      );
+    }
+  }
+
+  return failures;
+}
+
+const VENDORS_CATALOG = 'docs/design-system/vendors.json';
+
+/**
+ * Huellas de CDN, a mano y en lista cerrada.
+ *
+ * `vendors.json` describe los assets *locales* de cada vendor; los que entran
+ * por CDN no tienen ruta en disco que buscar (`adminlte` ni siquiera declara
+ * `assets`). Cada fragmento de esta tabla se midió contra las URLs absolutas
+ * que hoy aparecen en `views/`: son subcadenas literales, no patrones, para que
+ * un falso positivo exija que alguien escriba la URL del vendor sin usarlo.
+ */
+export const VENDOR_CDN_FOOTPRINTS = {
+  adminlte: ['admin-lte@'],
+  anychart: ['cdn.anychart.com'],
+  bootstrap: ['/npm/bootstrap@', 'bootstrapcdn.com/bootstrap/'],
+  datatables: ['cdn.datatables.net'],
+  'font-awesome': ['/libs/font-awesome/'],
+  handsontable: ['/npm/handsontable@'],
+  jquery: ['/libs/jquery/', 'code.jquery.com/jquery-'],
+  'jquery-ui': ['code.jquery.com/ui/'],
+  select2: ['/libs/select2/'],
+  'tom-select': ['/npm/tom-select@'],
+};
+
+/**
+ * vendor → subcadenas cuya presencia en el markup de una vista prueba que esa
+ * vista carga el vendor. Se derivan de `vendors.json` (asset local
+ * `public/x/y.css` → `/x/y.css`, que es como lo escriben las vistas) más
+ * `VENDOR_CDN_FOOTPRINTS`.
+ */
+export function vendorViewFootprints(root, catalogOverride = null) {
+  const catalog = catalogOverride
+    ?? JSON.parse(readFileSync(join(root, VENDORS_CATALOG), 'utf8'));
+  const footprints = {};
+  for (const vendor of catalog.vendors ?? []) {
+    const needles = new Set(VENDOR_CDN_FOOTPRINTS[vendor.id] ?? []);
+    for (const asset of vendor.assets ?? []) {
+      if (asset.startsWith('public/')) needles.add(`/${asset.slice('public/'.length)}`);
+    }
+    if (needles.size) footprints[vendor.id] = [...needles];
+  }
+  return footprints;
+}
+
+function viewsByModule(views) {
+  const byModule = new Map();
+  for (const view of views) {
+    for (const [, moduleId] of view.content.matchAll(/renderForModule\('([^']+)'\)/g)) {
+      if (!byModule.has(moduleId)) byModule.set(moduleId, []);
+      if (!byModule.get(moduleId).includes(view)) byModule.get(moduleId).push(view);
+    }
+  }
+  return byModule;
+}
+
+/**
+ * Espejo de `manifestVendorFailures`: aquélla caza el vendor declarado de MÁS
+ * (está en el manifiesto y no en el registro PHP); ésta caza el declarado de
+ * MENOS — la vista carga un vendor que su manifiesto calla.
+ *
+ * Es la dirección peligrosa. El contrato de `renderForModule()` es «siempre
+ * cargar de más, nunca de menos»: un vendor que nadie declaró es un vendor que
+ * nadie vigila, y el día que gane un `attach-<vendor>.css` la superficie se
+ * queda sin su adaptador oscuro sin que ninguna suite lo vea. Es la regresión
+ * que describe el check #6 de tests/test_design_system_head_component.php.
+ *
+ * ALCANCE — lo que este gate NO cubre, para que su silencio no se lea como
+ * cobertura total:
+ *
+ * 1. Solo mira las vistas cableadas a `renderForModule('X')`. Los `sources[]`
+ *    del manifiesto y los módulos aún en `render()` quedan fuera: ahí no hay
+ *    head segmentado que pueda cargar de menos.
+ * 2. Solo ve el markup literal de esas vistas. No sigue `include`/`require` de
+ *    parciales, no evalúa PHP, y no ve los assets que inyecta JavaScript en
+ *    caliente — `linksComunesHead2.js` mete select2 y sweetalert2 en varias
+ *    rutas y este gate no lo sabe. Tampoco mira los `@import` de un CSS propio.
+ * 3. `VENDOR_CDN_FOOTPRINTS` es una lista cerrada escrita a mano: un vendor que
+ *    llegue por un CDN nuevo es invisible hasta que alguien añada su fragmento.
+ * 4. Los `CORE_VENDORS` se excluyen a propósito. `renderForModule()` no emite
+ *    nada por ellos —su CSS ya viaja dentro de `core.css`, incondicional—, así
+ *    que declararlos de menos no puede perder ningún adaptador. Exigirlos solo
+ *    añadiría ruido (hoy: `jquery` en las tres vistas de auth).
+ * 5. No comprueba versiones, ni que el vendor detectado se use de verdad: basta
+ *    con que la vista enlace su asset.
+ */
+export function manifestUnderDeclarationFailures({
+  root,
+  viewsOverride = null,
+  footprintsOverride = null,
+  manifestsOverride = null,
+}) {
+  const failures = [];
+  const { coreVendors } = phpVendorRegistry(root);
+  if (coreVendors.length === 0) {
+    return ['php-registry-unreadable: no se pudieron extraer CORE_VENDORS'];
+  }
+  const footprints = footprintsOverride ?? vendorViewFootprints(root);
+  const views = viewsOverride ?? [...phpViews(root)];
+  const manifestsById = new Map(
+    (manifestsOverride ?? moduleManifests(root))
+      .filter(({ manifest }) => manifest && typeof manifest.moduleId === 'string')
+      .map(({ manifest }) => [manifest.moduleId, manifest]),
+  );
+
+  for (const [moduleId, moduleViews] of [...viewsByModule(views)].sort()) {
+    const manifest = manifestsById.get(moduleId);
+    // Un manifiesto ausente o ilegible ya lo cazan coherenceFailures /
+    // manifestVendorFailures; aquí no hay nada contra lo que comparar.
+    if (!manifest || !Array.isArray(manifest.vendors)) continue;
+    const declared = new Set(manifest.vendors);
+    const detected = new Map();
+    for (const { file, content } of moduleViews) {
+      for (const [vendor, needles] of Object.entries(footprints)) {
+        if (declared.has(vendor) || coreVendors.includes(vendor)) continue;
+        const hit = needles.find((needle) => content.includes(needle));
+        if (hit !== undefined && !detected.has(vendor)) detected.set(vendor, { file, hit });
+      }
+    }
+    for (const vendor of [...detected.keys()].sort()) {
+      const { file, hit } = detected.get(vendor);
+      failures.push(
+        `undeclared-vendor: ${vendor} lo carga ${file} pero `
+        + `${MANIFEST_DIR}/${moduleId}.json no lo declara (huella "${hit}")`,
       );
     }
   }
@@ -351,6 +526,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     ...coherenceFailures({ root }),
     ...manifestVendorFailures({ root }),
     ...manifestIdentityFailures({ root }),
+    ...manifestUnderDeclarationFailures({ root }),
   ];
   if (failures.length) {
     console.error('Design system entrypoint partition: FAIL');

@@ -41,12 +41,14 @@ final class DesignSystemHeadComponent
      * Vendors cuyo CSS enlaza la propia vista, no este head.
      *
      * Ni el agregador ni la partición los importan: `programa_general.view.php`
-     * pone su `<link>` a `/public/vendor/toastr.min.css` y
+     * pone su `<link>` a `/public/vendor/toastr.min.css`,
      * `programacion_intermedia.view.php` el suyo a
-     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`. Medido: no hay
-     * una sola regla `toastr` en `public/css/`, y de Tom Select solo el
-     * `border-radius` de `.ts-control`/`.ts-dropdown` en `theme-overrides.css`,
-     * que ya viaja dentro de `core.css`.
+     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`, y las tres
+     * vistas de `views/auth/` el suyo a `admin-lte@3.2/dist/css/adminlte.min.css`
+     * por CDN. Medido: no hay una sola regla `toastr` ni `adminlte` en
+     * `public/css/`, y de Tom Select solo el `border-radius` de
+     * `.ts-control`/`.ts-dropdown` en `theme-overrides.css`, que ya viaja dentro
+     * de `core.css`.
      *
      * Por eso no son `VENDOR_ATTACHMENTS`: darles un `attach-*` obligaría a
      * meter sus hojas en `aia-design-system.css` —`partitionFailures()` exige
@@ -58,8 +60,16 @@ final class DesignSystemHeadComponent
      *
      * Declararlos aquí es lo que hace que `renderForModule()` los reconozca y
      * emita exactamente lo mismo que `render()` para ellos: nada.
+     *
+     * El criterio es verificable y lo ejerce
+     * `scripts/design-system-entrypoint-partition.mjs`: ningún miembro de esta
+     * lista puede tener `attach-<vendor>.css` en la partición ni entrada en
+     * `STANDALONE_ATTACHMENTS`, y debe aparecer en un `<link>` de alguna vista.
+     * Sin ese candado, mover aquí un vendor que sí tiene adjunto (select2, por
+     * ejemplo) dejaba los tres gates en verde mientras `renderForModule()`
+     * perdía su adaptador oscuro.
      */
-    public const VIEW_OWNED_VENDORS = ['toastr', 'tom-select'];
+    public const VIEW_OWNED_VENDORS = ['toastr', 'tom-select', 'adminlte'];
 
     /**
      * Adjuntos por vendor, en el orden canónico del agregador.

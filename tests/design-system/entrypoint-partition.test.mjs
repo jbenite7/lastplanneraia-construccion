@@ -7,7 +7,9 @@ import { partitionFailures } from '../../scripts/design-system-entrypoint-partit
 import {
   coherenceFailures,
   manifestIdentityFailures,
+  manifestUnderDeclarationFailures,
   manifestVendorFailures,
+  vendorViewFootprints,
 } from '../../scripts/design-system-entrypoint-partition.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
@@ -155,6 +157,94 @@ test('los archivos sin moduleId no disparan el gate de identidad', () => {
     }),
     [],
   );
+});
+
+// Gate espejo: `manifestVendorFailures` caza el vendor declarado de MÁS; éste
+// caza el declarado de MENOS, que es la dirección que rompe el contrato
+// «siempre cargar de más, nunca de menos» de renderForModule().
+test('ninguna vista cableada carga un vendor que su manifiesto no declara', () => {
+  assert.deepEqual(manifestUnderDeclarationFailures({ root }), []);
+});
+
+test('el gate caza el vendor que la vista carga y el manifiesto calla', () => {
+  const failures = manifestUnderDeclarationFailures({
+    root,
+    viewsOverride: [{
+      file: 'views/fake/fake.view.php',
+      content: '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">'
+        + "<?= DesignSystemHeadComponent::renderForModule('fake') ?>",
+    }],
+    manifestsOverride: [{
+      file: 'docs/design-system/manifests/fake.json',
+      manifest: { moduleId: 'fake', vendors: ['bootstrap'] },
+    }],
+  });
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /^undeclared-vendor: adminlte lo carga views\/fake\/fake\.view\.php/);
+  assert.match(failures[0], /docs\/design-system\/manifests\/fake\.json no lo declara/);
+});
+
+// Declarar de menos un CORE_VENDOR no pierde nada: renderForModule() no emite
+// adjunto por ellos y su CSS ya viaja incondicional dentro de core.css. Hoy es
+// el caso real de `jquery` en las tres vistas de auth.
+test('un CORE_VENDOR sin declarar no dispara el gate espejo', () => {
+  const failures = manifestUnderDeclarationFailures({
+    root,
+    viewsOverride: [{
+      file: 'views/fake/fake.view.php',
+      content: '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>'
+        + "<?= DesignSystemHeadComponent::renderForModule('fake') ?>",
+    }],
+    manifestsOverride: [{
+      file: 'docs/design-system/manifests/fake.json',
+      manifest: { moduleId: 'fake', vendors: [] },
+    }],
+  });
+  assert.deepEqual(failures, []);
+});
+
+test('las huellas de vendor cubren asset local y CDN', () => {
+  const footprints = vendorViewFootprints(root);
+  assert.ok(footprints.toastr.includes('/vendor/toastr.min.css'));
+  assert.deepEqual(footprints.adminlte, ['admin-lte@']);
+});
+
+// Contraejemplo medido: mover a VIEW_OWNED_VENDORS un vendor que SÍ tiene
+// adjunto dejaba los tres gates en verde mientras renderForModule() dejaba de
+// emitir su attach-*.css.
+test('un VIEW_OWNED_VENDORS con adjunto propio falla', () => {
+  const failures = manifestVendorFailures({
+    root,
+    registryOverride: {
+      coreVendors: ['bootstrap'],
+      viewOwnedVendors: ['select2'],
+      attachments: [{ vendor: 'select2', url: '/css/design-system/entrypoints/attach-select2.css' }],
+    },
+    manifestsOverride: [],
+  });
+  assert.deepEqual(failures, [
+    'view-owned-with-attachment: select2 está en VIEW_OWNED_VENDORS pero tiene adjunto; '
+    + 'renderForModule() dejaría de emitir su adaptador oscuro',
+  ]);
+});
+
+test('un VIEW_OWNED_VENDORS que ninguna vista enlaza falla', () => {
+  const failures = manifestVendorFailures({
+    root,
+    registryOverride: {
+      coreVendors: ['bootstrap'],
+      viewOwnedVendors: ['toastr'],
+      attachments: [{ vendor: 'jquery-ui', url: '/css/design-system/entrypoints/attach-jquery-ui.css' }],
+    },
+    viewsOverride: [{ file: 'views/fake.view.php', content: '<link rel="stylesheet" href="/css/tokens.css">' }],
+    manifestsOverride: [],
+  });
+  assert.equal(failures.length, 1);
+  assert.match(failures[0], /^view-owned-without-link: toastr/);
+});
+
+test('los VIEW_OWNED_VENDORS reales (toastr, tom-select, adminlte) cumplen el criterio', () => {
+  assert.deepEqual(manifestVendorFailures({ root }), []);
 });
 
 test('los manifiestos sin moduleId (inventory, goal-provenance) no son de módulo', () => {
