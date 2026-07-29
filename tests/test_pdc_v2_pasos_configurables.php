@@ -89,7 +89,7 @@ $assert(count($svc->deProyecto($P)) === 8, 'Ninguna validación fallida dejó la
 
 // ── Restablecer ─────────────────────────────────────────────────────────────
 echo "=== restablecer ===\n";
-$svc->restablecer($P);
+$svc->restablecer($P, 'test-a41');
 $assert(!$svc->configurado($P) && count($svc->deProyecto($P)) === 7,
     'Restablecer devuelve la obra al proceso por defecto.');
 

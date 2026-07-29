@@ -716,3 +716,12 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Mientras el POST vuela el campo se bloquea: el cursor de espera es la unica senal de que la fecha
    todavia no esta guardada. */
 .pdc-seg-panel-tabla input[type='date']:disabled { opacity: 0.55; cursor: wait; }
+/* A4.1 · diferido nº 3 — historial de la configuración de pasos. Mismo tratamiento plegado que los
+   otros dos bloques de montaje de la pantalla. */
+.pdc-pasos-historial {
+  margin: 12px 0; padding: 10px 14px;
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-caja);
+}
+.pdc-pasos-historial > summary { cursor: pointer; font-weight: 600; }
+.pdc-pasos-historial li { padding: 6px 0; border-bottom: 1px solid var(--pdc-border); }
+.pdc-pasos-historial li:last-child { border-bottom: none; }

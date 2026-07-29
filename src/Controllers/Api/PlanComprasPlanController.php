@@ -353,6 +353,21 @@ class PlanComprasPlanController
         $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
     }
 
+    /**
+     * GET /plan-compras/api/plan/pasos/historial — quién cambió la configuración, cuándo y a qué.
+     *
+     * Con el guard de LECTURA y no el de reglas: enterarse de por qué se movieron unas fechas no
+     * exige poder moverlas. Quien recibe el plan es justo quien más necesita esa respuesta.
+     */
+    public function historialPasos(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['historial' => (new PasosContratacionService($this->db))->historial($projectId)]);
+    }
+
     /** GET /plan-compras/api/plan/pasos/origenes — de qué obras puede copiar QUIEN pregunta. */
     public function origenesPasos(): void
     {
@@ -495,7 +510,7 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
-        (new PasosContratacionService($this->db))->restablecer($projectId);
+        (new PasosContratacionService($this->db))->restablecer($projectId, $this->usuario());
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 

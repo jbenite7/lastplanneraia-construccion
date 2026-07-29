@@ -175,6 +175,18 @@ class PasosContratacionService
             }
         }
 
+        // La forma limpia de la lista, para el historial: lo que llegó del cliente ya está validado
+        // arriba, pero conserva claves sueltas y tipos flojos que no queremos congelar en el JSON.
+        $normalizados = [];
+        foreach (array_values($pasos) as $p) {
+            $c = $cat[(string) $p['clave']];
+            $normalizados[] = [
+                'clave' => (string) $p['clave'],
+                'alias' => trim((string) ($p['alias'] ?? '')),
+                'diasFijos' => $c['colLegacy'] === null ? (int) $p['diasFijos'] : null,
+            ];
+        }
+
         $this->db->beginTransaction();
         try {
             // Se borra y se reescribe entera: la lista es corta, el orden queda contiguo desde 0, y
@@ -192,12 +204,62 @@ class PasosContratacionService
                     ],
                 );
             }
+            $this->anotarHistorial($projectId, $normalizados, $usuario);
             $this->db->commit();
         } catch (\Throwable $t) {
             $this->db->rollBack();
             throw $t;
         }
         return ['ok' => true, 'pasos' => count($pasos)];
+    }
+
+    /**
+     * Anota la configuración que acaba de quedar vigente. Solo anexa: nunca actualiza ni borra.
+     *
+     * Va DENTRO de la transacción de quien la llama, para que no pueda quedar una configuración
+     * guardada sin su entrada de historial ni al revés.
+     *
+     * @param list<array{clave:string,alias:string,diasFijos:?int}> $pasos lista vacía = la obra
+     *        volvió al proceso por defecto de la empresa, que también es un cambio que registrar
+     */
+    private function anotarHistorial(int $projectId, array $pasos, string $usuario): void
+    {
+        $this->db->query(
+            'INSERT INTO pdc_proyecto_pasos_historial (project_id, configuracion, pasos, actualizado_por, created_at)
+             VALUES (?, ?, ?, ?, NOW())',
+            [
+                $projectId,
+                json_encode($pasos, JSON_UNESCAPED_UNICODE),
+                count($pasos),
+                mb_substr($usuario, 0, 100),
+            ],
+        );
+    }
+
+    /**
+     * Quién cambió la configuración de esta obra, cuándo y a qué quedó.
+     *
+     * @return list<array{id:int,usuario:string,cuando:string,pasos:list<array{clave:string,alias:string,diasFijos:?int}>}>
+     */
+    public function historial(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT id, configuracion, actualizado_por, created_at
+             FROM pdc_proyecto_pasos_historial WHERE project_id = ? ORDER BY created_at DESC, id DESC',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $pasos = json_decode((string) $r['configuracion'], true);
+            $out[] = [
+                'id' => (int) $r['id'],
+                'usuario' => (string) $r['actualizado_por'],
+                'cuando' => (string) $r['created_at'],
+                'pasos' => is_array($pasos) ? $pasos : [],
+            ];
+        }
+        return $out;
     }
 
     /**
@@ -309,9 +371,23 @@ class PasosContratacionService
         return $this->guardar($destinoId, $pasos, $usuario);
     }
 
-    /** La obra vuelve al proceso por defecto de la empresa. */
-    public function restablecer(int $projectId): void
+    /**
+     * La obra vuelve al proceso por defecto de la empresa.
+     *
+     * Deja entrada en el historial con la lista vacía: renunciar a la configuración propia mueve las
+     * fechas igual que cambiarla, y es exactamente el movimiento que alguien va a querer rastrear
+     * cuando pregunte «¿por qué se movieron mis fechas?».
+     */
+    public function restablecer(int $projectId, string $usuario): void
     {
-        $this->db->query('DELETE FROM pdc_proyecto_pasos WHERE project_id = ?', [$projectId]);
+        $this->db->beginTransaction();
+        try {
+            $this->db->query('DELETE FROM pdc_proyecto_pasos WHERE project_id = ?', [$projectId]);
+            $this->anotarHistorial($projectId, [], $usuario);
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
     }
 }

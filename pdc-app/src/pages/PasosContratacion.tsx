@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
-import type { DuracionCatalogo, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
+import type { DuracionCatalogo, EntradaHistorialPasos, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -66,6 +66,7 @@ export default function PasosContratacion() {
       })
       setMensaje(`Guardado: ${r.pasos} pasos. Se recalcularon ${r.calculados} paquetes.`)
       await cargar()
+      await cargarHistorial()
     } catch (e) {
       setError((e as PdcApiError).message)
     } finally {
@@ -114,6 +115,7 @@ export default function PasosContratacion() {
       })
       setPreview(null)
       await cargar()
+      await cargarHistorial()
       setMensaje(`Copiados ${r.pasos} pasos. Se recalcularon ${r.calculados} paquetes.`)
     } catch (e) {
       setError((e as PdcApiError).message)
@@ -160,6 +162,20 @@ export default function PasosContratacion() {
     }
   }
 
+  // ── Historial de la configuración (A4.1 · diferido nº 3) ───────────────────
+  // Existe para contestar «¿por qué se movieron mis fechas?». Se recarga tras cada cambio.
+  const [historial, setHistorial] = useState<EntradaHistorialPasos[]>([])
+
+  const cargarHistorial = async () => {
+    await apiGet<{ historial: EntradaHistorialPasos[] }>('/plan-compras/api/plan/pasos/historial')
+      .then((d) => setHistorial(d.historial))
+      .catch(() => setHistorial([]))
+  }
+
+  useEffect(() => {
+    void cargarHistorial()
+  }, [])
+
   const onRestablecer = async () => {
     setOcupado(true)
     setError('')
@@ -167,6 +183,7 @@ export default function PasosContratacion() {
     try {
       const r = await apiPost<{ calculados: number }>('/plan-compras/api/plan/pasos/restablecer', {})
       await cargar()
+      await cargarHistorial()
       setMensaje(`La obra vuelve al proceso por defecto de la empresa. Se recalcularon ${r.calculados} paquetes.`)
     } catch (e) {
       setError((e as PdcApiError).message)
@@ -201,6 +218,27 @@ export default function PasosContratacion() {
       )}
       {error !== '' && <div className="pdc-error" role="status">{error}</div>}
       {mensaje !== '' && <div className="pdc-info" role="status">{mensaje}</div>}
+
+      {/* La pregunta que este bloque existe para contestar es «¿por qué se movieron mis fechas?».
+          Va con el guard de lectura: enterarse no exige poder cambiar nada. */}
+      {historial.length > 0 && (
+        <details className="pdc-pasos-historial" data-testid="pdc-pasos-historial">
+          <summary>Historial de cambios ({historial.length})</summary>
+          <ol className="pdc-paq-lista" data-testid="pdc-pasos-historial-lista">
+            {historial.map((h) => (
+              <li key={h.id}>
+                <strong>{h.cuando}</strong>
+                <span className="pdc-paq-meta">{h.usuario}</span>
+                <span className="pdc-paq-meta">
+                  {h.pasos.length === 0
+                    ? 'volvió al proceso por defecto de la empresa'
+                    : h.pasos.map((p) => (p.alias !== '' ? p.alias : p.clave)).join(' → ')}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
 
       {/* Cambiar un número de aquí mueve las fechas de todas las obras que usen esa fila, no solo
           de esta. El aviso es permanente a propósito: es la advertencia, no una decoración. */}

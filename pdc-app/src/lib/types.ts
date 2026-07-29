@@ -434,6 +434,15 @@ export type PasoPreviewCopia = {
 // hay que decirlo ANTES de copiar.
 export type PreviewCopia = { pasos: PasoPreviewCopia[]; incompleta: boolean }
 
+// A4.1 · diferido nº 3 — una entrada del historial de configuración. `pasos` vacío = esa vez la
+// obra volvió al proceso por defecto de la empresa.
+export type EntradaHistorialPasos = {
+  id: number
+  usuario: string
+  cuando: string
+  pasos: { clave: string; alias: string; diasFijos: number | null }[]
+}
+
 // A4.1 · diferido nº 4 — una fila del catálogo legacy de duraciones. Es de la EMPRESA: cambiarla
 // mueve las fechas de todas las obras cuyos paquetes la usen, de ahí `paquetesQueLaUsan`.
 export type DuracionCatalogo = {
