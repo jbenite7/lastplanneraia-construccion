@@ -84,6 +84,23 @@ goals/validar-migracion-handsontable/evidence/contratos-native/*
 goals/validar-migracion-handsontable/evidence/pdc-native/*
 !goals/validar-migracion-handsontable/evidence/pdc-native/*.png
 
+# Goals del PDC, llegados con la unificación de repos del 2026-07-29. En
+# `plan-de-compras` la carpeta `goals/` se versionaba entera; aquí se permite carpeta
+# por carpeta, así que sin estas líneas los archivos YA movidos siguen versionados
+# (git no desversiona por .gitignore) pero cualquiera NUEVO caería en `goals/*` de la
+# línea 58 y desaparecería sin avisar. El stderr de las entrevistas lo sigue excluyendo
+# `goals/.gitignore`.
+!goals/pdc-a41-pasos-configurables/
+!goals/pdc-a41-pasos-configurables/**
+!goals/pdc-a42-frentes-cobertura/
+!goals/pdc-a42-frentes-cobertura/**
+!goals/pdc-revision-ux/
+!goals/pdc-revision-ux/**
+!goals/pdc-tanda2-plan-verdad/
+!goals/pdc-tanda2-plan-verdad/**
+!goals/pdc-tanda34-pulido/
+!goals/pdc-tanda34-pulido/**
+
 # Archivos de configuración de IDEs y prompts de IA
 AGENTS.md
 CLAUDE.md
