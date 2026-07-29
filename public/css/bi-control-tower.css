@@ -1103,11 +1103,56 @@
     color: var(--ds-active-text-primary);
   }
 
+  /*
+   * El `!important` que llevaban estas tres declaraciones era una muleta
+   * contra el preflight sin capa del Play CDN de Tailwind (`*{border-width:0}`
+   * y compania). Retirado el CDN (caso 9), ya no hace falta: esta regla vive
+   * en la misma capa que `.bi-control-tower-page .card`, tiene mas
+   * especificidad y va despues, asi que gana por si sola. Quitarlo ademas
+   * permite que los acentos de dominio de abajo pinten su `border-left-color`,
+   * cosa que un `border-color !important` impedia.
+   */
   [data-aia-theme='dark'] .bi-control-tower-page .card,
   .aia-theme-dark .bi-control-tower-page .card {
-    border-color: color-mix(in srgb, var(--ds-color-text-inverse) 26%, transparent) !important;
-    background-color: var(--ds-active-surface-raised) !important;
-    box-shadow: var(--ds-shadow-md) !important;
+    border-color: color-mix(in srgb, var(--ds-color-text-inverse) 26%, transparent);
+    background-color: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-md);
+  }
+
+  /*
+   * Acento de dominio de las tarjetas KPI.
+   *
+   * El markup pedia `border-l-aia-const-main` / `-proj-` / `-corp-`, pero esas
+   * clases nunca pintaron: las generaba un `window.tailwind.config` inline que
+   * el propio CDN sobreescribia al cargar, asi que la franja llevaba anos
+   * saliendo del color neutro del borde. El mapeo original se recupero del
+   * historial (`dce3fac`): const -> construccion, proj -> aqua, corp -> verde
+   * corporativo.
+   *
+   * Se usan las variantes `-on-dark` y no los tokens de marca crudos que
+   * nombraba aquel config: `--ds-color-brand-primary` es un verde de 32% de
+   * luminosidad pensado para tema claro, y sobre la superficie elevada oscura
+   * queda practicamente invisible. Medido sobre
+   * `--ds-color-surface-raised-dark`, los tres valores de abajo dan 3.86, 4.82
+   * y 3.85 de contraste, por encima del 3:1 que pide WCAG 1.4.11 para
+   * elementos no textuales que codifican informacion.
+   */
+  .bi-control-tower-page .bi-kpi--construction,
+  [data-aia-theme='dark'] .bi-control-tower-page .bi-kpi--construction,
+  .aia-theme-dark .bi-control-tower-page .bi-kpi--construction {
+    border-left-color: var(--ds-color-domain-construction-on-dark);
+  }
+
+  .bi-control-tower-page .bi-kpi--real-estate,
+  [data-aia-theme='dark'] .bi-control-tower-page .bi-kpi--real-estate,
+  .aia-theme-dark .bi-control-tower-page .bi-kpi--real-estate {
+    border-left-color: var(--ds-color-domain-real-estate-on-dark);
+  }
+
+  .bi-control-tower-page .bi-kpi--corporate,
+  [data-aia-theme='dark'] .bi-control-tower-page .bi-kpi--corporate,
+  .aia-theme-dark .bi-control-tower-page .bi-kpi--corporate {
+    border-left-color: var(--ds-color-domain-corporate-on-dark);
   }
 
   .bi-control-tower-page #gantt-container,

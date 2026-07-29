@@ -6,7 +6,7 @@
     </section>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-row">
-        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Porcentaje Plan Cumplido">
+        <div class="card p-5 flex items-center gap-4 border-l-4 bi-kpi--construction" aria-label="KPI: Porcentaje Plan Cumplido">
             <i data-lucide="target" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">PPC</p>
@@ -14,21 +14,21 @@
                 <p id="kpi-ppc-delta" class="text-xs text-gray-400">vs semana anterior</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Actividades Programadas">
+        <div class="card p-5 flex items-center gap-4 border-l-4 bi-kpi--real-estate" aria-label="KPI: Actividades Programadas">
             <i data-lucide="clipboard-list" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Programadas</p>
                 <p id="kpi-programadas" class="text-2xl font-bold text-gray-900">--</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Actividades Ejecutadas">
+        <div class="card p-5 flex items-center gap-4 border-l-4 bi-kpi--corporate" aria-label="KPI: Actividades Ejecutadas">
             <i data-lucide="check-circle" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Ejecutadas</p>
                 <p id="kpi-ejecutadas" class="text-2xl font-bold text-gray-900">--</p>
             </div>
         </div>
-        <div class="card p-5 flex items-center gap-4 border-l-4" aria-label="KPI: Brecha vs Programado">
+        <div class="card p-5 flex items-center gap-4 border-l-4 bi-kpi--construction" aria-label="KPI: Brecha vs Programado">
             <i data-lucide="alert-triangle" class="w-10 h-10" aria-hidden="true"></i>
             <div>
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Brecha</p>
