@@ -29,7 +29,8 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     }
 
     // Ir al visor.
-    await page.locator('[aria-label="Submódulos del plan de compras"] >> text=Presupuesto').click();
+    // Por nombre exacto: «Presupuesto» como subcadena también casa con «Cargar presupuesto».
+    await page.getByRole('link', { name: 'Presupuesto', exact: true }).click();
     await expect(page.locator('h1')).toContainText('Presupuesto', { timeout: 15000 });
     const arbol = page.locator('[data-testid="pdc-visor-arbol"]');
 

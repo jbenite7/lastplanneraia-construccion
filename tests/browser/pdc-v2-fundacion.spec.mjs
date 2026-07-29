@@ -32,7 +32,9 @@ test('la isla React del PDC v2 monta con contexto real del proyecto', async ({ p
     });
 
     // El nav de submódulos sigue presente en el nuevo layout.
-    await expect(page.locator('.pdc-nav')).toContainText('Ensamble');
+    // «Ensamble» dejó de ser el nombre de una pantalla (f27 de la revisión de UX): nombra la
+    // etapa que agrupa a las seis, y la del cargue del Excel se llama «Cargar presupuesto».
+    await expect(page.locator('.pdc-nav')).toContainText('Cargar presupuesto');
 
     // La página del maestro (A2) reemplazó la página de contexto de la fundación.
     await expect(page.locator('h1')).toContainText('Maestro de insumos', { timeout: 15000 });
