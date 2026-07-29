@@ -1,0 +1,143 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+@AGENTS.md is the authoritative contract for this repo (permissions, RBAC, global-tables architecture,
+design-system scope, verification routing) — read it in full. GEMINI.md and README.md carry the same
+rules restated for other assistants/humans; where they overlap, `AGENTS.md` wins. Everything below is
+additional orientation that isn't already in those files: commands and where things actually live in
+the code.
+
+## Runtime & commands
+
+Everything runs in Docker Compose — never use MAMP/XAMPP/a host PHP. Services: `app` (PHP 8.3 +
+Apache, `http://localhost:8081`), `db` (MySQL 8.0, host port `3307`), `adminer` (`http://localhost:8082`).
+
+```bash
+docker compose up -d --build db app adminer   # start stack
+docker compose exec app composer install      # install PHP deps
+docker compose exec app php -v                # sanity check
+```
+
+There is no `.env.example` — `.env` must be created from scratch or copied from an existing one;
+see GEMINI.md §Base de Datos for required keys, and README.md §3.1 for the extra mail vars needed if
+enabling password recovery.
+
+### Tests
+
+There is no PHPUnit. `tests/test_*.php` files are standalone self-executing scripts (no runner) — run
+one directly:
+
+```bash
+docker compose exec app php tests/test_global_table_safety.php
+docker compose exec app php tests/test_global_table_reconciliation.php
+```
+
+Node/JS tests use the built-in Node test runner or Playwright, driven from `package.json`:
+
+```bash
+npm run test:design-system:static     # node --test tests/design-system/*.test.mjs + contract/audit scripts
+npm run test:design-system:phpstan    # phpstan baseline via scripts/design-system-phpstan-baseline.mjs
+npm run test:design-system:runtime    # playwright: design-system-lab.mjs + a11y + visual + performance
+npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
+```
+
+`e2e/` is a **separate** Playwright suite (own `e2e/playwright.config.mjs`, own fixtures under
+`e2e/support/`) covering smoke/admin/workflow tests — distinct from `tests/browser/`, which is
+design-system/lab-focused. Don't conflate the two when picking where a new browser test belongs.
+
+Static analysis: `phpstan` is a Composer dependency but there is **no `phpstan.neon`** at the repo
+root — its scope/invocation for the design system is managed through
+`scripts/design-system-phpstan-baseline.mjs` / `docs/design-system/phpstan-baseline.json`. For ad hoc
+runs use the command AGENTS.md gives: `docker compose exec app vendor/bin/phpstan analyse src
+admin/src --memory-limit=1G`. `biome.json` only covers `public/js`, `public/css`,
+`admin/public/css` (no PHP linting there):
+
+```bash
+npm run check:frontend        # biome check public/js public/css admin/public/css
+npm run lint:frontend
+npm run format:frontend
+```
+
+## Architecture
+
+### Front controller & routing
+
+`public/index.php` is a flat, plain-PHP front controller (no framework): loads Composer autoload,
+applies `MaintenanceMode` and `SessionMiddleware::check()`, then dispatches through
+`App\Core\Router` — a thin wrapper around **nikic/FastRoute** (`src/Core/Router.php`). All ~150+
+routes are registered inline in `index.php` as one long list grouped by comment headers (Auth,
+Programacion, Gestion, APIs, BI, Legacy). Some routes point to closures that `require_once` a
+procedural script under `src/Legacy/` instead of a controller method — that's the "Legacy" lane
+mentioned in AGENTS.md/GEMINI.md, not a bug.
+
+### `src/` layout
+
+- `Controllers/` — HTTP controllers, grouped by domain: `Api/`, `Auth/`, `Bi/`, `Core/`, `Gestion/`,
+  `Integracion/`, `Internal/`, `Programacion/`, plus `BaseController.php`.
+- `Services/` — business logic (`SemiAutoService`, `ActivityMatcherService`, `ReportProcessor`,
+  `ControlTowerService`, …), with `Auth/`, `Bi/`, `Mail/` subfolders.
+- `Core/` — framework primitives: `Router.php`, `Database.php` (singleton, PDO prepared statements
+  only), `TableResolver.php`, `SessionMiddleware.php`, `MaintenanceMode.php`, `AppEnvironment.php`,
+  `CommitmentLockGuard.php`, plus `Lps/` and `Notifications/`.
+- `Security/` — `RbacManager.php`, `RbacCatalog.php`, `RbacService.php`, `CsrfTokenManager.php`,
+  `EventService.php`, `LpsWeekEditPolicy.php`, `DesignSystemLabAccessPolicy.php`.
+- `Legacy/` — procedural scripts + `Endpoints/`, still wired into the router; maintenance-only per
+  AGENTS.md, no new features here.
+- `Support/` — cross-cutting helpers (`ActivityMatcher`, `BiProjectScope`, `SemiAutoQualityGate`,
+  `OperationalFamilyPolicy`, `ModuleRequestContext`).
+- `View/Components/` — template helpers.
+
+### RBAC
+
+`RbacCatalog.php` defines the role codes (`A` Admin, `D` Director de Obra, `R` Residente de Obra,
+`DCV`, `OT`, `G` Ambiental, `S` SST, `SG`, `C` Subcontratista, `V` Visualizador), a `roleAliases()`
+map for legacy names, and permission constants (`PERM_AUTO_DEFINIR_CONTRATOS`, etc.). `RbacManager`
+is intentionally simple: `getCapabilities(string $role)` returns a flat boolean map
+(`canManageWeeks`, `canEditGeneralProgram`, `canManageContracts`, …) computed from hardcoded
+`in_array($role, [...])` lists — there is no DB-backed permission table. `hasCapability($role, $cap)`
+just reads that map. Always normalize an incoming role/cargo through
+`Admin\Core\RoleManager::cleanCargo()` before checking capabilities.
+
+### `admin/` is a separate mini-app
+
+It does **not** reuse `src/Core` or `src/Security`. It has its own front controller
+(`admin/index.php`), its own `admin/src/Core/Router.php`, `RoleManager.php`, `Security.php`, its own
+`admin/src/Models/` (User, Project, ProjectMember) and `admin/src/Controllers/`, its own
+`admin/views/` and `admin/public/css/`. It shares the same Composer autoloader/vendor and the same
+MySQL schema as the main app (that's what `tests/test_global_table_safety.php` cross-checks), but is
+architecturally isolated — treat it as its own codebase when tracing a bug, not an extension of
+`src/`.
+
+### Data model
+
+Global tables shared across projects, isolated by `project_id` on every operational query.
+`{prefix}_*` tables are historical/compat only — don't write new runtime SQL against them. See
+`docs/global-tables-architecture.md` before touching schema, migrations, or backfills (dry-run first;
+any apply/delete needs a Plannotator gate, verifiable backup, and restore plan per AGENTS.md).
+
+### Design system
+
+`docs/design-system/README.md` describes it as the non-negotiable, contractual layer (tokens, dark
+desktop-only scope, accessibility floor, glass-effect rules) — distinct from `docs/brand/` and Stitch
+mockups, which are just visual inputs, not contracts. Scope for all design-system work is desktop
+≥1180px, dark mode only (see AGENTS.md's UI routing section for the full restriction — no mobile,
+tablet, or `linen` theme work of any kind).
+
+### `goals/` workflow
+
+Each `goals/<slug>/` directory holds `goal.md` (objective + links), `facts.md` /
+`facts-result*.json` / `facts.meta.json` (accepted facts, with an iterative interview round history —
+`interview.json`, `interview-result-round-2.json`, …), `plan.md`, and `validation-log.md`, often with
+an `evidence/` subfolder. Read the relevant files under a named goal before acting on it; don't mix
+goals.
+
+## Reference docs
+
+- `DESIGN.md` — contrato de consumo para desarrolladores/asistentes: qué tokens y primitivas `aia-*` usar y el flujo obligatorio antes de editar una superficie migrada. Léelo antes de cualquier cambio de UI. La autoridad ejecutable vive en `docs/design-system/`.
+- `GLOSARIO.md` — LPS/Lean terminology, consult before naming anything domain-related.
+- `docs/ROUTES.md` — MVC/API routing reference.
+- `docs/global-tables-architecture.md` — DB architecture rules.
+- `docs/design-system/README.md` and contracts therein — design tokens/component rules.
+- `docs/siteground-deploy-routine.md` — deploy checklist (only on explicit publish request).
+- `docs/pdc-v2.md` — módulo **Plan de Compras (PDC) v2**: modelo de dominio (presupuesto → maestro de insumos → paquetes → plan con fechas), fases A1–A4, deudas de datos conocidas y trampas ya medidas. La SPA (React + Vite + AG Grid) vive en `pdc-app/` y publica su bundle en `public/pdc-app/`; el PHP, en `src/Services/Pdc/`. Léelo antes de tocar cualquier cosa del PDC.

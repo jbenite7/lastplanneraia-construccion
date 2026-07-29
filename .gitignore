@@ -103,7 +103,12 @@ goals/validar-migracion-handsontable/evidence/pdc-native/*
 
 # Archivos de configuración de IDEs y prompts de IA
 AGENTS.md
-CLAUDE.md
+# CLAUDE.md se versiona desde la unificación de repos del 2026-07-29: es el único
+# sitio donde un asistente que entra al repo se entera de que existe el módulo PDC
+# y de que debe leer `docs/pdc-v2.md` antes de tocarlo. Un puntero que no viaja en
+# git no sirve en un clon nuevo ni en un worktree, que es justo donde nadie lo tiene.
+# AGENTS.md y MEMORY.md siguen fuera: el primero por decisión de otras sesiones, y
+# MEMORY.md porque es memoria personal del usuario y no debe salir de su máquina.
 MEMORY.md
 .php-cs-fixer.dist.php
 

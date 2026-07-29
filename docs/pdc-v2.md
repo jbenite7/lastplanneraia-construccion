@@ -1,6 +1,9 @@
-# CLAUDE.md
+# Plan de Compras (PDC) v2 — conocimiento del módulo
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Referencia del módulo PDC v2: modelo de dominio, fases A1–A4, decisiones de datos y las trampas ya
+medidas. Vive aquí y no en `CLAUDE.md` porque son 290 líneas que solo necesita quien toca el PDC, y
+`CLAUDE.md` se carga en todas las sesiones del repo. La SPA está en `pdc-app/`; su PHP en
+`src/Services/Pdc/` y `src/Controllers/Api/PlanCompras*`.
 
 ## Estado actual
 
@@ -210,11 +213,10 @@ Es una **implementación global y multiproyecto**, no específica de un proyecto
 
 ## Relación con `lastplanneraia-construccion` (lps-aia)
 
-Este repo **no es autónomo**: es la reimplementación (modelo nuevo, ver abajo) del módulo de **Plan de Compras (PDC)** que se integrará a la plataforma **Last Planner System de AIA**.
+El PDC v2 es la reimplementación (modelo nuevo, ver abajo) del módulo de Plan de Compras que reemplaza al de familias en esta misma plataforma.
 
-- **Repo destino:** `lastplanneraia-construccion` — GitHub `jbenite7/lastplanneraia-construccion`; en local es el repo hermano `../lps-aia`.
-- **Qué es lps-aia:** app web PHP/MySQL madura de Last Planner System (planificación y control de obra). **Ya tiene un módulo PDC en producción** (SiteGround), construido sobre el **modelo viejo de "familias"** (`OperationalFamilyPolicy` en `src/Support/`, vista PDC en Handsontable, tabla `general_dias_procesos_contratacion`, automatización PDCA v4.0 de jun-2026). Este repo produce el **reemplazo** de ese módulo con el modelo revisado que elimina "familias".
-- **Decisión de stack (2026-07-21, ver spec en `docs/superpowers/specs/`):** este repo desarrolla el **frontend** del módulo como SPA **React + Vite + AG Grid Community**; el "glue" PHP (vista shell, endpoints JSON, migraciones) se agrega a **lps-aia**. No cambies este reparto sin confirmarlo.
+- **Qué es lps-aia:** app web PHP/MySQL madura de Last Planner System (planificación y control de obra). **Ya tiene un módulo PDC en producción** (SiteGround), construido sobre el **modelo viejo de "familias"** (`OperationalFamilyPolicy` en `src/Support/`, vista PDC en Handsontable, tabla `general_dias_procesos_contratacion`, automatización PDCA v4.0 de jun-2026). El PDC v2 es el **reemplazo** de ese módulo con el modelo revisado que elimina "familias".
+- **Decisión de stack (2026-07-21, ver spec en `docs/superpowers/specs/`):** el frontend es una SPA React + Vite + AG Grid Community en `pdc-app/`; el glue PHP (vista shell, endpoints JSON, migraciones) vive en `src/` y `database/`. **Unificados en un repo el 2026-07-29** (ver `docs/superpowers/specs/2026-07-29-unificacion-repos-design.md`).
 - **Documentos autoritativos de lps-aia** (léelos antes de decisiones de arquitectura, dominio o UI): `AGENTS.md` (contrato del repo), `GLOSARIO.md` (terminología LPS/Lean), `docs/VISTAS-MODULOS.md` (módulos de UI, incl. PDC), `docs/pdca-automatizacion-plan-compras.md` (histórico del PDC actual y duraciones por categoría), `docs/global-tables-architecture.md` (tablas globales por `project_id`), `docs/design-system/`.
 
 ## Flujo de negocio (modelo de dominio)
@@ -242,16 +244,16 @@ Conceptos adicionales:
 
 Arquitectura de **"isla moderna" dentro de lps-aia**, pensada para SiteGround hosting compartido (el build corre local/CI; al servidor solo llegan estáticos + PHP):
 
-- **Este repo (`plan-de-compras`):** SPA **React + Vite + AG Grid Community** (MIT — no usar features Enterprise ni Handsontable, cuyo tier gratis es solo no-comercial). Vistas: importar presupuesto, maestro de insumos, Pareto, paquetes, plan final. Recibe contexto por `window.__PDC_BOOTSTRAP__` (projectId, proyectoNombre, usuario, rol, csrfToken) y consume los tokens `aia-*` de lps-aia. El build (`dist/`) se despliega a `lps-aia/public/pdc-app/` (nombre distinto de la ruta `/plan-compras` para no romper el ruteo de Apache).
-- **En `../lps-aia` (glue PHP):** vista shell `views/plan-compras/app.view.php` tras `SessionMiddleware`; rutas y **endpoints JSON delgados** (`/plan-compras/api/...`, envelope `{ok,data|error}`) vía FastRoute con CSRF (form key `plan_compras_v2`) + RBAC (`lps.pdc.ver`); import de Excel con `phpoffice/phpspreadsheet`; tablas nuevas aisladas por `project_id` con migraciones en `database/migrations/` (ver `docs/global-tables-architecture.md`).
+- **La SPA (`pdc-app/`):** SPA **React + Vite + AG Grid Community** (MIT — no usar features Enterprise ni Handsontable, cuyo tier gratis es solo no-comercial). Vistas: importar presupuesto, maestro de insumos, Pareto, paquetes, plan final. Recibe contexto por `window.__PDC_BOOTSTRAP__` (projectId, proyectoNombre, usuario, rol, csrfToken) y consume los tokens `aia-*` de lps-aia. El build escribe directo a `public/pdc-app/` (nombre distinto de la ruta `/plan-compras` para no romper el ruteo de Apache).
+- **El glue PHP:** vista shell `views/plan-compras/app.view.php` tras `SessionMiddleware`; rutas y **endpoints JSON delgados** (`/plan-compras/api/...`, envelope `{ok,data|error}`) vía FastRoute con CSRF (form key `plan_compras_v2`) + RBAC (`lps.pdc.ver`); import de Excel con `phpoffice/phpspreadsheet`; tablas nuevas aisladas por `project_id` con migraciones en `database/migrations/` (ver `docs/global-tables-architecture.md`).
 - **Testing:** Vitest (lógica SPA) y `npm run build` como gate aquí; en lps-aia, scripts `tests/test_pdc_*.php` autoejecutables (no hay PHPUnit), PHPStan, y e2e Playwright en `tests/browser/`.
 - **Deploy:** rutina de lps-aia (`docs/siteground-deploy-routine.md`). Watch-items SiteGround: verificar `upload_max_filesize`/`post_max_size` ≥ 10M (límite del importador) y `memory_limit` de PhpSpreadsheet con presupuestos grandes — el parser usa `toArray()` sobre la hoja completa (read-only, medido OK a escala DAPORTO: parse 0.13s / confirmar 0.42s); migrar a lectura por chunks solo si un presupuesto real lo exige.
 
 ### Worktree dedicado en lps-aia (sesiones paralelas)
 
-El working tree principal de lps-aia (`../lps-aia`) lo comparten otras sesiones activas (indicadores/Power BI, design-system/sidebar) que lo dejan con cambios sin commitear y bloquean checkouts/merges. Por eso **el trabajo PDC en lps-aia se hace en un git worktree dedicado**, no en el principal:
+El working tree principal de lps-aia (`/Volumes/Crucial X6/Developer/lps-aia`) lo comparten otras sesiones activas (indicadores/Power BI, design-system/sidebar) que lo dejan con cambios sin commitear y bloquean checkouts/merges. Por eso **el trabajo PDC en lps-aia se hace en un git worktree dedicado**, no en el principal:
 
-- **Worktree PDC:** `/Volumes/Crucial X6/Developer/lps-aia-pdc`, rama base `pdc-dev` (desde `main`). Crear ahí las ramas de feature por fase (`git checkout -b pdc-a3-paquetes`, etc.). NO trabajar PDC en `../lps-aia` (es de las otras sesiones); tampoco tocar `../lps-aia/.claude/worktrees/lab-preview` (locked, ajeno).
+- **Worktree PDC:** `/Volumes/Crucial X6/Developer/lps-aia-pdc`, rama base `pdc-dev` (desde `main`). Crear ahí las ramas de feature por fase (`git checkout -b pdc-a3-paquetes`, etc.). NO trabajar PDC en `/Volumes/Crucial X6/Developer/lps-aia` (es de las otras sesiones); tampoco tocar `../lps-aia/.claude/worktrees/lab-preview` (locked, ajeno).
 - **Docker:** el `docker-compose.override.yml` (versionado) monta `./` (relativo), así que `docker compose` **desde el worktree** monta el código del worktree. Levantar el stack del worktree con `COMPOSE_PROJECT_NAME` y puertos propios para no chocar con el principal (app `8081` es fijo en `docker-compose.yml`; db/adminer son `${DOCKER_DB_PORT:-3307}`/`${DOCKER_ADMINER_PORT:-8082}`).
 - **Integración:** consolidar en `origin/main` (decisión 2026-07-23; ya no la rama `desarrollo-pdc-v2`). Antes de mergear: `git fetch` y FF `main` a `origin/main` — las sesiones ajenas pushean seguido, así que main avanza en horas. Si el principal está bloqueado, mergear vía worktree temporal aislado.
 
@@ -264,15 +266,12 @@ docker compose exec app php tests/test_global_table_safety.php   # correr un sol
 npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
 ```
 
-Comandos de este repo:
+Comandos de la SPA (desde `pdc-app/`):
 
 ```bash
-npm run dev     # Vite dev server con proxy /plan-compras/api → localhost:8081 (Docker de lps-aia)
-npm run build   # tsc + vite build → dist/ con nombres fijos (assets/pdc.js, assets/pdc.css)
-npm run test    # Vitest (src/lib/*.test.ts)
-npm run sync    # build + copia dist/ a ../lps-aia/public/pdc-app/ (commitear allá: deploy = git pull)
-                # OJO: apunta a ../lps-aia (principal). Trabajando en el worktree, copiar el bundle
-                # a /Volumes/Crucial X6/Developer/lps-aia-pdc/public/pdc-app/ y commitear en la rama del worktree.
+npm run dev     # Vite dev server con proxy /plan-compras/api → Docker (PDC_API_PORT, por defecto 8091)
+npm run build   # tsc + vite build → ../public/pdc-app/assets/{pdc.js,pdc.css}, listo para commitear
+npm run test    # Vitest
 ```
 
 ## Materiales de referencia (locales, no versionados)
