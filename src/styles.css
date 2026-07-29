@@ -466,3 +466,27 @@
 .pdc-plan-recalcular-ayuda { flex: 1 1 320px; min-width: 260px; font-size: 13px; }
 .pdc-plan-recalcular-ayuda > summary { cursor: pointer; opacity: 0.7; }
 .pdc-plan-recalcular-ayuda[open] > summary { margin-bottom: 4px; }
+
+/* A4.1 — configuración de los pasos del proceso de contratación. */
+
+/* `.pdc-paq-secundario` nació para <button>; aquí también lo lleva un <a> (el enlace «Configurar
+   pasos» y el «Volver al plan»), que por defecto viene subrayado y en línea. Estas dos líneas lo
+   dejan idéntico al botón sin duplicar el resto de la regla. */
+a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
+
+.pdc-pasos-lista { list-style: none; margin: 12px 0; padding: 0; }
+.pdc-pasos-fila {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 10px; border-bottom: 1px solid var(--pdc-border);
+}
+.pdc-pasos-orden {
+  min-width: 1.6rem; color: var(--pdc-ink-muted);
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+.pdc-pasos-nombre { min-width: 14rem; font-weight: 600; }
+.pdc-pasos-alias { flex: 1 1 12rem; min-width: 8rem; }
+.pdc-pasos-dias { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.pdc-pasos-dias input { width: 5.5rem; }
+/* Los días de estos pasos cambian con cada paquete, así que no hay un número que enseñar: se dice
+   por qué, en vez de dejar el hueco vacío y que parezca un error. */
+.pdc-pasos-dias-catalogo { color: var(--pdc-ink-muted); font-size: 12.5px; }

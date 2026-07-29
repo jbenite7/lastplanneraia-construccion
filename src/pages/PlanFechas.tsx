@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
@@ -497,6 +498,11 @@ export default function PlanFechas() {
         <button type="button" className="pdc-paq-primario" data-testid="pdc-plan-recalcular" disabled={ui.ocupado} onClick={onRecalcular}>
           Recalcular
         </button>
+        {/* A4.1 — los pasos del proceso son configurables por obra. El enlace vive aquí y no en la
+            barra de pestañas porque se configura una vez y casi no se vuelve a tocar. */}
+        <Link to="/ensamble/plan/pasos" className="pdc-paq-secundario" data-testid="pdc-plan-configurar-pasos">
+          Configurar pasos
+        </Link>
         {/* La duda («¿pierdo lo avanzado?») se tiene una vez; el párrafo se leía en cada visita a
             las cuatro pestañas. Plegado, la respuesta sigue a un clic. El texto NO cambia: es la
             garantía que vigilan los tests de PlanFechasService. */}

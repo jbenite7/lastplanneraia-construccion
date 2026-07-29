@@ -18,6 +18,8 @@ export type PasoEditable = {
   colLegacy: string | null
   diasFijos: number | null
   diasSugeridos: number | null
+  /** Posición del paso en el proceso canónico de la empresa. Decide dónde cae al agregarlo. */
+  ordenDefault: number
 }
 
 export function mover(pasos: PasoEditable[], desde: number, hacia: number): PasoEditable[] {
@@ -43,9 +45,15 @@ export function agregar(pasos: PasoEditable[], cat: PasoCatalogo, posicion?: num
     // catálogo evita que la pantalla nazca en estado inválido.
     diasFijos: cat.colLegacy === null ? (cat.diasSugeridos ?? 0) : null,
     diasSugeridos: cat.diasSugeridos,
+    ordenDefault: cat.ordenDefault,
   }
   const copia = [...pasos]
-  copia.splice(posicion ?? copia.length, 0, nuevo)
+  // Sin posición explícita, el paso cae donde le toca en el proceso canónico de la empresa, no al
+  // final: «Aprobación del cliente» va entre Cuadros y Legalización —así lo tenían los dos proyectos
+  // históricos que la usaban— y `orden_default` del catálogo existe justamente para saberlo.
+  // Añadirlo al final obligaría a subirlo a mano cuatro veces cada vez.
+  const destino = posicion ?? copia.findIndex((p) => p.ordenDefault > cat.ordenDefault)
+  copia.splice(destino < 0 ? copia.length : destino, 0, nuevo)
   return copia
 }
 

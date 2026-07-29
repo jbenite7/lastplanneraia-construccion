@@ -6,6 +6,7 @@ import VisorPresupuesto from './pages/VisorPresupuesto'
 import ComparativoPresupuesto from './pages/ComparativoPresupuesto'
 import PaquetesContratacion from './pages/PaquetesContratacion'
 import PlanFechas from './pages/PlanFechas'
+import PasosContratacion from './pages/PasosContratacion'
 
 export default function App() {
   return (
@@ -34,6 +35,9 @@ export default function App() {
           <Route path="/ensamble/comparar" element={<ComparativoPresupuesto />} />
           <Route path="/ensamble/paquetes" element={<PaquetesContratacion />} />
           <Route path="/ensamble/plan" element={<PlanFechas />} />
+          {/* Fuera de PANTALLAS a propósito: se configura una vez por obra, y se llega desde el
+              Plan de compras. Una pestaña permanente para eso sería ruido en la barra. */}
+          <Route path="/ensamble/plan/pasos" element={<PasosContratacion />} />
           <Route path="/maestro" element={<Navigate to="/ensamble/maestro" replace />} />
         </Routes>
       </div>

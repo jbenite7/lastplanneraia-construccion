@@ -2,17 +2,23 @@ import { describe, expect, it } from 'vitest'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from './pasosState'
 import type { PasoCatalogo } from './types'
 
-const paso = (clave: string, colLegacy: string | null = 'diasX'): PasoEditable => ({
+const paso = (clave: string, colLegacy: string | null = 'diasX', ordenDefault = 0): PasoEditable => ({
   clave,
   nombre: clave,
   alias: '',
   colLegacy,
   diasFijos: colLegacy === null ? 15 : null,
   diasSugeridos: null,
+  ordenDefault,
 })
 
-const cat = (clave: string, colLegacy: string | null, diasSugeridos: number | null): PasoCatalogo => ({
-  id: 1, clave, nombre: clave.toUpperCase(), colLegacy, diasSugeridos, peso: colLegacy === null ? null : 0.5, ordenDefault: 0,
+const cat = (
+  clave: string,
+  colLegacy: string | null,
+  diasSugeridos: number | null,
+  ordenDefault = 0,
+): PasoCatalogo => ({
+  id: 1, clave, nombre: clave.toUpperCase(), colLegacy, diasSugeridos, peso: colLegacy === null ? null : 0.5, ordenDefault,
 })
 
 describe('mover', () => {
@@ -90,6 +96,24 @@ describe('agregar y disponibles', () => {
   it('se puede insertar en una posición concreta', () => {
     const lista = [paso('a'), paso('b')]
     expect(agregar(lista, cat('z', null, 3), 1).map((p) => p.clave)).toEqual(['a', 'z', 'b'])
+  })
+
+  it('sin posición, cae donde le toca en el proceso canónico y no al final', () => {
+    // El caso real, con los `orden_default` que siembra la migración: aprobación del cliente (35) va
+    // entre cuadros comparativos (30) y legalización (40), no detrás de «insumos en obra» (60).
+    const lista = [paso('cuadros', 'diasX', 30), paso('legalizacion', 'diasX', 40), paso('insumos', 'diasX', 60)]
+    const r = agregar(lista, cat('aprobacion_cliente', null, 15, 35))
+    expect(r.map((p) => p.clave)).toEqual(['cuadros', 'aprobacion_cliente', 'legalizacion', 'insumos'])
+  })
+
+  it('Licify entra en segundo lugar, como en la Variante A del histórico', () => {
+    const lista = [paso('elaboracion', 'diasX', 0), paso('entrega', 'diasX', 10)]
+    expect(agregar(lista, cat('licify', null, 1, 5)).map((p) => p.clave)).toEqual(['elaboracion', 'licify', 'entrega'])
+  })
+
+  it('un paso posterior a todos los de la lista se agrega al final', () => {
+    const lista = [paso('a', 'diasX', 0), paso('b', 'diasX', 10)]
+    expect(agregar(lista, cat('z', null, 3, 90)).map((p) => p.clave)).toEqual(['a', 'b', 'z'])
   })
 })
 
