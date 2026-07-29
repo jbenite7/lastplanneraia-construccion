@@ -1061,9 +1061,18 @@ table.dataTable tbody tr:hover td {
      --ds-color-domain-corporate y su parada profunda
      --ds-color-domain-corporate-deep. Ya no queda ningun literal aqui.
      Estas dos custom properties se conservan porque estan ACOTADAS a
-     .aia-modal -las consume tambien el bloque de botones de mas abajo (tramo
-     5d)-, no porque anadan color propio; las otras tres se retiraron porque
-     solo se usaban aqui.
+     .aia-modal, no porque anadan color propio; las otras tres se retiraron
+     porque solo se usaban aqui. Dos motivos, los dos medidos:
+      1) .aia-modal__eyebrow (:1156) es una clase PELADA, sin .aia-modal de
+         ancestro. Inlinear el token haria que un eyebrow huerfano pintase el
+         verde profundo, porque el token vive en :root. Hoy no hay huerfanos:
+         no mueve un pixel, pero cambia el comportamiento.
+      2) Del bloque de botones de mas abajo solo sobrevive la rama
+         `.aia-btn-primary` (viva: programacion_semanal.view.php:379 y
+         programaGeneralActualizar.view.php:643). La rama `.btn-primary` esta
+         INERTE, y NO la gana el design system: la gana `.btn-primary` de ESTE
+         mismo archivo (:950-957) con !important, que vence a una declaracion
+         plana sea cual sea la especificidad. No la busques en core.css.
      OJO al elegir la parada profunda: --ds-color-brand-primary-dark NO vale.
      Encadena a --aia-green-dark, declarado en OKLCH, y esas coordenadas pintan
      #162f19 (medido en Chromium, tramo 5c), no el verde de esta cabecera. */
