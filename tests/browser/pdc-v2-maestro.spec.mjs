@@ -59,6 +59,10 @@ test('maestro: cold start masivo y re-import con auto-match', async ({ page }) =
     const filaBombeo = catalogo.locator('.ag-row', { hasText: 'ZZTEST SERVICIO BOMBEO' }).first();
     await expect(filaBombeo).toBeVisible({ timeout: 15000 });
     await filaBombeo.locator('.pdc-celda-accion').click();
+    // Retirar revierte los vínculos automáticos del insumo en TODOS los proyectos, así que desde la
+    // tanda 4 pregunta antes de escribir. «Reactivar» sigue yendo directo: no destruye nada.
+    await expect(page.locator('[data-testid="pdc-maestro-confirmar-retirar"]')).toBeVisible({ timeout: 15000 });
+    await page.locator('[data-testid="pdc-maestro-retirar-confirmar"]').click();
     await expect(page.locator('.pdc-exito')).toContainText('retirado', { timeout: 15000 });
     await expect(catalogo.locator('.ag-cell', { hasText: 'ZZTEST SERVICIO BOMBEO' })).toHaveCount(0, { timeout: 15000 });
 
