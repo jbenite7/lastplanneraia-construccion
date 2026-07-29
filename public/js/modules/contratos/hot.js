@@ -466,7 +466,13 @@
     // contratos.view.php, que carga antes que este archivo.
     $('#formularioEditarContratos .ct-contract-quantity').val('1');
     if (typeof window.clearContractQuantityErrors === 'function') window.clearContractQuantityErrors();
-    $('.mensaje').stop(true, true).text('').removeClass('ct-message-error').show();
+    // Mismo motivo que arriba: el aviso global lleva `role="alert"` y su limpiador cancela
+    // ademas el repintado pendiente que reinyectaria el texto en un modal ya reseteado.
+    if (typeof window.clearContractMessage === 'function') {
+      window.clearContractMessage();
+    } else {
+      $('.mensaje').stop(true, true).text('').removeClass('ct-message-error').show();
+    }
     if (typeof window.updateSections === 'function') window.updateSections();
     if (typeof window.updateCheckboxState === 'function') window.updateCheckboxState();
     resetPackageSlotVisibility();

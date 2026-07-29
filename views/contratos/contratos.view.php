@@ -183,7 +183,10 @@
 									</div>
 
 									<div class="col-sm-12 ct-contract-message-wrap">
-										<p class="mensaje"></p>
+										<!-- `role="alert"` va FIJO en el marcado, no se pone junto con el texto: una
+										     region live que nace a la vez que su contenido es justo el caso que el
+										     navegador se salta. Nace vacia, asi que no anuncia nada al cargar. -->
+										<p class="mensaje" role="alert"></p>
 									</div>
 								</form>
 							</div>
@@ -641,6 +644,59 @@
 		// hot.js normaliza el modal al abrirlo y necesita el mismo camino de limpieza.
 		window.clearContractQuantityErrors = clearContractQuantityErrors;
 
+		// El aviso global del modal (`<p class="mensaje">`) se veia pero no se anunciaba:
+		// medido en el arbol de accesibilidad de Chromium con el error provocado, llegaba
+		// con `role: null` y `aria-live: null`, y su texto solo existia como StaticText
+		// suelto — cero regiones live dentro de #modalEditarContratos. WCAG 3.3.1.
+		//
+		// NO se copia el temporizador de Programacion Semanal
+		// (public/js/modules/programacion_semanal/hot.js:383-385), que a los 4 s borra el
+		// texto y devuelve el nodo a `role="status"`. Ahi la senal se vuelve efimera
+		// mientras el estado de error sigue puesto, y quien vuelva al aviso ya no lo
+		// encuentra. Aqui el aviso acompana a los `aria-invalid` de las cantidades, que
+		// duran hasta la siguiente validacion: el aviso dura exactamente lo mismo y solo
+		// lo retiran los caminos de limpieza reales.
+		//
+		// Reponer el MISMO texto en una region live puede no anunciarse una segunda vez, y
+		// este aviso repite palabra por palabra cada vez que se pulsa Guardar con la misma
+		// cantidad mal. Por eso, cuando el texto entrante coincide con el que ya esta, se
+		// vacia y se repone en un tick posterior: el hueco fuerza una insercion nueva en
+		// lugar de una escritura que el navegador puede coalescer en nada.
+		var contractMessageRepaint = null;
+
+		function cancelContractMessageRepaint() {
+			if (contractMessageRepaint) {
+				window.clearTimeout(contractMessageRepaint);
+				contractMessageRepaint = null;
+			}
+		}
+
+		function setContractMessage(message) {
+			var $mensaje = $('#modalEditarContratos .mensaje');
+			if (!$mensaje.length) return;
+			cancelContractMessageRepaint();
+			$mensaje.stop(true, true).addClass('ct-message-error').show();
+			if ($mensaje.text() === message) {
+				$mensaje.text('');
+				contractMessageRepaint = window.setTimeout(function() {
+					contractMessageRepaint = null;
+					$mensaje.text(message);
+				}, 120);
+				return;
+			}
+			$mensaje.text(message);
+		}
+
+		function clearContractMessage() {
+			cancelContractMessageRepaint();
+			$('#modalEditarContratos .mensaje').stop(true, true)
+				.text('').removeClass('ct-message-error').show();
+		}
+		// hot.js resetea el modal al abrirlo por el boton "editar": si limpiara el texto
+		// por su cuenta dejaria vivo un repintado pendiente que reinyectaria el aviso ya
+		// obsoleto en un modal recien reseteado.
+		window.clearContractMessage = clearContractMessage;
+
 		/* Ejecuta la funcion guardar, solo cuando se presiona el botón guardar. La función guardar busca la informacion registrada en el formulario de registro de usuarios y lo envia por medio de AJAX para que se ejecute la funcion modificar en guardar.php */
 		function validatePackageQuantities() {
 			var valid = true;
@@ -656,7 +712,7 @@
 				}
 			});
 			if (!valid) {
-				$('.mensaje').text('La cantidad de contratos del paquete actual debe ser un entero mayor o igual a 1.').addClass('ct-message-error');
+				setContractMessage('La cantidad de contratos del paquete actual debe ser un entero mayor o igual a 1.');
 				$('#formularioEditarContratos .ct-contract-quantity[aria-invalid="true"]').first().trigger('focus');
 			}
 			return valid;
@@ -693,7 +749,7 @@
 			    var db = document.getElementById('baseDatos').value;
 					contractSaveInFlight = true;
 					$('#btn_guardar_contratos').prop('disabled', true);
-					$('.mensaje').text('').removeClass('ct-message-error');
+					clearContractMessage();
 			    return $.ajax({
 		      method: "POST",
 		      url: "/api/contratos/save?db="+db,
@@ -709,7 +765,11 @@
 						openDurationsModal(json_info.paquetes || [], frmStr);
 		      } else {
 		        var msg = json_info.mensaje || json_info.respuesta || 'Error inesperado';
-			        $(".mensaje").text(msg).addClass('ct-message-error');
+			        setContractMessage(msg);
+							// El desvanecido a 5 s de esta rama es anterior a este cambio y se conserva: el
+							// anuncio ya salio al insertarse el texto, asi que retirarlo despues no le quita
+							// nada al lector de pantalla. Solo aplica al error devuelto por el servidor, no al
+							// aviso de validacion, que no caduca solo.
 							$(".mensaje").fadeOut(5000, function() {
 								$(this).text("");
 							$(this).removeClass('ct-message-error');
@@ -722,7 +782,7 @@
 		    		var json = JSON.parse(jqXHR.responseText || '{}');
 		    		msg = json.mensaje || msg;
 		    	} catch(e) {}
-		          $(".mensaje").text(msg).addClass('ct-message-error');
+		          setContractMessage(msg);
 				console.error('submitContractSave error:', msg, jqXHR.responseText);
 			    }).always(function() {
 						contractSaveInFlight = false;
@@ -734,7 +794,7 @@
 				contractSaveInFlight = false;
 				pendingContractSavePayload = null;
 				$('#btn_guardar_contratos').prop('disabled', false);
-				$('.mensaje').stop(true, true).text('').removeClass('ct-message-error').show();
+				clearContractMessage();
 				clearContractQuantityErrors();
 				resetProgressivePackageSlots();
 			});
