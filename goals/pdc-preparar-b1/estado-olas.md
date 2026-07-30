@@ -58,7 +58,7 @@ por prudencia nunca es el error caro.
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
+| 5 | Equipo alquilado vs comprado | 4 | **HECHO** | `e992301` | 2026-07-29 |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
@@ -113,6 +113,39 @@ procesos, hay que crear su fila y apuntar el paquete a ella; a partir de ahí s�
 `tests/browser/pdc-v2-pasos.spec.mjs` (2 nuevos, en navegador contra el contenedor servido).
 Cero regresión comprobada sobre Da Porto: sigue sin configurar y con los siete pasos por defecto.
 De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pasos`.
+
+### Nota sobre la fila 5 — no esperó al despliegue, y aparecieron dos cosas
+
+Arrancó sin la fila 4 en `HECHO`: Felipe liberó la espera el 2026-07-29 (el despliegue a pruebas ya
+estaba hecho y pidió que las sesiones avanzaran sin quedarse en comprobaciones humanas). Se entrega la
+migración, el código y las pruebas en la rama; **no se aplicó nada al servidor** — eso es de la fila 4.
+
+Evidencia completa, con salida real de comandos:
+[`evidence/validacion-equipo-alquilado-comprado.md`](evidence/validacion-equipo-alquilado-comprado.md).
+
+**El spec decía «amplía el enum de `tipo_recurso`» y no hay enum:** es `varchar(60)` que siembra el
+importador SINCO. No hubo DDL de enum. Los dos riesgos reales estaban en otro sitio, y los dos se
+midieron antes de arreglarlos: `PaquetesService::tiposCompatibles()` tiene un `default` que significa
+«no filtro» (partir «Equipo» sin nombrar los valores nuevos ahí los volvía candidatos de cualquier
+paquete — la trampa de A3.2 en sitio nuevo), y el importador que borraba el trabajo humano era el de
+**SINCO**, no el de presupuestos.
+
+**Dos decisiones que quedan para Felipe:**
+
+1. **`OT` (Oficina Técnica / Compras) hoy no puede clasificar equipos.** La capacidad elegida es
+   `lps.pdc.maestro` (A, D), según el spec —el maestro es global, es administración—. Pero
+   `lps.paquetes_contratacion.reglas` la tienen A, D **y OT**, y decidir si un equipo se alquila o se
+   compra suena más a Compras que a Administración. El cambio sería una línea de RBAC.
+2. **Gastos generales: revisado, no implementado.** El presupuesto **no** trae categorías que el maestro
+   pierda (sus capítulos son sólo `COSTO DIRECTO` y `COSTO INDIRECTO`); las de Tomás llegan por el
+   `agrupacion` de SINCO, que el maestro **ya guarda** y ninguna pantalla agrupa. Es un entregable
+   aparte y necesita grilleo con él para no duplicar su código.
+
+⚠️ **Aviso para las demás sesiones — el volumen de MySQL del compose es `external` con nombre fijo
+`htdocs_db_data`.** Un `COMPOSE_PROJECT_NAME` propio **no** da base propia: levanta un segundo MySQL
+sobre los archivos de la base de desarrollo principal. Aquí murió con «Unable to lock ./ibdata1» porque
+el principal estaba vivo (sin daño, verificado), pero **con el principal apagado le habría escrito**.
+Hace falta un override local que declare un volumen propio.
 
 ## Ola 3 — lo grande
 
