@@ -70,6 +70,21 @@ class ProjectSelectorController
         $usuario = (string) $_SESSION['usuario'];
         $proyectoSeleccionado = trim((string) ($_POST['proyecto'] ?? ''));
 
+        $this->enterProject($usuario, $proyectoSeleccionado);
+    }
+
+    /**
+     * Establece el contexto de proyecto en la sesión y redirige a la pantalla de aterrizaje.
+     *
+     * Extraído de select() para que la puerta de servicio de desarrollo (App\Core\DevDoor)
+     * reutilice esta misma lógica en vez de duplicarla: la verificación de membresía contra
+     * project_members, la normalización del rol y el respeto a Acceso=0 deben ser idénticos
+     * por los dos caminos, o el rol obtenido por la puerta dejaría de ser el rol real.
+     *
+     * Nunca retorna: siempre redirige.
+     */
+    public function enterProject(string $usuario, string $proyectoSeleccionado): void
+    {
         if ($proyectoSeleccionado === '') {
             $_SESSION['error'] = 'Debes seleccionar un proyecto.';
             header('Location: /proyectos');

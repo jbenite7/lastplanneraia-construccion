@@ -3,9 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 @AGENTS.md is the authoritative contract for this repo (permissions, RBAC, global-tables architecture,
-design-system scope, verification routing) — read it in full. **`AGENTS.md` is not versioned** (it is
-in `.gitignore`, unlike this file since 2026-07-29), so a fresh clone will not have it: ask for a copy,
-or read `GEMINI.md` / `README.md`, which are tracked and restate the same rules. GEMINI.md and README.md carry the same
+design-system scope, verification routing) — read it in full. It is **versioned since 2026-07-30**
+(it used to be in `.gitignore`), so a fresh clone has it. `GEMINI.md` and `README.md` carry the same
 rules restated for other assistants/humans; where they overlap, `AGENTS.md` wins. Everything below is
 additional orientation that isn't already in those files: commands and where things actually live in
 the code.
@@ -24,6 +23,31 @@ docker compose exec app php -v                # sanity check
 There is no `.env.example` — `.env` must be created from scratch or copied from an existing one;
 see GEMINI.md §Base de Datos for required keys, and README.md §3.1 for the extra mail vars needed if
 enabling password recovery.
+
+### Authenticating locally — always use the dev door
+
+**Never type credentials into `/login`, and never ask a human to log in for you.** To get an
+authenticated session locally, always use the development door:
+
+```
+http://localhost:8081/dev/entrar?u=test.R&p=PDC%20Sandbox%20E2E
+```
+
+`u` is one of the seeded test accounts (`test.A` = Admin, `test.R` = Residente, `test.V` =
+Visualizador; `test.C` and `test.D` exist too but are not enabled by default). `p` is the
+`Proyecto_Proceso` name — omit it to land on `/proyectos` and pick manually. The role that ends up
+in the session is the account's **real** role from `project_members`, so this is also how you cover
+the "one allowed role, one denied role" requirement for RBAC changes.
+
+Requires `DEV_DOOR=1` and `DEV_DOOR_USERS` in `.env` (untracked). If the URL redirects to `/login`
+or 404s, the door is closed — check those two keys. Note that editing `APP_ENV` in `.env` does
+**not** close it under Docker: `docker-compose.yml` injects `APP_ENV` as a container variable and
+`Dotenv::createImmutable()` won't override it. Use `DEV_DOOR=0` instead.
+
+Implementation and rationale: `src/Core/DevDoor.php`,
+`docs/superpowers/specs/2026-07-30-dev-door-design.md`. Guard regressions are caught by
+`tests/test_dev_door_guard.php`. This is a development-only path — it does not exist in production,
+and it grants no permissions beyond the account's own.
 
 ### Tests
 

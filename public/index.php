@@ -44,6 +44,14 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
 $publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+
+// Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
+// (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
+$devDoorIsOpen = \App\Core\DevDoor::isOpen();
+if ($devDoorIsOpen) {
+    $publicRoutes[] = '/dev/entrar';
+}
+
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
@@ -92,6 +100,12 @@ $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']
 // Project Selector (Phase 2)
 $router->get('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
 $router->post('/proyecto/seleccionar', [\App\Controllers\Core\ProjectSelectorController::class, 'select']);
+
+// Puerta de servicio de desarrollo. Fuera de desarrollo la ruta NO se registra: el router
+// responde 404, que es lo correcto — un 403 confirmaría que el endpoint existe.
+if ($devDoorIsOpen) {
+    $router->get('/dev/entrar', [\App\Controllers\Core\DevDoorController::class, 'enter']);
+}
 
 
 // Programacion
