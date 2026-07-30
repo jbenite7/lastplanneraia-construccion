@@ -99,7 +99,7 @@ de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también
 | 2 | Copiar la configuración entre obras | **Hecho** (`efe8d5e`). Copia puntual, no vínculo vivo; la pantalla enseña qué trae y marca si el origen está a medias |
 | 4 | Duraciones del catálogo editables | **Hecho** (`20d6acf`). Solo las filas que la obra usa, con aviso permanente de que son de la empresa. Recorte: el upsert ya existía en `/contratos`; lo que faltaba era llegar desde el PDC v2, con el permiso de reglas y recalculando |
 | 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
-| 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
+| 1 | Listas de pasos por modalidad | **ARCHIVADO el 2026-07-30.** Felipe preguntó a las dos obras: las modalidades siguen **el mismo proceso**. No se construye y no queda pendiente. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md) |
 
 **Límite conocido del nº 4, y su relación con los 42 paquetes sin `duracion_ref`**
 ([`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md)): la pantalla lista

@@ -40,9 +40,22 @@ La pregunta en simple, para quien la traslade:
 Si alguna dice que sí, se anota aquí su respuesta y **se abre grilleo propio** antes de tocar nada:
 el spec lo exige explícitamente porque cambia la forma del modelo de datos.
 
-## Estado
+## Estado — CERRADO el 2026-07-30
 
-**Pendiente de:** el dueño del producto, que es quien tiene el canal con las dos obras.
+**Respondido por Felipe:** las modalidades **siguen el mismo proceso** en las dos obras.
+
+La precondición del spec no se cumple, y ahora no por falta de respuesta sino **porque la respuesta es
+que no hace falta**. El diferido nº 1 pasa de «pendiente de preguntar» a **archivado**: no se construye,
+y no hay que volver a preguntarlo.
+
+**Cuándo reabrirlo.** Solo si una obra futura contrata de verdad por caminos distintos según la
+modalidad —y entonces con evidencia de esa obra, no por analogía—. Si eso pasa, el spec exige **grilleo
+propio** antes de tocar nada, porque la configuración dejaría de ser por obra y pasaría a ser por obra ×
+modalidad, con todo lo que eso arrastra (arriba, «qué costaría construirlo a ciegas»).
+
+**Lo que esta respuesta confirma de paso:** que los siete pasos por defecto y la configuración por obra
+son suficientes hoy para las dos obras reales del módulo. La flexibilidad que ya existe —elegir qué
+pasos usa cada obra, en qué orden, con qué alias y qué días— cubre lo que hay.
 
 Los otros tres diferidos de A4.1 sí se construyeron: copiar la configuración entre obras (`efe8d5e`),
 duraciones del catálogo editables (`20d6acf`) e historial de versiones.
