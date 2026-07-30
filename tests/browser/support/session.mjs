@@ -36,7 +36,10 @@ export async function selectProject(page, project) {
  * Va como `addInitScript` y no como un `evaluate` posterior porque el recorrido se decide al montar
  * la aplicación: escribir la clave después de cargar llegaría tarde.
  *
- * Un test que SÍ quiera ver el recorrido —`pdc-v2-ayuda.spec.mjs`— lo borra por su cuenta.
+ * Un test que SÍ quiera ver el recorrido —`pdc-v2-ayuda.spec.mjs`— pide `silenciarRecorrido: false`
+ * al entrar. No vale que lo borre por su cuenta con otro `addInitScript`: este corre en CADA
+ * navegación, así que tras una recarga volvería a escribir «visto» y la prueba de que el módulo
+ * recuerda la decisión mediría el andamiaje en vez de la aplicación.
  */
 export async function silenciarRecorridoPdc(page) {
   await page.addInitScript(() => {
@@ -48,8 +51,13 @@ export async function silenciarRecorridoPdc(page) {
   });
 }
 
-export async function loginAndSelectProject(page, project, credentials = CREDENTIALS) {
-  await silenciarRecorridoPdc(page);
+export async function loginAndSelectProject(
+  page,
+  project,
+  credentials = CREDENTIALS,
+  { silenciarRecorrido = true } = {},
+) {
+  if (silenciarRecorrido) await silenciarRecorridoPdc(page);
   await login(page, credentials);
   await selectProject(page, project);
 }
