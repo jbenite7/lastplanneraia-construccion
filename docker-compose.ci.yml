@@ -13,6 +13,12 @@ services:
       - "18081:80"
     environment:
       APP_ENV: testing
+      # La puerta de servicio se abre en el runtime de CI para poder probarla extremo a
+      # extremo (tests/test_dev_door_http.php). Es un contenedor efímero y aislado; el
+      # blindaje de producción lo demuestra tests/test_dev_door_guard.php, que no depende
+      # de este entorno.
+      DEV_DOOR: "1"
+      DEV_DOOR_USERS: "test.A,test.R,test.V"
       DB_HOST: db
       DB_PORT: 3306
       DB_NAME: lastplanneraia_ci

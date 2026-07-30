@@ -206,6 +206,29 @@ class BiControlTowerApiController extends BaseController
         exit;
     }
 
+    /**
+     * Drill-down del panel de compras: un renglón por paso pendiente (fase B3).
+     *
+     * Los proyectos salen de resolveProjectIds() —que pasa por BiProjectScope— y nunca de un
+     * project_id crudo del cliente: es lo que impide que una obra vea la contratación de otra.
+     */
+    public function pdcDetail(): void
+    {
+        $this->requireAuth();
+        $projectIds = $this->resolveProjectIds();
+
+        $seguimiento = new \App\Services\Pdc\SeguimientoService(\Database::getInstance());
+        $hoy = (new \DateTimeImmutable('today'))->format('Y-m-d');
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'respuesta' => 'BIEN',
+            'hoy'       => $hoy,
+            'paquetes'  => $seguimiento->detalleDestinos($projectIds, $hoy),
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     // -----------------------------------------------------------------
     // 6. CIC (Contratistas)
     // -----------------------------------------------------------------

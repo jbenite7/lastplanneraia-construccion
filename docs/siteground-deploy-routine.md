@@ -14,6 +14,11 @@ la rama `main` y sin perder cambios locales del servidor.
 - Alias SSH de produccion: `siteground-produccion-lastplanner`.
 - El archivo `.env` solo vive en el servidor y no se versiona.
 - Produccion solo se despliega despues de validar pruebas.
+- **El reenvio de puertos por SSH esta prohibido en la cuenta.** Cualquier `ssh -L` muere con
+  `administratively prohibited: open failed`, aunque las opciones de la llave listen
+  `port-forwarding`. Medido el 2026-07-30 contra los puertos 80 y 443. Consecuencia: no se puede
+  abrir un tunel para ver el sitio como si fuera local; lo que si funciona es ejecutar `curl`
+  dentro del servidor contra `https://127.0.0.1` con la cabecera `Host` del dominio.
 
 ## 1. Preparacion local
 
@@ -149,6 +154,20 @@ Notas:
 > migracion sin correr, **toda la pestana Plan del modulo de compras responde 500**, porque el
 > `SELECT` de `plan()` pide la columna nueva — no se degrada solo el responsable.
 
+> [!CAUTION]
+> **NO ejecutes `20260712_remap_consolidado_unique_id.php` en produccion sin decision previa.**
+> Anula el `unique_id` de los encabezados del cronograma **a proposito** —su propia cabecera lo dice:
+> «Los Titulo=1 quedan NULL (sin FK)»— y el Plan de Compras exige `unique_id IS NOT NULL` para
+> ofrecer un nodo como frente. Consecuencia medida en `prueba-lps` el 2026-07-30: el desplegable
+> «Elegir frente» pasa a ofrecer 155 opciones y **ninguna es un frente**, todas son actividades.
+>
+> En produccion hay ~27.813 filas con `unique_id` (medido por la sesion de despliegue, sin desglosar
+> cuantas son encabezados). Correrlo alli tal como esta reproduce el sintoma sobre datos reales.
+>
+> Las dos reglas no pueden ser ciertas a la vez y **la eleccion es de diseno, no mecanica**: o el
+> remap deja de anular los encabezados, o el Plan de Compras deja de exigir `unique_id` para ellos.
+> El detalle vive en `docs/pdc-v2.md`, seccion «Los frentes y el remap del `unique_id`».
+
 No hay runner automatico: las migraciones se aplican a mano. Revisa que llego algo nuevo antes de
 aplicar:
 
@@ -198,6 +217,29 @@ fue 10 de esquema y 11 de datos.
 ```bash
 tail -40 php_errorlog
 ```
+
+> [!IMPORTANT]
+> **Una migracion `.php` no lee el `.env` por si sola.** El `.env` lo carga `public/index.php`, y
+> los scripts de `database/migrations/` no pasan por ahi. Sin exportarlo antes, la migracion muere
+> con un generico `Error: No se pudo conectar a la base de datos`, que parece un problema de
+> credenciales o de red y no lo es. Medido en el deploy del 2026-07-30. Exportalo primero:
+>
+> ```bash
+> set -a; . ./.env; set +a
+> /usr/local/php83/bin/php-cli database/migrations/<archivo>.php            # dry-run
+> /usr/local/php83/bin/php-cli database/migrations/<archivo>.php --apply
+> ```
+
+> [!IMPORTANT]
+> **El `composer install` del paso 5 no es opcional cuando el deploy trae clases nuevas.** El
+> autoloader se genera con `--optimize-autoloader`, que es un classmap estatico: una clase que
+> llego con el `git pull` **no existe** para PHP hasta regenerarlo, y la ruta que la usa responde
+> 500. Medido el 2026-07-30 con `App\Core\DevDoor`: 0 entradas en `vendor/composer/autoload_classmap.php`
+> antes del `composer install`, 2 despues. Comprobacion rapida tras desplegar:
+>
+> ```bash
+> grep -c "<ClaseNueva>" vendor/composer/autoload_classmap.php   # debe ser > 0
+> ```
 
 **Las tres fases, en este orden:**
 

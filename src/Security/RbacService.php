@@ -100,9 +100,6 @@ class RbacService
 
         $role = $this->normalizeRole($role ?? $this->resolveCurrentRole());
         if ($role === 'V' && in_array($permissionKey, [
-            'lps.listado_actividades.editar',
-            'lps.contratos.editar',
-            'lps.contratos.auto_definir',
             'lps.pdc.editar',
             'lps.pdc.auto_generar',
         ], true)) {

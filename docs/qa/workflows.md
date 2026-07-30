@@ -383,6 +383,21 @@ Flujo paso a paso:
 
 Entrada: `/programacion-semanal`.
 
+> **Rol `V` (Visualizador): no ve los botones de accion, y ademas el servidor los rechaza.**
+> Medido el 2026-07-30 en `PDC Sandbox E2E` (990100), viewport 1180x820. Con `V`,
+> `#btn_autoprogramar`, `#btn_agregar_actividad`, `#btn_cerrar_compromisos_semana`,
+> `#btn_reabrir_semana` y `#btn_tnp` quedan ocultos; con `R`, los tres primeros visibles.
+> Hasta ese dia los tres primeros salian **visibles pero `disabled`** para `V`: `maestroPermisos('V')`
+> en `public/js/cargarDatosGeneralesPagina2.js` les ponia `display:none` y despues `syncPhaseUI()` en
+> `public/js/modules/programacion_semanal/hot.js` los volvia a mostrar con un `.show()` incondicional.
+> Ese `.show()` ahora esta condicionado a `canManageToolbarActions()`, la misma funcion que decide el
+> `disabled`, para que visibilidad y habilitacion no puedan divergir.
+> Era inconsistencia cosmetica, no escalada: el servidor rechaza con **403** todas las
+> mutaciones (`save` con `autoprogramar|bloquear_compromisos|tnp|nuevo`, `reabrir` y `auto-program`),
+> porque los tres entrypoints llaman `rbac_guard_require_permission('lps.programacion_semanal.editar')`
+> y `V` no tiene ese permiso. Contrastado con `R`, que recibe 200 en los mismos endpoints.
+> El candado vive en `tests/test_semanal_rbac_solo_lectura.php`.
+
 Botones y navegacion:
 
 | Control | ID | Funcion |

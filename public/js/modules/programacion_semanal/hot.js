@@ -3140,9 +3140,18 @@
     } else {
       $('#phase-badge').text('Programación').removeClass('badge-warning').addClass('badge-info');
       $('#weeklyPhaseMobileLabel').text(phaseInfo.mobileLabel);
-      $('#btn_autoprogramar').show();
-      $('#btn_agregar_actividad').show();
-      $('#btn_cerrar_compromisos_semana').show();
+      // Solo se muestran a quien puede usarlos: este .show() pisaba el display:none que
+      // maestroPermisos() aplica por rol, y dejaba los tres botones visibles pero grises
+      // para V, C, OT, G, S y SG.
+      if (canManageToolbarActions()) {
+        $('#btn_autoprogramar').show();
+        $('#btn_agregar_actividad').show();
+        $('#btn_cerrar_compromisos_semana').show();
+      } else {
+        $('#btn_autoprogramar').hide();
+        $('#btn_agregar_actividad').hide();
+        $('#btn_cerrar_compromisos_semana').hide();
+      }
       $('#btn_informe_compromisos').hide();
       $('#btn_tnp').hide();
       $('#btn_reabrir_semana').hide();

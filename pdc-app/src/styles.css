@@ -830,3 +830,233 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-flujo-prov { color: var(--pdc-ink-muted); font-style: italic; }
 .pdc-flujo-provisional { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
   background: var(--pdc-info-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+
+/* --- Lotes de obra (subpaquetes) ---------------------------------------------------------------- */
+/* El panel se abre DENTRO de la fila del paquete: partir se decide mirando los insumos de ese
+   paquete, y llevar al usuario a otra ruta le quita de delante lo que necesita para decidir. */
+.pdc-paq-lotes { margin-left: 8px; font-size: var(--pdc-fs-sm); color: var(--pdc-accent-texto);
+  background: none; border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-pill);
+  padding: 2px 10px; cursor: pointer; }
+.pdc-paq-lotes:hover { border-color: var(--pdc-accent-texto); }
+.pdc-paq-lotes:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+
+.pdc-sub-panel { margin: 10px 0 4px; padding: 12px 14px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-surface-raised); border: 1px solid var(--pdc-border-control); }
+.pdc-sub-partir textarea, .pdc-sub-agregar input { width: 100%; max-width: 420px; margin: 6px 0;
+  background: var(--pdc-bg); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control);
+  border-radius: var(--pdc-radio-control); padding: 6px 9px; font: inherit; }
+.pdc-sub-acciones { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.pdc-sub-motivo { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+
+.pdc-sub-resumen { display: flex; flex-wrap: wrap; gap: 6px 24px; margin: 0 0 10px; }
+.pdc-sub-resumen dt { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em;
+  color: var(--pdc-ink-muted); }
+.pdc-sub-resumen dd { margin: 2px 0 0; font-size: var(--pdc-fs-md); }
+/* Lo que no entra al plan se dice con el tono de aviso, igual que en el flujo de caja: es la misma
+   clase de confesión y conviene que se reconozca de una pantalla a otra. */
+.pdc-sub-fuera { margin: 0 0 10px; padding: 7px 11px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+
+.pdc-sub-tabla { width: 100%; border-collapse: collapse; font-size: var(--pdc-fs-md); margin-bottom: 10px; }
+.pdc-sub-tabla caption { text-align: left; margin-bottom: 6px; }
+.pdc-sub-tabla th, .pdc-sub-tabla td { text-align: left; padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--pdc-border-control); }
+.pdc-sub-tabla thead th { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em;
+  color: var(--pdc-ink-muted); }
+.pdc-sub-tabla .pdc-num { text-align: right; padding-right: 0; }
+/* El «Resto» se atenúa: existe para que nada quede sin destino, no es una decisión que alguien tomó. */
+.pdc-sub-resto th, .pdc-sub-resto td { color: var(--pdc-ink-muted); }
+.pdc-sub-tag { margin-left: 7px; font-size: var(--pdc-fs-xs); text-transform: uppercase;
+  letter-spacing: .04em; padding: 1px 7px; border-radius: var(--pdc-radio-pill);
+  border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted); }
+.pdc-sub-tag--fuera { background: var(--pdc-aviso-bg); }
+.pdc-sub-borrar { background: none; border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted);
+  border-radius: var(--pdc-radio-control); padding: 3px 10px; font-size: var(--pdc-fs-sm); cursor: pointer; }
+.pdc-sub-borrar:hover { color: var(--pdc-error-ink); border-color: var(--pdc-error-ink); }
+.pdc-sub-borrar:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+
+.pdc-sub-agregar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.pdc-sub-repartir { border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: 8px 12px 12px; }
+.pdc-sub-repartir legend { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); padding: 0 6px; }
+.pdc-sub-insumos { list-style: none; margin: 4px 0 8px; padding: 0; max-height: 220px; overflow-y: auto;
+  font-size: var(--pdc-fs-md); }
+.pdc-sub-insumos li { padding: 3px 0; }
+.pdc-sub-insumos label { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }
+.pdc-sub-um, .pdc-sub-valor { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+.pdc-sub-nota { margin: 10px 0 0; font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+/* Rótulo solo para lectores de pantalla: la columna de acciones no necesita título visible, pero sin
+   uno la tabla queda con un encabezado vacío que los lectores anuncian como «columna en blanco». */
+.pdc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/*
+ * Ayuda por pantalla — el panel del botón de interrogación.
+ *
+ * Namespace `pdc-guia-` y no `pdc-ayuda-`: `.pdc-ayuda` es de antes y significa otra cosa en este
+ * módulo (el texto atenuado que acompaña a un campo). Ver BotonAyuda.tsx.
+ *
+ * La caja, el borde y el fondo los pone la primitiva `aia-dialog` del sistema de diseño. Aquí solo
+ * va lo que esa primitiva no puede saber: que esto es texto para leer y no un formulario de
+ * confirmar, y por tanto quiere más ancho, más interlineado y tope de altura.
+ */
+.pdc-guia-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pdc-control-h);
+  height: var(--pdc-control-h);
+  padding: 0;
+  border: 0;
+  border-radius: var(--pdc-radio-control);
+  background: transparent;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pdc-guia-boton:hover {
+  color: var(--pdc-ink);
+}
+
+.pdc-guia-boton:focus-visible {
+  outline: 2px solid var(--pdc-focus);
+  outline-offset: 2px;
+}
+
+/* Más ancho que el diálogo por defecto del sistema (32rem), que está pensado para confirmar una
+   acción. Y con tope de altura, porque el panel del Plan es largo. */
+.pdc-guia .aia-modal-surface {
+  width: min(44rem, calc(100vw - 4rem));
+  max-width: min(44rem, calc(100vw - 4rem));
+  max-height: 80vh;
+  overflow-y: auto;
+  color: var(--pdc-ink);
+  font-size: var(--pdc-fs-md);
+}
+
+.pdc-guia-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.pdc-guia-titulo {
+  margin: 0;
+  font-size: var(--pdc-fs-xl);
+}
+
+.pdc-guia-seccion + .pdc-guia-seccion {
+  margin-top: 20px;
+}
+
+/* Los rótulos de las tres preguntas. En versalitas y atenuados: son la estructura del panel, no
+   su contenido, y compitiendo con el texto lo harían más difícil de leer. */
+.pdc-guia-pregunta {
+  margin: 0 0 6px;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Interlineado 1.55, más suelto que el resto del módulo: aquí se lee un párrafo, no se recorre una
+   tabla con la vista. */
+.pdc-guia-texto {
+  margin: 0;
+  font-size: var(--pdc-fs-md);
+  line-height: 1.55;
+}
+
+.pdc-guia-pasos {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.pdc-guia-pasos > li + li {
+  margin-top: 6px;
+}
+
+.pdc-guia-apartados {
+  margin: 0;
+}
+
+.pdc-guia-apartado + .pdc-guia-apartado {
+  margin-top: 12px;
+}
+
+.pdc-guia-apartado-etiqueta {
+  margin-bottom: 2px;
+  font-size: var(--pdc-fs-md);
+  font-weight: 600;
+}
+
+.pdc-guia-apartado dd {
+  margin: 0;
+}
+
+.pdc-guia-pie {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pdc-border);
+}
+
+/* La fila del título de cada pantalla: el h1 y su botón de ayuda, juntos. */
+.pdc-titulo-fila {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * Recorrido de la primera visita. Panel angosto y pegado abajo, para dejar ver la pantalla que
+ * está explicando: si lo tapara, el recorrido sería una presentación en vez de un paseo.
+ */
+.pdc-recorrido .aia-modal-surface {
+  width: min(30rem, calc(100vw - 4rem));
+  max-width: min(30rem, calc(100vw - 4rem));
+  margin-block: auto 32px;
+  color: var(--pdc-ink);
+  font-size: var(--pdc-fs-md);
+}
+
+.pdc-recorrido-progreso {
+  margin: 0 0 6px;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdc-recorrido-titulo {
+  margin: 0 0 8px;
+  font-size: var(--pdc-fs-lg);
+}
+
+.pdc-recorrido-texto {
+  margin: 0;
+  font-size: var(--pdc-fs-md);
+  line-height: 1.55;
+}
+
+.pdc-recorrido-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pdc-recorrido-avance {
+  display: flex;
+  gap: 6px;
+}
+
+/* Mismo patrón que el primario de Paquetes: el acento del módulo, que ya sale del token de acción
+   primaria del sistema. */
+.pdc-recorrido .pdc-recorrido-principal:not(:disabled) {
+  background: var(--pdc-accent);
+  border-color: var(--pdc-accent);
+  color: var(--pdc-accent-ink);
+}

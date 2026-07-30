@@ -166,6 +166,37 @@ base de desarrollo principal. Si el principal está vivo, el nuevo muere con «U
 migración destructiva de por medio eso corrompe el trabajo de otra sesión. Las sesiones paralelas se
 lo saltan con un override local que declara un volumen propio (`!reset` sobre `volumes` del servicio).
 
+### Los frentes y el remap del `unique_id` — contradicción abierta (2026-07-30)
+
+**Dos reglas del repositorio se contradicen, y no pueden ser ciertas a la vez.**
+
+- `database/migrations/20260712_remap_consolidado_unique_id.php` **anula a propósito** el `unique_id`
+  de los encabezados del cronograma. Su cabecera lo dice sin ambigüedad: «Los `Titulo=1` quedan NULL
+  (sin FK)». El motivo es que un encabezado no tiene fila equivalente en `programa` a la que apuntar.
+- `PlanFechasService::semanaYFrentes()` exige `unique_id IS NOT NULL` para incluir un nodo, y marca
+  `esFrente` con `Titulo === 1`. Es decir: **pide como frentes justo las filas que el remap deja sin
+  identificador.**
+
+**Consecuencia, medida en `prueba-lps` el 2026-07-30** por la sesión de despliegue, sobre el proyecto
+27 en semana 7: tras aplicar el remap, el desplegable «Elegir frente…» pasó de **0 a 155 opciones** —el
+remap arregló el vacío total— pero **ninguna de las 155 es un frente**: todas salen marcadas como
+«· actividad». Los 31 encabezados que el diseño de A4.2 daba por disponibles son, tras el remap,
+inalcanzables por construcción.
+
+**Por qué no se vio antes.** La base local **no está remapeada**: ahí los encabezados sí tienen
+`unique_id` (`uid=0` y `uid=2` salen como FRENTE), así que todo el trabajo de amarrar por frente se
+diseñó y se validó contra un esquema anterior al remap. Local y servidor no coinciden en este punto.
+
+**Qué NO es.** No es el bug del `unique_id` vacío que se arregló ese mismo día —ese era que la columna
+estaba sin poblar en los ocho proyectos—. Este aparece **después** de arreglar aquel, y es de diseño.
+
+**Decisión pendiente, y es de producto, no mecánica.** O el remap deja de anular los encabezados —y
+entonces hay que decidir a qué apuntan, porque no tienen fila en `programa`—, o el Plan de Compras
+deja de exigir `unique_id` para ellos y los identifica de otra forma. Hasta que se decida, **el remap
+no debe ejecutarse en producción**: allí hay ~27.813 filas con `unique_id` y correrlo reproduciría el
+síntoma sobre datos reales. El aviso está también en `docs/siteground-deploy-routine.md` §5.1, que es
+donde lo va a leer quien despliegue.
+
 ### B1 — El amarre al cronograma es por RAMA, no por actividad (2026-07-28)
 
 `pdc_insumo_actividades.unique_id` llegó a B1 con **820 de 820 filas en NULL** en Da Porto. La nota que decía
@@ -455,3 +486,49 @@ Son insumos de trabajo, no artefactos del repo:
 - **Idioma:** el proyecto y su dominio son en español. Documentación y comentarios en español; identificadores de código, rutas y comandos en su idioma original.
 - Preserva la terminología de dominio del equipo (confírmala en `GLOSARIO.md`, en la raíz): *maestro de insumos*, *Pareto de insumos*, *paquetes de contratación*, *APU*, *plan de compras (PDC)*.
 - `.omo/` (continuaciones de sesión), `.claude/`, `docs/pdc/` y `.DS_Store` están ignorados y no deben versionarse. `docs/` **no** lo está: ver el aviso de «Materiales de referencia» más arriba.
+
+## Ayuda dentro del módulo
+
+Cada una de las **ocho** pantallas tiene un botón de ayuda que responde tres cosas en este orden:
+**qué hace esta pantalla · qué tengo que hacer yo aquí · qué pasa después**. El contenido vive en
+`pdc-app/src/lib/ayuda.ts` y el componente único en `pdc-app/src/components/BotonAyuda.tsx`. La
+primera visita lanza un recorrido de seis paradas (`pdc-app/src/lib/recorrido.ts`), omitible en el
+primer clic, que no vuelve solo y se relanza desde cualquier botón de ayuda.
+
+**La regla, y es la razón de existir de todo esto:** una pantalla no está terminada sin su ayuda, y
+eso incluye cambiarla. Si modificas una pantalla, revisa su entrada en `ayuda.ts` en el mismo
+cambio. `ayuda.test.ts` atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad
+solo lo puede comprobar quien hace el cambio.
+
+**Granularidad:** un botón por página (ocho), no por pestaña (serían diecisiete). Las pestañas que
+necesitan explicación —Desfases, Vencimientos, Flujo de caja, Sin frente…— la llevan como apartado
+dentro del panel de su página. Decisión del usuario, 2026-07-29. El spec original hablaba de «nueve
+pantallas» mezclando páginas con pestañas; el inventario medido contra el código son 8 páginas y 13
+pestañas.
+
+**Lo que la ayuda NO dice, a propósito.** Un mensaje que la pantalla ya da en el momento no se
+repite aquí, porque dos copias del mismo aviso envejecen por separado:
+
+| Mensaje | Dónde vive | Qué hace la ayuda |
+|---|---|---|
+| Advertencia de método del flujo de caja | `FlujoCajaService::NOTA_METODO`, servida por el servidor y dentro del CSV | La señala y dice llevársela; no la reescribe |
+| Impacto sobre el trabajo ya hecho al recargar | `ImportarPresupuesto.tsx` | Dice que hay que leerlo y por qué importa; no lo resume |
+| Por qué el desplegable de frentes está vacío | `motivoSinAnclas()` en `lib/planFechas.ts` | Remite a ese mensaje, sin repetir las tres causas |
+
+**Los e2e y el recorrido.** `tests/browser/support/session.mjs` marca el recorrido como visto en
+todos los e2e (`silenciarRecorridoPdc`, vía `addInitScript`). Sin eso, cada test de Playwright
+arranca con almacén limpio, el recorrido se abre como modal y tapa los clics del resto de la suite
+del PDC. `tests/browser/pdc-v2-ayuda.spec.mjs` lo borra para sí mismo.
+
+**Un hueco declarado, no olvidado:**
+
+- **Subpaquetes no tiene ayuda** porque cuando se escribió esto su pantalla de partir y repartir no
+  existía (fila 8a del tablero, `EN CURSO`). Cuando exista, entra aquí y en la ayuda del Plan.
+
+**Hueco cerrado el 2026-07-30 — y sirve de ejemplo de la regla funcionando.** `reenganchados` se
+calculaba en el servidor y el cliente lo descartaba, así que la ayuda solo podía describir el efecto
+(«la lista de pendientes puede haber bajado sin que tú hicieras nada») sin poder señalar dónde
+mirarlo. Al mostrarlo en el resumen de la carga, la entrada de `maestro` en `ayuda.ts` se actualizó
+**en el mismo commit** (`a62d619`). En pantalla no se dice «reenganchados» —es la palabra de dentro
+para el vínculo que vuelve de pendiente a automático— sino «N pendientes se resolvieron solos al
+entrar sus insumos»; `ayuda.test.ts` vigila que esa palabra interna no se cuele en ningún texto.

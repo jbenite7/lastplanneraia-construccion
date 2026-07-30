@@ -76,6 +76,10 @@ class ControlTowerService
             'filters'               => $this->describeFilters($semana, $filters),
             'data_source'           => $this->dataSourceForReport($reportKey),
             'raw_row_count'         => count($data),
+            // Fase B3: avance por paso y carga por responsable. Solo para compras; el resto de
+            // informes no los tiene y mandarlos en null evita que el front adivine.
+            'pdc_breakdown'         => $reportKey === 'pdc' ? $this->pdcBreakdown($projectIds) : null,
+            'pdc_items'             => $reportKey === 'pdc' ? $data : null,
             'activity_snapshot'     => $activitySnapshot,
             'executive_brief'       => $this->storytelling->composeExecutiveBrief($reportKey, $data, $role),
             'scorecard'             => $scorecard,
@@ -98,7 +102,6 @@ class ControlTowerService
                 ['bi_pg_semana', 'pg', ['week' => 'Semana'], 'sub_contratista'],
                 ['bi_pi_restricciones', 'pi', ['week' => 'Semana'], 'subcontractor'],
                 ['bi_ps_compromisos', 'ps', ['week' => 'Semana'], 'subcontractor'],
-                ['bi_pdc_general', 'pdc', ['week' => 'semana'], 'subcontratoPaquete'],
                 ['bi_cic_contratistas', 'cic', ['week' => 'Semana'], 'subcontratista'],
             ]),
             'responsables' => $this->collectFilterValues($projectIds, $semana, $scopeFilters, [
@@ -350,7 +353,9 @@ class ControlTowerService
             'hard_restriction_blocked_count' => count(array_filter($pg, fn($r) => ($r['is_lookahead_window'] ?? 0) == 1 && ($r['hard_restrictions_ready'] ?? 0) == 0)),
             'weekly_commitments_count' => count($ps),
             'weekly_commitments_at_risk_count' => count(array_filter($ps, fn($r) => ($r['fulfillment_alert'] ?? 0) == 1)),
-            'pdc_at_risk_count' => count(array_filter($pdc, fn($r) => ($r['listo_para_iniciar'] ?? 1) == 0)),
+            // Fase B3: la fila de compras ya no es la del PDC viejo (no tiene listo_para_iniciar).
+            // Dejarlo como estaba habria devuelto 0 en silencio, que es peor que un error.
+            'pdc_at_risk_count' => array_sum(array_map(fn($r) => (int) ($r['vencidos'] ?? 0), $pdc)),
             'contractors_at_risk_count' => count(array_filter($cic, fn($r) => ($r['alert_contractor_future_risk'] ?? 0) == 1)),
             'responsibles_at_risk_count' => count(array_filter($cip, fn($r) => ($r['fulfillment_alert'] ?? 0) == 1)),
             'pdc_items' => $pdc,
@@ -513,12 +518,87 @@ class ControlTowerService
         ];
     }
 
+    /**
+     * Fase B3: el informe de compras se alimenta del PDC v2, no de bi_pdc_general (PDC viejo).
+     *
+     * El parámetro $semana se acepta y se IGNORA a propósito (Decisión 5 del spec): los
+     * vencimientos se calculan contra hoy, con la fecha puesta por el servidor, para que este
+     * panel y la pestaña del módulo no puedan discrepar el mismo día. El rótulo de la tarjeta
+     * lo dice, para que no se lea como un fallo.
+     */
     private function fetchPdc(array $projectIds, string $semana, array $filters): array
     {
-        [$where, $params] = $this->buildFilteredWhere($projectIds, $semana, $filters, 'pdc', [
-            'week' => 'semana', 'sub' => 'subcontratoPaquete', 'etapa' => ['paqueteContratacion', 'tipoPaquete', 'estado'],
-        ]);
-        return $this->queryAll("SELECT * FROM bi_pdc_general pdc WHERE {$where}", $params);
+        $seguimiento = new \App\Services\Pdc\SeguimientoService($this->db);
+        $paquetes    = new \App\Services\Pdc\PaquetesService($this->db);
+
+        $agg = $seguimiento->vencimientosAgregados($projectIds);
+        $nombres = $this->nombresDeProyecto($projectIds);
+
+        $filas = [];
+        foreach ($projectIds as $pid) {
+            $pid = (int) $pid;
+            $obra = $agg['por_obra'][$pid] ?? ['conteos' => [], 'destinos' => 0, 'pasos' => 0];
+            $c = $obra['conteos'];
+            $resumen = $paquetes->resumen($pid) ?? [];
+
+            $filas[] = [
+                'project_id'      => $pid,
+                'obra'            => $nombres[$pid] ?? ('Obra ' . $pid),
+                'cobertura'       => (float) ($resumen['cobertura'] ?? 0.0),
+                'cobertura_valor' => (float) ($resumen['coberturaValor'] ?? 0.0),
+                'vencidos'        => (int) ($c['vencido'] ?? 0),
+                'en_riesgo'       => (int) ($c['sem1'] ?? 0) + (int) ($c['sem2'] ?? 0) + (int) ($c['sem3'] ?? 0),
+                'destinos'        => (int) $obra['destinos'],
+                'pasos'           => (int) $obra['pasos'],
+                'sin_mirar'       => count($seguimiento->paquetesDesactualizados($pid)),
+                'hoy'             => $agg['hoy'],
+            ];
+        }
+
+        return $filas;
+    }
+
+    /**
+     * Avance por paso y carga por responsable, para el panel de compras (fase B3).
+     *
+     * @param int[] $projectIds
+     * @return array{por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:list<array{nombre:string,pendientes:int,vencidos:int}>}
+     */
+    private function pdcBreakdown(array $projectIds): array
+    {
+        $agg = (new \App\Services\Pdc\SeguimientoService($this->db))->vencimientosAgregados($projectIds);
+
+        return [
+            'por_paso' => $agg['por_paso'],
+            // Se reindexa porque las claves son ids de usuario y el JSON las convertiría en un
+            // objeto con huecos; al front le sirve una lista ya ordenada.
+            'por_responsable' => array_values($agg['por_responsable']),
+        ];
+    }
+
+    /**
+     * @param int[] $projectIds
+     * @return array<int,string>
+     */
+    private function nombresDeProyecto(array $projectIds): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $projectIds)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $this->queryAll(
+            "SELECT ID, Proyecto_Proceso FROM general_proyectos_procesos WHERE ID IN ({$ph})",
+            $ids,
+        );
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r['ID']] = (string) $r['Proyecto_Proceso'];
+        }
+
+        return $out;
     }
 
     private function fetchCic(array $projectIds, string $semana, array $filters): array
@@ -650,12 +730,29 @@ class ControlTowerService
 
     private function scorecardPDC(array $data): array
     {
-        $notReady = count(array_filter($data, fn($r) => ($r['listo_para_iniciar'] ?? 1) == 0));
-        $needsConfig = count(array_filter($data, fn($r) => ($r['necesita_configuracion'] ?? 0) == 1));
+        $vencidos = array_sum(array_map(fn($r) => (int) ($r['vencidos'] ?? 0), $data));
+        $enRiesgo = array_sum(array_map(fn($r) => (int) ($r['en_riesgo'] ?? 0), $data));
+        $destinos = array_sum(array_map(fn($r) => (int) ($r['destinos'] ?? 0), $data));
+        $sinMirar = array_sum(array_map(fn($r) => (int) ($r['sin_mirar'] ?? 0), $data));
+
+        // Cobertura promedio ponderada por destinos: la media simple le daria el mismo peso a una
+        // obra de tres paquetes que a una de noventa.
+        $peso = static fn(string $campo): float => $destinos > 0
+            ? array_sum(array_map(
+                fn($r) => (float) ($r[$campo] ?? 0) * (int) ($r['destinos'] ?? 0),
+                $data,
+            )) / $destinos
+            : 0.0;
+
         return [
-            $this->kpi('Paquetes PDC', count($data), 'count', null),
-            $this->kpi('No listos', $notReady, 'count', $notReady > 0 ? 'Escalar' : null),
-            $this->kpi('Sin configurar', $needsConfig, 'count', $needsConfig > 0 ? 'Completar' : null),
+            // Los dos numeros de cobertura van SIEMPRE juntos: cada uno por separado cuenta media verdad.
+            $this->kpi('Cobertura (conteo)', round($peso('cobertura'), 1), '%', null),
+            $this->kpi('Cobertura (valor)', round($peso('cobertura_valor'), 1), '%', null),
+            $this->kpi('Vencidos', $vencidos, 'count', $vencidos > 0 ? 'Escalar' : null),
+            $this->kpi('En riesgo (3 semanas)', $enRiesgo, 'count', $enRiesgo > 0 ? 'Revisar' : null),
+            $this->kpi('Destinos con pasos abiertos', $destinos, 'count', null),
+            // Un tablero vacio y un tablero ciego se ven igual. Esta cifra es la diferencia.
+            $this->kpi('Paquetes sin mirar', $sinMirar, 'count', $sinMirar > 0 ? 'Actualizar cronograma' : null),
         ];
     }
 
@@ -818,8 +915,8 @@ class ControlTowerService
                 'grain' => 'project_id + Semana + row_id',
             ],
             'pdc' => [
-                'source_relations' => ['bi_pdc_general'],
-                'grain' => 'project_id + semana + consecutivo',
+                'source_relations' => ['pdc_plan_paso', 'pdc_plan_paquete', 'pdc_subpaquete', 'general_paquetes_contratacion'],
+                'grain' => 'project_id + paquete_id + subpaquete_id (destino), contra la fecha de hoy',
             ],
             'cic' => [
                 'source_relations' => ['bi_cic_contratistas'],

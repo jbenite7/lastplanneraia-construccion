@@ -486,6 +486,15 @@ que el trabajo pide.
 - **Reserva** el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.
 - **Expresa** el estado con superficie + borde + texto del tema destino; anima solo `transform` y `box-shadow`, nunca `color`/`background` (DS-023/DS-025).
 - **Registra** en `exceptions.json` cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.
+- **No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez.** Si tocas una
+  pantalla del Plan de Compras y no tocas su entrada en `pdc-app/src/lib/ayuda.ts`, el cambio no
+  está terminado. Una ayuda que miente es peor que ninguna, y lo único que lo evita es que la
+  pantalla y su texto viajen en el mismo commit. `pdc-app/src/lib/ayuda.test.ts` atrapa la pantalla
+  sin ayuda y la jerga; que el texto siga siendo **verdad** solo lo puede comprobar quien hace el
+  cambio.
+- **No repitas en la ayuda un mensaje que la pantalla ya da en el momento.** Un aviso que aparece
+  cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo
+  aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él.
 
 ### Don't:
 - **Nunca** introduzcas hex sueltos, estilos inline, bloques `<style>`, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.

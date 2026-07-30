@@ -26,7 +26,38 @@ export async function selectProject(page, project) {
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
 }
 
-export async function loginAndSelectProject(page, project, credentials = CREDENTIALS) {
+/**
+ * Marca el recorrido guiado del PDC como ya visto, antes de que cargue cualquier página.
+ *
+ * Cada test de Playwright arranca con un almacén limpio, así que para el módulo TODOS los tests son
+ * un usuario que entra por primera vez: sin esto, el recorrido se abre como diálogo modal y tapa
+ * los clics de los veinte e2e del PDC que existían antes de que hubiera ayuda.
+ *
+ * Va como `addInitScript` y no como un `evaluate` posterior porque el recorrido se decide al montar
+ * la aplicación: escribir la clave después de cargar llegaría tarde.
+ *
+ * Un test que SÍ quiera ver el recorrido —`pdc-v2-ayuda.spec.mjs`— pide `silenciarRecorrido: false`
+ * al entrar. No vale que lo borre por su cuenta con otro `addInitScript`: este corre en CADA
+ * navegación, así que tras una recarga volvería a escribir «visto» y la prueba de que el módulo
+ * recuerda la decisión mediría el andamiaje en vez de la aplicación.
+ */
+export async function silenciarRecorridoPdc(page) {
+  await page.addInitScript(() => {
+    try {
+      window.localStorage.setItem('aia-pdc-recorrido', 'visto');
+    } catch {
+      // Sin almacén no hay nada que silenciar, y el recorrido tampoco podrá recordarse.
+    }
+  });
+}
+
+export async function loginAndSelectProject(
+  page,
+  project,
+  credentials = CREDENTIALS,
+  { silenciarRecorrido = true } = {},
+) {
+  if (silenciarRecorrido) await silenciarRecorridoPdc(page);
   await login(page, credentials);
   await selectProject(page, project);
 }

@@ -35,10 +35,6 @@ try {
 
     $removedRoutes = [
         '/legacy/pdc/actualizar_pdc.php' => '/api/pdc/auto/apply-from-contratos',
-        '/api/contratos/auto-define' => '/api/contratos/auto/preview',
-        '/api/contratos/auto-define/apply' => '/api/contratos/auto/apply',
-        '/api/contratos/auto-define/undo' => '/api/contratos/auto/undo',
-        '/api/contratos/auto-define/reanalyze' => '/api/contratos/auto/preview',
     ];
 
     foreach ($removedRoutes as $legacy => $replacement) {
@@ -54,7 +50,6 @@ try {
     foreach ([
         'tests/test_legacy_absence_for_lacp_runtime.php',
         'tests/test_lacp_modern_navigation.php',
-        'tests/test_contratos_modern_assistant_replaces_auto_define_ui.php',
         'tests/test_pdc_modern_replaces_legacy_update.php',
         'tests/test_lacp_backup_restore_before_cleanup.php',
     ] as $guard) {

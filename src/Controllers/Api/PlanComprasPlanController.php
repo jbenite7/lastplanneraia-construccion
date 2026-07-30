@@ -126,9 +126,24 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
+        // `destinos` y `amarresDestino` son lo que permite que la lista «Sin frente» enumere
+        // UNIDADES CONTRATABLES y no paquetes: un paquete partido en tres aparece como tres filas,
+        // cada una eligiendo su propio frente («eso lo contrato en dos meses; eso lo necesito ya»).
+        // Así no hace falta un segundo desplegable de lote en una fila que ya lleva el frente, la
+        // procedencia de la sugerencia y el botón de amarrar.
+        //
+        // `amarres` se conserva tal cual —indexado por paquete, solo los sin partir— porque es lo que
+        // la pantalla usa para el resto de sus cuentas y cambiarlo rompería a sus consumidores.
+        $subpaquetes = new \App\Services\Pdc\SubpaquetesService($this->db);
+        $amarresDestino = [];
+        foreach ($this->service->destinosAmarrados($projectId) as $d) {
+            $amarresDestino[] = ['paqueteId' => $d['paqueteId'], 'subpaqueteId' => $d['subpaqueteId']];
+        }
         $this->ok([
             'plan' => $this->service->plan($projectId),
             'amarres' => $this->service->amarres($projectId),
+            'destinos' => $subpaquetes->destinos($projectId),
+            'amarresDestino' => $amarresDestino,
         ]);
     }
 

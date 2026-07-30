@@ -44,6 +44,14 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
 $publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+
+// Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
+// (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
+$devDoorIsOpen = \App\Core\DevDoor::isOpen();
+if ($devDoorIsOpen) {
+    $publicRoutes[] = '/dev/entrar';
+}
+
 if (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
@@ -93,6 +101,12 @@ $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']
 $router->get('/proyectos', [\App\Controllers\Core\ProjectSelectorController::class, 'index']);
 $router->post('/proyecto/seleccionar', [\App\Controllers\Core\ProjectSelectorController::class, 'select']);
 
+// Puerta de servicio de desarrollo. Fuera de desarrollo la ruta NO se registra: el router
+// responde 404, que es lo correcto — un 403 confirmaría que el endpoint existe.
+if ($devDoorIsOpen) {
+    $router->get('/dev/entrar', [\App\Controllers\Core\DevDoorController::class, 'enter']);
+}
+
 
 // Programacion
 $router->get('/programa-general', [\App\Controllers\Programacion\ProgramaGeneralController::class, 'index']);
@@ -128,8 +142,6 @@ $router->get('/pdc', [\App\Controllers\Gestion\PdcController::class, 'index']);
 $router->get('/plan-compras', [\App\Controllers\Gestion\PlanComprasController::class, 'index']);
 $router->get('/profesionales', [\App\Controllers\Gestion\ProfesionalesController::class, 'index']);
 $router->get('/subcontratistas', [\App\Controllers\Gestion\SubcontratistasController::class, 'index']);
-$router->get('/contratos', [\App\Controllers\Gestion\ContratosController::class, 'index']);
-$router->get('/listado-actividades', [\App\Controllers\Gestion\ListadoActividadesController::class, 'index']);
 $router->get('/indicadores', [\App\Controllers\Gestion\IndicadoresController::class, 'index']);
 
 // Reportes (Nuevo Controller) - Allow GET and POST
@@ -141,41 +153,6 @@ $router->post('/reportes/{tipo}', [\App\Controllers\Gestion\ReportController::cl
 $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosController::class, 'index']);
 
 // --- APIs (Migradas Fase 3) ---
-// Api/Contratos
-$router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
-$router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
-$router->post('/api/contratos/auto-assign', [\App\Controllers\Api\ContratosApiController::class, 'autoAssign']);
-$router->post('/api/contratos/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewContratos']);
-$router->post('/api/contratos/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusContratos']);
-$router->post('/api/contratos/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyContratos']);
-$router->post('/api/contratos/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoContratos']);
-$router->post('/api/contratos/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackContratos']);
-$router->post('/api/contratos/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsContratos']);
-$router->post('/api/contratos/auto/assistant/inbox', [\App\Controllers\Api\SemiAutoController::class, 'assistantInboxContratos']);
-$router->post('/api/contratos/auto/assistant/ack', [\App\Controllers\Api\SemiAutoController::class, 'assistantAckContratos']);
-$router->post('/api/contratos/auto/assistant/feedback', [\App\Controllers\Api\SemiAutoController::class, 'assistantFeedbackContratos']);
-$router->post('/api/contratos/auto/learning/candidates', [\App\Controllers\Api\SemiAutoController::class, 'learningCandidatesContratos']);
-$router->post('/api/contratos/auto/learning/approve', [\App\Controllers\Api\SemiAutoController::class, 'learningApproveContratos']);
-$router->post('/api/contratos/auto/learning/reject', [\App\Controllers\Api\SemiAutoController::class, 'learningRejectContratos']);
-// Api/ListadoActividades
-$router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
-$router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
-$router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
-$router->post('/api/listado-actividades/update-cell', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCell']);
-$router->post('/api/listado-actividades/update-card', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCard']);
-$router->post('/api/listado-actividades/auto-generate', [\App\Controllers\Api\ListadoActividadesApiController::class, 'autoGenerate']);
-$router->post('/api/listado-actividades/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewListado']);
-$router->post('/api/listado-actividades/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusListado']);
-$router->post('/api/listado-actividades/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyListado']);
-$router->post('/api/listado-actividades/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoListado']);
-$router->post('/api/listado-actividades/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackListado']);
-$router->post('/api/listado-actividades/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsListado']);
-$router->post('/api/listado-actividades/auto/assistant/inbox', [\App\Controllers\Api\SemiAutoController::class, 'assistantInboxListado']);
-$router->post('/api/listado-actividades/auto/assistant/ack', [\App\Controllers\Api\SemiAutoController::class, 'assistantAckListado']);
-$router->post('/api/listado-actividades/auto/assistant/feedback', [\App\Controllers\Api\SemiAutoController::class, 'assistantFeedbackListado']);
-$router->post('/api/listado-actividades/auto/learning/candidates', [\App\Controllers\Api\SemiAutoController::class, 'learningCandidatesListado']);
-$router->post('/api/listado-actividades/auto/learning/approve', [\App\Controllers\Api\SemiAutoController::class, 'learningApproveListado']);
-$router->post('/api/listado-actividades/auto/learning/reject', [\App\Controllers\Api\SemiAutoController::class, 'learningRejectListado']);
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
@@ -394,6 +371,7 @@ $router->get('/api/bi/report/programa-general/cnc-detail', [\App\Controllers\Api
 $router->get('/api/bi/report/intermedia', [\App\Controllers\Api\BiControlTowerApiController::class, 'intermedia']);
 $router->get('/api/bi/report/semanal', [\App\Controllers\Api\BiControlTowerApiController::class, 'semanal']);
 $router->get('/api/bi/report/pdc', [\App\Controllers\Api\BiControlTowerApiController::class, 'pdc']);
+$router->get('/api/bi/report/pdc/detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'pdcDetail']);
 $router->get('/api/bi/report/cic', [\App\Controllers\Api\BiControlTowerApiController::class, 'cic']);
 $router->get('/api/bi/report/cip', [\App\Controllers\Api\BiControlTowerApiController::class, 'cip']);
 $router->get('/api/bi/report/curva-s', [\App\Controllers\Api\BiControlTowerApiController::class, 'curvaS']);

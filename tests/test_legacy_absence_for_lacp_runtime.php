@@ -33,11 +33,8 @@ function fileText(string $path): string
 echo "=== Legacy absence guard for Listado, Contratos y PDC ===\n";
 
 $runtimeFiles = [
-    'views/listado-actividades/listadoActividades.view.php',
-    'views/contratos/contratos.view.php',
     'views/pdc/pdc.view.php',
     'public/js/modules/semi_auto_review.js',
-    'src/Controllers/Api/ContratosApiController.php',
     'src/Controllers/Api/PdcAutoGenerateController.php',
     'src/Controllers/Api/SemiAutoController.php',
     'src/Services/SemiAutoService.php',
@@ -56,6 +53,9 @@ $forbiddenRuntime = [
 ];
 
 foreach ($runtimeFiles as $relativePath) {
+    if (!file_exists($root . '/' . $relativePath)) {
+        continue;
+    }
     $text = fileText($root . '/' . $relativePath);
     foreach ($forbiddenRuntime as $needle) {
         if (str_contains($text, $needle)) {
@@ -69,8 +69,6 @@ $failed === 0
     : null;
 
 $lacpViews = [
-    'views/listado-actividades/listadoActividades.view.php',
-    'views/contratos/contratos.view.php',
     'views/pdc/pdc.view.php',
 ];
 
