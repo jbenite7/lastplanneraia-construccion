@@ -239,6 +239,16 @@ export type MaestroImportResultado = {
   actualizados: number
   enriquecidos: number
   conflictos: MaestroImportConflicto[]
+  /**
+   * Vínculos que estaban esperando un insumo y lo encontraron en esta carga: vuelven de
+   * «pendiente» a automático sin que nadie los toque. El servidor lo calcula desde el principio
+   * (`MaestroSincoImportService`), pero el cliente lo descartaba, así que la lista de pendientes
+   * bajaba sola y sin explicación.
+   *
+   * Es la palabra de dentro. Lo que se muestra en pantalla habla de «pendientes que se resolvieron
+   * solos», que es lo que el lector puede comprobar.
+   */
+  reenganchados: number
 }
 
 export type MaestroImportErrorFila = { fila: number; columna: string; motivo: string }
@@ -257,6 +267,22 @@ export type ActividadDiff = {
   deltaValor: number
   deltaPct: number | null
   estado: EstadoDiff
+}
+
+/**
+ * Un equipo del maestro global que espera que alguien diga si se alquila o se compra (Ola 2).
+ *
+ * `pista` es lo que SUGIERE la agrupación de SINCO. Nunca se guarda sin que una persona lo confirme:
+ * adivinar es justo lo que el módulo evita en todo lo demás.
+ */
+export type EquipoSinClasificar = {
+  id: number
+  descripcion: string
+  unidad: string
+  agrupacion: string | null
+  /** Código SINCO: la fila viene del maestro de la empresa, no de un presupuesto. */
+  codigoSinco: string | null
+  pista: string | null
 }
 
 export type InsumoDiff = {

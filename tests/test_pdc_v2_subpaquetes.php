@@ -289,6 +289,16 @@ $assert(
     in_array('Porcelanato', $nombresVenc, true),
     'Los lotes SÍ aparecen en el tablero: es donde de verdad se contrata. Vio: ' . implode(' · ', $nombresVenc),
 );
+// El conteo, y no solo los nombres: sin esta aserción, una unión hecha por paquete en vez de por
+// destino multiplica las filas del tablero y este test sigue pasando —los nombres que espera están
+// todos, solo que repetidos—. Se comprobó rompiendo la unión a propósito: sin esto, verde.
+// 5 destinos × 7 pasos = 35, menos el paso de «Porcelanato» que se registró como cumplido más
+// arriba: el tablero solo mira lo pendiente.
+$assert(
+    array_sum($venc['conteos']) === 5 * 7 - 1,
+    'El tablero cuenta cada paso pendiente UNA vez: 34. Dio ' . array_sum($venc['conteos']),
+);
+
 $resumen = $seg->resumen($P);
 $idsResumen = array_map(static fn (array $f): string => $f['paqueteId'] . ':' . $f['subpaqueteId'], $resumen);
 $assert(
@@ -361,6 +371,67 @@ $assert(
     (int) $db->query('SELECT COUNT(*) FROM pdc_subpaquete WHERE project_id = ?', [$P])->fetchColumn() === 0,
     'No queda ninguna fila de lote en la obra.',
 );
+
+// --- Asignar a un paquete YA PARTIDO no puede resucitar al sombrilla ---------------------------
+//
+// Regresión encontrada revisando el 2026-07-30: `PaquetesService::asignar()` no ponía
+// `subpaquete_id`, así que un insumo asignado a un paquete partido se quedaba en `0` DENTRO de un
+// paquete partido, y `destinos()` volvía a listar el sombrilla al lado de sus propios lotes: se
+// contrataba a sí mismo, que es justo lo que el «Resto» existe para impedir. Pasa por el camino
+// normal —el motor y la grilla masiva asignan a nivel de paquete—, no por uno raro.
+// El bloque anterior deshizo la partición, así que aquí se vuelve a partir: sin esto la comprobación
+// mediría un paquete SIN partir, donde `subpaquete_id = 0` es lo correcto y el test pasaría en verde
+// sin haber probado nada.
+$sub->partir($P, $paqPisos, ['Porcelanato otra vez'], $USR);
+$paquetesSvc = new \App\Services\Pdc\PaquetesService($db);
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos
+        (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo,
+         cantidad_total, valor_total, apariciones, estado)
+     VALUES (?, ?, 'listelo decorativo', 'ML', 'listelo decorativo', 'MATERIAL', 1, 33, 1, 'confirmado')",
+    [$P, $versionId],
+);
+$paquetesSvc->asignar($P, [['descripcionNorm' => 'listelo decorativo', 'unidad' => 'ML']], $paqPisos, $USR);
+
+$huerfanos = (int) $db->query(
+    'SELECT COUNT(*) FROM pdc_insumo_paquete WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = 0',
+    [$P, $paqPisos],
+)->fetchColumn();
+$assert(
+    $huerfanos === 0,
+    'Asignar un insumo a un paquete partido NO lo deja en subpaquete_id = 0. Dio ' . $huerfanos,
+);
+$destinosTrasAsignar = array_filter($sub->destinos($P, $versionId), static fn (array $d): bool => $d['paqueteId'] === $paqPisos);
+$assert(
+    count(array_filter($destinosTrasAsignar, static fn (array $d): bool => !$d['esLote'])) === 0,
+    'Y el paquete sombrilla NO reaparece como destino contratable al lado de sus lotes.',
+);
+$assert(
+    count(array_filter($destinosTrasAsignar, static fn (array $d): bool => $d['esResto'])) === 1,
+    'El insumo nuevo aterriza en el «Resto», que es el único destino al que el motor puede llegar solo.',
+);
+
+// Y mover un insumo de un paquete a OTRO no le deja el lote del paquete viejo: la fila ya existe, y
+// sin `subpaquete_id` en el ON DUPLICATE KEY UPDATE conservaba un lote que no es de su paquete.
+$paquetesSvc->asignar($P, [['descripcionNorm' => 'listelo decorativo', 'unidad' => 'ML']], $paqEnchapes, $USR);
+$loteTrasMudanza = (int) $db->query(
+    "SELECT subpaquete_id FROM pdc_insumo_paquete
+      WHERE project_id = ? AND descripcion_norm = 'listelo decorativo' AND unidad = 'ML'",
+    [$P],
+)->fetchColumn();
+$assert(
+    $loteTrasMudanza === 0,
+    'Al mudar el insumo a un paquete sin partir, su lote vuelve a 0 en vez de apuntar al del paquete anterior. Dio ' . $loteTrasMudanza,
+);
+
+// Se deshace la partición que abrió este bloque: el siguiente empieza con el paquete entero, y
+// dejarlo partido le hacía creer que un nombre repetido era nuevo.
+foreach ($sub->listar($P, $paqPisos, $versionId) as $l) {
+    if (!$l['esResto']) {
+        $sub->eliminar($P, $l['subpaqueteId']);
+    }
+}
+$assert(!$sub->estaPartido($P, $paqPisos), 'El bloque deja el paquete como lo encontró: sin partir.');
 
 // --- Las prohibiciones del alcance -------------------------------------------------------------
 $sub->partir($P, $paqPisos, ['Porcelanato'], $USR);

@@ -697,7 +697,7 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
   padding: 10px 14px; border: 1px solid var(--pdc-border); border-radius: 8px; font-size: var(--pdc-fs-md); }
 .pdc-seg-filtros label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .pdc-seg-filtros select { background: var(--pdc-surface); color: var(--pdc-ink);
-  border: 1px solid var(--pdc-border); border-radius: 6px; padding: 6px 10px; }
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-control); padding: 6px 10px; }
 .pdc-seg-filtros input[type='checkbox'] { accent-color: var(--pdc-accent); }
 .pdc-seg-filtros :focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
 
@@ -708,7 +708,7 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-seg-panel-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .pdc-seg-panel-cabecera h2 { margin: 0; font-size: var(--pdc-fs-xl); }
 .pdc-seg-panel-cabecera button { background: transparent; color: var(--pdc-ink); cursor: pointer;
-  border: 1px solid var(--pdc-border); border-radius: 6px; padding: 5px 12px; font-size: var(--pdc-fs-md); }
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-control); padding: 5px 12px; font-size: var(--pdc-fs-md); }
 .pdc-seg-panel-cabecera button:hover { border-color: var(--pdc-accent); }
 .pdc-seg-panel-cabecera button:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
 
@@ -720,7 +720,7 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-seg-panel-tabla tbody th { font-weight: 500; }
 .pdc-seg-panel-tabla tbody tr:last-child th, .pdc-seg-panel-tabla tbody tr:last-child td { border-bottom: none; }
 .pdc-seg-panel-tabla input[type='date'] { background: var(--pdc-bg); color: var(--pdc-ink);
-  border: 1px solid var(--pdc-border); border-radius: 6px; padding: 4px 8px; color-scheme: dark; }
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-control); padding: 4px 8px; color-scheme: dark; }
 .pdc-seg-panel-tabla input[type='date']:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
 /* Mientras el POST vuela el campo se bloquea: el cursor de espera es la unica senal de que la fecha
    todavia no esta guardada. */

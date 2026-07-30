@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-29T00:00:00Z",
+  "generatedAt": "2026-07-30T15:13:07Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -413,16 +413,18 @@
       "Usa tokens --ds-*/--aia-* y primitivas aia-*. Cambia primero tokens, componentes o capas canónicas.",
       "Usa Montserrat para títulos, métricas y jerarquía de decisión; Inter para cuerpo, navegación, formularios, tablas y ayudas.",
       "Diseña y valida solo en desktop dark de al menos 1180 px. Viewport canónico 1180x820; secundario 1440x900.",
-      "Mantén WCAG AA, foco visible de 4px, objetivos táctiles de 44px y una alternativa prefers-reduced-motion en toda animación.",
+      "Mantén WCAG AA, foco visible de 4px, objetivos táctiles de 44px y una alternativa prefers-reduced-motion en toda animación. En superficies de datos densas el alto de control es 28px por excepción registrada (§5 bis); el resto no se relaja.",
       "Reserva el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.",
       "Expresa el estado con superficie + borde + texto del tema destino; anima solo transform y box-shadow, nunca color/background (DS-023/DS-025).",
-      "Registra en exceptions.json cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos."
+      "Registra en exceptions.json cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.",
+      "No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez. Si tocas una pantalla del Plan de Compras y no tocas su entrada en pdc-app/src/lib/ayuda.ts, el cambio no está terminado. Una ayuda que miente es peor que ninguna, y lo único que lo evita es que la pantalla y su texto viajen en el mismo commit. ayuda.test.ts atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad solo lo puede comprobar quien hace el cambio.",
+      "No repitas en la ayuda un mensaje que la pantalla ya da en el momento. Un aviso que aparece cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él."
     ],
     "donts": [
       "Nunca introduzcas hex sueltos, estilos inline, bloques <style>, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.",
       "Nunca hagas que la interfaz se vea decorativa, saturada de alertas o que exija lectura innecesaria antes de actuar (anti-referencia de PRODUCT.md).",
       "Nunca uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.",
-      "Nunca trabajes ni generes cambios, pruebas o evidencia para mobile, tablet o el tema linen: fuera del alcance visual vigente. linen se envía pero ningún gate lo valida (deuda consciente).",
+      "Nunca trabajes, generes cambios, pruebas o evidencia para mobile o tablet: fuera del alcance visual vigente. linen quedó retirado del producto en F0 del goal dark-mode-todos-los-modulos; dark es el único tema y no existe conmutador.",
       "Nunca uses clamp() fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.",
       "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto cero.",
       "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",

@@ -3,21 +3,22 @@
   "designSystemVersion": "1.0.0",
   "provenanceManifest": "goal-provenance.json",
   "manifests": [
+    "auth.json",
+    "bi-runtime.json",
+    "control-cambios.json",
+    "escalamientos.json",
     "foundation-shell.json",
+    "indicadores.json",
     "laboratory.json",
+    "pdc.json",
+    "plan-compras-v2.json",
+    "profesionales.json",
+    "programa-general-actualizar.json",
     "programa-general.json",
     "programacion-intermedia.json",
     "programacion-semanal.json",
     "project-selector.json",
-    "auth.json",
-    "profesionales.json",
-    "subcontratistas.json",
-    "control-cambios.json",
-    "programa-general-actualizar.json",
-    "indicadores.json",
-    "escalamientos.json",
-    "bi-runtime.json",
-    "pdc.json"
+    "subcontratistas.json"
   ],
   "sharedHeadConsumers": [
     "views/contratos/contratos.view.php",
@@ -68,8 +69,9 @@
     },
     {
       "moduleId": "plan-compras-v2",
-      "status": "inventory-only",
-      "manifest": null
+      "status": "pilot",
+      "manifest": "plan-compras-v2.json",
+      "note": "Cierra la deuda registrada en C1 (goals/pdc-preparar-b1, spec 2026-07-29-c1-retiro-pdc-viejo-design.md): el modulo dejaba de ser inventory-only al ganar manifiesto con escenario y golden real. Declara vendors vacio porque no carga ninguna libreria por CDN: la isla React se empaqueta entera en /pdc-app/assets. El escenario es el estado vacio del sandbox 990100 a proposito: es la primera pantalla de un proyecto nuevo y es el unico contenido estable: la unica obra con datos v2 la escriben otras sesiones y su golden cambiaria solo."
     },
     {
       "moduleId": "bi-runtime",

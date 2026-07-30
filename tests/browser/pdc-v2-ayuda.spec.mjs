@@ -21,16 +21,13 @@ const PANTALLAS = [
   ['seguimiento', '/seguimiento/avance'],
 ];
 
-/** El helper de sesión silencia el recorrido para todos los e2e; aquí lo queremos ver. */
-async function permitirRecorrido(page) {
-  await page.addInitScript(() => {
-    try {
-      window.localStorage.removeItem('aia-pdc-recorrido');
-    } catch {
-      // Sin almacén, el recorrido sale igual: es el comportamiento que este test quiere.
-    }
-  });
-}
+/**
+ * El helper de sesión silencia el recorrido para todos los e2e; los dos tests que lo quieren ver
+ * entran pidiendo que NO lo silencie. Cada test arranca con el almacén limpio, así que no hay nada
+ * que borrar: basta con no escribir. Borrarlo con un `addInitScript` propio sería peor, porque ese
+ * script vuelve a correr en la recarga y tumbaría la decisión que la recarga viene a comprobar.
+ */
+const SIN_SILENCIAR = { silenciarRecorrido: false };
 
 async function abrir(page, ruta) {
   await page.goto(`/plan-compras#${ruta}`, { waitUntil: 'domcontentloaded' });
@@ -43,8 +40,7 @@ test.describe('PDC v2 · ayuda dentro de la aplicación', () => {
   test.afterEach(async ({ page }) => { await logout(page); });
 
   test('el recorrido sale la primera vez, se omite y no vuelve al recargar', async ({ page }) => {
-    await loginAndSelectProject(page, project);
-    await permitirRecorrido(page);
+    await loginAndSelectProject(page, project, undefined, SIN_SILENCIAR);
     await abrir(page, '/ensamble/importar');
 
     const recorrido = page.getByTestId('pdc-recorrido');
@@ -61,8 +57,7 @@ test.describe('PDC v2 · ayuda dentro de la aplicación', () => {
   });
 
   test('recorrerlo entero también lo cierra para siempre', async ({ page }) => {
-    await loginAndSelectProject(page, project);
-    await permitirRecorrido(page);
+    await loginAndSelectProject(page, project, undefined, SIN_SILENCIAR);
     await abrir(page, '/ensamble/importar');
     await expect(page.getByTestId('pdc-recorrido')).toBeVisible({ timeout: 15000 });
 

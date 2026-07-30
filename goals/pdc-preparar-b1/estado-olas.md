@@ -83,8 +83,8 @@ fila 1.
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
-| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **EN CURSO** (construido y commiteado; faltan las dos verificaciones aplazadas — ver nota) | `ed9c321` | 2026-07-29 |
+| 5 | Equipo alquilado vs comprado | 4 | **HECHO** | `e992301` | 2026-07-29 |
+| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **HECHO** — 8 pantallas con ayuda, recorrido omitible, 13 e2e en verde y la lectura del revisor dada por cumplida por Felipe | `5e80112` (serie `b4294f3`…`5e80112`) | 2026-07-30 |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
@@ -138,6 +138,42 @@ procesos, hay que crear su fila y apuntar el paquete a ella; a partir de ahí s�
 `tests/browser/pdc-v2-pasos.spec.mjs` (2 nuevos, en navegador contra el contenedor servido).
 Cero regresión comprobada sobre Da Porto: sigue sin configurar y con los siete pasos por defecto.
 De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pasos`.
+
+### Nota sobre la fila 5 — no esperó al despliegue, y aparecieron dos cosas
+
+Arrancó sin la fila 4 en `HECHO`: Felipe liberó la espera el 2026-07-29 (el despliegue a pruebas ya
+estaba hecho y pidió que las sesiones avanzaran sin quedarse en comprobaciones humanas). Se entrega la
+migración, el código y las pruebas en la rama; **no se aplicó nada al servidor** — eso es de la fila 4.
+
+Evidencia completa, con salida real de comandos:
+[`evidence/validacion-equipo-alquilado-comprado.md`](evidence/validacion-equipo-alquilado-comprado.md).
+
+**El spec decía «amplía el enum de `tipo_recurso`» y no hay enum:** es `varchar(60)` que siembra el
+importador SINCO. No hubo DDL de enum. Los dos riesgos reales estaban en otro sitio, y los dos se
+midieron antes de arreglarlos: `PaquetesService::tiposCompatibles()` tiene un `default` que significa
+«no filtro» (partir «Equipo» sin nombrar los valores nuevos ahí los volvía candidatos de cualquier
+paquete — la trampa de A3.2 en sitio nuevo), y el importador que borraba el trabajo humano era el de
+**SINCO**, no el de presupuestos.
+
+**Dos decisiones que quedan para Felipe:**
+
+1. **`OT` (Oficina Técnica / Compras) ya puede clasificar equipos** — Felipe dijo que sí el
+   2026-07-30, y quedó aplicado. `lps.pdc.maestro` pasa a A, D y OT. **Consecuencia que hay que
+   saber:** la capacidad es única y abre TODO el maestro (clasificar, crear a mano, vincular,
+   retirar/reactivar e importar el Excel de SINCO), no sólo clasificar. Se asumió porque OT ya tenía
+   `paquetes_contratacion.reglas`, que redirige insumos en todos los proyectos. Si el alcance resulta
+   ser demasiado, la vuelta es partir la capacidad en dos, no revertir el permiso.
+2. **Gastos generales: aprobado, va a sesión propia.** Felipe dijo que sí el 2026-07-30. El presupuesto
+   **no** trae categorías que el maestro pierda (sus capítulos son sólo `COSTO DIRECTO` y `COSTO
+   INDIRECTO`); las de Tomás llegan por el `agrupacion` de SINCO, que el maestro **ya guarda** y ninguna
+   pantalla agrupa ni filtra. No se construye aquí: es un entregable distinto y necesita grilleo con
+   Tomás para no duplicar lo que él ya tiene en su código.
+
+⚠️ **Aviso para las demás sesiones — el volumen de MySQL del compose es `external` con nombre fijo
+`htdocs_db_data`.** Un `COMPOSE_PROJECT_NAME` propio **no** da base propia: levanta un segundo MySQL
+sobre los archivos de la base de desarrollo principal. Aquí murió con «Unable to lock ./ibdata1» porque
+el principal estaba vivo (sin daño, verificado), pero **con el principal apagado le habría escrito**.
+Hace falta un override local que declare un volumen propio.
 
 ## Ola 3 — lo grande
 
@@ -225,10 +261,17 @@ aprende de lotes, y preseleccionar la sugerencia del paquete en sus tres lotes l
 mismo frente, lo contrario de lo que se busca). Y un lote **sin insumos** no aparece como destino
 contratable: no tiene valor que repartir ni nada que contratar, así que tampoco se le ofrece frente.
 
-**El volumen sigue sin estresar,** y es el único hueco que dejo: Da Porto tiene 4 paquetes con insumos
-y 12 asignaciones. La regla de contar por paquete + lote está probada (los tests exigen que no se
-repitan destinos ni se multipliquen los pasos) pero no medida con los 96 paquetes previstos, porque no
-hay ningún proyecto con volumen en la base local.
+**El volumen ya está estresado** (2026-07-30). `tests/test_pdc_v2_subpaquetes_volumen.php` fabrica la
+escala real del módulo —96 paquetes, 384 insumos, 12 partidos en 3 lotes cada uno = **132 destinos
+contratables**— y comprueba que la unidad se sostiene: ningún destino repetido, una cabecera y
+exactamente siete pasos por destino (924 filas, ni una mezclada), recalcular no duplica, y las tres
+vistas que consumen la unidad —seguimiento, vencimientos y curva de caja— cuentan cada cosa una vez.
+Medición: partir y repartir 0,41 s · amarrar 1,14 s · **calcular el plan de 132 destinos, 1,30 s**.
+
+Y se comprobó que el test **sabe fallar**: rompiendo a propósito la unión por lote, el tablero pasó de
+924 pasos a 1.932. Con ese mismo sabotaje el test pequeño seguía **en verde**, porque comprobaba
+nombres y no totales — así que se le añadió también la aserción de conteo. Un test de regresión que
+nunca se ha visto fallar no prueba nada.
 
 La API que sostiene todo esto: `GET /plan-compras/api/subpaquetes?paqueteId=N`
 devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
@@ -236,7 +279,7 @@ la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actual
 `mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote
 su frente.
 
-### Nota sobre la nº 6 — por qué no se marca `HECHO`
+### Nota sobre la nº 6 — qué se construyó y cómo se verificó
 
 Está **construido y commiteado** en `worktree-pdc-ola2-ayuda-in-app`: las ocho pantallas con su
 botón, el contenido de las ocho ayudas, el recorrido de seis paradas con su memoria por usuario, el
@@ -245,20 +288,32 @@ e2e escrito y la regla de proceso en `DESIGN.md` y `docs/pdc-v2.md`.
 **Verificado:** 362 tests de vitest en verde (25 archivos, 28 nuevos entre `ayuda.test.ts` y
 `recorrido.test.ts`), tipos limpios, bundle recompilado a `public/pdc-app/`.
 
-**Aplazado por decisión del usuario** («avanza sin pruebas físicas»), y por eso la fila no dice
-`HECHO`:
+Las dos verificaciones que estaban aplazadas **están hechas (2026-07-30)**, y con eso la fila cierra:
 
-1. **Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.** Playwright los carga y los lista, y
-   `node --check` pasa, pero ejecutarlos necesita la app servida sobre *este* árbol; el contenedor
-   no llegó a arrancar (montar el repo desde disco externo agota el tiempo). **No están verdes: no
-   se han corrido.**
-2. **La condición de hecho nº 3 del spec** — un revisor que no conoce el módulo lee las ayudas y
-   recorre el flujo sin preguntar. Es *el* hecho de verdad del entregable; que los botones existan
-   no lo sustituye.
+1. ~~Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.~~ **Corridos y en verde: 6 de 6**, sobre este árbol
+   servido en `http://localhost:8083` (contenedor propio con la imagen del servicio `app`, red del
+   stack principal y la misma base de datos). La primera pasada dio **2 fallos, y eran del
+   andamiaje, no del módulo**: el helper `permitirRecorrido` borraba la memoria del recorrido con un
+   `addInitScript`, que vuelve a correr **en cada navegación** — también en la recarga que la prueba
+   usa para comprobar que la decisión se recuerda. Arreglado donde correspondía: `loginAndSelectProject`
+   acepta `{ silenciarRecorrido: false }` y los dos tests entran así, sin escribir ni borrar nada
+   después. La persistencia que se mide vuelve a ser la de la aplicación.
+   **Regresión de la zona, también en verde:** los 7 casos de `pdc-v2-plan`, `pdc-v2-vencimientos` y
+   `pdc-v2-maestro` — el silenciador llega a todos los e2e del PDC y ningún modal tapa un clic.
+   **Rojo preexistente, ajeno a esto:** `pdc-v2-sin-scroll-x.spec.mjs` falla igual con estos cambios
+   revertidos (comprobado por `git stash` en la misma sesión).
+2. ~~La condición de hecho nº 3 del spec — un revisor que no conoce el módulo lee las ayudas y
+   recorre el flujo sin preguntar.~~ **Dada por cumplida por Felipe el 2026-07-30.** Es el hecho de
+   verdad del entregable y no lo cubre ningún test: los tests atrapan la pantalla sin ayuda y la
+   jerga, no atrapan una explicación que no explica. Por eso lo cierra una persona y no una tubería,
+   y por eso queda escrito **quién** lo cerró y cuándo.
 
-**Riesgo que hereda quien cierre esto:** el punto 2 es el único que puede detectar que un texto es
-correcto pero inútil. Los tests atrapan la pantalla sin ayuda y la jerga; no atrapan una explicación
-que no explica.
+**Lo que esta fila NO garantiza hacia el futuro.** Que las ayudas fueran verdad el 2026-07-30 no
+dice nada de mañana. Lo único que lo sostiene es la regla escrita en `DESIGN.md` §Do y en
+`docs/pdc-v2.md`: **una pantalla no se cierra sin su ayuda, y cambiarla cuenta como cerrarla otra
+vez.** Ya se aplicó una vez con resultado (el número de pendientes resueltos del Maestro, `a62d619`,
+donde el cambio de pantalla arrastró su texto en el mismo commit). Quien toque una pantalla del PDC
+y no toque su entrada en `pdc-app/src/lib/ayuda.ts` está dejando el cambio a medias.
 
 **Cambio de alcance medido, no supuesto:** el spec decía «nueve pantallas» mezclando páginas con
 pestañas. El inventario contra el código son **8 páginas y 13 pestañas**, y el usuario decidió un

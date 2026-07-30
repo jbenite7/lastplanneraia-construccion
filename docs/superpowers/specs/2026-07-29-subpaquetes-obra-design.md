@@ -172,9 +172,21 @@ línea base — el punto 4 comprobado de ida y de vuelta, con fechas propias y r
 `Record<number, T>` es asignable a un `Record<string, T>` porque las claves numéricas son un
 subconjunto de las de texto. Corregido, y fijado con un test que falla con la clave vieja.
 
-## Lo que queda fuera, dicho
+## El volumen, estresado (2026-07-30)
 
-**El volumen sigue sin estresar.** Da Porto tiene 4 paquetes con insumos y 12 asignaciones. La regla de
-contar por paquete + lote está **probada** —los tests exigen que no se repitan destinos ni se
-multipliquen los pasos— pero no **medida** con los 96 paquetes previstos, porque no hay ningún proyecto
-con ese volumen en la base local.
+`tests/test_pdc_v2_subpaquetes_volumen.php` fabrica la escala real del módulo, que no existe en
+ninguna base: **96 paquetes, 384 insumos y 12 partidos en 3 lotes cada uno → 132 destinos
+contratables**, el orden de magnitud que este spec anticipaba al preguntar «¿11 de 96 paquetes o 11 de
+130 subpaquetes?».
+
+Comprueba que la unidad se sostiene a esa escala: ningún destino repetido, una cabecera y exactamente
+siete pasos por destino (924 filas), recalcular dos veces no duplica nada, y el seguimiento, el
+tablero de vencimientos y la curva de caja cuentan cada cosa una vez. Mide además el tiempo, porque la
+degradación probable no es un número mal contado sino una consulta por destino: **calcular el plan de
+132 destinos tarda 1,30 s**.
+
+**Y sabe fallar.** Rompiendo a propósito la unión por lote en `SeguimientoService::vencimientos()`, el
+tablero pasó de 924 pasos a 1.932 y el test se puso rojo. El dato que justifica el archivo: con ese
+mismo sabotaje, `test_pdc_v2_subpaquetes.php` seguía **en verde**, porque comprobaba qué nombres
+aparecían y no cuántas veces. Se le añadió la aserción de conteo que le faltaba —también verificada
+roja contra el código saboteado—, así que ahora el fallo se atrapa en los dos sitios.

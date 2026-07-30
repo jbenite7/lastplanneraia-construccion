@@ -76,18 +76,23 @@ final class MaestroSincoImportService
                 $tipoInsumo = mb_substr($ins['tipoInsumo'], 0, 100);
 
                 $porCodigo = $this->db->query(
-                    'SELECT id FROM general_maestro_insumos WHERE codigo_sinco = ?',
+                    'SELECT id, tipo_recurso, clasificado_at FROM general_maestro_insumos WHERE codigo_sinco = ?',
                     [$ins['codigoSinco']],
-                )->fetchColumn();
+                )->fetch(\PDO::FETCH_ASSOC);
 
                 if ($porCodigo !== false) {
+                    $tipoRecurso = $this->resolverTipoRecurso(
+                        $ins['tipoRecurso'],
+                        $porCodigo['tipo_recurso'],
+                        $porCodigo['clasificado_at'],
+                    );
                     $this->db->query(
                         'UPDATE general_maestro_insumos
                          SET descripcion = ?, descripcion_norm = ?, unidad = ?, tipo_insumo = ?, agrupacion = ?,
                              tipo_recurso = ?, valor_unitario = ?, iva = ?, activo = 1, actualizado_por = ?, updated_at = NOW()
                          WHERE id = ?',
                         [$ins['descripcion'], $ins['descripcionNorm'], $ins['unidad'], $tipoInsumo, $ins['agrupacion'],
-                         $ins['tipoRecurso'], $ins['valorUnitario'], $ins['iva'], $usuario, (int) $porCodigo],
+                         $tipoRecurso, $ins['valorUnitario'], $ins['iva'], $usuario, (int) $porCodigo['id']],
                     );
                     $actualizados++;
                     continue;
@@ -95,18 +100,23 @@ final class MaestroSincoImportService
 
                 // Sin match por código: ¿hay una fila con la misma norma+unidad?
                 $huerfana = $this->db->query(
-                    'SELECT id, codigo_sinco FROM general_maestro_insumos WHERE descripcion_norm = ? AND unidad = ?',
+                    'SELECT id, codigo_sinco, tipo_recurso, clasificado_at FROM general_maestro_insumos WHERE descripcion_norm = ? AND unidad = ?',
                     [$ins['descripcionNorm'], $ins['unidad']],
                 )->fetch(\PDO::FETCH_ASSOC);
 
                 if ($huerfana !== false) {
                     if ($huerfana['codigo_sinco'] === null || $huerfana['codigo_sinco'] === '') {
+                        $tipoRecurso = $this->resolverTipoRecurso(
+                            $ins['tipoRecurso'],
+                            $huerfana['tipo_recurso'],
+                            $huerfana['clasificado_at'],
+                        );
                         $this->db->query(
                             'UPDATE general_maestro_insumos
                              SET codigo_sinco = ?, descripcion = ?, tipo_insumo = ?, agrupacion = ?, tipo_recurso = ?,
                                  valor_unitario = ?, iva = ?, activo = 1, actualizado_por = ?, updated_at = NOW()
                              WHERE id = ?',
-                            [$ins['codigoSinco'], $ins['descripcion'], $tipoInsumo, $ins['agrupacion'], $ins['tipoRecurso'],
+                            [$ins['codigoSinco'], $ins['descripcion'], $tipoInsumo, $ins['agrupacion'], $tipoRecurso,
                              $ins['valorUnitario'], $ins['iva'], $usuario, (int) $huerfana['id']],
                         );
                         $enriquecidos++;
@@ -143,5 +153,40 @@ final class MaestroSincoImportService
 
         $this->store->eliminar($token);
         return ['ok' => true, 'creados' => $creados, 'actualizados' => $actualizados, 'enriquecidos' => $enriquecidos, 'conflictos' => $conflictos, 'reenganchados' => $reenganchados];
+    }
+
+    /**
+     * Qué `tipo_recurso` queda tras un re-import, cuando el entrante y el guardado no coinciden.
+     *
+     * Punto 5 de la condición de hecho de la Ola 2: reimportar el maestro NO puede devolver a «sin
+     * clasificar» un equipo que una persona ya clasificó. Este servicio escribía `tipo_recurso` a
+     * ciegas por `codigo_sinco`, y los 167 equipos que la migración movió a tránsito tienen TODOS
+     * código: sin esto, la siguiente carga de SINCO borraba el trabajo humano entero y en silencio.
+     *
+     * La regla es estrecha a propósito — sólo protege equipos, y sólo contra una DEGRADACIÓN:
+     * - Entrante genérico o de tránsito, guardado clasificado, con autor humano → gana la persona.
+     * - Entrante ya clasificado → gana SINCO: la fuente se puso más precisa, eso es dato nuevo.
+     * - Entrante que no es equipo → gana SINCO: dejó de ser equipo, no es asunto de esta regla.
+     *
+     * Lo que permite distinguir los casos es `clasificado_at`: sin él, «lo dijo una persona» y «lo
+     * trajo el Excel» son indistinguibles. La migración deja ese campo NULL a propósito.
+     */
+    private function resolverTipoRecurso(?string $entrante, ?string $guardado, ?string $clasificadoAt): ?string
+    {
+        // Sólo se protege un equipo clasificado por una persona.
+        if ($clasificadoAt === null || !TipoRecursoEquipo::esClasificado($guardado)) {
+            return $entrante;
+        }
+        // Si lo entrante ya es una clasificación, es una corrección de la fuente: pasa.
+        if (TipoRecursoEquipo::esClasificado($entrante)) {
+            return $entrante;
+        }
+        // Si lo entrante dejó de ser equipo, SINCO reclasificó de verdad: pasa.
+        if (!TipoRecursoEquipo::esEquipo($entrante)) {
+            return $entrante;
+        }
+        // Queda el único caso peligroso: SINCO manda el genérico o el de tránsito sobre una
+        // clasificación humana. Se conserva lo que dijo la persona.
+        return $guardado;
     }
 }

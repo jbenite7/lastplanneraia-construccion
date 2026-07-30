@@ -107,11 +107,6 @@ class RbacCatalog
             ['key' => 'lps.cnc.editar', 'module' => 'lps', 'action' => 'cnc_editar', 'description' => 'Editar CNC'],
             ['key' => 'lps.cnp.ver', 'module' => 'lps', 'action' => 'cnp_ver', 'description' => 'Ver CNP'],
             ['key' => 'lps.cnp.editar', 'module' => 'lps', 'action' => 'cnp_editar', 'description' => 'Editar CNP'],
-            ['key' => 'lps.listado_actividades.ver', 'module' => 'lps', 'action' => 'listado_actividades_ver', 'description' => 'Ver listado de actividades'],
-            ['key' => 'lps.listado_actividades.editar', 'module' => 'lps', 'action' => 'listado_actividades_editar', 'description' => 'Editar listado de actividades'],
-            ['key' => 'lps.contratos.ver', 'module' => 'lps', 'action' => 'contratos_ver', 'description' => 'Ver contratos'],
-            ['key' => 'lps.contratos.editar', 'module' => 'lps', 'action' => 'contratos_editar', 'description' => 'Editar contratos'],
-            ['key' => 'lps.contratos.auto_definir', 'module' => 'lps', 'action' => 'contratos_auto_definir', 'description' => 'Auto-definir contratos con preview y confianza'],
             ['key' => 'lps.pdc.ver', 'module' => 'lps', 'action' => 'pdc_ver', 'description' => 'Ver PDC'],
             ['key' => 'lps.pdc.editar', 'module' => 'lps', 'action' => 'pdc_editar', 'description' => 'Editar PDC'],
             ['key' => 'lps.pdc.auto_generar', 'module' => 'lps', 'action' => 'pdc_auto_generar', 'description' => 'Auto-generar PDC desde el programa general'],
@@ -159,8 +154,6 @@ class RbacCatalog
             'lps.cic.ver',
             'lps.cnc.ver',
             'lps.cnp.ver',
-				'lps.listado_actividades.ver',
-				'lps.contratos.ver',
 				'lps.pdc.ver',
             'lps.control_cambios.ver',
             'lps.paquetes_contratacion.ver',
@@ -178,8 +171,6 @@ class RbacCatalog
             'lps.cic.editar',
             'lps.cnc.editar',
             'lps.cnp.editar',
-            'lps.listado_actividades.editar',
-            'lps.contratos.editar',
             'lps.pdc.editar',
             'lps.pdc.auto_generar',
             'lps.control_cambios.editar',
@@ -231,11 +222,6 @@ class RbacCatalog
                 'lps.cnp.editar',
                 'lps.control_cambios.ver',
                 'lps.control_cambios.editar',
-                'lps.listado_actividades.ver',
-                'lps.listado_actividades.editar',
-                'lps.contratos.ver',
-                'lps.contratos.editar',
-                'lps.contratos.auto_definir',
                 'lps.pdc.ver',
                 'lps.pdc.editar',
                 'lps.pdc.auto_generar',
@@ -268,8 +254,6 @@ class RbacCatalog
                 'lps.cnp.editar',
                 'lps.control_cambios.ver',
                 'lps.control_cambios.editar',
-                'lps.listado_actividades.ver',
-                'lps.contratos.ver',
                 'lps.pdc.ver',
                 'lps.paquetes_contratacion.ver',
                 'lps.profesionales.ver',
@@ -285,7 +269,6 @@ class RbacCatalog
 
             // Oficina tecnica: solo edita Listado/Contratos/PDC; lo demas lectura.
             'OT' => [
-                'lps.contratos.auto_definir',
                 'lps.semana.crear',
                 'lps.semana.eliminar',
                 'lps.programa_general.ver',
@@ -303,13 +286,16 @@ class RbacCatalog
                 'lps.profesionales.ver',
                 'lps.subcontratistas.ver',
                 'lps.indicadores.ver',
-                'lps.listado_actividades.ver',
-                'lps.listado_actividades.editar',
-                'lps.contratos.ver',
-                'lps.contratos.editar',
                 'lps.pdc.ver',
                 'lps.pdc.editar',
                 'lps.pdc.auto_generar',
+                // Maestro global de insumos (decisión de Felipe, 2026-07-30). Entró por la pregunta
+                // de quién clasifica un equipo como alquilado o comprado: es una decisión de compra,
+                // y Compras vive en este rol. La capacidad es una sola y abre TODO el maestro —
+                // clasificar, crear a mano, vincular, retirar/reactivar e importar el Excel de
+                // SINCO—; se asume porque OT ya tenía `paquetes_contratacion.reglas`, que redirige
+                // insumos en todos los proyectos: alcance comparable, no mayor.
+                'lps.pdc.maestro',
                 'lps.reportes.generar',
                 'notificaciones.resumen_semanal',
                 'notificaciones.lps_operativas',
@@ -402,16 +388,6 @@ class RbacCatalog
                 'eliminar' => ['modulo_legacy' => 'Proyectos', 'accion_legacy' => 'ELIMINAR'],
                 'estado' => ['modulo_legacy' => 'Proyectos', 'accion_legacy' => 'ESTADO'],
                 'backup' => ['modulo_legacy' => 'Proyectos', 'accion_legacy' => 'BACKUP'],
-            ],
-            'lps.listado_actividades' => [
-                'crear' => ['modulo_legacy' => 'ListadoActividades', 'accion_legacy' => 'CREAR'],
-                'modificar' => ['modulo_legacy' => 'ListadoActividades', 'accion_legacy' => 'MODIFICAR'],
-                'eliminar' => ['modulo_legacy' => 'ListadoActividades', 'accion_legacy' => 'ELIMINAR'],
-                'importar' => ['modulo_legacy' => 'ListadoActividades', 'accion_legacy' => 'IMPORTAR'],
-            ],
-            'lps.contratos' => [
-                'modificar' => ['modulo_legacy' => 'Contratos', 'accion_legacy' => 'MODIFICAR'],
-                'crear_dias_proceso' => ['modulo_legacy' => 'Contratos', 'accion_legacy' => 'CREAR_DIAS_PROCESO'],
             ],
             'lps.pdc' => [
                 'crear' => ['modulo_legacy' => 'PDC', 'accion_legacy' => 'CREAR_ACTIVIDAD'],

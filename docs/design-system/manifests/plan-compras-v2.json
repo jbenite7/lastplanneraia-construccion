@@ -1,0 +1,67 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.0.0",
+  "moduleId": "plan-compras-v2",
+  "routes": [
+    "/plan-compras"
+  ],
+  "sources": [
+    "views/plan-compras/app.view.php",
+    "pdc-app/src/styles.css",
+    "public/pdc-app/assets/pdc.css",
+    "public/pdc-app/assets/pdc.js"
+  ],
+  "components": [
+    "shell",
+    "page-header",
+    "navigation",
+    "toolbar",
+    "button",
+    "icon",
+    "table-shell",
+    "field",
+    "state",
+    "feedback"
+  ],
+  "vendors": [],
+  "layouts": [
+    "desktop"
+  ],
+  "states": [
+    "empty"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection",
+    "local": "aia-pdc-recorrido (guided tour seen), aia-sidebar-state (shell sidebar)"
+  },
+  "exceptions": [],
+  "tests": [
+    "tests/browser/shell-sidebar-rollout.mjs",
+    "tests/browser/design-system-consumer-smoke.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/plan-compras-v2/"
+  ],
+  "scenarios": [
+    {
+      "id": "plan-compras-v2-dark-1180x820",
+      "family": "page-structure",
+      "route": "/plan-compras",
+      "fixture": "pdc-sandbox-990100",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "empty",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/plan-compras-v2/plan-compras-v2-dark-1180x820.png",
+      "sha256": "cd5523bde70f145760737ce50d9197dbb9518b5db0ccbaf3afa1b7a15078d424"
+    }
+  ]
+}

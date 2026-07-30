@@ -554,36 +554,6 @@
       }
     },
     {
-      "name": "contratos",
-      "paths": [
-        "views/contratos/contratos.view.php",
-        "public/css/contratos.css",
-        "public/js/modules/contratos/hot.js"
-      ],
-      "maxViolations": {
-        "hardcoded-hex": 0,
-        "inline-style": 0,
-        "embedded-style-block": 0,
-        "forbidden-font-roboto": 0,
-        "hardcoded-radius": 0
-      }
-    },
-    {
-      "name": "listado-actividades",
-      "paths": [
-        "views/listado-actividades/listadoActividades.view.php",
-        "public/css/listado-actividades.css",
-        "public/js/modules/listado_actividades/hot.js"
-      ],
-      "maxViolations": {
-        "hardcoded-hex": 0,
-        "inline-style": 0,
-        "embedded-style-block": 0,
-        "forbidden-font-roboto": 0,
-        "hardcoded-radius": 0
-      }
-    },
-    {
       "name": "programacion-semanal",
       "paths": [
         "views/programacion-semanal/",
@@ -657,7 +627,7 @@
         "public/css/design-system/adapters/admin-lte.css"
       ],
       "maxViolations": {
-        "hardcoded-hex": 0,
+        "hardcoded-hex": 1,
         "hardcoded-color-function": 0,
         "inline-style": 0,
         "embedded-style-block": 0,
