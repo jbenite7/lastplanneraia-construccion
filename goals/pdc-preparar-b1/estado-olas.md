@@ -52,7 +52,32 @@ por prudencia nunca es el error caro.
 | 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | HECHO | `31e9145` (merge de main: `22d13c7`) | 2026-07-29 |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
-| 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
+| 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | HECHO — **solo `prueba-lps`** | `9e77dd2` (desplegado) | 2026-07-30 |
+
+### Nota sobre 4 — el alcance es `prueba-lps`, no la producción real
+
+**Léela antes de arrancar la 5 o la 10.** «HECHO» aquí no significa que el PDC v2 esté en
+`lastplanneraia.com`. La producción real **no se tocó**, por decisión de Felipe del 2026-07-30: lo que
+él trata como producción es `prueba-lps`, y ahí se desplegó en dos pasadas (642 commits primero, 21
+después) hasta `9e77dd2`, con las 35 migraciones aplicadas, los dos parches de RBAC del PDC
+(`lps.pdc.importar`, `lps.pdc.maestro`) y el remap de `unique_id`.
+
+`lastplanneraia.com` sigue en `1aa7c69` del 2026-07-16, con **cero tablas `pdc_*`**.
+
+**Consecuencia directa para la fila 10:** su puerta era «una obra trabajando de verdad en
+producción», y con la producción real intacta **esa puerta sigue cerrada**. Que esta fila diga HECHO
+no la abre.
+
+**Aplazado por decisión de Felipe, no olvidado:** el humo autenticado. Nadie ha mirado con sesión el
+visor con los avisos del tamiz, el informe de impacto al recargar, la curva de desembolsos ni el
+desplegable de frentes. Lo verificable por datos y comandos sí está: respaldos restaurados y
+comparados por conteos, esquema comprobado en SQL, y `anclasDisponibles()` del proyecto 27 devolviendo
+155 anclas donde devolvía 0.
+
+**Dos huecos de datos que quedan abiertos y no son de esta fila:** ~18 700 filas de
+`programa_consolidado` huérfanas sin pareja en `programa` (el remap no puede darles identificador, y
+el porqué merece sesión propia), y 52 paquetes sin `duracion_ref`, que el propio tablero asigna a la
+fila 1.
 
 ## Ola 2 — lo que el uso va a exigir
 
