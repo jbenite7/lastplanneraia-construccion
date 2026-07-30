@@ -2697,20 +2697,66 @@ function renderSemanal(data) {
   }
 }
 
-function renderPDC(data) {
-  const rows = Array.isArray(data.scorecard) ? data.scorecard : [];
-  const body = document.getElementById('pdc-body');
+// Pinta un tbody a partir de una lista, o el mensaje de vacío si no hay nada. Evita repetir
+// cuatro veces el mismo bucle en el panel de compras.
+function fillRows(id, items, columnas, celdas, vacio) {
+  const body = document.getElementById(id);
   if (!body) return;
-  if (!rows.length) {
-    body.innerHTML = '<tr><td class=\"p-4 text-center text-gray-400\" colspan=\"5\">Sin datos de compras.</td></tr>';
+  if (!items.length) {
+    body.innerHTML = `<tr><td class="p-4 text-center text-gray-400" colspan="${columnas}">${escapeHtml(vacio)}</td></tr>`;
     return;
   }
   body.innerHTML = '';
-  rows.forEach((row) => {
+  items.forEach((item) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td class=\"p-2\">${escapeHtml(row.item || row.kpi || '--')}</td><td class=\"p-2\">${escapeHtml(row.descripcion || '--')}</td><td class=\"p-2\">${escapeHtml(row.cantidad || '--')}</td><td class=\"p-2\">${escapeHtml(row.fecha || row.Fecha || '--')}</td><td class=\"p-2\">${statusPill(row.status || (toNumber(row.value) > 50 ? 'activo' : 'pendiente'))}</td>`;
+    tr.innerHTML = celdas(item).map((c) => `<td class="p-2">${c}</td>`).join('');
     body.appendChild(tr);
   });
+}
+
+function renderPDC(data) {
+  const rows = Array.isArray(data.scorecard) ? data.scorecard : [];
+  const items = Array.isArray(data.pdc_items) ? data.pdc_items : [];
+  const breakdown = data.pdc_breakdown || {};
+
+  // Decisión 5 del spec B3: este panel ignora el selector de semana y siempre responde «hoy».
+  // La fecha la pone el SERVIDOR, no el navegador: dos usuarios en husos distintos tienen que
+  // ver el mismo vencido. El rótulo existe para que ignorar el selector no parezca un fallo.
+  const fecha = document.getElementById('pdc-fecha-corte');
+  if (fecha) {
+    const hoy = items.length ? items[0].hoy : '';
+    fecha.textContent = hoy ? `Al ${hoy} · no depende de la semana seleccionada` : '';
+  }
+
+  fillRows('pdc-body', rows, 3, (row) => [
+    escapeHtml(row.kpi || '--'),
+    `${escapeHtml(String(row.value ?? '--'))}${row.unit === '%' ? '%' : ''}`,
+    escapeHtml(row.action || '--'),
+  ], 'Sin datos de compras.');
+
+  fillRows('pdc-obra-body', items, 7, (o) => [
+    escapeHtml(o.obra || '--'),
+    `${escapeHtml(String(o.cobertura ?? 0))}%`,
+    `${escapeHtml(String(o.cobertura_valor ?? 0))}%`,
+    escapeHtml(String(o.vencidos ?? 0)),
+    escapeHtml(String(o.en_riesgo ?? 0)),
+    escapeHtml(String(o.destinos ?? 0)),
+    escapeHtml(String(o.sin_mirar ?? 0)),
+  ], 'Sin obras con plan de compras.');
+
+  const pasos = Object.entries(breakdown.por_paso || {});
+  fillRows('pdc-paso-body', pasos, 3, ([nombre, v]) => [
+    escapeHtml(nombre),
+    escapeHtml(String(v.pendientes ?? 0)),
+    escapeHtml(String(v.vencidos ?? 0)),
+  ], 'Sin pasos pendientes.');
+
+  const responsables = Array.isArray(breakdown.por_responsable) ? breakdown.por_responsable : [];
+  fillRows('pdc-resp-body', responsables, 3, (r) => [
+    escapeHtml(r.nombre || '--'),
+    escapeHtml(String(r.pendientes ?? 0)),
+    escapeHtml(String(r.vencidos ?? 0)),
+  ], 'Sin trabajo pendiente asignado.');
 }
 
 function renderCIC(data) {
