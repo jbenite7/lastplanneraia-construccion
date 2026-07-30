@@ -98,8 +98,8 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
-| 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | EN CURSO | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
+| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO (falta la pantalla de partir y repartir) | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
+| 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
@@ -135,19 +135,28 @@ la nº 1, no de la nº 3. **Cerrado el 2026-07-29:** no eran 25 sino 42, y ya re
 mediana de su tipo — ver [`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md).
 El «25» venía del spec y era una cifra vieja: quien lo lea allí, que se fíe de esta medición.
 
-**El nº 8 se partió en 8a y 8b, y las dos están EN CURSO, no HECHO.** El modelo, los servicios, los
-endpoints y las pruebas de ambas están terminados y verificados en `6d702ef` (40 + 31 asserts, PHPStan
-del PDC en 0 errores, y la cero regresión comprobada fila a fila contra
-`evidence/linea-base-plan-antes-subpaquetes.txt`). Pero la condición de hecho de los dos specs es de
-**pantalla**: ver los tres subpaquetes en el plan con sus fechas, que el tablero de vencimientos liste
-subpaquetes, que la curva sea exportable y que la pantalla diga cuántos paquetes quedan fuera y cuánto
-valen. Las vistas de `pdc-app/` no están construidas, así que ninguna de las dos filas está cumplida.
+**El nº 8 se partió en 8a y 8b. 8b está cerrada; 8a sigue EN CURSO.**
 
-Se marcaron `HECHO (…)` primero y se corrigió: el paréntesis contradecía la palabra, y en este tablero
-`HECHO` significa condición de hecho cumplida. No bloquea a nadie —ninguna fila espera a la 8— pero un
-tablero que se lee mal es exactamente lo que este archivo existe para evitar.
+**8b — flujo de caja: HECHO.** Los seis puntos de su condición de hecho están cumplidos y verificados.
+La pestaña «Flujo de caja» de Seguimiento se recorrió en Da Porto a 1180×820 en dark: 14 meses, la
+suma de los meses igual al total del pie y al último acumulado ($6.192.372.106), cobertura del 87,4 %
+del valor del plan, los $890.202.075 no contratables declarados arriba con su motivo, cero errores de
+consola y sin desbordamiento horizontal. El CSV descarga con los mismos números, con BOM UTF‑8 y coma
+decimal, y lleva la advertencia del método dentro del archivo. Matiz honesto sobre el punto 4: se
+verificó el formato, las cabeceras de descarga y el contenido byte a byte, no se abrió Excel en esta
+máquina.
 
-Quien retome empieza por las pantallas: la API ya devuelve todo lo que necesitan, incluida la etiqueta
-de la unidad («procesos de contratación») y el conteo y valor de los excluidos de la curva. 8b puede
-ir después de 8a o en paralelo: el reparto por destino contratable ya está hecho, no hay nada que
-rehacer.
+**8a — subpaquetes: EN CURSO.** Dominio, API y pruebas terminados y verificados en `6d702ef` (40
+asserts, la cero regresión comprobada fila a fila contra
+`evidence/linea-base-plan-antes-subpaquetes.txt`). Lo que falta es **una sola pantalla**: partir un
+paquete dándole nombre a sus lotes, mover insumos entre lotes, y ver el sombrilla con su rango y su
+avance agregado. Sin ella no se cumplen los puntos 1 y 2 de su condición de hecho —«ver los tres en el
+plan» y «el sombrilla muestra el rango»—; el punto 3, que el tablero de vencimientos liste lotes, ya
+está en el servidor y probado, pero no se ha podido recorrer en pantalla porque nadie puede partir un
+paquete todavía.
+
+La API le deja el trabajo hecho a esa pantalla: `GET /plan-compras/api/subpaquetes?paqueteId=N`
+devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
+la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actualizar`, `eliminar` y
+`mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote
+su frente.
