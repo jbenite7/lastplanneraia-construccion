@@ -109,6 +109,22 @@ class PlanFechasService
     }
 
     /**
+     * Los frentes y CUÁNTOS se quedaron fuera por no poder anclarse a ninguna hoja.
+     *
+     * `sinAncla` no es un detalle interno: un desplegable que ofrece 24 frentes de 25 sin decirlo
+     * hace pensar que el que falta no existe. Ocurre con encabezados cuyo `Id` no es jerárquico (el
+     * proyecto 74 numera 199, 201, 202), con la raíz cuando el cronograma la numera `0`, y con
+     * capítulos que todavía no tienen ninguna actividad debajo.
+     *
+     * @return array{frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>, sinAncla: int}
+     */
+    public function frentesYCobertura(int $projectId): array
+    {
+        $r = $this->semanaYFrentes($projectId);
+        return ['frentes' => $r['frentes'], 'sinAncla' => $r['sinAncla']];
+    }
+
+    /**
      * La semana activa y sus frentes, de una sola pasada.
      *
      * `amarrar()` necesita las dos cosas: los frentes para validar el destino y la semana para
@@ -117,7 +133,8 @@ class PlanFechasService
      * cambiaba en medio (inalcanzable en la práctica: sin semanas no hay frentes y `amarrar()` sale
      * antes con FRENTE_INVALIDO). Devolverlas juntas quita el segundo viaje y la incoherencia.
      *
-     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>}
+     * @return array{semana: ?int, frentes: list<array{uniqueId: int, nombre: string, capitulo: string, fechaInicio: string, esFrente: bool}>, sinAncla: int}
+     *         `sinAncla` = encabezados que no pudieron anclarse a ninguna hoja (ver `anclasDeEncabezados()`)
      */
     private function semanaYFrentes(int $projectId, bool $soloEncabezados = true): array
     {
@@ -126,32 +143,137 @@ class PlanFechasService
             [$projectId],
         )->fetchColumn();
         if ($semana === false || $semana === null) {
-            return ['semana' => null, 'frentes' => []];
+            return ['semana' => null, 'frentes' => [], 'sinAncla' => 0];
         }
         // `Titulo = 1` son los encabezados —los 31 frentes de obra—; con `$soloEncabezados = false`
         // entran también las 242 hojas. Ver anclasDisponibles() para por qué hacen falta.
         $filtroTitulo = $soloEncabezados ? ' AND Titulo = 1' : '';
         $rows = $this->db->query(
-            "SELECT unique_id, Actividad, Fecha_Inicio, Titulo FROM programa_consolidado
-             WHERE project_id = ? AND Semana = ?{$filtroTitulo} AND unique_id IS NOT NULL
+            "SELECT unique_id, Actividad, Fecha_Inicio, Titulo, Id FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ?{$filtroTitulo}
                AND Fecha_Inicio IS NOT NULL
              ORDER BY Fecha_Inicio ASC, unique_id ASC",
             [$projectId, (int) $semana],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
-        return [
-            'semana' => (int) $semana,
-            'frentes' => array_map(static function (array $r): array {
-                $l = self::limpiarActividad((string) $r['Actividad']);
-                return [
-                    'uniqueId' => (int) $r['unique_id'],
-                    'nombre' => $l['nombre'],
-                    'capitulo' => $l['capitulo'],
-                    'fechaInicio' => (string) $r['Fecha_Inicio'],
-                    'esFrente' => (int) $r['Titulo'] === 1,
+        // Un encabezado sin `unique_id` propio se ancla a la hoja más temprana de su subárbol. Ver
+        // `anclaDeEncabezado()`: es lo que devuelve los frentes a una base remapeada sin tocar el
+        // remap ni `programa_consolidado`, que son del LPS.
+        $anclas = null;
+        $frentes = [];
+        $sinAncla = 0;
+        foreach ($rows as $r) {
+            $esFrente = (int) $r['Titulo'] === 1;
+            $uniqueId = $r['unique_id'] === null ? null : (int) $r['unique_id'];
+            $fecha = (string) $r['Fecha_Inicio'];
+
+            if ($uniqueId === null) {
+                // Una HOJA sin identificador no tiene reemplazo posible: se descarta, como siempre.
+                if (!$esFrente) {
+                    continue;
+                }
+                $anclas ??= $this->anclasDeEncabezados($projectId, (int) $semana);
+                $resuelta = $anclas[(string) $r['Id']] ?? null;
+                if ($resuelta === null) {
+                    $sinAncla++;
+                    continue;
+                }
+                $uniqueId = $resuelta['uniqueId'];
+                // La fecha que se enseña es la que se va a USAR al recalcular. En 1.182 de 1.185
+                // encabezados medidos coincide con la del encabezado; en los tres que no, mentir
+                // aquí escondería justo el dato que manda.
+                $fecha = $resuelta['fechaInicio'];
+            }
+
+            $l = self::limpiarActividad((string) $r['Actividad']);
+            $frentes[] = [
+                'uniqueId' => $uniqueId,
+                'nombre' => $l['nombre'],
+                'capitulo' => $l['capitulo'],
+                'fechaInicio' => $fecha,
+                'esFrente' => $esFrente,
+            ];
+        }
+
+        // Dedupe por identificador. Un padre y sus hijos comparten la hoja más temprana —medido: 16
+        // de 60 anclas en el proyecto 27, 81 de 316 en el aeropuerto, con cadenas de tres—, y dos
+        // opciones con el mismo `uniqueId` son indistinguibles para `amarrar()`, que resuelve el
+        // frente por primera coincidencia: el nombre guardado no sería el que el usuario pulsó.
+        // Gana el encabezado más ALTO del árbol (Id más corto), que es el frente del que la obra
+        // habla —«ESTRUCTURA», no «INTERNA»—; los de abajo siguen alcanzables como anclas sueltas.
+        $vistos = [];
+        $out = [];
+        foreach ($frentes as $f) {
+            if (isset($vistos[$f['uniqueId']])) {
+                continue;
+            }
+            $vistos[$f['uniqueId']] = true;
+            $out[] = $f;
+        }
+
+        return ['semana' => (int) $semana, 'frentes' => $out, 'sinAncla' => $sinAncla];
+    }
+
+    /**
+     * Para cada encabezado sin `unique_id`, la hoja más temprana de su subárbol.
+     *
+     * **Por qué existe.** `programa_consolidado.Id` es la ruta WBS de MS Project («1», «1.2»,
+     * «1.2.1»), así que el subárbol de un encabezado son las filas cuyo `Id` empieza por el suyo más
+     * un punto. `20260712_remap_consolidado_unique_id.php` deja los encabezados sin `unique_id` —un
+     * encabezado no es una tarea de MS Project y no tiene identidad propia que sobreviva a una
+     * reprogramación—, y sin identificador no hay a qué amarrar. Anclarlo a una hoja REAL le da una
+     * identidad estable sin inventar ids ni tocar datos del LPS.
+     *
+     * **Por qué la más temprana y no la primera.** Medido: en «Campamentos e Instalaciones» la
+     * primera por orden arranca el 2023-08-05 y la más temprana el 2023-07-31, que es justo la fecha
+     * del encabezado. Anclar por orden movería la fecha del frente sin que nadie lo pidiera.
+     *
+     * @return array<string, array{uniqueId: int, fechaInicio: string}> indexado por `Id` del encabezado
+     */
+    private function anclasDeEncabezados(int $projectId, int $semana): array
+    {
+        $filas = $this->db->query(
+            'SELECT Id, Titulo, unique_id, Fecha_Inicio FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ? AND Fecha_Inicio IS NOT NULL
+             ORDER BY Fecha_Inicio ASC, unique_id ASC',
+            [$projectId, $semana],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $encabezados = [];
+        $hojas = [];
+        foreach ($filas as $f) {
+            if ((int) $f['Titulo'] === 1) {
+                if ($f['unique_id'] === null) {
+                    $encabezados[] = (string) $f['Id'];
+                }
+                continue;
+            }
+            if ($f['unique_id'] !== null) {
+                $hojas[] = $f;
+            }
+        }
+
+        $out = [];
+        foreach ($encabezados as $id) {
+            // El prefijo lleva punto para no confundir «1.2» con «1.20». Un `Id` no jerárquico
+            // —el proyecto 74 numera 199, 201, 202— simplemente no casa con nada y se queda fuera:
+            // es de los que el llamador cuenta en `sinAncla` y la pantalla declara.
+            $prefijo = $id . '.';
+            $largo = strlen($prefijo);
+            foreach ($hojas as $h) {
+                if (strncmp((string) $h['Id'], $prefijo, $largo) !== 0) {
+                    continue;
+                }
+                // `$hojas` ya viene ordenado por fecha, así que la primera que casa es la más
+                // temprana y no hace falta comparar.
+                $out[$id] = [
+                    'uniqueId' => (int) $h['unique_id'],
+                    'fechaInicio' => (string) $h['Fecha_Inicio'],
                 ];
-            }, $rows),
-        ];
+                break;
+            }
+        }
+        return $out;
     }
 
     /**

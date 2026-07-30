@@ -51,6 +51,50 @@ $pdo->exec("SET time_zone = '-05:00'");
 
 $apply = in_array('--apply', $argv ?? [], true);
 
+/**
+ * GUARDARRAÍL AÑADIDO EL 2026-07-30 — esta migración quedó obsoleta y es destructiva.
+ *
+ * Su premisa (línea «title rows do not FK to programa») era cierta en julio de 2026 con el esquema
+ * de entonces. Hoy NO lo es: `fk_pc__programa__unique_id` referencia `programa (project_id,
+ * unique_id)` —no `programa.Consecutivo`— y `programa` SÍ contiene los encabezados con su propio
+ * `unique_id`. La migración confunde las dos columnas: solo `Consecutivo_en_Programa` necesitaba
+ * anularse en los encabezados, y anula también `unique_id`.
+ *
+ * Consecuencia medida: `PlanFechasService::semanaYFrentes()` exige `unique_id IS NOT NULL` y marca
+ * `esFrente = Titulo === 1`. Con los encabezados anulados, una obra se queda SIN NINGÚN FRENTE al
+ * que amarrar paquetes — el desplegable «Elegir frente…» ofrece solo actividades. Le pasó a
+ * `prueba-lps` (proyecto 27) el 2026-07-29.
+ *
+ * Dry-run sobre la base de desarrollo del 2026-07-30: `pc_t1_nulled=12136` —todos los encabezados
+ * de todos los proyectos, Da Porto incluido— y su mapa de reasignación encuentra UNA entrada.
+ *
+ * Se aborta antes de tocar nada. `--acepto-destruir-los-frentes` existe solo para un entorno
+ * legado que de verdad siga con el esquema de julio; si lo necesitas, mide antes.
+ */
+$excepcion = in_array('--acepto-destruir-los-frentes', $argv ?? [], true);
+if (!$excepcion) {
+    $encabezadosVivos = (int) $pdo->query(
+        'SELECT COUNT(*) FROM programa WHERE Titulo = 1 AND unique_id IS NOT NULL'
+    )->fetchColumn();
+    if ($encabezadosVivos > 0) {
+        fwrite(STDERR, <<<TXT
+
+        ABORTADA: esta migración está obsoleta y borraría los frentes de obra.
+
+        `programa` tiene {$encabezadosVivos} encabezados (Titulo=1) con `unique_id`, así que la FK
+        `fk_pc__programa__unique_id` se satisface y NO hace falta anular nada en
+        `programa_consolidado`. Anularlo deja a las obras sin frentes a los que amarrar paquetes
+        en el Plan de Compras (PlanFechasService::semanaYFrentes exige `unique_id IS NOT NULL`).
+
+        Si de verdad estás en un entorno con el esquema de julio de 2026, mide primero:
+          SELECT COUNT(*) FROM programa WHERE Titulo = 1 AND unique_id IS NOT NULL;   -- debe dar 0
+        y solo entonces vuelve a lanzarla con --acepto-destruir-los-frentes.
+
+        TXT);
+        exit(1);
+    }
+}
+
 $stats = [
     'pc_rows_total' => 0,
     'pc_t0' => 0,
