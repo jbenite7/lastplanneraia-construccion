@@ -59,7 +59,7 @@ por prudencia nunca es el error caro.
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
-| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **EN CURSO** (construido; e2e corridos y en verde el 2026-07-30 — falta la condición de hecho nº 3: la lectura de un revisor ajeno al módulo — ver nota) | último: `5e80112` | 2026-07-30 |
+| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **HECHO** — 8 pantallas con ayuda, recorrido omitible, 13 e2e en verde y la lectura del revisor dada por cumplida por Felipe | `5e80112` (serie `b4294f3`…`5e80112`) | 2026-07-30 |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
@@ -181,7 +181,7 @@ la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actual
 `mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote
 su frente.
 
-### Nota sobre la nº 6 — por qué no se marca `HECHO`
+### Nota sobre la nº 6 — qué se construyó y cómo se verificó
 
 Está **construido y commiteado** en `worktree-pdc-ola2-ayuda-in-app`: las ocho pantallas con su
 botón, el contenido de las ocho ayudas, el recorrido de seis paradas con su memoria por usuario, el
@@ -190,8 +190,7 @@ e2e escrito y la regla de proceso en `DESIGN.md` y `docs/pdc-v2.md`.
 **Verificado:** 362 tests de vitest en verde (25 archivos, 28 nuevos entre `ayuda.test.ts` y
 `recorrido.test.ts`), tipos limpios, bundle recompilado a `public/pdc-app/`.
 
-De las dos verificaciones aplazadas, **la primera ya está hecha (2026-07-30)** y la segunda sigue
-pendiente — por eso la fila todavía no dice `HECHO`:
+Las dos verificaciones que estaban aplazadas **están hechas (2026-07-30)**, y con eso la fila cierra:
 
 1. ~~Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.~~ **Corridos y en verde: 6 de 6**, sobre este árbol
    servido en `http://localhost:8083` (contenedor propio con la imagen del servicio `app`, red del
@@ -205,13 +204,18 @@ pendiente — por eso la fila todavía no dice `HECHO`:
    `pdc-v2-maestro` — el silenciador llega a todos los e2e del PDC y ningún modal tapa un clic.
    **Rojo preexistente, ajeno a esto:** `pdc-v2-sin-scroll-x.spec.mjs` falla igual con estos cambios
    revertidos (comprobado por `git stash` en la misma sesión).
-2. **La condición de hecho nº 3 del spec** — un revisor que no conoce el módulo lee las ayudas y
-   recorre el flujo sin preguntar. Es *el* hecho de verdad del entregable; que los botones existan
-   no lo sustituye.
+2. ~~La condición de hecho nº 3 del spec — un revisor que no conoce el módulo lee las ayudas y
+   recorre el flujo sin preguntar.~~ **Dada por cumplida por Felipe el 2026-07-30.** Es el hecho de
+   verdad del entregable y no lo cubre ningún test: los tests atrapan la pantalla sin ayuda y la
+   jerga, no atrapan una explicación que no explica. Por eso lo cierra una persona y no una tubería,
+   y por eso queda escrito **quién** lo cerró y cuándo.
 
-**Riesgo que hereda quien cierre esto:** el punto 2 es el único que puede detectar que un texto es
-correcto pero inútil. Los tests atrapan la pantalla sin ayuda y la jerga; no atrapan una explicación
-que no explica.
+**Lo que esta fila NO garantiza hacia el futuro.** Que las ayudas fueran verdad el 2026-07-30 no
+dice nada de mañana. Lo único que lo sostiene es la regla escrita en `DESIGN.md` §Do y en
+`docs/pdc-v2.md`: **una pantalla no se cierra sin su ayuda, y cambiarla cuenta como cerrarla otra
+vez.** Ya se aplicó una vez con resultado (el número de pendientes resueltos del Maestro, `a62d619`,
+donde el cambio de pantalla arrastró su texto en el mismo commit). Quien toque una pantalla del PDC
+y no toque su entrada en `pdc-app/src/lib/ayuda.ts` está dejando el cambio a medias.
 
 **Cambio de alcance medido, no supuesto:** el spec decía «nueve pantallas» mezclando páginas con
 pestañas. El inventario contra el código son **8 páginas y 13 pestañas**, y el usuario decidió un
