@@ -289,6 +289,16 @@ $assert(
     in_array('Porcelanato', $nombresVenc, true),
     'Los lotes SÍ aparecen en el tablero: es donde de verdad se contrata. Vio: ' . implode(' · ', $nombresVenc),
 );
+// El conteo, y no solo los nombres: sin esta aserción, una unión hecha por paquete en vez de por
+// destino multiplica las filas del tablero y este test sigue pasando —los nombres que espera están
+// todos, solo que repetidos—. Se comprobó rompiendo la unión a propósito: sin esto, verde.
+// 5 destinos × 7 pasos = 35, menos el paso de «Porcelanato» que se registró como cumplido más
+// arriba: el tablero solo mira lo pendiente.
+$assert(
+    array_sum($venc['conteos']) === 5 * 7 - 1,
+    'El tablero cuenta cada paso pendiente UNA vez: 34. Dio ' . array_sum($venc['conteos']),
+);
+
 $resumen = $seg->resumen($P);
 $idsResumen = array_map(static fn (array $f): string => $f['paqueteId'] . ':' . $f['subpaqueteId'], $resumen);
 $assert(

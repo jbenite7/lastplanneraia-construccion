@@ -258,10 +258,17 @@ aprende de lotes, y preseleccionar la sugerencia del paquete en sus tres lotes l
 mismo frente, lo contrario de lo que se busca). Y un lote **sin insumos** no aparece como destino
 contratable: no tiene valor que repartir ni nada que contratar, así que tampoco se le ofrece frente.
 
-**El volumen sigue sin estresar,** y es el único hueco que dejo: Da Porto tiene 4 paquetes con insumos
-y 12 asignaciones. La regla de contar por paquete + lote está probada (los tests exigen que no se
-repitan destinos ni se multipliquen los pasos) pero no medida con los 96 paquetes previstos, porque no
-hay ningún proyecto con volumen en la base local.
+**El volumen ya está estresado** (2026-07-30). `tests/test_pdc_v2_subpaquetes_volumen.php` fabrica la
+escala real del módulo —96 paquetes, 384 insumos, 12 partidos en 3 lotes cada uno = **132 destinos
+contratables**— y comprueba que la unidad se sostiene: ningún destino repetido, una cabecera y
+exactamente siete pasos por destino (924 filas, ni una mezclada), recalcular no duplica, y las tres
+vistas que consumen la unidad —seguimiento, vencimientos y curva de caja— cuentan cada cosa una vez.
+Medición: partir y repartir 0,41 s · amarrar 1,14 s · **calcular el plan de 132 destinos, 1,30 s**.
+
+Y se comprobó que el test **sabe fallar**: rompiendo a propósito la unión por lote, el tablero pasó de
+924 pasos a 1.932. Con ese mismo sabotaje el test pequeño seguía **en verde**, porque comprobaba
+nombres y no totales — así que se le añadió también la aserción de conteo. Un test de regresión que
+nunca se ha visto fallar no prueba nada.
 
 La API que sostiene todo esto: `GET /plan-compras/api/subpaquetes?paqueteId=N`
 devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
