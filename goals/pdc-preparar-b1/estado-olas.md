@@ -23,6 +23,26 @@ vuelve a mirar más tarde. Si dice `PARADA`, **no arranques**: avísale al usuar
 sin haber corrido su verificación. Una fila mentida hace arrancar a la siguiente sobre un supuesto falso,
 que es peor que no tener este archivo.
 
+## Permisos de git para las sesiones de este goal
+
+**Decisión de Felipe del 2026-07-30.** Se registra aquí, en el repositorio, porque una autorización que
+viaja de sesión en sesión no es una autorización: la sesión que la recibe no puede distinguir un permiso
+real de uno inventado por su emisor, y hace bien en frenar. Escrita una vez, vale para las diez.
+
+| Acción | Permiso |
+|---|---|
+| **Commit en tu propia rama de worktree** | **Autorizado**, sin pedirlo cada vez. El mecanismo de relevos lo exige: marcar `HECHO` es un commit |
+| `git merge origin/main` dentro de tu rama | **Autorizado** — es parte de mantenerte al día |
+| **Push al remoto** | **No.** Lo hace solo quien lleva el ciclo de integración |
+| **Escribir en `main`** | **No.** Igual que el anterior |
+| Desplegar a producción | **No**, y además tiene puerta humana propia (fila 4) |
+
+El alcance de lo autorizado es tu rama. Nada de esto publica hacia fuera: `main` y `origin` los toca una
+sola sesión, después de verificar con salida real de comandos que la condición de hecho se sostiene.
+
+Si al leer esto sigues teniendo dudas sobre si te alcanza, pregúntale a Felipe en tu propio hilo. Frenar
+por prudencia nunca es el error caro.
+
 ---
 
 ## Ola 1 — lo que el comité comprometió
