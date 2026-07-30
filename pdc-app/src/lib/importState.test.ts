@@ -9,6 +9,15 @@ const preview: ImportPreview = {
   advertencias: [],
   sinCambios: false,
   versionActiva: null,
+  // Sin versión activa no hay trabajo previo que perder, así que el impacto viene en cero: es lo que
+  // devuelve el servicio en un proyecto que importa por primera vez.
+  impacto: {
+    versionActiva: null,
+    nuevosSinPaquete: { cantidad: 0, valor: 0, detalle: [] },
+    desaparecenConPaquete: { cantidad: 0, valor: 0, detalle: [] },
+    cambianTipo: { cantidad: 0, valor: 0, detalle: [] },
+    valorAfectado: 0,
+  },
 }
 
 const resultado: ImportConfirmResult = {

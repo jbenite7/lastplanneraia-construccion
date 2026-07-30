@@ -752,3 +752,33 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
    semana, y darles color propio los pondría a competir con lo que sí lo es. */
 .pdc-venc--adelante,
 .pdc-venc--sin_fecha { color: var(--pdc-ink-muted); }
+/* ── Impacto de recargar el presupuesto y avisos del tamiz ──────────────────────────────────────
+   Dos bloques informativos que comparten tabla de detalle. Los dos señalan y ninguno bloquea, así
+   que se leen como aviso —borde y superficie del tema— y nunca como error. */
+.pdc-impacto { margin: 12px 0; }
+.pdc-impacto h3 { font-size: var(--pdc-fs-md); margin: 0 0 4px; }
+.pdc-impacto-cifras { list-style: none; padding: 0; margin: 0 0 8px; display: flex; flex-direction: column; gap: 6px; }
+/* Cerrados, los tres avisos van en UNA fila: este bloque le robaba 156px de alto a la grilla del
+   visor, que es a lo que se viene, y la dejaba en ocho filas visibles. El que se abra pasa a ocupar
+   el ancho completo y empuja a los otros abajo. */
+.pdc-avisos-lista { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-start; }
+.pdc-avisos-lista > details { border-top: 1px solid var(--pdc-border); padding-top: 6px; }
+.pdc-avisos-lista > details[open] { flex-basis: 100%; }
+.pdc-impacto details > summary,
+.pdc-avisos details > summary { cursor: pointer; padding: 4px 0; white-space: nowrap; }
+.pdc-impacto details > summary:focus-visible,
+.pdc-avisos details > summary:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+.pdc-avisos-umbral { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.pdc-avisos-umbral .pdc-ayuda { margin: 0; }
+.pdc-avisos-umbral input[type='number'] {
+  background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control);
+  border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); width: 15ch;
+}
+/* Tabla de detalle de los desplegables: se desborda en su propia caja, nunca la página. */
+.pdc-tabla-detalle {
+  width: 100%; border-collapse: collapse; font-size: var(--pdc-fs-sm);
+  display: block; overflow: auto; max-height: 40vh;
+}
+.pdc-tabla-detalle th, .pdc-tabla-detalle td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--pdc-border); }
+.pdc-tabla-detalle th { color: var(--pdc-ink-muted); font-weight: 600; }
+.pdc-tabla-detalle .pdc-num { text-align: right; font-variant-numeric: tabular-nums; }

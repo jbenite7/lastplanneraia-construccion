@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filtraPorTexto, normaliza, plural } from './texto'
+import { contarInsumos, filtraPorTexto, normaliza, PALABRA_INSUMOS, plural } from './texto'
 
 describe('plural', () => {
   it('el singular va sin «s»', () => {
@@ -64,5 +64,30 @@ describe('filtraPorTexto', () => {
 
   it('busca por trozo, no solo por el principio', () => {
     expect(filtraPorTexto(filas, 'madera', (f) => f.nombre)).toHaveLength(1)
+  })
+})
+
+describe('contarInsumos', () => {
+  it('las dos magnitudes tienen una sola palabra cada una', () => {
+    expect(PALABRA_INSUMOS.apariciones).toBe('apariciones en APU')
+    expect(PALABRA_INSUMOS.distintos).toBe('insumos distintos')
+  })
+
+  it('el 820 y el 396 pueden convivir sin parecer un error', () => {
+    expect(contarInsumos(820, 'apariciones')).toBe('820 apariciones en APU')
+    expect(contarInsumos(396, 'distintos')).toBe('396 insumos distintos')
+  })
+
+  it('en singular no dice «1 insumos distintos»', () => {
+    expect(contarInsumos(1, 'distintos')).toBe('1 insumo distinto')
+    expect(contarInsumos(1, 'apariciones')).toBe('1 aparición en APU')
+  })
+
+  it('el cero va en plural', () => {
+    expect(contarInsumos(0, 'distintos')).toBe('0 insumos distintos')
+  })
+
+  it('los miles se separan como se leen en español', () => {
+    expect(contarInsumos(1343, 'apariciones')).toBe('1.343 apariciones en APU')
   })
 })

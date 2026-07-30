@@ -10,9 +10,10 @@ import {
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { alternarSeleccion, puedeMarcar, rutaComparar, rutaVisor } from '../lib/historialVersiones'
 import { estadoInicial, importReducer } from '../lib/importState'
+import { hayImpacto, textoConserva } from '../lib/impactoReimport'
 import { etiquetaVersion } from '../lib/versionLabel'
-import type { Comparativo, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
-import { plural } from '../lib/texto'
+import type { Comparativo, GrupoImpacto, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
+import { contarInsumos, plural } from '../lib/texto'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -57,7 +58,9 @@ const colsVersiones = (seleccion: number[]): ColDef<VersionPresupuesto>[] => [
     tooltipValueGetter: (p) => String(p.value ?? ''),
   },
   { ...columnaNumero('totalActividades', 'Actividades'), colId: 'actividades', headerName: 'Activ.', headerTooltip: 'Actividades del presupuesto' },
-  { ...columnaNumero('totalInsumos', 'Insumos'), colId: 'insumos', headerTooltip: 'Filas de insumo del presupuesto: un mismo insumo cuenta una vez por cada actividad que lo usa.' },
+  // «Aparic. APU» y no «Insumos»: la columna cuenta apariciones (820 en Da Porto), no insumos
+  // distintos (396). Llamarla «Insumos» fue lo que hizo falta explicar tres veces en el comité.
+  { ...columnaNumero('totalInsumos', 'Insumos'), colId: 'insumos', headerName: 'Aparic. APU', headerTooltip: 'Apariciones en APU: un mismo insumo cuenta una vez por cada actividad que lo usa. No es el número de insumos distintos.' },
   columnaMoneda('costoTotal', 'Costo total'),
   { ...COLUMNA_CORTA, colId: 'importadoPor', field: 'importadoPor', headerName: 'Importó', minWidth: 110, maxWidth: 150, wrapText: true, autoHeight: true },
   { ...COLUMNA_CORTA, colId: 'estado', field: 'activa', headerName: 'Estado', valueFormatter: (p) => (p.value ? 'Activa' : '') },
@@ -263,7 +266,7 @@ export default function ImportarPresupuesto() {
           <h2>Previsualización — {state.preview?.versionLabel ?? 'sin versión'}</h2>
           <p>
             {r.capitulos} capítulos · {r.subcapitulos} subcapítulos · {r.grupos} grupos · {r.actividades} actividades ·{' '}
-            {r.insumos} insumos · Costo total {moneda(r.costoTotal)}
+            {contarInsumos(r.insumos, 'apariciones')} · Costo total {moneda(r.costoTotal)}
           </p>
           {state.preview?.advertencias.map((a) => (
             <p key={a} className="pdc-advertencia">⚠ {a}</p>
@@ -273,6 +276,62 @@ export default function ImportarPresupuesto() {
               ⚠ Este presupuesto es idéntico a la <strong>Versión {state.preview.versionActiva.numero}</strong> (activa). No se creará una versión nueva.
             </p>
           )}
+          {/* El impacto va ANTES del botón: hoy el usuario confirma a ciegas y no sabe cuánto de su
+              trabajo queda huérfano hasta después de haberlo hecho. Informa; no cambia nada solo. */}
+          {hayImpacto(state.preview?.impacto) && state.preview && (
+            <div className="pdc-impacto" data-testid="pdc-import-impacto">
+              <h3>Impacto sobre el trabajo ya hecho</h3>
+              <p className="pdc-ayuda">
+                Comparado con la {state.preview.impacto.versionActiva?.label || 'versión activa'}.
+                Esto se informa: no se reasigna nada por su cuenta.
+              </p>
+              <ul className="pdc-impacto-cifras">
+                {/* El rótulo concuerda en número: «1 insumos nuevos» es exactamente el tropiezo de
+                    lectura que este trabajo viene a quitar de la aplicación. */}
+                {([
+                  ['nuevos', 'insumo nuevo sin paquete', 'insumos nuevos sin paquete', state.preview.impacto.nuevosSinPaquete,
+                    'Aparecen en esta versión y no tienen destino asignado: es trabajo que se suma.'],
+                  ['desaparecen', 'insumo con paquete que desaparece', 'insumos con paquete que desaparecen', state.preview.impacto.desaparecenConPaquete,
+                    'Estaban asignados a un paquete y ya no existen: es trabajo que se pierde.'],
+                  ['cambian', 'insumo que cambia de tipo', 'insumos que cambian de tipo', state.preview.impacto.cambianTipo,
+                    'Siguen existiendo, pero el motor los va a sugerir distinto. Se señalan para que los revises a mano.'],
+                ] as [string, string, string, GrupoImpacto, string][]).map(([id, uno, varios, grupo, ayuda]) => (
+                  <li key={id}>
+                    <details data-testid={`pdc-impacto-${id}`}>
+                      <summary>
+                        <strong>{plural(grupo.cantidad, uno, varios)}</strong> · {moneda(grupo.valor)}
+                      </summary>
+                      <p className="pdc-ayuda">{ayuda}</p>
+                      {grupo.detalle.length === 0 ? (
+                        <p className="pdc-vacio">Ninguno.</p>
+                      ) : (
+                        <table className="pdc-tabla-detalle">
+                          <thead>
+                            <tr><th>Insumo</th><th>Und</th><th>Tipo</th><th>Paquete actual</th><th>Valor</th></tr>
+                          </thead>
+                          <tbody>
+                            {grupo.detalle.map((f) => (
+                              <tr key={`${f.descripcion}|${f.unidad}`}>
+                                <td>{f.descripcion}</td>
+                                <td>{f.unidad}</td>
+                                <td>{f.tipoInsumoAnterior === null ? f.tipoInsumo : `${f.tipoInsumoAnterior} → ${f.tipoInsumo}`}</td>
+                                <td>{f.paquete ?? '—'}</td>
+                                <td className="pdc-num">{moneda(f.valorTotal)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </details>
+                  </li>
+                ))}
+              </ul>
+              <p data-testid="pdc-impacto-valor">
+                <strong>Valor afectado: {moneda(state.preview.impacto.valorAfectado)}</strong> — la suma de los tres grupos.
+              </p>
+            </div>
+          )}
+          <p className="pdc-ayuda" data-testid="pdc-import-conserva">{textoConserva(state.preview?.impacto)}</p>
           <button
             type="button"
             data-testid="pdc-import-confirmar"
