@@ -145,7 +145,7 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 |---|---|---|---|---|---|
 | 8a | Subpaquetes de obra | 7a y 7b | **HECHO** | `6d702ef` · `935d194` · `ceb0e73` + el amarre por lote | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
-| 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
+| 9 | Torre de Control (B3) | 1 | HECHO | `e610fbb` (rama `worktree-pdc-b3-torre-control`) | 2026-07-30 |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
 ---
