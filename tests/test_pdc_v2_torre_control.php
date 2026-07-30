@@ -120,6 +120,16 @@ $assert(($agg['por_paso']['Propuestas']['vencidos'] ?? -1) === 0, 'avance por pa
 $assert(isset($agg['por_responsable'][0]), 'carga por responsable: los pasos sin responsable se agrupan aparte');
 $assert(($agg['por_responsable'][0]['pendientes'] ?? -1) === 4, 'carga por responsable: los cuatro pasos del fixture no tienen responsable');
 
+// --- El drill-down al paquete ------------------------------------------------------------------
+$detalle = $svc->detalleDestinos([$A], $HOY);
+$assert(count($detalle) === 2, 'el detalle de la obra A trae sus dos pasos pendientes');
+$assert(isset($detalle[0]['paquete'], $detalle[0]['estado']), 'cada fila del detalle trae paquete y estado');
+$assert($detalle[0]['estado'] === 'vencido', 'el detalle viene ordenado por fecha: primero lo vencido');
+$assert(!array_key_exists('proveedor', $detalle[0]), 'el detalle NO trae proveedor');
+
+$detalleB = $svc->detalleDestinos([$B], $HOY);
+$assert(($detalleB[0]['lote'] ?? null) !== null, 'el detalle de un paquete partido nombra su lote');
+
 // --- El informe de la Torre ya no lee el PDC viejo -------------------------------------------
 $ct = new \App\Services\ControlTowerService($db);
 $brief = $ct->getBrief('pdc', [$A, $B], '1', 'A');

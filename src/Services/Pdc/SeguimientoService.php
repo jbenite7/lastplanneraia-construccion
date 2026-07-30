@@ -484,6 +484,57 @@ class SeguimientoService
     }
 
     /**
+     * Detalle del drill-down de la Torre de Control: un renglón por paso pendiente.
+     *
+     * No selecciona proveedor a propósito (Decisión 3 del spec): ese dato no sale del módulo.
+     * Para eso está la pantalla de contratación, que ya lo protege.
+     *
+     * @param int[] $projectIds
+     * @return list<array{project_id:int,paquete:string,lote:?string,paso:string,fecha_fin:?string,estado:string,diasDesfase:int,responsable:?string}>
+     */
+    public function detalleDestinos(array $projectIds, ?string $hoy = null): array
+    {
+        $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $ids = array_values(array_unique(array_map('intval', $projectIds)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $this->db->query(
+            "SELECT ps.project_id, p.nombre AS paquete, s.nombre AS lote, ps.paso, ps.fecha_fin,
+                    u.nombre AS responsable
+             FROM pdc_plan_paso ps
+             JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
+                                     AND pp.subpaquete_id = ps.subpaquete_id
+             JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
+             LEFT JOIN pdc_subpaquete s ON s.project_id = ps.project_id AND s.id = ps.subpaquete_id
+             LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
+             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL AND p.activo = 1
+             ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, p.nombre ASC, ps.orden ASC",
+            $ids,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $fechaFin = $r['fecha_fin'] === null ? null : (string) $r['fecha_fin'];
+            $c = self::clasificarVencimiento($fechaFin, $hoy);
+            $out[] = [
+                'project_id'  => (int) $r['project_id'],
+                'paquete'     => (string) $r['paquete'],
+                'lote'        => $r['lote'] === null ? null : (string) $r['lote'],
+                'paso'        => (string) $r['paso'],
+                'fecha_fin'   => $fechaFin,
+                'estado'      => (string) $c['estado'],
+                'diasDesfase' => (int) $c['diasDesfase'],
+                'responsable' => $r['responsable'] === null ? null : (string) $r['responsable'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * Agregado de vencimientos para VARIAS obras, para la Torre de Control (fase B3).
      *
      * Una sola consulta con IN (...), no N consultas: el número de obras autorizadas crece y el

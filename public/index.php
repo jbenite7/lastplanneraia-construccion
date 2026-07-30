@@ -391,6 +391,7 @@ $router->get('/api/bi/report/programa-general/cnc-detail', [\App\Controllers\Api
 $router->get('/api/bi/report/intermedia', [\App\Controllers\Api\BiControlTowerApiController::class, 'intermedia']);
 $router->get('/api/bi/report/semanal', [\App\Controllers\Api\BiControlTowerApiController::class, 'semanal']);
 $router->get('/api/bi/report/pdc', [\App\Controllers\Api\BiControlTowerApiController::class, 'pdc']);
+$router->get('/api/bi/report/pdc/detail', [\App\Controllers\Api\BiControlTowerApiController::class, 'pdcDetail']);
 $router->get('/api/bi/report/cic', [\App\Controllers\Api\BiControlTowerApiController::class, 'cic']);
 $router->get('/api/bi/report/cip', [\App\Controllers\Api\BiControlTowerApiController::class, 'cip']);
 $router->get('/api/bi/report/curva-s', [\App\Controllers\Api\BiControlTowerApiController::class, 'curvaS']);
