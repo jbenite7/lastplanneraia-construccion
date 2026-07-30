@@ -118,7 +118,7 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO (falta elegir el lote al amarrar un frente) | `6d702ef` + pantalla de partir y repartir | 2026-07-30 |
+| 8a | Subpaquetes de obra | 7a y 7b | **HECHO** | `6d702ef` · `935d194` · `ceb0e73` + el amarre por lote | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
@@ -166,27 +166,46 @@ decimal, y lleva la advertencia del método dentro del archivo. Matiz honesto so
 verificó el formato, las cabeceras de descarga y el contenido byte a byte, no se abrió Excel en esta
 máquina.
 
-**8a — subpaquetes: EN CURSO, pero mucho más cerca.** Ya se puede **partir un paquete y repartirle
-insumos desde la pantalla**: panel «Lotes de obra» dentro de «Paquetes con insumos», con el resumen del
-sombrilla (rango, avance agregado y cuánto de su valor no entra al plan), cambio de modalidad por lote,
-agregar y borrar lotes, y el reparto de insumos con casillas. Recorrido en Da Porto: se partió
-«Suministro CONCRETO» en tres lotes, se le movieron dos insumos al primero ($2.161.853.568, dejando el
-«Resto» en cinco por $329.341.927 — suman el total del paquete), y el lote apareció como fila propia en
-el plan con `esLote`. Al deshacer la partición desde la pantalla, **la foto del plan volvió a ser
-idéntica a la línea base**, que es el punto 4 de la condición de hecho comprobado de ida y de vuelta.
+**8a — subpaquetes: HECHO.** Los siete puntos de su condición de hecho están cumplidos y verificados
+en pantalla, no solo en tests.
 
-**Lo que falta para cerrarla:** en la pantalla de «Plan», el amarre a un frente todavía no permite
-elegir el lote — hoy cada lote solo puede recibir su propio frente por API (`amarrar` acepta
-`subpaqueteId`). Sin eso no se puede «darle a cada uno su fecha» desde la interfaz, y por tanto no se
-ve a los tres en el plan con fechas distintas: eso está probado en `test_pdc_v2_subpaquetes.php`, no en
-pantalla.
+Recorrido completo en Da Porto, con el paquete real «Suministro CONCRETO»:
 
-**Y un límite medido, no supuesto:** el volumen sigue sin estresar. Da Porto tiene 4 paquetes con
-insumos y 12 asignaciones, así que la regla de conteo por paquete + lote está **probada** (el test
-exige que no se repitan destinos ni se multipliquen los pasos) pero **no estresada** con los 96
-paquetes previstos. No hay ningún proyecto con volumen en la base local.
+1. Se partió en tres lotes desde la pantalla; nació el «Resto» automático con los insumos que nadie
+   movió.
+2. Se le repartieron insumos con casillas: un insumo a «Premezclado 3000», otro a «Premezclado 4000»,
+   y el «Resto» quedó con cinco. Los valores suman el total del paquete.
+3. En «Sin frente», cada lote apareció como **fila propia** rotulada «Suministro CONCRETO ›
+   Premezclado 3000», con su propio desplegable de frente. Se les dio **frentes distintos**
+   (PRELIMINARES y REDES) y al amarrar uno **su hermano no desapareció de la lista**.
+4. Tras recalcular, los tres lotes salen en el plan con **tres anclas distintas**: 2026-05-25,
+   2026-08-18 y 2027-03-16, cada uno con su propia fecha de arranque.
+5. Se deshizo la partición borrando los tres lotes: el paquete se despartió solo y **la foto del plan
+   volvió a ser idéntica a la línea base**. El punto 4 comprobado de ida y de vuelta, con fechas
+   propias y recálculo en medio, no solo en reposo.
 
-La API le deja el trabajo hecho a esa pantalla: `GET /plan-compras/api/subpaquetes?paqueteId=N`
+**La forma del amarre por lote se decidió antes de escribirla.** No es un segundo desplegable en la
+fila: la lista «Sin frente» pasó a enumerar **unidades contratables** en vez de paquetes, así que cada
+fila ya *es* un lote y solo le falta su frente. Esa fila ya llevaba el frente, la procedencia de la
+sugerencia y el botón de amarrar; una segunda elección dentro de ella obligaría a leer dos controles
+para entender una decisión.
+
+**Un fallo silencioso que apareció al hacerlo, y que ningún tipo detectaba:** `preseleccionDestinos()`
+seguía indexando por id de paquete mientras la pantalla ya leía «paquete:lote», así que la preselección
+del motor dejó de aplicarse **sin que TypeScript dijera nada** —un `Record<number, T>` es asignable a
+un `Record<string, T>`—. Corregido, con un test que lo fija.
+
+**Dos límites escritos, no supuestos.** El motor sigue sugiriendo por paquete y no por lote (no
+aprende de lotes, y preseleccionar la sugerencia del paquete en sus tres lotes les daría a los tres el
+mismo frente, lo contrario de lo que se busca). Y un lote **sin insumos** no aparece como destino
+contratable: no tiene valor que repartir ni nada que contratar, así que tampoco se le ofrece frente.
+
+**El volumen sigue sin estresar,** y es el único hueco que dejo: Da Porto tiene 4 paquetes con insumos
+y 12 asignaciones. La regla de contar por paquete + lote está probada (los tests exigen que no se
+repitan destinos ni se multipliquen los pasos) pero no medida con los 96 paquetes previstos, porque no
+hay ningún proyecto con volumen en la base local.
+
+La API que sostiene todo esto: `GET /plan-compras/api/subpaquetes?paqueteId=N`
 devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
 la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actualizar`, `eliminar` y
 `mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote
