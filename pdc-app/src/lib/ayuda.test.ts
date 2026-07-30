@@ -68,9 +68,14 @@ describe('contenido de la ayuda', () => {
   it('no documenta lo que todavía no existe', () => {
     const todo = JSON.stringify(AYUDAS)
     expect(todo).not.toMatch(/subpaquete/i)
-    // `reenganchados` se calcula en el servidor pero la pantalla no lo pinta. Describir un número
-    // que el lector no va a encontrar es la forma más rápida de que la ayuda deje de creerse.
-    expect(todo).not.toMatch(/reenganch/i)
+  })
+
+  it('no usa las palabras de dentro para cosas que sí se ven', () => {
+    // «Reenganchado» es como se llama por dentro el vínculo que vuelve de pendiente a automático.
+    // Desde que el resumen de la carga del maestro muestra ese número, la ayuda SÍ lo explica —pero
+    // con las palabras de la pantalla, «pendientes que se resolvieron solos»—. La regla no es
+    // callar el dato: es no obligar al lector a aprender el vocabulario del sistema.
+    expect(JSON.stringify(AYUDAS)).not.toMatch(/reenganch/i)
   })
 
   it('ayudaDe falla fuerte si le piden una pantalla que no existe', () => {

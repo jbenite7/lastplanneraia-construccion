@@ -516,11 +516,15 @@ todos los e2e (`silenciarRecorridoPdc`, vía `addInitScript`). Sin eso, cada tes
 arranca con almacén limpio, el recorrido se abre como modal y tapa los clics del resto de la suite
 del PDC. `tests/browser/pdc-v2-ayuda.spec.mjs` lo borra para sí mismo.
 
-**Dos huecos declarados, no olvidados:**
+**Un hueco declarado, no olvidado:**
 
 - **Subpaquetes no tiene ayuda** porque cuando se escribió esto su pantalla de partir y repartir no
   existía (fila 8a del tablero, `EN CURSO`). Cuando exista, entra aquí y en la ayuda del Plan.
-- **`reenganchados` no está documentado** porque no se ve: el servidor lo calcula y lo devuelve
-  (`MaestroSincoImportService.php`), pero la pantalla del Maestro no lo pinta. La ayuda sí explica
-  el efecto que el usuario **puede** comprobar —que la lista de pendientes baja sola tras una carga
-  de SINCO—. Mostrar el número es un cambio de esa pantalla, y arrastra su línea de ayuda.
+
+**Hueco cerrado el 2026-07-30 — y sirve de ejemplo de la regla funcionando.** `reenganchados` se
+calculaba en el servidor y el cliente lo descartaba, así que la ayuda solo podía describir el efecto
+(«la lista de pendientes puede haber bajado sin que tú hicieras nada») sin poder señalar dónde
+mirarlo. Al mostrarlo en el resumen de la carga, la entrada de `maestro` en `ayuda.ts` se actualizó
+**en el mismo commit** (`a62d619`). En pantalla no se dice «reenganchados» —es la palabra de dentro
+para el vínculo que vuelve de pendiente a automático— sino «N pendientes se resolvieron solos al
+entrar sus insumos»; `ayuda.test.ts` vigila que esa palabra interna no se cuele en ningún texto.
