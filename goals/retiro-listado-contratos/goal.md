@@ -2,7 +2,7 @@
 
 **Slug:** `retiro-listado-contratos`
 **Fecha de apertura:** 2026-07-29
-**Estado:** abierto, sin ejecutar — **la etapa 3 exige gate explícito**
+**Estado:** Etapas 1 y 2 ejecutadas y verificadas (2026-07-30) — Etapas 3 y 4 pospuestas para C1 / gates dedicados.
 
 ## Objetivo
 

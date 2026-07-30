@@ -23,8 +23,8 @@
 
 | Paradigma | Vistas | Motor | Características |
 |-----------|--------|-------|-----------------|
-| **DataTable** (legacy) | Contratos, CNP, CNC, CIC, Indicadores, Control Cambios | DataTables 1.11.4 | Tablas con paginación, filtros por columna, modales de edición |
-| **Handsontable** (moderno) | PDC, Listado Actividades, Programa General, Programa Actualizar, Programación Semanal, Programación Intermedia, Profesionales, Subcontratistas | Handsontable (full) | Grillas tipo spreadsheet, edición inline, auto-save, vista móvil tipo tarjetas |
+| **DataTable** (legacy) | CNP, CNC, CIC, Indicadores, Control Cambios | DataTables 1.11.4 | Tablas con paginación, filtros por columna, modales de edición |
+| **Handsontable** (moderno) | PDC, Programa General, Programa Actualizar, Programación Semanal, Programación Intermedia, Profesionales, Subcontratistas | Handsontable (full) | Grillas tipo spreadsheet, edición inline, auto-save, vista móvil tipo tarjetas |
 
 ### Patrón de Carga
 

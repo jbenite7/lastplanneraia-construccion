@@ -5,8 +5,8 @@ import { loginAndSelectProject, logout } from './support/session.mjs';
 const project = PROJECTS.find(({ key }) => key === 'construction');
 const CI_ADMIN = { username: 'test.A', password: 'aia2026' };
 const routes = [
-  '/contratos', '/control-cambios', '/dashboard/escalamientos', '/indicadores',
-  '/listado-actividades', '/pdc', '/profesionales', '/programa-general-actualizar',
+  '/control-cambios', '/dashboard/escalamientos', '/indicadores',
+  '/pdc', '/profesionales', '/programa-general-actualizar',
   '/programa-general', '/programacion-intermedia', '/programacion-semanal/cic',
   '/programacion-semanal/cnc', '/programacion-semanal/cnp',
   '/programacion-semanal', '/subcontratistas',

@@ -142,8 +142,6 @@ $router->get('/pdc', [\App\Controllers\Gestion\PdcController::class, 'index']);
 $router->get('/plan-compras', [\App\Controllers\Gestion\PlanComprasController::class, 'index']);
 $router->get('/profesionales', [\App\Controllers\Gestion\ProfesionalesController::class, 'index']);
 $router->get('/subcontratistas', [\App\Controllers\Gestion\SubcontratistasController::class, 'index']);
-$router->get('/contratos', [\App\Controllers\Gestion\ContratosController::class, 'index']);
-$router->get('/listado-actividades', [\App\Controllers\Gestion\ListadoActividadesController::class, 'index']);
 $router->get('/indicadores', [\App\Controllers\Gestion\IndicadoresController::class, 'index']);
 
 // Reportes (Nuevo Controller) - Allow GET and POST
@@ -155,41 +153,6 @@ $router->post('/reportes/{tipo}', [\App\Controllers\Gestion\ReportController::cl
 $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosController::class, 'index']);
 
 // --- APIs (Migradas Fase 3) ---
-// Api/Contratos
-$router->post('/api/contratos/list', [\App\Controllers\Api\ContratosApiController::class, 'list']);
-$router->post('/api/contratos/save', [\App\Controllers\Api\ContratosApiController::class, 'save']);
-$router->post('/api/contratos/auto-assign', [\App\Controllers\Api\ContratosApiController::class, 'autoAssign']);
-$router->post('/api/contratos/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewContratos']);
-$router->post('/api/contratos/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusContratos']);
-$router->post('/api/contratos/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyContratos']);
-$router->post('/api/contratos/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoContratos']);
-$router->post('/api/contratos/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackContratos']);
-$router->post('/api/contratos/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsContratos']);
-$router->post('/api/contratos/auto/assistant/inbox', [\App\Controllers\Api\SemiAutoController::class, 'assistantInboxContratos']);
-$router->post('/api/contratos/auto/assistant/ack', [\App\Controllers\Api\SemiAutoController::class, 'assistantAckContratos']);
-$router->post('/api/contratos/auto/assistant/feedback', [\App\Controllers\Api\SemiAutoController::class, 'assistantFeedbackContratos']);
-$router->post('/api/contratos/auto/learning/candidates', [\App\Controllers\Api\SemiAutoController::class, 'learningCandidatesContratos']);
-$router->post('/api/contratos/auto/learning/approve', [\App\Controllers\Api\SemiAutoController::class, 'learningApproveContratos']);
-$router->post('/api/contratos/auto/learning/reject', [\App\Controllers\Api\SemiAutoController::class, 'learningRejectContratos']);
-// Api/ListadoActividades
-$router->get('/api/listado-actividades/template', [\App\Controllers\Api\ListadoActividadesApiController::class, 'downloadTemplate']);
-$router->post('/api/listado-actividades/list', [\App\Controllers\Api\ListadoActividadesApiController::class, 'list']);
-$router->post('/api/listado-actividades/save', [\App\Controllers\Api\ListadoActividadesApiController::class, 'save']);
-$router->post('/api/listado-actividades/update-cell', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCell']);
-$router->post('/api/listado-actividades/update-card', [\App\Controllers\Api\ListadoActividadesApiController::class, 'updateCard']);
-$router->post('/api/listado-actividades/auto-generate', [\App\Controllers\Api\ListadoActividadesApiController::class, 'autoGenerate']);
-$router->post('/api/listado-actividades/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewListado']);
-$router->post('/api/listado-actividades/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusListado']);
-$router->post('/api/listado-actividades/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyListado']);
-$router->post('/api/listado-actividades/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoListado']);
-$router->post('/api/listado-actividades/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackListado']);
-$router->post('/api/listado-actividades/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsListado']);
-$router->post('/api/listado-actividades/auto/assistant/inbox', [\App\Controllers\Api\SemiAutoController::class, 'assistantInboxListado']);
-$router->post('/api/listado-actividades/auto/assistant/ack', [\App\Controllers\Api\SemiAutoController::class, 'assistantAckListado']);
-$router->post('/api/listado-actividades/auto/assistant/feedback', [\App\Controllers\Api\SemiAutoController::class, 'assistantFeedbackListado']);
-$router->post('/api/listado-actividades/auto/learning/candidates', [\App\Controllers\Api\SemiAutoController::class, 'learningCandidatesListado']);
-$router->post('/api/listado-actividades/auto/learning/approve', [\App\Controllers\Api\SemiAutoController::class, 'learningApproveListado']);
-$router->post('/api/listado-actividades/auto/learning/reject', [\App\Controllers\Api\SemiAutoController::class, 'learningRejectListado']);
 // Api/PDC
 $router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
 $router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);

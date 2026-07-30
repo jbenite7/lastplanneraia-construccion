@@ -1,5 +1,7 @@
 # Validar integralmente la migración a Handsontable
 
+**Estado:** descartado / no aplica (2026-07-30) — el retiro de `/listado-actividades` y `/contratos` dejó sin efecto esta validación; las tablas restantes se gobiernan mediante PDC V2 y `cierre-dark-mode-y-tablas`.
+
 ## Goal
 
 Completar, corregir y demostrar la migración de DataTables a Handsontable en Listado de Actividades, Contratos y PDC, incluyendo la tabla principal y `dt_definirContratos`. El trabajo se ejecuta como un único sprint continuo, con pruebas funcionales, persistencia, restauración de datos y matriz responsive Dark/Linen antes de una sola revisión y aprobación final.
