@@ -11,6 +11,7 @@ import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from '../
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
 import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
 import { plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -210,7 +211,7 @@ export default function MaestroInsumos() {
   if (sinPresupuesto) {
     return (
       <section className="pdc-page">
-        <header className="pdc-header"><h1>Maestro de insumos</h1></header>
+        <header className="pdc-header"><div className="pdc-titulo-fila"><h1>Maestro de insumos</h1><BotonAyuda pantalla="maestro" /></div></header>
         <div className="pdc-bloque pdc-vacio" data-testid="pdc-maestro-vacio">
           Este proyecto aún no tiene un presupuesto importado. Ve a <strong>Ensamble → Importar</strong>.
         </div>
@@ -222,7 +223,7 @@ export default function MaestroInsumos() {
     <section className="pdc-page">
       <header className="pdc-header pdc-header-fila">
         <div>
-          <h1>Maestro de insumos</h1>
+          <div className="pdc-titulo-fila"><h1>Maestro de insumos</h1><BotonAyuda pantalla="maestro" /></div>
           <p>Catálogo único de AIA. Vincula o crea los insumos del presupuesto activo.</p>
         </div>
         {resumen && (
