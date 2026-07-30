@@ -159,6 +159,42 @@ FROM pdc GROUP BY project_id ORDER BY filas DESC;
 SELECT COUNT(*) FROM papelera_pdc;
 ```
 
+### Qué se pierde exactamente si se borra — medido, no supuesto
+
+Contar filas no basta para decidir: hace falta saber **qué información** contienen. Medido sobre las 370
+filas:
+
+| Qué guarda la fila | Filas que lo tienen |
+|---|---|
+| Nombre del paquete de contratación | 370 (todas) |
+| Contratos asociados | 268 |
+| Estado | 269 |
+| Alguna fecha **real** de ejecución | 8 |
+| Proveedor adjudicado | 5 |
+| Valor de presupuesto | 3 |
+| Observaciones del contrato | 4 |
+| **Valor adjudicado / anticipo / vencimiento de pólizas** | **0** |
+
+**Lectura:** lo que hay es la *definición* de los paquetes —cómo se llaman, qué contratos agrupan, en qué
+estado están—, no su *ejecución*. Lo que costaría dinero perder (valores adjudicados, anticipos, pólizas)
+**no está registrado en ninguna fila**. Ocho filas de 370 tienen alguna fecha real.
+
+### El dato que cambia la decisión: tres de las cuatro obras no tienen nada en v2
+
+| `project_id` | Filas v1 | Paquetes distintos | Versiones de presupuesto v2 | Paquetes v2 |
+|---|---|---|---|---|
+| 73 | 292 | 66 | 1 | 3 |
+| 27 | 33 | 7 | **0** | **0** |
+| 68 | 24 | 3 | **0** | **0** |
+| 74 | 21 | 3 | **0** | **0** |
+
+Para las obras 27, 68 y 74, borrar el modelo viejo **no es migrar: es perder**. No hay equivalente en v2
+al que mirar. Son 78 filas y 13 paquetes distintos, casi sin ejecución registrada — poco, pero no nada, y
+sobre todo: nadie las ha migrado.
+
+Esto no bloquea el retiro del **código**, que es lo que estorba. Sí es la razón por la que retirar la
+pantalla y borrar los datos deben ser dos decisiones separadas.
+
 ## Decisión que corresponde al dueño del producto (Felipe), no al criterio técnico
 
 Con lo medido, la pregunta se puede formular en concreto:
@@ -175,11 +211,25 @@ Tres opciones, con lo que cuesta cada una:
 | **B. Exportar y luego borrar** | Volcado a CSV/SQL archivado fuera de la base, y `DROP` con respaldo verificable y plan de restauración | Medio; exige el gate destructivo de `AGENTS.md` | Sí, si el respaldo se verifica |
 | **C. Borrar sin más** | — | — | **No.** Contraviene `docs/global-tables-architecture.md` |
 
-**Mi recomendación, y es solo eso:** la **A**. El coste de conservar es despreciable y el retiro del
-código —que es lo que de verdad estorba— no necesita que las tablas desaparezcan. Separar «retirar la
-pantalla» de «borrar los datos» permite hacer lo primero sin arriesgar lo segundo, y deja la decisión
-sobre los datos para cuando haya certeza de que nadie los mira. Cualquier borrado, si se elige, exige el
-gate de Plannotator, respaldo verificable y estrategia de restauración.
+**Mi recomendación, y es solo eso:** la **A**, y la medición de arriba la refuerza en vez de debilitarla.
+
+El argumento no es «por si acaso». Es concreto:
+
+1. **Conservar no cuesta nada.** 176 KB, cuatro obras, sin lectores una vez retiradas las rutas. No frena
+   el retiro del código, que es lo único que de verdad estorba.
+2. **Borrar sí cuesta, aunque poco.** Tres de las cuatro obras no tienen equivalente en v2: para ellas
+   borrar es pérdida, no migración. Es poco valor —78 filas, casi sin ejecución registrada— pero la
+   asimetría manda: conservarlo de más no hace daño; borrarlo de menos no tiene vuelta atrás.
+3. **No hay forma de saber si alguien los mira.** La tabla no tiene timestamps. Elegir B sobre una
+   pregunta que no se puede responder es apostar, y no hace falta apostar.
+
+**Qué haría falta para que cambiara de opinión, para que quede escrito:** que confirmes que las obras 27,
+68 y 74 están cerradas o son de prueba, y que la 73 ya tiene en v2 lo que necesita. Ahí la **B** pasa a
+ser razonable — con export previo, gate de Plannotator, respaldo verificable y plan de restauración.
+
+**Lo que sí conviene decidir ya, y es barato:** que el retiro de C1 **no toque las tablas**. Eso desbloquea
+todo el trabajo de código sin comprometer ningún dato, y deja la pregunta de los datos abierta para cuando
+haya respuesta. Si te parece bien, lo doy por criterio de C1 salvo que digas lo contrario.
 
 ## Alcance corregido de C1, según lo medido
 
