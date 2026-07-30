@@ -183,11 +183,19 @@ el usuario acaba de seleccionar y no pueden diverger.
 | Paquetes · sin destino | «Queda 1 insumo…» | «Queda 1 insumo distinto…» |
 | Paquetes · propuesta del motor | «N insumos» | «N insumos distintos» |
 | Asistente · quedan sin asignar | «N insumos» | «N insumos distintos» |
-| Maestro · preview del import SINCO | «N insumos activos» | «N insumos distintos activos» |
+| Maestro · preview del import SINCO | «N insumos activos» | **sin cambio** (ver abajo) |
 | Paquetes · cobertura | ya decía «insumos distintos» | sin cambios (misma palabra) |
 
 De paso se corrigió la concordancia de los rótulos nuevos: «**1** insumo nuevo sin paquete», no
 «1 insumos nuevos» — que es exactamente el tropiezo de lectura que este trabajo viene a quitar.
+
+**Una etiqueta que se puso y se quitó, y por qué.** El preview del import SINCO se etiquetó primero
+como «N insumos distintos activos», y `pdc-v2-maestro-sinco.spec.mjs` se puso rojo afirmando el texto
+anterior. Al mirarlo, el test tenía razón: el criterio de este trabajo es etiquetar las cifras donde
+**las dos magnitudes pueden divergir**, y el catálogo SINCO no tiene dimensión de APU en absoluto —
+sus filas son insumos distintos por construcción—, así que «distintos» ahí añade una palabra que no
+responde a ninguna pregunta. Se revirtió la etiqueta, no el test. Queda anotado porque es la regla
+fallando en su propio borde: la tentación de aplicarla mecánicamente a todo lo que diga «insumos».
 
 El barrido con grep sobre `pdc-app/src/pages` y `src/components` no deja ninguna cifra de insumos
 muda; lo que queda son variables, encabezados de columna («Insumo») y frases sin número.
