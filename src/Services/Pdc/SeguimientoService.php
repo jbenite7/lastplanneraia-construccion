@@ -484,6 +484,68 @@ class SeguimientoService
     }
 
     /**
+     * Agregado de vencimientos para VARIAS obras, para la Torre de Control (fase B3).
+     *
+     * Una sola consulta con IN (...), no N consultas: el número de obras autorizadas crece y el
+     * panel de gerencia las pide todas de golpe.
+     *
+     * La clasificación NO se recalcula aquí: se delega en clasificarVencimiento(), la misma que
+     * consumen la pestaña del módulo y el semáforo del plan. Dos definiciones de «vencido» en la
+     * misma empresa es peor que no tener ninguna.
+     *
+     * @param int[] $projectIds
+     * @return array{hoy:string,por_obra:array<int,array{project_id:int,conteos:array<string,int>,destinos:int,pasos:int}>,totales:array<string,int>}
+     */
+    public function vencimientosAgregados(array $projectIds, ?string $hoy = null): array
+    {
+        $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
+
+        $ids = array_values(array_unique(array_map('intval', $projectIds)));
+        $vacio = ['vencido' => 0, 'sem1' => 0, 'sem2' => 0, 'sem3' => 0, 'sem6' => 0, 'adelante' => 0, 'sin_fecha' => 0];
+        if ($ids === []) {
+            return ['hoy' => $hoy, 'por_obra' => [], 'totales' => $vacio];
+        }
+
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        // La unión va por DESTINO (paquete + lote), igual que vencimientos(): unir solo por
+        // paquete hace que un paso de un paquete partido en tres se cuente tres veces.
+        $rows = $this->db->query(
+            "SELECT ps.project_id, ps.paquete_id, ps.subpaquete_id, ps.fecha_fin
+             FROM pdc_plan_paso ps
+             JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
+                                     AND pp.subpaquete_id = ps.subpaquete_id
+             JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
+             WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL AND p.activo = 1",
+            $ids,
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $porObra = [];
+        $totales = $vacio;
+        $destinos = [];
+        foreach ($rows as $r) {
+            $pid = (int) $r['project_id'];
+            if (!isset($porObra[$pid])) {
+                $porObra[$pid] = ['project_id' => $pid, 'conteos' => $vacio, 'destinos' => 0, 'pasos' => 0];
+                $destinos[$pid] = [];
+            }
+
+            $fechaFin = $r['fecha_fin'] === null ? null : (string) $r['fecha_fin'];
+            $estado = (string) self::clasificarVencimiento($fechaFin, $hoy)['estado'];
+
+            $porObra[$pid]['conteos'][$estado]++;
+            $porObra[$pid]['pasos']++;
+            $totales[$estado]++;
+            $destinos[$pid][$r['paquete_id'] . ':' . $r['subpaquete_id']] = true;
+        }
+
+        foreach ($destinos as $pid => $claves) {
+            $porObra[$pid]['destinos'] = count($claves);
+        }
+
+        return ['hoy' => $hoy, 'por_obra' => $porObra, 'totales' => $totales];
+    }
+
+    /**
      * Cuantos paquetes del proyecto NO puede ver el tablero, y por que.
      *
      * Un plan que calla lo que no sabe es peor que uno incompleto que lo declara: sin este numero, un
