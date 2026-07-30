@@ -76,6 +76,10 @@ class ControlTowerService
             'filters'               => $this->describeFilters($semana, $filters),
             'data_source'           => $this->dataSourceForReport($reportKey),
             'raw_row_count'         => count($data),
+            // Fase B3: avance por paso y carga por responsable. Solo para compras; el resto de
+            // informes no los tiene y mandarlos en null evita que el front adivine.
+            'pdc_breakdown'         => $reportKey === 'pdc' ? $this->pdcBreakdown($projectIds) : null,
+            'pdc_items'             => $reportKey === 'pdc' ? $data : null,
             'activity_snapshot'     => $activitySnapshot,
             'executive_brief'       => $this->storytelling->composeExecutiveBrief($reportKey, $data, $role),
             'scorecard'             => $scorecard,
@@ -552,6 +556,24 @@ class ControlTowerService
         }
 
         return $filas;
+    }
+
+    /**
+     * Avance por paso y carga por responsable, para el panel de compras (fase B3).
+     *
+     * @param int[] $projectIds
+     * @return array{por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:list<array{nombre:string,pendientes:int,vencidos:int}>}
+     */
+    private function pdcBreakdown(array $projectIds): array
+    {
+        $agg = (new \App\Services\Pdc\SeguimientoService($this->db))->vencimientosAgregados($projectIds);
+
+        return [
+            'por_paso' => $agg['por_paso'],
+            // Se reindexa porque las claves son ids de usuario y el JSON las convertiría en un
+            // objeto con huecos; al front le sirve una lista ya ordenada.
+            'por_responsable' => array_values($agg['por_responsable']),
+        ];
     }
 
     /**

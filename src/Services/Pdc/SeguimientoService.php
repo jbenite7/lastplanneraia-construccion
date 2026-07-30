@@ -494,7 +494,7 @@ class SeguimientoService
      * misma empresa es peor que no tener ninguna.
      *
      * @param int[] $projectIds
-     * @return array{hoy:string,por_obra:array<int,array{project_id:int,conteos:array<string,int>,destinos:int,pasos:int}>,totales:array<string,int>}
+     * @return array{hoy:string,por_obra:array<int,array{project_id:int,conteos:array<string,int>,destinos:int,pasos:int}>,totales:array<string,int>,por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:array<int,array{nombre:string,pendientes:int,vencidos:int}>}
      */
     public function vencimientosAgregados(array $projectIds, ?string $hoy = null): array
     {
@@ -503,18 +503,20 @@ class SeguimientoService
         $ids = array_values(array_unique(array_map('intval', $projectIds)));
         $vacio = ['vencido' => 0, 'sem1' => 0, 'sem2' => 0, 'sem3' => 0, 'sem6' => 0, 'adelante' => 0, 'sin_fecha' => 0];
         if ($ids === []) {
-            return ['hoy' => $hoy, 'por_obra' => [], 'totales' => $vacio];
+            return ['hoy' => $hoy, 'por_obra' => [], 'totales' => $vacio, 'por_paso' => [], 'por_responsable' => []];
         }
 
         $ph = implode(',', array_fill(0, count($ids), '?'));
         // La unión va por DESTINO (paquete + lote), igual que vencimientos(): unir solo por
         // paquete hace que un paso de un paquete partido en tres se cuente tres veces.
         $rows = $this->db->query(
-            "SELECT ps.project_id, ps.paquete_id, ps.subpaquete_id, ps.fecha_fin
+            "SELECT ps.project_id, ps.paquete_id, ps.subpaquete_id, ps.fecha_fin, ps.paso,
+                    pp.responsable_user_id, u.nombre AS responsable_nombre
              FROM pdc_plan_paso ps
              JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
                                      AND pp.subpaquete_id = ps.subpaquete_id
              JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
+             LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
              WHERE ps.project_id IN ({$ph}) AND ps.fecha_real IS NULL AND p.activo = 1",
             $ids,
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -522,6 +524,8 @@ class SeguimientoService
         $porObra = [];
         $totales = $vacio;
         $destinos = [];
+        $porPaso = [];
+        $porResponsable = [];
         foreach ($rows as $r) {
             $pid = (int) $r['project_id'];
             if (!isset($porObra[$pid])) {
@@ -531,18 +535,55 @@ class SeguimientoService
 
             $fechaFin = $r['fecha_fin'] === null ? null : (string) $r['fecha_fin'];
             $estado = (string) self::clasificarVencimiento($fechaFin, $hoy)['estado'];
+            $vencido = $estado === 'vencido';
 
             $porObra[$pid]['conteos'][$estado]++;
             $porObra[$pid]['pasos']++;
             $totales[$estado]++;
             $destinos[$pid][$r['paquete_id'] . ':' . $r['subpaquete_id']] = true;
+
+            // Avance de contratación: por qué paso va cada compra.
+            $paso = (string) $r['paso'];
+            if (!isset($porPaso[$paso])) {
+                $porPaso[$paso] = ['pendientes' => 0, 'vencidos' => 0];
+            }
+            $porPaso[$paso]['pendientes']++;
+            if ($vencido) {
+                $porPaso[$paso]['vencidos']++;
+            }
+
+            // Carga por responsable. El 0 agrupa lo que no tiene dueño: repartirlo o esconderlo
+            // haría que «quién está sobrecargado» ignorara justo el trabajo que nadie ha reclamado.
+            $rid = $r['responsable_user_id'] === null ? 0 : (int) $r['responsable_user_id'];
+            if (!isset($porResponsable[$rid])) {
+                $porResponsable[$rid] = [
+                    'nombre' => $rid === 0
+                        ? 'Sin responsable'
+                        : (string) ($r['responsable_nombre'] ?? ('Usuario ' . $rid)),
+                    'pendientes' => 0,
+                    'vencidos' => 0,
+                ];
+            }
+            $porResponsable[$rid]['pendientes']++;
+            if ($vencido) {
+                $porResponsable[$rid]['vencidos']++;
+            }
         }
 
         foreach ($destinos as $pid => $claves) {
             $porObra[$pid]['destinos'] = count($claves);
         }
 
-        return ['hoy' => $hoy, 'por_obra' => $porObra, 'totales' => $totales];
+        // El más cargado primero: la pregunta de gerencia es a quién descargar.
+        uasort($porResponsable, static fn(array $a, array $b): int => $b['pendientes'] <=> $a['pendientes']);
+
+        return [
+            'hoy' => $hoy,
+            'por_obra' => $porObra,
+            'totales' => $totales,
+            'por_paso' => $porPaso,
+            'por_responsable' => $porResponsable,
+        ];
     }
 
     /**

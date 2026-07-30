@@ -113,6 +113,13 @@ $assert(
     'los conteos de la Torre coinciden exactamente con los de la pestaña del módulo',
 );
 
+// --- Avance por paso y carga por responsable ---------------------------------------------------
+$assert(($agg['por_paso']['Pliegos']['pendientes'] ?? -1) === 3, 'avance por paso: tres pasos «Pliegos» pendientes entre las dos obras');
+$assert(($agg['por_paso']['Pliegos']['vencidos'] ?? -1) === 3, 'avance por paso: los tres están vencidos');
+$assert(($agg['por_paso']['Propuestas']['vencidos'] ?? -1) === 0, 'avance por paso: «Propuestas» no está vencido');
+$assert(isset($agg['por_responsable'][0]), 'carga por responsable: los pasos sin responsable se agrupan aparte');
+$assert(($agg['por_responsable'][0]['pendientes'] ?? -1) === 4, 'carga por responsable: los cuatro pasos del fixture no tienen responsable');
+
 // --- El informe de la Torre ya no lee el PDC viejo -------------------------------------------
 $ct = new \App\Services\ControlTowerService($db);
 $brief = $ct->getBrief('pdc', [$A, $B], '1', 'A');
@@ -141,6 +148,14 @@ $assert($hay('Cobertura'), 'el scorecard trae cobertura');
 $assert($hay('valor'), 'la cobertura por valor aparece junto a la de conteo');
 $assert($hay('Vencid'), 'el scorecard trae vencidos');
 $assert($hay('sin mirar'), 'el scorecard dice cuántos paquetes no está mirando');
+
+$assert(($brief['pdc_breakdown']['por_paso']['Pliegos']['pendientes'] ?? -1) === 3, 'el brief expone el avance por paso');
+$assert(
+    ($brief['pdc_breakdown']['por_responsable'][0]['nombre'] ?? '') === 'Sin responsable',
+    'el brief expone la carga por responsable, con lo no asignado a la vista',
+);
+$assert(is_array($brief['pdc_items'] ?? null), 'el brief lleva las filas por obra para el rótulo de fecha');
+$assert(($brief['pdc_items'][0]['hoy'] ?? '') !== '', 'las filas traen la fecha de corte del servidor');
 // El lineage es una LISTA de métricas, no un mapa: el plan asumió la forma equivocada.
 $assert(
     ($brief['lineage'][0]['grain'] ?? '') === 'project_id + paquete_id + subpaquete_id (destino)',
