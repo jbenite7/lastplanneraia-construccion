@@ -7,6 +7,7 @@ import {
   columnasQueCaben, defaultColDef, moneda, pdcTheme, usaAnchoContenedor, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
+import SubpaquetesPanel from '../components/SubpaquetesPanel'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { ACCION_PROPONER, claveInsumo, estaCerradoPorValor, estadoInicialPaquetes, filtroInicial, muestraTipoNegociacion, paquetesReducer } from '../lib/paquetesState'
 import type { FiltroPaquetes } from '../lib/paquetesState'
@@ -77,6 +78,9 @@ export default function PaquetesContratacion() {
   const [nuevoTipo, setNuevoTipo] = useState(TIPOS_NEGOCIACION[0].value)
   const [nuevaModalidad, setNuevaModalidad] = useState(MODALIDADES[0].value)
   const [buscaPaquete, setBuscaPaquete] = useState('')
+  // Qué paquete tiene abierto su panel de lotes. Uno a la vez: abrir varios llena la pantalla de
+  // tablas y la decisión de partir se toma paquete por paquete, no comparando cinco.
+  const [loteAbierto, setLoteAbierto] = useState<number | null>(null)
   // El filtro de apertura se decide una sola vez, cuando llega el primer resumen: en el primer
   // render todavía no se sabe cuántos insumos faltan. A partir de ahí manda el usuario — volver a
   // aplicarlo en cada recarga le pisaría el filtro que acabara de elegir a mano.
@@ -502,6 +506,26 @@ export default function PaquetesContratacion() {
               </span>
             )}
             <span className="pdc-paq-meta">{plural(p.insumos, 'insumo')} · {moneda(p.subtotal)}</span>
+            {/* Partir vive aquí, junto a los insumos del paquete: es mirándolos como se decide que
+                «aquí había porcelanato, porcelanato, tableta gres, cerámica» son contratos distintos. */}
+            <button
+              type="button"
+              className="pdc-paq-lotes"
+              data-testid={`pdc-paq-lotes-${p.paqueteId}`}
+              aria-expanded={loteAbierto === p.paqueteId}
+              onClick={() => setLoteAbierto(loteAbierto === p.paqueteId ? null : p.paqueteId)}
+            >
+              {loteAbierto === p.paqueteId ? 'Cerrar lotes' : 'Lotes de obra'}
+            </button>
+            {loteAbierto === p.paqueteId && (
+              <SubpaquetesPanel
+                paqueteId={p.paqueteId}
+                paqueteNombre={p.nombre}
+                // `cargar` ya trae insumos, catálogo y resumen en la misma pasada: los tres tienen
+                // que moverse juntos o la cobertura de la cabecera queda contando lo de antes.
+                onCambio={() => cargar(filtro)}
+              />
+            )}
           </li>
         ))}
         {(resumen?.porPaquete ?? []).length === 0 && <li className="pdc-vacio">Aún no hay insumos asignados a ningún paquete.</li>}

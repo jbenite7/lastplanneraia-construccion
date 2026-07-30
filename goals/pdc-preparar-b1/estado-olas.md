@@ -98,7 +98,7 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO (falta la pantalla de partir y repartir) | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
+| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO (falta elegir el lote al amarrar un frente) | `6d702ef` + pantalla de partir y repartir | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
@@ -146,14 +146,25 @@ decimal, y lleva la advertencia del método dentro del archivo. Matiz honesto so
 verificó el formato, las cabeceras de descarga y el contenido byte a byte, no se abrió Excel en esta
 máquina.
 
-**8a — subpaquetes: EN CURSO.** Dominio, API y pruebas terminados y verificados en `6d702ef` (40
-asserts, la cero regresión comprobada fila a fila contra
-`evidence/linea-base-plan-antes-subpaquetes.txt`). Lo que falta es **una sola pantalla**: partir un
-paquete dándole nombre a sus lotes, mover insumos entre lotes, y ver el sombrilla con su rango y su
-avance agregado. Sin ella no se cumplen los puntos 1 y 2 de su condición de hecho —«ver los tres en el
-plan» y «el sombrilla muestra el rango»—; el punto 3, que el tablero de vencimientos liste lotes, ya
-está en el servidor y probado, pero no se ha podido recorrer en pantalla porque nadie puede partir un
-paquete todavía.
+**8a — subpaquetes: EN CURSO, pero mucho más cerca.** Ya se puede **partir un paquete y repartirle
+insumos desde la pantalla**: panel «Lotes de obra» dentro de «Paquetes con insumos», con el resumen del
+sombrilla (rango, avance agregado y cuánto de su valor no entra al plan), cambio de modalidad por lote,
+agregar y borrar lotes, y el reparto de insumos con casillas. Recorrido en Da Porto: se partió
+«Suministro CONCRETO» en tres lotes, se le movieron dos insumos al primero ($2.161.853.568, dejando el
+«Resto» en cinco por $329.341.927 — suman el total del paquete), y el lote apareció como fila propia en
+el plan con `esLote`. Al deshacer la partición desde la pantalla, **la foto del plan volvió a ser
+idéntica a la línea base**, que es el punto 4 de la condición de hecho comprobado de ida y de vuelta.
+
+**Lo que falta para cerrarla:** en la pantalla de «Plan», el amarre a un frente todavía no permite
+elegir el lote — hoy cada lote solo puede recibir su propio frente por API (`amarrar` acepta
+`subpaqueteId`). Sin eso no se puede «darle a cada uno su fecha» desde la interfaz, y por tanto no se
+ve a los tres en el plan con fechas distintas: eso está probado en `test_pdc_v2_subpaquetes.php`, no en
+pantalla.
+
+**Y un límite medido, no supuesto:** el volumen sigue sin estresar. Da Porto tiene 4 paquetes con
+insumos y 12 asignaciones, así que la regla de conteo por paquete + lote está **probada** (el test
+exige que no se repitan destinos ni se multipliquen los pasos) pero **no estresada** con los 96
+paquetes previstos. No hay ningún proyecto con volumen en la base local.
 
 La API le deja el trabajo hecho a esa pantalla: `GET /plan-compras/api/subpaquetes?paqueteId=N`
 devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
