@@ -8,6 +8,15 @@ import { getBootstrap } from '../lib/bootstrap'
 import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSeguimiento } from '../lib/seguimiento'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { CORTES, claseCorte, etiquetaCorte, textoDesfase, textoSinFechas } from '../lib/vencimientos'
+import {
+  alturaBarra,
+  cobertura,
+  etiquetaMes,
+  mesPico,
+  textoExcluidos,
+  type RespuestaFlujoCaja,
+} from '../lib/flujoCaja'
+import { moneda } from '../lib/agGrid'
 import type { FilaSeguimiento, FiltrosSeguimiento, FilaVencimiento, PasoSeguimiento, RespuestaVencimientos } from '../lib/types'
 import { plural } from '../lib/texto'
 
@@ -41,6 +50,7 @@ export default function Seguimiento() {
   const [venc, setVenc] = useState<RespuestaVencimientos | null>(null)
   const [filtroPaso, setFiltroPaso] = useState('')
   const [filtroResp, setFiltroResp] = useState('')
+  const [flujo, setFlujo] = useState<RespuestaFlujoCaja | null>(null)
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -77,6 +87,21 @@ export default function Seguimiento() {
   useEffect(() => {
     if (seccion === 'vencimientos') void cargarVencimientos()
   }, [seccion, cargarVencimientos])
+
+  // La curva se pide al abrir su pestaña y no al cargar la pantalla: es un cálculo derivado sobre
+  // todos los destinos contratables de la obra, y quien entra a registrar un avance no lo necesita.
+  const cargarFlujo = useCallback(async () => {
+    try {
+      setFlujo(await apiGet<RespuestaFlujoCaja>('/plan-compras/api/seguimiento/flujo-caja'))
+      setError('')
+    } catch (e) {
+      setError(mensajeError(e))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (seccion === 'flujo') void cargarFlujo()
+  }, [seccion, cargarFlujo])
 
   useEffect(() => {
     void cargar()
@@ -187,6 +212,7 @@ export default function Seguimiento() {
         pestanas={[
           { id: 'paquetes', etiqueta: 'Paquetes', conteo: filas.length },
           { id: 'vencimientos', etiqueta: 'Vencimientos', conteo: venc?.conteos.vencido },
+          { id: 'flujo', etiqueta: 'Flujo de caja', conteo: flujo?.meses.length },
         ]}
       />
 
@@ -287,6 +313,120 @@ export default function Seguimiento() {
           {venc && venc.filas.length === 0 && (
             <p className="pdc-vacio" data-testid="pdc-venc-vacio">
               No hay pasos pendientes que venzan en las próximas seis semanas.
+            </p>
+          )}
+        </PanelPestana>
+      )}
+
+      {seccion === 'flujo' && (
+        <PanelPestana idBase="pdc-seg" id="flujo">
+          {/* La advertencia del método va ARRIBA y siempre, no en un pie ni tras un despliegue. Esta
+              tabla se fotografía y se lleva a comité, y sin esta frase alguien la trata como un
+              presupuesto de tesorería. El texto lo manda el servidor —el mismo que va dentro del
+              CSV— para que pantalla y archivo no puedan decir cosas distintas. */}
+          {flujo && (
+            <p className="pdc-flujo-nota" data-testid="pdc-flujo-nota" role="note">
+              {flujo.nota}
+            </p>
+          )}
+
+          {/* Lo que la curva NO incluye, antes de la curva. Una curva que calla lo que deja fuera es
+              una curva que miente, y con 11 de 96 paquetes con fecha lo que calla es la mitad. */}
+          {flujo && textoExcluidos(flujo.excluidos, moneda) !== '' && (
+            <p className="pdc-flujo-excluidos" data-testid="pdc-flujo-excluidos" role="status">
+              {textoExcluidos(flujo.excluidos, moneda)}
+            </p>
+          )}
+
+          {flujo && (
+            <div className="pdc-flujo-cifras" data-testid="pdc-flujo-cifras">
+              <span>
+                <strong>{moneda(flujo.total)}</strong> en la curva
+              </span>
+              <span>
+                {plural(flujo.incluidos.destinos, 'contratación', 'contrataciones')} incluida
+                {flujo.incluidos.destinos === 1 ? '' : 's'}
+              </span>
+              {cobertura(flujo) !== null && (
+                <span>
+                  cubre el <strong>{cobertura(flujo)} %</strong> del valor del plan
+                </span>
+              )}
+              {mesPico(flujo.meses) !== null && (
+                <span>
+                  pico en <strong>{etiquetaMes(mesPico(flujo.meses)!.mes)}</strong>
+                </span>
+              )}
+              {/* Descarga directa por enlace y no por fetch: el navegador ya sabe guardar un
+                  adjunto, y pasarlo por JavaScript solo añade una forma de que el archivo llegue
+                  distinto de lo que el servidor generó. */}
+              <a
+                className="pdc-flujo-exportar"
+                data-testid="pdc-flujo-exportar"
+                href="/plan-compras/api/seguimiento/flujo-caja.csv"
+              >
+                Exportar a Excel
+              </a>
+            </div>
+          )}
+
+          {flujo && flujo.meses.length > 0 && (
+            <table className="pdc-flujo-tabla" data-testid="pdc-flujo-tabla">
+              <caption className="pdc-sub">
+                Desembolso previsto por mes. El reparto de cada contratación es lineal a lo largo de
+                los días de su frente.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Mes</th>
+                  <th scope="col" className="pdc-num">
+                    Desembolso previsto
+                  </th>
+                  <th scope="col" className="pdc-num">
+                    Acumulado
+                  </th>
+                  <th scope="col" className="pdc-num">
+                    Contrataciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {flujo.meses.map((m) => (
+                  <tr key={m.mes}>
+                    <th scope="row">{etiquetaMes(m.mes)}</th>
+                    <td className="pdc-num">
+                      {/* La barra vive dentro de la celda del número, no en una columna aparte: es
+                          la forma de la curva, no un dato más, y así se lee la cifra y el relieve de
+                          un solo golpe sin traer una librería de gráficos. */}
+                      <span
+                        className="pdc-flujo-barra"
+                        style={{ width: `${alturaBarra(m.previsto, mesPico(flujo.meses)!.previsto)}%` }}
+                        aria-hidden="true"
+                      />
+                      <span className="pdc-flujo-monto">{moneda(m.previsto)}</span>
+                    </td>
+                    <td className="pdc-num">{moneda(m.acumulado)}</td>
+                    <td className="pdc-num">{m.destinos}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row">Total</th>
+                  <td className="pdc-num">
+                    <strong>{moneda(flujo.total)}</strong>
+                  </td>
+                  <td className="pdc-num" />
+                  <td className="pdc-num" />
+                </tr>
+              </tfoot>
+            </table>
+          )}
+
+          {flujo && flujo.meses.length === 0 && (
+            <p className="pdc-vacio" data-testid="pdc-flujo-vacio">
+              Todavía no hay ninguna contratación con frente y fechas, así que no hay curva que
+              dibujar. Amarra paquetes a su frente en «Plan» y recalcula.
             </p>
           )}
         </PanelPestana>
