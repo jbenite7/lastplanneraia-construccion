@@ -175,6 +175,50 @@ class PlanComprasMaestroController
         $this->ok(['reactivado' => 1, 'reenganchados' => $r['reenganchados']]);
     }
 
+    /** GET /plan-compras/api/maestro/equipos[?q=] — la cola de equipos sin clasificar (Ola 2). */
+    public function equipos(): void
+    {
+        if ($this->guardLectura() === null) {
+            return;
+        }
+        $q = isset($_GET['q']) ? (string) $_GET['q'] : null;
+        $this->ok($this->service->equiposSinClasificar($q));
+    }
+
+    /**
+     * POST /plan-compras/api/maestro/equipos/clasificar {ids:[...], destino:"..."}
+     *
+     * Escritura sobre el maestro GLOBAL: pasa por `guardEscritura()`, que exige `lps.pdc.maestro`
+     * —capacidad de administración— y no una capacidad de obra. Clasificar aquí cambia el dato para
+     * todos los proyectos de AIA.
+     */
+    public function clasificarEquipos(): void
+    {
+        if ($this->guardEscritura() === null) {
+            return;
+        }
+        $body = $this->body();
+        $ids = is_array($body['ids'] ?? null) ? $body['ids'] : [];
+        $ids = array_values(array_filter(
+            $ids,
+            static fn ($v): bool => (is_int($v) && $v > 0) || (is_string($v) && ctype_digit($v)),
+        ));
+        $destino = is_string($body['destino'] ?? null) ? $body['destino'] : '';
+
+        $r = $this->service->clasificarEquipos($ids, $destino, $this->usuario());
+        if ($r['ok'] !== true) {
+            $mensaje = $r['code'] === 'SIN_IDS'
+                ? 'No se seleccionó ningún equipo.'
+                : 'El destino debe ser equipo alquilado o equipo comprado.';
+            $this->fail($r['code'], $mensaje, 422);
+            return;
+        }
+        $this->ok([
+            'clasificados' => $r['clasificados'],
+            'cola' => $this->service->equiposSinClasificar(),
+        ]);
+    }
+
     // ── guards ──────────────────────────────────────────────
 
     private function guardLectura(): ?int

@@ -563,10 +563,39 @@
             <i data-lucide="shopping-cart" class="w-5 h-5" aria-hidden="true"></i>
             <h3 class="font-semibold text-gray-800">Plan de Compras (PDC)</h3>
         </div>
+        <!-- Este panel no obedece al selector de semana (Decisión 5 del spec B3): responde
+             siempre «hoy», con la fecha del servidor. El rótulo existe para que eso no se lea
+             como un fallo. -->
+        <p id="pdc-fecha-corte" class="text-xs text-gray-500"></p>
         <div id="pdc-table-wrapper" class="bi-table-container">
             <table class="w-full text-xs" id="pdc-table">
-                <thead><tr class="bg-gray-100"><th class="p-2 text-left font-semibold text-gray-600">Ítem</th><th class="p-2 text-left font-semibold text-gray-600">Descripción</th><th class="p-2 text-left font-semibold text-gray-600">Cant.</th><th class="p-2 text-left font-semibold text-gray-600">Fecha</th><th class="p-2 text-left font-semibold text-gray-600">Estado</th></tr></thead>
-                <tbody id="pdc-body"><tr><td class="p-4 text-center text-gray-400" colspan="5">Cargando datos de compras...</td></tr></tbody>
+                <thead><tr class="bg-gray-100"><th class="p-2 text-left font-semibold text-gray-600">Indicador</th><th class="p-2 text-left font-semibold text-gray-600">Valor</th><th class="p-2 text-left font-semibold text-gray-600">Acción</th></tr></thead>
+                <tbody id="pdc-body"><tr><td class="p-4 text-center text-gray-400" colspan="3">Cargando datos de compras...</td></tr></tbody>
+            </table>
+        </div>
+
+        <h4 class="font-semibold text-gray-800">Cobertura y vencimientos por obra</h4>
+        <p class="text-xs text-gray-500">Un paquete partido en lotes cuenta un destino por lote: el total sube cuando una obra parte un paquete.</p>
+        <div id="pdc-obra-wrapper" class="bi-table-container">
+            <table class="w-full text-xs" id="pdc-obra-table">
+                <thead><tr class="bg-gray-100"><th class="p-2 text-left font-semibold text-gray-600">Obra</th><th class="p-2 text-left font-semibold text-gray-600">Cobertura (conteo)</th><th class="p-2 text-left font-semibold text-gray-600">Cobertura (valor)</th><th class="p-2 text-left font-semibold text-gray-600">Vencidos</th><th class="p-2 text-left font-semibold text-gray-600">En riesgo</th><th class="p-2 text-left font-semibold text-gray-600">Destinos</th><th class="p-2 text-left font-semibold text-gray-600">Sin mirar</th></tr></thead>
+                <tbody id="pdc-obra-body"><tr><td class="p-4 text-center text-gray-400" colspan="7">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+
+        <h4 class="font-semibold text-gray-800">Avance de contratación por paso</h4>
+        <div id="pdc-paso-wrapper" class="bi-table-container">
+            <table class="w-full text-xs" id="pdc-paso-table">
+                <thead><tr class="bg-gray-100"><th class="p-2 text-left font-semibold text-gray-600">Paso</th><th class="p-2 text-left font-semibold text-gray-600">Pendientes</th><th class="p-2 text-left font-semibold text-gray-600">Vencidos</th></tr></thead>
+                <tbody id="pdc-paso-body"><tr><td class="p-4 text-center text-gray-400" colspan="3">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+
+        <h4 class="font-semibold text-gray-800">Carga por responsable</h4>
+        <div id="pdc-resp-wrapper" class="bi-table-container">
+            <table class="w-full text-xs" id="pdc-resp-table">
+                <thead><tr class="bg-gray-100"><th class="p-2 text-left font-semibold text-gray-600">Responsable</th><th class="p-2 text-left font-semibold text-gray-600">Pendientes</th><th class="p-2 text-left font-semibold text-gray-600">Vencidos</th></tr></thead>
+                <tbody id="pdc-resp-body"><tr><td class="p-4 text-center text-gray-400" colspan="3">Cargando...</td></tr></tbody>
             </table>
         </div>
     </div>

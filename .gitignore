@@ -125,13 +125,14 @@ public/pdc-app/index.html
 !goals/pdc-tanda34-pulido/**
 
 # Archivos de configuración de IDEs y prompts de IA
-AGENTS.md
 # CLAUDE.md se versiona desde la unificación de repos del 2026-07-29: es el único
 # sitio donde un asistente que entra al repo se entera de que existe el módulo PDC
 # y de que debe leer `docs/pdc-v2.md` antes de tocarlo. Un puntero que no viaja en
 # git no sirve en un clon nuevo ni en un worktree, que es justo donde nadie lo tiene.
-# AGENTS.md y MEMORY.md siguen fuera: el primero por decisión de otras sesiones, y
-# MEMORY.md porque es memoria personal del usuario y no debe salir de su máquina.
+# AGENTS.md se versiona desde el 2026-07-30, por decisión explícita del usuario y por
+# el mismo motivo: es el contrato autoritativo del repo, y uno que no viaja en git deja
+# a cada clon nuevo sin las reglas que dice imponer.
+# MEMORY.md sigue fuera: es memoria personal del usuario y no debe salir de su máquina.
 MEMORY.md
 .php-cs-fixer.dist.php
 
@@ -276,3 +277,4 @@ goals/retiro-listado-contratos/*
 !tests/browser/pdc-v2-tamiz-daporto.evidencia.mjs
 !tests/browser/pdc-v2-impacto-daporto.evidencia.mjs
 !tests/browser/pdc-v2-ayuda.spec.mjs
+!tests/browser/pdc-v2-equipos.spec.mjs

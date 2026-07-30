@@ -52,13 +52,38 @@ por prudencia nunca es el error caro.
 | 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
 | 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | HECHO | `31e9145` (merge de main: `22d13c7`) | 2026-07-29 |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
-| 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
+| 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | HECHO — **solo `prueba-lps`** | `9e77dd2` (desplegado) | 2026-07-30 |
+
+### Nota sobre 4 — el alcance es `prueba-lps`, no la producción real
+
+**Léela antes de arrancar la 5 o la 10.** «HECHO» aquí no significa que el PDC v2 esté en
+`lastplanneraia.com`. La producción real **no se tocó**, por decisión de Felipe del 2026-07-30: lo que
+él trata como producción es `prueba-lps`, y ahí se desplegó en dos pasadas (642 commits primero, 21
+después) hasta `9e77dd2`, con las 35 migraciones aplicadas, los dos parches de RBAC del PDC
+(`lps.pdc.importar`, `lps.pdc.maestro`) y el remap de `unique_id`.
+
+`lastplanneraia.com` sigue en `1aa7c69` del 2026-07-16, con **cero tablas `pdc_*`**.
+
+**Consecuencia directa para la fila 10:** su puerta era «una obra trabajando de verdad en
+producción», y con la producción real intacta **esa puerta sigue cerrada**. Que esta fila diga HECHO
+no la abre.
+
+**Aplazado por decisión de Felipe, no olvidado:** el humo autenticado. Nadie ha mirado con sesión el
+visor con los avisos del tamiz, el informe de impacto al recargar, la curva de desembolsos ni el
+desplegable de frentes. Lo verificable por datos y comandos sí está: respaldos restaurados y
+comparados por conteos, esquema comprobado en SQL, y `anclasDisponibles()` del proyecto 27 devolviendo
+155 anclas donde devolvía 0.
+
+**Dos huecos de datos que quedan abiertos y no son de esta fila:** ~18 700 filas de
+`programa_consolidado` huérfanas sin pareja en `programa` (el remap no puede darles identificador, y
+el porqué merece sesión propia), y 52 paquetes sin `duracion_ref`, que el propio tablero asigna a la
+fila 1.
 
 ## Ola 2 — lo que el uso va a exigir
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
+| 5 | Equipo alquilado vs comprado | 4 | **HECHO** | `e992301` | 2026-07-29 |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **HECHO** — 8 pantallas con ayuda, recorrido omitible, 13 e2e en verde y la lectura del revisor dada por cumplida por Felipe | `5e80112` (serie `b4294f3`…`5e80112`) | 2026-07-30 |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
@@ -114,13 +139,46 @@ procesos, hay que crear su fila y apuntar el paquete a ella; a partir de ahí s�
 Cero regresión comprobada sobre Da Porto: sigue sin configurar y con los siete pasos por defecto.
 De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pasos`.
 
+### Nota sobre la fila 5 — no esperó al despliegue, y aparecieron dos cosas
+
+Arrancó sin la fila 4 en `HECHO`: Felipe liberó la espera el 2026-07-29 (el despliegue a pruebas ya
+estaba hecho y pidió que las sesiones avanzaran sin quedarse en comprobaciones humanas). Se entrega la
+migración, el código y las pruebas en la rama; **no se aplicó nada al servidor** — eso es de la fila 4.
+
+Evidencia completa, con salida real de comandos:
+[`evidence/validacion-equipo-alquilado-comprado.md`](evidence/validacion-equipo-alquilado-comprado.md).
+
+**El spec decía «amplía el enum de `tipo_recurso`» y no hay enum:** es `varchar(60)` que siembra el
+importador SINCO. No hubo DDL de enum. Los dos riesgos reales estaban en otro sitio, y los dos se
+midieron antes de arreglarlos: `PaquetesService::tiposCompatibles()` tiene un `default` que significa
+«no filtro» (partir «Equipo» sin nombrar los valores nuevos ahí los volvía candidatos de cualquier
+paquete — la trampa de A3.2 en sitio nuevo), y el importador que borraba el trabajo humano era el de
+**SINCO**, no el de presupuestos.
+
+**Dos decisiones que quedan para Felipe:**
+
+1. **`OT` (Oficina Técnica / Compras) hoy no puede clasificar equipos.** La capacidad elegida es
+   `lps.pdc.maestro` (A, D), según el spec —el maestro es global, es administración—. Pero
+   `lps.paquetes_contratacion.reglas` la tienen A, D **y OT**, y decidir si un equipo se alquila o se
+   compra suena más a Compras que a Administración. El cambio sería una línea de RBAC.
+2. **Gastos generales: revisado, no implementado.** El presupuesto **no** trae categorías que el maestro
+   pierda (sus capítulos son sólo `COSTO DIRECTO` y `COSTO INDIRECTO`); las de Tomás llegan por el
+   `agrupacion` de SINCO, que el maestro **ya guarda** y ninguna pantalla agrupa. Es un entregable
+   aparte y necesita grilleo con él para no duplicar su código.
+
+⚠️ **Aviso para las demás sesiones — el volumen de MySQL del compose es `external` con nombre fijo
+`htdocs_db_data`.** Un `COMPOSE_PROJECT_NAME` propio **no** da base propia: levanta un segundo MySQL
+sobre los archivos de la base de desarrollo principal. Aquí murió con «Unable to lock ./ibdata1» porque
+el principal estaba vivo (sin daño, verificado), pero **con el principal apagado le habría escrito**.
+Hace falta un override local que declare un volumen propio.
+
 ## Ola 3 — lo grande
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO (falta la pantalla de partir y repartir) | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
+| 8a | Subpaquetes de obra | 7a y 7b | **HECHO** | `6d702ef` · `935d194` · `ceb0e73` + el amarre por lote | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
-| 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
+| 9 | Torre de Control (B3) | 1 | HECHO | `e610fbb` (rama `worktree-pdc-b3-torre-control`) | 2026-07-30 |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
 ---
@@ -166,16 +224,46 @@ decimal, y lleva la advertencia del método dentro del archivo. Matiz honesto so
 verificó el formato, las cabeceras de descarga y el contenido byte a byte, no se abrió Excel en esta
 máquina.
 
-**8a — subpaquetes: EN CURSO.** Dominio, API y pruebas terminados y verificados en `6d702ef` (40
-asserts, la cero regresión comprobada fila a fila contra
-`evidence/linea-base-plan-antes-subpaquetes.txt`). Lo que falta es **una sola pantalla**: partir un
-paquete dándole nombre a sus lotes, mover insumos entre lotes, y ver el sombrilla con su rango y su
-avance agregado. Sin ella no se cumplen los puntos 1 y 2 de su condición de hecho —«ver los tres en el
-plan» y «el sombrilla muestra el rango»—; el punto 3, que el tablero de vencimientos liste lotes, ya
-está en el servidor y probado, pero no se ha podido recorrer en pantalla porque nadie puede partir un
-paquete todavía.
+**8a — subpaquetes: HECHO.** Los siete puntos de su condición de hecho están cumplidos y verificados
+en pantalla, no solo en tests.
 
-La API le deja el trabajo hecho a esa pantalla: `GET /plan-compras/api/subpaquetes?paqueteId=N`
+Recorrido completo en Da Porto, con el paquete real «Suministro CONCRETO»:
+
+1. Se partió en tres lotes desde la pantalla; nació el «Resto» automático con los insumos que nadie
+   movió.
+2. Se le repartieron insumos con casillas: un insumo a «Premezclado 3000», otro a «Premezclado 4000»,
+   y el «Resto» quedó con cinco. Los valores suman el total del paquete.
+3. En «Sin frente», cada lote apareció como **fila propia** rotulada «Suministro CONCRETO ›
+   Premezclado 3000», con su propio desplegable de frente. Se les dio **frentes distintos**
+   (PRELIMINARES y REDES) y al amarrar uno **su hermano no desapareció de la lista**.
+4. Tras recalcular, los tres lotes salen en el plan con **tres anclas distintas**: 2026-05-25,
+   2026-08-18 y 2027-03-16, cada uno con su propia fecha de arranque.
+5. Se deshizo la partición borrando los tres lotes: el paquete se despartió solo y **la foto del plan
+   volvió a ser idéntica a la línea base**. El punto 4 comprobado de ida y de vuelta, con fechas
+   propias y recálculo en medio, no solo en reposo.
+
+**La forma del amarre por lote se decidió antes de escribirla.** No es un segundo desplegable en la
+fila: la lista «Sin frente» pasó a enumerar **unidades contratables** en vez de paquetes, así que cada
+fila ya *es* un lote y solo le falta su frente. Esa fila ya llevaba el frente, la procedencia de la
+sugerencia y el botón de amarrar; una segunda elección dentro de ella obligaría a leer dos controles
+para entender una decisión.
+
+**Un fallo silencioso que apareció al hacerlo, y que ningún tipo detectaba:** `preseleccionDestinos()`
+seguía indexando por id de paquete mientras la pantalla ya leía «paquete:lote», así que la preselección
+del motor dejó de aplicarse **sin que TypeScript dijera nada** —un `Record<number, T>` es asignable a
+un `Record<string, T>`—. Corregido, con un test que lo fija.
+
+**Dos límites escritos, no supuestos.** El motor sigue sugiriendo por paquete y no por lote (no
+aprende de lotes, y preseleccionar la sugerencia del paquete en sus tres lotes les daría a los tres el
+mismo frente, lo contrario de lo que se busca). Y un lote **sin insumos** no aparece como destino
+contratable: no tiene valor que repartir ni nada que contratar, así que tampoco se le ofrece frente.
+
+**El volumen sigue sin estresar,** y es el único hueco que dejo: Da Porto tiene 4 paquetes con insumos
+y 12 asignaciones. La regla de contar por paquete + lote está probada (los tests exigen que no se
+repitan destinos ni se multipliquen los pasos) pero no medida con los 96 paquetes previstos, porque no
+hay ningún proyecto con volumen en la base local.
+
+La API que sostiene todo esto: `GET /plan-compras/api/subpaquetes?paqueteId=N`
 devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/subpaquetes/destinos` trae
 la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actualizar`, `eliminar` y
 `mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote

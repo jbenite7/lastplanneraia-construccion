@@ -331,22 +331,24 @@ class MetricDictionaryService
         $catalog['pdc_at_risk'] = [
             'metric_key' => 'pdc_at_risk',
             'report_key' => 'pdc',
-            'metric_name' => 'Paquetes PDC en riesgo',
-            'definition' => 'Paquetes no listos para iniciar dentro de las siguientes seis semanas.',
-            'formula' => 'COUNT(*) WHERE listo_para_iniciar=0 AND fechaInicio <= cutoff + 6 weeks',
-            'unit' => 'paquetes',
-            'execution_source' => 'bi_pdc_general',
-            'source_relations' => ['pdc', 'semanas_activas'],
-            'grain' => 'project_id + Semana + consecutivo',
-            'cutoff_policy' => 'Fecha de corte explícita del rango o fin de semana seleccionado.',
-            'filters' => ['titulo=0', 'listo_para_iniciar=0'],
-            'aggregation_policy' => 'COUNT de paquetes únicos.',
+            'metric_name' => 'Pasos de contratación vencidos',
+            'definition' => 'Pasos de contratación pendientes cuya fecha programada ya pasó, por destino (paquete + lote).',
+            'formula' => 'COUNT(*) WHERE fecha_real IS NULL AND fecha_fin < hoy',
+            'unit' => 'pasos',
+            'execution_source' => 'pdc_plan_paso',
+            'source_relations' => ['pdc_plan_paso', 'pdc_plan_paquete', 'pdc_subpaquete'],
+            'grain' => 'project_id + paquete_id + subpaquete_id (destino)',
+            // Fase B3: la fecha de corte NO es la semana seleccionada. Es hoy, puesta por el
+            // servidor, para que este panel y la pestaña del módulo no discrepen el mismo día.
+            'cutoff_policy' => 'Fecha de hoy del servidor; el selector de semana no aplica a esta métrica.',
+            'filters' => ['fecha_real IS NULL', 'paquete activo'],
+            'aggregation_policy' => 'COUNT de pasos pendientes; la unidad de destino es paquete + lote.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'Ventana determinística de seis semanas desde el corte.',
             'version' => '1.0',
-            'known_limitations' => 'Requiere fechaInicio y estado listo_para_iniciar confiables.',
+            'known_limitations' => 'Un paquete sin fechas programadas no puede vencer: el panel declara aparte cuántos no está mirando.',
         ];
 
         $catalog['cic_cal_integral'] = [

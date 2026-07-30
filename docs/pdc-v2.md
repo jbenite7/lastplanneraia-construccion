@@ -100,6 +100,99 @@ que sirve para cualquier proyecto de AIA con el mismo problema. Solo cuentan las
 separan más que la tolerancia — sin ese filtro, las 442 de coeficiente 1 y las 53 de actividades con cantidad 0
 hacían pasar por «ambigua» una versión que no lo es.
 
+### Equipo alquilado vs comprado (2026-07-29, Ola 2)
+
+`tipo_recurso` **no es un enum**: es `varchar(60)` que siembra el importador SINCO desde la columna
+«TIPO DESCRIPCION». Por eso partir «Equipo» no llevó DDL de enum, sino datos + reglas de lectura.
+
+- **Los tres valores** viven en un solo sitio, `App\Services\Pdc\TipoRecursoEquipo`, con espejo en
+  `pdc-app/src/lib/tipoRecurso.ts` y un test a cada lado que fija los strings — la misma disciplina
+  que fijó los cinco de `TIPOS_NEGOCIACION`.
+- **`ALQUILER EQUIPOS` no es un nombre nuevo: SINCO ya lo emitía** (2 filas en el maestro). Adoptarlo
+  en vez de inventar «EQUIPO ALQUILADO» es lo que evita que cada carga de SINCO reabra la deuda con un
+  sinónimo. Para «comprado» no había nada que adoptar: los de compra llegan como `EQUIPO` con
+  `agrupacion` en `COMPRA ELEMENTOS-…`, así que `EQUIPO COMPRADO` sí es valor nuevo.
+- **Los 167 preexistentes quedaron en `EQUIPO (SIN CLASIFICAR)`** por decisión explícita del usuario,
+  contra la opción barata de mandarlos a «comprado»: nadie afirma lo que no sabe. El tapón se asume —
+  «sin clasificar» hereda el cuadro de compatibilidad del viejo `EQUIPO`, así que el módulo se usa
+  igual con el tapón puesto. Migración `20260729_pdc_v2_equipo_sin_clasificar.php`, reglada por
+  `tipo_recurso` (no por lista de nombres, la lección de A3.2), con `--revertir` probado: revertir
+  devuelve el censo exacto de la línea base y **conserva** lo que un humano ya clasificó.
+- **La trampa de A3.2, en sitio nuevo.** `PaquetesService::tiposCompatibles()` es un `match` cuyo
+  `default` es *no filtrar*. Renombrar los equipos sin nombrar los valores nuevos ahí los habría vuelto
+  candidatos de cualquier paquete, mano de obra incluida, y **ningún test lo atrapaba** — se midió: 4
+  aserciones nuevas fallaban antes del arreglo. `ALQUILADO` sale además de `suministro` a propósito:
+  alquilar no es comprar. El `GENERICO` sigue nombrado porque SINCO lo emite en cada carga.
+- **El punto delicado era el importador SINCO, no el de presupuestos.** El de presupuestos nunca
+  escribe `tipo_recurso` (un test lo fija sobre sus INSERT reales). El de SINCO sí, a ciegas por
+  `codigo_sinco`, y los 167 equipos **todos** tienen código: la siguiente carga habría borrado el
+  trabajo humano. `resolverTipoRecurso()` lo acota — la persona gana sólo contra una *degradación*
+  (genérico o tránsito sobre una clasificación con autor); si SINCO se pone más preciso, gana SINCO.
+  Lo hace verificable el par `clasificado_por` / `clasificado_at`: sin él, «lo dijo una persona» y «lo
+  trajo el Excel» son indistinguibles, el mismo problema del NULL mudo de B1.
+- **No hay que re-enganchar la cola de vínculos.** `reengancharPendientes()` empareja por
+  `descripcion_norm` + `unidad`, y `pdc_insumo_vinculos` no tiene `tipo_recurso`: reetiquetar equipos
+  no puede alterar un vínculo. Verificado en código y en comportamiento.
+- **La pista sugiere, no escribe.** 145 de los 167 traen la respuesta en `agrupacion` (89 `ALQUILER…`,
+  53 `COMPRA…`, 3 `COMPRAS…`). La cola la muestra como evidencia en una columna «SINCO dice» y
+  preordena por ella, y un botón *selecciona* el lote — pero la escritura siempre la dispara una
+  persona. Adivinar por la **descripción** del insumo sigue descartado.
+- **Sin pantalla nueva:** una sección más en las pestañas que el maestro ya tenía, que desaparece
+  cuando la cola llega a 0. RBAC `lps.pdc.maestro` (A, D) — el maestro es global, y clasificar no es
+  una capacidad de obra. **Ojo:** `lps.paquetes_contratacion.reglas` la tienen A, D **y OT**; OT es
+  Oficina Técnica / Compras, así que hoy Compras puede aprobar reglas del motor pero **no** clasificar
+  equipos. Está anotado como decisión pendiente del usuario en la bitácora del goal.
+- **Dos huecos que sólo vio el navegador.** La pantalla del maestro hace *early return* cuando la obra
+  no tiene presupuesto importado, y eso escondía la cola —que es del catálogo global y no depende del
+  presupuesto de ninguna obra— y también el acuse de «N equipos clasificados». Corregido en las dos
+  ramas del render. Ningún test de PHP podía verlo; lo cazó `tests/browser/pdc-v2-equipos.spec.mjs`.
+
+**Hecho aparte, no implementado — gastos generales.** El comité pidió revisar si el presupuesto trae
+categorías de gastos generales que el maestro no distinga. **No las trae:** los capítulos de nivel 1
+son exactamente `COSTO DIRECTO` y `COSTO INDIRECTO`. Lo que Tomás llama «categorías de gastos
+generales» llega por el **`agrupacion` de SINCO**, que el maestro **ya guarda** (`GASTOS MEDICOS Y
+DROGAS PERSONAL OBRA`, `COMPRA ELEMENTOS- EQUIPO DE OFICINA`, …). No hay dato perdido: hay dato **no
+explotado** — ninguna pantalla agrupa ni filtra por `agrupacion`. Es un entregable distinto (una vista
+del maestro por agrupación) y necesita grilleo con Tomás para no duplicar lo que él ya tiene.
+
+⚠️ **El volumen de MySQL del compose es `external` con nombre fijo `htdocs_db_data`.** Un
+`COMPOSE_PROJECT_NAME` propio **no** da base propia: da un segundo MySQL apuntando a los archivos de la
+base de desarrollo principal. Si el principal está vivo, el nuevo muere con «Unable to lock ./ibdata1»
+(lo que pasó aquí, sin daño); si está apagado, **el nuevo abre la base ajena y le escribe**. Con una
+migración destructiva de por medio eso corrompe el trabajo de otra sesión. Las sesiones paralelas se
+lo saltan con un override local que declara un volumen propio (`!reset` sobre `volumes` del servicio).
+
+### Los frentes y el remap del `unique_id` — contradicción abierta (2026-07-30)
+
+**Dos reglas del repositorio se contradicen, y no pueden ser ciertas a la vez.**
+
+- `database/migrations/20260712_remap_consolidado_unique_id.php` **anula a propósito** el `unique_id`
+  de los encabezados del cronograma. Su cabecera lo dice sin ambigüedad: «Los `Titulo=1` quedan NULL
+  (sin FK)». El motivo es que un encabezado no tiene fila equivalente en `programa` a la que apuntar.
+- `PlanFechasService::semanaYFrentes()` exige `unique_id IS NOT NULL` para incluir un nodo, y marca
+  `esFrente` con `Titulo === 1`. Es decir: **pide como frentes justo las filas que el remap deja sin
+  identificador.**
+
+**Consecuencia, medida en `prueba-lps` el 2026-07-30** por la sesión de despliegue, sobre el proyecto
+27 en semana 7: tras aplicar el remap, el desplegable «Elegir frente…» pasó de **0 a 155 opciones** —el
+remap arregló el vacío total— pero **ninguna de las 155 es un frente**: todas salen marcadas como
+«· actividad». Los 31 encabezados que el diseño de A4.2 daba por disponibles son, tras el remap,
+inalcanzables por construcción.
+
+**Por qué no se vio antes.** La base local **no está remapeada**: ahí los encabezados sí tienen
+`unique_id` (`uid=0` y `uid=2` salen como FRENTE), así que todo el trabajo de amarrar por frente se
+diseñó y se validó contra un esquema anterior al remap. Local y servidor no coinciden en este punto.
+
+**Qué NO es.** No es el bug del `unique_id` vacío que se arregló ese mismo día —ese era que la columna
+estaba sin poblar en los ocho proyectos—. Este aparece **después** de arreglar aquel, y es de diseño.
+
+**Decisión pendiente, y es de producto, no mecánica.** O el remap deja de anular los encabezados —y
+entonces hay que decidir a qué apuntan, porque no tienen fila en `programa`—, o el Plan de Compras
+deja de exigir `unique_id` para ellos y los identifica de otra forma. Hasta que se decida, **el remap
+no debe ejecutarse en producción**: allí hay ~27.813 filas con `unique_id` y correrlo reproduciría el
+síntoma sobre datos reales. El aviso está también en `docs/siteground-deploy-routine.md` §5.1, que es
+donde lo va a leer quien despliegue.
+
 ### B1 — El amarre al cronograma es por RAMA, no por actividad (2026-07-28)
 
 `pdc_insumo_actividades.unique_id` llegó a B1 con **820 de 820 filas en NULL** en Da Porto. La nota que decía
