@@ -289,6 +289,13 @@ class RbacCatalog
                 'lps.pdc.ver',
                 'lps.pdc.editar',
                 'lps.pdc.auto_generar',
+                // Maestro global de insumos (decisión de Felipe, 2026-07-30). Entró por la pregunta
+                // de quién clasifica un equipo como alquilado o comprado: es una decisión de compra,
+                // y Compras vive en este rol. La capacidad es una sola y abre TODO el maestro —
+                // clasificar, crear a mano, vincular, retirar/reactivar e importar el Excel de
+                // SINCO—; se asume porque OT ya tenía `paquetes_contratacion.reglas`, que redirige
+                // insumos en todos los proyectos: alcance comparable, no mayor.
+                'lps.pdc.maestro',
                 'lps.reportes.generar',
                 'notificaciones.resumen_semanal',
                 'notificaciones.lps_operativas',

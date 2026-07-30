@@ -139,9 +139,13 @@ hacían pasar por «ambigua» una versión que no lo es.
   persona. Adivinar por la **descripción** del insumo sigue descartado.
 - **Sin pantalla nueva:** una sección más en las pestañas que el maestro ya tenía, que desaparece
   cuando la cola llega a 0. RBAC `lps.pdc.maestro` (A, D) — el maestro es global, y clasificar no es
-  una capacidad de obra. **Ojo:** `lps.paquetes_contratacion.reglas` la tienen A, D **y OT**; OT es
-  Oficina Técnica / Compras, así que hoy Compras puede aprobar reglas del motor pero **no** clasificar
-  equipos. Está anotado como decisión pendiente del usuario en la bitácora del goal.
+  una capacidad de obra. Los roles con ella son **A, D y OT**: OT (Oficina Técnica / **Compras**)
+  entró el 2026-07-30 por decisión de Felipe, porque decidir si un equipo se alquila o se compra es una
+  decisión de compra. La capacidad es **única y abre todo el maestro** —clasificar, crear a mano,
+  vincular, retirar/reactivar e importar el Excel de SINCO—; se asumió ese alcance en vez de inventar
+  una capacidad nueva porque OT ya tenía `lps.paquetes_contratacion.reglas`, que redirige insumos en
+  todos los proyectos: alcance comparable, no mayor. `test_pdc_v2_rbac_maestro.php` afirmaba justo lo
+  contrario y se actualizó con el motivo escrito, no en silencio.
 - **Dos huecos que sólo vio el navegador.** La pantalla del maestro hace *early return* cuando la obra
   no tiene presupuesto importado, y eso escondía la cola —que es del catálogo global y no depende del
   presupuesto de ninguna obra— y también el acuse de «N equipos clasificados». Corregido en las dos
