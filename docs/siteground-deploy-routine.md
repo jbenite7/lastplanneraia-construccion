@@ -200,10 +200,16 @@ simulacro y estan bien aplicadas — `rama_frente` dice «26 a insertar» con la
 `admite_materiales` dice «a marcar: 5» con las 5 marcadas. Confirma en SQL antes de repetirlas.
 
 > [!WARNING]
-> **Una migracion con `DELIMITER $$` no se puede aplicar por PDO ni por PHP.** `DELIMITER` es una
-> directiva del cliente `mysql`, no SQL, y el error que sale parece SQL mal escrito sin serlo. Esas
-> van por `mysql <archivo` obligatoriamente. Caso conocido en camino:
-> `20260729_pdc_v2_subpaquetes.sql`.
+> **Los `.sql` van por el cliente `mysql`, nunca por PDO ni por un runner en PHP.** Varios usan
+> `DELIMITER $$`, que es una directiva del cliente y no SQL: por PDO el error que sale parece un SQL
+> mal escrito sin serlo. No es una excepcion aislada — al 2026-07-30 hay cinco en el repo
+> (`contratos_slot_quantities_traceability`, `pdc_v2_version_numero_unique`, `pdc_v2_plan_fechas`,
+> `pdc_v2_seguimiento_avance`, `pdc_v2_subpaquetes`), y las tres del medio se aplicaron sin
+> incidencia justamente porque se usó `mysql <archivo`. Para ver cuales son en un deploy dado:
+
+```bash
+grep -l DELIMITER database/migrations/*.sql
+```
 
 **Las `.php` necesitan el entorno exportado.** `src/Core/Database.php` lee `$_ENV`/`getenv()` y no
 carga `.env` por su cuenta, asi que en CLI hay que exportarlo antes o toda migracion `.php` falla
