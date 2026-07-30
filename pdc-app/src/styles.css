@@ -888,3 +888,175 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Rótulo solo para lectores de pantalla: la columna de acciones no necesita título visible, pero sin
    uno la tabla queda con un encabezado vacío que los lectores anuncian como «columna en blanco». */
 .pdc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/*
+ * Ayuda por pantalla — el panel del botón de interrogación.
+ *
+ * Namespace `pdc-guia-` y no `pdc-ayuda-`: `.pdc-ayuda` es de antes y significa otra cosa en este
+ * módulo (el texto atenuado que acompaña a un campo). Ver BotonAyuda.tsx.
+ *
+ * La caja, el borde y el fondo los pone la primitiva `aia-dialog` del sistema de diseño. Aquí solo
+ * va lo que esa primitiva no puede saber: que esto es texto para leer y no un formulario de
+ * confirmar, y por tanto quiere más ancho, más interlineado y tope de altura.
+ */
+.pdc-guia-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pdc-control-h);
+  height: var(--pdc-control-h);
+  padding: 0;
+  border: 0;
+  border-radius: var(--pdc-radio-control);
+  background: transparent;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pdc-guia-boton:hover {
+  color: var(--pdc-ink);
+}
+
+.pdc-guia-boton:focus-visible {
+  outline: 2px solid var(--pdc-focus);
+  outline-offset: 2px;
+}
+
+/* Más ancho que el diálogo por defecto del sistema (32rem), que está pensado para confirmar una
+   acción. Y con tope de altura, porque el panel del Plan es largo. */
+.pdc-guia .aia-modal-surface {
+  width: min(44rem, calc(100vw - 4rem));
+  max-width: min(44rem, calc(100vw - 4rem));
+  max-height: 80vh;
+  overflow-y: auto;
+  color: var(--pdc-ink);
+  font-size: var(--pdc-fs-md);
+}
+
+.pdc-guia-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.pdc-guia-titulo {
+  margin: 0;
+  font-size: var(--pdc-fs-xl);
+}
+
+.pdc-guia-seccion + .pdc-guia-seccion {
+  margin-top: 20px;
+}
+
+/* Los rótulos de las tres preguntas. En versalitas y atenuados: son la estructura del panel, no
+   su contenido, y compitiendo con el texto lo harían más difícil de leer. */
+.pdc-guia-pregunta {
+  margin: 0 0 6px;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Interlineado 1.55, más suelto que el resto del módulo: aquí se lee un párrafo, no se recorre una
+   tabla con la vista. */
+.pdc-guia-texto {
+  margin: 0;
+  font-size: var(--pdc-fs-md);
+  line-height: 1.55;
+}
+
+.pdc-guia-pasos {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.pdc-guia-pasos > li + li {
+  margin-top: 6px;
+}
+
+.pdc-guia-apartados {
+  margin: 0;
+}
+
+.pdc-guia-apartado + .pdc-guia-apartado {
+  margin-top: 12px;
+}
+
+.pdc-guia-apartado-etiqueta {
+  margin-bottom: 2px;
+  font-size: var(--pdc-fs-md);
+  font-weight: 600;
+}
+
+.pdc-guia-apartado dd {
+  margin: 0;
+}
+
+.pdc-guia-pie {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pdc-border);
+}
+
+/* La fila del título de cada pantalla: el h1 y su botón de ayuda, juntos. */
+.pdc-titulo-fila {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/*
+ * Recorrido de la primera visita. Panel angosto y pegado abajo, para dejar ver la pantalla que
+ * está explicando: si lo tapara, el recorrido sería una presentación en vez de un paseo.
+ */
+.pdc-recorrido .aia-modal-surface {
+  width: min(30rem, calc(100vw - 4rem));
+  max-width: min(30rem, calc(100vw - 4rem));
+  margin-block: auto 32px;
+  color: var(--pdc-ink);
+  font-size: var(--pdc-fs-md);
+}
+
+.pdc-recorrido-progreso {
+  margin: 0 0 6px;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdc-recorrido-titulo {
+  margin: 0 0 8px;
+  font-size: var(--pdc-fs-lg);
+}
+
+.pdc-recorrido-texto {
+  margin: 0;
+  font-size: var(--pdc-fs-md);
+  line-height: 1.55;
+}
+
+.pdc-recorrido-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pdc-recorrido-avance {
+  display: flex;
+  gap: 6px;
+}
+
+/* Mismo patrón que el primario de Paquetes: el acento del módulo, que ya sale del token de acción
+   primaria del sistema. */
+.pdc-recorrido .pdc-recorrido-principal:not(:disabled) {
+  background: var(--pdc-accent);
+  border-color: var(--pdc-accent);
+  color: var(--pdc-accent-ink);
+}

@@ -16,6 +16,7 @@ import { guardarUmbral, leerUmbral, partidasSobreUmbral } from '../lib/tamiz'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
 import { contarInsumos, plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -180,7 +181,7 @@ export default function VisorPresupuesto() {
     <section className="pdc-page">
       <header className="pdc-header pdc-header-fila">
         <div>
-          <h1>Presupuesto</h1>
+          <div className="pdc-titulo-fila"><h1>Presupuesto</h1><BotonAyuda pantalla="presupuesto" /></div>
           <p>Vista del presupuesto importado. Elige hasta qué nivel verlo, o haz clic en una fila para abrirla.</p>
           {/* Las dos magnitudes juntas y con su nombre: es la única forma de que el 396 y el 820
               convivan en la misma app sin parecer que una de las dos está mal. */}

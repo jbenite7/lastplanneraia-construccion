@@ -21,6 +21,7 @@ import {
 import { moneda } from '../lib/agGrid'
 import type { FilaSeguimiento, FiltrosSeguimiento, FilaVencimiento, PasoSeguimiento, RespuestaVencimientos } from '../lib/types'
 import { plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Solo lectura en la grilla: el avance se registra en el panel de detalle, no en la celda. Por eso
 // no se registra ningun modulo de edicion aqui.
@@ -186,7 +187,7 @@ export default function Seguimiento() {
   return (
     <section className="pdc-page">
       <header className="pdc-header">
-        <h1>Seguimiento del plan de compras</h1>
+        <div className="pdc-titulo-fila"><h1>Seguimiento del plan de compras</h1><BotonAyuda pantalla="seguimiento" /></div>
         <p className="pdc-sub">
           {seccion === 'paquetes'
             ? `${plural(visibles.length, 'paquete', 'paquetes')} de ${filas.length}. Haz clic en una fila para registrar cuándo ocurrió cada paso.`

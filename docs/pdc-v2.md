@@ -389,3 +389,45 @@ Son insumos de trabajo, no artefactos del repo:
 - **Idioma:** el proyecto y su dominio son en español. Documentación y comentarios en español; identificadores de código, rutas y comandos en su idioma original.
 - Preserva la terminología de dominio del equipo (confírmala en `GLOSARIO.md`, en la raíz): *maestro de insumos*, *Pareto de insumos*, *paquetes de contratación*, *APU*, *plan de compras (PDC)*.
 - `.omo/` (continuaciones de sesión), `.claude/`, `docs/pdc/` y `.DS_Store` están ignorados y no deben versionarse. `docs/` **no** lo está: ver el aviso de «Materiales de referencia» más arriba.
+
+## Ayuda dentro del módulo
+
+Cada una de las **ocho** pantallas tiene un botón de ayuda que responde tres cosas en este orden:
+**qué hace esta pantalla · qué tengo que hacer yo aquí · qué pasa después**. El contenido vive en
+`pdc-app/src/lib/ayuda.ts` y el componente único en `pdc-app/src/components/BotonAyuda.tsx`. La
+primera visita lanza un recorrido de seis paradas (`pdc-app/src/lib/recorrido.ts`), omitible en el
+primer clic, que no vuelve solo y se relanza desde cualquier botón de ayuda.
+
+**La regla, y es la razón de existir de todo esto:** una pantalla no está terminada sin su ayuda, y
+eso incluye cambiarla. Si modificas una pantalla, revisa su entrada en `ayuda.ts` en el mismo
+cambio. `ayuda.test.ts` atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad
+solo lo puede comprobar quien hace el cambio.
+
+**Granularidad:** un botón por página (ocho), no por pestaña (serían diecisiete). Las pestañas que
+necesitan explicación —Desfases, Vencimientos, Flujo de caja, Sin frente…— la llevan como apartado
+dentro del panel de su página. Decisión del usuario, 2026-07-29. El spec original hablaba de «nueve
+pantallas» mezclando páginas con pestañas; el inventario medido contra el código son 8 páginas y 13
+pestañas.
+
+**Lo que la ayuda NO dice, a propósito.** Un mensaje que la pantalla ya da en el momento no se
+repite aquí, porque dos copias del mismo aviso envejecen por separado:
+
+| Mensaje | Dónde vive | Qué hace la ayuda |
+|---|---|---|
+| Advertencia de método del flujo de caja | `FlujoCajaService::NOTA_METODO`, servida por el servidor y dentro del CSV | La señala y dice llevársela; no la reescribe |
+| Impacto sobre el trabajo ya hecho al recargar | `ImportarPresupuesto.tsx` | Dice que hay que leerlo y por qué importa; no lo resume |
+| Por qué el desplegable de frentes está vacío | `motivoSinAnclas()` en `lib/planFechas.ts` | Remite a ese mensaje, sin repetir las tres causas |
+
+**Los e2e y el recorrido.** `tests/browser/support/session.mjs` marca el recorrido como visto en
+todos los e2e (`silenciarRecorridoPdc`, vía `addInitScript`). Sin eso, cada test de Playwright
+arranca con almacén limpio, el recorrido se abre como modal y tapa los clics del resto de la suite
+del PDC. `tests/browser/pdc-v2-ayuda.spec.mjs` lo borra para sí mismo.
+
+**Dos huecos declarados, no olvidados:**
+
+- **Subpaquetes no tiene ayuda** porque cuando se escribió esto su pantalla de partir y repartir no
+  existía (fila 8a del tablero, `EN CURSO`). Cuando exista, entra aquí y en la ayuda del Plan.
+- **`reenganchados` no está documentado** porque no se ve: el servidor lo calcula y lo devuelve
+  (`MaestroSincoImportService.php`), pero la pantalla del Maestro no lo pinta. La ayuda sí explica
+  el efecto que el usuario **puede** comprobar —que la lista de pendientes baja sola tras una carga
+  de SINCO—. Mostrar el número es un cambio de esa pantalla, y arrastra su línea de ayuda.

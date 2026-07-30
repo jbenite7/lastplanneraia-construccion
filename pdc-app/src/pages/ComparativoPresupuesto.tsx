@@ -14,6 +14,7 @@ import type { FilaComparativo } from '../lib/comparativo'
 import { NIVELES_PRESUPUESTO, expandirHastaNivel } from '../lib/presupuestoTree'
 import type { Comparativo, InsumoDiff, LadoComparativo, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
 ModuleRegistry.registerModules([
@@ -169,7 +170,7 @@ export default function ComparativoPresupuesto() {
     <section className="pdc-page">
       <header className="pdc-header pdc-header-fila">
         <div>
-          <h1>Comparativo de versiones</h1>
+          <div className="pdc-titulo-fila"><h1>Comparativo de versiones</h1><BotonAyuda pantalla="comparar" /></div>
           <p>Elige dos versiones para ver qué cambió: sobrecostos y ahorros por actividad e insumo.</p>
         </div>
         <div className="pdc-cmp-selectores">

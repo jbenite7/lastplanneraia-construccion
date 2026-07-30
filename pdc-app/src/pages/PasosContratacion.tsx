@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
 import type { DuracionCatalogo, EntradaHistorialPasos, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
+import BotonAyuda from '../components/BotonAyuda'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -196,7 +197,7 @@ export default function PasosContratacion() {
     <section className="pdc-bloque pdc-pasos">
       <header className="pdc-paq-header">
         <div>
-          <h1>Pasos del proceso de contratación</h1>
+          <div className="pdc-titulo-fila"><h1>Pasos del proceso de contratación</h1><BotonAyuda pantalla="pasos" /></div>
           <p className="pdc-sub">
             El camino que recorre cada paquete antes de llegar a obra. Cambiarlo mueve las fechas de
             todos los paquetes de esta obra.

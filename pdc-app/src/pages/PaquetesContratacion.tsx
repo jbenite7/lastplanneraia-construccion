@@ -15,6 +15,7 @@ import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
 import { contarInsumos, filtraPorTexto, plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
@@ -320,7 +321,7 @@ export default function PaquetesContratacion() {
   if (sinVersion) {
     return (
       <section className="pdc-bloque">
-        <h1>Paquetes de contratación</h1>
+        <div className="pdc-titulo-fila"><h1>Paquetes de contratación</h1><BotonAyuda pantalla="paquetes" /></div>
         <p className="pdc-vacio">El proyecto no tiene un presupuesto importado. Importa un presupuesto para empezar a empaquetar.</p>
       </section>
     )
@@ -330,7 +331,7 @@ export default function PaquetesContratacion() {
     <section className="pdc-bloque pdc-paquetes">
       <header className="pdc-paq-header">
         <div>
-          <h1>Paquetes de contratación</h1>
+          <div className="pdc-titulo-fila"><h1>Paquetes de contratación</h1><BotonAyuda pantalla="paquetes" /></div>
           <p className="pdc-sub">Agrupa los insumos del presupuesto activo. Meta: 100% asignado u omitido.</p>
         </div>
         {resumen && <Cobertura resumen={resumen} />}

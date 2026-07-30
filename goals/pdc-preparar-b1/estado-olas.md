@@ -84,7 +84,7 @@ fila 1.
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
-| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
+| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **EN CURSO** (construido y commiteado; faltan las dos verificaciones aplazadas — ver nota) | `ed9c321` | 2026-07-29 |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
@@ -235,3 +235,31 @@ devuelve los lotes con sus insumos, su valor y el resumen del sombrilla; `…/su
 la unidad contratable con su etiqueta ya escrita; y `partir`, `agregar`, `actualizar`, `eliminar` y
 `mover` cubren todas las acciones. `amarrar`/`desamarrar` aceptan `subpaqueteId` para darle a cada lote
 su frente.
+
+### Nota sobre la nº 6 — por qué no se marca `HECHO`
+
+Está **construido y commiteado** en `worktree-pdc-ola2-ayuda-in-app`: las ocho pantallas con su
+botón, el contenido de las ocho ayudas, el recorrido de seis paradas con su memoria por usuario, el
+e2e escrito y la regla de proceso en `DESIGN.md` y `docs/pdc-v2.md`.
+
+**Verificado:** 362 tests de vitest en verde (25 archivos, 28 nuevos entre `ayuda.test.ts` y
+`recorrido.test.ts`), tipos limpios, bundle recompilado a `public/pdc-app/`.
+
+**Aplazado por decisión del usuario** («avanza sin pruebas físicas»), y por eso la fila no dice
+`HECHO`:
+
+1. **Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.** Playwright los carga y los lista, y
+   `node --check` pasa, pero ejecutarlos necesita la app servida sobre *este* árbol; el contenedor
+   no llegó a arrancar (montar el repo desde disco externo agota el tiempo). **No están verdes: no
+   se han corrido.**
+2. **La condición de hecho nº 3 del spec** — un revisor que no conoce el módulo lee las ayudas y
+   recorre el flujo sin preguntar. Es *el* hecho de verdad del entregable; que los botones existan
+   no lo sustituye.
+
+**Riesgo que hereda quien cierre esto:** el punto 2 es el único que puede detectar que un texto es
+correcto pero inútil. Los tests atrapan la pantalla sin ayuda y la jerga; no atrapan una explicación
+que no explica.
+
+**Cambio de alcance medido, no supuesto:** el spec decía «nueve pantallas» mezclando páginas con
+pestañas. El inventario contra el código son **8 páginas y 13 pestañas**, y el usuario decidió un
+botón por página con apartados dentro. Subpaquetes queda sin ayuda a propósito (fila 8a `EN CURSO`).
