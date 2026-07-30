@@ -422,7 +422,19 @@ export type ResumenPaquetes = {
 }
 
 // Tipos del plan de fechas (Fase A4)
-export type PasoPlan = { orden: number; paso: string; dias: number; fechaInicio: string; fechaFin: string }
+// `vencimiento` lo resuelve el servidor con la misma regla que el tablero de Vencimientos (B2):
+// 'cumplido' | 'vencido' | 'sem1' | 'sem2' | 'sem3' | 'sem6' | 'adelante' | 'sin_fecha'. Se recibe como
+// string y no como unión literal a propósito: si el servidor añadiera un corte, la pantalla lo mostraría
+// crudo (ver etiquetaCorte) en vez de romper el build o esconder la fila.
+export type PasoPlan = {
+  orden: number
+  paso: string
+  dias: number
+  fechaInicio: string
+  fechaFin: string
+  fechaReal: string | null
+  vencimiento: string
+}
 
 export type FilaPlan = {
   paqueteId: number
@@ -456,6 +468,69 @@ export type Desfase = {
   fechaGuardada: string
   fechaActual: string | null
   diasMovidos: number | null
+}
+
+// B2 · el delta de una reprogramación, antes de aplicarla. `arranqueActual` es null cuando el
+// paquete todavía no tenía plan calculado: no hay un «desde» que enseñar, y fingir uno mentiría.
+export type DeltaPaquete = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  anclaActual: string
+  anclaNueva: string
+  diasMovidos: number
+  arranqueActual: string | null
+  arranqueNuevo: string
+  pasosQueSeMueven: number
+  pasosConFechaReal: number
+}
+
+// Un amarre a un frente que ya no está en el cronograma. Va aparte de `movidos` porque no tiene
+// delta que aplicar: lo resuelve una persona amarrándolo a mano.
+export type HuerfanoReprogramacion = {
+  paqueteId: number
+  nombre: string
+  frenteNombre: string
+  anclaActual: string
+}
+
+export type SimulacionReprogramacion = {
+  movidos: DeltaPaquete[]
+  huerfanos: HuerfanoReprogramacion[]
+}
+
+// A4.1 · diferido nº 2 — copiar la configuración de pasos de otra obra.
+export type OrigenCopia = { projectId: number; nombre: string; pasos: number }
+
+export type PasoPreviewCopia = {
+  clave: string
+  nombre: string
+  alias: string
+  diasFijos: number | null
+  tieneCatalogo: boolean
+}
+
+// `incompleta` = la obra origen tiene algún paso sin duración. La copia hereda ese hueco, así que
+// hay que decirlo ANTES de copiar.
+export type PreviewCopia = { pasos: PasoPreviewCopia[]; incompleta: boolean }
+
+// A4.1 · diferido nº 3 — una entrada del historial de configuración. `pasos` vacío = esa vez la
+// obra volvió al proceso por defecto de la empresa.
+export type EntradaHistorialPasos = {
+  id: number
+  usuario: string
+  cuando: string
+  pasos: { clave: string; alias: string; diasFijos: number | null }[]
+}
+
+// A4.1 · diferido nº 4 — una fila del catálogo legacy de duraciones. Es de la EMPRESA: cambiarla
+// mueve las fechas de todas las obras cuyos paquetes la usen, de ahí `paquetesQueLaUsan`.
+export type DuracionCatalogo = {
+  duracionRef: number
+  paqueteContratacion: string
+  tipoPaquete: string
+  dias: Record<string, number | null>
+  paquetesQueLaUsan: number
 }
 
 export type FrenteDisponible = { uniqueId: number; nombre: string; capitulo: string; fechaInicio: string }
@@ -622,4 +697,29 @@ export type FiltrosSeguimiento = {
   frente: string
   estado: '' | 'sin_empezar' | 'en_curso' | 'terminado'
   soloAtrasados: boolean
+}
+
+// Tablero de vencimientos (Fase B2, primera mitad). Una fila por PASO pendiente, no por paquete.
+export type FilaVencimiento = {
+  paqueteId: number
+  paquete: string
+  frenteNombre: string
+  pasoId: number | null
+  orden: number
+  paso: string
+  clave: string
+  fechaFin: string | null
+  responsableUserId: number | null
+  responsableNombre: string
+  estado: string
+  diasDesfase: number | null
+}
+
+export type RespuestaVencimientos = {
+  hoy: string
+  filas: FilaVencimiento[]
+  conteos: Record<string, number>
+  totalPendientes: number
+  pasos: { clave: string; paso: string }[]
+  sinFechas: { paquetes: number; sinFrente: number; sinCalcular: number }
 }

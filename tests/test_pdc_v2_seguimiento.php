@@ -33,7 +33,7 @@ $db->query("UPDATE pdc_plan_paso SET fecha_real = NULL, registrado_por = '', reg
 // pasos de la obra. Ambas se retiran al empezar por lo mismo que las fechas: una corrida cortada a
 // mitad no puede cambiar el resultado de la siguiente.
 $db->query("DELETE FROM pdc_plan_paso WHERE project_id = ? AND paso_id IS NULL AND paso LIKE 'test-b1%'", [P]);
-(new \App\Services\Pdc\PasosContratacionService($db))->restablecer(P);
+(new \App\Services\Pdc\PasosContratacionService($db))->restablecer(P, 'test-b1');
 
 $svc = new SeguimientoService($db);
 
@@ -292,7 +292,7 @@ $vigentes = (int) $db->query(
 $assert($vigentes === count($reducida),
     'Sobrantes: los pasos que siguen en el proceso conservan sus fechas. Dio ' . $vigentes . ' de ' . count($reducida));
 
-$pasosSvc->restablecer(P);
+$pasosSvc->restablecer(P, 'test-b1');
 $plan->calcular(P, 'test-b1');
 $assert($svc->pasosDePaquete(P, $paquete)[0]['fechaFin'] !== null,
     'Sobrantes: devolver el paso al proceso le repone sus fechas programadas.');

@@ -70,8 +70,12 @@ class PlanFechasService
      * usuario en el valor, así que interpolarlos directo en la consulta es seguro; se centraliza
      * aquí para que `calcular()` y `plan()` no dupliquen el literal ni puedan divergir de
      * `MODALIDADES_CON_PROCESO`.
+     *
+     * Pública desde B2: el tablero de vencimientos necesita el mismo denominador que el plan para
+     * contar los paquetes sin fecha. Duplicar la lista allí haría que nómina o imprevistos contaran
+     * como «paquetes que el tablero no está mirando», una alarma que nadie podría apagar.
      */
-    private static function modalidadesConProcesoSql(): string
+    public static function modalidadesConProcesoSql(): string
     {
         return "'" . implode("','", self::MODALIDADES_CON_PROCESO) . "'";
     }
@@ -1075,6 +1079,88 @@ class PlanFechasService
       *
       * @return array{ok: true, calculados: int, sinDuracion: int}
       */
+    /**
+     * Qué fechas produciría este paquete anclado a `$fechaAncla`. NO escribe nada.
+     *
+     * Se separó de `calcular()` en B2 porque simular la reprogramación necesita exactamente este
+     * cálculo sin la escritura. La aritmética no cambió al extraerla: el contrato de fronteras
+     * medio abiertas `[fecha_inicio, fecha_fin)` que documenta `calcular()` sigue siendo el mismo,
+     * y quien recorre los pasos con el cursor sigue siendo `calcular()`. Aquí solo se decide
+     * cuántos días dura cada paso y en qué fecha arranca el conjunto.
+     *
+     * @param list<array{pasoId:?int,clave:string,nombre:string,colLegacy:?string,diasFijos:?int,peso:?float}> $pasos
+     * @param array<string, int> $medianas
+     * @return array{arranque:string,total:int,dias:list<int>,provisional:bool,duracionRef:?int}|null
+     *         null si el paquete está inactivo o su modalidad ya no genera proceso de contratación
+     */
+    private function proyectar(int $paqueteId, string $fechaAncla, array $pasos, array $medianas, string $selectCols): ?array
+    {
+        $paq = $this->db->query(
+            "SELECT p.id, p.tipo_negociacion, p.duracion_ref{$selectCols}
+             FROM general_paquetes_contratacion p
+             LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
+             WHERE p.id = ? AND p.activo = 1
+               AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')',
+            [$paqueteId],
+        )->fetch(\PDO::FETCH_ASSOC);
+        if ($paq === false) {
+            return null;
+        }
+
+        // «Sin duración» se decide por las columnas del desglose que ESTA obra usa, no por
+        // `duracion_ref`: así se cubren de una sola vez los tres casos silenciosos (duracion_ref
+        // NULL, apuntando a una fila borrada, o a una fila con algún `dias*` NULL) porque los tres
+        // producen el mismo resultado en el LEFT JOIN — al menos una columna NULL.
+        // Un paso de días fijos siempre aporta su número y nunca vuelve provisional a un paquete.
+        $desgloseCompleto = true;
+        foreach ($pasos as $p) {
+            if ($p['colLegacy'] !== null && ($paq[$p['colLegacy']] ?? null) === null) {
+                $desgloseCompleto = false;
+                break;
+            }
+        }
+        $provisional = !$desgloseCompleto;
+
+        if ($provisional) {
+            // Los pasos de días fijos se respetan y el RESTO de la mediana se reparte entre los
+            // que tienen peso, re-normalizados sobre los activos. La mediana es la duración del
+            // proceso COMPLETO para ese tipo —ya incluye el tiempo administrativo real de esas
+            // obras—, así que aquí es el sobre entero y no una base a la que sumar. En un paquete
+            // CON desglose sí se suma: allí cada número es una medición de su propio paso.
+            $mediana = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
+            $fijos = 0;
+            $pesos = [];
+            foreach ($pasos as $p) {
+                $esFijo = $p['colLegacy'] === null;
+                $fijos += $esFijo ? (int) ($p['diasFijos'] ?? 0) : 0;
+                $pesos[] = $esFijo ? 0.0 : ($p['peso'] ?? 0.0);
+            }
+            // Si los días fijos ya suman más que la mediana, el resto se topa en cero: el total
+            // pasa a ser la suma de los fijos. Nunca un total negativo ni pasos en negativo.
+            $reparto = self::repartirMediana(max(0, $mediana - $fijos), $pesos);
+            $dias = [];
+            foreach ($pasos as $i => $p) {
+                $dias[] = $p['colLegacy'] === null ? (int) ($p['diasFijos'] ?? 0) : $reparto[$i];
+            }
+        } else {
+            $dias = [];
+            foreach ($pasos as $p) {
+                $dias[] = $p['colLegacy'] === null
+                    ? (int) ($p['diasFijos'] ?? 0)
+                    : (int) $paq[$p['colLegacy']];
+            }
+        }
+        $total = array_sum($dias);
+
+        return [
+            'arranque' => (new \DateTimeImmutable($fechaAncla))->modify(sprintf('-%d days', $total))->format('Y-m-d'),
+            'total' => $total,
+            'dias' => $dias,
+            'provisional' => $provisional,
+            'duracionRef' => $paq['duracion_ref'] === null ? null : (int) $paq['duracion_ref'],
+        ];
+    }
+
     public function calcular(int $projectId, string $usuario): array
     {
         $amarres = $this->amarres($projectId);
@@ -1101,70 +1187,21 @@ class PlanFechasService
         $sinDuracion = 0;
 
         foreach ($amarres as $paqueteId => $a) {
-            $paq = $this->db->query(
-                "SELECT p.id, p.tipo_negociacion, p.duracion_ref{$selectCols}
-                 FROM general_paquetes_contratacion p
-                 LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
-                 WHERE p.id = ? AND p.activo = 1
-                   AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')',
-                [$paqueteId],
-            )->fetch(\PDO::FETCH_ASSOC);
-            if ($paq === false) {
+            $pr = $this->proyectar($paqueteId, $a['fechaAncla'], $pasos, $medianas, $selectCols);
+            if ($pr === null) {
                 // Paquete inactivo, o cuya modalidad ya no genera proceso de contratación (cambió
                 // después de amarrarlo): no se calcula plan para él. Su cabecera vieja, si existe,
                 // queda huérfana en pdc_plan_paquete — plan() la filtra por su cuenta.
                 continue;
             }
-
-            // «Sin duración» se decide por las columnas del desglose que ESTA obra usa, no por
-            // `duracion_ref`: así se cubren de una sola vez los tres casos silenciosos (duracion_ref
-            // NULL, apuntando a una fila borrada, o a una fila con algún `dias*` NULL) porque los tres
-            // producen el mismo resultado en el LEFT JOIN — al menos una columna NULL.
-            // Un paso de días fijos siempre aporta su número y nunca vuelve provisional a un paquete.
-            $desgloseCompleto = true;
-            foreach ($pasos as $p) {
-                if ($p['colLegacy'] !== null && ($paq[$p['colLegacy']] ?? null) === null) {
-                    $desgloseCompleto = false;
-                    break;
-                }
-            }
-            $provisional = !$desgloseCompleto;
-
+            $provisional = $pr['provisional'];
+            $dias = $pr['dias'];
+            $total = $pr['total'];
+            $arranque = $pr['arranque'];
+            $cursor = new \DateTimeImmutable($arranque);
             if ($provisional) {
                 $sinDuracion++;
-                $mediana = $medianas[$paq['tipo_negociacion']] ?? self::DURACION_FALLBACK_DIAS;
-                // Los pasos de días fijos se respetan y el RESTO de la mediana se reparte entre los
-                // que tienen peso, re-normalizados sobre los activos. La mediana es la duración del
-                // proceso COMPLETO para ese tipo —ya incluye el tiempo administrativo real de esas
-                // obras—, así que aquí es el sobre entero y no una base a la que sumar. En un paquete
-                // CON desglose sí se suma: allí cada número es una medición de su propio paso.
-                $fijos = 0;
-                $pesos = [];
-                foreach ($pasos as $p) {
-                    $esFijo = $p['colLegacy'] === null;
-                    $fijos += $esFijo ? (int) ($p['diasFijos'] ?? 0) : 0;
-                    $pesos[] = $esFijo ? 0.0 : ($p['peso'] ?? 0.0);
-                }
-                // Si los días fijos ya suman más que la mediana, el resto se topa en cero: el total
-                // pasa a ser la suma de los fijos. Nunca un total negativo ni pasos en negativo.
-                $reparto = self::repartirMediana(max(0, $mediana - $fijos), $pesos);
-                $dias = [];
-                foreach ($pasos as $i => $p) {
-                    $dias[] = $p['colLegacy'] === null ? (int) ($p['diasFijos'] ?? 0) : $reparto[$i];
-                }
-            } else {
-                $dias = [];
-                foreach ($pasos as $p) {
-                    $dias[] = $p['colLegacy'] === null
-                        ? (int) ($p['diasFijos'] ?? 0)
-                        : (int) $paq[$p['colLegacy']];
-                }
             }
-            $total = array_sum($dias);
-
-            $ancla = new \DateTimeImmutable($a['fechaAncla']);
-            $cursor = $ancla->modify(sprintf('-%d days', $total));
-            $arranque = $cursor->format('Y-m-d');
 
             // La cabecera y sus siete pasos son una sola unidad: si algo falla a mitad de camino,
             // un rollback evita que quede una cabecera con `dias_totales = N` y menos de siete pasos
@@ -1187,7 +1224,7 @@ class PlanFechasService
                         // le asignó cada paquete, y por eso B1 podrá añadir sus columnas sin volver a
                         // tocar este INSERT. No añadirlas sin querer perder esa garantía.
                         $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
-                        $paq['duracion_ref'], $provisional ? 1 : 0, $usuario,
+                        $pr['duracionRef'], $provisional ? 1 : 0, $usuario,
                     ],
                 );
 
@@ -1519,20 +1556,34 @@ class PlanFechasService
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        $hoyStr = (new \DateTimeImmutable('today'))->format('Y-m-d');
         $pasos = [];
         foreach ($this->db->query(
-            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin, g.clave
+            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin,
+                    pp.fecha_real, g.clave
              FROM pdc_plan_paso pp
              LEFT JOIN general_pasos_contratacion g ON g.id = pp.paso_id
              WHERE pp.project_id = ? ORDER BY pp.paquete_id, pp.orden',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC) as $p) {
+            $fechaReal = $p['fecha_real'] === null ? null : (string) $p['fecha_real'];
             $pasos[(int) $p['paquete_id']][] = [
                 'orden' => (int) $p['orden'], 'paso' => (string) $p['paso'], 'dias' => (int) $p['dias'],
                 'fechaInicio' => (string) $p['fecha_inicio'], 'fechaFin' => (string) $p['fecha_fin'],
                 // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
                 // obra puede haber renombrado con su alias.
                 'clave' => (string) ($p['clave'] ?? ''),
+                'fechaReal' => $fechaReal,
+                // El semáforo lo resuelve la MISMA función que el tablero de vencimientos. Es lo único
+                // que garantiza que el color de esta tabla y la lista de la pestaña no se contradigan:
+                // si algún día cambian los cortes, cambian en los dos sitios a la vez o en ninguno.
+                // Un paso ya cumplido no vence: sale del semáforo, igual que sale del tablero.
+                'vencimiento' => $fechaReal !== null
+                    ? 'cumplido'
+                    : SeguimientoService::clasificarVencimiento(
+                        $p['fecha_fin'] === null ? null : (string) $p['fecha_fin'],
+                        $hoyStr,
+                    )['estado'],
             ];
         }
 
@@ -1704,6 +1755,163 @@ class PlanFechasService
       * }> `fechaActual` y `diasMovidos` van en null —y no en '' ni en 0— cuando el amarre quedó
       *    huérfano: no hay fecha nueva que comparar, que es distinto de «se movió 0 días»
       */
+    /**
+     * El antes/después de aplicar al plan la reprogramación del cronograma. NO escribe nada.
+     *
+     * Es la mitad «mirar» de la operación que más daño puede hacer del módulo; la mitad «escribir»
+     * es `aplicarReprogramacion()`, y solo corre si el usuario confirma. Se proyecta con el ancla
+     * NUEVA y se compara contra lo que hay guardado, sin tocar la base: por eso cancelar no puede
+     * dejar nada a medias, no hay nada que deshacer.
+     *
+     * Los huérfanos —amarres a un frente que ya no está en el cronograma— van en su propia lista y
+     * NUNCA en `movidos`: no hay fecha nueva contra la que proyectar, y elegirles otro frente es
+     * una decisión humana que este módulo no toma por nadie.
+     *
+     * @return array{
+     *     movidos: list<array{paqueteId:int,nombre:string,frenteNombre:string,anclaActual:string,
+     *         anclaNueva:string,diasMovidos:int,arranqueActual:?string,arranqueNuevo:string,
+     *         pasosQueSeMueven:int,pasosConFechaReal:int}>,
+     *     huerfanos: list<array{paqueteId:int,nombre:string,frenteNombre:string,anclaActual:string}>
+     * }
+     */
+    public function simularReprogramacion(int $projectId): array
+    {
+        $desfases = $this->desfases($projectId);
+        if ($desfases === []) {
+            return ['movidos' => [], 'huerfanos' => []];
+        }
+
+        $medianas = $this->medianasPorTipo();
+        $pasos = $this->pasos->deProyecto($projectId);
+        self::exigirIdentidad($pasos);
+        $cols = [];
+        foreach ($pasos as $p) {
+            if ($p['colLegacy'] !== null && in_array($p['colLegacy'], PasosContratacionService::columnasLegacy(), true)) {
+                $cols[$p['colLegacy']] = true;
+            }
+        }
+        $selectCols = $cols === []
+            ? ''
+            : ', ' . implode(', ', array_map(static fn (string $c): string => 'd.' . $c, array_keys($cols)));
+
+        $movidos = [];
+        $huerfanos = [];
+        foreach ($desfases as $d) {
+            if ($d['fechaActual'] === null) {
+                $huerfanos[] = [
+                    'paqueteId' => $d['paqueteId'],
+                    'nombre' => $d['nombre'],
+                    'frenteNombre' => $d['frenteNombre'],
+                    'anclaActual' => $d['fechaGuardada'],
+                ];
+                continue;
+            }
+            $pr = $this->proyectar($d['paqueteId'], $d['fechaActual'], $pasos, $medianas, $selectCols);
+            if ($pr === null) {
+                // Inactivo o sin proceso de contratación: `calcular()` tampoco lo tocaría, así que
+                // prometer un delta que luego no se aplicaría sería mentir en pantalla.
+                continue;
+            }
+            $cab = $this->db->query(
+                'SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
+                [$projectId, $d['paqueteId']],
+            )->fetch(\PDO::FETCH_ASSOC);
+            // Los pasos que ya ocurrieron se cuentan aparte y se dicen en pantalla: son justo los
+            // que NO se van a mover, y es la garantía que hace segura esta operación.
+            $conReal = (int) $this->db->query(
+                'SELECT COUNT(*) FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL',
+                [$projectId, $d['paqueteId']],
+            )->fetchColumn();
+
+            $movidos[] = [
+                'paqueteId' => $d['paqueteId'],
+                'nombre' => $d['nombre'],
+                'frenteNombre' => $d['frenteNombre'],
+                'anclaActual' => $d['fechaGuardada'],
+                'anclaNueva' => $d['fechaActual'],
+                'diasMovidos' => (int) $d['diasMovidos'],
+                'arranqueActual' => $cab === false ? null : (string) $cab['fecha_arranque'],
+                'arranqueNuevo' => $pr['arranque'],
+                'pasosQueSeMueven' => count($pasos),
+                'pasosConFechaReal' => $conReal,
+            ];
+        }
+        return ['movidos' => $movidos, 'huerfanos' => $huerfanos];
+    }
+
+    /**
+     * Aplica la reprogramación del cronograma SOLO a los paquetes que el usuario confirmó.
+     *
+     * Refresca la `fecha_ancla` del amarre desde el cronograma en vivo y recalcula. Ese refresco es
+     * el punto: sin él, `calcular()` vuelve a proyectar contra la copia congelada del ancla y el
+     * desfase no se va nunca — el bug que midió B2, ver
+     * `goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29.md`.
+     *
+     * Un amarre cuyo frente ya no está en el cronograma se IGNORA y se cuenta: no hay fecha nueva a
+     * la que moverlo, y elegirle otro frente es una decisión humana. Se devuelve en `ignorados` para
+     * que la pantalla pueda decir cuántos quedaron pendientes en vez de callarlo.
+     *
+     * `fecha_real` no corre peligro: `calcular()` hace upsert de `pdc_plan_paso` listando solo las
+     * columnas programadas, y lo que no se lista MySQL lo conserva.
+     *
+     * @param list<int> $paqueteIds los confirmados en pantalla; una lista vacía no escribe nada
+     * @return array{ok:true,aplicados:int,ignorados:int}
+     */
+    public function aplicarReprogramacion(int $projectId, array $paqueteIds, string $usuario): array
+    {
+        $pedidos = array_values(array_unique(array_map('intval', $paqueteIds)));
+        if ($pedidos === []) {
+            return ['ok' => true, 'aplicados' => 0, 'ignorados' => 0];
+        }
+
+        $frentes = [];
+        foreach ($this->frentesDisponibles($projectId) as $f) {
+            $frentes[$f['uniqueId']] = $f;
+        }
+
+        $aplicados = 0;
+        $ignorados = 0;
+        $this->db->beginTransaction();
+        try {
+            foreach ($pedidos as $paqueteId) {
+                $r = $this->db->query(
+                    'SELECT unique_id, fecha_ancla FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
+                    [$projectId, $paqueteId],
+                )->fetch(\PDO::FETCH_ASSOC);
+                if ($r === false) {
+                    $ignorados++;
+                    continue;
+                }
+                $f = $frentes[(int) $r['unique_id']] ?? null;
+                if ($f === null) {
+                    $ignorados++; // huérfano: sin frente vivo no hay reprogramación que aplicar
+                    continue;
+                }
+                if ($f['fechaInicio'] === (string) $r['fecha_ancla']) {
+                    $ignorados++; // ya estaba al día; nada que mover
+                    continue;
+                }
+                $this->db->query(
+                    'UPDATE pdc_paquete_frente SET fecha_ancla = ? WHERE project_id = ? AND paquete_id = ?',
+                    [$f['fechaInicio'], $projectId, $paqueteId],
+                );
+                $aplicados++;
+            }
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+
+        if ($aplicados > 0) {
+            // `calcular()` abre su propia transacción por paquete, así que corre FUERA de la de
+            // arriba: PDO no anida transacciones de verdad, y un rollback interno se llevaría por
+            // delante el refresco de las anclas ya confirmadas.
+            $this->calcular($projectId, $usuario);
+        }
+        return ['ok' => true, 'aplicados' => $aplicados, 'ignorados' => $ignorados];
+    }
+
     public function desfases(int $projectId): array
     {
         $actual = [];

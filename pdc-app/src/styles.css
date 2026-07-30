@@ -492,6 +492,11 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 /* Las tres confianzas y sus dos botones, en una sola línea que se parte si no cabe. */
 .pdc-plan-propuestas { align-items: center; flex-wrap: wrap; gap: 10px; }
 .pdc-plan-desglose { font-size: var(--pdc-fs-sm); opacity: 0.85; margin-right: auto; }
+/* El toggle del panel de correspondencias es «▸ etiqueta + resumen» en un solo botón. Sin estas dos
+   reglas los dos textos salían pegados —«…con el cronograma4 confirmadas»—, que es lo que se vio al
+   fotografiar el panel por primera vez (cierre pre-lanzamiento, 2026-07-29). */
+.pdc-plan-panel-toggle { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pdc-plan-panel-resumen { font-size: var(--pdc-fs-sm); opacity: 0.85; }
 /* Secundario a la vista, no solo por su nombre: la acción arriesgada no debe competir con la
    segura. Mismo tamaño para que siga siendo cómodo de pulsar. */
 .pdc-paq-secundario {
@@ -660,6 +665,27 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Los días de estos pasos cambian con cada paquete, así que no hay un número que enseñar: se dice
    por qué, en vez de dejar el hueco vacío y que parezca un error. */
 .pdc-pasos-dias-catalogo { color: var(--pdc-ink-muted); font-size: var(--pdc-fs-sm); }
+/* A4.1 · los dos bloques plegados de la pantalla de pasos: copiar de otra obra y las duraciones del
+   catálogo. Plegados porque son operaciones de montaje, no del día a día. */
+.pdc-pasos-copiar, .pdc-pasos-duraciones {
+  margin: 12px 0; padding: 10px 14px;
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-caja);
+}
+.pdc-pasos-copiar > summary, .pdc-pasos-duraciones > summary { cursor: pointer; font-weight: 600; }
+.pdc-pasos-copiar label, .pdc-pasos-copiar button { margin-right: 8px; }
+.pdc-pasos-copiar select { background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: var(--pdc-control-pad); }
+/* La tabla puede pasarse de ancho con siete pasos: scrollea ella, nunca la página. */
+.pdc-pasos-duraciones { overflow-x: auto; }
+.pdc-duraciones-tabla { border-collapse: collapse; width: 100%; font-size: var(--pdc-fs-md); }
+.pdc-duraciones-tabla th, .pdc-duraciones-tabla td {
+  border-bottom: 1px solid var(--pdc-border); padding: 8px 10px; text-align: left; vertical-align: top;
+}
+.pdc-duraciones-tabla thead th { color: var(--pdc-ink-muted); font-weight: 600; white-space: nowrap; }
+.pdc-duraciones-tabla tbody th { font-weight: 600; }
+.pdc-duraciones-tabla tbody th .pdc-paq-meta { display: block; }
+.pdc-duraciones-tabla input { width: 4.5rem; }
 /* Seguimiento del plan de compras (fase B1).
    Barra de filtros y panel de detalle. Se apoyan en los tokens `--pdc-*` y en los mismos valores que
    ya usan el resto de barras y tarjetas del modulo: nada de paleta propia. */
@@ -695,7 +721,37 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* Mientras el POST vuela el campo se bloquea: el cursor de espera es la unica senal de que la fecha
    todavia no esta guardada. */
 .pdc-seg-panel-tabla input[type='date']:disabled { opacity: 0.55; cursor: wait; }
+/* A4.1 · diferido nº 3 — historial de la configuración de pasos. Mismo tratamiento plegado que los
+   otros dos bloques de montaje de la pantalla. */
+.pdc-pasos-historial {
+  margin: 12px 0; padding: 10px 14px;
+  border: 1px solid var(--pdc-border); border-radius: var(--pdc-radio-caja);
+}
+.pdc-pasos-historial > summary { cursor: pointer; font-weight: 600; }
+.pdc-pasos-historial li { padding: 6px 0; border-bottom: 1px solid var(--pdc-border); }
+.pdc-pasos-historial li:last-child { border-bottom: none; }
 
+/* Tablero de vencimientos (B2). Los niveles del semáforo salen de los tokens que ya usa el estado del
+   plan, para que el mismo grado de urgencia se vea igual en las dos pantallas. */
+.pdc-venc-ciego { margin: 8px 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+.pdc-venc-conteos { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.pdc-venc-chip { font-size: var(--pdc-fs-sm); padding: 4px 11px; border-radius: var(--pdc-radio-pill);
+  border: 1px solid var(--pdc-border-control); color: var(--pdc-ink-muted); }
+.pdc-venc-grupo { margin-top: 20px; }
+.pdc-venc-titulo { font-size: var(--pdc-fs-md); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.pdc-venc-num { font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+.pdc-venc--vencido { color: var(--pdc-error-ink); font-weight: 600; }
+.pdc-venc--sem1 { color: var(--pdc-aviso-ink); font-weight: 600; }
+.pdc-venc--sem2 { color: var(--pdc-aviso-ink); }
+.pdc-venc--sem3 { color: var(--pdc-accent-texto); }
+.pdc-venc--sem6 { color: var(--pdc-accent-texto); }
+/* Un paso ya cumplido no vence: se ve tranquilo, y en el tablero de vencimientos ni aparece. */
+.pdc-venc--cumplido { color: var(--pdc-accent-texto); }
+/* Lo lejano y lo que no tiene fecha comparten el gris apagado: ninguno de los dos es trabajo de esta
+   semana, y darles color propio los pondría a competir con lo que sí lo es. */
+.pdc-venc--adelante,
+.pdc-venc--sin_fecha { color: var(--pdc-ink-muted); }
 /* ── Impacto de recargar el presupuesto y avisos del tamiz ──────────────────────────────────────
    Dos bloques informativos que comparten tabla de detalle. Los dos señalan y ninguno bloquea, así
    que se leen como aviso —borde y superficie del tema— y nunca como error. */

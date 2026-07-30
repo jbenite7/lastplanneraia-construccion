@@ -175,6 +175,18 @@ class PasosContratacionService
             }
         }
 
+        // La forma limpia de la lista, para el historial: lo que llegó del cliente ya está validado
+        // arriba, pero conserva claves sueltas y tipos flojos que no queremos congelar en el JSON.
+        $normalizados = [];
+        foreach (array_values($pasos) as $p) {
+            $c = $cat[(string) $p['clave']];
+            $normalizados[] = [
+                'clave' => (string) $p['clave'],
+                'alias' => trim((string) ($p['alias'] ?? '')),
+                'diasFijos' => $c['colLegacy'] === null ? (int) $p['diasFijos'] : null,
+            ];
+        }
+
         $this->db->beginTransaction();
         try {
             // Se borra y se reescribe entera: la lista es corta, el orden queda contiguo desde 0, y
@@ -192,6 +204,7 @@ class PasosContratacionService
                     ],
                 );
             }
+            $this->anotarHistorial($projectId, $normalizados, $usuario);
             $this->db->commit();
         } catch (\Throwable $t) {
             $this->db->rollBack();
@@ -200,9 +213,181 @@ class PasosContratacionService
         return ['ok' => true, 'pasos' => count($pasos)];
     }
 
-    /** La obra vuelve al proceso por defecto de la empresa. */
-    public function restablecer(int $projectId): void
+    /**
+     * Anota la configuración que acaba de quedar vigente. Solo anexa: nunca actualiza ni borra.
+     *
+     * Va DENTRO de la transacción de quien la llama, para que no pueda quedar una configuración
+     * guardada sin su entrada de historial ni al revés.
+     *
+     * @param list<array{clave:string,alias:string,diasFijos:?int}> $pasos lista vacía = la obra
+     *        volvió al proceso por defecto de la empresa, que también es un cambio que registrar
+     */
+    private function anotarHistorial(int $projectId, array $pasos, string $usuario): void
     {
-        $this->db->query('DELETE FROM pdc_proyecto_pasos WHERE project_id = ?', [$projectId]);
+        $this->db->query(
+            'INSERT INTO pdc_proyecto_pasos_historial (project_id, configuracion, pasos, actualizado_por, created_at)
+             VALUES (?, ?, ?, ?, NOW())',
+            [
+                $projectId,
+                json_encode($pasos, JSON_UNESCAPED_UNICODE),
+                count($pasos),
+                mb_substr($usuario, 0, 100),
+            ],
+        );
+    }
+
+    /**
+     * Quién cambió la configuración de esta obra, cuándo y a qué quedó.
+     *
+     * @return list<array{id:int,usuario:string,cuando:string,pasos:list<array{clave:string,alias:string,diasFijos:?int}>}>
+     */
+    public function historial(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT id, configuracion, actualizado_por, created_at
+             FROM pdc_proyecto_pasos_historial WHERE project_id = ? ORDER BY created_at DESC, id DESC',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $pasos = json_decode((string) $r['configuracion'], true);
+            $out[] = [
+                'id' => (int) $r['id'],
+                'usuario' => (string) $r['actualizado_por'],
+                'cuando' => (string) $r['created_at'],
+                'pasos' => is_array($pasos) ? $pasos : [],
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Obras de las que se puede copiar: las que este usuario ve Y tienen configuración propia.
+     *
+     * Se excluyen a propósito las obras sin filas en `pdc_proyecto_pasos`. Ofrecerlas copiaría «los
+     * siete por defecto» como si fueran una decisión de esa obra, y a partir de ahí el destino
+     * dejaría de seguir el proceso por defecto de la empresa aunque nadie lo hubiera elegido —
+     * justo el contrato de cero regresión que A4.1 demostró.
+     *
+     * El filtro por `project_members` no es cosmético: `origenId` llega del cliente, y sin él la
+     * pantalla sería una forma de leer cómo trabaja una obra a la que no se tiene acceso.
+     *
+     * @return list<array{projectId:int,nombre:string,pasos:int}>
+     */
+    public function origenesDisponibles(int $projectIdActual, int $userId): array
+    {
+        $rows = $this->db->query(
+            'SELECT p.Id AS project_id, p.Proyecto_Proceso AS nombre, COUNT(pp.id) AS pasos
+             FROM project_members pm
+             JOIN general_proyectos_procesos p ON p.Id = pm.project_id
+             JOIN pdc_proyecto_pasos pp ON pp.project_id = p.Id
+             WHERE pm.user_id = ? AND p.Id <> ? AND p.Activo = 1
+             GROUP BY p.Id, p.Proyecto_Proceso
+             ORDER BY p.Proyecto_Proceso',
+            [$userId, $projectIdActual],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'projectId' => (int) $r['project_id'],
+                'nombre' => (string) $r['nombre'],
+                'pasos' => (int) $r['pasos'],
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Qué se copiaría, para poder enseñarlo antes de copiarlo.
+     *
+     * `incompleta` marca el riesgo que registró el diseño: si la obra origen quedó a medias, la
+     * copia hereda ese hueco. Se decide con el mismo criterio que valida `guardar()` —un paso sin
+     * respaldo en el catálogo necesita días fijos—, así que lo que aquí se advierte es exactamente
+     * lo que allí sería un error.
+     *
+     * @return array{pasos: list<array{clave:string,nombre:string,alias:string,diasFijos:?int,tieneCatalogo:bool}>, incompleta: bool}
+     */
+    public function previsualizarCopia(int $origenId): array
+    {
+        $rows = $this->db->query(
+            'SELECT c.clave, c.nombre, c.col_legacy, p.alias, p.dias_fijos
+             FROM pdc_proyecto_pasos p
+             JOIN general_pasos_contratacion c ON c.id = p.paso_id
+             WHERE p.project_id = ? AND c.activo = 1
+             ORDER BY p.orden, p.id',
+            [$origenId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $legales = self::columnasLegacy();
+        $pasos = [];
+        $incompleta = false;
+        foreach ($rows as $r) {
+            $col = $r['col_legacy'] === null ? null : (string) $r['col_legacy'];
+            $tieneCatalogo = $col !== null && in_array($col, $legales, true);
+            $dias = $r['dias_fijos'] === null ? null : (int) $r['dias_fijos'];
+            if (!$tieneCatalogo && $dias === null) {
+                $incompleta = true;
+            }
+            $pasos[] = [
+                'clave' => (string) $r['clave'],
+                'nombre' => (string) $r['nombre'],
+                'alias' => trim((string) $r['alias']),
+                'diasFijos' => $dias,
+                'tieneCatalogo' => $tieneCatalogo,
+            ];
+        }
+        return ['pasos' => $pasos, 'incompleta' => $incompleta];
+    }
+
+    /**
+     * Copia la configuración de una obra a otra. Puntual, no un vínculo vivo.
+     *
+     * Se reutiliza `guardar()` en vez de un `INSERT ... SELECT`: así la copia pasa por exactamente
+     * las mismas validaciones que una configuración escrita a mano (paso desconocido, repetido,
+     * días fijos obligatorios), y no hay forma de meter por la puerta de atrás una configuración
+     * que la pantalla habría rechazado. Terminada la copia los dos proyectos son independientes:
+     * editar el destino no toca el origen, porque no queda ninguna referencia entre ellos.
+     *
+     * @return array{ok:bool,code?:string,mensaje?:string,pasos?:int}
+     */
+    public function copiarDesde(int $origenId, int $destinoId, string $usuario): array
+    {
+        if ($origenId === $destinoId) {
+            return ['ok' => false, 'code' => 'ORIGEN_ES_DESTINO', 'mensaje' => 'Una obra no puede copiarse a sí misma.'];
+        }
+        if (!$this->configurado($origenId)) {
+            return [
+                'ok' => false,
+                'code' => 'ORIGEN_SIN_CONFIGURAR',
+                'mensaje' => 'Esa obra no tiene un proceso propio: usa el proceso por defecto de la empresa, que esta obra ya tiene.',
+            ];
+        }
+        $pasos = [];
+        foreach ($this->previsualizarCopia($origenId)['pasos'] as $p) {
+            $pasos[] = ['clave' => $p['clave'], 'alias' => $p['alias'], 'diasFijos' => $p['diasFijos']];
+        }
+        return $this->guardar($destinoId, $pasos, $usuario);
+    }
+
+    /**
+     * La obra vuelve al proceso por defecto de la empresa.
+     *
+     * Deja entrada en el historial con la lista vacía: renunciar a la configuración propia mueve las
+     * fechas igual que cambiarla, y es exactamente el movimiento que alguien va a querer rastrear
+     * cuando pregunte «¿por qué se movieron mis fechas?».
+     */
+    public function restablecer(int $projectId, string $usuario): void
+    {
+        $this->db->beginTransaction();
+        try {
+            $this->db->query('DELETE FROM pdc_proyecto_pasos WHERE project_id = ?', [$projectId]);
+            $this->anotarHistorial($projectId, [], $usuario);
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
     }
 }

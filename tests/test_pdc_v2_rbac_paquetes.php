@@ -45,5 +45,32 @@ $desamarrarFn = substr($desamarrarFn, 0, (int) strpos($desamarrarFn, 'public fun
 $assert(str_contains($desamarrarFn, 'guardEscritura()'),
     'desamarrar() pasa por el mismo guard de escritura que amarrar (permiso + CSRF).');
 
+// B2 · reprogramación. Simular NO escribe, pero va con el guard de escritura a propósito: enseñar
+// el delta a quien no puede aplicarlo produce una pantalla que promete un botón que dará 403.
+$assert(str_contains($rutas, '/plan-compras/api/plan/reprogramacion/simular'),
+    'La ruta GET de simular la reprogramación está registrada.');
+$assert(str_contains($rutas, '/plan-compras/api/plan/reprogramacion/aplicar'),
+    'La ruta POST de aplicar la reprogramación está registrada.');
+$simularFn = substr($controlador, (int) strpos($controlador, 'public function simularReprogramacion'));
+$simularFn = substr($simularFn, 0, (int) strpos($simularFn, "\n    /**", 10));
+$assert(str_contains($simularFn, "can('lps.paquetes_contratacion.editar')"),
+    'simularReprogramacion() exige el permiso de editar, aunque solo lea.');
+// CSRF protege mutaciones; simular no lo es, y el cliente solo adjunta el token en POST. Pedirlo en
+// este GET dejaba la pestaña «Desfases» sin poder enseñar el delta (visto en el e2e).
+$assert(!str_contains($simularFn, 'CsrfTokenManager'),
+    'simularReprogramacion() NO exige CSRF: es un GET que no escribe.');
+
+$aplicarFn = substr($controlador, (int) strpos($controlador, 'public function aplicarReprogramacion'));
+$aplicarFn = substr($aplicarFn, 0, (int) strpos($aplicarFn, "\n    /**", 10));
+$assert(str_contains($aplicarFn, 'guardEscritura()'),
+    'aplicarReprogramacion() sí pasa por el guard de escritura (permiso + CSRF): escribe.');
+// Rol permitido y rol denegado, que es lo que exige AGENTS.md para toda ruta protegida nueva.
+$assert($rbac->can('lps.paquetes_contratacion.editar', 'D'),
+    'Rol permitido: D puede aplicar una reprogramación.');
+$assert(!$rbac->can('lps.paquetes_contratacion.editar', 'V'),
+    'Rol denegado: V (Visualizador) no puede aplicar una reprogramación.');
+$assert(!$rbac->can('lps.paquetes_contratacion.editar', 'R'),
+    'Rol denegado: R tampoco, aunque vea el plan.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 exit($failures === [] ? 0 : 1);

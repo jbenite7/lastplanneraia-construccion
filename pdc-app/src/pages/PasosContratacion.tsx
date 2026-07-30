@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
-import type { PasoCatalogo, RespuestaPasos } from '../lib/types'
+import type { DuracionCatalogo, EntradaHistorialPasos, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -66,12 +66,115 @@ export default function PasosContratacion() {
       })
       setMensaje(`Guardado: ${r.pasos} pasos. Se recalcularon ${r.calculados} paquetes.`)
       await cargar()
+      await cargarHistorial()
     } catch (e) {
       setError((e as PdcApiError).message)
     } finally {
       setOcupado(false)
     }
   }
+
+  // ── Copiar de otra obra (A4.1 · diferido nº 2) ────────────────────────────
+  // Copia puntual, no vínculo vivo: una vez copiada, editar esta obra no toca la de origen.
+  const [origenes, setOrigenes] = useState<OrigenCopia[]>([])
+  const [origenElegido, setOrigenElegido] = useState<number | ''>('')
+  // `null` = no hay nada previsualizado. El diseño exige enseñar QUÉ se copia antes de copiarlo,
+  // porque una obra origen a medias contagia su hueco.
+  const [preview, setPreview] = useState<PreviewCopia | null>(null)
+
+  useEffect(() => {
+    // Un 403 aquí es normal y no es un error que mostrar: significa que este usuario no tiene el
+    // permiso de reglas, así que el bloque de copia sencillamente no aparece.
+    void apiGet<{ origenes: OrigenCopia[] }>('/plan-compras/api/plan/pasos/origenes')
+      .then((d) => setOrigenes(d.origenes))
+      .catch(() => setOrigenes([]))
+  }, [])
+
+  const onPrevisualizarCopia = async () => {
+    if (origenElegido === '') return
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      setPreview(await apiGet<PreviewCopia>(`/plan-compras/api/plan/pasos/copia-preview?origenId=${origenElegido}`))
+    } catch (e) {
+      setError((e as PdcApiError).message)
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  const onCopiar = async () => {
+    if (origenElegido === '') return
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      const r = await apiPost<{ pasos: number; calculados: number }>('/plan-compras/api/plan/pasos/copiar', {
+        origenId: origenElegido,
+      })
+      setPreview(null)
+      await cargar()
+      await cargarHistorial()
+      setMensaje(`Copiados ${r.pasos} pasos. Se recalcularon ${r.calculados} paquetes.`)
+    } catch (e) {
+      setError((e as PdcApiError).message)
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  // ── Duraciones del catálogo (A4.1 · diferido nº 4) ─────────────────────────
+  // Hasta ahora había que entrar a la base para cambiar un número que mueve las fechas de toda la
+  // obra. Solo se ofrecen las filas que los paquetes de ESTA obra usan.
+  const [duraciones, setDuraciones] = useState<DuracionCatalogo[]>([])
+
+  const cargarDuraciones = async () => {
+    // Igual que los orígenes de copia: un 403 solo significa que este usuario no tiene el permiso
+    // de reglas, y entonces el bloque no aparece. No es un error que mostrar.
+    await apiGet<{ duraciones: DuracionCatalogo[] }>('/plan-compras/api/plan/duraciones')
+      .then((d) => setDuraciones(d.duraciones))
+      .catch(() => setDuraciones([]))
+  }
+
+  useEffect(() => {
+    void cargarDuraciones()
+  }, [])
+
+  const onGuardarDuracion = async (ref: number, columna: string, valor: number) => {
+    setOcupado(true)
+    setError('')
+    setMensaje('')
+    try {
+      const r = await apiPost<{ calculados: number }>('/plan-compras/api/plan/duraciones', {
+        duracionRef: ref,
+        dias: { [columna]: valor },
+      })
+      await cargarDuraciones()
+      setMensaje(`Duración guardada. Se recalcularon ${r.calculados} paquetes de esta obra.`)
+    } catch (e) {
+      setError((e as PdcApiError).message)
+      // La pantalla vuelve a lo que hay guardado: dejar el número tecleado sobre un guardado que
+      // falló haría creer que la fecha del plan ya se movió.
+      await cargarDuraciones()
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  // ── Historial de la configuración (A4.1 · diferido nº 3) ───────────────────
+  // Existe para contestar «¿por qué se movieron mis fechas?». Se recarga tras cada cambio.
+  const [historial, setHistorial] = useState<EntradaHistorialPasos[]>([])
+
+  const cargarHistorial = async () => {
+    await apiGet<{ historial: EntradaHistorialPasos[] }>('/plan-compras/api/plan/pasos/historial')
+      .then((d) => setHistorial(d.historial))
+      .catch(() => setHistorial([]))
+  }
+
+  useEffect(() => {
+    void cargarHistorial()
+  }, [])
 
   const onRestablecer = async () => {
     setOcupado(true)
@@ -80,6 +183,7 @@ export default function PasosContratacion() {
     try {
       const r = await apiPost<{ calculados: number }>('/plan-compras/api/plan/pasos/restablecer', {})
       await cargar()
+      await cargarHistorial()
       setMensaje(`La obra vuelve al proceso por defecto de la empresa. Se recalcularon ${r.calculados} paquetes.`)
     } catch (e) {
       setError((e as PdcApiError).message)
@@ -114,6 +218,164 @@ export default function PasosContratacion() {
       )}
       {error !== '' && <div className="pdc-error" role="status">{error}</div>}
       {mensaje !== '' && <div className="pdc-info" role="status">{mensaje}</div>}
+
+      {/* La pregunta que este bloque existe para contestar es «¿por qué se movieron mis fechas?».
+          Va con el guard de lectura: enterarse no exige poder cambiar nada. */}
+      {historial.length > 0 && (
+        <details className="pdc-pasos-historial" data-testid="pdc-pasos-historial">
+          <summary>Historial de cambios ({historial.length})</summary>
+          <ol className="pdc-paq-lista" data-testid="pdc-pasos-historial-lista">
+            {historial.map((h) => (
+              <li key={h.id}>
+                <strong>{h.cuando}</strong>
+                <span className="pdc-paq-meta">{h.usuario}</span>
+                <span className="pdc-paq-meta">
+                  {h.pasos.length === 0
+                    ? 'volvió al proceso por defecto de la empresa'
+                    : h.pasos.map((p) => (p.alias !== '' ? p.alias : p.clave)).join(' → ')}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+
+      {/* Cambiar un número de aquí mueve las fechas de todas las obras que usen esa fila, no solo
+          de esta. El aviso es permanente a propósito: es la advertencia, no una decoración. */}
+      {duraciones.length > 0 && (
+        <details className="pdc-pasos-duraciones" data-testid="pdc-duraciones">
+          <summary>Duraciones del catálogo de la empresa</summary>
+          <p className="pdc-sub" data-testid="pdc-duraciones-aviso">
+            Estas duraciones son de la empresa, no de esta obra: cambiarlas mueve las fechas de todas
+            las obras cuyos paquetes las usen. Aquí ves {duraciones.length} porque son las que usan
+            los paquetes de esta obra.
+          </p>
+          <table className="pdc-duraciones-tabla">
+            <thead>
+              <tr>
+                <th scope="col">Paquete del catálogo</th>
+                {pasos
+                  .filter((p) => p.colLegacy !== null)
+                  .map((p) => <th scope="col" key={p.clave}>{p.nombre}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {duraciones.map((d) => (
+                <tr key={d.duracionRef} data-testid={`pdc-duracion-${d.duracionRef}`}>
+                  <th scope="row">
+                    {d.paqueteContratacion}
+                    <span className="pdc-paq-meta">
+                      {d.paquetesQueLaUsan === 1
+                        ? '1 paquete de esta obra la usa'
+                        : `${d.paquetesQueLaUsan} paquetes de esta obra la usan`}
+                    </span>
+                  </th>
+                  {pasos
+                    .filter((p) => p.colLegacy !== null)
+                    .map((p) => (
+                      <td key={p.clave}>
+                        <input
+                          type="number"
+                          min={0}
+                          aria-label={`${p.nombre} de ${d.paqueteContratacion}`}
+                          data-testid={`pdc-duracion-${d.duracionRef}-${p.colLegacy}`}
+                          disabled={ocupado}
+                          defaultValue={d.dias[p.colLegacy as string] ?? ''}
+                          // Se guarda al salir del campo y no en cada tecla: cada guardado recalcula
+                          // el plan de la obra entera.
+                          onBlur={(e) => {
+                            const n = Number(e.target.value)
+                            if (e.target.value === '' || !Number.isInteger(n) || n < 0) return
+                            if (n === d.dias[p.colLegacy as string]) return
+                            void onGuardarDuracion(d.duracionRef, p.colLegacy as string, n)
+                          }}
+                        />
+                      </td>
+                    ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      )}
+
+      {/* Montar la segunda obra empieza por querer partir de lo que ya funcionó en la primera. El
+          bloque no aparece si no hay ninguna obra configurada que este usuario pueda ver. */}
+      {origenes.length > 0 && (
+        <details className="pdc-pasos-copiar" data-testid="pdc-pasos-copiar">
+          <summary>Copiar la configuración de otra obra</summary>
+          <p className="pdc-sub">
+            Se copia una vez y se queda quieta: después puedes editarla aquí sin que la obra de
+            origen se entere, y sin que lo que hagas allá vuelva a esta.
+          </p>
+          <label>
+            Obra de origen{' '}
+            <select
+              data-testid="pdc-pasos-copiar-origen"
+              value={origenElegido}
+              onChange={(e) => {
+                setOrigenElegido(e.target.value === '' ? '' : Number(e.target.value))
+                setPreview(null)
+              }}
+            >
+              <option value="">Elige una obra…</option>
+              {origenes.map((o) => (
+                <option key={o.projectId} value={o.projectId}>
+                  {o.nombre} ({o.pasos} pasos)
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            data-testid="pdc-pasos-copiar-preview"
+            disabled={ocupado || origenElegido === ''}
+            onClick={() => void onPrevisualizarCopia()}
+          >
+            Ver qué se copiaría
+          </button>
+
+          {preview !== null && (
+            <div className="pdc-panel" data-testid="pdc-pasos-preview-copia">
+              <p>
+                Se copiarían estos {preview.pasos.length} pasos, reemplazando el proceso actual de
+                esta obra:
+              </p>
+              <ol data-testid="pdc-pasos-preview-lista">
+                {preview.pasos.map((p) => (
+                  <li key={p.clave}>
+                    {p.alias !== '' ? `${p.alias} (${p.nombre})` : p.nombre}
+                    {p.diasFijos !== null && (
+                      <span className="pdc-paq-meta">{p.diasFijos} día(s) fijos</span>
+                    )}
+                    {!p.tieneCatalogo && p.diasFijos === null && (
+                      <span className="pdc-paq-meta">sin duración definida</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+              {preview.incompleta && (
+                <p role="status" data-testid="pdc-pasos-preview-incompleta">
+                  Ojo: esa obra tiene algún paso sin duración definida. Al copiarla, esta obra hereda
+                  ese hueco y sus fechas saldrán estimadas hasta que lo llenes.
+                </p>
+              )}
+              <button
+                type="button"
+                className="pdc-paq-primario"
+                data-testid="pdc-pasos-copiar-confirmar"
+                disabled={ocupado}
+                onClick={() => void onCopiar()}
+              >
+                Copiar a esta obra
+              </button>
+              <button type="button" data-testid="pdc-pasos-copiar-cancelar" onClick={() => setPreview(null)}>
+                Cancelar
+              </button>
+            </div>
+          )}
+        </details>
+      )}
 
       <ol className="pdc-pasos-lista" data-testid="pdc-pasos-lista">
         {pasos.map((p, i) => (

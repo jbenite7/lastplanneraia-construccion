@@ -4,8 +4,10 @@ namespace App\Controllers\Api;
 
 use App\Security\CsrfTokenManager;
 use App\Security\RbacService;
+use App\Services\Pdc\DuracionesCatalogoService;
 use App\Services\Pdc\PasosContratacionService;
 use App\Services\Pdc\PlanFechasService;
+use App\Support\SesionUsuario;
 
 /**
  * Plan de compras con fechas (PDC v2 / Fase A4).
@@ -197,6 +199,55 @@ class PlanComprasPlanController
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
+    /**
+     * GET /plan-compras/api/plan/reprogramacion/simular — el antes/después, sin escribir nada.
+     *
+     * Exige el permiso de EDITAR aunque solo lea: simular es el primer paso de aplicar, y enseñarle
+     * el delta completo a quien no puede aplicarlo solo produce una pantalla que promete un botón
+     * que va a responderle 403.
+     *
+     * Lo que NO exige es CSRF, y por eso no reutiliza `guardEscritura()`: CSRF protege mutaciones,
+     * y esta no lo es. Pedirlo en un GET además rompe el cliente, que solo adjunta el token en
+     * POST (ver `apiPost()` en pdc-app/src/lib/api.ts).
+     */
+    public function simularReprogramacion(): void
+    {
+        if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.editar')) {
+            $this->fail('FORBIDDEN', 'No autorizado para reprogramar el plan de compras.', 403);
+            return;
+        }
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        if ($projectId <= 0) {
+            $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return;
+        }
+        $this->ok($this->service->simularReprogramacion($projectId));
+    }
+
+    /** POST /plan-compras/api/plan/reprogramacion/aplicar  {paqueteIds:[int]} */
+    public function aplicarReprogramacion(): void
+    {
+        $projectId = $this->guardEscritura();
+        if ($projectId === null) {
+            return;
+        }
+        $ids = $this->body()['paqueteIds'] ?? null;
+        if (!is_array($ids)) {
+            $this->fail('PAQUETES_INVALIDOS', 'Falta la lista de paquetes a reprogramar.', 422);
+            return;
+        }
+        $limpios = [];
+        foreach ($ids as $id) {
+            $n = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($n === false) {
+                $this->fail('PAQUETES_INVALIDOS', 'Hay un paquete inválido en la lista.', 422);
+                return;
+            }
+            $limpios[] = $n;
+        }
+        $this->ok($this->service->aplicarReprogramacion($projectId, $limpios, $this->usuario()));
+    }
+
     /** POST /plan-compras/api/plan/responsable  {paqueteId|paqueteIds, responsableUserId} — null lo deja sin responsable */
     public function responsable(): void
     {
@@ -302,6 +353,156 @@ class PlanComprasPlanController
         $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
     }
 
+    /**
+     * GET /plan-compras/api/plan/pasos/historial — quién cambió la configuración, cuándo y a qué.
+     *
+     * Con el guard de LECTURA y no el de reglas: enterarse de por qué se movieron unas fechas no
+     * exige poder moverlas. Quien recibe el plan es justo quien más necesita esa respuesta.
+     */
+    public function historialPasos(): void
+    {
+        $projectId = $this->guardLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['historial' => (new PasosContratacionService($this->db))->historial($projectId)]);
+    }
+
+    /** GET /plan-compras/api/plan/pasos/origenes — de qué obras puede copiar QUIEN pregunta. */
+    public function origenesPasos(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $userId = SesionUsuario::resolverId($this->db);
+        if ($userId === null) {
+            $this->fail('SIN_USUARIO', 'No se pudo identificar al usuario de la sesión.', 409);
+            return;
+        }
+        $this->ok(['origenes' => (new PasosContratacionService($this->db))->origenesDisponibles($projectId, $userId)]);
+    }
+
+    /**
+     * GET /plan-compras/api/plan/pasos/copia-preview?origenId=N — qué se copiaría.
+     *
+     * El origen se revalida contra `origenesDisponibles()` y no solo contra el `<select>`: el
+     * parámetro llega del cliente, y sin esta comprobación la pantalla sería una forma de leer cómo
+     * trabaja una obra a la que no se tiene acceso.
+     */
+    public function previewCopiaPasos(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $origenId = filter_var($_GET['origenId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($origenId === false) {
+            $this->fail('ORIGEN_INVALIDO', 'origenId inválido.', 422);
+            return;
+        }
+        $svc = new PasosContratacionService($this->db);
+        if (!$this->origenPermitido($svc, $projectId, $origenId)) {
+            return;
+        }
+        $this->ok($svc->previsualizarCopia($origenId));
+    }
+
+    /**
+     * POST /plan-compras/api/plan/pasos/copiar  {origenId}
+     *
+     * Recalcula después de copiar, por la misma razón que `guardarPasos()`: la configuración nueva
+     * conviviendo con el plan viejo pondría en pantalla unas fechas que ya no son las que produce
+     * esa configuración.
+     */
+    public function copiarPasos(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        $origenId = filter_var($this->body()['origenId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($origenId === false) {
+            $this->fail('ORIGEN_INVALIDO', 'Falta la obra de la que copiar.', 422);
+            return;
+        }
+        $svc = new PasosContratacionService($this->db);
+        if (!$this->origenPermitido($svc, $projectId, $origenId)) {
+            return;
+        }
+        $r = $svc->copiarDesde($origenId, $projectId, $this->usuario());
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'COPIA_INVALIDA', $r['mensaje'] ?? 'No se pudo copiar.', 422);
+            return;
+        }
+        $this->ok(array_merge($r, $this->service->calcular($projectId, $this->usuario())));
+    }
+
+    /** GET /plan-compras/api/plan/duraciones — las duraciones del catálogo que esta obra usa. */
+    public function duraciones(): void
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
+            return;
+        }
+        $this->ok(['duraciones' => (new DuracionesCatalogoService($this->db))->deProyecto($projectId)]);
+    }
+
+    /**
+     * POST /plan-compras/api/plan/duraciones  {duracionRef, dias:{columna: dias}}
+     *
+     * Recalcula el plan de ESTA obra después de guardar, por la misma razón que `guardarPasos()`.
+     * Las demás obras que usen la misma fila del catálogo verán el cambio cuando recalculen: no se
+     * recalculan aquí porque un cambio hecho desde una obra no debe reescribir el plan de otras a
+     * sus espaldas — para eso tienen sus desfases y su «Recalcular».
+     */
+    public function guardarDuracion(): void
+    {
+        $projectId = $this->guardReglas();
+        if ($projectId === null) {
+            return;
+        }
+        $body = $this->body();
+        $ref = filter_var($body['duracionRef'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($ref === false) {
+            $this->fail('DURACION_INVALIDA', 'Falta la fila del catálogo que se quiere cambiar.', 422);
+            return;
+        }
+        $dias = is_array($body['dias'] ?? null) ? $body['dias'] : null;
+        if ($dias === null) {
+            $this->fail('DIAS_INVALIDOS', 'Falta el detalle de días.', 422);
+            return;
+        }
+        // La fila tiene que ser una de las que esta obra usa: `duracionRef` llega del cliente, y sin
+        // esta comprobación la pantalla de una obra podría reescribir duraciones que no le tocan.
+        $svc = new DuracionesCatalogoService($this->db);
+        if (!in_array($ref, array_column($svc->deProyecto($projectId), 'duracionRef'), true)) {
+            $this->fail('DURACION_NO_DISPONIBLE', 'Esa duración no la usa ningún paquete de esta obra.', 403);
+            return;
+        }
+        $r = $svc->actualizar($ref, $dias, $this->usuario());
+        if (!$r['ok']) {
+            $this->fail($r['code'] ?? 'DIAS_INVALIDOS', $r['mensaje'] ?? 'No se pudo guardar.', 422);
+            return;
+        }
+        $this->ok($this->service->calcular($projectId, $this->usuario()));
+    }
+
+    /** Responde el 403 y devuelve false si el origen no es una obra que este usuario pueda copiar. */
+    private function origenPermitido(PasosContratacionService $svc, int $projectId, int $origenId): bool
+    {
+        $userId = SesionUsuario::resolverId($this->db);
+        if ($userId === null) {
+            $this->fail('SIN_USUARIO', 'No se pudo identificar al usuario de la sesión.', 409);
+            return false;
+        }
+        if (!in_array($origenId, array_column($svc->origenesDisponibles($projectId, $userId), 'projectId'), true)) {
+            $this->fail('ORIGEN_NO_DISPONIBLE', 'No tienes acceso a esa obra o no tiene un proceso propio.', 403);
+            return false;
+        }
+        return true;
+    }
+
     /** POST /plan-compras/api/plan/pasos/restablecer — la obra vuelve al proceso por defecto. */
     public function restablecerPasos(): void
     {
@@ -309,7 +510,7 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
-        (new PasosContratacionService($this->db))->restablecer($projectId);
+        (new PasosContratacionService($this->db))->restablecer($projectId, $this->usuario());
         $this->ok($this->service->calcular($projectId, $this->usuario()));
     }
 
@@ -353,7 +554,16 @@ class PlanComprasPlanController
      * con poder asignar insumos: exige el mismo permiso con el que A3.3 aprueba reglas globales del
      * motor (Oficina Técnica / Compras y Director de Obra).
      */
-    private function guardReglas(): ?int
+    /**
+     * El permiso de reglas y el proyecto, SIN CSRF: para los GET que solo preparan una decisión
+     * (de qué obras se puede copiar, qué traería esa copia).
+     *
+     * Existe porque CSRF protege mutaciones y estas no lo son, y porque el cliente solo adjunta el
+     * token en POST (ver `apiPost()` en pdc-app/src/lib/api.ts): exigirlo en un GET deja la pantalla
+     * sin poder leer nada. El permiso sí es el de reglas, no el de lectura — quien no puede copiar
+     * tampoco necesita ver el catálogo de configuraciones ajenas.
+     */
+    private function guardReglasLectura(): ?int
     {
         if (!(new RbacService($this->db))->can('lps.paquetes_contratacion.reglas')) {
             $this->fail('FORBIDDEN', 'No autorizado para cambiar los pasos del proceso de contratación.', 403);
@@ -362,6 +572,15 @@ class PlanComprasPlanController
         $projectId = (int) ($_SESSION['project_id'] ?? 0);
         if ($projectId <= 0) {
             $this->fail('NO_PROJECT', 'No hay proyecto activo. Selecciona un proyecto.', 409);
+            return null;
+        }
+        return $projectId;
+    }
+
+    private function guardReglas(): ?int
+    {
+        $projectId = $this->guardReglasLectura();
+        if ($projectId === null) {
             return null;
         }
         $csrf = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';

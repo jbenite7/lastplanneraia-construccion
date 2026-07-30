@@ -226,6 +226,9 @@ $router->get('/plan-compras/api/plan/anclas', [\App\Controllers\Api\PlanComprasP
 $router->get('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'correspondencias']);
 $router->post('/plan-compras/api/plan/correspondencias', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarCorrespondencia']);
 $router->get('/plan-compras/api/plan/desfases', [\App\Controllers\Api\PlanComprasPlanController::class, 'desfases']);
+// B2 — el desfase se mira antes de aplicarse: simular no escribe, aplicar solo lo confirmado.
+$router->get('/plan-compras/api/plan/reprogramacion/simular', [\App\Controllers\Api\PlanComprasPlanController::class, 'simularReprogramacion']);
+$router->post('/plan-compras/api/plan/reprogramacion/aplicar', [\App\Controllers\Api\PlanComprasPlanController::class, 'aplicarReprogramacion']);
 $router->get('/plan-compras/api/plan/responsables', [\App\Controllers\Api\PlanComprasPlanController::class, 'responsables']);
 $router->get('/plan-compras/api/plan', [\App\Controllers\Api\PlanComprasPlanController::class, 'plan']);
 $router->post('/plan-compras/api/plan/amarrar', [\App\Controllers\Api\PlanComprasPlanController::class, 'amarrar']);
@@ -236,9 +239,18 @@ $router->post('/plan-compras/api/plan/responsable', [\App\Controllers\Api\PlanCo
 // desnuda por consistencia con el resto del bloque (FastRoute resuelve estáticas por hashmap exacto).
 $router->get('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'pasos']);
 $router->post('/plan-compras/api/plan/pasos/restablecer', [\App\Controllers\Api\PlanComprasPlanController::class, 'restablecerPasos']);
+// A4.1 · diferido nº 2 — copiar la configuración de otra obra. Copia puntual, no vínculo vivo.
+$router->get('/plan-compras/api/plan/pasos/historial', [\App\Controllers\Api\PlanComprasPlanController::class, 'historialPasos']);
+$router->get('/plan-compras/api/plan/pasos/origenes', [\App\Controllers\Api\PlanComprasPlanController::class, 'origenesPasos']);
+$router->get('/plan-compras/api/plan/pasos/copia-preview', [\App\Controllers\Api\PlanComprasPlanController::class, 'previewCopiaPasos']);
+$router->post('/plan-compras/api/plan/pasos/copiar', [\App\Controllers\Api\PlanComprasPlanController::class, 'copiarPasos']);
+// A4.1 · diferido nº 4 — las duraciones del catalogo, editables sin entrar a la base.
+$router->get('/plan-compras/api/plan/duraciones', [\App\Controllers\Api\PlanComprasPlanController::class, 'duraciones']);
+$router->post('/plan-compras/api/plan/duraciones', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarDuracion']);
 $router->post('/plan-compras/api/plan/pasos', [\App\Controllers\Api\PlanComprasPlanController::class, 'guardarPasos']);
 // PDC v2 · Fase B1 — Seguimiento. Las rutas con segmento van antes que la desnuda, igual que en el
 // bloque del plan, para no depender de como resuelva el router los prefijos.
+$router->get('/plan-compras/api/seguimiento/vencimientos', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'vencimientos']);
 $router->get('/plan-compras/api/seguimiento/paquete', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paquete']);
 $router->post('/plan-compras/api/seguimiento/paso', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paso']);
 $router->get('/plan-compras/api/seguimiento', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'resumen']);
