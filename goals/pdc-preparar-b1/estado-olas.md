@@ -61,7 +61,7 @@ por prudencia nunca es el error caro.
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
-| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO (3 de 4)** | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
+| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
 `3a0da33` es el merge de la fila 1 (`9d90663`) dentro de esta rama, verificado después de integrar:
 16 tests PHP en verde —incluidos `test_pdc_v2_vencimientos` y `test_pdc_v2_maestro_gobernado`, que
