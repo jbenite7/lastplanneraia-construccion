@@ -98,7 +98,7 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8 | Subpaquetes + flujo de caja | 7a y 7b | **HECHO (dominio, API y pruebas; pantallas pendientes)** | `PENDIENTE-SHA` | 2026-07-29 |
+| 8 | Subpaquetes + flujo de caja | 7a y 7b | **HECHO (dominio, API y pruebas; pantallas pendientes)** | `6d702ef` | 2026-07-29 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
