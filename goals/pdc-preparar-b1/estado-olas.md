@@ -50,7 +50,7 @@ por prudencia nunca es el error caro.
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
 | 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
-| 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
+| 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | HECHO | `31e9145` (merge de main: `22d13c7`) | 2026-07-29 |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
 
