@@ -4,7 +4,8 @@
 - **Ola:** 3 (lo grande)
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — necesidad de negocio con dolor actual y nombre propio.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado** (2026-07-29), después de subpaquetes y por tanto repartiendo por destino
+  contratable, no por paquete. Ver «Cómo quedó implementado».
 
 ## Problema
 
@@ -45,8 +46,10 @@ repetitivo en manos de una persona cada mes, que es justo el problema).
 - **Curva mensual del proyecto:** una fila por mes, con el desembolso previsto y el acumulado.
 - **Desglose:** poder ver de qué paquetes se compone el mes.
 - **Exportable** a Excel, porque va a viajar a un comité que no entra a la aplicación.
-- **Los paquetes sin frente o sin fechas quedan fuera de la curva, y la pantalla dice cuántos son y
-  cuánto valen.** Una curva que calla lo que no incluye es una curva que miente.
+- ~~**Los paquetes sin frente o sin fechas quedan fuera de la curva, y la pantalla dice cuántos son y
+  cuánto valen.**~~ **Corregido el 2026-07-30 por el dueño del producto:** «debería contar todo, lo que
+  no se contrata distribuirlo en toda la duración de la obra». La curva cuenta el presupuesto entero.
+  Ver «La curva cuenta el plan entero» abajo.
 
 ### No entra
 
@@ -83,3 +86,86 @@ repetitivo en manos de una persona cada mes, que es justo el problema).
   Es útil, pero solo si se dice: por eso el punto 3 es un hecho y no un detalle.
 - **Si la Ola 3 trae subpaquetes**, la curva pasa a repartir por subpaquete. Los dos specs tienen que
   entrar en ese orden, o rehacer esto.
+
+## Cómo quedó implementado
+
+- **`src/Services/Pdc/FlujoCajaService.php`**, derivado y sin almacenar nada. Sin migración, a
+  propósito.
+- **La unidad es el destino contratable** de `SubpaquetesService::destinos()`, así que si la obra
+  partió «Pisos» en tres lotes con fechas distintas, la curva reparte por lote. Los dos specs se
+  hicieron en ese orden justamente para no tener que rehacer el reparto.
+- **El fin del frente no estaba en el modelo.** `pdc_paquete_frente` solo guarda `fecha_ancla` (el
+  inicio). El fin se lee de `programa_consolidado.Fecha_Fin` por `unique_id` en la última semana
+  consolidada — comprobado poblado en las 1.092 filas de Da Porto. Y el **inicio** también se lee del
+  cronograma en vivo, no del `fecha_ancla` guardado: ese campo es una copia congelada del momento del
+  amarre, y dibujar la curva sobre él la pondría sobre fechas que la obra ya movió.
+- **El residuo del reparto va al último mes.** Con céntimos repartidos entre 20 meses, la suma de los
+  redondeos se separa del total unos céntimos; en una tabla que va a comité, «la suma no da»
+  desacredita todo aunque el error sea de $3. Así el punto 1 de la condición de hecho es exacto.
+- **La exportación es CSV con `;` y BOM UTF-8**, no `.xlsx`, aunque PhpSpreadsheet ya sea dependencia:
+  lo que viaja es una tabla de cuatro columnas, y así Excel la abre sin preguntar nada ni romper las
+  tildes. El `;` es obligatorio porque el Excel en español lee la coma como decimal.
+- **La advertencia va dentro del archivo**, en sus dos primeras filas, además de en la respuesta de la
+  API (`FlujoCajaService::NOTA_METODO`). El archivo se reenvía por correo y se abre sin la pantalla al
+  lado; sin eso, alguien lo lee como presupuesto de tesorería.
+- Endpoints `GET /plan-compras/api/seguimiento/flujo-caja` y `…/flujo-caja.csv`, RBAC de lectura
+  `lps.paquetes_contratacion.ver`.
+
+## Verificación
+
+`tests/test_pdc_v2_flujo_caja.php` — 31 asserts. La aritmética del reparto se prueba primero y sin
+base de datos (frente de febrero a abril, un solo día, cruce de año, fin anterior al inicio, y que la
+suma de los meses sea **exactamente** el valor repartido); después, sobre MySQL real (proyecto 999941),
+los cinco puntos de la condición de hecho, incluido que mover un frente mueva la curva sin cambiar su
+total, y que partir un paquete no cambie el total sino quién lo aporta.
+
+## Lo que queda pendiente
+
+**La pantalla.** El servicio, los endpoints y la exportación están; la vista de `pdc-app/` con la
+tabla mensual, el desglose y el botón de exportar **no está construida**. La advertencia y el conteo
+de excluidos ya viajan en la respuesta, listos para pintarse.
+
+## La curva cuenta el plan entero, en tres orígenes (2026-07-30)
+
+Un flujo de caja que solo mira lo contratado no es el flujo de caja de la obra: la nómina y los
+imprevistos también salen de caja, y todos los meses. Decisión del dueño del producto, textual:
+
+> «Debería contar todo, lo que no se contrata distribuirlo en toda la duración de la obra.»
+
+Cada peso del plan entra en la curva, pero por el camino que le corresponde y **dicho con su nombre**:
+
+| Origen | Qué es | Cómo se reparte |
+|---|---|---|
+| `contratado` | Tiene frente amarrado y fechas propias | Lineal entre el inicio y el fin de **su** frente |
+| `permanente` | No se le compra a nadie (nómina, imprevistos, provisiones) o no se contrata (ferretería contra almacén) | Lineal sobre **toda la duración de la obra** |
+| `provisional` | Se va a contratar, pero nadie le ha amarrado un frente todavía | Lineal sobre toda la obra, **contado y mostrado aparte** |
+
+**Por qué `provisional` va separado.** Se preguntó y se decidió en grilleo: `permanente` es un dato
+correcto —ese gasto es continuo de verdad— y `provisional` es un **relleno que se va a mover** en
+cuanto alguien amarre ese paquete. Mezclarlos daría una curva que se ve igual de firme en las dos
+mitades, y cuando la parte provisional se reacomode nadie entendería por qué cambió. Hoy en Da Porto
+son 0, pero en el aeropuerto van a ser muchos. Por eso la pantalla y el CSV llevan una columna propia,
+la pantalla avisa de cuánto de la curva se moverá, y hay una cifra de «% con fecha propia» que dice
+cuánto se puede creer de la forma de la curva.
+
+**La duración de la obra** sale del cronograma (`MIN(Fecha_Inicio)` a `MAX(Fecha_Fin)` de la última
+semana consolidada), que es la misma fuente del resto de la curva, con la línea base del proyecto como
+respaldo. **Si no hay ninguna de las dos**, lo que no tiene frente propio sigue quedando declarado
+fuera con su motivo: inventar un rango de fechas para que el total cuadre sería justo la mentira que
+este módulo evita. Es el único caso que queda excluido, y hay un test que lo fija.
+
+## Verificado en pantalla (2026-07-30)
+
+Pestaña «Flujo de caja» de Seguimiento, en Da Porto, a 1180×820 y en dark:
+
+- **22 meses** (la curva arranca en mayo 2026, cuando arranca la obra, no cuando arranca la primera
+  contratación), y la suma de los meses es **$7.082.574.181**, igual al valor total del plan y al
+  último acumulado.
+- Desglose del pie: **$6.192.372.106 contratado + $890.202.075 de nómina y provisiones + $0
+  provisional**, y «cubre el 100 % del valor del plan · 87,4 % con fecha propia».
+- Sin errores de consola y sin desbordamiento horizontal a 1180 px exactos.
+- El CSV trae las tres columnas, la duración de obra usada para el reparto, y los mismos números.
+
+**Límite honesto:** el camino `provisional` no se pudo recorrer en pantalla con datos reales porque Da
+Porto no tiene ningún paquete sin frente. Está cubierto por el test PHP (un destino de $7.000 sin
+frente) y por Vitest (el texto del aviso y su concordancia en singular), no por observación.

@@ -254,6 +254,20 @@ $router->get('/plan-compras/api/seguimiento/vencimientos', [\App\Controllers\Api
 $router->get('/plan-compras/api/seguimiento/paquete', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paquete']);
 $router->post('/plan-compras/api/seguimiento/paso', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'paso']);
 $router->get('/plan-compras/api/seguimiento', [\App\Controllers\Api\PlanComprasSeguimientoController::class, 'resumen']);
+// Flujo de caja (Ola 3). Va bajo `seguimiento` porque es una lectura del plan en operación, no una
+// pieza del ensamble. El `.csv` se registra ANTES que la ruta sin extensión: FastRoute casa por
+// literal exacto, pero mantenerlos juntos y en este orden evita que alguien inserte más tarde un
+// parámetro que se coma la extensión.
+$router->get('/plan-compras/api/seguimiento/flujo-caja.csv', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'flujoCajaCsv']);
+$router->get('/plan-compras/api/seguimiento/flujo-caja', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'flujoCaja']);
+// Subpaquetes de obra (Ola 3).
+$router->get('/plan-compras/api/subpaquetes/destinos', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'destinos']);
+$router->get('/plan-compras/api/subpaquetes', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'listar']);
+$router->post('/plan-compras/api/subpaquetes/partir', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'partir']);
+$router->post('/plan-compras/api/subpaquetes/agregar', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'agregar']);
+$router->post('/plan-compras/api/subpaquetes/actualizar', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'actualizar']);
+$router->post('/plan-compras/api/subpaquetes/eliminar', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'eliminar']);
+$router->post('/plan-compras/api/subpaquetes/mover', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'mover']);
 // Api/PDC Plantillas
 $router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
 $router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);

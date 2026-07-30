@@ -42,6 +42,10 @@
   --pdc-aviso-bg: var(--ds-state-tint-amber, #3a3a0f);
   --pdc-aviso-borde: color-mix(in srgb, var(--ds-color-state-warning-text, #5d4200) 60%, var(--pdc-border));
   --pdc-info-bg: var(--ds-state-tint-blue, #17334f);
+  /* El relieve de la curva de desembolsos. Se apoya en el tinte informativo del sistema y no en un
+     color propio: la barra no comunica estado —ni alarma ni éxito—, solo cuánto pesa un mes frente
+     al pico, así que no debe competir con los tintes que sí significan algo. */
+  --pdc-state-tint-curva: var(--ds-state-tint-blue, #17334f);
   --pdc-error-bg: var(--ds-state-tint-red, #431414);
   --pdc-error-borde: color-mix(in srgb, var(--ds-color-state-critical-text, #8f1d1d) 60%, var(--pdc-border));
   /* Los textos de estado del catálogo son para tema claro (#8f1d1d sobre blanco). Aquí se aclaran
@@ -782,3 +786,47 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-tabla-detalle th, .pdc-tabla-detalle td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--pdc-border); }
 .pdc-tabla-detalle th { color: var(--pdc-ink-muted); font-weight: 600; }
 .pdc-tabla-detalle .pdc-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* --- Flujo de caja: la curva mensual de desembolsos -------------------------------------------- */
+/* La nota del método usa el tono de aviso y NO el de error: no hay nada roto, hay algo que el lector
+   tiene que saber antes de usar la cifra. Va arriba, sin plegar, porque esta tabla se fotografía y se
+   lleva a comité, y una advertencia escondida detrás de un despliegue no viaja con la foto. */
+.pdc-flujo-nota { margin: 8px 0 12px; padding: 9px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm);
+  border-left: 3px solid var(--pdc-aviso-ink); }
+/* Lo excluido se ve como el «tablero ciego» de vencimientos: misma forma para el mismo tipo de
+   confesión, para que quien ya conoce una reconozca la otra. */
+.pdc-flujo-excluidos { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }
+.pdc-flujo-cifras { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 0 0 4px;
+  font-size: var(--pdc-fs-md); color: var(--pdc-ink-muted); }
+.pdc-flujo-cifras strong { color: var(--pdc-ink); }
+.pdc-flujo-exportar { margin-left: auto; font-size: var(--pdc-fs-md); color: var(--pdc-accent-texto);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: 5px 12px; text-decoration: none; }
+.pdc-flujo-exportar:hover { border-color: var(--pdc-accent-texto); }
+.pdc-flujo-exportar:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+
+.pdc-flujo-tabla { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: var(--pdc-fs-md); }
+.pdc-flujo-tabla caption { text-align: left; margin-bottom: 8px; }
+.pdc-flujo-tabla th, .pdc-flujo-tabla td { text-align: left; padding: 7px 12px 7px 0;
+  border-bottom: 1px solid var(--pdc-border-control); }
+.pdc-flujo-tabla thead th { font-size: var(--pdc-fs-xs); text-transform: uppercase; letter-spacing: .04em;
+  color: var(--pdc-ink-muted); font-weight: 600; }
+.pdc-flujo-tabla tbody th { font-weight: 500; }
+.pdc-flujo-tabla .pdc-num { text-align: right; padding-right: 0; }
+.pdc-flujo-tabla tfoot th, .pdc-flujo-tabla tfoot td { border-bottom: none; border-top: 2px solid var(--pdc-border-control); }
+
+/* La barra va DETRÁS del número, dentro de su misma celda: es el relieve de la curva, no una columna
+   de datos. `position: relative` en la celda y la barra en absoluto pegada a la derecha, para que
+   todas crezcan desde el mismo borde que alinea las cifras. */
+.pdc-flujo-tabla td.pdc-num { position: relative; }
+.pdc-flujo-barra { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 60%;
+  background: var(--pdc-state-tint-curva); border-radius: var(--pdc-radio-control); }
+.pdc-flujo-monto { position: relative; }
+/* La columna provisional se atenúa a propósito: es dinero real y por eso está en la tabla, pero su
+   posición en el tiempo todavía no la ha decidido nadie. Leerla con el mismo peso que un compromiso
+   con fecha es exactamente el error que la curva debe evitar. */
+.pdc-flujo-prov { color: var(--pdc-ink-muted); font-style: italic; }
+.pdc-flujo-provisional { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-info-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }

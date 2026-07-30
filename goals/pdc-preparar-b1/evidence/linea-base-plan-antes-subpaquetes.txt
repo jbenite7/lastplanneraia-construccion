@@ -1,0 +1,45 @@
+# Foto del plan de fechas — proyecto 73
+# Sin id, updated_at, calculado_por ni asignado_por: cambian solos y no son el plan.
+
+## Amarres (pdc_paquete_frente)
+filas: 3
+paquete_id=123  unique_id=1475  frente_nombre=ESTRUCTURA  fecha_ancla=2026-08-18  semana_origen=4  origen=correspondencia  confianza=alta  evidencia=Sus insumos están en «ESTRUCTURA», que según una correspondencia confirmada corresponde a «ESTRUCTURA» del cronograma (arranca 2026-08-18).  confirmado_humano=1
+paquete_id=124  unique_id=1475  frente_nombre=ESTRUCTURA  fecha_ancla=2026-08-18  semana_origen=4  origen=correspondencia  confianza=alta  evidencia=Sus insumos están en «ESTRUCTURA», que según una correspondencia confirmada corresponde a «ESTRUCTURA» del cronograma (arranca 2026-08-18).  confirmado_humano=1
+paquete_id=191  unique_id=1580  frente_nombre=RED ELÉCTRICA  fecha_ancla=2027-03-16  semana_origen=4  origen=correspondencia  confianza=alta  evidencia=Sus insumos están en «RED ELECTRICA», que según una correspondencia confirmada corresponde a «RED ELÉCTRICA» del cronograma (arranca 2027-03-16).  confirmado_humano=1
+
+## Cabeceras del plan (pdc_plan_paquete)
+filas: 3
+paquete_id=123  unique_id=1475  fecha_ancla=2026-08-18  fecha_arranque=2026-05-23  dias_totales=87  duracion_ref=128  duracion_provisional=0  responsable_user_id=~
+paquete_id=124  unique_id=1475  fecha_ancla=2026-08-18  fecha_arranque=2026-05-06  dias_totales=104  duracion_ref=110  duracion_provisional=0  responsable_user_id=~
+paquete_id=191  unique_id=1580  fecha_ancla=2027-03-16  fecha_arranque=2026-12-01  dias_totales=105  duracion_ref=~  duracion_provisional=1  responsable_user_id=~
+
+## Pasos del plan (pdc_plan_paso)
+filas: 21
+paquete_id=123  orden=0  paso_id=1  paso=Elaboración de pliegos  dias=7  fecha_inicio=2026-05-23  fecha_fin=2026-05-30  fecha_real=2026-04-15
+paquete_id=123  orden=1  paso_id=3  paso=Entrega de pliegos  dias=5  fecha_inicio=2026-05-30  fecha_fin=2026-06-04  fecha_real=~
+paquete_id=123  orden=2  paso_id=4  paso=Recibo de propuestas  dias=7  fecha_inicio=2026-06-04  fecha_fin=2026-06-11  fecha_real=~
+paquete_id=123  orden=3  paso_id=5  paso=Cuadros comparativos  dias=25  fecha_inicio=2026-06-11  fecha_fin=2026-07-06  fecha_real=~
+paquete_id=123  orden=4  paso_id=7  paso=Legalización  dias=20  fecha_inicio=2026-07-06  fecha_fin=2026-07-26  fecha_real=~
+paquete_id=123  orden=5  paso_id=8  paso=Fabricación  dias=8  fecha_inicio=2026-07-26  fecha_fin=2026-08-03  fecha_real=~
+paquete_id=123  orden=6  paso_id=9  paso=Insumos en obra  dias=15  fecha_inicio=2026-08-03  fecha_fin=2026-08-18  fecha_real=~
+paquete_id=124  orden=0  paso_id=1  paso=Elaboración de pliegos  dias=7  fecha_inicio=2026-05-06  fecha_fin=2026-05-13  fecha_real=2026-05-29
+paquete_id=124  orden=1  paso_id=3  paso=Entrega de pliegos  dias=5  fecha_inicio=2026-05-13  fecha_fin=2026-05-18  fecha_real=~
+paquete_id=124  orden=2  paso_id=4  paso=Recibo de propuestas  dias=7  fecha_inicio=2026-05-18  fecha_fin=2026-05-25  fecha_real=~
+paquete_id=124  orden=3  paso_id=5  paso=Cuadros comparativos  dias=25  fecha_inicio=2026-05-25  fecha_fin=2026-06-19  fecha_real=~
+paquete_id=124  orden=4  paso_id=7  paso=Legalización  dias=20  fecha_inicio=2026-06-19  fecha_fin=2026-07-09  fecha_real=~
+paquete_id=124  orden=5  paso_id=8  paso=Fabricación  dias=25  fecha_inicio=2026-07-09  fecha_fin=2026-08-03  fecha_real=~
+paquete_id=124  orden=6  paso_id=9  paso=Insumos en obra  dias=15  fecha_inicio=2026-08-03  fecha_fin=2026-08-18  fecha_real=~
+paquete_id=191  orden=0  paso_id=1  paso=Elaboración de pliegos  dias=9  fecha_inicio=2026-12-01  fecha_fin=2026-12-10  fecha_real=~
+paquete_id=191  orden=1  paso_id=3  paso=Entrega de pliegos  dias=13  fecha_inicio=2026-12-10  fecha_fin=2026-12-23  fecha_real=~
+paquete_id=191  orden=2  paso_id=4  paso=Recibo de propuestas  dias=6  fecha_inicio=2026-12-23  fecha_fin=2026-12-29  fecha_real=~
+paquete_id=191  orden=3  paso_id=5  paso=Cuadros comparativos  dias=20  fecha_inicio=2026-12-29  fecha_fin=2027-01-18  fecha_real=~
+paquete_id=191  orden=4  paso_id=7  paso=Legalización  dias=19  fecha_inicio=2027-01-18  fecha_fin=2027-02-06  fecha_real=~
+paquete_id=191  orden=5  paso_id=8  paso=Fabricación  dias=26  fecha_inicio=2027-02-06  fecha_fin=2027-03-04  fecha_real=~
+paquete_id=191  orden=6  paso_id=9  paso=Insumos en obra  dias=12  fecha_inicio=2027-03-04  fecha_fin=2027-03-16  fecha_real=~
+
+## Asignación de insumos (pdc_insumo_paquete) — conteo por paquete
+filas: 4
+paquete_id=123  insumos=7
+paquete_id=124  insumos=3
+paquete_id=191  insumos=1
+paquete_id=205  insumos=1

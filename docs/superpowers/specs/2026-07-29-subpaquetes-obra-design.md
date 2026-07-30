@@ -4,8 +4,9 @@
 - **Ola:** 3 (lo grande)
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — la observación más de fondo de toda la reunión.
-- **Estado:** aprobado en grilleo, pendiente de plan. **Requiere su propio grilleo antes de implementar:**
-  cambia la forma del modelo de datos.
+- **Estado:** **implementado** (2026-07-29). El grilleo propio que este spec exigía se hizo antes de
+  escribir código; sus cinco decisiones están abajo, en «Decisiones del grilleo del modelo», y una de
+  ellas **corrige** el alcance original de este documento.
 
 ## Problema
 
@@ -61,7 +62,9 @@ Por eso lleva grilleo propio antes de implementarse, y por eso está en la Ola 3
 - Cada subpaquete: nombre, insumos, modalidad, fechas propias, responsable propio, proceso de
   contratación propio.
 - El paquete sombrilla muestra el rango de fechas que abarcan sus subpaquetes y su avance agregado.
-- Los insumos que no se asignan a ningún subpaquete se quedan en el paquete, que sigue siendo contratable.
+- ~~Los insumos que no se asignan a ningún subpaquete se quedan en el paquete, que sigue siendo
+  contratable.~~ **Corregido en el grilleo:** caen en un lote **«Resto»** que nace solo al partir. Un
+  paquete partido no se contrata a sí mismo nunca. Ver la decisión 2 más abajo.
 
 ### No entra
 
@@ -90,3 +93,54 @@ Por eso lleva grilleo propio antes de implementarse, y por eso está en la Ola 3
   decirla en pantalla, no dejar que cada vista decida.
 - **Es el cambio más grande que le queda al módulo.** Si la Ola 3 tiene que recortarse, este es el que
   debe empezar, no el que debe hacerse a medias.
+
+## Decisiones del grilleo del modelo (2026-07-29)
+
+Este spec fijaba la dirección; el grilleo fijó el diseño fino. Las cinco son decisiones del dueño del
+producto, no del implementador.
+
+| # | Pregunta | Decisión |
+|---|---|---|
+| 1 | ¿De dónde salen las fechas de cada subpaquete? | **Frente propio por subpaquete.** Cada lote se amarra a su propio nodo del cronograma, así que reprogramar la obra sigue moviendo las fechas solo. Se descartó la fecha a mano justamente por eso: quedaría congelada. |
+| 2 | ¿Quién contrata los insumos sueltos? | **Un lote «Resto» automático**, con las fechas del padre. Un paquete partido **nunca** se contrata él mismo. Corrige la línea del alcance tachada arriba. |
+| 3 | ¿Qué unidad cuenta la cobertura del plan? | **Lo contratable:** paquetes sin partir + lotes de los partidos. La pantalla lo dice con esas palabras («N procesos de contratación»). La cobertura *de insumos* no cambia: se mide sobre insumos y un insumo sigue teniendo un solo destino. |
+| 4 | ¿Puede un lote tener modalidad distinta a la del padre? | **Sí, libre**, incluidas las que no generan proceso. A cambio, el paquete sombrilla **declara cuánto de su valor no entra al plan y por qué**. |
+| 5 | ¿Quién puede partir? | **`lps.paquetes_contratacion.editar`**, el permiso de la obra. Partir es casuística local y no toca el maestro global. |
+
+## Cómo quedó implementado
+
+- **`pdc_subpaquete`** (por proyecto): nombre, modalidad, responsable, `es_resto`, orden. FK al
+  catálogo global; nunca escribe en él.
+- **`subpaquete_id BIGINT NOT NULL DEFAULT 0`** en `pdc_insumo_paquete` y en las tres tablas del plan,
+  con las claves únicas extendidas. **`0` = el paquete sin partir.** No es nulable a propósito: en un
+  índice UNIQUE de MySQL dos `NULL` son distintos, así que el `ON DUPLICATE KEY` de
+  `PlanFechasService::calcular()` dejaría de dispararse y cada recálculo insertaría cabeceras nuevas
+  —el mismo fallo que A4.1 pagó con `paso_id`—. Precio aceptado: esa columna no lleva FK.
+- **`SubpaquetesService::destinos()`** es la única definición de «unidad contratable» del módulo. La
+  consumen el plan de fechas, el tablero de vencimientos y el flujo de caja, para que dos pantallas no
+  puedan contar distinto. Un lote todavía vacío no aparece ahí (no tiene valor que repartir) aunque sí
+  en `listar()`, que es lo que usa la pantalla que reparte insumos.
+- **La herencia del frente se materializa al partir:** el amarre del paquete pasa al «Resto» y los
+  demás lotes se amarran aparte. Así ninguna consulta necesita un caso especial de herencia.
+- **`PlanFechasService::calcular()`** recorre destinos y no paquetes, y **todos** sus borrados y
+  actualizaciones van acotados por `subpaquete_id`: sin eso, recalcular un lote se llevaba los pasos
+  de sus hermanos, que comparten `paso_id`.
+
+## Verificación
+
+- `tests/test_pdc_v2_subpaquetes.php` — 30 asserts sobre MySQL real (proyecto 999940) con el caso
+  literal del comité: «Pisos» partido en porcelanato, tableta gres y cerámica, cada uno con su fecha.
+- **Punto 4, la cero regresión, comprobado dos veces:** dentro del test, el paquete vecino que nadie
+  parte conserva su plan carácter por carácter; y sobre el proyecto real de Da Porto comparando
+  `tests/foto_plan_fechas.php` contra
+  [`evidence/linea-base-plan-antes-subpaquetes.txt`](../../../goals/pdc-preparar-b1/evidence/linea-base-plan-antes-subpaquetes.txt)
+  tomada antes de tocar código — `diff` sin diferencias tras recalcular con el modelo nuevo.
+- 35 de los 36 tests `test_pdc*` en verde y PHPStan del PDC sin errores (llegó con 2 y quedó en 0).
+  El único rojo, `test_pdc_v2_brecha_daporto.php`, falla por falta de la versión 292 del presupuesto
+  en la base local y **falla igual con el código original**.
+
+## Lo que queda pendiente
+
+**Las pantallas.** Todo lo de arriba es dominio, API y pruebas; la interfaz de `pdc-app/` para partir
+un paquete, repartirle insumos y ver el sombrilla resumido **no está construida**. Hasta que exista,
+los puntos de la condición de hecho que dicen «en pantalla» no se pueden dar por cumplidos.

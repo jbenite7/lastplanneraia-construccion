@@ -75,7 +75,7 @@ class PlanComprasSeguimientoController
         ]));
     }
 
-    /** GET /plan-compras/api/seguimiento/paquete?paqueteId=N */
+    /** GET /plan-compras/api/seguimiento/paquete?paqueteId=N&subpaqueteId=M */
     public function paquete(): void
     {
         $projectId = $this->guardLectura();
@@ -87,7 +87,27 @@ class PlanComprasSeguimientoController
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $this->ok(['pasos' => $this->service->pasosDePaquete($projectId, $paqueteId)]);
+        $subpaqueteId = $this->subpaqueteId($_GET['subpaqueteId'] ?? null);
+        if ($subpaqueteId === false) {
+            $this->fail('SUBPAQUETE_INVALIDO', 'subpaqueteId inválido.', 422);
+            return;
+        }
+        $this->ok(['pasos' => $this->service->pasosDePaquete($projectId, $paqueteId, $subpaqueteId)]);
+    }
+
+    /**
+     * `subpaqueteId` ausente = 0 = el paquete sin partir, que es lo que pide la pantalla para todo
+     * paquete que nadie ha partido. Se admite el 0 explícito porque `min_range => 1` lo rechazaría y
+     * es un valor legítimo, no un id que falte.
+     *
+     * @return int|false
+     */
+    private function subpaqueteId(mixed $crudo): int|false
+    {
+        if ($crudo === null || $crudo === '') {
+            return 0;
+        }
+        return filter_var($crudo, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
     }
 
     /** POST /plan-compras/api/seguimiento/paso  {paqueteId, pasoId, fechaReal} — null deshace el registro */
@@ -123,7 +143,20 @@ class PlanComprasSeguimientoController
             return;
         }
 
-        $r = $this->service->registrarPaso($projectId, $paqueteId, $pasoId, $fechaReal, $this->usuario());
+        $subpaqueteId = $this->subpaqueteId($body['subpaqueteId'] ?? null);
+        if ($subpaqueteId === false) {
+            $this->fail('SUBPAQUETE_INVALIDO', 'subpaqueteId inválido.', 422);
+            return;
+        }
+
+        $r = $this->service->registrarPaso(
+            $projectId,
+            $paqueteId,
+            $pasoId,
+            $fechaReal,
+            $this->usuario(),
+            $subpaqueteId,
+        );
         if ($r['ok'] !== true) {
             $this->fail($r['code'] ?? 'ERROR', $r['mensaje'] ?? 'No se pudo registrar el avance.', 422);
             return;

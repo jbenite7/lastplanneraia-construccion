@@ -23,5 +23,6 @@ parameters:
         - src/Controllers/Api/PlanComprasPaquetesController.php
         - src/Controllers/Api/PlanComprasPlanController.php
         - src/Controllers/Api/PlanComprasSeguimientoController.php
+        - src/Controllers/Api/PlanComprasSubpaquetesController.php
     bootstrapFiles:
         - scripts/phpstan/constantes-entrypoint.php
