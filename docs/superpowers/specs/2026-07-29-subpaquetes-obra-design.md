@@ -139,8 +139,42 @@ producto, no del implementador.
   El único rojo, `test_pdc_v2_brecha_daporto.php`, falla por falta de la versión 292 del presupuesto
   en la base local y **falla igual con el código original**.
 
-## Lo que queda pendiente
+## Las pantallas (2026-07-30)
 
-**Las pantallas.** Todo lo de arriba es dominio, API y pruebas; la interfaz de `pdc-app/` para partir
-un paquete, repartirle insumos y ver el sombrilla resumido **no está construida**. Hasta que exista,
-los puntos de la condición de hecho que dicen «en pantalla» no se pueden dar por cumplidos.
+- **Partir y repartir:** panel «Lotes de obra» dentro de «Paquetes con insumos». Vive ahí y no en una
+  ruta propia porque partir se decide mirando los insumos del paquete, y mandar al usuario a otra
+  pantalla le quita de delante lo que necesita para decidir. Trae el resumen del sombrilla (rango,
+  avance agregado y cuánto de su valor no entra al plan), modalidad por lote, agregar, borrar y el
+  reparto de insumos con casillas.
+- **Darle a cada lote su fecha:** la lista «Sin frente» del Plan pasó a enumerar **unidades
+  contratables** en vez de paquetes, así que cada fila ya *es* un lote y solo le falta su frente. Se
+  eligió esta forma sobre añadir un segundo desplegable de lote: esa fila ya lleva el frente, la
+  procedencia de la sugerencia y el botón de amarrar, y dos elecciones en una fila obligan a leer dos
+  controles para entender una decisión.
+- El motor sigue sugiriendo **por paquete**: en un lote no se muestra propuesta, porque preseleccionar
+  la del paquete en sus tres lotes les daría a los tres el mismo frente.
+- Un lote **sin insumos** no es un destino contratable: no aparece en «Sin frente» ni en la curva de
+  caja. No tiene valor que repartir ni nada que contratar.
+
+### Verificado en pantalla, en Da Porto
+
+Con el paquete real «Suministro CONCRETO»: partido en tres desde la pantalla, insumos repartidos con
+casillas (los valores suman el total del paquete), cada lote como fila propia en «Sin frente» rotulada
+«Suministro CONCRETO › Premezclado 3000», **frentes distintos** a cada uno (al amarrar uno su hermano
+no desapareció de la lista), y tras recalcular **tres anclas distintas en el plan: 2026-05-25,
+2026-08-18 y 2027-03-16**. Al deshacer la partición, la foto del plan volvió a ser **idéntica** a la
+línea base — el punto 4 comprobado de ida y de vuelta, con fechas propias y recálculo en medio.
+
+### Un fallo silencioso que apareció al construirlo
+
+`preseleccionDestinos()` seguía indexando por id de paquete mientras la pantalla ya leía
+«paquete:lote». La preselección del motor dejó de aplicarse **sin que TypeScript dijera nada**: un
+`Record<number, T>` es asignable a un `Record<string, T>` porque las claves numéricas son un
+subconjunto de las de texto. Corregido, y fijado con un test que falla con la clave vieja.
+
+## Lo que queda fuera, dicho
+
+**El volumen sigue sin estresar.** Da Porto tiene 4 paquetes con insumos y 12 asignaciones. La regla de
+contar por paquete + lote está **probada** —los tests exigen que no se repitan destinos ni se
+multipliquen los pasos— pero no **medida** con los 96 paquetes previstos, porque no hay ningún proyecto
+con ese volumen en la base local.

@@ -30,6 +30,9 @@ import {
   trasGuardarEdicion,
   uniqueIdPorEtiquetaFrente,
   valorResponsableMostrado,
+  destinosSinFrente,
+  etiquetaDestino,
+  type DestinoContratable,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
@@ -306,21 +309,21 @@ describe('preseleccionDestinos', () => {
 
   it('en cuanto las sugerencias cargan, siembra con la propuesta del motor', () => {
     const resultado = preseleccionDestinos({}, [{ paqueteId: 1 }], { 1: sugerencia }, true)
-    expect(resultado).toEqual({ 1: 9001 })
+    expect(resultado).toEqual({ '1:0': 9001 })
   })
 
   it('sin propuesta para ese paquete (pero ya cargadas las sugerencias), siembra vacío', () => {
     const resultado = preseleccionDestinos({}, [{ paqueteId: 1 }], {}, true)
-    expect(resultado).toEqual({ 1: '' })
+    expect(resultado).toEqual({ '1:0': '' })
   })
 
   it('no pisa lo que el usuario ya eligió a mano', () => {
-    const resultado = preseleccionDestinos({ 1: 9002 }, [{ paqueteId: 1 }], { 1: sugerencia }, true)
-    expect(resultado).toEqual({ 1: 9002 })
+    const resultado = preseleccionDestinos({ '1:0': 9002 }, [{ paqueteId: 1 }], { 1: sugerencia }, true)
+    expect(resultado).toEqual({ '1:0': 9002 })
   })
 
   it('sin cambios, devuelve la misma referencia (sin re-render de balde)', () => {
-    const prev = { 1: 9002 }
+    const prev = { '1:0': 9002 }
     expect(preseleccionDestinos(prev, [{ paqueteId: 1 }], { 1: sugerencia }, true)).toBe(prev)
   })
 
@@ -330,7 +333,7 @@ describe('preseleccionDestinos', () => {
     const trasCarrera = preseleccionDestinos({}, [{ paqueteId: 1 }], {}, false) // sinFrente llegó primero
     expect(trasCarrera).toEqual({})
     const trasSugerencias = preseleccionDestinos(trasCarrera, [{ paqueteId: 1 }], { 1: sugerencia }, true)
-    expect(trasSugerencias).toEqual({ 1: 9001 })
+    expect(trasSugerencias).toEqual({ '1:0': 9001 })
   })
 })
 
@@ -677,5 +680,83 @@ describe('A4.2 · correspondencias y anclas', () => {
 
   it('sin propuesta previa no inventa una sugerencia que corregir', () => {
     expect(procedenciaConSugerencia(undefined, 1508)?.sugeridoUniqueId).toBeUndefined()
+  })
+})
+
+describe('destinosSinFrente y etiquetaDestino', () => {
+  const d = (
+    paqueteId: number,
+    subpaqueteId: number,
+    nombre: string,
+    valor: number,
+    extra: Partial<DestinoContratable> = {},
+  ): DestinoContratable => ({
+    paqueteId,
+    subpaqueteId,
+    nombre,
+    paqueteNombre: 'Suministro PISOS',
+    esLote: subpaqueteId !== 0,
+    esResto: false,
+    modalidad: 'contrato',
+    generaProceso: true,
+    valor,
+    ...extra,
+  })
+
+  it('un paquete partido aporta una fila por lote, no una sola', () => {
+    // Es el punto del cambio de unidad: contarlo por paquete deja a los lotes sin forma de recibir
+    // fecha desde la pantalla.
+    const lista = destinosSinFrente([d(1, 11, 'Porcelanato', 300), d(1, 12, 'Gres', 200), d(1, 99, 'Resto', 100)], [])
+    expect(lista.map((x) => x.subpaqueteId)).toEqual([11, 12, 99])
+  })
+
+  it('quita los que ya tienen frente, por paquete Y lote', () => {
+    const lista = destinosSinFrente(
+      [d(1, 11, 'Porcelanato', 300), d(1, 12, 'Gres', 200)],
+      [{ paqueteId: 1, subpaqueteId: 11 }],
+    )
+    expect(lista.map((x) => x.subpaqueteId)).toEqual([12])
+  })
+
+  it('un amarre del paquete no tapa a sus lotes: la clave es paquete + lote', () => {
+    // Con la clave puesta solo en el paquete, amarrar un lote borraba de la lista a sus hermanos.
+    const lista = destinosSinFrente([d(1, 11, 'Porcelanato', 300)], [{ paqueteId: 1, subpaqueteId: 0 }])
+    expect(lista).toHaveLength(1)
+  })
+
+  it('deja fuera lo que no genera proceso', () => {
+    const lista = destinosSinFrente([d(2, 0, 'Imprevistos', 900, { generaProceso: false })], [])
+    expect(lista).toEqual([])
+  })
+
+  it('ordena por cuantía descendente: lo caro primero', () => {
+    const lista = destinosSinFrente([d(1, 11, 'Barato', 10), d(1, 12, 'Caro', 999)], [])
+    expect(lista.map((x) => x.nombre)).toEqual(['Caro', 'Barato'])
+  })
+
+  it('un lote se rotula con su paquete delante, para poder situarlo', () => {
+    expect(etiquetaDestino(d(1, 11, 'Porcelanato', 1))).toBe('Suministro PISOS › Porcelanato')
+    expect(etiquetaDestino(d(1, 0, 'Suministro PISOS', 1))).toBe('Suministro PISOS')
+  })
+})
+
+describe('preseleccionDestinos indexa por paquete:lote', () => {
+  it('siembra con la clave paquete:lote, que es la que lee la pantalla', () => {
+    // Al añadir los lotes, la pantalla pasó a leer `destinos['7:0']` mientras esto escribía
+    // `destinos['7']`: la preselección del motor dejó de aplicarse y TypeScript no lo vio, porque un
+    // Record<number,T> es asignable a un Record<string,T>. Este test es lo único que lo detecta.
+    const r = preseleccionDestinos(
+      {},
+      [{ paqueteId: 7 }],
+      { 7: { uniqueId: 900, origen: 'similitud', confianza: 'alta' } as never },
+      true,
+    )
+    expect(r['7:0']).toBe(900)
+    expect(r['7']).toBeUndefined()
+  })
+
+  it('cada lote recibe su propia clave y no se pisan entre hermanos', () => {
+    const r = preseleccionDestinos({}, [{ paqueteId: 7, subpaqueteId: 11 }, { paqueteId: 7, subpaqueteId: 12 }], {}, true)
+    expect(Object.keys(r).sort()).toEqual(['7:11', '7:12'])
   })
 })

@@ -32,6 +32,10 @@ import {
   opcionesResponsable,
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
+  destinosSinFrente,
+  etiquetaDestino,
+  claveDestino,
+  type DestinoContratable,
   planUiReducer,
   preseleccionDestinos,
   procedenciaDeAmarre,
@@ -71,6 +75,8 @@ export default function PlanFechas() {
   const [ui, dispatch] = useReducer(planUiReducer, estadoInicialPlanUi)
   const [plan, setPlan] = useState<FilaPlan[]>([])
   const [amarres, setAmarres] = useState<PlanResultado['amarres']>({})
+  const [destinosContratables, setDestinosContratables] = useState<DestinoContratable[]>([])
+  const [amarresDestino, setAmarresDestino] = useState<PlanResultado['amarresDestino']>([])
   const [frentes, setFrentes] = useState<FrenteDisponible[]>([])
   const [sugerencias, setSugerencias] = useState<Record<number, SugerenciaFrente>>({})
   // El motivo por el que un paquete no recibió propuesta, y el panel de correspondencias que lo
@@ -94,7 +100,9 @@ export default function PlanFechas() {
   const [expandido, setExpandido] = useState<number | null>(null)
   // Lo que el usuario tiene elegido en cada <select> de "sin frente" mientras dura la sesión;
   // arranca en la propuesta del motor (ver el efecto de preselección más abajo).
-  const [destinos, setDestinos] = useState<Record<number, number | ''>>({})
+  // Indexado por `claveDestino()` —«paquete:lote»— y no por id de paquete: los lotes de un mismo
+  // paquete comparten `paqueteId`, así que con una clave numérica los tres compartirían desplegable.
+  const [destinos, setDestinos] = useState<Record<string, number | ''>>({})
   // Corrige la columna «Responsable» cuando el POST falla. AG Grid muta `data.responsable`
   // in-place al confirmar la edición (antes de saber si el guardado tuvo éxito); este mapa es lo
   // único que puede devolver la celda a lo último confirmado — ver trasGuardarEdicion.
@@ -114,11 +122,16 @@ export default function PlanFechas() {
       .then((d) => {
         setPlan(d.plan)
         setAmarres(d.amarres)
+        setDestinosContratables(d.destinos ?? [])
+        setAmarresDestino(d.amarresDestino ?? [])
         // Cuando se recargan los datos del servidor (la verdad), limpiar el overlay de correcciones
         // pendientes: si un guardado falló y dejó un responsable revertido, este nuevo dato lo supera.
         setResponsableOverride({})
       })
-      .catch((e) => { setPlan([]); setAmarres({}); dispatch({ type: 'FALLO', mensaje: mensajeError(e) }) })
+      .catch((e) => {
+        setPlan([]); setAmarres({}); setDestinosContratables([]); setAmarresDestino([])
+        dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
+      })
     apiGet<{ frentes: FrenteDisponible[] }>('/plan-compras/api/plan/frentes')
       .then((d) => setFrentes(d.frentes))
     // Las anclas incluyen las 242 actividades: hay ramas sin frente propio cuyo hito real es una
@@ -178,7 +191,14 @@ export default function PlanFechas() {
   // onResponsable cambia responsableOverride (mismo patrón que `filaExpandida` más abajo, que
   // tampoco memoiza su lectura de `plan`).
   const sinResponsable = contarSinResponsable(plan)
-  const sinFrente = useMemo(() => paquetesSinFrente(porPaquete, amarres), [porPaquete, amarres])
+  // «Sin frente» enumera UNIDADES CONTRATABLES: un paquete partido en tres da tres filas, cada una
+  // con su propio frente. `paquetesSinFrente` se conserva para el resto de las cuentas de la pantalla,
+  // que siguen razonando por paquete.
+  const sinFrente = useMemo(
+    () => destinosSinFrente(destinosContratables, amarresDestino),
+    [destinosContratables, amarresDestino],
+  )
+  const sinFrentePorPaquete = useMemo(() => paquetesSinFrente(porPaquete, amarres), [porPaquete, amarres])
   // Importante 2 del review final: un paquete recién amarrado sale de «Sin frente» pero no entra a
   // la grilla (que solo lee el plan calculado) hasta que alguien pulsa «Recalcular». Sin este
   // bloque queda invisible en las dos partes de la pantalla a la vez.
@@ -192,8 +212,8 @@ export default function PlanFechas() {
   // review final A4: sin esa espera, una carrera entre `sinFrente` y `sugerencias` perdía la
   // propuesta para siempre en esa carga).
   useEffect(() => {
-    setDestinos((prev) => preseleccionDestinos(prev, sinFrente, sugerencias, sugerenciasCargadas))
-  }, [sinFrente, sugerencias, sugerenciasCargadas])
+    setDestinos((prev) => preseleccionDestinos(prev, sinFrentePorPaquete, sugerencias, sugerenciasCargadas))
+  }, [sinFrentePorPaquete, sugerencias, sugerenciasCargadas])
 
   const onResponsable = async (paqueteId: number, etiqueta: string, anterior: string) => {
     // AG Grid ya mutó la fila al valor nuevo (valueSetter por defecto, corrió antes de este
@@ -346,14 +366,22 @@ export default function PlanFechas() {
     }
   }
 
-  const onAmarrar = async (paqueteId: number, uniqueId: number, anterior: number | '') => {
+  const onAmarrar = async (
+    paqueteId: number,
+    uniqueId: number,
+    anterior: number | '',
+    subpaqueteId = 0,
+  ) => {
     const frente = frentes.find((f) => f.uniqueId === uniqueId)
     dispatch({ type: 'OCUPADO' })
     try {
       await apiPost('/plan-compras/api/plan/amarrar', {
         paqueteId,
+        subpaqueteId,
         uniqueId,
-        procedencia: procedenciaConSugerencia(sugerencias[paqueteId], uniqueId),
+        // La procedencia solo viaja para el paquete entero: la sugerencia del motor es del paquete, y
+        // atribuirle el amarre de un lote le contaría un acierto que no tuvo.
+        procedencia: subpaqueteId === 0 ? procedenciaConSugerencia(sugerencias[paqueteId], uniqueId) : {},
       })
       // El aviso de recalcular no es un adorno: cambiar de frente invalida el plan viejo, así que
       // la fila desaparece de la grilla y cae en «Amarrados, pendientes de calcular». Sin decirlo,
@@ -398,20 +426,26 @@ export default function PlanFechas() {
     }
   }
 
-  const onAmarrarClick = (paqueteId: number) => {
-    const valor = destinos[paqueteId]
+  const onAmarrarClick = (paqueteId: number, subpaqueteId = 0) => {
+    const valor = destinos[claveDestino({ paqueteId, subpaqueteId })]
     if (valor === undefined || valor === '') return
-    void onAmarrar(paqueteId, valor, valor)
+    void onAmarrar(paqueteId, valor, valor, subpaqueteId)
   }
 
   // Acción masiva: acepta de golpe la propuesta del motor para todos los «sin frente» que la
   // tienen, tal como quedó preseleccionada — mismo patrón que «Aceptar sugeridos» en
   // PaquetesContratacion. Sin este botón, aceptar 50 propuestas exige 50 clics uno por uno.
+  // Las piezas del MOTOR razonan por paquete y no por lote, a propósito: el motor no aprende de
+  // lotes (son casuística de obra), y preseleccionar la sugerencia del paquete en sus tres lotes les
+  // daría a los tres el mismo frente — exactamente lo contrario de «a cada uno su fecha».
   const sugeridosPendientes = useMemo(
-    () => sinFrente.filter((p) => sugerencias[p.paqueteId] !== undefined),
-    [sinFrente, sugerencias],
+    () => sinFrentePorPaquete.filter((p) => sugerencias[p.paqueteId] !== undefined),
+    [sinFrentePorPaquete, sugerencias],
   )
-  const porConfianza = useMemo(() => agruparPorConfianza(sinFrente, sugerencias), [sinFrente, sugerencias])
+  const porConfianza = useMemo(
+    () => agruparPorConfianza(sinFrentePorPaquete, sugerencias),
+    [sinFrentePorPaquete, sugerencias],
+  )
   const [confirmarMedia, setConfirmarMedia] = useState(false)
   const [buscaSinFrente, setBuscaSinFrente] = useState('')
 
@@ -952,20 +986,27 @@ export default function PlanFechas() {
         onChange={(e) => setBuscaSinFrente(e.target.value)}
       />
       <ul className="pdc-paq-lista pdc-plan-sinfrente-lista" data-testid="pdc-plan-sin-frente">
-        {filtraPorTexto(sinFrente, buscaSinFrente, (x) => x.nombre).map((p) => {
-          const sugerencia = sugerencias[p.paqueteId]
-          const destino = destinos[p.paqueteId] ?? ''
+        {filtraPorTexto(sinFrente, buscaSinFrente, (x) => etiquetaDestino(x)).map((p) => {
+          // La identidad de la fila es paquete + lote. Con la clave puesta solo en el paquete, los
+          // tres lotes de un paquete partido compartían desplegable: elegir el frente de uno lo
+          // elegía en los tres, y amarrar uno los sacaba a todos de la lista.
+          const clave = claveDestino(p)
+          // El motor sugiere por paquete y no por lote; en un lote no hay propuesta que mostrar, y
+          // enseñar la del paquete invitaría a darle a los tres el mismo frente.
+          const sugerencia = p.esLote ? undefined : sugerencias[p.paqueteId]
+          const destino = destinos[clave] ?? ''
           return (
-            <li key={p.paqueteId}>
-              <strong>{p.nombre}</strong>
-              <span className="pdc-paq-meta">{moneda(p.subtotal)}</span>
+            <li key={clave}>
+              <strong>{etiquetaDestino(p)}</strong>
+              {p.esLote && <span className="pdc-paq-tag">lote de obra</span>}
+              <span className="pdc-paq-meta">{moneda(p.valor)}</span>
               <select
-                aria-label={`Frente para ${p.nombre}`}
+                aria-label={`Frente para ${etiquetaDestino(p)}`}
                 disabled={ui.ocupado}
                 value={destino}
                 onChange={(e) => {
                   const valor = e.target.value === '' ? '' : Number(e.target.value)
-                  setDestinos((prev) => ({ ...prev, [p.paqueteId]: valor }))
+                  setDestinos((prev) => ({ ...prev, [clave]: valor }))
                 }}
               >
                 <option value="">Elegir frente…</option>
@@ -985,10 +1026,10 @@ export default function PlanFechas() {
                   que sin este botón aceptarla tal cual era imposible desde la interfaz. */}
               <button
                 type="button"
-                data-testid={`pdc-plan-amarrar-${p.paqueteId}`}
+                data-testid={`pdc-plan-amarrar-${clave}`}
                 className="pdc-paq-primario"
                 disabled={ui.ocupado || destino === ''}
-                onClick={() => onAmarrarClick(p.paqueteId)}
+                onClick={() => onAmarrarClick(p.paqueteId, p.subpaqueteId)}
               >
                 Amarrar
               </button>
@@ -998,7 +1039,7 @@ export default function PlanFechas() {
                 </span>
               )}
               {/* Sin propuesta ya no es una fila muda: dice qué rama falta y ofrece resolverla. */}
-              {!sugerencia && motivos[p.paqueteId] && (
+              {!sugerencia && !p.esLote && motivos[p.paqueteId] && (
                 <span className="pdc-paq-motivo" data-testid={`pdc-plan-motivo-${p.paqueteId}`}>
                   {motivos[p.paqueteId].texto}
                   {motivos[p.paqueteId].rama && (
@@ -1016,7 +1057,11 @@ export default function PlanFechas() {
             </li>
           )
         })}
-        {sinFrente.length === 0 && <li className="pdc-vacio">Todos los paquetes que generan proceso ya tienen frente.</li>}
+        {sinFrente.length === 0 && (
+          <li className="pdc-vacio">
+            Todas las contrataciones que generan proceso ya tienen frente, lotes de obra incluidos.
+          </li>
+        )}
       </ul>
       </PanelPestana>
       )}

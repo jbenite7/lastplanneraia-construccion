@@ -1,4 +1,4 @@
-import type { AnclaDisponible, Desfase, FilaPlan, FrenteDisponible, PanelCorrespondencias, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente } from './types'
+import type { AnclaDisponible, Desfase, FilaPlan, FrenteDisponible, PanelCorrespondencias, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente, DestinoContratable} from './types'
 
 export type EstadoFila = { clave: 'desfasado' | 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
 
@@ -157,6 +157,46 @@ export function paquetesSinFrente(
     .sort((a, b) => b.subtotal - a.subtotal)
 }
 
+/** La identidad de una fila de «Sin frente»: paquete + lote. Nunca solo el paquete. */
+export type { DestinoContratable }
+
+export function claveDestino(d: { paqueteId: number; subpaqueteId: number }): string {
+  return `${d.paqueteId}:${d.subpaqueteId}`
+}
+
+/**
+ * Unidades contratables que deberían tener fecha y todavía no la tienen.
+ *
+ * Sustituye a `paquetesSinFrente()` en la pantalla, y el cambio de unidad es el punto: un paquete
+ * partido en tres aparece como TRES filas, cada una eligiendo su propio frente, porque es cada lote
+ * el que se contrata en su momento —«eso lo contrato en 2 meses; eso lo necesito ya»—. Contarlo por
+ * paquete dejaría a los lotes sin forma de recibir fecha desde la pantalla.
+ *
+ * Esta forma se eligió sobre la alternativa de añadir un segundo desplegable de lote a la fila: esa
+ * fila ya lleva el frente, la procedencia de la sugerencia y el botón de amarrar, y una segunda
+ * elección dentro de la misma fila obliga a leer dos controles para entender una decisión.
+ *
+ * Orden por cuantía descendente: lo caro primero, igual criterio que el resto del sembrado.
+ */
+export function destinosSinFrente(
+  destinos: DestinoContratable[],
+  amarrados: { paqueteId: number; subpaqueteId: number }[],
+): DestinoContratable[] {
+  const yaAmarrados = new Set(amarrados.map(claveDestino))
+  return destinos
+    .filter((d) => d.generaProceso && !yaAmarrados.has(claveDestino(d)))
+    .sort((a, b) => b.valor - a.valor)
+}
+
+/**
+ * Cómo se rotula una fila de «Sin frente». Un lote se nombra con su paquete delante —«Pisos ›
+ * Porcelanato»— porque su nombre suelto no dice de qué paquete sale, y en una lista de 96 filas
+ * «Porcelanato» a secas no se sitúa.
+ */
+export function etiquetaDestino(d: DestinoContratable): string {
+  return d.esLote ? `${d.paqueteNombre} › ${d.nombre}` : d.nombre
+}
+
 /**
  * Paquetes que ya tienen frente pero todavía no tienen plan calculado: acaban de amarrarse (o se
  * reamarraron a un frente distinto, que invalida el plan viejo — ver PlanFechasService::amarrar())
@@ -184,20 +224,27 @@ export function paquetesAmarradosSinCalcular(
  * `undefined` y el efecto no la vuelve a tocar, así que la propuesta se pierde para esa carga. La
  * espera a `sugerenciasCargadas` (true solo cuando la petición de sugerencias ya resolvió, con éxito
  * o sin él) evita sembrar a ciegas antes de saber si hay o no propuesta para cada paquete.
+ *
+ * La clave es `claveDestino()` —«paquete:lote»— y no el id de paquete. Al añadir los lotes, la
+ * pantalla pasó a leer `destinos['123:0']` mientras esto seguía escribiendo `destinos['123']`, y la
+ * preselección del motor dejó de aplicarse **sin que TypeScript dijera nada**: un `Record<number, T>`
+ * es asignable a un `Record<string, T>` porque las claves numéricas son un subconjunto de las de
+ * texto. El test «siembra con la clave paquete:lote» es lo que fija esto.
  */
 export function preseleccionDestinos(
-  prev: Record<number, number | ''>,
-  sinFrente: { paqueteId: number }[],
+  prev: Record<string, number | ''>,
+  sinFrente: { paqueteId: number; subpaqueteId?: number }[],
   sugerencias: Record<number, SugerenciaFrente>,
   sugerenciasCargadas: boolean,
-): Record<number, number | ''> {
+): Record<string, number | ''> {
   if (!sugerenciasCargadas) return prev
   let cambio = false
   const next = { ...prev }
   for (const p of sinFrente) {
-    if (next[p.paqueteId] === undefined) {
+    const clave = claveDestino({ paqueteId: p.paqueteId, subpaqueteId: p.subpaqueteId ?? 0 })
+    if (next[clave] === undefined) {
       const s = sugerencias[p.paqueteId]
-      next[p.paqueteId] = s ? s.uniqueId : ''
+      next[clave] = s ? s.uniqueId : ''
       cambio = true
     }
   }

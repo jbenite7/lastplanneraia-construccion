@@ -560,9 +560,32 @@ export type AmarrePlan = {
   confirmadoHumano: boolean
 }
 
+/**
+ * Un destino contratable: la unidad del módulo. Un paquete sin partir (`subpaqueteId = 0`) o un lote
+ * de un paquete partido. Lo define `SubpaquetesService::destinos()` en el servidor, que es el único
+ * sitio donde se decide qué cuenta como unidad — el plan de fechas, el tablero de vencimientos y el
+ * flujo de caja consumen esa misma lista para no poder contar distinto.
+ */
+export type DestinoContratable = {
+  paqueteId: number
+  subpaqueteId: number
+  nombre: string
+  paqueteNombre: string
+  esLote: boolean
+  esResto: boolean
+  modalidad: string
+  generaProceso: boolean
+  valor: number
+}
+
 export type PlanResultado = {
   plan: FilaPlan[]
+  /** Indexado por paquete y solo los SIN partir: un paquete partido no es una unidad contratable. */
   amarres: Record<number, AmarrePlan>
+  /** Las unidades contratables de la obra: paquetes sin partir y lotes de los partidos. */
+  destinos: DestinoContratable[]
+  /** Qué destinos ya tienen frente, por paquete Y lote. */
+  amarresDestino: { paqueteId: number; subpaqueteId: number }[]
 }
 
 /**
