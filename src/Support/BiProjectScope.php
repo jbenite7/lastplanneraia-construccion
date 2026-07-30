@@ -13,7 +13,8 @@ final class BiProjectScope
 {
     private Database $db;
     private RbacService $rbac;
-    private ?array $projects = null;
+    /** @var array<string,array<int,array{project_id:int|string,nombre:string}>> Caché por usuario. */
+    private array $projectsPorUsuario = [];
 
     public function __construct(?Database $db = null)
     {
@@ -46,15 +47,27 @@ final class BiProjectScope
         throw new DomainException('No tienes proyectos autorizados para Control Tower.');
     }
 
+    /**
+     * Proyectos que este usuario puede ver en BI.
+     *
+     * La caché va POR USUARIO. Antes era una sola `$this->projects` para toda la instancia, de modo
+     * que reusarla con dos sesiones distintas le respondía a la segunda con los permisos de la
+     * primera. Por HTTP no era explotable —cada petición construye su instancia y una petición es
+     * una sesión—, pero esta es la clase que decide qué obras ve cada quien: un comando, un worker
+     * o un informe que recorra varios usuarios habría filtrado datos entre obras.
+     */
     public function authorizedProjects(array $session): array
     {
-        if ($this->projects !== null) {
-            return $this->projects;
+        $usuario = trim((string) ($session['usuario'] ?? ''));
+
+        // array_key_exists y no isset: una lista vacía es un resultado legítimo que hay que
+        // cachear, no un fallo de caché que reintentar en cada llamada.
+        if (array_key_exists($usuario, $this->projectsPorUsuario)) {
+            return $this->projectsPorUsuario[$usuario];
         }
 
-        $usuario = trim((string) ($session['usuario'] ?? ''));
         if ($usuario === '') {
-            return $this->projects = [];
+            return $this->projectsPorUsuario[$usuario] = [];
         }
 
         $stmt = $this->db->prepare(
@@ -70,17 +83,18 @@ final class BiProjectScope
         );
         $stmt->execute([$usuario]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        $this->projects = [];
+
+        $proyectos = [];
         foreach ($rows as $row) {
             if (!$this->rbac->can('lps.indicadores.ver', (string) ($row['role'] ?? ''))) {
                 continue;
             }
 
             unset($row['role']);
-            $this->projects[] = $row;
+            $proyectos[] = $row;
         }
 
-        return $this->projects;
+        return $this->projectsPorUsuario[$usuario] = $proyectos;
     }
 
     public static function normalizeProjectIds($raw): array

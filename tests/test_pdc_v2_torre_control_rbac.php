@@ -86,11 +86,6 @@ if ($ajena <= 0) {
 }
 
 // --- Sesión sin usuario -------------------------------------------------------------------------
-// OJO: con una instancia NUEVA, que es como funciona en producción (una por petición).
-// BiProjectScope memoiza $this->projects sin tener en cuenta la sesión, así que reusar la misma
-// instancia con dos sesiones distintas devuelve los permisos de la primera. No es explotable por
-// HTTP —una petición es una sesión—, pero sí lo sería en un proceso que recorra varios usuarios.
-// Está reportado aparte; este test fija el contrato real y no lo tapa.
 $scopeLimpio = new BiProjectScope($db);
 $lanzoAnonimo = false;
 try {
@@ -100,20 +95,26 @@ try {
 }
 $assert($lanzoAnonimo, 'sesión sin usuario: no resuelve ninguna obra');
 
-// Y se deja constancia ejecutable del matiz, para que si alguien arregla la caché este test
-// se lo diga en vez de quedarse callado.
-$scopeSucio = new BiProjectScope($db);
-$scopeSucio->resolve([$permitido], $session);
-$cacheFiltra = false;
+// --- La caché no mezcla sesiones ---------------------------------------------------------------
+// Fue un fallo real: authorizedProjects() memoizaba en una sola $this->projects, así que una
+// instancia reutilizada le respondía al segundo usuario con los permisos del primero. Arreglado
+// cacheando por usuario; este test es lo que impide que vuelva.
+$scopeReusado = new BiProjectScope($db);
+$scopeReusado->resolve([$permitido], $session);
+
+$lanzoTrasReuso = false;
 try {
-    $scopeSucio->resolve([$permitido], ['usuario' => '']);
-    $cacheFiltra = true;
+    $scopeReusado->resolve([$permitido], ['usuario' => '']);
 } catch (\DomainException) {
-    $cacheFiltra = false;
+    $lanzoTrasReuso = true;
 }
+$assert($lanzoTrasReuso, 'la misma instancia, con una sesión anónima después de una válida, no hereda permisos');
+
+// Y el usuario legítimo sigue viendo lo suyo después de que otra sesión haya pasado por la
+// instancia: la caché por usuario tiene que aislar en los dos sentidos, no solo denegar.
 $assert(
-    $cacheFiltra,
-    'DOCUMENTADO (no deseable): la caché por instancia ignora la sesión. Si esto falla, es que se arregló: quita este bloque',
+    $scopeReusado->resolve([$permitido], $session) === [$permitido],
+    'la misma instancia sigue resolviendo bien al usuario legítimo tras atender a otra sesión',
 );
 
 fwrite(STDOUT, $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallos\n");
