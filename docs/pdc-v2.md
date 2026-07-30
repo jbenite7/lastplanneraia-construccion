@@ -162,6 +162,37 @@ base de desarrollo principal. Si el principal está vivo, el nuevo muere con «U
 migración destructiva de por medio eso corrompe el trabajo de otra sesión. Las sesiones paralelas se
 lo saltan con un override local que declara un volumen propio (`!reset` sobre `volumes` del servicio).
 
+### Los frentes y el remap del `unique_id` — contradicción abierta (2026-07-30)
+
+**Dos reglas del repositorio se contradicen, y no pueden ser ciertas a la vez.**
+
+- `database/migrations/20260712_remap_consolidado_unique_id.php` **anula a propósito** el `unique_id`
+  de los encabezados del cronograma. Su cabecera lo dice sin ambigüedad: «Los `Titulo=1` quedan NULL
+  (sin FK)». El motivo es que un encabezado no tiene fila equivalente en `programa` a la que apuntar.
+- `PlanFechasService::semanaYFrentes()` exige `unique_id IS NOT NULL` para incluir un nodo, y marca
+  `esFrente` con `Titulo === 1`. Es decir: **pide como frentes justo las filas que el remap deja sin
+  identificador.**
+
+**Consecuencia, medida en `prueba-lps` el 2026-07-30** por la sesión de despliegue, sobre el proyecto
+27 en semana 7: tras aplicar el remap, el desplegable «Elegir frente…» pasó de **0 a 155 opciones** —el
+remap arregló el vacío total— pero **ninguna de las 155 es un frente**: todas salen marcadas como
+«· actividad». Los 31 encabezados que el diseño de A4.2 daba por disponibles son, tras el remap,
+inalcanzables por construcción.
+
+**Por qué no se vio antes.** La base local **no está remapeada**: ahí los encabezados sí tienen
+`unique_id` (`uid=0` y `uid=2` salen como FRENTE), así que todo el trabajo de amarrar por frente se
+diseñó y se validó contra un esquema anterior al remap. Local y servidor no coinciden en este punto.
+
+**Qué NO es.** No es el bug del `unique_id` vacío que se arregló ese mismo día —ese era que la columna
+estaba sin poblar en los ocho proyectos—. Este aparece **después** de arreglar aquel, y es de diseño.
+
+**Decisión pendiente, y es de producto, no mecánica.** O el remap deja de anular los encabezados —y
+entonces hay que decidir a qué apuntan, porque no tienen fila en `programa`—, o el Plan de Compras
+deja de exigir `unique_id` para ellos y los identifica de otra forma. Hasta que se decida, **el remap
+no debe ejecutarse en producción**: allí hay ~27.813 filas con `unique_id` y correrlo reproduciría el
+síntoma sobre datos reales. El aviso está también en `docs/siteground-deploy-routine.md` §5.1, que es
+donde lo va a leer quien despliegue.
+
 ### B1 — El amarre al cronograma es por RAMA, no por actividad (2026-07-28)
 
 `pdc_insumo_actividades.unique_id` llegó a B1 con **820 de 820 filas en NULL** en Da Porto. La nota que decía

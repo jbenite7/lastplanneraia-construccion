@@ -154,6 +154,20 @@ Notas:
 > migracion sin correr, **toda la pestana Plan del modulo de compras responde 500**, porque el
 > `SELECT` de `plan()` pide la columna nueva — no se degrada solo el responsable.
 
+> [!CAUTION]
+> **NO ejecutes `20260712_remap_consolidado_unique_id.php` en produccion sin decision previa.**
+> Anula el `unique_id` de los encabezados del cronograma **a proposito** —su propia cabecera lo dice:
+> «Los Titulo=1 quedan NULL (sin FK)»— y el Plan de Compras exige `unique_id IS NOT NULL` para
+> ofrecer un nodo como frente. Consecuencia medida en `prueba-lps` el 2026-07-30: el desplegable
+> «Elegir frente» pasa a ofrecer 155 opciones y **ninguna es un frente**, todas son actividades.
+>
+> En produccion hay ~27.813 filas con `unique_id` (medido por la sesion de despliegue, sin desglosar
+> cuantas son encabezados). Correrlo alli tal como esta reproduce el sintoma sobre datos reales.
+>
+> Las dos reglas no pueden ser ciertas a la vez y **la eleccion es de diseno, no mecanica**: o el
+> remap deja de anular los encabezados, o el Plan de Compras deja de exigir `unique_id` para ellos.
+> El detalle vive en `docs/pdc-v2.md`, seccion «Los frentes y el remap del `unique_id`».
+
 No hay runner automatico: las migraciones se aplican a mano. Revisa que llego algo nuevo antes de
 aplicar:
 
