@@ -210,5 +210,40 @@ gate de Plannotator, respaldo verificable y estrategia de restauración.
 | 1 | Censo escrito con el grep como evidencia | **Hecho** — este documento |
 | 2 | Decisión escrita del dueño sobre los datos históricos | **Medido y planteado; falta la respuesta de Felipe** |
 | 3 | Rutas retiradas, app arranca, suite pasa, nada enlaza a `/pdc` | Bloqueado por la precondición |
-| 4 | Manifiesto de piloto del v2 | Pendiente — no depende de la precondición |
-| 5 | `PdcResetService` sigue vivo | Pendiente de verificar tras el retiro |
+| 4 | Manifiesto de piloto del v2 | **Hecho** — `docs/design-system/manifests/plan-compras-v2.json`, ver abajo |
+| 5 | `PdcResetService` sigue vivo | Pendiente — solo verificable **después** del retiro |
+
+## Punto 4 — la deuda de diseño del v2, cerrada
+
+`plan-compras-v2` pasa de `inventory-only` a `pilot` con manifiesto, escenario y golden real.
+
+- **Golden:** `tests/browser/__screenshots__/plan-compras-v2/plan-compras-v2-dark-1180x820.png`,
+  `sha256: cd5523bd…`. Capturado contra el contenedor, 1180×820, dark, sandbox 990100.
+  Comprobado en la captura: canvas `rgb(11, 16, 13)`, sin overflow horizontal.
+- **`vendors: []`** y **no** es un descuido: la vista no carga ninguna librería por CDN. `tokens.css`,
+  el design system y la isla React empaquetada salen todos del propio dominio. Es la diferencia de fondo
+  con el manifiesto del v1, que conserva nueve librerías por CDN más Google Fonts y por eso no puede
+  declarar `consumerContract v1`.
+- **`state: "empty"`, no `"normal"`.** El escenario es la pantalla de importar presupuesto sin presupuesto
+  todavía. Es deliberado por dos razones: es la primera pantalla que ve un proyecto nuevo, y es el único
+  contenido **estable** — la única obra con datos v2 (`project_id` 73) la escriben otras sesiones del
+  goal, así que su golden cambiaría solo. El manifiesto dice lo que la imagen muestra.
+- **La trampa del censo se confirmó:** `tests/design-system/contracts.test.mjs:249` es un `deepEqual`
+  contra una lista fija de manifiestos. Un manifiesto nuevo obliga a ampliarla en el mismo commit.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `node scripts/design-system-contracts.mjs` | **PASS** (exige árbol limpio: se commiteó antes de correrlo) |
+| `npm run test:design-system:static` | 358 de 359 |
+
+El único rojo es `foundation.test.mjs:273` «stylesheet versions follow nested CSS changes», y es
+**ambiental del worktree, no una regresión**: el test ejecuta PHP dentro del contenedor —que sirve el
+árbol principal— y lo compara contra el `tokens.css` de *este* worktree, cuyo mtime es la hora del
+checkout. El mismo test pasa en el árbol principal (28/28), y este commit no toca ningún CSS.
+
+### Lo que NO se arregló, a propósito
+
+La duplicación de `pdc` en `inventory.json` (hallazgo 6) sigue ahí. Es un defecto previo y ajeno a C1;
+tocarlo dentro de este commit habría mezclado dos cosas que se revisan por separado.
