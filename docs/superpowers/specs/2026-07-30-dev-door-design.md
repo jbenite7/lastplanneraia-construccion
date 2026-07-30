@@ -174,6 +174,54 @@ Verificación adicional en navegador: abrir `/dev/entrar` con cada uno de los tr
 y confirmar que se aterriza autenticado con el rol correspondiente, en el viewport
 canónico 1180×820 y dark mode.
 
+## Acceso a `prueba-lps` por túnel SSH (decidido el 2026-07-30)
+
+Objetivo: poder usar la puerta contra `prueba-lps.lastplanneraia.com` **sin** debilitar el
+candado.
+
+**La condición de origen no se toca.** Un túnel SSH con reenvío de puerto hace que la
+petición llegue al Apache remoto desde `127.0.0.1`: es local de verdad, no una excepción
+añadida al código. Desde internet la puerta sigue sin existir.
+
+```bash
+ssh -L 8090:localhost:80 <usuario>@<host-siteground>
+# y en otra terminal, o en el navegador:
+curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8090/dev/entrar?u=test.R"
+```
+
+### Lo que hay que cambiar en el servidor, y su coste
+
+Para que la puerta abra en `prueba-lps` su `.env` necesita:
+
+```
+APP_ENV="testing"
+DEV_DOOR=1
+DEV_DOOR_USERS=test.A,test.R,test.V
+```
+
+Dos advertencias que deben decidirse antes de tocar nada:
+
+1. **`APP_ENV` no solo gobierna esta puerta.** `public/index.php:80` registra
+   `/internal/design-system` bajo la misma condición, y `DesignSystemLabAccessPolicy`
+   devuelve 404 fuera de development/testing. Pasar `prueba-lps` a `testing` expone esa
+   ruta —aún protegida por la capacidad RBAC `PERM_INTERNAL_DESIGN_SYSTEM_VIEW`, que
+   responde 403 a quien no la tenga, pero deja de ser invisible. Es un cambio de
+   superficie, no solo de la puerta.
+2. **`prueba-lps` y producción comparten cuenta SSH y solo cambian de carpeta y de base**
+   (`docs/siteground-deploy-routine.md`). Editar el `.env` equivocado pone estas claves en
+   producción. La carpeta y la base de datos deben verificarse **antes** de escribir, y el
+   `.env` respaldarse antes de modificarlo.
+
+Las cuentas `test.*` deben existir y estar activas en la base de `prueba-lps`; si no
+existen, la puerta responde 404 aunque el candado esté abierto.
+
+### Por qué no se eligió un secreto en cabecera
+
+La alternativa evaluada era relajar `requestIsLocal()` y exigir un secreto en una cabecera
+HTTP. Se descartó: introduce un secreto que custodiar y cuya filtración abriría sesión sin
+credenciales desde cualquier lugar de internet, sobre un host con datos de obra reales. El
+túnel no añade ningún secreto nuevo — reutiliza el acceso SSH que ya controla el equipo.
+
 ## Lo que este diseño no hace
 
 - No toca `admin/`.
