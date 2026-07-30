@@ -136,6 +136,59 @@ sus hijos, esa fecha ES la del primer consumo, que es justo lo que Seguimiento p
 - **Nota para B2:** el re-matching al reprogramar funciona porque `unique_id` es estable; lo que se mueve es la
   `Fecha_Inicio` del frente. Un amarre más fino exigiría que planeación llene `codigo_actividad` en el programa.
 
+### Ola 3 — Subpaquetes de obra y flujo de caja (2026-07-29)
+
+**Subpaquetes.** Un paquete de preconstrucción puede partirse en los lotes que la obra de verdad
+contrata («Pisos» → porcelanato, tableta gres, cerámica), cada uno con su modalidad, su frente, su
+responsable y su proceso. El sombrilla se conserva y **resume**; el que se contrata es el lote.
+
+- Tabla `pdc_subpaquete` (por proyecto, FK al catálogo global, **nunca escribe en él**) y columna
+  `subpaquete_id BIGINT NOT NULL DEFAULT 0` en `pdc_insumo_paquete`, `pdc_paquete_frente`,
+  `pdc_plan_paquete` y `pdc_plan_paso`, con las claves únicas extendidas. Migración
+  `20260729_pdc_v2_subpaquetes.sql` (convergente, sin backfill).
+- ⚠️ **`0` significa «sin partir» y NO es nulable.** En un índice UNIQUE de MySQL dos `NULL` se
+  consideran distintos: con una columna nulable, el `ON DUPLICATE KEY` de `calcular()` deja de
+  dispararse y cada recálculo inserta cabeceras nuevas en vez de actualizar las suyas. Es el mismo
+  fallo que A4.1 pagó con `paso_id`. Precio aceptado: la columna no lleva FK, porque el `0` no existe
+  en `pdc_subpaquete` y una fila fantasma con id 0 sería el «lote de compatibilidad» que el alcance
+  prohíbe.
+- **`SubpaquetesService::destinos()` es la ÚNICA definición de «unidad contratable»** del módulo, y la
+  respuesta trae la etiqueta («procesos de contratación») para que ninguna vista la reinvente. Resuelve
+  la ambigüedad de «11 de 96 paquetes o 11 de 130 lotes». Un lote vacío no aparece ahí —no tiene valor
+  que repartir— pero sí en `listar()`.
+- **Un paquete partido nunca se contrata a sí mismo:** lo que nadie mueve cae en el lote `es_resto`,
+  que nace en la misma transacción que la partición. Y al borrar el último lote de verdad, el paquete
+  **se desparte** solo y todo vuelve a `subpaquete_id = 0`.
+- ⚠️ **Todo borrado y actualización del plan va acotado por `subpaquete_id`.** Los lotes de un mismo
+  paquete comparten `paso_id`, así que sin esa condición recalcular un lote se lleva los pasos de sus
+  hermanos, y registrar un avance los marca a todos. Es el borrado más peligroso de
+  `PlanFechasService`.
+- La herencia del frente **se materializa al partir** (el amarre del paquete pasa al «Resto») en vez de
+  resolverse en cada consulta: así ninguna unión necesita un caso especial. Y las uniones a
+  `pdc_paquete_frente` / `pdc_plan_paquete` van por **destino** (paquete + lote): unir solo por paquete
+  multiplica cada fila por el número de lotes.
+- El motor de sugerencias sigue a nivel de paquete grande y **no aprende de lotes**;
+  `destinoDeAsignacion()` hace que sus asignaciones aterricen en el «Resto» si el paquete está partido.
+- RBAC: `lps.paquetes_contratacion.editar` (el de la obra), no `...reglas`.
+
+**Flujo de caja.** `FlujoCajaService`: curva mensual de desembolsos, **derivada y nunca almacenada**,
+repartiendo el valor de cada destino contratable de forma **lineal** por días entre el inicio y el fin
+de su frente. Sin condiciones de pago (eso es una fase propia). Los destinos sin frente, sin fechas o
+cuya modalidad no contrata quedan fuera **contados, valorados y con motivo**, e `incluidos + excluidos`
+es el valor total del plan. Endpoints `GET /plan-compras/api/seguimiento/flujo-caja[.csv]`.
+
+- El **fin** del frente no está en `pdc_paquete_frente` (solo guarda el ancla): se lee de
+  `programa_consolidado.Fecha_Fin` por `unique_id` en la última semana consolidada. El **inicio**
+  también se lee del cronograma en vivo y no del `fecha_ancla` guardado, que es una copia congelada.
+- El residuo del reparto va al último mes, para que la suma de los meses sea exactamente el valor.
+- Exportación CSV con `;` y BOM UTF-8 (el Excel en español lee la coma como decimal), con la
+  advertencia del método **dentro del archivo**: viaja a un comité sin la pantalla al lado.
+
+⚠️ **Las pantallas de las dos cosas NO están construidas.** Dominio, API y pruebas sí. Tests:
+`tests/test_pdc_v2_subpaquetes.php` (30 asserts) y `tests/test_pdc_v2_flujo_caja.php` (31). La cero
+regresión se defiende con `tests/foto_plan_fechas.php` contra
+`goals/pdc-preparar-b1/evidence/linea-base-plan-antes-subpaquetes.txt`.
+
 ### A4.1 — Pasos del proceso de contratación configurables por proyecto
 
 Los siete pasos dejaron de estar escritos en el código. Catálogo global `general_pasos_contratacion`

@@ -779,13 +779,25 @@ class PlanFechasService
       * @param array<string, mixed> $procedencia origen, confianza y confirmado de la decisión; como en
       *                                          los insumos, aceptar la propuesta conserva su capa
       *
+      * @param int $subpaqueteId destino contratable dentro del paquete: `0` es el paquete sin partir,
+      *                          y un id de `pdc_subpaquete` es uno de sus lotes. Cada lote tiene su
+      *                          propio frente («eso lo contrato en dos meses; eso lo necesito ya»),
+      *                          así que el amarre es por destino y no por paquete. El valor por
+      *                          defecto deja intacto a todo el que ya llamaba a este método.
+      *
       * @return array{ok: true}|array{
       *     ok: false,
       *     code: 'FRENTE_INVALIDO'|'PAQUETE_INVALIDO'|'MODALIDAD_NO_CONTRATABLE'
       * }
       */
-    public function amarrar(int $projectId, int $paqueteId, int $uniqueId, string $usuario, array $procedencia = []): array
-    {
+    public function amarrar(
+        int $projectId,
+        int $paqueteId,
+        int $uniqueId,
+        string $usuario,
+        array $procedencia = [],
+        int $subpaqueteId = SubpaquetesService::SIN_PARTIR,
+    ): array {
         // Una sola lectura del cronograma para las dos cosas que hacen falta aquí: el frente destino
         // y la semana activa que se guarda en `semana_origen` (ver semanaYFrentes()).
         // `false` = también las hojas. Un paquete puede amarrarse a una actividad concreta y no solo
@@ -861,8 +873,9 @@ class PlanFechasService
             // contra qué estaba calculado el plan, y va DENTRO de la transacción para no competir con
             // un `calcular()` concurrente que reescriba `pdc_plan_paquete` entre la lectura y el DELETE.
             $planCalculado = $this->db->query(
-                'SELECT unique_id, fecha_ancla FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-                [$projectId, $paqueteId],
+                'SELECT unique_id, fecha_ancla FROM pdc_plan_paquete
+                  WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?',
+                [$projectId, $paqueteId, $subpaqueteId],
             )->fetch(\PDO::FETCH_ASSOC);
             $reamarreInvalida = $planCalculado !== false
                 && ((int) $planCalculado['unique_id'] !== $uniqueId
@@ -870,16 +883,18 @@ class PlanFechasService
 
             $this->db->query(
                 'INSERT INTO pdc_paquete_frente
-                    (project_id, paquete_id, unique_id, frente_nombre, fecha_ancla, semana_origen,
-                     origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    (project_id, paquete_id, subpaquete_id, unique_id, frente_nombre, fecha_ancla,
+                     semana_origen, origen, confianza, evidencia, confirmado_humano, asignado_por,
+                     updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                  ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), frente_nombre = VALUES(frente_nombre),
                     fecha_ancla = VALUES(fecha_ancla), semana_origen = VALUES(semana_origen),
                     origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
                     confirmado_humano = VALUES(confirmado_humano), asignado_por = VALUES(asignado_por),
                     updated_at = NOW()',
                 [
-                    $projectId, $paqueteId, $uniqueId, $frente['nombre'], $frente['fechaInicio'], $semana,
+                    $projectId, $paqueteId, $subpaqueteId, $uniqueId, $frente['nombre'],
+                    $frente['fechaInicio'], $semana,
                     $origen,
                     $delMotor && in_array($procedencia['confianza'] ?? '', ['alta', 'media', 'baja'], true) ? $procedencia['confianza'] : null,
                     $delMotor ? mb_substr((string) ($procedencia['evidencia'] ?? ''), 0, 500) : '',
@@ -898,7 +913,7 @@ class PlanFechasService
                 // esto era un `DELETE FROM pdc_plan_paquete` que se llevaba también al responsable,
                 // en silencio. Corregir un frente mal elegido no puede costar volver a repartir el
                 // trabajo (ver limpiarPlanCalculado()).
-                $this->limpiarPlanCalculado($projectId, $paqueteId);
+                $this->limpiarPlanCalculado($projectId, $paqueteId, $subpaqueteId);
             }
 
             $this->db->commit();
@@ -934,14 +949,18 @@ class PlanFechasService
      *
      * @return array{ok: bool, code?: string}
      */
-    public function desamarrar(int $projectId, int $paqueteId): array
-    {
+    public function desamarrar(
+        int $projectId,
+        int $paqueteId,
+        int $subpaqueteId = SubpaquetesService::SIN_PARTIR,
+    ): array {
         $this->db->beginTransaction();
         try {
-            $this->limpiarPlanCalculado($projectId, $paqueteId);
+            $this->limpiarPlanCalculado($projectId, $paqueteId, $subpaqueteId);
             $this->db->query(
-                'DELETE FROM pdc_paquete_frente WHERE project_id = ? AND paquete_id = ?',
-                [$projectId, $paqueteId],
+                'DELETE FROM pdc_paquete_frente
+                  WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?',
+                [$projectId, $paqueteId, $subpaqueteId],
             );
             $this->db->commit();
         } catch (\Throwable $t) {
@@ -964,12 +983,20 @@ class PlanFechasService
      *
      * Asume una transacción abierta por quien llama.
      */
-    private function limpiarPlanCalculado(int $projectId, int $paqueteId): void
-    {
+    private function limpiarPlanCalculado(
+        int $projectId,
+        int $paqueteId,
+        int $subpaqueteId = SubpaquetesService::SIN_PARTIR,
+    ): void {
+        // Todo va acotado al DESTINO y no al paquete: en un paquete partido, invalidar el plan de un
+        // lote no puede llevarse el de sus hermanos, que están amarrados a otros frentes y cuyas
+        // fechas siguen siendo buenas. Con `subpaquete_id = 0` esto es palabra por palabra lo que
+        // hacía antes, porque un paquete sin partir tiene exactamente una fila por tabla.
         // Las filas SIN avance se borran: son solo fechas calculadas contra un frente que ya no vale.
         $this->db->query(
-            'DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL',
-            [$projectId, $paqueteId],
+            'DELETE FROM pdc_plan_paso
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ? AND fecha_real IS NULL',
+            [$projectId, $paqueteId, $subpaqueteId],
         );
         // Las que SI llevan avance se conservan y se les vacian las fechas programadas. Una propuesta
         // ya recibida no deja de haberse recibido porque la obra se reprograme, y borrar la fila se
@@ -978,16 +1005,16 @@ class PlanFechasService
         // hizo, pero el plan todavia no se ha recalculado». El siguiente calcular() las repone.
         $this->db->query(
             'UPDATE pdc_plan_paso SET fecha_inicio = NULL, fecha_fin = NULL
-              WHERE project_id = ? AND paquete_id = ?',
-            [$projectId, $paqueteId],
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?',
+            [$projectId, $paqueteId, $subpaqueteId],
         );
         $this->db->query(
             'UPDATE pdc_plan_paquete
                 SET unique_id = NULL, fecha_ancla = NULL, fecha_arranque = NULL,
                     dias_totales = NULL, duracion_ref = NULL, duracion_provisional = 0,
                     updated_at = NOW()
-              WHERE project_id = ? AND paquete_id = ?',
-            [$projectId, $paqueteId],
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?',
+            [$projectId, $paqueteId, $subpaqueteId],
         );
         // La cabecera se retira solo si no queda nada que sostener: ni responsable ni avance. No hay
         // clave foránea entre `pdc_plan_paso` y `pdc_plan_paquete`, así que borrarla con pasos vivos
@@ -995,17 +1022,25 @@ class PlanFechasService
         // resumen une por cabecera y el detalle necesita su `fecha_arranque`.
         $this->db->query(
             'DELETE FROM pdc_plan_paquete
-              WHERE project_id = ? AND paquete_id = ? AND responsable_user_id IS NULL
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?
+                AND responsable_user_id IS NULL
                 AND NOT EXISTS (
                     SELECT 1 FROM pdc_plan_paso s
-                     WHERE s.project_id = ? AND s.paquete_id = ? AND s.fecha_real IS NOT NULL
+                     WHERE s.project_id = ? AND s.paquete_id = ? AND s.subpaquete_id = ?
+                       AND s.fecha_real IS NOT NULL
                 )',
-            [$projectId, $paqueteId, $projectId, $paqueteId],
+            [$projectId, $paqueteId, $subpaqueteId, $projectId, $paqueteId, $subpaqueteId],
         );
     }
 
     /**
      * Amarres vigentes del proyecto, indexados por paquete.
+     *
+     * Acotado a los paquetes SIN PARTIR (`subpaquete_id = 0`), y por eso sigue pudiendo indexarse por
+     * id de paquete sin perder filas: un paquete partido ya no es una unidad contratable —lo son sus
+     * lotes— y su amarre pasó al lote «Resto». Quien necesite todas las unidades, incluidos los
+     * lotes, tiene `destinosAmarrados()`; esta lista es la que la pantalla usa para saber qué
+     * paquetes están amarrados como un todo.
      *
      * @return array<int, array{
      *     uniqueId: int,
@@ -1020,8 +1055,8 @@ class PlanFechasService
     {
         $rows = $this->db->query(
             'SELECT paquete_id, unique_id, frente_nombre, fecha_ancla, origen, confianza, confirmado_humano
-             FROM pdc_paquete_frente WHERE project_id = ?',
-            [$projectId],
+             FROM pdc_paquete_frente WHERE project_id = ? AND subpaquete_id = ?',
+            [$projectId, SubpaquetesService::SIN_PARTIR],
         )->fetchAll(\PDO::FETCH_ASSOC);
         $out = [];
         foreach ($rows as $r) {
@@ -1035,6 +1070,60 @@ class PlanFechasService
             ];
         }
         return $out;
+    }
+
+    /**
+     * Modalidad de cada lote de la obra, indexada por `subpaquete_id`.
+     *
+     * Se lee de una vez y no lote por lote dentro del bucle de `calcular()`: son 130 destinos en el
+     * peor caso conocido y una consulta por destino convertiría un recálculo en 130 idas a la base.
+     *
+     * @return array<int, string>
+     */
+    private function modalidadPorLote(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT id, modalidad_contratacion FROM pdc_subpaquete WHERE project_id = ?',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r['id']] = (string) $r['modalidad_contratacion'];
+        }
+        return $out;
+    }
+
+    /**
+     * Todos los destinos contratables amarrados del proyecto: paquetes sin partir Y lotes.
+     *
+     * Es lo que recorre `calcular()`. Devuelve una LISTA y no un mapa indexado por paquete porque la
+     * clave ya no es el paquete: un paquete partido aporta tantas entradas como lotes tenga, y
+     * indexar por paquete perdería todas menos una — el error silencioso más fácil de cometer al
+     * añadir este nivel.
+     *
+     * @return list<array{
+     *     paqueteId: int,
+     *     subpaqueteId: int,
+     *     uniqueId: int,
+     *     frenteNombre: string,
+     *     fechaAncla: string
+     * }>
+     */
+    public function destinosAmarrados(int $projectId): array
+    {
+        $rows = $this->db->query(
+            'SELECT paquete_id, subpaquete_id, unique_id, frente_nombre, fecha_ancla
+               FROM pdc_paquete_frente WHERE project_id = ?
+              ORDER BY paquete_id, subpaquete_id',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        return array_map(static fn (array $r): array => [
+            'paqueteId' => (int) $r['paquete_id'],
+            'subpaqueteId' => (int) $r['subpaquete_id'],
+            'uniqueId' => (int) $r['unique_id'],
+            'frenteNombre' => (string) $r['frente_nombre'],
+            'fechaAncla' => (string) $r['fecha_ancla'],
+        ], $rows);
     }
 
     /**
@@ -1093,14 +1182,30 @@ class PlanFechasService
      * @return array{arranque:string,total:int,dias:list<int>,provisional:bool,duracionRef:?int}|null
      *         null si el paquete está inactivo o su modalidad ya no genera proceso de contratación
      */
-    private function proyectar(int $paqueteId, string $fechaAncla, array $pasos, array $medianas, string $selectCols): ?array
-    {
+    private function proyectar(
+        int $paqueteId,
+        string $fechaAncla,
+        array $pasos,
+        array $medianas,
+        string $selectCols,
+        ?string $modalidadDestino = null,
+    ): ?array {
+        // Cuando el destino es un LOTE, la modalidad que decide si hay proceso es la suya y no la del
+        // paquete: la obra puede descubrir que la cerámica se compra por orden de compra aunque
+        // «Pisos» sea un contrato. Por eso el filtro de modalidad se mueve del SQL a PHP en ese caso.
+        // Con `$modalidadDestino === null` —un paquete sin partir— la consulta es exactamente la de
+        // antes, filtro incluido, y no hay forma de que el resultado cambie.
+        if ($modalidadDestino !== null && !in_array($modalidadDestino, self::MODALIDADES_CON_PROCESO, true)) {
+            return null;
+        }
+        $filtroModalidad = $modalidadDestino === null
+            ? ' AND p.modalidad_contratacion IN (' . self::modalidadesConProcesoSql() . ')'
+            : '';
         $paq = $this->db->query(
             "SELECT p.id, p.tipo_negociacion, p.duracion_ref{$selectCols}
              FROM general_paquetes_contratacion p
              LEFT JOIN general_dias_procesos_contratacion d ON d.id = p.duracion_ref
-             WHERE p.id = ? AND p.activo = 1
-               AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')',
+             WHERE p.id = ? AND p.activo = 1{$filtroModalidad}",
             [$paqueteId],
         )->fetch(\PDO::FETCH_ASSOC);
         if ($paq === false) {
@@ -1161,12 +1266,21 @@ class PlanFechasService
         ];
     }
 
+    /**
+     * @return array{ok: true, calculados: int, sinDuracion: int} `calculados` cuenta DESTINOS
+     *         contratables, no paquetes: un paquete partido en tres suma tres.
+     */
     public function calcular(int $projectId, string $usuario): array
     {
-        $amarres = $this->amarres($projectId);
-        if ($amarres === []) {
+        // Destinos contratables, no paquetes: un paquete partido aporta una entrada por lote y sus
+        // fechas se calculan por separado, porque cada lote se contrata con su propio proveedor y en
+        // su propio momento. Un proyecto sin ningún paquete partido produce exactamente la misma
+        // lista que producía `amarres()`, en el mismo orden de recorrido.
+        $destinos = $this->destinosAmarrados($projectId);
+        if ($destinos === []) {
             return ['ok' => true, 'calculados' => 0, 'sinDuracion' => 0];
         }
+        $modalidadPorLote = $this->modalidadPorLote($projectId);
         $medianas = $this->medianasPorTipo();
         $pasos = $this->pasos->deProyecto($projectId);
         // Las columnas legacy que ESTA obra necesita, no las siete siempre. `columnasLegacy()` es la
@@ -1186,8 +1300,17 @@ class PlanFechasService
         $calculados = 0;
         $sinDuracion = 0;
 
-        foreach ($amarres as $paqueteId => $a) {
-            $pr = $this->proyectar($paqueteId, $a['fechaAncla'], $pasos, $medianas, $selectCols);
+        foreach ($destinos as $a) {
+            $paqueteId = $a['paqueteId'];
+            $subpaqueteId = $a['subpaqueteId'];
+            $pr = $this->proyectar(
+                $paqueteId,
+                $a['fechaAncla'],
+                $pasos,
+                $medianas,
+                $selectCols,
+                $modalidadPorLote[$subpaqueteId] ?? null,
+            );
             if ($pr === null) {
                 // Paquete inactivo, o cuya modalidad ya no genera proceso de contratación (cambió
                 // después de amarrarlo): no se calcula plan para él. Su cabecera vieja, si existe,
@@ -1210,9 +1333,9 @@ class PlanFechasService
             try {
                 $this->db->query(
                     'INSERT INTO pdc_plan_paquete
-                        (project_id, paquete_id, unique_id, fecha_ancla, fecha_arranque, dias_totales,
-                         duracion_ref, duracion_provisional, calculado_por, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                        (project_id, paquete_id, subpaquete_id, unique_id, fecha_ancla, fecha_arranque,
+                         dias_totales, duracion_ref, duracion_provisional, calculado_por, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE unique_id = VALUES(unique_id), fecha_ancla = VALUES(fecha_ancla),
                         fecha_arranque = VALUES(fecha_arranque), dias_totales = VALUES(dias_totales),
                         duracion_ref = VALUES(duracion_ref), duracion_provisional = VALUES(duracion_provisional),
@@ -1223,7 +1346,8 @@ class PlanFechasService
                         // se lista, MySQL lo conserva. Por eso recalcular el plan no borra a quién se
                         // le asignó cada paquete, y por eso B1 podrá añadir sus columnas sin volver a
                         // tocar este INSERT. No añadirlas sin querer perder esa garantía.
-                        $projectId, $paqueteId, $a['uniqueId'], $a['fechaAncla'], $arranque, $total,
+                        $projectId, $paqueteId, $subpaqueteId, $a['uniqueId'], $a['fechaAncla'],
+                        $arranque, $total,
                         $pr['duracionRef'], $provisional ? 1 : 0, $usuario,
                     ],
                 );
@@ -1248,11 +1372,11 @@ class PlanFechasService
                         $idsVigentes[] = (int) $p['pasoId'];
                     }
                     $this->db->query(
-                        'INSERT INTO pdc_plan_paso (project_id, paquete_id, orden, paso_id, paso, dias, fecha_inicio, fecha_fin)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        'INSERT INTO pdc_plan_paso (project_id, paquete_id, subpaquete_id, orden, paso_id, paso, dias, fecha_inicio, fecha_fin)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                          ON DUPLICATE KEY UPDATE orden = VALUES(orden), paso = VALUES(paso), dias = VALUES(dias),
                             fecha_inicio = VALUES(fecha_inicio), fecha_fin = VALUES(fecha_fin)',
-                        [$projectId, $paqueteId, $i, $p['pasoId'], $p['nombre'], $dias[$i],
+                        [$projectId, $paqueteId, $subpaqueteId, $i, $p['pasoId'], $p['nombre'], $dias[$i],
                             $ini->format('Y-m-d'), $cursor->format('Y-m-d')],
                     );
                 }
@@ -1285,10 +1409,14 @@ class PlanFechasService
                 // llegaba hasta aquí y borraba la fila con su `fecha_real` dentro, sin aviso ni
                 // rastro: la promesa del upsert de arriba cubría el recálculo, no este DELETE. Una
                 // propuesta recibida no deja de haberse recibido porque la obra cambie su proceso.
+                // Acotado al destino: sin `subpaquete_id` en el WHERE, recalcular un lote borraría los
+                // pasos de sus hermanos, que tienen los mismos `paso_id` y por tanto entran todos en
+                // la condición de sobrante. Es el borrado más peligroso del servicio.
                 $this->db->query(
-                    "DELETE FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NULL
+                    "DELETE FROM pdc_plan_paso
+                      WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ? AND fecha_real IS NULL
                        AND {$sobrante}",
-                    array_merge([$projectId, $paqueteId], $argsSobrante),
+                    array_merge([$projectId, $paqueteId, $subpaqueteId], $argsSobrante),
                 );
                 // Las que se quedan por llevar avance pierden lo programado: son pasos que ya no están
                 // en el proceso, así que nadie va a recalcular esas fechas y dejarlas ahí las haría
@@ -1297,8 +1425,9 @@ class PlanFechasService
                 // guion en la columna de programado.
                 $this->db->query(
                     "UPDATE pdc_plan_paso SET fecha_inicio = NULL, fecha_fin = NULL
-                      WHERE project_id = ? AND paquete_id = ? AND fecha_real IS NOT NULL AND {$sobrante}",
-                    array_merge([$projectId, $paqueteId], $argsSobrante),
+                      WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?
+                        AND fecha_real IS NOT NULL AND {$sobrante}",
+                    array_merge([$projectId, $paqueteId, $subpaqueteId], $argsSobrante),
                 );
                 $this->db->commit();
             } catch (\Throwable $t) {
@@ -1536,14 +1665,21 @@ class PlanFechasService
     public function plan(int $projectId): array
     {
         $rows = $this->db->query(
-            "SELECT pp.paquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque, pp.dias_totales,
+            "SELECT pp.paquete_id, pp.subpaquete_id, pp.unique_id, pp.fecha_ancla, pp.fecha_arranque,
+                    pp.dias_totales,
                     pp.duracion_provisional, pp.responsable_user_id, p.nombre, p.tipo_negociacion,
                     p.modalidad_contratacion, f.frente_nombre,
+                    s.nombre AS lote_nombre, s.modalidad_contratacion AS lote_modalidad, s.es_resto,
                     u.nombre AS responsable_nombre, u.cargo AS responsable_cargo,
                     u.activo AS responsable_activo, pm.user_id AS responsable_miembro
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
+             -- El amarre se une por DESTINO (paquete + lote) y no solo por paquete: en un paquete
+             -- partido hay una fila de amarre por lote, y unir solo por paquete multiplicaría cada
+             -- cabecera por el número de lotes del paquete.
              JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
+                                      AND f.subpaquete_id = pp.subpaquete_id
+             LEFT JOIN pdc_subpaquete s ON s.project_id = pp.project_id AND s.id = pp.subpaquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
              LEFT JOIN project_members pm ON pm.project_id = pp.project_id AND pm.user_id = pp.responsable_user_id
              WHERE pp.project_id = ? AND p.activo = 1
@@ -1551,7 +1687,13 @@ class PlanFechasService
                -- ya no tiene plan (ver desamarrar()): no es una fila de la grilla. Sin este filtro
                -- aparecería con las fechas en blanco, indistinguible de un error de cálculo.
                AND pp.fecha_arranque IS NOT NULL
-               AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . ')
+               -- La modalidad que decide es la del DESTINO: la del lote si la fila es un lote, la del
+               -- paquete si no está partido. Un lote de cerámica que la obra pasó a orden de compra
+               -- sigue generando proceso; uno que pasó a provisión, no, aunque «Pisos» sea contrato.
+               AND ((pp.subpaquete_id = 0
+                     AND p.modalidad_contratacion IN (" . self::modalidadesConProcesoSql() . '))
+                    OR (pp.subpaquete_id <> 0
+                        AND s.modalidad_contratacion IN (' . self::modalidadesConProcesoSql() . ')))
              ORDER BY pp.fecha_arranque ASC',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC);
@@ -1559,15 +1701,18 @@ class PlanFechasService
         $hoyStr = (new \DateTimeImmutable('today'))->format('Y-m-d');
         $pasos = [];
         foreach ($this->db->query(
-            'SELECT pp.paquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio, pp.fecha_fin,
-                    pp.fecha_real, g.clave
+            'SELECT pp.paquete_id, pp.subpaquete_id, pp.orden, pp.paso, pp.dias, pp.fecha_inicio,
+                    pp.fecha_fin, pp.fecha_real, g.clave
              FROM pdc_plan_paso pp
              LEFT JOIN general_pasos_contratacion g ON g.id = pp.paso_id
-             WHERE pp.project_id = ? ORDER BY pp.paquete_id, pp.orden',
+             WHERE pp.project_id = ? ORDER BY pp.paquete_id, pp.subpaquete_id, pp.orden',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC) as $p) {
             $fechaReal = $p['fecha_real'] === null ? null : (string) $p['fecha_real'];
-            $pasos[(int) $p['paquete_id']][] = [
+            // Indexado por DESTINO. Con la clave puesta solo en el paquete, los pasos de todos los
+            // lotes de un paquete partido caían en la misma lista y cada lote mostraba los siete
+            // pasos de sus hermanos además de los suyos.
+            $pasos[(int) $p['paquete_id'] . ':' . (int) $p['subpaquete_id']][] = [
                 'orden' => (int) $p['orden'], 'paso' => (string) $p['paso'], 'dias' => (int) $p['dias'],
                 'fechaInicio' => (string) $p['fecha_inicio'], 'fechaFin' => (string) $p['fecha_fin'],
                 // La identidad del paso, para que el consumidor no tenga que casar por nombre —que la
@@ -1592,11 +1737,19 @@ class PlanFechasService
         foreach ($rows as $r) {
             $arranque = new \DateTimeImmutable((string) $r['fecha_arranque']);
             $retraso = $arranque < $hoy ? (int) $hoy->diff($arranque)->days : 0;
+            $subpaqueteId = (int) $r['subpaquete_id'];
+            $esLote = $subpaqueteId !== SubpaquetesService::SIN_PARTIR;
             $out[] = [
                 'paqueteId' => (int) $r['paquete_id'],
-                'nombre' => (string) $r['nombre'],
+                'subpaqueteId' => $subpaqueteId,
+                'esLote' => $esLote,
+                'esResto' => $esLote && (int) $r['es_resto'] === 1,
+                // El nombre de la fila es el del lote cuando es un lote, porque es lo que se
+                // contrata; el del paquete queda aparte para poder escribir «Pisos › Porcelanato».
+                'nombre' => $esLote ? (string) $r['lote_nombre'] : (string) $r['nombre'],
+                'paqueteNombre' => (string) $r['nombre'],
                 'tipoNegociacion' => (string) $r['tipo_negociacion'],
-                'modalidad' => (string) $r['modalidad_contratacion'],
+                'modalidad' => $esLote ? (string) $r['lote_modalidad'] : (string) $r['modalidad_contratacion'],
                 'frenteNombre' => (string) ($r['frente_nombre'] ?? ''),
                 'uniqueId' => (int) $r['unique_id'],
                 'fechaAncla' => (string) $r['fecha_ancla'],
@@ -1611,7 +1764,7 @@ class PlanFechasService
                 'responsableHuerfano' => $r['responsable_user_id'] !== null
                     && ($r['responsable_miembro'] === null || (int) $r['responsable_activo'] !== 1),
                 'diasRetraso' => $retraso,
-                'pasos' => $pasos[(int) $r['paquete_id']] ?? [],
+                'pasos' => $pasos[(int) $r['paquete_id'] . ':' . $subpaqueteId] ?? [],
             ];
         }
         // Los vencidos primero, del más atrasado al menos; luego el resto por fecha de arranque.
@@ -1912,6 +2065,16 @@ class PlanFechasService
         return ['ok' => true, 'aplicados' => $aplicados, 'ignorados' => $ignorados];
     }
 
+    /**
+     * @return list<array{
+     *     paqueteId: int,
+     *     nombre: string,
+     *     frenteNombre: string,
+     *     fechaGuardada: string,
+     *     fechaActual: string|null,
+     *     diasMovidos: int|null
+     * }> `fechaActual` y `diasMovidos` en null = el frente ya no existe en el cronograma
+     */
     public function desfases(int $projectId): array
     {
         $actual = [];

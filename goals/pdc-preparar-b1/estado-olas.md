@@ -98,7 +98,7 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8 | Subpaquetes + flujo de caja | 7 | PENDIENTE | | |
+| 8 | Subpaquetes + flujo de caja | 7a y 7b | **HECHO (dominio, API y pruebas; pantallas pendientes)** | `PENDIENTE-SHA` | 2026-07-29 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
@@ -133,3 +133,12 @@ triage del piloto real.** Si Tomás reporta después, entra por la Ola 2 y no re
 la nº 1, no de la nº 3. **Cerrado el 2026-07-29:** no eran 25 sino 42, y ya recibían fechas solos por la
 mediana de su tipo — ver [`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md).
 El «25» venía del spec y era una cifra vieja: quien lo lea allí, que se fíe de esta medición.
+
+**El nº 8 quedó a medias a propósito, y está dicho dónde.** El modelo, los servicios, los endpoints y
+las pruebas de subpaquetes y flujo de caja están terminados y verificados (65 asserts nuevos, PHPStan
+del PDC en 0 errores, y la cero regresión comprobada fila a fila contra
+`evidence/linea-base-plan-antes-subpaquetes.txt`). Lo que **no** se construyó son las pantallas de
+`pdc-app/`: partir un paquete, repartirle insumos, ver el sombrilla resumido y la tabla mensual del
+flujo de caja con su exportación. Por eso los puntos de las dos condiciones de hecho que dicen «en
+pantalla» **no se dan por cumplidos**. Quien retome empieza por ahí: la API ya devuelve todo lo que
+esas vistas necesitan, incluida la etiqueta de la unidad y el conteo de excluidos.

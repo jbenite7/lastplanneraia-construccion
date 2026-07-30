@@ -157,7 +157,22 @@ class PlanComprasPlanController
             return;
         }
         $procedencia = is_array($body['procedencia'] ?? null) ? $body['procedencia'] : [];
-        $r = $this->service->amarrar($projectId, (int) $paqueteId, (int) $uniqueId, $this->usuario(), $procedencia);
+        // `subpaqueteId` ausente o 0 = el paquete sin partir. Es lo que hace que cada lote pueda
+        // amarrarse a SU frente («eso lo contrato en dos meses; eso lo necesito ya») sin que la
+        // llamada de siempre cambie.
+        $subpaqueteId = $this->subpaqueteIdOpcional($body['subpaqueteId'] ?? null);
+        if ($subpaqueteId === false) {
+            $this->fail('SUBPAQUETE_INVALIDO', 'subpaqueteId inválido.', 422);
+            return;
+        }
+        $r = $this->service->amarrar(
+            $projectId,
+            (int) $paqueteId,
+            (int) $uniqueId,
+            $this->usuario(),
+            $procedencia,
+            $subpaqueteId,
+        );
         if (!$r['ok']) {
             $mensaje = $r['code'] === 'MODALIDAD_NO_CONTRATABLE'
                 ? 'Este paquete no genera proceso de contratación (nómina, imprevistos o consumo directo contra almacén) y no puede amarrarse a una fecha.'
@@ -181,12 +196,32 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
-        $paqueteId = filter_var($this->body()['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $body = $this->body();
+        $paqueteId = filter_var($body['paqueteId'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if ($paqueteId === false) {
             $this->fail('PAQUETE_INVALIDO', 'paqueteId inválido.', 422);
             return;
         }
-        $this->ok($this->service->desamarrar($projectId, (int) $paqueteId));
+        $subpaqueteId = $this->subpaqueteIdOpcional($body['subpaqueteId'] ?? null);
+        if ($subpaqueteId === false) {
+            $this->fail('SUBPAQUETE_INVALIDO', 'subpaqueteId inválido.', 422);
+            return;
+        }
+        $this->ok($this->service->desamarrar($projectId, (int) $paqueteId, $subpaqueteId));
+    }
+
+    /**
+     * `subpaqueteId` ausente o vacío = 0 = el paquete sin partir. Se valida con `min_range => 0`
+     * porque el 0 es un valor legítimo del dominio —el centinela «sin partir»— y no un id que falte.
+     *
+     * @return int|false
+     */
+    private function subpaqueteIdOpcional(mixed $crudo): int|false
+    {
+        if ($crudo === null || $crudo === '') {
+            return 0;
+        }
+        return filter_var($crudo, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
     }
 
     /** POST /plan-compras/api/plan/calcular */

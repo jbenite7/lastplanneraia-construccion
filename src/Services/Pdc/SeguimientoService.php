@@ -32,10 +32,13 @@ class SeguimientoService
      */
     public function paquetesDesactualizados(int $projectId): array
     {
-        return array_values(array_map(
+        // Sin `array_values()`: `desfases()` ya devuelve una lista con claves consecutivas, y
+        // envolverla no hacía nada. Se veía necesario mientras el tipo de retorno de `desfases()`
+        // estaba sin declarar; al declararlo, PHPStan señaló que la llamada no tenía efecto.
+        return array_map(
             static fn (array $d): int => $d['paqueteId'],
             (new PlanFechasService($this->db))->desfases($projectId),
-        ));
+        );
     }
 
     /**
@@ -133,11 +136,15 @@ class SeguimientoService
      *
      * @return list<array<string, mixed>>
      */
-    public function pasosDePaquete(int $projectId, int $paqueteId): array
+    public function pasosDePaquete(int $projectId, int $paqueteId, int $subpaqueteId = 0): array
     {
+        // `$subpaqueteId` no es opcional por comodidad: sin él, un paquete partido en tres devolvería
+        // los pasos de sus tres lotes mezclados y ordenados por `orden`, es decir tres veces cada
+        // paso del proceso, como si el paquete tuviera 21 pasos. `0` es el paquete sin partir.
         $arranque = $this->db->query(
-            'SELECT fecha_arranque FROM pdc_plan_paquete WHERE project_id = ? AND paquete_id = ?',
-            [$projectId, $paqueteId],
+            'SELECT fecha_arranque FROM pdc_plan_paquete
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?',
+            [$projectId, $paqueteId, $subpaqueteId],
         )->fetchColumn();
         if ($arranque === false || $arranque === null) {
             // Sin cabecera con fechas no hay plan que seguir. Devolver vacio y no reventar: la
@@ -149,9 +156,9 @@ class SeguimientoService
             'SELECT paso_id, orden, paso, dias, fecha_inicio, fecha_fin, fecha_real,
                     registrado_por, registrado_at
              FROM pdc_plan_paso
-             WHERE project_id = ? AND paquete_id = ?
+             WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ?
              ORDER BY orden',
-            [$projectId, $paqueteId],
+            [$projectId, $paqueteId, $subpaqueteId],
         )->fetchAll(\PDO::FETCH_ASSOC);
 
         $paraProyectar = array_map(static fn (array $r): array => [
@@ -197,6 +204,7 @@ class SeguimientoService
         int $pasoId,
         ?string $fechaReal,
         string $usuario,
+        int $subpaqueteId = 0,
     ): array {
         if ($fechaReal !== null) {
             // Formato estricto: `strtotime` aceptaria '15/04/2026' y lo interpretaria al reves, y esa
@@ -207,12 +215,16 @@ class SeguimientoService
             }
         }
 
-        // La terna (proyecto, paquete, paso) se comprueba junta. Que el paso exista en el catalogo no
-        // dice nada: lo que hay que garantizar es que ESE paso pertenece al plan de ESE paquete en
-        // ESTE proyecto. Sin esto, un paquete_id equivocado escribiria en el plan de otro.
+        // La CUATERNA (proyecto, paquete, lote, paso) se comprueba junta. Que el paso exista en el
+        // catalogo no dice nada: lo que hay que garantizar es que ESE paso pertenece al plan de ESE
+        // destino en ESTE proyecto. Sin esto, un paquete_id equivocado escribiria en el plan de otro.
+        // El lote entra en la clave porque en un paquete partido los tres lotes tienen el MISMO
+        // paso_id: sin el, registrar «propuestas recibidas» en el lote de porcelanato lo marcaria
+        // tambien en el de ceramica, que no ha recibido nada.
         $existe = $this->db->query(
-            'SELECT 1 FROM pdc_plan_paso WHERE project_id = ? AND paquete_id = ? AND paso_id = ?',
-            [$projectId, $paqueteId, $pasoId],
+            'SELECT 1 FROM pdc_plan_paso
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ? AND paso_id = ?',
+            [$projectId, $paqueteId, $subpaqueteId, $pasoId],
         )->fetchColumn();
         if ($existe === false) {
             return [
@@ -229,12 +241,12 @@ class SeguimientoService
                 SET fecha_real = ?,
                     registrado_por = ?,
                     registrado_at = ?
-              WHERE project_id = ? AND paquete_id = ? AND paso_id = ?',
+              WHERE project_id = ? AND paquete_id = ? AND subpaquete_id = ? AND paso_id = ?',
             [
                 $fechaReal,
                 $fechaReal === null ? '' : $usuario,
                 $fechaReal === null ? null : (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                $projectId, $paqueteId, $pasoId,
+                $projectId, $paqueteId, $subpaqueteId, $pasoId,
             ],
         );
 
@@ -252,12 +264,18 @@ class SeguimientoService
     public function resumen(int $projectId): array
     {
         $cabeceras = $this->db->query(
-            'SELECT pp.paquete_id, pp.fecha_arranque, p.nombre, f.frente_nombre,
+            'SELECT pp.paquete_id, pp.subpaquete_id, pp.fecha_arranque, p.nombre, f.frente_nombre,
+                    s.nombre AS lote_nombre, s.es_resto, s.responsable_user_id AS lote_responsable,
                     pp.responsable_user_id, u.nombre AS responsable_nombre,
                     u.activo AS responsable_activo, pm.user_id AS responsable_miembro
              FROM pdc_plan_paquete pp
              JOIN general_paquetes_contratacion p ON p.id = pp.paquete_id
+             -- Por DESTINO (paquete + lote). Unir el amarre solo por paquete multiplicaba cada
+             -- cabecera de un paquete partido por su número de lotes, y el tablero mostraba el mismo
+             -- proceso tantas veces como lotes tuviera.
              LEFT JOIN pdc_paquete_frente f ON f.project_id = pp.project_id AND f.paquete_id = pp.paquete_id
+                                           AND f.subpaquete_id = pp.subpaquete_id
+             LEFT JOIN pdc_subpaquete s ON s.project_id = pp.project_id AND s.id = pp.subpaquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
              LEFT JOIN project_members pm ON pm.project_id = pp.project_id AND pm.user_id = pp.responsable_user_id
              WHERE pp.project_id = ? AND p.activo = 1 AND pp.fecha_arranque IS NOT NULL
@@ -267,20 +285,23 @@ class SeguimientoService
 
         // Una sola consulta para todos los pasos del proyecto: pedirlos paquete por paquete serian
         // cientos de viajes a la base para pintar una pantalla.
+        // Indexado por DESTINO y no por paquete: si no, los pasos de todos los lotes de un paquete
+        // partido se apilan en la misma lista y cada lote cuenta como si tuviera 21 pasos.
         $porPaquete = [];
         foreach ($this->db->query(
-            'SELECT paquete_id, orden, paso, dias, fecha_fin, fecha_real
-             FROM pdc_plan_paso WHERE project_id = ? ORDER BY paquete_id, orden',
+            'SELECT paquete_id, subpaquete_id, orden, paso, dias, fecha_fin, fecha_real
+             FROM pdc_plan_paso WHERE project_id = ? ORDER BY paquete_id, subpaquete_id, orden',
             [$projectId],
         )->fetchAll(\PDO::FETCH_ASSOC) as $r) {
-            $porPaquete[(int) $r['paquete_id']][] = $r;
+            $porPaquete[(int) $r['paquete_id'] . ':' . (int) $r['subpaquete_id']][] = $r;
         }
 
         $hoy = (new \DateTimeImmutable('today'))->format('Y-m-d');
         $out = [];
         foreach ($cabeceras as $c) {
             $paqueteId = (int) $c['paquete_id'];
-            $pasos = $porPaquete[$paqueteId] ?? [];
+            $subpaqueteId = (int) $c['subpaquete_id'];
+            $pasos = $porPaquete[$paqueteId . ':' . $subpaqueteId] ?? [];
             if ($pasos === []) {
                 continue;
             }
@@ -323,9 +344,16 @@ class SeguimientoService
             }
 
             $total = count($pasos);
+            $esLote = $subpaqueteId !== 0;
             $out[] = [
                 'paqueteId' => $paqueteId,
-                'nombre' => (string) $c['nombre'],
+                'subpaqueteId' => $subpaqueteId,
+                'esLote' => $esLote,
+                'esResto' => $esLote && (int) $c['es_resto'] === 1,
+                // Para un paquete partido, el tablero nombra el LOTE: es lo que de verdad se
+                // contrata y lo que alguien tiene que ir a mover. El paquete queda como contexto.
+                'nombre' => $esLote ? (string) $c['lote_nombre'] : (string) $c['nombre'],
+                'paqueteNombre' => (string) $c['nombre'],
                 'frenteNombre' => (string) ($c['frente_nombre'] ?? ''),
                 'responsableUserId' => $c['responsable_user_id'] === null ? null : (int) $c['responsable_user_id'],
                 'responsableNombre' => (string) ($c['responsable_nombre'] ?? ''),
@@ -362,15 +390,22 @@ class SeguimientoService
         $hoy ??= (new \DateTimeImmutable('today'))->format('Y-m-d');
 
         $rows = $this->db->query(
-            'SELECT ps.paquete_id, ps.paso_id, ps.orden, ps.paso, ps.fecha_fin,
+            'SELECT ps.paquete_id, ps.subpaquete_id, ps.paso_id, ps.orden, ps.paso, ps.fecha_fin,
                     COALESCE(g.clave, ps.paso) AS clave,
                     p.nombre AS paquete, f.frente_nombre,
+                    s.nombre AS lote_nombre, s.es_resto,
                     pp.responsable_user_id, u.nombre AS responsable_nombre
              FROM pdc_plan_paso ps
+             -- Las tres uniones van por DESTINO (paquete + lote). Con la unión solo por paquete, un
+             -- paso de un paquete partido en tres salía tres veces en el tablero —una por cabecera—
+             -- y los conteos de «qué se me vence» quedaban multiplicados sin que nada lo dijera.
              JOIN pdc_plan_paquete pp ON pp.project_id = ps.project_id AND pp.paquete_id = ps.paquete_id
+                                     AND pp.subpaquete_id = ps.subpaquete_id
              JOIN general_paquetes_contratacion p ON p.id = ps.paquete_id
              LEFT JOIN general_pasos_contratacion g ON g.id = ps.paso_id
              LEFT JOIN pdc_paquete_frente f ON f.project_id = ps.project_id AND f.paquete_id = ps.paquete_id
+                                           AND f.subpaquete_id = ps.subpaquete_id
+             LEFT JOIN pdc_subpaquete s ON s.project_id = ps.project_id AND s.id = ps.subpaquete_id
              LEFT JOIN general_usuarios u ON u.id = pp.responsable_user_id
              WHERE ps.project_id = ? AND ps.fecha_real IS NULL AND p.activo = 1
              ORDER BY ps.fecha_fin IS NULL, ps.fecha_fin ASC, p.nombre ASC, ps.orden ASC',
@@ -411,9 +446,15 @@ class SeguimientoService
                 // la cola lejana es la mitad del peso de la tabla sin ser el trabajo de esta semana.
                 continue;
             }
+            $subpaqueteId = (int) $r['subpaquete_id'];
             $filas[] = [
                 'paqueteId' => (int) $r['paquete_id'],
-                'paquete' => (string) $r['paquete'],
+                'subpaqueteId' => $subpaqueteId,
+                'esLote' => $subpaqueteId !== 0,
+                // Lo que se contrata: el lote si el paquete está partido. El tablero de vencimientos
+                // es donde de verdad se contrata, así que aquí manda el lote.
+                'paquete' => $subpaqueteId !== 0 ? (string) $r['lote_nombre'] : (string) $r['paquete'],
+                'paqueteNombre' => (string) $r['paquete'],
                 'frenteNombre' => (string) ($r['frente_nombre'] ?? ''),
                 'pasoId' => $r['paso_id'] === null ? null : (int) $r['paso_id'],
                 'orden' => (int) $r['orden'],

@@ -4,7 +4,8 @@
 - **Ola:** 3 (lo grande)
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — necesidad de negocio con dolor actual y nombre propio.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado** (2026-07-29), después de subpaquetes y por tanto repartiendo por destino
+  contratable, no por paquete. Ver «Cómo quedó implementado».
 
 ## Problema
 
@@ -83,3 +84,41 @@ repetitivo en manos de una persona cada mes, que es justo el problema).
   Es útil, pero solo si se dice: por eso el punto 3 es un hecho y no un detalle.
 - **Si la Ola 3 trae subpaquetes**, la curva pasa a repartir por subpaquete. Los dos specs tienen que
   entrar en ese orden, o rehacer esto.
+
+## Cómo quedó implementado
+
+- **`src/Services/Pdc/FlujoCajaService.php`**, derivado y sin almacenar nada. Sin migración, a
+  propósito.
+- **La unidad es el destino contratable** de `SubpaquetesService::destinos()`, así que si la obra
+  partió «Pisos» en tres lotes con fechas distintas, la curva reparte por lote. Los dos specs se
+  hicieron en ese orden justamente para no tener que rehacer el reparto.
+- **El fin del frente no estaba en el modelo.** `pdc_paquete_frente` solo guarda `fecha_ancla` (el
+  inicio). El fin se lee de `programa_consolidado.Fecha_Fin` por `unique_id` en la última semana
+  consolidada — comprobado poblado en las 1.092 filas de Da Porto. Y el **inicio** también se lee del
+  cronograma en vivo, no del `fecha_ancla` guardado: ese campo es una copia congelada del momento del
+  amarre, y dibujar la curva sobre él la pondría sobre fechas que la obra ya movió.
+- **El residuo del reparto va al último mes.** Con céntimos repartidos entre 20 meses, la suma de los
+  redondeos se separa del total unos céntimos; en una tabla que va a comité, «la suma no da»
+  desacredita todo aunque el error sea de $3. Así el punto 1 de la condición de hecho es exacto.
+- **La exportación es CSV con `;` y BOM UTF-8**, no `.xlsx`, aunque PhpSpreadsheet ya sea dependencia:
+  lo que viaja es una tabla de cuatro columnas, y así Excel la abre sin preguntar nada ni romper las
+  tildes. El `;` es obligatorio porque el Excel en español lee la coma como decimal.
+- **La advertencia va dentro del archivo**, en sus dos primeras filas, además de en la respuesta de la
+  API (`FlujoCajaService::NOTA_METODO`). El archivo se reenvía por correo y se abre sin la pantalla al
+  lado; sin eso, alguien lo lee como presupuesto de tesorería.
+- Endpoints `GET /plan-compras/api/seguimiento/flujo-caja` y `…/flujo-caja.csv`, RBAC de lectura
+  `lps.paquetes_contratacion.ver`.
+
+## Verificación
+
+`tests/test_pdc_v2_flujo_caja.php` — 31 asserts. La aritmética del reparto se prueba primero y sin
+base de datos (frente de febrero a abril, un solo día, cruce de año, fin anterior al inicio, y que la
+suma de los meses sea **exactamente** el valor repartido); después, sobre MySQL real (proyecto 999941),
+los cinco puntos de la condición de hecho, incluido que mover un frente mueva la curva sin cambiar su
+total, y que partir un paquete no cambie el total sino quién lo aporta.
+
+## Lo que queda pendiente
+
+**La pantalla.** El servicio, los endpoints y la exportación están; la vista de `pdc-app/` con la
+tabla mensual, el desglose y el botón de exportar **no está construida**. La advertencia y el conteo
+de excluidos ya viajan en la respuesta, listos para pintarse.
