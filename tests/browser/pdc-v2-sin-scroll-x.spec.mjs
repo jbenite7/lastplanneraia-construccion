@@ -34,7 +34,26 @@ test('las tablas del PDC no tienen scroll horizontal en desktop', async ({ page 
         await page.goto(`/plan-compras#/ensamble/${ruta}`, { waitUntil: 'domcontentloaded' });
         await page.reload({ waitUntil: 'domcontentloaded' });
         const grid = page.locator('.pdc-grid, .pdc-grid-wrap, .pdc-grid-corta').first();
-        await expect(grid).toBeVisible({ timeout: 20000 });
+
+        // Una pantalla puede no tener grilla porque a la obra le faltan datos, no porque algo se
+        // haya roto. «Comparar» es el caso real: necesita DOS versiones de presupuesto, y Da Porto
+        // ha llegado a tener una sola —el test se ponía rojo y parecía una regresión de anchos—.
+        //
+        // Solo se tolera el vacío que la propia pantalla DECLARA. Si no hay grilla y tampoco hay
+        // mensaje que lo explique, se falla: es exactamente la diferencia entre un dato que falta y
+        // un defecto que se esconde.
+        if (!(await grid.count())) {
+          const vacioDeclarado = page.getByText(/Necesitas al menos dos versiones|No hay .* para mostrar/i);
+          if (await vacioDeclarado.count()) {
+            const motivo = (await vacioDeclarado.first().innerText()).trim();
+            test.info().annotations.push({
+              type: 'omitida',
+              description: `${cond.nombre} · ${ruta}: sin grilla porque la obra no tiene los datos — «${motivo}»`,
+            });
+            continue;
+          }
+        }
+        await expect(grid, `${cond.nombre} · ${ruta}`).toBeVisible({ timeout: 20000 });
         await expect(grid.locator('.ag-header-cell').first()).toBeVisible({ timeout: 20000 });
         // El reajuste de anchos ocurre tras pintar las filas (ver `ajusteDeAncho`).
         await page.waitForTimeout(1200);
