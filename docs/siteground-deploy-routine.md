@@ -183,6 +183,22 @@ done | sort -rn
 Las que devuelven `0` son de datos y van en la segunda fase. En el deploy del 2026-07-30 el corte
 fue 10 de esquema y 11 de datos.
 
+> [!IMPORTANT]
+> **El grep sobre el archivo no ve toda la dependencia.** Una migracion de datos puede necesitar una
+> columna que no menciona, porque la pide el servicio que llama. Medido en el deploy del 2026-07-30:
+> `paquete_indirectos`, `paquetes_profesional_daporto`, `seed_paquetes_aia` y `backfill_modalidades`
+> no nombran `modalidad_contratacion` en ninguna linea, y las cuatro murieron por esa columna dentro
+> de `PaquetesService::crearPaquete()` (`src/Services/Pdc/PaquetesService.php:521`). Es la misma
+> trampa que ya describe `docs/pdc-v2.md`.
+>
+> Consecuencia practica: **el php_errorlog del servidor es el que dice la verdad**, no la salida del
+> script. Las cuatro reportaron codigo de error con salida vacia; el log traia el `SQLSTATE[42S22]`
+> con la columna y la linea exactas. Si una migracion falla sin explicarse, leelo ahi:
+
+```bash
+tail -40 php_errorlog
+```
+
 **Las tres fases, en este orden:**
 
 1. **Esquema.** Todos los `.sql`, y las `.php` con conteo distinto de `0` (estas tambien admiten
