@@ -951,3 +951,55 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
   align-items: center;
   gap: 6px;
 }
+
+/*
+ * Recorrido de la primera visita. Panel angosto y pegado abajo, para dejar ver la pantalla que
+ * está explicando: si lo tapara, el recorrido sería una presentación en vez de un paseo.
+ */
+.pdc-recorrido .aia-modal-surface {
+  width: min(30rem, calc(100vw - 4rem));
+  max-width: min(30rem, calc(100vw - 4rem));
+  margin-block: auto 32px;
+  color: var(--pdc-ink);
+  font-size: var(--pdc-fs-md);
+}
+
+.pdc-recorrido-progreso {
+  margin: 0 0 6px;
+  color: var(--pdc-ink-muted);
+  font-size: var(--pdc-fs-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdc-recorrido-titulo {
+  margin: 0 0 8px;
+  font-size: var(--pdc-fs-lg);
+}
+
+.pdc-recorrido-texto {
+  margin: 0;
+  font-size: var(--pdc-fs-md);
+  line-height: 1.55;
+}
+
+.pdc-recorrido-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pdc-recorrido-avance {
+  display: flex;
+  gap: 6px;
+}
+
+/* Mismo patrón que el primario de Paquetes: el acento del módulo, que ya sale del token de acción
+   primaria del sistema. */
+.pdc-recorrido .pdc-recorrido-principal:not(:disabled) {
+  background: var(--pdc-accent);
+  border-color: var(--pdc-accent);
+  color: var(--pdc-accent-ink);
+}
