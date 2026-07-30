@@ -42,6 +42,21 @@
 -- OJO: los nombres de FOREIGN KEY son únicos en TODO el esquema, no por tabla (ya hizo fallar con
 -- un 1826 a `fk_pps_paso`). Los de aquí van prefijados con `psub`/`pip`/`ppf`/`ppp`/`pps` y
 -- comprobados contra `TABLE_CONSTRAINTS`, que es global, no contra `STATISTICS` de una tabla.
+--
+-- ------------------------------------------------------------------------------------------------
+-- CÓMO SE APLICA: con el cliente `mysql`, NO con PDO
+-- ------------------------------------------------------------------------------------------------
+--     docker compose exec -T db mysql -uroot -p"$DB_PASS" "$DB_NAME" < database/migrations/20260729_pdc_v2_subpaquetes.sql
+--
+-- `DELIMITER $$` es una directiva del CLIENTE `mysql`, no una sentencia SQL: el servidor no la
+-- conoce. Pasar este archivo por `PDO::exec()` falla con un 1064 apuntando a esa línea, y se lee
+-- como que el SQL está mal escrito cuando lo que está mal es el camino. Comprobado, no supuesto.
+--
+-- No es una particularidad de este archivo: es la convención de todas las migraciones del repo que
+-- necesitan guardas de convergencia — `20260724_pdc_v2_version_numero_unique.sql`,
+-- `20260728_pdc_v2_plan_fechas.sql`, `20260729_pdc_v2_seguimiento_avance.sql` y
+-- `20260703_contratos_slot_quantities_traceability.sql` usan las mismas. Quien despliegue las aplica
+-- igual que esta.
 
 CREATE TABLE IF NOT EXISTS pdc_subpaquete (
   id BIGINT NOT NULL AUTO_INCREMENT,

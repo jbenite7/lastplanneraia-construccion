@@ -98,7 +98,8 @@ De paso se corrigió que el reseteo del sandbox e2e no limpiaba `pdc_proyecto_pa
 
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
-| 8 | Subpaquetes + flujo de caja | 7a y 7b | **HECHO (dominio, API y pruebas; pantallas pendientes)** | `6d702ef` | 2026-07-29 |
+| 8a | Subpaquetes de obra | 7a y 7b | EN CURSO | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
+| 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | EN CURSO | `6d702ef` (dominio, API y pruebas) | 2026-07-29 |
 | 9 | Torre de Control (B3) | 1 | PENDIENTE | | |
 | 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
 
@@ -134,11 +135,19 @@ la nº 1, no de la nº 3. **Cerrado el 2026-07-29:** no eran 25 sino 42, y ya re
 mediana de su tipo — ver [`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md).
 El «25» venía del spec y era una cifra vieja: quien lo lea allí, que se fíe de esta medición.
 
-**El nº 8 quedó a medias a propósito, y está dicho dónde.** El modelo, los servicios, los endpoints y
-las pruebas de subpaquetes y flujo de caja están terminados y verificados (65 asserts nuevos, PHPStan
+**El nº 8 se partió en 8a y 8b, y las dos están EN CURSO, no HECHO.** El modelo, los servicios, los
+endpoints y las pruebas de ambas están terminados y verificados en `6d702ef` (40 + 31 asserts, PHPStan
 del PDC en 0 errores, y la cero regresión comprobada fila a fila contra
-`evidence/linea-base-plan-antes-subpaquetes.txt`). Lo que **no** se construyó son las pantallas de
-`pdc-app/`: partir un paquete, repartirle insumos, ver el sombrilla resumido y la tabla mensual del
-flujo de caja con su exportación. Por eso los puntos de las dos condiciones de hecho que dicen «en
-pantalla» **no se dan por cumplidos**. Quien retome empieza por ahí: la API ya devuelve todo lo que
-esas vistas necesitan, incluida la etiqueta de la unidad y el conteo de excluidos.
+`evidence/linea-base-plan-antes-subpaquetes.txt`). Pero la condición de hecho de los dos specs es de
+**pantalla**: ver los tres subpaquetes en el plan con sus fechas, que el tablero de vencimientos liste
+subpaquetes, que la curva sea exportable y que la pantalla diga cuántos paquetes quedan fuera y cuánto
+valen. Las vistas de `pdc-app/` no están construidas, así que ninguna de las dos filas está cumplida.
+
+Se marcaron `HECHO (…)` primero y se corrigió: el paréntesis contradecía la palabra, y en este tablero
+`HECHO` significa condición de hecho cumplida. No bloquea a nadie —ninguna fila espera a la 8— pero un
+tablero que se lee mal es exactamente lo que este archivo existe para evitar.
+
+Quien retome empieza por las pantallas: la API ya devuelve todo lo que necesitan, incluida la etiqueta
+de la unidad («procesos de contratación») y el conteo y valor de los excluidos de la curva. 8b puede
+ir después de 8a o en paralelo: el reparto por destino contratable ya está hecho, no hay nada que
+rehacer.
