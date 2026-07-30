@@ -120,9 +120,10 @@ export const AYUDAS: Record<PantallaAyuda, ContenidoAyuda> = {
           'Trae el catálogo desde el Excel exportado de SINCO, con la hoja «Maestro Insumos». Se '
           + 'hace de vez en cuando y afecta a toda la empresa, no solo a tu obra. Ojo con un efecto '
           + 'que no es obvio: al entrar insumos nuevos al catálogo, algunos de tus pendientes '
-          + 'encuentran solos el insumo que estaban esperando. Vuelve a mirar «Pendientes por '
-          + 'vincular» después de una carga, porque la lista puede haber bajado sin que tú hicieras '
-          + 'nada.',
+          + 'encuentran solos el insumo que estaban esperando. El resumen que sale al terminar la '
+          + 'carga te dice cuántos se resolvieron así, y por eso la lista de «Pendientes por '
+          + 'vincular» puede haber bajado sin que tú hicieras nada. Si el resumen no menciona '
+          + 'ninguno, es que esta carga no resolvió nada tuyo.',
       },
     ],
   },

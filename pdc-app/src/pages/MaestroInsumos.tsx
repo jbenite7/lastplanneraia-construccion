@@ -8,7 +8,7 @@ import {
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from '../lib/maestroState'
-import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
+import { estadoInicialMaestroImport, maestroImportReducer, resumenImportacionMaestro } from '../lib/maestroImportState'
 import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
 import { plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
@@ -279,8 +279,8 @@ export default function MaestroInsumos() {
           </div>
         )}
         {imp.fase === 'confirmado' && imp.resultado && (
-          <div className="pdc-exito" role="status">
-            Maestro importado: {imp.resultado.creados} creados, {imp.resultado.actualizados} actualizados, {imp.resultado.enriquecidos} enriquecidos.
+          <div className="pdc-exito" role="status" data-testid="pdc-maestro-import-resumen">
+            {resumenImportacionMaestro(imp.resultado)}
           </div>
         )}
         {imp.fase === 'confirmado' && imp.resultado && imp.resultado.conflictos.length > 0 && (
