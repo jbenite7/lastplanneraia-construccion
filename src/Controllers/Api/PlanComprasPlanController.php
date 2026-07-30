@@ -34,7 +34,9 @@ class PlanComprasPlanController
         if ($projectId === null) {
             return;
         }
-        $this->ok(['frentes' => $this->service->frentesDisponibles($projectId)]);
+        // `sinAncla` viaja con la lista: un desplegable que ofrece 24 frentes de 25 sin decirlo hace
+        // pensar que el que falta no existe. Ver `frentesYCobertura()`.
+        $this->ok($this->service->frentesYCobertura($projectId));
     }
 
     /**
