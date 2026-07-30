@@ -179,15 +179,39 @@ canónico 1180×820 y dark mode.
 Objetivo: poder usar la puerta contra `prueba-lps.lastplanneraia.com` **sin** debilitar el
 candado.
 
-**La condición de origen no se toca.** Un túnel SSH con reenvío de puerto hace que la
-petición llegue al Apache remoto desde `127.0.0.1`: es local de verdad, no una excepción
-añadida al código. Desde internet la puerta sigue sin existir.
+**La condición de origen no se toca.** La idea era que un túnel SSH con reenvío de puerto
+hiciera llegar la petición al Apache remoto desde `127.0.0.1` —local de verdad, no una
+excepción en el código—, dejando la puerta inexistente desde internet.
+
+> [!CAUTION]
+> **Medido el 2026-07-30: el túnel NO es posible en SiteGround.** El `sshd` de la cuenta
+> responde `administratively prohibited: open failed` a cualquier `-L`, pese a que las
+> opciones de la llave listan `port-forwarding`. Se probó contra el puerto 80 y el 443, con
+> `localhost` y con `127.0.0.1` en el extremo remoto, y en modo `-v` para confirmar que el
+> rechazo viene del servidor y no del cliente.
+>
+> ```
+> debug1: Connection to port 8443 forwarding to 127.0.0.1 port 443 requested.
+> channel 2: open failed: administratively prohibited: open failed
+> ```
+
+**Lo que sí funciona, y su límite.** Ejecutando `curl` **dentro** del servidor por SSH, la
+petición sí es local y la puerta entrega una sesión utilizable:
 
 ```bash
-ssh -L 8090:localhost:80 <usuario>@<host-siteground>
-# y en otra terminal, o en el navegador:
-curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8090/dev/entrar?u=test.R"
+ssh siteground-pruebas-lastplanner
+curl -s -k -c /tmp/cj.txt -H 'Host: prueba-lps.lastplanneraia.com' \
+  'https://127.0.0.1/dev/entrar?u=test.R&p=Da%20Porto'
+curl -s -o /dev/null -w '%{http_code}\n' -k -b /tmp/cj.txt \
+  -H 'Host: prueba-lps.lastplanneraia.com' https://127.0.0.1/proyectos   # 200
 ```
+
+Sirve para smokes automatizados con un rol concreto sin credenciales. **No sirve para QA en
+navegador desde una máquina de trabajo**, que era el objetivo original. Para eso, hoy, no
+hay vía en este host.
+
+Nota: en la base de `prueba-lps` existen `test.A`, `test.C`, `test.D` y `test.R`, pero
+**no** `test.V`, aunque figure en su `DEV_DOOR_USERS`. Ese login responde 404 allí.
 
 ### Lo que hay que cambiar en el servidor, y su coste
 
