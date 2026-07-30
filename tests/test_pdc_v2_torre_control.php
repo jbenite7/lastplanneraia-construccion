@@ -113,6 +113,44 @@ $assert(
     'los conteos de la Torre coinciden exactamente con los de la pestaña del módulo',
 );
 
+// --- El informe de la Torre ya no lee el PDC viejo -------------------------------------------
+$ct = new \App\Services\ControlTowerService($db);
+$brief = $ct->getBrief('pdc', [$A, $B], '1', 'A');
+
+$assert($brief['respuesta'] === 'BIEN', 'el brief responde BIEN');
+$assert(count($brief['scorecard']) > 0, 'el scorecard trae indicadores');
+$assert($brief['raw_row_count'] === 2, 'el brief trae una fila por obra');
+
+$json = json_encode($brief, JSON_UNESCAPED_UNICODE);
+$assert(stripos($json, 'subcontratoPaquete') === false, 'el brief ya no expone columnas del PDC viejo');
+$assert(stripos($json, 'bi_pdc_general') === false, 'el lineage ya no apunta a la tabla del PDC viejo');
+
+// Punto 5 de la condición de hecho: el proveedor no sale de la Torre.
+foreach (['proveedor', 'subcontratista'] as $prohibido) {
+    $assert(stripos($json, $prohibido) === false, "el brief no expone «{$prohibido}»");
+}
+
+// --- El scorecard responde las preguntas del comité -------------------------------------------
+$nombresKpi = array_map(static fn($k) => (string) ($k['kpi'] ?? $k['name'] ?? ''), $brief['scorecard']);
+$hay = static fn(string $frag): bool => $nombresKpi !== array_filter(
+    $nombresKpi,
+    static fn($n) => stripos($n, $frag) === false,
+);
+
+$assert($hay('Cobertura'), 'el scorecard trae cobertura');
+$assert($hay('valor'), 'la cobertura por valor aparece junto a la de conteo');
+$assert($hay('Vencid'), 'el scorecard trae vencidos');
+$assert($hay('sin mirar'), 'el scorecard dice cuántos paquetes no está mirando');
+// El lineage es una LISTA de métricas, no un mapa: el plan asumió la forma equivocada.
+$assert(
+    ($brief['lineage'][0]['grain'] ?? '') === 'project_id + paquete_id + subpaquete_id (destino)',
+    'el lineage declara el grano por destino',
+);
+$assert(
+    stripos(json_encode($brief['lineage'], JSON_UNESCAPED_UNICODE), 'listo_para_iniciar') === false,
+    'el lineage ya no describe el campo del PDC viejo',
+);
+
 $limpiar();
 fwrite(STDOUT, $failures === [] ? "\nOK\n" : "\n" . count($failures) . " fallos\n");
 exit($failures === [] ? 0 : 1);
