@@ -132,14 +132,17 @@ paquete — la trampa de A3.2 en sitio nuevo), y el importador que borraba el tr
 
 **Dos decisiones que quedan para Felipe:**
 
-1. **`OT` (Oficina Técnica / Compras) hoy no puede clasificar equipos.** La capacidad elegida es
-   `lps.pdc.maestro` (A, D), según el spec —el maestro es global, es administración—. Pero
-   `lps.paquetes_contratacion.reglas` la tienen A, D **y OT**, y decidir si un equipo se alquila o se
-   compra suena más a Compras que a Administración. El cambio sería una línea de RBAC.
-2. **Gastos generales: revisado, no implementado.** El presupuesto **no** trae categorías que el maestro
-   pierda (sus capítulos son sólo `COSTO DIRECTO` y `COSTO INDIRECTO`); las de Tomás llegan por el
-   `agrupacion` de SINCO, que el maestro **ya guarda** y ninguna pantalla agrupa. Es un entregable
-   aparte y necesita grilleo con él para no duplicar su código.
+1. **`OT` (Oficina Técnica / Compras) ya puede clasificar equipos** — Felipe dijo que sí el
+   2026-07-30, y quedó aplicado. `lps.pdc.maestro` pasa a A, D y OT. **Consecuencia que hay que
+   saber:** la capacidad es única y abre TODO el maestro (clasificar, crear a mano, vincular,
+   retirar/reactivar e importar el Excel de SINCO), no sólo clasificar. Se asumió porque OT ya tenía
+   `paquetes_contratacion.reglas`, que redirige insumos en todos los proyectos. Si el alcance resulta
+   ser demasiado, la vuelta es partir la capacidad en dos, no revertir el permiso.
+2. **Gastos generales: aprobado, va a sesión propia.** Felipe dijo que sí el 2026-07-30. El presupuesto
+   **no** trae categorías que el maestro pierda (sus capítulos son sólo `COSTO DIRECTO` y `COSTO
+   INDIRECTO`); las de Tomás llegan por el `agrupacion` de SINCO, que el maestro **ya guarda** y ninguna
+   pantalla agrupa ni filtra. No se construye aquí: es un entregable distinto y necesita grilleo con
+   Tomás para no duplicar lo que él ya tiene en su código.
 
 ⚠️ **Aviso para las demás sesiones — el volumen de MySQL del compose es `external` con nombre fijo
 `htdocs_db_data`.** Un `COMPOSE_PROJECT_NAME` propio **no** da base propia: levanta un segundo MySQL

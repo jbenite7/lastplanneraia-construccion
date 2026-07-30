@@ -79,9 +79,18 @@ foreach (['R', 'C', 'S', 'G', 'V'] as $rol) {
     $assert($rbac->can(MAESTRO, $rol) === false, "$rol NO puede clasificar equipos del maestro global.");
 }
 
+// ── Compras clasifica: OT entra al maestro (decisión de Felipe, 2026-07-30) ──
+// La primera versión dejaba fuera a OT —Oficina Técnica / COMPRAS—, que es justamente quien sabe si
+// un equipo se alquila o se compra. Se le dio `lps.pdc.maestro`, que es una capacidad única y abre
+// todo el maestro (clasificar, crear, vincular, retirar e importar SINCO). Alcance comparable al de
+// `paquetes_contratacion.reglas`, que OT ya tenía y redirige insumos en todos los proyectos.
+fwrite(STDOUT, "\nRol PERMITIDO — OT (Oficina Técnica / Compras):\n");
+$assert($rbac->can(MAESTRO, 'OT') === true, 'OT puede clasificar equipos: la decisión de compra la toma Compras.');
+$assert($rbac->can(VER_PDC, 'OT') === true, 'OT puede leer la cola.');
+
 // ── La capacidad es la del maestro, no la de las reglas del motor ────────────
-// Si ambas dieran exactamente lo mismo para todos los roles, elegir una u otra sería indistinguible
-// y el spec no habría tenido que preguntar. Se deja constancia del reparto de cada una.
+// Se deja constancia del reparto de cada una: son puertas distintas sobre objetos distintos, aunque
+// desde el 2026-07-30 coincidan en los tres roles.
 fwrite(STDOUT, "\nReparto de cada capacidad (para que la elección quede justificada):\n");
 $reparto = static function (RbacService $rbac, string $cap): array {
     $con = [];
@@ -96,7 +105,8 @@ $conMaestro = $reparto($rbac, MAESTRO);
 $conReglas = $reparto($rbac, REGLAS_MOTOR);
 fwrite(STDOUT, '  ' . MAESTRO . ': ' . implode(', ', $conMaestro) . "\n");
 fwrite(STDOUT, '  ' . REGLAS_MOTOR . ': ' . implode(', ', $conReglas) . "\n");
-$assert($conMaestro !== [], 'Alguien puede administrar el maestro (si no, la cola sería irresoluble).');
+// Se fija el reparto exacto para que nadie lo ensanche por accidente: el maestro es de la empresa.
+$assert($conMaestro === ['A', 'D', 'OT'], 'El maestro lo administran exactamente A, D y OT. Dio: ' . implode(', ', $conMaestro));
 $assert(!in_array('R', $conMaestro, true), 'El residente de obra no está entre quienes administran el maestro.');
 $assert(!in_array('V', $conMaestro, true), 'El visualizador tampoco.');
 
