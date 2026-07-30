@@ -9,7 +9,8 @@ import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
-import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
+import type { EquipoSinClasificar, MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
+import { TIPO_RECURSO_EQUIPO, etiquetaTipoRecurso } from '../lib/tipoRecurso'
 import { plural } from '../lib/texto'
 
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
@@ -32,6 +33,13 @@ export default function MaestroInsumos() {
   const [verRetirados, setVerRetirados] = useState(false)
   const [porRetirar, setPorRetirar] = useState<MaestroInsumo | null>(null)
   const [imp, dispatchImp] = useReducer(maestroImportReducer, estadoInicialMaestroImport)
+  // Cola de equipos sin clasificar (Ola 2). Vive aquí y no en pantalla propia porque es el mismo
+  // trabajo que la cola de vínculos: decidir sobre insumos del maestro.
+  const [equipos, setEquipos] = useState<EquipoSinClasificar[]>([])
+  const [equiposTotal, setEquiposTotal] = useState(0)
+  const [selEquipos, setSelEquipos] = useState<Set<number>>(new Set())
+  const [equiposOcupado, setEquiposOcupado] = useState(false)
+  const [puedeEscribir, setPuedeEscribir] = useState(true)
   // Las tres tablas de esta pantalla vivían apiladas y el catálogo global (3.079 insumos) tapaba
   // la cola de pendientes, que es el trabajo que de verdad falta. Abre por ahí — salvo que no haya
   // pendientes, y entonces abrir por una tabla vacía sería enseñar una pared en blanco.
@@ -57,6 +65,7 @@ export default function MaestroInsumos() {
       if (e instanceof PdcApiError && e.code === 'NO_VERSION') setSinPresupuesto(true)
       else if (e instanceof PdcApiError && e.code === 'FORBIDDEN') {
         // Sin permiso de escritura: cargar solo lectura.
+        setPuedeEscribir(false)
         try {
           const v = await apiGet<{ resumen: ResumenVinculos; vinculos: VinculoInsumo[] }>('/plan-compras/api/maestro/vinculos')
           setResumen(v.resumen)
@@ -73,7 +82,20 @@ export default function MaestroInsumos() {
       .catch(() => setCatalogo([]))
   }, [])
 
+  const cargarEquipos = useCallback(async () => {
+    try {
+      const r = await apiGet<{ total: number; items: EquipoSinClasificar[] }>('/plan-compras/api/maestro/equipos')
+      setEquipos(r.items)
+      setEquiposTotal(r.total)
+    } catch {
+      // La cola es informativa: si falla, la pestaña simplemente no aparece. No debe tumbar la pantalla.
+      setEquipos([])
+      setEquiposTotal(0)
+    }
+  }, [])
+
   useEffect(() => { void cargar() }, [cargar])
+  useEffect(() => { void cargarEquipos() }, [cargarEquipos])
   useEffect(() => { cargarCatalogo(busqueda, verRetirados) }, [busqueda, verRetirados, cargarCatalogo])
 
   useEffect(() => {
@@ -108,12 +130,69 @@ export default function MaestroInsumos() {
       const resultado = await apiPost<MaestroImportResultado>('/plan-compras/api/maestro/importar/confirmar', { importToken: imp.preview.importToken })
       dispatchImp({ type: 'CONFIRMADO', resultado })
       cargarCatalogo(busqueda, verRetirados)
+      // Cargar el maestro puede traer equipos nuevos, y esos nacen sin clasificar.
+      void cargarEquipos()
     } catch (e) {
       dispatchImp({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
     }
   }
 
   const pendientes = useMemo(() => vinculos.filter((v) => v.estado === 'pendiente'), [vinculos])
+
+  // ── Cola de equipos sin clasificar (Ola 2) ───────────────────────────────────────────────────
+  const colsEquipos: ColDef<EquipoSinClasificar>[] = useMemo(() => [
+    {
+      headerName: '✓', width: 60, field: 'id', suppressAutoSize: true,
+      valueFormatter: (p) => (selEquipos.has(p.value as number) ? '●' : ''),
+    },
+    columnaTexto('descripcion', 'Equipo', 300),
+    { ...COLUMNA_CORTA, field: 'unidad', headerName: 'Und' },
+    // La evidencia, cruda y a la vista: es lo que escribió el equipo de presupuestos en SINCO.
+    { ...COLUMNA_CATEGORIA, field: 'agrupacion', headerName: 'SINCO dice', minWidth: 240, valueFormatter: (p) => (p.value as string | null) ?? '—' },
+    // Informativa. No hay ninguna celda editable que escriba esto sola.
+    {
+      ...COLUMNA_CATEGORIA, field: 'pista', headerName: 'Sugerencia', minWidth: 170,
+      valueFormatter: (p) => (p.value ? etiquetaTipoRecurso(p.value as string) : '—'),
+    },
+  ], [selEquipos])
+
+  const onEquipoClick = (e: CellClickedEvent<EquipoSinClasificar>) => {
+    const id = e.data?.id
+    if (id === undefined) return
+    setSelEquipos((prev) => {
+      const s = new Set(prev)
+      if (s.has(id)) s.delete(id)
+      else s.add(id)
+      return s
+    })
+  }
+
+  /** Selecciona (no guarda) el lote que SINCO marca con un destino. La persona sigue confirmando. */
+  const seleccionarPorPista = (pista: string) => {
+    setSelEquipos(new Set(equipos.filter((eq) => eq.pista === pista).map((eq) => eq.id)))
+  }
+
+  const clasificarSeleccion = async (destino: string) => {
+    if (selEquipos.size === 0) return
+    setEquiposOcupado(true)
+    try {
+      const r = await apiPost<{ clasificados: number; cola: { total: number; items: EquipoSinClasificar[] } }>(
+        '/plan-compras/api/maestro/equipos/clasificar',
+        { ids: [...selEquipos], destino },
+      )
+      setEquipos(r.cola.items)
+      setEquiposTotal(r.cola.total)
+      setSelEquipos(new Set())
+      dispatch({ type: 'LISTO', mensaje: `${r.clasificados} ${plural(r.clasificados, 'equipo', 'equipos')} ${plural(r.clasificados, 'clasificado', 'clasificados')} como ${etiquetaTipoRecurso(destino).toLowerCase()}.` })
+    } catch (e) {
+      dispatch({ type: 'FALLO', mensaje: e instanceof Error ? e.message : String(e) })
+    } finally {
+      setEquiposOcupado(false)
+    }
+  }
+
+  const conPistaAlquiler = useMemo(() => equipos.filter((eq) => eq.pista === TIPO_RECURSO_EQUIPO.ALQUILADO).length, [equipos])
+  const conPistaCompra = useMemo(() => equipos.filter((eq) => eq.pista === TIPO_RECURSO_EQUIPO.COMPRADO).length, [equipos])
 
   const colsPendientes: ColDef<VinculoInsumo>[] = useMemo(() => [
     // La marca de selección se queda con su ancho fijo: medirla por contenido daría una columna de
@@ -207,6 +286,74 @@ export default function MaestroInsumos() {
     }
   }
 
+  // El bloque vive en una constante porque se usa en DOS ramas del render: la normal y la de «este
+  // proyecto no tiene presupuesto». La cola de equipos es del catálogo GLOBAL de la empresa y no
+  // depende del presupuesto de ninguna obra — esconderla ahí dejaba el tapón sin puerta de entrada
+  // en cualquier obra nueva, que es justo donde alguien va a estar montando el maestro. Lo cazó el
+  // e2e en navegador; los tests de PHP no podían verlo.
+  const bloqueEquipos = (
+  <div className="pdc-bloque">
+          <div className="pdc-fila-acciones">
+            <h2>Clasificar equipos ({equiposTotal})</h2>
+            {puedeEscribir && (
+              <div>
+                <button
+                  type="button"
+                  data-testid="pdc-equipos-clasificar-alquilado"
+                  disabled={selEquipos.size === 0 || equiposOcupado}
+                  onClick={() => void clasificarSeleccion(TIPO_RECURSO_EQUIPO.ALQUILADO)}
+                >
+                  {equiposOcupado ? 'Procesando…' : `Marcar ${selEquipos.size} como alquilado`}
+                </button>{' '}
+                <button
+                  type="button"
+                  data-testid="pdc-equipos-clasificar-comprado"
+                  disabled={selEquipos.size === 0 || equiposOcupado}
+                  onClick={() => void clasificarSeleccion(TIPO_RECURSO_EQUIPO.COMPRADO)}
+                >
+                  {equiposOcupado ? 'Procesando…' : `Marcar ${selEquipos.size} como comprado`}
+                </button>
+              </div>
+            )}
+          </div>
+          <p className="pdc-ayuda">
+            Estos equipos venían en una sola categoría. Contabilidad maneja distinto un alquiler que una
+            compra, así que hay que decirlo una vez por insumo. La columna «SINCO dice» es lo que escribió
+            presupuestos: úsala como pista, no como respuesta.
+          </p>
+          {puedeEscribir && (conPistaAlquiler > 0 || conPistaCompra > 0) && (
+            <p className="pdc-ayuda">
+              Atajos que <strong>seleccionan</strong> (no guardan):{' '}
+              {conPistaAlquiler > 0 && (
+                <button type="button" data-testid="pdc-equipos-sel-alquiler" onClick={() => seleccionarPorPista(TIPO_RECURSO_EQUIPO.ALQUILADO)}>
+                  los {conPistaAlquiler} que SINCO marca como alquiler
+                </button>
+              )}
+              {conPistaAlquiler > 0 && conPistaCompra > 0 ? ' · ' : ''}
+              {conPistaCompra > 0 && (
+                <button type="button" data-testid="pdc-equipos-sel-compra" onClick={() => seleccionarPorPista(TIPO_RECURSO_EQUIPO.COMPRADO)}>
+                  los {conPistaCompra} que SINCO marca como compra
+                </button>
+              )}
+            </p>
+          )}
+          <p className="pdc-ayuda">Clic = seleccionar.</p>
+          <div className="pdc-grid" data-testid="pdc-equipos-cola">
+            <AgGridReact<EquipoSinClasificar>
+              theme={pdcTheme}
+              rowData={equipos}
+              overlayNoRowsTemplate={vacioTabla('No queda ningún equipo sin clasificar.')}
+              columnDefs={colsEquipos}
+              defaultColDef={defaultColDef}
+              autoSizeStrategy={autoSizeStrategy}
+            {...ajusteDeAncho}
+              getRowId={(p) => String(p.data.id)}
+              onCellClicked={onEquipoClick}
+            />
+          </div>
+        </div>
+  )
+
   if (sinPresupuesto) {
     return (
       <section className="pdc-page">
@@ -214,6 +361,10 @@ export default function MaestroInsumos() {
         <div className="pdc-bloque pdc-vacio" data-testid="pdc-maestro-vacio">
           Este proyecto aún no tiene un presupuesto importado. Ve a <strong>Ensamble → Importar</strong>.
         </div>
+        {/* El acuse va aquí también: clasificar equipos funciona en esta rama, y sin esto la acción
+            se completaba en silencio. Lo cazó el e2e al clasificar en una obra sin presupuesto. */}
+        {state.mensaje && <div className="pdc-exito" role="status">{state.mensaje}</div>}
+        {equiposTotal > 0 && bloqueEquipos}
       </section>
     )
   }
@@ -247,9 +398,17 @@ export default function MaestroInsumos() {
         pestanas={[
           { id: 'pendientes', etiqueta: 'Pendientes por vincular', conteo: pendientes.length },
           { id: 'catalogo', etiqueta: 'Catálogo global', conteo: catalogo.length },
+          // Sólo aparece mientras haya tapón: cuando la cola llega a 0, la pantalla vuelve a como estaba.
+          ...(equiposTotal > 0 ? [{ id: 'equipos', etiqueta: 'Clasificar equipos', conteo: equiposTotal }] : []),
           { id: 'importar', etiqueta: 'Importar SINCO' },
         ]}
       />
+
+      {seccion === 'equipos' && (
+      <PanelPestana idBase="pdc-maestro" id="equipos">
+      {bloqueEquipos}
+      </PanelPestana>
+      )}
 
       {seccion === 'importar' && (
       <PanelPestana idBase="pdc-maestro" id="importar">

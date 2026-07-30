@@ -259,6 +259,22 @@ export type ActividadDiff = {
   estado: EstadoDiff
 }
 
+/**
+ * Un equipo del maestro global que espera que alguien diga si se alquila o se compra (Ola 2).
+ *
+ * `pista` es lo que SUGIERE la agrupación de SINCO. Nunca se guarda sin que una persona lo confirme:
+ * adivinar es justo lo que el módulo evita en todo lo demás.
+ */
+export type EquipoSinClasificar = {
+  id: number
+  descripcion: string
+  unidad: string
+  agrupacion: string | null
+  /** Código SINCO: la fila viene del maestro de la empresa, no de un presupuesto. */
+  codigoSinco: string | null
+  pista: string | null
+}
+
 export type InsumoDiff = {
   descripcionNorm: string
   unidad: string

@@ -436,6 +436,121 @@ final class MaestroInsumosService
     }
 
     /**
+     * Los equipos que esperan que alguien diga si se alquilan o se compran.
+     *
+     * Es una cola del catálogo GLOBAL, no de una versión de presupuesto: por eso no lleva
+     * `project_id` ni `version_id`, al contrario que la cola de vínculos. Vive en la misma pantalla
+     * del maestro (una sección más de las pestañas que ya tiene), no en una pantalla nueva.
+     *
+     * `pista` es lo que SUGIERE la `agrupacion` que escribió el equipo de presupuestos, y viaja junto
+     * al valor crudo que la justifica para poder mostrarse como evidencia. NO está escrita en
+     * `tipo_recurso`: adivinar sin confirmación humana está descartado, y adivinar por la descripción
+     * del insumo lo está doblemente. Lo único que hace la pista es ORDENAR la cola, de modo que las
+     * decisiones fáciles se resuelvan en un lote en vez de una por una.
+     *
+     * @return array{total: int, items: list<array{id: int, descripcion: string, unidad: string,
+     *                agrupacion: ?string, codigoSinco: ?string, pista: ?string}>}
+     */
+    public function equiposSinClasificar(?string $busqueda = null, int $limite = 2000): array
+    {
+        $sql = 'SELECT id, descripcion, unidad, agrupacion, codigo_sinco
+                FROM general_maestro_insumos
+                WHERE tipo_recurso = ? AND activo = 1';
+        $args = [TipoRecursoEquipo::SIN_CLASIFICAR];
+
+        if ($busqueda !== null && trim($busqueda) !== '') {
+            // Comodines LIKE escapados, como en el resto del maestro (follow-up del review de A2).
+            $like = '%' . addcslashes(trim($busqueda), '\\%_') . '%';
+            $sql .= ' AND (descripcion LIKE ? OR agrupacion LIKE ?)';
+            $args[] = $like;
+            $args[] = $like;
+        }
+
+        $sql .= ' ORDER BY descripcion ASC LIMIT ' . max(1, min($limite, 5000));
+
+        $filas = $this->db->query($sql, $args)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $items = [];
+        foreach ($filas as $f) {
+            $items[] = [
+                'id' => (int) $f['id'],
+                'descripcion' => (string) $f['descripcion'],
+                'unidad' => (string) $f['unidad'],
+                'agrupacion' => $f['agrupacion'],
+                'codigoSinco' => $f['codigo_sinco'],
+                'pista' => TipoRecursoEquipo::pistaSinco($f['agrupacion']),
+            ];
+        }
+
+        // Preorden: primero lo que trae pista, agrupado por destino sugerido y por agrupación, para
+        // que el lote se arme solo. La pista no decide el valor; sólo el orden de la fila.
+        usort($items, static function (array $a, array $b): int {
+            return [$a['pista'] ?? 'ZZZ', $a['agrupacion'] ?? '', $a['descripcion']]
+               <=> [$b['pista'] ?? 'ZZZ', $b['agrupacion'] ?? '', $b['descripcion']];
+        });
+
+        $total = (int) $this->db->query(
+            'SELECT COUNT(*) FROM general_maestro_insumos WHERE tipo_recurso = ? AND activo = 1',
+            [TipoRecursoEquipo::SIN_CLASIFICAR],
+        )->fetchColumn();
+
+        return ['total' => $total, 'items' => $items];
+    }
+
+    /**
+     * Clasifica equipos en lote: la operación de la cola — selección múltiple, un solo destino.
+     *
+     * El WHERE filtra por `tipo_recurso` además de por id, así que un id que no sea de un equipo no
+     * se toca ni por un error de la SPA. Reclasificar uno ya clasificado SÍ se permite —corregir una
+     * equivocación humana es parte del trabajo— y re-sella la auditoría con el nuevo autor.
+     *
+     * `clasificado_at` no es decorativo: es lo que le dice al importador SINCO que esta fila la
+     * decidió una persona y no debe degradarla en la siguiente carga del maestro.
+     *
+     * @param list<int>|array<array-key, mixed> $ids
+     *
+     * @return array{ok: true, clasificados: int}|array{ok: false, code: string, clasificados: int}
+     */
+    public function clasificarEquipos(array $ids, string $destino, string $usuario): array
+    {
+        if (!TipoRecursoEquipo::esDestinoValido($destino)) {
+            return ['ok' => false, 'code' => 'DESTINO_INVALIDO', 'clasificados' => 0];
+        }
+        $ids = array_values(array_unique(array_filter(
+            array_map(static fn ($i): int => (int) $i, $ids),
+            static fn (int $i): bool => $i > 0,
+        )));
+        if ($ids === []) {
+            return ['ok' => false, 'code' => 'SIN_IDS', 'clasificados' => 0];
+        }
+
+        $marcadores = implode(', ', array_fill(0, count($ids), '?'));
+        $tipos = implode(', ', array_fill(0, count(TipoRecursoEquipo::TODOS), '?'));
+
+        $this->db->beginTransaction();
+        try {
+            $st = $this->db->query(
+                "UPDATE general_maestro_insumos
+                 SET tipo_recurso = ?, clasificado_por = ?, clasificado_at = NOW(),
+                     actualizado_por = ?, updated_at = NOW()
+                 WHERE id IN ({$marcadores}) AND UPPER(TRIM(tipo_recurso)) IN ({$tipos})",
+                array_merge(
+                    [mb_strtoupper($destino), $usuario, $usuario],
+                    $ids,
+                    TipoRecursoEquipo::TODOS,
+                ),
+            );
+            $clasificados = $st->rowCount();
+            $this->db->commit();
+        } catch (\Throwable $t) {
+            $this->db->rollBack();
+            throw $t;
+        }
+
+        return ['ok' => true, 'clasificados' => $clasificados];
+    }
+
+    /**
      * Vuelve a enganchar los vínculos `pendiente` que ya tienen un insumo activo que les case.
      *
      * Existe porque el auto-match vivía sólo dentro de `generarVinculos()`, y eso únicamente se
