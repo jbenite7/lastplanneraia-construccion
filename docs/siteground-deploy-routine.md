@@ -73,6 +73,41 @@ ls -lt ~/backups | head -n 3
 
 Esto permite rollback rapido aun si el repo queda en un estado inconsistente.
 
+### 3.1 Respaldo de la base, y probarlo
+
+El tar del paso 3 **no cubre la base**. Si el deploy trae migraciones, toma tambien un dump completo
+(en el servidor, leyendo las credenciales de `.env` para no escribirlas en el comando):
+
+```bash
+set -a; . ./.env; set +a
+mysqldump -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" --single-transaction --routines --triggers "$DB_NAME" \
+  > ~/backups/db-predeploy-$(date +%Y%m%d-%H%M%S).sql
+tail -1 ~/backups/db-predeploy-*.sql   # debe decir "Dump completed"
+```
+
+> [!IMPORTANT]
+> **El dump no restaura en otro servidor tal como sale.** `mysqldump` escribe clausulas
+> `DEFINER=` con el usuario de SiteGround en vistas y rutinas (30 en la base de pruebas), y en
+> cualquier otra maquina la restauracion muere con `ERROR 1449 ... definer does not exist` a mitad
+> del archivo. Restaurar en el **mismo** servidor funciona; en un entorno de prueba hay que
+> neutralizarlas primero:
+
+```bash
+perl -pe 's/\sDEFINER=`[^`]+`@`[^`]+`//g; s/SQL SECURITY DEFINER/SQL SECURITY INVOKER/g' \
+  dump.sql > dump-sin-definer.sql
+```
+
+**Un dump no probado no es un respaldo.** Restauralo en una base aparte y **compara conteos exactos
+contra el origen** — no te conformes con que el comando termine sin error ni con `table_rows` de
+`information_schema`, que es una estimacion. Comparacion usada el 2026-07-30 en pruebas:
+`programa_consolidado`, `programa`, `programacion_semanal`, `general_usuarios`,
+`pi_shared_constraint_links` y `pdc`, con `COUNT(*)` a los dos lados. Si no cuadran, no despliegues.
+
+> [!CAUTION]
+> Pruebas y produccion **viven en la misma cuenta SSH**, solo cambian de carpeta y de base
+> (`dbbfn7fojgsqao` en pruebas, `dbhif4pdimjtxe` en produccion). Antes de cualquier comando
+> destructivo, imprime `$DB_NAME` y confirma contra cual estas trabajando.
+
 ## 4. Guardar drift del servidor
 
 Si `git status` muestra cambios locales del servidor, guardalos antes del `pull`:
@@ -114,14 +149,69 @@ Notas:
 > migracion sin correr, **toda la pestana Plan del modulo de compras responde 500**, porque el
 > `SELECT` de `plan()` pide la columna nueva — no se degrada solo el responsable.
 
-No hay runner automatico: las migraciones se aplican a mano y en orden cronologico por nombre de
-archivo. Revisa que llego algo nuevo antes de aplicar:
+No hay runner automatico: las migraciones se aplican a mano. Revisa que llego algo nuevo antes de
+aplicar:
 
 ```bash
 git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/ | grep -E '^database/migrations/'
 ```
 
 Si la lista sale vacia, no hay migraciones en este deploy y puedes seguir al paso 6.
+
+> [!CAUTION]
+> **El orden NO es cronologico por nombre de archivo.** Es por lo que hace cada migracion: primero
+> todo lo que cambia el esquema, despues todo lo que escribe datos. La extension no dice cual es
+> cual — hay `.php` que crean tablas y columnas.
+>
+> Medido en pruebas el 2026-07-30 (34 migraciones, 642 commits de atraso): aplicando por nombre
+> fallaron 5 de 34, todas por la misma causa. Las 4 primeras (`paquete_indirectos`,
+> `paquetes_profesional_daporto`, `seed_paquetes_aia`, `backfill_modalidades`) son de datos puros y
+> caen por nombre *antes* de `modalidad_contratacion.php`, que es la que crea la columna que
+> necesitan. La quinta, `desamarrar_paquete.sql`, necesita la tabla que crea `plan_fechas.sql`,
+> tambien posterior por nombre. Las cinco pasaron al repetirlas. **Repetir hasta que pase no es un
+> plan de deploy:** clasifica antes.
+
+**Como clasificar las migraciones de un deploy.** El criterio es si el archivo toca esquema, sin
+importar su extension:
+
+```bash
+for f in $(ls database/migrations/*.php | sort); do
+  printf "%s  %s\n" "$(grep -cE 'CREATE TABLE|ALTER TABLE|ADD COLUMN|ADD INDEX|MODIFY COLUMN' "$f")" "$(basename "$f")"
+done | sort -rn
+```
+
+Las que devuelven `0` son de datos y van en la segunda fase. En el deploy del 2026-07-30 el corte
+fue 10 de esquema y 11 de datos.
+
+**Las tres fases, en este orden:**
+
+1. **Esquema.** Todos los `.sql`, y las `.php` con conteo distinto de `0` (estas tambien admiten
+   `--apply`). Si una falla por una tabla o columna que no existe, su dependencia es otra migracion
+   de esta misma fase: aplica el resto y repite la que fallo al terminar la fase.
+2. **Datos.** Las `.php` con conteo `0`. Dentro de esta fase, **el sembrado del catalogo va
+   primero** (`seed_paquetes_aia`): varias de las demas mueven o retiran paquetes que ese sembrado
+   crea, y sin el reportan «destino no existe activo» y no hacen nada.
+3. **Repaso.** Vuelve a correr `admite_materiales` y `puente_duraciones` con `--apply`. Son
+   idempotentes y dependen del catalogo ya sembrado, asi que en la fase 1 quedan a medias.
+
+**Comprobar el resultado, no el codigo de salida.** Al terminar, vuelve a correr todas en seco: las
+que reporten trabajo pendiente hay que mirarlas una por una contra la base. Dos mienten en el
+simulacro y estan bien aplicadas — `rama_frente` dice «26 a insertar» con las 26 puestas, y
+`admite_materiales` dice «a marcar: 5» con las 5 marcadas. Confirma en SQL antes de repetirlas.
+
+> [!WARNING]
+> **Una migracion con `DELIMITER $$` no se puede aplicar por PDO ni por PHP.** `DELIMITER` es una
+> directiva del cliente `mysql`, no SQL, y el error que sale parece SQL mal escrito sin serlo. Esas
+> van por `mysql <archivo` obligatoriamente. Caso conocido en camino:
+> `20260729_pdc_v2_subpaquetes.sql`.
+
+**Las `.php` necesitan el entorno exportado.** `src/Core/Database.php` lee `$_ENV`/`getenv()` y no
+carga `.env` por su cuenta, asi que en CLI hay que exportarlo antes o toda migracion `.php` falla
+con «No se pudo conectar a la base de datos», que parece un problema del servidor y no lo es:
+
+```bash
+set -a; . ./.env; set +a
+```
 
 **Archivos `.sql` (DDL).** Se aplican directo. Backup de las tablas afectadas primero, porque un
 `DROP COLUMN` no se deshace con el backup de archivos del paso 3:
@@ -222,3 +312,7 @@ Tambien limpia carpetas no trackeadas viejas dentro de `public_html` si confirma
 - Produccion requiere verificacion local y smoke test exitoso en pruebas.
 - Si el deploy trae migraciones, se aplican antes de los smoke tests (paso 5.1) y con dump previo
   de las tablas afectadas. El backup de archivos del paso 3 no cubre la base.
+- Las migraciones **no se aplican en orden de nombre de archivo**, sino en tres fases: esquema,
+  datos, repaso (paso 5.1). Repetir las que fallan hasta que pasen no es un plan de deploy.
+- Un respaldo de base **sin restauracion probada y conteos comparados** no cuenta como respaldo
+  (paso 3.1). Si no se puede volver atras, no se despliega.
