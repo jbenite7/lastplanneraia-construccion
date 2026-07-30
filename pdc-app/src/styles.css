@@ -791,9 +791,14 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 /* La nota del método usa el tono de aviso y NO el de error: no hay nada roto, hay algo que el lector
    tiene que saber antes de usar la cifra. Va arriba, sin plegar, porque esta tabla se fotografía y se
    lleva a comité, y una advertencia escondida detrás de un despliegue no viaja con la foto. */
+/* El aviso se sostiene con su propio tono de superficie, no con una barra de acento al costado. Esa
+   barra existía como refuerzo y era redundante: el fondo ya distingue la nota del resto de la tabla,
+   así que quitarla no le resta visibilidad —que es lo que la nota necesita para viajar en la foto— y
+   de paso saca de encima el patrón de borde lateral grueso. El borde completo, del mismo tono del
+   texto de aviso, mantiene el contorno sin señalar un lado. */
 .pdc-flujo-nota { margin: 8px 0 12px; padding: 9px 12px; border-radius: var(--pdc-radio-control);
   background: var(--pdc-aviso-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm);
-  border-left: 3px solid var(--pdc-aviso-ink); }
+  border: 1px solid color-mix(in oklab, var(--pdc-aviso-ink) 35%, transparent); }
 /* Lo excluido se ve como el «tablero ciego» de vencimientos: misma forma para el mismo tipo de
    confesión, para que quien ya conoce una reconozca la otra. */
 .pdc-flujo-excluidos { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
