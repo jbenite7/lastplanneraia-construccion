@@ -1862,7 +1862,25 @@ final class PaquetesService
             'MANO DE OBRA' => ['mano_obra', 'a_todo_costo'],
             'NOMINA' => ['mano_obra', 'consumibles'],
             'SUBCONTRATO' => ['a_todo_costo', 'mano_obra', 'suministro'],
-            'EQUIPO', 'TRANSPORTE' => ['suministro', 'a_todo_costo', 'consumibles'],
+            // Equipo (partido en Ola 2). Nombrar los valores nuevos aquí NO es opcional: el `default`
+            // de este match significa «no sé filtrar, no filtro», así que un valor sin rama pasa a ser
+            // candidato de cualquier paquete, mano de obra incluida. Es la misma regresión que dejó el
+            // corte del bucket de indirectos en A3.2 (docs/pdc-v2.md §deudas de datos saldadas), y
+            // aquí no la atrapaba ningún test hasta que se escribió el de este bloque.
+            //
+            // ALQUILADO sale de `suministro` a propósito: alquilar no es comprar. Un alquiler se
+            // contrata (a todo costo) o se consume, y si además figurara como candidato de un paquete
+            // de compra, contabilidad seguiría con las dos cosas en la misma bolsa — el problema que
+            // este trabajo viene a resolver.
+            TipoRecursoEquipo::ALQUILADO => ['a_todo_costo', 'consumibles'],
+            // COMPRADO, SIN_CLASIFICAR y el GENERICO conservan el cuadro del viejo «EQUIPO»: el de
+            // tránsito se comporta como hoy —ni mejor ni peor— para que el módulo se pueda usar con
+            // el tapón de clasificación puesto. El genérico sigue aquí porque SINCO lo emite en cada
+            // carga del maestro, y entre la carga y la clasificación hay que seguir filtrando.
+            TipoRecursoEquipo::COMPRADO,
+            TipoRecursoEquipo::SIN_CLASIFICAR,
+            TipoRecursoEquipo::GENERICO,
+            'TRANSPORTE' => ['suministro', 'a_todo_costo', 'consumibles'],
             'HONORARIOS', 'CONSUMIBLES' => ['consumibles', 'a_todo_costo'],
             default => self::TIPOS,
         };

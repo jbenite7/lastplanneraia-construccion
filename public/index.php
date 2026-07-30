@@ -203,6 +203,9 @@ $router->post('/plan-compras/api/maestro/desactivar', [\App\Controllers\Api\Plan
 $router->post('/plan-compras/api/maestro/reactivar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'reactivar']);
 $router->post('/plan-compras/api/maestro/importar/preview', [\App\Controllers\Api\PlanComprasMaestroImportController::class, 'preview']);
 $router->post('/plan-compras/api/maestro/importar/confirmar', [\App\Controllers\Api\PlanComprasMaestroImportController::class, 'confirmar']);
+// Cola de equipos sin clasificar (Ola 2): alquilado vs comprado. Escritura con lps.pdc.maestro.
+$router->get('/plan-compras/api/maestro/equipos', [\App\Controllers\Api\PlanComprasMaestroController::class, 'equipos']);
+$router->post('/plan-compras/api/maestro/equipos/clasificar', [\App\Controllers\Api\PlanComprasMaestroController::class, 'clasificarEquipos']);
 // Api/Plan de Compras v2 — paquetes de contratación (A3)
 $router->get('/plan-compras/api/paquetes', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'catalogo']);
 $router->get('/plan-compras/api/paquetes/insumos', [\App\Controllers\Api\PlanComprasPaquetesController::class, 'insumos']);

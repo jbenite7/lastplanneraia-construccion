@@ -532,6 +532,43 @@ foreach ($sugAseo['sugerencias'] as $s) { $byAseo[$s['descripcionNorm']] = $s; }
 $sAseo = $byAseo['ASEO PERMANENTE DE OBRA A3'] ?? null;
 $assert($sAseo !== null && (int) $sAseo['paqueteId'] === $indirectosId, 'El aseo permanente es un indirecto, no el contrato de aseo final: ' . ($sAseo['paqueteNombre'] ?? 'sin propuesta'));
 
+// --- Ola 2 · Equipo alquilado / comprado / sin clasificar --------------------------------------
+// `tiposCompatibles()` es un `match` cuyo `default` significa «no sé filtrar, no filtro». Partir el
+// valor «EQUIPO» sin nombrar los nuevos ahí los mandaría al default y pasarían a ser candidatos de
+// cualquier paquete, mano de obra incluida — la regresión de A3.2 en sitio nuevo, y ningún test la
+// atrapaba. Se prueba a través de `tipoRecursoAdmitido()`, que es la puerta pública.
+$suministroId = (int) $db->query(
+    "SELECT id FROM general_paquetes_contratacion WHERE tipo_negociacion = 'suministro' AND activo = 1
+       AND modalidad_contratacion = 'contrato' LIMIT 1",
+)->fetchColumn();
+$manoObraId = (int) $db->query(
+    "SELECT id FROM general_paquetes_contratacion WHERE tipo_negociacion = 'mano_obra' AND activo = 1
+       AND modalidad_contratacion = 'contrato' LIMIT 1",
+)->fetchColumn();
+$assert($suministroId > 0 && $manoObraId > 0, 'Hay un paquete de suministro y uno de mano de obra en el catálogo.');
+
+$EQ_ALQ = \App\Services\Pdc\TipoRecursoEquipo::ALQUILADO;
+$EQ_COM = \App\Services\Pdc\TipoRecursoEquipo::COMPRADO;
+$EQ_SIN = \App\Services\Pdc\TipoRecursoEquipo::SIN_CLASIFICAR;
+
+// Punto 4 de la condición de hecho: un equipo ALQUILADO no es candidato de un paquete de COMPRA.
+// Alquilar no es comprar; si además figurara como candidato de suministro, contabilidad volvería a
+// tener las dos cosas en la misma bolsa, que es el problema que este trabajo viene a resolver.
+$assert($svc->tipoRecursoAdmitido($EQ_ALQ, $suministroId) === false, 'Un equipo ALQUILADO no es admisible en un paquete de suministro (no se compra lo que se alquila).');
+$assert($svc->tipoRecursoAdmitido($EQ_COM, $suministroId) === true, 'Un equipo COMPRADO sí es admisible en un paquete de suministro.');
+
+// «Sin clasificar» se comporta exactamente como el «EQUIPO» de hoy: es lo que permite usar el
+// módulo con el tapón puesto.
+$assert($svc->tipoRecursoAdmitido($EQ_SIN, $suministroId) === true, 'Sin clasificar se comporta como el EQUIPO de hoy: admisible en suministro.');
+$assert($svc->tipoRecursoAdmitido($EQ_SIN, $manoObraId) === false, 'Sin clasificar NO cae en mano de obra: sigue filtrando, no cayó al default.');
+$assert($svc->tipoRecursoAdmitido($EQ_ALQ, $manoObraId) === false, 'Un equipo alquilado tampoco cae en mano de obra.');
+$assert($svc->tipoRecursoAdmitido($EQ_COM, $manoObraId) === false, 'Un equipo comprado tampoco cae en mano de obra.');
+
+// El genérico sigue nombrado a propósito: SINCO lo emite en cada carga, y entre la carga y la
+// clasificación el motor tiene que seguir filtrándolo igual que antes.
+$assert($svc->tipoRecursoAdmitido('EQUIPO', $suministroId) === true, 'El genérico EQUIPO conserva su comportamiento (SINCO lo sigue emitiendo).');
+$assert($svc->tipoRecursoAdmitido('EQUIPO', $manoObraId) === false, 'Y sigue sin caer en mano de obra.');
+
 echo $failures === [] ? "=== OK ===\n" : '=== ' . count($failures) . " FAILED ===\n";
 $limpiar();
 exit($failures === [] ? 0 : 1);

@@ -276,3 +276,4 @@ goals/retiro-listado-contratos/*
 !tests/browser/pdc-v2-tamiz-daporto.evidencia.mjs
 !tests/browser/pdc-v2-impacto-daporto.evidencia.mjs
 !tests/browser/pdc-v2-ayuda.spec.mjs
+!tests/browser/pdc-v2-equipos.spec.mjs
