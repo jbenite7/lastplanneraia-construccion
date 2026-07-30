@@ -46,6 +46,7 @@ import { etiquetaMovimiento, resumenDelta } from '../lib/reprogramacion'
 import { claseCorte, etiquetaCorte } from '../lib/vencimientos'
 import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SimulacionReprogramacion, SugerenciaFrente } from '../lib/types'
 import { filtraPorTexto, plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 // TextEditorModule: la columna Responsable es `editable: true`; sin este módulo AG Grid rechaza la
@@ -564,7 +565,7 @@ export default function PlanFechas() {
     <section className="pdc-bloque pdc-plan">
       <header className="pdc-paq-header">
         <div>
-          <h1>Plan de compras</h1>
+          <div className="pdc-titulo-fila"><h1>Plan de compras</h1><BotonAyuda pantalla="plan" /></div>
           <p className="pdc-sub">Qué hay que empezar a contratar y cuándo — lo vencido va primero.</p>
         </div>
         {/* Misma forma que la cobertura de Paquetes de contratación, a propósito: quien pasa de una

@@ -14,6 +14,7 @@ import { hayImpacto, textoConserva } from '../lib/impactoReimport'
 import { etiquetaVersion } from '../lib/versionLabel'
 import type { Comparativo, GrupoImpacto, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
 import { contarInsumos, plural } from '../lib/texto'
+import BotonAyuda from '../components/BotonAyuda'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -201,7 +202,7 @@ export default function ImportarPresupuesto() {
   return (
     <section className="pdc-page">
       <header className="pdc-header">
-        <h1>Importar presupuesto</h1>
+        <div className="pdc-titulo-fila"><h1>Importar presupuesto</h1><BotonAyuda pantalla="importar" /></div>
         <p>Sube el Excel exportado del software de presupuestos (hoja «Presupuesto», máx. 10MB).</p>
       </header>
 

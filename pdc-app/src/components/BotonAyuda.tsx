@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { ayudaDe } from '../lib/ayuda'
 import type { PantallaAyuda } from '../lib/ayuda'
+import { AyudaContexto } from '../lib/ayudaContexto'
 
 /**
  * El botón de ayuda de una pantalla. UNO para las ocho: recibe qué pantalla es y saca su contenido
@@ -18,14 +19,9 @@ import type { PantallaAyuda } from '../lib/ayuda'
  * Los botones van sin clase: dentro de `.pdc-shell` el módulo ya les da su alto y su tipografía
  * densos, y ponerles `aia-btn` los habría sacado de esa escala.
  */
-export default function BotonAyuda({
-  pantalla,
-  onRelanzarRecorrido,
-}: {
-  pantalla: PantallaAyuda
-  onRelanzarRecorrido?: () => void
-}) {
+export default function BotonAyuda({ pantalla }: { pantalla: PantallaAyuda }) {
   const contenido = ayudaDe(pantalla)
+  const { relanzarRecorrido } = useContext(AyudaContexto)
   const dialogo = useRef<HTMLDialogElement>(null)
   const disparador = useRef<HTMLButtonElement>(null)
   const [abierto, setAbierto] = useState(false)
@@ -112,12 +108,12 @@ export default function BotonAyuda({
             </section>
           )}
 
-          {onRelanzarRecorrido && (
+          {relanzarRecorrido && (
             <footer className="pdc-guia-pie">
               <button
                 type="button"
                 data-testid={`pdc-ayuda-relanzar-${pantalla}`}
-                onClick={() => { setAbierto(false); onRelanzarRecorrido() }}
+                onClick={() => { setAbierto(false); relanzarRecorrido() }}
               >
                 Ver otra vez el recorrido del módulo
               </button>
