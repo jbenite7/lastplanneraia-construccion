@@ -435,6 +435,42 @@ final class MaestroInsumosService
         ], $rows);
     }
 
+    /**
+     * Vuelve a enganchar los vínculos `pendiente` que ya tienen un insumo activo que les case.
+     *
+     * Existe porque el auto-match vivía sólo dentro de `generarVinculos()`, y eso únicamente se
+     * dispara desde el lado del presupuesto. Cualquier escritura del lado del maestro —importar el
+     * catálogo de SINCO, reactivar un insumo retirado— añadía filas que hacían resoluble un
+     * pendiente, y nadie volvía a mirar: la cola se quedaba igual de larga aunque el insumo que
+     * faltaba ya estuviera en el catálogo.
+     *
+     * La asimetría era medible en el código: `desactivar()` sí propagaba —devolvía los `auto` a
+     * `pendiente`, y encima sin filtro de proyecto—, pero añadir no propagaba nada. Quitar se
+     * enteraba, poner no.
+     *
+     * Global por la misma razón que lo es `desactivar()`: el catálogo es de la empresa, así que un
+     * insumo nuevo resuelve pendientes de cualquier obra. Se acota por proyecto sólo cuando quien
+     * llama tiene motivo para hacerlo.
+     *
+     * Sólo toca `pendiente`: un vínculo confirmado es una decisión humana y no se pisa.
+     *
+     * @return int cuántos vínculos pasaron de `pendiente` a `auto`
+     */
+    public function reengancharPendientes(?int $projectId = null): int
+    {
+        $filtro = $projectId !== null ? ' AND v.project_id = ?' : '';
+        $params = $projectId !== null ? [$projectId] : [];
+        $stmt = $this->db->query(
+            "UPDATE pdc_insumo_vinculos v
+             JOIN general_maestro_insumos m
+               ON m.descripcion_norm = v.descripcion_norm AND m.unidad = v.unidad AND m.activo = 1
+             SET v.maestro_id = m.id, v.estado = 'auto'
+             WHERE v.estado = 'pendiente'{$filtro}",
+            $params,
+        );
+        return $stmt->rowCount();
+    }
+
     /** Retira un insumo del catálogo: activo=0, auditoría y reversión global del auto-match. */
     /**
      * `revertidos` cuenta los vínculos que vuelven a pendiente: sólo los `auto`, porque un
@@ -469,7 +505,10 @@ final class MaestroInsumosService
     }
 
     /**
-     * @return array{ok: true}|array{ok: false, code: 'MAESTRO_INVALIDO'}
+     * `reenganchados` cuenta los vínculos que vuelven de `pendiente` a `auto` porque este insumo
+     * volvió al catálogo: es el simétrico de `revertidos` en `desactivar()`.
+     *
+     * @return array{ok: true, reenganchados: int}|array{ok: false, code: 'MAESTRO_INVALIDO'}
      */
     public function reactivar(int $maestroId, string $usuario): array
     {
@@ -481,6 +520,9 @@ final class MaestroInsumosService
             'UPDATE general_maestro_insumos SET activo = 1, actualizado_por = ?, updated_at = NOW() WHERE id = ?',
             [$usuario, $maestroId],
         );
-        return ['ok' => true];
+        // Simétrico a `desactivar()`: si retirar un insumo devuelve sus vínculos a pendiente,
+        // devolverlo al catálogo tiene que volver a engancharlos. Sin esto, reactivar dejaba la cola
+        // igual de larga con el insumo ya disponible.
+        return ['ok' => true, 'reenganchados' => $this->reengancharPendientes()];
     }
 }

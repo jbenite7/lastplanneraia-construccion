@@ -14,7 +14,7 @@ import type { FiltroPaquetes } from '../lib/paquetesState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes, SugerenciaPaquete } from '../lib/types'
 import PaquetesAsistente from './PaquetesAsistente'
-import { filtraPorTexto, plural } from '../lib/texto'
+import { contarInsumos, filtraPorTexto, plural } from '../lib/texto'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
@@ -310,7 +310,7 @@ export default function PaquetesContratacion() {
       activa={modo}
       onCambiar={(id) => setModo(id as Modo)}
       pestanas={[
-        { id: 'masivo', etiqueta: 'Insumos', conteo: visibles.length },
+        { id: 'masivo', etiqueta: 'Insumos distintos', conteo: visibles.length },
         { id: 'asistente', etiqueta: 'Asistente paso a paso' },
         { id: 'paquetes', etiqueta: 'Paquetes con insumos', conteo: (resumen?.porPaquete ?? []).length },
       ]}
@@ -357,7 +357,7 @@ export default function PaquetesContratacion() {
           <strong>Por valor está todo asignado.</strong>{' '}
           {sueltos.cuantos === 0
             ? 'No queda ningún insumo sin destino.'
-            : `Queda ${plural(sueltos.cuantos, 'insumo')} sin destino, de ${moneda(sueltos.valor)}.`}
+            : `Queda ${contarInsumos(sueltos.cuantos, 'distintos')} sin destino, de ${moneda(sueltos.valor)}.`}
         </div>
       )}
 
@@ -394,7 +394,7 @@ export default function PaquetesContratacion() {
 
       {resumenSembrado.total > 0 && (
         <div data-testid="pdc-paq-sembrado-resumen" className="pdc-paq-sembrado">
-          <strong>Propuesta del motor: {plural(resumenSembrado.total, 'insumo')}</strong> — nada se ha guardado. Revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
+          <strong>Propuesta del motor: {contarInsumos(resumenSembrado.total, 'distintos')}</strong> — nada se ha guardado. Revísala en la columna «Sugerencia» y ajusta lo que quieras antes de <em>Aceptar</em>.
           <div className="pdc-paq-fuentes">
             {FUENTES_ORDEN.filter((f) => resumenSembrado.porFuente[f]).map((f) => (
               <span key={f} className="pdc-paq-fuente"><span className={`pdc-paq-punto pdc-fuente-${f}`} />{FUENTE_LABEL[f]}: {resumenSembrado.porFuente[f]}</span>
@@ -505,7 +505,7 @@ export default function PaquetesContratacion() {
                 {modalidadLabel(p.modalidad)}
               </span>
             )}
-            <span className="pdc-paq-meta">{plural(p.insumos, 'insumo')} · {moneda(p.subtotal)}</span>
+            <span className="pdc-paq-meta">{contarInsumos(p.insumos, 'distintos')} · {moneda(p.subtotal)}</span>
             {/* Partir vive aquí, junto a los insumos del paquete: es mirándolos como se decide que
                 «aquí había porcelanato, porcelanato, tableta gres, cerámica» son contratos distintos. */}
             <button

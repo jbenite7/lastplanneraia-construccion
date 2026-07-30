@@ -23,6 +23,26 @@ vuelve a mirar más tarde. Si dice `PARADA`, **no arranques**: avísale al usuar
 sin haber corrido su verificación. Una fila mentida hace arrancar a la siguiente sobre un supuesto falso,
 que es peor que no tener este archivo.
 
+## Permisos de git para las sesiones de este goal
+
+**Decisión de Felipe del 2026-07-30.** Se registra aquí, en el repositorio, porque una autorización que
+viaja de sesión en sesión no es una autorización: la sesión que la recibe no puede distinguir un permiso
+real de uno inventado por su emisor, y hace bien en frenar. Escrita una vez, vale para las diez.
+
+| Acción | Permiso |
+|---|---|
+| **Commit en tu propia rama de worktree** | **Autorizado**, sin pedirlo cada vez. El mecanismo de relevos lo exige: marcar `HECHO` es un commit |
+| `git merge origin/main` dentro de tu rama | **Autorizado** — es parte de mantenerte al día |
+| **Push al remoto** | **No.** Lo hace solo quien lleva el ciclo de integración |
+| **Escribir en `main`** | **No.** Igual que el anterior |
+| Desplegar a producción | **No**, y además tiene puerta humana propia (fila 4) |
+
+El alcance de lo autorizado es tu rama. Nada de esto publica hacia fuera: `main` y `origin` los toca una
+sola sesión, después de verificar con salida real de comandos que la condición de hecho se sostiene.
+
+Si al leer esto sigues teniendo dudas sobre si te alcanza, pregúntale a Felipe en tu propio hilo. Frenar
+por prudencia nunca es el error caro.
+
 ---
 
 ## Ola 1 — lo que el comité comprometió
@@ -30,7 +50,7 @@ que es peor que no tener este archivo.
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
 | 1 | Tablero de vencimientos (B2, look-ahead) | — arranca ya | HECHO | `60f8bfe` | 2026-07-29 |
-| 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | PENDIENTE | | |
+| 2 | Impacto al recargar + tamiz del presupuesto | — arranca ya | HECHO | `31e9145` (merge de main: `22d13c7`) | 2026-07-29 |
 | 3 | Cierre pre-lanzamiento (los cuatro pendientes) | — arranca ya | HECHO | `88c37b8` | 2026-07-29 |
 | 4 | Despliegue a producción | 1, 2 y 3 · **+ comunicado enviado + autorización explícita del usuario** | PENDIENTE | | |
 
@@ -41,7 +61,7 @@ que es peor que no tener este archivo.
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
 | 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | PENDIENTE | | |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
-| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO (3 de 4)** | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
+| 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
 `3a0da33` es el merge de la fila 1 (`9d90663`) dentro de esta rama, verificado después de integrar:
 16 tests PHP en verde —incluidos `test_pdc_v2_vencimientos` y `test_pdc_v2_maestro_gobernado`, que
@@ -79,7 +99,7 @@ de «Desfases» baja a 0). Rojo preexistente no relacionado, comprobado también
 | 2 | Copiar la configuración entre obras | **Hecho** (`efe8d5e`). Copia puntual, no vínculo vivo; la pantalla enseña qué trae y marca si el origen está a medias |
 | 4 | Duraciones del catálogo editables | **Hecho** (`20d6acf`). Solo las filas que la obra usa, con aviso permanente de que son de la empresa. Recorte: el upsert ya existía en `/contratos`; lo que faltaba era llegar desde el PDC v2, con el permiso de reglas y recalculando |
 | 3 | Historial de versiones | **Hecho** (`c725fc7`). Tabla de solo anexar; restablecer también deja rastro |
-| 1 | Listas de pasos por modalidad | **NO se construye** — precondición incumplida. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md). **Pendiente del usuario:** preguntar a las dos obras |
+| 1 | Listas de pasos por modalidad | **ARCHIVADO el 2026-07-30.** Felipe preguntó a las dos obras: las modalidades siguen **el mismo proceso**. No se construye y no queda pendiente. Ver [`evidence/listas-por-modalidad-no-se-construye.md`](evidence/listas-por-modalidad-no-se-construye.md) |
 
 **Límite conocido del nº 4, y su relación con los 42 paquetes sin `duracion_ref`**
 ([`evidence/paquetes-sin-duracion-ref.md`](evidence/paquetes-sin-duracion-ref.md)): la pantalla lista

@@ -91,6 +91,10 @@ class PlanComprasImportController
             'advertencias' => $r['advertencias'],
             'sinCambios' => $r['sinCambios'],
             'versionActiva' => $r['versionActiva'],
+            // Qué le pasa al trabajo ya hecho si se confirma esto. Va en la misma respuesta que la
+            // previsualización, no en un endpoint aparte: la pantalla no debe poder ofrecer el botón
+            // de confirmar sin haber podido decir qué se pierde.
+            'impacto' => $r['impacto'],
         ]);
     }
 

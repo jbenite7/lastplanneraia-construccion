@@ -169,7 +169,10 @@ class PlanComprasMaestroController
             $this->fail('MAESTRO_INVALIDO', 'El insumo no existe o ya está activo.', 422);
             return;
         }
-        $this->ok(['reactivado' => 1]);
+        // `reenganchados` viaja porque es lo que el usuario no puede deducir: devolver un insumo al
+        // catálogo puede resolver vínculos pendientes de cualquier obra, y sin este número la cola
+        // baja sola sin que nadie sepa por qué.
+        $this->ok(['reactivado' => 1, 'reenganchados' => $r['reenganchados']]);
     }
 
     // ── guards ──────────────────────────────────────────────

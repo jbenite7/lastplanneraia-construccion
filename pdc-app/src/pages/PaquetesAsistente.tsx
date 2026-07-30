@@ -10,7 +10,7 @@ import {
 } from '../lib/paqueteWizardState'
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
-import { plural } from '../lib/texto'
+import { contarInsumos, plural } from '../lib/texto'
 
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
 const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''
@@ -283,7 +283,7 @@ export default function PaquetesAsistente({
       )}
 
       <div className="pdc-wiz-progreso">
-        Quedan <strong>{plural(restantes, 'insumo')}</strong> sin asignar, <strong>{conPropuesta}</strong> con propuesta del motor.
+        Quedan <strong>{contarInsumos(restantes, 'distintos')}</strong> sin asignar, <strong>{conPropuesta}</strong> con propuesta del motor.
         <span className="pdc-wiz-filtro" role="group" aria-label="Filtrar la cola">
           {([['todos', 'Todos'], ['con', 'Con propuesta'], ['sin', 'Sin propuesta']] as [FiltroCola, string][]).map(([v, l]) => (
             <button key={v} type="button" data-testid={`pdc-wiz-filtro-${v}`} className={filtro === v ? 'is-activo' : ''}

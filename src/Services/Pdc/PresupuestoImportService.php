@@ -16,6 +16,13 @@ namespace App\Services\Pdc;
  */
 final class PresupuestoImportService
 {
+    /**
+     * Unidades que en el export de presupuestos significan «esto es una suma global»: el APU no se
+     * descompone, se resuelve con una cifra. Medido contra Da Porto, donde son `SG` (54 actividades)
+     * y `GL` (3); `GLB` y `GLOBAL` se aceptan porque el mismo software las emite según la plantilla.
+     */
+    public const UNIDADES_GLOBALES = ['SG', 'GL', 'GLB', 'GLOBAL'];
+
     public function __construct(
         private readonly \Database $db,
         private readonly PresupuestoImportStore $store,
@@ -156,6 +163,124 @@ final class PresupuestoImportService
     }
 
     /**
+     * Qué le pasa al trabajo ya hecho si se confirma esta versión candidata.
+     *
+     * Se responde ANTES de confirmar porque hoy el usuario carga a ciegas: la herencia de A3 existe
+     * —las asignaciones se conservan y el auto-match vuelve a correr—, pero nadie sabe cuánto de su
+     * trabajo va a quedar huérfano hasta después de haberlo hecho.
+     *
+     * No hay consulta nueva contra el presupuesto: la versión activa se consolida con la misma
+     * función que usa el comparativo de A1.6 y la candidata con esa misma función sobre las filas que
+     * el parser acaba de leer. `pdc_insumo_paquete` tiene como clave única exactamente
+     * `(project_id, descripcion_norm, unidad)`, así que el cruce es un join más.
+     *
+     * **Informa; no decide.** Un insumo que cambió de tipo se señala y nada más: reasignarlo solo
+     * rompería la única regla sobre la que se sostiene el módulo, que es la confirmación humana.
+     *
+     * Sobre «cambia de tipo» y no «cambia de agrupación»: la columna `Agrupacion` del export de
+     * SINCO se lee y se descarta (`PresupuestoExcelParser` no la persiste), y la `agrupacion` que sí
+     * existe vive en `general_maestro_insumos` indexada por `(descripcion_norm, unidad)` — o sea, es
+     * propiedad de la identidad del insumo y no puede cambiar entre dos versiones del presupuesto.
+     * Lo que sí se persiste y sí alimenta al motor de sugerencias es `tipo_insumo`, y es eso lo que
+     * se compara. Diferenciar la agrupación real exigiría una migración, que el spec excluye.
+     *
+     * @param list<array<string, mixed>> $insumosCandidatos filas del parser (sin persistir todavía)
+     * @return array{
+     *     versionActiva: array{id: int, label: mixed}|null,
+     *     nuevosSinPaquete: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *     desaparecenConPaquete: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *     cambianTipo: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *     valorAfectado: float
+     * }
+     */
+    public function impactoDeReimportar(int $projectId, array $insumosCandidatos): array
+    {
+        $vacio = static fn (): array => ['cantidad' => 0, 'valor' => 0.0, 'detalle' => []];
+        $activa = $this->versionActivaDe($projectId);
+        if ($activa === null) {
+            return [
+                'versionActiva' => null,
+                'nuevosSinPaquete' => $vacio(),
+                'desaparecenConPaquete' => $vacio(),
+                'cambianTipo' => $vacio(),
+                'valorAfectado' => 0.0,
+            ];
+        }
+
+        $antes = $this->insumosConsolidados($projectId, (int) $activa['id']);
+        $despues = self::consolidarInsumos($insumosCandidatos);
+
+        // Destino de cada insumo: nombre del paquete, o null cuando está omitido a propósito (omitir
+        // también es una decisión tomada, así que tampoco es trabajo pendiente). La clave existe en
+        // el mapa en los dos casos: lo que distingue «sin destino» es que no exista la clave.
+        $rows = $this->db->query(
+            'SELECT a.descripcion_norm, a.unidad, a.omitido, p.nombre
+             FROM pdc_insumo_paquete a
+             LEFT JOIN general_paquetes_contratacion p ON p.id = a.paquete_id
+             WHERE a.project_id = ? AND (a.paquete_id IS NOT NULL OR a.omitido = 1)',
+            [$projectId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $destino = [];
+        foreach ($rows as $r) {
+            $destino[$r['descripcion_norm'] . '|' . $r['unidad']] = $r['nombre'];
+        }
+
+        $fila = static fn (array $ins, ?string $paquete, ?string $tipoAnterior = null): array => [
+            'descripcion' => $ins['descripcion'],
+            'unidad' => $ins['unidad'],
+            'tipoInsumo' => $ins['tipoInsumo'],
+            'tipoInsumoAnterior' => $tipoAnterior,
+            'valorTotal' => round($ins['valorTotal'], 2),
+            'paquete' => $paquete,
+        ];
+        $norma = static fn (mixed $t): string => mb_strtoupper(trim((string) $t));
+
+        $nuevos = [];
+        $desaparecen = [];
+        $cambian = [];
+        foreach ($despues as $clave => $ins) {
+            if (!isset($antes[$clave])) {
+                if (!array_key_exists($clave, $destino)) {
+                    $nuevos[] = $fila($ins, null);
+                }
+                continue;
+            }
+            if ($norma($ins['tipoInsumo']) !== $norma($antes[$clave]['tipoInsumo'])) {
+                $cambian[] = $fila($ins, $destino[$clave] ?? null, (string) $antes[$clave]['tipoInsumo']);
+            }
+        }
+        foreach ($antes as $clave => $ins) {
+            // Omitido (nombre null en el mapa) fuera: no se pierde trabajo al desaparecer algo que ya
+            // se había decidido no contratar.
+            if (!isset($despues[$clave]) && ($destino[$clave] ?? null) !== null) {
+                $desaparecen[] = $fila($ins, (string) $destino[$clave]);
+            }
+        }
+
+        $porValor = static fn (array $x, array $y): int => $y['valorTotal'] <=> $x['valorTotal'];
+        usort($nuevos, $porValor);
+        usort($desaparecen, $porValor);
+        usort($cambian, $porValor);
+
+        $grupo = static fn (array $detalle): array => [
+            'cantidad' => count($detalle),
+            'valor' => round(array_sum(array_column($detalle, 'valorTotal')), 2),
+            'detalle' => $detalle,
+        ];
+        $g1 = $grupo($nuevos);
+        $g2 = $grupo($desaparecen);
+        $g3 = $grupo($cambian);
+
+        return [
+            'versionActiva' => ['id' => (int) $activa['id'], 'label' => $activa['version_label']],
+            'nuevosSinPaquete' => $g1,
+            'desaparecenConPaquete' => $g2,
+            'cambianTipo' => $g3,
+            'valorAfectado' => round($g1['valor'] + $g2['valor'] + $g3['valor'], 2),
+        ];
+    }
+
+    /**
      * @return array{ok: false, errores: list<PresupuestoErrorFila>}|array{
      *     ok: true,
      *     importToken: string,
@@ -163,7 +288,14 @@ final class PresupuestoImportService
      *     resumen: PresupuestoResumen,
      *     advertencias: list<string>,
      *     sinCambios: bool,
-     *     versionActiva: array{id: int, numero: int, label: mixed, createdAt: mixed}|null
+     *     versionActiva: array{id: int, numero: int, label: mixed, createdAt: mixed}|null,
+     *     impacto: array{
+     *         versionActiva: array{id: int, label: mixed}|null,
+     *         nuevosSinPaquete: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *         desaparecenConPaquete: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *         cambianTipo: array{cantidad: int, valor: float, detalle: list<array<string, mixed>>},
+     *         valorAfectado: float
+     *     }
      * }
      */
     public function previewDesdeArchivo(string $rutaArchivo, string $nombreOriginal, int $projectId, string $usuario): array
@@ -208,6 +340,10 @@ final class PresupuestoImportService
                 'label' => $activa['version_label'],
                 'createdAt' => $activa['created_at'],
             ],
+            // El informe de impacto viaja aquí y no en un endpoint aparte: es la misma pregunta que
+            // la pantalla ya está haciendo («¿qué voy a cargar?»), y separarlo permitiría mostrar la
+            // previsualización sin él.
+            'impacto' => $this->impactoDeReimportar($projectId, $resultado['insumos']),
         ];
     }
 
@@ -438,6 +574,14 @@ final class PresupuestoImportService
      *
      * @return array{
      *     version: array{id: int, versionLabel: mixed, activa: int},
+     *     avisos: array{
+     *         costoTotal: float,
+     *         insumosDistintos: int,
+     *         aparicionesApu: int,
+     *         actividadesSinCantidad: array{cantidad: int, lineasEnCero: int, detalle: list<array<string, mixed>>},
+     *         insumosEnCero: array{cantidad: int, detalle: list<array<string, mixed>>},
+     *         partidasGlobales: array{unidades: list<string>, candidatos: list<array<string, mixed>>}
+     *     },
      *     items: list<array{
      *         id: int,
      *         codigo: mixed,
@@ -495,6 +639,9 @@ final class PresupuestoImportService
 
         return [
             'version' => ['id' => $vid, 'versionLabel' => $version['version_label'], 'activa' => (int) $version['activa']],
+            // Los avisos viajan con el árbol y no en un endpoint aparte, para que un presupuesto no
+            // pueda mostrarse sin ellos.
+            'avisos' => $this->avisosDelPresupuesto($projectId, $vid),
             'items' => array_map(static fn (array $r): array => [
                 'id' => (int) $r['id'],
                 'codigo' => $r['codigo'],
@@ -516,6 +663,121 @@ final class PresupuestoImportService
                 'valorUnitario' => $num($r['valor_unitario']),
                 'valorTotal' => $num($r['valor_total']),
             ], $insumos),
+        ];
+    }
+
+    /**
+     * Lo que el presupuesto no explica solo, señalado sin bloquear nada.
+     *
+     * Viaja dentro de `arbol()` —el servicio del visor— y no en un endpoint aparte, para que un
+     * presupuesto no pueda mostrarse sin sus avisos. Es la mejor oportunidad de la empresa para cazar
+     * los machetazos del presupuesto: el que arma el plan de compras es el primero que los ve.
+     *
+     * Los dos avisos de ceros están **separados a propósito**. La regla del spec (`cantidad = 0` o
+     * `valor_unitario = 0`) da 112 líneas en Da Porto, pero 102 de ellas son consecuencia de otra
+     * cosa: 47 actividades que nadie cuantificó todavía. Reportar «112 insumos vacíos» sería un
+     * número verdadero que señala mal, y el 47 es además el que le cuadra a quien recorrió el
+     * presupuesto a mano. 102 + 10 = 112: no hay doble conteo ni fuga.
+     *
+     * El umbral del «globalazo» **no se aplica aquí**: se devuelven todos los candidatos con su valor
+     * y el costo total de la versión, y quien pone el umbral es el usuario en la pantalla. Un umbral
+     * cocinado en el servidor sería un juicio disfrazado de constante.
+     *
+     * @return array{
+     *   costoTotal: float,
+     *   insumosDistintos: int,
+     *   aparicionesApu: int,
+     *   actividadesSinCantidad: array{cantidad: int, lineasEnCero: int, detalle: list<array<string, mixed>>},
+     *   insumosEnCero: array{cantidad: int, detalle: list<array<string, mixed>>},
+     *   partidasGlobales: array{unidades: list<string>, candidatos: list<array<string, mixed>>}
+     * }
+     */
+    private function avisosDelPresupuesto(int $projectId, int $versionId): array
+    {
+        $rows = $this->db->query(
+            'SELECT i.descripcion, i.tipo_insumo, i.unidad, i.cantidad_total, i.valor_unitario, i.valor_total,
+                    it.id AS item_id, it.codigo, it.descripcion AS actividad, it.unidad AS unidad_actividad,
+                    it.cantidad AS cantidad_actividad
+             FROM pdc_presupuesto_apu_insumos i
+             JOIN pdc_presupuesto_items it ON it.id = i.item_id
+             WHERE i.project_id = ? AND i.version_id = ?
+             ORDER BY it.codigo ASC, i.id ASC',
+            [$projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $sinCantidad = [];
+        $enCero = [];
+        $porItem = [];
+        $costoTotal = 0.0;
+
+        foreach ($rows as $r) {
+            $valor = (float) ($r['valor_total'] ?? 0);
+            $costoTotal += $valor;
+            $itemId = (int) $r['item_id'];
+            if (!isset($porItem[$itemId])) {
+                $porItem[$itemId] = [
+                    'codigo' => $r['codigo'], 'descripcion' => $r['actividad'],
+                    'unidad' => $r['unidad_actividad'], 'insumos' => 0, 'valorTotal' => 0.0,
+                ];
+            }
+            $porItem[$itemId]['insumos']++;
+            $porItem[$itemId]['valorTotal'] += $valor;
+
+            if (((float) ($r['cantidad_actividad'] ?? 0)) === 0.0) {
+                $cod = (string) $r['codigo'];
+                if (!isset($sinCantidad[$cod])) {
+                    $sinCantidad[$cod] = ['codigo' => $cod, 'descripcion' => $r['actividad'], 'valorTotal' => 0.0, 'lineas' => 0];
+                }
+                $sinCantidad[$cod]['lineas']++;
+                $sinCantidad[$cod]['valorTotal'] += $valor;
+                continue; // su línea de insumo la explica la actividad: no se cuenta dos veces
+            }
+            if (((float) ($r['cantidad_total'] ?? 0)) === 0.0 || ((float) ($r['valor_unitario'] ?? 0)) === 0.0) {
+                $enCero[] = [
+                    'codigo' => $r['codigo'], 'actividad' => $r['actividad'],
+                    'descripcion' => $r['descripcion'], 'unidad' => $r['unidad'],
+                    'cantidad' => (float) ($r['cantidad_total'] ?? 0),
+                    'valorUnitario' => (float) ($r['valor_unitario'] ?? 0),
+                ];
+            }
+        }
+
+        // Actividades sin cantidad que además no tienen ninguna línea de insumo: existen y también
+        // hay que mirarlas, así que el conteo no puede salir solo del recorrido de arriba.
+        $huerfanas = $this->db->query(
+            "SELECT codigo, descripcion FROM pdc_presupuesto_items
+             WHERE project_id = ? AND version_id = ? AND tipo_fila = 'actividad'
+               AND (cantidad = 0 OR cantidad IS NULL)
+               AND id NOT IN (SELECT item_id FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ?)",
+            [$projectId, $versionId, $projectId, $versionId],
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($huerfanas as $h) {
+            $sinCantidad[(string) $h['codigo']] = ['codigo' => $h['codigo'], 'descripcion' => $h['descripcion'], 'valorTotal' => 0.0, 'lineas' => 0];
+        }
+
+        $candidatos = [];
+        foreach ($porItem as $it) {
+            if ($it['insumos'] <= 2 && in_array(mb_strtoupper(trim((string) $it['unidad'])), self::UNIDADES_GLOBALES, true)) {
+                $it['valorTotal'] = round($it['valorTotal'], 2);
+                $candidatos[] = $it;
+            }
+        }
+        usort($candidatos, static fn (array $x, array $y): int => $y['valorTotal'] <=> $x['valorTotal']);
+
+        $detalleSinCantidad = array_values($sinCantidad);
+        usort($detalleSinCantidad, static fn (array $x, array $y): int => strcmp((string) $x['codigo'], (string) $y['codigo']));
+
+        return [
+            'costoTotal' => round($costoTotal, 2),
+            'insumosDistintos' => count(self::consolidarInsumos($rows)),
+            'aparicionesApu' => count($rows),
+            'actividadesSinCantidad' => [
+                'cantidad' => count($detalleSinCantidad),
+                'lineasEnCero' => array_sum(array_column($detalleSinCantidad, 'lineas')),
+                'detalle' => $detalleSinCantidad,
+            ],
+            'insumosEnCero' => ['cantidad' => count($enCero), 'detalle' => $enCero],
+            'partidasGlobales' => ['unidades' => self::UNIDADES_GLOBALES, 'candidatos' => $candidatos],
         ];
     }
 
@@ -672,7 +934,51 @@ final class PresupuestoImportService
     }
 
     /**
-     * Insumos consolidados por (descripcion_norm, unidad) de una versión.
+     * Agrupa filas de insumo por la clave de fusión del diff: `(descripcion_norm, unidad)`, que es
+     * también la clave única de `pdc_insumo_paquete`. Estático y puro a propósito: lo llaman el
+     * comparativo (con filas de la base) y el informe de impacto (con filas recién parseadas, de una
+     * versión candidata que aún no existe). Si las dos rutas no compartieran esta función, el impacto
+     * podría contar como «nuevo» un insumo que el comparativo considera el mismo.
+     *
+     * @param list<array<string, mixed>> $rows usa descripcion, tipo_insumo, unidad, cantidad_total,
+     *                                        valor_total
+     * @return array<string, array{
+     *     norm: string,
+     *     descripcion: mixed,
+     *     tipoInsumo: mixed,
+     *     unidad: mixed,
+     *     cantidadTotal: float,
+     *     valorTotal: float,
+     *     apariciones: int
+     * }> indexado por "descripcion_norm|unidad", que es la clave de fusión del diff (spec A1.6)
+     */
+    public static function consolidarInsumos(array $rows): array
+    {
+        $acc = [];
+        foreach ($rows as $r) {
+            $norm = MaestroInsumosService::normalizar((string) ($r['descripcion'] ?? ''));
+            $clave = $norm . '|' . ($r['unidad'] ?? '');
+            if (!isset($acc[$clave])) {
+                $acc[$clave] = [
+                    'norm' => $norm,
+                    'descripcion' => $r['descripcion'] ?? '',
+                    'tipoInsumo' => $r['tipo_insumo'] ?? '',
+                    'unidad' => $r['unidad'] ?? '',
+                    'cantidadTotal' => 0.0,
+                    'valorTotal' => 0.0,
+                    'apariciones' => 0,
+                ];
+            }
+            $acc[$clave]['cantidadTotal'] += (float) ($r['cantidad_total'] ?? 0);
+            $acc[$clave]['valorTotal'] += (float) ($r['valor_total'] ?? 0);
+            $acc[$clave]['apariciones']++;
+        }
+        return $acc;
+    }
+
+    /**
+     * Insumos consolidados de una versión ya persistida. La agrupación la hace
+     * `consolidarInsumos()`, compartida con el informe de impacto.
      *
      * @return array<string, array{
      *     norm: string,
@@ -680,7 +986,8 @@ final class PresupuestoImportService
      *     tipoInsumo: mixed,
      *     unidad: mixed,
      *     cantidadTotal: float,
-     *     valorTotal: float
+     *     valorTotal: float,
+     *     apariciones: int
      * }> indexado por "descripcion_norm|unidad", que es la clave de fusión del diff (spec A1.6)
      */
     private function insumosConsolidados(int $projectId, int $versionId): array
@@ -690,17 +997,7 @@ final class PresupuestoImportService
              FROM pdc_presupuesto_apu_insumos WHERE project_id = ? AND version_id = ?',
             [$projectId, $versionId],
         )->fetchAll(\PDO::FETCH_ASSOC);
-        $acc = [];
-        foreach ($rows as $r) {
-            $norm = MaestroInsumosService::normalizar($r['descripcion']);
-            $clave = $norm . '|' . $r['unidad'];
-            if (!isset($acc[$clave])) {
-                $acc[$clave] = ['norm' => $norm, 'descripcion' => $r['descripcion'], 'tipoInsumo' => $r['tipo_insumo'], 'unidad' => $r['unidad'], 'cantidadTotal' => 0.0, 'valorTotal' => 0.0];
-            }
-            $acc[$clave]['cantidadTotal'] += (float) ($r['cantidad_total'] ?? 0);
-            $acc[$clave]['valorTotal'] += (float) ($r['valor_total'] ?? 0);
-        }
-        return $acc; // indexado por "norm|unidad" (clave de fusión del diff = descripcion_norm + unidad, spec A1.6)
+        return self::consolidarInsumos($rows);
     }
 
     /**

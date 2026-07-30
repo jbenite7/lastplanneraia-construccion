@@ -9,6 +9,29 @@
  *   php tests/test_pdc_v2_brecha_daporto.php            resumen + fallo si la brecha supera el techo
  *   php tests/test_pdc_v2_brecha_daporto.php --detalle  además, cada diferencia con su evidencia
  *   php tests/test_pdc_v2_brecha_daporto.php --json     vuelca la brecha a brecha.json
+ *
+ * ---------------------------------------------------------------------------------------------
+ * 2026-07-29 · POR QUÉ LA VERSIÓN DEL PRESUPUESTO YA NO VA CABLEADA
+ *
+ * Este test fijaba `$VERSION = 292`. Desde que las bases de desarrollo tienen otra versión activa
+ * de DAPORTO (la 376), fallaba **siempre** con «no hay versión 292 en el proyecto 73» — un rojo
+ * permanente que no dice nada del código y que enseña a ignorar la salida del test.
+ *
+ * El arreglo no es aflojar la medición, es corregirla. Lo que este test ancla es el **estado
+ * canónico de asignaciones** (`pdc_insumo_paquete`), y esa tabla **no lleva `version_id`**: sus
+ * filas son del proyecto, no de una versión. El presupuesto es solo la ENTRADA que el motor lee.
+ * Con un id fijo, el test acabó comparando las propuestas del motor sobre un presupuesto viejo
+ * contra unas asignaciones que pertenecen al presupuesto vigente: justo lo contrario de lo que su
+ * primera línea promete.
+ *
+ * Así que la versión se resuelve como la resuelve producción: `proponerSembrado()` con `versionId`
+ * en `null` toma la activa (ver `insumosDeVersion()`), y es lo que hace la pantalla, porque
+ * `GET /plan-compras/api/paquetes/sugerencias` pasa `null` cuando no viene el parámetro. El test
+ * mide ahora el mismo camino que corre en caliente.
+ *
+ * Y si el proyecto no tiene NINGUNA versión importada, eso es un dato local ausente, no un rojo del
+ * código: se salta con motivo, igual que ya hacía cuando no hay asignaciones sembradas.
+ * ---------------------------------------------------------------------------------------------
  */
 
 declare(strict_types=1);
@@ -22,8 +45,19 @@ use App\Services\Pdc\MaestroInsumosService;
 /** Techo de diferencias tolerado. Bájalo cada vez que cierres un grupo: es un trinquete. */
 const BRECHA_MAXIMA = 7;
 
+/**
+ * Cuántas asignaciones curadas hacen falta para que un verde signifique algo.
+ *
+ * El techo de la brecha se cuenta en número de diferencias, así que un proyecto con cuatro
+ * asignaciones da PASS por no tener casi nada que reproducir. No es motivo para fallar —la base de
+ * quien corre esto no es asunto del test—, pero sí para decirlo en voz alta: un trinquete que se
+ * queda verde por falta de datos deja de ser un trinquete.
+ */
+const CANON_MINIMO_UTIL = 50;
+
 $PROYECTO = 73;
-$VERSION = 292;
+// Sin id fijo: la versión activa la resuelve el propio servicio (ver la nota de cabecera).
+$VERSION = null;
 
 $db = Database::getInstance();
 $svc = new PaquetesService($db);
@@ -39,9 +73,17 @@ if ($hay === 0) {
 
 $r = $svc->proponerSembrado($PROYECTO, $VERSION, 'todos');
 if ($r === null) {
-    fwrite(STDERR, "FAIL: no hay versión {$VERSION} en el proyecto {$PROYECTO}.\n");
-    exit(1);
+    // Único caso que queda: el proyecto tiene asignaciones pero ningún presupuesto importado. Es un
+    // dato local ausente, no un fallo del motor, y leerlo como rojo manda a diagnosticar código sano.
+    fwrite(STDOUT, sprintf(
+        "SKIP: el proyecto %d no tiene ninguna versión de presupuesto importada en esta base,\n"
+        . "      así que no hay entrada sobre la que correr el motor. Importa el presupuesto de\n"
+        . "      DAPORTO (Ensamble → Cargar presupuesto) y vuelve a medir.\n",
+        $PROYECTO,
+    ));
+    exit(0);
 }
+$VERSION = (int) $r['version']['id']; // la que el servicio resolvió: el resto del test mide sobre ella
 
 $clave = static fn(string $norm, string $unidad): string => $norm . '@@' . mb_strtoupper(trim($unidad));
 
@@ -107,11 +149,28 @@ if (in_array('--json', $argv, true)) {
 }
 
 printf(
-    "El motor reproduce %d de %d (%.1f%%) · difieren %d · valor en desacuerdo %s de %s (%.1f%%)\n",
+    "Versión %d (activa) · el motor reproduce %d de %d (%.1f%%) · difieren %d · valor en desacuerdo %s de %s (%.1f%%)\n",
+    $VERSION,
     $coincide, $conDestino, 100 * $coincide / max(1, $conDestino), count($difs),
     number_format($valorDif, 0, ',', '.'), number_format($valorTotal, 0, ',', '.'),
     100 * $valorDif / max(1.0, $valorTotal),
 );
+
+// Un trinquete que se queda verde por falta de datos no protege nada: que lo diga, en vez de dejar
+// que un PASS de cuatro insumos se lea como «el motor reproduce DAPORTO».
+//
+// Va por STDOUT y no por STDERR —a diferencia del aviso de residuo de más abajo— porque es parte del
+// informe de la medición, no un error, y porque así queda pegado al resumen al que califica: bajo
+// `docker compose exec` los dos flujos se entremezclan y un aviso a STDERR aparecía suelto.
+if ($conDestino < CANON_MINIMO_UTIL) {
+    fwrite(STDOUT, sprintf(
+        "AVISO: solo %d insumo(s) con destino canónico (el mínimo para que la medida diga algo es %d).\n"
+        . "       Esta base tiene el estado de DAPORTO a medio sembrar, así que un PASS aquí NO\n"
+        . "       significa que el motor reproduzca el plan real: significa que hay poco que reproducir.\n",
+        $conDestino,
+        CANON_MINIMO_UTIL,
+    ));
+}
 
 // Los paquetes del sandbox e2e viven en el catálogo GLOBAL (`general_paquetes_contratacion` no
 // lleva project_id), y el motor aprende de lo asignado en otros proyectos. El seed los limpia al

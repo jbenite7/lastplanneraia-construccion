@@ -22,6 +22,7 @@ import {
   etiquetaElegible,
   idPorEtiqueta,
   mensajeCalculo,
+  motivoSinAnclas,
   opcionFrente,
   opcionesFrente,
   opcionAncla,
@@ -79,6 +80,11 @@ export default function PlanFechas() {
   const [panelAbierto, setPanelAbierto] = useState(false)
   const [ramaFoco, setRamaFoco] = useState<string | null>(null)
   const [anclas, setAnclas] = useState<AnclaDisponible[]>([])
+  // Por qué el desplegable de frentes no ofrece nada. Sin esto, «no hay cronograma», «no tienes
+  // permiso» y «se cayó la petición» se ven idénticos: una lista vacía. Ver motivoSinAnclas().
+  const [anclasFallo, setAnclasFallo] = useState<string | null>(null)
+  const [anclasCargando, setAnclasCargando] = useState(true)
+  const motivoAnclas = motivoSinAnclas(anclas, frentes, anclasFallo, anclasCargando)
   // Bloqueante del review final A4: true solo cuando la petición de sugerencias ya resolvió (con
   // éxito o sin él). Sin esto, el efecto de preselección de abajo no puede distinguir «todavía no
   // sabemos si hay propuesta» de «ya sabemos que no la hay» — ver preseleccionDestinos().
@@ -117,9 +123,13 @@ export default function PlanFechas() {
       .then((d) => setFrentes(d.frentes))
     // Las anclas incluyen las 242 actividades: hay ramas sin frente propio cuyo hito real es una
     // actividad concreta (CUBIERTA ancla en «LOSA AÉREA CUBIERTA»).
+    setAnclasCargando(true)
     apiGet<{ anclas: AnclaDisponible[] }>('/plan-compras/api/plan/anclas')
-      .then((d) => setAnclas(d.anclas))
-      .catch(() => setAnclas([]))
+      .then((d) => { setAnclas(d.anclas); setAnclasFallo(null) })
+      // El mensaje se guarda en vez de descartarse: es lo único que distingue un 403 de una caída de
+      // red, y quien mira la pantalla es quien puede actuar sobre esa diferencia.
+      .catch((e) => { setAnclas([]); setAnclasFallo(mensajeError(e)) })
+      .finally(() => setAnclasCargando(false))
     apiGet<PanelCorrespondencias>('/plan-compras/api/plan/correspondencias')
       .then((d) => setPanel(d))
       .catch(() => setPanel(null))
@@ -791,6 +801,9 @@ export default function PlanFechas() {
       {seccion === 'sin-frente' && (
       <PanelPestana idBase="pdc-plan" id="sin-frente">
       <p className="pdc-sub">Paquetes que generan proceso de contratación y todavía no están amarrados a un frente del cronograma.</p>
+      {/* El aviso va arriba y una sola vez, no repetido en cada fila: el motivo es del proyecto
+          entero, no de un paquete. Sin él, 96 desplegables vacíos no dicen nada 96 veces. */}
+      {motivoAnclas && <p className="pdc-flujo-nota" role="status">{motivoAnclas}</p>}
       {/* Antes había un solo botón que escribía las 40 propuestas de un clic. Medido en Da Porto:
           37 eran de confianza media —deducidas de la actividad padre, no de la descripción del
           insumo— y solo 3 de confianza alta. El desglose lo dice antes de pulsar, el botón primario
@@ -963,6 +976,9 @@ export default function PlanFechas() {
                 {(anclas.length > 0 ? anclasOrdenadas(anclas) : frentes.map((f) => ({ ...f, esFrente: true }))).map((f) => (
                   <option key={f.uniqueId} value={f.uniqueId}>{opcionAncla(f)}</option>
                 ))}
+                {/* Sin opciones, el motivo va DENTRO del desplegable y no solo en el aviso de arriba:
+                    quien lo abre buscando un frente lo abre aquí, y es aquí donde se lleva el chasco. */}
+                {motivoAnclas && <option value="" disabled>{motivoAnclas}</option>}
               </select>
               {/* Único disparador del amarre (Crítico del review final): elegir en el <select> ya no
                   basta — la opción preseleccionada con la propuesta del motor no emite `change`, así
