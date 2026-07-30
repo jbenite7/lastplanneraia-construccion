@@ -171,11 +171,24 @@ responsable y su proceso. El sombrilla se conserva y **resume**; el que se contr
   `destinoDeAsignacion()` hace que sus asignaciones aterricen en el «Resto» si el paquete está partido.
 - RBAC: `lps.paquetes_contratacion.editar` (el de la obra), no `...reglas`.
 
-**Flujo de caja.** `FlujoCajaService`: curva mensual de desembolsos, **derivada y nunca almacenada**,
-repartiendo el valor de cada destino contratable de forma **lineal** por días entre el inicio y el fin
-de su frente. Sin condiciones de pago (eso es una fase propia). Los destinos sin frente, sin fechas o
-cuya modalidad no contrata quedan fuera **contados, valorados y con motivo**, e `incluidos + excluidos`
-es el valor total del plan. Endpoints `GET /plan-compras/api/seguimiento/flujo-caja[.csv]`.
+**Flujo de caja.** `FlujoCajaService`: curva mensual **derivada y nunca almacenada** que cuenta el
+presupuesto ENTERO en tres orígenes (decisión del dueño del producto el 2026-07-30 — «debería contar
+todo, lo que no se contrata distribuirlo en toda la duración de la obra»):
+`contratado` (lineal sobre las fechas de su frente) · `permanente` (nómina, imprevistos, provisiones,
+ferretería: lineal sobre toda la duración de la obra) · `provisional` (se contratará pero no tiene
+frente: lineal sobre toda la obra y **contado aparte**, porque esa parte se moverá). Sin condiciones de
+pago: eso es una fase propia. Endpoints `GET /plan-compras/api/seguimiento/flujo-caja[.csv]`, pantalla
+en la pestaña «Flujo de caja» de Seguimiento.
+
+- ⚠️ **`provisional` NO se mezcla con `permanente`.** El primero es un relleno que se reacomodará; el
+  segundo es un gasto continuo de verdad. Juntarlos daría una curva que parece igual de firme en las
+  dos mitades. La pantalla y el CSV le dan columna propia, y hay una cifra de «% con fecha propia».
+- La **duración de obra** sale de `programa_consolidado` (`MIN(Fecha_Inicio)`→`MAX(Fecha_Fin)` de la
+  última semana), con `fechaInicioLineaBase`/`fechaFinLineaBase` como respaldo. Sin ninguna de las dos,
+  lo que no tiene frente propio queda declarado fuera con su motivo en vez de repartido sobre un rango
+  inventado.
+- ⚠️ En los tests, **no borrar `semanas_activas` para simular «obra sin fechas»**: `programa_consolidado`
+  cuelga de ella por FK en cascada y se lleva el cronograma entero. Usar un proyecto aparte.
 
 - El **fin** del frente no está en `pdc_paquete_frente` (solo guarda el ancla): se lee de
   `programa_consolidado.Fecha_Fin` por `unique_id` en la última semana consolidada. El **inicio**
@@ -184,7 +197,8 @@ es el valor total del plan. Endpoints `GET /plan-compras/api/seguimiento/flujo-c
 - Exportación CSV con `;` y BOM UTF-8 (el Excel en español lee la coma como decimal), con la
   advertencia del método **dentro del archivo**: viaja a un comité sin la pantalla al lado.
 
-⚠️ **Las pantallas de las dos cosas NO están construidas.** Dominio, API y pruebas sí. Tests:
+⚠️ **La pantalla del flujo de caja SÍ está construida y verificada; la de subpaquetes NO.** Falta
+partir un paquete y repartirle insumos desde la interfaz. Tests:
 `tests/test_pdc_v2_subpaquetes.php` (30 asserts) y `tests/test_pdc_v2_flujo_caja.php` (31). La cero
 regresión se defiende con `tests/foto_plan_fechas.php` contra
 `goals/pdc-preparar-b1/evidence/linea-base-plan-antes-subpaquetes.txt`.

@@ -13,7 +13,9 @@ import {
   cobertura,
   etiquetaMes,
   mesPico,
+  porcentajeConFecha,
   textoExcluidos,
+  textoProvisional,
   type RespuestaFlujoCaja,
 } from '../lib/flujoCaja'
 import { moneda } from '../lib/agGrid'
@@ -330,8 +332,18 @@ export default function Seguimiento() {
             </p>
           )}
 
-          {/* Lo que la curva NO incluye, antes de la curva. Una curva que calla lo que deja fuera es
-              una curva que miente, y con 11 de 96 paquetes con fecha lo que calla es la mitad. */}
+          {/* Qué parte de la curva se va a mover. Desde que la curva cuenta el presupuesto entero,
+              el riesgo dejó de ser «falta plata» y pasó a ser «esta forma parece más firme de lo que
+              es»: este aviso es lo que lo evita sin esconder ese dinero. */}
+          {flujo && textoProvisional(flujo, moneda) !== '' && (
+            <p className="pdc-flujo-provisional" data-testid="pdc-flujo-provisional" role="status">
+              {textoProvisional(flujo, moneda)}
+            </p>
+          )}
+
+          {/* Lo que la curva NO incluye. Ya solo pasa cuando la obra no tiene fechas con las que
+              repartir, pero cuando pasa hay que decirlo: una curva que calla lo que deja fuera es una
+              curva que miente. */}
           {flujo && textoExcluidos(flujo.excluidos, moneda) !== '' && (
             <p className="pdc-flujo-excluidos" data-testid="pdc-flujo-excluidos" role="status">
               {textoExcluidos(flujo.excluidos, moneda)}
@@ -350,6 +362,11 @@ export default function Seguimiento() {
               {cobertura(flujo) !== null && (
                 <span>
                   cubre el <strong>{cobertura(flujo)} %</strong> del valor del plan
+                </span>
+              )}
+              {porcentajeConFecha(flujo) !== null && (
+                <span>
+                  <strong>{porcentajeConFecha(flujo)} %</strong> con fecha propia
                 </span>
               )}
               {mesPico(flujo.meses) !== null && (
@@ -373,8 +390,15 @@ export default function Seguimiento() {
           {flujo && flujo.meses.length > 0 && (
             <table className="pdc-flujo-tabla" data-testid="pdc-flujo-tabla">
               <caption className="pdc-sub">
-                Desembolso previsto por mes. El reparto de cada contratación es lineal a lo largo de
-                los días de su frente.
+                Desembolso previsto por mes, con el presupuesto completo repartido.{' '}
+                {flujo.duracionObra !== null && (
+                  <>
+                    Lo que no depende de un frente se reparte entre{' '}
+                    <strong>{flujo.duracionObra.desde}</strong> y <strong>{flujo.duracionObra.hasta}</strong>,
+                    la duración de la obra según{' '}
+                    {flujo.duracionObra.origen === 'cronograma' ? 'el cronograma' : 'la línea base del proyecto'}.
+                  </>
+                )}
               </caption>
               <thead>
                 <tr>
@@ -384,6 +408,18 @@ export default function Seguimiento() {
                   </th>
                   <th scope="col" className="pdc-num">
                     Acumulado
+                  </th>
+                  {/* Las tres columnas de origen son lo que permite ver qué parte del mes es un
+                      compromiso con fecha y qué parte es un reparto uniforme. Sin ellas la curva se
+                      lee toda igual de firme. */}
+                  <th scope="col" className="pdc-num">
+                    Contratado
+                  </th>
+                  <th scope="col" className="pdc-num">
+                    Nómina y provisiones
+                  </th>
+                  <th scope="col" className="pdc-num">
+                    Provisional
                   </th>
                   <th scope="col" className="pdc-num">
                     Contrataciones
@@ -406,6 +442,11 @@ export default function Seguimiento() {
                       <span className="pdc-flujo-monto">{moneda(m.previsto)}</span>
                     </td>
                     <td className="pdc-num">{moneda(m.acumulado)}</td>
+                    <td className="pdc-num">{m.contratado > 0 ? moneda(m.contratado) : '—'}</td>
+                    <td className="pdc-num">{m.permanente > 0 ? moneda(m.permanente) : '—'}</td>
+                    <td className="pdc-num pdc-flujo-prov">
+                      {m.provisional > 0 ? moneda(m.provisional) : '—'}
+                    </td>
                     <td className="pdc-num">{m.destinos}</td>
                   </tr>
                 ))}
@@ -417,7 +458,10 @@ export default function Seguimiento() {
                     <strong>{moneda(flujo.total)}</strong>
                   </td>
                   <td className="pdc-num" />
-                  <td className="pdc-num" />
+                  <td className="pdc-num">{moneda(flujo.porOrigen.contratado.valor)}</td>
+                  <td className="pdc-num">{moneda(flujo.porOrigen.permanente.valor)}</td>
+                  <td className="pdc-num pdc-flujo-prov">{moneda(flujo.porOrigen.provisional.valor)}</td>
+                  <td className="pdc-num">{flujo.incluidos.destinos}</td>
                 </tr>
               </tfoot>
             </table>
@@ -425,8 +469,8 @@ export default function Seguimiento() {
 
           {flujo && flujo.meses.length === 0 && (
             <p className="pdc-vacio" data-testid="pdc-flujo-vacio">
-              Todavía no hay ninguna contratación con frente y fechas, así que no hay curva que
-              dibujar. Amarra paquetes a su frente en «Plan» y recalcula.
+              Todavía no hay nada que repartir: ni contrataciones con frente ni fechas de obra con las
+              que distribuir el resto. Amarra paquetes a su frente en «Plan» y recalcula.
             </p>
           )}
         </PanelPestana>

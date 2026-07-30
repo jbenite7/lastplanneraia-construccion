@@ -158,32 +158,59 @@ $plan->calcular($P, $USR);
 $flujo = new FlujoCajaService($db);
 $c = $flujo->curva($P, $versionId);
 
-// Punto 1: la suma de los meses es la suma del valor de los incluidos.
+// Punto 1: la curva cuenta el PLAN ENTERO, y la suma de los meses es ese total.
+//
+// Cambió respecto a la primera versión de este servicio, por decisión del dueño del producto
+// (2026-07-30): «debería contar todo, lo que no se contrata distribuirlo en toda la duración de la
+// obra». La nómina y los imprevistos también salen de caja, y todos los meses.
 $assert(
-    abs($c['total'] - 119000.0) < 0.01,
-    'La curva suma el valor de los dos paquetes incluidos (89.000 + 30.000). Dio ' . $c['total'],
+    abs($c['total'] - 131000.0) < 0.01,
+    'La curva suma el valor total del plan (119.000 contratados + 5.000 de provisión + 7.000 sin frente). Dio ' . $c['total'],
 );
 $assert(
-    abs($c['total'] - $c['incluidos']['valor']) < 0.01,
-    'El total de la curva es exactamente el valor de los destinos incluidos.',
+    abs($c['total'] - $c['valorTotalDelPlan']) < 0.01,
+    'El total de la curva ES el valor total del plan: no se queda nada fuera cuando la obra tiene fechas.',
+);
+$assert($c['excluidos']['destinos'] === 0, 'Con la obra fechada, nada queda fuera de la curva. Dio ' . $c['excluidos']['destinos']);
+
+// Los tres orígenes, cada uno por su camino y con su nombre.
+$assert(
+    abs($c['porOrigen']['contratado']['valor'] - 119000.0) < 0.01,
+    'Lo contratado con fecha propia son 119.000. Dio ' . $c['porOrigen']['contratado']['valor'],
+);
+$assert(
+    abs($c['porOrigen']['permanente']['valor'] - 5000.0) < 0.01,
+    'La provisión (no contratable) son 5.000 repartidos sobre toda la obra. Dio ' . $c['porOrigen']['permanente']['valor'],
+);
+$assert(
+    abs($c['porOrigen']['provisional']['valor'] - 7000.0) < 0.01,
+    'Lo que se contratará pero no tiene frente son 7.000, y va MARCADO aparte. Dio ' . $c['porOrigen']['provisional']['valor'],
 );
 
-// Punto 2: cada paquete aporta a los meses de su frente y a ningún otro.
+// La duración de la obra sale del cronograma, que es la misma fuente del resto de la curva.
+$assert($c['duracionObra'] !== null, 'La curva sabe de cuándo a cuándo va la obra.');
 $assert(
-    array_column($c['meses'], 'mes') === ['2026-02', '2026-03', '2026-04', '2026-06'],
-    'La curva tiene los cuatro meses de los dos frentes, sin mayo (que no tiene nada). Dio: '
-        . implode(' ', array_column($c['meses'], 'mes')),
+    $c['duracionObra']['origen'] === 'cronograma' && $c['duracionObra']['desde'] === '2026-02-01',
+    'Y la toma del cronograma: ' . json_encode($c['duracionObra']),
 );
-$porMes = array_column($c['meses'], 'previsto', 'mes');
-$assert(abs($porMes['2026-06'] - 30000.0) < 0.01, 'Junio recibe el acero completo (30.000). Dio ' . $porMes['2026-06']);
 
-// Punto 3: los excluidos están contados, valorados y con motivo, y la suma cuadra.
-$assert($c['excluidos']['destinos'] === 2, 'Dos destinos quedan fuera: la provisión y el que no tiene frente. Dio ' . $c['excluidos']['destinos']);
-$assert(abs($c['excluidos']['valor'] - 12000.0) < 0.01, 'Y su valor está dicho (5.000 + 7.000). Dio ' . $c['excluidos']['valor']);
-$assert(count($c['excluidos']['motivos']) === 2, 'Con un motivo distinto cada uno, no un «otros».');
+// Punto 2: lo contratado aporta a los meses de SU frente y a ningún otro. Se mira en la columna
+// `contratado`, porque ahora el total del mes incluye además el reparto de toda la obra.
+$porMesContratado = array_column($c['meses'], 'contratado', 'mes');
 $assert(
-    abs($c['valorTotalDelPlan'] - 131000.0) < 0.01,
-    'Incluidos + excluidos es el valor total del plan (131.000). Dio ' . $c['valorTotalDelPlan'],
+    abs($porMesContratado['2026-06'] - 30000.0) < 0.01,
+    'Junio recibe el acero completo (30.000) en la columna de lo contratado. Dio ' . $porMesContratado['2026-06'],
+);
+$assert(
+    abs(($porMesContratado['2026-05'] ?? 0.0)) < 0.01,
+    'Mayo no recibe nada contratado: ningún frente lo toca.',
+);
+// Pero mayo SÍ existe ahora como mes de la curva, porque la nómina corre todos los meses de la obra.
+$porMesTotal = array_column($c['meses'], 'previsto', 'mes');
+$assert(isset($porMesTotal['2026-05']), 'Mayo aparece en la curva: la nómina no descansa. Meses: ' . implode(' ', array_keys($porMesTotal)));
+$assert(
+    array_column($c['meses'], 'mes')[0] === '2026-02',
+    'La curva arranca cuando arranca la obra. Dio ' . array_column($c['meses'], 'mes')[0],
 );
 
 // El acumulado es monótono y termina en el total.
@@ -193,29 +220,79 @@ sort($ordenado);
 $assert($acum === $ordenado, 'El acumulado nunca baja.');
 $assert(abs(end($acum) - $c['total']) < 0.01, 'El acumulado del último mes es el total de la curva.');
 
-// La advertencia viaja en la respuesta.
+// La advertencia viaja en la respuesta y nombra los tres caminos.
 $assert(
-    str_contains($c['nota'], 'lineal') && str_contains($c['nota'], 'condiciones de pago'),
-    'La respuesta declara que el reparto es lineal y que no considera condiciones de pago.',
+    str_contains($c['nota'], 'lineal') && str_contains($c['nota'], 'condiciones de pago')
+        && str_contains($c['nota'], 'toda la duración de la obra'),
+    'La respuesta declara el reparto lineal, que no considera condiciones de pago, y que hay una parte repartida sobre toda la obra.',
 );
 
-// Punto 4: la exportación lleva los mismos números y la misma advertencia.
+// Punto 4: la exportación lleva los mismos números, las tres columnas y la misma advertencia.
 $csv = $flujo->csv($P, $versionId);
 $assert(str_starts_with($csv, "\xEF\xBB\xBF"), 'El CSV lleva BOM: Excel lo abre sin romper las tildes.');
 $assert(str_contains($csv, 'condiciones de pago'), 'La advertencia va DENTRO del archivo, que es lo que viaja al comité.');
-$assert(str_contains($csv, '"2026-06";"30000,00"'), 'El CSV trae los mismos números que la pantalla, con coma decimal.');
-$assert(str_contains($csv, 'Fuera de la curva'), 'El CSV también declara lo que no está incluyendo.');
+$assert(
+    str_contains($csv, 'Provisional (sin frente todavía)'),
+    'El CSV separa en su propia columna la parte que se va a mover.',
+);
+$assert(str_contains($csv, 'Duración de obra usada para el reparto'), 'Y dice sobre qué rango repartió lo que no tiene frente.');
+$assert(str_contains($csv, '"2026-06"'), 'El CSV trae las filas de mes.');
+$assert(str_contains($csv, 'Total en la curva'), 'Y el total.');
 
-// Punto 5: mover el frente y recalcular mueve la curva de forma coherente.
+// Punto 5: mover el frente y recalcular mueve la curva de forma coherente, sin cambiar el total.
 $db->query(
     'UPDATE programa_consolidado SET Fecha_Inicio = ?, Fecha_Fin = ? WHERE project_id = ? AND unique_id = ?',
     ['2026-09-01', '2026-09-30', $P, 7702],
 );
 $c2 = $flujo->curva($P, $versionId);
-$porMes2 = array_column($c2['meses'], 'previsto', 'mes');
-$assert(!isset($porMes2['2026-06']), 'Al mover el frente del acero, junio desaparece de la curva.');
+$porMes2 = array_column($c2['meses'], 'contratado', 'mes');
+$assert(abs(($porMes2['2026-06'] ?? 0.0)) < 0.01, 'Al mover el frente del acero, junio deja de tener contratación.');
 $assert(abs(($porMes2['2026-09'] ?? 0.0) - 30000.0) < 0.01, 'Y su valor completo aparece en septiembre. Dio ' . ($porMes2['2026-09'] ?? 0));
 $assert(abs($c2['total'] - $c['total']) < 0.01, 'Mover un frente no cambia el total de la curva, solo cuándo cae.');
+
+// Sin fechas de obra, lo que no tiene frente propio vuelve a quedar declarado fuera: no se inventa
+// un rango para que el total cuadre. Va en un proyecto APARTE y no borrando el cronograma de este:
+// `programa_consolidado` cuelga de `semanas_activas` por clave foránea en cascada, así que borrar la
+// semana se lleva el cronograma entero y lo que se estaría midiendo sería otra cosa.
+$P2 = 999942;
+$db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$P2]);
+$db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$P2]);
+$db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$P2]);
+$db->query(
+    "INSERT INTO pdc_presupuesto_versiones
+        (project_id, version_label, version_numero, archivo_nombre, archivo_hash, contenido_hash,
+         import_token, total_actividades, total_insumos, costo_total, activa, importado_por, created_at)
+     VALUES (?, 'Versión 1 · sin obra', 1, 't.xlsx', 'h2', 'c2', 'tk2', 1, 1, 5000, 1, ?, NOW())",
+    [$P2, $USR],
+);
+$v2 = (int) $db->lastInsertId();
+$db->query(
+    "INSERT INTO pdc_insumo_vinculos
+        (project_id, version_id, descripcion_norm, unidad, descripcion_original, tipo_insumo,
+         cantidad_total, valor_total, apariciones, estado)
+     VALUES (?, ?, 'provision sin obra', 'SG', 'provision sin obra', 'MATERIAL', 1, 5000, 1, 'confirmado')",
+    [$P2, $v2],
+);
+$db->query(
+    "INSERT INTO pdc_insumo_paquete
+        (project_id, descripcion_norm, unidad, paquete_id, omitido, origen, confirmado_humano, asignado_por, updated_at)
+     VALUES (?, 'provision sin obra', 'SG', ?, 0, 'humano', 1, ?, NOW())",
+    [$P2, $paquetes['TEST FLUJO Provisiones'], $USR],
+);
+$cSinObra = $flujo->curva($P2, $v2);
+$assert($cSinObra['duracionObra'] === null, 'Sin cronograma consolidado ni línea base, la obra no tiene duración conocida.');
+$assert(
+    $cSinObra['excluidos']['destinos'] === 1 && abs($cSinObra['excluidos']['valor'] - 5000.0) < 0.01,
+    'Y entonces ese destino queda declarado fuera con su motivo, en vez de repartido sobre un rango inventado. Dio '
+        . json_encode($cSinObra['excluidos']),
+);
+$assert(
+    array_key_exists('La obra no tiene fechas de inicio y fin con las que repartir', $cSinObra['excluidos']['motivos']),
+    'Y el motivo lo dice con palabras: ' . implode(' | ', array_keys($cSinObra['excluidos']['motivos'])),
+);
+$db->query('DELETE FROM pdc_insumo_paquete WHERE project_id = ?', [$P2]);
+$db->query('DELETE FROM pdc_insumo_vinculos WHERE project_id = ?', [$P2]);
+$db->query('DELETE FROM pdc_presupuesto_versiones WHERE project_id = ?', [$P2]);
 
 // Un lote hereda el comportamiento: partir un paquete reparte por lote.
 $sub = new SubpaquetesService($db);
@@ -233,6 +310,10 @@ $assert(
     count($c3['detalle']) === 4,
     'El desglose lista un destino por lote CON insumos, más los otros tres paquetes. Un lote vacío no '
         . 'aparece: no tiene valor que repartir. Dio ' . count($c3['detalle']),
+);
+$assert(
+    count(array_filter($c3['detalle'], static fn (array $f): bool => $f['origen'] === 'provisional')) === 1,
+    'Y cada fila del desglose dice por qué camino entró a la curva.',
 );
 $nombresDetalle = array_column($c3['detalle'], 'nombre');
 $assert(

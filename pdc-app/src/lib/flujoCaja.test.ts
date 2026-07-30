@@ -4,11 +4,31 @@ import {
   cobertura,
   etiquetaMes,
   mesPico,
+  porcentajeConFecha,
   textoExcluidos,
+  textoProvisional,
   type ExcluidosFlujo,
   type MesFlujo,
   type RespuestaFlujoCaja,
 } from './flujoCaja'
+
+/** Los tres orígenes en cero: la base sobre la que cada test pone solo lo que le importa. */
+const SIN_ORIGENES = {
+  contratado: { destinos: 0, valor: 0 },
+  permanente: { destinos: 0, valor: 0 },
+  provisional: { destinos: 0, valor: 0 },
+}
+
+const mes = (m: string, previsto: number, acumulado: number, extra: Partial<MesFlujo> = {}): MesFlujo => ({
+  mes: m,
+  previsto,
+  acumulado,
+  destinos: 1,
+  contratado: previsto,
+  permanente: 0,
+  provisional: 0,
+  ...extra,
+})
 
 const valor = (v: number) => `$${v.toLocaleString('es-CO')}`
 
@@ -34,8 +54,10 @@ describe('etiquetaMes', () => {
 describe('cobertura', () => {
   const base: RespuestaFlujoCaja = {
     nota: '',
+    duracionObra: null,
     meses: [],
     total: 0,
+    porOrigen: SIN_ORIGENES,
     incluidos: { destinos: 0, valor: 0 },
     excluidos: { destinos: 0, valor: 0, motivos: {} },
     valorTotalDelPlan: 0,
@@ -85,9 +107,9 @@ describe('textoExcluidos', () => {
 
 describe('mesPico y alturaBarra', () => {
   const meses: MesFlujo[] = [
-    { mes: '2026-02', previsto: 100, acumulado: 100, destinos: 1 },
-    { mes: '2026-03', previsto: 400, acumulado: 500, destinos: 2 },
-    { mes: '2026-04', previsto: 250, acumulado: 750, destinos: 2 },
+    mes('2026-02', 100, 100),
+    mes('2026-03', 400, 500),
+    mes('2026-04', 250, 750),
   ]
 
   it('encuentra el mes que más plata pide', () => {
@@ -108,5 +130,72 @@ describe('mesPico y alturaBarra', () => {
     // que no hay desembolso ese mes, cuando lo que hay es un desembolso pequeño.
     expect(alturaBarra(1, 4_000_000_000)).toBe(1)
     expect(alturaBarra(0, 0)).toBe(0)
+  })
+})
+
+describe('porcentajeConFecha', () => {
+  const base: RespuestaFlujoCaja = {
+    nota: '',
+    duracionObra: { desde: '2026-01-01', hasta: '2027-12-31', origen: 'cronograma' },
+    meses: [],
+    total: 0,
+    porOrigen: SIN_ORIGENES,
+    incluidos: { destinos: 0, valor: 0 },
+    excluidos: { destinos: 0, valor: 0, motivos: {} },
+    valorTotalDelPlan: 0,
+    detalle: [],
+  }
+
+  it('mide qué parte de la curva son compromisos con fecha propia', () => {
+    const r: RespuestaFlujoCaja = {
+      ...base,
+      total: 1000,
+      porOrigen: {
+        contratado: { destinos: 2, valor: 900 },
+        permanente: { destinos: 1, valor: 100 },
+        provisional: { destinos: 0, valor: 0 },
+      },
+    }
+    expect(porcentajeConFecha(r)).toBe(90)
+  })
+
+  it('es null con la curva vacía, no 0', () => {
+    expect(porcentajeConFecha(base)).toBeNull()
+  })
+})
+
+describe('textoProvisional', () => {
+  const conProvisional = (destinos: number, valor: number, total: number): RespuestaFlujoCaja => ({
+    nota: '',
+    duracionObra: { desde: '2026-01-01', hasta: '2027-12-31', origen: 'cronograma' },
+    meses: [],
+    total,
+    porOrigen: {
+      contratado: { destinos: 1, valor: total - valor },
+      permanente: { destinos: 0, valor: 0 },
+      provisional: { destinos, valor },
+    },
+    incluidos: { destinos: destinos + 1, valor: total },
+    excluidos: { destinos: 0, valor: 0, motivos: {} },
+    valorTotalDelPlan: total,
+    detalle: [],
+  })
+
+  it('avisa de cuánto de la curva se va a mover, y por qué', () => {
+    const t = textoProvisional(conProvisional(3, 300, 1000), valor)
+    expect(t).toContain('$300')
+    expect(t).toContain('30 %')
+    expect(t).toContain('3 contrataciones')
+    expect(t).toContain('se moverá')
+  })
+
+  it('concuerda en singular', () => {
+    const t = textoProvisional(conProvisional(1, 100, 1000), valor)
+    expect(t).toContain('1 contratación que todavía no tiene frente')
+    expect(t).not.toContain('contrataciones')
+  })
+
+  it('no dice nada cuando toda la curva tiene fecha o es gasto permanente', () => {
+    expect(textoProvisional(conProvisional(0, 0, 1000), valor)).toBe('')
   })
 })

@@ -794,3 +794,9 @@ a.pdc-paq-secundario { display: inline-block; text-decoration: none; }
 .pdc-flujo-barra { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 60%;
   background: var(--pdc-state-tint-curva); border-radius: var(--pdc-radio-control); }
 .pdc-flujo-monto { position: relative; }
+/* La columna provisional se atenúa a propósito: es dinero real y por eso está en la tabla, pero su
+   posición en el tiempo todavía no la ha decidido nadie. Leerla con el mismo peso que un compromiso
+   con fecha es exactamente el error que la curva debe evitar. */
+.pdc-flujo-prov { color: var(--pdc-ink-muted); font-style: italic; }
+.pdc-flujo-provisional { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--pdc-radio-control);
+  background: var(--pdc-info-bg); color: var(--pdc-ink); font-size: var(--pdc-fs-sm); }

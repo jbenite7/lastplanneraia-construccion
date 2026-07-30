@@ -46,8 +46,10 @@ repetitivo en manos de una persona cada mes, que es justo el problema).
 - **Curva mensual del proyecto:** una fila por mes, con el desembolso previsto y el acumulado.
 - **Desglose:** poder ver de qué paquetes se compone el mes.
 - **Exportable** a Excel, porque va a viajar a un comité que no entra a la aplicación.
-- **Los paquetes sin frente o sin fechas quedan fuera de la curva, y la pantalla dice cuántos son y
-  cuánto valen.** Una curva que calla lo que no incluye es una curva que miente.
+- ~~**Los paquetes sin frente o sin fechas quedan fuera de la curva, y la pantalla dice cuántos son y
+  cuánto valen.**~~ **Corregido el 2026-07-30 por el dueño del producto:** «debería contar todo, lo que
+  no se contrata distribuirlo en toda la duración de la obra». La curva cuenta el presupuesto entero.
+  Ver «La curva cuenta el plan entero» abajo.
 
 ### No entra
 
@@ -122,3 +124,48 @@ total, y que partir un paquete no cambie el total sino quién lo aporta.
 **La pantalla.** El servicio, los endpoints y la exportación están; la vista de `pdc-app/` con la
 tabla mensual, el desglose y el botón de exportar **no está construida**. La advertencia y el conteo
 de excluidos ya viajan en la respuesta, listos para pintarse.
+
+## La curva cuenta el plan entero, en tres orígenes (2026-07-30)
+
+Un flujo de caja que solo mira lo contratado no es el flujo de caja de la obra: la nómina y los
+imprevistos también salen de caja, y todos los meses. Decisión del dueño del producto, textual:
+
+> «Debería contar todo, lo que no se contrata distribuirlo en toda la duración de la obra.»
+
+Cada peso del plan entra en la curva, pero por el camino que le corresponde y **dicho con su nombre**:
+
+| Origen | Qué es | Cómo se reparte |
+|---|---|---|
+| `contratado` | Tiene frente amarrado y fechas propias | Lineal entre el inicio y el fin de **su** frente |
+| `permanente` | No se le compra a nadie (nómina, imprevistos, provisiones) o no se contrata (ferretería contra almacén) | Lineal sobre **toda la duración de la obra** |
+| `provisional` | Se va a contratar, pero nadie le ha amarrado un frente todavía | Lineal sobre toda la obra, **contado y mostrado aparte** |
+
+**Por qué `provisional` va separado.** Se preguntó y se decidió en grilleo: `permanente` es un dato
+correcto —ese gasto es continuo de verdad— y `provisional` es un **relleno que se va a mover** en
+cuanto alguien amarre ese paquete. Mezclarlos daría una curva que se ve igual de firme en las dos
+mitades, y cuando la parte provisional se reacomode nadie entendería por qué cambió. Hoy en Da Porto
+son 0, pero en el aeropuerto van a ser muchos. Por eso la pantalla y el CSV llevan una columna propia,
+la pantalla avisa de cuánto de la curva se moverá, y hay una cifra de «% con fecha propia» que dice
+cuánto se puede creer de la forma de la curva.
+
+**La duración de la obra** sale del cronograma (`MIN(Fecha_Inicio)` a `MAX(Fecha_Fin)` de la última
+semana consolidada), que es la misma fuente del resto de la curva, con la línea base del proyecto como
+respaldo. **Si no hay ninguna de las dos**, lo que no tiene frente propio sigue quedando declarado
+fuera con su motivo: inventar un rango de fechas para que el total cuadre sería justo la mentira que
+este módulo evita. Es el único caso que queda excluido, y hay un test que lo fija.
+
+## Verificado en pantalla (2026-07-30)
+
+Pestaña «Flujo de caja» de Seguimiento, en Da Porto, a 1180×820 y en dark:
+
+- **22 meses** (la curva arranca en mayo 2026, cuando arranca la obra, no cuando arranca la primera
+  contratación), y la suma de los meses es **$7.082.574.181**, igual al valor total del plan y al
+  último acumulado.
+- Desglose del pie: **$6.192.372.106 contratado + $890.202.075 de nómina y provisiones + $0
+  provisional**, y «cubre el 100 % del valor del plan · 87,4 % con fecha propia».
+- Sin errores de consola y sin desbordamiento horizontal a 1180 px exactos.
+- El CSV trae las tres columnas, la duración de obra usada para el reparto, y los mismos números.
+
+**Límite honesto:** el camino `provisional` no se pudo recorrer en pantalla con datos reales porque Da
+Porto no tiene ningún paquete sin frente. Está cubierto por el test PHP (un destino de $7.000 sin
+frente) y por Vitest (el texto del aviso y su concordancia en singular), no por observación.

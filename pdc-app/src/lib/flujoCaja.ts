@@ -15,7 +15,15 @@ export type MesFlujo = {
   previsto: number
   acumulado: number
   destinos: number
+  /** Contrataciones con frente amarrado: reparto sobre las fechas de su propio frente. */
+  contratado: number
+  /** Nómina, imprevistos, provisiones y ferretería: reparto sobre toda la duración de la obra. */
+  permanente: number
+  /** Se va a contratar, pero nadie le ha amarrado frente: reparto que SE VA A MOVER. */
+  provisional: number
 }
+
+export type OrigenFlujo = 'contratado' | 'permanente' | 'provisional'
 
 export type ExcluidosFlujo = {
   destinos: number
@@ -25,8 +33,10 @@ export type ExcluidosFlujo = {
 
 export type RespuestaFlujoCaja = {
   nota: string
+  duracionObra: { desde: string; hasta: string; origen: string } | null
   meses: MesFlujo[]
   total: number
+  porOrigen: Record<OrigenFlujo, { destinos: number; valor: number }>
   incluidos: { destinos: number; valor: number }
   excluidos: ExcluidosFlujo
   valorTotalDelPlan: number
@@ -37,9 +47,10 @@ export type RespuestaFlujoCaja = {
     paqueteNombre: string
     valor: number
     incluido: boolean
+    origen: OrigenFlujo
     motivoExclusion: string | null
-    frenteInicio?: string
-    frenteFin?: string
+    repartoDesde: string | null
+    repartoHasta: string | null
     meses: Record<string, number>
   }[]
 }
@@ -76,12 +87,53 @@ export function etiquetaMes(mes: string): string {
 /**
  * Qué porcentaje del valor del plan cubre la curva.
  *
+ * Desde que la curva cuenta el presupuesto entero esto es 100 % siempre que la obra tenga fechas, y
+ * por eso vale la pena mostrarlo: cuando NO es 100 % es porque algo quedó fuera, y ese es justo el
+ * momento en que hay que mirar.
+ *
  * `null` cuando no hay nada que medir: un «0 %» sobre un plan vacío se lee como un fallo del cálculo,
  * y un «100 %» sobre un plan vacío es peor todavía.
  */
 export function cobertura(r: RespuestaFlujoCaja): number | null {
   if (r.valorTotalDelPlan <= 0) return null
   return Math.round((r.incluidos.valor / r.valorTotalDelPlan) * 1000) / 10
+}
+
+/**
+ * Qué parte de la curva son compromisos con fecha propia, en porcentaje.
+ *
+ * Es la cifra que dice cuánto se puede creer de la forma de la curva. Con el 90 % contratado, los
+ * picos son reales; con el 30 %, la curva es sobre todo un reparto uniforme y su forma no significa
+ * gran cosa todavía. `null` con la curva vacía.
+ */
+export function porcentajeConFecha(r: RespuestaFlujoCaja): number | null {
+  if (r.total <= 0) return null
+  return Math.round((r.porOrigen.contratado.valor / r.total) * 1000) / 10
+}
+
+/**
+ * La advertencia sobre la parte provisional: lo que se va a contratar pero todavía no tiene frente, y
+ * que por tanto está repartido de forma uniforme y **se moverá** cuando alguien lo amarre.
+ *
+ * Cadena vacía cuando no hay nada provisional. Es la frase que evita que la curva se lea como más
+ * firme de lo que es sin tener que esconder ese dinero.
+ */
+export function textoProvisional(r: RespuestaFlujoCaja, formatoValor: (v: number) => string): string {
+  const p = r.porOrigen.provisional
+  if (p.destinos <= 0) return ''
+  const pct = r.total > 0 ? Math.round((p.valor / r.total) * 1000) / 10 : 0
+  const cuantas =
+    p.destinos === 1
+      ? '1 contratación que todavía no tiene frente amarrado en el cronograma y va repartida'
+      : `${p.destinos} contrataciones que todavía no tienen frente amarrado en el cronograma y van repartidas`
+  return `${formatoValor(p.valor)} de esta curva (${pct} %) es reparto provisional: ${cuantas} por igual sobre toda la obra. Esa parte se moverá en cuanto se le amarre un frente.`
+}
+
+/** Rótulos de los tres orígenes. Los mismos en la pantalla y en la exportación. */
+export const ETIQUETAS_ORIGEN: Record<OrigenFlujo, string> = {
+  contratado: 'Contratado con fecha',
+  permanente: 'Nómina y provisiones',
+  provisional: 'Provisional',
 }
 
 /**
