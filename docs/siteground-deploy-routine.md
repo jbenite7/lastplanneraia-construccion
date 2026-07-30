@@ -324,6 +324,90 @@ git stash drop stash@{0}
 
 Tambien limpia carpetas no trackeadas viejas dentro de `public_html` si confirmas que no se usan.
 
+## Anexo A. Orden verificado de las migraciones del PDC v2
+
+Este es el orden **medido**, no deducido: se aplico asi en `prueba-lps` el 2026-07-30 sobre un
+atraso de 642 commits, y quedo verificado en base (9 tablas `pdc_*`, catalogo con 217 paquetes, 5
+con `admite_materiales=1`, 26 correspondencias de rama/frente).
+
+Vale para cualquier entorno que venga de antes del 2026-07-22. **Un entorno mas adelantado no
+necesita todas**: comprueba primero cuales faltan con el `git log` del paso 5.1.
+
+### Fase 1 — esquema, archivos `.sql` (13)
+
+Por el cliente `mysql`, nunca por PHP. Los marcados con **`D`** llevan `DELIMITER` y por PDO fallan
+con un error que parece SQL roto.
+
+| # | Archivo | Nota |
+|---|---|---|
+| 1 | `20260722_pdc_v2_presupuesto_tables.sql` | |
+| 2 | `20260723_pdc_import_token_idempotencia.sql` | |
+| 3 | `20260723_pdc_v2_maestro_insumos.sql` | |
+| 4 | `20260723_pdc_v2_maestro_retiro.sql` | |
+| 5 | `20260723_pdc_v2_maestro_sinco_cols.sql` | |
+| 6 | `20260723_pdc_v2_versionamiento_inteligente.sql` | |
+| 7 | `20260724_pdc_v2_paquetes_contratacion.sql` | |
+| 8 | `20260724_pdc_v2_version_numero_unique.sql` | **`D`** |
+| 9 | `20260728_pdc_v2_plan_fechas.sql` | **`D`** · crea `pdc_plan_paquete` |
+| 10 | `20260728_pdc_v2_desamarrar_paquete.sql` | **adelantada a proposito**: por nombre va antes de la 9, pero necesita su tabla |
+| 11 | `20260728_pdc_v2_responsable_usuario.sql` | |
+| 12 | `20260729_pdc_pasos_historial.sql` | |
+| 13 | `20260729_pdc_v2_seguimiento_avance.sql` | **`D`** |
+
+`20260729_pdc_v2_subpaquetes.sql` entro a `main` despues de este deploy y **no se aplico en
+pruebas**. Lleva `DELIMITER $$`: va en esta fase y solo por el cliente `mysql`.
+
+### Fase 2 — esquema, archivos `.php` (10)
+
+Con `--apply`, y con el entorno exportado. **La primera es la critica**: crea la columna por la que
+mueren cuatro migraciones de la fase 3 si se adelantan.
+
+| # | Archivo | Que aporta |
+|---|---|---|
+| 14 | `20260725_pdc_v2_modalidad_contratacion.php` | columna `modalidad_contratacion` + indice — **la que rompe todo si va tarde** |
+| 15 | `20260726_pdc_v2_insumo_actividades.php` | tabla `pdc_insumo_actividades` |
+| 16 | `20260726_pdc_v2_admite_materiales.php` | columna `admite_materiales` |
+| 17 | `20260726_pdc_v2_puente_duraciones.php` | columna `duracion_ref` |
+| 18 | `20260728_pdc_v2_tipo_no_aplica.php` | valor `no_aplica` en el enum |
+| 19 | `20260728_pdc_v2_rama_frente.php` | tablas `general_rama_frente` y `pdc_rama_frente` |
+| 20 | `20260728_pdc_v2_pasos_configurables.php` | |
+| 21 | `20260728_pdc_v2_versiones_obsoletas.php` | |
+| 22 | `20260726_pdc_v2_procedencia_asignaciones.php` | |
+| 23 | `20260729_pdc_v2_amarre_cronograma.php` | columnas de trazabilidad del amarre |
+
+### Fase 3 — datos (11)
+
+**El sembrado del catalogo va primero.** Las cuatro primeras pasan por
+`PaquetesService::crearPaquete()`, que pide `modalidad_contratacion` sin que sus archivos la
+mencionen: adelantarlas a la fase 2 es exactamente el fallo medido.
+
+| # | Archivo | Nota |
+|---|---|---|
+| 24 | `20260724_pdc_v2_seed_paquetes_aia.php` | **primero de la fase**: siembra 188 paquetes de los que dependen las demas |
+| 25 | `20260724_pdc_v2_paquete_indirectos.php` | |
+| 26 | `20260724_pdc_v2_paquetes_profesional_daporto.php` | |
+| 27 | `20260725_pdc_v2_backfill_modalidades.php` | |
+| 28 | `20260725_pdc_v2_paquetes_por_oficio.php` | |
+| 29 | `20260726_pdc_v2_paquetes_cola_larga.php` | |
+| 30 | `20260726_pdc_v2_permiso_reglas_motor.php` | |
+| 31 | `20260727_pdc_v2_paquetes_partidos.php` | |
+| 32 | `20260727_pdc_v2_materiales_producto_terminado.php` | necesita los destinos del nº 24 |
+| 33 | `20260727_pdc_v2_retirar_paquetes_fusionados.php` | necesita los destinos del nº 24 |
+| 34 | `20260728_pdc_v2_duraciones_faltantes.php` | |
+
+### Fase 4 — repaso (2)
+
+Repite con `--apply`. Ya corrieron en la fase 2, pero dependen del catalogo, que en ese momento
+estaba vacio. Son idempotentes:
+
+```bash
+/usr/local/php83/bin/php-cli database/migrations/20260726_pdc_v2_admite_materiales.php --apply
+/usr/local/php83/bin/php-cli database/migrations/20260726_pdc_v2_puente_duraciones.php --apply
+```
+
+Resultado esperado del repaso, medido en pruebas: `admite_materiales` marca 5 paquetes; el puente
+apunta 10 de 22 paquetes activos a su fila de duraciones y deja 12 en `NULL` (eso no es un fallo).
+
 ## Regla operativa
 
 - No editar produccion a mano salvo emergencia.
