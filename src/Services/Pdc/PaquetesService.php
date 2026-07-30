@@ -641,22 +641,40 @@ final class PaquetesService
             $this->registrarCorreccionSugerida($projectId, $validos, $paqueteId, $procedencia, $usuario);
         }
 
+        // A qué LOTE cae la asignación. Si el paquete está partido, al «Resto»; si no, a `0`, que es
+        // el centinela «sin partir».
+        //
+        // Sin esto, asignar un insumo a un paquete que la obra ya partió lo dejaba en `subpaquete_id
+        // = 0` DENTRO de un paquete partido, y el sombrilla reaparecía como destino contratable al
+        // lado de sus propios lotes: se contrataba a sí mismo, que es justo lo que el «Resto» existe
+        // para impedir. Medido: un paquete partido con un insumo asignado después daba dos destinos,
+        // el lote y el paquete entero.
+        //
+        // El motor no elige lote a propósito —trabaja a nivel de paquete y no aprende de lotes, que
+        // son casuística de obra—, así que el «Resto» es el único destino al que puede aterrizar sin
+        // que un humano haya decidido nada.
+        $subpaqueteId = (new SubpaquetesService($this->db))->destinoDeAsignacion($projectId, $paqueteId);
+
         // Lotes multi-fila (patrón generarVinculos): evita un round-trip por insumo.
         foreach (array_chunk($validos, 200) as $lote) {
-            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, 0, ?, ?, ?, ?, ?, NOW())'));
+            $valores = implode(', ', array_fill(0, count($lote), '(?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, NOW())'));
             $params = [];
             foreach ($lote as $u) {
                 array_push(
                     $params,
-                    $projectId, $u['norm'], $u['unidad'], $paqueteId,
+                    $projectId, $u['norm'], $u['unidad'], $paqueteId, $subpaqueteId,
                     $origen, $confianza, $evidencia, $confirmado ? 1 : 0, $usuario,
                 );
             }
             $this->db->query(
                 "INSERT INTO pdc_insumo_paquete
-                    (project_id, descripcion_norm, unidad, paquete_id, omitido, origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
+                    (project_id, descripcion_norm, unidad, paquete_id, subpaquete_id, omitido, origen, confianza, evidencia, confirmado_humano, asignado_por, updated_at)
                  VALUES {$valores}
                  ON DUPLICATE KEY UPDATE paquete_id = VALUES(paquete_id), omitido = 0,
+                    -- `subpaquete_id` TIENE que ir aquí: al mover un insumo de un paquete a otro, la
+                    -- fila ya existe y sin esta línea conservaría el lote del paquete ANTERIOR,
+                    -- apuntando a un lote que no es de su paquete.
+                    subpaquete_id = VALUES(subpaquete_id),
                     origen = VALUES(origen), confianza = VALUES(confianza), evidencia = VALUES(evidencia),
                     confirmado_humano = VALUES(confirmado_humano),
                     asignado_por = VALUES(asignado_por), updated_at = NOW()",
