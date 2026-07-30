@@ -44,7 +44,8 @@ final class MaestroSincoImportService
      *     creados: int,
      *     actualizados: int,
      *     enriquecidos: int,
-     *     conflictos: list<array{codigoSinco: string, descripcion: string, chocaCon: mixed}>
+     *     conflictos: list<array{codigoSinco: string, descripcion: string, chocaCon: mixed}>,
+     *     reenganchados: int
      * }
      */
     public function confirmar(string $token): array
@@ -131,7 +132,16 @@ final class MaestroSincoImportService
             throw $t;
         }
 
+        // Fuera de la transacción a propósito: el maestro ya está guardado y no debe deshacerse si
+        // el re-enganche falla. Son dos cosas distintas —el catálogo y la cola de vínculos— y la
+        // primera vale por sí sola.
+        //
+        // Sin esta llamada, cargar el maestro metía miles de insumos y dejaba la cola de pendientes
+        // exactamente igual de larga, con el insumo que faltaba ya dentro del catálogo. El auto-match
+        // sólo vivía en `generarVinculos()`, que se dispara desde el lado del presupuesto.
+        $reenganchados = (new MaestroInsumosService($this->db))->reengancharPendientes();
+
         $this->store->eliminar($token);
-        return ['ok' => true, 'creados' => $creados, 'actualizados' => $actualizados, 'enriquecidos' => $enriquecidos, 'conflictos' => $conflictos];
+        return ['ok' => true, 'creados' => $creados, 'actualizados' => $actualizados, 'enriquecidos' => $enriquecidos, 'conflictos' => $conflictos, 'reenganchados' => $reenganchados];
     }
 }

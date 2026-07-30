@@ -420,6 +420,38 @@ export function anclasOrdenadas(anclas: AnclaDisponible[]): AnclaDisponible[] {
 }
 
 /**
+ * Por qué el desplegable de frentes no tiene nada que ofrecer. `null` = sí tiene.
+ *
+ * Existe porque un desplegable vacío es mudo y tres causas distintas se ven exactamente igual: que
+ * el proyecto no tenga cronograma en su semana activa, que el permiso de lectura del plan lo haya
+ * rechazado, y que la petición se cayera. La pantalla las trataba a las tres como «no hay frentes»
+ * porque la carga hacía `.catch(() => setAnclas([]))`: el fallo se perdía y quien miraba no tenía
+ * forma de saber cuál de las tres le había tocado.
+ *
+ * Reportado el 2026-07-30 sobre el proyecto «Prueba» en el entorno de pruebas, donde el desplegable
+ * salió vacío y hubo que ir al código para descartar que fuera un fallo del servicio.
+ */
+export function motivoSinAnclas(
+  anclas: AnclaDisponible[],
+  frentes: FrenteDisponible[],
+  fallo: string | null,
+  cargando: boolean,
+): string | null {
+  if (anclas.length > 0 || frentes.length > 0) {
+    return null
+  }
+  if (cargando) {
+    return 'Cargando los frentes del cronograma…'
+  }
+  if (fallo !== null) {
+    // El mensaje del servidor viaja entero: un 403 y una caída de red no se arreglan igual, y quien
+    // mira la pantalla es quien puede distinguirlas si se las nombramos.
+    return `No se pudieron cargar los frentes: ${fallo}`
+  }
+  return 'Este proyecto no tiene cronograma en su semana activa, así que no hay frentes que ofrecer.'
+}
+
+/**
  * Resumen del panel de correspondencias.
  *
  * «Pendiente» es solo la rama que hoy deja a algún paquete sin fecha, no cualquier rama sin regla

@@ -12,6 +12,7 @@ import {
   generaProceso,
   idPorEtiqueta,
   mensajeCalculo,
+  motivoSinAnclas,
   opcionAncla,
   opcionFrente,
   opcionesFrente,
@@ -623,6 +624,32 @@ describe('A4.2 · correspondencias y anclas', () => {
       frente(1, 'ESTRUCTURA', '2027-12-31'),
     ])
     expect(orden.map((a) => a.uniqueId)).toEqual([1, 2])
+  })
+
+  describe('un desplegable vacío deja de ser mudo', () => {
+    it('calla cuando sí hay algo que ofrecer', () => {
+      expect(motivoSinAnclas([frente(1, 'ESTRUCTURA', '2026-08-18')], [], null, false)).toBeNull()
+    })
+
+    it('también calla si solo hay frentes, que es el camino de respaldo del desplegable', () => {
+      expect(motivoSinAnclas([], [frente(1, 'ESTRUCTURA', '2026-08-18')], null, false)).toBeNull()
+    })
+
+    it('no acusa de nada mientras la petición sigue en el aire', () => {
+      expect(motivoSinAnclas([], [], null, true)).toContain('Cargando')
+    })
+
+    it('distingue el fallo de la petición y arrastra su mensaje, que es lo que separa un 403 de una caída', () => {
+      const m = motivoSinAnclas([], [], 'No tienes permiso para ver el plan de este proyecto.', false)
+      expect(m).toContain('No se pudieron cargar')
+      expect(m).toContain('No tienes permiso')
+    })
+
+    it('cuando de verdad no hay cronograma, lo dice sin culpar a nadie', () => {
+      const m = motivoSinAnclas([], [], null, false)
+      expect(m).toContain('no tiene cronograma')
+      expect(m).not.toContain('No se pudieron cargar')
+    })
   })
 
   it('el resumen no habla de pendientes cuando no queda ninguna rama sin asignar', () => {

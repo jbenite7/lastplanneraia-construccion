@@ -92,7 +92,10 @@ class PlanComprasMaestroImportController
             }
             return;
         }
-        $this->ok(['creados' => $r['creados'], 'actualizados' => $r['actualizados'], 'enriquecidos' => $r['enriquecidos'], 'conflictos' => $r['conflictos']]);
+        // `reenganchados` es la respuesta a «cargué el maestro, ¿y mis pendientes?»: dice cuántos
+        // vínculos que esperaban un insumo lo encontraron en esta carga. Sin él, la carga informa de
+        // lo que entró al catálogo y calla lo que eso resolvió, que es lo que la obra estaba mirando.
+        $this->ok(['creados' => $r['creados'], 'actualizados' => $r['actualizados'], 'enriquecidos' => $r['enriquecidos'], 'conflictos' => $r['conflictos'], 'reenganchados' => $r['reenganchados']]);
     }
 
     /** RBAC maestro + proyecto activo + CSRF. true si pasa; false y ya respondió si no. */
