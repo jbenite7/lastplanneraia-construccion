@@ -59,7 +59,7 @@ por prudencia nunca es el error caro.
 | # | Tarea | Espera a | Estado | Commit | Fecha |
 |---|---|---|---|---|---|
 | 5 | Equipo alquilado vs comprado | 4 | PENDIENTE | | |
-| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **EN CURSO** (construido y commiteado; faltan las dos verificaciones aplazadas — ver nota) | `ed9c321` | 2026-07-29 |
+| 6 | Ayuda dentro de la aplicación | 1 y 2 (necesita las pantallas terminadas) | **EN CURSO** (construido; e2e corridos y en verde el 2026-07-30 — falta la condición de hecho nº 3: la lectura de un revisor ajeno al módulo — ver nota) | último: `5e80112` | 2026-07-30 |
 | 7a | Re-matching al reprogramar (B2, 2ª mitad) | 1 (comparten `PlanFechasService`) | **HECHO** | `3a0da33` (integra `b590b5e`, `13e6e31`, `b2859e3`, `c254955`, `87fa7a3`) | 2026-07-29 |
 | 7b | Los cuatro diferidos de A4.1 (configuración de pasos) | 7a (misma superficie) | **HECHO — A4.1 cerrada del todo:** 3 construidos + 1 archivado con motivo el 2026-07-30 | `3a0da33` (integra `efe8d5e`, `20d6acf`, `c725fc7`) | 2026-07-29 |
 
@@ -190,13 +190,21 @@ e2e escrito y la regla de proceso en `DESIGN.md` y `docs/pdc-v2.md`.
 **Verificado:** 362 tests de vitest en verde (25 archivos, 28 nuevos entre `ayuda.test.ts` y
 `recorrido.test.ts`), tipos limpios, bundle recompilado a `public/pdc-app/`.
 
-**Aplazado por decisión del usuario** («avanza sin pruebas físicas»), y por eso la fila no dice
-`HECHO`:
+De las dos verificaciones aplazadas, **la primera ya está hecha (2026-07-30)** y la segunda sigue
+pendiente — por eso la fila todavía no dice `HECHO`:
 
-1. **Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.** Playwright los carga y los lista, y
-   `node --check` pasa, pero ejecutarlos necesita la app servida sobre *este* árbol; el contenedor
-   no llegó a arrancar (montar el repo desde disco externo agota el tiempo). **No están verdes: no
-   se han corrido.**
+1. ~~Correr los 6 e2e de `pdc-v2-ayuda.spec.mjs`.~~ **Corridos y en verde: 6 de 6**, sobre este árbol
+   servido en `http://localhost:8083` (contenedor propio con la imagen del servicio `app`, red del
+   stack principal y la misma base de datos). La primera pasada dio **2 fallos, y eran del
+   andamiaje, no del módulo**: el helper `permitirRecorrido` borraba la memoria del recorrido con un
+   `addInitScript`, que vuelve a correr **en cada navegación** — también en la recarga que la prueba
+   usa para comprobar que la decisión se recuerda. Arreglado donde correspondía: `loginAndSelectProject`
+   acepta `{ silenciarRecorrido: false }` y los dos tests entran así, sin escribir ni borrar nada
+   después. La persistencia que se mide vuelve a ser la de la aplicación.
+   **Regresión de la zona, también en verde:** los 7 casos de `pdc-v2-plan`, `pdc-v2-vencimientos` y
+   `pdc-v2-maestro` — el silenciador llega a todos los e2e del PDC y ningún modal tapa un clic.
+   **Rojo preexistente, ajeno a esto:** `pdc-v2-sin-scroll-x.spec.mjs` falla igual con estos cambios
+   revertidos (comprobado por `git stash` en la misma sesión).
 2. **La condición de hecho nº 3 del spec** — un revisor que no conoce el módulo lee las ayudas y
    recorre el flujo sin preguntar. Es *el* hecho de verdad del entregable; que los botones existan
    no lo sustituye.
