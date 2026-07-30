@@ -38,6 +38,37 @@ export type ImportPreview = {
   advertencias: string[]
   sinCambios: boolean
   versionActiva: { id: number; numero: number; label: string | null; createdAt: string } | null
+  impacto: ImpactoReimport
+}
+
+/** Una fila del detalle de impacto. `tipoInsumoAnterior` solo viene en el grupo de cambios de tipo. */
+export type FilaImpacto = {
+  descripcion: string
+  unidad: string
+  tipoInsumo: string
+  tipoInsumoAnterior: string | null
+  valorTotal: number
+  paquete: string | null
+}
+
+export type GrupoImpacto = { cantidad: number; valor: number; detalle: FilaImpacto[] }
+
+/**
+ * Impacto de recargar una versión del presupuesto sobre el trabajo ya hecho, informado antes de
+ * confirmar. No confundir con `ImpactoVersion`, que mide otra cosa: cuántos vínculos del maestro
+ * quedan apuntando a la versión que se abandona al cambiar cuál rige.
+ *
+ * `cambianTipo` compara `tipo_insumo` y no la agrupación de SINCO: esa columna del Excel se lee y se
+ * descarta, y la `agrupacion` que existe vive en el maestro indexada por (descripción, unidad), o sea
+ * que es propiedad de la identidad del insumo y no cambia entre versiones. `tipo_insumo` sí se
+ * persiste y sí es lo que consume el motor de sugerencias.
+ */
+export type ImpactoReimport = {
+  versionActiva: { id: number; label: string | null } | null
+  nuevosSinPaquete: GrupoImpacto
+  desaparecenConPaquete: GrupoImpacto
+  cambianTipo: GrupoImpacto
+  valorAfectado: number
 }
 
 export type ImportConfirmResult = {
@@ -108,8 +139,45 @@ export type ArbolInsumo = {
 
 export type ArbolPresupuesto = {
   version: { id: number; versionLabel: string; activa: number }
+  avisos: AvisosPresupuesto
   items: ArbolItem[]
   insumos: ArbolInsumo[]
+}
+
+export type CandidatoGlobal = {
+  codigo: string
+  descripcion: string
+  unidad: string
+  /** Con cuántos insumos se resuelve el APU de la actividad. */
+  insumos: number
+  valorTotal: number
+}
+
+export type ActividadSinCantidad = { codigo: string; descripcion: string; valorTotal: number; lineas: number }
+
+export type InsumoEnCero = {
+  codigo: string
+  actividad: string
+  descripcion: string
+  unidad: string
+  cantidad: number
+  valorUnitario: number
+}
+
+/**
+ * Lo que el presupuesto no explica solo. Viaja dentro del árbol y no en un endpoint aparte: un
+ * presupuesto no puede mostrarse sin sus avisos. **Ninguno bloquea nada.**
+ *
+ * `partidasGlobales.candidatos` llega sin umbral aplicado: el servidor manda los 57 de Da Porto con
+ * su valor y la vista filtra con el umbral que pone el usuario.
+ */
+export type AvisosPresupuesto = {
+  costoTotal: number
+  insumosDistintos: number
+  aparicionesApu: number
+  actividadesSinCantidad: { cantidad: number; lineasEnCero: number; detalle: ActividadSinCantidad[] }
+  insumosEnCero: { cantidad: number; detalle: InsumoEnCero[] }
+  partidasGlobales: { unidades: string[]; candidatos: CandidatoGlobal[] }
 }
 
 // Tipos del maestro de insumos (Task 6)

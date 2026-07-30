@@ -10,7 +10,7 @@ import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { estadoInicialMaestro, maestroReducer, pestanaInicialMaestro } from '../lib/maestroState'
 import { estadoInicialMaestroImport, maestroImportReducer } from '../lib/maestroImportState'
 import type { MaestroImportErrorFila, MaestroImportPreview, MaestroImportResultado, MaestroInsumo, ResumenVinculos, SugerenciaMaestro, VinculoInsumo } from '../lib/types'
-import { plural } from '../lib/texto'
+import { contarInsumos, plural } from '../lib/texto'
 
 // Mismo criterio que ImportarPresupuesto.tsx/VisorPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -271,7 +271,7 @@ export default function MaestroInsumos() {
         )}
         {(imp.fase === 'previewOk' || imp.fase === 'confirmando') && imp.preview && (
           <div data-testid="pdc-maestro-import-resumen">
-            <p>{imp.preview.resumen.activos} insumos activos · {imp.preview.resumen.omitidos} omitidos · {imp.preview.resumen.agrupaciones} agrupaciones · {imp.preview.resumen.tiposRecurso} tipos</p>
+            <p>{contarInsumos(imp.preview.resumen.activos, 'distintos')} activos · {imp.preview.resumen.omitidos} omitidos · {imp.preview.resumen.agrupaciones} agrupaciones · {imp.preview.resumen.tiposRecurso} tipos</p>
             <button type="button" data-testid="pdc-maestro-import-confirmar" disabled={imp.fase === 'confirmando'} onClick={onConfirmarMaestro}>
               {imp.fase === 'confirmando' ? 'Importando…' : 'Confirmar e importar'}
             </button>

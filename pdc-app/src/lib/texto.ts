@@ -20,6 +20,32 @@ export function plural(n: number, singular: string, pluralExplicito?: string): s
 }
 
 /**
+ * Las dos magnitudes de insumos que el módulo cuenta, y sus dos palabras.
+ *
+ * En el comité del 2026-07-29 el módulo anunció 820 insumos, el dueño del producto esperaba ~390, y
+ * explicar la diferencia tomó tres turnos de conversación; más adelante apareció un 396 en otra
+ * pantalla. Los tres números eran verdaderos: ninguno decía de qué hablaba. Aquí viven las dos
+ * palabras, en un solo sitio, para que no se separen con el uso.
+ */
+export type MagnitudInsumos = 'apariciones' | 'distintos'
+
+export const PALABRA_INSUMOS: Record<MagnitudInsumos, string> = {
+  apariciones: 'apariciones en APU',
+  distintos: 'insumos distintos',
+}
+
+const PALABRA_INSUMOS_SINGULAR: Record<MagnitudInsumos, string> = {
+  apariciones: 'aparición en APU',
+  distintos: 'insumo distinto',
+}
+
+/** «820 apariciones en APU» · «396 insumos distintos». Nunca «820 insumos» a secas. */
+export function contarInsumos(n: number, magnitud: MagnitudInsumos): string {
+  const palabra = n === 1 ? PALABRA_INSUMOS_SINGULAR[magnitud] : PALABRA_INSUMOS[magnitud]
+  return `${n.toLocaleString('es-CO')} ${palabra}`
+}
+
+/**
  * Centinela para proteger la ñ, sacado del área de uso privado de Unicode.
  *
  * Tiene que ser un carácter que no aparezca jamás en una descripción de insumo: con un espacio o un

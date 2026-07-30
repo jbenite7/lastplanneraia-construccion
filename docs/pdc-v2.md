@@ -186,6 +186,35 @@ proyecto real): exige `PDC_E2E_DESTRUCTIVO=1`. Y el stack del worktree publica *
 comprobar si una constraint existe, mirar `information_schema.TABLE_CONSTRAINTS` (global), no
 `STATISTICS` de una tabla.
 
+### Impacto al recargar + tamiz del presupuesto (Ola 1 del comité, 2026-07-29)
+
+Dos entregables de **lectura pura: sin migraciones, sin tablas y sin endpoint nuevo**. Bitácora con la
+medición completa: `goals/pdc-preparar-b1/evidence/impacto-y-tamiz-validacion.md`.
+
+- **El impacto viaja dentro de `preview`**, no en una ruta aparte: la pantalla no debe poder ofrecer el
+  botón de confirmar sin haber podido decir qué se pierde. `PresupuestoImportService::impactoDeReimportar()`
+  cruza la versión activa con la candidata recién parseada usando `consolidarInsumos()` —la misma clave
+  `(descripcion_norm, unidad)` del comparativo de A1.6, que es además la clave única de
+  `pdc_insumo_paquete`— así que es un join más, no un motor nuevo. **Ojo:** `PlanComprasImportController::preview()`
+  enumera a mano las claves del JSON; añadir algo al servicio y no a esa lista lo hace desaparecer sin
+  que ningún test PHP lo note.
+- **Los avisos del tamiz viajan dentro de `arbol()`** (`avisosDelPresupuesto()`), para que un presupuesto
+  no pueda mostrarse sin ellos. **Ninguno bloquea nada.**
+- **El umbral del «globalazo» no lo aplica el servidor:** devuelve los candidatos con su valor y el
+  costo total de la versión, y la vista filtra con lo que el usuario pone en el visor
+  (`pdc-app/src/lib/tamiz.ts`, persistido en `localStorage` por proyecto; arranca en el 0,25 % del costo
+  redondeado al millón). Un umbral cocinado en el código sería un juicio disfrazado de constante.
+- **`cambianTipo` compara `tipo_insumo`, no la agrupación de SINCO:** esa columna del Excel se lee y se
+  descarta, y la `agrupacion` real vive en el maestro indexada por `(descripcion_norm, unidad)`, o sea
+  que es propiedad de la identidad del insumo y no cambia entre versiones. Diferenciarla exigiría una
+  migración.
+- **Toda cifra de insumos declara su magnitud**, con las dos palabras en un solo sitio
+  (`pdc-app/src/lib/texto.ts`: `contarInsumos`): **«apariciones en APU»** (820 en Da Porto) e
+  **«insumos distintos»** (396). No usar «insumos» a secas para un conteo.
+- **Trampa de los fixtures:** `fromArray()` de PhpSpreadsheet omite las celdas cuyo valor es `== null`,
+  y en PHP `0 == null` es verdadero → los ceros escritos como `int` no llegan al .xlsx y el parser
+  rechaza la fila. Escribirlos como cadena `'0'`.
+
 El desarrollo sigue el **roadmap maestro** `docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md` (fases A1→A4, B1→B3, C1); cada fase recibe su propio spec y plan detallado antes de ejecutarse.
 
 ## Producto: 2 submódulos de UI

@@ -7,14 +7,15 @@ import {
 } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
-  COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, pdcTheme, vacioTabla
+  COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet } from '../lib/api'
 import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
+import { guardarUmbral, leerUmbral, partidasSobreUmbral } from '../lib/tamiz'
 import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
-import { plural } from '../lib/texto'
+import { contarInsumos, plural } from '../lib/texto'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -82,6 +83,18 @@ export default function VisorPresupuesto() {
   useEffect(() => {
     if (arbol) setExpandidos(expandirHastaNivel(arbol.items, nivel))
   }, [arbol, nivel])
+
+  // Umbral del «globalazo»: lo pone el usuario aquí y se recuerda por proyecto. Arranca en el 0,25 %
+  // del presupuesto de la versión, que es la medición que se aceptó contra Da Porto.
+  const [umbral, setUmbral] = useState<number | null>(null)
+  useEffect(() => {
+    if (arbol) setUmbral(leerUmbral(arbol.version.id, arbol.avisos.costoTotal))
+  }, [arbol])
+
+  const globales = useMemo(
+    () => (arbol && umbral !== null ? partidasSobreUmbral(arbol.avisos.partidasGlobales.candidatos, umbral) : []),
+    [arbol, umbral],
+  )
 
   const filtro = useMemo(
     () => ({ texto, tipoInsumo, unidad, plano }),
@@ -169,6 +182,14 @@ export default function VisorPresupuesto() {
         <div>
           <h1>Presupuesto</h1>
           <p>Vista del presupuesto importado. Elige hasta qué nivel verlo, o haz clic en una fila para abrirla.</p>
+          {/* Las dos magnitudes juntas y con su nombre: es la única forma de que el 396 y el 820
+              convivan en la misma app sin parecer que una de las dos está mal. */}
+          {arbol && (
+            <p className="pdc-ayuda" data-testid="pdc-visor-cifras">
+              {contarInsumos(arbol.avisos.insumosDistintos, 'distintos')} ·{' '}
+              {contarInsumos(arbol.avisos.aparicionesApu, 'apariciones')}
+            </p>
+          )}
         </div>
         {versiones.length > 0 && (
           <label className="pdc-selector">
@@ -258,6 +279,115 @@ export default function VisorPresupuesto() {
               {plural(filas.length, 'fila')}
             </span>
           </div>
+
+          {/* Avisos del tamiz. Señalan y nada más: no impiden importar, ni asignar, ni recalcular.
+              Van plegados para no robarle alto a la grilla, que es a lo que se viene. */}
+          {arbol && umbral !== null && (
+            <div className="pdc-bloque pdc-avisos" data-testid="pdc-visor-avisos">
+              <p className="pdc-ayuda">
+                Cosas que vale la pena mirar en este presupuesto. Son un dedo señalando: no impiden
+                importar, ni asignar a paquetes, ni recalcular el plan.
+              </p>
+
+              <div className="pdc-avisos-lista">
+              <details data-testid="pdc-aviso-sin-cantidad">
+                <summary>
+                  <strong>{plural(arbol.avisos.actividadesSinCantidad.cantidad, 'actividad sin cantidad', 'actividades sin cantidad')}</strong>
+                  {arbol.avisos.actividadesSinCantidad.lineasEnCero > 0
+                    && ` (arrastran ${plural(arbol.avisos.actividadesSinCantidad.lineasEnCero, 'línea', 'líneas')} de insumo a cero)`}
+                </summary>
+                <p className="pdc-ayuda">
+                  Su APU tiene precios, pero nadie puso la cantidad todavía. Puede ser una partida
+                  prevista sin valorar: míralas antes de confiar en su valor.
+                </p>
+                {arbol.avisos.actividadesSinCantidad.cantidad === 0 ? (
+                  <p className="pdc-vacio">Todas las actividades tienen cantidad.</p>
+                ) : (
+                  <table className="pdc-tabla-detalle">
+                    <thead><tr><th>Código</th><th>Actividad</th><th>Líneas</th></tr></thead>
+                    <tbody>
+                      {arbol.avisos.actividadesSinCantidad.detalle.map((a) => (
+                        <tr key={a.codigo}><td>{a.codigo}</td><td>{a.descripcion}</td><td className="pdc-num">{a.lineas}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </details>
+
+              <details data-testid="pdc-aviso-en-cero">
+                <summary>
+                  <strong>{plural(arbol.avisos.insumosEnCero.cantidad, 'insumo', 'insumos')}</strong> en cero por su propia línea de APU
+                </summary>
+                <p className="pdc-ayuda">
+                  La actividad sí tiene cantidad, pero este insumo entra con cantidad o precio en cero.
+                </p>
+                {arbol.avisos.insumosEnCero.cantidad === 0 ? (
+                  <p className="pdc-vacio">Ningún insumo entra en cero por su cuenta.</p>
+                ) : (
+                  <table className="pdc-tabla-detalle">
+                    <thead><tr><th>Código</th><th>Actividad</th><th>Insumo</th><th>Und</th><th>Vr. unitario</th></tr></thead>
+                    <tbody>
+                      {arbol.avisos.insumosEnCero.detalle.map((i, idx) => (
+                        <tr key={`${i.codigo}-${i.descripcion}-${idx}`}>
+                          <td>{i.codigo}</td><td>{i.actividad}</td><td>{i.descripcion}</td><td>{i.unidad}</td>
+                          <td className="pdc-num">{moneda(i.valorUnitario)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </details>
+
+              <details data-testid="pdc-aviso-globales">
+                <summary>
+                  <strong>{plural(globales.length, 'actividad resuelta', 'actividades resueltas')}</strong> con una partida global
+                </summary>
+                <p className="pdc-ayuda">
+                  Su APU se resuelve con una o dos líneas de unidad global
+                  ({arbol.avisos.partidasGlobales.unidades.join(', ')}) por encima del umbral. Un
+                  imprevisto o una provisión pueden ser globales con razón; un capítulo entero
+                  resuelto de un plumazo, normalmente no.
+                </p>
+                <div className="pdc-avisos-umbral">
+                  <label className="pdc-selector">
+                    Umbral de valor{' '}
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000000}
+                      data-testid="pdc-aviso-umbral"
+                      value={umbral}
+                      onChange={(e) => {
+                        const n = Number(e.target.value)
+                        const v = Number.isFinite(n) && n >= 0 ? n : 0
+                        setUmbral(v)
+                        guardarUmbral(arbol.version.id, v)
+                      }}
+                    />
+                  </label>
+                  <span className="pdc-ayuda">
+                    {moneda(umbral)} · de {arbol.avisos.partidasGlobales.candidatos.length} candidatos con unidad global
+                  </span>
+                </div>
+                {globales.length === 0 ? (
+                  <p className="pdc-vacio">Ninguna partida global pasa este umbral. Bájalo para ver más.</p>
+                ) : (
+                  <table className="pdc-tabla-detalle">
+                    <thead><tr><th>Código</th><th>Actividad</th><th>Und</th><th>Insumos</th><th>Valor</th></tr></thead>
+                    <tbody>
+                      {globales.map((g) => (
+                        <tr key={g.codigo}>
+                          <td>{g.codigo}</td><td>{g.descripcion}</td><td>{g.unidad}</td>
+                          <td className="pdc-num">{g.insumos}</td><td className="pdc-num">{moneda(g.valorTotal)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </details>
+              </div>
+            </div>
+          )}
 
           <div className="pdc-grid" data-testid="pdc-visor-arbol" ref={refGrid}>
             <AgGridReact<FilaVisor>

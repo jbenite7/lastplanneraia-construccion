@@ -22,7 +22,7 @@ test('importar presupuesto: preview, confirmación y versión activa', async ({ 
     const resumen = page.locator('[data-testid="pdc-import-resumen"]');
     await expect(resumen).toContainText('PI_TEST_1', { timeout: 20000 });
     await expect(resumen).toContainText('2 actividades');
-    await expect(resumen).toContainText('4 insumos');
+    await expect(resumen).toContainText('4 apariciones en APU');
 
     await page.locator('[data-testid="pdc-import-confirmar"]').click();
     await expect(page.locator('.pdc-exito')).toBeVisible({ timeout: 20000 });
