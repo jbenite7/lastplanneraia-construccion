@@ -7,7 +7,7 @@
                     </a>
                 </div>
             </div>
-            <div class="card-body p-0 dashboard-widget__body h-auto admin-table-scroll">
+            <div class="card-body p-0 dashboard-widget__body h-auto admin-table-scroll aia-grid-shell">
                 <table id="projectsTable" class="table table-bordered table-striped table-sm table-sticky-header admin-table-dense">
                                 <thead>
                                     <tr>

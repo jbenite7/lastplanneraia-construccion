@@ -30,7 +30,7 @@
 	</div> -->
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
-	<div class="tabla" id="contenedorInformePowerBI">
+	<div class="tabla aia-grid-shell" id="contenedorInformePowerBI">
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">

@@ -21,7 +21,7 @@ use Admin\Core\RoleManager;
     </div>
   </div>
   <!-- /.card-header -->
-  <div class="card-body p-0 admin-table-scroll">
+  <div class="card-body p-0 admin-table-scroll aia-grid-shell">
     <table id="usersTable" class="table table-bordered table-striped table-sm admin-table-dense">
       <thead>
         <tr>
