@@ -135,6 +135,18 @@
     color: var(--ds-active-text-primary);
   }
 
+  .aia-table-shell,
+  .aia-grid-shell {
+    --_row-h:     var(--ds-table-row-h);
+    --_cell-px:   var(--ds-table-cell-pad-x);
+    --_cell-py:   var(--ds-table-cell-pad-y);
+    --_header-bg: var(--ds-table-header-bg);
+    --_header-fg: var(--ds-table-header-fg);
+    --_border:    var(--ds-table-border);
+    border-radius: var(--ds-radius-table);
+    overflow: hidden;
+  }
+
   .aia-glass {
     background: var(--ds-active-surface-glass);
     border: var(--ds-border-width) solid var(--ds-color-border-subtle);

@@ -204,14 +204,31 @@
     --ds-color-focus-ring-light: #006d66;
     --ds-color-focus-ring-dark: #2caa9f;
 
-    --ds-color-state-success-bg: #ddefe6;
-    --ds-color-state-success-text: #1a5633;
-    --ds-color-state-warning-bg: #fff8e1;
-    --ds-color-state-warning-text: #5d4200;
-    --ds-color-state-critical-bg: #fdecec;
-    --ds-color-state-critical-text: #8f1d1d;
-    --ds-color-state-info-bg: #e3f9f7;
-    --ds-color-state-info-text: #006d66;
+    /* PALETA DE ESTADO INVERTIDA A TEMA OSCURO
+       Medidos en 1180x820 dark:
+       - success:  bg #173d26 / text #b7e8c6 (8,88:1)
+       - warning:  bg #3a3a0f / text #f2e79c (9,31:1)
+       - critical: bg #431414 / text #ffcdc8 (10,99:1)
+       - info:     bg #134841 / text #bbdcfb (8,95:1)
+    */
+    --ds-color-state-success-bg: #173d26;
+    --ds-color-state-success-text: #b7e8c6;
+    --ds-color-state-warning-bg: #3a3a0f;
+    --ds-color-state-warning-text: #f2e79c;
+    --ds-color-state-critical-bg: #431414;
+    --ds-color-state-critical-text: #ffcdc8;
+    --ds-color-state-info-bg: #134841;
+    --ds-color-state-info-text: #bbdcfb;
+
+    /* Valores de soporte para impresos / XLSX */
+    --ds-color-state-success-bg-light: #ddefe6;
+    --ds-color-state-success-text-light: #1a5633;
+    --ds-color-state-warning-bg-light: #fff8e1;
+    --ds-color-state-warning-text-light: #5d4200;
+    --ds-color-state-critical-bg-light: #fdecec;
+    --ds-color-state-critical-text-light: #8f1d1d;
+    --ds-color-state-info-bg-light: #e3f9f7;
+    --ds-color-state-info-text-light: #006d66;
 
     /* ========================================
      PALETA DE MATICES DE ESTADO (un matiz, un estado)
@@ -491,6 +508,36 @@
     --ds-sidebar-width-collapsed: 4.5rem;
     --ds-sidebar-item-min-height: var(--ds-target-min);
     --ds-sidebar-section-gap: var(--ds-space-6);
+
+    /* ── Table contract ── */
+    --ds-table-row-h:        2.25rem;
+    --ds-table-cell-pad-x:   var(--ds-space-3);
+    --ds-table-cell-pad-y:   var(--ds-space-2);
+    --ds-table-header-bg:    var(--ds-active-surface-raised);
+    --ds-table-header-fg:    var(--ds-active-text-secondary);
+    --ds-table-border:       var(--ds-active-border);
+    --ds-table-zebra:        color-mix(in oklch, var(--ds-active-surface) 95%, var(--ds-active-text-primary));
+    --ds-table-row-hover:    color-mix(in oklch, var(--ds-active-surface) 90%, var(--ds-color-brand-primary));
+    --ds-table-row-selected: color-mix(in oklch, var(--ds-active-surface) 85%, var(--ds-color-brand-primary));
+    --ds-table-cell-focus:   var(--ds-color-brand-primary);
+    --ds-table-empty-bg:     var(--ds-active-surface);
+    --ds-table-empty-fg:     var(--ds-active-text-tertiary);
+
+    /* ── Cell state semantic scale (7 peldaños) ── */
+    --ds-cell-state-neutral-bg:   var(--ds-active-surface);
+    --ds-cell-state-neutral-fg:   var(--ds-active-text-primary);
+    --ds-cell-state-ok-bg:        oklch(0.45 0.12 145);
+    --ds-cell-state-ok-fg:        oklch(0.92 0.03 145);
+    --ds-cell-state-atencion-bg:  oklch(0.50 0.14 85);
+    --ds-cell-state-atencion-fg:  oklch(0.95 0.03 85);
+    --ds-cell-state-riesgo-bg:    oklch(0.48 0.16 50);
+    --ds-cell-state-riesgo-fg:    oklch(0.93 0.04 50);
+    --ds-cell-state-critico-bg:   oklch(0.42 0.18 25);
+    --ds-cell-state-critico-fg:   oklch(0.93 0.04 25);
+    --ds-cell-state-bloqueado-bg: oklch(0.35 0.05 260);
+    --ds-cell-state-bloqueado-fg: oklch(0.85 0.03 260);
+    --ds-cell-state-sin-datos-bg: var(--ds-active-surface);
+    --ds-cell-state-sin-datos-fg: var(--ds-active-text-tertiary);
   }
 
   @media (min-width: 75rem) {
