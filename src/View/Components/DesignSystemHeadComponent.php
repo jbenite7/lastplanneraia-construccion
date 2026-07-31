@@ -107,6 +107,7 @@ final class DesignSystemHeadComponent
         'select2' => '/css/design-system/entrypoints/attach-select2.css',
         'sweetalert2' => '/css/design-system/entrypoints/attach-sweetalert2.css',
         'handsontable' => '/css/design-system/entrypoints/attach-handsontable.css',
+        'tom-select' => '/css/design-system/adapters/tom-select.css',
         'datatables' => '/css/design-system/vendor-datatables-legacy.css',
     ];
 
