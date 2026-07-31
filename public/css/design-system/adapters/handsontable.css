@@ -12,6 +12,7 @@
   .handsontable tbody tr {
     display: table-row !important;
     width: auto !important;
+    height: var(--ds-table-row-h);
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -21,7 +22,7 @@
   }
   /* El vendor pinta `.handsontable tr` de blanco opaco y aqui solo se neutralizaba
      la fila del cuerpo. La fila de cabecera seguia blanca, y como el `th` usa
-     `--ds-active-surface-raised` (translucido al 86 %) ese blanco se colaba por
+     `--ds-table-header-bg` (translucido al 86 %) ese blanco se colaba por
      debajo: la cabecera componia un gris verdoso muy por encima del token, y era
      la superficie mas clara de la app en dark. Se neutraliza solo el fondo; el
      resto del reset de fila no aplica a la cabecera. */
@@ -29,25 +30,12 @@
     background: transparent !important;
   }
 
-  /* Relleno SOLO horizontal.
-
-     Handsontable calcula la altura de cada fila y la escribe como `height`
-     INLINE en las celdas de sus clones. Ese numero no contempla el relleno
-     vertical que aqui se añadia, asi que el master crecia con el relleno y los
-     clones no: los encabezados de fila se despegaban de sus filas y el desvio
-     se acumulaba hacia abajo (111 px a la octava fila de /profesionales,
-     medido a 1180x820).
-
-     La densidad de una grilla NO se expresa con relleno de celda, porque el
-     vendor mide la altura de fila y no lo ve. Se expresa con la altura de fila,
-     que es su propio mecanismo. Quitar el eje vertical alinea los cuatro clones
-     por construccion. El eje horizontal se conserva: no participa del calculo
-     de altura. */
+  /* Relleno SOLO horizontal tokenizado por contrato (--ds-table-cell-pad-x). */
   .handsontable :where(th, td) {
     display: table-cell !important;
     width: auto !important;
     padding-block: 0 !important;
-    padding-inline: var(--ds-space-3) !important;
+    padding-inline: var(--ds-table-cell-pad-x) !important;
   }
 
 }
@@ -60,13 +48,14 @@
   }
 
   :where(.handsontable th, .handsontable td) {
-    border-color: var(--ds-active-border);
+    border-color: var(--ds-table-border);
     background: var(--ds-active-surface);
     color: var(--ds-active-text-primary);
   }
 
   :where(.handsontable th) {
-    background: var(--ds-active-surface-raised);
+    background: var(--ds-table-header-bg);
+    color: var(--ds-table-header-fg);
     font-weight: var(--ds-type-weight-semibold);
   }
 
@@ -85,6 +74,7 @@
   .handsontable tbody tr {
     display: table-row !important;
     width: auto !important;
+    height: var(--ds-table-row-h);
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -97,11 +87,33 @@
     display: table-cell !important;
     width: auto !important;
     padding-block: 0 !important;
-    padding-inline: var(--ds-space-3) !important;
+    padding-inline: var(--ds-table-cell-pad-x) !important;
   }
 
+  /* Filas alternas (zebra) */
+  :where(.handsontable tbody tr:nth-child(even) td:not([class*="-state-"])) {
+    background: var(--ds-table-zebra);
+  }
 
+  /* Hover de fila */
+  :where(.handsontable tbody tr:hover td:not([class*="-state-"])) {
+    background: var(--ds-table-row-hover);
+  }
+
+  /* Fila seleccionada / resaltada */
+  :where(.handsontable tbody tr.htRowSelection td, .handsontable tbody tr.highlight td) {
+    background: var(--ds-table-row-selected);
+  }
+
+  /* Foco de celda / selección */
   :where(.handsontable .current, .handsontable .area) {
-    box-shadow: inset 0 0 0 var(--ds-border-width) var(--ds-color-brand-primary);
+    box-shadow: inset 0 0 0 var(--ds-border-width) var(--ds-table-cell-focus);
+  }
+
+  /* Estado vacío */
+  :where(.handsontable .htEmptyState, .handsontable td.htEmpty, .handsontable .htNoData) {
+    background: var(--ds-table-empty-bg);
+    color: var(--ds-table-empty-fg);
   }
 }
+

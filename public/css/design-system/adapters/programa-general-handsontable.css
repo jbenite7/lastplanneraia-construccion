@@ -28,45 +28,80 @@
     color: var(--ds-active-text-primary) !important;
   }
 
+  :where(.pg-page) {
+    --pg-future-bg: var(--ds-cell-state-ok-bg);
+    --pg-future-text: var(--ds-cell-state-ok-fg);
+    --pg-future-border: var(--ds-cell-state-ok-fg);
+    --pg-progress-bg: var(--ds-cell-state-ok-bg);
+    --pg-progress-text: var(--ds-cell-state-ok-fg);
+    --pg-progress-border: var(--ds-cell-state-ok-fg);
+    --pg-due-bg: var(--ds-cell-state-riesgo-bg);
+    --pg-due-text: var(--ds-cell-state-riesgo-fg);
+    --pg-due-border: var(--ds-cell-state-riesgo-fg);
+    --pg-alert-bg: var(--ds-cell-state-atencion-bg);
+    --pg-alert-text: var(--ds-cell-state-atencion-fg);
+    --pg-alert-border: var(--ds-cell-state-atencion-fg);
+    --pg-delayed-bg: var(--ds-cell-state-critico-bg);
+    --pg-delayed-text: var(--ds-cell-state-critico-fg);
+    --pg-delayed-border: var(--ds-cell-state-critico-fg);
+    --pg-done-bg: var(--ds-cell-state-neutral-bg);
+    --pg-done-text: var(--ds-cell-state-neutral-fg);
+    --pg-done-border: var(--ds-active-border);
+    --pg-nodata-bg: var(--ds-cell-state-sin-datos-bg);
+    --pg-nodata-text: var(--ds-cell-state-sin-datos-fg);
+    --pg-nodata-border: var(--ds-active-border);
+  }
+
   :where(.pg-page .handsontable td.pg-state-actividad-futura) {
-    background: var(--pg-future-bg) !important;
-    border-color: var(--pg-future-border) !important;
-    color: var(--pg-future-text) !important;
+    background: var(--ds-cell-state-ok-bg) !important;
+    border-color: var(--ds-cell-state-ok-fg) !important;
+    color: var(--ds-cell-state-ok-fg) !important;
   }
 
   :where(.pg-page .handsontable td.pg-state-en-curso, .pg-page .handsontable td.pg-state-a-tiempo-en-curso) {
-    background: var(--pg-progress-bg) !important;
-    border-color: var(--pg-progress-border) !important;
-    color: var(--pg-progress-text) !important;
+    background: var(--ds-cell-state-ok-bg) !important;
+    border-color: var(--ds-cell-state-ok-fg) !important;
+    color: var(--ds-cell-state-ok-fg) !important;
   }
 
-  :where(.pg-page .handsontable td.pg-state-debe-iniciar, .pg-page .handsontable td.pg-state-restr-0) {
-    background: var(--pg-due-bg) !important;
-    border-color: var(--pg-due-border) !important;
-    color: var(--pg-due-text) !important;
+  :where(.pg-page .handsontable td.pg-state-debe-iniciar) {
+    background: var(--ds-cell-state-riesgo-bg) !important;
+    border-color: var(--ds-cell-state-riesgo-fg) !important;
+    color: var(--ds-cell-state-riesgo-fg) !important;
+  }
+
+  :where(.pg-page .handsontable td.pg-state-restr-0, .pg-page .handsontable td.pg-state-r0) {
+    background: var(--ds-cell-state-bloqueado-bg) !important;
+    border-color: var(--ds-cell-state-bloqueado-fg) !important;
+    color: var(--ds-cell-state-bloqueado-fg) !important;
   }
 
   :where(
-    .pg-page .handsontable td.pg-state-r0,
     .pg-page .handsontable td.pg-state-r1,
     .pg-page .handsontable td.pg-state-r2-3,
     .pg-page .handsontable td.pg-state-r4-6
   ) {
-    background: var(--pg-alert-bg) !important;
-    border-color: var(--pg-alert-border) !important;
-    color: var(--pg-alert-text) !important;
+    background: var(--ds-cell-state-atencion-bg) !important;
+    border-color: var(--ds-cell-state-atencion-fg) !important;
+    color: var(--ds-cell-state-atencion-fg) !important;
   }
 
   :where(.pg-page .handsontable td.pg-state-atrasado, .pg-page .handsontable td.pg-state-atrasada) {
-    background: var(--pg-delayed-bg) !important;
-    border-color: var(--pg-delayed-border) !important;
-    color: var(--pg-delayed-text) !important;
+    background: var(--ds-cell-state-critico-bg) !important;
+    border-color: var(--ds-cell-state-critico-fg) !important;
+    color: var(--ds-cell-state-critico-fg) !important;
   }
 
-  :where(.pg-page .handsontable td.pg-state-terminada, .pg-page .handsontable td.pg-state-sin-datos) {
-    background: var(--ds-active-surface) !important;
+  :where(.pg-page .handsontable td.pg-state-terminada) {
+    background: var(--ds-cell-state-neutral-bg) !important;
     border-color: var(--ds-active-border) !important;
-    color: var(--ds-active-text-secondary) !important;
+    color: var(--ds-cell-state-neutral-fg) !important;
+  }
+
+  :where(.pg-page .handsontable td.pg-state-sin-datos) {
+    background: var(--ds-cell-state-sin-datos-bg) !important;
+    border-color: var(--ds-active-border) !important;
+    color: var(--ds-cell-state-sin-datos-fg) !important;
   }
 
   :where(.pg-page #hot-container td.pg-cell-editable) {
