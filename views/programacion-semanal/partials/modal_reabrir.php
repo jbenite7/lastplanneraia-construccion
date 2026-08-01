@@ -1,5 +1,5 @@
 <!-- Modal: Reabrir Semana (solo Admin) -->
-<div class="modal fade" id="modal_reabrir_semana" tabindex="-1" role="dialog" aria-labelledby="modalReabrirTitle" aria-hidden="true">
+<div class="modal fade aia-modal" id="modal_reabrir_semana" tabindex="-1" role="dialog" aria-labelledby="modalReabrirTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header ps-reopen-header">
@@ -15,14 +15,14 @@
                 </div>
                 <div class="form-group">
                     <label for="reabrir_motivo"><strong>Motivo de reapertura <span class="text-danger">*</span></strong></label>
-                    <textarea id="reabrir_motivo" class="form-control" rows="4" minlength="20" maxlength="500" placeholder="Describa el motivo por el cual necesita reabrir esta semana (mínimo 20 caracteres)..." required></textarea>
+                    <textarea id="reabrir_motivo" class="aia-input" rows="4" minlength="20" maxlength="500" placeholder="Describa el motivo por el cual necesita reabrir esta semana (mínimo 20 caracteres)..." required></textarea>
                     <small class="form-text text-muted"><span id="reabrir_motivo_count">0</span>/20 caracteres mínimos</small>
                 </div>
                 <div id="reabrir_feedback" class="d-none"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" id="btn_confirmar_reabrir" class="btn btn-warning" disabled>
+                <button type="button" class="aia-btn aia-btn--secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn_confirmar_reabrir" class="aia-btn aia-btn--warning" disabled>
                     <i class="fas fa-unlock"></i> Confirmar Reapertura
                 </button>
             </div>

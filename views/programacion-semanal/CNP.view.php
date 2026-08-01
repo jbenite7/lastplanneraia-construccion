@@ -79,8 +79,8 @@
 		        <p class="modal-body-texto-reprogramar" id="modal-body-texto-reprogramar"></p>
 		      </div>
  		      <div class="modal-footer">
-				<button type="button" id="reprogramar-usuario" class="btn btn-primary" aria-label="Aceptar">Aceptar</button>
- 		        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Cancelar">Cancelar</button>
+				<button type="button" id="reprogramar-usuario" class="aia-btn aia-btn--primary" aria-label="Aceptar">Aceptar</button>
+ 		        <button type="button" class="aia-btn aia-btn--secondary" data-dismiss="modal" aria-label="Cancelar">Cancelar</button>
  		      </div>
 		    </div>
 		  </div>
@@ -201,9 +201,9 @@
 
 
 			if(Semanal_Confirmada==1){
-					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar btn btn-primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button></div>";
+					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar aia-btn aia-btn--primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button></div>";
 			}else{
-					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar btn btn-primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button><button type='button' class='reprogramar btn btn-success btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Reprogramar actividad' title='Reprogramar actividad'><i class='fa fa-undo-alt fa-xs' aria-hidden='true'></i></button></div>";
+					var botones_disponibles="<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de la actividad'><button type='button' class='editar aia-btn aia-btn--primary btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit fa-xs' aria-hidden='true'></i></button><button type='button' class='reprogramar aia-btn aia-btn--success btn-sm ps-btn-tight ps-cnp-row-action' aria-label='Reprogramar actividad' title='Reprogramar actividad'><i class='fa fa-undo-alt fa-xs' aria-hidden='true'></i></button></div>";
 			}
 
 			var table = $("#dt_cliente").DataTable({
@@ -358,11 +358,11 @@
 				table.columns.adjust();
 			});
 
-			$("div.ps-actions-row").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Grupo de botones leyenda"><button type= "button" class="leyenda_colores btn-pdc-modern ps-btn-gap" data-toggle="modal" data-target="#modal_leyenda_colores" aria-label="Ver leyenda de colores">Leyenda <i class="fas fa-question-circle fa-lg" aria-hidden="true"></i></button></div><div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal"><button type="button" class="btn-pdc-modern btn-dropdown-trigger" id="dropdownTriggerSecciones"><i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i></button><div class="ps-dropdown-content" role="menu"><button id="btn_Actividades_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-table"></i> Actividades</button><button id="btn_CNP_nav" type="button" class="ps-dropdown-item is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNP&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-calendar-times"></i> Causas No Programacion</button><button id="btn_CNC_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button><button id="btn_Cal_Proveedores_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CIC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-clipboard-check"></i> Calificacion Proveedores</button></div></div></div>');
+			$("div.ps-actions-row").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Grupo de botones leyenda"><button type= "button" class="leyenda_colores aia-btn aia-btn--secondary ps-btn-gap" data-toggle="modal" data-target="#modal_leyenda_colores" aria-label="Ver leyenda de colores">Leyenda <i class="fas fa-question-circle fa-lg" aria-hidden="true"></i></button></div><div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal"><button type="button" class="aia-btn aia-btn--secondary btn-dropdown-trigger" id="dropdownTriggerSecciones"><i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i></button><div class="ps-dropdown-content" role="menu"><button id="btn_Actividades_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-table"></i> Actividades</button><button id="btn_CNP_nav" type="button" class="ps-dropdown-item is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNP&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-calendar-times"></i> Causas No Programacion</button><button id="btn_CNC_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button><button id="btn_Cal_Proveedores_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CIC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-clipboard-check"></i> Calificacion Proveedores</button></div></div></div>');
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="aia-btn aia-btn--secondary ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
 			$("div.toolbarFiltro").first().insertBefore($("div.ps-actions-row .ps-toolbar-nav-wrap").first());
 
 			var permisoElem = document.getElementById('permiso_canonico');
@@ -416,16 +416,16 @@
         echo '""';
     }
     ?> ;
-					var codigo_html_Responsable_AIA = "<select id='select_Responsable_AIA' name='Responsable_AIA' class='form-control form-control-sm' ><option value=''></option>" + Responsable_AIA + "</select>";
+					var codigo_html_Responsable_AIA = "<select id='select_Responsable_AIA' name='Responsable_AIA' class='aia-input' ><option value=''></option>" + Responsable_AIA + "</select>";
 					$row.find('.input_Responsable_AIA').html(codigo_html_Responsable_AIA);
-					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
+					var codigo_html_Categoria_CNC = "<select id='select_Categoria_CNC' name='Categoria_CNC' class='aia-input'><option value='' selected></option></select>";
 					$row.find('.input_Categoria_CNC').html(codigo_html_Categoria_CNC);
 					cargarCategoriasCNC(data.Categoria_CNP);
-					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='form-control form-control-sm'><option value='' selected></option></select>";
+					var codigo_html_CNC = "<select id='select_CNC' name='CNC' class='aia-input'><option value='' selected></option></select>";
 					$row.find('.input_CNC').html(codigo_html_CNC);
-					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='form-control form-control-sm'>'" + data.Observaciones_CNC + "'</textarea>";
+					var codigo_html_Observaciones_CNC = "<textarea id='select_Observaciones_CNC' name='Observaciones_CNC' class='aia-input'>'" + data.Observaciones_CNC + "'</textarea>";
 					$row.find('.input_Observaciones_CNC').html(codigo_html_Observaciones_CNC);
-					var codigo_html_botones = "<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de edición'><button type='button' id='btn_guardar_editar' class='guardar btn btn-success btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Guardar causa de no programación' title='Guardar Causa de No Programación'><i class='fa fa-save fa-xs' aria-hidden='true'></i></button><button type='button' id='btn_cancelar_editar' class='cancelar btn btn-danger btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Cancelar edición' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true'></i></button></div>";
+					var codigo_html_botones = "<div class='ps-cnp-row-actions d-inline-flex flex-column align-items-center' role='group' aria-label='Acciones de edición'><button type='button' id='btn_guardar_editar' class='guardar aia-btn aia-btn--success btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Guardar causa de no programación' title='Guardar Causa de No Programación'><i class='fa fa-save fa-xs' aria-hidden='true'></i></button><button type='button' id='btn_cancelar_editar' class='cancelar aia-btn aia-btn--danger btn-sm ps-btn-edit ps-cnp-row-action' aria-label='Cancelar edición' title='Cancelar la edición'><i class='fa fa-undo fa-xs' aria-hidden='true'></i></button></div>";
 					$row.find('.Botones').html(codigo_html_botones);
 					$("#select_Responsable_AIA").val(data.Responsable_AIA).change();
 					$("#select_Responsable_AIA").focus();

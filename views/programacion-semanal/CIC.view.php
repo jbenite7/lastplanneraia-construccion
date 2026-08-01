@@ -541,15 +541,15 @@
 												</div>
 
 												<div class="pregunta form-group">
-														<div class="col-sm-12"><textarea id="si_Observaciones" name="si_Observaciones" class="form-control" ></textarea></div>
+														<div class="col-sm-12"><textarea id="si_Observaciones" name="si_Observaciones" class="aia-input" ></textarea></div>
 												</div>
 										 </div>
 		              </div>
 		              <!--Se crean los botones Guardar y Listar-->
 		              <div class="form-group">
 		                <div class="col-sm-offset-1 col-sm-3 mr-auto ml-0">
-		                  <input id="btn_guardar_cic_si" type="button" data-dismiss="modal" class="btn btn-primary" value="Guardar" aria-label="Guardar Calificación SI">
-		                  <input id="btn_cancelar_cic_si" type="button" data-dismiss="modal" class="btn btn-outline-secondary" value="Cancelar" aria-label="Cancelar Calificación SI">
+		                  <input id="btn_guardar_cic_si" type="button" data-dismiss="modal" class="aia-btn aia-btn--primary" value="Guardar" aria-label="Guardar Calificación SI">
+		                  <input id="btn_cancelar_cic_si" type="button" data-dismiss="modal" class="aia-btn aia-btn--secondary" value="Cancelar" aria-label="Cancelar Calificación SI">
 		                </div>
 		              </div>
 		            </form>
@@ -903,15 +903,15 @@
 												</div>
 
 												<div class="pregunta form-group">
-														<div class="col-sm-12"><textarea id="mdo_Observaciones" name="mdo_Observaciones" class="form-control" ></textarea></div>
+														<div class="col-sm-12"><textarea id="mdo_Observaciones" name="mdo_Observaciones" class="aia-input" ></textarea></div>
 												</div>
 										 </div>
 		              </div>
 		              <!--Se crean los botones Guardar y Listar-->
 		              <div class="form-group">
 		                <div class="col-sm-offset-1 col-sm-3 mr-auto ml-0">
-		                  <input id="btn_guardar_cic_mdo" type="button" data-dismiss="modal" class="btn btn-primary" value="Guardar" aria-label="Guardar Calificación MDO">
-		                  <input id="btn_cancelar_cic_mdo" type="button" data-dismiss="modal" class="btn btn-outline-secondary" value="Cancelar" aria-label="Cancelar Calificación MDO">
+		                  <input id="btn_guardar_cic_mdo" type="button" data-dismiss="modal" class="aia-btn aia-btn--primary" value="Guardar" aria-label="Guardar Calificación MDO">
+		                  <input id="btn_cancelar_cic_mdo" type="button" data-dismiss="modal" class="aia-btn aia-btn--secondary" value="Cancelar" aria-label="Cancelar Calificación MDO">
 		                </div>
 		              </div>
 		            </form>
@@ -1146,7 +1146,7 @@
 				"lengthMenu": [10],
 
 				"columns":[
-						{"defaultContent":"<button type= 'button' class='editar btn btn-primary btn-sm'><i class='fa fa-edit'></i></button>"},
+						{"defaultContent":"<button type= 'button' class='editar aia-btn aia-btn--primary btn-sm'><i class='fa fa-edit'></i></button>"},
 						{"data":"Id", "visible":false},
 						{"data":"semanasEnProyecto"},
 						{"data":"Semana"},
@@ -1252,11 +1252,11 @@
 				table.columns.adjust();
 			});
 
-			$("div.ps-actions-row").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Grupo de botones leyenda"><button id="btn_tutorialCIC" type="button" class="btn-pdc-modern ps-btn-gap" title="Video tutorial de la Calificación de Subcontratistas" onclick="window.open(\'https://youtu.be/OJrd5qlgFm4\', \'_blank\')" aria-label="Ver Tutorial Calificación de Proveedores">Tutorial <i class="fas fa-list-ol fa-lg" aria-hidden="true"></i></button></div><div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal"><button type="button" class="btn-pdc-modern btn-dropdown-trigger" id="dropdownTriggerSecciones"><i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i></button><div class="ps-dropdown-content" role="menu"><button id="btn_Actividades_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-table"></i> Actividades</button><button id="btn_CNP_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNP&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-calendar-times"></i> Causas No Programacion</button><button id="btn_CNC_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button><button id="btn_Cal_Proveedores_nav" type="button" class="ps-dropdown-item is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CIC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-clipboard-check"></i> Calificacion Proveedores</button></div></div></div>');
+			$("div.ps-actions-row").html('<div class="grupo_botones1 ps-toolbar-actions" role="group" aria-label="Grupo de botones leyenda"><button id="btn_tutorialCIC" type="button" class="aia-btn aia-btn--secondary ps-btn-gap" title="Video tutorial de la Calificación de Subcontratistas" onclick="window.open(\'https://youtu.be/OJrd5qlgFm4\', \'_blank\')" aria-label="Ver Tutorial Calificación de Proveedores">Tutorial <i class="fas fa-list-ol fa-lg" aria-hidden="true"></i></button></div><div class="grupo_botones_semanal_madre ps-toolbar-nav-wrap"><div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal"><button type="button" class="aia-btn aia-btn--secondary btn-dropdown-trigger" id="dropdownTriggerSecciones"><i class="fas fa-th-list"></i> <span>Ver Secciones</span> <i class="fas fa-chevron-down ml-1"></i></button><div class="ps-dropdown-content" role="menu"><button id="btn_Actividades_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=programacion_semanal&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-table"></i> Actividades</button><button id="btn_CNP_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNP&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-calendar-times"></i> Causas No Programacion</button><button id="btn_CNC_nav" type="button" class="ps-dropdown-item" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CNC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-exclamation-triangle"></i> Causas No Cumplimiento</button><button id="btn_Cal_Proveedores_nav" type="button" class="ps-dropdown-item is-active" onclick="window.location.href=\'/legacy/cambiar_pagina.php?seccion=CIC&semana=\'+(document.getElementById(\'semana\') ? document.getElementById(\'semana\').value : document.getElementById(\'semana_PHP\').value)" role="menuitem"><i class="fas fa-clipboard-check"></i> Calificacion Proveedores</button></div></div></div>');
 
 			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
 
-			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="btn-pdc-modern ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
+			$("div.toolbarFiltro").html('<div class="ps-toolbar-filter"><button id="btn_limpiar_buscador" type="button" class="aia-btn aia-btn--secondary ps-filter-clear" aria-label="Limpiar búsqueda"><i class="fas fa-times-circle" aria-hidden="true"></i> Limpiar</button></div>');
 			maestroPermisos(document.getElementById('permiso_canonico').value);
 			obtener_data_editar("#dt_cliente tbody", table);
 			if (window.PSLegacyCards) window.PSLegacyCards.attach(table, 'cic');

@@ -62,21 +62,21 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
     <div class="header-actions action-bar ps-hot-toolbar-shell">
             <div class="ps-actions-row">
-            <button class="btn-pdc-modern ps-mobile-actions-toggle d-md-none" type="button" data-toggle="collapse" data-target="#psMobileActionsPanel" aria-expanded="false" aria-controls="psMobileActionsPanel">
+            <button class="aia-btn aia-btn--secondary ps-mobile-actions-toggle d-md-none" type="button" data-toggle="collapse" data-target="#psMobileActionsPanel" aria-expanded="false" aria-controls="psMobileActionsPanel">
                 <i aria-hidden="true" class="fas fa-sliders-h"></i> <span>Botones de acción</span>
             </button>
             <div class="ps-toolbar-left collapse d-md-flex" id="psMobileActionsPanel">
                 <span class="ps-mobile-actions-title d-md-none">Acciones disponibles</span>
                 <div class="ps-hot-toolbar-actions">
-                    <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> <span>Leyenda</span></button>
-                    <button id="btn_autoprogramar" class="btn-pdc-modern" aria-label="Autoprogramar Actividades"><i aria-hidden="true" class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
-                    <button id="btn_agregar_actividad" type="button" class="btn-pdc-modern" aria-label="Agregar Actividad Manual"><i aria-hidden="true" class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
-                    <button id="btn_cerrar_compromisos_semana" type="button" class="btn-pdc-modern" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
-                    <button type="button" id="btn_reabrir_semana" class="btn-pdc-modern ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
-                    <button id="btn_tnp" type="button" class="btn-pdc-modern ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
-                    <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> <span>Imprimir</span></button>
-                    <button id="btn-export" class="btn-pdc-modern" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
-                    <button id="btn-refresh" class="btn-pdc-modern" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> <span>Recargar</span></button>
+                    <button type="button" class="leyenda_colores aia-btn aia-btn--secondary" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> <span>Leyenda</span></button>
+                    <button id="btn_autoprogramar" class="aia-btn aia-btn--secondary" aria-label="Autoprogramar Actividades"><i aria-hidden="true" class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
+                    <button id="btn_agregar_actividad" type="button" class="aia-btn aia-btn--secondary" aria-label="Agregar Actividad Manual"><i aria-hidden="true" class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
+                    <button id="btn_cerrar_compromisos_semana" type="button" class="aia-btn aia-btn--secondary" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
+                    <button type="button" id="btn_reabrir_semana" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
+                    <button id="btn_tnp" type="button" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
+                    <button id="btn_informe_compromisos" type="button" class="aia-btn aia-btn--secondary" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> <span>Imprimir</span></button>
+                    <button id="btn-export" class="aia-btn aia-btn--secondary" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
+                    <button id="btn-refresh" class="aia-btn aia-btn--secondary" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> <span>Recargar</span></button>
                     <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal') ?>
                 </div>
             </div>
@@ -87,7 +87,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 </div>
                 <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">
-                    <button type="button" class="btn-pdc-modern btn-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+                    <button type="button" class="aia-btn aia-btn--secondary btn-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
                         <i aria-hidden="true" class="fas fa-th-list"></i> <span>Ver Secciones</span> <i aria-hidden="true" class="fas fa-chevron-down ml-1"></i>
                     </button>
                     <div class="ps-dropdown-content" role="menu">
@@ -98,7 +98,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     </div>
                 </div>
                 <button class="btn-filter-toggle pdc-mobile-toggle" type="button" data-toggle="collapse" data-target="#psAlertsMobile" aria-expanded="false" aria-controls="psAlertsMobile">
-                    <i aria-hidden="true" class="fas fa-filter"></i> Alertas <span id="weeklyPhaseMobileLabel" class="ps-weekly-phase-mobile-label">Programacion</span> <span class="badge badge-light" id="mobileAlertCount">0</span>
+                    <i aria-hidden="true" class="fas fa-filter"></i> Alertas <span id="weeklyPhaseMobileLabel" class="ps-weekly-phase-mobile-label">Programacion</span> <span class="aia-chip aia-chip--secondary" id="mobileAlertCount">0</span>
                 </button>
             </div>
         </div>
@@ -115,7 +115,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <div id="mobile-card-view"></div>
     </div>
 
-    <div class="row ventanasModalesSemana" id="ventanasModalesSemana"></div>
+    <div class="row ventanasModalesSemana" id="ventanasModalesSemana" data-skip-legacy-legend="true"></div>
 
     <div class="modal fade aia-modal" id="modal_leyenda_colores_ps" role="dialog" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -138,8 +138,8 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 </div>
                 <div class="modal-body" id="cerrar_compromisos_semana"></div>
                 <div class="modal-footer">
-                    <input id="btn_confirmar_compromisos_semana" type="button" class="btn btn-primary btn-lg" value="Confirmar" aria-label="Confirmar cerrar compromisos">
-                    <input id="btn_cancelar_compromisos_semana" type="button" data-dismiss="modal" class="btn btn-danger btn-lg" value="Cancelar" aria-label="Cancelar cerrar compromisos">
+                    <input id="btn_confirmar_compromisos_semana" type="button" class="aia-btn aia-btn--primary btn-lg" value="Confirmar" aria-label="Confirmar cerrar compromisos">
+                    <input id="btn_cancelar_compromisos_semana" type="button" data-dismiss="modal" class="aia-btn aia-btn--danger btn-lg" value="Cancelar" aria-label="Cancelar cerrar compromisos">
                 </div>
             </div>
         </div>
@@ -154,7 +154,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 </div>
                 <div class="modal-body" id="aceptar_cerrar_compromisos_semana"></div>
                 <div class="modal-footer">
-                    <input id="btn_cerrar_aceptar_compromisos_semana" type="button" data-dismiss="modal" class="btn btn-danger btn-lg" value="Cerrar" aria-label="Cerrar alerta">
+                    <input id="btn_cerrar_aceptar_compromisos_semana" type="button" data-dismiss="modal" class="aia-btn aia-btn--danger btn-lg" value="Cerrar" aria-label="Cerrar alerta">
                 </div>
             </div>
         </div>
@@ -173,10 +173,10 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                             <div class="card h-100 ps-card-excepciones">
                                 <div class="card-header d-flex justify-content-between align-items-center ps-card-excepciones__header">
                                     <strong>Bandeja de No Autoprogramadas</strong>
-                                    <button type="button" id="btn_recargar_bandeja_no_autoprogramadas" class="btn btn-outline-secondary btn-sm">Actualizar</button>
+                                    <button type="button" id="btn_recargar_bandeja_no_autoprogramadas" class="aia-btn aia-btn--secondary btn-sm">Actualizar</button>
                                 </div>
                                 <div class="card-body p-2 ps-card-excepciones__body">
-                                    <input type="text" id="filtro_excepciones_no_autoprogramadas" class="form-control form-control-sm mb-2" placeholder="Filtrar por Id o Actividad" aria-label="Filtrar bandeja de actividades no autoprogramadas">
+                                    <input type="text" id="filtro_excepciones_no_autoprogramadas" class="aia-input mb-2" placeholder="Filtrar por Id o Actividad" aria-label="Filtrar bandeja de actividades no autoprogramadas">
                                     <div class="table-responsive ps-excepciones-scroll">
                                         <table class="table table-sm table-hover mb-0" id="tabla_excepciones_no_autoprogramadas">
                                             <thead>
@@ -200,7 +200,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                 <div class="form-group ps-form-col">
                                     <label for="idNuevoDisplay" class="control-label">Id *</label>
                                     <input type="hidden" id="idNuevo" name="idNuevo" value="" aria-required="true" required>
-                                    <input type="text" id="idNuevoDisplay" class="form-control" value="" placeholder="Selecciona una actividad de la Bandeja" readonly aria-readonly="true" tabindex="-1">
+                                    <input type="text" id="idNuevoDisplay" class="aia-input" value="" placeholder="Selecciona una actividad de la Bandeja" readonly aria-readonly="true" tabindex="-1">
                                     <small class="form-text ps-id-source-hint">Selecciona una actividad de la <strong>Bandeja de No Autoprogramadas</strong> a la izquierda.</small>
                                     <!-- Ancla del mensaje de error por campo. Nace vacia a proposito: un texto
                                          permanente aqui lo leeria el lector de pantalla en modo exploracion
@@ -210,17 +210,17 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                 </div>
                                 <div class="form-group ps-form-col">
                                     <label for="Actividad" class="control-label">Actividad *</label>
-                                    <div><input id="Actividad" name="Actividad" class="form-control" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Actividad"></small></div>
+                                    <div><input id="Actividad" name="Actividad" class="aia-input" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Actividad"></small></div>
                                 </div>
                                 <div class="form-group ps-form-col">
                                     <label for="Descripcion" class="control-label">Descripción</label>
-                                    <div><input id="Descripcion" name="Descripcion" class="form-control" value="" type="text"></div>
+                                    <div><input id="Descripcion" name="Descripcion" class="aia-input" value="" type="text"></div>
                                 </div>
-                                <input id="Ubicacion" name="Ubicacion" class="form-control" value="" type="hidden">
+                                <input id="Ubicacion" name="Ubicacion" class="aia-input" value="" type="hidden">
                                 <div class="form-group ps-form-col-6">
                                     <label for="Sub_Contratista" class="control-label">Sub-Contratista *</label>
                                     <div>
-                                        <select id="Sub_Contratista" name="Sub_Contratista" class="form-control" aria-required="true" required>
+                                        <select id="Sub_Contratista" name="Sub_Contratista" class="aia-input" aria-required="true" required>
                                             <option value=""></option>
                                             <?php
         if (!empty($subcontratistas) && is_array($subcontratistas)) {
@@ -239,7 +239,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                 <div class="form-group ps-form-col-6">
                                     <label for="Responsable_AIA" class="control-label">Profesional AIA *</label>
                                     <div>
-                                        <select id="Responsable_AIA" name="Responsable_AIA" class="form-control" aria-required="true" required>
+                                        <select id="Responsable_AIA" name="Responsable_AIA" class="aia-input" aria-required="true" required>
                                             <option value=""></option>
                                             <?php
         if (!empty($profesionales) && is_array($profesionales)) {
@@ -255,24 +255,24 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                                         <small class="sr-only ps-field-error-message" id="ps-error-Responsable_AIA"></small>
                                     </div>
                                 </div>
-                                <input id="Empresa" name="Empresa" class="form-control" value="" type="hidden">
+                                <input id="Empresa" name="Empresa" class="aia-input" value="" type="hidden">
                                 <div class="form-group ps-form-col-4">
                                     <label for="Unidad" class="control-label">Unidad de Medida</label>
-                                    <div><input id="Unidad" name="Unidad" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Automático" tabindex="-1"></div>
+                                    <div><input id="Unidad" name="Unidad" class="aia-input" value="" type="text" readonly aria-readonly="true" placeholder="Automático" tabindex="-1"></div>
                                 </div>
                                 <div class="form-group ps-form-col-4">
                                     <label for="CantidadPPTO" class="control-label">Cant. PPTO</label>
-                                    <div><input id="CantidadPPTO" name="CantidadPPTO" class="form-control" value="" type="text" readonly aria-readonly="true" placeholder="Sin cantidad" tabindex="-1"></div>
+                                    <div><input id="CantidadPPTO" name="CantidadPPTO" class="aia-input" value="" type="text" readonly aria-readonly="true" placeholder="Sin cantidad" tabindex="-1"></div>
                                 </div>
                                 <div class="form-group ps-form-col-4">
                                     <label for="Compromiso" class="control-label">Cantidad *</label>
-                                    <div><input id="Compromiso" name="Compromiso" class="form-control" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Compromiso"></small></div>
+                                    <div><input id="Compromiso" name="Compromiso" class="aia-input" value="" type="text" aria-required="true" required><small class="sr-only ps-field-error-message" id="ps-error-Compromiso"></small></div>
                                 </div>
-                                <input id="Real" name="Real" class="form-control" value="" type="hidden">
+                                <input id="Real" name="Real" class="aia-input" value="" type="hidden">
                                 <input type="hidden" id="opcion" name="opcion" value="nuevo">
                                 <div class="ps-form-actions">
-                                    <button type="button" id="btn_guardar_nueva_actividad" class="btn btn-primary" aria-label="Guardar nueva actividad">Guardar</button>
-                                    <button type="button" id="btn_listar" class="btn btn-outline-secondary" aria-label="Cancelar nueva actividad" data-dismiss="modal">Cancelar</button>
+                                    <button type="button" id="btn_guardar_nueva_actividad" class="aia-btn aia-btn--primary" aria-label="Guardar nueva actividad">Guardar</button>
+                                    <button type="button" id="btn_listar" class="aia-btn aia-btn--secondary" aria-label="Cancelar nueva actividad" data-dismiss="modal">Cancelar</button>
                                 </div>
                             </form>
                             <p class="mensaje" role="status" aria-live="polite"></p>
@@ -295,7 +295,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     <div class="ps-delete-cnp-grid">
                     <div class="form-group ps-delete-cnp-field">
                         <label for="psDeleteResponsableAIA">Profesional de AIA Encargado de la Actividad</label>
-                        <select id="psDeleteResponsableAIA" class="form-control">
+                        <select id="psDeleteResponsableAIA" class="aia-input">
                             <option value=""></option>
                             <?php
                                 if (!empty($profesionales) && is_array($profesionales)) {
@@ -311,11 +311,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     </div>
                     <div class="form-group ps-delete-cnp-field">
                         <label for="psDeleteEmpresa">Empresa Encargada de la Ejecucion</label>
-                        <input id="psDeleteEmpresa" type="text" class="form-control">
+                        <input id="psDeleteEmpresa" type="text" class="aia-input">
                     </div>
                     <div class="form-group ps-delete-cnp-field">
                         <label for="psDeleteCategoriaCNP">Categoria</label>
-                        <select id="psDeleteCategoriaCNP" class="form-control">
+                        <select id="psDeleteCategoriaCNP" class="aia-input">
                             <option value=""></option>
                             <?php if (($area ?? 'Construccion') === 'Pre-Construccion'): ?>
                                 <option value="Diseños">Diseños</option>
@@ -336,19 +336,19 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     </div>
                     <div class="form-group ps-delete-cnp-field">
                         <label for="psDeleteCNP">Causa de No Programacion</label>
-                        <select id="psDeleteCNP" class="form-control">
+                        <select id="psDeleteCNP" class="aia-input">
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group mb-0 ps-delete-cnp-field ps-delete-cnp-field--full">
                         <label for="psDeleteObservacionesCNP">Observaciones</label>
-                        <textarea id="psDeleteObservacionesCNP" class="form-control"></textarea>
+                        <textarea id="psDeleteObservacionesCNP" class="aia-input"></textarea>
                     </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn_confirmar_eliminar_actividad" type="button" class="btn btn-danger">Guardar y Eliminar</button>
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancelar</button>
+                    <button id="btn_confirmar_eliminar_actividad" type="button" class="aia-btn aia-btn--danger">Guardar y Eliminar</button>
+                    <button type="button" class="aia-btn aia-btn--secondary" data-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -366,23 +366,23 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     <p class="ps-modal-copy">El avance real digitado es <strong>inferior al compromiso</strong>. Obligatoriamente debes justificar el motivo a continuación. Al guardar, actualizaremos la fila en la tabla y en el servidor.</p>
                     <div class="form-group mt-3 mb-4">
                         <label for="hot_cat_cnc" class="ps-modal-label">Categoría CNC <span class="ps-required">*</span></label>
-                        <select id="hot_cat_cnc" class="form-control ps-modal-control">
+                        <select id="hot_cat_cnc" class="aia-input ps-modal-control">
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group mb-4">
                         <label for="hot_cnc" class="ps-modal-label">Causa de No Cumplimiento <span class="ps-required">*</span></label>
-                        <select id="hot_cnc" class="form-control ps-modal-control" disabled>
+                        <select id="hot_cnc" class="aia-input ps-modal-control" disabled>
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group mb-0">
                         <label for="hot_obs_cnc" class="ps-modal-label">Observaciones <span class="ps-required">*</span></label>
-                        <textarea id="hot_obs_cnc" class="form-control ps-modal-control ps-modal-textarea" rows="3" placeholder="Detalle la causa del incumplimiento..."></textarea>
+                        <textarea id="hot_obs_cnc" class="aia-input ps-modal-control ps-modal-textarea" rows="3" placeholder="Detalle la causa del incumplimiento..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer ps-modal-footer-between">
-                    <button id="btn_cancelar_cnc_hot" type="button" class="btn btn-outline-secondary ps-modal-secondary" data-dismiss="modal">Cancelar</button>
+                    <button id="btn_cancelar_cnc_hot" type="button" class="aia-btn aia-btn--secondary ps-modal-secondary" data-dismiss="modal">Cancelar</button>
                     <button id="btn_guardar_cnc_hot" type="button" class="btn aia-btn-primary">Guardar y Confirmar</button>
                 </div>
         </div>
@@ -409,7 +409,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         <!-- Activity Selector -->
         <div class="form-group">
           <label for="tnp_actividad_select"><strong>Actividad *</strong></label>
-          <select id="tnp_actividad_select" class="form-control" data-placeholder="Buscar actividad..." required>
+          <select id="tnp_actividad_select" class="aia-input" data-placeholder="Buscar actividad..." required>
             <option value="">Seleccione una actividad...</option>
           </select>
         </div>
@@ -447,7 +447,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         </div>
         <div class="form-group">
           <label for="tnp_categoria_cp"><strong>Causa de Programación (CP) *</strong></label>
-          <select id="tnp_categoria_cp" class="form-control" required>
+          <select id="tnp_categoria_cp" class="aia-input" required>
             <option value="">Seleccione una causa...</option>
             <?php foreach ($categoriasCP as $cat): ?>
               <option value="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></option>
@@ -457,22 +457,22 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
         <div class="form-group">
           <label for="tnp_cp"><strong>CP (Detalle adicional)</strong></label>
-          <input type="text" id="tnp_cp" class="form-control" maxlength="255" placeholder="Detalle opcional de la causa">
+          <input type="text" id="tnp_cp" class="aia-input" maxlength="255" placeholder="Detalle opcional de la causa">
         </div>
 
         <div class="form-group">
           <label for="tnp_ejecutado_real"><strong>Ejecutado Real *</strong></label>
-          <input type="number" id="tnp_ejecutado_real" class="form-control" step="0.1" min="0.1" required placeholder="Cantidad ejecutada">
+          <input type="number" id="tnp_ejecutado_real" class="aia-input" step="0.1" min="0.1" required placeholder="Cantidad ejecutada">
         </div>
 
         <div class="form-group">
           <label for="tnp_observaciones_cp"><strong>Observaciones</strong></label>
-          <textarea id="tnp_observaciones_cp" class="form-control" maxlength="500" rows="3" placeholder="Observaciones opcionales (máx. 500 caracteres)"></textarea>
+          <textarea id="tnp_observaciones_cp" class="aia-input" maxlength="500" rows="3" placeholder="Observaciones opcionales (máx. 500 caracteres)"></textarea>
         </div>
       </div>
       <div class="modal-footer ps-tnp-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-success" id="btn_guardar_tnp">Guardar</button>
+        <button type="button" class="aia-btn aia-btn--secondary" data-dismiss="modal">Cerrar</button>
+        <button type="button" class="aia-btn aia-btn--success" id="btn_guardar_tnp">Guardar</button>
       </div>
     </div>
   </div>

@@ -18,7 +18,7 @@
 
             <div class="modal-body cm-modal-body">
                 <div class="cm-toolbar">
-                    <button type="button" id="cm-btn-refresh" class="btn cm-refresh-btn">
+                    <button type="button" id="cm-btn-refresh" class="aia-btn aia-btn--secondary cm-refresh-btn">
                         <i class="fas fa-sync"></i> Actualizar
                     </button>
                 </div>
@@ -47,7 +47,7 @@
             </div>
 
             <div class="modal-footer cm-modal-footer">
-                <button type="button" class="btn cm-close-btn" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="aia-btn aia-btn--secondary cm-close-btn" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
