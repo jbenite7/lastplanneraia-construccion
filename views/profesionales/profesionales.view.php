@@ -35,7 +35,7 @@
         <h4>Profesionales (Live Edición)</h4>
         <div class="header-actions-group">
             <span id="save-status" class="aia-chip aia-chip--success prof-save-flag">Guardado</span>
-            <span id="save-error" class="badge badge-danger prof-save-flag">Error al guardar</span>
+            <span id="save-error" class="aia-chip aia-chip--danger prof-save-flag">Error al guardar</span>
             <button id="btn-export" class="aia-btn aia-btn--secondary"><i class="fas fa-file-excel"></i> Exportar</button>
             <?= \App\View\Components\BiAccessComponent::renderLink('profesionales', 'BI Responsables') ?>
         </div>

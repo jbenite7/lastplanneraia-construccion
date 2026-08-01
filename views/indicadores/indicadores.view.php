@@ -26,8 +26,7 @@
 	</div>
 
   <!--Se crea un div con nombre de clase "row". Acá se agregara un nuevo div que contiene la clase "formulario_nuevo", que contiene el formulario de registro de nuevas actividades, el cual permanecerá oculto hasta que se presione el botón "Agregar Actividad" -->
-	<!-- <div class="row formularioRegistro">
-	</div> -->
+	
 
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
 	<div class="tabla aia-grid-shell" id="contenedorInformePowerBI">

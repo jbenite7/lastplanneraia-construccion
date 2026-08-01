@@ -70,7 +70,7 @@
 						<th></th>
 						<th></th>
 						<th>
-							<select class="cc-filter-80" id="buscadorSolicitanteCambio" aria-label="Filtrar por Solicitante">
+							<select class="aia-input cc-filter-80" id="buscadorSolicitanteCambio" aria-label="Filtrar por Solicitante">
 								<option value="">Todas</option>
 								<option value="Obra">Obra</option>
 								<option value="Cliente">Cliente</option>
@@ -79,18 +79,18 @@
 							</select>
 						</th>
 						<th></th>
-						<th><input type="date" id="buscadorFechaSolicitud" class="cc-filter-80" aria-label="Filtrar por Fecha de Solicitud"></th>
+						<th><input type="date" id="buscadorFechaSolicitud" class="aia-input cc-filter-80" aria-label="Filtrar por Fecha de Solicitud"></th>
 						<th>
-							<select id="buscadorPrioridad" aria-label="Filtrar por Prioridad">
+							<select id="buscadorPrioridad" class="aia-input" aria-label="Filtrar por Prioridad">
 								<option value="">Todas</option>
 								<option value="Alta">Alta</option>
 								<option value="Media">Media</option>
 								<option value="Baja">Baja</option>
 							</select>
 						</th>
-						<th><input type="text" id="buscadorTipoCambio" placeholder="Buscar" class="cc-filter-80" aria-label="Filtrar por Tipo de Cambio"></th>
+						<th><input type="text" id="buscadorTipoCambio" placeholder="Buscar" class="aia-input cc-filter-80" aria-label="Filtrar por Tipo de Cambio"></th>
 						<th>
-							<select class="cc-filter-80" id="buscadorResponsableDefinicion" aria-label="Filtrar por Responsable">
+							<select class="aia-input cc-filter-80" id="buscadorResponsableDefinicion" aria-label="Filtrar por Responsable">
 								<option value="">Todas</option>
 								<option value="Obra">Obra</option>
 								<option value="Cliente">Cliente</option>
@@ -108,17 +108,17 @@
 						<th></th>
 						<th></th>
 						<th></th>
-						<th><input type="text" id="buscadorCostoDirecto" placeholder="Buscar" class="cc-filter-80" aria-label="Filtrar por Costo Directo"></th>
-						<th><input type="text" id="buscadorValorAprobado" placeholder="Buscar" class="cc-filter-80" aria-label="Filtrar por Valor Aprobado"></th>
+						<th><input type="text" id="buscadorCostoDirecto" placeholder="Buscar" class="aia-input cc-filter-80" aria-label="Filtrar por Costo Directo"></th>
+						<th><input type="text" id="buscadorValorAprobado" placeholder="Buscar" class="aia-input cc-filter-80" aria-label="Filtrar por Valor Aprobado"></th>
 						<th></th>
 						<th></th>
 						<th></th>
-						<th><input type="date" id="buscadorFechaTentativaDefinicion" class="cc-filter-80" aria-label="Filtrar por Fecha Tentativa"></th>
-						<th><input type="date" id="buscadorFechaEntregaInterventoria" class="cc-filter-80" aria-label="Filtrar por Fecha Entrega"></th>
-						<th><input type="text" placeholder="Buscar" class="cc-filter-80" aria-label="Filtrar por Observaciones"></th>
-						<th><input type="date" id="buscadorFechaDefinicion" class="cc-filter-80" aria-label="Filtrar por Fecha Definición"></th>
+						<th><input type="date" id="buscadorFechaTentativaDefinicion" class="aia-input cc-filter-80" aria-label="Filtrar por Fecha Tentativa"></th>
+						<th><input type="date" id="buscadorFechaEntregaInterventoria" class="aia-input cc-filter-80" aria-label="Filtrar por Fecha Entrega"></th>
+						<th><input type="text" placeholder="Buscar" class="aia-input cc-filter-80" aria-label="Filtrar por Observaciones"></th>
+						<th><input type="date" id="buscadorFechaDefinicion" class="aia-input cc-filter-80" aria-label="Filtrar por Fecha Definición"></th>
 						<th>
-							<select class="cc-filter-80" id="buscadorAprobacion" aria-label="Filtrar por Aprobación">
+							<select class="aia-input cc-filter-80" id="buscadorAprobacion" class="aia-input" aria-label="Filtrar por Aprobación">
 								<option value="">Todas</option>
 								<option value="En Estudio">En Estudio</option>
 								<option value="Aprobado">Aprobado</option>
@@ -172,21 +172,21 @@
 									<div class="row m-0 mb-3">
 									<div class="form-group col-sm mt-0 mb-0 pt-3 pb-3 h-100">
 											<label for="inputConsecutivo"><b>Número de Orden</b></label>
-											<input type="number" class="form-control" id="inputConsecutivo" name="inputConsecutivo" placeholder="Consecutivo" autocomplete="off" readonly>
+											<input type="number" class="aia-input" id="inputConsecutivo" name="inputConsecutivo" placeholder="Consecutivo" autocomplete="off" readonly>
 										</div>
 									<div class="form-group col-sm mt-0 mb-0 pt-3 pb-3 h-100">
 											<label for="inputProyecto"><b>Proyecto</b></label>
-											<input type="text" class="form-control" name="inputProyecto" id="inputProyecto" placeholder="Proyecto" autocomplete="off" readonly>
+											<input type="text" class="aia-input" name="inputProyecto" id="inputProyecto" placeholder="Proyecto" autocomplete="off" readonly>
 										</div>
 									</div>
 									<div class="row m-0 cc-field-divider">
 									<div class="form-group col-sm mt-0 mb-0 pb-3 h-100">
 											<label for="inputDirector"><b>Director de Obra</b></label>
-											<input type="text" class="form-control" name="inputDirector" id="inputDirector" placeholder="Director" autocomplete="off" readonly>
+											<input type="text" class="aia-input" name="inputDirector" id="inputDirector" placeholder="Director" autocomplete="off" readonly>
 										</div>
 									<div class="form-group col-sm mt-0 mb-0 pb-3 h-100">
 											<label for="inputFechaSolicitud"><b>Fecha de Solicitud</b></label>
-											<input type="text" class="form-control" name="inputFechaSolicitud" id="inputFechaSolicitud" placeholder="Fecha de Solicitud" autocomplete="off" readonly>
+											<input type="text" class="aia-input" name="inputFechaSolicitud" id="inputFechaSolicitud" placeholder="Fecha de Solicitud" autocomplete="off" readonly>
 										</div>
 									</div>
 									<div class="row m-0 cc-field-divider">
@@ -209,7 +209,7 @@
 											<div class="form-check form-check-inline col-sm-6" data-field-group="radioSolicitanteCambio">
 												<input type="radio" class="form-check-input" name="inputSolicitanteCambio" id="inputSolicitanteCambioOtro" value="4" onclick="document.getElementById('inputDetalleSolicitanteOtro').disabled = false;">
 												<label class="form-check-label" for="inputSolicitanteCambioOtro">Otro:&nbsp&nbsp</label>
-												<input type="text" class="form-control" name="inputDetalleSolicitanteOtro" id="inputDetalleSolicitanteOtro" placeholder="¿Quien?" disabled autocomplete="off">
+												<input type="text" class="aia-input" name="inputDetalleSolicitanteOtro" id="inputDetalleSolicitanteOtro" placeholder="¿Quien?" disabled autocomplete="off">
 											</div>
 										</div>
 										<div class="form-group col-sm-5 mt-0 mb-0 pt-3 pb-3">
@@ -283,7 +283,7 @@
 											<div class="form-check form-check-inline col-sm-6" data-field-group="radioResponsableSolucion">
 												<input type="radio" class="form-check-input" name="inputResponsableSolucion" id="inputResponsableSolucionOtro" value="4" onclick="document.getElementById('inputDetalleResponsableSolucion').disabled = false;">
 												<label class="form-check-label" for="inputResponsableSolucionOtro">Otro:&nbsp&nbsp</label>
-												<input type="text" class="form-control" name="inputDetalleResponsableSolucion" id="inputDetalleResponsableSolucion" placeholder="¿Quien?" disabled autocomplete="off">
+												<input type="text" class="aia-input" name="inputDetalleResponsableSolucion" id="inputDetalleResponsableSolucion" placeholder="¿Quien?" disabled autocomplete="off">
 											</div>
 										</div>
 									</div>
@@ -297,7 +297,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputJustificacion">Justificación</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputJustificacion" id="inputJustificacion" rows="3" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputJustificacion" id="inputJustificacion" rows="3" onkeyup="contadorTextarea(this,'contadorJustificacion',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorJustificacion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -308,7 +308,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputDescripcion">Descripción <br>del Cambio</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputDescripcion" id="inputDescripcion" rows="3" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputDescripcion" id="inputDescripcion" rows="3" onkeyup="contadorTextarea(this,'contadorDescripcion',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorDescripcion" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -319,7 +319,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaAlcance">Incidencia en <br>el Alcance</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaAlcance" id="inputIncidenciaAlcance" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaAlcance" id="inputIncidenciaAlcance" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaAlcance',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaAlcance" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -335,7 +335,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputTiempoCronograma">Días Según Cronograma</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputTiempoCronograma" id="inputTiempoCronograma" data-type="number" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputTiempoCronograma" id="inputTiempoCronograma" data-type="number" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -343,7 +343,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputTiempoCronogramaAfectado">Días Adicionales</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputTiempoCronogramaAfectado" id="inputTiempoCronogramaAfectado" data-type="number" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputTiempoCronogramaAfectado" id="inputTiempoCronogramaAfectado" data-type="number" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -351,7 +351,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputPorcentajeAfectacionCronograma">% Afectación Cronograma</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputPorcentajeAfectacionCronograma" id="inputPorcentajeAfectacionCronograma" data-type="text" autocomplete="off" readonly>
+													<input type="text" class="aia-input h-100" name="inputPorcentajeAfectacionCronograma" id="inputPorcentajeAfectacionCronograma" data-type="text" autocomplete="off" readonly>
 												</div>
 											</div>
 											<div class="row m-0">
@@ -359,7 +359,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaCronograma">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
-													<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaCronograma" id="inputIncidenciaCronograma" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off"></textarea>
+													<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaCronograma" id="inputIncidenciaCronograma" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCronograma',500)" autocomplete="off"></textarea>
 												</div>
 											</div>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
@@ -377,7 +377,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputValorPresupuesto">Costo Actividad Según Presupuesto (Incluye AIU + IVA)</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputValorPresupuesto" id="inputValorPresupuesto" data-type="currency" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputValorPresupuesto" id="inputValorPresupuesto" data-type="currency" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -385,7 +385,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirecto">Costo Directo</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirecto" id="inputCostoDirecto" data-type="currency" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputCostoDirecto" id="inputCostoDirecto" data-type="currency" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -393,7 +393,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirectoAIU">Costo Directo + AIU</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirectoAIU" id="inputCostoDirectoAIU" data-type="currency" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputCostoDirectoAIU" id="inputCostoDirectoAIU" data-type="currency" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -401,7 +401,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputCostoDirectoAIUIVA">Costo Directo + AIU + IVA</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputCostoDirectoAIUIVA" id="inputCostoDirectoAIUIVA" data-type="currency" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputCostoDirectoAIUIVA" id="inputCostoDirectoAIUIVA" data-type="currency" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -409,7 +409,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputValorAprobado">Valor Aprobado</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputValorAprobado" id="inputValorAprobado" data-type="currency" autocomplete="off">
+													<input type="text" class="aia-input h-100" name="inputValorAprobado" id="inputValorAprobado" data-type="currency" autocomplete="off">
 												</div>
 											</div>
 											<div class="row m-0 cc-field-divider">
@@ -417,7 +417,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputPorcentajeAfectacionPresupuesto">% Afectación Presupuesto</label>
 												</div>
 												<div class="col-sm-7 p-0">
-													<input type="text" class="form-control border-0 rounded-0 h-100" name="inputPorcentajeAfectacionPresupuesto" id="inputPorcentajeAfectacionPresupuesto" data-type="text" autocomplete="off" readonly>
+													<input type="text" class="aia-input h-100" name="inputPorcentajeAfectacionPresupuesto" id="inputPorcentajeAfectacionPresupuesto" data-type="text" autocomplete="off" readonly>
 												</div>
 											</div>
 											<div class="row m-0">
@@ -425,7 +425,7 @@
 													<label class="mb-0 font-weight-bold text-wrap" for="inputIncidenciaPresupuesto">Observaciones</label>
 												</div>
 												<div class="col-sm-7 p-0 d-flex flex-column">
-													<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaPresupuesto" id="inputIncidenciaPresupuesto" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off"></textarea>
+													<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaPresupuesto" id="inputIncidenciaPresupuesto" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaPresupuesto',500)" autocomplete="off"></textarea>
 												</div>
 											</div>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
@@ -438,7 +438,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaCalidad">Incidencia <br>en la <br>Calidad</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaCalidad" id="inputIncidenciaCalidad" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaCalidad" id="inputIncidenciaCalidad" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaCalidad',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaCalidad" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -449,7 +449,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRiesgo">Incidencia <br>en el <br>Riesgo</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaRiesgo" id="inputIncidenciaRiesgo" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaRiesgo" id="inputIncidenciaRiesgo" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRiesgo',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaRiesgo" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -460,7 +460,7 @@
 											<label class="mb-0 text-center font-weight-bold" for="inputIncidenciaRecurso">Incidencia <br>en el <br>Recurso</label>
 										</div>
 										<div class="col-sm-9 p-0 d-flex flex-column cc-field-value">
-											<textarea class="form-control border-0 rounded-0 cc-textarea-fixed" name="inputIncidenciaRecurso" id="inputIncidenciaRecurso" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off"></textarea>
+											<textarea class="aia-input cc-textarea-fixed" name="inputIncidenciaRecurso" id="inputIncidenciaRecurso" rows="3" onkeyup="contadorTextarea(this,'contadorIncidenciaRecurso',500)" autocomplete="off"></textarea>
 											<div class="d-flex justify-content-end px-2 py-1 cc-field-counter">
 												<p id="contadorIncidenciaRecurso" class="mb-0 small">0 de 500 caracteres permitidos.</p>
 											</div>
@@ -470,13 +470,13 @@
 										<div class="col-sm-6 d-flex justify-content-center cc-field-edge">
 										<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 h-100">
 												<label for="inputFechaEntregaInterventoria"><b>Fecha de Entrega a Interventoría</b></label>
-												<input type="text" class="form-control" name="inputFechaEntregaInterventoria" id="inputFechaEntregaInterventoria" placeholder="Fecha de Entrega a Interventoría" autocomplete="off">
+												<input type="text" class="aia-input" name="inputFechaEntregaInterventoria" id="inputFechaEntregaInterventoria" placeholder="Fecha de Entrega a Interventoría" autocomplete="off">
 											</div>
 										</div>
 										<div class="col-sm-6 d-flex justify-content-center">
 										<div class="form-group col-sm-8 mt-0 mb-0 pt-3 pb-3 h-100">
 												<label for="inputFechaTentativaDefinicion"><b>Fecha Tentativa de Definición</b></label>
-												<input type="text" class="form-control" name="inputFechaTentativaDefinicion" id="inputFechaTentativaDefinicion" placeholder="Fecha Tentativa de Definición" autocomplete="off">
+												<input type="text" class="aia-input" name="inputFechaTentativaDefinicion" id="inputFechaTentativaDefinicion" placeholder="Fecha Tentativa de Definición" autocomplete="off">
 											</div>
 										</div>
 									</div>
@@ -514,7 +514,7 @@
 										<div class="col-sm-4 d-flex justify-content-center">
 										<div class="form-group col-sm-12 mt-0 mb-0 pt-3 pb-3 h-100">
 												<label for="inputFechaDefinicion"><b>Fecha de Definición</b></label>
-												<input type="text" class="form-control" name="inputFechaDefinicion" id="inputFechaDefinicion" placeholder="Fecha de Definición" autocomplete="off">
+												<input type="text" class="aia-input" name="inputFechaDefinicion" id="inputFechaDefinicion" placeholder="Fecha de Definición" autocomplete="off">
 											</div>
 										</div>
 									</div>
