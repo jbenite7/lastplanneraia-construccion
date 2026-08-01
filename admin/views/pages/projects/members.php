@@ -4,7 +4,7 @@
 <div class="row">
     <!-- Listado de Miembros Actuales -->
     <div class="col-md-8">
-        <div class="card card-outline card-primary">
+        <div class="card aia-panel aia-panel--elevated card-outline card-primary">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-users-cog mr-2"></i> Miembros Asignados</h3>
             </div>
@@ -63,7 +63,7 @@
 
     <!-- Panel para añadir miembros -->
     <div class="col-md-4">
-        <div class="card card-outline card-success">
+        <div class="card aia-panel aia-panel--elevated card-outline card-success">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-user-plus mr-2"></i> Añadir Miembro</h3>
             </div>

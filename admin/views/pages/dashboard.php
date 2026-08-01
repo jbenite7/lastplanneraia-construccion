@@ -3,7 +3,7 @@
 <div class="row">
   <div class="col-lg-3 col-6">
     <!-- small box: Proyectos -->
-    <div class="small-box bg-info">
+    <div class="small-box aia-panel aia-panel--elevated bg-info">
       <div class="inner">
         <h3>
           <?php echo $stats['active_projects_count']; ?> / <?php echo $stats['total_projects']; ?>
@@ -23,7 +23,7 @@
   <!-- ./col -->
   <div class="col-lg-3 col-6">
     <!-- small box: DB Size -->
-    <div class="small-box bg-success">
+    <div class="small-box aia-panel aia-panel--elevated bg-success">
       <div class="inner">
         <h3>
           <?php echo $stats['db_size']; ?><sup class="text-sm">MB</sup>
@@ -41,7 +41,7 @@
   <!-- ./col -->
   <div class="col-lg-3 col-6">
     <!-- small box: Usuarios -->
-    <div class="small-box bg-warning">
+    <div class="small-box aia-panel aia-panel--elevated bg-warning">
       <div class="inner">
         <h3>
           <?php echo $stats['total_users']; ?>
@@ -59,7 +59,7 @@
   <!-- ./col -->
   <div class="col-lg-3 col-6">
     <!-- small box: Errores -->
-    <div class="small-box bg-danger">
+    <div class="small-box aia-panel aia-panel--elevated bg-danger">
       <div class="inner">
         <h3>
           <?php echo $stats['log_errors']; ?>
@@ -80,7 +80,7 @@
 <div class="row">
   <div class="col-lg-3 col-6">
     <!-- small box: Password Change Status -->
-    <div class="small-box bg-maroon">
+    <div class="small-box aia-panel aia-panel--elevated bg-maroon">
       <div class="inner">
         <h3>
           <?php echo $stats['password_stats']['completed']; ?> / <?php echo $stats['password_stats']['total']; ?>
@@ -107,7 +107,7 @@
 <div class="row">
   <!-- COLUMNA IZQUIERDA (Info Servidor e Integridad) -->
   <div class="col-md-4">
-    <div class="card card-outline card-primary">
+    <div class="card aia-panel aia-panel--elevated card-outline card-primary">
       <div class="card-header">
         <h3 class="card-title">
           <i class="fas fa-server"></i> Servidor
@@ -147,7 +147,7 @@
       </div>
     </div>
 
-    <div class="card card-outline card-info">
+    <div class="card aia-panel aia-panel--elevated card-outline card-info">
       <div class="card-header">
         <h3 class="card-title">
           <i class="fas fa-cog"></i> Configuración y Seguridad
@@ -229,7 +229,7 @@
     </div>
 
     <!-- Integrity Alerts -->
-    <div class="card card-outline card-warning">
+    <div class="card aia-panel aia-panel--elevated card-outline card-warning">
       <div class="card-header">
         <h3 class="card-title text-warning">
           <i class="fas fa-tools"></i> Integridad
@@ -258,7 +258,7 @@
     </div>
 
     <!-- Orphan Tables -->
-    <div class="card card-outline card-secondary">
+    <div class="card aia-panel aia-panel--elevated card-outline card-secondary">
       <div class="card-header">
         <h3 class="card-title">
           <i class="fas fa-trash-alt"></i> Tablas Legacy Huérfanas (<?php echo count($stats['orphan_tables']); ?>)
@@ -289,7 +289,7 @@
   <!-- COLUMNA DERECHA (Logs) -->
   <div class="col-md-8">
     <!-- Auditoría -->
-    <div class="card card-outline card-success" id="audit-log">
+    <div class="card aia-panel aia-panel--elevated card-outline card-success" id="audit-log">
       <div class="card-header">
         <h3 class="card-title">
           <i class="fas fa-user-shield"></i> Auditoría de Acciones
@@ -331,7 +331,7 @@
     </div>
 
     <!-- Errores -->
-    <div class="card card-outline card-danger" id="system-log">
+    <div class="card aia-panel aia-panel--elevated card-outline card-danger" id="system-log">
       <div class="card-header d-flex p-0">
         <h3 class="card-title p-3">
           <i class="fas fa-server"></i> Errores de Sistema

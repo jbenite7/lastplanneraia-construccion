@@ -10,10 +10,7 @@
     <link rel="stylesheet" href="/css/profesionales.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/profesionales.css') ?: 'prof1')) ?>" />
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
-    <!-- Handsontable CSS -->
-    <!-- Handsontable CSS -->
-    <link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
-    <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
+    <!-- Handsontable CSS llega vía attach-handsontable.css (design system); el link crudo duplicaba la cascada y pisaba dark mode. -->
 </head>
 <body class="aia-shell aia-shell--sidebar prof-page">
 
@@ -36,10 +33,10 @@
 
     <div class="header-actions action-bar">
         <h4>Profesionales (Live Edición)</h4>
-        <div>
-            <span id="save-status" class="badge badge-success prof-save-flag">Guardado</span>
+        <div class="header-actions-group">
+            <span id="save-status" class="aia-chip aia-chip--success prof-save-flag">Guardado</span>
             <span id="save-error" class="badge badge-danger prof-save-flag">Error al guardar</span>
-            <button id="btn-export" class="btn-pdc-modern"><i class="fas fa-file-excel"></i> Exportar</button>
+            <button id="btn-export" class="aia-btn aia-btn--secondary"><i class="fas fa-file-excel"></i> Exportar</button>
             <?= \App\View\Components\BiAccessComponent::renderLink('profesionales', 'BI Responsables') ?>
         </div>
     </div>
@@ -87,7 +84,7 @@
                     if (hot) {
                         hot.updateSettings({
                             colWidths: function(colIndex) {
-                                const containerWidth = document.getElementById('hot-container').offsetWidth - 50;
+                                const containerWidth = document.getElementById('hot-container').offsetWidth;
                                 const percentages = [0, 25, 30, 25, 10, 10];
                                 return Math.floor(containerWidth * (percentages[colIndex] / 100));
                             }
@@ -236,7 +233,7 @@
 
             hot = new Handsontable(container, {
                 data: data,
-                rowHeaders: true,
+                rowHeaders: false,
                 colHeaders: ['ID', 'Nombre', 'Correo', 'Cargo', 'Activo', 'Acciones'],
                 columns: [
                     { data: 'id', readOnly: true, className: 'htCenter htMiddle' },
@@ -258,7 +255,7 @@
                 ],
                 // Anchos en porcentaje: ID(0%), Nombre(25%), Correo(30%), Cargo(25%), Activo(10%), Acciones(10%) = 100%
                 colWidths: function(colIndex) {
-                    const containerWidth = document.getElementById('hot-container').offsetWidth - 50;
+                    const containerWidth = document.getElementById('hot-container').offsetWidth;
                     const percentages = [0, 25, 30, 25, 10, 10];
                     return Math.floor(containerWidth * (percentages[colIndex] / 100));
                 },
@@ -307,9 +304,9 @@
 
                               if (rowData && rowData.id && !rowData.can_delete) {
                                   const reason = rowData.delete_reason || 'Registro bloqueado';
-                                  td.innerHTML = `<button class="btn btn-secondary btn-xs" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
+                                  td.innerHTML = `<button class="aia-btn aia-btn--secondary aia-btn--sm" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
                               } else {
-                                  td.innerHTML = '<button class="btn btn-danger btn-xs btn-delete"><i class="fas fa-trash"></i></button>';
+                                  td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete"><i class="fas fa-trash"></i></button>';
                               }
                              td.style.textAlign = 'center';
                          }

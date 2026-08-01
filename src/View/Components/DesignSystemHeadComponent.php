@@ -69,7 +69,7 @@ final class DesignSystemHeadComponent
      * ejemplo) dejaba los tres gates en verde mientras `renderForModule()`
      * perdía su adaptador oscuro.
      */
-    public const VIEW_OWNED_VENDORS = ['toastr', 'tom-select', 'adminlte'];
+    public const VIEW_OWNED_VENDORS = ['toastr', 'adminlte'];
 
     /**
      * Vendors sin CSS: la vista carga su `<script>` y no hay hoja que emitir.

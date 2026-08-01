@@ -67,7 +67,7 @@
                     
                     <div class="row">
                         <div class="col-12">
-                            <button type="submit" class="btn btn-aia btn-block" data-loading-text="Ingresando…">
+                            <button type="submit" class="aia-btn aia-btn-primary aia-btn--lg aia-btn--block" data-loading-text="Ingresando…">
                                 INICIAR SESIÓN <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
                             </button>
                         </div>

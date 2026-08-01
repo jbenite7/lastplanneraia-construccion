@@ -81,6 +81,12 @@
     color: var(--ds-active-text-primary);
   }
 
+  .prof-page .header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+
   /* Una sola declaracion: la vista repartia la geometria del contenedor en
      tres bloques que se pisaban entre si. `height` se deja al reparto flex en
      vez del `calc(100vh - 180px)` original, un numero magico que no
@@ -111,10 +117,48 @@
     align-items: center;
   }
 
+  .prof-page #loading .spinner-border {
+    color: var(--ds-color-brand-primary, #6c9077) !important;
+  }
+
   /* Los dos distintivos de guardado viven ocultos hasta que el JS los muestra.
      Era un `style="display:none"` en cada uno. */
   .prof-page .prof-save-flag {
     display: none;
+  }
+
+  /* Botón circular de borrado dentro de la celda de acciones. */
+  .prof-page .btn-delete {
+    border-radius: var(--ds-radius-pill);
+    inline-size: 28px;
+    block-size: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border: none;
+    box-shadow: var(--ds-shadow-xs);
+    transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+  }
+
+  .prof-page .btn-delete:hover {
+    transform: scale(1.1);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  .prof-page .btn-delete i {
+    font-size: var(--ds-type-size-xs);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .prof-page .btn-delete {
+      transition-duration: var(--ds-motion-reduced-duration);
+    }
+
+    .prof-page .btn-delete:hover {
+      transform: none;
+    }
   }
 }
 

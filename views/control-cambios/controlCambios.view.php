@@ -32,7 +32,7 @@
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
 	<div class="row tabla table-responsive-custom aia-grid-shell">
 		<div id="cuadroTabla" class="col-sm-12 col-md-12 col-lg-12 p-0 w-100">
-			<table id="dt_cliente" class="dt_infoGeneral table table-bordered table-hover table-responsive-sm table-sm w-100" cellspacing="0" width="100%">
+			<table id="dt_cliente" class="dt_infoGeneral table aia-table w-100" cellspacing="0" width="100%">
 				<thead>
 					<tr>
 						<th></th>
@@ -525,7 +525,7 @@
 									</div>
 									<div class="row mt-4 mb-4 col-sm-12">
 										<div class="col-sm-11 ml-auto mr-auto">
-											<table id="dt_soportes" class="table table-bordered table-responsive-sm w-100">
+											<table id="dt_soportes" class="table aia-table w-100">
 												<thead>
 													<tr>
 														<th>Adjunto N°</th>
@@ -538,7 +538,7 @@
 										</div>
 										<div class="input-group col-sm-10 mt-2 ml-auto mr-auto">
 											<div class="input-group col-sm-12">
-												<button type="button" class="btn btn-primary btn-sm" onclick="agregarSoporte()">Agregar <i class="fas fa-plus"></i></button>
+												<button type="button" class="aia-btn aia-btn-primary aia-btn--sm" onclick="agregarSoporte()">Agregar <i class="fas fa-plus"></i></button>
 											</div>
 										</div>
 									</div>
@@ -555,9 +555,9 @@
 								</div>
 								<div class="row m-0">
 									<div class="col-sm-12 d-flex justify-content-end">
-										<button id="btn_guardarOrden" type="button" class="btn btn-success ml-1 mr-1" onclick="guardar_modificar()">Guardar <i class="fas fa-save fa-lg"></i></i></button>
-										<button id="btn_generarPDFOrden" type="button" class="btn btn-secondary ml-1 mr-1">Generar PDF <i class="fas fa-download fa-lg"></i></button>
-										<button id="btn_cancelarOrden" type="button" class="btn btn-danger ml-1 mr-1" data-dismiss="modal" onclick='cerrarTodosModales();recargarTabla("listar")'>Cancelar <i class="fas fa-window-close fa-lg"></i></button>
+										<button id="btn_guardarOrden" type="button" class="aia-btn aia-btn-primary ml-1 mr-1" onclick="guardar_modificar()">Guardar <i class="fas fa-save fa-lg"></i></i></button>
+										<button id="btn_generarPDFOrden" type="button" class="aia-btn aia-btn--secondary ml-1 mr-1">Generar PDF <i class="fas fa-download fa-lg"></i></button>
+										<button id="btn_cancelarOrden" type="button" class="aia-btn aia-btn--secondary ml-1 mr-1" data-dismiss="modal" onclick='cerrarTodosModales();recargarTabla("listar")'>Cancelar <i class="fas fa-window-close fa-lg"></i></button>
 									</div>
 								</div>
 							</div>
@@ -580,9 +580,9 @@
 		        <p class="modal-body-texto-eliminar" id="modal-body-texto-eliminar"></p>
 		      </div>
 		      <div class="modal-footer">
-		        <button type="button" id="eliminarODC" class="btn btn-primary" data-dismiss="modal" data-toggle="modal" onclick='eliminar()'>Aceptar</button>
+		        <button type="button" id="eliminarODC" class="aia-btn aia-btn--critical" data-dismiss="modal" data-toggle="modal" onclick='eliminar()'>Aceptar</button>
 		        <!--data-target="#modal_CNP"-->
-		        <button type="button" id="btn_cancelar_eliminar" class="btn btn-default" data-dismiss="modal" onclick='cerrarTodosModales();recargarTabla("listar")'>Cancelar</button>
+		        <button type="button" id="btn_cancelar_eliminar" class="aia-btn aia-btn--secondary" data-dismiss="modal" onclick='cerrarTodosModales();recargarTabla("listar")'>Cancelar</button>
 		      </div>
 		    </div>
 		  </div>

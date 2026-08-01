@@ -737,22 +737,7 @@
     align-items: center;
   }
 
-  .review-tabs .badge {
-    font-size: var(--ds-type-size-xs);
-    font-weight: var(--ds-type-weight-semibold);
-    padding: var(--ds-space-1) var(--ds-space-2);
-    border-radius: var(--ds-radius-pill);
-  }
 
-  .review-tabs .badge-warning {
-    background: var(--ds-color-state-warning-bg);
-    color: var(--ds-color-state-warning-text);
-  }
-
-  .review-tabs .badge-success {
-    background: var(--ds-color-state-success-bg);
-    color: var(--ds-color-state-success-text);
-  }
 }
 
 /* Fuera del alcance visual vigente (desktop >= 1180 px, dark). Se conserva

@@ -205,17 +205,17 @@ window.HOTActualizarModule = (function() {
         var chipHtml = displayValue;
 
         if (value && value !== '*No Asociada*') {
-            chipHtml = `<div class="aia-table-chip" style="background: rgba(181,82,17,0.08); color: #8b4011; border: 1px solid rgba(181,82,17,0.2); border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; line-height: 1.3; white-space: normal; word-break: break-word;">${displayValue}</div>`;
+            chipHtml = `<div class="aia-table-chip" style="background: var(--aia-surface-active, rgba(181,82,17,0.08)); color: var(--aia-text-active, #8b4011); border: 1px solid var(--aia-border-active, rgba(181,82,17,0.2)); border-radius: var(--ds-radius-sm, 4px); padding: 2px 8px; font-size: 0.8rem; line-height: 1.3; white-space: normal; word-break: break-word;">${displayValue}</div>`;
         } else if (value === '*No Asociada*') {
-            chipHtml = `<div style="color: #c90000; font-weight: 700; font-size: 0.8rem;"><i class="fas fa-exclamation-triangle"></i> PENDIENTE</div>`;
+            chipHtml = `<div style="color: var(--aia-red-primary, #c90000); font-weight: 700; font-size: 0.8rem;"><i class="fas fa-exclamation-triangle"></i> PENDIENTE</div>`;
         }
         td.innerHTML = chipHtml;
         td.className = "htMiddle htCenter force-wrap pg-cell-editable";
 
         if (value === null || value === '' || value === '*No Asociada*') {
-            td.style.backgroundColor = 'rgba(235, 64, 52, 0.05)';
+            td.style.backgroundColor = 'var(--aia-red-soft-bg, rgba(235, 64, 52, 0.05))';
         } else {
-            td.style.backgroundColor = 'rgba(26, 86, 51, 0.05)';
+            td.style.backgroundColor = 'var(--aia-green-soft-bg, rgba(26, 86, 51, 0.05))';
         }
     }
 
@@ -229,9 +229,9 @@ window.HOTActualizarModule = (function() {
         // Colorear toda la fila sutilmente si la actividad no está asociada
         var isMapped = instance.getDataAtRowProp(row, 'programaAnteriorAsociar');
         if (isMapped === null || isMapped === '' || isMapped === '*No Asociada*') {
-            td.style.backgroundColor = 'rgba(255,83,51,0.05)';
+            td.style.backgroundColor = 'var(--aia-orange-soft-bg, rgba(255,83,51,0.05))';
         } else {
-            td.style.backgroundColor = '#f8fafc'; // Color por defecto readonly
+            td.style.backgroundColor = 'var(--ds-active-surface, #f8fafc)'; // Color por defecto readonly
         }
     }
 
@@ -425,7 +425,7 @@ window.HOTActualizarModule = (function() {
 
         // Ocultar badge de guardando
         var $saveStatus = $('#save-status');
-        $saveStatus.stop(true, true).addClass('badge-badge-hidden').removeClass('badge-warning badge-success').fadeOut(120);
+        $saveStatus.stop(true, true).addClass('badge-badge-hidden').removeClass('aia-chip--warning aia-chip--success').fadeOut(120);
 
         keys.forEach(function(visualRowStr) {
             var visualRow = parseInt(visualRowStr);
@@ -459,8 +459,8 @@ window.HOTActualizarModule = (function() {
         var $saveStatus = $('#save-status');
         $saveStatus
             .stop(true, true)
-            .removeClass('badge-badge-hidden badge-success')
-            .addClass('badge-warning')
+            .removeClass('badge-badge-hidden aia-chip--success')
+            .addClass('aia-chip--warning')
             .text('Guardando...')
             .fadeIn(120);
 
@@ -561,7 +561,7 @@ window.HOTActualizarModule = (function() {
         .then(res => res.json())
         .then(res => {
             if (res.respuesta === "BIEN") {
-                $saveStatus.removeClass('badge-warning').addClass('badge-success');
+                $saveStatus.removeClass('aia-chip--warning').addClass('aia-chip--success');
                 if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
                     window.AIA.Notice.badge('success', 'Auto-Guardado');
                 } else {
@@ -858,8 +858,8 @@ window.HOTActualizarModule = (function() {
                 var $saveStatus = $('#save-status');
                 $saveStatus
                     .stop(true, true)
-                    .removeClass('badge-badge-hidden badge-success')
-                    .addClass('badge-warning')
+                    .removeClass('badge-badge-hidden aia-chip--success')
+                    .addClass('aia-chip--warning')
                     .text('Guardando... (' + pendingCount + ')')
                     .fadeIn(120);
 
@@ -993,8 +993,8 @@ window.HOTActualizarModule = (function() {
             return '';
         }
         return '<div class="match-candidate-meta" ' +
-            'style="font-family: \'Inter\', sans-serif; font-size: 0.72rem; font-weight: 400; ' +
-            'color: #1a5633; margin-bottom: 4px; display: inline-flex; align-items: center; ' +
+            'style="font-family: var(--aia-font-family-body, \'Inter\', sans-serif); font-size: 0.72rem; font-weight: 400; ' +
+            'color: var(--aia-green-primary, #1a5633); margin-bottom: 4px; display: inline-flex; align-items: center; ' +
             'gap: 5px; opacity: 0.85; letter-spacing: 0.01em;">' +
             parts.join('<span style="opacity: 0.4; margin: 0 3px;">&middot;</span>') +
             '</div>';
@@ -1231,8 +1231,8 @@ window.HOTActualizarModule = (function() {
                 showCancelButton: true,
                 confirmButtonText: 'Sí, salir',
                 cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#1a5633'
+                confirmButtonColor: 'var(--aia-red-primary, #dc3545)',
+                cancelButtonColor: 'var(--aia-green-primary, #1a5633)'
             }).then(function(result) {
                 doClose(result.isConfirmed);
             });
@@ -1339,10 +1339,10 @@ window.HOTActualizarModule = (function() {
         var label;
 
         if (isExisting) {
-            label = '<i class="fas fa-history" style="color: #6c757d;"></i> ' +
+            label = '<i class="fas fa-history" style="color: var(--aia-text-muted, #6c757d);"></i> ' +
                 'Asociación previa: <strong>' + escapeHtml(decision.candidateName || '—') + '</strong>';
         } else if (isAccepted) {
-            label = '<i class="fas fa-check-circle" style="color: #1a5633;"></i> ' +
+            label = '<i class="fas fa-check-circle" style="color: var(--aia-green-primary, #1a5633);"></i> ' +
                 'Asociada con: <strong>' + escapeHtml(decision.candidateName) + '</strong>';
         } else {
             label = '<i class="fas fa-times-circle"></i> Marcada como actividad nueva';

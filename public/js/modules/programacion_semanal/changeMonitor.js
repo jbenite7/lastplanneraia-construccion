@@ -216,15 +216,15 @@
 
   function classifyEntry(entry) {
     if (entry.accion === 'comprometer') {
-      return { tipo: 'reactivacion', label: 'Reactivación', icon: 'fa-undo', cls: 'badge-info' };
+      return { tipo: 'reactivacion', label: 'Reactivación', icon: 'fa-undo', cls: 'aia-chip--info' };
     }
     if (entry.accion === 'descomprometer' || entry.accion === 'insert_cnp') {
       if (entry.categoria_cnp === 'Programación') {
-        return { tipo: 'restricciones', label: 'Restricciones pendientes', icon: 'fa-lock', cls: 'badge-warning' };
+        return { tipo: 'restricciones', label: 'Restricciones pendientes', icon: 'fa-lock', cls: 'aia-chip--warning' };
       }
-      return { tipo: 'estado', label: 'Desprogramación', icon: 'fa-times-circle', cls: 'badge-danger' };
+      return { tipo: 'estado', label: 'Desprogramación', icon: 'fa-times-circle', cls: 'aia-chip--critical' };
     }
-    return { tipo: 'otro', label: entry.accion, icon: 'fa-circle', cls: 'badge-secondary' };
+    return { tipo: 'otro', label: entry.accion, icon: 'fa-circle', cls: 'aia-chip--secondary' };
   }
 
   function renderTable() {
@@ -270,19 +270,19 @@
       switch (entry.accion) {
         case 'comprometer':
           accionLabel = 'Comprometida';
-          accionCls = 'badge-success';
+          accionCls = 'aia-chip--success';
           break;
         case 'descomprometer':
           accionLabel = 'Desprogramada';
-          accionCls = 'badge-danger';
+          accionCls = 'aia-chip--critical';
           break;
         case 'insert_cnp':
           accionLabel = 'Insertada con CNP';
-          accionCls = 'badge-warning';
+          accionCls = 'aia-chip--warning';
           break;
         default:
           accionLabel = entry.accion;
-          accionCls = 'badge-secondary';
+          accionCls = 'aia-chip--secondary';
       }
 
       var detalle = entry.detalle || '';
@@ -314,10 +314,10 @@
       $tr.append($('<td>', { 'class': 'cm-activity-cell', 'data-label': 'Actividad' }).html(entry.actividad_nombre || '-'));
 
       var $tipo = $('<td>', { 'data-label': 'Tipo' });
-      $tipo.html('<span class="badge ' + info.cls + '"><i class="fas ' + info.icon + '"></i> ' + info.label + '</span>');
+      $tipo.html('<span class="aia-chip ' + info.cls + '"><i class="fas ' + info.icon + '"></i> ' + info.label + '</span>');
       $tr.append($tipo);
 
-      $tr.append($('<td>', { 'data-label': 'Acción' }).html('<span class="badge ' + accionCls + '">' + accionLabel + '</span>'));
+      $tr.append($('<td>', { 'data-label': 'Acción' }).html('<span class="aia-chip ' + accionCls + '">' + accionLabel + '</span>'));
       $tr.append($('<td>', { 'class': 'cm-detail-cell', 'data-label': 'Detalle' }).text(detalle));
       $tr.append($('<td>', { 'data-label': 'Fecha' }).text(fecha));
       $tbody.append($tr);

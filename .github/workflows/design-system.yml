@@ -95,7 +95,7 @@ jobs:
         run: npm run test:pdc:phpstan
       - name: Enforce global-table safety
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
-      - name: Enforce dev-door guard (production must stay closed)
+      - name: Enforce dev-door guard (prod must stay closed)
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_dev_door_guard.php
       - name: Enforce dev-door end-to-end behaviour
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_dev_door_http.php

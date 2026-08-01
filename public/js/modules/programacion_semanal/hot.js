@@ -3115,7 +3115,7 @@
     var phaseInfo = getWeeklyPhaseInfo(weeklyPhaseKey, fechaCierre);
 
     if (weeklyPhaseKey === 'calificacion') {
-      $('#phase-badge').text('Calificación').removeClass('badge-info').addClass('badge-warning');
+      $('#phase-badge').text('Calificación').removeClass('aia-chip--info').addClass('aia-chip--warning');
       $('#weeklyPhaseMobileLabel').text(phaseInfo.mobileLabel);
       $('#btn_autoprogramar').hide();
       $('#btn_agregar_actividad').hide();
@@ -3138,7 +3138,7 @@
         $('#btn_reabrir_semana').hide();
       }
     } else {
-      $('#phase-badge').text('Programación').removeClass('badge-warning').addClass('badge-info');
+      $('#phase-badge').text('Programación').removeClass('aia-chip--warning').addClass('aia-chip--info');
       $('#weeklyPhaseMobileLabel').text(phaseInfo.mobileLabel);
       // Solo se muestran a quien puede usarlos: este .show() pisaba el display:none que
       // maestroPermisos() aplica por rol, y dejaba los tres botones visibles pero grises
@@ -4003,7 +4003,7 @@
       var softText = alertas[i].RestriccionesBlandas || '';
       var conditions = '<div class="text-danger font-weight-bold ps-autoprogram-hard-condition">' + escapeHtml(hardText) + '</div>';
       if (softText) {
-        conditions += '<div class="mt-1 text-warning ps-autoprogram-soft-condition"><span class="badge badge-warning mr-1">Blandas</span>'
+        conditions += '<div class="mt-1 text-warning ps-autoprogram-soft-condition"><span class="aia-chip aia-chip--warning mr-1">Blandas</span>'
           + escapeHtml(softText)
           + '<small class="d-block text-muted">Pdto. Constructivo y Modelo BIM no bloquean autoprogramación.</small></div>';
       }
@@ -4017,7 +4017,7 @@
       + '<div class="modal-header bg-danger text-white ps-autoprogram-modal-header is-danger"><h5 class="modal-title"><i class="fas fa-clipboard-list"></i> Actividades pendientes por habilitantes</h5>'
       + '<button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div>'
       + '<div class="modal-body ps-autoprogram-modal-body"><p>Las siguientes <strong>' + alertas.length + '</strong> actividades se omitieron porque tienen condiciones <strong>habilitantes</strong> pendientes para comprometer:</p>'
-      + '<p class="text-muted ps-autoprogram-note"><small><span class="badge badge-warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
+      + '<p class="text-muted ps-autoprogram-note"><small><span class="aia-chip aia-chip--warning">Blandas</span> Pdto. Constructivo y Modelo BIM son seguimiento operativo; aparecen en ámbar y no bloquean la autoprogramación.</small></p>'
       + '<div class="table-responsive ps-autoprogram-table-wrap"><table class="table table-sm table-bordered ps-autoprogram-table"><thead><tr><th>Id</th><th>Actividad</th><th>Condiciones</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>'
       + '<p class="text-muted mt-2 ps-autoprogram-note"><small>Cierre las acciones de habilitación duras desde la Programación Intermedia para que puedan ser autoprogramadas o agregadas manualmente.</small></p></div>'

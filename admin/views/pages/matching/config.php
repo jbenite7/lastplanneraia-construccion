@@ -19,7 +19,7 @@
 
 <div class="row">
   <div class="col-lg-6 col-md-8">
-    <div class="card card-outline card-success">
+    <div class="card aia-panel aia-panel--elevated card-outline card-success">
       <div class="card-header">
         <h3 class="card-title">
           <i class="fas fa-sliders-h mr-2"></i>Umbrales de Matching Semántico

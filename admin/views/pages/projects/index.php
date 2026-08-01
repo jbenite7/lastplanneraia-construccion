@@ -1,4 +1,4 @@
-<div class="card card-primary card-outline">
+<div class="card aia-panel aia-panel--elevated card-primary card-outline">
             <div class="card-header">
                 <h3 class="card-title">Listado de Proyectos de Construcción</h3>
                 <div class="card-tools">

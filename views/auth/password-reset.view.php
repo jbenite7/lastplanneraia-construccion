@@ -59,7 +59,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-aia btn-block" data-loading-text="Actualizando…">
+                        <button type="submit" class="aia-btn aia-btn-primary aia-btn--lg aia-btn--block" data-loading-text="Actualizando…">
                             ACTUALIZAR CONTRASEÑA <i class="fas fa-key ml-2" aria-hidden="true"></i>
                         </button>
                     </form>

@@ -45,7 +45,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-aia btn-block" data-loading-text="Enviando…">
+                    <button type="submit" class="aia-btn aia-btn-primary aia-btn--lg aia-btn--block" data-loading-text="Enviando…">
                         ENVIAR ENLACE <i class="fas fa-paper-plane ml-2" aria-hidden="true"></i>
                     </button>
                 </form>

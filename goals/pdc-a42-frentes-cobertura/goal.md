@@ -94,3 +94,22 @@ que corre en paralelo sobre el mismo archivo), la pestaña «Plan», y los 25 pa
 `duracion_ref` (Task 5 del plan A4, anotada y diferida). Tampoco lee
 `pdc_insumo_actividades.unique_id`: está vacío, lo va a poblar otra sesión, y esta tanda no depende de
 ese trabajo ni lo estorba.
+
+---
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-07-28 (documentado formalmente 2026-07-31)
+**Commit:** `ed5dfd1` (rama `pdc-a42-frentes`, mergeado a `main`)
+
+### Condición de hecho — cumplida
+
+| # | Condición | Resultado |
+|---|---|---|
+| 1 | Sin propuesta ≤ 10 | **4** (de 45) ✅ |
+| 2 | ALTA ≥ 30 | **71** (de 3) ✅ |
+| 3 | 11 amarres intactos | **11** ✅ |
+| 4 | 0 amarres automáticos | **0** ✅ |
+| 5 | Panel de amarre funcional | Endpoints + panel + atajo ✅ |
+| 6 | Tests en verde | 242/242 Vitest · PHPStan 0 · 2/2 e2e ✅ |

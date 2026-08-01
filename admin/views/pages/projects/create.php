@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-        <div class="card card-success">
+        <div class="card aia-panel aia-panel--elevated card-success">
             <div class="card-header">
                 <h3 class="card-title">Nuevo Proyecto</h3>
             </div>

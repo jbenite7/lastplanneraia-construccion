@@ -17,38 +17,18 @@
   ],
   "static": [
     {
-      "sheet": "/css/contratos.css",
-      "via": "view-link",
-      "unlayeredRules": 62,
-      "sites": [
-        "views/contratos/contratos.view.php"
-      ]
-    },
-    {
       "sheet": "/css/handsontable-header-global.css",
       "via": "view-link",
       "unlayeredRules": 8,
       "sites": [
-        "views/contratos/contratos.view.php",
-        "views/listado-actividades/listadoActividades.view.php",
-        "views/profesionales/profesionales.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php",
-        "views/programacion-semanal/programacion_semanal.view.php",
-        "views/subcontratistas/subcontratistas.view.php"
-      ]
-    },
-    {
-      "sheet": "/css/listado-actividades.css",
-      "via": "view-link",
-      "unlayeredRules": 124,
-      "sites": [
-        "views/listado-actividades/listadoActividades.view.php"
+        "views/programacion-semanal/programacion_semanal.view.php"
       ]
     },
     {
       "sheet": "/css/login-brand-unified.css",
       "via": "view-link",
-      "unlayeredRules": 50,
+      "unlayeredRules": 54,
       "sites": [
         "views/auth/login.view.php",
         "views/auth/password-forgot.view.php",
@@ -70,7 +50,7 @@
     {
       "sheet": "/pdc-app/assets/pdc.css",
       "via": "view-link",
-      "unlayeredRules": 140,
+      "unlayeredRules": 385,
       "sites": [
         "views/plan-compras/app.view.php"
       ]
@@ -90,7 +70,6 @@
       "via": "view-link",
       "unlayeredRules": 364,
       "sites": [
-        "views/profesionales/profesionales.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php",
         "views/programacion-semanal/programacion_semanal.view.php"
       ],
@@ -113,16 +92,6 @@
       ]
     },
     {
-      "sheet": "/vendor/handsontable/handsontable.full.min.css",
-      "via": "view-link",
-      "unlayeredRules": 364,
-      "sites": [
-        "views/contratos/contratos.view.php",
-        "views/listado-actividades/listadoActividades.view.php"
-      ],
-      "case": "2/5-handsontable-doble-carga"
-    },
-    {
       "sheet": "https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css",
       "via": "view-link-external",
       "unlayeredRules": null,
@@ -138,7 +107,6 @@
       "via": "view-link-external",
       "unlayeredRules": null,
       "sites": [
-        "views/listado-actividades/listadoActividades.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php"
       ]
     },
@@ -160,8 +128,6 @@
         "views/auth/login.view.php",
         "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php",
-        "views/contratos/contratos.view.php",
-        "views/listado-actividades/listadoActividades.view.php",
         "views/pdc/pdc.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php"
       ]
@@ -357,19 +323,7 @@
     },
     "/profesionales": {
       "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
-          "via": "link",
-          "unlayeredRules": 364,
-          "case": "2-handsontable-doble-carga"
-        },
-        {
-          "sheet": "/css/handsontable-header-global.css",
-          "via": "link",
-          "unlayeredRules": 8
-        }
-      ]
+      "unlayered": []
     },
     "/programa-general-actualizar": {
       "authenticated": true,
@@ -470,13 +424,7 @@
     },
     "/subcontratistas": {
       "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "/css/handsontable-header-global.css",
-          "via": "link",
-          "unlayeredRules": 8
-        }
-      ]
+      "unlayered": []
     },
     "/bi/control-tower": {
       "authenticated": true,

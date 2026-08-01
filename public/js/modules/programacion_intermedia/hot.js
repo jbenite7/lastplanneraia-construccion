@@ -1935,7 +1935,7 @@
       html += '<ul style="text-align:left;margin:8px 0 0 18px;">';
       html += parts.join('');
       html += '</ul>';
-      html += '<br><small style="color:#666;">Esta acción no se puede deshacer desde este modal.</small><br><br>¿Continuar de todos modos?';
+      html += '<br><small style="color:var(--aia-text-muted, #666);">Esta acción no se puede deshacer desde este modal.</small><br><br>¿Continuar de todos modos?';
       return { title: 'Conflictos de asignación', html: html, icon: 'warning' };
     }
 
@@ -2635,7 +2635,7 @@
         "<section class='pi-legend-quick-group'>" +
           "<h6 class='pi-legend-quick-group-title'>Restricciones blandas</h6>" +
           "<div class='pi-legend-quick-row'>" +
-            "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:#fef3c7;border-color:#f59e0b;'></span>" +
+            "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:var(--aia-warning-soft-bg, #fef3c7);border-color:var(--aia-warning-border, #f59e0b);'></span>" +
             "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitacion, estado operativo ni autoprogramacion.</small></div>" +
             "<div class='pi-legend-quick-action'>Completar para control tecnico, sin detener compromisos listos.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>Blanda</span>" +

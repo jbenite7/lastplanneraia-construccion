@@ -166,18 +166,22 @@ var cargarDatosGeneralesPagina = function (seccion) {
           (rol ? '<br><small style="opacity:.65;font-size:.75em">' + rol + '</small>' : '');
       }
 
-      document.getElementById('Fecha_Fin_Sem').value = datosGenerales.Fecha_Fin_Sem;
-      document.getElementById('Fecha_Fin_SemYMD').value = datosGenerales.Fecha_Fin_SemYMD;
-      document.getElementById('Fecha_Inicio_Sem').value = datosGenerales.Fecha_Inicio_Sem;
-      document.getElementById('Fecha_Inicio_SemYMD').value = datosGenerales.Fecha_Inicio_SemYMD;
-      document.getElementById('Fecha_datepicker').value = datosGenerales.Fecha_datepicker;
-      document.getElementById('Max_Semana').value = datosGenerales.Max_Semana;
-      document.getElementById('baseDatos').value = datosGenerales.db;
-      document.getElementById('permiso_canonico').value = datosGenerales.permiso_canonico || datosGenerales.permiso || '';
-      document.getElementById('permiso_canonico').value = datosGenerales.permiso_canonico || datosGenerales.permiso || '';
-      document.getElementById('pdcActivo').value = datosGenerales.pdcActivo;
-      document.getElementById('proyecto').value = datosGenerales.proyecto;
-      document.getElementById('semana').value = datosGenerales.semana;
+      var setVal = function(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.value = (val !== null && val !== undefined) ? val : '';
+      };
+
+      setVal('Fecha_Fin_Sem', datosGenerales.Fecha_Fin_Sem);
+      setVal('Fecha_Fin_SemYMD', datosGenerales.Fecha_Fin_SemYMD);
+      setVal('Fecha_Inicio_Sem', datosGenerales.Fecha_Inicio_Sem);
+      setVal('Fecha_Inicio_SemYMD', datosGenerales.Fecha_Inicio_SemYMD);
+      setVal('Fecha_datepicker', datosGenerales.Fecha_datepicker);
+      setVal('Max_Semana', datosGenerales.Max_Semana);
+      setVal('baseDatos', datosGenerales.db);
+      setVal('permiso_canonico', datosGenerales.permiso_canonico || datosGenerales.permiso);
+      setVal('pdcActivo', datosGenerales.pdcActivo);
+      setVal('proyecto', datosGenerales.proyecto);
+      setVal('semana', datosGenerales.semana);
 
       try {
         if (typeof cargaParametros === 'function') {
@@ -189,25 +193,10 @@ var cargarDatosGeneralesPagina = function (seccion) {
         console.error("🕵️ [DeepAnalysis] Excepción ahogada (swallowed) capturada al ejecutar cargaParametros():", error);
       }
 
-      document.getElementById('Semanal_Confirmada').value = datosGenerales.Semanal_Confirmada;
-      if (datosGenerales.fechaCierreCompromisos == null) {
-        document.getElementById('fechaCierreCompromisos').value = '';
-      } else {
-        document.getElementById('fechaCierreCompromisos').value =
-          datosGenerales.fechaCierreCompromisos;
-      }
-
-      if (datosGenerales.fechaCreacionSemana == null) {
-        document.getElementById('fechaCreacionSemana').value = '';
-      } else {
-        document.getElementById('fechaCreacionSemana').value = datosGenerales.fechaCreacionSemana;
-      }
-
-      if (datosGenerales.versionCronograma == null) {
-        document.getElementById('versionCronograma').value = '';
-      } else {
-        document.getElementById('versionCronograma').value = datosGenerales.versionCronograma;
-      }
+      setVal('Semanal_Confirmada', datosGenerales.Semanal_Confirmada);
+      setVal('fechaCierreCompromisos', datosGenerales.fechaCierreCompromisos);
+      setVal('fechaCreacionSemana', datosGenerales.fechaCreacionSemana);
+      setVal('versionCronograma', datosGenerales.versionCronograma);
 
       // --- Context Bar Population ---
       // En vistas con shell sidebar la context-bar la renderiza el servidor

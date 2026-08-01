@@ -562,7 +562,6 @@ export default function Seguimiento() {
                       type="date"
                       value={p.fechaReal ?? ''}
                       onChange={(e) => void registrar(p, e.target.value)}
-                      disabled={guardando !== null}
                       aria-label={`Fecha real de ${p.paso}`}
                     />
                   </td>

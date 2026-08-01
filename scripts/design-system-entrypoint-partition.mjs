@@ -27,6 +27,7 @@ export const ENTRYPOINT_FILES = {
 // `attachment-url-drift`.
 export const STANDALONE_ATTACHMENTS = {
   datatables: 'public/css/design-system/vendor-datatables-legacy.css',
+  'tom-select': 'public/css/design-system/adapters/tom-select.css',
 };
 
 // Import propio de la partición, ausente del agregador por diseño.

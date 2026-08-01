@@ -98,3 +98,18 @@ Plannotator → ejecución subagent-driven + TDD.
 - `AGENTS.md` — alcance visual (desktop ≥1180 px, dark).
 - `goals/segmentacion-entrypoint-css/` — antecedente de la segmentación del entrypoint.
 - `goals/design-system-nucleo-gobernanza/` — antecedente de gobernanza del núcleo.
+
+---
+
+## Cierre formal
+
+**Estado:** CERRADO — absorbido por `cierre-dark-mode-y-tablas`
+**Fecha de cierre:** 2026-07-31
+
+### Justificación
+
+Este goal fue reemplazado por [`cierre-dark-mode-y-tablas`](../cierre-dark-mode-y-tablas/goal.md),
+que absorbió todas sus especificaciones, fases y deudas pendientes. El `validation-log.md`
+(1 638 líneas) queda como historia consultable, no como trabajo abierto. Ninguna de las fases
+F0–F6 se ejecutó bajo este goal; el diseño y las decisiones del grilleo siguen vigentes en
+el goal sucesor.

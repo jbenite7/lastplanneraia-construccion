@@ -20,7 +20,7 @@ foreach (($roles ?? []) as $code => $role) {
 
 <script src="/public/vendor/select2/select2.min.js"></script>
 
-<div class="card card-primary">
+<div class="card aia-panel aia-panel--elevated card-primary">
   <div class="card-header">
     <h3 class="card-title">Datos del Usuario</h3>
   </div>

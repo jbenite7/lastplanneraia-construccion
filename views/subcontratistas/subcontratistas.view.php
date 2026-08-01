@@ -11,8 +11,7 @@
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
     <!-- Handsontable CSS -->
-
-    <link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260223a" />
+    <!-- Handsontable CSS llega vía attach-handsontable.css (design system); el link crudo duplicaba la cascada y pisaba dark mode. -->
 </head>
 <body class="aia-shell aia-shell--sidebar sub-page">
 <?php $isPreConstruccion = (($area ?? $_SESSION['area'] ?? 'Construccion') === 'Pre-Construccion'); ?>
@@ -34,15 +33,17 @@
     <input type="hidden" id="baseDatos" value="<?php echo $_SESSION['db'] ?? 'Prueba'; ?>">
     <input type="hidden" id="permiso_canonico" value="<?php echo $_SESSION['permiso'] ?? 'V'; ?>">
 
-<div class="header-actions action-bar">
-        <h4><?php echo $isPreConstruccion ? 'Interesados Externos (Live Edición)' : 'Subcontratistas (Live Edición)'; ?></h4>
-        <?php if ($isPreConstruccion): ?>
-            <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
-        <?php endif; ?>
+    <div class="header-actions action-bar">
         <div>
-            <span id="save-status" class="badge badge-success sub-save-flag">Guardado</span>
+            <h4><?php echo $isPreConstruccion ? 'Interesados Externos (Live Edición)' : 'Subcontratistas (Live Edición)'; ?></h4>
+            <?php if ($isPreConstruccion): ?>
+                <small class="text-muted d-block mt-1">Gestión de interesados externos del proyecto: Socios, Ventas, Gerencia, Diseñadores, Entidades.</small>
+            <?php endif; ?>
+        </div>
+        <div class="header-actions-group">
+            <span id="save-status" class="aia-chip aia-chip--success sub-save-flag">Guardado</span>
             <span id="save-error" class="badge badge-danger sub-save-flag">Error al guardar</span>
-            <button id="btn-export" class="btn-pdc-modern" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
+            <button id="btn-export" class="aia-btn aia-btn--secondary" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Exportar</button>
             <?= \App\View\Components\BiAccessComponent::renderLink('subcontratistas', $isPreConstruccion ? 'BI Interesados' : 'BI Contratistas') ?>
         </div>
     </div>
@@ -116,7 +117,7 @@
                     if (hot && window.innerWidth > 768) {
                         hot.updateSettings({
                             colWidths: function(colIndex) {
-                                const containerWidth = document.getElementById('hot-container').offsetWidth - 50;
+                                const containerWidth = document.getElementById('hot-container').offsetWidth;
                                 const percentages = [0, 18, 18, 8, 18, 22, 6, 10];
                                 return Math.floor(containerWidth * (percentages[colIndex] / 100));
                             }
@@ -289,8 +290,8 @@
 
             hot = new Handsontable(container, {
                 data: data,
-                rowHeaders: true,
-                rowHeaderWidth: 50,
+                rowHeaders: false,
+
                 colHeaders: [<?php echo $isPreConstruccion ? "'ID', 'Interesado', 'Correo Contacto', 'Identificación', 'Rol/Interés', 'Tipo de Interesado', 'Activo', 'Acciones'" : "'ID', 'Subcontratista', 'Correo Contacto', 'NIT', 'Alcance', 'Tipo Proveedor', 'Activo', 'Acciones'"; ?>],
                 columns: [
                     { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
@@ -318,7 +319,7 @@
                 ],
                 // Anchos en porcentaje: ID(0%), Subcontratista(18%), Correo(18%), NIT(8%), Alcance(18%), TipoProveedor(22%), Activo(6%), Acciones(10%) = 100%
                 colWidths: function(colIndex) {
-                    const containerWidth = document.getElementById('hot-container').offsetWidth - 50; // 50px para rowHeaders
+                    const containerWidth = document.getElementById('hot-container').offsetWidth;
                     const percentages = [0, 18, 18, 8, 18, 22, 6, 10]; // ID oculto = 0%
                     return Math.floor(containerWidth * (percentages[colIndex] / 100));
                 },
@@ -349,10 +350,10 @@
                              // Matching logic from profesionales for Delete button
                              // In subcontratistas, the ID key is 'Id'
                              if (rowData && rowData.Id && rowData.has_dependencies) {
-                                 td.innerHTML = '<button class="btn btn-secondary btn-xs" disabled title="No se puede eliminar: tiene registros asociados en otros módulos del proyecto."><i class="fas fa-lock"></i></button>';
+                                 td.innerHTML = '<button class="aia-btn aia-btn--secondary aia-btn--sm" disabled title="No se puede eliminar: tiene registros asociados en otros módulos del proyecto."><i class="fas fa-lock"></i></button>';
                              } else {
                                  // Perfect circular button via .btn-delete CSS class
-                                 td.innerHTML = '<button class="btn btn-danger btn-xs btn-delete"><i class="fas fa-trash"></i></button>';
+                                 td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete"><i class="fas fa-trash"></i></button>';
                              }
                          }
                     }

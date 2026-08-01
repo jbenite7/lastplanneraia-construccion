@@ -77,7 +77,7 @@ Los comandos de operación del agente ahora están definidos como workflows form
 - `DESIGN.md`: Guía de consumo del Design System (tokens `--ds-*`/`--aia-*`, primitivas `aia-*`, flujo obligatorio antes de tocar UI). Léela antes de cualquier cambio visual; la autoridad ejecutable vive en `docs/design-system/`.
 - `GLOSARIO.md`: Diccionario de términos esenciales del proyecto.
 - `ROADMAP.md`: Seguimiento de hitos técnicos y tareas.
-- `docs/ROUTES.md`: Direccionamiento del MVC, APIs e instrucciones del Front Controller.
+- `docs/ROUTES.md`: Direccionamiento del MVC, APIs, inventario canónico de superficies y matriz de navegación cruzada para asistentes LLM.
 
 ## 🚀 Comandos Rápidos de Verificación
 

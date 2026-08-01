@@ -234,8 +234,21 @@ $shellGroups = array_values(array_filter([
     var item = event.target.closest('[data-shell-week]');
     if (!item) return;
     var week = parseInt(item.getAttribute('data-shell-week'), 10);
-    if (!week || typeof window.cambiarSemanaSesion !== 'function') return;
-    window.cambiarSemanaSesion(week, item.getAttribute('data-shell-path') || window.location.pathname);
+    if (!week) return;
+    var path = item.getAttribute('data-shell-path') || window.location.pathname;
+    if (typeof window.cambiarSemanaSesion === 'function') {
+      window.cambiarSemanaSesion(week, path);
+    } else {
+      fetch('/context/week', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ semana: week })
+      }).then(function (res) { return res.json(); }).then(function (data) {
+        window.location.href = path;
+      }).catch(function () {
+        window.location.href = path;
+      });
+    }
   });
 
   // Flyout de semanas por módulo (PG/PI/PS): panel alineado con la píldora del rail.

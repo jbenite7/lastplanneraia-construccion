@@ -2,7 +2,7 @@
 
 **Slug:** `retiro-listado-contratos`
 **Fecha de apertura:** 2026-07-29
-**Estado:** Etapas 1 y 2 ejecutadas y verificadas (2026-07-30) — Etapas 3 y 4 pospuestas para C1 / gates dedicados.
+**Estado:** HECHO (2026-07-31) — Etapas 1 y 2 ejecutadas y verificadas; etapas 3 y 4 diferidas a C1.
 
 ## Objetivo
 
@@ -119,3 +119,32 @@ registro.**
 4. Los tests compartidos reescritos pasan, y ninguno se adaptó para ocultar una regresión.
 5. `node scripts/design-system-audit.mjs` pasa sin las dos entradas de `pathBudgets`.
 6. Etapas 3 y 4 anotadas como abiertas, con su condición de arranque.
+
+---
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-07-31
+
+### Lo que se logró
+
+- **Etapa 1:** rutas de vista y API retiradas del router. `/listado-actividades` y `/contratos`
+  devuelven 404.
+- **Etapa 2:** archivos exclusivos borrados (vistas, controladores, CSS, JS, `ActivityMatcher.php`,
+  tests exclusivos). Tests compartidos reescritos. RBAC limpio. PHPStan en verde.
+- Entradas de `pathBudgets` retiradas de `exceptions.json`; audit del design system pasa.
+
+### Lo que queda diferido
+
+- **Etapa 3 — Cirugía en `SemiAutoService`:** retirar ramas `MODULE_LISTADO` y `MODULE_CONTRATOS`.
+  Requiere plan propio y aprobación (gate explícito). Las ramas quedan inertes con las rutas
+  apagadas; no hay urgencia.
+- **Etapa 4 — Datos:** decisión sobre `actividades` y `contratos_trazabilidad`. Se resuelve con
+  C1 del roadmap PDC, con dry-run, gate, respaldo y plan de restauración.
+
+### Justificación del cierre
+
+El objetivo principal (que las rutas viejas desaparezcan del producto) está cumplido y verificado.
+Las etapas diferidas son deuda técnica interna que no afecta al usuario, requieren gates dedicados
+y están documentadas con sus condiciones de arranque.

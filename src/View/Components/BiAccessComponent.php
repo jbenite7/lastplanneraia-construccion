@@ -79,7 +79,7 @@ class BiAccessComponent
     public static function renderLink(
         string $module = 'control-tower',
         string $label = 'Control Tower',
-        string $class = 'btn-pdc-modern',
+        string $class = 'aia-btn aia-btn--secondary',
         array $attributes = [],
     ): string {
         if (!self::canAccess()) {

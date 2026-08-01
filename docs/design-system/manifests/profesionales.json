@@ -8,8 +8,7 @@
   ],
   "sources": [
     "views/profesionales/profesionales.view.php",
-    "public/css/profesionales.css",
-    "public/css/handsontable-header-global.css"
+    "public/css/profesionales.css"
   ],
   "components": [
     "shell",

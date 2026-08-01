@@ -25,22 +25,6 @@
       "reason": "Es el riel de un switch decorativo: el elemento no renderiza texto en ningun estado, asi que no hay nada a lo que aplicar el info-text pareado. El contraste que importa es riel contra knob (--ds-color-brand-aqua), no riel contra texto."
     },
     {
-      "file": "public/css/contratos.css",
-      "line": 46,
-      "selector": ".ct-table-status[data-state=\"error\"]",
-      "token": "--ds-color-state-critical-text",
-      "kind": "by-design",
-      "reason": "Modificador que solo cambia el color del texto del chip de estado; el fondo lo pone la regla base .ct-table-status y no es un fondo de estado. Es un acento de texto sobre superficie ambiente, no un par bg/text, y con el critical-text claro sigue siendolo."
-    },
-    {
-      "file": "public/css/contratos.css",
-      "line": 62,
-      "selector": ".ct-message-error",
-      "token": "--ds-color-state-critical-text",
-      "kind": "by-design",
-      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .la-message-error y .pdc-message-error: el token se usa como acento de texto sobre la superficie de la pagina, no como mitad de un par que haya que completar."
-    },
-    {
       "file": "public/css/design-system/adapters/lps-drawer.css",
       "line": 18,
       "selector": ".lps-drawer-state--error",
@@ -117,40 +101,6 @@
       "kind": "at-risk",
       "reason": "Unico cruce que va en direccion CONTRARIA a los demas: el token de texto hace de relleno del disco y la tinta es --ds-active-bg-page (#111a15), oscuro sobre oscuro. Medido HOY: #5d4200 contra #111a15 = 1,90:1, es decir ya incumple 1.4.11 antes de tocar nada.",
       "revisit": "La inversion lo ARREGLA sola: el relleno pasa a #f2e79c y sube a 14,11:1 contra la misma tinta. Lo desbloquea la Task 2; despues hay que volver aqui y retirar esta entrada, porque dejara de ser un riesgo y una entrada fantasma hace fallar el guard."
-    },
-    {
-      "file": "public/css/listado-actividades.css",
-      "line": 169,
-      "selector": ".la-message-success",
-      "token": "--ds-color-state-success-text",
-      "kind": "by-design",
-      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .pdc-message-success y .ct-message-error: el token se usa como acento de texto sobre la superficie de la pagina, no como mitad de un par."
-    },
-    {
-      "file": "public/css/listado-actividades.css",
-      "line": 173,
-      "selector": ".la-message-error",
-      "token": "--ds-color-state-critical-text",
-      "kind": "by-design",
-      "reason": "Mensaje de texto suelto sin chip de fondo alrededor, igual que .pdc-message-error y .ct-message-error: el token se usa como acento de texto sobre la superficie de la pagina, no como mitad de un par."
-    },
-    {
-      "file": "public/css/listado-actividades.css",
-      "line": 584,
-      "selector": ".la-mobile-card__edit-field",
-      "token": "--ds-color-state-success-bg",
-      "kind": "out-of-scope-mobile",
-      "reason": "Campo editable de la tarjeta movil, dentro de @media (max-width: 43.75rem). Tinta el fondo con success-bg y deja el texto heredado; la inversion vive en el valor del token, asi que este bloque tambien se oscurece y su texto heredado quedara oscuro sobre oscuro. No se empareja porque AGENTS.md prohibe a esta linea de trabajo tocar CSS movil.",
-      "revisit": "Una tarea con alcance movil explicito tiene que emparejarlo (o repintarlo) despues de la inversion. Queda registrado como deuda, no como intencion de diseno: la unica razon para no arreglarlo aqui es la prohibicion de alcance, no que el uso sea correcto."
-    },
-    {
-      "file": "public/css/listado-actividades.css",
-      "line": 677,
-      "selector": ".la-mobile-tipo-pill.is-checked",
-      "token": "--ds-color-state-success-bg",
-      "kind": "out-of-scope-mobile",
-      "reason": "Pill de tipo marcada en la tarjeta movil, dentro de @media (max-width: 43.75rem). Tinta el fondo con success-bg y fija el texto en --aia-green-dark (#1a3c2a): 10,19:1 hoy sobre el pastel claro, 1,00:1 en cuanto el fondo pase a #173d26. No se toca porque AGENTS.md prohibe CSS movil en esta linea de trabajo.",
-      "revisit": "Una tarea con alcance movil explicito tiene que sustituir el --aia-green-dark por el success-text pareado despues de la inversion. Es deuda medida (1,00:1), no una excepcion de diseno."
     },
     {
       "file": "public/css/pdc.css",
@@ -280,7 +230,7 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 4239,
+      "line": 4237,
       "selector": "#modalEditarContratos .ct-overplanning-alert",
       "token": "--ds-color-state-warning-bg",
       "kind": "at-risk",

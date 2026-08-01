@@ -48,3 +48,13 @@ confirmación al retirar); en esos dos se ajustó el spec sin tocar lo que compr
 El dato `tipo_negociacion` de «Nómina de obra» e «Imprevistos y provisiones» sigue diciendo
 `consumibles` en `general_paquetes_contratacion`. Se decidió esconderlo, no corregirlo: ese catálogo
 lo comparten todos los proyectos de AIA y la migración merece su propio alcance.
+
+---
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-07-29 (documentado formalmente 2026-07-31)
+
+Condición de hecho cumplida: 26 hechos verificados. Vitest 215/215, build OK, 14/14 e2e.
+0 apariciones de "No Rows To Show", 0 "(s)", buscadores insensibles a tildes funcionando.

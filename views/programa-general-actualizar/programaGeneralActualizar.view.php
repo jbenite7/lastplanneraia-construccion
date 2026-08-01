@@ -95,13 +95,13 @@
 		<div class="header-actions action-bar">
 			<div class="pg-actions-row">
 				<div class="d-flex flex-wrap align-items-center pga-actions-group">
-					<button id="btn_cargarCronogramaExcel" type="button" class="btn-pdc-modern" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
-					<button id="btn_eliminarActualizacion" type="button" class="btn-pdc-modern" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
-					<button id="btn_toggleFiltroMapeo" type="button" class="btn-pdc-modern" title="Alternar visualización de actividades" aria-label="Alternar visualización">Ver Programa Completo <i class="fas fa-filter fa-lg"></i></button>
-					<button id="btn_autoAsociar" type="button" class="btn-pdc-modern" title="Asociar automáticamente"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Asociar</button>
+					<button id="btn_cargarCronogramaExcel" type="button" class="aia-btn aia-btn-primary" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
+					<button id="btn_eliminarActualizacion" type="button" class="aia-btn aia-btn-ghost" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
+					<button id="btn_toggleFiltroMapeo" type="button" class="aia-btn aia-btn-ghost" title="Alternar visualización de actividades" aria-label="Alternar visualización">Ver Programa Completo <i class="fas fa-filter fa-lg"></i></button>
+					<button id="btn_autoAsociar" type="button" class="aia-btn aia-btn-ghost" title="Asociar automáticamente"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Asociar</button>
 				</div>
 				<div class="pg-status-badges">
-					<span id="save-status" class="badge badge-success badge-badge-hidden">Auto-Guardado</span>
+					<span id="save-status" class="aia-chip badge-badge-hidden" data-aia-severity="success">Auto-Guardado</span>
 				</div>
 			</div>
 		</div>
@@ -123,9 +123,10 @@
 		  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h5 class="modal-title" id="modalCargarExcelLabel">
-		          <p class="modal-body-texto-cargarExcel" id="modal-body-texto-cargarExcel">Cargar Cronograma desde Excel</p>
-		        </h5>
+		        <div class="modal-title" id="modalCargarExcelLabel">
+		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
+		          <h5 class="aia-modal__title">Cargar Cronograma desde Excel</h5>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
@@ -133,26 +134,22 @@
 		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
 		            <form enctype="multipart/form-data" class="form form-horizontal" id="formCargarExcel" name="formCargarExcel" action="" method="POST">
 		              <div class="form-group parametro_cargarExcel">
-		                <!-- <div class="form_eval form-group">
-													<h3 id='form_general'>
-														Descargar Archivo Base
-													</h3>
-												</div> -->
+
 		                <label for="descargarArchivoBase" class="control-label">En el siguiente enlace puede descargar el archivo base para cargar una actualización del cronograma desde Excel:</label>
-		                <a id="descargarArchivoBase" class="descargarArchivoBase btn btn-primary" download="actualizacionCronogramaLPS.xlsx" href="/archivosBase/actualizacionCronogramaLPS.xlsx">Descargar Archivo Base</a>
+		                <a id="descargarArchivoBase" class="descargarArchivoBase aia-btn aia-btn-secondary" download="actualizacionCronogramaLPS.xlsx" href="/archivosBase/actualizacionCronogramaLPS.xlsx">Descargar Archivo Base</a>
 		              </div>
 		              <div class="form-group parametro_cargarExcel">
 		                <div class="form_eval form-group">
 		                  <h3 id='form_general'> Cargar Cronograma en Excel </h3>
 		                </div>
 		                <!--Se crean 2 inputs que contienen el id del registro que se va a modificar, y el switch que dice si la acción es cargarExcel-->
-		                <input type="hidden" id="Id" name="Id" value="">
-		                <input type="hidden" id="opcion" name="opcion" value="cargarExcel">
+		                <input type="hidden" id="modalCargarExcelId" name="Id" value="">
+		                <input type="hidden" id="modalCargarExcelOpcion" name="opcion" value="cargarExcel">
 		                <input type="hidden" id="codigo" name="codigo" value="">
 		                <!-- Se crea el input para cargar el archivo CSV que cargarà el listado de actividades del proyecto -->
 		                <div class="col-sm-12">
 		                  <label for="archivoExcel" class="control-label">Seleccione el archivo con el cronograma completo desde el equipo (Solo se permiten archivos en formato XLSX):</label>
-		                  <input type="file" name="archivoExcel" id="archivoExcel" class="form-control form-control-lg" accept=".xlsx">
+		                  <input type="file" name="archivoExcel" id="archivoExcel" class="aia-input" accept=".xlsx">
 		                </div>
 		              </div>
 
@@ -160,14 +157,14 @@
 		              <div id="container_f_inicio_importar" class="form-group parametro_cargarExcel" hidden>
 		                <div class="col-sm-12">
 		                  <label for="f_inicio_importar" class="control-label"><b>Fecha de Inicio de la Primera Semana:</b></label>
-		                  <input type="text" name="f_inicio_importar" id="f_inicio_importar" class="form-control pga-datepicker-input" readonly placeholder="YYYY-MM-DD">
+		                  <input type="text" name="f_inicio_importar" id="f_inicio_importar" class="aia-input pga-datepicker-input" readonly placeholder="YYYY-MM-DD">
 		                  <small class="text-muted">Como este es un proyecto nuevo, por favor define cuándo inicia la primera semana.</small>
 		                </div>
 		              </div>
 		              <div class="form-group">
 		                <div class="col-sm-12">
-		                  <input id="" type="submit" class="btn btn-success" value="Guardar" aria-label="Guardar carga de Excel">
-		                  <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal" aria-label="Cancelar carga">
+		                  <input type="submit" class="aia-btn aia-btn-primary" value="Guardar" aria-label="Guardar carga de Excel">
+		                  <input id="btn_listar" type="button" class="aia-btn aia-btn-ghost" value="Cancelar" data-dismiss="modal" aria-label="Cancelar carga">
 		                </div>
 		              </div>
 		              <!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
@@ -188,9 +185,10 @@
 		  <div class="modal-dialog modal-m modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <h5 class="modal-title" id="modalEliminarActualizacionLabel">
-		          <p class="modal-body-texto-eliminarActualizacion" id="modal-body-texto-eliminarActualizacion">Eliminar Actualizacion del Cronograma</p>
-		        </h5>
+		        <div class="modal-title" id="modalEliminarActualizacionLabel">
+		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
+		          <h5 class="aia-modal__title">Eliminar Actualizacion del Cronograma</h5>
+		        </div>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		      </div>
 		      <div class="modal-body">
@@ -202,8 +200,8 @@
 		              </div>
 		              <div class="form-group">
 		                <div class="col-sm-12">
-		                  <input id="" type="submit" class="btn btn-primary" value="Aceptar" aria-label="Aceptar eliminar actualización">
-		                  <input id="btn_listar" type="button" class="btn btn-danger" value="Cancelar" data-dismiss="modal" aria-label="Cancelar eliminar">
+		                  <input type="submit" class="aia-btn aia-btn-primary" value="Aceptar" aria-label="Aceptar eliminar actualización">
+		                  <input id="btn_listar" type="button" class="aia-btn aia-btn-ghost" value="Cancelar" data-dismiss="modal" aria-label="Cancelar eliminar">
 		                </div>
 		              </div>
 		              <!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
@@ -232,7 +230,7 @@
 		          El cronograma y la primera semana han sido creados correctamente. <br>
 		          Hemos preparado todo para que inicies tu seguimiento.
 		        </p>
-		        <button type="button" class="btn btn-lg aia-btn-primary" id="btnIrAlPrograma">
+		        <button type="button" class="aia-btn aia-btn-primary aia-btn--lg" id="btnIrAlPrograma">
 		          Ir al Programa General
 		        </button>
 		      </div>
@@ -247,7 +245,11 @@
 		    <!-- Modal content-->
 		    <div class='modal-content'>
 		      <div class='modal-header'>
-		        <h4 class='modal-title' id='modal_Ejecutado_Teorico_Label'>Ejecutado Teórico</h4><button type='button' class='close' data-dismiss='modal'>&times;</button>
+		        <div class="modal-title" id='modal_Ejecutado_Teorico_Label'>
+		          <div class="aia-modal__eyebrow">AIA Corporativo</div>
+		          <h5 class="aia-modal__title">Ejecutado Teórico</h5>
+		        </div>
+		        <button type='button' class='close' data-dismiss='modal'>&times;</button>
 		      </div>
 		      <div class='modal-body'>
 		        <ul class='pga-formula-list'>
@@ -255,7 +257,7 @@
 		          <div><img src='/img/formula_ejecutado_teorico.png' class='pga-formula-img d-inline-block align-top' alt=''></div>
 		        </ul>
 		      </div>
-		      <div class='modal-footer'><button type='button' class='btn btn-default btn-primary' data-dismiss='modal' >Close</button></div>
+		      <div class='modal-footer'><button type='button' class='aia-btn aia-btn-ghost' data-dismiss='modal' >Cerrar</button></div>
 		    </div>
 		  </div>
 		</div>
@@ -267,7 +269,10 @@
 				<!-- Modal content-->
 				<div class="modal-content">
 					<div class="modal-header">
-						<h4 class="modal-title" id="modal_cantidad_ejecutada_error_Label"><b>Cantidad Ejecutada Mayor</b></h4>
+						<div class="modal-title" id="modal_cantidad_ejecutada_error_Label">
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
+							<h5 class="aia-modal__title">Cantidad Ejecutada Mayor</h5>
+						</div>
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
 					</div>
 					<div class="modal-body pga-alert-body">
@@ -275,9 +280,8 @@
 						<div class="texto_cantidad_ejecutada_error pga-alert-copy"></div>
 					</div>
 					<div class="modal-footer">
-						<!-- <button type="button" class="btn btn-default btn-primary" id="cambiar_compromiso">Si</button>
-						<button type="button" class="btn btn-default btn-danger" id="mantener_compromiso">No</button> -->
-						<input id="btn_cantidad_ejecutada_error" type="button" data-dismiss="modal" class="btn btn-danger btn-lg" value="Cerrar" aria-label="Cerrar alerta">
+
+						<input id="btn_cantidad_ejecutada_error" type="button" data-dismiss="modal" class="aia-btn aia-btn-ghost aia-btn--lg" value="Cerrar" aria-label="Cerrar alerta">
 					</div>
 				</div>
 			</div>
@@ -289,17 +293,19 @@
 					<!-- Modal content-->
 					<div class="modal-content">
 						<div class="modal-header">
-							<h4 class="modal-title" id="modal_semanal_confirmada_Label"><b>Programa General Bloqueado</b></h4>
-							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<div class="modal-title" id="modal_semanal_confirmada_Label">
+							<div class="aia-modal__eyebrow">AIA Corporativo</div>
+							<h5 class="aia-modal__title">Programa General Bloqueado</h5>
 						</div>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
 						<div class="modal-body iconoAlertaSemanalConfirmada pga-alert-body">
 							<i class="fas fa-exclamation-circle fa-5x pga-alert-icon" aria-hidden="true"></i>
 							<div class="texto_semanal_confirmada pga-alert-copy"></div>
 						</div>
 						<div class="modal-footer">
-							<!-- <button type="button" class="btn btn-default btn-primary" id="cambiar_compromiso">Si</button>
-							<button type="button" class="btn btn-default btn-danger" id="mantener_compromiso">No</button> -->
-							<input id="btn_semanal_confirmada" type="button" data-dismiss="modal" class="btn btn-danger btn-lg" value="Cerrar" aria-label="Cerrar alerta confirmación">
+
+							<input id="btn_semanal_confirmada" type="button" data-dismiss="modal" class="aia-btn aia-btn-ghost aia-btn--lg" value="Cerrar" aria-label="Cerrar alerta confirmación">
 						</div>
 					</div>
 				</div>
@@ -346,13 +352,13 @@
 								<li class="nav-item">
 									<a class="nav-link active" id="tab-pending" data-toggle="tab" href="#review-pending" role="tab" aria-controls="review-pending" aria-selected="true">
 										<i class="fas fa-clock"></i> Pendientes
-										<span class="badge badge-warning ml-1" id="tab-pending-badge">0</span>
+										<span class="aia-chip ml-1" data-aia-severity="warning" id="tab-pending-badge">0</span>
 									</a>
 								</li>
 								<li class="nav-item">
 									<a class="nav-link" id="tab-processed" data-toggle="tab" href="#review-processed" role="tab" aria-controls="review-processed" aria-selected="false">
 										<i class="fas fa-check-circle"></i> Procesadas
-										<span class="badge badge-success ml-1" id="tab-processed-badge">0</span>
+										<span class="aia-chip ml-1" data-aia-severity="success" id="tab-processed-badge">0</span>
 									</a>
 								</li>
 							</ul>
@@ -371,13 +377,13 @@
 					</div>
 					<div class="modal-footer">
 						<div>
-							<button type="button" class="btn btn-primary" id="btn-guardar-cambios" disabled>
+							<button type="button" class="aia-btn aia-btn-primary" id="btn-guardar-cambios" disabled>
 								<i class="fas fa-save"></i> Guardar Cambios
 								<span class="guardar-count ml-1"></span>
 							</button>
 						</div>
 						<div>
-							<button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Cerrar revisión">Cerrar</button>
+							<button type="button" class="aia-btn aia-btn-ghost" data-dismiss="modal" aria-label="Cerrar revisión">Cerrar</button>
 						</div>
 					</div>
 				</div>

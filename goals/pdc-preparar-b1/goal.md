@@ -111,3 +111,29 @@ Se registran para que quien retome sepa que fueron deliberadas:
 
 Comunicado y material de capacitación (los lleva el comité) · extracción de despieces de acero desde
 planos DWG (encargo aparte, agosto) · matriz de áreas (la construye Tomás).
+
+---
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-07-31
+
+### Lo que se logró
+
+- **Ola 1** (100%): tablero look-ahead, informe de reimportación, tamiz de presupuesto, prelanzamiento
+  y despliegue a producción.
+- **Ola 2** (100%): equipo alquilado/comprado, ayuda in-app, diferidos de A4.1 y re-matching.
+- **Ola 3** (100% salvo tarea 10): subpaquetes de obra, flujo de caja, PDC en Torre de Control.
+
+### Lo que queda diferido
+
+- **Tarea 10 — retiro del PDC viejo (C1):** depende de que una obra real esté operando en
+  producción. Capturada en [`goals/retiro-listado-contratos`](../retiro-listado-contratos/goal.md)
+  (etapas 3 y 4) y en el spec `c1-retiro-pdc-viejo`.
+
+### Justificación del cierre
+
+El objetivo del goal era llevar el PDC v2 del comité al lanzamiento. Todas las peticiones del
+comité están implementadas y desplegadas. La tarea 10 no depende de código sino de un evento
+externo (adopción en producción) y ya está rastreada en su goal propio.

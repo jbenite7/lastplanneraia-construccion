@@ -11,7 +11,7 @@ $etapaClaves = array_keys($etapas);
 
 <div class="row">
   <div class="col-lg-5">
-    <div class="card card-primary card-outline">
+    <div class="card aia-panel aia-panel--elevated card-primary card-outline">
       <div class="card-header">
         <h3 class="card-title">Qué borrar</h3>
       </div>
@@ -70,7 +70,7 @@ $etapaClaves = array_keys($etapas);
 
     <!-- Se arma como `card` y no como `alert`/`callout`: en dark, los tokens de estado
          pintan esas dos con fondo claro y el texto interior queda ilegible. -->
-    <div class="card card-outline card-success">
+    <div class="card aia-panel aia-panel--elevated card-outline card-success">
       <div class="card-header">
         <h3 class="card-title">Esto nunca se toca</h3>
       </div>
@@ -87,7 +87,7 @@ $etapaClaves = array_keys($etapas);
   </div>
 
   <div class="col-lg-7">
-    <div class="card card-outline card-secondary">
+    <div class="card aia-panel aia-panel--elevated card-outline card-secondary">
       <div class="card-header">
         <h3 class="card-title">Estado actual del proyecto</h3>
       </div>

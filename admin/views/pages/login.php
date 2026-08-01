@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="/public/css/login-brand-unified.css?v=1.2">
 </head>
 <body class="hold-transition login-page login-brand-page">
-<div class="login-box">
-  <div class="card card-login">
+<div class="login-box aia-panel aia-panel--elevated">
+  <div class="card aia-panel aia-panel--elevated card-login">
     <div class="card-header">
       <img src="/public/img/aiaConstruccionMasCerteza.png" alt="AIA Logo" class="brand-logo">
       <h1 class="login-title">Last Planner AIA</h1>

@@ -8,8 +8,7 @@
   ],
   "sources": [
     "views/subcontratistas/subcontratistas.view.php",
-    "public/css/subcontratistas.css",
-    "public/css/handsontable-header-global.css"
+    "public/css/subcontratistas.css"
   ],
   "components": [
     "shell",

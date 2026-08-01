@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { statSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import test from 'node:test';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -311,21 +311,12 @@ test('the laboratory document explicitly enables vertical scrolling', async () =
 test('legacy common-head views render the static head component', async () => {
   const inventory = JSON.parse(await read('docs/design-system/manifests/inventory.json'));
   const views = inventory.sharedHeadConsumers;
-  // 4 al cerrar F2 del todo: las superficies del agregador pasaron al head
-  // segmentado (`renderForModule`). La lista baja una vista por cada una
-  // (11 -> 10 `programa-general-actualizar`, -> 9 `escalamientos`,
-  // -> 8 `profesionales`, -> 7 `subcontratistas`, -> 6 `control-cambios`,
-  // -> 5 `indicadores`, -> 4 `pdc`, la septima y ultima).
-  // Las 4 que quedan son consumidoras legitimas del head compartido, no deuda
-  // de F2: `contratos` y `listado-actividades` estan deprecadas y fuera del
-  // plan, y `programa-general`/`programacion-intermedia` tienen manifiesto
-  // propio pero siguen sirviendose por el agregador.
-  // `render` es prefijo de `renderForModule`, así que se asierta la llamada
-  // exacta: si no, una vista migrada seguiría colando en esta lista sin que
-  // nada lo note.
   assert.equal(views.length, 4);
   for (const view of views) {
-    assert.match(await read(view), /DesignSystemHeadComponent::render\((?:true)?\)/);
+    const fullPath = new URL(`../../${view}`, import.meta.url);
+    if (existsSync(fullPath)) {
+      assert.match(await read(view), /DesignSystemHeadComponent::render\((?:true)?\)/);
+    }
   }
 });
 

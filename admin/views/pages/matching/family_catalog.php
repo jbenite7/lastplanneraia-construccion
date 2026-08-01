@@ -38,7 +38,7 @@ $statusDetail = static function (array $status) use ($h): string {
   </div>
 <?php endif; ?>
 
-<div class="card">
+<div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
   <div class="card-body d-flex flex-wrap align-items-center">
     <strong class="mr-3">Exportar catálogo</strong>
     <a class="btn btn-sm btn-outline-success mr-2" href="/admin/matching/family-catalog/export?type=families"><i class="fas fa-download mr-1"></i>Familias</a>
@@ -50,7 +50,7 @@ $statusDetail = static function (array $status) use ($h): string {
 
 <div class="row">
   <div class="col-lg-4">
-    <div class="card card-outline card-success">
+    <div class="card aia-panel aia-panel--elevated card-outline card-success">
       <div class="card-header"><h3 class="card-title"><i class="fas fa-layer-group mr-2"></i>Familias operativas</h3></div>
       <form method="POST" action="/admin/matching/family-catalog/family">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -90,7 +90,7 @@ $statusDetail = static function (array $status) use ($h): string {
   </div>
 
   <div class="col-lg-4">
-    <div class="card card-outline card-info">
+    <div class="card aia-panel aia-panel--elevated card-outline card-info">
       <div class="card-header"><h3 class="card-title"><i class="fas fa-random mr-2"></i>Aliases</h3></div>
       <form method="POST" action="/admin/matching/family-catalog/alias">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -129,7 +129,7 @@ $statusDetail = static function (array $status) use ($h): string {
   </div>
 
   <div class="col-lg-4">
-    <div class="card card-outline card-warning">
+    <div class="card aia-panel aia-panel--elevated card-outline card-warning">
       <div class="card-header"><h3 class="card-title"><i class="fas fa-file-contract mr-2"></i>Elementos contractuales</h3></div>
       <form method="POST" action="/admin/matching/family-catalog/contractual">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -176,7 +176,7 @@ $statusDetail = static function (array $status) use ($h): string {
   </div>
 </div>
 
-<div class="card card-outline card-primary">
+<div class="card aia-panel aia-panel--elevated card-outline card-primary">
   <div class="card-header"><h3 class="card-title"><i class="fas fa-box-open mr-2"></i>Crear opción contractual guiada</h3></div>
   <form method="POST" action="/admin/matching/family-catalog/contract-option">
     <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -233,7 +233,7 @@ $statusDetail = static function (array $status) use ($h): string {
 
 <div class="row">
   <div class="col-lg-7">
-    <div class="card">
+    <div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
       <div class="card-header"><h3 class="card-title">Catálogo actual</h3></div>
       <div class="card-body table-responsive p-0 admin-table-scroll--sm">
         <table class="table table-sm table-hover mb-0">
@@ -266,7 +266,7 @@ $statusDetail = static function (array $status) use ($h): string {
       </div>
     </div>
 
-    <div class="card">
+    <div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
       <div class="card-header"><h3 class="card-title">Reporte completo del catálogo</h3></div>
       <div class="card-body border-bottom">
         <span class="mr-2"><?php echo $statusBadge(['status_key' => 'creates_activities', 'label' => 'Crea actividades']); ?></span>
@@ -294,7 +294,7 @@ $statusDetail = static function (array $status) use ($h): string {
       </div>
     </div>
 
-    <div class="card">
+    <div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
       <div class="card-header"><h3 class="card-title">Importar catálogo</h3></div>
       <form method="POST" action="/admin/matching/family-catalog/import">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -321,7 +321,7 @@ $statusDetail = static function (array $status) use ($h): string {
   </div>
 
   <div class="col-lg-5">
-    <div class="card card-outline card-danger">
+    <div class="card aia-panel aia-panel--elevated card-outline card-danger">
       <div class="card-header"><h3 class="card-title">Decisiones pendientes</h3></div>
       <div class="card-body">
         <?php if (empty($pendingDecisions)): ?>
@@ -370,7 +370,7 @@ $statusDetail = static function (array $status) use ($h): string {
       </div>
     </div>
 
-    <div class="card">
+    <div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
       <div class="card-header"><h3 class="card-title">Impacto y Auditoría</h3></div>
       <div class="card-body">
         <h6>Aliases activos</h6>
@@ -402,7 +402,7 @@ $statusDetail = static function (array $status) use ($h): string {
       </div>
     </div>
 
-    <div class="card">
+    <div class="card aia-panel aia-panel--elevated aia-panel aia-panel--elevated">
       <div class="card-header"><h3 class="card-title">Reglas de detección</h3></div>
       <form method="POST" action="/admin/matching/family-catalog/rule">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">

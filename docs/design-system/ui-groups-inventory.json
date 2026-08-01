@@ -455,7 +455,7 @@
       "family": "actions",
       "label": "Botón con icono",
       "sources": [
-        "views/listado-actividades/listadoActividades.view.php"
+        "views/programacion-semanal/programacion_semanal.view.php"
       ],
       "catalogIds": [
         "button",
@@ -586,7 +586,7 @@
       "family": "forms-filters",
       "label": "Select enriquecido",
       "sources": [
-        "views/listado-actividades/listadoActividades.view.php"
+        "views/programacion-intermedia/programacion_intermedia.view.php"
       ],
       "catalogIds": [
         "select-adapter"
@@ -605,7 +605,7 @@
       "family": "forms-filters",
       "label": "Casilla de selección",
       "sources": [
-        "views/contratos/contratos.view.php"
+        "views/programacion-semanal/programacion_semanal.view.php"
       ],
       "catalogIds": [
         "field"
@@ -678,7 +678,7 @@
       "family": "forms-filters",
       "label": "Carga de archivo",
       "sources": [
-        "views/listado-actividades/listadoActividades.view.php"
+        "views/programa-general-actualizar/programaGeneralActualizar.view.php"
       ],
       "catalogIds": [
         "field",

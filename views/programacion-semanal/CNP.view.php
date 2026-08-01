@@ -43,7 +43,7 @@
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
 	<div class="row tabla table-responsive-custom ps-table-wrap aia-grid-shell">
 		<div id="cuadroTabla" class="col-sm-12 col-md-12 col-lg-12 p-0 w-100 ps-table-container">
-			<table id="dt_cliente" class="dt_CNP table table-bordered table-hover table-responsive-sm table-sm w-100 ps-table" cellspacing="0" width="100%">
+			<table id="dt_cliente" class="dt_CNP table aia-table w-100 ps-table" cellspacing="0" width="100%">
 				<thead>
 					<tr>
 						<th></th>

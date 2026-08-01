@@ -29,7 +29,7 @@ $isUserActive = (int) ($user['activo'] ?? 1) === 1;
 $forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
 ?>
 
-<div class="card card-info">
+<div class="card aia-panel aia-panel--elevated card-info">
   <div class="card-header">
     <h3 class="card-title">Editar Datos del Usuario</h3>
   </div>

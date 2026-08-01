@@ -37,7 +37,7 @@
   body.aia-shell--sidebar .context-bar {
     position: sticky;
     top: 0;
-    z-index: var(--ds-z-sticky);
+    z-index: 1050;
     display: flex;
     align-items: center;
     gap: var(--ds-space-3);
@@ -89,13 +89,16 @@
     inset-inline-end: 0;
     inset-block-start: calc(100% + var(--ds-space-2));
     z-index: var(--ds-z-dropdown);
-    min-width: 16rem;
+    min-width: 19rem;
     max-height: 22rem;
     overflow-y: auto;
     padding: var(--ds-space-2);
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-popover);
-    background: var(--ds-active-surface-raised);
+    background-color: var(--ds-active-bg-page);
+    background-image: linear-gradient(var(--ds-active-surface-raised), var(--ds-active-surface-raised));
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     box-shadow: var(--ds-shadow-lg);
   }
 
@@ -104,7 +107,7 @@
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    gap: var(--ds-space-2);
+    gap: var(--ds-space-3);
     min-height: var(--ds-target-min);
     padding: var(--ds-space-2) var(--ds-space-3);
     border: var(--ds-border-width) solid transparent;
@@ -114,6 +117,12 @@
     font-size: var(--ds-type-size-sm);
     text-align: start;
     cursor: pointer;
+  }
+
+  body.aia-shell--sidebar .context-week-menu [role="menuitem"] span {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-weight: var(--ds-type-weight-medium);
   }
 
   body.aia-shell--sidebar .context-week-menu [role="menuitem"]:hover {
@@ -129,10 +138,13 @@
   body.aia-shell--sidebar .context-week-menu [role="menuitem"] small {
     color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-xs);
+    white-space: nowrap;
+    margin-inline-start: auto;
   }
 
   body.aia-shell--sidebar .context-week-menu [role="menuitem"][aria-current="true"] small {
     color: inherit;
+    opacity: 0.85;
   }
 
   /* Padding de los flyouts del rail colapsado: el reset global de styles.css
@@ -646,8 +658,10 @@
   body.aia-shell--sidebar .aia-sidebar__account [data-aia-menu-panel],
   body.aia-shell--sidebar .shell-week-flyout,
   body.aia-shell--sidebar .shell-week-flyout__head {
-    background-color: var(--ds-active-nav-bg);
+    background-color: var(--ds-active-bg-page);
     background-image: linear-gradient(var(--ds-active-surface-raised), var(--ds-active-surface-raised));
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
   }
 
   @media (prefers-reduced-motion: reduce) {

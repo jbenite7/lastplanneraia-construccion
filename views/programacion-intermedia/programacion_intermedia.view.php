@@ -49,7 +49,7 @@
                 <?= \App\View\Components\BiAccessComponent::renderLink('intermedia', 'BI Intermedia') ?>
                 <span id="shared-selection-count" class="badge badge-secondary" aria-live="polite">0 selec.</span>
                 <div class="pi-status-badges">
-                    <span id="save-status" class="badge badge-success pi-status-badge-hidden" role="status">Guardado</span>
+                    <span id="save-status" class="aia-chip aia-chip--success pi-status-badge-hidden" role="status">Guardado</span>
                     <span id="save-error" class="badge badge-danger pi-status-badge-hidden" role="alert">Error al guardar</span>
                 </div>
             </div>

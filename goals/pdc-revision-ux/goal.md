@@ -55,3 +55,16 @@ sin errores.
 
 Cada plan es entregable por separado: terminar el 1 ya mejora el módulo aunque el 2 y el 3 no
 hayan empezado.
+
+---
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-07-28 (documentado formalmente 2026-07-31)
+
+### Condición de hecho — cumplida
+
+Los 30 hechos de `facts.md` verificados. Suites en verde: PHP 0 fallos, Vitest verde,
+motor de paquetes intacto (7 diferencias), PHPStan nivel 6 sin errores. Los 3 planes
+(tablas, funcionalidad, navegación) entregados.

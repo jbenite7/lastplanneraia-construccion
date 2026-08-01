@@ -19,11 +19,11 @@
 
 /* --- Utilidades de Espaciado (Reemplazo de Magic Numbers) --- */
 .btn-action-gap {
-  margin: 0 5px !important; /* Reemplaza style="margin: 0px 5px" */
+  margin: 0 var(--ds-space-1, 4px);
 }
 
 .nav-link-custom {
-  padding: 16px 0 8px 16px !important; /* Reemplaza style="padding: 16px 0px 8px 16px" */
+  padding: var(--ds-space-4, 16px) 0 var(--ds-space-2, 8px) var(--ds-space-4, 16px);
 }
 
 .p-xs {
