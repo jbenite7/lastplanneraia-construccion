@@ -31,10 +31,10 @@
     <div class="header-actions action-bar">
         <div class="pi-actions-row">
             <div class="pi-toolbar-actions">
-                <button type="button" class="leyenda_colores btn-pdc-modern" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>
-                <button id="btn_informe_compromisos" type="button" class="btn-pdc-modern">Descargar Corte <i class="fas fa-download ml-1"></i></button>
-                <button id="btn-export" class="btn-pdc-modern">Exportar CSV</button>
-                <button id="btn-refresh" class="btn-pdc-modern">Recargar</button>
+                <button type="button" class="leyenda_colores aia-btn aia-btn--secondary" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>
+                <button id="btn_informe_compromisos" type="button" class="aia-btn aia-btn--secondary">Descargar Corte <i class="fas fa-download ml-1"></i></button>
+                <button id="btn-export" class="aia-btn aia-btn--secondary">Exportar CSV</button>
+                <button id="btn-refresh" class="aia-btn aia-btn--secondary">Recargar</button>
                 <div class="pi-view-all-toggle d-inline-flex align-items-center mx-2 <?= $viewAll ? 'is-on' : '' ?>" title="<?= $viewAll ? 'Volver a la ventana de 6 semanas de liberacion de restricciones' : 'Mostrar todas las actividades, incluyendo las que aun no entran en la ventana de 6 semanas' ?>">
                     <span class="pi-view-all-toggle-label"><i class="fas fa-layer-group mr-1"></i>Ver Todas las Actividades</span>
                     <div class="custom-control custom-switch mb-0 ml-2">
@@ -42,15 +42,15 @@
                         <label class="custom-control-label" for="piViewAllToggle"></label>
                     </div>
                 </div>
-                <button id="btn-shared-constraint" class="btn-pdc-modern">Restricción Compartida</button>
-                <button id="btn-refresh-listas" class="btn-pdc-modern" title="Recargar listas de Subcontratistas y Profesionales"><i class="fas fa-sync" aria-hidden="true"></i> Listas</button>
-                <button id="btn-shared-select-visible" class="btn-pdc-modern">Seleccionar visibles</button>
-                <button id="btn-shared-clear-selection" class="btn-pdc-modern">Limpiar selección</button>
+                <button id="btn-shared-constraint" class="aia-btn aia-btn--secondary">Restricción Compartida</button>
+                <button id="btn-refresh-listas" class="aia-btn aia-btn--secondary" title="Recargar listas de Subcontratistas y Profesionales"><i class="fas fa-sync" aria-hidden="true"></i> Listas</button>
+                <button id="btn-shared-select-visible" class="aia-btn aia-btn--secondary">Seleccionar visibles</button>
+                <button id="btn-shared-clear-selection" class="aia-btn aia-btn--secondary">Limpiar selección</button>
                 <?= \App\View\Components\BiAccessComponent::renderLink('intermedia', 'BI Intermedia') ?>
-                <span id="shared-selection-count" class="badge badge-secondary" aria-live="polite">0 selec.</span>
+                <span id="shared-selection-count" class="aia-chip aia-chip--secondary" aria-live="polite">0 selec.</span>
                 <div class="pi-status-badges">
                     <span id="save-status" class="aia-chip aia-chip--success pi-status-badge-hidden" role="status">Guardado</span>
-                    <span id="save-error" class="badge badge-danger pi-status-badge-hidden" role="alert">Error al guardar</span>
+                    <span id="save-error" class="aia-chip aia-chip--danger pi-status-badge-hidden" role="alert">Error al guardar</span>
                 </div>
             </div>
         </div>
@@ -121,8 +121,8 @@
                             <div class="pi-shared-restrictions-header">
                                 <label class="mb-0">Restricciones objetivo</label>
                                 <div class="pi-shared-restriction-actions">
-                                    <button id="btn_pi_shared_select_all_restrictions" type="button" class="btn btn-outline-secondary">Seleccionar todas</button>
-                                    <button id="btn_pi_shared_clear_restrictions" type="button" class="btn btn-outline-secondary">Limpiar</button>
+                                    <button id="btn_pi_shared_select_all_restrictions" type="button" class="aia-btn aia-btn--secondary">Seleccionar todas</button>
+                                    <button id="btn_pi_shared_clear_restrictions" type="button" class="aia-btn aia-btn--secondary">Limpiar</button>
                                 </div>
                             </div>
                             <div id="piSharedRestrictionsPanel" class="pi-shared-restrictions-panel">
@@ -133,49 +133,49 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_D_y_E" data-restriction-type="D_y_E" checked>
                                         <label class="custom-control-label" for="piSharedRestriction_D_y_E">Diseños y Especif.</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="D_y_E" aria-label="Valor objetivo para Diseños y Especificaciones"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="D_y_E" aria-label="Valor objetivo para Diseños y Especificaciones"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Materiales">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Materiales" data-restriction-type="Materiales">
                                         <label class="custom-control-label" for="piSharedRestriction_Materiales">Materiales</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Materiales" aria-label="Valor objetivo para Materiales"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="Materiales" aria-label="Valor objetivo para Materiales"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="MdeO">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_MdeO" data-restriction-type="MdeO">
                                         <label class="custom-control-label" for="piSharedRestriction_MdeO">Mano de Obra</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="MdeO" aria-label="Valor objetivo para Mano de Obra"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="MdeO" aria-label="Valor objetivo para Mano de Obra"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Equipos">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Equipos" data-restriction-type="Equipos">
                                         <label class="custom-control-label" for="piSharedRestriction_Equipos">Equipos</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Equipos" aria-label="Valor objetivo para Equipos"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="Equipos" aria-label="Valor objetivo para Equipos"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Predecesora">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Predecesora" data-restriction-type="Predecesora">
                                         <label class="custom-control-label" for="piSharedRestriction_Predecesora">Predecesora</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Predecesora" aria-label="Valor objetivo para Predecesora"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="Predecesora" aria-label="Valor objetivo para Predecesora"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Pdto_Cons">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Pdto_Cons" data-restriction-type="Pdto_Cons">
                                         <label class="custom-control-label" for="piSharedRestriction_Pdto_Cons">Proced. Constructivo</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Pdto_Cons" aria-label="Valor objetivo para Procedimiento Constructivo"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="Pdto_Cons" aria-label="Valor objetivo para Procedimiento Constructivo"></select>
                                 </div>
                                 <div class="pi-shared-restriction-row" data-restriction-row="Modelo">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_Modelo" data-restriction-type="Modelo">
                                         <label class="custom-control-label" for="piSharedRestriction_Modelo">Modelación BIM</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="Modelo" aria-label="Valor objetivo para Modelación BIM"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="Modelo" aria-label="Valor objetivo para Modelación BIM"></select>
                                 </div>
                                 <?php else: ?>
                                 <!-- PRE-CONSTRUCCION: Predecesora + personalizadas nombradas -->
@@ -184,7 +184,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_1" data-restriction-type="restriccion_pc_1" checked>
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_1">Predecesora</label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_1" aria-label="Valor objetivo para Predecesora"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="restriccion_pc_1" aria-label="Valor objetivo para Predecesora"></select>
                                 </div>
                                 <?php if (!empty($pcRestrictionNames[2])): ?>
                                 <div class="pi-shared-restriction-row" data-restriction-row="restriccion_pc_2">
@@ -192,7 +192,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_2" data-restriction-type="restriccion_pc_2">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_2"><?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_2" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?>"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="restriccion_pc_2" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[2], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($pcRestrictionNames[3])): ?>
@@ -201,7 +201,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_3" data-restriction-type="restriccion_pc_3">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_3"><?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_3" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?>"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="restriccion_pc_3" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[3], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($pcRestrictionNames[4])): ?>
@@ -210,7 +210,7 @@
                                         <input type="checkbox" class="custom-control-input pi-shared-restriction-check" id="piSharedRestriction_restriccion_pc_4" data-restriction-type="restriccion_pc_4">
                                         <label class="custom-control-label" for="piSharedRestriction_restriccion_pc_4"><?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?></label>
                                     </div>
-                                    <select class="form-control form-control-sm pi-shared-restriction-value" data-restriction-type="restriccion_pc_4" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?>"></select>
+                                    <select class="aia-input pi-shared-restriction-value" data-restriction-type="restriccion_pc_4" aria-label="Valor objetivo para <?= htmlspecialchars($pcRestrictionNames[4], ENT_QUOTES, 'UTF-8') ?>"></select>
                                 </div>
                                 <?php endif; ?>
                                 <?php endif; ?>
@@ -219,12 +219,12 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label for="piSharedActivityIds">Consecutivos objetivo</label>
-                            <input id="piSharedActivityIds" type="text" class="form-control form-control-sm" placeholder="Ej: 120,121,122">
+                            <input id="piSharedActivityIds" type="text" class="aia-input" placeholder="Ej: 120,121,122">
                             <small class="pi-shared-hint">Se cargan desde selección de filas (editable manualmente).</small>
                             <div class="pi-shared-tools">
-                                <button id="btn_pi_shared_use_marked" type="button" class="btn btn-outline-secondary">Cargar marcadas</button>
-                                <button id="btn_pi_shared_use_visible" type="button" class="btn btn-outline-secondary">Usar visibles</button>
-                                <button id="btn_pi_shared_clear_ids" type="button" class="btn btn-outline-secondary">Limpiar lista</button>
+                                <button id="btn_pi_shared_use_marked" type="button" class="aia-btn aia-btn--secondary">Cargar marcadas</button>
+                                <button id="btn_pi_shared_use_visible" type="button" class="aia-btn aia-btn--secondary">Usar visibles</button>
+                                <button id="btn_pi_shared_clear_ids" type="button" class="aia-btn aia-btn--secondary">Limpiar lista</button>
                             </div>
                             <small id="piSharedSelectionInfo" class="pi-shared-selection-info">Marcadas: 0 | Visibles: 0</small>
                         </div>
@@ -233,19 +233,19 @@
                     <div id="piSharedAssignmentsFields" class="form-row d-none">
                         <div class="form-group col-md-6">
                             <label for="piSharedSubContratista">Sub-Contratista común</label>
-                            <select id="piSharedSubContratista" class="form-control form-control-sm" disabled></select>
+                            <select id="piSharedSubContratista" class="aia-input" disabled></select>
                             <small class="pi-shared-hint">Si queda vacío, no se modifica el Sub-Contratista.</small>
                         </div>
                         <div class="form-group col-md-6">
                             <label for="piSharedResponsableAIA">Responsable AIA común</label>
-                            <select id="piSharedResponsableAIA" class="form-control form-control-sm" disabled></select>
+                            <select id="piSharedResponsableAIA" class="aia-input" disabled></select>
                             <small class="pi-shared-hint">Si queda vacío, no se modifica el Responsable.</small>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="piSharedNote">Observación de lote</label>
-                        <textarea id="piSharedNote" class="form-control form-control-sm" rows="2" placeholder="Causa | Acción | Responsable | Fecha | Evidencia"></textarea>
+                        <textarea id="piSharedNote" class="aia-input" rows="2" placeholder="Causa | Acción | Responsable | Fecha | Evidencia"></textarea>
                     </div>
 
                     <div class="form-group mb-0">
@@ -254,9 +254,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn_pi_shared_preview" type="button" class="btn btn-outline-primary">Ver Conflictos</button>
-                    <button id="btn_pi_shared_apply" type="button" class="btn btn-primary">Aplicar en Lote</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button id="btn_pi_shared_preview" type="button" class="aia-btn aia-btn--secondary">Ver Conflictos</button>
+                    <button id="btn_pi_shared_apply" type="button" class="aia-btn aia-btn--primary">Aplicar en Lote</button>
+                    <button type="button" class="aia-btn aia-btn--secondary" data-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>
