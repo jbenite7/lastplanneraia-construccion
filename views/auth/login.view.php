@@ -47,7 +47,7 @@
                 <form action="<?php echo htmlspecialchars($formAction ?? '/login', ENT_QUOTES, 'UTF-8'); ?>" method="post" id="loginForm" data-auth-form>
                     <div class="input-group mb-3">
                         <label for="usuario" class="auth-field-label">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                        <input type="text" id="usuario" name="usuario" class="aia-input" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-user" aria-hidden="true"></span>
@@ -57,7 +57,7 @@
                     
                     <div class="input-group mb-4">
                         <label for="password" class="auth-field-label">Contraseña</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Contraseña" autocomplete="current-password" required>
+                        <input type="password" id="password" name="password" class="aia-input" placeholder="Contraseña" autocomplete="current-password" required>
                         <div class="input-group-append">
                             <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
                                 <i class="fas fa-eye" aria-hidden="true"></i>
@@ -125,7 +125,7 @@ $(document).ready(function() {
     <?php if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password']): ?>
     AIA.Notice.dialog({
         title: '🔑 Cambio de Contraseña Obligatorio',
-        html: '<div class="brand-modal-content"><p>Para fortalecer la seguridad de <b>Last Planner AIA</b>, establece una contraseña robusta y privada.</p><div class="brand-modal-form-group"><label for="new_password">Nueva contraseña <small>(1 mayúscula y 1 carácter especial)</small></label><div class="auth-modal-password-row"><input type="password" id="new_password" class="form-control" autocomplete="new-password" placeholder="Mín. 6 caracteres"><button type="button" class="auth-password-toggle" data-password-toggle="new_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div><div class="brand-modal-form-group"><label for="confirm_password">Confirmar contraseña</label><div class="auth-modal-password-row"><input type="password" id="confirm_password" class="form-control" autocomplete="new-password" placeholder="Repite tu nueva contraseña"><button type="button" class="auth-password-toggle" data-password-toggle="confirm_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div></div>',
+        html: '<div class="brand-modal-content"><p>Para fortalecer la seguridad de <b>Last Planner AIA</b>, establece una contraseña robusta y privada.</p><div class="brand-modal-form-group"><label for="new_password">Nueva contraseña <small>(1 mayúscula y 1 carácter especial)</small></label><div class="auth-modal-password-row"><input type="password" id="new_password" class="aia-input" autocomplete="new-password" placeholder="Mín. 6 caracteres"><button type="button" class="auth-password-toggle" data-password-toggle="new_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div><div class="brand-modal-form-group"><label for="confirm_password">Confirmar contraseña</label><div class="auth-modal-password-row"><input type="password" id="confirm_password" class="aia-input" autocomplete="new-password" placeholder="Repite tu nueva contraseña"><button type="button" class="auth-password-toggle" data-password-toggle="confirm_password" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div></div></div>',
         icon: 'warning',
         iconColor: 'var(--ds-color-state-success-text)',
         customClass: {

@@ -61,7 +61,7 @@ echo \App\View\Components\DesignSystemComponent::navigation([
               <?php endif; ?>
               <div class="input-group" role="search">
                   <label for="projectSearch" class="sr-only">Buscar proyecto</label>
-                  <input type="search" id="projectSearch" class="form-control aia-input" placeholder="Buscar proyecto..." autocomplete="off" aria-controls="projectGrid" aria-describedby="projectSearchStatus">
+                  <input type="search" id="projectSearch" class="aia-input" placeholder="Buscar proyecto..." autocomplete="off" aria-controls="projectGrid" aria-describedby="projectSearchStatus">
                   <div class="input-group-append">
                       <span class="input-group-text" aria-hidden="true"><i class="fas fa-search"></i></span>
                   </div>
@@ -118,7 +118,7 @@ echo \App\View\Components\DesignSystemComponent::navigation([
 
                         <form action="/proyecto/seleccionar" method="POST">
                             <input type="hidden" name="proyecto" value="<?php echo htmlspecialchars($projectTitle, ENT_QUOTES, 'UTF-8'); ?>">
-                            <button type="submit" class="btn btn-enter aia-btn btn-block">
+                            <button type="submit" class="aia-btn aia-btn--block btn-enter">
                                 Ingresar al proyecto <i class="fas fa-arrow-right ml-1" aria-hidden="true"></i>
                             </button>
                         </form>

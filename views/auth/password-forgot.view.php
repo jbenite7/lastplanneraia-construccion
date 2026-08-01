@@ -37,7 +37,7 @@
 
                     <div class="input-group mb-4">
                         <label for="email" class="auth-field-label">Correo electrónico</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="nombre@empresa.com" autocomplete="email" value="<?php echo htmlspecialchars($emailValue); ?>" required>
+                        <input type="email" id="email" name="email" class="aia-input" placeholder="nombre@empresa.com" autocomplete="email" value="<?php echo htmlspecialchars($emailValue); ?>" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope" aria-hidden="true"></span>
