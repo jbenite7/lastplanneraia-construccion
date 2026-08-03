@@ -92,9 +92,9 @@ en git. Se retiró el 2026-08-03: ahora están aquí y versionados.
 
 ## Catálogo
 
-Decisiones, trampas y referencias generadas desde el frontmatter de cada página (`tipo`,
-`resumen`, `areas`, `fecha`). La base trae las tres vistas seleccionables — no hace falta un
-embebido por tabla.
+Decisiones, trampas, referencias, módulos y flujos, generados desde el frontmatter de cada página
+(`tipo`, `resumen`, `areas`, `fecha`). La base trae las cinco vistas seleccionables — no hace falta
+un embebido por tabla.
 
 ![[paginas.base]]
 
