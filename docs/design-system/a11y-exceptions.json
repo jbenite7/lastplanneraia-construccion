@@ -336,6 +336,114 @@
       "reason": "Axe no puede calcular texto SVG sobre nodos gráficos; requiere contraste tokenizado y QA visual.",
       "milestone": "1.0.0 harden",
       "expiresAt": "2026-08-31"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > b",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > b",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > small",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > small",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.force-wrap.pg-cell-readonly:nth-child(11)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.force-wrap.pg-cell-readonly:nth-child(11)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(1)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(1)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(12)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(12)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(3)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(3)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(6)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(6)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(4)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(4)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "fingerprint": "color-contrast|serious|incomplete|programa-general:wide-desktop:dark|.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(5)",
+      "surface": "programa-general:wide-desktop:dark",
+      "rule": "color-contrast",
+      "impact": "serious",
+      "kind": "incomplete",
+      "selector": ".ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(5)",
+      "owner": "Design System AIA",
+      "reason": "Axe no resuelve contraste sobre fondo translucido: las celdas de capitulo declaran rgba(28, 36, 31, 0.92) y axe no puede saber que hay detras, asi que devuelve `incomplete` -no pudo medir- y no `violation`. Medido el 2026-08-03 con la sonda de tests/browser/support/contrast.mjs, que si compone alfa sobre los ancestros: 55 nodos .pdc-header en el rango 13,82-15,27:1, CERO por debajo del minimo AA de 4,5. No hay defecto. Caduca cuando el arnes distinga `incomplete` de `violation`.",
+      "milestone": "arnes a11y: separar incomplete de violation",
+      "expiresAt": "2026-11-30"
     }
   ]
 }
