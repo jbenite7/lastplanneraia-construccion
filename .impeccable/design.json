@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-30T15:13:07Z",
+  "generatedAt": "2026-08-03T00:00:00Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -279,6 +279,35 @@
         "expiresIf": "la superficie se abre a táctil",
         "source": "DESIGN.md §5 bis / PRODUCT.md §Accesibilidad"
       }
+    },
+    "stateChannels": {
+      "note": "La paleta de estado tiene DOS canales ortogonales. Una lista plana miente por omisión.",
+      "nivel": {
+        "purpose": "Prioridad de acción; se pinta en el acento.",
+        "contract": "docs/design-system/state-semantics.json (levels)",
+        "tokens": [
+          "--ds-color-state-info-*",
+          "--ds-color-state-success-*",
+          "--ds-color-state-warning-*",
+          "--ds-color-state-critical-*"
+        ]
+      },
+      "matiz": {
+        "purpose": "Identidad del estado; se pinta en el fondo. Paleta NOMINAL de ocho anclas, sin eje de intensidad.",
+        "contract": "docs/design-system/state-semantics.json (hues)",
+        "anchors": {
+          "teal": "#134841",
+          "green": "#173d26",
+          "amber": "#3a3a0f",
+          "red": "#431414",
+          "blue": "#17334f",
+          "violet": "#33204a",
+          "orange": "#452a0d",
+          "neutral": "#2b2f2d"
+        },
+        "overlap": "teal/green/amber/red son bit-idénticos al -bg de info/success/warning/critical; medido en navegador el 2026-08-03 tras aplicar los cuatro alias: los cuatro --ds-color-state-*-bg resuelven idénticos a su ancla, cero píxeles movidos. blue, violet, orange y neutral no tienen token de nivel."
+      },
+      "deuda": "--ds-cell-state-bloqueado-* ancla color propio (oklch(0.35 0.05 260)) fuera de ambos canales. Medido: --ds-state-tint-blue (#17334f) es L 0,314 · C 0,061 · H 250,4° — 0,036 de luminosidad y 9,6° de separación. El usuario decidió (2026-08-03) que pase a usar el matiz azul existente, con revisión visual previa. Hasta que se ejecute, la paleta vigente tiene aprobación explícita: no corregir de oficio."
     }
   },
   "components": [
@@ -320,7 +349,7 @@
       "refersTo": "chip-info",
       "description": "Vocabulario semántico de estado. Cuatro niveles con tinte fijo; el texto siempre nombra el significado y nunca se fragmenta una palabra.",
       "html": "<div class=\"ds-chips\"><span class=\"ds-chip ds-chip--info\">Sin datos</span><span class=\"ds-chip ds-chip--success\">Al día</span><span class=\"ds-chip ds-chip--warning\">Revisar</span><span class=\"ds-chip ds-chip--critical\">Atraso</span></div>",
-      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; font-family: Inter, sans-serif; } .ds-chip { display: inline-flex; min-height: 1.75rem; align-items: center; padding: 0.25rem 0.65rem; border: 1px solid rgba(26,86,51,0.2); border-radius: 9999px; font-size: 0.78rem; font-weight: 800; overflow-wrap: normal; word-break: normal; hyphens: none; } .ds-chip--info { background: #e3f9f7; color: #006d66; } .ds-chip--success { background: #ddefe6; color: #1a5633; } .ds-chip--warning { background: #fff8e1; color: #5d4200; } .ds-chip--critical { background: #fdecec; color: #8f1d1d; }"
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; font-family: Inter, sans-serif; } .ds-chip { display: inline-flex; min-height: 1.75rem; align-items: center; padding: 0.25rem 0.65rem; border: 1px solid rgba(26,86,51,0.2); border-radius: 9999px; font-size: 0.78rem; font-weight: 800; overflow-wrap: normal; word-break: normal; hyphens: none; } .ds-chip--info { background: #134841; color: #bbdcfb; } .ds-chip--success { background: #173d26; color: #b7e8c6; } .ds-chip--warning { background: #3a3a0f; color: #f2e79c; } .ds-chip--critical { background: #431414; color: #ffcdc8; }"
     },
     {
       "name": "Card / Panel",
@@ -384,6 +413,11 @@
         "section": "colors"
       },
       {
+        "name": "La Regla de Un Matiz por Estado",
+        "body": "Dentro de un mismo módulo, dos estados distintos nunca comparten matiz. Es contractual: sin eje de intensidad, el matiz es lo único que los separa. Sí se permite derivar dos intensidades del mismo matiz para dos superficies del MISMO estado. Guards: tests/design-system/state-tint-ladder.test.mjs y tests/browser/state-tint-ladder.mjs.",
+        "section": "colors"
+      },
+      {
         "name": "La Regla de Escala Fija",
         "body": "Los tamaños son rem fijos, nunca clamp() fluido en UI de producto. Un h1 que encoge dentro de un sidebar se ve peor, no mejor. El fluido queda para la marca, no para la operación.",
         "section": "typography"
@@ -407,6 +441,21 @@
         "name": "La Regla de la Densidad de Datos",
         "body": "Una superficie de hoja de cálculo no se comprime encogiendo la letra, se comprime quitando aire: la fila baja a 28px y el encabezado a 32px, pero el cuerpo se queda en 13px y nada baja de 11px. El alto de control de 28px es una excepción registrada al mínimo táctil de 44px, limitada a desktop con ratón y sin equivalente móvil; el contraste AA, el foco visible y el teclado no se relajan nunca.",
         "section": "layout"
+      },
+      {
+        "name": "La Regla del Shell Único",
+        "body": "Toda grilla vive dentro de `.aia-grid-shell` (o `.aia-table-shell`). Es lo que convierte los tokens de tabla en variables que el adaptador puede leer; una grilla suelta se queda sin métrica y hereda lo que pille.",
+        "section": "components"
+      },
+      {
+        "name": "La Regla de la Escala Derivada",
+        "body": "`--ds-cell-state-*` no inventa color: deriva de `--ds-color-state-*`. Un peldaño nuevo se justifica nombrando de qué estado sale, y `bloqueado` es la única excepción viva.",
+        "section": "components"
+      },
+      {
+        "name": "La Regla de los Dos Gates",
+        "body": "El contrato de tabla se vigila en dos superficies y ninguna sustituye a la otra: `scripts/design-system-table-contract.mjs` (estático) comprueba que los doce tokens, los catorce de la escala, la regla del shell y el módulo de vocabulario existan; `tests/browser/design-system-table-contract.runtime.mjs` comprueba que resuelvan en el motor y que cada peldaño cumpla AA sobre su propio fondo.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -418,7 +467,8 @@
       "Expresa el estado con superficie + borde + texto del tema destino; anima solo transform y box-shadow, nunca color/background (DS-023/DS-025).",
       "Registra en exceptions.json cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.",
       "No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez. Si tocas una pantalla del Plan de Compras y no tocas su entrada en pdc-app/src/lib/ayuda.ts, el cambio no está terminado. Una ayuda que miente es peor que ninguna, y lo único que lo evita es que la pantalla y su texto viajen en el mismo commit. ayuda.test.ts atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad solo lo puede comprobar quien hace el cambio.",
-      "No repitas en la ayuda un mensaje que la pantalla ya da en el momento. Un aviso que aparece cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él."
+      "No repitas en la ayuda un mensaje que la pantalla ya da en el momento. Un aviso que aparece cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él.",
+      "Envuelve toda grilla en `.aia-grid-shell` / `.aia-table-shell`, consume los doce `--ds-table-*` y pide el peldaño de celda a `getCanonicalCellState()`, nunca escribas la clase `ds-cell-*` a mano."
     ],
     "donts": [
       "Nunca introduzcas hex sueltos, estilos inline, bloques <style>, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.",
@@ -428,7 +478,10 @@
       "Nunca uses clamp() fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.",
       "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto cero.",
       "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",
-      "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie."
+      "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie.",
+      "Nunca pintes en pantalla las variantes `--ds-color-state-*-light`: son reserva para impresos y XLSX. La escala de pantalla está invertida a oscuro.",
+      "Nunca ancles un color propio en `--ds-cell-state-*` ni instales un skin de vendor para una grilla: la escala deriva de `--ds-color-state-*` (salvo `bloqueado`) y cada librería entra por su adaptador en `layer(vendor)`.",
+      "Nunca trates la paleta de estado como una lista plana de cuatro tintes ni repitas matiz entre dos estados de un mismo módulo: son dos canales —nivel en el acento, matiz en el fondo— y el matiz es el único eje que los separa. Tampoco derives pasos de intensidad de un ancla: la paleta es nominal."
     ]
   }
 }

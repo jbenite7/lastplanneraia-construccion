@@ -28,15 +28,44 @@ colors:
   text-secondary-dark: "#c7d4cc"
   border-dark: "#ddefe638"           # rgba(221,239,230,.22)
   focus-ring-dark: "#2caa9f"
-  # Estados semánticos (tintes fijos, independientes del tema)
-  state-success-bg: "#ddefe6"
-  state-success-text: "#1a5633"
-  state-warning-bg: "#fff8e1"
-  state-warning-text: "#5d4200"
-  state-critical-bg: "#fdecec"
-  state-critical-text: "#8f1d1d"
-  state-info-bg: "#e3f9f7"
-  state-info-text: "#006d66"
+  # ── CANAL 1 de 2: NIVEL (prioridad de acción) ──
+  # Cuatro peldaños, invertidos a oscuro. Es la mitad del contrato de estado:
+  # el canal de MATIZ va más abajo (`state-tint-*`). Ojo, esta lista NO es la
+  # paleta de estado completa. Contrastes medidos en 1180x820 dark:
+  # success 8,88:1 · warning 9,31:1 · critical 10,99:1 · info 8,95:1.
+  state-success-bg: "#173d26"
+  state-success-text: "#b7e8c6"
+  state-warning-bg: "#3a3a0f"
+  state-warning-text: "#f2e79c"
+  state-critical-bg: "#431414"
+  state-critical-text: "#ffcdc8"
+  state-info-bg: "#134841"
+  state-info-text: "#bbdcfb"
+  # Variantes claras de soporte (`--ds-color-state-*-light`): reservadas para
+  # impresos y XLSX, NUNCA para pantalla. Hoy declaradas y sin consumidor.
+  state-success-bg-light: "#ddefe6"
+  state-success-text-light: "#1a5633"
+  state-warning-bg-light: "#fff8e1"
+  state-warning-text-light: "#5d4200"
+  state-critical-bg-light: "#fdecec"
+  state-critical-text-light: "#8f1d1d"
+  state-info-bg-light: "#e3f9f7"
+  state-info-text-light: "#006d66"
+  # ── CANAL 2 de 2: MATIZ (identidad del estado) ──
+  # Ocho anclas nominales (`--ds-state-tint-*`), sin eje de intensidad. Cuatro
+  # coinciden bit a bit con el `-bg` de su nivel; las otras cuatro no tienen
+  # token de nivel y solo existen aquí. Un módulo no puede repetir matiz.
+  state-tint-teal: "#134841"      # Contexto        (= state-info-bg)
+  state-tint-green: "#173d26"     # Controlado      (= state-success-bg)
+  state-tint-amber: "#3a3a0f"     # Por resolver    (= state-warning-bg)
+  state-tint-red: "#431414"       # Bloqueado o vencido (= state-critical-bg)
+  state-tint-blue: "#17334f"      # En marcha
+  state-tint-violet: "#33204a"    # Sin datos suficientes
+  state-tint-orange: "#452a0d"    # Fuera de plazo
+  state-tint-neutral: "#2b2f2d"   # Silencio — único acromático (C=0,0066)
+  # Escala de celda — único ancla propia (`--ds-cell-state-bloqueado-*`)
+  cell-bloqueado-bg: "oklch(0.35 0.05 260)"
+  cell-bloqueado-fg: "oklch(0.85 0.03 260)"
 typography:
   display:
     fontFamily: "Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -149,6 +178,35 @@ components:
     textColor: "{colors.text-primary-dark}"
     rounded: "{rounded.2xl}"
     padding: "0.75rem 0.875rem"
+  table-shell:
+    backgroundColor: "{colors.surface-dark}"
+    textColor: "{colors.text-primary-dark}"
+    rounded: "{rounded.lg}"
+  table-header:
+    backgroundColor: "{colors.surface-raised-dark}"
+    textColor: "{colors.text-secondary-dark}"
+    padding: "0.5rem 0.75rem"
+    height: "36px"
+  table-row:
+    backgroundColor: "{colors.surface-dark}"
+    textColor: "{colors.text-primary-dark}"
+    padding: "0.5rem 0.75rem"
+    height: "36px"
+  cell-state-ok:
+    backgroundColor: "{colors.state-success-bg}"
+    textColor: "{colors.state-success-text}"
+  cell-state-atencion:
+    backgroundColor: "{colors.state-warning-bg}"
+    textColor: "{colors.state-warning-text}"
+  cell-state-critico:
+    backgroundColor: "{colors.state-critical-bg}"
+    textColor: "{colors.state-critical-text}"
+  cell-state-bloqueado:
+    backgroundColor: "{colors.cell-bloqueado-bg}"
+    textColor: "{colors.cell-bloqueado-fg}"
+  cell-state-sin-datos:
+    backgroundColor: "{colors.surface-dark}"
+    textColor: "{colors.text-secondary-dark}"
 ---
 
 # Design System: Last Planner AIA
@@ -229,11 +287,63 @@ temas. El acento aparece por significado, no por decoración.
 - **Tinta Dark** (`#f7faf8` primaria · `#c7d4cc` secundaria): texto sobre penumbra.
 - **Borde Dark** (`rgba(221,239,230,.22)`): separadores tenues; el foco usa `#2caa9f`.
 
-### Estados semánticos
-- **Info** (bg `#e3f9f7` / text `#006d66`): contexto o falta de datos, sin corrección inmediata.
-- **Success** (bg `#ddefe6` / text `#1a5633`): controlado o completado, continuar el ciclo normal.
-- **Warning** (bg `#fff8e1` / text `#5d4200`): atención, revisar antes del siguiente hito.
-- **Critical** (bg `#fdecec` / text `#8f1d1d`): acción inmediata — bloqueo, atraso, riesgo o error recuperable.
+### Estados semánticos — dos canales, no una lista
+
+Aquí está el error más caro que puedes cometer leyendo este archivo: **la paleta de
+estado no es una lista plana de tintes.** Son **dos canales ortogonales** y hacen falta
+los dos, porque uno solo no puede decir las dos cosas. Toda la escala está **invertida a
+oscuro**: tintes profundos con tinta clara encima, nunca los pasteles de un tema claro.
+
+**Canal 1 — NIVEL: qué tan urgente es.** Cuatro peldaños
+(`--ds-color-state-{info,success,warning,critical}-*`), definidos en
+`docs/design-system/state-semantics.json` como `neutral` → info, `healthy` → success,
+`attention` → warning, `urgent` → critical, cada uno con su par `severity`/`urgency`.
+**Se pinta en el acento** —borde o punto— y es lo que consumen chips y alertas.
+
+- **Info**: contexto o falta de datos, sin corrección inmediata.
+- **Success**: controlado o completado, continuar el ciclo normal.
+- **Warning**: atención, revisar antes del siguiente hito.
+- **Critical**: acción inmediata — bloqueo, atraso, riesgo o error recuperable.
+
+**Canal 2 — MATIZ: de qué estado se trata.** Ocho anclas
+(`--ds-state-tint-{teal,green,amber,red,blue,violet,orange,neutral}`), con etiqueta
+propia en `state-semantics.json`: Contexto, Controlado, Por resolver, Bloqueado o
+vencido, En marcha, Sin datos suficientes, Fuera de plazo, Silencio. **Se pinta en el
+fondo.**
+
+**Por qué no se pueden fundir.** `missing` (violeta) y `completed-late` (ámbar) son
+ambos `attention`; `critical` (rojo) y `delayed` (naranja) son ambos `urgent`. Con el
+matiz separado del nivel, los tres `attention` de Plan de Compras siguen
+distinguiéndose entre sí y la regla del contrato —«urgencia `now` siempre usa
+`critical`»— se cumple igual, porque vive en el acento.
+
+**La trampa al leer el frontmatter.** `colors.state-*` es **el canal de nivel, no la
+paleta entera**: cuatro de las ocho anclas de matiz coinciden bit a bit con el `-bg` de
+su nivel (`red`=critical, `amber`=warning, `green`=success, `teal`=info), así que una
+lista de cuatro pares *parece* cubrirlo todo y cubre la mitad. `blue`, `violet`,
+`orange` y `neutral` **no tienen token de nivel** y solo existen como matiz. Por eso el
+frontmatter lleva los ocho `state-tint-*` aparte y con los dos canales rotulados.
+
+**La paleta es NOMINAL, no ordinal.** Ocho anclas y nada más. Hubo una versión con tres
+pasos por familia derivados del ancla: medida en el navegador, la separación máxima
+entre dos pasos consecutivos era 1,012:1 de contraste y ΔE-OK 0,0168 —bajo el umbral de
+percepción—, o sea un solo color disfrazado de tres, y dos entradas de leyenda que el
+usuario filtra por separado pintaban fondos bit-idénticos. Sobre este lienzo no hay eje
+de intensidad que gastar: WCAG es ciego al croma, y entre el ancla más oscura
+(`#431414`, L=0,268 OKLCH) y el fondo de página (`#111a15`, L=0,207) quedan 0,061 de
+margen. **Queda un solo eje útil: el matiz.**
+
+**Las variantes `-light` no son de pantalla.** `--ds-color-state-*-light` se pensó como
+juego de soporte para **impresos y XLSX**, donde el fondo es papel. Si escribes una de
+ellas en una hoja de la aplicación, estás pintando un pastel claro sobre penumbra.
+
+Son **reserva sin cablear**, y conviene saber por qué: la exportación a Excel existe
+—`src/Controllers/Gestion/ReportController.php`, vía PhpSpreadsheet, pinta el estado de
+cada fila— pero **no las consume**. Lleva su propia paleta ARGB escrita a mano, con
+valores que además no coinciden con estos. Hay dos paletas claras para lo mismo.
+Unificarlas cambiaría el aspecto de los Excel ya repartidos, así que es decisión aparte;
+el usuario resolvió el 2026-08-03 dejarlas y decir la verdad en el comentario de
+`tokens.css`, no tomarla de oficio.
 
 ### Named Rules
 
@@ -249,6 +359,17 @@ sin datos **no** escala a `warning` por sí solo.
 
 **La Regla del Acento Escaso.** El acento es para acción primaria, selección actual
 e indicadores de estado. Prohibido a plena saturación en estados inactivos y prohibido como relleno decorativo.
+
+**La Regla de Un Matiz por Estado.** Dentro de un mismo módulo, **dos estados distintos
+nunca comparten matiz**. Es contractual, no estilístico: sin eje de intensidad, el matiz
+es lo único que los separa, y dos leyendas que el usuario filtra por separado no pueden
+pintar el mismo fondo. `/programacion-intermedia` (8 estados) y `/programa-general` (7)
+se reasignaron para cumplirlo. Lo que **sí** sigue permitido es derivar dos intensidades
+del mismo matiz para dos superficies del **mismo** estado —el chip de la leyenda y la
+fila de la grilla en `/programacion-semanal`—. Vigilan la regla
+`tests/design-system/state-tint-ladder.test.mjs` (texto del CSS y del contrato) y
+`tests/browser/state-tint-ladder.mjs` (valor resuelto, separación entre los 28 pares y
+unicidad por módulo).
 
 ## 3. Typography — Decisión y operación
 
@@ -355,6 +476,109 @@ al separador, para que un contador dentro de un chip no herede la frontera del c
 **Límite conocido:** el mecanismo actúa sobre elementos, así que **no alcanza los controles cuyo
 borde se pinta en un pseudo-elemento** — el caso de los interruptores de Bootstrap, que dibujan su
 frontera en `label::before`. Ésos siguen en el valor de separador y son deuda aparte.
+
+### Tablas y grillas — el contrato de tabla
+
+Éste es el camino único para poner datos tabulares en pantalla. No hay un segundo.
+
+**1. Envuelve la grilla en `.aia-grid-shell`.** Es el envoltorio canónico, definido en
+`public/css/design-system/core.css` y servido por
+`entrypoints/core.css`. `.aia-table-shell` es su sinónimo exacto y comparte la misma
+regla; usa `grid-shell` para grillas de vendor (Handsontable, DataTables, AG Grid) y
+`table-shell` para una `<table>` propia. El shell aporta superficie, borde, sombra
+`xs`, radio de tabla (`--ds-radius-table`, `1rem`), `overflow: hidden` y —lo que
+importa— **re-publica los tokens de tabla como variables privadas del subárbol**
+(`--_row-h`, `--_cell-px`, `--_cell-py`, `--_header-bg`, `--_header-fg`, `--_border`),
+que es de donde los adaptadores tiran. Sin el shell, un adaptador queda sin métrica.
+
+**2. Consume los doce `--ds-table-*`.** Son la métrica y el color de cualquier tabla;
+ninguno se sustituye por un valor propio.
+
+| Token | Qué gobierna |
+|---|---|
+| `--ds-table-row-h` | alto de fila (`2.25rem` = 36 px) |
+| `--ds-table-cell-pad-x` / `-pad-y` | relleno de celda (`0.75rem` / `0.5rem`) |
+| `--ds-table-header-bg` / `-header-fg` | cabecera: superficie elevada + tinta secundaria |
+| `--ds-table-border` | filete de la rejilla (borde activo → **separador**, no control) |
+| `--ds-table-zebra` | banda alterna, mezcla de superficie con tinta primaria |
+| `--ds-table-row-hover` / `-row-selected` | fila apuntada y fila elegida, ambas mezcladas con el verde de marca |
+| `--ds-table-cell-focus` | anillo de celda enfocada (`inset`, verde de marca) |
+| `--ds-table-empty-bg` / `-empty-fg` | estado vacío de la tabla |
+
+Los cinco de fondo se derivan con `color-mix(in oklch, …)` sobre la superficie activa:
+**su valor final no existe en ningún archivo**, solo en el navegador. Por eso el gate
+que los vigila es de runtime.
+
+**3. Pinta el significado con la escala `--ds-cell-state-*`.** Siete peldaños, cada uno
+con par `bg`/`fg`: `neutral`, `ok`, `atencion`, `riesgo`, `critico`, `bloqueado`,
+`sin-datos`. **No es una paleta nueva**: es la capa de significado de tabla montada
+sobre `--ds-color-state-*`, y desde el 2026-08-03 deriva de ella:
+
+- **Tres alias directos** — `ok` → success, `atencion` → warning, `critico` → critical.
+- **Uno derivado** — `riesgo` = `color-mix()` al 45 % entre warning y critical, porque
+  vive literalmente entre los dos y no se inventa.
+- **Dos heredan la superficie activa** — `neutral` (tinta primaria) y `sin-datos`
+  (tinta secundaria): una celda sin dato no tiene color propio, tiene menos voz.
+- **Una sola ancla propia** — `bloqueado`, en azul OKLCH. Existe porque el canal de
+  **nivel** no tiene un peldaño de «detenido por otro», y el informativo significa otra
+  cosa. Ese razonamiento sigue en pie para el nivel, pero no se hizo contra el canal de
+  **matiz**, que entonces no estaba a la vista.
+
+  **Deuda registrada (2026-08-03).** `--ds-cell-state-bloqueado-*` ancla color propio
+  pese a que `--ds-state-tint-blue` es un candidato perceptualmente cercano; queda
+  pendiente de decisión del usuario porque la paleta actual tiene **aprobación visual
+  explícita** del 2026-08-03. Medido: `#17334f` es OKLCH L 0,314 · C 0,061 · H 250,4°
+  frente al `oklch(0.35 0.05 260)` de `bloqueado` — 0,036 de luminosidad y 9,6° de matiz
+  de separación. No lo corrijas de oficio: cambiarlo invalidaría en silencio una paleta
+  ya aprobada lado a lado.
+
+Antes esta escala anclaba cinco colores propios y duplicaba la escala del design
+system. Si añades un peldaño, la pregunta correcta es de qué estado existente deriva.
+
+**4. Traduce los nombres del módulo con el vocabulario compartido.** Cada módulo tiene
+sus propios nombres de estado (`pg-state-atrasada`, `ps-alert-critical`,
+`pdc-completed-late`…). El mapa único vive en
+`public/js/modules/shared/cell-state-vocabulary.mjs` y expone `CELL_STATE`, `STATE_MAP`
+y `getCanonicalCellState(className)`. **No escribas una clase `ds-cell-*` a mano**: pide
+la canónica al mapa y añade allí el alias nuevo.
+
+**5. Usa el adaptador de tu librería, no un skin.** Cada vendor entra por
+`entrypoints/attach-*.css` (que lo importa con `layer(vendor)`) y luego su adaptador:
+
+- **Handsontable** — `adapters/handsontable.css` (más
+  `adapters/programa-general-handsontable.css` para el piloto).
+- **DataTables** — `adapters/datatables.css`.
+- **AG Grid** (`ag-grid-community`) — no lleva adaptador CSS: la SPA de Plan de Compras
+  configura el tema en `pdc-app/src/lib/agGrid.ts`, donde `themeQuartz.withParams()`
+  recibe los mismos tokens como `var()` con respaldo literal para `npm run dev`. El
+  registro de módulos es selectivo a propósito (nada de `AllCommunityModule`).
+
+Un skin de vendor descargado, una hoja fuera de capa o un hex suelto en el módulo están
+vetados por el audit y por el gate de entregas sin capa.
+
+**Ojo con la métrica: hay dos, y no se mezclan.** `--ds-table-row-h` (36 px) es la de
+las tablas generales. Plan de Compras corre a `28/32/13/10` por la **excepción de
+densidad registrada** (§5 bis), que aplica solo a esa superficie.
+
+### Named Rules
+
+**La Regla del Shell Único.** Toda grilla vive dentro de `.aia-grid-shell` (o
+`.aia-table-shell`). Es lo que convierte los tokens de tabla en variables que el
+adaptador puede leer; una grilla suelta se queda sin métrica y hereda lo que pille.
+
+**La Regla de la Escala Derivada.** `--ds-cell-state-*` no inventa color: deriva de
+`--ds-color-state-*`. Un peldaño nuevo se justifica nombrando de qué estado sale, y
+`bloqueado` es la única excepción viva.
+
+**La Regla de los Dos Gates.** El contrato de tabla se vigila en dos superficies y
+ninguna sustituye a la otra: `scripts/design-system-table-contract.mjs` (estático,
+enrutado en `npm run test:design-system:static`) comprueba que los doce tokens, los
+catorce de la escala, la regla del shell y el módulo de vocabulario **existan**;
+`tests/browser/design-system-table-contract.runtime.mjs` (en
+`npm run test:design-system:runtime`, sobre `/internal/design-system` con filas
+cargadas) comprueba que **resuelvan** en el motor y que cada peldaño cumpla AA sobre su
+propio fondo. Un token puede existir en `tokens.css` y llegar vacío a la celda; el gate
+estático daba verde sobre una tabla sin filas.
 
 ### Inputs / Fields
 - **Style:** ancho completo, altura mínima `44px`, radio de control, superficie del tema, borde activo
@@ -484,6 +708,7 @@ que el trabajo pide.
 - **Mantén** WCAG AA, foco visible de 4px, objetivos táctiles de `44px` y una alternativa `prefers-reduced-motion` en toda animación.
   En superficies de datos densas el alto de control es `28px` por excepción registrada (§5 bis); el resto no se relaja.
 - **Reserva** el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.
+- **Envuelve** toda grilla en `.aia-grid-shell` / `.aia-table-shell`, consume los doce `--ds-table-*` y pide el peldaño de celda a `getCanonicalCellState()`, nunca escribas la clase `ds-cell-*` a mano.
 - **Expresa** el estado con superficie + borde + texto del tema destino; anima solo `transform` y `box-shadow`, nunca `color`/`background` (DS-023/DS-025).
 - **Registra** en `exceptions.json` cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.
 - **No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez.** Si tocas una
@@ -502,6 +727,9 @@ que el trabajo pide.
 - **Nunca** uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.
 - **Nunca** trabajes, generes cambios, pruebas o evidencia para **mobile o tablet**: fuera del alcance visual vigente. `linen` quedó **retirado del producto** en F0 del goal `dark-mode-todos-los-modulos`; dark es el único tema y no existe conmutador.
 - **Nunca** uses `clamp()` fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.
+- **Nunca** pintes en pantalla las variantes `--ds-color-state-*-light`: son reserva para impresos y XLSX. La escala de pantalla está invertida a oscuro.
+- **Nunca** trates la paleta de estado como una lista plana de cuatro tintes ni repitas matiz entre dos estados de un mismo módulo: son dos canales —nivel en el acento, matiz en el fondo— y el matiz es el único eje que los separa. Tampoco derives pasos de intensidad de un ancla: la paleta es nominal, se midió, y los pasos resultan indistinguibles.
+- **Nunca** ancles un color propio en `--ds-cell-state-*` ni instales un skin de vendor para una grilla: la escala deriva de `--ds-color-state-*` (salvo `bloqueado`) y cada librería entra por su adaptador en `layer(vendor)`.
 - **Nunca** uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto **cero** para hex sueltos, inline styles, `<style>`, Roboto y radios hardcodeados.
 - **Nunca** regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.
 - **Nunca** modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie.
