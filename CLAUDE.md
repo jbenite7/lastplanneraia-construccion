@@ -41,13 +41,37 @@ Tres operaciones:
   relacionadas por si alguna quedó obsoleta, y anexa una línea a `memoria/log.md`.
 - **Query** — al preguntar contra la wiki, responde citando páginas. Si la respuesta era valiosa y
   no estaba escrita, promuévela a página.
-- **Lint** — al cerrar un sprint o a petición: barrido en busca de contradicciones, afirmaciones
-  que el repo ya desmintió, páginas huérfanas y referencias ausentes. Delegable a un subagente de
-  bajo coste. Deja línea en el log.
+- **Lint** — al cerrar un sprint o a petición, en dos mitades:
+
+  ```bash
+  node scripts/wiki-lint.mjs
+  ```
+
+  Ese script comprueba la **forma**: enlaces rotos o ambiguos, frontmatter incompleto, `areas`
+  fuera de la lista cerrada, notas que empaquetan más de tres hechos, y páginas que no aparecen
+  en `memoria/index.md` ni las cubre una vista de `memoria/paginas.base`. Sale con código 1 si
+  hay hallazgos. Comprueba y reporta; no corrige.
+
+  **No comprueba la verdad**: que una nota siga siendo cierta contra el código de hoy solo se
+  averigua leyendo el repositorio, y esa mitad es manual — delegable a un subagente de bajo coste,
+  pero exigiéndole que verifique cada afirmación en vez de sospecharla. Un verde del script no
+  significa que la wiki sea correcta.
+
+  Deja línea en el log.
 
 Reglas de escritura: **una nota, un hecho**; si no cabe en una pantalla, probablemente son dos.
-Frontmatter con `tipo`, `estado`, `fecha`, `areas`, `fuente` (y `origen` si viene de la memoria
-privada previa). Sin plugins de comunidad: el vault debe funcionar en cualquier máquina.
+Frontmatter con `tipo`, `estado`, `fecha`, `areas`, `fuente` y `resumen` (más `origen` si viene de
+la memoria privada previa). `resumen` es la columna que se ve en el catálogo del índice: si
+corriges el cuerpo de una nota, corrige también su resumen o la afirmación vieja seguirá
+circulando.
+
+`areas` es una **lista cerrada de trece valores**, comprobada por el script: `design-system`,
+`qa`, `docker`, `worktrees`, `pdc`, `lps`, `datos`, `rbac`, `deploy`, `bi`, `admin`, `proceso`,
+`arquitectura`. Para añadir una, edita primero `scripts/wiki-lint.mjs` y explica en `index.md` qué
+cubre.
+
+Sin plugins de comunidad: el vault debe funcionar en cualquier máquina. Obsidian Bases sí se usa
+—es nativo— para generar el catálogo del índice desde el frontmatter.
 
 **Antes de tocar un área, lee su mapa** en `memoria/mapas/`: dice qué documentos mandan y qué
 trampas hay puestas.
