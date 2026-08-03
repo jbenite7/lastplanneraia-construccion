@@ -653,7 +653,10 @@
     }).done(function (response) {
       mainRows = response && Array.isArray(response.data) ? response.data : [];
       renderMainGrid();
-      setMainTableState(mainRows.length ? 'ready' : 'empty', mainRows.length ? '' : 'No hay paquetes de contratación para mostrar.');
+      // El caso vacío ya no usa el párrafo suelto (`pdc-table-state`): lo cubre
+      // `attachHtEmptyState` dentro de la malla (ver renderMainGrid). Aquí solo
+      // se retira el mensaje de "Cargando…"; 'ready' oculta el párrafo siempre.
+      setMainTableState('ready', '');
     }).fail(function () {
       mainRows = [];
       renderMainGrid();
@@ -726,6 +729,14 @@
     }
 
     window.table = mainHot;
+
+    import('/js/design-system/ht-empty-state.js').then(function (mod) {
+      if (!mainHot || mainHot.isDestroyed) { return; }
+      mod.attachHtEmptyState(mainHot, {
+        titulo: 'No hay paquetes de contratación',
+        cuerpo: 'Los paquetes se arman desde el maestro de insumos, en la pestaña «Paquetes» del plan de compras.',
+      });
+    });
   }
 
   function loadDefinirData(done) {
