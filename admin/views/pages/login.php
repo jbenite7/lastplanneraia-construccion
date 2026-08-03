@@ -32,16 +32,18 @@
 
       <form id="loginForm">
         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        <label for="admin-usuario" class="auth-field-label">Usuario</label>
         <div class="input-group mb-3">
-          <input type="text" name="usuario" class="form-control" placeholder="Usuario" required>
+          <input type="text" id="admin-usuario" name="usuario" class="form-control" placeholder="Usuario" autocomplete="username" required>
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-user"></span>
             </div>
           </div>
         </div>
+        <label for="admin-password" class="auth-field-label">Contraseña</label>
         <div class="input-group mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
+          <input type="password" id="admin-password" name="password" class="form-control" placeholder="Contraseña" autocomplete="current-password" required>
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-lock"></span>

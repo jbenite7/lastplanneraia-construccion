@@ -354,3 +354,4 @@ goals/pg-chip-de-estado/evidence/*
 !tests/browser/escalamientos-sin-errores.spec.mjs
 !tests/browser/escalamientos-acciones.spec.mjs
 !tests/browser/ht-empty-state.spec.mjs
+!tests/browser/admin-login-a11y.spec.mjs
