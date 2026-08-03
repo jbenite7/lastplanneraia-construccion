@@ -215,8 +215,9 @@ export function archivoDeDestino(destino) {
 
 // --- Cobertura -------------------------------------------------------------
 
-function cobertura() {
-  const rutas = leerRutas();
+// Calcula los problemas de cobertura sin imprimir ni salir: lo reutilizan
+// tanto `--cobertura` (modo informe) como `--escribir` (gate previo).
+function erroresDeCobertura(rutas) {
   const porModulo = new Map(MODULOS.map((m) => [m.slug, []]));
   const huerfanas = [];
   for (const r of rutas) {
@@ -224,11 +225,6 @@ function cobertura() {
     if (!a) huerfanas.push(r);
     else porModulo.get(a.mod.slug).push(r);
   }
-
-  for (const m of MODULOS) {
-    console.log(`${String(porModulo.get(m.slug).length).padStart(4)}  ${m.slug}`);
-  }
-  console.log(`${String(rutas.length).padStart(4)}  TOTAL`);
 
   const errores = [];
   for (const r of huerfanas) errores.push(`HUERFANA ${r.verbo} ${r.path}`);
@@ -240,6 +236,18 @@ function cobertura() {
   }
   const sinDestino = rutas.filter((r) => r.tipo === 'indeterminado');
   for (const r of sinDestino) errores.push(`DESTINO INDETERMINADO ${r.verbo} ${r.path}`);
+
+  return { errores, porModulo };
+}
+
+function cobertura() {
+  const rutas = leerRutas();
+  const { errores, porModulo } = erroresDeCobertura(rutas);
+
+  for (const m of MODULOS) {
+    console.log(`${String(porModulo.get(m.slug).length).padStart(4)}  ${m.slug}`);
+  }
+  console.log(`${String(rutas.length).padStart(4)}  TOTAL`);
 
   if (errores.length) {
     console.log('\n' + errores.join('\n'));
@@ -265,6 +273,9 @@ export function datosDe(mod, rutas, rbac) {
       .filter(([, mapa]) => mapa[cap] === true)
       .map(([rol]) => rol);
     const existe = Object.values(rbac).some((mapa) => cap in mapa);
+    if (!existe) {
+      console.error(`CAPACIDAD FANTASMA ${mod.slug}: '${cap}' no existe en RbacManager — revisar el manifiesto.`);
+    }
     return { cap, roles, existe };
   });
 
@@ -325,7 +336,9 @@ export function componer(mod, d) {
   partes.push('\n### Quién puede\n');
   partes.push(mod.capacidades.length
     ? tabla(['Capacidad', 'Roles que la tienen'],
-        d.capacidades.map((c) => [`\`${c.cap}\``, c.roles.length ? c.roles.join(', ') : '—']))
+        d.capacidades.map((c) => [`\`${c.cap}\``,
+          !c.existe ? '_capacidad desconocida — revisar el manifiesto_'
+          : c.roles.length ? c.roles.join(', ') : '—']))
     : '_Sin capacidad propia: la ruta exige sesión y proyecto, no una capacidad específica._\n');
 
   return partes.join('');
@@ -367,6 +380,32 @@ function escribir() {
   const dir = join(RAIZ, 'memoria/arquitectura');
   mkdirSync(dir, { recursive: true });
   const rutas = leerRutas();
+
+  // Gate 1: cobertura. Una ruta huérfana, un prefijo muerto o un destino
+  // indeterminado nuevo pasan desapercibidos si no se comprueban aquí —
+  // --cobertura no es obligatorio en ningún contrato del repo, así que el
+  // único comando que la gente recuerda (--escribir) tiene que absorberlo.
+  const { errores: erroresCobertura } = erroresDeCobertura(rutas);
+  if (erroresCobertura.length) {
+    console.error('No se escribe: hay problemas de cobertura sin resolver.\n');
+    console.error(erroresCobertura.join('\n'));
+    console.error(`\n${erroresCobertura.length} problemas de cobertura. Ejecuta `
+      + '`node scripts/wiki-arquitectura.mjs --cobertura` para el detalle, asigna la ruta a un '
+      + 'módulo de wiki-arquitectura.modulos.mjs (o resuelve el destino indeterminado) y reintenta.');
+    process.exit(1);
+  }
+
+  // Gate 2: esquema de base de datos alcanzable. Sin él, tablasDe() no puede
+  // distinguir una tabla real de ruido y el generador tendría que sustituir
+  // 118 líneas de datos reales por "_indeterminado_" en silencio. Preferimos
+  // abortar entero: dejar la wiki como estaba es mejor que dejarla peor.
+  if (leerEsquema() === null) {
+    console.error('No se escribe: no se pudo leer el esquema real de la base de datos '
+      + '(revisa que el contenedor `db` esté arriba y que DB_NAME/.env apunten a una base '
+      + 'existente). Levanta `db` con `docker compose up -d db` y reintenta.');
+    process.exit(1);
+  }
+
   const rbac = leerRbac();
   let creadas = 0, actualizadas = 0;
 
