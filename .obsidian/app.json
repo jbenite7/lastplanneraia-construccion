@@ -1,0 +1,31 @@
+{
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "absolute",
+  "useMarkdownLinks": false,
+  "attachmentFolderPath": "memoria/adjuntos",
+  "showUnsupportedFiles": false,
+  "userIgnoreFilters": [
+    "vendor/",
+    "node_modules/",
+    "pdc-app/node_modules/",
+    "pdc-app/dist/",
+    "public/pdc-app/",
+    "public/vendor/",
+    "docs/qa/",
+    "docs/design-system/evidence/",
+    "docs/design-system/runtime-measurements/",
+    "docs/design-system/baseline-approvals/",
+    "tests/",
+    "e2e/",
+    "storage/",
+    ".claude/",
+    ".superpowers/",
+    ".agents/",
+    ".github/",
+    ".impeccable/",
+    ".gemini/",
+    ".codex/",
+    ".omo/",
+    ".opencode/"
+  ]
+}

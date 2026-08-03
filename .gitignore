@@ -136,6 +136,16 @@ public/pdc-app/index.html
 MEMORY.md
 .php-cs-fixer.dist.php
 
+# Vault de Obsidian (raíz del repo = vault; las notas viven en `memoria/`).
+# La configuración compartida SÍ se versiona —plugins, tema, filtros de exclusión y
+# grafo— para que cualquiera abra el vault igual. Lo que queda fuera es el estado
+# personal de la ventana y las cachés, que cambian en cada sesión y ensucian los diffs.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/plugins/
+.obsidian/themes/
+
 # Evidencia QA local (capturas de pantalla)
 docs/qa/
 docs/qa/evidence/**/*.webm

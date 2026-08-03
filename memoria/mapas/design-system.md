@@ -1,0 +1,64 @@
+---
+tipo: mapa
+estado: vigente
+fecha: 2026-08-02
+areas: [design-system]
+fuente: sesion
+resumen: "Tokens, capas CSS, gates y baselines del design system — y las trampas que cuestan una vuelta entera"
+---
+# Mapa · Design system
+
+## Qué manda
+
+- [[DESIGN]] (raíz) — contrato de **consumo**: qué tokens y primitivas `aia-*` usar. Se lee antes
+  de tocar cualquier superficie migrada.
+- `docs/design-system/README.md` — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
+  `decisions.md` forma la capa contractual, distinta de `docs/brand/`, que solo aporta insumos
+  visuales.
+- [[AGENTS]] — fija el alcance: **desktop ≥1180 px y dark mode, nada más**. El viewport canónico
+  de validación es 1180×820. No se trabaja móvil, tablet ni el tema `linen`, ni siquiera para
+  generar evidencia.
+
+## Restricción de alcance
+
+Esto no es una preferencia, es una prohibición del repo. Si una petición pide móvil, tablet o
+`linen`, hay que decirlo explícitamente y no hacer esa parte.
+
+## La cascada, que es donde duele
+
+El orden de capas es `reset, vendor, theme, base, layout, components, utilities, module,
+legacy-overrides`. Dos consecuencias que ya costaron horas:
+
+- `styles.css` entra como `layer(module)` pero anida `@layer components` dentro, así que sus
+  reglas quedan en `module.components` y ganan a reglas planas de `module` — ver
+  [[css-layer-cascade]].
+- Con `!important` el orden **se invierte**: solo una capa anterior puede ganar. Por eso los
+  remapeos contra Bootstrap viven en `@layer reset` — ver [[admin-adminlte-adaptador]].
+
+Y el reset legado pisa adaptadores: el spacing de adaptadores va en `@layer legacy-overrides`.
+
+## Gates
+
+Antes de dar nada por verde, lee [[branch-preexisting-red-gates]]: hay rojos preexistentes que no
+son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (el audit lee texto crudo,
+así que un hex citado en un comentario rompe el presupuesto),
+[[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco) y
+[[visual-baselines-estado-real]] (las baselines del lab están rojas; mide el delta antes de
+culparte).
+
+Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
+[[lab-desktop-layout-suite]].
+
+Antes de borrar una hoja: [[navbar-css-consumidor-vivo]]. Antes de migrar un head a
+`renderForModule`: [[drawer-en-handsontable-module]].
+
+## Decisiones vigentes
+
+[[goal-dark-mode-todos-modulos]] (F0–F6: `linen` se retira, `:root` pasa a dark, AdminLTE no se
+migra) · [[sidebar-default-collapsed]] · [[compras-migrado-shell-sidebar]].
+
+Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
+
+## Vecinos
+
+[[qa-y-gates]] para las suites · [[lps-dominio]] para las superficies que consumen todo esto.
