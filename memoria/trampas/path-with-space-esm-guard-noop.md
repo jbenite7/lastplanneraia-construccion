@@ -2,7 +2,7 @@
 tipo: trampa
 estado: vigente
 fecha: 2026-07-21
-areas: [tooling]
+areas: [proceso]
 fuente: memoria-claude
 origen: path-with-space-esm-guard-noop
 resumen: "El repo vive en una ruta con espacio (Crucial X6); el guard ESM file://${argv[1]} es no-op, usar pathToFileURL"

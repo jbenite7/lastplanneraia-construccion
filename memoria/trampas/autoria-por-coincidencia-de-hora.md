@@ -2,7 +2,7 @@
 tipo: trampa
 estado: vigente
 fecha: 2026-08-02
-areas: [sesiones, git]
+areas: [proceso]
 fuente: sesion
 resumen: "La hora de última actividad de una sesión no prueba que escribiera un archivo; atribuir trabajo por esa coincidencia acusa en falso"
 ---

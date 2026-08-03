@@ -2,7 +2,7 @@
 tipo: goal
 estado: vigente
 fecha: 2026-08-02
-areas: [goals]
+areas: [proceso]
 fuente: sesion
 resumen: "Estado real de los 16 goals del repo, leído de cada goal.md — cuáles siguen abiertos y cuáles no viajan en git"
 ---

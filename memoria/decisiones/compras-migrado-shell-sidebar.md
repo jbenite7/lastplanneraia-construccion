@@ -2,7 +2,7 @@
 tipo: decision
 estado: vigente
 fecha: 2026-07-29
-areas: [design-system, shell, pdc]
+areas: [design-system, pdc]
 fuente: memoria-claude
 origen: lps-aia-compras-migrado-shell-sidebar
 resumen: "Compras (/contratos, /listado-actividades, /pdc) YA usa el shell sidebar, revirtiendo la exclusión que sigue escrita en goals/sidebar-todos-modulos/goal.md"

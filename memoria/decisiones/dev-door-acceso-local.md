@@ -2,7 +2,7 @@
 tipo: decision
 estado: vigente
 fecha: 2026-07-30
-areas: [entorno, rbac, qa]
+areas: [docker, rbac, qa]
 fuente: memoria-claude
 origen: lps-aia-dev-door-acceso-local
 resumen: "en lps-aia la sesión local se abre SIEMPRE por /dev/entrar, nunca tecleando credenciales ni pidiéndole el login al usuario"

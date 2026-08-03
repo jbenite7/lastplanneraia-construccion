@@ -2,7 +2,7 @@
 tipo: decision
 estado: vigente
 fecha: 2026-07-24
-areas: [ui]
+areas: [design-system]
 fuente: memoria-claude
 origen: lps-aia-sidebar-default-collapsed
 resumen: El shell sidebar debe permanecer colapsado por defecto; no cambiar initialState a expanded

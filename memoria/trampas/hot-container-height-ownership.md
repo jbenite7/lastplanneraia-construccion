@@ -2,7 +2,7 @@
 tipo: trampa
 estado: vigente
 fecha: 2026-07-25
-areas: [ui]
+areas: [design-system]
 fuente: memoria-claude
 origen: lps-aia-hot-container-height-ownership
 resumen: Quién resuelve la altura de #hot-container en los módulos HOT y por qué calc(100vh - Npx) sobre ese contenedor es siempre incorrecto

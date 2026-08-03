@@ -2,7 +2,7 @@
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
-areas: [rbac, rutas]
+areas: [rbac]
 fuente: sesion
 resumen: "Roles, capacidades, rutas protegidas y sesión: dónde se resuelve cada cosa y qué hay que probar al cambiarlas"
 ---

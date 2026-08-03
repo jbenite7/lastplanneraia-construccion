@@ -2,7 +2,7 @@
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
-areas: [entorno, docker, deploy]
+areas: [docker, deploy]
 fuente: sesion
 resumen: "Levantar el proyecto en local, aislar un worktree y publicar en producción — con las trampas que ya mordieron"
 ---
