@@ -73,19 +73,19 @@
     var normalized = normalizeText(original);
 
     if (!normalized) return '';
-    if (normalized.includes('atrasado: contratacion sin iniciar')) return 'Atrasado: contratacion sin iniciar';
-    if (normalized.includes('en curso: contratacion sin iniciar')) return 'En curso: contratacion sin iniciar';
-    if (normalized.includes('atrasado') && normalized.includes('proceso de contratacion no iniciado')) return 'Atrasado: contratacion sin iniciar';
-    if ((normalized.includes('en curso') || normalized.startsWith('a tiempo')) && normalized.includes('proceso de contratacion no iniciado')) return 'En curso: contratacion sin iniciar';
-    if (normalized.includes('inicio de contratacion vencido')) return 'Inicio de contratacion vencido';
-    if (normalized.includes('contratacion atrasada')) return 'Contratacion atrasada';
-    if (normalized.includes('contratacion cerrada tarde') || normalized.includes('terminado con retras')) return 'Contratacion cerrada tarde';
-    if (normalized.includes('contratacion cerrada a tiempo') || normalized.includes('terminado a tiempo')) return 'Contratacion cerrada a tiempo';
-    if (normalized.includes('contratacion pendiente de inicio')) return 'Contratacion pendiente de inicio';
-    if (normalized.includes('contratacion en curso')) return 'Contratacion en curso';
-    if (normalized.includes('atrasado')) return 'Contratacion atrasada';
-    if (normalized.includes('proceso de contratacion no iniciado')) return 'Contratacion pendiente de inicio';
-    if (normalized.includes('en curso') || normalized.startsWith('a tiempo')) return 'Contratacion en curso';
+    if (normalized.includes('atrasado: contratacion sin iniciar')) return 'Atrasado: contratación sin iniciar';
+    if (normalized.includes('en curso: contratacion sin iniciar')) return 'En curso: contratación sin iniciar';
+    if (normalized.includes('atrasado') && normalized.includes('proceso de contratacion no iniciado')) return 'Atrasado: contratación sin iniciar';
+    if ((normalized.includes('en curso') || normalized.startsWith('a tiempo')) && normalized.includes('proceso de contratacion no iniciado')) return 'En curso: contratación sin iniciar';
+    if (normalized.includes('inicio de contratacion vencido')) return 'Inicio de contratación vencido';
+    if (normalized.includes('contratacion atrasada')) return 'Contratación atrasada';
+    if (normalized.includes('contratacion cerrada tarde') || normalized.includes('terminado con retras')) return 'Contratación cerrada tarde';
+    if (normalized.includes('contratacion cerrada a tiempo') || normalized.includes('terminado a tiempo')) return 'Contratación cerrada a tiempo';
+    if (normalized.includes('contratacion pendiente de inicio')) return 'Contratación pendiente de inicio';
+    if (normalized.includes('contratacion en curso')) return 'Contratación en curso';
+    if (normalized.includes('atrasado')) return 'Contratación atrasada';
+    if (normalized.includes('proceso de contratacion no iniciado')) return 'Contratación pendiente de inicio';
+    if (normalized.includes('en curso') || normalized.startsWith('a tiempo')) return 'Contratación en curso';
 
     return original;
   }
@@ -471,7 +471,7 @@
       td.textContent = texto;
       return;
     }
-    if (estado === 'missing') texto = 'Informacion pendiente';
+    if (estado === 'missing') texto = 'Información pendiente';
     if (estado === 'completed-ontime') iconClass = 'fas fa-grin-stars fa-lg pdc-icon-state pdc-icon-ok';
     if (estado === 'completed-late') iconClass = 'fas fa-sad-cry fa-lg pdc-icon-state pdc-icon-amber';
     if (estado === 'active' && normalizeText(texto) !== 'en curso: contratacion sin iniciar') iconClass = 'fas fa-glasses fa-lg pdc-icon-state pdc-icon-info';
