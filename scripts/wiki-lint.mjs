@@ -54,6 +54,14 @@ const anota = (cat, archivo, detalle) => hallazgos.push(`${cat} ${archivo}: ${de
 const paginas = listarMd(WIKI);
 const indice = readFileSync(join(WIKI, 'index.md'), 'utf8');
 
+// Tipos cubiertos por alguna vista de paginas.base: esas páginas no necesitan enlace desde index.md.
+const tiposCubiertos = new Set();
+const rutaBase = join(WIKI, 'paginas.base');
+if (existsSync(rutaBase)) {
+  const base = readFileSync(rutaBase, 'utf8');
+  for (const m of base.matchAll(/note\.tipo\s*==\s*"([^"]+)"/g)) tiposCubiertos.add(m[1]);
+}
+
 for (const p of paginas) {
   const rel = relative(RAIZ, p);
   const texto = readFileSync(p, 'utf8');
@@ -100,8 +108,8 @@ for (const p of paginas) {
   const enlazadaEnIndice = new RegExp(`\\[\\[${nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\]\\]|[|#])`).test(indice);
   if (!['index', 'log'].includes(nombre)
       && !enlazadaEnIndice
-      && !existsSync(join(WIKI, 'paginas.base'))) {
-    anota('INDICE', rel, 'no aparece en index.md y no hay base que la liste');
+      && !tiposCubiertos.has(campo('tipo'))) {
+    anota('INDICE', rel, 'no aparece en index.md y ninguna vista de paginas.base la lista');
   }
 }
 

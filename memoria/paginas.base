@@ -9,8 +9,6 @@ properties:
     displayName: Áreas
   note.fecha:
     displayName: Fecha
-  note.estado:
-    displayName: Estado
 
 views:
   - type: table

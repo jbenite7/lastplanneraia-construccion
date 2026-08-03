@@ -5,7 +5,7 @@ fecha: 2026-07-29
 areas: [qa]
 fuente: memoria-claude
 origen: lps-aia-suite-php-rojos-preexistentes
-resumen: "Los rojos preexistentes de la suite PHP autoejecutable (tests/test_*.php): 16/103 en pdc-a4-fechas, pero solo 4/108 en main @1a75b19 — no cites la cifra vieja sin re-medir; y las dos trampas al medirlos en macOS"
+resumen: "Rojos preexistentes de tests/test_*.php: 4/108 en main @1a75b19 (2026-07-29), pero el universo es hoy 126 archivos y no se ha vuelto a medir — cita siempre la fecha o re-mide; y las dos trampas al medirlos en macOS"
 ---
 Medido el 2026-07-28 en el worktree `lps-aia-pdc`, rama `pdc-a4-fechas` @ `2357b0a`, con árbol
 revertido a HEAD: de los 103 `tests/test_*.php`, **16 fallan sin que nadie los haya tocado**.

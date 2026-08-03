@@ -5,7 +5,7 @@ fecha: 2026-07-29
 areas: [design-system, pdc]
 fuente: memoria-claude
 origen: lps-aia-compras-migrado-shell-sidebar
-resumen: "Compras (/contratos, /listado-actividades, /pdc) YA usa el shell sidebar, revirtiendo la exclusión que sigue escrita en goals/sidebar-todos-modulos/goal.md"
+resumen: "Compras (/contratos, /listado-actividades, /pdc) ya usa el shell sidebar canónico desde el 2026-07-25, aunque el goal sidebar-todos-modulos las excluyó a propósito"
 ---
 El 2026-07-25 se migraron `/contratos`, `/listado-actividades` y `/pdc` al shell sidebar canónico.
 El harness `tests/browser/shell-sidebar-rollout.mjs` cubre ahora 22 rutas (113 checks) y
