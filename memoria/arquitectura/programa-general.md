@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Programa General: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Programa General: la línea base del cronograma maestro; editar el pasado exige rol A o D"
 ---
 # Programa General
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es el cronograma maestro del proyecto — la línea base contra la que se mide todo
+lo demás en el flujo LPS. Solo Admin y Director pueden editar filas de semanas ya pasadas
+(`canEditPastGeneralProgram`); el resto del equipo puede ver y editar el presente/futuro. Para
+traer una versión nueva desde Excel, ver [[cronograma]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

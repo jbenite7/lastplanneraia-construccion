@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo CNP — Causas de No Programación: rutas, controladores, servicios y quién puede usarlo"
+resumen: "CNP: registra por qué una actividad del look-ahead no entró a la semana comprometida"
 ---
 # CNP — Causas de No Programación
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Registra por qué una actividad que estaba en el look-ahead de
+[[programacion-intermedia]] no llegó a entrar al plan de la semana — normalmente porque alguno de
+sus 7 recursos de liberación no estaba resuelto a tiempo. Se abre como una de las tres píldoras de
+[[programacion-semanal]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

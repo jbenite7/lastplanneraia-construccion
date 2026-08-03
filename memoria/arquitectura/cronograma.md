@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Actualizar cronograma: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Actualizar cronograma: importa desde Excel una nueva versión del Programa General sin perder el histórico"
 ---
 # Actualizar cronograma
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es el punto de entrada para traer un cronograma maestro nuevo desde Excel y
+reemplazar o ajustar el vigente en [[programa-general]], sin perder la trazabilidad de lo que
+cambió. Se usa cuando el cronograma contractual se revisa formalmente, no para el ajuste semana a
+semana — eso vive en [[programacion-semanal]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

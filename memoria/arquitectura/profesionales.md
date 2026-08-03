@@ -4,13 +4,15 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Profesionales: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Profesionales: grilla editable en vivo con el equipo AIA asignado al proyecto"
 ---
 # Profesionales
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Mantiene la lista de profesionales de AIA asignados al proyecto (residentes,
+directores, etc.) en una grilla Handsontable con autosave. Otros módulos, como
+[[programa-general]] o [[control-de-cambios]], reutilizan estos nombres como responsables.
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

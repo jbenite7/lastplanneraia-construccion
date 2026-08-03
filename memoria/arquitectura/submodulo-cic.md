@@ -4,13 +4,15 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo CIC — Cumplimiento de Actividades: rutas, controladores, servicios y quién puede usarlo"
+resumen: "CIC: califica a cada subcontratista en 4 dimensiones dentro de Programación Semanal"
 ---
 # CIC — Cumplimiento de Actividades
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Evalúa a cada subcontratista en 4 dimensiones de desempeño dentro de la semana en
+curso. Se abre como una de las tres píldoras de [[programacion-semanal]] y trabaja sobre el mismo
+catálogo que [[subcontratistas]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

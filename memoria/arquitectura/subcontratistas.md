@@ -4,13 +4,15 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Subcontratistas: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Subcontratistas: catálogo editable de subcontratistas/proveedores, compartido entre LPS y PDC"
 ---
 # Subcontratistas
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Mantiene el catálogo de subcontratistas y proveedores en una grilla editable en
+vivo. Lo usan ambos flujos: [[submodulo-cic]] los califica dentro del LPS, y
+[[plan-de-compras]]/[[contratos]] los usan como destino de un paquete de contratación.
 
-**Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
+**Dónde encaja.** En los dos flujos. Ver [[lps-dominio]] y [[pdc]].
 
 ## Inventario
 

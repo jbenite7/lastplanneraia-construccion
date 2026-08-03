@@ -4,11 +4,13 @@ estado: vigente
 fecha: 2026-08-03
 areas: [datos, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Integración de reportes: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Integración: procesa reportes externos (ReportProcessor) para alimentar otros módulos, sin vista propia"
 ---
 # Integración de reportes
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es la capa que procesa reportes que llegan de fuera de la app (vía
+`ReportProcessor`) y los deja listos para que otros módulos los consuman. No tiene pantalla propia
+que alguien navegue: es tubería interna, se entiende leyendo quién la llama, no quién la abre.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 

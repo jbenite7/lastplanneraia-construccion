@@ -4,13 +4,21 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Programación Semanal: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Programación Semanal: la grilla de compromisos de los próximos 7 días y sus tres píldoras CNP/CNC/CIC"
 ---
 # Programación Semanal
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es el corazón del [[lps-dominio|Last Planner System]]: la grilla donde los
+Last Planners asumen compromisos reales para la semana. De aquí sale el PAC/PPC, el indicador que
+mide si el equipo cumple lo que promete. Antes de tocarla conviene conocer [[submodulo-cnp]],
+[[submodulo-cnc]] y [[submodulo-cic]], que son sus tres vistas satélite.
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+
+Desde la propia vista, tres píldoras cambian de pestaña sin salir del módulo: `CNP` lleva a
+`/programacion-semanal/cnp` ([[submodulo-cnp]], causas por las que algo no entró a la semana),
+`CNC` a `/programacion-semanal/cnc` ([[submodulo-cnc]], causas por las que algo no se cumplió) y
+`CIC` a `/programacion-semanal/cic` ([[submodulo-cic]], la calificación de contratistas).
 
 ## Inventario
 

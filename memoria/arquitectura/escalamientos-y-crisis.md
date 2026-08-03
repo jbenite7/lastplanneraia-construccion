@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Escalamientos, crisis y avisos: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Escalamientos y crisis: comentarios y avisos que suben un problema de actividad a Dirección"
 ---
 # Escalamientos, crisis y avisos
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Cuando una actividad no puede resolverse en el nivel donde surgió, este módulo
+es el canal para escalarla: guarda comentarios asociados a un `escalamiento_id` y avisa a quien
+corresponda. Es infraestructura de comunicación del LPS, no una vista con ruta propia — se consume
+desde dentro de otros módulos vía `LpsApiController`.
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

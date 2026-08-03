@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Control de Cambios: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Control de Cambios: registra órdenes de cambio formales sobre el alcance del proyecto"
 ---
 # Control de Cambios
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Registra las órdenes de cambio: cuando el alcance o el presupuesto del proyecto
+se modifica formalmente, queda constancia aquí en vez de perderse en un correo o un chat. Es
+consulta habitual de Dirección y Residencia cuando algo del cronograma ya no calza con lo
+originalmente pactado.
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

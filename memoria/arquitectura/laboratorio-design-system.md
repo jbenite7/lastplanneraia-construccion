@@ -4,11 +4,15 @@ estado: vigente
 fecha: 2026-08-03
 areas: [design-system, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Laboratorio del design system: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Laboratorio del design system: banco de pruebas visual para tokens y componentes aia-*, no es una vista de negocio"
 ---
 # Laboratorio del design system
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es el banco de pruebas donde se ven los tokens, componentes y layouts del
+[[design-system]] aislados de cualquier dato real de proyecto. Sirve para revisar un cambio visual
+antes de llevarlo a un módulo de verdad. Acceso restringido — ver
+`App\Security\DesignSystemLabAccessPolicy`. Antes de tocarlo, revisa
+[[lab-desktop-layout-suite]], que documenta sus trampas ya medidas.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 

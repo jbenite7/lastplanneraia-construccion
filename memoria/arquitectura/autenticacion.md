@@ -4,11 +4,14 @@ estado: vigente
 fecha: 2026-08-03
 areas: [rbac, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Autenticación: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Autenticación: login, recuperar contraseña y la puerta de desarrollo que evita teclear credenciales en local"
 ---
 # Autenticación
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es la puerta de entrada: login, recuperación de contraseña y, solo en local, la
+puerta de desarrollo (`/dev/entrar`) que abre sesión sin pasar por el formulario. En desarrollo
+**nunca** se usa `/login` a mano — ver [[dev-door-acceso-local]] para el porqué y el candado que la
+cierra en producción.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 

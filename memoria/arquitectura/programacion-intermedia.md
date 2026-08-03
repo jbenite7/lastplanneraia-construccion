@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Programación Intermedia: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Programación Intermedia: el look-ahead a 6 semanas que libera restricciones antes de comprometer la semana"
 ---
 # Programación Intermedia
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es la ventana de look-ahead (6 semanas) donde se identifican y resuelven las
+restricciones de una actividad antes de que llegue a [[programacion-semanal]]. Una actividad solo
+está «liberada» cuando sus 7 recursos de liberación quedan resueltos aquí — ver [[lps-dominio]]
+para el detalle de esos 7 recursos.
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

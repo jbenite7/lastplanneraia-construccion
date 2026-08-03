@@ -4,13 +4,32 @@ estado: vigente
 fecha: 2026-08-03
 areas: [arquitectura, design-system]
 fuente: public/index.php
-resumen: "Módulo Núcleo, sesión y runtime: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Núcleo y runtime: sesión, contexto de semana activa y los assets del design system que sirve cada request"
 ---
 # Núcleo, sesión y runtime
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** No es un módulo que alguien abra: es lo que sostiene a todos los demás. Guarda
+qué semana está activa en cada flujo (PG/PI/PS), mantiene la sesión viva mientras se trabaja
+(`/session/touch`) y sirve el CSS del design system compilado para el resto de vistas. Antes de
+tocar algo aquí, ten claro que un cambio afecta a toda la app, no a un módulo aislado.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
+
+## Navegación desde el shell
+
+Todos los módulos activos comparten el mismo `views/partials/shell_sidebar.php`. Se organiza en
+tres grupos. El grupo **Información** lleva a `Control Tower - Informes` ([[torre-de-control-bi]]),
+a `Semanas del Proyecto` (abre un flyout con la lista de semanas — ver [[legado]] para las rutas de
+crear y eliminar semana), a `Profesionales`, `Subcontratistas`, `Indicadores LPS` y
+`Control de Cambios`. El grupo **Obra** lleva a `Programa General`, `Programación Intermedia`,
+`Programación Semanal` y `Actualizar Cronograma`; en los tres primeros, pasar el mouse sobre el
+ítem abre un flyout con las semanas de ese módulo, y elegir una semana **cambia la semana activa y
+redirige al propio módulo** — no es un enlace fijo, depende del contexto que guarda este módulo. El
+grupo **Compras** solo lleva a `Plan de Compras` (la isla React, ver [[plan-de-compras]]). El menú
+de usuario ofrece `Cambiar proyecto` (hacia [[selector-de-proyectos]]) y `Cerrar sesión`.
+
+Ver [[arquitectura]] para el mapa completo y [[navbar-css-consumidor-vivo]] para las trampas del
+CSS que consume este shell.
 
 ## Inventario
 

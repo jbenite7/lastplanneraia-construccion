@@ -4,15 +4,28 @@ estado: vigente
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Plan de Compras v2: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Plan de Compras v2: del presupuesto al paquete de contratación, con fechas y seguimiento por hash"
 ---
 # Plan de Compras v2
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Convierte el presupuesto importado en un plan de compras con fechas: reconoce
+insumos, los agrupa en paquetes de contratación y calcula cuándo hay que comprar cada uno para no
+frenar la obra. Es una isla React que vive detrás de una sola ruta (`/plan-compras`); todo lo demás
+se mueve por hash dentro del navegador, no por rutas HTTP nuevas. Antes de tocarlo, lee [[pdc]] y
+[[pdc-v2|docs/pdc-v2.md]] — ahí está el modelo de dominio completo y las trampas ya medidas.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
 
-**Nota del manifiesto.** SPA React en pdc-app/, bundle en public/pdc-app/. Sub-router por hash.
+**Nota del manifiesto.** SPA React en `pdc-app/`, bundle en `public/pdc-app/`. Sub-router por hash.
+
+## Sub-router por hash
+
+La SPA no cambia de ruta HTTP al navegar entre sus pantallas: cambia el hash de `/plan-compras`.
+`#/ensamble/importar` es donde se carga el presupuesto; `#/ensamble/maestro`, el catálogo global de
+insumos; `#/ensamble/paquetes`, dónde se arma cada paquete de contratación; `#/plan/fechas`, el
+calendario resultante; `#/seguimiento`, el avance real de cada paquete comprado; y
+`#/torre-control`, el resumen ejecutivo de compras. Si buscas dónde vive una pantalla del PDC en el
+código, empieza por el hash, no por el router de `public/index.php`.
 
 ## Inventario
 

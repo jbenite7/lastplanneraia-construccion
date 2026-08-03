@@ -4,11 +4,14 @@ estado: vigente
 fecha: 2026-08-03
 areas: [rbac, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Selector de proyectos: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Selector de proyectos: pantalla tras el login para elegir en qué proyecto trabajar"
 ---
 # Selector de proyectos
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es la pantalla que aparece justo después de iniciar sesión (o al usar
+`Cambiar proyecto` desde el menú de usuario, ver [[nucleo-y-runtime]]): elegir con qué proyecto
+trabajar. El rol de la sesión depende de a qué proyecto entraste, porque `project_members` guarda
+el rol por proyecto, no por cuenta.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 

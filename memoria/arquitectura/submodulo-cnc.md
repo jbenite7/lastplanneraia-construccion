@@ -4,13 +4,15 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
 fuente: public/index.php
-resumen: "Módulo CNC — Causas de No Cumplimiento: rutas, controladores, servicios y quién puede usarlo"
+resumen: "CNC: registra por qué una actividad comprometida no se cumplió, base del PAC/PPC"
 ---
 # CNC — Causas de No Cumplimiento
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Registra por qué una actividad que sí se había comprometido para la semana no se
+terminó. Es el dato crudo detrás del PAC/PPC y del análisis de causa raíz (RCA) de
+[[indicadores]]. Se abre como una de las tres píldoras de [[programacion-semanal]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
 
 ## Inventario
 

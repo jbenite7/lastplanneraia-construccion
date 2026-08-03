@@ -4,13 +4,16 @@ estado: vigente
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Listado de Actividades (PDC v1): rutas, controladores, servicios y quién puede usarlo"
+resumen: "Listado de Actividades: CRUD de actividades del proyecto, base sobre la que se arma el PDC v1"
 ---
 # Listado de Actividades (PDC v1)
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Es el CRUD de actividades del proyecto — la versión anterior al PDC v2 de
+[[plan-de-compras]], y todavía la fuente de las actividades que ese módulo consume. No se elimina
+mientras el PDC v2 no cubra todo lo que cubre este. Ver [[pdc]] y [[pdc-v2|docs/pdc-v2.md]] para el
+mapa completo de dónde encaja cada versión.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
 
 ## Inventario
 

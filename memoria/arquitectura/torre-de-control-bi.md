@@ -4,13 +4,24 @@ estado: vigente
 fecha: 2026-08-03
 areas: [bi, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Torre de Control BI: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos"
 ---
 # Torre de Control BI
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Da una vista de arriba hacia abajo del proyecto: cumplimiento, avance, curva S y
+desempeño de contratistas, todo leído desde las mismas tablas operativas de LPS y PDC pero sin
+escribir en ellas. Es adonde manda `Control Tower - Informes` del sidebar, y es el módulo que casi
+todos los roles pueden ver aunque no puedan editar nada.
 
-**Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
+**Dónde encaja.** En los dos flujos. Ver [[lps-dominio]] y [[pdc]].
+
+## Navegación interna
+
+`views/bi/_nav.php` es la barra propia de este módulo, con ocho destinos que no pasan por el
+sidebar general: `Control Tower` (el resumen), `Programa General`, `Programación Intermedia`,
+`Programación Semanal`, `Plan de Compras`, `Contratistas`, `Responsables` y `Curva S`. Cada uno es
+su propia ruta bajo `/bi/*` (ver el inventario generado arriba), así que moverse entre reportes
+recarga la página — no es una SPA como [[plan-de-compras]].
 
 ## Inventario
 

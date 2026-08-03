@@ -4,13 +4,21 @@ estado: vigente
 fecha: 2026-08-03
 areas: [arquitectura]
 fuente: public/index.php
-resumen: "Módulo Carril legado: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Carril legado: rutas que aún hacen require_once de scripts procedurales; mantenimiento, no lugar para features nuevas"
 ---
 # Carril legado
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Nada nuevo: son rutas que sobrevivieron de la versión procedural de la app y
+todavía hacen `require_once` de un script en vez de llamar a un controlador. `AGENTS.md` es
+tajante: se corrige lo mínimo cuando hay un bug, no se le agrega funcionalidad ni se moderniza de
+oficio.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
+
+Dos de estas rutas explican algo que en el sidebar parece un detalle menor: el flyout
+`Semanas del Proyecto` (ver [[nucleo-y-runtime]]) trae los botones `+ Nueva semana` y
+`Eliminar semana`. Esos dos botones son los que llaman a `nueva_semana.php` y a
+`eliminar_semana.php` — la única razón por la que esas dos rutas legadas siguen vivas.
 
 **Nota del manifiesto.** Rutas que hacen require_once de scripts procedurales: servicios y tablas saldrán indeterminados por diseño.
 

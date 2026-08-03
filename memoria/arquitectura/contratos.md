@@ -4,13 +4,17 @@ estado: vigente
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
-resumen: "Módulo Contratos y definición semiautomática: rutas, controladores, servicios y quién puede usarlo"
+resumen: "Contratos: vincula actividades con paquetes de contratación (S, MO, SI) usando el motor semi-auto"
 ---
 # Contratos y definición semiautomática
 
-**Qué resuelve.** _Pendiente de escribir a mano._
+**Qué resuelve.** Une cada actividad del proyecto con su paquete de contratación (Suministro, Mano
+de Obra o Suministro e Instalación) para saber quién es responsable de comprarla o ejecutarla. Usa
+el mismo motor semiautomático (`auto/preview`, `auto/apply`, `auto/undo`) que
+[[listado-de-actividades]] y el PDC: antes de tocar la lógica de sugerencias conviene revisar cómo
+se usa en los otros dos para no crear un flujo paralelo.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
 
 **Nota del manifiesto.** Reparto de criterio: /api/pdc/auto/* se atribuye a Contratos por ser el contrato auto/preview·apply·undo·feedback·metrics que define contratos; el resto de /api/pdc/* queda en Listado de Actividades. Verificable leyendo src/Controllers/Api/PdcAutoGenerateController.php y src/Services/SemiAutoService.php.
 
