@@ -327,3 +327,14 @@ goals/retiro-listado-contratos/*
 !tests/browser/pdc-v2-impacto-daporto.evidencia.mjs
 !tests/browser/pdc-v2-ayuda.spec.mjs
 !tests/browser/pdc-v2-equipos.spec.mjs
+
+# Repaso de usabilidad no-tablas (H-08). Igual que `cierre-dark-mode-y-tablas`, hay que
+# re-permitir la carpeta y luego cada archivo: un `!goals/<slug>/` solo no basta porque
+# `goals/*` ya excluyo el directorio y git no desciende a un directorio excluido.
+!goals/repaso-usabilidad-no-tablas/
+goals/repaso-usabilidad-no-tablas/*
+!goals/repaso-usabilidad-no-tablas/goal.md
+!goals/repaso-usabilidad-no-tablas/inventario-usabilidad.md
+!goals/repaso-usabilidad-no-tablas/evidence/
+goals/repaso-usabilidad-no-tablas/evidence/*
+!goals/repaso-usabilidad-no-tablas/evidence/*.png
