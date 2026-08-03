@@ -22,6 +22,7 @@ import {
   etiquetaElegible,
   idPorEtiqueta,
   mensajeCalculo,
+  avisoFrentesSinAncla,
   motivoSinAnclas,
   opcionFrente,
   opcionesFrente,
@@ -92,6 +93,11 @@ export default function PlanFechas() {
   const [anclasFallo, setAnclasFallo] = useState<string | null>(null)
   const [anclasCargando, setAnclasCargando] = useState(true)
   const motivoAnclas = motivoSinAnclas(anclas, frentes, anclasFallo, anclasCargando)
+  // Cuántos frentes del cronograma no se pudieron ofrecer por no tener ninguna actividad debajo.
+  // Es el hermano de `motivoAnclas`: aquel explica una lista vacía, este una lista INCOMPLETA, que
+  // es más traicionera porque parece completa.
+  const [frentesSinAncla, setFrentesSinAncla] = useState(0)
+  const avisoSinAncla = avisoFrentesSinAncla(frentesSinAncla)
   // Bloqueante del review final A4: true solo cuando la petición de sugerencias ya resolvió (con
   // éxito o sin él). Sin esto, el efecto de preselección de abajo no puede distinguir «todavía no
   // sabemos si hay propuesta» de «ya sabemos que no la hay» — ver preseleccionDestinos().
@@ -133,8 +139,10 @@ export default function PlanFechas() {
         setPlan([]); setAmarres({}); setDestinosContratables([]); setAmarresDestino([])
         dispatch({ type: 'FALLO', mensaje: mensajeError(e) })
       })
-    apiGet<{ frentes: FrenteDisponible[] }>('/plan-compras/api/plan/frentes')
-      .then((d) => setFrentes(d.frentes))
+    // `sinAncla` es opcional en el tipo a propósito: un bundle servido desde una caché vieja puede
+    // hablar con un servidor que ya lo manda, y al revés. Sin dato, 0 = no se avisa de nada.
+    apiGet<{ frentes: FrenteDisponible[]; sinAncla?: number }>('/plan-compras/api/plan/frentes')
+      .then((d) => { setFrentes(d.frentes); setFrentesSinAncla(d.sinAncla ?? 0) })
     // Las anclas incluyen las 242 actividades: hay ramas sin frente propio cuyo hito real es una
     // actividad concreta (CUBIERTA ancla en «LOSA AÉREA CUBIERTA»).
     setAnclasCargando(true)
@@ -839,6 +847,11 @@ export default function PlanFechas() {
       {/* El aviso va arriba y una sola vez, no repetido en cada fila: el motivo es del proyecto
           entero, no de un paquete. Sin él, 96 desplegables vacíos no dicen nada 96 veces. */}
       {motivoAnclas && <p className="pdc-flujo-nota" role="status">{motivoAnclas}</p>}
+      {avisoSinAncla && (
+        <p className="pdc-flujo-nota" data-testid="pdc-plan-frentes-sin-ancla" role="status">
+          {avisoSinAncla}
+        </p>
+      )}
       {/* Antes había un solo botón que escribía las 40 propuestas de un clic. Medido en Da Porto:
           37 eran de confianza media —deducidas de la actividad padre, no de la descripción del
           insumo— y solo 3 de confianza alta. El desglose lo dice antes de pulsar, el botón primario

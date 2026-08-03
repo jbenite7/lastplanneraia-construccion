@@ -7,6 +7,7 @@ import {
   coberturaPlan,
   contarSinResponsable,
   estadoFila,
+  avisoFrentesSinAncla,
   etiquetaDesfase,
   etiquetaElegible,
   generaProceso,
@@ -758,5 +759,27 @@ describe('preseleccionDestinos indexa por paquete:lote', () => {
   it('cada lote recibe su propia clave y no se pisan entre hermanos', () => {
     const r = preseleccionDestinos({}, [{ paqueteId: 7, subpaqueteId: 11 }, { paqueteId: 7, subpaqueteId: 12 }], {}, true)
     expect(Object.keys(r).sort()).toEqual(['7:11', '7:12'])
+  })
+})
+
+describe('avisoFrentesSinAncla', () => {
+  it('sin ninguno fuera, no se dice nada', () => {
+    expect(avisoFrentesSinAncla(0)).toBeNull()
+  })
+
+  // Defensivo, no teórico: `sinAncla` llega del servidor y un cliente viejo contra un servidor que
+  // aún no lo manda recibe `undefined`, que el consumidor convierte en 0.
+  it('un negativo tampoco inventa un aviso', () => {
+    expect(avisoFrentesSinAncla(-1)).toBeNull()
+  })
+
+  it('uno solo va en singular y dice qué hacer', () => {
+    expect(avisoFrentesSinAncla(1)).toContain('1 frente del cronograma no se puede ofrecer')
+    expect(avisoFrentesSinAncla(1)).toContain('Añádele una actividad')
+  })
+
+  it('varios van en plural', () => {
+    expect(avisoFrentesSinAncla(24)).toContain('24 frentes del cronograma no se pueden ofrecer')
+    expect(avisoFrentesSinAncla(24)).toContain('Añádeles una actividad')
   })
 })

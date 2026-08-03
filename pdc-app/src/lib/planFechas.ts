@@ -499,6 +499,29 @@ export function motivoSinAnclas(
 }
 
 /**
+ * Cuántos frentes del cronograma se quedaron fuera del desplegable. `null` = ninguno.
+ *
+ * Un encabezado del cronograma no tiene identidad propia —`unique_id` lo da MS Project a las tareas,
+ * no a los capítulos—, así que se ancla a la actividad más temprana de su subárbol. Cuando no tiene
+ * ninguna debajo, no hay a qué amarrarlo y no se puede ofrecer. Ver `anclasDeEncabezados()` en
+ * PlanFechasService.
+ *
+ * Se dice en vez de callarse por lo mismo que existe `motivoSinAnclas()`, y el caso es peor: aquel
+ * explica una lista VACÍA, que ya se nota sola; esta explica una lista INCOMPLETA, que parece
+ * completa. Una que ofrece 24 de 25 sin avisar hace pensar que el que falta no existe.
+ */
+export function avisoFrentesSinAncla(sinAncla: number): string | null {
+  if (sinAncla <= 0) {
+    return null
+  }
+  return sinAncla === 1
+    ? '1 frente del cronograma no se puede ofrecer todavía: no tiene ninguna actividad debajo a la '
+      + 'que amarrarse. Añádele una actividad en el cronograma y volverá a la lista.'
+    : `${sinAncla} frentes del cronograma no se pueden ofrecer todavía: no tienen ninguna actividad `
+      + 'debajo a la que amarrarse. Añádeles una actividad en el cronograma y volverán a la lista.'
+}
+
+/**
  * Resumen del panel de correspondencias.
  *
  * «Pendiente» es solo la rama que hoy deja a algún paquete sin fecha, no cualquier rama sin regla
