@@ -635,5 +635,266 @@
 	<!-- Bloquear el click derecho-->
 	<!--    <script type='text/javascript'>document.oncontextmenu = function(){return false}</script>-->
 
+	<script>
+		/*
+		 * Cableado de la tabla de solicitudes de cambio.
+		 *
+		 * Esta pantalla nacio con la tabla, la fila de filtros y los `onclick` de los modales, pero sin
+		 * el bloque de JS que los sostiene: nadie inicializaba la DataTable y `recargarTabla` /
+		 * `cerrarTodosModales` no existian en todo el repositorio. La API (/api/control-cambios/list)
+		 * si funcionaba, asi que lo que faltaba era exactamente esto.
+		 */
+		$(document).on("ready", function() {
+			cargarDatosGeneralesPagina(document.getElementById('seccion').value);
+		});
+
+		var cargaParametros = function() {
+			listar();
+		}
+
+		/* La base guarda codigos numericos; la cabecera filtra por etiqueta. Se muestran etiquetas. */
+		var SOLICITANTES = { "1": "Obra", "2": "Cliente", "3": "Interventoría", "4": "Otro" };
+		var PRIORIDADES = { "1": "Alta", "2": "Media", "3": "Baja" };
+		var APROBACIONES = {
+			"1": "Aprobado", "2": "Aprobado con Restricciones", "3": "No Aprobado",
+			"4": "En Estudio", "5": "Desistido"
+		};
+
+		var escaparHtml = function(valor) {
+			return $("<div>").text(valor == null ? "" : valor).html();
+		}
+
+		var etiqueta = function(mapa) {
+			return function(data) {
+				if (data === null || data === "") return "";
+				return escaparHtml(mapa[String(data)] || data);
+			};
+		}
+
+		var texto = function(data) {
+			return escaparHtml(data);
+		}
+
+		var moneda = function(data) {
+			var n = parseFloat(data);
+			if (isNaN(n) || n === 0) return "";
+			return "$" + n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
+		}
+
+		/* `tipoCambio` viaja como {"tiposCambio":{"Alcance":1,...}}: se resume en la lista marcada. */
+		var tiposMarcados = function(data) {
+			if (!data) return "";
+			var json;
+			try { json = typeof data === "string" ? JSON.parse(data) : data; } catch (e) { return ""; }
+			var tipos = (json && json.tiposCambio) || {};
+			return escaparHtml(Object.keys(tipos).filter(function(k) {
+				return tipos[k] && tipos[k] !== "0";
+			}).join(", "));
+		}
+
+		function calcDataTableHeight() {
+			if (window.DataTableHeightManager && typeof window.DataTableHeightManager.calcHeight === "function") {
+				return window.DataTableHeightManager.calcHeight({
+					container: "#cuadroTabla", internalChrome: 170, bottomMargin: 25, minHeight: 200
+				});
+			}
+			var disponible = $(window).height() - $("#cuadroTabla").offset().top - 170 - 25;
+			return (disponible > 200 ? disponible : 200) + "px";
+		}
+
+		var idioma_espanol = {
+			"sProcessing": "Procesando...",
+			"sZeroRecords": "Ninguna solicitud coincide con los filtros.",
+			"sEmptyTable": "No hay solicitudes de cambio registradas para este proyecto.",
+			"sInfo": "Mostrando _TOTAL_ solicitudes",
+			"sInfoEmpty": "Sin solicitudes",
+			"sInfoFiltered": "(filtrado de un total de _MAX_)",
+			"sSearch": "Buscar:",
+			"sLoadingRecords": "Cargando...",
+			"oAria": {
+				"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+				"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+			}
+		}
+
+		var listar = function() {
+			var db = document.getElementById('baseDatos').value;
+			var alturatabla = calcDataTableHeight();
+
+			var table = $("#dt_cliente").DataTable({
+				"dom": "<'row filaMensajes'<'col-md-12 mr-auto p-0'<'toolbarFilaMensajes'>>>t<'row'<'col-md-6'i>><'clear'>",
+				"destroy": true,
+				"ordering": false,
+				"orderCellsTop": true,
+				"autoWidth": false,
+				"scrollX": false, /* PROHIBIDO SCROLL HORIZONTAL */
+				"scrollY": alturatabla,
+				"paging": false,
+				"ajax": {
+					"method": "POST",
+					/* El prefijo va en la query string: el controlador lo lee de $_GET, no del cuerpo. */
+					"url": "/api/control-cambios/list?db=" + encodeURIComponent(db),
+					/* La API devuelve una fila centinela vacia cuando no hay nada: se descarta para
+					   que DataTables muestre su propio estado vacio en vez de una fila fantasma. */
+					"dataSrc": function(json) {
+						if (json && json.error) {
+							/* Sin esto un fallo del servidor se disfrazaria de "no hay solicitudes". */
+							$("#mensajeActualizacion").text("No fue posible cargar las solicitudes: " + json.error);
+							return [];
+						}
+						return ((json && json.data) || []).filter(function(fila) {
+							return fila.id !== "" && fila.id != null;
+						});
+					}
+				},
+				/* 29 definiciones para las 29 columnas de la cabecera. El detalle completo vive en la
+				   orden de cambio; aqui solo se deja lo que cabe a 1180 px sin scroll horizontal. */
+				"columns": [
+					{ "defaultContent": "<button type='button' class='ver-orden aia-btn aia-btn--secondary btn-sm' aria-label='Ver orden de cambio'><i class='fa fa-eye'></i></button>", "width": "4%" },
+					{ "data": "id", "width": "5%" },
+					{ "data": "solicitanteCambio", "render": etiqueta(SOLICITANTES), "width": "8%" },
+					{ "data": "detalleSolicitanteOtro", "visible": false },
+					{ "data": "fechaSolicitud", "render": texto, "width": "8%" },
+					{ "data": "prioridad", "render": etiqueta(PRIORIDADES), "width": "6%" },
+					{ "data": "tipoCambio", "render": tiposMarcados, "width": "12%" },
+					{ "data": "responsableSolucion", "render": etiqueta(SOLICITANTES), "width": "8%" },
+					{ "data": "detalleResponsableSolucion", "visible": false },
+					{ "data": "justificacion", "visible": false },
+					{ "data": "descripcion", "render": texto, "width": "18%" },
+					{ "data": "incidenciaAlcance", "visible": false },
+					{ "data": "tiempoCronograma", "visible": false },
+					{ "data": "tiempoCronogramaAfectado", "visible": false },
+					{ "data": "incidenciaCronograma", "visible": false },
+					{ "data": "valorPresupuesto", "visible": false },
+					{ "data": "costoDirecto", "render": moneda, "width": "9%" },
+					{ "data": "costoDirectoAIU", "visible": false },
+					{ "data": "costoDirectoAIUIVA", "visible": false },
+					{ "data": "valorAprobado", "render": moneda, "width": "9%" },
+					{ "data": "incidenciaPresupuesto", "visible": false },
+					{ "data": "incidenciaCalidad", "visible": false },
+					{ "data": "incidenciaRiesgo", "visible": false },
+					{ "data": "fechaTentativaDefinicion", "render": texto, "width": "8%" },
+					{ "data": "fechaEntregaInterventoria", "render": texto, "width": "8%" },
+					{ "data": "Observaciones", "visible": false },
+					{ "data": "fechaDefinicion", "render": texto, "width": "8%" },
+					{ "data": "aprobacion", "render": etiqueta(APROBACIONES), "width": "10%" },
+					{ "data": "soportes", "visible": false }
+				],
+				"language": idioma_espanol
+			});
+
+			$("div.toolbarFilaMensajes").html('<p id="mensajeActualizacion"></p>');
+			conectarFiltros(table);
+			abrirOrdenAlHacerClick(table);
+			return table;
+		}
+
+		/* La fila de filtros existia en el HTML desde el principio, sin nada al otro lado. */
+		var conectarFiltros = function(table) {
+			var filtros = {
+				2: "#buscadorSolicitanteCambio",
+				4: "#buscadorFechaSolicitud",
+				5: "#buscadorPrioridad",
+				6: "#buscadorTipoCambio",
+				7: "#buscadorResponsableDefinicion",
+				16: "#buscadorCostoDirecto",
+				19: "#buscadorValorAprobado",
+				23: "#buscadorFechaTentativaDefinicion",
+				24: "#buscadorFechaEntregaInterventoria",
+				26: "#buscadorFechaDefinicion",
+				27: "#buscadorAprobacion"
+			};
+			Object.keys(filtros).forEach(function(indice) {
+				var $campo = $(filtros[indice]);
+				if (!$campo.length) return;
+				$campo.off('.ccFiltro').on('input.ccFiltro change.ccFiltro', function() {
+					table.column(Number(indice)).search(this.value).draw();
+				});
+			});
+		}
+
+		var abrirOrdenAlHacerClick = function(table) {
+			$("#dt_cliente tbody").off('click.ccOrden').on('click.ccOrden', 'td', function() {
+				var data = table.row($(this).parents('tr')).data();
+				if (data) abrirOrdenDeCambio(data);
+			});
+		}
+
+		var marcarOpcion = function(nombre, valor) {
+			$("input[name='" + nombre + "']").prop("checked", false);
+			if (valor !== null && valor !== "") {
+				$("input[name='" + nombre + "'][value='" + valor + "']").prop("checked", true);
+			}
+		}
+
+		/*
+		 * La orden se abre en consulta. El formulario de edicion (guardar, PDF, soportes) todavia no
+		 * existe en esta pantalla — es H-38 — y dejar botones que llaman a funciones inexistentes es
+		 * justo el defecto que este cambio corrige, asi que se ocultan mientras tanto.
+		 */
+		var abrirOrdenDeCambio = function(data) {
+			$("#Id").val(data.id);
+			$("#inputConsecutivo").val(data.id);
+			$("#inputProyecto").val($("#proyecto").val() || "");
+			$("#inputFechaSolicitud").val(data.fechaSolicitud || "");
+
+			marcarOpcion("inputSolicitanteCambio", data.solicitanteCambio);
+			marcarOpcion("inputPrioridad", data.prioridad);
+			marcarOpcion("inputResponsableSolucion", data.responsableSolucion);
+			marcarOpcion("inputAprobacion", data.aprobacion);
+
+			$("#inputDetalleSolicitanteOtro").val(data.detalleSolicitanteOtro || "");
+			$("#inputDetalleResponsableSolucion").val(data.detalleResponsableSolucion || "");
+
+			var tipos = {};
+			try { tipos = (JSON.parse(data.tipoCambio || "{}").tiposCambio) || {}; } catch (e) { tipos = {}; }
+			["Alcance", "Cronograma", "Costo", "Calidad", "Riesgo", "Recurso"].forEach(function(t) {
+				$("#inputTipoCambio" + t).prop("checked", !!tipos[t] && tipos[t] !== "0");
+			});
+
+			var campos = {
+				"#inputJustificacion": data.justificacion,
+				"#inputDescripcion": data.descripcion,
+				"#inputIncidenciaAlcance": data.incidenciaAlcance,
+				"#inputTiempoCronograma": data.tiempoCronograma,
+				"#inputTiempoCronogramaAfectado": data.tiempoCronogramaAfectado,
+				"#inputIncidenciaCronograma": data.incidenciaCronograma,
+				"#inputValorPresupuesto": moneda(data.valorPresupuesto),
+				"#inputCostoDirecto": moneda(data.costoDirecto),
+				"#inputCostoDirectoAIU": moneda(data.costoDirectoAIU),
+				"#inputCostoDirectoAIUIVA": moneda(data.costoDirectoAIUIVA),
+				"#inputValorAprobado": moneda(data.valorAprobado),
+				"#inputIncidenciaPresupuesto": data.incidenciaPresupuesto,
+				"#inputIncidenciaCalidad": data.incidenciaCalidad,
+				"#inputIncidenciaRiesgo": data.incidenciaRiesgo,
+				"#inputIncidenciaRecurso": data.incidenciaRecurso,
+				"#inputFechaEntregaInterventoria": data.fechaEntregaInterventoria,
+				"#inputFechaTentativaDefinicion": data.fechaTentativaDefinicion,
+				"#inputFechaDefinicion": data.fechaDefinicion
+			};
+			Object.keys(campos).forEach(function(sel) {
+				$(sel).val(campos[sel] == null ? "" : campos[sel]);
+			});
+
+			$("#modalordenDeCambio").find("input, textarea, select").prop("disabled", true);
+			$("#btn_guardarOrden, #btn_generarPDFOrden, .formOrdenCambio button[onclick^='agregarSoporte']").hide();
+			$("#modalordenDeCambio .mensaje").text("Consulta de la orden de cambio. La edición aún no está disponible en esta pantalla.");
+			$("#modalordenDeCambio").modal("show");
+		}
+
+		var cerrarTodosModales = function() {
+			$(".modal").modal("hide");
+		}
+
+		var recargarTabla = function(opcion) {
+			var table = $.fn.DataTable.isDataTable("#dt_cliente") ? $("#dt_cliente").DataTable() : null;
+			if (!table || opcion === "listar") {
+				listar();
+				return;
+			}
+			table.ajax.reload(null, false);
+		}
+	</script>
+
 </body>
 </html>

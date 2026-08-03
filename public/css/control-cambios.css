@@ -56,4 +56,8 @@
   .cc-textarea-fixed {
     resize: none;
   }
+
+  /* El estado vacio de la tabla ya no es una fila estatica en el HTML: al cablear la carga
+     (la vista nacio sin init de DataTables) habria convivido con las filas reales. Ahora lo
+     pone DataTables via `language.sEmptyTable`, con los tokens --ds-table-empty-* del sistema. */
 }

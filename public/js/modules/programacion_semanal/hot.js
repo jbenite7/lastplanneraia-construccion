@@ -2884,6 +2884,14 @@
       },
     });
 
+    import('/js/design-system/ht-empty-state.js').then(function (mod) {
+      if (!hot || hot.isDestroyed) { return; }
+      mod.attachHtEmptyState(hot, {
+        titulo: 'Sin actividades programadas esta semana',
+        cuerpo: 'Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia.',
+      });
+    });
+
     // Fix: Asegurar que HOT mantenga el listening activo.
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();

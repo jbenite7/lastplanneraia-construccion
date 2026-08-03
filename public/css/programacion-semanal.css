@@ -57,6 +57,7 @@ html.aia-theme-dark body.ps-page {
 }
 
 #hot-container {
+    position: relative;
     height: calc(100vh - 380px);
     margin-top: 4px;
     width: 100% !important;

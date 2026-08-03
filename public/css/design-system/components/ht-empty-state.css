@@ -1,0 +1,38 @@
+/**
+ * Estado vacío de las mallas Handsontable.
+ *
+ * Reutiliza la primitiva `.aia-empty` (borde, color, centrado) y añade
+ * solo lo que esa primitiva no cubre: posicionarse como superposición
+ * sobre la malla y estructurar título + cuerpo.
+ */
+@layer components {
+  .ht-empty-state {
+    position: absolute;
+    inset: 0;
+    padding: var(--spacing-lg);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ht-empty-state[hidden] {
+    display: none;
+  }
+
+  .ht-empty-state__content {
+    display: grid;
+    gap: var(--spacing-xs);
+  }
+
+  .ht-empty-state__titulo {
+    margin: 0;
+    color: var(--ds-active-text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .ht-empty-state__cuerpo {
+    margin: 0;
+    max-width: 46ch;
+    color: var(--ds-active-text-secondary);
+  }
+}

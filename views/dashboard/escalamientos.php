@@ -111,11 +111,10 @@ foreach ($crisis as $c) {
     <script>
         let currentSelectedCardData = null;
 
-        // Adaptador dummy para emular Handsontable en el dashboard
-        const dummyHot = {
-            getSourceDataAtRow: function(index) {
-                return currentSelectedCardData;
-            },
+        // Este dashboard no tiene malla: sus tarjetas abren el drawer directamente. El adaptador
+        // solo declara lo que de verdad sabe hacer —escribir una fila— y no finge ser una
+        // instancia de Handsontable. El drawer consulta por capacidad y se adapta.
+        const gridlessAdapter = {
             setDataAtRowProp: function(index, prop, value) {
                 if (prop === 'alerta_crisis' && parseInt(value, 10) === 0) {
                     // Si se mitiga, recargar el dashboard
@@ -125,8 +124,8 @@ foreach ($crisis as $c) {
         };
 
         $(document).ready(function() {
-            // Inicializar el Drawer con el dummyHot y el contexto
-            LPSContextualDrawer.init(dummyHot, 'dashboard', {});
+            // Inicializar el Drawer sin malla, con el adaptador de escritura
+            LPSContextualDrawer.init(gridlessAdapter, 'dashboard', {});
         });
 
         function openLpsDrawer(itemData) {
@@ -141,7 +140,10 @@ foreach ($crisis as $c) {
                 Ruta_Critica: 1, // Todas las crisis del dashboard son Ruta Crítica P1
                 alerta_crisis: 1,
                 nivel_actual: itemData.nivel_actual,
-                alerta_id: itemData.id
+                alerta_id: itemData.id,
+                // El modulo en que nacio la crisis: el dashboard las reune de los tres, asi que sin
+                // este dato el escalamiento quedaria registrado contra el modulo equivocado.
+                modulo: itemData.modulo
             };
 
             // Abrir el drawer pasándole el rowData emulado
