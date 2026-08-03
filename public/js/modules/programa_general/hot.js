@@ -1605,6 +1605,29 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
     });
 
+    Handsontable.renderers.registerRenderer('pgStateChipRenderer', function (instance, td, row, col, prop, value, cellProperties) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = instance.getSourceDataAtRow(instance.toPhysicalRow(row));
+      var classification = rowData ? classifyPGRow(rowData) : null;
+      if (!classification) {
+        return;
+      }
+      // Misma precedencia que la insignia de estado: una fila con alerta de
+      // restricciones se anuncia como tal, no por su estado de avance.
+      var stateKey = classification.restrictionAlertKey
+        ? 'con-alerta-restricciones'
+        : classification.key;
+      var attrs = stateChipAttrs(stateKey);
+      if (!attrs) {
+        return;
+      }
+      var label = classification.restrictionAlertKey
+        ? 'Con Alerta Restricciones'
+        : (value === null || value === undefined || value === '' ? 'Sin datos' : String(value));
+      td.innerHTML = '<span class="ops-state-chip"' + attrs + '>' + escapeHtml(label) + '</span>';
+      td.classList.add('ops-state-td');
+    });
+
     Handsontable.renderers.registerRenderer('pgGenericDateRenderer', function () {
       var dateRenderer = Handsontable.renderers.getRenderer('date') || Handsontable.renderers.TextRenderer;
       dateRenderer.apply(this, arguments);
@@ -2887,7 +2910,7 @@
           renderer: 'pgEjecutadoRealRenderer',
           className: 'htCenter htMiddle',
         },
-        { data: 'Estado', readOnly: true, renderer: 'pgGenericTextRenderer', className: 'htCenter htMiddle force-wrap' },
+        { data: 'Estado', readOnly: true, renderer: 'pgStateChipRenderer', className: 'htCenter htMiddle force-wrap' },
         {
           data: 'Estado_Restricciones',
           readOnly: true,
