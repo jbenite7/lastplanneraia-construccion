@@ -129,3 +129,48 @@ test('la hoja de Semanal no vuelve a pintar el chip por nombre de estado', async
     `${painting.length} regla(s) vuelven a colorear el chip por nombre de estado`,
   );
 });
+
+test('la tabla de presentación de Programa General proyecta el contrato', async () => {
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  const module = semantics.moduleMappings.find((m) => m.module === 'programa-general');
+  const presentation = parsePresentation(
+    await read('public/js/modules/programa_general/hot.js'),
+  );
+
+  for (const state of module.states) {
+    assert.ok(state.key, `el contrato no declara \`key\` para «${state.label}»`);
+    const declared = presentation[state.key];
+    assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
+    assert.deepEqual(
+      declared,
+      { level: state.level, hue: state.hue },
+      `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
+    );
+  }
+
+  const extra = Object.keys(presentation)
+    .filter((key) => key !== 'neutral' && !module.states.some((s) => s.key === key));
+  assert.deepEqual(extra, [], `el módulo presenta estados que el contrato no declara: ${extra}`);
+});
+
+test('la hoja de Programa General no vuelve a pintar el chip por nombre de estado', async () => {
+  const css = await read('public/css/design-system/components/ops-state-chip.css');
+
+  // El fondo del chip es del design system. Si alguien lo declara otra vez en la
+  // forma del chip, la primitiva que pinta por matiz se vuelve inerte.
+  const chipBlock = css.match(/\.ops-state-chip \{([^}]*)\}/)?.[1] ?? '';
+  assert.ok(chipBlock, 'no se encontró la regla base de .ops-state-chip');
+  assert.doesNotMatch(
+    chipBlock,
+    /(^|[\s;])background(-color)?\s*:/,
+    '.ops-state-chip volvió a declarar `background`; eso tapa la primitiva del DS',
+  );
+
+  const modulo = await read('public/css/programa-general.css');
+  const perState = modulo.match(/\.pg-state-[\w-]+ \.ops-state-chip \{[^}]*(background|color|border-color)[^}]*\}/g) ?? [];
+  assert.deepEqual(
+    perState,
+    [],
+    `${perState.length} regla(s) vuelven a colorear el chip por nombre de estado`,
+  );
+});

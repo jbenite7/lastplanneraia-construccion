@@ -749,6 +749,41 @@
     return '';
   }
 
+  // Guard de que esta tabla no se desvie del contrato:
+  // tests/design-system/ops-state-contract.test.mjs
+  var LEVEL_ATTRS = {
+    neutral: { severity: 'none', urgency: 'none' },
+    healthy: { severity: 'low', urgency: 'none' },
+    attention: { severity: 'medium', urgency: 'soon' },
+    urgent: { severity: 'high', urgency: 'now' },
+  };
+
+  // Siete estados, siete matices, sin repetir. Los valores salen de
+  // docs/design-system/state-semantics.json y no se eligen aqui: el matiz es el
+  // eje que desempata dentro de un mismo nivel. `actividad-futura` y `en-curso`
+  // comparten nivel `healthy`, asi que sin matiz se pintan identicas -que es el
+  // defecto que este chip viene a corregir-.
+  var statePresentation = {
+    'actividad-futura': { level: 'healthy', hue: 'green' },
+    'en-curso': { level: 'healthy', hue: 'blue' },
+    terminada: { level: 'healthy', hue: 'neutral' },
+    'con-alerta-restricciones': { level: 'attention', hue: 'amber' },
+    'debe-iniciar': { level: 'attention', hue: 'orange' },
+    atrasada: { level: 'urgent', hue: 'red' },
+    'sin-datos': { level: 'neutral', hue: 'violet' },
+  };
+
+  function stateChipAttrs(state) {
+    var presentation = statePresentation[state];
+    if (!presentation) {
+      return '';
+    }
+    var pair = LEVEL_ATTRS[presentation.level];
+    return ' data-aia-hue="' + presentation.hue + '"'
+      + ' data-aia-severity="' + pair.severity + '"'
+      + ' data-aia-urgency="' + pair.urgency + '"';
+  }
+
   function classifyPGRow(data) {
     if (!data || (getProgramUniqueId(data) === null && data.Consecutivo === undefined && data.Id === undefined)) {
       return {
