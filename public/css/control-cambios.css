@@ -56,4 +56,13 @@
   .cc-textarea-fixed {
     resize: none;
   }
+
+  /* Estado vacio de la tabla de solicitudes (H-02): antes eran 550px de
+     vacio absoluto bajo las cabeceras cuando no habia filas. */
+  .cc-empty-state {
+    text-align: center;
+    color: var(--ds-active-text-secondary);
+    font-style: italic;
+    padding: 2rem !important;
+  }
 }
