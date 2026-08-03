@@ -69,58 +69,58 @@ antes de tocar un área, lee su mapa: dice qué documentos mandan y qué trampas
 Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o absorbido) y
 **[[log]]** (bitácora cronológica de lo que se ha ingerido y verificado).
 
-## Decisiones
+## Catálogo
 
-| Página | De qué va | Fecha |
-|---|---|---|
-| [[compras-migrado-shell-sidebar]] | Compras ya usa el shell sidebar, revirtiendo la exclusión que sigue escrita en el goal | 2026-07-29 |
-| [[dev-door-acceso-local]] | La sesión local se abre siempre por `/dev/entrar`, nunca tecleando credenciales | 2026-07-30 |
-| [[goal-dark-mode-todos-modulos]] | Decisiones vinculantes F0–F6: retirada del tema `linen`, exclusión de AdminLTE | 2026-07-29 |
-| [[no-enriquecer-daporto-para-medir]] | No enriquecer el proyecto real 73 para medir; usar uno sintético | 2026-07-30 |
-| [[powerbi-indicadores]] | `/indicadores` dejó Data Studio por Power BI publish-to-web, y sus límites | 2026-07-23 |
-| [[sidebar-default-collapsed]] | El shell sidebar se queda colapsado por defecto | 2026-07-24 |
+Decisiones, trampas y referencias generadas desde el frontmatter de cada página (`tipo`,
+`resumen`, `areas`, `fecha`). La base trae las tres vistas seleccionables — no hace falta un
+embebido por tabla.
 
-## Trampas
+```base
+filters:
+  and:
+    - file.inFolder("memoria")
 
-| Página | Qué muerde | Fecha |
-|---|---|---|
-| [[admin-adminlte-adaptador]] | `admin/` tiene entrypoint CSS propio; para ganar a un `!important` del vendor hay que capar en `@layer reset` | 2026-07-29 |
-| [[aislar-stack-docker-por-worktree]] | Receta para dar a un worktree stack Docker y base propios sin recrear el ajeno | 2026-07-29 |
-| [[audit-ve-color-en-comentarios]] | El audit cuenta hex y `rgba()` escritos dentro de comentarios CSS | 2026-07-29 |
-| [[autoria-por-coincidencia-de-hora]] | La hora de última actividad de una sesión no prueba que escribiera un archivo | 2026-08-02 |
-| [[bitacora-drawer-sin-profesional]] | `general_usuarios` id 366 no tiene fila en `profesionales` para el proyecto 73: sembrar la bitácora del drawer con `test.A` falla por FK | 2026-07-29 |
-| [[branch-preexisting-red-gates]] | Rojos preexistentes tolerados de los gates del design system, y cómo validarlos en worktrees | 2026-07-23 |
-| [[captura-playwright-miente]] | La captura `only-on-failure` de Playwright se toma tras el `finally { logout }` y simula una caída de sesión | 2026-07-29 |
-| [[css-layer-cascade]] | `styles.css` vive en `module.components`; para ganarle en `!important` hace falta capa superior | 2026-07-22 |
-| [[dos-stacks-docker]] | Dos stacks con MySQL propio: conectarse al equivocado escribe en la base de otra sesión | 2026-07-28 |
-| [[drawer-en-handsontable-module]] | La geometría del Cajón Contextual vive en `handsontable-module.css`, que `core.css` no importa | 2026-07-29 |
-| [[gate-visual-tolerancia-enganosa]] | El gate visual puede pasar en verde con un rediseño real; hay que regenerar goldens con `--update-snapshots=all` | 2026-07-29 |
-| [[hot-container-height-ownership]] | La altura de `#hot-container` la resuelve JS; `calc(100vh - Npx)` sobre él es siempre falso | 2026-07-25 |
-| [[lab-desktop-layout-suite]] | La suite desktop-layout corre fuera del carril `runtime` | 2026-07-27 |
-| [[lab-header-offset-medido]] | El offset del header del lab se mide con `ResizeObserver`; el `calc()` es solo respaldo | 2026-07-27 |
-| [[lab-sticky-body-overflow]] | `.ds-lab` necesita `overflow: visible` en ambos ejes, y borrar la declaración no basta | 2026-07-27 |
-| [[manifiesto-ds-exige-golden]] | Un manifiesto de módulo no se puede crear «en seco»: exige un golden real con `sha256` que case | 2026-07-29 |
-| [[navbar-css-consumidor-vivo]] | Antes de borrar una hoja CSS hay que grepear también el JS de runtime | 2026-07-25 |
-| [[path-with-space-esm-guard-noop]] | La ruta del repo tiene un espacio: el guard `file://${argv[1]}` es no-op | 2026-07-21 |
-| [[pdc-e2e-sandbox]] | Los e2e del PDC v2 corren contra el proyecto sacrificable 990100 | 2026-07-28 |
-| [[pdc-legend-item-clase-compartida]] | `pdc-legend-item` la comparten PG, PI y PS con `!important` invencibles: desacoplar, no pelear la cascada | 2026-08-03 |
-| [[reset-legacy-pisa-adaptadores]] | El spacing de adaptadores del design system va en `@layer legacy-overrides`, no en `components` | 2026-07-29 |
-| [[semanal-auto-dispara-mutaciones]] | Abrir `/programacion-semanal` dispara `save`/`auto-program` automáticos al cargar | 2026-07-29 |
-| [[servir-worktree-stack-efimero]] | Para correr e2e sobre un worktree hace falta identidad compose, no `docker run` | 2026-07-30 |
-| [[sesion-cae-en-el-panel]] | La sesión "muere" ~60-90 s tras login solo en el panel del navegador de Claude, no en el servidor | 2026-07-29 |
-| [[siteground-sin-tunel-ssh]] | SiteGround prohíbe el reenvío de puertos: no hay forma de ver producción como local | 2026-07-30 |
-| [[stack-principal-migraciones-pdc-pendientes]] | Replayar las migraciones del PDC exige todo el DDL antes que los seeds | 2026-07-28 |
-| [[suite-php-rojos-preexistentes]] | Rojos preexistentes de la suite PHP, y las dos trampas al medirlos en macOS | 2026-07-29 |
-| [[tests-browser-allowlist]] | `tests/browser/` está gitignorado con lista blanca: un test nuevo no se commitea solo | 2026-07-28 |
-| [[visual-baselines-estado-real]] | Las baselines visuales del lab están rojas: mide el delta antes de culpar a tu cambio | 2026-07-28 |
-| [[worktree-compartido-arrastra-commits]] | Dos sesiones en el mismo worktree se arrastran los cambios sin commitear | 2026-07-28 |
+properties:
+  note.resumen:
+    displayName: De qué va
+  note.areas:
+    displayName: Áreas
+  note.fecha:
+    displayName: Fecha
+  note.estado:
+    displayName: Estado
 
-## Referencias
-
-| Página | Apunta a | Fecha |
-|---|---|---|
-| [[artefacto-estado-dark-mode]] | Dashboard vivo del goal de dark mode; se regenera desde el audit, no a mano | 2026-07-29 |
-| [[produccion-deploy]] | Cómo se despliega producción en SiteGround y cuánto va por detrás de `main` | 2026-07-23 |
+views:
+  - type: table
+    name: Decisiones
+    filters:
+      and:
+        - 'note.tipo == "decision"'
+    order:
+      - file.name
+      - note.resumen
+      - note.areas
+      - note.fecha
+  - type: table
+    name: Trampas
+    filters:
+      and:
+        - 'note.tipo == "trampa"'
+    order:
+      - file.name
+      - note.resumen
+      - note.areas
+      - note.fecha
+  - type: table
+    name: Referencias
+    filters:
+      and:
+        - 'note.tipo == "referencia"'
+    order:
+      - file.name
+      - note.resumen
+      - note.fecha
+```
 
 ## Contratos del repo (no viven aquí)
 
