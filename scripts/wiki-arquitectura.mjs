@@ -2,7 +2,7 @@
 // Genera las zonas <!-- generado --> de memoria/arquitectura/.
 // Escribe SOLO entre marcadores: la prosa de fuera nunca se toca.
 // Ver memoria/index.md y docs/superpowers/plans/2026-08-03-arquitectura-en-la-wiki.md.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -77,33 +77,127 @@ export function leerRbac() {
 }
 
 // --- Servicios y tablas ----------------------------------------------------
+//
+// El generador no inventa: un nombre que "parece" tabla o servicio pero no
+// se puede confirmar contra una fuente de verdad (el esquema real, el árbol
+// de archivos de src/Services y src/Support) se descarta, no se publica.
 
 const RUIDO_SQL = new Set(['select', 'from', 'where', 'join', 'inner', 'left', 'right', 'outer',
   'on', 'as', 'and', 'or', 'set', 'values', 'into', 'update', 'insert', 'delete', 'group',
   'order', 'by', 'limit', 'offset', 'union', 'null', 'not', 'is', 'in', 'exists', 'case',
   'when', 'then', 'else', 'end', 'distinct', 'having', 'dual', 'if']);
 
+// Quita comentarios de bloque, de línea (// y #) antes de aplicar cualquier
+// regex de extracción: si no, texto en prosa dentro de un comentario ("top 5
+// from stage 1") se lee como si fuera SQL real.
+function sinComentariosPhp(t) {
+  return t
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+    .replace(/^\s*#.*$/gm, ' ');
+}
+
+// Índice real de archivos bajo src/Services y src/Support: única fuente de
+// verdad para decidir si un nombre capturado por regex es un servicio real.
+let _indiceServiciosCache = null;
+function indiceServicios() {
+  if (_indiceServiciosCache) return _indiceServiciosCache;
+  const rutasRelativas = new Set();
+  const basenames = new Map(); // nombre de clase (sin namespace) -> ruta relativa a src/
+  for (const raiz of ['src/Services', 'src/Support']) {
+    const base = join(RAIZ, raiz);
+    if (!existsSync(base)) continue;
+    const walk = (dir, prefijo) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          walk(join(dir, entry.name), `${prefijo}${entry.name}/`);
+        } else if (entry.name.endsWith('.php')) {
+          const rel = `${raiz}/${prefijo}${entry.name}`;
+          rutasRelativas.add(rel);
+          basenames.set(entry.name.slice(0, -4), rel);
+        }
+      }
+    };
+    walk(base, '');
+  }
+  _indiceServiciosCache = { rutasRelativas, basenames };
+  return _indiceServiciosCache;
+}
+
+// Devuelve la ruta real (relativa a RAIZ) de un nombre de servicio ya
+// validado por serviciosDe(), o null si por algún motivo no se encuentra.
+export function archivoDeServicio(nombre) {
+  const { rutasRelativas, basenames } = indiceServicios();
+  const conNamespace = [...rutasRelativas].find((r) => r.endsWith(`/${nombre.replace(/\\/g, '/')}.php`));
+  if (conNamespace) return join(RAIZ, conNamespace);
+  const plano = basenames.get(nombre);
+  return plano ? join(RAIZ, plano) : null;
+}
+
 export function serviciosDe(archivo) {
   if (!existsSync(archivo)) return [];
-  const t = readFileSync(archivo, 'utf8');
+  const t = sinComentariosPhp(readFileSync(archivo, 'utf8'));
+  const { rutasRelativas, basenames } = indiceServicios();
   const s = new Set();
-  for (const m of t.matchAll(/App\\(?:Services|Support)\\([A-Za-z0-9_\\]+)/g)) {
-    s.add(m[1].replace(/\\/g, '\\'));
+  for (const m of t.matchAll(/App\\(Services|Support)\\([A-Za-z0-9_\\]+)/g)) {
+    const raiz = `src/${m[1]}`;
+    const clase = m[2];
+    const rel = `${raiz}/${clase.replace(/\\/g, '/')}.php`;
+    // Normaliza al nombre de clase (sin namespace) para que un uso calificado
+    // (App\Services\Pdc\X) y un uso corto (new X(...)) en el mismo archivo
+    // no aparezcan como dos servicios distintos.
+    if (rutasRelativas.has(rel)) s.add(clase.split('\\').pop());
   }
-  for (const m of t.matchAll(/new\s+([A-Z][A-Za-z0-9_]*(?:Service|Processor|Matcher|Resolver|Gate|Policy))\s*\(/g)) {
-    s.add(m[1]);
+  for (const m of t.matchAll(/new\s+\\?([A-Z][A-Za-z0-9_]*(?:Service|Processor|Matcher|Resolver|Gate|Policy))\s*\(/g)) {
+    const nombre = m[1];
+    if (basenames.has(nombre)) s.add(nombre);
   }
   return [...s].sort();
 }
 
+// Esquema real de la base de datos, vía docker compose (nunca hardcodeado).
+// Si el contenedor no responde, devuelve null: el llamador debe tratarlo
+// como "no se pudo confirmar", no como "no hay tablas".
+let _esquemaCache = undefined;
+export function leerEsquema() {
+  if (_esquemaCache !== undefined) return _esquemaCache;
+  try {
+    const env = readFileSync(join(RAIZ, '.env'), 'utf8');
+    const leer = (clave) => {
+      const m = env.match(new RegExp(`^${clave}=(.*)$`, 'm'));
+      return m ? m[1].trim().replace(/^"(.*)"$/, '$1') : null;
+    };
+    const usuario = leer('DB_USER') || 'root';
+    const clave = leer('DB_PASS') || '';
+    const base = leer('DB_NAME');
+    if (!base) { _esquemaCache = null; return null; }
+    const salida = execFileSync('docker', [
+      'compose', 'exec', '-T', 'db', 'mysql', `-u${usuario}`, `-p${clave}`, '-N', '-e', 'SHOW TABLES', base,
+    ], { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    _esquemaCache = new Set(salida.split('\n').map((l) => l.trim()).filter(Boolean));
+  } catch {
+    _esquemaCache = null;
+  }
+  return _esquemaCache;
+}
+
 export function tablasDe(archivos) {
+  const esquema = leerEsquema();
   const s = new Set();
   for (const a of archivos) {
     if (!existsSync(a)) continue;
-    const t = readFileSync(a, 'utf8');
+    const t = sinComentariosPhp(readFileSync(a, 'utf8'));
     for (const m of t.matchAll(/\b(?:FROM|JOIN|INTO|UPDATE)\s+`?([a-z][a-z0-9_]{2,})`?/gi)) {
       const nombre = m[1].toLowerCase();
-      if (!RUIDO_SQL.has(nombre)) s.add(nombre);
+      if (RUIDO_SQL.has(nombre)) continue;
+      if (esquema) {
+        if (esquema.has(nombre)) s.add(nombre);
+      } else {
+        // Sin esquema disponible: solo la extracción textual, ya libre de
+        // comentarios. Es un fallback deliberadamente más débil que 1) del
+        // brief; si ni así se confía, mejor null aguas arriba.
+        s.add(nombre);
+      }
     }
   }
   return [...s].sort();
@@ -160,8 +254,8 @@ export function datosDe(mod, rutas, rbac) {
   const archivos = [...new Set(mias.map((r) => archivoDeDestino(r.destino)).filter(Boolean))];
   const servicios = [...new Set(archivos.flatMap((a) => serviciosDe(a)))].sort();
   const archivosServicio = servicios
-    .map((s) => join(RAIZ, 'src/Services', s.replace(/\\/g, '/') + '.php'))
-    .filter((p) => existsSync(p));
+    .map((s) => archivoDeServicio(s))
+    .filter((p) => p && existsSync(p));
   const soloLegado = mias.length > 0 && mias.every((r) => r.tipo === 'legado');
 
   const capacidades = mod.capacidades.map((cap) => {
