@@ -63,7 +63,11 @@
     border-radius: var(--ds-radius-control) !important;
   }
 
-  :where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child)) {
+  :where(
+    .input-group > .form-control:not(:last-child),
+    .input-group > .custom-select:not(:last-child),
+    .input-group > .aia-input:not(:last-child)
+  ) {
     border-start-end-radius: var(--ds-radius-none) !important;
     border-end-end-radius: var(--ds-radius-none) !important;
   }

@@ -169,6 +169,15 @@ Lo de abajo no es vocabulario, son defectos.
 El hallazgo más barato de arreglar y el más revelador: **la app y admin resuelven la misma pantalla
 de forma distinta, y admin la resuelve peor.**
 
+> **Aviso para H-33 y H-35 (añadido el 2026-08-03).** El marcado de `/login`, `/password/forgot` y
+> `/password/reset` **se corrigió** ese día: la `<label class="auth-field-label">` vivía *dentro* del
+> `.input-group`, ocupaba todo el ancho del flex y empujaba el icono a una tercera línea, debajo del
+> campo. Ahora la etiqueta va en un envoltorio `.auth-field` y el `.input-group` contiene solo el
+> campo y su apéndice; además `.aia-input` recibe el `flex: 1 1 auto` que Bootstrap solo daba a
+> `.form-control`. **El patrón a copiar hacia `/admin/*` es el corregido, no el que estaba vigente
+> cuando se levantó este inventario.** Lo que sigue siendo ejemplar de `/login` es lo semántico: el
+> `<label for="…">` visible y los `autocomplete="username"` / `"current-password"`.
+
 | # | Superficie | Descripción | Sev. | Captura |
 |---|---|---|---|---|
 | H-33 | `/admin/login` | Los campos `usuario` y `password` **no tienen `<label>`** (solo `placeholder`, que desaparece al escribir) y llevan **`autocomplete=""` vacío**, así que ningún gestor de contraseñas los rellena. `/login` de la app hace las dos cosas bien: tiene labels y declara `autocomplete="username"` / `"current-password"`. Mismo trabajo, dos calidades. | alta | `admin-login.png` vs `login.png` |

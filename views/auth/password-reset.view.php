@@ -37,25 +37,29 @@
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
 
-                        <div class="input-group mb-3">
+                        <div class="auth-field mb-3">
                             <label for="password" class="auth-field-label">Nueva contraseña</label>
-                            <input type="password" id="password" name="password" class="aia-input" placeholder="Nueva contraseña" autocomplete="new-password" minlength="6" pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{6,}" aria-describedby="password-policy" required>
-                            <div class="input-group-append">
-                                <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
-                                    <i class="fas fa-eye" aria-hidden="true"></i>
-                                </button>
+                            <div class="input-group">
+                                <input type="password" id="password" name="password" class="aia-input" placeholder="Nueva contraseña" autocomplete="new-password" minlength="6" pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{6,}" aria-describedby="password-policy" required>
+                                <div class="input-group-append">
+                                    <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <p id="password-policy" class="auth-field-help">Mínimo 6 caracteres, una mayúscula y un carácter especial.</p>
 
-                        <div class="input-group mb-4">
+                        <div class="auth-field mb-4">
                             <label for="confirm_password" class="auth-field-label">Confirmar contraseña</label>
-                            <input type="password" id="confirm_password" name="confirm_password" class="aia-input" placeholder="Confirma tu contraseña" autocomplete="new-password" required>
-                            <div class="input-group-append">
-                                <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="confirm_password" aria-label="Mostrar contraseña" aria-pressed="false">
-                                    <i class="fas fa-eye" aria-hidden="true"></i>
-                                </button>
+                            <div class="input-group">
+                                <input type="password" id="confirm_password" name="confirm_password" class="aia-input" placeholder="Confirma tu contraseña" autocomplete="new-password" required>
+                                <div class="input-group-append">
+                                    <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="confirm_password" aria-label="Mostrar contraseña" aria-pressed="false">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
