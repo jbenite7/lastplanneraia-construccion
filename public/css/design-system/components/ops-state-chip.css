@@ -1,0 +1,27 @@
+@layer components {
+  /* Chip de estado operativo: el marcado declara su matiz y su nivel, y la
+     primitiva de states-feedback.css los traduce a fondo y texto. Aqui va solo
+     la forma.
+
+     SIN `background` A PROPOSITO. El fondo lo pinta la capa de componentes
+     desde `data-aia-hue`. Si este bloque lo declarara, ganaria siempre —`module`
+     va despues de `components` en el orden de capas— y la primitiva quedaria
+     inerte. Es el error que Intermedia ya cometio y corrigio. */
+  .ops-state-chip {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    color: inherit;
+    font-weight: 900;
+    font-size: 0.78rem;
+    line-height: 1.18;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: normal;
+  }
+}
