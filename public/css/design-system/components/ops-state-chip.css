@@ -24,4 +24,14 @@
     white-space: normal;
     word-break: normal;
   }
+
+  /* Celda que aloja el chip. Sin `background` por la misma razon de arriba
+     -no aporta color, solo asegura que el chip respire dentro de la celda-.
+     Programacion Intermedia ya declaraba estas mismas propiedades en su
+     propio CSS con !important; se dejan tal cual alli y no se tocan. */
+  td.ops-state-td {
+    padding: var(--ds-space-1) var(--ds-space-2);
+    overflow: visible;
+    vertical-align: middle;
+  }
 }
