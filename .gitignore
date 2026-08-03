@@ -96,6 +96,45 @@ goals/dark-mode-todos-los-modulos/*
 !goals/dark-mode-todos-los-modulos/specs/
 !goals/dark-mode-todos-los-modulos/plans/
 
+# Goals que quedaron fuera de la lista blanca y solo existían en la máquina local
+# (revisado el 2026-08-02). Se versiona el núcleo documental, no los JSON de
+# entrevista ni la evidencia, igual que en el resto.
+!goals/shell-layout-design-system/
+goals/shell-layout-design-system/*
+!goals/shell-layout-design-system/goal.md
+!goals/shell-layout-design-system/plan.md
+!goals/shell-layout-design-system/facts.md
+
+# `sidebar-todos-modulos` lleva además `briefs/` y `reports/`: cada report registra
+# el commit, el resultado de los tests y cómo se resolvió ese módulo. Es el único
+# rastro de por qué cada pantalla del rollout quedó como quedó.
+!goals/sidebar-todos-modulos/
+goals/sidebar-todos-modulos/*
+!goals/sidebar-todos-modulos/goal.md
+!goals/sidebar-todos-modulos/plan.md
+!goals/sidebar-todos-modulos/facts.md
+!goals/sidebar-todos-modulos/briefs/
+!goals/sidebar-todos-modulos/reports/
+
+# `bi-control-tower-gemini` ya estaba rastreado antes de existir esta lista blanca,
+# así que viajaba pese a caer en `goals/*` — git no desversiona por .gitignore. Se
+# explicita para que deje de depender de ese accidente: si alguien lo saca del
+# índice, sin esta línea no volvería a entrar.
+!goals/bi-control-tower-gemini/
+goals/bi-control-tower-gemini/*
+!goals/bi-control-tower-gemini/goal.md
+!goals/bi-control-tower-gemini/validation-log.md
+!goals/bi-control-tower-gemini/evidence/
+
+# Falta suelta del mismo repaso: el resto del goal sí viajaba, pero `specs/` no. Hay
+# que reabrir la carpeta del goal antes de poder reincluir nada de dentro — git no
+# desciende a un directorio ya excluido por `goals/*`.
+!goals/cierre-dark-mode-y-tablas/
+goals/cierre-dark-mode-y-tablas/*
+!goals/cierre-dark-mode-y-tablas/goal.md
+!goals/cierre-dark-mode-y-tablas/inventario.md
+!goals/cierre-dark-mode-y-tablas/specs/
+
 # Vite emite un index.html junto al bundle del PDC; en producción la página la sirve el
 # shell PHP (views/plan-compras/app.view.php), que es quien inyecta __PDC_BOOTSTRAP__.
 # El script `npm run build` lo borra, pero eso solo protege a quien pase por él: quien

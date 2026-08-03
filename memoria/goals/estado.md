@@ -42,16 +42,27 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 | `dark-mode-todos-los-modulos` | `cierre-dark-mode-y-tablas`. Ninguna fase llegó a ejecutarse bajo este goal, pero sus decisiones F0–F6 siguen vigentes: ver [[goal-dark-mode-todos-modulos]] |
 | `pdc-responsable-usuario` | `pdc-preparar-b1` |
 
-## Cuáles no viajan en git
+## Qué viaja en git
 
-`.gitignore` ignora `goals/` y va habilitando carpetas una a una con lista blanca (líneas 56–125
-y 270–274). Estos goals **existen solo en esta máquina**: en un clon fresco no están, y cualquier
-enlace hacia ellos queda roto.
+`.gitignore` ignora `goals/` entero y va habilitando carpetas una a una con lista blanca. Tras el
+repaso del 2026-08-02, **los 16 goals viajan**: 97 archivos `.md` llegan a un clon fresco.
 
-`bi-control-tower-gemini` · `cierre-dark-mode-y-tablas` · `shell-layout-design-system` ·
-`sidebar-todos-modulos`
+Antes de ese repaso faltaban tres cosas, y conviene saber por qué, porque el mismo patrón puede
+repetirse con cualquier goal nuevo:
 
-Tampoco viajan enteros los que sí están en la lista blanca: de varios solo se versionan
-`goal.md`, `plan.md`, `facts.md` y `validation-log.md`, no la evidencia.
+- `shell-layout-design-system` y `sidebar-todos-modulos` no tenían **ningún** archivo en git: se
+  crearon después de que existiera la lista blanca y nadie añadió su excepción. De
+  `sidebar-todos-modulos` se versionaron también `briefs/` y `reports/`, porque cada report
+  registra el commit, el resultado de los tests y cómo se resolvió ese módulo del rollout.
+- `cierre-dark-mode-y-tablas/specs/diseno.md` estaba suelto fuera. Reincluirlo exigió reabrir
+  antes la carpeta del goal: git no desciende a un directorio ya excluido por `goals/*`, así que
+  una excepción a un archivo interior no basta por sí sola.
+- `bi-control-tower-gemini` **sí viajaba**, pero por accidente: sus archivos ya estaban rastreados
+  antes de que existiera la lista blanca, y `.gitignore` no desversiona lo que git ya sigue. Se le
+  añadió su excepción explícita para que deje de depender de eso.
 
-Corregir esa lista es una decisión aparte, no algo que arregle la wiki.
+Lo que sigue deliberadamente fuera: los JSON de entrevista y `facts-result*`, la evidencia en
+imagen, y `dark-mode-todos-los-modulos/HANDOFF-5h-5k.md` —un traspaso entre sesiones que apunta a
+`.superpowers/`, scratch que nunca viaja, así que en un clon sería un puntero roto—.
+
+**Al crear un goal nuevo, añade su excepción en `.gitignore` o desaparecerá en silencio.**
