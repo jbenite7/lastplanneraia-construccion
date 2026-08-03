@@ -6,6 +6,7 @@
 - Aplica lecturas, comprobaciones y validaciones solo cuando correspondan al área modificada y de forma proporcional al riesgo. Reutiliza evidencia vigente de la misma sesión cuando sus entradas no hayan cambiado; empieza por la comprobación enfocada y amplía solo si el impacto o los resultados lo justifican.
 - Si el usuario nombra un goal o sprint, lee primero `goals/<slug>/goal.md`, `plan.md` y `facts.md` cuando existan y sean pertinentes para la petición. Consulta `validation-log.md`, `checklist.md`, `evidence.md` o `gates.md` únicamente cuando controlen el trabajo solicitado. No mezcles otros goals, módulos o sprints sin autorización.
 - Conserva el worktree existente. Antes de editar, revisa estado y diff; no reviertas, limpies ni incluyas cambios ajenos. Evita refactors de cortesía y mantén cada cambio ligado al objetivo activo.
+- `memoria/` es la wiki del proyecto: contexto, nunca contrato. Precedencia ante conflictos: **código > este archivo > `memoria/`**. Una nota que contradiga al repo se corrige y se marca `estado: derogada`. La escribe el asistente, no se edita a mano, y su esquema está en `CLAUDE.md`.
 
 ## Runtime local
 

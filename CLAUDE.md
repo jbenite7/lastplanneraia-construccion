@@ -9,6 +9,44 @@ rules restated for other assistants/humans; where they overlap, `AGENTS.md` wins
 additional orientation that isn't already in those files: commands and where things actually live in
 the code.
 
+## Memoria del proyecto (wiki en `memoria/`)
+
+**Empieza por `memoria/index.md`.** Es la wiki del proyecto: el porqué de las decisiones, las
+trampas que ya costaron tiempo, un mapa por área y el estado real de los goals. Sigue el patrón
+[LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f), en tres capas:
+
+| Capa | Dónde | Regla |
+|---|---|---|
+| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Nunca se editan desde la wiki.** |
+| Wiki | `memoria/` | La escribe el asistente. **Nunca se edita a mano.** |
+| Esquema | esta sección | Explica la estructura y las operaciones. |
+
+Precedencia ante conflictos: **código > `AGENTS.md` > `memoria/`**. Nada de lo que hay en la wiki
+es contrato. Si una nota contradice al repo, gana el repo: corrígela y márcala `estado: derogada`
+en vez de borrarla.
+
+El vault de Obsidian es la **raíz del repo**, no `memoria/`; por eso los wikilinks alcanzan a
+`docs/`, `goals/` y a los `.md` de la raíz sin copiarlos. La configuración compartida está en
+`.obsidian/` (versionada salvo el estado personal de la ventana).
+
+Tres operaciones:
+
+- **Ingest** — al cerrar una tarea o al aparecer una fuente nueva: lee la fuente, comenta el
+  hallazgo, escribe o actualiza la página, actualiza `memoria/index.md`, revisa las páginas
+  relacionadas por si alguna quedó obsoleta, y anexa una línea a `memoria/log.md`.
+- **Query** — al preguntar contra la wiki, responde citando páginas. Si la respuesta era valiosa y
+  no estaba escrita, promuévela a página.
+- **Lint** — al cerrar un sprint o a petición: barrido en busca de contradicciones, afirmaciones
+  que el repo ya desmintió, páginas huérfanas y referencias ausentes. Delegable a un subagente de
+  bajo coste. Deja línea en el log.
+
+Reglas de escritura: **una nota, un hecho**; si no cabe en una pantalla, probablemente son dos.
+Frontmatter con `tipo`, `estado`, `fecha`, `areas`, `fuente` (y `origen` si viene de la memoria
+privada previa). Sin plugins de comunidad: el vault debe funcionar en cualquier máquina.
+
+**Antes de tocar un área, lee su mapa** en `memoria/mapas/`: dice qué documentos mandan y qué
+trampas hay puestas.
+
 ## Runtime & commands
 
 Everything runs in Docker Compose — never use MAMP/XAMPP/a host PHP. Services: `app` (PHP 8.3 +
