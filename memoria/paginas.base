@@ -38,3 +38,20 @@ views:
       - file.name
       - resumen
       - fecha
+  - type: table
+    name: Módulos
+    filters:
+      and:
+        - note.tipo == "modulo"
+    order:
+      - file.name
+      - resumen
+      - areas
+  - type: table
+    name: Flujos
+    filters:
+      and:
+        - note.tipo == "flujo"
+    order:
+      - file.name
+      - resumen

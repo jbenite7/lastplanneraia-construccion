@@ -69,6 +69,27 @@ antes de tocar un área, lee su mapa: dice qué documentos mandan y qué trampas
 Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o absorbido) y
 **[[log]]** (bitácora cronológica de lo que se ha ingerido y verificado).
 
+## Arquitectura por módulo
+
+Una página por módulo real de la aplicación en `memoria/arquitectura/`, y dos de flujo en
+`memoria/flujos/`: [[flujo-lps]] y [[flujo-pdc]].
+
+Cada página de módulo tiene dos zonas. Entre `<!-- generado:inicio -->` y `<!-- generado:fin -->`
+manda `scripts/wiki-arquitectura.mjs`, que extrae del código las rutas con su verbo y destino, los
+controladores, los servicios, las tablas y qué rol tiene cada capacidad. **Fuera de los marcadores
+manda la persona**, y regenerar no lo toca. Cuando cambien rutas, controladores o permisos:
+
+```bash
+node scripts/wiki-arquitectura.mjs --cobertura   # ninguna ruta sin módulo
+node scripts/wiki-arquitectura.mjs --escribir    # actualiza las zonas generadas
+```
+
+Si aparece un módulo nuevo, se declara en `scripts/wiki-arquitectura.modulos.mjs`; si una ruta
+nueva no casa con ningún módulo, `--cobertura` falla en vez de dejarla fuera del mapa en silencio.
+
+El inventario de rutas y la matriz de navegación vivían antes en `docs/ROUTES.md`, que no viajaba
+en git. Se retiró el 2026-08-03: ahora están aquí y versionados.
+
 ## Catálogo
 
 Decisiones, trampas y referencias generadas desde el frontmatter de cada página (`tipo`,

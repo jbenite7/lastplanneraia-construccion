@@ -10,7 +10,8 @@ const WIKI = join(RAIZ, 'memoria');
 
 const AREAS = new Set(['design-system', 'qa', 'docker', 'worktrees', 'pdc',
   'lps', 'datos', 'rbac', 'deploy', 'bi', 'admin', 'proceso', 'arquitectura']);
-const TIPOS = new Set(['decision', 'trampa', 'mapa', 'goal', 'concepto', 'referencia', 'log']);
+const TIPOS = new Set(['decision', 'trampa', 'mapa', 'goal', 'concepto', 'referencia', 'log',
+  'modulo', 'flujo']);
 const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
 
 function listarMd(dir) {
