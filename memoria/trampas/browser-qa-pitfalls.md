@@ -17,7 +17,14 @@ Durante QA en navegador contra `http://localhost:8081` (2026-07-22) se observó 
 5. **Playwright desde un worktree**: vive solo en el node_modules del checkout principal; importarlo con URL absoluta `file:///Volumes/Crucial%20X6/Developer/lps-aia/node_modules/playwright/index.mjs` (la ruta tiene espacio).
 6. **Reset legacy pisa adaptadores**: `styles.css` entra como `layer(module)` y su `* {margin/padding:0}` (capa `module.reset`) gana a `@layer components`; el spacing de adaptadores del design system debe ir en `@layer legacy-overrides` (patrón de semi-auto-review.css y bi-figure.css).
 7. **El gate visual (maxDiffPixelRatio 0.03) puede pasar en verde con un rediseño real**: el rediseño completo de la toolbar/leyenda del PG (2026-07-22) midió solo 2,6% de píxeles distintos (el fondo oscuro uniforme domina) — un golden obsoleto no siempre falla. Tras un cambio visual intencional, regenerar goldens deliberadamente con `--update-snapshots=all` (el default `changed` NO reescribe si el diff cae dentro de tolerancia) y actualizar los `sha256` del manifiesto.
-8. **`pdc-legend-item` es una clase compartida trampa**: `styles.css:6476` le fija ancho 205px `!important` vía `html body …` a PG/PI/PS, y `buttons.css` la llena de `!important` en capa components (invencibles desde CSS de módulo, donde `!important` está prohibido por contrato). Para adoptar el DS en una leyenda, desacoplar con clase propia del módulo (patrón `pg-filter-chip` del PG) en vez de pelear la cascada.
+8. **`pdc-legend-item` es una clase compartida trampa** (revisado el 2026-08-03): la regla
+   `html body … {width: 205px !important}` que citaba la línea 6476 de `styles.css` **ya no
+   existe** — el archivo tiene hoy 4380 líneas y `205px` no aparece en él. Tras la tokenización,
+   `.pdc-legend-item` se define en `styles.css:532-536` con tokens de estado del design system y
+   sin `!important` de ancho. Lo que sigue vigente es el fondo del asunto: la clase la comparten
+   PG, PI y PS, y `buttons.css` la llena de `!important` en capa `components`, invencibles desde
+   CSS de módulo. Para adoptar el design system en una leyenda, desacopla con una clase propia del
+   módulo (patrón `pg-filter-chip`) en vez de pelear la cascada.
 
 9. **La captura de fallo de Playwright miente cuando el spec tiene `finally { logout }`** (2026-07-29): los specs del PDC v2 envuelven el cuerpo en `try/finally` con `logout(page)`, y la captura `only-on-failure` se toma **después** de ese teardown → cualquier fallo, sea el que sea, se «ve» como la pantalla de login y parece caída de sesión (punto 1). Costó un diagnóstico entero. Ir al log del contenedor (`docker compose logs app`) y mirar el código/tamaño de la respuesta, no a la imagen: un `POST …/preview 200 693` con un cuerpo sospechosamente pequeño fue lo que delató el bug real.
 

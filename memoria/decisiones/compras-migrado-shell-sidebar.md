@@ -8,10 +8,15 @@ origen: lps-aia-compras-migrado-shell-sidebar
 resumen: "Compras (/contratos, /listado-actividades, /pdc) YA usa el shell sidebar, revirtiendo la exclusión que sigue escrita en goals/sidebar-todos-modulos/goal.md"
 ---
 El 2026-07-25 se migraron `/contratos`, `/listado-actividades` y `/pdc` al shell sidebar canónico.
-`goals/sidebar-todos-modulos/goal.md` **sigue diciendo** que Compras está «OMITIDO de este goal
-(ligado al desarrollo PDC v2 activo)» y que el alcance son 11 rutas: ese texto quedó obsoleto y
-puede inducir a error. El harness `tests/browser/shell-sidebar-rollout.mjs` cubre ahora 22 rutas
-(113 checks) y `docs/design-system/manifests/foundation-shell.json` las declara.
+El harness `tests/browser/shell-sidebar-rollout.mjs` cubre ahora 22 rutas (113 checks) y
+`docs/design-system/manifests/foundation-shell.json` las declara.
+
+**Sobre el goal `sidebar-todos-modulos`** (revisado el 2026-08-03): su `goal.md` excluye a Compras,
+y eso **no es un texto olvidado**. El goal cerró el 2026-07-31 con una sección «Cierre formal» que
+documenta la omisión como excepción deliberada: «Compras… omitidas — PDC v2 tiene su propia
+navegación; las rutas viejas ya están retiradas». Las dos cosas son ciertas a la vez: aquel goal no
+migró Compras, y Compras llegó al shell sidebar por otra vía. No hay nada que corregir en el goal;
+lo que había que corregir era esta nota, que lo acusaba de estar desactualizado.
 
 **Why:** el usuario revirtió esa exclusión explícitamente al arreglar el navbar huérfano; sin este
 apunte, una sesión futura que lea el goal asumiría que Compras sigue en navegación legacy.

@@ -27,7 +27,13 @@ que cubran **2026-07-02**, una fecha ya pasada, en Da Porto, Milán T19 y Aeropu
 diagnosticar.
 
 **Re-medido el 2026-07-29 en el worktree principal, rama `main` @ `1a75b19`, árbol limpio: son 4 de 108,
-no 16 de 103.** La cifra de arriba es de una rama, y sobre `main` la mayoría ya estaba resuelta —así que
+no 16 de 103.**
+
+> **Universo medido el 2026-08-03:** `ls tests/test_*.php | wc -l` da **126** archivos, no 108. La
+> cifra de fallos de arriba es de `main@1a75b19` (2026-07-29) y **no se ha vuelto a medir**. Cítala
+> siempre con su fecha, o vuelve a correr la suite.
+
+La cifra de arriba es de una rama, y sobre `main` la mayoría ya estaba resuelta —así que
 **la lista de 16 no sirve como línea base de `main`**. Los 4 de `main`: `test_pdc_phpstan_nivel6` (roto
 de verdad, arreglado en `88c37b8`), `test_pdc_v2_brecha_daporto` (obsoleto: fija la versión 292 de Da
 Porto, que desapareció al reimportarse el presupuesto el 2026-07-29; se dejó rojo a propósito),
