@@ -1,7 +1,16 @@
 # F5 · plan-compras
 
 **Depende de:** F0. Independiente del resto; puede correr en cualquier momento tras F0.
-**Riesgo:** medio — el trabajo principal ocurre en **otro repositorio**.
+**Riesgo:** medio — el trabajo cruza la frontera PHP/SPA, pero **todo ocurre en este repositorio**.
+
+> **Corrección de premisa — 2026-08-03.** Este spec se escribió cuando la isla React vivía en un
+> repositorio externo `plan-de-compras`. **Ya no.** La SPA está versionada aquí en `pdc-app/`
+> (`pdc-app/package.json` declara `ag-grid-community@^36.0.2`) y publica su bundle en
+> `public/pdc-app/`. No hay coordinación entre repositorios: T5.5 y T5.6 son tareas de
+> `pdc-app/src/`, y T5.7 es un build local. Ver `docs/pdc-v2.md`.
+>
+> El trabajo de F5 se ejecutó y cerró bajo `goals/cierre-dark-mode-y-tablas/` (fase G4) el
+> 2026-07-31. Este spec queda como antecedente histórico, no como trabajo abierto.
 
 ## Objetivo
 
@@ -28,16 +37,16 @@ Características:
   el tercer mecanismo de tema del repositorio (F0 unifica los otros dos y deja éste para aquí).
 - Carga `tokens.css`, así que las variables `--ds-*` están disponibles — pero nada garantiza
   que `pdc.css` las use.
-- `pdc.css` y `pdc.js` se compilan en el repositorio externo **`plan-de-compras`** (`npm run
-  sync`) y llegan compilados a `public/pdc-app/`. **Ningún gate de este repositorio los ve**:
-  no están en `scanRoots` del audit, no tienen manifiesto, y `public/pdc-app/` es artefacto de
-  build, no fuente.
+- `pdc.css` y `pdc.js` los compila **`pdc-app/` de este mismo repositorio** (Vite) hacia
+  `public/pdc-app/`. Al escribirse el spec ningún gate los veía: ni `pdc-app/src` ni
+  `public/pdc-app/` estaban en `scanRoots` del audit, y no había manifiesto. La fuente sí es
+  auditable aquí — es la diferencia frente a lo que este spec suponía.
 - No carga el entrypoint del design system, así que no hereda componentes ni adaptadores.
 
 ## Decisión habilitante
 
-Decisión 14: **tenemos acceso y autoridad sobre `plan-de-compras`**. F5 es, por tanto, un spec
-de implementación en dos repositorios, no sólo de contrato.
+Decisión 14 (revisada el 2026-08-03): la isla es **código propio de este repositorio**. F5 es un
+spec de implementación normal, sin coordinación entre repositorios.
 
 ## Alcance
 
@@ -73,16 +82,15 @@ Se implementa como script nuevo bajo `scripts/`, invocado desde el enrutador de 
 
 Prueba de navegador que carga `/plan-compras` en `1180×820` dark y comprueba que las
 superficies principales resuelven a los valores de `--ds-active-*`, no a colores propios. Es
-la red de seguridad frente a un `npm run sync` que traiga una regresión desde el otro
-repositorio.
+la red de seguridad frente a un rebuild de la SPA que traiga una regresión.
 
-### En el repositorio `plan-de-compras`
+### En `pdc-app/` (misma base de código)
 
 #### T5.5 — Migrar a tokens compartidos
 
-Inventariar los colores propios del código fuente de la isla y sustituirlos por
-`var(--ds-active-*)` / `var(--ds-*)`, que ya están disponibles porque el shell carga
-`tokens.css`.
+Inventariar los colores propios de `pdc-app/src/` y sustituirlos por `var(--ds-active-*)` /
+`var(--ds-*)`, que ya están disponibles porque el shell carga `tokens.css`. Al ser fuente
+versionada aquí, `pdc-app/src` puede entrar en `scanRoots` del audit.
 
 #### T5.6 — Declarar la versión de DS
 
@@ -91,20 +99,18 @@ compararla.
 
 #### T5.7 — Publicar
 
-`npm run sync` trae el bundle actualizado; el commit en este repositorio incluye artefacto,
+El build de `pdc-app/` regenera `public/pdc-app/`; el commit incluye fuente, artefacto,
 manifiesto y evidencia juntos.
 
 ## Dependencia de secuencia
 
-T5.5 ocurre en el otro repositorio y su ritmo no lo controla este plan. T5.1 a T5.3 pueden
-completarse antes, de forma independiente. **T5.4 y el cierre de F5 requieren que T5.7 haya
-llegado.**
+Ninguna cruza repositorios. T5.1 a T5.3 son independientes y pueden ir primero. **T5.4 y el
+cierre de F5 requieren que T5.7 se haya ejecutado**, porque validan el artefacto publicado.
 
 ## Fuera de alcance
 
 - Rediseñar la interfaz de Plan de Compras.
 - Cambiar la lógica de la isla ni los endpoints `/plan-compras/api/*`.
-- Absorber el repositorio externo dentro de éste.
 
 ## Verificación
 
@@ -123,9 +129,9 @@ al cargar, contraste AA en las superficies principales.
 
 | Riesgo | Mitigación |
 |---|---|
-| El otro repositorio se desincroniza y trae una regresión | T5.4 la detecta en CI de este repositorio |
+| Un rebuild de la SPA trae una regresión de color sin que nadie lo note | T5.4 la detecta en runtime |
 | El gate de artefacto produce falsos positivos por minificación | Verifica contrato, no estilo: presencia de `var(--ds-*)` y ausencia de redefinición de tokens |
-| La versión de DS diverge entre repositorios | T5.6 la declara y T5.3 la compara |
+| La versión de DS diverge entre el bundle y el repo | T5.6 la declara y T5.3 la compara |
 
 ## Criterio de cierre
 

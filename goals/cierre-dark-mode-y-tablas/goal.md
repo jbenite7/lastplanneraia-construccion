@@ -124,6 +124,43 @@ DataTables conviven en las mismas vistas.
 
 ---
 
+## Saneamiento posterior al cierre — 2026-08-03
+
+Un repaso contra la wiki (`memoria/`) encontró que el goal se dio por HECHO con tres de sus ocho
+condiciones sin cumplir como estaban escritas, más un token roto que nadie medía. Corregido:
+
+| # | Hallazgo | Corrección |
+|---|---|---|
+| 1 | La escala `--ds-cell-state-*` ancló **cinco colores propios** junto a `--ds-color-state-*`, que ya existía con su `state-token-pairing.test.mjs`. El goal existía para acabar con las paletas paralelas y creó una | Tres peldaños pasan a alias directos, `riesgo` se deriva con `color-mix()`, y sólo `bloqueado` conserva ancla propia, porque la escala preexistente no tiene un peldaño de «detenido por otro» |
+| 2 | La condición 3 exigía el gate **enrutado**, y sólo corría a mano | Enrutado en `test:design-system:static` (estático) y en `test:design-system:runtime` (navegador) |
+| 3 | Las condiciones 1 y 2 exigían medir **con filas cargadas** y AA por par; el gate era estático y pasaba en verde sin mirar una tabla | `tests/browser/design-system-table-contract.runtime.mjs`: mide tokens sobre celda real con filas y contraste de los 7 peldaños. Registrado en el `.gitignore` de `tests/browser/` |
+| 4 | `--ds-table-empty-fg` y `--ds-cell-state-sin-datos-fg` apuntaban a `--ds-active-text-tertiary`, **que nunca existió**: el texto caía a color heredado en todas las tablas | Apuntan a `--ds-active-text-secondary`. Lo encontró el gate de runtime en su primera corrida |
+
+**Contraste medido en `/programa-general`, 1180×820 dark, con la grilla montada.** Los cuatro
+peldaños derivados mejoraron: ok 5,63 → 8,88 · atención 5,21 → 9,31 · riesgo 5,58 → 10,07 ·
+crítico 7,19 → 10,99. `bloqueado` se mantiene en 7,18 (ancla propia, sin tocar). Ninguno baja.
+
+### Queda abierto
+
+- **El vocabulario JS es código muerto.** `public/js/modules/shared/cell-state-vocabulary.mjs` no
+  lo importa nadie salvo el gate: los renderers de Handsontable nunca lo llaman, así que
+  `STATE_MAP` documenta una intención, no un comportamiento. Las clases de dominio siguen
+  asignándose a mano en cada `hot.js`.
+- **Un mapeo que no se sostiene:** `pi-state-execution-blocked → OK`. Decisión de dominio, no de
+  diseño: la debe resolver quien conoce el significado en Programación Intermedia.
+- **No se recapturó ningún golden.** Los colores de estado cambiaron de aspecto, así que las
+  baselines de tabla retratan el estado anterior. Requiere aprobación visual explícita.
+
+### Rojos preexistentes verificados como ajenos
+
+Medidos con `git stash` sobre `tokens.css` y con diff limpio:
+
+- `design-system-audit.mjs`: `profesionales` y `subcontratistas` con `hardcoded-hex: 1 > 0`.
+  Idéntico con `tokens.css` en HEAD.
+- `shell-navigation.test.mjs`: espera `--ds-sidebar-width-expanded: 17.5rem` y el token vale
+  `15rem` desde HEAD. Ninguna línea de sidebar aparece en el diff de este saneamiento.
+
+
 ## Archivos de este goal
 
 [[goals/cierre-dark-mode-y-tablas/inventario|inventario.md]]

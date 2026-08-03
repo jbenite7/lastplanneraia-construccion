@@ -279,6 +279,7 @@ tests/browser/*
 !tests/browser/shell-week-admin.mjs
 !tests/browser/shell-sidebar-rollout.mjs
 !tests/browser/design-system-unlayered-delivery.mjs
+!tests/browser/design-system-table-contract.runtime.mjs
 .playwright-mcp/
 .tmp-e2e/
 

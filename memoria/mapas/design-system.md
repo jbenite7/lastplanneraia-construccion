@@ -42,9 +42,10 @@ Y el reset legado pisa adaptadores: el spacing de adaptadores va en `@layer lega
 Antes de dar nada por verde, lee [[branch-preexisting-red-gates]]: hay rojos preexistentes que no
 son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (el audit lee texto crudo,
 así que un hex citado en un comentario rompe el presupuesto),
-[[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco) y
+[[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco),
 [[visual-baselines-estado-real]] (las baselines del lab están rojas; mide el delta antes de
-culparte).
+culparte) y [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
+que apunta a una variable inexistente: los valores resueltos solo se ven en navegador).
 
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
 [[lab-desktop-layout-suite]].
