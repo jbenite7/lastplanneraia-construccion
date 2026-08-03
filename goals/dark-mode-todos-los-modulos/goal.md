@@ -113,3 +113,13 @@ que absorbió todas sus especificaciones, fases y deudas pendientes. El `validat
 (1 638 líneas) queda como historia consultable, no como trabajo abierto. Ninguna de las fases
 F0–F6 se ejecutó bajo este goal; el diseño y las decisiones del grilleo siguen vigentes en
 el goal sucesor.
+
+---
+
+## Archivos de este goal
+
+[[goals/dark-mode-todos-los-modulos/facts|facts.md]] · [[goals/dark-mode-todos-los-modulos/validation-log|validation-log.md]]
+
+[[goals/dark-mode-todos-los-modulos/plans/F0-fundacion-tema.plan|plans/F0-fundacion-tema.plan.md]] · [[goals/dark-mode-todos-los-modulos/plans/F1-modales-huerfanos.plan|plans/F1-modales-huerfanos.plan.md]] · [[goals/dark-mode-todos-los-modulos/plans/F1-styles-css.plan|plans/F1-styles-css.plan.md]] · [[goals/dark-mode-todos-los-modulos/specs/F0-fundacion-tema|specs/F0-fundacion-tema.md]] · [[goals/dark-mode-todos-los-modulos/specs/F1-modales-huerfanos|specs/F1-modales-huerfanos.md]] · [[goals/dark-mode-todos-los-modulos/specs/F1-styles-css|specs/F1-styles-css.md]] · [[goals/dark-mode-todos-los-modulos/specs/F2-superficies-agregador|specs/F2-superficies-agregador.md]] · [[goals/dark-mode-todos-los-modulos/specs/F3-bi|specs/F3-bi.md]] · [[goals/dark-mode-todos-los-modulos/specs/F4-admin|specs/F4-admin.md]] · [[goals/dark-mode-todos-los-modulos/specs/F5-plan-compras|specs/F5-plan-compras.md]] · [[goals/dark-mode-todos-los-modulos/specs/F6-vendors|specs/F6-vendors.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

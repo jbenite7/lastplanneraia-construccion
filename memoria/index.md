@@ -16,9 +16,14 @@ tres capas, y el asistente mantiene la de en medio.
 
 | Capa | Dónde | Regla |
 |---|---|---|
-| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Nunca se editan desde aquí.** |
+| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Su contenido no se edita desde aquí.** |
 | Wiki | `memoria/` | La escribe el asistente. **Nunca se edita a mano.** |
 | Esquema | Sección «Memoria del proyecto» de [[CLAUDE]] | Explica esta estructura y las tres operaciones. |
+
+**Una excepción, decidida el 2026-08-02:** cada `goals/<slug>/goal.md` lleva al final una sección
+«Archivos de este goal» que enlaza a sus hermanos y a [[estado|Estado de los goals]]. Es
+navegación añadida al pie, no contenido modificado, y es lo único que hace que los 99 archivos de
+`goals/` aparezcan tejidos en el grafo en vez de como islas. `docs/` sigue intacto.
 
 El vault de Obsidian es la **raíz del repo**, no esta carpeta. Por eso los enlaces alcanzan a
 `docs/`, `goals/` y a los `.md` de la raíz sin copiarlos aquí.

@@ -36,3 +36,11 @@ El diseño completo aprobado se encuentra en [`docs/superpowers/specs/2026-07-30
 Este goal existía para consolidar cuatro iniciativas de interfaz bajo un solo paraguas de
 ejecución. Cada una tiene ahora su goal dedicado con su propia condición de hecho. Mantenerlo
 abierto solo duplica el rastreo sin aportar gobernanza adicional.
+
+---
+
+## Archivos de este goal
+
+[[goals/shell-layout-design-system/facts|facts.md]] · [[goals/shell-layout-design-system/plan|plan.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

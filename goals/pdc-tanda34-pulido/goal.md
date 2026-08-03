@@ -58,3 +58,11 @@ lo comparten todos los proyectos de AIA y la migración merece su propio alcance
 
 Condición de hecho cumplida: 26 hechos verificados. Vitest 215/215, build OK, 14/14 e2e.
 0 apariciones de "No Rows To Show", 0 "(s)", buscadores insensibles a tildes funcionando.
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-tanda34-pulido/facts|facts.md]] · [[goals/pdc-tanda34-pulido/plan|plan.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

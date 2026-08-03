@@ -137,3 +137,13 @@ planos DWG (encargo aparte, agosto) · matriz de áreas (la construye Tomás).
 El objetivo del goal era llevar el PDC v2 del comité al lanzamiento. Todas las peticiones del
 comité están implementadas y desplegadas. La tarea 10 no depende de código sino de un evento
 externo (adopción en producción) y ya está rastreada en su goal propio.
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-preparar-b1/estado-olas|estado-olas.md]] · [[goals/pdc-preparar-b1/hallazgos-piloto|hallazgos-piloto.md]]
+
+[[goals/pdc-preparar-b1/evidence/b3-aislamiento-http|evidence/b3-aislamiento-http.md]] · [[goals/pdc-preparar-b1/evidence/b3-volumen|evidence/b3-volumen.md]] · [[goals/pdc-preparar-b1/evidence/censo-consumidores-pdc-v1|evidence/censo-consumidores-pdc-v1.md]] · [[goals/pdc-preparar-b1/evidence/cierre-prelanzamiento-2026-07-29|evidence/cierre-prelanzamiento-2026-07-29.md]] · [[goals/pdc-preparar-b1/evidence/comite-2026-07-29|evidence/comite-2026-07-29.md]] · [[goals/pdc-preparar-b1/evidence/impacto-y-tamiz-validacion|evidence/impacto-y-tamiz-validacion.md]] · [[goals/pdc-preparar-b1/evidence/listas-por-modalidad-no-se-construye|evidence/listas-por-modalidad-no-se-construye.md]] · [[goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29|evidence/medicion-rematching-2026-07-29.md]] · [[goals/pdc-preparar-b1/evidence/paquetes-sin-duracion-ref|evidence/paquetes-sin-duracion-ref.md]] · [[goals/pdc-preparar-b1/evidence/validacion-equipo-alquilado-comprado|evidence/validacion-equipo-alquilado-comprado.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

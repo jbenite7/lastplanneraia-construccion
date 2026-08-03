@@ -30,3 +30,11 @@ Medido en la app real (Da Porto, `localhost:8091`), consola sin errores:
 Por **valor** el plan está al 54 %; por **conteo**, al 11 % (11 de 96). No es una contradicción: los
 once paquetes ya amarrados son los más caros del proyecto. Por eso el grilleo pidió los dos números
 juntos — cada uno solo cuenta media verdad, y el de conteo es el que dice cuánto trabajo queda.
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-tanda2-plan-verdad/facts|facts.md]] · [[goals/pdc-tanda2-plan-verdad/plan|plan.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

@@ -68,3 +68,11 @@ hayan empezado.
 Los 30 hechos de `facts.md` verificados. Suites en verde: PHP 0 fallos, Vitest verde,
 motor de paquetes intacto (7 diferencias), PHPStan nivel 6 sin errores. Los 3 planes
 (tablas, funcionalidad, navegación) entregados.
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-revision-ux/facts|facts.md]] · [[goals/pdc-revision-ux/hallazgos-e2e-usuario|hallazgos-e2e-usuario.md]] · [[goals/pdc-revision-ux/hallazgos|hallazgos.md]] · [[goals/pdc-revision-ux/plan-1-tablas|plan-1-tablas.md]] · [[goals/pdc-revision-ux/plan-2-funcionalidad|plan-2-funcionalidad.md]] · [[goals/pdc-revision-ux/plan-3-navegacion|plan-3-navegacion.md]] · [[goals/pdc-revision-ux/validation-log|validation-log.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

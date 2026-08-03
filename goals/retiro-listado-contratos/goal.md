@@ -148,3 +148,9 @@ registro.**
 El objetivo principal (que las rutas viejas desaparezcan del producto) está cumplido y verificado.
 Las etapas diferidas son deuda técnica interna que no afecta al usuario, requieren gates dedicados
 y están documentadas con sus condiciones de arranque.
+
+---
+
+## Contexto
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

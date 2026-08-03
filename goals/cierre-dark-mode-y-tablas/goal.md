@@ -122,3 +122,12 @@ DataTables conviven en las mismas vistas.
    - `node scripts/design-system-plan-compras-gate.mjs`: **PASS**
    - `docker compose exec app vendor/bin/phpstan analyse src admin/src --memory-limit=1G`: **PASS (0 errores)**
 
+---
+
+## Archivos de este goal
+
+[[goals/cierre-dark-mode-y-tablas/inventario|inventario.md]]
+
+[[goals/cierre-dark-mode-y-tablas/specs/diseno|specs/diseno.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

@@ -17,9 +17,14 @@ trampas que ya costaron tiempo, un mapa por área y el estado real de los goals.
 
 | Capa | Dónde | Regla |
 |---|---|---|
-| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Nunca se editan desde la wiki.** |
+| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Su contenido no se edita desde la wiki.** |
 | Wiki | `memoria/` | La escribe el asistente. **Nunca se edita a mano.** |
 | Esquema | esta sección | Explica la estructura y las operaciones. |
+
+Excepción decidida el 2026-08-02: cada `goals/<slug>/goal.md` termina con una sección «Archivos de
+este goal» que enlaza a sus hermanos versionados y a `memoria/goals/estado.md`. Es navegación
+añadida al pie, no contenido modificado; sin ella los 99 archivos de `goals/` quedan como islas en
+el grafo. Al crear un goal nuevo, añade esa sección. `docs/` no se toca.
 
 Precedencia ante conflictos: **código > `AGENTS.md` > `memoria/`**. Nada de lo que hay en la wiki
 es contrato. Si una nota contradice al repo, gana el repo: corrígela y márcala `estado: derogada`

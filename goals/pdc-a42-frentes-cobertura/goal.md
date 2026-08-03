@@ -113,3 +113,11 @@ ese trabajo ni lo estorba.
 | 4 | 0 amarres automáticos | **0** ✅ |
 | 5 | Panel de amarre funcional | Endpoints + panel + atajo ✅ |
 | 6 | Tests en verde | 242/242 Vitest · PHPStan 0 · 2/2 e2e ✅ |
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-a42-frentes-cobertura/coordinacion-sesiones|coordinacion-sesiones.md]] · [[goals/pdc-a42-frentes-cobertura/facts|facts.md]] · [[goals/pdc-a42-frentes-cobertura/plan|plan.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

@@ -47,3 +47,15 @@ El plan aprobado está en [`plan.md`](plan.md): "receta PI" repetible por módul
   navegación; las rutas viejas ya están retiradas (ver `retiro-listado-contratos`).
 - **Control Tower:** diferido a goal dedicado [`bi-control-tower-gemini`](../bi-control-tower-gemini/goal.md)
   — es una SPA con stack propio que requiere rediseño, no migración mecánica.
+
+---
+
+## Archivos de este goal
+
+[[goals/sidebar-todos-modulos/facts|facts.md]] · [[goals/sidebar-todos-modulos/plan|plan.md]]
+
+**Briefs por tarea:** [[goals/sidebar-todos-modulos/briefs/task-1-harness|briefs/task-1-harness.md]] · [[goals/sidebar-todos-modulos/briefs/task-11-manifest-gates|briefs/task-11-manifest-gates.md]] · [[goals/sidebar-todos-modulos/briefs/task-2-programa-general|briefs/task-2-programa-general.md]] · [[goals/sidebar-todos-modulos/briefs/task-3-profesionales|briefs/task-3-profesionales.md]] · [[goals/sidebar-todos-modulos/briefs/task-4-subcontratistas|briefs/task-4-subcontratistas.md]] · [[goals/sidebar-todos-modulos/briefs/task-5-control-cambios|briefs/task-5-control-cambios.md]] · [[goals/sidebar-todos-modulos/briefs/task-6-actualizar-cronograma|briefs/task-6-actualizar-cronograma.md]] · [[goals/sidebar-todos-modulos/briefs/task-7-programacion-semanal|briefs/task-7-programacion-semanal.md]] · [[goals/sidebar-todos-modulos/briefs/task-8-subvistas-cic-cnc-cnp|briefs/task-8-subvistas-cic-cnc-cnp.md]] · [[goals/sidebar-todos-modulos/briefs/task-9-indicadores|briefs/task-9-indicadores.md]]
+
+**Reportes por tarea:** [[goals/sidebar-todos-modulos/reports/ct-task-1-report|reports/ct-task-1-report.md]] · [[goals/sidebar-todos-modulos/reports/ct-task-2-report|reports/ct-task-2-report.md]] · [[goals/sidebar-todos-modulos/reports/ct-task-3-report|reports/ct-task-3-report.md]] · [[goals/sidebar-todos-modulos/reports/ct-task-4-report|reports/ct-task-4-report.md]] · [[goals/sidebar-todos-modulos/reports/ct-task-5-report|reports/ct-task-5-report.md]] · [[goals/sidebar-todos-modulos/reports/task-1-report|reports/task-1-report.md]] · [[goals/sidebar-todos-modulos/reports/task-11-report|reports/task-11-report.md]] · [[goals/sidebar-todos-modulos/reports/task-2-report|reports/task-2-report.md]] · [[goals/sidebar-todos-modulos/reports/task-3-report|reports/task-3-report.md]] · [[goals/sidebar-todos-modulos/reports/task-4-report|reports/task-4-report.md]] · [[goals/sidebar-todos-modulos/reports/task-5-report|reports/task-5-report.md]] · [[goals/sidebar-todos-modulos/reports/task-6-report|reports/task-6-report.md]] · [[goals/sidebar-todos-modulos/reports/task-7-report|reports/task-7-report.md]] · [[goals/sidebar-todos-modulos/reports/task-8-report|reports/task-8-report.md]] · [[goals/sidebar-todos-modulos/reports/task-9-report|reports/task-9-report.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

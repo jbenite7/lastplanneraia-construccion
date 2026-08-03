@@ -18,3 +18,11 @@ La comprensión compartida y verificable está en `facts.md`. El orden de implem
 Infraestructura de partición CSS y runtime PHP funcionando. Superficies auth y project-selector
 migradas a `renderForModule`. Equivalencia visual verificada byte a byte. Gates de partición
 pasando (11/11).
+
+---
+
+## Archivos de este goal
+
+[[goals/segmentacion-entrypoint-css/facts|facts.md]] · [[goals/segmentacion-entrypoint-css/plan|plan.md]] · [[goals/segmentacion-entrypoint-css/validation-log|validation-log.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

@@ -19,3 +19,9 @@ días fijos por paso, alias opcional, reordenar/apagar/agregar pasos.
 Integración de la configuración de pasos en el Plan de Fechas de PDC v2 completada.
 3 diferidos construidos, 1 archivado justificadamente. Tests PHP/E2E pasando,
 recálculo automático al guardar verificado.
+
+---
+
+## Contexto
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

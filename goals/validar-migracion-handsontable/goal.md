@@ -47,3 +47,11 @@ El retiro de `/listado-actividades` y `/contratos` (ver [`retiro-listado-contrat
 dejó sin efecto esta validación. Las tablas activas se gobiernan ahora mediante PDC v2 y el
 goal [`cierre-dark-mode-y-tablas`](../cierre-dark-mode-y-tablas/goal.md). Los 57 hechos de
 `facts.md` y el `validation-log.md` quedan como referencia histórica.
+
+---
+
+## Archivos de este goal
+
+[[goals/validar-migracion-handsontable/facts|facts.md]] · [[goals/validar-migracion-handsontable/plan|plan.md]] · [[goals/validar-migracion-handsontable/validation-log|validation-log.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

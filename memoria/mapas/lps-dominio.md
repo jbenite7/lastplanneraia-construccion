@@ -12,12 +12,12 @@ resumen: "Last Planner en este producto: programación general, intermedia y sem
 
 - [[GLOSARIO]] — vocabulario oficial. **Consúltalo antes de nombrar cualquier cosa del dominio**;
   aquí un nombre mal puesto se propaga a la base de datos y a la interfaz.
-- `docs/ESTADOS-PG-PI-PS.md` — los estados de las tres programaciones, que es donde está la
+- [[docs/ESTADOS-PG-PI-PS]] — los estados de las tres programaciones, que es donde está la
   complejidad real.
-- `docs/last-planner-programacion-intermedia-estados.md` y
-  `docs/last-planner-programacion-semanal-estados.md` — el detalle por superficie.
-- `docs/VISTAS-MODULOS.md` — qué vista corresponde a qué módulo.
-- `docs/matriz-severidad-cajon-contextual-lps.md` — severidades del cajón contextual.
+- [[docs/last-planner-programacion-intermedia-estados]] y
+  [[docs/last-planner-programacion-semanal-estados]] — el detalle por superficie.
+- [[docs/VISTAS-MODULOS]] — qué vista corresponde a qué módulo.
+- [[docs/matriz-severidad-cajon-contextual-lps]] — severidades del cajón contextual.
 
 ## Las tres programaciones
 

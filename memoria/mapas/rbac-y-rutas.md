@@ -12,7 +12,7 @@ resumen: "Roles, capacidades, rutas protegidas y sesión: dónde se resuelve cad
 
 - `docs/ROUTES.md` — inventario canónico de superficies y matriz de navegación. **No viaja en
   git** (está en `.gitignore`), así que en un clon fresco no existe.
-- `docs/rbac_roles_reference.md` y `docs/rbac_cargos_roles_dictionary.md` — roles y cargos.
+- [[docs/rbac_roles_reference]] y [[docs/rbac_cargos_roles_dictionary]] — roles y cargos.
 - [[AGENTS]] — obliga a verificar **un rol permitido y uno denegado** cuando cambien rutas
   protegidas, sesión, middleware o capacidades.
 

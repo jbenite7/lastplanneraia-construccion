@@ -11,7 +11,7 @@ resumen: "Levantar el proyecto en local, aislar un worktree y publicar en produc
 ## Qué manda
 
 [[AGENTS]] §Runtime local y §Publicación · [[CLAUDE]] §Runtime & commands ·
-`docs/siteground-deploy-routine.md` para publicar.
+[[docs/siteground-deploy-routine]] para publicar.
 
 ## Local
 

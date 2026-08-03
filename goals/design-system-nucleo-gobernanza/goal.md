@@ -9,3 +9,11 @@ La comprensión compartida y verificable está en `facts.md`. El orden de implem
 La ejecución debe seleccionar y usar de forma explícita las skills, plugins, MCPs, conectores, hooks y subagentes disponibles que aporten calidad, velocidad, evidencia o seguridad material al paso activo. El catálogo efectivo del runtime, no un inventario histórico, determina qué está disponible. Cada selección debe ser mínima, justificada, proporcional al riesgo y producir evidencia verificable; ninguna capacidad instalada, hook o subagente amplía alcance, permisos ni autorización de cambios externos.
 
 Done condition: el trabajo preexistente fue preservado y aislado fuera del sprint sin convertir ese prerrequisito en sprints por módulo; todos los hechos vigentes de `facts.md` están verificados; cada fase deja trazabilidad de sus capacidades seleccionadas, su evidencia y sus fallback; cada ficha del catálogo declara madurez y solo la API `stable`, ejercida por laboratorio y Programa General, entra en la garantía SemVer `1.0.0`; los quince gates exactos de `closeout-evidence.json` tienen evidencia fresca y estado `passed`; los datos de prueba quedaron restaurados; el usuario aprobó la revisión consolidada del laboratorio y del piloto; la revisión local quedó resuelta; el milestone quedó en una serie de commits coherentes más un commit de release, sin push, deploy ni activación de branch protection, y PDC queda listo como prueba posterior de reutilización y retorno. Teclado y reflow permanecen como evidencia no bloqueante y no activan la versión.
+
+---
+
+## Archivos de este goal
+
+[[goals/design-system-nucleo-gobernanza/facts|facts.md]] · [[goals/design-system-nucleo-gobernanza/plan|plan.md]] · [[goals/design-system-nucleo-gobernanza/validation-log|validation-log.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

@@ -12,7 +12,7 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
 
 - [[DESIGN]] (raíz) — contrato de **consumo**: qué tokens y primitivas `aia-*` usar. Se lee antes
   de tocar cualquier superficie migrada.
-- `docs/design-system/README.md` — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
+- [[docs/design-system/README]] — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
   `decisions.md` forma la capa contractual, distinta de `docs/brand/`, que solo aporta insumos
   visuales.
 - [[AGENTS]] — fija el alcance: **desktop ≥1180 px y dark mode, nada más**. El viewport canónico
@@ -58,6 +58,17 @@ Antes de borrar una hoja: [[navbar-css-consumidor-vivo]]. Antes de migrar un hea
 migra) · [[sidebar-default-collapsed]] · [[compras-migrado-shell-sidebar]].
 
 Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
+
+## Goals que trabajaron esta área
+
+- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Sigue abierto.**
+- [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]] — núcleo sin vendors más adjuntos por vendor, para dejar de servir ~190 KB de CSS de grilla a superficies ligeras.
+- [[goals/shell-layout-design-system/goal|shell-layout-design-system]] — el paraguas que agrupó shell, layout y sistema.
+- [[goals/sidebar-todos-modulos/goal|sidebar-todos-modulos]] — el rollout del shell sidebar; sus `reports/` explican módulo por módulo.
+- [[goals/cierre-dark-mode-y-tablas/goal|cierre-dark-mode-y-tablas]] y [[goals/dark-mode-todos-los-modulos/goal|dark-mode-todos-los-modulos]] — el dark mode, absorbido el segundo en el primero.
+- [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] — dashboard de BI, **bloqueado** esperando aprobación visual de sus 6 modos.
+
+Estado de todos en [[estado|Estado de los goals]].
 
 ## Vecinos
 

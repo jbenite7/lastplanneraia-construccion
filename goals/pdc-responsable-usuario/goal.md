@@ -21,3 +21,11 @@ en `main` sin perder responsables al cambiar de frente. Absorbido por
 [`pdc-preparar-b1`](../pdc-preparar-b1/goal.md); el spec original
 (`docs/superpowers/specs/2026-07-28-responsable-usuario-proyecto-design.md`) está implementado.
 Ver también `ABSORBIDO.md` en este directorio.
+
+---
+
+## Archivos de este goal
+
+[[goals/pdc-responsable-usuario/ABSORBIDO|ABSORBIDO.md]]
+
+Estado y relación con los demás goals: [[estado|Estado de los goals]].

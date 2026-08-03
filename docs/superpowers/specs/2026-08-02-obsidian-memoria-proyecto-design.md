@@ -43,13 +43,29 @@ referencias cruzadas ya resueltas y contradicciones ya señaladas.
 
 | Capa | En este repo | Regla |
 |---|---|---|
-| **Raw sources** | `docs/`, `goals/`, `GLOSARIO.md`, `AGENTS.md`, `README.md`, el código | Se leen; **nunca se editan desde la wiki**. Son la fuente de verdad. |
+| **Raw sources** | `docs/`, `goals/`, `GLOSARIO.md`, `AGENTS.md`, `README.md`, el código | Se leen; **su contenido no se edita desde la wiki**. Son la fuente de verdad. |
 | **Wiki** | `memoria/` | Artefacto generado. Lo escribe solo el asistente, nunca a mano. |
 | **Schema** | Sección «Memoria del proyecto» en `CLAUDE.md` | Explica al asistente la estructura, las convenciones y las tres operaciones. |
 
 Precedencia ante conflictos: **código > `AGENTS.md` > `memoria/`**. Si una nota contradice al
 repo, gana el repo y la nota se marca `estado: derogada` en vez de borrarse: saber que algo dejó
 de ser cierto es información.
+
+### Excepción a la inmutabilidad de las fuentes (2026-08-02)
+
+Con la wiki ya montada, el grafo mostraba `goals/` como 99 islas: los `goal.md` colgaban solo de
+`memoria/goals/estado.md` y sus `plan.md`, `facts.md`, `briefs/` y `reports/` no colgaban de
+nada. Enlazarlos desde la wiki habría producido un índice de contenidos, no una relación.
+
+Por decisión explícita del usuario, cada `goals/<slug>/goal.md` recibe al final una sección
+«Archivos de este goal» que enlaza a sus hermanos **versionados** —solo los que viajan en git, para
+no dejar enlaces rotos en un clon— y a `estado.md`. Es navegación añadida al pie: no altera el
+contenido del goal.
+
+Resultado medido: `goals/` pasa de 16 a 97 nodos conectados de 99; el grafo completo, de 75 a 156
+de 265. Los 2 restantes son los archivos que deliberadamente no viajan en git.
+
+`docs/` no se toca: sus 112 documentos siguen conectados solo cuando un mapa de la wiki los cita.
 
 ## El vault es la raíz del repo
 
