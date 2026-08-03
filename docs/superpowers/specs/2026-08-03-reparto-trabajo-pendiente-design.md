@@ -54,21 +54,52 @@ No necesita nada de este reparto salvo lo que produzca **B**.
 Decisiones 4 y 5. Dos problemas distintos con la misma consecuencia: hoy ninguna recaptura de
 goldens es fiable.
 
-**B1 — Sembrar estados en el proyecto de pruebas.** Medido: los goldens de `programa-general` y
-`programacion-intermedia` retratan una grilla vacía, y `#hot-container` de
-`/programa-general-actualizar` tiene cero `td`. No es un problema de baselines: es que el proyecto
-sembrado no tiene datos con estado. El sembrado debe cubrir los siete peldaños de
-`--ds-cell-state-*` **y** las clases de coincidencia `pg-match-auto`, `pg-match-review` y
-`pg-match-new`, que la línea A necesita para medir in situ.
+**B1 — Que los goldens retraten estados. NO es sembrar la base de datos.**
 
-**Límite del sembrado, medido el 2026-08-03.** No todo estado se alcanza con datos. En
-`/programacion-semanal`, con la tabla ya poblada con dos filas, `.ps-row-selected` y
-`.ps-motivo-restriction` **siguen sin existir en el DOM**: la primera es estado de interacción y
-la segunda es contenido condicional. Sembrar no las produce; hay que inducirlas. La consecuencia
-para B1 es de alcance: el sembrado cubre los estados **de dato**, y los de **interacción y
-contenido condicional** necesitan un banco de pruebas que los provoque. Si B1 se plantea como
-«sembrar y ya», dos de las seis reglas huérfanas de la línea A se quedan sin superficie donde
-medirse y el tramo parecerá cerrado sin estarlo.
+> **Corrección de premisa — 2026-08-03, y es la segunda de este documento.** B1 se escribió como
+> «sembrar actividades con estado en el proyecto de pruebas», partiendo de que la grilla sale
+> vacía por falta de datos. **Falso, y comprobado en tres pasos.**
+>
+> 1. `Da Porto` tiene **273 filas** en `programa`, consultado contra la base local.
+> 2. Navegando a `/programa-general` a 1180×820 la grilla pinta **312 celdas en 26 filas**, con
+>    tres clases de estado vivas: `pg-state-actividad-futura` (216), `pg-state-terminada` (36) y
+>    `pg-state-en-curso` (12).
+> 3. La causa real está en `tests/browser/programa-general.visual.mjs:24`: la función
+>    `mockDeterministicData()` intercepta `**/api/general/list**` y devuelve `data: []`. **El test
+>    borra los datos a propósito** para que la captura sea determinista, y nunca consulta la base.
+>
+> Sembrar la base no habría cambiado un solo píxel de esos goldens. La decisión que el usuario
+> aprobó sigue siendo válida en su intención —que los goldens dejen de dar cobertura falsa— pero
+> el trabajo es otro y mucho más barato.
+
+El trabajo real es **sustituir el `data: []` del mock por un conjunto fijo de filas que cubra los
+peldaños**. Sigue siendo determinista —que es lo que la función busca y hay que preservar— pero
+deja de retratar un tablero en blanco. Mismo tratamiento en
+`programacion-intermedia.visual.mjs` si usa el mismo patrón.
+
+**Ojo con la tentación de quitar el mock.** Está ahí por una razón: sin él, la captura depende del
+estado de la base y del momento, y el gate se vuelve inestable. La corrección es darle contenido al
+mock, no eliminarlo.
+
+Para la línea A, que necesita medir `pg-match-auto`, `pg-match-review` y `pg-match-new` en
+`/programa-general-actualizar`, aplica lo mismo: comprobar antes si esa superficie también mockea
+su endpoint, en vez de dar por hecho que le faltan datos.
+
+**Trampa de método, y es la lección cara de este documento:** «la grilla está vacía» admitía al
+menos tres causas —sin datos, sin renderizar, o con los datos interceptados— y se eligió la
+primera sin descartar las otras dos. El diagnóstico costó dos correcciones de premisa. Antes de
+declarar que falta un dato, hay que comprobar si alguien lo está quitando por el camino.
+
+**Límite que ningún dato resuelve, medido el 2026-08-03.** Aunque el mock devuelva filas, no todo
+estado se alcanza con datos. En `/programacion-semanal`, con la tabla ya poblada con dos filas,
+`.ps-row-selected` y `.ps-motivo-restriction` **siguen sin existir en el DOM**: la primera es
+estado de interacción y la segunda es contenido condicional. Hay que **inducirlas**, no esperarlas.
+
+La consecuencia es de alcance: dar filas al mock cubre los estados **de dato**, y los de
+**interacción y contenido condicional** necesitan que la prueba los provoque —seleccionar una
+fila, abrir un motivo—. Si B1 se plantea como «que el mock devuelva filas y ya», dos de las seis
+reglas huérfanas de la línea A se quedan sin superficie donde medirse y el tramo parecerá cerrado
+sin estarlo.
 
 **B2 — Resolver el drift del sidebar.** `--ds-sidebar-width-expanded` vale `15rem` y
 `shell-navigation.test.mjs` espera `17.5rem`. Averiguar primero cuál es el correcto: si el token

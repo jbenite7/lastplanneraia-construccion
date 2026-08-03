@@ -1,0 +1,59 @@
+{
+  "purpose": "Inventario de reglas que pintan un fondo de --ds-state-tint-* sin declarar la tinta del texto en la misma regla ni en otra regla del mismo selector. Guard: tests/design-system/state-tint-pairing.test.mjs.",
+  "kinds": {
+    "by-design": "El fondo no lleva texto encima, o la tinta llega correcta por una via que leer archivos no puede comprobar. Sobrevive tal cual.",
+    "at-risk": "Hoy puede estar mal. Exige `revisit`.",
+    "out-of-scope-mobile": "Deuda fuera del alcance desktop dark. Exige `revisit`."
+  },
+  "medicion": "Las seis entradas se midieron en navegador el 2026-08-03, en dark y a 1180x820, con la sonda compartida de tests/browser/support/contrast.mjs. Ninguna tiene defecto visible hoy: el hallazgo es estructural, no de pixel. La medicion de las tres celdas de grilla lleva una reserva anotada en cada entrada.",
+  "entries": [
+    {
+      "file": "public/css/programa-general-actualizar.css",
+      "token": "--ds-state-tint-green",
+      "line": 234,
+      "selector": ".pg-page #hot-container td.pg-match-auto",
+      "kind": "by-design",
+      "reason": "La celda hereda el texto primario del tema oscuro y rinde 11,54:1 sobre su propio fondo, medido en navegador y dentro de la banda que ya cumple la escala de celda. Declarar la tinta aqui no cambiaria nada visible. RESERVA: se midio inyectando la celda en la pagina real porque la grilla no llega a tener filas con los datos sembrados, asi que las reglas propias de Handsontable no estaban activas; se vuelve a medir cuando el sembrado exista."
+    },
+    {
+      "file": "public/css/programa-general-actualizar.css",
+      "token": "--ds-state-tint-amber",
+      "line": 245,
+      "selector": ".pg-page #hot-container td.pg-match-review",
+      "kind": "by-design",
+      "reason": "Mismo caso que la celda de emparejado automatico: hereda el texto primario del tema oscuro y rinde 11,15:1 sobre su propio fondo, medido en navegador. La misma reserva sobre las reglas de Handsontable se aplica aqui, porque la grilla se midio sin filas reales."
+    },
+    {
+      "file": "public/css/programa-general-actualizar.css",
+      "token": "--ds-state-tint-neutral",
+      "line": 256,
+      "selector": ".pg-page #hot-container td.pg-match-new",
+      "kind": "by-design",
+      "reason": "Mismo caso que las otras dos celdas de confianza de emparejado: hereda el texto primario del tema oscuro y rinde 12,92:1 sobre su propio fondo, el mas holgado de los tres. La misma reserva sobre las reglas de Handsontable se aplica aqui."
+    },
+    {
+      "file": "public/css/styles.css",
+      "token": "--ds-state-tint-blue",
+      "line": 2287,
+      "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover",
+      "kind": "by-design",
+      "reason": "El fondo va sobre la fila, pero el texto vive en las celdas, y cada celda trae su propio fondo casi opaco y su propia tinta casi blanca. La tinta que heredaria la fila no llega a pintar nada. Declararla seria una linea muerta que dejaria verde el guard sin resolver nada."
+    },
+    {
+      "file": "public/css/styles.css",
+      "token": "--ds-state-tint-blue",
+      "line": 2291,
+      "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-selected",
+      "kind": "by-design",
+      "reason": "Mismo caso que la fila con puntero encima: el texto lo pintan las celdas con su propia tinta y su propio fondo, que ademas tapa casi todo el fondo de la fila. El comentario de la hoja ya documenta que de estos fondos de fila solo se ve una fraccion pequena."
+    },
+    {
+      "file": "public/css/styles.css",
+      "token": "--ds-state-tint-orange",
+      "line": 2358,
+      "selector": "#tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction",
+      "kind": "by-design",
+      "reason": "La pildora hereda su tinta del contenedor de motivo que la envuelve, que si la declara con el par de texto de la familia de retraso, y sale un melocoton claro sobre el fondo naranja oscuro. El par existe y funciona; lo que no puede es verse leyendo esta regla aislada."
+    }
+  ]
+}
