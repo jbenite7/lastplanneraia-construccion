@@ -364,7 +364,22 @@ e indicadores de estado. Prohibido a plena saturación en estados inactivos y pr
 nunca comparten matiz**. Es contractual, no estilístico: sin eje de intensidad, el matiz
 es lo único que los separa, y dos leyendas que el usuario filtra por separado no pueden
 pintar el mismo fondo. `/programacion-intermedia` (8 estados) y `/programa-general` (7)
-se reasignaron para cumplirlo. Lo que **sí** sigue permitido es derivar dos intensidades
+se reasignaron para cumplirlo **en la declaración**.
+
+> **Cuidado: la regla está vigilada en el papel, no en el píxel.** Sus dos guards
+> recorren `state-semantics.json` y comprueban que no se repita `hue` **dentro de ese
+> mismo archivo** — validan una declaración contra sí misma y **nunca leen el CSS**. Hoy
+> `/programa-general` diverge: el contrato declara «Actividad Futura» → `green` y «En
+> Curso» → `blue`, y `public/css/styles.css` pinta **las dos** con
+> `--ds-cell-state-ok-*`. El mismo par, medido 8,88:1 en ambas porque es el mismo color.
+> Se fundieron al migrar la grilla a la escala de celda, que es una escala de **nivel**,
+> y ambos estados son `healthy`: migrar por nivel descarta el matiz, que es justo el eje
+> que la regla existe para conservar. Peor: la leyenda **sí** los distingue
+> (`--pg-dot-future` deriva de `success`, `--pg-dot-progress` de `info`), así que promete
+> una diferencia que la grilla no cumple. Antes de fiarte de la regla en un módulo,
+> **comprueba el CSS**, no solo el JSON.
+
+Lo que **sí** sigue permitido es derivar dos intensidades
 del mismo matiz para dos superficies del **mismo** estado —el chip de la leyenda y la
 fila de la grilla en `/programacion-semanal`—. Vigilan la regla
 `tests/design-system/state-tint-ladder.test.mjs` (texto del CSS y del contrato) y
@@ -541,6 +556,14 @@ sus propios nombres de estado (`pg-state-atrasada`, `ps-alert-critical`,
 `public/js/modules/shared/cell-state-vocabulary.mjs` y expone `CELL_STATE`, `STATE_MAP`
 y `getCanonicalCellState(className)`. **No escribas una clase `ds-cell-*` a mano**: pide
 la canónica al mapa y añade allí el alias nuevo.
+
+**Pero el mapa traduce por nivel, y eso pierde matiz.** `STATE_MAP` lleva
+`pg-state-actividad-futura` y `pg-state-en-curso` **los dos a `CELL_STATE.OK`**, cuando
+el contrato les asigna matices distintos (`green` y `blue`). Es el mismo defecto que
+tiene el CSS de Programa General, en el otro extremo del cable. Si añades un alias,
+comprueba en `state-semantics.json` qué **matiz** le toca: si dos estados de tu módulo
+caen en el mismo peldaño de celda, la escala de siete no te alcanza y estás a punto de
+pintar dos cosas distintas del mismo color.
 
 **5. Usa el adaptador de tu librería, no un skin.** Cada vendor entra por
 `entrypoints/attach-*.css` (que lo importa con `layer(vendor)`) y luego su adaptador:

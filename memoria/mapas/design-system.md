@@ -47,9 +47,11 @@ así que un hex citado en un comentario rompe el presupuesto),
 culparte) y [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
 que apunta a una variable inexistente: los valores resueltos solo se ven en navegador).
 
-Y antes de citar un comentario de `tokens.css` como contrato:
-[[comentario-de-token-afirma-uso-inexistente]] — ocho tokens llevan rotulado un uso que ningún
-archivo del repositorio ejerce.
+Y antes de citar una fuente como contrato, dos que afirman lo que el código no cumple:
+[[comentario-de-token-afirma-uso-inexistente]] (ocho tokens rotulados para un uso que su
+consumidor real nunca cableó) y [[guard-valida-declaracion-contra-si-misma]] (el guard de «un
+matiz por estado» comprueba el JSON contra el JSON y nunca abre el CSS: Programa General pinta
+dos estados del mismo color con el test en verde).
 
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
 [[lab-desktop-layout-suite]].

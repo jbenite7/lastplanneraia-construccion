@@ -1,53 +1,72 @@
 # Reparto del trabajo pendiente tras el saneamiento del goal de tablas
 
-**Fecha:** 2026-08-03 · **Estado:** diseño aprobado, sin ejecutar
-**Origen:** grilleo de las diez decisiones acumuladas el 2026-08-03, tras el saneamiento de
+**Fecha:** 2026-08-03 · **Última revisión:** 2026-08-03, al cerrar la jornada
+**Estado:** A cerrada · B1 a medias · el resto sin empezar
+**Origen:** grilleo de doce decisiones acumuladas el 2026-08-03, tras el saneamiento de
 `goals/cierre-dark-mode-y-tablas/` y los informes de tres sesiones paralelas.
 
 ## Por qué existe este documento
 
 El 3 de agosto se acumularon diez decisiones del usuario procedentes de cuatro frentes: el
 saneamiento del goal de tablas, la sesión de consolidación de tintes, la de puesta al día de
-`DESIGN.md` y el repaso de usabilidad H-08. Todas quedaron resueltas en un solo grilleo.
+`DESIGN.md` y el repaso de usabilidad H-08. Se resolvieron en un solo grilleo, y ejecutar la
+primera línea destapó dos decisiones más.
 
-El resultado **no cabe en un spec**: son seis líneas de trabajo independientes, y una de ellas es
+El resultado **no cabe en un spec**: son **ocho líneas** de trabajo, y una de ellas es
 funcionalidad nueva. Este documento reparte, ordena y explica las dependencias. Cada línea recibe
 después su propio ciclo de spec, plan y ejecución.
 
-Son seis por decisión del usuario, más una séptima que este documento desgaja por su cuenta y
-señala como tal: **F-bis**, el autoguardado al entrar. La razón está en su sección; queda anotada
-aquí para que nadie la confunda con una decisión tomada en el grilleo.
+Seis vienen del grilleo. Las otras dos aparecieron después y se señalan como tales: **F-bis**, el
+autoguardado al entrar, que este documento desgaja por su cuenta; y **G**, restaurar el canal de
+matiz en las grillas, que no existía al grillear porque el defecto se descubrió al ejecutar B1 —
+su alcance sí lo decidió el usuario, una vez medido.
 
-## Las diez decisiones, tal como se resolvieron
+## Las doce decisiones, tal como se resolvieron
 
 | # | Decisión | Resolución |
 |---|---|---|
 | 1 | Cuarto alias `teal` ↔ `info` | **Sí entra.** Mismo caso que los otros tres: valores idénticos, no reasigna estados |
 | 2 | Alcance del guard de emparejamiento | **Acepta el selector hermano inmediato.** Exigir la misma regla mandaría a excepciones un caso hoy correcto |
 | 3 | Cambio visual de las reglas huérfanas | **Aprobado**, con la condición de medir en navegador antes y después |
-| 4 | Fixture de pruebas sin estados | **Sembrar actividades con estado.** Única vía para que los goldens dejen de dar cobertura falsa |
+| 4 | Los goldens retratan una grilla vacía | **Que dejen de dar cobertura falsa.** Se aprobó como «sembrar la base»; medido después, el trabajo real es darle filas al mock — ver B1 |
 | 5 | Drift del ancho de sidebar | **Investigar cuál es el correcto antes de tocar nada** |
 | 6 | `--ds-cell-state-bloqueado-*` fuera de los dos canales | **Pasa al matiz azul existente**, enseñando antes el cambio |
 | 7 | Embebido de Power BI en `/indicadores` | **Se conserva**, con estado de carga y de error, enmarcado como contenido externo |
 | 8 | `/dashboard` como redirect | **Sí debe existir un panel de inicio**, que además resuelve el efecto colateral |
 | 9 | 14 pantallas de `admin/` sin cubrir | **Extender la puerta de servicio a `admin/`** |
-| 10 | 39 hallazgos de usabilidad | **Altas y medias**: 30 de 39 |
+| 10 | 39 hallazgos de usabilidad | **Altas y medias**: 30 aprobadas, 26 ejecutables — cuatro ya tienen dueño en otra línea |
+| 11 | Alcance del arreglo del canal de matiz | **Restaurarlo en los tres módulos**, no solo las colisiones sueltas |
+| 12 | Cuándo nace el guard que cruza contrato y CSS | **Junto al sembrado de B1.** Antes nacería verde sobre una grilla vacía |
 
-Las decisiones 1, 2 y 3 ya están despachadas a la sesión que las esperaba y en ejecución.
+Las decisiones 1, 2 y 3 están **ejecutadas y publicadas**; la sesión que las llevaba cerró. La 4
+se reformuló al medirla y la 6 puede quedar absorbida por la 11 — ambas cosas están explicadas en
+su línea.
 
 ## El reparto
 
-### A · Tintes — en curso
+### A · Tintes — CERRADA
 
 Decisiones 1, 2 y 3. Consolidar `--ds-state-tint-*` sin colapsar el contrato de dos canales.
 
-Estado al escribir esto: los cuatro alias aplicados y medidos —cero píxeles movidos, 15 tests en
-verde—, guard `state-tint-pairing.test.mjs` escrito **antes** que los arreglos, y censo de reglas
-huérfanas rectificado a la baja de ocho a seis por el propio guard. Quedan las seis: tres de
-Handsontable en `programa-general-actualizar.css` y tres de `/programacion-semanal` en
-`styles.css`.
+**Qué quedó hecho**, publicado en `95a1827` y `08fe26c`:
 
-No necesita nada de este reparto salvo lo que produzca **B**.
+- Los **cuatro** alias aplicados y medidos en navegador: los cuatro `--ds-color-state-*-bg`
+  resuelven idénticos a su ancla. Cero píxeles movidos.
+- Guard `state-tint-pairing.test.mjs` con `docs/design-system/state-tint-exceptions.json`.
+- Las seis reglas huérfanas **inventariadas como `by-design`, no arregladas** — que es el
+  desenlace correcto, porque al medirlas ninguna tenía defecto visible: las tres celdas de grilla
+  heredan el texto primario del tema (11,54 · 11,15 · 12,92:1), las dos de fila no pintan texto, y
+  la píldora hereda su par del contenedor. Declararles color habría sido una línea muerta.
+
+**Dos cosas que este tramo enseñó y que valen para las demás líneas:**
+
+1. **Escribir el guard antes que el arreglo paga.** Su rojo levantó el censo por su cuenta y
+   corrigió el recuento a la baja, de ocho a seis: dos reglas de `admin/` sí reciben tinta en una
+   regla agrupada que el escaneo manual había pasado por alto.
+2. **Reserva medida sobre la sonda compartida:** `measure()` devolvió 1:1 con primer plano igual al
+   fondo en dos especímenes **en línea**, mientras `getComputedStyle` reportaba colores distintos.
+   En elementos de bloque se portó bien. Sin confirmar a fondo, pero si mides un `span` en línea y
+   sale 1:1, sospecha de la sonda antes que del CSS.
 
 ### B · Que las pruebas digan la verdad — primero
 
@@ -107,7 +126,7 @@ se cambió a propósito y nadie actualizó el test, o si alguien lo pisó. Cambi
 el ancho de la barra en toda la aplicación. Hoy este drift contamina cualquier recaptura, porque
 se hornearía en la baseline con la firma de quien recapture.
 
-**Va primera de todo.** Sin B, ni A ni C ni E pueden cerrar su verificación visual.
+**Va primera de todo.** Sin B, ni A ni C ni E ni G pueden cerrar su verificación visual.
 
 ### C · Cerrar la paleta — pequeña
 
@@ -120,6 +139,12 @@ runtime existente, sin depender de B.
 
 **Condición:** el usuario ve el antes/después antes de fijarlo. La paleta actual tiene aprobación
 visual explícita del 2026-08-03 y cambiarla en silencio la invalidaría.
+
+**Solape con G, y conviene resolverlo antes de ejecutar cualquiera de las dos.** C mueve un peldaño
+de la escala de celda; G devuelve cada estado a su matiz declarado. Si G se hace primero, es
+posible que C se disuelva: `bloqueado` solo lo usan `pg-state-r0` y `pg-state-restr-0`, que son
+sub-estados de restricción y no figuran entre los siete estados que el contrato declara para
+`programa-general`. Quien abra G debe decidir si C sigue teniendo objeto.
 
 ### D · Puerta de servicio para `admin/` — toca seguridad
 
@@ -190,6 +215,67 @@ Decisión 8. `/dashboard` es hoy un redirect a `/programacion-semanal`.
 visualizador, qué ocurre si no hay semana activa. Merece su propio grilleo, no una tarea dentro de
 un lote.
 
+### G · Restaurar el canal de matiz en las grillas — nueva, y no venía del grilleo
+
+Descubierta el 2026-08-03 al ejecutar B1, y es la razón por la que B1 valía la pena.
+
+**El contrato y el CSS se contradicen en los tres módulos operativos.** `state-semantics.json`
+declara un matiz distinto por estado; el CSS los colapsa sobre la escala de **nivel** de siete
+peldaños a la que el goal de tablas migró las grillas:
+
+| Módulo | Estados / matices declarados | Tokens que usa el CSS | Distinciones perdidas |
+|---|---|---|---|
+| `programa-general` | 7 / 7 | 5 | 2 |
+| `programacion-intermedia` | 8 / 8 | 5 | 3 |
+| `pdc` | 7 / 7 | 6 | 1 |
+
+Colisiones reales, separadas de las inocentes —`atrasada`/`atrasado` es la misma palabra,
+`r1`/`restr-1` son alias—:
+
+- **PG**: *Actividad Futura* (matiz green) y *En Curso* (matiz **blue**) comparten
+  `--ds-cell-state-ok-bg`. Antes del goal eran `#d9f99d` verde lima y `#bae6fd` azul claro.
+- **PI**: *En Ejecución Pendiente* y *Listo para Comprometer* comparten `ok`.
+- **PS**: *Crítica* y *Crítica de Ruta* comparten `critico`; *Info* y *Neutral* comparten
+  `neutral`.
+
+**Lo que lo agrava, y hay que saberlo antes de arreglar:** la cadena de `En Curso` es
+`--ds-cell-state-ok-bg` → `--ds-color-state-success-bg` → `--ds-state-tint-green` → `#173d26`. Es
+decir, un estado que su propio contrato declara **blue** se está pintando con el **ancla verde**.
+No es solo que dos estados colisionen: es que uno lleva un matiz que su contrato le prohíbe. El
+arreglo no es separar dos peldaños, es devolver cada estado a su matiz declarado.
+
+**Y la leyenda ya promete lo que la grilla no da.** Los puntos de la leyenda de PG sí distinguen
+—`--pg-dot-future` deriva de `success`, `--pg-dot-progress` de `info`—, así que el usuario aprende
+un código de color que la tabla incumple. Eso es peor que cualquiera de las dos opciones por
+separado.
+
+#### Por qué ningún guard lo vio
+
+`state-tint-ladder.test.mjs:170` recorre `semantics.moduleMappings` y comprueba que ningún módulo
+repita `hue` **dentro del propio JSON**. Nunca mira el CSS. **Un assert que valida una declaración
+contra sí misma está verde por construcción.**
+
+Es la familia de `gate-estatico-no-ve-tokens-rotos`, un nivel más arriba: allí el gate no resolvía
+el valor de un token; aquí no comprueba que la implementación obedezca al contrato que él valida.
+
+#### El guard que falta
+
+Un assert que cruce `state-semantics.json` contra el color **resuelto en navegador** —no contra el
+texto del CSS, porque `--ds-cell-state-riesgo-bg` se calcula con `color-mix()` y su valor no existe
+en ningún archivo— y **con filas reales en la grilla**.
+
+**Nace junto al sembrado de B1, no antes.** Escrito sobre una grilla vacía se quedaría verde, que
+es exactamente el fallo que viene a corregir. Es de la familia de
+`tests/browser/design-system-table-contract.runtime.mjs`.
+
+#### Alcance decidido
+
+**Restaurar el canal de matiz en los tres módulos**: cada estado vuelve a pintarse con el matiz que
+su contrato le declara. No se inventa nada — es implementar el diseño de dos canales que ya está
+escrito, aprobado y vigilado a medias.
+
+**Depende de B1**, tanto para verificarse como para que su guard pueda nacer viendo algo.
+
 ### F-bis · El autoguardado al entrar — se separa
 
 Abrir `/programacion-semanal` puede disparar `POST /api/semanal/save` y
@@ -224,15 +310,19 @@ porque mezclarla con F la dejaría bloqueada tras una decisión de producto que 
 ## Orden y dependencias
 
 ```
-B  ─────────────────────────────► habilita la verificación visual de A, C y E
+B  ─────────────────────────────► habilita la verificación visual de A, C, E y G
       │
 A  ───┘ (en curso, solo necesita B1 para medir in situ)
+G  ────────────► depende de B1: su guard nace con el sembrado o nace ciego
 C  ────────────► independiente, verificable con el gate de runtime
 D  ────────────► habilita la parte admin/ de E
 E  ────────────► depende de D solo para admin/
 F  ────────────► independiente, necesita grilleo propio
 F-bis ─────────► independiente, no espera a F
 ```
+
+**G es ahora la más urgente después de B**, y no por tamaño: es la única que corrige algo que el
+usuario final ve mal hoy, en las tres pantallas donde más tiempo pasa.
 
 ## Hallazgo posterior al grilleo: hay una cuarta paleta, y está en PHP
 
