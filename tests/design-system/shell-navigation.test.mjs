@@ -52,6 +52,15 @@ test('the global navigation bar keeps padding on all four sides', async () => {
   assert.match(component, /presentation.*sidebar/);
   assert.match(component, /data-shell-pattern="sidebar/);
   assert.match(css, /\.aia-navigation--sidebar/);
-  assert.match(tokens, /--ds-sidebar-width-expanded:\s*17\.5rem/);
-  assert.match(tokens, /--ds-sidebar-width-collapsed:\s*4\.5rem/);
+  // 15rem / 4rem desde `72093c6` (2026-08-01). El contrato decia 17.5rem / 4.5rem, que fueron los
+  // valores originales de `321b095`, y este assert llevaba en rojo desde entonces: aquel commit
+  // —un lote de 211 archivos— estrecho ambos tokens sin actualizar este test ni recapturar un solo
+  // golden. Resuelto el 2026-08-03 a favor del token, por decision del usuario: la barra lleva
+  // dias servida a 15rem sin queja, el commit si tocaba `views/partials/shell_sidebar.php` (no fue
+  // un reemplazo ciego), y 240px en vez de 280 dan 40px mas de tabla en una aplicacion densa.
+  //
+  // Las baselines visuales SIGUEN retratando la barra ancha: se recapturan junto con la linea G
+  // del reparto, no antes. Ver docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design.md
+  assert.match(tokens, /--ds-sidebar-width-expanded:\s*15rem/);
+  assert.match(tokens, /--ds-sidebar-width-collapsed:\s*4rem/);
 });
