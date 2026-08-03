@@ -2,7 +2,7 @@
 // Genera las zonas <!-- generado --> de memoria/arquitectura/.
 // Escribe SOLO entre marcadores: la prosa de fuera nunca se toca.
 // Ver memoria/index.md y docs/superpowers/plans/2026-08-03-arquitectura-en-la-wiki.md.
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -279,8 +279,120 @@ export function datosDe(mod, rutas, rbac) {
   };
 }
 
+// --- Composición y escritura ------------------------------------------------
+
+const INICIO = '<!-- generado:inicio -->';
+const FIN = '<!-- generado:fin -->';
+
+function tabla(cabeceras, filas) {
+  if (!filas.length) return '_Ninguno._\n';
+  return `| ${cabeceras.join(' | ')} |\n| ${cabeceras.map(() => '---').join(' | ')} |\n`
+    + filas.map((f) => `| ${f.join(' | ')} |`).join('\n') + '\n';
+}
+
+export function componer(mod, d) {
+  const partes = [];
+
+  partes.push('### Rutas\n');
+  partes.push(mod.rutas.length === 0
+    ? '_Este módulo no declara rutas en `public/index.php`._\n'
+    : tabla(['Verbo', 'Ruta', 'Destino'],
+        d.rutas.map((r) => [r.verbo, `\`${r.path}\``,
+          r.tipo === 'legado' ? `\`${r.destino}\` (legado)` : `\`${r.destino}\``])));
+
+  partes.push('\n### Controladores\n');
+  partes.push(d.controladores.length
+    ? d.controladores.map((c) => `- \`${c}\``).join('\n') + '\n'
+    : '_Ninguno: ' + (d.legados.length ? 'carril legado.' : 'sin rutas propias.') + '_\n');
+
+  if (d.legados.length) {
+    partes.push('\n### Scripts legados\n');
+    partes.push(d.legados.map((l) => `- \`${l}\``).join('\n') + '\n');
+  }
+
+  partes.push('\n### Servicios\n');
+  partes.push(d.servicios.length
+    ? d.servicios.map((s) => `- \`${s}\``).join('\n') + '\n'
+    : '_indeterminado_\n');
+
+  partes.push('\n### Tablas\n');
+  partes.push(d.tablas === null
+    ? '_indeterminado_ — o bien todas las rutas de este módulo son legadas (las consultas '
+      + 'viven en scripts procedurales y la extracción textual no es fiable ahí), o bien no '
+      + 'se pudo leer el esquema real de la base de datos al generar esta página.\n'
+    : d.tablas.length ? d.tablas.map((t) => `- \`${t}\``).join('\n') + '\n' : '_indeterminado_\n');
+
+  partes.push('\n### Quién puede\n');
+  partes.push(mod.capacidades.length
+    ? tabla(['Capacidad', 'Roles que la tienen'],
+        d.capacidades.map((c) => [`\`${c.cap}\``, c.roles.length ? c.roles.join(', ') : '—']))
+    : '_Sin capacidad propia: la ruta exige sesión y proyecto, no una capacidad específica._\n');
+
+  return partes.join('');
+}
+
+function paginaNueva(mod, flujoTexto) {
+  return `---
+tipo: modulo
+estado: vigente
+fecha: 2026-08-03
+areas: [${mod.areas.join(', ')}]
+fuente: public/index.php
+resumen: "Módulo ${mod.titulo}: rutas, controladores, servicios y quién puede usarlo"
+---
+# ${mod.titulo}
+
+**Qué resuelve.** _Pendiente de escribir a mano._
+
+**Dónde encaja.** ${flujoTexto}
+
+${mod.nota ? `**Nota del manifiesto.** ${mod.nota}\n\n` : ''}## Inventario
+
+Lo de abajo lo genera \`scripts/wiki-arquitectura.mjs\` desde el código. **No lo edites a mano:**
+se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es tuyo.
+
+${INICIO}
+${FIN}
+`;
+}
+
+const TEXTO_FLUJO = {
+  lps: 'En el flujo LPS. Ver [[flujo-lps]].',
+  pdc: 'En el flujo del Plan de Compras. Ver [[flujo-pdc]].',
+  ambos: 'En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].',
+  null: 'Fuera de los dos flujos de negocio: es infraestructura de la aplicación.',
+};
+
+function escribir() {
+  const dir = join(RAIZ, 'memoria/arquitectura');
+  mkdirSync(dir, { recursive: true });
+  const rutas = leerRutas();
+  const rbac = leerRbac();
+  let creadas = 0, actualizadas = 0;
+
+  for (const mod of MODULOS) {
+    const archivo = join(dir, `${mod.slug}.md`);
+    if (!existsSync(archivo)) {
+      writeFileSync(archivo, paginaNueva(mod, TEXTO_FLUJO[mod.flujo ?? 'null']));
+      creadas++;
+    }
+    const texto = readFileSync(archivo, 'utf8');
+    const i = texto.indexOf(INICIO), f = texto.indexOf(FIN);
+    if (i === -1 || f === -1 || f < i) {
+      console.error(`SIN MARCADORES ${mod.slug}.md — no se toca. Añádelos a mano.`);
+      process.exitCode = 1;
+      continue;
+    }
+    const nuevo = texto.slice(0, i + INICIO.length) + '\n'
+      + componer(mod, datosDe(mod, rutas, rbac)) + texto.slice(f);
+    if (nuevo !== texto) { writeFileSync(archivo, nuevo); actualizadas++; }
+  }
+  console.log(`${creadas} páginas creadas, ${actualizadas} zonas generadas actualizadas.`);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv.includes('--cobertura')) cobertura();
+  else if (process.argv.includes('--escribir')) escribir();
   else if (process.argv.includes('--datos')) {
     const slug = process.argv[process.argv.indexOf('--datos') + 1];
     const mod = MODULOS.find((m) => m.slug === slug);
