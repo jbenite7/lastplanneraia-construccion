@@ -28,6 +28,13 @@
     color: var(--ds-active-text-primary);
   }
 
+  /* `jquery.dataTables.css` pinta TODA fila de blanco (`table.dataTable tbody tr`). La capa
+     `components` gana a `vendor`, pero solo donde hay una regla que la cubra, y la cebra de abajo
+     solo alcanzaba a las pares: en dark las impares salian blancas con el texto claro encima. */
+  table.dataTable tbody tr {
+    background-color: var(--ds-active-surface);
+  }
+
   table.dataTable tbody tr:nth-child(even),
   table.dataTable.stripe tbody tr.odd,
   table.dataTable.display tbody tr.odd {
