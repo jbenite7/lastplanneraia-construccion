@@ -130,13 +130,9 @@
 						<th></th>
 					</tr>
 				</thead>
-				<tbody>
-					<tr>
-						<td colspan="28" class="cc-empty-state">No hay solicitudes de cambio registradas para este proyecto.</td>
-					</tr>
-				</tbody>
 			</table>
 		</div>
+		<div class="aia-empty cc-empty-state">No hay solicitudes de cambio registradas para este proyecto.</div>
 	</div>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">

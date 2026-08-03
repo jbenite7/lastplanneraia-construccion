@@ -58,11 +58,14 @@
   }
 
   /* Estado vacio de la tabla de solicitudes (H-02): antes eran 550px de
-     vacio absoluto bajo las cabeceras cuando no habia filas. */
+     vacio absoluto bajo las cabeceras cuando no habia filas. Reutiliza la
+     primitiva `.aia-empty` del design system (core.css) para el color, el
+     centrado y el borde punteado; esta clase solo aporta la separacion con
+     la tabla. Fix round 1: vive FUERA de #cuadroTabla (el contenedor con el
+     ancho de las 28 columnas) para que se ancle al viewport de 1180px y no
+     al ancho real de la tabla — la primera version la centraba dentro de un
+     <td colspan="28"> de ~3276px, fuera del viewport visible. */
   .cc-empty-state {
-    text-align: center;
-    color: var(--ds-active-text-secondary);
-    font-style: italic;
-    padding: 2rem !important;
+    margin-top: var(--ds-space-3);
   }
 }
