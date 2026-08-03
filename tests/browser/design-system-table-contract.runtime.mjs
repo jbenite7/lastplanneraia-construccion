@@ -18,6 +18,14 @@
 import { expect, test } from '@playwright/test';
 import { PROJECTS } from './fixtures/projects.mjs';
 import { login, logout, selectProject } from './support/session.mjs';
+// La sonda compartida, no una copia. Además de rasterizar con canvas —que es lo
+// que hace falta para `oklch()` y `color-mix()`—, COMPONE ALFA sobre los
+// ancestros hasta la primera capa opaca. Aquí no es un detalle: dos peldaños de
+// la escala heredan `--ds-active-surface`, que es translúcido, y medirlos sin
+// componer da un contraste inventado. Sus dos límites conocidos (elementos fuera
+// de flujo y fondos con degradado) no afectan a esta medición: los especímenes
+// son elementos en flujo con fondo plano.
+import { installContrastProbe, measure } from './support/contrast.mjs';
 
 const DA_PORTO = PROJECTS.find((project) => project.name === 'Da Porto');
 const ADMIN = { username: 'test.A', password: 'aia2026' };
@@ -44,66 +52,30 @@ const CELL_STATES = ['neutral', 'ok', 'atencion', 'riesgo', 'critico', 'bloquead
 
 const AA_MIN = 4.5;
 
-/** Contraste WCAG entre dos colores ya reducidos a canales sRGB 0-255. */
-function contrastRatio(foreground, background) {
-  const luminance = ([red, green, blue]) => {
-    const [r, g, b] = [red, green, blue].map((value) => {
-      const channel = value / 255;
-      return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-    });
-    return (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
-  };
-  const lighter = Math.max(luminance(foreground), luminance(background));
-  const darker = Math.min(luminance(foreground), luminance(background));
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
 /**
- * Resuelve cada par de la escala semántica y lo devuelve en canales sRGB.
+ * Siembra un espécimen por peldaño y devuelve sus selectores.
  *
- * Dos pasos, y ninguno es prescindible. Primero se pinta el token en un elemento real, porque
- * `getPropertyValue` sobre la variable devuelve el texto sin evaluar (`color-mix(...)`,
- * `var(...)`). Después se pasa por un lienzo, porque el color computado se serializa en el
- * espacio en que se escribió —`oklch(...)` para esta escala— y leer esos tres números como si
- * fueran canales RGB da un contraste inventado: fue el primer resultado de este gate, y daba
- * 1,01:1 sobre pares que en pantalla se leen perfectamente.
+ * Se pinta el token en un elemento real porque `getPropertyValue` sobre la variable devuelve el
+ * texto sin evaluar (`color-mix(...)`, `var(...)`). Los especímenes van dentro del contenedor
+ * principal, no en un rincón suelto: los dos peldaños que heredan `--ds-active-surface` son
+ * translúcidos, así que su contraste depende de sobre qué se compongan y hay que darles el
+ * mismo fondo que tendría una celda.
  */
-const RESOLVE_STATES = (states) => {
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.left = '-9999px';
-  document.body.append(probe);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 1;
-  canvas.height = 1;
-  const context = canvas.getContext('2d', { willReadFrequently: true });
-  const toSrgb = (color) => {
-    context.clearRect(0, 0, 1, 1);
-    context.fillStyle = '#000';
-    context.fillStyle = color;
-    context.fillRect(0, 0, 1, 1);
-    const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
-    return { channels: [red, green, blue], alpha };
-  };
-
-  const resolved = {};
+const SEMBRAR_ESPECIMENES = (states) => {
+  const host = document.querySelector('[data-family="vendor-adapters"]') ?? document.body;
+  const caja = document.createElement('div');
+  caja.id = 'especimenes-cell-state';
   for (const state of states) {
-    probe.style.backgroundColor = `var(--ds-cell-state-${state}-bg)`;
-    probe.style.color = `var(--ds-cell-state-${state}-fg)`;
-    const computed = getComputedStyle(probe);
-    const bg = toSrgb(computed.backgroundColor);
-    const fg = toSrgb(computed.color);
-    resolved[state] = {
-      bg: bg.channels,
-      fg: fg.channels,
-      bgAlpha: bg.alpha,
-      bgText: computed.backgroundColor,
-      fgText: computed.color,
-    };
+    const muestra = document.createElement('span');
+    muestra.id = `especimen-${state}`;
+    muestra.textContent = 'Actividad de referencia';
+    muestra.style.backgroundColor = `var(--ds-cell-state-${state}-bg)`;
+    muestra.style.color = `var(--ds-cell-state-${state}-fg)`;
+    muestra.style.display = 'block';
+    muestra.style.padding = '0.5rem 0.75rem';
+    caja.append(muestra);
   }
-  probe.remove();
-  return resolved;
+  host.append(caja);
 };
 
 test.use({ viewport: VIEWPORT, colorScheme: 'dark' });
@@ -146,24 +118,25 @@ test('los tokens de tabla resuelven sobre una celda real con filas cargadas', as
 });
 
 test('cada peldaño de la escala semántica cumple AA sobre su propio fondo', async ({ page }) => {
+  await installContrastProbe(page);
   await login(page, ADMIN);
   await selectProject(page, DA_PORTO);
   await page.goto('/internal/design-system', { waitUntil: 'domcontentloaded' });
 
-  const resolved = await page.evaluate(RESOLVE_STATES, CELL_STATES);
+  await page.evaluate(SEMBRAR_ESPECIMENES, CELL_STATES);
 
   const failures = [];
   for (const state of CELL_STATES) {
-    const { bg, fg, bgAlpha, bgText, fgText } = resolved[state];
-    // Un par a medio resolver (fondo transparente) es un fallo de contrato, no un aprobado:
-    // significa que la cadena de `var()` se rompió.
-    if (bgAlpha === 0) {
-      failures.push(`${state}: fondo sin resolver (${bgText})`);
+    const medida = await measure(page, `#especimen-${state}`);
+    // Un par a medio resolver es un fallo de contrato, no un aprobado: significa que la cadena
+    // de `var()` se rompió y el texto cae a color heredado. Fue el caso de `sin-datos`, que
+    // apuntaba a `--ds-active-text-tertiary`, una variable que nunca existió.
+    if (!medida || typeof medida.ratio !== 'number') {
+      failures.push(`${state}: la sonda no pudo medir el espécimen`);
       continue;
     }
-    const ratio = contrastRatio(fg, bg);
-    if (ratio < AA_MIN) {
-      failures.push(`${state}: ${ratio.toFixed(2)}:1 (mínimo ${AA_MIN}:1) — ${fgText} sobre ${bgText}`);
+    if (medida.ratio < AA_MIN) {
+      failures.push(`${state}: ${medida.ratio.toFixed(2)}:1 (mínimo ${AA_MIN}:1)`);
     }
   }
 
