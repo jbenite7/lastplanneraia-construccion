@@ -190,7 +190,6 @@ docs/qa/
 docs/qa/evidence/**/*.webm
 
 # Documentación interna (no desplegar a producción)
-docs/ROUTES.md
 docs/pdc/
 
 # AI tooling local

@@ -47,8 +47,8 @@ plataforma, estructurada en el arco de tres actos que rige nuestra visión opera
   de la metodología LPS (Indispensable para todo colaborador).
 - **[Roadmap (ROADMAP.md)](ROADMAP.md)**: Planificación a largo plazo, hitos aprobados y sprints de
   modernización.
-- **[Rutas del Sistema (docs/ROUTES.md)](docs/ROUTES.md)**: Direccionamiento del MVC, APIs e
-  instrucciones del Front Controller.
+- **[Rutas del Sistema (memoria/arquitectura/)](memoria/arquitectura/)**: inventario de rutas por
+  módulo y matriz de navegación, generado desde el código; sustituye al retirado `docs/ROUTES.md`.
 - **[Contrato de consumo del Design System (DESIGN.md)](DESIGN.md)**: Tokens `--ds-*`/`--aia-*`,
   primitivas `aia-*` y flujo obligatorio antes de tocar UI. Léelo antes de cualquier cambio visual;
   la autoridad ejecutable vive en `docs/design-system/`.

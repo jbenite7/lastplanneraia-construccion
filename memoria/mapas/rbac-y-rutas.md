@@ -10,8 +10,8 @@ resumen: "Roles, capacidades, rutas protegidas y sesión: dónde se resuelve cad
 
 ## Qué manda
 
-- `docs/ROUTES.md` — inventario canónico de superficies y matriz de navegación. **No viaja en
-  git** (está en `.gitignore`), así que en un clon fresco no existe.
+- `memoria/arquitectura/` y `memoria/flujos/` — inventario de rutas por módulo y matriz de
+  navegación. Reemplazan al retirado `docs/ROUTES.md` (2026-08-03), que no viajaba en git.
 - [[docs/rbac_roles_reference]] y [[docs/rbac_cargos_roles_dictionary]] — roles y cargos.
 - [[AGENTS]] — obliga a verificar **un rol permitido y uno denegado** cuando cambien rutas
   protegidas, sesión, middleware o capacidades.

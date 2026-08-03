@@ -229,7 +229,9 @@ goals.
 
 - `DESIGN.md` — contrato de consumo para desarrolladores/asistentes: qué tokens y primitivas `aia-*` usar y el flujo obligatorio antes de editar una superficie migrada. Léelo antes de cualquier cambio de UI. La autoridad ejecutable vive en `docs/design-system/`.
 - `GLOSARIO.md` — LPS/Lean terminology, consult before naming anything domain-related.
-- `docs/ROUTES.md` — MVC/API routing reference, canonical surface inventory, and cross-navigation matrix for LLMs.
+- `memoria/arquitectura/` y `memoria/flujos/` — inventario de rutas por módulo, matriz de
+  navegación y los dos flujos de negocio. Generado desde el código con
+  `scripts/wiki-arquitectura.mjs`; sustituye al retirado `docs/ROUTES.md`.
 - `docs/global-tables-architecture.md` — DB architecture rules.
 - `docs/design-system/README.md` and contracts therein — design tokens/component rules.
 - `docs/siteground-deploy-routine.md` — deploy checklist (only on explicit publish request).

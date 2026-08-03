@@ -359,7 +359,7 @@ Monitor de cambios en Programa General (PG) y Programación Intermedia (PI) que 
 Las siguientes guías establecen el soporte del desarrollo asíncrono y la declaración de la Constitución IA de la base de código.
 
 1. [**Declaración de Arquitectura e IA** (`GEMINI.md`)](GEMINI.md)
-2. [**Mapa de Sub-Sistemas MVC y Legacy** (`docs/ROUTES.md`)](docs/ROUTES.md)
+2. [**Mapa de Sub-Sistemas MVC y Legacy** (`memoria/arquitectura/`)](memoria/arquitectura/)
 3. [**Glosario Operativo** (`GLOSARIO.md`)](GLOSARIO.md)
 4. [**Diccionario de Eventos Canónicos** (`docs/rbac_event_dictionary.md`)](docs/rbac_event_dictionary.md)
 5. [**Migración Shared Schema (Architectural Ready)** (`docs/plan-migracion-shared-schema-sin-reporteria.md`)](docs/plan-migracion-shared-schema-sin-reporteria.md)
