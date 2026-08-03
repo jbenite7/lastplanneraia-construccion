@@ -14,7 +14,11 @@ window.LPSContextualDrawer = (function() {
   let activeHasGrid = false;
   let activeModuleKey = null;
   let activeStateAdapter = null;
+  // `activeRowIndex` es la fila seleccionada DENTRO de una malla; sin malla no significa nada.
+  // `activeRowData` es la fila activa a secas, la unica nocion que ambas clases de superficie
+  // comparten: con malla la pone el hook de seleccion, sin malla la pone quien abre el cajon.
   let activeRowIndex = null;
+  let activeRowData = null;
   let activeConsecutivo = null;
   let activeParentId = null;
   let activeAlertaId = null;
@@ -22,6 +26,14 @@ window.LPSContextualDrawer = (function() {
 
   // Repinta la malla tras las transiciones del drawer. Sin malla no hay nada que repintar, asi que
   // no hacer nada es la respuesta correcta, no un fallo silenciado.
+  // Escribe una propiedad de la fila activa. Con malla se dirige por indice; sin malla el
+  // adaptador de la superficie ya sabe a que fila se refiere y el indice no le dice nada.
+  function writeActiveRowProp(prop, value) {
+    if (!activeHot || typeof activeHot.setDataAtRowProp !== 'function') return;
+    if (activeHasGrid && activeRowIndex === null) return;
+    activeHot.setDataAtRowProp(activeRowIndex, prop, value);
+  }
+
   function renderActiveGrid() {
     if (activeHasGrid && typeof activeHot.render === 'function') activeHot.render();
   }
@@ -662,6 +674,10 @@ window.LPSContextualDrawer = (function() {
   }
 
   function getActiveRowData() {
+    // Sin malla la fila activa es la que entrego quien abrio el cajon: no hay indice que traducir
+    // ni sourceData que consultar, y devolver null aqui dejaba muertos el cierre de crisis, el SOS
+    // y la propia deteccion de crisis, que es la que muestra sus tarjetas.
+    if (!activeHasGrid) return activeRowData;
     if (!activeHot || activeRowIndex === null) return null;
     const physicalRow = typeof activeHot.toPhysicalRow === 'function'
       ? activeHot.toPhysicalRow(activeRowIndex)
@@ -1083,10 +1099,8 @@ window.LPSContextualDrawer = (function() {
           showNotification('¡Crisis mitigada y cerrada formalmente!');
           input.value = '';
 
-          // Limpiar banderas en caliente en Handsontable
-          if (activeHot && activeRowIndex !== null) {
-            activeHot.setDataAtRowProp(activeRowIndex, 'alerta_crisis', 0);
-          }
+          // Limpiar banderas en caliente en la superficie de origen
+          writeActiveRowProp('alerta_crisis', 0);
 
           drawerClose();
         } else {
@@ -1150,7 +1164,8 @@ window.LPSContextualDrawer = (function() {
   }
 
   function triggerEscalate(type) {
-    if (activeRowIndex === null || !activeHot) return;
+    // Basta con que haya fila activa: exigir ademas un indice de malla dejaba el SOS muerto en las
+    // superficies sin malla, que son justo las que existen para atender crisis.
     const rowData = getActiveRowData();
     if (!rowData) return;
     const context = buildDrawerContext(rowData, activeModuleKey);
@@ -1179,7 +1194,11 @@ window.LPSContextualDrawer = (function() {
       // Registrar la detonación del escalamiento en la base de datos
       const formData = new FormData();
       formData.append('consecutivo', consecutivo);
-      formData.append('modulo', activeModuleKey === 'programa-general' ? 'PG' : (activeModuleKey === 'programacion-intermedia' ? 'PI' : 'PS'));
+      // El dashboard no es un modulo de programacion: reune crisis nacidas en los tres. Cuando la
+      // fila dice de cual viene, esa es la respuesta buena; deducirla de la superficie activa
+      // etiquetaria como 'PS' todo lo escalado desde alli.
+      const moduloDeLaFila = ['PG', 'PI', 'PS'].includes(rowData.modulo) ? rowData.modulo : null;
+      formData.append('modulo', moduloDeLaFila || (activeModuleKey === 'programa-general' ? 'PG' : (activeModuleKey === 'programacion-intermedia' ? 'PI' : 'PS')));
       formData.append('trigger', `SOS-${rolSuperior.substring(0, 3).toUpperCase()}`);
 
       fetch('/api/lps/crisis/register', {
@@ -1189,8 +1208,8 @@ window.LPSContextualDrawer = (function() {
         .then(res => res.json())
         .then(response => {
           if (response.respuesta === 'OK') {
-            // Actualizar Handsontable
-            activeHot.setDataAtRowProp(activeRowIndex, 'alerta_crisis', 1);
+            // Actualizar la superficie de origen
+            writeActiveRowProp('alerta_crisis', 1);
             showNotification('Alerta SOS registrada.');
             refreshDrawerData();
           }
@@ -1437,6 +1456,10 @@ window.LPSContextualDrawer = (function() {
 
     updateContext: function(rowData, moduleKey) {
       if (!rowData) return;
+
+      // La fila activa se registra siempre. Con malla el hook ya la habia traido de ella, asi que
+      // esto no cambia nada; sin malla es la unica via por la que el cajon sabe sobre que actua.
+      activeRowData = rowData;
 
       const drawer = document.getElementById('lps_drawer');
       const overlay = document.getElementById('lps_drawer_overlay');

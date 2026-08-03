@@ -140,7 +140,10 @@ foreach ($crisis as $c) {
                 Ruta_Critica: 1, // Todas las crisis del dashboard son Ruta Crítica P1
                 alerta_crisis: 1,
                 nivel_actual: itemData.nivel_actual,
-                alerta_id: itemData.id
+                alerta_id: itemData.id,
+                // El modulo en que nacio la crisis: el dashboard las reune de los tres, asi que sin
+                // este dato el escalamiento quedaria registrado contra el modulo equivocado.
+                modulo: itemData.modulo
             };
 
             // Abrir el drawer pasándole el rowData emulado
