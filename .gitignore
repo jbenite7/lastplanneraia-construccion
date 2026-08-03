@@ -351,3 +351,4 @@ goals/pg-chip-de-estado/*
 !goals/pg-chip-de-estado/evidence/
 goals/pg-chip-de-estado/evidence/*
 !goals/pg-chip-de-estado/evidence/*.png
+!tests/browser/escalamientos-sin-errores.spec.mjs

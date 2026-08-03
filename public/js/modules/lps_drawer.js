@@ -8,6 +8,10 @@
 window.LPSContextualDrawer = (function() {
   const lpsFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
   let activeHot = null;
+  // `activeHot` no siempre es una malla Handsontable: las superficies sin malla (el dashboard de
+  // escalamientos) pasan un adaptador que solo sabe escribir una fila. Se consulta por capacidad,
+  // nunca por identidad, y esta bandera decide lo que depende de que exista una malla de verdad.
+  let activeHasGrid = false;
   let activeModuleKey = null;
   let activeStateAdapter = null;
   let activeRowIndex = null;
@@ -15,6 +19,12 @@ window.LPSContextualDrawer = (function() {
   let activeParentId = null;
   let activeAlertaId = null;
   let commentsRequestController = null;
+
+  // Repinta la malla tras las transiciones del drawer. Sin malla no hay nada que repintar, asi que
+  // no hacer nada es la respuesta correcta, no un fallo silenciado.
+  function renderActiveGrid() {
+    if (activeHasGrid && typeof activeHot.render === 'function') activeHot.render();
+  }
 
   // Dynamic restriction config cache (fetched from API, falls back to construction defaults)
   let _restrictionConfig = null;
@@ -1109,7 +1119,7 @@ window.LPSContextualDrawer = (function() {
       document.body.classList.add('lps-drawer-open');
       // Redibujado diferido tras la transición de apertura
       setTimeout(() => {
-        if (activeHot) activeHot.render();
+        renderActiveGrid();
       }, 300);
     } else if (overlay) {
       overlay.classList.add('active');
@@ -1135,9 +1145,7 @@ window.LPSContextualDrawer = (function() {
     document.body.classList.remove('lps-drawer-open');
     // Redibujado diferido tras la transición de cierre
     setTimeout(() => {
-      if (activeHot) {
-        activeHot.render();
-      }
+      renderActiveGrid();
     }, 300);
   }
 
@@ -1210,7 +1218,8 @@ window.LPSContextualDrawer = (function() {
   }
 
   function compileWeeklyDigest() {
-    if (!activeHot) return;
+    // Su boton ya se retira en `init` cuando no hay malla; esta guarda es la segunda linea.
+    if (!activeHasGrid || typeof activeHot.getSourceData !== 'function') return;
     const sourceData = activeHot.getSourceData();
     const criticallyBlocked = {};
 
@@ -1392,14 +1401,28 @@ window.LPSContextualDrawer = (function() {
   }
 
   return {
+    /**
+     * `hot` puede ser una malla Handsontable (programa general, intermedia, semanal) o un adaptador
+     * sin malla (dashboard de escalamientos), que solo escribe filas. Lo segundo es legitimo: esas
+     * superficies abren el drawer desde sus propias tarjetas, no desde la seleccion de una celda.
+     */
     init: function(hot, moduleKey, stateAdapter) {
       activeHot = hot;
+      activeHasGrid = Boolean(hot) && typeof hot.addHook === 'function';
       activeModuleKey = moduleKey;
       activeStateAdapter = stateAdapter;
 
       fetchRestrictionConfig();
 
       bindEvents();
+
+      if (!activeHasGrid) {
+        // El digest semanal recorre las filas de la malla. Sin malla no hay nada que recorrer, asi
+        // que se retira su boton: mejor que no ofrecerlo que ofrecer un clic que no puede cumplir.
+        const btnDigest = document.getElementById('lps_btn_digest');
+        if (btnDigest) btnDigest.hidden = true;
+        return;
+      }
 
       // Interceptar clics y selección en Handsontable
       hot.addHook('afterSelectionEnd', function(r, c, r2, c2) {
@@ -1426,7 +1449,7 @@ window.LPSContextualDrawer = (function() {
         if (window.innerWidth >= 992) {
           document.body.classList.add('lps-drawer-open');
           setTimeout(() => {
-            if (activeHot) activeHot.render();
+            renderActiveGrid();
           }, 300);
         } else if (overlay) {
           overlay.classList.add('active');
