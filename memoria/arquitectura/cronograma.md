@@ -13,7 +13,9 @@ reemplazar o ajustar el vigente en [[programa-general]], sin perder la trazabili
 cambió. Se usa cuando el cronograma contractual se revisa formalmente, no para el ajuste semana a
 semana — eso vive en [[programacion-semanal]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

@@ -14,7 +14,7 @@ frenar la obra. Es una isla React que vive detrás de una sola ruta (`/plan-comp
 se mueve por hash dentro del navegador, no por rutas HTTP nuevas. Antes de tocarlo, lee [[pdc]] y
 [[pdc-v2|docs/pdc-v2.md]] — ahí está el modelo de dominio completo y las trampas ya medidas.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
 
 **Nota del manifiesto.** SPA React en `pdc-app/`, bundle en `public/pdc-app/`. Sub-router por hash.
 

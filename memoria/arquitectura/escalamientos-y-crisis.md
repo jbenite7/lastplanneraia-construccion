@@ -13,7 +13,7 @@ es el canal para escalarla: guarda comentarios asociados a un `escalamiento_id` 
 corresponda. Es infraestructura de comunicación del LPS, no una vista con ruta propia — se consume
 desde dentro de otros módulos vía `LpsApiController`.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
 
 ## Inventario
 

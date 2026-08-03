@@ -14,7 +14,9 @@ el mismo motor semiautomático (`auto/preview`, `auto/apply`, `auto/undo`) que
 [[listado-de-actividades]] y el PDC: antes de tocar la lógica de sugerencias conviene revisar cómo
 se usa en los otros dos para no crear un flujo paralelo.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 **Nota del manifiesto.** Reparto de criterio: /api/pdc/auto/* se atribuye a Contratos por ser el contrato auto/preview·apply·undo·feedback·metrics que define contratos; el resto de /api/pdc/* queda en Listado de Actividades. Verificable leyendo src/Controllers/Api/PdcAutoGenerateController.php y src/Services/SemiAutoService.php.
 

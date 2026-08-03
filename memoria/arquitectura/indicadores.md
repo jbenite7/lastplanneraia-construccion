@@ -12,7 +12,9 @@ resumen: "Indicadores LPS: dashboard de KPIs que embebe reportes de Google Data 
 Google Data Studio en vez de calcularlos en la app. Si un número no cuadra aquí, primero hay que
 mirar el reporte externo, no este módulo — es solo el marco que lo aloja.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

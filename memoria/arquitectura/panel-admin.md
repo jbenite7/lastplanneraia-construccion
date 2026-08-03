@@ -15,13 +15,18 @@ router y su propio estilo AdminLTE — nada de lo de `src/` se reutiliza aquí.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 
+Sus vistas (login, dashboard, usuarios, proyectos) están catalogadas en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
+
 ## Menú del panel
 
-`Usuarios`, `Proyectos` y `Familias` son el CRUD básico. `Mantenimiento PDC`
-(`/admin/pdc-maintenance`) y `Configuración` (`/admin/config`) son dos destinos que solo existen
-aquí — no aparecen en ninguna otra parte de la wiki ni del sidebar principal, así que si buscas
-dónde se ajustan parámetros globales del PDC o de la app, es en este menú y no en
-[[plan-de-compras]].
+| Ruta | Para qué sirve |
+| --- | --- |
+| `/admin/users` | CRUD de usuarios |
+| `/admin/projects` | CRUD de proyectos |
+| `/admin/families` | Catálogo de familias |
+| `/admin/pdc-maintenance` | Mantenimiento del PDC — no aparece en ninguna otra parte de la wiki ni del sidebar principal; si buscas dónde se ajustan parámetros globales del PDC, es aquí y no en [[plan-de-compras]] |
+| `/admin/config` | Configuración general de la app — tampoco aparece en otro lugar |
+| `/admin/logout` → `/admin/login` | Cierra la sesión del panel y vuelve al login propio del admin |
 
 **Nota del manifiesto.** Mini-app aislada con su propio front controller (admin/index.php) y su propio router. Ninguna de sus rutas pasa por public/index.php, por eso la zona generada de rutas queda vacía a propósito.
 

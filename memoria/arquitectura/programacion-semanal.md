@@ -13,7 +13,9 @@ Last Planners asumen compromisos reales para la semana. De aquí sale el PAC/PPC
 mide si el equipo cumple lo que promete. Antes de tocarla conviene conocer [[submodulo-cnp]],
 [[submodulo-cnc]] y [[submodulo-cic]], que son sus tres vistas satélite.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 Desde la propia vista, tres píldoras cambian de pestaña sin salir del módulo: `CNP` lleva a
 `/programacion-semanal/cnp` ([[submodulo-cnp]], causas por las que algo no entró a la semana),

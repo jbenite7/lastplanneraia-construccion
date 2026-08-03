@@ -13,7 +13,7 @@ desempeño de contratistas, todo leído desde las mismas tablas operativas de LP
 escribir en ellas. Es adonde manda `Control Tower - Informes` del sidebar, y es el módulo que casi
 todos los roles pueden ver aunque no puedan editar nada.
 
-**Dónde encaja.** En los dos flujos. Ver [[lps-dominio]] y [[pdc]].
+**Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
 
 ## Navegación interna
 

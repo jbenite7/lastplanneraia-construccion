@@ -13,7 +13,9 @@ se modifica formalmente, queda constancia aquí en vez de perderse en un correo 
 consulta habitual de Dirección y Residencia cuando algo del cronograma ya no calza con lo
 originalmente pactado.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

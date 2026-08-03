@@ -13,7 +13,9 @@ lo demás en el flujo LPS. Solo Admin y Director pueden editar filas de semanas 
 (`canEditPastGeneralProgram`); el resto del equipo puede ver y editar el presente/futuro. Para
 traer una versión nueva desde Excel, ver [[cronograma]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

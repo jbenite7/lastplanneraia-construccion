@@ -15,6 +15,8 @@ cierra en producción.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]] (login y recuperación de contraseña).
+
 **Nota del manifiesto.** La puerta de servicio /dev/entrar solo se registra en desarrollo. /_aia/operacion/7f3c9b es la ruta secreta de acceso en mantenimiento (MaintenanceMode::SECRET_PATH, ver src/Core/MaintenanceMode.php); sirve el mismo LoginController.
 
 ## Inventario

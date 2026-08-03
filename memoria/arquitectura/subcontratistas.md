@@ -12,7 +12,9 @@ resumen: "Subcontratistas: catálogo editable de subcontratistas/proveedores, co
 vivo. Lo usan ambos flujos: [[submodulo-cic]] los califica dentro del LPS, y
 [[plan-de-compras]]/[[contratos]] los usan como destino de un paquete de contratación.
 
-**Dónde encaja.** En los dos flujos. Ver [[lps-dominio]] y [[pdc]].
+**Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

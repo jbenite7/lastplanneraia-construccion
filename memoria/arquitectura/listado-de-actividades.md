@@ -13,7 +13,9 @@ resumen: "Listado de Actividades: CRUD de actividades del proyecto, base sobre l
 mientras el PDC v2 no cubra todo lo que cubre este. Ver [[pdc]] y [[pdc-v2|docs/pdc-v2.md]] para el
 mapa completo de dónde encaja cada versión.
 
-**Dónde encaja.** En el flujo del Plan de Compras. Ver [[pdc]].
+**Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

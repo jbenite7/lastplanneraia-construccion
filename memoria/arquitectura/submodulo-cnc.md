@@ -12,7 +12,9 @@ resumen: "CNC: registra por qué una actividad comprometida no se cumplió, base
 terminó. Es el dato crudo detrás del PAC/PPC y del análisis de causa raíz (RCA) de
 [[indicadores]]. Se abre como una de las tres píldoras de [[programacion-semanal]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

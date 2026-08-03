@@ -12,7 +12,9 @@ resumen: "CIC: califica a cada subcontratista en 4 dimensiones dentro de Program
 curso. Se abre como una de las tres píldoras de [[programacion-semanal]] y trabaja sobre el mismo
 catálogo que [[subcontratistas]].
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

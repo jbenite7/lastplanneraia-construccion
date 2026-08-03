@@ -13,7 +13,9 @@ restricciones de una actividad antes de que llegue a [[programacion-semanal]]. U
 está «liberada» cuando sus 7 recursos de liberación quedan resueltos aquí — ver [[lps-dominio]]
 para el detalle de esos 7 recursos.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 

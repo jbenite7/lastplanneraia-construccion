@@ -12,7 +12,9 @@ resumen: "Profesionales: grilla editable en vivo con el equipo AIA asignado al p
 directores, etc.) en una grilla Handsontable con autosave. Otros módulos, como
 [[programa-general]] o [[control-de-cambios]], reutilizan estos nombres como responsables.
 
-**Dónde encaja.** En el flujo LPS. Ver [[lps-dominio]].
+**Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
+
+Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 
 ## Inventario
 
