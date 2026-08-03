@@ -22,3 +22,7 @@ bloque `environment:` de `docker-compose.yml` (DB_HOST=db, DB_PORT=3306, DB_NAME
 USE_GLOBAL_TABLES). Borrar el `.env` copiado al terminar: lleva credenciales.
 
 Ver [[dos-stacks-docker]] y [[aislar-stack-docker-por-worktree]].
+
+> Esta página deroga lo que `browser-qa-pitfalls` recomendaba antes: servir un worktree con un
+> `docker run` suelto. El toolchain asume compose, así que aquel atajo apunta al stack de la sesión
+> vecina. Ver también [[aislar-stack-docker-por-worktree]].

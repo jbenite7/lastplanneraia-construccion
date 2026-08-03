@@ -83,11 +83,13 @@ Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o 
 | [[aislar-stack-docker-por-worktree]] | Receta para dar a un worktree stack Docker y base propios sin recrear el ajeno | 2026-07-29 |
 | [[audit-ve-color-en-comentarios]] | El audit cuenta hex y `rgba()` escritos dentro de comentarios CSS | 2026-07-29 |
 | [[autoria-por-coincidencia-de-hora]] | La hora de última actividad de una sesión no prueba que escribiera un archivo | 2026-08-02 |
+| [[bitacora-drawer-sin-profesional]] | `general_usuarios` id 366 no tiene fila en `profesionales` para el proyecto 73: sembrar la bitácora del drawer con `test.A` falla por FK | 2026-07-29 |
 | [[branch-preexisting-red-gates]] | Rojos preexistentes tolerados de los gates del design system, y cómo validarlos en worktrees | 2026-07-23 |
-| [[browser-qa-pitfalls]] | La sesión cae a los 60–90 s en el panel, y la vista semanal auto-dispara mutaciones al cargar | 2026-07-29 |
+| [[captura-playwright-miente]] | La captura `only-on-failure` de Playwright se toma tras el `finally { logout }` y simula una caída de sesión | 2026-07-29 |
 | [[css-layer-cascade]] | `styles.css` vive en `module.components`; para ganarle en `!important` hace falta capa superior | 2026-07-22 |
 | [[dos-stacks-docker]] | Dos stacks con MySQL propio: conectarse al equivocado escribe en la base de otra sesión | 2026-07-28 |
 | [[drawer-en-handsontable-module]] | La geometría del Cajón Contextual vive en `handsontable-module.css`, que `core.css` no importa | 2026-07-29 |
+| [[gate-visual-tolerancia-enganosa]] | El gate visual puede pasar en verde con un rediseño real; hay que regenerar goldens con `--update-snapshots=all` | 2026-07-29 |
 | [[hot-container-height-ownership]] | La altura de `#hot-container` la resuelve JS; `calc(100vh - Npx)` sobre él es siempre falso | 2026-07-25 |
 | [[lab-desktop-layout-suite]] | La suite desktop-layout corre fuera del carril `runtime` | 2026-07-27 |
 | [[lab-header-offset-medido]] | El offset del header del lab se mide con `ResizeObserver`; el `calc()` es solo respaldo | 2026-07-27 |
@@ -96,7 +98,11 @@ Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o 
 | [[navbar-css-consumidor-vivo]] | Antes de borrar una hoja CSS hay que grepear también el JS de runtime | 2026-07-25 |
 | [[path-with-space-esm-guard-noop]] | La ruta del repo tiene un espacio: el guard `file://${argv[1]}` es no-op | 2026-07-21 |
 | [[pdc-e2e-sandbox]] | Los e2e del PDC v2 corren contra el proyecto sacrificable 990100 | 2026-07-28 |
+| [[pdc-legend-item-clase-compartida]] | `pdc-legend-item` la comparten PG, PI y PS con `!important` invencibles: desacoplar, no pelear la cascada | 2026-08-03 |
+| [[reset-legacy-pisa-adaptadores]] | El spacing de adaptadores del design system va en `@layer legacy-overrides`, no en `components` | 2026-07-29 |
+| [[semanal-auto-dispara-mutaciones]] | Abrir `/programacion-semanal` dispara `save`/`auto-program` automáticos al cargar | 2026-07-29 |
 | [[servir-worktree-stack-efimero]] | Para correr e2e sobre un worktree hace falta identidad compose, no `docker run` | 2026-07-30 |
+| [[sesion-cae-en-el-panel]] | La sesión "muere" ~60-90 s tras login solo en el panel del navegador de Claude, no en el servidor | 2026-07-29 |
 | [[siteground-sin-tunel-ssh]] | SiteGround prohíbe el reenvío de puertos: no hay forma de ver producción como local | 2026-07-30 |
 | [[stack-principal-migraciones-pdc-pendientes]] | Replayar las migraciones del PDC exige todo el DDL antes que los seeds | 2026-07-28 |
 | [[suite-php-rojos-preexistentes]] | Rojos preexistentes de la suite PHP, y las dos trampas al medirlos en macOS | 2026-07-29 |

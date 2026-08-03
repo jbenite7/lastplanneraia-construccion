@@ -24,7 +24,7 @@ resumen: "Last Planner en este producto: programación general, intermedia y sem
 Programación General (PG), Intermedia (PI) y Semanal (PS). Comparten primitivas visuales y buena
 parte de la cascada CSS, así que un cambio en una salpica a las otras — la clase
 `pdc-legend-item`, por ejemplo, está compartida entre las tres y llena de `!important`
-(ver [[browser-qa-pitfalls]]).
+(ver [[pdc-legend-item-clase-compartida]]).
 
 ## Cajón contextual
 
@@ -33,7 +33,7 @@ migras un head a `renderForModule` sin declarar el vendor `handsontable`, el caj
 gate lo detecta — [[drawer-en-handsontable-module]].
 
 Para QA visual del cajón conviene `/dashboard/escalamientos`, no `/programacion-semanal`: esta
-última dispara `save` y `auto-program` con solo cargar la página ([[browser-qa-pitfalls]]).
+última dispara `save` y `auto-program` con solo cargar la página ([[semanal-auto-dispara-mutaciones]]).
 Sembrar la bitácora con `test.A` falla por clave foránea; se intercepta con una fixture.
 
 ## Tablas

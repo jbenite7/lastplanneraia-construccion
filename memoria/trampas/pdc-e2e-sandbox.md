@@ -25,4 +25,4 @@ datos reales.
   (y `E2E ` para paquetes). El reseteo del sandbox borra esas filas si nadie las referencia.
 - `--purge` desmonta el sandbox entero.
 
-Relacionado: [[tests-browser-allowlist]], [[browser-qa-pitfalls]].
+Relacionado: [[tests-browser-allowlist]], [[captura-playwright-miente]].

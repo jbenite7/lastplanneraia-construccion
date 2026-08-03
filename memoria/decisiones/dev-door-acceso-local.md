@@ -20,7 +20,7 @@ están habilitados por defecto. Sin `p` aterriza en `/proyectos`. El rol que que
 contrato de `AGENTS.md`.
 
 **Why:** el usuario pidió esto explícitamente (2026-07-30) tras constatar que yo no puedo teclear
-credenciales y que el panel del navegador pierde la cookie cada 60-90 s ([[browser-qa-pitfalls]]),
+credenciales y que el panel del navegador pierde la cookie cada 60-90 s ([[sesion-cae-en-el-panel]]),
 lo que convertía cada QA en pedirle el login una y otra vez.
 
 **How to apply:** ir directo a `/dev/entrar` al empezar cualquier verificación en navegador; no

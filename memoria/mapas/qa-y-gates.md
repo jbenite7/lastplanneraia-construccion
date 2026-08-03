@@ -45,9 +45,11 @@ Hay rojos que ya estaban ahí. Lee primero:
 - [[manifiesto-ds-exige-golden]] — un manifiesto exige un golden real con `sha256` que case.
 - [[pdc-e2e-sandbox]] — los e2e del PDC van contra el proyecto 990100.
 - [[no-enriquecer-daporto-para-medir]] — no toques el proyecto 73 para tener una línea base ancha.
-- [[browser-qa-pitfalls]] — la lista larga: caídas de sesión que son del panel, mutaciones
-  automáticas al cargar la semanal, capturas de fallo que mienten cuando el spec cierra sesión en
-  el `finally`, y goldens que pasan en verde con un rediseño real.
+- [[sesion-cae-en-el-panel]] — caídas de sesión que son del panel, no de la aplicación.
+- [[semanal-auto-dispara-mutaciones]] — mutaciones automáticas al cargar la semanal.
+- [[captura-playwright-miente]] — capturas de fallo que mienten cuando el spec cierra sesión en
+  el `finally`.
+- [[gate-visual-tolerancia-enganosa]] — goldens que pasan en verde con un rediseño real.
 
 ## Regla de fondo
 

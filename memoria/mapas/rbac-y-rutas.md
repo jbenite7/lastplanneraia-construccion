@@ -40,7 +40,7 @@ Para abrir sesión en local se usa **siempre** la puerta de servicio, nunca el f
 rol que queda en sesión es el real de `project_members`.
 
 Si la sesión parece caerse durante QA en navegador, antes de diagnosticar lee
-[[browser-qa-pitfalls]]: casi siempre es el panel, no la aplicación.
+[[sesion-cae-en-el-panel]]: casi siempre es el panel, no la aplicación.
 
 ## Vecinos
 
