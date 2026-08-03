@@ -51,13 +51,13 @@
 				</div>
 				<div class="pdc-legend-wrap">
 					<div class="pdc-legend">
-						<span class="pdc-legend-item missing" onclick="filterPDC('missing', event)"><span class="indicator"></span> Informacion pendiente <span id="count-missing" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item critical" onclick="filterPDC('critical', event)"><span class="indicator"></span> Inicio de contratacion vencido <span id="count-critical" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item delayed" onclick="filterPDC('delayed', event)"><span class="indicator"></span> Contratacion atrasada <span id="count-delayed" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item completed-late" onclick="filterPDC('completed-late', event)"><span class="indicator"></span> Contratacion cerrada tarde <span id="count-completed-late" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item completed-ontime" onclick="filterPDC('completed-ontime', event)"><span class="indicator"></span> Contratacion cerrada a tiempo <span id="count-completed-ontime" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item active" onclick="filterPDC('active', event)"><span class="indicator"></span> Contratacion en curso <span id="count-active" class="count-badge">(...)</span></span>
-						<span class="pdc-legend-item not-started" onclick="filterPDC('not-started', event)"><span class="indicator"></span> Contratacion pendiente de inicio <span id="count-not-started" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item missing" onclick="filterPDC('missing', event)"><span class="indicator"></span> Información pendiente <span id="count-missing" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item critical" onclick="filterPDC('critical', event)"><span class="indicator"></span> Inicio de contratación vencido <span id="count-critical" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item delayed" onclick="filterPDC('delayed', event)"><span class="indicator"></span> Contratación atrasada <span id="count-delayed" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item completed-late" onclick="filterPDC('completed-late', event)"><span class="indicator"></span> Contratación cerrada tarde <span id="count-completed-late" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item completed-ontime" onclick="filterPDC('completed-ontime', event)"><span class="indicator"></span> Contratación cerrada a tiempo <span id="count-completed-ontime" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item active" onclick="filterPDC('active', event)"><span class="indicator"></span> Contratación en curso <span id="count-active" class="count-badge">(...)</span></span>
+						<span class="pdc-legend-item not-started" onclick="filterPDC('not-started', event)"><span class="indicator"></span> Contratación pendiente de inicio <span id="count-not-started" class="count-badge">(...)</span></span>
 					</div>
 				</div>
 				<div id="dt_cliente" class="pdc-hot-grid w-100"></div>

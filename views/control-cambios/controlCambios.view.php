@@ -43,7 +43,7 @@
 						<th>Prioridad</th>
 						<th>Tipo de Cambio</th>
 						<th>Responsable</th>
-						<th>Detalle</th>
+						<th>Detalle Responsable</th>
 						<th>Justificación</th>
 						<th>Descripción</th>
 						<th>Incidencia Alcance</th>

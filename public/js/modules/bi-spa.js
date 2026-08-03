@@ -3661,7 +3661,8 @@ function stabilizeCanvas(canvas, variant = 'standard') {
 function valueWithUnit(item) {
   if (!item || typeof item !== 'object') return '--';
   const value = item.value == null ? '--' : item.value;
-  const unit = item.unit ? String(item.unit) : '';
+  const rawUnit = item.unit ? String(item.unit) : '';
+  const unit = rawUnit === 'count' ? '' : rawUnit;
   return `${value}${unit ? ` ${unit}` : ''}`;
 }
 
