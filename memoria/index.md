@@ -75,52 +75,7 @@ Decisiones, trampas y referencias generadas desde el frontmatter de cada página
 `resumen`, `areas`, `fecha`). La base trae las tres vistas seleccionables — no hace falta un
 embebido por tabla.
 
-```base
-filters:
-  and:
-    - file.inFolder("memoria")
-
-properties:
-  note.resumen:
-    displayName: De qué va
-  note.areas:
-    displayName: Áreas
-  note.fecha:
-    displayName: Fecha
-  note.estado:
-    displayName: Estado
-
-views:
-  - type: table
-    name: Decisiones
-    filters:
-      and:
-        - 'note.tipo == "decision"'
-    order:
-      - file.name
-      - note.resumen
-      - note.areas
-      - note.fecha
-  - type: table
-    name: Trampas
-    filters:
-      and:
-        - 'note.tipo == "trampa"'
-    order:
-      - file.name
-      - note.resumen
-      - note.areas
-      - note.fecha
-  - type: table
-    name: Referencias
-    filters:
-      and:
-        - 'note.tipo == "referencia"'
-    order:
-      - file.name
-      - note.resumen
-      - note.fecha
-```
+![[paginas.base]]
 
 ## Contratos del repo (no viven aquí)
 
