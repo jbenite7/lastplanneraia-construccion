@@ -69,7 +69,14 @@ caducidad.
 brief de aquella tarea pedía además garantizar que `%` y las demás unidades **siguen** viéndose. Tal
 como está, un cambio que borrase todas las unidades pasaría en verde.
 
-**El arreglo:** añadir al mismo spec la afirmación que falta, sobre un KPI que hoy muestra `%`.
+**El arreglo:** añadir al mismo spec la afirmación que falta.
+
+**Corrección a este spec, medida al escribir el plan:** se dio por hecho que bastaría con afirmar
+sobre un KPI que ya mostrase `%`. No hay ninguno: en el sandbox los cuatro KPI del scorecard llegan
+con `unit: "count"`. Un aserto contra los datos reales solo puede comprobar la mitad negativa, que
+es justo el hueco que se quiere tapar. El test **inyecta** la unidad interceptando la respuesta de
+`/api/bi/control-tower` y cambiándosela a dos KPI: uno con `%` y otro con `count`. Así cubre las dos
+mitades sobre el mismo payload y deja de depender de lo que el sandbox tenga sembrado.
 
 ## Fuera de alcance
 
