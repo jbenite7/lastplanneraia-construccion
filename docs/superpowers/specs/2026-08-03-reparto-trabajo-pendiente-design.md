@@ -371,6 +371,21 @@ decisión de producto sobre documentos que ya salieron de la aplicación.
 Queda registrado aquí y en el comentario de `tokens.css`, que dejó de afirmar un uso vigente y
 ahora dice lo que es: reserva sin cablear, con el exportador y su paleta paralela nombrados.
 
+## Pendiente registrado: el arnés de a11y no distingue «no medible» de «mal»
+
+`tests/browser/support/accessibility.mjs:36` aplana los `incomplete` de axe en la misma lista que
+las `violations`. Un «no pude comprobarlo» bloquea igual que un defecto probado, y como las
+superficies de este repositorio son translúcidas por diseño —`rgba(28, 36, 31, 0.92)`—, axe no
+puede calcular contraste sobre ellas y devuelve `incomplete` **sistemáticamente**.
+
+Medido el 2026-08-03: los nueve de `/programa-general` no eran defecto — 55 nodos entre 13,82 y
+15,27:1, cero bajo AA. Se registraron como excepción con la cifra dentro y caducidad al
+2026-11-30.
+
+**Queda pendiente separar las dos categorías en el arnés.** No entra en ninguna línea de este
+reparto: cambia la política de accesibilidad de todo el repositorio y merece decisión propia.
+Documentado en `memoria/trampas/axe-incomplete-cuenta-como-violacion.md`.
+
 ## Fuera de alcance de todo el reparto
 
 - Mobile, tablet y cualquier viewport bajo 1180 px; el tema `linen` (`AGENTS.md`).

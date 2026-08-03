@@ -45,23 +45,27 @@
                 <?php endif; ?>
 
                 <form action="<?php echo htmlspecialchars($formAction ?? '/login', ENT_QUOTES, 'UTF-8'); ?>" method="post" id="loginForm" data-auth-form>
-                    <div class="input-group mb-3">
+                    <div class="auth-field mb-3">
                         <label for="usuario" class="auth-field-label">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" class="aia-input" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user" aria-hidden="true"></span>
+                        <div class="input-group">
+                            <input type="text" id="usuario" name="usuario" class="aia-input" placeholder="Ingresa tu usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <span class="fas fa-user" aria-hidden="true"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="input-group mb-4">
+
+                    <div class="auth-field mb-4">
                         <label for="password" class="auth-field-label">Contraseña</label>
-                        <input type="password" id="password" name="password" class="aia-input" placeholder="Contraseña" autocomplete="current-password" required>
-                        <div class="input-group-append">
-                            <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
-                                <i class="fas fa-eye" aria-hidden="true"></i>
-                            </button>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="aia-input" placeholder="Contraseña" autocomplete="current-password" required>
+                            <div class="input-group-append">
+                                <button type="button" class="input-group-text auth-password-toggle" data-password-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     

@@ -773,6 +773,20 @@
     'sin-datos': { level: 'neutral', hue: 'violet' },
   };
 
+  // Etiquetas de respaldo para cuando el valor de Estado viene vacio pero la
+  // fila si tiene clasificacion (Id/Consecutivo presentes). Sin esto el chip
+  // podia mostrar "Sin datos" con un matiz distinto al neutral (el defecto
+  // que este renderer existe para evitar). Mismo vocabulario que la leyenda.
+  var STATE_KEY_LABELS = {
+    'actividad-futura': 'Actividad Futura',
+    'en-curso': 'En Curso',
+    terminada: 'Terminada',
+    'con-alerta-restricciones': 'Con Alerta Restricciones',
+    'debe-iniciar': 'Debe Iniciar',
+    atrasada: 'Atrasada',
+    'sin-datos': 'Sin Datos',
+  };
+
   function stateChipAttrs(state) {
     var presentation = statePresentation[state];
     if (!presentation) {
@@ -1603,6 +1617,38 @@
 
     Handsontable.renderers.registerRenderer('pgGenericTextRenderer', function () {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
+    });
+
+    Handsontable.renderers.registerRenderer('pgStateChipRenderer', function (instance, td, row, col, prop, value, cellProperties) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = instance.getSourceDataAtRow(instance.toPhysicalRow(row));
+      var classification = rowData ? classifyPGRow(rowData) : null;
+      if (!classification) {
+        return;
+      }
+      // Misma precedencia que la insignia de estado: una fila con alerta de
+      // restricciones se anuncia como tal, no por su estado de avance.
+      var stateKey = classification.restrictionAlertKey
+        ? 'con-alerta-restricciones'
+        : classification.key;
+      var attrs = stateChipAttrs(stateKey);
+      if (!attrs) {
+        return;
+      }
+      var isEmptyValue = value === null || value === undefined || value === '';
+      var label;
+      if (classification.restrictionAlertKey) {
+        label = 'Con Alerta Restricciones';
+      } else if (isEmptyValue) {
+        // El texto no puede decir "Sin datos" mientras el matiz pinta otro
+        // estado (p. ej. filas heredadas sin Estado pero con clasificacion
+        // por fallback): la etiqueta sigue al stateKey, no al valor crudo.
+        label = STATE_KEY_LABELS[stateKey] || 'Sin Datos';
+      } else {
+        label = String(value);
+      }
+      td.innerHTML = '<span class="ops-state-chip"' + attrs + '>' + escapeHtml(label) + '</span>';
+      td.classList.add('ops-state-td');
     });
 
     Handsontable.renderers.registerRenderer('pgGenericDateRenderer', function () {
@@ -2887,7 +2933,7 @@
           renderer: 'pgEjecutadoRealRenderer',
           className: 'htCenter htMiddle',
         },
-        { data: 'Estado', readOnly: true, renderer: 'pgGenericTextRenderer', className: 'htCenter htMiddle force-wrap' },
+        { data: 'Estado', readOnly: true, renderer: 'pgStateChipRenderer', className: 'htCenter htMiddle force-wrap' },
         {
           data: 'Estado_Restricciones',
           readOnly: true,
