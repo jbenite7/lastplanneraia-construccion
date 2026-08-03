@@ -68,8 +68,16 @@ for (const p of paginas) {
   if (campo('estado') && !ESTADOS.has(campo('estado'))) anota('FRONTMATTER', rel, `estado desconocido: ${campo('estado')}`);
   if (campo('fecha') && !/^\d{4}-\d{2}-\d{2}$/.test(campo('fecha'))) anota('FRONTMATTER', rel, `fecha no ISO: ${campo('fecha')}`);
 
-  const areas = (fm.match(/^areas:\s*\[(.*)\]$/m)?.[1] ?? '')
-    .split(',').map((s) => s.trim()).filter(Boolean);
+  let areas = [];
+  const areasInline = fm.match(/^areas:\s*\[(.*)\]$/m)?.[1];
+  if (areasInline !== undefined) {
+    areas = areasInline.split(',').map((s) => s.trim()).filter(Boolean);
+  } else {
+    const areasBloque = fm.match(/^areas:\s*\n((?:^\s*-\s*.+\n?)+)/m)?.[1];
+    if (areasBloque) {
+      areas = [...areasBloque.matchAll(/^\s*-\s*(.+)$/gm)].map((m) => m[1].trim()).filter(Boolean);
+    }
+  }
   for (const a of areas) if (!AREAS.has(a)) anota('AREA', rel, `fuera de la lista cerrada: ${a}`);
 
   // Una nota, un hecho: más de tres hechos numerados delata una nota que debería partirse.
@@ -88,8 +96,9 @@ for (const p of paginas) {
 
   // Toda página debe ser alcanzable desde el índice o desde una vista de la base.
   const nombre = basename(p, '.md');
+  const enlazadaEnIndice = new RegExp(`\\[\\[${nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\]\\]|[|#])`).test(indice);
   if (!['index', 'log'].includes(nombre)
-      && !indice.includes(`[[${nombre}`)
+      && !enlazadaEnIndice
       && !existsSync(join(WIKI, 'paginas.base'))) {
     anota('INDICE', rel, 'no aparece en index.md y no hay base que la liste');
   }
