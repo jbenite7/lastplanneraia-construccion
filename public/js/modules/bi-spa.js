@@ -345,10 +345,7 @@ function renderCurrentView() {
 
 function hasNoData(data) {
   const scorecard = Array.isArray(data.scorecard) ? data.scorecard : [];
-  const hasBrief = typeof data.executive_brief === 'object' && (
-    Boolean((data.executive_brief?.text || '').trim()) ||
-    Boolean((data.executive_brief?.summary || '').trim())
-  );
+  const hasBrief = Boolean(executiveBriefText(data.executive_brief));
   const hasActions = Array.isArray(data.recommended_actions) && data.recommended_actions.length > 0;
   const hasDrivers = Array.isArray(data.drivers) && data.drivers.length > 0;
   const hasRisks = Array.isArray(data.risks) && data.risks.length > 0;
@@ -424,7 +421,7 @@ function renderView(viewId, data) {
 
 function renderOverview(data) {
   const scorecard = Array.isArray(data.scorecard) ? data.scorecard : [];
-  setText('executive-brief', (data.executive_brief && (data.executive_brief.text || data.executive_brief.summary)) || '');
+  setText('executive-brief', executiveBriefText(data.executive_brief));
   setText('kpi-ppc', valueWithUnit(scorecard[0]));
   setText('kpi-programadas', valueWithUnit(scorecard[1]));
   setText('kpi-ejecutadas', valueWithUnit(scorecard[2]));
@@ -3910,6 +3907,20 @@ function getValue(id) {
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = String(text || '--');
+}
+
+// El brief del backend (ControlTowerService::composeExecutiveBrief) sigue la
+// plantilla de 5 frases: estado → causa → impacto → accion → confianza. No
+// trae campos "text" ni "summary": hay que componerlos aqui. Cuando no hay
+// registros para el proyecto/semana, el backend ya devuelve un mensaje
+// legitimo de "sin datos" (ver StorytellingService::emptyBrief) que se
+// reutiliza tal cual.
+function executiveBriefText(brief) {
+  if (!brief || typeof brief !== 'object') return '';
+  const parts = [brief.status, brief.root_cause, brief.impact, brief.priority_action]
+    .map((part) => (typeof part === 'string' ? part.trim() : ''))
+    .filter(Boolean);
+  return parts.join(' ');
 }
 
 function escapeHtml(value) {
