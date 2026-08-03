@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "designSystemVersion": "1.0.0",
   "goalId": "design-system-nucleo-gobernanza",
-  "sourceCommit": "054f395f8f842e7ca20900956761becbfaaba86c",
+  "sourceCommit": "9abedebc17de9a829a5b4f9096c3d3b4fab957dc",
   "canonicalSources": [
     {
       "path": "goals/design-system-nucleo-gobernanza/goal.md",
-      "sha256": "ddc9e21bad67c250f7a3f3dcd95c0c02487da4a0e41305b3d85cdb7f552d47f4"
+      "sha256": "ad7e8a09bb4e6df0efe7341b3c13af2a59a17b6ba0b4bd8a970e37a0260eb561"
     },
     {
       "path": "goals/design-system-nucleo-gobernanza/facts.md",
