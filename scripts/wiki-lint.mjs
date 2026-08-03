@@ -9,7 +9,7 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
 
 const AREAS = new Set(['design-system', 'qa', 'docker', 'worktrees', 'pdc',
-  'lps', 'datos', 'rbac', 'deploy', 'bi', 'admin', 'proceso']);
+  'lps', 'datos', 'rbac', 'deploy', 'bi', 'admin', 'proceso', 'arquitectura']);
 const TIPOS = new Set(['decision', 'trampa', 'mapa', 'goal', 'concepto', 'referencia', 'log']);
 const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
 

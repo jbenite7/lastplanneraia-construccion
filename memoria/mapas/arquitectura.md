@@ -2,7 +2,7 @@
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
-areas: [proceso]
+areas: [arquitectura]
 fuente: sesion
 resumen: "Cómo está montada la aplicación: front controller, src/, el mini-app admin/ y las tablas globales"
 ---

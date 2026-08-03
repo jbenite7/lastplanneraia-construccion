@@ -36,10 +36,10 @@ Nada de lo que hay aquí es contrato. Si una nota contradice al repo, gana el re
 y márcala `estado: derogada` en vez de borrarla — saber que algo dejó de ser cierto también es
 memoria.
 
-**Áreas válidas** (lista cerrada; `scripts/wiki-lint.mjs` la comprueba): `design-system` · `qa` ·
-`docker` · `worktrees` · `pdc` · `lps` · `datos` · `rbac` · `deploy` · `bi` · `admin` · `proceso`.
-Si necesitas una nueva, añádela primero al script y explica aquí qué cubre; una lista que crece
-sin control deja de servir para filtrar.
+**Áreas válidas** (lista cerrada de trece; `scripts/wiki-lint.mjs` la comprueba): `design-system` ·
+`qa` · `docker` · `worktrees` · `pdc` · `lps` · `datos` · `rbac` · `deploy` · `bi` · `admin` ·
+`proceso` · `arquitectura`. Si necesitas una nueva, añádela primero al script y explica aquí qué
+cubre; una lista que crece sin control deja de servir para filtrar.
 
 ## Las tres operaciones
 
