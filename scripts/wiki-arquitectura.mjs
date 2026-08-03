@@ -157,7 +157,11 @@ export function serviciosDe(archivo) {
 
 // Esquema real de la base de datos, vía docker compose (nunca hardcodeado).
 // Si el contenedor no responde, devuelve null: el llamador debe tratarlo
-// como "no se pudo confirmar", no como "no hay tablas".
+// como "no se pudo confirmar", no como "no hay tablas". IMPORTANTE: cuando
+// esto devuelve null, tablasDe() también devuelve null en vez de caer a un
+// fallback de solo-regex — una lista sin contrastar contra el esquema
+// parece verídica pero no lo es, y eso es justo lo que el generador no debe
+// hacer. "Sin db, sin tablas" es intencional, no un defecto pendiente.
 let _esquemaCache = undefined;
 export function leerEsquema() {
   if (_esquemaCache !== undefined) return _esquemaCache;
@@ -183,6 +187,11 @@ export function leerEsquema() {
 
 export function tablasDe(archivos) {
   const esquema = leerEsquema();
+  // Sin esquema no hay forma honesta de distinguir una tabla real de un
+  // nombre de variable o columna que también matchea la regex: en vez de
+  // publicar una lista con apariencia de cierta, se declara indeterminada
+  // igual que el carril legado.
+  if (!esquema) return null;
   const s = new Set();
   for (const a of archivos) {
     if (!existsSync(a)) continue;
@@ -190,14 +199,7 @@ export function tablasDe(archivos) {
     for (const m of t.matchAll(/\b(?:FROM|JOIN|INTO|UPDATE)\s+`?([a-z][a-z0-9_]{2,})`?/gi)) {
       const nombre = m[1].toLowerCase();
       if (RUIDO_SQL.has(nombre)) continue;
-      if (esquema) {
-        if (esquema.has(nombre)) s.add(nombre);
-      } else {
-        // Sin esquema disponible: solo la extracción textual, ya libre de
-        // comentarios. Es un fallback deliberadamente más débil que 1) del
-        // brief; si ni así se confía, mejor null aguas arriba.
-        s.add(nombre);
-      }
+      if (esquema.has(nombre)) s.add(nombre);
     }
   }
   return [...s].sort();
