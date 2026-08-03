@@ -17,9 +17,9 @@ funcionalidad nueva. Este documento reparte, ordena y explica las dependencias. 
 después su propio ciclo de spec, plan y ejecución.
 
 Seis vienen del grilleo. Las otras dos aparecieron después y se señalan como tales: **F-bis**, el
-autoguardado al entrar, que este documento desgaja por su cuenta; y **G**, restaurar el canal de
-matiz en las grillas, que no existía al grillear porque el defecto se descubrió al ejecutar B1 —
-su alcance sí lo decidió el usuario, una vez medido.
+autoguardado al entrar, que este documento desgaja por su cuenta; y **G**, el chip de estado que le
+falta a Programa General, que no existía al grillear porque el defecto se descubrió al ejecutar B1
+— su alcance sí lo decidió el usuario, y se corrigió a la baja al medirlo.
 
 ## Las doce decisiones, tal como se resolvieron
 
@@ -35,7 +35,8 @@ su alcance sí lo decidió el usuario, una vez medido.
 | 8 | `/dashboard` como redirect | **Sí debe existir un panel de inicio**, que además resuelve el efecto colateral |
 | 9 | 14 pantallas de `admin/` sin cubrir | **Extender la puerta de servicio a `admin/`** |
 | 10 | 39 hallazgos de usabilidad | **Altas y medias**: 30 aprobadas, 26 ejecutables — cuatro ya tienen dueño en otra línea |
-| 11 | Alcance del arreglo del canal de matiz | **Restaurarlo en los tres módulos**, no solo las colisiones sueltas |
+| 11 | Alcance del arreglo del canal de matiz | Se aprobó como «los tres módulos». **Medido después: solo PG está roto** — PI y PS ya llevan el chip. Ver G |
+| 11-bis | Cómo recupera PG su matiz | **Con chip en la celda, como PI y PS.** Deja las tres pantallas consistentes en vez de inventar un tercer patrón |
 | 12 | Cuándo nace el guard que cruza contrato y CSS | **Junto al sembrado de B1.** Antes nacería verde sobre una grilla vacía |
 
 Las decisiones 1, 2 y 3 están **ejecutadas y publicadas**; la sesión que las llevaba cerró. La 4
@@ -215,48 +216,63 @@ Decisión 8. `/dashboard` es hoy un redirect a `/programacion-semanal`.
 visualizador, qué ocurre si no hay semana activa. Merece su propio grilleo, no una tarea dentro de
 un lote.
 
-### G · Restaurar el canal de matiz en las grillas — nueva, y no venía del grilleo
+### G · Programa General recupera su chip de estado — nueva, y no venía del grilleo
 
 Descubierta el 2026-08-03 al ejecutar B1, y es la razón por la que B1 valía la pena.
 
-**El contrato y el CSS se contradicen en los tres módulos operativos.** `state-semantics.json`
-declara un matiz distinto por estado; el CSS los colapsa sobre la escala de **nivel** de siete
-peldaños a la que el goal de tablas migró las grillas:
+> **Corrección de diagnóstico — 2026-08-03, la tercera de este documento y la más cara si no se
+> hubiera hecho.** Esta línea se escribió como «restaurar el canal de matiz en las **tres** grillas»,
+> sobre la tesis de que las tres colapsaban el matiz contra el nivel y de que unas reglas
+> `!important` estaban anulando un mecanismo ya montado.
+>
+> **La tesis era falsa en su mitad importante, y actuar sobre ella habría dejado las celdas sin
+> fondo**, porque nada más las pinta.
+>
+> Lo que hay de verdad, medido en código y en navegador:
+>
+> | Módulo | Canal de nivel | Canal de matiz | ¿Defecto? |
+> |---|---|---|---|
+> | `programacion-intermedia` | fondo de fila | **chip dentro de la celda** (`renderOperationalStateCell`) | **No** |
+> | `programacion-semanal` | fondo de fila | **chip dentro de la celda** (`hot.js:951` y `:984`) | **No** |
+> | `programa-general` | fondo de fila | **ninguno** — la columna Estado es texto plano | **Sí** |
+>
+> PI y PS **sí implementan los dos canales**, y bien: `stateChipAttrs()` emite `data-aia-hue`,
+> `data-aia-severity` y `data-aia-urgency` sobre un `<span class="ops-state-chip">`, y
+> `states-feedback.css` los traduce a fondo por matiz con texto pareado. Verificado en
+> `/programacion-intermedia`: un chip con `data-aia-hue="green"` resuelve a `#173d26`, que es
+> `--ds-state-tint-green`.
+>
+> Las colisiones de fondo que este documento reportaba para PI y PS **no son defectos**: son el
+> canal de nivel funcionando como se diseñó.
 
-| Módulo | Estados / matices declarados | Tokens que usa el CSS | Distinciones perdidas |
-|---|---|---|---|
-| `programa-general` | 7 / 7 | 5 | 2 |
-| `programacion-intermedia` | 8 / 8 | 5 | 3 |
-| `pdc` | 7 / 7 | 6 | 1 |
+#### El defecto real, y es uno solo
 
-Colisiones reales, separadas de las inocentes —`atrasada`/`atrasado` es la misma palabra,
-`r1`/`restr-1` son alias—:
+**A `programa-general` nunca se le puso el chip.** Su columna Estado se pinta con
+`pgGenericTextRenderer` —texto suelto—, así que el canal de matiz no tiene dónde aparecer. Como
+*Actividad Futura* y *En Curso* comparten nivel `healthy`, sin chip no queda nada que los separe:
+las dos caen en `--ds-cell-state-ok-bg` y se ven idénticas.
 
-- **PG**: *Actividad Futura* (matiz green) y *En Curso* (matiz **blue**) comparten
-  `--ds-cell-state-ok-bg`. Antes del goal eran `#d9f99d` verde lima y `#bae6fd` azul claro.
-- **PI**: *En Ejecución Pendiente* y *Listo para Comprometer* comparten `ok`.
-- **PS**: *Crítica* y *Crítica de Ruta* comparten `critico`; *Info* y *Neutral* comparten
-  `neutral`.
+`state-semantics.json` sí les declara matices distintos —**green** y **blue**— y la leyenda de la
+toolbar sí los distingue, porque `--pg-dot-future` deriva de `success` y `--pg-dot-progress` de
+`info`. **La leyenda promete una distinción que la grilla no puede dar.** Eso es peor que no
+distinguir en ninguno de los dos sitios, porque el usuario aprende un código de color que falla.
 
-**Lo que lo agrava, y hay que saberlo antes de arreglar:** la cadena de `En Curso` es
-`--ds-cell-state-ok-bg` → `--ds-color-state-success-bg` → `--ds-state-tint-green` → `#173d26`. Es
-decir, un estado que su propio contrato declara **blue** se está pintando con el **ancla verde**.
-No es solo que dos estados colisionen: es que uno lleva un matiz que su contrato le prohíbe. El
-arreglo no es separar dos peldaños, es devolver cada estado a su matiz declarado.
+#### Alcance decidido
 
-**Y la leyenda ya promete lo que la grilla no da.** Los puntos de la leyenda de PG sí distinguen
-—`--pg-dot-future` deriva de `success`, `--pg-dot-progress` de `info`—, así que el usuario aprende
-un código de color que la tabla incumple. Eso es peor que cualquiera de las dos opciones por
-separado.
+**Darle a PG el chip que PI y PS ya tienen.** No se inventa mecanismo: se copia uno existente,
+probado y medido, y se dejan las tres pantallas consistentes.
 
-#### Por qué ningún guard lo vio
+Lo que hace falta, sin entrar en el plan:
 
-`state-tint-ladder.test.mjs:170` recorre `semantics.moduleMappings` y comprueba que ningún módulo
-repita `hue` **dentro del propio JSON**. Nunca mira el CSS. **Un assert que valida una declaración
-contra sí misma está verde por construcción.**
-
-Es la familia de `gate-estatico-no-ve-tokens-rotos`, un nivel más arriba: allí el gate no resolvía
-el valor de un token; aquí no comprueba que la implementación obedezca al contrato que él valida.
+- Un renderer para la columna Estado que emita `<span class="ops-state-chip">` con los tres
+  atributos, siguiendo `stateChipAttrs()` de PI.
+- Un mapa `estado → { level, hue }` para los siete estados de PG. **No se inventa**: sale de
+  `state-semantics.json`, que ya los declara.
+- El CSS del chip. Hoy está duplicado en `programacion-intermedia.css` y `programacion-semanal.css`
+  bajo `.pi-page` y `.ps-page`. Una tercera copia bajo `.pg-page` sería la opción perezosa;
+  extraerlo a componente compartido es la que corresponde, y el plan debe decidirlo con el coste
+  delante. Ojo: el chip se define **sin `background` a propósito** —lo pinta la capa de
+  componentes vía el atributo—, y una copia que lo olvide rompe el mecanismo sin dar la cara.
 
 #### El guard que falta
 
@@ -265,14 +281,16 @@ texto del CSS, porque `--ds-cell-state-riesgo-bg` se calcula con `color-mix()` y
 en ningún archivo— y **con filas reales en la grilla**.
 
 **Nace junto al sembrado de B1, no antes.** Escrito sobre una grilla vacía se quedaría verde, que
-es exactamente el fallo que viene a corregir. Es de la familia de
-`tests/browser/design-system-table-contract.runtime.mjs`.
+es exactamente el fallo que viene a corregir.
 
-#### Alcance decidido
+#### Por qué ningún guard lo vio
 
-**Restaurar el canal de matiz en los tres módulos**: cada estado vuelve a pintarse con el matiz que
-su contrato le declara. No se inventa nada — es implementar el diseño de dos canales que ya está
-escrito, aprobado y vigilado a medias.
+`state-tint-ladder.test.mjs:170` recorre `semantics.moduleMappings` y comprueba que ningún módulo
+repita `hue` **dentro del propio JSON**. Nunca mira el CSS ni el DOM. **Un assert que valida una
+declaración contra sí misma está verde por construcción.** Documentado en
+`memoria/trampas/guard-valida-declaracion-contra-si-misma.md`, con la heurística para no repetirlo:
+al escribir un guard, pregúntate qué archivo tendría que estar mal para que fallara; si es el mismo
+que lee, no vigila nada.
 
 **Depende de B1**, tanto para verificarse como para que su guard pueda nacer viendo algo.
 
@@ -313,7 +331,7 @@ porque mezclarla con F la dejaría bloqueada tras una decisión de producto que 
 B  ─────────────────────────────► habilita la verificación visual de A, C, E y G
       │
 A  ───┘ (en curso, solo necesita B1 para medir in situ)
-G  ────────────► depende de B1: su guard nace con el sembrado o nace ciego
+G  ────────────► solo PG. Depende de B1: su guard nace con el sembrado o nace ciego
 C  ────────────► independiente, verificable con el gate de runtime
 D  ────────────► habilita la parte admin/ de E
 E  ────────────► depende de D solo para admin/
@@ -321,8 +339,9 @@ F  ────────────► independiente, necesita grilleo propi
 F-bis ─────────► independiente, no espera a F
 ```
 
-**G es ahora la más urgente después de B**, y no por tamaño: es la única que corrige algo que el
-usuario final ve mal hoy, en las tres pantallas donde más tiempo pasa.
+**G es ahora la más urgente después de B**, y no por tamaño —al medirla encogió de tres módulos a
+uno—: es la única que corrige algo que el usuario final ve mal hoy, en una de las pantallas donde
+más tiempo pasa.
 
 ## Hallazgo posterior al grilleo: hay una cuarta paleta, y está en PHP
 
