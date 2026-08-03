@@ -47,6 +47,10 @@ así que un hex citado en un comentario rompe el presupuesto),
 culparte) y [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
 que apunta a una variable inexistente: los valores resueltos solo se ven en navegador).
 
+Y antes de citar un comentario de `tokens.css` como contrato:
+[[comentario-de-token-afirma-uso-inexistente]] — ocho tokens llevan rotulado un uso que ningún
+archivo del repositorio ejerce.
+
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
 [[lab-desktop-layout-suite]].
 
