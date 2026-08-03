@@ -28,6 +28,8 @@ export function attachHtEmptyState(hot, { titulo, cuerpo }) {
       '</div>';
     host.appendChild(panel);
   }
+  // Los textos se actualizan siempre, aunque ya exista panel: una segunda llamada con
+  // otro titulo/cuerpo (p. ej. tras cambiar de semana) debe reflejarse igual.
   panel.querySelector('.ht-empty-state__titulo').textContent = titulo;
   panel.querySelector('.ht-empty-state__cuerpo').textContent = cuerpo;
 
@@ -35,8 +37,16 @@ export function attachHtEmptyState(hot, { titulo, cuerpo }) {
     panel.hidden = hot.countRows() > 0;
   };
   sync();
-  hot.addHook('afterLoadData', sync);
-  hot.addHook('afterChange', sync);
-  hot.addHook('afterRemoveRow', sync);
-  hot.addHook('afterCreateRow', sync);
+
+  // Guarda de idempotencia: sin esto, invocar attachHtEmptyState() dos veces sobre la
+  // misma instancia (reconstruccion sin destroy(), doble montaje) acumula los mismos
+  // cuatro hooks y sync() se dispara N veces por evento. No corrompe datos, pero es
+  // desperdicio silencioso — y esta pieza ya tiene un segundo consumidor (PDC).
+  if (!panel.dataset.attached) {
+    panel.dataset.attached = 'true';
+    hot.addHook('afterLoadData', sync);
+    hot.addHook('afterChange', sync);
+    hot.addHook('afterRemoveRow', sync);
+    hot.addHook('afterCreateRow', sync);
+  }
 }
