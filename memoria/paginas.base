@@ -1,7 +1,6 @@
 filters:
   and:
     - file.inFolder("memoria")
-
 properties:
   note.resumen:
     displayName: De qué va
@@ -9,34 +8,33 @@ properties:
     displayName: Áreas
   note.fecha:
     displayName: Fecha
-
 views:
   - type: table
     name: Decisiones
     filters:
       and:
-        - 'note.tipo == "decision"'
+        - note.tipo == "decision"
     order:
       - file.name
-      - note.resumen
-      - note.areas
-      - note.fecha
+      - resumen
+      - areas
+      - fecha
   - type: table
     name: Trampas
     filters:
       and:
-        - 'note.tipo == "trampa"'
+        - note.tipo == "trampa"
     order:
       - file.name
-      - note.resumen
-      - note.areas
-      - note.fecha
+      - resumen
+      - areas
+      - fecha
   - type: table
     name: Referencias
     filters:
       and:
-        - 'note.tipo == "referencia"'
+        - note.tipo == "referencia"
     order:
       - file.name
-      - note.resumen
-      - note.fecha
+      - resumen
+      - fecha
