@@ -646,3 +646,24 @@ pseudo-elemento o del propio control, en las toolbars de PG, PI, PS y PDC; foco 
 con teclado; contraste del texto del contador con sonda real. Capturas antes/después de una
 toolbar completa. Y jerarquía: aprovechar para que la acción primaria de cada toolbar deje de
 pesar lo mismo que las demás (hallazgo Refactoring UI del 2026-08-03).
+
+### Task 23: Decir por qué el estado está retenido (nace del bug reportado el 2026-08-03)
+
+**Origen:** el usuario reportó «los chips de PS no se actualizan al cambiar de estado». Tres rondas
+de diagnóstico refutaron el bug con evidencia directa (no hay estado persistido, el renderer
+recalcula en cada pintada, el guardado persiste en la misma petición, y `Compromiso` 10→12 en Da
+Porto quedó en MySQL con el chip coherente antes, después y tras recargar). La causa real es de
+comunicación: **el estado depende de campos que el usuario no está editando** —`Sub_Contratista`
+vacío, restricciones abiertas— y la pantalla no dice cuál lo retiene. El usuario decidió tratarlo
+como mejora de UX.
+
+Qué construir: cuando el estado de una fila esté retenido por una condición ajena a lo que se
+edita, la interfaz debe decir **cuál** y en el punto de uso — no en una leyenda general. Formas
+posibles (decidir con `impeccable` + `ux-heuristics`, no inventar): texto en el propio chip al
+pasar el cursor o en el panel de detalle, marca en la celda que falta, o una línea en el drawer.
+Debe cubrir al menos las condiciones que `PSStateMachine.classifyState()` evalúa además de
+`Compromiso`/`Ejecutado_Real`; inventaríalas primero leyendo esa función.
+
+Aplica a Programación Semanal, y comprobar si Programación Intermedia tiene el mismo silencio
+(su máquina de estados es hermana). Verificación en navegador con un caso real de estado retenido,
+más el ciclo triple. NO recapturar goldens.
