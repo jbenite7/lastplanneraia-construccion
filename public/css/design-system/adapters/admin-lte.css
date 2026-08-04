@@ -245,6 +245,24 @@
     opacity: 0.16;
   }
 
+  /* `prefers-reduced-motion` en admin/. La app principal lo cubre entera con una
+     regla global sobre `.aia-shell *` en `core.css`, pero admin/ no monta ese
+     shell y se quedaba solo con lo que trae Bootstrap, que alcanza `.btn`,
+     `.form-control`, `.fade`, `.collapsing` y los controles custom. Medido en
+     /admin/ a 1180x820: de 39 elementos con movimiento, 34 quedaban
+     descubiertos —iconos, insignias, barras de progreso—, con transiciones de
+     hasta 0,6s. Se replica el mismo paraguas y el mismo token que usa la app,
+     anclado al `body` de admin. Es una preferencia del sistema operativo: para
+     quien no la tiene activada no cambia absolutamente nada. */
+  @media (prefers-reduced-motion: reduce) {
+    body.sidebar-mini *,
+    body.hold-transition * {
+      transition-duration: var(--ds-motion-reduced-duration) !important;
+      animation-duration: var(--ds-motion-reduced-duration) !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
   /* AdminLTE oscurece el pie con un velo negro al 10% y le pone tinta propia. Esa
      capa baja el acento medio lo justo para romper AA (medido 2.8–3.48:1): el
      par acento-on-dark + `--ds-color-text-on-domain-dark` esta calibrado a
