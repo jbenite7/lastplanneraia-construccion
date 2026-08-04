@@ -106,7 +106,10 @@ async function openProgrammingWeek(
 }
 
 async function expectSectionDropdown(page) {
-  const navigation = page.locator('.ps-dropdown-nav');
+  // Scoped por aria-label: desde que las acciones que no caben viven en el
+  // menu "Mas" (otro .ps-dropdown-nav en la misma toolbar), el selector
+  // desnudo matchea dos elementos y rompe en modo estricto.
+  const navigation = page.locator('.ps-dropdown-nav[aria-label="Navegacion Programacion Semanal"]');
   await navigation.locator('.btn-dropdown-trigger').click();
   await expect(navigation).toHaveClass(/is-open/);
   const items = navigation.locator('.ps-dropdown-item');
@@ -426,11 +429,23 @@ test('calificación expone controles y modales sin escribir datos', async ({ pag
   ]) {
     await expect(page.locator(selector)).toBeHidden();
   }
+  // Imprimir vive en el menu de desbordamiento "Mas" (task 25, f61f966):
+  // hay que abrirlo antes de comprobar visibilidad del control movido.
+  const moreMenu = page.locator('.ps-hot-overflow-nav');
+  await moreMenu.locator('.btn-dropdown-trigger').click();
+  await expect(moreMenu).toHaveClass(/is-open/);
   await expect(page.locator('#btn_informe_compromisos')).toBeVisible();
+  await page.locator('body').click({ position: { x: 4, y: 4 } });
+  await expect(moreMenu).not.toHaveClass(/is-open/);
+
   await expect(page.locator('#btn_tnp')).toBeVisible();
   await expect(page.locator('#btn_reabrir_semana')).toBeVisible();
 
   await expectSectionDropdown(page);
+
+  // Leyenda tambien se movio al menu "Mas": lo reabrimos antes de tocarla.
+  await moreMenu.locator('.btn-dropdown-trigger').click();
+  await expect(moreMenu).toHaveClass(/is-open/);
   await page.locator('.leyenda_colores').click();
   const legendModal = page.locator('#modal_leyenda_colores_ps');
   await expect(legendModal).toBeVisible();
