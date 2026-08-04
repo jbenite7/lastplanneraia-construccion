@@ -2420,6 +2420,19 @@ body.ps-page #hot-container .ops-state-chip {
     body.ps-page #hot-container .ops-state-topline .ops-state-chip {
         display: none;
     }
+
+    /* Con el nombre oculto, el boton seguia siendo un grid de DOS filas: una
+       para un punto de 9px y otra para el contador. Medido asi: 95x44 px en una
+       celda de 116 -el 82 % del ancho- para mostrar un punto y «2 pend.», con
+       la mayor parte del alto vacio. En esta condicion —y solo en ella— las dos
+       piezas caben en una linea, que es lo que la columna estrecha pedia desde
+       el principio. El piso tactil de 44px NO se toca: lo da `min-height` y
+       sigue vigente; lo que se recupera es el espacio horizontal. */
+    body.ps-page #hot-container .ops-state-zoom {
+        grid-auto-flow: column;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+    }
 }
 
 body.ps-page #hot-container .ops-state-summary {
