@@ -69,5 +69,15 @@ foreach ($apis as $ruta) {
     );
 }
 
+// 4. La API de Programación Intermedia no persiste la semana del request: el guard 409 del
+//    script legacy solo tiene sentido si la sesión conserva su propio valor.
+$pi = (string) file_get_contents($raiz . '/src/Controllers/Programacion/ProgramacionIntermediaController.php');
+$save = substr($pi, (int) strpos($pi, 'public function save()'));
+$save = substr($save, 0, (int) strpos($save, 'public function getFilters()'));
+comprobar(
+    'ProgramacionIntermediaController::save() no asigna $_SESSION[\'semana\']',
+    preg_match('/\$_SESSION\s*\[\s*[\'"]semana[\'"]\s*\]\s*=/', $save) !== 1,
+);
+
 echo "\n{$total} comprobaciones, {$fallos} fallidas\n";
 exit($fallos === 0 ? 0 : 1);
