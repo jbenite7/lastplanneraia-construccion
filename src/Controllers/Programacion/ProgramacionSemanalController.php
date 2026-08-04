@@ -12,6 +12,7 @@ class ProgramacionSemanalController extends BaseController
     public function index()
     {
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
@@ -69,6 +70,7 @@ class ProgramacionSemanalController extends BaseController
     public function cnp()
     {
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
@@ -88,6 +90,7 @@ class ProgramacionSemanalController extends BaseController
     public function cnc()
     {
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';
@@ -107,6 +110,7 @@ class ProgramacionSemanalController extends BaseController
     public function cic()
     {
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
         $this->healWeeklyContext();
 
         $dbName = $_SESSION['db'] ?? '';

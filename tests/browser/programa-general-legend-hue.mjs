@@ -118,20 +118,27 @@ test.describe('leyenda de Programa General', () => {
     const dots = await readLegendDots(page);
     const byFilter = new Map(dots.map((dot) => [dot.filter, dot]));
 
+    // `soft` a proposito: los cinco estados son independientes entre si. Con
+    // aserciones duras el bucle aborta en el primero y los demas quedan sin
+    // medir -asi es como `en-curso` estuvo roto sin que nadie lo viera mientras
+    // `actividad-futura` fallaba antes que el-. Los umbrales no se tocan: el
+    // cambio es de REPORTE, no de exigencia.
     for (const { filter, level, hueRange } of CHROMATIC_DOTS) {
       const entry = byFilter.get(filter);
-      expect(entry, `falta el chip data-filter="${filter}"`).toBeTruthy();
-      expect(entry.hasDot, `${filter} no tiene .indicator`).toBe(true);
+      expect.soft(entry, `falta el chip data-filter="${filter}"`).toBeTruthy();
+      if (!entry) continue; // sin chip no hay pixel que medir; ya quedo reportado
+      expect.soft(entry.hasDot, `${filter} no tiene .indicator`).toBe(true);
+      if (!entry.hasDot) continue;
 
       const { hue, saturation } = toHsl(entry.painted);
       const seen = `${toHex(entry.painted)} (hue ${hue.toFixed(0)}, sat ${saturation.toFixed(0)}%)`;
 
-      expect(
+      expect.soft(
         saturation,
         `${filter} (${level}) deberia leerse cromatico y sale ${seen}`,
       ).toBeGreaterThanOrEqual(MIN_SATURATION);
 
-      expect(
+      expect.soft(
         hueWithin(hue, hueRange),
         `${filter} (${level}) deberia caer en el matiz ${hueRange[0]}-${hueRange[1]} y sale ${seen}`,
       ).toBe(true);
@@ -142,11 +149,16 @@ test.describe('leyenda de Programa General', () => {
     const dots = await readLegendDots(page);
     const byFilter = new Map(dots.map((dot) => [dot.filter, dot]));
 
+    // Mismo criterio que el test de arriba: los dos estados silenciosos se
+    // miden ambos en la misma corrida.
     for (const filter of NEUTRAL_DOTS) {
       const entry = byFilter.get(filter);
-      expect(entry, `falta el chip data-filter="${filter}"`).toBeTruthy();
+      expect.soft(entry, `falta el chip data-filter="${filter}"`).toBeTruthy();
+      if (!entry) continue;
+      expect.soft(entry.hasDot, `${filter} no tiene .indicator`).toBe(true);
+      if (!entry.hasDot) continue;
       const { saturation } = toHsl(entry.painted);
-      expect(
+      expect.soft(
         saturation,
         `${filter} deberia seguir neutro y sale ${toHex(entry.painted)} (sat ${saturation.toFixed(0)}%)`,
       ).toBeLessThanOrEqual(MAX_NEUTRAL_SATURATION);

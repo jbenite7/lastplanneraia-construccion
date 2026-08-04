@@ -12,6 +12,7 @@ class ProgramaGeneralController extends BaseController
     public function index()
     {
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
         $this->healWeeklyContext();
 
         $vars = $this->getSessionVars();

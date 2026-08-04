@@ -88,9 +88,15 @@ test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
 
   // Los siete matices del contrato para este modulo, no un subconjunto: si
   // falta alguno el guard vuelve a estar ciego para ese estado.
+  //
+  // De aqui abajo las aserciones son `soft`: comprueban propiedades
+  // INDEPENDIENTES del mismo conjunto de chips (cobertura, colision, intrusos,
+  // contraste). Con aserciones duras, la primera que falla esconde a las otras
+  // tres y hacen falta tantas corridas como defectos haya. El cambio es de
+  // REPORTE: ningun umbral ni banda se relaja.
   const declaradosTodos = new Set(PG_STATES.map((s) => s.hue));
   const faltantes = [...declaradosTodos].filter((h) => !matices.includes(h));
-  expect(faltantes, `matices declarados que la grilla no ejercito: ${faltantes}`).toEqual([]);
+  expect.soft(faltantes, `matices declarados que la grilla no ejercito: ${faltantes}`).toEqual([]);
 
   // Dos matices distintos no pueden resolver al mismo pixel: ese es el defecto.
   const colisiones = [];
@@ -99,12 +105,12 @@ test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
       if (a < b && fondos[a] === fondos[b]) colisiones.push(`${a} y ${b} pintan ${fondos[a]}`);
     }
   }
-  expect(colisiones, `matices distintos con el mismo color:\n${colisiones.join('\n')}`).toEqual([]);
+  expect.soft(colisiones, `matices distintos con el mismo color:\n${colisiones.join('\n')}`).toEqual([]);
 
   // Y cada matiz visible tiene que estar declarado en el contrato.
   const declarados = new Set(PG_STATES.map((s) => s.hue));
   const intrusos = matices.filter((h) => !declarados.has(h));
-  expect(intrusos, `matices que el contrato no declara: ${intrusos}`).toEqual([]);
+  expect.soft(intrusos, `matices que el contrato no declara: ${intrusos}`).toEqual([]);
 
   const bajos = [];
   for (const hue of matices) {
@@ -112,7 +118,7 @@ test('cada matiz declarado se pinta distinto y legible', async ({ page }) => {
     if (!medida || typeof medida.ratio !== 'number') { bajos.push(`${hue}: la sonda no pudo medir`); continue; }
     if (medida.ratio < AA_MIN) bajos.push(`${hue}: ${medida.ratio.toFixed(2)}:1`);
   }
-  expect(bajos, `chips bajo AA:\n${bajos.join('\n')}`).toEqual([]);
+  expect.soft(bajos, `chips bajo AA:\n${bajos.join('\n')}`).toEqual([]);
 
   await logout(page);
 });

@@ -16,6 +16,7 @@ class ProgramacionIntermediaController extends BaseController
     {
         // Validar autenticación y gestionar timeout (centralizado en BaseController)
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
 
         // Obtener variables de sesión comunes
         $vars = $this->getSessionVars();
@@ -225,16 +226,16 @@ class ProgramacionIntermediaController extends BaseController
         $dbPrefix = $_POST['db'] ?? $_GET['db'] ?? ($vars['dbName'] ?? '');
         $semanaReq = $_POST['semana'] ?? $_GET['semana'] ?? null;
 
-        if ($semanaReq !== null && $semanaReq !== '') {
-            $_SESSION['semana'] = (int) $semanaReq;
-        }
-
         if ($dbPrefix !== '' && (!isset($_SESSION['db']) || $_SESSION['db'] === '')) {
             $_SESSION['db'] = $dbPrefix;
         }
 
         // Block mutations when week is confirmed
-        $semana = (int) ($_SESSION['semana'] ?? 0);
+        // La semana del request manda para el guard de bloqueo, pero NO se persiste: si difiere de
+        // la de la sesión, guardar_programacion_intermedia.php responde 409 y aborta.
+        $semana = ($semanaReq !== null && $semanaReq !== '')
+            ? (int) $semanaReq
+            : (int) ($_SESSION['semana'] ?? 0);
         \CommitmentLockGuard::guard($dbPrefix, $semana, 'modificar_pi');
 
         // Delegate to legacy script (contains modificar, alerts, notifications)

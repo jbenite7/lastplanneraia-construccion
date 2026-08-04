@@ -97,16 +97,19 @@ test('los chips de /pdc se pintan en oscuro', async ({ page }) => {
 
   const measured = await measureChips(page, CHIPS);
 
+  // `soft`: los tres chips son medidas independientes -son tres reglas CSS
+  // distintas- y con aserciones duras el primero roto esconde a los otros dos.
+  // Los umbrales quedan igual; lo que cambia es cuanto reporta una corrida.
   for (const { name } of CHIPS) {
     const { background, foreground } = measured[name];
     const seen = `fondo ${toHex(background)}, texto ${toHex(foreground)}`;
 
-    expect(
+    expect.soft(
       relativeLuminance(background),
       `${name} deberia tener fondo oscuro y tiene ${seen}`,
     ).toBeLessThanOrEqual(MAX_BACKGROUND_LUMINANCE);
 
-    expect(
+    expect.soft(
       contrastRatio(background, foreground),
       `${name} deberia superar ${MIN_CONTRAST}:1 y tiene ${seen}`,
     ).toBeGreaterThanOrEqual(MIN_CONTRAST);
