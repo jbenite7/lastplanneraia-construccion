@@ -504,6 +504,40 @@ Origen: hallazgo de la Task 1, verificado de forma independiente por el coordina
 - [ ] **Step 5: Correr los 16 casos** que dependían de él: `npx playwright test tests/browser/programacion-semanal-*.mjs --workers=1`. Expected: los 16 pasan de fallo a verde; el resto no empeora.
 - [ ] **Step 6: Suite estática 8/8 + goldens movidos + ciclo triple + commit.** `git commit -m "fix(ps): restaura el indicador de fase que el shell lateral dejo huerfano"`.
 
+### Task 33: Apretar la tolerancia de los goldens (hallazgo de la Task 5) — PRIORITARIA
+
+**Files:**
+- Modify: `tests/browser/programa-general.visual.mjs:90`, `tests/browser/programacion-intermedia.visual.mjs:43` (`maxDiffPixelRatio`), más cualquier otro spec visual con la misma tolerancia
+- Test: los propios visuales
+
+**Interfaces:**
+- Consumes: goldens al día (Task 4 + Task 5).
+- Produces: red visual que de verdad detecta cambios; **todas las tasks visuales posteriores dependen de ella**. Va antes que el resto de la fase 3.
+
+Origen: la Task 5 midió que su propio cambio de rejilla ocupa el 2,66 % de la imagen y **pasó en verde**, porque la tolerancia es del 3 % (~29.000 px a 1180×820). Además `--update-snapshots` no reescribe por debajo del umbral: hace falta `=all`. Decisión del usuario (2026-08-04): apretarla ya.
+
+- [ ] **Step 1: Censar** todos los specs visuales y su tolerancia: `grep -rn "maxDiffPixelRatio\|maxDiffPixels" tests/browser/`.
+- [ ] **Step 2: Bajar a ~0,002 (0,2 %)** en todos. Justificar el valor en un comentario: por debajo del ruido de renderizado entre corridas, por encima de cero para no romper por antialiasing.
+- [ ] **Step 3: Comprobar que la nueva vara no da falsos rojos:** correr los visuales **tres veces seguidas sin tocar nada**. Expected: verde las tres. Si alguna da rojo, el piso es demasiado bajo — subirlo al mínimo que aguante tres corridas limpias, y decirlo.
+- [ ] **Step 4: Probar que la vara MUERDE:** introducir un cambio visual pequeño y deliberado (p. ej. 1 px de borde), comprobar que ahora sale rojo, y revertirlo. Sin esta prueba no se sabe si el gate mide algo.
+- [ ] **Step 5: Suite estática 8/8 + commit.** `git commit -m "test(visual): la tolerancia de los goldens baja del 3% al 0,2% y por fin muerde"`.
+
+### Task 34: Tipar las columnas numéricas y alinearlas a la derecha (tercio pendiente de la variante B)
+
+**Files:**
+- Modify: `public/js/modules/programa_general/hot.js` (config de columnas; `cantidad_ppto` :2918 y `EjecutadoDisplay` :2930 ya son `type: 'numeric'`, `Ejecutado_Teorico` :2922 no lo es), y los `hot.js` equivalentes de PI/PS/PDC donde aplique
+
+**Interfaces:**
+- Consumes: Task 5 (bordes) y Task 33 (la red que detectará el cambio).
+- Produces: la variante B aprobada, completa.
+
+Origen: la Task 5 implementó 2 de los 3 elementos de la variante B. El tercero exige tipar columnas en JS, porque hoy cada columna fuerza `className: 'htCenter htMiddle'` y alinear solo las tipadas dejaría columnas gemelas desalineadas entre sí. Decisión del usuario (2026-08-04): hacerlo como task propia.
+
+- [ ] **Step 1: Censar** qué columnas contienen números de verdad en PG, PI, PS y PDC, y cuáles están tipadas hoy (`grep -n "type: 'numeric'" public/js/modules/*/hot.js`). Distinguir números reales de códigos jerárquicos como `3.5.2.1` — **esos NO se alinean a la derecha**, son identificadores, no cantidades.
+- [ ] **Step 2: Tipar** las columnas numéricas que falten y quitarles el `htCenter` forzado, dejando la alineación a la derecha por clase del sistema.
+- [ ] **Step 3: Verificar con datos reales en solo lectura:** las columnas gemelas quedan alineadas igual entre sí; los códigos jerárquicos siguen sin alinearse a la derecha; los totales se leen alineados por unidades.
+- [ ] **Step 4: Suite estática 8/8 + goldens movidos (ya con la tolerancia fina) + ciclo triple + commit.** `git commit -m "feat(tablas): las columnas numericas se tipan y alinean a la derecha — cierra la variante B"`.
+
 ---
 
 ## Self-review
