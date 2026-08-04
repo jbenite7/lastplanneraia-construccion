@@ -1,4 +1,30 @@
 @layer components {
+  /* Endurecimiento: si `.aia-dialog` cae sobre un `<dialog>` nativo en vez de
+     sobre su envoltorio, el host se queda SIN estilo de autor y Chrome le
+     aplica su hoja por defecto. Medido en /plan-compras: el recorrido rendia
+     `3px solid rgb(255,255,255)` sobre `rgb(18,18,18)` —un marco blanco en
+     tema oscuro— y ninguna regla de autor lo tocaba.
+     El contrato de la primitiva es `.aia-dialog` en el envoltorio y
+     `.aia-modal-surface` en el `<dialog>`, como hace `shell_sidebar.php`; la
+     SPA del plan de compras lo monta invertido. Mientras eso se decide, esta
+     regla impide que el cromo del navegador se vea: va anclada al TIPO de
+     elemento, asi que no puede alcanzar el uso correcto —donde `.aia-dialog`
+     es un `div`— y deja que mande `.aia-modal-surface`, que ya pinta borde y
+     fondo con tokens. */
+  dialog.aia-dialog {
+    padding: var(--ds-space-0, 0);
+    border: 0;
+    /* Opaco a proposito, NO `transparent`. La superficie interior es
+       translucida (`--ds-active-surface-raised`, alfa 0.86) y se apoyaba en el
+       fondo opaco que ponia el navegador. Al neutralizar solo el borde y dejar
+       el host transparente, el contenido de la pagina se leia A TRAVES del
+       dialogo —verificado en /plan-compras: «Elegir archivo…» y el texto de la
+       zona de carga atravesaban el recorrido—. Este es un dialogo NO modal, sin
+       backdrop que lo aisle, asi que el respaldo opaco lo pone el host. */
+    background: var(--ds-active-bg-canvas);
+    color: inherit;
+  }
+
   .aia-dialog .aia-modal-surface {
     width: min(32rem, calc(100% - var(--ds-space-8)));
     max-width: min(32rem, calc(100% - var(--ds-space-8)));
