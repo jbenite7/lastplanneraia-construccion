@@ -21,6 +21,7 @@
 - Commits atómicos por task, mensaje honesto. **Nunca incluir** `memoria/log.md` ni `memoria/trampas/drawer-en-handsontable-module.md` (los tiene otra sesión). No push sin petición explícita.
 - Goldens: **ninguna task de F3 arranca antes de que F2-1 cierre.** Tras F2-1, cada task de F3 recaptura solo los goldens que su cambio mueve, con evidencia antes/después.
 - Método: un resultado vacío, redondo o idéntico al anterior se sospecha de la sonda antes que de la app; la captura es parte de la medición. El panel del navegador colapsado (`innerWidth: 0`) ya contaminó 4 mediciones — comprobar `window.innerWidth === 1180` antes de medir.
+- **PDC V1 DEPRECADO (decisión del usuario, 2026-08-04): fuera de alcance de toda la campaña.** Son `public/js/modules/pdc/`, `public/css/pdc.css`, la ruta `/pdc` y los módulos `listado-actividades/` y `contratos/`. Ninguna task los toca ni los verifica. **No confundir con Plan de Compras v2** (`/plan-compras`, `pdc-app/`, `src/Services/Pdc/`), que sí está vivo. Entradas cerradas como «no aplica: módulo deprecado»: C-3, C-10, C-36, C-43 y la parte PDC de C-31.
 - Ledger: `.superpowers/sdd/2026-08-04-campana-cierre/progress.md` (nuevo; el viejo es git-ignored y no se recrea).
 
 ---
@@ -127,7 +128,12 @@
 - [ ] **Step 4: Baseline sin subir.** Run: `npm run test:design-system:static`. Expected: 8/8 y los contadores de `off-scale-typography` bajan o quedan iguales.
 - [ ] **Step 5: Goldens movidos + ciclo triple + commit.** `git commit -m "refactor(css): colapsa los dos racimos tipograficos sub-pixel a tokens de rampa (C-40)"`.
 
-### Task 7: F3-3 — Filas de «Capítulo» del PDC sin bloque de color (C-44)
+### Task 7: F3-3 — Filas de «Capítulo» del PDC sin bloque de color (C-44) — HECHA, sobre módulo hoy deprecado
+
+> **Nota del 2026-08-04, posterior a su cierre:** esta task se ejecutó (commit `1e479a94`) sobre
+> `/pdc`, que el usuario deprecó ese mismo día. El trabajo queda hecho y es inocuo, pero **el valor
+> vivo está en la Task 36**, que lleva ese mismo encabezado sobrio a Programa General y Programación
+> Intermedia, que sí siguen. No se invierte más en `/pdc`.
 
 **Files:**
 - Modify: `public/css/pdc.css` (y/o el renderer en `public/js/modules/pdc/hot.js` si el color se aplica inline)
@@ -145,14 +151,16 @@
 ### Task 8: F3-4 — Anchos de columna que ocultan datos (C-16, C-31, C-49p1)
 
 **Files:**
-- Modify: `public/js/modules/programa_general/hot.js`, `public/js/modules/programacion_intermedia/hot.js`, `public/js/modules/pdc/hot.js` (claves `colWidths`), vista de Subcontratistas (localizar su config de tabla: `grep -rn "colWidths\|columnDefs" public/js | grep -i subcontrat`)
+- Modify: `public/js/modules/programa_general/hot.js`, `public/js/modules/programacion_intermedia/hot.js`, `public/js/modules/programacion_semanal/hot.js` (claves `colWidths`), vista de Subcontratistas (localizar su config de tabla: `grep -rn "colWidths\|columnDefs" public/js | grep -i subcontrat`)
+- **PDC V1 fuera de alcance** (deprecado el 2026-08-04): no se toca `public/js/modules/pdc/`. El caso «ESTADO DEL PROCESO» que ocultaba «71 días de retraso» se cierra como no aplica.
 - Test: `tests/browser/handsontable-ancho-tabla.mjs`, visuales de PG/PI
 
 **Interfaces:**
 - Consumes: Task 4.
 - Produces: columnas medidas sin recorte de datos; C-49p1 deja la celda de Estado Operativo >120 px (el container query de `.ops-state-zoom` vuelve a mostrar el nombre solo).
 
-- [ ] **Step 1: Fijar las cifras objetivo por columna (ya medidas):** PG «Id» 54→≥66 px; PI «Id» ≥ su texto máximo (26/27 códigos recortados, `9.5.1.1` pierde 18 px → medir el máximo real); PDC «ESTADO DEL PROCESO» 124→≥138 px; Subcontratistas correo → ancho del correo más largo del proyecto de prueba; PS/tabla de C-49: la columna de Estado Operativo >120 px.
+- [ ] **Step 1: Fijar las cifras objetivo por columna (ya medidas):** PG «Id» 54→≥66 px; PI «Id» ≥ su texto máximo (26/27 códigos recortados, `9.5.1.1` pierde 18 px → medir el máximo real); Subcontratistas correo → ancho del correo más largo del proyecto de prueba; PS/tabla de C-49: la columna de Estado Operativo >120 px.
+- [ ] **Step 1-bis: Cabeceras completas (añadido del usuario, 2026-08-04).** Censar en PG, PI y PS qué textos de cabecera se recortan (`scrollWidth > clientWidth` sobre `.colHeader`) y darles ancho suficiente para verse **enteros**, sin elipsis ni tooltip como sustituto. Aprovechar aquí la causa raíz de C-16: la caja interna `.colHeader` renderiza 33 px donde el `th` mide 56, o sea que **hay 23 px por columna ya pagados y desperdiciados** — recuperarlos puede bastar para varias cabeceras sin robar ancho a ninguna celda. Medir el ancho que cada cabecera necesita antes de ensanchar nada.
 - [ ] **Step 2: Editar `colWidths` módulo a módulo.** En cada `hot.js`, localizar el array `colWidths` y subir SOLO las columnas de la lista. El ancho extra sale del viewport total: comprobar tras cada módulo que no aparece scroll horizontal a 1180 px (`document.documentElement.scrollWidth <= 1180`).
 - [ ] **Step 3: Verificar con datos reales, en solo lectura.** Re-correr la sonda de truncamiento (contar celdas con `scrollWidth > clientWidth`): los casos de la lista deben quedar a 0; anotar el total de la app antes/después en el ledger (línea base: 105).
 - [ ] **Step 4: C-49p1 verificado:** en la tabla de PS, el botón `.ops-state-zoom` muestra el nombre del estado («Lista para Confirmar») porque la celda supera el umbral de 120 px del `@container`.
@@ -184,7 +192,7 @@
 - [ ] **Step 1: Línea base medida:** secundario en hover `rgb(149,187,156)` luminancia 0,443 vs primario en reposo `rgb(108,144,119)` luminancia 0,245 (80 % más luminoso).
 - [ ] **Step 2: Editar la regla:** en hover, el secundario pasa a superficie elevada (`--ds-active-surface-raised` o el token hover que el sistema ya defina — comprobar en `tokens.css`) + borde con el token de borde vivo, SIN relleno del acento.
 - [ ] **Step 3: Medir después:** luminancia del secundario:hover < luminancia del primario en reposo; contraste de texto del secundario:hover ≥4,5:1.
-- [ ] **Step 4: Verificar en 3 superficies consumidoras** (PS, PI, PDC) que ningún botón queda ilegible; suite 8/8; goldens movidos; ciclo triple; commit. `git commit -m "fix(buttons): el hover del secundario gana presencia sin adelantar al acento (C-34)"`.
+- [ ] **Step 4: Verificar en 3 superficies consumidoras vivas** (PS, PI, PG — **no** `/pdc`, deprecado) que ningún botón queda ilegible; suite 8/8; goldens movidos; ciclo triple; commit. `git commit -m "fix(buttons): el hover del secundario gana presencia sin adelantar al acento (C-34)"`.
 
 ### Task 11: F3-7 — Chip contador atenuado en cero (C-24)
 
@@ -224,10 +232,10 @@
 - Produces: 3 excepciones justificadas, cada una con medición escrita; errores de admin legibles; corte de pestañas anunciado.
 
 - [ ] **Step 1: C-29.** En `admin-lte.css`, los mensajes `.text-danger` de campo pasan al token de texto crítico (`--ds-color-state-critical-text`), con la entrada en `state-token-exceptions.json` justificada: «mensaje de error de campo; contraste medido 11,21:1 sobre la superficie del formulario; el aclarado al 35 % era para el enlace Salir, premisa caduca». El enlace «Salir» conserva el aclarado.
-- [ ] **Step 2: C-3.** `pdc.css:318` (borde-acento del toast): declararlo intencional en la config del audit con su justificación, para que deje de marcar en cada parada.
+- [ ] **Step 2: C-3 RETIRADA — PDC V1 deprecado.** Era el borde-acento del toast en `pdc.css:318`. No se declara excepción para un archivo que se va; **C-3 se cierra como «no aplica: módulo deprecado»**. Si el detector sigue marcándolo, la salida correcta es que `pdc.css` salga del alcance del audit al retirar el módulo, no una excepción justificada.
 - [ ] **Step 3: C-23.** Degradado de anuncio de corte en el borde derecho del carril de pestañas de BI, como excepción de presupuesto de color documentada (el carril ya desplaza y la barra es visible; el degradado solo anuncia que hay más).
 - [ ] **Step 4: Verificar:** suite 8/8 (las excepciones válidas no rompen el gate); en navegador: error de admin legible de un vistazo, degradado visible en `/bi/control-tower`, toast sin cambio visual.
-- [ ] **Step 5: Ciclo triple + commit.** `git commit -m "feat(ds): tres excepciones puntuales justificadas — error de admin, toast pdc, corte de tabs BI (C-29/C-3/C-23)"`.
+- [ ] **Step 5: Ciclo triple + commit.** `git commit -m "feat(ds): dos excepciones puntuales justificadas — error de admin y corte de tabs BI (C-29/C-23)"`.
 
 ### Task 14: IA-2 — Volcado de hallazgos a los artefactos del journey
 
@@ -254,12 +262,12 @@
 
 **Interfaces:**
 - Consumes: Task 1 (suite PS en verde protege parte del radio).
-- Produces: 0 ids duplicados de esta familia en `/programa-general`, `/programa-general-actualizar`, `/programacion-semanal`, `/pdc`.
+- Produces: 0 ids duplicados de esta familia en las vistas vivas: `/programa-general`, `/programa-general-actualizar`, `/programacion-semanal`. (`/pdc` también los repetía, pero está deprecado y no se verifica ahí.)
 
 - [ ] **Step 1: Mapa de lecturas ANTES de tocar.** Por cada id: `grep -rn "getElementById('Max_Semana')\|getElementById(\"Max_Semana\")\|#Max_Semana" public/js views src` (repetir para los 7). Documentar en el ledger: quién lee, quién escribe, y si algún consumidor depende del elemento INYECTADO (p. ej. por orden de carga o por vivir dentro de un modal que el PHP no renderiza).
 - [ ] **Step 2: Confirmar que el PHP emite los 7 en las 4 vistas.** Con dev door, en cada vista: `document.querySelectorAll('#Max_Semana').length` etc. Expected hoy: 2 por id duplicado. Verificar que la copia del PHP (bloque `.encabezado`) trae valor resuelto.
 - [ ] **Step 3: Quitar la inyección** en los dos JS — solo las líneas que crean los campos con esos 7 ids; si el JS además LEE el campo, la lectura queda apuntando a la copia del PHP (mismo id, ahora único). Si el paso 1 reveló un consumidor que depende de la copia inyectada: STOP, reportar al usuario con el mapa.
-- [ ] **Step 4: Humo funcional por vista, en el sandbox:** PG carga y guarda una celda; PS abre semana y modales de semana (los que montaba `funcionesGenerales6.js` con `Id`/`opcion`); PDC abre y filtra; **`/programa-general-actualizar` es el crítico**: cargar el flujo de importación hasta la previsualización SIN aplicar (no ejecutar la importación real), verificando que `semana`, `Max_Semana`, `Semanal_Confirmada`, `baseDatos` llevan el valor correcto en el form que se enviaría.
+- [ ] **Step 4: Humo funcional por vista, en el sandbox:** PG carga y guarda una celda; PS abre semana y modales de semana (los que montaba `funcionesGenerales6.js` con `Id`/`opcion`); **`/programa-general-actualizar` es el crítico**: cargar el flujo de importación hasta la previsualización SIN aplicar (no ejecutar la importación real), verificando que `semana`, `Max_Semana`, `Semanal_Confirmada`, `baseDatos` llevan el valor correcto en el form que se enviaría.
 - [ ] **Step 5: Sonda final:** 0 duplicados de los 7 ids en las 4 vistas. Suite PS verde. Commit: `git commit -m "fix(js): los inyectores dejan de duplicar los ids que el PHP ya emite — manda el servidor (C-46)"`.
 
 ### Task 16: F4-2 — Investigación de «Lista para Confirmar» con pendientes (C-49p2)
@@ -277,19 +285,11 @@
 - [ ] **Step 3: Escribir el diagnóstico:** la regla exacta (con cita de línea) por la que el estado ignora esas condiciones. Decisión del usuario ya tomada: **no pueden convivir** — si hay pendientes, no está lista. Proponer el remedio mínimo en la regla de cálculo (p. ej. `classifyState` no devuelve «Lista para Confirmar» mientras `condicionesPendientes > 0`, degradando al estado anterior) y su impacto (cuántas filas del proyecto real cambian de estado).
 - [ ] **Step 4: Presentar al usuario y ESPERAR aprobación** (cambia significado de dominio). Solo tras el sí: aplicar, verificar en las 4 filas + suite PS + test del guard de matiz de estado (`tests/browser/programa-general-state-hue.mjs`, `ops-state-chip-hue.mjs`), commit: `git commit -m "fix(ps): una fila con condiciones pendientes no se declara Lista para Confirmar (C-49)"`.
 
-### Task 17: F4-3 — Chips del PDC: teclado + aria-pressed + región de estado (C-10, C-43)
+### Task 17: RETIRADA — PDC V1 deprecado (2026-08-04)
 
-**Files:**
-- Modify: el JS que crea los chips del PDC y su filtrado (localizar: `grep -rn "inactive-filter\|pdc-legend-item" public/js/modules/pdc/`), vista del PDC si los chips vienen del PHP
-- Test: sonda de teclado con Playwright
-
-**Interfaces:**
-- Consumes: patrón existente de los chips de PS (misma clase `pdc-legend-item`, ya llevan `role="button"` y `tabindex="0"` — copiarlo, no inventar).
-- Produces: chips operables por teclado con estado anunciado.
-
-- [ ] **Step 1: Las tres cosas JUNTAS (partirlo deja estados peores):** (a) `role="button"`, `tabindex="0"` y manejador `keydown` (Enter/Espacio → mismo handler del click); (b) `aria-pressed` reflejando el filtro activo (hoy vive solo en la clase `inactive-filter`); (c) conectar `#pdc-table-state` (`role="status"`, existe vacío): al filtrar, escribir «Mostrando N de M paquetes — filtro: <estado>».
-- [ ] **Step 2: Verificar con teclado real** (Tab hasta el chip, Enter activa, el filtro aplica, la región anuncia — leer `#pdc-table-state.textContent` tras filtrar). Con datos reales en solo lectura: 33→10 filas anunciado.
-- [ ] **Step 3: Paridad:** los chips de PS no cambian (ya cumplen). Suite 8/8. Ciclo triple. Commit: `git commit -m "feat(pdc): chips de filtro operables por teclado, con aria-pressed y anuncio de resultado (C-10/C-43)"`.
+Era «Chips del PDC: teclado + aria-pressed + región de estado (C-10, C-43)», sobre `/pdc`.
+El usuario deprecó PDC V1 (`listado-actividades/`, `contratos/`, `pdc/` viejo), así que **C-10 y C-43
+se cierran como «no aplica: módulo deprecado»**, no como deuda pendiente. No se reintroduce.
 
 ### Task 18: F4-4 — `<main>` y `h1` en once vistas (C-30)
 
@@ -385,18 +385,12 @@
 - [ ] **Step 1: Editar las etiquetas:** «Email» → «Email (opcional)» y «Cargo» → «Cargo (opcional)» en create.php y edit.php.
 - [ ] **Step 2: Verificar en `/admin/usuarios/crear`** que renderiza limpio y el formulario no cambia de geometría. Commit: `git commit -m "feat(admin): marca los dos campos opcionales del formulario de usuario (C-28)"`.
 
-### Task 25: F5-3 — Etiquetas del modal de contrato del PDC (C-36)
+### Task 25: RETIRADA — PDC V1 deprecado (2026-08-04)
 
-**Files:**
-- Modify: la vista del modal de contrato del PDC (localizar: `grep -rln "Inicio en obra" views/ public/js`)
-
-**Interfaces:**
-- Consumes: nada.
-- Produces: 53 campos con nombre programático.
-
-- [ ] **Step 1: Censar los 34 sin etiqueta.** Sonda en `/pdc` con el modal abierto: por cada `input/select/textarea`, ¿tiene `label[for]`, `aria-label` o `aria-labelledby`? Listar los que no.
-- [ ] **Step 2: Emparejar uno a uno:** dar `id` único a cada `<span class="h6">` que ya muestra la etiqueta («8. Inicio en obra:» → `id="lbl-contrato-inicio-obra"`) y `aria-labelledby` en su campo. **El texto ya existe: no inventar nomenclatura.** Una etiqueta mal asignada es peor que ninguna: verificar cada par leyendo el DOM (campo → nombre accesible calculado).
-- [ ] **Step 3: Sonda final: 53/53 con nombre.** El que no tenga texto visible se reporta, no se inventa. Commit: `git commit -m "fix(pdc): los 34 campos del modal de contrato reciben su etiqueta programatica (C-36)"`.
+Era «Etiquetas del modal de contrato del PDC (C-36)»: 34 de 53 campos con etiqueta visible pero no
+asociada, en el formulario más largo de la aplicación. Ese modal pertenece a `contratos/`, dentro de
+PDC V1. **C-36 se cierra como «no aplica: módulo deprecado»**. Si PDC v2 (`/plan-compras`) monta un
+formulario equivalente, su accesibilidad se audita allí desde cero, no se traslada este censo.
 
 ### Task 26: F5-4 — Tabla equivalente para los gráficos de BI (C-32)
 
@@ -465,7 +459,7 @@
 - Consumes: `docs/CUSTOMER.md` (lenguaje del job por rol).
 - Produces: copy por superficie con score y reescritura aprobada; C-33 preguntado.
 
-- [ ] **Step 1: Invocar la skill `made-to-stick`** sobre: onboarding del PDC («Paso 1 de 6»), estados vacíos (los buenos ya censados — solo se toca lo que falle el score), errores, CTAs y tooltips de PG→PI→PS.
+- [ ] **Step 1: Invocar la skill `made-to-stick`** sobre: onboarding de **Plan de Compras v2** (`/plan-compras`, el modal «Paso 1 de 6» — **no** el `/pdc` viejo, deprecado), estados vacíos (los buenos ya censados — solo se toca lo que falle el score), errores, CTAs y tooltips de PG→PI→PS.
 - [ ] **Step 2: C-33 aquí:** preguntar al usuario la frase de dominio del estado vacío de Control de Cambios («¿de dónde nacen las solicitudes de cambio?»). Con su frase, aplicarla; sin ella, chip.
 - [ ] **Step 3: Reescrituras aprobadas se aplican** (texto de UI no-dominio); las de dominio solo con su visto bueno explícito. Verificación en navegador + commit.
 
@@ -525,7 +519,7 @@ Origen: la Task 5 midió que su propio cambio de rejilla ocupa el 2,66 % de la i
 ### Task 34: Tipar las columnas numéricas y alinearlas a la derecha (tercio pendiente de la variante B)
 
 **Files:**
-- Modify: `public/js/modules/programa_general/hot.js` (config de columnas; `cantidad_ppto` :2918 y `EjecutadoDisplay` :2930 ya son `type: 'numeric'`, `Ejecutado_Teorico` :2922 no lo es), y los `hot.js` equivalentes de PI/PS/PDC donde aplique
+- Modify: `public/js/modules/programa_general/hot.js` (config de columnas; `cantidad_ppto` :2918 y `EjecutadoDisplay` :2930 ya son `type: 'numeric'`, `Ejecutado_Teorico` :2922 no lo es), y los `hot.js` equivalentes de PI y PS donde aplique (**no** `pdc/`, deprecado)
 
 **Interfaces:**
 - Consumes: Task 5 (bordes) y Task 33 (la red que detectará el cambio).
@@ -533,7 +527,7 @@ Origen: la Task 5 midió que su propio cambio de rejilla ocupa el 2,66 % de la i
 
 Origen: la Task 5 implementó 2 de los 3 elementos de la variante B. El tercero exige tipar columnas en JS, porque hoy cada columna fuerza `className: 'htCenter htMiddle'` y alinear solo las tipadas dejaría columnas gemelas desalineadas entre sí. Decisión del usuario (2026-08-04): hacerlo como task propia.
 
-- [ ] **Step 1: Censar** qué columnas contienen números de verdad en PG, PI, PS y PDC, y cuáles están tipadas hoy (`grep -n "type: 'numeric'" public/js/modules/*/hot.js`). Distinguir números reales de códigos jerárquicos como `3.5.2.1` — **esos NO se alinean a la derecha**, son identificadores, no cantidades.
+- [ ] **Step 1: Censar** qué columnas contienen números de verdad en PG, PI y PS (no en `pdc/`, deprecado), y cuáles están tipadas hoy (`grep -n "type: 'numeric'" public/js/modules/*/hot.js`). Distinguir números reales de códigos jerárquicos como `3.5.2.1` — **esos NO se alinean a la derecha**, son identificadores, no cantidades.
 - [ ] **Step 2: Tipar** las columnas numéricas que falten y quitarles el `htCenter` forzado, dejando la alineación a la derecha por clase del sistema.
 - [ ] **Step 3: Verificar con datos reales en solo lectura:** las columnas gemelas quedan alineadas igual entre sí; los códigos jerárquicos siguen sin alinearse a la derecha; los totales se leen alineados por unidades.
 - [ ] **Step 4: Suite estática 8/8 + goldens movidos (ya con la tolerancia fina) + ciclo triple + commit.** `git commit -m "feat(tablas): las columnas numericas se tipan y alinean a la derecha — cierra la variante B"`.
@@ -581,4 +575,5 @@ Origen: la Task 7 dejó `/pdc` con encabezado sobrio (negrita + filete, luminanc
 
 - **Cobertura del spec:** F1-1→T1, F1-2→T2, F2-1→T4, F3-1..9→T5-13, F4-1..7→T15-21, F5-1..6→T23-28, IA-1..6→T3/T14/T22/T29/T30/T31, barrido final y condición de hecho→T31. Cerradas-sin-trabajo y chips: T31 step 4. Sin huecos.
 - **Placeholders:** las tasks de investigación (T2, T16, T27 step 6) producen informes con regla de decisión explícita, no «TBD»; los pasos de edición citan selector, valor medido y objetivo numérico.
-- **Consistencia:** `pdc-legend-item` (T11/T17), `--ds-active-surface-raised` (T7/T10/T11), `.ops-state-zoom` y umbral 120 px (T8), dev door y viewport uniformes en todas.
+- **Consistencia:** `pdc-legend-item` (T11 — la clase se llama así por herencia, pero sus consumidores vivos son PI y PS), `--ds-active-surface-raised` (T7/T10/T11), `.ops-state-zoom` y umbral 120 px (T8), dev door y viewport uniformes en todas.
+- **Purga de PDC V1 (2026-08-04):** retiradas las tasks 17 y 25 enteras; acotadas la 8 (fuera «ESTADO DEL PROCESO»), la 10, la 13 (fuera C-3), la 15, la 30 y la 34. La 7 queda hecha pero marcada. Ninguna task viva lee, mide ni edita `pdc/`, `listado-actividades/` o `contratos/`.
