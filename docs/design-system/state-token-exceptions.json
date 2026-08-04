@@ -1,6 +1,6 @@
 {
-  "version": "2.1.0",
-  "purpose": "Inventario de los sitios que consumen la mitad de un par de estado. Al invertir los cuatro pares a fondo oscuro con texto claro, un bloque con solo -bg o solo -text queda descompensado. Cada entrada dice donde esta (file + line + selector), que token usa y de que tipo es: `by-design` sobrevive la inversion tal cual, `at-risk` no sobrevive -o ya esta mal hoy- y hay que decidirlo antes o durante la inversion, `out-of-scope-mobile` es deuda dentro de un media query movil que AGENTS.md prohibe tocar en esta linea de trabajo. Guard: tests/design-system/state-token-pairing.test.mjs.",
+  "version": "3.0.0",
+  "purpose": "Inventario de los sitios que consumen la mitad de un par de estado. Al invertir los cuatro pares a fondo oscuro con texto claro, un bloque con solo -bg o solo -text queda descompensado. Cada entrada dice donde esta (file + selector, con `occurrence` solo cuando el mismo selector+token se repite en el archivo), que token usa y de que tipo es: `by-design` sobrevive la inversion tal cual, `at-risk` no sobrevive -o ya esta mal hoy- y hay que decidirlo antes o durante la inversion, `out-of-scope-mobile` es deuda dentro de un media query movil que AGENTS.md prohibe tocar en esta linea de trabajo. Guard: tests/design-system/state-token-pairing.test.mjs. El ancla es selector+token (mas `occurrence` si hace falta desambiguar), no numero de linea: una insercion antes de la regla ya no desalinea el inventario -ver memoria/trampas/anclas-por-linea-se-desalinean-.",
   "kinds": {
     "by-design": "Medio par a proposito: no hay contraparte que declarar en el bloque y el uso sigue siendo correcto con el par invertido.",
     "at-risk": "El bloque no sobrevive la inversion tal cual, o ya incumple hoy. Lleva `revisit` con la decision pendiente.",
@@ -9,7 +9,6 @@
   "exceptions": [
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 115,
       "selector": ".bi-chip",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -18,7 +17,6 @@
     },
     {
       "file": "public/css/bi-control-tower.css",
-      "line": 313,
       "selector": ".bi-switch-input:checked + .bi-switch-track",
       "token": "--ds-color-state-info-bg",
       "kind": "by-design",
@@ -26,7 +24,6 @@
     },
     {
       "file": "public/css/design-system/adapters/lps-drawer.css",
-      "line": 18,
       "selector": ".lps-drawer-state--error",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -34,7 +31,6 @@
     },
     {
       "file": "public/css/design-system/components/navigation.css",
-      "line": 385,
       "selector": ".aia-sidebar__retry",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -42,7 +38,6 @@
     },
     {
       "file": "public/css/design-system/components/navigation.css",
-      "line": 477,
       "selector": ".ds-shell-candidate[data-sidebar-preview-state=\"error\"] .aia-sidebar__notification-state",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -50,7 +45,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 717,
       "selector": ".ds-state-set--solid .aia-chip--success",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
@@ -59,7 +53,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 722,
       "selector": ".ds-state-set--solid .aia-chip--warning",
       "token": "--ds-color-state-warning-text",
       "kind": "at-risk",
@@ -68,7 +61,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 727,
       "selector": ".ds-state-set--solid .aia-chip--critical",
       "token": "--ds-color-state-critical-text",
       "kind": "at-risk",
@@ -77,7 +69,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 850,
       "selector": ".ds-state-set--solid .ds-feedback--success",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
@@ -86,7 +77,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 855,
       "selector": ".ds-state-set--solid .ds-feedback--critical",
       "token": "--ds-color-state-critical-text",
       "kind": "at-risk",
@@ -95,7 +85,6 @@
     },
     {
       "file": "public/css/design-system/lab.css",
-      "line": 1143,
       "selector": ".ds-vendor-alert__signal",
       "token": "--ds-color-state-warning-text",
       "kind": "at-risk",
@@ -104,7 +93,6 @@
     },
     {
       "file": "public/css/pdc.css",
-      "line": 43,
       "selector": ".pdc-message-success",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",
@@ -112,7 +100,6 @@
     },
     {
       "file": "public/css/pdc.css",
-      "line": 47,
       "selector": ".pdc-message-error",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -120,7 +107,6 @@
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "line": 340,
       "selector": ".pga-success-badge",
       "token": "--ds-color-state-success-bg",
       "kind": "by-design",
@@ -128,7 +114,6 @@
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "line": 344,
       "selector": ".pga-success-badge i",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",
@@ -136,16 +121,15 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 362,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
+      "occurrence": 1,
       "kind": "at-risk",
       "reason": "El item activo del dropdown tinta el fondo con info-bg y fija el texto en --ds-color-brand-architecture (#2a5a8f) para conservar el acento de marca en vez del info-text pareado. Hoy son 6,48:1 sobre el pastel #e3f9f7; con el fondo invertido a #134841 caen a 1,46:1.",
       "revisit": "Antes o durante la inversion hay que decidir si el item activo pasa al info-text pareado o si el azul de marca se aclara. Sustituir el acento de marca es una decision de diseno y por eso no se hizo aqui; lo que no puede quedarse es 1,46:1."
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 644,
       "selector": ".ps-page .ops-state-ready",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
@@ -154,7 +138,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1166,
       "selector": ".ps-page .ps-mobile-save-status.is-success",
       "token": "--ds-color-state-success-text",
       "kind": "out-of-scope-mobile",
@@ -163,7 +146,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1170,
       "selector": ".ps-page .ps-mobile-save-status.is-error",
       "token": "--ds-color-state-warning-text",
       "kind": "out-of-scope-mobile",
@@ -172,7 +154,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1201,
       "selector": ".ps-page #hot-container td .ps-commit-indicator.is-low",
       "token": "--ds-color-state-warning-text",
       "kind": "by-design",
@@ -180,7 +161,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1205,
       "selector": ".ps-page #hot-container td .ps-commit-indicator.is-ok",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",
@@ -188,7 +168,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1294,
       "selector": ".ps-page #hot-container .handsontable .changeType:hover, .ps-page #hot-container .handsontable .changeType:focus",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -197,7 +176,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1430,
       "selector": "html.aia-theme-dark body.ps-page .text-danger",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -205,7 +183,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1672,
       "selector": ".ps-missing-assignment",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -213,16 +190,15 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 2951,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
+      "occurrence": 2,
       "kind": "at-risk",
       "reason": "Segunda copia literal del bloque de la linea 361 -misma regla duplicada en la misma hoja-, con el mismo fondo info-bg y el mismo texto fijo en --ds-color-brand-architecture. Los numeros son identicos: 6,48:1 hoy, 1,46:1 con el fondo invertido.",
-      "revisit": "Ademas de la decision de color compartida con la linea 361, esta duplicacion literal deberia consolidarse en una sola regla: hoy cualquier arreglo hay que aplicarlo dos veces o queda a medias."
+      "revisit": "Ademas de la decision de color compartida con la primera copia, esta duplicacion literal deberia consolidarse en una sola regla: hoy cualquier arreglo hay que aplicarlo dos veces o queda a medias."
     },
     {
       "file": "public/css/styles.css",
-      "line": 2597,
       "selector": ".cic-text-dark",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -230,7 +206,6 @@
     },
     {
       "file": "public/css/styles.css",
-      "line": 4237,
       "selector": "#modalEditarContratos .ct-overplanning-alert",
       "token": "--ds-color-state-warning-bg",
       "kind": "at-risk",
@@ -239,7 +214,6 @@
     },
     {
       "file": "views/auth/login.view.php",
-      "line": 134,
       "selector": "AIA.Notice.dialog({ ..., iconColor })",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
@@ -248,7 +222,6 @@
     },
     {
       "file": "public/css/design-system/adapters/admin-lte.css",
-      "line": 666,
       "selector": ".text-danger",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",

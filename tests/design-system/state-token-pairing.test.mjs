@@ -3,6 +3,14 @@ import { readFile, readdir } from 'node:fs/promises';
 import { extname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import {
+  ANY_STATE_RE,
+  inlineUsesBySignature,
+  resolveCssException,
+  signatureKey,
+  stripComments,
+  unpairedUsesBySignature,
+} from '../../scripts/design-system/state-token-locator.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const CSS_ROOT = join(REPO_ROOT, 'public/css');
@@ -25,7 +33,7 @@ const KINDS_NEEDING_REVISIT = new Set(['at-risk', 'out-of-scope-mobile']);
 // Las razones reales de este inventario miden entre 130 y 280 caracteres. El
 // umbral no mide calidad -ningun numero lo hace-, solo descarta el marcador de
 // posicion; quien clasifica de verdad es `kind` mas la verificacion de que
-// `selector` y `line` apuntan a codigo que existe.
+// `selector` y `occurrence` apuntan a una regla que existe hoy en el CSS real.
 const MIN_REASON = 80;
 
 async function walk(dir, keep) {
@@ -48,109 +56,31 @@ async function walk(dir, keep) {
   return found;
 }
 
-// Un `/* ... */` puede contener el nombre de un token o una declaracion comentada;
-// se blanquea conservando los saltos de linea para que los numeros no se muevan.
-function stripComments(css) {
-  return css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
-}
-
-function lineCounter(source) {
-  const offsets = [0];
-  for (let i = 0; i < source.length; i += 1) if (source[i] === '\n') offsets.push(i + 1);
-  return (index) => {
-    let lo = 0;
-    let hi = offsets.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (offsets[mid] <= index) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo + 1;
-  };
-}
-
-const BG_RE = /background[^;:]*:\s*[^;]*--ds-color-state-(\w+)-bg/g;
-// `(?<![-\w])` es la parte que importa: sin ella el lookbehind solo bloquea el
-// literal `backgroundcolor:`, que no es CSS, y dejan pasar `background-color:`,
-// `border-color:`, `outline-color:` y `-webkit-text-fill-color:`. Aqui solo entra
-// la propiedad `color` de verdad.
-const TEXT_RE = /(?<![-\w])color\s*:\s*[^;]*--ds-color-state-(\w+)-text/g;
-
-// Los dos de arriba solo miran el token en la posicion que le toca, asi que eran
-// ciegos al CRUCE: un `-bg` pintando texto o un `-text` pintando fondo. Eso no es
-// medio par «pendiente de emparejar», es el par usado del reves, y es justo lo
-// que la inversion de la paleta vuelve ilegible: el token viaja de claro a oscuro
-// conservando su PAPEL, no su luminancia. Un `-bg` que hoy hace de tinta clara
-// sobre superficie oscura acaba siendo oscuro sobre oscuro; un `-text` que hoy
-// hace de relleno solido oscuro bajo texto inverso acaba siendo claro bajo texto
-// claro. Se reporta SIEMPRE, este o no la otra mitad en el bloque: ninguna forma
-// de emparejarlo lo salva, solo cambiar de token o inventariarlo.
-//
-// La linea se traza en SUSTITUCION CRUDA, no en «aparece el token». El valor
-// tiene que ser el token entero (con su fallback opcional y su `!important`).
-// Queda fuera a proposito el token como INGREDIENTE de una funcion --
-// `color-mix(in srgb, var(--X-text) 24%, var(--ds-active-surface))` o un segmento
-// de `conic-gradient(...)`--: ahi el token no ocupa el papel contrario, aporta el
-// matiz de su estado a un color derivado, y la inversion lo aclara u oscurece sin
-// invertir ningun papel. Medido al abrir esta deteccion: 30 usos cruzados en el
-// arbol, 9 crudos y 21 derivados; los derivados degradan, los crudos rompen.
-const RAW_VALUE = String.raw`var\(\s*--ds-color-state-(\w+)-%ROLE%\s*(?:,[^;()]*)?\)\s*(?:!important\s*)?(?=;|$)`;
-const BG_AS_TEXT_RE = new RegExp(String.raw`(?<![-\w])color\s*:\s*${RAW_VALUE.replace('%ROLE%', 'bg')}`, 'g');
-const TEXT_AS_BG_RE = new RegExp(String.raw`background[^;:]*:\s*${RAW_VALUE.replace('%ROLE%', 'text')}`, 'g');
-
-const ANY_STATE_RE = /--ds-color-state-\w+-(?:bg|text)/g;
-
-// Se recorre bloque a bloque `{ ... }` porque la pareja tiene sentido dentro de
-// una misma regla: un `-bg` en una regla y su `-text` en otra no garantiza que
-// se apliquen al mismo elemento.
-function unpairedUses(css) {
-  const clean = stripComments(css);
-  const lineAt = lineCounter(clean);
-  const found = [];
-  for (const match of clean.matchAll(/\{([^{}]*)\}/g)) {
-    const block = match[1];
-    const base = match.index + 1;
-    const bg = new Map();
-    const text = new Map();
-    for (const m of block.matchAll(BG_RE)) if (!bg.has(m[1])) bg.set(m[1], base + m.index);
-    for (const m of block.matchAll(TEXT_RE)) if (!text.has(m[1])) text.set(m[1], base + m.index);
-    for (const [family, index] of bg) {
-      if (!text.has(family)) found.push({ token: `--ds-color-state-${family}-bg`, line: lineAt(index) });
-    }
-    for (const [family, index] of text) {
-      if (!bg.has(family)) found.push({ token: `--ds-color-state-${family}-text`, line: lineAt(index) });
-    }
-    for (const m of block.matchAll(BG_AS_TEXT_RE)) {
-      found.push({ token: `--ds-color-state-${m[1]}-bg`, line: lineAt(base + m.index) });
-    }
-    for (const m of block.matchAll(TEXT_AS_BG_RE)) {
-      found.push({ token: `--ds-color-state-${m[1]}-text`, line: lineAt(base + m.index) });
-    }
-  }
-  return found;
-}
-
-function inlineUses(source) {
-  const clean = source;
-  const lineAt = lineCounter(clean);
-  return [...clean.matchAll(ANY_STATE_RE)].map((m) => ({ token: m[0], line: lineAt(m.index) }));
-}
-
 function key(entry) {
-  return `${entry.file}|${entry.token}|${entry.line}`;
+  // Los usos "found" en CSS llevan `selector`; los inline (fuera de hojas)
+  // no tienen bloque del que sacarlo, asi que su firma es solo file+token+occurrence.
+  // Las entradas declaradas siempre traen `selector` en el JSON (documental para
+  // inline), pero solo entra en la firma cuando el archivo es una hoja CSS real.
+  const withSelector = entry.file.endsWith('.css');
+  return signatureKey({
+    file: entry.file,
+    selector: withSelector ? entry.selector : undefined,
+    token: entry.token,
+    occurrence: entry.occurrence ?? 1,
+  });
 }
 
 async function collectFound() {
   const found = [];
   for (const file of (await walk(CSS_ROOT, (name) => name.endsWith('.css'))).sort()) {
     const rel = `public/css/${relative(CSS_ROOT, file)}`;
-    for (const use of unpairedUses(await readFile(file, 'utf8'))) found.push({ file: rel, ...use });
+    for (const use of unpairedUsesBySignature(await readFile(file, 'utf8'))) found.push({ file: rel, ...use });
   }
   for (const root of INLINE_ROOTS) {
     const files = await walk(join(REPO_ROOT, root), (name) => INLINE_EXTS.has(extname(name)));
     for (const file of files.sort()) {
       const rel = relative(REPO_ROOT, file);
-      for (const use of inlineUses(await readFile(file, 'utf8'))) found.push({ file: rel, ...use });
+      for (const use of inlineUsesBySignature(await readFile(file, 'utf8'))) found.push({ file: rel, ...use });
     }
   }
   return found;
@@ -174,11 +104,11 @@ test('el inventario coincide exactamente con los usos descompensados del arbol',
     declared.set(k, entry);
   }
 
-  const foundKeys = new Set(found.map(key));
+  const foundKeys = new Set(found.map((use) => key({ ...use })));
   // Declarar de menos deja pasar una regresion; declarar de mas -una entrada
   // fantasma sobre codigo que ya esta pareado, o que se movio- deja un hueco
   // libre donde la proxima regresion entraria en verde. Las dos fallan.
-  const sinDeclarar = found.filter((use) => !declared.has(key(use))).map(key).sort();
+  const sinDeclarar = found.filter((use) => !declared.has(key({ ...use }))).map((use) => key({ ...use })).sort();
   const fantasma = [...declared.keys()].filter((k) => !foundKeys.has(k)).sort();
 
   assert.deepEqual(sinDeclarar, [], `usos descompensados sin declarar:\n  ${sinDeclarar.join('\n  ')}`);
@@ -197,9 +127,12 @@ test('cada entrada del inventario esta bien formada y localizable', async () => 
   };
 
   for (const entry of inventory.exceptions) {
-    const where = `${entry.file}:${entry.line} ${entry.token}`;
+    const where = `${entry.file}#${entry.occurrence ?? 1} ${entry.token}`;
     assert.ok(typeof entry.file === 'string' && entry.file.length > 0, `${where}: falta \`file\``);
-    assert.ok(Number.isInteger(entry.line) && entry.line > 0, `${where}: \`line\` tiene que ser un entero positivo`);
+    assert.ok(
+      entry.occurrence === undefined || (Number.isInteger(entry.occurrence) && entry.occurrence > 0),
+      `${where}: \`occurrence\`, si esta, tiene que ser un entero positivo`,
+    );
     assert.ok(/^--ds-color-state-\w+-(bg|text)$/.test(entry.token ?? ''), `${where}: \`token\` no es un token de estado`);
     assert.ok(KINDS.has(entry.kind), `${where}: \`kind\` tiene que ser uno de ${[...KINDS].join(', ')}`);
     assert.ok(
@@ -213,23 +146,20 @@ test('cada entrada del inventario esta bien formada y localizable', async () => 
       );
     }
 
-    const source = await readOnce(entry.file);
-    const lines = source.split('\n');
-    assert.ok(entry.line <= lines.length, `${where}: la linea no existe en el archivo`);
-    assert.ok(
-      lines[entry.line - 1].includes(entry.token),
-      `${where}: la linea declarada no contiene el token, dice: ${lines[entry.line - 1].trim()}`,
-    );
-
     assert.ok(typeof entry.selector === 'string' && entry.selector.length > 0, `${where}: falta \`selector\``);
+
+    const source = await readOnce(entry.file);
     if (entry.file.endsWith('.css')) {
-      // El `selector` tiene que ser selector de verdad: si es prosa, una regla
-      // entera o un multi-selector truncado, no aparece literal en la hoja.
-      const flat = (text) => text.replace(/\s+/g, ' ').trim();
-      assert.ok(
-        flat(stripComments(source)).includes(flat(entry.selector)),
-        `${where}: \`selector\` no aparece literal en la hoja: ${entry.selector}`,
-      );
+      // El ancla ya NO es un numero de linea: es la firma selector+token(+occurrence),
+      // resuelta contra el CSS real de hoy. Si la regla se borro, el selector
+      // cambio o el occurrence declarado no tiene tantas copias, esto falla con
+      // un mensaje que dice exactamente que falta -no un pase silencioso.
+      const resolved = resolveCssException(source, entry);
+      assert.ok(resolved.found, `${where}: ${resolved.reason}`);
+    } else {
+      // Fuera de una hoja CSS no hay bloque que resolver: basta con que el
+      // token literal siga apareciendo en el archivo.
+      assert.ok(source.includes(entry.token), `${where}: el token ya no aparece en ${entry.file}`);
     }
   }
 });
@@ -251,4 +181,60 @@ test('el escaner bloque a bloque ve todos los usos de token de estado', async ()
     }
   }
   assert.deepEqual(ciegos, [], `el escaner deja usos sin ver (nesting nativo?):\n  ${ciegos.join('\n  ')}`);
+});
+
+// --- Fragilidad resuelta (Task 12-bis): una insercion antes de las entradas
+// no puede mover el ancla, porque el ancla ya no es una linea. Se construye
+// una copia de programacion-semanal.css con un comentario inocuo insertado al
+// principio -desplaza TODAS las lineas de las 4 entradas de ese archivo- y se
+// comprueba que la resolucion de las excepciones de ese archivo no cambia.
+test('insertar una linea inocua antes de las excepciones no rompe su resolucion', async () => {
+  const inventory = await loadInventory();
+  const targetFile = 'public/css/programacion-semanal.css';
+  const entries = inventory.exceptions.filter((e) => e.file === targetFile);
+  assert.ok(entries.length >= 4, 'se esperaban varias excepciones en programacion-semanal.css para este caso');
+
+  const original = await readFile(join(REPO_ROOT, targetFile), 'utf8');
+  const before = entries.map((entry) => resolveCssException(original, entry));
+  assert.ok(before.every((r) => r.found), 'las excepciones deberian resolverse contra el CSS original');
+
+  const mutated = `/* linea inocua insertada por el test de fragilidad, 2026-08-03 */\n${original}`;
+  const after = entries.map((entry) => resolveCssException(mutated, entry));
+
+  assert.deepEqual(
+    after.map((r) => r.found),
+    before.map((r) => r.found),
+    'insertar una linea antes de las entradas no deberia cambiar si se resuelven o no',
+  );
+  for (let i = 0; i < entries.length; i += 1) {
+    assert.equal(after[i].atom?.selector, before[i].atom?.selector, `${entries[i].selector}: el selector resuelto cambio tras la insercion`);
+  }
+});
+
+// --- Guard-rail del rediseño para Task 13: borrar el bloque entero de una
+// excepcion declarada tiene que fallar con un mensaje claro, no pasar en
+// silencio. Se simula quitando la regla `.ps-missing-assignment` (by-design,
+// sin duplicado) de una copia del CSS.
+test('borrar el bloque de una excepcion declarada produce un error claro, no un pase silencioso', async () => {
+  const inventory = await loadInventory();
+  const targetFile = 'public/css/programacion-semanal.css';
+  const entry = inventory.exceptions.find((e) => e.file === targetFile && e.selector === '.ps-missing-assignment');
+  assert.ok(entry, 'se esperaba encontrar la excepcion de .ps-missing-assignment en el inventario');
+
+  const original = await readFile(join(REPO_ROOT, targetFile), 'utf8');
+  const before = resolveCssException(original, entry);
+  assert.ok(before.found, 'la excepcion deberia resolverse contra el CSS original');
+
+  // Localiza y borra el bloque `.ps-missing-assignment { ... }` completo de una
+  // copia en memoria, sin tocar el archivo real.
+  const startIdx = original.indexOf('.ps-missing-assignment');
+  assert.ok(startIdx >= 0, 'no se encontro el selector en el archivo real');
+  const braceOpen = original.indexOf('{', startIdx);
+  const braceClose = original.indexOf('}', braceOpen);
+  assert.ok(braceOpen >= 0 && braceClose >= 0, 'no se pudo delimitar el bloque a borrar');
+  const mutated = original.slice(0, original.lastIndexOf('\n', startIdx) + 1) + original.slice(braceClose + 1);
+
+  const after = resolveCssException(mutated, entry);
+  assert.equal(after.found, false, 'borrar el bloque deberia dejar la excepcion sin regla que la respalde');
+  assert.match(after.reason, /excepcion sin regla que la respalde/, 'el mensaje de error deberia decirlo explicitamente');
 });
