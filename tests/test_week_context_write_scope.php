@@ -79,5 +79,19 @@ comprobar(
     preg_match('/\$_SESSION\s*\[\s*[\'"]semana[\'"]\s*\]\s*=/', $save) !== 1,
 );
 
+// 5. ModuleRequestContext sí puede escribir la semana, pero solo como arranque de contexto: la
+//    asignación debe seguir envuelta en una condición que exija sesión sin semana ($sessionWeek ===
+//    null). No exigimos "sin asignación" porque esa escritura es legítima (la usan GeneralApiController,
+//    PdcApiController, SemiAutoController, PdcAutoGenerateController y PgBreadcrumbController para
+//    arrancar el contexto); lo que hay que fijar es que el candado que evita pisar la sesión siga ahí.
+$mrc = (string) file_get_contents($raiz . '/src/Support/ModuleRequestContext.php');
+comprobar(
+    'ModuleRequestContext solo escribe $_SESSION[\'semana\'] cuando $sessionWeek === null',
+    preg_match(
+        '/if\s*\(\s*\$syncSession\s*&&\s*\$sessionWeek\s*===\s*null\s*&&\s*\$requestWeek\s*!==\s*null\s*\)\s*\{\s*\$_SESSION\s*\[\s*[\'"]semana[\'"]\s*\]\s*=\s*\$requestWeek\s*;/',
+        $mrc,
+    ) === 1,
+);
+
 echo "\n{$total} comprobaciones, {$fallos} fallidas\n";
 exit($fallos === 0 ? 0 : 1);

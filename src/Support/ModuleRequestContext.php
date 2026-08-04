@@ -66,6 +66,11 @@ final class ModuleRequestContext
 
         $semana = $sessionWeek ?? $requestWeek ?? ($allowZeroWeek ? 0 : null);
 
+        // Esta escritura sí puede quedarse: solo corre cuando la sesión NO trae semana (arranque de
+        // contexto para las APIs), nunca cuando ya hay una. Como más arriba `$semana` prioriza siempre
+        // `$sessionWeek` sobre `$requestWeek`, esta asignación no puede pisar una selección posterior
+        // del usuario — que es justo el fallo que esta rama corrigió al sacar la escritura incondicional
+        // de SessionMiddleware.
         if ($syncSession && $sessionWeek === null && $requestWeek !== null) {
             $_SESSION['semana'] = $requestWeek;
             $semana = $requestWeek;
