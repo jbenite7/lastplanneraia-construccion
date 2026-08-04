@@ -538,6 +538,24 @@ Origen: la Task 5 implementó 2 de los 3 elementos de la variante B. El tercero 
 - [ ] **Step 3: Verificar con datos reales en solo lectura:** las columnas gemelas quedan alineadas igual entre sí; los códigos jerárquicos siguen sin alinearse a la derecha; los totales se leen alineados por unidades.
 - [ ] **Step 4: Suite estática 8/8 + goldens movidos (ya con la tolerancia fina) + ciclo triple + commit.** `git commit -m "feat(tablas): las columnas numericas se tipan y alinean a la derecha — cierra la variante B"`.
 
+### Task 35: El golden de Programación Intermedia retrata una grilla vacía (hallazgo de la Task 33)
+
+**Files:**
+- Modify: `tests/browser/programacion-intermedia.visual.mjs:22-23` (el mock de `**/api/pi/list**` devuelve `data: []`)
+- Patrón a copiar: `tests/browser/programa-general.visual.mjs:14-25` (`FILAS_DE_ESTADO`), que ya resolvió el mismo defecto
+
+**Interfaces:**
+- Consumes: Task 33 (tolerancia fina).
+- Produces: golden de PI capaz de detectar regresiones de celda. **Las tasks 6 y 8 editan PI**, así que va antes que ellas.
+
+Origen: la Task 33 midió que su prueba de mordida (borde de celda 1px→2px) **no hizo reaccionar al golden de PI**, porque su mock devuelve cero filas. Apretar la tolerancia no arregla un retrato en el que no sale lo que hay que vigilar: hoy PI solo cubre cromo y maquetación, y es ciega a bordes de celda, tintes de fila y ruta crítica.
+
+- [ ] **Step 1: Leer el patrón de PG** (`FILAS_DE_ESTADO`) y entender qué estados siembra y por qué esos.
+- [ ] **Step 2: Sembrar el mock de PI** con filas que cubran sus estados propios de alistamiento (no copiar los de PG: PI tiene su propio vocabulario — comprobarlo en el módulo antes de inventar). Incluir al menos una fila por estado que la vista tiña.
+- [ ] **Step 3: Re-baselinear el golden de PI** con `--update-snapshots=all` (recordar: por debajo de la tolerancia no reescribe sin `=all`) y **presentar el nuevo retrato al usuario antes de consagrarlo** — pasa de tabla vacía a tabla con datos, así que es un cambio de línea base, no un ajuste.
+- [ ] **Step 4: Probar que ahora muerde:** repetir la mordida de la Task 33 (borde de celda 1px→2px) y confirmar que PI se pone en rojo; revertir.
+- [ ] **Step 5: Sincronizar sha256 de manifiestos + suite estática 8/8 + commit.** `git commit -m "test(visual): el golden de PI deja de retratar una tabla vacia y por fin vigila celdas"`.
+
 ---
 
 ## Self-review
