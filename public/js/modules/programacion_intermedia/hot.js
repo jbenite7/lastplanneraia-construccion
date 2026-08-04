@@ -3733,6 +3733,16 @@
           headerNode.classList.add('pi-header-single-word');
         }
 
+        // Task 26 (2026-08-04): el header se trunca con text-overflow/line-clamp
+        // (handsontable-header-global.css); el title deja el texto completo
+        // recuperable. No colisiona con .pi-help-trigger, que es un elemento
+        // aparte (icono "?") con su propio tooltip de Bootstrap.
+        if (headerText) {
+          headerNode.title = headerText;
+        } else {
+          headerNode.removeAttribute('title');
+        }
+
         // Inject tooltip trigger alongside changeType
         var resProp = headerIndexToRestrictionProp[col];
         if (softRestrictionProps.indexOf(resProp) > -1) {

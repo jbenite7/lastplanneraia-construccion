@@ -47,7 +47,13 @@ body.pi-page #hot-container .handsontable thead th .relative > .colHeader,
 body.pg-page #hot-container .handsontable thead th .relative > .colHeader,
 body #hot-container .handsontable thead th .relative > .colHeader {
   order: 1 !important;
-  display: block !important;
+  /* Task 26 (2026-08-04): esta regla es mas especifica (.relative > .colHeader)
+     que la que trunca con line-clamp mas abajo, asi que gana el empate de
+     !important y hay que declarar el mismo display aqui o el line-clamp
+     queda sin efecto (computed display vuelve a "block"). */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
   width: 100% !important;
 }
 
@@ -71,6 +77,20 @@ body #hot-container .handsontable thead th .colHeader {
   hyphens: none !important;
   font-size: var(--ds-table-header-font-size, 0.75rem) !important;
   line-height: 1.15 !important;
+  /* Task 26 (2026-08-04, deuda del task 24): el task 24 quito el break-word que
+     partia palabras, pero dejo el corte sin anunciar (overflow: visible,
+     text-overflow: clip, sin title) cuando una palabra o frase no cabe en el
+     ancho de columna medido. `-webkit-line-clamp` trunca al final de la
+     segunda linea con "..." sin volver a partir palabras (overflow-wrap sigue
+     en `normal`) y sin tocar cabeceras que ya envuelven a dos lineas sin
+     desbordar (p. ej. "Sub-Contratista"), que quedan intactas. El texto
+     integro se recupera via `title`, inyectado por cada adaptador
+     (afterGetColHeader) en public/js/modules/*/hot.js. */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 body.ps-page #hot-container .handsontable thead th .relative > .changeType,

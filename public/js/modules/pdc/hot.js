@@ -687,6 +687,20 @@
       th.style.setProperty('width', width, 'important');
       th.style.setProperty('min-width', width, 'important');
       th.style.setProperty('max-width', width, 'important');
+
+      // Task 26 (2026-08-04): title con el texto integro, recuperable cuando
+      // el header se trunca con elipsis/line-clamp (handsontable-header-global.css).
+      if (th.querySelector) {
+        var headerNode = th.querySelector('.colHeader');
+        if (headerNode) {
+          var headerText = headerNode.textContent.replace(/\s+/g, ' ').trim();
+          if (headerText) {
+            headerNode.title = headerText;
+          } else {
+            headerNode.removeAttribute('title');
+          }
+        }
+      }
     };
 
     if (!mainHot) {
@@ -783,6 +797,20 @@
       th.style.setProperty('width', width, 'important');
       th.style.setProperty('min-width', width, 'important');
       th.style.setProperty('max-width', width, 'important');
+
+      // Task 26 (2026-08-04): title con el texto integro, recuperable cuando
+      // el header se trunca con elipsis/line-clamp (handsontable-header-global.css).
+      if (th.querySelector) {
+        var headerNode = th.querySelector('.colHeader');
+        if (headerNode) {
+          var headerText = headerNode.textContent.replace(/\s+/g, ' ').trim();
+          if (headerText) {
+            headerNode.title = headerText;
+          } else {
+            headerNode.removeAttribute('title');
+          }
+        }
+      }
     };
     var columns = applyColumnWidths([
       { title: 'Modalidad de contratacion', data: 'tipoPaquete', readOnly: true, width: 180, renderer: function (instance, td, row, col, prop, value) {

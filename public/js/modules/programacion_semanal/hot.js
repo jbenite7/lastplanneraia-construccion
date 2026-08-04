@@ -2713,6 +2713,14 @@
         if (headerText && headerText.indexOf(' ') === -1) {
           headerNode.classList.add('ps-header-single-word');
         }
+
+        // Task 26 (2026-08-04): title con el texto integro para recuperar lo
+        // que la elipsis/line-clamp corta (handsontable-header-global.css).
+        if (headerText) {
+          headerNode.title = headerText;
+        } else {
+          headerNode.removeAttribute('title');
+        }
       },
       beforeKeyDown: function (event) {
         if (!event) {

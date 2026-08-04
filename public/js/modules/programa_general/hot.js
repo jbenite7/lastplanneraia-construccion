@@ -2991,6 +2991,26 @@
           }
         });
       },
+      afterGetColHeader: function (col, TH) {
+        // Task 26 (2026-08-04): title con el texto integro, recuperable
+        // cuando el header se trunca con elipsis/line-clamp
+        // (handsontable-header-global.css).
+        if (!TH || !TH.querySelector) {
+          return;
+        }
+
+        var headerNode = TH.querySelector('.colHeader');
+        if (!headerNode) {
+          return;
+        }
+
+        var headerText = String(this.getColHeader(col) || '').replace(/\s+/g, ' ').trim();
+        if (headerText) {
+          headerNode.title = headerText;
+        } else {
+          headerNode.removeAttribute('title');
+        }
+      },
       className: 'htMiddle',
       cells: function (row, col, prop) {
         var hotInstance = (this && this.instance) || (window.PGHotModule && window.PGHotModule.getHotInstance && window.PGHotModule.getHotInstance());
