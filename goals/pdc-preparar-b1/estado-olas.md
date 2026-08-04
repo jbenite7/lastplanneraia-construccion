@@ -324,17 +324,22 @@ botón por página con apartados dentro. Subpaquetes queda sin ayuda a propósit
 
 ## Lo que NO entró al cierre
 
-Tres cosas quedan vivas fuera de este goal. Están aquí para que nadie las descubra por sorpresa.
+Dos cosas quedan vivas fuera de este goal —la 2 y la 3—. Están aquí para que nadie las descubra por
+sorpresa. La 1 se conserva tachada porque su letrero costó una sesión.
 
-### 1 · Dos pantallas cuyo motor ya está hecho — chip propio
+### 1 · Dos pantallas cuyo motor ya está hecho — RESUELTO, no era pendiente
 
-| Qué | Qué existe | Qué falta |
+**Corregido el 2026-08-04.** Esta fila decía que faltaba la vista de las dos pantallas, y era falso
+cuando se escribió: las dos ya estaban en `main`. El letrero colgado mandó a una sesión a construir lo
+construido; se deja escrito en vez de borrarlo porque el fallo fue del acta, no del código.
+
+| Qué | Dónde está | Commit |
 |---|---|---|
-| **Curva de flujo de caja** | `FlujoCajaService`, sus dos endpoints y la exportación CSV, con 41 asserts en verde | La vista: tabla mensual, desglose y botón de exportar |
-| **Aviso «N frentes sin ancla»** | El dato viaja en `GET /plan-compras/api/plan/frentes` | El texto en pantalla |
+| **Curva de flujo de caja** | Pestaña «Flujo de caja» de Seguimiento: nota del método sin plegar, aviso provisional, excluidos, botón de exportar y tabla mensual con las tres columnas de origen | `4a6c88d5` |
+| **Aviso «N frentes sin ancla»** | `avisoFrentesSinAncla()` en `pdc-app/src/lib/planFechas.ts`, hermano de `motivoSinAnclas()`, pintado en `PlanFechas.tsx` | `6f3f379d` |
 
-El motor calcula y nadie lo puede ver. La advertencia del método y el conteo de excluidos ya viajan en la
-respuesta, listos para pintarse.
+Ambas montan su ayuda (`4680dc4d`). Comprobado el 2026-08-04 con `vitest` sobre `flujoCaja.test.ts`,
+`planFechas.test.ts` y `ayuda.test.ts`: 142 asserts en verde.
 
 ### 2 · El retiro del PDC viejo (C1) — chip propio, ya autorizado
 
