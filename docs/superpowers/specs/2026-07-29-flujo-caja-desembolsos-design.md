@@ -119,11 +119,16 @@ suma de los meses sea **exactamente** el valor repartido); después, sobre MySQL
 los cinco puntos de la condición de hecho, incluido que mover un frente mueva la curva sin cambiar su
 total, y que partir un paquete no cambie el total sino quién lo aporta.
 
-## Lo que queda pendiente
+## La pantalla, construida (2026-07-30)
 
-**La pantalla.** El servicio, los endpoints y la exportación están; la vista de `pdc-app/` con la
-tabla mensual, el desglose y el botón de exportar **no está construida**. La advertencia y el conteo
-de excluidos ya viajan en la respuesta, listos para pintarse.
+Esta sección decía «no está construida» y dejó de ser cierta el mismo día, tres líneas antes de la
+verificación en pantalla que hay más abajo. Se corrige el 2026-08-04, después de que la contradicción
+mandara a una sesión a rehacer trabajo ya hecho.
+
+La vista es la pestaña «Flujo de caja» de Seguimiento (`pdc-app/src/pages/Seguimiento.tsx`), con la
+advertencia del método arriba y sin plegar, el aviso de la parte provisional, el conteo de excluidos,
+la fila de cifras con el botón de exportar y la tabla mensual con las tres columnas de origen. Las
+palabras viven en `pdc-app/src/lib/flujoCaja.ts` y el reparto no se recalcula en el navegador.
 
 ## La curva cuenta el plan entero, en tres orígenes (2026-07-30)
 
