@@ -2877,10 +2877,14 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       showFeedback('error', message);
-    }).fail(function () {
+    }).fail(function (jqXHR) {
       revertCell(visualRow, prop, oldValue);
       if (restrictionProps.indexOf(prop) > -1) {
         recalculateRestrictionStateForVisualRow(visualRow);
+      }
+      if (jqXHR && jqXHR.status === 409) {
+        showFeedback('error', 'La semana activa cambio en otra pestana o sesion. Recargue la pagina para continuar.');
+        return;
       }
       showFeedback('error', 'Error de red');
     });
