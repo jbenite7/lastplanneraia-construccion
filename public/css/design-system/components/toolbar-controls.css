@@ -39,4 +39,41 @@
   .btn-pdc-modern {
     min-height: var(--ds-control-compact-min);
   }
+
+  /* Task 27 (2026-08-04): buttons.css:681 pinta `.btn-pdc-modern` (sin
+     modificador) con `background-color: #ffffff` y tokens legados
+     (`--aia-text-secondary`, `--aia-separators`) que solo tienen valor
+     claro — nunca se resuelven contra el tema activo. En una app
+     dark-only eso es una fuga: el navegador nunca corrige un literal.
+     Los tres botones sin modificador de /pdc («Desglosar», «Ver
+     alertas», «Limpiar filtros») heredaban ese literal. Import order
+     (aia-design-system.css) mete este archivo despues de buttons.css
+     dentro de `layer(components)`, asi que gana sin `!important`. El
+     acento primario ya lo tiene `--primary`; estos son secundarios y
+     usan el mismo par surface-raised/border-control/text-secondary que
+     `.aia-btn--secondary` (core.css) para leerse como tales. */
+  .btn-pdc-modern {
+    background-color: var(--ds-active-surface-raised);
+    border-color: var(--ds-active-border-control);
+    color: var(--ds-active-text-secondary);
+  }
+
+  .btn-pdc-modern:hover {
+    background-color: var(--ds-active-surface-raised);
+    border-color: var(--ds-active-text-secondary);
+    color: var(--ds-active-text-primary);
+  }
+
+  .btn-pdc-modern:active {
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+
+  .btn-pdc-modern i {
+    color: var(--ds-active-text-secondary);
+  }
+
+  .btn-pdc-modern:hover i {
+    color: var(--ds-active-text-primary);
+  }
 }
