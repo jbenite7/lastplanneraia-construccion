@@ -698,25 +698,39 @@ no estimado.
 
 ### Métrica de tabla
 
-Fila `28px`, encabezado `32px`, celda `13px`, padding horizontal `10px`. Las filas que
-envuelven texto (`autoHeight`) crecen lo que necesiten. Resultado medido: 25 filas donde
-había 17.
+**Actualizado 2026-08-03 (Task 19, corrección de rumbo del dueño del producto):** el
+corte del 2026-07-29 fijaba fila y control en `28px` por calco directo de la medición de
+`/plan-compras`, no porque `28px` fuera el suelo real. La premisa pasó a ser **maximizar
+filas visibles** contra el suelo real de accesibilidad — no quedarse arriba de él por
+inercia. Fila y encabezado (base) `24px` — **exactamente el mínimo de WCAG 2.2 SC 2.5.8
+(AA), sin margen**: ningún control futuro dentro de una fila puede medir menos sin
+incumplir de verdad —, celda `13px`, padding horizontal `10px`, padding vertical `2px`.
+Las filas que envuelven texto (`autoHeight`) crecen lo que necesiten, y el encabezado
+crece con `height: auto` si el texto necesita dos líneas legibles: comprimir rompiendo
+palabras a mitad o truncando en ambigüedad es empeorar, por mucha fila que se gane.
+Resultado medido en `/plan-compras`: 25 filas donde había 17 con la métrica antigua de
+`42px`; con `24px` de fila la cuenta sube más — ver medición en el reporte del Task 19.
 
 ### Excepción al mínimo de 44 px
 
 En una superficie de datos densa, **operada con ratón en desktop y sin equivalente
-móvil**, los controles miden `28px` de alto con `4px 10px` de padding. Es la métrica de
-Excel, Figma y cualquier herramienta de este tipo, y es lo que hace posible la densidad
-que el trabajo pide.
+móvil**, fila y controles miden `24px` de alto — el suelo real de **WCAG 2.2 SC 2.5.8
+(AA): 24×24px** para objetivos de interacción, no un valor arbitrario más compacto que
+Excel o Figma. Es lo que hace posible maximizar la densidad sin cruzar accesibilidad.
 
-- **Alcance:** `/plan-compras` (PDC v2). No se extiende a ninguna otra superficie sin
-  la misma decisión explícita.
-- **Lo que NO se relaja:** contraste AA, foco visible de 4px, orden de foco, navegación
-  por teclado y `prefers-reduced-motion` siguen siendo obligatorios y verificados.
+- **Alcance:** familia de tablas desktop (`/programa-general`, `/programacion-intermedia`,
+  `/programacion-semanal`, `/pdc`, `/plan-compras`) vía el contrato `--ds-table-*` del
+  design system — ampliado el 2026-08-03 desde `/plan-compras` únicamente. Ver
+  PRODUCT.md §Accessibility & Inclusion.
+- **Lo que NO se relaja:** contraste AA (4,5:1), foco visible de 4px, orden de foco,
+  navegación por teclado y `prefers-reduced-motion` siguen siendo obligatorios y
+  verificados. El piso duro de fuente (`11px`) es solo para elementos secundarios; el
+  dato principal no baja de `13px`.
 - **Por qué es admisible:** el criterio de 44 px protege el acierto del dedo sobre un
-  cristal. Esta superficie está fuera del alcance móvil del producto por contrato
+  cristal. Esta familia está fuera del alcance móvil del producto por contrato
   (`AGENTS.md` §Routing: desktop ≥1180 px, dark, sin mobile ni tablet), así que el
-  riesgo que el mínimo previene no existe aquí.
+  riesgo que el mínimo de 44px previene no existe aquí — pero el suelo de **24×24px sí
+  aplica y no se cruza**.
 - **Si alguna vez se abre a táctil:** esta excepción caduca y los controles vuelven a
   `44px` antes de exponer la superficie.
 

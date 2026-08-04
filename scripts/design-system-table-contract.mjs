@@ -28,6 +28,10 @@ const tokensContent = checkFileExists('public/css/tokens.css', 'Tokens CSS');
 if (tokensContent) {
   const requiredTableTokens = [
     '--ds-table-row-h',
+    '--ds-table-header-h',
+    '--ds-table-cell-font-size',
+    '--ds-table-header-font-size',
+    '--ds-table-font-size-floor',
     '--ds-table-cell-pad-x',
     '--ds-table-cell-pad-y',
     '--ds-table-header-bg',

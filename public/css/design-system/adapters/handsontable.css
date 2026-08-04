@@ -28,6 +28,8 @@
      resto del reset de fila no aplica a la cabecera. */
   .handsontable thead tr {
     background: transparent !important;
+    height: auto !important;
+    min-height: var(--ds-table-header-h);
   }
 
   /* Relleno SOLO horizontal tokenizado por contrato (--ds-table-cell-pad-x). */
@@ -47,6 +49,12 @@
     font-family: var(--ds-font-body);
   }
 
+  /* Densidad compacta app-wide (Task 19). Piso duro --ds-table-font-size-floor: nada
+     por debajo, ni aquí ni en un override local del módulo. */
+  :where(.handsontable td) {
+    font-size: var(--ds-table-cell-font-size);
+  }
+
   :where(.handsontable th, .handsontable td) {
     border-color: var(--ds-table-border);
     background: var(--ds-active-surface);
@@ -57,6 +65,7 @@
     background: var(--ds-table-header-bg);
     color: var(--ds-table-header-fg);
     font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-table-header-font-size);
   }
 
   .handsontable table {

@@ -18,6 +18,14 @@ body #hot-container .handsontable thead th {
   position: relative !important;
   padding: 0 !important;
   text-align: center !important;
+  /* Task 19 (2026-08-03, Nielsen sev-3): el vendor trae una segunda regla
+     `.handsontable th { white-space: nowrap }` que, con `overflow: hidden` y ancho
+     fijo de columna, corta el texto de la cabecera a mitad sin marca de truncado
+     ("INICIO EN OBRA SEGUN CRONOGRAMA" / "PROYECTADO" / "REAL" se volvían
+     indistinguibles). Se permite envolver a dos líneas en vez de truncar. */
+  height: auto !important;
+  min-height: var(--ds-table-header-h, 1.5rem) !important;
+  white-space: normal !important;
 }
 
 body.ps-page #hot-container .handsontable thead th .relative,
@@ -46,8 +54,16 @@ body #hot-container .handsontable thead th .relative > .colHeader {
 body.ps-page #hot-container .handsontable thead th .colHeader,
 body.pi-page #hot-container .handsontable thead th .colHeader,
 body.pg-page #hot-container .handsontable thead th .colHeader,
+body.pdc-page #dt_cliente .handsontable thead th .colHeader,
 body #hot-container .handsontable thead th .colHeader {
   text-align: center !important;
+  /* Legible con la densidad nueva: envuelve por palabra, nunca a mitad de una. */
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  hyphens: none !important;
+  font-size: var(--ds-table-header-font-size, 0.75rem) !important;
+  line-height: 1.15 !important;
 }
 
 body.ps-page #hot-container .handsontable thead th .relative > .changeType,

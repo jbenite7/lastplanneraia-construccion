@@ -10,8 +10,12 @@
     border-spacing: 0;
     color: var(--ds-active-text-primary);
     background-color: var(--ds-active-surface);
+    font-size: var(--ds-table-cell-font-size);
   }
 
+  /* Densidad compacta app-wide (Task 19). Cabecera legible: envuelve a dos líneas en
+     vez de truncar de forma ambigua (`height: auto` sobre el piso de --ds-table-header-h),
+     sin romper palabras a mitad. */
   table.dataTable thead th,
   table.dataTable thead td {
     background-color: var(--ds-table-header-bg);
@@ -19,6 +23,14 @@
     padding: var(--ds-table-cell-pad-y) var(--ds-table-cell-pad-x);
     border-bottom: 2px solid var(--ds-table-border);
     font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-table-header-font-size);
+    height: auto;
+    min-height: var(--ds-table-header-h);
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+    vertical-align: middle;
   }
 
   table.dataTable tbody td,

@@ -534,10 +534,27 @@
     --ds-sidebar-item-min-height: var(--ds-target-min);
     --ds-sidebar-section-gap: var(--ds-space-6);
 
-    /* ── Table contract ── */
-    --ds-table-row-h:        2.25rem;
-    --ds-table-cell-pad-x:   var(--ds-space-3);
-    --ds-table-cell-pad-y:   var(--ds-space-2);
+    /* ── Table contract ──
+       Densidad compacta app-wide (Task 19, 2026-08-03): se extiende la escala de
+       /plan-compras a toda tabla que consuma este contrato — no como techo conservador,
+       sino maximizando filas visibles contra el suelo real de WCAG 2.2 SC 2.5.8 (AA):
+       24×24px para objetivos de interacción. Corrección de rumbo del dueño del producto
+       (2026-08-03): el primer corte usaba 28px por calco directo de /plan-compras; se
+       baja a 24px porque es el suelo real y no hay razón para quedarse arriba de él.
+       --ds-table-row-h queda EXACTAMENTE en el mínimo — sin margen — así que ningún
+       control futuro dentro de una fila puede medir menos. Encabezado con el mismo piso
+       de 24px como base, pero crece con `height: auto` si el texto necesita dos líneas
+       legibles — nunca trunca de forma ambigua. Texto de celda 13px (dato principal,
+       cuerpo); texto de cabecera 12px (secundario). Piso duro de fuente 11px, reservado
+       a elementos secundarios — el dato principal no baja de 13px. Contraste AA (4.5:1),
+       foco visible, orden de foco, teclado y `prefers-reduced-motion` no se relajan. */
+    --ds-table-row-h:              1.5rem;    /* 24px — EN el suelo AA (SC 2.5.8), sin margen */
+    --ds-table-header-h:           1.5rem;    /* 24px, base — crece con `height: auto` si envuelve */
+    --ds-table-cell-font-size:     0.8125rem; /* 13px, cuerpo/dato principal */
+    --ds-table-header-font-size:   0.75rem;   /* 12px, cabecera/secundario */
+    --ds-table-font-size-floor:    0.6875rem; /* 11px, piso duro — solo secundarios, nunca el dato principal */
+    --ds-table-cell-pad-x:   0.625rem; /* 10px, escala de /plan-compras */
+    --ds-table-cell-pad-y:   0.125rem; /* 2px — con fila de 24px y texto de 13px, deja el aire mínimo legible */
     --ds-table-header-bg:    var(--ds-active-surface-raised);
     --ds-table-header-fg:    var(--ds-active-text-secondary);
     --ds-table-border:       var(--ds-active-border);

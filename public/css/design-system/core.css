@@ -137,12 +137,15 @@
 
   .aia-table-shell,
   .aia-grid-shell {
-    --_row-h:     var(--ds-table-row-h);
-    --_cell-px:   var(--ds-table-cell-pad-x);
-    --_cell-py:   var(--ds-table-cell-pad-y);
-    --_header-bg: var(--ds-table-header-bg);
-    --_header-fg: var(--ds-table-header-fg);
-    --_border:    var(--ds-table-border);
+    --_row-h:      var(--ds-table-row-h);
+    --_header-h:   var(--ds-table-header-h);
+    --_cell-px:    var(--ds-table-cell-pad-x);
+    --_cell-py:    var(--ds-table-cell-pad-y);
+    --_font-size:  var(--ds-table-cell-font-size);
+    --_header-fs:  var(--ds-table-header-font-size);
+    --_header-bg:  var(--ds-table-header-bg);
+    --_header-fg:  var(--ds-table-header-fg);
+    --_border:     var(--ds-table-border);
     border-radius: var(--ds-radius-table);
     overflow: hidden;
   }

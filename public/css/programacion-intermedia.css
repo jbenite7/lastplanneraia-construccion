@@ -185,8 +185,11 @@ html.aia-theme-dark .pi-page {
 .pi-page #hot-container td.force-wrap,
 .pi-page #hot-container th.force-wrap {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+    /* Task 19: `overflow-wrap: anywhere` partía por carácter ("Diseño s y Especi
+       ficacio nes"); `break-word` solo parte si la palabra sola no cabe. */
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
 }
 
 .pi-page #hot-container .handsontable {
@@ -576,20 +579,27 @@ html.aia-theme-dark .pi-page {
     min-width: 0;
     padding: 0 !important;
     margin: 0;
-    line-height: 1;
-    font-size: 0.66rem;
+    line-height: 1.15;
+    /* Task 19 (2026-08-03): 0.66rem (10.56px) quedaba por debajo del piso duro de
+       11px de la escala densa (DESIGN.md §5 bis). Sube al token de cabecera (12px)
+       y deja de romper palabras a mitad ("Sem-anas"): `overflow-wrap: anywhere`
+       partía por carácter cuando la columna era angosta; `break-word` solo parte
+       si una palabra sola no cabe en todo el ancho disponible. */
+    font-size: var(--ds-table-header-font-size, 0.75rem);
     white-space: normal;
-    overflow: hidden;
+    overflow: visible;
     text-overflow: clip;
     word-break: normal;
     overflow-wrap: break-word;
+    hyphens: none;
     text-align: center !important;
 }
 
 .pi-page #hot-container .handsontable thead th .colHeader.pi-header-single-word {
     white-space: normal;
     word-break: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    hyphens: none;
     overflow: visible;
     text-overflow: clip;
 }
