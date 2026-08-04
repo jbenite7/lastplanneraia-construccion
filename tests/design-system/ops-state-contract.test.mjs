@@ -52,15 +52,18 @@ test('la tabla de presentación de Intermedia proyecta el contrato', async () =>
 test('la hoja del módulo no vuelve a pintar el chip por nombre de estado', async () => {
   const css = await read('public/css/programacion-intermedia.css');
 
-  // El fondo del chip es del design system. Si el modulo lo declara otra vez
-  // gana por capa -`module` va despues de `components`- y la primitiva se
-  // vuelve inerte, que es exactamente el fallo que motivo esta migracion.
-  const chipBlock = css.match(/\.pi-page \.ops-state-chip \{([^}]*)\}/)?.[1] ?? '';
-  assert.ok(chipBlock, 'no se encontró la regla base de .ops-state-chip');
-  assert.doesNotMatch(
+  // El fondo y la forma del chip son del design system
+  // (`public/css/design-system/components/ops-state-chip.css`). El modulo ya
+  // no declara una copia local de `.pi-page .ops-state-chip` -ni siquiera sin
+  // `background`-: la unica fuente de verdad es el componente compartido.
+  // Si reaparece aqui, gana por capa -`module` va despues de `components`- y
+  // la primitiva se vuelve inerte, que es exactamente el fallo que motivo
+  // esta migracion.
+  const chipBlock = css.match(/\.pi-page \.ops-state-chip \{([^}]*)\}/)?.[1];
+  assert.equal(
     chipBlock,
-    /(^|[\s;])background(-color)?\s*:/,
-    '.pi-page .ops-state-chip volvió a declarar `background`; eso tapa la primitiva del DS',
+    undefined,
+    '.pi-page .ops-state-chip reapareció localmente; debe vivir solo en el componente compartido',
   );
 
   const perState = css.match(/\.pi-state-[\w-]+ \.ops-state-chip \{[^}]*(background|color|border-color)[^}]*\}/g) ?? [];

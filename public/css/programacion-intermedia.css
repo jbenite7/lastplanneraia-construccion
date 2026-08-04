@@ -246,38 +246,12 @@ html.aia-theme-dark .pi-page {
     min-width: 0;
 }
 
-.pi-page .ops-state-chip {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    padding: 4px 8px;
-    border: 1px solid var(--ds-active-border);
-    border-radius: 8px;
-    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
-       componentes desde `data-aia-hue`. Mientras el modulo lo declarara aqui
-       ganaba siempre -`module` va despues de `components` en el orden de capas-
-       y la primitiva del design system era inerte sobre esta superficie. */
-    color: inherit;
-    font-weight: 900;
-    font-size: 0.78rem;
-    line-height: 1.18;
-    overflow: visible;
-    overflow-wrap: anywhere;
-    white-space: normal;
-    word-break: normal;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
-}
-
-/* Las diez reglas de color por nombre de estado que vivian aqui las sustituye
-   la primitiva de `design-system/components/states-feedback.css`: el chip
-   declara su matiz y su nivel y el design system lo pinta. El mapa de estado a
-   matiz sale del contrato (`statePresentation` en el hot.js del modulo).
-   Solo sobrevive el peso tipografico, que no es color: el estado critico va mas
-   marcado para que se lea antes en una grilla densa. */
-.pi-page .handsontable td.ops-state-td.pi-row-state.pi-state-blocked-overdue-critical .ops-state-chip {
-    font-weight: 900;
-}
+/* El bloque base `.pi-page .ops-state-chip` y la variante
+   `.pi-state-blocked-overdue-critical .ops-state-chip` se retiraron: ambos
+   duplicaban exactamente la forma y el `font-weight: 900` que ya declara
+   `public/css/design-system/components/ops-state-chip.css`. Ningun matiz
+   propio sobrevivia -el chip crítico ya llega en negrita 900 desde el
+   componente compartido-, asi que no quedaba nada que documentar aqui. */
 
 .pi-page .handsontable td.pi-soft-restriction-cell:not(.pi-row-state) {
     background: color-mix(in srgb, var(--pi-due-bg) 62%, var(--ds-active-surface-raised) 38%) !important;

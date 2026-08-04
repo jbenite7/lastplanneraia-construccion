@@ -435,6 +435,28 @@
       }
     },
     {
+      "name": "programacion-intermedia",
+      "paths": [
+        "views/programacion-intermedia/programacion_intermedia.view.php",
+        "public/css/programacion-intermedia.css",
+        "public/js/modules/programacion_intermedia/hot.js"
+      ],
+      "maxViolations": {
+        "hardcoded-hex": 45,
+        "inline-style": 3,
+        "embedded-style-block": 0,
+        "forbidden-font-roboto": 0,
+        "hardcoded-radius": 27,
+        "hardcoded-color-function": 5,
+        "off-scale-spacing": 82,
+        "unauthorized-important": 175,
+        "duplicate-canonical-primitive": 1,
+        "off-scale-typography": 47,
+        "off-scale-shadow": 5,
+        "local-vendor-override": 39
+      }
+    },
+    {
       "name": "programa-general-actualizar",
       "paths": [
         "views/programa-general-actualizar/programaGeneralActualizar.view.php",
