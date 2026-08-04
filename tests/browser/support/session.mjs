@@ -24,13 +24,6 @@ export async function selectProject(page, project) {
   await expect(card, `Project card not found: ${project.name}`).toBeVisible({ timeout: 45000 });
   await card.locator('button[type="submit"], .btn-enter').click();
   await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
-  // El módulo al que aterriza la selección sigue pidiendo datos después del `load`, y alguna de
-  // esas peticiones fija la semana del proyecto en la sesión. Quien encadenaba `changeWeek()`
-  // justo después competía con esa escritura tardía: el POST dejaba la semana pedida y la
-  // petición rezagada la devolvía a la última del proyecto, con el síntoma «Expected 4 /
-  // Received 6» en `#semana_PHP`. Esperar a que la red calle deja la sesión en un estado
-  // conocido antes de cambiar de semana.
-  await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {});
 }
 
 /**
