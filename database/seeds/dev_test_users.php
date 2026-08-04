@@ -29,7 +29,13 @@ foreach ($users as [$username, $name, $email, $cargo, $role]) {
         $userId = (int) $db->lastInsertId();
     }
 
-    $projectIds = $username === 'test.A' ? [73, 75, 76] : [73, 75];
+    // 27 «Prueba» es el proyecto que la suite de navegador de Programación Semanal usa como
+    // banco de pruebas de CNP/CNC/CIC: es el único con semanas 5, 6 y 7 sembradas y con los
+    // estados de confirmación que esas pruebas miden. Nunca se sembró aquí, así que cuando el
+    // listado de proyectos pasó a filtrar por `project_members` la tarjeta desapareció y una
+    // docena de casos empezó a morir en «Project card not found: Prueba». No es un proyecto
+    // nuevo: es el dato real al que ya apuntaban los fixtures.
+    $projectIds = $username === 'test.A' ? [27, 73, 75, 76] : [27, 73, 75];
     foreach ($projectIds as $projectId) {
         $exists = (int) $db->query('SELECT COUNT(*) FROM general_proyectos_procesos WHERE Id = ?', [$projectId])->fetchColumn();
         if ($exists !== 1) {
