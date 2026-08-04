@@ -72,8 +72,10 @@ El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 | [[entorno-y-despliegue]] | Docker, puerta de servicio, worktrees, SiteGround |
 | [[qa-y-gates]] | Suites de prueba, rojos preexistentes, evidencia |
 
-Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o absorbido) y
-**[[log]]** (bitácora cronológica de lo que se ha ingerido y verificado).
+Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o absorbido),
+**[[registro-de-trabajo|Registro de trabajo]]** (cada spec de diseño con el plan que la ejecutó,
+por mes, incluido lo archivado) y **[[log]]** (bitácora cronológica de lo que se ha ingerido y
+verificado).
 
 ## Arquitectura por módulo
 
@@ -104,15 +106,18 @@ un embebido por tabla.
 
 ![[paginas.base]]
 
-**Lo que queda fuera del grafo, y por qué.** Medido el 2026-08-03: de 324 archivos del vault, 99
-no tienen ningún enlace entrante ni saliente, y así se quedan. Son trabajo fechado —planes y specs
-de goals ya ejecutados, los ciclos PDCA de `docs/archive/`, entregables de goals cerrados—, y su
-vía de acceso ya existe sin pasar por el grafo: [[log]] los cita cuando importan y cada
-`goals/<slug>/goal.md` enlaza sus hermanos. Ese mismo día se tejieron los 25 que sí mandan hoy
-(contratos del design system, referencias de infraestructura y los `.md` de la raíz). El criterio y
-la medición están en
-[[docs/superpowers/specs/evidencia/2026-08-03-nodos-sueltos|la evidencia del barrido]]: tejer los
-99 restantes daría un grafo completo a cambio de enlaces que nadie recorrería.
+**Lo que queda fuera del grafo, y por qué.** Medido el 2026-08-03: el vault pasó de **124 archivos
+sueltos a 25**. Primero se tejieron a mano los 25 que sí mandan hoy —contratos del design system,
+referencias de infraestructura, los `.md` de la raíz—; después, los 74 planes y specs de trabajo
+fechado dejaron de estar sueltos sin escribir un solo enlace a mano, porque
+[[registro-de-trabajo|el registro de trabajo]] los cataloga y empareja cada spec con su plan. Y los
+30 documentos ya cerrados que nadie citaba se movieron a `docs/archive/superpowers/`.
+
+Los 25 que quedan son documentos sueltos de `docs/` y entregables de goals cerrados. Se quedan así:
+[[log]] los cita cuando importan y cada `goals/<slug>/goal.md` enlaza sus hermanos, de modo que
+tejerlos daría un grafo completo a cambio de enlaces que nadie recorrería. El criterio y las
+mediciones están en
+[[docs/superpowers/specs/evidencia/2026-08-03-nodos-sueltos|la evidencia del barrido]].
 
 ## Contratos del repo (no viven aquí)
 

@@ -150,13 +150,18 @@ qué cubre. Una lista que crece sin control deja de servir para filtrar.
 | `scripts/wiki-lint.mjs` | La operación `lint` y la alarma de veracidad. Comprueba y reporta. |
 | `scripts/wiki-veracidad.mjs` | Funciones puras de la alarma. No imprime; lo consume el lint. |
 | `scripts/wiki-arquitectura.mjs` | Genera las páginas de módulo desde el código. |
+| `scripts/wiki-registro.mjs` | Genera el catálogo del trabajo fechado de `docs/superpowers/`. |
 | `tests/wiki/veracidad.test.mjs` | Pruebas del módulo, con `node --test`. |
 
 ```bash
 npm run test:wiki                                # pruebas del módulo + lint
 node scripts/wiki-arquitectura.mjs --cobertura   # ninguna ruta sin módulo
 node scripts/wiki-arquitectura.mjs --escribir    # actualiza las zonas generadas
+node scripts/wiki-registro.mjs --escribir        # actualiza el registro de trabajo
 ```
+
+Corre `wiki-registro.mjs` cuando escribas una spec o un plan nuevos, o cuando archives trabajo
+cerrado: empareja spec y plan por su slug y marca lo que vive en `docs/archive/superpowers/`.
 
 Las páginas de `memoria/arquitectura/` y `memoria/flujos/` tienen dos zonas. Entre
 `<!-- generado:inicio -->` y `<!-- generado:fin -->` manda `scripts/wiki-arquitectura.mjs`, que
