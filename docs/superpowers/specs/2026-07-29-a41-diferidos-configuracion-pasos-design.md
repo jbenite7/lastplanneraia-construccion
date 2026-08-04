@@ -6,7 +6,7 @@
 - **Origen:** decisión del grilleo de A4.1 (2026-07-28), que los registró fuera de alcance dejando
   constancia de que ninguno bloquea B1. El comité no los pidió; entran porque el aeropuerto los va a
   necesitar.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **cerrado** (fila 7b del tablero, `3a0da33`). Tres diferidos construidos y uno archivado con motivo: las dos obras siguen el mismo proceso en todas las modalidades. A4.1 no tiene pendientes.
 
 ## Problema
 

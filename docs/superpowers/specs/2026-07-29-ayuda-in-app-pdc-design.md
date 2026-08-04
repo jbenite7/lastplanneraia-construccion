@@ -5,7 +5,7 @@
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — planteado por Daniela Betancur y respaldado por Tomás, que ya tiene
   el patrón funcionando en el visor de cronogramas.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 6 del tablero, serie `b4294f3`…`5e80112`). Ocho pantallas con ayuda y recorrido omitible; la lectura del revisor ajeno la dio por cumplida Felipe el 2026-07-30.
 
 ## Problema
 

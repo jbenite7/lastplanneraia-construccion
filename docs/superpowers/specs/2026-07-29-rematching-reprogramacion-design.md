@@ -6,7 +6,7 @@
 - **Origen:** roadmap maestro, fase B2. No lo pidió el comité: lo exige el uso real, porque los
   cronogramas se reprograman todas las semanas.
 - **Hermano:** `2026-07-29-b2-semaforos-lookahead-design.md` (la primera mitad de B2).
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 7a del tablero, `3a0da33`). La medición inicial recortó el alcance a la mitad y destapó un bug real: «Recalcular» no recogía la fecha nueva del frente.
 
 ## Problema
 

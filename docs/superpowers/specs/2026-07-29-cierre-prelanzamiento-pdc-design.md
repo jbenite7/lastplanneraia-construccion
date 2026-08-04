@@ -6,7 +6,7 @@
 - **Origen:** el comité mandó «arreglar los bugs que tengas identificados» antes de lanzar. En la reunión
   no se nombró ninguno, así que este spec reúne **los pendientes reales ya registrados** en los planes
   anteriores, y reserva el hueco para lo que salga del piloto de Da Porto.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **cerrado** (fila 3 del tablero, `88c37b8`). Los cuatro pendientes quedaron cerrados o clasificados por escrito; el hueco del piloto se cerró vacío por decisión de Felipe, y está dicho así en el tablero.
 
 ## Problema
 

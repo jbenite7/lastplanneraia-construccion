@@ -7,7 +7,7 @@
   de Tomás Trujillo. Transcripción en `goals/pdc-preparar-b1/evidence/comite-2026-07-29.md`.
 - **Depende de:** B1 (`fecha_real` por paso, `SeguimientoService`) y responsable-como-usuario —
   **ambos ya en `main`** (`f7cef87`, `5ee2e49`, `9f2790c`, `a4d0c75`, `20260728_pdc_v2_responsable_usuario.sql`).
-- **Estado:** aprobado en grilleo, pendiente de plan de implementación.
+- **Estado:** **implementado y en `main`** (fila 1 del tablero, `60f8bfe`). La pestaña «Vencimientos» y el semáforo del plan existen; la clasificación vive en `SeguimientoService` y la consumen también B3 y el flujo de caja.
 
 ## Problema
 

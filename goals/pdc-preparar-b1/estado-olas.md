@@ -1,27 +1,28 @@
-# Estado de las olas — tablero de relevos
+# Estado de las olas — acta de cierre
 
-**Para qué existe.** Las tareas de este goal se ejecutan en sesiones independientes y varias tienen que
-esperar a otra. Preguntarle a una sesión «¿ya acabaste?» no es fiable: puede no responder, puede haberse
-caído, o puede creer que acabó. Este archivo convierte esa pregunta en algo **comprobable**.
+> **GOAL CERRADO el 2026-08-03.** Este archivo dejó de ser un tablero vivo. Nació para que diez sesiones
+> independientes supieran cuándo les tocaba —preguntarle a una sesión «¿ya acabaste?» no es fiable, y esto
+> convertía esa pregunta en un `git show` que cualquiera podía correr sola— y ahora es el registro de lo
+> que pasó: quién cerró qué, con qué sha y con qué evidencia.
+>
+> **Nadie tiene que consultarlo ya para saber si puede empezar.** Lo que quedó fuera está abajo, en «Lo que
+> no entró al cierre», con su motivo y su dueño.
 
-**Cómo se usa.**
+**Lo que este montaje enseñó, por si sirve para el siguiente.** El mecanismo funcionó, pero tuvo dos
+fallos de diseño que costaron tiempo y conviene no repetir:
 
-- **Al cerrar tu tarea** —y solo cuando su condición de hecho esté cumplida y verificada— cambia tu fila a
-  `HECHO`, escribe el `sha` del commit que la cierra y la fecha, y commitea este archivo junto con tu
-  trabajo. Si tu tarea queda a medias, escribe `PARADA` y el motivo en una línea: a quien espera le sirve
-  más saber que no vas a llegar que seguir esperando.
-- **Antes de empezar la tuya**, comprueba a tu predecesora así:
+1. **Un buzón que nadie podía llenar.** A las diez sesiones se les dijo «no commitees sin permiso» y a la
+   vez «marca `HECHO`, que es un commit». Una sesión honesta se paró en seco durante una hora, y con
+   razón. La regla de permisos de abajo nació de ahí.
+2. **Un permiso relatado no es un permiso.** Cuando se le transmitió esa autorización de sesión a sesión,
+   la receptora la rechazó: no podía distinguirla de una inventada. Tenía razón, y por eso quedó escrita
+   en el repositorio en vez de en un mensaje.
 
-```bash
-git fetch origin --quiet && git show origin/main:goals/pdc-preparar-b1/estado-olas.md
-```
-
-Lee la fila de tu predecesora. Si dice `HECHO`, estás autorizada. Si dice `PENDIENTE` o `EN CURSO`,
-vuelve a mirar más tarde. Si dice `PARADA`, **no arranques**: avísale al usuario, porque el plan cambió.
-
-**Regla que no se rompe:** nadie marca `HECHO` la fila de otra sesión, y nadie se marca `HECHO` a sí misma
-sin haber corrido su verificación. Una fila mentida hace arrancar a la siguiente sobre un supuesto falso,
-que es peor que no tener este archivo.
+Y una lección que no es del mecanismo sino del trabajo: **cuatro premisas escritas en los specs resultaron
+falsas al medirlas** —el BI de la Torre no era público, `/api/pdc/*` no era del módulo viejo, la jerarquía
+del cronograma estaba en los datos y no había que deducirla, y `/pdc` no se pintaba en claro—. Las cuatro
+las desmintió quien fue a comprobarlas antes de construir. Ese hábito es lo que evitó romper dos módulos
+sanos.
 
 ## Permisos de git para las sesiones de este goal
 
@@ -182,7 +183,7 @@ Hace falta un override local que declare un volumen propio.
 | 8a | Subpaquetes de obra | 7a y 7b | **HECHO** | `6d702ef` · `935d194` · `ceb0e73` + el amarre por lote | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
 | 9 | Torre de Control (B3) | 1 | HECHO | `e610fbb` (rama `worktree-pdc-b3-torre-control`) | 2026-07-30 |
-| 10 | Retiro del PDC viejo (C1) | 4 · **+ una obra trabajando de verdad en producción** | PENDIENTE | | |
+| 10 | Retiro del PDC viejo (C1) | — | **SALE DEL GOAL** — trabajo previo cerrado; la ejecución va a chip propio, autorizada por Felipe el 2026-08-03 | censo, medición y manifiesto en `main` | 2026-08-03 |
 
 ---
 
@@ -318,3 +319,52 @@ y no toque su entrada en `pdc-app/src/lib/ayuda.ts` está dejando el cambio a me
 **Cambio de alcance medido, no supuesto:** el spec decía «nueve pantallas» mezclando páginas con
 pestañas. El inventario contra el código son **8 páginas y 13 pestañas**, y el usuario decidió un
 botón por página con apartados dentro. Subpaquetes queda sin ayuda a propósito (fila 8a `EN CURSO`).
+
+---
+
+## Lo que NO entró al cierre
+
+Tres cosas quedan vivas fuera de este goal. Están aquí para que nadie las descubra por sorpresa.
+
+### 1 · Dos pantallas cuyo motor ya está hecho — chip propio
+
+| Qué | Qué existe | Qué falta |
+|---|---|---|
+| **Curva de flujo de caja** | `FlujoCajaService`, sus dos endpoints y la exportación CSV, con 41 asserts en verde | La vista: tabla mensual, desglose y botón de exportar |
+| **Aviso «N frentes sin ancla»** | El dato viaja en `GET /plan-compras/api/plan/frentes` | El texto en pantalla |
+
+El motor calcula y nadie lo puede ver. La advertencia del método y el conteo de excluidos ya viajan en la
+respuesta, listos para pintarse.
+
+### 2 · El retiro del PDC viejo (C1) — chip propio, ya autorizado
+
+**Felipe lo autorizó el 2026-08-03**, y su criterio se sostiene por un hecho que la precondición original
+no contemplaba: **el roadmap suponía que producción seguía de cerca a `main`, y no es así.** La producción
+real está en `1aa7c69` del 16 de julio, sin una sola tabla `pdc_*`. Retirar el PDC viejo en `main` hoy no
+le quita nada a nadie allí: cuando esa rama llegue, llegarán el retiro y el v2 en el mismo envío.
+
+El riesgo residual es pequeño por dos decisiones ya tomadas: **C1 no toca tablas** —los 370 registros
+históricos se conservan, decidido el 2026-07-30— y su alcance quedó recortado a código y rutas, con
+`/api/pdc/auto/*` y `OperationalFamilyPolicy` **fuera** porque los consumen Contratos y Listado de
+Actividades.
+
+**Lo único que sí conviene preguntar antes:** en `prueba-lps` el PDC viejo está vivo y accesible por su
+dirección. Si alguien de Da Porto o del aeropuerto lo abrió alguna vez, el retiro se lo quita sin aviso.
+
+### 3 · El despliegue a la producción real
+
+La fila 4 cerró con alcance explícito, «solo `prueba-lps`», y esa redacción fue deliberada: un `HECHO` a
+secas habría arrancado la fila 10 sobre un supuesto falso. El envío a producción sigue pendiente, arrastra
+~500 commits, y tiene su rutina escrita y su orden de migraciones medido en
+`docs/siteground-deploy-routine.md`.
+
+**Con dos avisos que ya están en esa rutina y no se pueden perder:** no ejecutar
+`20260712_remap_consolidado_unique_id.php` sin decidir antes la contradicción de los frentes, y que
+`20260729_pdc_v2_subpaquetes.sql` solo se aplica con el cliente `mysql`, nunca por PDO.
+
+### Una verificación que sigue sin poder hacerse aquí
+
+El arreglo de los frentes está en `main`, pero **la base local no puede reproducir el caso**: tiene dos
+triggers no versionados que rellenan `unique_id` en cuanto llega nulo (0 de 53.705 filas en NULL). Solo se
+comprueba en `prueba-lps`, y **después** del remap. El test lo detecta y se declara omitido en vez de dar
+por probado lo que no probó.
