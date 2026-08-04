@@ -14,7 +14,7 @@ deja preparado y aquí anotado.
 
 | # | Qué | Estado | Por qué es tuya |
 |---|---|---|---|
-| **A-1** | **Goldens de tabla** (task 15) | Preparados, **sin commitear** | Recapturar consagra el aspecto actual como «lo correcto». Si algo se rompió sin que lo viéramos, quedaría bendecido. Se te mostrará par a par |
+| **A-1** | **Goldens de tabla** (task 15) | **Sin recapturar**, a propósito. El visual de Programa General está en rojo y ese rojo es correcto: refleja los cambios de hoy | Recapturar consagra el aspecto actual como «lo correcto» para siempre. Ya te envié el par (esperado / actual / diferencias) de `/programa-general`. **Lo que decides:** si el «actual» es lo que quieres, se recapturan y el rojo desaparece; si ves algo que no esperabas, se investiga antes. Ficheros en `test-output/programa-general.visual.mj-b4b64-…/`. Los demás goldens de tabla se recapturarían en el mismo lote |
 | **A-2** | **Densidad compacta** (task 19) | **Aplicada** (`67f35c4`) — reversible con `git revert` | Ya la aprobaste dos veces (extender la escala + «maximizar espacio»), así que se aplicó. Te quedan por ver las capturas antes/después: `task-19-densidad/`. **Ojo al resultado honesto**: el alto de fila bajó de 36 a 24 px, pero **no se ganan filas** en PG/PI con datos reales, porque el texto envuelto domina la altura (el token es un mínimo, no un máximo). Lo que sí se arregló: las cabeceras truncadas e ilegibles de `/pdc` |
 | **A-3** | **Variante B de bordes en tablas reales** | Decidida en maqueta, **no aplicada** | Aprobaste B + numéricas a la derecha sobre una maqueta HTML. Handsontable y DataTables pintan sus propios bordes: hay que verlo ahí antes de producción |
 
