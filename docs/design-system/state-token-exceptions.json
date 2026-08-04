@@ -136,7 +136,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 361,
+      "line": 362,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -145,7 +145,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 643,
+      "line": 644,
       "selector": ".ps-page .ops-state-ready",
       "token": "--ds-color-state-success-text",
       "kind": "at-risk",
@@ -154,7 +154,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1165,
+      "line": 1166,
       "selector": ".ps-page .ps-mobile-save-status.is-success",
       "token": "--ds-color-state-success-text",
       "kind": "out-of-scope-mobile",
@@ -163,7 +163,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1169,
+      "line": 1170,
       "selector": ".ps-page .ps-mobile-save-status.is-error",
       "token": "--ds-color-state-warning-text",
       "kind": "out-of-scope-mobile",
@@ -172,7 +172,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1200,
+      "line": 1201,
       "selector": ".ps-page #hot-container td .ps-commit-indicator.is-low",
       "token": "--ds-color-state-warning-text",
       "kind": "by-design",
@@ -180,7 +180,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1204,
+      "line": 1205,
       "selector": ".ps-page #hot-container td .ps-commit-indicator.is-ok",
       "token": "--ds-color-state-success-text",
       "kind": "by-design",
@@ -188,7 +188,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1293,
+      "line": 1294,
       "selector": ".ps-page #hot-container .handsontable .changeType:hover, .ps-page #hot-container .handsontable .changeType:focus",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
@@ -197,7 +197,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1429,
+      "line": 1430,
       "selector": "html.aia-theme-dark body.ps-page .text-danger",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -205,7 +205,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 1671,
+      "line": 1672,
       "selector": ".ps-missing-assignment",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
@@ -213,7 +213,7 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "line": 2950,
+      "line": 2951,
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "kind": "at-risk",
