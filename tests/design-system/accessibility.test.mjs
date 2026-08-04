@@ -8,6 +8,34 @@ const readJson = async (file) => JSON.parse(await readFile(
   new URL(`../../docs/design-system/${file}`, import.meta.url), 'utf8',
 ));
 
+// Cada superficie con excepciones `color-contrast|incomplete` se afirma sola: sus
+// selectores exactos, su naturaleza y la coherencia del fingerprint.
+const assertScopedContrastExceptions = (exceptions, surface, expectedSelectors) => {
+  const scoped = exceptions.filter((exception) => exception.surface === surface);
+  assert.deepEqual(scoped.map(({ selector }) => selector).sort(), [...expectedSelectors].sort(), surface);
+  assert.equal(scoped.every((exception) => (
+    exception.kind === 'incomplete'
+    && exception.rule === 'color-contrast'
+    && exception.impact === 'serious'
+    && exception.fingerprint === [exception.rule, exception.impact, exception.kind,
+      exception.surface, exception.selector].join('|')
+  )), true, surface);
+};
+
+// Programa General entro al carril pilot el 2026-08-03: nueve celdas `.pdc-header`
+// que axe no puede medir por su fondo translucido (memoria/trampas/axe-incomplete-cuenta-como-violacion.md).
+const programaGeneralSelectors = [
+  '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > b',
+  '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > small',
+  '.ht__row_even:nth-child(2) > .pdc-header.force-wrap.pg-cell-readonly:nth-child(11)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(1)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(12)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(3)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(6)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(4)',
+  '.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(5)',
+];
+
 test('the shared axe helper exists', () => {
   assert.equal(existsSync(helperPath), true);
 });
@@ -169,19 +197,17 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
     'text[x="88"]', 'text[y="31"]', 'text[y="42"]', 'text[y="53"]',
     'text[y="7"]', 'text[y="9"]',
   ];
-  assert.equal(exceptions.exceptions.length, reviewedSelectors.length * 2);
+  // Cada superficie documentada se comprueba por separado: el total global no se
+  // afirma, porque acoplarlo a una superficie concreta rompe el test cada vez que
+  // entra otra al carril (fue lo que paso con Programa General).
   for (const viewport of ['1180x820', '1440x900']) {
-    const surface = `lab/bi-primitives/dark/${viewport}`;
-    const scoped = exceptions.exceptions.filter((exception) => exception.surface === surface);
-    assert.deepEqual(scoped.map(({ selector }) => selector).sort(), reviewedSelectors);
-    assert.equal(scoped.every((exception) => (
-      exception.kind === 'incomplete'
-      && exception.rule === 'color-contrast'
-      && exception.impact === 'serious'
-      && exception.fingerprint === [exception.rule, exception.impact, exception.kind,
-        exception.surface, exception.selector].join('|')
-    )), true);
+    assertScopedContrastExceptions(
+      exceptions.exceptions, `lab/bi-primitives/dark/${viewport}`, reviewedSelectors,
+    );
   }
+  assertScopedContrastExceptions(
+    exceptions.exceptions, 'programa-general:wide-desktop:dark', programaGeneralSelectors,
+  );
 });
 
 test('the shared helper loads the versioned baseline and exceptions', async () => {
@@ -190,7 +216,19 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
   const governance = await helper.loadAccessibilityGovernance();
   assert.equal(governance.designSystemVersion, '1.0.0');
   assert.deepEqual(governance.baseline, []);
-  assert.equal(governance.exceptions.length, 28);
+  // Lo que se afirma es que el helper carga el contrato versionado tal cual, no un
+  // total escrito a mano que caduca con cada superficie nueva.
+  const exceptions = await readJson('a11y-exceptions.json');
+  assert.deepEqual(governance.exceptions, exceptions.exceptions);
+  for (const viewport of ['1180x820', '1440x900']) {
+    assert.equal(
+      governance.exceptions.filter((e) => e.surface === `lab/bi-primitives/dark/${viewport}`).length, 14,
+    );
+  }
+  assert.equal(
+    governance.exceptions.filter((e) => e.surface === 'programa-general:wide-desktop:dark').length,
+    programaGeneralSelectors.length,
+  );
 });
 
 test('axe schemas prohibit undeclared fields and broad exclusions', async () => {
