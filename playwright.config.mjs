@@ -18,7 +18,11 @@ export default defineConfig({
     toHaveScreenshot: {
       animations: 'disabled',
       caret: 'hide',
-      maxDiffPixelRatio: 0.005,
+      // Piso comun para los goldens que no fijan el suyo (laboratorio y cajon LPS). Baja de 0,005 a
+      // 0,002 por el mismo hallazgo que apreto los dos specs de rejilla: una tolerancia amplia deja
+      // pasar cambios reales de diseno. Medido: con la tolerancia en 0, tres corridas seguidas sin
+      // tocar nada no produjeron ni un pixel de diferencia.
+      maxDiffPixelRatio: 0.002,
       scale: 'css',
     },
   },

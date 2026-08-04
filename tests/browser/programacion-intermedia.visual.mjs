@@ -40,7 +40,10 @@ for (const scenario of VISUAL_SCENARIOS) {
       path.basename(scenario.golden),
       {
         fullPage: false,
-        maxDiffPixelRatio: 0.03,
+        // Mismo criterio que `programa-general.visual.mjs`: 0,2 % en vez del 3 % anterior. El ruido
+        // de renderizado medido entre corridas es cero, asi que este valor es holgura deliberada
+        // por si cambia la maquina, no una necesidad del render actual.
+        maxDiffPixelRatio: 0.002,
       },
     );
   });

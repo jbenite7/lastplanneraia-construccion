@@ -87,7 +87,12 @@ for (const scenario of VISUAL_SCENARIOS) {
         path.basename(scenario.golden),
         {
           fullPage: false,
-          maxDiffPixelRatio: 0.03,
+          // 0,2 % del encuadre (~1.900 px a 1180x820). Estaba en 3 % (~29.000 px), y por eso la
+          // Task 5 pudo cambiar el borde de TODAS las rejillas de la app —2,66 % de la imagen— sin
+          // que ningun golden se pusiera rojo. El piso se midio: con la tolerancia en 0, tres
+          // corridas seguidas sin tocar nada dieron CERO pixeles de diferencia, asi que aqui no hay
+          // ruido de antialiasing que absorber. El 0,2 % es margen, no necesidad.
+          maxDiffPixelRatio: 0.002,
         },
       );
     });
