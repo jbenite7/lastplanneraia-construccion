@@ -483,6 +483,7 @@
 - [ ] **Step 3: Crear `docs/PRODUCT.md`** con `## Outcome Roadmap` poblado con cortes/arreglos priorizados.
 - [ ] **Step 4: Disposición final de las 54 entradas** en el registro de decisiones: cada una marcada ejecutada (commit), chip (creado con `spawn_task`: C-33 si quedó sin frase, C-35, C-39, C-41, C-42, C-12, C-6, C-9, campaña C-2, más lo que las auditorías de Task 27 ameriten), o cerrada. Verificar contra la condición de hecho del spec (5 puntos).
 - [ ] **Step 5: `memoria/` ingest** de lo aprendido (respetando `docs/wiki-operacion.md` y sin tocar los 2 archivos de la otra sesión si siguen sin commitear — confirmar antes), ledger cerrado, resumen final al usuario con: verificado, comandos, resultados, límites pendientes y la tarea externa suya (tema oscuro del informe en Power BI).
+- [ ] **Step 6: Traspaso al cierre de 1.1.0.** Con la campaña terminada se cumple la precondición D4 del goal `goals/cierre-version-1-1-0-design-system/goal.md`. Crear el chip de arranque con `spawn_task` (título: «Ejecutar el cierre de la versión 1.1.0 del design system»; prompt: ejecutar `docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system.md` con superpowers:subagent-driven-development o executing-plans, leyendo antes `memoria/trampas/subir-la-version-del-ds-cobra-deudas.md`; la precondición D4 ya está cumplida por este cierre) y decírselo al usuario en el resumen final. Si el chip de la sesión del 2026-08-04 sigue vivo, no duplicar: basta señalarlo como listo para lanzar.
 
 ---
 
