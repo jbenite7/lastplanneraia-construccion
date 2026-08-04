@@ -118,7 +118,7 @@
   }
 
   .prof-page #loading .spinner-border {
-    color: var(--ds-color-brand-primary, #6c9077) !important;
+    color: var(--ds-color-brand-primary) !important;
   }
 
   /* Los dos distintivos de guardado viven ocultos hasta que el JS los muestra.
