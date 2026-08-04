@@ -200,7 +200,7 @@
     <p class="sub">Estado de todos los frentes de desarrollo abiertos en Last Planner AIA: qué persigue cada uno, dónde está de verdad y qué lo detiene. Cada cifra se relee del repositorio cada hora.</p>
     <div class="meta">
       <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 12:00</b></span>
-      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>4</b> frentes activos</span>
+      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos</span>
       <span class="chip-meta">Rama <b>main</b> · <b>2</b> commits sin subir</span>
     </div>
   </div>
@@ -210,7 +210,7 @@
   <div class="wrap">
     <p class="eyebrow">Estado global</p>
     <h2>Dónde está el desarrollo hoy</h2>
-    <p class="lede" style="margin-bottom:26px">Last Planner AIA es la herramienta interna con la que la obra planifica y compromete su trabajo semana a semana. El desarrollo tiene ahora mismo <b>cuatro frentes vivos</b>, y todos convergen en el mismo sitio: la cascada <code>Programa General → Programación Intermedia → Programación Semanal</code>, que el propio equipo señala como el flujo más áspero de usar. El trabajo de forma —lo que se podía arreglar sin cambiar comportamiento— está agotado; lo que queda son decisiones de criterio y una campaña que las ejecuta en orden.</p>
+    <p class="lede" style="margin-bottom:26px">Last Planner AIA es la herramienta interna con la que la obra planifica y compromete su trabajo semana a semana. El desarrollo tiene ahora mismo <b>cinco frentes vivos</b>. Cuatro convergen en el mismo sitio: la cascada <code>Programa General → Programación Intermedia → Programación Semanal</code>, que el propio equipo señala como el flujo más áspero de usar. El trabajo de forma —lo que se podía arreglar sin cambiar comportamiento— está agotado; lo que queda son decisiones de criterio y una campaña que las ejecuta en orden.</p>
 
     <div class="kpis">
       <div class="kpi">
@@ -274,7 +274,7 @@
 <section id="frentes" style="background:var(--panel-sunk)">
   <div class="wrap">
     <p class="eyebrow">Frentes activos</p>
-    <h2>Los cuatro planes vivos, uno por uno</h2>
+    <h2>Los cinco frentes vivos, uno por uno</h2>
     <p class="lede" style="margin-bottom:24px">Cada ficha trae el estado técnico y, al lado, su lectura en simple. El orden es por cuánto arrastran a los demás.</p>
 
     <div class="frentes">
@@ -353,6 +353,32 @@
 
       <div class="frente">
         <div class="f-head">
+          <div class="f-title">Plan de Compras v2 <span class="badge b-done">Construido y desplegado</span></div>
+          <div><span class="badge b-wait">Cola atada al lanzamiento</span></div>
+        </div>
+        <div class="f-body">
+          <div>
+            <h4>Estado detallado</h4>
+            <p>Es el frente más grande del repositorio: <b>siete de los 19 objetivos</b> son suyos, y los siete están cerrados con fecha y commit. El módulo —presupuesto → maestro de insumos → paquetes → plan con fechas— vive en una SPA propia (<code>pdc-app/</code>, React + Vite + AG Grid) sobre servicios PHP en <code>src/Services/Pdc/</code>. El dueño del producto lo recorrió entero en el Comité del <b>29 de julio</b>, dio el visto bueno y dejó seis peticiones y una fecha; ese feedback se ejecutó completo en tres olas y terminó en producción el <b>31 de julio</b>.</p>
+            <p>Lo que queda no es trabajo pendiente sino trabajo <b>condicionado</b>: la tarea 10 —retirar el PDC viejo— no puede hacerse hasta que una obra real esté operando con el nuevo en producción. Está capturada aparte, en <code>retiro-listado-contratos</code>, cuyas etapas 1 y 2 ya se ejecutaron y verificaron; las etapas 3 y 4 esperan esa misma señal.</p>
+            <p><b>Por qué faltaba en este informe:</b> se contaba dentro del bloque genérico de objetivos en vez de como frente propio, y así un módulo entero quedaba invisible detrás de un número.</p>
+            <div class="f-meta">
+              <div><span>Goals suyos</span><b>7 de 19</b></div>
+              <div><span>Todos</span><b>Cerrados</b></div>
+              <div><span>En producción</span><b>31 jul</b></div>
+              <div><span>Diferido</span><b>Retiro C1</b></div>
+            </div>
+          </div>
+          <div class="f-eli">
+            <h4>En simple</h4>
+            <p>Es el módulo con el que la obra planifica sus compras: cuánto hay presupuestado, qué paquetes salen de ahí y para cuándo hay que contratarlos. Se construyó entero, el jefe del proyecto lo revisó en comité, pidió seis arreglos, se hicieron todos y ya está funcionando de verdad.</p>
+            <p>Solo falta una cosa, y no depende de programar: apagar la versión antigua. Eso no se hace hasta que una obra lleve un tiempo trabajando con la nueva, para no dejar a nadie sin herramienta si algo falla.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="frente">
+        <div class="f-head">
           <div class="f-title">Goals abiertos <span class="badge b-block">1 bloqueado · 1 sin cerrar</span></div>
           <div><span class="badge b-mute">19 goals en total</span></div>
         </div>
@@ -361,6 +387,7 @@
             <h4>Estado detallado</h4>
             <p>Según el último censo del propio proyecto, quedan dos objetivos sin cerrar. <b>Torre de Control BI</b> está bloqueado a la espera de una aprobación visual explícita de su matriz de seis modos; sin ella no hay commit. <b>Gobernanza del núcleo del design system</b> quedó indeterminado: su registro no tiene sección de cierre y deja pendientes la revisión visual, los datos del piloto y el contrato de publicación.</p>
             <p><b>Salvedad de exactitud:</b> ese censo está fechado el 2 de agosto y habla de 16 goals; hoy el repositorio tiene <b>19 carpetas</b>. Los tres nuevos —cierre de la versión 1.1.0, repaso de usabilidad fuera de tablas y el chip de estado de Programa General— son posteriores al censo y no están reflejados en él.</p>
+            <p><b>No cuentes dos veces:</b> siete de esos 19 son del Plan de Compras v2 y están todos cerrados, así que tienen ficha propia arriba en vez de sumar aquí.</p>
             <div class="f-meta">
               <div><span>Bloqueado</span><b>BI Control Tower</b></div>
               <div><span>Sin cerrar</span><b>Gobernanza DS</b></div>
