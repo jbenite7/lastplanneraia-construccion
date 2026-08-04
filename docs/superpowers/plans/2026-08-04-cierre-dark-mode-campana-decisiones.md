@@ -556,6 +556,25 @@ Origen: la Task 33 midió que su prueba de mordida (borde de celda 1px→2px) **
 - [ ] **Step 4: Probar que ahora muerde:** repetir la mordida de la Task 33 (borde de celda 1px→2px) y confirmar que PI se pone en rojo; revertir.
 - [ ] **Step 5: Sincronizar sha256 de manifiestos + suite estática 8/8 + commit.** `git commit -m "test(visual): el golden de PI deja de retratar una tabla vacia y por fin vigila celdas"`.
 
+### Task 36: Llevar el encabezado sobrio a Programa General y Programación Intermedia (paridad de C-44)
+
+**Files:**
+- Modify: `public/css/design-system/tokens.css:325-327` (`--pdc-header-*`, hoy compartido) y/o las reglas de `.pdc-header` / `.row-header` que consumen PG y PI
+- Test: goldens de `programa-general.visual.mjs` y `programacion-intermedia.visual.mjs` (ambos asertan píxeles y ahora muerden al 0,2 %)
+
+**Interfaces:**
+- Consumes: Task 7 (el tratamiento sobrio ya definido en `#dt_cliente`), Task 33 y 35 (la red visual afinada).
+- Produces: un solo lenguaje visual de encabezado en las tres tablas.
+
+Origen: la Task 7 dejó `/pdc` con encabezado sobrio (negrita + filete, luminancia 1,64× frente a 5,72×) pero acotó el cambio a `#dt_cliente` porque `--pdc-header-bg` lo comparten PG y PI —verificado: `programa_general/hot.js:824,1322,1531` y `programacion_intermedia/hot.js:746` estampan `pdc-header`— y tocarlo movía sus goldens sin autorización. Decisión del usuario (2026-08-04): **igualar las tres**.
+
+- [ ] **Step 1: Mapear los consumidores reales** del token y de las reglas `.pdc-header td` / `.row-header td` (`styles.css:514,609` apuntan a `tr`, la vía de PG). Distinguir qué superficie consume qué, para no cambiar de más.
+- [ ] **Step 2: Comprobar la compuerta de semántica en PG y PI**, igual que hizo la Task 7 en PDC: que en esos módulos el naranja marque encabezado y no un estado. Si en alguno codifica estado, **STOP y reportar** — la paridad no vale romper significado.
+- [ ] **Step 3: Aplicar el mismo tratamiento** (peso tipográfico + filete superior, superficie neutra del sistema). Reutilizar exactamente lo que la Task 7 dejó, no una variante nueva.
+- [ ] **Step 4: Medir con datos reales en solo lectura:** luminancia de la fila de capítulo ≤2× la normal en PG y PI, y captura que demuestre que los capítulos siguen encontrándose de un vistazo.
+- [ ] **Step 5: Recapturar los goldens de PG y PI** con `--update-snapshots=all`, **presentando el antes/después al usuario** (mueve dos líneas base que él ya aprobó una vez). Sincronizar sha256 de manifiestos.
+- [ ] **Step 6: Suite estática 8/8 + ciclo triple + commit.** `git commit -m "feat(tablas): PG y PI estrenan el encabezado sobrio del PDC — un solo lenguaje en las tres"`.
+
 ---
 
 ## Self-review
