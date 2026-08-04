@@ -416,12 +416,22 @@
     padding-inline: var(--ds-space-2);
   }
 
+  /* El rail colapsado mide 4rem; con el padding expandido (--ds-space-3) el
+   ancho útil caía a 38px y ningún objetivo alcanzaba el piso de 44x44. Con
+   --ds-space-2 quedan 46px libres, suficientes para el mínimo táctil.
+   `!important` reasserts sobre el `padding … !important` del estado normal,
+   que a su vez existe por el reset global de styles.css. */
+  .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__nav {
+    padding-inline: var(--ds-space-2) !important;
+  }
+
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__brand,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__toggle,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__utility,
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__link {
     justify-content: center;
-    padding-inline: var(--ds-space-2);
+    min-inline-size: var(--ds-target-min);
+    padding-inline: var(--ds-space-2) !important;
   }
 
   .aia-navigation--sidebar[data-sidebar-state="collapsed"] .aia-sidebar__badge {

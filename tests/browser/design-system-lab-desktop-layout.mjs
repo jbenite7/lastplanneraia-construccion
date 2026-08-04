@@ -13,8 +13,22 @@ const FAMILIES = [
   'vendor-adapters', 'bi-primitives',
 ];
 
+// Excepción registrada en DESIGN.md §5 bis («Excepción al mínimo de 44 px»):
+// en la familia de tablas densas desktop —operadas con ratón, sin equivalente
+// móvil por contrato de AGENTS.md— el suelo es el de WCAG 2.2 SC 2.5.8 (AA),
+// 24x24px, no los 44 del resto del sistema. No es un aflojamiento de la vara:
+// es la vara que ya estaba escrita, que este test aplicaba plana a todas las
+// familias. Se acota al gatillo canónico de filtro de columna (su skin único
+// vive en components/table-filter-trigger.css, y `.changeType` es el nombre
+// que Handsontable impone en el DOM que genera); cualquier otro objetivo, aquí
+// dentro incluido, sigue midiéndose contra 44. Si la superficie se abriera a
+// táctil, la excepción caduca y esta lista se vacía.
+const DENSE_TABLE_TARGETS = '.aia-table-filter-trigger, .changeType';
+const DENSE_TABLE_MIN = 24;
+const DEFAULT_MIN = 44;
+
 async function readLayoutContract(page, scopeSelector) {
-  return page.evaluate((scope) => {
+  return page.evaluate(({ scope, denseSelector, denseMin, defaultMin }) => {
     const root = document.documentElement;
     const panel = document.querySelector(scope);
     const textSelectors = 'h1,h2,h3,h4,h5,h6,p,label,button,.aia-chip,[data-state-text]';
@@ -37,8 +51,14 @@ async function readLayoutContract(page, scopeSelector) {
         ? element.closest('label') || element
         : element;
       const box = target.getBoundingClientRect();
-      return box.width + 0.01 < 44 || box.height + 0.01 < 44
-        ? [{ label: element.getAttribute('aria-label') || element.textContent.trim().slice(0, 80), width: box.width, height: box.height }]
+      const min = target.matches(denseSelector) ? denseMin : defaultMin;
+      return box.width + 0.01 < min || box.height + 0.01 < min
+        ? [{
+          label: element.getAttribute('aria-label') || element.textContent.trim().slice(0, 80),
+          width: box.width,
+          height: box.height,
+          min,
+        }]
         : [];
     });
     return {
@@ -46,7 +66,12 @@ async function readLayoutContract(page, scopeSelector) {
       textViolations,
       targetViolations,
     };
-  }, scopeSelector);
+  }, {
+    scope: scopeSelector,
+    denseSelector: DENSE_TABLE_TARGETS,
+    denseMin: DENSE_TABLE_MIN,
+    defaultMin: DEFAULT_MIN,
+  });
 }
 
 for (const viewport of VIEWPORTS) {
@@ -63,7 +88,7 @@ for (const viewport of VIEWPORTS) {
       const contract = await readLayoutContract(page, scope);
       expect(contract.overflow, `${family}: horizontal overflow`).toBeLessThanOrEqual(1);
       expect(contract.textViolations, `${family}: fragmented text`).toEqual([]);
-      expect(contract.targetViolations, `${family}: targets below 44px`).toEqual([]);
+      expect(contract.targetViolations, `${family}: targets below their minimum (44px; 24px en tablas densas, DESIGN.md §5 bis)`).toEqual([]);
     }
   });
 

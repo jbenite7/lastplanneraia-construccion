@@ -24,8 +24,13 @@
  * apuntar `.changeType` aqui en vez de redefinir tamano/color/hover.
  */
 
+/* Tamano de objetivo: 24px, el suelo de WCAG 2.2 SC 2.5.8 (AA) que la excepcion
+   de superficies densas de DESIGN.md §5 bis declara innegociable. El gatillo
+   medía 13px, por debajo de ese suelo. Solo crece la caja (invisible en
+   reposo); el glifo mantiene su tamano, asi que el trigger sigue igual de
+   quieto y unicamente mejora el area de acierto. */
 :root {
-  --ds-table-filter-trigger-size: 13px;
+  --ds-table-filter-trigger-size: 24px;
   --ds-table-filter-trigger-icon-size: 6px;
 }
 
