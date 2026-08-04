@@ -120,7 +120,7 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
-		<div class="modal_cargarExcel modal fade aia-modal" id="modalCargarExcel" role="dialog" aria-labelledby="modal_cargarExcelLabel">
+		<div class="modal_cargarExcel modal fade aia-modal" id="modalCargarExcel" tabindex="-1" role="dialog" aria-labelledby="modalCargarExcelLabel">
 		  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
@@ -182,7 +182,7 @@
 		<!-- Modal -->
 
 		<!-- General el modal para descargar y cargar el CSV con el que se puede agregar el listado de actividades desde excel -->
-		<div class="modal_eliminarActualizacion modal fade aia-modal" id="modalEliminarActualizacion" role="dialog" aria-labelledby="modal_eliminarActualizacionLabel">
+		<div class="modal_eliminarActualizacion modal fade aia-modal" id="modalEliminarActualizacion" tabindex="-1" role="dialog" aria-labelledby="modalEliminarActualizacionLabel">
 		  <div class="modal-dialog modal-m modal-dialog-centered" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
@@ -219,7 +219,7 @@
 		<!-- Modal -->
 
 		<!-- Modal de Éxito - Marca AIA corporativa -->
-		<div class="modal fade aia-modal" id="modalImportacionExitosa" role="dialog" data-backdrop="static">
+		<div class="modal fade aia-modal" id="modalImportacionExitosa" tabindex="-1" role="dialog" data-backdrop="static">
 		  <div class="modal-dialog modal-dialog-centered">
 		    <div class="modal-content">
 		      <div class="modal-body text-center pga-success-body">
@@ -241,7 +241,7 @@
 
 
 		<!-- Se crea el Modal que explica el significado de la columna 'Ejecutado Teórico' -->
-		<div class='modal fade aia-modal' id='modal_Ejecutado_Teorico' role='dialog' data-backdrop='static'>
+		<div class='modal fade aia-modal' id='modal_Ejecutado_Teorico' tabindex='-1' role='dialog' aria-labelledby='modal_Ejecutado_Teorico_Label' data-backdrop='static'>
 		  <div class='modal-dialog modal-lg modal-dialog-centered'>
 		    <!-- Modal content-->
 		    <div class='modal-content'>
@@ -265,7 +265,7 @@
 		<!-- Modal -->
 
 		<!-- Se crea el Modal que avisa que la cantidad que se está comprometiendo en una actividad, es inferior a la cantidad sugerida por el programa -->
-		<div class="modal fade aia-modal" id="modal_cantidad_ejecutada_error" role="dialog">
+		<div class="modal fade aia-modal" id="modal_cantidad_ejecutada_error" tabindex="-1" role="dialog" aria-labelledby="modal_cantidad_ejecutada_error_Label">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<!-- Modal content-->
 				<div class="modal-content">
@@ -289,7 +289,7 @@
 		</div>
 
 			<!-- Se crea el Modal que avisa que la cantidad que se está comprometiendo en una actividad, es inferior a la cantidad sugerida por el programa -->
-			<div class="modal fade aia-modal" id="modal_semanal_confirmada" role="dialog">
+			<div class="modal fade aia-modal" id="modal_semanal_confirmada" tabindex="-1" role="dialog" aria-labelledby="modal_semanal_confirmada_Label">
 				<div class="modal-dialog modal-lg modal-dialog-centered">
 					<!-- Modal content-->
 					<div class="modal-content">
@@ -314,7 +314,7 @@
 		</div>
 
 		<!-- Modal de Revisión de Auto-Asociación (Opción C: split Pendientes/Procesadas + Guardar Cambios batch) -->
-		<div class="modal fade aia-modal" id="modalAutoAsociar" role="dialog" aria-labelledby="modalAutoAsociarLabel" data-backdrop="static">
+		<div class="modal fade aia-modal" id="modalAutoAsociar" tabindex="-1" role="dialog" aria-labelledby="modalAutoAsociarLabel" data-backdrop="static">
 			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
