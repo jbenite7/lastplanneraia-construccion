@@ -140,7 +140,7 @@
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
 
-	<div class="modal_ordenDeCambio modal fade aia-modal" id="modalordenDeCambio" role="dialog" aria-labelledby="modal_ordenDeCambioLabel" data-keyboard="false">
+	<div class="modal_ordenDeCambio modal fade aia-modal" id="modalordenDeCambio" tabindex="-1" role="dialog" aria-labelledby="modalordenDeCambioLabel" data-keyboard="false">
 				<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 					<div class="modal-content" id="modalordenDeCambioContent">
 						<div class="modal-header p-0">

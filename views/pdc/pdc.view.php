@@ -70,7 +70,7 @@
 	</div>
 
 	<div class="row ventanasModalesEspecificas" id="ventanasModalesEspecificas">
-		<div class="modal_Contrato modal aia-modal" id="modalContrato" tabindex="-1" role="dialog" aria-labelledby="modal_ContratoLabel">
+		<div class="modal_Contrato modal aia-modal" id="modalContrato" tabindex="-1" role="dialog" aria-labelledby="modalContratoLabel">
 			<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -491,7 +491,7 @@
 		</div>
 		<!-- Modal -->
 
-		<div class="modal_DefinirContrato modal aia-modal" id="modalDefinirContratos" tabindex="-1" role="dialog" aria-labelledby="modal_DefinirContratoLabel">
+		<div class="modal_DefinirContrato modal aia-modal" id="modalDefinirContratos" tabindex="-1" role="dialog" aria-labelledby="modalDefinirContratosLabel">
 			<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">

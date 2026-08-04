@@ -79,7 +79,7 @@
     <div id="mobile-card-view" style="display:none;"></div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_leyenda_colores" role="dialog" data-backdrop="static" aria-labelledby="modal_leyenda_colores_Label" aria-modal="true">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="modal_leyenda_colores_Label" aria-modal="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -91,7 +91,7 @@
         </div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_shared_constraint" role="dialog" data-backdrop="static" aria-labelledby="modal_shared_constraint_Label" aria-modal="true">
+    <div class="modal fade aia-modal" id="modal_shared_constraint" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="modal_shared_constraint_Label" aria-modal="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
