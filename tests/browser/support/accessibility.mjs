@@ -89,7 +89,7 @@ export function evaluateAccessibility(results, { surface, baseline = [], excepti
     (known.has(finding.fingerprint) ? outcome.existing : outcome.newFindings).push(finding);
     if (approved.has(finding.fingerprint)) {
       outcome.excepted.push(finding);
-    } else if (BLOCKING_IMPACTS.has(finding.impact)) {
+    } else if (finding.kind === 'violation' && BLOCKING_IMPACTS.has(finding.impact)) {
       outcome.blocking.push(finding);
     } else {
       outcome.reported.push(finding);

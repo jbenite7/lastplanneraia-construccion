@@ -84,7 +84,7 @@ test('critical and serious findings block while lower impacts are reported', asy
   assert.deepEqual(outcome.reported.map(({ impact }) => impact), ['moderate']);
 });
 
-test('serious axe findings that require review still block the gate', async () => {
+test('serious axe incomplete findings are reported, not blocked', async () => {
   const { evaluateAccessibility, fingerprintViolations } = await import(helperPath);
   const results = {
     violations: [],
@@ -98,7 +98,8 @@ test('serious axe findings that require review still block the gate', async () =
     surface: 'lab/data-display', exceptions: [], now: '2026-07-12',
   });
 
-  assert.deepEqual(outcome.blocking.map(({ rule, kind }) => ({ rule, kind })), [{
+  assert.deepEqual(outcome.blocking, []);
+  assert.deepEqual(outcome.reported.map(({ rule, kind }) => ({ rule, kind })), [{
     rule: 'color-contrast', kind: 'incomplete',
   }]);
   assert.deepEqual(fingerprintViolations(results, 'lab/data-display'), [
@@ -270,4 +271,16 @@ test('keyboard and desktop layout have one non-blocking laboratory command outsi
     'playwright test tests/browser/design-system-lab-keyboard.mjs tests/browser/design-system-lab-desktop-layout.mjs --workers=1',
   );
   assert.doesNotMatch(packageJson.scripts?.['test:design-system:runtime'], /keyboard|reflow|desktop-layout/);
+});
+
+test('incomplete never blocks, even with critical impact', async () => {
+  const { evaluateAccessibility } = await import(helperPath);
+  const results = {
+    violations: [],
+    incomplete: [{ id: 'color-contrast', impact: 'critical', nodes: [{ target: ['.glass'], failureSummary: 'no se pudo medir sobre fondo translucido' }] }],
+  };
+  const outcome = evaluateAccessibility(results, { surface: 'lab' });
+  assert.equal(outcome.blocking.length, 0);
+  assert.equal(outcome.reported.length, 1);
+  assert.equal(outcome.reported[0].kind, 'incomplete');
 });
