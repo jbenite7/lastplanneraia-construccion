@@ -63,11 +63,6 @@ class SessionMiddleware
             $_SESSION["timeout"] = time();
         }
 
-        // Actualizar semana en sesión si viene por parámetro GET (patrón legacy)
-        if (isset($_GET['semana'])) {
-            $_SESSION['semana'] = (int) $_GET['semana'];
-        }
-
         // Auto-establecer contexto de proyecto para tablas globales (USE_GLOBAL_TABLES=true)
         if (isset($_SESSION['db']) && $_SESSION['db'] !== '') {
             try {
