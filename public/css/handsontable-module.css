@@ -236,7 +236,7 @@ body {
 }
 
 .btn-delete i {
-  font-size: 12px !important;
+  font-size: var(--ds-type-size-xs) !important;
 }
 
 /* ========================================
@@ -280,7 +280,7 @@ body {
   border-radius: var(--ds-radius-pill, 12px) !important;
   padding: 2px 6px 2px 20px !important; /* Espacio para la x a la izquierda */
   position: relative;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
 }
 
 .htSelect2Wrapper .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
@@ -350,7 +350,7 @@ body {
 .mobile-label {
   font-weight: 600;
   color: var(--ds-active-text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   text-transform: uppercase;
   min-width: 80px;
   display: inline-block;
@@ -382,7 +382,7 @@ body {
    ======================================== */
 @media (min-width: 1200px) {
   .navbar-nav .nav-link {
-    font-size: 0.85rem !important;
+    font-size: var(--ds-type-size-sm) !important;
     padding-left: 8px !important;
     padding-right: 8px !important;
     white-space: nowrap;
@@ -534,7 +534,7 @@ body {
 .lps-badge {
   display: inline-block;
   padding: 4px 8px;
-  font-size: 0.75rem;
+  font-size: var(--ds-type-size-xs);
   font-weight: 600;
   border-radius: 6px;
   text-transform: uppercase;
@@ -555,7 +555,7 @@ body {
 
 .lps-digest-preview {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-size-xs);
   white-space: pre-wrap;
   background: var(--ds-active-surface);
   padding: 10px;
@@ -574,7 +574,7 @@ body {
   min-height: 48px;
   padding: 10px 20px;
   border-radius: var(--ds-radius-control-sm);
-  font-size: 0.9rem;
+  font-size: var(--ds-type-size-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -642,7 +642,7 @@ body {
 }
 
 .lps-sim-label {
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   font-weight: 600;
   color: var(--ds-active-text-primary);
 }
@@ -739,7 +739,7 @@ body {
   right: -2px;
   background: var(--ds-cell-state-critico-bg);
   color: var(--ds-cell-state-critico-fg);
-  font-size: 0.78rem;
+  font-size: var(--ds-type-size-xs);
   font-weight: 700;
   width: 24px;
   height: 24px;

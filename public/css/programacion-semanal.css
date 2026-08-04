@@ -361,7 +361,7 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 0.85rem;
+    font-size: var(--ds-type-size-sm);
     font-weight: 500;
     border-bottom: 1px solid var(--ds-active-border);
     transition: background-color 0.2s ease-out, color 0.2s ease-out;
@@ -734,7 +734,7 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .ops-state-eyebrow {
     display: block;
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    font-size: var(--ds-type-size-xs);
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1012,7 +1012,7 @@ body.ps-page .ps-hot-toolbar-shell {
         display: block;
         margin: 0;
         color: var(--ds-active-text-secondary);
-        font-size: 0.78rem;
+        font-size: var(--ds-type-size-xs);
         font-weight: 800;
         line-height: 1.2;
     }
@@ -1566,7 +1566,7 @@ body.ps-page #modal_cnc_hot .modal-footer {
 
 .ps-modal-label {
     color: var(--ds-active-text-primary);
-    font-size: 0.9rem;
+    font-size: var(--ds-type-size-sm);
     font-weight: 600;
 }
 
@@ -1683,7 +1683,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 
 .ps-missing-assignment {
     color: var(--ds-color-state-critical-text);
-    font-size: 0.875rem;
+    font-size: var(--ds-type-size-sm);
 }
 
 .ps-empty-icon {
@@ -1702,7 +1702,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 
 .tnp-option-meta {
     margin-top: calc(var(--spacing-xs) / 2);
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
 }
 
 .tnp-option-flag-wrap {
@@ -2171,7 +2171,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     body.ps-page #dt_cliente_wrapper .ps-toolbar-filter label {
         margin: 0;
         color: var(--ds-active-text-secondary);
-        font-size: 0.78rem;
+        font-size: var(--ds-type-size-xs);
         font-weight: 800;
     }
 
@@ -2275,7 +2275,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     .ps-legacy-card-id,
     .ps-legacy-card-eyebrow {
         color: var(--ds-active-text-secondary);
-        font-size: 0.75rem;
+        font-size: var(--ds-type-size-xs);
         font-weight: 800;
     }
 
@@ -2307,7 +2307,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 
     .ps-legacy-card-metric span {
         color: var(--ds-active-text-secondary);
-        font-size: 0.78rem;
+        font-size: var(--ds-type-size-xs);
     }
 
     .ps-legacy-card-metric strong {
@@ -2971,7 +2971,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 0.85rem;
+    font-size: var(--ds-type-size-sm);
     font-weight: 500;
     border-bottom: 1px solid var(--ds-active-border);
     transition: background-color 0.2s ease-out, color 0.2s ease-out;
@@ -3078,7 +3078,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     justify-content: center;
     background: color-mix(in srgb, var(--ds-color-text-inverse) 20%, transparent);
     color: var(--ds-color-text-inverse);
-    font-size: 0.75rem;
+    font-size: var(--ds-type-size-xs);
     font-weight: 700;
     min-width: 28px;
     height: 28px;
@@ -3088,7 +3088,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
 .cm-modal-header p {
     margin: 0.15rem 0 0;
-    font-size: 0.78rem;
+    font-size: var(--ds-type-size-xs);
     opacity: 0.8;
     line-height: 1.4;
 }
@@ -3127,7 +3127,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     background: var(--ds-active-surface-raised);
     border: 1px solid var(--ds-active-border);
     color: var(--ds-active-text-secondary);
-    font-size: 0.78rem;
+    font-size: var(--ds-type-size-xs);
     padding: 0.3rem 0.75rem;
     border-radius: var(--ds-radius-xs);
     cursor: pointer;
@@ -3143,7 +3143,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
     color: var(--ds-active-text-secondary);
     background: var(--ds-active-surface-raised);
     padding: 0.6rem 0.85rem;

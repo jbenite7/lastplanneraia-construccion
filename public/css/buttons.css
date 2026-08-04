@@ -84,7 +84,7 @@
   /* Typography */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 500;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   letter-spacing: -0.01em;
   line-height: 1.5;
 
@@ -157,14 +157,14 @@
    ================================================================ */
 
 .btn-xs {
-  font-size: 0.75rem;
+  font-size: var(--ds-type-size-xs);
   padding: 0.12rem 0.4rem;
   border-radius: var(--ds-radius-control-sm) !important;
   gap: 3px;
 }
 
 .btn-sm {
-  font-size: 0.78rem;
+  font-size: var(--ds-type-size-xs);
   padding: 0.25rem 0.65em;
   border-radius: var(--ds-radius-control-sm) !important;
 }
@@ -499,7 +499,7 @@
   border-radius: var(--ds-radius-none) var(--ds-radius-control-sm) var(--ds-radius-control-sm) var(--ds-radius-none) !important;
 }
 .btn-group-sm > .btn {
-  font-size: 0.8rem;
+  font-size: var(--ds-type-size-xs);
 }
 
 .btn-group-lg {
@@ -567,7 +567,7 @@
   background-color: var(--aia-bg-secondary, oklch(94% 0 0));
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: none;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -589,7 +589,7 @@
   gap: 6px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   padding: 0.3rem 0.8rem;
   border-radius: var(--ds-radius-control) !important;
   border: 1px solid transparent;
@@ -667,7 +667,7 @@
 /* --- btn-auto: Small --- */
 .btn-auto.btn-sm {
   padding: 0.2rem 0.6rem;
-  font-size: 0.8rem;
+  font-size: var(--ds-type-size-xs);
   gap: 4px;
   border-radius: var(--ds-radius-control-sm) !important;
 }
@@ -691,7 +691,7 @@
   border-radius: var(--ds-radius-control) !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 500;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   padding: 0.2rem 0.65rem;
   box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
   cursor: pointer;
@@ -755,7 +755,7 @@
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   padding: 10px;
   border-radius: var(--ds-radius-control) !important;
   box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
@@ -780,7 +780,7 @@
   color: #ffffff;
   border-radius: var(--ds-radius-pill);
   padding: 3px 7px;
-  font-size: 0.75rem;
+  font-size: var(--ds-type-size-xs);
   vertical-align: middle;
 }
 
@@ -921,7 +921,7 @@
 .toolbarFilaMensajes {
   display: flex !important;
   align-items: center !important;
-  font-size: 0.85rem;
+  font-size: var(--ds-type-size-sm);
   color: var(--aia-text-tertiary, oklch(72% 0 0));
   flex: 1 1 auto;
   min-width: 0 !important;

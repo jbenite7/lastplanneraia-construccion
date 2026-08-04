@@ -193,13 +193,13 @@ html.aia-theme-dark .pi-page {
 }
 
 .pi-page #hot-container .handsontable {
-    font-size: 0.76rem;
+    font-size: var(--ds-type-size-xs);
     line-height: 1.05;
 }
 
 .pi-page #hot-container .handsontable td,
 .pi-page #hot-container .handsontable th {
-    font-size: 0.76rem !important;
+    font-size: var(--ds-type-size-xs) !important;
     line-height: 1.05;
 }
 
@@ -295,7 +295,7 @@ html.aia-theme-dark .pi-page {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
     font-weight: 800;
-    font-size: 0.75rem;
+    font-size: var(--ds-type-size-xs);
     line-height: 1;
     box-shadow: inset 0 0 0 1px var(--ds-active-border);
 }
@@ -388,7 +388,7 @@ html.aia-theme-dark .pi-page {
 .pi-page .ops-state-eyebrow {
     display: block;
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    font-size: var(--ds-type-size-xs);
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -625,7 +625,7 @@ html.aia-theme-dark .pi-page {
 
 #modal_shared_constraint .form-group label {
     margin-bottom: 0.32rem;
-    font-size: 0.9rem;
+    font-size: var(--ds-type-size-sm);
     font-weight: 600;
     color: var(--ds-active-text-primary);
 }
@@ -667,7 +667,7 @@ html.aia-theme-dark .pi-page {
     padding: 12px;
     min-height: 96px;
     max-height: 380px;
-    font-size: 0.85rem;
+    font-size: var(--ds-type-size-sm);
     line-height: 1.28;
     white-space: normal;
     overflow: auto;
@@ -734,7 +734,7 @@ html.aia-theme-dark .pi-page {
 
 .pi-shared-coverage-text {
     min-width: 88px;
-    font-size: 0.78rem;
+    font-size: var(--ds-type-size-xs);
     font-weight: 600;
     text-align: right;
     color: var(--ds-active-text-secondary);
@@ -746,7 +746,7 @@ html.aia-theme-dark .pi-page {
     background: var(--pi-danger-soft-bg);
     padding: 7px 9px;
     color: var(--pi-danger-text);
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
     line-height: 1.3;
 }
 
@@ -783,7 +783,7 @@ html.aia-theme-dark .pi-page {
     background: var(--pi-danger-soft-bg);
     border: 1px solid var(--pi-danger-border);
     color: var(--pi-danger-text);
-    font-size: 0.76rem;
+    font-size: var(--ds-type-size-xs);
     font-weight: 600;
     margin-right: 4px;
 }
@@ -818,7 +818,7 @@ html.aia-theme-dark .pi-page {
 .pi-shared-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
     line-height: 1.3;
 }
 
@@ -899,7 +899,7 @@ html.aia-theme-dark .pi-page {
 .pi-shared-more,
 .pi-shared-empty,
 .pi-shared-loading {
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
     color: var(--ds-active-text-secondary);
 }
 
@@ -924,7 +924,7 @@ html.aia-theme-dark .pi-page {
 }
 
 .pi-shared-hint {
-    font-size: 0.8rem;
+    font-size: var(--ds-type-size-xs);
     color: var(--ds-active-text-secondary);
 }
 
@@ -937,14 +937,14 @@ html.aia-theme-dark .pi-page {
 
 .pi-shared-tools .btn {
     padding: 0.16rem 0.5rem;
-    font-size: 0.76rem;
+    font-size: var(--ds-type-size-xs);
     line-height: 1.15;
 }
 
 .pi-shared-selection-info {
     display: block;
     margin-top: 4px;
-    font-size: 0.78rem;
+    font-size: var(--ds-type-size-xs);
     color: var(--ds-active-text-secondary);
 }
 
@@ -1232,7 +1232,7 @@ html.aia-theme-dark .pi-page {
     border: 1px solid #e87722 !important; /* mid naranja AIA */
     color: #8b4011 !important;         /* dark naranja AIA */
     border-radius: 4px !important;
-    font-size: 0.78rem !important;
+    font-size: var(--ds-type-size-xs) !important;
     font-weight: 500 !important;
     padding: 2px 6px !important;
     margin: 2px !important;
@@ -1340,7 +1340,7 @@ html.aia-theme-dark .pi-page {
     padding: 8px 12px !important;
     width: calc(100% + 8px) !important; /* Expands to cover padding */
     margin-left: -4px !important; /* Offsets padding */
-    font-size: 0.75rem !important;
+    font-size: var(--ds-type-size-xs) !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     cursor: pointer !important;
@@ -1352,7 +1352,7 @@ html.aia-theme-dark .pi-page {
     box-sizing: border-box !important;
 }
 .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn i {
-    font-size: 0.75rem !important;
+    font-size: var(--ds-type-size-xs) !important;
     color: #b55211 !important;
 }
 .htTomSelectWrapper .ts-control .clear-button.aia-clear-btn:hover {
@@ -1382,7 +1382,7 @@ color: #fff !important;
 gap: 4px;
       }
       .pi-view-all-toggle-label {
-font-size: 0.78rem;
+font-size: var(--ds-type-size-xs);
 font-weight: 600;
 color: var(--ds-active-text-secondary);
 letter-spacing: 0.01em;

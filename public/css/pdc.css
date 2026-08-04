@@ -56,7 +56,7 @@
 	display: inline-flex;
 	gap: 15px;
 	margin-bottom: 0px;
-	font-size: 0.85rem;
+	font-size: var(--ds-type-size-sm);
 	color: var(--ds-color-text-tertiary); /* Slate-500 */
 	vertical-align: middle;
 	margin-left: 0;
@@ -154,7 +154,7 @@
 
 /* Chip Badge (Counter) */
 .count-badge {
-	font-size: 0.75rem;
+	font-size: var(--ds-type-size-xs);
 	margin-left: 6px;
 	background-color: color-mix(in srgb, var(--ds-active-surface) 55%, transparent);
 	padding: 2px 8px;
@@ -336,7 +336,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 	box-shadow: var(--ds-shadow-md);
 	border-left: 5px solid var(--ds-active-action-primary); /* Accent color */
 	font-family: var(--ds-font-body);
-	font-size: 14px;
+	font-size: var(--ds-type-size-sm);
 	display: none; /* Hidden by default */
 	max-width: 300px;
 	animation: slideIn 0.3s ease-out forwards;
@@ -403,7 +403,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 	background: var(--ds-active-surface-raised);
 	color: var(--ds-active-action-primary);
 	font-family: 'Montserrat', sans-serif;
-	font-size: 0.75rem;
+	font-size: var(--ds-type-size-xs);
 	font-weight: 700;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -458,7 +458,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 #modalContrato .pdc-contract-section__hint {
 	margin: 0;
 	font-family: 'Inter', sans-serif;
-	font-size: 0.88rem;
+	font-size: var(--ds-type-size-sm);
 	line-height: 1.45;
 	color: var(--ds-active-text-secondary);
 }
@@ -490,7 +490,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 #modalContrato .labelFormularioSeguimientoContrato {
 	display: inline-block;
 	font-family: 'Montserrat', sans-serif;
-	font-size: 0.9rem;
+	font-size: var(--ds-type-size-sm);
 	font-weight: 600;
 	line-height: 1.45;
 	color: var(--ds-active-text-primary);
@@ -709,7 +709,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 #modalContrato .mensajeModalContrato {
 	margin: 0;
 	font-family: 'Inter', sans-serif;
-	font-size: 0.88rem;
+	font-size: var(--ds-type-size-sm);
 }
 
 #modalContrato .pdc-provider-locked {
@@ -866,7 +866,7 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 		width: 100%;
 		margin-bottom: 0.45rem;
 		font-family: 'Montserrat', sans-serif;
-		font-size: 0.76rem;
+		font-size: var(--ds-type-size-xs);
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
