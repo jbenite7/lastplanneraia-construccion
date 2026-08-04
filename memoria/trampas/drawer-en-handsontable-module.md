@@ -7,12 +7,12 @@ fuente: memoria-claude
 origen: lps-aia-drawer-en-handsontable-module
 resumen: toda la geometría del Cajón Contextual LPS vive dentro de handsontable-module.css, que core.css no importa; migrar un head a renderForModule sin declarar el vendor handsontable tumba el drawer
 ---
-`public/css/handsontable-module.css:377+` contiene **toda** la geometría de `.lps-drawer` y su
+`public/css/handsontable-module.css:399+` contiene **toda** la geometría de `.lps-drawer` y su
 overlay (`position: fixed`, `translateX(100%)`, z-index). El nombre del archivo miente: no es sólo
 Handsontable.
 
-`aia-design-system.css` (el agregador) lo importa; `public/css/design-system/entrypoints/core.css`
-**no**. Así que cualquier vista que pase de `DesignSystemHeadComponent::render()` a
+`aia-design-system.css` (el agregador) lo importa en `layer(vendor)` (`:10`);
+`public/css/design-system/entrypoints/core.css` **no** lo menciona ni una vez. Así que cualquier vista que pase de `DesignSystemHeadComponent::render()` a
 `renderForModule('<id>')` e incluya `views/partials/drawer_unificado.php` pierde el drawer —cae al
 flujo del documento, visible debajo del contenido— salvo que declare `handsontable` en los
 `vendors[]` de su manifiesto, aunque no monte ninguna grilla. Le pasó a `escalamientos` el
