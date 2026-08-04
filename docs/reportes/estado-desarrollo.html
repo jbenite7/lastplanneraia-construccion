@@ -1,0 +1,496 @@
+<title>Last Planner AIA · Estado del desarrollo</title>
+<style>
+  :root {
+    --aia-green: #1A5633; --aia-green-700: #134026; --aia-green-300: #6C9077;
+    --aia-amber: #8A6420; --aia-amber-300: #D6A94E;
+
+    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE;
+    --ink: #131A16; --ink-soft: #45524A; --ink-faint: #647065;
+    --hairline: #DCE3DD; --hairline-strong: #C6D0C8;
+
+    --st-done: #1A5633;  --st-done-bg: #E4EFE8;
+    --st-wait: #8A6420;  --st-wait-bg: #F6EFDC;
+    --st-block: #9B2C2C; --st-block-bg: #F7E6E4;
+    --st-info: #2C6096;  --st-info-bg: #E3EDF8;
+    --st-mute: #5A655D;  --st-mute-bg: #E9EDE9;
+
+    --accent: var(--aia-green);
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(19,26,22,.05), 0 8px 24px rgba(19,26,22,.06);
+    --font-display: "Montserrat", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, monospace;
+  }
+  /* El tema oscuro no es una inversión: son los valores que la propia aplicación
+     rinde hoy —fondo de página rgb(11,16,13), acento #6c9077— medidos en el
+     navegador. El informe se pinta con la paleta del producto que describe. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711;
+      --ink: #F7FAF8; --ink-soft: #C7D4CC; --ink-faint: #8C9A91;
+      --hairline: #26332B; --hairline-strong: #35443B;
+      --st-done: #7FC79A; --st-done-bg: #12301F;
+      --st-wait: #D6A94E; --st-wait-bg: #322915;
+      --st-block: #E88F8F; --st-block-bg: #3A1A1A;
+      --st-info: #7FB0DE; --st-info-bg: #16283A;
+      --st-mute: #9AA79D; --st-mute-bg: #1E2721;
+      --accent: var(--aia-green-300);
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE;
+    --ink: #131A16; --ink-soft: #45524A; --ink-faint: #647065;
+    --hairline: #DCE3DD; --hairline-strong: #C6D0C8;
+    --st-done: #1A5633; --st-done-bg: #E4EFE8;
+    --st-wait: #8A6420; --st-wait-bg: #F6EFDC;
+    --st-block: #9B2C2C; --st-block-bg: #F7E6E4;
+    --st-info: #2C6096; --st-info-bg: #E3EDF8;
+    --st-mute: #5A655D; --st-mute-bg: #E9EDE9;
+    --accent: #1A5633;
+    --shadow: 0 1px 2px rgba(19,26,22,.05), 0 8px 24px rgba(19,26,22,.06);
+  }
+  :root[data-theme="dark"] {
+    --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711;
+    --ink: #F7FAF8; --ink-soft: #C7D4CC; --ink-faint: #8C9A91;
+    --hairline: #26332B; --hairline-strong: #35443B;
+    --st-done: #7FC79A; --st-done-bg: #12301F;
+    --st-wait: #D6A94E; --st-wait-bg: #322915;
+    --st-block: #E88F8F; --st-block-bg: #3A1A1A;
+    --st-info: #7FB0DE; --st-info-bg: #16283A;
+    --st-mute: #9AA79D; --st-mute-bg: #1E2721;
+    --accent: #6C9077;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 46px 0; }
+  h1, h2, h3, .num { font-family: var(--font-display); }
+  h2 { font-size: clamp(1.35rem, 2.4vw, 1.85rem); font-weight: 700; letter-spacing: -.01em; margin: 0 0 6px; text-wrap: balance; }
+  .eyebrow { font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--hairline); }
+  .lede { color: var(--ink-soft); max-width: 68ch; font-size: 1.02rem; }
+  .num { font-variant-numeric: tabular-nums; }
+  code, .mono { font-family: var(--font-mono); font-size: .82em; background: var(--panel-sunk); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--hairline); }
+
+  header.masthead { background: radial-gradient(120% 140% at 88% -20%, rgba(108,144,119,.30), transparent 55%), linear-gradient(150deg, #16412A 0%, #0C2318 100%); color: #EEF3EF; position: relative; overflow: hidden; border-bottom: 3px solid var(--aia-green-300); }
+  header.masthead::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px); background-size: 100% 30px; opacity: .6; pointer-events: none; }
+  .masthead .wrap { padding-top: 30px; padding-bottom: 38px; position: relative; }
+  .brandbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 40px; }
+  .logo { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 800; letter-spacing: .02em; }
+  .logo .mark { width: 38px; height: 38px; border-radius: 8px; background: #EEF3EF; color: #16412A; display: grid; place-items: center; font-size: .8rem; font-weight: 800; box-shadow: inset 0 0 0 2px rgba(108,144,119,.9); }
+  .logo small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .68rem; letter-spacing: .04em; opacity: .82; }
+  .hbtn { appearance: none; cursor: pointer; background: rgba(255,255,255,.1); color: #EEF3EF; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; padding: 7px 14px; font-family: var(--font-body); font-size: .8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; }
+  .hbtn:hover { background: rgba(255,255,255,.18); }
+  .hbtn:focus-visible { outline: 2px solid #EEF3EF; outline-offset: 2px; }
+  .masthead h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.025em; margin: 0 0 14px; line-height: 1.03; text-wrap: balance; max-width: 18ch; }
+  .masthead h1 em { font-style: normal; color: #A9D6BA; }
+  .masthead .sub { font-size: 1.06rem; max-width: 62ch; color: #DDE6DF; }
+  .masthead .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .chip-meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 6px 13px; font-size: .82rem; font-weight: 600; }
+  .chip-meta b { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .kpi { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
+  .kpi .k-label { font-family: var(--font-display); font-weight: 700; font-size: .96rem; }
+  .kpi .k-sub { color: var(--ink-faint); font-size: .82rem; }
+  .kpi .k-big { font-family: var(--font-display); font-weight: 800; font-size: 2.5rem; line-height: 1; letter-spacing: -.03em; }
+  .kpi .k-unit { font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
+
+  .banner { margin-top: 18px; border-radius: var(--radius); padding: 20px 22px; background: var(--st-wait-bg); border: 1px solid color-mix(in srgb, var(--st-wait) 34%, var(--hairline)); }
+  .banner h3 { margin: 0 0 6px; font-size: 1.02rem; color: var(--ink); }
+  .banner p { margin: 0; color: var(--ink-soft); font-size: .9rem; max-width: 80ch; }
+  .banner p + p { margin-top: 9px; }
+
+  .eli-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .eli-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+  .eli-card h3 { margin: 0 0 5px; font-size: 1.04rem; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+  .eli-card h3::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: none; background: var(--accent); }
+  .eli-card.b h3::before { background: var(--st-wait); }
+  .eli-card .kicker { font-size: .84rem; color: var(--ink-faint); margin: 0 0 16px; }
+  .eli-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .eli-card li { display: flex; gap: 12px; font-size: .9rem; color: var(--ink-soft); line-height: 1.5; align-items: flex-start; }
+  .eli-card li b { color: var(--ink); font-weight: 700; }
+  .eli-tag { font-family: var(--font-display); font-weight: 800; font-size: .72rem; flex: none; width: 30px; height: 26px; border-radius: 7px; display: grid; place-items: center; margin-top: 1px; background: var(--st-done-bg); color: var(--st-done); }
+  .eli-card.b .eli-tag { background: var(--st-wait-bg); color: var(--st-wait); }
+
+  /* Cada frente es una ficha con dos mitades: el estado técnico y su lectura en
+     simple. La regla de separación es horizontal y no un borde de color lateral,
+     para que la jerarquía la lleve el espaciado. */
+  .frentes { display: flex; flex-direction: column; gap: 18px; }
+  .frente { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .f-head { padding: 20px 24px 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--hairline); }
+  .f-title { font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .f-title small { font-family: var(--font-body); font-weight: 500; font-size: .78rem; color: var(--ink-faint); }
+  .f-body { padding: 20px 24px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; }
+  .f-body h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .f-body p { margin: 0; color: var(--ink-soft); font-size: .89rem; }
+  .f-body p + p { margin-top: 9px; }
+  .f-eli { background: var(--panel-sunk); border-radius: 8px; padding: 16px 18px; }
+  .f-eli p { font-size: .88rem; }
+  .f-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; padding-top: 13px; border-top: 1px dashed var(--hairline-strong); font-size: .8rem; }
+  .f-meta div span { display: block; color: var(--ink-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+  .f-meta div b { font-family: var(--font-display); font-size: .92rem; font-variant-numeric: tabular-nums; }
+
+  .badge { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .b-done { background: var(--st-done-bg); color: var(--st-done); }
+  .b-wait { background: var(--st-wait-bg); color: var(--st-wait); }
+  .b-block { background: var(--st-block-bg); color: var(--st-block); }
+  .b-info { background: var(--st-info-bg); color: var(--st-info); }
+  .b-mute { background: var(--st-mute-bg); color: var(--st-mute); }
+
+  .timeline { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 24px 22px 14px; box-shadow: var(--shadow); overflow-x: auto; }
+  .tl-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(70px, 1fr); gap: 12px; align-items: end; min-width: 420px; }
+  .tl-day { display: flex; flex-direction: column; gap: 8px; }
+  .tl-col { height: 130px; display: flex; align-items: flex-end; }
+  .tl-bar { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, var(--aia-green-300), var(--aia-green)); height: 0; transition: height 1s cubic-bezier(.22,.61,.36,1); }
+  .tl-day.is-today .tl-bar { background: linear-gradient(180deg, var(--st-wait), var(--aia-amber)); }
+  .tl-n { font-family: var(--font-display); font-weight: 800; font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .tl-d { font-size: .72rem; color: var(--ink-faint); text-align: center; font-weight: 600; }
+  .tl-note { margin-top: 16px; font-size: .84rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: flex-start; }
+
+  .table-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  thead th { text-align: left; font-family: var(--font-display); font-weight: 700; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); padding: 13px 16px; border-bottom: 1.5px solid var(--hairline-strong); white-space: nowrap; }
+  tbody td { padding: 13px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; font-size: .89rem; color: var(--ink-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--panel-sunk); }
+  td .t-id { font-family: var(--font-display); font-weight: 800; font-size: .92rem; color: var(--ink); white-space: nowrap; }
+
+  .debt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .debt-item { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+  .debt-item .d-n { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .debt-item .d-l { font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
+
+  footer { border-top: 3px solid var(--aia-green-300); background: #0C2318; color: #D5E0D8; }
+  footer .wrap { padding: 30px 24px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: flex-start; }
+  footer .disclaimer { max-width: 68ch; font-size: .82rem; line-height: 1.6; opacity: .92; }
+  footer .brand-foot { font-family: var(--font-display); font-weight: 800; }
+  footer .brand-foot small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .72rem; opacity: .75; margin-top: 3px; }
+
+  @media (max-width: 940px) { .eli-grid, .debt, .f-body { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } section { padding: 34px 0; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media print {
+    @page { margin: 13mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; transition: none !important; }
+    html, body { background: #fff; }
+    .hbtn { display: none !important; }
+    section { padding: 14px 0; break-inside: avoid; }
+    .kpi, .timeline, .table-card, .frente, .banner, .eli-card, .debt-item, footer { box-shadow: none !important; break-inside: avoid; }
+    .table-card, .timeline { overflow: visible !important; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brandbar">
+      <div class="logo">
+        <span class="mark">AIA</span>
+        <span>Arquitectos e Ingenieros Asociados
+          <small>Last Planner · Estado del desarrollo</small>
+        </span>
+      </div>
+      <button class="hbtn" id="themeBtn" aria-label="Cambiar tema claro u oscuro"><span aria-hidden="true">◐</span> Tema</button>
+    </div>
+    <h1>Qué se está <em>construyendo</em> y en qué punto va</h1>
+    <p class="sub">Estado de todos los frentes de desarrollo abiertos en Last Planner AIA: qué persigue cada uno, dónde está de verdad y qué lo detiene. Cada cifra se relee del repositorio cada hora.</p>
+    <div class="meta">
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 12:00</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>4</b> frentes activos</span>
+      <span class="chip-meta">Rama <b>main</b> · <b>2</b> commits sin subir</span>
+    </div>
+  </div>
+</header>
+
+<section id="global">
+  <div class="wrap">
+    <p class="eyebrow">Estado global</p>
+    <h2>Dónde está el desarrollo hoy</h2>
+    <p class="lede" style="margin-bottom:26px">Last Planner AIA es la herramienta interna con la que la obra planifica y compromete su trabajo semana a semana. El desarrollo tiene ahora mismo <b>cuatro frentes vivos</b>, y todos convergen en el mismo sitio: la cascada <code>Programa General → Programación Intermedia → Programación Semanal</code>, que el propio equipo señala como el flujo más áspero de usar. El trabajo de forma —lo que se podía arreglar sin cambiar comportamiento— está agotado; lo que queda son decisiones de criterio y una campaña que las ejecuta en orden.</p>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k-label">Frentes activos</div>
+        <div><span class="k-big num">4</span> <span class="k-unit">planes vivos</span></div>
+        <div class="k-sub">Dos entrelazados entre sí, uno sin arrancar y uno de gobernanza.</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Decisiones en cola</div>
+        <div><span class="k-big num">54</span> <span class="k-unit">esperan criterio</span></div>
+        <div class="k-sub">3 de aprobación, 2 asumidas por ratificar, 49 de deuda inventariada.</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Suite estática</div>
+        <div><span class="k-big num">8/8</span> <span class="k-unit">verde</span></div>
+        <div class="k-sub">Ejecutada en esta pasada. Es el gate que cierra la versión 1.1.0.</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Objetivos</div>
+        <div><span class="k-big num">19</span> <span class="k-unit">goals en el repo</span></div>
+        <div class="k-sub">2 abiertos o bloqueados según el último censo, 3 creados después de él.</div>
+      </div>
+    </div>
+
+    <div class="banner">
+      <h3>Un solo permiso mueve tres frentes a la vez</h3>
+      <p>Las capturas de referencia de las tablas («goldens») están en rojo <b>a propósito</b>: reflejan los cambios ya aplicados, y recapturarlas consagra el aspecto actual como el correcto. Mientras no se firmen, todo lo que altera el render de una tabla queda preparado y quieto — y eso atraviesa la campaña de decisiones, el cierre de la versión 1.1.0 y el repaso de usabilidad. Es la tarea 4 de la campaña y el mayor efecto palanca de la lista.</p>
+    </div>
+  </div>
+</section>
+
+<section id="eli">
+  <div class="wrap">
+    <p class="eyebrow">En palabras simples</p>
+    <h2>Qué es esta app y cómo se organiza el trabajo</h2>
+    <p class="lede" style="margin-bottom:26px">Para quien llegue nuevo y necesite entender el resto del informe.</p>
+    <div class="eli-grid">
+      <div class="eli-card">
+        <h3>La herramienta, contada sin tecnicismos</h3>
+        <p class="kicker">Tres personas distintas le piden cosas distintas.</p>
+        <ul>
+          <li><span class="eli-tag">R</span><span><b>El residente de obra</b> necesita que los compromisos de la semana sean fiables: lo que se promete, se puede cumplir.</span></li>
+          <li><span class="eli-tag">D</span><span><b>El director</b> necesita anticipar lo que va a bloquear el trabajo antes de que lo bloquee.</span></li>
+          <li><span class="eli-tag">G</span><span><b>La gerencia</b> necesita demostrar avance con datos, no con impresiones.</span></li>
+          <li><span class="eli-tag">→</span><span>Los tres pasan por la misma cadena: el <b>programa general</b> de la obra se baja a un <b>plan intermedio</b> y de ahí a los <b>compromisos de la semana</b>. Esa cadena es el terreno donde ocurre casi todo lo que hay en este informe.</span></li>
+        </ul>
+      </div>
+      <div class="eli-card b">
+        <h3>Cómo se decide y se ejecuta</h3>
+        <p class="kicker">Una regla explica la mayoría de los frenos.</p>
+        <ul>
+          <li><span class="eli-tag">1</span><span>Se puede cambiar <b>la forma</b> —colores, tamaños, espacios, nombres para lectores de pantalla— sin preguntar, siempre midiendo antes y después.</span></li>
+          <li><span class="eli-tag">2</span><span><b>No</b> se puede cambiar el comportamiento, los datos, las reglas del negocio ni el texto que explica una regla. Eso se anota y espera decisión.</span></li>
+          <li><span class="eli-tag">3</span><span>Por eso hay <b>54 apuntes en cola</b>: no son trabajo sin hacer, son preguntas sin responder. Cuando llega una respuesta, se aplican rápido — la última tardó menos de una hora.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="frentes" style="background:var(--panel-sunk)">
+  <div class="wrap">
+    <p class="eyebrow">Frentes activos</p>
+    <h2>Los cuatro planes vivos, uno por uno</h2>
+    <p class="lede" style="margin-bottom:24px">Cada ficha trae el estado técnico y, al lado, su lectura en simple. El orden es por cuánto arrastran a los demás.</p>
+
+    <div class="frentes">
+
+      <div class="frente">
+        <div class="f-head">
+          <div class="f-title">Campaña de decisiones de dark mode <span class="badge b-info">En marcha</span></div>
+          <div><span class="badge b-mute">31 tareas · 5 fases</span></div>
+        </div>
+        <div class="f-body">
+          <div>
+            <h4>Estado detallado</h4>
+            <p>Plan aprobado el 4 de agosto. Su objetivo declarado es ejecutar <b>las 54 decisiones del registro</b> hasta que ninguna quede pendiente de criterio, entrelazado con seis tareas del journey <code>improve-app</code>. Ya pasó el pre-arranque: se rescató trabajo de otra sesión que llevaba horas sin guardar, se publicó todo a <code>origin/main</code> y el árbol quedó limpio.</p>
+            <p>El orden es deliberado y empieza por lo menos vistoso: las <b>dos primeras tareas reparan redes de prueba caídas</b> —los fixtures de la suite de navegador y el guard de color de la leyenda—, ambas verificadas como rotas <i>desde antes</i> de esta campaña. La revisión y recaptura de goldens es la tarea 4. Cuatro tareas están marcadas como interactivas por diseño: requieren una respuesta antes de continuar.</p>
+            <div class="f-meta">
+              <div><span>Ejecutado</span><b>Pre-arranque</b></div>
+              <div><span>Siguiente</span><b>Fixtures de PS</b></div>
+              <div><span>Requieren respuesta</span><b>4 tareas</b></div>
+            </div>
+          </div>
+          <div class="f-eli">
+            <h4>En simple</h4>
+            <p>Es la lista de la compra de todo lo que quedó pendiente de tu criterio, convertida en un plan con orden.</p>
+            <p>Empieza <b>arreglando dos pruebas automáticas que estaban rotas</b> antes de tocar nada visible: primero se calibra la báscula, después se pesa. Tu firma sobre las fotos de referencia es el cuarto paso, y el que más cosas destraba.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="frente">
+        <div class="f-head">
+          <div class="f-title">Journey <code>improve-app</code> <span class="badge b-wait">Bloqueado en su puerta</span></div>
+          <div><span class="badge b-mute">9 fases</span></div>
+        </div>
+        <div class="f-body">
+          <div>
+            <h4>Estado detallado</h4>
+            <p>Recorrido de mejora de producto arrancado el 4 de agosto, que corre entrelazado con la campaña. <b>Dos fases van en curso</b> —heurísticas de usabilidad y jerarquía visual—, y no se re-ejecutan desde cero porque la campaña ya pasó esas lentes; sus hallazgos se vuelcan aquí. <b>Cinco están pendientes</b>, <b>una se descartó</b> por no aplicar a una app interna sin superficies de venta, y <b>una se aplazó</b> hasta que una medición o una queja señale lentitud.</p>
+            <p>Su primera fase es una <b>puerta</b>: una entrevista para fijar qué trabajo viene a hacer cada rol. Nada de lo posterior debería darse por bueno sin ella, porque es lo que decide qué merece mejorarse. La evidencia declarada hoy son quejas verbales de obra <b>sin registro escrito</b>, más las mediciones de la campaña.</p>
+            <div class="f-meta">
+              <div><span>En curso</span><b>2 de 9</b></div>
+              <div><span>Pendientes</span><b>5</b></div>
+              <div><span>Fuera</span><b>1 + 1 aplazada</b></div>
+            </div>
+          </div>
+          <div class="f-eli">
+            <h4>En simple</h4>
+            <p>Es el plan para que la app no solo se vea bien, sino que sirva mejor.</p>
+            <p>Está parado en su primer paso, que es <b>preguntar a la obra qué necesita de verdad</b>. Hoy lo que se sabe son quejas de pasillo, sin nada escrito. Hasta que no se haga esa conversación, todo lo demás son suposiciones bien intencionadas.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="frente">
+        <div class="f-head">
+          <div class="f-title">Cierre de la versión 1.1.0 del design system <span class="badge b-wait">Sin arrancar</span></div>
+          <div><span class="badge b-mute">7 tareas</span></div>
+        </div>
+        <div class="f-body">
+          <div>
+            <h4>Estado detallado</h4>
+            <p>Plan y objetivo escritos el 4 de agosto, todavía sin ejecución registrada. Persigue subir el sistema de diseño a una versión formal: migrar <code>/proyectos</code> a las primitivas propias, retirar un acento que sigue escrito a mano en vez de como token, revisar grupo a grupo los componentes pendientes y endurecer los gates.</p>
+            <p>Su condición de hecho es explícita y comprobable: <b>la suite estática en 8/8</b> con los gates subidos de nivel. Hoy la suite ya está verde, pero contra el listón actual, no contra el nuevo.</p>
+            <div class="f-meta">
+              <div><span>Ejecutado</span><b>Nada aún</b></div>
+              <div><span>Condición de hecho</span><b>Suite 8/8</b></div>
+              <div><span>Depende de</span><b>Goldens</b></div>
+            </div>
+          </div>
+          <div class="f-eli">
+            <h4>En simple</h4>
+            <p>El «kit de piezas» con el que está construida la interfaz aún no tiene una versión cerrada y numerada.</p>
+            <p>Este plan la cierra: pone en orden las piezas sueltas y sube el listón de los controles automáticos. Está escrito y todavía no empezó.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="frente">
+        <div class="f-head">
+          <div class="f-title">Goals abiertos <span class="badge b-block">1 bloqueado · 1 sin cerrar</span></div>
+          <div><span class="badge b-mute">19 goals en total</span></div>
+        </div>
+        <div class="f-body">
+          <div>
+            <h4>Estado detallado</h4>
+            <p>Según el último censo del propio proyecto, quedan dos objetivos sin cerrar. <b>Torre de Control BI</b> está bloqueado a la espera de una aprobación visual explícita de su matriz de seis modos; sin ella no hay commit. <b>Gobernanza del núcleo del design system</b> quedó indeterminado: su registro no tiene sección de cierre y deja pendientes la revisión visual, los datos del piloto y el contrato de publicación.</p>
+            <p><b>Salvedad de exactitud:</b> ese censo está fechado el 2 de agosto y habla de 16 goals; hoy el repositorio tiene <b>19 carpetas</b>. Los tres nuevos —cierre de la versión 1.1.0, repaso de usabilidad fuera de tablas y el chip de estado de Programa General— son posteriores al censo y no están reflejados en él.</p>
+            <div class="f-meta">
+              <div><span>Bloqueado</span><b>BI Control Tower</b></div>
+              <div><span>Sin cerrar</span><b>Gobernanza DS</b></div>
+              <div><span>Censo desfasado</span><b>02 ago</b></div>
+            </div>
+          </div>
+          <div class="f-eli">
+            <h4>En simple</h4>
+            <p>Un objetivo espera que alguien mire unos gráficos y diga «sí, así». El otro se quedó a medio cerrar y nadie escribió el final.</p>
+            <p>Y el listado que lleva la cuenta se quedó viejo: dice 16 objetivos cuando ya hay 19. No es grave, pero conviene saber que ese resumen no está al día.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="cerrado">
+  <div class="wrap">
+    <p class="eyebrow">Cerrado recientemente</p>
+    <h2>Lo que ya no está en curso</h2>
+    <p class="lede" style="margin-bottom:20px">Frentes que aparecían activos hace poco y hoy no lo están, para que no se cuenten dos veces.</p>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Frente</th><th>Qué dejó hecho</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t-id">Dark mode, fases 0–3</span></td>
+            <td>La campaña original de migración a tema oscuro. Dejó aplicados los arreglos de forma en toda la app —contraste, nombres accesibles, foco en ventanas, texto al 200 %— y produjo el registro de 54 decisiones que ahora ejecuta la campaña nueva.</td>
+            <td><span class="badge b-done">Sustituido</span></td>
+          </tr>
+          <tr>
+            <td><span class="t-id">Usabilidad, altas y medias</span></td>
+            <td>Saneamiento de las deudas de usabilidad de severidad alta y media. Su registro de ejecución quedó cerrado con una nota explícita de no añadir más.</td>
+            <td><span class="badge b-done">Cerrado</span></td>
+          </tr>
+          <tr>
+            <td><span class="t-id">Shell y layout del design system</span></td>
+            <td>La estructura común de todas las pantallas —barra lateral, cabecera, contenedor— unificada como pieza del sistema.</td>
+            <td><span class="badge b-done">Completado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="ritmo" style="background:var(--panel-sunk)">
+  <div class="wrap">
+    <p class="eyebrow">Ritmo real</p>
+    <h2>Actividad de los últimos días</h2>
+    <p class="lede" style="margin-bottom:24px">Commits en <code>main</code>. La proporción dice más que el total: por cada arreglo hay algo más de un documento, porque cada hallazgo que no se puede aplicar se deja escrito con su medición en vez de perderse.</p>
+    <div class="timeline">
+      <div class="tl-grid">
+        <div class="tl-day">
+          <div class="tl-n num">6</div>
+          <div class="tl-col"><div class="tl-bar" data-h="5"></div></div>
+          <div class="tl-d">01/08</div>
+        </div>
+        <div class="tl-day">
+          <div class="tl-n num">3</div>
+          <div class="tl-col"><div class="tl-bar" data-h="2"></div></div>
+          <div class="tl-d">02/08</div>
+        </div>
+        <div class="tl-day">
+          <div class="tl-n num">133</div>
+          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
+          <div class="tl-d">03/08</div>
+        </div>
+        <div class="tl-day is-today">
+          <div class="tl-n num">77</div>
+          <div class="tl-col"><div class="tl-bar" data-h="58"></div></div>
+          <div class="tl-d">04/08</div>
+        </div>
+      </div>
+      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago: <b>95</b> docs · <b>73</b> fix · <b>20</b> feat · <b>11</b> test · <b>11</b> otros.</span></p>
+    </div>
+  </div>
+</section>
+
+<section id="deuda">
+  <div class="wrap">
+    <p class="eyebrow">Contexto</p>
+    <h2>La deuda visual que el repo ya contabiliza</h2>
+    <p class="lede" style="margin-bottom:22px">El proyecto lleva su propio libro de deuda con <b>7.161</b> apuntes y una política escrita: «reducir por módulo migrado, no aumentarlo sin justificación». Ninguna cifra de los frentes activos la incrementa — la suite estática lo comprueba en cada cambio. Estas son las categorías mayores.</p>
+    <div class="debt">
+      <div class="debt-item"><div class="d-n num">2 166</div><div class="d-l"><code>!important</code> no autorizados</div></div>
+      <div class="debt-item"><div class="d-n num">829</div><div class="d-l">CSS fuera de capa</div></div>
+      <div class="debt-item"><div class="d-n num">806</div><div class="d-l">Colores escritos a mano</div></div>
+      <div class="debt-item"><div class="d-n num">791</div><div class="d-l">Token crudo en módulo</div></div>
+      <div class="debt-item"><div class="d-n num">733</div><div class="d-l">Espaciado fuera de escala</div></div>
+      <div class="debt-item"><div class="d-n num">402</div><div class="d-l">Tipografía fuera de rampa</div></div>
+    </div>
+    <div class="banner" style="margin-top:20px">
+      <h3>Dos redes de prueba llevan tiempo caídas, y no las rompió esta campaña</h3>
+      <p>Verificado contra el árbol limpio, sin ninguno de los cambios recientes: <b>34 de 35 pruebas de navegador</b> de Programación Semanal fallan por entorno, y un <b>guard de color</b> de la leyenda de Programa General falla con el valor idéntico. Es decir, dos redes que se creían puestas llevan tiempo sin proteger nada. Son, con buen criterio, <b>las dos primeras tareas de la campaña</b>: se reparan antes de tocar nada visible.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand-foot">AIA · Last Planner
+      <small>Estado del desarrollo · informe generado desde el repositorio</small>
+    </div>
+    <p class="disclaimer">Todas las cifras se leen del repositorio en el momento de generar el informe: planes y sus tareas, tracker de fases del journey, censo de objetivos, entradas del registro de decisiones, commits por día y por tipo, categorías de la baseline de deuda y resultado real de la suite estática. Las mediciones de contraste y tamaño citadas provienen de comprobaciones hechas en el navegador a 1180×820 en tema oscuro y quedan escritas con su valor en los commits correspondientes. Los registros de ejecución detallados viven fuera de git, así que el estado de cada frente se deriva de fuentes versionadas; donde una fuente está desfasada, el informe lo dice en vez de disimularlo.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeBtn');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var isDark = root.getAttribute('data-theme') === 'dark'
+          || (!root.hasAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      });
+    }
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll('.tl-bar').forEach(function (bar) {
+      var h = Math.max(2, Math.min(100, parseFloat(bar.dataset.h) || 0));
+      if (reduce) { bar.style.height = h + '%'; return; }
+      requestAnimationFrame(function () {
+        setTimeout(function () { bar.style.height = h + '%'; }, 140);
+      });
+    });
+  })();
+</script>
