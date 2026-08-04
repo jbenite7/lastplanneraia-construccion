@@ -48,6 +48,11 @@
   .badge-status,
   .pdc-legend-item,
   .aia-chip,
+  /* .ops-state-chip: el padding aqui coincide en valor con el del componente
+     (0.25rem/0.5rem = --ds-space-1/2), pero line-height:1.15 !important es un
+     matiz real de la familia badge/chip que gana sobre el 1.18 del componente
+     y el 1.12 local de PS por ser !important en hoja unlayered -no se retira
+     porque cambiaria el line-height efectivo renderizado hoy-. */
   .ops-state-chip,
   .ops-state-count,
   .ps-tnp-badge,

@@ -452,27 +452,20 @@ body.ps-page .ps-hot-toolbar-shell {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-state-accent) 18%, transparent);
 }
 
+/* Variante densa de tabla: ancho auto (el componente usa 100%), sin borde ni
+   radio (el componente dibuja pildora bordeada), color con fallback propio,
+   tipografia mas chica/compacta (0.72rem/1.12 vs 0.78rem/1.18 del componente)
+   y ruptura de palabra mas agresiva para celdas angostas de Handsontable.
+   display, min-width, max-width, font-weight y overflow* quedan fuera por
+   duplicar al componente compartido sin aportar matiz. */
 .ps-page .ops-state-chip {
-    display: block;
     width: auto;
-    min-width: 0;
-    max-width: 100%;
     border: 0;
     border-radius: var(--ds-radius-none);
-    /* Sin `background` a proposito: el fondo del chip lo pinta la capa de
-       componentes desde `data-aia-hue`. Esta hoja no esta en @layer module -es
-       CSS suelto que llega por un <link> propio, fuera de cualquier @layer- asi
-       que aunque declarara `transparent` seguia ganando siempre por ser
-       unlayered, y la primitiva del design system era inerte sobre esta
-       superficie. */
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
-    font-weight: 900;
     font-size: 0.72rem;
     line-height: 1.12;
-    overflow: visible;
-    overflow-wrap: anywhere;
     word-break: break-word;
-    white-space: normal !important;
 }
 
 .ps-page .ops-state-summary {
@@ -493,14 +486,12 @@ body.ps-page .ps-hot-toolbar-shell {
     white-space: nowrap;
 }
 
-.ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical-route .ops-state-chip {
-    font-weight: 900;
-}
-
-.ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-chip {
-    font-weight: 900;
-}
-
+/* critical-route y critical no necesitan regla propia: el chip ya nace en
+   font-weight 900 (componente compartido) y no lo aligeran mas abajo, asi
+   que forzar 900 aqui era un duplicado literal, igual al hallazgo del
+   Task 11 en PI. Solo high/medium/control aportan matiz real: aligeran el
+   peso a 800 para diferenciarse visualmente de critical dentro de la misma
+   tabla. */
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-chip,
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-medium .ops-state-chip,
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-chip {
@@ -2391,6 +2382,11 @@ body.ps-page #hot-container .ops-state-zoom {
     container-type: inline-size;
 }
 
+/* Matiz de columna angosta (celda de Handsontable, no la vista completa del
+   chip): trunca a una linea con elipsis en vez de envolver. Cada propiedad
+   invierte lo que declara el chip mas arriba en esta misma hoja (visible,
+   normal !important, anywhere, break-word), asi que ninguna es duplicado del
+   componente compartido ni de la variante base de PS. */
 body.ps-page #hot-container .ops-state-chip {
     overflow: hidden;
     text-overflow: ellipsis;
