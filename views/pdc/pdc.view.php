@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+    <title>Plan de Compras y Contrataciones — Last Planner AIA</title>
 	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<!-- Los <link> crudos a handsontable.full.min.css y handsontable-header-global.css

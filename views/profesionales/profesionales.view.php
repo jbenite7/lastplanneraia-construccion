@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <title>Profesionales — Last Planner AIA</title>
     <!-- jQuery Must be loaded first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

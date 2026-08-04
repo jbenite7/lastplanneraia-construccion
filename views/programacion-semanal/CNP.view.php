@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+    <title>Causas de No Programado — Last Planner AIA</title>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('programacion-semanal') ?>

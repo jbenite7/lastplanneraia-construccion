@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+    <title>Actualizar Programa General — Last Planner AIA</title>
 	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>

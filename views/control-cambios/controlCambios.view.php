@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+    <title>Control de Cambios — Last Planner AIA</title>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('control-cambios') ?>
 	<link rel="stylesheet" href="/css/control-cambios.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/control-cambios.css') ?: 'cc1')) ?>" />

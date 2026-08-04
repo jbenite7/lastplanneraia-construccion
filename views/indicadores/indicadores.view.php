@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+    <title>Indicadores LPS — Last Planner AIA</title>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('indicadores') ?>
 	<link rel="stylesheet" href="/css/indicadores.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/indicadores.css') ?: 'ind1')) ?>" />
