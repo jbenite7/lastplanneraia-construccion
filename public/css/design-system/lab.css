@@ -1870,4 +1870,100 @@
   .ds-lab [hidden] {
     display: none;
   }
+
+  /* Task-18: prototipo A/B "tabla sin bordes de columna" (spec §Adenda T-3).
+     Exploracion de laboratorio, gate del usuario antes de tocar produccion.
+     No reutiliza .aia-table-shell/.aia-data-display__table (contrato --ds-table-*
+     de produccion) para no arrastrar cambios fuera de esta pagina: usa clases
+     propias `ds-table-abproto__*` con los mismos tokens. */
+  .ds-table-abproto {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-space-6);
+    align-items: start;
+  }
+
+  .ds-table-abproto__variant {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    min-width: 0;
+  }
+
+  .ds-table-abproto__variant h4 {
+    margin: var(--ds-space-0);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-md);
+  }
+
+  .ds-table-abproto__table-shell {
+    overflow-x: auto;
+    border-radius: var(--ds-radius-table);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+  }
+
+  .ds-table-abproto__table-shell table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--ds-type-size-sm);
+  }
+
+  .ds-table-abproto__table-shell caption {
+    text-align: start;
+    padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-0);
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+  }
+
+  /* Variante A (actual): bordes de columna y de fila, como hoy en produccion. */
+  .ds-table-abproto__table-shell--a th,
+  .ds-table-abproto__table-shell--a td {
+    padding: var(--ds-table-cell-pad-y) var(--ds-table-cell-pad-x);
+    border: var(--ds-border-width) solid var(--ds-table-border);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  .ds-table-abproto__table-shell--a thead th {
+    background: var(--ds-table-header-bg);
+    color: var(--ds-table-header-fg);
+    font-weight: var(--ds-type-weight-bold);
+  }
+
+  /* Variante B (propuesta): sin bordes de columna. Separacion solo por borde
+     de fila inferior + zebra sutil + cabecera des-enfatizada (menor tamano y
+     peso, estilo label) para no dejar el ruido donde estaba el borde. */
+  .ds-table-abproto__table-shell--b th,
+  .ds-table-abproto__table-shell--b td {
+    padding: var(--ds-table-cell-pad-y) var(--ds-table-cell-pad-x);
+    border: 0;
+    border-bottom: var(--ds-border-width) solid var(--ds-table-border);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  .ds-table-abproto__table-shell--b thead th {
+    border-bottom-width: calc(var(--ds-border-width) * 2);
+    color: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .ds-table-abproto__table-shell--b tbody tr:nth-child(even) td {
+    background: var(--ds-table-zebra);
+  }
+
+  .ds-table-abproto__table-shell--b tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 40rem) {
+    .ds-table-abproto {
+      grid-template-columns: 1fr;
+    }
+  }
 }
