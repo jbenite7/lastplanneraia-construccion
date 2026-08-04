@@ -56,21 +56,21 @@ $statusDetail = static function (array $status) use ($h): string {
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <div class="card-body">
           <div class="form-group">
-            <label>Código</label>
-            <input class="form-control" name="codigo" placeholder="PISOS_ENCHAPES" required>
+            <label for="fc-codigo">Código</label>
+            <input id="fc-codigo" class="form-control" name="codigo" placeholder="PISOS_ENCHAPES" required>
           </div>
           <div class="form-group">
-            <label>Nombre</label>
-            <input class="form-control" name="nombre" placeholder="Pisos y Enchapes" required>
+            <label for="fc-nombre">Nombre</label>
+            <input id="fc-nombre" class="form-control" name="nombre" placeholder="Pisos y Enchapes" required>
           </div>
           <div class="form-row">
             <div class="form-group col-7">
-              <label>Categoría</label>
-              <input class="form-control" name="categoria" value="GENERAL">
+              <label for="fc-categoria">Categoría</label>
+              <input id="fc-categoria" class="form-control" name="categoria" value="GENERAL">
             </div>
             <div class="form-group col-5">
-              <label>Orden</label>
-              <input class="form-control" type="number" name="orden" value="999">
+              <label for="fc-orden">Orden</label>
+              <input id="fc-orden" class="form-control" type="number" name="orden" value="999">
             </div>
           </div>
           <div class="custom-control custom-checkbox mb-2">
@@ -96,12 +96,12 @@ $statusDetail = static function (array $status) use ($h): string {
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <div class="card-body">
           <div class="form-group">
-            <label>Alias detectado</label>
-            <input class="form-control" name="alias_nombre" placeholder="Red RCI" required>
+            <label for="fc-alias_nombre">Alias detectado</label>
+            <input id="fc-alias_nombre" class="form-control" name="alias_nombre" placeholder="Red RCI" required>
           </div>
           <div class="form-group">
-            <label>Familia canónica</label>
-            <select class="form-control" name="familia_id" required>
+            <label for="fc-familia_id">Familia canónica</label>
+            <select id="fc-familia_id" class="form-control" name="familia_id" required>
               <?php foreach ($families as $family): ?>
                 <?php if ((int) ($family['activa'] ?? 1) !== 1) { continue; } ?>
                 <option value="<?php echo (int) $family['id']; ?>"><?php echo $h($family['nombre']); ?></option>
@@ -109,12 +109,12 @@ $statusDetail = static function (array $status) use ($h): string {
             </select>
           </div>
           <div class="form-group">
-            <label>Fuente</label>
-            <input class="form-control" name="fuente" value="admin">
+            <label for="fc-fuente">Fuente</label>
+            <input id="fc-fuente" class="form-control" name="fuente" value="admin">
           </div>
           <div class="form-group">
-            <label>Notas</label>
-            <textarea class="form-control" name="notas" rows="2"></textarea>
+            <label for="fc-notas">Notas</label>
+            <textarea id="fc-notas" class="form-control" name="notas" rows="2"></textarea>
           </div>
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="aliasActive" name="activa" checked>
@@ -135,13 +135,13 @@ $statusDetail = static function (array $status) use ($h): string {
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <div class="card-body">
           <div class="form-group">
-            <label>Nombre</label>
-            <input class="form-control" name="nombre" placeholder="Acero de Refuerzo" required>
+            <label for="fc-nombre-2">Nombre</label>
+            <input id="fc-nombre-2" class="form-control" name="nombre" placeholder="Acero de Refuerzo" required>
           </div>
           <div class="form-row">
             <div class="form-group col-6">
-              <label>Tipo</label>
-              <select class="form-control" name="tipo_paquete" required>
+              <label for="fc-tipo_paquete">Tipo</label>
+              <select id="fc-tipo_paquete" class="form-control" name="tipo_paquete" required>
                 <option>Suministro</option>
                 <option>Mano de Obra</option>
                 <option>Suministro e Instalación</option>
@@ -149,13 +149,13 @@ $statusDetail = static function (array $status) use ($h): string {
               </select>
             </div>
             <div class="form-group col-6">
-              <label>Paquete</label>
-              <input class="form-control" name="paquete_nombre" placeholder="ACERO DE REFUERZO" required>
+              <label for="fc-paquete_nombre">Paquete</label>
+              <input id="fc-paquete_nombre" class="form-control" name="paquete_nombre" placeholder="ACERO DE REFUERZO" required>
             </div>
           </div>
           <div class="form-group">
-            <label>Familia relacionada</label>
-            <select class="form-control" name="familia_id">
+            <label for="fc-familia_id-2">Familia relacionada</label>
+            <select id="fc-familia_id-2" class="form-control" name="familia_id">
               <option value="">Sin relación directa</option>
               <?php foreach ($families as $family): ?>
                 <?php if ((int) ($family['activa'] ?? 1) !== 1) { continue; } ?>
@@ -183,16 +183,16 @@ $statusDetail = static function (array $status) use ($h): string {
     <div class="card-body">
       <div class="form-row">
         <div class="form-group col-lg-4">
-          <label>Familia</label>
-          <select class="form-control" name="familia_id" required>
+          <label for="fc-familia_id-3">Familia</label>
+          <select id="fc-familia_id-3" class="form-control" name="familia_id" required>
             <?php foreach ($families as $family): ?>
               <option value="<?php echo (int) $family['id']; ?>"><?php echo $h($family['nombre']); ?> · <?php echo $h($family['catalog_status']['label'] ?? ''); ?></option>
             <?php endforeach; ?>
           </select>
         </div>
         <div class="form-group col-lg-3">
-          <label>Modalidad</label>
-          <select class="form-control" name="tipo_contrato" required>
+          <label for="fc-tipo_contrato">Modalidad</label>
+          <select id="fc-tipo_contrato" class="form-control" name="tipo_contrato" required>
             <option value="2">Suministro e Instalación</option>
             <option value="3">Suministro</option>
             <option value="4">Mano de Obra</option>
@@ -202,26 +202,26 @@ $statusDetail = static function (array $status) use ($h): string {
           </select>
         </div>
         <div class="form-group col-lg-3">
-          <label>Tipo visible</label>
-          <input class="form-control" name="tipo_paquete" value="Suministro e Instalación" required>
+          <label for="fc-tipo_paquete-2">Tipo visible</label>
+          <input id="fc-tipo_paquete-2" class="form-control" name="tipo_paquete" value="Suministro e Instalación" required>
         </div>
         <div class="form-group col-lg-2">
-          <label>Cantidad por defecto</label>
-          <input class="form-control" type="number" min="1" name="cantidad_default" value="1" required>
+          <label for="fc-cantidad_default">Cantidad por defecto</label>
+          <input id="fc-cantidad_default" class="form-control" type="number" min="1" name="cantidad_default" value="1" required>
         </div>
       </div>
       <div class="form-group">
-        <label>Paquetes</label>
-        <textarea class="form-control" name="paquetes" rows="3" placeholder="PISOS Y ENCHAPES&#10;MORTERO DE NIVELACION" required></textarea>
+        <label for="fc-paquetes">Paquetes</label>
+        <textarea id="fc-paquetes" class="form-control" name="paquetes" rows="3" placeholder="PISOS Y ENCHAPES&#10;MORTERO DE NIVELACION" required></textarea>
       </div>
       <div class="form-row">
-        <div class="form-group col-md-2"><label>Elaboración</label><input class="form-control" type="number" min="0" name="dias_elaboracion" value="8"></div>
-        <div class="form-group col-md-2"><label>Entrega</label><input class="form-control" type="number" min="0" name="dias_entrega" value="10"></div>
-        <div class="form-group col-md-2"><label>Recibo</label><input class="form-control" type="number" min="0" name="dias_recibo" value="1"></div>
-        <div class="form-group col-md-2"><label>Cuadros</label><input class="form-control" type="number" min="0" name="dias_cuadros" value="10"></div>
-        <div class="form-group col-md-2"><label>Legalización</label><input class="form-control" type="number" min="0" name="dias_legalizacion" value="10"></div>
-        <div class="form-group col-md-1"><label>Fabric.</label><input class="form-control" type="number" min="0" name="dias_fabricacion" value="0"></div>
-        <div class="form-group col-md-1"><label>Insumos</label><input class="form-control" type="number" min="0" name="dias_insumos" value="0"></div>
+        <div class="form-group col-md-2"><label for="fc-dias_elaboracion">Elaboración</label><input id="fc-dias_elaboracion" class="form-control" type="number" min="0" name="dias_elaboracion" value="8"></div>
+        <div class="form-group col-md-2"><label for="fc-dias_entrega">Entrega</label><input id="fc-dias_entrega" class="form-control" type="number" min="0" name="dias_entrega" value="10"></div>
+        <div class="form-group col-md-2"><label for="fc-dias_recibo">Recibo</label><input id="fc-dias_recibo" class="form-control" type="number" min="0" name="dias_recibo" value="1"></div>
+        <div class="form-group col-md-2"><label for="fc-dias_cuadros">Cuadros</label><input id="fc-dias_cuadros" class="form-control" type="number" min="0" name="dias_cuadros" value="10"></div>
+        <div class="form-group col-md-2"><label for="fc-dias_legalizacion">Legalización</label><input id="fc-dias_legalizacion" class="form-control" type="number" min="0" name="dias_legalizacion" value="10"></div>
+        <div class="form-group col-md-1"><label for="fc-dias_fabricacion">Fabric.</label><input id="fc-dias_fabricacion" class="form-control" type="number" min="0" name="dias_fabricacion" value="0"></div>
+        <div class="form-group col-md-1"><label for="fc-dias_insumos">Insumos</label><input id="fc-dias_insumos" class="form-control" type="number" min="0" name="dias_insumos" value="0"></div>
       </div>
       <p class="text-muted mb-0">Usa esto cuando una familia ya existe, pero el asistente indica que faltan paquetes de Contratos.</p>
     </div>
@@ -300,16 +300,16 @@ $statusDetail = static function (array $status) use ($h): string {
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <div class="card-body">
           <div class="form-group">
-            <label>Tipo</label>
-            <select class="form-control" name="type">
+            <label for="fc-type">Tipo</label>
+            <select id="fc-type" class="form-control" name="type">
               <option value="families">Familias</option>
               <option value="aliases">Aliases</option>
               <option value="contractual">Elementos contractuales</option>
             </select>
           </div>
           <div class="form-group">
-            <label>CSV</label>
-            <textarea class="form-control" name="csv" rows="5" placeholder="codigo,nombre,categoria,orden,siempre_revision,activa"></textarea>
+            <label for="fc-csv">CSV</label>
+            <textarea id="fc-csv" class="form-control" name="csv" rows="5" placeholder="codigo,nombre,categoria,orden,siempre_revision,activa"></textarea>
           </div>
           <p class="text-muted mb-0">Las filas importadas pueden quedar inactivas para revisión y aprobarse después.</p>
         </div>
@@ -350,14 +350,14 @@ $statusDetail = static function (array $status) use ($h): string {
                         <input type="hidden" name="familia_id" value="<?php echo (int) $pending['id']; ?>">
                         <input type="hidden" name="decision" value="move_contracts">
                         <input type="hidden" name="motivo" value="Definida como compra, recurso o paquete contractual.">
-                        <select class="form-control form-control-sm mb-1" name="tipo_paquete" required>
+                        <select class="form-control form-control-sm mb-1" name="tipo_paquete" required aria-label="Tipo de paquete — <?php echo $h($pending['nombre']); ?>">
                           <option>Suministro</option>
                           <option>Mano de Obra</option>
                           <option>Suministro e Instalación</option>
                           <option>Orden de Compra</option>
                           <option>Equipos</option>
                         </select>
-                        <input class="form-control form-control-sm mb-1" name="paquete_nombre" value="<?php echo $h(mb_strtoupper((string) $pending['nombre'], 'UTF-8')); ?>" required>
+                        <input class="form-control form-control-sm mb-1" name="paquete_nombre" value="<?php echo $h(mb_strtoupper((string) $pending['nombre'], 'UTF-8')); ?>" required aria-label="Nombre del paquete — <?php echo $h($pending['nombre']); ?>">
                         <button class="btn btn-xs btn-outline-warning" type="submit">Pasar a Contratos</button>
                       </form>
                     </td>
@@ -408,16 +408,16 @@ $statusDetail = static function (array $status) use ($h): string {
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <div class="card-body">
           <div class="form-group">
-            <label>Regla</label>
-            <select class="form-control" name="rule_id" required>
+            <label for="fc-rule_id">Regla</label>
+            <select id="fc-rule_id" class="form-control" name="rule_id" required>
               <?php foreach ($rules as $rule): ?>
                 <option value="<?php echo (int) $rule['id']; ?>">#<?php echo (int) $rule['id']; ?> · <?php echo $h($rule['familia_nombre']); ?> · <?php echo $h(mb_substr((string) $rule['patron_regex'], 0, 70)); ?></option>
               <?php endforeach; ?>
             </select>
           </div>
           <div class="form-group">
-            <label>Familia correcta</label>
-            <select class="form-control" name="familia_id" required>
+            <label for="fc-familia_id-4">Familia correcta</label>
+            <select id="fc-familia_id-4" class="form-control" name="familia_id" required>
               <?php foreach ($families as $family): ?>
                 <?php if ((int) ($family['activa'] ?? 1) !== 1) { continue; } ?>
                 <option value="<?php echo (int) $family['id']; ?>"><?php echo $h($family['nombre']); ?></option>
@@ -425,8 +425,8 @@ $statusDetail = static function (array $status) use ($h): string {
             </select>
           </div>
           <div class="form-group">
-            <label>Motivo</label>
-            <input class="form-control" name="motivo" placeholder="Corrección por validación humana">
+            <label for="fc-motivo">Motivo</label>
+            <input id="fc-motivo" class="form-control" name="motivo" placeholder="Corrección por validación humana">
           </div>
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="ruleActive" name="activa" checked>
