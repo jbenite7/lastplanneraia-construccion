@@ -1,7 +1,7 @@
 # Puerta de servicio de desarrollo (`DevDoor`)
 
 Fecha: 2026-07-30
-Estado: diseño aprobado, pendiente de plan de implementación
+Estado: **implementado y en `main`** (`ed6fe61`). Aviso medido el 2026-07-30: la ruta `/dev/entrar` devuelve **404 incluso en local** con el candado evaluando `true`; el guard tiene test propio, el camino completo no. Sin diagnosticar.
 
 ## Problema
 

@@ -4,7 +4,7 @@
 - **Ola:** 2 (después del lanzamiento)
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — petición de Tomás Trujillo, con motivo contable explícito.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 5 del tablero, `e992301`). Los equipos existentes quedaron «sin clasificar» en la cola del maestro, como se decidió.
 
 ## Problema
 

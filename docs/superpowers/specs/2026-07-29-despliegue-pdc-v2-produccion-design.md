@@ -5,7 +5,7 @@
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** decisión del comité del 2026-07-29: no lanzar todavía, una semana más, y entonces sí.
 - **Rutina obligatoria:** `docs/siteground-deploy-routine.md`
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **ejecutado sobre `prueba-lps`** (fila 4 del tablero, `9e77dd2`), en dos pasadas. **La producción real NO se tocó**: sigue en `1aa7c69` del 16 de julio, sin una sola tabla `pdc_*`. Ese envío sigue pendiente y arrastra ~500 commits.
 
 ## Problema
 

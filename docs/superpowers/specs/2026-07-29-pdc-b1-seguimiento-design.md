@@ -1,7 +1,7 @@
 # PDC v2 · Fase B1 — Seguimiento al Plan de Compras — Design
 
 **Fecha:** 2026-07-29
-**Estado:** aprobado en grilleo (`superpowers:brainstorming`), pendiente de plan de implementación
+**Estado:** **implementado y en `main`** (`f7cef87`, `5ee2e49`, `9f2790c`, `92c5c13`, `a4d0c75`, `bfe7055`). `pdc_plan_paso` guarda `fecha_real` y recalcular ya no borra lo que sí ocurrió.
 **Depende de:** A4 (plan de fechas), A4.1 (pasos configurables con identidad `paso_id`), preparación de B1
 (upsert de `pdc_plan_paso`, responsable como usuario) — todo ya en `main`.
 

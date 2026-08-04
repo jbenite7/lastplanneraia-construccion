@@ -5,7 +5,7 @@
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — dos observaciones del dueño del producto hechas en vivo, mirando
   Da Porto.
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 2 del tablero, `31e9145`). Avisos de insumos vacíos y partidas globales en el visor, y las cifras de insumos etiquetadas.
 
 ## Problema
 

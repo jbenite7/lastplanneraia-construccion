@@ -1,4 +1,4 @@
-<title>Last Planner AIA · Estado del desarrollo</title>
+<title>Estado de desarrollo · Last Planner AIA</title>
 <style>
   :root {
     --aia-green: #1A5633; --aia-green-700: #134026; --aia-green-300: #6C9077;
@@ -21,9 +21,9 @@
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, monospace;
   }
-  /* El tema oscuro no es una inversión: son los valores que la propia aplicación
-     rinde hoy —fondo de página rgb(11,16,13), acento #6c9077— medidos en el
-     navegador. El informe se pinta con la paleta del producto que describe. */
+  /* El tema oscuro NO es una inversión: son los valores que la propia app rinde
+     hoy —fondo de página rgb(11,16,13), acento #6c9077, tinte de estado— medidos
+     en esta misma sesión. El informe se pinta con la paleta que audita. */
   @media (prefers-color-scheme: dark) {
     :root {
       --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711;
@@ -65,13 +65,13 @@
 
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
   section { padding: 46px 0; }
   h1, h2, h3, .num { font-family: var(--font-display); }
   h2 { font-size: clamp(1.35rem, 2.4vw, 1.85rem); font-weight: 700; letter-spacing: -.01em; margin: 0 0 6px; text-wrap: balance; }
   .eyebrow { font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
   .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--hairline); }
-  .lede { color: var(--ink-soft); max-width: 68ch; font-size: 1.02rem; }
+  .lede { color: var(--ink-soft); max-width: 74ch; font-size: 1.02rem; }
   .num { font-variant-numeric: tabular-nums; }
   code, .mono { font-family: var(--font-mono); font-size: .82em; background: var(--panel-sunk); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--hairline); }
 
@@ -85,25 +85,32 @@
   .hbtn { appearance: none; cursor: pointer; background: rgba(255,255,255,.1); color: #EEF3EF; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; padding: 7px 14px; font-family: var(--font-body); font-size: .8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; }
   .hbtn:hover { background: rgba(255,255,255,.18); }
   .hbtn:focus-visible { outline: 2px solid #EEF3EF; outline-offset: 2px; }
-  .masthead h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.025em; margin: 0 0 14px; line-height: 1.03; text-wrap: balance; max-width: 18ch; }
+  .masthead h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.025em; margin: 0 0 14px; line-height: 1.03; text-wrap: balance; max-width: 20ch; }
   .masthead h1 em { font-style: normal; color: #A9D6BA; }
-  .masthead .sub { font-size: 1.06rem; max-width: 62ch; color: #DDE6DF; }
+  .masthead .sub { font-size: 1.06rem; max-width: 66ch; color: #DDE6DF; }
   .masthead .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
   .chip-meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 6px 13px; font-size: .82rem; font-weight: 600; }
   .chip-meta b { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
   .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-  .kpi { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
+  .kpi { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
   .kpi .k-label { font-family: var(--font-display); font-weight: 700; font-size: .96rem; }
   .kpi .k-sub { color: var(--ink-faint); font-size: .82rem; }
   .kpi .k-big { font-family: var(--font-display); font-weight: 800; font-size: 2.5rem; line-height: 1; letter-spacing: -.03em; }
   .kpi .k-unit { font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
+  .ring-wrap { display: flex; align-items: center; gap: 16px; }
+  .ring { width: 84px; height: 84px; flex: none; }
+  .ring circle { fill: none; stroke-width: 9; }
+  .ring .track { stroke: var(--hairline); }
+  .ring .val { stroke: var(--accent); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.1s cubic-bezier(.22,.61,.36,1); }
+  .ring .val.wait { stroke: var(--st-wait); }
+  .ring text { font-family: var(--font-display); font-weight: 800; fill: var(--ink); font-size: 14px; }
 
   .banner { margin-top: 18px; border-radius: var(--radius); padding: 20px 22px; background: var(--st-wait-bg); border: 1px solid color-mix(in srgb, var(--st-wait) 34%, var(--hairline)); }
   .banner h3 { margin: 0 0 6px; font-size: 1.02rem; color: var(--ink); }
-  .banner p { margin: 0; color: var(--ink-soft); font-size: .9rem; max-width: 80ch; }
-  .banner p + p { margin-top: 9px; }
+  .banner p { margin: 0; color: var(--ink-soft); font-size: .9rem; max-width: 84ch; }
+  .banner p + p { margin-top: 8px; }
 
   .eli-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
   .eli-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
@@ -117,36 +124,25 @@
   .eli-tag { font-family: var(--font-display); font-weight: 800; font-size: .72rem; flex: none; width: 30px; height: 26px; border-radius: 7px; display: grid; place-items: center; margin-top: 1px; background: var(--st-done-bg); color: var(--st-done); }
   .eli-card.b .eli-tag { background: var(--st-wait-bg); color: var(--st-wait); }
 
-  /* Cada frente es una ficha con dos mitades: el estado técnico y su lectura en
-     simple. La regla de separación es horizontal y no un borde de color lateral,
-     para que la jerarquía la lleve el espaciado. */
-  .frentes { display: flex; flex-direction: column; gap: 18px; }
-  .frente { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-  .f-head { padding: 20px 24px 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--hairline); }
-  .f-title { font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; letter-spacing: -.01em; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-  .f-title small { font-family: var(--font-body); font-weight: 500; font-size: .78rem; color: var(--ink-faint); }
-  .f-body { padding: 20px 24px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; }
-  .f-body h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
-  .f-body p { margin: 0; color: var(--ink-soft); font-size: .89rem; }
-  .f-body p + p { margin-top: 9px; }
-  .f-eli { background: var(--panel-sunk); border-radius: 8px; padding: 16px 18px; }
-  .f-eli p { font-size: .88rem; }
-  .f-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; padding-top: 13px; border-top: 1px dashed var(--hairline-strong); font-size: .8rem; }
-  .f-meta div span { display: block; color: var(--ink-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
-  .f-meta div b { font-family: var(--font-display); font-size: .92rem; font-variant-numeric: tabular-nums; }
-
-  .badge { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .b-done { background: var(--st-done-bg); color: var(--st-done); }
-  .b-wait { background: var(--st-wait-bg); color: var(--st-wait); }
-  .b-block { background: var(--st-block-bg); color: var(--st-block); }
-  .b-info { background: var(--st-info-bg); color: var(--st-info); }
-  .b-mute { background: var(--st-mute-bg); color: var(--st-mute); }
+  /* Cada frente activo lleva su estado detallado y su lectura en simple lado a
+     lado, exactamente en la misma proporción que el bloque global de arriba:
+     misma pareja de clases, para que la forma del informe no se invente dos
+     veces. */
+  .front-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .front-head .badge { font-size: .68rem; }
+  .front-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; align-items: start; margin-top: 20px; }
+  .front-detail { display: flex; flex-direction: column; gap: 14px; }
+  @media (max-width: 980px) { .front-grid { grid-template-columns: 1fr; } }
 
   .timeline { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 24px 22px 14px; box-shadow: var(--shadow); overflow-x: auto; }
   .tl-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(70px, 1fr); gap: 12px; align-items: end; min-width: 420px; }
   .tl-day { display: flex; flex-direction: column; gap: 8px; }
   .tl-col { height: 130px; display: flex; align-items: flex-end; }
-  .tl-bar { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, var(--aia-green-300), var(--aia-green)); height: 0; transition: height 1s cubic-bezier(.22,.61,.36,1); }
+  /* La barra crece con `transform: scaleY` anclado abajo, no animando `height`:
+     animar una propiedad de layout obliga a recalcular el flujo en cada
+     fotograma. El alto final lo fija el JS de una vez y la animacion solo
+     escala. */
+  .tl-bar { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, var(--aia-green-300), var(--aia-green)); transform: scaleY(0); transform-origin: 50% 100%; transition: transform 1s cubic-bezier(.22,.61,.36,1); will-change: transform; }
   .tl-day.is-today .tl-bar { background: linear-gradient(180deg, var(--st-wait), var(--aia-amber)); }
   .tl-n { font-family: var(--font-display); font-weight: 800; font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
   .tl-d { font-size: .72rem; color: var(--ink-faint); text-align: center; font-weight: 600; }
@@ -158,7 +154,29 @@
   tbody td { padding: 13px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; font-size: .89rem; color: var(--ink-soft); }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover { background: var(--panel-sunk); }
-  td .t-id { font-family: var(--font-display); font-weight: 800; font-size: .92rem; color: var(--ink); white-space: nowrap; }
+  td .t-id { font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: var(--ink); white-space: nowrap; }
+  .badge { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .b-done { background: var(--st-done-bg); color: var(--st-done); }
+  .b-wait { background: var(--st-wait-bg); color: var(--st-wait); }
+  .b-block { background: var(--st-block-bg); color: var(--st-block); }
+  .b-info { background: var(--st-info-bg); color: var(--st-info); }
+  .b-mute { background: var(--st-mute-bg); color: var(--st-mute); }
+
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  /* El estado de cada tarjeta lo lleva su insignia, no un rail de color en el
+     borde: ese rail es el delator mas reconocible de interfaz generada. Aqui la
+     severidad se codifica con un fondo apenas tenido y el titulo en el tono del
+     estado, que es mas discreto y sigue leyendose de un vistazo. */
+  .card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); }
+  .card.block { background: color-mix(in srgb, var(--st-block-bg) 45%, var(--panel)); border-color: color-mix(in srgb, var(--st-block) 26%, var(--hairline)); }
+  .card.wait { background: color-mix(in srgb, var(--st-wait-bg) 45%, var(--panel)); border-color: color-mix(in srgb, var(--st-wait) 26%, var(--hairline)); }
+  .card.done { background: color-mix(in srgb, var(--st-done-bg) 40%, var(--panel)); border-color: color-mix(in srgb, var(--st-done) 22%, var(--hairline)); }
+  .card.block h3 { color: var(--st-block); }
+  .card.wait h3 { color: var(--st-wait); }
+  .card.done h3 { color: var(--st-done); }
+  .card h3 { margin: 0 0 8px; font-size: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .card p { margin: 0; color: var(--ink-soft); font-size: .89rem; max-width: 82ch; }
+  .card p + p { margin-top: 9px; }
 
   .debt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .debt-item { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
@@ -167,11 +185,11 @@
 
   footer { border-top: 3px solid var(--aia-green-300); background: #0C2318; color: #D5E0D8; }
   footer .wrap { padding: 30px 24px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: flex-start; }
-  footer .disclaimer { max-width: 68ch; font-size: .82rem; line-height: 1.6; opacity: .92; }
+  footer .disclaimer { max-width: 72ch; font-size: .82rem; line-height: 1.6; opacity: .92; }
   footer .brand-foot { font-family: var(--font-display); font-weight: 800; }
   footer .brand-foot small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .72rem; opacity: .75; margin-top: 3px; }
 
-  @media (max-width: 940px) { .eli-grid, .debt, .f-body { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 940px) { .eli-grid, .debt { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } section { padding: 34px 0; } }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   @media print {
@@ -180,7 +198,7 @@
     html, body { background: #fff; }
     .hbtn { display: none !important; }
     section { padding: 14px 0; break-inside: avoid; }
-    .kpi, .timeline, .table-card, .frente, .banner, .eli-card, .debt-item, footer { box-shadow: none !important; break-inside: avoid; }
+    .kpi, .timeline, .table-card, .card, .banner, .eli-card, .debt-item, footer { box-shadow: none !important; break-inside: avoid; }
     .table-card, .timeline { overflow: visible !important; }
   }
 </style>
@@ -191,53 +209,70 @@
       <div class="logo">
         <span class="mark">AIA</span>
         <span>Arquitectos e Ingenieros Asociados
-          <small>Last Planner · Estado del desarrollo</small>
+          <small>Last Planner · Estado de desarrollo</small>
         </span>
       </div>
       <button class="hbtn" id="themeBtn" aria-label="Cambiar tema claro u oscuro"><span aria-hidden="true">◐</span> Tema</button>
     </div>
-    <h1>Qué se está <em>construyendo</em> y en qué punto va</h1>
-    <p class="sub">Estado de todos los frentes de desarrollo abiertos en Last Planner AIA: qué persigue cada uno, dónde está de verdad y qué lo detiene. Cada cifra se relee del repositorio cada hora.</p>
+    <h1>Estado del <em>desarrollo</em> general</h1>
+    <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cuatro frentes en marcha, uno de ellos (Plan de Compras v2) prácticamente cerrado y a la espera de producción real; los otros catorce goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
     <div class="meta">
-      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 12:00</b></span>
-      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos</span>
-      <span class="chip-meta">Rama <b>main</b> · <b>2</b> commits sin subir</span>
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 18:26 UTC</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>4</b> frentes activos · <b>54</b> decisiones pendientes</span>
+      <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code>origin/main</code></span>
     </div>
   </div>
 </header>
 
-<section id="global">
+<section id="resumen">
   <div class="wrap">
-    <p class="eyebrow">Estado global</p>
-    <h2>Dónde está el desarrollo hoy</h2>
-    <p class="lede" style="margin-bottom:26px">Last Planner AIA es la herramienta interna con la que la obra planifica y compromete su trabajo semana a semana. El desarrollo tiene ahora mismo <b>cinco frentes vivos</b>. Cuatro convergen en el mismo sitio: la cascada <code>Programa General → Programación Intermedia → Programación Semanal</code>, que el propio equipo señala como el flujo más áspero de usar. El trabajo de forma —lo que se podía arreglar sin cambiar comportamiento— está agotado; lo que queda son decisiones de criterio y una campaña que las ejecuta en orden.</p>
+    <p class="eyebrow">Resumen ejecutivo</p>
+    <h2>Dónde está el desarrollo hoy, frente por frente</h2>
+    <p class="lede" style="margin-bottom:26px">Este informe cubría solo el cierre de dark mode hasta hoy; se llamaba <code>dark-mode-estado.html</code> y ese nombre ya no existe. El alcance ahora es <b>todo</b> el desarrollo activo. De los <b>18 goals</b> que hoy viven en <code>goals/</code>, catorce ya cerraron, se descartaron o se absorbieron en otro, y quedan <b>4 frentes activos</b>: el <b>cierre de dark mode</b> (54 decisiones registradas y un plan de 31 tareas aprobado hace unas horas, pero sin ninguna tarea todavía con commit propio), el <b>Plan de Compras v2</b> (7 de esos 18 goals, con el trabajo de código prácticamente cerrado y esperando solo el despliegue a la producción real), el <b>núcleo y gobernanza del Design System</b> (Sprint 00, sin fecha de cierre) y la <b>Torre de Control BI con Gemini</b> (bloqueada por una sola aprobación visual pendiente).</p>
 
     <div class="kpis">
       <div class="kpi">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 100 100" data-pct="96" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="42"></circle>
+            <circle class="val" cx="50" cy="50" r="42"></circle>
+            <text x="50" y="57" text-anchor="middle">354/368</text>
+          </svg>
+          <div>
+            <div class="k-label">Suite estática</div>
+            <div class="k-sub">14 caen por entorno<br>(sin Docker en esta nube)</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 100 100" data-pct="6" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="42"></circle>
+            <circle class="val wait" cx="50" cy="50" r="42"></circle>
+            <text x="50" y="57" text-anchor="middle">3</text>
+          </svg>
+          <div>
+            <div class="k-label">Esperan tu firma</div>
+            <div class="k-sub">Bloque A del registro<br>A-1 bloquea al resto</div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Commits últimas 24 h</div>
+        <div><span class="k-big num">131</span> <span class="k-unit">4 ago, fecha de autor UTC</span></div>
+        <div class="k-sub">git log de esta misma pasada.</div>
+      </div>
+      <div class="kpi">
         <div class="k-label">Frentes activos</div>
-        <div><span class="k-big num">4</span> <span class="k-unit">planes vivos</span></div>
-        <div class="k-sub">Dos entrelazados entre sí, uno sin arrancar y uno de gobernanza.</div>
-      </div>
-      <div class="kpi">
-        <div class="k-label">Decisiones en cola</div>
-        <div><span class="k-big num">54</span> <span class="k-unit">esperan criterio</span></div>
-        <div class="k-sub">3 de aprobación, 2 asumidas por ratificar, 49 de deuda inventariada.</div>
-      </div>
-      <div class="kpi">
-        <div class="k-label">Suite estática</div>
-        <div><span class="k-big num">8/8</span> <span class="k-unit">verde</span></div>
-        <div class="k-sub">Ejecutada en esta pasada. Es el gate que cierra la versión 1.1.0.</div>
-      </div>
-      <div class="kpi">
-        <div class="k-label">Objetivos</div>
-        <div><span class="k-big num">19</span> <span class="k-unit">goals en el repo</span></div>
-        <div class="k-sub">2 abiertos o bloqueados según el último censo, 3 creados después de él.</div>
+        <div><span class="k-big num">4</span> <span class="k-unit">de 18 goals del repo</span></div>
+        <div class="k-sub">Los otros 14 ya cerraron, se descartaron o se absorbieron.</div>
       </div>
     </div>
 
     <div class="banner">
-      <h3>Un solo permiso mueve tres frentes a la vez</h3>
-      <p>Las capturas de referencia de las tablas («goldens») están en rojo <b>a propósito</b>: reflejan los cambios ya aplicados, y recapturarlas consagra el aspecto actual como el correcto. Mientras no se firmen, todo lo que altera el render de una tabla queda preparado y quieto — y eso atraviesa la campaña de decisiones, el cierre de la versión 1.1.0 y el repaso de usabilidad. Es la tarea 4 de la campaña y el mayor efecto palanca de la lista.</p>
+      <h3>El plan de 31 tareas está aprobado, pero cero tareas tienen commit todavía</h3>
+      <p>Se verificó en <code>git log</code> de esta misma pasada: el commit que aprueba el plan (<code>160dee7</code>, 4 ago 11:09) es anterior a todos los commits de arreglos que este informe cita como evidencia del cierre — esos arreglos (el botón de Estado Operativo, los chips de PG, el <code>reduce-motion</code> de <code>admin/</code>) pertenecen a los <b>ocho barridos</b> que <i>encontraron</i> las 54 decisiones, no a la ejecución de las 31 tareas que se aprobaron después. Desde la aprobación solo hay commits de wiki y de este mismo informe. Las tareas 1 y 2 (los fixtures de PS y el guard de PG) están <i>diagnosticadas y descritas</i>, no cerradas todavía.</p>
+      <p>La tarea 4 (recapturar goldens, la que consagra el aspecto visual) sigue siendo el nudo real: mientras no se firme, las tareas de fase 3 en adelante quedan preparadas y quietas — igual que el chip de estado de Programa General (ver frente 1), que sí tiene código en <code>main</code> desde ayer pero no puede darse por cerrado sin ese mismo permiso.</p>
     </div>
   </div>
 </section>
@@ -245,202 +280,234 @@
 <section id="eli">
   <div class="wrap">
     <p class="eyebrow">En palabras simples</p>
-    <h2>Qué es esta app y cómo se organiza el trabajo</h2>
-    <p class="lede" style="margin-bottom:26px">Para quien llegue nuevo y necesite entender el resto del informe.</p>
+    <h2>Qué avanzó y qué frena todo ahora mismo</h2>
+    <p class="lede" style="margin-bottom:26px">Una lectura rápida para quien llegue nuevo, sin tecnicismos. Cada frente de abajo repite este mismo formato a su propia escala.</p>
     <div class="eli-grid">
       <div class="eli-card">
-        <h3>La herramienta, contada sin tecnicismos</h3>
-        <p class="kicker">Tres personas distintas le piden cosas distintas.</p>
+        <h3>Lo que sí avanzó</h3>
+        <p class="kicker">Cambios reales, ya en <code>main</code>.</p>
         <ul>
-          <li><span class="eli-tag">R</span><span><b>El residente de obra</b> necesita que los compromisos de la semana sean fiables: lo que se promete, se puede cumplir.</span></li>
-          <li><span class="eli-tag">D</span><span><b>El director</b> necesita anticipar lo que va a bloquear el trabajo antes de que lo bloquee.</span></li>
-          <li><span class="eli-tag">G</span><span><b>La gerencia</b> necesita demostrar avance con datos, no con impresiones.</span></li>
-          <li><span class="eli-tag">→</span><span>Los tres pasan por la misma cadena: el <b>programa general</b> de la obra se baja a un <b>plan intermedio</b> y de ahí a los <b>compromisos de la semana</b>. Esa cadena es el terreno donde ocurre casi todo lo que hay en este informe.</span></li>
+          <li><span class="eli-tag">1</span><span><b>El plan de compras nuevo (PDC v2) ya funciona.</b> Siete objetivos de trabajo se cerraron: subpaquetes, flujo de caja, torre de control, ayuda dentro de la app. Está probado y desplegado en el ambiente de pruebas del equipo, pero <b>no en la web real de la empresa todavía</b>.</span></li>
+          <li><span class="eli-tag">2</span><span><b>Se auditó toda la app en oscuro.</b> Ocho barridos completos encontraron 54 cosas que necesitan tu criterio antes de tocarse, y ya hay un plan escrito para resolverlas una por una.</span></li>
+          <li><span class="eli-tag">3</span><span><b>Se revisó la facilidad de uso de 26 pantallas</b> que no son tablas (menús, formularios, avisos). Se encontraron 39 problemas, y ya se aprobó arreglar los 30 más importantes.</span></li>
+          <li><span class="eli-tag">4</span><span><b>Programa General ya distingue sus siete estados en pantalla</b> con un color propio para cada uno — el código ya está escrito, solo falta el mismo permiso de la foto de referencia que frena el resto.</span></li>
         </ul>
       </div>
       <div class="eli-card b">
-        <h3>Cómo se decide y se ejecuta</h3>
-        <p class="kicker">Una regla explica la mayoría de los frenos.</p>
+        <h3>Lo que frena todo ahora</h3>
+        <p class="kicker">Cuatro esperas concretas, y ninguna es falta de trabajo.</p>
         <ul>
-          <li><span class="eli-tag">1</span><span>Se puede cambiar <b>la forma</b> —colores, tamaños, espacios, nombres para lectores de pantalla— sin preguntar, siempre midiendo antes y después.</span></li>
-          <li><span class="eli-tag">2</span><span><b>No</b> se puede cambiar el comportamiento, los datos, las reglas del negocio ni el texto que explica una regla. Eso se anota y espera decisión.</span></li>
-          <li><span class="eli-tag">3</span><span>Por eso hay <b>54 apuntes en cola</b>: no son trabajo sin hacer, son preguntas sin responder. Cuando llega una respuesta, se aplican rápido — la última tardó menos de una hora.</span></li>
+          <li><span class="eli-tag">A</span><span><b>Una foto de referencia por firmar.</b> Recapturar las capturas de las tablas consagra cómo se ven para siempre. Eso se firma, no se asume — y frena media docena de arreglos detrás.</span></li>
+          <li><span class="eli-tag">B</span><span><b>Una aprobación visual de BI.</b> El tablero de Torre de Control con Gemini está construido y probado, pero nadie ha dado el visto bueno final a cómo se ve en sus seis combinaciones de filtros.</span></li>
+          <li><span class="eli-tag">C</span><span><b>La web real de la empresa no tiene el plan de compras nuevo.</b> Sigue con el código de julio. Hasta que se despliegue ahí, ni el plan de compras nuevo se puede dar por terminado del todo, ni se puede apagar el plan de compras viejo.</span></li>
+          <li><span class="eli-tag">D</span><span><b>Una entrevista contigo.</b> El proyecto de mejora general (<code>improve-app</code>) tiene una primera pregunta pendiente que abre paso a las demás — sin ella, tres fases más quedan en espera.</span></li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<section id="frentes" style="background:var(--panel-sunk)">
+<section id="frente-dark-mode" style="background:var(--panel-sunk)">
   <div class="wrap">
-    <p class="eyebrow">Frentes activos</p>
-    <h2>Los cinco frentes vivos, uno por uno</h2>
-    <p class="lede" style="margin-bottom:24px">Cada ficha trae el estado técnico y, al lado, su lectura en simple. El orden es por cuánto arrastran a los demás.</p>
+    <p class="eyebrow">Frente activo 1 de 4</p>
+    <div class="front-head">
+      <h2 style="margin:0">Cierre de dark mode y decisiones pendientes</h2>
+      <span class="badge b-wait">Plan aprobado, sin ejecutar</span>
+    </div>
+    <p class="lede">La migración visual a tema oscuro ya cerró como goal (<code>cierre-dark-mode-y-tablas</code>, HECHO el 31 jul). Lo que sigue activo es la cola de 54 decisiones que esa migración dejó abiertas, más el diagnóstico de usabilidad que generó (H-08), entrelazados en un solo plan de 31 tareas.</p>
 
-    <div class="frentes">
-
-      <div class="frente">
-        <div class="f-head">
-          <div class="f-title">Campaña de decisiones de dark mode <span class="badge b-info">En marcha</span></div>
-          <div><span class="badge b-mute">31 tareas · 5 fases</span></div>
+    <div class="front-grid">
+      <div class="front-detail">
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Bloque</th><th>Qué es</th><th>Cuántas</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="t-id">A</span></td>
+                <td>Requieren tu aprobación antes de aplicarse. Nada de esto se ha tocado.</td>
+                <td><span class="badge b-block">3</span></td>
+              </tr>
+              <tr>
+                <td><span class="t-id">B</span></td>
+                <td>Asumidas por la sesión con la opción reversible; para que ratifiques o revoques.</td>
+                <td><span class="badge b-wait">2</span></td>
+              </tr>
+              <tr>
+                <td><span class="t-id">C</span></td>
+                <td>Deuda medida que espera tu criterio de negocio o de diseño.</td>
+                <td><span class="badge b-mute">49</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="f-body">
-          <div>
-            <h4>Estado detallado</h4>
-            <p>Plan aprobado el 4 de agosto. Su objetivo declarado es ejecutar <b>las 54 decisiones del registro</b> hasta que ninguna quede pendiente de criterio, entrelazado con seis tareas del journey <code>improve-app</code>. Ya pasó el pre-arranque: se rescató trabajo de otra sesión que llevaba horas sin guardar, se publicó todo a <code>origin/main</code> y el árbol quedó limpio.</p>
-            <p>El orden es deliberado y empieza por lo menos vistoso: las <b>dos primeras tareas reparan redes de prueba caídas</b> —los fixtures de la suite de navegador y el guard de color de la leyenda—, ambas verificadas como rotas <i>desde antes</i> de esta campaña. La revisión y recaptura de goldens es la tarea 4. Cuatro tareas están marcadas como interactivas por diseño: requieren una respuesta antes de continuar.</p>
-            <div class="f-meta">
-              <div><span>Ejecutado</span><b>Pre-arranque</b></div>
-              <div><span>Siguiente</span><b>Fixtures de PS</b></div>
-              <div><span>Requieren respuesta</span><b>4 tareas</b></div>
-            </div>
-          </div>
-          <div class="f-eli">
-            <h4>En simple</h4>
-            <p>Es la lista de la compra de todo lo que quedó pendiente de tu criterio, convertida en un plan con orden.</p>
-            <p>Empieza <b>arreglando dos pruebas automáticas que estaban rotas</b> antes de tocar nada visible: primero se calibra la báscula, después se pesa. Tu firma sobre las fotos de referencia es el cuarto paso, y el que más cosas destraba.</p>
-          </div>
+        <div class="card block">
+          <h3>A-1 · Goldens de tabla <span class="badge b-block">Bloquea a 5 tareas más</span></h3>
+          <p>Las capturas de referencia de Programa General están en rojo, y ese rojo es correcto: refleja los cambios ya aplicados. Recapturarlas consagra el aspecto actual como «lo correcto» para siempre. Es la tarea 4 del plan de 31, y mientras siga sin firma, las variantes de borde de tabla (A-3), el chip de estado de PG y varias tareas de fase 3 quedan preparadas y quietas.</p>
+        </div>
+        <div class="card wait">
+          <h3>pg-chip-de-estado <span class="badge b-info">Código en <code>main</code>, cierre pendiente</span></h3>
+          <p>Este goal small (fuera del plan de 31) sí tiene código: el 3 de agosto, horas después de abrirse, Programa General recibió el mismo chip de estado que Programación Intermedia y Semanal (<code>d08679be</code>, <code>8b4c4fc6</code>). Su propio <code>goal.md</code> todavía dice «sin ejecutar» — está desactualizado, el mismo patrón de documento que quedó obsoleto que ya se corrigió en once specs del PDC (ver frente 2). Lo que sí sigue abierto de verdad es su condición de hecho nº 5: recapturar los goldens con tu aprobación, el mismo nudo que A-1.</p>
+        </div>
+        <div class="card done">
+          <h3>Usabilidad de superficies sin tabla (H-08) <span class="badge b-done">Diagnóstico cerrado 3 ago</span></h3>
+          <p>26 de 45 superficies recorridas (las 14 internas de <code>admin/</code> quedaron fuera: no tienen puerta de servicio propia todavía). 39 hallazgos — 15 altos, 15 medios, 9 bajos — y aprobaste atacar los 30 altos y medios. La ejecución (plan de 135 sub-tareas en 5 fases F1–F5) ya tiene evidencia en <code>main</code>: el componente de estado vacío para Handsontable (<code>ht-empty-state.*</code>) y el arreglo de <code>reduce-motion</code> en <code>admin/</code>, del 4 de agosto.</p>
         </div>
       </div>
-
-      <div class="frente">
-        <div class="f-head">
-          <div class="f-title">Journey <code>improve-app</code> <span class="badge b-wait">Bloqueado en su puerta</span></div>
-          <div><span class="badge b-mute">9 fases</span></div>
-        </div>
-        <div class="f-body">
-          <div>
-            <h4>Estado detallado</h4>
-            <p>Recorrido de mejora de producto arrancado el 4 de agosto, que corre entrelazado con la campaña. <b>Dos fases van en curso</b> —heurísticas de usabilidad y jerarquía visual—, y no se re-ejecutan desde cero porque la campaña ya pasó esas lentes; sus hallazgos se vuelcan aquí. <b>Cinco están pendientes</b>, <b>una se descartó</b> por no aplicar a una app interna sin superficies de venta, y <b>una se aplazó</b> hasta que una medición o una queja señale lentitud.</p>
-            <p>Su primera fase es una <b>puerta</b>: una entrevista para fijar qué trabajo viene a hacer cada rol. Nada de lo posterior debería darse por bueno sin ella, porque es lo que decide qué merece mejorarse. La evidencia declarada hoy son quejas verbales de obra <b>sin registro escrito</b>, más las mediciones de la campaña.</p>
-            <div class="f-meta">
-              <div><span>En curso</span><b>2 de 9</b></div>
-              <div><span>Pendientes</span><b>5</b></div>
-              <div><span>Fuera</span><b>1 + 1 aplazada</b></div>
-            </div>
-          </div>
-          <div class="f-eli">
-            <h4>En simple</h4>
-            <p>Es el plan para que la app no solo se vea bien, sino que sirva mejor.</p>
-            <p>Está parado en su primer paso, que es <b>preguntar a la obra qué necesita de verdad</b>. Hoy lo que se sabe son quejas de pasillo, sin nada escrito. Hasta que no se haga esa conversación, todo lo demás son suposiciones bien intencionadas.</p>
-          </div>
-        </div>
+      <div class="eli-card">
+        <h3>En simple</h3>
+        <p class="kicker">Qué significa cada pieza sin jerga.</p>
+        <ul>
+          <li><span class="eli-tag">1</span><span><b>54 cosas anotadas, ninguna perdida.</b> Cuando algo necesitaba tu criterio y no el de quien programa, se escribió en una lista en vez de decidirse solo.</span></li>
+          <li><span class="eli-tag">2</span><span><b>Hay un plan para vaciar esa lista</b>, pero recién se aprobó y todavía no arrancó ninguna de sus 31 tareas — es papel firmado, no trabajo hecho.</span></li>
+          <li><span class="eli-tag">3</span><span><b>El color de los estados en Programa General ya está listo</b> en el código, solo falta que apruebes las fotos de referencia para darlo por terminado del todo.</span></li>
+          <li><span class="eli-tag">4</span><span><b>Se revisaron 26 pantallas que no son tablas</b> (menús, avisos, formularios) y ya se está arreglando lo más importante de lo que se encontró.</span></li>
+        </ul>
       </div>
-
-      <div class="frente">
-        <div class="f-head">
-          <div class="f-title">Cierre de la versión 1.1.0 del design system <span class="badge b-wait">Sin arrancar</span></div>
-          <div><span class="badge b-mute">7 tareas</span></div>
-        </div>
-        <div class="f-body">
-          <div>
-            <h4>Estado detallado</h4>
-            <p>Plan y objetivo escritos el 4 de agosto, todavía sin ejecución registrada. Persigue subir el sistema de diseño a una versión formal: migrar <code>/proyectos</code> a las primitivas propias, retirar un acento que sigue escrito a mano en vez de como token, revisar grupo a grupo los componentes pendientes y endurecer los gates.</p>
-            <p>Su condición de hecho es explícita y comprobable: <b>la suite estática en 8/8</b> con los gates subidos de nivel. Hoy la suite ya está verde, pero contra el listón actual, no contra el nuevo.</p>
-            <div class="f-meta">
-              <div><span>Ejecutado</span><b>Nada aún</b></div>
-              <div><span>Condición de hecho</span><b>Suite 8/8</b></div>
-              <div><span>Depende de</span><b>Goldens</b></div>
-            </div>
-          </div>
-          <div class="f-eli">
-            <h4>En simple</h4>
-            <p>El «kit de piezas» con el que está construida la interfaz aún no tiene una versión cerrada y numerada.</p>
-            <p>Este plan la cierra: pone en orden las piezas sueltas y sube el listón de los controles automáticos. Está escrito y todavía no empezó.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="frente">
-        <div class="f-head">
-          <div class="f-title">Plan de Compras v2 <span class="badge b-done">Construido y desplegado</span></div>
-          <div><span class="badge b-wait">Cola atada al lanzamiento</span></div>
-        </div>
-        <div class="f-body">
-          <div>
-            <h4>Estado detallado</h4>
-            <p>Es el frente más grande del repositorio: <b>siete de los 19 objetivos</b> son suyos, y los siete están cerrados con fecha y commit. El módulo —presupuesto → maestro de insumos → paquetes → plan con fechas— vive en una SPA propia (<code>pdc-app/</code>, React + Vite + AG Grid) sobre servicios PHP en <code>src/Services/Pdc/</code>. El dueño del producto lo recorrió entero en el Comité del <b>29 de julio</b>, dio el visto bueno y dejó seis peticiones y una fecha; ese feedback se ejecutó completo en tres olas y terminó en producción el <b>31 de julio</b>.</p>
-            <p>Lo que queda no es trabajo pendiente sino trabajo <b>condicionado</b>: la tarea 10 —retirar el PDC viejo— no puede hacerse hasta que una obra real esté operando con el nuevo en producción. Está capturada aparte, en <code>retiro-listado-contratos</code>, cuyas etapas 1 y 2 ya se ejecutaron y verificaron; las etapas 3 y 4 esperan esa misma señal.</p>
-            <p><b>Por qué faltaba en este informe:</b> se contaba dentro del bloque genérico de objetivos en vez de como frente propio, y así un módulo entero quedaba invisible detrás de un número.</p>
-            <div class="f-meta">
-              <div><span>Goals suyos</span><b>7 de 19</b></div>
-              <div><span>Todos</span><b>Cerrados</b></div>
-              <div><span>En producción</span><b>31 jul</b></div>
-              <div><span>Diferido</span><b>Retiro C1</b></div>
-            </div>
-          </div>
-          <div class="f-eli">
-            <h4>En simple</h4>
-            <p>Es el módulo con el que la obra planifica sus compras: cuánto hay presupuestado, qué paquetes salen de ahí y para cuándo hay que contratarlos. Se construyó entero, el jefe del proyecto lo revisó en comité, pidió seis arreglos, se hicieron todos y ya está funcionando de verdad.</p>
-            <p>Solo falta una cosa, y no depende de programar: apagar la versión antigua. Eso no se hace hasta que una obra lleve un tiempo trabajando con la nueva, para no dejar a nadie sin herramienta si algo falla.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="frente">
-        <div class="f-head">
-          <div class="f-title">Goals abiertos <span class="badge b-block">1 bloqueado · 1 sin cerrar</span></div>
-          <div><span class="badge b-mute">19 goals en total</span></div>
-        </div>
-        <div class="f-body">
-          <div>
-            <h4>Estado detallado</h4>
-            <p>Según el último censo del propio proyecto, quedan dos objetivos sin cerrar. <b>Torre de Control BI</b> está bloqueado a la espera de una aprobación visual explícita de su matriz de seis modos; sin ella no hay commit. <b>Gobernanza del núcleo del design system</b> quedó indeterminado: su registro no tiene sección de cierre y deja pendientes la revisión visual, los datos del piloto y el contrato de publicación.</p>
-            <p><b>Salvedad de exactitud:</b> ese censo está fechado el 2 de agosto y habla de 16 goals; hoy el repositorio tiene <b>19 carpetas</b>. Los tres nuevos —cierre de la versión 1.1.0, repaso de usabilidad fuera de tablas y el chip de estado de Programa General— son posteriores al censo y no están reflejados en él.</p>
-            <p><b>No cuentes dos veces:</b> siete de esos 19 son del Plan de Compras v2 y están todos cerrados, así que tienen ficha propia arriba en vez de sumar aquí.</p>
-            <div class="f-meta">
-              <div><span>Bloqueado</span><b>BI Control Tower</b></div>
-              <div><span>Sin cerrar</span><b>Gobernanza DS</b></div>
-              <div><span>Censo desfasado</span><b>02 ago</b></div>
-            </div>
-          </div>
-          <div class="f-eli">
-            <h4>En simple</h4>
-            <p>Un objetivo espera que alguien mire unos gráficos y diga «sí, así». El otro se quedó a medio cerrar y nadie escribió el final.</p>
-            <p>Y el listado que lleva la cuenta se quedó viejo: dice 16 objetivos cuando ya hay 19. No es grave, pero conviene saber que ese resumen no está al día.</p>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<section id="cerrado">
+<section id="frente-pdc">
+  <div class="wrap">
+    <p class="eyebrow">Frente activo 2 de 4</p>
+    <div class="front-head">
+      <h2 style="margin:0">Plan de Compras v2 (PDC)</h2>
+      <span class="badge b-wait">Código cerrado · producción pendiente</span>
+    </div>
+    <p class="lede">Siete de los 18 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada pero movida a su propio pendiente.</p>
+
+    <div class="front-grid">
+      <div class="front-detail">
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Goal</th><th>Qué cerró</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t-id">pdc-tanda2-plan-verdad</span></td><td>El plan de compras deja de mentir sobre cuánto falta: cobertura por valor y por conteo, vencidos, dos botones de aceptar/revisar por confianza.</td></tr>
+              <tr><td><span class="t-id">pdc-tanda34-pulido</span></td><td>Once pendientes de primera impresión y pulido.</td></tr>
+              <tr><td><span class="t-id">pdc-revision-ux</span></td><td>Los 15 hallazgos de usabilidad del recorrido del dueño de producto.</td></tr>
+              <tr><td><span class="t-id">pdc-a41-pasos-configurables</span></td><td>Pasos de contratación configurables por obra.</td></tr>
+              <tr><td><span class="t-id">pdc-a42-frentes-cobertura</span></td><td>Cada paquete sabe a qué frente del cronograma pertenece.</td></tr>
+              <tr><td><span class="t-id">pdc-preparar-b1</span></td><td>Subpaquetes, flujo de caja, Torre de Control BI, equipo alquilado/comprado, ayuda in-app en 8 pantallas — desplegado en <code>prueba-lps</code>.</td></tr>
+              <tr><td><span class="t-id">pdc-responsable-usuario</span></td><td>Absorbido por <code>pdc-preparar-b1</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card block">
+          <h3>La brecha real: producción sigue en julio</h3>
+          <p><code>lastplanneraia.com</code> (la producción real) sigue en el commit <code>1aa7c69</code> del 16 de julio, con <b>cero</b> tablas <code>pdc_*</code>. Todo lo de esta tarjeta vive en <code>prueba-lps</code>, el ambiente que el equipo usa como pruebas — no en la web de la empresa. El despliegue real arrastra ~500 commits y tiene su rutina escrita en <code>docs/siteground-deploy-routine.md</code>, pero no se ha ejecutado.</p>
+        </div>
+        <div class="card wait">
+          <h3>Retiro del PDC viejo (etapas 3–4 de <code>retiro-listado-contratos</code>)</h3>
+          <p>Las etapas 1 y 2 ya están HECHAS y verificadas: las rutas <code>/listado-actividades</code> y <code>/contratos</code> ya no existen en <code>public/index.php</code>. Lo que falta —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>, para que viaje junto con el v2 cuando por fin se despliegue. <b>Autorizado, no ejecutado:</b> <code>/pdc</code> y <code>OperationalFamilyPolicy.php</code> siguen en el código hoy.</p>
+        </div>
+        <div class="card wait">
+          <h3>Dos pantallas con motor listo y sin vista</h3>
+          <p>La curva de flujo de caja mensual y el aviso de «N frentes sin ancla» tienen su servicio, sus endpoints y sus datos ya viajando en la API — falta solo pintarlos. Quedaron fuera del cierre del 3 de agosto como pendientes con nombre propio, no perdidos.</p>
+        </div>
+      </div>
+      <div class="eli-card">
+        <h3>En simple</h3>
+        <p class="kicker">El plan de compras nuevo, sin jerga.</p>
+        <ul>
+          <li><span class="eli-tag">1</span><span><b>El módulo nuevo ya está construido y probado</b> — parte, reparte y reprograma paquetes, calcula flujo de caja, avisa vencimientos.</span></li>
+          <li><span class="eli-tag">2</span><span><b>Pero solo lo usa el ambiente de pruebas del equipo</b>, no la web real de la empresa. Esa es la única pieza grande que falta.</span></li>
+          <li><span class="eli-tag">3</span><span><b>El módulo viejo sigue prendido</b> a propósito, hasta que el nuevo llegue a la web real — se apagarán juntos, no antes.</span></li>
+          <li><span class="eli-tag">4</span><span><b>Dos pantallas menores</b> (flujo de caja, avisos de frentes) tienen el cálculo listo y solo falta dibujarlas.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="frente-design-system" style="background:var(--panel-sunk)">
+  <div class="wrap">
+    <p class="eyebrow">Frente activo 3 de 4</p>
+    <div class="front-head">
+      <h2 style="margin:0">Design System — núcleo y gobernanza</h2>
+      <span class="badge b-mute">Sprint 00 · sin fecha de cierre</span>
+    </div>
+    <p class="lede">Goal <code>design-system-nucleo-gobernanza</code>: convertir el design system AIA en fuente de verdad única, versionada (release <code>1.0.0</code>), con gates automáticos y Programa General como piloto. La propia wiki del proyecto lo marca «indeterminado»: su último registro no tiene sección de cierre.</p>
+    <div class="front-grid">
+      <div class="front-detail">
+        <div class="card wait">
+          <h3>Qué falta antes de poder declarar <code>1.0.0</code></h3>
+          <p>Su registro de trazabilidad (<code>validation-log.md</code>) lista más de diez capacidades con evidencia «histórica» o «superseded» que necesita una ejecución fresca sobre el árbol exacto de release: revisión visual en sesión autenticada, presupuesto de runtime con tres muestras limpias, datos del piloto sobre una fixture aislada, y la revisión de accesibilidad separada del gate automático. Ninguna observación antigua activa la versión por sí sola.</p>
+        </div>
+        <div class="card">
+          <h3>Última actividad registrada</h3>
+          <p>3 de agosto — commit que teje los goals en el grafo de la wiki. No hay commits posteriores sobre este goal en el rango que cubre este informe.</p>
+        </div>
+      </div>
+      <div class="eli-card">
+        <h3>En simple</h3>
+        <p class="kicker">Por qué no tiene fecha todavía.</p>
+        <ul>
+          <li><span class="eli-tag">1</span><span><b>Es el proyecto que ordena todas las reglas de diseño</b> de la app (colores, espacios, componentes) en un solo lugar con reglas automáticas que impiden que se rompan.</span></li>
+          <li><span class="eli-tag">2</span><span><b>Antes de darlo por terminado hay que volver a comprobar varias cosas</b> con datos frescos, no con mediciones viejas — igual que revisar de nuevo antes de firmar un contrato importante.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="frente-bi">
+  <div class="wrap">
+    <p class="eyebrow">Frente activo 4 de 4</p>
+    <div class="front-head">
+      <h2 style="margin:0">Torre de Control BI (Gemini)</h2>
+      <span class="badge b-block">Bloqueado por aprobación visual</span>
+    </div>
+    <p class="lede">Goal <code>bi-control-tower-gemini</code>: radar de productividad, eficiencia y PAC, más cronograma de avance, integrado a la Torre de Control existente. La preflight técnica está aprobada; falta la aprobación visual de la matriz de seis modos.</p>
+    <div class="front-grid">
+      <div class="front-detail">
+        <div class="card block">
+          <h3>Lo único que falta: tu aprobación visual</h3>
+          <p>La matriz de seis modos (combinaciones de filtro y vista) está construida y no tiene luz verde de diseño. Sin ella no hay commit de cierre — el propio goal lo declara así.</p>
+        </div>
+        <div class="card done">
+          <h3>Evidencia automatizada, ya en verde</h3>
+          <p>7 suites de PHP en verde (aislamiento por proyecto, RBAC 403, reconciliación de fuentes con 17 casos, datos reales con 101 casos), 33 casos de Playwright en un pase completo, PHPStan limpio y 151 pruebas estáticas de design system en verde. El audit global de deuda sigue en rojo por drift ajeno al worktree de este goal — verificado que el diff propio no añade <code>!important</code>, hex ni alias fuera de escala.</p>
+        </div>
+      </div>
+      <div class="eli-card">
+        <h3>En simple</h3>
+        <p class="kicker">Qué falta y por qué no se decide solo.</p>
+        <ul>
+          <li><span class="eli-tag">1</span><span><b>El tablero de indicadores de compras para gerencia está construido y probado</b> con datos reales de dos obras.</span></li>
+          <li><span class="eli-tag">2</span><span><b>Solo falta que alguien lo mire y diga «así se ve bien».</b> Es una decisión de diseño, no una tarea técnica pendiente.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cerrado" style="background:var(--panel-sunk)">
   <div class="wrap">
     <p class="eyebrow">Cerrado recientemente</p>
-    <h2>Lo que ya no está en curso</h2>
-    <p class="lede" style="margin-bottom:20px">Frentes que aparecían activos hace poco y hoy no lo están, para que no se cuenten dos veces.</p>
+    <h2>Los 14 goals que ya no están activos</h2>
+    <p class="lede" style="margin-bottom:20px">Para que no se cuenten dos veces con los 4 frentes de arriba. Siete son del Plan de Compras (ver frente 2, no repetidos aquí); estos son los otros siete, más los que se descartaron o absorbieron.</p>
     <div class="table-card">
       <table>
-        <thead><tr><th>Frente</th><th>Qué dejó hecho</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Goal</th><th>Estado</th><th>Nota</th></tr></thead>
         <tbody>
-          <tr>
-            <td><span class="t-id">Dark mode, fases 0–3</span></td>
-            <td>La campaña original de migración a tema oscuro. Dejó aplicados los arreglos de forma en toda la app —contraste, nombres accesibles, foco en ventanas, texto al 200 %— y produjo el registro de 54 decisiones que ahora ejecuta la campaña nueva.</td>
-            <td><span class="badge b-done">Sustituido</span></td>
-          </tr>
-          <tr>
-            <td><span class="t-id">Usabilidad, altas y medias</span></td>
-            <td>Saneamiento de las deudas de usabilidad de severidad alta y media. Su registro de ejecución quedó cerrado con una nota explícita de no añadir más.</td>
-            <td><span class="badge b-done">Cerrado</span></td>
-          </tr>
-          <tr>
-            <td><span class="t-id">Shell y layout del design system</span></td>
-            <td>La estructura común de todas las pantallas —barra lateral, cabecera, contenedor— unificada como pieza del sistema.</td>
-            <td><span class="badge b-done">Completado</span></td>
-          </tr>
+          <tr><td><span class="t-id">cierre-dark-mode-y-tablas</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>7 fases (G0–G6); es la base de la que nace el frente 1 de arriba.</td></tr>
+          <tr><td><span class="t-id">repaso-usabilidad-no-tablas</span></td><td><span class="badge b-done">HECHO 3 ago</span></td><td>El diagnóstico H-08; su ejecución sigue viva dentro del frente 1.</td></tr>
+          <tr><td><span class="t-id">shell-layout-design-system</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>Goal paraguas; sus piezas vivas ya tienen goal propio.</td></tr>
+          <tr><td><span class="t-id">sidebar-todos-modulos</span></td><td><span class="badge b-done">HECHO</span></td><td>Barra lateral canónica en los 11 módulos que usaban navegación antigua.</td></tr>
+          <tr><td><span class="t-id">segmentacion-entrypoint-css</span></td><td><span class="badge b-done">HECHO</span></td><td>Núcleo CSS sin vendors más adjuntos por vendor.</td></tr>
+          <tr><td><span class="t-id">dark-mode-todos-los-modulos</span></td><td><span class="badge b-mute">Absorbido</span></td><td>Ninguna fase se ejecutó bajo este goal; sus decisiones F0–F6 pasaron a <code>cierre-dark-mode-y-tablas</code>.</td></tr>
+          <tr><td><span class="t-id">validar-migracion-handsontable</span></td><td><span class="badge b-mute">Descartado 30 jul</span></td><td>Quedó sin objeto al retirarse las superficies que iba a validar.</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<section id="ritmo" style="background:var(--panel-sunk)">
+<section id="ritmo">
   <div class="wrap">
     <p class="eyebrow">Ritmo real</p>
-    <h2>Actividad de los últimos días</h2>
-    <p class="lede" style="margin-bottom:24px">Commits en <code>main</code>. La proporción dice más que el total: por cada arreglo hay algo más de un documento, porque cada hallazgo que no se puede aplicar se deja escrito con su medición en vez de perderse.</p>
+    <h2>Commits verificados de esta pasada</h2>
+    <p class="lede" style="margin-bottom:24px">Fecha de autor normalizada a UTC, contada con <code>git log</code> directamente sobre el árbol de esta sesión — no arrastrada de la pasada anterior.</p>
     <div class="timeline">
       <div class="tl-grid">
         <div class="tl-day">
@@ -449,31 +516,31 @@
           <div class="tl-d">01/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">3</div>
-          <div class="tl-col"><div class="tl-bar" data-h="2"></div></div>
+          <div class="tl-n num">0</div>
+          <div class="tl-col"><div class="tl-bar" data-h="0"></div></div>
           <div class="tl-d">02/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">133</div>
-          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
+          <div class="tl-n num">83</div>
+          <div class="tl-col"><div class="tl-bar" data-h="63"></div></div>
           <div class="tl-d">03/08</div>
         </div>
         <div class="tl-day is-today">
-          <div class="tl-n num">77</div>
-          <div class="tl-col"><div class="tl-bar" data-h="58"></div></div>
+          <div class="tl-n num">131</div>
+          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
           <div class="tl-d">04/08</div>
         </div>
       </div>
-      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago: <b>95</b> docs · <b>73</b> fix · <b>20</b> feat · <b>11</b> test · <b>11</b> otros.</span></p>
+      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago (<b>214</b> commits): <b>98</b> docs · <b>74</b> fix · <b>20</b> feat · <b>11</b> test · <b>11</b> otros (merge/chore/refactor/a11y/wip). La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
     </div>
   </div>
 </section>
 
-<section id="deuda">
+<section id="deuda" style="background:var(--panel-sunk)">
   <div class="wrap">
     <p class="eyebrow">Contexto</p>
     <h2>La deuda visual que el repo ya contabiliza</h2>
-    <p class="lede" style="margin-bottom:22px">El proyecto lleva su propio libro de deuda con <b>7.161</b> apuntes y una política escrita: «reducir por módulo migrado, no aumentarlo sin justificación». Ninguna cifra de los frentes activos la incrementa — la suite estática lo comprueba en cada cambio. Estas son las categorías mayores.</p>
+    <p class="lede" style="margin-bottom:22px">El proyecto lleva su propio libro de deuda con <b>7.161</b> apuntes (baseline generada el 25 de julio, sin cambios en esta pasada) y una política escrita: «reducir por módulo migrado, no aumentarlo sin justificación». Estas son las categorías mayores.</p>
     <div class="debt">
       <div class="debt-item"><div class="d-n num">2 166</div><div class="d-l"><code>!important</code> no autorizados</div></div>
       <div class="debt-item"><div class="d-n num">829</div><div class="d-l">CSS fuera de capa</div></div>
@@ -483,8 +550,34 @@
       <div class="debt-item"><div class="d-n num">402</div><div class="d-l">Tipografía fuera de rampa</div></div>
     </div>
     <div class="banner" style="margin-top:20px">
-      <h3>Dos redes de prueba llevan tiempo caídas, y no las rompió esta campaña</h3>
-      <p>Verificado contra el árbol limpio, sin ninguno de los cambios recientes: <b>34 de 35 pruebas de navegador</b> de Programación Semanal fallan por entorno, y un <b>guard de color</b> de la leyenda de Programa General falla con el valor idéntico. Es decir, dos redes que se creían puestas llevan tiempo sin proteger nada. Son, con buen criterio, <b>las dos primeras tareas de la campaña</b>: se reparan antes de tocar nada visible.</p>
+      <h3><code>npm run test:design-system:static</code> — ejecutado en esta pasada, 7 de 8 checks en verde</h3>
+      <p>Corrido sin Docker (esta nube no tiene demonio Docker disponible): <code>entrypoint-partition</code>, <code>unlayered-delivery</code>, <code>bi-utilities</code>, <code>table-contract</code>, <code>contracts</code>, <code>consumer-contract</code> y <code>audit</code> pasan. El check <code>node-tests</code> corre <b>354 de 368</b> pruebas en verde; las 14 que fallan son las mismas dos causas de entorno en todos los casos: falta el paquete <code>@axe-core/playwright</code> y no hay demonio Docker en este contenedor — ninguna es una regresión de código, verificado leyendo el mensaje de error de cada una.</p>
+    </div>
+  </div>
+</section>
+
+<section id="registro">
+  <div class="wrap">
+    <p class="eyebrow">Inventario</p>
+    <h2>Goals, planes y la wiki que los resume</h2>
+    <p class="lede" style="margin-bottom:20px">Contraste hecho en esta pasada, no arrastrado.</p>
+    <div class="stack">
+      <div class="card wait">
+        <h3><code>memoria/goals/estado.md</code> <span class="badge b-wait">Desactualizada — 2 ago</span></h3>
+        <p>Esa página de la wiki afirma «16 goals» y fecha su lectura el 2026-08-02. <code>find goals/ -name goal.md</code> en esta pasada cuenta <b>18</b>: le faltan <code>repaso-usabilidad-no-tablas</code> (cerrado el 3 de agosto) y <code>pg-chip-de-estado</code> (abierto el 3 de agosto). No se corrige aquí — corresponde a una pasada de <code>ingest</code> sobre la wiki, no a este informe — pero queda anotado para que nadie la use como fuente sin ese aviso.</p>
+      </div>
+      <div class="card">
+        <h3>Planes en <code>docs/superpowers/plans/</code> <span class="badge b-info">19 archivos</span></h3>
+        <p>La mayoría corresponde a goals ya cerrados (confirmado por evidencia en <code>main</code>: rutas retiradas, scripts de la wiki existentes, componentes construidos). El único con checkboxes marcados sin ningún commit de ejecución detrás es el plan de la campaña de 31 tareas del frente 1, arriba. Los checkboxes de los planes <b>no se usaron como señal</b> — están todos sin marcar incluso en planes con trabajo terminado, así que esta lectura se hizo contra <code>git log</code>, no contra el markdown.</p>
+      </div>
+      <div class="card">
+        <h3>Journey <code>improve-app</code> <span class="badge b-info">9 fases</span></h3>
+        <p>2 en curso (2 y 4, satisfechas por los barridos del frente 1), 5 pendientes (1, 3, 5, 6, 9), 1 saltada (7, app interna sin venta) y 1 diferida (8, hasta que haya queja de lentitud). La <b>fase 1 es puerta</b>: sin su entrevista, las fases 3, 5, 6 y 9 no pueden arrancar. Corre entrelazado con el frente 1, no como proyecto aparte.</p>
+      </div>
+      <div class="card">
+        <h3>Registro de decisiones <span class="badge b-mute">54 filas</span></h3>
+        <p>Contadas por referencia (<code>A-</code>/<code>B-</code>/<code>C-</code>) en esta pasada: <b>3</b> del bloque A, <b>2</b> del bloque B, <b>49</b> del bloque C. Sin cambios desde la pasada anterior — el archivo no tiene commits nuevos.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -492,9 +585,9 @@
 <footer>
   <div class="wrap">
     <div class="brand-foot">AIA · Last Planner
-      <small>Estado del desarrollo · informe generado desde el repositorio</small>
+      <small>Estado de desarrollo · informe generado desde el repositorio</small>
     </div>
-    <p class="disclaimer">Todas las cifras se leen del repositorio en el momento de generar el informe: planes y sus tareas, tracker de fases del journey, censo de objetivos, entradas del registro de decisiones, commits por día y por tipo, categorías de la baseline de deuda y resultado real de la suite estática. Las mediciones de contraste y tamaño citadas provienen de comprobaciones hechas en el navegador a 1180×820 en tema oscuro y quedan escritas con su valor en los commits correspondientes. Los registros de ejecución detallados viven fuera de git, así que el estado de cada frente se deriva de fuentes versionadas; donde una fuente está desfasada, el informe lo dice en vez de disimularlo.</p>
+    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó con solo 50 commits visibles), los <code>goal.md</code> de <code>goals/</code>, los planes de <code>docs/superpowers/plans/</code>, el registro de decisiones, la baseline de deuda y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual.</p>
   </div>
 </footer>
 
@@ -512,11 +605,26 @@
 
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    document.querySelectorAll('.ring').forEach(function (ring) {
+      var pct = Math.max(0, Math.min(100, parseFloat(ring.dataset.pct) || 0));
+      var val = ring.querySelector('.val');
+      var C = 2 * Math.PI * 42;
+      val.style.strokeDasharray = C + ' ' + C;
+      val.style.strokeDashoffset = reduce ? String(C - (pct / 100) * C) : String(C);
+      if (!reduce) {
+        requestAnimationFrame(function () {
+          setTimeout(function () { val.style.strokeDashoffset = String(C - (pct / 100) * C); }, 90);
+        });
+      }
+    });
+
     document.querySelectorAll('.tl-bar').forEach(function (bar) {
       var h = Math.max(2, Math.min(100, parseFloat(bar.dataset.h) || 0));
-      if (reduce) { bar.style.height = h + '%'; return; }
+      // El alto real se fija una sola vez; lo que se anima es la escala.
+      bar.style.height = h + '%';
+      if (reduce) { bar.style.transform = 'scaleY(1)'; return; }
       requestAnimationFrame(function () {
-        setTimeout(function () { bar.style.height = h + '%'; }, 140);
+        setTimeout(function () { bar.style.transform = 'scaleY(1)'; }, 140);
       });
     });
   })();

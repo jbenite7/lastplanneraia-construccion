@@ -5,7 +5,7 @@
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** Comité del 2026-07-29 — el «punto gris» que el dueño del producto no supo resolver en vivo.
 - **Depende de:** A1 (importador con versiones), A2 (maestro), A3 (asignación insumo↔paquete).
-- **Estado:** aprobado en grilleo, pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 2 del tablero, `31e9145`). El informe de impacto se muestra en la previsualización de la importación, antes de confirmar.
 
 ## Problema
 
