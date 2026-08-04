@@ -14,7 +14,7 @@
 - Spec fuente: `docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design.md`. Cada task cita su entrada (A-*/C-*/IA-*).
 - Desktop ≥1180 px, dark only; viewport canónico **1180×820** (AGENTS.md). Nada de mobile/tablet/`linen`.
 - Sesión SIEMPRE por `http://localhost:8081/dev/entrar?u=test.R&p=...` (o `test.A` para admin/lab). Nunca `/login`.
-- Proyectos con datos «Da Porto» y «Optimización Aeropuerto JMC»: **solo lectura**. El sandbox `PDC Sandbox E2E` es el único mutable, y solo si la task lo exige.
+- Proyectos con datos «Da Porto» y «Optimización Aeropuerto JMC»: **solo lectura**. Mutables: el sandbox `PDC Sandbox E2E` y el proyecto 27 «Prueba» (ampliación decidida por el usuario el 2026-08-04, al descubrirse que el sandbox solo monta el módulo PDC y una semana, insuficiente para la suite de PS).
 - Colores solo con tokens `--ds-*`; sin hex **ni siquiera en comentarios** (el audit los cuenta ahí).
 - `npm run test:design-system:static` debe dar **8/8** antes de cerrar cualquier task.
 - **Gate de cierre de toda task visual:** ciclo triple `/impeccable audit` → `/ux-heuristics` → `/refactoring-ui`, en ese orden, sobre lo tocado, a 1180×820 dark. Resultado al ledger.
@@ -484,6 +484,25 @@
 - [ ] **Step 4: Disposición final de las 54 entradas** en el registro de decisiones: cada una marcada ejecutada (commit), chip (creado con `spawn_task`: C-33 si quedó sin frase, C-35, C-39, C-41, C-42, C-12, C-6, C-9, campaña C-2, más lo que las auditorías de Task 27 ameriten), o cerrada. Verificar contra la condición de hecho del spec (5 puntos).
 - [ ] **Step 5: `memoria/` ingest** de lo aprendido (respetando `docs/wiki-operacion.md` y sin tocar los 2 archivos de la otra sesión si siguen sin commitear — confirmar antes), ledger cerrado, resumen final al usuario con: verificado, comandos, resultados, límites pendientes y la tarea externa suya (tema oscuro del informe en Power BI).
 - [ ] **Step 6: Traspaso al cierre de 1.1.0.** Con la campaña terminada se cumple la precondición D4 del goal `goals/cierre-version-1-1-0-design-system/goal.md`. Crear el chip de arranque con `spawn_task` (título: «Ejecutar el cierre de la versión 1.1.0 del design system»; prompt: ejecutar `docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system.md` con superpowers:subagent-driven-development o executing-plans, leyendo antes `memoria/trampas/subir-la-version-del-ds-cobra-deudas.md`; la precondición D4 ya está cumplida por este cierre) y decírselo al usuario en el resumen final. Si el chip de la sesión del 2026-08-04 sigue vivo, no duplicar: basta señalarlo como listo para lanzar.
+
+### Task 32: Restaurar el indicador de fase de Programación Semanal (regresión hallada en Task 1)
+
+**Files:**
+- Modify: `public/js/modules/programacion_semanal/hot.js` (`ensureContextPhaseShell()`, línea ~1116)
+- Test: los 16 casos de `tests/browser/programacion-semanal-*.mjs` que esperan `.ps-weekly-phase-title`
+
+**Interfaces:**
+- Consumes: Task 4 (mueve píxel: va tras la recaptura de goldens).
+- Produces: indicador de fase visible de nuevo en escritorio; 16 casos de la suite recuperados.
+
+Origen: hallazgo de la Task 1, verificado de forma independiente por el coordinador en navegador a 1200 px — `.context-bar .container-fluid.d-flex.align-items-center.justify-content-between` da **0 coincidencias**, no hay `.context-breadcrumb`, y `#ctxWeeklyPhase` / `.ps-weekly-phase-title` no existen en el DOM servido. La función busca el contenedor de la navbar legacy que murió con el rollout del shell lateral, así que `return null` y el indicador no se pinta nunca. Decisión del usuario (2026-08-04): **restaurarlo** — es devolver algo que existía, no inventar UI.
+
+- [ ] **Step 1: Medir el estado actual** en `/programacion-semanal` con dev door a 1180×820: confirmar los 4 valores de arriba y capturar la barra de contexto como evidencia del «antes».
+- [ ] **Step 2: Localizar el anclaje del shell actual.** La `.context-bar` viva contiene hoy tres `<span>` y un `.aia-menu.context-week-menu`. Determinar en el markup del shell (buscar la vista/partial que la renderiza) cuál es el punto de inserción correcto y si el shell ya expone un contenedor con nombre propio al que engancharse.
+- [ ] **Step 3: Reenganchar `ensureContextPhaseShell()`** al selector real, conservando el markup que inyecta (`#ctxWeeklyPhase`, `.ps-weekly-phase-title`, las clases de modificador de fase). No cambiar el texto ni la lógica de fases: solo dónde se monta.
+- [ ] **Step 4: Verificar:** el indicador aparece y cambia con la fase; sin overflow a 1180 px; consola limpia; estilo coherente con el shell (tokens `--ds-*`, sin hex).
+- [ ] **Step 5: Correr los 16 casos** que dependían de él: `npx playwright test tests/browser/programacion-semanal-*.mjs --workers=1`. Expected: los 16 pasan de fallo a verde; el resto no empeora.
+- [ ] **Step 6: Suite estática 8/8 + goldens movidos + ciclo triple + commit.** `git commit -m "fix(ps): restaura el indicador de fase que el shell lateral dejo huerfano"`.
 
 ---
 
