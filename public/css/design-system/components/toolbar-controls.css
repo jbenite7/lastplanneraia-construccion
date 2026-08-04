@@ -1,0 +1,42 @@
+@layer components {
+  /* T-5 (2026-08-03): componente compartido de botones de accion y chips
+     contadores de las toolbars de tabla (PG, PI, PS, PDC). Piso AA de
+     --ds-control-compact-min (24px, WCAG 2.2 SC 2.5.8), no el AAA de
+     --ds-target-min (44px) que trae .aia-btn por defecto en core.css.
+
+     Los selectores de PG llevan el scope minimo que ya traian en su propio
+     archivo (`.pg-page ...`) para no ensanchar su alcance sin querer; los
+     de PI/PS no viven aqui porque esos modulos ya tenian una guerra de
+     especificidad propia que este archivo no puede ganar sin repetirla
+     (ver el CSS de cada modulo). `.pdc-legend-item` y `.btn-pdc-modern` si
+     son genericos porque no tenian conflicto previo. Donde un modulo YA tenia
+     una regla propia peleando por el mismo control (PI: `styles.css` fuerza
+     32px con !important; PS: un `@layer components` interno del propio
+     archivo del modulo, mas su media query "tablet" que atrapa el viewport
+     canonico de 1180px, C-11), ese modulo SIGUE necesitando su propio
+     override para ganar esa guerra de especificidad concreta — eso queda
+     documentado en el CSS del modulo, no aqui, porque no es parte del
+     componente: es la cicatriz de ese modulo. */
+
+  .pg-page .pg-toolbar-buttons .aia-btn {
+    min-height: var(--ds-control-compact-min);
+    padding-block: var(--ds-space-1);
+  }
+
+  .pg-page #pgLegend .pg-filter-chip {
+    min-height: var(--ds-control-compact-min);
+  }
+
+  .pdc-legend-item {
+    min-height: var(--ds-control-compact-min) !important;
+  }
+
+  .pdc-legend-item:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring) !important;
+    outline-offset: var(--ds-outline-offset) !important;
+  }
+
+  .btn-pdc-modern {
+    min-height: var(--ds-control-compact-min);
+  }
+}

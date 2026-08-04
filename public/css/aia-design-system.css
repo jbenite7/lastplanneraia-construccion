@@ -34,6 +34,16 @@
 @import url("/css/design-system/adapters/shell-sidebar.css?v=1.0.0");
 @import url("/css/styles.css?v=1.0.0") layer(module);
 @import url("/css/buttons.css?v=1.0.0") layer(components);
+/* T-5 (2026-08-03): DESPUES de buttons.css a proposito — dentro de la misma
+   capa components, sus reglas !important necesitan ser el encuentro mas
+   tardio para ganarle a las de .pdc-legend-item/.btn-pdc-modern que ya
+   viven en buttons.css (misma especificidad + misma importancia, gana el
+   orden de encuentro). Sin la anotacion de capa en la linea de abajo, a
+   proposito, igual que el resto de components/*.css: el archivo ya se
+   auto-encapa por dentro con su propio @layer components; declararlo dos
+   veces anida una subcapa components.components en vez de fundirse con
+   la capa components de nivel superior. */
+@import url("/css/design-system/components/toolbar-controls.css?v=1.0.0");
 @import url("/css/access.css?v=1.0.0") layer(utilities);
 
 @layer theme {

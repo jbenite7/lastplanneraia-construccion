@@ -682,9 +682,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  /* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min) explicito —
-     antes dependia solo del contenido/padding, sin garantia. */
-  min-height: var(--ds-control-compact-min);
+  /* T-5 (2026-08-03): el piso AA de 24px (min-height) vive en el
+     componente compartido toolbar-controls.css — antes de eso este boton
+     dependia solo del contenido/padding, sin garantia explicita. */
   background-color: #ffffff;
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: 1px solid var(--aia-separators, oklch(86% 0 0));
@@ -970,12 +970,12 @@
   white-space: normal !important;
   flex-shrink: 0 !important;
 
-  /* Compact chip sizing. T-5 (2026-08-03): piso AA de 24px
-     (--ds-control-compact-min), no el AAA de 44px — decision 1-bis, sin
-     margen. Estos chips son controles que filtran, no etiquetas: conservan
-     foco visible y aria-pressed. */
+  /* Compact chip sizing. El piso AA de 24px (min-height) vive en el
+     componente compartido public/css/design-system/components/toolbar-controls.css
+     (T-5, 2026-08-03) — no aqui, para no duplicarlo modulo a modulo. Estos
+     chips son controles que filtran, no etiquetas: conservan foco visible
+     (tambien en el componente compartido) y aria-pressed. */
   height: auto !important;
-  min-height: var(--ds-control-compact-min) !important;
   max-height: none !important;
   font-size: var(--ds-type-size-xs) !important;
   padding: var(--ds-space-1) var(--ds-space-2) !important;
@@ -993,14 +993,9 @@
   border: 1px solid oklch(0% 0 0 / 0.1) !important;
 }
 
-/* T-5 (2026-08-03): foco visible sobre la forma compacta del chip — no
-   existia una regla generica para PS/PDC (PI ya la tenia en
-   programacion-intermedia.css:1517), asi que el foco dependia del outline
-   por defecto del navegador. */
-.pdc-legend-item:focus-visible {
-  outline: var(--ds-outline-width) solid var(--ds-active-focus-ring) !important;
-  outline-offset: var(--ds-outline-offset) !important;
-}
+/* T-5 (2026-08-03): el foco visible generico para PS/PDC (no existia; PI ya
+   lo tenia en programacion-intermedia.css:1517) vive en el componente
+   compartido toolbar-controls.css, no aqui. */
 
 .pdc-legend-item .indicator {
   display: block !important;

@@ -1495,14 +1495,17 @@ border: 1px solid var(--pi-due-border);
     display: none;
 }
 
-/* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min) en vez del
-   AAA de 44px de --ds-target-min — decision 1-bis, sin margen. Deja de
-   pesar aqui: la accion primaria de esta toolbar no esta forzada por
-   diseño (ninguna de estas acciones domina el flujo semanal de Intermedia;
-   la accion principal del modulo es fila a fila, liberar restricciones, no
-   un boton de toolbar), asi que se mantiene el conjunto secundario parejo —
-   ver duda en el reporte del task 22. !important: styles.css fija 32px con
-   !important en capa module previa. */
+/* T-5 (2026-08-03): consume el token compartido --ds-control-compact-min
+   (24px, componente en public/css/design-system/components/toolbar-controls.css)
+   pero NO puede vivir solo ahi: esta regla ya existia antes de este task
+   (era 44px) porque styles.css fija 32px con !important en capa module, y
+   sin este !important propio de PI ese 32px vuelve a ganar. Es cicatriz
+   real del modulo, no duplicacion del componente. Deja de pesar aqui: la
+   accion primaria de esta toolbar no esta forzada por diseño (ninguna de
+   estas acciones domina el flujo semanal de Intermedia; la accion
+   principal del modulo es fila a fila, liberar restricciones, no un boton
+   de toolbar), asi que se mantiene el conjunto secundario parejo — ver
+   duda en el reporte del task 22. */
 .pi-page .pi-toolbar-actions .btn-pdc-modern,
 .pi-page .pi-toolbar-actions .aia-btn {
     min-height: var(--ds-control-compact-min) !important;

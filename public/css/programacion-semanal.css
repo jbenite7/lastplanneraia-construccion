@@ -1862,12 +1862,16 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
         padding-block: var(--spacing-xs) !important;
     }
 
-    /* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min), no el AAA
-       de 44px — decision 1-bis, sin margen. Va DESPUES y con especificidad
-       igual o mayor a los dos bloques !important de arriba (misma capa
-       components): para declaraciones !important el orden de capas se
-       invierte respecto a lo no encapado, asi que solo otra regla en esta
-       misma capa, mas tardia o mas especifica, puede ganarles. */
+    /* T-5 (2026-08-03): consume el token compartido --ds-control-compact-min
+       (componente en toolbar-controls.css) pero no puede vivir solo ahi:
+       este propio archivo trae, arriba, dos bloques !important preexistentes
+       de 44px (uno en @media tablet 768-1199.98px que atrapa el viewport
+       canonico 1180px, C-11; otro aqui mismo en @layer components) que le
+       ganarian a cualquier regla externa. Va DESPUES y con especificidad
+       igual o mayor a esos dos bloques, en la MISMA capa components: para
+       !important el orden de capas se invierte respecto a lo no encapado,
+       asi que solo otra regla en esta misma capa, mas tardia o mas
+       especifica, puede ganarles. Cicatriz real de PS, no duplicacion. */
     html body.ps-page .header-actions :is(button, a[href]),
     html body.ps-page #psAlertsLegend .pdc-legend-item,
     html body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {

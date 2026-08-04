@@ -22,5 +22,6 @@
 @import url("/css/design-system/adapters/shell-sidebar.css?v=1.0.0");
 @import url("/css/styles.css?v=1.0.0") layer(module);
 @import url("/css/buttons.css?v=1.0.0") layer(components);
+@import url("/css/design-system/components/toolbar-controls.css?v=1.0.0");
 @import url("/css/access.css?v=1.0.0") layer(utilities);
 @import url("/css/design-system/entrypoints/theme-overrides.css?v=1.0.0");
