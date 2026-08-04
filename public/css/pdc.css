@@ -223,20 +223,15 @@ body.pdc-page #dt_cliente .handsontable thead th .relative > .changeType {
 	z-index: 2 !important;
 	pointer-events: auto !important;
 }
-body.pdc-page #dt_cliente .handsontable thead th .changeType::before {
-	content: "\f0b0" !important;
-	font-family: "Font Awesome 5 Free" !important;
-	font-size: calc(var(--ds-space-2) - (var(--ds-border-width) * 2)) !important;
-	font-weight: 900 !important;
-	line-height: 1 !important;
-}
-body.pdc-page #dt_cliente .handsontable thead th .changeType:hover,
-body.pdc-page #dt_cliente .handsontable thead th .changeType:focus {
-	border-color: var(--ds-color-border-focus) !important;
-	background: var(--ds-color-surface-hover) !important;
-	color: var(--ds-color-brand-primary) !important;
-	cursor: pointer !important;
-}
+/*
+ * Task 17 (2026-08-03): el tamano/color/hover del trigger (antes una caja
+ * siempre visible, calc(--ds-space-3)+borde) quedo consolidado en
+ * handsontable-header-global.css, que ahora tambien cubre
+ * body.pdc-page #dt_cliente (layer vendor, !important — ya ganaba a la caja
+ * de arriba en .relative > .changeType, que no llevaba tamano/color) y en
+ * design-system/components/table-filter-trigger.css. Skin quieto: sin caja
+ * en reposo, caja solo en hover/focus.
+ */
 .pdc-row-actions {
 	display: inline-flex;
 	flex-direction: column;

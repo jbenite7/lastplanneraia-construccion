@@ -1244,43 +1244,16 @@ body.ps-page .ps-hot-toolbar-shell {
     text-overflow: ellipsis;
 }
 
-html body.ps-page #hot-container .handsontable thead th .changeType {
-    float: none !important;
-    position: static !important;
-    transform: none;
-    width: var(--ds-target-min) !important;
-    min-width: var(--ds-target-min) !important;
-    max-width: none !important;
-    height: var(--ds-target-min) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 1px solid var(--ds-color-border-default);
-    border-radius: var(--ds-radius-xs);
-    background: var(--ds-color-bg-page);
-    color: var(--ds-color-text-secondary);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    z-index: 2;
-    flex: 0 0 var(--ds-target-min) !important;
-}
-
-html body.ps-page #hot-container .handsontable .changeType:before {
-    content: "\f0b0";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 0.75rem !important;
-    line-height: 1;
-}
-
-.ps-page #hot-container .handsontable .changeType:hover,
-.ps-page #hot-container .handsontable .changeType:focus {
-    border-color: var(--aia-blue-medium);
-    background: var(--ds-color-state-info-bg);
-    color: var(--ds-color-brand-architecture);
-    cursor: pointer;
-}
+/*
+ * Task 17 (2026-08-03): esta regla dibujaba una caja de --ds-target-min
+ * (24px, pensada para touch) alrededor del trigger de filtro — el hallazgo
+ * Refactoring UI del barrido de hoy es exactamente este boton, mas grande
+ * que los datos de la fila que decora. El skin quieto (sin caja en reposo,
+ * caja solo en hover/focus, ~13px) vive ahora en
+ * handsontable-header-global.css (layer vendor, !important) y en
+ * design-system/components/table-filter-trigger.css. Se retira el
+ * duplicado local; no habia matiz real que conservar.
+ */
 
 .ps-page .htDropdownMenu:not(.htGhostTable),
 .ps-page .htFiltersConditionsMenu:not(.htGhostTable) {
@@ -1883,8 +1856,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     }
 
     html body.ps-page .ps-action-btn,
-    html body.ps-page #dt_cliente :is(button.editar, button.reprogramar),
-    html body.ps-page #hot-container .handsontable thead th .changeType {
+    html body.ps-page #dt_cliente :is(button.editar, button.reprogramar) {
         width: var(--ds-target-min) !important;
         min-width: var(--ds-target-min) !important;
         max-width: none !important;
@@ -1940,16 +1912,14 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
         --ps-cnp-action-bg: var(--ds-color-state-critical-text);
     }
 
-    html body.ps-page #hot-container .handsontable thead th .changeType {
-        border-color: var(--ds-active-border) !important;
-        border-radius: var(--ds-radius-control) !important;
-        background: var(--ds-active-surface-raised) !important;
-        color: var(--ds-active-text-secondary) !important;
-    }
-
-    html body.ps-page #hot-container .handsontable thead th .changeType::before {
-        font-size: 0.75rem !important;
-    }
+    /*
+     * Task 17 (2026-08-03): este breakpoint (768-1199.98px) cubre tambien el
+     * viewport desktop canonico de verificacion (1180x820) — no es "tablet"
+     * puro. Dibujaba una caja siempre-visible mas grande (border-radius
+     * control, texto 0.75rem) encima del skin quieto del componente. Se
+     * retira: el skin de handsontable-header-global.css ya aplica aqui sin
+     * necesitar este duplicado.
+     */
 
     html body.ps-page #modalReprogramar :is(.modal-content, .modal-body, .modal-footer) {
         background: var(--ds-active-surface) !important;

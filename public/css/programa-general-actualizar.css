@@ -146,37 +146,13 @@
     text-align: center !important;
   }
 
-  .pg-page #hot-container thead th .changeType {
-    float: none !important;
-    position: static !important;
-    transform: none;
-    width: 13px;
-    height: 13px;
-    border: var(--ds-border-width) solid var(--ds-active-border);
-    border-radius: var(--ds-radius-xs);
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-secondary);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--ds-z-dropdown);
-    /* Glifo dentro de un boton de 13px del vendor: la escala de texto del DS
-       empieza en 12px y no cabe con el borde. */
-    font-size: 9px;
-  }
-
-  .pg-page #hot-container .changeType::before {
-    content: "\f0b0";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-  }
-
-  .pg-page #hot-container thead th .changeType:hover {
-    border-color: var(--ds-active-action-primary);
-    background: var(--ds-active-surface);
-    color: var(--ds-active-action-primary);
-    cursor: pointer;
-  }
+  /*
+   * Task 17 (2026-08-03): skin del trigger (tamano/color/hover) consolidado
+   * en handsontable-header-global.css (layer vendor, !important — ya ganaba
+   * a esta regla, que no llevaba !important en background/color/font-size) y
+   * en design-system/components/table-filter-trigger.css. Se retira el
+   * duplicado local.
+   */
 
   .pg-page .htDropdownMenu:not(.htGhostTable),
   .pg-page .htFiltersConditionsMenu:not(.htGhostTable) {

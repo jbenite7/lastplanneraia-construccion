@@ -122,6 +122,30 @@
     border-color: transparent;
   }
 
+  /*
+   * Task 17 (2026-08-03): skin del trigger de orden de columna, la version de
+   * DataTables del gatillo de filtro/menu de cabecera. `jquery.dataTables.css`
+   * (vendor) trae el caret en hex fijo (#64748b reposo, #1a5633 activo), sin
+   * tema oscuro. Aplica el mismo criterio quieto que Handsontable/AG Grid via
+   * `design-system/components/table-filter-trigger.css`: contraste legible en
+   * reposo, sin caja, mas visible en hover/focus — no un widget nuevo.
+   */
+  table.dataTable thead .sorting::after,
+  table.dataTable thead .sorting_asc::after,
+  table.dataTable thead .sorting_desc::after {
+    color: var(--ds-active-text-secondary);
+    opacity: 1;
+  }
+
+  table.dataTable thead th.sorting:hover::after,
+  table.dataTable thead th.sorting_asc:hover::after,
+  table.dataTable thead th.sorting_desc:hover::after,
+  table.dataTable thead th.sorting:focus-within::after,
+  table.dataTable thead th.sorting_asc:focus-within::after,
+  table.dataTable thead th.sorting_desc:focus-within::after {
+    color: var(--ds-active-focus-ring);
+  }
+
   table.dataTable td.dataTables_empty {
     background-color: var(--ds-table-empty-bg);
     color: var(--ds-table-empty-fg);

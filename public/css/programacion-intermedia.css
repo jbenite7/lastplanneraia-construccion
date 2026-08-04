@@ -594,43 +594,14 @@ html.aia-theme-dark .pi-page {
     text-overflow: clip;
 }
 
-.pi-page #hot-container .handsontable .changeType {
-    float: none !important;
-    position: static !important;
-    transform: none;
-    width: 13px;
-    height: 13px;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 1px solid var(--ds-active-border);
-    border-radius: 4px;
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-secondary);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    z-index: 2;
-    flex: 0 0 auto;
-    order: 2;
-    margin-left: 0 !important;
-}
-
-.pi-page #hot-container .handsontable .changeType:before {
-    content: "\f0b0";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 6px;
-    line-height: 1;
-}
-
-.pi-page #hot-container .handsontable .changeType:hover,
-.pi-page #hot-container .handsontable .changeType:focus {
-    border-color: var(--ds-active-focus-ring);
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-focus-ring);
-    cursor: pointer;
-}
+/*
+ * Task 17 (2026-08-03): el skin del trigger (tamaño/color/hover) quedó
+ * consolidado en handsontable-header-global.css (layer vendor, !important —
+ * ya ganaba a estas reglas sin !important) y en
+ * design-system/components/table-filter-trigger.css. Este bloque duplicaba
+ * ese skin sin efecto real; solo `order: 2` y `flex: 0 0 auto` seguían
+ * aplicando, y ya los cubre `.relative > .changeType` arriba.
+ */
 
 .pi-page .htDropdownMenu:not(.htGhostTable),
 .pi-page .htFiltersConditionsMenu:not(.htGhostTable) {

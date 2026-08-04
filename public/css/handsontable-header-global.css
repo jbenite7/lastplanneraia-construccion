@@ -59,22 +59,32 @@ body #hot-container .handsontable thead th .relative > .changeType {
   margin: 1px 0 0 0 !important;
 }
 
+/*
+ * Skin del trigger: quieto en reposo (sin caja), caja visible solo en
+ * hover/focus. Fuente de verdad del diseno visual en
+ * design-system/components/table-filter-trigger.css (Task 17, 2026-08-03) —
+ * este bloque existe aparte porque el vendor exige !important y ese archivo
+ * de componente vive fuera de @layer a proposito para no perder la pelea.
+ * Cubre tambien body.pdc-page #dt_cliente, que hasta ahora dibujaba su propia
+ * caja duplicada en pdc.css con los mismos valores (ver comentario alli).
+ */
 body.ps-page #hot-container .handsontable thead th .changeType,
 body.pi-page #hot-container .handsontable thead th .changeType,
 body.pg-page #hot-container .handsontable thead th .changeType,
+body.pdc-page #dt_cliente .handsontable thead th .changeType,
 body #hot-container .handsontable thead th .changeType {
   float: none !important;
   position: static !important;
   top: auto !important;
   right: auto !important;
   transform: none !important;
-  width: 13px !important;
-  height: 13px !important;
+  width: var(--ds-table-filter-trigger-size, 13px) !important;
+  height: var(--ds-table-filter-trigger-size, 13px) !important;
   margin: 1px 0 0 0 !important;
   padding: 0 !important;
-  border: 1px solid var(--ds-active-border) !important;
+  border: 1px solid transparent !important;
   border-radius: 4px !important;
-  background: var(--ds-active-surface-raised) !important;
+  background: transparent !important;
   color: var(--ds-active-text-secondary) !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -86,11 +96,12 @@ body #hot-container .handsontable thead th .changeType {
 body.ps-page #hot-container .handsontable thead th .changeType:before,
 body.pi-page #hot-container .handsontable thead th .changeType:before,
 body.pg-page #hot-container .handsontable thead th .changeType:before,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:before,
 body #hot-container .handsontable thead th .changeType:before {
   content: "\f0b0" !important;
   font-family: "Font Awesome 5 Free" !important;
   font-weight: 900 !important;
-  font-size: 6px !important;
+  font-size: var(--ds-table-filter-trigger-icon-size, 6px) !important;
   line-height: 1 !important;
 }
 
@@ -100,10 +111,12 @@ body.pi-page #hot-container .handsontable thead th .changeType:hover,
 body.pi-page #hot-container .handsontable thead th .changeType:focus,
 body.pg-page #hot-container .handsontable thead th .changeType:hover,
 body.pg-page #hot-container .handsontable thead th .changeType:focus,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:hover,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:focus,
 body #hot-container .handsontable thead th .changeType:hover,
 body #hot-container .handsontable thead th .changeType:focus {
-  border-color: var(--ds-color-brand-primary) !important;
-  background: var(--ds-active-surface) !important;
-  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-focus-ring) !important;
+  background: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-focus-ring) !important;
   cursor: pointer !important;
 }

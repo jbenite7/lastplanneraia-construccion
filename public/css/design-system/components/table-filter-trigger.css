@@ -1,0 +1,73 @@
+/**
+ * table-filter-trigger.css
+ * ========================
+ * Skin unico del gatillo de filtro/menu en cabecera de columna, para las tres
+ * librerias de tabla del proyecto (Handsontable, DataTables, AG Grid).
+ *
+ * Decision (spec 2026-08-03, Adenda T-2): un solo componente visual, no tres
+ * implementaciones duplicadas. Donde la libreria trae su propio control (menu
+ * de AG Grid), se le aplica el mismo skin via los tokens --ds-* que su tema ya
+ * consume (pdc-app/src/lib/agGrid.ts) en vez de construir un trigger paralelo.
+ *
+ * Hallazgo que motiva el rediseno (Refactoring UI, barrido 2026-08-03): en PI
+ * el triangulo del filtro es casi invisible (borde+relleno del mismo tono que
+ * el fondo); en PS el boton es una caja tan grande que pesa mas que los datos
+ * de la fila. El objetivo es un trigger QUIETO: sin caja en reposo, contraste
+ * suficiente para leerse (icono es control de UI, no texto: piso 3:1, no
+ * 4.5:1), y una caja SOLO aparece en hover/focus como confirmacion de
+ * affordance interactiva.
+ *
+ * Selector generico .aia-table-filter-trigger + selector de compatibilidad
+ * .changeType (el nombre que trae Handsontable en el DOM que genera; no se
+ * puede renombrar sin tocar el vendor). Los adaptadores de Handsontable
+ * (`handsontable-header-global.css` y los remanentes por modulo) deben
+ * apuntar `.changeType` aqui en vez de redefinir tamano/color/hover.
+ */
+
+:root {
+  --ds-table-filter-trigger-size: 13px;
+  --ds-table-filter-trigger-icon-size: 6px;
+}
+
+.aia-table-filter-trigger,
+.changeType {
+  float: none;
+  position: static;
+  transform: none;
+  width: var(--ds-table-filter-trigger-size);
+  height: var(--ds-table-filter-trigger-size);
+  margin: 0;
+  padding: 0;
+  /* Reposo: sin caja. El icono lleva su propio contraste (>=3:1, ver arriba),
+     no necesita un fondo/borde para leerse. */
+  border: var(--ds-border-width, 1px) solid transparent;
+  border-radius: var(--ds-radius-xs, 0.25rem);
+  background: transparent;
+  color: var(--ds-active-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 2;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.aia-table-filter-trigger::before,
+.changeType::before {
+  content: "\f0b0";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: var(--ds-table-filter-trigger-icon-size);
+  line-height: 1;
+}
+
+/* Affordance interactiva: la caja aparece recien en hover/focus, no en reposo. */
+.aia-table-filter-trigger:hover,
+.aia-table-filter-trigger:focus,
+.changeType:hover,
+.changeType:focus {
+  border-color: var(--ds-active-focus-ring);
+  background: var(--ds-active-surface-raised);
+  color: var(--ds-active-focus-ring);
+}

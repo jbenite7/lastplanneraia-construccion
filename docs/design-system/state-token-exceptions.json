@@ -169,14 +169,6 @@
     },
     {
       "file": "public/css/programacion-semanal.css",
-      "selector": ".ps-page #hot-container .handsontable .changeType:hover, .ps-page #hot-container .handsontable .changeType:focus",
-      "token": "--ds-color-state-info-bg",
-      "kind": "at-risk",
-      "reason": "El hover/focus del icono changeType tinta el fondo con info-bg y fija el texto en --ds-color-brand-architecture (#2a5a8f), igual que .ps-dropdown-item.is-active: 6,48:1 hoy sobre el pastel #e3f9f7 y 1,46:1 con el fondo invertido a #134841.",
-      "revisit": "Misma decision que .ps-dropdown-item.is-active y conviene tomarla junta: o el hover pasa al info-text pareado, o el azul de marca se aclara hasta cumplir sobre el fondo invertido."
-    },
-    {
-      "file": "public/css/programacion-semanal.css",
       "selector": "html.aia-theme-dark body.ps-page .text-danger",
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
