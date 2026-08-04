@@ -327,12 +327,12 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
     position: absolute;
     right: 0;
     top: 100%;
-    background-color: var(--ds-color-surface);
+    background-color: var(--ds-active-surface-raised);
     min-width: 240px;
     box-shadow: var(--ds-shadow-lg);
     z-index: 1001;
     border-radius: var(--ds-radius-xs);
-    border: 1px solid var(--ds-color-border-default);
+    border: 1px solid var(--ds-active-border);
     overflow: visible !important;
     margin-top: 4px;
 }
@@ -343,7 +343,7 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
 }
 
 .ps-dropdown-item {
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-active-text-secondary);
     padding: 12px 16px;
     text-decoration: none;
     display: flex;
@@ -351,7 +351,7 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
     gap: 12px;
     font-size: 0.85rem;
     font-weight: 500;
-    border-bottom: 1px solid var(--ds-color-bg-page);
+    border-bottom: 1px solid var(--ds-active-border);
     transition: background-color 0.2s ease-out, color 0.2s ease-out;
     background: none;
     border-left: none;
@@ -373,33 +373,33 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 
 .ps-dropdown-item:hover {
-    background-color: var(--ds-color-bg-page);
-    color: var(--ds-color-brand-architecture);
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
 }
 
 .ps-dropdown-item.is-active {
     background-color: var(--ds-color-state-info-bg) !important;
-    color: var(--ds-color-brand-architecture) !important;
+    color: var(--ds-active-text-primary) !important;
     font-weight: 700 !important;
 }
 
 .ps-dropdown-item i {
     width: 18px;
     text-align: center;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
 }
 
 .btn-dropdown-trigger {
-    background: var(--ds-color-surface) !important;
-    border: 1px solid var(--ds-color-border-default) !important;
-    color: var(--ds-color-brand-architecture) !important;
+    background: var(--ds-active-surface-raised) !important;
+    border: 1px solid var(--ds-active-border) !important;
+    color: var(--ds-active-text-primary) !important;
     font-weight: 700 !important;
     box-shadow: var(--ds-shadow-xs) !important;
 }
 
 .btn-dropdown-trigger:hover {
-    background: var(--ds-color-bg-page) !important;
-    border-color: var(--ds-color-brand-architecture) !important;
+    background: var(--ds-active-surface) !important;
+    border-color: var(--ds-active-text-secondary) !important;
 }
 
 #textoFechaCierreCompromisos {
@@ -2901,12 +2901,12 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     position: absolute;
     right: 0;
     top: 100%;
-    background-color: var(--ds-color-surface);
+    background-color: var(--ds-active-surface-raised);
     min-width: 240px;
     box-shadow: var(--ds-shadow-lg);
     z-index: 1001;
     border-radius: var(--ds-radius-xs);
-    border: 1px solid var(--ds-color-border-default);
+    border: 1px solid var(--ds-active-border);
     overflow: visible !important;
     margin-top: 4px;
 }
@@ -2917,7 +2917,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .ps-dropdown-item {
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-active-text-secondary);
     padding: 12px 16px;
     text-decoration: none;
     display: flex;
@@ -2925,7 +2925,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     gap: 12px;
     font-size: 0.85rem;
     font-weight: 500;
-    border-bottom: 1px solid var(--ds-color-bg-page);
+    border-bottom: 1px solid var(--ds-active-border);
     transition: background-color 0.2s ease-out, color 0.2s ease-out;
     background: none;
     border-left: none;
@@ -2941,26 +2941,26 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .ps-dropdown-item:hover {
-    background-color: var(--ds-color-bg-page);
-    color: var(--ds-color-brand-architecture);
+    background-color: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
 }
 
 .ps-dropdown-item.is-active {
     background-color: var(--ds-color-state-info-bg) !important;
-    color: var(--ds-color-brand-architecture) !important;
+    color: var(--ds-active-text-primary) !important;
     font-weight: 700 !important;
 }
 
 .ps-dropdown-item i {
     width: 18px;
     text-align: center;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
 }
 
 .btn-dropdown-trigger {
-    background: var(--ds-color-surface) !important;
-    border: 1px solid var(--ds-color-border-default) !important;
-    color: var(--ds-color-brand-architecture) !important;
+    background: var(--ds-active-surface-raised) !important;
+    border: 1px solid var(--ds-active-border) !important;
+    color: var(--ds-active-text-primary) !important;
     font-weight: 700 !important;
     box-shadow: var(--ds-shadow-xs) !important;
     padding: 0.35rem 0.75rem;
@@ -2968,8 +2968,8 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .btn-dropdown-trigger:hover {
-    background: var(--ds-color-bg-page) !important;
-    border-color: var(--ds-color-brand-architecture) !important;
+    background: var(--ds-active-surface) !important;
+    border-color: var(--ds-active-text-secondary) !important;
 }
 
 
