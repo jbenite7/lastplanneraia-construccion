@@ -533,23 +533,27 @@
     color: var(--pdc-critical-text);
   }
 
-  /* F1 5j: conmutador «Solo alertas» (styles.css:4499-4528). Sigue CLARO a
-     proposito: los otros ocho `.btn-pdc-modern` de la barra los pinta
-     buttons.css (alias deprecado, dueno `pdc`, fuera de F1) y oscurecer solo
-     este es diseno, no tema. La tinta se queda como literal: el token que le
-     corresponde rasteriza 19 puntos por canal mas oscuro. El fondo SI toma
-     token —un punto por canal, dE 0,35—. Podado `.pdc-btn-alertas.active`:
-     el JS escribe `is-active` (hot.js:294). */
+  /* Conmutador «Solo alertas» (styles.css:4499-4528). Estuvo CLARO a proposito
+     mientras sus hermanos `.btn-pdc-modern` los pintaba otro archivo fuera del
+     alcance de F1: oscurecer solo este habria sido la incoherencia. Esa premisa
+     caduco. Medido hoy en /pdc dark: de los tres `.btn-pdc-modern` vivos, los
+     otros dos —«Desglosar» y «Limpiar filtros»— ya resuelven a
+     `--ds-active-surface-raised`, asi que el unico claro era este y la
+     excepcion protegia justo la anomalia que pretendia evitar.
+     Se retokeniza al mismo par que ellos, fondo Y texto a la vez: cambiar solo
+     el fondo es lo que hundio el contraste en el intento del task 27.
+     Podado `.pdc-btn-alertas.active`: el JS escribe `is-active` (hot.js:294). */
   .pdc-btn-alertas {
-    background-color: var(--aia-bg-secondary);
-    color: #1c1c1e;
-    border: 1px solid var(--aia-separators);
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-secondary);
+    border: 1px solid var(--ds-active-border);
     font-weight: 500;
     transition: all 0.2s ease;
   }
 
   .pdc-btn-alertas:hover {
-    background-color: var(--aia-separators);
+    background-color: var(--ds-active-surface);
+    border-color: var(--ds-active-text-secondary);
   }
 
   .pdc-btn-alertas .badge {
