@@ -25,7 +25,16 @@ const CHROMATIC_DOTS = [
   { filter: 'con-alerta-restricciones', level: 'attention', hueRange: [30, 70] },
   { filter: 'debe-iniciar', level: 'attention', hueRange: [30, 70] },
   { filter: 'actividad-futura', level: 'healthy', hueRange: [110, 175] },
-  { filter: 'en-curso', level: 'healthy', hueRange: [110, 195] },
+  // `en-curso` espera AZUL, no teal. Cuando se escribio este guard el token de
+  // origen (`--ds-color-state-info-text`) era un teal profundo y la banda
+  // [110,195] lo recogia. Despues, `e32e7e84` («reducir la paleta de estados a
+  // un matiz por estado») cedio deliberadamente `progress` al azul, porque «En
+  // Curso» aqui y «Contratacion en curso» en /pdc son el mismo concepto y deben
+  // leerse igual entre modulos; la decision esta escrita en el propio
+  // public/css/programa-general.css («Teal queda libre en este modulo»). La
+  // banda se actualiza al matiz vigente, y sigue siendo disjunta de las otras
+  // cuatro, que es lo que sostiene la nota del final del archivo.
+  { filter: 'en-curso', level: 'healthy', hueRange: [195, 250] },
 ];
 
 // Los dos estados silenciosos del modulo (`Terminada`, `Sin Datos`) no llevan
