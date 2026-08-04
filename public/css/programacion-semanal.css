@@ -458,13 +458,13 @@ body.ps-page .ps-hot-toolbar-shell {
    y ruptura de palabra mas agresiva para celdas angostas de Handsontable.
    display, min-width, max-width, font-weight y overflow* quedan fuera por
    duplicar al componente compartido sin aportar matiz. */
+/* Task 16 (paridad PG/PI/PS, M-08): forma, radio, peso, tamano y sombra
+   quedan a cargo unico del componente compartido -sin override local-. Lo
+   unico que sobrevive aqui es el color de texto (matiz real: en la celda
+   densa el chip toma el color del contador de estado, no `inherit`) y el
+   ruptura de palabra para columnas angostas de Handsontable. */
 .ps-page .ops-state-chip {
-    width: auto;
-    border: 0;
-    border-radius: var(--ds-radius-none);
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
-    font-size: 0.72rem;
-    line-height: 1.12;
     word-break: break-word;
 }
 
