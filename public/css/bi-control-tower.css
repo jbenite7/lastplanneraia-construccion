@@ -1452,13 +1452,24 @@
     background: transparent;
   }
 
+  /* `--aia-separators` es un gris claro al 86% de luminancia, estatico: no tiene
+     variante oscura. Como pulgar del scrollbar sobre el lienzo dark rendia una
+     barra casi blanca que competia con el contenido. Se retokeniza a los tokens
+     dark-aware del shell: reposo discreto, presencia al pasar el cursor. Misma
+     familia que C-20 en el registro de decisiones; el token en si no se toca.
+     (El comentario evita escribir valores de color: el audit lee texto crudo y
+     los contaria contra el presupuesto — ver `audit-ve-color-en-comentarios`.) */
   .bi-control-tower-page ::-webkit-scrollbar-thumb {
     border-radius: var(--ds-radius-xs);
-    background: var(--aia-separators);
+    background: var(--ds-active-border);
   }
 
   .bi-control-tower-page ::-webkit-scrollbar-thumb:hover {
-    background: var(--ds-color-text-tertiary);
+    background: var(--ds-active-text-secondary);
+  }
+
+  .bi-control-tower-page {
+    scrollbar-color: var(--ds-active-border) transparent;
   }
 }
 
