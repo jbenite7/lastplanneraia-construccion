@@ -10,6 +10,13 @@ resumen: "Roles, capacidades, rutas protegidas y sesión: dónde se resuelve cad
 
 ## Qué manda
 
+**El comportamiento esperado vive en la biblia, no aquí.** Este mapa dice dónde está el código;
+[[docs/flujos/transversal-rbac|la biblia de RBAC]] dice qué debe pasar, capacidad por capacidad, y
+[[docs/flujos/transversal-autenticacion|la de sesión]] y [[docs/flujos/transversal-proyecto|la de
+proyecto]] hacen lo propio con la entrada. Son capas distintas: si la biblia y el código divergen,
+es un bug de uno de los dos — regla contraria a la de esta wiki, y deliberada
+([[docs/flujos/README|por qué]]).
+
 - `memoria/arquitectura/` y `memoria/flujos/` — inventario de rutas por módulo y matriz de
   navegación. Reemplazan al retirado `docs/ROUTES.md` (2026-08-03), que no viajaba en git.
 - [[docs/rbac_roles_reference]] y [[docs/rbac_cargos_roles_dictionary]] — roles y cargos.

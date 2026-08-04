@@ -23,7 +23,7 @@
 
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
-| 1 | jobs-to-be-done | pending — GATE, primera tarea del encaje | CUSTOMER.md | |
+| 1 | jobs-to-be-done | done — GATE abierto; fases 2-9 desbloqueadas | CUSTOMER.md | 2026-08-04 |
 | 2 | ux-heuristics | in-progress — la corre la campaña (ciclo triple + barridos); volcado a DESIGN.md al cierre de cada fase | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
 | 3 | design-everyday-things | pending — lente nueva: gulfs de Norman sobre el flujo PG→PI→PS | DESIGN.md, EXPERIMENTS.md | |
 | 4 | refactoring-ui | in-progress — ídem fase 2, dentro del ciclo triple de la campaña | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
@@ -44,11 +44,16 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-04 | Intake | Fase 7 skipped, fase 8 deferred | App interna sin venta; sin evidencia de lentitud aún |
 | 2026-08-04 | Encaje | Fases 2 y 4 se satisfacen con el ciclo triple y los barridos de la campaña de dark mode; un control exigido por varias reglas se cumple con una comprobación | Evitar re-auditar lo ya medido; política global de eficiencia |
 | 2026-08-04 | Encaje | Ningún cambio de UI sin hallazgo de fases 1–3 detrás | Regla 8 de la skill; la campaña ya cumple (todo viene de mediciones) |
+| 2026-08-04 | Fase 1 | El Residente entra por lo funcional (anticipar restricciones) y lo social defensivo (constancia de la causa); se descarta el miedo a «quedar mal al comprometerse» como motor | Respuesta del usuario en la entrevista |
+| 2026-08-04 | Fase 1 | Subentrega declarada en las **cuatro** áreas ofrecidas: no hay dimensión sana que sostenga a las demás | Respuesta del usuario; sin analítica que la contraste |
+| 2026-08-04 | Fase 1 | La fuga es Little Hire (uso repetido), no Big Hire: falla el ciclo semanal, no el arranque | Las cuatro subentregas son de uso diario y la app ya está implantada |
+| 2026-08-04 | Fase 1 | La cascada PG→PI→PS es el cuello de botella de los **tres** jobs a la vez, no solo el flujo más usado | Si el residente no registra bien, el director no ve patrones y la gerencia no sostiene cifras |
+| 2026-08-04 | Encaje | La biblia de flujos (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md`) comparte backlog con este tracker: la matriz esfuerzo/impacto **es** EXPERIMENTS.md | Un solo backlog; evita dos listas de pendientes divergentes |
 
 ## Next Actions
 
-- [ ] Fase 1 (jobs-to-be-done) como tarea temprana del plan de la campaña — entrevista al usuario,
-  produce CUSTOMER.md (gate del resto)
+- [x] Fase 1 (jobs-to-be-done) — cerrada el 2026-08-04 con entrevista al usuario; `docs/CUSTOMER.md`
+  escrito con los tres jobs por rol, nueve dimensiones y las alternativas. Gate abierto.
 - [ ] Volcar los hallazgos ya medidos de la campaña a DESIGN.md `## UX Audit Findings` y crear
   EXPERIMENTS.md con el backlog ICE (tarea de encaje, sin re-medir nada)
 - [ ] Fase 3 sobre PG→PI→PS cuando la fase 4 de la campaña (comportamiento) esté cerrada

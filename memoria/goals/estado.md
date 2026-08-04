@@ -15,6 +15,11 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 
 | Goal | Estado | Qué persigue |
 |---|---|---|
+| [[goals/biblia-t1-transversal/goal|biblia-t1-transversal]] | **abierto** — se ejecuta primero: impacto alto y esfuerzo bajo | Describir y verificar los escenarios de entrada a la app: autenticación, selección de proyecto y las 17 capacidades de RBAC |
+| [[goals/biblia-t2-cascada-lps/goal|biblia-t2-cascada-lps]] | **abierto** — segundo; requiere T1 | El ciclo Last Planner completo, escenario a escenario: es el cuello de botella de los tres jobs a la vez |
+| [[goals/biblia-t3-pdc/goal|biblia-t3-pdc]] | **abierto** — tercero | El Plan de Compras v2, con sus deudas de datos conocidas como escenarios de primera clase |
+| [[goals/biblia-t4-soporte/goal|biblia-t4-soporte]] | **abierto** — cuarto | Los seis módulos que alimentan la cascada, y la invariante de los contratos `auto/*` que comparten con el PDC |
+| [[goals/biblia-t5-lectura/goal|biblia-t5-lectura]] | **abierto** — quinto; depende de las anteriores | Indicadores y Torre de Control: describir una cifra exige haber descrito su origen |
 | [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado** — falta aprobación visual explícita de la matriz de 6 modos; sin ella no hay commit | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
 | [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **indeterminado** — sin sección de cierre; la última entrada deja pendientes la revisión visual, los datos del piloto y el contrato de release | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
 

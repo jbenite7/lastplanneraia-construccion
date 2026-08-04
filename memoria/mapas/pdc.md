@@ -21,6 +21,13 @@ pila, [[docs/superpowers/plans/2026-07-22-roadmap-pdc-v2|el roadmap]] ordenó la
 diagnóstico. Los datos de arranque están en
 [[database/seeds/biblioteca_maestra_pdc_source_of_truth_v1_0|la biblioteca maestra v1.0]].
 
+## Qué debe pasar
+
+El comportamiento esperado, escenario por escenario, está en
+[[docs/flujos/pdc-plan-compras|la biblia del PDC]]: quién puede cada operación, qué exige CSRF y por qué toda
+escritura del plan de fechas se acota por `subpaquete_id`. Este mapa dice dónde vive el código; la
+biblia, qué debe hacer.
+
 ## Dónde vive
 
 - SPA en `pdc-app/` (React + Vite + AG Grid); publica su bundle en `public/pdc-app/`.

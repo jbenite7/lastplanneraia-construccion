@@ -56,6 +56,24 @@ debug_*.php
 goals/
 !goals/
 goals/*
+
+# Biblia de flujos: los cinco goals de tanda (2026-08-04)
+!goals/biblia-t1-transversal/
+goals/biblia-t1-transversal/*
+!goals/biblia-t1-transversal/goal.md
+!goals/biblia-t2-cascada-lps/
+goals/biblia-t2-cascada-lps/*
+!goals/biblia-t2-cascada-lps/goal.md
+!goals/biblia-t3-pdc/
+goals/biblia-t3-pdc/*
+!goals/biblia-t3-pdc/goal.md
+!goals/biblia-t4-soporte/
+goals/biblia-t4-soporte/*
+!goals/biblia-t4-soporte/goal.md
+!goals/biblia-t5-lectura/
+goals/biblia-t5-lectura/*
+!goals/biblia-t5-lectura/goal.md
+
 !goals/design-system-nucleo-gobernanza/
 goals/design-system-nucleo-gobernanza/*
 !goals/design-system-nucleo-gobernanza/goal.md
