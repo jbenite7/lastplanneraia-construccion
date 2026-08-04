@@ -217,7 +217,7 @@
     <h1>Estado del <em>desarrollo</em> general</h1>
     <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cinco frentes en marcha; la campaña de cierre de dark mode subió a <b>9 de 35 tareas</b> ejecutadas con commit — incluida la que apretó la red de goldens visuales — y esa misma red destapó una regresión real: dos capturas de tabla se regeneraron sin sincronizar el manifiesto, así que el check <code>contracts</code> vuelve a fallar. El Plan de Compras v2 sigue prácticamente cerrado y a la espera de producción real; su antecesor (PDC v1) quedó formalmente deprecado hoy. Otros ocho goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
     <div class="meta">
-      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 22:20 UTC</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 23:20 UTC</b></span>
       <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos · <b>54</b> decisiones pendientes</span>
       <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code>origin/main</code></span>
     </div>
@@ -259,8 +259,8 @@
       </div>
       <div class="kpi">
         <div class="k-label">Commits últimas 24 h</div>
-        <div><span class="k-big num">174</span> <span class="k-unit">ventana móvil hasta 22:20 UTC</span></div>
-        <div class="k-sub">git log de esta misma pasada — re-ejecutada 55 min después del corte anterior (21:25); ningún commit nuevo salvo el que publicó ese informe.</div>
+        <div><span class="k-big num">176</span> <span class="k-unit">ventana móvil hasta 23:20 UTC</span></div>
+        <div class="k-sub">git log de esta misma pasada, tras un <code>fetch --unshallow</code> (el clon llegó recortado otra vez). Un commit real nuevo desde el informe anterior: <code>f1ab72c</code>, que corrige el frente 2 (ver abajo).</div>
       </div>
       <div class="kpi">
         <div class="k-label">Frentes activos</div>
@@ -390,7 +390,7 @@
       <h2 style="margin:0">Plan de Compras v2 (PDC)</h2>
       <span class="badge b-wait">Código cerrado · producción pendiente</span>
     </div>
-    <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada pero movida a su propio pendiente. Hoy (<code>6b683c6</code>) ese tablero pasó de mecanismo vivo a acta formal, y se corrigieron once specs del PDC que decían «pendiente de plan» estando ya implementadas y en <code>main</code>.</p>
+    <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada pero movida a su propio pendiente. El 3 de agosto (<code>6b683c6</code>) ese tablero pasó de mecanismo vivo a acta formal, y se corrigieron once specs del PDC que decían «pendiente de plan» estando ya implementadas y en <code>main</code>. Hoy (<code>f1ab72c</code>) se corrigió una fila más del mismo tablero: dos pantallas que el acta seguía dando por pendientes ya estaban construidas — ver tarjeta abajo.</p>
 
     <div class="front-grid">
       <div class="front-detail">
@@ -416,9 +416,9 @@
           <h3>Retiro del PDC viejo (etapas 3–4 de <code>retiro-listado-contratos</code>)</h3>
           <p>Las etapas 1 y 2 ya están HECHAS y verificadas: las rutas <code>/listado-actividades</code> y <code>/contratos</code> ya no existen en <code>public/index.php</code>. Lo que falta —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>, para que viaje junto con el v2 cuando por fin se despliegue. Hoy, al reescribir la biblia de flujos sobre el módulo vivo, quedó anotado explícitamente que el usuario <b>deprecó el PDC v1</b> el 4 de agosto — la misma decisión, formalizada un día después. <b>Autorizado, no ejecutado:</b> <code>/pdc</code> y <code>OperationalFamilyPolicy.php</code> siguen en el código hoy.</p>
         </div>
-        <div class="card wait">
-          <h3>Dos pantallas con motor listo y sin vista</h3>
-          <p>La curva de flujo de caja mensual y el aviso de «N frentes sin ancla» tienen su servicio, sus endpoints y sus datos ya viajando en la API — falta solo pintarlos. Quedaron fuera del cierre del 3 de agosto como pendientes con nombre propio, no perdidos.</p>
+        <div class="card done">
+          <h3>Dos pantallas que se creían pendientes <span class="badge b-done">Resuelto 4 ago: ya estaban construidas</span></h3>
+          <p>El cierre del 3 de agosto había dejado anotada esta fila como pendiente: la curva de flujo de caja mensual y el aviso de «N frentes sin ancla» con el motor listo pero, según el acta, sin pintar. Era falso desde que se escribió — las dos ya estaban en <code>main</code> (<code>4a6c88d5</code> y <code>6f3f379d</code>, con su ayuda en <code>4680dc4d</code>), y el letrero mandó a una sesión a reconstruir lo ya construido. Corregido hoy (<code>f1ab72c</code>): el acta ahora dice dónde vive cada pieza y con qué commit llegó, con la fila tachada en vez de borrada. Verificado en esta pasada leyendo el código citado en <code>4a6c88d5</code> y <code>6f3f379d</code> — las dos vistas están en <code>pdc-app/src/pages/Seguimiento.tsx</code> y <code>PlanFechas.tsx</code>; el propio commit reporta 142 asserts de <code>vitest</code> en verde, no repetidos en esta pasada.</p>
         </div>
       </div>
       <div class="eli-card">
@@ -428,7 +428,7 @@
           <li><span class="eli-tag">1</span><span><b>El módulo nuevo ya está construido y probado</b> — parte, reparte y reprograma paquetes, calcula flujo de caja, avisa vencimientos.</span></li>
           <li><span class="eli-tag">2</span><span><b>Pero solo lo usa el ambiente de pruebas del equipo</b>, no la web real de la empresa. Esa es la única pieza grande que falta.</span></li>
           <li><span class="eli-tag">3</span><span><b>El módulo viejo sigue prendido</b> a propósito, hasta que el nuevo llegue a la web real — se apagarán juntos, no antes.</span></li>
-          <li><span class="eli-tag">4</span><span><b>Dos pantallas menores</b> (flujo de caja, avisos de frentes) tienen el cálculo listo y solo falta dibujarlas.</span></li>
+          <li><span class="eli-tag">4</span><span><b>Ninguna pantalla se quedó a medias.</b> Dos que el acta daba por «solo falta dibujarlas» (flujo de caja, avisos de frentes) resultaron ya estar construidas — el acta mentía, no el código, y hoy se corrigió el papel.</span></li>
         </ul>
       </div>
     </div>
@@ -574,26 +574,26 @@
       <div class="tl-grid">
         <div class="tl-day">
           <div class="tl-n num">6</div>
-          <div class="tl-col"><div class="tl-bar" data-h="5"></div></div>
+          <div class="tl-col"><div class="tl-bar" data-h="4"></div></div>
           <div class="tl-d">01/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">3</div>
-          <div class="tl-col"><div class="tl-bar" data-h="2"></div></div>
+          <div class="tl-n num">0</div>
+          <div class="tl-col"><div class="tl-bar" data-h="0"></div></div>
           <div class="tl-d">02/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">133</div>
-          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
+          <div class="tl-n num">83</div>
+          <div class="tl-col"><div class="tl-bar" data-h="49"></div></div>
           <div class="tl-d">03/08</div>
         </div>
         <div class="tl-day is-today">
-          <div class="tl-n num">116</div>
-          <div class="tl-col"><div class="tl-bar" data-h="87"></div></div>
+          <div class="tl-n num">171</div>
+          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
           <div class="tl-d">04/08</div>
         </div>
       </div>
-      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago (<b>249</b> commits): <b>111</b> docs · <b>80</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros (merge/chore/refactor/a11y/wip). El único commit nuevo desde el corte de las 21:25 es el que publicó ese mismo informe. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
+      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Recontado tras un <code>fetch --unshallow</code>: el clon de esta sesión volvió a llegar con el historial recortado a los commits de hoy, así que <b>01–03 ago cambian frente al informe anterior</b> (que medía sobre ese mismo historial incompleto) — 02/08 pasa de 3 a <b>0</b>, 03/08 de 133 a <b>83</b>. Reparto del 3–4 ago (<b>254</b> commits): <b>115</b> docs · <b>81</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros (merge/chore/refactor/a11y/wip). Un commit real nuevo desde el informe anterior: <code>f1ab72c</code>. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
     </div>
   </div>
 </section>
@@ -649,7 +649,7 @@
     <div class="brand-foot">AIA · Last Planner
       <small>Estado de desarrollo · informe generado desde el repositorio</small>
     </div>
-    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó otra vez con el historial recortado a los commits de hoy — con él, el reparto diario de commits cambió respecto al informe anterior, que medía sobre ese mismo historial incompleto), los <code>goal.md</code> de <code>goals/</code>, los planes de <code>docs/superpowers/plans/</code> contrastados commit a commit contra sus mensajes propuestos, el registro de decisiones, la baseline de deuda y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado. Esta pasada corrió 55 minutos después del corte anterior (21:25 UTC) y repitió el mismo conjunto de comandos: no encontró ningún commit nuevo aparte del que publicó ese informe, así que las cifras de ritmo se refrescaron pero el relato de cada frente no cambió.</p>
+    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó otra vez con el historial recortado a los commits de hoy — con él, el reparto diario de commits del 1–3 de agosto cambió respecto al informe anterior, que medía sobre ese mismo historial incompleto), los <code>goal.md</code> de <code>goals/</code>, los 25 planes de <code>docs/superpowers/plans/</code>, el registro de decisiones, la baseline de deuda (<code>docs/design-system/audit-baseline.json</code>, sin cambios desde el 25 de julio) y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado. Esta pasada encontró un solo commit real nuevo desde el informe anterior (<code>f1ab72c</code>, 18:02 hora local del autor / 23:02 UTC) — corrige una fila del acta de <code>pdc-preparar-b1</code> que daba dos pantallas del PDC por pendientes cuando ya estaban construidas; ver frente 2. El resto de frentes (dark mode, design system, BI, biblia de flujos) no tuvo commits nuevos desde el informe anterior, así que su relato no cambió — solo se refrescaron las cifras de ritmo y se repitió la verificación de cada afirmación contra el árbol actual.</p>
   </div>
 </footer>
 
