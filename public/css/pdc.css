@@ -67,6 +67,30 @@
 	gap: 6px;
 	font-weight: 500;
 }
+
+/* T-5 (2026-08-03): "Actualizar" (btn_actualizarPDC) se promueve a acento
+   unico de la toolbar — es el equivalente literal de "Actualizar Ejecucion"
+   en Programa General, ya acentuado alli. El resto de .btn-pdc-modern queda
+   en su piel neutra; un solo acento por vista (premisa Apple-en-AIA). */
+.btn-pdc-modern.btn-pdc-modern--primary {
+	background-color: var(--ds-active-action-primary);
+	color: var(--ds-active-action-text);
+	border-color: var(--ds-active-action-primary);
+}
+
+.btn-pdc-modern.btn-pdc-modern--primary i {
+	color: var(--ds-active-action-text);
+}
+
+.btn-pdc-modern.btn-pdc-modern--primary:hover {
+	background-color: var(--ds-active-action-primary-hover);
+	border-color: var(--ds-active-action-primary-hover);
+	color: var(--ds-active-action-text);
+}
+
+.btn-pdc-modern.btn-pdc-modern--primary:hover i {
+	color: var(--ds-active-action-text);
+}
 /* Legend Container */
 .pdc-legend {
 	display: flex;

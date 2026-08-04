@@ -205,6 +205,16 @@ html.aia-theme-dark .pg-page {
   gap: var(--ds-space-2);
 }
 
+/* T-5 (2026-08-03): botones de accion ultra compactos — piso AA de 24px
+   (--ds-control-compact-min), no el AAA de 44px que trae .aia-btn por
+   defecto (DESIGN.md/PRODUCT.md). "Actualizar Ejecucion" se deja como
+   .aia-btn sin --secondary a proposito: es la accion primaria de la
+   toolbar (unico acento, el resto queda en segundo plano). */
+.pg-page .pg-toolbar-buttons .aia-btn {
+  min-height: var(--ds-control-compact-min);
+  padding-block: var(--ds-space-1);
+}
+
 .pg-page .pg-status-badges {
   display: inline-flex;
   gap: var(--ds-space-2);
@@ -244,7 +254,10 @@ html.aia-theme-dark .pg-page {
   display: inline-flex;
   align-items: center;
   gap: var(--ds-chip-gap);
-  min-height: var(--ds-target-min);
+  /* T-5 (2026-08-03): piso AA de 24px, no el AAA de 44px — decision 1-bis,
+     sin margen. Son controles que filtran (clic = aplica filtro), no
+     etiquetas: conservan foco visible y aria-pressed abajo. */
+  min-height: var(--ds-control-compact-min);
   font-size: var(--ds-chip-font-size);
   line-height: var(--ds-type-line-compact);
   white-space: nowrap;

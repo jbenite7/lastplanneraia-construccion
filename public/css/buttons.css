@@ -682,6 +682,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min) explicito —
+     antes dependia solo del contenido/padding, sin garantia. */
+  min-height: var(--ds-control-compact-min);
   background-color: #ffffff;
   color: var(--aia-text-secondary, oklch(35% 0.002 260));
   border: 1px solid var(--aia-separators, oklch(86% 0 0));
@@ -689,7 +692,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 500;
   font-size: 0.85rem;
-  padding: 0.3rem 0.8rem;
+  padding: 0.2rem 0.65rem;
   box-shadow: 0 1px 2px oklch(0% 0 0 / 0.05);
   cursor: pointer;
   white-space: nowrap;
@@ -967,9 +970,12 @@
   white-space: normal !important;
   flex-shrink: 0 !important;
 
-  /* Compact chip sizing */
+  /* Compact chip sizing. T-5 (2026-08-03): piso AA de 24px
+     (--ds-control-compact-min), no el AAA de 44px — decision 1-bis, sin
+     margen. Estos chips son controles que filtran, no etiquetas: conservan
+     foco visible y aria-pressed. */
   height: auto !important;
-  min-height: var(--ds-target-min) !important;
+  min-height: var(--ds-control-compact-min) !important;
   max-height: none !important;
   font-size: var(--ds-type-size-xs) !important;
   padding: var(--ds-space-1) var(--ds-space-2) !important;
@@ -985,6 +991,15 @@
 
   transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast) !important;
   border: 1px solid oklch(0% 0 0 / 0.1) !important;
+}
+
+/* T-5 (2026-08-03): foco visible sobre la forma compacta del chip — no
+   existia una regla generica para PS/PDC (PI ya la tenia en
+   programacion-intermedia.css:1517), asi que el foco dependia del outline
+   por defecto del navegador. */
+.pdc-legend-item:focus-visible {
+  outline: var(--ds-outline-width) solid var(--ds-active-focus-ring) !important;
+  outline-offset: var(--ds-outline-offset) !important;
 }
 
 .pdc-legend-item .indicator {

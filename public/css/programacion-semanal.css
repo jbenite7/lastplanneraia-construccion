@@ -193,6 +193,25 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
     flex: 1 1 auto;
 }
 
+/* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min), no el AAA
+   de 44px que trae .aia-btn por defecto. "Confirmar Compromisos" se
+   promueve a acento unico (sin .aia-btn--secondary) porque es el cierre
+   del ciclo semanal — el gate mas consecuente del modulo — y toda esta
+   toolbar era plana, sin jerarquia, antes de este cambio.
+   La regla !important vive en @layer components (linea ~1843), no aqui sin
+   capa — para declaraciones !important el orden de capas se INVIERTE (una
+   capa nombrada gana sobre lo no encapado, al reves que en lo normal); una
+   regla !important aqui perderia siempre contra esa. Ver ese bloque. */
+.ps-page .ps-hot-toolbar-actions .aia-btn,
+.ps-page .ps-dropdown-nav > .aia-btn {
+    padding-block: var(--ds-space-1, 0.25rem);
+    /* Sin esto el rotulo de dos palabras ("Autoprogramar Actividades") hace
+       wrap a dos lineas con el tamano de fuente por defecto de .aia-btn
+       (1rem) y el alto real queda en ~45px pese al min-height compacto. */
+    font-size: var(--ds-type-size-sm, 0.875rem);
+    white-space: nowrap;
+}
+
 .ps-hot-status-badges {
     display: inline-flex;
     gap: calc(4px * var(--ps-hot-scale));
@@ -1841,6 +1860,20 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
         height: var(--ds-target-min) !important;
         block-size: var(--ds-target-min) !important;
         padding-block: var(--spacing-xs) !important;
+    }
+
+    /* T-5 (2026-08-03): piso AA de 24px (--ds-control-compact-min), no el AAA
+       de 44px — decision 1-bis, sin margen. Va DESPUES y con especificidad
+       igual o mayor a los dos bloques !important de arriba (misma capa
+       components): para declaraciones !important el orden de capas se
+       invierte respecto a lo no encapado, asi que solo otra regla en esta
+       misma capa, mas tardia o mas especifica, puede ganarles. */
+    html body.ps-page .header-actions :is(button, a[href]),
+    html body.ps-page #psAlertsLegend .pdc-legend-item,
+    html body.ps-page #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
+        min-height: var(--ds-control-compact-min) !important;
+        height: auto !important;
+        block-size: auto !important;
     }
 
     html body.ps-page #dt_cliente_wrapper :is(.dataTables_scrollHead, .dataTables_scrollBody) table {

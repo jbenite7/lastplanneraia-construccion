@@ -420,6 +420,12 @@
     --ds-motion-reduced: 1ms linear;
     --ds-motion-reduced-duration: 1ms;
     --ds-target-min: 44px;
+    /* T-5 (2026-08-03): piso AA para la familia de botones de accion y chips
+       contadores de las toolbars de tabla (PG, PI, PS, PDC). No es AAA
+       (--ds-target-min, SC 2.5.5): es el minimo EXACTO de WCAG 2.2 SC 2.5.8
+       (AA), sin margen — misma razon y mismo suelo que --ds-table-row-h.
+       Componente compartido: public/css/design-system/components/toolbar-controls.css. */
+    --ds-control-compact-min: 24px;
 
     --ds-space-0: 0;
     --ds-space-1: 0.25rem;

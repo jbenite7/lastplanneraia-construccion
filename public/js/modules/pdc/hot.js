@@ -282,7 +282,7 @@
     var updateLabel = compact ? 'Recargar' : 'Actualizar';
     var alertsLabel = compact ? 'Alertas' : 'Ver alertas';
     var editorActions = canEdit()
-      ? '<button id="btn_actualizarPDC" class="btn-pdc-modern ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">' + updateLabel + ' <i class="fas fa-sync fa-lg"></i></button>'
+      ? '<button id="btn_actualizarPDC" class="btn-pdc-modern btn-pdc-modern--primary ps-btn-gap" title="Actualizar items" onclick="actualizarPDC()">' + updateLabel + ' <i class="fas fa-sync fa-lg"></i></button>'
       : '';
     var automationAction = canEdit()
       ? '<button id="btn_pdcSemiAuto" class="btn-pdc-modern ps-btn-gap" title="Revisar propuestas automáticas"><i class="fas fa-magic" aria-hidden="true"></i> Analizar propuestas</button>'
