@@ -706,6 +706,17 @@
     color: var(--ds-active-text-primary) !important;
   }
 
+  /* Bootstrap pinta `<hr>` con un negro al 10%, calculado para fondos claros.
+     Sobre la superficie oscura del panel da 1,32:1 —medido en
+     /admin/usuarios/crear—, es decir, un separador que no separa: no se ve.
+     Son 7 en tres vistas (dashboard, crear y editar usuario), y ninguna regla
+     lo remapeaba. Va aqui, junto a sus hermanos `.text-muted` y `.bg-white`,
+     porque es exactamente la misma fuga: un valor de Bootstrap correcto en
+     claro que se vuelve invisible al invertir el fondo. */
+  hr {
+    border-top-color: var(--ds-active-border) !important;
+  }
+
   /* Excepcion medida a la regla de arriba. `.text-danger` da 4.24:1
      sobre el lienzo del panel: falla AA por poco, y el unico sitio donde se usa
      como texto suelto es el enlace «Salir» de la navbar. No hay token de rojo
