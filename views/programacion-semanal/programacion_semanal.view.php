@@ -68,16 +68,23 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
             <div class="ps-toolbar-left collapse d-md-flex" id="psMobileActionsPanel">
                 <span class="ps-mobile-actions-title d-md-none">Acciones disponibles</span>
                 <div class="ps-hot-toolbar-actions">
-                    <button type="button" class="leyenda_colores aia-btn aia-btn--secondary" data-toggle="modal" data-target="#modal_leyenda_colores_ps" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> <span>Leyenda</span></button>
                     <button id="btn_autoprogramar" class="aia-btn aia-btn--secondary" aria-label="Autoprogramar Actividades"><i aria-hidden="true" class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
                     <button id="btn_agregar_actividad" type="button" class="aia-btn aia-btn--secondary" aria-label="Agregar Actividad Manual"><i aria-hidden="true" class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
                     <button id="btn_cerrar_compromisos_semana" type="button" class="aia-btn" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
                     <button type="button" id="btn_reabrir_semana" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
                     <button id="btn_tnp" type="button" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
-                    <button id="btn_informe_compromisos" type="button" class="aia-btn aia-btn--secondary" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> <span>Imprimir</span></button>
-                    <button id="btn-export" class="aia-btn aia-btn--secondary" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> <span>Exportar CSV</span></button>
-                    <button id="btn-refresh" class="aia-btn aia-btn--secondary" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> <span>Recargar</span></button>
-                    <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal') ?>
+                    <div class="ps-dropdown-nav ps-hot-overflow-nav" aria-label="Mas acciones">
+                        <button type="button" class="aia-btn aia-btn--secondary btn-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+                            <i aria-hidden="true" class="fas fa-ellipsis-h"></i> <span>Más</span>
+                        </button>
+                        <div class="ps-dropdown-content ps-hot-overflow-content" role="menu">
+                            <button type="button" class="leyenda_colores ps-dropdown-item" data-toggle="modal" data-target="#modal_leyenda_colores_ps" role="menuitem" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> Leyenda</button>
+                            <button id="btn_informe_compromisos" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> Imprimir</button>
+                            <button id="btn-export" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> Exportar CSV</button>
+                            <button id="btn-refresh" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> Recargar</button>
+                            <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal', 'ps-dropdown-item', ['role' => 'menuitem']) ?>
+                        </div>
+                    </div>
                 </div>
             </div>
 
