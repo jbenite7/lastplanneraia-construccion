@@ -1,7 +1,10 @@
 {
   "detector": {
     "ignoreRules": [],
-    "ignoreFiles": [],
+    "ignoreFiles": [
+      "/private/tmp/claude-501/-Volumes-Crucial-X6-Developer-lps-aia/762af9bc-30b7-409b-822d-8c8e2bb0fb50/scratchpad/dark-mode-estado.html",
+      "docs/reportes/dark-mode-estado.html"
+    ],
     "ignoreValues": [
       {
         "rule": "layout-transition",
