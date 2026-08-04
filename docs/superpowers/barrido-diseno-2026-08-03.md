@@ -226,6 +226,29 @@ párrafo**, y daba «no dice qué hacer» en estados que sí lo dicen. Se rehíz
 entero. Sin esa corrección, este barrido habría reportado como defectuosos los mejores estados
 vacíos de la aplicación.
 
+## Sexta pasada horaria del 2026-08-04 — regresión, y un censo mío que estaba mal
+
+Los ejes de auditoría están agotados: reposo, foco, hover, deshabilitado, error, vacío, movimiento,
+zoom, color, estructura, datos reales, gráficos, diálogos y elementos nativos. Así que esta pasada
+no busca novedad: **comprueba que los siete cambios de la noche no rompieron nada**, midiendo en las
+28 rutas los cinco indicadores que esos cambios tocaron.
+
+**Sin regresiones.** Las 28 rutas dan cero en fugas de color claro, diálogos con cromo del
+navegador, `<hr>` invisible, títulos genéricos y overflow horizontal. Único aviso, ya conocido y
+descartado: los dos radios del laboratorio, que usan etiqueta envolvente y la sonda no ve.
+
+**Pero contar en vez de truncar destapó 234 controles anónimos** (`e94f430`): 150 en
+`/admin/proyectos` —tres por proyecto: activo, acceso y plan de compras, sobre 50— y 84 en
+`/admin/usuarios`, uno por usuario. Conceden o revocan acceso a proyectos y activan cuentas, y con
+lector de pantalla sonaban todos igual en una tabla de 50 filas. Cada uno recibe ahora su columna y
+su fila: «Activo — Paris Campestre», «Usuario activo — Juan Felipe Benitez Ramos».
+
+**Corrige un censo mío.** Al arreglar los dos interruptores del dashboard afirmé que eran «las dos
+únicas etiquetas vacías de todo `admin/`». No lo eran: mi `grep` con `[^>]*` **no puede cruzar el
+`<?php echo … ?>`** del atributo `for`, porque el bloque PHP contiene `>`. Los 234 quedaron fuera
+por una limitación del patrón, no porque no existieran. Es la misma familia de error que los ceros
+del ciclo 18 — **un resultado vacío merecía sospecha, no confianza**.
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
