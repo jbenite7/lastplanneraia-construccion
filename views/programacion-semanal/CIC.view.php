@@ -1146,7 +1146,7 @@
 				"lengthMenu": [10],
 
 				"columns":[
-						{"defaultContent":"<button type= 'button' class='editar aia-btn aia-btn--primary btn-sm'><i class='fa fa-edit'></i></button>"},
+						{"defaultContent":"<button type= 'button' class='editar aia-btn aia-btn--primary btn-sm' aria-label='Editar actividad' title='Editar actividad'><i class='fa fa-edit' aria-hidden='true'></i></button>"},
 						{"data":"Id", "visible":false},
 						{"data":"semanasEnProyecto"},
 						{"data":"Semana"},

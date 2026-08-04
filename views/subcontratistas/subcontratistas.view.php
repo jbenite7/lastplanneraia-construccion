@@ -353,7 +353,7 @@
                                  td.innerHTML = '<button class="aia-btn aia-btn--secondary aia-btn--sm" disabled title="No se puede eliminar: tiene registros asociados en otros módulos del proyecto."><i class="fas fa-lock"></i></button>';
                              } else {
                                  // Perfect circular button via .btn-delete CSS class
-                                 td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete"><i class="fas fa-trash"></i></button>';
+                                 td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete" aria-label="Eliminar subcontratista" title="Eliminar subcontratista"><i class="fas fa-trash" aria-hidden="true"></i></button>';
                              }
                          }
                     }

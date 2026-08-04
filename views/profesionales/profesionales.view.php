@@ -306,7 +306,7 @@
                                   const reason = rowData.delete_reason || 'Registro bloqueado';
                                   td.innerHTML = `<button class="aia-btn aia-btn--secondary aia-btn--sm" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
                               } else {
-                                  td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete"><i class="fas fa-trash"></i></button>';
+                                  td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete" aria-label="Eliminar profesional" title="Eliminar profesional"><i class="fas fa-trash" aria-hidden="true"></i></button>';
                               }
                              td.style.textAlign = 'center';
                          }
