@@ -581,3 +581,42 @@ npm run test:design-system:runtime 2>&1 | tail -15
 git push origin main
 ```
 Esperado: estática 8/8 en verde; en runtime, cero `violation` bloqueantes (los `incomplete` ya se reportan aparte por Task 7). Reportar al usuario el estado exacto y qué planes siguen (fases 4–7).
+
+---
+
+## FASE 3-BIS · Unificación de tablas (adenda del 2026-08-03 — ver spec §Adenda)
+
+Las decisiones están tomadas en el spec; el detalle paso a paso se refina al despachar cada
+task, con las lentes de impeccable (critique), ux-heuristics y refactoring-ui cargadas en la
+tarea que corresponda. Orden: 16 → 17 → (18 decide el usuario) → 19, y el task 15 (goldens) se
+mueve al FINAL de esta fase.
+
+### Task 16: Paridad del chip PG/PI/PS (asciende M-08)
+
+Reconciliar el componente ops-state-chip con los matices locales supervivientes de PI/PS y el
+uso de PG: una sola forma (radio, peso, sombra, tamaño) medida en las tres superficies con
+capturas comparadas lado a lado. Lo que sea matiz de módulo justificado se documenta en el
+componente, no en el módulo. Verificación: capturas de los 3 módulos + suite estática + runtime
+de tabla.
+
+### Task 17: changeType como componente del design system
+
+Inventariar los changeType existentes (Handsontable) y las affordances nativas de DataTables y
+AG Grid; crear el skin único (pequeño, sutil, claro — tokens, sin hex) en
+public/css/design-system/components/; aplicarlo a las tres librerías vía adaptadores.
+Verificación en navegador por librería.
+
+### Task 18: Exploración — bordes solo de fila (gate del usuario)
+
+Prototipo A/B en el laboratorio del design system con las tres librerías: variante actual vs
+sin bordes de columna (jerarquía por espaciado/zebra según refactoring-ui). Critique con
+puntuación heurística (impeccable + ux-heuristics), capturas comparadas al usuario, y SU
+decisión antes de tocar producción. Si aprueba: cambio en el contrato --ds-table-* y
+adaptadores, como task de implementación aparte.
+
+### Task 19: Densidad compacta app-wide (gate del usuario sobre PRODUCT.md)
+
+Extender la escala de /plan-compras (28/13/11) a la familia de tablas: tokens de densidad en el
+contrato --ds-table-*, aplicación por adaptador, y actualización de la excepción de
+accesibilidad de PRODUCT.md (de superficie única a familia). Antes de aplicar: mostrar al
+usuario una captura antes/después de PG con la densidad nueva. Después: task 15 (goldens).

@@ -130,6 +130,25 @@ spec, punto por punto y con evidencia**, que es exactamente lo que faltó el 202
 - La puerta de `admin/` toca autenticación: mitigado con spec propio, guard de producción y
   revisión humana explícita.
 
+## Adenda — Fase 3-bis · Unificación de tablas (añadida 2026-08-03, shape con Impeccable)
+
+Cuatro puntos añadidos por el usuario, grillados en entrevista de shape. Modo Operate: la tabla
+es herramienta de trabajo — escaneabilidad y consistencia mandan sobre expresión.
+
+| # | Punto | Decisión del usuario |
+|---|---|---|
+| T-1 | Paridad del chip de estado entre PG, PI y PS (asciende la deuda M-08) | Mismo diseño en los tres: el componente compartido es la única fuente; los matices locales que sobrevivieron el task 13 se reconcilian o se absorben al componente |
+| T-2 | Botones `changeType` (gatillo de filtro en cabecera de columna) | Existen en **las tres librerías** con un solo diseño del design system: pequeño, sutil, claro. Donde la librería trae su propio control (menú de AG Grid), se le aplica el mismo skin en vez de duplicar |
+| T-3 | Tablas sin bordes de columna, solo de fila | **Exploración en el laboratorio primero**: prototipo A/B con las tres librerías, critique con capturas, decisión del usuario viendo — solo entonces toca producción |
+| T-4 | Densidad compacta en todas las tablas | Se extiende la **escala ya medida de `/plan-compras`** (controles 28 px, texto 13 px, piso 11 px) a toda la familia de tablas desktop; la excepción de accesibilidad registrada en PRODUCT.md se amplía de una superficie a la familia, sin relajar contraste AA, foco, teclado ni reduced-motion |
+
+Método exigido: la exploración y el critique usan las lentes de `impeccable` (critique con
+puntuación heurística), `ux-heuristics` (severidad Nielsen) y `refactoring-ui` (jerarquía sin
+bordes: espaciado y zebra antes que líneas) — se cargan al ejecutar esas tareas. T-3 y T-4 se
+deciden con capturas frente al usuario antes de aplicar; T-1 y T-2 son implementación directa
+porque la decisión ya está tomada. Los goldens de la fase 3 (task 15) se recapturan DESPUÉS de
+esta fase para no consagrar dos veces.
+
 ## Decisiones del grilleo (2026-08-03)
 
 1. Alcance: **dark mode completo**, los 4 511 a cero — no solo los 4 módulos.
