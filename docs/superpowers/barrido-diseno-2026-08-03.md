@@ -199,6 +199,33 @@ del usuario.
 produjo hallazgos correctos pero sesgados, y en un caso —C-24— con la recomendación invertida. El
 estado vacío es un caso, no el caso.
 
+## Quinta pasada horaria del 2026-08-04 — los estados vacíos, censados por fin
+
+Dimensión que el mandato nombra desde el principio y que nunca se había barrido de forma
+sistemática: solo se habían elogiado tres o cuatro sueltos. Simetría útil: el sandbox vacío, que
+para auditar datos no sirve, es **el fixture ideal para esto**.
+
+**El resultado es mayoritariamente bueno, y conviene decirlo.** Los estados vacíos de esta
+aplicación explican **por qué** está vacío y **qué hacer**, que es más de lo que se ve en la mayoría
+de productos:
+
+- Programación Semanal: «Sin actividades programadas esta semana» + «Usa «Agregar Actividad» para
+  programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia».
+  Nombra los dos botones exactos.
+- PDC: «No hay paquetes de contratación» + de dónde se arman.
+- Panel lateral de PS/PI/escalamientos: «Ninguna actividad seleccionada» + «Haz clic en cualquier
+  celda de la planilla…».
+
+**La excepción, a C-33:** `/control-cambios` dice «No hay solicitudes de cambio registradas para
+este proyecto.» y ahí termina — sin explicar de dónde salen y **sin ninguna acción en toda la
+vista**. Es el único que deja sin salida, y rompe el estándar que la propia app cumple en el resto.
+No se redactó la frase que falta porque explica una regla de dominio.
+
+**Método, una corrección propia:** la primera sonda evaluaba el título del estado vacío **sin su
+párrafo**, y daba «no dice qué hacer» en estados que sí lo dicen. Se rehízo midiendo el bloque
+entero. Sin esa corrección, este barrido habría reportado como defectuosos los mejores estados
+vacíos de la aplicación.
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
