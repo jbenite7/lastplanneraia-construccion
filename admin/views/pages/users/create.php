@@ -33,14 +33,14 @@ foreach (($roles ?? []) as $code => $role) {
         <div class="col-md-6">
           <div class="form-group">
             <label for="nombre">Nombre Completo</label>
-            <input type="text" name="nombre" class="form-control" id="nombre" placeholder="Nombre completo" required>
-            <span id="nombre-error" class="text-danger admin-field-error">Este nombre ya esta registrado.</span>
+            <input type="text" name="nombre" class="form-control" id="nombre" placeholder="Nombre completo" aria-describedby="nombre-error" required>
+            <span id="nombre-error" class="text-danger admin-field-error" role="alert" aria-live="polite">Este nombre ya está registrado.</span>
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" name="email" class="form-control" id="email" placeholder="Email">
-            <span id="email-error" class="text-danger admin-field-error">Este email ya esta registrado.</span>
+            <input type="email" name="email" class="form-control" id="email" placeholder="Email" aria-describedby="email-error">
+            <span id="email-error" class="text-danger admin-field-error" role="alert" aria-live="polite">Este email ya está registrado.</span>
           </div>
 
           <div class="form-group">
