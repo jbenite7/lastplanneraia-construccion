@@ -89,7 +89,7 @@ que es justo para lo que existe — el porqué, en [[docs/flujos/README|su READM
 - **Cascada LPS** — [[docs/flujos/lps-cascada|invariantes y candado de semana]] ·
   [[docs/flujos/lps-programa-general|programa general]] · [[docs/flujos/lps-intermedia|intermedia]] ·
   [[docs/flujos/lps-semanal|semanal]] · [[docs/flujos/lps-aprendizaje|CNP/CNC/CIC]]
-- **Compras** — [[docs/flujos/pdc-plan-compras|plan de compras]]
+- **Compras** — [[docs/flujos/compras-v2|plan de compras v2]]
 - **Soporte** — [[docs/flujos/soporte|subcontratistas, profesionales, control de cambios]]
 - **Lectura** — [[docs/flujos/lectura-bi|indicadores y Torre de Control]]
 

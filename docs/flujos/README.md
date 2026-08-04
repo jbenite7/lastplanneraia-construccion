@@ -82,7 +82,7 @@ Se ejecutan por matriz esfuerzo/impacto, no en orden narrativo.
 |---|---|---|---|
 | T1 | Transversal — autenticación, proyecto, RBAC | `AUTH`, `PROY`, `RBAC` | **primera pasada cerrada** (2026-08-04): 3 documentos, 7 pruebas en verde, 10 hallazgos. Quedan los pendientes que cada documento declara al final |
 | T2 | Cascada LPS | `PG`, `CRO`, `PI`, `PS`, `APR`, `CAS` | **primera pasada cerrada** (2026-08-04): 5 documentos, 26 escenarios, 5 pruebas en verde, 5 hallazgos |
-| T3 | Plan de Compras v2 | `PDC` | **primera pasada (puerta) cerrada** (2026-08-04): 8 escenarios de autorización y acotación, 3 pruebas en verde, 0 hallazgos. Falta la cadena de dominio |
+| T3 | Plan de Compras **v2** | `PDC` | **rehecha el 2026-08-04.** La primera versión documentaba v1 (`/api/pdc/*`); al deprecarse v1 se retiró y se escribió desde cero sobre `/plan-compras` y sus 70 rutas: 5 escenarios, 0 hallazgos. Falta la cadena de dominio |
 | T4 | Soporte | `SOP` | **primera pasada cerrada** (2026-08-04): 3 escenarios, 2 pruebas en verde, 1 hallazgo mayor (CSRF ausente en seis módulos). Escalamientos queda entero |
 | T5 | Lectura — indicadores y BI | `BI` | **primera pasada cerrada** (2026-08-04): 6 escenarios, 1 hallazgo. Falta la comprobación cruzada de cifras contra su origen |
 

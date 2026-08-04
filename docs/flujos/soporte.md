@@ -22,7 +22,7 @@ el contrato auto/preview·apply·undo·feedback·metrics que define contratos» 
 Listado. Se comprobó antes de escribirlo para no registrar una alarma falsa.
 
 **Consecuencia para quien trabaje aquí:** los escenarios de esos dos módulos son los de
-`docs/flujos/pdc-plan-compras.md`. Lo único propio de Contratos es el flujo semi-automático, y hoy
+`docs/flujos/pdc-v2.md`. Lo único propio de Contratos es el flujo semi-automático, y hoy
 está atado al PDC (ver `PDC-007` y `memoria/trampas/semi-auto-solo-lo-usa-pdc.md`).
 
 Los módulos con backend propio son cuatro: **subcontratistas, profesionales, control de cambios** y

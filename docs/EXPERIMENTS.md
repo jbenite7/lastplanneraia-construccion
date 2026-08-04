@@ -35,8 +35,25 @@ comprometida de antemano.)*
 | La invariante que el propio `ProjectSelectorController:81-85` se impone —que la lista y la entrada traten `Acceso` igual— no se cumple: `index()` filtra en SQL con `pm.role` **crudo** (`:41`) y `enterProject()` comprueba en PHP con el rol **ya normalizado** (`:122`). Para una cuenta cuyo `role` no sea literalmente `A`/`D` pero normalice a uno de ellos, un proyecto cerrado no aparece en la lista y sin embargo deja entrar por nombre. Incoherencia, no escalada | PROY-006 (T1) | 5 | 8 | 7 | 280 | — | abierto |
 | La barra de progreso del selector de proyectos es `rand(0, 100)` (`src/Controllers/Core/ProjectSelectorController.php:49`): un número inventado presentado como dato de avance en la primera pantalla que ve todo el mundo. O se cablea a una métrica real o se retira | PROY-001 (T1) | 5 | 10 | 8 | 400 | — | abierto · decide: usuario |
 | Cuando la sesión caduca durante una petición de datos de una grilla, el usuario **pierde el trabajo sin ver un error entendible**. `SessionMiddleware` solo responde el 401 JSON si la petición trae la cabecera propietaria `X-AIA-Expect-Json` (`src/Core/SessionMiddleware.php:91-96`); si no, manda un `Location: /login`, que un `fetch` sigue y devuelve el HTML del login como si fueran datos. Y esa cabecera la envían **solo 2 archivos** —`public/js/core/SessionTimeoutManager.js:145` y `public/js/components/notifications.js:25`—: **ninguno** de los módulos de grilla la manda (`grep -rl X-AIA-Expect-Json public/js/modules/` → 0), incluidos `programacion_intermedia/hot.js` y `programa_actualizar/hot_actualizar.js`. Encaja con la subentrega del Residente en `docs/CUSTOMER.md`: el trabajo se pierde justo cuando más caro sale | AUTH-002 (T1) | 8 | 8 | 6 | 384 | — | abierto |
-| `AGENTS.md:23` afirma que «Listado de Actividades, Contratos y PDC comparten los contratos `auto/preview`, `auto/apply`, `auto/undo`, `auto/feedback` y `auto/metrics`», y hoy **solo el PDC los usa**. Las 13 rutas `auto/*` de `public/index.php:256-268` son todas `/api/pdc/` y apuntan a los métodos `*Pdc`; `SemiAutoController` tiene además **12 métodos `*Listado` sin una sola ruta que los invoque** (`grep "Listado']" public/index.php` → 0), y `semi_auto_review.js` solo lo carga `views/pdc/pdc.view.php:601`. O el contrato de `AGENTS.md` describe una intención que se quedó a medias, o el cableado de Listado se perdió: hay 12 métodos de servicio esperando rutas que no existen | T4 (redacción del plan, 2026-08-04) | 7 | 9 | 5 | 315 | — | abierto · decide: usuario |
+| `AGENTS.md:23` afirma que «Listado de Actividades, Contratos y PDC comparten los contratos `auto/preview`, `auto/apply`, `auto/undo`, `auto/feedback` y `auto/metrics`», y hoy **solo el PDC los usa**. Las 13 rutas `auto/*` de `public/index.php:256-268` son todas `/api/pdc/` y apuntan a los métodos `*Pdc`; `SemiAutoController` tiene además **12 métodos `*Listado` sin una sola ruta que los invoque** (`grep "Listado']" public/index.php` → 0), y `semi_auto_review.js` solo lo carga `views/pdc/pdc.view.php:601`. O el contrato de `AGENTS.md` describe una intención que se quedó a medias, o el cableado de Listado se perdió: hay 12 métodos de servicio esperando rutas que no existen | T4 (redacción del plan, 2026-08-04) | 7 | 9 | 5 | 315 | — | **cerrado: no se arregla** — `SemiAutoController` y las rutas `/api/pdc/auto/*` son PDC v1, deprecado por decisión del usuario del 2026-08-04. Queda pendiente retirar la afirmación de `AGENTS.md:23`, que seguirá siendo falsa aunque el código desaparezca |
 | `/indicadores` oculta el informe solo en el navegador: el servidor no comprueba el rol. `IndicadoresController` no tiene ningún guard (ni RBAC, ni 403), y `views/indicadores/indicadores.view.php:111` declara `POWER_BI_REPORT_URL` **antes** de que `:151` decida ocultarla, así que la URL viaja en el HTML de todos los roles, incluidos los cuatro restringidos `G`, `S`, `SG`, `C`. El contraste está en el módulo hermano: `src/Controllers/Bi/BiViewController.php:179` sí responde 403 de servidor | T5 (redacción del plan, 2026-08-04) | 6 | 9 | 7 | 378 | — | abierto |
+
+
+### Hallazgos cerrados por la deprecación del PDC v1 (2026-08-04)
+
+El usuario decidió deprecar el PDC v1 —`/pdc`, `/api/pdc/*`, y los módulos «Listado de Actividades»
+y «Contratos» que cuelgan de esas rutas—. Los hallazgos cuyo código está en retirada se cierran como
+**no se arregla**, en vez de quedarse compitiendo por prioridad con los de código vivo:
+
+- **CSRF y permisos de `PdcApiController`** (`/api/pdc/save`, `/api/pdc/update-cell`): nunca llegaron
+  a entrar al backlog porque la verificación no encontró fallo — el v1 sí validaba. Sin efecto.
+- **`AGENTS.md:23` sobre los contratos `auto/*` compartidos**: cerrado arriba. **Ojo:** el código
+  desaparecerá, pero la frase de `AGENTS.md` seguirá afirmando algo falso. Retirarla es trabajo
+  aparte y sigue pendiente.
+
+Lo que **no** se cierra: la comprobación de acotación por `subpaquete_id` de `PlanFechasService`,
+porque ese servicio es de **v2** (`src/Services/Pdc/`, consumido por `PlanComprasPlanController`) y
+sobrevive a la deprecación. Está en `docs/flujos/compras-v2.md` como `PDC-005`.
 
 ### Nota sobre el hallazgo de `/indicadores`
 

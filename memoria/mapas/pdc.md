@@ -24,7 +24,7 @@ diagnóstico. Los datos de arranque están en
 ## Qué debe pasar
 
 El comportamiento esperado, escenario por escenario, está en
-[[docs/flujos/pdc-plan-compras|la biblia del PDC]]: quién puede cada operación, qué exige CSRF y por qué toda
+[[docs/flujos/compras-v2|la biblia del PDC v2]]: quién puede cada operación, qué exige CSRF y por qué toda
 escritura del plan de fechas se acota por `subpaquete_id`. Este mapa dice dónde vive el código; la
 biblia, qué debe hacer.
 
