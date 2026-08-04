@@ -682,6 +682,11 @@ body {
   right: 20px;
   width: 50px;
   height: 50px;
+  /* El piso de area tactil de `programacion-semanal.css` fija
+     `height: auto !important` sobre este mismo boton, asi que la altura de
+     arriba no llega y el circulo salia 50x44. La proporcion cuadrada consigue
+     lo mismo sin entrar en una guerra de `!important` y respetando ese piso. */
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--aia-green-dark, oklch(35.5% 0.09 143.5)); /* Verde Oscuro Oficial AIA */
   backdrop-filter: blur(12px) saturate(140%);
@@ -807,112 +812,34 @@ body {
    DESKTOP OPTIMIZATION (>= 992px): Sidebar Vertical Fija
    ======================================== */
 @media (min-width: 992px) {
-  .lps-sidebar-trigger {
-    bottom: auto;
-    top: 0;
-    right: 0;
-    width: var(--lps-rail-width);
-    height: 100vh;
-    border-radius: 0;
-    background: var(--aia-green-dark, oklch(35.5% 0.09 143.5));
-    backdrop-filter: blur(16px) saturate(120%);
-    -webkit-backdrop-filter: blur(16px) saturate(120%);
-    border: none;
-    border-left: 1px solid rgba(26, 60, 42, 0.12);
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.04);
-    z-index: var(--ds-z-shell-rail, 2050);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 0;
-    box-sizing: border-box;
-  }
-
-  .lps-sidebar-trigger:hover,
-  .lps-sidebar-trigger:focus-visible {
-    transform: none;
-    width: var(--lps-rail-hover-width); /* Sutil aumento interactivo de ancho */
-    background: var(--aia-green, oklch(43.86% 0.084 142.5));
-    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
-  }
-
-  .lps-sidebar-content {
-    flex-direction: column;
-    gap: 20px;
-    height: 100%;
-    justify-content: center;
-  }
-
-  .lps-sidebar-icon {
-    font-size: 1.2rem;
-  }
-
-  .lps-sidebar-text {
-    display: block !important;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    margin-top: 10px;
-    transition: color 0.2s ease;
-  }
-
-  .lps-sidebar-trigger:hover .lps-sidebar-text {
-    color: #ffffff;
-  }
-
-  /* Posición del Badge de Alerta en Desktop */
-  .lps-sidebar-badge {
-    position: absolute;
-    top: 26px;
-    right: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 26px;
-    height: 26px;
-    border-radius: 999px;
-    font-size: 0.9rem;
-    line-height: 1;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.82);
-    background: #e53935;
-    color: #ffffff;
-  }
-
+  /* El disparador es un boton flotante TAMBIEN en escritorio.
+     Antes era un carril de 42px a lo alto de la pantalla que, ademas de ocupar
+     su propio ancho, obligaba a `body`, navbar y barra de contexto a reservarle
+     46px permanentes por la derecha (`--lps-rail-safe-width`) — ancho que las
+     tablas no podian usar aunque el cajon estuviera cerrado, que es su estado
+     habitual. Se adopta el FAB que este mismo archivo ya define para pantallas
+     pequenas, asi que aqui NO se inventa un componente: solo se deja de
+     sobreescribirlo. El rotulo vertical «CONCURRENCIA LPS» desaparece con el
+     carril; el nombre accesible del boton no se pierde porque vive en su
+     `aria-label`, no en ese texto.
+     Contrapartida asumida: se pierde la etiqueta permanente en pantalla, de la
+     que el icono y el `aria-label` pasan a ser el unico anuncio. */
   .lps-sidebar-trigger.has-crisis {
-    background: linear-gradient(180deg, #9a1f1f 0%, #e53935 100%) !important;
+    background: linear-gradient(135deg, #9a1f1f 0%, #e53935 100%) !important;
     animation: lps-pulse-glow 2s infinite ease-in-out;
   }
 
   .lps-sidebar-trigger.has-attention {
-    background: linear-gradient(180deg, #a0731a 0%, #ffca28 100%) !important;
+    background: linear-gradient(135deg, #a0731a 0%, #ffca28 100%) !important;
     animation: none;
   }
 
-  .lps-sidebar-trigger.has-attention:hover .lps-sidebar-text,
-  .lps-sidebar-trigger.has-attention:focus-visible .lps-sidebar-text {
-    color: #1a3c2a;
-  }
-
-  .lps-sidebar-trigger.has-crisis .lps-sidebar-badge {
-    position: absolute;
-    top: 26px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: lps-desktop-badge-heartbeat 1.5s infinite ease-in-out;
-  }
-
-  .lps-sidebar-trigger.has-attention .lps-sidebar-badge {
-    position: absolute;
-    top: 26px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: none;
+  /* El carril reservaba este ancho a perpetuidad; el FAB flota sobre el
+     contenido y no necesita reservar nada, asi que las tablas recuperan los
+     46px. El cajon abierto sigue empujando con `--lps-context-drawer-width`,
+     que no se toca. */
+  :root {
+    --lps-rail-safe-width: 0px;
   }
 
   /* Ajuste Dinámico de Layout para Evitar Solapamiento de Sidebar y Drawer.
