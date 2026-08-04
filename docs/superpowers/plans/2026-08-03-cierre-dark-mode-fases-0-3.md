@@ -668,3 +668,16 @@ Debe cubrir al menos las condiciones que `PSStateMachine.classifyState()` evalú
 Aplica a Programación Semanal, y comprobar si Programación Intermedia tiene el mismo silencio
 (su máquina de estados es hermana). Verificación en navegador con un caso real de estado retenido,
 más el ciclo triple. NO recapturar goldens.
+
+### Task 24: La ruptura de palabras sigue viva en Programa General (ciclo del 2026-08-03)
+
+El task 19 corrigió el truncado ambiguo de `/pdc` en el punto compartido, pero el ciclo de
+auditoría midió que **en PG las palabras siguen partiéndose**: «Crítica» renderiza 33 px —el ancho
+de «Crític»— en dos líneas dentro de una cabecera de 56 px, y las celdas hacen lo mismo
+(«HOMECENTE R CALI»). Severidad 3 (Nielsen H6): obliga a reconstruir la palabra al leer.
+
+Ojo al diagnóstico: `word-break` y `overflow-wrap` resuelven `normal` tanto en el `th` como en su
+`div.relative`, así que **el mecanismo no es el obvio** — puede ser un ancho de columna menor que
+la palabra más un wrapping heredado de otro clon de Handsontable, o un carácter invisible en el
+texto. Medir antes de tocar: reproducir el corte, identificar qué regla lo produce, y solo entonces
+arreglar. Alcance: cabeceras y celdas de PG; comprobar si PI y PS comparten el defecto.
