@@ -718,3 +718,23 @@ el `title` no duplique ni pise el tooltip de ayuda que ya llevan algunas cabecer
 
 Y anotar la cura de fondo, que no es de este task: hay 16 columnas compitiendo en 1180 px. Mientras
 eso siga, cualquier cabecera larga se cortará por definición.
+
+### Task 27: Controles sin fondo declarado en una app dark-only (ciclo del 2026-08-04)
+
+**Severidad 3, preexistente.** Medido en `/pdc` a 1180×820 con `data-aia-theme="dark"`:
+«Desglosar», «Ver alertas» y «Limpiar filtros» resuelven `background-color: rgb(255,255,255)` con
+texto `oklch(0.35 …)`. Sin filtros ni ancestros que lo compensen.
+
+Causa: **ninguna regla de la aplicación declara el fondo de `.btn-pdc-modern` sin modificador** —
+se delega al navegador. `color-scheme` sí está en `dark` (hipótesis descartada), así que la
+garantía que se le supone al navegador no se cumple. El task 22 solo añadió el modificador
+`--primary`; el diff confirma que no retiró ningún fondo.
+
+Arreglo: declarar el fondo, borde y color de texto de esos controles con tokens `--ds-*` en el
+componente compartido, no por módulo. **Y barrer si hay más controles en la misma situación**:
+cualquier `button`, `input` o `select` sin fondo declarado es una fuga a claro esperando ocurrir,
+y este plan no puede cerrar el dark mode dejando el aspecto de un control al criterio del
+navegador. Inventariar los que aparezcan.
+
+Verificación: medir `backgroundColor` y contraste del texto en las cuatro superficies, más
+`/control-cambios` y `/indicadores` por si comparten el patrón.
