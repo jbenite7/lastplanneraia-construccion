@@ -194,7 +194,7 @@
 		      </div>
 		      <div class="modal-body">
 		        <div class="row">
-		          <div id="cuadro4" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
+		          <div id="cuadro4_eliminarActualizacion" class="cuadro4 col-sm-12 col-md-12 col-lg-12 ">
 		            <form enctype="multipart/form-data" class="form form-horizontal" id="formEliminarActualizacion" name="formEliminarActualizacion" action="" method="POST">
 		              <div class="form-group parametro_cargarExcel">
 										<p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'>¿Desea eliminar esta actualización del cronograma del proyecto?</p>
@@ -202,7 +202,7 @@
 		              <div class="form-group">
 		                <div class="col-sm-12">
 		                  <input type="submit" class="aia-btn aia-btn-primary" value="Aceptar" aria-label="Aceptar eliminar actualización">
-		                  <input id="btn_listar" type="button" class="aia-btn aia-btn-ghost" value="Cancelar" data-dismiss="modal" aria-label="Cancelar eliminar">
+		                  <input id="btn_listar_eliminarActualizacion" type="button" class="aia-btn aia-btn-ghost" value="Cancelar" data-dismiss="modal" aria-label="Cancelar eliminar">
 		                </div>
 		              </div>
 		              <!--Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no-->
