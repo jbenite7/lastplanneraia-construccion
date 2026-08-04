@@ -22,6 +22,7 @@
 @import url("/css/design-system/components/dialog.css?v=1.0.0");
 @import url("/css/design-system/components/bi-figure.css?v=1.0.0");
 @import url("/css/design-system/components/primitives.css?v=1.0.0");
+@import url("/css/design-system/components/ht-empty-state.css?v=1.0.0");
 @import url("/css/design-system/adapters/legacy-bridge.css?v=1.0.0");
 @import url("/css/design-system/adapters/handsontable.css?v=1.0.0");
 @import url("/css/design-system/adapters/programa-general-handsontable.css?v=1.0.0");
