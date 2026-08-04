@@ -105,7 +105,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
-      "sha256": "28debd5732900b0bf4e4ccce64ccd4ac14c52a60ce748a9ffc7b4f5c4e9ca332"
+      "sha256": "7af07d9da440e3b12d7a0ea7d72217d5dc307eaaf56bfdbef3c2c9a5f75055a2"
     },
     {
       "id": "actions-dark-1440x900",
@@ -121,7 +121,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
-      "sha256": "128c7428acd20558b3a23fc9256949d2b10b4e45541dfe9dd590894cf015fcec"
+      "sha256": "265980329a63b9c6ee16ff3ff2bdcc5aa5929d3bfedec627fb148f0d6526d6c0"
     },
     {
       "id": "bi-primitives-dark-1180x820",
@@ -137,7 +137,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1180x820.png",
-      "sha256": "47c9e9a51001fb0914a77d8cc50a02939379065ad8a655bd330e7b92a7710c96"
+      "sha256": "82bd49b13bda5259f05c787d8d2b6d21b1a65087ba579457cd666d8c003c4e17"
     },
     {
       "id": "bi-primitives-dark-1440x900",
@@ -153,7 +153,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1440x900.png",
-      "sha256": "bc7c9da7bdc809ce6c79ad759c59a2749684bc33996f09dd59fa7eb5e43c1c64"
+      "sha256": "cc90bc5d4f6ab099265e5078a0f3f9049e96fbc3e7ff9f626aedccb4744b7abe"
     },
     {
       "id": "data-display-dark-1180x820",
@@ -169,7 +169,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1180x820.png",
-      "sha256": "07c203818fe6c681d7bc9c4684ad2135aed89c75d43406f1edea9569ce944564"
+      "sha256": "c53e2337c2e22537a4c2b1003457fd7c422828eb5545932c538eed4c07deb767"
     },
     {
       "id": "data-display-dark-1440x900",
@@ -185,7 +185,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
-      "sha256": "feccf731d5f72356c21e920efbb34ce1b479ab421cd3cdbb1c08ad4b96f47ddf"
+      "sha256": "1cfce06e70d4163a020b1d62ab2e7a35cdd45fc0e4553a1848de5704b52f159c"
     },
     {
       "id": "forms-filters-dark-1180x820",
@@ -201,7 +201,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1180x820.png",
-      "sha256": "c62330185656b4d75a92861ccf69952132dd9ffde702f506bfac39736e791620"
+      "sha256": "b3ec385bc4090928f899c61dcf598f72d64a7a479c7c3a5469ba329cbde0fb33"
     },
     {
       "id": "forms-filters-dark-1440x900",
@@ -217,7 +217,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1440x900.png",
-      "sha256": "dfa1b9c3ed7e7dbfb484e7885b39f030daca2323b0138d1544e20117968516f9"
+      "sha256": "4888307c2aa35b054c38ef488a1076d981d387c94c9063c87d908a154b61230e"
     },
     {
       "id": "foundations-dark-1180x820",
@@ -233,7 +233,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1180x820.png",
-      "sha256": "220d216cbc46abd1940df386ee0713da0121323a4533884cf8a4c5307c82a202"
+      "sha256": "e171cb6411f116ba084c34ed862a7df0f6b3ff84e285d810b06ec5f58be4247c"
     },
     {
       "id": "foundations-dark-1440x900",
@@ -249,7 +249,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
-      "sha256": "287d31d89cc183f2c6bd6590e6afbc53dd6d782a95d7d9e32ebbc2a3c241fab1"
+      "sha256": "39d9837c417681aa6d5e9255272e51ddd9b4a593ab7e16bb4033cbd53787d4b7"
     },
     {
       "id": "overlays-dark-1180x820",
@@ -265,7 +265,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1180x820.png",
-      "sha256": "bbbaaf35073114988c483c737698e28f93918a1f87a1435a654efe29597d07f0"
+      "sha256": "0da408a43b4358ee308b800c9aaa261802d3881b4f9c743054b9bbf30ef9d60a"
     },
     {
       "id": "overlays-dark-1440x900",
@@ -281,7 +281,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1440x900.png",
-      "sha256": "3aa76240bfc57da163433e857e1a48f757368eee2d9dd9bf1b0f7913d1de979c"
+      "sha256": "1d553427c242cd7addbad26f1cca2b81668ad5e80bbb88460e518564466560d3"
     },
     {
       "id": "page-structure-dark-1180x820",
@@ -297,7 +297,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1180x820.png",
-      "sha256": "958bc9282859b59884504f781520096706d6ee8226639d861e34b7d363b8bfce"
+      "sha256": "4dfd6691d471a8ab9dcddec5fd067e8ffc17866168dcdf669c5afb01c8abd8e6"
     },
     {
       "id": "page-structure-dark-1440x900",
@@ -313,7 +313,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1440x900.png",
-      "sha256": "df6619634b432c864b4290e38243fa8e598b4d706348893aaba7401dd5d90a90"
+      "sha256": "bf3fe0d044c7f8ea2bd697eed6d04cb758d6a82d107d0c0613a1e34f1d9caf07"
     },
     {
       "id": "shell-navigation-dark-1180x820",
@@ -329,7 +329,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
-      "sha256": "0609cf0e42bb22f4ee639653853f9cf15fd365c3ce543a6e6c5cc62eb7f39ee5"
+      "sha256": "b3813dd72cad55403fd9baefad273821a669ed0fb1394b8d8060d153dd8df495"
     },
     {
       "id": "shell-navigation-dark-1440x900",
@@ -345,7 +345,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
-      "sha256": "eecd86517048463295a8057004038de9e4f8b69b1e88a9c495b0a772be954137"
+      "sha256": "c508a946d329ac07c6f8fbb9fc9d3c65d39c4331b1669f646972eac03aab6d7f"
     },
     {
       "id": "states-feedback-dark-1180x820",
@@ -393,7 +393,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "b9bdba6a29a90e5cfeb385b0340ad94434f05c01a89153022c453a81575fb5b0"
+      "sha256": "f92a4afe44bd17db60f56896c5c3c2588e58a0d2c9ea8b737706825f7250f09c"
     },
     {
       "id": "vendor-adapters-dark-1440x900",
@@ -409,7 +409,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "835ff7f2b253ed0de79f636340197d2cba8292fe4ab132a68ae376660a776679"
+      "sha256": "9ba83ee37e8d4b0cec2ebc9989a12c4e026b1968651e40a392056a7abaa4debb"
     }
   ]
 }
