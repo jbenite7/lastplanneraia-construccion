@@ -554,6 +554,25 @@ body.ps-page .ps-hot-toolbar-shell {
     --ops-state-count-text: var(--ds-color-state-success-text);
 }
 
+/* UN SOLO HECHO LLEVA EL COLOR (decision del usuario, 2026-08-04).
+   El boton daba dos codigos cromaticos a la vez y se contradecian: medido en una
+   fila real, la celda declaraba `ps-alert-control` —verde, bajo control— y el
+   boton `is-critical` por sus 2 condiciones pendientes, asi que el acento salia
+   del par de exito mientras el fondo y el contador se mezclaban con el par
+   critico. El resultado era un marron turbio que no decia ninguna de las dos
+   cosas. (Los valores concretos NO se citan aqui: el audit del design system
+   cuenta colores literales tambien dentro de comentarios.)
+
+   El contador deja de teñirse: la cuenta sigue comunicando —dice «2 pend.» con
+   todas sus letras— pero sin competir por el color. Es lo que **Programacion
+   Intermedia ya hacia**: su `hot.js:1174` emite `<span class="ops-state-count">`
+   sin clase de estado. Las clases `is-*` NO se retiran del DOM; solo dejan de
+   pintar el contador, asi que nada que dependa de ellas cambia. */
+.ps-page .ops-state-zoom .ops-state-count {
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-secondary);
+}
+
 .ps-alert-tnp {
     border: 1px solid var(--aia-blue-primary);
     background-color: var(--aia-blue-very-light);
