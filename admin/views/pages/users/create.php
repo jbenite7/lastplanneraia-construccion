@@ -58,14 +58,14 @@ foreach (($roles ?? []) as $code => $role) {
           </div>
 
           <div class="form-group">
-            <label for="password">Contrasena</label>
+            <label for="password">Contraseña</label>
             <div class="input-group">
-              <input type="password" name="password" class="form-control" id="password" placeholder="Contrasena" required>
+              <input type="password" name="password" class="form-control" id="password" placeholder="Contraseña" required>
               <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" id="generatePass" title="Generar contrasena">
+                <button type="button" class="btn btn-outline-secondary" id="generatePass" title="Generar contraseña">
                   <i class="fas fa-magic"></i>
                 </button>
-                <button type="button" class="btn btn-outline-secondary" id="togglePass" title="Ver/Ocultar contrasena">
+                <button type="button" class="btn btn-outline-secondary" id="togglePass" title="Ver/Ocultar contraseña">
                   <i class="fas fa-eye"></i>
                 </button>
               </div>
@@ -115,15 +115,15 @@ $(document).ready(function () {
       '<div class="assignment-row">' +
         '<div class="row align-items-end">' +
           '<div class="col-md-7">' +
-            '<label>Proyecto</label>' +
-            '<select class="form-control assignment-project" name="assignments[' + idx + '][project_id]" required>' +
+            '<label for="assignment-project-' + idx + '">Proyecto</label>' +
+            '<select id="assignment-project-' + idx + '" class="form-control assignment-project" name="assignments[' + idx + '][project_id]" required>' +
               '<option value="">Seleccione un proyecto</option>' +
               projectOptionsHtml +
             '</select>' +
           '</div>' +
           '<div class="col-md-4">' +
-            '<label>Rol</label>' +
-            '<select class="form-control assignment-role" name="assignments[' + idx + '][role]" required>' +
+            '<label for="assignment-role-' + idx + '">Rol</label>' +
+            '<select id="assignment-role-' + idx + '" class="form-control assignment-role" name="assignments[' + idx + '][role]" required>' +
               roleOptionsHtml +
             '</select>' +
           '</div>' +
@@ -238,7 +238,7 @@ $(document).ready(function () {
     }
     $password.val(password).attr('type', 'text');
     $togglePassIcon.removeClass('fa-eye').addClass('fa-eye-slash');
-    toastr.success('Contrasena generada');
+    toastr.success('Contraseña generada');
   });
 
   $('#togglePass').on('click', function () {
@@ -336,7 +336,7 @@ $(document).ready(function () {
             'Hola ' + nombre + ',\n' +
             'Se ha creado tu cuenta de acceso a la plataforma de Last Planner:\n' +
             'Usuario: ' + usuario + '\n' +
-            'Contrasena: ' + password + '\n' +
+            'Contraseña: ' + password + '\n' +
             'Puedes ingresar aqui: https://lastplanneraia.com';
 
           AIA.Notice.dialog({
@@ -347,7 +347,7 @@ $(document).ready(function () {
                 '<p>Comparte estos datos de forma segura:</p>' +
                 '<div class="admin-credentials-block mb-3">' +
                   '<strong>Usuario:</strong> <code>' + usuario + '</code><br>' +
-                  '<strong>Contrasena:</strong> <code>' + password + '</code>' +
+                  '<strong>Contraseña:</strong> <code>' + password + '</code>' +
                 '</div>' +
                 '<button type="button" class="btn btn-success btn-block" id="btnCopyCreds">' +
                   '<i class="fab fa-whatsapp"></i> Copiar para enviar' +

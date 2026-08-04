@@ -74,8 +74,8 @@ $forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
           </div>
 
           <div class="form-group">
-            <label for="password">Contrasena (dejar en blanco para no cambiar)</label>
-            <input type="password" name="password" class="form-control" id="password" placeholder="Nueva contrasena">
+            <label for="password">Contraseña (dejar en blanco para no cambiar)</label>
+            <input type="password" name="password" class="form-control" id="password" placeholder="Nueva contraseña">
           </div>
 
           <div class="form-group mb-0">
@@ -83,9 +83,9 @@ $forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
             <input type="hidden" name="force_password_change" value="0">
             <div class="custom-control custom-switch">
               <input type="checkbox" class="custom-control-input" id="force_password_change" name="force_password_change" value="1" <?php echo $forcePasswordChangeEnabled ? 'checked' : ''; ?>>
-              <label class="custom-control-label" for="force_password_change">Forzar cambio de contrasena</label>
+              <label class="custom-control-label" for="force_password_change">Forzar cambio de contraseña</label>
             </div>
-            <small class="text-muted">La bandera seguirá activa hasta que el usuario cambie su contrasena o un admin la desactive.</small>
+            <small class="text-muted">La bandera seguirá activa hasta que el usuario cambie su contraseña o un admin la desactive.</small>
           </div>
         </div>
       </div>

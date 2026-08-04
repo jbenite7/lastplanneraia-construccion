@@ -212,6 +212,27 @@
     background-color: transparent;
   }
 
+  /* Select2 en los formularios de admin/ llegaba SIN vestir: el puente de
+     `legacy-bridge.css` le devuelve la geometria interna, pero nadie le daba
+     superficie. Medido en /admin/usuarios/crear a 1180x820: el campo «Cargo»
+     rendia fondo transparente frente a la superficie elevada de sus hermanos,
+     CERO borde frente a 1px, radio 0 frente a 12px y 44px de alto frente a 38.
+     Entre campos enmarcados, se leia como si no fuera un campo. Se le da el
+     mismo par superficie/borde que `.form-control` para que la fila de
+     controles vuelva a ser una sola familia. */
+  .select2-container--bootstrap4 .select2-selection,
+  .select2-container--default .select2-selection {
+    background-color: var(--ds-active-surface-raised);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    color: var(--ds-active-text-primary);
+  }
+
+  .select2-container--bootstrap4 .select2-selection:focus-within,
+  .select2-container--default .select2-selection:focus-within {
+    border-color: var(--ds-active-text-secondary);
+  }
+
   /* El icono de `.small-box` es decoracion de fondo: AdminLTE lo pinta como
      marca de agua, pero al retintarlo a la tinta clara de arriba se quedo a
      opacidad plena y paso a competir con el rotulo. Medido en /admin/ a
