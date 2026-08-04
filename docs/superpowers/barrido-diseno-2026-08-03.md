@@ -81,6 +81,42 @@ RBAC en `/internal/design-system` con rol R). No hubo errores de consola en ning
    la app. Arquitectónicamente admin/ está fuera del alcance del design system (AGENTS.md), pero el
    contraste es abrupto para quien navega entre ambos paneles.
 
+## Pasada horaria del 2026-08-04 — solo lo nuevo o lo que cambió
+
+No se repite la matriz: las 32 superficies siguen respondiendo y sin errores de consola. Lo que
+cambió respecto al barrido del 03:
+
+**Cerrados desde entonces** — [b] mojibake (task 20), [c] cabeceras partidas carácter a carácter
+(tasks 24 y 26), y el disparador de menú blanco de PS (task 28).
+
+**Top-1 reclasificado, no resuelto.** El bloque blanco de `/indicadores` **no es CSS nuestro**: es
+un `<iframe>` de `app.powerbi.com`, otro origen, cuyo interior ninguna hoja de este repo puede
+tematizar. El barrido anterior lo daba a entender como infracción propia y por eso nunca se
+arregló. Va como **C-22**; la salida está en el tema del informe en Power BI, fuera del repo.
+
+**Top-2 medido y parcialmente resuelto.** Las 8 pestañas de `/bi/*` suman 1626 px en un carril de
+1116: quedan invisibles «Plan de Compras», «Proveedores (CIC)» y «Responsables (CIP)». **No caben**
+— sin iconos y a 13 px siguen sumando 1363 px, y acortar etiquetas es tocar texto de navegación.
+Queda como **C-23**.
+
+**Hallazgo nuevo, arreglado (`e38be1c`).** Al medir el carril apareció lo que nadie había mirado:
+el pulgar del scrollbar de las 8 rutas de BI usaba `--aia-separators`, un gris claro **estático sin
+variante oscura**, rindiendo una franja casi blanca sobre el lienzo oscuro — justo bajo las
+pestañas, el elemento más brillante de la vista. Retokenizado al par dark-aware del shell. Misma
+familia que C-20.
+
+**Hallazgo nuevo, arreglado (`ed8c411`).** Los chips contadores de PI y PS estaban encajonados a
+155 px con `!important` desde `legacy-bridge.css`: seis de los ocho de PI partían en dos renglones
+y ocupaban tres filas sobre la tabla. Ahora se dimensionan por su contenido — PI baja a dos filas
+(98 → 88 px), PS cabe en una. Programa General no usa ese selector y queda intacto, así que sus
+goldens pendientes no se mueven.
+
+**Método, dos veces en la misma pasada.** Un desvanecido de borde para anunciar el corte de las
+pestañas se probó y **se descartó**: la ruta tiene presupuesto de cero funciones de color y mover
+la regla de archivo habría sido esquivar el gate. Y el primer intento del arreglo de BI dejó el
+audit en rojo porque **el comentario citaba valores de color literales** — la trampa que la wiki ya
+tenía puesta en `audit-ve-color-en-comentarios`. Ambas cosas las atrapó el gate, no yo.
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
