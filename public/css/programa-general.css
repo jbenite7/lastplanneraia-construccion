@@ -101,7 +101,17 @@ html.aia-theme-dark .pg-page {
      Guard: tests/browser/programa-general-legend-hue.mjs mide el pixel real. */
   --pg-dot-alert: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
   --pg-dot-due: oklch(from var(--ds-color-state-warning-text) 0.68 calc(c * 1.4) h);
-  --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.4) h);
+  /* El verde va a 1.75 y no a 1.4 porque su token de origen perdio croma
+     despues de que se escribiera esta formula: cuando nacio el guard,
+     `--ds-color-state-success-text` en dark era el verde profundo del tema
+     claro (croma OKLCH 0.0852) y el punto salia con croma 0.119 -35,5 % de
+     saturacion, justo sobre el piso-. Al tokenizar la paleta de estados a dark
+     ese token paso al tinte palido actual (croma 0.0687, -19 %) y arrastro el
+     punto a 0.096 -28,6 %-, por debajo del piso. 1.75 devuelve el croma
+     original (0.0687 x 1.75 = 0.120): no es un factor nuevo, es el mismo color
+     que ya se aprobo. Los otros cuatro puntos perdieron mucho menos croma en
+     ese cambio y siguen sobre el piso con 1.4. */
+  --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.75) h);
   --pg-dot-progress: oklch(from var(--ds-color-state-info-text) 0.68 calc(c * 1.4) h);
   --pg-dot-delayed: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.4) h);
   /* R0-R1-R2/3-R4/6 son la ALERTA SECUNDARIA de restricciones -en cuantas
