@@ -692,8 +692,8 @@ body.ps-page .ps-hot-toolbar-shell {
     grid-template-rows: auto 1fr;
     width: min(420px, 92vw);
     height: 100dvh;
-    background: var(--ds-color-surface);
-    color: var(--ds-color-text-primary);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
     box-shadow: var(--ds-shadow-lg);
     transform: translateX(102%);
     transition: transform 180ms ease;
@@ -709,12 +709,12 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: space-between;
     gap: 16px;
     padding: 18px 20px;
-    border-bottom: 1px solid var(--ds-color-border-default);
+    border-bottom: 1px solid var(--ds-active-border);
 }
 
 .ps-page .ops-state-eyebrow {
     display: block;
-    color: var(--ds-color-text-tertiary);
+    color: var(--ds-active-text-secondary);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -723,7 +723,7 @@ body.ps-page .ps-hot-toolbar-shell {
 
 .ps-page .ops-state-panel-header h5 {
     margin: 4px 0 0;
-    color: var(--ds-color-text-primary);
+    color: var(--ds-active-text-primary);
     font-weight: 800;
 }
 
@@ -732,8 +732,8 @@ body.ps-page .ps-hot-toolbar-shell {
     height: 34px;
     border: 0;
     border-radius: var(--ds-radius-pill);
-    background: var(--ds-color-bg-page);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-secondary);
     font-size: 1.4rem;
     line-height: 1;
     cursor: pointer;
@@ -754,7 +754,7 @@ body.ps-page .ps-hot-toolbar-shell {
 
 .ps-page .ops-state-activity {
     align-items: flex-start;
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-active-text-secondary);
     line-height: 1.3;
 }
 
@@ -765,8 +765,8 @@ body.ps-page .ps-hot-toolbar-shell {
     align-items: center;
     padding: 3px 7px;
     border-radius: var(--ds-radius-pill);
-    background: var(--ds-color-bg-page);
-    color: var(--ds-color-text-secondary);
+    background: var(--ds-active-bg-page);
+    color: var(--ds-active-text-secondary);
     font-size: 0.74rem;
     font-weight: 800;
     white-space: nowrap;
@@ -774,7 +774,7 @@ body.ps-page .ps-hot-toolbar-shell {
 
 .ps-page .ops-state-panel-body h6 {
     margin: 18px 0 10px;
-    color: var(--ds-color-text-primary);
+    color: var(--ds-active-text-primary);
     font-weight: 800;
 }
 
@@ -792,9 +792,9 @@ body.ps-page .ps-hot-toolbar-shell {
     gap: 8px;
     align-items: start;
     padding: 10px;
-    border: 1px solid var(--ds-color-border-subtle);
+    border: 1px solid var(--ds-active-border);
     border-radius: var(--ds-radius-sm);
-    background: var(--ds-color-bg-page);
+    background: var(--ds-active-bg-page);
 }
 
 /* La tarjeta de accion se tinta con el par completo. Traia solo el fondo y el
@@ -824,10 +824,14 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 
 /* Sin `color` propio: hereda. En la tarjeta sin estado hereda el
-   --ds-color-text-primary que ya declara `.ops-state-panel` -mismo valor que
-   tenia escrito aqui-, y en las tarjetas `.is-*` hereda el texto del par de
-   estado que pinta su fondo, que es lo que hace que el tinte sobreviva la
-   inversion del par. */
+   --ds-active-text-primary que ya declara `.ops-state-panel`, y en las tarjetas
+   `.is-*` hereda el texto del par de estado que pinta su fondo, que es lo que
+   hace que el tinte sobreviva la inversion del par.
+   (2026-08-04: el armazon del cajon citaba `--ds-color-*`, los tokens BASE del
+   tema claro, y por eso el panel se veia blanco dentro de la app oscura. Se
+   migro a los `--ds-active-*` que Programacion Intermedia ya usaba en su cajon
+   equivalente. Los pares `--ds-color-state-*` de las tarjetas NO se tocaron:
+   ya resuelven en oscuro y los guarda `state-token-pairing.test.mjs`.) */
 .ps-page .ops-state-action-text {
     line-height: 1.35;
 }
