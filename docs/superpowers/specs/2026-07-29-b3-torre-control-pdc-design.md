@@ -8,7 +8,7 @@
 - **Depende de:** `2026-07-29-b2-semaforos-lookahead-design.md` (la pestaña es el día 1; esto es el día 2).
   **Ya en `main`** (`60f8bfe`): existe `SeguimientoService::clasificarVencimiento()` y la pestaña
   Vencimientos.
-- **Estado:** grilleo propio cumplido el 2026-07-29 y diseño aprobado. Pendiente de plan.
+- **Estado:** **implementado y en `main`** (fila 9 del tablero, `e610fbb`). El panel de compras de la Torre de Control existe, con sus cuatro indicadores y el aislamiento por obra verificado con un rol permitido y uno denegado.
 
 ## Problema
 
