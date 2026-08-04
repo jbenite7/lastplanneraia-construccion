@@ -700,3 +700,21 @@ Después, el arreglo: el problema de fondo no es el tamaño sino que hay más ac
 caben. Achicar más sería insistir en la vía equivocada. La salida correcta según Refactoring UI es
 **agrupar**: acciones secundarias en un menú de desbordamiento, dejando visibles la primaria y las
 frecuentes. Averiguar por qué `flex-wrap: wrap` no envuelve es parte del diagnóstico.
+
+### Task 26: El truncado de cabeceras necesita elipsis y texto accesible (ciclo del 2026-08-04)
+
+**Es deuda propia, no preexistente.** El task 24 quitó el `overflow-wrap: break-word` que partía
+palabras, pero no completó la otra mitad que su propio encargo pedía: «truncar con
+`text-overflow: ellipsis` + el texto completo accesible (title)». Resultado medido en PI a
+1180×820: `text-overflow: clip`, `title: NINGUNO`, y cabeceras con menos de la mitad del espacio
+que necesitan — «Semanas Inicio» 29 px para 53, «Diseños y Especificaciones» 41 para 99.
+
+Se cambió un defecto por otro: antes ilegible pero completo, ahora limpio pero **irrecuperable**.
+El usuario lee «Materiale» y no puede saber qué columna es.
+
+Arreglo: `text-overflow: ellipsis` para que el corte se anuncie, y `title` (o `aria-label` si el
+elemento ya tiene rol) con el texto íntegro, en el punto compartido por PG/PI/PS/PDC. Verificar que
+el `title` no duplique ni pise el tooltip de ayuda que ya llevan algunas cabeceras (`?`).
+
+Y anotar la cura de fondo, que no es de este task: hay 16 columnas compitiendo en 1180 px. Mientras
+eso siga, cualquier cabecera larga se cortará por definición.
