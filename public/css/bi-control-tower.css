@@ -75,7 +75,16 @@
     --bi-chart-brand-construction-medium: var(--aia-orange-medium);
     --bi-chart-critical: var(--aia-alert-medium);
     --bi-chart-neutral-muted: var(--ds-active-text-secondary);
-    --bi-chart-surface-muted: color-mix(in srgb, var(--ds-active-text-primary) 82%, transparent);
+    /* El carril vacio de los medidores. Se llamaba «surface-muted» pero se
+       derivaba del color de TEXTO primario al 82%, asi que rendia casi blanco:
+       medido sobre el canvas de «% Avance de Obra» en Da Porto, el 95% de la
+       tinta del grafico era ese carril a 13,12:1 de contraste, mientras el dato
+       real —2,7% de avance— ocupaba el 1%. El medidor daba mas peso visual a lo
+       que NO ha pasado que al dato, justo al reves de lo que debe.
+       Baja al 18%: sigue leyendose como ranura pero cede el protagonismo a la
+       serie. Sus vecinos `drilldown-*` ya derivan de superficies; este era el
+       unico que derivaba de tinta. */
+    --bi-chart-surface-muted: color-mix(in srgb, var(--ds-active-text-primary) 18%, transparent);
     --bi-filter-control-border: color-mix(in srgb, var(--ds-active-text-primary) 28%, transparent);
     --bi-drilldown-backdrop: color-mix(in srgb, var(--ds-active-bg-canvas) 72%, transparent);
     --bi-drilldown-panel-surface: color-mix(in srgb, var(--ds-active-surface-raised) 94%, var(--ds-active-bg-canvas));
