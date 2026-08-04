@@ -115,21 +115,19 @@ test('la hoja de Semanal no vuelve a pintar el chip por nombre de estado', async
     '.ps-page .ops-state-chip volvió a declarar `background`; eso tapa la primitiva del DS',
   );
 
-  // Los cuatro niveles (`ps-alert-critical-route`, `ps-alert-critical`,
-  // `ps-alert-high`, `ps-alert-medium`, `ps-alert-control`) solo pueden seguir
-  // marcando peso tipográfico, no color, sobre `.ops-state-chip`.
+  // Decisión del usuario (2026-08-03, task 16 revisión): "Uniforme 900 en
+  // todo: PS pierde su 800" — paridad literal absoluta entre PG/PI/PS, sin
+  // gradación de peso por nivel. Ningún selector `.ps-alert-*` puede volver a
+  // tocar `.ops-state-chip` (ni color/background -ya prohibido antes-, ni
+  // peso -ahora tampoco-): el chip nace en 900 desde el componente compartido
+  // y ningún nivel lo aligera.
   const perStateBlocks = [...css.matchAll(
     /([^{}]*\.ps-alert-[\w-]+[^{}]*\.ops-state-chip[^{}]*)\{([^}]*)\}/g,
   )];
-  assert.ok(
-    perStateBlocks.length > 0,
-    'no se encontraron reglas de .ops-state-chip por nivel para comprobar',
-  );
-  const painting = perStateBlocks.filter(([, , body]) => /(background|color|border-color)\s*:/.test(body));
   assert.deepEqual(
-    painting.map(([selector]) => selector.trim()),
+    perStateBlocks.map(([selector]) => selector.trim()),
     [],
-    `${painting.length} regla(s) vuelven a colorear el chip por nombre de estado`,
+    `${perStateBlocks.length} regla(s) de .ops-state-chip por nivel sobreviven; la paridad 900 uniforme decidida el 2026-08-03 exige que no quede ninguna`,
   );
 });
 

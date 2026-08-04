@@ -486,17 +486,12 @@ body.ps-page .ps-hot-toolbar-shell {
     white-space: nowrap;
 }
 
-/* critical-route y critical no necesitan regla propia: el chip ya nace en
-   font-weight 900 (componente compartido) y no lo aligeran mas abajo, asi
-   que forzar 900 aqui era un duplicado literal, igual al hallazgo del
-   Task 11 en PI. Solo high/medium/control aportan matiz real: aligeran el
-   peso a 800 para diferenciarse visualmente de critical dentro de la misma
-   tabla. */
-.ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-chip,
-.ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-medium .ops-state-chip,
-.ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-chip {
-    font-weight: 800;
-}
+/* Task 16 (revision, decision del usuario 2026-08-03): "Uniforme 900 en
+   todo: PS pierde su 800" -paridad literal absoluta, sin gradacion por
+   nivel-. Este bloque bajaba high/medium/control a 800 para diferenciarse
+   de critical; esa justificacion caduco por la decision explicita. El chip
+   ya nace en 900 desde el componente compartido y ningun nivel lo aligera
+   ahora -mismo criterio que PG y PI, que nunca tuvieron esta gradacion-. */
 
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical-route .ops-state-zoom,
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-zoom,
