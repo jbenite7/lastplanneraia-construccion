@@ -824,6 +824,18 @@ body {
      `aria-label`, no en ese texto.
      Contrapartida asumida: se pierde la etiqueta permanente en pantalla, de la
      que el icono y el `aria-label` pasan a ser el unico anuncio. */
+  /* Contraste del propio boton, medido tras convertirlo en FAB: su cuerpo da
+     1,23:1 contra la pagina y el borde blanco al 20 % daba 1,41:1, por debajo
+     del 3:1 que WCAG 1.4.11 pide para identificar un control. Como carril esto
+     pesaba menos —ocupaba el alto completo y tenia su propio filo—; como
+     circulo flotante, encontrarlo dependia del emoji, porque la sombra es
+     negra sobre fondo casi negro y no separa nada. El borde pasa al acento del
+     sistema: 4,98:1 medido, y de paso sustituye un `rgba` crudo por un token.
+     Solo en escritorio: `mobile` queda fuera del alcance del repo. */
+  .lps-sidebar-trigger {
+    border-color: var(--ds-active-action-primary);
+  }
+
   .lps-sidebar-trigger.has-crisis {
     background: linear-gradient(135deg, #9a1f1f 0%, #e53935 100%) !important;
     animation: lps-pulse-glow 2s infinite ease-in-out;

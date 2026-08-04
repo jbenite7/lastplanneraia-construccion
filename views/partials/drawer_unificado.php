@@ -1,5 +1,5 @@
 <!-- views/partials/drawer_unificado.php -->
-<button type="button" class="lps-sidebar-trigger" id="lps_sidebar_trigger" aria-label="Abrir Cajón Contextual LPS" aria-controls="lps_drawer" aria-expanded="false">
+<button type="button" class="lps-sidebar-trigger" id="lps_sidebar_trigger" aria-label="Abrir Cajón Contextual LPS" title="Concurrencia LPS" aria-controls="lps_drawer" aria-expanded="false">
   <div class="lps-sidebar-content">
     <span class="lps-sidebar-icon" aria-hidden="true">💡</span>
     <span class="lps-sidebar-text">CONCURRENCIA LPS</span>
