@@ -357,3 +357,9 @@ goals/pg-chip-de-estado/evidence/*
 !tests/browser/ht-empty-state.spec.mjs
 !tests/browser/control-cambios-listado.spec.mjs
 !tests/browser/admin-login-a11y.spec.mjs
+
+# Goal del cierre de la versión 1.1.0 del design system (2026-08-04): como los demás,
+# hay que re-permitir la carpeta y luego el archivo, porque `goals/*` ya excluyó el directorio.
+!goals/cierre-version-1-1-0-design-system/
+goals/cierre-version-1-1-0-design-system/*
+!goals/cierre-version-1-1-0-design-system/goal.md
