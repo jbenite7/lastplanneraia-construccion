@@ -16,6 +16,7 @@ class ProgramacionIntermediaController extends BaseController
     {
         // Validar autenticación y gestionar timeout (centralizado en BaseController)
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
 
         // Obtener variables de sesión comunes
         $vars = $this->getSessionVars();

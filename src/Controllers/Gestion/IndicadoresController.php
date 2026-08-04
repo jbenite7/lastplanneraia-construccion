@@ -12,6 +12,7 @@ class IndicadoresController extends BaseController
     {
         // Validar autenticación
         $this->requireAuth();
+        $this->syncRequestedWeekContext();
 
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
