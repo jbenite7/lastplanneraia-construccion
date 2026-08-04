@@ -65,6 +65,7 @@ use Admin\Core\RoleManager;
               <input type="checkbox"
                      class="custom-control-input user-active-toggle"
                      id="user-active-<?php echo $user['id']; ?>"
+                     aria-label="Usuario activo — <?php echo htmlspecialchars($user['nombre']); ?>"
                      data-id="<?php echo $user['id']; ?>"
                      <?php echo $isActive ? 'checked' : ''; ?>>
               <label class="custom-control-label" for="user-active-<?php echo $user['id']; ?>"></label>

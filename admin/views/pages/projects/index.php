@@ -40,7 +40,8 @@
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" 
                                                        class="custom-control-input status-toggle" 
-                                                       id="activo-<?php echo $project['Id']; ?>" 
+                                                       id="activo-<?php echo $project['Id']; ?>"
+                                                       aria-label="Activo — <?php echo htmlspecialchars($project['Proyecto_Proceso']); ?>" 
                                                        data-id="<?php echo $project['Id']; ?>"
                                                        data-field="activo"
                                                        <?php echo ($project['Activo']) ? 'checked' : ''; ?>>
@@ -51,7 +52,8 @@
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" 
                                                        class="custom-control-input status-toggle" 
-                                                       id="acceso-<?php echo $project['Id']; ?>" 
+                                                       id="acceso-<?php echo $project['Id']; ?>"
+                                                       aria-label="Acceso — <?php echo htmlspecialchars($project['Proyecto_Proceso']); ?>" 
                                                        data-id="<?php echo $project['Id']; ?>"
                                                        data-field="acceso"
                                                        <?php echo ($project['Acceso']) ? 'checked' : ''; ?>>
@@ -62,7 +64,8 @@
                                             <div class="custom-control custom-switch">
                                                 <input type="checkbox" 
                                                        class="custom-control-input status-toggle" 
-                                                       id="pdc-<?php echo $project['Id']; ?>" 
+                                                       id="pdc-<?php echo $project['Id']; ?>"
+                                                       aria-label="Plan de Compras — <?php echo htmlspecialchars($project['Proyecto_Proceso']); ?>" 
                                                        data-id="<?php echo $project['Id']; ?>"
                                                        data-field="pdc"
                                                        <?php echo ($project['pdcActivo']) ? 'checked' : ''; ?>>
