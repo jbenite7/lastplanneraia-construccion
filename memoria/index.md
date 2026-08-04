@@ -18,7 +18,7 @@ tres capas, y el asistente mantiene la de en medio.
 |---|---|---|
 | Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Su contenido no se edita desde aquí.** |
 | Wiki | `memoria/` | La escribe el asistente. **Nunca se edita a mano.** |
-| Esquema | Sección «Memoria del proyecto» de [[CLAUDE]] | Explica esta estructura y las tres operaciones. |
+| Esquema | [[wiki-operacion|Cómo se opera la wiki]] | Explica esta estructura y las cuatro operaciones. [[CLAUDE]] lo resume. |
 
 **Una excepción, decidida el 2026-08-02:** cada `goals/<slug>/goal.md` lleva al final una sección
 «Archivos de este goal» que enlaza a sus hermanos y a [[estado|Estado de los goals]]. Es
@@ -41,18 +41,24 @@ memoria.
 `proceso` · `arquitectura`. Si necesitas una nueva, añádela primero al script y explica aquí qué
 cubre; una lista que crece sin control deja de servir para filtrar.
 
-## Las tres operaciones
+## Las cuatro operaciones
 
 - **Ingest** — al cerrar una tarea o al aparecer una fuente nueva: se escribe o actualiza la
   página, se actualiza este índice, se revisan las páginas relacionadas y se anexa una línea a
   [[log]].
 - **Query** — preguntas contra la wiki, respondidas citando páginas. Si la respuesta era valiosa y
   no estaba escrita, se convierte en página.
-- **Lint** — al cerrar un sprint o a petición: barrido en busca de contradicciones, afirmaciones
-  que el repo ya desmintió, páginas huérfanas y referencias ausentes.
+- **Lint** — `npm run test:wiki`: comprueba la **forma** (enlaces, frontmatter, áreas, orfandad).
+  Comprueba y reporta; nunca corrige. Un verde no significa que la wiki sea correcta.
+- **Veracidad** — la otra mitad: verificar contra el código que lo escrito sigue siendo cierto,
+  por rotación de áreas y verificando cada afirmación en vez de sospecharla. No depende de que
+  alguien se acuerde: el lint cuenta los commits de código desde el último pase y sale en rojo por
+  encima de 40.
 
 Reglas de escritura: **una nota, un hecho**; si no cabe en una pantalla, probablemente son dos. Y
 antes de tocar un área, lee su mapa: dice qué documentos mandan y qué trampas hay puestas.
+
+El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 
 ## Mapas por área
 
@@ -97,6 +103,16 @@ Decisiones, trampas, referencias, módulos y flujos, generados desde el frontmat
 un embebido por tabla.
 
 ![[paginas.base]]
+
+**Lo que queda fuera del grafo, y por qué.** Medido el 2026-08-03: de 324 archivos del vault, 99
+no tienen ningún enlace entrante ni saliente, y así se quedan. Son trabajo fechado —planes y specs
+de goals ya ejecutados, los ciclos PDCA de `docs/archive/`, entregables de goals cerrados—, y su
+vía de acceso ya existe sin pasar por el grafo: [[log]] los cita cuando importan y cada
+`goals/<slug>/goal.md` enlaza sus hermanos. Ese mismo día se tejieron los 25 que sí mandan hoy
+(contratos del design system, referencias de infraestructura y los `.md` de la raíz). El criterio y
+la medición están en
+[[docs/superpowers/specs/evidencia/2026-08-03-nodos-sueltos|la evidencia del barrido]]: tejer los
+99 restantes daría un grafo completo a cambio de enlaces que nadie recorrería.
 
 ## Contratos del repo (no viven aquí)
 

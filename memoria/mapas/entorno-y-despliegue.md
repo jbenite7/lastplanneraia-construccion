@@ -13,6 +13,11 @@ resumen: "Levantar el proyecto en local, aislar un worktree y publicar en produc
 [[AGENTS]] §Runtime local y §Publicación · [[CLAUDE]] §Runtime & commands ·
 [[docs/siteground-deploy-routine]] para publicar.
 
+Detalle del stack: [[docker/README|docker/README.md]] describe el compose `last-planner-aia`
+servicio por servicio; la puerta de servicio que sustituye a `/login` está diseñada en
+[[docs/superpowers/specs/2026-07-30-dev-door-design|su spec]]. Cómo quedaron unificados los dos
+repositorios: [[docs/superpowers/specs/2026-07-29-unificacion-repos-design|unificacion-repos]].
+
 ## Local
 
 Docker Compose es la única fuente de verdad. Nunca MAMP, XAMPP ni un PHP del host. Servicios:

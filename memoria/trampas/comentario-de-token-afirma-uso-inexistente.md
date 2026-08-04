@@ -6,7 +6,7 @@ areas: [design-system, qa]
 fuente: sesion
 resumen: "Un comentario de tokens.css afirmaba un uso que el consumidor real nunca ejerció: el exportador a Excel existe pero montó su propia paleta en paralelo"
 ---
-`public/css/tokens.css:223` rotula ocho tokens como «Valores de soporte para impresos /
+`public/css/tokens.css:237` rotula ocho tokens como «Valores de soporte para impresos /
 XLSX»:
 
 ```

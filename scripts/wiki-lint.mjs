@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, extname, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { estadoVeracidad, mensajeVeracidad } from './wiki-veracidad.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
@@ -113,6 +114,11 @@ for (const p of paginas) {
     anota('INDICE', rel, 'no aparece en index.md y ninguna vista de paginas.base la lista');
   }
 }
+
+// Edad del último pase de veracidad, medida en commits de código (no en días).
+const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
+if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
+if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
 
 if (hallazgos.length) {
   console.log(hallazgos.join('\n'));

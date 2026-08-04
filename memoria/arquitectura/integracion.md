@@ -12,7 +12,8 @@ resumen: "Integración: procesa reportes externos (ReportProcessor) para aliment
 `ReportProcessor`) y los deja listos para que otros módulos los consuman. No tiene pantalla propia
 que alguien navegue: es tubería interna, se entiende leyendo quién la llama, no quién la abre.
 
-**Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
+**Dónde encaja.** Fuera de los dos flujos de negocio ([[flujo-lps]] y [[flujo-pdc]]): es
+infraestructura de la aplicación, así que se lee junto al mapa de [[arquitectura]].
 
 ## Inventario
 

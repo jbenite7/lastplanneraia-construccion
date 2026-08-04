@@ -22,12 +22,12 @@ semana). Medido a 1180x820 dark en /programacion-semanal: context-bar 49px + `.h
 
 Ojo con el **drift de sujeto**: `calc(100vh - 49px)` es correcto sobre **`.hot-full-bleed`**
 (el 49px es la context-bar sticky, que sí es lo único encima de ese wrapper) y así se aplicó en
-`views/programa-general-actualizar/programaGeneralActualizar.view.php:33`. Copiarlo a
+`public/css/programa-general-actualizar.css:63`. Copiarlo a
 `#hot-container` lo vuelve falso por el alto de la toolbar (resolvía 771px). Esa vista tiene
 además el patrón CSS completo y sin números mágicos por módulo, si algún día se migra la
 geometría a CSS: `.hot-full-bleed { display:flex; flex-direction:column; height:calc(100vh - 49px) }`
 + `#hot-container { flex:1 1 auto; min-height:0 }` — el `flex: 1 1 auto` ya existe en
-`handsontable-module.css:65` pero está inerte porque `.hot-full-bleed` es `display:block` en
+`handsontable-module.css:79` pero está inerte porque `.hot-full-bleed` es `display:block` en
 el resto de módulos.
 
 Contrato de geometría verificado en `tests/browser/programacion-semanal-hot-height.mjs`.

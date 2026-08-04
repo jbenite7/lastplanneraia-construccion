@@ -14,6 +14,13 @@ resumen: "Plan de Compras v2: dónde vive la SPA, dónde el PHP, y qué leer ant
 fechas), fases A1–A4, deudas de datos conocidas y trampas ya medidas. **Se lee antes de tocar
 cualquier cosa del PDC**, no después.
 
+De dónde viene el módulo, cuando hace falta el porqué y no el cómo:
+[[docs/superpowers/specs/2026-07-21-stack-plan-de-compras-design|la spec del stack]] eligió la
+pila, [[docs/superpowers/plans/2026-07-22-roadmap-pdc-v2|el roadmap]] ordenó las fases, y
+[[docs/pdca-automatizacion-plan-compras|el PDCA de junio]] es el ciclo previo del que salió el
+diagnóstico. Los datos de arranque están en
+[[database/seeds/biblioteca_maestra_pdc_source_of_truth_v1_0|la biblioteca maestra v1.0]].
+
 ## Dónde vive
 
 - SPA en `pdc-app/` (React + Vite + AG Grid); publica su bundle en `public/pdc-app/`.

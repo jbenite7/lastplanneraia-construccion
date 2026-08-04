@@ -14,6 +14,14 @@ resumen: "Cómo está montada la aplicación: front controller, src/, el mini-ap
 - [[docs/global-tables-architecture]] — **lectura obligatoria** antes de tocar schema, migraciones,
   backfills o ciclo de vida de proyectos. Empieza siempre en dry-run.
 - [[CLAUDE]] — dónde vive cada cosa en el código.
+- [[docs/global-tables-unique-ids|Unique IDs en tablas globales]] — el hermano operativo del
+  anterior: cómo se generan y qué garantiza cada identificador cuando las tablas son compartidas.
+- [[database/patches/global/README|database/patches/global]] — los parches equivalentes en versión
+  global de los que había por proyecto. Se mira antes de escribir un parche nuevo.
+
+Orientación general del producto y del repo, fuera del código: [[README]] es la puerta de entrada,
+[[PRODUCT]] fija propósito y principios, y [[GEMINI]] repite las reglas para otro asistente (donde
+choque con [[AGENTS]], manda AGENTS).
 
 ## La forma del sistema
 

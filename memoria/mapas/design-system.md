@@ -19,6 +19,26 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
   de validación es 1180×820. No se trabaja móvil, tablet ni el tema `linen`, ni siquiera para
   generar evidencia.
 
+Los tres contratos que cuelgan de esa autoridad, cada uno con su ámbito:
+[[docs/design-system/contracts/governance|gobierno global]] (el repositorio es la autoridad del
+sistema), [[docs/design-system/contracts/module-migration|migración por módulo]] (un módulo por
+sprint, sin primitivas locales) y
+[[docs/design-system/contracts/sprint-review-close|revisión y cierre de sprint]] (el cierre es
+verificable, y la aprobación humana bloquea).
+
+Y las cuatro referencias que se consultan al implementar: [[docs/design-system/tokens|tokens]]
+canónicos en sus dos capas, [[docs/design-system/components|componentes]] `aia-*`,
+[[docs/design-system/decisions|decisiones DS-000…]] —una variante sigue `candidate` hasta que el
+laboratorio la aprueba— y la [[docs/design-system/dark-palette|paleta oscura]], aprobada el
+2026-07-12. El orden de migración de los módulos vive en
+[[docs/design-system/migration|migration.md]], la accesibilidad revisada a mano en
+[[docs/design-system/manual-accessibility-review|manual-accessibility-review.md]], y la versión en
+curso en el [[docs/design-system/CHANGELOG|changelog]].
+
+Insumo visual, **no contrato**: [[docs/STITCH]] explica cómo se conecta con Stitch y
+[[docs/brand/aia_design_system_web_apple_inspired|el brief de marca]] aporta dirección; ninguno de
+los dos manda sobre los tokens.
+
 ## Restricción de alcance
 
 Esto no es una preferencia, es una prohibición del repo. Si una petición pide móvil, tablet o
