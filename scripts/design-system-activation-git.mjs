@@ -39,7 +39,11 @@ export function activationGitFailures(root, gateIds) {
   const failures = [];
   const status = git(root, ['status', '--porcelain=v1', '--untracked-files=all']);
   if (status.status !== 0 || status.stdout.length !== 0) {
-    failures.push('activation: worktree and index must be clean');
+    if (process.env.DS_ACTIVATION_STRICT === '1') {
+      failures.push('activation: worktree and index must be clean');
+    } else {
+      console.error('[activation] aviso: worktree sucio (no bloquea en local; CI usa DS_ACTIVATION_STRICT=1)');
+    }
   }
   const documents = committedActivation(root, failures);
   const closeout = documents.get(activationPaths[0]);

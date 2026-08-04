@@ -29,7 +29,10 @@ jobs:
       - run: npm ci
       - name: Build the PHP test runtime
         run: docker compose build app
-      - run: npm run test:design-system:static
+      - name: Enforce design-system static gates
+        env:
+          DS_ACTIVATION_STRICT: "1"
+        run: npm run test:design-system:static
       - name: Enforce Programa General pilot contract
         run: node tests/test_programa_general_sprint_contract.mjs
 

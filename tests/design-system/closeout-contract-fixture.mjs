@@ -60,7 +60,7 @@ export function runContracts(fixtureRoot) {
   return spawnSync(
     process.execPath,
     [path.join(repositoryRoot, 'scripts/design-system-contracts.mjs')],
-    { cwd: fixtureRoot, encoding: 'utf8' },
+    { cwd: fixtureRoot, encoding: 'utf8', env: { ...process.env, DS_ACTIVATION_STRICT: '1' } },
   );
 }
 

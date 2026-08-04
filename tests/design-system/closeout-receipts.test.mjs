@@ -138,21 +138,35 @@ test('an arbitrary command registry ID cannot activate a gate', () => {
 
 test('a dirty source tree cannot pass with committed activation documents', () => {
   const dirtyPath = path.join(fixtureRoot, 'dirty-source.txt');
+  const previousStrict = process.env.DS_ACTIVATION_STRICT;
+  process.env.DS_ACTIVATION_STRICT = '1';
   try {
     writeFileSync(dirtyPath, 'uncommitted source change\n');
     assert.match(closeoutFailures().join('\n'), /activation: worktree and index must be clean/);
   } finally {
     rmSync(dirtyPath, { force: true });
+    if (previousStrict === undefined) {
+      delete process.env.DS_ACTIVATION_STRICT;
+    } else {
+      process.env.DS_ACTIVATION_STRICT = previousStrict;
+    }
   }
 });
 
 test('a staged source change cannot pass with committed activation documents', () => {
   writeFileSync(path.join(fixtureRoot, 'staged-source.txt'), 'staged source change\n');
   git(fixtureRoot, ['add', 'staged-source.txt']);
+  const previousStrict = process.env.DS_ACTIVATION_STRICT;
+  process.env.DS_ACTIVATION_STRICT = '1';
   try {
     assert.match(closeoutFailures().join('\n'), /activation: worktree and index must be clean/);
   } finally {
     git(fixtureRoot, ['commit', '-m', 'preserve staged test source']);
+    if (previousStrict === undefined) {
+      delete process.env.DS_ACTIVATION_STRICT;
+    } else {
+      process.env.DS_ACTIVATION_STRICT = previousStrict;
+    }
   }
 });
 
