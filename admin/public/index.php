@@ -57,6 +57,14 @@ $router->add('GET', '/password/reset', 'PasswordResetController@resetView');
 $router->add('POST', '/password/reset', 'PasswordResetController@resetPassword');
 $router->add('GET', '/logout', 'AuthController@logout');
 
+// Puerta de servicio de desarrollo: reutiliza App\Core\DevDoor tal cual (admin/ comparte
+// proceso, .env y APP_ENV con la app principal). Solo se registra si el candado de los tres
+// requisitos está abierto; fuera de desarrollo la ruta ni existe (404 natural del router).
+// Ver docs/superpowers/specs/2026-08-03-admin-dev-door-design.md
+if (\App\Core\DevDoor::isOpen()) {
+    $router->add('GET', '/dev/entrar', 'DevDoorController@enter');
+}
+
 // Rutas Protegidas
 
 $router->add('GET', '/', 'DashboardController@index');
