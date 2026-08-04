@@ -34,7 +34,7 @@
     {
       "file": "public/css/styles.css",
       "token": "--ds-state-tint-blue",
-      "line": 2294,
+      "line": 2302,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover",
       "kind": "by-design",
       "reason": "El fondo va sobre la fila, pero el texto vive en las celdas, y cada celda trae su propio fondo casi opaco y su propia tinta casi blanca. La tinta que heredaria la fila no llega a pintar nada. Declararla seria una linea muerta que dejaria verde el guard sin resolver nada."
@@ -42,7 +42,7 @@
     {
       "file": "public/css/styles.css",
       "token": "--ds-state-tint-blue",
-      "line": 2298,
+      "line": 2306,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-selected",
       "kind": "by-design",
       "reason": "Mismo caso que la fila con puntero encima: el texto lo pintan las celdas con su propia tinta y su propio fondo, que ademas tapa casi todo el fondo de la fila. El comentario de la hoja ya documenta que de estos fondos de fila solo se ve una fraccion pequena."
@@ -50,7 +50,7 @@
     {
       "file": "public/css/styles.css",
       "token": "--ds-state-tint-orange",
-      "line": 2365,
+      "line": 2373,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction",
       "kind": "by-design",
       "reason": "La pildora hereda su tinta del contenedor de motivo que la envuelve, que si la declara con el par de texto de la familia de retraso, y sale un melocoton claro sobre el fondo naranja oscuro. El par existe y funciona; lo que no puede es verse leyendo esta regla aislada."

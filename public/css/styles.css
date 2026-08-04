@@ -658,17 +658,25 @@ table.dataTable tbody tr:hover td {
   color: var(--ds-cell-state-neutral-fg) !important;
 }
 
+/* C-44 (2026-08-04): la fila de «Capitulo» se distingue por PESO TIPOGRAFICO y
+   FILETE, no por un bloque de color. El relleno naranja pintaba 40 de las 100
+   celdas visibles de /pdc con ~5,7x la luminancia de una fila normal: cromo
+   gritando mas fuerte que el contenido, con la jerarquia puesta en el relleno
+   en vez de en el espacio y la tipografia. Se sustituye por superficie elevada
+   + filete superior con el separador canonico, el mismo recurso neutro que ya
+   usan los chips de Programa General.
+   ALCANCE: solo /pdc. Los tokens `--pdc-header-*` los comparten
+   /programa-general y /programacion-intermedia (ver la nota de
+   public/css/tokens.css), que tienen golden de pixeles y tarea propia; por eso
+   el cambio va en este bloque `#dt_cliente` y no en el token. */
 #dt_cliente .handsontable td.pdc-header {
-  background-color: var(--pdc-header-bg) !important;
-  color: var(--pdc-header-text) !important;
+  background-color: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-text-primary) !important;
   font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
-  border-color: var(--pdc-header-border) !important;
-}
-
-#dt_cliente .handsontable td.pdc-header:first-child {
-  box-shadow: inset 4px 0 0 var(--pdc-header-accent) !important;
+  border-color: var(--ds-active-border) !important;
+  border-top: 1px solid var(--ds-active-border) !important;
 }
 
 /* Legend / Convenciones Styles */
