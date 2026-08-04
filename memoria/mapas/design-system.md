@@ -10,6 +10,10 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
 
 ## Qué manda
 
+- **[[inspiracion-apple-en-dark-aia]] — premisa de diseño de alta prioridad (2026-08-03).**
+  Principios de Apple (deferencia al contenido, jerarquía sin cromo, un solo acento por vista,
+  controles discretos) expresados con los tokens y primitivas de AIA en dark. No se copia el
+  aspecto de macOS/iOS. Su límite duro: libertad de forma, nunca de funcionalidad.
 - [[DESIGN]] (raíz) — contrato de **consumo**: qué tokens y primitivas `aia-*` usar. Se lee antes
   de tocar cualquier superficie migrada.
 - [[docs/design-system/README]] — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
