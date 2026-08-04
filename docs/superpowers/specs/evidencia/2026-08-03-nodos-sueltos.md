@@ -44,12 +44,34 @@ propio, no un histórico—. **25.**
 
 La medición posterior bajó de 124 a 99 exactamente, lo que confirma que los 25 enlaces resolvieron.
 
-## Los 99 que quedan sueltos, a propósito
+## Segunda vuelta: de 99 a 25
 
-Son trabajo fechado: planes y specs de `docs/superpowers/` de goals ya ejecutados, los ciclos PDCA
-de `docs/archive/`, los walkthroughs de marzo, análisis de productividad y entregables de goals
-cerrados. Su vía de acceso ya existe y no pasa por el grafo: `memoria/log.md` los cita cuando
-importan, y cada `goals/<slug>/goal.md` enlaza sus propios hermanos.
+Los 99 restantes eran 74 planes y specs de `docs/superpowers/` más 25 documentos varios. Se
+resolvieron sin escribir enlaces a mano:
+
+1. **Archivado de lo cerrado.** De los 66 documentos de julio se midieron las referencias entrantes
+   de cada uno: **36 tenían al menos una** (sobre todo desde `goals/pdc-preparar-b1` y desde otros
+   planes) y 5 están citados por contratos vivos, entre ellos la spec de la puerta de servicio que
+   cita `AGENTS.md`. Se movieron con `git mv` —historial conservado, los 30 detectados como
+   renombrados— **solo los 30 que ningún archivo citaba**, a `docs/archive/superpowers/`. Verificado
+   después: **cero referencias rotas**.
+2. **Registro generado.** `scripts/wiki-registro.mjs` produce `memoria/registro-de-trabajo.md`
+   emparejando cada spec con su plan por slug: **60 trabajos, 23 con las dos mitades, 14
+   archivados**. Eso saca del aislamiento a los 74 con enlaces que sí describen una relación real
+   (una spec y el plan que la ejecutó), en vez de enlaces de relleno desde los mapas.
+
+| Momento | Sueltos |
+|---|---|
+| Antes de todo | 124 |
+| Tras tejer los 25 vigentes | 99 |
+| Tras archivar y generar el registro | **25** |
+
+## Los 25 que quedan sueltos, a propósito
+
+Documentos sueltos de `docs/` —feature flags, migraciones planificadas, análisis de productividad—,
+tres ciclos PDCA de `docs/archive/` y cuatro entregables de goals cerrados. Su vía de acceso ya
+existe y no pasa por el grafo: `memoria/log.md` los cita cuando importan, y cada
+`goals/<slug>/goal.md` enlaza sus propios hermanos.
 
 Tejerlos daría un grafo del 100 % a cambio de enlaces que nadie recorrería. Un grafo honesto vale
 más que uno completo.
