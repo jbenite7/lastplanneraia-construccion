@@ -57,10 +57,17 @@ body.pg-page #hot-container .handsontable thead th .colHeader,
 body.pdc-page #dt_cliente .handsontable thead th .colHeader,
 body #hot-container .handsontable thead th .colHeader {
   text-align: center !important;
-  /* Legible con la densidad nueva: envuelve por palabra, nunca a mitad de una. */
+  /* Legible con la densidad nueva: envuelve por palabra, nunca a mitad de una.
+     Task 24 (2026-08-03, Nielsen sev-3): `overflow-wrap: break-word` SI parte
+     palabras cuando no caben en la caja del span (aqui mas angosta que el th
+     por un desajuste de ancho entre columna configurada y columna renderizada
+     via table auto-layout, medido con getComputedStyle). `normal` deja que la
+     palabra desborde ese span interno sin partirse; el `th` sigue con
+     `overflow: hidden` y es mas ancho que la palabra en los casos medidos, asi
+     que el desborde no se ve fuera de la celda. */
   white-space: normal !important;
   word-break: normal !important;
-  overflow-wrap: break-word !important;
+  overflow-wrap: normal !important;
   hyphens: none !important;
   font-size: var(--ds-table-header-font-size, 0.75rem) !important;
   line-height: 1.15 !important;

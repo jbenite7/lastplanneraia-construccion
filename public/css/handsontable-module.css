@@ -185,12 +185,16 @@ body {
   text-align: center !important;
 }
 
-/* 5. Word wrap para celdas */
+/* 5. Word wrap para celdas
+   Task 24 (2026-08-03, Nielsen sev-3): `word-wrap`/`overflow-wrap: break-word`
+   partian palabras cuando la caja del renderer resolvia mas angosta que la
+   palabra ("HOMECENTE R CALI"). `normal` envuelve por espacio y deja
+   desbordar la palabra suelta en vez de cortarla a mitad. */
 .force-wrap {
   white-space: pre-wrap !important;
-  word-wrap: break-word !important;
+  word-wrap: normal !important;
   word-break: normal !important;
-  overflow-wrap: break-word !important;
+  overflow-wrap: normal !important;
 }
 
 /* 6. Row headers
