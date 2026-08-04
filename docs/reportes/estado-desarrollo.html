@@ -217,7 +217,7 @@
     <h1>Estado del <em>desarrollo</em> general</h1>
     <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cinco frentes en marcha; la campaña de cierre de dark mode subió a <b>9 de 35 tareas</b> ejecutadas con commit — incluida la que apretó la red de goldens visuales — y esa misma red destapó una regresión real: dos capturas de tabla se regeneraron sin sincronizar el manifiesto, así que el check <code>contracts</code> vuelve a fallar. El Plan de Compras v2 sigue prácticamente cerrado y a la espera de producción real; su antecesor (PDC v1) quedó formalmente deprecado hoy. Otros ocho goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
     <div class="meta">
-      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 21:25 UTC</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 22:20 UTC</b></span>
       <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos · <b>54</b> decisiones pendientes</span>
       <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code>origin/main</code></span>
     </div>
@@ -259,8 +259,8 @@
       </div>
       <div class="kpi">
         <div class="k-label">Commits últimas 24 h</div>
-        <div><span class="k-big num">179</span> <span class="k-unit">ventana móvil hasta 21:25 UTC</span></div>
-        <div class="k-sub">git log de esta misma pasada.</div>
+        <div><span class="k-big num">174</span> <span class="k-unit">ventana móvil hasta 22:20 UTC</span></div>
+        <div class="k-sub">git log de esta misma pasada — re-ejecutada 55 min después del corte anterior (21:25); ningún commit nuevo salvo el que publicó ese informe.</div>
       </div>
       <div class="kpi">
         <div class="k-label">Frentes activos</div>
@@ -588,12 +588,12 @@
           <div class="tl-d">03/08</div>
         </div>
         <div class="tl-day is-today">
-          <div class="tl-n num">115</div>
-          <div class="tl-col"><div class="tl-bar" data-h="86"></div></div>
+          <div class="tl-n num">116</div>
+          <div class="tl-col"><div class="tl-bar" data-h="87"></div></div>
           <div class="tl-d">04/08</div>
         </div>
       </div>
-      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago (<b>248</b> commits): <b>110</b> docs · <b>80</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros (merge/chore/refactor/a11y/wip). La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
+      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago (<b>249</b> commits): <b>111</b> docs · <b>80</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros (merge/chore/refactor/a11y/wip). El único commit nuevo desde el corte de las 21:25 es el que publicó ese mismo informe. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
     </div>
   </div>
 </section>
@@ -649,7 +649,7 @@
     <div class="brand-foot">AIA · Last Planner
       <small>Estado de desarrollo · informe generado desde el repositorio</small>
     </div>
-    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó otra vez con el historial recortado a los commits de hoy — con él, el reparto diario de commits cambió respecto al informe anterior, que medía sobre ese mismo historial incompleto), los <code>goal.md</code> de <code>goals/</code>, los planes de <code>docs/superpowers/plans/</code> contrastados commit a commit contra sus mensajes propuestos, el registro de decisiones, la baseline de deuda y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado.</p>
+    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó otra vez con el historial recortado a los commits de hoy — con él, el reparto diario de commits cambió respecto al informe anterior, que medía sobre ese mismo historial incompleto), los <code>goal.md</code> de <code>goals/</code>, los planes de <code>docs/superpowers/plans/</code> contrastados commit a commit contra sus mensajes propuestos, el registro de decisiones, la baseline de deuda y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado. Esta pasada corrió 55 minutos después del corte anterior (21:25 UTC) y repitió el mismo conjunto de comandos: no encontró ningún commit nuevo aparte del que publicó ese informe, así que las cifras de ritmo se refrescaron pero el relato de cada frente no cambió.</p>
   </div>
 </footer>
 
