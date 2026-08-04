@@ -1498,7 +1498,8 @@ border: 1px solid var(--pi-due-border);
 /* T-5 (2026-08-03): consume el token compartido --ds-control-compact-min
    (24px, componente en public/css/design-system/components/toolbar-controls.css)
    pero NO puede vivir solo ahi: esta regla ya existia antes de este task
-   (era 44px) porque styles.css fija 32px con !important en capa module, y
+   (era 44px) porque adapters/legacy-bridge.css:683 fija 32px con !important
+   en capa module (verificado en revision; NO es styles.css), y
    sin este !important propio de PI ese 32px vuelve a ganar. Es cicatriz
    real del modulo, no duplicacion del componente. Deja de pesar aqui: la
    accion primaria de esta toolbar no esta forzada por diseño (ninguna de
