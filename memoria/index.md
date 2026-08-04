@@ -77,6 +77,28 @@ Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o 
 por mes, incluido lo archivado) y **[[log]]** (bitácora cronológica de lo que se ha ingerido y
 verificado).
 
+## La biblia de flujos: qué **debe** hacer la aplicación
+
+Vive fuera de esta wiki, en `docs/flujos/`, y con la **regla contraria** a propósito: aquí, si una
+nota contradice al código, gana el código; allí, **si la biblia y el código divergen es un bug de
+uno de los dos**. Una biblia que pierde por definición no podría certificar que el código está mal,
+que es justo para lo que existe — el porqué, en [[docs/flujos/README|su README]].
+
+- **Transversal** — [[docs/flujos/transversal-autenticacion|sesión]] ·
+  [[docs/flujos/transversal-proyecto|proyecto]] · [[docs/flujos/transversal-rbac|capacidades por rol]]
+- **Cascada LPS** — [[docs/flujos/lps-cascada|invariantes y candado de semana]] ·
+  [[docs/flujos/lps-programa-general|programa general]] · [[docs/flujos/lps-intermedia|intermedia]] ·
+  [[docs/flujos/lps-semanal|semanal]] · [[docs/flujos/lps-aprendizaje|CNP/CNC/CIC]]
+- **Compras** — [[docs/flujos/pdc-plan-compras|plan de compras]]
+- **Soporte** — [[docs/flujos/soporte|subcontratistas, profesionales, control de cambios]]
+- **Lectura** — [[docs/flujos/lectura-bi|indicadores y Torre de Control]]
+
+Primera vuelta cerrada el 2026-08-04: **65 escenarios** con cita `archivo:línea`, **17 pruebas** en
+`e2e/tests/biblia/` que citan su `id`, y **17 hallazgos** registrados sin arreglar en
+`docs/EXPERIMENTS.md` —el backlog único que comparte con `docs/IMPROVE-APP-PLAN.md`—. Los dos de más
+alcance tienen ficha propia aquí: [[semi-auto-solo-lo-usa-pdc]] y
+[[indicadores-oculta-en-cliente-bi-en-servidor]]. El relato tanda por tanda, en [[log]].
+
 ## Arquitectura por módulo
 
 Una página por módulo real de la aplicación en `memoria/arquitectura/`, y dos de flujo en
