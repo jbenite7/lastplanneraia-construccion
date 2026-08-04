@@ -36,12 +36,32 @@ canónicos en sus dos capas, [[docs/design-system/components|componentes]] `aia-
 laboratorio la aprueba— y la [[docs/design-system/dark-palette|paleta oscura]], aprobada el
 2026-07-12. El orden de migración de los módulos vive en
 [[docs/design-system/migration|migration.md]], la accesibilidad revisada a mano en
-[[docs/design-system/manual-accessibility-review|manual-accessibility-review.md]], y la versión en
-curso en el [[docs/design-system/CHANGELOG|changelog]].
+[[docs/design-system/manual-accessibility-review|manual-accessibility-review.md]], y qué entró en
+cada ciclo en el [[docs/design-system/CHANGELOG|changelog]] — **la versión viva la manda
+`version.json`, no el encabezado del changelog**: ver
+[[changelog-ds-encabeza-version-vieja]].
 
 Insumo visual, **no contrato**: [[docs/STITCH]] explica cómo se conecta con Stitch y
 [[docs/brand/aia_design_system_web_apple_inspired|el brief de marca]] aporta dirección; ninguno de
 los dos manda sobre los tokens.
+
+## Conceptos: el terreno antes que las minas
+
+Siete fichas que explican **para qué existe** cada pieza del gobierno del sistema, verificadas
+contra sus consumidores reales el 2026-08-04:
+
+- [[dos-capas-de-tokens]] — por qué `--aia-*` (marca) y `--ds-*` (semántica) son capas distintas y
+  qué consume un módulo.
+- [[madurez-y-api-estable]] — qué separa `candidate` de `stable` y qué garantiza de verdad la
+  versión 1.0.0.
+- [[baselines-y-presupuestos]] — congelar el desorden viejo vs. acotar lo nuevo, y qué gate vigila
+  cada archivo.
+- [[excepciones-registradas]] — la desviación tolerada con dueño, motivo y caducidad; lista
+  cerrada.
+- [[homologacion-y-familias]] — cómo una familia visual gana su aspecto por candidatos y
+  aprobación humana trazable.
+- [[manifiesto-de-modulo]] — la declaración jurada de cada módulo, y los dos selladores del cierre.
+- [[inventarios-del-sistema]] — los cuatro censos y por qué dos son normativos y dos descriptivos.
 
 ## Restricción de alcance
 

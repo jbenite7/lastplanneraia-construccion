@@ -1,6 +1,32 @@
 # Design System AIA changelog
 
-## 0.3.6 - En construcción
+## Sin publicar (candidato a 1.1.0)
+
+> La versión viva sigue siendo `1.0.0` según `version.json`. Publicar `1.1.0` es un cierre de
+> versión completo: sincroniza `designSystemVersion` en los manifiestos y hace exigibles las 38
+> excepciones registradas con vencimiento «expira en 1.1.0» (`exceptions.json`).
+
+Cambios contractuales entrados entre el 25 de julio y el 3 de agosto de 2026 (los fixes de
+módulos que solo consumen el sistema no se listan):
+
+- **Densidad compacta en toda la familia de tablas**, con piso AA de 24px de área de clic
+  (`67f35c4f`).
+- **Botones y chips contadores compactos**, también con área de clic mínima de 24px (`201dd5ec`).
+- **El control compacto de toolbar es un componente real**: se consolida en una sola definición lo
+  que eran cinco copias (`03434f64`).
+- **Gatillo de filtro unificado**: un componente único y quieto compartido por las tres librerías
+  de tabla (`a6a664f9`).
+- **Paridad del chip de estado** entre Programa General, Programación Intermedia y Programación
+  Semanal, medida en píxeles (`51ccd5ca`).
+
+## 1.0.0 - Activada
+
+> Ciclo de cierre hacia `1.0.0`. **La activación ya ocurrió:** el commit
+> `58b850e7 docs(design-system): activate closeout and align test`, del 16 de julio de 2026, subió
+> `version.json` de `0.3.6 / construction` a `1.0.0 / stable` junto con `closeout-evidence.json` y
+> `stable-api-1.0.0.json`. Lo que sigue documenta cómo se llegó hasta aquí, así que conserva la
+> redacción en futuro con la que se escribió; la versión viva la manda `version.json`, no este
+> encabezado.
 
 ### API candidata para la garantía 1.0.0
 

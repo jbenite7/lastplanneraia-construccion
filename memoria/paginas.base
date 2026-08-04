@@ -20,6 +20,16 @@ views:
       - areas
       - fecha
   - type: table
+    name: Conceptos
+    filters:
+      and:
+        - note.tipo == "concepto"
+    order:
+      - file.name
+      - resumen
+      - areas
+      - fecha
+  - type: table
     name: Trampas
     filters:
       and:
