@@ -609,7 +609,12 @@ Verificación en navegador por librería.
 ### Task 18: Exploración — bordes solo de fila (gate del usuario)
 
 Prototipo A/B en el laboratorio del design system con las tres librerías: variante actual vs
-sin bordes de columna (jerarquía por espaciado/zebra según refactoring-ui). Critique con
+sin bordes de columna (jerarquía por espaciado/zebra según refactoring-ui). La variante B
+incluye además cabecera des-enfatizada (menor tamaño/peso que los datos, estilo label) —
+hallazgo Refactoring UI del 2026-08-03: hoy cabeceras y filtros en caja pesan más que los
+datos, y quitar bordes sin rebajar la cabecera dejaría el ruido donde estaba. La jerarquía de
+toolbar (todos los botones con el mismo peso) queda anotada como candidata aparte, no entra
+en este A/B. Critique con
 puntuación heurística (impeccable + ux-heuristics), capturas comparadas al usuario, y SU
 decisión antes de tocar producción. Si aprueba: cambio en el contrato --ds-table-* y
 adaptadores, como task de implementación aparte.
@@ -618,5 +623,8 @@ adaptadores, como task de implementación aparte.
 
 Extender la escala de /plan-compras (28/13/11) a la familia de tablas: tokens de densidad en el
 contrato --ds-table-*, aplicación por adaptador, y actualización de la excepción de
-accesibilidad de PRODUCT.md (de superficie única a familia). Antes de aplicar: mostrar al
+accesibilidad de PRODUCT.md (de superficie única a familia). Criterio añadido (Nielsen sev-3
+del 2026-08-03): las cabeceras deben quedar LEGIBLES con la densidad nueva — hoy /pdc muestra
+tres columnas truncadas idénticas («INICIO EN OI…») y PI rompe palabras por envoltura;
+compactar sin resolver truncado/envoltura de cabecera es empeorar. Antes de aplicar: mostrar al
 usuario una captura antes/después de PG con la densidad nueva. Después: task 15 (goldens).
