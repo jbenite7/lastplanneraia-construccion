@@ -146,6 +146,28 @@ miraba `label[for]`.
 
 Al registro: **C-25**, la marca «AIA» de `admin/` a 4,46:1 frente al mínimo de 4,5.
 
+## Tercera pasada horaria del 2026-08-04 — la estructura del documento
+
+Las dos pasadas anteriores dejaron color, overflow y controles anónimos medidos y limpios; repetir
+esa batería no habría enseñado nada. Esta barre una dimensión **que ninguna pasada había mirado**:
+título de página, jerarquía de encabezados y landmarks.
+
+**Hallazgo principal, arreglado (`e6f7f4c`).** 6 rutas tenían título descriptivo y al menos 9 decían
+solo «Last Planner AIA»: en la pestaña, el historial y los marcadores eran indistinguibles entre sí
+(WCAG 2.4.2, nivel A). El mecanismo ya estaba bien pensado —`linksComunesHead2.js` dice literalmente
+«Respetar el `<title>` definido por la vista; solo aportar el genérico si falta»— y nadie lo
+aprovechaba en once vistas. Se declara el título en cada una con el nombre que ya usan sus migas de
+pan, sin inventar nomenclatura.
+
+**Al registro (C-30).** La otra mitad del problema es estructural y no es un retoque de barrido:
+solo 3 rutas declaran `<main>` y la mayoría no tiene `h1`, así que con lector de pantalla no se
+puede saltar al contenido ni recorrer la página por encabezados.
+
+**Vuelve a aparecer el mismo patrón de la pasada anterior:** la solución correcta ya existía en el
+repo —seis rutas con título propio, y un comentario explicando el mecanismo— y solo hacía falta
+extenderla. Van cuatro veces en la sesión (chips de PG, `aria-label` de CNP, `.pdc-btn-alertas`, y
+ahora los títulos).
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
