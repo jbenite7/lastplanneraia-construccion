@@ -124,6 +124,7 @@
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "occurrence": 1,
+      "occurrenceCaveat": "occurrence cuenta posicion relativa entre copias de este mismo selector+token, no una identidad propia del bloque: si se inserta una tercera regla identica ENTRE esta y su duplicado, este occurrence pasa a resolver contra la regla nueva. Ver memoria/trampas/occurrence-no-resiste-insercion-entre-duplicados.md antes de tocar .ps-dropdown-item.is-active.",
       "kind": "at-risk",
       "reason": "El item activo del dropdown tinta el fondo con info-bg y fija el texto en --ds-color-brand-architecture (#2a5a8f) para conservar el acento de marca en vez del info-text pareado. Hoy son 6,48:1 sobre el pastel #e3f9f7; con el fondo invertido a #134841 caen a 1,46:1.",
       "revisit": "Antes o durante la inversion hay que decidir si el item activo pasa al info-text pareado o si el azul de marca se aclara. Sustituir el acento de marca es una decision de diseno y por eso no se hizo aqui; lo que no puede quedarse es 1,46:1."
@@ -193,6 +194,7 @@
       "selector": ".ps-dropdown-item.is-active",
       "token": "--ds-color-state-info-bg",
       "occurrence": 2,
+      "occurrenceCaveat": "occurrence cuenta posicion relativa entre copias de este mismo selector+token, no una identidad propia del bloque: si se inserta una tercera regla identica ENTRE esta y la primera copia, este occurrence pasa a resolver contra la regla nueva. Ver memoria/trampas/occurrence-no-resiste-insercion-entre-duplicados.md antes de tocar .ps-dropdown-item.is-active.",
       "kind": "at-risk",
       "reason": "Segunda copia literal del bloque de la linea 361 -misma regla duplicada en la misma hoja-, con el mismo fondo info-bg y el mismo texto fijo en --ds-color-brand-architecture. Los numeros son identicos: 6,48:1 hoy, 1,46:1 con el fondo invertido.",
       "revisit": "Ademas de la decision de color compartida con la primera copia, esta duplicacion literal deberia consolidarse en una sola regla: hoy cualquier arreglo hay que aplicarlo dos veces o queda a medias."

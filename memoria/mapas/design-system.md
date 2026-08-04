@@ -44,8 +44,11 @@ son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (el audit
 así que un hex citado en un comentario rompe el presupuesto),
 [[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco),
 [[visual-baselines-estado-real]] (las baselines del lab están rojas; mide el delta antes de
-culparte) y [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
-que apunta a una variable inexistente: los valores resueltos solo se ven en navegador).
+culparte), [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
+que apunta a una variable inexistente: los valores resueltos solo se ven en navegador) y
+[[occurrence-no-resiste-insercion-entre-duplicados]] (el ancla por firma de
+`state-token-exceptions.json` resiste inserciones salvo una: meter una regla nueva entre dos
+copias duplicadas del mismo selector+token corre el `occurrence` declarado).
 
 Y antes de citar una fuente como contrato, dos que afirman lo que el código no cumple:
 [[comentario-de-token-afirma-uso-inexistente]] (ocho tokens rotulados para un uso que su
