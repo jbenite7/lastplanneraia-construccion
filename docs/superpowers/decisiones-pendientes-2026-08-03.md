@@ -15,7 +15,7 @@ deja preparado y aquí anotado.
 | # | Qué | Estado | Por qué es tuya |
 |---|---|---|---|
 | **A-1** | **Goldens de tabla** (task 15) | Preparados, **sin commitear** | Recapturar consagra el aspecto actual como «lo correcto». Si algo se rompió sin que lo viéramos, quedaría bendecido. Se te mostrará par a par |
-| **A-2** | **Densidad compacta** (task 19) | En curso; capturas antes/después al terminar | Cambia el aspecto de todas las tablas de la app. Verás filas ganadas por superficie y las cabeceras ya legibles |
+| **A-2** | **Densidad compacta** (task 19) | **Aplicada** (`67f35c4`) — reversible con `git revert` | Ya la aprobaste dos veces (extender la escala + «maximizar espacio»), así que se aplicó. Te quedan por ver las capturas antes/después: `task-19-densidad/`. **Ojo al resultado honesto**: el alto de fila bajó de 36 a 24 px, pero **no se ganan filas** en PG/PI con datos reales, porque el texto envuelto domina la altura (el token es un mínimo, no un máximo). Lo que sí se arregló: las cabeceras truncadas e ilegibles de `/pdc` |
 | **A-3** | **Variante B de bordes en tablas reales** | Decidida en maqueta, **no aplicada** | Aprobaste B + numéricas a la derecha sobre una maqueta HTML. Handsontable y DataTables pintan sus propios bordes: hay que verlo ahí antes de producción |
 
 ## B · Asumidas por la sesión, ratifícalas o revócalas
@@ -37,3 +37,4 @@ deja preparado y aquí anotado.
 | **C-6** | **Contenido de «HOMECENTER CALI» en la fila 1 del sandbox** `pdc_sandbox_e2e` | Desconocido | No coincide con el seed. Puede ser residuo de una importación manual o un bug de importación real; no se investigó |
 | **C-7** | **DataTables: gatillo de filtro sin verificación visual** | Menor | Ninguna tabla alcanzable tiene ordenación activa hoy; la regla está escrita pero nadie la ha visto en acción |
 | **C-8** | **`state-tint-exceptions.json` sigue anclado por número de línea** | Menor | Su hermano ya migró a firma (task 12-bis). Las 3 entradas actuales están verificadas correctas |
+| **C-9** | **La densidad no gana filas por el ancho de la columna «Actividad»** | Medio | Hallazgo del task 19: bajar el alto de fila no sirve de nada mientras el texto largo se envuelva en varias líneas. Ganar filas de verdad exige decidir qué hacer con esa columna (truncar con detalle al pasar el cursor, ancho fijo, o dos líneas máximo). Es una decisión de producto: afecta a cuánto texto lees de un vistazo |
