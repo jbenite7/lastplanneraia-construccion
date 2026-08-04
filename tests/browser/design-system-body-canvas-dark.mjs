@@ -16,26 +16,31 @@ const VIEWPORT = { width: 1180, height: 820 };
 // tema no deja rastro de `.dark-mode` y ese test estatico pasa igual. Este
 // test cierra ese hueco midiendo el color real en el navegador.
 //
+// Las dos rutas del hallazgo original -/contratos y /listado-actividades- ya no
+// existen: `569ae903` («retirar superficies deprecadas listado-actividades y
+// contratos») las saco de public/index.php y hoy responden 404. Estuvieron aqui
+// esperandose en oscuro hasta el 2026-08-04, cuando el paso a `expect.soft` de
+// los guards de color dejo de abortar el bucle en la primera y las hizo
+// visibles a las dos. Se retiran: un guard que navega a una ruta inexistente no
+// mide tema, mide routing, y ya hay suites para eso.
+//
 // El fondo esperado no es uniforme: las rutas con shell (.pg-page/.ps-page/
-// .pi-page) usan --ds-color-bg-page-dark (#111a15); contratos y
-// listado-actividades estilan `body` directo con --ds-color-bg-canvas-dark
-// (#0b100d), que es exactamente el valor que la regla rota de Finding 1
-// dejaba de aplicar.
+// .pi-page) usan --ds-color-bg-page-dark (#111a15); las demas caen al canvas
+// generico --ds-color-bg-canvas-dark (#0b100d), que es exactamente el valor que
+// la regla rota de Finding 1 dejaba de aplicar.
 const EXPECTED_BODY_BACKGROUND = {
   '/programa-general': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pg-page
   '/programacion-semanal': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .ps-page
   '/programacion-intermedia': 'rgb(17, 26, 21)', // --ds-color-bg-page-dark via .pi-page
-  '/contratos': 'rgb(11, 16, 13)', // --ds-color-bg-canvas-dark via `html.aia-theme-dark body`
-  '/listado-actividades': 'rgb(11, 16, 13)', // --ds-color-bg-canvas-dark via `html.aia-theme-dark body`
   // Las cinco de abajo son las superficies claras que F1 ataca (spec F1-styles-css.md /
   // plan F1-styles-css.plan.md, Task 1). Hoy caen al fallback claro de styles.css
   // (--surface-bg: #f5f5f7 -> body rgb(245,245,247)) porque su @layer base resuelve como
   // module.base y gana a components del DS (styles.css:26,36,104). Ninguna tiene hoy CSS
   // propio que pinte `body` en oscuro: pdc.css no declara `body {}` y las otras cuatro no
   // tienen hoja de módulo. El valor esperado es el canvas oscuro genérico
-  // --ds-color-bg-canvas-dark (rgb(11, 16, 13)), el mismo que /contratos y
-  // /listado-actividades, porque ninguna de estas cinco usa una clase de "page" con su
-  // propio --ds-color-bg-page-dark (no son .pg-page/.ps-page/.pi-page). Task 3 del plan F1
+  // --ds-color-bg-canvas-dark (rgb(11, 16, 13)), porque ninguna de estas cinco usa una
+  // clase de "page" con su propio --ds-color-bg-page-dark (no son
+  // .pg-page/.ps-page/.pi-page). Task 3 del plan F1
   // remapea --surface-bg a var(--ds-active-bg-canvas), que es justo ese token.
   '/pdc': 'rgb(11, 16, 13)',
   '/indicadores': 'rgb(11, 16, 13)',
@@ -91,7 +96,10 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
   try {
     for (const [route, expectedBackground] of Object.entries(EXPECTED_BODY_BACKGROUND)) {
       const response = await page.goto(route, { waitUntil: 'load' });
-      expect(response?.status(), `${route} must respond`).toBeLessThan(400);
+      // `soft` + `continue` por lo mismo que el fondo: una ruta que no responde
+      // abortaba el bucle y dejaba sin medir las que venian detras.
+      expect.soft(response?.status(), `${route} must respond`).toBeLessThan(400);
+      if ((response?.status() ?? 500) >= 400) continue;
       const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
       // `soft` a proposito: durante F1 varias rutas estan en rojo a la vez y se van
       // apagando tramo a tramo. Con un expect duro el test aborta en la primera y no
@@ -107,7 +115,7 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
           (propertyName) => getComputedStyle(document.body).getPropertyValue(propertyName).trim(),
           stateToken.property,
         );
-        expect(
+        expect.soft(
           tokenValue,
           `${route}: ${stateToken.property} debe resolver al valor dark declarado (${stateToken.value}), ` +
             'no quedar vacio ni con un valor distinto (p. ej. si la regla condicionada por tema pierde su prefijo)',
@@ -122,36 +130,28 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
 // Hallazgo posterior a la Tarea 3 (commit efabf46): este archivo mide solo
 // `document.body`, y las cinco rutas de EXPECTED_BODY_BACKGROUND ya dan
 // verde ahi. Pero el body es el lienzo exterior; la grilla Handsontable que
-// cubre casi toda la pantalla en /contratos, /pdc, /profesionales,
-// /subcontratistas y /listado-actividades vive en su propio contenedor
-// (`#hot-container`, o `#dt_cliente` en /pdc) con su propio fondo CSS, sin
-// heredar el del body. Medido en vivo a 1180x820 dark, logueado como test.A
-// en un proyecto con project_id activo (Da Porto u otro: contratos/
-// listado-actividades no tienen filas seed en ningun proyecto disponible,
-// asi que la comparacion es sobre el contenedor, no sobre una celda de
-// datos, lo cual ademas es correcto: una celda puede llevar legitimamente
-// un tinte de estado, por ejemplo `.pdc-header` en rgb(139, 64, 17) o
-// `.pdc-missing-data` en rgb(233, 213, 255) en /pdc; ninguna de las dos es
-// un bug, y afirmar "ninguna celda es blanca" habria sido una asercion
-// invalida). El contenedor no tiene `style` inline con background (solo
-// height/width/overflow), asi que su color viene integramente de la
-// cascada CSS y es un punto de medicion real, no vacuo:
-//   /contratos            #hot-container -> rgb(17, 26, 21)   (referencia: OK)
-//   /listado-actividades  #hot-container -> rgb(17, 26, 21)   (OK)
-//   /pdc                  #dt_cliente    -> rgba(28, 36, 31, 0.92) (OK, superficie "glass" ya oscura)
-//   /profesionales        #hot-container -> rgb(255, 255, 255) (ROTO: contenedor blanco)
-//   /subcontratistas      #hot-container -> rgb(255, 255, 255) (ROTO: contenedor blanco)
-// En /profesionales y /subcontratistas el `body` que las envuelve ya es
-// oscuro (rgb(11, 16, 13), la misma EXPECTED_BODY_BACKGROUND de arriba) y
-// las celdas de datos (`td`) tambien miden blanco solido, pero el
-// contenedor es el nivel donde el token deberia aplicarse de forma estable
-// sin depender de si hay filas cargadas -- el arreglo (una tarea posterior
-// de F1 sobre `@layer components`, o F6 tokenizando
-// handsontable-module.css) vive fuera de este archivo; este test solo
-// deja el hueco visible.
+// cubre casi toda la pantalla en /pdc, /profesionales y /subcontratistas vive
+// en su propio contenedor (`#hot-container`, o `#dt_cliente` en /pdc) con su
+// propio fondo CSS, sin heredar el del body. Medido en vivo a 1180x820 dark,
+// logueado como test.A en un proyecto con project_id activo. La comparacion es
+// sobre el contenedor, no sobre una celda de datos, lo cual ademas es correcto:
+// una celda puede llevar legitimamente un tinte de estado, por ejemplo
+// `.pdc-header` en rgb(139, 64, 17) o `.pdc-missing-data` en rgb(233, 213, 255)
+// en /pdc; ninguna de las dos es un bug, y afirmar "ninguna celda es blanca"
+// habria sido una asercion invalida. El contenedor no tiene `style` inline con
+// background (solo height/width/overflow), asi que su color viene integramente
+// de la cascada CSS y es un punto de medicion real, no vacuo.
+//
+// El bloque llevaba tambien /contratos y /listado-actividades -la primera como
+// referencia OK-, retiradas el 2026-08-04 por el mismo motivo que arriba: las
+// rutas ya no existen desde `569ae903`.
+//
+// Los dos rojos deliberados que documentaba este comentario (/profesionales y
+// /subcontratistas con `#hot-container` en rgb(255, 255, 255)) YA NO ESTAN: el
+// 404 de /contratos abortaba el bucle antes de llegar a ellas, asi que el
+// comentario describia una medicion que llevaba tiempo sin repetirse. Con el
+// bucle completo las tres rutas vivas dan verde.
 const EXPECTED_GRID_SURFACE_BACKGROUND = {
-  '/contratos': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
-  '/listado-actividades': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
   '/pdc': { selector: '#dt_cliente', background: 'rgba(28, 36, 31, 0.92)' },
   '/profesionales': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
   '/subcontratistas': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
@@ -164,7 +164,9 @@ test('la superficie de la grilla Handsontable (no el body) usa fondo oscuro en c
   try {
     for (const [route, expected] of Object.entries(EXPECTED_GRID_SURFACE_BACKGROUND)) {
       const response = await page.goto(route, { waitUntil: 'load' });
-      expect(response?.status(), `${route} must respond`).toBeLessThan(400);
+      // Igual que arriba: el 404 de una ruta no puede dejar ciegas a las demas.
+      expect.soft(response?.status(), `${route} must respond`).toBeLessThan(400);
+      if ((response?.status() ?? 500) >= 400) continue;
       await page.waitForSelector(expected.selector, { state: 'attached', timeout: 15000 });
       // `attached` solo garantiza que el nodo existe. Handsontable monta su
       // superficie de forma asincrona y, mientras no lo ha hecho, el contenedor

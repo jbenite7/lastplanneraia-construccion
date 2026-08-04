@@ -114,24 +114,33 @@ test('la celda de estado de Intermedia declara matiz y nivel', async ({ page }) 
   expect(chips.length, 'la grilla no renderizó ninguna celda de estado').toBeGreaterThan(0);
 
   const known = new Set(states.map((s) => s.hue));
+  // `soft`: cada chip es una medicion independiente. Con aserciones duras la
+  // corrida aborta en el primer chip roto y los demas quedan sin medir, asi que
+  // hacen falta tantas corridas como estados rotos haya. Los umbrales no se
+  // relajan; solo cambia cuanto se ve por corrida.
   for (const chip of chips) {
-    expect(chip.hue, `el chip «${chip.label}» no declara data-aia-hue`).toBeTruthy();
-    expect(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
+    expect.soft(chip.hue, `el chip «${chip.label}» no declara data-aia-hue`).toBeTruthy();
+    if (!chip.hue) continue; // sin matiz declarado no hay escalera contra la que comparar
+    expect.soft(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
       .toContain(chip.hue);
 
     // El nivel viaja como severity+urgency, que es el par que la capa de
     // componentes ya usa. La tripleta completa tiene que ser una de las que el
     // contrato declara para este modulo.
-    expect(
+    expect.soft(
       triples,
       `«${chip.label}» declara ${chip.hue}|${chip.severity}|${chip.urgency}, `
       + 'que no es ninguna de las combinaciones matiz+nivel del contrato',
     ).toContain(`${chip.hue}|${chip.severity}|${chip.urgency}`);
 
+    // Si el matiz no esta en el contrato no hay token de escalera que resolver:
+    // medir `var(undefined)` daria un fallo derivado que no dice nada nuevo.
+    if (!hues[chip.hue]) continue;
+
     // Y el color pintado tiene que ser el de la escalera para ese matiz: si el
     // modulo lo sigue eligiendo por su cuenta, aqui se separa.
     const tint = await resolveTint(page, hues[chip.hue]);
-    expect(
+    expect.soft(
       separation(chip.painted, tint),
       `«${chip.label}» pinta ${toHex(chip.painted)} pero la escalera da `
       + `${toHex(tint)} para ${chip.hue} (${hues[chip.hue]})`,
@@ -163,22 +172,31 @@ test('la celda de estado de Semanal declara matiz y nivel', async ({ page }) => 
   expect(chips.length, 'la grilla no renderizó ninguna celda de estado').toBeGreaterThan(0);
 
   const known = new Set(states.map((s) => s.hue));
+  // `soft`: cada chip es una medicion independiente. Con aserciones duras la
+  // corrida aborta en el primer chip roto y los demas quedan sin medir, asi que
+  // hacen falta tantas corridas como estados rotos haya. Los umbrales no se
+  // relajan; solo cambia cuanto se ve por corrida.
   for (const chip of chips) {
-    expect(chip.hue, `el chip «${chip.label}» no declara data-aia-hue`).toBeTruthy();
-    expect(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
+    expect.soft(chip.hue, `el chip «${chip.label}» no declara data-aia-hue`).toBeTruthy();
+    if (!chip.hue) continue; // sin matiz declarado no hay escalera contra la que comparar
+    expect.soft(known, `«${chip.label}» declara el matiz ${chip.hue}, que no está en el contrato`)
       .toContain(chip.hue);
 
     // El nivel viaja como severity+urgency, que es el par que la capa de
     // componentes ya usa. La tripleta completa tiene que ser una de las que el
     // contrato declara para este modulo.
-    expect(
+    expect.soft(
       triples,
       `«${chip.label}» declara ${chip.hue}|${chip.severity}|${chip.urgency}, `
       + 'que no es ninguna de las combinaciones matiz+nivel del contrato',
     ).toContain(`${chip.hue}|${chip.severity}|${chip.urgency}`);
 
+    // Si el matiz no esta en el contrato no hay token de escalera que resolver:
+    // medir `var(undefined)` daria un fallo derivado que no dice nada nuevo.
+    if (!hues[chip.hue]) continue;
+
     const tint = await resolveTint(page, hues[chip.hue]);
-    expect(
+    expect.soft(
       separation(chip.painted, tint),
       `«${chip.label}» pinta ${toHex(chip.painted)} pero la escalera da `
       + `${toHex(tint)} para ${chip.hue} (${hues[chip.hue]})`,

@@ -137,17 +137,21 @@ test.describe('leyenda de Programación Semanal', () => {
     const classes = [...Object.keys(LEGEND_TO_ROW), ...LEGEND_ONLY];
     const { legend, row } = await readLegendAndRowTints(page, classes, Object.values(LEGEND_TO_ROW));
 
+    // `soft`, igual que en el test del modal de mas abajo: las cuatro parejas
+    // chip/fila son independientes y con aserciones duras la primera rota
+    // esconde a las otras tres. No se relaja ningun umbral.
     for (const [cls, token] of Object.entries(LEGEND_TO_ROW)) {
-      expect(legend[cls], `no se encontró el chip .${cls} en la leyenda`).toBeTruthy();
-      expect(row[token], `${token} no resuelve en la página`).toBeTruthy();
+      expect.soft(legend[cls], `no se encontró el chip .${cls} en la leyenda`).toBeTruthy();
+      expect.soft(row[token], `${token} no resuelve en la página`).toBeTruthy();
+      if (!legend[cls] || !row[token]) continue; // sin las dos muestras no hay familia que comparar
 
       const drift = hueDistance(legend[cls], row[token]);
-      expect(
+      expect.soft(
         drift,
         `.${cls} pinta ${toHex(legend[cls])} en la leyenda y ${toHex(row[token])} en la fila; `
         + 'uno de los dos es gris y no se puede comparar la familia',
       ).not.toBeNull();
-      expect(
+      expect.soft(
         drift,
         `.${cls} promete la familia de ${toHex(legend[cls])} en la leyenda pero su fila pinta `
         + `${toHex(row[token])} (${token}), a ${drift?.toFixed(0)}° de distancia`,
@@ -161,14 +165,16 @@ test.describe('leyenda de Programación Semanal', () => {
 
     // Las de la fase activa tienen que estar; `tnp` se mide solo si aparece.
     for (const cls of ALWAYS_PRESENT) {
-      expect(legend[cls], `la fase Programación debería renderizar .${cls}`).toBeTruthy();
+      expect.soft(legend[cls], `la fase Programación debería renderizar .${cls}`).toBeTruthy();
     }
     const present = classes.filter((cls) => legend[cls]);
 
     for (let i = 0; i < present.length; i += 1) {
       for (let j = i + 1; j < present.length; j += 1) {
         const [a, b] = [present[i], present[j]];
-        expect(
+        // `soft`: son hasta diez pares y cualquiera de ellos puede colisionar
+        // por su cuenta; un expect duro reportaria uno por corrida.
+        expect.soft(
           separation(legend[a], legend[b]),
           `.${a} y .${b} pintan casi lo mismo: ${toHex(legend[a])} vs ${toHex(legend[b])}`,
         ).toBeGreaterThanOrEqual(MIN_CHANNEL_SEPARATION);
@@ -239,7 +245,8 @@ test.describe('leyenda de Programación Semanal', () => {
     }), MODAL_SWATCH_STATES);
 
     for (const m of measured) {
-      expect(m.missing, `${m.cls}: ${m.missing}`).toBeUndefined();
+      expect.soft(m.missing, `${m.cls}: ${m.missing}`).toBeUndefined();
+      if (m.missing) continue; // sin muestra no hay frontera que medir
 
       // Frontera del objeto grafico (WCAG 1.4.11) contra lo adyacente: la
       // sostiene el borde o el relleno, cualquiera de los dos sirve.

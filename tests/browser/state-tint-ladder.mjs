@@ -258,9 +258,13 @@ test.describe('paleta de matices de estado', () => {
 
     // Tolerancia de una unidad por canal: el compositor de canvas redondea en
     // 8 bits premultiplicados y se desvia hasta 1 respecto al calculo exacto.
+    // `soft` de aqui en adelante en los bucles de este archivo: cada matiz (y
+    // cada par de matices) es una medicion independiente, y con aserciones
+    // duras una sola desviacion esconde a todas las demas. Ningun umbral se
+    // relaja: lo unico que cambia es cuantos fallos reporta una corrida.
     for (const [hue, expected] of Object.entries(PALETTE)) {
       const drift = channelDrift(resolved[tintOf(hue)].painted, expected);
-      expect(
+      expect.soft(
         drift,
         `${tintOf(hue)} deberia valer ${expected} y pinta ${toHex(resolved[tintOf(hue)].painted)}`,
       ).toBeLessThanOrEqual(1);
@@ -278,11 +282,11 @@ test.describe('paleta de matices de estado', () => {
 
     for (const hue of HUES) {
       const painted = resolved[tintOf(hue)].painted;
-      expect(
+      expect.soft(
         deltaE(painted, canvas),
         `${tintOf(hue)} (${toHex(painted)}) se hunde en el canvas ${toHex(canvas)}`,
       ).toBeGreaterThanOrEqual(MIN_DELTA_E_VS_CANVAS);
-      expect(
+      expect.soft(
         contrast(text.painted, painted),
         `el texto primario sobre ${tintOf(hue)} (${toHex(painted)}) no llega a AA`,
       ).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
@@ -296,7 +300,7 @@ test.describe('paleta de matices de estado', () => {
     for (let i = 0; i < HUES.length; i += 1) {
       for (let j = i + 1; j < HUES.length; j += 1) {
         const [a, b] = [HUES[i], HUES[j]];
-        expect(
+        expect.soft(
           deltaE(resolved[tintOf(a)].painted, resolved[tintOf(b)].painted),
           `${a} y ${b} pintan casi lo mismo: `
           + `${toHex(resolved[tintOf(a)].painted)} vs ${toHex(resolved[tintOf(b)].painted)}`,
@@ -321,7 +325,7 @@ test.describe('paleta de matices de estado', () => {
     for (let i = 0; i < CHROMATIC.length; i += 1) {
       for (let j = i + 1; j < CHROMATIC.length; j += 1) {
         const [a, b] = [CHROMATIC[i], CHROMATIC[j]];
-        expect(
+        expect.soft(
           hueGap(lch[a].H, lch[b].H),
           `${a} (${lch[a].H.toFixed(1)}°) y ${b} (${lch[b].H.toFixed(1)}°) son casi el mismo matiz`,
         ).toBeGreaterThanOrEqual(MIN_HUE_SEPARATION_DEG);
@@ -361,10 +365,11 @@ test.describe('paleta de matices de estado', () => {
     );
 
     for (const { id, tint, text } of withText) {
-      expect(resolved[tint], `${tint} no resuelve`).not.toBeNull();
-      expect(resolved[text], `${text} no resuelve`).not.toBeNull();
+      expect.soft(resolved[tint], `${tint} no resuelve`).not.toBeNull();
+      expect.soft(resolved[text], `${text} no resuelve`).not.toBeNull();
+      if (!resolved[tint] || !resolved[text]) continue; // sin color no hay ratio que medir
       const ratio = contrast(resolved[text].painted, resolved[tint].painted);
-      expect(
+      expect.soft(
         ratio,
         `el texto tintado de ${id} (${toHex(resolved[text].painted)}) sobre su ancla `
         + `(${toHex(resolved[tint].painted)}) mide ${ratio.toFixed(2)}:1`,
@@ -391,11 +396,11 @@ test.describe('paleta de matices de estado', () => {
       // que recalcule el color por su cuenta cae aqui aunque el resultado se
       // parezca.
       for (const [moduleToken, hue] of Object.entries(bindings)) {
-        expect(
+        expect.soft(
           resolved[tintOf(hue)]?.declared,
           `${tintOf(hue)} no resuelve en ${route}`,
         ).toBeTruthy();
-        expect(
+        expect.soft(
           resolved[moduleToken]?.declared,
           `${moduleToken} deberia resolver igual que ${tintOf(hue)} (matiz ${hue})`,
         ).toBe(resolved[tintOf(hue)]?.declared);
@@ -410,7 +415,10 @@ test.describe('paleta de matices de estado', () => {
         for (let j = i + 1; j < entries.length; j += 1) {
           const [tokenA] = entries[i];
           const [tokenB] = entries[j];
-          expect(
+          // Un token que no resuelve ya quedo reportado arriba; comparar `null`
+          // aqui solo anadiria un fallo derivado.
+          if (!resolved[tokenA] || !resolved[tokenB]) continue;
+          expect.soft(
             deltaE(resolved[tokenA].painted, resolved[tokenB].painted),
             `${tokenA} y ${tokenB} son dos entradas de leyenda y pintan `
             + `${toHex(resolved[tokenA].painted)} y ${toHex(resolved[tokenB].painted)}`,
