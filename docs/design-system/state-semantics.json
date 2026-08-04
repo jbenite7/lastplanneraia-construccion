@@ -285,7 +285,8 @@
           "label": "En Ejecución Pendiente",
           "key": "execution-blocked",
           "level": "attention",
-          "hue": "blue"
+          "hue": "blue",
+          "note": "Ratificado 2026-08-03 por el propietario del producto: attention/blue para actividad en ejecución sin liberar (stateMachine.js getState). El mapeo a ok que registró el inventario G0 quedó obsoleto antes del repaso."
         },
         {
           "label": "Listo para Comprometer",

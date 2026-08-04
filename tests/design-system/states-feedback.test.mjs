@@ -86,7 +86,7 @@ test('programación intermedia exposes its eight real states with action priorit
     { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'urgent', hue: 'amber' },
     { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
     { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'neutral' },
-    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'blue' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'blue', note: 'Ratificado 2026-08-03 por el propietario del producto: attention/blue para actividad en ejecución sin liberar (stateMachine.js getState). El mapeo a ok que registró el inventario G0 quedó obsoleto antes del repaso.' },
     { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green' },
   ]);
   assert.equal(
