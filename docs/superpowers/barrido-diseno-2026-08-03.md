@@ -117,6 +117,35 @@ la regla de archivo habría sido esquivar el gate. Y el primer intento del arreg
 audit en rojo porque **el comentario citaba valores de color literales** — la trampa que la wiki ya
 tenía puesta en `audit-ve-color-en-comentarios`. Ambas cosas las atrapó el gate, no yo.
 
+## Segunda pasada horaria del 2026-08-04 — solo lo nuevo
+
+Método distinto y más barato: en vez de navegar ruta por ruta, se miden las 28 rutas
+(20 de la app principal + 8 de `admin/`) desde iframes del mismo origen, con la misma batería por
+superficie. Resultado global: **cero fugas de color claro y cero overflow horizontal en las 28**.
+Las dos fugas que quedaban vivas —el disparador de menú de PS y «Ver alertas» de PDC— ya no
+aparecen: los cerraron `312ba9b` y `be5eae7`.
+
+**Lo que quedaba era accesibilidad, no color.** Cinco controles de solo icono se anunciaban sin
+nombre, arreglados en `0471e2f`: los dos botones de **borrar** de `/profesionales` y
+`/subcontratistas` —un botón que elimina una fila, anunciado como nada—, el de editar de CIC y CNC,
+y el menú lateral de `admin/`, presente en sus 8 rutas. Todo metadato: no cambia comportamiento.
+
+Dos cosas que enseñó el barrido:
+
+- **El patrón correcto ya existía en el repo.** `CNP.view.php` ya traía `aria-label` más
+  `aria-hidden` en el icono; CIC y CNC se habían quedado atrás. Se copió en vez de inventar otro.
+  Es el mismo hallazgo que con los chips de PG: cuando algo falta, conviene mirar si un módulo
+  hermano ya lo resolvió.
+- **Una tabla vacía esconde defectos.** CNC salió limpia en la medición porque no tenía filas; su
+  botón de editar tiene el mismo defecto que CIC, solo que latente. Medir solo el estado vacío da
+  una foto incompleta.
+
+Falsos positivos descartados: los `htFocusCatcher` de Handsontable (`role="presentation"`,
+`aria-hidden="true"`) y los radios del laboratorio, que usan etiqueta envolvente y mi sonda solo
+miraba `label[for]`.
+
+Al registro: **C-25**, la marca «AIA» de `admin/` a 4,46:1 frente al mínimo de 4,5.
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
