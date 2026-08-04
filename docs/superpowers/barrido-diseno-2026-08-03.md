@@ -168,6 +168,37 @@ repo —seis rutas con título propio, y un comentario explicando el mecanismo�
 extenderla. Van cuatro veces en la sesión (chips de PG, `aria-label` de CNP, `.pdc-btn-alertas`, y
 ahora los títulos).
 
+## Cuarta pasada horaria del 2026-08-04 — la primera con datos reales
+
+Las tres pasadas anteriores midieron el sandbox, donde casi todas las tablas están vacías. Esta
+recorre las mismas rutas sobre un proyecto **con datos** («Optimización Aeropuerto JMC», solo
+lectura; no Da Porto, que tiene protecciones explícitas). El cambio de método vale más que
+cualquier hallazgo anterior de tabla.
+
+**Hallazgo único y sistémico: 51 truncamientos silenciosos, y cero celdas con elipsis en toda la
+aplicación.** El reparto:
+
+| Superficie | Recortes mudos | Qué se corta |
+|---|---|---|
+| Programación Intermedia | **29** | 26 de sus 27 códigos «Id» (`9.5.1.1` pierde 18 px), más nombres de subcontratista |
+| Programación Semanal | 9 | celdas de la rejilla |
+| Programa General | 6 | códigos «Id» (`3.5.2.1.1` se ve igual que `3.5.2.1`, otra actividad de la misma tabla) |
+| Subcontratistas | 7 | **direcciones de correo** (`proyectos@concreacero.`) |
+| Profesionales | **0** | limpia con 24 filas — prueba de que no es inevitable |
+
+No es un defecto de un módulo: es una **laguna del contrato de tabla**, que nunca especificó qué
+pasa cuando el contenido no cabe. Va a **C-31**, elevado.
+
+**Nada aplicado, y por qué.** Se probaron dos mitigaciones y se descartaron las dos con evidencia:
+la elipsis exige `nowrap`, que rompería el ajuste de «Actividad»; y aunque las celdas que deben
+envolver se marcan con `force-wrap`, poner elipsis al resto ocultaría texto que hoy se ve entero en
+celdas que envuelven por defecto. La cura es el ancho de columna, que vive en el JS y es decisión
+del usuario.
+
+**Lo que este barrido enseña sobre los anteriores:** medir el estado vacío durante toda la sesión
+produjo hallazgos correctos pero sesgados, y en un caso —C-24— con la recomendación invertida. El
+estado vacío es un caso, no el caso.
+
 ## Documento
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
