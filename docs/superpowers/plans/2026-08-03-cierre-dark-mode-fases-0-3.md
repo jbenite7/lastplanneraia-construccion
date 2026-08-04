@@ -634,12 +634,13 @@ usuario una captura antes/después de PG con la densidad nueva. Después: task 1
 Va DESPUÉS del task 19 — comparten los CSS de módulo y el contrato de densidad, y solaparlos
 provoca conflictos.
 
-Forma visual ~24 px con área clicable ampliada a **32 px** por pseudo-elemento (no 44: decisión
-explícita del usuario). Foco visible sobre la forma, no sobre el área. Los chips contadores son
+Forma visual compacta con área clicable ampliada a **24 px** por pseudo-elemento — corregido a la
+baja desde 32 px por decisión del usuario del 2026-08-03: accesibilidad básica y máximo espacio
+para las tablas. 24×24 px es el mínimo EXACTO de WCAG 2.2 SC 2.5.8 (AA): sin margen. Foco visible sobre la forma, no sobre el área. Los chips contadores son
 **controles que filtran**: conservan afordancia, foco y estado activo. Componente compartido en
 `public/css/design-system/components/`, consumido por los módulos; nada de parchear módulo a
-módulo. Ampliar en `PRODUCT.md` la regla de 44 px para esta familia, citando que 32 px cumple
-WCAG 2.2 SC 2.5.8 (AA, mínimo 24 px) y que los 44 px son AAA (SC 2.5.5).
+módulo. Sustituir en `PRODUCT.md` la regla de 44 px (que es AAA, SC 2.5.5) por el piso AA de 24 px para
+esta familia, con la razón escrita.
 
 Verificación: medir el área clicable real (no solo la visual) con `getBoundingClientRect` del
 pseudo-elemento o del propio control, en las toolbars de PG, PI, PS y PDC; foco visible navegando

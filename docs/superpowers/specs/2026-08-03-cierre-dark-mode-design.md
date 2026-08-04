@@ -160,15 +160,19 @@ datos.
 
 | # | Decisión |
 |---|---|
-| 1 | **Pequeño a la vista, grande al clic**: la forma visual se compacta (~24 px) y el área clicable se amplía por pseudo-elemento — pero el área **no pasa de 32 px**, no 44: «que se vea un incremento pero sutil» (palabras del usuario). El foco visible se dibuja sobre la forma visual, nunca sobre el área invisible |
+| 1 | **Pequeño a la vista, grande al clic**: la forma visual se compacta y el área clicable se amplía por pseudo-elemento. El foco visible se dibuja sobre la forma visual, nunca sobre el área invisible |
+| 1-bis | **Corrección del 2026-08-03, posterior**: el área baja de 32 px a **24 px**. El usuario corrigió el rumbo — «solo necesitamos cumplir con accesibilidad básica, [con] una premisa de optimizar al máximo el tamaño de los elementos, para maximizar el espacio disponible de las tablas». 24×24 px es el **mínimo exacto de WCAG 2.2 SC 2.5.8 (AA)**: no queda margen, cualquier reducción posterior incumple |
 | 2 | **Los chips contadores filtran al hacer clic**: son controles, no etiquetas. Conservan afordancia, foco visible y estado activo aunque se compacten |
 
 **Consecuencia normativa:** `PRODUCT.md` exige hoy «objetivos de interacción de al menos 44 px».
-Eso es más estricto que el estándar: WCAG 2.2 pide 24×24 px en nivel AA (SC 2.5.8) y reserva los
-44 px para AAA (SC 2.5.5). Los 32 px decididos **cumplen AA con margen** y no llegan a AAA. La
-regla interna se amplía explícitamente para esta familia de controles, con esta razón escrita —
-mismo procedimiento que la excepción de densidad de tablas del 2026-07-29. No se relajan
-contraste, foco visible, orden de foco, teclado ni `prefers-reduced-motion`.
+Eso es la regla AAA (SC 2.5.5) autoimpuesta; el estándar AA pide 24×24 px (SC 2.5.8). La regla
+interna se sustituye para toda la familia de tablas y sus controles por el **piso AA de 24 px**,
+con esta razón escrita — mismo procedimiento que la excepción de densidad del 2026-07-29.
+
+**El suelo que no se cruza, en ninguna tarea de esta familia:** objetivos de 24×24 px, contraste
+de texto 4.5:1, foco visible, orden de foco, teclado y `prefers-reduced-motion`. Todo lo demás se
+optimiza para ganar filas visibles. Cuando un valor quede **en** el mínimo exacto, la tarea debe
+decirlo: es una posición sin margen, y quien la toque después necesita saberlo.
 
 ## Decisiones del grilleo (2026-08-03)
 
