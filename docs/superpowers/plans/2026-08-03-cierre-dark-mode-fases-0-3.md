@@ -628,3 +628,21 @@ del 2026-08-03): las cabeceras deben quedar LEGIBLES con la densidad nueva — h
 tres columnas truncadas idénticas («INICIO EN OI…») y PI rompe palabras por envoltura;
 compactar sin resolver truncado/envoltura de cabecera es empeorar. Antes de aplicar: mostrar al
 usuario una captura antes/después de PG con la densidad nueva. Después: task 15 (goldens).
+
+### Task 22: Botones de acción y chips contadores ultra compactos (ver spec §T-5)
+
+Va DESPUÉS del task 19 — comparten los CSS de módulo y el contrato de densidad, y solaparlos
+provoca conflictos.
+
+Forma visual ~24 px con área clicable ampliada a **32 px** por pseudo-elemento (no 44: decisión
+explícita del usuario). Foco visible sobre la forma, no sobre el área. Los chips contadores son
+**controles que filtran**: conservan afordancia, foco y estado activo. Componente compartido en
+`public/css/design-system/components/`, consumido por los módulos; nada de parchear módulo a
+módulo. Ampliar en `PRODUCT.md` la regla de 44 px para esta familia, citando que 32 px cumple
+WCAG 2.2 SC 2.5.8 (AA, mínimo 24 px) y que los 44 px son AAA (SC 2.5.5).
+
+Verificación: medir el área clicable real (no solo la visual) con `getBoundingClientRect` del
+pseudo-elemento o del propio control, en las toolbars de PG, PI, PS y PDC; foco visible navegando
+con teclado; contraste del texto del contador con sonda real. Capturas antes/después de una
+toolbar completa. Y jerarquía: aprovechar para que la acción primaria de cada toolbar deje de
+pesar lo mismo que las demás (hallazgo Refactoring UI del 2026-08-03).

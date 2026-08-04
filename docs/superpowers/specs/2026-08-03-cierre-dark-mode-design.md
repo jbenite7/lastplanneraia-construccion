@@ -149,6 +149,27 @@ deciden con capturas frente al usuario antes de aplicar; T-1 y T-2 son implement
 porque la decisión ya está tomada. Los goldens de la fase 3 (task 15) se recapturan DESPUÉS de
 esta fase para no consagrar dos veces.
 
+### T-5 · Botones de acción y chips contadores — ultra compactos y accesibles (añadido 2026-08-03)
+
+Petición del usuario: los botones de acción y los chips contadores se ven demasiado grandes en
+todos los módulos. Objetivo: **ultra compactos, ultra accesibles**. Lo confirman las tres lentes
+de hoy — «toolbars planas, todos los botones con el mismo peso» y contadores que compiten con los
+datos.
+
+**Decisiones tomadas:**
+
+| # | Decisión |
+|---|---|
+| 1 | **Pequeño a la vista, grande al clic**: la forma visual se compacta (~24 px) y el área clicable se amplía por pseudo-elemento — pero el área **no pasa de 32 px**, no 44: «que se vea un incremento pero sutil» (palabras del usuario). El foco visible se dibuja sobre la forma visual, nunca sobre el área invisible |
+| 2 | **Los chips contadores filtran al hacer clic**: son controles, no etiquetas. Conservan afordancia, foco visible y estado activo aunque se compacten |
+
+**Consecuencia normativa:** `PRODUCT.md` exige hoy «objetivos de interacción de al menos 44 px».
+Eso es más estricto que el estándar: WCAG 2.2 pide 24×24 px en nivel AA (SC 2.5.8) y reserva los
+44 px para AAA (SC 2.5.5). Los 32 px decididos **cumplen AA con margen** y no llegan a AAA. La
+regla interna se amplía explícitamente para esta familia de controles, con esta razón escrita —
+mismo procedimiento que la excepción de densidad de tablas del 2026-07-29. No se relajan
+contraste, foco visible, orden de foco, teclado ni `prefers-reduced-motion`.
+
 ## Decisiones del grilleo (2026-08-03)
 
 1. Alcance: **dark mode completo**, los 4 511 a cero — no solo los 4 módulos.
