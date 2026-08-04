@@ -22,7 +22,8 @@ deja preparado y aquí anotado.
 
 | # | Decisión asumida | Razón | Reversible |
 |---|---|---|---|
-| — | *(se irá llenando durante la ejecución)* | | |
+| **B-1** | El barrido horario de todas las superficies corre **en esta sesión**, no como tarea programada en la nube | Tú mismo pediste que los hallazgos «se envíen a esta sesión para incorporarlas al plan»: una tarea en la nube no podría hacerlo. Además muere al cerrar la sesión, que es lo conservador | Sí — se puede mover a la nube con `/schedule` |
+| **B-2** | La primera pasada del barrido horario **no arranca de inmediato**, sino cuando cierre el task en vuelo que está editando el CSS de tablas | Medir un árbol a medio cambiar produce hallazgos falsos que luego contaminarían el plan | Sí |
 
 ## C · Deuda inventariada que espera tu criterio
 
