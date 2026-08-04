@@ -313,6 +313,62 @@ html.aia-theme-dark .pg-page {
   color: var(--pg-delayed-text);
 }
 
+/* ── Paridad con la referencia aprobada: Programacion Semanal ──────────────
+   Decision del usuario del 2026-08-04: los contadores de los tres modulos se
+   unifican y **manda el chip de Programacion Semanal**. PG era el raro: chip
+   neutro con el color solo en el punto, tenido unicamente al seleccionarse.
+
+   La divergencia de fondo era de arquitectura, no de valores: `.pdc-legend-item`
+   es el componente canonico compartido —vive en `buttons.css` y fija borde,
+   tamano y peso— y PS lo consume anadiendo solo el fondo por severidad, mientras
+   PG se habia construido su propio chip. La vista ya consume el canonico; aqui
+   se le da el fondo en reposo con **la misma formula que PS**
+   (`color-mix(... 88%, var(--ds-active-surface) 12%)`) pero sobre **los tintes
+   de fila de PG**: el chip debe prometer el tinte de la fila que filtra. Copiar
+   los matices de PS haria que mintiera sobre su propia grilla, que es el error
+   que el comentario de `programacion-semanal.css` documenta tras cometerlo.
+   Verificado: los valores resultantes coinciden EXACTAMENTE con los de PS en los
+   estados equivalentes (rojo, naranja y ambar). */
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
+  background: color-mix(in srgb, var(--pg-alert-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+/* `debe-iniciar` NO se agrupa con `alerta-restricciones`, aunque el bloque de
+   `[aria-pressed]` de mas arriba si lo hace: su fila es naranja (`--pg-due-bg`)
+   y la de alerta es ambar. Agrupados, «Debe Iniciar» anuncia el ambar de otro
+   estado. */
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.debe-iniciar {
+  background: color-mix(in srgb, var(--pg-due-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.actividad-futura {
+  background: color-mix(in srgb, var(--pg-future-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.en-curso {
+  background: color-mix(in srgb, var(--pg-progress-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.atrasada {
+  background: color-mix(in srgb, var(--pg-delayed-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.sin-datos {
+  background: color-mix(in srgb, var(--pg-nodata-bg) 88%, var(--ds-active-surface) 12%);
+}
+
+/* `terminada` NO lleva regla: su fila usa `--pg-done-bg`, que es
+   `--ds-state-tint-neutral`. Dejarlo en la superficie neutra ES prometer su
+   tinte; darle color seria mentir al reves. */
+
+/* El peso lo traia `aia-chip` en 600 y la referencia rinde 500. */
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip {
+  font-weight: var(--ds-type-weight-medium);
+}
+
+/* El atenuado de los filtros no aplicados se conserva en 0.6 —la referencia no
+   atenua, pero eso es senal de estado y no apariencia del chip, y no es lo que
+   se pidio unificar. */
 .pg-page #pgLegend .pg-filter-chip.inactive-filter {
   opacity: 0.6;
 }

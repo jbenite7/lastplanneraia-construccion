@@ -1019,17 +1019,16 @@
   border-radius: var(--ds-radius-pill) !important;
 }
 
-.pg-page #pgLegend .pdc-legend-item.sin-datos {
-  background: var(--ds-active-surface-raised) !important;
-  border-color: var(--ds-active-border) !important;
-  color: var(--ds-active-text-primary) !important;
-}
-
-.pg-page #pgLegend .pdc-legend-item.en-curso {
-  background: var(--ds-color-state-info-bg) !important;
-  border-color: var(--ds-color-state-info-text) !important;
-  color: var(--ds-color-state-info-text) !important;
-}
+/* Aqui vivian dos reglas `.pg-page #pgLegend .pdc-legend-item.sin-datos` y
+   `.en-curso` que fijaban con `!important` los pasteles del TEMA CLARO
+   (`--ds-color-state-info-bg` y su texto como borde). Estaban **muertas**:
+   Programa General no consumia `.pdc-legend-item`, asi que nunca aplicaron.
+   Al hacer que sus chips consuman el componente canonico —paridad con la
+   referencia, decision del usuario del 2026-08-04— despertaron y pintaron «En
+   Curso» con un borde azul claro sobre tema oscuro.
+   Se retiran en vez de acotarlas a claro: la aplicacion es dark-only por
+   contrato (AGENTS.md) y `programa-general.css` ya define los estados del
+   modulo con sus propios tokens. */
 
 /* --- Legend state colors --- */
 .pdc-legend-item.missing .indicator          { background-color: var(--aia-text-tertiary, oklch(72% 0 0)); }
