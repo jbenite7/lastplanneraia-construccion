@@ -43,7 +43,21 @@
             5 => ['titulo' => 'Gerente General', 'clase' => 'col-gerente-g', 'items' => []],
         ];
 
+// El nombre de actividad llega con marcado embebido desde `programa` /
+// `programa_consolidado` («<b>ACTA INICIO</b><small>[Capítulo:…]</small>»).
+// Se limpia aquí, antes de repartir por columna, para que el mismo texto plano
+// alimente el título de la tarjeta y el JSON que abre el drawer. Se descarta la
+// lista blanca de etiquetas porque obligaría a imprimir sin escapar un dato de
+// base de datos.
+$limpiarNombre = static function ($valor): string {
+    $texto = html_entity_decode(strip_tags((string) $valor), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $texto = preg_replace('/\s+/u', ' ', $texto) ?? $texto;
+
+    return trim($texto);
+};
+
 foreach ($crisis as $c) {
+    $c['actividad_nombre'] = $limpiarNombre($c['actividad_nombre'] ?? '');
     $nivel = (int) $c['nivel_actual'];
     // Si el nivel es 1 (Residente), lo mostramos en la columna del Director ya que el Director es el superior inmediato del Residente
     $colNivel = $nivel === 1 ? 2 : $nivel;
