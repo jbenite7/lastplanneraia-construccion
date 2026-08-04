@@ -88,7 +88,7 @@
       "id": "programacion-intermedia-dark-1180x820",
       "family": null,
       "route": "/programacion-intermedia",
-      "fixture": "deterministic-empty",
+      "fixture": "deterministic-estados-pi",
       "theme": "dark",
       "viewport": {
         "width": 1180,
@@ -98,13 +98,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1180x820.png",
-      "sha256": "d7ab689752954f1a89ca0e669eba2c4a6e743424d7da46ee3ebe286818ff38ab"
+      "sha256": "0f1496d4cfdba8ac937bf1108c8f04f2f2f82519ae8b0c70b27e9cd68ce53b94"
     },
     {
       "id": "programacion-intermedia-dark-1440x900",
       "family": null,
       "route": "/programacion-intermedia",
-      "fixture": "deterministic-empty",
+      "fixture": "deterministic-estados-pi",
       "theme": "dark",
       "viewport": {
         "width": 1440,
@@ -114,7 +114,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1440x900.png",
-      "sha256": "82a3e81e01ea662e20a7851710cef9632df3d9402929c1a982ed05d852b0c946"
+      "sha256": "c36d1c0b8116c73c50339b721e8273b6439eceb83ae7f3ee24e89ce45d2c88bc"
     }
   ]
 }
