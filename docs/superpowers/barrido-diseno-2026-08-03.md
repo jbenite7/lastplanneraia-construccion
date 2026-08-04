@@ -253,3 +253,26 @@ del ciclo 18 — **un resultado vacío merecía sospecha, no confianza**.
 
 `docs/superpowers/barrido-diseno-2026-08-03.md` (este archivo). Capturas en
 `.superpowers/sdd/2026-08-03-cierre-dark-mode-fases-0-3/barrido/`.
+
+## Pasada 7 — 2026-08-04 · foco y etiquetado de modales, ahora en TODAS las superficies
+
+Dimensión elegida por ser la que yo mismo declaré sin medir al cerrar el ciclo 28.
+Recorridas `/programa-general`, `/programacion-intermedia`, `/pdc`,
+`/control-cambios`, `/plan-compras` y `/profesionales` a 1180×820 dark.
+
+**Aplicado y verificado (`9ff6bf6`):** el defecto del ciclo 28 no era de
+Programación Semanal, era del repositorio. Tres `aria-labelledby` más apuntando a
+ids inexistentes —`modalContrato`, `modalDefinirContratos`, `modalordenDeCambio`,
+todos citando una variante con guion bajo del id real— y cuatro modales más sin
+`tabindex="-1"`. Totales tras el arreglo: **colgantes 3 → 0, sin `tabindex`
+7 → 0**.
+
+**Limpias de origen:** `/plan-compras` (usa `<dialog>` nativo, los 3 con nombre) y
+`/profesionales` (sin modales). `/programa-general` ya había quedado limpia por
+el arreglo del ciclo 28, porque los modales de semana son compartidos.
+
+**Nuevo, sin aplicar:** `/control-cambios` tiene **12 ids duplicados**, diez de
+ellos campos de filtro `buscador*`. Ver C-41.
+
+**Sin hallazgos nuevos** en las lentes 2 y 3 para esta dimensión: los modales ya
+consumen la primitiva `aia-modal` y su tipografía y espaciado salen del sistema.
