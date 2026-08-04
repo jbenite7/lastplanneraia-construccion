@@ -125,7 +125,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
     <div class="row ventanasModalesSemana" id="ventanasModalesSemana" data-skip-legacy-legend="true"></div>
 
-    <div class="modal fade aia-modal" id="modal_leyenda_colores_ps" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_leyenda_colores_ps" tabindex="-1" role="dialog" aria-labelledby="modal_leyenda_colores_ps_Label" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -137,11 +137,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         </div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_cerrar_compromisos" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_cerrar_compromisos" tabindex="-1" role="dialog" aria-labelledby="modal_cerrar_compromisos_Label" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title"><b>Cierre de Compromisos</b></h4>
+                    <h4 class="modal-title" id="modal_cerrar_compromisos_Label"><b>Cierre de Compromisos</b></h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body" id="cerrar_compromisos_semana"></div>
@@ -153,11 +153,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         </div>
     </div>
 
-    <div class="modal fade aia-modal" id="modal_aceptar_cerrar_compromisos" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_aceptar_cerrar_compromisos" tabindex="-1" role="dialog" aria-labelledby="modal_aceptar_cerrar_compromisos_Label" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title"><b>Resultado de Cierre</b></h4>
+                    <h4 class="modal-title" id="modal_aceptar_cerrar_compromisos_Label"><b>Resultado de Cierre</b></h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body" id="aceptar_cerrar_compromisos_semana"></div>
@@ -363,11 +363,11 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     </div>
 
     <!-- Modal CNC (Handsontable Handler) -->
-    <div class="modal fade aia-modal" id="modal_cnc_hot" role="dialog" data-backdrop="static">
+    <div class="modal fade aia-modal" id="modal_cnc_hot" tabindex="-1" role="dialog" aria-labelledby="modal_cnc_hot_Label" data-backdrop="static">
         <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header text-white">
-                    <h4 class="modal-title ps-modal-title">Justificación de Incumplimiento (CNC)</h4>
+                    <h4 class="modal-title ps-modal-title" id="modal_cnc_hot_Label">Justificación de Incumplimiento (CNC)</h4>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body">
