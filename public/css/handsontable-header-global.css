@@ -13,6 +13,7 @@
 body.ps-page #hot-container .handsontable thead th,
 body.pi-page #hot-container .handsontable thead th,
 body.pg-page #hot-container .handsontable thead th,
+body.pdc-page #dt_cliente .handsontable thead th,
 body #hot-container .handsontable thead th {
   position: relative !important;
   padding: 0 !important;

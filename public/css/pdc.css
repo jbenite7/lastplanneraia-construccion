@@ -181,13 +181,12 @@
 }
 
 /* PDC uses its own grid id, so the shared Handsontable header contract does not
- * reach it through #hot-container. Keep the filter trigger above the label and
- * inside the header without changing any other module. */
-body.pdc-page #dt_cliente .handsontable thead th {
-	position: relative !important;
-	padding: 0 !important;
-	text-align: center !important;
-}
+ * reach it through #hot-container. handsontable-header-global.css:16-20 ahora
+ * incluye `body.pdc-page #dt_cliente .handsontable thead th` en su lista de
+ * selectores, asi que ese bloque (position/padding/text-align) ya no se
+ * duplica aqui. El resto de este bloque local sigue siendo necesario: colorea
+ * el trigger con los tokens propios de PDC (--ds-color-*), distintos de los
+ * --ds-active-* del adaptador compartido. */
 body.pdc-page #dt_cliente .handsontable thead th .relative {
 	display: flex !important;
 	flex-direction: column !important;
