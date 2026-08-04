@@ -212,6 +212,18 @@
     background-color: transparent;
   }
 
+  /* El icono de `.small-box` es decoracion de fondo: AdminLTE lo pinta como
+     marca de agua, pero al retintarlo a la tinta clara de arriba se quedo a
+     opacidad plena y paso a competir con el rotulo. Medido en /admin/ a
+     1180x820: el icono ocupa 87px de ancho y se cruza 47px sobre «Proyectos
+     Activos», que mide 129 — mas de un tercio del rotulo bajo un glifo opaco.
+     Ocurre en las cinco cajas. Devolverle la opacidad de marca de agua deja los
+     cinco rotulos legibles enteros sin quitar el icono: deferencia al
+     contenido, que es de lo que trata la premisa. */
+  :where(.small-box) .icon > i {
+    opacity: 0.16;
+  }
+
   /* AdminLTE oscurece el pie con un velo negro al 10% y le pone tinta propia. Esa
      capa baja el acento medio lo justo para romper AA (medido 2.8–3.48:1): el
      par acento-on-dark + `--ds-color-text-on-domain-dark` esta calibrado a

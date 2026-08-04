@@ -164,6 +164,7 @@
               <input type="checkbox"
                      class="custom-control-input"
                      id="consoleLogsGlobalToggle"
+                     aria-label="Console Logs Frontend"
                      <?php echo $stats['console_logs_enabled'] ? 'checked' : ''; ?>>
               <label class="custom-control-label" for="consoleLogsGlobalToggle"></label>
             </div>
@@ -185,6 +186,7 @@
             <input type="checkbox"
                    class="custom-control-input"
                    id="maintenanceModeToggle"
+                   aria-label="Modo Mantenimiento"
                    <?php echo $stats['maintenance_active'] ? 'checked' : ''; ?>>
             <label class="custom-control-label" for="maintenanceModeToggle"></label>
           </div>
