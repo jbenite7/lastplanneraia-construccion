@@ -738,3 +738,24 @@ navegador. Inventariar los que aparezcan.
 
 Verificación: medir `backgroundColor` y contraste del texto en las cuatro superficies, más
 `/control-cambios` y `/indicadores` por si comparten el patrón.
+
+### Task 28: `.btn-dropdown-trigger` es blanco en tema oscuro (ciclo del 2026-08-04)
+
+Medido en `/programacion-semanal`: «Más» y «Ver Secciones» resuelven
+`background: rgba(255,255,255,0.92)` con texto `oklch(0.42 0.1 247.1)`. Ambos usan
+`.btn-dropdown-trigger`, que consume `--ds-color-surface` — declarado literalmente en blanco
+(`tokens.css:165`) y **sin variante dark**.
+
+**Nosotros lo agravamos:** el menú «Más» del task 25 usa esa misma clase, así que la fuga pasó de
+un botón a dos. Y viola la premisa de un solo acento por vista: junto al verde de «Confirmar
+Compromisos», dos botones blancos llaman más la atención que el propio acento.
+
+**Por qué falló el intento del task 27** (dato que ahorra la vuelta): cambió solo el fondo y dejó
+el texto en `--ds-color-brand-architecture`, otro token estático azul oscuro — de ahí el 1,67:1.
+Hay que cambiar **el par completo**, fondo y texto a la vez, verificando el contraste del
+resultado, no de una mitad.
+
+Alcance mínimo: `.btn-dropdown-trigger` en sus 6 usos. Alcance recomendado, si el barrido lo
+confirma: dar variante dark a `--ds-color-surface` y sus hermanos (`-raised`, `-glass`), que es la
+raíz registrada como C-20 — pero eso toca el sistema entero y debe medirse superficie por
+superficie antes de tocarlo.
