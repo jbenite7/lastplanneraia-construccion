@@ -117,7 +117,14 @@ body.ps-page #hot-container .handsontableInput {
 .ps-actions-row {
     display: flex;
     gap: calc(var(--ps-hot-gap) * var(--ps-hot-scale));
-    flex-wrap: nowrap;
+    /* `wrap`, no `nowrap`: con `nowrap` y el `overflow: visible !important` de
+       abajo, lo que no cabe se escapa del carril SIN barra que lo alcance.
+       Medido a 1180x820 con el texto al 200 % (WCAG 1.4.4): «Confirmar
+       Compromisos», «Mas» y «Ver Secciones» acababan con su borde derecho en
+       1348, 1490 y 1919 px —fuera del viewport y sin forma de llegar a ellos—.
+       A tamano normal esto NO cambia nada: la fila mide 970 px y su contenido
+       tambien 970, asi que no hay nada que envolver y el render es identico. */
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between; /* Alineación Dual */
     min-width: 0;
@@ -184,7 +191,12 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
 
 .ps-hot-toolbar-actions {
     display: inline-flex;
-    flex-wrap: nowrap;
+    /* Mismo motivo que `.ps-actions-row`: envolver el carril exterior recupero
+       «Ver Secciones», pero «Confirmar Compromisos» y «Mas» seguian saliendose
+       porque este grupo interior tampoco envuelve. A tamano normal mide 685 px
+       con 685 de contenido, asi que aqui tampoco hay nada que envolver y el
+       render no cambia. */
+    flex-wrap: wrap;
     align-items: center;
     gap: calc(var(--ps-hot-gap) * var(--ps-hot-scale));
     max-inline-size: none;
