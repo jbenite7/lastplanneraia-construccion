@@ -601,9 +601,17 @@
   #piLegend.pdc-legend-autoscaling .pdc-legend-item,
   #pgLegend.pdc-legend-autoscaling .pdc-legend-item,
   #psAlertsLegend.pdc-legend-autoscaling .pdc-legend-item {
-    width: 155px !important;
-    max-width: 155px !important;
-    flex: 0 0 155px !important;
+    /* El ancho fijo de 155px partia en dos renglones 6 de los 8 chips de PI
+       ("Alistamiento en Riesgo", "Listo para Comprometer"...) y los apilaba en
+       tres filas sobre la tabla. Medido a 1180x820: al dimensionar cada chip a
+       su contenido todos caen a una linea (39px -> 34px de alto), el bloque
+       pasa de tres filas a dos y devuelve 10px al area de datos. La etiqueta
+       manda sobre la rejilla: es la jerarquia por tipografia y espaciado que
+       pide la premisa, no una caja igual para todos.
+       `flex-wrap` del contenedor sigue gobernando el salto de fila. */
+    width: auto !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
     font-weight: 500 !important;
     min-inline-size: 0 !important;
     margin: 4px !important;
