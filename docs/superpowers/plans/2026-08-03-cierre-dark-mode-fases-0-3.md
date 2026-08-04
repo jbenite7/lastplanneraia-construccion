@@ -681,3 +681,22 @@ Ojo al diagnóstico: `word-break` y `overflow-wrap` resuelven `normal` tanto en 
 la palabra más un wrapping heredado de otro clon de Handsontable, o un carácter invisible en el
 texto. Medir antes de tocar: reproducir el corte, identificar qué regla lo produce, y solo entonces
 arreglar. Alcance: cabeceras y celdas de PG; comprobar si PI y PS comparten el defecto.
+
+### Task 25: Botones inalcanzables en la toolbar de Programación Semanal (ciclo del 2026-08-03)
+
+**Severidad 4 — impide completar tareas.** Medido a 1180×820: la toolbar de PS tiene 1054 px
+visibles y 1373 px de contenido, con `overflow-x: visible` y `flex-wrap: wrap` que no envuelve.
+Resultado: «BI Semanal» queda cortado (termina en 1176 sobre un borde de 1126) y **«Ver Secciones»
+cae en x=1445, fuera del viewport**, arrastrando consigo el menú que abre (Actividades, Causas No
+Programación, Causas No Cumplimiento, Calificación Proveedores, Alertas). No hay scroll: son
+inalcanzables.
+
+PRIMERO determinar si es regresión de hoy o preexistente — los botones eran más grandes antes del
+task 22, así que lo probable es que sea preexistente y hoy haya mejorado, pero **hay que medirlo
+contra el commit anterior**, no suponerlo (lección del día: «este archivo no cambió» no prueba
+nada).
+
+Después, el arreglo: el problema de fondo no es el tamaño sino que hay más acciones de las que
+caben. Achicar más sería insistir en la vía equivocada. La salida correcta según Refactoring UI es
+**agrupar**: acciones secundarias en un menú de desbordamiento, dejando visibles la primaria y las
+frecuentes. Averiguar por qué `flex-wrap: wrap` no envuelve es parte del diagnóstico.
