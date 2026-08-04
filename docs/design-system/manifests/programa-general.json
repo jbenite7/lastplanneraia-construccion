@@ -82,7 +82,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "c642c52e73e6c534dbde5be9da12eb8d2ca212fac776d29fe68ee72aed21f8f6"
+      "sha256": "d7502de4a29fc894953d8b510256c7e4e10fde0a5577ff28cd17a1c031401dc4"
     },
     {
       "id": "programa-general-dark-1440x900",
@@ -98,7 +98,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
-      "sha256": "e87e7b30a7ebc576d5ad29731a9a464b9a8d0ab6ea98e66ce8719e8b7ce8f125"
+      "sha256": "24ad13467715bd4e4af61764305423bdad888c0d5d6fcd79206660e5bcefc9f8"
     },
     {
       "id": "programa-general-dark-390x844",

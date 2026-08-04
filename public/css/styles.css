@@ -1840,7 +1840,12 @@ table.dataTable thead th {
   padding: 8px 4px !important;
   text-align: center !important;
   vertical-align: middle !important;
-  border: 1px solid var(--ds-active-border) !important;
+  /* Variante B (A-3): solo separador horizontal. Esta regla vive en
+     `module.components` y por eso le gana al bloque de `table.dataTable` de
+     legacy-bridge, que esta en `module` a secas; si aqui quedara el `border`
+     de los cuatro lados, la cabecera seria la unica pieza con verticales. */
+  border: 0 !important;
+  border-bottom: 1px solid var(--ds-active-border) !important;
   white-space: normal !important;
   overflow-wrap: break-word !important;
   word-break: normal !important; /* FIXED: Don't break mid-letter */
@@ -1863,7 +1868,9 @@ table.dataTable tbody td {
   font-size: 0.85rem !important;
   padding: 6px 6px !important;
   vertical-align: middle !important;
-  border: 1px solid var(--ds-active-border) !important;
+  /* Variante B (A-3): solo separador horizontal, igual que la cabecera. */
+  border: 0 !important;
+  border-bottom: 1px solid var(--ds-active-border) !important;
   color: var(--ds-active-text-primary) !important;
   white-space: normal !important;
   overflow-wrap: break-word !important;

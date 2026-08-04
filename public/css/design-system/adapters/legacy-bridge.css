@@ -704,17 +704,20 @@
      tablas legacy que solo existen dentro de modales no se han censado. Los
      cinco sujetos son los del original; solo cambia el orden dentro de la
      lista, que no influye en la cascada, para no dejar especificidad
-     descendente. */
+     descendente.
+
+     Variante B (A-3): el literal gris azulado que vivia aqui medía 11,96:1
+     contra el fondo de celda y era lo mas brillante del area de contenido —la
+     rejilla gritaba mas que los datos—. Ahora el color lo pone el token de
+     separador del sistema, y solo quedan los bordes horizontales: los
+     verticales van a ancho cero para que la tabla se lea por filas. */
   table.dataTable,
   .table-bordered th,
   .table-bordered td,
   table.dataTable th,
   table.dataTable td {
-    border-right-color: #cbd5e1 !important;
-    border-bottom-color: #cbd5e1 !important;
-    border-left-color: #cbd5e1 !important;
-    border-top-color: #cbd5e1 !important;
-    border-width: 1px !important;
+    border-color: var(--ds-active-border) !important;
+    border-width: 0 0 1px 0 !important;
   }
 
   /* Unica declaracion viva del bloque de filas de estado de cic/cnc/cnp: el
@@ -724,17 +727,16 @@
     font-weight: 600;
   }
 
-  /* Marco exterior de la rejilla HOT. handsontable-module.css solo declara el
-     borde derecho y el inferior de cada celda, asi que el izquierdo de la
-     primera columna y el superior de la primera fila viven aqui, con el mismo
-     literal que usa ese modulo para que el marco no quede a dos tintas. */
-  #hot-container .handsontable th:first-child,
-  #hot-container .handsontable td:first-child {
-    border-left: 1px solid #cbd5e1 !important;
-  }
+  /* Cierre superior de la rejilla HOT. handsontable-module.css solo declara el
+     borde inferior de cada celda, asi que el superior de la primera fila vive
+     aqui, con el mismo token que usa ese modulo para que el marco no quede a
+     dos tintas.
 
+     Variante B (A-3): el cierre izquierdo de la primera columna se retiro con
+     el resto de los verticales; el contenedor ya recorta la rejilla con su
+     propio radio, asi que no deja borde suelto. */
   #hot-container .handsontable tr:first-child th,
   #hot-container .handsontable tr:first-child td {
-    border-top: 1px solid #cbd5e1 !important;
+    border-top: 1px solid var(--ds-active-border) !important;
   }
 }

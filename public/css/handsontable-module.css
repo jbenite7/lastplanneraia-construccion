@@ -100,12 +100,17 @@ body {
   display: none !important;
 }
 
-/* 2. Restaurar propiedades de tabla estándar (excluir editores) */
+/* 2. Restaurar propiedades de tabla estándar (excluir editores)
+
+   Variante B (A-3): solo separadores horizontales. El borde vertical se retira
+   —no se pinta transparente— para que la rejilla se lea por filas y deje de
+   competir con los datos; el ancho pasa a cero en los dos lados verticales
+   para no dejar hueco de un pixel al lado de cada celda. */
 #hot-container td:not(.handsontableInputHolder),
 #hot-container th {
   display: table-cell !important;
   padding: 0 !important;
-  border-right: 1px solid var(--ds-active-border) !important;
+  border-inline: 0 !important;
   border-bottom: 1px solid var(--ds-active-border) !important;
 }
 
