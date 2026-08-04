@@ -276,3 +276,31 @@ ellos campos de filtro `buscador*`. Ver C-41.
 
 **Sin hallazgos nuevos** en las lentes 2 y 3 para esta dimensión: los modales ya
 consumen la primitiva `aia-modal` y su tipografía y espaciado salen del sistema.
+
+## Pasada 8 — 2026-08-04 · regresión del botón flotante en todas las superficies
+
+El cambio del carril a FAB (`2c39fe0`) tocó **CSS compartido y un partial que
+monta toda la app**, y solo se había verificado en tres superficies. Este barrido
+es de regresión. Diez superficies medidas a 1180×820 dark, más `admin/`.
+
+**Resultado: sin regresiones.** En las diez, `padding-right` del body a **0**,
+**cero overflow horizontal**, y el contenido llega al borde derecho (hueco de 0
+a 8 px, que es el respiro propio de cada vista). En `admin/` no hay vía de
+regresión posible: se comprobó que **no carga** `aia-design-system.css`, de donde
+colgaba la regla.
+
+**Hallazgo nuevo, y agranda el beneficio del cambio.** El cajón LPS **solo se
+monta en tres superficies** —Programación Semanal, Intermedia y Programa
+General—. Las otras siete medidas (`/pdc`, `/plan-compras`, `/profesionales`,
+`/subcontratistas`, `/control-cambios`, `/bi/control-tower`, `/proyectos`) **no
+montan ni el carril ni el cajón**, y sin embargo todas reservaban los mismos
+46 px. Es decir: en **7 de 10 superficies el pasillo derecho no protegía nada**,
+era ancho perdido a cambio de nada. En el commit esto se dijo solo de `/pdc`;
+medido, es el caso mayoritario.
+
+El propio CSS ya avisaba de esto para una vista —«el selector de proyectos no
+monta el rail ni el drawer, así que reservarle el ancho solo le deja un margen
+derecho muerto»— y se había resuelto con una excepción puntual
+(`:not(.project-selector-page)`) en vez de mirar cuántas más estaban igual.
+
+Sin cambios aplicados en esta pasada: no había nada que arreglar.
