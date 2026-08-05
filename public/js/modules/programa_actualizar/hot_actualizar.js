@@ -746,7 +746,11 @@ window.HOTActualizarModule = (function() {
                     _colContainerWidth = cw;
                     // Original ratios: [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109] → sum ~1.002
                     // Normalized to sum exactly 1.0 to eliminate right-side gap
-                    var raw = [0.031, 0.031, 0.271, 0.233, 0.070, 0.070, 0.047, 0.062, 0.078, 0.109];
+                    // Task 8 (2026-08-05, ronda 1): «Restricciones» (indice 8) es una palabra
+                    // sola de 80 px que no puede envolver y rendizaba una caja de 76 — se cortaba
+                    // en seco. Sube de 0.078 a 0.083 (89 px medidos a 1180) y los 5 milesimos
+                    // salen de «Actividad Nueva» (indice 2), que rendiza 292 px y envuelve.
+                    var raw = [0.031, 0.031, 0.266, 0.233, 0.070, 0.070, 0.047, 0.062, 0.083, 0.109];
                     var sum = raw.reduce(function(a, b) { return a + b; }, 0);
                     _colWidthCache = raw.map(function(r) { return Math.max(Math.floor(cw * r / sum), 20); });
                 }

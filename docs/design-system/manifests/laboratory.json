@@ -393,7 +393,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "f92a4afe44bd17db60f56896c5c3c2588e58a0d2c9ea8b737706825f7250f09c"
+      "sha256": "0eb762a0d59c57b6c9801629fcb70c022332241582e5f2aaaf5b12d256d7cb15"
     },
     {
       "id": "vendor-adapters-dark-1440x900",
@@ -409,7 +409,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "9ba83ee37e8d4b0cec2ebc9989a12c4e026b1968651e40a392056a7abaa4debb"
+      "sha256": "0387ec787e84afc6f3bbf1ac4e65a64b19158345fae9e1e98253789a3573d281"
     }
   ]
 }
