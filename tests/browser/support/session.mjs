@@ -138,11 +138,8 @@ export async function postFormJson(page, url, body = {}, options = {}) {
       Object.entries(apiBody).forEach(([key, value]) => append(key, value));
       const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-      const isPdcUrl = apiUrl.startsWith('/api/pdc/');
       const shouldAttachCsrf = includeCsrf && (apiUrl.startsWith('/api/general/')
-        || apiUrl.startsWith('/api/listado-actividades/')
-        || apiUrl.startsWith('/api/semanal/')
-        || (includePdcCsrf && isPdcUrl));
+        || apiUrl.startsWith('/api/semanal/'));
       if (shouldAttachCsrf) {
         headers['X-CSRF-Token'] = csrfToken;
       }

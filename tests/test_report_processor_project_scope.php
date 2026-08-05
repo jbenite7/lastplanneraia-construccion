@@ -138,43 +138,9 @@ foreach ($projects as $project) {
         reportScopeFail("{$projectName}: subcontratistas esperado={$expectedSubs}, actual={$actualSubs}");
     }
 
-    if ((int) $project['pdcActivo'] === 1) {
-        $expectedPdc = reportScopeScalar(
-            $db,
-            "SELECT COUNT(*)
-             FROM pdc
-             WHERE project_id = ?
-               AND titulo = 0
-               AND semana <= (SELECT MAX(semana) FROM pdc WHERE project_id = ?)",
-            [$projectId, $projectId],
-        );
-        $actualPdc = reportScopeScalar($db, 'SELECT COUNT(*) FROM general_informe_pdc WHERE project_id = ?', [$projectId]);
-        if ($expectedPdc !== $actualPdc) {
-            reportScopeFail("{$projectName}: PDC esperado={$expectedPdc}, actual={$actualPdc}");
-        }
-    }
-}
-
-$datedPdcProjects = reportScopeScalar(
-    $db,
-    "SELECT COUNT(DISTINCT pdc.project_id)
-     FROM pdc
-     JOIN general_proyectos_procesos g ON g.Id = pdc.project_id
-     WHERE g.Area = 'Construccion'
-       AND g.Activo = 1
-       AND g.pdcActivo = 1
-       AND pdc.titulo = 0
-       AND pdc.fechaElaboracionPliegos IS NOT NULL
-       AND pdc.fechaFabricacion IS NOT NULL",
-);
-
-$canonicalPdcProjects = reportScopeScalar(
-    $db,
-    'SELECT COUNT(DISTINCT project_id) FROM general_curvas_pdc',
-);
-
-if ($datedPdcProjects > 0 && $canonicalPdcProjects === 0) {
-    reportScopeFail('general_curvas_pdc no se poblo para proyectos con PDC reportable');
+    // El informe del PDC v1 se retiró el 2026-08-04 con el módulo (tabla `pdc` eliminada).
+    // `general_informe_pdc` conserva el histórico y ya no se regenera, así que no hay
+    // conteo de origen contra el que contrastarlo.
 }
 
 reportScopeOk('conteos de reporterias coinciden con fuentes scoped por proyecto');

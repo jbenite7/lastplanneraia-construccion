@@ -14,8 +14,6 @@ class TableResolver
      * Tipos de tabla válidos del sistema LPS.
      */
     private static array $validTables = [
-        'actividades',
-        'auto_contrato_log',
         'auto_program_log',
         'cambios',
         'cic',
@@ -23,8 +21,6 @@ class TableResolver
         'indicadores_generales',
         'lps_drawer_comentarios',
         'lps_escalamientos',
-        'pdc',
-        'papelera_pdc',
         'pg_tracking',
         'pi_shared_constraints',
         'pi_shared_constraint_links',
@@ -33,15 +29,6 @@ class TableResolver
         'programa_consolidado',
         'programacion_semanal',
         'semanas_activas',
-        'semi_auto_assistant_feedback',
-        'semi_auto_decisions',
-        'semi_auto_feedback',
-        'semi_auto_learning_candidates',
-        'semi_auto_learning_rules',
-        'semi_auto_project_config',
-        'semi_auto_proactive_queue',
-        'semi_auto_runs',
-        'semi_auto_suggestions',
         'subcontratistas',
     ];
 

@@ -1,12 +1,27 @@
 ---
 tipo: trampa
-estado: vigente
+estado: derogada
 fecha: 2026-08-04
 areas: [pdc, arquitectura, lps]
-fuente: public/index.php, src/Controllers/Api/SemiAutoController.php, AGENTS.md
-resumen: "AGENTS.md dice que Listado, Contratos y PDC comparten los contratos auto/*, pero las 13 rutas son todas /api/pdc/ y los 12 métodos *Listado del controlador no tienen ninguna ruta"
+fuente: public/index.php, AGENTS.md
+resumen: "DEROGADA: el motor semi-automático se eliminó entero el 2026-08-04 con el PDC v1. La duda que planteaba —doce métodos *Listado sin ruta— se resolvió por retiro, no por cableado"
 ---
 # El semi-automático lo usa solo el PDC, aunque el contrato diga tres
+
+> [!warning] Derogada el 2026-08-04 — el sujeto ya no existe
+> `src/Controllers/Api/SemiAutoController.php`, `SemiAutoService`, `ActivityMatcher`,
+> `OperationalFamilyPolicy`, las trece rutas `/api/pdc/auto/*` y `public/js/modules/semi_auto_review.js`
+> **se eliminaron** con el PDC v1. También `/contratos` y `/listado-actividades`.
+>
+> **La pregunta que esta nota dejaba abierta ya tiene respuesta.** Planteaba dos lecturas para los doce
+> métodos `*Listado` sin ruta: contrato a medias, o cableado perdido. Se resolvió por una tercera vía:
+> se retiró todo. Nunca llegaron a tener ruta.
+>
+> **Lo que sigue siendo cierto y hay que arrastrar:** el párrafo de `AGENTS.md` `:23` que esta nota
+> desmentía **sigue en el repositorio**, y ahora describe tres módulos que ya no existen. Es deuda
+> pendiente de corregir en `AGENTS.md`, no en la wiki.
+>
+> Se conserva como registro. El sucesor del módulo es [[plan-de-compras]].
 
 [[AGENTS]] `:23` afirma:
 

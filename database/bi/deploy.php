@@ -17,7 +17,6 @@ $views = [
     '001_bi_pg_semana.sql',
     '002_bi_pi_restricciones.sql',
     '003_bi_ps_compromisos.sql',
-    '004_bi_pdc_general.sql',
     '005_bi_cic_contratistas.sql',
     '006_bi_cip_responsables.sql',
     '007_bi_curva_s_duracion.sql',

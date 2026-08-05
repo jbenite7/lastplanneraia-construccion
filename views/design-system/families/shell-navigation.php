@@ -40,9 +40,7 @@
                 'id' => 'compras',
                 'label' => 'Compras',
                 'items' => [
-                    ['id' => 'activity-families', 'label' => 'Familias de Actividades', 'href' => '/listado-actividades', 'icon' => 'hierarchy'],
-                    ['id' => 'contracts', 'label' => 'Paquetes de Contratación', 'href' => '/contratos', 'icon' => 'contract'],
-                    ['id' => 'pdc', 'label' => 'Plan de Compras', 'href' => '/pdc', 'icon' => 'clipboard'],
+                    ['id' => 'pdc', 'label' => 'Plan de Compras', 'href' => '/plan-compras', 'icon' => 'clipboard'],
                 ],
             ],
         ],

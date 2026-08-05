@@ -322,9 +322,8 @@ test('legacy common-head views render the static head component', async () => {
 
 test('shared JavaScript does not generate visual CSS', async () => {
   const notices = await read('public/js/core/AiaAlertInterceptor.js');
-  const reviews = await read('public/js/modules/semi_auto_review.js');
   assert.doesNotMatch(notices, /injectStyles|createElement\(['"]style['"]\)/);
-  assert.doesNotMatch(reviews, /ensureStyles|<style\b|appendTo\(['"]head['"]\)/);
+  // semi_auto_review.js se eliminó el 2026-08-04 con el PDC v1.
   const drawer = await read('public/js/modules/lps_drawer.js');
   assert.doesNotMatch(drawer, /innerHTML\s*=\s*[`'"][^\n]*style=/);
 });
@@ -332,7 +331,7 @@ test('shared JavaScript does not generate visual CSS', async () => {
 test('shared generated styles have governed adapter files', async () => {
   const css = await read('public/css/aia-design-system.css');
   for (const adapter of [
-    'sweetalert2', 'semi-auto-review', 'lps-drawer',
+    'sweetalert2', 'lps-drawer',
   ]) {
     assert.match(css, new RegExp(`adapters\\/${adapter}\\.css`));
     await read(`public/css/design-system/adapters/${adapter}.css`);

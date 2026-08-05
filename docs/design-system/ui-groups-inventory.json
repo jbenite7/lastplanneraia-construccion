@@ -623,7 +623,7 @@
       "family": "forms-filters",
       "label": "Selección exclusiva",
       "sources": [
-        "views/pdc/pdc.view.php"
+        "views/programacion-semanal/CIC.view.php"
       ],
       "catalogIds": [
         "field"
@@ -956,7 +956,7 @@
       "family": "states-feedback",
       "label": "Anuncio asíncrono",
       "sources": [
-        "public/js/modules/semi_auto_review.js"
+        "views/programa-general/programa_general.view.php"
       ],
       "catalogIds": [
         "live-region"
@@ -1254,7 +1254,7 @@
       "family": "vendor-adapters",
       "label": "Select2",
       "sources": [
-        "views/pdc/pdc.view.php"
+        "views/indicadores/indicadores.view.php"
       ],
       "catalogIds": [
         "select-adapter"

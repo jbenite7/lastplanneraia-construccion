@@ -3,7 +3,7 @@ import test from 'node:test';
 import { routeChanges } from '../../scripts/design-system-router.mjs';
 
 test('archivos no-UI no disparan gates de design system', () => {
-  const r = routeChanges(['src/Services/SemiAutoService.php', 'README.md']);
+  const r = routeChanges(['src/Services/ReportProcessor.php', 'README.md']);
   assert.equal(r.uiFiles.length, 0);
   assert.equal(r.commands.length, 0);
 });

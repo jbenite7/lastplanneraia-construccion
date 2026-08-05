@@ -38,7 +38,6 @@ echo "=== BI Historical Source Reconciliation ===\n\n";
 
 $requiredViewFiles = [
     'database/bi/002_bi_pi_restricciones.sql' => 'bi_pi_restricciones',
-    'database/bi/004_bi_pdc_general.sql' => 'bi_pdc_general',
     'database/bi/005_bi_cic_contratistas.sql' => 'bi_cic_contratistas',
     'database/bi/006_bi_cip_responsables.sql' => 'bi_cip_responsables',
 ];

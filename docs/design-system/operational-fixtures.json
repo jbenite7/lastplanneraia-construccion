@@ -75,16 +75,6 @@
       "states": ["default", "loading", "crisis", "simulation", "closing", "error", "success"]
     },
     {
-      "id": "semi-auto-review",
-      "label": "Revisión semiautomática",
-      "priority": "P1",
-      "family": "actions",
-      "topology": "object-workbench",
-      "summary": "Permite analizar, seleccionar, aplicar parcialmente, dar feedback y deshacer.",
-      "consumers": ["listado-actividades", "contratos", "pdc"],
-      "states": ["default", "analyzing", "reviewing", "applying", "partial", "error", "success", "undone"]
-    },
-    {
       "id": "admin-operations",
       "label": "Shell y operaciones Admin",
       "priority": "P1",

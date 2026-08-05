@@ -10,7 +10,6 @@ import {
   createOperationalFixture,
   payloadHasServerError,
   runLastPlannerCycle,
-  runPurchasingCycle,
 } from './support/operationalCycle.mjs';
 
 test('operational fixtures cover the requested projects and weeks', () => {
@@ -67,7 +66,7 @@ for (const project of OPERATIONAL_PROJECTS) {
       for (const baselineProject of OPERATIONAL_PROJECTS) {
         const snapshot = new ProjectDbSnapshot(
           baselineProject,
-          [...GLOBAL_TABLES, 'contratos_trazabilidad'],
+          GLOBAL_TABLES,
         );
         const baseline = { project: baselineProject, snapshot, fingerprint: null };
         snapshots.push(baseline);
@@ -78,12 +77,6 @@ for (const project of OPERATIONAL_PROJECTS) {
       await loginAndSelectProject(page, project);
       await page.waitForLoadState('networkidle', { timeout: 30_000 });
       await runLastPlannerCycle(page, project, fixture);
-      if (project.constructionOnly) {
-        await runPurchasingCycle(page, project, {
-          ...fixture,
-          week: project.purchasingWeek,
-        });
-      }
       assertNoRuntimeErrors(runtimeErrors);
     } finally {
       await logout(page).catch(() => {});

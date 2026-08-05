@@ -24,9 +24,9 @@ const ALL_ROUTES = [
   { route: '/programacion-semanal/cnc', active: 'programacion-semanal', label: 'CNC' },
   { route: '/programacion-semanal/cnp', active: 'programacion-semanal', label: 'CNP' },
   { route: '/indicadores', active: 'indicadores', label: 'Indicadores LPS' },
-  { route: '/listado-actividades', active: null, label: 'Familias de Actividades' },
-  { route: '/contratos', active: null, label: 'Paquetes de Contratación' },
-  { route: '/pdc', active: 'plan-compras', label: 'Plan de Compras (clásico)' },
+  // Podadas el 2026-08-04 con el retiro del PDC v1: /listado-actividades, /contratos y /pdc ya no
+  // existen en public/index.php. Las dos primeras salían como PENDING; /pdc estaba en MIGRATED y
+  // reventaba el harness entero con un timeout esperando [data-shell-pattern="sidebar"] sobre un 404.
   { route: '/plan-compras', active: 'plan-compras', label: 'Plan de Compras' },
   { route: '/bi/control-tower', active: 'control-tower', label: 'Control Tower - Informes' },
   { route: '/bi/programa-general', active: 'control-tower', label: 'Control Tower - Programa General' },
@@ -37,7 +37,7 @@ const ALL_ROUTES = [
   { route: '/bi/responsables', active: 'control-tower', label: 'Control Tower - Responsables (CIP)' },
   { route: '/bi/curva-s', active: 'control-tower', label: 'Control Tower - Curva S' },
 ];
-const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores', '/pdc', '/plan-compras', '/bi/control-tower', '/bi/programa-general', '/bi/intermedia', '/bi/semanal', '/bi/pdc', '/bi/contratistas', '/bi/responsables', '/bi/curva-s']); // se irá ampliando módulo a módulo
+const MIGRATED = new Set(['/programacion-intermedia', '/programa-general', '/profesionales', '/subcontratistas', '/control-cambios', '/programa-general-actualizar', '/programacion-semanal', '/programacion-semanal/cic', '/programacion-semanal/cnc', '/programacion-semanal/cnp', '/indicadores', '/plan-compras', '/bi/control-tower', '/bi/programa-general', '/bi/intermedia', '/bi/semanal', '/bi/pdc', '/bi/contratistas', '/bi/responsables', '/bi/curva-s']); // se irá ampliando módulo a módulo
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });

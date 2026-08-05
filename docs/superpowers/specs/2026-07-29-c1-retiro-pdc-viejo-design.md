@@ -4,9 +4,45 @@
 - **Ola:** 3 (lo grande), pero **con una decisión que aplica hoy**
 - **Goal:** `goals/pdc-preparar-b1`
 - **Origen:** roadmap maestro (fase C1) + un conflicto detectado al reunir los pendientes.
-- **Estado (2026-07-30):** trabajo previo **cerrado** — censo, medición, decisión del dueño y manifiesto del
-  v2 (puntos 1, 2 y 4). El retiro en sí sigue **bloqueado por la precondición**, y el alcance quedó
-  reescrito: es más pequeño y más seguro de lo que decía el diseño original. Ver «Alcance de C1».
+- **Estado (2026-08-04): EJECUTADO, y con más alcance del que este documento describe.** Lo de abajo
+  quedó **superado por los hechos** y se conserva como historia, no como contrato. Ver «Lo que
+  realmente pasó» justo aquí debajo antes de leer nada más.
+- **Estado (2026-07-30, superado):** trabajo previo **cerrado** — censo, medición, decisión del dueño y
+  manifiesto del v2 (puntos 1, 2 y 4). El retiro en sí sigue **bloqueado por la precondición**, y el
+  alcance quedó reescrito: es más pequeño y más seguro de lo que decía el diseño original.
+
+## Lo que realmente pasó — 2026-08-04
+
+Tres cosas que este documento afirma **ya no son ciertas**. Se corrigen aquí en vez de reescribir el
+cuerpo, para que se vea qué se planificó y qué se hizo.
+
+**1. La precondición no se cumplió: se retiró.** Decía que C1 no empezaba hasta tener el v2 validado en
+producción con una obra trabajando. Felipe la levantó el 2026-08-03 sobre un hecho que el spec no
+contemplaba: suponía que producción seguía de cerca a `main`, y no es así. Producción está en `1aa7c69`
+del 2026-07-16, **sin una sola tabla `pdc_*`**. Retirar el v1 en `main` no le quitaba nada a nadie allí:
+cuando esa rama llegue, llegarán el retiro y el v2 en el mismo envío.
+
+**2. Los datos SÍ se borraron.** La «opción A — conservar, y el retiro no toca las tablas» de más abajo
+**está revocada**. Felipe decidió el 2026-08-04 eliminar también los datos: **18 tablas** de MySQL, con
+respaldo previo en `storage/backups/lastplanneraia_dev-pre-borrado-pdc-v1-20260804.sql`. Todo el
+apartado «Los datos históricos: decidido, ya no está abierto» es historia, y con él el punto 2 de la
+condición de hecho.
+
+**3. El alcance fue mayor: cayó el motor semiautomático entero.** El spec insiste en que
+`OperationalFamilyPolicy`, los trece `/api/pdc/auto/*`, `/contratos` y `/listado-actividades` quedan
+**fuera** del retiro. Se retiraron igualmente, y fue deliberado: Felipe confirmó el 2026-08-04 que los
+tres módulos eran el v1. Desaparecieron `SemiAutoController`, `SemiAutoService`, `ActivityMatcher`,
+`OperationalFamilyPolicy` y las rutas de los tres módulos. **La advertencia del cuerpo —«retirarlo rompe
+Listado de Actividades y Contratos»— era correcta en su momento**: describía el daño colateral de un
+retiro que no pretendía llevárselos. Dejó de aplicar cuando llevárselos pasó a ser la intención.
+
+Lo que **sí** se cumplió tal cual: `PdcResetService` y su panel de mantenimiento sobrevivieron (punto 5,
+verificado el 2026-08-04 — servicio, controlador, las tres rutas de `admin/public/index.php:144-146`, la
+vista, el enlace del menú y las 13 tablas `pdc_*` que consume). Y el manifiesto del v2 (punto 4) ya
+estaba cerrado antes, que era justo el orden que este documento pedía.
+
+**Plan archivado sin ejecutar:** `docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo.md`. Se escribió
+y se aprobó, pero el retiro se aplicó por otra vía mientras tanto.
 
 ## El conflicto que se resolvió solo — y por qué queda escrito igual
 
@@ -80,6 +116,11 @@ que iteran rutas). Son 35 archivos en total; el censo los lista.
 
 ### NO se retira — y esto es lo que corrigió la medición
 
+> **DEROGADO el 2026-08-04.** Los tres primeros puntos de esta lista **sí se retiraron**, por decisión
+> de Felipe: el motor semiautomático y sus dos módulos consumidores eran también el v1. Solo el cuarto
+> —`PdcResetService` y `PdcMaintenanceController`— siguió en pie, como decía. Ver «Lo que realmente
+> pasó» al principio del documento.
+
 - **`OperationalFamilyPolicy` y el modelo de «familias».** El alcance original lo condicionaba a «si no lo
   consume nada más». **Lo consumen:** `src/Support/ActivityMatcher.php:13,18` y
   `src/Services/SemiAutoService.php:9,27,57,60`, ambos transversales, más tres tests. El prefijo
@@ -96,7 +137,14 @@ que iteran rutas). Son 35 archivos en total; el censo los lista.
 
 ### Los datos históricos: decidido, ya no está abierto
 
-**Decisión de Felipe del 2026-07-30: opción A — conservar, y el retiro no toca las tablas.**
+> **DEROGADO el 2026-08-04: se eligió borrar.** Felipe revocó la opción A y eliminó las 18 tablas del
+> v1, con respaldo previo verificable en
+> `storage/backups/lastplanneraia_dev-pre-borrado-pdc-v1-20260804.sql`. Todo este apartado —incluida la
+> frase «C1 es hoy un retiro de código, no una operación sobre datos»— es historia. La medición que
+> sigue conserva su valor: es lo que se sabía al decidir.
+
+**Decisión de Felipe del 2026-07-30 (derogada el 2026-08-04): opción A — conservar, y el retiro no toca
+las tablas.**
 
 Se tomó sobre medición, no sobre criterio técnico. De las 370 filas de `pdc` en 4 obras: las 370 tienen
 nombre de paquete y 269 tienen estado, pero **cero** tienen valor adjudicado, anticipo o vencimiento de
@@ -123,6 +171,12 @@ no lo eran. Que la regla estuviera escrita es lo que evitó romper dos módulos 
 ejecutado como estaba redactado, `/contratos` y `/listado-actividades` habrían caído con el PDC viejo.**
 
 ### Precondición innegociable
+
+> **LEVANTADA por Felipe el 2026-08-03.** No se incumplió por comodidad de calendario: dejó de aplicar
+> porque su premisa era falsa. Daba por hecho que producción seguía de cerca a `main`, y producción está
+> en `1aa7c69` del 2026-07-16, sin ninguna tabla `pdc_*`. El v2 no existe allí, así que retirar el v1 en
+> `main` no dejaba a ninguna obra sin herramienta: cuando esa rama llegue, llegarán el retiro y el v2
+> juntos.
 
 C1 **no empieza** hasta que el PDC v2 esté validado en producción con una obra trabajando de verdad. Es la
 condición que ya fijaba el roadmap («cuando A+B estén validados en producción») y el comité no la cambió.
@@ -182,15 +236,23 @@ cuando el v1 deje el suyo.
 
 1. **HECHO (2026-07-30).** Está medido y escrito quién consume todavía el modelo viejo, con el grep
    completo como evidencia → `goals/pdc-preparar-b1/evidence/censo-consumidores-pdc-v1.md`.
-2. **HECHO (2026-07-30).** Hay decisión escrita del dueño del producto sobre los datos históricos del v1:
-   **opción A, conservar; el retiro no toca las tablas.** Ver el apartado «Los datos históricos».
-3. **Bloqueado por la precondición.** Retiradas las rutas, la aplicación arranca, la suite pasa y ninguna
-   pantalla queda enlazando a `/pdc`.
+2. **HECHO, y luego CAMBIADO (2026-08-04).** Hubo decisión escrita del dueño el 2026-07-30 —opción A,
+   conservar— y el 2026-08-04 la revocó: **se borraron las 18 tablas del v1**, con respaldo previo en
+   `storage/backups/lastplanneraia_dev-pre-borrado-pdc-v1-20260804.sql`. Ver el apartado «Los datos
+   históricos», que queda como historia.
+3. **HECHO (2026-08-04).** Retiradas las rutas, la aplicación arranca y ninguna pantalla enlaza a `/pdc`:
+   cero rutas del v1 en `public/index.php`, `phpstan analyse src admin/src` → `[OK] No errors`, y
+   `/programacion-intermedia` y `/programacion-semanal` renderizan en dark 1180×820 sin errores de
+   consola. **Límite:** «la suite pasa» **no** está comprobado entero — se verificó el gate de contratos
+   del sistema de diseño (PASS) y `ci-fixture-contract.test.mjs` (10/10), no la suite completa.
 4. **HECHO (2026-07-30).** El PDC v2 tiene manifiesto de piloto con escenarios y evidencia, y deja de ser
    `inventory-only` → `docs/design-system/manifests/plan-compras-v2.json`, con golden real
    (`sha256: cd5523bd…`) y `contracts.test` ampliado. Gate en verde.
-5. **Solo verificable después del retiro.** `PdcResetService` y el panel de mantenimiento siguen
-   funcionando: no eran del PDC viejo y no deben caer con él.
+5. **HECHO (2026-08-04).** `PdcResetService` y el panel de mantenimiento siguen en pie: el servicio,
+   `admin/src/Controllers/PdcMaintenanceController.php`, las tres rutas de `admin/public/index.php:144-146`,
+   la vista `admin/views/pages/pdc/limpieza.php`, el enlace del menú y **las 13 tablas `pdc_*` que el
+   servicio consume**, todas presentes. **Límite:** se verificaron las piezas y sus tablas; **no** se
+   ejecutó un vaciado real desde el panel.
 
 ## Riesgos
 

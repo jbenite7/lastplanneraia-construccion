@@ -7,9 +7,30 @@
   para que el dueño del producto pueda decidir sobre los datos históricos).
 - **Base del censo:** `main` en `a083d6c`. Solo lectura: no se retiró, borró ni modificó nada.
 
-**Lo que este documento NO hace:** no autoriza el retiro. La precondición del roadmap —PDC v2 validado en
-producción con una obra trabajando de verdad— sigue incumplida; la fila 4 de `estado-olas.md` está
-`PENDIENTE`. Esto es el trabajo previo que no depende de esa puerta.
+> ## ⚠ El retiro YA SE EJECUTÓ — 2026-08-04, y con más alcance del que este censo recomienda
+>
+> Este documento es **la medición del 2026-07-29, no el estado de hoy**. Sigue siendo válido como
+> evidencia de lo que se sabía al decidir; **no** como descripción de lo que pasó. Tres correcciones:
+>
+> 1. **La precondición se levantó** (Felipe, 2026-08-03): producción está en `1aa7c69` del 2026-07-16
+>    sin ninguna tabla `pdc_*`, así que el v2 no existe allí y retirar el v1 en `main` no dejaba a
+>    ninguna obra sin herramienta.
+> 2. **Los datos se borraron.** La recomendación de más abajo —«la **A**», conservar en frío, «que el
+>    retiro de C1 **no toque las tablas**»— **fue aceptada el 2026-07-30 y revocada el 2026-08-04**. Se
+>    eliminaron 18 tablas, con respaldo previo en
+>    `storage/backups/lastplanneraia_dev-pre-borrado-pdc-v1-20260804.sql`.
+> 3. **El hallazgo 4 dejó de aplicar.** `OperationalFamilyPolicy`, el motor semiautomático,
+>    `/contratos` y `/listado-actividades` **sí se retiraron**: Felipe confirmó que los tres módulos
+>    eran el v1. El hallazgo era correcto —describía el daño colateral de un retiro que no pretendía
+>    llevárselos— y dejó de aplicar cuando llevárselos pasó a ser la intención.
+>
+> Lo que **sí** se sostuvo tal cual: los hallazgos 2 (`hot.js` era consumidor vivo), 3 (plantillas ya
+> muertas), 5 (los 35 archivos de prueba) y 6 (la duplicación de `pdc` en el inventario). Y el punto 5
+> de la condición de hecho: `PdcResetService` sobrevivió, verificado el 2026-08-04.
+
+**Lo que este documento NO hace (al 2026-07-29):** no autoriza el retiro. La precondición del roadmap
+—PDC v2 validado en producción con una obra trabajando de verdad— sigue incumplida; la fila 4 de
+`estado-olas.md` está `PENDIENTE`. Esto es el trabajo previo que no depende de esa puerta.
 
 ## Método
 

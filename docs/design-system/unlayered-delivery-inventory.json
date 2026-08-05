@@ -128,7 +128,6 @@
         "views/auth/login.view.php",
         "views/auth/password-forgot.view.php",
         "views/auth/password-reset.view.php",
-        "views/pdc/pdc.view.php",
         "views/programa-general-actualizar/programaGeneralActualizar.view.php"
       ]
     }
@@ -225,32 +224,6 @@
         }
       ]
     },
-    "/contratos": {
-      "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "https://fonts.googleapis.com/css2",
-          "via": "cross-origin-opaque",
-          "unlayeredRules": null
-        },
-        {
-          "sheet": "/vendor/handsontable/handsontable.full.min.css",
-          "via": "link",
-          "unlayeredRules": 364,
-          "case": "2/5-handsontable-doble-carga"
-        },
-        {
-          "sheet": "/css/handsontable-header-global.css",
-          "via": "link",
-          "unlayeredRules": 8
-        },
-        {
-          "sheet": "/css/contratos.css",
-          "via": "link",
-          "unlayeredRules": 62
-        }
-      ]
-    },
     "/control-cambios": {
       "authenticated": true,
       "unlayered": []
@@ -262,47 +235,6 @@
     "/indicadores": {
       "authenticated": true,
       "unlayered": []
-    },
-    "/listado-actividades": {
-      "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "https://fonts.googleapis.com/css2",
-          "via": "cross-origin-opaque",
-          "unlayeredRules": null
-        },
-        {
-          "sheet": "/vendor/handsontable/handsontable.full.min.css",
-          "via": "link",
-          "unlayeredRules": 364,
-          "case": "2/5-handsontable-doble-carga"
-        },
-        {
-          "sheet": "/css/handsontable-header-global.css",
-          "via": "link",
-          "unlayeredRules": 8
-        },
-        {
-          "sheet": "/css/listado-actividades.css",
-          "via": "link",
-          "unlayeredRules": 124
-        },
-        {
-          "sheet": "https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css",
-          "via": "cross-origin-opaque",
-          "unlayeredRules": null
-        }
-      ]
-    },
-    "/pdc": {
-      "authenticated": true,
-      "unlayered": [
-        {
-          "sheet": "https://fonts.googleapis.com/css2",
-          "via": "cross-origin-opaque",
-          "unlayeredRules": null
-        }
-      ]
     },
     "/plan-compras": {
       "authenticated": true,

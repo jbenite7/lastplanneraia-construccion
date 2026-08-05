@@ -1,12 +1,18 @@
 ---
 tipo: modulo
-estado: vigente
+estado: derogada
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
 resumen: "Listado de Actividades: CRUD de actividades del proyecto, base sobre la que se arma el PDC v1"
 ---
 # Listado de Actividades (PDC v1)
+
+> [!warning] Derogada el 2026-08-04
+> El PDC v1 se **eliminó del repositorio**: rutas, controladores, servicios, vistas, JS/CSS,
+> pruebas y 18 tablas. Esta página se conserva como registro histórico, no describe código
+> vivo. El sucesor es [[plan-de-compras]] (`/plan-compras`).
+
 
 **Qué resuelve.** Es el CRUD de actividades del proyecto — la versión anterior al PDC v2 de
 [[plan-de-compras]], y todavía la fuente de las actividades que ese módulo consume. No se elimina

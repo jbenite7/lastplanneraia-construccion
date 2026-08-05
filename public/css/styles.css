@@ -2648,13 +2648,10 @@ table.dataTable td.dt-min-width-300,
   max-inline-size: 40%;
 }
 
-/* El conmutador esta vivo en listado, contratos y PDC, pero su piel no: el
-   unico productor del nodo (info_general_nav.js) le pone siempre `aia-info-nav`
-   ademas de esta clase, y la regla `.filaBotones .aia-info-nav` de mas abajo
-   -misma capa, misma especificidad, posterior- lo deja sin relleno y sin borde.
-   Medido en las tres rutas: fondo transparente y ancho de borde cero. Se
-   retiran las dos declaraciones muertas; la geometria que si sobrevive
-   (alineacion, hueco y flex) se queda. */
+/* El conmutador de modulo. Su unico productor vivo es
+   programacion_semanal/hot.js; el otro, info_general_nav.js, se borro el
+   2026-08-04 con el PDC v1 junto con toda la piel `.aia-info-nav` que lo
+   acompanaba. Aqui queda solo la geometria (alineacion, hueco y flex). */
 .filaBotones .ps-module-switcher {
   display: inline-flex;
   align-items: center;
@@ -2670,28 +2667,11 @@ table.dataTable td.dt-min-width-300,
   -webkit-overflow-scrolling: touch;
 }
 
-/* Aqui vivian las pestanas `.ps-module-tab` -reposo, hover/focus, activa e
-   icono- enteramente en claro, con azul de marca en la tinta y en el borde de
-   la activa. No hay markup que las produzca: ni las vistas, ni el JS que arma
-   el conmutador, ni la suite emiten esa clase, y el censo de las siete rutas
-   del modulo devolvio cero nodos. El indicador de estado real es
-   `.aia-info-nav__item.is-active`, que se resuelve por relleno en su propia
-   hoja. Se borran. */
+/* Aqui vivian las pestanas `.ps-module-tab` y, hasta el 2026-08-04, toda la piel
+   de `.aia-info-nav` y las reglas de `.toolbarNavegacion` del PDC v1. Ninguna
+   tiene ya markup que la produzca: el conmutador del nav legado se borro con el
+   modulo. Se borran. */
 
-/* PDC uses toolbarNavegacion outside toolbarFilaBotones; prevent tab clipping */
-.filaBotones .toolbarNavegacion .ps-toolbar-nav-wrap {
-  inline-size: auto !important;
-  width: max-content;
-  max-width: none;
-  overflow: visible;
-}
-
-.filaBotones .toolbarNavegacion .ps-module-switcher {
-  width: max-content;
-  max-width: none;
-  overflow-x: visible;
-  flex-shrink: 0;
-}
 
 .filaBotones {
   margin-bottom: 0.75rem !important;
@@ -2706,164 +2686,35 @@ table.dataTable td.dt-min-width-300,
   background: transparent;
 }
 
-.filaBotones .toolbarFilaBotones > .ps-toolbar-nav-wrap,
-.filaBotones .toolbarNavegacion .ps-toolbar-nav-wrap {
-  inline-size: min(25rem, 100%) !important;
-  width: min(25rem, 100%);
-  max-width: min(25rem, 100%);
-  margin-left: auto;
-  flex: 0 0 min(25rem, 100%);
-}
 
 .filaBotones .toolbarFilaBotones > .ps-toolbar-actions {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.filaBotones .aia-info-nav {
-  position: relative;
-  display: inline-flex;
-  width: 100%;
-  max-width: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: 0.875rem;
-  background: transparent;
-  overflow: visible;
-  white-space: normal;
-}
 
-.filaBotones .aia-info-nav__trigger {
-  width: 100%;
-  min-height: 2.7rem;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "eyebrow chevron"
-    "current chevron";
-  align-items: center;
-  gap: 0.1rem 0.75rem;
-  padding: 0.48rem 0.8rem;
-  border: 1px solid var(--aia-green-light);
-  border-radius: 0.875rem;
-  background: linear-gradient(180deg, var(--ds-color-text-inverse), var(--aia-green-very-light));
-  color: var(--aia-green-dark);
-  box-shadow: 0 6px 16px rgba(30, 72, 45, 0.1);
-  text-align: left;
-}
 
-.filaBotones .aia-info-nav__trigger:hover,
-.filaBotones .aia-info-nav__trigger:focus {
-  border-color: var(--aia-green-primary);
-  box-shadow: 0 10px 22px rgba(30, 72, 45, 0.16);
-  outline: none;
-}
 
-.filaBotones .aia-info-nav__eyebrow {
-  grid-area: eyebrow;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  color: var(--aia-text-secondary);
-  line-height: 1;
-}
 
-.filaBotones .aia-info-nav__current {
-  grid-area: current;
-  display: inline-flex;
-  align-items: center;
-  min-width: 0;
-  gap: 0.45rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.15;
-}
 
-.filaBotones .aia-info-nav__current span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 /* F1 Task 5g: retokenizado. Gana legacy-bridge.css (@layer legacy-overrides)
    en las tres rutas del conmutador; el token fijado ya coincidia. */
-.filaBotones .aia-info-nav__chevron {
-  grid-area: chevron;
-  font-size: 0.78rem;
-  color: var(--ds-active-text-primary);
-  transition: transform 0.16s ease;
-}
 
-.filaBotones .aia-info-nav.is-open .aia-info-nav__chevron {
-  transform: rotate(180deg);
-}
 
-.filaBotones .aia-info-nav__menu {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  right: 0;
-  z-index: 1050;
-  display: none;
-  width: min(24rem, calc(100vw - 1.5rem));
-  padding: 0.35rem;
-  /* F1 Task 5g: borde/fondo retokenizados pero muertos — gana legacy-bridge.css
-     en /contratos y /pdc, y listado-actividades.css (sin capa, !important) en
-     /listado-actividades. La sombra si estaba viva: pasa a --ds-shadow-lg. */
-  border: 1px solid var(--ds-active-border);
-  border-radius: 0.875rem;
-  background: var(--ds-active-surface-raised);
-  box-shadow: var(--ds-shadow-lg);
-}
 
-.filaBotones .aia-info-nav.is-open .aia-info-nav__menu {
-  display: grid;
-  gap: 0.2rem;
-}
 
-.filaBotones .aia-info-nav__item {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1rem 1fr auto;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.62rem 0.7rem;
-  border: 0;
-  border-radius: 0.65rem;
-  background: transparent;
-  /* F1 Task 5g: tinta viva y rota (~1,2:1) en /contratos y /pdc; el token
-     secundario de la paleta activa la sube a ~9:1. /listado-actividades ya
-     fijaba este mismo token vía su !important sin capa. */
-  color: var(--ds-active-text-secondary);
-  font-size: 0.86rem;
-  font-weight: 650;
-  text-align: left;
-}
 
 /* F1 Task 5g: hover vivo y en claro en /contratos y /pdc; se homologa al par
    que listado-actividades.css ya imponia en su ruta. */
-.filaBotones .aia-info-nav__item:hover,
-.filaBotones .aia-info-nav__item:focus {
-  background: var(--ds-active-surface-raised);
-  color: var(--ds-active-text-primary);
-  outline: none;
-}
 
 /* F1 Task 5g — cierre WCAG 1.4.11: el indicador se resuelve por relleno, no
    por borde (0px medido en las tres rutas), con --ds-active-action-primary /
    --ds-active-action-text (>=3,9:1 relleno, 4,87:1 tinta). Mismo par en la
    regla gemela de listado-actividades.css, que gana esa ruta. */
-.filaBotones .aia-info-nav__item.is-active {
-  background: var(--ds-active-action-primary);
-  color: var(--ds-active-action-text);
-}
 
 /* F1 Task 5g: hereda del padre .is-active; el literal blanco previo caeria a
    3,56:1 sobre el relleno nuevo. */
-.filaBotones .aia-info-nav__check {
-  color: inherit;
-  font-size: 0.75rem;
-}
 
 @media (max-width: 1650px) {
   .filaBotones {
@@ -3063,45 +2914,10 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   font-size: var(--ps-btn-icon-size) !important;
 }
 
-.filaBotones .ps-toolbar-nav-wrap:has(.aia-info-nav) {
-  inline-size: min(25rem, 100%) !important;
-  width: min(25rem, 100%) !important;
-  max-width: min(25rem, 100%) !important;
-  flex: 0 0 min(25rem, 100%) !important;
-  justify-content: flex-end !important;
-  margin-left: auto !important;
-  padding: 0 !important;
-  background: transparent !important;
-  overflow: visible !important;
-}
 
-.filaBotones .toolbarNavegacion:has(.aia-info-nav) {
-  width: min(25rem, calc(100vw - 1rem)) !important;
-  max-width: min(25rem, calc(100vw - 1rem)) !important;
-  margin-left: auto !important;
-}
 
-.filaBotones .toolbarNavegacion .aia-info-nav {
-  width: min(25rem, calc(100vw - 1rem)) !important;
-  max-width: min(25rem, calc(100vw - 1rem)) !important;
-  flex: 0 0 min(25rem, calc(100vw - 1rem)) !important;
-}
 
-.filaBotones .toolbarFilaBotones:has(.aia-info-nav) {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: calc(var(--spacing-sm) + var(--spacing-xs)) !important;
-  padding: var(--spacing-xs) var(--spacing-sm) !important;
-  margin-bottom: var(--spacing-xs) !important;
-  background: transparent !important;
-  border: 0 !important;
-}
 
-.filaBotones:has(.aia-info-nav) {
-  margin-bottom: var(--spacing-sm) !important;
-}
 
 
 .filaBotones .ps-toolbar-actions .btn:hover,

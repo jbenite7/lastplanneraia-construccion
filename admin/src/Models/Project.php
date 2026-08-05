@@ -1215,14 +1215,11 @@ class Project
         ));
 
         $preferred = [
-            'semi_auto_assistant_feedback', 'semi_auto_decisions', 'semi_auto_feedback',
-            'semi_auto_learning_candidates', 'semi_auto_learning_rules', 'semi_auto_project_config',
-            'semi_auto_proactive_queue', 'semi_auto_suggestions', 'semi_auto_runs',
-            'auto_contrato_log', 'auto_program_log', 'lps_drawer_comentarios',
+            'auto_program_log', 'lps_drawer_comentarios',
             'lps_escalamientos', 'pi_shared_constraint_links', 'pi_shared_constraints',
-            'pg_tracking', 'papelera_pdc', 'pdc', 'cic', 'cip',
+            'pg_tracking', 'cic', 'cip',
             'indicadores_generales', 'programacion_semanal', 'programa_consolidado',
-            'actividades', 'cambios', 'subcontratistas', 'profesionales',
+            'cambios', 'subcontratistas', 'profesionales',
             'programa', 'semanas_activas',
         ];
 

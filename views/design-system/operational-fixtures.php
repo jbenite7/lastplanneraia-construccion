@@ -100,13 +100,6 @@ $stateLabels = [
                         <aside id="fixture-lps-drawer" class="ds-lps-drawer" aria-labelledby="fixture-lps-drawer-title"><header><div><h4 id="fixture-lps-drawer-title">Losa N1 · hilo operativo</h4><p>3 respuestas · modo seguimiento</p></div><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="close-drawer">Cerrar</button></header><ol><li><strong>Residente</strong><p>El acero llega hoy a las 15:00.</p></li><li><strong>Planificador</strong><p>Se mantiene el compromiso condicionado.</p></li></ol><label class="aia-field" for="fixture-drawer-reply"><span>Responder</span><textarea class="aia-textarea" id="fixture-drawer-reply"></textarea></label><div class="ds-fixture-actions"><button class="aia-btn" type="button">Enviar respuesta</button><button class="aia-btn aia-btn--critical" type="button">Cerrar con justificación</button></div></aside>
                     </div>
                 <?php break;
-                case 'semi-auto-review': ?>
-                    <div class="ds-review-workbench">
-                        <div class="ds-fixture-toolbar"><p><strong>3 propuestas detectadas</strong><span>Revisa antes de aplicar.</span></p><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="analyze-review">Analizar de nuevo</button></div>
-                        <ul class="ds-proposal-list"><li><label class="aia-choice"><input type="checkbox" checked><span><strong>Normalizar responsable</strong><small>Ana T. → Ana Torres</small></span></label></li><li><label class="aia-choice"><input type="checkbox" checked><span><strong>Completar disciplina</strong><small>Redes norte → Hidrosanitaria</small></span></label></li><li><label class="aia-choice"><input type="checkbox"><span><strong>Ajustar fecha</strong><small>Requiere validación humana</small></span></label></li></ul>
-                        <div class="ds-fixture-actions"><button class="aia-btn" type="button" data-fixture-action="apply-review">Aplicar seleccionadas</button><button class="aia-btn aia-btn--secondary" type="button" data-fixture-action="undo-review" disabled>Deshacer</button></div>
-                    </div>
-                <?php break;
                 case 'admin-operations': ?>
                     <div class="ds-admin-contract">
                         <nav aria-label="Áreas administrativas"><a href="#admin-audit" aria-current="page">Auditoría</a><a href="#admin-backups">Respaldos</a><a href="#admin-import">Importación</a></nav>

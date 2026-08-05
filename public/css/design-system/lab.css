@@ -1358,7 +1358,6 @@
   .ds-notification-contract,
   .ds-drawer-contract,
   .ds-lps-drawer,
-  .ds-review-workbench,
   .ds-bi-runtime,
   .ds-tom-contract,
   .ds-datepicker-contract {
@@ -1492,7 +1491,6 @@
 
   .ds-project-list,
   .ds-notification-panel ul,
-  .ds-proposal-list,
   .ds-lps-drawer ol {
     display: grid;
     gap: var(--ds-space-2);
@@ -1599,7 +1597,6 @@
   }
 
   .ds-notification-panel li,
-  .ds-proposal-list li,
   .ds-lps-drawer li {
     display: grid;
     gap: var(--ds-space-1);
@@ -1608,7 +1605,6 @@
   }
 
   .ds-notification-panel li span,
-  .ds-proposal-list small,
   .ds-lps-drawer li p {
     color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-sm);

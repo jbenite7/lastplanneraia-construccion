@@ -77,7 +77,7 @@ if ($pair === false) {
         }
     }
     $unsupportedContext = ['resp' => '__risk-context-without-source__'];
-    foreach (['cic' => 'contratista', 'pdc' => 'pdc'] as $reportKey => $riskType) {
+    foreach (['cic' => 'contratista'] as $reportKey => $riskType) {
         $risk = $db->query("SELECT project_id, Semana FROM bi_riesgos WHERE risk_type = '{$riskType}' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
         if ($risk !== false && $riskService->getTopRisks($reportKey, (int) $risk['project_id'], (string) $risk['Semana'], 100, $unsupportedContext) !== []) {
             $failures[] = "{$riskType} risks ignored an active unsupported context filter";
@@ -241,41 +241,8 @@ if ($contractorContext === false) {
     $assertRiskIds('contractor', $actualContractor, $expectedContractor->fetchAll(\PDO::FETCH_COLUMN));
 }
 
-$pdcContext = $db->query(
-    "SELECT r.project_id, r.Semana, p.subcontratoPaquete,
-            COALESCE(NULLIF(p.estado, ''), NULLIF(p.paqueteContratacion, ''), p.tipoPaquete) AS etapa
-     FROM bi_riesgos r
-     INNER JOIN pdc p ON p.project_id = r.project_id AND p.semana = r.Semana
-                     AND CONVERT(CAST(p.consecutivo AS CHAR) USING utf8mb4) COLLATE utf8mb4_0900_ai_ci
-                         = CONVERT(r.entity_id USING utf8mb4) COLLATE utf8mb4_0900_ai_ci
-     WHERE r.risk_type = 'pdc' AND COALESCE(p.subcontratoPaquete, '') <> ''
-       AND COALESCE(NULLIF(p.estado, ''), NULLIF(p.paqueteContratacion, ''), p.tipoPaquete) <> '' LIMIT 1",
-)->fetch(\PDO::FETCH_ASSOC);
-
-if ($pdcContext === false) {
-    $failures[] = 'missing real PDC risk context fixture';
-} else {
-    $pdcFilters = ['sub' => $pdcContext['subcontratoPaquete'], 'etapa' => $pdcContext['etapa']];
-    $expectedPdc = $db->prepare(
-        "SELECT r.entity_id FROM bi_riesgos r INNER JOIN pdc p
-            ON p.project_id = r.project_id AND p.semana = r.Semana
-           AND CONVERT(CAST(p.consecutivo AS CHAR) USING utf8mb4) COLLATE utf8mb4_0900_ai_ci
-               = CONVERT(r.entity_id USING utf8mb4) COLLATE utf8mb4_0900_ai_ci
-         WHERE r.project_id = ? AND r.Semana = ? AND r.risk_type = 'pdc'
-           AND LOWER(COALESCE(p.subcontratoPaquete, '')) LIKE ?
-           AND (LOWER(COALESCE(p.paqueteContratacion, '')) LIKE ?
-             OR LOWER(COALESCE(p.tipoPaquete, '')) LIKE ? OR LOWER(COALESCE(p.estado, '')) LIKE ?)",
-    );
-    $pdcLike = array_map(static fn(string $value): string => '%' . strtolower($value) . '%', $pdcFilters);
-    $expectedPdc->execute([
-        $pdcContext['project_id'], $pdcContext['Semana'], $pdcLike['sub'],
-        $pdcLike['etapa'], $pdcLike['etapa'], $pdcLike['etapa'],
-    ]);
-    $actualPdc = $riskService->getTopRisks(
-        'pdc', (int) $pdcContext['project_id'], (string) $pdcContext['Semana'], 100, $pdcFilters,
-    );
-    $assertRiskIds('PDC', $actualPdc, $expectedPdc->fetchAll(\PDO::FETCH_COLUMN));
-}
+// La cobertura del contexto de riesgo 'pdc' se retiró el 2026-08-04: se apoyaba en la tabla
+// `pdc` del PDC v1, eliminada, y `bi_riesgos` ya no emite filas de ese tipo.
 
 $actions = (new ActionRecommendationService())->recommend('programa-general', [
     [

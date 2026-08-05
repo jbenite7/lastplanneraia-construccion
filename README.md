@@ -109,9 +109,9 @@ La persistencia aprobada es **global-only**: cada módulo debe leer y escribir t
 `project_id`. Los prefijos de proyecto se conservan solo como metadato histórico o fuente de migración;
 no se deben agregar nuevas consultas runtime a tablas `{prefix}_*`.
 
-Listado de Actividades, Contratos y PDC comparten un asistente semi-automático: analiza, agrupa
-propuestas por seguridad y aplica solo lo seleccionado. Cada corrida queda trazada en tablas globales
-y la UI normal oculta detalles técnicos salvo para Admin.
+El PDC v1 —Listado de Actividades, Contratos y el módulo `/pdc`, con su asistente semi-automático—
+se eliminó el 2026-08-04. Su sucesor es el **Plan de Compras v2** (`/plan-compras`), la isla React
+documentada en `docs/pdc-v2.md`.
 
 <details>
 <summary><b>🗺️ Ver Diagrama de Arquitectura Híbrida</b></summary>

@@ -20,7 +20,7 @@
 - La aplicación combina MVC moderno y legado. `public/index.php` es el Front Controller y define rutas; el código moderno vive en `src/`, las vistas en `views/` y el panel Admin en `admin/`. `src/Legacy/` es mantenimiento: no agregues allí funcionalidad nueva salvo que el objetivo lo exija.
 - La arquitectura vigente usa tablas globales compartidas y todas las consultas operativas deben aislarse por `project_id`. `Base_de_Datos`, `dbPrefix` y `{prefix}_*` son compatibilidad histórica, no permiso para introducir SQL dinámico nuevo.
 - Antes de tocar schema, migraciones, backfills, limpieza o lifecycle de proyectos, lee `docs/global-tables-architecture.md`. Empieza con dry-run; cualquier aplicación o borrado exige gate de Plannotator, respaldo verificable, estrategia de restauración y reconciliación posterior.
-- Listado de Actividades, Contratos y PDC comparten los contratos `auto/preview`, `auto/apply`, `auto/undo`, `auto/feedback` y `auto/metrics`. Reutiliza `public/js/modules/semi_auto_review.js` y los servicios existentes; no crees un flujo paralelo sin evidencia.
+- **El PDC v1 se eliminó el 2026-08-04.** Listado de Actividades, Contratos y el PDC viejo (`/pdc`, `/api/pdc/*`), con su asistente semiautomático (`SemiAutoService`, `semi_auto_review.js`, contratos `auto/preview·apply·undo·feedback·metrics`) y sus 18 tablas, ya no existen en el repo. Su sucesor es **Plan de Compras v2** (`/plan-compras`, `pdc-app/`, `src/Services/Pdc/`): ver `docs/pdc-v2.md`. No reintroduzcas rutas, servicios ni tablas del v1.
 
 ## Seguridad y permisos
 

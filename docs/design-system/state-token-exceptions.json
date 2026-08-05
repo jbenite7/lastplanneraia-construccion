@@ -92,20 +92,6 @@
       "revisit": "La inversion lo ARREGLA sola: el relleno pasa a #f2e79c y sube a 14,11:1 contra la misma tinta. Lo desbloquea la Task 2; despues hay que volver aqui y retirar esta entrada, porque dejara de ser un riesgo y una entrada fantasma hace fallar el guard."
     },
     {
-      "file": "public/css/pdc.css",
-      "selector": ".pdc-message-success",
-      "token": "--ds-color-state-success-text",
-      "kind": "by-design",
-      "reason": "Mensaje de texto suelto, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par. Actualizado el 2026-07-29 al cerrar F2: ya no es una sustitucion cruda del token con fallback --aia-*, sino una elevacion por color relativo -oklch(from ... 0.68 calc(c * 1.4) h)-, el mismo recurso de programa-general-actualizar.css:30-33. La sustitucion cruda pintaba verde muy oscuro sobre el canvas oscuro."
-    },
-    {
-      "file": "public/css/pdc.css",
-      "selector": ".pdc-message-error",
-      "token": "--ds-color-state-critical-text",
-      "kind": "by-design",
-      "reason": "Mensaje de texto suelto, sin chip de fondo alrededor, igual que el .pdc-message-neutral vecino: acento de texto sobre la superficie de la pagina, no la mitad de un par. Actualizado el 2026-07-29 al cerrar F2: ya no es una sustitucion cruda del token con fallback --aia-*, sino una elevacion por color relativo -oklch(from ... 0.68 calc(c * 1.4) h)-, el mismo recurso de programa-general-actualizar.css:30-33. La sustitucion cruda pintaba rojo muy oscuro sobre el canvas oscuro."
-    },
-    {
       "file": "public/css/programa-general-actualizar.css",
       "selector": ".pga-success-badge",
       "token": "--ds-color-state-success-bg",

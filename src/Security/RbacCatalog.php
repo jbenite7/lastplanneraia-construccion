@@ -5,7 +5,8 @@ namespace App\Security;
 class RbacCatalog
 {
     public const DEFAULT_ROLE = 'C';
-    public const PERM_AUTO_DEFINIR_CONTRATOS = 'lps.contratos.auto_definir';
+    // PERM_AUTO_DEFINIR_CONTRATOS ('lps.contratos.auto_definir') se retiró el 2026-08-04 con el
+    // módulo de Contratos del PDC v1: era el permiso del flujo auto/preview·apply·undo.
     public const PERM_INTERNAL_DESIGN_SYSTEM_VIEW = 'internal.design-system.view';
 
     public static function roleAliases(): array
@@ -109,7 +110,6 @@ class RbacCatalog
             ['key' => 'lps.cnp.editar', 'module' => 'lps', 'action' => 'cnp_editar', 'description' => 'Editar CNP'],
             ['key' => 'lps.pdc.ver', 'module' => 'lps', 'action' => 'pdc_ver', 'description' => 'Ver PDC'],
             ['key' => 'lps.pdc.editar', 'module' => 'lps', 'action' => 'pdc_editar', 'description' => 'Editar PDC'],
-            ['key' => 'lps.pdc.auto_generar', 'module' => 'lps', 'action' => 'pdc_auto_generar', 'description' => 'Auto-generar PDC desde el programa general'],
             ['key' => 'lps.pdc.importar', 'module' => 'lps', 'action' => 'pdc_importar', 'description' => 'Importar presupuesto Excel al plan de compras v2'],
             ['key' => 'lps.pdc.maestro', 'module' => 'lps', 'action' => 'pdc_maestro', 'description' => 'Administrar el maestro global de insumos del plan de compras v2'],
             ['key' => 'lps.control_cambios.ver', 'module' => 'lps', 'action' => 'control_cambios_ver', 'description' => 'Ver control de cambios'],
@@ -172,7 +172,6 @@ class RbacCatalog
             'lps.cnc.editar',
             'lps.cnp.editar',
             'lps.pdc.editar',
-            'lps.pdc.auto_generar',
             'lps.control_cambios.editar',
             'lps.paquetes_contratacion.editar',
             'lps.paquetes_contratacion.reglas',
@@ -188,7 +187,6 @@ class RbacCatalog
                 $allRead,
                 $allWrite,
                 [
-                    'lps.contratos.auto_definir',
                     'lps.pdc.importar',
                     'lps.pdc.maestro',
                     'lps.semana.crear',
@@ -224,7 +222,6 @@ class RbacCatalog
                 'lps.control_cambios.editar',
                 'lps.pdc.ver',
                 'lps.pdc.editar',
-                'lps.pdc.auto_generar',
                 'lps.paquetes_contratacion.ver',
                 'lps.profesionales.ver',
                 'lps.subcontratistas.ver',
@@ -288,7 +285,6 @@ class RbacCatalog
                 'lps.indicadores.ver',
                 'lps.pdc.ver',
                 'lps.pdc.editar',
-                'lps.pdc.auto_generar',
                 // Maestro global de insumos (decisión de Felipe, 2026-07-30). Entró por la pregunta
                 // de quién clasifica un equipo como alquilado o comprado: es una decisión de compra,
                 // y Compras vive en este rol. La capacidad es una sola y abre TODO el maestro —

@@ -46,17 +46,17 @@ if (!empty($shellUltimaSemana['Fecha_Fin_Sem'])) {
 // Transcripción server-side de la visibilidad legacy de maestroPermisos
 // (cargarDatosGeneralesPagina2.js): qué ítems de navegación NO ve cada rol.
 $shellHiddenByRole = [
-    'G' => ['profesionales', 'subcontratistas', 'listado-actividades', 'contratos', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
-    'S' => ['profesionales', 'subcontratistas', 'listado-actividades', 'contratos', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
-    'SG' => ['profesionales', 'subcontratistas', 'listado-actividades', 'contratos', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
-    'C' => ['profesionales', 'subcontratistas', 'listado-actividades', 'contratos', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
+    'G' => ['profesionales', 'subcontratistas', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
+    'S' => ['profesionales', 'subcontratistas', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
+    'SG' => ['profesionales', 'subcontratistas', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
+    'C' => ['profesionales', 'subcontratistas', 'plan-compras', 'actualizar-cronograma', 'control-cambios', 'programa-general', 'programacion-intermedia'],
     'V' => ['actualizar-cronograma', 'control-cambios'],
     'OT' => ['actualizar-cronograma'],
     'DCV' => ['actualizar-cronograma'],
 ];
 $shellHidden = $shellHiddenByRole[$shellRol] ?? [];
 if ($shellArea === 'Pre-Construccion') {
-    $shellHidden = array_merge($shellHidden, ['listado-actividades', 'contratos', 'plan-compras']);
+    $shellHidden = array_merge($shellHidden, ['plan-compras']);
 }
 // Nunca ocultar el módulo en el que el usuario ya está.
 $shellHidden = array_values(array_diff(array_unique($shellHidden), [$shellActive]));
@@ -88,25 +88,13 @@ $shellObra = array_values(array_filter([
 
 $shellCompras = array_values(array_filter([
     // «Familias de Actividades» (/listado-actividades) y «Paquetes de Contratación» (/contratos)
-    // se retiran del rail el 2026-07-29: son la interfaz del PDC VIEJO, el modelo de familias que
-    // el submódulo A reemplaza —el propio CLAUDE.md dice que «el concepto de familias queda
-    // eliminado»—. Dejarlas visibles junto a la entrada nueva ofrece dos caminos para la misma
-    // tarea y el usuario no puede saber cuál es el vigente.
-    //
-    // Se ocultan, no se borran: las rutas, sus controladores y sus datos siguen servidos y
-    // accesibles escribiendo la dirección, porque el apagado real del PDC viejo es la fase C1 del
-    // roadmap y exige decidir antes qué pasa con el histórico. Esto es solo la puerta de entrada.
-    // Sus ids siguen en $shellHiddenByRole a propósito: si C1 se revierte, vuelven con su RBAC.
-    //
-    // Apunta al módulo NUEVO (la isla React en /plan-compras). Hasta la revisión de UX de julio de
-    // 2026 llevaba al módulo viejo de Handsontable (/pdc) y a la SPA no llegaba ningún enlace de la
-    // interfaz: solo se entraba escribiendo la dirección.
+    // salieron del rail el 2026-07-29 por ser la interfaz del PDC VIEJO. El 2026-08-04 se completó
+    // el apagado: rutas, controladores, servicios y datos del PDC v1 se eliminaron del repo, así
+    // que ya no hay nada detrás de esas direcciones. Queda una sola entrada, la isla React.
     //
     // Una sola entrada, no dos: el rail tiene un presupuesto de altura y el gate
     // `shell-sidebar-rollout.mjs` exige que el nav no haga scroll interno en ningún estado. Con un
-    // ítem más, ese gate cae en las 22 rutas migradas — medido, no supuesto. El id se conserva
-    // ('plan-compras') para que el $shellActive del controlador viejo siga casando; /pdc sigue
-    // servido y accesible por su dirección mientras siga en producción.
+    // ítem más, ese gate cae en las 22 rutas migradas — medido, no supuesto.
     $shellItem('plan-compras', 'Plan de Compras', '/plan-compras', 'clipboard'),
 ]));
 

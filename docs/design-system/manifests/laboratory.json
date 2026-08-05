@@ -105,7 +105,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
-      "sha256": "7af07d9da440e3b12d7a0ea7d72217d5dc307eaaf56bfdbef3c2c9a5f75055a2"
+      "sha256": "6ab179f4f4f0bd851e2c400f2a7e11afed783431a7ea7f369fe56a385648f2e9"
     },
     {
       "id": "actions-dark-1440x900",
@@ -121,7 +121,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
-      "sha256": "265980329a63b9c6ee16ff3ff2bdcc5aa5929d3bfedec627fb148f0d6526d6c0"
+      "sha256": "3c1d9ea799eb1f843fa957e46a107fcd79623fb1bcfe82c38e81a6dbc1eb7961"
     },
     {
       "id": "bi-primitives-dark-1180x820",

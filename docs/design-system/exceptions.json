@@ -592,23 +592,6 @@
       }
     },
     {
-      "name": "pdc",
-      "paths": [
-        "views/pdc/pdc.view.php",
-        "public/css/pdc.css",
-        "public/js/modules/pdc/hot.js"
-      ],
-      "maxViolations": {
-        "hardcoded-hex": 0,
-        "hardcoded-color-function": 1,
-        "inline-style": 0,
-        "embedded-style-block": 0,
-        "forbidden-font-roboto": 0,
-        "hardcoded-radius": 0
-      },
-      "note": "hardcoded-color-function en 1, no en 0, y es deliberado: de los 23 rgba() que tenia public/css/pdc.css al cerrar F2 quedo UNO, el borde en verde de marca dentro de @media (max-width: 767.98px). AGENTS.md prohibe implementar, validar o generar evidencia para movil en esta linea de trabajo, asi que no se puede tokenizar y medir a ese viewport. Es deuda acotada y contada, no un presupuesto laxo: cualquier rgba/hsl/oklch nuevo en escritorio pone el gate en rojo igual que con cero. Lo desbloquea una tarea con alcance movil explicito."
-    },
-    {
       "name": "bi-runtime",
       "paths": [
         "views/bi/",
