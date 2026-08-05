@@ -43,14 +43,19 @@ const INIT_COPIES = [
   ['database/migrations/20260710_equipment_families_require_review.sql', '016-equipment-review.sql'],
   ['database/migrations/20260711_apply_human_family_decisions.sql', '017-human-decisions.sql'],
   ['database/fixtures/design-system-ci-normalize.sql', '018-design-system-ci-normalize.sql'],
-  ...Array.from({ length: 10 }, (_, index) => [
-    `database/bi/${String(index + 1).padStart(3, '0')}_bi_${[
-      'pg_semana', 'pi_restricciones', 'ps_compromisos', 'pdc_general',
-      'cic_contratistas', 'cip_responsables', 'curva_s_duracion', 'riesgos',
-      'control_tower_summary', 'lineage',
-    ][index]}.sql`,
-    `${String(index + 101).padStart(3, '0')}-bi-view.sql`,
-  ]),
+  // Vistas BI. Se listan una a una y NO se generan con un contador: el 2026-08-04 el retiro del
+  // PDC v1 se llevo `004_bi_pdc_general.sql`, y la numeracion dejo de ser contigua —queda 001-003 y
+  // 005-010, con destinos 101-103 y 105-110—. Un `Array.from({length})` con `index + 1` no puede
+  // expresar ese hueco, y fue justo lo que rompio este test al podar la lista de produccion.
+  ['database/bi/001_bi_pg_semana.sql', '101-bi-view.sql'],
+  ['database/bi/002_bi_pi_restricciones.sql', '102-bi-view.sql'],
+  ['database/bi/003_bi_ps_compromisos.sql', '103-bi-view.sql'],
+  ['database/bi/005_bi_cic_contratistas.sql', '105-bi-view.sql'],
+  ['database/bi/006_bi_cip_responsables.sql', '106-bi-view.sql'],
+  ['database/bi/007_bi_curva_s_duracion.sql', '107-bi-view.sql'],
+  ['database/bi/008_bi_riesgos.sql', '108-bi-view.sql'],
+  ['database/bi/009_bi_control_tower_summary.sql', '109-bi-view.sql'],
+  ['database/bi/010_bi_lineage.sql', '110-bi-view.sql'],
 ];
 
 function safeConfig() {
@@ -217,6 +222,21 @@ test('accepts SQL baked into a uniquely tagged database image when host binds ca
   ].join('\n');
   assert.equal(assertSafeCiComposeConfig(safeConfig(), SAFE_ENV), true);
   assert.equal(assertDbInitDockerfile(dockerfile), true);
+});
+
+test('the real db init Dockerfile satisfies the allowlist it is built from', () => {
+  // Anadido el 2026-08-04. Los dos tests de arriba comprueban el Dockerfile SINTETICO que este
+  // archivo construye desde su propia copia de la lista, asi que las dos listas pueden separarse
+  // de la de produccion sin que nadie se entere. Paso: al podar `004_bi_pdc_general.sql` de
+  // scripts/design-system-ci-preflight.mjs, la copia de aqui se quedo en 28 entradas y el test
+  // sintetico se puso rojo sin decir cual de las tres listas estaba mal.
+  // Esta asercion mira el fichero REAL del disco, que es el que se hornea en la imagen: si el
+  // Dockerfile y la lista blanca se separan, falla aqui y senala el sitio.
+  const realDockerfile = readFileSync(
+    new URL('../../database/fixtures/design-system-ci.Dockerfile', import.meta.url),
+    'utf8',
+  );
+  assert.equal(assertDbInitDockerfile(realDockerfile), true);
 });
 
 test('rejects foreign build contexts, app mounts and undeclared services or volumes', () => {

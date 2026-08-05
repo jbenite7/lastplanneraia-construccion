@@ -104,7 +104,9 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     '101-bi-view.sql',
     '102-bi-view.sql',
     '103-bi-view.sql',
-    '104-bi-view.sql',
+    // 104 retirado el 2026-08-04 con el PDC v1: database/bi/004_bi_pdc_general.sql se borro y su
+    // COPY rompia el build de la imagen de CI. La vista no tiene lectores — el informe de compras
+    // se alimenta del PDC v2 (src/Services/ControlTowerService.php:522).
     '105-bi-view.sql',
     '106-bi-view.sql',
     '107-bi-view.sql',
