@@ -1,4 +1,50 @@
+/* ── Carril de pestanas: anuncio de corte ────────────────────────────────
+ *
+ * Medido en /bi/control-tower a 1180x820: las ocho pestanas suman 1626 px de
+ * `scrollWidth` dentro de un carril de 1116 px de `clientWidth`. Sobran 510 px,
+ * asi que «Plan de Compras» queda cortada a media palabra y «Proveedores (CIC)»
+ * (x=1280) y «Responsables (CIP)» (x=1483) no se ven en absoluto.
+ *
+ * NO CABEN DE VERDAD: sin iconos y a 13 px las ocho siguen sumando 1363 px, y
+ * acortar los rotulos es editar el texto de navegacion, no maquetar. El carril
+ * ya desplaza y su barra es visible y discreta, de modo que el destino es
+ * alcanzable; lo que falta es que se ANUNCIE que hay mas. Eso es lo que hace
+ * este degradado, y nada mas: no aporta color de estado ni significado propio,
+ * solo disuelve el ultimo rotulo contra el lienzo.
+ *
+ * SIN EXCEPCION DE PRESUPUESTO, Y ESO SE COMPROBO. Una sesion anterior
+ * descarto este degradado dando por hecho que el presupuesto de color de
+ * `bi-runtime` (hardcoded-hex 0, hardcoded-color-function 0 en
+ * docs/design-system/exceptions.json) lo prohibia. Medido con
+ * `node scripts/design-system-audit.mjs`: derivado de tokens
+ * (`--ds-active-bg-canvas` -> `transparent`) no gasta ni un punto de ese
+ * presupuesto, porque no hay hex ni funcion de color -`linear-gradient` no lo
+ * es-. Se autorizo una excepcion para esta regla y resulto no hacer falta: no
+ * se declara, porque una excepcion que nadie consume es un hueco por donde
+ * entraria en verde la proxima fuga de color.
+ *
+ * LIMITE CONOCIDO: el degradado es estatico. Al desplazar hasta el final sigue
+ * ahi, aunque ya no haya nada que anunciar. Atarlo al scroll pedia
+ * `animation-timeline: scroll(self …)` sobre el propio contenedor que
+ * desplaza, y ahi el pseudo-elemento vuelve a viajar con el contenido; se
+ * dejo fuera a proposito en vez de complicar el carril. */
 @layer components {
+  .bi-tabs-rail {
+    position: relative;
+    flex: 0 0 auto;
+    min-inline-size: 0;
+  }
+
+  .bi-tabs-rail::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--ds-space-8);
+    pointer-events: none;
+    background: linear-gradient(to left, var(--ds-active-bg-canvas), transparent);
+  }
+
   .bi-control-tower-page {
     background-color: var(--ds-active-bg-canvas) !important;
     color: var(--ds-active-text-primary) !important;
