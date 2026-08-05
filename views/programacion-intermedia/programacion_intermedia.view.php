@@ -266,7 +266,12 @@
         </div>
     </div>
 
-    <div class="row ventanasModalesSemana" id="ventanasModalesSemana"></div>
+    <!-- C-26: `funcionesGenerales6.js` inyecta aqui un modal legado «Leyenda de Colores de Las
+         Actividades» que duplica el id `modal_leyenda_colores` (y su `_Label`) de la Guia
+         Operativa de arriba. Ese modal esta muerto: el boton «Leyenda» apunta al de la vista, que
+         va primero en el DOM y se queda con el `getElementById`. `data-skip-legacy-legend` lo
+         borra al inyectarlo, igual que ya hacen Programa General y Programacion Semanal. -->
+    <div class="row ventanasModalesSemana" id="ventanasModalesSemana" data-skip-legacy-legend="true"></div>
 
     <!-- Resolve jQuery UI Tooltip conflict before Bootstrap -->
     <script>
