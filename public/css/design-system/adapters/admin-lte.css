@@ -76,8 +76,14 @@
     color: var(--ds-active-text-secondary);
   }
 
+  /* La marca «AIA» del pie (C-25). El unico enlace del pie es el de la linea de
+     copyright: 16 px en negrita, que NO cuenta como texto grande —para eso
+     harian falta 18,66 px en negrita—, asi que le aplica el minimo AA de texto
+     normal. Con el verde de accion se quedaba a 4,46:1 sobre la superficie del
+     pie, 0,04 por debajo. Sube un escalon de luminancia al verde claro del
+     tema: mismo matiz, mismo vocabulario, sin inventar un color. */
   :where(.main-footer) a {
-    color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-primary-hover);
   }
 
   /* ── Navbar superior ────────────────────────────────────────────────── */
@@ -454,6 +460,62 @@
   :where(.btn-outline-secondary):hover {
     background-color: var(--ds-active-surface-raised);
     color: var(--ds-active-text-primary);
+  }
+
+  /* Las tres variantes que faltaban (C-38). Sin ellas el borde se quedaba en el
+     valor crudo de Bootstrap —verde 40/167/69, azul 23/162/184, ambar
+     255/193/7— mientras el texto ya venia tokenizado por la regla de enlace de
+     mas arriba: en /admin/matching/family-catalog los botones de exportar
+     rendian texto verde con borde azul y texto verde con borde ambar. Por eso
+     se cambia el PAR completo, borde y texto, y no solo el borde.
+
+     SOBRE LA ESPECIFICIDAD: se escriben con `:where()` como sus tres hermanas
+     porque aqui manda el ORDEN DE CAPAS, no la especificidad — `components` va
+     despues de `vendor` y gana con declaracion normal aunque valga cero. El
+     diagnostico que atribuia el fallo a la variante oscura del vendor —la que
+     antepone la clase de tema legacy que este repo ya retiro— no se sostiene
+     en este panel: `main.php` no pone esa clase en ningun sitio (medido:
+     `body` es `sidebar-mini`, `html` es `aia-theme-dark`), asi que esa regla
+     del vendor ni siquiera participa. Nombrarla aqui tampoco seria legal:
+     `tests/design-system/dead-theme-removal.test.mjs` prohibe esa clase en
+     cualquier hoja de `public/css`. Verificado en el navegador: con estas
+     reglas el borde pasa al token.
+
+     `warning` no toma el naranja de dominio como TEXTO porque no llega: mide
+     4,497:1 sobre el lienzo del panel, justo por debajo de AA. Toma la tinta
+     primaria y deja el naranja en el borde, que es exactamente lo que ya hace
+     `.btn-outline-danger` mas abajo. */
+  :where(.btn-outline-success) {
+    border-color: var(--ds-active-action-primary);
+    background-color: transparent;
+    color: var(--ds-active-action-primary);
+  }
+
+  :where(.btn-outline-success):hover {
+    background-color: var(--ds-active-action-primary);
+    color: var(--ds-active-action-text);
+  }
+
+  :where(.btn-outline-info) {
+    border-color: var(--ds-active-data-plan);
+    background-color: transparent;
+    color: var(--ds-active-data-plan);
+  }
+
+  :where(.btn-outline-info):hover {
+    background-color: var(--ds-active-data-plan);
+    color: var(--ds-color-text-on-domain-dark);
+  }
+
+  :where(.btn-outline-warning) {
+    border-color: var(--ds-active-domain-construction);
+    background-color: transparent;
+    color: var(--ds-active-text-primary);
+  }
+
+  :where(.btn-outline-warning):hover {
+    background-color: var(--ds-active-domain-construction);
+    color: var(--ds-active-domain-construction-text);
   }
 
   :where(.btn-outline-danger) {
