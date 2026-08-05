@@ -131,7 +131,6 @@ class RiskScoringService
             'programa-general'    => 'actividad',
             'intermedia'          => 'actividad',
             'semanal'             => 'actividad',
-            'pdc'                 => 'pdc',
             'cic'                 => 'contratista',
             'cip'                 => 'actividad',
             'curva-s'             => 'actividad',
@@ -143,7 +142,7 @@ class RiskScoringService
     {
         return in_array($reportKey, [
             'overview', 'programa-general', 'intermedia', 'semanal',
-            'pdc', 'cic', 'cip', 'curva-s',
+            'cic', 'cip', 'curva-s',
         ], true);
     }
 
@@ -178,7 +177,8 @@ class RiskScoringService
 
         if ($filters['resp'] === '') {
             $this->appendContractorBranch($branches, $params, $filters);
-            $this->appendPdcBranch($branches, $params, $filters);
+            // La rama de riesgos 'pdc' se retiró el 2026-08-04: filtraba contra la tabla `pdc` del
+            // PDC v1, eliminada con el módulo, y `bi_riesgos` ya no emite filas de ese tipo.
         }
 
         return $branches === [] ? ' AND 1 = 0' : ' AND (' . implode(' OR ', $branches) . ')';
@@ -194,18 +194,6 @@ class RiskScoringService
         $this->appendContextLike($conditions, $params, 'cic_filter.subcontratista', $filters['sub']);
         $this->appendAnyContextLike($conditions, $params, ['cic_filter.alcance', 'cic_filter.tipo_proveedor'], $filters['etapa']);
         $branches[] = "(bi_riesgos.risk_type = 'contratista' AND EXISTS (SELECT 1 FROM bi_cic_contratistas cic_filter WHERE " . implode(' AND ', $conditions) . '))';
-    }
-
-    private function appendPdcBranch(array &$branches, array &$params, array $filters): void
-    {
-        $conditions = [
-            'pdc_filter.project_id = bi_riesgos.project_id',
-            'pdc_filter.semana = bi_riesgos.Semana',
-            "CONVERT(CAST(pdc_filter.consecutivo AS CHAR) USING utf8mb4) COLLATE utf8mb4_unicode_ci = CONVERT(bi_riesgos.entity_id USING utf8mb4) COLLATE utf8mb4_unicode_ci",
-        ];
-        $this->appendContextLike($conditions, $params, 'pdc_filter.subcontratoPaquete', $filters['sub']);
-        $this->appendAnyContextLike($conditions, $params, ['pdc_filter.paqueteContratacion', 'pdc_filter.tipoPaquete', 'pdc_filter.estado'], $filters['etapa']);
-        $branches[] = "(bi_riesgos.risk_type = 'pdc' AND EXISTS (SELECT 1 FROM pdc pdc_filter WHERE " . implode(' AND ', $conditions) . '))';
     }
 
     private function appendContextLike(array &$conditions, array &$params, string $column, string $value): void

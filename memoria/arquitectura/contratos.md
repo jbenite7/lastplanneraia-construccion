@@ -1,12 +1,18 @@
 ---
 tipo: modulo
-estado: vigente
+estado: derogada
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
 resumen: "Contratos: vincula actividades con paquetes de contratación (S, MO, SI) usando el motor semi-auto"
 ---
 # Contratos y definición semiautomática
+
+> [!warning] Derogada el 2026-08-04
+> El PDC v1 se **eliminó del repositorio**: rutas, controladores, servicios, vistas, JS/CSS,
+> pruebas y 18 tablas. Esta página se conserva como registro histórico, no describe código
+> vivo. El sucesor es [[plan-de-compras]] (`/plan-compras`).
+
 
 **Qué resuelve.** Une cada actividad del proyecto con su paquete de contratación (Suministro, Mano
 de Obra o Suministro e Instalación) para saber quién es responsable de comprarla o ejecutarla. Usa

@@ -14,8 +14,6 @@ if (!isset($dbInstance)) {
     $dbInstance = Database::getInstance();
 }
 
-require_once __DIR__ . '/_pdc_functions.php';
-
 use App\Services\RestrictionConfigResolver;
 
 $db = $_GET['db'] ?? $_POST['db'] ?? '';
@@ -38,7 +36,6 @@ if (!preg_match('/^[a-zA-Z0-9_]+$/', $db)) {
 $tPrograma = TableResolver::resolveByPrefix($db, 'programa');
 $tProgConsolidado = TableResolver::resolveByPrefix($db, 'programa_consolidado');
 $tSemanasActivas = TableResolver::resolveByPrefix($db, 'semanas_activas');
-$tPdc = TableResolver::resolveByPrefix($db, 'pdc');
 
 // Set project context for queryWithProject auto-injection
 $projectId = TableResolver::getProjectIdByPrefix($db);
@@ -195,19 +192,9 @@ try {
             $carryoverService = new \App\Services\WeeklyRealProgressCarryoverService($dbInstance);
             $carryoverService->syncWeek($db, $conteo, $semana_crear);
 
-            if ($pdcActivo == 1) {
-                $basePdcId = (int) $dbInstance
-                    ->queryWithProject("SELECT COALESCE(MAX(pdc_row_id), MAX(consecutivo), 0) FROM {$tPdc} WHERE project_id = ?", [$projectId], $projectId)
-                    ->fetchColumn();
-                $sqlCopyPDC = "INSERT INTO {$tPdc} (project_id, pdc_row_id, consecutivo, semana, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato)
-                                SELECT ?, ? + ROW_NUMBER() OVER (ORDER BY COALESCE(pdc_row_id, consecutivo)), ? + ROW_NUMBER() OVER (ORDER BY COALESCE(pdc_row_id, consecutivo)), ?, titulo, tipoPaquete, paqueteContratacion, contratos, numeroSubcontratos, subcontratoPaquete, estado, fechaElaboracionPliegos, diasElaboracionPliegos, fechaRealElaboracionPliegos, fechaEntregaPliegos, diasEntregaPliegos, fechaRealEntregaPliegos, fechaReciboPropuestas, diasReciboPropuestas, fechaRealReciboPropuestas, fechaCuadrosComparativos, diasCuadrosComparativos, fechaRealCuadrosComparativos, fechaLegalizacionContrato, diasLegalizacionContrato, fechaRealLegalizacionContrato, fechaFabricacion, diasFabricacion, fechaRealFabricacion, fechaInsumosObra, diasInsumosObra, fechaRealInsumosObra, fechaInicio, fechaInicioProyectada, fechaRealInicio, idProveedorAdjudicado, numeroContrato, fechaVencimientoPolizas, valorPresupuesto, valorPrimeraNegociacion, valorAdjudicado, valorAnticipo, valorReclamado, valorDevoluciones, observacionesContrato
-                                FROM {$tPdc} WHERE project_id = ? AND semana = ?";
-                $dbInstance->query($sqlCopyPDC, [$projectId, $basePdcId, $basePdcId, $semana_crear, $projectId, $conteo]);
-
-                pdc_insertarPaquetes($dbInstance, $db, $semana_crear, '', '', '');
-                pdc_crearSubcontratosDuplicados($dbInstance, $db, $semana_crear);
-                pdc_generarEstadoProceso($dbInstance, $db, $semana_crear);
-            }
+            // El arrastre semanal del PDC v1 (copia de filas de `pdc` + paquetes, subcontratos
+            // y estado de proceso) se eliminó el 2026-08-04 junto con el módulo. `pdcActivo`
+            // sigue siendo un atributo del proyecto y viaja en la respuesta como `$conteoPDC`.
         }
 
         $conteoPDC = $pdcActivo;

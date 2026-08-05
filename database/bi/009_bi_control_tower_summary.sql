@@ -52,19 +52,11 @@ SELECT
           AND bps.fulfillment_alert = 1
     ) AS weekly_commitments_at_risk_count,
 
-    -- PDC at risk (not ready, starting soon)
-    (
-        SELECT COUNT(*)
-        FROM bi_pdc_general bp
-        INNER JOIN semanas_activas sa
-            ON sa.project_id = bp.project_id
-           AND sa.Semana = bp.semana
-        WHERE bp.project_id = pg.project_id
-          AND bp.semana = pg.Semana
-          AND bp.listo_para_iniciar = 0
-          AND bp.fechaInicio IS NOT NULL
-          AND bp.fechaInicio <= DATE_ADD(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem), INTERVAL 6 WEEK)
-    ) AS pdc_at_risk_count,
+    -- PDC at risk: la fuente era `bi_pdc_general` (tabla `pdc` del PDC v1), eliminada el
+    -- 2026-08-04. La columna se conserva en cero para no romper a sus consumidores
+    -- (ControlTowerService, MetricDictionaryService) hasta que el Plan de Compras v2
+    -- publique su propia vista BI de riesgo de compras.
+    0 AS pdc_at_risk_count,
 
     -- Contractors at risk
     (

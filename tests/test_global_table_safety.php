@@ -98,10 +98,10 @@ try {
         "SELECT a.Id,
                 (SELECT pc.Actividad
                  FROM da_porto_programa_consolidado pc
-                 WHERE pc.Semana = a.semanaActualizacion
+                 WHERE pc.Semana = a.Semana
                  LIMIT 1) AS nombreActividadInicio
-         FROM da_porto_actividades a
-         WHERE a.semanaActualizacion = ?
+         FROM da_porto_cic a
+         WHERE a.Semana = ?
          LIMIT 1",
         [1],
     );
@@ -122,10 +122,10 @@ $db->query(
             (SELECT pc.Actividad
              FROM da_porto_programa_consolidado pc
              WHERE pc.project_id = a.project_id
-               AND pc.Semana = a.semanaActualizacion
+               AND pc.Semana = a.Semana
              LIMIT 1) AS nombreActividadInicio
-     FROM da_porto_actividades a
-     WHERE a.project_id = ? AND a.semanaActualizacion = ?
+     FROM da_porto_cic a
+     WHERE a.project_id = ? AND a.Semana = ?
      LIMIT 1",
     [73, 1],
 );

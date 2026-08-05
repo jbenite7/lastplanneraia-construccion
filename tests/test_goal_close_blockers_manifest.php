@@ -77,21 +77,8 @@ try {
     )->fetchAll(PDO::FETCH_COLUMN);
     gcbAssert(count($metroProjects) > 0, 'existen proyectos Metrolinea para validar brecha');
 
-    if ($metroProjects !== []) {
-        $placeholders = implode(',', array_fill(0, count($metroProjects), '?'));
-        $metroActivities = (int) gcbScalar(
-            $db,
-            "SELECT COUNT(*) FROM actividades WHERE project_id IN ({$placeholders})",
-            $metroProjects,
-        );
-        $metroPdc = (int) gcbScalar(
-            $db,
-            "SELECT COUNT(*) FROM pdc WHERE project_id IN ({$placeholders})",
-            $metroProjects,
-        );
-        gcbAssert($metroActivities === 0, 'Metrolinea omitido sigue sin actividades globales aplicables');
-        gcbAssert($metroPdc === 0, 'Metrolinea omitido sigue sin PDC global aplicable');
-    }
+    // La comprobación de que Metrolinea no tiene filas en `actividades` ni `pdc` se retiró el
+    // 2026-08-04: ambas tablas se eliminaron con el PDC v1, así que la brecha ya no puede existir.
 
     foreach ($manifest['minimum_close_checks'] ?? [] as $check) {
         gcbAssert(is_string($check) && $check !== '', "check minimo declarado: {$check}");

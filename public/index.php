@@ -138,7 +138,6 @@ $router->post('/api/indicadores/generar', [\App\Controllers\Api\IndicadoresApiCo
 $router->get('/programa-general-actualizar', [\App\Controllers\Programacion\ProgramaGeneralActualizarController::class, 'index']);
 
 // Gestion
-$router->get('/pdc', [\App\Controllers\Gestion\PdcController::class, 'index']);
 $router->get('/plan-compras', [\App\Controllers\Gestion\PlanComprasController::class, 'index']);
 $router->get('/profesionales', [\App\Controllers\Gestion\ProfesionalesController::class, 'index']);
 $router->get('/subcontratistas', [\App\Controllers\Gestion\SubcontratistasController::class, 'index']);
@@ -153,12 +152,7 @@ $router->post('/reportes/{tipo}', [\App\Controllers\Gestion\ReportController::cl
 $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosController::class, 'index']);
 
 // --- APIs (Migradas Fase 3) ---
-// Api/PDC
-$router->post('/api/pdc/list', [\App\Controllers\Api\PdcApiController::class, 'list']);
-$router->post('/api/pdc/save', [\App\Controllers\Api\PdcApiController::class, 'save']);
-$router->post('/api/pdc/update-cell', [\App\Controllers\Api\PdcApiController::class, 'updateCell']);
-$router->get('/api/pdc/duracion-sugerida', [\App\Controllers\Api\PdcApiController::class, 'duracionSugerida']);
-// Api/Plan de Compras v2 (isla React — namespace nuevo, no tocar /api/pdc/*)
+// Api/Plan de Compras v2 (isla React)
 $router->get('/plan-compras/api/contexto', [\App\Controllers\Api\PlanComprasApiController::class, 'contexto']);
 $router->post('/plan-compras/api/presupuesto/preview', [\App\Controllers\Api\PlanComprasImportController::class, 'preview']);
 $router->post('/plan-compras/api/presupuesto/confirmar', [\App\Controllers\Api\PlanComprasImportController::class, 'confirmar']);
@@ -248,24 +242,6 @@ $router->post('/plan-compras/api/subpaquetes/agregar', [\App\Controllers\Api\Pla
 $router->post('/plan-compras/api/subpaquetes/actualizar', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'actualizar']);
 $router->post('/plan-compras/api/subpaquetes/eliminar', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'eliminar']);
 $router->post('/plan-compras/api/subpaquetes/mover', [\App\Controllers\Api\PlanComprasSubpaquetesController::class, 'mover']);
-// Api/PDC Plantillas
-$router->get('/api/pdc/plantillas', [\App\Controllers\Api\PdcPlantillaController::class, 'list']);
-$router->get('/api/pdc/plantillas/{id}', [\App\Controllers\Api\PdcPlantillaController::class, 'show']);
-$router->get('/api/pdc/plantillas/{id}/items', [\App\Controllers\Api\PdcPlantillaController::class, 'items']);
-$router->get('/api/pdc/categorias-recurso', [\App\Controllers\Api\PdcPlantillaController::class, 'categorias']);
-$router->post('/api/pdc/auto/apply-from-contratos', [\App\Controllers\Api\PdcAutoGenerateController::class, 'applyFromContratos']);
-$router->post('/api/pdc/auto/preview', [\App\Controllers\Api\SemiAutoController::class, 'previewPdc']);
-$router->post('/api/pdc/auto/status', [\App\Controllers\Api\SemiAutoController::class, 'statusPdc']);
-$router->post('/api/pdc/auto/apply', [\App\Controllers\Api\SemiAutoController::class, 'applyPdc']);
-$router->post('/api/pdc/auto/undo', [\App\Controllers\Api\SemiAutoController::class, 'undoPdc']);
-$router->post('/api/pdc/auto/feedback', [\App\Controllers\Api\SemiAutoController::class, 'feedbackPdc']);
-$router->post('/api/pdc/auto/metrics', [\App\Controllers\Api\SemiAutoController::class, 'metricsPdc']);
-$router->post('/api/pdc/auto/assistant/inbox', [\App\Controllers\Api\SemiAutoController::class, 'assistantInboxPdc']);
-$router->post('/api/pdc/auto/assistant/ack', [\App\Controllers\Api\SemiAutoController::class, 'assistantAckPdc']);
-$router->post('/api/pdc/auto/assistant/feedback', [\App\Controllers\Api\SemiAutoController::class, 'assistantFeedbackPdc']);
-$router->post('/api/pdc/auto/learning/candidates', [\App\Controllers\Api\SemiAutoController::class, 'learningCandidatesPdc']);
-$router->post('/api/pdc/auto/learning/approve', [\App\Controllers\Api\SemiAutoController::class, 'learningApprovePdc']);
-$router->post('/api/pdc/auto/learning/reject', [\App\Controllers\Api\SemiAutoController::class, 'learningRejectPdc']);
 // Api/PG Breadcrumb
 $router->post('/api/pg/breadcrumb-estandarizar', [\App\Controllers\Api\PgBreadcrumbController::class, 'standardize']);
 $router->post('/api/pg/breadcrumb-preview', [\App\Controllers\Api\PgBreadcrumbController::class, 'preview']);

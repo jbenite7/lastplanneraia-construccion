@@ -17,7 +17,6 @@
 @import url("/css/design-system/components/ht-empty-state.css?v=1.0.0");
 @import url("/css/design-system/components/table-filter-trigger.css?v=1.0.0");
 @import url("/css/design-system/adapters/legacy-bridge.css?v=1.0.0");
-@import url("/css/design-system/adapters/semi-auto-review.css?v=1.0.0");
 @import url("/css/design-system/adapters/lps-drawer.css?v=1.0.0");
 @import url("/css/design-system/adapters/shell-sidebar.css?v=1.0.0");
 @import url("/css/styles.css?v=1.0.0") layer(module);

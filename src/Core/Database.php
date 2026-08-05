@@ -10,9 +10,6 @@ class Database
     private array $tableExistsCache = [];
 
     private const GLOBAL_TABLES = [
-        'actividades',
-        'actividad_programa_fuentes',
-        'auto_contrato_log',
         'auto_program_log',
         'cambios',
         'cic',
@@ -20,8 +17,6 @@ class Database
         'indicadores_generales',
         'lps_drawer_comentarios',
         'lps_escalamientos',
-        'papelera_pdc',
-        'pdc',
         'pg_tracking',
         'pi_shared_constraint_links',
         'pi_shared_constraints',
@@ -30,26 +25,14 @@ class Database
         'programa_consolidado',
         'programacion_semanal',
         'semanas_activas',
-        'semi_auto_assistant_feedback',
-        'semi_auto_decisions',
-        'semi_auto_feedback',
-        'semi_auto_learning_candidates',
-        'semi_auto_learning_rules',
-        'semi_auto_project_config',
-        'semi_auto_proactive_queue',
-        'semi_auto_runs',
-        'semi_auto_suggestions',
         'subcontratistas',
     ];
 
     private const PROJECT_SCOPED_IDS = [
-        'actividades' => 'Id',
         'cambios' => 'id',
         'cic' => 'Id',
         'lps_drawer_comentarios' => 'id',
         'lps_escalamientos' => 'id',
-        'papelera_pdc' => 'pdc_row_id',
-        'pdc' => 'pdc_row_id',
         'pi_shared_constraint_links' => 'id',
         'pi_shared_constraints' => 'id',
         'profesionales' => 'id',
@@ -61,8 +44,6 @@ class Database
     ];
 
     private const LEGACY_ID_COMPANIONS = [
-        'papelera_pdc' => ['pdc_row_id' => 'consecutivo'],
-        'pdc' => ['pdc_row_id' => 'consecutivo'],
         'programa' => ['unique_id' => 'Consecutivo'],
         'programa_consolidado' => ['row_id' => 'Consecutivo'],
         'programacion_semanal' => ['row_id' => 'Consecutivo'],

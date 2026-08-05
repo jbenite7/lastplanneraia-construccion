@@ -6,7 +6,7 @@ const project = PROJECTS.find(({ key }) => key === 'construction');
 const CI_ADMIN = { username: 'test.A', password: 'aia2026' };
 const routes = [
   '/control-cambios', '/dashboard/escalamientos', '/indicadores',
-  '/pdc', '/profesionales', '/programa-general-actualizar',
+  '/profesionales', '/programa-general-actualizar',
   '/programa-general', '/programacion-intermedia', '/programacion-semanal/cic',
   '/programacion-semanal/cnc', '/programacion-semanal/cnp',
   '/programacion-semanal', '/subcontratistas',

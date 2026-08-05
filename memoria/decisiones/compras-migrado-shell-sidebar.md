@@ -1,12 +1,27 @@
 ---
 tipo: decision
-estado: vigente
+estado: derogada
 fecha: 2026-07-29
 areas: [design-system, pdc]
 fuente: memoria-claude
 origen: lps-aia-compras-migrado-shell-sidebar
-resumen: "Compras (/contratos, /listado-actividades, /pdc) usa el shell sidebar canónico desde el 2026-07-25 aunque el goal sidebar-todos-modulos las excluyó a propósito; el harness lista 23 rutas pero solo cuenta 21 como migradas, y las dos que deja fuera son /contratos y /listado-actividades"
+resumen: "DEROGADA: las tres rutas de Compras (/contratos, /listado-actividades, /pdc) se eliminaron el 2026-08-04 con el PDC v1. El harness quedó en 20 rutas listadas y 20 migradas"
 ---
+
+> [!warning] Derogada el 2026-08-04 — las tres rutas ya no existen
+> `/contratos`, `/listado-actividades` y `/pdc` **se eliminaron** con el PDC v1. Todo el matiz que
+> esta nota cuidaba —23 listadas contra 21 migradas, y cuáles eran las dos excluidas— dejó de existir
+> con su sujeto.
+>
+> **El harness había quedado roto, y esta nota fue lo que lo destapó.**
+> `tests/browser/shell-sidebar-rollout.mjs` seguía listando las tres rutas retiradas, con `/pdc` aún
+> dentro de `MIGRATED`: las dos primeras salían `PENDING` y `/pdc` **reventaba la ejecución entera**
+> con un timeout esperando `[data-shell-pattern="sidebar"]` sobre un 404. Podado el 2026-08-04 →
+> **20 listadas, 20 migradas, 123/123 checks en verde.**
+>
+> Lo que sigue en pie del cuerpo: la exclusión de Compras en el goal `sidebar-todos-modulos` fue
+> deliberada y su «Cierre formal» lo documenta. Se conserva como registro.
+>
 El 2026-07-25 se migraron `/contratos`, `/listado-actividades` y `/pdc` al shell sidebar canónico.
 El harness `tests/browser/shell-sidebar-rollout.mjs` lista **23** rutas en `ALL_ROUTES`
 (`:15-38`), las mismas 23 que declara `docs/design-system/manifests/foundation-shell.json`.

@@ -32,7 +32,7 @@ test('shell navigation registers the sidebar candidate as approved', async () =>
   assert.deepEqual(sidebarApproval.themes, ['dark']);
   assert.deepEqual(sidebarApproval.viewports, ['1180x820', '1440x900']);
   assert.match(decisions, /DS-026.*Sidebar desktop.*approved/);
-  for (const label of ['Obra', 'Programa General', 'Programación Intermedia', 'Programación Semanal', 'Compras', 'Familias de Actividades', 'Paquetes de Contratación', 'Plan de Compras', 'Control Tower - Informes', 'Profesionales', 'Subcontratistas']) {
+  for (const label of ['Obra', 'Programa General', 'Programación Intermedia', 'Programación Semanal', 'Compras', 'Plan de Compras', 'Control Tower - Informes', 'Profesionales', 'Subcontratistas']) {
     assert.match(fixture, new RegExp(label.replace(/[+]/g, '\\+')));
   }
   assert.doesNotMatch(fixture, /'label' => 'Integración'/);

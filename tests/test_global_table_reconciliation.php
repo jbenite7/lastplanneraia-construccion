@@ -21,8 +21,6 @@ $pdo = new PDO(
 );
 
 $keyColumns = [
-    'actividades' => ['Id'],
-    'auto_contrato_log' => ['semana', 'Id_actividad', 'accion', 'batch_id'],
     'auto_program_log' => ['semana', 'consecutivo', 'accion'],
     'cambios' => ['id'],
     'cic' => ['Id'],
@@ -30,8 +28,6 @@ $keyColumns = [
     'indicadores_generales' => ['Semana', 'subcontratista_profesional', 'rol'],
     'lps_drawer_comentarios' => ['id'],
     'lps_escalamientos' => ['id'],
-    'papelera_pdc' => ['consecutivo'],
-    'pdc' => ['consecutivo'],
     'pg_tracking' => ['consecutivo_en_programa', 'semana'],
     'pi_shared_constraint_links' => ['Id'],
     'pi_shared_constraints' => ['Id'],

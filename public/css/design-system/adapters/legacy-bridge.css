@@ -149,41 +149,14 @@
     color: var(--ds-active-text-primary);
   }
 
-  :where(html.aia-theme-dark .aia-info-nav__trigger, html.aia-theme-dark .aia-info-nav__menu) {
-    border-color: var(--ds-active-border);
-    background: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-primary);
-  }
+  /* Las tres reglas de tema oscuro para `.aia-info-nav` se retiraron el
+     2026-08-04: su unico productor, info_general_nav.js, se borro con el PDC v1
+     y ningun documento emite ya esas clases. */
 
-  :where(html.aia-theme-dark .aia-info-nav__current, html.aia-theme-dark .aia-info-nav__chevron) {
-    color: var(--ds-active-text-primary);
-  }
-
-  :where(html.aia-theme-dark .aia-info-nav__eyebrow) {
-    color: var(--ds-active-text-secondary);
-  }
-
-  /* WCAG 2.4.7: el design system reclama el anillo de foco de la barra
-     «Informacion General». `styles.css:2739` y `:2829` apagaban el anillo con
-     `outline: none` en `:focus` sin sustituto, y ganaban por especificidad al
-     `button:focus` de Bootstrap (vendor), asi que el teclado se quedaba sin
-     marca en las tres rutas que montan `info_general_nav.js`:
-     /listado-actividades, /contratos y /pdc.
-
-     No hace falta `!important` ni subir especificidad: esta hoja vive en
-     `@layer legacy-overrides`, la ultima del orden de `aia-design-system.css:1`,
-     y `styles.css` entra en `module`. La capa decide.
-
-     Se declara sobre `:focus-visible`, no sobre `:focus`, a proposito: asi el
-     `outline: none` de `styles.css` conserva su unica funcion legitima -matar
-     el anillo del navegador tras un clic de raton- y el teclado recupera la
-     suya. Los tres valores son los del contrato de `core.css:104`, sin
-     inventar nada local. */
-  :where(.aia-info-nav__trigger, .aia-info-nav__item):focus-visible {
-    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
-    outline-offset: var(--ds-outline-offset);
-    box-shadow: var(--ds-shadow-focus);
-  }
+  /* El anillo de foco que el design system reclamaba para la barra «Informacion
+     General» (WCAG 2.4.7) se retiro el 2026-08-04 con el resto de
+     `.aia-info-nav`: las tres rutas que montaban info_general_nav.js
+     -/listado-actividades, /contratos y /pdc- se eliminaron con el PDC v1. */
 
   /* F1 Task 5a: absorbido desde public/css/styles.css:319-323
      (module.components). Neutraliza las gutters negativas de `.row` de
@@ -437,132 +410,19 @@
    de un `<style>`, bajo `.navbar-nav` y en un `@media` de movil; y admin/ no
    carga esta hoja ni el design system. */
 
-@layer legacy-overrides {
-  /* F1 5j: ayudantes del modal de /pdc (styles.css:4360-4430). Van en
-     `legacy-overrides` y NO en su subcapa de origen `module.components`: alli
-     este archivo entra antes que styles.css (core.css:16 vs :20) y el empate de
-     especificidad de `.pdc-row-center`/`.pdc-inline-msg` con `.row` y
-     `.aia-modal__message` se volteaba. La tinta de `.pdc-modal-field` corrige un
-     contraste real (1,93:1 -> 14,99:1). */
-  .pdc-modal-value {
-    text-align: center;
-  }
-
-  .pdc-row-center {
-    text-align: center;
-    margin: 0 auto 0.625rem;
-  }
-
-  .pdc-inline-msg {
-    margin-inline-start: 0.3125rem;
-  }
-
-  .pdc-modal-field {
-    text-align: left;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--ds-active-text-primary);
-  }
-
-  /* F1 5j: iconos de estado de /pdc (styles.css:4432-4497) llevados a la
-     escalera oscura `--pdc-*`; el emparejado sale de los estados que emite
-     public/js/modules/pdc/hot.js, no del ojo. `.pdc-icon-warn` y
-     `.pdc-ready-icon--ok` no tienen estado propio en la escalera y conservan
-     familia de matiz: reasignarles el matiz es diseno, no tema. */
-  .pdc-icon-state {
-    margin-inline-end: 0.3125rem;
-    display: inline-block;
-  }
-
-  .pdc-icon-ok {
-    color: var(--pdc-completed-ontime-text);
-  }
-
-  .pdc-icon-warn {
-    color: var(--pdc-completed-late-text);
-  }
-
-  .pdc-icon-danger {
-    color: var(--pdc-critical-text);
-  }
-
-  .pdc-icon-amber {
-    color: var(--pdc-completed-late-text);
-  }
-
-  .pdc-icon-info {
-    color: var(--pdc-active-text);
-  }
-
-  .pdc-ready-icon--ok {
-    color: var(--pdc-delayed-text);
-  }
-
-  .pdc-ready-icon--config {
-    color: var(--pdc-completed-late-text);
-  }
-
-  .pdc-ready-icon--risk {
-    color: var(--pdc-critical-text);
-  }
-
-  /* F1 5j: los dos indicadores de desviacion llegan ya tokenizados del 5b y se
-     mueven verbatim salvo el radio, que pasa al token de pildora. El naranja de
-     `--ahead` colisiona con «atrasada» en /pdc: la colision es PREVIA y se
-     conserva a proposito. Guard: tests/browser/pdc-chips-dark.mjs. */
-  .pdc-delta {
-    font-size: 0.72rem;
-    font-weight: 500;
-    font-family: "Inter", sans-serif;
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 8px;
-    border-radius: var(--ds-radius-pill);
-    line-height: 1.5;
-    white-space: nowrap;
-  }
-
-  .pdc-delta--ahead {
-    background-color: var(--ds-state-tint-orange);
-    color: var(--pdc-delayed-text);
-  }
-
-  .pdc-delta--delay {
-    background-color: var(--ds-state-tint-red);
-    color: var(--pdc-critical-text);
-  }
-
-  /* Conmutador «Solo alertas» (styles.css:4499-4528). Estuvo CLARO a proposito
-     mientras sus hermanos `.btn-pdc-modern` los pintaba otro archivo fuera del
-     alcance de F1: oscurecer solo este habria sido la incoherencia. Esa premisa
-     caduco. Medido hoy en /pdc dark: de los tres `.btn-pdc-modern` vivos, los
-     otros dos —«Desglosar» y «Limpiar filtros»— ya resuelven a
-     `--ds-active-surface-raised`, asi que el unico claro era este y la
-     excepcion protegia justo la anomalia que pretendia evitar.
-     Se retokeniza al mismo par que ellos, fondo Y texto a la vez: cambiar solo
-     el fondo es lo que hundio el contraste en el intento del task 27.
-     Podado `.pdc-btn-alertas.active`: el JS escribe `is-active` (hot.js:294). */
-  .pdc-btn-alertas {
-    background-color: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-secondary);
-    border: 1px solid var(--ds-active-border);
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .pdc-btn-alertas:hover {
-    background-color: var(--ds-active-surface);
-    border-color: var(--ds-active-text-secondary);
-  }
-
-  .pdc-btn-alertas .badge {
-    font-size: 0.65rem;
-    margin-left: 4px;
-    background-color: rgba(0, 0, 0, 0.15);
-    color: inherit;
-  }
-}
+/* RETIRADO (C1, 2026-08-04): el tramo «F1 5j» que vivia aqui —ayudantes del
+   modal, iconos de estado `.pdc-icon-*`/`.pdc-ready-icon--*`, indicadores
+   `.pdc-delta*` y el conmutador «Solo alertas» `.pdc-btn-alertas*`— pintaba
+   solo /pdc. Su emisor era public/js/modules/pdc/hot.js y su guard
+   tests/browser/pdc-chips-dark.mjs; los tres cayeron con el PDC v1. Medido
+   antes de retirar: cero consumidores de esos trece selectores en public/js,
+   views, src y admin. OJO al retirar vecinos por proximidad: 20 clases con
+   prefijo `pdc-` siguen VIVAS y NO son de este modulo (`.pdc-legend-item` y
+   `.pdc-header` de Programacion Intermedia, `.pdc-mobile-toggle` y
+   `.pdc-modern` de Programacion Semanal, `.pdc-body`/`.pdc-fecha-corte` del
+   BI, `.pdc-etapa` del panel de limpieza de Admin, y las cinco de estado que
+   escribe public/js/modules/shared/cell-state-vocabulary.mjs). El prefijo
+   enganya sobre el duenyo, igual que las tablas `general_pdc_*`. */
 
 /* LOAD-BEARING, y tiene que ir ANTES del primer `@layer module.components` de
    este archivo: el orden de subcapas lo fija el PRIMER encuentro del nombre, y
@@ -619,49 +479,6 @@
     font-weight: 500 !important;
     min-inline-size: 0 !important;
     margin: 4px !important;
-  }
-
-  html body #pdc-hot-shell .pdc-legend {
-    justify-content: flex-start !important;
-  }
-}
-
-@layer legacy-overrides {
-  /* F1 5j: badge de fecha de corte de /pdc (styles.css:4606-4631), retintado a
-     la superficie elevada neutra por ser informativo, sin matiz de estado.
-     SUJETO AUSENTE: lo crea el modulo en JS (hot.js:324-336) y solo si hay
-     semana en contexto, asi que NO existe en reposo y el barrido de computados
-     del tramo no lo alcanzo — no hay A/B de este bloque. Lo cubre el guard
-     tests/browser/pdc-chips-dark.mjs, que si lo inyecta. */
-  .context-right-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  #ctxPdcCalcDate {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    background-color: var(--ds-active-surface-raised);
-    color: var(--ds-active-text-primary);
-    border: 1px solid var(--ds-active-border);
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  #ctxPdcCalcDate .pdc-calc-date {
-    margin-left: 4px;
-    font-weight: 700;
-  }
-}
-
-@layer module.components {
-  /* F1 5j: el `display` de `.pdc-inline-msg` conserva subcapa de origen: desde
-     `legacy-overrides` ganaria a los cinco sujetos de /pdc y ensancharia los
-     cuatro que hoy computan `block` por un selector mas especifico. */
-  .pdc-inline-msg {
-    display: inline-block;
   }
 }
 

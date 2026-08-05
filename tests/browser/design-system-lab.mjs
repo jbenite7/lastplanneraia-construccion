@@ -346,8 +346,9 @@ test('sidebar shell exposes grouped navigation and an accessible collapse state'
   const shell = page.locator('[data-shell-pattern="sidebar"]');
   await expect(shell).toHaveCount(1);
   await expect(shell).toHaveAttribute('data-aia-component', 'navigation');
-  // 13 destinos = Información 6 + Obra 4 + Compras 3, el espejo del shell real.
-  await expect(shell.locator('[data-shell-destination]')).toHaveCount(13);
+  // 11 destinos = Información 6 + Obra 4 + Compras 1, el espejo del shell real. Compras bajó de
+  // 3 a 1 el 2026-08-04: «Familias de Actividades» y «Paquetes de Contratación» eran el PDC v1.
+  await expect(shell.locator('[data-shell-destination]')).toHaveCount(11);
   await expect(shell.locator('[aria-current="page"]')).toHaveCount(1);
   await expect(shell.locator('[data-sidebar-group="obra"]')).toContainText('Programación Semanal');
   await expect(shell.locator('[data-sidebar-group="compras"]')).toContainText('Plan de Compras');

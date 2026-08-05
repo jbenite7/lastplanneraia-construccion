@@ -896,7 +896,6 @@ class ControlTowerService
                     'bi_pg_semana',
                     'programacion_semanal',
                     'bi_ps_compromisos',
-                    'bi_pdc_general',
                     'bi_cic_contratistas',
                     'bi_cip_responsables',
                 ],

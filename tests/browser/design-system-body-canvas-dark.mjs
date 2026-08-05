@@ -42,7 +42,6 @@ const EXPECTED_BODY_BACKGROUND = {
   // clase de "page" con su propio --ds-color-bg-page-dark (no son
   // .pg-page/.ps-page/.pi-page). Task 3 del plan F1
   // remapea --surface-bg a var(--ds-active-bg-canvas), que es justo ese token.
-  '/pdc': 'rgb(11, 16, 13)',
   '/indicadores': 'rgb(11, 16, 13)',
   '/profesionales': 'rgb(11, 16, 13)',
   '/subcontratistas': 'rgb(11, 16, 13)',
@@ -152,7 +151,6 @@ test('el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback cla
 // comentario describia una medicion que llevaba tiempo sin repetirse. Con el
 // bucle completo las tres rutas vivas dan verde.
 const EXPECTED_GRID_SURFACE_BACKGROUND = {
-  '/pdc': { selector: '#dt_cliente', background: 'rgba(28, 36, 31, 0.92)' },
   '/profesionales': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
   '/subcontratistas': { selector: '#hot-container', background: 'rgb(17, 26, 21)' },
 };

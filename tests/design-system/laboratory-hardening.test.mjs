@@ -48,7 +48,7 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
     'font-awesome', 'bootstrap', 'jquery-ui', 'anychart', 'select2.min.css',
     'sweetalert2.min.css', 'handsontable.full.min.css', 'styles.css',
     'buttons.css', 'access.css', 'legacy-bridge.css',
-    'programa-general-handsontable.css', 'semi-auto-review.css', 'lps-drawer.css',
+    'programa-general-handsontable.css', 'lps-drawer.css',
   ]) {
     assert.doesNotMatch(entrypoint, new RegExp(forbidden.replaceAll('.', '\\.')));
   }

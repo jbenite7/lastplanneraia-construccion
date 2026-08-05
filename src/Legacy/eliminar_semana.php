@@ -21,8 +21,6 @@ $tSemanasActivas = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
 $tProgConsolidado = TableResolver::resolveByPrefix($dbName, 'programa_consolidado');
 $tProgSemanal = TableResolver::resolveByPrefix($dbName, 'programacion_semanal');
 $tCic = TableResolver::resolveByPrefix($dbName, 'cic');
-$tPdc = TableResolver::resolveByPrefix($dbName, 'pdc');
-$tActividades = TableResolver::resolveByPrefix($dbName, 'actividades');
 
 // Set project context for queryWithProject auto-injection
 $projectId = TableResolver::getProjectIdByPrefix($dbName);
@@ -45,13 +43,12 @@ try {
         echo json_encode($arreglo, JSON_UNESCAPED_UNICODE);
     } else {
         // 2. Realizar eliminación en cascada de la semana seleccionada (y superiores por seguridad)
+        // `pdc` y `actividades` salieron de la cascada el 2026-08-04: eran las tablas del PDC v1.
         $tablas = [
             "{$tSemanasActivas}" => "Semana",
             "{$tProgConsolidado}" => "Semana",
             "{$tProgSemanal}" => "Semana",
             "{$tCic}" => "Semana",
-            "{$tPdc}" => "semana",
-            "{$tActividades}" => "semanaActualizacion",
         ];
 
         foreach ($tablas as $tabla => $columna) {

@@ -147,14 +147,5 @@ test('catalog migrations fix their UTF-8 client session before seeding labels', 
   }
 });
 
-test('LACP persistence harness returns a failing process status for failed assertions', async () => {
-  const harness = await readFile(
-    new URL('../test_lacp_manual_crud_persistence.php', import.meta.url),
-    'utf8',
-  );
-
-  assert.match(harness, /register_shutdown_function[\s\S]*?!\$completed[\s\S]*?exit\(1\)/);
-  assert.match(harness, /\$completed = true;\s*exit\(\$failed === 0 \? 0 : 1\);\s*$/);
-  assert.match(harness, /exit\(\$failed === 0 \? 0 : 1\);\s*$/);
-  assert.doesNotMatch(harness, /exit\(0\);\s*$/);
-});
+// El contrato del harness de persistencia se retiró junto con el PDC V1 (2026-08-04): vigilaba
+// `test_lacp_manual_crud_persistence.php`, que era la prueba de Listado/Contratos/PDC v1.

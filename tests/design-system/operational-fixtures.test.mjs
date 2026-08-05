@@ -12,7 +12,6 @@ const expected = new Map([
   ['datatables-legacy', ['P1', 'vendor-adapters', 'contract-explorer']],
   ['notifications-center', ['P1', 'shell-navigation', 'control-room']],
   ['lps-context-drawer', ['P1', 'overlays', 'contract-explorer']],
-  ['semi-auto-review', ['P1', 'actions', 'object-workbench']],
   ['admin-operations', ['P1', 'shell-navigation', 'control-room']],
   ['bi-runtime-drilldown', ['P1', 'bi-primitives', 'control-room']],
   ['tom-select-advanced', ['P2', 'vendor-adapters', 'object-workbench']],

@@ -103,27 +103,8 @@ export const MODULOS = [
     capacidades: ['canManagePdC', 'canManageContracts'],
     nota: 'SPA React en pdc-app/, bundle en public/pdc-app/. Sub-router por hash.',
   },
-  {
-    slug: 'listado-de-actividades',
-    titulo: 'Listado de Actividades (PDC v1)',
-    areas: ['pdc', 'arquitectura'],
-    flujo: 'pdc',
-    rutas: ['/pdc', '/api/pdc'],
-    capacidades: ['canManagePdC'],
-    nota: '',
-  },
-  {
-    slug: 'contratos',
-    titulo: 'Contratos y definición semiautomática',
-    areas: ['pdc', 'arquitectura'],
-    flujo: 'pdc',
-    rutas: ['/api/pdc/auto'],
-    capacidades: ['canManageContracts', 'canAutoDefineContracts'],
-    nota: 'Reparto de criterio: /api/pdc/auto/* se atribuye a Contratos por ser el '
-      + 'contrato auto/preview·apply·undo·feedback·metrics que define contratos; el resto de '
-      + '/api/pdc/* queda en Listado de Actividades. Verificable leyendo '
-      + 'src/Controllers/Api/PdcAutoGenerateController.php y src/Services/SemiAutoService.php.',
-  },
+  // Listado de Actividades, Contratos y el PDC v1 (`/pdc`, `/api/pdc/*`) se eliminaron el
+  // 2026-08-04. Su sucesor es Plan de Compras v2, arriba.
   {
     slug: 'profesionales',
     titulo: 'Profesionales',

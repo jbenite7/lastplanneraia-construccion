@@ -49,30 +49,6 @@ parameters:
 			path: src/Controllers/Api/IndicadoresApiController.php
 
 		-
-			message: '#^Comparison operation "\<" between 1\|2\|3\|4\|5\|6\|7 and 8 is always true\.$#'
-			identifier: smaller.alwaysTrue
-			count: 1
-			path: src/Controllers/Api/PdcApiController.php
-
-		-
-			message: '#^Comparison operation "\<\=" between 1\|2\|3\|4\|5\|6\|7 and 8 is always true\.$#'
-			identifier: smallerOrEqual.alwaysTrue
-			count: 1
-			path: src/Controllers/Api/PdcApiController.php
-
-		-
-			message: '#^Loose comparison using \!\= between int\<min, \-1\>\|int\<1, max\> and ''0'' will always evaluate to true\.$#'
-			identifier: notEqual.alwaysTrue
-			count: 1
-			path: src/Controllers/Api/PdcApiController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: src/Controllers/Api/PdcApiController.php
-
-		-
 			message: '#^Property App\\Controllers\\Api\\ProfesionalesApiController\:\:\$lpsService is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1
@@ -95,12 +71,6 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: src/Controllers/Api/SemanalApiController.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 2
-			path: src/Controllers/Api/SemiAutoController.php
 
 		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
@@ -337,25 +307,7 @@ parameters:
 			path: src/Services/ReportProcessor.php
 
 		-
-			message: '#^Method App\\Services\\SemiAutoService\:\:pdcObservationForPackage\(\) never returns string so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: src/Services/SemiAutoService.php
-
-		-
 			message: '#^Parameter \#1 \$array \(list\<int\>\) of array_values is already a list, call has no effect\.$#'
 			identifier: arrayValues.list
 			count: 1
 			path: src/Support/BiProjectScope.php
-
-		-
-			message: '#^Method App\\Support\\SemiAutoQualityGate\:\:operationalSuffix\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: src/Support/SemiAutoQualityGate.php
-
-		-
-			message: '#^Method App\\Support\\SemiAutoQualityGate\:\:sourceScopeLabel\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: src/Support/SemiAutoQualityGate.php

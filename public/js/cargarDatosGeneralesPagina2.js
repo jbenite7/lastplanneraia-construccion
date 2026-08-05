@@ -43,24 +43,16 @@ if (
 var inputosOcultos =
   "<input type='hidden' name='Fecha_Fin_Sem' id='Fecha_Fin_Sem' value=''><input type='hidden' name='Fecha_Fin_SemYMD' id='Fecha_Fin_SemYMD' value=''><input type='hidden' name='Fecha_Inicio_Sem' id='Fecha_Inicio_Sem' value=''><input type='hidden' name='Fecha_Inicio_SemYMD' id='Fecha_Inicio_SemYMD' value=''><input type='hidden' name='Fecha_datepicker' id='Fecha_datepicker' value=''><input type='hidden' name='Max_Semana' id='Max_Semana' value=''><input type='hidden' name='baseDatos' id='baseDatos' value=''><input type='hidden' name='permiso_canonico' id='permiso_canonico' value=''><input type='hidden' name='proyecto' id='proyecto' value=''><input type='hidden' name='semana' id='semana' value=''><input type='hidden' name='pdcActivo' id='pdcActivo' value=''><input type='hidden' name='tituloSuperior' id='tituloSuperior' value=''><input type='hidden' name='Semanal_Confirmada' id='Semanal_Confirmada' value=''><input type='hidden' name='fechaCierreCompromisos' id='fechaCierreCompromisos' value=''><input type='hidden' name='fechaCreacionSemana' id='fechaCreacionSemana' value=''><input type='hidden' name='versionCronograma' id='versionCronograma' value=''>";
 
+// Refresca el area del proyecto desde la respuesta AJAX. La consumen
+// programacion_semanal/hot.js y legacyCards.js para pedir categorias por area.
+//
+// Hasta el 2026-08-04 esta funcion ademas ocultaba los items del nav legado
+// (tituloActividadesProyecto, info_listadoActividades, info_contratos, planCompras,
+// tituloInteresados, info_subcontratistas) en proyectos de Pre-Construccion. Ese nav lo
+// producia info_general_nav.js, borrado con el PDC v1: ningun documento crea ya esos ids.
+// La visibilidad por rol y por area vive ahora en views/partials/shell_sidebar.php.
 function applyProjectTypeVisibility(datosGenerales) {
-  var area = datosGenerales.area || datosGenerales.Area || window.__PROJECT_AREA__ || 'Construccion';
-  window.__PROJECT_AREA__ = area;
-
-  if (area !== 'Pre-Construccion') return;
-
-  ['tituloActividadesProyecto', 'info_listadoActividades', 'info_contratos', 'planCompras'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    var container = el.closest('li') || el;
-    container.style.display = 'none';
-  });
-
-  var interesados = document.getElementById('tituloInteresados');
-  if (interesados) interesados.textContent = 'Interesados Externos';
-
-  var subcontratistas = document.getElementById('info_subcontratistas');
-  if (subcontratistas) subcontratistas.textContent = 'Interesados Externos';
+  window.__PROJECT_AREA__ = datosGenerales.area || datosGenerales.Area || window.__PROJECT_AREA__ || 'Construccion';
 }
 
 // Inyectar Script ContextManager
@@ -79,28 +71,9 @@ if (!document.querySelector('script[src*="bi-access.js"]')) {
 document.getElementById('encabezado').innerHTML =
   document.getElementById('encabezado').innerHTML + inputosOcultos;
 
-// --- Pre-Construction Area: Hide construction-only modules ---
-if (window.__PROJECT_AREA__ === 'Pre-Construccion') {
-  // Helper: hide a nav-item (the <li> wrapper) by child element id
-  function _hideNavItem(childId) {
-    var el = document.getElementById(childId);
-    if (el) {
-      var li = el.closest('li');
-      if (li) li.style.display = 'none';
-    }
-  }
-  // Listado de Actividades
-  _hideNavItem('info_listadoActividades');
-  // Contratos
-  _hideNavItem('info_contratos');
-  // Plan de Compras (PDC)
-  _hideNavItem('planCompras');
-  // Programación Semanal (contains CIC / Calificación Integral de Proveedores)
-  //_hideNavItem('programacion_semanal');
-  // Hide "Actividades del Proyecto" section header if both children hidden
-  var _titAct = document.getElementById('tituloActividadesProyecto');
-  if (_titAct) _titAct.style.display = 'none';
-}
+// El bloque que ocultaba los modulos de solo-construccion en Pre-Construccion se retiro el
+// 2026-08-04: apuntaba a los ids del nav legado del PDC v1, que ya no crea ningun documento.
+// La regla equivalente vive en views/partials/shell_sidebar.php ($shellArea === 'Pre-Construccion').
 
 // Inyectar Script Notifications (DESPUÉS del innerHTML para que existan los elementos)
 if (!document.querySelector('script[src*="notifications.js"]')) {
@@ -211,9 +184,7 @@ var cargarDatosGeneralesPagina = function (seccion) {
           controlCambios: 'Control de Cambios',
           info_profesionales: 'Profesionales',
           info_subcontratistas: 'Subcontratistas',
-          info_listadoActividades: 'Familias de obra',
-          info_contratos: 'Paquetes de contratacion',
-          planCompras: 'Plan de Compras y Contrataciones',
+          planCompras: 'Plan de Compras',
           actualizarCronograma: 'Actualizar Cronograma',
           indicadores: 'Indicadores',
           programacion_intermedia: 'Liberación de Restricciones',
@@ -264,32 +235,9 @@ var cargarDatosGeneralesPagina = function (seccion) {
         };
       }
 
-      if (document.getElementById('info_listadoActividades')) {
-        document.getElementById('info_listadoActividades').href = '#';
-        document.getElementById('info_listadoActividades').onclick = function () {
-          window.Context.clearWeek('/listado-actividades');
-          return false;
-        };
-      }
-      if (document.getElementById('info_contratos')) {
-        document.getElementById('info_contratos').href = '#';
-        document.getElementById('info_contratos').onclick = function () {
-          window.Context.clearWeek('/contratos');
-          return false;
-        };
-      }
-
-      if (document.getElementById('planCompras')) {
-        document.getElementById('planCompras').href = '#';
-        document.getElementById('planCompras').onclick = function () {
-          window.location.href =
-            '/legacy/cambiar_pagina.php?seccion=planCompras&semana=' +
-            datosGenerales.Max_Semana +
-            '&origen=' +
-            encodeURIComponent(seccion || '');
-          return false;
-        };
-      }
+      // Los manejadores de info_listadoActividades, info_contratos y planCompras se retiraron el
+      // 2026-08-04: eran los items del nav legado del PDC v1 y apuntaban a rutas ya inexistentes.
+      // El enlace vigente a Plan de Compras v2 lo pinta views/partials/shell_sidebar.php.
 
       if (document.getElementById('informe_lps')) {
         document.getElementById('informe_lps').href = '#';
@@ -457,8 +405,6 @@ var cargarDatosGeneralesPagina = function (seccion) {
         controlCambios: 'integracion',
         info_profesionales: 'informacionGeneral',
         info_subcontratistas: 'informacionGeneral',
-        info_listadoActividades: 'informacionGeneral',
-        info_contratos: 'informacionGeneral',
         planCompras: 'informacionGeneral',
         actualizarCronograma: 'informacionGeneral',
         indicadores: 'informacionGeneral',
@@ -567,7 +513,7 @@ var maestroPermisos = function (permiso) {
     case 'G':
       //Bloqueos Información General
       $(
-        '#tituloInteresados, #info_profesionales, #btn_nuevo, #info_subcontratistas, #tituloActividadesProyecto, #info_listadoActividades, #btn_cargarActividadesExcel, #btn_nueva_actividad, #info_contratos, #btn_guardar_contratos, #planCompras, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
+        '#btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
       //Bloqueos Integración
@@ -597,7 +543,7 @@ var maestroPermisos = function (permiso) {
     case 'S':
       //Bloqueos Información General
       $(
-        '#tituloInteresados, #info_profesionales, #btn_nuevo, #info_subcontratistas, #tituloActividadesProyecto, #info_listadoActividades, #btn_cargarActividadesExcel, #btn_nueva_actividad, #info_contratos, #btn_guardar_contratos, #planCompras, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
+        '#btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
       //Bloqueos Integración
@@ -627,7 +573,7 @@ var maestroPermisos = function (permiso) {
     case 'SG':
       //Bloqueos Información General
       $(
-        '#tituloInteresados, #info_profesionales, #btn_nuevo, #info_subcontratistas, #tituloActividadesProyecto, #info_listadoActividades, #btn_cargarActividadesExcel, #btn_nueva_actividad, #info_contratos, #btn_guardar_contratos, #planCompras, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
+        '#btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
       //Bloqueos Integración
@@ -680,7 +626,7 @@ var maestroPermisos = function (permiso) {
     case 'DCV':
       //Bloqueos Información General
       $(
-        '#btn_nuevo, #btn_cargarActividadesExcel, #btn_nueva_actividad, #btn_guardar_contratos, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
+        '#btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
       //Bloqueos Integración
@@ -705,7 +651,7 @@ var maestroPermisos = function (permiso) {
     case 'V':
       //Bloqueos Información General
       $(
-        '#btn_nuevo, #btn_cargarActividadesExcel, #btn_nueva_actividad, #btn_guardar_contratos, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_eliminarActualizacion'
+        '#btn_eliminarActualizacion'
       ).css('display', 'none');
 
       //Bloqueos Integración
@@ -731,7 +677,7 @@ var maestroPermisos = function (permiso) {
     case 'C':
       //Bloqueos Información General
       $(
-        '#tituloInteresados, #info_profesionales, #btn_nuevo, #info_subcontratistas, #tituloActividadesProyecto, #info_listadoActividades, #btn_cargarActividadesExcel, #btn_nueva_actividad, #info_contratos, #btn_guardar_contratos, #planCompras, #btn_guardar_pdc, #btn_actualizarPDC, #btn_informeProgramaGeneral, #btn_informeProgramacionIntermedia, #btn_informeProgramacionSemanal, #btn_informePDC, #informe_productividad, #tituloActualizarCronograma, #btn_tutorialActualizarCronograma, #actualizarCronograma, #btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
+        '#btn_cargarCronogramaExcel, #btn_eliminarActualizacion'
       ).css('display', 'none');
 
       if (!window.__AIA_HANDSONTABLE_ONLY__) {

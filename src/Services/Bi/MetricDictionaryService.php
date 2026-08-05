@@ -443,7 +443,7 @@ class MetricDictionaryService
             'formula' => 'ROUND(35*p + 25*i + 20*u + 10*c + 10*d)',
             'unit' => 'score',
             'execution_source' => 'bi_riesgos',
-            'source_relations' => ['bi_pg_semana', 'bi_cic_contratistas', 'bi_pdc_general'],
+            'source_relations' => ['bi_pg_semana', 'bi_cic_contratistas'],
             'grain' => 'project_id + Semana + entity_type + entity_id',
             'cutoff_policy' => 'Semana o rango explícitamente seleccionado por el reporte.',
             'filters' => [],

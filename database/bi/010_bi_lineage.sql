@@ -53,9 +53,9 @@ UNION ALL SELECT
 UNION ALL SELECT
     'pdc_at_risk', 'Paquetes PDC en riesgo',
     'Paquetes no listos para iniciar dentro de 6 semanas del corte semanal',
-    'COUNT(*) WHERE listo_para_iniciar=0 AND fechaInicio <= Fecha_Fin_Sem/Fecha_Inicio_Sem + 6w',
-    'bi_pdc_general', 'pdc, semanas_activas', 'project_id + semana + consecutivo',
-    'titulo=0; corte=COALESCE(Fecha_Fin_Sem,Fecha_Inicio_Sem)', '1.1', CAST('2026-07-10' AS DATE), NULL
+    'Constante 0 desde el 2026-08-04: la fuente era el PDC v1, eliminado',
+    'bi_control_tower_summary', 'ninguna', 'project_id + Semana',
+    'Sin fuente: el Plan de Compras v2 aun no publica vista BI de riesgo', '2.0', CAST('2026-08-04' AS DATE), NULL
 
 UNION ALL SELECT
     'cic_cal_integral', 'Calificación integral de contratista',
@@ -93,7 +93,7 @@ UNION ALL SELECT
     'riesgo_score_100', 'Risk score (0-100)',
     'Suma ponderada: 35*prob + 25*impact + 20*urgency + 10*criticality + 10*confidence',
     'ROUND(35*p + 25*i + 20*u + 10*c + 10*d)', 'bi_riesgos',
-    'bi_pg_semana, bi_cic_contratistas, bi_pdc_general, semanas_activas',
+    'bi_pg_semana, bi_cic_contratistas, semanas_activas',
     'project_id + Semana + entity_type + entity_id',
     'Corte=COALESCE(Fecha_Fin_Sem,Fecha_Inicio_Sem)', 'RISK-SCORE-1.1', CAST('2026-07-10' AS DATE),
     'Fórmula calibrable. Los riesgos usan el corte de su semana; drivers obligatorios para scores >30.'

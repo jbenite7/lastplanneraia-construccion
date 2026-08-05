@@ -11,11 +11,6 @@ if (isset($_SESSION['usuario'])) {
     $_SESSION['semana'] = $semana;
     $_SESSION['seccion'] = $seccion;
 
-    if ($seccion === 'planCompras' && $origen !== '' && $origen !== 'planCompras') {
-        $_SESSION['pdc_sync_on_load'] = true;
-        $_SESSION['pdc_sync_origin'] = $origen;
-    }
-
     if ($seccion == 'contenido') {
         header("Location: contenido/contenido.php");
     } elseif ($seccion == 'info_profesionales') {
@@ -36,14 +31,10 @@ if (isset($_SESSION['usuario'])) {
         header("Location: /programacion-semanal/cic");
     } elseif ($seccion == 'indicadores') {
         header("Location: /indicadores");
-    } elseif ($seccion == 'info_listadoActividades') {
-        header("Location: /listado-actividades");
-    } elseif ($seccion == 'info_contratos') {
-        header("Location: /contratos");
-    } elseif ($seccion == 'info_paquetesContratacion') {
-        header("Location: /paquetes-contratacion");
+    // Listado de Actividades, Contratos y el PDC v1 se eliminaron el 2026-08-04. Su única
+    // sucesora es la isla React de Plan de Compras, a la que apunta 'planCompras'.
     } elseif ($seccion == 'planCompras') {
-        header("Location: /pdc");
+        header("Location: /plan-compras");
     } elseif ($seccion == 'actualizarCronograma') {
         header("Location: /programa-general-actualizar");
     } elseif ($seccion == 'controlCambios') {

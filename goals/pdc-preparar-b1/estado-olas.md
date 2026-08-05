@@ -183,7 +183,7 @@ Hace falta un override local que declare un volumen propio.
 | 8a | Subpaquetes de obra | 7a y 7b | **HECHO** | `6d702ef` · `935d194` · `ceb0e73` + el amarre por lote | 2026-07-30 |
 | 8b | Flujo de caja: curva mensual de desembolsos | 8a (reparte por subpaquete) | **HECHO** | `6d702ef` + `bfa0c7d` | 2026-07-30 |
 | 9 | Torre de Control (B3) | 1 | HECHO | `e610fbb` (rama `worktree-pdc-b3-torre-control`) | 2026-07-30 |
-| 10 | Retiro del PDC viejo (C1) | — | **SALE DEL GOAL** — trabajo previo cerrado; la ejecución va a chip propio, autorizada por Felipe el 2026-08-03 | censo, medición y manifiesto en `main` | 2026-08-03 |
+| 10 | Retiro del PDC viejo (C1) | — | **SALIÓ DEL GOAL y YA SE EJECUTÓ** el 2026-08-04, con más alcance del previsto: también los datos (18 tablas, con respaldo) y también el motor semiautomático con `/contratos` y `/listado-actividades` | censo, medición y manifiesto en `main`; ver § 2 más abajo | 2026-08-04 |
 
 ---
 
@@ -341,7 +341,23 @@ construido; se deja escrito en vez de borrarlo porque el fallo fue del acta, no 
 Ambas montan su ayuda (`4680dc4d`). Comprobado el 2026-08-04 con `vitest` sobre `flujoCaja.test.ts`,
 `planFechas.test.ts` y `ayuda.test.ts`: 142 asserts en verde.
 
-### 2 · El retiro del PDC viejo (C1) — chip propio, ya autorizado
+### 2 · El retiro del PDC viejo (C1) — EJECUTADO el 2026-08-04
+
+> **Hecho, y con más alcance del que esta sección anticipaba.** Las dos «decisiones ya tomadas» que se
+> citan abajo como amortiguadores del riesgo **cambiaron las dos** el 2026-08-04, por decisión de Felipe:
+>
+> - **Sí tocó tablas.** Se eliminaron las 18 del v1, con respaldo previo en
+>   `storage/backups/lastplanneraia_dev-pre-borrado-pdc-v1-20260804.sql`. Los 370 registros históricos
+>   no se conservaron.
+> - **Sí cayeron `/api/pdc/auto/*` y `OperationalFamilyPolicy`**, y con ellos `/contratos` y
+>   `/listado-actividades`: Felipe confirmó que los tres módulos eran el v1.
+>
+> Y la pregunta pendiente del final ya tiene respuesta: **la contestó el 2026-08-04 —nadie lo usa— y por
+> eso se ejecutó sin aviso previo a las obras.** El párrafo de abajo se conserva como historia.
+>
+> Verificado tras el retiro: `phpstan` sobre `src` y `admin/src` en `[OK] No errors`, gate de contratos
+> del sistema de diseño en PASS, y `PdcResetService` con su panel y sus 13 tablas en pie. Detalle en
+> `docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design.md` § «Lo que realmente pasó».
 
 **Felipe lo autorizó el 2026-08-03**, y su criterio se sostiene por un hecho que la precondición original
 no contemplaba: **el roadmap suponía que producción seguía de cerca a `main`, y no es así.** La producción

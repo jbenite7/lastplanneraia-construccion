@@ -168,68 +168,8 @@ LEFT JOIN semanas_activas sa
     ON sa.project_id = cic.project_id
    AND sa.Semana = cic.Semana
 
-UNION ALL
-
--- Riesgos de PDC (desde bi_pdc_general)
-SELECT
-    pdc.project_id,
-    pdc.semana,
-    'pdc' AS entity_type,
-    CAST(pdc.consecutivo AS CHAR) AS entity_id,
-    pdc.paqueteContratacion AS entity_name,
-
-    -- Probability: basado en si está listo + días delta
-    CASE
-        WHEN pdc.listo_para_iniciar = 0 AND pdc.dias_delta_simple > 7 THEN 0.80
-        WHEN pdc.listo_para_iniciar = 0 THEN 0.55
-        WHEN pdc.necesita_configuracion = 1 THEN 0.40
-        ELSE 0.15
-    END AS probability_score,
-
-    -- Impact: basado en valor del paquete
-    CASE
-        WHEN pdc.valorPresupuesto > 100000000 THEN 0.70
-        WHEN pdc.valorPresupuesto > 10000000 THEN 0.45
-        ELSE 0.25
-    END AS impact_score,
-
-    -- Urgency: basado en fecha de inicio próxima
-    CASE
-        WHEN pdc.fechaInicio IS NOT NULL
-         AND pdc.fechaInicio <= DATE_ADD(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem), INTERVAL 2 WEEK) THEN 0.85
-        WHEN pdc.fechaInicio IS NOT NULL
-         AND pdc.fechaInicio <= DATE_ADD(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem), INTERVAL 6 WEEK) THEN 0.55
-        ELSE 0.25
-    END AS urgency_score,
-
-    -- Criticality: PDC siempre impacta flujo
-    0.50 AS criticality_score,
-
-    -- Data confidence
-    CASE
-        WHEN pdc.diasElaboracionPliegos IS NOT NULL AND pdc.diasInsumosObra IS NOT NULL THEN 0.80
-        ELSE 0.35
-    END AS data_confidence_score,
-
-    ROUND(
-        35 * CASE WHEN pdc.listo_para_iniciar = 0 AND pdc.dias_delta_simple > 7 THEN 0.80 WHEN pdc.listo_para_iniciar = 0 THEN 0.55 WHEN pdc.necesita_configuracion = 1 THEN 0.40 ELSE 0.15 END
-        + 25 * CASE WHEN pdc.valorPresupuesto > 100000000 THEN 0.70 WHEN pdc.valorPresupuesto > 10000000 THEN 0.45 ELSE 0.25 END
-        + 20 * CASE
-            WHEN pdc.fechaInicio <= DATE_ADD(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem), INTERVAL 2 WEEK) THEN 0.85
-            WHEN pdc.fechaInicio <= DATE_ADD(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem), INTERVAL 6 WEEK) THEN 0.55
-            ELSE 0.25
-        END
-        + 10 * 0.50
-        + 10 * CASE WHEN pdc.diasElaboracionPliegos IS NOT NULL AND pdc.diasInsumosObra IS NOT NULL THEN 0.80 ELSE 0.35 END
-    , 0) AS risk_score_100,
-
-    'pdc' AS risk_type,
-    'bi_pdc_general' AS source_view,
-    CAST(COALESCE(sa.Fecha_Fin_Sem, sa.Fecha_Inicio_Sem) AS DATETIME) AS computed_at
-
-FROM bi_pdc_general pdc
-LEFT JOIN semanas_activas sa
-    ON sa.project_id = pdc.project_id
-   AND sa.Semana = pdc.semana
+-- La rama de riesgos de compras se retiró el 2026-08-04: leía `bi_pdc_general`, proyección
+-- directa de la tabla `pdc` del PDC v1, eliminada con el módulo. El Plan de Compras v2 tiene
+-- su propio seguimiento (PlanComprasSeguimientoController) y aún no publica vista BI.
 
 ORDER BY project_id, Semana, risk_score_100 DESC;

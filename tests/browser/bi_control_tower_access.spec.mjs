@@ -9,7 +9,6 @@ const MODULE_ACCESS = [
   { path: '/programa-general', label: /BI Programa/i, target: /\/bi\/programa-general/ },
   { path: '/programacion-intermedia', label: /BI Intermedia/i, target: /\/bi\/intermedia/ },
   { path: '/programacion-semanal', label: /BI Semanal/i, target: /\/bi\/semanal/ },
-  { path: '/pdc', label: /BI PDC/i, target: /\/bi\/pdc/ },
   { path: '/subcontratistas', label: /BI (Contratistas|Interesados)/i, target: /\/bi\/contratistas/ },
   { path: '/profesionales', label: /BI Responsables/i, target: /\/bi\/responsables/ },
   { path: '/indicadores', label: /BI Curva S/i, target: /\/bi\/curva-s/ },

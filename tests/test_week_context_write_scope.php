@@ -46,7 +46,8 @@ $paginas = [
     'src/Controllers/Programacion/ProgramacionSemanalController.php',
     'src/Controllers/Programacion/ProgramacionIntermediaController.php',
     'src/Controllers/Gestion/IndicadoresController.php',
-    'src/Controllers/Gestion/PdcController.php',
+    // PdcController salió el 2026-08-04 con el PDC v1. `/plan-compras` no entra en esta lista:
+    // la isla React resuelve su semana por API, no por `syncRequestedWeekContext()`.
 ];
 foreach ($paginas as $ruta) {
     $fuente = (string) file_get_contents($raiz . '/' . $ruta);
@@ -82,7 +83,7 @@ comprobar(
 // 5. ModuleRequestContext sí puede escribir la semana, pero solo como arranque de contexto: la
 //    asignación debe seguir envuelta en una condición que exija sesión sin semana ($sessionWeek ===
 //    null). No exigimos "sin asignación" porque esa escritura es legítima (la usan GeneralApiController,
-//    PdcApiController, SemiAutoController, PdcAutoGenerateController y PgBreadcrumbController para
+//    y PgBreadcrumbController para
 //    arrancar el contexto); lo que hay que fijar es que el candado que evita pisar la sesión siga ahí.
 $mrc = (string) file_get_contents($raiz . '/src/Support/ModuleRequestContext.php');
 comprobar(

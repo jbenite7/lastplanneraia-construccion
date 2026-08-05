@@ -10,7 +10,6 @@
     "foundation-shell.json",
     "indicadores.json",
     "laboratory.json",
-    "pdc.json",
     "plan-compras-v2.json",
     "profesionales.json",
     "programa-general-actualizar.json",
@@ -53,21 +52,6 @@
       "manifest": "programacion-semanal.json"
     },
     {
-      "moduleId": "listado-actividades",
-      "status": "deprecated",
-      "manifest": null
-    },
-    {
-      "moduleId": "contratos",
-      "status": "deprecated",
-      "manifest": null
-    },
-    {
-      "moduleId": "pdc",
-      "status": "inventory-only",
-      "manifest": null
-    },
-    {
       "moduleId": "plan-compras-v2",
       "status": "pilot",
       "manifest": "plan-compras-v2.json",
@@ -83,12 +67,6 @@
       "status": "inventory-only",
       "manifest": null,
       "note": "F4 del goal dark-mode-todos-los-modulos (2026-07-29). Deja de ser 'observed-frozen' porque ese estado significa, por definicion del README, 'sin presupuesto de rutas — el contador solo puede bajar', y admin ya declara el presupuesto 'admin' en exceptions.json con cero en las seis reglas. Sigue SIN manifiesto y SIN cobertura golden, y eso es deliberado y vinculante: por decision explicita del usuario AdminLTE permanece como framework de admin/, no se reescriben las 14 vistas sobre el shell canonico ni se migran a primitivas aia-*. admin/ queda en dark y tokenizado pero NO migrado al design system; es la unica desviacion asumida del criterio del resto del goal y no debe leerse como un olvido."
-    },
-    {
-      "moduleId": "pdc",
-      "status": "pilot",
-      "manifest": "pdc.json",
-      "note": "Septima y ultima superficie de F2 del goal dark-mode-todos-los-modulos (2026-07-29). Con ella el agregador deja de tener consumidores en /pdc: public/css/pdc.css entra en @layer module (eran 124 reglas sin capa) y el head pasa a renderForModule. NO declara consumerContract v1, igual que las otras seis: la vista conserva por decision explicita sus 9 librerias por CDN mas Google Fonts, y v1 prohibe URL externas."
     },
     {
       "moduleId": "profesionales",

@@ -128,7 +128,6 @@ if ($rollback) {
     foreach ([
         'programa', 'programa_consolidado', 'programacion_semanal', 'lps_drawer_comentarios',
         'lps_escalamientos', 'pg_tracking', 'pi_shared_constraint_links', 'auto_program_log',
-        'pdc', 'papelera_pdc',
     ] as $table) {
         execSql($pdo, "DROP TRIGGER IF EXISTS `trg_{$table}_unique_id_INSERT`", $apply);
         execSql($pdo, "DROP TRIGGER IF EXISTS `trg_{$table}_unique_id_UPDATE`", $apply);
@@ -145,8 +144,6 @@ if ($rollback) {
         ['pg_tracking', 'idx_pgt_project_unique_week'],
         ['pi_shared_constraint_links', 'idx_pscl_project_unique_week'],
         ['auto_program_log', 'idx_apl_project_unique_week'],
-        ['pdc', 'idx_pdc_project_row_id'],
-        ['papelera_pdc', 'idx_papelera_project_row_id'],
     ] as [$table, $index]) {
         dropIndex($pdo, $table, $index, $apply);
     }
@@ -162,8 +159,6 @@ if ($rollback) {
         ['pg_tracking', 'unique_id'],
         ['pi_shared_constraint_links', 'unique_id'],
         ['auto_program_log', 'unique_id'],
-        ['pdc', 'pdc_row_id'],
-        ['papelera_pdc', 'pdc_row_id'],
     ] as [$table, $column]) {
         dropColumn($pdo, $table, $column, $apply);
     }
@@ -185,8 +180,6 @@ addColumn($pdo, 'lps_escalamientos', 'unique_id', '`unique_id` int DEFAULT NULL 
 addColumn($pdo, 'pg_tracking', 'unique_id', '`unique_id` int DEFAULT NULL AFTER `project_id`', $apply);
 addColumn($pdo, 'pi_shared_constraint_links', 'unique_id', '`unique_id` int DEFAULT NULL AFTER `Semana`', $apply);
 addColumn($pdo, 'auto_program_log', 'unique_id', '`unique_id` int DEFAULT NULL AFTER `consecutivo`', $apply);
-addColumn($pdo, 'pdc', 'pdc_row_id', '`pdc_row_id` int DEFAULT NULL AFTER `project_id`', $apply);
-addColumn($pdo, 'papelera_pdc', 'pdc_row_id', '`pdc_row_id` int DEFAULT NULL AFTER `project_id`', $apply);
 
 foreach ([
     'UPDATE `programa` SET `unique_id` = `Consecutivo` WHERE `unique_id` IS NULL OR `unique_id` <> `Consecutivo`',
@@ -199,8 +192,6 @@ foreach ([
     'UPDATE `pg_tracking` SET `unique_id` = `consecutivo_en_programa` WHERE `unique_id` IS NULL OR `unique_id` <> `consecutivo_en_programa`',
     'UPDATE `pi_shared_constraint_links` SET `unique_id` = `ConsecutivoEnPrograma` WHERE `unique_id` IS NULL OR `unique_id` <> `ConsecutivoEnPrograma`',
     'UPDATE `auto_program_log` l SET `unique_id` = CASE WHEN l.`consecutivo` > 0 AND EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`consecutivo`) THEN l.`consecutivo` ELSE NULL END WHERE (l.`unique_id` IS NOT NULL AND NOT EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`unique_id`)) OR (l.`consecutivo` > 0 AND EXISTS (SELECT 1 FROM `programa` p WHERE p.`project_id` <=> l.`project_id` AND p.`unique_id` = l.`consecutivo`) AND (l.`unique_id` IS NULL OR l.`unique_id` <> l.`consecutivo`)) OR (l.`consecutivo` <= 0 AND l.`unique_id` IS NOT NULL)',
-    'UPDATE `pdc` SET `pdc_row_id` = `consecutivo` WHERE `pdc_row_id` IS NULL OR `pdc_row_id` <> `consecutivo`',
-    'UPDATE `papelera_pdc` SET `pdc_row_id` = `consecutivo` WHERE `pdc_row_id` IS NULL OR `pdc_row_id` <> `consecutivo`',
 ] as $sql) {
     execSql($pdo, $sql, $apply);
 }
@@ -217,8 +208,6 @@ addIndex($pdo, 'lps_escalamientos', 'idx_le_project_unique_week', 'KEY `idx_le_p
 addIndex($pdo, 'pg_tracking', 'idx_pgt_project_unique_week', 'KEY `idx_pgt_project_unique_week` (`project_id`, `unique_id`, `semana`)', $apply);
 addIndex($pdo, 'pi_shared_constraint_links', 'idx_pscl_project_unique_week', 'KEY `idx_pscl_project_unique_week` (`project_id`, `unique_id`, `Semana`)', $apply);
 addIndex($pdo, 'auto_program_log', 'idx_apl_project_unique_week', 'KEY `idx_apl_project_unique_week` (`project_id`, `unique_id`, `semana`)', $apply);
-addIndex($pdo, 'pdc', 'idx_pdc_project_row_id', 'KEY `idx_pdc_project_row_id` (`project_id`, `pdc_row_id`)', $apply);
-addIndex($pdo, 'papelera_pdc', 'idx_papelera_project_row_id', 'KEY `idx_papelera_project_row_id` (`project_id`, `pdc_row_id`)', $apply);
 
 addForeignKey($pdo, 'programa_consolidado', 'fk_pc__programa__unique_id', 'FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE', $apply);
 addForeignKey($pdo, 'programacion_semanal', 'fk_ps__programa__unique_id', 'FOREIGN KEY (`project_id`, `unique_id`) REFERENCES `programa` (`project_id`, `unique_id`) ON DELETE CASCADE', $apply);
@@ -244,9 +233,5 @@ syncTrigger($pdo, 'pi_shared_constraint_links', 'pscl', 'INSERT', [['unique_id',
 syncTrigger($pdo, 'pi_shared_constraint_links', 'pscl', 'UPDATE', [['unique_id', 'ConsecutivoEnPrograma']], $apply);
 syncAutoProgramLogTrigger($pdo, 'INSERT', $apply);
 syncAutoProgramLogTrigger($pdo, 'UPDATE', $apply);
-syncTrigger($pdo, 'pdc', 'pdc', 'INSERT', [['pdc_row_id', 'consecutivo']], $apply);
-syncTrigger($pdo, 'pdc', 'pdc', 'UPDATE', [['pdc_row_id', 'consecutivo']], $apply);
-syncTrigger($pdo, 'papelera_pdc', 'papelera', 'INSERT', [['pdc_row_id', 'consecutivo']], $apply);
-syncTrigger($pdo, 'papelera_pdc', 'papelera', 'UPDATE', [['pdc_row_id', 'consecutivo']], $apply);
 
 echo ($apply ? 'Migración unique_id aplicada.' : 'Dry-run unique_id completado. Use --apply para ejecutar.') . PHP_EOL;

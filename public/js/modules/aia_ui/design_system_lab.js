@@ -185,17 +185,9 @@
         if (!open) drawerToggle.focus();
       }
 
-      if (actionName === "analyze-review") setOperationalState(fixture, "analyzing");
-      if (actionName === "apply-review") {
-        const selected = fixture.querySelectorAll(".ds-proposal-list input:checked").length;
-        const undoReview = fixture.querySelector('[data-fixture-action="undo-review"]');
-        if (undoReview) undoReview.disabled = selected === 0;
-        setOperationalState(fixture, selected > 0 ? "partial" : "reviewing");
-      }
-      if (actionName === "undo-review") {
-        action.disabled = true;
-        setOperationalState(fixture, "undone");
-      }
+      // Las acciones analyze/apply/undo-review se retiraron el 2026-08-04 con el contrato
+      // operativo `semi-auto-review`, el unico de la familia `actions`: era el asistente
+      // semiautomatico del PDC v1 y su JS de aplicacion ya no existe.
       if (actionName === "confirm-admin") setOperationalState(fixture, "confirming");
 
       if (actionName === "load-more-bi") {

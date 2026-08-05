@@ -86,19 +86,21 @@ test.describe('Pre-Construction: Navbar Visibility', () => {
   });
 
   test('construction-only nav items are hidden', async ({ page }) => {
-    // Listado, Contratos, PDC are hidden for Pre-Construccion via _hideNavItem()
-    // Their parent <li> gets display:none
-    const listado = page.locator('#info_listadoActividades');
-    const contratos = page.locator('#info_contratos');
-    const pdc = page.locator('#planCompras');
+    // Hasta el 2026-08-04 esta prueba miraba #info_listadoActividades, #info_contratos y
+    // #planCompras, los ids del nav legado que producia info_general_nav.js. Ese nav y el PDC v1
+    // se borraron, asi que la comprobacion quedo vacia: con 0 elementos el bucle no corria nunca y
+    // la prueba pasaba sin verificar nada. La regla equivalente vive ahora en
+    // views/partials/shell_sidebar.php, que en Pre-Construccion saca 'plan-compras' del rail.
+    // El id del destino viaja en `data-destination-id`; `data-shell-destination` es un marcador
+    // sin valor (solo el laboratorio le pone contenido). Verificado en /programa-general con el
+    // proyecto Pre-Construccion real antes de fijarlo aqui.
+    const shell = page.locator('[data-aia-component="navigation"]').first();
+    await expect(shell).toBeVisible();
 
-    // These elements may or may not exist in DOM; if they exist, they should be hidden
-    for (const el of [listado, contratos, pdc]) {
-      const count = await el.count();
-      if (count > 0) {
-        await expect(el.locator('..')).toHaveCSS('display', 'none');
-      }
-    }
+    await expect(shell.locator('[data-destination-id="plan-compras"]')).toHaveCount(0);
+    await expect(shell.locator('[data-sidebar-group="compras"]')).toHaveCount(0);
+    // Los modulos de obra si permanecen: es lo que distingue ocultar de estar roto.
+    await expect(shell.locator('[data-destination-id="programa-general"]')).toHaveCount(1);
   });
 
   test('navbar brand contains project selector link', async ({ page }) => {

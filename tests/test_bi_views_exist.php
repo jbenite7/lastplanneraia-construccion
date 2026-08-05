@@ -13,7 +13,6 @@ $views = [
     'bi_pg_semana',
     'bi_pi_restricciones',
     'bi_ps_compromisos',
-    'bi_pdc_general',
     'bi_cic_contratistas',
     'bi_cip_responsables',
     'bi_curva_s_duracion',

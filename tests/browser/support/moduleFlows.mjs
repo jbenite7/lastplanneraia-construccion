@@ -247,69 +247,8 @@ export const moduleFlows = {
     async cleanup() {},
   },
 
-  listadoActividades: {
-    async smoke(page, project) {
-      await expectUsablePage(page, '/listado-actividades', [
-        '#hot-container .ht_master.handsontable',
-      ]);
-      const runtime = await page.evaluate(() => ({
-        sourceRows: window.ListadoActividadesHotModule?.getHotInstance?.()?.countSourceRows(),
-        masters: document.querySelectorAll('#hot-container .ht_master.handsontable').length,
-        legacy: document.querySelectorAll('.dataTables_wrapper, table.dataTable').length,
-      }));
-      expect(runtime.masters).toBe(1);
-      expect(runtime.legacy).toBe(0);
-      expect(runtime.sourceRows).toBeGreaterThanOrEqual(0);
-      const response = await postFormJson(page, '/api/listado-actividades/list', {});
-      assertJsonOk(response, 'Listado actividades list');
-    },
-    async edit(page) {
-      const preview = await postFormJson(page, '/api/listado-actividades/auto/preview', {});
-      assertJsonOk(preview, 'Listado actividades semi-auto preview');
-      expect(preview.payload.run_id, JSON.stringify(preview.payload)).toBeTruthy();
-      expect(preview.payload.analysis?.steps?.length, JSON.stringify(preview.payload)).toBeGreaterThan(0);
-    },
-    async validateTypeSpecificBehavior(page, project) {
-      if (!project.constructionOnly) throw new Error('ListadoActividades must not run for PC projects');
-    },
-    async cleanup() {},
-  },
-
-  contratos: {
-    async smoke(page, project) {
-      await expectUsablePage(page, '/contratos', ['#dt_cliente', 'body']);
-      const response = await postFormJson(page, '/api/contratos/list', { semana: project.maxWeek });
-      assertJsonOk(response, 'Contratos list');
-    },
-    async edit(page) {
-      const preview = await postFormJson(page, '/api/contratos/auto/preview', {});
-      assertJsonOk(preview, 'Contratos semi-auto preview');
-      expect(preview.payload.run_id, JSON.stringify(preview.payload)).toBeTruthy();
-      expect(preview.payload.analysis?.steps?.length, JSON.stringify(preview.payload)).toBeGreaterThan(0);
-    },
-    async validateTypeSpecificBehavior(page, project) {
-      if (!project.constructionOnly) throw new Error('Contratos must not run for PC projects');
-    },
-    async cleanup() {},
-  },
-
-  pdc: {
-    async smoke(page, project) {
-      await expectUsablePage(page, '/pdc', ['#dt_cliente', 'body']);
-      const response = await postFormJson(page, '/api/pdc/list', { semana: project.maxWeek });
-      assertJsonOk(response, 'PDC list');
-    },
-    async edit(page, project) {
-      const preview = await postFormJson(page, `/api/pdc/auto/preview?db=${project.dbPrefix}&semana=${project.maxWeek}`, {});
-      assertJsonOk(preview, 'PDC semi-auto preview');
-      expect(preview.payload.run_id, JSON.stringify(preview.payload)).toBeTruthy();
-      expect(preview.payload.analysis?.steps?.length, JSON.stringify(preview.payload)).toBeGreaterThan(0);
-    },
-    async validateTypeSpecificBehavior(page, project) {
-      if (!project.constructionOnly) throw new Error('PDC must not run for PC projects');
-    },
-    async cleanup() {},
-  },
+  // listadoActividades, contratos y pdc (PDC v1) se eliminaron el 2026-08-04 junto con sus
+  // rutas y APIs. El sucesor, Plan de Compras v2, tiene su propia suite en pdc-v2-*.spec.mjs.
 
   cnp: {
     async smoke(page, project) {
