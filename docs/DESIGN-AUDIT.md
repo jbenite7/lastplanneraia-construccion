@@ -51,6 +51,12 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **N-5** · El acuse de guardado se **anuncia en 1 de 4** rejillas: `#save-status` lleva `role="status"` solo en Programación Intermedia | Golfo de evaluación; accesibilidad — anuncio de estado | 2 | Mismo id, mismo componente, mismo papel, cuatro vistas: `programacion_intermedia.view.php:56` lo declara con `role="status"`; `programa_general.view.php:70`, `programacion_semanal.view.php:100` y `programaGeneralActualizar.view.php:106` **no**. Para quien usa lector de pantalla, guardar en tres de las cuatro pantallas de la cascada no produce ningún anuncio. Arreglo de una palabra por vista, pero toca contrato de accesibilidad y conviene verificarlo | backlog ICE |
 | **N-6** · El resumen de cierre de semana **corta las listas a 8 sin decirlo**, mientras el contador de arriba muestra el total | Golfo de evaluación; visibilidad del estado del sistema (N1) | 2 | `buildCloseSummary()` acota las cuatro listas con `items.length < 8` (`programacion_semanal/hot.js:3436` y hermanos) y `renderSummaryList()` no añade ningún «y N más». Con 30 actividades bloqueadas el KPI dice **30** y el detalle enseña **8**: el usuario cree que arreglando esas ocho termina. Es el momento de mayor consecuencia del flujo semanal y el que peor informa | backlog ICE |
 | **N-7** · El gate de cierre está implementado **dos veces** y pueden discrepar; cuando discrepan, el error no señala ninguna fila | Golfo de ejecución y de evaluación; ayuda a reconocer errores (N9) | 2 | El cliente deshabilita «Confirmar» con `hasBlocking` (`hot.js:3522`); el servidor puede aun así responder `No_Bloqueado`, y la UI lo traduce en «Se detectaron actividades sin compromiso o sin asignaciones obligatorias» (`hot.js:4056-4058`), un texto que **no dice cuáles**. El usuario atraviesa el modal entero creyendo que estaba listo y sale sin saber dónde mirar. La salida barata no es unificar los dos gates, sino que la respuesta del servidor devuelva los ids y la UI los filtre en la rejilla | backlog ICE |
+| **M-1** · Con un filtro activo, los chips atenuados de Programación Semanal pierden **todo** acuse de recibo: ni al señalarlos ni al pulsarlos cambia un solo píxel | Feedback ≤0,1 s en el elemento tocado; visibilidad del estado del sistema (N1) | 2 | `.pdc-legend-item.inactive-filter` fija `transform: scale(.95)` (`styles.css:781`) y, con la misma especificidad que `:hover`/`:active` (`:772`/`:778`) pero declarada después, les ganaba por orden. Medido a 1180×820 dark antes del arreglo: reposo, hover y `:active` devolvían los tres `matrix(0.95,…)`, el mismo `box-shadow` y el mismo `filter`. Y los atenuados son justo la **única vía para añadir o cambiar de filtro**. Arreglado con dos reglas CSS que recomponen el gesto sobre la escala atenuada (`translateY(-2px) scale(.95)` al hover, `scale(.93)` al pulsar) sin tocar `opacity` ni `grayscale`: siguen leyéndose como apagados. Medido después: hover `matrix(0.95,…,-2)`, active `matrix(0.93,…)`. **Nota:** el `box-shadow` del `:hover` original **está muerto en PS** desde antes — `programacion-semanal.css:2566` fija `--ds-shadow-xs` con `!important` sobre `#psAlertsLegend .pdc-legend-item` y gana siempre; por eso el arreglo no lo replica | done (Task 29) |
+| **M-2** · Los contadores de los chips se recalculan **sobre el conjunto ya filtrado**, así que al filtrar dejan de ser el mapa de la semana sin decirlo | Golfo de evaluación; visibilidad del estado del sistema (N1) | 2 | `applyFiltersAndRender()` llama `updateLegendCounts(filtered)` (`programacion_semanal/hot.js:2971-2974`), no sobre `masterData`. Medido en vivo (proyecto 68, semana 6): antes de filtrar, `Por Comprometer (56)` y `Lista para Confirmar (1)`; tras activar «Por Comprometer», «Lista para Confirmar» cae a **(0)**. Si el filtro elegido no devuelve filas, **los cinco chips leen (0)** y la única salida es volver a pulsar el mismo chip. El contador debería contar la semana y el filtro marcarse en el chip; hoy hacen lo contrario. **Cambio de comportamiento: se registra, no se aplica** | backlog ICE |
+| **M-3** · Filtrar no anuncia nada, y los chips de Programación Semanal son los **únicos de los tres módulos sin `aria-pressed`** | Accesibilidad — estado del control (WCAG 4.1.2) y cambio de estado (4.1.3) | 3 | `renderAlertLegend()` (`hot.js:2984`) escribe `role='button' tabindex='0'` y **ningún `aria-pressed`** — medido en vivo: `getAttribute('aria-pressed')` → `null` en los 5 chips. Los hermanos sí lo tienen: PI lo trae en el markup (`programacion_intermedia.view.php:68-76`) y PG lo escribe desde JS (`programa_general/hot.js:3273`). Encima, el comentario de `buttons.css:977` afirma que estos chips «conservan foco visible y aria-pressed»: el contrato escrito no se cumple. Y `toggleWeeklyAlertFilter()` no toca ninguna región viva, así que el cambio de 57 a 0 filas no se anuncia. Es el mismo defecto que C-43 marcó en el PDC, en el módulo que se citaba como patrón correcto. **Toca JS: se registra, no se aplica** | backlog ICE |
+| **M-4** · Importar el cronograma —la operación más larga de la app— no da **ningún** acuse de recibo, y el patrón correcto está en el mismo repositorio | Feedback ≤0,1 s; prevención de errores (N5) | 3 | El submit de `#formCargarExcel` (`programaGeneralActualizar.view.php:447-465`) sube el XLSX y espera al parseo del servidor **sin deshabilitar el botón, sin spinner y sin bloquear el reenvío**: entre pulsar «Guardar» y el badge de éxito no cambia nada en pantalla, y pulsar dos veces lanza dos importaciones. El repo ya tiene la receta a mano: «Crear Semana LPS» hace `prop('disabled', true)` + `$('#modal_spinner').modal('show')` (`funcionesGenerales6.js:59-60`), y ese `#modal_spinner` es un diálogo con `aria-live="polite"` y «Procesando…» que ya está en la página. Es paridad, no invención. **Toca JS: se registra, no se aplica** | backlog ICE |
+| **M-5** · El estado vacío que aparece al filtrar a cero dice que **la semana está vacía**, y ofrece las dos acciones que no son | Golfo de evaluación; ayuda a reconocer errores (N9) | 3 | Medido: con 57 actividades en la semana, filtrar por un chip en cero deja la rejilla en 0 filas y `attachHtEmptyState` (`hot.js:2854-2858`) pinta «Sin actividades programadas esta semana · Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades»…». El estado vacío del **conjunto filtrado** se está contando como el estado vacío de la **semana**, y las dos salidas que sugiere añaden actividades en vez de la única que recupera el dato: quitar el filtro. El componente ya acepta título y cuerpo por parámetro, así que el remedio es pasarle otro texto cuando `weeklyAlertFilters.length > 0`. **Toca JS: se registra, no se aplica** | backlog ICE |
+| **M-6** · Momento firma (**confirmar compromisos**, elegido por el usuario): el modal que cierra la semana llega con su acción principal apagada y sin decir en el propio botón por qué | Jerarquía del momento; ayuda a reconocer errores (N9) | 2 | Medido en vivo: el modal abre con `#btn_confirmar_compromisos_semana` `disabled` y clase `disabled`, **sin `title`, sin `aria-describedby` y sin `aria-busy`**; el motivo (`56 · Por completar`) vive en un KPI a media pantalla de distancia. Y el acuse del acto más consecuente del ciclo semanal es un segundo modal de texto plano («Se han bloqueado los compromisos…»). **Propuesta de pulido, registrada y no aplicada:** (a) atar el botón a su causa con `aria-describedby` al KPI bloqueante y un texto propio del tipo «Faltan 56 por completar»; (b) darle al acto un cierre memorable —transición de sello sobre la barra de fase, que ya cambia de `Programación` a `Calificación`— en vez de un modal de texto. (a) es contrato de accesibilidad y (b) es animación nueva: ninguno es solo CSS de feedback, así que van al backlog | backlog ICE · decide: usuario |
 | **C-15** · `buttons.css` (1.215 líneas) se auto-encapsula en `@layer components` **y** se importa con `layer(components)`, creando `components.components` | Consistencia y estándares (N4) — arquitectura de capas | 2 | **Auditoría emitida (Task 27), nada aplicado.** 8 casos: **4 de capa duplicada exacta** y 4 de anidamiento con capa distinta. Hallazgo que el registro no tenía: `buttons.css` y `access.css` **entran cada uno por dos puertas** (`aia-design-system.css` y `entrypoints/core.css`), así que un arreglo que toque una sola deja la otra. **Recomendación: diferir a ticket propio y no tocarlo dentro de una campaña visual** — hoy el accidente juega a favor y quitarlo cambia el orden de cascada en toda la app. Detalle en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-16** · La caja interna del `.colHeader` renderiza 33 px donde el `th` mide 56: 23 px por columna desperdiciados; la flecha del selector tapa el último dígito de las fechas | Deferencia al contenido; eficiencia de uso (N7) | 3 | Token nuevo `--ds-table-header-pad-x` (3px) recupera 14-22 px por columna corrigiendo la aritmética del `container-type`. Las cabeceras se leen enteras **sin quitarle ancho a ningún dato**. 20 cabeceras truncadas → 0 | done (commits d877a76c, 5555127a, 12c457f3) |
 | **C-17** · Cinco acciones de Programación Semanal se fueron a un menú «Más», entre ellas «Recargar» | Reconocimiento antes que recuerdo (N6); flexibilidad y eficiencia (N7) | 2 | Por decisión del usuario, «Recargar» y «BI Semanal» vuelven a la barra. Barra final: Autoprogramar · Agregar Actividad · Confirmar Compromisos · Reabrir Semana · Registrar TNP · Recargar · BI Semanal · «Más» (Leyenda, Imprimir, Exportar CSV). `scrollWidth == clientWidth`, sin desbordar | done (commit 9f4e9926) |
@@ -227,18 +233,61 @@ agrupación por *debounce*, guardia de salida con cambios sin guardar (`hot_actu
 tiene consecuencia práctica: **el patrón correcto ya está escrito en este repositorio** y N-4 es
 darle paridad, no inventar nada.
 
+## Microinteraction Inventory (Task 29 — fase 5 de `improve-app`, IA-4)
+
+Las cuatro acciones diarias que el usuario señaló, desmontadas en **Trigger · Rules · Feedback ·
+Loops**, con las dos preguntas del marco: *¿hay feedback por debajo de 0,1 s en el elemento que se
+toca?* y *¿están mapeados los estados vacío, cargando, parcial y error?*
+
+**Todo lo de abajo se midió en navegador**, no leyendo: montaje efímero de esta rama a 1180×820 en
+dark (ver el informe del task), proyecto 68 «Optimización Aeropuerto JMC» semana 6 (57 actividades,
+**solo lectura**) para lo que no escribe, y proyecto **27 «Prueba»** semana 6 para la única
+interacción de escritura, con el dato restaurado al terminar. Esto es lo que la fase 3 no pudo hacer
+y dejó anotado como límite.
+
+| Interacción | Trigger | Rules | Feedback | Loops |
+|---|---|---|---|---|
+| **Confirmar compromisos** (PS) — *momento firma* | Botón «Confirmar Compromisos» → modal de resumen → botón primario del modal | Cliente: se apaga el primario si `blockingCount > 0` (`hot.js:3522`). Servidor: revalida y puede responder `No_Bloqueado` (N-7) | Al pulsar: `disabled` + etiqueta «Confirmando…» (**inmediato, síncrono**). Al terminar: se cierra un modal y se abre otro con el desenlace en texto | Éxito → `Semanal_Confirmada=1`, `syncPhaseUI()` cambia la fase a Calificación y recarga. Deshacer: **solo rol `A`** (N-2) |
+| **Guardar celda** (Handsontable, PS) | `Enter`/blur del editor → `afterChange` → `saveRow()` | Validación local (`normalizeCellValue`, guardas de Sub-Contratista/Responsable, CNC obligatoria si el real baja del compromiso) antes de tocar la red | Eco del valor en la celda a **36,7 ms**; badge «Guardado» a **303 ms** (red medida: 33,6–66,0 ms). En error de validación: `revertCell` + `.ps-cell-shake` (**canal vivo**, `programacion-semanal.css:2489`, 180 ms ×2, con guard de `prefers-reduced-motion` en `:3384`) | Éxito recalcula PAC/%Completado en local y repinta estado operativo. Deshacer: rehaciendo la celda; no hay «revertir» explícito |
+| **Filtrar** (chips de alerta, PS) | Clic o `Enter`/`Espacio` sobre `.pdc-legend-item`; `Ctrl`/`Cmd` acumula filtros | `toggleWeeklyAlertFilter()`: sin modificador, un chip solo o ninguno; con modificador, alterna en la lista | **22,7–38,0 ms** de clic a rejilla repintada (todo local, sin red). En el chip: atenuación de los no elegidos — y, hasta M-1, **cero acuse** en los atenuados | Volver: pulsar el mismo chip. Contadores: se recalculan sobre el filtrado (M-2). Vacío del filtro: se confunde con vacío de la semana (M-5) |
+| **Importar cronograma** (`/programa-general-actualizar`) | Submit de `#formCargarExcel` con el XLSX adjunto | `accept=".xlsx"`; si la semana es 0 pide además fecha de inicio. El grueso de la validación es del servidor | **Ninguno** entre el submit y la respuesta: ni `disabled`, ni spinner, ni barra de subida (M-4). Al terminar: badge de éxito, o `AIA.Notice.error` con el mensaje del servidor | Éxito → recarga y deja `autoAssociatePending` para el mapeo. Deshacer: «Eliminar Actualización», modal aparte |
+
+**¿Feedback por debajo de 0,1 s en el elemento tocado?** Dos sí y dos no. *Filtrar* (22,7–38,0 ms) y
+*confirmar* (cambio síncrono del botón) sí. *Guardar celda* tiene eco del valor a 36,7 ms, pero es el
+eco del editor, **no una señal de guardado**: el acuse real llega a 303 ms con una red de 34–66 ms,
+así que en obra escala con la latencia — es la medición que faltaba bajo N-4. *Importar* no tiene
+ninguno, y es la operación más larga de la app (M-4).
+
+**Mapa de estados.** El hueco no está repartido al azar: falta siempre el mismo lado.
+
+| Interacción | Vacío | Cargando | Parcial | Error |
+|---|---|---|---|---|
+| Confirmar compromisos | sin estado propio (una semana sin actividades no dice nada distinto) | **sí** — botón apagado con etiqueta | **sí, pero mudo**: `No_Bloqueado` no dice cuáles (N-7), y el detalle corta a 8 sin avisar (N-6) | **sí** — `showFeedback('error', …)` |
+| Guardar celda | n/a | **no** (N-4) | n/a | **sí** — reversión + `ps-cell-shake` + badge |
+| Filtrar | **sí, pero equivocado** (M-5) | n/a (local) | n/a | n/a |
+| Importar cronograma | n/a | **no** (M-4) | n/a | **sí** — mensaje del servidor |
+
+**Dos cosas que la fase 3 dejó abiertas y esta cierra con medida.**
+
+1. **El `⚠ Sin asignar` de C-14 sí cae dentro del viewport**, y esa explicación de «no lo vi» queda
+   descartada: la celda mide `x = 411 → 514 px` en un viewport de 1180, con `scrollWidth == clientWidth
+   == 1180` (cero desbordamiento horizontal) y `scrollX = 0`. Lo que queda en pie de C-14 es lo otro:
+   el peso visual del indicio y su canal de fondo muerto.
+2. **N-6 se confirma en vivo, no por lectura:** el modal de cierre mostró `56 · Por completar` en el
+   KPI y **exactamente 8** elementos en la lista de detalle, sin ningún «y 48 más».
+
 ## Recuento
 
 | Estado | Entradas |
 |---|---|
-| `done` | 19 |
+| `done` | 20 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | 12 |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 18 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 23 |
 | `cerrado sin código` | 4 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **61** |
+| **Total** | **67** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
@@ -254,3 +303,10 @@ porque el Task 22 era justo su task viva y la cerró midiendo en vez de aplicand
 `pendiente` 13 → **12**, `backlog ICE` 10 + 7 + 1 = **18**, y el resto de estados no se toca
 (`done` 19, `informe emitido` 3, `no ejecutable` 1, `cerrado sin código` 4, `no aplica` 4).
 Comprobación: 19 + 3 + 1 + 12 + 18 + 4 + 4 = **61**.
+
+**Aritmética del Task 29** (microinteracciones, IA-4), que lleva el total de 61 a **67**: se añaden
+las **6** entradas `M-1` … `M-6`. Solo `M-1` era arreglo de CSS puro y se aplicó (`done` 19 → **20**);
+las otras cinco tocan comportamiento o contrato de accesibilidad y van al backlog
+(`backlog ICE` 18 + 5 = **23**). El resto de estados no se mueve. Comprobación:
+20 + 3 + 1 + 12 + 23 + 4 + 4 = **67**. Los ids ya son cinco familias (`A-`, `B-`, `C-`, `N-`, `M-`),
+así que el recuento se cuenta sobre `^| \*\*[A-CNM]-`.

@@ -27,7 +27,7 @@
 | 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 3 | design-everyday-things | done — lente de Norman sobre PG→PI→PS; 7 hallazgos nuevos (`N-1`…`N-7`) con severidad y C-14 medido y absorbido. **Nada aplicado:** todo es cambio de comportamiento, se registra y se pregunta | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
-| 5 | microinteractions | pending — sobre las acciones diarias: confirmar compromisos, guardar celda, filtrar, importar | DESIGN.md, EXPERIMENTS.md | |
+| 5 | microinteractions | done — las 4 acciones diarias desmontadas en Trigger/Rules/Feedback/Loops **midiendo en navegador**; 6 hallazgos (`M-1`…`M-6`), momento firma = confirmar compromisos. Solo `M-1` era CSS puro y se aplicó; los otros 5 tocan comportamiento y van al backlog | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 6 | made-to-stick | pending — copy in-app; absorbe C-27 (tildes) y deja C-33 (frase de dominio) como pregunta al usuario | POSITIONING.md, EXPERIMENTS.md | |
 | 7 | influence-psychology | skipped: app interna de empresa, sin paywall ni superficies de upsell | — | 2026-08-04 |
 | 8 | high-perf-browser | deferred: hasta que una medición o queja señale lentitud percibida | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
@@ -51,6 +51,9 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-05 | Fase 3 | El artefacto de la fase 3 es `docs/DESIGN-AUDIT.md`, no el `DESIGN.md` de la raíz | Misma decisión que tomó la tarea de encaje: `DESIGN.md` es contrato de consumo, no registro de auditoría |
 | 2026-08-05 | Fase 3 | C-14 se cierra **midiendo el indicio**, no aplicando el remedio: el caso del usuario fue «había indicio y no lo vi», y la marca resultó más apagada que el dato normal (1,35:1 entre ambos) con su canal de fondo muerto | Decisión del usuario sobre su propio caso; el remedio de peso visual queda como hallazgo con severidad, sin aplicar |
 | 2026-08-05 | Fase 3 | Los 7 hallazgos `N-*` se registran, **ninguno se aplica** | Seis de siete son cambio de comportamiento o de contrato de accesibilidad; la regla de la fase es registrar y preguntar |
+| 2026-08-05 | Fase 5 | El **momento firma es «confirmar compromisos»**, decidido por el usuario | Es el corazón del LPS y el acto de mayor consecuencia del ciclo semanal: sin él la app sería una hoja de cálculo compartida |
+| 2026-08-05 | Fase 5 | De los 6 hallazgos solo se aplica `M-1` (feedback de hover/pulsación en los chips atenuados); los otros 5 se registran | Regla de la fase: lo que es solo CSS/feedback visual se aplica con su verificación; lo que toca comportamiento o contrato de accesibilidad va al backlog con ICE |
+| 2026-08-05 | Fase 5 | El pulido del momento firma se **propone y no se aplica**, aun siendo el momento elegido | Sus dos mitades son contrato de accesibilidad (atar el botón a su causa) y animación nueva (sello de fase); ninguna cabe en «solo CSS de feedback» |
 | 2026-08-04 | Encaje | La biblia de flujos (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md`) comparte backlog con este tracker: la matriz esfuerzo/impacto **es** EXPERIMENTS.md | Un solo backlog; evita dos listas de pendientes divergentes |
 
 ## Next Actions
@@ -72,6 +75,16 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   seguir siendo exclusivo del Admin, o el Residente puede reabrir dentro de una ventana?) y N-1 (¿se
   bloquean las celdas de restricción sin Responsable, en vez de revertirlas después?). Ninguna se
   toca sin su respuesta.
-- [ ] **Límite que la fase 3 deja sin medir:** si el `⚠` de C-14 cae dentro del viewport de 1180 px
-  sin desplazamiento horizontal. Es la otra explicación posible de «no lo vi» y exige navegador.
-- [ ] Fases 5 y 6 tras la fase 3; fase 9 al cierre de la campaña
+- [x] **Límite que la fase 3 dejó sin medir, cerrado en la fase 5:** el `⚠ Sin asignar` de C-14 **sí
+  cae dentro del viewport** — celda en `x = 411 → 514 px` sobre 1180, `scrollWidth == clientWidth ==
+  1180` y `scrollX = 0`. Queda descartado el desplazamiento horizontal como explicación de «no lo
+  vi»; lo que sigue en pie de C-14 es el peso visual del indicio y su canal de fondo muerto.
+- [x] Fase 5 (microinteractions) — cerrada el 2026-08-05 (Task 29 / IA-4) con las cuatro acciones
+  medidas en navegador: `## Microinteraction Inventory` en `docs/DESIGN-AUDIT.md`, seis hallazgos
+  `M-1`…`M-6` y cinco tarjetas ICE. El patrón del hueco es constante: **falta siempre el estado
+  «cargando»** (guardar celda e importar cronograma no lo tienen) mientras que error y validación
+  están bien cubiertos. De paso quedó confirmado en vivo N-6 (KPI 56 · lista de 8).
+- [ ] **Pregunta abierta al usuario, de la fase 5:** ¿el pulido del momento firma (M-6) se hace, y
+  con cuál de sus dos mitades — atar el botón apagado a su causa, el sello de fase al confirmar, o
+  ambas?
+- [ ] Fase 6 tras la fase 5; fase 9 al cierre de la campaña
