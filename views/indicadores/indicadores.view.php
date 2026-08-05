@@ -25,6 +25,8 @@
 		<input type="hidden" id="scriptBarraFiltros" name="scriptBarraFiltros" value="" aria-hidden="true">
 	</div>
 
+	<main>
+	<h1 class="aia-visually-hidden">Indicadores LPS</h1>
 	<div class="row direccionSeccion">
 		<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto" class="ind-section-title" id="textoDireccionSeccion">
 		</div>
@@ -36,6 +38,7 @@
   <!--Se crea la estructura de la tabla, y Se crea el mensaje emergente que dice si los comandos fueron ejecutados correctamente o no (se repite el mismo de la línea anterior) -->
 	<div class="tabla aia-grid-shell" id="contenedorInformePowerBI">
 	</div>
+	</main>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
 	</div>

@@ -28,7 +28,9 @@
 <body class="aia-shell aia-shell--sidebar">
 	<?php require PROJECT_ROOT . '/views/partials/shell_sidebar.php'; ?>
 
-	<div id="root"></div>
+	<?php /* El h1 lo declara cada pantalla de la SPA (`pdc-titulo-fila`); aqui solo se
+	         marca el landmark, sin mover el nodo que React monta. */ ?>
+	<main id="root"></main>
 	<script>
 		window.__PDC_BOOTSTRAP__ = <?php echo $bootstrapJson; ?>;
 		window.__AIA_SHELL_SIDEBAR__ = true;

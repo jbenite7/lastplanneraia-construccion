@@ -60,7 +60,8 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 
-    <div class="hot-full-bleed">
+    <main class="hot-full-bleed">
+    <h1 class="aia-visually-hidden">Programación Semanal</h1>
     <div class="row direccionSeccion ps-direction-row">
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
@@ -126,7 +127,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
     <div id="hot-container"></div>
     <div id="mobile-card-view"></div>
-    </div>
+    </main>
 
     <div class="row ventanasModalesSemana" id="ventanasModalesSemana" data-skip-legacy-legend="true"></div>
 

@@ -88,7 +88,8 @@
 		<input type="hidden" id="scriptBarraFiltros" name="scriptBarraFiltros" value="" aria-hidden="true">
 	</div>
 
-	<div class="hot-full-bleed">
+	<main class="hot-full-bleed">
+	<h1 class="aia-visually-hidden">Actualizar Programa General</h1>
 		<div class="row direccionSeccion">
 			<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
 		</div>
@@ -113,7 +114,7 @@
 
 		<!-- Data para Dropdowns (Hidden context) -->
 		<script id="historicoData" type="application/json"><?php echo $opcionesDropdownJSON; ?></script>
-	</div>
+	</main>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
 	</div>

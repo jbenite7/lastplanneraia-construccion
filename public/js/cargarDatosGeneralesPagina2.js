@@ -217,11 +217,12 @@ var cargarDatosGeneralesPagina = function (seccion) {
         }
       }
 
-      // Update Title - Note: Title might be elsewhere in Legacy pages, we keep this for compatibility if it targets an element
-      if (document.getElementById('tituloSuperior')) {
-        document.getElementById('tituloSuperior').innerHTML =
-          "<h1 class='titulo'>Last Planner AIA - " + datosGenerales.proyecto + '</h1>';
-      }
+      // C-30: aqui se escribia un `<h1>Last Planner AIA - <proyecto></h1>` dentro de
+      // `#tituloSuperior`, que es un <input type=hidden> creado por este mismo archivo
+      // (linea 58). Un input no puede tener hijos renderizados, asi que ese h1 no se
+      // veia nunca, pero si contaba: era el unico h1 del documento en todas las vistas
+      // con shell y ademas decia lo mismo en todas. Cada vista declara ahora su propio
+      // h1 descriptivo, asi que este quedaba como duplicado fantasma.
 
       // Update Links based on permissions/PDC
       // Update Links based on permissions/PDC

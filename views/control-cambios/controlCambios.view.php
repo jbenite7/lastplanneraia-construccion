@@ -25,6 +25,8 @@
 		<input type="hidden" id="codigo" name="codigo" value="" aria-hidden="true">
 	</div>
 
+	<main>
+	<h1 class="aia-visually-hidden">Control de Cambios</h1>
 	<div class="row direccionSeccion">
 		<div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion">
 		</div>
@@ -138,6 +140,7 @@
 			</table>
 		</div>
 	</div>
+	</main>
 
 	<div class="row ventanasModalesSemana" id="ventanasModalesSemana">
 	</div>

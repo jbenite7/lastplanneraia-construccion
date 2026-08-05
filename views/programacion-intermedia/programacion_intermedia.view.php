@@ -30,7 +30,8 @@
     </div>
 
 
-    <div class="hot-full-bleed">
+    <main class="hot-full-bleed">
+    <h1 class="aia-visually-hidden">Programación Intermedia</h1>
     <div class="header-actions action-bar">
         <div class="pi-actions-row">
             <div class="pi-toolbar-actions">
@@ -80,7 +81,7 @@
 
     <div id="hot-container"></div>
     <div id="mobile-card-view" style="display:none;"></div>
-    </div>
+    </main>
 
     <div class="modal fade aia-modal" id="modal_leyenda_colores" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="modal_leyenda_colores_Label" aria-modal="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">

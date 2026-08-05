@@ -17,7 +17,7 @@
 </head>
 <body class="esc-page">
 
-    <div class="lps-dashboard-container">
+    <main class="lps-dashboard-container">
         <div class="dashboard-header">
             <div class="dashboard-header__row">
                 <div>
@@ -105,7 +105,7 @@ foreach ($crisis as $c) {
                 </div>
             <?php endforeach; ?>
         </div>
-    </div>
+    </main>
 
     <!-- Incluir Drawer Lateral Unificado -->
     <?php include PROJECT_ROOT . '/views/partials/drawer_unificado.php'; ?>
