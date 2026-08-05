@@ -784,6 +784,29 @@ table.dataTable tbody tr:hover td {
   transform: scale(0.95);
 }
 
+/* IA-4 (Task 29) — M-1. `.inactive-filter` fija `transform: scale(.95)` y, con
+   la misma especificidad que `:hover`/`:active` de arriba pero declarada
+   despues, les ganaba por orden: en cuanto habia un filtro activo, los chips
+   atenuados -que son la unica via para anadir o cambiar de filtro- perdian
+   todo acuse de recibo. Medido en 1180x820 dark: reposo, hover y active
+   devolvian `matrix(0.95,...)`, el mismo `box-shadow` y el mismo `filter`.
+   Se les devuelve el gesto de los activos compuesto sobre su escala atenuada;
+   no se tocan `opacity` ni `grayscale`, asi que siguen leyendose como
+   apagados. La transicion de `transform`/`box-shadow` ya esta declarada en
+   public/css/buttons.css:990 y `prefers-reduced-motion` la reduce en el guard
+   de modulo (programacion-semanal.css:3384, programacion-intermedia.css:1620).
+   No se replica aqui el `box-shadow` del `:hover` de arriba: en Programacion
+   Semanal esa declaracion esta muerta desde antes -
+   `programacion-semanal.css:2566` fija `box-shadow: var(--ds-shadow-xs)` con
+   `!important` sobre `#psAlertsLegend .pdc-legend-item`, y gana siempre-, asi
+   que el canal vivo es el desplazamiento, y es el que se devuelve. */
+.pdc-legend-item.inactive-filter:hover {
+  transform: translateY(-2px) scale(0.95);
+}
+.pdc-legend-item.inactive-filter:active {
+  transform: scale(0.93);
+}
+
 /* Chip Badge (Counter)
    Dentro de un chip gana public/css/buttons.css:993, que ya fija
    `--ds-active-surface-raised` con `!important`; este valor solo alcanza a un
