@@ -34,22 +34,22 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **C-2** · ~2.600 hallazgos estructurales: `!important`, `css-outside-layer`, `raw-token-in-module` | Consistencia y estándares (N4) | 3 | Requiere que el usuario apruebe el inventario inicial de excepciones justificadas. Es la campaña larga y el punto natural de corte | backlog ICE |
 | **C-3** · `pdc.css:318` — borde-acento del toast marcado por el detector | Un acento por vista | 1 | Sin objeto: `pdc.css` ya no existe | no aplica: módulo eliminado |
 | **C-4** · 23 hallazgos de `pdc.css` y 16 de PS fuera de la rampa tipográfica | Consistencia y estándares (N4) | 2 | Los 23 de `pdc.css` se fueron con el módulo; los de PS los absorbió el colapso de racimos de C-40. El remanente es deuda ancha, contabilizada en la baseline y cubierta por C-2 | cerrado sin código (resto en C-2) |
-| **C-5** · Sidecar `.impeccable/design.json` desactualizado frente a `DESIGN.md` | Consistencia y estándares (N4) | 1 | Regenerarlo es un comando | pendiente (Task 27) |
+| **C-5** · Sidecar `.impeccable/design.json` desactualizado frente a `DESIGN.md` | Consistencia y estándares (N4) | 1 | **No ejecutable como se planteó: «regenerarlo es un comando» era falso.** `/impeccable document` es un procedimiento de autoría que reescribe `DESIGN.md` *y* el sidecar; no hay script en `scripts/` ni entrada en `package.json`. Regenerar de verdad tocaría `DESIGN.md`, que es contrato gobernado y tiene su propio gate. El sidecar **no se tocó**. Deriva medida: `generatedAt` 2026-08-03 frente a commits posteriores de `DESIGN.md`, y **una sola frase** de `narrative.rules` que aún nombra «PDC, Contratos, Listado de Actividades», eliminados el 2026-08-04. `scope`, `densityException`, `stateChannels` y `colorMeta` siguen coherentes. **Recomendación:** corregir esa frase en el próximo paso que toque `DESIGN.md`; regeneración completa cuando se ejecute `/impeccable document` con su gate | no ejecutable (Task 27) · deriva acotada y documentada |
 | **C-6** · Contenido de «HOMECENTER CALI» en la fila 1 del sandbox `pdc_sandbox_e2e` no coincide con el seed | Integridad del fixture | 2 | Sin investigar: puede ser residuo de importación manual o un bug de importación real | backlog ICE |
 | **C-7** · Gatillo de filtro de DataTables sin verificación visual | Visibilidad del estado del sistema (N1) | 1 | **Cierra de otra forma:** el gatillo no existe en ningún producto — su único uso es un fixture del laboratorio, y las DataTables del producto llevan `sorting_disabled`. Medido en el lab: 4×4 px. No es deuda de producto | cerrado sin código |
-| **C-8** · `state-tint-exceptions.json` anclado por número de línea | Robustez del contrato de test | 2 | **Corrección (Task 27):** la fila anterior daba esto por cerrado, pero confundía los dos inventarios hermanos. Lo que la sesión paralela migró a v3.0.0 fue `state-token-exceptions.json`; **`state-tint-exceptions.json` seguía con `"line"` en sus 6 entradas**. Migrado ahora a ancla por firma (`file` + `selector` + `token` + `occurrence`), v2.0.0, reusando `scripts/design-system/state-token-locator.mjs` en vez de duplicar el troceo. El guard gana la prueba de fragilidad (insertar una línea antes de las entradas no mueve el ancla) y rechaza `line` como campo | done (Task 27) |
+| **C-8** · `state-tint-exceptions.json` anclado por número de línea | Robustez del contrato de test | 2 | **Corrección (Task 27):** la fila anterior daba esto por cerrado, pero confundía los dos inventarios hermanos. Lo que la sesión paralela migró a v3.0.0 fue `state-token-exceptions.json`; **`state-tint-exceptions.json` seguía con `"line"` en sus 6 entradas**. Migrado ahora a ancla por firma (`file` + `selector` + `token` + `occurrence`), v2.0.0, reusando `scripts/design-system/state-token-locator.mjs` en vez de duplicar el troceo. El guard gana la prueba de fragilidad (insertar una línea antes de las entradas no mueve el ancla) y rechaza `line` como campo | done (Task 27 · `aeb58277`) |
 | **C-9** · La densidad no gana filas: la fila mediana mide 111 px con un token de 24 (4,6×), gobernada por el texto envuelto de «Actividad» | Eficiencia de uso (N7) | 3 | Exige decidir qué hacer con esa columna (truncar con detalle al pasar el cursor, ancho fijo, o dos líneas máximo). Es decisión de producto: afecta a cuánto texto lees de un vistazo | backlog ICE · decide: usuario |
 | **C-10** · Los chips contadores del PDC no se pueden usar con teclado (WCAG 2.1.1, nivel A) | Accesibilidad — nivel A | 3 | Sin objeto: `/pdc` y sus chips ya no existen | no aplica: módulo eliminado |
-| **C-11** · Reglas `@media` pensadas para tablet alcanzan el viewport canónico de 1180 px | Consistencia y estándares (N4) | 2 | Auditar todos los media query que solapen 1180 px; solo informe, sin aplicar | pendiente (Task 27) |
+| **C-11** · Reglas `@media` pensadas para tablet alcanzan el viewport canónico de 1180 px | Consistencia y estándares (N4) | 2 | **Auditoría emitida (Task 27), nada aplicado.** 40 media queries con condición de ancho alcanzan 1180 px; **13 tienen techo**. **Recomendación: solo 1 de las 13 es acción clara ahora** (la de `768–1199.98` con `!important` que impone 44 px táctiles al escritorio); 10 son escaleras de escala que **hoy hacen trabajo** y 2 son una cura, no una herida. Detalle y razonamiento en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-12** · Programación Intermedia se queda sin acción primaria | Jerarquía visual; reconocimiento antes que recuerdo (N6) | 2 | No había candidata defendible sin inventar criterio de dominio. Requiere que el usuario diga cuál debe destacar | backlog ICE · decide: usuario |
 | **C-13** · Los chips de PI y PS envuelven a dos líneas por un ancho fijo de 155 px | Eficiencia de uso (N7) | 2 | Quitar el ancho fijo y dimensionar por contenido, como ya hace PG | backlog ICE |
 | **C-14** · El aviso de «qué retiene el estado» ya existe por tres vías y aun así el usuario no lo vio | Visibilidad del estado del sistema (N1) — descubribilidad | 2 | Ninguno de código: hay marca `⚠ Sin asignar` en celda, `title`/`aria-label` en el chip y panel al hacer clic. Falta saber si el caso del usuario lo retenía otra condición, o si el aviso está pero no invita a mirarlo | pendiente (Task 22) |
-| **C-15** · `buttons.css` (1.215 líneas) se auto-encapsula en `@layer components` **y** se importa con `layer(components)`, creando `components.components` | Consistencia y estándares (N4) — arquitectura de capas | 2 | Hoy juega a favor, pero es accidente y no diseño. Auditar todos los `@import … layer(x)` sobre archivos ya auto-encapsulados; `access.css` tiene el mismo patrón con `utilities` | pendiente (Task 27) |
+| **C-15** · `buttons.css` (1.215 líneas) se auto-encapsula en `@layer components` **y** se importa con `layer(components)`, creando `components.components` | Consistencia y estándares (N4) — arquitectura de capas | 2 | **Auditoría emitida (Task 27), nada aplicado.** 8 casos: **4 de capa duplicada exacta** y 4 de anidamiento con capa distinta. Hallazgo que el registro no tenía: `buttons.css` y `access.css` **entran cada uno por dos puertas** (`aia-design-system.css` y `entrypoints/core.css`), así que un arreglo que toque una sola deja la otra. **Recomendación: diferir a ticket propio y no tocarlo dentro de una campaña visual** — hoy el accidente juega a favor y quitarlo cambia el orden de cascada en toda la app. Detalle en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-16** · La caja interna del `.colHeader` renderiza 33 px donde el `th` mide 56: 23 px por columna desperdiciados; la flecha del selector tapa el último dígito de las fechas | Deferencia al contenido; eficiencia de uso (N7) | 3 | Token nuevo `--ds-table-header-pad-x` (3px) recupera 14-22 px por columna corrigiendo la aritmética del `container-type`. Las cabeceras se leen enteras **sin quitarle ancho a ningún dato**. 20 cabeceras truncadas → 0 | done (commits d877a76c, 5555127a, 12c457f3) |
 | **C-17** · Cinco acciones de Programación Semanal se fueron a un menú «Más», entre ellas «Recargar» | Reconocimiento antes que recuerdo (N6); flexibilidad y eficiencia (N7) | 2 | Por decisión del usuario, «Recargar» y «BI Semanal» vuelven a la barra. Barra final: Autoprogramar · Agregar Actividad · Confirmar Compromisos · Reabrir Semana · Registrar TNP · Recargar · BI Semanal · «Más» (Leyenda, Imprimir, Exportar CSV). `scrollWidth == clientWidth`, sin desbordar | done (commit 9f4e9926) |
-| **C-18** · `fitActionsRowSingleLine()` es código muerto con comentario falso (`hot.js:1203`) | Consistencia y estándares (N4) | 1 | Borrar la función y su comentario tras comprobar cero referencias | pendiente (Task 27) |
-| **C-19** · El tooltip de cabecera aparece también donde no hace falta: «Id» muestra un tooltip que dice «Id» | Estética y diseño minimalista (N8) | 1 | Condicionarlo a recorte real desde un hook `afterRender` — medir después del ancho definitivo, no dentro del renderer | pendiente (Task 27) |
-| **C-20** · Tokens de color sin variante oscura (`--ds-color-surface`, `--ds-color-brand-architecture`) | Consistencia y estándares (N4) | 3 | El síntoma quedó curado en el consumidor (`312ba9b`, contraste 13,4:1 / 15,13:1) **cambiando el par completo fondo+texto**. La raíz sigue: censo de tokens sin variante dark, solo informe | pendiente (Task 27) |
+| **C-18** · `fitActionsRowSingleLine()` es código muerto con comentario falso (`hot.js:1203`) | Consistencia y estándares (N4) | 1 | **Hecho (`aeb58277`). Dos correcciones al enunciado:** no estaba en `programa_general` sino en **`programacion_semanal/hot.js`**, y no era una función suelta sino una **cadena entera** — `scheduleActionsRowFit()` no hacía más que llamarla tras un `setTimeout` y tenía **10 sitios de llamada**. Borrado el conjunto (2 funciones + `toolbarFitTimer` + los 10 sitios): **118 líneas, 0 referencias residuales**; se comprobó que ningún callback quedara vacío. Un **segundo** comentario falso, en `programacion-semanal.css:262`, citaba ese mismo JS y se corrigió después (ver fila de seguimiento). Quedan huérfanas las reglas `.ps-actions-stacked` y la variable `--ps-hot-scale` desde JS: **anotado, fuera de alcance**, a revisar con C-11 | done (Task 27 · `aeb58277`) |
+| **C-19** · El tooltip de cabecera aparece también donde no hace falta: «Id» muestra un tooltip que dice «Id» | Estética y diseño minimalista (N8) | 1 | **Hecho (`aeb58277`).** La receta del ledger era correcta y es la que se siguió: el barrido se movió a `afterRender`, que es cuando el ancho de columna ya es el definitivo. `refreshHeaderTitles()` pone `title` solo si el nodo se recorta, comprobando **los dos cortes** que produce el CSS —`-webkit-line-clamp: 2` vía `scrollHeight` y palabra que no cabe vía `scrollWidth`—, con 1 px de margen para el redondeo subpíxel. Aplicado a los tres módulos del task 26: PG, PS y PI. Sondas con datos reales a 1180×820: **0 tooltips redundantes** (12/17/12 cabeceras, ninguna con `title`; «Id» limpio) y, forzando un recorte real, la cabecera recortada **sí** recibe el texto íntegro y sus vecinas no. Límite: con anchos reales ninguna cabecera se recorta hoy, así que el camino positivo se observó forzado, no en producción | done (Task 27 · `aeb58277`) |
+| **C-20** · Tokens de color sin variante oscura (`--ds-color-surface`, `--ds-color-brand-architecture`) | Consistencia y estándares (N4) | 3 | **Auditoría emitida (Task 27), nada aplicado.** El censo encontró que la raíz es **otra y mayor** que la enunciada: además de 13 tokens estáticos de verdad, hay **47 consumos directos de la mitad clara de un par** —el token existe en par, pero el consumidor usa el nombre pelado en vez de `--ds-active-*`—, y 42 se concentran en `--ds-color-brand-primary` (33) y `--ds-color-brand-construction` (9). Dos precisiones al enunciado: el token se llama `--ds-color-domain-architecture`, y **`--ds-color-surface` ya tiene 0 consumos directos** (la cura de `312ba9b` aguantó). **Recomendación: empezar por esos 42, yendo por consumidor y cambiando el par completo fondo+texto** —nunca «dándole variante oscura al token», que es justo el intento que bajó el contraste a 1,67:1 y hubo que revertir. Detalle en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-21** · La suite de navegador de PS estaba caída por entorno: 34 fallos de 35, desde antes de la campaña | Confianza en las redes de prueba | 4 | Dos clases de fixture rot eliminadas: membresía del proyecto 27 en el seed (12 casos) y carrera de semana en `selectProject` (9 casos). Línea base real medida 44/16; tras el arreglo 38/22. 11 casos exigen el stack de CI y 7 miden mobile/tablet que el repo borró a propósito — inalcanzables por diseño | done (commit 9e11f612) |
 | **C-22** · El bloque blanco de `/indicadores` es un `<iframe>` de `app.powerbi.com`, otro origen | Consistencia y estándares (N4) | 2 | No se puede tematizar desde nuestras hojas por ningún medio legítimo. Queda enmarcarlo para suavizar el salto; cambiar el tema del informe es trabajo del usuario en Power BI. Descartado `filter: invert()`: destroza los datos | pendiente (Task 21) |
 | **C-23** · Tres de las ocho pestañas de BI quedan fuera de vista (1626 px de pestañas en un carril de 1116) | Visibilidad del estado del sistema (N1) | 3 | No caben ni quitando iconos. Degradado de anuncio de corte en el borde derecho, como excepción de presupuesto documentada; el carril desplaza y la barra de scroll es visible | done (commit 539aaf68) |
@@ -66,7 +66,7 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **C-34** · Al pasar el ratón, el botón secundario adelanta a la acción principal: luminancia 0,443 frente a 0,245 del primario en reposo (+80%) | Jerarquía visual; un acento por vista | 3 | El hover del secundario sube a superficie elevada con el borde más vivo, en vez de rellenarse del verde del acento: luminancia 0,443 → **0,0715** (29% del primario), texto 8,23:1, borde 3,20:1 → 5,46:1. El primario no se toca | done (commit 293b2540) |
 | **C-35** · El motivo por el que un botón está bloqueado vive solo en el `title`, y los 13 `disabled` nativos no son focalizables | Accesibilidad; ayuda a reconocer errores (N9) | 2 | Lo demás está bien resuelto (cuatro canales de distinción, motivo explícito). El remedio estándar —`aria-disabled` focalizable— devuelve el botón a pulsable y exige bloqueo por JS: es comportamiento | backlog ICE · decide: usuario |
 | **C-36** · 34 de los 53 campos del modal de contrato del PDC tienen etiqueta visible pero no asociada | Accesibilidad — nivel A | 3 | Sin objeto: el modal de contrato del PDC v1 ya no existe. Si el PDC v2 monta un formulario equivalente, se vuelve a medir allí | no aplica: módulo eliminado |
-| **C-37** · Solo 12 de los 24 gatillos decorativos de PG llevan `aria-hidden="true"` | Consistencia y estándares (N4); accesibilidad | 1 | `aria-hidden` incondicional en el renderer. Daño acotado: los 24 llevan `tabindex="-1"` | pendiente (Task 27) |
+| **C-37** · Solo 12 de los 24 gatillos decorativos de PG llevan `aria-hidden="true"` | Consistencia y estándares (N4); accesibilidad | 1 | **Hecho (`aeb58277`), pero no «en el renderer» como decía el plan: esa vía no funciona.** Medido con datos reales: en `afterGetColHeader` el botón todavía no existe (lo inyecta después el plugin `dropdownMenu`), y un barrido en `afterRender` sí marca los 24 pero **cada `render()` reusa los nodos de la tabla maestra y les borra el atributo** (24/24 → `render()` → 12/24, con el clon superior intacto). Resuelto con el patrón que el propio archivo ya usa para `.htFocusCatcher`: `MutationObserver` sobre el contenedor vigilando `childList` **y** la mutación de `aria-hidden`, escritura condicional y coalescido por frame. Sonda: **24/24, y sigue 24/24 tras `render()` forzado**; los 24 con `tabindex="-1"`. PI y PS ya estaban al 100 % (34/34 y 24/24): era inconsistencia exclusiva de PG | done (Task 27 · `aeb58277`) |
 | **C-38** · El adaptador de `admin/` cubre tres variantes de botón y no puede alcanzar las otras tres: texto verde con borde azul o ámbar | Consistencia y estándares (N4) | 2 | El adaptador usa `:where()` (especificidad 0) y AdminLTE trae `.dark-mode .btn-outline-*` (0,2,0): el vendor gana siempre. Salida: anclar las tres variantes a `.dark-mode` sin `!important`, cambiando el par borde+texto. No es accesibilidad (5,24:1 a 10,07:1), es coherencia | pendiente (Task 23) |
 | **C-39** · `Esc` no cierra los modales pese a que su configuración reporta `keyboard: true`, y `data-backdrop="static"` tampoco deja cerrar fuera | Control y libertad del usuario (N3); consistencia (N4) | 2 | No es trampa de teclado (la «×» es alcanzable con Tab), pero rompe la convención que todo usuario intenta primero. **Alcance sin medir:** verificado en un solo modal de los 12 | backlog ICE · decide: usuario |
 | **C-40** · 16 tamaños de letra en un solo viewport de PI, diez de ellos en dos racimos indistinguibles por debajo de un píxel | Consistencia y estándares (N4); jerarquía tipográfica | 2 | Racimos colapsados a `--ds-type-size-sm` (14px) y `--ds-type-size-xs` (12px): 60 líneas, **cero que no sean `font-size`**. La baseline de deuda bajó: `off-scale-typography` 306 → 247. El espaciado ya estaba sano, así que no hace falta campaña equivalente | done (commit 20321285) |
@@ -80,16 +80,118 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **C-48** · El gatillo de filtro de PS se pinta como una píldora de 11×32 px dentro de un botón de 13, y cuelga por debajo de la cabecera | Consistencia y estándares (N4); piso táctil de accesibilidad | 3 | `::before` de 22×32 (fondo, borde, radio) → 6×6 transparente, idéntico a PG y PI; botón 24×24 en los tres. **24 px es el piso real**, no un recorte: WCAG 2.2 SC 2.5.8 (AA) exige 24×24 CSS px, y los 44 px son SC 2.5.5 (AAA)/heurística táctil, que `DESIGN.md` §5 bis declara no aplicable a esta familia desktop-only. Los 44 px no caben, medido: el `thead` subía +20 px y rompía la paridad con PG/PI. Geometría sin mover, 25/25 goldens verdes sin recapturar | done (commit 606f64bd) |
 | **C-49** · El botón de «Estado Operativo» esconde su nombre (0×0 px por un container query a 120 px, en una celda de 116) y da dos señales de color opuestas: punto verde con marco crítico | Visibilidad del estado del sistema (N1); un acento por vista | 3 | **p1 (el nombre) hecho:** apilado nombre/contador aprobado por el usuario, con la columna por encima del umbral — era eso o un muñón elidido. **p2 (el color) abierto:** elegir cuál de los dos hechos manda es significado de dominio — si el estado es «Lista para Confirmar» pero hay 2 condiciones pendientes, ¿la fila se lee como buena o como crítica? | p1: done (Task 8); p2: pendiente (Task 16) · decide: usuario |
 
+## Auditorías C-11 / C-15 / C-20 (Task 27 — solo informe, nada aplicado)
+
+Las tres se censaron con script sobre `public/css` el 2026-08-05. **Ninguna se aplicó:** reportan y
+recomiendan; la decisión es del usuario. Método y sondas completas en
+`.superpowers/sdd/2026-08-04-cierre-dark-mode-campana-decisiones/task-27-report.md` (no versionado).
+
+### C-11 · Media queries que solapan 1180 px
+
+**40** media queries con condición de ancho alcanzan 1180 px; **13 tienen techo** (`max-width`), o sea se
+escribieron para un rango que no es «escritorio abierto» y aun así muerden el viewport de trabajo. No son
+una sola cosa — son tres grupos con naturalezas distintas:
+
+| Archivo | Línea | Rango | Qué hace |
+|---|---|---|---|
+| `programacion-semanal.css` | 1331/1334/1337/1340/1343 | `≤1650 … ≤1250` | escalan `--ps-hot-scale` 0,95→0,75 en `.ps-hot-header-actions` |
+| `styles.css` | 2719/2725/2731/2737/2743 | `≤1650 … ≤1250` | escalan `--ps-module-scale` 0,95→0,75 en `.filaBotones` |
+| `programacion-semanal.css` | 1447 y 1450 | `≤1180` | re-tokenizan `.pdc-legend` a la superficie activa |
+| `programacion-semanal.css` | 1728 | `768–1199.98` | fuerza `min-width/min-height: var(--ds-target-min)` con `!important` |
+
+1. **Las dos escaleras (10 de 13).** A 1180 px caen en el escalón `≤1250`: el contenido se encoge al
+   **0,75** en el viewport canónico. Cubren la banda 1161–1440 px que ninguna otra regla alcanza — la
+   misma que citaba C-18. Ahora que el compensador JS se borró, **son el único mecanismo que queda**.
+2. **Las dos de `.pdc-legend`.** No son deuda: existen *para corregir* que `styles.css` pintaba un gris
+   claro dentro de un `@media (max-width: 1180px)`. Es una cura, no una herida.
+3. **La de `768–1199.98`.** La que el registro ya señaló dos veces; única que impone geometría táctil
+   (44 px) al escritorio con `!important`.
+
+**Recomendación.** *Ahora:* solo la línea 1728 — cambiar el techo a `1179.98px` la saca del viewport
+canónico sin tocar lo que sí es tablet. Bajo riesgo, reversible. *Diferible y con medición antes:* las dos
+escaleras; tocarlas es un cambio **visible** de tamaño en la barra de Semanal a 1180 px, no una limpieza, y
+conviene mirarlo en navegador ahora que C-18 quitó el compensador JS. *No tocar:* las de `.pdc-legend`.
+
+### C-15 · Dobles capas (`@import … layer(x)` sobre archivos ya auto-encapsulados)
+
+**8 casos**, más de los registrados. **4 con la capa duplicada exacta**, que es la patología descrita:
+
+| Importador | Archivo | Resultado |
+|---|---|---|
+| `aia-design-system.css:35` | `buttons.css` | **`components.components`** |
+| `aia-design-system.css:46` | `access.css` | **`utilities.utilities`** |
+| `design-system/entrypoints/core.css:23` | `buttons.css` | **`components.components`** |
+| `design-system/entrypoints/core.css:25` | `access.css` | **`utilities.utilities`** |
+
+Lo que el registro no tenía: **cada archivo entra por dos puertas** (el entrypoint viejo y el nuevo), así
+que un arreglo que toque una sola deja la otra viva. Los otros 4 son anidamientos con capa distinta —
+`handsontable-module.css` → `vendor.base`/`vendor.components` (desde `aia-design-system.css:10` y
+`entrypoints/attach-handsontable.css:3`) y `styles.css` → `module.theme`/`module.components` (desde
+`aia-design-system.css:34` y `entrypoints/core.css:22`)—; no son el mismo defecto, pero el sub-orden
+interno decide igual y conviene tenerlos censados.
+
+**Recomendación: diferir a ticket propio, y no tocarlo dentro de una campaña visual.** Hoy
+`components.components` **juega a favor** — es lo que deja ganar al componente compartido. Quitar la capa
+duplicada cambia el orden de la cascada de golpe y en toda la app; el efecto no es local ni predecible
+leyendo, hay que medirlo. El task dedicado debería (a) decidir el orden que se quiere, (b) aplicarlo en las
+**dos** puertas a la vez y (c) validar en navegador. Riesgo de hacerlo a la ligera: alto. De dejarlo: bajo.
+
+### C-20 · Tokens de color sin variante oscura
+
+De 60 tokens `--ds-color-*`, solo **10 declaran par claro/oscuro**. Hay **dos familias**, y el registro
+solo nombraba una:
+
+**Familia A — estáticos de verdad (13; 12 en uso).** Ni tienen `-dark` ni derivan de nada que dependa del
+tema: `--ds-color-text-inverse` (53 usos), `--ds-color-border-strong` (11), `--ds-color-brand-aqua` (7),
+`--ds-color-text-tertiary` (5), `--ds-color-border-default` (5), `--ds-color-domain-corporate` (4),
+`--ds-color-border-subtle` (4), y con 1 uso cada uno `--ds-color-domain-construction`,
+`--ds-color-domain-real-estate`, `--ds-color-domain-architecture`, `--ds-color-domain-corporate-deep` y
+`--ds-color-surface-tint`.
+
+**Familia B — la mitad clara de un par, consumida directamente (47 consumos).** Ésta es la raíz que
+produjo el defecto: el token existe en par, pero el consumidor usa el nombre pelado —el valor **claro**—
+en vez de pasar por `--ds-active-*`, y se queda claro haga lo que haga el tema.
+
+| Token | Consumos | Dónde |
+|---|---|---|
+| `--ds-color-brand-primary` | **33** | `bi-control-tower.css`, `adapters/select2.css`, `adapters/sweetalert2.css`, `components/primitives.css` |
+| `--ds-color-brand-construction` | **9** | `bi-control-tower.css` (×4), `design-system/core.css` (×2), `programacion-semanal.css` |
+| `--ds-color-text-primary` | 2 | `components/dialog.css`, `lab.css` (ambos en `color-mix` al 60 %) |
+| `--ds-color-surface-raised` · `--ds-color-text-secondary` · `--ds-color-focus-ring` | 1 c/u | `programacion-semanal.css:619` · `:419` · `login-brand-unified.css:328` |
+
+Se descontaron 2 apariciones que **no** son defecto: `foundation.css:8-9` los usa como *fallback* dentro de
+`var(--ds-active-X, var(--ds-color-X))`, que es el uso correcto. Y **`--ds-color-surface` tiene 0 consumos
+directos**: la cura de `312ba9b` aguantó, lo que confirma cuál es el patrón bueno.
+
+**Recomendación.** *Ahora, y es lo que más rinde:* los **42 consumos de `brand-primary` +
+`brand-construction`** — 85 % del problema, concentrados en pocos archivos, y son colores de marca sobre
+superficies oscuras, el escenario exacto que ya produjo un 1,67:1 medido. Ir **por consumidor**, cambiando
+el par completo fondo+texto y midiendo contraste, como en `312ba9b`. **No** «arreglar el token» dándole
+variante oscura: ése es precisamente el intento que hubo que revertir. *Después:* los 5 sueltos, baratos y
+aislados, aunque `focus-ring` toca accesibilidad y merece medirse aparte. *Decisión de sistema, no
+mecánica:* la Familia A — `--ds-color-text-inverse: #ffffff` con 53 usos puede ser correcto a propósito
+(blanco sobre relleno de marca), y los `--ds-color-domain-*` ya tienen hermanos `-on-dark` que el tema sí
+usa. Antes de tocar nada hay que decidir **si estos tokens deben ser conscientes del tema o si su gracia es
+no serlo**; ésa es la pregunta que convierte C-20 de síntoma en raíz.
+
 ## Recuento
 
 | Estado | Entradas |
 |---|---|
 | `done` | 16 |
-| `pendiente (Task N)` | 20 |
+| `informe emitido (Task 27)` | 3 |
+| `no ejecutable (Task 27)` | 1 |
+| `pendiente (Task N)` | 13 |
 | `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 10 |
-| `cerrado sin código` | 4 |
+| `cerrado sin código` | 2 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **54** |
+| **Total** | **49** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
+
+Recuento **medido sobre la tabla** el 2026-08-05, no arrastrado: el anterior declaraba 54 entradas
+(16 `done`, 20 `pendiente`, 4 `cerrado sin código`) y la tabla tiene **49 filas con id único**, así que
+venía desalineado en 5 desde antes de este task —3 de más en `done` y 2 en `cerrado sin código`—. Los
+7 movimientos del Task 27 (C-37/C-18/C-19 a `done`; C-11/C-15/C-20 a `informe emitido`; C-5 a
+`no ejecutable`) salen todos de `pendiente`, que baja de 20 a 13.

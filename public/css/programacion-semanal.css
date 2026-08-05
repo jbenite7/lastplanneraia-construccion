@@ -260,8 +260,14 @@ body.ps-page .ps-status-badges .badge-badge-hidden {
 
 /* En tablet las acciones conservan texto visible y se distribuyen en filas. */
 /* 1160px y no 1200px: el viewport desktop canónico (1180×820) debe recibir el
-   layout compacto de escritorio; el auto-ajuste JS (ps-actions-stacked +
-   --ps-hot-scale en hot.js) cubre el rango 1161-1440. */
+   layout compacto de escritorio. El rango 1161-1440 lo cubre la escalera de
+   `--ps-hot-scale` por media query que hay al final de este archivo (a partir
+   de `max-width: 1650px`), no código JS: el auto-ajuste que este comentario
+   citaba —`fitActionsRowSingleLine()` en hot.js, que ademas ponía la clase
+   `ps-actions-stacked`— llevaba desactivado con un `return` inmediato desde
+   antes de la campaña y se borró el 2026-08-05 (C-18). Por eso las reglas de
+   `.ps-actions-stacked` de más arriba ya no las activa nadie: quedan anotadas
+   como huérfanas, pendientes de revisar junto con C-11. */
 @media (min-width: 769px) and (max-width: 1160px) {
     .ps-page .ps-hot-toolbar-shell .ps-actions-row {
         flex-wrap: wrap;
