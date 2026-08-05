@@ -2640,7 +2640,7 @@
   }
 
   function renderLegendModal() {
-    $('#modal_leyenda_colores_Label').text('Guia Operativa - Programación Intermedia (Last Planner 6 semanas)');
+    $('#modal_leyenda_colores_Label').text('Guía Operativa - Programación Intermedia (Last Planner 6 semanas)');
     $('#modal_leyenda_colores_body').html(
       "<div class='pi-legend-quick'>" +
         "<div class='pi-legend-quick-header'>" +
@@ -2656,8 +2656,8 @@
           "<h6 class='pi-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue-critical'></span>" +
-            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debio iniciar y requiere condiciones de habilitacion en ruta critica.</small></div>" +
-            "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitacion.</div>" +
+            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debio iniciar y requiere condiciones de habilitación en ruta crítica.</small></div>" +
+            "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitación.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
@@ -2669,28 +2669,28 @@
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-due'></span>" +
             "<div class='pi-legend-quick-state'><strong>Inicio por Habilitar</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
-            "<div class='pi-legend-quick-action'>Cerrar acciones de habilitacion antes del inicio.</div>" +
+            "<div class='pi-legend-quick-action'>Cerrar acciones de habilitación antes del inicio.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-execution-blocked'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Ejecucion Pendiente</strong><small>Actividad iniciada con acciones de habilitacion abiertas.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Ejecución Pendiente</strong><small>Actividad iniciada con acciones de habilitación abiertas.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar condiciones pendientes para evitar retrabajos y paradas.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
         "</section>" +
 
         "<section class='pi-legend-quick-group'>" +
-          "<h6 class='pi-legend-quick-group-title'>P2 - Gestion semanal</h6>" +
+          "<h6 class='pi-legend-quick-group-title'>P2 - Gestión semanal</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-1-week'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento urgente</strong><small>Inicia en una semana y requiere acciones de habilitacion.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento urgente</strong><small>Inicia en una semana y requiere acciones de habilitación.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar las condiciones pendientes esta semana.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-2-3-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aun requiere preparacion.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aun requiere preparación.</small></div>" +
             "<div class='pi-legend-quick-action'>Ejecutar plan preventivo de abastecimiento y recursos.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
@@ -2701,12 +2701,12 @@
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-4-6-weeks'></span>" +
             "<div class='pi-legend-quick-state'><strong>Alistamiento pendiente</strong><small>Inicia en 4 a 6 semanas y requiere seguimiento temprano.</small></div>" +
-            "<div class='pi-legend-quick-action'>Monitorear preparacion y anticipar condiciones pendientes.</div>" +
+            "<div class='pi-legend-quick-action'>Monitorear preparación y anticipar condiciones pendientes.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-liberated-control'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Listo para comprometer</strong><small>Cumple la matriz de habilitacion para pasar a Programacion Semanal.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Listo para comprometer</strong><small>Cumple la matriz de habilitación para pasar a Programación Semanal.</small></div>" +
             "<div class='pi-legend-quick-action'>Mantener control semanal y preparar compromiso viable.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
@@ -2716,8 +2716,8 @@
           "<h6 class='pi-legend-quick-group-title'>Restricciones blandas</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:var(--aia-warning-soft-bg, #fef3c7);border-color:var(--aia-warning-border, #f59e0b);'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitacion, estado operativo ni autoprogramacion.</small></div>" +
-            "<div class='pi-legend-quick-action'>Completar para control tecnico, sin detener compromisos listos.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitación, estado operativo ni autoprogramacion.</small></div>" +
+            "<div class='pi-legend-quick-action'>Completar para control técnico, sin detener compromisos listos.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>Blanda</span>" +
           "</div>" +
         "</section>" +

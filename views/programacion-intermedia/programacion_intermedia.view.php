@@ -87,7 +87,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modal_leyenda_colores_Label">Guia Operativa - Programación Intermedia</h4>
+                    <h4 class="modal-title" id="modal_leyenda_colores_Label">Guía Operativa - Programación Intermedia</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="modal-body" id="modal_leyenda_colores_body"></div>
