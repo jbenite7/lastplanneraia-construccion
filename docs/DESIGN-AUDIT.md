@@ -178,20 +178,19 @@ no serlo**; ésa es la pregunta que convierte C-20 de síntoma en raíz.
 
 | Estado | Entradas |
 |---|---|
-| `done` | 16 |
+| `done` | 19 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | 13 |
 | `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 10 |
-| `cerrado sin código` | 2 |
+| `cerrado sin código` | 4 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **49** |
+| **Total** | **54** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
 
-Recuento **medido sobre la tabla** el 2026-08-05, no arrastrado: el anterior declaraba 54 entradas
-(16 `done`, 20 `pendiente`, 4 `cerrado sin código`) y la tabla tiene **49 filas con id único**, así que
-venía desalineado en 5 desde antes de este task —3 de más en `done` y 2 en `cerrado sin código`—. Los
-7 movimientos del Task 27 (C-37/C-18/C-19 a `done`; C-11/C-15/C-20 a `informe emitido`; C-5 a
-`no ejecutable`) salen todos de `pendiente`, que baja de 20 a 13.
+Los 7 movimientos del Task 27 salen todos de `pendiente`, que baja de 20 a 13: C-37, C-18 y C-19 pasan a
+`done` (16 → 19), C-11, C-15 y C-20 a `informe emitido` y C-5 a `no ejecutable`. Los ids no son solo `C-`:
+la tabla incluye también `A-` y `B-` —`cerrado sin código` son B-1, B-2, C-4 y C-7—, así que cualquier
+recuento tiene que contar sobre `^| \*\*[A-C]-` o se dejará 5 filas fuera.
