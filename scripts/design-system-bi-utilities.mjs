@@ -42,6 +42,11 @@ const CLASS_ATTR = /\bclass\s*=\s*(["'])([\s\S]*?)\1/g;
 // en un valor de RETORNO, no en un `class=`, y asi fue como `.inline-flex`,
 // `.px-2` y `.py-0.5` llegaron a la superficie sin figurar en ningun markup.
 const JS_STRING = /(['"`])((?:\\.|(?!\1)[^\\])*)\1/g;
+// `document.createElement('table')` no declara una clase, declara una etiqueta.
+// Sin esta excepcion, `table` (que TAMBIEN es una utilidad de Tailwind:
+// `display: table`) entra al censo por construir un nodo, y el gate exige
+// declarar en la hoja una regla que nadie usa.
+const CREATE_ELEMENT_CALL = /createElement\(\s*$/;
 
 /**
  * Formas de utilidad de Tailwind. Se lista lo que TIENE forma de utilidad en vez
@@ -145,6 +150,7 @@ export function usedClassTokens({ views, scripts }) {
 
   for (const { file, content } of scripts) {
     for (const match of content.matchAll(JS_STRING)) {
+      if (CREATE_ELEMENT_CALL.test(content.slice(Math.max(0, match.index - 20), match.index))) continue;
       // Las plantillas de `bi-spa.js` llevan las comillas del markup
       // escapadas (`class=\"w-3 h-3\"`). Si no se deshacen, la barra queda
       // pegada al token y `h-3\` deja de reconocerse: asi es como `.h-3` se

@@ -522,6 +522,7 @@ function renderProgramaDelay(chart) {
   } else {
     BI.charts['programa-dias-retraso']?.destroy();
     delete BI.charts['programa-dias-retraso'];
+    clearChartDataTable('programa-dias-retraso');
   }
 
   const days = finiteNumber(metrics?.variation_days?.p50);
@@ -795,6 +796,7 @@ function renderProgramaRadar(chart) {
   if (!isAvailable) {
     BI.charts['programa-radar-productividad']?.destroy();
     delete BI.charts['programa-radar-productividad'];
+    clearChartDataTable('programa-radar-productividad');
     return;
   }
   renderRadarChart('programa-radar-productividad', chartLabels(chart), axes.map((axis) => axis.value), chartDatasetLabel(chart, 0, 'Radar'));
@@ -3152,6 +3154,96 @@ function hideEmptyState() {
   if (state) state.classList.add('hidden');
 }
 
+/**
+ * C-32: tabla equivalente oculta para cada canvas.
+ * Recibe exactamente los mismos arrays que se entregan a Chart.js (no una copia
+ * recalculada), de modo que la tabla no puede divergir de lo pintado.
+ */
+function syncChartDataTable(canvasId, labels, datasets) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const tableId = `${canvasId}-data-table`;
+  let container = document.getElementById(tableId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = tableId;
+    container.className = 'aia-visually-hidden';
+    container.dataset.chartDataTable = canvasId;
+    canvas.insertAdjacentElement('afterend', container);
+  }
+
+  const describedBy = String(canvas.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+  if (!describedBy.includes(tableId)) {
+    describedBy.push(tableId);
+    canvas.setAttribute('aria-describedby', describedBy.join(' '));
+  }
+
+  const caption = canvas.getAttribute('aria-label') || 'Gráfico';
+  const rows = Array.isArray(labels) ? labels : [];
+  const series = (Array.isArray(datasets) ? datasets : []).filter(Boolean).map((dataset, index) => ({
+    label: String(dataset.label || `Serie ${index + 1}`),
+    data: Array.isArray(dataset.data) ? dataset.data : [],
+  }));
+
+  container.replaceChildren();
+
+  if (!rows.length || !series.length) {
+    const empty = document.createElement('p');
+    empty.textContent = `${caption}: sin datos para los filtros aplicados.`;
+    container.appendChild(empty);
+    return;
+  }
+
+  // Se construye por DOM (no por innerHTML): los valores llegan del backend y
+  // aqui no hay markup interpolado que escapar.
+  const table = document.createElement('table');
+  const tableCaption = document.createElement('caption');
+  tableCaption.textContent = `${caption} — tabla equivalente`;
+  table.appendChild(tableCaption);
+
+  const head = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.appendChild(chartDataTableHeader('col', 'Categoría'));
+  for (const serie of series) headRow.appendChild(chartDataTableHeader('col', serie.label));
+  head.appendChild(headRow);
+  table.appendChild(head);
+
+  const body = document.createElement('tbody');
+  rows.forEach((rowLabel, index) => {
+    const row = document.createElement('tr');
+    row.appendChild(chartDataTableHeader('row', String(rowLabel ?? '')));
+    for (const serie of series) {
+      const cell = document.createElement('td');
+      cell.textContent = chartDataTableCell(serie.data[index]);
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  });
+  table.appendChild(body);
+  container.appendChild(table);
+}
+
+function chartDataTableHeader(scope, text) {
+  const cell = document.createElement('th');
+  cell.scope = scope;
+  cell.textContent = text;
+  return cell;
+}
+
+function chartDataTableCell(value) {
+  if (value === null || value === undefined || value === '') return 'sin dato';
+  if (typeof value === 'object') {
+    const inner = value.y ?? value.value;
+    return inner === null || inner === undefined ? 'sin dato' : String(inner);
+  }
+  return String(value);
+}
+
+function clearChartDataTable(canvasId) {
+  syncChartDataTable(canvasId, [], []);
+}
+
 function renderBarChart(canvasId, labels, values, label, color) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
@@ -3159,6 +3251,7 @@ function renderBarChart(canvasId, labels, values, label, color) {
   const theme = chartTheme();
   const chartData = sanitizeChartData(values);
   const chartColor = resolveChartColor(color);
+  syncChartDataTable(canvasId, labels, [{ label, data: chartData }]);
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
     BI.charts[canvasId].data.datasets[0].data = chartData;
@@ -3197,6 +3290,7 @@ function renderLineLikeBars(canvasId, labels, datasets) {
     const color = resolveChartColor(dataset.color);
     return { ...dataset, data: sanitizeChartData(dataset.data), borderColor: color, backgroundColor: colorWithAlpha(color, 0.2), borderWidth: 2 };
   });
+  syncChartDataTable(canvasId, labels, norm);
 
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
@@ -3250,6 +3344,7 @@ function renderLineChart(canvasId, labels, series, options = {}) {
   canvas.dataset.seriesLabels = datasets.map((dataset) => dataset.label).join('|');
   canvas.dataset.percentScale = percentScale ? 'true' : 'false';
   canvas._biTooltipContext = options.tooltipContext || null;
+  syncChartDataTable(canvasId, labels, datasets);
 
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
@@ -3450,6 +3545,7 @@ function renderComparativeProgressGauge(canvasId, chart) {
     borderWidth: 2,
   }));
   syncGaugeLegend(canvasId, ['Avance real', 'Avance teórico'], colors);
+  syncChartDataTable(canvasId, chartLabels(chart), datasets);
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.datasets = datasets;
     BI.charts[canvasId].update('none');
@@ -3472,12 +3568,14 @@ function renderProgressDonut(canvasId, labels, values, gauge = false, colorKey =
   stabilizeCanvas(canvas, gauge ? 'gauge' : 'donut');
   const theme = chartTheme();
   const palette = [resolveChartColor(colorKey), resolveChartColor('surface-muted')];
+  const chartData = sanitizeChartData(values);
   if (gauge) {
     syncGaugeLegend(canvasId, labels, palette);
   }
+  syncChartDataTable(canvasId, labels, [{ label: 'Valor', data: chartData }]);
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
-    BI.charts[canvasId].data.datasets[0].data = sanitizeChartData(values);
+    BI.charts[canvasId].data.datasets[0].data = chartData;
     BI.charts[canvasId].data.datasets[0].backgroundColor = palette;
     BI.charts[canvasId].options.circumference = gauge ? 180 : 360;
     BI.charts[canvasId].options.rotation = gauge ? 270 : 0;
@@ -3488,7 +3586,7 @@ function renderProgressDonut(canvasId, labels, values, gauge = false, colorKey =
     type: 'doughnut',
     data: {
       labels,
-      datasets: [{ data: sanitizeChartData(values), backgroundColor: palette }],
+      datasets: [{ data: chartData, backgroundColor: palette }],
     },
       options: {
         responsive: true,
@@ -3573,6 +3671,7 @@ function renderDoughnutChart(canvasId, labels, values, label, options = {}) {
     }
     lastSegmentClick = { category, at: now };
   };
+  syncChartDataTable(canvasId, labels, [{ label, data: chartData }]);
 
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
@@ -3613,6 +3712,7 @@ function renderRadarChart(canvasId, labels, values, label) {
   const theme = chartTheme();
   const chartData = sanitizeChartData(values);
   const color = resolveChartColor('brand-aqua');
+  syncChartDataTable(canvasId, labels, [{ label, data: chartData }]);
 
   if (BI.charts[canvasId]) {
     BI.charts[canvasId].data.labels = labels;
