@@ -2530,26 +2530,29 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         --ps-action-icon-bg: var(--ds-color-state-critical-text);
     }
 
-    html body.ps-page #hot-container .handsontable thead th .changeType {
-        display: grid !important;
-        place-items: center !important;
-        border: 0 !important;
-        background: transparent !important;
-        padding: calc((var(--ds-target-min) - 2rem) / 2) !important;
-        box-shadow: none !important;
-    }
+    /* C-48: aqui vivia una sobrescritura exclusiva de PS que pintaba el `::before`
+       del gatillo de filtro como una pildora de 2rem (fondo, borde, radio y
+       sombra) dentro de un boton mucho mas chico. El usuario lo reporto dos
+       veces como botones «ovalados»: el glifo colgaba fuera de su propia caja y
+       PS era el unico de los tres modulos con ese aspecto.
 
-    html body.ps-page #hot-container .handsontable thead th .changeType::before {
-        display: grid;
-        place-items: center;
-        width: 2rem !important;
-        height: 2rem !important;
-        border: 1px solid var(--ds-active-border) !important;
-        border-radius: var(--ds-radius-control-sm) !important;
-        background: var(--ds-active-surface) !important;
-        color: var(--ds-active-text-secondary) !important;
-        box-shadow: var(--ds-shadow-xs) !important;
-    }
+       La regla del boton que la acompanaba calculaba
+       `padding: calc((var(--ds-target-min) - 2rem) / 2)`, es decir «objetivo
+       tactil de 44px con un control de 2rem dentro» (trabajo T-5). Esa mitad
+       nunca llego a aplicarse: vive en `@layer components` y para declaraciones
+       `!important` el orden de capas se invierte, asi que
+       `handsontable-header-global.css` —sin capa— le ganaba.
+
+       El piso tactil ya no depende de este bloque: desde T-2/T-17 el gatillo es
+       un componente unico (`design-system/components/table-filter-trigger.css`)
+       con `--ds-table-filter-trigger-size: 24px`, el suelo de WCAG 2.2 SC 2.5.8
+       (AA) que DESIGN.md §5 bis declara innegociable para superficies densas, y
+       glifo de 6px sin caja en reposo. PG y PI ya lo respetan.
+
+       Medido a 1180x820: forzar aqui la caja de 44px sube el `thead` de PS de
+       56.59px a 76.59px (+20px en cada cabecera de columna) y rompe la paridad
+       con PG y PI, que se quedan en 24px. Por eso se retira la sobrescritura en
+       vez de completarla: PS hereda el mismo trigger quieto de 24px. */
 
     html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item {
         border-color: var(--ds-active-border) !important;
