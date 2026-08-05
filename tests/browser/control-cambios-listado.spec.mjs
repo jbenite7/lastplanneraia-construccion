@@ -52,8 +52,12 @@ test.describe.serial('Control de Cambios lista sus solicitudes', () => {
     await limpiar(page, db);
     await page.reload();
     await expect(page.locator('#dt_cliente')).toBeVisible();
+    // C-33 (Task 30): el estado vacio dejo de decir solo que no hay nada y ahora dice de donde
+    // nace una solicitud. La asercion sigue al copy nuevo palabra por palabra, con la frase
+    // entera y no un fragmento vago: si alguien la vacia o la vuelve a acortar, este caso cae.
     await expect(page.locator('#dt_cliente tbody')).toContainText(
-      'No hay solicitudes de cambio registradas para este proyecto.'
+      'Las solicitudes de cambio nacen en obra: cuando el diseño, el cliente o la interventoría '
+      + 'piden algo distinto de lo contratado, regístralo aquí para tramitar su aprobación.'
     );
     // La fila estatica anterior convivia con las filas reales: no debe quedar rastro.
     await expect(page.locator('.cc-empty-state')).toHaveCount(0);
