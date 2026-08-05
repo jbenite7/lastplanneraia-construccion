@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/css/login-brand-unified.css?v=<?= filemtime(__DIR__ . '/../../public/css/login-brand-unified.css') ?>">
 </head>
 <body class="hold-transition login-page login-brand-page aia-shell">
-    <div class="login-box">
+    <main class="login-box">
         <div class="card card-login">
             <div class="card-header">
                 <div class="login-brand-lockup" aria-label="Last Planner AIA">
@@ -62,7 +62,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="/public/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>
     <script src="/public/js/modules/aia_ui/auth_forms.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/auth_forms.js') ?>"></script>
