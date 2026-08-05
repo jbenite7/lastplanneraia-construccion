@@ -3384,3 +3384,26 @@ body.ps-page #dt_cliente_wrapper .filaMensajes:has(#mensajeActualizacion:empty) 
         animation-iteration-count: 1 !important;
     }
 }
+
+/* C-24 — Chip contador atenuado cuando marca cero.
+   Simetrico al de programacion-intermedia.css: con conteo > 0 nada cambia; en
+   cero el chip cae a la superficie elevada neutra con tinta secundaria. La
+   clase `is-zero` la pone `updateLegendCounts` en programacion_semanal/hot.js.
+   Dentro de `@layer components` y con !important a proposito: los fondos
+   `--ps-*-chip` de arriba se declaran `!important` en esa misma capa, y en la
+   inversion de important una declaracion sin capa PIERDE contra una con capa
+   (medido: la version sin capa no llegaba a pintar). Misma capa, mas tarde y
+   con mas especificidad, si gana.
+   No se usa `opacity`: eso lo confundiria con `.inactive-filter` (filtro
+   apagado) y con un control deshabilitado. */
+@layer components {
+html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero {
+    background: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-secondary) !important;
+    border-color: var(--ds-active-border) !important;
+}
+
+html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count-badge {
+    color: var(--ds-active-text-secondary) !important;
+}
+}

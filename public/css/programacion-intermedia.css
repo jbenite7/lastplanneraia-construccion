@@ -1661,3 +1661,27 @@ body.pi-page :is(#modal_leyenda_colores, #modal_shared_constraint) .custom-contr
     border: 1px solid var(--ds-active-text-secondary);
 }
 }
+
+/* C-24 — Chip contador atenuado cuando marca cero.
+   Con conteo > 0 el color saturado hace su trabajo y no se toca nada: 31
+   atrasadas merecen rojo. En cero el chip no tiene nada que reclamar, asi que
+   cae a la superficie elevada neutra con tinta secundaria. La clase `is-zero`
+   la pone el JS (`setLegendCount` en programacion_intermedia/hot.js).
+   En `@layer components` de nivel superior y con !important, por la misma
+   receta que ya usan los modales de este archivo: las reglas de estado viven en
+   `module.components`, una capa posterior, asi que en declaraciones normales
+   ganarian; una declaracion importante desde esta capa si las supera. Sin capa
+   funcionaba, pero rompe el contrato `unlayered-delivery` (medido).
+   No se usa `opacity`: eso lo confundiria con `.inactive-filter` (filtro
+   apagado, 0.4 + grayscale) y con un control deshabilitado. */
+@layer components {
+html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-zero {
+    background-color: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-secondary) !important;
+    border-color: var(--ds-active-border) !important;
+}
+
+html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-zero .count-badge {
+    color: var(--ds-active-text-secondary) !important;
+}
+}

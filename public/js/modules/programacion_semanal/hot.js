@@ -3012,7 +3012,13 @@
 
     for (var j = 0; j < config.length; j++) {
       var item = config[j];
-      $('#count-' + item.key).text('(' + (counts[item.key] || 0) + ')');
+      var value = counts[item.key] || 0;
+      /* Un chip que marca cero no tiene nada que reclamar: se atenua con
+         `is-zero` y recupera su color saturado en cuanto vuelve a contar. */
+      $('#count-' + item.key)
+        .text('(' + value + ')')
+        .closest('.pdc-legend-item')
+        .toggleClass('is-zero', value === 0);
     }
   }
 

@@ -2763,8 +2763,18 @@
 
   function updateLegendCountsFromServer() {
     Object.keys(piServerCounts).forEach(function (key) {
-      $('#count-' + key).text('(' + piServerCounts[key] + ')');
+      setLegendCount(key, piServerCounts[key]);
     });
+  }
+
+  /* Un chip que marca cero no tiene nada que reclamar: se atenua con `is-zero`
+     y recupera su color saturado en cuanto vuelve a contar algo. */
+  function setLegendCount(key, value) {
+    var count = Number(value) || 0;
+    $('#count-' + key)
+      .text('(' + value + ')')
+      .closest('.pdc-legend-item')
+      .toggleClass('is-zero', count === 0);
   }
 
   function buildListUrl(extraFlags) {
@@ -3635,7 +3645,7 @@
     }
 
     Object.keys(counts).forEach(function (key) {
-      $('#count-' + key).text('(' + counts[key] + ')');
+      setLegendCount(key, counts[key]);
     });
   }
 
