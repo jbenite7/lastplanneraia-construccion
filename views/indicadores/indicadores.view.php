@@ -144,7 +144,22 @@
 			var alturaLibre = window.innerHeight - margenSuperior - margenInferior;
 			if (alturaLibre < 320) { alturaLibre = 320; } // piso razonable
 			var anchoDisponible = contenedor.clientWidth || document.documentElement.clientWidth;
-			var anchoMax = anchoDisponible * 0.95;         // 5% de holgura lateral
+			// C-22: el marco (padding + borde) ocupa ancho y alto propios; se
+			// descuentan para que el iframe no empuje el marco fuera del ancho
+			// disponible ni fuera de la altura visible.
+			var marcoAncho = 0;
+			var marcoAlto = 0;
+			var marco = iframe.parentElement;
+			if (marco && marco.classList.contains('ind-powerbi-marco')) {
+				var estilo = window.getComputedStyle(marco);
+				marcoAncho = parseFloat(estilo.paddingLeft) + parseFloat(estilo.paddingRight)
+					+ parseFloat(estilo.borderLeftWidth) + parseFloat(estilo.borderRightWidth);
+				marcoAlto = parseFloat(estilo.paddingTop) + parseFloat(estilo.paddingBottom)
+					+ parseFloat(estilo.borderTopWidth) + parseFloat(estilo.borderBottomWidth);
+			}
+			alturaLibre -= marcoAlto;
+			if (alturaLibre < 320) { alturaLibre = 320; }
+			var anchoMax = anchoDisponible * 0.95 - marcoAncho; // 5% de holgura lateral
 			var ancho = Math.min(alturaLibre * REPORTE_ASPECTO, anchoMax);
 			iframe.style.width = Math.round(ancho) + 'px';
 			iframe.style.height = Math.round(ancho / REPORTE_ASPECTO) + 'px';
@@ -159,7 +174,10 @@
 				contenedor.innerHTML = '<p class="ind-powerbi-denied">El informe de indicadores no está disponible para tu perfil.</p>';
 				return;
 			}
-			contenedor.innerHTML = '<iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" class="ind-powerbi-frame"></iframe>';
+			// C-22: el iframe va dentro de un marco del design system (padding,
+			// separador y superficie) para que el informe lea como contenido
+			// embebido y no como una isla blanca a sangre.
+			contenedor.innerHTML = '<div class="ind-powerbi-marco"><iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" class="ind-powerbi-frame"></iframe></div>';
 			ajustarInformePowerBI();
 		}
 

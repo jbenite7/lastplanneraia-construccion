@@ -25,12 +25,26 @@
     margin-bottom: var(--ds-space-3);
   }
 
+  /* C-22: marco del embed. El informe llega con fondo claro y sin borde; el
+     marco le da padding, separador y superficie del sistema para que lea como
+     contenido embebido y no como una isla a sangre. Se ajusta al iframe
+     (inline-block) porque el script fija sus medidas en runtime. */
+  .ind-powerbi-marco {
+    display: inline-block;
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-card);
+    background: var(--ds-active-surface-raised);
+    max-width: 100%;
+  }
+
   /* El iframe ajeno: solo se le retira el borde del navegador y se centra.
      Su ancho y alto los fija el script segun la altura libre. */
   .ind-powerbi-frame {
     border: 0;
     display: block;
     margin-inline: auto;
+    border-radius: var(--ds-radius-md);
   }
 
   /* Mensaje cuando el perfil no tiene acceso al informe. */
