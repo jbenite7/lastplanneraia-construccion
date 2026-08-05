@@ -215,9 +215,9 @@
       <button class="hbtn" id="themeBtn" aria-label="Cambiar tema claro u oscuro"><span aria-hidden="true">◐</span> Tema</button>
     </div>
     <h1>Estado del <em>desarrollo</em> general</h1>
-    <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cinco frentes en marcha; la campaña de cierre de dark mode subió a <b>9 de 35 tareas</b> ejecutadas con commit — incluida la que apretó la red de goldens visuales — y esa misma red destapó una regresión real: dos capturas de tabla se regeneraron sin sincronizar el manifiesto, así que el check <code>contracts</code> vuelve a fallar. El Plan de Compras v2 sigue prácticamente cerrado y a la espera de producción real; su antecesor (PDC v1) quedó formalmente deprecado hoy. Otros ocho goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
+    <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cinco frentes en marcha; la campaña de cierre de dark mode subió a <b>9 de 35 tareas</b> ejecutadas con commit — incluida la que apretó la red de goldens visuales — y esa misma red destapó una regresión real: dos capturas de tabla se regeneraron sin sincronizar el manifiesto, así que el check <code>contracts</code> vuelve a fallar. El Plan de Compras v2 sigue prácticamente cerrado y a la espera de producción real; su antecesor (PDC v1) quedó formalmente deprecado el 4 de agosto. Otros ocho goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
     <div class="meta">
-      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">4 ago 2026 · 22:20 UTC</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">5 ago 2026 · 05:20 UTC</b></span>
       <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos · <b>54</b> decisiones pendientes</span>
       <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code>origin/main</code></span>
     </div>
@@ -228,7 +228,7 @@
   <div class="wrap">
     <p class="eyebrow">Resumen ejecutivo</p>
     <h2>Dónde está el desarrollo hoy, frente por frente</h2>
-    <p class="lede" style="margin-bottom:26px">Este informe cubría solo el cierre de dark mode hasta hoy; se llamaba <code>dark-mode-estado.html</code> y ese nombre ya no existe. El alcance ahora es <b>todo</b> el desarrollo activo. De los <b>24 goals</b> que hoy viven en <code>goals/</code>, ocho ya cerraron, se descartaron o se absorbieron en otro, y los <b>16 restantes</b> viven repartidos en <b>5 frentes activos</b>: el <b>cierre de dark mode</b> (54 decisiones registradas y un plan que creció de 34 a <b>35 tareas</b> — nueve ya ejecutadas con commit propio, incluidas dos tareas más de la Fase 3 desde el último corte y la que apretó la tolerancia de los goldens del 3% al 0,2% — pero la propia tolerancia nueva destapó que el último commit del día dejó dos capturas de tabla sin sincronizar con su manifiesto, así que el check <code>contracts</code> de la suite estática vuelve a estar en rojo), el <b>Plan de Compras v2</b> (7 de esos 24 goals, con el trabajo de código prácticamente cerrado, su antecesor v1 deprecado hoy por decisión del usuario, y esperando solo el despliegue a la producción real), el <b>núcleo y gobernanza del Design System</b> (Sprint 00 sigue sin fecha de cierre, y desde el 4 de agosto tiene el plan de la versión 1.1.0 detrás suyo, sin arrancar todavía), la <b>Torre de Control BI con Gemini</b> (bloqueada por una sola aprobación visual pendiente) y la <b>Biblia de flujos</b> (documenta lo que la app debe hacer, escenario por escenario; su primera pasada encontró seis módulos que mutan datos sin validar CSRF, todavía sin arreglar, y hoy reescribió por completo su capítulo del Plan de Compras porque describía el módulo v1 ya deprecado en vez del v2 vivo).</p>
+    <p class="lede" style="margin-bottom:26px">Este informe cubría solo el cierre de dark mode hasta hoy; se llamaba <code>dark-mode-estado.html</code> y ese nombre ya no existe. El alcance ahora es <b>todo</b> el desarrollo activo. De los <b>24 goals</b> que hoy viven en <code>goals/</code>, ocho ya cerraron, se descartaron o se absorbieron en otro, y los <b>16 restantes</b> viven repartidos en <b>5 frentes activos</b>: el <b>cierre de dark mode</b> (54 decisiones registradas y un plan que creció de 31 a <b>35 tareas</b> — nueve ya ejecutadas con commit propio, incluidas dos tareas más de la Fase 3 desde el último corte y la que apretó la tolerancia de los goldens del 3% al 0,2% — pero la propia tolerancia nueva destapó que el último commit del día dejó dos capturas de tabla sin sincronizar con su manifiesto, así que el check <code>contracts</code> de la suite estática vuelve a estar en rojo), el <b>Plan de Compras v2</b> (7 de esos 24 goals, con el trabajo de código prácticamente cerrado, su antecesor v1 deprecado el 4 de agosto por decisión del usuario, y esperando solo el despliegue a la producción real), el <b>núcleo y gobernanza del Design System</b> (Sprint 00 sigue sin fecha de cierre, y desde el 4 de agosto tiene el plan de la versión 1.1.0 detrás suyo, sin arrancar todavía), la <b>Torre de Control BI con Gemini</b> (bloqueada por una sola aprobación visual pendiente) y la <b>Biblia de flujos</b> (documenta lo que la app debe hacer, escenario por escenario; su primera pasada encontró seis módulos que mutan datos sin validar CSRF, todavía sin arreglar, y el 4 de agosto reescribió por completo su capítulo del Plan de Compras porque describía el módulo v1 ya deprecado en vez del v2 vivo).</p>
 
     <div class="kpis">
       <div class="kpi">
@@ -253,14 +253,14 @@
           </svg>
           <div>
             <div class="k-label">Esperan tu firma</div>
-            <div class="k-sub">Bloque A del registro<br>A-1 ya se firmó hoy</div>
+            <div class="k-sub">Bloque A del registro<br>A-1 se firmó el 4 de agosto</div>
           </div>
         </div>
       </div>
       <div class="kpi">
         <div class="k-label">Commits últimas 24 h</div>
-        <div><span class="k-big num">174</span> <span class="k-unit">ventana móvil hasta 22:20 UTC</span></div>
-        <div class="k-sub">git log de esta misma pasada — re-ejecutada 55 min después del corte anterior (21:25); ningún commit nuevo salvo el que publicó ese informe.</div>
+        <div><span class="k-big num">122</span> <span class="k-unit">ventana móvil hasta 05:20 UTC</span></div>
+        <div class="k-sub">git log de esta misma pasada, ~58 min después del corte anterior (04:22 UTC, commit <code>b927a8f</code>). El clon volvió a llegar recortado (<code>git rev-list --count HEAD</code> daba 80) y con <code>HEAD</code> desprendido — <code>fetch --unshallow</code> trajo las 1.514 commits reales y <code>checkout -B main origin/main</code> dejó la rama local al día antes de contar nada. Confirmado tras el arreglo: <b>0 commits</b> de diferencia en ambos sentidos entre <code>main</code> y <code>origin/main</code>. <b>Cero commits de desarrollo nuevos</b> en todo el árbol desde el informe anterior — el único commit del día que se suma a los cuatro previos es el que la quinta pasada de este mismo informe publicó (<code>e81d3e47</code>, <code>850f3c8</code>, <code>b657d17</code>, <code>89d5d727</code>, <code>b927a8f</code>). El relato de los cinco frentes no cambia por sexta vez seguida.</div>
       </div>
       <div class="kpi">
         <div class="k-label">Frentes activos</div>
@@ -270,9 +270,9 @@
     </div>
 
     <div class="banner">
-      <h3>La tolerancia de los goldens ya baja al 0,2% y por fin muerde — y al morder encontró un manifiesto sin sincronizar</h3>
-      <p>Contrastado en <code>git log</code> de esta misma pasada: el plan de campaña creció de 34 a <b>35 tareas</b> y acumula <b>9</b> con commit real detrás. A las cinco ya conocidas (fixtures de PS <code>9e11f61</code>, guard de matiz de PG <code>ba5da88</code>, entrevista <code>improve-app</code>/<code>CUSTOMER.md</code>, goldens de PG/PI recapturados y aprobados <code>560a98f</code>, variante B de bordes <code>1835d379</code>) se suman cuatro desde el último corte: <b>Task 6</b> colapsó los dos racimos tipográficos sub-píxel a tokens de rampa (<code>2032128</code>); <b>Task 7</b> cambió las filas de «Capítulo» del PDC de bloque de color a peso tipográfico y filete (<code>1e479a9</code>); <b>Task 33</b>, la prioritaria, bajó <code>maxDiffPixelRatio</code> del 3% al 0,2% en los specs visuales y probó con un cambio deliberado de 1px que ahora sí se detecta (<code>af16227</code>); y <b>Task 35</b>, abierta por un hallazgo de la propia Task 33 (su prueba de mordida no movía el golden de Programación Intermedia porque el mock retrata una grilla vacía), sembró ese mock con filas reales y volvió a vigilar celdas (<code>ac7949f</code>). De paso, apretar la vara destapó dos goldens del laboratorio y del cajón que llevaban semanas rotos sin que nadie lo notara (18 escenarios, <code>e105f14</code>). Siguen sin ejecutar la <b>Task 32</b> (regresión: el indicador de fase de Programación Semanal quedó huérfano tras el rollout del shell lateral) y la <b>Task 34</b> (falta tipar y alinear a la derecha las columnas numéricas — verificado que <code>Ejecutado_Teorico</code> en el <code>hot.js</code> de Programa General sigue sin <code>type: 'numeric'</code>).</p>
-      <p><b>Lo que la propia red destapó al morder, sin task que lo cubra todavía:</b> el commit <code>ddfea348</code> (accesibilidad del rail colapsado y el gatillo de filtro) regeneró las capturas de Programa General, Programación Intermedia y del laboratorio para reflejar un cambio de layout autorizado, pero no volvió a sincronizar el sha256 en los tres manifiestos. Verificado en esta pasada corriendo <code>npm run test:design-system:static</code>: el check <code>contracts</code>, que había vuelto a pasar con la Task 5, cae otra vez con 5 «golden hash mismatch» (PG ×2, PI ×2, laboratorio ×1). No es una tarea del plan porque nadie la ha escrito todavía — es un cabo suelto de hoy mismo, y el arreglo es mecánico: recalcular y pegar el sha256 de esas cinco capturas.</p>
+      <h3>Sexta pasada seguida sin ningún commit de desarrollo — el manifiesto sigue sin sincronizar</h3>
+      <p>Contrastado en <code>git log</code> de esta misma pasada: el plan de campaña sigue en 35 tareas con <b>9</b> con commit real detrás — las mismas cinco de siempre (fixtures de PS <code>9e11f61</code>, guard de matiz de PG <code>ba5da88</code>, entrevista <code>improve-app</code>/<code>CUSTOMER.md</code>, goldens de PG/PI recapturados y aprobados <code>560a98f</code>, variante B de bordes <code>1835d379</code>) más las cuatro que sumó el corte del 4 de agosto por la tarde (Task 6 <code>2032128</code>, Task 7 <code>1e479a9</code>, Task 33 <code>af16227</code>, Task 35 <code>ac7949f</code>, más los 18 goldens de laboratorio/cajón resincronizados en <code>e105f14</code>). Nada de esto avanzó desde entonces: los únicos commits que aparecen después son los cinco que este mismo informe fue publicando en sus cinco pasadas anteriores (<code>e81d3e47</code>, <code>850f3c8</code>, <code>b657d17</code>, <code>89d5d727</code>, <code>b927a8f</code>). Siguen sin ejecutar la <b>Task 32</b> (regresión: el indicador de fase de Programación Semanal quedó huérfano tras el rollout del shell lateral — reverificado en esta pasada, <code>.ps-weekly-phase-title</code> sigue en <code>hot.js</code> sin nuevo anclaje) y la <b>Task 34</b> (falta tipar y alinear a la derecha las columnas numéricas — reverificado en esta pasada que la columna <code>Ejecutado_Teorico</code> del <code>hot.js</code> de Programa General, línea 2924, sigue sin <code>type: 'numeric'</code>, a diferencia de <code>EjecutadoDisplay</code> justo debajo que sí lo tiene).</p>
+      <p><b>El cabo suelto que la Task 5 había cerrado sigue abierto, sin que nadie lo haya tocado todavía:</b> el commit <code>ddfea348</code> (accesibilidad del rail colapsado y el gatillo de filtro) regeneró las capturas de Programa General, Programación Intermedia y del laboratorio para reflejar un cambio de layout autorizado, pero no volvió a sincronizar el sha256 en los tres manifiestos. Reverificado en esta pasada corriendo <code>npm run test:design-system:static</code> de nuevo, línea por línea: el check <code>contracts</code> cae exactamente igual que en las cinco pasadas anteriores, con los mismos 5 «golden hash mismatch» (PG ×2, PI ×2, laboratorio ×1). No es una tarea del plan porque nadie la ha escrito todavía — es un cabo suelto que lleva desde las 20:54 UTC del 4 de agosto esperando (ya más de 8 horas), y el arreglo sigue siendo mecánico: recalcular y pegar el sha256 de esas cinco capturas.</p>
     </div>
   </div>
 </section>
@@ -299,7 +299,7 @@
         <ul>
           <li><span class="eli-tag">A</span><span><b>Una aprobación visual de BI.</b> El tablero de Torre de Control con Gemini está construido y probado, pero nadie ha dado el visto bueno final a cómo se ve en sus seis combinaciones de filtros.</span></li>
           <li><span class="eli-tag">B</span><span><b>La web real de la empresa no tiene el plan de compras nuevo.</b> Sigue con el código de julio. Hasta que se despliegue ahí, ni el plan de compras nuevo se puede dar por terminado del todo, ni se puede apagar el plan de compras viejo.</span></li>
-          <li><span class="eli-tag">C</span><span><b>La prueba que vigila los cambios visuales ya se apretó, y al apretarla mordió algo real.</b> El último cambio de accesibilidad de hoy regeneró las fotos de referencia de tres pantallas pero no actualizó el archivo que dice «esta es la foto correcta». Resultado: la prueba automática vuelve a estar en rojo. No es un arreglo de diseño — es pegar un dato técnico (un hash) en tres archivos — pero nadie lo ha hecho todavía.</span></li>
+          <li><span class="eli-tag">C</span><span><b>La prueba que vigila los cambios visuales ya se apretó, y al apretarla mordió algo real.</b> El último cambio de accesibilidad, del 4 de agosto, regeneró las fotos de referencia de tres pantallas pero no actualizó el archivo que dice «esta es la foto correcta». Resultado: la prueba automática vuelve a estar en rojo. No es un arreglo de diseño — es pegar un dato técnico (un hash) en tres archivos — pero nadie lo ha hecho todavía.</span></li>
         </ul>
       </div>
     </div>
@@ -342,7 +342,7 @@
         <div class="card done">
           <h3>A-1 · Goldens de tabla <span class="badge b-done">Firmado, recapturado y con manifiesto sincronizado</span></h3>
           <p>El usuario revisó el par esperado/actual/diff de Programa General y Programación Intermedia (42.763 px distintos en PG, 5%; 31.508 en PI, 4%) y lo aprobó. Los goldens se recapturaron en <code>560a98f</code> — «Desbloquea la fase 3 del plan». Con esto la Fase 3 (9 tareas: bordes de tabla A-3, tipografía, anchos de columna, hover, chips en cero…) quedó desbloqueada, y su primera tarea (Task 5, bordes) ya se ejecutó.</p>
-          <p><b>El cabo suelto que este informe venía midiendo se cerró y volvió a abrirse el mismo día.</b> El sha256 de estos dos manifiestos se sincronizó con la Task 5 (<code>1835d379</code>) y el check <code>contracts</code> pasó a partir de ahí. Pero un commit posterior de accesibilidad (<code>ddfea348</code>, ver tarjeta de abajo) regeneró estas mismas capturas por una razón legítima y no volvió a sincronizar el manifiesto. Verificado en esta pasada corriendo <code>npm run test:design-system:static</code>: <code>contracts</code> está otra vez en rojo, con 5 «golden hash mismatch» — 2 de PG, 2 de PI y 1 del laboratorio.</p>
+          <p><b>El cabo suelto que este informe venía midiendo se cerró y volvió a abrirse el mismo día, y sigue así dos horas después.</b> El sha256 de estos dos manifiestos se sincronizó con la Task 5 (<code>1835d379</code>) y el check <code>contracts</code> pasó a partir de ahí. Pero un commit posterior de accesibilidad (<code>ddfea348</code>, ver tarjeta de abajo) regeneró estas mismas capturas por una razón legítima y no volvió a sincronizar el manifiesto. Reverificado en esta pasada corriendo <code>npm run test:design-system:static</code>: <code>contracts</code> sigue en rojo, con los mismos 5 «golden hash mismatch» — 2 de PG, 2 de PI y 1 del laboratorio.</p>
         </div>
         <div class="card wait">
           <h3>pg-chip-de-estado <span class="badge b-info">Código, goldens y manifiesto en <code>main</code>; <code>goal.md</code> sin cerrar</span></h3>
@@ -361,7 +361,7 @@
           <p><b>Task 32:</b> restaurar el indicador de fase de Programación Semanal, huérfano desde el rollout del shell lateral — hallazgo de la Task 1, con commit del plan que la define pero ninguno que la resuelva. Verificado en esta pasada: <code>.ps-weekly-phase-title</code> sigue en el código sin nuevo anclaje. <b>Task 34:</b> tipar y alinear a la derecha las columnas numéricas, el tercio pendiente de la variante B — verificado que <code>Ejecutado_Teorico</code> en el <code>hot.js</code> de Programa General sigue sin <code>type: 'numeric'</code>.</p>
         </div>
         <div class="card block">
-          <h3>Regresión sin task todavía · manifiesto sin sincronizar <span class="badge b-block"><code>ddfea348</code>, hoy 15:54</span></h3>
+          <h3>Regresión sin task todavía · manifiesto sin sincronizar <span class="badge b-block"><code>ddfea348</code>, 4 ago 15:54</span></h3>
           <p>El mismo commit que llevó los 13 ítems del rail colapsado y el gatillo de filtro de columna a su piso táctil de 44 px regeneró las capturas de PG, PI y del laboratorio (el gatillo más alto mueve la cabecera ~10 px) pero no volvió a calcular su sha256 en <code>docs/design-system/manifests/*.json</code>. El mensaje del commit afirma «test:design-system:static 8/8», pero verificado en esta misma pasada la suite da 6/8: <code>contracts</code> falla con 5 «golden hash mismatch». El propio commit advierte que las capturas se tomaron con trabajo ajeno sin comitear en el árbol (<code>public/css/styles.css</code>, <code>public/js/modules/pdc/hot.js</code>), lo que puede explicar la discrepancia entre lo que vio quien ejecutó y lo que hay en <code>main</code> ahora. El arreglo es mecánico — recalcular y pegar el sha256 — pero nadie lo ha hecho.</p>
         </div>
         <div class="card done">
@@ -375,7 +375,7 @@
         <ul>
           <li><span class="eli-tag">1</span><span><b>54 cosas anotadas, ninguna perdida.</b> Cuando algo necesitaba tu criterio y no el de quien programa, se escribió en una lista en vez de decidirse solo.</span></li>
           <li><span class="eli-tag">2</span><span><b>Hay un plan para vaciar esa lista</b>, y ya lleva 9 de sus 35 tareas con trabajo terminado: la firma de las fotos de referencia, cuatro arreglos visuales sobre las tablas y el plan de compras, y el ajuste de la prueba que vigila que nada cambie sin que se note.</span></li>
-          <li><span class="eli-tag">3</span><span><b>Al apretar esa prueba de vigilancia, encontró algo que se había colado sin querer:</b> el último cambio del día actualizó tres fotos de referencia pero no el archivo que dice cuáles son las correctas. Es un descuido de un minuto de arreglar, pero hoy la prueba automática está en rojo por eso.</span></li>
+          <li><span class="eli-tag">3</span><span><b>Al apretar esa prueba de vigilancia, encontró algo que se había colado sin querer:</b> un cambio del 4 de agosto actualizó tres fotos de referencia pero no el archivo que dice cuáles son las correctas. Es un descuido de un minuto de arreglar, pero la prueba automática sigue en rojo por eso, más de medio día después.</span></li>
           <li><span class="eli-tag">4</span><span><b>Se revisaron 26 pantallas que no son tablas</b> (menús, avisos, formularios) y ya se está arreglando lo más importante de lo que se encontró.</span></li>
         </ul>
       </div>
@@ -390,7 +390,7 @@
       <h2 style="margin:0">Plan de Compras v2 (PDC)</h2>
       <span class="badge b-wait">Código cerrado · producción pendiente</span>
     </div>
-    <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada pero movida a su propio pendiente. Hoy (<code>6b683c6</code>) ese tablero pasó de mecanismo vivo a acta formal, y se corrigieron once specs del PDC que decían «pendiente de plan» estando ya implementadas y en <code>main</code>.</p>
+    <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada pero movida a su propio pendiente. El 3 de agosto (<code>6b683c6</code>) ese tablero pasó de mecanismo vivo a acta formal, y se corrigieron once specs del PDC que decían «pendiente de plan» estando ya implementadas y en <code>main</code>. El 4 de agosto (<code>f1ab72c</code>) se corrigió una fila más del mismo tablero: dos pantallas que el acta seguía dando por pendientes ya estaban construidas — ver tarjeta abajo.</p>
 
     <div class="front-grid">
       <div class="front-detail">
@@ -410,15 +410,15 @@
         </div>
         <div class="card block">
           <h3>La brecha real: producción sigue en julio</h3>
-          <p><code>lastplanneraia.com</code> (la producción real) sigue en el commit <code>1aa7c69</code> del 16 de julio, con <b>cero</b> tablas <code>pdc_*</code>. Todo lo de esta tarjeta vive en <code>prueba-lps</code>, el ambiente que el equipo usa como pruebas — no en la web de la empresa. El despliegue real arrastra ~500 commits y tiene su rutina escrita en <code>docs/siteground-deploy-routine.md</code>, pero no se ha ejecutado.</p>
+          <p><code>lastplanneraia.com</code> (la producción real) sigue en el commit <code>1aa7c69</code> del 16 de julio, según <code>goals/pdc-preparar-b1/estado-olas.md</code> — con <b>cero</b> tablas <code>pdc_*</code>. Todo lo de esta tarjeta vive en <code>prueba-lps</code>, el ambiente que el equipo usa como pruebas — no en la web de la empresa. Contado en esta pasada con <code>git rev-list --count 1aa7c69..HEAD</code> (confirmado que ese commit sigue siendo ancestro de <code>main</code>): el despliegue real arrastra <b>1.068</b> commits, no los «~500» que estimaban las specs de julio — más del doble. Tiene su rutina escrita en <code>docs/siteground-deploy-routine.md</code>, pero no se ha ejecutado.</p>
         </div>
         <div class="card wait">
           <h3>Retiro del PDC viejo (etapas 3–4 de <code>retiro-listado-contratos</code>)</h3>
-          <p>Las etapas 1 y 2 ya están HECHAS y verificadas: las rutas <code>/listado-actividades</code> y <code>/contratos</code> ya no existen en <code>public/index.php</code>. Lo que falta —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>, para que viaje junto con el v2 cuando por fin se despliegue. Hoy, al reescribir la biblia de flujos sobre el módulo vivo, quedó anotado explícitamente que el usuario <b>deprecó el PDC v1</b> el 4 de agosto — la misma decisión, formalizada un día después. <b>Autorizado, no ejecutado:</b> <code>/pdc</code> y <code>OperationalFamilyPolicy.php</code> siguen en el código hoy.</p>
+          <p>Las etapas 1 y 2 ya están HECHAS y verificadas: las rutas <code>/listado-actividades</code> y <code>/contratos</code> ya no existen en <code>public/index.php</code>. Lo que falta —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>, para que viaje junto con el v2 cuando por fin se despliegue. El 4 de agosto, al reescribir la biblia de flujos sobre el módulo vivo, quedó anotado explícitamente que el usuario <b>deprecó el PDC v1</b> ese mismo día — la misma decisión, formalizada un día después. <b>Autorizado, no ejecutado:</b> reverificado en esta pasada, <code>/pdc</code> sigue registrada en <code>public/index.php:141</code> y <code>OperationalFamilyPolicy.php</code> sigue en <code>src/Support/</code>.</p>
         </div>
-        <div class="card wait">
-          <h3>Dos pantallas con motor listo y sin vista</h3>
-          <p>La curva de flujo de caja mensual y el aviso de «N frentes sin ancla» tienen su servicio, sus endpoints y sus datos ya viajando en la API — falta solo pintarlos. Quedaron fuera del cierre del 3 de agosto como pendientes con nombre propio, no perdidos.</p>
+        <div class="card done">
+          <h3>Dos pantallas que se creían pendientes <span class="badge b-done">Resuelto 4 ago: ya estaban construidas</span></h3>
+          <p>El cierre del 3 de agosto había dejado anotada esta fila como pendiente: la curva de flujo de caja mensual y el aviso de «N frentes sin ancla» con el motor listo pero, según el acta, sin pintar. Era falso desde que se escribió — las dos ya estaban en <code>main</code> (<code>4a6c88d5</code> y <code>6f3f379d</code>, con su ayuda en <code>4680dc4d</code>), y el letrero mandó a una sesión a reconstruir lo ya construido. Corregido el 4 de agosto (<code>f1ab72c</code>): el acta ahora dice dónde vive cada pieza y con qué commit llegó, con la fila tachada en vez de borrada. Verificado en esta pasada leyendo el código citado en <code>4a6c88d5</code> y <code>6f3f379d</code> — las dos vistas están en <code>pdc-app/src/pages/Seguimiento.tsx</code> y <code>PlanFechas.tsx</code>; el propio commit reporta 142 asserts de <code>vitest</code> en verde, no repetidos en esta pasada.</p>
         </div>
       </div>
       <div class="eli-card">
@@ -428,7 +428,7 @@
           <li><span class="eli-tag">1</span><span><b>El módulo nuevo ya está construido y probado</b> — parte, reparte y reprograma paquetes, calcula flujo de caja, avisa vencimientos.</span></li>
           <li><span class="eli-tag">2</span><span><b>Pero solo lo usa el ambiente de pruebas del equipo</b>, no la web real de la empresa. Esa es la única pieza grande que falta.</span></li>
           <li><span class="eli-tag">3</span><span><b>El módulo viejo sigue prendido</b> a propósito, hasta que el nuevo llegue a la web real — se apagarán juntos, no antes.</span></li>
-          <li><span class="eli-tag">4</span><span><b>Dos pantallas menores</b> (flujo de caja, avisos de frentes) tienen el cálculo listo y solo falta dibujarlas.</span></li>
+          <li><span class="eli-tag">4</span><span><b>Ninguna pantalla se quedó a medias.</b> Dos que el acta daba por «solo falta dibujarlas» (flujo de caja, avisos de frentes) resultaron ya estar construidas — el acta mentía, no el código, y el 4 de agosto se corrigió el papel.</span></li>
         </ul>
       </div>
     </div>
@@ -442,7 +442,7 @@
       <h2 style="margin:0">Design System — núcleo y gobernanza</h2>
       <span class="badge b-mute">Sprint 00 · sin fecha de cierre</span>
     </div>
-    <p class="lede">Dos goals forman este frente. <code>design-system-nucleo-gobernanza</code>: convertir el design system AIA en fuente de verdad única, versionada (release <code>1.0.0</code>), con gates automáticos y Programa General como piloto — la propia wiki lo marca «indeterminado», su último registro no tiene sección de cierre. Detrás de él, nuevo desde hoy, <code>cierre-version-1-1-0-design-system</code>: pagar o re-vencer las 39 excepciones que expiran en la 1.1.0 y sincronizar manifiestos + changelog.</p>
+    <p class="lede">Dos goals forman este frente. <code>design-system-nucleo-gobernanza</code>: convertir el design system AIA en fuente de verdad única, versionada (release <code>1.0.0</code>), con gates automáticos y Programa General como piloto — la propia wiki lo marca «indeterminado», su último registro no tiene sección de cierre. Detrás de él, nuevo desde el 4 de agosto, <code>cierre-version-1-1-0-design-system</code>: pagar o re-vencer las 39 excepciones que expiran en la 1.1.0 y sincronizar manifiestos + changelog.</p>
     <div class="front-grid">
       <div class="front-detail">
         <div class="card wait">
@@ -450,8 +450,8 @@
           <p>Su registro de trazabilidad (<code>validation-log.md</code>) lista más de diez capacidades con evidencia «histórica» o «superseded» que necesita una ejecución fresca sobre el árbol exacto de release: revisión visual en sesión autenticada, presupuesto de runtime con tres muestras limpias, datos del piloto sobre una fixture aislada, y la revisión de accesibilidad separada del gate automático. Ninguna observación antigua activa la versión por sí sola.</p>
         </div>
         <div class="card wait">
-          <h3><code>cierre-version-1-1-0-design-system</code> <span class="badge b-mute">Planeado hoy, sin arrancar</span></h3>
-          <p>Plan y spec escritos hoy (<code>c2f2327</code>, 7 tareas), con una precondición dura: no arranca hasta que termine la campaña de cierre de dark mode del frente 1 (decisión D4 del usuario). Cero commits de ejecución todavía — solo el commit que lo redacta.</p>
+          <h3><code>cierre-version-1-1-0-design-system</code> <span class="badge b-mute">Planeado el 4 de agosto, sin arrancar</span></h3>
+          <p>Plan y spec escritos el 4 de agosto (<code>c2f2327</code>, 7 tareas), con una precondición dura: no arranca hasta que termine la campaña de cierre de dark mode del frente 1 (decisión D4 del usuario). Reverificado en esta pasada contando encabezados <code>### Task N</code> del plan: sigue en 7 tareas, y ninguna tiene commit de ejecución todavía — solo el commit que lo redacta.</p>
         </div>
       </div>
       <div class="eli-card">
@@ -505,7 +505,7 @@
       <h2 style="margin:0">Biblia de flujos</h2>
       <span class="badge b-info">Primera pasada cerrada · 5 tandas abiertas</span>
     </div>
-    <p class="lede">Cinco goals (<code>biblia-t1-transversal</code> a <code>t5-lectura</code>) nacieron el 4 de agosto y son un solo frente, no cinco: documentar en <code>docs/flujos/</code> qué DEBE hacer la aplicación, escenario por escenario y verificado contra el código con cita <code>archivo:línea</code>, con cláusula de autoridad deliberadamente invertida respecto a la wiki — si la biblia y el código divergen, es un bug de uno de los dos. Un primer commit (<code>7a5b738</code>) le dio vuelta a las cinco tandas a la vez; horas más tarde un segundo commit (<code>2223301</code>) tuvo que reescribir de cero el capítulo de PDC, porque documentaba el módulo v1 que el usuario deprecó ese mismo día en vez del v2 que sigue vivo. Hoy quedan <b>11 documentos</b> (1.444 líneas, 63 escenarios citados con cita <code>archivo:línea</code>), 17 pruebas Playwright en <code>e2e/tests/biblia/</code> y 17 hallazgos en <code>docs/EXPERIMENTS.md</code> — 16 siguen abiertos y 1 se cerró hoy como «no se arregla» porque describía código ya deprecado. Los cinco <code>goal.md</code> siguen diciendo «ABIERTO» porque, en efecto, ninguna tanda cerró su condición de hecho completa (falta, por ejemplo, la cobertura Playwright propia de <code>biblia-t5-lectura</code>: no hay <code>lectura-bi.spec.mjs</code> en <code>e2e/tests/biblia/</code>).</p>
+    <p class="lede">Cinco goals (<code>biblia-t1-transversal</code> a <code>t5-lectura</code>) nacieron el 4 de agosto y son un solo frente, no cinco: documentar en <code>docs/flujos/</code> qué DEBE hacer la aplicación, escenario por escenario y verificado contra el código con cita <code>archivo:línea</code>, con cláusula de autoridad deliberadamente invertida respecto a la wiki — si la biblia y el código divergen, es un bug de uno de los dos. Un primer commit (<code>7a5b738</code>) le dio vuelta a las cinco tandas a la vez; horas más tarde un segundo commit (<code>2223301</code>) tuvo que reescribir de cero el capítulo de PDC, porque documentaba el módulo v1 que el usuario deprecó ese mismo día en vez del v2 que sigue vivo. Recontado en esta pasada: quedan <b>11 documentos</b> (1.444 líneas, 63 escenarios citados con cita <code>archivo:línea</code>), 17 pruebas Playwright en <code>e2e/tests/biblia/</code> (5 cascada, 3 PDC, 2 soporte, 7 transversal) y 17 hallazgos en <code>docs/EXPERIMENTS.md</code> — 16 siguen abiertos y 1 se cerró el 4 de agosto como «no se arregla» porque describía código ya deprecado. Los cinco <code>goal.md</code> siguen diciendo «ABIERTO» porque, en efecto, ninguna tanda cerró su condición de hecho completa (falta, por ejemplo, la cobertura Playwright propia de <code>biblia-t5-lectura</code>: no hay <code>lectura-bi.spec.mjs</code> en <code>e2e/tests/biblia/</code>).</p>
     <div class="front-grid">
       <div class="front-detail">
         <div class="table-card">
@@ -514,7 +514,7 @@
             <tbody>
               <tr><td><span class="t-id">T1 transversal</span></td><td>Autenticación, selección de proyecto, las 17 capacidades de <code>RbacManager</code>.</td><td><code>transversal.spec.mjs</code> — 7 casos</td></tr>
               <tr><td><span class="t-id">T2 cascada LPS</span></td><td>Programa General → Intermedia → Semanal, el ciclo completo.</td><td><code>cascada-lps.spec.mjs</code> — 5 casos</td></tr>
-              <tr><td><span class="t-id">T3 PDC</span></td><td>Plan de Compras v2 (reescrito hoy sobre el módulo vivo) y sus deudas de datos conocidas.</td><td><code>pdc.spec.mjs</code> — 3 casos</td></tr>
+              <tr><td><span class="t-id">T3 PDC</span></td><td>Plan de Compras v2 (reescrito el 4 de agosto sobre el módulo vivo) y sus deudas de datos conocidas.</td><td><code>pdc.spec.mjs</code> — 3 casos</td></tr>
               <tr><td><span class="t-id">T4 soporte</span></td><td>Módulos de soporte a la operación.</td><td><code>soporte.spec.mjs</code> — 2 casos</td></tr>
               <tr><td><span class="t-id">T5 lectura</span></td><td>Torre de Control BI y superficies de solo lectura.</td><td>Sin spec propio todavía</td></tr>
             </tbody>
@@ -526,7 +526,7 @@
         </div>
         <div class="card">
           <h3>Dos reglas de negocio que solo vivían en la cabeza de alguien</h3>
-          <p>Quedaron escritas por primera vez: el Residente solo puede editar las dos últimas semanas del programa, y cada rol solo califica las disciplinas que le competen. Antes de hoy, ninguna de las dos estaba documentada — solo implementada.</p>
+          <p>Quedaron escritas por primera vez: el Residente solo puede editar las dos últimas semanas del programa, y cada rol solo califica las disciplinas que le competen. Antes del 4 de agosto, ninguna de las dos estaba documentada — solo implementada.</p>
         </div>
       </div>
       <div class="eli-card">
@@ -569,31 +569,36 @@
   <div class="wrap">
     <p class="eyebrow">Ritmo real</p>
     <h2>Commits verificados de esta pasada</h2>
-    <p class="lede" style="margin-bottom:24px">Fecha de autor normalizada a UTC, contada con <code>git log</code> directamente sobre el árbol de esta sesión — no arrastrada de la pasada anterior.</p>
+    <p class="lede" style="margin-bottom:24px">Fecha de autor normalizada a UTC, contada con <code>git log</code> sobre el historial completo tras <code>fetch --unshallow</code> — el clon llegó recortado también en esta pasada, y un conteo sobre el árbol truncado habría vuelto a repartir mal los commits entre días, como le pasó a un informe anterior a este.</p>
     <div class="timeline">
       <div class="tl-grid">
         <div class="tl-day">
           <div class="tl-n num">6</div>
-          <div class="tl-col"><div class="tl-bar" data-h="5"></div></div>
+          <div class="tl-col"><div class="tl-bar" data-h="3"></div></div>
           <div class="tl-d">01/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">3</div>
-          <div class="tl-col"><div class="tl-bar" data-h="2"></div></div>
+          <div class="tl-n num">0</div>
+          <div class="tl-col"><div class="tl-bar" data-h="0"></div></div>
           <div class="tl-d">02/08</div>
         </div>
         <div class="tl-day">
-          <div class="tl-n num">133</div>
-          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
+          <div class="tl-n num">83</div>
+          <div class="tl-col"><div class="tl-bar" data-h="48"></div></div>
           <div class="tl-d">03/08</div>
         </div>
-        <div class="tl-day is-today">
-          <div class="tl-n num">116</div>
-          <div class="tl-col"><div class="tl-bar" data-h="87"></div></div>
+        <div class="tl-day">
+          <div class="tl-n num">172</div>
+          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
           <div class="tl-d">04/08</div>
         </div>
+        <div class="tl-day is-today">
+          <div class="tl-n num">5</div>
+          <div class="tl-col"><div class="tl-bar" data-h="3"></div></div>
+          <div class="tl-d">05/08</div>
+        </div>
       </div>
-      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Reparto del 3–4 ago (<b>249</b> commits): <b>111</b> docs · <b>80</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros (merge/chore/refactor/a11y/wip). El único commit nuevo desde el corte de las 21:25 es el que publicó ese mismo informe. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits sin subir.</span></p>
+      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>Sexta pasada, mismo clon recortado de siempre: <code>git rev-list --count HEAD</code> volvía a ver solo 80 commits; tras <code>fetch --unshallow</code> (1.514 commits reales) el reparto por día se recontó de cero y coincide exactamente con el de la pasada anterior — el 2 de agosto sigue en <b>0</b> commits, el 3–4 ago sigue sumando <b>255</b> (<b>116</b> docs · <b>81</b> fix · <b>22</b> feat · <b>19</b> test · <b>17</b> otros: merge/chore/refactor/a11y/wip/style/UI). El único cambio es el 5 de agosto, que pasa de 4 a <b>5</b> commits: el quinto es <code>b927a8f</code> (04:22 UTC), la publicación de la pasada anterior de este mismo informe — sigue sin aparecer ningún commit de desarrollo real ese día (los otros cuatro: <code>e81d3e47</code> 00:24 UTC, <code>850f3c8</code> 01:19 UTC, <code>b657d17</code> 02:22 UTC, <code>89d5d727</code> 03:27 UTC). Total desde el 1 de agosto: <b>266</b> commits (<b>122</b> docs · <b>81</b> fix · <b>23</b> feat · <b>19</b> test · <b>21</b> otros) antes de que esta pasada publique la suya. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits de diferencia en ambos sentidos.</span></p>
     </div>
   </div>
 </section>
@@ -626,14 +631,14 @@
     <div class="stack">
       <div class="card wait">
         <h3><code>memoria/goals/estado.md</code> <span class="badge b-wait">Desactualizada — se contradice a sí misma</span></h3>
-        <p>Su frontmatter y su texto siguen afirmando «16 goals» y fechando la lectura el 2026-08-02, pero su propio último commit es de hoy 14:03:56 — el mismo que creó los cinco goals de la Biblia, que la página sí lista. Es decir: se actualizó a medias. <code>find goals/ -name goal.md</code> en esta pasada cuenta <b>24</b>; a la página le faltan al menos <code>cierre-version-1-1-0-design-system</code> (creado antes de su propio último commit, así que debería estar), <code>pg-chip-de-estado</code> y <code>repaso-usabilidad-no-tablas</code>. No se corrige aquí — corresponde a una pasada de <code>ingest</code> sobre la wiki, no a este informe — pero queda anotado para que nadie la use como fuente sin ese aviso.</p>
+        <p>Su frontmatter y su texto siguen afirmando «16 goals» y fechando la lectura el 2026-08-02, pero su propio último commit es del 4 de agosto 14:03:56 — el mismo que creó los cinco goals de la Biblia, que la página sí lista. Es decir: se actualizó a medias. <code>find goals/ -name goal.md</code> en esta pasada cuenta <b>24</b>; a la página le faltan al menos <code>cierre-version-1-1-0-design-system</code> (creado antes de su propio último commit, así que debería estar), <code>pg-chip-de-estado</code> y <code>repaso-usabilidad-no-tablas</code>. No se corrige aquí — corresponde a una pasada de <code>ingest</code> sobre la wiki, no a este informe — pero queda anotado para que nadie la use como fuente sin ese aviso.</p>
       </div>
       <div class="card">
         <h3>Planes en <code>docs/superpowers/plans/</code> <span class="badge b-info">25 archivos</span></h3>
-        <p>La mayoría corresponde a goals ya cerrados (confirmado por evidencia en <code>main</code>: rutas retiradas, scripts de la wiki existentes, componentes construidos). El plan de la campaña de dark mode creció de 32 a <b>35 tareas</b> y ya tiene <b>9 con commit real</b> detrás, comprobado línea a línea contra el mensaje de commit exacto que cada tarea del plan se propone escribir; el de la versión 1.1.0 (7 tareas) todavía ninguno. Los checkboxes de los planes <b>no se usaron como señal</b> — están todos sin marcar incluso en planes con trabajo terminado, así que esta lectura se hizo contra <code>git log</code>, no contra el markdown.</p>
+        <p>La mayoría corresponde a goals ya cerrados (confirmado por evidencia en <code>main</code>: rutas retiradas, scripts de la wiki existentes, componentes construidos). El plan de la campaña de dark mode creció de 31 a <b>35 tareas</b> y ya tiene <b>9 con commit real</b> detrás, comprobado línea a línea contra el mensaje de commit exacto que cada tarea del plan se propone escribir; el de la versión 1.1.0 (7 tareas) todavía ninguno. Los checkboxes de los planes <b>no se usaron como señal</b> — están todos sin marcar incluso en planes con trabajo terminado, así que esta lectura se hizo contra <code>git log</code>, no contra el markdown.</p>
       </div>
       <div class="card">
-        <h3>Journey <code>improve-app</code> <span class="badge b-done">Fase 1 cerrada hoy</span></h3>
+        <h3>Journey <code>improve-app</code> <span class="badge b-done">Fase 1 cerrada el 4 de agosto</span></h3>
         <p>La entrevista de jobs-to-be-done se hizo hoy y escribió <code>docs/CUSTOMER.md</code> — la fase que era puerta ya está <b>done</b>, y las fases 3, 5, 6 y 9 quedan desbloqueadas. Estado actual de las 9 fases: <b>1 hecha</b> (fase 1), <b>2 en curso</b> (2 y 4, satisfechas por los barridos del frente 1), <b>4 pendientes</b> (3, 5, 6, 9), <b>1 saltada</b> (7, app interna sin venta) y <b>1 diferida</b> (8, hasta que haya queja de lentitud). Corre entrelazado con el frente 1, no como proyecto aparte.</p>
       </div>
       <div class="card">
@@ -649,7 +654,7 @@
     <div class="brand-foot">AIA · Last Planner
       <small>Estado de desarrollo · informe generado desde el repositorio</small>
     </div>
-    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (incluyendo un <code>fetch --unshallow</code>, porque el clon llegó otra vez con el historial recortado a los commits de hoy — con él, el reparto diario de commits cambió respecto al informe anterior, que medía sobre ese mismo historial incompleto), los <code>goal.md</code> de <code>goals/</code>, los planes de <code>docs/superpowers/plans/</code> contrastados commit a commit contra sus mensajes propuestos, el registro de decisiones, la baseline de deuda y la ejecución real de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado. Esta pasada corrió 55 minutos después del corte anterior (21:25 UTC) y repitió el mismo conjunto de comandos: no encontró ningún commit nuevo aparte del que publicó ese informe, así que las cifras de ritmo se refrescaron pero el relato de cada frente no cambió.</p>
+    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (el clon llegó otra vez recortado —<code>git rev-list --count HEAD</code> daba solo 80 hasta correr <code>fetch --unshallow</code>, que trajo las 1.514 commits reales—, con <code>HEAD</code> desprendido; <code>checkout -B main origin/main</code> dejó la rama local al día, confirmado con <code>rev-list --left-right --count main...origin/main</code> en 0/0), los <code>goal.md</code> de los 24 directorios de <code>goals/</code>, los 25 planes de <code>docs/superpowers/plans/</code> (las 35 tareas de la campaña de dark mode y las 7 de la 1.1.0 recontadas por encabezado <code>### Task N</code>, no por checkbox), el registro de decisiones (54 filas: 3 A, 2 B, 49 C, recontadas por referencia), la baseline de deuda (<code>docs/design-system/audit-baseline.json</code>, sin cambios desde el 25 de julio), los 63 escenarios con cita <code>archivo:línea</code> de <code>docs/flujos/</code> (recontados por encabezado <code>PREFIJO-NÚMERO</code>, incluidos los cinco <code>RBAC-A</code>…<code>RBAC-E</code> con sufijo de letra — <code>docs/flujos/</code> no tiene commits desde el 4 de agosto 15:55 UTC, antes de que arrancara la primera pasada de este informe) y la ejecución completa de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual ni sincroniza el manifiesto de goldens que reporta como desincronizado. <b>Esta es la sexta pasada seguida sobre el mismo estado: corrió ~58 minutos después del corte anterior (04:22 UTC, commit <code>b927a8f</code>) y repitió el mismo conjunto de comandos sin encontrar ningún commit de desarrollo nuevo</b> — el único commit que aparece en el árbol desde el informe de la pasada anterior es el que esa misma pasada publicó (<code>e81d3e47</code>, <code>850f3c8</code>, <code>b657d17</code>, <code>89d5d727</code>, <code>b927a8f</code>: las cinco publicaciones previas de este informe, ninguna de desarrollo real). El relato de los cinco frentes, la suite estática (6/8 checks, 352/368 <code>node-tests</code>, mismos 5 «golden hash mismatch» en <code>contracts</code>) y el registro de decisiones no cambiaron: se repitió la verificación de cada afirmación contra el árbol actual y todas se sostuvieron, incluyendo una relectura directa del código de las Tasks 32 y 34 (línea de <code>Ejecutado_Teorico</code> corrida a 2924 por el desplazamiento de una línea en <code>hot.js</code>, mismo contenido). Único dato corregido de fondo, además del reparto de commits por día (ver arriba): la distancia entre <code>main</code> y el commit de producción real (<code>1aa7c69</code>) avanzó de 1.067 a <b>1.068</b> commits, porque <code>main</code> mismo avanzó un commit (el de la pasada anterior) desde la última medición.</p>
   </div>
 </footer>
 
