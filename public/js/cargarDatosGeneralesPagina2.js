@@ -40,8 +40,22 @@ if (
   document.head.appendChild(faLink);
 }
 
+// C-46 (paso 2/2): los cinco ids que el PHP ya emite —Max_Semana, baseDatos,
+// permiso_canonico, semana y Semanal_Confirmada— salieron de esta plantilla.
+// Los inyectaba en las 10 vistas que cargan este script, duplicando un id que
+// el servidor ya resuelve; como el inyector hace `encabezado.innerHTML += ...`,
+// la copia del PHP iba primero y se quedaba con el `getElementById`, dejando la
+// inyectada vacía e inerte. Ahora hay una sola fuente por id: manda el servidor.
+//
+// Los `setVal(...)` de la respuesta AJAX NO se tocan: siguen escribiendo el
+// valor fresco sobre el campo del PHP, que es lo que ya hacían. `setVal` está
+// guardado con `if (el)`, así que en las vistas donde el PHP no emite un id
+// concreto (por ejemplo `Semanal_Confirmada` en /indicadores o /control-cambios,
+// donde ningún JS lo lee) la llamada queda en no-op sin romper nada.
+//
+// Los 11 restantes se quedan: están fuera de C-46 y ninguna vista los emite.
 var inputosOcultos =
-  "<input type='hidden' name='Fecha_Fin_Sem' id='Fecha_Fin_Sem' value=''><input type='hidden' name='Fecha_Fin_SemYMD' id='Fecha_Fin_SemYMD' value=''><input type='hidden' name='Fecha_Inicio_Sem' id='Fecha_Inicio_Sem' value=''><input type='hidden' name='Fecha_Inicio_SemYMD' id='Fecha_Inicio_SemYMD' value=''><input type='hidden' name='Fecha_datepicker' id='Fecha_datepicker' value=''><input type='hidden' name='Max_Semana' id='Max_Semana' value=''><input type='hidden' name='baseDatos' id='baseDatos' value=''><input type='hidden' name='permiso_canonico' id='permiso_canonico' value=''><input type='hidden' name='proyecto' id='proyecto' value=''><input type='hidden' name='semana' id='semana' value=''><input type='hidden' name='pdcActivo' id='pdcActivo' value=''><input type='hidden' name='tituloSuperior' id='tituloSuperior' value=''><input type='hidden' name='Semanal_Confirmada' id='Semanal_Confirmada' value=''><input type='hidden' name='fechaCierreCompromisos' id='fechaCierreCompromisos' value=''><input type='hidden' name='fechaCreacionSemana' id='fechaCreacionSemana' value=''><input type='hidden' name='versionCronograma' id='versionCronograma' value=''>";
+  "<input type='hidden' name='Fecha_Fin_Sem' id='Fecha_Fin_Sem' value=''><input type='hidden' name='Fecha_Fin_SemYMD' id='Fecha_Fin_SemYMD' value=''><input type='hidden' name='Fecha_Inicio_Sem' id='Fecha_Inicio_Sem' value=''><input type='hidden' name='Fecha_Inicio_SemYMD' id='Fecha_Inicio_SemYMD' value=''><input type='hidden' name='Fecha_datepicker' id='Fecha_datepicker' value=''><input type='hidden' name='proyecto' id='proyecto' value=''><input type='hidden' name='pdcActivo' id='pdcActivo' value=''><input type='hidden' name='tituloSuperior' id='tituloSuperior' value=''><input type='hidden' name='fechaCierreCompromisos' id='fechaCierreCompromisos' value=''><input type='hidden' name='fechaCreacionSemana' id='fechaCreacionSemana' value=''><input type='hidden' name='versionCronograma' id='versionCronograma' value=''>";
 
 // Refresca el area del proyecto desde la respuesta AJAX. La consumen
 // programacion_semanal/hot.js y legacyCards.js para pedir categorias por area.

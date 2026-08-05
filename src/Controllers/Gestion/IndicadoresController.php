@@ -34,6 +34,12 @@ class IndicadoresController extends BaseController
                 error_log('Error cargando semanas para el shell Indicadores: ' . $e->getMessage());
             }
         }
+        // C-46: Max_Semana resuelto en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana] = $this->getWeekStatusVars(
+            (string) ($vars['dbName'] ?? ''),
+            (int) ($vars['semana'] ?? 0)
+        );
+
         $shellActive = 'indicadores';
         $shellModuleLabel = 'Indicadores LPS';
 

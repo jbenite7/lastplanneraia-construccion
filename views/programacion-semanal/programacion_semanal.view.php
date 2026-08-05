@@ -53,6 +53,10 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <!-- C-46: los emite el servidor; el inyector JS los duplica todavia (Task 37 lo retira). -->
+        <input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo (int) ($maxSemana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="Semanal_Confirmada" name="Semanal_Confirmada" value="<?php echo (int) ($semanalConfirmada ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="semana" name="semana" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
     </div>
 
@@ -74,6 +78,9 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                     <button id="btn_cerrar_compromisos_semana" type="button" class="aia-btn" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
                     <button type="button" id="btn_reabrir_semana" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
                     <button id="btn_tnp" type="button" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
+                    <!-- Recargar es accion de recuperacion: se busca cuando los datos no cuadran, el peor momento para tener que abrir un desplegable (C-17). -->
+                    <button id="btn-refresh" type="button" class="aia-btn aia-btn--secondary" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> <span>Recargar</span></button>
+                    <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal') ?>
                     <div class="ps-dropdown-nav ps-hot-overflow-nav" aria-label="Mas acciones">
                         <button type="button" class="aia-btn aia-btn--secondary btn-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
                             <i aria-hidden="true" class="fas fa-ellipsis-h"></i> <span>Más</span>
@@ -82,8 +89,6 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                             <button type="button" class="leyenda_colores ps-dropdown-item" data-toggle="modal" data-target="#modal_leyenda_colores_ps" role="menuitem" aria-label="Ver leyenda de colores"><i aria-hidden="true" class="fas fa-question-circle"></i> Leyenda</button>
                             <button id="btn_informe_compromisos" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Imprimir Informe de Compromisos"><i aria-hidden="true" class="fas fa-print"></i> Imprimir</button>
                             <button id="btn-export" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Exportar datos a CSV"><i aria-hidden="true" class="fas fa-file-csv"></i> Exportar CSV</button>
-                            <button id="btn-refresh" type="button" class="ps-dropdown-item" role="menuitem" aria-label="Recargar tabla de actividades"><i aria-hidden="true" class="fas fa-sync"></i> Recargar</button>
-                            <?= \App\View\Components\BiAccessComponent::renderLink('semanal', 'BI Semanal', 'ps-dropdown-item', ['role' => 'menuitem']) ?>
                         </div>
                     </div>
                 </div>

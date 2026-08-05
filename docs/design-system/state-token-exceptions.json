@@ -206,6 +206,13 @@
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
       "reason": "Es media pareja a proposito: .text-danger es una utilidad de SOLO texto de Bootstrap, no pinta fondo, asi que no existe la otra mitad que declarar. El critical-text no se usa como tinta directa sino como matiz: se mezcla al 35% contra --ds-active-text-primary para obtener un rojo claro legible sobre oscuro. Medido en /admin/: el #dc3545 original daba 4,24:1 sobre el lienzo del panel y fallaba AA; la mezcla sube a ~8:1 conservando el matiz rojo."
+    },
+    {
+      "file": "public/css/design-system/adapters/admin-lte.css",
+      "selector": ".admin-field-error",
+      "token": "--ds-color-state-critical-text",
+      "kind": "by-design",
+      "reason": "Mensaje de error de campo, hoy en tres sitios: /admin/usuarios/crear (2 campos) y el dashboard (progreso de consolidacion y alertas de integridad). Es una linea de texto suelta bajo el input o la lista, sin chip ni superficie propia, asi que no hay bloque donde declarar el critical-bg pareado: medio par a proposito. Toma el token de texto critico SIN aclarar porque el aclarado al 35% de la regla hermana .text-danger da rgb(250,234,231) -practicamente blanco, indistinguible del texto normal, y un error que no se ve rojo no se lee como error-. El contraste nunca fue el problema: medido a 1180x820 en dark, #ffcdc8 sobre la superficie compuesta del formulario rgb(27,34,30) da 11,42:1, muy por encima de AA. El aclarado sigue vigente para .text-danger sin este gancho -por ejemplo el enlace «Salir» de la navbar, donde el matiz no carga significado-."
     }
   ]
 }

@@ -1,3 +1,8 @@
+<?php /* El carril envuelve al `<nav>` solo para dar un ancla que NO se desplace:
+   el degradado de corte tiene que quedarse pegado al borde derecho visible, y
+   un `::after` absoluto dentro del propio contenedor con `overflow-x: auto`
+   viaja con el contenido. Ver `.bi-tabs-rail` en public/css/bi-control-tower.css. */ ?>
+<div class="bi-tabs-rail">
 <nav class="bi-tabs-nav flex items-center gap-1 flex-shrink-0 overflow-x-auto whitespace-nowrap" role="tablist" aria-label="Hojas del reporte">
     <button type="button" role="tab" onclick="switchView('torre-control')" id="nav-torre-control" class="nav-item <?= ($reportKey ?? '') === 'overview' ? 'active' : '' ?> flex items-center gap-2 px-4 py-2 text-sm font-medium flex-shrink-0" aria-controls="view-torre-control" aria-selected="<?= ($reportKey ?? '') === 'overview' ? 'true' : 'false' ?>" tabindex="<?= ($reportKey ?? '') === 'overview' ? '0' : '-1' ?>">
         <i data-lucide="layout-dashboard" class="w-4 h-4" aria-hidden="true"></i> Resumen Ejecutivo
@@ -24,3 +29,4 @@
         <i data-lucide="users" class="w-4 h-4" aria-hidden="true"></i> Responsables (CIP)
     </button>
 </nav>
+</div>

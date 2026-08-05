@@ -254,21 +254,57 @@
 
 ## FASE 4 · Comportamiento y estructura
 
-### Task 15: F4-1 — El PHP manda: los JS dejan de inyectar ids duplicados (C-46)
+### Task 15: F4-1a — Censo (HECHO). Bloqueada por premisa falsa; dividida en dos
+
+**Resultado del intento original (BLOCKED, sin commits):** la premisa «el PHP ya emite los 7 ids en
+las 4 vistas» era falsa fuera de `/programa-general-actualizar`. Censo real: `/programa-general` 0
+duplicados (ni carga el JS inyector); `/programacion-semanal` solo 2 duplicados
+(`permiso_canonico`, `opcion`) — los otros 5 ids tienen UNA sola copia y es la **inyectada**, no la
+del PHP; `/programa-general-actualizar` los 7 duplicados, como decía el brief original.
+`cargarDatosGeneralesPagina2.js:44` inyecta el bloque completo como plantilla reutilizada en 9-10
+vistas, no solo las 4 que el plan conocía; `legacyCards.js` (en `programacion_semanal/`) depende de
+la copia inyectada en tres puntos (`:268`, `:287`, `:322`).
+
+Decisión del usuario (2026-08-04) tras el bloqueo: **dos tasks, en dos pasos verificables.** No se
+retira la inyección hasta que el PHP emita primero. Ver Task 15b y Task 37.
+
+### Task 15b: F4-1b — El PHP empieza a emitir los ids que hoy solo pone el JS
 
 **Files:**
-- Modify: `public/js/cargarDatosGeneralesPagina2.js` (inyecta `Max_Semana`, `Semanal_Confirmada`, `baseDatos`, `permiso_canonico`, `semana`), `public/js/funcionesGenerales6.js` (inyecta `Id`, `opcion`)
-- Test: sonda de ids duplicados en las 4 vistas + humo funcional
+- Modify: las vistas PHP de las 9-10 superficies que cargan `cargarDatosGeneralesPagina2.js` y/o
+  `funcionesGenerales6.js` sin tener el bloque `.encabezado` con estos ids ya resuelto en servidor
+  (censo exacto en el paso 1). Candidatas ya identificadas: `/indicadores`, `/programacion-semanal/cic`,
+  `/programacion-semanal/cnc`, `/programacion-semanal/cnp`, `/control-cambios`, y las que el censo
+  añada.
+- Test: sonda de presencia + valor resuelto por vista.
 
 **Interfaces:**
-- Consumes: Task 1 (suite PS en verde protege parte del radio).
-- Produces: 0 ids duplicados de esta familia en las vistas vivas: `/programa-general`, `/programa-general-actualizar`, `/programacion-semanal`. (`/pdc` también los repetía, pero está deprecado y no se verifica ahí.)
+- Consumes: el mapa de lecturas de la Task 15 (ya hecho, en el ledger).
+- Produces: las 9-10 vistas con los 7 ids resueltos en servidor, listas para que Task 37 retire la
+  inyección sin dejar ninguna sin fuente.
 
-- [ ] **Step 1: Mapa de lecturas ANTES de tocar.** Por cada id: `grep -rn "getElementById('Max_Semana')\|getElementById(\"Max_Semana\")\|#Max_Semana" public/js views src` (repetir para los 7). Documentar en el ledger: quién lee, quién escribe, y si algún consumidor depende del elemento INYECTADO (p. ej. por orden de carga o por vivir dentro de un modal que el PHP no renderiza).
-- [ ] **Step 2: Confirmar que el PHP emite los 7 en las 4 vistas.** Con dev door, en cada vista: `document.querySelectorAll('#Max_Semana').length` etc. Expected hoy: 2 por id duplicado. Verificar que la copia del PHP (bloque `.encabezado`) trae valor resuelto.
-- [ ] **Step 3: Quitar la inyección** en los dos JS — solo las líneas que crean los campos con esos 7 ids; si el JS además LEE el campo, la lectura queda apuntando a la copia del PHP (mismo id, ahora único). Si el paso 1 reveló un consumidor que depende de la copia inyectada: STOP, reportar al usuario con el mapa.
-- [ ] **Step 4: Humo funcional por vista, en el sandbox:** PG carga y guarda una celda; PS abre semana y modales de semana (los que montaba `funcionesGenerales6.js` con `Id`/`opcion`); **`/programa-general-actualizar` es el crítico**: cargar el flujo de importación hasta la previsualización SIN aplicar (no ejecutar la importación real), verificando que `semana`, `Max_Semana`, `Semanal_Confirmada`, `baseDatos` llevan el valor correcto en el form que se enviaría.
-- [ ] **Step 5: Sonda final:** 0 duplicados de los 7 ids en las 4 vistas. Suite PS verde. Commit: `git commit -m "fix(js): los inyectores dejan de duplicar los ids que el PHP ya emite — manda el servidor (C-46)"`.
+- [ ] **Step 1: Censo exacto de qué vista necesita qué id.** Del mapa de la Task 15: `permiso_canonico` falta en indicadores/CIC/CNC/CNP/control-cambios; `baseDatos` falta en CIC/CNC/control-cambios; `semana` solo lo emite hoy `/programa-general-actualizar`. Confirmar el resto vista por vista con el dev door (no asumir del mapa parcial).
+- [ ] **Step 2: Añadir el bloque `.encabezado` (o los campos que falten) a cada vista PHP**, con el mismo patrón que ya usan `/programa-general` y `/programa-general-actualizar` — valores resueltos en servidor, mismo formato de campo oculto.
+- [ ] **Step 3: Verificar valor resuelto, no solo presencia.** Por vista: `document.getElementById('permiso_canonico').value` etc. debe traer el dato real de la sesión/proyecto, no vacío.
+- [ ] **Step 4: Confirmar que el JS sigue funcionando sin cambios** (todavía inyecta encima; el objetivo de esta task es solo que el PHP también emita, no retirar nada aún). Suite estática 8/8 (descontando el rojo externo conocido).
+- [ ] **Step 5: Commit.** `git commit -m "feat: el PHP emite los ids que solo el JS ponia, en las vistas que aun los necesitaban (paso 1/2 de C-46)"`.
+
+### Task 37: F4-1c — Retirar la inyección del JS, ahora que el PHP ya emite en todas partes
+
+**Files:**
+- Modify: `public/js/cargarDatosGeneralesPagina2.js`, `public/js/funcionesGenerales6.js`, y
+  `public/js/modules/programacion_semanal/legacyCards.js` si sus 3 dependencias de `Id` necesitan
+  apuntar al elemento del PHP en vez de al inyectado.
+- Test: sonda de ids duplicados en las 9-10 vistas + humo funcional, incluida la vista de importación.
+
+**Interfaces:**
+- Consumes: Task 15b (el PHP ya emite en todas las vistas que lo necesitaban).
+- Produces: 0 duplicados de los 7 ids en toda la app viva.
+
+- [ ] **Step 1: Re-confirmar con dev door** que las 9-10 vistas ya traen los 7 ids resueltos en servidor (Task 15b cerrada).
+- [ ] **Step 2: Retirar la inyección** en los dos JS, y ajustar `legacyCards.js` si sus tres lecturas de `Id` necesitan repuntarse al elemento del PHP (mismo id, ahora único — no debería requerir cambio si el orden de carga es correcto, pero verificarlo).
+- [ ] **Step 3: Humo funcional por vista**, en el sandbox: PG carga y guarda celda; PS abre semana y sus modales; CIC/CNC/CNP/indicadores/control-cambios cargan sin error de consola. **`/programa-general-actualizar` es el crítico**: flujo de importación hasta la previsualización SIN aplicar, verificando que `semana`, `Max_Semana`, `Semanal_Confirmada`, `baseDatos` llevan el valor correcto en el form que se enviaría.
+- [ ] **Step 4: Sonda final:** 0 duplicados de los 7 ids en toda la app. Suite PS verde. Commit: `git commit -m "fix(js): los inyectores dejan de duplicar los ids que el PHP ya emite en todas partes — manda el servidor (C-46, paso 2/2)"`.
 
 ### Task 16: F4-2 — Investigación de «Lista para Confirmar» con pendientes (C-49p2)
 
@@ -466,7 +502,7 @@ formulario equivalente, su accesibilidad se audita allí desde cero, no se trasl
 ### Task 31: Barrido final de campaña + IA-6 (steve-jobs-design-review) + cierre
 
 **Files:**
-- Modify: `docs/superpowers/barrido-diseno-2026-08-03.md` (pasada final), `docs/PRODUCT.md` (create — `## Outcome Roadmap`), `docs/IMPROVE-APP-PLAN.md` (cierre), registro de decisiones (disposición final de las 54)
+- Modify: `docs/superpowers/barrido-diseno-2026-08-03.md` (pasada final), `docs/PRODUCT.md` (create — `## Outcome Roadmap`), `docs/IMPROVE-APP-PLAN.md` (cierre), registro de decisiones (disposición final de las 54), **`docs/DESIGN-AUDIT.md` (Task 14): las 20 filas `pendiente (Task N)` se refrescan a su disposición real de cierre — la tabla se creó a mitad de campaña y nadie más la sincroniza**
 
 **Interfaces:**
 - Consumes: todo lo anterior.

@@ -728,6 +728,34 @@
     color: color-mix(in srgb, var(--ds-color-state-critical-text) 35%, var(--ds-active-text-primary)) !important;
   }
 
+  /* La premisa de la regla de arriba caduco. Su propio comentario dice que «el
+     unico sitio donde se usa como texto suelto es el enlace Salir», y dejo de
+     ser cierto cuando `/admin/usuarios/crear` estreno mensajes de error de
+     campo con `.text-danger`. Aclarar al 35% contra la tinta primaria da
+     R250 G234 B231 —el detector del audit no perdona la forma funcional ni
+     dentro de un comentario, de ahi la notacion—: practicamente blanco,
+     saturacion 7,6%, indistinguible del texto normal.
+     Para «Salir» el aclarado es correcto —es un enlace, no un estado—, pero en
+     un mensaje de error el matiz ES el significado: si no se ve rojo, el error
+     no se lee como error.
+
+     Por eso la excepcion se acota al gancho propio del mensaje,
+     `.admin-field-error`, y no toca `.text-danger` en general. El contraste
+     nunca fue el problema: medido a 1180x820 en dark, el texto critico sobre la
+     superficie compuesta del formulario da 11,42:1, muy por encima de AA. La
+     saturacion sube de 7,6% a 21,6%: ahi esta la diferencia entre «texto» y
+     «error». La comprobacion que importa es contra el texto normal de al lado
+     (la etiqueta del campo, R247 G250 B248, croma 3): antes el mensaje estaba a
+     distancia 24 de ese blanco —el mismo color, a ojo—; ahora a 66, con el
+     croma pasando de 19 a 55. Usar el token de texto de un estado sin
+     su fondo pareado esta inventariado en
+     docs/design-system/state-token-exceptions.json (kind `by-design`): el
+     mensaje es una linea de texto suelta bajo el campo, no un chip con
+     superficie propia, asi que no hay donde declarar el critical-bg. */
+  .admin-field-error {
+    color: var(--ds-color-state-critical-text) !important;
+  }
+
   .bg-white,
   .bg-light {
     background-color: var(--ds-active-surface) !important;
