@@ -40,6 +40,21 @@
     padding-inline: var(--ds-table-cell-pad-x) !important;
   }
 
+  /* Task 8 (2026-08-05, C-16). Esta declaracion es la que MANDA sobre el relleno
+     del `th`: para declaraciones `!important` el orden de capas se invierte, asi
+     que `@layer reset` gana a `@layer components` y tambien al `padding: 0
+     !important` sin capa de handsontable-header-global.css. Por eso la cabecera
+     pagaba 10px por lado igual que la celda de datos: `th` de 56 px con
+     `.colHeader` de 34 — 22 px por columna gastados en aire alrededor de un texto
+     centrado que las lineas de columna ya separan del vecino. Bajarlo a 3px
+     devuelve 14 px de texto POR COLUMNA sin quitarle un pixel a ningun dato, y es
+     lo que hace legibles enteras «Unidad», «Critica», «Ejecutado» o
+     «Especificaciones». La celda de datos conserva sus 10px: ahi el texto va
+     alineado a un borde y el aire si hace falta. */
+  .handsontable thead th {
+    padding-inline: var(--ds-table-header-pad-x) !important;
+  }
+
 }
 
 @layer components {

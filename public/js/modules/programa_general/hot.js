@@ -236,9 +236,17 @@
     return key;
   }
 
-  var columnMinWidths = [34, 52, 112, 48, 96, 96, 38, 38, 52, 58, 58, 70, 58];
-  var columnFloorWidths = [30, 44, 92, 42, 90, 90, 32, 32, 44, 50, 50, 58, 50];
-  var columnMaxWidths = [56, 120, 300, 64, 104, 104, 56, 56, 82, 90, 90, 112, 78];
+  // Task 8 (2026-08-05, C-31). La columna «Id» estaba topada en 56 px por su
+  // `max` y el codigo jerarquico mas largo del programa de JMC («3.5.2.1.1»)
+  // necesita 73 px medidos con la fuente de celda. A 56 px se recortaba en seco,
+  // sin elipsis ni marca alguna, y «3.5.2.1.1» se leia «3.5.2.1» — que es OTRA
+  // actividad de la misma tabla. 9 de 29 filas visibles caian en ese error.
+  // El piso sube a 72 y el techo a 84; los 20 px extra salen de «Actividad»
+  // (indice 2), que rendiza 182 px con un `max` de 300 y envuelve por palabra:
+  // su palabra mas larga mide 133 px, asi que sigue sin partirse.
+  var columnMinWidths = [76, 52, 112, 48, 96, 96, 38, 38, 52, 58, 58, 70, 58];
+  var columnFloorWidths = [72, 44, 92, 42, 90, 90, 32, 32, 44, 50, 50, 58, 50];
+  var columnMaxWidths = [84, 120, 300, 64, 104, 104, 56, 56, 82, 90, 90, 112, 78];
   var columnShrinkPriority = [2, 11, 8, 9, 10, 12, 3, 0, 6, 7, 4, 5, 1];
   var baseHiddenColumns = [1];
   var tabletHiddenColumns = [0, 3, 6, 9, 12];

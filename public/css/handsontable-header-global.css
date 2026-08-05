@@ -93,6 +93,28 @@ body #hot-container .handsontable thead th .colHeader {
   text-overflow: ellipsis !important;
 }
 
+/* Task 8 (2026-08-05, Step 1-bis): excepcion al clamp de arriba para las cabeceras
+   de restriccion blanda de PI. La pastilla « blanda» que anade
+   `programacion-intermedia.css` via ::after cuenta como una palabra mas, asi que
+   «Procedimiento Constructivo» y «Modelacion BIM» componen TRES lineas
+   («Procedimiento» / «Constructivo» / «blanda») y el clamp de dos solo dejaba ver
+   las dos primeras: la etiqueta que dice que la restriccion es blanda desaparecia
+   sin marca alguna. Medido: caja de 28 px de alto con 42 px de contenido.
+   Subir el clamp a 3 NO surte efecto (`-webkit-line-clamp` seguia calculando 2);
+   lo que si funciona es quitarle el `display: -webkit-box` del que depende. Cabe
+   sin robarle un pixel de ancho a ninguna columna: el `th` mide 57 px de alto y
+   tres lineas ocupan 42. Esta regla vive aqui, y no en la hoja del modulo, porque
+   `programacion-intermedia.css` entra en `@layer module` y para declaraciones
+   `!important` el orden de capas se invierte: lo no capado de este archivo le
+   gana. */
+body.pi-page #hot-container .handsontable thead th .colHeader.pi-soft-restriction-header,
+body.pi-page #hot-container .handsontable thead th .relative > .colHeader.pi-soft-restriction-header {
+  display: block !important;
+  -webkit-line-clamp: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
 body.ps-page #hot-container .handsontable thead th .relative > .changeType,
 body.pi-page #hot-container .handsontable thead th .relative > .changeType,
 body.pg-page #hot-container .handsontable thead th .relative > .changeType,

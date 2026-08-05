@@ -335,16 +335,78 @@
     return cols;
   }
 
+  /**
+   * Ancho que necesita una cabecera para leerse ENTERA, medido, no estimado.
+   *
+   * Task 8 (2026-08-05, Step 1-bis). Las cabeceras de las columnas de restriccion
+   * no son texto del repo: salen de `general` via `/api/general/restriction-config`
+   * y cambian por proyecto («Diseños y Especificaciones», «Procedimiento
+   * Constructivo», «Equipos y Herramienta»…). Fijar numeros a mano aqui los
+   * dejaria mal en cuanto un proyecto renombrara una restriccion, asi que el piso
+   * se calcula del propio texto.
+   *
+   * Se mide la PALABRA mas larga, no la frase: el `.colHeader` envuelve por
+   * palabra y admite dos lineas, asi que «Equipos y Herramienta» cabe en
+   * `max("Equipos", "y", "Herramienta")`; lo que nunca cabe —y es lo que se
+   * recortaba— es una palabra sola mas ancha que la columna.
+   */
+  function anchoMinimoCabecera(texto) {
+    var etiqueta = String(texto == null ? '' : texto).trim();
+    if (!etiqueta) return 0;
+
+    var canvas;
+    if (!anchoMinimoCabecera._ctx) {
+      canvas = document.createElement('canvas');
+      anchoMinimoCabecera._ctx = canvas.getContext ? canvas.getContext('2d') : null;
+    }
+    var ctx = anchoMinimoCabecera._ctx;
+    if (!ctx) {
+      // Sin canvas se cae a la heuristica previa del modulo (~6 px por caracter).
+      return 0;
+    }
+
+    var raiz = document.documentElement;
+    var estilos = window.getComputedStyle(raiz);
+    var fuente = window.getComputedStyle(document.body || raiz).fontFamily || 'sans-serif';
+    var tamano = (estilos.getPropertyValue('--ds-table-header-font-size') || '0.75rem').trim();
+    var relleno = (estilos.getPropertyValue('--ds-table-header-pad-x') || '0.1875rem').trim();
+    var aRem = function (valor, porDefecto) {
+      var n = parseFloat(valor);
+      if (!Number.isFinite(n)) return porDefecto;
+      return /rem|em/.test(valor) ? n * 16 : n;
+    };
+    var px = aRem(tamano, 12);
+    var pad = aRem(relleno, 3) * 2;
+
+    ctx.font = '600 ' + px + 'px ' + fuente;
+    var palabras = etiqueta.split(/\s+/);
+    var mayor = 0;
+    var i;
+    var w;
+    for (i = 0; i < palabras.length; i++) {
+      w = ctx.measureText(palabras[i]).width;
+      if (w > mayor) mayor = w;
+    }
+
+    // +2 px de holgura: el redondeo del colgroup y el borde de 1px del `th`.
+    return Math.ceil(mayor + pad) + 2;
+  }
+
   function buildColumnSizing() {
     var config = _activeConfig || CONSTRUCTION_DEFAULTS;
     var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
     var numRestrictions = restrictions.length;
 
+    // Task 8 (2026-08-05, C-31): «Id» pasa de 36 px (su piso) a 74. Los codigos
+    // jerarquicos de JMC llegan a «2.4.1.3.1», que mide 69 px; a 36 px se veian
+    // «2.4» — 27 de las 28 filas visibles mostraban un id que no era el suyo.
+    // «Sub-Contratista» sube su piso de 100 a 126: «CONCREACEROS» mide 122 px y
+    // se cortaba a mitad de palabra en 3 filas.
     // Fixed leading columns (7): Id, Lote, Actividad, Sub, Resp, Semana, Ejecutado
     var fixedLeading = {
-      min:   [44, 54, 150, 130, 130, 60, 72],
-      floor: [36, 44, 120, 100, 100, 52, 64],
-      max:   [90, 70, 460, 240, 240, 110, 110],
+      min:   [76, 54, 150, 130, 130, 60, 72],
+      floor: [74, 44, 120, 126, 100, 52, 64],
+      max:   [96, 70, 460, 240, 240, 110, 110],
       ratio: [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048],
     };
 
@@ -382,6 +444,24 @@
     columnFloorWidths = fixedLeading.floor.concat(restrictionFloor, fixedTrailing.floor);
     columnMaxWidths = fixedLeading.max.concat(restrictionMax, fixedTrailing.max);
     columnWidthRatios = fixedLeading.ratio.concat(restrictionRatio, fixedTrailing.ratio);
+
+    /* Task 8 (2026-08-05, Step 1-bis): ninguna columna baja del ancho que su
+       propia cabecera necesita para leerse entera. Se aplica al PISO (el limite
+       duro que usa `reduceWidthsToTarget` en el segundo pase) y de rebote al
+       `min` y al `max`, para que el reparto responsivo no pueda deshacerlo.
+       Ocho cabeceras de PI se recortaban en seco —«Diseños y Especificaciones»
+       mostraba «Diseños y Especifi…»— y siete de ellas son etiquetas de
+       restriccion que vienen de la base de datos, no del repo. */
+    var cabeceras = buildColumnHeaders();
+    var hc;
+    var necesita;
+    for (hc = 0; hc < columnFloorWidths.length; hc++) {
+      necesita = anchoMinimoCabecera(cabeceras[hc]);
+      if (!necesita) continue;
+      if (columnFloorWidths[hc] < necesita) columnFloorWidths[hc] = necesita;
+      if (columnMinWidths[hc] < necesita) columnMinWidths[hc] = necesita;
+      if (columnMaxWidths[hc] < necesita) columnMaxWidths[hc] = necesita;
+    }
 
     // Shrink priority: lower index = shrinks first; trailing Observaciones shrinks last (0)
     var totalCols = 7 + numRestrictions + 3;

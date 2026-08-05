@@ -268,6 +268,14 @@ html.aia-theme-dark .pi-page {
     color: var(--pi-due-text) !important;
 }
 
+/* Task 8 (2026-08-05, Step 1-bis): la regla que impide que esta pastilla se coma
+   la tercera línea de la cabecera NO puede vivir aquí. Este archivo entra en
+   `@layer module` y, para declaraciones `!important`, el orden de capas se
+   invierte: el `-webkit-line-clamp: 2 !important` sin capa de
+   handsontable-header-global.css gana a cualquier `!important` de esta hoja
+   (comprobado con CSS.getMatchedStylesForNode + getComputedStyle: la regla
+   figuraba como «matched» y el valor calculado seguía siendo 2). El
+   contra-ajuste vive en handsontable-header-global.css, junto al clamp. */
 .pi-page .pi-soft-restriction-header::after {
     content: " blanda";
     display: inline-block;

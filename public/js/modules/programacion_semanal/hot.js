@@ -57,15 +57,36 @@
     }).filter(function (idx) { return idx >= 0; });
   }
 
+  // Task 8 (2026-08-05). Dos indices cambian de piso:
+  //  - 14 «Compromiso»: rendizaba 78 px y la cabecera —una sola palabra, que no
+  //    puede envolver— necesita 85. Era la ultima cabecera recortada de PS tras
+  //    recuperar el relleno horizontal del `th`.
+  //  - 22 «Estado Operativo» (C-49p1): rendizaba 116 px. El boton
+  //    `.ops-state-zoom` declara `container-type: inline-size` y una consulta
+  //    `@container (max-width: 120px)` que ESCONDE el nombre del estado y deja
+  //    solo el punto de color y el contador. La caja del contenedor es el ancho
+  //    interior de la celda (columna menos 20 px de relleno), asi que a 116 px
+  //    media 96 y la consulta disparaba siempre: «Lista para Confirmar» no se
+  //    leia nunca. El umbral NO se baja —a menos ancho el nombre saldria
+  //    mutilado—: la columna sube a 144 px para que el contenedor mida 124 y la
+  //    consulta deje de aplicar. OJO con la aritmetica: el contenedor NO mide lo
+  //    que mide la columna. `container-type: inline-size` consulta la CAJA DE
+  //    CONTENIDO del propio boton, que es la columna menos los 10 px de relleno
+  //    de la celda por lado y menos los 8 px de relleno del boton por lado: 36 px
+  //    menos. Medido paso a paso: con la columna en 144 el contenedor media 108;
+  //    con 158 media EXACTAMENTE 120 y `max-width: 120px` sigue cumpliendose (el
+  //    limite es inclusivo). 164 - 36 = 128 > 120, con holgura para el redondeo.
+  // Los 36 px extra salen de «Actividad» (indice 3, `max` 460, rendiza 202 y
+  // envuelve por palabra; su palabra mas larga mide 133 px).
   var columnMinWidths = [
     34, 64, 34, 210, 36, 34, 120,
-    120, 36, 50, 64, 72, 78, 72, 80,
-    74, 54, 62, 36, 36, 36, 160, 118, 64,
+    120, 36, 54, 64, 72, 80, 72, 88,
+    74, 54, 62, 36, 36, 36, 160, 164, 68,
   ];
   var columnFloorWidths = [
     28, 54, 28, 160, 28, 28, 92,
-    92, 28, 42, 54, 62, 68, 62, 70,
-    64, 46, 52, 28, 28, 28, 122, 104, 54,
+    92, 28, 52, 54, 62, 78, 62, 86,
+    64, 46, 52, 28, 28, 28, 122, 164, 66,
   ];
   var columnMaxWidths = [
     90, 98, 120, 460, 120, 100, 238,

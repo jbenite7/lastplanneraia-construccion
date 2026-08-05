@@ -41,12 +41,18 @@ test('modal de actividad manual usa superficies dark coherentes', async ({ page 
   }
 });
 
-test('estado operativo permanece en una linea sin recorte vertical', async ({ page }) => {
+test('estado operativo muestra el nombre completo, sin recorte', async ({ page }) => {
   await openDarkWeek(page);
-  // Contrato: si el label cabe, va en una linea sin recorte vertical; si el
-  // boton queda cerca del minimo de columna (container query <= 120px), el
-  // label se oculta y el estado se comunica con punto + contador, con el
-  // nombre completo en title/aria-label. Nunca texto solapado o recortado.
+  // Contrato (Task 8, 2026-08-05, C-49 parte 1). El anterior era «una linea, con
+  // elipsis si no cabe, y oculto por debajo de 120 px». Medido con datos reales,
+  // ese contrato NUNCA mostraba el nombre: la columna rendizaba 116 px, el
+  // contenedor del boton media 96 y la consulta `@container (max-width: 120px)`
+  // se cumplia siempre, asi que «Lista para Confirmar» no se leia jamas — solo un
+  // punto de color y «2 pend.». La columna sube a 164 px (contenedor 128) y el
+  // nombre se apila sobre el contador para disponer del ancho entero.
+  // Lo que se exige ahora: el nombre esta visible y ENTERO, sin recorte en ningun
+  // eje. El camino de ocultarlo sigue siendo legitimo si la columna se estrecha,
+  // y entonces el punto + contador tienen que quedar visibles.
   const zooms = page.locator('#hot-container .ops-state-zoom:visible');
   await expect(zooms.first()).toBeVisible();
   const metrics = await zooms.evaluateAll((nodes) => nodes.map((node) => {
@@ -61,6 +67,8 @@ test('estado operativo permanece en una linea sin recorte vertical', async ({ pa
       overflow: chipVisible ? chipStyle.overflow : null,
       scrollHeight: chipVisible ? chip.scrollHeight : 0,
       clientHeight: chipVisible ? chip.clientHeight : 0,
+      scrollWidth: chipVisible ? chip.scrollWidth : 0,
+      clientWidth: chipVisible ? chip.clientWidth : 0,
       countVisible: Boolean(count && count.getClientRects().length),
       hasAccessibleDetail: Boolean(node.closest('[title], [aria-label]')),
     };
@@ -68,9 +76,8 @@ test('estado operativo permanece en una linea sin recorte vertical', async ({ pa
   expect(metrics.length).toBeGreaterThan(0);
   for (const item of metrics) {
     if (item.chipVisible) {
-      expect(item.whiteSpace, item.text).toBe('nowrap');
-      expect(item.overflow, item.text).toBe('hidden');
       expect(item.scrollHeight, item.text).toBeLessThanOrEqual(item.clientHeight + 1);
+      expect(item.scrollWidth, item.text).toBeLessThanOrEqual(item.clientWidth + 1);
     } else {
       expect(item.countVisible, item.text).toBe(true);
     }
