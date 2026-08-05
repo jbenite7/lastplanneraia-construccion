@@ -26,6 +26,8 @@
         <input type="hidden" name="seccion" id="seccion" value="info_subcontratistas">
     </div>
 
+    <main>
+    <h1 class="aia-visually-hidden">Subcontratistas</h1>
     <div class="row direccionSeccion">
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
@@ -52,7 +54,7 @@
     <!-- Handsontable Container (Desktop) -->
     <div id="hot-container"></div>
 
-    </div>
+    </main>
 
     <!-- Bootstrap Dependencies (Required for Navbar Dropdowns) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

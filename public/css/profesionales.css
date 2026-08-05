@@ -53,8 +53,16 @@
   /* Las `.row` de Bootstrap a nivel de pagina traen `margin-inline: -15px`.
      Con el body en `overflow: hidden` eso no da scroll: recorta el contenido
      por la izquierda. La vista lo neutralizaba con un `style="margin:0"`. */
-  .prof-page > .row {
+  .prof-page main > .row {
     margin-inline: 0;
+  }
+
+  /* C-30: el contenido principal pasa a vivir dentro de un <main>. El body
+     sigue repartiendo la columna flex entre encabezado, barra de acciones y
+     grilla, asi que main se declara `display: contents` y no interpone una
+     caja: el reparto y los pixeles quedan exactamente como estaban. */
+  .prof-page > main {
+    display: contents;
   }
 
   .prof-page #encabezado,
