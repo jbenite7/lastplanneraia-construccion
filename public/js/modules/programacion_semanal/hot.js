@@ -577,12 +577,22 @@
     matrix: readinessActionMatrix,
   };
 
+  // Solo las restricciones DURAS generan items de habilitacion (C-49).
+  // Leia `cached.restrictions` -las 7 de Construccion- cuando el fallback de
+  // abajo siempre fueron las 5 duras. Las 2 blandas (`Pdto_Cons`, `Modelo`)
+  // entraban en la lista, no tenian entrada en `readinessActionMatrix` y salian
+  // `conflict` incluso al 100%, encendiendo el rojo del boton en 47 de 57 filas
+  // medidas. Programacion Intermedia ya lo resuelve igual:
+  // `programacion_intermedia/hot.js:231` -> `readinessActionProps = hardKeys.slice()`.
+  // Las blandas son seguimiento operativo y no bloquean habilitacion (ver el
+  // texto de la leyenda mas abajo en este archivo); se siguen viendo en su
+  // columna y en el drawer.
   function getConfigRestrictions() {
     var cached = window.__RESTRICTION_CONFIG__;
-    if (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0) {
+    if (cached && Array.isArray(cached.hardRestrictions) && cached.hardRestrictions.length > 0) {
       var normalized = [];
-      for (var i = 0; i < cached.restrictions.length; i++) {
-        var entry = cached.restrictions[i];
+      for (var i = 0; i < cached.hardRestrictions.length; i++) {
+        var entry = cached.hardRestrictions[i];
         if (typeof entry === 'string') {
           normalized.push(entry);
         } else if (entry && typeof entry === 'object' && typeof entry.key === 'string') {
