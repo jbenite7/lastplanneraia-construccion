@@ -42,8 +42,10 @@ class ProgramaGeneralController extends BaseController
                 $projectId = TableResolver::getProjectIdByPrefix($dbName);
                 $tSa = TableResolver::resolveByPrefix($dbName, 'semanas_activas');
 
-                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSa} ORDER BY Semana DESC LIMIT 1";
-                $stmtUltima = $this->db->queryWithProject($sqlUltima);
+                // El aislamiento por proyecto va explícito en la consulta, no delegado a la
+                // reescritura de queryWithProject: Max_Semana alimenta campos ocultos de varias vistas.
+                $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSa} WHERE project_id = ? ORDER BY Semana DESC LIMIT 1";
+                $stmtUltima = $this->db->queryWithProject($sqlUltima, [$projectId]);
                 $dataUltima = $stmtUltima->fetch();
 
                 if ($dataUltima) {
