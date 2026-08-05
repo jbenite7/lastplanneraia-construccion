@@ -230,6 +230,33 @@
     color: var(--ds-active-text-primary);
   }
 
+  /* C-34 — EL SECUNDARIO EN HOVER NO PUEDE ADELANTAR AL ACENTO.
+     Sin esta regla el secundario heredaba `.aia-btn:hover`, que rellena con
+     `--ds-active-action-primary-hover`: medido con raton real a 1180x820 en
+     Programacion Semanal daba luminancia 0,443 frente a 0,245 del primario en
+     reposo — un 80 % mas luminoso, o sea dos primarios con el equivocado
+     ganando. La premisa de la campana es que el control discreto gane presencia,
+     no que robe la jerarquia.
+     Se queda por tanto en la superficie elevada, solo un escalon por encima de
+     su propio reposo, con el borde de control mas vivo. Las mezclas van en oklch
+     sobre tokens existentes (nunca hex): la superficie sube hacia el texto
+     primario y el borde tambien, sin tocar el acento.
+     Medido despues, mismo metodo: fondo luminancia 0,0715 (29 % del primario,
+     3x su propio reposo de 0,024), texto 8,23:1 y borde 5,46:1 contra el fondo. */
+  .aia-btn--secondary:hover {
+    border-color: color-mix(
+      in oklch,
+      var(--ds-active-border-control) 40%,
+      var(--ds-active-text-primary)
+    );
+    background: color-mix(
+      in oklch,
+      var(--ds-active-surface-raised) 82%,
+      var(--ds-active-text-primary)
+    );
+    color: var(--ds-active-text-primary);
+  }
+
   .aia-btn--construction {
     border-color: var(--ds-color-brand-construction);
     background: var(--ds-color-brand-construction);
