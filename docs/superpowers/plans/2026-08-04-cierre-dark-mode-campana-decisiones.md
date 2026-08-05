@@ -466,7 +466,7 @@ formulario equivalente, su accesibilidad se audita allí desde cero, no se trasl
 ### Task 31: Barrido final de campaña + IA-6 (steve-jobs-design-review) + cierre
 
 **Files:**
-- Modify: `docs/superpowers/barrido-diseno-2026-08-03.md` (pasada final), `docs/PRODUCT.md` (create — `## Outcome Roadmap`), `docs/IMPROVE-APP-PLAN.md` (cierre), registro de decisiones (disposición final de las 54)
+- Modify: `docs/superpowers/barrido-diseno-2026-08-03.md` (pasada final), `docs/PRODUCT.md` (create — `## Outcome Roadmap`), `docs/IMPROVE-APP-PLAN.md` (cierre), registro de decisiones (disposición final de las 54), **`docs/DESIGN-AUDIT.md` (Task 14): las 20 filas `pendiente (Task N)` se refrescan a su disposición real de cierre — la tabla se creó a mitad de campaña y nadie más la sincroniza**
 
 **Interfaces:**
 - Consumes: todo lo anterior.
