@@ -17,6 +17,7 @@ COPY database/migrations/20260709_inactivate_alias_contractual_families.sql /doc
 COPY database/migrations/20260710_equipment_families_require_review.sql /docker-entrypoint-initdb.d/016-equipment-review.sql
 COPY database/migrations/20260711_apply_human_family_decisions.sql /docker-entrypoint-initdb.d/017-human-decisions.sql
 COPY database/fixtures/design-system-ci-normalize.sql /docker-entrypoint-initdb.d/018-design-system-ci-normalize.sql
+COPY database/fixtures/design-system-ci-pdc-v2.sql /docker-entrypoint-initdb.d/019-pdc-v2-schema.sql
 COPY database/bi/001_bi_pg_semana.sql /docker-entrypoint-initdb.d/101-bi-view.sql
 COPY database/bi/002_bi_pi_restricciones.sql /docker-entrypoint-initdb.d/102-bi-view.sql
 COPY database/bi/003_bi_ps_compromisos.sql /docker-entrypoint-initdb.d/103-bi-view.sql

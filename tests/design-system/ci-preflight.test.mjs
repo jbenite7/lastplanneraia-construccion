@@ -43,6 +43,7 @@ const INIT_COPIES = [
   ['database/migrations/20260710_equipment_families_require_review.sql', '016-equipment-review.sql'],
   ['database/migrations/20260711_apply_human_family_decisions.sql', '017-human-decisions.sql'],
   ['database/fixtures/design-system-ci-normalize.sql', '018-design-system-ci-normalize.sql'],
+  ['database/fixtures/design-system-ci-pdc-v2.sql', '019-pdc-v2-schema.sql'],
   // Vistas BI. Se listan una a una y NO se generan con un contador: el 2026-08-04 el retiro del
   // PDC v1 se llevo `004_bi_pdc_general.sql`, y la numeracion dejo de ser contigua —queda 001-003 y
   // 005-010, con destinos 101-103 y 105-110—. Un `Array.from({length})` con `index + 1` no puede

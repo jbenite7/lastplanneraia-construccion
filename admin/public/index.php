@@ -14,8 +14,17 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 define('ADMIN_PROJECT_ROOT', __DIR__ . '/../..');
 
 // 2. Cargar las variables de entorno (.env)
-$dotenv = Dotenv\Dotenv::createImmutable(ADMIN_PROJECT_ROOT);
-$dotenv->load();
+// La guarda `file_exists` + `safeLoad()` replica a public/index.php:40-43 y NO es cosmetica: sin
+// ella, `load()` lanza InvalidPathException y el panel entero responde 500 en cualquier entorno que
+// no hornee un `.env` — que es justo lo que hace la imagen de CI, a proposito, para no meter
+// secretos en una imagen. `Database` (src/Core/Database.php:59-63) ya cae a `$_SERVER`/`getenv()`,
+// asi que las variables inyectadas por el contenedor bastan y no hay nada que cargar de fichero.
+// Medido el 2026-08-04: /admin/proyectos daba 500 en el stack aislado y 302 -> /admin/login en
+// desarrollo, y el sintoma estaba tapado porque los tests de admin fallaban antes por credenciales.
+if (file_exists(ADMIN_PROJECT_ROOT . '/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(ADMIN_PROJECT_ROOT);
+    $dotenv->safeLoad();
+}
 
 // 3. Configuración del sistema de logs
 ini_set('display_errors', 0);

@@ -32,6 +32,10 @@ Thumbs.db
 !database/patches/*.sql
 !database/fixtures/
 !database/fixtures/design-system-ci.sql
+# Los fixtures que la imagen de CI hornea TIENEN que viajar en git: si `*.sql` se los come, el
+# Dockerfile hace COPY de un fichero que en un clon limpio no existe y el build revienta.
+!database/fixtures/design-system-ci-normalize.sql
+!database/fixtures/design-system-ci-pdc-v2.sql
 backups/
 DB_server_produccion.sql
 

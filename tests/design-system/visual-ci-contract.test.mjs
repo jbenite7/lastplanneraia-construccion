@@ -101,6 +101,7 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     '016-equipment-review.sql',
     '017-human-decisions.sql',
     '018-design-system-ci-normalize.sql',
+    '019-pdc-v2-schema.sql',
     '101-bi-view.sql',
     '102-bi-view.sql',
     '103-bi-view.sql',

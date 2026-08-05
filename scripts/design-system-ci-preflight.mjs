@@ -26,6 +26,7 @@ const EXPECTED_INIT_COPIES = [
   ['database/migrations/20260710_equipment_families_require_review.sql', '016-equipment-review.sql'],
   ['database/migrations/20260711_apply_human_family_decisions.sql', '017-human-decisions.sql'],
   ['database/fixtures/design-system-ci-normalize.sql', '018-design-system-ci-normalize.sql'],
+  ['database/fixtures/design-system-ci-pdc-v2.sql', '019-pdc-v2-schema.sql'],
   ['database/bi/001_bi_pg_semana.sql', '101-bi-view.sql'],
   ['database/bi/002_bi_pi_restricciones.sql', '102-bi-view.sql'],
   ['database/bi/003_bi_ps_compromisos.sql', '103-bi-view.sql'],
