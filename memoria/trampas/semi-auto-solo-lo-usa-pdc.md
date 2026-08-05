@@ -17,9 +17,9 @@ resumen: "DEROGADA: el motor semi-automático se eliminó entero el 2026-08-04 c
 > métodos `*Listado` sin ruta: contrato a medias, o cableado perdido. Se resolvió por una tercera vía:
 > se retiró todo. Nunca llegaron a tener ruta.
 >
-> **Lo que sigue siendo cierto y hay que arrastrar:** el párrafo de `AGENTS.md` `:23` que esta nota
-> desmentía **sigue en el repositorio**, y ahora describe tres módulos que ya no existen. Es deuda
-> pendiente de corregir en `AGENTS.md`, no en la wiki.
+> **El párrafo de `AGENTS.md` que esta nota desmentía ya no está.** Se sustituyó el 2026-08-04 por uno
+> que declara el retiro y apunta al v2. La contradicción que motivó esta trampa se cerró en la fuente,
+> que es donde tocaba.
 >
 > Se conserva como registro. El sucesor del módulo es [[plan-de-compras]].
 

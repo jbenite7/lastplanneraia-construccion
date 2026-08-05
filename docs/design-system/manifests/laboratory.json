@@ -185,7 +185,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
-      "sha256": "1cfce06e70d4163a020b1d62ab2e7a35cdd45fc0e4553a1848de5704b52f159c"
+      "sha256": "9e5137f8262088558feb3bcf2c588cb809503e92f20d200a960b2b673d10a30d"
     },
     {
       "id": "forms-filters-dark-1180x820",
