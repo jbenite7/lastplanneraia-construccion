@@ -17,19 +17,20 @@ import { test, expect } from '@playwright/test';
  */
 
 const BASE_URL = 'http://localhost:8081';
-const CREDENTIALS = { username: 'test.A', password: 'aia2026' };
 const PC_PROJECT = 'Aeropuerto Regional PC';
 
 // ─── Shared helpers ──────────────────────────────────────────────
 
 /**
- * Login as test.A user.
+ * Abre sesión como test.A por la puerta de servicio.
+ *
+ * Hasta el 2026-08-04 este helper tecleaba usuario y contraseña en /login, que
+ * AGENTS.md prohíbe: la sesión local se abre siempre por /dev/entrar. El rol que
+ * queda en sesión es el real de project_members, así que la cobertura no cambia.
+ * Requiere DEV_DOOR=1 y DEV_DOOR_USERS en .env; sin eso redirige a /login.
  */
 async function loginAsTestA(page) {
-  await page.goto(`${BASE_URL}/login`);
-  await page.locator('#usuario').fill(CREDENTIALS.username);
-  await page.locator('#password').fill(CREDENTIALS.password);
-  await page.locator('button[type="submit"]').click();
+  await page.goto(`${BASE_URL}/dev/entrar?u=test.A`);
   await page.waitForURL('**/proyectos', { timeout: 15000 });
 }
 
@@ -47,6 +48,10 @@ async function selectPreConstructionProject(page) {
 
 /**
  * Full login + project selection shortcut.
+ *
+ * La puerta de servicio admite `&p=<Proyecto_Proceso>` para aterrizar directo, pero
+ * aquí se conserva el paso por /proyectos: la primera prueba verifica justamente que
+ * la tarjeta del proyecto se ve y que el POST del selector lleva a /programa-general.
  */
 async function loginAndSelectProject(page) {
   await loginAsTestA(page);
@@ -78,11 +83,11 @@ test.describe('Pre-Construction: Navbar Visibility', () => {
   });
 
   test('PG and PI nav items are present', async ({ page }) => {
-    // The navbar is built dynamically via JS with dropdown menus.
-    // Nav items use id attributes: programa_general, programacion_intermedia, programacion_semanal
-    // For Pre-Construccion, programacion_semanal is hidden client-side.
-    await expect(page.locator('#programa_general')).toBeVisible();
-    await expect(page.locator('#programacion_intermedia')).toBeVisible();
+    // Antes miraba #programa_general y #programacion_intermedia, ids del nav legado que ya no
+    // produce ningun documento: la navegacion vive en el shell (views/partials/shell_sidebar.php).
+    const shell = page.locator('[data-aia-component="navigation"]').first();
+    await expect(shell.locator('[data-destination-id="programa-general"]')).toHaveCount(1);
+    await expect(shell.locator('[data-destination-id="programacion-intermedia"]')).toHaveCount(1);
   });
 
   test('construction-only nav items are hidden', async ({ page }) => {
@@ -104,10 +109,10 @@ test.describe('Pre-Construction: Navbar Visibility', () => {
   });
 
   test('navbar brand contains project selector link', async ({ page }) => {
-    // The brand links back to /proyectos
-    const brand = page.locator('.navbar-brand');
+    // La marca ya no es .navbar-brand del nav legado, sino la del shell; sigue enlazando a
+    // /proyectos, que es la conducta que esta prueba cuida.
+    const brand = page.locator('a[href="/proyectos"]').filter({ hasText: 'Last Planner AIA' });
     await expect(brand).toBeVisible();
-    await expect(brand).toContainText('Last Planner AIA');
   });
 });
 
@@ -394,8 +399,13 @@ test.describe('Pre-Construction: Restriction Config API', () => {
     const pc2 = config.restrictions.find((r) => r.key === 'restriccion_pc_2');
     expect(pc2.threshold).toBe(100);
 
-    // Options for hard restriction (PC_1)
-    expect(pc1.options).toEqual(['0%', '33%', '66%', '100%', 'N/A']);
+    // Options for hard restriction (PC_1).
+    // Fueron 5 (0/33/66/100/N-A) hasta el commit 41720ad7 del 2026-07-05, «normalize Predecesora
+    // options in intermedia module», que las bajo a 4 a proposito para alinear backend y frontend.
+    // Esta prueba llevaba rota desde antes y nunca registro el cambio. Verificado el 2026-08-04 en
+    // los tres sitios: GeneralApiController.php:1598, programacion_intermedia/hot.js:48 y el texto
+    // de ayuda de hot.js:80, que solo documenta 0/50/100.
+    expect(pc1.options).toEqual(['0%', '50%', '100%', 'N/A']);
 
     // Options for soft restrictions (PC_2-4)
     for (const key of ['restriccion_pc_2', 'restriccion_pc_3', 'restriccion_pc_4']) {
