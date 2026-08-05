@@ -2644,7 +2644,7 @@
     $('#modal_leyenda_colores_body').html(
       "<div class='pi-legend-quick'>" +
         "<div class='pi-legend-quick-header'>" +
-          "<p class='pi-legend-quick-intro'><strong>Lectura rapida:</strong> atiende primero P1, luego P2 y deja P3 en monitoreo.</p>" +
+          "<p class='pi-legend-quick-intro'><strong>Lectura rápida:</strong> atiende primero P1, luego P2 y deja P3 en monitoreo.</p>" +
           "<div class='pi-legend-quick-scale'>" +
             "<span class='pi-legend-quick-badge is-p1'>P1 Hoy</span>" +
             "<span class='pi-legend-quick-badge is-p2'>P2 Esta semana</span>" +
@@ -2656,14 +2656,14 @@
           "<h6 class='pi-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue-critical'></span>" +
-            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debio iniciar y requiere condiciones de habilitación en ruta crítica.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debió iniciar y requiere condiciones de habilitación en ruta crítica.</small></div>" +
             "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitación.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Inicio Vencido</strong><small>Debio iniciar y aun tiene condiciones pendientes.</small></div>" +
-            "<div class='pi-legend-quick-action'>Definir responsable y fecha de cierre en la reunion diaria.</div>" +
+            "<div class='pi-legend-quick-state'><strong>Inicio Vencido</strong><small>Debió iniciar y aún tiene condiciones pendientes.</small></div>" +
+            "<div class='pi-legend-quick-action'>Definir responsable y fecha de cierre en la reunión diaria.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
@@ -2690,7 +2690,7 @@
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-2-3-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aun requiere preparación.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aún requiere preparación.</small></div>" +
             "<div class='pi-legend-quick-action'>Ejecutar plan preventivo de abastecimiento y recursos.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
@@ -2716,7 +2716,7 @@
           "<h6 class='pi-legend-quick-group-title'>Restricciones blandas</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:var(--aia-warning-soft-bg, #fef3c7);border-color:var(--aia-warning-border, #f59e0b);'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitación, estado operativo ni autoprogramacion.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitación, estado operativo ni autoprogramación.</small></div>" +
             "<div class='pi-legend-quick-action'>Completar para control técnico, sin detener compromisos listos.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>Blanda</span>" +
           "</div>" +
