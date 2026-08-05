@@ -7,7 +7,6 @@
   var reloadTimer = null;
   var saveBadgeTimer = null;
   var layoutTimer = null;
-  var toolbarFitTimer = null;
   var pendingDropdownAutoOpen = false;
   var lastAppliedContainerWidth = 0;
   var lastAppliedContainerHeight = 0;
@@ -1230,113 +1229,6 @@
     }
   }
 
-  function fitActionsRowSingleLine() {
-    return; // DISABLED: Responsive scaling is now perfectly handled by CSS @media queries
-    var shell = document.querySelector('.ps-hot-toolbar-shell');
-    var row = document.querySelector('.ps-actions-row');
-    if (!shell || !row) {
-      return;
-    }
-
-    var actions = row.querySelector('.ps-hot-toolbar-actions');
-    var badges = row.querySelector('.ps-hot-status-badges');
-    var switcher = row.querySelector('.ps-module-switcher');
-    var mobileToggle = row.querySelector('.pdc-mobile-toggle');
-    var minScale = 0.22;
-    var maxScale = 1;
-    var tolerance = 2;
-    var scale = maxScale;
-    var rowStyle = window.getComputedStyle(row);
-    var gap = parseFloat(rowStyle.columnGap || rowStyle.gap || '0') || 0;
-
-    var setScale = function (value) {
-      shell.style.setProperty('--ps-hot-scale', String(value));
-    };
-
-    var getElementWidth = function (element) {
-      if (!element) {
-        return 0;
-      }
-
-      var style = window.getComputedStyle(element);
-      if (style.display === 'none' || style.visibility === 'hidden') {
-        return 0;
-      }
-
-      var marginLeft = parseFloat(style.marginLeft || '0') || 0;
-      var marginRight = parseFloat(style.marginRight || '0') || 0;
-      var width = Math.max(element.scrollWidth || 0, element.offsetWidth || 0, element.clientWidth || 0);
-
-      return Math.ceil(width + marginLeft + marginRight);
-    };
-
-    var getRequiredWidth = function () {
-      var parts = [actions, badges, switcher, mobileToggle];
-      var used = [];
-
-      for (var i = 0; i < parts.length; i++) {
-        var width = getElementWidth(parts[i]);
-        if (width > 0) {
-          used.push(width);
-        }
-      }
-
-      if (!used.length) {
-        return 0;
-      }
-
-      var total = 0;
-      for (var j = 0; j < used.length; j++) {
-        total += used[j];
-      }
-
-      if (used.length > 1 && gap > 0) {
-        total += gap * (used.length - 1);
-      }
-
-      return total;
-    };
-
-    var fits = function () {
-      return getRequiredWidth() <= (row.clientWidth + tolerance);
-    };
-
-    row.classList.remove('ps-actions-stacked');
-    setScale(scale.toFixed(3));
-
-    var guard = 0;
-    while (!fits() && scale > minScale && guard < 80) {
-      scale = Math.max(minScale, scale - 0.02);
-      setScale(scale.toFixed(3));
-      guard += 1;
-    }
-
-    if (!fits()) {
-      setScale(minScale.toFixed(3));
-      row.classList.add('ps-actions-stacked');
-      return;
-    }
-
-    guard = 0;
-    while (scale < maxScale && guard < 80) {
-      var next = Math.min(maxScale, scale + 0.01);
-      setScale(next.toFixed(3));
-      if (!fits()) {
-        setScale(scale.toFixed(3));
-        break;
-      }
-      scale = next;
-      guard += 1;
-    }
-  }
-
-  function scheduleActionsRowFit(delay) {
-    clearTimeout(toolbarFitTimer);
-    toolbarFitTimer = setTimeout(function () {
-      fitActionsRowSingleLine();
-    }, Number.isFinite(delay) ? delay : 0);
-  }
-
   function isDropdownCellAt(visualRow, visualCol) {
     if (!hot) {
       return false;
@@ -1582,6 +1474,41 @@
 
     container.style.height = resolved + 'px';
     return resolved;
+  }
+
+  // C-19 (2026-08-05): el `title` de cabecera solo cuando el texto se recorta
+  // de verdad. El task 26 lo ponia en TODAS desde `afterGetColHeader`, y ahi
+  // «Id» acababa con un tooltip que decia «Id»: ruido, no ayuda. Medir dentro
+  // del renderer no sirve para condicionarlo, porque Handsontable renderiza
+  // varias veces y el ancho definitivo de la columna aun no esta aplicado -se
+  // ven desbordes que luego no existen-. Por eso el barrido vive en
+  // `afterRender`, cuando la medida ya es la final.
+  function isHeaderClipped(node) {
+    // Dos cortes distintos, los dos con `overflow: hidden` en el `th`
+    // (handsontable-header-global.css): el vertical lo hace `-webkit-line-clamp: 2`
+    // y se ve en scrollHeight; el horizontal lo produce una palabra que no cabe
+    // y no se parte (`overflow-wrap: normal`) y se ve en scrollWidth. El margen
+    // de 1 px absorbe el redondeo subpixel de anchos fraccionarios.
+    return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+  }
+
+  function refreshHeaderTitles(instance) {
+    var hotInstance = instance || hot;
+    var root = hotInstance && hotInstance.rootElement;
+    if (!root || typeof root.querySelectorAll !== 'function') {
+      return;
+    }
+
+    var headers = root.querySelectorAll('thead th .colHeader');
+    for (var i = 0; i < headers.length; i++) {
+      var node = headers[i];
+      var text = String(node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text && isHeaderClipped(node)) {
+        node.title = text;
+      } else {
+        node.removeAttribute('title');
+      }
+    }
   }
 
   function syncRenderedTableWidth(instance) {
@@ -2727,6 +2654,8 @@
       height: getContainerAvailableHeight() || '100%',
       afterRender: function () {
         syncRenderedTableWidth(this);
+        // C-19: necesita el ancho ya aplicado, por eso no va en el renderer.
+        refreshHeaderTitles(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -2745,13 +2674,10 @@
           headerNode.classList.add('ps-header-single-word');
         }
 
-        // Task 26 (2026-08-04): title con el texto integro para recuperar lo
-        // que la elipsis/line-clamp corta (handsontable-header-global.css).
-        if (headerText) {
-          headerNode.title = headerText;
-        } else {
-          headerNode.removeAttribute('title');
-        }
+        // Task 26 ponia aqui el `title`. C-19 (2026-08-05) lo movio a
+        // `refreshHeaderTitles()`, que corre en `afterRender`: solo con el
+        // ancho definitivo aplicado se sabe si el texto se recorta de verdad.
+        // La clase de arriba si depende solo del texto y se queda.
       },
       beforeKeyDown: function (event) {
         if (!event) {
@@ -3224,7 +3150,6 @@
     updateLegendCounts(getFilteredRows());
     renderLegendModal();
     syncLegendVisualState();
-    scheduleActionsRowFit(0);
   }
 
   function formatWeeklyQuantity(value, unidad) {
@@ -3950,7 +3875,6 @@
     var semana = getSemana();
 
     $('#btn_autoprogramar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verificando...');
-    scheduleActionsRowFit(0);
 
     // Preflight: detectar datos faltantes
     $.ajax({
@@ -3967,7 +3891,6 @@
           ejecutarAutoprogramar(db, semana);
         });
         $('#btn_autoprogramar').prop('disabled', false).html('<i class="fas fa-magic"></i> Autoprogramar Actividades');
-        scheduleActionsRowFit(0);
       } else {
         ejecutarAutoprogramar(db, semana);
       }
@@ -3978,7 +3901,6 @@
 
   function ejecutarAutoprogramar(db, semana) {
     $('#btn_autoprogramar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Ejecutando...');
-    scheduleActionsRowFit(0);
 
     $.ajax({
       method: 'POST',
@@ -4007,7 +3929,6 @@
       showFeedback('error', 'Error ejecutando autoprogramación');
     }).always(function () {
       $('#btn_autoprogramar').prop('disabled', false).html('<i class="fas fa-magic"></i> Autoprogramar Actividades');
-      scheduleActionsRowFit(0);
     });
   }
 
@@ -4145,7 +4066,6 @@
     var semana = getSemana();
 
     $('#btn_informe_compromisos').prop('disabled', true).text('Generando...');
-    scheduleActionsRowFit(0);
 
     $.ajax({
       method: 'POST',
@@ -4162,7 +4082,6 @@
       showFeedback('error', 'Error generando informe');
     }).always(function () {
       $('#btn_informe_compromisos').prop('disabled', false).html('Imprimir <i class="fas fa-print"></i>');
-      scheduleActionsRowFit(0);
     });
   }
 
@@ -4413,7 +4332,6 @@
       .off('shown.bs.collapse.psLayout hidden.bs.collapse.psLayout')
       .on('shown.bs.collapse.psLayout hidden.bs.collapse.psLayout', function () {
         scheduleLayoutRefresh(0, true);
-        scheduleActionsRowFit(0);
       });
 
     $(document)
@@ -4533,7 +4451,6 @@
       .off('resize.psHot orientationchange.psHot aia:viewport-scale-change.psHot')
       .on('resize.psHot orientationchange.psHot aia:viewport-scale-change.psHot', function () {
         scheduleLayoutRefresh(80, true);
-        scheduleActionsRowFit(80);
         syncFixedContextSpacer();
       });
 
@@ -4813,7 +4730,6 @@
     fetchRestrictionConfig(function () {
       loadData();
     });
-    scheduleActionsRowFit(0);
 
     if (window.ChangeMonitor && typeof window.ChangeMonitor.init === 'function') {
       window.ChangeMonitor.init();

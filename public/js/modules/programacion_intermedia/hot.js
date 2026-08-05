@@ -3122,6 +3122,41 @@
     return resolved;
   }
 
+  // C-19 (2026-08-05): el `title` de cabecera solo cuando el texto se recorta
+  // de verdad. El task 26 lo ponia en TODAS desde `afterGetColHeader`, y ahi
+  // «Id» acababa con un tooltip que decia «Id»: ruido, no ayuda. Medir dentro
+  // del renderer no sirve para condicionarlo, porque Handsontable renderiza
+  // varias veces y el ancho definitivo de la columna aun no esta aplicado -se
+  // ven desbordes que luego no existen-. Por eso el barrido vive en
+  // `afterRender`, cuando la medida ya es la final.
+  function isHeaderClipped(node) {
+    // Dos cortes distintos, los dos con `overflow: hidden` en el `th`
+    // (handsontable-header-global.css): el vertical lo hace `-webkit-line-clamp: 2`
+    // y se ve en scrollHeight; el horizontal lo produce una palabra que no cabe
+    // y no se parte (`overflow-wrap: normal`) y se ve en scrollWidth. El margen
+    // de 1 px absorbe el redondeo subpixel de anchos fraccionarios.
+    return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+  }
+
+  function refreshHeaderTitles(instance) {
+    var hotInstance = instance || hot;
+    var root = hotInstance && hotInstance.rootElement;
+    if (!root || typeof root.querySelectorAll !== 'function') {
+      return;
+    }
+
+    var headers = root.querySelectorAll('thead th .colHeader');
+    for (var i = 0; i < headers.length; i++) {
+      var node = headers[i];
+      var text = String(node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text && isHeaderClipped(node)) {
+        node.title = text;
+      } else {
+        node.removeAttribute('title');
+      }
+    }
+  }
+
   function syncRenderedTableWidth(instance) {
     var hotInstance = instance || hot;
     var container = document.getElementById('hot-container');
@@ -3808,6 +3843,8 @@
       afterRender: function () {
         applyRowClassesToDOM(this);
         syncRenderedTableWidth(this);
+        // C-19: necesita el ancho ya aplicado, por eso no va en el renderer.
+        refreshHeaderTitles(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -3827,15 +3864,11 @@
           headerNode.classList.add('pi-header-single-word');
         }
 
-        // Task 26 (2026-08-04): el header se trunca con text-overflow/line-clamp
-        // (handsontable-header-global.css); el title deja el texto completo
-        // recuperable. No colisiona con .pi-help-trigger, que es un elemento
-        // aparte (icono "?") con su propio tooltip de Bootstrap.
-        if (headerText) {
-          headerNode.title = headerText;
-        } else {
-          headerNode.removeAttribute('title');
-        }
+        // Task 26 ponia aqui el `title`. C-19 (2026-08-05) lo movio a
+        // `refreshHeaderTitles()`, que corre en `afterRender` con el ancho ya
+        // definitivo y solo lo pone donde el texto se recorta de verdad. Sigue
+        // sin colisionar con .pi-help-trigger, que es un elemento aparte
+        // (icono "?") con su propio tooltip de Bootstrap.
 
         // Inject tooltip trigger alongside changeType
         var resProp = headerIndexToRestrictionProp[col];

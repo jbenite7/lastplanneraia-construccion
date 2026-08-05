@@ -1,5 +1,6 @@
 {
-  "purpose": "Inventario de reglas que pintan un fondo de --ds-state-tint-* sin declarar la tinta del texto en la misma regla ni en otra regla del mismo selector. Guard: tests/design-system/state-tint-pairing.test.mjs.",
+  "version": "2.0.0",
+  "purpose": "Inventario de reglas que pintan un fondo de --ds-state-tint-* sin declarar la tinta del texto en la misma regla ni en otra regla del mismo selector. Guard: tests/design-system/state-tint-pairing.test.mjs. El ancla es la firma selector+token (mas `occurrence` si el mismo par se repite en el archivo), no el numero de linea: una insercion antes de la regla ya no desalinea el inventario -ver memoria/trampas/anclas-por-linea-se-desalinean-. Mismo esquema que su hermano state-token-exceptions.json.",
   "kinds": {
     "by-design": "El fondo no lleva texto encima, o la tinta llega correcta por una via que leer archivos no puede comprobar. Sobrevive tal cual.",
     "at-risk": "Hoy puede estar mal. Exige `revisit`.",
@@ -9,49 +10,49 @@
   "entries": [
     {
       "file": "public/css/programa-general-actualizar.css",
-      "token": "--ds-state-tint-green",
-      "line": 210,
       "selector": ".pg-page #hot-container td.pg-match-auto",
+      "token": "--ds-state-tint-green",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "La celda hereda el texto primario del tema oscuro y rinde 11,54:1 sobre su propio fondo, medido en navegador y dentro de la banda que ya cumple la escala de celda. Declarar la tinta aqui no cambiaria nada visible. RESERVA: se midio inyectando la celda en la pagina real porque la grilla no llega a tener filas con los datos sembrados, asi que las reglas propias de Handsontable no estaban activas; se vuelve a medir cuando el sembrado exista."
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "token": "--ds-state-tint-amber",
-      "line": 221,
       "selector": ".pg-page #hot-container td.pg-match-review",
+      "token": "--ds-state-tint-amber",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "Mismo caso que la celda de emparejado automatico: hereda el texto primario del tema oscuro y rinde 11,15:1 sobre su propio fondo, medido en navegador. La misma reserva sobre las reglas de Handsontable se aplica aqui, porque la grilla se midio sin filas reales."
     },
     {
       "file": "public/css/programa-general-actualizar.css",
-      "token": "--ds-state-tint-neutral",
-      "line": 232,
       "selector": ".pg-page #hot-container td.pg-match-new",
+      "token": "--ds-state-tint-neutral",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "Mismo caso que las otras dos celdas de confianza de emparejado: hereda el texto primario del tema oscuro y rinde 12,92:1 sobre su propio fondo, el mas holgado de los tres. La misma reserva sobre las reglas de Handsontable se aplica aqui."
     },
     {
       "file": "public/css/styles.css",
-      "token": "--ds-state-tint-blue",
-      "line": 2302,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover",
+      "token": "--ds-state-tint-blue",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "El fondo va sobre la fila, pero el texto vive en las celdas, y cada celda trae su propio fondo casi opaco y su propia tinta casi blanca. La tinta que heredaria la fila no llega a pintar nada. Declararla seria una linea muerta que dejaria verde el guard sin resolver nada."
     },
     {
       "file": "public/css/styles.css",
-      "token": "--ds-state-tint-blue",
-      "line": 2306,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-selected",
+      "token": "--ds-state-tint-blue",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "Mismo caso que la fila con puntero encima: el texto lo pintan las celdas con su propia tinta y su propio fondo, que ademas tapa casi todo el fondo de la fila. El comentario de la hoja ya documenta que de estos fondos de fila solo se ve una fraccion pequena."
     },
     {
       "file": "public/css/styles.css",
-      "token": "--ds-state-tint-orange",
-      "line": 2373,
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-motivo-chip .ps-motivo-restriction",
+      "token": "--ds-state-tint-orange",
+      "occurrence": 1,
       "kind": "by-design",
       "reason": "La pildora hereda su tinta del contenedor de motivo que la envuelve, que si la declara con el par de texto de la familia de retraso, y sale un melocoton claro sobre el fondo naranja oscuro. El par existe y funciona; lo que no puede es verse leyendo esta regla aislada."
     }

@@ -3,6 +3,13 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import {
+  flat,
+  parseAtoms,
+  resolveCssException,
+  signatureKey,
+  stripComments,
+} from '../../scripts/design-system/state-token-locator.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const INVENTORY = join(REPO_ROOT, 'docs/design-system/state-tint-exceptions.json');
@@ -62,42 +69,11 @@ async function walk(dir, keep) {
   return found;
 }
 
-// Un `/* ... */` puede citar un token o llevar una declaracion comentada; se
-// blanquea conservando los saltos para que los numeros de linea no se muevan.
-function stripComments(css) {
-  return css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
-}
-
-function lineCounter(source) {
-  const offsets = [0];
-  for (let i = 0; i < source.length; i += 1) if (source[i] === '\n') offsets.push(i + 1);
-  return (index) => {
-    let lo = 0;
-    let hi = offsets.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (offsets[mid] <= index) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo + 1;
-  };
-}
-
-// Solo casan los bloques SIN llaves dentro, o sea las reglas de verdad: un
-// `@layer` o un `@media` envuelven otras reglas y no declaran nada por si
-// mismos. El selector es el texto que va desde el limite de bloque anterior
-// hasta la llave de apertura.
-function rules(clean) {
-  const out = [];
-  let cursor = 0;
-  for (const match of clean.matchAll(/\{([^{}]*)\}/g)) {
-    const head = clean.slice(cursor, match.index);
-    const selector = head.slice(Math.max(head.lastIndexOf('}'), head.lastIndexOf('{')) + 1).trim();
-    out.push({ selector, body: match[1], bodyIndex: match.index + 1 });
-    cursor = match.index + match[0].length;
-  }
-  return out;
-}
+// El troceo en reglas (`parseAtoms`) y el blanqueo de comentarios
+// (`stripComments`) se comparten con el inventario hermano de tokens de estado
+// en `scripts/design-system/state-token-locator.mjs`: los dos guards anclan por
+// firma sobre el mismo modelo de "atomo" selector+bloque, y tener una sola
+// implementacion evita que uno de los dos derive sin que nadie lo note.
 
 function selectorParts(selector) {
   return selector
@@ -115,36 +91,48 @@ function selectorParts(selector) {
 // comprobacion de TEXTO. No sabe de orden de capas, de especificidad ni de
 // `!important`, asi que ve un par que la cascada podria estar pisando. Lo que
 // confirma que la tinta llega al pixel es medirla en el navegador.
-function pairedElsewhere(allRules, ownParts) {
-  return allRules.some(
-    (rule) =>
-      COLOR_RE.test(rule.body) &&
-      selectorParts(rule.selector).some((part) => ownParts.includes(part)),
+function pairedElsewhere(allAtoms, ownParts) {
+  return allAtoms.some(
+    (atom) =>
+      COLOR_RE.test(atom.block) &&
+      selectorParts(atom.selector).some((part) => ownParts.includes(part)),
   );
 }
 
-function unpairedUses(css) {
-  const clean = stripComments(css);
-  const lineAt = lineCounter(clean);
-  const all = rules(clean);
+// Igual que el inventario hermano: el ancla NO es un numero de linea sino la
+// firma selector+token(+occurrence). `occurrence` es el n-esimo par
+// (selector, token) identico visto en orden de aparicion dentro del archivo, y
+// ese contador solo depende del ORDEN relativo de las reglas, asi que una
+// insercion en cualquier punto anterior no lo mueve. Ver
+// memoria/trampas/anclas-por-linea-se-desalinean.
+function unpairedUsesBySignature(css) {
+  const atoms = parseAtoms(stripComments(css));
+  const seen = new Map();
   const found = [];
-  for (const rule of all) {
-    if (COLOR_RE.test(rule.body)) continue;
-    const parts = selectorParts(rule.selector);
-    for (const m of rule.body.matchAll(BG_WITH_TINT_RE)) {
-      if (pairedElsewhere(all, parts)) break;
-      found.push({
-        token: m[1],
-        selector: parts.join(', '),
-        line: lineAt(rule.bodyIndex + m.index),
-      });
+  const nextOccurrence = (selector, token) => {
+    const k = `${selector} ${token}`;
+    const n = (seen.get(k) ?? 0) + 1;
+    seen.set(k, n);
+    return n;
+  };
+  for (const atom of atoms) {
+    if (COLOR_RE.test(atom.block)) continue;
+    const parts = selectorParts(atom.selector);
+    for (const m of atom.block.matchAll(BG_WITH_TINT_RE)) {
+      if (pairedElsewhere(atoms, parts)) break;
+      found.push({ token: m[1], selector: atom.selector, occurrence: nextOccurrence(atom.selector, m[1]) });
     }
   }
   return found;
 }
 
 function key(entry) {
-  return `${entry.file}|${entry.token}|${entry.line}`;
+  return signatureKey({
+    file: entry.file,
+    selector: flat(entry.selector),
+    token: entry.token,
+    occurrence: entry.occurrence ?? 1,
+  });
 }
 
 async function collect() {
@@ -154,7 +142,7 @@ async function collect() {
       const css = await readFile(file, 'utf8');
       if (!TINT_RE.test(css)) continue;
       const rel = relative(REPO_ROOT, file);
-      for (const use of unpairedUses(css)) found.push({ file: rel, ...use });
+      for (const use of unpairedUsesBySignature(css)) found.push({ file: rel, ...use });
     }
   }
   return found;
@@ -170,7 +158,7 @@ test('ninguna regla pinta un fondo de matiz sin declarar la tinta', async () => 
   const excused = new Set(inventory.entries.map(key));
   const offenders = found.filter((entry) => !excused.has(key(entry)));
   assert.deepEqual(
-    offenders.map((e) => `${e.file}:${e.line} ${e.selector} -> ${e.token}`),
+    offenders.map((e) => `${e.file}#${e.occurrence} ${e.selector} -> ${e.token}`),
     [],
     'fondo de matiz sin tinta declarada y sin inventariar',
   );
@@ -184,7 +172,7 @@ test('el inventario no excusa nada que ya este emparejado', async () => {
   const inventory = await readInventory();
   const stale = inventory.entries.filter((entry) => !found.has(key(entry)));
   assert.deepEqual(
-    stale.map((e) => `${e.file}:${e.line} ${e.token}`),
+    stale.map((e) => `${e.file}#${e.occurrence ?? 1} ${e.token}`),
     [],
     'entradas del inventario que ya no corresponden a ningun uso descompensado',
   );
@@ -192,8 +180,16 @@ test('el inventario no excusa nada que ya este emparejado', async () => {
 
 test('cada entrada del inventario esta bien formada y localizable', async () => {
   const inventory = await readInventory();
+  assert.ok(inventory.version, 'el inventario necesita `version`');
+  assert.ok(Array.isArray(inventory.entries) && inventory.entries.length > 0, 'el inventario esta vacio');
+
   for (const entry of inventory.entries) {
-    const where = `${entry.file}:${entry.line}`;
+    const where = `${entry.file}#${entry.occurrence ?? 1} ${entry.token}`;
+    assert.ok(
+      entry.occurrence === undefined || (Number.isInteger(entry.occurrence) && entry.occurrence > 0),
+      `${where}: \`occurrence\`, si esta, tiene que ser un entero positivo`,
+    );
+    assert.ok(!('line' in entry), `${where}: \`line\` es un ancla retirada; el ancla es selector+token(+occurrence)`);
     assert.ok(KINDS.has(entry.kind), `${where}: \`kind\` desconocido: ${entry.kind}`);
     assert.ok(
       typeof entry.reason === 'string' && entry.reason.length >= MIN_REASON,
@@ -202,10 +198,44 @@ test('cada entrada del inventario esta bien formada y localizable', async () => 
     if (KINDS_NEEDING_REVISIT.has(entry.kind)) {
       assert.ok(entry.revisit, `${where}: \`kind\` ${entry.kind} exige \`revisit\``);
     }
+    // El ancla se resuelve contra el CSS real de hoy, no contra la propia
+    // declaracion: si la regla se borro, el selector cambio o el `occurrence`
+    // declarado no tiene tantas copias, esto falla diciendo exactamente que
+    // falta -en vez de pasar en silencio-.
     const css = await readFile(join(REPO_ROOT, entry.file), 'utf8');
-    assert.ok(
-      css.includes(entry.selector.split(',')[0].trim()),
-      `${where}: \`selector\` no aparece literal en la hoja: ${entry.selector}`,
+    const resolved = resolveCssException(css, entry);
+    assert.ok(resolved.found, `${where}: ${resolved.reason}`);
+  }
+});
+
+// --- Fragilidad resuelta (C-8): una insercion antes de las entradas no puede
+// mover el ancla, porque el ancla ya no es una linea. Se construye una copia de
+// programa-general-actualizar.css con un comentario inocuo al principio -que
+// desplaza TODAS las lineas de sus entradas- y se comprueba que la resolucion
+// no cambia.
+test('insertar una linea inocua antes de las excepciones no rompe su resolucion', async () => {
+  const inventory = await readInventory();
+  const targetFile = 'public/css/programa-general-actualizar.css';
+  const entries = inventory.entries.filter((e) => e.file === targetFile);
+  assert.ok(entries.length >= 3, 'se esperaban varias entradas en programa-general-actualizar.css para este caso');
+
+  const original = await readFile(join(REPO_ROOT, targetFile), 'utf8');
+  const before = entries.map((entry) => resolveCssException(original, entry));
+  assert.ok(before.every((r) => r.found), 'las entradas deberian resolverse contra el CSS original');
+
+  const mutated = `/* linea inocua insertada por el test de fragilidad, 2026-08-05 */\n${original}`;
+  const after = entries.map((entry) => resolveCssException(mutated, entry));
+
+  assert.deepEqual(
+    after.map((r) => r.found),
+    before.map((r) => r.found),
+    'insertar una linea antes de las entradas no deberia cambiar si se resuelven o no',
+  );
+  for (let i = 0; i < entries.length; i += 1) {
+    assert.equal(
+      after[i].atom?.selector,
+      before[i].atom?.selector,
+      `${entries[i].selector}: el selector resuelto cambio tras la insercion`,
     );
   }
 });

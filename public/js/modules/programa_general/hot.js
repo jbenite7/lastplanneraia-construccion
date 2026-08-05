@@ -2200,6 +2200,101 @@
     container.style.setProperty('--hot-table-width', width);
   }
 
+  // C-19 (2026-08-05): el `title` de cabecera solo cuando el texto se recorta
+  // de verdad. El task 26 lo ponia en TODAS desde `afterGetColHeader`, y ahi
+  // «Id» acababa con un tooltip que decia «Id»: ruido, no ayuda. Medir dentro
+  // del renderer no sirve para condicionarlo, porque Handsontable renderiza
+  // varias veces y el ancho definitivo de la columna aun no esta aplicado -se
+  // ven desbordes que luego no existen-. Por eso el barrido vive en
+  // `afterRender`, cuando la medida ya es la final.
+  function isHeaderClipped(node) {
+    // Dos cortes distintos, los dos con `overflow: hidden` en el `th`
+    // (handsontable-header-global.css): el vertical lo hace `-webkit-line-clamp: 2`
+    // y se ve en scrollHeight; el horizontal lo produce una palabra que no cabe
+    // y no se parte (`overflow-wrap: normal`) y se ve en scrollWidth. El margen
+    // de 1 px absorbe el redondeo subpixel de anchos fraccionarios.
+    return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+  }
+
+  function refreshHeaderTitles(instance) {
+    var hotInstance = instance || hot;
+    var root = hotInstance && hotInstance.rootElement;
+    if (!root || typeof root.querySelectorAll !== 'function') {
+      return;
+    }
+
+    var headers = root.querySelectorAll('thead th .colHeader');
+    for (var i = 0; i < headers.length; i++) {
+      var node = headers[i];
+      var text = String(node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text && isHeaderClipped(node)) {
+        node.title = text;
+      } else {
+        node.removeAttribute('title');
+      }
+    }
+  }
+
+  // C-37 (2026-08-05): los gatillos `.changeType` son el indicador decorativo
+  // que Handsontable inyecta en la cabecera. Los 24 nacen con `tabindex="-1"`,
+  // asi que ninguno es alcanzable por teclado, pero solo 12 llevaban
+  // `aria-hidden`: un lector de pantalla anunciaba esos 12 como botones sin
+  // nombre e ignoraba los otros 12, identicos. Se marcan todos, sin condicion.
+  // Marcar un elemento con `tabindex="-1"` no dispara `aria-hidden-focus`,
+  // que solo aplica a lo que sigue siendo tabulable.
+  function markDecorativeHeaderTriggers(container) {
+    var triggers = container.querySelectorAll('thead th .changeType');
+    Array.prototype.forEach.call(triggers, function (trigger) {
+      if (trigger.getAttribute('aria-hidden') !== 'true') {
+        trigger.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  // Ni `afterGetColHeader` ni `afterRender` sirven para C-37, y las dos vias se
+  // midieron antes de descartarlas: en el hook de cabecera el boton todavia no
+  // existe -lo inyecta el plugin dropdownMenu despues-, y un barrido en
+  // `afterRender` si marca los 24, pero cada `render()` posterior REUSA los
+  // mismos nodos de la tabla maestra y les quita el `aria-hidden` (medido:
+  // 24/24 -> render() -> 12/24, con el clon superior intacto). Por eso hay que
+  // vigilar tambien la mutacion de atributo, no solo la de nodos, con el mismo
+  // patron que este archivo ya usa para `.htFocusCatcher`.
+  function observeDecorativeHeaderTriggers(container) {
+    var pending = false;
+    var apply = function () {
+      pending = false;
+      markDecorativeHeaderTriggers(container);
+    };
+
+    markDecorativeHeaderTriggers(container);
+
+    // Coalescer por frame: un render toca muchos nodos y no hace falta barrer
+    // una vez por mutacion. La escritura es condicional, asi que reafirmar el
+    // atributo no genera mutaciones nuevas y el ciclo se cierra solo.
+    new MutationObserver(function (records) {
+      if (pending) {
+        return;
+      }
+      for (var i = 0; i < records.length; i++) {
+        var record = records[i];
+        var isTrigger =
+          record.type === 'attributes' &&
+          record.target.classList &&
+          record.target.classList.contains('changeType');
+        if (record.type === 'childList' || isTrigger) {
+          pending = true;
+          window.requestAnimationFrame(apply);
+          return;
+        }
+      }
+    }).observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-hidden'],
+    });
+  }
+
   function syncFocusCatcherA11y(container) {
     // HOT 14 arma sus .htFocusCatcher (tabindex 0) manteniendo aria-hidden,
     // lo que dispara aria-hidden-focus en Axe. Espejo: expuesto si es
@@ -2994,31 +3089,20 @@
         window.requestAnimationFrame(function () {
           refreshVisiblePGCellMeta(hotInstance);
           syncRenderedTableWidth(hotInstance);
+          // C-19: el barrido de titles necesita el ancho ya aplicado, asi que
+          // va aqui y no en el renderer. (C-37 vive en `afterGetColHeader`.)
+          refreshHeaderTitles(hotInstance);
           if (window.AiaComponents && window.AiaComponents.ensureScrollableRegions) {
             window.AiaComponents.ensureScrollableRegions(container);
           }
         });
       },
-      afterGetColHeader: function (col, TH) {
-        // Task 26 (2026-08-04): title con el texto integro, recuperable
-        // cuando el header se trunca con elipsis/line-clamp
-        // (handsontable-header-global.css).
-        if (!TH || !TH.querySelector) {
-          return;
-        }
-
-        var headerNode = TH.querySelector('.colHeader');
-        if (!headerNode) {
-          return;
-        }
-
-        var headerText = String(this.getColHeader(col) || '').replace(/\s+/g, ' ').trim();
-        if (headerText) {
-          headerNode.title = headerText;
-        } else {
-          headerNode.removeAttribute('title');
-        }
-      },
+      // Task 26 ponia aqui el `title` del header. C-19 (2026-08-05) lo movio a
+      // `refreshHeaderTitles()`, invocado desde `afterRender`: solo ahi el ancho
+      // de columna es el definitivo y se puede saber si el texto se recorta de
+      // verdad.
+      // (C-37 se resuelve con un MutationObserver sobre el contenedor; ver
+      // `observeDecorativeHeaderTriggers`.)
       className: 'htMiddle',
       cells: function (row, col, prop) {
         var hotInstance = (this && this.instance) || (window.PGHotModule && window.PGHotModule.getHotInstance && window.PGHotModule.getHotInstance());
@@ -3113,6 +3197,7 @@
     // Bootstrap/jQuery roban el foco a nivel de document.
     hot.listen();
     syncFocusCatcherA11y(container);
+    observeDecorativeHeaderTriggers(container);
     hot.addHook('afterFilter', function () {
       if (!hot) return;
       window.setTimeout(function () {
