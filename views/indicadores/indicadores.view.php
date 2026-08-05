@@ -174,9 +174,10 @@
 				contenedor.innerHTML = '<p class="ind-powerbi-denied">El informe de indicadores no está disponible para tu perfil.</p>';
 				return;
 			}
-			// C-22: el iframe va dentro de un marco del design system (padding,
-			// separador y superficie) para que el informe lea como contenido
-			// embebido y no como una isla blanca a sangre.
+			// C-22: el iframe va dentro de un passe-partout que le da aire contra
+			// el borde de la tarjeta `.aia-grid-shell` del contenedor, para que el
+			// informe lea como contenido embebido y no como una isla blanca a
+			// sangre. La tarjeta ya pone superficie, separador, radio y sombra.
 			contenedor.innerHTML = '<div class="ind-powerbi-marco"><iframe title="Last Planner AIA - Power BI" src="' + POWER_BI_REPORT_URL + '" frameborder="0" allowfullscreen="true" onload="ajustarInformePowerBI()" class="ind-powerbi-frame"></iframe></div>';
 			ajustarInformePowerBI();
 		}
