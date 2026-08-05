@@ -34,7 +34,10 @@
     <div class="bi-main-shell flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <header class="bi-main-header border-b border-gray-200 py-3 px-6 flex flex-col justify-center flex-shrink-0 z-10 min-h-[72px]">
             <div class="flex items-center justify-between gap-4 mb-2">
-                <h2 id="current-view-title" class="text-xl font-bold text-gray-800 tracking-tight leading-none">Resumen Ejecutivo</h2>
+                <!-- C-30: es el titulo de la vista y lo reescribe `bi-spa.js` en cada
+                     cambio de pestana, asi que es el h1 del documento. Antes era un h2 y
+                     el BI no declaraba ningun h1. Clases e id intactos. -->
+                <h1 id="current-view-title" class="text-xl font-bold text-gray-800 tracking-tight leading-none">Resumen Ejecutivo</h1>
                 <button type="button" data-bi-filter-trigger class="aia-btn aia-btn--secondary bi-filter-trigger" aria-haspopup="dialog" aria-controls="bi-filter-drawer" aria-expanded="false">
                     <i data-lucide="sliders-horizontal" class="w-4 h-4" aria-hidden="true"></i>
                     <span>Filtros</span>
