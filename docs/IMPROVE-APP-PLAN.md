@@ -24,9 +24,9 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done — GATE abierto; fases 2-9 desbloqueadas | CUSTOMER.md | 2026-08-04 |
-| 2 | ux-heuristics | in-progress — la corre la campaña (ciclo triple + barridos); volcado a DESIGN.md al cierre de cada fase | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
+| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 3 | design-everyday-things | pending — lente nueva: gulfs de Norman sobre el flujo PG→PI→PS | DESIGN.md, EXPERIMENTS.md | |
-| 4 | refactoring-ui | in-progress — ídem fase 2, dentro del ciclo triple de la campaña | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
+| 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 5 | microinteractions | pending — sobre las acciones diarias: confirmar compromisos, guardar celda, filtrar, importar | DESIGN.md, EXPERIMENTS.md | |
 | 6 | made-to-stick | pending — copy in-app; absorbe C-27 (tildes) y deja C-33 (frase de dominio) como pregunta al usuario | POSITIONING.md, EXPERIMENTS.md | |
 | 7 | influence-psychology | skipped: app interna de empresa, sin paywall ni superficies de upsell | — | 2026-08-04 |
@@ -54,7 +54,10 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 
 - [x] Fase 1 (jobs-to-be-done) — cerrada el 2026-08-04 con entrevista al usuario; `docs/CUSTOMER.md`
   escrito con los tres jobs por rol, nueve dimensiones y las alternativas. Gate abierto.
-- [ ] Volcar los hallazgos ya medidos de la campaña a DESIGN.md `## UX Audit Findings` y crear
-  EXPERIMENTS.md con el backlog ICE (tarea de encaje, sin re-medir nada)
+- [x] Volcar los hallazgos ya medidos de la campaña a `## UX Audit Findings` y al backlog ICE
+  (tarea de encaje, sin re-medir nada) — cerrada el 2026-08-04. Se creó `docs/DESIGN-AUDIT.md` en
+  vez de extender el `DESIGN.md` de la raíz, que es contrato de consumo y no registro de auditoría;
+  las 54 entradas A-*/B-*/C-* quedan con severidad 0-4 y disposición real, y las 10 que siguen
+  abiertas sin task se añadieron al backlog compartido de `docs/EXPERIMENTS.md`.
 - [ ] Fase 3 sobre PG→PI→PS cuando la fase 4 de la campaña (comportamiento) esté cerrada
 - [ ] Fases 5 y 6 tras la fase 3; fase 9 al cierre de la campaña
