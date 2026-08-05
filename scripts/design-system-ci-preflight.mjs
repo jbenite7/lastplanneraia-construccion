@@ -29,7 +29,7 @@ const EXPECTED_INIT_COPIES = [
   ['database/bi/001_bi_pg_semana.sql', '101-bi-view.sql'],
   ['database/bi/002_bi_pi_restricciones.sql', '102-bi-view.sql'],
   ['database/bi/003_bi_ps_compromisos.sql', '103-bi-view.sql'],
-  ['database/bi/004_bi_pdc_general.sql', '104-bi-view.sql'],
+  // 104 retirado el 2026-08-04 con el PDC v1 (ver database/fixtures/design-system-ci.Dockerfile).
   ['database/bi/005_bi_cic_contratistas.sql', '105-bi-view.sql'],
   ['database/bi/006_bi_cip_responsables.sql', '106-bi-view.sql'],
   ['database/bi/007_bi_curva_s_duracion.sql', '107-bi-view.sql'],

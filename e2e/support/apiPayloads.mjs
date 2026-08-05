@@ -60,40 +60,13 @@ export const CNC_API = {
   reasons: { method: 'POST', url: '/api/cnc/reasons', payload: { categoria: 'Programación' } },
 };
 
-// ─── Listado de Actividades ───────────────────────────────────────────────────
-export const LISTADO_API = {
-  list: { method: 'POST', url: '/api/listado-actividades/list', payload: {} },
-  updateCell: { method: 'POST', url: '/api/listado-actividades/update-cell', payload: { id: '%ID%', prop: '%PROP%', value: '%VALUE%' } },
-  save: { method: 'POST', url: '/api/listado-actividades/save', payload: { opcion: '%OPCION%' } },
-  autoPreview: { method: 'POST', url: '/api/listado-actividades/auto/preview', payload: {} },
-  autoApply: { method: 'POST', url: '/api/listado-actividades/auto/apply', payload: { run_id: '%RUN_ID%', suggestion_ids: ['%SUGGESTION_ID%'] } },
-  autoUndo: { method: 'POST', url: '/api/listado-actividades/auto/undo', payload: { run_id: '%RUN_ID%' } },
-};
-export const LISTADO_DB = {
-  list: 'SELECT * FROM actividades WHERE project_id = %PID% ORDER BY Id',
-};
-
-// ─── Contratos ────────────────────────────────────────────────────────────────
-export const CONTRATOS_API = {
-  list: { method: 'POST', url: '/api/contratos/list', payload: { semana: '%SEMANA%' } },
-  autoPreview: { method: 'POST', url: '/api/contratos/auto/preview', payload: {} },
-  /** NOTE (F-006): currently returns "Solicitud inválida". */
-  autoApply: { method: 'POST', url: '/api/contratos/auto/apply', payload: { run_id: '%RUN_ID%' } },
-};
-export const CONTRATOS_DB = {
-  list: 'SELECT * FROM contratos WHERE project_id = %PID% ORDER BY id',
-};
-
-// ─── PDC (Plan de Compras) ───────────────────────────────────────────────────
-export const PDC_API = {
-  list: { method: 'POST', url: '/api/pdc/list', payload: { semana: '%SEMANA%' } },
-  autoPreview: { method: 'POST', url: '/api/pdc/auto/preview', payload: {} },
-  /** NOTE (F-007): currently returns "Solicitud inválida". */
-  autoApply: { method: 'POST', url: '/api/pdc/auto/apply', payload: { run_id: '%RUN_ID%' } },
-};
-export const PDC_DB = {
-  list: 'SELECT * FROM pdc WHERE project_id = %PID% ORDER BY id',
-};
+// ─── Listado de Actividades · Contratos · PDC v1 ──────────────────────────────
+// Podados el 2026-08-04 con el retiro del PDC v1: LISTADO_API/DB, CONTRATOS_API/DB
+// y PDC_API/DB apuntaban a rutas y tablas que ya no existen (`/api/listado-actividades/*`,
+// `/api/contratos/*`, `/api/pdc/*`, y las tablas `actividades`, `contratos` y `pdc`).
+// Cero consumidores al retirarlos: sus dos unicos specs —workflows/pdc-full.spec.mjs y
+// workflows/procurement-flow.spec.mjs— cayeron en el mismo commit.
+// El sucesor es Plan de Compras v2, con su propia cobertura en tests/browser/pdc-v2-*.spec.mjs.
 
 // ─── Subcontratistas ──────────────────────────────────────────────────────────
 export const SUBCONTRATISTAS_API = {

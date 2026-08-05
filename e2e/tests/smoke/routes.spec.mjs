@@ -30,9 +30,8 @@ test.describe('Smoke: all routes render without fatal errors', () => {
     { path: '/programacion-semanal/cnp', selectors: ['#dt_cliente', 'body'] },
     { path: '/programacion-semanal/cnc', selectors: ['#dt_cliente', 'body'] },
     { path: '/programacion-semanal/cic', selectors: ['#dt_cliente', 'body'] },
-    { path: '/listado-actividades', selectors: ['#hot-container .ht_master.handsontable'] },
-    { path: '/contratos', selectors: ['#dt_cliente', 'body'] },
-    { path: '/pdc', selectors: ['#dt_cliente', 'body'] },
+    // Podadas el 2026-08-04: /listado-actividades, /contratos y /pdc se eliminaron con el PDC v1.
+    // El humo las seguia visitando y fallaba con «No usable selector found for /listado-actividades».
     { path: '/indicadores', selectors: ['body'] },
     { path: '/control-cambios', selectors: ['.handsontable', '#dt_cliente', 'body'] },
   ];

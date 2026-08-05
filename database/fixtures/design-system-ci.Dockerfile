@@ -20,7 +20,9 @@ COPY database/fixtures/design-system-ci-normalize.sql /docker-entrypoint-initdb.
 COPY database/bi/001_bi_pg_semana.sql /docker-entrypoint-initdb.d/101-bi-view.sql
 COPY database/bi/002_bi_pi_restricciones.sql /docker-entrypoint-initdb.d/102-bi-view.sql
 COPY database/bi/003_bi_ps_compromisos.sql /docker-entrypoint-initdb.d/103-bi-view.sql
-COPY database/bi/004_bi_pdc_general.sql /docker-entrypoint-initdb.d/104-bi-view.sql
+# 104 retirado el 2026-08-04 con el PDC v1: database/bi/004_bi_pdc_general.sql se borro y este COPY
+# rompia el build de la imagen de CI. La vista bi_pdc_general no tiene lectores — el informe de
+# compras se alimenta del PDC v2 (ver src/Services/ControlTowerService.php:522).
 COPY database/bi/005_bi_cic_contratistas.sql /docker-entrypoint-initdb.d/105-bi-view.sql
 COPY database/bi/006_bi_cip_responsables.sql /docker-entrypoint-initdb.d/106-bi-view.sql
 COPY database/bi/007_bi_curva_s_duracion.sql /docker-entrypoint-initdb.d/107-bi-view.sql
