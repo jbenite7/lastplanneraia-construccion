@@ -16,9 +16,9 @@
 
 	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
-    <input type="hidden" id="semana_PHP" value="<?php echo $semana; ?>">
-    <input type="hidden" id="db_PHP" value="<?php echo $dbName; ?>">
-    <input type="hidden" id="proyecto_PHP" value="<?php echo $proyecto; ?>">
+    <input type="hidden" id="semana_PHP" value="<?php echo htmlspecialchars((string) ($semana ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" id="db_PHP" value="<?php echo htmlspecialchars((string) ($dbName ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" id="proyecto_PHP" value="<?php echo htmlspecialchars((string) ($proyecto ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" id="Semanal_Confirmada" value="<?php echo htmlspecialchars($AIA_semana_confirmada ?? 0, ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
 
 	<div class="encabezado" id="encabezado">
