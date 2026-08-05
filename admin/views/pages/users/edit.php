@@ -47,12 +47,12 @@ $forcePasswordChangeEnabled = (int) ($user['force_password_change'] ?? 0) === 1;
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">Email (opcional)</label>
             <input type="email" name="email" class="form-control" id="email" value="<?php echo htmlspecialchars((string) $user['email']); ?>">
           </div>
 
           <div class="form-group">
-            <label for="cargo">Cargo</label>
+            <label for="cargo">Cargo (opcional)</label>
             <input type="text" name="cargo" class="form-control" id="cargo" value="<?php echo htmlspecialchars((string) $user['cargo']); ?>">
           </div>
 

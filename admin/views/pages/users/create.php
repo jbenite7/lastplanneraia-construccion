@@ -38,13 +38,13 @@ foreach (($roles ?? []) as $code => $role) {
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">Email (opcional)</label>
             <input type="email" name="email" class="form-control" id="email" placeholder="Email" aria-describedby="email-error">
             <span id="email-error" class="text-danger admin-field-error" role="alert" aria-live="polite">Este email ya está registrado.</span>
           </div>
 
           <div class="form-group">
-            <label for="cargo">Cargo</label>
+            <label for="cargo">Cargo (opcional)</label>
             <select name="cargo" class="form-control select2 w-full" id="cargo">
               <option value=""></option>
             </select>
