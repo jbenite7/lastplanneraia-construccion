@@ -210,7 +210,7 @@
           </div>
           <div id="currentProgressStep" class="small text-muted mt-1"></div>
           <div id="progressStepsList" class="mt-1 small admin-progress-steps"></div>
-          <div id="progressError" class="small text-danger mt-1 admin-hidden"></div>
+          <div id="progressError" class="small text-danger admin-field-error mt-1 admin-hidden"></div>
           <button class="btn btn-sm btn-outline-secondary mt-1 admin-hidden" id="btnCloseProgress">
             <i class="fas fa-times mr-1"></i> Cerrar
           </button>
@@ -246,7 +246,7 @@
                 data-project="<?php echo htmlspecialchars($issue['nombre']); ?>" 
                 data-missing="<?php echo htmlspecialchars(implode(', ', $issue['missing'])); ?>">
               <small><strong><?php echo $issue['nombre']; ?></strong></small><br>
-              <small class="text-danger">Elementos pendientes: <?php echo count($issue['missing']); ?></small>
+              <small class="text-danger admin-field-error">Elementos pendientes: <?php echo count($issue['missing']); ?></small>
             </li>
             <?php endforeach; ?>
           </ul>
