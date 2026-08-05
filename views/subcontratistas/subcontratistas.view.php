@@ -318,10 +318,21 @@
                        className: 'htCenter htMiddle'
                     }
                 ],
-                // Anchos en porcentaje: ID(0%), Subcontratista(18%), Correo(18%), NIT(8%), Alcance(18%), TipoProveedor(22%), Activo(6%), Acciones(10%) = 100%
+                // Anchos en porcentaje: ID(0%), Subcontratista(18%), Correo(21%), NIT(9%), Alcance(18%), TipoProveedor(18%), Activo(6%), Acciones(10%) = 100%
+                //
+                // Task 8 (2026-08-05, C-31). Medido a 1180x820 con datos reales de JMC, con el
+                // contenedor en 1116 px:
+                //  - «Correo Contacto» rendizaba 200 px y `proyectos@concreacero.com.co` necesita
+                //    231. Se cortaba a mitad de dominio y SIN elipsis: se leia
+                //    «proyectos@concreacero.» — un correo mal copiado es un correo que rebota.
+                //    18% -> 21% = 234 px.
+                //  - «NIT» rendizaba 89 px y los NIT de nueve digitos necesitan 95. Un NIT
+                //    truncado es un numero equivocado. 8% -> 9% = 100 px.
+                // Los 4 puntos salen de «Tipo Proveedor», que rendizaba 245 px para un contenido
+                // cuyo maximo medido es 97: baja a 18% (200 px) y sigue sobrada.
                 colWidths: function(colIndex) {
                     const containerWidth = document.getElementById('hot-container').offsetWidth;
-                    const percentages = [0, 18, 18, 8, 18, 22, 6, 10]; // ID oculto = 0%
+                    const percentages = [0, 18, 21, 9, 18, 18, 6, 10]; // ID oculto = 0%
                     return Math.floor(containerWidth * (percentages[colIndex] / 100));
                 },
                 hiddenColumns: {
