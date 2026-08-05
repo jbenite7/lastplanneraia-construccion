@@ -57,6 +57,12 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **M-4** · Importar el cronograma —la operación más larga de la app— no da **ningún** acuse de recibo, y el patrón correcto está en el mismo repositorio | Feedback ≤0,1 s; prevención de errores (N5) | 3 | El submit de `#formCargarExcel` (`programaGeneralActualizar.view.php:447-465`) sube el XLSX y espera al parseo del servidor **sin deshabilitar el botón, sin spinner y sin bloquear el reenvío**: entre pulsar «Guardar» y el badge de éxito no cambia nada en pantalla, y pulsar dos veces lanza dos importaciones. El repo ya tiene la receta a mano: «Crear Semana LPS» hace `prop('disabled', true)` + `$('#modal_spinner').modal('show')` (`funcionesGenerales6.js:59-60`), y ese `#modal_spinner` es un diálogo con `aria-live="polite"` y «Procesando…» que ya está en la página. Es paridad, no invención. **Toca JS: se registra, no se aplica** | backlog ICE |
 | **M-5** · El estado vacío que aparece al filtrar a cero dice que **la semana está vacía**, y ofrece las dos acciones que no son | Golfo de evaluación; ayuda a reconocer errores (N9) | 3 | Medido: con 57 actividades en la semana, filtrar por un chip en cero deja la rejilla en 0 filas y `attachHtEmptyState` (`hot.js:2854-2858`) pinta «Sin actividades programadas esta semana · Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades»…». El estado vacío del **conjunto filtrado** se está contando como el estado vacío de la **semana**, y las dos salidas que sugiere añaden actividades en vez de la única que recupera el dato: quitar el filtro. El componente ya acepta título y cuerpo por parámetro, así que el remedio es pasarle otro texto cuando `weeklyAlertFilters.length > 0`. **Toca JS: se registra, no se aplica** | backlog ICE |
 | **M-6** · Momento firma (**confirmar compromisos**, elegido por el usuario): el modal que cierra la semana llega con su acción principal apagada y sin decir en el propio botón por qué | Jerarquía del momento; ayuda a reconocer errores (N9) | 2 | Medido en vivo: el modal abre con `#btn_confirmar_compromisos_semana` `disabled` y clase `disabled`, **sin `title`, sin `aria-describedby` y sin `aria-busy`**; el motivo (`56 · Por completar`) vive en un KPI a media pantalla de distancia. Y el acuse del acto más consecuente del ciclo semanal es un segundo modal de texto plano («Se han bloqueado los compromisos…»). **Propuesta de pulido, registrada y no aplicada:** (a) atar el botón a su causa con `aria-describedby` al KPI bloqueante y un texto propio del tipo «Faltan 56 por completar»; (b) darle al acto un cierre memorable —transición de sello sobre la barra de fase, que ya cambia de `Programación` a `Calificación`— en vez de un modal de texto. (a) es contrato de accesibilidad y (b) es animación nueva: ninguno es solo CSS de feedback, así que van al backlog | backlog ICE · decide: usuario |
+| **S-1** · Los errores de la cascada PG→PI→PS son **etiquetas de diagnóstico, no mensajes**: «Error de red», «Error cargando datos», «Error al guardar» | Ayuda a reconocer y recuperarse de errores (N9); SUCCESs: Concrete | 2 | Cuatro cadenas repetidas en los tres módulos que puntúan **0 en Concrete** —no dicen qué se perdió ni qué hacer— y **0 en Emotional**: el residente acaba de perder un dato y lee un código de estado. Y el patrón bueno ya está en el repo, en el mismo archivo: `programacion_intermedia/hot.js:4442` («Marque al menos 2 filas… Con una sola actividad no hay lote que comparar»). **Aplicado (Task 30):** «Error de red» → «No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.» (`programacion_intermedia/hot.js:2979`, `programacion_semanal/hot.js:2375`); «Error cargando datos» → «No se pudo cargar el programa general / No se pudieron cargar las actividades (de la semana). Recarga la página para volver a intentarlo.» (`programa_general/hot.js:1088`, `programacion_intermedia/hot.js:2817`, `programacion_semanal/hot.js:2047`). Es reescritura de texto no-dominio: no cambia ningún término del `GLOSARIO.md` ni ninguna condición del flujo. Medido en el diálogo real (SweetAlert2) a 1180×820 dark: 512×332 px, dentro del viewport, texto íntegro y sin desbordar en las cuatro | done (Task 30) |
+| **S-2** · Los avisos y tooltips de Programación Intermedia siguen sin tildes donde el resto de la app sí las pone — el `C-27b` que la Task 20 recomendó y nadie abrió | Consistencia y estándares (N4); SUCCESs: Credible | 1 | Cinco textos visibles: tres `title` de la barra y la leyenda (`programacion_intermedia.view.php:42,64,66` — «liberacion», «aun», «semaforo», «Pre-Construccion») y dos errores (`hot.js:2976` «cambio en otra pestana o sesion… Recargue la pagina», `hot.js:4431` «La tabla aun no esta lista.»). La ortografía descuidada cuesta **Credible**: es la misma pantalla que le pide al residente que confíe en el dato. **Aplicado (Task 30):** las cinco con tilde; además `4431` gana salida («Espera a que termine de cargar e inténtalo de nuevo») y `2976` pasa a tuteo, que es lo que usa el resto de la app. **No se tocó** `$area === 'Pre-Construccion'` (`:65`): eso es comparación de un valor de datos, no texto de pantalla. Sonda en vivo: los dos `title` leen con tilde y **cero** coincidencias del patrón sin tilde en todos los `[title]` de la vista | done (Task 30) |
+| **S-3** · El recorrido de Plan de Compras v2 (modal «Paso 1 de 6») es **el mejor copy de la app** y conviene decirlo: es el estándar contra el que se mide el resto | SUCCESs, las seis letras | 0 | Puntuado sobre las 6 paradas de `pdc-app/src/lib/recorrido.ts`: **Simple** sí (una idea por parada, y el propio comentario del archivo justifica por qué son seis y no ocho); **Unexpected** sí en la parada 4 («El presupuesto está ordenado como se construye. Aquí se agrupan sus insumos en paquetes de contratación»), que es exactamente la sorpresa útil del módulo; **Concrete** sí («se sube el Excel», «una actividad sin cantidad»); **Credible** sí, por detalle verificable y no por adjetivos; **Emotional** flojo salvo en la parada 6 («la que vas a abrir todas las mañanas»); **Stories** sí — las seis paradas son una secuencia, no una lista de funciones. **Nada que reescribir.** Verificado renderizando: `Paso 1 de 6`, 480×242 px, sin desbordar, consola limpia | cerrado sin código |
+| **S-4** · Los estados vacíos de la app son buenos **salvo uno**, y el malo es el que más se mira: `/indicadores` dice «Ningún dato disponible en esta tabla =(» | Ayuda y documentación (N10); SUCCESs: Credible, Concrete | 2 | El patrón bueno está tres veces y es explícito sobre **cómo se llena** la tabla: CNC «Sin causas de no cumplimiento esta semana. Se registran al justificar un avance menor al compromiso en Programación Semanal», CNP y CIC igual (`CNC.view.php:543`, `CNP.view.php:709`, `CIC.view.php:1502`). Frente a eso, el de `/indicadores` (`indicadores.view.php:265`) no dice qué falta ni qué hacer, y el emoticono `=(` es un golpe directo a **Credible** en la pantalla que la gerencia enseña al cliente. **Registrado, no aplicado:** queda fuera de las superficies que este task tenía encargadas (PG→PI→PS, Plan de Compras, Control de Cambios) y es cadena compartida de DataTables en esa vista | backlog ICE |
+| **S-5** · El historial de versiones del Plan de Compras dice qué **no** pasó y no dice qué hacer, teniendo la acción a diez centímetros | SUCCESs: Concrete (falta el paso siguiente) | 1 | Medido en vivo: con proyecto sin presupuesto, la tabla pinta «Todavía no se ha importado ningún presupuesto en este proyecto.» — cierto, pasivo y sin salida, justo debajo del cargador de Excel que sí la tiene. El patrón bueno de la propia app (CNC/CNP/CIC) añade siempre la frase de «se llena cuando…». Reescritura propuesta, **no aplicada** por ser copy de un módulo fuera del encargo directo: «Todavía no se ha importado ningún presupuesto. Sube el Excel aquí arriba y esta lista guardará cada versión para que puedas compararlas» | backlog ICE |
+| **S-6** · Los textos que **más** ganarían con la lente son de dominio, y por eso no se tocan: se registran para que el usuario decida | SUCCESs: Concrete/Emotional sobre vocabulario LPS | 2 | Tres nudos, los tres gobernados por `GLOSARIO.md` y por doctrina Last Planner, no por redacción: (1) el vacío de PS al filtrar («Sin actividades programadas esta semana») ya está medido en **M-5**, y su arreglo obliga a decidir cómo se llama el vacío de un filtro frente al vacío de una semana; (2) «Falta Sub-Contratista o Resp. AIA para registrar avance» (`programacion_semanal/hot.js:2823`) y «No puede gestionar restricciones de una actividad sin asignar Responsable AIA» (`programacion_intermedia/hot.js:4014`) nombran roles del glosario y **la reescritura correcta no es de estilo sino de conducta** (N-1: impedir en vez de reprochar); (3) los rótulos de las acciones —«Autoprogramar Actividades», «Confirmar Compromisos», «Restricción Compartida»— son términos del glosario, y cambiarlos rompería el vocabulario compartido con la obra. **Regla aplicada: dominio se registra, no se reescribe** | backlog ICE · decide: usuario |
 | **C-15** · `buttons.css` (1.215 líneas) se auto-encapsula en `@layer components` **y** se importa con `layer(components)`, creando `components.components` | Consistencia y estándares (N4) — arquitectura de capas | 2 | **Auditoría emitida (Task 27), nada aplicado.** 8 casos: **4 de capa duplicada exacta** y 4 de anidamiento con capa distinta. Hallazgo que el registro no tenía: `buttons.css` y `access.css` **entran cada uno por dos puertas** (`aia-design-system.css` y `entrypoints/core.css`), así que un arreglo que toque una sola deja la otra. **Recomendación: diferir a ticket propio y no tocarlo dentro de una campaña visual** — hoy el accidente juega a favor y quitarlo cambia el orden de cascada en toda la app. Detalle en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-16** · La caja interna del `.colHeader` renderiza 33 px donde el `th` mide 56: 23 px por columna desperdiciados; la flecha del selector tapa el último dígito de las fechas | Deferencia al contenido; eficiencia de uso (N7) | 3 | Token nuevo `--ds-table-header-pad-x` (3px) recupera 14-22 px por columna corrigiendo la aritmética del `container-type`. Las cabeceras se leen enteras **sin quitarle ancho a ningún dato**. 20 cabeceras truncadas → 0 | done (commits d877a76c, 5555127a, 12c457f3) |
 | **C-17** · Cinco acciones de Programación Semanal se fueron a un menú «Más», entre ellas «Recargar» | Reconocimiento antes que recuerdo (N6); flexibilidad y eficiencia (N7) | 2 | Por decisión del usuario, «Recargar» y «BI Semanal» vuelven a la barra. Barra final: Autoprogramar · Agregar Actividad · Confirmar Compromisos · Reabrir Semana · Registrar TNP · Recargar · BI Semanal · «Más» (Leyenda, Imprimir, Exportar CSV). `scrollWidth == clientWidth`, sin desbordar | done (commit 9f4e9926) |
@@ -75,7 +81,7 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **C-30** · Solo 3 rutas declaran `<main>` y la mayoría no tiene `h1`; `/programa-general` salta de `h1` a `h3` | Accesibilidad — estructura del documento | 3 | Envolver el contenido en `<main>` y decidir el `h1` de cada pantalla, con `/dashboard/escalamientos` como patrón (la mejor estructura medida de la sesión). Los títulos de pestaña ya se cerraron en `e6f7f4c` | pendiente (Task 18) |
 | **C-31** · 105 truncamientos silenciosos en toda la app, cero elipsis en ninguna parte; `3.5.2.1.1` se lee igual que `3.5.2.1`, que es otra actividad de la misma tabla | Visibilidad del estado del sistema (N1) — el dato se lee mal | 4 | Anchos de columna corregidos: **48 celdas y 20 cabeceras truncadas → 0 y 0 en 6 de 6 superficies vivas.** Id de PG 56→84 px, de PI 36→74. Subcontratistas: `proyectos@concreacero.com.co` y los NIT de 9 dígitos, enteros. Los 54 truncamientos de `/pdc` se fueron con el módulo | done (commits d877a76c, 5555127a, 12c457f3); parte PDC: no aplica |
 | **C-32** · Los gráficos de BI traen `aria-label` pero no comunican sus datos (WCAG 1.1.1) | Accesibilidad — nivel A | 3 | Tabla equivalente oculta (`.sr-only`) junto a cada gráfico, **generada de la misma fuente que alimenta la serie** para que no pueda desincronizarse | pendiente (Task 26) |
-| **C-33** · El estado vacío de `/control-cambios` es el único que deja al usuario sin salida | Ayuda y documentación (N10); control y libertad (N3) | 2 | Es una frase, pero explica una regla de dominio (de dónde nacen las solicitudes de cambio) y esa la tiene el usuario. El resto de estados vacíos de la app está notablemente bien | pendiente (Task 30) · si el usuario no da la frase → chip |
+| **C-33** · El estado vacío de `/control-cambios` es el único que deja al usuario sin salida | Ayuda y documentación (N10); control y libertad (N3) | 2 | **Aplicado (Task 30) con la frase genérica del equipo, marcada como provisional en el propio código.** Antes: «No hay solicitudes de cambio registradas para este proyecto» — dice que no hay nada y no dice de dónde nace una. Ahora: «Las solicitudes de cambio nacen en obra: cuando el diseño, el cliente o la interventoría piden algo distinto de lo contratado, regístralo aquí para tramitar su aprobación.» (`views/control-cambios/controlCambios.view.php`, `sEmptyTable`, con comentario que la marca provisional y remite a la ratificación del usuario). Sube en **Concrete** (nombra a los tres emisores reales del cambio) y en **Story** (describe la escena de obra, no el estado de la tabla); conserva Simple. Medido en vivo a 1180×820 dark: una sola línea, `x = 65 → 1179` de 1180, sin recorte ni desbordamiento (`scrollWidth == clientWidth == 1180`) | done (Task 30) · redacción **provisional**, pendiente de ratificar |
 | **C-34** · Al pasar el ratón, el botón secundario adelanta a la acción principal: luminancia 0,443 frente a 0,245 del primario en reposo (+80%) | Jerarquía visual; un acento por vista | 3 | El hover del secundario sube a superficie elevada con el borde más vivo, en vez de rellenarse del verde del acento: luminancia 0,443 → **0,0715** (29% del primario), texto 8,23:1, borde 3,20:1 → 5,46:1. El primario no se toca | done (commit 293b2540) |
 | **C-35** · El motivo por el que un botón está bloqueado vive solo en el `title`, y los 13 `disabled` nativos no son focalizables | Accesibilidad; ayuda a reconocer errores (N9) | 2 | Lo demás está bien resuelto (cuatro canales de distinción, motivo explícito). El remedio estándar —`aria-disabled` focalizable— devuelve el botón a pulsable y exige bloqueo por JS: es comportamiento | backlog ICE · decide: usuario |
 | **C-36** · 34 de los 53 campos del modal de contrato del PDC tienen etiqueta visible pero no asociada | Accesibilidad — nivel A | 3 | Sin objeto: el modal de contrato del PDC v1 ya no existe. Si el PDC v2 monta un formulario equivalente, se vuelve a medir allí | no aplica: módulo eliminado |
@@ -276,18 +282,59 @@ ninguno, y es la operación más larga de la app (M-4).
 2. **N-6 se confirma en vivo, no por lectura:** el modal de cierre mostró `56 · Por completar` en el
    KPI y **exactamente 8** elementos en la lista de detalle, sin ningún «y 48 más».
 
+## Score SUCCESs del copy in-app (Task 30 — fase 6 de `improve-app`, IA-5)
+
+Las seis entradas `S-*` salen de puntuar el texto de la interfaz con el marco *Made to Stick*
+(**S**imple · **U**nexpected · **C**oncrete · **C**redible · **E**motional · **S**tories) sobre las
+superficies que el brief encargó: el onboarding de **Plan de Compras v2** (`/plan-compras`, modal
+«Paso 1 de 6» — el `/pdc` v1 se eliminó el 2026-08-04 y no se auditó), los estados vacíos, los
+errores, los CTA y los tooltips de la cascada **PG → PI → PS**.
+
+**La regla de aplicación, que es lo que separa este task de un rediseño de texto:** una reescritura
+de UI **no-dominio** que sube el score se aplica; una que toca **dominio** —términos de
+`GLOSARIO.md`, nombres de proceso, roles LPS— solo se registra, y decide el usuario. Por eso hay
+once cadenas reescritas y tres nudos anotados sin tocar (`S-6`).
+
+**Qué mide cada letra aquí, sin adornos:**
+
+| Letra | La pregunta, aplicada a esta app | Dónde falló |
+|---|---|---|
+| **Simple** | ¿Una idea por mensaje, sin subordinadas? | Casi en ningún sitio: el copy de la app peca de corto, no de largo |
+| **Unexpected** | ¿Dice algo que el usuario no daba por supuesto? | Solo el recorrido del PDC lo consigue (`S-3`) |
+| **Concrete** | ¿Nombra cosas del mundo de la obra y **el paso siguiente**? | El agujero grande: `S-1` (errores sin salida), `S-4`, `S-5`, C-33 |
+| **Credible** | ¿El detalle sostiene la confianza, o la ortografía la mina? | `S-2` (tildes) y `S-4` (el `=(` de indicadores) |
+| **Emotional** | ¿Habla de lo que el usuario se juega? | `S-1`: el residente pierde un dato y lee «Error de red» |
+| **Stories** | ¿Hay secuencia, un antes y un después? | `S-3` la tiene; C-33 la gana con la frase nueva |
+
+**El hallazgo de la fase, y no es el que se esperaba.** No hay un problema de tono ni de longitud:
+**el copy de esta app está bien escrito donde alguien se sentó a escribirlo** —el recorrido del PDC,
+los vacíos de CNC/CNP/CIC, el aviso de selección insuficiente de PI— y es puro código de estado
+donde nadie lo hizo: los errores de red y de carga, que son exactamente los momentos en que el
+usuario más necesita una frase. Es la misma forma que encontró la fase 5 con las microinteracciones
+(el hueco siempre del mismo lado), traducida a palabras: **lo que falta no es estilo, es el paso
+siguiente**.
+
+**Las once cadenas aplicadas** (todas verificadas en navegador a 1180×820 dark, ver el informe del
+task): 4 errores genéricos de PG/PI/PS (`S-1`), 5 textos sin tilde de PI más la salida que le faltaba
+a uno (`S-2`), y el estado vacío de Control de Cambios (C-33, redacción **provisional**).
+
+**Lo que se dejó fuera a propósito.** El badge de guardado de la **vista móvil de tarjetas** de PS
+(`programacion_semanal/hot.js:2373`) conserva «Error de red»: `AGENTS.md` excluye mobile de todo
+trabajo de esta campaña, así que su desktop hermano quedó reescrito y él no. Es inconsistencia
+deliberada y anotada, no un olvido.
+
 ## Recuento
 
 | Estado | Entradas |
 |---|---|
-| `done` | 20 |
+| `done` | 23 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
-| `pendiente (Task N)` | 12 |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 23 |
-| `cerrado sin código` | 4 |
+| `pendiente (Task N)` | 11 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 26 |
+| `cerrado sin código` | 5 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **67** |
+| **Total** | **73** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
@@ -310,3 +357,12 @@ las otras cinco tocan comportamiento o contrato de accesibilidad y van al backlo
 (`backlog ICE` 18 + 5 = **23**). El resto de estados no se mueve. Comprobación:
 20 + 3 + 1 + 12 + 23 + 4 + 4 = **67**. Los ids ya son cinco familias (`A-`, `B-`, `C-`, `N-`, `M-`),
 así que el recuento se cuenta sobre `^| \*\*[A-CNM]-`.
+
+**Aritmética del Task 30** (copy con SUCCESs, IA-5), que lleva el total de 67 a **73**: se añaden las
+**6** entradas `S-1` … `S-6`, y **C-33 se mueve de `pendiente` a `done`** porque el Task 30 era su
+task viva y se aplicó con la frase del usuario (provisional, marcada en el código). De las nuevas,
+`S-1` y `S-2` son reescritura de texto no-dominio y se aplicaron (`done` 20 + 2 + C-33 = **23**);
+`S-3` queda `cerrado sin código` —es el copy que sí puntúa, no hay nada que arreglar— (4 → **5**); y
+`S-4`, `S-5` y `S-6` van al backlog (23 + 3 = **26**). `pendiente` baja 12 → **11**. Comprobación:
+23 + 3 + 1 + 11 + 26 + 5 + 4 = **73**. Con la familia `S-` el recuento se cuenta ya sobre
+`^| \*\*[A-CNMS]-`.

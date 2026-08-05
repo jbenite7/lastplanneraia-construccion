@@ -28,7 +28,7 @@
 | 3 | design-everyday-things | done — lente de Norman sobre PG→PI→PS; 7 hallazgos nuevos (`N-1`…`N-7`) con severidad y C-14 medido y absorbido. **Nada aplicado:** todo es cambio de comportamiento, se registra y se pregunta | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 5 | microinteractions | done — las 4 acciones diarias desmontadas en Trigger/Rules/Feedback/Loops **midiendo en navegador**; 6 hallazgos (`M-1`…`M-6`), momento firma = confirmar compromisos. Solo `M-1` era CSS puro y se aplicó; los otros 5 tocan comportamiento y van al backlog | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
-| 6 | made-to-stick | pending — copy in-app; absorbe C-27 (tildes) y deja C-33 (frase de dominio) como pregunta al usuario | POSITIONING.md, EXPERIMENTS.md | |
+| 6 | made-to-stick | done — score SUCCESs sobre el onboarding de Plan de Compras v2, estados vacíos, errores, CTAs y tooltips de PG→PI→PS; 6 hallazgos (`S-1`…`S-6`) y **11 cadenas reescritas** (S-1, S-2 y C-33). C-33 aplicado con la frase genérica del equipo, marcada **provisional** en el código. Lo de dominio se registra, no se toca | docs/POSITIONING.md, docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 7 | influence-psychology | skipped: app interna de empresa, sin paywall ni superficies de upsell | — | 2026-08-04 |
 | 8 | high-perf-browser | deferred: hasta que una medición o queja señale lentitud percibida | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
 | 9 | steve-jobs-design-review | pending — revisión final en frío del flujo PG→PI→PS, tras cerrar la campaña | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
@@ -54,6 +54,10 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-05 | Fase 5 | El **momento firma es «confirmar compromisos»**, decidido por el usuario | Es el corazón del LPS y el acto de mayor consecuencia del ciclo semanal: sin él la app sería una hoja de cálculo compartida |
 | 2026-08-05 | Fase 5 | De los 6 hallazgos solo se aplica `M-1` (feedback de hover/pulsación en los chips atenuados); los otros 5 se registran | Regla de la fase: lo que es solo CSS/feedback visual se aplica con su verificación; lo que toca comportamiento o contrato de accesibilidad va al backlog con ICE |
 | 2026-08-05 | Fase 5 | El pulido del momento firma se **propone y no se aplica**, aun siendo el momento elegido | Sus dos mitades son contrato de accesibilidad (atar el botón a su causa) y animación nueva (sello de fase); ninguna cabe en «solo CSS de feedback» |
+| 2026-08-05 | Fase 6 | **C-33 se aplica con la frase genérica del equipo, marcada como provisional en el código** en vez de dejarse como chip | Decisión del usuario: el estado vacío ya no deja a nadie sin salida, y la frase definitiva de su obra puede sustituirla después sin coste |
+| 2026-08-05 | Fase 6 | La regla de aplicación del copy es **no-dominio se reescribe, dominio se registra**; `GLOSARIO.md` es la autoridad de nomenclatura | Reescribir «compromiso», «restricción» o «Autoprogramar» rompería el vocabulario compartido con la obra, que es justo lo que sostiene los tres jobs |
+| 2026-08-05 | Fase 6 | `docs/POSITIONING.md` se escribe como **esqueleto mínimo**: solo `## Key Messages`, derivado de los tres job statements de `CUSTOMER.md` | App interna sin superficie de venta (la misma razón por la que la fase 7 está `skipped`); rellenar audiencia, categoría y diferenciadores sería inventar |
+| 2026-08-05 | Fase 6 | El hallazgo de la fase: **el copy no falla por tono ni por longitud, sino por ausencia de paso siguiente** en los momentos de error y de vacío | Es la misma forma que encontró la fase 5 con las microinteracciones —el hueco siempre del mismo lado—, ahora en palabras |
 | 2026-08-04 | Encaje | La biblia de flujos (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md`) comparte backlog con este tracker: la matriz esfuerzo/impacto **es** EXPERIMENTS.md | Un solo backlog; evita dos listas de pendientes divergentes |
 
 ## Next Actions
@@ -87,4 +91,15 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 - [ ] **Pregunta abierta al usuario, de la fase 5:** ¿el pulido del momento firma (M-6) se hace, y
   con cuál de sus dos mitades — atar el botón apagado a su causa, el sello de fase al confirmar, o
   ambas?
-- [ ] Fase 6 tras la fase 5; fase 9 al cierre de la campaña
+- [x] Fase 6 (made-to-stick) — cerrada el 2026-08-05 (Task 30 / IA-5). `docs/POSITIONING.md` creado
+  con `## Key Messages` (uno por rol, derivados de `CUSTOMER.md`); §Score SUCCESs del copy in-app en
+  `docs/DESIGN-AUDIT.md` con `S-1`…`S-6`; 4 tarjetas ICE nuevas. **Once cadenas reescritas y
+  verificadas en navegador** a 1180×820 dark: 4 errores genéricos de PG/PI/PS («Error de red»,
+  «Error cargando datos») que ahora dicen qué se perdió y qué hacer, 5 textos de PI sin tilde (el
+  `C-27b` que la Task 20 recomendó) y el estado vacío de Control de Cambios. El total de hallazgos
+  del audit pasa de 67 a **73**.
+- [ ] **Pregunta abierta al usuario, de la fase 6:** ¿ratifica la frase provisional del estado vacío
+  de Control de Cambios, o la sustituye por la de su obra? Y de `S-6`: ¿abre alguno de los tres
+  textos de dominio (vacío del filtro en PS, los dos avisos de «sin Responsable AIA», los rótulos de
+  las acciones)?
+- [ ] Fase 9 al cierre de la campaña

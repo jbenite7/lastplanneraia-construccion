@@ -39,7 +39,7 @@
                 <button id="btn_informe_compromisos" type="button" class="aia-btn aia-btn--secondary">Descargar Corte <i class="fas fa-download ml-1"></i></button>
                 <button id="btn-export" class="aia-btn aia-btn--secondary">Exportar CSV</button>
                 <button id="btn-refresh" class="aia-btn aia-btn--secondary">Recargar</button>
-                <div class="pi-view-all-toggle d-inline-flex align-items-center mx-2 <?= $viewAll ? 'is-on' : '' ?>" title="<?= $viewAll ? 'Volver a la ventana de 6 semanas de liberacion de restricciones' : 'Mostrar todas las actividades, incluyendo las que aun no entran en la ventana de 6 semanas' ?>">
+                <div class="pi-view-all-toggle d-inline-flex align-items-center mx-2 <?= $viewAll ? 'is-on' : '' ?>" title="<?= $viewAll ? 'Volver a la ventana de 6 semanas de liberación de restricciones' : 'Mostrar todas las actividades, incluyendo las que aún no entran en la ventana de 6 semanas' ?>">
                     <span class="pi-view-all-toggle-label"><i class="fas fa-layer-group mr-1"></i>Ver Todas las Actividades</span>
                     <div class="custom-control custom-switch mb-0 ml-2">
                         <input type="checkbox" class="custom-control-input" id="piViewAllToggle" <?= $viewAll ? 'checked' : '' ?> aria-label="Ver Todas las Actividades">
@@ -61,9 +61,9 @@
 
         <div class="collapse d-md-block" id="pdcFiltersMobile">
             <div class="pdc-legend pi-legend pdc-legend-autoscaling" id="piLegend">
-                <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semaforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
+                <span class="pi-legend-window-label <?= $viewAll ? 'is-active' : '' ?>" title="Los conteos del semáforo se calculan sobre la ventana de 6 semanas, no sobre la vista actual.">(Ventana 6 sem.)</span>
                 <?php if ($area === 'Pre-Construccion'): ?>
-                <span class="pi-legend-window-label pi-legend-window-label--info is-active" title="Pre-Construccion: 4 restricciones activas">Pre-Cons. 4R</span>
+                <span class="pi-legend-window-label pi-legend-window-label--info is-active" title="Pre-Construcción: 4 restricciones activas">Pre-Cons. 4R</span>
                 <?php endif; ?>
                 <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 

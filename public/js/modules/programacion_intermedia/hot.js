@@ -2814,7 +2814,7 @@
       showLoading(false);
     }).fail(function () {
       showLoading(false);
-      showFeedback('error', 'Error cargando datos');
+      showFeedback('error', 'No se pudieron cargar las actividades. Recarga la página para volver a intentarlo.');
     });
   }
 
@@ -2973,10 +2973,10 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       if (jqXHR && jqXHR.status === 409) {
-        showFeedback('error', 'La semana activa cambio en otra pestana o sesion. Recargue la pagina para continuar.');
+        showFeedback('error', 'La semana activa cambió en otra pestaña o sesión. Recarga la página para continuar.');
         return;
       }
-      showFeedback('error', 'Error de red');
+      showFeedback('error', 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.');
     });
   }
 
@@ -4428,7 +4428,7 @@
     $('#btn-shared-clear-selection').off('click.piSharedClear').on('click.piSharedClear', clearSharedSelection);
     $('#btn-shared-constraint').off('click.piSharedOpen').on('click.piSharedOpen', function () {
       if (!hot) {
-        showFeedback('error', 'La tabla aun no esta lista.');
+        showFeedback('error', 'La tabla aún no está lista. Espera a que termine de cargar e inténtalo de nuevo.');
         return;
       }
 

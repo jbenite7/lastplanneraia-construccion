@@ -1085,7 +1085,7 @@
       })
       .fail(function () {
         showLoading(false);
-        showFeedback('error', 'Error cargando datos');
+        showFeedback('error', 'No se pudo cargar el programa general. Recarga la página para volver a intentarlo.');
       });
   }
 

@@ -713,7 +713,11 @@
 		var idioma_espanol = {
 			"sProcessing": "Procesando...",
 			"sZeroRecords": "Ninguna solicitud coincide con los filtros.",
-			"sEmptyTable": "No hay solicitudes de cambio registradas para este proyecto.",
+			// C-33 · Redacción PROVISIONAL (frase genérica del equipo, 2026-08-05). El estado vacío
+			// era el único de la app que dejaba al usuario sin salida: decía que no había nada y no
+			// decía de dónde nace una solicitud. Pendiente de que el usuario ratifique la frase de
+			// dominio definitiva; el resto de estados vacíos (CNC, CNP, CIC) ya siguen este patrón.
+			"sEmptyTable": "Las solicitudes de cambio nacen en obra: cuando el diseño, el cliente o la interventoría piden algo distinto de lo contratado, regístralo aquí para tramitar su aprobación.",
 			"sInfo": "Mostrando _TOTAL_ solicitudes",
 			"sInfoEmpty": "Sin solicitudes",
 			"sInfoFiltered": "(filtrado de un total de _MAX_)",

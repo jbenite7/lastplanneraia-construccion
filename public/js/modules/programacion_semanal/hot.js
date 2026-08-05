@@ -2044,7 +2044,7 @@
       syncPhaseUI();
     }).fail(function () {
       showLoading(false);
-      showFeedback('error', 'Error cargando datos');
+      showFeedback('error', 'No se pudieron cargar las actividades de la semana. Recarga la página para volver a intentarlo.');
     });
   }
 
@@ -2372,7 +2372,7 @@
       if (!isMobileSave) { revertCell(visualRow, prop, oldValue); }
       setMobileSaveState(visualRow, prop, 'error', 'Error de red');
       renderMobileCards(getFilteredRows());
-      showFeedback('error', 'Error de red');
+      showFeedback('error', 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.');
     });
   }
 
