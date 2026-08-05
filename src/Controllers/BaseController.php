@@ -85,6 +85,45 @@ abstract class BaseController
     }
 
     /**
+     * Estado semanal del proyecto resuelto en servidor: la última semana creada
+     * (`Max_Semana`) y si la semana en curso está confirmada (`Semanal_Confirmada`).
+     *
+     * Reproduce a propósito la misma consulta que `src/Legacy/datosGeneralesPagina.php`,
+     * para que el valor que emite el PHP en el bloque `.encabezado` y el que llega
+     * después por AJAX sean el mismo dato y no puedan divergir (C-46).
+     *
+     * @return array{maxSemana: int, semanalConfirmada: int}
+     */
+    protected function getWeekStatusVars(string $dbName, int $semana): array
+    {
+        $estado = ['maxSemana' => 0, 'semanalConfirmada' => 0];
+
+        if ($dbName === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            return $estado;
+        }
+
+        try {
+            $tSa = \TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+            $projectId = \TableResolver::getProjectIdByPrefix($dbName);
+
+            $stmtMax = $this->db->queryWithProject(
+                "SELECT Semana FROM {$tSa} ORDER BY Semana DESC LIMIT 1"
+            );
+            $estado['maxSemana'] = (int) ($stmtMax->fetchColumn() ?: 0);
+
+            $stmtSc = $this->db->queryWithProject(
+                "SELECT Semanal_Confirmada FROM {$tSa} WHERE project_id = ? AND Semana = ? LIMIT 1",
+                [$projectId, $semana]
+            );
+            $estado['semanalConfirmada'] = (int) ($stmtSc->fetchColumn() ?: 0);
+        } catch (\Throwable $e) {
+            error_log('Error resolviendo el estado semanal en servidor (C-46): ' . $e->getMessage());
+        }
+
+        return $estado;
+    }
+
+    /**
      * Sincroniza la semana desde rutas modernas como /pdc?semana=5.
      */
     protected function syncRequestedWeekContext(): bool

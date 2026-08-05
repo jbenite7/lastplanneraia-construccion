@@ -61,6 +61,10 @@ class ProgramacionSemanalController extends BaseController
                 error_log('Error cargando semanas para el shell Programación Semanal: ' . $e->getMessage());
             }
         }
+        // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
+            $this->getWeekStatusVars($dbName, $semana);
+
         $shellActive = 'programacion-semanal';
         $shellModuleLabel = 'Programación Semanal';
 
@@ -79,6 +83,10 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
+
+        // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
+            $this->getWeekStatusVars($dbName, $semana);
 
         $shellWeeks = $this->loadShellWeeks($dbName);
         $shellActive = 'programacion-semanal';
@@ -100,6 +108,10 @@ class ProgramacionSemanalController extends BaseController
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
 
+        // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
+            $this->getWeekStatusVars($dbName, $semana);
+
         $shellWeeks = $this->loadShellWeeks($dbName);
         $shellActive = 'programacion-semanal';
         $shellModuleLabel = 'CNC';
@@ -119,6 +131,10 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
+
+        // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
+            $this->getWeekStatusVars($dbName, $semana);
 
         $shellWeeks = $this->loadShellWeeks($dbName);
         $shellActive = 'programacion-semanal';

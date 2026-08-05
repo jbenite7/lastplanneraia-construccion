@@ -22,6 +22,9 @@
         <input type="hidden" id="baseDatos_PHP" value="<?php echo htmlspecialchars($dbName ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
         <input type="hidden" id="semana_PHP" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="permiso_canonico" value="<?php echo htmlspecialchars($permiso ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <!-- C-46: los emite el servidor; el inyector JS los duplica todavia (Task 37 lo retira). -->
+        <input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo (int) ($maxSemana ?? 0); ?>" aria-hidden="true">
+        <input type="hidden" id="semana" name="semana" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="" aria-hidden="true">
         <input type="hidden" id="Semanal_Confirmada" value="<?php echo (int) ($semanalConfirmada ?? 0); ?>" aria-hidden="true">
     </div>

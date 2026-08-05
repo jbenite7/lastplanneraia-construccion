@@ -41,6 +41,8 @@
         <input type="hidden" id="Max_Semana" value="<?php echo (int) ($maxSemana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="Semanal_Confirmada" value="<?php echo (int) ($semanalConfirmada ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="area_PHP" value="<?php echo htmlspecialchars($area ?? 'Construccion', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+        <!-- C-46: funcionesGenerales6.js lee #semana sin guarda y esta vista no carga el inyector. -->
+        <input type="hidden" id="semana" name="semana" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
         <input type="hidden" id="scriptBarraFiltros" value="<?php echo htmlspecialchars($initialFilterQuery ?? '', ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
     </div>
 

@@ -18,6 +18,10 @@
 		<input type="hidden" name="seccion" id="seccion" value="indicadores" aria-hidden="true">
 		<input type="hidden" id="Id" name="Id" value="0" aria-hidden="true">
 		<input type="hidden" id="opcion" name="opcion" value="registrar" aria-hidden="true">
+		<!-- C-46: los emite el servidor; el inyector JS los duplica todavia (Task 37 lo retira). -->
+		<input type="hidden" id="permiso_canonico" name="permiso_canonico" value="<?php echo htmlspecialchars($_SESSION['permiso_canonico'] ?? ($permiso ?? ''), ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true">
+		<input type="hidden" id="Max_Semana" name="Max_Semana" value="<?php echo (int) ($maxSemana ?? 0); ?>" aria-hidden="true">
+		<input type="hidden" id="semana" name="semana" value="<?php echo (int) ($semana ?? 0); ?>" aria-hidden="true">
 		<input type="hidden" id="scriptBarraFiltros" name="scriptBarraFiltros" value="" aria-hidden="true">
 	</div>
 

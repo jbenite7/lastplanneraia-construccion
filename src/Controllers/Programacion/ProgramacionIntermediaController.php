@@ -91,6 +91,9 @@ class ProgramacionIntermediaController extends BaseController
             }
         }
 
+        // C-46: Max_Semana resuelto en servidor para el bloque .encabezado.
+        ['maxSemana' => $maxSemana] = $this->getWeekStatusVars($dbName, (int) ($vars['semana'] ?? 0));
+
         // Shell sidebar (DS-027): semanas del proyecto para el chip de contexto.
         $shellWeeks = [];
         if ($dbName) {
@@ -114,6 +117,7 @@ class ProgramacionIntermediaController extends BaseController
             'area' => $_SESSION['area'] ?? 'Construccion',
             'pcRestrictionNames' => $pcRestrictionNames,
             'semanalConfirmada' => $semanalConfirmada,
+            'maxSemana' => $maxSemana,
             'shellWeeks' => $shellWeeks,
             'shellActive' => 'programacion-intermedia',
             'shellModuleLabel' => 'Programación Intermedia',
