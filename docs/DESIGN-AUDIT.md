@@ -43,7 +43,14 @@ resuelto sin cambio · `no aplica: módulo eliminado` — el PDC v1 se borró el
 | **C-11** · Reglas `@media` pensadas para tablet alcanzan el viewport canónico de 1180 px | Consistencia y estándares (N4) | 2 | **Auditoría emitida (Task 27), nada aplicado.** 40 media queries con condición de ancho alcanzan 1180 px; **13 tienen techo**. **Recomendación: solo 1 de las 13 es acción clara ahora** (la de `768–1199.98` con `!important` que impone 44 px táctiles al escritorio); 10 son escaleras de escala que **hoy hacen trabajo** y 2 son una cura, no una herida. Detalle y razonamiento en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-12** · Programación Intermedia se queda sin acción primaria | Jerarquía visual; reconocimiento antes que recuerdo (N6) | 2 | No había candidata defendible sin inventar criterio de dominio. Requiere que el usuario diga cuál debe destacar | backlog ICE · decide: usuario |
 | **C-13** · Los chips de PI y PS envuelven a dos líneas por un ancho fijo de 155 px | Eficiencia de uso (N7) | 2 | Quitar el ancho fijo y dimensionar por contenido, como ya hace PG | backlog ICE |
-| **C-14** · El aviso de «qué retiene el estado» ya existe por tres vías y aun así el usuario no lo vio | Visibilidad del estado del sistema (N1) — descubribilidad | 2 | Ninguno de código: hay marca `⚠ Sin asignar` en celda, `title`/`aria-label` en el chip y panel al hacer clic. Falta saber si el caso del usuario lo retenía otra condición, o si el aviso está pero no invita a mirarlo | pendiente (Task 22) |
+| **C-14** · El aviso de «qué retiene el estado» ya existe por tres vías y aun así el usuario no lo vio | Visibilidad del estado del sistema (N1) — descubribilidad; peso visual del signifier | 2 | **Medido en la lente de Norman (Task 22) y reclasificado: el caso del usuario fue «había indicio y no lo vi», y el indicio pesa menos que el dato que lo rodea.** `.ps-missing-assignment` (`programacion-semanal.css:1690`) pinta `⚠ Sin asignar` con `--ds-color-state-critical-text` (`#ffcdc8`) a `--ds-type-size-sm` (14 px) y **sin `font-weight`**: el mismo tamaño y el mismo peso que la tinta de datos de la celda. Contra el fondo de celda (`--ds-active-bg-page`, `#111a15`) da **12,53:1**, pero el texto normal (`#f7faf8`) da **16,90:1** — la marca es **más apagada que el dato normal** (73 % de su luminancia) y entre ambos solo hay **1,35:1**, por debajo del 3:1 que WCAG 1.4.11 pide para distinguir por color. Y el segundo canal que el propio código pretende —teñir la celda— **está muerto**: `td.classList.add('ps-cell-empty-alert')` (`hot.js:2542`) pone una clase que **no tiene ninguna regla CSS en todo el árbol** (`grep` → 2 usos en JS, 0 en CSS). Queda un solo canal, el matiz, y encima con menos peso. **Remedio propuesto, NO aplicado:** dar regla a `.ps-cell-empty-alert` con la superficie de estado crítico ya tokenizada y subir el peso del `⚠` (negrita y un escalón de tamaño en el glifo), de modo que la marca gane por forma y fondo, no solo por color | backlog ICE · decide: usuario |
+| **N-1** · En Programación Intermedia el sistema **avisa después del hecho** en vez de impedirlo: editas una restricción de una actividad sin Responsable AIA, la edición entra, y solo entonces se revierte la celda con un error | Restricción (*forcing function*) mejor que aviso; golfo de ejecución | 3 | `programacion_intermedia/hot.js:4008-4016` comprueba `hasResp` **dentro de `afterChange`**, o sea cuando el cambio ya ocurrió: llama a `revertCell()` y emite «No puede gestionar restricciones de una actividad sin asignar Responsable AIA». El sistema ya sabía que era imposible antes de dejar abrir el editor. Norman: la restricción de UI hace innecesario el aviso. Salida: `readOnly` condicional en las columnas de restricción mientras falte Responsable, con el motivo visible en la celda y la celda causante señalada. **Es cambio de comportamiento: se registra, no se aplica** | backlog ICE · decide: usuario |
+| **N-2** · Confirmar compromisos es irreversible **para quien lo hace**: solo el rol `A` ve «Reabrir Semana» | Deshacer antes que confirmar; control y libertad del usuario (N3) | 3 | `syncPhaseUI()` (`programacion_semanal/hot.js:3115-3119`) muestra `#btn_reabrir_semana` únicamente si `getPermiso() === 'A'`. El Residente —que es quien confirma a diario, según `docs/CUSTOMER.md`— no tiene salida propia: depende de que un Admin la abra. La app sustituye el deshacer por una advertencia («Al confirmar, no se podrán modificar compromisos ni eliminar actividades», `hot.js:3517`), que es justo el intercambio que Norman desaconseja. **Puede ser correcto a propósito**: el candado de compromisos es doctrina Last Planner, no un descuido de UI. Por eso se registra como pregunta de dominio y no como defecto | backlog ICE · decide: usuario |
+| **N-3** · «Responsable AIA sin asignar» bloquea en los dos módulos y **solo uno lo marca en la celda** | Signifier ausente; golfo de evaluación | 2 | La misma condición revierte ediciones en PI (N-1) y bloquea el cierre en PS (`hot.js:3420`). PS al menos pinta `⚠ Sin asignar` en la celda de Responsable (C-14); **PI no marca esa celda de ninguna forma** — `grep ps-missing-assignment` no tiene equivalente en `programacion-intermedia.css`. En PI la condición solo se descubre chocando contra ella. El patrón correcto ya existe en el repo, en el módulo hermano | backlog ICE |
+| **N-4** · La rejilla de escritorio no tiene estado «guardando»; el único que existe vive en la vista móvil, que está fuera de alcance | Feedback ≤0,1 s; visibilidad del estado del sistema (N1) | 2 | PG, PI y PS emiten señal **solo al terminar** (`showFeedback('success', 'Guardado')` tras el `done` del AJAX: `programacion_intermedia/hot.js:2960`). Entre la tecla y el badge hay una ida y vuelta de red sin ningún acuse de recibo. El patrón correcto está dos veces en el repo: `programa_actualizar/hot_actualizar.js:861-867` pinta «Guardando... (n)» de inmediato y agrupa con *debounce* de 800 ms, y `programacion_semanal/hot.js:3360` hace lo mismo… pero solo dentro de `ps-legacy-card-view`, la vista de tarjetas móvil que `AGENTS.md` excluye del alcance. O sea: el canal existe justo donde no se puede trabajar | backlog ICE |
+| **N-5** · El acuse de guardado se **anuncia en 1 de 4** rejillas: `#save-status` lleva `role="status"` solo en Programación Intermedia | Golfo de evaluación; accesibilidad — anuncio de estado | 2 | Mismo id, mismo componente, mismo papel, cuatro vistas: `programacion_intermedia.view.php:56` lo declara con `role="status"`; `programa_general.view.php:70`, `programacion_semanal.view.php:100` y `programaGeneralActualizar.view.php:106` **no**. Para quien usa lector de pantalla, guardar en tres de las cuatro pantallas de la cascada no produce ningún anuncio. Arreglo de una palabra por vista, pero toca contrato de accesibilidad y conviene verificarlo | backlog ICE |
+| **N-6** · El resumen de cierre de semana **corta las listas a 8 sin decirlo**, mientras el contador de arriba muestra el total | Golfo de evaluación; visibilidad del estado del sistema (N1) | 2 | `buildCloseSummary()` acota las cuatro listas con `items.length < 8` (`programacion_semanal/hot.js:3436` y hermanos) y `renderSummaryList()` no añade ningún «y N más». Con 30 actividades bloqueadas el KPI dice **30** y el detalle enseña **8**: el usuario cree que arreglando esas ocho termina. Es el momento de mayor consecuencia del flujo semanal y el que peor informa | backlog ICE |
+| **N-7** · El gate de cierre está implementado **dos veces** y pueden discrepar; cuando discrepan, el error no señala ninguna fila | Golfo de ejecución y de evaluación; ayuda a reconocer errores (N9) | 2 | El cliente deshabilita «Confirmar» con `hasBlocking` (`hot.js:3522`); el servidor puede aun así responder `No_Bloqueado`, y la UI lo traduce en «Se detectaron actividades sin compromiso o sin asignaciones obligatorias» (`hot.js:4056-4058`), un texto que **no dice cuáles**. El usuario atraviesa el modal entero creyendo que estaba listo y sale sin saber dónde mirar. La salida barata no es unificar los dos gates, sino que la respuesta del servidor devuelva los ids y la UI los filtre en la rejilla | backlog ICE |
 | **C-15** · `buttons.css` (1.215 líneas) se auto-encapsula en `@layer components` **y** se importa con `layer(components)`, creando `components.components` | Consistencia y estándares (N4) — arquitectura de capas | 2 | **Auditoría emitida (Task 27), nada aplicado.** 8 casos: **4 de capa duplicada exacta** y 4 de anidamiento con capa distinta. Hallazgo que el registro no tenía: `buttons.css` y `access.css` **entran cada uno por dos puertas** (`aia-design-system.css` y `entrypoints/core.css`), así que un arreglo que toque una sola deja la otra. **Recomendación: diferir a ticket propio y no tocarlo dentro de una campaña visual** — hoy el accidente juega a favor y quitarlo cambia el orden de cascada en toda la app. Detalle en §Auditorías C-11/C-15/C-20 | informe emitido (Task 27) · decide: usuario |
 | **C-16** · La caja interna del `.colHeader` renderiza 33 px donde el `th` mide 56: 23 px por columna desperdiciados; la flecha del selector tapa el último dígito de las fechas | Deferencia al contenido; eficiencia de uso (N7) | 3 | Token nuevo `--ds-table-header-pad-x` (3px) recupera 14-22 px por columna corrigiendo la aritmética del `container-type`. Las cabeceras se leen enteras **sin quitarle ancho a ningún dato**. 20 cabeceras truncadas → 0 | done (commits d877a76c, 5555127a, 12c457f3) |
 | **C-17** · Cinco acciones de Programación Semanal se fueron a un menú «Más», entre ellas «Recargar» | Reconocimiento antes que recuerdo (N6); flexibilidad y eficiencia (N7) | 2 | Por decisión del usuario, «Recargar» y «BI Semanal» vuelven a la barra. Barra final: Autoprogramar · Agregar Actividad · Confirmar Compromisos · Reabrir Semana · Registrar TNP · Recargar · BI Semanal · «Más» (Leyenda, Imprimir, Exportar CSV). `scrollWidth == clientWidth`, sin desbordar | done (commit 9f4e9926) |
@@ -174,6 +181,52 @@ mecánica:* la Familia A — `--ds-color-text-inverse: #ffffff` con 53 usos pued
 usa. Antes de tocar nada hay que decidir **si estos tokens deben ser conscientes del tema o si su gracia es
 no serlo**; ésa es la pregunta que convierte C-20 de síntoma en raíz.
 
+## Lente de Norman sobre PG → PI → PS (Task 22 — fase 3 de `improve-app`, IA-3)
+
+Las siete entradas `N-*` salen de aplicar *The Design of Everyday Things* a los tres flujos núcleo
+que `docs/CUSTOMER.md` señala como cuello de botella de los tres jobs a la vez: **confirmar
+compromisos** (PS), **liberar restricciones** (PI) y **actualizar avance** (PG). **Nada se aplicó:**
+seis de las siete son cambio de comportamiento o de contrato, y la regla de esta fase es registrar y
+preguntar.
+
+**Método y su límite, dicho sin adornos.** Todo se midió **leyendo el código de esta rama**, no
+sondeando el navegador: los contrastes están **calculados a partir de los tokens** (`tokens.css` →
+`aia-design-system.css`) con la fórmula de WCAG 2.x, no muestreados de un píxel renderizado. Es
+suficiente para lo que se afirma —los valores son literales de token y la cadena de herencia se
+verificó archivo a archivo— pero significa que **no se comprobó si el `⚠` de C-14 cae dentro del
+viewport de 1180 px sin desplazamiento horizontal**, que es la otra explicación posible de «no lo vi»
+y sigue sin medir. El contenedor Docker en marcha sirve el otro checkout, así que medirlo exige
+montar la rama aparte; se dejó fuera por proporcionalidad.
+
+**Los cuatro cortes de la lente y qué encontró cada uno:**
+
+| Corte de Norman | Qué se buscó | Entradas |
+|---|---|---|
+| **Signifiers débiles** | ¿La marca que anuncia el estado pesa más que el dato que la rodea? | C-14 (medido), N-3 |
+| **Restricción antes que aviso** | ¿Dónde una restricción de UI haría imposible el error, en vez de reprocharlo? | N-1 |
+| **Feedback ≤0,1 s** | ¿Hay acuse de recibo antes de que termine la red? | N-4, N-5 |
+| **Deshacer antes que confirmar** | ¿La acción irreversible tiene salida para quien la ejecuta? | N-2 |
+| **Golfos de ejecución y evaluación** | ¿El usuario sabe qué hacer, y sabe qué pasó? | N-6, N-7 (y N-1, N-3 por su lado de evaluación) |
+
+**Lo que la lente aporta y las dos anteriores no vieron.** Las fases 2 y 4 (`ux-heuristics` y
+`refactoring-ui`) miraron la superficie: contraste, densidad, truncamiento, jerarquía. Esta mira **el
+ciclo de acción**, y por eso da hallazgos de otra clase — tres de ellos son **canales muertos o
+mudos**, no cosas mal pintadas:
+
+1. `.ps-cell-empty-alert` se aplica desde JS y **no existe en CSS** (C-14).
+2. El estado «guardando» de escritorio **solo existe en la vista móvil**, que el repo excluye (N-4).
+3. `role="status"` está en **1 de las 4** declaraciones del mismo `#save-status` (N-5).
+
+Ninguno de los tres se ve en una captura: los tres se ven mirando qué pasa **entre** que el usuario
+actúa y que el sistema responde. Ése es el aporte de la fase.
+
+**Lo que no es un hallazgo, y conviene decirlo.** `programa_actualizar` —el módulo de actualizar
+avance— es el **mejor de los cuatro** en este eje: badge inmediato con contador de pendientes,
+agrupación por *debounce*, guardia de salida con cambios sin guardar (`hot_actualizar.js:1230`) y un
+«Decisión revertida» que es deshacer de verdad (`:1445`). La lente no le encontró golfo propio. Eso
+tiene consecuencia práctica: **el patrón correcto ya está escrito en este repositorio** y N-4 es
+darle paridad, no inventar nada.
+
 ## Recuento
 
 | Estado | Entradas |
@@ -181,16 +234,23 @@ no serlo**; ésa es la pregunta que convierte C-20 de síntoma en raíz.
 | `done` | 19 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
-| `pendiente (Task N)` | 13 |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 10 |
+| `pendiente (Task N)` | 12 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 18 |
 | `cerrado sin código` | 4 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **54** |
+| **Total** | **61** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
 
 Los 7 movimientos del Task 27 salen todos de `pendiente`, que baja de 20 a 13: C-37, C-18 y C-19 pasan a
 `done` (16 → 19), C-11, C-15 y C-20 a `informe emitido` y C-5 a `no ejecutable`. Los ids no son solo `C-`:
-la tabla incluye también `A-` y `B-` —`cerrado sin código` son B-1, B-2, C-4 y C-7—, así que cualquier
-recuento tiene que contar sobre `^| \*\*[A-C]-` o se dejará 5 filas fuera.
+la tabla incluye también `A-`, `B-` y ahora `N-` —`cerrado sin código` son B-1, B-2, C-4 y C-7—, así que
+cualquier recuento tiene que contar sobre `^| \*\*[A-CN]-` o se dejará filas fuera.
+
+**Aritmética del Task 22** (lente de Norman, IA-3), que lleva el total de 54 a **61**: se añaden las
+**7** entradas `N-1` … `N-7`, todas `backlog ICE`, y **C-14 se mueve de `pendiente` a `backlog ICE`**
+porque el Task 22 era justo su task viva y la cerró midiendo en vez de aplicando. Por tanto
+`pendiente` 13 → **12**, `backlog ICE` 10 + 7 + 1 = **18**, y el resto de estados no se toca
+(`done` 19, `informe emitido` 3, `no ejecutable` 1, `cerrado sin código` 4, `no aplica` 4).
+Comprobación: 19 + 3 + 1 + 12 + 18 + 4 + 4 = **61**.
