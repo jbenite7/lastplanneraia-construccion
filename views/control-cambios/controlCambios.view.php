@@ -760,19 +760,22 @@
 					}
 				},
 				/* 29 definiciones para las 29 columnas de la cabecera. El detalle completo vive en la
-				   orden de cambio; aqui solo se deja lo que cabe a 1180 px sin scroll horizontal. */
+				   orden de cambio; aqui solo se deja lo que cabe a 1180 px sin scroll horizontal.
+				   Los porcentajes estan repartidos para que ninguna cabecera se parta a mitad de
+				   palabra: el ancho extra sale de Descripcion y Tipo de Cambio, que son texto libre
+				   y reenvuelven sin perder sentido. Suma constante, asi que no reaparece scroll. */
 				"columns": [
 					{ "defaultContent": "<button type='button' class='ver-orden aia-btn aia-btn--secondary btn-sm' aria-label='Ver orden de cambio'><i class='fa fa-eye'></i></button>", "width": "4%" },
 					{ "data": "id", "width": "5%" },
-					{ "data": "solicitanteCambio", "render": etiqueta(SOLICITANTES), "width": "8%" },
+					{ "data": "solicitanteCambio", "render": etiqueta(SOLICITANTES), "width": "8.5%" },
 					{ "data": "detalleSolicitanteOtro", "visible": false },
 					{ "data": "fechaSolicitud", "render": texto, "width": "8%" },
-					{ "data": "prioridad", "render": etiqueta(PRIORIDADES), "width": "6%" },
-					{ "data": "tipoCambio", "render": tiposMarcados, "width": "12%" },
-					{ "data": "responsableSolucion", "render": etiqueta(SOLICITANTES), "width": "8%" },
+					{ "data": "prioridad", "render": etiqueta(PRIORIDADES), "width": "7.5%" },
+					{ "data": "tipoCambio", "render": tiposMarcados, "width": "11%" },
+					{ "data": "responsableSolucion", "render": etiqueta(SOLICITANTES), "width": "10%" },
 					{ "data": "detalleResponsableSolucion", "visible": false },
 					{ "data": "justificacion", "visible": false },
-					{ "data": "descripcion", "render": texto, "width": "18%" },
+					{ "data": "descripcion", "render": texto, "width": "13%" },
 					{ "data": "incidenciaAlcance", "visible": false },
 					{ "data": "tiempoCronograma", "visible": false },
 					{ "data": "tiempoCronogramaAfectado", "visible": false },
@@ -786,7 +789,7 @@
 					{ "data": "incidenciaCalidad", "visible": false },
 					{ "data": "incidenciaRiesgo", "visible": false },
 					{ "data": "fechaTentativaDefinicion", "render": texto, "width": "8%" },
-					{ "data": "fechaEntregaInterventoria", "render": texto, "width": "8%" },
+					{ "data": "fechaEntregaInterventoria", "render": texto, "width": "10%" },
 					{ "data": "Observaciones", "visible": false },
 					{ "data": "fechaDefinicion", "render": texto, "width": "8%" },
 					{ "data": "aprobacion", "render": etiqueta(APROBACIONES), "width": "10%" },
