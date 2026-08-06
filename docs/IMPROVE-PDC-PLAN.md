@@ -68,6 +68,20 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: `<rea
 | 2026-08-06 | Fase 1 | El job es de **ensamble**, no de alerta ni de reparto | Respuesta del usuario |
 | 2026-08-06 | Fase 1 | Big/Little Hire se deja a la medición en vez de suponerlo | Respuesta del usuario; los datos de Da Porto apuntan al armado inicial |
 
+## Anexo · Reporte de compras en la Control Tower (2026-08-06)
+
+Pasada aparte, pedida por el usuario: hacer visual con **data storytelling** la pestaña Plan de
+Compras de `/bi/control-tower`. No es la SPA `/plan-compras`, así que no depende de `P-1`.
+
+| Decisión | Elegida por el usuario |
+|---|---|
+| Qué cuenta el reporte de un vistazo | **Riesgo primero**: vencimientos, cuello de botella, carga |
+| Qué pasa con las tablas | **Gráficos arriba, detalle plegable** — no se pierde ninguna cifra |
+| Alcance | Pestaña PDC **+ el KPI de compras del resumen ejecutivo** |
+
+Hallazgos `T-1`…`T-8` en `docs/PDC-AUDIT.md`; cinco aplicados y verificados en navegador, tres
+registrados en el backlog ICE de `docs/EXPERIMENTS.md`.
+
 ## Next Actions
 
 - [x] Fases 1, 2, 3, 4 y 6 cerradas el 2026-08-06. Siete hallazgos `P-1`…`P-7` en

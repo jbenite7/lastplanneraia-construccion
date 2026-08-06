@@ -562,13 +562,17 @@ class ControlTowerService
      * Avance por paso y carga por responsable, para el panel de compras (fase B3).
      *
      * @param int[] $projectIds
-     * @return array{por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:list<array{nombre:string,pendientes:int,vencidos:int}>}
+     * @return array{totales:array<string,int>,por_paso:array<string,array{pendientes:int,vencidos:int}>,por_responsable:list<array{nombre:string,pendientes:int,vencidos:int}>}
      */
     private function pdcBreakdown(array $projectIds): array
     {
         $agg = (new \App\Services\Pdc\SeguimientoService($this->db))->vencimientosAgregados($projectIds);
 
         return [
+            // El horizonte completo (vencido · sem1 · sem2 · sem3 · sem6 · adelante · sin fecha).
+            // Las filas por obra solo traen «vencidos» y «en riesgo», que colapsan seis cubetas en
+            // dos: el panel no podia dibujar cuanto tiempo queda hasta que esto se expuso.
+            'totales' => $agg['totales'],
             'por_paso' => $agg['por_paso'],
             // Se reindexa porque las claves son ids de usuario y el JSON las convertiría en un
             // objeto con huecos; al front le sirve una lista ya ordenada.

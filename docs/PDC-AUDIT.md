@@ -62,3 +62,37 @@ Dos cambios, ambos verificados en navegador tras recompilar el bundle (`npm run 
    comportamiento.
 3. **`P-5`**: ¿las cabeceras mudas de AG Grid entran en el suelo de accesibilidad del sistema, o se
    aceptan como excepción documentada igual que las de `.pdc-header`?
+
+## Reporte de compras en la Control Tower · rediseño narrativo (2026-08-06)
+
+Alcance distinto al del resto de este archivo: no es la SPA de `/plan-compras`, sino la pestaña
+**Plan de Compras** de `/bi/control-tower`, que hasta hoy eran cuatro tablas seguidas sin ninguna
+frase que dijera qué mirar. Decidido con el usuario: **riesgo primero**, gráficos arriba y tablas
+al detalle plegable. Medido en Da Porto, 1180×820, dark.
+
+### Hallazgos que motivaron el cambio
+
+| Id | Hallazgo | Severidad | Estado |
+|---|---|---|---|
+| `T-1` | El reporte abría con una tabla «Indicador / Valor / Acción». Nada decía qué pasa: había que leer 27 celdas para descubrir que 174 compras están vencidas | 3 | **aplicado** — titular generado del corte + tres tarjetas de cifra |
+| `T-2` | El horizonte de vencimientos existía en el servicio (`vencimientosAgregados()['totales']`, siete cubetas) pero **no viajaba al front**: `pdcBreakdown()` solo mandaba paso y responsable, y las filas por obra colapsan las seis cubetas en «vencidos» y «en riesgo» | 3 | **aplicado** — `totales` expuesto y dibujado |
+| `T-3` | «Dónde se atasca» y «quién lo tiene encima» eran tablas de tres columnas ordenadas alfabéticamente por el navegador; el cuello de botella no saltaba a la vista | 2 | **aplicado** — barras horizontales apiladas, ordenadas por carga |
+| `T-4` | El resumen ejecutivo mostraba «PDC en riesgo» sin ninguna vía para ir a mirarlo | 2 | **aplicado** — tarjeta «Compras vencidas» que abre la pestaña |
+| `T-5` | La cubeta «más adelante» (443 pasos en Da Porto) aplasta la escala de lo urgente si se dibuja junto a las demás | 2 | **aplicado** — queda fuera del gráfico y se declara en la nota al pie, no se oculta |
+
+### Registrado, no aplicado
+
+| Id | Hallazgo | Por qué no se tocó |
+|---|---|---|
+| `T-6` | **El resumen ejecutivo se contradice con su propio tablero:** dice «el nivel de riesgo de la obra es bajo» en la misma pantalla donde 174 compras están vencidas. `composeExecutiveBrief()` no mira compras | Cambiar el diagnóstico ejecutivo es dominio, no presentación. Pide decisión del usuario |
+| `T-7` | Con una sola obra en el filtro, «cuánto del plan está armado» es un gráfico de dos barras: la forma no aporta sobre el número | Solo molesta en proyecto único; con cartera se lee bien. No vale la excepción todavía |
+
+### Trampa medida, para quien siga
+
+- **`status-critical` no es un color de dato.** Resuelve a `#ffcdc8`, un rosa pálido pensado para
+  texto de estado: la barra de «ya vencido» salió rosa claro sobre fondo oscuro. El rojo de series
+  es `critical` (`oklch(65% 0.18 26.3)`). Queda un uso viejo de `status-critical` como color de
+  serie en `bi-spa.js:3704`, sin auditar en esta pasada.
+- **Las utilidades de rejilla del BI no son Tailwind completo.** `public/css/design-system/adapters/bi-utilities.css`
+  define a mano solo `md:grid-cols-2`, `lg:grid-cols-2/3/4` y `xl:grid-cols-2/3`. Escribir
+  `md:grid-cols-3` o `xl:grid-cols-5` no falla: la rejilla se queda en una columna, en silencio.

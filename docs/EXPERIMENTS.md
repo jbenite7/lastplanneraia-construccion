@@ -137,3 +137,16 @@ Del tracker `docs/IMPROVE-PDC-PLAN.md` y el audit `docs/PDC-AUDIT.md`. Todo medi
 | `P-5` | **Las cabeceras de columna de AG Grid dejan de ser mudas** para el lector de pantalla | 3 | 3 | 2 | Ocho `columnheader` sin texto; decidir antes si entra en el suelo de a11y o es excepción |
 | `P-6` | **La rejilla de «Sin frente» asigna columnas por selector, no por orden** | 2 | 4 | 1 | Hoy se desordena en cuanto una fila trae la etiqueta «lote de obra» |
 | `P-7` | Baseline de INP/LCP/CLS del módulo (hoy: ocho peticiones API en paralelo al cargar, todas 200) | 2 | 4 | 1 | Punto de partida de la fase 8, no un defecto |
+
+## Reporte de compras en la Control Tower · rediseño narrativo (2026-08-06)
+
+Aplicado y verificado en navegador en la misma sesión (`T-1`…`T-5`, ver `docs/PDC-AUDIT.md`).
+Métrica precomprometida para el conjunto: **que un director nombre el cuello de botella del plan de
+compras sin abrir ninguna tabla**, preguntado sobre la pantalla. Hoy la respuesta exige leer las
+cuatro tablas.
+
+| Id | Cambio | I | C | E | Nota |
+|---|---|---|---|---|---|
+| `T-6` | **El resumen ejecutivo deja de decir «riesgo bajo» con 174 compras vencidas** — `composeExecutiveBrief()` mira también el PDC | 4 | 5 | 2 | Cambia el diagnóstico, no la presentación: pide el sí del usuario |
+| `T-8` | Auditar el último `status-critical` usado como color de serie (`bi-spa.js:3704`) | 2 | 4 | 1 | Misma trampa que ya se corrigió en el horizonte de compras |
+| `T-7` | Reemplazar el gráfico de cobertura por la cifra cuando el filtro trae una sola obra | 1 | 4 | 1 | Diferible: solo molesta en proyecto único |

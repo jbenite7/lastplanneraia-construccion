@@ -38,6 +38,15 @@
         "value": "inter",
         "createdAt": "2026-07-29T21:20:32.660Z",
         "reason": "Fuente de marca AIA, declarada en DESIGN.md"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "public/css/design-system/adapters/bi-utilities.css"
+        ],
+        "createdAt": "2026-08-06T19:17:56.065Z",
+        "reason": "Borde lateral de 4px: convencion establecida de las tarjetas KPI de la Control Tower; el usuario lo confirmo intencional el 2026-08-06"
       }
     ]
   }

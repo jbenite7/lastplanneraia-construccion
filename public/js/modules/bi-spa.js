@@ -427,6 +427,10 @@ function renderOverview(data) {
   setText('kpi-ejecutadas', valueWithUnit(scorecard[2]));
   setText('kpi-brecha', valueWithUnit(scorecard[3]));
   setText('kpi-ppc-delta', 'Resumen KPI');
+  // El conteo de compras vencidas viaja dentro del scorecard, no como campo suelto del payload:
+  // se busca por nombre para que reordenar el scorecard no cambie en silencio de KPI.
+  const pdcKpi = scorecard.find((item) => (item.kpi || '') === 'PDC en riesgo');
+  setText('kpi-pdc', formatInteger(toNumber(pdcKpi ? pdcKpi.value : 0)));
 
   const labels = scorecard.slice(0, 6).map((item) => item.kpi || 'Métrica');
   const values = scorecard.slice(0, 6).map((item) => toNumber(item.value));
@@ -2713,6 +2717,113 @@ function fillRows(id, items, columnas, celdas, vacio) {
   });
 }
 
+// Cubetas del horizonte, en el orden en que el tiempo corre. El nombre de cada una se escribe
+// en semanas porque «sem1» es la clave del servicio, no algo que un director deba descifrar.
+// El color no es decorativo: es una rampa de urgencia, de rojo a verde, en el mismo orden en que
+// corre el tiempo. `status-critical` NO sirve aquí — es el rosa pálido del texto de estado, no un
+// color de serie; el rojo de datos es `critical`.
+const PDC_HORIZONTE = [
+  { clave: 'vencido', label: 'Ya vencido', color: 'critical' },
+  { clave: 'sem1', label: 'Esta semana', color: 'brand-construction-medium' },
+  { clave: 'sem2', label: 'En 2 semanas', color: 'brand-construction' },
+  { clave: 'sem3', label: 'En 3 semanas', color: 'brand-aqua' },
+  { clave: 'sem6', label: 'En 6 semanas', color: 'brand-primary' },
+  { clave: 'sin_fecha', label: 'Sin fecha', color: 'neutral-muted' },
+];
+
+/**
+ * Barras con varias series, en horizontal o apiladas. Los helpers que ya existían pintan una
+ * sola serie vertical (renderBarChart) o series-línea (renderLineLikeBars); el panel de compras
+ * necesita ambas cosas a la vez: pendiente vs vencido, apilado, y con las etiquetas de paso o
+ * de responsable en el eje largo para que se lean sin girar la cabeza.
+ */
+function renderGroupedBarChart(canvasId, labels, datasets, options = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  stabilizeCanvas(canvas);
+  const theme = chartTheme();
+  const horizontal = options.horizontal === true;
+  const stacked = options.stacked === true;
+  const norm = datasets.map((dataset) => ({
+    label: dataset.label || '',
+    data: sanitizeChartData(dataset.data),
+    backgroundColor: Array.isArray(dataset.color)
+      ? dataset.color.map(resolveChartColor)
+      : resolveChartColor(dataset.color),
+    borderRadius: 4,
+  }));
+  syncChartDataTable(canvasId, labels, norm);
+
+  // Con `max` el eje no se autoescala: un porcentaje siempre se lee contra el 100, no contra el
+  // valor más alto del corte, que haría ver «lleno» un 40 %.
+  const valueAxis = { beginAtZero: true, stacked, ticks: { precision: 0 } };
+  if (typeof options.max === 'number') valueAxis.max = options.max;
+  const categoryAxis = { stacked };
+  const scales = chartCartesianScales(theme, horizontal
+    ? { x: valueAxis, y: categoryAxis }
+    : { x: categoryAxis, y: valueAxis });
+
+  if (BI.charts[canvasId]) {
+    BI.charts[canvasId].data.labels = labels;
+    BI.charts[canvasId].data.datasets = norm;
+    BI.charts[canvasId].options.scales = scales;
+    BI.charts[canvasId].update('none');
+    return;
+  }
+
+  BI.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: norm },
+    options: {
+      indexAxis: horizontal ? 'y' : 'x',
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: options.aspectRatio || 2.1,
+      animation: false,
+      resizeDelay: 200,
+      plugins: {
+        legend: chartLegendOptions(theme, { display: norm.length > 1 }),
+        tooltip: chartTooltipOptions(theme),
+      },
+      scales,
+    },
+  });
+}
+
+// El titular del reporte. Sale de los datos del corte, no de una plantilla fija: si no hay nada
+// vencido lo dice, en vez de dejar una frase alarmista que el tablero contradice.
+function pdcTitular(items, breakdown) {
+  const vencidos = items.reduce((sum, o) => sum + toNumber(o.vencidos), 0);
+  const enRiesgo = items.reduce((sum, o) => sum + toNumber(o.en_riesgo), 0);
+  const obrasConVencidos = items.filter((o) => toNumber(o.vencidos) > 0).length;
+
+  const pasos = Object.entries(breakdown.por_paso || {});
+  const cuello = pasos.reduce(
+    (peor, [nombre, v]) => (toNumber(v.vencidos) > toNumber(peor.vencidos) ? { nombre, vencidos: v.vencidos } : peor),
+    { nombre: '', vencidos: 0 },
+  );
+
+  if (!items.length) {
+    return { titular: 'Todavía no hay plan de compras que seguir.', sub: 'Arma los paquetes y amárralos al cronograma para que este reporte tenga qué contar.' };
+  }
+  if (vencidos === 0) {
+    return {
+      titular: enRiesgo > 0
+        ? `Nada vencido, pero ${formatInteger(enRiesgo)} compras vencen en las próximas 3 semanas.`
+        : 'Ninguna compra vencida ni en riesgo a 3 semanas.',
+      sub: enRiesgo > 0 ? 'Es el momento barato de moverlas: todavía hay margen.' : 'El plan va al día en el corte de hoy.',
+    };
+  }
+
+  const dondeObra = obrasConVencidos === 1 ? 'en 1 obra' : `en ${formatInteger(obrasConVencidos)} obras`;
+  return {
+    titular: `${formatInteger(vencidos)} compras ya vencidas ${dondeObra}, y ${formatInteger(enRiesgo)} más vencen en 3 semanas.`,
+    sub: toNumber(cuello.vencidos) > 0
+      ? `El cuello está en «${cuello.nombre}»: ahí se acumulan ${formatInteger(cuello.vencidos)} pasos vencidos.`
+      : 'Los vencimientos están repartidos, sin un paso que concentre el atraso.',
+  };
+}
+
 function renderPDC(data) {
   const rows = Array.isArray(data.scorecard) ? data.scorecard : [];
   const items = Array.isArray(data.pdc_items) ? data.pdc_items : [];
@@ -2726,6 +2837,64 @@ function renderPDC(data) {
     const hoy = items.length ? items[0].hoy : '';
     fecha.textContent = hoy ? `Al ${hoy} · no depende de la semana seleccionada` : '';
   }
+
+  const historia = pdcTitular(items, breakdown);
+  setText('pdc-titular', historia.titular);
+  setText('pdc-subtitular', historia.sub);
+
+  setText('pdc-kpi-vencidos', formatInteger(items.reduce((s, o) => s + toNumber(o.vencidos), 0)));
+  setText('pdc-kpi-riesgo', formatInteger(items.reduce((s, o) => s + toNumber(o.en_riesgo), 0)));
+  setText('pdc-kpi-sin-mirar', formatInteger(items.reduce((s, o) => s + toNumber(o.sin_mirar), 0)));
+
+  // «Más adelante» se cuenta pero no se dibuja: con cientos de pasos a más de seis semanas, esa
+  // barra aplasta a las que urgen y el gráfico deja de responder «cuánto tiempo queda». Va como
+  // nota al pie, que es donde ese dato hace su trabajo sin robar la escala.
+  const totales = breakdown.totales || {};
+  const lejanos = toNumber(totales.adelante);
+  setText('pdc-horizonte-nota', lejanos > 0
+    ? `Otros ${formatInteger(lejanos)} pasos vencen más allá de 6 semanas; quedan fuera del gráfico para no aplastar la escala de lo urgente.`
+    : '');
+
+  renderGroupedBarChart(
+    'pdc-horizonte',
+    PDC_HORIZONTE.map((b) => b.label),
+    [{ label: 'Pasos pendientes', data: PDC_HORIZONTE.map((b) => toNumber(totales[b.clave])), color: PDC_HORIZONTE.map((b) => b.color) }],
+    { aspectRatio: 2.6 },
+  );
+
+  const pasosOrdenados = Object.entries(breakdown.por_paso || {})
+    .sort((a, b) => toNumber(b[1].pendientes) - toNumber(a[1].pendientes));
+  renderGroupedBarChart(
+    'pdc-paso-chart',
+    pasosOrdenados.map(([nombre]) => nombre),
+    [
+      // «Vencidos» es un subconjunto de «pendientes»: apilar el crudo contaría doble.
+      { label: 'Vencidos', data: pasosOrdenados.map(([, v]) => toNumber(v.vencidos)), color: 'critical' },
+      { label: 'Aún a tiempo', data: pasosOrdenados.map(([, v]) => Math.max(0, toNumber(v.pendientes) - toNumber(v.vencidos))), color: 'brand-aqua' },
+    ],
+    { horizontal: true, stacked: true, aspectRatio: 1.5 },
+  );
+
+  const respOrdenados = (Array.isArray(breakdown.por_responsable) ? breakdown.por_responsable : []).slice(0, 10);
+  renderGroupedBarChart(
+    'pdc-resp-chart',
+    respOrdenados.map((r) => r.nombre || 'Sin responsable'),
+    [
+      { label: 'Vencidos', data: respOrdenados.map((r) => toNumber(r.vencidos)), color: 'critical' },
+      { label: 'Aún a tiempo', data: respOrdenados.map((r) => Math.max(0, toNumber(r.pendientes) - toNumber(r.vencidos))), color: 'brand-aqua' },
+    ],
+    { horizontal: true, stacked: true, aspectRatio: 1.5 },
+  );
+
+  renderGroupedBarChart(
+    'pdc-cobertura-chart',
+    items.map((o) => o.obra || '--'),
+    [
+      { label: 'Cobertura por conteo (%)', data: items.map((o) => toNumber(o.cobertura)), color: 'brand-aqua' },
+      { label: 'Cobertura por valor (%)', data: items.map((o) => toNumber(o.cobertura_valor)), color: 'brand-primary' },
+    ],
+    { aspectRatio: 2.6, max: 100 },
+  );
 
   fillRows('pdc-body', rows, 3, (row) => [
     escapeHtml(row.kpi || '--'),
