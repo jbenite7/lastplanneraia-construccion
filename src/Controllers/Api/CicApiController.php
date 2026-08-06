@@ -88,6 +88,7 @@ class CicApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cic.editar');
+        legacy_require_csrf('cic');
         $role = (new RbacService($this->db))->resolveCurrentRole();
         $allowedDisciplines = RbacCatalog::cicDisciplinesForRole($role);
         if ($allowedDisciplines === []) {

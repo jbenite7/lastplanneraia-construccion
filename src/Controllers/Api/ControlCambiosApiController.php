@@ -57,6 +57,7 @@ class ControlCambiosApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.control_cambios.editar');
+        legacy_require_csrf('control-cambios');
         $dbPrefix = $_GET['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 

@@ -44,6 +44,7 @@ class CncApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnc.editar');
+        legacy_require_csrf('cnc');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = filter_var($_POST['Consecutivo'] ?? $_POST['Id'] ?? null, FILTER_VALIDATE_INT);
         $week = filter_var($_POST['semana'] ?? null, FILTER_VALIDATE_INT);
