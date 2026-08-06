@@ -4,6 +4,7 @@ import { apiGet, apiPost, PdcApiError } from '../lib/api'
 import { agregar, aPayload, disponibles, mover, quitar, validar, type PasoEditable } from '../lib/pasosState'
 import type { DuracionCatalogo, EntradaHistorialPasos, OrigenCopia, PasoCatalogo, PreviewCopia, RespuestaPasos } from '../lib/types'
 import BotonAyuda from '../components/BotonAyuda'
+import { Selector } from '../components/Selector'
 
 /**
  * A4.1 — el proceso de contratación de esta obra.
@@ -309,24 +310,23 @@ export default function PasosContratacion() {
             Se copia una vez y se queda quieta: después puedes editarla aquí sin que la obra de
             origen se entere, y sin que lo que hagas allá vuelva a esta.
           </p>
-          <label>
-            Obra de origen{' '}
-            <select
-              data-testid="pdc-pasos-copiar-origen"
-              value={origenElegido}
-              onChange={(e) => {
-                setOrigenElegido(e.target.value === '' ? '' : Number(e.target.value))
+          <span className="pdc-selector">
+            <span className="pdc-selector-rotulo">Obra de origen</span>
+            <Selector
+              testid="pdc-pasos-copiar-origen"
+              value={origenElegido === '' ? '' : String(origenElegido)}
+              onChange={(v) => {
+                setOrigenElegido(v === '' ? '' : Number(v))
                 setPreview(null)
               }}
-            >
-              <option value="">Elige una obra…</option>
-              {origenes.map((o) => (
-                <option key={o.projectId} value={o.projectId}>
-                  {o.nombre} ({o.pasos} pasos)
-                </option>
-              ))}
-            </select>
-          </label>
+              opciones={origenes.map((o) => ({
+                valor: String(o.projectId),
+                etiqueta: `${o.nombre} (${o.pasos} pasos)`,
+              }))}
+              etiqueta="Obra de origen"
+              placeholder="Elige una obra…"
+            />
+          </span>
           <button
             type="button"
             data-testid="pdc-pasos-copiar-preview"
@@ -448,22 +448,17 @@ export default function PasosContratacion() {
       )}
 
       <div className="pdc-paq-toolbar">
-        <select
-          data-testid="pdc-pasos-agregar"
+        <Selector
+          testid="pdc-pasos-agregar"
           value=""
-          aria-label="Agregar un paso"
-          onChange={(e) => {
-            const c = cat.find((x) => x.clave === e.target.value)
+          onChange={(v) => {
+            const c = cat.find((x) => x.clave === v)
             if (c) setPasos(agregar(pasos, c))
           }}
-        >
-          <option value="">Agregar un paso…</option>
-          {disponibles(cat, pasos).map((c) => (
-            <option key={c.clave} value={c.clave}>
-              {c.nombre}
-            </option>
-          ))}
-        </select>
+          opciones={disponibles(cat, pasos).map((c) => ({ valor: c.clave, etiqueta: c.nombre }))}
+          etiqueta="Agregar un paso"
+          placeholder="Agregar un paso…"
+        />
         <button
           type="button"
           className="pdc-paq-primario"

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { moneda } from '../lib/agGrid'
+import { Selector } from './Selector'
 import {
   avisoAlBorrar,
   motivoNoPartir,
@@ -215,25 +216,20 @@ export default function SubpaquetesPanel({ paqueteId, paqueteNombre, onCambio }:
                     {!l.generaProceso && <span className="pdc-sub-tag pdc-sub-tag--fuera">sin proceso</span>}
                   </th>
                   <td>
-                    <select
-                      aria-label={`Modalidad de ${l.nombre}`}
+                    <Selector
                       value={l.modalidad}
-                      disabled={ocupado}
-                      onChange={(e) =>
+                      onChange={(v) =>
                         void accion(() =>
                           apiPost('/plan-compras/api/subpaquetes/actualizar', {
                             subpaqueteId: l.subpaqueteId,
-                            modalidad: e.target.value,
+                            modalidad: v,
                           }),
                         )
                       }
-                    >
-                      {MODALIDADES.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
+                      opciones={MODALIDADES.map((m) => ({ valor: m.value, etiqueta: m.label }))}
+                      etiqueta={`Modalidad de ${l.nombre}`}
+                      disabled={ocupado}
+                    />
                   </td>
                   <td className="pdc-num">{l.insumos}</td>
                   <td className="pdc-num">{moneda(l.valor)}</td>
@@ -324,19 +320,16 @@ export default function SubpaquetesPanel({ paqueteId, paqueteNombre, onCambio }:
                   ))}
                 </ul>
                 <div className="pdc-sub-acciones">
-                  <select
-                    aria-label="Lote destino"
-                    data-testid="pdc-sub-destino"
-                    value={destino}
-                    onChange={(e) => setDestino(e.target.value === '' ? '' : Number(e.target.value))}
-                  >
-                    <option value="">Mover los marcados a…</option>
-                    {lotes.map((l) => (
-                      <option key={l.subpaqueteId} value={l.subpaqueteId}>
-                        {l.nombre}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="pdc-selector">
+                    <Selector
+                      value={destino === '' ? '' : String(destino)}
+                      onChange={(v) => setDestino(v === '' ? '' : Number(v))}
+                      opciones={lotes.map((l) => ({ valor: String(l.subpaqueteId), etiqueta: l.nombre }))}
+                      etiqueta="Lote destino"
+                      placeholder="Mover los marcados a…"
+                      testid="pdc-sub-destino"
+                    />
+                  </span>
                   <button
                     type="button"
                     data-testid="pdc-sub-mover"

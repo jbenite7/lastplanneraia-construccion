@@ -15,6 +15,7 @@ import { NIVELES_PRESUPUESTO, expandirHastaNivel } from '../lib/presupuestoTree'
 import type { Comparativo, InsumoDiff, LadoComparativo, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
 import BotonAyuda from '../components/BotonAyuda'
+import { Selector } from '../components/Selector'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
 ModuleRegistry.registerModules([
@@ -140,16 +141,19 @@ export default function ComparativoPresupuesto() {
     })
   }
 
-  const selectorVersion = (value: number | null, on: (id: number | null) => void, testid: string) => (
-    <select data-testid={testid} value={value ?? ''} onChange={(e) => on(e.target.value === '' ? null : Number(e.target.value))}>
-      <option value="">—</option>
-      {/* «(obsoleta)» va en la opción para que la advertencia empiece antes de elegir, no después. */}
-      {versiones.map((v) => (
-        <option key={v.id} value={v.id}>
-          {etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}{v.obsoleta ? ' (obsoleta)' : ''}
-        </option>
-      ))}
-    </select>
+  const selectorVersion = (value: number | null, on: (id: number | null) => void, testid: string, etiqueta: string) => (
+    <Selector
+      testid={testid}
+      value={value === null ? '' : String(value)}
+      onChange={(v) => on(v === '' ? null : Number(v))}
+      // «(obsoleta)» va en la opción para que la advertencia empiece antes de elegir, no después.
+      opciones={versiones.map((v) => ({
+        valor: String(v.id),
+        etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}${v.obsoleta ? ' (obsoleta)' : ''}`,
+      }))}
+      etiqueta={etiqueta}
+      placeholder="—"
+    />
   )
 
   /**
@@ -174,8 +178,14 @@ export default function ComparativoPresupuesto() {
           <p>Elige dos versiones para ver qué cambió: sobrecostos y ahorros por actividad e insumo.</p>
         </div>
         <div className="pdc-cmp-selectores">
-          <label className="pdc-selector">A {selectorVersion(idA, setIdA, 'pdc-cmp-version-a')}</label>
-          <label className="pdc-selector">B {selectorVersion(idB, setIdB, 'pdc-cmp-version-b')}</label>
+          <span className="pdc-selector">
+            <span className="pdc-selector-rotulo">A</span>
+            {selectorVersion(idA, setIdA, 'pdc-cmp-version-a', 'Versión A')}
+          </span>
+          <span className="pdc-selector">
+            <span className="pdc-selector-rotulo">B</span>
+            {selectorVersion(idB, setIdB, 'pdc-cmp-version-b', 'Versión B')}
+          </span>
         </div>
       </header>
 
@@ -237,14 +247,16 @@ export default function ComparativoPresupuesto() {
               onChange={(e) => setBusca(e.target.value)}
             />
             {eje === 'actividades' && (
-              <label className="pdc-selector">
-                Ver hasta{' '}
-                <select data-testid="pdc-cmp-nivel" value={nivel} onChange={(e) => setNivel(Number(e.target.value))}>
-                  {NIVELES_COMPARATIVO.map((n) => (
-                    <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
-                  ))}
-                </select>
-              </label>
+              <span className="pdc-selector">
+                <span className="pdc-selector-rotulo">Ver hasta</span>
+                <Selector
+                  testid="pdc-cmp-nivel"
+                  value={String(nivel)}
+                  onChange={(v) => setNivel(Number(v))}
+                  opciones={NIVELES_COMPARATIVO.map((n) => ({ valor: String(n.valor), etiqueta: n.etiqueta }))}
+                  etiqueta="Ver hasta"
+                />
+              </span>
             )}
           </div>
 

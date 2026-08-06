@@ -11,6 +11,7 @@ import {
 import { MODALIDADES, TIPOS_NEGOCIACION } from '../lib/types'
 import type { ActividadesInsumo, CandidatoPaquete, InsumoPaquete, PaqueteCatalogo, SugerenciaPaquete } from '../lib/types'
 import { contarInsumos, plural } from '../lib/texto'
+import { Selector } from '../components/Selector'
 
 const tipoNegLabel = (v: string) => TIPOS_NEGOCIACION.find((t) => t.value === v)?.label ?? v
 const modalidadLabel = (v?: string) => MODALIDADES.find((m) => m.value === v)?.label ?? v ?? ''
@@ -345,24 +346,33 @@ export default function PaquetesAsistente({
 
         <div className="pdc-wiz-manual">
           <div className="pdc-wiz-fila">
-            <label>Tipo de negociación
-              <select data-testid="pdc-wiz-tipo" value={tipoNeg} onChange={(e) => { setTipoNeg(e.target.value); setDestino('') }}>
-                <option value="">Todos</option>
-                {TIPOS_NEGOCIACION.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </label>
-            <label>Paquete
-              <select data-testid="pdc-wiz-paquete" value={destino} onChange={(e) => setDestino(e.target.value === '' ? '' : Number(e.target.value))}>
-                <option value="">Elegir paquete…</option>
-                {/* La modalidad solo se anota cuando no es «contrato»: avisa que ese destino no lleva
-                    proceso de contratación con fechas (orden de compra, consumo directo, no contratable). */}
-                {paquetesFiltrados.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}{p.modalidad && p.modalidad !== 'contrato' ? ` — ${modalidadLabel(p.modalidad)}` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Tipo de negociación</span>
+              <Selector
+                testid="pdc-wiz-tipo"
+                value={tipoNeg}
+                onChange={(v) => { setTipoNeg(v); setDestino('') }}
+                opciones={TIPOS_NEGOCIACION.map((t) => ({ valor: t.value, etiqueta: t.label }))}
+                etiqueta="Tipo de negociación"
+                placeholder="Todos"
+              />
+            </span>
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Paquete</span>
+              {/* La modalidad solo se anota cuando no es «contrato»: avisa que ese destino no lleva
+                  proceso de contratación con fechas (orden de compra, consumo directo, no contratable). */}
+              <Selector
+                testid="pdc-wiz-paquete"
+                value={destino === '' ? '' : String(destino)}
+                onChange={(v) => setDestino(v === '' ? '' : Number(v))}
+                opciones={paquetesFiltrados.map((p) => ({
+                  valor: String(p.id),
+                  etiqueta: `${p.nombre}${p.modalidad && p.modalidad !== 'contrato' ? ` — ${modalidadLabel(p.modalidad)}` : ''}`,
+                }))}
+                etiqueta="Paquete"
+                placeholder="Elegir paquete…"
+              />
+            </span>
             <button type="button" className="pdc-paq-primario" data-testid="pdc-wiz-asignar" disabled={state.ocupado || destino === ''}
               onClick={asignarAlDestino}>
               Asignar <kbd>Enter</kbd>

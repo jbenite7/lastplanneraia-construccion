@@ -6,6 +6,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PDC_SANDBOX_PROJECT, sqlEnApp, usarSandboxPdc } from './support/pdc-sandbox.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 const project = PDC_SANDBOX_PROJECT;
 
@@ -25,7 +26,7 @@ test('una obra agrega un paso propio y vuelve al proceso por defecto', async ({ 
 
   // Licify y Aprobación del cliente son justamente las dos variantes que el roadmap pedía no
   // hardcodear: si el catálogo no las ofreciera, este selectOption fallaría.
-  await page.getByTestId('pdc-pasos-agregar').selectOption('aprobacion_cliente');
+  await elegirEnSelector(page, 'pdc-pasos-agregar', 'Aprobación del cliente');
   await expect(lista.locator('li')).toHaveCount(8);
 
   await page.getByTestId('pdc-pasos-guardar').click();
@@ -145,7 +146,7 @@ test('copiar la configuración de otra obra enseña qué trae antes de traerlo',
     await expect(lista.locator('li')).toHaveCount(7);
 
     await page.getByTestId('pdc-pasos-copiar').locator('summary').click();
-    await page.getByTestId('pdc-pasos-copiar-origen').selectOption(String(OTRA));
+    await elegirEnSelector(page, 'pdc-pasos-copiar-origen', 'ZZTEST OBRA ORIGEN');
     await page.getByTestId('pdc-pasos-copiar-preview').click();
 
     // Se ve QUÉ se copiaría, con el alias incluido, ANTES de tocar nada.
@@ -167,7 +168,7 @@ test('copiar la configuración de otra obra enseña qué trae antes de traerlo',
     await expect(lista.locator('li')).toHaveCount(3);
 
     // Copia PUNTUAL, no vínculo vivo: editar aquí no puede tocar la obra de origen.
-    await page.getByTestId('pdc-pasos-agregar').selectOption('aprobacion_cliente');
+    await elegirEnSelector(page, 'pdc-pasos-agregar', 'Aprobación del cliente');
     await page.getByTestId('pdc-pasos-guardar').click();
     await expect(page.getByText(/Se recalcularon \d+ paquetes/)).toBeVisible({ timeout: 15000 });
     const pasosOrigen = Number(sqlEnApp(
