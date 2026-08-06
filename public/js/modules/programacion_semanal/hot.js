@@ -1144,19 +1144,29 @@
   }
 
   function ensureContextPhaseShell() {
+    // La navbar legacy (.container-fluid dentro de .context-bar) murio con el rollout
+    // del shell lateral: si no esta, el anclaje vivo es #shellContextBar, que ya no
+    // tiene breadcrumb sino los spans de proyecto/modulo y el menu de semana.
     var $contextContainer = $('.context-bar .container-fluid.d-flex.align-items-center.justify-content-between');
+    var isShellBar = false;
+    if (!$contextContainer.length) {
+      $contextContainer = $('#shellContextBar');
+      isShellBar = $contextContainer.length > 0;
+    }
     if (!$contextContainer.length) {
       return null;
     }
 
     $contextContainer.addClass('context-has-weekly-phase');
 
-    var $breadcrumb = $contextContainer.find('.context-breadcrumb').first();
+    var $anchor = isShellBar
+      ? $contextContainer.find('#ctxModulo').first()
+      : $contextContainer.find('.context-breadcrumb').first();
     var $phaseWrap = $contextContainer.find('#ctxWeeklyPhase').first();
     if (!$phaseWrap.length) {
       $phaseWrap = $('<div id="ctxWeeklyPhase" class="context-weekly-phase context-weekly-phase--programacion"><strong class="ps-weekly-phase-title">Fase: Programación de Compromisos</strong></div>');
-      if ($breadcrumb.length) {
-        $phaseWrap.insertAfter($breadcrumb);
+      if ($anchor.length) {
+        $phaseWrap.insertAfter($anchor);
       } else {
         $contextContainer.prepend($phaseWrap);
       }
@@ -1165,11 +1175,20 @@
     var $weekInfo = $contextContainer.find('.context-week-info').first();
     var $rightWrap = $contextContainer.find('.context-right-info').first();
     if (!$rightWrap.length) {
-      $rightWrap = $('<div class="context-right-info d-flex align-items-center ml-auto"></div>');
+      // En el shell el chip de semana ya se empuja a la derecha con margin auto:
+      // el ml-auto de bootstrap aqui competiria con el y partiria la barra.
+      $rightWrap = $('<div class="context-right-info d-flex align-items-center"></div>');
+      if (!isShellBar) {
+        $rightWrap.addClass('ml-auto');
+      }
       if ($weekInfo.length) {
         $weekInfo.appendTo($rightWrap);
       }
-      $contextContainer.append($rightWrap);
+      if (isShellBar) {
+        $rightWrap.insertAfter($phaseWrap);
+      } else {
+        $contextContainer.append($rightWrap);
+      }
     }
 
     return {

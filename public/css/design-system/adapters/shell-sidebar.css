@@ -54,6 +54,40 @@
     font-weight: var(--ds-type-weight-semibold);
   }
 
+  /* Indicador de fase de Programación Semanal (#ctxWeeklyPhase, inyectado por
+     hot.js): chip de estado a la altura del de semana, sin robarle jerarquía. */
+  body.aia-shell--sidebar .context-bar .context-weekly-phase {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: var(--ds-space-1) var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-pill);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    white-space: nowrap;
+  }
+
+  body.aia-shell--sidebar .context-bar .context-weekly-phase .ps-weekly-phase-title {
+    font-weight: var(--ds-type-weight-semibold);
+  }
+
+  body.aia-shell--sidebar .context-bar .context-weekly-phase--programacion {
+    background: var(--ds-color-state-info-bg);
+    color: var(--ds-color-state-info-text);
+  }
+
+  body.aia-shell--sidebar .context-bar .context-weekly-phase--calificacion {
+    background: var(--ds-color-state-warning-bg);
+    color: var(--ds-color-state-warning-text);
+  }
+
+  body.aia-shell--sidebar .context-bar .context-cierre-info {
+    color: var(--ds-active-text-secondary);
+    white-space: nowrap;
+  }
+
   body.aia-shell--sidebar .context-week-menu {
     position: relative;
     margin-inline-start: auto;
