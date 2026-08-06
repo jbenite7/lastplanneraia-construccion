@@ -3021,20 +3021,24 @@
           type: 'numeric',
           numericFormat: { pattern: '0.0' },
           renderer: 'pgGenericNumericRenderer',
-          className: 'htCenter htMiddle',
+          className: 'htRight htMiddle',
         },
         {
+          // Task 34: es una cantidad, no un identificador — se tipa y se alinea
+          // a la derecha igual que su gemela `EjecutadoDisplay`, para que las dos
+          // columnas de ejecutado se lean por unidades en la misma vertical.
           data: 'Ejecutado_Teorico',
+          type: 'numeric',
           readOnly: true,
           renderer: 'pgEjecutadoTeoricoRenderer',
-          className: 'htCenter htMiddle',
+          className: 'htRight htMiddle',
         },
         {
           data: 'EjecutadoDisplay',
           type: 'numeric',
           numericFormat: { pattern: '0.0' },
           renderer: 'pgEjecutadoRealRenderer',
-          className: 'htCenter htMiddle',
+          className: 'htRight htMiddle',
         },
         { data: 'Estado', readOnly: true, renderer: 'pgStateChipRenderer', className: 'htCenter htMiddle force-wrap' },
         {

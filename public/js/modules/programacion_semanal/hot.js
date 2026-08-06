@@ -2539,7 +2539,9 @@
           td.textContent = textValue;
         }
       }
-      td.classList.add('htCenter');
+      // Task 34: el renderer imponia `htCenter` en caliente y ganaba a la clase
+      // de la columna. Son cantidades: van a la derecha.
+      td.classList.add('htRight');
     });
 
     Handsontable.renderers.registerRenderer('psPptoRenderer', function (instance, td, row, col, prop, value) {
@@ -2551,7 +2553,7 @@
       } else {
         td.textContent = isBlank(value) ? '' : value;
       }
-      td.classList.add('htCenter', 'htMiddle');
+      td.classList.add('htRight', 'htMiddle');
     });
 
     Handsontable.renderers.registerRenderer('psResponsableRenderer', function (instance, td, row, col, prop, value) {
@@ -2601,12 +2603,16 @@
       { data: 'Responsable_AIA', type: 'dropdown', source: profesionales, strict: false, allowInvalid: false, renderer: 'psResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
       { data: 'Empresa', readOnly: true, className: 'htCenter htMiddle force-wrap' },
       { data: 'Unidad', readOnly: true, className: 'htCenter htMiddle' },
-      { data: 'cantidad_ppto', readOnly: true, renderer: 'psPptoRenderer', className: 'htCenter htMiddle' },
+      { data: 'cantidad_ppto', type: 'numeric', readOnly: true, renderer: 'psPptoRenderer', className: 'htRight htMiddle' },
       { data: 'Ejecutado', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
       { data: 'Ejecutado_Fin_Semana', readOnly: true, renderer: 'psRatioRenderer', className: 'htCenter htMiddle' },
-      { data: 'cantidad_sugerida_auto', readOnly: true, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
-      { data: 'Compromiso', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
-      { data: 'Ejecutado_Real', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htCenter htMiddle' },
+      // Task 34: las tres columnas de cantidad comparten renderer y son gemelas;
+      // se tipan y alinean a la derecha en bloque para que no queden desalineadas
+      // entre si. `Consecutivo`, `Id` y `codigo_actividad` son identificadores y
+      // siguen centrados.
+      { data: 'cantidad_sugerida_auto', type: 'numeric', numericFormat: { pattern: '0.0' }, readOnly: true, renderer: 'psCompromisoRenderer', className: 'htRight htMiddle' },
+      { data: 'Compromiso', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htRight htMiddle' },
+      { data: 'Ejecutado_Real', type: 'numeric', numericFormat: { pattern: '0.0' }, renderer: 'psCompromisoRenderer', className: 'htRight htMiddle' },
       { data: 'Es_TNP', type: 'numeric', readOnly: true, visible: false, className: 'htCenter' },
       { data: 'PAC', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
       { data: 'P_Completado', readOnly: true, renderer: 'psPacRenderer', className: 'htCenter htMiddle' },
