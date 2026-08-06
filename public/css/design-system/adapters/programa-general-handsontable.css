@@ -130,6 +130,7 @@
     white-space: nowrap !important;
   }
 
+
   :where(.pg-page .htDropdownMenu:not(.htGhostTable), .pg-page .htFiltersConditionsMenu:not(.htGhostTable)) {
     z-index: var(--ds-z-dropdown);
   }
@@ -167,5 +168,23 @@
 @layer legacy-overrides {
   :where(.pg-page #hot-container .pg-cell-meta) {
     color: inherit;
+  }
+}
+
+/* F-2 (2026-08-05). Mismo mecanismo de capas que la Task 8: la declaracion que MANDA
+   sobre el relleno de la celda es `.handsontable :where(th, td)` de `@layer reset`
+   (handsontable.css), porque para `!important` el orden de capas se invierte. Por eso
+   este override tiene que vivir tambien en `reset` — y con especificidad real, no
+   `:where()`, que no le ganaria a la de origen.
+
+   El problema: en las celdas con desplegable la flecha flota a la derecha DENTRO del
+   mismo renglon del texto. La caja mide 104px, el interior 84, la flecha se lleva 16 y
+   al texto le quedan 68 — pero una fecha `2026-04-30` pide hasta 77, asi que el ultimo
+   digito quedaba debajo de la flecha y `2026-04-30` se leia `2026-04-3`. Se recupera el
+   aire sobrante del relleno (10px -> 4px por lado) en vez de ensanchar la columna: la
+   caja sigue en 104px, ningun otro dato pierde un pixel y no reaparece scroll a 1180. */
+@layer reset {
+  .pg-page #hot-container td.pg-date-cell.htAutocomplete {
+    padding-inline: var(--ds-table-cell-pad-x-selector) !important;
   }
 }

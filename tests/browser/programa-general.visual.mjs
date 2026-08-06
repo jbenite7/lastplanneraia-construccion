@@ -24,6 +24,14 @@ const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => them
 //   · `Estado` se normaliza contra una lista cerrada — las etiquetas de abajo salen de
 //     `normalizeEstadoToStateKey()`, no son texto libre.
 const FILAS_DE_ESTADO = [
+  // Fila de CAPITULO (`Titulo: 1`). Se anade el 2026-08-05 porque las siete filas de abajo
+  // llevaban todas `Titulo: 0` y el golden era ciego al encabezado sobrio que introdujo la Task 36
+  // (`.handsontable td.pdc-header` en styles.css: peso 700, filete superior y superficie elevada).
+  // La forma copia la que emite el endpoint real para `Titulo = 1`
+  // (GeneralApiController::list:110): fuerza `Estado = 'Capítulo'`, `boton = 'No Boton'` y
+  // `Ejecutado_Teorico = null`; `unidad` vacia sale como '%' y entonces `cantidad_ppto` se anula.
+  // `Actividad` llega con `<b>` desde la base y `pgActividadRenderer` la pinta como HTML saneado.
+  { Id: '1', Consecutivo: 0, Titulo: 1, Actividad: '<b>Capitulo 1 - Estructura</b>', Estado: 'Capítulo', Ruta_Critica: null, Semanas_Inicio: 0, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-06-12', unidad: '%', cantidad_ppto: null, Ejecutado_Teorico: null, EjecutadoDisplay: '', Estado_Restricciones: 0, boton: 'No Boton' },
   { Id: 1, Consecutivo: 1, Titulo: 0, Actividad: 'Cimentacion eje 4', Estado: 'Terminada', Ruta_Critica: '0', Semanas_Inicio: 1, Fecha_Inicio: '2026-02-02', Fecha_Fin: '2026-02-20', unidad: 'm3', cantidad_ppto: 120, Ejecutado_Teorico: 120, EjecutadoDisplay: '100%', Estado_Restricciones: 'Liberada' },
   { Id: 2, Consecutivo: 2, Titulo: 0, Actividad: 'Muros nivel 2', Estado: 'En curso', Ruta_Critica: '0', Semanas_Inicio: 2, Fecha_Inicio: '2026-03-02', Fecha_Fin: '2026-03-27', unidad: 'm2', cantidad_ppto: 340, Ejecutado_Teorico: 210, EjecutadoDisplay: '62%', Estado_Restricciones: 'Liberada' },
   { Id: 3, Consecutivo: 3, Titulo: 0, Actividad: 'Redes hidrosanitarias', Estado: 'Actividad futura', Ruta_Critica: '0', Semanas_Inicio: 8, Fecha_Inicio: '2026-05-04', Fecha_Fin: '2026-06-12', unidad: 'ml', cantidad_ppto: 520, Ejecutado_Teorico: 0, EjecutadoDisplay: '0%', Estado_Restricciones: 'Pendiente' },
@@ -87,12 +95,15 @@ for (const scenario of VISUAL_SCENARIOS) {
         path.basename(scenario.golden),
         {
           fullPage: false,
-          // 0,2 % del encuadre (~1.900 px a 1180x820). Estaba en 3 % (~29.000 px), y por eso la
-          // Task 5 pudo cambiar el borde de TODAS las rejillas de la app —2,66 % de la imagen— sin
-          // que ningun golden se pusiera rojo. El piso se midio: con la tolerancia en 0, tres
-          // corridas seguidas sin tocar nada dieron CERO pixeles de diferencia, asi que aqui no hay
-          // ruido de antialiasing que absorber. El 0,2 % es margen, no necesidad.
-          maxDiffPixelRatio: 0.002,
+          // Tope ABSOLUTO, no ratio. Venia de 3 % (~29.000 px) y la campana lo bajo a 0,2 %, pero
+          // 0,2 % siguen siendo 1.935 px a 1180x820 y 2.592 px a 1440x900: mas que suficiente para
+          // perdonar los tratamientos finos. Medido el 2026-08-05 sobre la fila de capitulo que
+          // ahora se siembra: anular el peso 700 y la superficie elevada de `td.pdc-header` mueve
+          // 208 px a 1180x820 y 161 px a 1440x900 — la red lo dejaba pasar entero. El piso de ruido
+          // se remidio en la misma sesion: con la tolerancia en 0 y sin tocar nada, CERO pixeles de
+          // diferencia. Por eso 100 px es holgura de maquina, no necesidad del render, y ademas no
+          // se afloja sola al crecer el viewport como hacia el ratio.
+          maxDiffPixels: 100,
         },
       );
     });
