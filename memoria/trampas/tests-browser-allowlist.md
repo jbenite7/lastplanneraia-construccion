@@ -7,7 +7,7 @@ fuente: memoria-claude
 origen: lps-aia-tests-browser-allowlist
 resumen: tests/browser/* está gitignorado con allowlist; un test nuevo ahí no se commitea si no lo registras en .gitignore
 ---
-`.gitignore:121` ignora `tests/browser/*` y lo reabre con una allowlist de `!tests/browser/<archivo>.mjs`, una línea por test (~40 entradas).
+`.gitignore:237` ignora `tests/browser/*` y lo reabre con una allowlist de `!tests/browser/<archivo>.mjs`, una línea por test (~40 entradas).
 
 Un test nuevo en `tests/browser/` **corre con Playwright pero `git add` lo rechaza**. Hay que añadir su `!` a la allowlist en el mismo commit, o el test se pierde y el guard queda sin efecto.
 

@@ -9,9 +9,11 @@ resumen: Quién resuelve la altura de #hot-container en los módulos HOT y por q
 ---
 La altura de `#hot-container` la resuelve **JS**, no CSS: `syncContainerHeight()` mide
 `getBoundingClientRect().top` y `getContainerAvailableHeight()` lee el `clientHeight` para
-alimentar `hot.updateSettings({ height })`. Es el patrón compartido por los 6 módulos HOT
-(programacion_semanal, programacion_intermedia, programa_general, contratos,
-listado_actividades, programa_actualizar). Los `calc(100vh - Npx)` de las hojas de módulo son
+alimentar `hot.updateSettings({ height })`. Es el patrón compartido por los **4** módulos HOT
+vigentes (programacion_semanal, programacion_intermedia, programa_general, programa_actualizar);
+eran 6 hasta que `contratos` y `listado_actividades` se borraron con el PDC v1 el 2026-08-04
+(verificado el 2026-08-06: `syncContainerHeight` sólo aparece en esos cuatro
+`public/js/modules/*/hot*.js`). Los `calc(100vh - Npx)` de las hojas de módulo son
 sólo fallback pre-JS.
 
 **Ningún `calc(100vh - Npx)` sobre `#hot-container` puede ser correcto** en las vistas con
