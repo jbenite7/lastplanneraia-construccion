@@ -22,38 +22,36 @@ const assertScopedContrastExceptions = (exceptions, surface, expectedSelectors) 
   )), true, surface);
 };
 
-// Programa General entro al carril pilot el 2026-08-03: nueve celdas `.pdc-header`
-// que axe no puede medir (memoria/trampas/axe-incomplete-cuenta-como-violacion.md).
+// RETIRADAS el 2026-08-05: Programa General ya no tiene ninguna excepcion de accesibilidad.
 //
-// OJO — DOS CORRECCIONES, medidas el 2026-08-05 (Task 36) contra /programa-general con datos
-// reales, 1180x820 dark, y con el mismo `withTags(WCAG_TAGS)` que usa el helper:
+// Entro al carril pilot el 2026-08-03 con nueve `.pdc-header` marcadas `color-contrast|
+// incomplete|serious`, justificadas por «fondo translucido». Esa justificacion era FALSA: los
+// nueve selectores empiezan por `.ht__row_even:nth-child(2)`, o sea la fila PAR, y lo que axe no
+// sabia componer era la funcion de color de la cebra (`--ds-table-zebra`, un
+// `color-mix(in oklch, ...)`), no el alfa —la superficie que la sustituye tambien es translucida
+// y axe la mide sin problema—.
 //
-// 1. La causa NO era «el fondo translucido». La fila de capitulo caia en la cebra
-//    (`--ds-table-zebra`, un `color-mix(in oklch, ...)`), y lo que axe no sabe componer es la
-//    FUNCION DE COLOR, no la transparencia: la superficie que la sustituye
-//    (`--ds-color-surface-raised-dark`) tambien es translucida —y axe la mide sin problema—.
-// 2. Por eso estas nueve excepciones estan OBSOLETAS. Medido en los tres estados del arbol:
-//    en `ba10712b` (antes de la Task 36) axe devuelve los 9 `color-contrast|incomplete|serious`
-//    listados abajo, uno a uno; en `fb059385` y despues, devuelve CERO, con cero violaciones
-//    critical/serious. El tratamiento sobrio del capitulo no relajo la accesibilidad: la
-//    arreglo, porque el contraste de esas celdas pasa a ser computable y pasa.
+// El encabezado sobrio de la campana de dark mode las dejo sin objeto (Task 36: 9 -> 0), y se
+// remidio el 2026-08-05 sobre `/programa-general` con datos reales, dark, en los DOS viewports
+// permitidos (1180x820 y 1440x900), con el mismo `withTags(WCAG_TAGS)` del helper: 0 violaciones,
+// 0 incompletos, 202 nodos `color-contrast` en `passes` sobre 48 celdas `.pdc-header` presentes
+// —no es un escaneo vacio—. El tratamiento sobrio no relajo la accesibilidad: la arreglo.
 //
-// No se borran aqui a proposito. La lista viaja en el JSON grabado de `docs/design-system/`, y
-// rehacer ese registro exige correr el escenario aprobado completo —que incluye 390x844, fuera
-// del alcance desktop-dark de AGENTS.md— y aprobacion explicita para mover una linea base. Queda
-// como retirada pendiente, con la medicion ya hecha; mientras tanto el test sigue verde porque
-// afirma el JSON, no el runtime.
-const programaGeneralSelectors = [
-  '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > b',
-  '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > small',
-  '.ht__row_even:nth-child(2) > .pdc-header.force-wrap.pg-cell-readonly:nth-child(11)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(1)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(12)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(3)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-cell-readonly.htDimmed:nth-child(6)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(4)',
-  '.ht__row_even:nth-child(2) > .pdc-header.pg-date-cell.htAutocomplete:nth-child(5)',
-];
+// El choque que bloqueo la retirada entonces —«rehacer el registro exige el escenario aprobado
+// completo, que incluye 390x844, viewport prohibido por AGENTS.md»— no existia. `a11y-exceptions
+// .json` es un contrato escrito a mano: ningun script lo genera, asi que no hay «regeneracion»
+// que arrastre viewports. Los 390x844 salen de `approvedAccessibilityScenarios(homologation)`,
+// que alimenta al LABORATORIO (superficies `lab/...`) y es otra lista de entradas. Estas nueve
+// vivian en la superficie `programa-general:wide-desktop:dark`, producida por
+// `tests/browser/programa-general-design-system.mjs`, cuyos unicos viewports son 1180x820 y
+// 1440x900. Retirarlas solo exigia remedir esos dos, dentro del alcance desktop-dark.
+//
+// Los dos tests de abajo afirman la AUSENCIA por prefijo de superficie: si alguien vuelve a colar
+// una excepcion para Programa General —con este nombre de superficie o con otro—, salta aqui en
+// vez de envejecer callada.
+const programaGeneralExceptions = (exceptions) => exceptions.filter(
+  ({ surface }) => surface.startsWith('programa-general'),
+);
 
 test('the shared axe helper exists', () => {
   assert.equal(existsSync(helperPath), true);
@@ -225,9 +223,7 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
       exceptions.exceptions, `lab/bi-primitives/dark/${viewport}`, reviewedSelectors,
     );
   }
-  assertScopedContrastExceptions(
-    exceptions.exceptions, 'programa-general:wide-desktop:dark', programaGeneralSelectors,
-  );
+  assert.deepEqual(programaGeneralExceptions(exceptions.exceptions), []);
 });
 
 test('the shared helper loads the versioned baseline and exceptions', async () => {
@@ -245,10 +241,7 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
       governance.exceptions.filter((e) => e.surface === `lab/bi-primitives/dark/${viewport}`).length, 14,
     );
   }
-  assert.equal(
-    governance.exceptions.filter((e) => e.surface === 'programa-general:wide-desktop:dark').length,
-    programaGeneralSelectors.length,
-  );
+  assert.deepEqual(programaGeneralExceptions(governance.exceptions), []);
 });
 
 test('axe schemas prohibit undeclared fields and broad exclusions', async () => {
