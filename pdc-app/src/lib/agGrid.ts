@@ -29,7 +29,10 @@ export const pdcTheme = themeQuartz.withParams({
    * cambia de tema con el resto de la aplicación. El segundo valor es el respaldo de `npm run dev`,
    * donde aia-design-system.css no está cargado.
    */
-  backgroundColor: 'var(--ds-active-bg-canvas, #0b100d)',
+  /* Superficie de tabla del contrato --ds-table-*: la familia (zebra, hover,
+     empty) se mezcla desde --ds-active-surface; el lienzo dejaba a esta grilla
+     más oscura que las Handsontable del resto de la app. */
+  backgroundColor: 'var(--ds-active-surface, #1c241f)',
   foregroundColor: 'var(--ds-active-text-primary, #f7faf8)',
   accentColor: 'var(--ds-active-action-primary, #6c9077)',
   headerBackgroundColor: 'var(--ds-table-header-bg, var(--ds-state-tint-green, #173d26))',
