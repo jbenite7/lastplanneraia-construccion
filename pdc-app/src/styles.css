@@ -21,6 +21,11 @@
  */
 :root {
   --pdc-bg: var(--ds-active-bg-canvas, #0b100d);
+  /* Fondo del shell del módulo: el resto de la app pinta la página con
+     `--ds-active-bg-page` (#111a15); el lienzo (#0b100d) se reserva a
+     controles y grillas. Sin este token el PDC se veía más oscuro que
+     los demás módulos. */
+  --pdc-bg-pagina: var(--ds-active-bg-page, #111a15);
   --pdc-surface: var(--ds-active-surface, #1c241f);
   --pdc-surface-raised: var(--ds-active-surface-raised, #233029);
   --pdc-ink: var(--ds-active-text-primary, #f7faf8);
@@ -117,7 +122,7 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
   flex-direction: column;
   overflow: hidden;
   padding: 12px 16px 0;
-  background: var(--pdc-bg);
+  background: var(--pdc-bg-pagina);
   color: var(--pdc-ink);
   font-family: var(--ds-font-body);
 }
