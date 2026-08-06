@@ -82,7 +82,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "2be0ee8078c90ca7f4900d4b5d09835a7d150eb60a61372e01f4d6cccfc347f4"
+      "sha256": "1399eda3d50dba5ddf28d26c12466017a02c38baace4a01ddeba049a33d88deb"
     },
     {
       "id": "programa-general-dark-1440x900",

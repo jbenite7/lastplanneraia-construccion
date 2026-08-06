@@ -580,6 +580,13 @@
        14 px de texto por columna SIN quitarle un píxel a ningún dato. La celda conserva
        sus 10px: ahí el texto va alineado a un borde y el aire sí hace falta. */
     --ds-table-header-pad-x: 0.1875rem; /* 3px — solo cabecera; ver nota arriba */
+    /* F-2 (2026-08-05): mismo criterio que arriba, ahora en la celda con selector. Cuando
+       la celda lleva la flecha del desplegable, esos 16px salen del mismo renglón que el
+       texto: la caja de 104px deja 84 de interior y solo 68 de texto, y una fecha
+       `2026-04-30` pide hasta 77 — el último dígito quedaba debajo de la flecha. Se
+       recupera el aire sobrante del relleno (10px → 4px por lado) en vez de ensanchar la
+       columna, así el dato se lee entero sin quitarle un píxel a ninguna otra. */
+    --ds-table-cell-pad-x-selector: 0.25rem; /* 4px — solo celdas con flecha de desplegable */
     --ds-table-cell-pad-y:   0.125rem; /* 2px — con fila de 24px y texto de 13px, deja el aire mínimo legible */
     --ds-table-header-bg:    var(--ds-active-surface-raised);
     --ds-table-header-fg:    var(--ds-active-text-secondary);
