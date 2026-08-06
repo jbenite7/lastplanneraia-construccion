@@ -4001,7 +4001,11 @@
           if (softRestrictionProps.indexOf(resProp) > -1) {
             trigger.setAttribute('data-soft-label', 'blanda');
           }
-          trigger.innerHTML = '<i class="fas fa-question-circle"></i>';
+          trigger.innerHTML = '<i class="fas fa-question-circle" aria-hidden="true"></i>';
+          // F-3: el gatillo entraba en el recorrido del tabulador sin nombre ni
+          // contenido: ocho paradas mudas. El nombre sale del mismo titulo que
+          // encabeza el tooltip, asi que no hay una segunda fuente que mantener.
+          trigger.setAttribute('aria-label', 'Ayuda sobre ' + (popoverTitles[resProp] || resProp));
           $(trigger).tooltip({
             trigger: 'manual', html: true, placement: 'bottom', container: 'body', boundary: 'window',
             template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
@@ -4441,31 +4445,80 @@
   var helpTooltipTimeout = null;
   var helpCurrentTrigger = null;
 
+  // F-3: el tooltip estaba atado solo a mouseenter/mouseleave, asi que quien
+  // llegaba con el tabulador no veia nada. `abrirAyuda`/`cerrarAyuda` sacan esa
+  // logica del manejador del raton para poder reusarla desde foco y teclado.
+  // Los clones de cabecera de Handsontable se hacen copiando el DOM, asi que el
+  // gatillo clonado NO trae la instancia de tooltip del original: sin esta
+  // inicializacion perezosa, `show` abriria un tooltip vacio.
+  function asegurarTooltip($this) {
+    if ($this.data('bs.tooltip')) {
+      return;
+    }
+    var type = $this.attr('data-type');
+    $this.tooltip({
+      trigger: 'manual', html: true,
+      placement: 'bottom', container: 'body',
+      boundary: 'window',
+      template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
+      title: function () {
+        var typeAttr = $(this).attr('data-type') || type;
+        return '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[typeAttr] || '') + '</h6>' + (popoverContent[typeAttr] || '');
+      },
+    });
+  }
+
+  function abrirAyuda($this) {
+    if (helpCurrentTrigger && helpCurrentTrigger[0] === $this[0]) {
+      clearTimeout(helpTooltipTimeout);
+      return;
+    }
+    clearTimeout(helpTooltipTimeout);
+    $('.pi-help-trigger').not($this).tooltip('hide');
+    helpCurrentTrigger = $this;
+    asegurarTooltip($this);
+    $this.tooltip('show');
+  }
+
+  function cerrarAyuda($this) {
+    $this.tooltip('hide');
+    if (helpCurrentTrigger && helpCurrentTrigger[0] === $this[0]) {
+      helpCurrentTrigger = null;
+    }
+  }
+
   function bindHeaderTooltips() {
-    $('body').off('mouseenter.piHelp').on('mouseenter.piHelp', '.pi-help-trigger', function (e) {
-      e.stopPropagation();
+    // Foco: misma ayuda que con el raton, sin retardo de cierre — al salir del
+    // gatillo con el tabulador el tooltip ya no tiene a donde volver.
+    $('body').off('focusin.piHelp').on('focusin.piHelp', '.pi-help-trigger', function () {
+      abrirAyuda($(this));
+    });
+    $('body').off('focusout.piHelp').on('focusout.piHelp', '.pi-help-trigger', function () {
+      cerrarAyuda($(this));
+    });
+    // Escape cierra sin mover el foco, como manda SC 1.4.13; Enter/Espacio
+    // alternan para quien prefiere abrir a voluntad.
+    $('body').off('keydown.piHelp').on('keydown.piHelp', '.pi-help-trigger', function (e) {
       var $this = $(this);
-      if (helpCurrentTrigger && helpCurrentTrigger[0] === $this[0]) {
-        clearTimeout(helpTooltipTimeout);
+      // `keyCode` como respaldo: jQuery normaliza `which`, pero no todo emisor de
+      // eventos rellena `key` (los sinteticos de automatizacion, por ejemplo).
+      var codigo = e.keyCode || e.which;
+      if (e.key === 'Escape' || e.key === 'Esc' || codigo === 27) {
+        cerrarAyuda($this);
         return;
       }
-      clearTimeout(helpTooltipTimeout);
-      $('.pi-help-trigger').not($this).tooltip('hide');
-      helpCurrentTrigger = $this;
-      if (!$this.data('bs.tooltip')) {
-        var type = $this.attr('data-type');
-        $this.tooltip({
-          trigger: 'manual', html: true,
-          placement: 'bottom', container: 'body',
-          boundary: 'window',
-          template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
-          title: function () {
-            var typeAttr = $(this).attr('data-type') || type;
-            return '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[typeAttr] || '') + '</h6>' + (popoverContent[typeAttr] || '');
-          },
-        });
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' || codigo === 13 || codigo === 32) {
+        e.preventDefault();
+        if (helpCurrentTrigger && helpCurrentTrigger[0] === $this[0]) {
+          cerrarAyuda($this);
+        } else {
+          abrirAyuda($this);
+        }
       }
-      $this.tooltip('show');
+    });
+    $('body').off('mouseenter.piHelp').on('mouseenter.piHelp', '.pi-help-trigger', function (e) {
+      e.stopPropagation();
+      abrirAyuda($(this));
     });
     $('body').off('mouseleave.piHelp').on('mouseleave.piHelp', '.pi-help-trigger', function () {
       var $this = $(this);

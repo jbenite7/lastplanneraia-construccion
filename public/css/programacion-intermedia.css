@@ -1190,17 +1190,32 @@ html.aia-theme-dark .pi-page {
     order: 2;
     width: 100%;
 }
+/* F-3 (2026-08-05). El gatillo media 8x8 px: por debajo del piso AA de WCAG 2.2
+   SC 2.5.8 y de lo que fija DESIGN.md §5 bis para esta familia desktop-only, donde
+   los 44 px no aplican pero los 24x24 no se cruzan. Se le da la caja del token
+   compartido (--ds-control-compact-min, el mismo suelo de los controles de toolbar)
+   y el glifo sube al piso de fuente. La caja vive en su propia fila de controles
+   (.pi-header-controls, order 2), asi que no le quita ancho al texto de la cabecera. */
 .pi-help-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-inline-size: var(--ds-control-compact-min);
+    min-block-size: var(--ds-control-compact-min);
     color: var(--ds-active-text-secondary);
-    font-size: 8px;
+    font-size: var(--ds-table-font-size-floor);
     cursor: pointer;
     line-height: 1;
 }
 .pi-help-trigger:hover {
     color: var(--ds-active-focus-ring);
+}
+/* El tooltip tambien se abre con el foco (ver hot.js), asi que el foco tiene que
+   verse: sin esto el usuario de teclado no sabria cual de los ocho esta leyendo. */
+.pi-help-trigger:focus-visible {
+    color: var(--ds-active-focus-ring);
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
 }
 .tooltip-inner--wide {
     max-width: 380px;
