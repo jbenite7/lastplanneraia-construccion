@@ -665,11 +665,23 @@ table.dataTable tbody tr:hover td {
    en vez de en el espacio y la tipografia. Se sustituye por superficie elevada
    + filete superior con el separador canonico, el mismo recurso neutro que ya
    usan los chips de Programa General.
-   ALCANCE: solo /pdc. Los tokens `--pdc-header-*` los comparten
-   /programa-general y /programacion-intermedia (ver la nota de
-   public/css/tokens.css), que tienen golden de pixeles y tarea propia; por eso
-   el cambio va en este bloque `#dt_cliente` y no en el token. */
-#dt_cliente .handsontable td.pdc-header {
+   ALCANCE (Task 36, 2026-08-05): las tres tablas. El acotamiento a
+   `#dt_cliente` quedo sin sujeto —/pdc se elimino el 2026-08-04 y el
+   `#dt_cliente` que sobrevive es el DataTable de CNP/CNC, sin ninguna
+   `.handsontable` dentro—, asi que aquel selector ya no pintaba nada.
+   Se reancla al lugar donde la clase vive de verdad: Programa General y
+   Programacion Intermedia la estampan en la CELDA (`className` de cellMeta,
+   programa_general/hot.js:832,1330,1539 y programacion_intermedia/hot.js:826),
+   no en la fila, y por eso las reglas historicas `.pdc-header td` /
+   `.row-header td` —que esperan un `tr` portador— nunca llegaron a aplicarse
+   alli: medido en /programa-general con datos reales, la fila de capitulo
+   salia con el MISMO fondo que una normal (ratio de luminancia 1,000) y sin
+   peso tipografico. Lo que esta regla anade, entonces, no es quitar naranja
+   sino devolverle jerarquia legible al capitulo con el recurso neutro.
+   En Programacion Intermedia no cambia nada visible: su endpoint filtra
+   `Titulo = 0` (ProgramacionIntermediaController::list), asi que la fila de
+   cabecera no llega a la grilla. */
+.handsontable td.pdc-header {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
   font-family: 'Montserrat', sans-serif;
