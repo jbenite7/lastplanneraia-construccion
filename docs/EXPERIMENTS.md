@@ -132,9 +132,9 @@ Del tracker `docs/IMPROVE-PDC-PLAN.md` y el audit `docs/PDC-AUDIT.md`. Todo medi
 
 | Id | Cambio | I | C | E | Nota |
 |---|---|---|---|---|---|
-| `P-1` | **La grilla deja de pintarse con el texto solapado** — 20 filas a 28 px con contenido de 2-3 renglones, en Plan y en Paquetes | 5 | 2 | 3 | **Bloqueante.** Tres hipótesis ya descartadas con medición; pide `systematic-debugging`, no otro parche |
-| `P-4` | **El botón de masa deja de arrancar en la rama destructiva** y el botón apagado dice su causa | 3 | 4 | 2 | Cambio de comportamiento: necesita el sí del usuario |
-| `P-5` | **Las cabeceras de columna de AG Grid dejan de ser mudas** para el lector de pantalla | 3 | 3 | 2 | Ocho `columnheader` sin texto; decidir antes si entra en el suelo de a11y o es excepción |
+| ~~`P-1`~~ | ~~La grilla deja de pintarse con el texto solapado~~ | — | — | — | **Retirado el 2026-08-06: no había nada que arreglar.** Artefacto de capturar con el render suspendido; en ventana visible se acomoda solo. Ver `docs/PDC-AUDIT.md` §P-1 |
+| ~~`P-4`~~ | ~~El botón de masa deja de arrancar en la rama destructiva~~ | — | — | — | **Aplicado y verificado el 2026-08-06**, con el sí del usuario. Ver `docs/PDC-AUDIT.md` |
+| ~~`P-5`~~ | ~~Las cabeceras de columna de AG Grid dejan de ser mudas~~ | — | — | — | **Retirado el 2026-08-06: no estaban mudas.** El volcado del árbol de accesibilidad engañaba; el nombre accesible real existe. Ver `docs/PDC-AUDIT.md` |
 | `P-6` | **La rejilla de «Sin frente» asigna columnas por selector, no por orden** | 2 | 4 | 1 | Hoy se desordena en cuanto una fila trae la etiqueta «lote de obra» |
 | `P-7` | Baseline de INP/LCP/CLS del módulo (hoy: ocho peticiones API en paralelo al cargar, todas 200) | 2 | 4 | 1 | Punto de partida de la fase 8, no un defecto |
 

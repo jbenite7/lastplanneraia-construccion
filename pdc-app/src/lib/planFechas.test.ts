@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AVISO_DESAMARRAR,
   accionDeClic,
+  accionMasaResponsable,
   agruparPorConfianza,
   anclasOrdenadas,
   coberturaPlan,
@@ -12,6 +13,7 @@ import {
   etiquetaElegible,
   generaProceso,
   idPorEtiqueta,
+  MASA_SIN_ELEGIR,
   mensajeCalculo,
   motivoSinAnclas,
   opcionAncla,
@@ -808,5 +810,41 @@ describe('avisoFrentesSinAncla', () => {
   it('varios van en plural', () => {
     expect(avisoFrentesSinAncla(24)).toContain('24 frentes del cronograma no se pueden ofrecer')
     expect(avisoFrentesSinAncla(24)).toContain('Añádeles una actividad')
+  })
+})
+
+describe('accionMasaResponsable', () => {
+  it('sin filas marcadas el botón está apagado y dice qué falta', () => {
+    const r = accionMasaResponsable({ marcados: 0, etiqueta: MASA_SIN_ELEGIR, ocupado: false })
+    expect(r.deshabilitado).toBe(true)
+    expect(r.texto).toBe('Marca paquetes en la tabla')
+    expect(r.accion).toBe('ninguna')
+  })
+
+  it('con filas marcadas pero sin persona elegida sigue apagado, y dice lo siguiente que falta', () => {
+    const r = accionMasaResponsable({ marcados: 3, etiqueta: MASA_SIN_ELEGIR, ocupado: false })
+    expect(r.deshabilitado).toBe(true)
+    expect(r.texto).toBe('Elige a quién asignar')
+    expect(r.accion).toBe('ninguna')
+  })
+
+  // El corazón de P-4: el estado de arranque no puede ofrecer la rama destructiva. Quitar
+  // responsable sigue siendo posible, pero solo si se elige a propósito.
+  it('elegir persona habilita asignar, en plural y en singular', () => {
+    expect(accionMasaResponsable({ marcados: 3, etiqueta: 'Ana Gómez — Residente', ocupado: false }))
+      .toEqual({ deshabilitado: false, texto: 'Asignar a 3 paquetes', accion: 'asignar' })
+    expect(accionMasaResponsable({ marcados: 1, etiqueta: 'Ana Gómez — Residente', ocupado: false }).texto)
+      .toBe('Asignar a 1 paquete')
+  })
+
+  it('elegir «sin asignar» a propósito sí ofrece quitar', () => {
+    expect(accionMasaResponsable({ marcados: 2, etiqueta: '', ocupado: false }))
+      .toEqual({ deshabilitado: false, texto: 'Quitar responsable a 2 paquetes', accion: 'quitar' })
+  })
+
+  it('mientras hay una petición en vuelo no se puede volver a pulsar', () => {
+    const r = accionMasaResponsable({ marcados: 2, etiqueta: 'Ana Gómez — Residente', ocupado: true })
+    expect(r.deshabilitado).toBe(true)
+    expect(r.accion).toBe('asignar')
   })
 })

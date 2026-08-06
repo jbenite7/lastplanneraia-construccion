@@ -1,3 +1,4 @@
+import { plural } from './texto'
 import type { AnclaDisponible, Desfase, FilaPlan, FrenteDisponible, PanelCorrespondencias, ProcedenciaAmarre, ResponsableElegible, ResumenPaquetes, SugerenciaFrente, DestinoContratable} from './types'
 
 export type EstadoFila = { clave: 'desfasado' | 'vencido' | 'provisional' | 'en-plazo'; etiqueta: string }
@@ -350,6 +351,40 @@ export function opcionesResponsable(
   const opciones = ['', ...elegibles.map(etiquetaElegible)]
   const actual = etiquetaResponsableFila(fila)
   return actual !== '' && !opciones.includes(actual) ? [...opciones, actual] : opciones
+}
+
+/**
+ * Valor del selector de asignación en masa mientras no se ha elegido nada.
+ *
+ * Existe porque `''` ya significa una acción real —«quitar el responsable»— y era además el valor
+ * de arranque: al entrar en la pantalla el botón leía «Quitar responsable a 0 paquetes» junto a un
+ * contador que decía «20 sin responsable», o sea que el estado por defecto ofrecía *vaciar* lo que
+ * no había. El centinela separa «todavía no he elegido» de «he elegido dejarlo sin responsable»;
+ * no viaja al servidor y no puede colisionar con la etiqueta de ninguna persona.
+ */
+export const MASA_SIN_ELEGIR = ' sin-elegir'
+
+/**
+ * Estado del botón de asignación en masa: qué dice, si se puede pulsar y qué haría.
+ *
+ * Vive aquí y no en el JSX porque es la regla que impide que la acción por defecto sea la
+ * destructiva, y eso merece prueba propia. Apagado, el botón **dice su causa** en vez de callarse:
+ * antes estaba gris sin explicar que primero hay que marcar filas con la casilla.
+ */
+export function accionMasaResponsable(
+  estado: { marcados: number; etiqueta: string; ocupado: boolean },
+): { deshabilitado: boolean; texto: string; accion: 'ninguna' | 'asignar' | 'quitar' } {
+  const { marcados, etiqueta, ocupado } = estado
+  if (marcados === 0) return { deshabilitado: true, texto: 'Marca paquetes en la tabla', accion: 'ninguna' }
+  if (etiqueta === MASA_SIN_ELEGIR) return { deshabilitado: true, texto: 'Elige a quién asignar', accion: 'ninguna' }
+  const accion = etiqueta === '' ? 'quitar' : 'asignar'
+  return {
+    deshabilitado: ocupado,
+    texto: accion === 'quitar'
+      ? `Quitar responsable a ${plural(marcados, 'paquete')}`
+      : `Asignar a ${plural(marcados, 'paquete')}`,
+    accion,
+  }
 }
 
 /** Traduce lo elegido en el desplegable al id que espera el servidor. Desconocido y '' → sin responsable. */
