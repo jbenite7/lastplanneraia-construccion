@@ -78,7 +78,7 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
     }
 
     // 7) Un paso del asistente: cambiar de modo y actuar sobre la tarjeta (o ver el fin).
-    await page.locator('text=Asistente paso a paso').click();
+    await page.getByRole('tab', { name: 'Asistente paso a paso' }).click();
     await expect(page.locator('[data-testid="pdc-wiz"]')).toBeVisible({ timeout: 15000 });
     const card = page.locator('[data-testid="pdc-wiz-card"]');
     if (await card.count() > 0) {
