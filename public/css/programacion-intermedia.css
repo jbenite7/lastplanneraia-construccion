@@ -514,6 +514,34 @@ html.aia-theme-dark .pi-page {
     cursor: not-allowed;
 }
 
+/* N-1 (Task 38, 2026-08-05): restriccion bloqueada por falta de Responsable
+   AIA. La leccion de C-14 es no repetir una marca mas apagada que el dato:
+   estas senales van con peso y con el color de estado de atencion, que en
+   dark queda por encima del texto normal de la celda, no por debajo. */
+.pi-page #hot-container td.pi-cell-locked-resp {
+    cursor: not-allowed;
+}
+
+.pi-page #hot-container td.pi-cell-locked-resp .pi-lock-mark {
+    margin-right: var(--ds-space-1);
+    font-size: inherit;
+    line-height: 1;
+    color: var(--ds-color-state-warning-text);
+}
+
+.pi-page #hot-container td .pi-missing-resp {
+    display: inline-block;
+    font-size: inherit;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ds-color-state-warning-text);
+}
+
+.pi-page #hot-container td .pi-missing-resp .pi-lock-mark {
+    margin-right: var(--ds-space-1);
+    color: inherit;
+}
+
 .pi-page #hot-container td.pi-cell-editable.current,
 .pi-page #hot-container td.pi-cell-editable.area {
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ds-color-state-success-text) 38%, transparent);

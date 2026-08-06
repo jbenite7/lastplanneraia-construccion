@@ -34,6 +34,20 @@
   subcontratistas.push(PI_CREATE_SUB);
   profesionales.push(PI_CREATE_PROF);
 
+  // N-1 (Task 38, 2026-08-05): vocabulario unico del bloqueo por falta de
+  // Responsable AIA. «Responsable AIA» es el termino del dominio (GLOSARIO.md).
+  // El candado va en Font Awesome, no en emoji: un emoji ignora `color` y la
+  // senal quedaria fuera del sistema de tokens (y sin contraste medible).
+  var PI_MISSING_RESP_LABEL = 'Falta Responsable AIA';
+  var PI_LOCK_REASON = 'Restricciones bloqueadas: asigne el Responsable AIA de esta actividad';
+
+  function buildLockGlyph() {
+    var icon = document.createElement('i');
+    icon.className = 'fas fa-lock pi-lock-mark';
+    icon.setAttribute('aria-hidden', 'true');
+    return icon;
+  }
+
   // --- Restriction Config (dynamic from API, fallback: construction defaults) ---
   var _activeConfig = null;
   var _activeRestrictions = [];
@@ -310,7 +324,7 @@
       { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
       { data: 'Actividad', readOnly: true, renderer: 'piActividadRenderer', className: 'htLeft htMiddle force-wrap' },
       { data: 'Sub_Contratista', editor: 'tomSelectMultiple', tomSelectOptions: subcontratistas, className: 'htCenter htMiddle force-wrap' },
-      { data: 'Responsable_AIA', editor: 'tomSelectSingle', tomSelectOptions: profesionales, className: 'htCenter htMiddle force-wrap' },
+      { data: 'Responsable_AIA', editor: 'tomSelectSingle', tomSelectOptions: profesionales, renderer: 'piResponsableRenderer', className: 'htCenter htMiddle force-wrap' },
       { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
       { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
     ];
@@ -323,7 +337,7 @@
         source: [''].concat(r.options || []),
         strict: false,
         allowInvalid: false,
-        renderer: 'piPercentRenderer',
+        renderer: 'piRestrictionRenderer',
         className: 'htCenter htMiddle' + (isSoft ? ' pi-soft-restriction-cell' : ''),
       });
     }
@@ -838,6 +852,11 @@
       isHeader: isHeader,
       rowStateClass: rowStateClass,
       rowClass: rowClass,
+      // N-1 (Task 38, 2026-08-05): sin Responsable AIA no se gestionan
+      // restricciones. Antes se dejaba escribir y se revertia despues; ahora
+      // la fila nace sabiendo si esta bloqueada, y `cells()` lo traduce a
+      // readOnly + senal visible.
+      hasResponsable: isHeader || hasAssignedValue(rowData && rowData.Responsable_AIA, PI_CREATE_PROF),
     };
   }
 
@@ -907,11 +926,17 @@
 
   function buildPICellProperties(baseClass, prop, meta) {
     var isSharedSelector = prop === '__shared_selected';
+    var isRestrictionCell = restrictionProps.indexOf(prop) > -1 && !meta.isHeader;
+    var isLockedByResponsable = isRestrictionCell && meta.hasResponsable === false;
     var canEdit = isSharedSelector
       ? !meta.isHeader
-      : (Boolean(editableProps[prop]) && !meta.isHeader && _canEditGlobal);
-    var isDropdownCell = Boolean(dropdownProps[prop]) && !meta.isHeader;
+      : (Boolean(editableProps[prop]) && !meta.isHeader && _canEditGlobal && !isLockedByResponsable);
+    var isDropdownCell = Boolean(dropdownProps[prop]) && !meta.isHeader && !isLockedByResponsable;
     var interactionClass = canEdit ? 'pi-cell-editable' : 'pi-cell-readonly';
+
+    if (isLockedByResponsable) {
+      interactionClass += ' pi-cell-locked-resp';
+    }
 
     if (isSharedSelector) {
       interactionClass += ' pi-shared-selector';
@@ -965,6 +990,47 @@
       for (var col = 0; col < cells.length; col++) {
         applyPIRowStateClass(cells[col], meta.rowClass);
       }
+    }
+  }
+
+  /**
+   * N-1 (Task 38): al asignar (o borrar) el Responsable AIA, las celdas de
+   * restriccion de esa fila deben abrirse (o cerrarse) en el acto.
+   * `cells()` no se re-evalua sobre cellMeta ya cacheado, asi que aqui se
+   * escribe `readOnly` y `className` directo, que es la via que ya usa el
+   * modulo para saltarse ese cache.
+   */
+  function syncRestrictionLockForVisualRow(visualRow) {
+    if (!hot || !Number.isInteger(visualRow) || visualRow < 0) {
+      return;
+    }
+
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow);
+    if (!rowData) {
+      return;
+    }
+
+    var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
+    invalidatePIRowCache(physicalRow, rowData);
+    var meta = getPIRowMeta(physicalRow, rowData);
+    if (meta.isHeader) {
+      return;
+    }
+
+    for (var i = 0; i < restrictionProps.length; i++) {
+      var prop = restrictionProps[i];
+      var col = typeof hot.propToCol === 'function' ? hot.propToCol(prop) : -1;
+      if (!Number.isInteger(col) || col < 0) {
+        continue;
+      }
+
+      var props = buildPICellProperties(getColumnBaseClass(hot, col), prop, meta);
+      hot.setCellMeta(visualRow, col, 'readOnly', props.readOnly);
+      hot.setCellMeta(visualRow, col, 'className', props.className);
+    }
+
+    if (typeof hot.render === 'function') {
+      hot.render();
     }
   }
 
@@ -2992,6 +3058,42 @@
       td.classList.add('htCenter');
     });
 
+    // N-1 (Task 38): la celda de restriccion bloqueada dice POR QUE sin que
+    // nadie la toque. El candado es el canal visible; el `title`, el respaldo.
+    Handsontable.renderers.registerRenderer('piRestrictionRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      td.textContent = formatPercent(value);
+      td.classList.add('htCenter');
+
+      if (td.classList.contains('pi-cell-locked-resp')) {
+        td.insertBefore(buildLockGlyph(), td.firstChild);
+
+        var sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = PI_LOCK_REASON;
+        td.appendChild(sr);
+        td.title = PI_LOCK_REASON;
+      }
+    });
+
+    // N-1 (Task 38): el motivo en claro vive en la propia columna que falta.
+    Handsontable.renderers.registerRenderer('piResponsableRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      var rowData = getSourceRowDataByVisualRow(instance, row) || {};
+      var physicalRow = getPhysicalRowFromVisualRow(instance, row);
+      var meta = getPIRowMeta(physicalRow, rowData);
+
+      if (!meta.isHeader && !hasAssignedValue(value, PI_CREATE_PROF)) {
+        td.textContent = '';
+        var mark = document.createElement('span');
+        mark.className = 'pi-missing-resp';
+        mark.appendChild(buildLockGlyph());
+        mark.appendChild(document.createTextNode(PI_MISSING_RESP_LABEL));
+        td.appendChild(mark);
+        td.title = PI_LOCK_REASON;
+      }
+    });
+
     Handsontable.renderers.registerRenderer('piActividadRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = getSourceRowDataByVisualRow(instance, row) || {};
@@ -4010,6 +4112,10 @@
             var respValue = hasAssignedValue(rowData.Responsable_AIA, PI_CREATE_PROF) ? rowData.Responsable_AIA : this.getDataAtRowProp(visualRow, 'Responsable_AIA');
             var hasResp = hasAssignedValue(respValue, PI_CREATE_PROF);
             if (!hasResp) {
+              // N-1 (Task 38): la celda ya nace readOnly cuando falta el
+              // Responsable AIA, asi que por la UI no se llega aqui. Se
+              // conserva como red de seguridad para pegados o cambios
+              // programaticos, que no pasan por el editor.
               revertCell(visualRow, prop, oldValue);
               showFeedback('error', 'No puede gestionar restricciones de una actividad sin asignar Responsable AIA');
               continue;
@@ -4030,6 +4136,10 @@
 
           if (isRestrictionChange) {
             recalculateRestrictionStateForVisualRow(visualRow);
+          }
+
+          if (prop === 'Responsable_AIA') {
+            syncRestrictionLockForVisualRow(visualRow);
           }
 
           saveRow(visualRow, prop, oldValue);
