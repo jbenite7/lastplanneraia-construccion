@@ -232,7 +232,8 @@
 
   function causeSavePayload(row, type, controls) {
     var payload = { Consecutivo: row.row_id || row.Consecutivo,
-      semana: weekValue() };
+      semana: weekValue(),
+      _csrf_token: window.aiaCsrfToken ? window.aiaCsrfToken() : '' };
     if (type === 'cnp') {
       payload.Responsable_AIA = controls.responsible.val();
       payload.Categoria_CNP = controls.category.val();
@@ -291,7 +292,8 @@
     );
     $('#reprogramar-usuario').off('click.psLegacyCards').one('click.psLegacyCards', function () {
       $.ajax({ method: 'POST', url: '/api/cnp/reprogramar', dataType: 'json',
-        data: { Id: id, semana: row.Semana || weekValue() } })
+        data: { Id: id, semana: row.Semana || weekValue(),
+          _csrf_token: window.aiaCsrfToken ? window.aiaCsrfToken() : '' } })
         .done(function (response) {
           showFeedback(response);
           if (response && response.respuesta === 'BIEN') table.ajax.reload(null, false);
@@ -313,7 +315,8 @@
   function cicFormPayload(prefix, row) {
     return $('#' + (prefix === 'mdo' ? 'formulario_cic_mdo' : 'formulario_cic_si')).serialize()
       + '&opcion=modificar_' + prefix + '&Id=' + encodeURIComponent(row.Id)
-      + '&semana=' + encodeURIComponent(row.Semana || weekValue());
+      + '&semana=' + encodeURIComponent(row.Semana || weekValue())
+      + '&_csrf_token=' + encodeURIComponent(window.aiaCsrfToken ? window.aiaCsrfToken() : '');
   }
 
   function openDirectCicEditor(row, table) {

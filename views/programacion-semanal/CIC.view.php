@@ -4,6 +4,8 @@
 	<meta charset="UTF-8">
 	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Compromisos con Contratistas — Last Planner AIA</title>
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+	<script src="/js/modules/aia_ui/csrf.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('programacion-semanal') ?>
@@ -1422,7 +1424,7 @@
 				var opcion = document.getElementById('opcion').value;
 				var Id = document.getElementById('Id').value;
 				var semana = document.getElementById('ultimaSemanaContratista') ? document.getElementById('ultimaSemanaContratista').value : (document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value);
-				var frm = $("#formulario_cic_si").serialize() + "&opcion="+opcion + "&Id="+Id + "&semana="+semana;
+				var frm = $("#formulario_cic_si").serialize() + "&opcion="+opcion + "&Id="+Id + "&semana="+semana + "&_csrf_token="+encodeURIComponent(window.aiaCsrfToken());
 				$.ajax({
 					method: "POST",
 					url: "/api/cic/save",
@@ -1444,7 +1446,7 @@
 				var opcion = document.getElementById('opcion').value;
 				var Id = document.getElementById('Id').value;
 				var semana = document.getElementById('ultimaSemanaContratista') ? document.getElementById('ultimaSemanaContratista').value : (document.getElementById('semana') ? document.getElementById('semana').value : document.getElementById('semana_PHP').value);
-				var frm = $("#formulario_cic_mdo").serialize() + "&opcion="+opcion + "&Id="+Id + "&semana="+semana;
+				var frm = $("#formulario_cic_mdo").serialize() + "&opcion="+opcion + "&Id="+Id + "&semana="+semana + "&_csrf_token="+encodeURIComponent(window.aiaCsrfToken());
 				$.ajax({
 					method: "POST",
 					url: "/api/cic/save",
