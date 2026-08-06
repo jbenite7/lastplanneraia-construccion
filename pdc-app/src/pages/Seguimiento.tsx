@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule } from 'ag-grid-community'
 import type { ColDef, RowClickedEvent } from 'ag-grid-community'
-import { MODULOS_TABLA, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme, vacioTabla } from '../lib/agGrid'
+import { MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme, vacioTabla } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { getBootstrap } from '../lib/bootstrap'
 import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSeguimiento } from '../lib/seguimiento'
@@ -543,6 +543,7 @@ export default function Seguimiento() {
           loading={cargando}
           overlayNoRowsTemplate={vacioTabla('No hay paquetes con plan calculado.')}
           onRowClicked={(e: RowClickedEvent<FilaSeguimiento>) => { if (e.data) void abrir(e.data) }}
+          {...ajusteDeAncho}
         />
       </div>
       </PanelPestana>

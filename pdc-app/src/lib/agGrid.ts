@@ -1,11 +1,19 @@
 import {
   ClientSideRowModelModule,
   ColumnAutoSizeModule,
+  CustomFilterModule,
+  DateFilterModule,
+  LocaleModule,
+  NumberFilterModule,
+  QuickFilterModule,
+  RowApiModule,
   RowAutoHeightModule,
+  TextFilterModule,
   themeQuartz,
 } from 'ag-grid-community'
 import type { ColDef, ColDefField, SizeColumnsToFitGridStrategy } from 'ag-grid-community'
 import { useEffect, useState } from 'react'
+import { FiltroLista } from '../components/FiltroLista'
 
 /**
  * Módulos que necesita cualquier tabla del módulo. El registro sigue siendo selectivo (nada de
@@ -15,8 +23,36 @@ import { useEffect, useState } from 'react'
  *   contenido se ignora en silencio.
  * - `RowAutoHeightModule` es lo que hace existir a `autoHeight`; sin él el texto envuelto se
  *   recorta contra una fila de altura fija, que es peor que el «…» que veníamos a quitar.
+ * - Los cinco módulos de filtro son lo que hace existir el embudo de la cabecera y el buscador
+ *   rápido. `LocaleModule` no es cosmético: sin él el menú dice «Contains», «Apply» y «Reset» en
+ *   una aplicación que está entera en español.
+ * - `RowApiModule` es lo que hace existir a `api.forEachNode`, que usa `FiltroLista` para juntar
+ *   los valores distintos de la columna: sin él el embudo abre vacío («Nada coincide con «»») y
+ *   AG Grid tira el error #200 en consola en vez de listar nada.
  */
-export const MODULOS_TABLA = [ClientSideRowModelModule, ColumnAutoSizeModule, RowAutoHeightModule]
+export const MODULOS_TABLA = [
+  ClientSideRowModelModule, ColumnAutoSizeModule, RowAutoHeightModule,
+  TextFilterModule, NumberFilterModule, DateFilterModule, CustomFilterModule,
+  QuickFilterModule, LocaleModule, RowApiModule,
+]
+
+/**
+ * Textos del menú de filtro en español. AG Grid Community no publica un paquete de idiomas en esta
+ * versión (`ag-grid-community/locale` no está en sus `exports`), así que se declara aquí lo que se
+ * ve. Lo que no esté en este mapa sale en inglés: si aparece una cadena nueva en pantalla, se añade.
+ */
+export const localeTextEs: Record<string, string> = {
+  applyFilter: 'Aplicar', clearFilter: 'Limpiar', resetFilter: 'Restablecer',
+  cancelFilter: 'Cancelar', textFilter: 'Filtro de texto', numberFilter: 'Filtro de número',
+  dateFilter: 'Filtro de fecha', filterOoo: 'Filtrar…', empty: 'Elige una',
+  equals: 'Igual a', notEqual: 'Distinto de', lessThan: 'Menor que', greaterThan: 'Mayor que',
+  lessThanOrEqual: 'Menor o igual que', greaterThanOrEqual: 'Mayor o igual que',
+  inRange: 'Entre', inRangeStart: 'Desde', inRangeEnd: 'Hasta',
+  contains: 'Contiene', notContains: 'No contiene',
+  startsWith: 'Empieza por', endsWith: 'Termina en',
+  blank: 'Vacío', notBlank: 'No vacío', before: 'Antes de', after: 'Después de',
+  andCondition: 'Y', orCondition: 'O', dateFormatOoo: 'aaaa-mm-dd',
+}
 
 /**
  * Tema único del módulo. Estaba copiado byte a byte en los seis archivos de página, así que
@@ -97,20 +133,22 @@ export const MIN_WIDTH_PALABRA_LARGA = 170
  * Se exporta como objeto además de las funciones porque varias columnas no salen de un `field`
  * directo (llevan `valueGetter`) y necesitan las mismas propiedades sin repetirlas a mano.
  */
-export const CIFRA = { type: 'rightAligned', wrapText: false, minWidth: MIN_WIDTH_CIFRA } satisfies ColDef
+export const CIFRA = {
+  type: 'rightAligned', wrapText: false, minWidth: MIN_WIDTH_CIFRA, filter: 'agNumberColumnFilter',
+} satisfies ColDef
 
 /**
  * Columnas cortas por naturaleza —unidad, tipo de insumo de una letra, conteos— con techo: en el
  * reparto de `fitGridWidth` una columna sin límite se lleva ancho que necesita el texto de al lado.
  * «Und» con 200 px de ancho para escribir «M2» era ancho robado a «Tipo».
  */
-export const COLUMNA_CORTA = { minWidth: 70, maxWidth: 104 } satisfies ColDef
+export const COLUMNA_CORTA = { minWidth: 70, maxWidth: 104, filter: FiltroLista } satisfies ColDef
 
 /**
  * Fecha ISO (`2026-05-25`). Diez caracteres que no admiten recorte: «2026-…» no dice nada, y en el
  * plan de compras la fecha ES la decisión.
  */
-export const COLUMNA_FECHA = { minWidth: 124, maxWidth: 148 } satisfies ColDef
+export const COLUMNA_FECHA = { minWidth: 124, maxWidth: 148, filter: 'agDateColumnFilter' } satisfies ColDef
 
 /**
  * Categoría o agrupación: texto medio (más que una unidad, menos que una descripción). Envuelve en
@@ -122,6 +160,7 @@ export const COLUMNA_CATEGORIA = {
   minWidth: MIN_WIDTH_PALABRA_LARGA,
   wrapText: true,
   autoHeight: true,
+  filter: FiltroLista,
 } satisfies ColDef
 
 /**
@@ -137,6 +176,7 @@ export const TEXTO_LARGO = {
   flex: 1,
   minWidth: 200,
   suppressAutoSize: true,
+  filter: 'agTextColumnFilter',
 } satisfies ColDef
 
 /** Columna de dinero a partir de un campo. */
@@ -291,6 +331,7 @@ export const autoSizeStrategy: SizeColumnsToFitGridStrategy = {
  * tablas y la alternativa era repetir dos handlers idénticos en cada una.
  */
 export const ajusteDeAncho = {
+  localeText: localeTextEs,
   onFirstDataRendered: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
   onGridSizeChanged: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
 }

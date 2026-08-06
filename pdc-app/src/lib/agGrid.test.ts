@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  COLUMNA_CATEGORIA,
+  COLUMNA_CORTA,
+  COLUMNA_FECHA,
   MIN_WIDTH_CIFRA,
   MIN_WIDTH_PALABRA_LARGA,
   autoSizeStrategy,
@@ -8,8 +11,10 @@ import {
   columnaTexto,
   columnasQueCaben,
   defaultColDef,
+  localeTextEs,
   moneda,
 } from './agGrid'
+import { FiltroLista } from '../components/FiltroLista'
 
 describe('moneda', () => {
   it('un cero se muestra como $ 0, no como celda vacía', () => {
@@ -152,5 +157,40 @@ describe('autoSizeStrategy', () => {
 
   it('una columna de cifra reserva lo que mide el importe más ancho de obra', () => {
     expect(columnaMoneda('valorTotal', 'Valor total').minWidth).toBe(MIN_WIDTH_CIFRA)
+  })
+})
+
+describe('filtros en los presets', () => {
+  it('el dinero filtra como número, no como texto', () => {
+    expect(columnaMoneda<{ v: number }>('v', 'Valor').filter).toBe('agNumberColumnFilter')
+  })
+
+  it('las cantidades también', () => {
+    expect(columnaNumero<{ v: number }>('v', 'Cantidad').filter).toBe('agNumberColumnFilter')
+  })
+
+  it('el texto largo filtra como texto', () => {
+    expect(columnaTexto<{ v: string }>('v', 'Descripción').filter).toBe('agTextColumnFilter')
+  })
+
+  it('las fechas filtran como fecha', () => {
+    expect(COLUMNA_FECHA.filter).toBe('agDateColumnFilter')
+  })
+
+  it('las columnas categóricas usan la lista propia', () => {
+    expect(COLUMNA_CATEGORIA.filter).toBe(FiltroLista)
+    expect(COLUMNA_CORTA.filter).toBe(FiltroLista)
+  })
+})
+
+describe('localeTextEs', () => {
+  it('traduce lo que se ve en el menú de filtro', () => {
+    expect(localeTextEs.contains).toBe('Contiene')
+    expect(localeTextEs.applyFilter).toBe('Aplicar')
+    expect(localeTextEs.resetFilter).toBe('Restablecer')
+  })
+
+  it('no deja ninguna cadena en inglés a medias', () => {
+    expect(Object.values(localeTextEs).every((v) => typeof v === 'string' && v.length > 0)).toBe(true)
   })
 })
