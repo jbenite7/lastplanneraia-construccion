@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
@@ -31,11 +32,10 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
     await expect(page.locator('[data-testid="pdc-paq-cobertura"]')).toBeVisible({ timeout: 15000 });
 
     const grid = page.locator('[data-testid="pdc-paq-grid"]');
-    const filtro = page.locator('[data-testid="pdc-paq-filtro"]');
 
     // Reset determinista: las asignaciones se heredan por proyecto entre corridas → devolver todo a sin asignar.
-    for (const estado of ['asignados', 'omitidos']) {
-      await filtro.selectOption(estado);
+    for (const etiqueta of ['Asignados', 'Omitidos']) {
+      await elegirEnSelector(page, 'pdc-paq-filtro', etiqueta);
       await page.waitForTimeout(400);
       if (await grid.locator('.ag-row').count() > 0) {
         await page.locator('[data-testid="pdc-paq-sel-todos"]').click();
@@ -49,12 +49,12 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
     // a la tabla): hay que desplegarlo antes de usarlo.
     await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill('E2E Paquete Pisos');
-    await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('suministro');
+    await elegirEnSelector(page, 'pdc-paq-crear-tipo', 'Suministro');
     await page.locator('[data-testid="pdc-paq-crear"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 15000 });
 
     // 5) Asignar el primer insumo sin asignar.
-    await filtro.selectOption('sin_asignar');
+    await elegirEnSelector(page, 'pdc-paq-filtro', 'Sin asignar');
     await expect(grid.locator('.ag-row').first()).toBeVisible({ timeout: 15000 });
     await grid.locator('.ag-row').first().click();
     await expect(page.locator('.pdc-paq-sel')).toContainText('1 seleccionado');
@@ -69,7 +69,7 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
 
     // 6) Omitir el siguiente insumo sin asignar (de vuelta a la pestaña de la grilla).
     await page.getByRole('tab', { name: /^Insumos/ }).click();
-    await filtro.selectOption('sin_asignar');
+    await elegirEnSelector(page, 'pdc-paq-filtro', 'Sin asignar');
     await page.waitForTimeout(400);
     if (await grid.locator('.ag-row').count() > 0) {
       await grid.locator('.ag-row').first().click();

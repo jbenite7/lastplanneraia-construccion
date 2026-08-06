@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PDC_SANDBOX_PROJECT, sqlEnApp, usarSandboxPdc } from './support/pdc-sandbox.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
@@ -56,12 +57,12 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
     // a la tabla): hay que desplegarlo antes de usarlo.
     await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill(PAQUETE_PLAN);
-    await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('a_todo_costo');
+    await elegirEnSelector(page, 'pdc-paq-crear-tipo', 'A todo costo (Sum. + Inst.)');
     await page.locator('[data-testid="pdc-paq-crear"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 15000 });
 
     const gridPaquetes = page.locator('[data-testid="pdc-paq-grid"]');
-    await page.locator('[data-testid="pdc-paq-filtro"]').selectOption('sin_asignar');
+    await elegirEnSelector(page, 'pdc-paq-filtro', 'Sin asignar');
     await expect(gridPaquetes.locator('.ag-row').first()).toBeVisible({ timeout: 15000 });
     await gridPaquetes.locator('.ag-row').first().click();
     await page.locator('[data-testid="pdc-paq-asignar"]').click();

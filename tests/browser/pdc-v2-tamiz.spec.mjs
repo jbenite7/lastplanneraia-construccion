@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 const project = PDC_SANDBOX_PROJECT;
 const FIXTURE = 'tests/browser/fixtures/pdc/presupuesto-mini.xlsx';
@@ -62,12 +63,12 @@ test('el visor señala sin bloquear, y sus cifras dicen qué cuentan', async ({ 
     await expect(page.locator('[data-testid="pdc-paq-cobertura"]')).toBeVisible({ timeout: 20000 });
     await page.locator('.pdc-paq-crear-plegable > summary').click();
     await page.locator('[data-testid="pdc-paq-crear-nombre"]').fill('E2E Tamiz No Bloquea');
-    await page.locator('[data-testid="pdc-paq-crear-tipo"]').selectOption('suministro');
+    await elegirEnSelector(page, 'pdc-paq-crear-tipo', 'Suministro');
     await page.locator('[data-testid="pdc-paq-crear"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 15000 });
 
     const grid = page.locator('[data-testid="pdc-paq-grid"]');
-    await page.locator('[data-testid="pdc-paq-filtro"]').selectOption('sin_asignar');
+    await elegirEnSelector(page, 'pdc-paq-filtro', 'Sin asignar');
     await expect(grid.locator('.ag-row').first()).toBeVisible({ timeout: 15000 });
     await grid.locator('.ag-row').first().click();
     await page.locator('[data-testid="pdc-paq-asignar"]').click();

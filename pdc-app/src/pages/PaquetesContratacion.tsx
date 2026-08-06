@@ -16,6 +16,7 @@ import type { ActividadesInsumo, InsumoPaquete, PaqueteCatalogo, ResumenPaquetes
 import PaquetesAsistente from './PaquetesAsistente'
 import { contarInsumos, filtraPorTexto, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { Selector } from '../components/Selector'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
@@ -60,6 +61,12 @@ const FUENTE_LABEL: Record<string, string> = {
   ia: 'Experto (IA)', exacta: 'Histórico', reglas: 'Reglas', tokens: 'Similitud', indirectos: 'Indirectos', agrupacion: 'Agrupación',
 }
 const FUENTES_ORDEN = ['reglas', 'ia', 'indirectos', 'exacta', 'tokens', 'agrupacion']
+const FILTRO_OPCIONES = [
+  { valor: 'todos', etiqueta: 'Todos' },
+  { valor: 'sin_asignar', etiqueta: 'Sin asignar' },
+  { valor: 'asignados', etiqueta: 'Asignados' },
+  { valor: 'omitidos', etiqueta: 'Omitidos' },
+]
 
 type Filtro = FiltroPaquetes
 type Modo = 'masivo' | 'asistente' | 'paquetes'
@@ -366,16 +373,27 @@ export default function PaquetesContratacion() {
         <summary>Asignar insumos</summary>
 
       <div className="pdc-paq-toolbar">
-        <select data-testid="pdc-paq-filtro" aria-label="Filtrar por estado" value={filtro} onChange={(e) => setFiltro(e.target.value as Filtro)}>
-          <option value="todos">Todos</option>
-          <option value="sin_asignar">Sin asignar</option>
-          <option value="asignados">Asignados</option>
-          <option value="omitidos">Omitidos</option>
-        </select>
-        <select aria-label="Filtrar por agrupación" value={agrupacion} onChange={(e) => setAgrupacion(e.target.value)}>
-          <option value="">Todas las agrupaciones</option>
-          {agrupaciones.map((a) => <option key={a} value={a}>{a}</option>)}
-        </select>
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Estado</span>{' '}
+          <Selector
+            testid="pdc-paq-filtro"
+            etiqueta="Filtrar por estado"
+            value={filtro}
+            onChange={(v) => setFiltro(v as Filtro)}
+            opciones={FILTRO_OPCIONES}
+          />
+        </span>
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Agrupación</span>{' '}
+          <Selector
+            testid="pdc-paq-agrupacion"
+            etiqueta="Filtrar por agrupación"
+            value={agrupacion}
+            onChange={setAgrupacion}
+            opciones={agrupaciones.map((a) => ({ valor: a, etiqueta: a }))}
+            placeholder="Todas las agrupaciones"
+          />
+        </span>
         <button
           type="button"
           data-testid="pdc-paq-sembrar"
@@ -413,10 +431,17 @@ export default function PaquetesContratacion() {
           Limpiar
         </button>
         <span className="pdc-paq-sel">{plural(seleccionados.length, 'seleccionado')}</span>
-        <select data-testid="pdc-paq-select-paquete" aria-label="Paquete destino" value={paqueteDestino} onChange={(e) => setPaqueteDestino(e.target.value === '' ? '' : Number(e.target.value))}>
-          <option value="">Paquete destino…</option>
-          {paquetes.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Paquete destino</span>{' '}
+          <Selector
+            testid="pdc-paq-select-paquete"
+            etiqueta="Paquete destino"
+            placeholder="Paquete destino…"
+            value={String(paqueteDestino ?? '')}
+            onChange={(v) => setPaqueteDestino(v === '' ? '' : Number(v))}
+            opciones={paquetes.map((p) => ({ valor: String(p.id), etiqueta: p.nombre }))}
+          />
+        </span>
         {/* `title` en los tres: apagados sin explicación, obligaban a probar combinaciones para
             descubrir qué faltaba. Ahora el propio botón dice qué le falta para encenderse. */}
         <button type="button" data-testid="pdc-paq-asignar" className="pdc-paq-primario" title={faltaParaAsignar} disabled={state.ocupado || paqueteDestino === '' || seleccionados.length === 0} onClick={onAsignar}>
@@ -437,18 +462,26 @@ export default function PaquetesContratacion() {
         <summary>Crear un paquete nuevo</summary>
       <div className="pdc-paq-crear">
         <input data-testid="pdc-paq-crear-nombre" placeholder="Crear paquete nuevo…" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} />
-        <select data-testid="pdc-paq-crear-tipo" aria-label="Tipo de negociación" value={nuevoTipo} onChange={(e) => setNuevoTipo(e.target.value)}>
-          {TIPOS_NEGOCIACION.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-        <select
-          data-testid="pdc-paq-crear-modalidad"
-          aria-label="Modalidad de contratación"
-          title={MODALIDADES.find((m) => m.value === nuevaModalidad)?.ayuda}
-          value={nuevaModalidad}
-          onChange={(e) => setNuevaModalidad(e.target.value)}
-        >
-          {MODALIDADES.map((m) => <option key={m.value} value={m.value} title={m.ayuda}>{m.label}</option>)}
-        </select>
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Tipo de negociación</span>{' '}
+          <Selector
+            testid="pdc-paq-crear-tipo"
+            etiqueta="Tipo de negociación"
+            value={nuevoTipo}
+            onChange={setNuevoTipo}
+            opciones={TIPOS_NEGOCIACION.map((t) => ({ valor: t.value, etiqueta: t.label }))}
+          />
+        </span>
+        <span className="pdc-selector" title={MODALIDADES.find((m) => m.value === nuevaModalidad)?.ayuda}>
+          <span className="pdc-selector-rotulo">Modalidad de contratación</span>{' '}
+          <Selector
+            testid="pdc-paq-crear-modalidad"
+            etiqueta="Modalidad de contratación"
+            value={nuevaModalidad}
+            onChange={setNuevaModalidad}
+            opciones={MODALIDADES.map((m) => ({ valor: m.value, etiqueta: m.label }))}
+          />
+        </span>
         <button type="button" data-testid="pdc-paq-crear" disabled={state.ocupado || nuevoNombre.trim() === ''} onClick={onCrearPaquete}>
           Crear paquete
         </button>
