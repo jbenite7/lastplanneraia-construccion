@@ -98,7 +98,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1180x820.png",
-      "sha256": "e0af301173a2fea1fe6393ce626fd959231d709fb607491c8c7074cab1baf15c"
+      "sha256": "8bfc7cddf9d46d72cf1e792e0592a7bc386221c378bb8189f0a47a4fe52580f1"
     },
     {
       "id": "programacion-intermedia-dark-1440x900",
@@ -114,7 +114,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1440x900.png",
-      "sha256": "7a4a17d88f5c21bf971f674960732987b5095a0a51b4f8aaf060ae7e015216e0"
+      "sha256": "eb88bf6460f63b91d98b2e69b6e62c5968e545e87d03224c1594c5e61881ca53"
     }
   ]
 }
