@@ -376,15 +376,21 @@
     --pdc-not-started-border: #c7cdd4;
     --pdc-not-started-text: #d4dad6;
 
-    /* Cabecera naranja historica de las tablas. SIN CONSUMIDOR VIVO desde la
-       Task 36 (2026-08-05): las unicas reglas que la leen son `.row-header td`
-       y `.pdc-header td` (public/css/styles.css), y ambas esperan que la clase
-       viaje en el `tr`. Programa General y Programacion Intermedia la estampan
-       en la CELDA, asi que nunca llegaron a pintarse de naranja; se comprobo en
-       /programa-general con datos reales antes de tocar nada. La fila de
-       capitulo se distingue ahora por peso tipografico y filete
-       (`.handsontable td.pdc-header`), no por relleno de color. Los cuatro
-       tokens y sus dos reglas quedan como codigo muerto a retirar aparte. */
+    /* Cabecera naranja historica de las tablas. SIN EFECTO VISIBLE desde la
+       Task 36 (2026-08-05), pero no por la misma razon en cada superficie, y
+       conviene no confundirlas:
+       · Programa General estampa `pdc-header` solo en la CELDA, y las reglas
+         que leen estos tokens (`.row-header td` y `.pdc-header td`,
+         public/css/styles.css) esperan la clase en el `tr`. Nunca casaron:
+         comprobado en /programa-general con datos reales antes de tocar nada.
+       · Programacion Intermedia SI la estampa en el `tr` (ademas de en el
+         `td`), asi que alli las reglas casarian; lo que hoy lo impide es que su
+         endpoint filtra `Titulo = 0` y la fila no llega a la grilla. Para que
+         el resultado no dependiera de ese filtro, las reglas naranjas llevan
+         `:not(.pdc-header)` sobre la celda.
+       La fila de capitulo se distingue ahora por peso tipografico y filete
+       (`.handsontable td.pdc-header`), no por relleno de color. Estos cuatro
+       tokens quedan sin consumidor efectivo; su retirada es tarea aparte. */
     --pdc-header-bg: #8b4011;
     --pdc-header-text: #fafafa;
     --pdc-header-accent: #e87722;

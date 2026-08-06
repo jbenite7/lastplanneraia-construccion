@@ -605,8 +605,24 @@ table.dataTable tbody tr:hover td {
   color: inherit !important;
 }
 
-/* Header / Title Rows */
-.pdc-header td {
+/* Header / Title Rows — cabecera naranja historica, con la clase en el `tr`.
+   El `:not(.pdc-header)` lo anade la Task 36 (2026-08-05) y desactiva estas
+   tres reglas en cuanto la CELDA lleva tambien la clase, que es la senal de que
+   le toca el tratamiento sobrio de `.handsontable td.pdc-header`.
+   Por que hace falta: Programacion Intermedia estampa `pdc-header` en el `tr` Y
+   en cada `td` (`applyRowClassesToDOM`, programacion_intermedia/hot.js:962,966).
+   Hoy la fila no llega a la grilla porque el endpoint filtra `Titulo = 0`
+   (ProgramacionIntermediaController::list:181), pero si alguien retira ese
+   filtro la celda recibiria el fondo sobrio Y, encima, el texto naranja de
+   `td *` y el filete naranja de `td:first-child` —que la regla sobria no anula,
+   porque no declara `box-shadow`—. El resultado seria sobrio con restos de
+   naranja. Con el `:not()` el resultado correcto deja de depender de un filtro
+   de SQL que vive en otra capa.
+   El `box-shadow` NO se neutraliza desde la regla sobria a proposito: en
+   Programa General esa propiedad la ocupa el velo de solo-lectura
+   (`:where(.pg-page #hot-container td.pg-cell-readonly)`), y pisarlo con un
+   `none` habria borrado esa senal en las filas de capitulo. */
+.pdc-header td:not(.pdc-header) {
   background-color: var(--pdc-header-bg) !important;
   color: var(--pdc-header-text) !important;
   font-family: 'Montserrat', sans-serif;
@@ -614,11 +630,11 @@ table.dataTable tbody tr:hover td {
   letter-spacing: 0.02em;
   border-color: var(--pdc-header-border) !important;
 }
-.pdc-header td * {
+.pdc-header td:not(.pdc-header) * {
   color: var(--pdc-header-text) !important;
 }
 .Titulo td:first-child,
-.pdc-header td:first-child {
+.pdc-header td:not(.pdc-header):first-child {
   box-shadow: inset 4px 0 0 var(--pdc-header-accent) !important;
 }
 
@@ -669,18 +685,23 @@ table.dataTable tbody tr:hover td {
    `#dt_cliente` quedo sin sujeto —/pdc se elimino el 2026-08-04 y el
    `#dt_cliente` que sobrevive es el DataTable de CNP/CNC, sin ninguna
    `.handsontable` dentro—, asi que aquel selector ya no pintaba nada.
-   Se reancla al lugar donde la clase vive de verdad: Programa General y
-   Programacion Intermedia la estampan en la CELDA (`className` de cellMeta,
-   programa_general/hot.js:832,1330,1539 y programacion_intermedia/hot.js:826),
-   no en la fila, y por eso las reglas historicas `.pdc-header td` /
-   `.row-header td` —que esperan un `tr` portador— nunca llegaron a aplicarse
-   alli: medido en /programa-general con datos reales, la fila de capitulo
-   salia con el MISMO fondo que una normal (ratio de luminancia 1,000) y sin
-   peso tipografico. Lo que esta regla anade, entonces, no es quitar naranja
-   sino devolverle jerarquia legible al capitulo con el recurso neutro.
-   En Programacion Intermedia no cambia nada visible: su endpoint filtra
-   `Titulo = 0` (ProgramacionIntermediaController::list), asi que la fila de
-   cabecera no llega a la grilla. */
+   Se reancla al lugar donde la clase vive de verdad, que NO es el mismo en las
+   dos superficies:
+   · Programa General la estampa SOLO en la CELDA (`className` de cellMeta,
+     programa_general/hot.js:832,1330,1539). Por eso las reglas historicas
+     `.pdc-header td` / `.row-header td` —que esperan un `tr` portador— nunca
+     llegaron a aplicarse alli: medido en /programa-general con datos reales,
+     la fila de capitulo salia con el MISMO fondo que una normal (ratio de
+     luminancia 1,000) y sin peso tipografico. Lo que esta regla anade,
+     entonces, no es quitar naranja sino devolverle jerarquia legible al
+     capitulo con el recurso neutro.
+   · Programacion Intermedia la estampa en el `tr` Y en cada `td`
+     (`applyRowClassesToDOM`, programacion_intermedia/hot.js:962,966), asi que
+     alli el `tr` portador SI existe. Hoy no cambia nada visible porque el
+     endpoint filtra `Titulo = 0`
+     (ProgramacionIntermediaController::list:181) y la fila de cabecera no
+     llega a la grilla — pero eso es inercia del backend, no ausencia de
+     portador. Ver el `:not(.pdc-header)` de las reglas naranjas de arriba. */
 .handsontable td.pdc-header {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;

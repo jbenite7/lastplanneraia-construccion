@@ -23,7 +23,26 @@ const assertScopedContrastExceptions = (exceptions, surface, expectedSelectors) 
 };
 
 // Programa General entro al carril pilot el 2026-08-03: nueve celdas `.pdc-header`
-// que axe no puede medir por su fondo translucido (memoria/trampas/axe-incomplete-cuenta-como-violacion.md).
+// que axe no puede medir (memoria/trampas/axe-incomplete-cuenta-como-violacion.md).
+//
+// OJO — DOS CORRECCIONES, medidas el 2026-08-05 (Task 36) contra /programa-general con datos
+// reales, 1180x820 dark, y con el mismo `withTags(WCAG_TAGS)` que usa el helper:
+//
+// 1. La causa NO era «el fondo translucido». La fila de capitulo caia en la cebra
+//    (`--ds-table-zebra`, un `color-mix(in oklch, ...)`), y lo que axe no sabe componer es la
+//    FUNCION DE COLOR, no la transparencia: la superficie que la sustituye
+//    (`--ds-color-surface-raised-dark`) tambien es translucida —y axe la mide sin problema—.
+// 2. Por eso estas nueve excepciones estan OBSOLETAS. Medido en los tres estados del arbol:
+//    en `ba10712b` (antes de la Task 36) axe devuelve los 9 `color-contrast|incomplete|serious`
+//    listados abajo, uno a uno; en `fb059385` y despues, devuelve CERO, con cero violaciones
+//    critical/serious. El tratamiento sobrio del capitulo no relajo la accesibilidad: la
+//    arreglo, porque el contraste de esas celdas pasa a ser computable y pasa.
+//
+// No se borran aqui a proposito. La lista viaja en el JSON grabado de `docs/design-system/`, y
+// rehacer ese registro exige correr el escenario aprobado completo —que incluye 390x844, fuera
+// del alcance desktop-dark de AGENTS.md— y aprobacion explicita para mover una linea base. Queda
+// como retirada pendiente, con la medicion ya hecha; mientras tanto el test sigue verde porque
+// afirma el JSON, no el runtime.
 const programaGeneralSelectors = [
   '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > b',
   '.ht__row_even:nth-child(2) > .htLeft.pdc-header.force-wrap > small',
