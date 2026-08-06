@@ -165,6 +165,20 @@ export function claveDestino(d: { paqueteId: number; subpaqueteId: number }): st
 }
 
 /**
+ * El destino elegido en pantalla para un PAQUETE ENTERO (lote 0). Única forma legítima de leer el
+ * mapa `destinos` cuando solo se tiene el id del paquete: el mapa indexa por `claveDestino()`
+ * («73:0»), y leerlo con la clave numérica desnuda («73») devuelve undefined siempre. Ese fue el
+ * bug del botón «Aceptar N de confianza alta» (2026-08-06): todos los paquetes parecían «sin
+ * elegir» y el lote entero se saltaba en silencio — cero POST, «0 paquetes amarrados».
+ */
+export function destinoDePaquete(
+  destinos: Record<string, number | ''>,
+  paqueteId: number,
+): number | '' | undefined {
+  return destinos[claveDestino({ paqueteId, subpaqueteId: 0 })]
+}
+
+/**
  * Unidades contratables que deberían tener fecha y todavía no la tienen.
  *
  * Sustituye a `paquetesSinFrente()` en la pantalla, y el cambio de unidad es el punto: un paquete

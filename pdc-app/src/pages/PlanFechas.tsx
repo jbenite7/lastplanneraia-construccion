@@ -36,6 +36,7 @@ import {
   destinosSinFrente,
   etiquetaDestino,
   claveDestino,
+  destinoDePaquete,
   type DestinoContratable,
   planUiReducer,
   preseleccionDestinos,
@@ -476,7 +477,7 @@ export default function PlanFechas() {
       // verdad de lo que está en pantalla (arranca en la propuesta, pero el usuario puede cambiarlo);
       // `procedenciaDeAmarre` ya sabe no acreditar al motor cuando el destino elegido no coincide con
       // su propuesta — mismo criterio que el amarre individual (onAmarrar).
-      const destino = destinos[p.paqueteId]
+      const destino = destinoDePaquete(destinos, p.paqueteId)
       if (destino === undefined || destino === '') continue // el usuario lo dejó sin elegir
       const s = sugerencias[p.paqueteId]
       try {
@@ -616,8 +617,12 @@ export default function PlanFechas() {
             conteo esconde justo eso. */}
         <div data-testid="pdc-plan-cobertura" className="pdc-paq-cobertura">
           <div className="pdc-paq-cobertura-num">{cobertura.porcentajeValor}%</div>
+          {/* El número grande es del VALOR y este detalle es por CONTEO: en Da Porto se leían «73%»
+              y «20 de 93 paquetes con fecha» pegados, y 20/93 es 21%, no 73. Dos métricas distintas
+              presentadas como si fueran la misma cifra. Nombrar la unidad cuesta dos palabras y
+              deshace la contradicción sin tocar ningún cálculo. */}
           <div className="pdc-paq-cobertura-detalle">
-            {cobertura.conFecha} de {cobertura.total} paquetes con fecha
+            del valor · {cobertura.conFecha} de {cobertura.total} paquetes con fecha
           </div>
           <div className="pdc-paq-barra">
             <div className="pdc-paq-barra-fill" style={{ transform: `scaleX(${cobertura.porcentajeValor / 100})` }} />
@@ -905,7 +910,7 @@ export default function PlanFechas() {
               {porConfianza.media.map((p) => {
                 // El destino que se va a escribir es el del `<select>` de la fila, no la propuesta
                 // cruda del motor: si alguien lo cambió a mano, la lista debe enseñar ese.
-                const elegido = destinos[p.paqueteId]
+                const elegido = destinoDePaquete(destinos, p.paqueteId)
                 const frente = frentes.find((f) => f.uniqueId === elegido)
                 return (
                   <li key={p.paqueteId}>
@@ -1047,9 +1052,16 @@ export default function PlanFechas() {
               >
                 Amarrar
               </button>
+              {/* El origen viaja en el `title` y no en el texto: escrito entero
+                  («CORRESPONDENCIA · CONFIANZA ALTA») el chip se llevaba 190 px de la fila, casi
+                  cinco veces lo que le quedaba al nombre del paquete. Lo que se decide mirando es
+                  la confianza; el origen se consulta, y para eso basta con posarse encima. */}
               {sugerencia && (
-                <span className={`pdc-paq-tag conf-${sugerencia.confianza}`}>
-                  {sugerencia.origen} · confianza {sugerencia.confianza}
+                <span
+                  className={`pdc-paq-tag conf-${sugerencia.confianza}`}
+                  title={`Origen de la propuesta: ${sugerencia.origen}`}
+                >
+                  confianza {sugerencia.confianza}
                 </span>
               )}
               {/* Sin propuesta ya no es una fila muda: dice qué rama falta y ofrece resolverla. */}

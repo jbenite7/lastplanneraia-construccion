@@ -124,3 +124,16 @@ en `docs/DESIGN-AUDIT.md`; la priorización de producto, en `docs/PRODUCT.md` §
 | `F-6` | **Un solo estado vacío en `/control-cambios`** (`sInfoEmpty` a cadena vacía) | 1 | 5 | 1 | Va junto con la ratificación de la frase de C-33 |
 | `R-5` · `R-6` | **Los maestros y los informes salen del camino diario del residente**, agrupados bajo una entrada de gestión | 3 | 3 | 2 | **No se borra ninguna ruta ni se cambia ningún permiso** |
 | `F-8` · `F-9` | Higiene: un id duplicado en PGA y un `rgba()` crudo en `programacion-intermedia.css:262` | 1 | 5 | 1 | Instancias sueltas de C-46 y de C-2 |
+
+## Plan de Compras · pase improve-app del ensamble (2026-08-06)
+
+Del tracker `docs/IMPROVE-PDC-PLAN.md` y el audit `docs/PDC-AUDIT.md`. Todo medido en Da Porto a
+1180×820 dark. `P-2` y `P-3` no aparecen aquí: se aplicaron y verificaron en la misma sesión.
+
+| Id | Cambio | I | C | E | Nota |
+|---|---|---|---|---|---|
+| `P-1` | **La grilla deja de pintarse con el texto solapado** — 20 filas a 28 px con contenido de 2-3 renglones, en Plan y en Paquetes | 5 | 2 | 3 | **Bloqueante.** Tres hipótesis ya descartadas con medición; pide `systematic-debugging`, no otro parche |
+| `P-4` | **El botón de masa deja de arrancar en la rama destructiva** y el botón apagado dice su causa | 3 | 4 | 2 | Cambio de comportamiento: necesita el sí del usuario |
+| `P-5` | **Las cabeceras de columna de AG Grid dejan de ser mudas** para el lector de pantalla | 3 | 3 | 2 | Ocho `columnheader` sin texto; decidir antes si entra en el suelo de a11y o es excepción |
+| `P-6` | **La rejilla de «Sin frente» asigna columnas por selector, no por orden** | 2 | 4 | 1 | Hoy se desordena en cuanto una fila trae la etiqueta «lote de obra» |
+| `P-7` | Baseline de INP/LCP/CLS del módulo (hoy: ocho peticiones API en paralelo al cargar, todas 200) | 2 | 4 | 1 | Punto de partida de la fase 8, no un defecto |

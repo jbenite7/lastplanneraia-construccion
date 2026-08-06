@@ -634,16 +634,30 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
    una cifra larga saltaba de renglón y desplazaba su desplegable. Una rejilla con columnas fijas
    deja nombre, cuantía, selector, botón y badge siempre en la misma posición, sin cambiar de
    tecnología ni tocar los controles que ya funcionan. */
+/* Los anchos fijos sumaban 828 px (160+320+110+190 y cuatro huecos de 12) dentro de un contenedor
+   que en el viewport canónico mide 867: al nombre del paquete le quedaban 39 px y se partía a una
+   palabra por renglón —«Suministro / BASE / Y / SUB / BASE / GRANULAR»—, cinco líneas para el único
+   dato que identifica la fila. Medido el 2026-08-06 en Da Porto, con la etiqueta de confianza
+   llevándose 190 px, casi cinco veces más que el nombre.
+   La media query de rescate no salvaba nada porque miraba el ancho del VIEWPORT (1180) cuando el
+   que se queda corto es el CONTENEDOR (867: la barra lateral se lleva 325). Ahora las columnas
+   accesorias piden lo que ocupan (`max-content`) y el sobrante va al nombre, que es lo que se lee
+   para decidir. */
+/* La lista es su propio contenedor de consulta: los `li` son descendientes suyos, así que la
+   `@container` de más abajo puede medirla. */
+.pdc-plan-sinfrente-lista { container: pdc-plan / inline-size; }
 .pdc-plan-sinfrente-lista > li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 160px 320px 110px 190px;
+  grid-template-columns: minmax(240px, 1fr) max-content minmax(200px, 260px) max-content max-content;
   align-items: center;
   gap: 12px;
 }
 .pdc-plan-sinfrente-lista > li > select { width: 100%; min-width: 0; }
 .pdc-plan-sinfrente-lista > li > .pdc-paq-meta { text-align: right; white-space: nowrap; }
-@media (max-width: 1100px) {
-  .pdc-plan-sinfrente-lista > li { grid-template-columns: minmax(0, 1fr) 140px; grid-auto-rows: auto; }
+/* El corte se decide por el ancho del contenedor, no por el del viewport: es el contenedor el que
+   se estrecha cuando la barra lateral está desplegada. */
+@container pdc-plan (max-width: 780px) {
+  .pdc-plan-sinfrente-lista > li { grid-template-columns: minmax(0, 1fr) max-content; grid-auto-rows: auto; }
   .pdc-plan-sinfrente-lista > li > select { grid-column: 1 / -1; }
 }
 

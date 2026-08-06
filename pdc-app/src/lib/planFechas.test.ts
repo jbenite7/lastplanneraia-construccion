@@ -34,6 +34,7 @@ import {
   destinosSinFrente,
   etiquetaDestino,
   type DestinoContratable,
+  destinoDePaquete,
 } from './planFechas'
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
@@ -335,6 +336,32 @@ describe('preseleccionDestinos', () => {
     expect(trasCarrera).toEqual({})
     const trasSugerencias = preseleccionDestinos(trasCarrera, [{ paqueteId: 1 }], { 1: sugerencia }, true)
     expect(trasSugerencias).toEqual({ '1:0': 9001 })
+  })
+})
+
+describe('destinoDePaquete', () => {
+  const sugerencia: SugerenciaFrente = {
+    uniqueId: 9001, nombre: 'ESTRUCTURA', fechaInicio: '2026-08-18', origen: 'similitud', confianza: 'alta', evidencia: 'coincide por código',
+  }
+
+  // Bug medido el 2026-08-06 en Da Porto: «Aceptar 64 de confianza alta» no emitía ni un solo POST
+  // («0 paquetes amarrados por sugerencia del motor»). El mapa `destinos` indexa por
+  // `claveDestino()` («73:0»), pero el botón masivo y la lista previa de confianza media leían
+  // `destinos[paqueteId]` («73»): la clave no existía, todos los paquetes caían en el `continue` de
+  // «sin elegir» y el lote entero se saltaba en silencio. Este helper es la única forma legítima de
+  // leer el destino de un paquete entero.
+  it('lee lo que preseleccionDestinos sembró para el paquete entero', () => {
+    const destinos = preseleccionDestinos({}, [{ paqueteId: 73 }], { 73: sugerencia }, true)
+    expect(destinoDePaquete(destinos, 73)).toBe(9001)
+  })
+
+  it('la lectura con la clave numérica desnuda es la que NO funciona (el bug)', () => {
+    const destinos = preseleccionDestinos({}, [{ paqueteId: 73 }], { 73: sugerencia }, true)
+    expect(destinos[73 as unknown as string]).toBeUndefined()
+  })
+
+  it('paquete sin sembrar devuelve undefined', () => {
+    expect(destinoDePaquete({}, 73)).toBeUndefined()
   })
 })
 
