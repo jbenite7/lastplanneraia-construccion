@@ -258,7 +258,11 @@ window.HOTActualizarModule = (function() {
             td.innerHTML = physicalDisplay + ' ' + unity + ' (' + percentValue + '%)';
         }
 
-        td.className = (td.className || '') + ' htCenter htMiddle';
+        // Task 34 (ola de arreglo): es una cantidad con su porcentaje entre
+        // parentesis, la gemela de `EjecutadoDisplay` en Programa General, que ya
+        // va a la derecha. El renderer pisa el className de la columna, asi que la
+        // alineacion tiene que cambiarse tambien aqui o no se mueve un pixel.
+        td.className = (td.className || '') + ' htRight htMiddle';
     }
 
     /**
@@ -674,10 +678,13 @@ window.HOTActualizarModule = (function() {
                     className: "htCenter htMiddle"
                 },
                 {
+                    // Task 34 (ola de arreglo): las cantidades se leen por unidades
+                    // en la misma vertical que en Programa General y Programacion
+                    // Semanal. Los identificadores y las fechas siguen centrados.
                     data: 'cantidad_ppto',
                     type: 'numeric',
                     numericFormat: { pattern: '0.0' },
-                    className: "htCenter htMiddle"
+                    className: "htRight htMiddle"
                 },
                 {
                     data: 'Estado_Restricciones',
@@ -690,7 +697,7 @@ window.HOTActualizarModule = (function() {
                     data: 'Ejecutado',
                     type: 'numeric',
                     numericFormat: { pattern: '0.0' },
-                    className: "htCenter htMiddle",
+                    className: "htRight htMiddle",
                     renderer: pgEjecutadoRealRenderer
                 }
             ],
