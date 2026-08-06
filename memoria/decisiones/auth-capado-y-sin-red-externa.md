@@ -43,12 +43,20 @@ Casos `6-adminlte-login` y `10-cdn-externo-auth` de
 `docs/design-system/unlayered-delivery-inventory.json`, ambos CERRADOS. Auth pasa de tres hojas sin
 capa a una: `login-brand-unified.css`, que es el caso 7, censado aparte y todavía abierto.
 
-**Rastro medido que conviene no repetir:** el golden `auth/login-dark-1180x820.png` ya estaba
-desactualizado **antes** de esta tanda —retrata el logo viejo y el botón «Modo linen», ambos
-retirados en `4437fcfa`— y no se regeneró aquí: capar el vendor no mueve la página (A/B con y sin el
-`<link>` del CDN: mismo ancho de botón, mismo `font-size` y mismo salto de línea del título; solo
-cambia el `offsetHeight` de la tarjeta, 736→603 px, invisible). Rehacerlo es trabajo aparte que
-exige aprobación visual explícita.
+**El golden, aparte.** `auth/login-dark-1180x820.png` ya estaba desactualizado **antes** de esta
+tanda —retrataba el logo viejo y el botón «Modo linen», ambos retirados en `4437fcfa`— y capar el
+vendor no mueve la página (A/B con y sin el `<link>` del CDN: mismo ancho de botón, mismo
+`font-size` y mismo salto de línea del título; solo cambia el `offsetHeight` de la tarjeta,
+736→603 px, invisible). Con **aprobación visual explícita del usuario** se rehízo el mismo día,
+como paso separado: `d932f02b`→`0d58ad67` en `scenarios[0].sha256` de `auth.json`.
+
+Se regeneró con el **mismo mecanismo que lo fijó** en su día —`DRYRUN_SURFACE=auth
+DRYRUN_PHASE=… npx playwright test tests/browser/entrypoint-segmentation-dryrun.mjs`— y no con una
+captura ad hoc: es lo único que garantiza mismo viewport, mismo `fullPage: false` y mismo estado de
+carga que el golden que sustituye. La fase se nombró `golden-2026-08-06` en vez de reusar `after`
+para no pisar la evidencia histórica del goal [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]].
+La corrida deja además su propia evidencia: consola vacía y **cero violaciones de axe** en las tres
+rutas, donde el dry-run de 2026-07-22 registraba `landmark-one-main` y `region`.
 
 Relacionado: [[admin-adminlte-adaptador]] (el precedente que fija el patrón, en `admin/`),
 [[css-layer-cascade]], [[panel-browser-no-anima]] (la trampa que se destapó al verificar el diálogo).

@@ -1,0 +1,100 @@
+{
+  "/login": {
+    "1180x820": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "1440x900": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "axeViolations": []
+  },
+  "/password/forgot": {
+    "1180x820": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "1440x900": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "axeViolations": []
+  },
+  "/password/reset": {
+    "1180x820": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "1440x900": {
+      "links": [
+        "/runtime/css/design-system/entrypoints/core.css",
+        "/css/design-system/entrypoints/attach-adminlte.css",
+        "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+        "/css/tokens.css",
+        "/css/login-brand-unified.css"
+      ]
+    },
+    "axeViolations": []
+  },
+  "cssRequests": [
+    "/css/access.css",
+    "/css/buttons.css",
+    "/css/design-system/adapters/legacy-bridge.css",
+    "/css/design-system/adapters/lps-drawer.css",
+    "/css/design-system/adapters/shell-sidebar.css",
+    "/css/design-system/adapters/sweetalert2.css",
+    "/css/design-system/components/action-group.css",
+    "/css/design-system/components/bi-figure.css",
+    "/css/design-system/components/data-display.css",
+    "/css/design-system/components/dialog.css",
+    "/css/design-system/components/filter-form.css",
+    "/css/design-system/components/ht-empty-state.css",
+    "/css/design-system/components/navigation.css",
+    "/css/design-system/components/ops-state-chip.css",
+    "/css/design-system/components/page-header.css",
+    "/css/design-system/components/primitives.css",
+    "/css/design-system/components/states-feedback.css",
+    "/css/design-system/components/table-filter-trigger.css",
+    "/css/design-system/components/toolbar-controls.css",
+    "/css/design-system/core.css",
+    "/css/design-system/entrypoints/attach-adminlte.css",
+    "/css/design-system/entrypoints/theme-overrides.css",
+    "/css/design-system/fonts.css",
+    "/css/design-system/foundation.css",
+    "/css/login-brand-unified.css",
+    "/css/styles.css",
+    "/css/tokens.css",
+    "/public/vendor/admin-lte/css/adminlte.min.css",
+    "/public/vendor/bootstrap/bootstrap.min.css",
+    "/public/vendor/font-awesome/css/all.css",
+    "/public/vendor/sweetalert2.min.css",
+    "/runtime/css/design-system/entrypoints/attach-sweetalert2.css",
+    "/runtime/css/design-system/entrypoints/core.css"
+  ]
+}
