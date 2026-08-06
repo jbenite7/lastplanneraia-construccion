@@ -15,6 +15,7 @@
 - **Contraste mínimo:** WCAG AA (≥ 4.5:1 en texto regular).
 - **Consistencia visual:** Cero hex sueltos, cero estilos inline o etiquetas `<style>` dentro de archivos de vistas en superficies migradas.
 - **Altura de controles:** Mínimo 44px para botones/inputs (excepción registrada de 28px exclusivamente en `/plan-compras`).
+  > **Nota posterior (2026-08-06, plan ya archivado):** esta línea quedó obsoleta el 2026-08-03. La excepción se amplió de `/plan-compras` a toda la familia de tablas desktop y el alto de fila/control bajó de `28px` a `24px` — el suelo real de WCAG 2.2 SC 2.5.8 (AA). Contrato vigente en `--ds-control-compact-min` y DESIGN.md §5 bis. No uses este plan como fuente de la métrica.
 
 ---
 

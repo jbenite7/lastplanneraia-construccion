@@ -743,7 +743,7 @@ Excel o Figma. Es lo que hace posible maximizar la densidad sin cruzar accesibil
 - **Usa** Montserrat para títulos, métricas y jerarquía de decisión; Inter para cuerpo, navegación, formularios, tablas y ayudas.
 - **Diseña y valida solo en desktop dark** de al menos 1180 px. Viewport canónico `1180x820`; secundario `1440x900`.
 - **Mantén** WCAG AA, foco visible de 4px, objetivos táctiles de `44px` y una alternativa `prefers-reduced-motion` en toda animación.
-  En superficies de datos densas el alto de control es `28px` por excepción registrada (§5 bis); el resto no se relaja.
+  En superficies de datos densas el alto de fila/control es `24px` — el mínimo real de WCAG 2.2 SC 2.5.8 (AA), por la excepción registrada al mínimo de 44 px que documenta §5 bis; el resto no se relaja.
 - **Reserva** el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.
 - **Envuelve** toda grilla en `.aia-grid-shell` / `.aia-table-shell`, consume los doce `--ds-table-*` y pide el peldaño de celda a `getCanonicalCellState()`, nunca escribas la clase `ds-cell-*` a mano.
 - **Expresa** el estado con superficie + borde + texto del tema destino; anima solo `transform` y `box-shadow`, nunca `color`/`background` (DS-023/DS-025).
