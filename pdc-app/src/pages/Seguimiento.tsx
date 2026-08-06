@@ -237,25 +237,40 @@ export default function Seguimiento() {
           )}
 
           <div className="pdc-seg-filtros">
-            <Selector
-              testid="pdc-venc-filtro-paso"
-              etiqueta="Filtrar por paso"
-              placeholder="Todos"
-              value={filtroPaso}
-              onChange={setFiltroPaso}
-              opciones={(venc?.pasos ?? []).map((p) => ({ valor: p.clave, etiqueta: p.paso }))}
-            />
-            <Selector
-              testid="pdc-venc-filtro-responsable"
-              etiqueta="Filtrar por responsable"
-              placeholder="Todos"
-              value={filtroResp}
-              onChange={setFiltroResp}
-              opciones={[
-                ...(usuarioId !== null ? [{ valor: String(usuarioId), etiqueta: 'Los míos' }] : []),
-                { valor: 'sin', etiqueta: 'Sin responsable' },
-              ]}
-            />
+            {/* Nunca un <label> envolviendo al Selector: un <label> sin htmlFor etiqueta a su primer
+                descendiente etiquetable, y el <button> del Selector lo es. Un clic en una opción del
+                popup —que vive dentro de ese mismo <label>— hace que el navegador reenvíe un click
+                sintético al botón *además* del que ya manejó React, y ese segundo click alterna
+                `abierto` justo después de que `onCerrar` lo puso en falso: el popup se reabre solo.
+                (Costó una migración entera diagnosticarlo — ver
+                .superpowers/sdd/2026-08-06-pdc-filtros-y-buscadores/diagnostico-vencimientos.md.)
+                El rótulo visible va en un <span> neutro; el nombre accesible lo pone `etiqueta` vía
+                aria-label, así que el <span> no necesita asociarse con el control. */}
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Paso</span>{' '}
+              <Selector
+                testid="pdc-venc-filtro-paso"
+                etiqueta="Filtrar por paso"
+                placeholder="Todos"
+                value={filtroPaso}
+                onChange={setFiltroPaso}
+                opciones={(venc?.pasos ?? []).map((p) => ({ valor: p.clave, etiqueta: p.paso }))}
+              />
+            </span>
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Responsable</span>{' '}
+              <Selector
+                testid="pdc-venc-filtro-responsable"
+                etiqueta="Filtrar por responsable"
+                placeholder="Todos"
+                value={filtroResp}
+                onChange={setFiltroResp}
+                opciones={[
+                  ...(usuarioId !== null ? [{ valor: String(usuarioId), etiqueta: 'Los míos' }] : []),
+                  { valor: 'sin', etiqueta: 'Sin responsable' },
+                ]}
+              />
+            </span>
           </div>
 
           {venc && (
@@ -482,24 +497,33 @@ export default function Seguimiento() {
           />{' '}
           Mis paquetes
         </label>
-        <Selector
-          etiqueta="Filtrar por frente"
-          placeholder="Todos"
-          value={filtros.frente}
-          onChange={(v) => setFiltros((f) => ({ ...f, frente: v }))}
-          opciones={frentes.map((n) => ({ valor: n, etiqueta: n }))}
-        />
-        <Selector
-          etiqueta="Filtrar por estado"
-          placeholder="Todos"
-          value={filtros.estado}
-          onChange={(v) => setFiltros((f) => ({ ...f, estado: v as FiltrosSeguimiento['estado'] }))}
-          opciones={[
-            { valor: 'sin_empezar', etiqueta: 'Sin empezar' },
-            { valor: 'en_curso', etiqueta: 'En curso' },
-            { valor: 'terminado', etiqueta: 'Terminado' },
-          ]}
-        />
+        {/* Nunca un <label> envolviendo al Selector: ver el comentario largo junto a los filtros de
+            Vencimientos más arriba en este archivo — un <label> sin htmlFor reenvía un click
+            sintético al <button> del Selector y reabre el popup justo tras cerrarlo. */}
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Frente</span>{' '}
+          <Selector
+            etiqueta="Filtrar por frente"
+            placeholder="Todos"
+            value={filtros.frente}
+            onChange={(v) => setFiltros((f) => ({ ...f, frente: v }))}
+            opciones={frentes.map((n) => ({ valor: n, etiqueta: n }))}
+          />
+        </span>
+        <span className="pdc-selector">
+          <span className="pdc-selector-rotulo">Estado</span>{' '}
+          <Selector
+            etiqueta="Filtrar por estado"
+            placeholder="Todos"
+            value={filtros.estado}
+            onChange={(v) => setFiltros((f) => ({ ...f, estado: v as FiltrosSeguimiento['estado'] }))}
+            opciones={[
+              { valor: 'sin_empezar', etiqueta: 'Sin empezar' },
+              { valor: 'en_curso', etiqueta: 'En curso' },
+              { valor: 'terminado', etiqueta: 'Terminado' },
+            ]}
+          />
+        </span>
         <label>
           <input
             type="checkbox" checked={filtros.soloAtrasados}

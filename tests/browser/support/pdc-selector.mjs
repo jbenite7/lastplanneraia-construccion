@@ -12,5 +12,8 @@ export async function elegirEnSelector(page, testid, etiquetaVisible) {
   const buscar = popup.locator('.pdc-lista-buscar');
   if (await buscar.count() > 0) await buscar.fill(etiquetaVisible);
   await popup.getByRole('option', { name: etiquetaVisible, exact: false }).first().click();
-  await popup.waitFor({ state: 'detached' });
+  // Timeout explícito: si el popup no cierra (p. ej. el bug del <label> que reenvía el click al
+  // botón y lo reabre — ver diagnostico-vencimientos.md), esto falla en 5s con un mensaje claro en
+  // vez de agotar los 120s del test entero disfrazado de sesión perdida.
+  await popup.waitFor({ state: 'detached', timeout: 5000 });
 }
