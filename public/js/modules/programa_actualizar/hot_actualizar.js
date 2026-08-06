@@ -205,18 +205,15 @@ window.HOTActualizarModule = (function() {
         var chipHtml = displayValue;
 
         if (value && value !== '*No Asociada*') {
-            chipHtml = `<div class="aia-table-chip" style="background: var(--aia-surface-active, rgba(181,82,17,0.08)); color: var(--aia-text-active, #8b4011); border: 1px solid var(--aia-border-active, rgba(181,82,17,0.2)); border-radius: var(--ds-radius-sm, 4px); padding: 2px 8px; font-size: 0.8rem; line-height: 1.3; white-space: normal; word-break: break-word;">${displayValue}</div>`;
+            chipHtml = `<div class="aia-chip aia-chip--success" style="white-space: normal; word-break: break-word;">${displayValue}</div>`;
         } else if (value === '*No Asociada*') {
-            chipHtml = `<div style="color: var(--aia-red-primary, #c90000); font-weight: 700; font-size: 0.8rem;"><i class="fas fa-exclamation-triangle"></i> PENDIENTE</div>`;
+            chipHtml = `<div class="aia-chip aia-chip--critical" style="font-weight: 700;"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> PENDIENTE</div>`;
         }
         td.innerHTML = chipHtml;
         td.className = "htMiddle htCenter force-wrap pg-cell-editable";
-
-        if (value === null || value === '' || value === '*No Asociada*') {
-            td.style.backgroundColor = 'var(--aia-red-soft-bg, rgba(235, 64, 52, 0.05))';
-        } else {
-            td.style.backgroundColor = 'var(--aia-green-soft-bg, rgba(26, 86, 51, 0.05))';
-        }
+        // El estado "sin asociar" se señala a nivel de fila (pg-row-unmapped, hook
+        // afterRenderer): un fondo por celda dejaba columnas de colores distintos.
+        td.style.backgroundColor = '';
     }
 
     /**
@@ -225,14 +222,8 @@ window.HOTActualizarModule = (function() {
     function ReadOnlyRenderer(instance, td, row, col, prop, value, cellProperties) {
         Handsontable.renderers.HtmlRenderer.apply(this, arguments);
         td.className = "htMiddle force-wrap pg-cell-readonly";
-
-        // Colorear toda la fila sutilmente si la actividad no está asociada
-        var isMapped = instance.getDataAtRowProp(row, 'programaAnteriorAsociar');
-        if (isMapped === null || isMapped === '' || isMapped === '*No Asociada*') {
-            td.style.backgroundColor = 'var(--aia-orange-soft-bg, rgba(255,83,51,0.05))';
-        } else {
-            td.style.backgroundColor = 'var(--ds-active-surface, #f8fafc)'; // Color por defecto readonly
-        }
+        // El tinte de fila sin asociar lo pone pg-row-unmapped (hook afterRenderer).
+        td.style.backgroundColor = '';
     }
 
     /**
@@ -644,6 +635,13 @@ window.HOTActualizarModule = (function() {
 
         var hotConfig = {
             data: data,
+            // Señal de fila sin asociar: una sola clase en TODAS las celdas de la fila,
+            // para que el fondo sea uniforme columna a columna (el tinte vive en
+            // programa-general-actualizar.css como token del design system).
+            afterRenderer: function(td, row, col, prop, value, cellProperties) {
+                var mapped = this.getDataAtRowProp(row, 'programaAnteriorAsociar');
+                td.classList.toggle('pg-row-unmapped', mapped === null || mapped === '' || mapped === '*No Asociada*');
+            },
             rowHeaders: false,
             colHeaders: [
                 "Consecutivo",
@@ -998,14 +996,14 @@ window.HOTActualizarModule = (function() {
             parts.push('<span style="font-weight: 500;">Id: ' + escapeHtml(String(id)) + '</span>');
         }
         if (fechaInicio) {
-            parts.push('<span><i class="fas fa-calendar-alt" style="font-size: 0.7rem; opacity: 0.75;"></i> ' + escapeHtml(fechaInicio) + '</span>');
+            parts.push('<span><i class="fas fa-calendar-alt" style="font-size: var(--ds-type-size-xs); opacity: 0.75;"></i> ' + escapeHtml(fechaInicio) + '</span>');
         }
         if (parts.length === 0) {
             return '';
         }
         return '<div class="match-candidate-meta" ' +
-            'style="font-family: var(--aia-font-family-body, \'Inter\', sans-serif); font-size: 0.72rem; font-weight: 400; ' +
-            'color: var(--aia-green-primary, #1a5633); margin-bottom: 4px; display: inline-flex; align-items: center; ' +
+            'style="font-family: var(--aia-font-family-body, \'Inter\', sans-serif); font-size: var(--ds-type-size-xs); font-weight: 400; ' +
+            'color: var(--aia-green-primary); margin-bottom: 4px; display: inline-flex; align-items: center; ' +
             'gap: 5px; opacity: 0.85; letter-spacing: 0.01em;">' +
             parts.join('<span style="opacity: 0.4; margin: 0 3px;">&middot;</span>') +
             '</div>';
@@ -1179,8 +1177,8 @@ window.HOTActualizarModule = (function() {
 
         if (mediumItems.length === 0) {
             $reviewList.html(
-                '<div class="text-center py-4" style="color: var(--aia-text-secondary, #4a4a4d);">' +
-                    '<i class="fas fa-check-circle fa-2x mb-2" style="color: var(--aia-green-primary, #1a5633);"></i>' +
+                '<div class="text-center py-4" style="color: var(--aia-text-secondary);">' +
+                    '<i class="fas fa-check-circle fa-2x mb-2" style="color: var(--aia-green-primary);"></i>' +
                     '<p>No hay actividades con confianza media para revisar.</p>' +
                 '</div>'
             );
@@ -1243,7 +1241,7 @@ window.HOTActualizarModule = (function() {
                 confirmButtonText: 'Sí, salir',
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: 'var(--aia-red-primary, #dc3545)',
-                cancelButtonColor: 'var(--aia-green-primary, #1a5633)'
+                cancelButtonColor: 'var(--aia-green-primary)'
             }).then(function(result) {
                 doClose(result.isConfirmed);
             });
@@ -1292,8 +1290,8 @@ window.HOTActualizarModule = (function() {
 
         if (pendingItems.length === 0) {
             $pendingList.html(
-                '<div class="text-center py-3" style="color: var(--aia-text-secondary, #4a4a4d);">' +
-                    '<i class="fas fa-check-circle" style="color: var(--aia-green-primary, #1a5633);"></i> ' +
+                '<div class="text-center py-3" style="color: var(--aia-text-secondary);">' +
+                    '<i class="fas fa-check-circle" style="color: var(--aia-green-primary);"></i> ' +
                     'Todas las actividades han sido procesadas.' +
                 '</div>'
             );
@@ -1310,7 +1308,7 @@ window.HOTActualizarModule = (function() {
 
         if (processedItems.length === 0) {
             $processedList.html(
-                '<div class="text-center py-3" style="color: var(--aia-text-secondary, #4a4a4d);">' +
+                '<div class="text-center py-3" style="color: var(--aia-text-secondary);">' +
                     '<i class="fas fa-inbox"></i> ' +
                     'Aún no has procesado ninguna actividad.' +
                 '</div>'
@@ -1353,7 +1351,7 @@ window.HOTActualizarModule = (function() {
             label = '<i class="fas fa-history" style="color: var(--aia-text-muted, #6c757d);"></i> ' +
                 'Asociación previa: <strong>' + escapeHtml(decision.candidateName || '—') + '</strong>';
         } else if (isAccepted) {
-            label = '<i class="fas fa-check-circle" style="color: var(--aia-green-primary, #1a5633);"></i> ' +
+            label = '<i class="fas fa-check-circle" style="color: var(--aia-green-primary);"></i> ' +
                 'Asociada con: <strong>' + escapeHtml(decision.candidateName) + '</strong>';
         } else {
             label = '<i class="fas fa-times-circle"></i> Marcada como actividad nueva';

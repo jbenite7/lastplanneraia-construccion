@@ -20,8 +20,11 @@
     /* Velos de celda. Misma receta que el piloto
        (public/css/programa-general.css): un tinte del token de estado sobre
        transparente, no un rgba suelto. */
-    --pga-cell-editable-overlay: color-mix(in srgb, var(--ds-color-state-success-text) 6%, transparent);
-    --pga-cell-readonly-overlay: color-mix(in srgb, var(--ds-color-text-tertiary) 8%, transparent);
+    /* 2026-08-06: overlays a transparent a pedido del usuario — los tintes por celda
+       (verde editable / gris readonly) rayaban las columnas y rompían la uniformidad
+       de fondo por fila. La editabilidad queda señalada por el cursor y el editor. */
+    --pga-cell-editable-overlay: transparent;
+    --pga-cell-readonly-overlay: transparent;
     /* Acentos de confianza del emparejado. Los tokens `--ds-color-state-*-text`
        son los tonos profundos del par semantico y sobre penumbra quedan casi
        negros; se suben en luminosidad en OKLCH para hacerlos visibles sin
@@ -203,6 +206,13 @@
   .pg-page #hot-container td.pg-cell-readonly.pg-state-terminada,
   .pg-page #hot-container td.pg-cell-readonly.pg-state-sin-datos {
     cursor: not-allowed;
+  }
+
+  /* Fila sin actividad asociada: el hook afterRenderer de hot_actualizar.js pone
+     pg-row-unmapped en TODAS las celdas de la fila, de modo que el tinte es uniforme
+     columna a columna (antes cada renderer pintaba solo su celda y con hue distinto). */
+  .pg-page #hot-container td.pg-row-unmapped {
+    background: var(--ds-state-tint-amber);
   }
 
   /* Niveles de confianza del emparejado, sobre la grilla. */

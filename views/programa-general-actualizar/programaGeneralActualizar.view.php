@@ -11,8 +11,8 @@
 	<link rel="stylesheet" href="/css/programa-general-actualizar.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/programa-general-actualizar.css') ?: 'pga1')) ?>" />
 	<script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>
 
-	<!-- Estilos Core Hot -->
-	<link rel="stylesheet" href="/public/vendor/handsontable/handsontable.full.min.css" />
+	<!-- Estilos Core Hot: el vendor de Handsontable llega vía attach-handsontable.css en
+	     layer(vendor); un link crudo aquí queda sin capa y pisa el tema oscuro del adapter. -->
 	<!-- handsontable-module.css llega vía aia-design-system.css (layer vendor); el link crudo duplicaba la cascada. -->
 
 	<!-- Google Fonts: Montserrat & Inter -->
@@ -427,7 +427,7 @@
 	<script src="/public/js/modules/programa_actualizar/decision_logger.js?v=20260622"></script>
 
 	<!-- Módulos de Handsontable -->
-	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260618b"></script>
+	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260806b"></script>
 
 	<script>
 		/* Funciones Legacy requeridas a nivel global */
