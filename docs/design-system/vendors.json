@@ -190,10 +190,12 @@
         "3.2"
       ],
       "delivery": [
-        "cdn"
+        "local-css"
       ],
       "classification": "inventory",
-      "assets": [],
+      "assets": [
+        "public/vendor/admin-lte/css/adminlte.min.css"
+      ],
       "adapterMaturity": null
     },
     {

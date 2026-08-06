@@ -206,7 +206,12 @@ test('un CORE_VENDOR sin declarar no dispara el gate espejo', () => {
 test('las huellas de vendor cubren asset local y CDN', () => {
   const footprints = vendorViewFootprints(root);
   assert.ok(footprints.toastr.includes('/vendor/toastr.min.css'));
-  assert.deepEqual(footprints.adminlte, ['admin-lte@']);
+  // adminlte tiene las dos: la huella de CDN se conserva aunque ninguna vista
+  // la use ya (DS-006, 2026-08-06) para cazar una reintroducción del <link>.
+  assert.deepEqual(
+    footprints.adminlte,
+    ['admin-lte@', '/vendor/admin-lte/css/adminlte.min.css'],
+  );
 });
 
 // Contraejemplo medido: mover a VIEW_OWNED_VENDORS un vendor que SÍ tiene
@@ -243,7 +248,7 @@ test('un VIEW_OWNED_VENDORS que ninguna vista enlaza falla', () => {
   assert.match(failures[0], /^view-owned-without-link: toastr/);
 });
 
-test('los VIEW_OWNED_VENDORS reales (toastr, tom-select, adminlte) cumplen el criterio', () => {
+test('los VIEW_OWNED_VENDORS reales (toastr) cumplen el criterio', () => {
   assert.deepEqual(manifestVendorFailures({ root }), []);
 });
 

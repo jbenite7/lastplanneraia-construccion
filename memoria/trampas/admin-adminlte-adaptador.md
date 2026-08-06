@@ -5,17 +5,23 @@ fecha: 2026-07-29
 areas: [design-system, admin]
 fuente: memoria-claude
 origen: lps-aia-admin-adminlte-adaptador
-resumen: admin/ tiene entrypoint CSS propio porque VIEW_OWNED_VENDORS prohíbe un attach-adminlte; y para ganarle a un !important del vendor hay que capar en @layer reset, no en components
+resumen: admin/ tiene entrypoint CSS propio por aislamiento de PHP (el veto de VIEW_OWNED_VENDORS cayó el 2026-08-06); para ganarle a un !important del vendor hay que capar en @layer reset, no en components
 ---
 F4 del goal dark-mode-todos-los-modulos (2026-07-29) dejó `admin/` en dark con dos piezas
 nuevas: `admin/public/css/admin-entrypoint.css` (+ `admin-auth-entrypoint.css`) y
 `public/css/design-system/adapters/admin-lte.css`.
 
-**Por qué entrypoint propio y no `renderForModule('admin')`:**
-`DesignSystemHeadComponent::VIEW_OWNED_VENDORS` declara `adminlte` con un candado explícito —
-ningún miembro de esa lista puede tener `entrypoints/attach-<vendor>.css`. Crearlo rompe
-`scripts/design-system-entrypoint-partition.mjs`. El aislamiento que AGENTS.md exige para
-`admin/` es de PHP, no de CSS: tokens, tema y adaptadores sí se comparten.
+**Por qué entrypoint propio y no `renderForModule('admin')`:** el aislamiento que AGENTS.md exige
+para `admin/` es de PHP, no de CSS: tokens, tema y adaptadores sí se comparten, pero el emisor
+canónico no.
+
+**Corregido el 2026-08-06 —** en su día esta nota daba una segunda razón que ya no vale:
+`DesignSystemHeadComponent::VIEW_OWNED_VENDORS` declaraba `adminlte`, y el candado
+`view-owned-with-attachment` de `scripts/design-system-entrypoint-partition.mjs` prohíbe a esa lista
+tener `entrypoints/attach-<vendor>.css`. **Ese `attach-adminlte.css` ya existe**: se creó para capar
+el vendor en las tres vistas de `views/auth/`, y `adminlte` salió de `VIEW_OWNED_VENDORS` a
+`VENDOR_ATTACHMENTS` + `STANDALONE_ATTACHMENTS`. El candado no era un veto al patrón, sino a tenerlo
+a la vez que la vista enlaza la hoja. Ver [[auth-capado-y-sin-red-externa]].
 
 **La trampa de capas que decide todo el adaptador:** capar el vendor con
 `@import ... layer(vendor)` basta para ganarle en declaraciones normales desde `components`.

@@ -8,12 +8,6 @@
     <script src="/js/tablet-viewport-scale.js?v=1.2"></script>
     <title>Iniciar Sesión | Last Planner AIA</title>
 
-    <!-- Google Fonts: Montserrat & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- AdminLTE / Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('auth') ?>
     <link rel="stylesheet" href="/css/login-brand-unified.css?v=<?= filemtime(__DIR__ . '/../../public/css/login-brand-unified.css') ?>">
 </head>
@@ -92,8 +86,16 @@
     </main>
 
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <?php /* jQuery local: la copia de `public/vendor/` es la MISMA version 3.6.0 que
+       servia cdnjs, asi que la sustitucion es 1:1. La necesitan el `$(document).ready`
+       de mas abajo y `AiaAlertInterceptor.js`.
+
+       El bundle de Bootstrap 4.6.1 que venia por CDN se retiro el 2026-08-06 en vez de
+       sustituirse: era carga muerta. Medido en las tres vistas de auth, no hay un solo
+       `data-toggle`, `data-dismiss`, modal, tooltip, popover ni collapse; el unico uso de
+       `$()` es jQuery puro, y los dialogos los pinta SweetAlert2. El CSS de Bootstrap si
+       hace falta y ya viaja capado dentro de `core.css`. */ ?>
+    <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/sweetalert2.all.min.js?v=11.4.24"></script>
     <script src="/public/js/core/AiaAlertInterceptor.js?v=20260324a"></script>
     <script src="/public/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>

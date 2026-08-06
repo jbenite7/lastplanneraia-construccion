@@ -22,6 +22,13 @@
     line-height: var(--ds-type-line-body);
   }
 
+  /* Este adaptador no necesita ni un `!important`. El `border-radius` lo tuvo
+     hasta el 2026-08-06: las vistas de `views/auth/` cargaban AdminLTE 3.2 desde
+     CDN con un <link> SIN capa, y su reboot de Bootstrap declara
+     `button { border-radius: 0 }`. Una hoja sin capa gana a TODAS las capas en
+     declaraciones normales (DS-006), asi que el radio salia en 0 en el dialogo
+     de sesion expirada. Capado el vendor en `layer(vendor)` desde
+     `entrypoints/attach-adminlte.css`, la declaracion normal basta. */
   :where(.aia-glass-confirm-btn, .aia-glass-deny-btn, .aia-glass-cancel-btn) {
     min-height: var(--ds-density-touch-control);
     border-radius: var(--ds-radius-control);

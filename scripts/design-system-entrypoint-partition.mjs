@@ -28,6 +28,12 @@ export const ENTRYPOINT_FILES = {
 export const STANDALONE_ATTACHMENTS = {
   datatables: 'public/css/design-system/vendor-datatables-legacy.css',
   'tom-select': 'public/css/design-system/adapters/tom-select.css',
+  // `adminlte` se sumó el 2026-08-06 al capar el vendor de `views/auth/`
+  // (DS-006, caso `6-adminlte-login`). Vive en `entrypoints/` y se llama
+  // `attach-*` como los miembros de la partición, pero NO lo es: AdminLTE nunca
+  // estuvo dentro de `aia-design-system.css` y meterlo ahí lo cargaría en las
+  // ~14 vistas que siguen en `render()`.
+  adminlte: 'public/css/design-system/entrypoints/attach-adminlte.css',
 };
 
 // Import propio de la partición, ausente del agregador por diseño.

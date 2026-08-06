@@ -1,0 +1,32 @@
+/* public/css/design-system/entrypoints/attach-adminlte.css
+ *
+ * Adjunto de AdminLTE para las tres vistas de `views/auth/`.
+ *
+ * POR QUE EXISTE (DS-006, caso 6-adminlte-login): hasta el 2026-08-06 esas tres
+ * vistas traian `<link rel="stylesheet" href="…admin-lte@3.2/…/adminlte.min.css">`
+ * por CDN. Una hoja de autor que entra SIN capa gana a TODAS las capas en
+ * declaraciones normales, asi que AdminLTE derrotaba al design system en toda
+ * la superficie de auth: medido, su `button { border-radius: 0 }` dejaba en
+ * radio 0 el boton del dialogo de sesion caducada, y `.h1..h6 { color: inherit }`
+ * ganaba al adaptador de SweetAlert2.
+ *
+ * QUE HACE: entrega la copia LOCAL del vendor dentro de `layer(vendor)`, el
+ * mismo patron que `admin/public/css/admin-entrypoint.css` usa para el panel.
+ * Capado el vendor, cualquier capa posterior —`base`, `components`,
+ * `module`— le gana con declaraciones normales y sin `!important`.
+ *
+ * POR QUE NO ES MIEMBRO DE LA PARTICION: su CSS nunca estuvo dentro de
+ * `public/css/aia-design-system.css`, igual que DataTables y Tom Select. Por eso
+ * se declara en `STANDALONE_ATTACHMENTS` de
+ * `scripts/design-system-entrypoint-partition.mjs` y no en `ENTRYPOINT_FILES.attachments`:
+ * exigirle que sume al agregador daria `extra-in-partition` sobre algo correcto
+ * por diseno, y meterlo en el agregador lo cargaria en las ~14 vistas que siguen
+ * en `render()`, un cambio visual global que nadie pidio.
+ *
+ * SIN ADAPTADOR PROPIO: `public/css/design-system/adapters/admin-lte.css` esta
+ * escrito para el armazon del panel (`.wrapper`, `.content-wrapper`, sidebar) y
+ * no aplica aqui. Las superficies de auth ya estan tematizadas por
+ * `core.css` + `public/css/login-brand-unified.css`.
+ */
+
+@import url("/public/vendor/admin-lte/css/adminlte.min.css") layer(vendor);

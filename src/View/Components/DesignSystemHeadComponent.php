@@ -43,9 +43,8 @@ final class DesignSystemHeadComponent
      * Ni el agregador ni la partición los importan: `programa_general.view.php`
      * pone su `<link>` a `/public/vendor/toastr.min.css`,
      * `programacion_intermedia.view.php` el suyo a
-     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`, y las tres
-     * vistas de `views/auth/` el suyo a `admin-lte@3.2/dist/css/adminlte.min.css`
-     * por CDN. Medido: no hay una sola regla `toastr` ni `adminlte` en
+     * `/public/vendor/tom-select/tom-select.bootstrap4.min.css`. Medido: no hay
+     * una sola regla `toastr` en
      * `public/css/`, y de Tom Select solo el `border-radius` de
      * `.ts-control`/`.ts-dropdown` en `theme-overrides.css`, que ya viaja dentro
      * de `core.css`.
@@ -68,8 +67,17 @@ final class DesignSystemHeadComponent
      * Sin ese candado, mover aquí un vendor que sí tiene adjunto (select2, por
      * ejemplo) dejaba los tres gates en verde mientras `renderForModule()`
      * perdía su adaptador oscuro.
+     *
+     * `adminlte` SALIO de esta lista el 2026-08-06 (DS-006, caso
+     * `6-adminlte-login`). Era el contraejemplo de la categoria: el `<link>` de
+     * las tres vistas de auth entregaba el vendor SIN capa, y una hoja sin capa
+     * gana a TODAS las capas en declaraciones normales, asi que el design system
+     * no pintaba en toda la superficie. Ahora tiene adjunto propio
+     * —`entrypoints/attach-adminlte.css`, copia local dentro de `layer(vendor)`—
+     * y por tanto ya no puede estar aqui: el candado `view-owned-with-attachment`
+     * lo prohibe, que es exactamente lo que se quiere.
      */
-    public const VIEW_OWNED_VENDORS = ['toastr', 'adminlte'];
+    public const VIEW_OWNED_VENDORS = ['toastr'];
 
     /**
      * Vendors sin CSS: la vista carga su `<script>` y no hay hoja que emitir.
@@ -100,8 +108,15 @@ final class DesignSystemHeadComponent
      * del agregador. Meterlo en CORE_VENDORS sería mentir —el core no lleva
      * DataTables— y dejaría a /programacion-semanal/{cnc,cic,cnp} sin la única
      * hoja que estiliza sus tablas.
+     *
+     * `adminlte` es el segundo caso fuera de la particion, y por la misma razon:
+     * su CSS nunca estuvo en el agregador. Va PRIMERO porque es el unico adjunto
+     * que entrega un framework completo (AdminLTE 3.2 trae Bootstrap 4.6.1
+     * dentro): dentro de `layer(vendor)` gana el ultimo declarado, y ninguno de
+     * los otros adjuntos debe perder contra el.
      */
     public const VENDOR_ATTACHMENTS = [
+        'adminlte' => '/css/design-system/entrypoints/attach-adminlte.css',
         'jquery-ui' => '/css/design-system/entrypoints/attach-jquery-ui.css',
         'anychart' => '/css/design-system/entrypoints/attach-anychart.css',
         'select2' => '/css/design-system/entrypoints/attach-select2.css',
