@@ -29,10 +29,27 @@ for (const viewport of VIEWPORTS) {
 
       const state = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        // Piso de objetivo: 24px, WCAG 2.2 SC 2.5.8 (AA) — no 44px, que es SC 2.5.5 (AAA) y
+        // heuristica tactil. DESIGN.md §5 bis declara la excepcion para la familia de tablas
+        // desktop, que nombra a `/programa-general`: sin equivalente movil por contrato
+        // (AGENTS.md §Routing: desktop >=1180px, dark), el riesgo que previenen los 44px no
+        // existe aqui, «pero el suelo de 24x24px si aplica y no se cruza». El CSS ya se movio a
+        // ese suelo el 2026-08-03 (T-5): `toolbar-controls.css` da a estos chips
+        // `min-height: var(--ds-control-compact-min)` = 24px (`tokens.css:440`). Esta asercion
+        // se quedo en 44 y por eso abortaba la corrida ANTES de axe — medido 2026-08-05: los 7
+        // chips miden 34px en 1180x820 y en 1440x900, o sea 10px POR ENCIMA del suelo real.
+        // Bajar el numero aqui no relaja nada: alinea el test con el contrato escrito y devuelve
+        // la ejecucion de axe, que es la guardia que de verdad faltaba.
         filtersVisible: [...document.querySelectorAll('#pgLegend .pg-filter-chip')]
-          .every((item) => item.getBoundingClientRect().height >= 44),
-        filterHeights: [...document.querySelectorAll('#pgLegend .pg-filter-chip')]
-          .map((item) => Math.round(item.getBoundingClientRect().height)),
+          .every((item) => {
+            const box = item.getBoundingClientRect();
+            return box.height >= 24 && box.width >= 24;
+          }),
+        filterBoxes: [...document.querySelectorAll('#pgLegend .pg-filter-chip')]
+          .map((item) => {
+            const box = item.getBoundingClientRect();
+            return `${Math.round(box.width)}x${Math.round(box.height)}`;
+          }),
         legendContained: (() => {
           const legend = document.querySelector('#pgLegend');
           if (!legend) return false;
