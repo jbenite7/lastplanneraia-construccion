@@ -83,7 +83,6 @@
           "uniqueItems": true,
           "items": {
             "enum": [
-              "390x844",
               "1180x820",
               "1440x900"
             ]

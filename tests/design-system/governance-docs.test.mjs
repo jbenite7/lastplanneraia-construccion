@@ -24,7 +24,7 @@ test('module migration contract prevents local primitives and broad rollout', as
   const source = await read('module-migration.md');
   requiresAll(source, [
     /un módulo por sprint/i, /componentes canónicos/i, /CSS local/i,
-    /dark/i, /390x844/, /1180x820/, /1440x900/,
+    /dark/i, /1180x820/, /1440x900/,
     /axe/i, /persistencia/i, /restauración/i,
   ]);
 });

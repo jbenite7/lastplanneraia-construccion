@@ -160,20 +160,13 @@ for (const approval of approvals?.approvals || []) {
   const candidate = family?.candidates?.find((item) => item.id === approval.candidateId);
   if (!candidate) failures.push(`family approval: unknown candidate ${key}`);
   if (!approval.evidence?.length) failures.push(`${key}: approval requires evidence`);
-  if (approval.scope === 'desktop-dark') {
-    if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
-      failures.push(`${key}: desktop-dark scoped approval must cover only dark`);
-    }
-    if (JSON.stringify(approval.viewports) !== JSON.stringify(['1180x820', '1440x900'])) {
-      failures.push(`${key}: desktop-dark scoped approval must cover the canonical desktop viewports`);
-    }
-  } else {
-    if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
-      failures.push(`${key}: approval must cover dark`);
-    }
-    if (JSON.stringify(approval.viewports) !== JSON.stringify(['390x844', '1180x820', '1440x900'])) {
-      failures.push(`${key}: approval must cover all viewports`);
-    }
+  // Toda aprobacion cubre el mismo alcance desktop dark: retirado 390x844, la
+  // distincion que introducia `scope: desktop-dark` dejo de tener efecto.
+  if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
+    failures.push(`${key}: approval must cover dark`);
+  }
+  if (JSON.stringify(approval.viewports) !== JSON.stringify(['1180x820', '1440x900'])) {
+    failures.push(`${key}: approval must cover the canonical desktop viewports`);
   }
 }
 for (const family of homologation?.families || []) {
@@ -336,14 +329,15 @@ for (const manifest of manifests) {
   }
 }
 
-const requiredViewportKeys = new Set(['390x844', '1180x820', '1440x900']);
-const laboratoryViewportKeys = new Set(['1180x820', '1440x900']);
+// Viewports soportados: solo desktop dark (AGENTS.md Routing). 390x844 se retiro
+// del sistema de diseno (DS-031), igual que el tema unico retirado en DS-030.
+const supportedViewportKeys = new Set(['1180x820', '1440x900']);
 const scenarioKey = (scenario) => `${scenario.theme}/${scenario.viewport.width}x${scenario.viewport.height}`;
 for (const familyId of governedFamilies) {
   const familyScenarios = (laboratoryManifest?.scenarios || [])
     .filter((scenario) => scenario.family === familyId);
   const keys = new Set(familyScenarios.map(scenarioKey));
-  for (const viewport of laboratoryViewportKeys) {
+  for (const viewport of supportedViewportKeys) {
     if (!keys.has(`dark/${viewport}`)) {
       failures.push(`laboratory: missing scenario ${familyId}/dark/${viewport}`);
     }
@@ -351,7 +345,7 @@ for (const familyId of governedFamilies) {
 }
 const pilotScenarioKeys = new Set((programManifest?.scenarios || []).map(scenarioKey));
 for (const theme of ['dark']) {
-  for (const viewport of requiredViewportKeys) {
+  for (const viewport of supportedViewportKeys) {
     if (!pilotScenarioKeys.has(`${theme}/${viewport}`)) {
       failures.push(`programa-general: missing scenario ${theme}/${viewport}`);
     }

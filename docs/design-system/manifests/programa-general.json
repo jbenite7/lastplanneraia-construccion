@@ -99,22 +99,6 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
       "sha256": "35e817e4d17ac48db3106470b1ce2fc7f74b0a0b5d7bdbe336591f28966095f8"
-    },
-    {
-      "id": "programa-general-dark-390x844",
-      "family": null,
-      "route": "/programa-general",
-      "fixture": "sanitized-pilot-v1",
-      "theme": "dark",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "density": "touch",
-      "state": "deterministic",
-      "role": "A",
-      "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-390x844.png",
-      "sha256": "0c0fbd544d507d9595dede5a7fb11ee76bb8b66938a239ada589e5d9cfc8373a"
     }
   ]
 }

@@ -72,7 +72,7 @@ test('homologation covers every governed visual family', () => {
     assert.ok(family.description?.length >= 24, `${family.id} needs a description`);
     assert.ok(family.candidates.length >= 1, family.id);
     assert.deepEqual(family.themes, ['dark'], family.id);
-    assert.deepEqual(family.viewports, ['390x844', '1180x820', '1440x900'], family.id);
+    assert.deepEqual(family.viewports, ['1180x820', '1440x900'], family.id);
   }
 });
 
@@ -255,7 +255,7 @@ test('manifests declare the complete deterministic visual matrix', () => {
     path.join(root, 'docs/design-system/manifests/programa-general.json'), 'utf8',
   ));
   assert.equal(laboratory.scenarios.length, 20);
-  assert.equal(pilot.scenarios.length, 3);
+  assert.equal(pilot.scenarios.length, 2);
 });
 
 test('golden checksums fail closed when a declared baseline changes', () => {
@@ -279,13 +279,13 @@ test('manifest sources and scenario matrices fail closed when stale', () => {
 
     const pilotFile = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const pilot = JSON.parse(readFileSync(pilotFile, 'utf8'));
-    pilot.scenarios = pilot.scenarios.filter(({ id }) => id !== 'programa-general-dark-390x844');
+    pilot.scenarios = pilot.scenarios.filter(({ id }) => id !== 'programa-general-dark-1440x900');
     writeFileSync(pilotFile, `${JSON.stringify(pilot, null, 2)}\n`);
   });
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /laboratory: missing source views\/design-system\/missing-specimen\.php/);
-  assert.match(result.stderr, /programa-general: missing scenario dark\/390x844/);
+  assert.match(result.stderr, /programa-general: missing scenario dark\/1440x900/);
 });
 
 test('manifest test references must exist', () => {

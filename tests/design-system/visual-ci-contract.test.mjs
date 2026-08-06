@@ -6,8 +6,9 @@ import { parseJobSteps } from './workflow-contract-parser.mjs';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
-const requiredViewports = ['390x844', '1180x820', '1440x900'];
-const laboratoryViewports = ['1180x820', '1440x900'];
+// Piloto y laboratorio comparten la misma matriz desde que se retiro 390x844.
+const requiredViewports = ['1180x820', '1440x900'];
+const laboratoryViewports = requiredViewports;
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
@@ -62,7 +63,7 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
   ]);
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
-  assert.equal(manifest.scenarios.length, 3);
+  assert.equal(manifest.scenarios.length, 2);
   assertDesktopDarkPilotMatrix(manifest.scenarios, 1);
 });
 
