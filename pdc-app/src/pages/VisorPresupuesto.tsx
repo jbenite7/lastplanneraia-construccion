@@ -17,6 +17,7 @@ import type { ArbolPresupuesto, VersionPresupuesto } from '../lib/types'
 import { etiquetaVersion } from '../lib/versionLabel'
 import { contarInsumos, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { Selector } from '../components/Selector'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -193,21 +194,23 @@ export default function VisorPresupuesto() {
           )}
         </div>
         {versiones.length > 0 && (
-          <label className="pdc-selector">
-            Versión{' '}
-            <select
-              data-testid="pdc-visor-version"
-              value={versionId ?? ''}
-              onChange={(e) => setVersionId(e.target.value === '' ? null : Number(e.target.value))}
-            >
-              <option value="">Activa</option>
-              {versiones.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {etiquetaVersion(v)}{v.activa ? ' (activa)' : ''}
-                </option>
-              ))}
-            </select>
-          </label>
+          // Nunca un <label> envolviendo al Selector: reenvía un click sintético al <button> del
+          // Selector y reabre el popup justo tras cerrarlo (ver el comentario largo en
+          // Seguimiento.tsx, junto a los filtros de Vencimientos).
+          <span className="pdc-selector">
+            <span className="pdc-selector-rotulo">Versión</span>{' '}
+            <Selector
+              testid="pdc-visor-version"
+              etiqueta="Versión del presupuesto"
+              placeholder="Activa"
+              value={String(versionId ?? '')}
+              onChange={(v) => setVersionId(v === '' ? null : Number(v))}
+              opciones={versiones.map((v) => ({
+                valor: String(v.id),
+                etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}`,
+              }))}
+            />
+          </span>
         )}
       </header>
 
@@ -229,34 +232,40 @@ export default function VisorPresupuesto() {
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
             />
-            <label className="pdc-selector">
-              Tipo insumo{' '}
-              <select data-testid="pdc-visor-tipo" value={tipoInsumo} onChange={(e) => setTipoInsumo(e.target.value)}>
-                <option value="">Todos</option>
-                {tiposInsumo.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </label>
-            <label className="pdc-selector">
-              Unidad{' '}
-              <select data-testid="pdc-visor-unidad" value={unidad} onChange={(e) => setUnidad(e.target.value)}>
-                <option value="">Todas</option>
-                {unidades.map((u) => <option key={u} value={u}>{u}</option>)}
-              </select>
-            </label>
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Tipo insumo</span>{' '}
+              <Selector
+                testid="pdc-visor-tipo"
+                etiqueta="Filtrar por tipo de insumo"
+                placeholder="Todos"
+                value={tipoInsumo}
+                onChange={setTipoInsumo}
+                opciones={tiposInsumo.map((t) => ({ valor: t, etiqueta: t }))}
+              />
+            </span>
+            <span className="pdc-selector">
+              <span className="pdc-selector-rotulo">Unidad</span>{' '}
+              <Selector
+                testid="pdc-visor-unidad"
+                etiqueta="Filtrar por unidad"
+                placeholder="Todas"
+                value={unidad}
+                onChange={setUnidad}
+                opciones={unidades.map((u) => ({ valor: u, etiqueta: u }))}
+              />
+            </span>
             {/* El nivel solo tiene sentido con jerarquía: en modo tabla no hay ramas que abrir. */}
             {!plano && (
-              <label className="pdc-selector">
-                Ver hasta{' '}
-                <select
-                  data-testid="pdc-visor-nivel"
-                  value={nivel}
-                  onChange={(e) => setNivel(Number(e.target.value))}
-                >
-                  {NIVELES_PRESUPUESTO.map((n) => (
-                    <option key={n.valor} value={n.valor}>{n.etiqueta}</option>
-                  ))}
-                </select>
-              </label>
+              <span className="pdc-selector">
+                <span className="pdc-selector-rotulo">Ver hasta</span>{' '}
+                <Selector
+                  testid="pdc-visor-nivel"
+                  etiqueta="Ver hasta el nivel"
+                  value={String(nivel)}
+                  onChange={(v) => setNivel(Number(v))}
+                  opciones={NIVELES_PRESUPUESTO.map((n) => ({ valor: String(n.valor), etiqueta: n.etiqueta }))}
+                />
+              </span>
             )}
             <label className="pdc-visor-modo">
               <input

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PDC_SANDBOX_PROJECT, usarSandboxPdc } from './support/pdc-sandbox.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 const project = PDC_SANDBOX_PROJECT;
 // Dos fixtures, no uno importado dos veces: el versionamiento inteligente NO crea una versión nueva
@@ -46,15 +47,15 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     await expect(arbol.locator('.ag-cell', { hasText: '$ 567.000' }).first()).toBeVisible();
 
     // El selector de nivel (f20) recorta la profundidad: con «Capítulo» no se ve nada por debajo.
-    const nivel = page.locator('[data-testid="pdc-visor-nivel"]');
-    await expect(nivel).toBeVisible();
-    await nivel.selectOption({ label: 'Capítulo' });
+    // Ya no es un <select> nativo, así que se elige por la etiqueta visible en su popup.
+    await expect(page.locator('[data-testid="pdc-visor-nivel"]')).toBeVisible();
+    await elegirEnSelector(page, 'pdc-visor-nivel', 'Capítulo');
     await expect(arbol.locator('.ag-cell', { hasText: 'CAMPAMENTO 18M2' })).toHaveCount(0);
     await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' })).toHaveCount(0);
     await expect(cap).toBeVisible();
 
     // Y volver a «Insumo» lo devuelve todo, sin tener que abrir carpeta por carpeta.
-    await nivel.selectOption({ label: 'Insumo' });
+    await elegirEnSelector(page, 'pdc-visor-nivel', 'Insumo');
     await expect(arbol.locator('.ag-cell', { hasText: 'ZZTEST TEJA DE ZINC' }).first()).toBeVisible();
 
     // El clic manual sigue mandando por encima del nivel sembrado: colapsar el capítulo esconde
@@ -67,10 +68,20 @@ test('visor: árbol expandible del presupuesto activo con insumos y totales', as
     const selectorVersion = page.locator('[data-testid="pdc-visor-version"]');
     await expect(selectorVersion).toBeVisible();
 
-    // Cambio de versión: seleccionar una histórica re-renderiza el árbol.
-    const opciones = await selectorVersion.locator('option').count();
-    expect(opciones).toBeGreaterThanOrEqual(2);
-    await selectorVersion.selectOption({ index: 1 }); // selección explícita por versionId (la más reciente; el camino histórico lo cubre el test PHP)
+    // Cambio de versión: seleccionar una histórica re-renderiza el árbol. El `Selector` no es un
+    // <select>: para elegir por posición hay que abrir su popup y leer la etiqueta real de la
+    // primera opción (igual que hace pdc-v2-vencimientos.spec.mjs con el filtro de paso).
+    await selectorVersion.click();
+    const popupVersion = page.locator('.pdc-selector-popup');
+    await popupVersion.waitFor({ state: 'visible' });
+    const opcionesVersion = popupVersion.getByRole('option');
+    expect(await opcionesVersion.count()).toBeGreaterThanOrEqual(2);
+    const etiquetaVersionHistorica = (await opcionesVersion.first().textContent())?.trim();
+    await page.keyboard.press('Escape');
+    await popupVersion.waitFor({ state: 'detached' });
+
+    // Selección explícita por versionId (la más reciente; el camino histórico lo cubre el test PHP).
+    await elegirEnSelector(page, 'pdc-visor-version', etiquetaVersionHistorica);
     await expect(arbol.locator('.ag-cell', { hasText: 'PRELIMINARES' }).first()).toBeVisible({ timeout: 10000 });
 
     expect(await page.locator('body').innerText()).not.toContain('Fatal error');
