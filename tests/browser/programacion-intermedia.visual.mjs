@@ -35,6 +35,13 @@ const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
 // `trackedStates` mas `neutral`. NO se siembra `header` (Titulo != 0) porque el endpoint real
 // filtra `Titulo = 0` (ProgramacionIntermediaController::list) y esa fila no existe en PI.
 const FILAS_DE_ESTADO = [
+  // Bloqueo por falta de Responsable AIA (Task 38). Se anade el 2026-08-05 porque las nueve filas
+  // de abajo llevaban todas responsable asignado y el golden era ciego al tratamiento: con
+  // `Responsable_AIA` vacio, `buildPICellProperties()` (hot.js:938) marca cada celda de restriccion
+  // `readOnly` + `pi-cell-locked-resp` —candado delante del valor— y `piResponsableRenderer`
+  // sustituye la celda del responsable por «🔒 Falta Responsable AIA». Va la PRIMERA a proposito:
+  // en 1180x820 solo entran unas cinco filas y mas abajo no saldria en el retrato.
+  { unique_id: 100, Id: 100, Titulo: 0, Actividad: 'Localizacion y replanteo', Sub_Contratista: 'Topografia Andina', Responsable_AIA: '', Semanas_Inicio: 0, Ejecutado: 0, D_y_E: '100%', Materiales: '100%', MdeO: '0%', Equipos: '100%', Predecesora: '100%', Pdto_Cons: '50%', Modelo: '0%', Ruta_Critica: '0', alerta_crisis: 0, Observaciones: '' },
   // blocked-overdue-critical: vencido, sin liberar y en ruta critica.
   { unique_id: 101, Id: 101, Titulo: 0, Actividad: 'Pilotaje eje A', Sub_Contratista: 'Cimentaciones SAS', Responsable_AIA: 'L. Marin', Semanas_Inicio: -2, Ejecutado: 0, D_y_E: '100%', Materiales: '0%', MdeO: '66%', Equipos: '100%', Predecesora: '0%', Pdto_Cons: '50%', Modelo: 'N/A', Ruta_Critica: '1', alerta_crisis: 0, Observaciones: '' },
   // blocked-overdue: mismo vencimiento, sin realce de criticidad.
@@ -89,10 +96,13 @@ for (const scenario of VISUAL_SCENARIOS) {
       path.basename(scenario.golden),
       {
         fullPage: false,
-        // Mismo criterio que `programa-general.visual.mjs`: 0,2 % en vez del 3 % anterior. El ruido
-        // de renderizado medido entre corridas es cero, asi que este valor es holgura deliberada
-        // por si cambia la maquina, no una necesidad del render actual.
-        maxDiffPixelRatio: 0.002,
+        // Mismo criterio que `programa-general.visual.mjs`: tope ABSOLUTO en vez de ratio. Con el
+        // 0,2 % anterior (1.935 px aqui, 2.592 px a 1440x900) la red no mordia el bloqueo por falta
+        // de Responsable AIA que ahora se siembra: quitar la marca «Falta Responsable AIA» mueve
+        // 385 px en ambos viewports y el golden pasaba en verde. El ruido de renderizado medido
+        // entre corridas sigue siendo cero, asi que los 100 px son holgura por si cambia la
+        // maquina, no una necesidad del render actual.
+        maxDiffPixels: 100,
       },
     );
   });
