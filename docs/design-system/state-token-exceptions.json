@@ -213,6 +213,20 @@
       "token": "--ds-color-state-critical-text",
       "kind": "by-design",
       "reason": "Mensaje de error de campo, hoy en tres sitios: /admin/usuarios/crear (2 campos) y el dashboard (progreso de consolidacion y alertas de integridad). Es una linea de texto suelta bajo el input o la lista, sin chip ni superficie propia, asi que no hay bloque donde declarar el critical-bg pareado: medio par a proposito. Toma el token de texto critico SIN aclarar porque el aclarado al 35% de la regla hermana .text-danger da rgb(250,234,231) -practicamente blanco, indistinguible del texto normal, y un error que no se ve rojo no se lee como error-. El contraste nunca fue el problema: medido a 1180x820 en dark, #ffcdc8 sobre la superficie compuesta del formulario rgb(27,34,30) da 11,42:1, muy por encima de AA. El aclarado sigue vigente para .text-danger sin este gancho -por ejemplo el enlace «Salir» de la navbar, donde el matiz no carga significado-."
+    },
+    {
+      "file": "public/css/programacion-intermedia.css",
+      "selector": ".pi-page #hot-container td .pi-missing-resp",
+      "token": "--ds-color-state-warning-text",
+      "kind": "by-design",
+      "reason": "Marca «Falta Responsable AIA» (N-1) dentro de la celda de Responsable AIA de PI. No puede llevar el warning-bg pareado porque el fondo de esa celda YA esta ocupado por la escala propia del modulo (.pi-row-state / .pi-state-*), que codifica el alistamiento: pintarle un chip ambar encima taparia el estado de la fila y mentiria -una fila liberada se leeria como «atencion»-. Es texto suelto sobre esa superficie, y el contraste esta medido en los NUEVE estados a 1180x820 en dark: 9,31:1 en el peor (blocked-due, alert-1-week y alert-2-3-weeks, fondo rgb(58,58,15)) y 15,59:1 en el mejor; nunca baja de 9,31:1, muy por encima de AA. En liberated-control y execution-blocked la marca (9,63:1) va POR ENCIMA del dato normal (8,88:1), que es justo lo que C-14 hizo al reves en PS."
+    },
+    {
+      "file": "public/css/programacion-intermedia.css",
+      "selector": ".pi-page #hot-container td.pi-cell-locked-resp .pi-lock-mark",
+      "token": "--ds-color-state-warning-text",
+      "kind": "by-design",
+      "reason": "Candado que marca la celda de restriccion bloqueada por falta de Responsable AIA (N-1). Es un glifo de Font Awesome ANTEPUESTO al valor que la celda sigue mostrando: el fondo de esa celda pertenece al estado de la fila (.pi-state-*) y al tinte de solo-lectura, asi que no hay superficie propia donde declarar el warning-bg pareado sin borrar informacion que ya esta ahi. Mismo rango medido que la marca hermana en los nueve estados a 1180x820 en dark: de 9,31:1 a 15,59:1. Va en Font Awesome y no en emoji precisamente para que el token de color aplique y el contraste sea medible."
     }
   ]
 }
