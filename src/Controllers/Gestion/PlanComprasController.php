@@ -45,6 +45,24 @@ class PlanComprasController extends BaseController
         $shellActive = 'plan-compras';
         $shellModuleLabel = 'Plan de Compras';
 
+        // Shell sidebar (DS-027): el PDC no maneja semanas (la vista apaga el chip),
+        // pero los flyouts de semana de PG/PI/PS en la lateral sí las necesitan.
+        $shellWeeks = [];
+        $dbName = (string) ($_SESSION['db'] ?? '');
+        if ($dbName !== '' && preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            try {
+                $tSaShell = \TableResolver::resolveByPrefix($dbName, 'semanas_activas');
+                $projectIdShell = \TableResolver::getProjectIdByPrefix($dbName);
+                $stmtShellWeeks = $this->db->queryWithProject(
+                    "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSaShell} WHERE project_id = ? ORDER BY Semana DESC",
+                    [$projectIdShell]
+                );
+                $shellWeeks = $stmtShellWeeks->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            } catch (\Throwable $e) {
+                error_log('Error cargando semanas para el shell PDC: ' . $e->getMessage());
+            }
+        }
+
         $bundlePath = PROJECT_ROOT . '/public/pdc-app/assets/pdc.js';
         $assetVersion = is_file($bundlePath) ? (int) filemtime($bundlePath) : 0;
 

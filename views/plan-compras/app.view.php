@@ -26,6 +26,7 @@
 	<link rel="stylesheet" href="/pdc-app/assets/pdc.css?v=<?php echo (int) $assetVersion; ?>">
 </head>
 <body class="aia-shell aia-shell--sidebar">
+	<?php $shellMuestraSemana = false; // El PDC no maneja semanas: sin chip de contexto. ?>
 	<?php require PROJECT_ROOT . '/views/partials/shell_sidebar.php'; ?>
 
 	<?php /* El h1 lo declara cada pantalla de la SPA (`pdc-titulo-fila`); aqui solo se

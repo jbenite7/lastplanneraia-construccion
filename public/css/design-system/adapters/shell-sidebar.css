@@ -37,7 +37,11 @@
   body.aia-shell--sidebar .context-bar {
     position: sticky;
     top: 0;
-    z-index: 1050;
+    /* Por encima de los clones de encabezado de Handsontable (~101-103) pero
+       por debajo del aside del rail (--ds-z-dropdown, 200): sus flyouts de
+       semana deben pintar sobre esta barra. El 1050 anterior venía del navbar
+       legacy y los tapaba. */
+    z-index: calc(var(--ds-z-dropdown) - 1);
     display: flex;
     align-items: center;
     gap: var(--ds-space-3);

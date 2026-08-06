@@ -16,6 +16,9 @@
 
 $shellActive = $shellActive ?? '';
 $shellModuleLabel = $shellModuleLabel ?? '';
+/* Módulos sin noción de semana (p. ej. Plan de Compras) apagan el chip de
+   contexto poniendo esto a false antes de incluir el partial. */
+$shellMuestraSemana = $shellMuestraSemana ?? true;
 $shellWeeks = is_array($shellWeeks ?? null) ? $shellWeeks : [];
 $shellProyecto = (string) ($proyecto ?? ($_SESSION['proyecto'] ?? ''));
 $shellSemana = (int) ($semana ?? ($_SESSION['semana'] ?? 0));
@@ -133,6 +136,7 @@ $shellGroups = array_values(array_filter([
   <span id="ctxProyecto"><?= htmlspecialchars($shellProyecto, ENT_QUOTES, 'UTF-8') ?></span>
   <span aria-hidden="true">/</span>
   <span id="ctxModulo"><?= htmlspecialchars($shellModuleLabel, ENT_QUOTES, 'UTF-8') ?></span>
+  <?php if ($shellMuestraSemana): ?>
   <div class="aia-menu context-week-menu" data-aia-component="menu">
     <button type="button" class="context-week-chip" id="ctxSemanaBadge" data-aia-menu-trigger
       aria-haspopup="menu" aria-controls="ctxWeekMenu" aria-expanded="false"
@@ -155,6 +159,7 @@ $shellGroups = array_values(array_filter([
       <?php endforeach; ?>
     </div>
   </div>
+  <?php endif; ?>
 </div>
 <?php if ($shellCanCreate): ?>
 <div class="aia-dialog" data-aia-component="dialog">
