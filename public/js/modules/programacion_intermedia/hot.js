@@ -3073,6 +3073,13 @@
         sr.textContent = PI_LOCK_REASON;
         td.appendChild(sr);
         td.title = PI_LOCK_REASON;
+      } else {
+        // Con `renderAllRows: false` HOT recicla los <td> al hacer scroll y su
+        // TextRenderer solo quita style/colspan/rowspan/dir/contenteditable: el
+        // `title` sobreviviria al reciclado y una celda editable acabaria
+        // anunciando un bloqueo que no tiene. El contenido (candado y sr-only)
+        // si se limpia solo, porque aqui se reescribe el texto de la celda.
+        td.removeAttribute('title');
       }
     });
 
@@ -3091,6 +3098,12 @@
         mark.appendChild(document.createTextNode(PI_MISSING_RESP_LABEL));
         td.appendChild(mark);
         td.title = PI_LOCK_REASON;
+      } else {
+        // Mismo motivo que en `piRestrictionRenderer`: el <td> reciclado se
+        // quedaba con el `title` del bloqueo aunque ya mostrara un responsable.
+        // Ninguna otra rama de este renderer pone `title`, asi que se puede
+        // quitar entero.
+        td.removeAttribute('title');
       }
     });
 
