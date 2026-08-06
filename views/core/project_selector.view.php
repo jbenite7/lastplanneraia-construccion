@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="/runtime/frontend-config.js?v=20260325a" defer></script>
     <script src="/public/js/core/SessionTimeoutManager.js?v=20260328a" defer></script>

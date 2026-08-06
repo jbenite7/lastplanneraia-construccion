@@ -2,6 +2,7 @@
 <html lang="es-CO">
 <head>
     <meta charset="UTF-8">
+    <?php require __DIR__ . '/../partials/head_brand.php'; ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BI Control Tower — LPS AIA</title>
     <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('bi-runtime') ?>

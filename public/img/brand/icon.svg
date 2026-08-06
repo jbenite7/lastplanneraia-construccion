@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="t d">
+  <title id="t">Last Planner — línea Construcción</title>
+  <desc id="d">Ícono de app: monograma L con flecha de avance sobre contenedor naranja redondeado.</desc>
+  <rect width="1024" height="1024" rx="225" fill="#B55211"/>
+  <path fill="#FFFFFF" d="M256 544 H640 V688 H328 A72 72 0 0 1 256 616 Z"/>
+  <path fill="#F4AD77" d="M256 544 V240 a72 72 0 0 1 144 0 V544 Z"/>
+  <path fill="#E87722" d="M490 512 H640 V656 H490 A72 72 0 0 1 490 512 Z"/>
+  <path fill="#E87722" stroke="#E87722" stroke-width="36" stroke-linejoin="round" d="M658 370 L782 543.5 L658 717 Z"/>
+</svg>

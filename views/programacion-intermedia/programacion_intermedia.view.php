@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Programación Intermedia · Last Planner AIA</title>
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>

@@ -428,7 +428,7 @@ final class DesignSystemComponent
         return '<aside class="aia-navigation aia-navigation--sidebar" aria-label="Navegación de ' . self::escape($brand) . '" data-aia-component="navigation"'
             . ' data-shell-pattern="sidebar" data-sidebar-state="' . self::escape($state) . '">'
             . '<header class="aia-sidebar__header"><a class="aia-sidebar__brand aia-brand-lockup" href="/proyectos"'
-            . ' aria-label="' . self::escape($brand) . '"><img src="/public/img/aia-last-planner-mark.svg" alt="" aria-hidden="true">'
+            . ' aria-label="' . self::escape($brand) . '"><img src="/public/img/brand/icon.svg" alt="" aria-hidden="true">'
             . '<strong class="aia-sidebar__brand-name">' . self::escape($brand) . '</strong></a>'
             . $contextMarkup
             . '<button type="button" class="aia-btn aia-btn--secondary aia-sidebar__toggle" id="' . self::escape($toggleId)
@@ -487,7 +487,7 @@ final class DesignSystemComponent
         $panelId = $id . '-links';
         return '<div class="aia-navigation" data-aia-component="navigation" data-shell-pattern="adaptive">'
             . '<div class="aia-navigation__global"><span class="aia-navigation__brand aia-brand-lockup">'
-            . '<img src="/public/img/aia-last-planner-mark.svg" alt="" aria-hidden="true">'
+            . '<img src="/public/img/brand/icon.svg" alt="" aria-hidden="true">'
             . '<strong>' . self::escape($brand) . '</strong></span>'
             . '<span class="aia-navigation__context">' . self::escape($context) . '</span><button type="button" class="aia-btn aia-btn--secondary"'
             . ' data-shell-drawer-toggle aria-controls="' . self::escape($panelId) . '" aria-expanded="false">Menú</button></div>'

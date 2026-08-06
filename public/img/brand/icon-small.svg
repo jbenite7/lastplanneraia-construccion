@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="t d">
+  <title id="t">Last Planner — ícono para tamaños pequeños</title>
+  <desc id="d">Variante del ícono con glifo ampliado y geometría simplificada para favicon de 16 y 32 px.</desc>
+  <rect width="1024" height="1024" rx="192" fill="#B55211"/>
+  <g transform="translate(528 451.5) scale(1.22) translate(-528 -451.5)">
+    <path fill="#FFFFFF" d="M256 544 H640 V688 H328 A72 72 0 0 1 256 616 Z"/>
+    <path fill="#F4AD77" d="M256 544 V240 a72 72 0 0 1 144 0 V544 Z"/>
+    <path fill="#FFB25C" d="M478 512 H640 V656 H478 A72 72 0 0 1 478 512 Z"/>
+    <path fill="#FFB25C" stroke="#FFB25C" stroke-width="36" stroke-linejoin="round" d="M658 362 L790 543.5 L658 725 Z"/>
+  </g>
+</svg>

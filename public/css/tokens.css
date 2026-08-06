@@ -540,7 +540,7 @@
     --ds-nav-brand-letter-spacing: 0;
     --ds-nav-brand-line-height: 1;
     --ds-nav-brand-margin-inline-end: var(--spacing-sm);
-    --ds-nav-brand-mark-image: url("/img/aia-last-planner-mark.svg");
+    --ds-nav-brand-mark-image: url("/img/brand/glyph-mono.svg");
     --ds-nav-brand-mark-size: clamp(1.8rem, 1.6rem + 0.8vw, 2rem);
     --ds-nav-brand-min-height: var(--ds-target-min);
     --ds-nav-brand-name-white-space: nowrap;
@@ -549,6 +549,9 @@
 
     --ds-sidebar-width-expanded: 15rem;
     --ds-sidebar-width-collapsed: 4rem;
+    /* El mark del sidebar no necesita el tamaño de objetivo táctil: el objetivo
+       accesible es el enlace completo del lockup, que conserva --ds-target-min. */
+    --ds-sidebar-brand-mark-size: 2.25rem;
     --ds-sidebar-item-min-height: var(--ds-target-min);
     --ds-sidebar-section-gap: var(--ds-space-6);
 

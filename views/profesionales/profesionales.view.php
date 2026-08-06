@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Profesionales — Last Planner AIA</title>
     <!-- jQuery Must be loaded first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

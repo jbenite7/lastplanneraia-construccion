@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Control de Cambios — Last Planner AIA</title>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('control-cambios') ?>

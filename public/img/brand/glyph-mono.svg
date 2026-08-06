@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="216 128 624 647" role="img" aria-labelledby="t d">
+  <title id="t">Last Planner — glifo monocromo</title>
+  <desc id="d">Silueta de un solo color del monograma L con flecha, para contextos teñidos con currentColor.</desc>
+  <g fill="currentColor" stroke="currentColor">
+    <path d="M256 240 a72 72 0 0 1 144 0 V544 H256 Z"/>
+    <path d="M256 544 H640 V688 H328 A72 72 0 0 1 256 616 Z"/>
+    <path d="M490 512 H640 V656 H490 A72 72 0 0 1 490 512 Z"/>
+    <path stroke-width="36" stroke-linejoin="round" d="M658 370 L782 543.5 L658 717 Z"/>
+  </g>
+</svg>

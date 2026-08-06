@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/img/brand/icon-16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/img/brand/icon-32.png">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/img/brand/icon-192.png">
   <script src="/runtime/frontend-config.js?v=20260325a"></script>
   <script src="/public/js/tablet-viewport-scale.js?v=1.2"></script>
   <title><?php echo $title; ?></title>

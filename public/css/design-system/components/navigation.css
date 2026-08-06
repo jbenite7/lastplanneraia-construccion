@@ -47,7 +47,8 @@
     width: var(--ds-target-min);
     height: var(--ds-target-min);
     object-fit: contain;
-    filter: var(--ds-active-nav-mark-filter);
+    /* El ícono Construcción es a color; no se tiñe con el tema. */
+    filter: none;
   }
 
   .aia-navigation__global .aia-btn {
@@ -169,14 +170,14 @@
   }
 
   .aia-sidebar__brand img {
-    width: var(--ds-target-min);
-    height: var(--ds-target-min);
-    flex: 0 0 var(--ds-target-min);
+    width: var(--ds-sidebar-brand-mark-size);
+    height: var(--ds-sidebar-brand-mark-size);
+    flex: 0 0 var(--ds-sidebar-brand-mark-size);
     object-fit: contain;
-    filter: var(--ds-active-nav-mark-filter);
+    /* El ícono Construcción es a color; no se tiñe con el tema. */
+    filter: none;
   }
 
-  .aia-sidebar__brand-name,
   .aia-sidebar__context span,
   .aia-sidebar__context small,
   .aia-sidebar__label {
@@ -186,10 +187,28 @@
     white-space: nowrap;
   }
 
+  /* El nombre de la persona identifica la sesión: se compone en varias líneas
+     en vez de truncarse a «Juan Felip…». Solo en el pie de cuenta expandido —
+     los ítems de navegación conservan el truncado de una línea. */
+  .aia-navigation--sidebar[data-sidebar-state="expanded"] .aia-sidebar__account .aia-sidebar__label {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.15;
+    text-align: start;
+  }
+
+  /* El nombre completo «Last Planner AIA» no cabe en una línea junto al mark y
+     al botón de colapsar (157 px de texto en 123 px disponibles): se compone en
+     dos líneas en vez de truncarse a «Last Plann…». */
   .aia-sidebar__brand-name {
+    min-width: 0;
+    overflow-wrap: break-word;
     font-family: var(--ds-font-display);
-    font-size: var(--ds-type-size-lg);
+    font-size: var(--ds-type-size-md);
     font-weight: var(--ds-type-weight-bold);
+    line-height: 1.15;
   }
 
   .aia-sidebar__context {

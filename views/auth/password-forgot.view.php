@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
+    <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/runtime/frontend-config.js?v=20260325a"></script>
     <script src="/js/tablet-viewport-scale.js?v=1.2"></script>

@@ -19,7 +19,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Plan de Compras — Last Planner AIA</title>
-	<link rel="icon" href="/favicon.ico">
+	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme-bootstrap.js') ?>
 	<link rel="stylesheet" href="/css/tokens.css?v=<?php echo (int) $tokensVersion; ?>">
 	<?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
