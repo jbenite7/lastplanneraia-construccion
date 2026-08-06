@@ -707,16 +707,17 @@ export default function PlanFechas() {
         <Selector
           testid="pdc-plan-masa-persona"
           etiqueta="Persona para asignar a los paquetes seleccionados"
-          placeholder="Sin asignar"
           value={masaEtiqueta}
           onChange={setMasaEtiqueta}
           disabled={ui.ocupado || seleccionados.length === 0}
+          // «Sin asignar» (valor '') NO es un «sin filtro»: es una opción de negocio elegible, la
+          // misma que usa `onResponsableMasa` para quitarle el responsable a varios paquetes a la
+          // vez (ver el botón de abajo). Por eso queda en la lista y no se manda a `placeholder`.
           // Fila «vacía» deliberada: opcionesResponsable necesita una fila para saber si debe sumar
           // una opción extra de huérfano, y aquí no hay una fila puntual — solo la lista general de
           // gente elegible del proyecto (siempre empieza en '' = "Sin asignar").
           opciones={opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false })
-            .filter((o) => o !== '')
-            .map((o) => ({ valor: o, etiqueta: o }))}
+            .map((o) => ({ valor: o, etiqueta: o === '' ? 'Sin asignar' : o }))}
         />
         <button
           type="button"

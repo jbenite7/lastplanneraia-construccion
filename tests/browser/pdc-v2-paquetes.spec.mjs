@@ -86,14 +86,16 @@ test('paquetes: crear, asignar, omitir, cobertura y un paso del asistente', asyn
       // «revisar y confirmar» en vez de buscar el paquete a mano entre más de 200.
       const sugerencia = page.locator('[data-testid="pdc-wiz-sugerencia"]');
       const texto = await sugerencia.innerText();
-      const select = page.locator('[data-testid="pdc-wiz-paquete"]');
+      // Ya no es un <select>: es un Selector (botón + popup). La opción elegida se pinta en el
+      // texto visible del botón, con la clase `es-vacio` solo cuando no hay nada elegido.
+      const boton = page.locator('[data-testid="pdc-wiz-paquete"]');
+      const valorBoton = boton.locator('.pdc-selector-valor');
       if (!texto.includes('Sin propuesta')) {
-        const valor = await select.inputValue();
-        expect(valor, 'con propuesta, el destino llega preseleccionado').not.toBe('');
-        const elegido = await select.locator('option:checked').innerText();
+        await expect(valorBoton, 'con propuesta, el destino llega preseleccionado').not.toHaveClass(/es-vacio/);
+        const elegido = await valorBoton.innerText();
         expect(texto).toContain(elegido.split(' — ')[0]);
       } else {
-        expect(await select.inputValue(), 'sin propuesta el destino queda vacío').toBe('');
+        await expect(valorBoton, 'sin propuesta el destino queda vacío').toHaveClass(/es-vacio/);
       }
       // El botón duplicado se retiró: queda un solo camino.
       await expect(page.locator('[data-testid="pdc-wiz-aceptar-sugerido"]')).toHaveCount(0);
