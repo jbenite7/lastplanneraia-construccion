@@ -304,3 +304,67 @@ derecho muerto»— y se había resuelto con una excepción puntual
 (`:not(.project-selector-page)`) en vez de mirar cuántas más estaban igual.
 
 Sin cambios aplicados en esta pasada: no había nada que arreglar.
+
+---
+
+## Pasada final de la campaña — 2026-08-05 (Task 31)
+
+Cierre del barrido. **28 superficies** medidas en navegador a **1180×820 dark** sobre la rama
+`campana/cierre-dark-mode-2` (HEAD `58ba25ab`), servida en un contenedor efímero propio (`php -S`
+con router de ruta absoluta que replica el `.htaccess`; imagen `last-planner-aia-app`, red
+`last-planner-aia_default`, desmontado al terminar). Sesión `test.R` en `PDC Sandbox E2E` para la app
+y `test.A` vía `/admin/dev/entrar` para el panel. **Proyectos en solo lectura: no se escribió ni un
+dato.** Tres lentes en orden — `impeccable-audit` (contrato: capas, tokens, overflow, consola),
+`ux-heuristics` (Nielsen) y `refactoring-ui` (jerarquía, densidad, piso táctil).
+
+Se consolida **contra este mismo documento**: solo se registra lo **nuevo o cambiado** por la campaña.
+
+### Lo que la campaña cerró de este barrido
+
+| Hallazgo del 2026-08-03 | Estado hoy | Evidencia |
+|---|---|---|
+| **[1]** Iframe blanco de `/indicadores` | **enmarcado** (Task 21, C-22). El blanco interior es del informe y es tarea del usuario dentro de Power BI | passe-partout tokenizado, hairline único |
+| **[2]** Tab bar de `/bi/*` desbordada | **cerrado** (C-23) | 8/8 vistas de BI con `scrollWidth == clientWidth == 1180` |
+| **[3]** Cabeceras partidas carácter a carácter en PI y CIC | **cerrado en PI y CIC** (C-16/C-31) — **pero sigue vivo en `/control-cambios`**, que no estaba en el censo original → `F-1` | 0 cabeceras recortadas en las 6 superficies de rejilla |
+| **[4]** Mojibake `CapÃ­tulo` / `InnovaciÃ³n` | **no reproducible.** Barrido de texto con `/Ã[-¿]\|Â[ -¿]\|â€/` sobre PG, PI, PS, `/proyectos`, `/control-cambios`, `/admin/usuarios` y `/admin/proyectos`: **0 coincidencias** | era dato de un proyecto concreto, no de la capa de salida |
+| **[5]** Salto de lenguaje visual de `admin/` | **atenuado, no cerrado** (C-25, C-29, C-38 aplicados). La paleta de las stat cards sigue siendo la de AdminLTE: es mini-app aparte por `AGENTS.md` | contraste del error 11,42:1; marca del pie 7,60:1 |
+
+### Contrato, en las 28 superficies
+
+**Cero regresiones y cero rojos de contrato.** Todas responden 200; **0 errores de consola** en las
+28; **0 desbordamiento horizontal** (`scrollWidth == clientWidth == 1180` en las 28); **28/28 con
+`<main>` y con un `h1` real** —lo que cierra C-30 medido en producto, no en diff—; **0 celdas y 0
+cabeceras recortadas** en las seis superficies de rejilla. Es el resultado más limpio de los cuatro
+barridos de la campaña.
+
+### Hallazgos nuevos: 9, ninguno bloqueante
+
+Ninguno pertenece a las categorías que la campaña dio por cerradas *en las superficies que auditó*;
+los dos de severidad 3 son **residuos en superficies que el censo original no cubrió** (`/control-cambios`)
+o **canales que ninguna lente anterior midió** (los gatillos de ayuda de PI). Todos se **registran**
+en `docs/DESIGN-AUDIT.md` como `F-1` … `F-9` — **nada se aplicó**, por la regla de la campaña: a esta
+altura un cambio de píxel mueve goldens ya aprobados y un cambio de comportamiento necesita al usuario.
+
+| Id | Severidad | Superficie | Qué se midió |
+|---|---|---|---|
+| `F-1` | 3 | `/control-cambios` | `word-break: normal` + columnas de 55-74 px parten «Priorid/ad», «Responsa/ble», «Intervento/ría»; cabecera de 94 px en 3 líneas |
+| `F-2` | 3 | `/programa-general` | la `htAutocompleteArrow` de 16 px se superpone al último dígito de la fecha: caja interna 84 px para 88-90 px de contenido en 3 de 4 celdas |
+| `F-3` | 3 | `/programacion-intermedia` | 8 `a.pi-help-trigger` de **8×8 px**, `tabIndex 0`, `aria-label` nulo y `title` vacío, con el tooltip atado solo a `mouseenter` |
+| `F-4` | 2 | 8 vistas de `/bi/*` | el botón «Quitar filtro» del chip mide **28×20 px** |
+| `F-5` | 2 | `/programacion-semanal/cic` | 7 ids repetidos (`cuadroModal`×3, `actualizacion`, `form_calidad`, `form_adm`, `form_GSA`, `form_sst`, `form_obs`) |
+| `F-6` | 1 | `/control-cambios` | dos estados vacíos apilados: `sEmptyTable` (C-33) y `sInfoEmpty` («Sin solicitudes») |
+| `F-7` | 2 | `/profesionales`, `/subcontratistas`, `/programacion-intermedia` | la casilla nativa de Handsontable mide **13×13 px** |
+| `F-8` | 1 | `/programa-general-actualizar` | `modal-eliminar-semana-body-texto` duplicado |
+| `F-9` | 1 | `public/css/programacion-intermedia.css:262` | `rgba(245, 158, 11, 0.24)` en crudo dentro de un módulo migrado |
+
+**Falsos positivos descartados y por qué**, para que la próxima pasada no los vuelva a levantar: los
+`label.sr-only` que el detector de recorte marca en `/proyectos`, CIC, CNC y CNP están
+*visualmente ocultos a propósito* (`clip-rect`), y los `input` de 1×1 (`pdc-sr-only`,
+`bi-switch-input`) y de 13×13 (`custom-control-input`) son casillas ocultas cuyo control real es la
+etiqueta visible. La pastilla « blanda» de PI **no** es hex suelto: sale de `--pi-due-bg`/`--pi-due-text`.
+
+### Límite declarado
+
+El barrido midió **estructura, geometría y contrato**, no contraste píxel a píxel de las 28
+superficies: eso ya lo cubren los guards de matiz y los cuatro specs visuales del repo, y repetirlo
+aquí habría sido volver a medir entradas que no cambiaron.

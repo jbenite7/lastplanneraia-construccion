@@ -102,4 +102,31 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   de Control de Cambios, o la sustituye por la de su obra? Y de `S-6`: ¿abre alguno de los tres
   textos de dominio (vacío del filtro en PS, los dos avisos de «sin Responsable AIA», los rótulos de
   las acciones)?
-- [ ] Fase 9 al cierre de la campaña
+- [x] **Fase 9 (barrido final + revisión en frío) — cerrada el 2026-08-05 (Task 31).** Tres piezas:
+  1. **Barrido consolidado** de las 28 superficies vivas (22 de la app + 6 de `admin/`) a 1180×820
+     dark con las tres lentes en orden. **Cero regresiones y cero rojos de contrato:** 28/28 en 200,
+     **0 errores de consola**, **0 desbordamiento horizontal**, **28/28 con `<main>` y `h1` real**,
+     **0 celdas y 0 cabeceras recortadas** en las seis superficies de rejilla. De los cinco hallazgos
+     top del barrido del 2026-08-03: dos cerrados, uno cerrado salvo en `/control-cambios`, uno
+     **no reproducible** (el mojibake: 0 coincidencias en 7 superficies) y uno atenuado. **9
+     hallazgos nuevos** (`F-1` … `F-9`), ninguno bloqueante, todos registrados sin aplicar. Detalle
+     en `docs/superpowers/barrido-diseno-2026-08-03.md` §Pasada final.
+  2. **IA-6 · revisión en frío** del flujo PG→PI→PS como usuario nuevo. Nombrada la Única Cosa
+     («cada semana la obra promete solo lo que puede cumplir, y al terminar se sabe si cumplió»),
+     contados los **13 pasos y la semana entera** hasta el primer dato útil, y emitido el veredicto
+     binario: **NO para un usuario nuevo sin acompañamiento; SÍ para uno entrenado.** Tres cortes
+     propuestos —**ninguno aplicado, nada borrado**— y cinco arreglos ordenados. Seis entradas
+     nuevas (`R-1` … `R-6`), con `R-1` (la app no tiene páginas de error: 404 y 403 responden 13
+     bytes de texto plano) marcada **bloqueante**.
+  3. **`docs/PRODUCT.md` creado** con `## Outcome Roadmap` en cuatro cajones (bloqueante · ahora ·
+     diferible · decisiones de dominio) y **`docs/DESIGN-AUDIT.md` refrescado a su disposición real
+     de cierre**: las 11 filas `pendiente (Task N)` a `done`, `N-1` a `done` y `N-2` a
+     `cerrado sin código` por decisión del usuario, y 15 entradas nuevas. Total 73 → **88**, con
+     `pendiente` en **cero**.
+- [ ] **Lo que queda abierto no es trabajo, son decisiones.** Diez, recogidas una a una en
+  `docs/DESIGN-AUDIT.md` §Pendiente de decisión del usuario: las 9 excepciones de a11y de
+  `.pdc-header`, los dos goldens ciegos (fila de capítulo en PG, estado bloqueado en PI), la
+  evidencia huérfana de `programa-general-actualizar`, la ratificación de la frase de C-33, el hex
+  del toast en `styles.css:936`, el rojo de `foundation.test.mjs` por mtimes, el hueco de
+  `applySharedConstraints`, las tres auditorías de la Task 27, los cortes de producto y el tema
+  oscuro del informe dentro de Power BI (tarea del usuario, fuera del repo).

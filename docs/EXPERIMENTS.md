@@ -100,3 +100,27 @@ Conviene medir su gravedad sin inflarla ni minimizarla:
 
 Encontrado **escribiendo el plan de T5**, antes de ejecutar ninguna tanda: es evidencia temprana de
 que el método funciona.
+
+---
+
+## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
+
+Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)
+y seis de la revisión en frío del flujo PG→PI→PS (`R-1` … `R-6`). El detalle medido de cada una está
+en `docs/DESIGN-AUDIT.md`; la priorización de producto, en `docs/PRODUCT.md` §Outcome Roadmap.
+
+| Id | Tarjeta | I | C | E | Nota |
+|---|---|---|---|---|---|
+| `R-1` | **Páginas de error dentro del shell.** `404` y `403` responden 13 bytes de texto plano: quien se equivoca de URL o choca con un permiso sale del producto | 4 | 5 | 1 | **La única bloqueante de la lista.** Dos plantillas en el shell que ya existe |
+| `R-2` | **Recorrido de primera vez para la cascada**, con la forma del de `/plan-compras` (que ya está escrito y calificado como el mejor copy de la app) | 5 | 4 | 3 | 13 pasos y una semana hasta el primer dato útil, sin ninguna guía |
+| `R-3` | **`title` en el carril y la cascada arriba.** Diez iconos sin etiqueta visible; la Única Cosa ocupa los puestos 6-8 de 10 | 4 | 4 | 2 | El `title` es barato; reordenar es decisión de navegación |
+| `M-4` | **Acuse de recibo al importar el cronograma** (ya estaba en el backlog; sube de prioridad tras la revisión en frío) | 4 | 5 | 2 | La receta está en `funcionesGenerales6.js:59-60` |
+| `F-2` | **La flecha del selector deja de tapar el último dígito de las fechas en PG** | 3 | 5 | 2 | Mueve píxel → exige aprobar de nuevo el golden de PG |
+| `R-4` | **El vacío del aterrizaje ofrece la salida que sí funciona** (importar) en vez de dos que no | 3 | 4 | 1 | Primo de `M-5`, pero caso distinto |
+| `F-1` | **Cabeceras de `/control-cambios` sin partir palabras**, repartiendo de nuevo los `width` en `%` | 2 | 5 | 1 | Residuo del hallazgo `[c]` en la vista que el censo de anchos no cubrió |
+| `F-3` | **Los gatillos de ayuda de PI ganan nombre, tamaño y ruta de teclado** | 3 | 4 | 2 | 8×8 px, `tabIndex 0`, sin `aria-label`, tooltip solo al pasar el ratón |
+| `F-4` · `F-7` | **El piso de 24 px llega también a BI y a las casillas de Handsontable** | 2 | 4 | 2 | 28×20 y 13×13 medidos; el de Handsontable cambia alto de celda |
+| `F-5` | **`/programacion-semanal/cic` deja de repetir siete ids** | 2 | 4 | 2 | Familia de C-41/C-46 en la superficie que ninguna censó |
+| `F-6` | **Un solo estado vacío en `/control-cambios`** (`sInfoEmpty` a cadena vacía) | 1 | 5 | 1 | Va junto con la ratificación de la frase de C-33 |
+| `R-5` · `R-6` | **Los maestros y los informes salen del camino diario del residente**, agrupados bajo una entrada de gestión | 3 | 3 | 2 | **No se borra ninguna ruta ni se cambia ningún permiso** |
+| `F-8` · `F-9` | Higiene: un id duplicado en PGA y un `rgba()` crudo en `programacion-intermedia.css:262` | 1 | 5 | 1 | Instancias sueltas de C-46 y de C-2 |
