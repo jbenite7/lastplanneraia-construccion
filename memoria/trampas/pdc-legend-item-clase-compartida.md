@@ -9,7 +9,8 @@ resumen: "pdc-legend-item es una clase compartida entre PG, PI y PS; adoptar el 
 ---
 **`pdc-legend-item` es una clase compartida trampa** (revisado el 2026-08-03): la regla
 `html body … {width: 205px !important}` que citaba la línea 6476 de `styles.css` **ya no
-existe** — el archivo tiene hoy 4380 líneas y `205px` no aparece en él. Tras la tokenización,
+existe** — `205px` no aparece en el archivo (comprobado de nuevo el 2026-08-06; el conteo de
+líneas se mueve con cada commit, hoy 4211). Tras la tokenización,
 `.pdc-legend-item` se define en `styles.css:532-536` con tokens de estado del design system y
 sin `!important` de ancho. Lo que sigue vigente es el fondo del asunto: la clase la comparten
 PG, PI y PS, y `buttons.css` la llena de `!important` en capa `components`, invencibles desde

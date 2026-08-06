@@ -4,13 +4,18 @@ estado: vigente
 fecha: 2026-08-03
 areas: [lps, bi, arquitectura]
 fuente: public/index.php
-resumen: "Indicadores LPS: dashboard de KPIs que embebe reportes de Google Data Studio"
+resumen: "Indicadores LPS: dashboard de KPIs que embebe un informe de Power BI publicado en la web"
 ---
 # Indicadores LPS
 
-**Qué resuelve.** Muestra los KPIs del proyecto (PAC/PPC y afines) embebiendo reportes externos de
-Google Data Studio en vez de calcularlos en la app. Si un número no cuadra aquí, primero hay que
-mirar el reporte externo, no este módulo — es solo el marco que lo aloja.
+**Qué resuelve.** Muestra los KPIs del proyecto (PAC/PPC y afines) embebiendo un informe externo en
+vez de calcularlos en la app. Si un número no cuadra aquí, primero hay que mirar el informe externo,
+no este módulo — es solo el marco que lo aloja.
+
+El informe es de **Power BI** (`publish-to-web`), no de Google Data Studio: la migración se decidió
+el 2026-07-23 y está registrada en [[powerbi-indicadores]]; la vista construye la URL
+`app.powerbi.com/view?r=…` en `views/indicadores/indicadores.view.php:99-111`. Esta página lo dijo
+mal durante tres días; corregido en el pase de veracidad del 2026-08-06.
 
 **Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
 

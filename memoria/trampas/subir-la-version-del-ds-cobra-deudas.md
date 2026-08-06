@@ -4,7 +4,7 @@ estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
 fuente: scripts/design-system-audit.mjs, docs/design-system/exceptions.json, scripts/design-system-contracts.mjs, scripts/design-system-activation-git.mjs
-resumen: "Subir version.json no es editar un número: 38 excepciones de exceptions.json vencen en 1.1.0, los manifiestos exigen designSystemVersion sincronizado y dos gates comprueban 1.0.0 literal"
+resumen: "Subir version.json no es editar un número: 39 excepciones de exceptions.json vencen en 1.1.0, los manifiestos exigen designSystemVersion sincronizado y dos gates comprueban 1.0.0 literal"
 ---
 # Subir la versión del design system cobra deudas, no solo cambia un número
 
@@ -13,7 +13,9 @@ changelog, y la suite estática se puso en rojo por tres frentes a la vez:
 
 1. **Excepciones con vencimiento por versión.** `scripts/design-system-audit.mjs:167-170` compara
    `expiresAtVersion` de cada excepción de `docs/design-system/exceptions.json` contra la versión
-   viva con `compareSemVer(...) >= 0`. Hay **38 excepciones que vencen en `1.1.0`**: declarar esa
+   viva con `compareSemVer(...) >= 0`. Hay **39 excepciones que vencen en `1.1.0`** (eran 38 el
+   2026-08-04; el número sube con cada excepción nueva —
+   `grep -c '"expiresAtVersion": "1.1.0"' docs/design-system/exceptions.json`): declarar esa
    versión las hace exigibles y el gate `audit` falla. (Ojo: no es `a11y-exceptions.json`, que usa
    `expiresAt` por fecha; el vencimiento por versión vive en `exceptions.json`.)
 2. **Manifiestos sincronizados.** `design-system-contracts.mjs` exige que `designSystemVersion`

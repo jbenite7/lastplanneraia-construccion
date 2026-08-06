@@ -4,12 +4,18 @@ estado: vigente
 fecha: 2026-08-02
 areas: [proceso]
 fuente: sesion
-resumen: "Estado real de los 16 goals del repo, leído de cada goal.md — cuáles siguen abiertos y cuáles no viajan en git"
+resumen: "Estado real de los 24 goals del repo, leído de cada goal.md — cuáles siguen abiertos y cuáles no viajan en git"
 ---
 # Estado de los goals
 
-Leído de los `goal.md` y de la última entrada de cada `validation-log.md` el 2026-08-02. La
+Leído de los `goal.md` y de la última entrada de cada `validation-log.md` el 2026-08-02, y
+repasado en el pase de veracidad del 2026-08-06 (entonces eran 16 carpetas; hoy son **24**). La
 fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
+
+**Aviso sobre las cinco tandas de la biblia:** sus `goal.md` siguen diciendo «ABIERTO», pero
+`memoria/log.md` registra el 2026-08-04 la **primera pasada ejecutada de T1 a T5**, con sus
+documentos en `docs/flujos/` y pruebas en verde. Lo que no está cerrado es el goal, no el trabajo:
+nadie actualizó la cabecera. Ante la duda, gana `docs/flujos/`.
 
 ## Abiertos o bloqueados
 
@@ -21,6 +27,8 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 | [[goals/biblia-t4-soporte/goal|biblia-t4-soporte]] | **abierto** — cuarto | Los seis módulos que alimentan la cascada, y la invariante de los contratos `auto/*` que comparten con el PDC |
 | [[goals/biblia-t5-lectura/goal|biblia-t5-lectura]] | **abierto** — quinto; depende de las anteriores | Indicadores y Torre de Control: describir una cifra exige haber descrito su origen |
 | [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado** — falta aprobación visual explícita de la matriz de 6 modos; sin ella no hay commit | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
+| [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | **diseño aprobado, sin ejecutar** (abierto el 2026-08-03) | Que `/programa-general` distinga en pantalla los siete estados que su contrato declara, con el chip que PI y PS ya tienen |
+| [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | **diseño y plan aprobados, en espera de precondición** (abierto el 2026-08-04): no arranca hasta que la campaña dark mode termine — el traspaso está escrito en el Step 6 de su Task 31 | Publicar la 1.1.0 del design system: pagar o re-vencer las 39 excepciones que vencen en ella (migrando `/proyectos` a primitivas `aia-*`), gates a «al menos 1.0.0» y commit de activación atómico. Por qué el bump cobra deudas: [[subir-la-version-del-ds-cobra-deudas]] |
 | [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **indeterminado** — sin sección de cierre; la última entrada deja pendientes la revisión visual, los datos del piloto y el contrato de release | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
 
 ## Cerrados
@@ -34,6 +42,7 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 | [[goals/pdc-revision-ux/goal|pdc-revision-ux]] | Los 15 hallazgos de usabilidad del recorrido del dueño de producto |
 | [[goals/pdc-tanda2-plan-verdad/goal|pdc-tanda2-plan-verdad]] | Condición de hecho cumplida el 2026-07-29, aunque sin sección de cierre formal |
 | [[goals/pdc-tanda34-pulido/goal|pdc-tanda34-pulido]] | Los once pendientes de primera impresión y pulido |
+| [[goals/repaso-usabilidad-no-tablas/goal|repaso-usabilidad-no-tablas]] | Cerrado el 2026-08-03: 39 hallazgos (15 altas, 15 medias, 9 bajas), el usuario aprobó atacar 30. Diagnóstico puro, no toca código; cubrió 26 de 45 superficies — las 14 de `admin/` quedaron fuera porque la puerta de servicio no abre su sesión |
 | [[goals/retiro-listado-contratos/goal|retiro-listado-contratos]] | Retirados `/listado-actividades` y `/contratos`; 2 de 4 etapas diferidas explícitamente |
 | [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]] | Núcleo CSS sin vendors más adjuntos por vendor |
 | [[goals/shell-layout-design-system/goal|shell-layout-design-system]] | Goal paraguas; se cerró aunque 2 de sus 4 iniciativas pasaron a un sucesor |
@@ -50,7 +59,11 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 ## Qué viaja en git
 
 `.gitignore` ignora `goals/` entero y va habilitando carpetas una a una con lista blanca. Tras el
-repaso del 2026-08-02, **los 16 goals viajan**: 97 archivos `.md` llegan a un clon fresco.
+repaso del 2026-08-02, **los 16 goals de entonces viajaban**: 97 archivos `.md` llegaban a un clon
+fresco. Recontado el 2026-08-06: hay **24 carpetas de goal** y **106 de los 108 `.md` están
+versionados** (`git ls-files 'goals/*.md'`), así que la lista blanca se ha ido manteniendo — los
+tres goals nuevos (`repaso-usabilidad-no-tablas`, `pg-chip-de-estado`,
+`cierre-version-1-1-0-design-system`) tienen su excepción en `.gitignore`.
 
 Antes de ese repaso faltaban tres cosas, y conviene saber por qué, porque el mismo patrón puede
 repetirse con cualquier goal nuevo:

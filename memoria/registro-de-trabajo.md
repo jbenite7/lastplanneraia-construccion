@@ -35,12 +35,22 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_60 trabajos · 23 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_70 trabajos · 26 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| La biblia de flujos: describir, verificar y auditar el comportamiento de la app | [[docs/superpowers/specs/2026-08-04-biblia-de-flujos-design|spec]] | — |
+| Biblia de flujos · Tanda T1 (transversal) | [[docs/superpowers/plans/2026-08-04-biblia-t1-transversal|plan]] | — |
+| Biblia de flujos · Tanda T2 (cascada LPS) | [[docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps|plan]] | — |
+| Biblia de flujos · Tanda T3 (PDC — Plan de Compras v2) | [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc|plan]] | — |
+| Biblia de flujos · Tanda T4 (soporte) | [[docs/superpowers/plans/2026-08-04-biblia-t4-soporte|plan]] | — |
+| Biblia de flujos · Tanda T5 (lectura) | [[docs/superpowers/plans/2026-08-04-biblia-t5-lectura|plan]] | — |
+| Spec — Campaña de cierre de dark mode: las 54 decisiones convertidas en trabajo | [[docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones|plan]] | — |
+| Cierre de la versión 1.1.0 del design system — Diseño | [[docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system|plan]] | — |
+| Sembrar los conceptos del design system en la wiki | [[docs/superpowers/specs/2026-08-04-conceptos-design-system-en-la-wiki-design|spec]] | — |
+| La semana en sesión solo la escribe una navegación | [[docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion|plan]] | — |
 | Puerta de servicio de desarrollo para admin/ | [[docs/superpowers/specs/2026-08-03-admin-dev-door-design|spec]] | — |
 | Arquitectura del proyecto en la wiki, generada desde el código | [[docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design|spec]] · [[docs/superpowers/plans/2026-08-03-arquitectura-en-la-wiki|plan]] | — |
 | Cierre de dark mode — diseño validado | [[docs/superpowers/specs/2026-08-03-cierre-dark-mode-design|spec]] | — |
@@ -69,7 +79,7 @@ _60 trabajos · 23 con spec y plan emparejados · 14 archivados en `docs/archive
 | PDC v2 · Fase B2 (primera mitad) — Semáforos y look-ahead de contratación — Design | [[docs/superpowers/specs/2026-07-29-b2-semaforos-lookahead-design|spec]] | — |
 | PDC v2 · B2 (primera mitad) — Vencimientos y semáforo del plan | [[docs/archive/superpowers/plans/2026-07-29-b2-vencimientos-lookahead|plan]] | sí |
 | PDC v2 · Fase B3 — El plan de compras en la Torre de Control — Design | [[docs/superpowers/specs/2026-07-29-b3-torre-control-pdc-design|spec]] · [[docs/archive/superpowers/plans/2026-07-30-b3-torre-control-pdc|plan]] | — |
-| PDC · Fase C1 — Retirar el PDC viejo, y qué hacer con su dark a medias — Design | [[docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design|spec]] | — |
+| PDC · Fase C1 — Retirar el PDC viejo, y qué hacer con su dark a medias — Design | [[docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design|spec]] · [[docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo|plan]] | — |
 | PDC v2 — Cierre pre-lanzamiento: los pendientes que bloquean decir «verificado» — Design | [[docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design|spec]] | — |
 | PDC v2 — Despliegue a producción — Design | [[docs/superpowers/specs/2026-07-29-despliegue-pdc-v2-produccion-design|spec]] | — |
 | PDC v2 — Equipo alquilado vs equipo comprado — Design | [[docs/superpowers/specs/2026-07-29-equipo-alquilado-comprado-design|spec]] · [[docs/superpowers/plans/2026-07-29-equipo-alquilado-comprado|plan]] | — |
