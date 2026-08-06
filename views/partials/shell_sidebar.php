@@ -383,31 +383,37 @@ $shellGroups = array_values(array_filter([
       });
     }
 
-    // Menú de cuenta: abre por hover con el mismo periodo de gracia que los
-    // flyouts de semana. No basta CSS: Bootstrap declara
-    // [hidden]{display:none!important} y el panel del componente usa [hidden],
-    // así que el estado se gobierna por atributo (igual que el click de
-    // components.js, que sigue funcionando para teclado y lectores).
+  })();
+
+  // Menú de cuenta: abre por hover con el mismo periodo de gracia que los
+  // flyouts de semana. No basta CSS: Bootstrap declara
+  // [hidden]{display:none!important} y el panel del componente usa [hidden],
+  // así que el estado se gobierna por atributo (igual que el click de
+  // components.js, que sigue funcionando para teclado y lectores).
+  // IIFE propio: el bloque de flyouts sale temprano cuando el proyecto no
+  // tiene semanas (p. ej. /plan-compras) y dejaba este menú sin conectar.
+  (function () {
     var account = document.querySelector('[data-shell-pattern="sidebar"] .aia-sidebar__account');
-    if (account) {
-      var accTrigger = account.querySelector('[data-aia-menu-trigger]');
-      var accPanel = account.querySelector('[data-aia-menu-panel]');
-      if (accTrigger && accPanel) {
-        var setAccOpen = function (open) {
-          accTrigger.setAttribute('aria-expanded', String(open));
-          accPanel.hidden = !open;
-        };
-        account.addEventListener('mouseenter', function () {
-          clearTimeout(account._shellCloseTimer);
-          setAccOpen(true);
-        });
-        account.addEventListener('mouseleave', function () {
-          account._shellCloseTimer = setTimeout(function () {
-            setAccOpen(false);
-          }, 350);
-        });
-      }
-    }
+    if (!account) return;
+    var accTrigger = account.querySelector('[data-aia-menu-trigger]');
+    var accPanel = account.querySelector('[data-aia-menu-panel]');
+    if (!accTrigger || !accPanel) return;
+    var setAccOpen = function (open) {
+      accTrigger.setAttribute('aria-expanded', String(open));
+      accPanel.hidden = !open;
+    };
+    account.addEventListener('mouseenter', function () {
+      clearTimeout(account._shellCloseTimer);
+      setAccOpen(true);
+    });
+    account.addEventListener('mouseleave', function () {
+      account._shellCloseTimer = setTimeout(function () {
+        setAccOpen(false);
+      }, 350);
+    });
+    accTrigger.addEventListener('click', function () {
+      setAccOpen(accPanel.hidden);
+    });
   })();
 </script>
 <?php if ($shellCanCreate || $shellCanDelete): ?>
