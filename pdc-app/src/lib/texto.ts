@@ -74,3 +74,16 @@ export function filtraPorTexto<T>(filas: T[], busqueda: string, campo: (f: T) =>
   if (q === '') return filas
   return filas.filter((f) => normaliza(campo(f)).includes(q))
 }
+
+/**
+ * ¿El texto contiene lo buscado? Sin distinguir mayúsculas ni acentos, conservando la ñ.
+ *
+ * Es el mismo criterio que `filtraPorTexto` aplicado a un solo valor: lo necesitan la lista
+ * buscable, el filtro de columna y el buscador rápido, y tenerlo en un solo sitio es lo que
+ * garantiza que los tres respondan igual a lo que el usuario teclea.
+ */
+export function coincide(texto: string, busqueda: string): boolean {
+  const q = normaliza(busqueda.trim())
+  if (q === '') return true
+  return normaliza(texto).includes(q)
+}

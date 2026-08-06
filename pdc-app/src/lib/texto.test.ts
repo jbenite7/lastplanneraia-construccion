@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contarInsumos, filtraPorTexto, normaliza, PALABRA_INSUMOS, plural } from './texto'
+import { coincide, contarInsumos, filtraPorTexto, normaliza, PALABRA_INSUMOS, plural } from './texto'
 
 describe('plural', () => {
   it('el singular va sin «s»', () => {
@@ -89,5 +89,25 @@ describe('contarInsumos', () => {
 
   it('los miles se separan como se leen en español', () => {
     expect(contarInsumos(1343, 'apariciones')).toBe('1.343 apariciones en APU')
+  })
+})
+
+describe('coincide', () => {
+  it('ignora mayúsculas y acentos', () => {
+    expect(coincide('Cementó Gris', 'cemento')).toBe(true)
+  })
+
+  it('conserva la ñ: «caño» no es «cano»', () => {
+    expect(coincide('CAÑO PVC', 'cano')).toBe(false)
+    expect(coincide('CAÑO PVC', 'caño')).toBe(true)
+  })
+
+  it('una búsqueda vacía o de solo espacios coincide con todo', () => {
+    expect(coincide('lo que sea', '')).toBe(true)
+    expect(coincide('lo que sea', '   ')).toBe(true)
+  })
+
+  it('busca por subcadena, no solo por prefijo', () => {
+    expect(coincide('MAT-ELECTRICOS Y AFINES', 'electri')).toBe(true)
   })
 })
