@@ -16,9 +16,9 @@
 
 	<?php require __DIR__ . '/../partials/shell_sidebar.php'; ?>
 
-    <input type="hidden" id="semana_PHP" value="<?php echo $semana; ?>">
-    <input type="hidden" id="db_PHP" value="<?php echo $dbName; ?>">
-    <input type="hidden" id="proyecto_PHP" value="<?php echo $proyecto; ?>">
+    <input type="hidden" id="semana_PHP" value="<?php echo htmlspecialchars((string) ($semana ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" id="db_PHP" value="<?php echo htmlspecialchars((string) ($dbName ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" id="proyecto_PHP" value="<?php echo htmlspecialchars((string) ($proyecto ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
     <!-- C-46: antes leia $AIA_semana_confirmada, una variable que nadie define, asi que
          siempre valia 0. Ahora usa el estado semanal resuelto en el controlador. -->
     <input type="hidden" id="Semanal_Confirmada" value="<?php echo (int) ($semanalConfirmada ?? 0); ?>" aria-hidden="true">

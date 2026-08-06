@@ -63,7 +63,8 @@ $arreglo = [
 ];
 
 try {
-    $stmtConteo = $dbInstance->queryWithProject("SELECT COUNT(*) AS total FROM {$tSemanasActivas}");
+    // Aislamiento por proyecto explícito (no delegado a la reescritura de queryWithProject).
+    $stmtConteo = $dbInstance->queryWithProject("SELECT COUNT(*) AS total FROM {$tSemanasActivas} WHERE project_id = ?", [$projectId]);
     $dataConteo = $stmtConteo->fetch();
     $conteo = (int) ($dataConteo["total"] ?? 0);
 
@@ -80,8 +81,8 @@ try {
         $_SESSION["Max_Semana"] = 0;
         $arreglo["listadoSemanas"] = [""];
     } else {
-        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} ORDER BY Semana DESC LIMIT 1";
-        $stmtUltima = $dbInstance->queryWithProject($sqlUltima);
+        $sqlUltima = "SELECT Semana, Fecha_Inicio_Sem, Fecha_Fin_Sem FROM {$tSemanasActivas} WHERE project_id = ? ORDER BY Semana DESC LIMIT 1";
+        $stmtUltima = $dbInstance->queryWithProject($sqlUltima, [$projectId]);
         $dataUltima = $stmtUltima->fetch();
 
         $arreglo["Fecha_Inicio_SemYMD"] = $dataUltima["Fecha_Inicio_Sem"];

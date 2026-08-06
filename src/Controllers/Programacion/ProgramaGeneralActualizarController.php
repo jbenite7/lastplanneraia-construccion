@@ -27,18 +27,23 @@ class ProgramaGeneralActualizarController extends BaseController
 
         if ($dbName !== '') {
             try {
+                // El aislamiento por proyecto va explícito en cada consulta, no delegado a la
+                // reescritura de queryWithProject: estas semanas deciden sobre cuál se opera.
+                $projectId = TableResolver::getProjectIdByPrefix($dbName);
+
                 // Obtenemos el panorama real del proyecto actual
                 $query = "SELECT
                             MAX(Semana) as max_overall,
                             MAX(CASE WHEN Semanal_Confirmada = 1 THEN Semana ELSE NULL END) as max_confirmed
-                          FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . "";
-                $stmt = $this->db->queryWithProject($query);
+                          FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . "
+                          WHERE project_id = ?";
+                $stmt = $this->db->queryWithProject($query, [$projectId]);
                 $res = $stmt->fetch();
 
                 $maxOverall = (int) ($res['max_overall'] ?? 0);
                 $maxConfirmed = ($res['max_confirmed'] !== null) ? (int) $res['max_confirmed'] : null;
 
-                $stmtProgram = $this->db->queryWithProject("SELECT MAX(Semana) as max_program FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . "");
+                $stmtProgram = $this->db->queryWithProject("SELECT MAX(Semana) as max_program FROM " . TableResolver::resolveByPrefix($dbName, 'programa_consolidado') . " WHERE project_id = ?", [$projectId]);
                 $programRes = $stmtProgram->fetch();
                 $maxProgramWeek = (int) ($programRes['max_program'] ?? 0);
 
@@ -60,7 +65,7 @@ class ProgramaGeneralActualizarController extends BaseController
 
                 // Obtener estado específico de la semana actual
                 if ($semanaBaseActualizacion > 0) {
-                    $stmtStatus = $this->db->queryWithProject("SELECT Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ?", [$semanaBaseActualizacion]);
+                    $stmtStatus = $this->db->queryWithProject("SELECT Semanal_Confirmada FROM " . TableResolver::resolveByPrefix($dbName, 'semanas_activas') . " WHERE Semana = ? AND project_id = ?", [$semanaBaseActualizacion, $projectId]);
                     $semanalConfirmada = (int) ($stmtStatus->fetchColumn() ?: 0);
                 }
 

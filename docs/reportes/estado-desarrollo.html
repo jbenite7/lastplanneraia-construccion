@@ -4,7 +4,7 @@
     --aia-green: #1A5633; --aia-green-700: #134026; --aia-green-300: #6C9077;
     --aia-amber: #8A6420; --aia-amber-300: #D6A94E;
 
-    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE;
+    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE; --panel-raised: #FFFFFF;
     --ink: #131A16; --ink-soft: #45524A; --ink-faint: #647065;
     --hairline: #DCE3DD; --hairline-strong: #C6D0C8;
 
@@ -15,18 +15,20 @@
     --st-mute: #5A655D;  --st-mute-bg: #E9EDE9;
 
     --accent: var(--aia-green);
-    --radius: 10px;
+    --radius: 10px; --radius-lg: 14px; --radius-sm: 7px;
     --shadow: 0 1px 2px rgba(19,26,22,.05), 0 8px 24px rgba(19,26,22,.06);
+    --shadow-lg: 0 4px 10px rgba(19,26,22,.06), 0 18px 40px rgba(19,26,22,.08);
+    --cmdbar-h: 60px;
     --font-display: "Montserrat", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
     --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, monospace;
   }
   /* El tema oscuro NO es una inversión: son los valores que la propia app rinde
      hoy —fondo de página rgb(11,16,13), acento #6c9077, tinte de estado— medidos
-     en esta misma sesión. El informe se pinta con la paleta que audita. */
+     en sesión. El informe se pinta con la paleta que audita. */
   @media (prefers-color-scheme: dark) {
     :root {
-      --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711;
+      --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711; --panel-raised: #182019;
       --ink: #F7FAF8; --ink-soft: #C7D4CC; --ink-faint: #8C9A91;
       --hairline: #26332B; --hairline-strong: #35443B;
       --st-done: #7FC79A; --st-done-bg: #12301F;
@@ -36,10 +38,11 @@
       --st-mute: #9AA79D; --st-mute-bg: #1E2721;
       --accent: var(--aia-green-300);
       --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.4);
+      --shadow-lg: 0 4px 14px rgba(0,0,0,.45), 0 22px 48px rgba(0,0,0,.4);
     }
   }
   :root[data-theme="light"] {
-    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE;
+    --ground: #F6F8F6; --panel: #FFFFFF; --panel-sunk: #EDF1EE; --panel-raised: #FFFFFF;
     --ink: #131A16; --ink-soft: #45524A; --ink-faint: #647065;
     --hairline: #DCE3DD; --hairline-strong: #C6D0C8;
     --st-done: #1A5633; --st-done-bg: #E4EFE8;
@@ -49,9 +52,10 @@
     --st-mute: #5A655D; --st-mute-bg: #E9EDE9;
     --accent: #1A5633;
     --shadow: 0 1px 2px rgba(19,26,22,.05), 0 8px 24px rgba(19,26,22,.06);
+    --shadow-lg: 0 4px 10px rgba(19,26,22,.06), 0 18px 40px rgba(19,26,22,.08);
   }
   :root[data-theme="dark"] {
-    --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711;
+    --ground: #0B100D; --panel: #141C17; --panel-sunk: #101711; --panel-raised: #182019;
     --ink: #F7FAF8; --ink-soft: #C7D4CC; --ink-faint: #8C9A91;
     --hairline: #26332B; --hairline-strong: #35443B;
     --st-done: #7FC79A; --st-done-bg: #12301F;
@@ -61,100 +65,154 @@
     --st-mute: #9AA79D; --st-mute-bg: #1E2721;
     --accent: #6C9077;
     --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.4);
+    --shadow-lg: 0 4px 14px rgba(0,0,0,.45), 0 22px 48px rgba(0,0,0,.4);
   }
 
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
-  section { padding: 46px 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 44px 0; scroll-margin-top: calc(var(--cmdbar-h) + 14px); }
   h1, h2, h3, .num { font-family: var(--font-display); }
-  h2 { font-size: clamp(1.35rem, 2.4vw, 1.85rem); font-weight: 700; letter-spacing: -.01em; margin: 0 0 6px; text-wrap: balance; }
-  .eyebrow { font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2 { font-size: clamp(1.3rem, 2.3vw, 1.7rem); font-weight: 700; letter-spacing: -.01em; margin: 0 0 6px; text-wrap: balance; }
+  .eyebrow { font-family: var(--font-display); font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }
   .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--hairline); }
-  .lede { color: var(--ink-soft); max-width: 74ch; font-size: 1.02rem; }
+  .lede { color: var(--ink-soft); max-width: 76ch; font-size: 1rem; }
   .num { font-variant-numeric: tabular-nums; }
   code, .mono { font-family: var(--font-mono); font-size: .82em; background: var(--panel-sunk); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--hairline); }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .skip-link { position: absolute; left: -999px; top: 0; background: var(--panel); color: var(--ink); padding: 10px 16px; border-radius: 0 0 8px 0; z-index: 200; }
+  .skip-link:focus { left: 0; }
 
+  /* ---------- barra de comandos fija ---------- */
+  .cmdbar { position: sticky; top: 0; z-index: 100; height: var(--cmdbar-h); background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--hairline); }
+  .cmdbar-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .cmd-brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 800; font-size: .86rem; letter-spacing: .01em; white-space: nowrap; }
+  .cmd-brand .mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--panel); display: grid; place-items: center; font-size: .6rem; font-weight: 800; }
+  .cmdnav { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; overflow-x: auto; }
+  .cmdnav a { font-size: .82rem; font-weight: 600; color: var(--ink-soft); text-decoration: none; padding: 7px 12px; border-radius: 999px; white-space: nowrap; }
+  .cmdnav a:hover { background: var(--panel-sunk); color: var(--ink); }
+  .cmdactions { display: flex; align-items: center; gap: 8px; }
+  .switch { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: var(--panel-sunk); color: var(--ink); border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 6px 8px 6px 12px; font-family: var(--font-body); font-size: .78rem; font-weight: 700; }
+  .switch .track { width: 30px; height: 18px; border-radius: 999px; background: var(--hairline-strong); position: relative; transition: background .18s ease; flex: none; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--panel); transition: transform .18s ease; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .switch[aria-pressed="true"] .track { background: var(--accent); }
+  .switch[aria-pressed="true"] .knob { transform: translateX(12px); }
+  .hbtn { appearance: none; cursor: pointer; background: var(--panel-sunk); color: var(--ink); border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 7px 13px; font-family: var(--font-body); font-size: .8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; }
+  .hbtn:hover { background: var(--hairline); }
+
+  /* ---------- hero ---------- */
   header.masthead { background: radial-gradient(120% 140% at 88% -20%, rgba(108,144,119,.30), transparent 55%), linear-gradient(150deg, #16412A 0%, #0C2318 100%); color: #EEF3EF; position: relative; overflow: hidden; border-bottom: 3px solid var(--aia-green-300); }
   header.masthead::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px); background-size: 100% 30px; opacity: .6; pointer-events: none; }
-  .masthead .wrap { padding-top: 30px; padding-bottom: 38px; position: relative; }
-  .brandbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 40px; }
-  .logo { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 800; letter-spacing: .02em; }
-  .logo .mark { width: 38px; height: 38px; border-radius: 8px; background: #EEF3EF; color: #16412A; display: grid; place-items: center; font-size: .8rem; font-weight: 800; box-shadow: inset 0 0 0 2px rgba(108,144,119,.9); }
-  .logo small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .68rem; letter-spacing: .04em; opacity: .82; }
-  .hbtn { appearance: none; cursor: pointer; background: rgba(255,255,255,.1); color: #EEF3EF; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; padding: 7px 14px; font-family: var(--font-body); font-size: .8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; }
-  .hbtn:hover { background: rgba(255,255,255,.18); }
-  .hbtn:focus-visible { outline: 2px solid #EEF3EF; outline-offset: 2px; }
-  .masthead h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -.025em; margin: 0 0 14px; line-height: 1.03; text-wrap: balance; max-width: 20ch; }
-  .masthead h1 em { font-style: normal; color: #A9D6BA; }
-  .masthead .sub { font-size: 1.06rem; max-width: 66ch; color: #DDE6DF; }
-  .masthead .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-  .chip-meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 6px 13px; font-size: .82rem; font-weight: 600; }
+  .masthead .wrap { padding-top: 34px; padding-bottom: 34px; position: relative; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip-meta { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 6px 13px; font-size: .8rem; font-weight: 600; }
   .chip-meta b { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
   .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .masthead h1 { font-size: clamp(1.7rem, 3.6vw, 2.55rem); font-weight: 800; letter-spacing: -.02em; margin: 0 0 12px; line-height: 1.08; text-wrap: balance; max-width: 26ch; }
+  .masthead h1 em { font-style: normal; color: #A9D6BA; }
+  .masthead .sub { font-size: 1rem; max-width: 68ch; color: #DDE6DF; margin: 0 0 22px; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cta-btn { appearance: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 10px 18px; font-family: var(--font-body); font-size: .86rem; font-weight: 700; border: 1px solid rgba(255,255,255,.28); }
+  .cta-btn.primary { background: #EEF3EF; color: #16412A; border-color: transparent; }
+  .cta-btn.primary:hover { background: #DCE9E0; }
+  .cta-btn.ghost { background: rgba(255,255,255,.08); color: #EEF3EF; }
+  .cta-btn.ghost:hover { background: rgba(255,255,255,.16); }
 
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-  .kpi { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
-  .kpi .k-label { font-family: var(--font-display); font-weight: 700; font-size: .96rem; }
-  .kpi .k-sub { color: var(--ink-faint); font-size: .82rem; }
-  .kpi .k-big { font-family: var(--font-display); font-weight: 800; font-size: 2.5rem; line-height: 1; letter-spacing: -.03em; }
-  .kpi .k-unit { font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
-  .ring-wrap { display: flex; align-items: center; gap: 16px; }
-  .ring { width: 84px; height: 84px; flex: none; }
+  /* ---------- callout de bloqueos ---------- */
+  .spotlight { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 30px; }
+  .spot-card { background: color-mix(in srgb, var(--st-block-bg) 55%, var(--panel)); border: 1px solid color-mix(in srgb, var(--st-block) 30%, var(--hairline)); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start; text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease; }
+  .spot-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .spot-ico { flex: none; width: 34px; height: 34px; border-radius: 9px; background: var(--st-block-bg); color: var(--st-block); display: grid; place-items: center; font-size: 1rem; font-weight: 800; border: 1px solid color-mix(in srgb, var(--st-block) 30%, var(--hairline)); }
+  .spot-card h3 { margin: 0 0 4px; font-size: .96rem; color: var(--st-block); }
+  .spot-card p { margin: 0; font-size: .86rem; color: var(--ink-soft); }
+  .spot-card .go { display: inline-block; margin-top: 8px; font-size: .78rem; font-weight: 700; color: var(--st-block); }
+  @media (max-width: 760px) { .spotlight { grid-template-columns: 1fr; } }
+
+  /* ---------- KPIs ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .kpi { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius-lg); padding: 20px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease; }
+  a.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--hairline-strong); }
+  .kpi .k-label { font-family: var(--font-display); font-weight: 700; font-size: .92rem; }
+  .kpi .k-sub { color: var(--ink-faint); font-size: .78rem; line-height: 1.5; }
+  .kpi .k-big { font-family: var(--font-display); font-weight: 800; font-size: 2.3rem; line-height: 1; letter-spacing: -.03em; }
+  .kpi .k-unit { font-size: .78rem; color: var(--ink-faint); font-weight: 600; }
+  .ring-wrap { display: flex; align-items: center; gap: 14px; }
+  .ring { width: 74px; height: 74px; flex: none; }
   .ring circle { fill: none; stroke-width: 9; }
   .ring .track { stroke: var(--hairline); }
   .ring .val { stroke: var(--accent); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.1s cubic-bezier(.22,.61,.36,1); }
   .ring .val.wait { stroke: var(--st-wait); }
-  .ring text { font-family: var(--font-display); font-weight: 800; fill: var(--ink); font-size: 14px; }
+  .ring text { font-family: var(--font-display); font-weight: 800; fill: var(--ink); font-size: 13px; }
+  .spark { display: block; margin-top: 2px; overflow: visible; }
+  .spark polyline { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .spark circle { fill: var(--panel); stroke: var(--accent); stroke-width: 1.6; }
+  .spark circle.today { fill: var(--st-wait); stroke: var(--st-wait); }
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
 
-  .banner { margin-top: 18px; border-radius: var(--radius); padding: 20px 22px; background: var(--st-wait-bg); border: 1px solid color-mix(in srgb, var(--st-wait) 34%, var(--hairline)); }
-  .banner h3 { margin: 0 0 6px; font-size: 1.02rem; color: var(--ink); }
-  .banner p { margin: 0; color: var(--ink-soft); font-size: .9rem; max-width: 84ch; }
-  .banner p + p { margin-top: 8px; }
+  .techy-toggle-note { display: none; }
+  [data-mode="simple"] .techy { display: none !important; }
+  [data-mode="simple"] .simple-badge { display: inline-flex !important; }
+  .simple-badge { display: none; align-items: center; gap: 6px; font-size: .74rem; font-weight: 700; color: var(--accent); background: var(--st-done-bg); border-radius: 999px; padding: 4px 10px; }
 
-  .eli-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  .eli-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
-  .eli-card h3 { margin: 0 0 5px; font-size: 1.04rem; font-weight: 700; display: flex; align-items: center; gap: 9px; }
-  .eli-card h3::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: none; background: var(--accent); }
-  .eli-card.b h3::before { background: var(--st-wait); }
-  .eli-card .kicker { font-size: .84rem; color: var(--ink-faint); margin: 0 0 16px; }
-  .eli-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
-  .eli-card li { display: flex; gap: 12px; font-size: .9rem; color: var(--ink-soft); line-height: 1.5; align-items: flex-start; }
+  /* ---------- en simple (global) ---------- */
+  .eli-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .eli-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow); }
+  .eli-card h3 { margin: 0 0 5px; font-size: 1.02rem; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+  .eli-card .kicker { font-size: .82rem; color: var(--ink-faint); margin: 0 0 16px; }
+  .eli-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; }
+  .eli-card li { display: flex; gap: 11px; font-size: .89rem; color: var(--ink-soft); line-height: 1.5; align-items: flex-start; }
   .eli-card li b { color: var(--ink); font-weight: 700; }
-  .eli-tag { font-family: var(--font-display); font-weight: 800; font-size: .72rem; flex: none; width: 30px; height: 26px; border-radius: 7px; display: grid; place-items: center; margin-top: 1px; background: var(--st-done-bg); color: var(--st-done); }
-  .eli-card.b .eli-tag { background: var(--st-wait-bg); color: var(--st-wait); }
+  .eli-ico { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; margin-top: 1px; background: var(--st-done-bg); color: var(--st-done); font-size: .78rem; font-weight: 800; }
+  .eli-card.b .eli-ico { background: var(--st-wait-bg); color: var(--st-wait); }
 
-  /* Cada frente activo lleva su estado detallado y su lectura en simple lado a
-     lado, exactamente en la misma proporción que el bloque global de arriba:
-     misma pareja de clases, para que la forma del informe no se invente dos
-     veces. */
+  /* ---------- radar de frentes ---------- */
+  .radar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 22px 0 30px; }
+  .radar-tile { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 16px 15px; box-shadow: var(--shadow); text-align: left; cursor: pointer; appearance: none; font-family: var(--font-body); display: flex; flex-direction: column; gap: 10px; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .radar-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--hairline-strong); }
+  .radar-tile .r-n { font-family: var(--font-display); font-size: .7rem; font-weight: 800; color: var(--ink-faint); letter-spacing: .04em; }
+  .radar-tile .r-t { font-family: var(--font-display); font-weight: 700; font-size: .88rem; color: var(--ink); line-height: 1.25; min-height: 2.5em; }
+  .pbar { display: block; height: 6px; border-radius: 999px; background: var(--panel-sunk); overflow: hidden; }
+  .pbar .fill { display: block; width: 100%; height: 100%; border-radius: 999px; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform 1s cubic-bezier(.22,.61,.36,1); }
+  .pbar .fill.wait { background: var(--st-wait); }
+  .pbar .fill.block { background: var(--st-block); }
+  .radar-tile .r-stat { font-size: .74rem; color: var(--ink-faint); font-weight: 600; }
+  .radar-duo { display: flex; gap: 6px; }
+  .radar-duo span { flex: 1; text-align: center; font-size: .68rem; font-weight: 800; letter-spacing: .02em; padding: 4px 0; border-radius: 5px; }
+  .radar-duo .yes { background: var(--st-done-bg); color: var(--st-done); }
+  .radar-duo .no { background: var(--st-block-bg); color: var(--st-block); }
+  .radar-status { display: flex; align-items: center; gap: 7px; font-size: .74rem; color: var(--ink-faint); font-weight: 600; }
+  .radar-status i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  @media (max-width: 980px) { .radar-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) { .radar-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- frentes ---------- */
+  .frente { background: var(--panel-sunk); border-radius: var(--radius-lg); padding: 28px 26px; margin-top: 20px; scroll-margin-top: calc(var(--cmdbar-h) + 14px); }
   .front-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
   .front-head .badge { font-size: .68rem; }
-  .front-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; align-items: start; margin-top: 20px; }
-  .front-detail { display: flex; flex-direction: column; gap: 14px; }
-  @media (max-width: 980px) { .front-grid { grid-template-columns: 1fr; } }
-
-  .timeline { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 24px 22px 14px; box-shadow: var(--shadow); overflow-x: auto; }
-  .tl-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(70px, 1fr); gap: 12px; align-items: end; min-width: 420px; }
-  .tl-day { display: flex; flex-direction: column; gap: 8px; }
-  .tl-col { height: 130px; display: flex; align-items: flex-end; }
-  /* La barra crece con `transform: scaleY` anclado abajo, no animando `height`:
-     animar una propiedad de layout obliga a recalcular el flujo en cada
-     fotograma. El alto final lo fija el JS de una vez y la animacion solo
-     escala. */
-  .tl-bar { width: 100%; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, var(--aia-green-300), var(--aia-green)); transform: scaleY(0); transform-origin: 50% 100%; transition: transform 1s cubic-bezier(.22,.61,.36,1); will-change: transform; }
-  .tl-day.is-today .tl-bar { background: linear-gradient(180deg, var(--st-wait), var(--aia-amber)); }
-  .tl-n { font-family: var(--font-display); font-weight: 800; font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
-  .tl-d { font-size: .72rem; color: var(--ink-faint); text-align: center; font-weight: 600; }
-  .tl-note { margin-top: 16px; font-size: .84rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: flex-start; }
+  .front-progress { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; max-width: 320px; }
+  .front-progress .pbar { flex: 1; }
+  .front-progress .p-txt { font-size: .78rem; font-weight: 700; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .frente-simple { margin-top: 16px; background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 18px 20px; }
+  .frente-simple > .kicker { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  .frente-simple ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .frente-simple li { display: flex; gap: 10px; font-size: .89rem; color: var(--ink-soft); line-height: 1.5; }
+  .frente-simple li b { color: var(--ink); }
+  .frente-simple li::before { content: "→"; color: var(--accent); flex: none; font-weight: 800; }
+  .tech-toggle { margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: .82rem; color: var(--accent); padding: 9px 4px; }
+  .tech-toggle .chev { transition: transform .18s ease; display: inline-block; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+  .tech-body { display: flex; flex-direction: column; gap: 14px; padding-top: 16px; }
 
   .table-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); box-shadow: var(--shadow); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 560px; }
-  thead th { text-align: left; font-family: var(--font-display); font-weight: 700; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); padding: 13px 16px; border-bottom: 1.5px solid var(--hairline-strong); white-space: nowrap; }
-  tbody td { padding: 13px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; font-size: .89rem; color: var(--ink-soft); }
+  table { width: 100%; border-collapse: collapse; min-width: 460px; }
+  thead th { text-align: left; font-family: var(--font-display); font-weight: 700; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); padding: 12px 16px; border-bottom: 1.5px solid var(--hairline-strong); white-space: nowrap; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; font-size: .88rem; color: var(--ink-soft); }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover { background: var(--panel-sunk); }
-  td .t-id { font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: var(--ink); white-space: nowrap; }
+  td .t-id { font-family: var(--font-display); font-weight: 800; font-size: .93rem; color: var(--ink); white-space: nowrap; }
   .badge { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
   .b-done { background: var(--st-done-bg); color: var(--st-done); }
   .b-wait { background: var(--st-wait-bg); color: var(--st-wait); }
@@ -162,76 +220,147 @@
   .b-info { background: var(--st-info-bg); color: var(--st-info); }
   .b-mute { background: var(--st-mute-bg); color: var(--st-mute); }
 
-  .stack { display: flex; flex-direction: column; gap: 14px; }
-  /* El estado de cada tarjeta lo lleva su insignia, no un rail de color en el
-     borde: ese rail es el delator mas reconocible de interfaz generada. Aqui la
-     severidad se codifica con un fondo apenas tenido y el titulo en el tono del
-     estado, que es mas discreto y sigue leyendose de un vistazo. */
-  .card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
   .card.block { background: color-mix(in srgb, var(--st-block-bg) 45%, var(--panel)); border-color: color-mix(in srgb, var(--st-block) 26%, var(--hairline)); }
   .card.wait { background: color-mix(in srgb, var(--st-wait-bg) 45%, var(--panel)); border-color: color-mix(in srgb, var(--st-wait) 26%, var(--hairline)); }
   .card.done { background: color-mix(in srgb, var(--st-done-bg) 40%, var(--panel)); border-color: color-mix(in srgb, var(--st-done) 22%, var(--hairline)); }
   .card.block h3 { color: var(--st-block); }
   .card.wait h3 { color: var(--st-wait); }
   .card.done h3 { color: var(--st-done); }
-  .card h3 { margin: 0 0 8px; font-size: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-  .card p { margin: 0; color: var(--ink-soft); font-size: .89rem; max-width: 82ch; }
+  .card h3 { margin: 0 0 8px; font-size: .96rem; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .card p { margin: 0; color: var(--ink-soft); font-size: .87rem; max-width: 82ch; }
   .card p + p { margin-top: 9px; }
 
-  .debt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .debt-item { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
-  .debt-item .d-n { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-  .debt-item .d-l { font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
+  /* ---------- cerrado ---------- */
+  .closed-summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); font-family: var(--font-display); font-weight: 700; font-size: .92rem; }
+  .closed-summary .chev { transition: transform .18s ease; }
+  details[open] > .closed-summary .chev { transform: rotate(90deg); }
+  .closed-body { margin-top: 12px; }
+
+  /* ---------- ritmo ---------- */
+  .timeline { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius-lg); padding: 24px 22px 16px; box-shadow: var(--shadow); overflow-x: auto; }
+  .tl-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(76px, 1fr); gap: 12px; align-items: end; min-width: 420px; }
+  .tl-day { display: flex; flex-direction: column; gap: 8px; }
+  .tl-col { height: 140px; display: flex; align-items: flex-end; }
+  .tl-bar { width: 100%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--aia-green-300), var(--aia-green)); transform: scaleY(0); transform-origin: 50% 100%; transition: transform 1s cubic-bezier(.22,.61,.36,1); will-change: transform; cursor: default; }
+  .tl-day.is-today .tl-bar { background: linear-gradient(180deg, var(--st-wait), var(--aia-amber)); }
+  .tl-n { font-family: var(--font-display); font-weight: 800; font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .tl-d { font-size: .72rem; color: var(--ink-faint); text-align: center; font-weight: 600; }
+  .tl-type { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--hairline); }
+  .tl-type-chip { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; color: var(--ink-soft); background: var(--panel-sunk); border-radius: 999px; padding: 5px 11px; }
+  .tl-type-chip .sw { width: 8px; height: 8px; border-radius: 2px; }
+  .tl-note { margin-top: 14px; font-size: .84rem; color: var(--ink-soft); display: flex; gap: 8px; align-items: flex-start; }
+
+  /* ---------- deuda ---------- */
+  .debt-chart { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 22px 24px; display: flex; flex-direction: column; gap: 13px; }
+  .debt-row { display: grid; grid-template-columns: 190px 1fr 74px; align-items: center; gap: 12px; }
+  .debt-row .d-l { font-size: .85rem; font-weight: 600; color: var(--ink-soft); }
+  .debt-row .pbar { height: 14px; }
+  .debt-row .d-n { font-family: var(--font-display); font-weight: 800; font-size: .92rem; text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 640px) { .debt-row { grid-template-columns: 1fr; gap: 4px; } .debt-row .d-n { text-align: left; } }
+
+  /* ---------- registro / decisiones ---------- */
+  .seg-bar { display: flex; height: 28px; border-radius: 999px; overflow: hidden; border: 1px solid var(--hairline); }
+  .seg-bar span { display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: .74rem; color: #fff; transform: scaleX(0); transform-origin: 0 50%; transition: transform 1s cubic-bezier(.22,.61,.36,1); }
+  .seg-a { background: var(--st-block); }
+  .seg-b { background: var(--st-wait); }
+  .seg-c { background: var(--st-mute); }
+  .seg-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: .8rem; color: var(--ink-soft); }
+  .seg-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .seg-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
   footer { border-top: 3px solid var(--aia-green-300); background: #0C2318; color: #D5E0D8; }
-  footer .wrap { padding: 30px 24px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: flex-start; }
-  footer .disclaimer { max-width: 72ch; font-size: .82rem; line-height: 1.6; opacity: .92; }
+  footer .wrap { padding: 28px 24px; }
+  footer .foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 14px; }
   footer .brand-foot { font-family: var(--font-display); font-weight: 800; }
   footer .brand-foot small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .72rem; opacity: .75; margin-top: 3px; }
+  footer .foot-summary { max-width: 60ch; font-size: .84rem; opacity: .92; }
+  footer .meth-summary { display: inline-flex; align-items: center; gap: 7px; font-size: .78rem; font-weight: 700; color: #A9D6BA; padding: 8px 0; }
+  footer .meth-summary .chev { transition: transform .18s ease; }
+  details[open] > .meth-summary .chev { transform: rotate(90deg); }
+  footer .disclaimer { max-width: 78ch; font-size: .8rem; line-height: 1.65; opacity: .85; margin-top: 8px; }
 
-  @media (max-width: 940px) { .eli-grid, .debt { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } section { padding: 34px 0; } }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 940px) { .eli-grid { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } .cmdnav { display: none; } }
+  @media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } section { padding: 32px 0; } .frente { padding: 20px 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, html { transition: none !important; scroll-behavior: auto !important; } }
   @media print {
     @page { margin: 13mm; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; transition: none !important; }
     html, body { background: #fff; }
-    .hbtn { display: none !important; }
-    section { padding: 14px 0; break-inside: avoid; }
-    .kpi, .timeline, .table-card, .card, .banner, .eli-card, .debt-item, footer { box-shadow: none !important; break-inside: avoid; }
+    .cmdbar, .hero-cta, .hbtn, .switch { display: none !important; }
+    section { padding: 12px 0; break-inside: avoid; }
+    .kpi, .timeline, .table-card, .card, .eli-card, .debt-chart, footer, .frente, .spot-card { box-shadow: none !important; break-inside: avoid; }
     .table-card, .timeline { overflow: visible !important; }
+    [data-mode="simple"] .techy { display: block !important; }
   }
 </style>
 
-<header class="masthead">
-  <div class="wrap">
-    <div class="brandbar">
-      <div class="logo">
-        <span class="mark">AIA</span>
-        <span>Arquitectos e Ingenieros Asociados
-          <small>Last Planner · Estado de desarrollo</small>
-        </span>
-      </div>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="cmdbar">
+  <div class="wrap cmdbar-inner">
+    <div class="cmd-brand"><span class="mark">AIA</span> Estado de desarrollo</div>
+    <nav class="cmdnav" aria-label="Secciones del informe">
+      <a href="#resumen">Resumen</a>
+      <a href="#frentes">Frentes</a>
+      <a href="#cerrado">Cerrado</a>
+      <a href="#ritmo">Ritmo</a>
+      <a href="#deuda">Deuda</a>
+      <a href="#registro">Registro</a>
+    </nav>
+    <div class="cmdactions">
+      <button class="switch" id="modeBtn" aria-pressed="false"><span class="track"><span class="knob"></span></span> Modo simple</button>
       <button class="hbtn" id="themeBtn" aria-label="Cambiar tema claro u oscuro"><span aria-hidden="true">◐</span> Tema</button>
-    </div>
-    <h1>Estado del <em>desarrollo</em> general</h1>
-    <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA — no solo dark mode. Cinco frentes en marcha; esta pasada, 54 minutos después de la anterior, no encontró desarrollo nuevo: <code>HEAD</code> sigue exactamente en <code>fe7c1b3</code>, el commit que publicó la pasada anterior. La racha de pasadas en cero, rota solo una vez por el commit de infraestructura de CI de la pasada anterior, vuelve a arrancar. Sí hubo una corrección de medición: el <code>fetch --unshallow</code> de la pasada anterior no había completado de verdad —el repo seguía marcado <code>shallow</code> pese al comando—, así que sus cifras de historial completo se quedaban un commit por debajo; corregidas aquí a <b>1.548</b> commits reales y <b>1.102</b> de distancia a producción. La campaña de cierre de dark mode se mantiene en <b>13 de 36 tareas</b> ejecutadas con commit. El Plan de Compras v2 sigue prácticamente cerrado y a la espera de producción real. Otros ocho goals del repo ya cerraron, se descartaron o se absorbieron en otro.</p>
-    <div class="meta">
-      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">5 ago 2026 · 16:22 UTC</b></span>
-      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos · <b>54</b> decisiones pendientes</span>
-      <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code>origin/main</code></span>
     </div>
   </div>
 </header>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="hero-meta">
+      <span class="chip-meta"><span class="dot" style="background:#A9D6BA"></span>Corte: <b id="corte">6 ago 2026 · 03:18 UTC</b></span>
+      <span class="chip-meta"><span class="dot" style="background:#D6A94E"></span><b>5</b> frentes activos · <b>54</b> decisiones pendientes</span>
+      <span class="chip-meta">Rama <b>main</b> · <b>al día</b> con <code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#EEF3EF">origin/main</code></span>
+    </div>
+    <h1>Cinco frentes activos. <em>Cero</em> commits de desarrollo nuevos — novena pasada seguida, otra vez sin hallazgos propios que contar.</h1>
+    <p class="sub">Radiografía de todo el desarrollo activo de Last Planner AIA. Ningún commit de código nuevo llegó desde que la pasada anterior publicó (<code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#EEF3EF">0ee2249</code>, 02:25 UTC) — los 27 planes y los 24 <code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#EEF3EF">goal.md</code> se releyeron igual y no hay desarrollo nuevo que contar, ni tampoco un error propio del informe como el que destapó hace cinco pasadas el conteo de commits por día. El total histórico, la brecha con producción y el desglose por tipo vuelven a subir en uno, por el mismo efecto aritmético de siempre: el commit con el que la pasada anterior publicó ya cuenta como commit de <code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#EEF3EF">main</code>.</p>
+    <div class="hero-cta">
+      <a class="cta-btn primary" href="#spotlight">Qué necesita tu firma →</a>
+      <a class="cta-btn ghost" href="#frentes">Ver los 5 frentes →</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
 
 <section id="resumen">
   <div class="wrap">
     <p class="eyebrow">Resumen ejecutivo</p>
     <h2>Dónde está el desarrollo hoy, frente por frente</h2>
-    <p class="lede" style="margin-bottom:26px">Este informe cubría solo el cierre de dark mode hasta hoy; se llamaba <code>dark-mode-estado.html</code> y ese nombre ya no existe. El alcance ahora es <b>todo</b> el desarrollo activo. De los <b>24 goals</b> que hoy viven en <code>goals/</code>, ocho ya cerraron, se descartaron o se absorbieron en otro, y los <b>16 restantes</b> viven repartidos en <b>5 frentes activos</b>: el <b>cierre de dark mode</b> (54 decisiones registradas y un plan que sigue en <b>36 tareas</b>, <b>trece</b> ejecutadas con commit propio — sin cambios desde la pasada anterior — con el check <code>contracts</code> de la suite estática en verde), el <b>Plan de Compras v2</b> (7 de esos 24 goals, con el trabajo de código prácticamente cerrado, su antecesor v1 <b>ya eliminado del repo</b> y, tras una regresión propia de ese retiro encontrada y reparada el mismo día —la pantalla de Subcontratistas dejó de cargar—, con un segundo commit de dureza de CI llegado en esta pasada —el panel Admin y la base de datos de CI del PDC v2—, esperando solo el despliegue a la producción real), el <b>núcleo y gobernanza del Design System</b> (Sprint 00 sigue sin fecha de cierre, y desde el 4 de agosto tiene el plan de la versión 1.1.0 detrás suyo, sin arrancar todavía), la <b>Torre de Control BI con Gemini</b> (bloqueada por una sola aprobación visual pendiente) y la <b>Biblia de flujos</b> (documenta lo que la app debe hacer, escenario por escenario; su primera pasada encontró seis módulos que mutan datos sin validar CSRF, todavía sin arreglar, y el 4 de agosto reescribió por completo su capítulo del Plan de Compras porque describía el módulo v1 que hoy ya ni siquiera existe en el árbol). Una racha de seis pasadas en cero se rompió hace dos pasadas al encontrar las Tasks 9, 10 y 11 de la campaña de dark mode; la racha que arrancó justo después duró exactamente una pasada, rota por un commit de infraestructura de CI ajeno al plan. Esta pasada, la siguiente, vuelve a cero: nadie tocó <code>main</code> en los 54 minutos desde la publicación anterior.</p>
+    <p class="lede" style="margin-bottom:24px">De los <b>24 goals</b> que hoy viven en <code>goals/</code>, ocho ya cerraron, se descartaron o se absorbieron en otro (ver «Cerrado recientemente» más abajo), y los <b>16 restantes</b> viven repartidos en <b>5 frentes activos</b>. Esta pasada vuelve a cero desarrollo nuevo en <code>git log</code> — releyendo otra vez los 27 planes y los 24 <code>goal.md</code> uno por uno no apareció nada que las pasadas anteriores no hubieran contado ya, y esta vez tampoco apareció un error propio del informe: tanto el conteo de «Ritmo» por marca de tiempo Unix (introducido hace seis pasadas) como el de «commits últimas 24 h» por <code>%at</code> en Python (adoptado hace cuatro pasadas) se reverificaron sin cambios de método, sumando solo un dato más a la ventana móvil. El registro de decisiones sigue sin tocarse desde el 4 de agosto por la mañana y sigue con las mismas diez filas que el código ya cerró sin que el documento se entere.</p>
+
+    <div id="spotlight" class="spotlight">
+      <a class="spot-card" href="#frente-bi">
+        <span class="spot-ico">A</span>
+        <span>
+          <h3>Una aprobación visual de BI</h3>
+          <p>El tablero de Torre de Control con Gemini está construido y probado, pero nadie ha dado el visto bueno final a cómo se ve en sus seis combinaciones de filtros.</p>
+          <span class="go">Ver el frente 4 →</span>
+        </span>
+      </a>
+      <a class="spot-card" href="#frente-pdc">
+        <span class="spot-ico">B</span>
+        <span>
+          <h3>La web real no tiene el plan de compras nuevo</h3>
+          <p>Sigue con el código de julio, <b>1.128</b> commits atrás. Hasta que se despliegue ahí, el Plan de Compras v2 no se puede dar por terminado del todo.</p>
+          <span class="go">Ver el frente 2 →</span>
+        </span>
+      </a>
+    </div>
 
     <div class="kpis">
-      <div class="kpi">
+      <a class="kpi" href="#deuda">
         <div class="ring-wrap">
           <svg class="ring" viewBox="0 0 100 100" data-pct="96" aria-hidden="true">
             <circle class="track" cx="50" cy="50" r="42"></circle>
@@ -240,11 +369,11 @@
           </svg>
           <div>
             <div class="k-label">Suite estática</div>
-            <div class="k-sub">14 caen: 10 por falta de <code>@axe-core/playwright</code>, 4 sin Docker — cero por regresión real<br>7 de 8 checks en verde — <code>contracts</code> solo falla si el clon llega recortado (pasó tras <code>fetch --unshallow</code>)</div>
+            <div class="k-sub techy">7/8 checks en verde · 14 caen: 10 por falta de <code>@axe-core/playwright</code>, 4 sin Docker — cero por regresión real</div>
           </div>
         </div>
-      </div>
-      <div class="kpi">
+      </a>
+      <a class="kpi" href="#frente-dark-mode">
         <div class="ring-wrap">
           <svg class="ring" viewBox="0 0 100 100" data-pct="6" aria-hidden="true">
             <circle class="track" cx="50" cy="50" r="42"></circle>
@@ -253,14 +382,24 @@
           </svg>
           <div>
             <div class="k-label">Esperan tu firma</div>
-            <div class="k-sub">Bloque A del registro<br>A-1 se firmó el 4 de agosto</div>
+            <div class="k-sub">Bloque A del registro de decisiones <span class="techy">· A-1 se firmó el 4 de agosto</span></div>
           </div>
         </div>
-      </div>
+      </a>
       <div class="kpi">
         <div class="k-label">Commits últimas 24 h</div>
-        <div><span class="k-big num">85</span> <span class="k-unit">ventana móvil hasta 16:22 UTC</span></div>
-        <div class="k-sub">git log de esta misma pasada, 54 minutos después del corte anterior (15:28:31 UTC, commit <code>fe7c1b3</code>, la publicación de la pasada anterior). El clon volvió a llegar shallow otra vez — se corrió <code>fetch --unshallow</code> y esta vez se verificó con <code>git rev-parse --is-shallow-repository</code> hasta dar <code>false</code>: la pasada anterior había dado por buena una rehidratación que en realidad no había completado, así que su cifra de <b>1.547</b> se quedaba corta por un commit. Recontado de cero: <b>1.548</b> commits reales. <code>HEAD</code> y <code>origin/main</code> coinciden en <code>fe7c1b3</code>, confirmado con <code>rev-list --left-right --count HEAD...origin/main</code>, <b>0/0</b>. <b>Esta vez no hay desarrollo nuevo</b>: nadie tocó <code>main</code> en esta ventana. La racha de pasadas en cero, rota una sola vez por el commit de infraestructura de CI de la pasada anterior, vuelve a arrancar.</div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+          <div><span class="k-big num">58</span> <span class="k-unit">hasta 03:18 UTC</span></div>
+          <svg class="spark" viewBox="0 0 140 40" width="88" height="26" aria-hidden="true">
+            <polyline points="4,2.0 37,23.6 70,38.0 103,30.8 136,30.8"></polyline>
+            <circle cx="4" cy="2.0" r="2.6"></circle>
+            <circle cx="37" cy="23.6" r="2.6"></circle>
+            <circle cx="70" cy="38.0" r="2.6"></circle>
+            <circle cx="103" cy="30.8" r="2.6"></circle>
+            <circle class="today" cx="136" cy="30.8" r="3"></circle>
+          </svg>
+        </div>
+        <div class="k-sub techy">1.574 commits reales en el historial. <code>HEAD</code> y <code>origin/main</code> coinciden en <code>0ee2249</code> — sin desarrollo nuevo desde esa publicación.</div>
       </div>
       <div class="kpi">
         <div class="k-label">Frentes activos</div>
@@ -269,299 +408,375 @@
       </div>
     </div>
 
-    <div class="banner">
-      <h3>Vuelve a cero: 54 minutos después, ningún commit de desarrollo nuevo</h3>
-      <p>Contrastado en <code>git log</code> de esta misma pasada tras rehidratar el clon (<code>fetch --unshallow</code>, verificado esta vez con <code>git rev-parse --is-shallow-repository</code> hasta dar <code>false</code>): <code>HEAD</code> y <code>origin/main</code> siguen exactamente en <code>fe7c1b3</code>, el commit de publicación de la pasada anterior — la que rompió la racha de pasadas en cero al encontrar el commit de infraestructura de CI (<code>c22b60ac</code>, el panel Admin y la base de CI del PDC v2). Nadie tocó <code>main</code> en esta ventana, así que no hay nada nuevo que narrar sobre el plan de campaña: sigue en <b>36 tareas</b>, <b>13</b> con commit real detrás. Reverificado en esta pasada corriendo <code>npm run test:design-system:static</code> sobre el mismo árbol: <code>contracts</code> sigue en verde, 0 «golden hash mismatch», <b>349/363</b> pruebas de <code>node-tests</code> en verde — cifras idénticas a la pasada anterior porque el código no cambió. Siguen sin ejecutar la <b>Task 32</b> (regresión: el indicador de fase de Programación Semanal quedó huérfano tras el rollout del shell lateral — reverificado en esta pasada, <code>.ps-weekly-phase-title</code> sigue en <code>hot.js</code> sin nuevo anclaje) y la <b>Task 34</b> (falta tipar y alinear a la derecha las columnas numéricas — reverificado en esta pasada que la columna <code>Ejecutado_Teorico</code> del <code>hot.js</code> de Programa General sigue sin <code>type: 'numeric'</code>).</p>
-      <p>El registro de decisiones (<code>docs/superpowers/decisiones-pendientes-2026-08-03.md</code>) sigue sin commits desde el 4 de agosto por la mañana (último commit <code>b389674</code>, 14:41 UTC): sus filas C-16, C-31, C-49, C-48, C-34 y C-24 todavía se leen como abiertas pese a que el código ya las cerró — el mismo patrón de documento que se queda atrás del código que ya midió A-1 en pasadas anteriores. Recontado en esta pasada por referencia: sigue en <b>54 filas</b> (3 A, 2 B, 49 C), sin cambios. C-49 sigue solo <b>parcialmente</b> cerrada: la parte de ancho (C-49p1, el nombre del estado invisible en la celda) sí se resolvió con <code>d877a76c</code>, pero la parte de color (C-49p2, el punto verde junto al marco crítico) sigue siendo la Task 16 del plan, pendiente porque decide significado de dominio y exige aprobación explícita del usuario antes de aplicarse.</p>
-    </div>
+    <details class="techy" style="margin-top:20px">
+      <summary class="tech-toggle"><span class="chev">▸</span> Ver el detalle técnico completo de esta pasada</summary>
+      <div class="tech-body">
+        <div class="card wait">
+          <h3>Sin desarrollo nuevo, novena pasada seguida — y otra vez sin hallazgos propios</h3>
+          <p>Contrastado en <code>git log</code> de esta misma pasada tras rehidratar el clon (<code>fetch --unshallow</code>, verificado con <code>git rev-parse --is-shallow-repository</code> hasta dar <code>false</code>): <code>HEAD</code> y <code>origin/main</code> coincidían en <code>0ee2249</code> antes de este informe — el propio commit con el que la pasada anterior publicó el suyo. Cero commits de código llegaron entre esa publicación (6 de agosto, 02:25 UTC) y esta pasada. Todo lo que ese informe narraba sigue exactamente igual, sin deshacerse ni avanzar: <b>C-46 completo</b> en sus dos pasos (el PHP pasa a emitir los ids que solo el JS ponía, <code>67fe8001</code>, Task 15b; los inyectores del JS se retiran, <code>bf1f2b66</code>, Task 37), la Task 12 (<code>9f4e9926</code>, C-17: Recargar y BI Semanal en la barra de Programación Semanal) y la Task 13 (<code>539aaf68</code>/<code>58d3476b</code>, C-29/C-23), el journey <code>improve-app</code> con sus fases 2 y 4 cerradas (<code>39380f6a</code>), los dos arreglos sueltos de aislamiento (<code>97e0b265</code>) y escape de CNP (<code>47b39dab</code>), la suite de preconstrucción revivida (<code>c5207a2e</code>, de 0/21 a 21/21) y el plan de la semana en sesión, ejecutado el 4 de agosto. El plan de campaña se mantiene en <b>38 tareas</b>, <b>18</b> con commit real detrás. Reverificado en esta pasada corriendo <code>npm run test:design-system:static</code> sobre el mismo árbol: <code>contracts</code> sigue en verde, 0 «golden hash mismatch», <b>349/363</b> pruebas de <code>node-tests</code> en verde, mismas 14 caídas por falta de <code>@axe-core/playwright</code> y de Docker — cifras idénticas porque no hubo commits nuevos que pudieran moverlas. Siguen sin ejecutar la <b>Task 32</b> (regresión: el indicador de fase de Programación Semanal quedó huérfano tras el rollout del shell lateral), la <b>Task 34</b> (falta tipar y alinear a la derecha las columnas numéricas) y la <b>Task 36</b> (paridad del encabezado sobrio del PDC en PG/PI — sin commit todavía). Esta pasada releyó los 27 planes y los 24 <code>goal.md</code> uno por uno, igual que las ocho anteriores, y no encontró ningún hallazgo de desarrollo nuevo — ni tampoco un ajuste de método que hacer esta vez: el conteo de «commits últimas 24 h» por <code>%at</code> en Python, adoptado hace cuatro pasadas, se reverificó sin cambios — recalculado así, la ventana móvil suma un noveno dato a la serie: 75 → 69 → 64 → 62 → 59 → 57 → 58 → 58 → 58, idéntico al de las dos pasadas anteriores porque en el tiempo que pasó entre una y otra no salió ningún commit del borde inferior de la ventana de 24 h. Esta es ya la novena pasada seguida sin código nuevo en <code>main</code>; lo único que cambia de una a otra es el efecto aritmético de que cada informe publicado es, él mismo, un commit — sube el total histórico, la brecha con producción y el desglose por tipo en uno cada vez, sin que eso sea desarrollo.</p>
+        </div>
+        <div class="card">
+          <h3>El registro de decisiones sigue diez filas por detrás del código</h3>
+          <p>El registro (<code>docs/superpowers/decisiones-pendientes-2026-08-03.md</code>) sigue sin commits desde el 4 de agosto por la mañana (último commit <code>b389674</code>, 14:41 UTC): sus diez filas —C-16, C-31, C-49p1, C-48, C-34, C-24, C-46, C-17, C-29 y C-23— siguen leyéndose como abiertas en el documento aunque el código ya las cerró desde antes. Recontado en esta pasada por referencia (<code>grep</code> de <code>**A-</code>/<code>**B-</code>/<code>**C-</code> únicos): sigue en <b>54 filas</b> (3 A, 2 B, 49 C), sin cambios en el total, cinco pasadas seguidas. C-49 sigue solo <b>parcialmente</b> cerrada: la parte de ancho (C-49p1) se resolvió con <code>d877a76c</code>, pero la parte de color (C-49p2) sigue siendo la Task 16 del plan, pendiente porque decide significado de dominio y exige aprobación explícita del usuario antes de aplicarse.</p>
+        </div>
+      </div>
+    </details>
   </div>
 </section>
 
-<section id="eli">
+<section id="eli" style="background:var(--panel-sunk)">
   <div class="wrap">
     <p class="eyebrow">En palabras simples</p>
     <h2>Qué avanzó y qué frena todo ahora mismo</h2>
-    <p class="lede" style="margin-bottom:26px">Una lectura rápida para quien llegue nuevo, sin tecnicismos. Cada frente de abajo repite este mismo formato a su propia escala.</p>
+    <p class="lede" style="margin-bottom:24px">Una lectura rápida para quien llegue nuevo, sin tecnicismos. Cada frente de abajo repite este mismo formato a su propia escala.</p>
     <div class="eli-grid">
       <div class="eli-card">
         <h3>Lo que sí avanzó</h3>
         <p class="kicker">Cambios reales, ya en <code>main</code>.</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>El plan de compras viejo ya se borró del todo, no solo se autorizó borrarlo.</b> Código, pantallas y 18 tablas de la base de datos desaparecieron del repositorio, con respaldo previo. Lo que lo reemplaza (Plan de Compras v2) no se tocó y sigue funcionando.</span></li>
-          <li><span class="eli-tag">2</span><span><b>La prueba que vigila los cambios visuales volvió a ponerse en verde.</b> Llevaba más de medio día fallando porque tres fotos de referencia se habían actualizado sin actualizar el archivo que dice cuáles son las correctas. Ya se corrigió, junto con el borrado del módulo viejo.</span></li>
-          <li><span class="eli-tag">3</span><span><b>El plan de compras nuevo (PDC v2) ya funciona.</b> Siete objetivos de trabajo se cerraron: subpaquetes, flujo de caja, torre de control, ayuda dentro de la app. Está probado y desplegado en el ambiente de pruebas del equipo, pero <b>no en la web real de la empresa todavía</b>.</span></li>
-          <li><span class="eli-tag">4</span><span><b>Nace la «Biblia de flujos»:</b> 11 documentos que describen, escenario por escenario, qué debe hacer cada parte de la app. La primera pasada ya encontró algo serio: seis módulos que guardan cambios sin comprobar el candado de seguridad (CSRF) que se supone que todos tienen — ninguno de los seis tiene que ver con el plan de compras, así que ese hallazgo sigue abierto igual.</span></li>
-          <li><span class="eli-tag">5</span><span><b>Se ensancharon columnas que escondían datos reales</b> en Programa General, Programación Intermedia y Subcontratistas — un identificador de actividad se leía como si fuera otro, y un correo se cortaba a media palabra. Y se reparó una pantalla (Subcontratistas) que había dejado de cargar por un descuido del propio borrado del plan de compras viejo: se encontró y se arregló el mismo día.</span></li>
-          <li><span class="eli-tag">6</span><span><b>Tres quejas visuales más se resolvieron</b>: los botones de la barra de Programación Semanal dejaron de verse como una píldora ovalada mal recortada, el botón secundario ya destaca al pasar el ratón sin competir con el color principal de la app, y los contadores en cero de Programación Intermedia y Semanal dejan de gritar con el mismo color que uno con datos reales.</span></li>
-          <li><span class="eli-tag">7</span><span><b>Dos huecos de infraestructura que solo se veían al correr todas las pruebas juntas ya se taparon.</b> El panel de administración dejaba de arrancar si faltaba un archivo de configuración que la máquina de pruebas automáticas no lleva a propósito, y esa misma máquina no tenía ni una tabla del plan de compras nuevo para poner a prueba.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>El plan de compras viejo ya se borró del todo, no solo se autorizó borrarlo.</b> Código, pantallas y 18 tablas de la base de datos desaparecieron del repositorio, con respaldo previo. Lo que lo reemplaza (Plan de Compras v2) no se tocó y sigue funcionando.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>La prueba que vigila los cambios visuales volvió a ponerse en verde.</b> Llevaba más de medio día fallando porque tres fotos de referencia se habían actualizado sin actualizar el archivo que dice cuáles son las correctas.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>El plan de compras nuevo (PDC v2) ya funciona.</b> Siete objetivos de trabajo se cerraron: subpaquetes, flujo de caja, torre de control, ayuda dentro de la app. Está probado y desplegado en el ambiente de pruebas del equipo, pero <b>no en la web real de la empresa todavía</b>.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Nace la «Biblia de flujos»:</b> 11 documentos que describen, escenario por escenario, qué debe hacer cada parte de la app. La primera pasada ya encontró algo serio: seis módulos que guardan cambios sin comprobar el candado de seguridad (CSRF) que se supone que todos tienen.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Se ensancharon columnas que escondían datos reales</b> en Programa General, Programación Intermedia y Subcontratistas — un identificador de actividad se leía como si fuera otro, y un correo se cortaba a media palabra. Y se reparó una pantalla (Subcontratistas) que había dejado de cargar por un descuido del propio borrado del plan de compras viejo.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Tres quejas visuales más se resolvieron</b>: los botones de la barra de Programación Semanal dejaron de verse como una píldora ovalada mal recortada, el botón secundario ya destaca al pasar el ratón, y los contadores en cero de Programación Intermedia y Semanal dejan de gritar con el mismo color que uno con datos reales.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Dos huecos de infraestructura que solo se veían al correr todas las pruebas juntas ya se taparon.</b> El panel de administración dejaba de arrancar sin un archivo de configuración que la máquina de pruebas no lleva a propósito, y esa misma máquina no tenía ni una tabla del plan de compras nuevo.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Un identificador duplicado que podía romper una importación de cronograma ya se resolvió del todo.</b> Diez pantallas emitían el mismo dato dos veces; ahora manda el servidor en todas, sin ninguna copia sobrante.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Dos arreglos de seguridad y de aislamiento entre obras</b>, encontrados y corregidos el mismo día: un cálculo de semana activa no filtraba explícitamente por obra, y tres campos ocultos podían romperse o inyectar código si el nombre del proyecto llevaba comillas.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Una prueba automática que llevaba rota volvió a vigilar de verdad</b>: sus 21 casos daban por buenos resultados sin comprobar nada porque el proyecto de prueba que necesitaban nunca se había creado en la base local.</span></li>
+          <li><span class="eli-ico">✓</span><span><b>Se encontró (y ya estaba resuelto) un arreglo que ningún informe anterior había contado:</b> si tenías dos pestañas abiertas en semanas distintas, o una petición de fondo llegaba tarde, la semana de una pestaña podía pisar silenciosamente la de la otra. Se corrigió el 4 de agosto — se destapó hace ocho pasadas, cuando una sesión revisó los 27 planes uno por uno en vez de solo los que ya tenían tarjeta.</span></li>
         </ul>
       </div>
       <div class="eli-card b">
         <h3>Lo que frena todo ahora</h3>
         <p class="kicker">Dos esperas concretas, y ninguna es falta de trabajo.</p>
         <ul>
-          <li><span class="eli-tag">A</span><span><b>Una aprobación visual de BI.</b> El tablero de Torre de Control con Gemini está construido y probado, pero nadie ha dado el visto bueno final a cómo se ve en sus seis combinaciones de filtros.</span></li>
-          <li><span class="eli-tag">B</span><span><b>La web real de la empresa no tiene el plan de compras nuevo.</b> Sigue con el código de julio, más de 1.000 commits atrás. Hasta que se despliegue ahí, el plan de compras nuevo no se puede dar por terminado del todo.</span></li>
+          <li><span class="eli-ico">⏳</span><span><b>Una aprobación visual de BI.</b> El tablero de Torre de Control con Gemini está construido y probado, pero nadie ha dado el visto bueno final a cómo se ve en sus seis combinaciones de filtros.</span></li>
+          <li><span class="eli-ico">⏳</span><span><b>La web real de la empresa no tiene el plan de compras nuevo.</b> Sigue con el código de julio, más de 1.100 commits atrás. Hasta que se despliegue ahí, el plan de compras nuevo no se puede dar por terminado del todo.</span></li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<section id="frente-dark-mode" style="background:var(--panel-sunk)">
+<section id="frentes">
   <div class="wrap">
-    <p class="eyebrow">Frente activo 1 de 5</p>
-    <div class="front-head">
-      <h2 style="margin:0">Cierre de dark mode y decisiones pendientes</h2>
-      <span class="badge b-wait">Plan en ejecución · 13/36 tareas</span>
+    <p class="eyebrow">Radar</p>
+    <h2>Los 5 frentes activos</h2>
+    <p class="lede">Toca cualquier tarjeta para saltar a su detalle. Cada frente abajo trae su lectura en simple siempre visible, y el detalle técnico completo detrás de «Ver detalle técnico».</p>
+    <div class="radar-grid">
+      <button class="radar-tile" data-target="frente-dark-mode">
+        <span class="r-n">FRENTE 1</span>
+        <span class="r-t">Cierre de dark mode</span>
+        <span class="pbar"><span class="fill wait" data-pct="47"></span></span>
+        <span class="r-stat">18 de 38 tareas</span>
+      </button>
+      <button class="radar-tile" data-target="frente-pdc">
+        <span class="r-n">FRENTE 2</span>
+        <span class="r-t">Plan de Compras v2</span>
+        <span class="radar-duo"><span class="yes">✓ código</span><span class="no">✗ producción</span></span>
+        <span class="r-stat">7 goals cerrados · 1.128 commits de brecha</span>
+      </button>
+      <button class="radar-tile" data-target="frente-design-system">
+        <span class="r-n">FRENTE 3</span>
+        <span class="r-t">Design System — núcleo</span>
+        <span class="radar-status"><i style="background:var(--st-mute)"></i>Sin fecha de cierre</span>
+        <span class="r-stat">10+ capacidades por reverificar</span>
+      </button>
+      <button class="radar-tile" data-target="frente-bi">
+        <span class="r-n">FRENTE 4</span>
+        <span class="r-t">Torre de Control BI</span>
+        <span class="radar-status"><i style="background:var(--st-block)"></i>Bloqueado</span>
+        <span class="r-stat">1 aprobación visual pendiente</span>
+      </button>
+      <button class="radar-tile" data-target="frente-biblia">
+        <span class="r-n">FRENTE 5</span>
+        <span class="r-t">Biblia de flujos</span>
+        <span class="pbar"><span class="fill" data-pct="6"></span></span>
+        <span class="r-stat">1 de 17 hallazgos resuelto</span>
+      </button>
     </div>
-    <p class="lede">La migración visual a tema oscuro ya cerró como goal (<code>cierre-dark-mode-y-tablas</code>, HECHO el 31 jul). Lo que sigue activo es la cola de 54 decisiones que esa migración dejó abiertas, más el diagnóstico de usabilidad que generó (H-08), entrelazados en un solo plan que sigue sumando 36 tareas: creció a 35 (una para restaurar una regresión hallada en la Task 1, dos que la propia Task 5 destapó, y una quinta que destapó a su vez la Task 33), luego el retiro del PDC v1 dejó sin objeto dos tareas enteras (Task 17 y 25, sobre pantallas de <code>/pdc</code> que ya no existen — se cierran como «no aplica», no como deuda pendiente) y sumó una nueva (Task 36, llevar a Programa General y Programación Intermedia el mismo encabezado sobrio que la Task 7 ya le dejó al PDC antes de deprecarse). Sube a <b>13 tareas cerradas con commit</b>: la Task 8 de la madrugada del 5 de agosto, y ahora las Tasks 9, 10 y 11 — el resto de la Fase 3, el tramo que mueve el píxel de verdad — que llegaron commiteadas mientras esta rutina de verificación no corría y solo se fusionaron a <code>main</code> después de que la pasada anterior ya hubiera publicado.</p>
 
-    <div class="front-grid">
-      <div class="front-detail">
-        <div class="table-card">
-          <table>
-            <thead><tr><th>Bloque</th><th>Qué es</th><th>Cuántas</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><span class="t-id">A</span></td>
-                <td>Requieren tu aprobación antes de aplicarse. Nada de esto se ha tocado.</td>
-                <td><span class="badge b-block">3</span></td>
-              </tr>
-              <tr>
-                <td><span class="t-id">B</span></td>
-                <td>Asumidas por la sesión con la opción reversible; para que ratifiques o revoques.</td>
-                <td><span class="badge b-wait">2</span></td>
-              </tr>
-              <tr>
-                <td><span class="t-id">C</span></td>
-                <td>Deuda medida que espera tu criterio de negocio o de diseño.</td>
-                <td><span class="badge b-mute">49</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="card done">
-          <h3>A-1 · Goldens de tabla <span class="badge b-done">Firmado, recapturado y con manifiesto sincronizado</span></h3>
-          <p>El usuario revisó el par esperado/actual/diff de Programa General y Programación Intermedia (42.763 px distintos en PG, 5%; 31.508 en PI, 4%) y lo aprobó. Los goldens se recapturaron en <code>560a98f</code> — «Desbloquea la fase 3 del plan». Con esto la Fase 3 (9 tareas: bordes de tabla A-3, tipografía, anchos de columna, hover, chips en cero…) quedó desbloqueada, y su primera tarea (Task 5, bordes) ya se ejecutó.</p>
-          <p><b>El cabo suelto que este informe venía midiendo durante cinco pasadas ya se cerró.</b> El sha256 de estos dos manifiestos se sincronizó con la Task 5 (<code>1835d379</code>) y el check <code>contracts</code> pasó a partir de ahí. Un commit posterior de accesibilidad (<code>ddfea348</code>) regeneró estas mismas capturas por una razón legítima y no volvió a sincronizar el manifiesto, dejando <code>contracts</code> en rojo desde las 20:54 UTC del 4 de agosto. Los commits <code>72956de7</code> y <code>ee49e693</code> de esta madrugada recalcularon los cinco sha256 pendientes (2 de PG, 2 de PI, 1 del laboratorio). Reverificado en esta pasada corriendo <code>npm run test:design-system:static</code>: 0 «golden hash mismatch», <code>contracts</code> en verde.</p>
-        </div>
-        <div class="card wait">
-          <h3>pg-chip-de-estado <span class="badge b-info">Código, goldens y manifiesto en <code>main</code>; <code>goal.md</code> sin cerrar</span></h3>
-          <p>El 3 de agosto, horas después de abrirse, Programa General recibió el mismo chip de estado que Programación Intermedia y Semanal (<code>d08679be</code>, <code>8b4c4fc6</code>), y ese mismo día sus colores se alinearon con la referencia aprobada (<code>47dda84</code>) y su guard de matiz se corrigió (<code>ba5da88</code>). El «rojo visual» que bloqueaba su Task 5 ya se recapturó y el manifiesto ya se sincronizó (ver A-1 arriba) — técnicamente no queda ningún bloqueo medible. Su <code>goal.md</code>, sin embargo, sigue sin tocarse desde el 3 de agosto y todavía dice «diseño aprobado, sin ejecutar»: está más desactualizado que nunca, el mismo patrón de documento obsoleto que ya se corrigió en once specs del PDC (ver frente 2).</p>
-        </div>
-        <div class="card done">
-          <h3>Tasks 5, 6 y 7 · Lo que mueve el píxel de verdad <span class="badge b-done">Las tres aplicadas</span></h3>
-          <p><b>Task 5</b> (<code>1835d379</code>): bordes con tokens en Handsontable/DataTables en vez del gris crudo de Bootstrap que gritaba más que los datos (11,96:1 de contraste contra el fondo de celda). Cubre 2 de los 3 elementos de la variante B aprobada sobre maqueta; el tercero (columnas numéricas a la derecha) pasó a ser la Task 34. <b>Task 6</b> (<code>2032128</code>): los dos racimos tipográficos sub-píxel de <code>buttons.css</code>, PI, PS y PDC se colapsaron a la rampa de tokens. <b>Task 7</b> (<code>1e479a9</code>): las filas de «Capítulo» del plan de compras dejan el bloque de color plano y pasan a distinguirse por peso tipográfico y filete — hecha sobre <code>/pdc</code>, que el usuario deprecó ese mismo día y que ya no existe en el árbol; el valor vivo de ese tratamiento pasó a la nueva Task 36, que lo lleva a Programa General y Programación Intermedia.</p>
-        </div>
-        <div class="card done">
-          <h3>Task 8 · Anchos de columna que ocultaban datos <span class="badge b-done"><code>d877a76c</code> — cierra C-16, C-31 y C-49p1</span></h3>
-          <p>Medido a 1180×820 en dark con datos reales de Da Porto y JMC, solo lectura. <b>C-16</b> (causa raíz): la caja interna <code>.colHeader</code> pagaba el mismo relleno horizontal que la celda de datos —10 px por lado— cuando el <code>th</code> medía 56; el nuevo token <code>--ds-table-header-pad-x</code> (3 px) recupera 14 px de texto por columna sin quitarle un píxel a ningún dato, y deja legibles enteras 2 cabeceras cortadas de PG y 5 de las 6 de PS. <b>C-31</b>: «Id» de Programa General estaba topada en 56 px y <code>3.5.2.1.1</code> (73 px) se leía como <code>3.5.2.1</code> —otra actividad real de la misma tabla, en 9 de 29 filas—; sube a 76-84 px. En Programación Intermedia «Id» rendizaba 36 px y 27 de 28 filas mostraban un id ajeno: sube a 74. «Sub-Contratista» pasa a 126 porque «CONCREACEROS» (122 px) se partía a mitad de palabra. <b>C-49p1</b>: la columna de Estado Operativo de PS supera ahora los 120 px del <code>@container</code> de <code>.ops-state-zoom</code>, así que el nombre del estado («Lista para Confirmar») vuelve a mostrarse en vez de quedar en 0×0. Queda abierta la mitad de C-49 (C-49p2, Task 16): qué color debe mandar cuando el estado es bueno pero hay condiciones pendientes — decisión de dominio que espera al usuario.</p>
-        </div>
-        <div class="card done">
-          <h3>Tasks 9, 10 y 11 · El resto de la Fase 3 <span class="badge b-done"><code>606f64bd</code> / <code>293b2540</code> / <code>8bf5518c</code> — cierran C-48, C-34 y C-24</span></h3>
-          <p><b>Task 9 (C-48):</b> el gatillo de filtro de Programación Semanal se reportó dos veces como «botón ovalado» — un bloque exclusivo de PS pintaba su <code>::before</code> como una caja de 2rem con fondo, borde, radio y sombra dentro de un botón de solo 24 px, porque la regla de relleno que debía acompañarlo vivía en <code>@layer components</code> y perdía contra ese CSS sin capa. El plan proponía completar la caja a 44 px (opción b); la sesión midió que ya no hacía falta — desde las Tasks 2/T-17 el gatillo es un componente único de 24×24 que ya cumple el piso táctil de WCAG 2.2 SC 2.5.8, y forzar 44 px aquí habría subido la cabecera de PS de 56,59 a 76,59 px, rompiendo la paridad con PG y PI. Se retiró la sobrescritura muerta en su lugar: los tres módulos quedan con botón 24×24 y <code>::before</code> 6×6 transparente, cabecera de PS sin moverse, 25/25 goldens verdes sin recapturar. <b>Task 10 (C-34):</b> el hover del botón secundario heredaba el relleno del primario y medía 80% más luminoso que el propio acento en reposo — dos primarios compitiendo por la vista. Pasa a superficie elevada con borde vivo, sin relleno del acento: contraste de texto 8,23:1, borde 5,46:1. <b>Task 11 (C-24):</b> los chips contadores de Programación Intermedia y Semanal se atenúan cuando marcan cero (superficie neutra, tinta secundaria) y recuperan el color saturado en cuanto vuelven a contar algo — Programa General ya tenía este patrón, así que PI y PS quedan a la par. Con datos reales (31 atrasadas, 202 con alerta) el color saturado sigue intacto, tal como pedía la propia fila C-24 del registro.</p>
-        </div>
-        <div class="card done">
-          <h3>Tasks 33 y 35 · La red de goldens por fin muerde <span class="badge b-done">Ambas aplicadas</span></h3>
-          <p><b>Task 33</b> (<code>af16227</code>): la Task 5 había medido que su propio cambio de rejilla ocupaba el 2,66% de la imagen y pasó en verde porque la tolerancia era del 3% — la red no mordía. Se bajó a 0,2%, se corrieron tres pasadas limpias sin falsos rojos, y se probó que muerde introduciendo un borde de 1px deliberado (detectado y revertido). <b>Task 35</b> (<code>ac7949f</code>), abierta por un hallazgo de la propia Task 33: esa misma prueba de mordida no movía el golden de Programación Intermedia porque su mock siempre devuelve la grilla vacía — se sembró con filas reales de cada estado y ahora sí vigila celdas. De paso se destaparon 18 goldens del laboratorio y del cajón lateral rotos desde julio, sin relación con estas tasks, ya resincronizados (<code>e105f14</code>).</p>
-        </div>
-        <div class="card wait">
-          <h3>Task 32 y Task 34 <span class="badge b-wait">Definidas, sin ejecutar</span></h3>
-          <p><b>Task 32:</b> restaurar el indicador de fase de Programación Semanal, huérfano desde el rollout del shell lateral — hallazgo de la Task 1, con commit del plan que la define pero ninguno que la resuelva. Verificado en esta pasada: <code>.ps-weekly-phase-title</code> sigue en el código sin nuevo anclaje. <b>Task 34:</b> tipar y alinear a la derecha las columnas numéricas, el tercio pendiente de la variante B — verificado que <code>Ejecutado_Teorico</code> en el <code>hot.js</code> de Programa General sigue sin <code>type: 'numeric'</code>.</p>
-        </div>
-        <div class="card done">
-          <h3>Regresión que llevaba desde el 4 de agosto · manifiesto ya sincronizado <span class="badge b-done"><code>ddfea348</code> → resuelto por <code>72956de7</code>/<code>ee49e693</code></span></h3>
-          <p>El commit que llevó los 13 ítems del rail colapsado y el gatillo de filtro de columna a su piso táctil de 44 px regeneró las capturas de PG, PI y del laboratorio (el gatillo más alto mueve la cabecera ~10 px) pero no había vuelto a calcular su sha256 en <code>docs/design-system/manifests/*.json</code>: el mensaje de ese commit afirmaba «test:design-system:static 8/8», pero la suite daba 6/8 desde entonces. Comprobado hash a hash en <code>72956de7</code>: el sha256 declarado en el manifiesto coincidía exacto con el PNG anterior a <code>ddfea348</code> en los cinco casos — no era una regresión visual, solo el manifiesto sin poner al día. Se sincronizaron los cuatro de PG/PI en <code>72956de7</code> y el quinto (laboratorio) en <code>ee49e693</code>, junto con el retiro del PDC v1. Reverificado en esta pasada: <code>npm run test:design-system:static</code> da <code>contracts</code> en verde, 0 «golden hash mismatch».</p>
-        </div>
-        <div class="card done">
-          <h3>Usabilidad de superficies sin tabla (H-08) <span class="badge b-done">Diagnóstico cerrado 3 ago</span></h3>
-          <p>26 de 45 superficies recorridas (las 14 internas de <code>admin/</code> quedaron fuera: no tienen puerta de servicio propia todavía). 39 hallazgos — 15 altos, 15 medios, 9 bajos — y aprobaste atacar los 30 altos y medios. La ejecución (plan de 135 sub-tareas en 5 fases F1–F5) ya tiene evidencia en <code>main</code>: el componente de estado vacío para Handsontable (<code>ht-empty-state.*</code>) y el arreglo de <code>reduce-motion</code> en <code>admin/</code>, del 4 de agosto.</p>
-        </div>
+    <article id="frente-dark-mode" class="frente">
+      <p class="eyebrow">Frente activo 1 de 5</p>
+      <div class="front-head">
+        <h2 style="margin:0">Cierre de dark mode y decisiones pendientes</h2>
+        <span class="badge b-wait">Plan en ejecución</span>
       </div>
-      <div class="eli-card">
-        <h3>En simple</h3>
-        <p class="kicker">Qué significa cada pieza sin jerga.</p>
+      <div class="front-progress">
+        <span class="pbar"><span class="fill wait" data-pct="47"></span></span>
+        <span class="p-txt num">18/38 tareas</span>
+      </div>
+      <p class="lede">La migración visual a tema oscuro ya cerró como goal (<code>cierre-dark-mode-y-tablas</code>, HECHO el 31 jul). Lo que sigue activo es la cola de 54 decisiones que esa migración dejó abiertas, más el diagnóstico de usabilidad que generó (H-08), entrelazados en un solo plan que sube a <b>38 tareas</b>.</p>
+
+      <div class="frente-simple">
+        <p class="kicker">En simple</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>54 cosas anotadas, ninguna perdida.</b> Cuando algo necesitaba tu criterio y no el de quien programa, se escribió en una lista en vez de decidirse solo.</span></li>
-          <li><span class="eli-tag">2</span><span><b>Hay un plan para vaciar esa lista</b>, y lleva 13 de sus 36 tareas con trabajo terminado: la firma de las fotos de referencia, ocho arreglos visuales sobre las tablas y el plan de compras (columnas que ocultaban un dato o mostraban el equivocado, un botón que parecía una píldora mal recortada, el hover del botón secundario y los contadores en cero), y el ajuste de la prueba que vigila que nada cambie sin que se note. Dos tareas más se cerraron solas porque la pantalla que arreglaban ya no existe.</span></li>
-          <li><span class="eli-tag">3</span><span><b>El descuido que llevaba más de medio día en rojo ya se corrigió.</b> Un cambio del 4 de agosto había actualizado tres fotos de referencia sin actualizar el archivo que dice cuáles son las correctas; se arregló esta madrugada junto con el borrado del plan de compras viejo.</span></li>
-          <li><span class="eli-tag">4</span><span><b>Se revisaron 26 pantallas que no son tablas</b> (menús, avisos, formularios) y ya se está arreglando lo más importante de lo que se encontró.</span></li>
+          <li><b>54 cosas anotadas, ninguna perdida.</b> Cuando algo necesitaba tu criterio y no el de quien programa, se escribió en una lista en vez de decidirse solo.</li>
+          <li><b>Hay un plan para vaciar esa lista</b>, y lleva 18 de sus 38 tareas con trabajo terminado: la firma de las fotos de referencia, ocho arreglos visuales sobre las tablas y el plan de compras, el ajuste de la prueba que vigila que nada cambie sin que se note, el identificador duplicado ya resuelto del todo, dos botones que volvieron a la barra principal, dos mensajes que ahora se leen mejor y el volcado de hallazgos al tracker del proyecto. Dos tareas más se cerraron solas porque la pantalla que arreglaban ya no existe.</li>
+          <li><b>El descuido que llevaba más de medio día en rojo ya se corrigió.</b> Un cambio del 4 de agosto había actualizado tres fotos de referencia sin actualizar el archivo que dice cuáles son las correctas.</li>
+          <li><b>Se revisaron 26 pantallas que no son tablas</b> (menús, avisos, formularios) y ya se está arreglando lo más importante de lo que se encontró.</li>
         </ul>
       </div>
-    </div>
-  </div>
-</section>
 
-<section id="frente-pdc">
-  <div class="wrap">
-    <p class="eyebrow">Frente activo 2 de 5</p>
-    <div class="front-head">
-      <h2 style="margin:0">Plan de Compras v2 (PDC)</h2>
-      <span class="badge b-wait">Código cerrado · producción pendiente</span>
-    </div>
-    <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto: nueve de diez filas de su tablero de relevos en HECHO, la décima (retirar el PDC viejo) autorizada y movida a su propio pendiente — que esta madrugada dejó de ser pendiente. El 3 de agosto (<code>6b683c6</code>) ese tablero pasó de mecanismo vivo a acta formal, y se corrigieron once specs del PDC que decían «pendiente de plan» estando ya implementadas y en <code>main</code>. El 4 de agosto (<code>f1ab72c</code>) se corrigió una fila más del mismo tablero: dos pantallas que el acta seguía dando por pendientes ya estaban construidas. Y en la madrugada del 5 de agosto (<code>a3fee1fb</code>), el PDC v1 —el módulo que este frente reemplaza— se eliminó del repo: no quedó solo autorizado, quedó ejecutado.</p>
+      <details class="tech-detail techy">
+        <summary class="tech-toggle"><span class="chev">▸</span> Ver detalle técnico completo</summary>
+        <div class="tech-body">
+          <p class="lede" style="margin:0 0 4px">El retiro del PDC v1 dejó sin objeto dos tareas enteras (Task 17 y 25, sobre pantallas de <code>/pdc</code> que ya no existen — se cierran como «no aplica»), y la Task 15 (F4-1, «el PHP manda») se topó con una premisa falsa a mitad de ejecución —el censo real encontró 9-10 vistas afectadas, no las 4 que el plan conocía— y el usuario decidió partirla en dos pasos verificables: Task 15b y Task 37, ambas ya con commit.</p>
+          <div class="table-card">
+            <table>
+              <thead><tr><th>Bloque</th><th>Qué es</th><th>Cuántas</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="t-id">A</span></td>
+                  <td>Requieren tu aprobación antes de aplicarse. Nada de esto se ha tocado.</td>
+                  <td><span class="badge b-block">3</span></td>
+                </tr>
+                <tr>
+                  <td><span class="t-id">B</span></td>
+                  <td>Asumidas por la sesión con la opción reversible; para que ratifiques o revoques.</td>
+                  <td><span class="badge b-wait">2</span></td>
+                </tr>
+                <tr>
+                  <td><span class="t-id">C</span></td>
+                  <td>Deuda medida que espera tu criterio de negocio o de diseño.</td>
+                  <td><span class="badge b-mute">49</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card done">
+            <h3>A-1 · Goldens de tabla <span class="badge b-done">Firmado, recapturado y con manifiesto sincronizado</span></h3>
+            <p>El usuario revisó el par esperado/actual/diff de Programa General y Programación Intermedia (42.763 px distintos en PG, 5%; 31.508 en PI, 4%) y lo aprobó. Los goldens se recapturaron en <code>560a98f</code>. Con esto la Fase 3 (9 tareas: bordes de tabla A-3, tipografía, anchos de columna, hover, chips en cero…) quedó desbloqueada, y su primera tarea (Task 5, bordes) ya se ejecutó.</p>
+            <p>El sha256 de estos dos manifiestos se sincronizó con la Task 5 (<code>1835d379</code>) y el check <code>contracts</code> pasó a partir de ahí. Un commit posterior de accesibilidad (<code>ddfea348</code>) regeneró estas mismas capturas y no volvió a sincronizar el manifiesto, dejando <code>contracts</code> en rojo desde las 20:54 UTC del 4 de agosto. Los commits <code>72956de7</code> y <code>ee49e693</code> recalcularon los cinco sha256 pendientes (2 de PG, 2 de PI, 1 del laboratorio). Reverificado corriendo <code>npm run test:design-system:static</code>: 0 «golden hash mismatch», <code>contracts</code> en verde.</p>
+          </div>
+          <div class="card wait">
+            <h3>pg-chip-de-estado <span class="badge b-info">Código, goldens y manifiesto en <code>main</code>; <code>goal.md</code> sin cerrar</span></h3>
+            <p>El 3 de agosto, horas después de abrirse, Programa General recibió el mismo chip de estado que Programación Intermedia y Semanal (<code>d08679be</code>, <code>8b4c4fc6</code>), y ese mismo día sus colores se alinearon con la referencia aprobada (<code>47dda84</code>) y su guard de matiz se corrigió (<code>ba5da88</code>). El «rojo visual» que bloqueaba su Task 5 ya se recapturó y el manifiesto ya se sincronizó (ver A-1 arriba) — técnicamente no queda ningún bloqueo medible. Su <code>goal.md</code>, sin embargo, sigue sin tocarse desde el 3 de agosto y todavía dice «diseño aprobado, sin ejecutar».</p>
+          </div>
+          <div class="card done">
+            <h3>Tasks 5, 6 y 7 · Lo que mueve el píxel de verdad <span class="badge b-done">Las tres aplicadas</span></h3>
+            <p><b>Task 5</b> (<code>1835d379</code>): bordes con tokens en Handsontable/DataTables en vez del gris crudo de Bootstrap que gritaba más que los datos (11,96:1 de contraste contra el fondo de celda). Cubre 2 de los 3 elementos de la variante B aprobada sobre maqueta; el tercero (columnas numéricas a la derecha) pasó a ser la Task 34. <b>Task 6</b> (<code>2032128</code>): los dos racimos tipográficos sub-píxel de <code>buttons.css</code>, PI, PS y PDC se colapsaron a la rampa de tokens. <b>Task 7</b> (<code>1e479a9</code>): las filas de «Capítulo» del plan de compras dejan el bloque de color plano y pasan a distinguirse por peso tipográfico y filete — hecha sobre <code>/pdc</code>, que el usuario deprecó ese mismo día; el valor vivo de ese tratamiento pasó a la nueva Task 36, que lo lleva a Programa General y Programación Intermedia.</p>
+          </div>
+          <div class="card done">
+            <h3>Task 8 · Anchos de columna que ocultaban datos <span class="badge b-done"><code>d877a76c</code> — cierra C-16, C-31 y C-49p1</span></h3>
+            <p>Medido a 1180×820 en dark con datos reales de Da Porto y JMC, solo lectura. <b>C-16</b> (causa raíz): la caja interna <code>.colHeader</code> pagaba el mismo relleno horizontal que la celda de datos —10 px por lado— cuando el <code>th</code> medía 56; el nuevo token <code>--ds-table-header-pad-x</code> (3 px) recupera 14 px de texto por columna, y deja legibles enteras 2 cabeceras cortadas de PG y 5 de las 6 de PS. <b>C-31</b>: «Id» de Programa General estaba topada en 56 px y <code>3.5.2.1.1</code> (73 px) se leía como <code>3.5.2.1</code> —otra actividad real de la misma tabla, en 9 de 29 filas—; sube a 76-84 px. En Programación Intermedia «Id» rendizaba 36 px y 27 de 28 filas mostraban un id ajeno: sube a 74. «Sub-Contratista» pasa a 126 porque «CONCREACEROS» (122 px) se partía a mitad de palabra. <b>C-49p1</b>: la columna de Estado Operativo de PS supera ahora los 120 px del <code>@container</code> de <code>.ops-state-zoom</code>, así que el nombre del estado («Lista para Confirmar») vuelve a mostrarse en vez de quedar en 0×0. Queda abierta la mitad de C-49 (C-49p2, Task 16): qué color debe mandar cuando el estado es bueno pero hay condiciones pendientes — decisión de dominio que espera al usuario.</p>
+          </div>
+          <div class="card done">
+            <h3>Tasks 9, 10 y 11 · El resto de la Fase 3 <span class="badge b-done"><code>606f64bd</code> / <code>293b2540</code> / <code>8bf5518c</code> — cierran C-48, C-34 y C-24</span></h3>
+            <p><b>Task 9 (C-48):</b> el gatillo de filtro de Programación Semanal se reportó dos veces como «botón ovalado» — un bloque exclusivo de PS pintaba su <code>::before</code> como una caja de 2rem con fondo, borde, radio y sombra dentro de un botón de solo 24 px, porque la regla de relleno que debía acompañarlo vivía en <code>@layer components</code> y perdía contra ese CSS sin capa. El plan proponía completar la caja a 44 px; la sesión midió que ya no hacía falta — desde las Tasks 2/T-17 el gatillo es un componente único de 24×24 que ya cumple el piso táctil de WCAG 2.2 SC 2.5.8, y forzar 44 px habría subido la cabecera de PS de 56,59 a 76,59 px, rompiendo la paridad con PG y PI. Se retiró la sobrescritura muerta en su lugar: 25/25 goldens verdes sin recapturar. <b>Task 10 (C-34):</b> el hover del botón secundario heredaba el relleno del primario y medía 80% más luminoso que el propio acento en reposo. Pasa a superficie elevada con borde vivo: contraste de texto 8,23:1, borde 5,46:1. <b>Task 11 (C-24):</b> los chips contadores de Programación Intermedia y Semanal se atenúan cuando marcan cero y recuperan el color saturado en cuanto vuelven a contar algo — Programa General ya tenía este patrón. Con datos reales (31 atrasadas, 202 con alerta) el color saturado sigue intacto.</p>
+          </div>
+          <div class="card done">
+            <h3>Tasks 33 y 35 · La red de goldens por fin muerde <span class="badge b-done">Ambas aplicadas</span></h3>
+            <p><b>Task 33</b> (<code>af16227</code>): la Task 5 había medido que su propio cambio de rejilla ocupaba el 2,66% de la imagen y pasó en verde porque la tolerancia era del 3% — la red no mordía. Se bajó a 0,2%, se corrieron tres pasadas limpias sin falsos rojos, y se probó que muerde introduciendo un borde de 1px deliberado (detectado y revertido). <b>Task 35</b> (<code>ac7949f</code>): esa misma prueba de mordida no movía el golden de Programación Intermedia porque su mock siempre devuelve la grilla vacía — se sembró con filas reales de cada estado y ahora sí vigila celdas. De paso se destaparon 18 goldens del laboratorio y del cajón lateral rotos desde julio, ya resincronizados (<code>e105f14</code>).</p>
+          </div>
+          <div class="card done">
+            <h3>Tasks 12 y 13 · Toolbar de PS y excepciones puntuales <span class="badge b-done"><code>9f4e9926</code> / <code>539aaf68</code> + <code>58d3476b</code> — cierran C-17, C-29 y C-23</span></h3>
+            <p><b>Task 12 (C-17):</b> «Recargar» y «BI Semanal» vuelven de un menú «Más» a la barra principal de Programación Semanal; verificado que a 1180×820 la barra no desborda y los specs de toolbar pasan. <b>Task 13 (C-29, C-23):</b> los mensajes de error de campo en <code>admin-lte.css</code> pasan al token de texto crítico en vez de casi blanco, con su excepción justificada en <code>state-token-exceptions.json</code>; el carril de pestañas de BI suma un degradado que anuncia que hay más pestañas fuera de vista. Un commit de ajuste (<code>58d3476b</code>) llegó doce minutos después para que los mensajes del dashboard de admin también leyeran como error.</p>
+          </div>
+          <div class="card done">
+            <h3>Task 15b y Task 37 · C-46 se cierra en dos pasos <span class="badge b-done"><code>67fe8001</code> / <code>bf1f2b66</code></span></h3>
+            <p>La Task 15 original («el PHP manda») se bloqueó a mitad de ejecución: la premisa de que el PHP ya emitía los 7 ids en 4 vistas era falsa fuera de <code>/programa-general-actualizar</code> — el censo real encontró 9-10 vistas cargando el mismo inyector. <b>Task 15b</b> hizo que el PHP emitiera los ids que solo el JS ponía. <b>Task 37</b>, ya con el PHP emitiendo en todas partes, retiró la inyección del JS y verificó 0 duplicados de los 7 ids en toda la app viva. Con esto <b>C-46 queda completamente cerrada</b>, junto con su hermana C-41 del mismo patrón.</p>
+          </div>
+          <div class="card done">
+            <h3>Journey <code>improve-app</code>, fases 2 y 4 <span class="badge b-done"><code>39380f6a</code> — pasan de «en curso» a done</span></h3>
+            <p>Los hallazgos ya medidos por el ciclo triple y los ocho barridos de la campaña se volcaron a <code>docs/DESIGN-AUDIT.md</code> y <code>docs/EXPERIMENTS.md</code>, sin volver a medir nada.</p>
+          </div>
+          <div class="card done">
+            <h3>Dos arreglos sueltos, fuera del plan de campaña <span class="badge b-done"><code>97e0b265</code> / <code>47b39dab</code> — aislamiento y seguridad</span></h3>
+            <p><b>Aislamiento:</b> seis consultas sobre <code>semanas_activas</code> y <code>programa_consolidado</code> calculaban la semana máxima sin <code>WHERE project_id</code> explícito, delegando el aislamiento a una reescritura de query — medido que sin filtro devuelven la misma semana (28) para cualquier proyecto; ahora cada consulta lo declara. <b>Seguridad:</b> tres campos ocultos de <code>/programacion-semanal/cnp</code> se emitían sin escapar — un nombre de proyecto con comillas rompía el atributo <code>value</code> e inyectaba HTML; van por <code>htmlspecialchars</code> con <code>ENT_QUOTES</code>.</p>
+          </div>
+          <div class="card done">
+            <h3>Suite de preconstrucción revivida <span class="badge b-done"><code>c5207a2e</code> — de 0/21 a 21/21</span></h3>
+            <p><code>tests/browser/preconstruccion-full-cycle.mjs</code> llevaba rota sin que nadie lo notara: el proyecto que sus 21 pruebas esperaban nunca se había sembrado en la base local. Se sembró el proyecto y se repararon tres pruebas más que miraban un nav legado ya retirado o fijaban un valor que el código cambió a propósito el 5 de julio.</p>
+          </div>
+          <div class="card wait">
+            <h3>Task 16, Task 32, Task 34 y Task 36 <span class="badge b-wait">Definidas, sin ejecutar</span></h3>
+            <p><b>Task 16 (C-49p2):</b> qué color debe mandar cuando el estado es «Lista para Confirmar» pero hay condiciones pendientes — espera aprobación explícita del usuario. <b>Task 32:</b> restaurar el indicador de fase de Programación Semanal, huérfano desde el rollout del shell lateral. <b>Task 34:</b> tipar y alinear a la derecha las columnas numéricas. <b>Task 36:</b> llevar a Programa General y Programación Intermedia el mismo encabezado sobrio que la Task 7 le dejó al PDC.</p>
+          </div>
+          <div class="card done">
+            <h3>Regresión que llevaba desde el 4 de agosto · manifiesto ya sincronizado <span class="badge b-done"><code>ddfea348</code> → resuelto por <code>72956de7</code>/<code>ee49e693</code></span></h3>
+            <p>El commit que llevó los 13 ítems del rail colapsado y el gatillo de filtro de columna a su piso táctil de 44 px regeneró las capturas de PG, PI y del laboratorio pero no había vuelto a calcular su sha256 en <code>docs/design-system/manifests/*.json</code>. Comprobado hash a hash en <code>72956de7</code>: no era una regresión visual, solo el manifiesto sin poner al día. Se sincronizaron los cuatro de PG/PI en <code>72956de7</code> y el quinto (laboratorio) en <code>ee49e693</code>.</p>
+          </div>
+          <div class="card done">
+            <h3>Usabilidad de superficies sin tabla (H-08) <span class="badge b-done">Diagnóstico cerrado 3 ago</span></h3>
+            <p>26 de 45 superficies recorridas (las 14 internas de <code>admin/</code> quedaron fuera). 39 hallazgos — 15 altos, 15 medios, 9 bajos — y aprobaste atacar los 30 altos y medios. La ejecución (plan de 135 sub-tareas en 5 fases F1–F5) ya tiene evidencia en <code>main</code>: el componente de estado vacío para Handsontable y el arreglo de <code>reduce-motion</code> en <code>admin/</code>.</p>
+          </div>
+        </div>
+      </details>
+    </article>
 
-    <div class="front-grid">
-      <div class="front-detail">
-        <div class="table-card">
-          <table>
-            <thead><tr><th>Goal</th><th>Qué cerró</th></tr></thead>
-            <tbody>
-              <tr><td><span class="t-id">pdc-tanda2-plan-verdad</span></td><td>El plan de compras deja de mentir sobre cuánto falta: cobertura por valor y por conteo, vencidos, dos botones de aceptar/revisar por confianza.</td></tr>
-              <tr><td><span class="t-id">pdc-tanda34-pulido</span></td><td>Once pendientes de primera impresión y pulido.</td></tr>
-              <tr><td><span class="t-id">pdc-revision-ux</span></td><td>Los 15 hallazgos de usabilidad del recorrido del dueño de producto.</td></tr>
-              <tr><td><span class="t-id">pdc-a41-pasos-configurables</span></td><td>Pasos de contratación configurables por obra.</td></tr>
-              <tr><td><span class="t-id">pdc-a42-frentes-cobertura</span></td><td>Cada paquete sabe a qué frente del cronograma pertenece.</td></tr>
-              <tr><td><span class="t-id">pdc-preparar-b1</span></td><td>Subpaquetes, flujo de caja, Torre de Control BI, equipo alquilado/comprado, ayuda in-app en 8 pantallas — desplegado en <code>prueba-lps</code>.</td></tr>
-              <tr><td><span class="t-id">pdc-responsable-usuario</span></td><td>Absorbido por <code>pdc-preparar-b1</code>.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="card block">
-          <h3>La brecha real: producción sigue en julio</h3>
-          <p><code>lastplanneraia.com</code> (la producción real) sigue en el commit <code>1aa7c69</code> del 16 de julio, según <code>goals/pdc-preparar-b1/estado-olas.md</code> — con <b>cero</b> tablas <code>pdc_*</code>. Todo lo de esta tarjeta vive en <code>prueba-lps</code>, el ambiente que el equipo usa como pruebas — no en la web de la empresa. Contado en esta pasada con <code>git rev-list --count 1aa7c69..HEAD</code> (confirmado que ese commit sigue siendo ancestro de <code>main</code>): el despliegue real arrastra <b>1.102</b> commits, no los «~500» que estimaban las specs de julio — más del doble, y sigue creciendo con cada pasada de este mismo informe. La subida de 1.101 a 1.102 es una corrección de medición, no un commit nuevo: la pasada anterior contó sobre un clon que decía estar rehidratado sin estarlo de verdad (ver KPI de commits arriba). Tiene su rutina escrita en <code>docs/siteground-deploy-routine.md</code>, pero no se ha ejecutado.</p>
-        </div>
-        <div class="card done">
-          <h3>Limpieza tardía de pruebas E2E del PDC v1 <span class="badge b-done"><code>1953a0f1</code> — con su propio arreglo el mismo día, <code>7b1dacf</code></span></h3>
-          <p>Correr la suite E2E completa tras el retiro destapó cuatro huérfanos que ningún gate había marcado: dos specs enteros (<code>pdc-full.spec.mjs</code>, <code>procurement-flow.spec.mjs</code>) que solo ejercitaban rutas ya retiradas, un smoke test que aún visitaba <code>/listado-actividades</code> y <code>/contratos</code>, y un <code>COPY</code> de <code>004_bi_pdc_general.sql</code> en el Dockerfile de la base de CI que ya no podía construir la imagen porque ese archivo se borró con el v1. Se podaron los cuatro. El propio cambio dejó dos copias de una lista blanca de SQL desincronizadas en <code>tests/design-system/</code> — rojo que el mismo autor detectó y reparó doce minutos después (<code>7b1dacf</code>), agregando además una aserción que compara contra el Dockerfile real del disco para que esa deriva no pueda repetirse en silencio.</p>
-        </div>
-        <div class="card done">
-          <h3>Segundo hueco de la misma raíz: el panel Admin y la base de CI del PDC v2 <span class="badge b-done"><code>c22b60ac</code> — fusionado esta pasada</span></h3>
-          <p>Correr la suite E2E completa contra el stack aislado destapó dos huecos más, de la misma familia que <code>1953a0f1</code>. <b>Uno:</b> <code>admin/public/index.php</code> llamaba a <code>Dotenv::createImmutable()->load()</code> sin guarda, así que respondía 500 en cualquier entorno sin <code>.env</code> — la imagen de CI, a propósito, no hornea secretos; <code>public/index.php</code> ya se protegía con <code>file_exists</code> + <code>safeLoad()</code>, y ahora <code>admin/</code> replica la misma simetría. Los 14 tests de admin fallaban antes por credenciales ausentes y el síntoma parecía la explicación completa. <b>Dos:</b> la base de CI no tenía ni una tabla del PDC v2, así que <code>/plan-compras</code> —el módulo que hoy ES el plan de compras de la empresa— nunca se ejercitaba allí; se horneó <code>database/fixtures/design-system-ci-pdc-v2.sql</code> con las 18 tablas de clausura (15 <code>pdc_*</code> más los tres catálogos globales de sus 13 claves foráneas), añadidas a las cuatro listas a la vez —Dockerfile, preflight y los dos tests— para no repetir la deriva que mordió en <code>1953a0f1</code>. No es tarea de ningún plan ni goal activo: es infraestructura de CI que ninguna de las cinco tandas de la Biblia ni la campaña de dark mode reclama como propia.</p>
-        </div>
-        <div class="card done">
-          <h3>Retiro del PDC viejo (etapas 3–4 de <code>retiro-listado-contratos</code>) <span class="badge b-done">Ejecutado 5 ago, 00:46 UTC-5</span></h3>
-          <p>Las etapas 1 y 2 ya estaban HECHAS y verificadas desde el 31 de julio: las rutas <code>/listado-actividades</code> y <code>/contratos</code> no existen en <code>public/index.php</code>. Lo que faltaba —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>. El 4 de agosto quedó anotado que el usuario <b>deprecó el PDC v1</b>, y ese mismo día se escribió un plan formal para la fase C1 (<code>docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo.md</code>, 9 tasks). <b>Pero el retiro se aplicó por otra vía, antes de que el plan C1 se ejecutara:</b> el commit <code>a3fee1fb</code> (5 ago, 00:46 UTC-5) borró <code>/pdc</code>, sus cinco controladores, <code>SemiAutoService</code>, <code>OperationalFamilyPolicy</code> y 18 tablas de MySQL directamente sobre <code>main</code>. El plan C1 se archivó sin ejecutar (<code>9a18a001</code>): «el retiro se aplicó por otra vía». Reverificado en esta pasada: <code>/pdc</code> ya no aparece en <code>public/index.php</code> y <code>src/Support/OperationalFamilyPolicy.php</code> ya no existe en el árbol.</p>
-        </div>
-        <div class="card done">
-          <h3>Regresión propia del retiro, encontrada y reparada el mismo día <span class="badge b-done"><code>cf918cd1</code> — Subcontratistas vuelve a cargar</span></h3>
-          <p><code>a3fee1fb</code> sacó <code>'pdc'</code> de la lista blanca de <code>TableResolver</code> y borró la tabla, pero dejó tres llamadas vivas en <code>SubcontratistasApiController</code>: <code>resolveByPrefix</code> lanza <code>InvalidArgumentException</code> ante un tipo desconocido, así que <code>/api/subcontratistas/list</code> devolvía «Invalid table type: pdc» y la pantalla no cargaba ninguna fila. Un segundo fallo, no reportado hasta ahora, iba con el primero: <code>actualizar_dependencias_nombre()</code> reventaba, así que renombrar un subcontratista dejaba de propagarse a <code>cic</code> y <code>programacion_semanal</code>. Ningún gate lo vio venir —phpstan pasa porque el argumento es un string válido, y la suite estática da 8/8 porque es una ruptura de tiempo de ejecución, no de tipos—, así que se añadió <code>tests/test_table_resolver_consumers.php</code>, que no cubre solo este caso sino la clase de fallo completa: 192 llamadas literales a <code>TableResolver</code> verificadas contra la lista blanca real. Verificado en esta pasada: <code>/subcontratistas</code> carga sus filas con <code>has_dependencies</code> calculado, sin errores de consola, a 1180×820 en dark.</p>
-        </div>
-        <div class="card done">
-          <h3>Dos pantallas que se creían pendientes <span class="badge b-done">Resuelto 4 ago: ya estaban construidas</span></h3>
-          <p>El cierre del 3 de agosto había dejado anotada esta fila como pendiente: la curva de flujo de caja mensual y el aviso de «N frentes sin ancla» con el motor listo pero, según el acta, sin pintar. Era falso desde que se escribió — las dos ya estaban en <code>main</code> (<code>4a6c88d5</code> y <code>6f3f379d</code>, con su ayuda en <code>4680dc4d</code>), y el letrero mandó a una sesión a reconstruir lo ya construido. Corregido el 4 de agosto (<code>f1ab72c</code>): el acta ahora dice dónde vive cada pieza y con qué commit llegó, con la fila tachada en vez de borrada. Verificado en esta pasada leyendo el código citado en <code>4a6c88d5</code> y <code>6f3f379d</code> — las dos vistas están en <code>pdc-app/src/pages/Seguimiento.tsx</code> y <code>PlanFechas.tsx</code>; el propio commit reporta 142 asserts de <code>vitest</code> en verde, no repetidos en esta pasada.</p>
-        </div>
+    <article id="frente-pdc" class="frente">
+      <p class="eyebrow">Frente activo 2 de 5</p>
+      <div class="front-head">
+        <h2 style="margin:0">Plan de Compras v2 (PDC)</h2>
+        <span class="badge b-wait">Código cerrado · producción pendiente</span>
       </div>
-      <div class="eli-card">
-        <h3>En simple</h3>
-        <p class="kicker">El plan de compras nuevo, sin jerga.</p>
+      <p class="lede">Siete de los 24 goals del repo son de este frente — cuéntalos aquí, no otra vez en el bloque genérico de goals de más abajo. El goal que los reunía (<code>pdc-preparar-b1</code>) cerró el 3 de agosto, y en la madrugada del 5 de agosto el PDC v1 —el módulo que este frente reemplaza— se eliminó del repo: no quedó solo autorizado, quedó ejecutado.</p>
+
+      <div class="frente-simple">
+        <p class="kicker">En simple</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>El módulo nuevo ya está construido y probado</b> — parte, reparte y reprograma paquetes, calcula flujo de caja, avisa vencimientos.</span></li>
-          <li><span class="eli-tag">2</span><span><b>Pero solo lo usa el ambiente de pruebas del equipo</b>, no la web real de la empresa. Esa es la única pieza grande que falta.</span></li>
-          <li><span class="eli-tag">3</span><span><b>El módulo viejo ya se apagó del todo</b> — código, pantallas y datos —, aunque el nuevo todavía no llegó a la web real. No hizo falta esperar a que llegara. El apagón sí dejó un cabo suelto —una pantalla ajena (Subcontratistas) dejó de cargar por seguir llamando a la tabla borrada—, pero se detectó y se corrigió ese mismo día.</span></li>
-          <li><span class="eli-tag">4</span><span><b>Ninguna pantalla se quedó a medias.</b> Dos que el acta daba por «solo falta dibujarlas» (flujo de caja, avisos de frentes) resultaron ya estar construidas — el acta mentía, no el código, y el 4 de agosto se corrigió el papel.</span></li>
-          <li><span class="eli-tag">5</span><span><b>La máquina de pruebas automáticas ya puede poner a prueba el plan de compras nuevo de principio a fin.</b> Antes de esta pasada le faltaban las tablas para hacerlo, y el panel de administración ni siquiera arrancaba ahí.</span></li>
+          <li><b>El módulo nuevo ya está construido y probado</b> — parte, reparte y reprograma paquetes, calcula flujo de caja, avisa vencimientos.</li>
+          <li><b>Pero solo lo usa el ambiente de pruebas del equipo</b>, no la web real de la empresa. Esa es la única pieza grande que falta.</li>
+          <li><b>El módulo viejo ya se apagó del todo</b> — código, pantallas y datos —, aunque el nuevo todavía no llegó a la web real. El apagón sí dejó un cabo suelto —una pantalla ajena (Subcontratistas) dejó de cargar—, pero se detectó y se corrigió ese mismo día.</li>
+          <li><b>Ninguna pantalla se quedó a medias.</b> Dos que el acta daba por «solo falta dibujarlas» resultaron ya estar construidas — el acta mentía, no el código, y el 4 de agosto se corrigió el papel.</li>
+          <li><b>La máquina de pruebas automáticas ya puede poner a prueba el plan de compras nuevo de principio a fin.</b> Antes le faltaban las tablas para hacerlo, y el panel de administración ni siquiera arrancaba ahí.</li>
         </ul>
       </div>
-    </div>
-  </div>
-</section>
 
-<section id="frente-design-system" style="background:var(--panel-sunk)">
-  <div class="wrap">
-    <p class="eyebrow">Frente activo 3 de 5</p>
-    <div class="front-head">
-      <h2 style="margin:0">Design System — núcleo y gobernanza</h2>
-      <span class="badge b-mute">Sprint 00 · sin fecha de cierre</span>
-    </div>
-    <p class="lede">Dos goals forman este frente. <code>design-system-nucleo-gobernanza</code>: convertir el design system AIA en fuente de verdad única, versionada (release <code>1.0.0</code>), con gates automáticos y Programa General como piloto — la propia wiki lo marca «indeterminado», su último registro no tiene sección de cierre. Detrás de él, nuevo desde el 4 de agosto, <code>cierre-version-1-1-0-design-system</code>: pagar o re-vencer las 39 excepciones que expiran en la 1.1.0 y sincronizar manifiestos + changelog.</p>
-    <div class="front-grid">
-      <div class="front-detail">
-        <div class="card wait">
-          <h3>Qué falta antes de poder declarar <code>1.0.0</code></h3>
-          <p>Su registro de trazabilidad (<code>validation-log.md</code>) lista más de diez capacidades con evidencia «histórica» o «superseded» que necesita una ejecución fresca sobre el árbol exacto de release: revisión visual en sesión autenticada, presupuesto de runtime con tres muestras limpias, datos del piloto sobre una fixture aislada, y la revisión de accesibilidad separada del gate automático. Ninguna observación antigua activa la versión por sí sola.</p>
+      <details class="tech-detail techy">
+        <summary class="tech-toggle"><span class="chev">▸</span> Ver detalle técnico completo</summary>
+        <div class="tech-body">
+          <div class="table-card">
+            <table>
+              <thead><tr><th>Goal</th><th>Qué cerró</th></tr></thead>
+              <tbody>
+                <tr><td><span class="t-id">pdc-tanda2-plan-verdad</span></td><td>El plan de compras deja de mentir sobre cuánto falta: cobertura por valor y por conteo, vencidos, dos botones de aceptar/revisar por confianza.</td></tr>
+                <tr><td><span class="t-id">pdc-tanda34-pulido</span></td><td>Once pendientes de primera impresión y pulido.</td></tr>
+                <tr><td><span class="t-id">pdc-revision-ux</span></td><td>Los 15 hallazgos de usabilidad del recorrido del dueño de producto.</td></tr>
+                <tr><td><span class="t-id">pdc-a41-pasos-configurables</span></td><td>Pasos de contratación configurables por obra.</td></tr>
+                <tr><td><span class="t-id">pdc-a42-frentes-cobertura</span></td><td>Cada paquete sabe a qué frente del cronograma pertenece.</td></tr>
+                <tr><td><span class="t-id">pdc-preparar-b1</span></td><td>Subpaquetes, flujo de caja, Torre de Control BI, equipo alquilado/comprado, ayuda in-app en 8 pantallas — desplegado en <code>prueba-lps</code>.</td></tr>
+                <tr><td><span class="t-id">pdc-responsable-usuario</span></td><td>Absorbido por <code>pdc-preparar-b1</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card block">
+            <h3>La brecha real: producción sigue en julio</h3>
+            <p><code>lastplanneraia.com</code> (la producción real) sigue en el commit <code>1aa7c69</code> del 16 de julio, según <code>goals/pdc-preparar-b1/estado-olas.md</code> — con <b>cero</b> tablas <code>pdc_*</code>. Todo lo de esta tarjeta vive en <code>prueba-lps</code>, el ambiente que el equipo usa como pruebas — no en la web de la empresa. Contado con <code>git rev-list --count 1aa7c69..HEAD</code>: el despliegue real arrastra <b>1.128</b> commits, no los «~500» que estimaban las specs de julio — más del doble, y sigue creciendo con cada pasada de este informe aunque no haya desarrollo nuevo, porque los propios commits del informe anterior también cuentan. Tiene su rutina escrita en <code>docs/siteground-deploy-routine.md</code>, pero no se ha ejecutado.</p>
+          </div>
+          <div class="card done">
+            <h3>Limpieza tardía de pruebas E2E del PDC v1 <span class="badge b-done"><code>1953a0f1</code> — con su propio arreglo el mismo día, <code>7b1dacf</code></span></h3>
+            <p>Correr la suite E2E completa tras el retiro destapó cuatro huérfanos que ningún gate había marcado: dos specs enteros que solo ejercitaban rutas ya retiradas, un smoke test que aún visitaba <code>/listado-actividades</code> y <code>/contratos</code>, y un <code>COPY</code> en el Dockerfile de la base de CI que ya no podía construir la imagen. Se podaron los cuatro. El propio cambio dejó dos copias de una lista blanca de SQL desincronizadas — rojo que el mismo autor detectó y reparó doce minutos después (<code>7b1dacf</code>), agregando además una aserción que compara contra el Dockerfile real del disco.</p>
+          </div>
+          <div class="card done">
+            <h3>Segundo hueco de la misma raíz: el panel Admin y la base de CI del PDC v2 <span class="badge b-done"><code>c22b60ac</code> — fusionado en una pasada anterior</span></h3>
+            <p><b>Uno:</b> <code>admin/public/index.php</code> llamaba a <code>Dotenv::createImmutable()->load()</code> sin guarda, así que respondía 500 en cualquier entorno sin <code>.env</code> — ahora <code>admin/</code> replica la simetría de <code>public/index.php</code>. <b>Dos:</b> la base de CI no tenía ni una tabla del PDC v2, así que <code>/plan-compras</code> nunca se ejercitaba allí; se horneó <code>database/fixtures/design-system-ci-pdc-v2.sql</code> con las 18 tablas de clausura, añadidas a las cuatro listas a la vez para no repetir la deriva que mordió en <code>1953a0f1</code>.</p>
+          </div>
+          <div class="card done">
+            <h3>Retiro del PDC viejo (etapas 3–4 de <code>retiro-listado-contratos</code>) <span class="badge b-done">Ejecutado 5 ago, 00:46 UTC-5</span></h3>
+            <p>Las etapas 1 y 2 ya estaban HECHAS desde el 31 de julio. Lo que faltaba —apagar <code>/pdc</code> y <code>OperationalFamilyPolicy</code>— tenía como condición original que A+B del PDC v2 estuvieran validados <b>en producción real</b>. El 3 de agosto Felipe reconsideró esa condición: como producción no sigue de cerca a <code>main</code> de todos modos, autorizó retirarlo ya en <code>main</code>. El 4 de agosto se escribió un plan formal para la fase C1 (9 tasks). <b>Pero el retiro se aplicó por otra vía, antes de que el plan C1 se ejecutara:</b> el commit <code>a3fee1fb</code> borró <code>/pdc</code>, sus cinco controladores, <code>SemiAutoService</code>, <code>OperationalFamilyPolicy</code> y 18 tablas de MySQL directamente sobre <code>main</code>. El plan C1 se archivó sin ejecutar.</p>
+          </div>
+          <div class="card done">
+            <h3>Regresión propia del retiro, encontrada y reparada el mismo día <span class="badge b-done"><code>cf918cd1</code> — Subcontratistas vuelve a cargar</span></h3>
+            <p><code>a3fee1fb</code> sacó <code>'pdc'</code> de la lista blanca de <code>TableResolver</code> y borró la tabla, pero dejó tres llamadas vivas en <code>SubcontratistasApiController</code>: <code>/api/subcontratistas/list</code> devolvía «Invalid table type: pdc» y la pantalla no cargaba ninguna fila. Un segundo fallo iba con el primero: renombrar un subcontratista dejaba de propagarse a <code>cic</code> y <code>programacion_semanal</code>. Se añadió <code>tests/test_table_resolver_consumers.php</code>, que verifica 192 llamadas literales a <code>TableResolver</code> contra la lista blanca real.</p>
+          </div>
+          <div class="card done">
+            <h3>Dos pantallas que se creían pendientes <span class="badge b-done">Resuelto 4 ago: ya estaban construidas</span></h3>
+            <p>El cierre del 3 de agosto había dejado anotada como pendiente la curva de flujo de caja mensual y el aviso de «N frentes sin ancla». Era falso desde que se escribió — las dos ya estaban en <code>main</code> (<code>4a6c88d5</code> y <code>6f3f379d</code>), y el letrero mandó a una sesión a reconstruir lo ya construido. Corregido el 4 de agosto (<code>f1ab72c</code>): las dos vistas están en <code>pdc-app/src/pages/Seguimiento.tsx</code> y <code>PlanFechas.tsx</code>, con 142 asserts de <code>vitest</code> en verde.</p>
+          </div>
         </div>
-        <div class="card wait">
-          <h3><code>cierre-version-1-1-0-design-system</code> <span class="badge b-mute">Planeado el 4 de agosto, sin arrancar</span></h3>
-          <p>Plan y spec escritos el 4 de agosto (<code>c2f2327</code>, 7 tareas), con una precondición dura: no arranca hasta que termine la campaña de cierre de dark mode del frente 1 (decisión D4 del usuario). Reverificado en esta pasada contando encabezados <code>### Task N</code> del plan: sigue en 7 tareas, y ninguna tiene commit de ejecución todavía — solo el commit que lo redacta.</p>
-        </div>
+      </details>
+    </article>
+
+    <article id="frente-design-system" class="frente">
+      <p class="eyebrow">Frente activo 3 de 5</p>
+      <div class="front-head">
+        <h2 style="margin:0">Design System — núcleo y gobernanza</h2>
+        <span class="badge b-mute">Sprint 00 · sin fecha de cierre</span>
       </div>
-      <div class="eli-card">
-        <h3>En simple</h3>
-        <p class="kicker">Por qué no tiene fecha todavía.</p>
+      <p class="lede">Dos goals forman este frente. <code>design-system-nucleo-gobernanza</code>: convertir el design system AIA en fuente de verdad única, versionada, con gates automáticos y Programa General como piloto. Detrás de él, nuevo desde el 4 de agosto, <code>cierre-version-1-1-0-design-system</code>: pagar o re-vencer las 39 excepciones que expiran en la 1.1.0.</p>
+
+      <div class="frente-simple">
+        <p class="kicker">En simple</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>Es el proyecto que ordena todas las reglas de diseño</b> de la app (colores, espacios, componentes) en un solo lugar con reglas automáticas que impiden que se rompan.</span></li>
-          <li><span class="eli-tag">2</span><span><b>Antes de darlo por terminado hay que volver a comprobar varias cosas</b> con datos frescos, no con mediciones viejas — igual que revisar de nuevo antes de firmar un contrato importante.</span></li>
-          <li><span class="eli-tag">3</span><span><b>Ya hay un plan para la siguiente versión (1.1.0)</b>, pero espera a propósito a que termine primero el frente 1.</span></li>
+          <li><b>Es el proyecto que ordena todas las reglas de diseño</b> de la app (colores, espacios, componentes) en un solo lugar con reglas automáticas que impiden que se rompan.</li>
+          <li><b>Antes de darlo por terminado hay que volver a comprobar varias cosas</b> con datos frescos, no con mediciones viejas — igual que revisar de nuevo antes de firmar un contrato importante.</li>
+          <li><b>Ya hay un plan para la siguiente versión (1.1.0)</b>, pero espera a propósito a que termine primero el frente 1.</li>
         </ul>
       </div>
-    </div>
-  </div>
-</section>
 
-<section id="frente-bi">
-  <div class="wrap">
-    <p class="eyebrow">Frente activo 4 de 5</p>
-    <div class="front-head">
-      <h2 style="margin:0">Torre de Control BI (Gemini)</h2>
-      <span class="badge b-block">Bloqueado por aprobación visual</span>
-    </div>
-    <p class="lede">Goal <code>bi-control-tower-gemini</code>: radar de productividad, eficiencia y PAC, más cronograma de avance, integrado a la Torre de Control existente. La preflight técnica está aprobada; falta la aprobación visual de la matriz de seis modos.</p>
-    <div class="front-grid">
-      <div class="front-detail">
-        <div class="card block">
-          <h3>Lo único que falta: tu aprobación visual</h3>
-          <p>La matriz de seis modos (combinaciones de filtro y vista) está construida y no tiene luz verde de diseño. Sin ella no hay commit de cierre — el propio goal lo declara así.</p>
+      <details class="tech-detail techy">
+        <summary class="tech-toggle"><span class="chev">▸</span> Ver detalle técnico completo</summary>
+        <div class="tech-body">
+          <div class="card wait">
+            <h3>Qué falta antes de poder declarar <code>1.0.0</code></h3>
+            <p>Su registro de trazabilidad (<code>validation-log.md</code>) lista más de diez capacidades con evidencia «histórica» o «superseded» que necesita una ejecución fresca sobre el árbol exacto de release: revisión visual en sesión autenticada, presupuesto de runtime con tres muestras limpias, datos del piloto sobre una fixture aislada, y la revisión de accesibilidad separada del gate automático. Ninguna observación antigua activa la versión por sí sola.</p>
+          </div>
+          <div class="card wait">
+            <h3><code>cierre-version-1-1-0-design-system</code> <span class="badge b-mute">Planeado el 4 de agosto, sin arrancar</span></h3>
+            <p>Plan y spec escritos el 4 de agosto (<code>c2f2327</code>, 7 tareas), con una precondición dura: no arranca hasta que termine la campaña de cierre de dark mode del frente 1 (decisión D4 del usuario). Sigue en 7 tareas, y ninguna tiene commit de ejecución todavía — solo el commit que lo redacta.</p>
+          </div>
         </div>
-        <div class="card done">
-          <h3>Evidencia automatizada, ya en verde</h3>
-          <p>7 suites de PHP en verde (aislamiento por proyecto, RBAC 403, reconciliación de fuentes con 17 casos, datos reales con 101 casos), 33 casos de Playwright en un pase completo, PHPStan limpio y 151 pruebas estáticas de design system en verde — cifras del <code>validation-log.md</code> de este goal, no repetidas en esta pasada. Ese mismo registro daba el audit global de deuda por rojo, por drift ajeno al worktree de este goal. Verificado en esta pasada corriendo <code>npm run test:design-system:static</code> sobre el árbol actual: el check <code>audit</code> pasa limpio (<code>✔ audit</code> en el resumen de la suite) — el drift que el goal describía ya no está, probablemente por la limpieza de CSS/JS que arrastró el retiro del PDC v1.</p>
-        </div>
+      </details>
+    </article>
+
+    <article id="frente-bi" class="frente">
+      <p class="eyebrow">Frente activo 4 de 5</p>
+      <div class="front-head">
+        <h2 style="margin:0">Torre de Control BI (Gemini)</h2>
+        <span class="badge b-block">Bloqueado por aprobación visual</span>
       </div>
-      <div class="eli-card">
-        <h3>En simple</h3>
-        <p class="kicker">Qué falta y por qué no se decide solo.</p>
+      <p class="lede">Goal <code>bi-control-tower-gemini</code>: radar de productividad, eficiencia y PAC, más cronograma de avance, integrado a la Torre de Control existente. La preflight técnica está aprobada; falta la aprobación visual de la matriz de seis modos.</p>
+
+      <div class="frente-simple">
+        <p class="kicker">En simple</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>El tablero de indicadores de compras para gerencia está construido y probado</b> con datos reales de dos obras.</span></li>
-          <li><span class="eli-tag">2</span><span><b>Solo falta que alguien lo mire y diga «así se ve bien».</b> Es una decisión de diseño, no una tarea técnica pendiente.</span></li>
+          <li><b>El tablero de indicadores de compras para gerencia está construido y probado</b> con datos reales de dos obras.</li>
+          <li><b>Solo falta que alguien lo mire y diga «así se ve bien».</b> Es una decisión de diseño, no una tarea técnica pendiente.</li>
         </ul>
       </div>
-    </div>
-  </div>
-</section>
 
-<section id="frente-biblia">
-  <div class="wrap">
-    <p class="eyebrow">Frente activo 5 de 5 · nacido el 4 de agosto</p>
-    <div class="front-head">
-      <h2 style="margin:0">Biblia de flujos</h2>
-      <span class="badge b-info">Primera pasada cerrada · 5 tandas abiertas</span>
-    </div>
-    <p class="lede">Cinco goals (<code>biblia-t1-transversal</code> a <code>t5-lectura</code>) nacieron el 4 de agosto y son un solo frente, no cinco: documentar en <code>docs/flujos/</code> qué DEBE hacer la aplicación, escenario por escenario y verificado contra el código con cita <code>archivo:línea</code>, con cláusula de autoridad deliberadamente invertida respecto a la wiki — si la biblia y el código divergen, es un bug de uno de los dos. Un primer commit (<code>7a5b738</code>) le dio vuelta a las cinco tandas a la vez; horas más tarde un segundo commit (<code>2223301</code>) tuvo que reescribir de cero el capítulo de PDC, porque documentaba el módulo v1 que el usuario deprecó ese mismo día en vez del v2 que sigue vivo — decisión que en la madrugada del 5 de agosto se ejecutó de verdad (frente 2), así que la reescritura resultó anticipar código que ya no existe. Recontado en esta pasada: quedan <b>11 documentos</b> (1.444 líneas, 63 escenarios citados con cita <code>archivo:línea</code>), 17 pruebas Playwright en <code>e2e/tests/biblia/</code> (5 cascada, 3 PDC, 2 soporte, 7 transversal) y 17 hallazgos en <code>docs/EXPERIMENTS.md</code> — 16 siguen abiertos y 1 se cerró el 4 de agosto como «no se arregla» porque describía código ya deprecado. Los cinco <code>goal.md</code> siguen diciendo «ABIERTO» porque, en efecto, ninguna tanda cerró su condición de hecho completa (falta, por ejemplo, la cobertura Playwright propia de <code>biblia-t5-lectura</code>: no hay <code>lectura-bi.spec.mjs</code> en <code>e2e/tests/biblia/</code>).</p>
-    <div class="front-grid">
-      <div class="front-detail">
-        <div class="table-card">
-          <table>
-            <thead><tr><th>Tanda</th><th>Cubre</th><th>Pruebas</th></tr></thead>
-            <tbody>
-              <tr><td><span class="t-id">T1 transversal</span></td><td>Autenticación, selección de proyecto, las 17 capacidades de <code>RbacManager</code>.</td><td><code>transversal.spec.mjs</code> — 7 casos</td></tr>
-              <tr><td><span class="t-id">T2 cascada LPS</span></td><td>Programa General → Intermedia → Semanal, el ciclo completo.</td><td><code>cascada-lps.spec.mjs</code> — 5 casos</td></tr>
-              <tr><td><span class="t-id">T3 PDC</span></td><td>Plan de Compras v2 (reescrito el 4 de agosto sobre el módulo vivo) y sus deudas de datos conocidas.</td><td><code>pdc.spec.mjs</code> — 3 casos</td></tr>
-              <tr><td><span class="t-id">T4 soporte</span></td><td>Módulos de soporte a la operación.</td><td><code>soporte.spec.mjs</code> — 2 casos</td></tr>
-              <tr><td><span class="t-id">T5 lectura</span></td><td>Torre de Control BI y superficies de solo lectura.</td><td>Sin spec propio todavía</td></tr>
-            </tbody>
-          </table>
+      <details class="tech-detail techy">
+        <summary class="tech-toggle"><span class="chev">▸</span> Ver detalle técnico completo</summary>
+        <div class="tech-body">
+          <div class="card block">
+            <h3>Lo único que falta: tu aprobación visual</h3>
+            <p>La matriz de seis modos (combinaciones de filtro y vista) está construida y no tiene luz verde de diseño. Sin ella no hay commit de cierre — el propio goal lo declara así.</p>
+          </div>
+          <div class="card done">
+            <h3>Evidencia automatizada, ya en verde</h3>
+            <p>7 suites de PHP en verde (aislamiento por proyecto, RBAC 403, reconciliación de fuentes con 17 casos, datos reales con 101 casos), 33 casos de Playwright en un pase completo, PHPStan limpio y 151 pruebas estáticas de design system en verde — cifras del <code>validation-log.md</code> de este goal. Ese mismo registro daba el audit global de deuda por rojo, por drift ajeno al worktree de este goal; corriendo <code>npm run test:design-system:static</code> sobre el árbol actual, el check <code>audit</code> pasa limpio — el drift que el goal describía ya no está, probablemente por la limpieza de CSS/JS que arrastró el retiro del PDC v1.</p>
+          </div>
         </div>
-        <div class="card block">
-          <h3>El hallazgo que más pesa: CSRF sin validar en seis módulos</h3>
-          <p>Verificado en ejecución, no solo leído: <code>rbac_guard</code> autoriza la petición pero no valida el token CSRF, y el helper que sí lo hace vive en el mismo archivo sin que nadie lo llame. Además, <code>sanear</code> queda fuera de la lista CSRF de Programación Semanal aunque borra e inserta filas. Registrado en <code>docs/EXPERIMENTS.md</code> como hallazgo — <b>no arreglado todavía</b>: la biblia documenta y mide, no corrige por su cuenta. Contraste que dejó el capítulo reescrito de PDC: los nueve controladores del plan de compras v2 sí validan CSRF y autorizan con un quinto mecanismo (<code>RbacService::can()</code>) — el hueco es de los módulos legacy, no del módulo nuevo.</p>
-        </div>
-        <div class="card">
-          <h3>Dos reglas de negocio que solo vivían en la cabeza de alguien</h3>
-          <p>Quedaron escritas por primera vez: el Residente solo puede editar las dos últimas semanas del programa, y cada rol solo califica las disciplinas que le competen. Antes del 4 de agosto, ninguna de las dos estaba documentada — solo implementada.</p>
-        </div>
+      </details>
+    </article>
+
+    <article id="frente-biblia" class="frente">
+      <p class="eyebrow">Frente activo 5 de 5 · nacido el 4 de agosto</p>
+      <div class="front-head">
+        <h2 style="margin:0">Biblia de flujos</h2>
+        <span class="badge b-info">Primera pasada cerrada · 5 tandas abiertas</span>
       </div>
-      <div class="eli-card">
-        <h3>En simple</h3>
-        <p class="kicker">Qué es y por qué importa.</p>
+      <p class="lede">Cinco goals (<code>biblia-t1-transversal</code> a <code>t5-lectura</code>) nacieron el 4 de agosto y son un solo frente, no cinco: documentar en <code>docs/flujos/</code> qué DEBE hacer la aplicación, escenario por escenario y verificado contra el código con cita <code>archivo:línea</code>. Si la biblia y el código divergen, es un bug de uno de los dos.</p>
+
+      <div class="frente-simple">
+        <p class="kicker">En simple</p>
         <ul>
-          <li><span class="eli-tag">1</span><span><b>Es el manual de «cómo se supone que se comporta la app»</b>, escrito comparando contra el código real, no contra lo que alguien recuerda.</span></li>
-          <li><span class="eli-tag">2</span><span><b>Ya encontró un problema de seguridad real</b>: hay pantallas que guardan cambios sin comprobar bien el candado anti-falsificación de peticiones. Está anotado, todavía no arreglado.</span></li>
-          <li><span class="eli-tag">3</span><span><b>Cuatro de las cinco partes ya tienen pruebas automáticas</b> que vigilan que lo escrito siga siendo cierto; la quinta (los tableros de lectura) todavía no.</span></li>
+          <li><b>Es el manual de «cómo se supone que se comporta la app»</b>, escrito comparando contra el código real, no contra lo que alguien recuerda.</li>
+          <li><b>Ya encontró un problema de seguridad real</b>: hay pantallas que guardan cambios sin comprobar bien el candado anti-falsificación de peticiones. Está anotado, todavía no arreglado.</li>
+          <li><b>Cuatro de las cinco partes ya tienen pruebas automáticas</b> que vigilan que lo escrito siga siendo cierto; la quinta (los tableros de lectura) todavía no.</li>
         </ul>
       </div>
-    </div>
+
+      <details class="tech-detail techy">
+        <summary class="tech-toggle"><span class="chev">▸</span> Ver detalle técnico completo</summary>
+        <div class="tech-body">
+          <p class="lede" style="margin:0 0 4px">Un primer commit (<code>7a5b738</code>) le dio vuelta a las cinco tandas a la vez; horas más tarde un segundo commit (<code>2223301</code>) tuvo que reescribir de cero el capítulo de PDC, porque documentaba el módulo v1 que el usuario deprecó ese mismo día. Quedan <b>11 documentos</b> (1.444 líneas, 63 escenarios citados), 17 pruebas Playwright (5 cascada, 3 PDC, 2 soporte, 7 transversal) y 17 hallazgos en <code>docs/EXPERIMENTS.md</code> — 16 abiertos, 1 cerrado el 4 de agosto como «no se arregla» porque describía código ya deprecado. Los cinco <code>goal.md</code> siguen diciendo «ABIERTO» porque ninguna tanda cerró su condición de hecho completa.</p>
+          <div class="table-card">
+            <table>
+              <thead><tr><th>Tanda</th><th>Cubre</th><th>Pruebas</th></tr></thead>
+              <tbody>
+                <tr><td><span class="t-id">T1 transversal</span></td><td>Autenticación, selección de proyecto, las 17 capacidades de <code>RbacManager</code>.</td><td><code>transversal.spec.mjs</code> — 7 casos</td></tr>
+                <tr><td><span class="t-id">T2 cascada LPS</span></td><td>Programa General → Intermedia → Semanal, el ciclo completo.</td><td><code>cascada-lps.spec.mjs</code> — 5 casos</td></tr>
+                <tr><td><span class="t-id">T3 PDC</span></td><td>Plan de Compras v2 (reescrito el 4 de agosto sobre el módulo vivo) y sus deudas de datos conocidas.</td><td><code>pdc.spec.mjs</code> — 3 casos</td></tr>
+                <tr><td><span class="t-id">T4 soporte</span></td><td>Módulos de soporte a la operación.</td><td><code>soporte.spec.mjs</code> — 2 casos</td></tr>
+                <tr><td><span class="t-id">T5 lectura</span></td><td>Torre de Control BI y superficies de solo lectura.</td><td>Sin spec propio todavía</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card block">
+            <h3>El hallazgo que más pesa: CSRF sin validar en seis módulos</h3>
+            <p>Verificado en ejecución, no solo leído: <code>rbac_guard</code> autoriza la petición pero no valida el token CSRF, y el helper que sí lo hace vive en el mismo archivo sin que nadie lo llame. Además, <code>sanear</code> queda fuera de la lista CSRF de Programación Semanal aunque borra e inserta filas. Registrado como hallazgo — <b>no arreglado todavía</b>: la biblia documenta y mide, no corrige por su cuenta. Los nueve controladores del plan de compras v2 sí validan CSRF — el hueco es de los módulos legacy, no del módulo nuevo.</p>
+          </div>
+          <div class="card">
+            <h3>Dos reglas de negocio que solo vivían en la cabeza de alguien</h3>
+            <p>Quedaron escritas por primera vez: el Residente solo puede editar las dos últimas semanas del programa, y cada rol solo califica las disciplinas que le competen. Antes del 4 de agosto, ninguna de las dos estaba documentada — solo implementada.</p>
+          </div>
+        </div>
+      </details>
+    </article>
   </div>
 </section>
 
@@ -569,22 +784,25 @@
   <div class="wrap">
     <p class="eyebrow">Cerrado recientemente</p>
     <h2>Los 8 goals que ya no están activos</h2>
-    <p class="lede" style="margin-bottom:20px">Para que no se cuenten dos veces con los 5 frentes de arriba. Siete son del Plan de Compras (ver frente 2, no repetidos aquí); estos son los otros ocho, más los que se descartaron o absorbieron.</p>
-    <div class="table-card">
-      <table>
-        <thead><tr><th>Goal</th><th>Estado</th><th>Nota</th></tr></thead>
-        <tbody>
-          <tr><td><span class="t-id">cierre-dark-mode-y-tablas</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>7 fases (G0–G6); es la base de la que nace el frente 1 de arriba.</td></tr>
-          <tr><td><span class="t-id">repaso-usabilidad-no-tablas</span></td><td><span class="badge b-done">HECHO 3 ago</span></td><td>El diagnóstico H-08; su ejecución sigue viva dentro del frente 1.</td></tr>
-          <tr><td><span class="t-id">retiro-listado-contratos</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>Etapas 1–2 verificadas el 31 jul; etapas 3–4 (retiro de <code>/pdc</code>) ejecutadas el 5 ago por otra vía — narradas dentro del frente 2 (PDC). El propio <code>goal.md</code> sigue sin actualizarse para reflejarlo.</td></tr>
-          <tr><td><span class="t-id">shell-layout-design-system</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>Goal paraguas; sus piezas vivas ya tienen goal propio.</td></tr>
-          <tr><td><span class="t-id">sidebar-todos-modulos</span></td><td><span class="badge b-done">HECHO</span></td><td>Barra lateral canónica en los 11 módulos que usaban navegación antigua.</td></tr>
-          <tr><td><span class="t-id">segmentacion-entrypoint-css</span></td><td><span class="badge b-done">HECHO</span></td><td>Núcleo CSS sin vendors más adjuntos por vendor.</td></tr>
-          <tr><td><span class="t-id">dark-mode-todos-los-modulos</span></td><td><span class="badge b-mute">Absorbido</span></td><td>Ninguna fase se ejecutó bajo este goal; sus decisiones F0–F6 pasaron a <code>cierre-dark-mode-y-tablas</code>.</td></tr>
-          <tr><td><span class="t-id">validar-migracion-handsontable</span></td><td><span class="badge b-mute">Descartado 30 jul</span></td><td>Quedó sin objeto al retirarse las superficies que iba a validar.</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="lede" style="margin-bottom:16px">Para que no se cuenten dos veces con los 5 frentes de arriba. Siete son del Plan de Compras (ver frente 2, no repetidos aquí); estos son los otros ocho, más los que se descartaron o absorbieron.</p>
+    <details>
+      <summary class="closed-summary"><span class="chev">▸</span> Ver los 8 goals cerrados</summary>
+      <div class="closed-body table-card">
+        <table>
+          <thead><tr><th>Goal</th><th>Estado</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr><td><span class="t-id">cierre-dark-mode-y-tablas</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>7 fases (G0–G6); es la base de la que nace el frente 1 de arriba.</td></tr>
+            <tr><td><span class="t-id">repaso-usabilidad-no-tablas</span></td><td><span class="badge b-done">HECHO 3 ago</span></td><td>El diagnóstico H-08; su ejecución sigue viva dentro del frente 1.</td></tr>
+            <tr><td><span class="t-id">retiro-listado-contratos</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>Etapas 1–2 verificadas el 31 jul; etapas 3–4 (retiro de <code>/pdc</code>) ejecutadas el 5 ago por otra vía — narradas dentro del frente 2 (PDC). El propio <code>goal.md</code> sigue sin actualizarse para reflejarlo.</td></tr>
+            <tr><td><span class="t-id">shell-layout-design-system</span></td><td><span class="badge b-done">HECHO 31 jul</span></td><td>Goal paraguas; sus piezas vivas ya tienen goal propio.</td></tr>
+            <tr><td><span class="t-id">sidebar-todos-modulos</span></td><td><span class="badge b-done">HECHO</span></td><td>Barra lateral canónica en los 11 módulos que usaban navegación antigua.</td></tr>
+            <tr><td><span class="t-id">segmentacion-entrypoint-css</span></td><td><span class="badge b-done">HECHO</span></td><td>Núcleo CSS sin vendors más adjuntos por vendor.</td></tr>
+            <tr><td><span class="t-id">dark-mode-todos-los-modulos</span></td><td><span class="badge b-mute">Absorbido</span></td><td>Ninguna fase se ejecutó bajo este goal; sus decisiones F0–F6 pasaron a <code>cierre-dark-mode-y-tablas</code>.</td></tr>
+            <tr><td><span class="t-id">validar-migracion-handsontable</span></td><td><span class="badge b-mute">Descartado 30 jul</span></td><td>Quedó sin objeto al retirarse las superficies que iba a validar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
   </div>
 </section>
 
@@ -592,36 +810,43 @@
   <div class="wrap">
     <p class="eyebrow">Ritmo real</p>
     <h2>Commits verificados de esta pasada</h2>
-    <p class="lede" style="margin-bottom:24px">Fecha de autor normalizada a UTC, contada con <code>git log</code> sobre el historial completo tras <code>fetch --unshallow</code> — el clon llegó recortado también en esta pasada, y un conteo sobre el árbol truncado habría vuelto a repartir mal los commits entre días, como le pasó a un informe anterior a este.</p>
+    <p class="lede" style="margin-bottom:22px">Fecha de autor normalizada a UTC real: por marca de tiempo Unix (<code>git log --format=%at</code>) convertida con <code>date -u</code>, contada sobre el historial completo tras <code>fetch --unshallow</code>. Recontado esta pasada sobre ese mismo método: el 6 de agosto sube de 2 a 3 commits y el total de 325 a 326 — no por trabajo nuevo, sino porque el commit con el que se publicó el informe anterior (<code>0ee2249</code>, 02:25 UTC) ya forma parte de <code>main</code>. Ningún commit de desarrollo llegó después de esa publicación.</p>
     <div class="timeline">
       <div class="tl-grid">
         <div class="tl-day">
-          <div class="tl-n num">6</div>
-          <div class="tl-col"><div class="tl-bar" data-h="3"></div></div>
-          <div class="tl-d">01/08</div>
-        </div>
-        <div class="tl-day">
           <div class="tl-n num">0</div>
-          <div class="tl-col"><div class="tl-bar" data-h="0"></div></div>
+          <div class="tl-col"><div class="tl-bar" data-h="0" title="2 de agosto: 0 commits"></div></div>
           <div class="tl-d">02/08</div>
         </div>
         <div class="tl-day">
           <div class="tl-n num">83</div>
-          <div class="tl-col"><div class="tl-bar" data-h="47"></div></div>
+          <div class="tl-col"><div class="tl-bar" data-h="47" title="3 de agosto: 83 commits"></div></div>
           <div class="tl-d">03/08</div>
         </div>
         <div class="tl-day">
           <div class="tl-n num">176</div>
-          <div class="tl-col"><div class="tl-bar" data-h="100"></div></div>
+          <div class="tl-col"><div class="tl-bar" data-h="100" title="4 de agosto: 176 commits"></div></div>
           <div class="tl-d">04/08</div>
         </div>
-        <div class="tl-day is-today">
-          <div class="tl-n num">35</div>
-          <div class="tl-col"><div class="tl-bar" data-h="20"></div></div>
+        <div class="tl-day">
+          <div class="tl-n num">58</div>
+          <div class="tl-col"><div class="tl-bar" data-h="33" title="5 de agosto: 58 commits — incluye el commit con el que la pasada anterior publicó su informe"></div></div>
           <div class="tl-d">05/08</div>
         </div>
+        <div class="tl-day is-today">
+          <div class="tl-n num">3</div>
+          <div class="tl-col"><div class="tl-bar" data-h="2" title="6 de agosto: 3 commits — los propios commits de publicación de las tres pasadas anteriores (cff2c67d 00:33 UTC, f61ed1b 01:23 UTC y 0ee2249c 02:25 UTC)"></div></div>
+          <div class="tl-d">06/08</div>
+        </div>
       </div>
-      <p class="tl-note"><span style="color:var(--accent)">▸</span> <span>El clon de esta pasada también llegó shallow; a diferencia de pasadas anteriores, el <code>fetch --unshallow</code> se verificó con <code>git rev-parse --is-shallow-repository</code> hasta confirmar <code>false</code> — la pasada anterior había dado por buena una rehidratación que en realidad no completó, así que su cifra de <b>1.547</b> commits y su reparto por día se quedaban un commit corto. Recontado de cero: <b>1.548</b> commits reales. El 1–4 de agosto no cambian: <b>6</b> el 1, <b>0</b> el 2, <b>83</b> el 3, <b>176</b> el 4. El 5 de agosto sube de <b>34</b> a <b>35</b>: el commit que faltaba es <code>fe7c1b3</code>, la publicación de la propia pasada anterior, que nunca se había contado a sí misma. Total desde el 1 de agosto: <b>300</b> commits (<b>136</b> docs · <b>89</b> fix · <b>24</b> feat · <b>21</b> test · <b>30</b> otros: merge/chore/refactor/a11y/wip/style/UI). Esta pasada no encontró ningún commit de desarrollo nuevo: <code>HEAD</code> sigue en <code>fe7c1b3</code>. La rama local está <b>al día</b> con <code>origin/main</code>: 0 commits de diferencia en ambos sentidos.</span></p>
+      <div class="tl-type">
+        <span class="tl-type-chip"><span class="sw" style="background:var(--st-info)"></span>151 docs</span>
+        <span class="tl-type-chip"><span class="sw" style="background:var(--st-block)"></span>93 fix</span>
+        <span class="tl-type-chip"><span class="sw" style="background:var(--st-done)"></span>27 feat</span>
+        <span class="tl-type-chip"><span class="sw" style="background:var(--st-wait)"></span>22 test</span>
+        <span class="tl-type-chip"><span class="sw" style="background:var(--st-mute)"></span>33 otros</span>
+      </div>
+      <p class="tl-note techy"><span style="color:var(--accent)">▸</span> <span>El clon de esta pasada también llegó shallow; se corrió <code>fetch --unshallow</code> y se verificó con <code>git rev-parse --is-shallow-repository</code> hasta confirmar <code>false</code> — <b>1.574</b> commits reales en el historial completo. Total desde el 1 de agosto: <b>326</b> commits (6/0/83/176/58/3, el 6 de agosto sube de 2 a 3 porque el commit con el que la pasada anterior publicó su informe ya entra en el gráfico) — el gráfico de arriba muestra los últimos 5 días de esa serie, del 2 al 6. El desglose por tipo sube igual en uno (<code>docs</code>: 150→151) por el mismo efecto de siempre: el commit con el que la pasada anterior publicó su informe (<code>0ee2249</code>, 02:25 UTC del 6 de agosto, <code>docs</code>) ya cuenta como commit de <code>main</code>. Esta pasada no encontró commits nuevos de desarrollo: antes de publicarse este informe, <code>HEAD</code> seguía en <code>0ee2249</code>, el mismo con el que cerró la pasada anterior. La rama local estaba <b>al día</b> con <code>origin/main</code>: 0 commits de diferencia en ambos sentidos.</span></p>
     </div>
   </div>
 </section>
@@ -630,71 +855,141 @@
   <div class="wrap">
     <p class="eyebrow">Contexto</p>
     <h2>La deuda visual que el repo ya contabiliza</h2>
-    <p class="lede" style="margin-bottom:22px">El proyecto lleva su propio libro de deuda con <b>7.161</b> apuntes (baseline generada el 25 de julio, sin cambios en esta pasada) y una política escrita: «reducir por módulo migrado, no aumentarlo sin justificación». Estas son las categorías mayores.</p>
-    <div class="debt">
-      <div class="debt-item"><div class="d-n num">2 166</div><div class="d-l"><code>!important</code> no autorizados</div></div>
-      <div class="debt-item"><div class="d-n num">829</div><div class="d-l">CSS fuera de capa</div></div>
-      <div class="debt-item"><div class="d-n num">806</div><div class="d-l">Colores escritos a mano</div></div>
-      <div class="debt-item"><div class="d-n num">791</div><div class="d-l">Token crudo en módulo</div></div>
-      <div class="debt-item"><div class="d-n num">733</div><div class="d-l">Espaciado fuera de escala</div></div>
-      <div class="debt-item"><div class="d-n num">402</div><div class="d-l">Tipografía fuera de rampa</div></div>
+    <p class="lede" style="margin-bottom:20px">El proyecto lleva su propio libro de deuda con <b>7.161</b> apuntes (baseline generada el 25 de julio, sin cambios en esta pasada) y una política escrita: «reducir por módulo migrado, no aumentarlo sin justificación». Estas son las categorías mayores, no la suma exhaustiva.</p>
+    <div class="debt-chart">
+      <div class="debt-row">
+        <span class="d-l"><code>!important</code> no autorizados</span>
+        <span class="pbar"><span class="fill block" data-pct="100"></span></span>
+        <span class="d-n num">2.166</span>
+      </div>
+      <div class="debt-row">
+        <span class="d-l">CSS fuera de capa</span>
+        <span class="pbar"><span class="fill wait" data-pct="38.3"></span></span>
+        <span class="d-n num">829</span>
+      </div>
+      <div class="debt-row">
+        <span class="d-l">Colores escritos a mano</span>
+        <span class="pbar"><span class="fill wait" data-pct="37.2"></span></span>
+        <span class="d-n num">806</span>
+      </div>
+      <div class="debt-row">
+        <span class="d-l">Token crudo en módulo</span>
+        <span class="pbar"><span class="fill wait" data-pct="36.5"></span></span>
+        <span class="d-n num">791</span>
+      </div>
+      <div class="debt-row">
+        <span class="d-l">Espaciado fuera de escala</span>
+        <span class="pbar"><span class="fill" data-pct="33.8"></span></span>
+        <span class="d-n num">733</span>
+      </div>
+      <div class="debt-row">
+        <span class="d-l">Tipografía fuera de rampa</span>
+        <span class="pbar"><span class="fill" data-pct="18.6"></span></span>
+        <span class="d-n num">402</span>
+      </div>
     </div>
-    <div class="banner" style="margin-top:20px">
-      <h3><code>npm run test:design-system:static</code> — reejecutado en esta pasada, 7 de 8 checks en verde</h3>
-      <p>Corrido sin Docker (esta nube no tiene demonio Docker disponible), tras <code>fetch --unshallow</code>: <code>entrypoint-partition</code>, <code>unlayered-delivery</code>, <code>bi-utilities</code>, <code>table-contract</code>, <code>consumer-contract</code>, <code>audit</code> y <code>contracts</code> pasan. Solo <code>node-tests</code> falla. El check <code>node-tests</code> corre <b>349 de 363</b> pruebas en verde; de las 14 que fallan, 10 son por falta del paquete <code>@axe-core/playwright</code> y 4 por no haber demonio Docker en este contenedor — sin relación con el código. Cero «golden hash mismatch». El árbol no tiene ningún commit de desarrollo nuevo desde la pasada anterior — <code>HEAD</code> sigue en <code>fe7c1b3</code> —, así que las cifras coinciden exactamente con las ya publicadas.</p>
+    <div class="card wait techy" style="margin-top:18px">
+      <h3><code>npm run test:design-system:static</code> — novena reejecución seguida, 7 de 8 checks en verde</h3>
+      <p>Corrido sin Docker (esta nube no tiene demonio Docker disponible), tras <code>fetch --unshallow</code>, sobre el mismo árbol que las siete pasadas anteriores — sin commits nuevos que fusionar: <code>entrypoint-partition</code>, <code>unlayered-delivery</code>, <code>bi-utilities</code>, <code>table-contract</code>, <code>consumer-contract</code>, <code>audit</code> y <code>contracts</code> pasan. Solo <code>node-tests</code> falla. El check <code>node-tests</code> corre <b>349 de 363</b> pruebas en verde; de las 14 que fallan, 10 son por falta del paquete <code>@axe-core/playwright</code> (<code>accessibility.test.mjs</code>, casos 2-9, 11 y 15) y 4 por no haber demonio Docker en este contenedor (<code>foundation.test.mjs</code>, casos 176, 179, 180 y 181) — sin relación con el código. Cero «golden hash mismatch». Las cifras coinciden con las ya publicadas porque no hay commits nuevos que pudieran moverlas.</p>
     </div>
   </div>
 </section>
 
-<section id="registro">
+<section id="registro" class="techy">
   <div class="wrap">
     <p class="eyebrow">Inventario</p>
     <h2>Goals, planes y la wiki que los resume</h2>
     <p class="lede" style="margin-bottom:20px">Contraste hecho en esta pasada, no arrastrado.</p>
-    <div class="stack">
+
+    <div class="card">
+      <h3>Registro de decisiones <span class="badge b-mute">54 filas</span></h3>
+      <div class="seg-bar" style="margin:10px 0" aria-hidden="true">
+        <span class="seg-a" style="flex-basis:5.6%" data-flex="5.6">A · 3</span>
+        <span class="seg-b" style="flex-basis:3.7%" data-flex="3.7">B</span>
+        <span class="seg-c" style="flex-basis:90.7%" data-flex="90.7">C · 49</span>
+      </div>
+      <div class="seg-legend">
+        <span><i style="background:var(--st-block)"></i>Bloque A · 3 — requieren tu aprobación</span>
+        <span><i style="background:var(--st-wait)"></i>Bloque B · 2 — asumidas reversibles, para ratificar</span>
+        <span><i style="background:var(--st-mute)"></i>Bloque C · 49 — deuda medida, criterio de negocio</span>
+      </div>
+      <p style="margin-top:14px">Contadas por referencia (<code>A-</code>/<code>B-</code>/<code>C-</code>) en esta pasada: <b>3</b> del bloque A, <b>2</b> del bloque B, <b>49</b> del bloque C — el archivo en sí sigue sin commits desde el 4 de agosto por la mañana, así que se sigue quedando atrás del código. A-1 todavía dice «sin recapturar» aunque los goldens se recapturaron, el usuario los aprobó (<code>560a98f</code>) y su manifiesto está sincronizado desde <code>72956de7</code>/<code>ee49e693</code>. El registro sigue describiendo como pendientes diez filas que el código ya cerró: C-16, C-31, C-49p1, C-48, C-34, C-24, C-46, C-17, C-29 y C-23. C-49p2 sí sigue genuinamente abierta — es la única de las once tocadas que espera criterio de dominio, no solo ejecución. El registro es fuente y no se edita desde aquí, pero el dato correcto es el de este informe, no el de esas filas.</p>
+    </div>
+
+    <div class="stack" style="margin-top:12px">
       <div class="card wait">
         <h3><code>memoria/goals/estado.md</code> <span class="badge b-wait">Desactualizada — se contradice a sí misma</span></h3>
-        <p>Su frontmatter y su texto siguen afirmando «16 goals» y fechando la lectura el 2026-08-02, pero su propio último commit es del 4 de agosto 14:03:56 — el mismo que creó los cinco goals de la Biblia, que la página sí lista. Es decir: se actualizó a medias. <code>find goals/ -name goal.md</code> en esta pasada cuenta <b>24</b>; a la página le faltan al menos <code>cierre-version-1-1-0-design-system</code> (creado antes de su propio último commit, así que debería estar), <code>pg-chip-de-estado</code> y <code>repaso-usabilidad-no-tablas</code>. No se corrige aquí — corresponde a una pasada de <code>ingest</code> sobre la wiki, no a este informe — pero queda anotado para que nadie la use como fuente sin ese aviso.</p>
+        <p>Su frontmatter y su texto siguen afirmando «16 goals» y fechando la lectura el 2026-08-02, pero su propio último commit es del 4 de agosto 14:03:56 — el mismo que creó los cinco goals de la Biblia, que la página sí lista. Es decir: se actualizó a medias. <code>find goals/ -name goal.md</code> en esta pasada cuenta <b>24</b>; a la página le faltan al menos <code>cierre-version-1-1-0-design-system</code>, <code>pg-chip-de-estado</code> y <code>repaso-usabilidad-no-tablas</code>. No se corrige aquí — corresponde a una pasada de <code>ingest</code> sobre la wiki, no a este informe.</p>
       </div>
       <div class="card">
         <h3>Planes en <code>docs/superpowers/plans/</code> <span class="badge b-info">27 archivos</span></h3>
-        <p>Sin archivos nuevos desde la pasada anterior. La mayoría corresponde a goals ya cerrados (confirmado por evidencia en <code>main</code>: rutas retiradas, scripts de la wiki existentes, componentes construidos). El plan de la campaña de dark mode sigue en <b>36 tareas</b> (dos retiradas por el retiro del PDC v1, una nueva de paridad visual) y sube a <b>13 con commit real</b> detrás — la Task 8 del 5 de agosto y ahora las Tasks 9, 10 y 11, comprobado línea a línea contra el mensaje de commit exacto que cada tarea del plan se propone escribir (la Task 9 se resolvió con una estrategia distinta a la escrita en el plan, pero cierra la misma decisión, C-48); el de la versión 1.1.0 (7 tareas) todavía ninguno. Los checkboxes de los planes <b>no se usaron como señal</b> — están todos sin marcar incluso en planes con trabajo terminado, así que esta lectura se hizo contra <code>git log</code>, no contra el markdown.</p>
+        <p>Sin archivos nuevos desde la pasada anterior — siguen siendo 27, releídos uno por uno otra vez en esta pasada. El plan de la campaña de dark mode se mantiene en <b>38 tareas</b> y <b>18 con commit real</b> detrás, comprobado línea a línea contra el mensaje de commit exacto que cada tarea del plan se propone escribir; el de la versión 1.1.0 (7 tareas) todavía ninguno. Los checkboxes de los planes <b>no se usaron como señal</b> — están todos sin marcar incluso en planes con trabajo terminado, así que esta lectura se hizo contra <code>git log</code>, no contra el markdown.</p>
+        <p>Hace ocho pasadas, una sesión releyó los 27 uno por uno, no solo los dos que ya tenían tarjeta, y encontró un caso extremo de esa misma trampa: <code>2026-08-04-semana-en-sesion-solo-por-navegacion.md</code> (4 tareas, «El middleware deja de escribir la semana», «las páginas recuperan el honrado de <code>?semana=</code>», «<code>/api/pi/save</code> deja de persistir la semana del request», «la suite de navegador vuelve a vigilar la carrera») aparece en <code>git log</code> con <b>una sola entrada de archivo</b> — llegó sin versionar hasta que <code>ee49e693</code> lo arrastró de otra sesión, como confiesa su propio mensaje («entran también dos archivos de otras sesiones que quedaron sin versionar»). Eso lo hacía indistinguible de un plan fantasma. Pero el código dice otra cosa: <code>SessionMiddleware</code> ya no escribe <code>$_SESSION['semana']</code> por GET (<code>945fb5bf</code>), los cuatro controladores de página llaman a <code>syncRequestedWeekContext()</code> antes de sanear (<code>8ed10927</code>), <code>ProgramacionIntermediaController::save()</code> ya no persiste la semana del request (<code>4abed9f0</code>), la suite de navegador dejó de esperar a la red para tapar la carrera (<code>5dacd72c</code>), y dos commits de cierre (<code>10434ca0</code>, <code>84cd0b37</code>) documentan el candado legítimo que sí debía quedar y distinguen el 409 de conflicto de semana de un error de red — las seis, más las dos fusiones (<code>739840a6</code>, <code>957c6d0d</code>), fechadas el 4 de agosto entre las 17:49 y las 18:36 UTC. <b>Las 4 tareas están hechas</b>; el plan solo nunca tuvo tarjeta en ningún informe hasta esa pasada. No se pudo correr <code>tests/test_week_context_write_scope.php</code> en esta nube (sin <code>vendor/autoload.php</code> fuera de <code>app</code>, mismo límite de Docker que el resto del informe) — la verificación sigue siendo por lectura de código y mensajes de commit, no por ejecución del test. Esta pasada —la novena desde ese hallazgo— volvió a releer los 27 y no encontró ningún otro plan en esa misma situación.</p>
       </div>
       <div class="card">
-        <h3>Journey <code>improve-app</code> <span class="badge b-done">Fase 1 cerrada el 4 de agosto</span></h3>
-        <p>Sin cambios desde la pasada anterior. La entrevista de jobs-to-be-done escribió <code>docs/CUSTOMER.md</code> — la fase que era puerta ya está <b>done</b>, y las fases 3, 5, 6 y 9 quedan desbloqueadas. Estado actual de las 9 fases: <b>1 hecha</b> (fase 1), <b>2 en curso</b> (2 y 4, satisfechas por los barridos del frente 1), <b>4 pendientes</b> (3, 5, 6, 9), <b>1 saltada</b> (7, app interna sin venta) y <b>1 diferida</b> (8, hasta que haya queja de lentitud). Corre entrelazado con el frente 1, no como proyecto aparte.</p>
-      </div>
-      <div class="card">
-        <h3>Registro de decisiones <span class="badge b-mute">54 filas</span></h3>
-        <p>Contadas por referencia (<code>A-</code>/<code>B-</code>/<code>C-</code>) en esta pasada: <b>3</b> del bloque A, <b>2</b> del bloque B, <b>49</b> del bloque C — el archivo en sí sigue sin commits desde el 4 de agosto por la mañana, así que se sigue quedando atrás del código. A-1 todavía dice «sin recapturar» aunque los goldens se recapturaron, el usuario los aprobó (<code>560a98f</code>) y su manifiesto está sincronizado desde <code>72956de7</code>/<code>ee49e693</code>. El registro sigue describiendo como pendientes seis filas que el código ya cerró: C-16, C-31 y C-49p1 desde <code>d877a76c</code> (ver frente 1), y también C-48 (<code>606f64bd</code>), C-34 (<code>293b2540</code>) y C-24 (<code>8bf5518c</code>), cerradas en la pasada anterior. C-49p2 sí sigue genuinamente abierta — es la única de las siete que espera criterio de dominio, no solo ejecución. El registro es fuente y no se edita desde aquí, pero el dato correcto es el de este informe, no el de esas filas.</p>
+        <h3>Journey <code>improve-app</code> <span class="badge b-done">Fases 1, 2 y 4 cerradas</span></h3>
+        <p>La entrevista de jobs-to-be-done escribió <code>docs/CUSTOMER.md</code> — la fase que era puerta ya está <b>done</b>, y las fases 3, 5, 6 y 9 quedan desbloqueadas. Estado actual de las 9 fases: <b>3 hechas</b> (1, 2 y 4), <b>4 pendientes</b> (3, 5, 6, 9), <b>1 saltada</b> (7, app interna sin venta) y <b>1 diferida</b> (8, hasta que haya queja de lentitud). Corre entrelazado con el frente 1, no como proyecto aparte.</p>
       </div>
     </div>
   </div>
 </section>
 
+</main>
+
 <footer>
   <div class="wrap">
-    <div class="brand-foot">AIA · Last Planner
-      <small>Estado de desarrollo · informe generado desde el repositorio</small>
+    <div class="foot-top">
+      <div class="brand-foot">AIA · Last Planner
+        <small>Estado de desarrollo · informe generado desde el repositorio</small>
+      </div>
+      <p class="foot-summary">Todas las cifras se leyeron del repositorio en esta misma pasada. El directorio <code style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#EEF3EF">.superpowers/</code> está en <code style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#EEF3EF">.gitignore</code> y no existe en este clon — este informe se apoya exclusivamente en fuentes versionadas.</p>
     </div>
-    <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code>git log</code> (el clon volvió a llegar shallow — se corrió <code>fetch --unshallow</code> y esta vez se verificó con <code>git rev-parse --is-shallow-repository</code> hasta dar <code>false</code>; confirmó <b>1.548</b> commits reales tras traerlos — la pasada anterior había dado por buena una rehidratación incompleta y se quedó corta en 1.547; <code>HEAD</code> y <code>origin/main</code> coinciden en <code>fe7c1b3</code>, confirmado con <code>rev-list --left-right --count HEAD...origin/main</code> en 0/0), los <code>goal.md</code> de los 24 directorios de <code>goals/</code>, los 27 planes de <code>docs/superpowers/plans/</code> (las 36 tareas de la campaña de dark mode y las 7 de la 1.1.0 recontadas por encabezado <code>### Task N</code>, no por checkbox), el registro de decisiones (54 filas: 3 A, 2 B, 49 C, recontadas por referencia), la baseline de deuda (<code>docs/design-system/audit-baseline.json</code>, sin cambios desde el 25 de julio) y la ejecución completa de <code>npm run test:design-system:static</code>. El directorio <code>.superpowers/</code> está en <code>.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual. <b>Esta pasada corrió 54 minutos después del corte anterior (15:28:31 UTC, commit <code>fe7c1b3</code>) y no encontró ningún commit de desarrollo nuevo</b>: <code>HEAD</code> y <code>origin/main</code> siguen exactamente en <code>fe7c1b3</code>, la propia publicación de la pasada anterior. La racha de pasadas en cero que había arrancado justo después de la pasada que encontró las Tasks 9/10/11 de la campaña se rompió una sola vez, por el commit de infraestructura de CI (<code>c22b60ac</code>) de esa misma pasada; con este hallazgo, la racha vuelve a arrancar. La distancia entre <code>main</code> y el commit de producción real (<code>1aa7c69</code>) es <b>1.102</b> commits — el salto desde los 1.101 publicados antes es la misma corrección de clon shallow, no un commit nuevo. El resto de datos —la baseline de deuda visual (7.161, generada el 25 de julio), el conteo del registro de decisiones (3 A, 2 B, 49 C = 54, sin cambios) y la suite estática (<b>349/363</b> <code>node-tests</code>, 7 de 8 checks en verde, las mismas 14 caídas de siempre: 10 <code>@axe-core/playwright</code>, 4 sin Docker)— se reverificaron y coinciden exactamente con lo publicado en la pasada anterior, porque ningún commit nuevo tocó esas superficies.</p>
+    <details>
+      <summary class="meth-summary"><span class="chev">▸</span> Metodología completa y fuentes</summary>
+      <p class="disclaimer">Todas las cifras de este informe se leyeron del repositorio en esta misma pasada: <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">git log</code> (el clon volvió a llegar shallow — se corrió <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">fetch --unshallow</code> y se verificó con <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">git rev-parse --is-shallow-repository</code> hasta dar <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">false</code>; confirmó 1.574 commits reales tras traerlos; <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">HEAD</code> y <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">origin/main</code> coincidían en <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">0ee2249</code> antes de este commit, confirmado con <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">rev-list --left-right --count HEAD...origin/main</code> en 0/0), los <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">goal.md</code> de los 24 directorios de <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">goals/</code>, los 27 planes de <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs/superpowers/plans/</code> —releídos uno por uno otra vez, igual que las ocho pasadas anteriores— el registro de decisiones (54 filas: 3 A, 2 B, 49 C), la baseline de deuda (<code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs/design-system/audit-baseline.json</code>, sin cambios desde el 25 de julio) y la ejecución completa de <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">npm run test:design-system:static</code>. El directorio <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">.superpowers/</code> está en <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">.gitignore</code> y no existe en este clon — los ledgers de ejecución que vivían ahí no son legibles desde la nube, así que este informe se apoya exclusivamente en fuentes versionadas. No recaptura ni modifica ninguna referencia visual. Esta pasada no encontró desarrollo nuevo en <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">git log</code>: antes de este commit, <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">HEAD</code> y <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">origin/main</code> seguían en <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">0ee2249</code> — el mismo commit con el que la pasada anterior publicó su informe (6 de agosto, 02:25 UTC) — y ningún archivo de <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">goals/</code>, <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs/superpowers/plans/</code>, el registro de decisiones, <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs/IMPROVE-APP-PLAN.md</code> ni la baseline de deuda cambió desde entonces. Esta pasada no ajustó ningún método — el de «commits últimas 24 h» por <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">%at</code> (epoch Unix) en Python, adoptado hace cuatro pasadas, se reverificó sin cambios; el conteo diario de «Ritmo» sigue igual, por <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">%at</code> convertido con <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">date -u</code>. El reparto por día desde el 1 de agosto pasa de 6/0/83/176/58/2 a <b>6/0/83/176/58/3</b> (el 6 de agosto sube de 2 a 3) — el total sube en uno (326, antes 325) solo por el commit con el que la pasada anterior publicó, no por el recuento ni por trabajo nuevo. El desglose por tipo se mantiene casi igual (151 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs</code>, antes 150; 93 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">fix</code>; 27 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">feat</code>; 22 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">test</code>; 33 otros) porque el commit que sube el total es siempre del mismo tipo (<code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs</code>). Releer los 27 planes y los 24 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">goal.md</code> uno por uno no destapó ningún plan o goal sin tarjeta — el caso encontrado hace ocho pasadas (<code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">2026-08-04-semana-en-sesion-solo-por-navegacion.md</code>) sigue siendo el único, y ya está narrado en «Registro». La distancia entre <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">main</code> y el commit de producción real (<code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">1aa7c69</code>) es 1.128 commits — sube en uno frente a los 1.127 publicados antes por el mismo efecto. Las «últimas 24 h» son una ventana móvil, no un total por día: recalculadas con los <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">%at</code> filtrados en Python dan 58 a la 03:18 UTC del 6 de agosto — y, sumando ese dato a la serie de las ocho publicaciones anteriores del mismo método (75 → 69 → 64 → 62 → 59 → 57 → 58 → 58), la ventana móvil se queda exactamente igual: 75 → 69 → 64 → 62 → 59 → 57 → 58 → 58 → 58 — sin cambio frente a la pasada anterior, porque en el tiempo transcurrido salió de la ventana de 24 h un commit del borde inferior a la vez que entró el propio commit de publicación de la pasada anterior (<code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">0ee2249</code>, un <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">docs</code> a las 02:25 UTC) — no porque haya más trabajo hoy que ayer; la ráfaga masiva del 4 de agosto sigue saliendo de la ventana por debajo. El resto de datos —la baseline de deuda visual (7.161, generada el 25 de julio), el conteo del registro de decisiones (3 A, 2 B, 49 C = 54, sin cambios en el total) y la suite estática (349/363 <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">node-tests</code>, 7 de 8 checks en verde, mismas 14 caídas por falta de <code style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#D5E0D8">@axe-core/playwright</code> y de Docker)— se reverificaron sobre el mismo árbol y coinciden exactamente con lo publicado antes.</p>
+    </details>
   </div>
 </footer>
 
 <script>
   (function () {
     var root = document.documentElement;
-    var btn = document.getElementById('themeBtn');
-    if (btn) {
-      btn.addEventListener('click', function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // tema
+    var themeBtn = document.getElementById('themeBtn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function () {
         var isDark = root.getAttribute('data-theme') === 'dark'
           || (!root.hasAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
         root.setAttribute('data-theme', isDark ? 'light' : 'dark');
       });
     }
 
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // modo simple / técnico
+    var modeBtn = document.getElementById('modeBtn');
+    if (modeBtn) {
+      modeBtn.addEventListener('click', function () {
+        var simple = root.getAttribute('data-mode') === 'simple';
+        root.setAttribute('data-mode', simple ? 'technical' : 'simple');
+        modeBtn.setAttribute('aria-pressed', String(!simple));
+        if (!simple) {
+          document.querySelectorAll('details.tech-detail[open]').forEach(function (d) { d.open = false; });
+        }
+      });
+    }
 
+    // radar: abrir el detalle del frente y desplazarse hasta él
+    document.querySelectorAll('.radar-tile').forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        var id = tile.getAttribute('data-target');
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    });
+
+    // anillos KPI
     document.querySelectorAll('.ring').forEach(function (ring) {
       var pct = Math.max(0, Math.min(100, parseFloat(ring.dataset.pct) || 0));
       var val = ring.querySelector('.val');
@@ -708,14 +1003,45 @@
       }
     });
 
+    // barras verticales del ritmo
     document.querySelectorAll('.tl-bar').forEach(function (bar) {
       var h = Math.max(2, Math.min(100, parseFloat(bar.dataset.h) || 0));
-      // El alto real se fija una sola vez; lo que se anima es la escala.
       bar.style.height = h + '%';
       if (reduce) { bar.style.transform = 'scaleY(1)'; return; }
       requestAnimationFrame(function () {
         setTimeout(function () { bar.style.transform = 'scaleY(1)'; }, 140);
       });
+    });
+
+    // barras horizontales (deuda, progreso de frentes, radar)
+    document.querySelectorAll('.pbar .fill').forEach(function (fill) {
+      var pct = Math.max(0, Math.min(100, parseFloat(fill.dataset.pct) || 0));
+      if (reduce) { fill.style.transform = 'scaleX(' + (pct / 100) + ')'; return; }
+      requestAnimationFrame(function () {
+        setTimeout(function () { fill.style.transform = 'scaleX(' + (pct / 100) + ')'; }, 140);
+      });
+    });
+
+    // barra segmentada de decisiones (A/B/C)
+    document.querySelectorAll('.seg-bar span').forEach(function (seg) {
+      var pct = parseFloat(seg.dataset.flex) || 0;
+      if (reduce) { seg.style.transform = 'scaleX(1)'; return; }
+      requestAnimationFrame(function () {
+        setTimeout(function () { seg.style.transform = 'scaleX(1)'; }, 160);
+      });
+    });
+
+    // imprimir con todo el detalle técnico desplegado
+    var openedForPrint = [];
+    window.addEventListener('beforeprint', function () {
+      openedForPrint = [];
+      document.querySelectorAll('details').forEach(function (d) {
+        if (!d.open) { d.open = true; openedForPrint.push(d); }
+      });
+    });
+    window.addEventListener('afterprint', function () {
+      openedForPrint.forEach(function (d) { d.open = false; });
+      openedForPrint = [];
     });
   })();
 </script>
