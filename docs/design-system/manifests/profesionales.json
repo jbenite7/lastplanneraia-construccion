@@ -26,6 +26,7 @@
     "jquery",
     "font-awesome",
     "aia-fonts",
+    "sweetalert2",
     "handsontable"
   ],
   "layouts": [
