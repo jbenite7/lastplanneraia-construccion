@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Support\ResponsableAiaPolicy;
 
 use TableResolver;
 
@@ -445,6 +446,13 @@ class ProgramacionIntermediaController extends BaseController
 
             $missingIds = array_values(array_diff($payload['activityIds'], $foundIds));
 
+            // N-1: el preview avisa antes de aplicar cuáles filas están bloqueadas por
+            // falta de Responsable AIA. Aquí es informativo; quien bloquea es `applySharedConstraints`.
+            $sinResponsable = $payload['applyRestriction']
+                && !($payload['applyAssignments'] && ResponsableAiaPolicy::hasAssigned($payload['responsableAia']))
+                    ? $this->activitiesWithoutResponsable($rows)
+                    : [];
+
             header('Content-Type: application/json');
             echo json_encode([
                 'respuesta' => 'BIEN',
@@ -461,6 +469,8 @@ class ProgramacionIntermediaController extends BaseController
                     'count_missing' => count($missingIds),
                     'found_ids' => $foundIds,
                     'missing_ids' => $missingIds,
+                    'count_sin_responsable' => count($sinResponsable),
+                    'sin_responsable_ids' => $sinResponsable,
                     'preview' => $preview,
                 ],
             ], JSON_UNESCAPED_UNICODE);
@@ -518,6 +528,28 @@ class ProgramacionIntermediaController extends BaseController
             $subContratista = $payload['subContratista'];
             $responsableAia = $payload['responsableAia'];
             $normalizedRestrictions = [];
+
+            // N-1: el lote no puede escribir restricciones donde la UI muestra candado.
+            // El lote SÍ puede hacerlo si en la misma operación asigna el Responsable AIA
+            // (es la vía con la que el usuario desbloquea las filas), igual que en el
+            // cliente, donde `syncRestrictionLockForVisualRow` abre la fila al asignarlo.
+            if ($applyRestriction && !($applyAssignments && ResponsableAiaPolicy::hasAssigned($responsableAia))) {
+                $sinResponsable = $this->activitiesWithoutResponsable($rows);
+                if (!empty($sinResponsable)) {
+                    http_response_code(422);
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'respuesta' => 'ERROR',
+                        'mensaje' => ResponsableAiaPolicy::mensajeLote($sinResponsable),
+                        'data' => [
+                            'motivo' => 'sin_responsable_aia',
+                            'sin_responsable_ids' => $sinResponsable,
+                        ],
+                    ], JSON_UNESCAPED_UNICODE);
+
+                    return;
+                }
+            }
 
             if ($applyRestriction) {
                 foreach ($restrictions as $restriction) {
@@ -777,6 +809,31 @@ class ProgramacionIntermediaController extends BaseController
 
             echo json_encode(["respuesta" => "ERROR", "mensaje" => $publicMessage], JSON_UNESCAPED_UNICODE);
         }
+    }
+
+    /**
+     * Consecutivos de las filas que no tienen Responsable AIA asignado.
+     *
+     * @param array<int,array<string,mixed>> $rows
+     *
+     * @return array<int,string>
+     */
+    private function activitiesWithoutResponsable(array $rows): array
+    {
+        $ids = [];
+
+        foreach ($rows as $row) {
+            if (ResponsableAiaPolicy::hasAssigned($row['Responsable_AIA'] ?? null)) {
+                continue;
+            }
+
+            $id = (string) ($row['unique_id'] ?? $row['Consecutivo_en_Programa'] ?? '');
+            if ($id !== '' && !in_array($id, $ids, true)) {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
     }
 
     private function resolveSharedConstraintPayload(bool $requireValue): array

@@ -203,6 +203,47 @@ switch ($opcion) {
         $Responsable_AIA = $_POST['Responsable_AIA'] ?? '';
         $Observaciones = $_POST['Observaciones'] ?? '';
 
+        // N-1: sin Responsable AIA no se gestionan restricciones. El cliente bloquea SOLO
+        // las celdas de restricción (Observaciones, Sub-Contratista y el propio Responsable
+        // siguen editables), así que aquí se rechaza únicamente si el guardado CAMBIA alguna
+        // restricción y la fila queda sin responsable. El responsable que manda es el del
+        // POST, porque se escribe en la misma sentencia: asignarlo desbloquea la fila igual
+        // que en la UI.
+        $restriccionesNuevas = $isPreConstruccion
+            ? [
+                'restriccion_pc_1' => ['valor' => $D_y_E, 'escala' => $longScale],
+                'restriccion_pc_2' => ['valor' => $Materiales, 'escala' => $longScale],
+                'restriccion_pc_3' => ['valor' => $MdeO, 'escala' => $longScale],
+                'restriccion_pc_4' => ['valor' => $Equipos, 'escala' => $longScale],
+            ]
+            : [
+                'D_y_E' => ['valor' => $D_y_E, 'escala' => $longScale],
+                'Materiales' => ['valor' => $Materiales, 'escala' => $longScale],
+                'MdeO' => ['valor' => $MdeO, 'escala' => $longScale],
+                'Equipos' => ['valor' => $Equipos, 'escala' => $longScale],
+                'Predecesora' => ['valor' => $Predecesora, 'escala' => $halfScale],
+                'Pdto_Cons' => ['valor' => $Pdto_Cons, 'escala' => $halfScale],
+                'Modelo' => ['valor' => $Modelo, 'escala' => $halfScale],
+            ];
+
+        if (!\App\Support\ResponsableAiaPolicy::hasAssigned($Responsable_AIA)) {
+            $columnas = implode(', ', array_keys($restriccionesNuevas));
+            $stmtActual = $dbInstance->queryWithProject(
+                "SELECT {$columnas} FROM {$tProgConsolidado} WHERE project_id = ? AND unique_id = ? AND Semana = ?",
+                [$projectId, $Id, $semana],
+                $projectId,
+            );
+            $filaActual = $stmtActual->fetch(PDO::FETCH_ASSOC) ?: [];
+
+            foreach ($restriccionesNuevas as $columna => $nueva) {
+                $actual = pi_clean_restriction_input($filaActual[$columna] ?? 'N/A', $nueva['escala']);
+                if ((string) $actual !== (string) $nueva['valor']) {
+                    pi_json_error(\App\Support\ResponsableAiaPolicy::MENSAJE_FALTA_RESPONSABLE, 422);
+                    break 2;
+                }
+            }
+        }
+
         modificar($D_y_E, $Materiales, $MdeO, $Equipos, $Predecesora, $Pdto_Cons, $Modelo, $Sub_Contratista, $Responsable_AIA, $Observaciones, $Id, $semana, fecha_inicio_sem($semana, $tSemanasActivas, $dbInstance, $projectId), $dbPrefix, $dbInstance, $isPreConstruccion, $tProgConsolidado, $tSemanasActivas, $projectId);
         break;
     default:

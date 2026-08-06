@@ -2429,6 +2429,34 @@
     renderSharedPreviewEmpty('Lista de consecutivos limpia. Cargue actividades y pulse "Ver Conflictos".');
   }
 
+  /**
+   * N-1: consecutivos, de entre los pedidos, cuya fila conocida no tiene Responsable AIA.
+   * Solo mira lo que el cliente ya tiene cargado; quien manda es el servidor.
+   */
+  function findActivityIdsWithoutResponsable(activityIds) {
+    var pedidos = {};
+    for (var i = 0; i < activityIds.length; i++) {
+      pedidos[String(activityIds[i])] = true;
+    }
+
+    var bloqueadas = [];
+    for (var j = 0; j < masterData.length; j++) {
+      var row = masterData[j] || {};
+      var id = getRowActivityId(row);
+      if (!id || !pedidos[id] || bloqueadas.indexOf(id) > -1) {
+        continue;
+      }
+      if (getState(row) === 'header') {
+        continue;
+      }
+      if (!hasAssignedValue(row.Responsable_AIA, PI_CREATE_PROF)) {
+        bloqueadas.push(id);
+      }
+    }
+
+    return bloqueadas;
+  }
+
   function buildSharedConstraintRequest(requireValue) {
     var db = getDb();
     var semana = getSemana();
@@ -2458,6 +2486,18 @@
 
     if (applyAssignments && !subContratista && !responsableAia) {
       return { valid: false, error: 'Active "Aplicar asignaciones comunes" y seleccione Sub-Contratista o Responsable AIA, o desactive el check.' };
+    }
+
+    // N-1: el lote no puede escribir restricciones donde la celda muestra candado.
+    // Se permite si el mismo lote asigna Responsable AIA, que es como se desbloquean.
+    if (applyRestriction && !(applyAssignments && hasAssignedValue(responsableAia, PI_CREATE_PROF))) {
+      var bloqueadas = findActivityIdsWithoutResponsable(activityIds);
+      if (bloqueadas.length > 0) {
+        return {
+          valid: false,
+          error: 'Falta el Responsable AIA en ' + bloqueadas.length + ' actividad(es) (' + bloqueadas.slice(0, 10).join(', ') + (bloqueadas.length > 10 ? ', …' : '') + '). Asigne el Responsable AIA antes de aplicar restricciones, o márquelo en "Aplicar asignaciones comunes".',
+        };
+      }
     }
 
     return {
