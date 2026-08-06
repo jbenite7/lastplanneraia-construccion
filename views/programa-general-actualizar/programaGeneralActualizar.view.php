@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
 	<meta charset="UTF-8">
+	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Actualizar Programa General — Last Planner AIA</title>
 	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -96,7 +97,9 @@
 
 		<div class="header-actions action-bar">
 			<div class="pg-actions-row">
-				<div class="d-flex flex-wrap align-items-center pga-actions-group">
+				<!-- pg-toolbar-buttons activa el piso compacto de 24px del componente
+				     compartido (design-system/components/toolbar-controls.css). -->
+				<div class="aia-action-group pg-toolbar-buttons" role="group" aria-label="Acciones de actualización">
 					<button id="btn_cargarCronogramaExcel" type="button" class="aia-btn aia-btn-primary" title="Cargar actualización del cronograma desde Excel" data-toggle="modal" data-target="#modalCargarExcel" aria-label="Cargar cronograma desde Excel">Cargar desde Excel <i class="fas fa-upload fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_eliminarActualizacion" type="button" class="aia-btn aia-btn-ghost" title="Eliminar actualización del cronograma" data-toggle="modal" data-target="#modalEliminarActualizacion" aria-label="Eliminar actualización">Eliminar Actualización <i class="far fa-trash-alt fa-lg" aria-hidden="true"></i></button>
 					<button id="btn_toggleFiltroMapeo" type="button" class="aia-btn aia-btn-ghost" title="Alternar visualización de actividades" aria-label="Alternar visualización">Ver Programa Completo <i class="fas fa-filter fa-lg"></i></button>
