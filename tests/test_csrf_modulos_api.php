@@ -59,7 +59,7 @@ foreach ($casos as [$api, $pagina, $payload]) {
         $fallos++; echo "FALLO meta: $pagina no emite csrf-token\n"; continue;
     }
     [$code2, $body2] = curlReq(BASE . $api, $payload + ['_csrf_token' => $m[1]], $jar);
-    if ($code2 === 403 && str_contains($body2, 'CSRF')) {
+    if ($code2 === 403 && str_contains($body2, 'Token de seguridad inválido')) {
         $fallos++; echo "FALLO con token: $api rechazó un token válido\n";
     }
 }

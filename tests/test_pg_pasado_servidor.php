@@ -105,7 +105,7 @@ $tokenA = csrfToken($jarA);
     ['unique_id' => $uniqueId, 'Actividad' => 'x', '_csrf_token' => $tokenA],
     $jarA
 );
-if ($codeA === 403 && str_contains($bodyA, 'pasado')) { $fallos++; echo "FALLO: A bloqueado en semana pasada\n"; }
+if ($codeA === 403 && str_contains($bodyA, 'pasadas')) { $fallos++; echo "FALLO: A bloqueado en semana pasada\n"; }
 
 // 3. test.R sobre la semana vigente → NO 403 por el candado
 [$codeV, $bodyV] = curlReq(
@@ -113,7 +113,7 @@ if ($codeA === 403 && str_contains($bodyA, 'pasado')) { $fallos++; echo "FALLO: 
     ['unique_id' => $uniqueId, 'Actividad' => 'x', '_csrf_token' => $tokenR],
     $jarR
 );
-if ($codeV === 403 && str_contains($bodyV, 'pasado')) { $fallos++; echo "FALLO: R bloqueado en semana vigente\n"; }
+if ($codeV === 403 && str_contains($bodyV, 'pasadas')) { $fallos++; echo "FALLO: R bloqueado en semana vigente\n"; }
 
 echo $fallos === 0 ? "OK\n" : "FALLOS: $fallos\n";
 exit($fallos === 0 ? 0 : 1);

@@ -616,9 +616,11 @@ test('CNC: Otra exige observación y no degrada la justificación', async ({ pag
     await openSection(page, section, VIEWPORTS[0], 5, PRUEBA, CREDENTIALS);
     original = (await listRows(page, section.endpoint, 5))[0];
     expect(original).toBeTruthy();
+    const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const response = await page.request.post('/api/cnc/save', { form: {
       Consecutivo: String(original.Consecutivo), semana: '5',
       Categoria_CNC: original.Categoria_CNC, CNC: 'Otra', Observaciones_CNC: '',
+      _csrf_token: csrf || '',
     } });
     expect(response.status()).toBe(422);
     expect((await response.json()).respuesta).toBe('ERROR');
@@ -706,8 +708,10 @@ test('CIC rechaza semana suplantada y campos fuera del formulario', async ({ pag
   expect(row).toBeTruthy();
   const prefix = row.tipo_proveedor === 'Mano de Obra' ? 'mdo' : 'si';
   const field = `${prefix}_cal_1`;
+  const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
   const base = { opcion: `modificar_${prefix}`, Id: String(row.Id),
-    [`${prefix}_Observaciones`]: row.Observaciones || '', [field]: row[field] || '' };
+    [`${prefix}_Observaciones`]: row.Observaciones || '', [field]: row[field] || '',
+    _csrf_token: csrf || '' };
   const wrongWeek = await page.request.post('/api/cic/save', { form: {
     ...base, semana: String(Number(row.Semana) + 1),
   } });
