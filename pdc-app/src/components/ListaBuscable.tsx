@@ -27,11 +27,17 @@ export function ListaBuscable({
   const [busqueda, setBusqueda] = useState('')
   const [resaltado, setResaltado] = useState(0)
   const cajaBusqueda = useRef<HTMLInputElement>(null)
+  const listaRef = useRef<HTMLUListElement>(null)
   const visibles = useMemo(() => opcionesVisibles(opciones, busqueda), [opciones, busqueda])
   const conBuscador = necesitaBuscador(opciones.length)
 
   // Al abrir, el foco va a la caja: quien abre una lista de trescientos insumos viene a escribir.
-  useEffect(() => { cajaBusqueda.current?.focus() }, [])
+  // Si la lista es corta y no hay caja, el foco va al propio <ul> (es el único con tabIndex 0):
+  // sin esto, Escape/Enter/flechas no llegan a ningún lado hasta el primer clic.
+  useEffect(() => {
+    if (conBuscador) cajaBusqueda.current?.focus()
+    else listaRef.current?.focus()
+  }, [conBuscador])
   // Teclear recorta la lista, y el resaltado podría quedar apuntando fuera de ella.
   useEffect(() => { setResaltado(0) }, [busqueda])
 
@@ -79,6 +85,7 @@ export function ListaBuscable({
         </div>
       )}
       <ul
+        ref={listaRef}
         id={`${idBase}-opciones`}
         className="pdc-lista-opciones"
         role="listbox"
