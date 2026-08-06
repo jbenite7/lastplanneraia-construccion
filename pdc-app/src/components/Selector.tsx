@@ -1,0 +1,72 @@
+import { useEffect, useId, useRef, useState } from 'react'
+import { ListaBuscable } from './ListaBuscable'
+import type { Opcion } from '../lib/listaBuscable'
+
+export interface SelectorProps {
+  value: string
+  onChange: (valor: string) => void
+  opciones: Opcion[]
+  etiqueta: string
+  placeholder?: string
+  disabled?: boolean
+  testid?: string
+}
+
+/**
+ * Sustituto de `<select>`. Misma forma de uso (valor controlado, `onChange` con un string), pero
+ * la lista se puede buscar en cuanto pasa de ocho opciones.
+ *
+ * Por qué no es un `<select>` nativo con `<datalist>`: el nativo no admite buscar dentro de sus
+ * opciones y `<datalist>` no restringe a la lista. Aquí el valor siempre sale de las opciones.
+ */
+export function Selector({
+  value, onChange, opciones, etiqueta, placeholder = 'Elegir…', disabled = false, testid,
+}: SelectorProps) {
+  const [abierto, setAbierto] = useState(false)
+  const caja = useRef<HTMLDivElement>(null)
+  const idBase = useId()
+  const elegida = opciones.find((o) => o.valor === value)
+
+  // Cerrar al hacer clic fuera. Sin esto quedan dos popups abiertos a la vez cuando la página
+  // tiene varios selectores seguidos, que es el caso de Paquetes y del Plan.
+  useEffect(() => {
+    if (!abierto) return
+    const fuera = (e: MouseEvent) => {
+      if (caja.current && !caja.current.contains(e.target as Node)) setAbierto(false)
+    }
+    document.addEventListener('mousedown', fuera)
+    return () => document.removeEventListener('mousedown', fuera)
+  }, [abierto])
+
+  return (
+    <div className="pdc-selector-caja" ref={caja}>
+      <button
+        type="button"
+        className="pdc-selector-boton"
+        data-testid={testid}
+        aria-label={etiqueta}
+        aria-haspopup="listbox"
+        aria-expanded={abierto}
+        disabled={disabled}
+        onClick={() => setAbierto((a) => !a)}
+      >
+        <span className={elegida ? 'pdc-selector-valor' : 'pdc-selector-valor es-vacio'}>
+          {elegida ? elegida.etiqueta : placeholder}
+        </span>
+        <span className="pdc-selector-flecha" aria-hidden="true" />
+      </button>
+      {abierto && (
+        <div className="pdc-selector-popup">
+          <ListaBuscable
+            opciones={opciones}
+            modo="una"
+            seleccion={value === '' ? [] : [value]}
+            onSeleccion={(s) => onChange(s[0] ?? '')}
+            onCerrar={() => setAbierto(false)}
+            idBase={idBase}
+          />
+        </div>
+      )}
+    </div>
+  )
+}

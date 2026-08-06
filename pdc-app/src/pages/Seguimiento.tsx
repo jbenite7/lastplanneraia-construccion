@@ -22,6 +22,7 @@ import { moneda } from '../lib/agGrid'
 import type { FilaSeguimiento, FiltrosSeguimiento, FilaVencimiento, PasoSeguimiento, RespuestaVencimientos } from '../lib/types'
 import { plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { Selector } from '../components/Selector'
 
 // Solo lectura en la grilla: el avance se registra en el panel de detalle, no en la celda. Por eso
 // no se registra ningun modulo de edicion aqui.
@@ -236,31 +237,25 @@ export default function Seguimiento() {
           )}
 
           <div className="pdc-seg-filtros">
-            <label>
-              Paso{' '}
-              <select
-                data-testid="pdc-venc-filtro-paso"
-                value={filtroPaso}
-                onChange={(e) => setFiltroPaso(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {(venc?.pasos ?? []).map((p) => (
-                  <option key={p.clave} value={p.clave}>{p.paso}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Responsable{' '}
-              <select
-                data-testid="pdc-venc-filtro-responsable"
-                value={filtroResp}
-                onChange={(e) => setFiltroResp(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {usuarioId !== null && <option value={String(usuarioId)}>Los míos</option>}
-                <option value="sin">Sin responsable</option>
-              </select>
-            </label>
+            <Selector
+              testid="pdc-venc-filtro-paso"
+              etiqueta="Filtrar por paso"
+              placeholder="Todos"
+              value={filtroPaso}
+              onChange={setFiltroPaso}
+              opciones={(venc?.pasos ?? []).map((p) => ({ valor: p.clave, etiqueta: p.paso }))}
+            />
+            <Selector
+              testid="pdc-venc-filtro-responsable"
+              etiqueta="Filtrar por responsable"
+              placeholder="Todos"
+              value={filtroResp}
+              onChange={setFiltroResp}
+              opciones={[
+                ...(usuarioId !== null ? [{ valor: String(usuarioId), etiqueta: 'Los míos' }] : []),
+                { valor: 'sin', etiqueta: 'Sin responsable' },
+              ]}
+            />
           </div>
 
           {venc && (
@@ -487,25 +482,24 @@ export default function Seguimiento() {
           />{' '}
           Mis paquetes
         </label>
-        <label>
-          Frente{' '}
-          <select value={filtros.frente} onChange={(e) => setFiltros((f) => ({ ...f, frente: e.target.value }))}>
-            <option value="">Todos</option>
-            {frentes.map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
-        </label>
-        <label>
-          Estado{' '}
-          <select
-            value={filtros.estado}
-            onChange={(e) => setFiltros((f) => ({ ...f, estado: e.target.value as FiltrosSeguimiento['estado'] }))}
-          >
-            <option value="">Todos</option>
-            <option value="sin_empezar">Sin empezar</option>
-            <option value="en_curso">En curso</option>
-            <option value="terminado">Terminado</option>
-          </select>
-        </label>
+        <Selector
+          etiqueta="Filtrar por frente"
+          placeholder="Todos"
+          value={filtros.frente}
+          onChange={(v) => setFiltros((f) => ({ ...f, frente: v }))}
+          opciones={frentes.map((n) => ({ valor: n, etiqueta: n }))}
+        />
+        <Selector
+          etiqueta="Filtrar por estado"
+          placeholder="Todos"
+          value={filtros.estado}
+          onChange={(v) => setFiltros((f) => ({ ...f, estado: v as FiltrosSeguimiento['estado'] }))}
+          opciones={[
+            { valor: 'sin_empezar', etiqueta: 'Sin empezar' },
+            { valor: 'en_curso', etiqueta: 'En curso' },
+            { valor: 'terminado', etiqueta: 'Terminado' },
+          ]}
+        />
         <label>
           <input
             type="checkbox" checked={filtros.soloAtrasados}

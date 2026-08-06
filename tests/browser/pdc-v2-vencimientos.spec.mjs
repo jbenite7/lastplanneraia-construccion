@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginAndSelectProject, logout } from './support/session.mjs';
 import { PROJECTS } from './fixtures/projects.mjs';
+import { elegirEnSelector } from './support/pdc-selector.mjs';
 
 // Contra la obra real (Da Porto), no contra el sandbox: este frente SOLO LEE —no amarra, no
 // recalcula, no escribe una sola fila—, así que no hay nada que sembrar ni que restaurar. Y es el
@@ -62,14 +63,20 @@ test.describe('PDC v2 · B2 — vencimientos', () => {
     await page.getByRole('tab', { name: /Vencimientos/ }).click();
     await expect(page.getByTestId('pdc-venc-conteos')).toBeVisible({ timeout: 15000 });
 
-    const select = page.getByTestId('pdc-venc-filtro-paso');
-    const opciones = select.locator('option');
+    // El `Selector` no es un <select>: para leer las opciones hay que abrir su popup, igual que
+    // haría una persona.
+    await page.getByTestId('pdc-venc-filtro-paso').click();
+    const popup = page.locator('.pdc-selector-popup');
+    await popup.waitFor({ state: 'visible' });
+    const opciones = popup.getByRole('option');
     const cuantas = await opciones.count();
-    test.skip(cuantas < 2, 'El proyecto no tiene pasos pendientes que filtrar.');
+    test.skip(cuantas < 1, 'El proyecto no tiene pasos pendientes que filtrar.');
 
-    const valor = await opciones.nth(1).getAttribute('value');
-    const etiqueta = (await opciones.nth(1).textContent())?.trim();
-    await select.selectOption(valor);
+    const etiqueta = (await opciones.first().textContent())?.trim();
+    await page.keyboard.press('Escape');
+    await popup.waitFor({ state: 'detached' });
+
+    await elegirEnSelector(page, 'pdc-venc-filtro-paso', etiqueta);
     // El filtro va al servidor: hay que esperar a que la tabla se repinte con la respuesta nueva.
     await expect(page.locator('.pdc-venc-grupo tbody tr').first()).toBeVisible({ timeout: 15000 });
 
