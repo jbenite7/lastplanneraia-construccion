@@ -4,6 +4,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowSelectionModule, RowStyleModule, SelectEditorModule, TextEditorModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, SelectionChangedEvent } from 'ag-grid-community'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
+import { Selector } from '../components/Selector'
 import {
   COLUMNA_FECHA, MODULOS_TABLA, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaNumero, columnaTexto,
   columnasQueCaben, defaultColDef, usaAnchoContenedor,
@@ -703,20 +704,20 @@ export default function PlanFechas() {
         >
           <strong>{sinResponsable}</strong> sin responsable
         </span>
-        <select
-          data-testid="pdc-plan-masa-persona"
-          aria-label="Persona para asignar a los paquetes seleccionados"
+        <Selector
+          testid="pdc-plan-masa-persona"
+          etiqueta="Persona para asignar a los paquetes seleccionados"
+          placeholder="Sin asignar"
           value={masaEtiqueta}
-          onChange={(e) => setMasaEtiqueta(e.target.value)}
+          onChange={setMasaEtiqueta}
           disabled={ui.ocupado || seleccionados.length === 0}
-        >
-          {/* Fila «vacía» deliberada: opcionesResponsable necesita una fila para saber si debe sumar
-              una opción extra de huérfano, y aquí no hay una fila puntual — solo la lista general de
-              gente elegible del proyecto (siempre empieza en '' = "Sin asignar"). */}
-          {opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false }).map((o) => (
-            <option key={o} value={o}>{o === '' ? 'Sin asignar' : o}</option>
-          ))}
-        </select>
+          // Fila «vacía» deliberada: opcionesResponsable necesita una fila para saber si debe sumar
+          // una opción extra de huérfano, y aquí no hay una fila puntual — solo la lista general de
+          // gente elegible del proyecto (siempre empieza en '' = "Sin asignar").
+          opciones={opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false })
+            .filter((o) => o !== '')
+            .map((o) => ({ valor: o, etiqueta: o }))}
+        />
         <button
           type="button"
           data-testid="pdc-plan-masa-asignar"
@@ -962,20 +963,25 @@ export default function PlanFechas() {
                     {panel.pendientes.map((rama) => (
                       <li key={rama} className={ramaFoco === rama ? 'pdc-destacado' : undefined}>
                         <strong>{rama}</strong>
-                        <select
-                          aria-label={`Nodo del cronograma para ${rama}`}
-                          disabled={ui.ocupado}
-                          defaultValue=""
-                          onChange={(e) => {
-                            const a = anclas.find((x) => String(x.uniqueId) === e.target.value)
-                            if (a) void onGuardarCorrespondencia(rama, a.nombre, 'proyecto')
-                          }}
-                        >
-                          <option value="">Elegir nodo del cronograma…</option>
-                          {anclasOrdenadas(anclas).map((a) => (
-                            <option key={a.uniqueId} value={a.uniqueId}>{opcionAncla(a)}</option>
-                          ))}
-                        </select>
+                        {/* Nunca dentro de un <label>: ver el comentario largo de Seguimiento.tsx —
+                            un <label> sin htmlFor reenvía un click sintético al <button> del Selector
+                            y reabre el popup justo tras cerrarlo. */}
+                        <span className="pdc-selector">
+                          <Selector
+                            etiqueta={`Nodo del cronograma para ${rama}`}
+                            placeholder="Elegir nodo del cronograma…"
+                            disabled={ui.ocupado}
+                            // Sin estado propio (igual que el <select> original con defaultValue=""):
+                            // el guardado dispara la recarga del panel, así que no hay valor que
+                            // conservar entre una rama y la siguiente.
+                            value=""
+                            onChange={(valor) => {
+                              const a = anclas.find((x) => String(x.uniqueId) === valor)
+                              if (a) void onGuardarCorrespondencia(rama, a.nombre, 'proyecto')
+                            }}
+                            opciones={anclasOrdenadas(anclas).map((a) => ({ valor: String(a.uniqueId), etiqueta: opcionAncla(a) }))}
+                          />
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -1019,27 +1025,33 @@ export default function PlanFechas() {
               <strong>{etiquetaDestino(p)}</strong>
               {p.esLote && <span className="pdc-paq-tag">lote de obra</span>}
               <span className="pdc-paq-meta">{moneda(p.valor)}</span>
-              <select
-                aria-label={`Frente para ${etiquetaDestino(p)}`}
-                disabled={ui.ocupado}
-                value={destino}
-                onChange={(e) => {
-                  const valor = e.target.value === '' ? '' : Number(e.target.value)
-                  setDestinos((prev) => ({ ...prev, [clave]: valor }))
-                }}
-              >
-                <option value="">Elegir frente…</option>
-                {/* La fecha siempre va en la etiqueta: el cronograma repite nombres de frente en
-                    fechas distintas y sin la fecha las opciones son indistinguibles. Los frentes van
-                    primero y las actividades después, marcadas: son 242 y enterrarían a los 31
-                    frentes, que es lo que casi siempre se busca. */}
-                {(anclas.length > 0 ? anclasOrdenadas(anclas) : frentes.map((f) => ({ ...f, esFrente: true }))).map((f) => (
-                  <option key={f.uniqueId} value={f.uniqueId}>{opcionAncla(f)}</option>
-                ))}
-                {/* Sin opciones, el motivo va DENTRO del desplegable y no solo en el aviso de arriba:
-                    quien lo abre buscando un frente lo abre aquí, y es aquí donde se lleva el chasco. */}
-                {motivoAnclas && <option value="" disabled>{motivoAnclas}</option>}
-              </select>
+              {/* Nunca dentro de un <label>: ver el comentario largo de Seguimiento.tsx — un <label>
+                  sin htmlFor reenvía un click sintético al <button> del Selector y reabre el popup
+                  justo tras cerrarlo. Crítico del review final, sigue vigente: elegir aquí SOLO
+                  actualiza `destinos` — el amarre lo dispara únicamente el botón «Amarrar» de abajo. */}
+              <span className="pdc-selector">
+                <Selector
+                  testid={`pdc-plan-frente-${clave}`}
+                  etiqueta={`Frente para ${etiquetaDestino(p)}`}
+                  placeholder="Elegir frente…"
+                  disabled={ui.ocupado}
+                  value={String(destino)}
+                  onChange={(valor) => {
+                    const nuevo = valor === '' ? '' : Number(valor)
+                    setDestinos((prev) => ({ ...prev, [clave]: nuevo }))
+                  }}
+                  // La fecha siempre va en la etiqueta: el cronograma repite nombres de frente en
+                  // fechas distintas y sin la fecha las opciones son indistinguibles. Los frentes van
+                  // primero y las actividades después, marcadas: son 242 y enterrarían a los 31
+                  // frentes, que es lo que casi siempre se busca.
+                  opciones={(anclas.length > 0 ? anclasOrdenadas(anclas) : frentes.map((f) => ({ ...f, esFrente: true }))).map((f) => ({ valor: String(f.uniqueId), etiqueta: opcionAncla(f) }))}
+                />
+              </span>
+              {/* Sin opciones, el motivo se dice aparte del desplegable: el Selector no admite una
+                  opción deshabilitada como aviso, así que va como texto junto al control. */}
+              {motivoAnclas && (anclas.length > 0 ? anclasOrdenadas(anclas) : frentes).length === 0 && (
+                <span className="pdc-paq-meta">{motivoAnclas}</span>
+              )}
               {/* Único disparador del amarre (Crítico del review final): elegir en el <select> ya no
                   basta — la opción preseleccionada con la propuesta del motor no emite `change`, así
                   que sin este botón aceptarla tal cual era imposible desde la interfaz. */}

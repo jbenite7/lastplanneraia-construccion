@@ -75,9 +75,19 @@ test('plan: desamarrar devuelve el paquete a «Sin frente» y le conserva el res
     await page.getByRole('tab', { name: /Sin frente/ }).click();
     const sinFrente = page.locator('[data-testid="pdc-plan-sin-frente"]');
     await expect(sinFrente).toBeVisible({ timeout: 20000 });
-    const primero = sinFrente.locator('li:has(select)').first();
+    // El testid del Selector de fila es `pdc-plan-frente-<clave>` (paquete:lote): dinámico, así que
+    // se localiza por prefijo en vez de por un valor fijo — mismo criterio que el botón «Amarrar».
+    const primero = sinFrente.locator('li:has([data-testid^="pdc-plan-frente-"])').first();
     await expect(primero).toBeVisible({ timeout: 20000 });
-    await primero.locator('select').selectOption({ index: 1 });
+    const testidFrente = await primero.locator('[data-testid^="pdc-plan-frente-"]').getAttribute('data-testid');
+    await primero.locator(`[data-testid="${testidFrente}"]`).click();
+    const popupFrente = page.locator('.pdc-selector-popup');
+    await popupFrente.waitFor({ state: 'visible' });
+    // Elige el primero de la lista: mismo criterio que `selectOption({ index: 1 })` sobre el
+    // `<select>` nativo, cuya opción 0 era el placeholder «Elegir frente…» (el Selector no la
+    // repite dentro del popup, así que aquí la primera opción real es la de índice 0).
+    await popupFrente.getByRole('option').first().click();
+    await popupFrente.waitFor({ state: 'detached', timeout: 5000 });
     await primero.locator('button[data-testid^="pdc-plan-amarrar-"]').click();
     await expect(page.locator('.pdc-info')).toBeVisible({ timeout: 20000 });
 
