@@ -204,6 +204,17 @@
     --ds-color-focus-ring-light: #006d66;
     --ds-color-focus-ring-dark: #2caa9f;
 
+    /* ACENTO LEGADO (azul). Unico consumidor: el anillo de foco de
+       `.form-control:focus` / `.custom-select:focus` en styles.css, que es piel
+       legacy de Bootstrap; las primitivas `aia-*` ya usan
+       --ds-color-focus-ring-dark (teal) para lo mismo. Se declara aqui, con su
+       valor intacto, para sacar el hex de styles.css sin cambiar un solo pixel
+       (cierre 1.1.0). NO es el acento de marca ni debe usarse en superficies
+       nuevas: la identidad es AIA, no Apple (memoria/decisiones/
+       inspiracion-apple-en-dark-aia.md). Su retiro —unificar el foco legacy con
+       el teal del sistema— es un cambio visual que pide aprobacion aparte. */
+    --ds-color-accent-legacy-dark: #0071e3;
+
     /* PALETA DE ESTADO INVERTIDA A TEMA OSCURO
        Los cuatro pares medidos en 1180x820 dark rinden entre 8,88:1 y 10,99:1;
        la cifra exacta de cada uno vive en la evidencia del goal, no aqui.

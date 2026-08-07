@@ -4,12 +4,16 @@
 :root {
   /* 2026 Apple-Style Design System (Premium) */
 
-  /* Acento azul heredado. Sin equivalente semantico 1:1 en --ds-active-action-*
-     (verde corporate contra azul Apple): remapearlo es marca, no tokenizacion.
-     F1 Task 5l borro sus doce companeros de paleta (--primary-dark,
-     --primary-light, los seis --status-*, los tres --color-* y --text-inverse)
-     tras censar cero consumidores en public/css, views, public/js, src y admin. */
-  --primary: #0071e3; /* System Blue - Action */
+  /* Acento azul heredado, ya sin hex: su valor vive en
+     --ds-color-accent-legacy-dark (tokens.css), que lo documenta como acento
+     legacy y no de marca. Cierre 1.1.0: la tokenizacion conserva el valor
+     resuelto intacto; unificar este foco con el teal del sistema es un cambio
+     visual aparte. Sigue sin equivalente semantico 1:1 en --ds-active-action-*
+     (verde corporate contra azul Apple). F1 Task 5l borro sus doce companeros
+     de paleta (--primary-dark, --primary-light, los seis --status-*, los tres
+     --color-* y --text-inverse) tras censar cero consumidores en public/css,
+     views, public/js, src y admin. */
+  --primary: var(--ds-color-accent-legacy-dark); /* System Blue - Action */
 
   /* Surfaces */
   --surface-bg: var(--ds-active-bg-canvas); /* F1 Task 3: antes literal claro */

@@ -306,15 +306,6 @@
       "owner": "design-system",
       "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
       "expiresAtVersion": "1.2.0"
-    },
-    {
-      "module": "legacy-palette-accent",
-      "rule": "hardcoded-hex",
-      "file": "public/css/styles.css",
-      "selector": ":root (--primary)",
-      "owner": "design-system",
-      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). F1 Task 5l retiro de esta excepcion --primary-dark, --primary-light y --text-inverse, y borro por completo las entradas legacy-palette-status y legacy-palette-services: sus doce tokens se eliminaron de styles.css tras censar cero consumidores por nombre exacto en public/css, views, public/js, src y admin (incluida la concatenacion de cadenas en JS: los 'color_token' de ControlTowerService resuelven contra el mapa --bi-* de public/js/modules/bi-spa.js, no contra estos). --primary se queda porque conserva consumidores vivos en esta misma hoja. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
-      "expiresAtVersion": "1.1.0"
     }
   ],
   "migratedPaths": [],
