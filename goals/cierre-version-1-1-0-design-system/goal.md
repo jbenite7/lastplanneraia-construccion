@@ -33,10 +33,13 @@ versión del design system vence excepciones y cobra deudas de golpe; son 39, no
    `name: last-planner-aia`, así que las pruebas que ejecutan PHP en el contenedor golpean el
    worktree principal, no el tuyo, y `node-tests` sale en rojo por mtimes ajenos. Exporta
    `COMPOSE_PROJECT_NAME` propio o la condición de hecho («8/8») no significará nada.
-2. **El contrato de alcance cambió.** La prohibición de móvil, tablet y tema claro se levantó, pero
-   el tema `linen` se retiró del producto el 2026-07-25 y no hay conmutador: trabajar en claro
-   implica reconstruirlo. Ese cambio de `AGENTS.md`/`CLAUDE.md`/`DESIGN.md` seguía **sin commitear**
-   el 2026-08-07 — comprueba su estado antes de apoyarte en él.
+2. **El contrato de alcance cambió, y ya está en git:** `72132cbc`, «retirar las prohibiciones de
+   movil, tablet y tema claro de los .md normativos». Puedes apoyarte en él sin comprobar nada.
+   `AGENTS.md:35` es ahora la redacción vigente. **Pero no lo leas como permiso de alcance gratis:**
+   el tema `linen` se retiró del producto el 2026-07-25 (DS-030) y **no hay conmutador**, así que
+   trabajar en claro implica **reconstruirlo, no reactivarlo**. Si alguna excepción de las 39 se
+   justificaba en el puente móvil o de tema, ese cambio de contrato puede alterar si toca pagarla o
+   re-vencerla: compruébalo excepción por excepción, no en bloque.
 
 Lo que queda abierto de la campaña son **decisiones del usuario**, recogidas en `docs/DESIGN-AUDIT.md`
 §Pendiente de decisión, no trabajo heredado por este goal.

@@ -1,6 +1,22 @@
 # Campaña de cierre de dark mode — Plan de implementación
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> # ✅ CAMPAÑA CERRADA — 2026-08-07 · 38 de 38
+>
+> **NO CUENTES LAS CASILLAS `- [ ]` DE ESTE DOCUMENTO. MIENTEN.**
+> Nunca se marcaron, ni una, mientras el trabajo se entregaba y se commiteaba. Quien las cuente
+> obtendrá «34 de 38» o parecido, y estará publicando una cifra falsa — ya pasó con
+> `docs/reportes/estado-desarrollo.html`.
+>
+> **La cifra real es 38 de 38: 36 tareas ejecutadas y 2 retiradas** por la deprecación del PDC V1.
+> Cero pendientes. La fuente de verdad es la tabla de la sección **«Cierre de la campaña —
+> disposición final»**, al final de este archivo: una fila por tarea, cada una con su commit,
+> verificada contra `git log` el 2026-08-07.
+>
+> Lo que la campaña deja abierto son **decisiones del usuario** (`docs/DESIGN-AUDIT.md` §Pendiente de
+> decisión), no trabajo. El relevo está en
+> `goals/cierre-version-1-1-0-design-system/goal.md`, cuya precondición D4 cumplió este cierre.
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. **Histórico: la campaña ya terminó — ver el aviso de arriba.**
 
 **Goal:** Ejecutar las 54 decisiones del registro de dark mode (5 fases F*) entrelazadas con el journey improve-app (6 tasks IA-*), hasta que ninguna entrada quede «pendiente de criterio».
 
@@ -659,9 +675,18 @@ denominador del informe de estado. Las tasks 17 y 25 están retiradas por la dep
 | 35 | Golden de PI con datos | ejecutada | `ac7949f6` |
 | 36 | Encabezado sobrio en PG y PI | ejecutada | `fb059385`, `1dab8584`, `1a4c0e9f` |
 | 37 | F4-1c retirar la inyección del JS | ejecutada | `bf1f2b66` |
+| 38 | Celda de PI bloqueada por falta de Responsable AIA (`N-1`) | ejecutada; **nunca se escribió como task en este plan** | `7ff39b54`, `58ba25ab`, `02670bfb` |
 
 **36 ejecutadas · 2 retiradas por deprecación · 0 pendientes.** La condición de hecho de la campaña
 queda cumplida.
+
+> **Sobre la Task 38 y por qué el denominador sigue siendo 38.** Las cabeceras `### Task N` de este
+> documento son 38 (las 37 numeradas más la 15b), y de ahí sale el denominador que usan los informes.
+> La «Task 38» que cita `docs/DESIGN-AUDIT.md` es trabajo real nacido del hallazgo `N-1` de la Task 22
+> que **se ejecutó sin darse de alta aquí**: no tiene cabecera, así que nunca entró en la cuenta. Se
+> registra en esta tabla para que la evidencia no quede huérfana, sin tocar el denominador —
+> hacerlo 39 rompería la comparación con todos los informes anteriores. **La lección: una task que se
+> ejecuta sin escribirse en el plan queda invisible para todo lo que cuenta cabeceras.**
 
 ### Lo que la Task 31 dejó abierto, y no es trabajo
 
