@@ -1,5 +1,5 @@
 import { evidenceReceiptFailures } from './design-system-evidence-receipt.mjs';
-import { activationGitFailures } from './design-system-activation-git.mjs';
+import { ACTIVATED_VERSION_PATTERN, activationGitFailures } from './design-system-activation-git.mjs';
 
 export const closeoutGateIds = [
   'static', 'runtime', 'runtime-budgets', 'phpstan-scoped', 'phpstan-global',
@@ -118,9 +118,13 @@ export function closeoutContractFailures(input) {
     failures.push(`stable API: invalid releaseStatus ${stableApi?.releaseStatus}`);
   }
   const stableApiActivated = stableApi?.releaseStatus === 'guaranteed';
-  const versionActivated = versionDocument?.version === '1.0.0'
+  // La activacion del design system fue un hito UNICO, cumplido en 1.0.0 (D2 del
+  // spec 2026-08-04). A partir de ahi el sistema no se "reactiva" en cada version:
+  // cualquier SemVer con major >= 1 y status stable es un sistema activado.
+  const activatedVersion = ACTIVATED_VERSION_PATTERN.test(versionDocument?.version ?? '');
+  const versionActivated = activatedVersion
     && versionDocument?.status === 'stable';
-  const versionPartiallyActivated = versionDocument?.version === '1.0.0'
+  const versionPartiallyActivated = activatedVersion
     || versionDocument?.status === 'stable';
   const passStateRequested = gates.some(({ status }) => status === 'passed')
     || stableApiActivated || versionPartiallyActivated;
