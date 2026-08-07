@@ -5,10 +5,12 @@ import {
   ModuleRegistry, NumberFilterModule, TextFilterModule,
   TooltipModule, ValidationModule,
 } from 'ag-grid-community'
-import type { CellClickedEvent, ColDef } from 'ag-grid-community'
+import type { CellClickedEvent, ColDef, GridApi } from 'ag-grid-community'
 import {
   COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, defaultColDef, moneda, pdcTheme, vacioTabla
 } from '../lib/agGrid'
+import { BarraFiltros } from '../components/BarraFiltros'
+import { chipsDeGrilla } from '../lib/barraFiltros'
 import { PdcApiError, apiGet } from '../lib/api'
 import { NIVELES_PRESUPUESTO, NIVEL_INSUMO, expandirHastaNivel, filasVisibles } from '../lib/presupuestoTree'
 import type { FilaVisor } from '../lib/presupuestoTree'
@@ -32,6 +34,12 @@ ModuleRegistry.registerModules([
   ...(import.meta.env.DEV ? [ValidationModule] : []),
 ])
 
+// Nombres de las columnas con filtro propio (solo activo en modo tabla) para los chips.
+const NOMBRES_COLUMNA_VISOR = {
+  codigo: 'Código', ruta: 'Dónde está', descripcion: 'Descripción',
+  tipo: 'Tipo', unidad: 'Und', cantidad: 'Cantidad', vrUnitario: 'Vr. unitario', valorTotal: 'Valor total',
+}
+
 export default function VisorPresupuesto() {
   // `?version=N` lo pone el historial al hacer clic en una fila: se llega aquí con esa versión ya
   // cargada, sin tener que volver a elegirla en el selector. Sin parámetro manda la activa.
@@ -52,6 +60,8 @@ export default function VisorPresupuesto() {
   const [tipoInsumo, setTipoInsumo] = useState('')
   const [unidad, setUnidad] = useState('')
   const [plano, setPlano] = useState(false)
+  const [gridApi, setGridApi] = useState<GridApi<FilaVisor> | null>(null)
+  const [modeloFiltrosGrid, setModeloFiltrosGrid] = useState<Record<string, unknown>>({})
 
   useEffect(() => {
     apiGet<{ versiones: VersionPresupuesto[] }>('/plan-compras/api/presupuesto/versiones')
@@ -167,6 +177,29 @@ export default function VisorPresupuesto() {
     [cols, anchoGrid],
   )
 
+  // Los filtros propios de la página (buscador y los dos desplegables) se anuncian junto a los de
+  // columna del modo tabla: si no, «Limpiar todo» limpiaría solo la mitad.
+  const chipsFiltros = [
+    ...(texto !== '' ? [{ id: 'pagina:texto', texto: `Búsqueda: «${texto}»` }] : []),
+    ...(tipoInsumo !== '' ? [{ id: 'pagina:tipo', texto: `Tipo insumo: ${tipoInsumo}` }] : []),
+    ...(unidad !== '' ? [{ id: 'pagina:unidad', texto: `Unidad: ${unidad}` }] : []),
+    ...chipsDeGrilla(modeloFiltrosGrid, NOMBRES_COLUMNA_VISOR),
+  ]
+
+  const quitarFiltro = (id: string) => {
+    if (id === 'pagina:texto') { setTexto(''); return }
+    if (id === 'pagina:tipo') { setTipoInsumo(''); return }
+    if (id === 'pagina:unidad') { setUnidad(''); return }
+    void gridApi?.setColumnFilterModel(id, null).then(() => gridApi.onFilterChanged())
+  }
+
+  const limpiarFiltros = () => {
+    setTexto('')
+    setTipoInsumo('')
+    setUnidad('')
+    void gridApi?.setFilterModel(null)
+  }
+
   const onCellClicked = (e: CellClickedEvent<FilaVisor>) => {
     const f = e.data
     if (!f || !f.expandible || e.colDef.field !== 'descripcion') return
@@ -276,19 +309,12 @@ export default function VisorPresupuesto() {
               />
               {' '}Ver como tabla
             </label>
-            {(texto !== '' || tipoInsumo !== '' || unidad !== '') && (
-              <button
-                type="button"
-                data-testid="pdc-visor-limpiar"
-                onClick={() => { setTexto(''); setTipoInsumo(''); setUnidad('') }}
-              >
-                Limpiar filtros
-              </button>
-            )}
             <span data-testid="pdc-visor-conteo" className="pdc-visor-conteo">
               {plural(filas.length, 'fila')}
             </span>
           </div>
+
+          <BarraFiltros chips={chipsFiltros} onQuitar={quitarFiltro} onLimpiar={limpiarFiltros} testid="pdc-visor-barra-filtros" />
 
           {/* Avisos del tamiz. Señalan y nada más: no impiden importar, ni asignar, ni recalcular.
               Van plegados para no robarle alto a la grilla, que es a lo que se viene. */}
@@ -410,6 +436,8 @@ export default function VisorPresupuesto() {
               columnDefs={colsVisibles}
               getRowId={(p) => p.data.key}
               onCellClicked={onCellClicked}
+              onGridReady={(p) => setGridApi(p.api)}
+              onFilterChanged={(p) => setModeloFiltrosGrid(p.api.getFilterModel())}
               // Los filtros por columna solo tienen sentido sin jerarquía: en el árbol ordenarían y
               // esconderían filas dejando hijos sin su padre.
               defaultColDef={{ ...defaultColDef, floatingFilter: plano }}

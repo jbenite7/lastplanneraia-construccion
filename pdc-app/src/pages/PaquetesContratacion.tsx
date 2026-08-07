@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, TooltipModule, ValidationModule } from 'ag-grid-community'
-import type { ColDef, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
+import type { ColDef, GridApi, ITooltipParams, RowClickedEvent } from 'ag-grid-community'
+import { BarraFiltros } from '../components/BarraFiltros'
+import { chipsDeGrilla } from '../lib/barraFiltros'
 import {
   COLUMNA_CORTA, MIN_WIDTH_PALABRA_LARGA, MODULOS_TABLA, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaTexto,
   columnasQueCaben, defaultColDef, moneda, pdcTheme, usaAnchoContenedor, vacioTabla
@@ -71,6 +73,11 @@ const FILTRO_OPCIONES = [
 type Filtro = FiltroPaquetes
 type Modo = 'masivo' | 'asistente' | 'paquetes'
 
+const etiquetaFiltro = (v: Filtro) => FILTRO_OPCIONES.find((o) => o.valor === v)?.etiqueta ?? v
+
+// Nombres de columna para los chips de la barra de filtros: solo las que tienen filtro habilitado.
+const NOMBRES_COLUMNA_PAQ = { agrupacion: 'Agrupación', recurso: 'Recurso', unidad: 'Und', valorTotal: 'Valor total' }
+
 export default function PaquetesContratacion() {
   const [modo, setModo] = useState<Modo>('masivo')
   const [state, dispatch] = useReducer(paquetesReducer, estadoInicialPaquetes)
@@ -89,6 +96,8 @@ export default function PaquetesContratacion() {
   // Qué paquete tiene abierto su panel de lotes. Uno a la vez: abrir varios llena la pantalla de
   // tablas y la decisión de partir se toma paquete por paquete, no comparando cinco.
   const [loteAbierto, setLoteAbierto] = useState<number | null>(null)
+  const [gridApi, setGridApi] = useState<GridApi<InsumoPaquete> | null>(null)
+  const [modeloFiltrosGrid, setModeloFiltrosGrid] = useState<Record<string, unknown>>({})
   // El filtro de apertura se decide una sola vez, cuando llega el primer resumen: en el primer
   // render todavía no se sabe cuántos insumos faltan. A partir de ahí manda el usuario — volver a
   // aplicarlo en cada recarga le pisaría el filtro que acabara de elegir a mano.
@@ -177,6 +186,26 @@ export default function PaquetesContratacion() {
     () => columnasQueCaben(cols, anchoGrid, ['agrupacion', 'recurso', 'unidad']),
     [cols, anchoGrid],
   )
+
+  // Los filtros propios de la página se anuncian junto a los de columna: si no, «Limpiar todo»
+  // limpiaría solo la mitad y la tabla seguiría sin enseñar filas.
+  const chipsFiltros = [
+    ...(filtro !== 'todos' ? [{ id: 'pagina:estado', texto: `Estado: ${etiquetaFiltro(filtro)}` }] : []),
+    ...(agrupacion !== '' ? [{ id: 'pagina:agrupacion', texto: `Agrupación: ${agrupacion}` }] : []),
+    ...chipsDeGrilla(modeloFiltrosGrid, NOMBRES_COLUMNA_PAQ),
+  ]
+
+  const quitarFiltro = (id: string) => {
+    if (id === 'pagina:estado') { setFiltro('todos'); return }
+    if (id === 'pagina:agrupacion') { setAgrupacion(''); return }
+    void gridApi?.setColumnFilterModel(id, null).then(() => gridApi.onFilterChanged())
+  }
+
+  const limpiarFiltros = () => {
+    setFiltro('todos')
+    setAgrupacion('')
+    void gridApi?.setFilterModel(null)
+  }
 
   const onRowClicked = (e: RowClickedEvent<InsumoPaquete>) => {
     if (!e.data) return
@@ -489,6 +518,8 @@ export default function PaquetesContratacion() {
       </details>
       </details>
 
+      <BarraFiltros chips={chipsFiltros} onQuitar={quitarFiltro} onLimpiar={limpiarFiltros} testid="pdc-paq-barra-filtros" />
+
       <div data-testid="pdc-paq-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<InsumoPaquete>
           theme={pdcTheme}
@@ -500,6 +531,8 @@ export default function PaquetesContratacion() {
           {...ajusteDeAncho}
           context={{ actividadesMap }}
           tooltipShowDelay={350}
+          onGridReady={(p) => setGridApi(p.api)}
+          onFilterChanged={(p) => setModeloFiltrosGrid(p.api.getFilterModel())}
           onRowClicked={onRowClicked}
           // Sin `domLayout="autoHeight"`: con 263 insumos la tabla medía miles de píxeles y
           // arrastraba la página entera, así que la grilla nunca llegaba a tener scroll propio.

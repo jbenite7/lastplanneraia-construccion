@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule } from 'ag-grid-community'
-import type { ColDef, RowClickedEvent } from 'ag-grid-community'
+import type { ColDef, GridApi, RowClickedEvent } from 'ag-grid-community'
 import { MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme, propsBuscador, vacioTabla } from '../lib/agGrid'
+import { BarraFiltros } from '../components/BarraFiltros'
+import { chipsDeGrilla } from '../lib/barraFiltros'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { getBootstrap } from '../lib/bootstrap'
 import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSeguimiento } from '../lib/seguimiento'
@@ -32,6 +34,14 @@ const mensajeError = (e: unknown) => (e instanceof Error ? e.message : String(e)
 
 const SIN_FILTRO: FiltrosSeguimiento = { soloMios: false, frente: '', estado: '', soloAtrasados: false }
 
+const ETIQUETA_ESTADO_FILTRO: Record<string, string> = { sin_empezar: 'Sin empezar', en_curso: 'En curso', terminado: 'Terminado' }
+
+// Nombres de las columnas con filtro de la grilla de paquetes, para los chips de la barra.
+const NOMBRES_COLUMNA_SEG = {
+  nombre: 'Paquete', frenteNombre: 'Frente', responsableNombre: 'Responsable',
+  pasoActual: 'Paso actual', estado: 'Estado', finProgramado: 'Fin programado', finProyectado: 'Fin proyectado',
+}
+
 export default function Seguimiento() {
   const [filas, setFilas] = useState<FilaSeguimiento[]>([])
   const [filtros, setFiltros] = useState<FiltrosSeguimiento>(SIN_FILTRO)
@@ -56,6 +66,8 @@ export default function Seguimiento() {
   const [filtroResp, setFiltroResp] = useState('')
   const [buscaSeg, setBuscaSeg] = useState('')
   const [flujo, setFlujo] = useState<RespuestaFlujoCaja | null>(null)
+  const [gridApi, setGridApi] = useState<GridApi<FilaSeguimiento> | null>(null)
+  const [modeloFiltrosGrid, setModeloFiltrosGrid] = useState<Record<string, unknown>>({})
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -185,6 +197,25 @@ export default function Seguimiento() {
     { ...columnaTexto, headerName: 'Fin programado', field: 'finProgramado', width: 150 },
     { ...columnaTexto, headerName: 'Fin proyectado', field: 'finProyectado', width: 150 },
   ], [])
+
+  // Los filtros propios de la página (frente y estado) se anuncian junto a los de columna: si no,
+  // «Limpiar todo» limpiaría solo la mitad y la tabla seguiría sin enseñar filas.
+  const chipsFiltros = [
+    ...(filtros.frente !== '' ? [{ id: 'pagina:frente', texto: `Frente: ${filtros.frente}` }] : []),
+    ...(filtros.estado !== '' ? [{ id: 'pagina:estado', texto: `Estado: ${ETIQUETA_ESTADO_FILTRO[filtros.estado] ?? filtros.estado}` }] : []),
+    ...chipsDeGrilla(modeloFiltrosGrid, NOMBRES_COLUMNA_SEG),
+  ]
+
+  const quitarFiltro = (id: string) => {
+    if (id === 'pagina:frente') { setFiltros((f) => ({ ...f, frente: '' })); return }
+    if (id === 'pagina:estado') { setFiltros((f) => ({ ...f, estado: '' })); return }
+    void gridApi?.setColumnFilterModel(id, null).then(() => gridApi.onFilterChanged())
+  }
+
+  const limpiarFiltros = () => {
+    setFiltros((f) => ({ ...f, frente: '', estado: '' }))
+    void gridApi?.setFilterModel(null)
+  }
 
   return (
     <section className="pdc-page">
@@ -539,6 +570,7 @@ export default function Seguimiento() {
         value={buscaSeg}
         onChange={(e) => setBuscaSeg(e.target.value)}
       />
+      <BarraFiltros chips={chipsFiltros} onQuitar={quitarFiltro} onLimpiar={limpiarFiltros} testid="pdc-seg-barra-filtros" />
       <div className="pdc-grid">
         <AgGridReact<FilaSeguimiento>
           theme={pdcTheme}
@@ -550,6 +582,8 @@ export default function Seguimiento() {
           loading={cargando}
           overlayNoRowsTemplate={vacioTabla('No hay paquetes con plan calculado.')}
           onRowClicked={(e: RowClickedEvent<FilaSeguimiento>) => { if (e.data) void abrir(e.data) }}
+          onGridReady={(p) => setGridApi(p.api)}
+          onFilterChanged={(p) => setModeloFiltrosGrid(p.api.getFilterModel())}
           {...ajusteDeAncho}
         />
       </div>
