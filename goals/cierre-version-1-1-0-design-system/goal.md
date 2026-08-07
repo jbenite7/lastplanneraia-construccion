@@ -17,6 +17,30 @@ ciclo triple de `/proyectos` aprobado.
 **Precondición dura:** no arranca hasta que la campaña dark mode
 (`docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones.md`) haya terminado (D4).
 
+### ✅ Precondición D4 CUMPLIDA — 2026-08-07. Este goal está listo para arrancar.
+
+La campaña dark mode cerró: **36 tareas ejecutadas, 2 retiradas por la deprecación del PDC V1, 0
+pendientes**. La disposición de las 38, una a una y con su commit, está en la sección «Cierre de la
+campaña» al final de su plan. Lo verificó el Step 6 de su Task 31 contra `git log`, no contra las
+casillas del plan, que nunca se marcaron y no son fiables.
+
+**Antes de tocar nada, lee `memoria/trampas/subir-la-version-del-ds-cobra-deudas.md`:** subir la
+versión del design system vence excepciones y cobra deudas de golpe; son 39, no 38.
+
+**Dos avisos del cierre de la campaña que afectan a este goal:**
+
+1. **La suite estática miente desde un worktree secundario.** `docker-compose.yml:1` fija
+   `name: last-planner-aia`, así que las pruebas que ejecutan PHP en el contenedor golpean el
+   worktree principal, no el tuyo, y `node-tests` sale en rojo por mtimes ajenos. Exporta
+   `COMPOSE_PROJECT_NAME` propio o la condición de hecho («8/8») no significará nada.
+2. **El contrato de alcance cambió.** La prohibición de móvil, tablet y tema claro se levantó, pero
+   el tema `linen` se retiró del producto el 2026-07-25 y no hay conmutador: trabajar en claro
+   implica reconstruirlo. Ese cambio de `AGENTS.md`/`CLAUDE.md`/`DESIGN.md` seguía **sin commitear**
+   el 2026-08-07 — comprueba su estado antes de apoyarte en él.
+
+Lo que queda abierto de la campaña son **decisiones del usuario**, recogidas en `docs/DESIGN-AUDIT.md`
+§Pendiente de decisión, no trabajo heredado por este goal.
+
 ## Archivos de este goal
 
 - [goal.md](goal.md) — este contrato.
