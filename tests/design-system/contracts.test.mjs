@@ -462,6 +462,37 @@ test('una familia no puede declarar un viewport no soportado', () => {
   assert.match(result.stderr, /foundations: unsupported viewport 800x600/);
 });
 
+test('un golden que no corresponde al viewport del escenario falla', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const target = manifest.scenarios.find((s) => s.viewport.width === 1180);
+    const donor = manifest.scenarios.find((s) => s.viewport.width === 1440);
+    target.golden = donor.golden;
+    target.sha256 = donor.sha256;
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /golden does not match theme\/viewport/);
+});
+
+test('dos escenarios no pueden compartir el mismo golden', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const [first, second] = manifest.scenarios;
+    second.id = `${second.id}-copia`;
+    second.viewport = { ...first.viewport };
+    second.golden = first.golden;
+    second.sha256 = first.sha256;
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /golden reused by another scenario/);
+});
+
 test('una familia no puede dejar de declarar un viewport requerido', () => {
   const result = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');

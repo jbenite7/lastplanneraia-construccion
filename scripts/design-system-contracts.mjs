@@ -324,6 +324,7 @@ for (const manifest of manifests) {
   }
 }
 
+const goldenOwners = new Map();
 const frontController = readFileSync(join(root, 'public/index.php'), 'utf8');
 for (const manifest of manifests) {
   for (const route of manifest.routes || []) {
@@ -353,6 +354,21 @@ for (const manifest of manifests) {
     if (actual !== scenario.sha256) {
       failures.push(`${manifest.moduleId}/${scenario.id}: golden hash mismatch`);
     }
+    const expectedSuffix =
+      `-${scenario.theme}-${scenario.viewport.width}x${scenario.viewport.height}.png`;
+    if (!scenario.golden.endsWith(expectedSuffix)) {
+      failures.push(
+        `${manifest.moduleId}/${scenario.id}: golden does not match theme/viewport `
+        + `(espera un nombre terminado en ${expectedSuffix})`,
+      );
+    }
+    if (goldenOwners.has(scenario.golden)) {
+      failures.push(
+        `${manifest.moduleId}/${scenario.id}: golden reused by another scenario `
+        + `(${goldenOwners.get(scenario.golden)})`,
+      );
+    }
+    goldenOwners.set(scenario.golden, `${manifest.moduleId}/${scenario.id}`);
   }
 }
 
