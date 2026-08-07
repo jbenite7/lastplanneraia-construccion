@@ -19,7 +19,7 @@ const APPROVED_BY_FAMILY = new Map(
 );
 const FAMILY_COUNT = new Set(MANIFEST.scenarios.map(({ family }) => family)).size;
 const STATES_FEEDBACK_FAMILY = 'states-feedback';
-const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180);
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme }) => theme === 'dark');
 const EVIDENCE_DIR = process.env.DESIGN_SYSTEM_EVIDENCE_DIR
   ? path.resolve(process.env.DESIGN_SYSTEM_EVIDENCE_DIR)
   : null;

@@ -9,7 +9,7 @@ const MANIFEST = JSON.parse(readFileSync(
   'utf8',
 ));
 const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
-  ({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180,
+  ({ theme }) => theme === 'dark',
 );
 
 // Filas fijas que cubren la escala de estado propia de Programacion Intermedia.

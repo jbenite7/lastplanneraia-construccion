@@ -9,7 +9,7 @@ const MANIFEST = JSON.parse(readFileSync(
   'utf8',
 ));
 const ADMIN = { username: 'test.A', password: 'aia2026' };
-const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme, viewport }) => theme === 'dark' && viewport.width >= 1180);
+const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(({ theme }) => theme === 'dark');
 
 // Filas fijas que cubren la escala de estado de Programa General.
 //

@@ -341,3 +341,25 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.equal(budgetGate?.status, 'passed');
   assert.equal(budgetGate?.blocking, true);
 });
+
+test('ningun carril descarta escenarios por ancho', async () => {
+  for (const spec of [
+    'tests/browser/design-system-lab.visual.mjs',
+    'tests/browser/programa-general.visual.mjs',
+    'tests/browser/programacion-intermedia.visual.mjs',
+    'tests/browser/design-system-lab.a11y.mjs',
+  ]) {
+    const source = await readFile(new URL(`../../${spec}`, import.meta.url), 'utf8');
+    assert.equal(
+      /width\s*>=\s*1180/.test(source), false,
+      `${spec} sigue descartando escenarios por ancho`,
+    );
+  }
+});
+
+test('el carril de accesibilidad no fija el numero de escenarios a mano', async () => {
+  const source = await readFile(
+    new URL('../../tests/browser/design-system-lab.a11y.mjs', import.meta.url), 'utf8',
+  );
+  assert.equal(/toHaveLength\(\d+\)/.test(source), false);
+});
