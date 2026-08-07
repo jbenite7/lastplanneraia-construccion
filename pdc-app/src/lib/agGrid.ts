@@ -141,8 +141,12 @@ export const CIFRA = {
  * Columnas cortas por naturaleza —unidad, tipo de insumo de una letra, conteos— con techo: en el
  * reparto de `fitGridWidth` una columna sin límite se lleva ancho que necesita el texto de al lado.
  * «Und» con 200 px de ancho para escribir «M2» era ancho robado a «Tipo».
+ *
+ * El mínimo subió de 70 a 80: con `FiltroLista` la cabecera suma el icono de embudo, y por debajo
+ * de 80 «Und» en Paquetes desbordaba 1 px a 1440 con la barra lateral abierta (visto en
+ * `pdc-v2-sin-scroll-x.spec.mjs`, condición «1440 lateral abierta»).
  */
-export const COLUMNA_CORTA = { minWidth: 70, maxWidth: 104, filter: FiltroLista } satisfies ColDef
+export const COLUMNA_CORTA = { minWidth: 80, maxWidth: 104, filter: FiltroLista } satisfies ColDef
 
 /**
  * Fecha ISO (`2026-05-25`). Diez caracteres que no admiten recorte: «2026-…» no dice nada, y en el

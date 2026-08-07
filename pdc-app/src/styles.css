@@ -243,6 +243,85 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-selector { display: flex; align-items: center; gap: 8px; }
 .pdc-selector select { background: var(--pdc-surface); color: var(--pdc-ink); border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control); padding: var(--pdc-control-pad); }
 
+/* Selector buscable: sustituye a <select> en todo el módulo. El botón imita al nativo para que
+   convivan mientras dure la migración; el popup es lo único nuevo que se ve. */
+.pdc-selector-caja { position: relative; display: inline-flex; }
+.pdc-selector-boton {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: var(--pdc-control-pad); cursor: pointer; text-align: left;
+}
+.pdc-selector-boton:disabled { opacity: 0.5; cursor: not-allowed; }
+.pdc-selector-boton:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; }
+.pdc-selector-valor.es-vacio { color: var(--pdc-ink-muted); }
+.pdc-selector-flecha {
+  width: 0; height: 0; margin-left: auto;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+.pdc-selector-popup {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; min-width: 100%;
+  background: var(--pdc-surface); border: 1px solid var(--pdc-border-control);
+  border-radius: var(--pdc-radio-caja);
+  box-shadow: var(--ds-shadow-lg, 0 16px 48px rgba(20, 28, 24, 0.5));
+}
+
+/* Lista buscable: la misma dentro del popup del selector y dentro del embudo de la cabecera. */
+.pdc-lista { display: flex; flex-direction: column; gap: 6px; padding: 8px; min-width: 220px; }
+.pdc-lista-buscar {
+  background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: var(--pdc-control-pad);
+}
+.pdc-lista-masa { display: flex; gap: 6px; font-size: var(--pdc-fs-sm); }
+.pdc-lista-opciones {
+  list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto;
+}
+.pdc-lista-op {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px; cursor: pointer; border-radius: var(--pdc-radio-control);
+  font-size: var(--pdc-fs-md);
+}
+.pdc-lista-op.es-resaltada { background: color-mix(in srgb, var(--pdc-accent) 22%, transparent); }
+.pdc-lista-vacia { padding: 8px; color: var(--pdc-ink-muted); font-size: var(--pdc-fs-sm); }
+
+/* Buscador rápido de tabla: mismo aspecto que el que ya tenía el Visor. */
+.pdc-buscador-tabla {
+  background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-control);
+  padding: var(--pdc-control-pad); min-width: 240px;
+}
+
+/* Barra de filtros activos. */
+.pdc-barra-filtros {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 8px 0; font-size: var(--pdc-fs-sm);
+}
+.pdc-barra-filtros-titulo { color: var(--pdc-ink-muted); }
+.pdc-chip-filtro {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: color-mix(in srgb, var(--pdc-accent) 18%, transparent);
+  color: var(--pdc-ink); border: 1px solid var(--pdc-border-control);
+  border-radius: 999px; padding: 2px 10px; cursor: pointer;
+}
+.pdc-chip-quitar { opacity: 0.7; }
+.pdc-barra-filtros-limpiar { background: none; border: none; color: var(--pdc-ink); text-decoration: underline; cursor: pointer; }
+
+/* Embudo de la cabecera: el mismo lenguaje que el changeType de Programa General — pequeño y
+   sutil, no un control de 32 px colgando de una cabecera de 32 (el defecto C-48 de PS). */
+.pdc-grid .ag-header-icon { color: var(--pdc-ink-muted); }
+.pdc-grid .ag-header-cell-filtered .ag-header-icon { color: var(--pdc-accent); }
+
+/* Popup del filtro de columna de AG Grid: por defecto no trae fondo propio y la tabla se
+   transparenta detrás, ilegible. Le damos el mismo tratamiento que a `.pdc-selector-popup`. */
+.ag-popup .ag-filter,
+.ag-popup .ag-menu {
+  background: var(--pdc-surface); color: var(--pdc-ink);
+  border: 1px solid var(--pdc-border-control); border-radius: var(--pdc-radio-caja);
+  box-shadow: var(--ds-shadow-lg, 0 16px 48px rgba(20, 28, 24, 0.5));
+}
+
 .pdc-bloque { margin-top: 20px; }
 /* Cuando `.pdc-bloque` es la pantalla entera (Paquetes, Plan, Pasos) ese margen es sangría muerta
    arriba del todo. */

@@ -29,11 +29,18 @@ test('paquetes: la modalidad de contratación se ve en el resumen y en el select
     // la tabla, y crear paquetes es una acción ocasional frente a asignar.
     await abrir('.pdc-paq-crear-plegable');
 
-    // El formulario de creación ofrece las 4 modalidades y arranca en «contrato».
-    const selModalidad = page.locator('[data-testid="pdc-paq-crear-modalidad"]');
-    await expect(selModalidad).toBeVisible();
-    await expect(selModalidad).toHaveValue('contrato');
-    await expect(selModalidad.locator('option')).toHaveCount(4);
+    // El formulario de creación ofrece las 4 modalidades y arranca en «contrato». Desde la migración
+    // a `Selector` (tanda 2026-08-06) ya no es un `<select>` nativo: se lee el botón y se abre el
+    // popup para contar las opciones, con `elegirEnSelector` como sustituto de `selectOption`.
+    const botonModalidad = page.locator('[data-testid="pdc-paq-crear-modalidad"]');
+    await expect(botonModalidad).toBeVisible();
+    await expect(botonModalidad).toContainText('Contrato');
+    await botonModalidad.click();
+    const popupModalidad = page.locator('.pdc-selector-popup');
+    await popupModalidad.waitFor({ state: 'visible' });
+    await expect(popupModalidad.getByRole('option')).toHaveCount(4);
+    await popupModalidad.getByRole('option', { name: 'Contrato', exact: true }).click();
+    await popupModalidad.waitFor({ state: 'detached', timeout: 5000 });
 
     // La lista de paquetes marca las modalidades sin proceso de contratación completo.
     await page.getByRole('tab', { name: /Paquetes con insumos/ }).click();
