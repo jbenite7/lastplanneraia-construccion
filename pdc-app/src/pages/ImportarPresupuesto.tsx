@@ -5,7 +5,7 @@ import { CellStyleModule, ModuleRegistry, TooltipModule, ValidationModule } from
 import type { CellClickedEvent, ColDef } from 'ag-grid-community'
 import {
   COLUMNA_CORTA, MODULOS_TABLA, columnasQueCaben, usaAnchoContenedor, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto,
-  defaultColDef, moneda, pdcTheme, vacioTabla
+  defaultColDef, moneda, pdcTheme, propsBuscador, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
 import { alternarSeleccion, puedeMarcar, rutaComparar, rutaVisor } from '../lib/historialVersiones'
@@ -86,6 +86,8 @@ export default function ImportarPresupuesto() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [arrastrando, setArrastrando] = useState(false)
   const [nombreArchivo, setNombreArchivo] = useState('')
+  const [buscaErrores, setBuscaErrores] = useState('')
+  const [buscaVersiones, setBuscaVersiones] = useState('')
   const navigate = useNavigate()
 
   const cargarVersiones = () => {
@@ -249,10 +251,16 @@ export default function ImportarPresupuesto() {
           <div className="pdc-error" role="alert">
             El archivo tiene {plural(state.errores.length, 'error', 'errores')}; no se importó nada. Corrige el Excel y vuelve a subirlo.
           </div>
+          <input
+            {...propsBuscador('Buscar en los errores del archivo', 'pdc-import-buscar-errores')}
+            value={buscaErrores}
+            onChange={(e) => setBuscaErrores(e.target.value)}
+          />
           <div className="pdc-grid-corta">
             <AgGridReact<ImportErrorFila>
               theme={pdcTheme}
               rowData={state.errores}
+              quickFilterText={buscaErrores}
               columnDefs={colsErrores}
               defaultColDef={defaultColDef}
               autoSizeStrategy={autoSizeStrategy}
@@ -410,10 +418,16 @@ export default function ImportarPresupuesto() {
           </div>
         )}
 
+        <input
+          {...propsBuscador('Buscar en el historial de versiones', 'pdc-import-buscar-versiones')}
+          value={buscaVersiones}
+          onChange={(e) => setBuscaVersiones(e.target.value)}
+        />
         <div className="pdc-grid-corta" ref={refGrid}>
           <AgGridReact<VersionPresupuesto>
             theme={pdcTheme}
             rowData={versiones}
+            quickFilterText={buscaVersiones}
             columnDefs={colsVisibles}
             defaultColDef={defaultColDef}
             autoSizeStrategy={autoSizeStrategy}

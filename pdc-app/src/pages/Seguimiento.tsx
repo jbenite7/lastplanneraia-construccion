@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule } from 'ag-grid-community'
 import type { ColDef, RowClickedEvent } from 'ag-grid-community'
-import { MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme, vacioTabla } from '../lib/agGrid'
+import { MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaTexto, defaultColDef, pdcTheme, propsBuscador, vacioTabla } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import { getBootstrap } from '../lib/bootstrap'
 import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSeguimiento } from '../lib/seguimiento'
@@ -54,6 +54,7 @@ export default function Seguimiento() {
   const [venc, setVenc] = useState<RespuestaVencimientos | null>(null)
   const [filtroPaso, setFiltroPaso] = useState('')
   const [filtroResp, setFiltroResp] = useState('')
+  const [buscaSeg, setBuscaSeg] = useState('')
   const [flujo, setFlujo] = useState<RespuestaFlujoCaja | null>(null)
 
   const cargar = useCallback(async () => {
@@ -533,10 +534,16 @@ export default function Seguimiento() {
         </label>
       </div>
 
+      <input
+        {...propsBuscador('Buscar en el seguimiento', 'pdc-seg-buscar')}
+        value={buscaSeg}
+        onChange={(e) => setBuscaSeg(e.target.value)}
+      />
       <div className="pdc-grid">
         <AgGridReact<FilaSeguimiento>
           theme={pdcTheme}
           rowData={visibles}
+          quickFilterText={buscaSeg}
           columnDefs={cols}
           defaultColDef={defaultColDef}
           autoSizeStrategy={autoSizeStrategy}

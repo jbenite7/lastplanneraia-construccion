@@ -3,7 +3,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { CellStyleModule, ModuleRegistry, RowStyleModule, ValidationModule } from 'ag-grid-community'
 import type { CellClickedEvent, ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import {
-  COLUMNA_CATEGORIA, COLUMNA_CORTA, MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme, vacioTabla
+  COLUMNA_CATEGORIA, COLUMNA_CORTA, MODULOS_TABLA, ajusteDeAncho, autoSizeStrategy, columnaMoneda, columnaNumero, columnaTexto, defaultColDef, pdcTheme, propsBuscador, vacioTabla
 } from '../lib/agGrid'
 import Pestanas, { PanelPestana } from '../components/Pestanas'
 import { PdcApiError, apiGet, apiPost, apiUpload } from '../lib/api'
@@ -29,6 +29,8 @@ export default function MaestroInsumos() {
   const [resumen, setResumen] = useState<ResumenVinculos | null>(null)
   const [catalogo, setCatalogo] = useState<MaestroInsumo[]>([])
   const [busqueda, setBusqueda] = useState('')
+  const [buscaPendientes, setBuscaPendientes] = useState('')
+  const [buscaEquipos, setBuscaEquipos] = useState('')
   const [sugerencias, setSugerencias] = useState<SugerenciaMaestro[]>([])
   const [sinPresupuesto, setSinPresupuesto] = useState(false)
   const [verRetirados, setVerRetirados] = useState(false)
@@ -339,10 +341,16 @@ export default function MaestroInsumos() {
             </p>
           )}
           <p className="pdc-ayuda">Clic = seleccionar.</p>
+          <input
+            {...propsBuscador('Buscar en equipos por clasificar', 'pdc-maestro-buscar-equipos')}
+            value={buscaEquipos}
+            onChange={(e) => setBuscaEquipos(e.target.value)}
+          />
           <div className="pdc-grid" data-testid="pdc-equipos-cola">
             <AgGridReact<EquipoSinClasificar>
               theme={pdcTheme}
               rowData={equipos}
+              quickFilterText={buscaEquipos}
               overlayNoRowsTemplate={vacioTabla('No queda ningún equipo sin clasificar.')}
               columnDefs={colsEquipos}
               defaultColDef={defaultColDef}
@@ -479,10 +487,16 @@ export default function MaestroInsumos() {
           </div>
         </div>
         <p className="pdc-ayuda">Clic = seleccionar · doble clic = vincular a un insumo existente.</p>
+        <input
+          {...propsBuscador('Buscar en pendientes por vincular', 'pdc-maestro-buscar-pendientes')}
+          value={buscaPendientes}
+          onChange={(e) => setBuscaPendientes(e.target.value)}
+        />
         <div className="pdc-grid" data-testid="pdc-maestro-pendientes">
           <AgGridReact<VinculoInsumo>
             theme={pdcTheme}
             rowData={pendientes}
+            quickFilterText={buscaPendientes}
             overlayNoRowsTemplate={vacioTabla("Nada pendiente: todos los insumos de este presupuesto ya están en el maestro.")}
             columnDefs={colsPendientes}
             defaultColDef={defaultColDef}

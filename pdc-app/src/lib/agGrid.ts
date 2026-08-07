@@ -335,3 +335,20 @@ export const ajusteDeAncho = {
   onFirstDataRendered: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
   onGridSizeChanged: (p: { api: { sizeColumnsToFit: () => void } }) => p.api.sizeColumnsToFit(),
 }
+
+/**
+ * Caja de búsqueda rápida de una tabla. Devuelve las props que se pasan a `<input>`; el texto lo
+ * guarda la página y viaja a `<AgGridReact quickFilterText={...}>`.
+ *
+ * AG Grid busca sobre las columnas **visibles**: es lo acordado (2026-08-06). Buscar en columnas
+ * ocultas encontraría filas donde el texto no se ve por ninguna parte.
+ */
+export function propsBuscador(etiqueta: string, testid: string) {
+  return {
+    type: 'search' as const,
+    className: 'pdc-buscador-tabla',
+    placeholder: 'Buscar…',
+    'aria-label': etiqueta,
+    'data-testid': testid,
+  }
+}

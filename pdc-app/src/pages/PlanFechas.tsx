@@ -8,7 +8,7 @@ import { Selector } from '../components/Selector'
 import {
   COLUMNA_FECHA, MODULOS_TABLA, TEXTO_LARGO, ajusteDeAncho, autoSizeStrategy, columnaNumero, columnaTexto,
   columnasQueCaben, defaultColDef, usaAnchoContenedor,
-  moneda, pdcTheme, vacioTabla
+  moneda, pdcTheme, propsBuscador, vacioTabla
 } from '../lib/agGrid'
 import { PdcApiError, apiGet, apiPost } from '../lib/api'
 import {
@@ -459,6 +459,7 @@ export default function PlanFechas() {
   )
   const [confirmarMedia, setConfirmarMedia] = useState(false)
   const [buscaSinFrente, setBuscaSinFrente] = useState('')
+  const [buscaPlan, setBuscaPlan] = useState('')
 
   // Recibe qué lote aceptar en vez de leerlo del cierre: los dos botones (confianza alta directo,
   // confianza media tras confirmar) comparten este cuerpo, y con él todas las garantías que ya
@@ -778,10 +779,16 @@ export default function PlanFechas() {
         </div>
       )}
 
+      <input
+        {...propsBuscador('Buscar en el plan de fechas', 'pdc-plan-buscar')}
+        value={buscaPlan}
+        onChange={(e) => setBuscaPlan(e.target.value)}
+      />
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
           rowData={planVisible}
+          quickFilterText={buscaPlan}
           overlayNoRowsTemplate={vacioTabla("Todavía no hay paquetes con plan calculado. Amarra un paquete a un frente y pulsa «Recalcular».")}
           columnDefs={colsVisibles}
           defaultColDef={defaultColDef}
