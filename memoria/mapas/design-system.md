@@ -53,7 +53,8 @@ contra sus consumidores reales el 2026-08-04:
 - [[dos-capas-de-tokens]] — por qué `--aia-*` (marca) y `--ds-*` (semántica) son capas distintas y
   qué consume un módulo.
 - [[madurez-y-api-estable]] — qué separa `candidate` de `stable` y qué garantiza de verdad la
-  versión 1.0.0.
+  versión estable. **La versión viva es `1.1.0` desde el 2026-08-07**; la activación fue un hito
+  único cumplido en `1.0.0` y los gates ya no la vuelven a exigir en cada bump.
 - [[baselines-y-presupuestos]] — congelar el desorden viejo vs. acotar lo nuevo, y qué gate vigila
   cada archivo.
 - [[excepciones-registradas]] — la desviación tolerada con dueño, motivo y caducidad; lista
