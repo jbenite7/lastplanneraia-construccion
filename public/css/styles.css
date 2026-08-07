@@ -906,50 +906,17 @@ table.dataTable tbody tr:hover td {
   white-space: nowrap;
 }
 
-.pdc-toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  background-color: var(--ds-active-surface);
-  color: var(--ds-active-text-primary);
-  padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: var(--ds-shadow-md);
-  /* Acento sin token: el azul original no existe en la paleta del design
-     system, cuyos dominios son verde, naranja, teal y morado. El tramo 5b lo
-     habia sustituido por el teal de real-estate, pero eso cambia el matiz y es
-     una decision de diseno en un tramo acotado a tokenizar: revertido por
-     decision del usuario (2026-07-27). Queda como el ultimo literal de este
-     bloque, a proposito y documentado.
-     El tramo 5l volvio a moverlo, esta vez a --aia-blue-primary (declarado en
-     tokens.css:25): conserva el angulo de matiz pero le quita mas de la mitad
-     de la saturacion, asi que NO es equivalencia exacta y reincide en la misma
-     decision ya revertida. Restaurado el literal. Ese mismo literal se conserva
-     como excepcion en el --tipo-brand de `.aia-tipo-pill--si`: su tratamiento es
-     uno solo en toda la hoja. (Referencia por selector y no por linea: la cita
-     por numero ya se desactualizo dos veces en este mismo bloque.)
-     Ojo: esta regla entera es INERTE. public/css/pdc.css:249-265 la duplica y
-     entra por <link> sin capa desde views/pdc/pdc.view.php:14, y una hoja sin
-     capa gana a cualquier @layer. El toast de /pdc sigue saliendo blanco en una
-     app dark-only, y su arreglo real vive en pdc.css, no aqui. */
-  border-left: 5px solid #007bff; /* Accent color */
-  font-family: var(--ds-font-body);
-  font-size: 14px;
-  display: none; /* Hidden by default */
-  max-width: 300px;
-  animation: slideIn 0.3s ease-out forwards;
-}
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+/* `.pdc-toast` y su `@keyframes slideIn` se retiraron el 2026-08-07 por estar
+   muertos, no por tokenizarlos. Eran el ultimo literal hex de esta hoja
+   (`#007bff`), conservado a proposito tras dos intentos revertidos de
+   sustituirlo (2026-07-27), y su comentario declaraba la regla INERTE porque
+   `public/css/pdc.css:249-265` la duplicaba sin capa desde
+   `views/pdc/pdc.view.php:14`. Esos dos archivos desaparecieron con el borrado
+   del PDC v1 (`a3fee1fb`), asi que la regla dejo de ser inerte y paso a ser la
+   unica... de una clase que ya no emite nadie: cero coincidencias de
+   `pdc-toast` en `public/js/`, `views/`, `src/`, `admin/` y `pdc-app/`.
+   `slideIn` no tenia otro consumidor. Se borra en vez de tokenizarse: no habia
+   decision de color que tomar sobre un toast que no se pinta. */
 
 /* Utility to ensure flex items shrink properly */
 .col-flexible-legend {

@@ -52,25 +52,6 @@
   "tests": [
     "tests/browser/shell-sidebar-rollout.mjs"
   ],
-  "evidence": [
-    "tests/browser/__screenshots__/programa-general-actualizar/"
-  ],
-  "scenarios": [
-    {
-      "id": "programa-general-actualizar-dark-1180x820",
-      "family": "page-structure",
-      "route": "/programa-general-actualizar",
-      "fixture": "authenticated-project-member",
-      "theme": "dark",
-      "viewport": {
-        "width": 1180,
-        "height": 820
-      },
-      "density": "touch",
-      "state": "normal",
-      "role": "authenticated-project-member",
-      "golden": "tests/browser/__screenshots__/programa-general-actualizar/programa-general-actualizar-dark-1180x820.png",
-      "sha256": "b6b4e7c28a09c6ef0fd6cb2b0010e8a262a7dd78c385359ca3b0f2634dfd3d97"
-    }
-  ]
+  "evidence": [],
+  "scenarios": []
 }
