@@ -17,7 +17,6 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 | Goal | Estado | Qué persigue |
 |---|---|---|
 | [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado** — falta aprobación visual explícita de la matriz de 6 modos; sin ella no hay commit | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
-| [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | **diseño aprobado, sin ejecutar** (abierto el 2026-08-03) | Que `/programa-general` distinga en pantalla los siete estados que su contrato declara, con el chip que PI y PS ya tienen |
 | [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | **diseño y plan aprobados, en espera de precondición** (abierto el 2026-08-04): no arranca hasta que la campaña dark mode termine — el traspaso está escrito en el Step 6 de su Task 31 | Publicar la 1.1.0 del design system: pagar o re-vencer las 39 excepciones que vencen en ella (migrando `/proyectos` a primitivas `aia-*`), gates a «al menos 1.0.0» y commit de activación atómico. Por qué el bump cobra deudas: [[subir-la-version-del-ds-cobra-deudas]] |
 | [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **indeterminado** — sin sección de cierre; la última entrada deja pendientes la revisión visual, los datos del piloto y el contrato de release | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
 
@@ -25,6 +24,7 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 
 | Goal | Matiz |
 |---|---|
+| [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | Cerrado el 2026-08-06 sin ejecución propia: lo resolvió `51ccd5ca` de la campaña dark mode. Verificado antes de cerrar — `hot.js:1658` pinta el `ops-state-chip` con su matiz y `programa-general-state-hue.mjs` pasa |
 | [[goals/biblia-t1-transversal/goal|biblia-t1-transversal]] | Cerrado el 2026-08-06 formalizando el trabajo ya hecho el 2026-08-04: entrada a la app (autenticación, proyecto, RBAC), 17 capacidades con escenario y 7 pruebas en verde |
 | [[goals/biblia-t2-cascada-lps/goal|biblia-t2-cascada-lps]] | Cerrado el 2026-08-06 formalizando el trabajo del 2026-08-04: ciclo Last Planner completo, 26 escenarios, 5 pruebas en verde |
 | [[goals/biblia-t3-pdc/goal|biblia-t3-pdc]] | Cerrado el 2026-08-06 formalizando el trabajo del 2026-08-04: se rehízo a mitad de camino cuando el usuario deprecó el PDC v1 el mismo día; quedó `docs/flujos/compras-v2.md` sobre el PDC v2 vivo, 3 pruebas en verde |
