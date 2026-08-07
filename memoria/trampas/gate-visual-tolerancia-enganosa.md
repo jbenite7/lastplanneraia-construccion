@@ -20,8 +20,19 @@ el diff cae dentro de tolerancia) y actualizar los `sha256` del manifiesto.
 `programacion-intermedia.visual.mjs:95`). La cifra 0.03 es histórica; lo que sigue vigente es que
 un verde del gate no prueba que el golden esté al día.
 
-**Why:** un gate visual en verde no prueba que el golden esté al día. **How to apply:** tras un
-cambio visual intencional, regenerar con `--update-snapshots=all` explícitamente y actualizar los
-`sha256` del manifiesto; no confiar en que el gate lo detecte solo.
+**Medido el 2026-08-06: 0.002 ya está cerca del suelo de ruido, no sobra margen.** El comentario de
+`playwright.config.mjs:22-24` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar
+nada no produjeron ni un pixel de diferencia». Se comprobó bajando el piso a `0` y corriendo dos
+veces `design-system-lab.visual.mjs` + `lps-drawer-design-system.mjs`: **dos escenarios sí difieren
+sin que nadie toque el código** — `data-display-dark-1180x820` con 141 px (ratio 0,000146) y
+`shell-navigation-dark-1440x900` con 1720 px (ratio 0,001327). El piso vigente de 0,002 deja apenas
+1,5× de holgura sobre ese peor caso, así que **apretarlo más produce falsos rojos**, no más rigor.
+La deuda real no es la cifra: es averiguar por qué esos dos escenarios no son deterministas.
+
+**Why:** un gate visual en verde no prueba que el golden esté al día, y un gate demasiado apretado
+tampoco prueba nada porque falla solo. **How to apply:** tras un cambio visual intencional,
+regenerar con `--update-snapshots=all` explícitamente y actualizar los `sha256` del manifiesto; y
+antes de proponer bajar `maxDiffPixelRatio`, medir el ruido con el piso en `0` — el número correcto
+depende del peor escenario no determinista, no del gusto.
 
 Relacionado: [[bitacora-drawer-sin-profesional]], [[reset-legacy-pisa-adaptadores]].
