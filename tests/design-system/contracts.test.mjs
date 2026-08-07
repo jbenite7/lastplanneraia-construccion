@@ -390,3 +390,41 @@ test('pilot manifest routes must exist in the front controller', () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /programa-general: route not registered \/missing-design-system-route/);
 });
+
+test('una familia puede declarar el viewport movil sin romper el gate', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820', '1440x900', '390x844'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+test('una familia no puede declarar un viewport no soportado', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820', '1440x900', '800x600'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /foundations: unsupported viewport 800x600/);
+});
+
+test('una familia no puede dejar de declarar un viewport requerido', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /foundations: missing required viewport 1440x900/);
+});
