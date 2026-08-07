@@ -7,6 +7,27 @@ import process from 'node:process';
 import { closeoutContractFailures } from './design-system-closeout-contract.mjs';
 
 const root = process.cwd();
+const manifestsDir = 'docs/design-system/manifests';
+const inventoryPath = `${manifestsDir}/inventory.json`;
+
+// El inventario es la unica fuente de verdad para "que manifiestos existen":
+// se lee aqui, temprano y por su cuenta, para poder derivar de el tanto la
+// lista de archivos requeridos como la lista de manifiestos que el gate
+// valida linea por linea mas abajo. Sin esto, un manifiesto nuevo (o uno
+// retirado) podia quedar fuera del gate en silencio -- exactamente lo que
+// paso con foundation-shell.json y sus rutas muertas del PDC v1.
+let inventoryManifestFiles = [];
+if (existsSync(join(root, inventoryPath))) {
+  try {
+    const inventoryDoc = JSON.parse(readFileSync(join(root, inventoryPath), 'utf8'));
+    inventoryManifestFiles = (inventoryDoc.manifests || [])
+      .filter((name) => !['inventory.json', 'goal-provenance.json'].includes(name));
+  } catch {
+    // Un inventory.json invalido se reporta mas abajo via readJson(); aqui
+    // simplemente no hay manifiestos que derivar todavia.
+  }
+}
+
 const required = [
   'docs/design-system/version.json',
   'docs/design-system/CHANGELOG.md',
@@ -29,16 +50,24 @@ const required = [
   'docs/design-system/a11y-exceptions.schema.json',
   'docs/design-system/a11y-exceptions.json',
   'docs/design-system/module-manifest.schema.json',
-  'docs/design-system/manifests/goal-provenance.json',
-  'docs/design-system/manifests/laboratory.json',
-  'docs/design-system/manifests/programa-general.json',
-  'docs/design-system/manifests/programacion-intermedia.json',
-  'docs/design-system/manifests/project-selector.json',
-  'docs/design-system/manifests/inventory.json',
+  `${manifestsDir}/goal-provenance.json`,
+  inventoryPath,
   'docs/design-system/closeout-evidence.json',
   'goals/design-system-nucleo-gobernanza/validation-log.md',
 ];
 const failures = [];
+
+// `required` se deja explicita a proposito y no se amplia con
+// `inventoryManifestFiles`: ese array alimenta el `documents` Map de mas
+// abajo, y ese Map es tambien lo que recorre el chequeo generico
+// `designSystemVersion must equal ${version}` al final del archivo. Automatizar
+// ambos a la vez mezclaria dos preguntas distintas -- "todo manifiesto se
+// valida linea por linea" (lo que pide esta tarea) contra "todo documento del
+// design system declara la version vigente" (una migracion de version
+// aparte, once manifiestos siguen en 1.0.0 mientras version.json ya esta en
+// 1.1.0) -- y produciria fallos de version no relacionados con el hallazgo
+// de esta tarea. `manifests` (mas abajo) se deriva de `inventoryManifestFiles`
+// leyendo cada archivo por su cuenta, sin pasar por `documents`.
 
 function readJson(file) {
   try {
@@ -257,12 +286,14 @@ for (const alias of aliases?.aliases || []) {
   }
 }
 const manifestSchema = documents.get('docs/design-system/module-manifest.schema.json');
-const manifests = [
-  documents.get('docs/design-system/manifests/laboratory.json'),
-  documents.get('docs/design-system/manifests/programa-general.json'),
-  documents.get('docs/design-system/manifests/programacion-intermedia.json'),
-  documents.get('docs/design-system/manifests/project-selector.json'),
-].filter(Boolean);
+const manifests = inventoryManifestFiles.map((name) => {
+  const relPath = `${manifestsDir}/${name}`;
+  if (!existsSync(join(root, relPath))) {
+    failures.push(`${relPath}: missing`);
+    return null;
+  }
+  return readJson(relPath);
+}).filter(Boolean);
 const programManifest = manifests.find(({ moduleId }) => moduleId === 'programa-general');
 const laboratoryManifest = manifests.find(({ moduleId }) => moduleId === 'laboratory');
 for (const manifest of manifests) {

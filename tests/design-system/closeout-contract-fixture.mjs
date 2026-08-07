@@ -7,28 +7,23 @@ import path from 'node:path';
 
 export const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 
-const referencedTests = [
-  'tests/test_programa_general_sprint_contract.mjs',
-  'tests/test_design_system_lab_access.php',
-  'tests/browser/design-system-lab.mjs',
-  'tests/browser/design-system-lab.a11y.mjs',
-  'tests/browser/design-system-lab.visual.mjs',
-  'tests/browser/design-system-lab-keyboard.mjs',
-  'tests/browser/design-system-lab-desktop-layout.mjs',
-  'tests/browser/design-system-lab.performance.mjs',
-  'tests/design-system/laboratory-hardening.test.mjs',
-  'tests/browser/programa-general-design-system.mjs',
-  'tests/browser/programa-general.visual.mjs',
-  'tests/browser/design-system-compliance.mjs',
-  'tests/design-system/operational-fixtures.test.mjs',
-  'tests/browser/operational-fixtures.mjs',
-  'tests/design-system/project-selector-contract.test.mjs',
-  'tests/browser/project-selector-sidebar.spec.mjs',
-  'tests/browser/design-system-consumer-smoke.mjs',
-  'tests/browser/programacion-intermedia.visual.mjs',
-  'tests/browser/entrypoint-segmentation-dryrun.mjs',
-  'e2e/tests/workflows/pg-interactions.spec.mjs',
-];
+// Derivada del inventario, igual que contracts.test.mjs (ver runFixture ahi):
+// el gate ahora valida los 15 manifiestos declarados en
+// docs/design-system/manifests/inventory.json, no solo un subconjunto, asi
+// que las pruebas de test/archivo referenciadas por cualquiera de ellos deben
+// existir tambien en este fixture o el gate falla por "missing test".
+function referencedTestFiles() {
+  const dsRoot = path.join(repositoryRoot, 'docs/design-system');
+  const homologation = JSON.parse(readFileSync(path.join(dsRoot, 'homologation.json'), 'utf8'));
+  const inventory = JSON.parse(readFileSync(path.join(dsRoot, 'manifests/inventory.json'), 'utf8'));
+  const files = new Set(homologation.tests || []);
+  for (const name of inventory.manifests) {
+    if (['inventory.json', 'goal-provenance.json'].includes(name)) continue;
+    const manifest = JSON.parse(readFileSync(path.join(dsRoot, 'manifests', name), 'utf8'));
+    for (const file of manifest.tests || []) files.add(file);
+  }
+  return [...files];
+}
 
 export function createCloseoutFixture() {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-closeout-contract-'));
@@ -44,9 +39,11 @@ export function createCloseoutFixture() {
   );
   symlinkSync(path.join(repositoryRoot, 'public'), path.join(fixtureRoot, 'public'), 'dir');
   symlinkSync(path.join(repositoryRoot, 'views'), path.join(fixtureRoot, 'views'), 'dir');
-  for (const file of referencedTests) {
+  symlinkSync(path.join(repositoryRoot, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
+  for (const file of referencedTestFiles()) {
+    const source = path.join(repositoryRoot, file);
     mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
-    cpSync(path.join(repositoryRoot, file), path.join(fixtureRoot, file));
+    cpSync(source, path.join(fixtureRoot, file));
   }
   symlinkSync(
     path.join(repositoryRoot, 'tests/browser/__screenshots__'),

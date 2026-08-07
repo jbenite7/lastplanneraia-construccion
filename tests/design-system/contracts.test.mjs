@@ -37,6 +37,7 @@ function runFixture(mutate) {
   symlinkSync(path.join(root, 'public'), path.join(fixtureRoot, 'public'), 'dir');
   symlinkSync(path.join(root, 'views'), path.join(fixtureRoot, 'views'), 'dir');
   symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
+  symlinkSync(path.join(root, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
   for (const file of contractTestFiles()) {
     const source = path.join(root, file);
     if (!existsSync(source)) continue;
@@ -504,4 +505,25 @@ test('una familia no puede dejar de declarar un viewport requerido', () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /foundations: missing required viewport 1440x900/);
+});
+
+// Candado contra el propio hallazgo de esta tarea: la lista de manifiestos que
+// el gate valida linea por linea se deriva de docs/design-system/manifests/inventory.json,
+// no de una lista escrita a mano. subcontratistas.json a proposito NO estaba
+// cubierto antes de esa derivacion (foundation-shell.json declaraba /contratos,
+// /listado-actividades y /pdc, del PDC v1 ya retirado, y nadie lo vio porque el
+// gate no miraba ese archivo). Esta prueba rompe subcontratistas.json de una
+// forma que solo se detecta si el gate de verdad lo procesa; si la lista de
+// manifiestos volviera a encogerse a mano, esta prueba pasaria en verde por la
+// razon equivocada (result.status === 0) y lo delataria.
+test('el gate valida todos los manifiestos declarados en el inventario, no solo algunos', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/subcontratistas.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.routes.push('/subcontratistas/ruta-inexistente');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /subcontratistas: route not registered \/subcontratistas\/ruta-inexistente/);
 });
