@@ -214,8 +214,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.card, .project-card, .aia-card, .aia-panel, .aia-table-shell, .aia-grid-shell)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -223,8 +223,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.modal-content, .swal2-popup, .aia-modal-surface)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -232,8 +232,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.dropdown-menu, .popover, .toast, .tooltip-inner)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -241,8 +241,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.btn, .btn-pdc-modern, .btn-enter, .island-btn, .pdc-mobile-toggle, .btn-filter-toggle, .aia-btn)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -250,8 +250,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(\n    .form-control,\n    .custom-select,\n    .input-group-text,\n    .select2-selection,\n    .ts-control,\n    .ts-dropdown,\n    .aia-input,\n    .aia-select,\n    .aia-textarea\n  )",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -259,8 +259,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child))",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -268,8 +268,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child))",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -277,8 +277,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -286,44 +286,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .aia-input:not(:last-child)",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .aia-input:not(:last-child)",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .input-group-append > .input-group-text",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .input-group-append > .input-group-text",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -331,8 +295,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -340,8 +304,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.progress, .progress-bar, .progress-xs)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "legacy-palette-accent",

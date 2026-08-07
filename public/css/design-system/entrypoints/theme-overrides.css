@@ -77,17 +77,6 @@
     border-end-start-radius: var(--ds-radius-none) !important;
   }
 
-  /* Project Selector composes a search control from Bootstrap's input-group. */
-  .project-selector-page .input-group > .aia-input:not(:last-child) {
-    border-start-end-radius: var(--ds-radius-none) !important;
-    border-end-end-radius: var(--ds-radius-none) !important;
-  }
-
-  .project-selector-page .input-group > .input-group-append > .input-group-text {
-    border-start-start-radius: var(--ds-radius-none) !important;
-    border-end-start-radius: var(--ds-radius-none) !important;
-  }
-
   :where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip) {
     border-radius: var(--ds-radius-pill) !important;
   }
