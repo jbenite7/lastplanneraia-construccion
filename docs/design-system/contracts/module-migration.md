@@ -13,7 +13,9 @@ para resolver una diferencia del consumidor.
 
 ## Gates mínimos
 
-- Dark en 1180x820 y 1440x900.
+- Dark en 1180x820 y 1440x900. Son los viewports **requeridos**: todo módulo migrado
+  los cubre con evidencia. `390x844` está **soportado pero no requerido** desde DS-032:
+  se puede declarar, y en cuanto se declara exige golden y `sha256` como cualquier otro.
 - Teclado, foco, targets, reflow, overflow y texto sin palabras fragmentadas.
 - Axe sin hallazgos critical o serious y revisión manual accesible.
 - Contrato funcional, consola limpia y requests esperados.
