@@ -12,6 +12,18 @@ const componentContractFields = [
   'testSelector', 'consumers', 'replacement', 'golden',
 ];
 
+function contractTestFiles() {
+  const dsRoot = path.join(root, 'docs/design-system');
+  const homologation = JSON.parse(readFileSync(path.join(dsRoot, 'homologation.json'), 'utf8'));
+  const inventory = JSON.parse(readFileSync(path.join(dsRoot, 'manifests/inventory.json'), 'utf8'));
+  const files = new Set(homologation.tests || []);
+  for (const name of inventory.manifests) {
+    const manifest = JSON.parse(readFileSync(path.join(dsRoot, 'manifests', name), 'utf8'));
+    for (const file of manifest.tests || []) files.add(file);
+  }
+  return [...files];
+}
+
 function runFixture(mutate) {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-ds-contract-'));
   cpSync(path.join(root, 'docs/design-system'), path.join(fixtureRoot, 'docs/design-system'), {
@@ -24,25 +36,19 @@ function runFixture(mutate) {
   );
   symlinkSync(path.join(root, 'public'), path.join(fixtureRoot, 'public'), 'dir');
   symlinkSync(path.join(root, 'views'), path.join(fixtureRoot, 'views'), 'dir');
-  for (const file of [
-    'tests/test_programa_general_sprint_contract.mjs',
-    'tests/test_design_system_lab_access.php',
-    'tests/browser/design-system-lab.mjs',
-    'tests/browser/design-system-lab.a11y.mjs',
-    'tests/browser/design-system-lab.visual.mjs',
-    'tests/browser/programa-general-design-system.mjs',
-    'tests/browser/programa-general.visual.mjs',
-    'tests/browser/design-system-compliance.mjs',
-    'e2e/tests/workflows/pg-interactions.spec.mjs',
-  ]) {
+  symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
+  for (const file of contractTestFiles()) {
+    const source = path.join(root, file);
+    if (!existsSync(source)) continue;
     mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
-    cpSync(path.join(root, file), path.join(fixtureRoot, file));
+    cpSync(source, path.join(fixtureRoot, file));
   }
   symlinkSync(
     path.join(root, 'tests/browser/__screenshots__'),
     path.join(fixtureRoot, 'tests/browser/__screenshots__'),
     'dir',
   );
+  symlinkSync(path.join(root, '.git'), path.join(fixtureRoot, '.git'), 'dir');
   mutate(fixtureRoot);
   const result = spawnSync(process.execPath, [path.join(root, 'scripts/design-system-contracts.mjs')], {
     cwd: fixtureRoot,
@@ -51,6 +57,11 @@ function runFixture(mutate) {
   rmSync(fixtureRoot, { recursive: true, force: true });
   return result;
 }
+
+test('un fixture sin mutar pasa el gate', () => {
+  const result = runFixture(() => {});
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
 
 test('canonical design-system contracts pass the executable gate', () => {
   const result = spawnSync(process.execPath, ['scripts/design-system-contracts.mjs'], {
@@ -404,10 +415,10 @@ test('pilot manifest routes must exist in the front controller', () => {
   assert.match(result.stderr, /programa-general: route not registered \/missing-design-system-route/);
 });
 
-// Comparacion diferencial en vez de `status 0`: el fixture corre en un directorio
-// temporal sin `.git`, asi que el gate siempre falla ahi por `sourceRef must resolve
-// to a Git commit` (36 fallos, ajenos a viewports). Lo que importa es que declarar
-// 390x844 no anada ni un fallo respecto de la linea base.
+// Comparacion diferencial en vez de `status 0`: aunque el fixture ya pasa limpio sin
+// mutar, esta prueba compara la lista completa de fallos entre linea base y mutacion
+// para blindarse ante cualquier regresion futura del harness. Lo que importa es que
+// declarar 390x844 no anada ni un fallo respecto de la linea base.
 test('declarar el viewport movil no anade ningun fallo al gate', () => {
   const baseline = runFixture(() => {});
   const withMobile = runFixture((fixtureRoot) => {
