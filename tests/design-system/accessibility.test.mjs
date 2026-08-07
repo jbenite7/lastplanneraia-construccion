@@ -8,20 +8,6 @@ const readJson = async (file) => JSON.parse(await readFile(
   new URL(`../../docs/design-system/${file}`, import.meta.url), 'utf8',
 ));
 
-// Cada superficie con excepciones `color-contrast|incomplete` se afirma sola: sus
-// selectores exactos, su naturaleza y la coherencia del fingerprint.
-const assertScopedContrastExceptions = (exceptions, surface, expectedSelectors) => {
-  const scoped = exceptions.filter((exception) => exception.surface === surface);
-  assert.deepEqual(scoped.map(({ selector }) => selector).sort(), [...expectedSelectors].sort(), surface);
-  assert.equal(scoped.every((exception) => (
-    exception.kind === 'incomplete'
-    && exception.rule === 'color-contrast'
-    && exception.impact === 'serious'
-    && exception.fingerprint === [exception.rule, exception.impact, exception.kind,
-      exception.surface, exception.selector].join('|')
-  )), true, surface);
-};
-
 // RETIRADAS el 2026-08-05: Programa General ya no tiene ninguna excepcion de accesibilidad.
 //
 // Entro al carril pilot el 2026-08-03 con nueve `.pdc-header` marcadas `color-contrast|
@@ -51,6 +37,33 @@ const assertScopedContrastExceptions = (exceptions, surface, expectedSelectors) 
 // vez de envejecer callada.
 const programaGeneralExceptions = (exceptions) => exceptions.filter(
   ({ surface }) => surface.startsWith('programa-general'),
+);
+
+// RETIRADAS el 2026-08-06: `lab/bi-primitives` ya no tiene ninguna excepcion de accesibilidad.
+//
+// Las 28 (14 selectores x 2 viewports) entraron marcadas `color-contrast|incomplete|serious`,
+// justificadas por «axe no puede calcular texto SVG sobre nodos graficos». Igual que con Programa
+// General, `incomplete` significa que axe no pudo medir, no que hubiera un defecto (memoria/
+// trampas/axe-incomplete-cuenta-como-violacion.md).
+//
+// Remedido el 2026-08-06 contra `/internal/design-system?family=bi-primitives`, dark, con la
+// puerta de desarrollo (`test.A`), en los DOS viewports permitidos (1180x820 y 1440x900), con una
+// sonda adaptada de `tests/browser/support/contrast.mjs`: mismo compuesto alpha sobre ancestros
+// via canvas (soporta `color()`/`color-mix`), pero leyendo `fill` en vez de `color` y arrancando
+// la cadena de ancestros en el primer nodo FUERA del <svg> (el propio <svg> no pinta fondo). Los
+// 14 nodos son etiquetas del radar (`aia-bi-radar__label`) y del ranking (`aia-bi-ranked__label`,
+// `aia-bi-ranked__value`, mas tres textos sin clase). Cada uno tiene exactamente un match; se
+// comprobo que un `rect` vecino (la barra del ranking) NUNCA se solapa con el texto de valor —el
+// texto vive fuera de la barra—, asi que el fondo real siempre es la tarjeta `<figure class=
+// "aia-card aia-bi ...">` compuesta sobre lo que hay detras, nunca el relleno de la barra.
+//
+// Resultado: identico en los dos viewports (el layout no cambia el color, solo el tamano).
+// Etiquetas (fill rgb(199,212,204) sobre fondo compuesto rgb(27,35,30)): 10.48:1. Valores (fill
+// rgb(247,250,248) sobre fondo compuesto rgb(27,35,30) o rgb(30,41,35) segun la tarjeta): entre
+// 14.30:1 y 15.27:1. El minimo de las 28 mediciones es 10.48:1, mas del doble del piso AA de
+// 4.5:1 para texto normal. Cero defectos que arreglar.
+const biPrimitivesExceptions = (exceptions) => exceptions.filter(
+  ({ surface }) => surface.startsWith('lab/bi-primitives'),
 );
 
 test('the shared axe helper exists', () => {
@@ -209,20 +222,7 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
   assert.equal(baseline.designSystemVersion, '1.0.0');
   assert.deepEqual(baseline.fingerprints, []);
   assert.equal(exceptions.designSystemVersion, '1.0.0');
-  const reviewedSelectors = [
-    'text[x="1"]', 'text[x="109"]', 'text[x="116"]', 'text[x="118"]',
-    'text[x="164"]', 'text[x="36"]', 'text[x="39"]', 'text[x="76"]',
-    'text[x="88"]', 'text[y="31"]', 'text[y="42"]', 'text[y="53"]',
-    'text[y="7"]', 'text[y="9"]',
-  ];
-  // Cada superficie documentada se comprueba por separado: el total global no se
-  // afirma, porque acoplarlo a una superficie concreta rompe el test cada vez que
-  // entra otra al carril (fue lo que paso con Programa General).
-  for (const viewport of ['1180x820', '1440x900']) {
-    assertScopedContrastExceptions(
-      exceptions.exceptions, `lab/bi-primitives/dark/${viewport}`, reviewedSelectors,
-    );
-  }
+  assert.deepEqual(biPrimitivesExceptions(exceptions.exceptions), []);
   assert.deepEqual(programaGeneralExceptions(exceptions.exceptions), []);
 });
 
@@ -236,11 +236,7 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
   // total escrito a mano que caduca con cada superficie nueva.
   const exceptions = await readJson('a11y-exceptions.json');
   assert.deepEqual(governance.exceptions, exceptions.exceptions);
-  for (const viewport of ['1180x820', '1440x900']) {
-    assert.equal(
-      governance.exceptions.filter((e) => e.surface === `lab/bi-primitives/dark/${viewport}`).length, 14,
-    );
-  }
+  assert.deepEqual(biPrimitivesExceptions(governance.exceptions), []);
   assert.deepEqual(programaGeneralExceptions(governance.exceptions), []);
 });
 
