@@ -70,7 +70,6 @@
       "via": "view-link",
       "unlayeredRules": 364,
       "sites": [
-        "views/programa-general-actualizar/programaGeneralActualizar.view.php",
         "views/programacion-semanal/programacion_semanal.view.php"
       ],
       "case": "2-handsontable-doble-carga"
