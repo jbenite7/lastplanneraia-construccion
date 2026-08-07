@@ -80,6 +80,29 @@ sobre permisos que se apoye solo en las capacidades está mirando la mitad del s
 - **Verificación:** lectura — `GeneralApiController.php:1298`, `:1478`;
   `src/Security/RbacCatalog.php:98-99`.
 
+## PG-006 · Editar una semana pasada exige ser Admin o Director
+
+Escenario que nació como hallazgo: la restricción existía **solo en el navegador** hasta el
+2026-08-06.
+
+- **Roles permitidos:** `A` y `D`. **Denegados:** todos los demás, incluido el Residente, que sí
+  puede editar el programa general en general.
+- **Precondiciones:** la semana pedida es anterior a la última existente (`semana < MAX(Semana)`).
+- **Pasos:**
+  1. El endpoint llama a `assertNotPastWeekOrPrivileged($semana, $dbPrefix, $projectId)`.
+  2. Calcula `maxWeek` sobre `semanas_activas` del proyecto. Si `semana >= maxWeek`, deja pasar.
+  3. Si no, resuelve el rol y consulta `canEditPastGeneralProgram`.
+- **Resultado esperado:** **403** con «Editar semanas pasadas del Programa General requiere rol
+  Admin o Director», y ninguna escritura.
+- **Verificación:** lectura — `GeneralApiController.php:1739-1757`, y **cableado en tres endpoints**
+  (`:165` edición, `:403` por lotes, `:1200` importación). Comprobado el 2026-08-07 que la función
+  se llama y no solo se declara.
+
+> **Por qué importaba.** La capacidad `canEditPastGeneralProgram` llevaba tiempo definida en
+> `RbacManager` y usada en `public/js/rbac_capabilities.js`, pero ningún archivo PHP la consultaba:
+> la interfaz escondía el botón y la API aceptaba la petición igual. Es el mismo patrón que
+> `canDeleteRows`, que **sigue sin consumidor** y protege algo destructivo.
+
 ## CRO-001 · La grilla ocupa el alto disponible sin scroll doble
 
 - **Rol:** cualquiera con acceso a la vista.
@@ -96,9 +119,7 @@ sobre permisos que se apoye solo en las capacidades está mirando la mitad del s
 
 ## Escenarios pendientes de esta pasada
 
-- **La edición del pasado.** `canEditPastGeneralProgram` existe en `RbacManager` (solo `A` y `D`),
-  pero **ningún endpoint de este controlador la consulta**. O la restricción vive en otro sitio, o
-  no se aplica en el servidor. Es el pendiente de mayor valor de este documento.
+- ~~**La edición del pasado.**~~ **Resuelto el 2026-08-06 en `23d27bb7`** — ver `PG-006`.
 - **El borrado de filas** (`/api/general/delete-update`): qué permiso exige y qué pasa con los datos
   dependientes — si la actividad borrada estaba comprometida en una semana o bajada a intermedia.
 - **Aislamiento por `project_id`** comprobado consulta a consulta; aquí solo se ha verificado la
