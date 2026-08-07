@@ -171,31 +171,31 @@ export default function Seguimiento() {
   const frentes = useMemo(() => frentesDeSeguimiento(filas), [filas])
 
   const cols = useMemo<ColDef<FilaSeguimiento>[]>(() => [
-    { ...columnaTexto, headerName: 'Paquete', field: 'nombre', flex: 2, minWidth: 240 },
-    { ...columnaTexto, headerName: 'Frente', field: 'frenteNombre', flex: 1, minWidth: 160 },
+    { ...columnaTexto('nombre', 'Paquete', 240), flex: 2 },
+    { ...columnaTexto('frenteNombre', 'Frente', 160), flex: 1 },
     {
-      ...columnaTexto, headerName: 'Responsable', field: 'responsableNombre', flex: 1, minWidth: 180,
+      ...columnaTexto('responsableNombre', 'Responsable', 180), flex: 1,
       valueFormatter: (p) => {
         const f = p.data
         if (!f || f.responsableUserId === null) return '— sin asignar —'
         return f.responsableHuerfano ? `${f.responsableNombre} (ya no está en el proyecto)` : f.responsableNombre
       },
     },
-    { ...columnaTexto, headerName: 'Paso actual', field: 'pasoActual', flex: 1, minWidth: 180 },
+    { ...columnaTexto('pasoActual', 'Paso actual', 180), flex: 1 },
     {
       headerName: 'Avance', field: 'cumplidos', width: 110,
       valueFormatter: (p) => (p.data ? `${p.data.cumplidos} / ${p.data.total}` : ''),
     },
     {
-      ...columnaTexto, headerName: 'Estado', field: 'estado', width: 130,
+      headerName: 'Estado', field: 'estado', width: 130, filter: 'agTextColumnFilter',
       valueFormatter: (p) => etiquetaEstado(String(p.value ?? '')),
     },
     {
       headerName: 'Atraso', field: 'atrasado', width: 100,
       valueFormatter: (p) => (p.value === true ? 'Sí' : ''),
     },
-    { ...columnaTexto, headerName: 'Fin programado', field: 'finProgramado', width: 150 },
-    { ...columnaTexto, headerName: 'Fin proyectado', field: 'finProyectado', width: 150 },
+    { headerName: 'Fin programado', field: 'finProgramado', width: 150, filter: 'agTextColumnFilter' },
+    { headerName: 'Fin proyectado', field: 'finProyectado', width: 150, filter: 'agTextColumnFilter' },
   ], [])
 
   // Los filtros propios de la página (frente y estado) se anuncian junto a los de columna: si no,
@@ -283,10 +283,12 @@ export default function Seguimiento() {
               <Selector
                 testid="pdc-venc-filtro-paso"
                 etiqueta="Filtrar por paso"
-                placeholder="Todos"
                 value={filtroPaso}
                 onChange={setFiltroPaso}
-                opciones={(venc?.pasos ?? []).map((p) => ({ valor: p.clave, etiqueta: p.paso }))}
+                opciones={[
+                  { valor: '', etiqueta: 'Todos' },
+                  ...(venc?.pasos ?? []).map((p) => ({ valor: p.clave, etiqueta: p.paso })),
+                ]}
               />
             </span>
             <span className="pdc-selector">
@@ -294,10 +296,10 @@ export default function Seguimiento() {
               <Selector
                 testid="pdc-venc-filtro-responsable"
                 etiqueta="Filtrar por responsable"
-                placeholder="Todos"
                 value={filtroResp}
                 onChange={setFiltroResp}
                 opciones={[
+                  { valor: '', etiqueta: 'Todos' },
                   ...(usuarioId !== null ? [{ valor: String(usuarioId), etiqueta: 'Los míos' }] : []),
                   { valor: 'sin', etiqueta: 'Sin responsable' },
                 ]}
@@ -536,20 +538,22 @@ export default function Seguimiento() {
           <span className="pdc-selector-rotulo">Frente</span>{' '}
           <Selector
             etiqueta="Filtrar por frente"
-            placeholder="Todos"
             value={filtros.frente}
             onChange={(v) => setFiltros((f) => ({ ...f, frente: v }))}
-            opciones={frentes.map((n) => ({ valor: n, etiqueta: n }))}
+            opciones={[
+              { valor: '', etiqueta: 'Todos' },
+              ...frentes.map((n) => ({ valor: n, etiqueta: n })),
+            ]}
           />
         </span>
         <span className="pdc-selector">
           <span className="pdc-selector-rotulo">Estado</span>{' '}
           <Selector
             etiqueta="Filtrar por estado"
-            placeholder="Todos"
             value={filtros.estado}
             onChange={(v) => setFiltros((f) => ({ ...f, estado: v as FiltrosSeguimiento['estado'] }))}
             opciones={[
+              { valor: '', etiqueta: 'Todos' },
               { valor: 'sin_empezar', etiqueta: 'Sin empezar' },
               { valor: 'en_curso', etiqueta: 'En curso' },
               { valor: 'terminado', etiqueta: 'Terminado' },

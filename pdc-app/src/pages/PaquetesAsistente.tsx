@@ -352,9 +352,11 @@ export default function PaquetesAsistente({
                 testid="pdc-wiz-tipo"
                 value={tipoNeg}
                 onChange={(v) => { setTipoNeg(v); setDestino('') }}
-                opciones={TIPOS_NEGOCIACION.map((t) => ({ valor: t.value, etiqueta: t.label }))}
+                opciones={[
+                  { valor: '', etiqueta: 'Todos' },
+                  ...TIPOS_NEGOCIACION.map((t) => ({ valor: t.value, etiqueta: t.label })),
+                ]}
                 etiqueta="Tipo de negociación"
-                placeholder="Todos"
               />
             </span>
             <span className="pdc-selector">

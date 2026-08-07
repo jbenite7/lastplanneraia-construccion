@@ -68,11 +68,13 @@ test.describe('PDC v2 · B2 — vencimientos', () => {
     await page.getByTestId('pdc-venc-filtro-paso').click();
     const popup = page.locator('.pdc-selector-popup');
     await popup.waitFor({ state: 'visible' });
+    // La primera opción es «Todos» (opción de negocio elegible, no un placeholder): el paso real a
+    // filtrar es la segunda.
     const opciones = popup.getByRole('option');
     const cuantas = await opciones.count();
-    test.skip(cuantas < 1, 'El proyecto no tiene pasos pendientes que filtrar.');
+    test.skip(cuantas < 2, 'El proyecto no tiene pasos pendientes que filtrar.');
 
-    const etiqueta = (await opciones.first().textContent())?.trim();
+    const etiqueta = (await opciones.nth(1).textContent())?.trim();
     await page.keyboard.press('Escape');
     await popup.waitFor({ state: 'detached' });
 

@@ -68,10 +68,13 @@ export function ListaBuscable({
         <input
           ref={cajaBusqueda}
           type="search"
+          role="combobox"
           className="pdc-lista-buscar"
           placeholder="Buscar…"
           aria-label="Buscar en la lista"
+          aria-expanded
           aria-controls={`${idBase}-opciones`}
+          aria-activedescendant={visibles[resaltado] ? `${idBase}-op-${resaltado}` : undefined}
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -90,7 +93,6 @@ export function ListaBuscable({
         className="pdc-lista-opciones"
         role="listbox"
         aria-multiselectable={modo === 'varias' || undefined}
-        aria-activedescendant={visibles[resaltado] ? `${idBase}-op-${resaltado}` : undefined}
         tabIndex={conBuscador ? -1 : 0}
       >
         {visibles.map((o, i) => (
@@ -109,7 +111,9 @@ export function ListaBuscable({
             {o.etiqueta}
           </li>
         ))}
-        {visibles.length === 0 && <li className="pdc-lista-vacia">Nada coincide con «{busqueda}»</li>}
+        {visibles.length === 0 && (
+          <li role="presentation" className="pdc-lista-vacia">Nada coincide con «{busqueda}»</li>
+        )}
       </ul>
     </div>
   )

@@ -419,8 +419,10 @@ export default function PaquetesContratacion() {
             etiqueta="Filtrar por agrupación"
             value={agrupacion}
             onChange={setAgrupacion}
-            opciones={agrupaciones.map((a) => ({ valor: a, etiqueta: a }))}
-            placeholder="Todas las agrupaciones"
+            opciones={[
+              { valor: '', etiqueta: 'Todas las agrupaciones' },
+              ...agrupaciones.map((a) => ({ valor: a, etiqueta: a })),
+            ]}
           />
         </span>
         <button

@@ -24,6 +24,7 @@ export function Selector({
 }: SelectorProps) {
   const [abierto, setAbierto] = useState(false)
   const caja = useRef<HTMLDivElement>(null)
+  const boton = useRef<HTMLButtonElement>(null)
   const idBase = useId()
   const elegida = opciones.find((o) => o.valor === value)
 
@@ -38,9 +39,32 @@ export function Selector({
     return () => document.removeEventListener('mousedown', fuera)
   }, [abierto])
 
+  // Cierra y devuelve el foco al botón que abrió el popup, tanto al elegir una opción como al
+  // salir con Escape — si no, el popup se desmonta con el foco dentro y cae al <body>.
+  const cerrar = () => {
+    setAbierto(false)
+    boton.current?.focus()
+  }
+
+  const seleccionar = (valor: string) => {
+    // Un <select> nativo no dispara onChange si se reelige el mismo valor; este tampoco debe.
+    if (valor === value) { cerrar(); return }
+    onChange(valor)
+    cerrar()
+  }
+
   return (
-    <div className="pdc-selector-caja" ref={caja}>
+    <div
+      className="pdc-selector-caja"
+      ref={caja}
+      // Si el foco sale del control (Tab) sin pasar por otro elemento interno, el popup queda
+      // abierto y desanclado del foco: lo cerramos también en ese caso.
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setAbierto(false)
+      }}
+    >
       <button
+        ref={boton}
         type="button"
         className="pdc-selector-boton"
         data-testid={testid}
@@ -61,8 +85,8 @@ export function Selector({
             opciones={opciones}
             modo="una"
             seleccion={value === '' ? [] : [value]}
-            onSeleccion={(s) => onChange(s[0] ?? '')}
-            onCerrar={() => setAbierto(false)}
+            onSeleccion={(s) => seleccionar(s[0] ?? '')}
+            onCerrar={cerrar}
             idBase={idBase}
           />
         </div>

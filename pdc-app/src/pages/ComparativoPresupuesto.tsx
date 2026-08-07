@@ -147,12 +147,14 @@ export default function ComparativoPresupuesto() {
       value={value === null ? '' : String(value)}
       onChange={(v) => on(v === '' ? null : Number(v))}
       // «(obsoleta)» va en la opción para que la advertencia empiece antes de elegir, no después.
-      opciones={versiones.map((v) => ({
-        valor: String(v.id),
-        etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}${v.obsoleta ? ' (obsoleta)' : ''}`,
-      }))}
+      opciones={[
+        { valor: '', etiqueta: '—' },
+        ...versiones.map((v) => ({
+          valor: String(v.id),
+          etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}${v.obsoleta ? ' (obsoleta)' : ''}`,
+        })),
+      ]}
       etiqueta={etiqueta}
-      placeholder="—"
     />
   )
 

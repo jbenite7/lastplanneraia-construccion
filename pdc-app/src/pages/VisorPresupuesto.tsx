@@ -235,13 +235,15 @@ export default function VisorPresupuesto() {
             <Selector
               testid="pdc-visor-version"
               etiqueta="Versión del presupuesto"
-              placeholder="Activa"
               value={String(versionId ?? '')}
               onChange={(v) => setVersionId(v === '' ? null : Number(v))}
-              opciones={versiones.map((v) => ({
-                valor: String(v.id),
-                etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}`,
-              }))}
+              opciones={[
+                { valor: '', etiqueta: 'Activa' },
+                ...versiones.map((v) => ({
+                  valor: String(v.id),
+                  etiqueta: `${etiquetaVersion(v)}${v.activa ? ' (activa)' : ''}`,
+                })),
+              ]}
             />
           </span>
         )}
@@ -270,10 +272,12 @@ export default function VisorPresupuesto() {
               <Selector
                 testid="pdc-visor-tipo"
                 etiqueta="Filtrar por tipo de insumo"
-                placeholder="Todos"
                 value={tipoInsumo}
                 onChange={setTipoInsumo}
-                opciones={tiposInsumo.map((t) => ({ valor: t, etiqueta: t }))}
+                opciones={[
+                  { valor: '', etiqueta: 'Todos' },
+                  ...tiposInsumo.map((t) => ({ valor: t, etiqueta: t })),
+                ]}
               />
             </span>
             <span className="pdc-selector">
@@ -281,10 +285,12 @@ export default function VisorPresupuesto() {
               <Selector
                 testid="pdc-visor-unidad"
                 etiqueta="Filtrar por unidad"
-                placeholder="Todas"
                 value={unidad}
                 onChange={setUnidad}
-                opciones={unidades.map((u) => ({ valor: u, etiqueta: u }))}
+                opciones={[
+                  { valor: '', etiqueta: 'Todas' },
+                  ...unidades.map((u) => ({ valor: u, etiqueta: u })),
+                ]}
               />
             </span>
             {/* El nivel solo tiene sentido con jerarquía: en modo tabla no hay ramas que abrir. */}
