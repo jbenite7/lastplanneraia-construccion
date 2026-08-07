@@ -1,4 +1,4 @@
-@layer components, states, responsive;
+@layer components;
 
 @layer components {
   /* Sin handsontable-module.css en el head segmentado, el documento scrollea
@@ -167,9 +167,10 @@
     color: var(--ds-active-text-secondary);
   }
 
-}
-
-@layer states {
+  /* Antes vivía en un `@layer states` propio de esta hoja, fuera de la escalera
+     canónica del design system. Vuelve a `components`: como `.project-card:hover`
+     tiene más especificidad que la regla base y va después, el resultado en
+     cascada es el mismo. */
   .project-card:hover {
     border-color: var(--ds-color-border-strong);
   }
