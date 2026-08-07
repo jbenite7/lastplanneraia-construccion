@@ -1,7 +1,7 @@
 {
   "$schema": "./stable-api.schema.json",
   "schemaVersion": 1,
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "1.1.0",
   "targetVersion": "1.0.0",
   "releaseStatus": "guaranteed",
   "guaranteeScope": "stable-only",

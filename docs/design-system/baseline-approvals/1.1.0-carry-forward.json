@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "designSystemVersion": "1.1.0",
+  "baseline": "docs/design-system/audit-baseline.json",
+  "beforeHash": "df7cf735fde0c727b9248431fe9c34fc0c08be28c8f8150cdbdd4259fabc159b",
+  "afterHash": "df7cf735fde0c727b9248431fe9c34fc0c08be28c8f8150cdbdd4259fabc159b",
+  "approvedBy": "carry-forward",
+  "approvalRef": "goals/cierre-version-1-1-0-design-system/goal.md — el bump a 1.1.0 exige una aprobacion de baseline para la version viva; el baseline NO se regenera ni se toca, su hash es identico al aprobado por el usuario en 1.1.0-total-gate (2026-07-25), asi que esto solo lo arrastra a la version nueva. Una regeneracion real de baseline seguiria necesitando aprobacion explicita del usuario.",
+  "recordedAt": "2026-08-07"
+}

@@ -1,5 +1,5 @@
 {
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "1.1.0",
   "purpose": "Translate module-specific labels into shared action priority without relying on color alone.",
   "dimensions": {
     "severity": [
