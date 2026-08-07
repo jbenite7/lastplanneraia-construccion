@@ -75,20 +75,33 @@ test('the shared axe helper exists', () => {
 test('approved accessibility scenarios cover every theme and required viewport', async () => {
   const { approvedAccessibilityScenarios } = await import(helperPath);
   const homologation = await readJson('homologation.json');
+  const approvals = await readJson('family-approvals.json');
   const scenarios = approvedAccessibilityScenarios(homologation);
 
-  const expectedCount = homologation.families
-    .reduce((total, family) => total + family.viewports.length, 0);
-  assert.equal(scenarios.length, expectedCount);
   assert.deepEqual([...new Set(scenarios.map(({ family }) => family))], [
     'foundations', 'shell-navigation', 'page-structure', 'actions', 'forms-filters',
     'states-feedback', 'data-display', 'overlays', 'vendor-adapters', 'bi-primitives',
   ]);
   for (const family of [...new Set(scenarios.map(({ family }) => family))]) {
     const familyScenarios = scenarios.filter((scenario) => scenario.family === family);
-    const declared = homologation.families.find(({ id }) => id === family).viewports;
     assert.deepEqual([...new Set(familyScenarios.map(({ theme }) => theme))], ['dark']);
-    assert.deepEqual([...new Set(familyScenarios.map(({ viewport }) => viewport))], declared);
+
+    // homologation.json declara los viewports de la familia; family-approvals.json declara los
+    // viewports que cubrio la aprobacion humana firmada de esa familia. Son dos archivos
+    // distintos que deben coincidir — si divergen, hay cobertura declarada sin aprobar o una
+    // aprobacion que ya no coincide con lo declarado. `activeCandidate` puede apuntar a una
+    // candidata todavia sin aprobar (p. ej. trabajo en curso), asi que la candidata que se
+    // contrasta es la marcada `status: 'approved'` en homologation.json — la misma que usa
+    // approvedAccessibilityScenarios para generar los escenarios.
+    const homologatedFamily = homologation.families.find(({ id }) => id === family);
+    const approvedCandidateId = (homologatedFamily.candidates || [])
+      .find(({ status }) => status === 'approved')?.id;
+    assert.ok(approvedCandidateId, `${family} has no approved candidate in homologation.json`);
+    const approval = approvals.approvals.find(
+      ({ familyId, candidateId }) => familyId === family && candidateId === approvedCandidateId,
+    );
+    assert.ok(approval, `no signed approval found for ${family}/${approvedCandidateId}`);
+    assert.deepEqual(homologatedFamily.viewports, approval.viewports);
   }
 });
 
