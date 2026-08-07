@@ -53,9 +53,21 @@ Este es el corazón de F1. Incluye un hallazgo de la exploración: `homologation
 
 Añadir al final de `tests/design-system/contracts.test.mjs`:
 
+> **Corregido tras la ejecución (2026-08-07).** La primera versión de esta prueba
+> asertaba `result.status === 0` y era **imposible de pasar**: `runFixture` corre en un
+> directorio temporal sin `.git`, así que el gate falla ahí siempre con 36 errores de
+> `sourceRef must resolve to a Git commit`, ajenos a viewports. Lo que sigue es la
+> comparación diferencial que se implementó de verdad. Consecuencia más amplia, anotada
+> como precondición de F2: **ninguna** prueba de `runFixture` puede comprobar un caso
+> positivo hoy, y por eso todas las existentes solo asertan `notEqual(status, 0)`.
+
 ```javascript
-test('una familia puede declarar el viewport movil sin romper el gate', () => {
-  const result = runFixture((fixtureRoot) => {
+// Comparacion diferencial en vez de `status 0`: el fixture corre en un directorio
+// temporal sin `.git`, asi que el gate siempre falla ahi. Lo que importa es que
+// declarar 390x844 no anada ni un fallo respecto de la linea base.
+test('declarar el viewport movil no anade ningun fallo al gate', () => {
+  const baseline = runFixture(() => {});
+  const withMobile = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -63,7 +75,12 @@ test('una familia puede declarar el viewport movil sin romper el gate', () => {
     writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
   });
 
-  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const failures = (result) => (result.stderr || '')
+    .split('\n')
+    .filter((line) => line.startsWith('- '));
+
+  assert.deepEqual(failures(withMobile), failures(baseline));
+  assert.equal(failures(baseline).some((line) => line.includes('390x844')), false);
 });
 
 test('una familia no puede declarar un viewport no soportado', () => {
@@ -310,7 +327,14 @@ git commit -m "feat(design-system): admitir el viewport movil en esquemas y gate
 
 ### Task 3: Reescribir el candado
 
-El archivo se **renombra** con `git mv` para que el historial siga al contenido. `scripts/design-system-static-suite.mjs:13` recoge los tests por glob sobre `tests/design-system`, así que el renombrado no lo saca de la suite; ningún workflow lo nombra explícitamente (verificado el 2026-08-07).
+El archivo se **renombra** con `git mv`. `scripts/design-system-static-suite.mjs:13` recoge los tests por glob sobre `tests/design-system`, así que el renombrado no lo saca de la suite; ningún workflow lo nombra explícitamente (verificado el 2026-08-07).
+
+> **Corregido tras la ejecución (2026-08-07).** La versión original decía que `git mv`
+> haría «que el historial siga al contenido». No es así: git detecta renombrados por
+> similitud al mostrar, no por el comando usado. Como aquí el contenido se reescribe
+> entero, con el umbral por defecto (50%) el commit aparece como borrado más creación;
+> `git show -M20%` sí lo detecta, al 32% de similitud. Es inherente a reescribir el
+> archivo, no algo que se pueda evitar.
 
 **Files:**
 - Rename: `tests/design-system/mobile-viewport-removal.test.mjs` → `tests/design-system/mobile-viewport-scope.test.mjs`
@@ -423,11 +447,15 @@ Esperado: PASS en las seis pruebas. Si la última falla, la Task 1 no está apli
 
 - [ ] **Step 4: Comprobar que la suite lo sigue recogiendo**
 
+> **Corregido tras la ejecución (2026-08-07).** El comando original filtraba la salida de
+> la suite por el nombre del archivo, y devuelve `0` **siempre**: `node --test` no imprime
+> nombres de archivo. Se comprueba por el título de una prueba, que sí aparece.
+
 ```bash
-node scripts/design-system-static-suite.mjs 2>&1 | grep -c "mobile-viewport-scope"
+node scripts/design-system-static-suite.mjs 2>&1 | grep -c "el gate de contratos distingue soportado de requerido"
 ```
 
-Esperado: al menos `1`. Si sale `0`, la suite no lo está cargando y hay que revisar el glob de `design-system-static-suite.mjs:13` antes de continuar.
+Esperado: al menos `1`. Si sale `0`, la suite no está cargando el archivo y hay que revisar el glob de `design-system-static-suite.mjs:13` antes de continuar.
 
 - [ ] **Step 5: Commit** *(solo con autorización explícita)*
 
