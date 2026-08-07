@@ -48,11 +48,17 @@ function runFixture(mutate) {
     path.join(fixtureRoot, 'tests/browser/__screenshots__'),
     'dir',
   );
-  symlinkSync(path.join(root, '.git'), path.join(fixtureRoot, '.git'), 'dir');
   mutate(fixtureRoot);
   const result = spawnSync(process.execPath, [path.join(root, 'scripts/design-system-contracts.mjs')], {
     cwd: fixtureRoot,
     encoding: 'utf8',
+    // No enlazamos .git dentro del fixture: git deduce el worktree como el
+    // directorio padre de .git, y sin `core.worktree` explicito cualquier
+    // `git status` que corra el gate refrescaria el indice real (compartido con
+    // el repo) contra el subconjunto de archivos del fixture. GIT_DIR/GIT_WORK_TREE
+    // le dicen a git donde estan los objetos y donde esta el worktree real, sin
+    // mentirle sobre cual es cual.
+    env: { ...process.env, GIT_DIR: path.join(root, '.git'), GIT_WORK_TREE: root },
   });
   rmSync(fixtureRoot, { recursive: true, force: true });
   return result;
