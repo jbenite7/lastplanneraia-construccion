@@ -165,10 +165,12 @@ describe('necesitaBuscador', () => {
 })
 
 describe('opcionesVisibles', () => {
-  const opciones = [o('a', 'Cemento gris'), o('b', 'Acero de refuerzo'), o('c', 'CAÑO PVC')]
+  // «Arena lavada» no lleva «o» a propósito: es lo que hace que buscar 'o' salte el elemento del
+  // medio y el test de orden pruebe algo. Con tres etiquetas que contengan «o» ese test es imposible.
+  const opciones = [o('a', 'Cemento gris'), o('b', 'Arena lavada'), o('c', 'CAÑO PVC')]
 
   it('recorta por la etiqueta, no por el valor', () => {
-    expect(opcionesVisibles(opciones, 'acero').map((x) => x.valor)).toEqual(['b'])
+    expect(opcionesVisibles(opciones, 'arena').map((x) => x.valor)).toEqual(['b'])
   })
 
   it('sin búsqueda devuelve todas', () => {
@@ -616,6 +618,7 @@ En `pdc-app/src/pages/Seguimiento.tsx`, sustituye cada `<label className="pdc-se
 ```
 
 Reglas al migrar, que valen también para la Task 5:
+- **El rótulo visible se conserva.** El `<Selector>` va dentro del mismo `<label className="pdc-selector">` que ya existía, con su texto delante. `etiqueta` alimenta el `aria-label` del botón y debe decir lo mismo que el rótulo visible o ampliarlo («Filtrar por frente»), nunca sustituirlo: dos cajas que solo dicen «Todos» no se distinguen. Como el control ya no es un `<select>` nativo sino un `<button>`, el `<label>` no le da nombre accesible por sí solo — ese lo pone `etiqueta`; y no dejes un `htmlFor` apuntando a nada.
 - La `<option value="">` de «todos» **no** es una opción: pasa a `placeholder`.
 - Si el `<select>` guardaba un número (`Number(e.target.value)`), convierte en el `onChange`: `onChange={(v) => setX(v === '' ? '' : Number(v))}` y pasa `value={String(x ?? '')}`.
 - El `data-testid` que hubiera se conserva **con el mismo nombre**, ahora en `testid`.
