@@ -33,13 +33,24 @@ La diferencia que importa es qué implica cada uno:
 `candidate`, puede cambiar bajo tus pies sin que nadie rompa una promesa. Si es `stable`, cambiarlo
 obliga a pasar por el contrato de release.
 
-## Y qué garantiza la versión 1.0.0
+## Y qué garantiza una versión estable
 
-`docs/design-system/version.json` es la fuente que manda sobre la versión viva. Que diga
-`1.0.0 / stable` no es una etiqueta suelta: `tests/design-system/release-governance.test.mjs:66-72`
-exige que **las quince gates de cierre** de `closeout-evidence.json` estén todas `blocking: true`,
-`status: 'passed'`, con `verifiedAt` y evidencia no vacía. Solo entonces `stable-api-1.0.0.json`
-puede declarar `releaseStatus: 'guaranteed'`.
+`docs/design-system/version.json` es la fuente que manda sobre la versión viva, que es **`1.1.0`
+desde el 2026-08-07**. Que diga `stable` no es una etiqueta suelta:
+`tests/design-system/release-governance.test.mjs` exige que **las quince gates de cierre** de
+`closeout-evidence.json` estén todas `blocking: true`, `status: 'passed'`, con `verifiedAt` y
+evidencia no vacía. Solo entonces `stable-api-1.0.0.json` puede declarar
+`releaseStatus: 'guaranteed'`.
+
+Ojo con el nombre del archivo: `stable-api-1.0.0.json` **no** se renombra en cada versión. Su
+`targetVersion` sigue siendo `1.0.0` porque enumera la API que ganó la garantía SemVer en aquel
+hito; su `designSystemVersion`, en cambio, sí acompaña a la versión viva.
+
+Y la activación **no se repite en cada bump**: fue un hito único cumplido en `1.0.0`. Desde el
+cierre de la 1.1.0, los gates aceptan cualquier SemVer con major ≥1 más `status: stable`, mediante
+`ACTIVATED_VERSION_PATTERN` (`scripts/design-system-activation-git.mjs`), que comparten el gate y
+sus tests. Antes comprobaban el literal `'1.0.0'` en tres sitios distintos y cualquier subida
+declaraba el sistema no activado — ver [[version-escrita-a-mano-rompe-el-bump]].
 
 Es decir: la garantía es verificable, no declarativa. Ver [[baselines-y-presupuestos]] para los
 gates que miden, y [[changelog-ds-encabeza-version-vieja]] para la fuente que **no** hay que leer
