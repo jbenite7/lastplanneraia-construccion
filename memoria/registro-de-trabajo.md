@@ -35,12 +35,17 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_70 trabajos · 26 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_75 trabajos · 29 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| F1 — Destrabar el viewport móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil|plan]] | — |
+| Reapertura de móvil/tablet y tema claro — diseño | [[docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design|spec]] | — |
+| Adopción del logo «Last Planner · línea Construcción» — Diseño | [[docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design|spec]] · [[docs/superpowers/plans/2026-08-06-adopcion-logo-construccion|plan]] | — |
+| Cierre de los hallazgos de seguridad de la biblia de flujos — diseño | [[docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design|spec]] · [[docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia|plan]] | — |
+| Plan de Compras: filtros de columna, buscadores rápidos y selects buscables | [[docs/superpowers/specs/2026-08-06-pdc-filtros-y-buscadores-design|spec]] · [[docs/superpowers/plans/2026-08-06-pdc-filtros-y-buscadores|plan]] | — |
 | La biblia de flujos: describir, verificar y auditar el comportamiento de la app | [[docs/superpowers/specs/2026-08-04-biblia-de-flujos-design|spec]] | — |
 | Biblia de flujos · Tanda T1 (transversal) | [[docs/superpowers/plans/2026-08-04-biblia-t1-transversal|plan]] | — |
 | Biblia de flujos · Tanda T2 (cascada LPS) | [[docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps|plan]] | — |

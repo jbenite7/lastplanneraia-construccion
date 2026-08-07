@@ -69,6 +69,14 @@ El 2026-08-07 se retiraron las tres prohibiciones (móvil, tablet y tema claro) 
 normativos. Lo que queda es descriptivo: el viewport canónico de validación sigue siendo 1180×820
 y dark sigue siendo el tema por defecto y único implementado.
 
+El mismo día, **DS-032** (`docs/design-system/decisions.md:39`) llevó esa reapertura a los gates:
+`390x844` vuelve a ser un viewport **soportado pero no requerido** —la cobertura obligatoria sigue
+siendo `1180x820` y `1440x900`—, `design-system-contracts.mjs` distingue `SUPPORTED_VIEWPORTS` de
+`REQUIRED_VIEWPORTS` y, por primera vez, valida los viewports declarados en `homologation.json`.
+El candado de DS-031 se renombró a `tests/design-system/mobile-viewport-scope.test.mjs` y cambió de
+intención: ya no prohíbe el ancho, exige evidencia para todo escenario declarado. **Evidencia móvil
+todavía no hay** (es la fase F2 del goal).
+
 ## La cascada, que es donde duele
 
 El orden de capas es `reset, vendor, theme, base, layout, components, utilities, module,
