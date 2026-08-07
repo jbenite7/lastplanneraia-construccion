@@ -176,3 +176,19 @@ test('compares only equivalent route, viewport, theme and fixture measurements',
     /runtime budget context mismatch: viewport/,
   );
 });
+
+test('el contrato de presupuesto acepta el viewport movil', async () => {
+  const source = await readFile(
+    new URL('../../scripts/design-system-runtime-budget.mjs', import.meta.url), 'utf8',
+  );
+  assert.match(source, /SUPPORTED_VIEWPORTS = \[[^\]]*'390x844'/);
+});
+
+test('el esquema de presupuesto admite el viewport movil', async () => {
+  const schema = JSON.parse(await readFile(
+    new URL('../../docs/design-system/runtime-budget.schema.json', import.meta.url), 'utf8',
+  ));
+  const viewport = schema["$defs"]["artifactBase"]["properties"]["viewport"];
+  assert.ok(viewport, 'no se encontro el enum de viewport');
+  assert.ok(viewport.enum.includes('390x844'));
+});
