@@ -66,6 +66,30 @@ Notas de programa, no de F1:
   que decía justo lo contrario de prometerlo lo puso en rojo. En F3 hay que sustituirlo por una
   comprobación de intención, no de cadena.
 
+## Precondiciones de F2
+
+Hallazgo de la revisión final de F1 (2026-08-07): hoy se puede declarar un escenario `390x844`
+reutilizando el golden y el `sha256` de un escenario desktop y el gate lo deja pasar en verde —
+verifica que el golden exista y que su hash cuadre, pero no que corresponda al viewport declarado
+en el escenario. Además, los carriles runtime filtran por `viewport.width >= 1180`, así que un
+escenario móvil nunca llega a renderizarse ni a compararse: el gate está midiendo un archivo que el
+runtime jamás produjo. Esto no se corrige en F1 — es alcance de F2 — pero deja tres precondiciones
+que F2 debe resolver **antes de declarar el primer escenario `390x844`**:
+
+1. **Retirar los tres filtros `viewport.width >= 1180`** de los carriles visual y de accesibilidad,
+   para que un escenario móvil realmente se renderice y se compare:
+   - `tests/browser/design-system-lab.visual.mjs:22`
+   - `tests/browser/programa-general.visual.mjs:12`
+   - `tests/browser/design-system-lab.a11y.mjs:19`
+2. **Atar el golden a su viewport** en el gate de contratos, para que un golden capturado en
+   desktop no pueda presentarse como evidencia de un escenario móvil (hoy el gate solo comprueba
+   existencia del archivo y que el `sha256` coincida con el contenido, sin cruzar el viewport del
+   escenario contra el viewport con que se capturó el golden).
+3. **Arreglar el harness `runFixture`** (`tests/design-system/contracts.test.mjs`): copiar los
+   archivos de test que hoy faltan (el harness solo copia 9 de la veintena que los contratos
+   referencian) y enlazar `.git` al fixture temporal. F2 necesitará pruebas de caso positivo sobre
+   este harness — hoy solo permite probar que algo falla, no que algo pasa.
+
 ---
 
 # F1 — Destrabar

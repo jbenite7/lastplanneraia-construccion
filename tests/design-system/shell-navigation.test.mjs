@@ -30,7 +30,21 @@ test('shell navigation registers the sidebar candidate as approved', async () =>
   const sidebarApproval = approvals.approvals.find(({ familyId, candidateId }) => familyId === family.id && candidateId === 'sidebar-shell');
   assert.ok(sidebarApproval, 'sidebar-shell must have its own approval entry');
   assert.deepEqual(sidebarApproval.themes, ['dark']);
-  assert.deepEqual(sidebarApproval.viewports, ['1180x820', '1440x900']);
+  const requiredViewports = ['1180x820', '1440x900'];
+  const supportedViewports = [...requiredViewports, '390x844'];
+  const sidebarLabel = `${family.id}/sidebar-shell`;
+  for (const viewport of requiredViewports) {
+    assert.ok(
+      sidebarApproval.viewports.includes(viewport),
+      `${sidebarLabel} no cubre ${viewport}`,
+    );
+  }
+  for (const viewport of sidebarApproval.viewports) {
+    assert.ok(
+      supportedViewports.includes(viewport),
+      `${sidebarLabel} declara el viewport no soportado ${viewport}`,
+    );
+  }
   assert.match(decisions, /DS-026.*Sidebar desktop.*approved/);
   for (const label of ['Obra', 'Programa General', 'Programación Intermedia', 'Programación Semanal', 'Compras', 'Plan de Compras', 'Control Tower - Informes', 'Profesionales', 'Subcontratistas']) {
     assert.match(fixture, new RegExp(label.replace(/[+]/g, '\\+')));

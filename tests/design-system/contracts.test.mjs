@@ -72,7 +72,20 @@ test('homologation covers every governed visual family', () => {
     assert.ok(family.description?.length >= 24, `${family.id} needs a description`);
     assert.ok(family.candidates.length >= 1, family.id);
     assert.deepEqual(family.themes, ['dark'], family.id);
-    assert.deepEqual(family.viewports, ['1180x820', '1440x900'], family.id);
+    const requiredViewports = ['1180x820', '1440x900'];
+    const supportedViewports = [...requiredViewports, '390x844'];
+    for (const viewport of requiredViewports) {
+      assert.ok(
+        family.viewports.includes(viewport),
+        `familia ${family.id} no cubre ${viewport}`,
+      );
+    }
+    for (const viewport of family.viewports) {
+      assert.ok(
+        supportedViewports.includes(viewport),
+        `familia ${family.id} declara el viewport no soportado ${viewport}`,
+      );
+    }
   }
 });
 

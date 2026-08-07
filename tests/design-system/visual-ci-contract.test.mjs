@@ -6,7 +6,10 @@ import { parseJobSteps } from './workflow-contract-parser.mjs';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
-// Piloto y laboratorio comparten la misma matriz desde que se retiro 390x844.
+// Piloto y laboratorio comparten la misma matriz de viewports requeridos.
+// 390x844 se reabrio el 2026-08-07 como soportado pero no exigido (ver
+// tests/design-system/mobile-viewport-scope.test.mjs); ninguna familia lo
+// declara todavia, asi que esta matriz sigue siendo solo los dos requeridos.
 const requiredViewports = ['1180x820', '1440x900'];
 const laboratoryViewports = requiredViewports;
 

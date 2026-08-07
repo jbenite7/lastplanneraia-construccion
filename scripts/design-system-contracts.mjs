@@ -167,8 +167,11 @@ for (const approval of approvals?.approvals || []) {
   const candidate = family?.candidates?.find((item) => item.id === approval.candidateId);
   if (!candidate) failures.push(`family approval: unknown candidate ${key}`);
   if (!approval.evidence?.length) failures.push(`${key}: approval requires evidence`);
-  // Toda aprobacion cubre el mismo alcance desktop dark: retirado 390x844, la
-  // distincion que introducia `scope: desktop-dark` dejo de tener efecto.
+  // Toda aprobacion sigue cubriendo dark unicamente; la distincion que
+  // introducia `scope: desktop-dark` dejo de tener efecto. 390x844 se reabrio
+  // el 2026-08-07 como viewport soportado pero no exigido (ver
+  // tests/design-system/mobile-viewport-scope.test.mjs): todavia ninguna
+  // familia lo declara.
   if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
     failures.push(`${key}: approval must cover dark`);
   }

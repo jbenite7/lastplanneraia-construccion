@@ -24,7 +24,9 @@ const readJson = async (file) => JSON.parse(await readFile(
 // —no es un escaneo vacio—. El tratamiento sobrio no relajo la accesibilidad: la arreglo.
 //
 // El choque que bloqueo la retirada entonces —«rehacer el registro exige el escenario aprobado
-// completo, que incluye 390x844, viewport prohibido por AGENTS.md»— no existia. `a11y-exceptions
+// completo, que incluye 390x844, viewport prohibido por AGENTS.md»— no existia. (Esa prohibicion
+// de AGENTS.md se retiro ademas el 2026-08-07: 390x844 quedo permitido pero no exigido, sin
+// evidencia todavia para ninguna familia.) `a11y-exceptions
 // .json` es un contrato escrito a mano: ningun script lo genera, asi que no hay «regeneracion»
 // que arrastre viewports. Los 390x844 salen de `approvedAccessibilityScenarios(homologation)`,
 // que alimenta al LABORATORIO (superficies `lab/...`) y es otra lista de entradas. Estas nueve
