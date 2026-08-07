@@ -20,17 +20,28 @@ async function entrarComo(page, cuenta, proyecto = PROYECTO) {
   await page.goto(`/dev/entrar?u=${encodeURIComponent(cuenta)}&p=${encodeURIComponent(proyecto)}`);
 }
 
-/** Reutiliza las cookies de la página para llamar la API como el usuario en sesión. */
-async function postComoUsuario(page, url, form) {
-  return page.evaluate(async ({ url, form }) => {
-    const body = new URLSearchParams(form).toString();
+/**
+ * Reutiliza las cookies de la página para llamar la API como el usuario en sesión.
+ *
+ * Con `conCsrf` adjunta el token que la página emite en `<meta name="csrf-token">`. Lo necesitan
+ * los escenarios que apuntan a un guard POSTERIOR al de CSRF: desde que toda mutación lo exige
+ * (2026-08-06), una petición sin token muere en la primera barrera y nunca llega a la que el
+ * escenario quiere probar.
+ */
+async function postComoUsuario(page, url, form, { conCsrf = false } = {}) {
+  return page.evaluate(async ({ url, form, conCsrf }) => {
+    const campos = { ...form };
+    if (conCsrf) {
+      campos._csrf_token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    }
+    const body = new URLSearchParams(campos).toString();
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
     });
     return { status: res.status, texto: (await res.text()).slice(0, 400) };
-  }, { url, form });
+  }, { url, form, conCsrf });
 }
 
 test.describe('T2 · Guardias de Programación Semanal', () => {
@@ -52,13 +63,14 @@ test.describe('T2 · Guardias de Programación Semanal', () => {
     await entrarComo(page, 'test.R');
     await page.goto('/programacion-semanal');
 
-    // Sin CSRF válido el corte ocurre antes; se usa una opción NO listada para CSRF
-    // para que la petición llegue hasta requireSessionDbPrefix (SemanalApiController:219-226).
+    // Se manda token CSRF válido para que la petición llegue hasta requireSessionDbPrefix
+    // (SemanalApiController:219-226), que es el guard que este escenario prueba. Antes bastaba
+    // con elegir `sanear` porque esquivaba la lista de CSRF; ese hueco se cerró el 2026-08-06.
     const r = await postComoUsuario(page, '/api/semanal/save', {
       opcion: 'sanear',
       semana: '4',
       db: 'prefijo_que_no_es_el_de_la_sesion',
-    });
+    }, { conCsrf: true });
 
     expect(r.status).toBe(403);
     expect(r.texto).toContain('no coincide con la sesión activa');

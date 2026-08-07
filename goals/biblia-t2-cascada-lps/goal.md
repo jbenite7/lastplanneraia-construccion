@@ -2,7 +2,7 @@
 
 **Slug:** `biblia-t2-cascada-lps`
 **Fecha de apertura:** 2026-08-04
-**Estado:** ABIERTO — segunda tanda; requiere T1 cerrada
+**Estado:** CERRADO — segunda pasada hecha y verde
 **Prioridad:** impacto muy alto · esfuerzo alto → **segunda**
 
 ## Objetivo
@@ -37,6 +37,29 @@ sostiene sus cifras.
 ## Fuera de alcance
 
 Arreglar los hallazgos. Rehacer `memoria/flujos/flujo-lps.md` más allá de enlazar.
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-08-06
+
+### Lo que se logró
+
+Cinco documentos en `docs/flujos/` (cascada, programa general, intermedia, semanal, aprendizaje) con
+26 escenarios verificados por lectura y cita. El candado de semana está descrito con las cinco
+salidas de `LpsWeekEditPolicy::allows()`. Los ocho estados operativos de Programación Intermedia
+tienen su condición de datos. El PPC está descrito con sus casos borde. 5 pruebas en
+`e2e/tests/biblia/cascada-lps.spec.mjs`, en verde. Hallazgos registrados en `docs/EXPERIMENTS.md`
+sin arreglar, entre ellos el que abrió la campaña de cierre del 2026-08-06 (`sanear` sin CSRF, el
+candado de semanas pasadas solo en cliente). `memoria/flujos/flujo-lps.md` enlaza la biblia.
+
+### Justificación del cierre
+
+Las ocho condiciones de hecho están cumplidas: los cinco documentos existen con sus casos borde, las
+pruebas corren en verde dejando el sandbox restaurado, los hallazgos quedan registrados (arreglarlos
+era fuera de alcance de este goal), y `npm run test:wiki` sigue en verde. Ejecutado y registrado el
+2026-08-04 (`memoria/log.md`), formalizado el 2026-08-06 tras verificar que el trabajo seguía
+vigente.
 
 ## Archivos de este goal
 

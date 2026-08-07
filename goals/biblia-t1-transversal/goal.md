@@ -2,7 +2,7 @@
 
 **Slug:** `biblia-t1-transversal`
 **Fecha de apertura:** 2026-08-04
-**Estado:** ABIERTO — primera tanda en ejecutarse
+**Estado:** CERRADO — primera pasada hecha y verde
 **Prioridad:** impacto alto · esfuerzo bajo → **se ejecuta primero**
 
 ## Objetivo
@@ -33,6 +33,27 @@ base tiene un hueco, las demás lo heredan.
 ## Fuera de alcance
 
 El panel `admin/` (otra aplicación, con su propio `RoleManager`) y arreglar los hallazgos.
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-08-06
+
+### Lo que se logró
+
+`docs/flujos/README.md` existe con la cláusula de autoridad y el formato del escenario. Los tres
+documentos (`transversal-autenticacion`, `transversal-proyecto`, `transversal-rbac`) describen sus
+escenarios con `id` estable, incluidos error y permiso denegado, con cita `archivo:línea`. Las 17
+capacidades de `RbacManager` tienen escenario, tabla de roles leída del código y consumidor citado.
+7 pruebas ejecutables en `e2e/tests/biblia/transversal.spec.mjs`, en verde. 10 hallazgos registrados
+en `docs/EXPERIMENTS.md` con ICE, sin arreglar. `memoria/mapas/rbac-y-rutas.md` enlaza la biblia.
+
+### Justificación del cierre
+
+Las siete condiciones de hecho del goal están cumplidas: los tres documentos existen y citan
+código, las pruebas corren en verde, los hallazgos quedan registrados sin arreglar (fuera de
+alcance), y `npm run test:wiki` sigue en verde. Ejecutado y registrado el 2026-08-04
+(`memoria/log.md`), formalizado el 2026-08-06 tras verificar que el trabajo seguía vigente.
 
 ## Archivos de este goal
 

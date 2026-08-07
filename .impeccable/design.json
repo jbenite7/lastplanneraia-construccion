@@ -476,7 +476,7 @@
       "Nunca uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.",
       "Nunca trabajes, generes cambios, pruebas o evidencia para mobile o tablet: fuera del alcance visual vigente. linen quedó retirado del producto en F0 del goal dark-mode-todos-los-modulos; dark es el único tema y no existe conmutador.",
       "Nunca uses clamp() fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.",
-      "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, PDC, Contratos, Listado de Actividades y el módulo de tema tienen presupuesto cero.",
+      "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, Plan de Compras (v2) y el módulo de tema tienen presupuesto cero.",
       "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",
       "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie.",
       "Nunca pintes en pantalla las variantes `--ds-color-state-*-light`: son reserva para impresos y XLSX. La escala de pantalla está invertida a oscuro.",
