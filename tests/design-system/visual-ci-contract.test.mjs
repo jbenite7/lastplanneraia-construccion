@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import test from 'node:test';
+import { requiredViewports as homologationViewports } from './manifest-sources.mjs';
 import { parseJobSteps } from './workflow-contract-parser.mjs';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
-// Piloto y laboratorio comparten la misma matriz de viewports requeridos.
-// 390x844 se reabrio el 2026-08-07 como soportado pero no exigido (ver
-// tests/design-system/mobile-viewport-scope.test.mjs); ninguna familia lo
-// declara todavia, asi que esta matriz sigue siendo solo los dos requeridos.
-const requiredViewports = ['1180x820', '1440x900'];
+// Piloto y laboratorio comparten la misma matriz de viewports requeridos, y
+// esa matriz se deriva de homologation.json en vez de escribirse a mano: es la
+// union de los viewports que declaran las familias gobernadas. 390x844 se
+// reabrio el 2026-08-07 como soportado pero no exigido (ver
+// tests/design-system/mobile-viewport-scope.test.mjs); en cuanto una familia lo
+// declare, esta matriz lo recoge sola.
+const requiredViewports = homologationViewports();
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
@@ -57,7 +61,7 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
   ]);
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
-  assert.equal(manifest.scenarios.length, 2);
+  assert.equal(manifest.scenarios.length, requiredViewports.length);
   assertDarkPilotMatrix(manifest.scenarios, 1, requiredViewports);
 });
 
@@ -334,12 +338,15 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
 });
 
 test('ningun carril descarta escenarios por ancho', async () => {
-  for (const spec of [
-    'tests/browser/design-system-lab.visual.mjs',
-    'tests/browser/programa-general.visual.mjs',
-    'tests/browser/programacion-intermedia.visual.mjs',
-    'tests/browser/design-system-lab.a11y.mjs',
-  ]) {
+  // Los carriles se descubren por busqueda, no se enumeran: un carril visual o
+  // de accesibilidad nuevo que filtrara por ancho pasaria inadvertido si la
+  // lista estuviera escrita a mano.
+  const browserDir = new URL('../browser/', import.meta.url);
+  const specs = (await readdir(browserDir))
+    .filter((name) => /\.(visual|a11y)\.mjs$/.test(name))
+    .map((name) => `tests/browser/${name}`);
+  assert.ok(specs.length >= 4, `se esperaban al menos 4 carriles, se hallaron ${specs.length}`);
+  for (const spec of specs) {
     const source = await readFile(new URL(`../../${spec}`, import.meta.url), 'utf8');
     assert.equal(
       /width\s*>=\s*1180/.test(source), false,

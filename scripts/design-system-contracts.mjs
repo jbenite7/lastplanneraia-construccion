@@ -51,23 +51,37 @@ const required = [
   'docs/design-system/a11y-exceptions.json',
   'docs/design-system/module-manifest.schema.json',
   `${manifestsDir}/goal-provenance.json`,
+  // Estos cuatro manifiestos estaban en `required` antes de que el gate
+  // derivara la lista de manifiestos del inventario, y sacarlos de aqui les
+  // quito en silencio el chequeo `designSystemVersion must equal ${version}`
+  // (ver comentario de abajo). Se conservan tal cual: son los cuatro que ya
+  // declaran 1.1.0.
+  `${manifestsDir}/laboratory.json`,
+  `${manifestsDir}/programa-general.json`,
+  `${manifestsDir}/programacion-intermedia.json`,
+  `${manifestsDir}/project-selector.json`,
   inventoryPath,
   'docs/design-system/closeout-evidence.json',
   'goals/design-system-nucleo-gobernanza/validation-log.md',
 ];
 const failures = [];
 
-// `required` se deja explicita a proposito y no se amplia con
-// `inventoryManifestFiles`: ese array alimenta el `documents` Map de mas
+// `required` es una lista explicita a proposito y NO se amplia con
+// `inventoryManifestFiles`, pero conserva los cuatro manifiestos que ya
+// estaban ahi. La razon es que `required` alimenta el `documents` Map de mas
 // abajo, y ese Map es tambien lo que recorre el chequeo generico
-// `designSystemVersion must equal ${version}` al final del archivo. Automatizar
-// ambos a la vez mezclaria dos preguntas distintas -- "todo manifiesto se
-// valida linea por linea" (lo que pide esta tarea) contra "todo documento del
-// design system declara la version vigente" (una migracion de version
-// aparte, once manifiestos siguen en 1.0.0 mientras version.json ya esta en
-// 1.1.0) -- y produciria fallos de version no relacionados con el hallazgo
-// de esta tarea. `manifests` (mas abajo) se deriva de `inventoryManifestFiles`
-// leyendo cada archivo por su cuenta, sin pasar por `documents`.
+// `designSystemVersion must equal ${version}` al final del archivo. Son dos
+// preguntas distintas:
+//   - "todo manifiesto declarado se valida linea por linea" -> lo cubre
+//     `manifests` (mas abajo), derivado de `inventoryManifestFiles` y leido
+//     por su cuenta, sin pasar por `documents`;
+//   - "todo documento del design system declara la version vigente" -> lo
+//     cubre `documents`, y por eso los cuatro manifiestos de arriba siguen
+//     listados: sacarlos redujo la cobertura de ese chequeo de 5 documentos a
+//     2 sin que nadie lo notara.
+// Los once manifiestos restantes siguen en 1.0.0 mientras version.json ya
+// esta en 1.1.0; incorporarlos exige una migracion de version aparte, asi que
+// no se anaden aqui.
 
 function readJson(file) {
   try {
@@ -356,6 +370,7 @@ for (const manifest of manifests) {
 }
 
 const goldenOwners = new Map();
+const goldenContentOwners = new Map();
 const frontController = readFileSync(join(root, 'public/index.php'), 'utf8');
 for (const manifest of manifests) {
   for (const route of manifest.routes || []) {
@@ -393,6 +408,27 @@ for (const manifest of manifests) {
         + `(espera un nombre terminado en ${expectedSuffix})`,
       );
     }
+    // El golden se ata a sus pixeles reales, no solo a su nombre. Un PNG
+    // guarda ancho y alto en el IHDR (bytes 16..23 del archivo), asi que se
+    // leen de ahi sin dependencias. La comparacion es `<=` y solo sobre el
+    // ancho a proposito: hay goldens recortados a un elemento (states-feedback
+    // mide 1102 de ancho en un viewport de 1180) y goldens de pagina completa
+    // mas altos que el viewport. Lo que ningun golden legitimo puede ser es
+    // MAS ancho que el viewport que declara -- que es exactamente lo que pasa
+    // al copiar una captura de escritorio bajo un nombre movil.
+    const header = readFileSync(goldenPath);
+    if (header.length >= 24 && header.readUInt32BE(12) === 0x49484452) {
+      const pngWidth = header.readUInt32BE(16);
+      const pngHeight = header.readUInt32BE(20);
+      if (pngWidth > scenario.viewport.width) {
+        failures.push(
+          `${manifest.moduleId}/${scenario.id}: golden mide ${pngWidth}x${pngHeight} px, `
+          + `mas ancho que el viewport declarado ${scenario.viewport.width}x${scenario.viewport.height}`,
+        );
+      }
+    } else {
+      failures.push(`${manifest.moduleId}/${scenario.id}: golden no es un PNG valido`);
+    }
     if (goldenOwners.has(scenario.golden)) {
       failures.push(
         `${manifest.moduleId}/${scenario.id}: golden reused by another scenario `
@@ -400,6 +436,16 @@ for (const manifest of manifests) {
       );
     }
     goldenOwners.set(scenario.golden, `${manifest.moduleId}/${scenario.id}`);
+    // Indexar solo por ruta deja pasar la copia con otro nombre: el contenido
+    // es el mismo y el sha256 tambien, asi que el hash es la clave que de
+    // verdad identifica un golden.
+    if (goldenContentOwners.has(actual)) {
+      failures.push(
+        `${manifest.moduleId}/${scenario.id}: golden content reused by another scenario `
+        + `(${goldenContentOwners.get(actual)})`,
+      );
+    }
+    goldenContentOwners.set(actual, `${manifest.moduleId}/${scenario.id}`);
   }
 }
 

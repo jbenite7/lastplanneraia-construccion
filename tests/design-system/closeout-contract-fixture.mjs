@@ -5,25 +5,13 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-export const repositoryRoot = path.resolve(import.meta.dirname, '../..');
+// Derivada del inventario y compartida con contracts.test.mjs: el gate valida
+// los 15 manifiestos declarados en docs/design-system/manifests/inventory.json,
+// no solo un subconjunto, asi que las pruebas referenciadas por cualquiera de
+// ellos deben existir tambien en este fixture o el gate falla por "missing test".
+import { referencedTestFiles, repositoryRoot } from './manifest-sources.mjs';
 
-// Derivada del inventario, igual que contracts.test.mjs (ver runFixture ahi):
-// el gate ahora valida los 15 manifiestos declarados en
-// docs/design-system/manifests/inventory.json, no solo un subconjunto, asi
-// que las pruebas de test/archivo referenciadas por cualquiera de ellos deben
-// existir tambien en este fixture o el gate falla por "missing test".
-function referencedTestFiles() {
-  const dsRoot = path.join(repositoryRoot, 'docs/design-system');
-  const homologation = JSON.parse(readFileSync(path.join(dsRoot, 'homologation.json'), 'utf8'));
-  const inventory = JSON.parse(readFileSync(path.join(dsRoot, 'manifests/inventory.json'), 'utf8'));
-  const files = new Set(homologation.tests || []);
-  for (const name of inventory.manifests) {
-    if (['inventory.json', 'goal-provenance.json'].includes(name)) continue;
-    const manifest = JSON.parse(readFileSync(path.join(dsRoot, 'manifests', name), 'utf8'));
-    for (const file of manifest.tests || []) files.add(file);
-  }
-  return [...files];
-}
+export { repositoryRoot };
 
 export function createCloseoutFixture() {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-closeout-contract-'));

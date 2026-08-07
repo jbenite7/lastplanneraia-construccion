@@ -4,6 +4,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symli
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { referencedTestFiles, requiredViewports as homologationViewports } from './manifest-sources.mjs';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const componentContractFields = [
@@ -11,18 +12,6 @@ const componentContractFields = [
   'variants', 'states', 'densities', 'tokens', 'responsive', 'accessibility',
   'testSelector', 'consumers', 'replacement', 'golden',
 ];
-
-function contractTestFiles() {
-  const dsRoot = path.join(root, 'docs/design-system');
-  const homologation = JSON.parse(readFileSync(path.join(dsRoot, 'homologation.json'), 'utf8'));
-  const inventory = JSON.parse(readFileSync(path.join(dsRoot, 'manifests/inventory.json'), 'utf8'));
-  const files = new Set(homologation.tests || []);
-  for (const name of inventory.manifests) {
-    const manifest = JSON.parse(readFileSync(path.join(dsRoot, 'manifests', name), 'utf8'));
-    for (const file of manifest.tests || []) files.add(file);
-  }
-  return [...files];
-}
 
 function runFixture(mutate) {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-ds-contract-'));
@@ -38,7 +27,7 @@ function runFixture(mutate) {
   symlinkSync(path.join(root, 'views'), path.join(fixtureRoot, 'views'), 'dir');
   symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
   symlinkSync(path.join(root, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
-  for (const file of contractTestFiles()) {
+  for (const file of referencedTestFiles()) {
     const source = path.join(root, file);
     if (!existsSync(source)) continue;
     mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
@@ -285,8 +274,27 @@ test('manifests declare the complete deterministic visual matrix', () => {
   const pilot = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/programa-general.json'), 'utf8',
   ));
-  assert.equal(laboratory.scenarios.length, 20);
-  assert.equal(pilot.scenarios.length, 2);
+  // Las dos cifras se derivan de homologation.json, no se escriben a mano: si
+  // manana una familia declara un viewport mas, el esperado se mueve solo y
+  // el manifiesto que no lo cubra es el que falla.
+  const homologation = JSON.parse(readFileSync(
+    path.join(root, 'docs/design-system/homologation.json'), 'utf8',
+  ));
+  const viewportsOf = (familyId) => homologation.families
+    .find(({ id }) => id === familyId)?.viewports || [];
+  const laboratoryFamilies = [...new Set(laboratory.scenarios.map(({ family }) => family))];
+  assert.equal(
+    laboratory.scenarios.length,
+    laboratoryFamilies.reduce((total, family) => total + viewportsOf(family).length, 0),
+  );
+  // El piloto no declara familia (family: null), asi que su matriz esperada es
+  // la union de viewports exigida por homologation, la misma que aplica el
+  // gate en REQUIRED_VIEWPORTS.
+  assert.equal(pilot.scenarios.length, homologationViewports().length);
+  assert.deepEqual(
+    [...new Set(pilot.scenarios.map(({ viewport }) => `${viewport.width}x${viewport.height}`))].sort(),
+    [...homologationViewports()].sort(),
+  );
 });
 
 test('golden checksums fail closed when a declared baseline changes', () => {
