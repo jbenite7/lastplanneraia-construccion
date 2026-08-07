@@ -22,9 +22,9 @@
 @import url("/public/vendor/font-awesome/css/all.css") layer(vendor);
 @import url("/public/vendor/icheck-bootstrap/icheck-bootstrap.min.css") layer(vendor);
 
-@import url("/css/design-system/fonts.css?v=1.0.0");
+@import url("/css/design-system/fonts.css?v=1.1.0");
 
-@import url("/css/tokens.css?v=1.0.0");
-@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.0.0");
+@import url("/css/tokens.css?v=1.1.0");
+@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.1.0");
 
-@import url("/css/design-system/adapters/admin-lte.css?v=1.0.0");
+@import url("/css/design-system/adapters/admin-lte.css?v=1.1.0");
