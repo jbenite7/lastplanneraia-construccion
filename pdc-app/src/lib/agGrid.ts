@@ -52,6 +52,21 @@ export const localeTextEs: Record<string, string> = {
   startsWith: 'Empieza por', endsWith: 'Termina en',
   blank: 'Vacío', notBlank: 'No vacío', before: 'Antes de', after: 'Después de',
   andCondition: 'Y', orCondition: 'O', dateFormatOoo: 'aaaa-mm-dd',
+
+  // Claves ARIA: no se ven en pantalla, las lee un lector de pantalla. Sin traducir, una interfaz
+  // en español anunciaba «Filter Input» o «Open Filter Menu» en inglés — el piso de accesibilidad
+  // del design system de este repo es contractual, no cosmético (hallazgo de verificación de la
+  // Task 10, 2026-08-06). Los nombres de clave y el texto en inglés que traducen salen tal cual del
+  // paquete instalado (`node_modules/ag-grid-community/dist/package/main.esm.mjs`, los `translate(
+  // "ariaX", "default en inglés")` de cada componente): no se inventa ninguna clave que la librería
+  // no reconozca, porque una clave inexistente no traduce nada y solo ensucia el mapa.
+  ariaFilterInput: 'Campo del filtro', ariaDateFilterInput: 'Campo del filtro de fecha',
+  ariaFilterMenuOpen: 'Abrir menú de filtro', ariaFilterColumn: 'Presiona CTRL ENTER para filtrar',
+  ariaFilterValue: 'Valor del filtro', ariaFilterFromValue: 'Filtrar desde el valor',
+  ariaFilterToValue: 'Filtrar hasta el valor', ariaFilteringOperator: 'Operador de filtrado',
+  ariaColumnFiltered: 'Columna filtrada',
+  ariaSortableColumn: 'Presiona ENTER para ordenar', ariaMenuColumn: 'Presiona ALT ABAJO para abrir el menú de columna',
+  ariaLabelColumnMenu: 'Menú de columna', ariaLabelColumnFilter: 'Filtro de columna',
 }
 
 /**
