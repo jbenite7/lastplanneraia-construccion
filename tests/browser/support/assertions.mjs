@@ -83,11 +83,15 @@ export async function assertRestrictionConfig(page, project) {
 }
 
 export async function assertNavbarForProject(page, project) {
-  await page.waitForFunction((ids) => ids.every((id) => document.getElementById(id)),
+  // El shell de sidebar (DS-027) no pone `id=` en los enlaces de navegación,
+  // solo `data-destination-id`; ver src/View/Components/DesignSystemComponent.php
+  // sidebarNavigation(). Los ids del proyecto son kebab-case (p. ej. `plan-compras`),
+  // iguales al `id` que arma views/partials/shell_sidebar.php.
+  await page.waitForFunction((ids) => ids.every((id) => document.querySelector(`[data-destination-id="${id}"]`)),
     project.expectedVisibleNav, { timeout: 15000 });
   const navState = await page.evaluate((ids) => {
     const displayOf = (id) => {
-      const el = document.getElementById(id);
+      const el = document.querySelector(`[data-destination-id="${id}"]`);
       if (!el) return 'missing';
       const target = el.closest('li') || el;
       return getComputedStyle(target).display;

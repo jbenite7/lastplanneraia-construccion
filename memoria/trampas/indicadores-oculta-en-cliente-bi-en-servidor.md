@@ -1,12 +1,18 @@
 ---
 tipo: trampa
-estado: vigente
+estado: derogada
 fecha: 2026-08-04
 areas: [bi, rbac]
-fuente: src/Controllers/Gestion/IndicadoresController.php, views/indicadores/indicadores.view.php, src/Controllers/Bi/BiViewController.php, src/Support/BiProjectScope.php, src/Security/RbacCatalog.php
-resumen: "/indicadores esconde el informe con JavaScript y su controlador no comprueba el rol; /bi/* responde 403 de servidor — dos módulos hermanos con dos niveles de garantía"
+fuente: src/Controllers/Gestion/IndicadoresController.php, views/indicadores/indicadores.view.php, src/Controllers/Bi/BiViewController.php, src/Support/BiProjectScope.php, src/Security/RbacCatalog.php, commit 4b1a2be0
+resumen: "Derogada el 2026-08-06 (commit 4b1a2be0): /indicadores ya comprueba el rol en servidor y no filtra la URL del informe. Queda como registro del patrón [[regla-solo-en-cliente-no-es-regla]]"
 ---
 # Indicadores oculta en el cliente; BI corta en el servidor
+
+**Corregida el 2026-08-06 (commit `4b1a2be0`): `IndicadoresController` ya comprueba el rol en
+servidor y la vista ya no filtra `POWER_BI_REPORT_URL` al HTML cuando el rol está restringido.**
+Ver `tests/test_indicadores_server_gate.php` y el patrón general en
+[[regla-solo-en-cliente-no-es-regla]]. Lo que sigue describe el estado **anterior** a esa fecha,
+como registro de qué se corrigió y por qué.
 
 Los cuatro roles `G`, `S`, `SG` y `C` no deben ver el informe de indicadores
 (ver [[powerbi-indicadores]]). **Dónde se cumple esa regla cambia según el módulo, y esa asimetría

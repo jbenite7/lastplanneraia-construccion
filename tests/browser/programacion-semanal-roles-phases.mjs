@@ -276,12 +276,12 @@ test('rol R histórico solo puede calificar el compromiso confirmado', async ({ 
         form: { semana: '4', motivo: '', _csrf_token: csrf || '' },
       }),
       page.request.post('/api/cnp/save', { form: {
-        Id: '1', semana: '4', Categoria_CNP: 'Programación', CNP: 'QA',
+        Id: '1', semana: '4', Categoria_CNP: 'Programación', CNP: 'QA', _csrf_token: csrf || '',
       } }),
-      page.request.post('/api/cnp/reprogramar', { form: { Id: '1', semana: '4' } }),
+      page.request.post('/api/cnp/reprogramar', { form: { Id: '1', semana: '4', _csrf_token: csrf || '' } }),
       page.request.post('/api/cnc/save', { form: {
         Id: '1', semana: '4', Categoria_CNC: 'Administrativas',
-        CNC: 'Otra', Observaciones_CNC: 'QA política',
+        CNC: 'Otra', Observaciones_CNC: 'QA política', _csrf_token: csrf || '',
       } }),
     ];
     for (const response of await Promise.all(blocked)) expect(response.status()).toBe(403);
@@ -300,8 +300,9 @@ test('API CNP no reprograma una semana confirmada', async ({ page }) => {
   const original = (await cnpRows(page, 4))[0];
   expect(original).toBeTruthy();
   try {
+    const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const response = await page.request.post('/api/cnp/reprogramar', { form: {
-      Id: String(original.Consecutivo), semana: '4',
+      Id: String(original.Consecutivo), semana: '4', _csrf_token: csrf || '',
     } });
     expect(response.status()).toBe(409);
     expect((await response.json()).respuesta).toBe('ERROR');

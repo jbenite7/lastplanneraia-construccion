@@ -3,6 +3,7 @@
 namespace App\Controllers\Integracion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 
 use TableResolver;
 
@@ -35,6 +36,7 @@ class ControlCambiosController extends BaseController
         }
         $shellActive = 'control-cambios';
         $shellModuleLabel = 'Control de Cambios';
+        $csrfToken = CsrfTokenManager::generate('control-cambios');
 
         // Cargar vista Control de Cambios
         require PROJECT_ROOT . '/views/control-cambios/controlCambios.view.php';

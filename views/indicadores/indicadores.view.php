@@ -116,10 +116,16 @@
 		 *     restringidos no ven el reporte hasta que exista una versión con alcance
 		 *     por rol/proyecto.
 		 */
-		var POWER_BI_REPORT_URL = 'https://app.powerbi.com/view?r=eyJrIjoiN2ZhODkwNzMtMDg0ZC00MTIzLWFiMjAtOTk0ZGM0MTUzOGY5IiwidCI6IjQxZjUxNDhjLThlNGMtNGE5Ny05M2Q5LWNhMzJhNDJhYzUyOCIsImMiOjR9';
 		// Roles restringidos (Ambiental, SST, SG, Subcontratista): antes solo veían el
 		// informe de proveedores; con el embed único no deben ver el dashboard completo.
+		// C-46/seguridad: el servidor (IndicadoresController::ROLES_SIN_INFORME) ya
+		// devuelve 403 para estos roles antes de renderizar esta vista, así que
+		// POWER_BI_REPORT_URL nunca llega a viajar en su HTML. Este chequeo en cliente
+		// queda como defensa adicional, no como el único guard.
 		var ROLES_SIN_INFORME_INDICADORES = ["G", "S", "SG", "C"];
+		var POWER_BI_REPORT_URL = ROLES_SIN_INFORME_INDICADORES.includes(document.getElementById('permiso_canonico').value)
+			? ''
+			: 'https://app.powerbi.com/view?r=eyJrIjoiN2ZhODkwNzMtMDg0ZC00MTIzLWFiMjAtOTk0ZGM0MTUzOGY5IiwidCI6IjQxZjUxNDhjLThlNGMtNGE5Ny05M2Q5LWNhMzJhNDJhYzUyOCIsImMiOjR9';
 
 		// Proporción (ancho/alto) del reporte de Power BI para conservar su forma.
 		var REPORTE_ASPECTO = 980 / 600;

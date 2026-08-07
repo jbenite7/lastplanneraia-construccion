@@ -125,7 +125,7 @@ class SemanalApiController
         $semana = filter_var($_POST['semana'] ?? $_GET['semana'] ?? 0, FILTER_VALIDATE_INT);
 
         // CSRF protection for mutating operations (not for read-only / listar endpoints)
-        if (in_array($opcion, ['nuevo', 'modificar', 'eliminar', 'duplicar', 'autoprogramar', 'bloquear_compromisos', 'importar_actividad_no_requerida', 'EstadoEjecucion', 'tnp'], true)) {
+        if (in_array($opcion, ['nuevo', 'modificar', 'eliminar', 'duplicar', 'autoprogramar', 'bloquear_compromisos', 'importar_actividad_no_requerida', 'EstadoEjecucion', 'tnp', 'sanear'], true)) {
             $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['_csrf_token'] ?? '';
             if (!CsrfTokenManager::validate($csrfToken, 'semanal_save')) {
                 http_response_code(403);

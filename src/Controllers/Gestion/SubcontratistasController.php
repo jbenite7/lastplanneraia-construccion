@@ -3,6 +3,7 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 
 use TableResolver;
 
@@ -35,6 +36,7 @@ class SubcontratistasController extends BaseController
         }
         $shellActive = 'subcontratistas';
         $shellModuleLabel = 'Subcontratistas';
+        $csrfToken = CsrfTokenManager::generate('subcontratistas');
 
         // Cargar vista Subcontratistas
         require PROJECT_ROOT . '/views/subcontratistas/subcontratistas.view.php';

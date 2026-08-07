@@ -83,6 +83,7 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
+        $csrfToken = CsrfTokenManager::generate('cnp');
 
         // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
         ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
@@ -107,6 +108,7 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
+        $csrfToken = CsrfTokenManager::generate('cnc');
 
         // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
         ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =
@@ -131,6 +133,7 @@ class ProgramacionSemanalController extends BaseController
         $nombreUsuario = $_SESSION['nombreUsuario'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $permiso = $_SESSION['permiso'] ?? '';
+        $csrfToken = CsrfTokenManager::generate('cic');
 
         // C-46: Max_Semana y Semanal_Confirmada resueltos en servidor para el bloque .encabezado.
         ['maxSemana' => $maxSemana, 'semanalConfirmada' => $semanalConfirmada] =

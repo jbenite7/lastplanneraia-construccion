@@ -31,7 +31,8 @@
     "datatables",
     "select2",
     "jquery-ui",
-    "anychart"
+    "anychart",
+    "sweetalert2"
   ],
   "layouts": [
     "desktop"

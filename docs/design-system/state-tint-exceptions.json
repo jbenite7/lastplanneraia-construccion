@@ -33,6 +33,14 @@
       "reason": "Mismo caso que las otras dos celdas de confianza de emparejado: hereda el texto primario del tema oscuro y rinde 12,92:1 sobre su propio fondo, el mas holgado de los tres. La misma reserva sobre las reglas de Handsontable se aplica aqui."
     },
     {
+      "file": "public/css/programa-general-actualizar.css",
+      "selector": ".pg-page #hot-container td.pg-row-unmapped",
+      "token": "--ds-state-tint-amber",
+      "occurrence": 1,
+      "kind": "by-design",
+      "reason": "Mismo token y mismo mecanismo que la celda de revision de emparejado (pg-match-review): --ds-state-tint-amber resuelve al mismo valor (#3a3a0f) en ambas reglas, la celda hereda el texto primario del tema oscuro tal como esa, y ya se midio 11,15:1 sobre ese fondo exacto. No hay una via distinta de color en esta regla que amerite una medicion propia. La misma reserva sobre las reglas de Handsontable sin filas sembradas se aplica aqui."
+    },
+    {
       "file": "public/css/styles.css",
       "selector": "#tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover",
       "token": "--ds-state-tint-blue",

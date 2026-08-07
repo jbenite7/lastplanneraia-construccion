@@ -162,6 +162,10 @@ class GeneralApiController extends BaseController
                 throw new Exception("Faltan parámetros requeridos (unique_id, Semana).");
             }
 
+            if (!$this->assertNotPastWeekOrPrivileged((int) $semana, $dbPrefix, $projectId)) {
+                return;
+            }
+
             $checkStmt = $this->db->queryWithProject("SELECT Titulo FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ?", [$projectId, $id, $semana], $projectId);
             $existingRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -395,6 +399,10 @@ class GeneralApiController extends BaseController
             }
             $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
+
+            if (!$this->assertNotPastWeekOrPrivileged((int) $semana, $dbPrefix, $projectId)) {
+                return;
+            }
 
             $stmtFecha = $this->db->queryWithProject("SELECT Fecha_Inicio_Sem, Fecha_Fin_Sem FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1", [$projectId, $semana], $projectId);
             $dataSemana = $stmtFecha->fetch(PDO::FETCH_ASSOC);
@@ -1189,6 +1197,10 @@ class GeneralApiController extends BaseController
             $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
 
+            if (!$this->assertNotPastWeekOrPrivileged($semana, $dbPrefix, $projectId)) {
+                return;
+            }
+
             // 1. Determinar la última semana activa oficialmente
             $stmtMax = $this->db->queryWithProject("SELECT MAX(Semana) FROM " . TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas') . " WHERE project_id = ?", [$projectId], $projectId);
             $maxSemanaActiva = (int) $stmtMax->fetchColumn();
@@ -1719,6 +1731,30 @@ class GeneralApiController extends BaseController
         }
 
         return $projectId;
+    }
+
+    /**
+     * Candado de servidor: solo A y D pueden editar/borrar semanas ya pasadas del PG.
+     * Emite el 403 JSON y devuelve false cuando corresponde bloquear.
+     */
+    private function assertNotPastWeekOrPrivileged(int $semana, string $dbPrefix, int $projectId): bool
+    {
+        $weeksTable = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
+        $maxWeek = (int) $this->db->queryWithProject(
+            "SELECT COALESCE(MAX(Semana), 0) FROM {$weeksTable} WHERE project_id = ?",
+            [$projectId],
+            $projectId,
+        )->fetchColumn();
+        if ($semana >= $maxWeek) {
+            return true;
+        }
+        $role = (new \App\Security\RbacService($this->db))->resolveCurrentRole();
+        if (!empty(\App\Security\RbacManager::getCapabilities($role)['canEditPastGeneralProgram'])) {
+            return true;
+        }
+        http_response_code(403);
+        echo json_encode(['respuesta' => 'ERROR', 'mensaje' => 'Editar semanas pasadas del Programa General requiere rol Admin o Director.'], JSON_UNESCAPED_UNICODE);
+        return false;
     }
 
     private function requireProgramaGeneralCsrf(): bool

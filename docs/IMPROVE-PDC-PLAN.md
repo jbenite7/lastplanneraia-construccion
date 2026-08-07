@@ -48,9 +48,9 @@ Dato duro que ya inclina la balanza: en Da Porto hay **20 paquetes en el plan y 
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done — GATE abierto | este archivo, §Fase 1 | 2026-08-06 |
 | 2 | ux-heuristics | done — 4 hallazgos (`P-1`, `P-4`, `P-5`, `P-7`), medidos en Da Porto | docs/PDC-AUDIT.md | 2026-08-06 |
-| 3 | design-everyday-things | done — `P-4` (la acción por defecto es la destructiva y el botón apagado no dice su causa); registrado, no aplicado | docs/PDC-AUDIT.md | 2026-08-06 |
+| 3 | design-everyday-things | done — `P-4` aplicado y verificado el 2026-08-06: el arranque deja de ser la rama destructiva y el botón apagado dice su causa | docs/PDC-AUDIT.md | 2026-08-06 |
 | 4 | refactoring-ui | done — `P-2` aplicado y verificado (nombre 39 → 287 px, fila 135 → 50 px), `P-6` registrado | docs/PDC-AUDIT.md | 2026-08-06 |
-| 5 | microinteractions | pending — no llegó a correrse: la fase 2 topó con `P-1`, que hay que cerrar antes de juzgar el feedback de las acciones | docs/PDC-AUDIT.md | |
+| 5 | microinteractions | pending — quedó parada por `P-1`, cerrado el 2026-08-06 (no era un defecto de la app); ya se puede correr | docs/PDC-AUDIT.md | |
 | 6 | made-to-stick | done — `P-3` aplicado («del valor · …»); el resto del copy de la pantalla se leyó y no dio más hallazgos | docs/PDC-AUDIT.md | 2026-08-06 |
 | 7 | influence-psychology | skipped: app interna, sin paywall ni upsell (mismo motivo que el otro pase) | — | 2026-08-06 |
 | 8 | high-perf-browser | pending | docs/PDC-AUDIT.md | |
@@ -86,14 +86,16 @@ registrados en el backlog ICE de `docs/EXPERIMENTS.md`.
 
 - [x] Fases 1, 2, 3, 4 y 6 cerradas el 2026-08-06. Siete hallazgos `P-1`…`P-7` en
       `docs/PDC-AUDIT.md`; dos aplicados y verificados en navegador, cinco registrados.
-- [ ] **`P-1` es bloqueante y no tiene causa raíz confirmada.** Ver `docs/PDC-AUDIT.md` §P-1, que
-      deja escritas las tres hipótesis ya descartadas con su medición. Merece una sesión propia de
-      `systematic-debugging`. Los tres intentos de arreglo se revirtieron: `lib/agGrid.ts` está
-      intacto.
-- [ ] **Fase 5 (microinteractions) sin correr.** Juzgar si las acciones «se sienten vivas» mientras
-      la grilla se pinta ilegible mediría el defecto equivocado. Va después de `P-1`.
+- [x] **`P-1` cerrado el 2026-08-06: no era un defecto de la aplicación.** La sesión de
+      `systematic-debugging` midió que AG Grid calcula bien las alturas y que lo que faltaba era el
+      repintado: el síntoma solo aparece con el bucle de render suspendido
+      (`document.visibilityState === "hidden"`, `requestAnimationFrame` sin correr), que es como se
+      tomaron las capturas. En ventana visible se acomoda solo en ~0,7 s. Ver `docs/PDC-AUDIT.md`
+      §P-1, incluida la nota metodológica sobre capturas automatizadas. `lib/agGrid.ts` intacto.
+- [ ] **Fase 5 (microinteractions) sin correr.** Ya no la bloquea nada: `P-1` está cerrado.
 - [ ] **Fase 8 (high-perf-browser) sin baseline.** `P-7` deja anotado el punto de partida: ocho
       peticiones API en paralelo al cargar, todas 200.
-- [ ] **Fase 9 (revisión en frío) sin correr.** Tiene poco sentido emitir un veredicto de conjunto
-      con `P-1` abierto.
-- [ ] Tres decisiones esperando al usuario, en `docs/PDC-AUDIT.md` §Pendiente de decisión.
+- [ ] **Fase 9 (revisión en frío) sin correr.** Ya no la bloquea nada: `P-1` está cerrado.
+- [x] Las tres decisiones que esperaban al usuario, resueltas el 2026-08-06: `P-1` y `P-5` cerrados
+      por no reproducibles (eran límites del instrumento de medición, no defectos), `P-4` aplicado y
+      verificado en navegador real. No queda ninguna en `docs/PDC-AUDIT.md` §Pendiente de decisión.

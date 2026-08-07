@@ -3,6 +3,7 @@
 namespace App\Controllers\Gestion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 
 use TableResolver;
 
@@ -35,6 +36,7 @@ class ProfesionalesController extends BaseController
         }
         $shellActive = 'profesionales';
         $shellModuleLabel = 'Profesionales';
+        $csrfToken = CsrfTokenManager::generate('profesionales');
 
         // Cargar vista Profesionales (usa Handsontable para live editing)
         require PROJECT_ROOT . '/views/profesionales/profesionales.view.php';

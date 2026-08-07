@@ -266,10 +266,6 @@
     justify-content: space-between;
   }
 
-  .pg-page .pga-actions-group {
-    gap: var(--ds-space-2);
-  }
-
   /* ---------------------------------------------------------------------
      Modales de carga / eliminacion
      --------------------------------------------------------------------- */

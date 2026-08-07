@@ -139,9 +139,18 @@ export async function postFormJson(page, url, body = {}, options = {}) {
       const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const shouldAttachCsrf = includeCsrf && (apiUrl.startsWith('/api/general/')
-        || apiUrl.startsWith('/api/semanal/'));
+        || apiUrl.startsWith('/api/semanal/')
+        || apiUrl.startsWith('/api/subcontratistas/')
+        || apiUrl.startsWith('/api/profesionales/')
+        || apiUrl.startsWith('/api/control-cambios/')
+        || apiUrl.startsWith('/api/cic/')
+        || apiUrl.startsWith('/api/cnc/')
+        || apiUrl.startsWith('/api/cnp/'));
       if (shouldAttachCsrf) {
         headers['X-CSRF-Token'] = csrfToken;
+        if (!formData.has('_csrf_token')) {
+          formData.append('_csrf_token', csrfToken);
+        }
       }
 
       // nueva_semana.php / eliminar_semana.php (legacy_require_csrf, formKey

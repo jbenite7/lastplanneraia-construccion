@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Subcontratistas — Last Planner AIA</title>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+    <script src="/js/modules/aia_ui/csrf.js"></script>
     <!-- jQuery Must be loaded first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -476,7 +478,8 @@
                             prop: change.prop,
                             value: payload[change.prop] !== undefined ? payload[change.prop] : rowData[change.prop]
                         };
-                    })
+                    }),
+                    _csrf_token: window.aiaCsrfToken()
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -536,7 +539,8 @@
                     Correo: payload.correo_contacto,
                     NIT: payload.NIT,
                     alcance: payload.alcance,
-                    tipo_proveedor: payload.tipo_proveedor
+                    tipo_proveedor: payload.tipo_proveedor,
+                    _csrf_token: window.aiaCsrfToken()
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -563,7 +567,8 @@
                 dataType: 'json',
                 data: {
                     opcion: 'eliminar',
-                    id: id
+                    id: id,
+                    _csrf_token: window.aiaCsrfToken()
                 },
                 success: function(res) {
                     if (res.status === 'success') {

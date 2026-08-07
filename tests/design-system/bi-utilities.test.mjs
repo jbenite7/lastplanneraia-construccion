@@ -14,13 +14,15 @@ test('el arbol real no usa ninguna utilidad Tailwind sin declarar', () => {
   assert.deepEqual(biUtilityFailures({ root }), []);
 });
 
-test('la hoja declara las 98 utilidades vivas de la superficie', () => {
+test('la hoja declara las 101 utilidades vivas de la superficie', () => {
   // 97 son la union medida de las 8 rutas /bi/* con el CDN puesto (94
   // estaticas mas `.inline-flex`, `.px-2` y `.py-0.5`, que solo aparecen en
   // runtime). La 98 es `.space-y-1`, que el volcado NO vio porque su rama
   // (`renderRecommendedActions()` con datos) no llego a ejecutarse, y que
-  // encontro este gate leyendo el codigo.
-  assert.equal(declaredUtilities({ root }).size, 98);
+  // encontro este gate leyendo el codigo. Las 99-101 son `.mt-3`, `.mt-4` y
+  // `.cursor-pointer`, que views/bi/control-tower.php empezo a usar despues
+  // del volcado original (ver reparacion de CI del 2026-08-06).
+  assert.equal(declaredUtilities({ root }).size, 101);
 });
 
 test('reconoce la forma de una utilidad Tailwind y no la de una clase propia', () => {

@@ -2,6 +2,7 @@
 <html lang="es">
 <head id="head">
     <meta charset="UTF-8">
+    <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Programa General — Last Planner AIA</title>
     <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/public/vendor/jquery.min.js"></script>

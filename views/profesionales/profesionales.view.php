@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Profesionales — Last Planner AIA</title>
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+    <script src="/js/modules/aia_ui/csrf.js"></script>
     <!-- jQuery Must be loaded first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -437,7 +439,8 @@
                     opcion: 'guardar_cambios',
                     cambios: changes.map(function(change) {
                         return { id: id, prop: change.prop, value: payload[change.prop] !== undefined ? payload[change.prop] : rowData[change.prop] };
-                    })
+                    }),
+                    _csrf_token: window.aiaCsrfToken()
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -507,7 +510,8 @@
                     opcion: 'crear',
                     nombre: payload.nombre,
                     email: payload.email,
-                    cargo: payload.cargo
+                    cargo: payload.cargo,
+                    _csrf_token: window.aiaCsrfToken()
                 },
                 success: function(res) {
                     if (res.status === 'success') {
@@ -531,7 +535,7 @@
              $.ajax({
                 url: '/api/profesionales/save?db=' + db,
                 type: 'POST',
-                data: { opcion: 'eliminar', id: id },
+                data: { opcion: 'eliminar', id: id, _csrf_token: window.aiaCsrfToken() },
                 success: function(res) {
                     if (res.status === 'success') {
                         // Success -> Reload data to refresh grid without destroying instance

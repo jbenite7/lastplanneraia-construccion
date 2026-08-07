@@ -32,6 +32,8 @@ import {
   resumenCorrespondencias,
   procedenciaConSugerencia,
   opcionesResponsable,
+  accionMasaResponsable,
+  MASA_SIN_ELEGIR,
   paquetesAmarradosSinCalcular,
   paquetesSinFrente,
   destinosSinFrente,
@@ -119,7 +121,9 @@ export default function PlanFechas() {
   const [elegibles, setElegibles] = useState<ResponsableElegible[]>([])
   // Filas marcadas con el checkbox de la grilla, para la asignación en masa (Task 5).
   const [seleccionados, setSeleccionados] = useState<number[]>([])
-  const [masaEtiqueta, setMasaEtiqueta] = useState('')
+  // Arranca en el centinela, no en '' : '' significa «quitar el responsable», y con él de valor
+  // inicial la pantalla ofrecía esa acción destructiva nada más entrar (ver MASA_SIN_ELEGIR).
+  const [masaEtiqueta, setMasaEtiqueta] = useState<string>(MASA_SIN_ELEGIR)
   // Fila esperando confirmación para desamarrarse: borra fechas, así que se pregunta antes.
   const [porDesamarrar, setPorDesamarrar] = useState<FilaPlan | null>(null)
   // Las cuatro secciones de esta pantalla vivían apiladas: «Sin frente» y sus 40 sugerencias solo
@@ -262,7 +266,9 @@ export default function PlanFechas() {
   // sea una hora de clics. `onResponsable` queda intacto arriba —esta función es un camino nuevo y
   // paralelo, no un reemplazo— para no arriesgar la edición celda a celda que ya funciona.
   const onResponsableMasa = async (paqueteIds: number[], etiqueta: string) => {
-    if (paqueteIds.length === 0) return
+    // El centinela no es una elección: el botón ya está apagado en ese caso, y esto es el cinturón
+    // por si alguna vez se llega aquí por otra vía. Mandarlo al servidor equivaldría a «quitar».
+    if (paqueteIds.length === 0 || etiqueta === MASA_SIN_ELEGIR) return
     dispatch({ type: 'OCUPADO' })
     const userId = idPorEtiqueta(elegibles, etiqueta)
     // Mismo override que en la edición individual: sin él, las filas recién asignadas se repintan
@@ -274,11 +280,18 @@ export default function PlanFechas() {
     })
     try {
       await apiPost('/plan-compras/api/plan/responsable', { paqueteIds, responsableUserId: userId })
-      dispatch({ type: 'LISTO', mensaje: `Responsable asignado a ${plural(paqueteIds.length, 'paquete')}.` })
+      // El mensaje nombra lo que de verdad pasó: decir «asignado» tras vaciar un lote de veinte
+      // deja al usuario creyendo lo contrario de lo que acaba de hacer.
+      dispatch({
+        type: 'LISTO',
+        mensaje: etiqueta === ''
+          ? `Responsable quitado a ${plural(paqueteIds.length, 'paquete')}.`
+          : `Responsable asignado a ${plural(paqueteIds.length, 'paquete')}.`,
+      })
       // El lote se guardó: limpiar la selección y la persona elegida, para no repetir el mismo
       // envío por accidente sobre un lote que ya quedó asignado.
       setSeleccionados([])
-      setMasaEtiqueta('')
+      setMasaEtiqueta(MASA_SIN_ELEGIR)
       cargar()
     } catch (e) {
       let mensaje = mensajeError(e)
@@ -604,6 +617,12 @@ export default function PlanFechas() {
     [cols, anchoGrid],
   )
 
+  // Qué ofrece el botón de masa ahora mismo — y, si no ofrece nada, por qué. La regla vive en
+  // `lib/planFechas.ts` con prueba propia: es la que impide que la acción por defecto sea destructiva.
+  const accionMasa = accionMasaResponsable({
+    marcados: seleccionados.length, etiqueta: masaEtiqueta, ocupado: ui.ocupado,
+  })
+
   const filaExpandida = plan.find((f) => f.paqueteId === expandido) ?? null
 
   return (
@@ -711,27 +730,30 @@ export default function PlanFechas() {
           value={masaEtiqueta}
           onChange={setMasaEtiqueta}
           disabled={ui.ocupado || seleccionados.length === 0}
-          // «Sin asignar» (valor '') NO es un «sin filtro»: es una opción de negocio elegible, la
-          // misma que usa `onResponsableMasa` para quitarle el responsable a varios paquetes a la
-          // vez (ver el botón de abajo). Por eso queda en la lista y no se manda a `placeholder`.
+          // Resolución del merge con main (2026-08-07): manda la semántica de main, expresada con
+          // el Selector de esta rama. El arranque es un marcador de posición, no una acción (ver
+          // MASA_SIN_ELEGIR): al entrar, la pantalla llegó a ofrecer «quitar responsable» sin que
+          // nadie lo pidiera. Quitarlo a un lote sigue siendo posible, pero hay que elegirlo a
+          // propósito, y la opción lo dice entera en vez de esconderse tras un «Sin asignar» a secas.
+          // El centinela va DENTRO de la lista, no como `placeholder`: el placeholder no es
+          // elegible, y aquí el valor de arranque tiene que poder recuperarse.
           // Fila «vacía» deliberada: opcionesResponsable necesita una fila para saber si debe sumar
           // una opción extra de huérfano, y aquí no hay una fila puntual — solo la lista general de
           // gente elegible del proyecto (siempre empieza en '' = "Sin asignar").
-          opciones={opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false })
-            .map((o) => ({ valor: o, etiqueta: o === '' ? 'Sin asignar' : o }))}
+          opciones={[
+            { valor: MASA_SIN_ELEGIR, etiqueta: 'Elige a quién asignar…' },
+            ...opcionesResponsable(elegibles, { responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false })
+              .map((o) => ({ valor: o, etiqueta: o === '' ? 'Sin asignar — quitar responsable' : o })),
+          ]}
         />
         <button
           type="button"
           data-testid="pdc-plan-masa-asignar"
-          disabled={ui.ocupado || seleccionados.length === 0}
+          data-accion={accionMasa.accion}
+          disabled={accionMasa.deshabilitado}
           onClick={() => void onResponsableMasa(seleccionados, masaEtiqueta)}
         >
-          {/* La opción "Sin asignar" también es válida para el lote (quitar responsable a varios a la
-              vez), pero es además el valor con el que arranca el selector — el botón dice "Quitar"
-              en ese caso para que nadie vacíe N paquetes sin darse cuenta de qué eligió. */}
-          {masaEtiqueta === ''
-            ? `Quitar responsable a ${seleccionados.length} paquete${seleccionados.length === 1 ? '' : 's'}`
-            : `Asignar a ${seleccionados.length} paquete${seleccionados.length === 1 ? '' : 's'}`}
+          {accionMasa.texto}
         </button>
       </div>
 

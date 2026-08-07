@@ -4,6 +4,8 @@
 	<meta charset="UTF-8">
 	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Control de Cambios — Last Planner AIA</title>
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+	<script src="/js/modules/aia_ui/csrf.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('control-cambios') ?>
 	<link rel="stylesheet" href="/css/control-cambios.css?v=<?= urlencode((string) (@filemtime(dirname(__DIR__, 2) . '/public/css/control-cambios.css') ?: 'cc1')) ?>" />

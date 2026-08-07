@@ -23,6 +23,7 @@ async function abrirPantalla(page) {
 }
 
 async function sembrar(page, db) {
+  const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
   const res = await page.request.post(`${BASE_URL}/api/control-cambios/save?db=${db}`, {
     form: {
       opcion: 'nuevo',
@@ -35,14 +36,16 @@ async function sembrar(page, db) {
       inputJustificacion: TIPO_SEMBRADO,
       inputDescripcion: TIPO_SEMBRADO,
       inputAprobacion: '4', // En Estudio
+      _csrf_token: csrf || '',
     },
   });
   expect((await res.json()).respuesta).toBe('BIEN');
 }
 
 async function limpiar(page, db) {
+  const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
   await page.request.post(`${BASE_URL}/api/control-cambios/save?db=${db}`, {
-    form: { opcion: 'eliminar', Id: String(ID_SEMBRADO) },
+    form: { opcion: 'eliminar', Id: String(ID_SEMBRADO), _csrf_token: csrf || '' },
   });
 }
 

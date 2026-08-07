@@ -8,6 +8,13 @@ use TableResolver;
 
 class IndicadoresController extends BaseController
 {
+    /**
+     * Roles restringidos (Ambiental, SST, SG, Subcontratista): no ven el informe de
+     * Power BI de Indicadores. Antes solo se ocultaba en el navegador (EXPERIMENTS.md
+     * fila 49); ahora también se comprueba en servidor.
+     */
+    private const ROLES_SIN_INFORME = ['G', 'S', 'SG', 'C'];
+
     public function index()
     {
         // Validar autenticación
@@ -17,6 +24,11 @@ class IndicadoresController extends BaseController
         // Obtener variables de sesión
         $vars = $this->getSessionVars();
         extract($vars); // $dbName, $semana, $proyecto, $permiso, etc.
+
+        $permisoCanonico = (string) ($_SESSION['permiso_canonico'] ?? ($permiso ?? ''));
+        if (in_array($permisoCanonico, self::ROLES_SIN_INFORME, true)) {
+            $this->abortUnauthorizedProjectScope('No tienes permiso para ver los indicadores de este proyecto.');
+        }
 
         // Shell sidebar (DS-027): semanas del proyecto para el chip de contexto
         // (Indicadores no es week-scoped; se provee para paridad de flyouts).
@@ -45,5 +57,13 @@ class IndicadoresController extends BaseController
 
         // Cargar vista Indicadores
         require PROJECT_ROOT . '/views/indicadores/indicadores.view.php';
+    }
+
+    private function abortUnauthorizedProjectScope(string $message): never
+    {
+        http_response_code(403);
+        $safeMessage = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+        echo "<h1>Error 403</h1><p>{$safeMessage}</p>";
+        exit;
     }
 }

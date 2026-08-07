@@ -4,6 +4,8 @@
 	<meta charset="UTF-8">
 	<?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Causas de No Programado — Last Planner AIA</title>
+	<meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+	<script src="/js/modules/aia_ui/csrf.js"></script>
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<!--Script cque va al archivo linksComunesHead2.js-->
 	<?= \App\View\Components\DesignSystemHeadComponent::renderForModule('programacion-semanal') ?>
@@ -594,7 +596,8 @@
 			      dataType: "json",
 		      data: {
 		        "Id": Id,
-		        "semana": semana
+		        "semana": semana,
+		        "_csrf_token": window.aiaCsrfToken()
 			      }
 			    }).done(function(info) {
 			      mostrar_mensaje(info);
@@ -618,7 +621,8 @@
 						Responsable_AIA: $("#select_Responsable_AIA").val() || '',
 						Categoria_CNP: $("#select_Categoria_CNC").val() || '',
 						CNP: $("#select_CNC").val() || '',
-						Observaciones_CNP: $("#select_Observaciones_CNC").val() || ''
+						Observaciones_CNP: $("#select_Observaciones_CNC").val() || '',
+						_csrf_token: window.aiaCsrfToken()
 					};
 
 						$.ajax({

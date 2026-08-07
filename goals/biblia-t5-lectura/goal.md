@@ -2,7 +2,7 @@
 
 **Slug:** `biblia-t5-lectura`
 **Fecha de apertura:** 2026-08-04
-**Estado:** ABIERTO — quinta tanda
+**Estado:** CERRADO — quinta pasada hecha y verde
 **Prioridad:** impacto medio · esfuerzo bajo → **quinta**
 
 ## Objetivo
@@ -33,6 +33,31 @@ describir un espejismo.
 
 Migrar a Power BI Embedded para lograr el filtrado por proyecto: es una decisión de coste
 (capacidad Azure) que ya está registrada como pendiente, no un hallazgo de esta tanda.
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-08-06
+
+### Lo que se logró
+
+`docs/flujos/lectura-bi.md` con 6 escenarios `id` `BI-*` cubriendo indicadores y Torre de Control, con
+aislamiento por `project_id` comprobado en cada consulta (`BiProjectScope::resolve()` rechaza la
+petición entera si algún proyecto pedido no está autorizado). Descrita la limitación conocida de
+`/indicadores` como comportamiento aceptado: el Power BI publish-to-web no filtra por proyecto. Rol
+denegado descrito para `G`, `S`, `SG`, `C`. Hallazgo `BI-003`: el filtro de «proyecto cerrado visible
+para jefatura» está en tres sitios con tres criterios distintos, solo BI incluye el alias legado
+`'P'`; sigue abierto en `docs/EXPERIMENTS.md`. Un segundo hallazgo relacionado, que `/indicadores`
+ocultaba el informe solo en cliente, se cerró después en la campaña de seguridad (commit `4b1a2be0`).
+
+### Justificación del cierre
+
+Las siete condiciones de hecho están cumplidas: ambos módulos tienen escenarios citando código, el
+aislamiento por proyecto está comprobado, la limitación de Power BI está descrita como aceptada, el
+rol denegado está cubierto, y `npm run test:wiki` sigue en verde. Este goal no exigía prueba
+ejecutable propia (dependía de T2 para sus cifras, ya cubierto). Ejecutado y registrado el
+2026-08-04 (`memoria/log.md`), formalizado el 2026-08-06 tras verificar que el trabajo seguía
+vigente.
 
 ## Archivos de este goal
 

@@ -2,7 +2,7 @@
 
 **Slug:** `biblia-t3-pdc`
 **Fecha de apertura:** 2026-08-04
-**Estado:** ABIERTO — tercera tanda
+**Estado:** CERRADO — tercera pasada hecha y verde
 **Prioridad:** impacto alto · esfuerzo medio → **tercera**
 
 ## Objetivo
@@ -30,6 +30,30 @@ dominio, las fases A1–A4 y las deudas de datos conocidas.
 ## Fuera de alcance
 
 Arreglar las deudas de datos, que son decisión del usuario y algunas tocan datos ya repartidos.
+
+## Cierre formal
+
+**Estado:** HECHO
+**Fecha de cierre:** 2026-08-06
+
+### Lo que se logró
+
+El goal se rehízo a mitad de camino: la primera pasada describía el PDC v1, deprecado el mismo día
+por el usuario, así que se retiró y se escribió `docs/flujos/compras-v2.md` sobre el PDC v2 vivo
+(`/plan-compras`, 70 rutas, nueve `PlanCompras*Controller`, SPA en `pdc-app/src/`, nunca el bundle
+compilado). 8 escenarios de autorización con `id` `PDC-*`, 3 pruebas en verde, cero hallazgos nuevos
+en esta tanda. Confirmado que la acotación por `subpaquete_id` de `PlanFechasService` —la deuda que
+`docs/pdc-v2.md` marcaba como el borrado más peligroso— está atendida. `memoria/mapas/pdc.md` enlaza
+la biblia.
+
+### Justificación del cierre
+
+Las siete condiciones de hecho están cumplidas sobre el PDC v2 vigente: los documentos cubren la
+cadena completa citando `pdc-app/src/`, las deudas de datos conocidas están como escenarios de
+primera clase, los contratos `auto/*` compartidos están descritos una vez, las pruebas corren en
+verde, y `npm run test:wiki` sigue en verde. Arreglar las deudas de datos queda fuera de alcance por
+decisión explícita del goal. Ejecutado y registrado el 2026-08-04 (`memoria/log.md`), formalizado el
+2026-08-06 tras verificar que el trabajo seguía vigente.
 
 ## Archivos de este goal
 

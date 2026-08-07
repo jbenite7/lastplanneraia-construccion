@@ -66,6 +66,7 @@ class SubcontratistasApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.subcontratistas.editar');
+        legacy_require_csrf('subcontratistas');
         $dbPrefix = $_GET['db'] ?? $_POST['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 

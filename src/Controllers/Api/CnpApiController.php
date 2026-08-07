@@ -44,6 +44,7 @@ class CnpApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnp.editar');
+        legacy_require_csrf('cnp');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = filter_var($_POST['Consecutivo'] ?? $_POST['Id'] ?? null, FILTER_VALIDATE_INT);
         $week = filter_var($_POST['semana'] ?? null, FILTER_VALIDATE_INT);
@@ -85,6 +86,7 @@ class CnpApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.cnp.editar');
+        legacy_require_csrf('cnp');
         $dbPrefix = $_SESSION['db'] ?? '';
         $id = filter_var($_POST['Id'] ?? null, FILTER_VALIDATE_INT);
         $week = filter_var($_POST['semana'] ?? null, FILTER_VALIDATE_INT);

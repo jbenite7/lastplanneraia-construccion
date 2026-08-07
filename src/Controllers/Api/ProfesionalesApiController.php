@@ -108,6 +108,7 @@ class ProfesionalesApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.profesionales.editar');
+        legacy_require_csrf('profesionales');
         $dbPrefix = $_GET['db'] ?? '';
         $opcion = $_POST["opcion"] ?? '';
 

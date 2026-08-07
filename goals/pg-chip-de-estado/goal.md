@@ -2,8 +2,26 @@
 
 **Slug:** `pg-chip-de-estado`
 **Fecha de apertura:** 2026-08-03
-**Estado:** diseño aprobado, sin ejecutar
+**Estado:** CERRADO el 2026-08-06 — lo resolvió la campaña de dark mode, no una ejecución propia
 **Línea G** de `docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design.md`
+
+## Cierre formal
+
+El goal se abrió con el diseño aprobado y nunca se ejecutó como tal, pero el objetivo se cumplió
+por otra vía: el commit `51ccd5ca` («paridad del chip de estado en PG, PI y PS, medida en
+píxeles») de la campaña de cierre de dark mode le dio a `/programa-general` el mismo
+`ops-state-chip` que ya tenían PI y PS.
+
+Verificado el 2026-08-06 antes de cerrar, no asumido:
+
+- `public/js/modules/programa_general/hot.js:1658` pinta el `<span class="ops-state-chip">` con
+  sus atributos de matiz (`data-aia-hue`, línea 804), que es exactamente lo que pedía el diseño.
+- `npx playwright test tests/browser/programa-general-state-hue.mjs` → **1 passed**: «cada matiz
+  declarado se pinta distinto y legible».
+- Comprobado en pantalla en `/programa-general` (dark, 1180×820): los siete estados —Terminada,
+  En curso, Actividad futura, Debe iniciar, Atrasada, Capítulo, Sin Datos— se distinguen entre sí.
+
+*Actividad Futura* y *En Curso*, el síntoma que abrió el goal, ya no se ven idénticas.
 
 ## Objetivo
 
