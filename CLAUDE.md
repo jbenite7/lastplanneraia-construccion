@@ -184,9 +184,10 @@ any apply/delete needs a Plannotator gate, verifiable backup, and restore plan p
 
 `docs/design-system/README.md` describes it as the non-negotiable, contractual layer (tokens, dark
 desktop-only scope, accessibility floor, glass-effect rules) — distinct from `docs/brand/` and Stitch
-mockups, which are just visual inputs, not contracts. Scope for all design-system work is desktop
-≥1180px, dark mode only (see AGENTS.md's UI routing section for the full restriction — no mobile,
-tablet, or `linen` theme work of any kind).
+mockups, which are just visual inputs, not contracts. Design-system work defaults to dark, with `1180x820` as the
+canonical validation viewport (see AGENTS.md's UI routing section). The `linen` theme was removed
+from the product on 2026-07-25 (DS-030) and there is no theme switcher, so light-mode work means
+rebuilding it.
 
 ### `goals/` workflow
 

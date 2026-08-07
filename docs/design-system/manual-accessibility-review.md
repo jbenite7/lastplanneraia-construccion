@@ -6,8 +6,8 @@ Superficies autorizadas: las diez familias aprobadas del laboratorio. No se
 revisan otros módulos.
 
 La matriz obligatoria cubre dark en `1180x820` y `1440x900`; `1180x820` es el
-viewport canónico. Mobile y tablet están fuera del alcance visual; `linen` fue
-retirado del producto en F0 del goal `dark-mode-todos-los-modulos`.
+viewport canónico. `linen` fue retirado del producto en F0 del goal
+`dark-mode-todos-los-modulos`.
 Axe agrega los 20 escenarios permitidos y registra superficie, tema, viewport,
 estado revelado, regla, impacto, tipo de resultado, selector y decisión.
 

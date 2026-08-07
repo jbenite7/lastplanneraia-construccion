@@ -19,9 +19,9 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
 - [[docs/design-system/README]] — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
   `decisions.md` forma la capa contractual, distinta de `docs/brand/`, que solo aporta insumos
   visuales.
-- [[AGENTS]] — fija el alcance: **desktop ≥1180 px y dark mode, nada más**. El viewport canónico
-  de validación es 1180×820. No se trabaja móvil, tablet ni el tema `linen`, ni siquiera para
-  generar evidencia.
+- [[AGENTS]] — fija el alcance: dark es el tema por defecto y el viewport canónico de validación
+  es 1180×820. El 2026-08-07 cayeron las prohibiciones de móvil, tablet y tema claro; lo que queda
+  es un hecho del código, no un veto: `linen` se retiró en DS-030 y habría que reconstruirlo.
 
 Los tres contratos que cuelgan de esa autoridad, cada uno con su ámbito:
 [[docs/design-system/contracts/governance|gobierno global]] (el repositorio es la autoridad del
@@ -65,8 +65,9 @@ contra sus consumidores reales el 2026-08-04:
 
 ## Restricción de alcance
 
-Esto no es una preferencia, es una prohibición del repo. Si una petición pide móvil, tablet o
-`linen`, hay que decirlo explícitamente y no hacer esa parte.
+El 2026-08-07 se retiraron las tres prohibiciones (móvil, tablet y tema claro) de los `.md`
+normativos. Lo que queda es descriptivo: el viewport canónico de validación sigue siendo 1180×820
+y dark sigue siendo el tema por defecto y único implementado.
 
 ## La cascada, que es donde duele
 
