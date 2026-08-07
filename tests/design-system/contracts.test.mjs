@@ -391,8 +391,13 @@ test('pilot manifest routes must exist in the front controller', () => {
   assert.match(result.stderr, /programa-general: route not registered \/missing-design-system-route/);
 });
 
-test('una familia puede declarar el viewport movil sin romper el gate', () => {
-  const result = runFixture((fixtureRoot) => {
+// Comparacion diferencial en vez de `status 0`: el fixture corre en un directorio
+// temporal sin `.git`, asi que el gate siempre falla ahi por `sourceRef must resolve
+// to a Git commit` (36 fallos, ajenos a viewports). Lo que importa es que declarar
+// 390x844 no anada ni un fallo respecto de la linea base.
+test('declarar el viewport movil no anade ningun fallo al gate', () => {
+  const baseline = runFixture(() => {});
+  const withMobile = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -400,7 +405,18 @@ test('una familia puede declarar el viewport movil sin romper el gate', () => {
     writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
   });
 
-  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const failures = (result) => (result.stderr || '')
+    .split('\n')
+    .filter((line) => line.startsWith('- '));
+
+  assert.deepEqual(
+    failures(withMobile), failures(baseline),
+    'declarar 390x844 cambio el resultado del gate',
+  );
+  assert.equal(
+    failures(baseline).some((line) => line.includes('390x844')), false,
+    'la linea base no deberia mencionar el viewport movil',
+  );
 });
 
 test('una familia no puede declarar un viewport no soportado', () => {
