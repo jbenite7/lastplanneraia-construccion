@@ -77,17 +77,18 @@ test('approved accessibility scenarios cover every theme and required viewport',
   const homologation = await readJson('homologation.json');
   const scenarios = approvedAccessibilityScenarios(homologation);
 
-  assert.equal(scenarios.length, 20);
+  const expectedCount = homologation.families
+    .reduce((total, family) => total + family.viewports.length, 0);
+  assert.equal(scenarios.length, expectedCount);
   assert.deepEqual([...new Set(scenarios.map(({ family }) => family))], [
     'foundations', 'shell-navigation', 'page-structure', 'actions', 'forms-filters',
     'states-feedback', 'data-display', 'overlays', 'vendor-adapters', 'bi-primitives',
   ]);
   for (const family of [...new Set(scenarios.map(({ family }) => family))]) {
     const familyScenarios = scenarios.filter((scenario) => scenario.family === family);
+    const declared = homologation.families.find(({ id }) => id === family).viewports;
     assert.deepEqual([...new Set(familyScenarios.map(({ theme }) => theme))], ['dark']);
-    assert.deepEqual([...new Set(familyScenarios.map(({ viewport }) => viewport))], [
-      '1180x820', '1440x900',
-    ]);
+    assert.deepEqual([...new Set(familyScenarios.map(({ viewport }) => viewport))], declared);
   }
 });
 

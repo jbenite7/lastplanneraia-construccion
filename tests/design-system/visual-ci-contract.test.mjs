@@ -11,18 +11,17 @@ const readJson = async (path) => JSON.parse(await read(path));
 // tests/design-system/mobile-viewport-scope.test.mjs); ninguna familia lo
 // declara todavia, asi que esta matriz sigue siendo solo los dos requeridos.
 const requiredViewports = ['1180x820', '1440x900'];
-const laboratoryViewports = requiredViewports;
 
 const viewportKey = ({ width, height }) => `${width}x${height}`;
 
-function assertDesktopDarkPilotMatrix(scenarios, expectedPerViewport) {
+function assertDarkPilotMatrix(scenarios, expectedPerViewport, viewports) {
   assert.deepEqual([...new Set(scenarios.map(({ theme }) => theme))], ['dark']);
   assert.deepEqual(
     [...new Set(scenarios.map(({ viewport }) => viewportKey(viewport)))].sort(),
-    [...requiredViewports].sort(),
+    [...viewports].sort(),
   );
 
-  for (const viewport of requiredViewports) {
+  for (const viewport of viewports) {
     assert.equal(
       scenarios.filter((scenario) => viewportKey(scenario.viewport) === viewport).length,
       expectedPerViewport,
@@ -31,32 +30,24 @@ function assertDesktopDarkPilotMatrix(scenarios, expectedPerViewport) {
   }
 }
 
-function assertDesktopDarkLaboratoryMatrix(scenarios, familyCount) {
-  assert.deepEqual([...new Set(scenarios.map(({ theme }) => theme))], ['dark']);
-  assert.deepEqual(
-    [...new Set(scenarios.map(({ viewport }) => viewportKey(viewport)))].sort(),
-    [...laboratoryViewports].sort(),
-  );
-  for (const viewport of laboratoryViewports) {
-    assert.equal(
-      scenarios.filter((scenario) => viewportKey(scenario.viewport) === viewport).length,
-      familyCount,
-      `dark ${viewport}`,
-    );
-  }
-}
-
 test('visual regression contract covers the approved laboratory matrix', async () => {
-  const [source, manifest] = await Promise.all([
+  const [source, manifest, homologation] = await Promise.all([
     read('tests/browser/design-system-lab.visual.mjs'),
     readJson('docs/design-system/manifests/laboratory.json'),
+    readJson('docs/design-system/homologation.json'),
   ]);
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
-  const familyCount = new Set(manifest.scenarios.map(({ family }) => family)).size;
+  const families = [...new Set(manifest.scenarios.map(({ family }) => family))];
+  const familyCount = families.length;
   assert.equal(familyCount, 10);
-  assert.equal(manifest.scenarios.length, 20);
-  assertDesktopDarkLaboratoryMatrix(manifest.scenarios, familyCount);
+  const declaredViewports = [...new Set(
+    families.flatMap(
+      (family) => homologation.families.find(({ id }) => id === family).viewports,
+    ),
+  )];
+  assert.equal(manifest.scenarios.length, familyCount * declaredViewports.length);
+  assertDarkPilotMatrix(manifest.scenarios, familyCount, declaredViewports);
 });
 
 test('visual regression contract covers the Programa General pilot matrix', async () => {
@@ -67,7 +58,7 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
   assert.match(source, /toHaveScreenshot/);
   assert.match(source, /MANIFEST\.scenarios/);
   assert.equal(manifest.scenarios.length, 2);
-  assertDesktopDarkPilotMatrix(manifest.scenarios, 1);
+  assertDarkPilotMatrix(manifest.scenarios, 1, requiredViewports);
 });
 
 test('CI is reproducible, least-privileged and has no deployment path', async () => {
