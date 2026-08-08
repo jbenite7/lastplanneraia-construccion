@@ -1,7 +1,7 @@
 {
   "$schema": "../module-manifest.schema.json",
   "schemaVersion": 2,
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "1.1.0",
   "moduleId": "programacion-semanal",
   "routes": [
     "/programacion-semanal",

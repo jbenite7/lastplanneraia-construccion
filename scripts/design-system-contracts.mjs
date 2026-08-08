@@ -56,32 +56,27 @@ const required = [
   // quito en silencio el chequeo `designSystemVersion must equal ${version}`
   // (ver comentario de abajo). Se conservan tal cual: son los cuatro que ya
   // declaran 1.1.0.
-  `${manifestsDir}/laboratory.json`,
-  `${manifestsDir}/programa-general.json`,
-  `${manifestsDir}/programacion-intermedia.json`,
-  `${manifestsDir}/project-selector.json`,
   inventoryPath,
   'docs/design-system/closeout-evidence.json',
   'goals/design-system-nucleo-gobernanza/validation-log.md',
+  ...inventoryManifestFiles.map((file) => `${manifestsDir}/${file}`),
 ];
 const failures = [];
 
-// `required` es una lista explicita a proposito y NO se amplia con
-// `inventoryManifestFiles`, pero conserva los cuatro manifiestos que ya
-// estaban ahi. La razon es que `required` alimenta el `documents` Map de mas
-// abajo, y ese Map es tambien lo que recorre el chequeo generico
+// `required` se amplia con `inventoryManifestFiles` a proposito: los 15
+// manifiestos del inventario ahora entran en `documents` (mas abajo), y ese
+// Map es lo que recorre el chequeo generico
 // `designSystemVersion must equal ${version}` al final del archivo. Son dos
 // preguntas distintas:
 //   - "todo manifiesto declarado se valida linea por linea" -> lo cubre
 //     `manifests` (mas abajo), derivado de `inventoryManifestFiles` y leido
 //     por su cuenta, sin pasar por `documents`;
 //   - "todo documento del design system declara la version vigente" -> lo
-//     cubre `documents`, y por eso los cuatro manifiestos de arriba siguen
-//     listados: sacarlos redujo la cobertura de ese chequeo de 5 documentos a
-//     2 sin que nadie lo notara.
-// Los once manifiestos restantes siguen en 1.0.0 mientras version.json ya
-// esta en 1.1.0; incorporarlos exige una migracion de version aparte, asi que
-// no se anaden aqui.
+//     cubre `documents`, y por eso los manifiestos del inventario estan
+//     listados aqui: sacarlos les quitaria en silencio el chequeo de version.
+// Los once manifiestos que quedaron en 1.0.0 tras la campana que publico
+// 1.1.0 ya subieron a la version vigente (ver CHANGELOG); todos los del
+// inventario pasan ahora por este chequeo.
 
 function readJson(file) {
   try {

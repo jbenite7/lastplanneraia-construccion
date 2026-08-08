@@ -560,3 +560,15 @@ test('el gate valida todos los manifiestos declarados en el inventario, no solo 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /subcontratistas: route not registered \/subcontratistas\/ruta-inexistente/);
 });
+
+test('todo manifiesto del inventario pasa por el chequeo de version', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/subcontratistas.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.designSystemVersion = '9.9.9';
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /subcontratistas\.json: designSystemVersion must equal/);
+});
