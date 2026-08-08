@@ -36,12 +36,17 @@ Se resuelven dentro de este goal, no se difieren fuera de él.
 | P-D | `capture: "element"` no acotaba el alto, así que un PNG móvil etiquetado como recorte pasaba bajo un viewport de escritorio. | Revisión de F2a-2a Task 1, medido | **Cerrado** (`9d0e7331`, `e00a1772`). Lista blanca con clave compuesta `moduleId/scenarioId`. |
 | P-E | Un conteo fijo cambiado por otro conteo fijo en `foundation.test.mjs`. | Revisión de F2a-2a Task 3 | **Cerrado** (`e00a1772`). |
 | P-F | La lista blanca se indexaba por `scenario.id`, que no es único entre módulos: otro manifiesto podía reclamar el id y heredar la excepción. Reproducido en verde. | Revisión final de F2a-2a, medido | **Cerrado** (`e00a1772`). Clave compuesta, dos pruebas que se ponen rojas si se borra la regla, y DS-033. |
+| P-G | `moduleId` tampoco era único: un manifiesto que se declarara `laboratory` heredaba la excepción. Reproducido en verde. | Caza de variantes, medido | **Cerrado** (`c4624ee8`). Unicidad de `moduleId` y correspondencia con el nombre del archivo. |
+| P-H | **La raíz de la escalera:** el gate nunca aplicaba los esquemas, solo comprobaba la presencia de campos obligatorios. Por eso `theme: "linen"` —prohibido por DS-030— entraba por la evidencia, y las propiedades inventadas también. | Caza de variantes, medido | **Cerrado** (`be97a947`, `2ca44f55`). Validador parcial propio (sin dependencias nuevas) aplicado a los siete pares esquema/documento. Cubre `enum`, `const`, `additionalProperties:false`, `required` de subobjetos, `$ref` local e `items`; **no** cubre `type`, `pattern`, `minimum`, `minItems` ni las combinaciones. |
+| P-I | La suite estática dejó de terminar (dos intentos abortados a 20 y 41 min). No era lentitud: era un cuelgue de `process.exit(1)` en `uv_thread_join` contra un hilo de Maglev (defecto de Node 26.5.0, medido: 1 cuelgue en 1200 ejecuciones, 0 en 2400 sin él). | Verificación del coordinador | **Cerrado** (`929a74bb`, `431b38e4`). Salida natural en vez de `process.exit`, fixtures concurrentes y `GIT_OPTIONAL_LOCKS=0`. **16 s**, verificado; exit 1 al romper una puerta. |
 
 ### Deuda anotada, con dueño
 
 | Deuda | Estado |
 |---|---|
 | `ELEMENT_CAPTURE_ALLOWLIST` vive como constante en `scripts/design-system-contracts.mjs`, no como contrato de datos en `docs/design-system/`. Con clave compuesta ya no es evadible, pero añadirse sigue siendo editar un `.mjs`; el obstáculo real es la revisión humana descrita en DS-033. | Abierta, aceptada. Se reevalúa si la lista pasa de dos entradas. |
+| El validador de esquema es **parcial a propósito** y está documentado como tal en el gate. Cubrirlo entero exigiría una dependencia (`ajv`), y este repositorio tiene tres en total: es una decisión de producto, no de implementación. | Abierta, aceptada. |
+| El cuelgue de `process.exit()` es un defecto de Node 26.5.0, evitado en el gate y en el corredor de la suite, **no auditado en el resto de scripts del repositorio**. | Abierta, con dueño: cualquier script que llame a `process.exit()` con trabajo de V8 en vuelo puede reproducirlo. |
 
 ## Archivos de este goal
 
