@@ -410,20 +410,32 @@ for (const manifest of manifests) {
     }
     // El golden se ata a sus pixeles reales, no solo a su nombre. Un PNG
     // guarda ancho y alto en el IHDR (bytes 16..23 del archivo), asi que se
-    // leen de ahi sin dependencias. La comparacion es `<=` y solo sobre el
-    // ancho a proposito: hay goldens recortados a un elemento (states-feedback
-    // mide 1102 de ancho en un viewport de 1180) y goldens de pagina completa
-    // mas altos que el viewport. Lo que ningun golden legitimo puede ser es
-    // MAS ancho que el viewport que declara -- que es exactamente lo que pasa
-    // al copiar una captura de escritorio bajo un nombre movil.
+    // leen de ahi sin dependencias. `capture` distingue los dos casos
+    // legitimos: "viewport" (por defecto) es una captura de pantalla completa
+    // y el PNG debe medir exactamente el viewport declarado, ancho y alto;
+    // "element" es un recorte a un elemento (states-feedback mide 1102 de
+    // ancho en un viewport de 1180) y solo exige no exceder el viewport.
     const header = readFileSync(goldenPath);
     if (header.length >= 24 && header.readUInt32BE(12) === 0x49484452) {
       const pngWidth = header.readUInt32BE(16);
       const pngHeight = header.readUInt32BE(20);
-      if (pngWidth > scenario.viewport.width) {
+      const capture = scenario.capture || 'viewport';
+      if (capture === 'element') {
+        // Un recorte a elemento no esta acotado por el alto del viewport: es
+        // una captura de un elemento que puede extenderse mas alla del pliegue
+        // (los dos recortes reales de states-feedback miden 1649 y 1577 px de
+        // alto sobre viewports de 820 y 900). Lo unico que un recorte legitimo
+        // no puede ser es mas ancho que el viewport que declara.
+        if (pngWidth > scenario.viewport.width) {
+          failures.push(
+            `${manifest.moduleId}/${scenario.id}: golden mide ${pngWidth}x${pngHeight} px, `
+            + `mas ancho que el viewport declarado ${scenario.viewport.width}x${scenario.viewport.height}`,
+          );
+        }
+      } else if (pngWidth !== scenario.viewport.width || pngHeight !== scenario.viewport.height) {
         failures.push(
           `${manifest.moduleId}/${scenario.id}: golden mide ${pngWidth}x${pngHeight} px, `
-          + `mas ancho que el viewport declarado ${scenario.viewport.width}x${scenario.viewport.height}`,
+          + `no coincide con el viewport declarado ${scenario.viewport.width}x${scenario.viewport.height}`,
         );
       }
     } else {

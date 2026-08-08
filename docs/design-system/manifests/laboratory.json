@@ -361,7 +361,8 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1180x820.png",
-      "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483"
+      "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483",
+      "capture": "element"
     },
     {
       "id": "states-feedback-dark-1440x900",
@@ -377,7 +378,8 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1440x900.png",
-      "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7"
+      "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7",
+      "capture": "element"
     },
     {
       "id": "vendor-adapters-dark-1180x820",

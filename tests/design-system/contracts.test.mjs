@@ -524,6 +524,31 @@ test('una familia no puede dejar de declarar un viewport requerido', () => {
 // forma que solo se detecta si el gate de verdad lo procesa; si la lista de
 // manifiestos volviera a encogerse a mano, esta prueba pasaria en verde por la
 // razon equivocada (result.status === 0) y lo delataria.
+test('un golden mas estrecho que su viewport falla si la captura es de pantalla completa', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios.find((s) => s.viewport.width === 1180);
+    // Solo se cambia el viewport declarado, sin tocar `golden`/`id`: si tambien
+    // se renombraran a los del escenario 1440x900 real, la ruta colisionaria
+    // con el golden ya existente y correctamente dimensionado de ese otro
+    // escenario, y el gate nunca veria el golden real de 1180x820 px contra un
+    // viewport declarado de 1440x900 -- que es justo el caso que se quiere
+    // reproducir aqui.
+    scenario.viewport = { width: 1440, height: 900 };
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /golden mide 1180x820 px, no coincide con el viewport declarado 1440x900/);
+});
+
+test('un recorte a elemento declarado no exige coincidencia exacta', () => {
+  const result = runFixture(() => {});
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(/states-feedback.*golden mide/.test(result.stderr || ''), false);
+});
+
 test('el gate valida todos los manifiestos declarados en el inventario, no solo algunos', () => {
   const result = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/subcontratistas.json');

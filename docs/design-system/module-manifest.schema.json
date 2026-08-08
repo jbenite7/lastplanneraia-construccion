@@ -181,6 +181,10 @@
         "sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "capture": {
+          "enum": ["viewport", "element"],
+          "description": "viewport: captura de pantalla completa, el PNG mide exactamente el viewport declarado. element: recorte a un elemento, el PNG puede ser menor. Si se omite, viewport."
         }
       }
     }
