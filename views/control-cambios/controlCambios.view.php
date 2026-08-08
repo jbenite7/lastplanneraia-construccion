@@ -160,9 +160,13 @@
 										<img src="/img/logoHorizontal.png" class="img-fluid" alt="Responsive image">
 									</div>
 									<div class="col-sm m-auto">
-										<h1 class="modal-title" id="modalordenDeCambioLabel">
+										<!-- h4, no h1: el h1 del documento es el de la linea 32. Este titulo de
+										     modal era el unico <h1 class="modal-title"> de todo views/ (los otros 16
+										     usan h4 o h5, incluido el de este mismo archivo en la 587), y dejaba la
+										     pagina con DOS h1. Hallazgo B-8 del barrido del 2026-08-07. -->
+										<h4 class="modal-title" id="modalordenDeCambioLabel">
 											<b><p class="modal-body-texto-ordenDeCambio text-center  mb-0" id="modal-body-texto-ordenDeCambio">Orden de Cambio</p></b>
-										</h1>
+										</h4>
 									</div>
 									<div class="col-sm-3 m-auto cc-logo-col">
 										<img src="/img/etiquetaConstructoraAIASAS.png" class="img-fluid" alt="Responsive image">

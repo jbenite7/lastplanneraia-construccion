@@ -2892,8 +2892,16 @@
       }
     }
 
+    /* Un chip que marca cero no tiene nada que reclamar: se atenua con `is-zero`
+       y recupera su color saturado en cuanto vuelve a contar algo. Misma receta
+       que `setLegendCount` en programacion_intermedia/hot.js y que Programacion
+       Semanal; PG se habia quedado fuera (la Task 11 de la campana solo listaba
+       las hojas de PI y PS), asi que sus ceros pesaban igual que un 238. */
     Object.keys(counts).forEach(function (key) {
-      $('#count-' + key).text(counts[key]);
+      $('#count-' + key)
+        .text(counts[key])
+        .closest('.pdc-legend-item')
+        .toggleClass('is-zero', Number(counts[key]) === 0);
     });
   }
 
