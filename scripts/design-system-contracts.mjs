@@ -359,6 +359,19 @@ for (const manifest of manifests) {
   }
 }
 
+// `capture: "element"` es una excepcion al contrato de dimensiones (mas
+// abajo se explica por que no se le puede acotar el alto): un recorte a
+// elemento con scroll es legitimamente mas alto que el viewport. Una
+// excepcion sin lista blanca es una puerta que cualquiera puede cruzar --
+// bastaria con etiquetar un PNG cualquiera como "element" para saltarse el
+// chequeo de alto. Por eso los escenarios habilitados para usarla estan
+// declarados aqui, como contrato explicito y revisado, no como una
+// propiedad que un manifiesto se auto-asigna.
+const ELEMENT_CAPTURE_ALLOWLIST = new Set([
+  'states-feedback-dark-1180x820',
+  'states-feedback-dark-1440x900',
+]);
+
 const goldenOwners = new Map();
 const goldenContentOwners = new Map();
 const frontController = readFileSync(join(root, 'public/index.php'), 'utf8');
@@ -419,7 +432,17 @@ for (const manifest of manifests) {
         // una captura de un elemento que puede extenderse mas alla del pliegue
         // (los dos recortes reales de states-feedback miden 1649 y 1577 px de
         // alto sobre viewports de 820 y 900). Lo unico que un recorte legitimo
-        // no puede ser es mas ancho que el viewport que declara.
+        // no puede ser es mas ancho que el viewport que declara. Justo porque
+        // el alto queda sin acotar, "element" solo esta permitido para los
+        // escenarios de ELEMENT_CAPTURE_ALLOWLIST: cualquier otro que declare
+        // "element" falla el gate en vez de heredar la excepcion en silencio.
+        if (!ELEMENT_CAPTURE_ALLOWLIST.has(scenario.id)) {
+          failures.push(
+            `${manifest.moduleId}/${scenario.id}: capture "element" no esta en la lista blanca `
+            + `(ELEMENT_CAPTURE_ALLOWLIST en scripts/design-system-contracts.mjs); es una excepcion `
+            + `al contrato de alto y solo se habilita por revision explicita`,
+          );
+        }
         if (pngWidth > scenario.viewport.width) {
           failures.push(
             `${manifest.moduleId}/${scenario.id}: golden mide ${pngWidth}x${pngHeight} px, `
