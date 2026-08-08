@@ -57,6 +57,9 @@ const INIT_COPIES = [
   ['database/bi/008_bi_riesgos.sql', '108-bi-view.sql'],
   ['database/bi/009_bi_control_tower_summary.sql', '109-bi-view.sql'],
   ['database/bi/010_bi_lineage.sql', '110-bi-view.sql'],
+  // B-9 (2026-08-07): migracion de `general_proyectos_procesos`. Esta lista es copia
+  // deliberada de la de scripts/design-system-ci-preflight.mjs — las dos deben moverse.
+  ['database/migrations/20260807_proyectos_lineabase_columns.sql', '120-proyectos-lineabase.sql'],
 ];
 
 function safeConfig() {

@@ -188,12 +188,6 @@
       "authenticated": true,
       "unlayered": [
         {
-          "sheet": "/public/vendor/handsontable/handsontable.full.min.css",
-          "via": "link",
-          "unlayeredRules": 364,
-          "case": "2-handsontable-doble-carga"
-        },
-        {
           "sheet": "https://fonts.googleapis.com/css2",
           "via": "cross-origin-opaque",
           "unlayeredRules": null
@@ -320,7 +314,7 @@
   },
   "knownCases": {
     "1-select2": "CERRADO 40d402c: <link> crudo al vendor en Programacion Semanal.",
-    "2-handsontable-doble-carga": "ABIERTO: el vendor se carga una SEGUNDA vez por <link> crudo en /contratos, /listado-actividades, /profesionales (y /pdc, /programa-general-actualizar, /programacion-semanal). Obligo a poner el arreglo en @layer reset con !important (53d55c5).",
+    "2-handsontable-doble-carga": "ABIERTO: el vendor se carga una SEGUNDA vez por <link> crudo en /contratos, /listado-actividades, /profesionales (y /pdc, /programa-general-actualizar, /programacion-semanal). Obligo a poner el arreglo en @layer reset con !important (53d55c5). ACTUALIZADO 2026-08-07: /programa-general-actualizar sale de la lista — el gate de runtime lo reportaba como `stale-inventory-entry`, es decir, ya NO carga el vendor sin capa por ahi. La entrada declaraba 364 reglas que no existen. Se retira en vez de conservarla: una declaracion caduca da cobertura falsa igual que una excepcion caduca.",
     "3-sweetalert2-login": "CERRADO 91de784: <link> crudo al vendor en /login.",
     "4-sweetalert2-runtime": "CERRADO dba703b: sweetalert2.all.min.js lleva el CSS embebido y lo inyecta en un <style> creado en runtime. No estaba en ningun archivo del repo. Hoy sale limpio del probe porque va envuelto en @layer vendor.",
     "5-handsontable-pdc": "ABIERTO: /vendor/handsontable/handsontable.full.min.css en /pdc. Su th es opaco del vendor y no lee ningun token.",
