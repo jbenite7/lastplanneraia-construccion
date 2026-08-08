@@ -367,9 +367,14 @@ for (const manifest of manifests) {
 // chequeo de alto. Por eso los escenarios habilitados para usarla estan
 // declarados aqui, como contrato explicito y revisado, no como una
 // propiedad que un manifiesto se auto-asigna.
+//
+// La clave es compuesta, `moduleId/scenarioId`: la unicidad de ids solo se
+// comprueba dentro de cada manifiesto (`scenarioIds` se re-crea por manifiesto),
+// asi que indexar solo por `scenario.id` dejaba que cualquier otro modulo
+// reclamara el id de un escenario autorizado y heredara la excepcion de alto.
 const ELEMENT_CAPTURE_ALLOWLIST = new Set([
-  'states-feedback-dark-1180x820',
-  'states-feedback-dark-1440x900',
+  'laboratory/states-feedback-dark-1180x820',
+  'laboratory/states-feedback-dark-1440x900',
 ]);
 
 const goldenOwners = new Map();
@@ -436,7 +441,7 @@ for (const manifest of manifests) {
         // el alto queda sin acotar, "element" solo esta permitido para los
         // escenarios de ELEMENT_CAPTURE_ALLOWLIST: cualquier otro que declare
         // "element" falla el gate en vez de heredar la excepcion en silencio.
-        if (!ELEMENT_CAPTURE_ALLOWLIST.has(scenario.id)) {
+        if (!ELEMENT_CAPTURE_ALLOWLIST.has(`${manifest.moduleId}/${scenario.id}`)) {
           failures.push(
             `${manifest.moduleId}/${scenario.id}: capture "element" no esta en la lista blanca `
             + `(ELEMENT_CAPTURE_ALLOWLIST en scripts/design-system-contracts.mjs); es una excepcion `

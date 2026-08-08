@@ -120,6 +120,43 @@ La evidencia no bloqueante se ejecuta por separado:
 npm run test:design-system:evidence
 ```
 
+### `capture`: cómo se mide un golden contra su viewport
+
+Cada escenario de un manifiesto ata su golden a los píxeles reales del PNG, no
+solo al nombre del archivo. El campo `capture` (enum en
+`module-manifest.schema.json`) declara cómo debe medirse:
+
+| Valor | Significado | Qué exige el gate |
+|---|---|---|
+| `viewport` (por defecto, si se omite) | Captura de pantalla completa | El PNG mide **exactamente** el viewport declarado, ancho y alto |
+| `element` | Recorte a un elemento | El PNG **no puede ser más ancho** que el viewport; el alto queda sin acotar |
+
+`element` **no es un modo alternativo: es una excepción.** Un recorte a un
+elemento con scroll es legítimamente más alto que el pliegue —los dos recortes
+reales de `states-feedback` miden 1649 y 1577 px sobre viewports de 820 y 900—,
+así que el gate renuncia a comprobar el alto. Una excepción sin lista blanca es
+una puerta abierta: bastaría etiquetar cualquier PNG como `element` para
+presentar como evidencia una imagen que no corresponde a su escenario.
+
+Por eso los escenarios habilitados están declarados en
+`ELEMENT_CAPTURE_ALLOWLIST`, en `scripts/design-system-contracts.mjs`, con clave
+compuesta `moduleId/scenarioId` —los ids solo son únicos dentro de un
+manifiesto, así que indexar por id suelto dejaba que otro módulo reclamara el id
+de un escenario autorizado y heredara la excepción—. Cualquier escenario que
+declare `element` sin estar en esa lista **falla el gate**.
+
+Qué califica para entrar en la lista:
+
+1. El golden es un recorte a un elemento concreto, producido por el propio
+   runner, y ese elemento excede verticalmente su viewport por diseño.
+2. No existe un encuadre a pantalla completa equivalente que sirva de evidencia.
+3. El ancho del recorte sigue acotado por el viewport declarado.
+
+Añadirse a la lista **exige revisión explícita**: es un cambio al contrato de
+evidencia, no una propiedad que un manifiesto se auto-asigne. Se registra como
+decisión en `decisions.md` y se entrega con la prueba que lo vigila
+(`tests/design-system/contracts.test.mjs`, mutaciones de lista blanca).
+
 El gate visual autorizado recorre las diez familias del laboratorio únicamente
 en dark a `1180x820` y `1440x900`. Las animaciones se desactivan y Chromium
 compara 18 goldens; los dos escenarios de `states-feedback` validan geometría,

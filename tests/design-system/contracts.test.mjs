@@ -4,7 +4,47 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symli
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { createHash } from 'node:crypto';
+import { deflateSync } from 'node:zlib';
 import { referencedTestFiles, requiredViewports as homologationViewports } from './manifest-sources.mjs';
+
+/**
+ * PNG valido y minimo de las dimensiones pedidas, en memoria. Existe para poder
+ * fabricar dentro de un fixture un golden con dimensiones arbitrarias sin
+ * escribir ningun binario en el repositorio.
+ */
+function syntheticPng(width, height) {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc32 = (buffer) => {
+    let c = 0xffffffff;
+    for (const byte of buffer) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type, data) => {
+    const head = Buffer.alloc(4);
+    head.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
+    return Buffer.concat([head, body, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 0; // greyscale
+  const raw = Buffer.alloc((width + 1) * height); // filtro 0 + scanlines en negro
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
 
 const root = path.resolve(import.meta.dirname, '../..');
 const componentContractFields = [
@@ -547,6 +587,53 @@ test('un recorte a elemento declarado no exige coincidencia exacta', () => {
   const result = runFixture(() => {});
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(/states-feedback.*golden mide/.test(result.stderr || ''), false);
+});
+
+// `capture: "element"` levanta el limite de alto del golden. Las dos pruebas
+// siguientes ejercitan la lista blanca que impide que ese levantamiento sea
+// auto-servicio: la primera, con un escenario que simplemente se declara
+// "element"; la segunda, con el vector real -- reclamar el id de un escenario
+// autorizado desde otro modulo, que es lo que dejaba pasar indexar la lista
+// blanca solo por `scenario.id`.
+test('un escenario fuera de la lista blanca no puede declarar capture "element"', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.scenarios.find((s) => s.viewport.width === 1180).capture = 'element';
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /programa-general\/programa-general-dark-1180x820: capture "element" no esta en la lista blanca/,
+  );
+});
+
+test('un modulo no puede heredar la excepcion reclamando el id de un escenario autorizado', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios.find((s) => s.viewport.width === 1180);
+    // Un PNG sintetico de 390x844: mas bajo que el viewport declarado, algo que
+    // solo "element" tolera. Vive dentro del fixture, nunca en el repo.
+    const golden = 'docs/design-system/evidence/fixture-element-allowlist-dark-1180x820.png';
+    const png = syntheticPng(390, 844);
+    const goldenPath = path.join(fixtureRoot, golden);
+    mkdirSync(path.dirname(goldenPath), { recursive: true });
+    writeFileSync(goldenPath, png);
+    scenario.id = 'states-feedback-dark-1180x820';
+    scenario.capture = 'element';
+    scenario.golden = golden;
+    scenario.sha256 = createHash('sha256').update(png).digest('hex');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /programa-general\/states-feedback-dark-1180x820: capture "element" no esta en la lista blanca/,
+  );
 });
 
 test('el gate valida todos los manifiestos declarados en el inventario, no solo algunos', () => {

@@ -317,10 +317,15 @@ test('legacy common-head views render the static head component', async () => {
   // pasara en vano sin comprobar nada.
   assert.ok(views.length > 0, 'sharedHeadConsumers no debe estar vacio');
   for (const view of views) {
-    const fullPath = new URL(`../../${view}`, import.meta.url);
-    if (existsSync(fullPath)) {
-      assert.match(await read(view), /DesignSystemHeadComponent::render\((?:true)?\)/);
-    }
+    // Una vista declarada que no existe en disco es el inventario mintiendo,
+    // no un caso tolerable: el `if (existsSync(...))` que habia aqui vaciaba la
+    // prueba por dentro (si las vistas desaparecieran sin salir del inventario,
+    // el bucle pasaba sin comprobar nada). Ahora falta = fallo.
+    assert.ok(
+      existsSync(new URL(`../../${view}`, import.meta.url)),
+      `sharedHeadConsumers declara una vista inexistente: ${view}`,
+    );
+    assert.match(await read(view), /DesignSystemHeadComponent::render\((?:true)?\)/);
   }
 });
 

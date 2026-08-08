@@ -58,17 +58,36 @@ test('the laboratory owns a dark-only lightweight entrypoint', async () => {
   );
 });
 
-test('the laboratory manifest declares only the governed desktop dark matrix', async () => {
-  const manifest = JSON.parse(await read('docs/design-system/manifests/laboratory.json'));
-  const families = new Set(manifest.scenarios.map(({ family }) => family));
+test('the laboratory manifest declares exactly the matrix that homologation governs', async () => {
+  const [manifest, homologation] = await Promise.all([
+    read('docs/design-system/manifests/laboratory.json').then(JSON.parse),
+    read('docs/design-system/homologation.json').then(JSON.parse),
+  ]);
+  const families = [...new Set(manifest.scenarios.map(({ family }) => family))];
   const scenarioKeys = new Set(manifest.scenarios.map(({ theme, viewport }) => (
     `${theme}/${viewport.width}x${viewport.height}`
   )));
+  // La matriz esperada se deriva de homologation.json, no de un conteo fijo:
+  // un `20` a mano es un candado desktop-only encubierto y el primer escenario
+  // que una familia declare de mas romperia este test con un mensaje que ni
+  // menciona viewports. Mismo criterio que visual-ci-contract.test.mjs.
+  const governed = families.map(
+    (family) => homologation.families.find(({ id }) => id === family),
+  );
+  const expectedKeys = new Set(governed.flatMap(
+    ({ themes, viewports }) => themes.flatMap(
+      (theme) => viewports.map((viewport) => `${theme}/${viewport}`),
+    ),
+  ));
+  const expectedScenarios = governed.reduce(
+    (total, { themes, viewports }) => total + (themes.length * viewports.length),
+    0,
+  );
 
   assert.deepEqual(manifest.layouts, ['desktop', 'wide']);
-  assert.equal(families.size, 10);
-  assert.equal(manifest.scenarios.length, 20);
-  assert.deepEqual([...scenarioKeys].sort(), ['dark/1180x820', 'dark/1440x900']);
+  assert.equal(families.length, homologation.families.length);
+  assert.equal(manifest.scenarios.length, expectedScenarios);
+  assert.deepEqual([...scenarioKeys].sort(), [...expectedKeys].sort());
   assert.ok(manifest.sources.includes('public/css/design-system/core.css'));
   assert.ok(manifest.sources.includes('public/css/design-system/lab-entrypoint.css'));
   assert.ok(!manifest.sources.includes('public/css/aia-design-system.css'));
