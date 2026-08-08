@@ -86,8 +86,12 @@ test('the laboratory manifest declares exactly the matrix that homologation gove
 
   assert.deepEqual(manifest.layouts, ['desktop', 'wide']);
   assert.equal(families.length, homologation.families.length);
-  assert.equal(manifest.scenarios.length, expectedScenarios);
+  // `deepEqual` de las claves va antes que el `equal` del conteo: si un
+  // viewport nuevo se añade, node/assert corta en la primera aserción que
+  // falla, y un `equal` de conteo primero solo deja un numero desnudo
+  // (`actual: 20, expected: 21`) sin decir que escenario falta.
   assert.deepEqual([...scenarioKeys].sort(), [...expectedKeys].sort());
+  assert.equal(manifest.scenarios.length, expectedScenarios);
   assert.ok(manifest.sources.includes('public/css/design-system/core.css'));
   assert.ok(manifest.sources.includes('public/css/design-system/lab-entrypoint.css'));
   assert.ok(!manifest.sources.includes('public/css/aia-design-system.css'));

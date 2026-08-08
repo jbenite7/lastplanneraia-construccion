@@ -298,6 +298,13 @@ const manifests = inventoryManifestFiles.map((name) => {
   }
   return readJson(relPath);
 }).filter(Boolean);
+enforceUnique(manifests, 'moduleId', 'module manifest moduleId');
+// Sin esta comprobacion, un manifiesto intruso con un `moduleId` duplicado
+// queda invisible para `programManifest`/`laboratoryManifest` (que toman el
+// primer match con `find`) pero sigue aportando escenarios a las demas
+// reglas -- incluida la lista blanca de `capture: "element"` de mas abajo,
+// que indexa por `moduleId/scenarioId`. Reproducido con `rogue.json`
+// (moduleId: "laboratory") en la re-revision de F2a-2a.
 const programManifest = manifests.find(({ moduleId }) => moduleId === 'programa-general');
 const laboratoryManifest = manifests.find(({ moduleId }) => moduleId === 'laboratory');
 for (const manifest of manifests) {

@@ -659,3 +659,37 @@ test('todo manifiesto del inventario pasa por el chequeo de version', () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /subcontratistas\.json: designSystemVersion must equal/);
 });
+
+// `moduleId` no era unico ni estaba atado al nombre del archivo: un manifiesto
+// intruso podia declarar el `moduleId` de otro (p.ej. "laboratory") y colarse
+// en el inventario. Sin control de unicidad, `manifests.find(...)` (que
+// resuelve `laboratoryManifest`/`programManifest`) toma el primer match, asi
+// que un intruso insertado *antes* del legitimo lo vuelve invisible para la
+// cobertura de familias mientras sigue aportando escenarios -- incluida la
+// lista blanca de `capture: "element"`, que indexa por `moduleId/scenarioId`.
+// Reproducido en la re-revision de F2a-2a con un `rogue.json` copiado de
+// laboratory.json con un escenario `capture: "element"` y un PNG de 390x844
+// declarado bajo 1180x820: sin esta prueba, el gate pasaba en verde.
+test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar el orden', () => {
+  const mutateDuplicating = (insertBeforeLaboratory) => (fixtureRoot) => {
+    const inventoryFile = path.join(fixtureRoot, 'docs/design-system/manifests/inventory.json');
+    const inventory = JSON.parse(readFileSync(inventoryFile, 'utf8'));
+    const laboratoryFile = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
+    const rogue = JSON.parse(readFileSync(laboratoryFile, 'utf8'));
+    // El intruso reutiliza el `moduleId` "laboratory" pero es un manifiesto
+    // distinto (sin escenarios): lo unico que importa para esta prueba es que
+    // el `moduleId` colisiona, no que el contenido sea identico.
+    rogue.scenarios = [];
+    const rogueFile = path.join(fixtureRoot, 'docs/design-system/manifests/rogue.json');
+    writeFileSync(rogueFile, `${JSON.stringify(rogue, null, 2)}\n`);
+    const labIndex = inventory.manifests.indexOf('laboratory.json');
+    inventory.manifests.splice(insertBeforeLaboratory ? labIndex : labIndex + 1, 0, 'rogue.json');
+    writeFileSync(inventoryFile, `${JSON.stringify(inventory, null, 2)}\n`);
+  };
+
+  for (const insertBeforeLaboratory of [false, true]) {
+    const result = runFixture(mutateDuplicating(insertBeforeLaboratory));
+    assert.notEqual(result.status, 0, `insertBeforeLaboratory=${insertBeforeLaboratory}`);
+    assert.match(result.stderr, /duplicate module manifest moduleId: laboratory/);
+  }
+});
