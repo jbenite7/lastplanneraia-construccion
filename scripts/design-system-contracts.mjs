@@ -51,11 +51,6 @@ const required = [
   'docs/design-system/a11y-exceptions.json',
   'docs/design-system/module-manifest.schema.json',
   `${manifestsDir}/goal-provenance.json`,
-  // Estos cuatro manifiestos estaban en `required` antes de que el gate
-  // derivara la lista de manifiestos del inventario, y sacarlos de aqui les
-  // quito en silencio el chequeo `designSystemVersion must equal ${version}`
-  // (ver comentario de abajo). Se conservan tal cual: son los cuatro que ya
-  // declaran 1.1.0.
   inventoryPath,
   'docs/design-system/closeout-evidence.json',
   'goals/design-system-nucleo-gobernanza/validation-log.md',
