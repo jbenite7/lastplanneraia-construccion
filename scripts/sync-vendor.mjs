@@ -38,10 +38,10 @@ const escribir = process.argv.includes('--write');
  * toque subirlas de version, que es cuando el cambio de bytes esta justificado.
  */
 const SIN_SINCRONIZAR = new Map([
+  ['pdfmake/vfs_fonts.js', 'vendor 926228 B vs npm 926233 B'],
   ['chart.js/chart.umd.min.js', 'vendor 205399 B vs npm 205125 B'],
   ['popper.min.js', 'vendor 21004 B vs npm 21233 B'],
   ['select2/select2.min.css', 'vendor 15275 B vs npm 14966 B'],
-  ['pdfmake/vfs_fonts.js', 'vendor 926228 B vs npm 926233 B'],
   ['datatables/js/jquery.dataTables.min.js', 'vendor 84647 B vs npm 82867 B'],
 ]);
 
