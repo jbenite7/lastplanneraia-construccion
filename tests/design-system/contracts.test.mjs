@@ -522,8 +522,8 @@ test('una familia no puede dejar de declarar un viewport requerido', () => {
 // /listado-actividades y /pdc, del PDC v1 ya retirado, y nadie lo vio porque el
 // gate no miraba ese archivo). Esta prueba rompe subcontratistas.json de una
 // forma que solo se detecta si el gate de verdad lo procesa; si la lista de
-// manifiestos volviera a encogerse a mano, esta prueba pasaria en verde por la
-// razon equivocada (result.status === 0) y lo delataria.
+// manifiestos volviera a encogerse a mano, esta prueba fallaria (result.status
+// !== 0, sin el mensaje esperado sobre subcontratistas.json) y lo delataria.
 test('un golden mas estrecho que su viewport falla si la captura es de pantalla completa', () => {
   const result = runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');

@@ -377,6 +377,10 @@ for (const manifest of manifests) {
     if (!(manifest.routes || []).includes(scenario.route)) {
       failures.push(`${manifest.moduleId}/${scenario.id}: undeclared route ${scenario.route}`);
     }
+    if (!scenario.viewport?.width || !scenario.viewport?.height) {
+      failures.push(`${manifest.moduleId}/${scenario.id}: scenario must declare a viewport`);
+      continue;
+    }
     const expectedDensity = scenario.viewport?.width >= 1200 ? 'compact' : 'touch';
     if (scenario.density !== expectedDensity) {
       failures.push(`${manifest.moduleId}/${scenario.id}: density must be ${expectedDensity}`);

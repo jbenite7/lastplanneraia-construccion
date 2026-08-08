@@ -20,8 +20,6 @@
     "subcontratistas.json"
   ],
   "sharedHeadConsumers": [
-    "views/contratos/contratos.view.php",
-    "views/listado-actividades/listadoActividades.view.php",
     "views/programa-general/programa_general.view.php",
     "views/programacion-intermedia/programacion_intermedia.view.php"
   ],

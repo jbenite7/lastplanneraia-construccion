@@ -89,19 +89,23 @@ test('approved accessibility scenarios cover every theme and required viewport',
     // homologation.json declara los viewports de la familia; family-approvals.json declara los
     // viewports que cubrio la aprobacion humana firmada de esa familia. Son dos archivos
     // distintos que deben coincidir — si divergen, hay cobertura declarada sin aprobar o una
-    // aprobacion que ya no coincide con lo declarado. `activeCandidate` puede apuntar a una
-    // candidata todavia sin aprobar (p. ej. trabajo en curso), asi que la candidata que se
-    // contrasta es la marcada `status: 'approved'` en homologation.json — la misma que usa
-    // approvedAccessibilityScenarios para generar los escenarios.
+    // aprobacion que ya no coincide con lo declarado. Una familia puede tener varias candidatas
+    // `approved` a la vez (p. ej. shell-navigation tiene adaptive-shell y sidebar-shell): elegir
+    // una por orden implicito del JSON deja el resultado sin determinar y puede contrastar la
+    // candidata equivocada. Se comprueban TODAS las aprobaciones firmadas de las candidatas
+    // aprobadas de la familia, no solo la primera.
     const homologatedFamily = homologation.families.find(({ id }) => id === family);
-    const approvedCandidateId = (homologatedFamily.candidates || [])
-      .find(({ status }) => status === 'approved')?.id;
-    assert.ok(approvedCandidateId, `${family} has no approved candidate in homologation.json`);
-    const approval = approvals.approvals.find(
-      ({ familyId, candidateId }) => familyId === family && candidateId === approvedCandidateId,
-    );
-    assert.ok(approval, `no signed approval found for ${family}/${approvedCandidateId}`);
-    assert.deepEqual(homologatedFamily.viewports, approval.viewports);
+    const approvedCandidateIds = (homologatedFamily.candidates || [])
+      .filter(({ status }) => status === 'approved')
+      .map(({ id }) => id);
+    assert.ok(approvedCandidateIds.length > 0, `${family} has no approved candidate in homologation.json`);
+    for (const approvedCandidateId of approvedCandidateIds) {
+      const approval = approvals.approvals.find(
+        ({ familyId, candidateId }) => familyId === family && candidateId === approvedCandidateId,
+      );
+      assert.ok(approval, `no signed approval found for ${family}/${approvedCandidateId}`);
+      assert.deepEqual(homologatedFamily.viewports, approval.viewports);
+    }
   }
 });
 

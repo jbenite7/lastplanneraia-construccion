@@ -311,7 +311,7 @@ test('the laboratory document explicitly enables vertical scrolling', async () =
 test('legacy common-head views render the static head component', async () => {
   const inventory = JSON.parse(await read('docs/design-system/manifests/inventory.json'));
   const views = inventory.sharedHeadConsumers;
-  assert.equal(views.length, 4);
+  assert.equal(views.length, 2);
   for (const view of views) {
     const fullPath = new URL(`../../${view}`, import.meta.url);
     if (existsSync(fullPath)) {

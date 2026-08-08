@@ -2,7 +2,7 @@
 // harness de pruebas. Existe para que no haya dos copias de la misma funcion:
 // `referencedTestFiles()` estaba duplicada en contracts.test.mjs y en
 // closeout-contract-fixture.mjs, y las copias ya habian divergido.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const repositoryRoot = path.resolve(import.meta.dirname, '../..');
@@ -27,7 +27,11 @@ export function referencedTestFiles() {
     const manifest = readJson('manifests', name);
     for (const file of manifest.tests || []) files.add(file);
   }
-  return [...files];
+  // Un manifiesto puede referenciar un test que no existe -- ese es justo el
+  // caso que el gate debe reportar como `missing test ...`. Filtrarlo aqui
+  // evita que los fixtures que copian estos archivos revienten con ENOENT
+  // antes de que el gate tenga oportunidad de correr y producir ese fallo.
+  return [...files].filter((file) => existsSync(path.join(repositoryRoot, file)));
 }
 
 /**
