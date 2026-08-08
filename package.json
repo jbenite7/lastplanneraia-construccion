@@ -22,11 +22,28 @@
     "test:hue:pilot": "playwright test tests/browser/programa-general-state-hue.mjs --workers=1",
     "test:performance:lab": "playwright test tests/browser/design-system-lab.performance.mjs --workers=1",
     "test:runtime-budget:measure": "playwright test tests/browser/design-system-runtime-budget.mjs --workers=1",
-    "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.3.json test-output/design-system-runtime-budget.json"
+    "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.3.json test-output/design-system-runtime-budget.json",
+    "check:vendor": "node scripts/sync-vendor.mjs --check",
+    "sync:vendor": "node scripts/sync-vendor.mjs --write"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@biomejs/biome": "2.5.4",
-    "@playwright/test": "^1.61.1"
+    "@playwright/test": "^1.61.1",
+    "bootstrap": "4.3.1",
+    "chart.js": "4.4.1",
+    "datatables.net": "1.10.21",
+    "handsontable": "14.6.1",
+    "icheck-bootstrap": "3.0.1",
+    "jquery": "3.6.0",
+    "jquery-ui": "1.14.2",
+    "jszip": "3.5.0",
+    "lucide": "1.27.0",
+    "pdfmake": "0.1.70",
+    "popper.js": "1.16.1",
+    "select2": "4.0.13",
+    "sweetalert2": "11.4.24",
+    "toastr": "2.1.4",
+    "tom-select": "2.3.1"
   }
 }
