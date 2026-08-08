@@ -90,6 +90,10 @@ function runGate(args, options) {
   return new Promise((resolve, reject) => {
     const opciones = { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 120_000, ...options };
     execFile(process.execPath, args, opciones, (error, stdout, stderr) => {
+      if (error?.killed && error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER') {
+        reject(new Error(`el gate supero el maxBuffer de ${opciones.maxBuffer} bytes y hubo que matarlo`));
+        return;
+      }
       if (error?.killed) {
         reject(new Error(`el gate no termino en ${opciones.timeout} ms y hubo que matarlo`));
         return;
@@ -147,18 +151,22 @@ async function runFixture(mutate, { copyScreenshots = false } = {}) {
     );
   }
   mutate(fixtureRoot);
-  const result = await runGate([path.join(root, 'scripts/design-system-contracts.mjs')], {
-    cwd: fixtureRoot,
-    // No enlazamos .git dentro del fixture: git deduce el worktree como el
-    // directorio padre de .git, y sin `core.worktree` explicito cualquier
-    // `git status` que corra el gate refrescaria el indice real (compartido con
-    // el repo) contra el subconjunto de archivos del fixture. GIT_DIR/GIT_WORK_TREE
-    // le dicen a git donde estan los objetos y donde esta el worktree real, sin
-    // mentirle sobre cual es cual.
-    env: { ...gateEnv, GIT_DIR: path.join(root, '.git'), GIT_WORK_TREE: root },
-  });
-  rmSync(fixtureRoot, { recursive: true, force: true });
-  return result;
+  try {
+    return await runGate([path.join(root, 'scripts/design-system-contracts.mjs')], {
+      cwd: fixtureRoot,
+      // No enlazamos .git dentro del fixture: git deduce el worktree como el
+      // directorio padre de .git, y sin `core.worktree` explicito cualquier
+      // `git status` que corra el gate refrescaria el indice real (compartido con
+      // el repo) contra el subconjunto de archivos del fixture. GIT_DIR/GIT_WORK_TREE
+      // le dicen a git donde estan los objetos y donde esta el worktree real, sin
+      // mentirle sobre cual es cual.
+      env: { ...gateEnv, GIT_DIR: path.join(root, '.git'), GIT_WORK_TREE: root },
+    });
+  } finally {
+    // `finally` en vez de tras el `await`: si `runGate` rechaza (timeout o
+    // maxBuffer) el fixture temporal no debe quedar huerfano en $TMPDIR.
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 }
 
 test('un fixture sin mutar pasa el gate', async () => {
