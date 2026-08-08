@@ -130,7 +130,44 @@ Riesgo doble: **disponibilidad** —una obra sin internet, o un CDN caído, romp
 **cadena de suministro**: `gyrocode.github.io` es una GitHub Pages personal y `unpkg.com` sirve lo
 que publique el paquete.
 
-## B-7 · Tres rutas públicas entregan CSS sin capa y sin declarar — severidad 2
+> **Al intentar arreglarlo (2026-08-07) resultó no ser un intercambio, sino una migración.** Son
+> **18 scripts**, no ocho. La mayoría ya está vendorizada en `public/vendor/` (jquery, jquery-ui,
+> popper, bootstrap, datatables, select2, anychart), pero **la vista carga jQuery 1.12.4 y la copia
+> local es 3.6.0**: dos versiones mayores. Esta pantalla es legado (jQuery UI 1.10.1, Bootstrap
+> 4.3.1) y jQuery 3 retiró APIs que muy probablemente usa, así que el cambio la rompería en
+> silencio. Faltan además 5 librerías por vendorizar (`numeral`, `jspdf`, `html2canvas`,
+> `tabulator`, el plugin de checkboxes de gyrocode), lo que implica descargar dependencias nuevas.
+>
+> **No se tocó.** Merece su propia tarea: migrar la vista a jQuery 3 con verificación funcional, o
+> vendorizar 1.12.4 tal cual si se prefiere congelar. Lo que no cabe es un swap a ciegas.
+
+## B-7 · CSS sin capa y sin declarar en las 25 rutas de la app — severidad 3
+
+> **Corregido al arreglarlo (2026-08-07): no son tres rutas, son TODAS.** La primera redacción
+> (abajo) se quedó con las tres públicas que salían en el mensaje de error. Al correr el gate entero:
+> **25 rutas**, públicas y autenticadas, todas con
+> `undeclared-unlayered-delivery: /runtime/css/design-system/entrypoints/core.css`.
+>
+> **Diagnóstico exacto:** `docs/design-system/unlayered-delivery-inventory.json` no menciona
+> `/runtime/` **ni una sola vez**, ni `entrypoints/core.css`. `DesignSystemHeadComponent:220` mapea
+> `/css/design-system/entrypoints/core.css` → `/runtime/css/...`, y esa entrega servida en runtime
+> nunca se declaró.
+>
+> **La salida correcta es declararla, no eliminarla**, y esto es lo que lo sostiene: `core.css`
+> tiene **cero reglas sin capa** — su línea 1 es el `@layer reset, vendor, theme, …` que declara el
+> orden de la cascada, y una hoja que declara el orden de capas **no puede ir dentro de una capa**.
+> Es la entrega sancionada del propio design system.
+>
+> **No se aplicó**, y no por dificultad: declarar una hoja en 25 rutas del inventario es **ratificar
+> un contrato del design system**, no arreglar un bug, y ese archivo es justo el área que la sesión
+> de cierre de la 1.1.0 tiene abierta (`scripts/design-system-contracts.mjs` y
+> `tests/design-system/contracts.test.mjs` siguen sin commitear en el worktree principal). Se deja
+> el diagnóstico hecho para que el arreglo sea mecánico para quien posee el contrato.
+>
+> Nota de método: `npm run test:design-system:static` da 8/8 y **no ve esto**; su gate homónimo es
+> estático y sólo el de runtime lo caza. Otro verde que cubre menos de lo que parece.
+
+### Redacción original (incompleta)
 
 `design-system-unlayered-delivery.mjs` falla con `undeclared-unlayered-delivery` en **`/login`,
 `/password/forgot` y `/password/reset`**: entregan `/runtime/css/design-system/entrypoints/core.css`
@@ -217,8 +254,43 @@ alta de entorno, a una restauración desde cero y al propio CI, que por eso no p
 También significa que **un verde del fixture de CI prueba menos de lo que aparenta** en todo lo que
 toque estas columnas.
 
-Se **reporta sin arreglar**: escribir la migración que falta toca el esquema, y `AGENTS.md` exige
-dry-run, gate de Plannotator, respaldo verificable y plan de restauración.
+### Corrección del 2026-08-07, al verificar el arreglo: el fondo es peor
+
+Se escribió la migración (`database/migrations/20260807_proyectos_lineabase_columns.sql`,
+idempotente, aplicada tres veces sobre el fixture sin error) y **crear proyecto seguía dando 500**.
+Al no darla por buena y volver al log aparecieron dos capas más:
+
+1. Faltaba una **tercera** columna, `costoDiaRetraso`. Se dejó de ir una a una y se comparó el censo
+   completo: base real 14 columnas, fixture 11.
+2. Con las 14 ya presentes, el error pasó a `Field 'Id' doesn't have a default value`.
+
+La causa raíz real:
+
+> **`general_proyectos_procesos` no tiene NINGUNA migración que la cree.** Su único `CREATE TABLE`
+> en todo `database/` está en `database/fixtures/design-system-ci.sql:32`, que es un **fixture de
+> CI**. Muchas migraciones la referencian; ninguna la crea.
+
+Y ese fixture ha derivado del esquema real en dos ejes:
+
+| | Base real | Fixture de CI |
+|---|---|---|
+| `Id` | `int AUTO_INCREMENT` | `int` (sin auto_increment) |
+| Columnas | 14 | 11 |
+
+**Dos consecuencias que exceden a la migración:**
+
+1. **No se puede reconstruir la base desde `database/migrations/`**: la tabla núcleo del producto no
+   está ahí. Un alta de entorno o una restauración desde cero no arrancan.
+2. **CI corre contra un esquema estructuralmente distinto de producción**, así que su verde prueba
+   menos de lo que aparenta en todo lo que toque esta tabla — y por eso
+   `e2e/tests/admin/proyectos-crud.spec.mjs` no puede pasar hoy por más que se arregle el código.
+
+**Lo hecho:** la migración de las tres columnas queda escrita y verificada (arregla la mitad que sí
+afecta a un entorno reconstruido). **Lo no hecho, y por qué:** llevar el DDL de las tablas núcleo a
+migraciones versionadas y regenerar el fixture desde ellas es una decisión de arquitectura de datos,
+no un parche; y `AGENTS.md` exige para el esquema dry-run, gate de Plannotator, respaldo verificable
+y plan de restauración. **No se aplicó nada sobre la base real** — la migración es idempotente y no
+haría nada allí, porque esas columnas ya existen.
 
 ### 3. Rol denegado `test.V` — verificado, y el RBAC está sano
 
