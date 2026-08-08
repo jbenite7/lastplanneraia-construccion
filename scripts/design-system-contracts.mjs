@@ -810,10 +810,17 @@ for (const file of [
   }
 }
 
+// `process.exitCode` y no `process.exit(1)`: medido el 2026-08-07, `process.exit()`
+// aborta el proceso mientras V8 todavia tiene un trabajo de compilacion
+// concurrente (Maglev) en vuelo, y el hilo principal se queda bloqueado para
+// siempre en `WorkerThreadsTaskRunner::Shutdown` esperando a que ese hilo se una.
+// Ocurre ~1 de cada 1200 fallos del gate, y cada vez colgaba entera la suite
+// estatica, que lanza el gate decenas de veces por sus fixtures. Salir de forma
+// natural conserva el mismo codigo de salida y la misma salida por consola.
 if (failures.length > 0) {
   console.error('Design system contracts: FAIL');
   failures.forEach((failure) => console.error(`- ${failure}`));
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log('Design system contracts: PASS');
 }
-
-console.log('Design system contracts: PASS');

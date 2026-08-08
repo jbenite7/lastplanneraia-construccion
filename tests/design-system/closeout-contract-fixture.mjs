@@ -45,7 +45,16 @@ export function runContracts(fixtureRoot) {
   return spawnSync(
     process.execPath,
     [path.join(repositoryRoot, 'scripts/design-system-contracts.mjs')],
-    { cwd: fixtureRoot, encoding: 'utf8', env: { ...process.env, DS_ACTIVATION_STRICT: '1' } },
+    // `timeout` es una red, no un limite de rendimiento: el gate tarda menos de
+    // dos segundos. Existe porque un cuelgue del gate al salir colgaba la suite
+    // entera para siempre (ver el comentario del `process.exitCode` en
+    // scripts/design-system-contracts.mjs); asi al menos se ve en rojo.
+    {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 120_000,
+      env: { ...process.env, DS_ACTIVATION_STRICT: '1' },
+    },
   );
 }
 

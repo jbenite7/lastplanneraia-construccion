@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { availableParallelism, tmpdir } from 'node:os';
 import path from 'node:path';
-import test from 'node:test';
+import { describe, test as declareTest } from 'node:test';
 import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { referencedTestFiles, requiredViewports as homologationViewports } from './manifest-sources.mjs';
@@ -47,6 +47,57 @@ function syntheticPng(width, height) {
 }
 
 const root = path.resolve(import.meta.dirname, '../..');
+
+/**
+ * Las 47 pruebas de este archivo lanzan el gate en un proceso aparte (~730 ms
+ * cada una). El runner de Node corre en serie las pruebas de un mismo archivo,
+ * asi que el archivo costaba ~35 s de pared y era el ultimo en terminar de toda
+ * la suite estatica. Aqui se declaran dentro de un `describe` con concurrencia
+ * para que los lanzamientos se solapen; `runFixture` espera al gate de forma
+ * asincrona (`execFile`, no `spawnSync`) para no bloquear el bucle de eventos,
+ * que es lo unico que hace util la concurrencia. Ninguna asercion cambia.
+ *
+ * `declareTest` se acumula en `casos` y se declara al final del archivo dentro
+ * del `describe`: asi las pruebas conservan su nombre, su orden y su cuerpo sin
+ * reindentar el archivo entero.
+ */
+const gateConcurrency = Math.max(2, Math.min(8, availableParallelism() - 1));
+const casos = [];
+const test = (nombre, cuerpo) => {
+  casos.push([nombre, cuerpo]);
+};
+
+/**
+ * `GIT_OPTIONAL_LOCKS=0` es obligatorio, no una optimizacion: el gate corre
+ * `git status` contra el repositorio real (via GIT_DIR/GIT_WORK_TREE) y con
+ * varios gates a la vez competirian por `.git/index.lock`, con fallos
+ * intermitentes. Con los locks opcionales apagados, `git status` ni toma el
+ * lock ni refresca el indice del repo.
+ */
+const gateEnv = { ...process.env, GIT_OPTIONAL_LOCKS: '0' };
+
+/**
+ * Lanza el gate y devuelve la misma forma que devolvia `spawnSync`.
+ *
+ * El `timeout` no es un limite de rendimiento -- el gate tarda menos de dos
+ * segundos incluso con la suite saturada -- sino una red contra un cuelgue real
+ * que se observo el 2026-08-07: el proceso del gate termina su trabajo, llama a
+ * `process.exit()` y se queda bloqueado en `WorkerThreadsTaskRunner::Shutdown`
+ * esperando a un hilo de compilacion concurrente de V8. Sin limite eso colgaba
+ * la suite entera para siempre; con limite falla en rojo y se ve.
+ */
+function runGate(args, options) {
+  return new Promise((resolve, reject) => {
+    const opciones = { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 120_000, ...options };
+    execFile(process.execPath, args, opciones, (error, stdout, stderr) => {
+      if (error?.killed) {
+        reject(new Error(`el gate no termino en ${opciones.timeout} ms y hubo que matarlo`));
+        return;
+      }
+      resolve({ status: error ? (error.code ?? 1) : 0, signal: error?.signal ?? null, stdout, stderr });
+    });
+  });
+}
 const componentContractFields = [
   'id', 'family', 'kind', 'maturity', 'visualApproval', 'purpose', 'doNotUseFor', 'api', 'markup',
   'variants', 'states', 'densities', 'tokens', 'responsive', 'accessibility',
@@ -62,7 +113,7 @@ const componentContractFields = [
  * fixture. Escribir a traves del symlink tocaria los PNG reales del repo, que es
  * justo lo que ninguna prueba puede hacer.
  */
-function runFixture(mutate, { copyScreenshots = false } = {}) {
+async function runFixture(mutate, { copyScreenshots = false } = {}) {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-ds-contract-'));
   cpSync(path.join(root, 'docs/design-system'), path.join(fixtureRoot, 'docs/design-system'), {
     recursive: true,
@@ -96,37 +147,33 @@ function runFixture(mutate, { copyScreenshots = false } = {}) {
     );
   }
   mutate(fixtureRoot);
-  const result = spawnSync(process.execPath, [path.join(root, 'scripts/design-system-contracts.mjs')], {
+  const result = await runGate([path.join(root, 'scripts/design-system-contracts.mjs')], {
     cwd: fixtureRoot,
-    encoding: 'utf8',
     // No enlazamos .git dentro del fixture: git deduce el worktree como el
     // directorio padre de .git, y sin `core.worktree` explicito cualquier
     // `git status` que corra el gate refrescaria el indice real (compartido con
     // el repo) contra el subconjunto de archivos del fixture. GIT_DIR/GIT_WORK_TREE
     // le dicen a git donde estan los objetos y donde esta el worktree real, sin
     // mentirle sobre cual es cual.
-    env: { ...process.env, GIT_DIR: path.join(root, '.git'), GIT_WORK_TREE: root },
+    env: { ...gateEnv, GIT_DIR: path.join(root, '.git'), GIT_WORK_TREE: root },
   });
   rmSync(fixtureRoot, { recursive: true, force: true });
   return result;
 }
 
-test('un fixture sin mutar pasa el gate', () => {
-  const result = runFixture(() => {});
+test('un fixture sin mutar pasa el gate', async () => {
+  const result = await runFixture(() => {});
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-test('canonical design-system contracts pass the executable gate', () => {
-  const result = spawnSync(process.execPath, ['scripts/design-system-contracts.mjs'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
+test('canonical design-system contracts pass the executable gate', async () => {
+  const result = await runGate(['scripts/design-system-contracts.mjs'], { cwd: root, env: gateEnv });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /Design system contracts: PASS/);
 });
 
-test('homologation covers every governed visual family', () => {
+test('homologation covers every governed visual family', async () => {
   const contract = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/homologation.json'), 'utf8',
   ));
@@ -153,8 +200,8 @@ test('homologation covers every governed visual family', () => {
   }
 });
 
-test('homologation cannot omit a governed visual family', () => {
-  const result = runFixture((fixtureRoot) => {
+test('homologation cannot omit a governed visual family', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     contract.families = contract.families.filter((family) => family.id !== 'states-feedback');
@@ -165,8 +212,8 @@ test('homologation cannot omit a governed visual family', () => {
   assert.match(result.stderr, /homologation: missing family states-feedback/);
 });
 
-test('homologation test references must exist', () => {
-  const result = runFixture((fixtureRoot) => {
+test('homologation test references must exist', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     contract.tests.push('tests/browser/missing-lab.mjs');
@@ -177,8 +224,8 @@ test('homologation test references must exist', () => {
   assert.match(result.stderr, /homologation: missing test tests\/browser\/missing-lab\.mjs/);
 });
 
-test('an active homologation candidate must exist in its family contract', () => {
-  const result = runFixture((fixtureRoot) => {
+test('an active homologation candidate must exist in its family contract', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -190,8 +237,8 @@ test('an active homologation candidate must exist in its family contract', () =>
   assert.match(result.stderr, /foundations: active candidate missing-foundations-candidate is not declared/);
 });
 
-test('a family candidate cannot be approved without recorded evidence', () => {
-  const result = runFixture((fixtureRoot) => {
+test('a family candidate cannot be approved without recorded evidence', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/family-approvals.json');
     const approvals = JSON.parse(readFileSync(file, 'utf8'));
     approvals.approvals = approvals.approvals.filter(({ familyId }) => familyId !== 'shell-navigation');
@@ -202,8 +249,8 @@ test('a family candidate cannot be approved without recorded evidence', () => {
   assert.match(result.stderr, /shell-navigation\/adaptive-shell: approved without approval evidence/);
 });
 
-test('duplicate component IDs fail the executable gate', () => {
-  const result = runFixture((fixtureRoot) => {
+test('duplicate component IDs fail the executable gate', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/component-catalog.json');
     const catalog = JSON.parse(readFileSync(file, 'utf8'));
     catalog.components.push({ ...catalog.components[0] });
@@ -214,8 +261,8 @@ test('duplicate component IDs fail the executable gate', () => {
   assert.match(result.stderr, /duplicate component id: shell/);
 });
 
-test('component maturity is mandatory and independent from visual approval', () => {
-  const result = runFixture((fixtureRoot) => {
+test('component maturity is mandatory and independent from visual approval', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/component-catalog.json');
     const catalog = JSON.parse(readFileSync(file, 'utf8'));
     delete catalog.components[0].maturity;
@@ -234,8 +281,8 @@ test('component maturity is mandatory and independent from visual approval', () 
   assert.doesNotMatch(result.stderr, /toolbar: stable component cannot be pending/);
 });
 
-test('vendor adapter maturity uses the adapter taxonomy', () => {
-  const result = runFixture((fixtureRoot) => {
+test('vendor adapter maturity uses the adapter taxonomy', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/vendors.json');
     const vendors = JSON.parse(readFileSync(file, 'utf8'));
     vendors.vendors.find(({ id }) => id === 'handsontable').adapterMaturity = 'stable';
@@ -248,8 +295,8 @@ test('vendor adapter maturity uses the adapter taxonomy', () => {
   assert.match(result.stderr, /select2: missing adapter maturity/);
 });
 
-test('canonical goal provenance rejects stale hashes and instructional history', () => {
-  const result = runFixture((fixtureRoot) => {
+test('canonical goal provenance rejects stale hashes and instructional history', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/goal-provenance.json');
     const provenance = existsSync(file)
       ? JSON.parse(readFileSync(file, 'utf8'))
@@ -283,8 +330,8 @@ test('canonical goal provenance rejects stale hashes and instructional history',
   assert.match(result.stderr, /goal provenance: historical source .* must be superseded and non-instructional/);
 });
 
-test('unknown manifest component references fail the executable gate', () => {
-  const result = runFixture((fixtureRoot) => {
+test('unknown manifest component references fail the executable gate', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.components.push('unknown-component');
@@ -295,8 +342,8 @@ test('unknown manifest component references fail the executable gate', () => {
   assert.match(result.stderr, /programa-general: unknown component unknown-component/);
 });
 
-test('unknown manifest vendor references fail the executable gate', () => {
-  const result = runFixture((fixtureRoot) => {
+test('unknown manifest vendor references fail the executable gate', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.vendors.push('unknown-vendor');
@@ -307,8 +354,8 @@ test('unknown manifest vendor references fail the executable gate', () => {
   assert.match(result.stderr, /programa-general: unknown vendor unknown-vendor/);
 });
 
-test('manifest inventory cannot omit an existing manifest', () => {
-  const result = runFixture((fixtureRoot) => {
+test('manifest inventory cannot omit an existing manifest', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/inventory.json');
     const inventory = JSON.parse(readFileSync(file, 'utf8'));
     inventory.manifests = [];
@@ -319,7 +366,7 @@ test('manifest inventory cannot omit an existing manifest', () => {
   assert.match(result.stderr, /inventory: missing manifest programa-general.json/);
 });
 
-test('manifests declare the complete deterministic visual matrix', () => {
+test('manifests declare the complete deterministic visual matrix', async () => {
   const inventory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/inventory.json'), 'utf8',
   ));
@@ -354,8 +401,8 @@ test('manifests declare the complete deterministic visual matrix', () => {
   );
 });
 
-test('golden checksums fail closed when a declared baseline changes', () => {
-  const result = runFixture((fixtureRoot) => {
+test('golden checksums fail closed when a declared baseline changes', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.scenarios[0].sha256 = '0'.repeat(64);
@@ -366,8 +413,8 @@ test('golden checksums fail closed when a declared baseline changes', () => {
   assert.match(result.stderr, /programa-general\/.*: golden hash mismatch/);
 });
 
-test('manifest sources and scenario matrices fail closed when stale', () => {
-  const result = runFixture((fixtureRoot) => {
+test('manifest sources and scenario matrices fail closed when stale', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const labFile = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
     const laboratory = JSON.parse(readFileSync(labFile, 'utf8'));
     laboratory.sources.push('views/design-system/missing-specimen.php');
@@ -384,8 +431,8 @@ test('manifest sources and scenario matrices fail closed when stale', () => {
   assert.match(result.stderr, /programa-general: missing scenario dark\/1440x900/);
 });
 
-test('manifest test references must exist', () => {
-  const result = runFixture((fixtureRoot) => {
+test('manifest test references must exist', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.tests.push('tests/missing-contract.mjs');
@@ -396,8 +443,8 @@ test('manifest test references must exist', () => {
   assert.match(result.stderr, /programa-general: missing test tests\/missing-contract.mjs/);
 });
 
-test('schemas must reject undeclared top-level properties', () => {
-  const result = runFixture((fixtureRoot) => {
+test('schemas must reject undeclared top-level properties', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/module-manifest.schema.json');
     const schema = JSON.parse(readFileSync(file, 'utf8'));
     schema.additionalProperties = true;
@@ -408,8 +455,8 @@ test('schemas must reject undeclared top-level properties', () => {
   assert.match(result.stderr, /module-manifest.schema.json: additionalProperties must be false/);
 });
 
-test('accessibility governance files are mandatory contracts', () => {
-  const result = runFixture((fixtureRoot) => {
+test('accessibility governance files are mandatory contracts', async () => {
+  const result = await runFixture((fixtureRoot) => {
     rmSync(path.join(fixtureRoot, 'docs/design-system/a11y-baseline.json'));
   });
 
@@ -417,7 +464,7 @@ test('accessibility governance files are mandatory contracts', () => {
   assert.match(result.stderr, /a11y-baseline.json: missing/);
 });
 
-test('every catalog entry exposes the complete component contract', () => {
+test('every catalog entry exposes the complete component contract', async () => {
   const catalog = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/component-catalog.json'), 'utf8',
   ));
@@ -426,8 +473,8 @@ test('every catalog entry exposes the complete component contract', () => {
   }
 });
 
-test('legacy aliases must resolve to catalog entries', () => {
-  const result = runFixture((fixtureRoot) => {
+test('legacy aliases must resolve to catalog entries', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/legacy-aliases.json');
     const aliases = JSON.parse(readFileSync(file, 'utf8'));
     aliases.aliases[0].catalogId = 'unknown-component';
@@ -438,8 +485,8 @@ test('legacy aliases must resolve to catalog entries', () => {
   assert.match(result.stderr, /legacy alias body.dark-mode: unknown component unknown-component/);
 });
 
-test('declared local vendor assets must exist', () => {
-  const result = runFixture((fixtureRoot) => {
+test('declared local vendor assets must exist', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/vendors.json');
     const vendors = JSON.parse(readFileSync(file, 'utf8'));
     vendors.vendors.find((vendor) => vendor.id === 'bootstrap').assets.push('public/vendor/missing.css');
@@ -450,8 +497,8 @@ test('declared local vendor assets must exist', () => {
   assert.match(result.stderr, /bootstrap: missing vendor asset public\/vendor\/missing.css/);
 });
 
-test('declared vendor hashes must match local assets', () => {
-  const result = runFixture((fixtureRoot) => {
+test('declared vendor hashes must match local assets', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/vendors.json');
     const vendors = JSON.parse(readFileSync(file, 'utf8'));
     const fonts = vendors.vendors.find((vendor) => vendor.id === 'aia-fonts');
@@ -463,8 +510,8 @@ test('declared vendor hashes must match local assets', () => {
   assert.match(result.stderr, /aia-fonts: hash mismatch inter-latin-v20\.woff2/);
 });
 
-test('pilot manifest must keep every governance field', () => {
-  const result = runFixture((fixtureRoot) => {
+test('pilot manifest must keep every governance field', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     delete manifest.roles;
@@ -475,8 +522,8 @@ test('pilot manifest must keep every governance field', () => {
   assert.match(result.stderr, /programa-general: missing required field roles/);
 });
 
-test('pilot manifest routes must exist in the front controller', () => {
-  const result = runFixture((fixtureRoot) => {
+test('pilot manifest routes must exist in the front controller', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.routes.push('/missing-design-system-route');
@@ -491,9 +538,9 @@ test('pilot manifest routes must exist in the front controller', () => {
 // mutar, esta prueba compara la lista completa de fallos entre linea base y mutacion
 // para blindarse ante cualquier regresion futura del harness. Lo que importa es que
 // declarar 390x844 no anada ni un fallo respecto de la linea base.
-test('declarar el viewport movil no anade ningun fallo al gate', () => {
-  const baseline = runFixture(() => {});
-  const withMobile = runFixture((fixtureRoot) => {
+test('declarar el viewport movil no anade ningun fallo al gate', async () => {
+  const baseline = await runFixture(() => {});
+  const withMobile = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -515,8 +562,8 @@ test('declarar el viewport movil no anade ningun fallo al gate', () => {
   );
 });
 
-test('una familia no puede declarar un viewport no soportado', () => {
-  const result = runFixture((fixtureRoot) => {
+test('una familia no puede declarar un viewport no soportado', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -528,8 +575,8 @@ test('una familia no puede declarar un viewport no soportado', () => {
   assert.match(result.stderr, /foundations: unsupported viewport 800x600/);
 });
 
-test('un golden que no corresponde al viewport del escenario falla', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un golden que no corresponde al viewport del escenario falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const target = manifest.scenarios.find((s) => s.viewport.width === 1180);
@@ -543,8 +590,8 @@ test('un golden que no corresponde al viewport del escenario falla', () => {
   assert.match(result.stderr, /golden does not match theme\/viewport/);
 });
 
-test('dos escenarios no pueden compartir el mismo golden', () => {
-  const result = runFixture((fixtureRoot) => {
+test('dos escenarios no pueden compartir el mismo golden', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const [first, second] = manifest.scenarios;
@@ -559,8 +606,8 @@ test('dos escenarios no pueden compartir el mismo golden', () => {
   assert.match(result.stderr, /golden reused by another scenario/);
 });
 
-test('una familia no puede dejar de declarar un viewport requerido', () => {
-  const result = runFixture((fixtureRoot) => {
+test('una familia no puede dejar de declarar un viewport requerido', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
     const contract = JSON.parse(readFileSync(file, 'utf8'));
     const foundations = contract.families.find(({ id }) => id === 'foundations');
@@ -581,8 +628,8 @@ test('una familia no puede dejar de declarar un viewport requerido', () => {
 // forma que solo se detecta si el gate de verdad lo procesa; si la lista de
 // manifiestos volviera a encogerse a mano, esta prueba fallaria (result.status
 // !== 0, sin el mensaje esperado sobre subcontratistas.json) y lo delataria.
-test('un golden mas estrecho que su viewport falla si la captura es de pantalla completa', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un golden mas estrecho que su viewport falla si la captura es de pantalla completa', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios.find((s) => s.viewport.width === 1180);
@@ -600,8 +647,8 @@ test('un golden mas estrecho que su viewport falla si la captura es de pantalla 
   assert.match(result.stderr, /golden mide 1180x820 px, no coincide con el viewport declarado 1440x900/);
 });
 
-test('un recorte a elemento declarado no exige coincidencia exacta', () => {
-  const result = runFixture(() => {});
+test('un recorte a elemento declarado no exige coincidencia exacta', async () => {
+  const result = await runFixture(() => {});
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(/states-feedback.*golden mide/.test(result.stderr || ''), false);
 });
@@ -612,8 +659,8 @@ test('un recorte a elemento declarado no exige coincidencia exacta', () => {
 // "element"; la segunda, con el vector real -- reclamar el id de un escenario
 // autorizado desde otro modulo, que es lo que dejaba pasar indexar la lista
 // blanca solo por `scenario.id`.
-test('un escenario fuera de la lista blanca no puede declarar capture "element"', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un escenario fuera de la lista blanca no puede declarar capture "element"', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.scenarios.find((s) => s.viewport.width === 1180).capture = 'element';
@@ -627,8 +674,8 @@ test('un escenario fuera de la lista blanca no puede declarar capture "element"'
   );
 });
 
-test('un modulo no puede heredar la excepcion reclamando el id de un escenario autorizado', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un modulo no puede heredar la excepcion reclamando el id de un escenario autorizado', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/programa-general.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios.find((s) => s.viewport.width === 1180);
@@ -656,8 +703,8 @@ test('un modulo no puede heredar la excepcion reclamando el id de un escenario a
   );
 });
 
-test('el gate valida todos los manifiestos declarados en el inventario, no solo algunos', () => {
-  const result = runFixture((fixtureRoot) => {
+test('el gate valida todos los manifiestos declarados en el inventario, no solo algunos', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/subcontratistas.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.routes.push('/subcontratistas/ruta-inexistente');
@@ -668,8 +715,8 @@ test('el gate valida todos los manifiestos declarados en el inventario, no solo 
   assert.match(result.stderr, /subcontratistas: route not registered \/subcontratistas\/ruta-inexistente/);
 });
 
-test('todo manifiesto del inventario pasa por el chequeo de version', () => {
-  const result = runFixture((fixtureRoot) => {
+test('todo manifiesto del inventario pasa por el chequeo de version', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/subcontratistas.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.designSystemVersion = '9.9.9';
@@ -690,7 +737,7 @@ test('todo manifiesto del inventario pasa por el chequeo de version', () => {
 // Reproducido en la re-revision de F2a-2a con un `rogue.json` copiado de
 // laboratory.json con un escenario `capture: "element"` y un PNG de 390x844
 // declarado bajo 1180x820: sin esta prueba, el gate pasaba en verde.
-test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar el orden', () => {
+test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar el orden', async () => {
   const mutateDuplicating = (insertBeforeLaboratory) => (fixtureRoot) => {
     const inventoryFile = path.join(fixtureRoot, 'docs/design-system/manifests/inventory.json');
     const inventory = JSON.parse(readFileSync(inventoryFile, 'utf8'));
@@ -708,7 +755,7 @@ test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar e
   };
 
   for (const insertBeforeLaboratory of [false, true]) {
-    const result = runFixture(mutateDuplicating(insertBeforeLaboratory));
+    const result = await runFixture(mutateDuplicating(insertBeforeLaboratory));
     assert.notEqual(result.status, 0, `insertBeforeLaboratory=${insertBeforeLaboratory}`);
     assert.match(result.stderr, /duplicate module manifest moduleId: laboratory/);
   }
@@ -728,8 +775,8 @@ test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar e
 // pasaba en verde, metiendo por la puerta de la evidencia un tema prohibido por
 // contrato (DS-030). linen-removal.test.mjs no lo atrapa: su lista fija cubre
 // esquemas y hojas de estilo, no los manifiestos.
-test('un escenario no puede declarar un tema fuera del enum del esquema', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un escenario no puede declarar un tema fuera del enum del esquema', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios[0];
@@ -752,8 +799,8 @@ test('un escenario no puede declarar un tema fuera del enum del esquema', () => 
 // R1 (bis). `additionalProperties: false` estaba escrito en el esquema y no se
 // aplicaba: cualquier propiedad inventada, en el manifiesto o en un escenario,
 // pasaba en verde.
-test('propiedades no declaradas en el esquema hacen fallar el gate', () => {
-  const result = runFixture((fixtureRoot) => {
+test('propiedades no declaradas en el esquema hacen fallar el gate', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.propiedadInventada = 'hola';
@@ -769,8 +816,8 @@ test('propiedades no declaradas en el esquema hacen fallar el gate', () => {
 // R1 (ter). El enum de `capture` vivia solo en el esquema: un valor invalido no
 // coincidia con "element", caia en la rama por defecto y el escenario pasaba con
 // el chequeo de dimensiones exactas, que su golden cumplia.
-test('un valor de capture fuera del enum del esquema no cae en la rama por defecto', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un valor de capture fuera del enum del esquema no cae en la rama por defecto', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.scenarios[0].capture = 'elemento';
@@ -789,8 +836,8 @@ test('un valor de capture fuera del enum del esquema no cae en la rama por defec
 // Sustituir el golden de states-feedback-dark-1180x820 (1102x1649 reales) por
 // uno de 390x844 pasaba en verde -- el agujero original, abierto *dentro* de la
 // lista blanca.
-test('un escenario autorizado a capture "element" no puede cambiar las dimensiones de su recorte', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un escenario autorizado a capture "element" no puede cambiar las dimensiones de su recorte', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios.find(({ id }) => id === 'states-feedback-dark-1180x820');
@@ -811,8 +858,8 @@ test('un escenario autorizado a capture "element" no puede cambiar las dimension
 // dejar un PNG suelto con el nombre y las dimensiones correctas para que el
 // escenario lo presentara como evidencia. El sha256 solo lo ataba al archivo que
 // el propio manifiesto habia elegido.
-test('un golden fuera del directorio de la suite de navegador falla', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un golden fuera del directorio de la suite de navegador falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios[0];
@@ -832,8 +879,8 @@ test('un golden fuera del directorio de la suite de navegador falla', () => {
 });
 
 // R3 (bis). El prefijo por si solo dejaria pasar una travesia con `..`.
-test('un golden que escapa del directorio permitido con .. falla', () => {
-  const result = runFixture((fixtureRoot) => {
+test('un golden que escapa del directorio permitido con .. falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios[0];
@@ -854,8 +901,8 @@ test('un golden que escapa del directorio permitido con .. falla', () => {
 // auth. Se ata al nombre del archivo, la unica correspondencia que hoy cumplen
 // los 15 manifiestos (ver el comentario del gate para por que no se ato a
 // inventory.modules[].moduleId).
-test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo', () => {
-  const renombrado = runFixture((fixtureRoot) => {
+test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo', async () => {
+  const renombrado = await runFixture((fixtureRoot) => {
     const dir = path.join(fixtureRoot, 'docs/design-system/manifests');
     const laboratory = readFileSync(path.join(dir, 'laboratory.json'), 'utf8');
     writeFileSync(path.join(dir, 'otro-nombre.json'), laboratory);
@@ -873,7 +920,7 @@ test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo
     /otro-nombre\.json: moduleId declara "laboratory" pero debe ser "otro-nombre"/,
   );
 
-  const suplantado = runFixture((fixtureRoot) => {
+  const suplantado = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     manifest.moduleId = 'no-soy-auth';
@@ -897,11 +944,11 @@ test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo
 // asi que la sola conexion del validador producia 87 falsos positivos. Esta
 // prueba falla con la comparacion por identidad (primer bloque) y comprueba en
 // el segundo que la comparacion estructural no ablanda la regla.
-test('un const de array se compara por contenido, no por identidad', () => {
-  const intacto = runFixture(() => {});
+test('un const de array se compara por contenido, no por identidad', async () => {
+  const intacto = await runFixture(() => {});
   assert.equal(intacto.status, 0, intacto.stderr || intacto.stdout);
 
-  const alterado = runFixture((fixtureRoot) => {
+  const alterado = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/ui-groups-inventory.json');
     const inventory = JSON.parse(readFileSync(file, 'utf8'));
     inventory.groups[0].themes = ['linen'];
@@ -918,8 +965,8 @@ test('un const de array se compara por contenido, no por identidad', () => {
 // El cableado en si: una propiedad inventada en un documento que antes no se
 // validaba, y un campo obligatorio ausente en un subobjeto. Los dos pasaban en
 // verde pese a que su esquema declara `additionalProperties: false` y `required`.
-test('el esquema se aplica a los documentos del design system, no solo a los manifiestos', () => {
-  const catalogo = runFixture((fixtureRoot) => {
+test('el esquema se aplica a los documentos del design system, no solo a los manifiestos', async () => {
+  const catalogo = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/component-catalog.json');
     const catalog = JSON.parse(readFileSync(file, 'utf8'));
     catalog.components[0].propiedadInventada = 'hola';
@@ -932,7 +979,7 @@ test('el esquema se aplica a los documentos del design system, no solo a los man
     /component-catalog\.json: components\[0\]: propiedad no declarada en el esquema: propiedadInventada/,
   );
 
-  const semantica = runFixture((fixtureRoot) => {
+  const semantica = await runFixture((fixtureRoot) => {
     const file = path.join(fixtureRoot, 'docs/design-system/state-semantics.json');
     const semantics = JSON.parse(readFileSync(file, 'utf8'));
     delete semantics.moduleMappings[0].states[0].level;
@@ -944,4 +991,10 @@ test('el esquema se aplica a los documentos del design system, no solo a los man
     semantica.stderr,
     /state-semantics\.json: moduleMappings\[0\]\.states\[0\]: falta el campo obligatorio level/,
   );
+});
+
+// Declaracion final: las 47 pruebas acumuladas arriba, dentro de una suite con
+// concurrencia. Ver el comentario de `gateConcurrency` al principio del archivo.
+describe('contratos ejecutables del design system', { concurrency: gateConcurrency }, () => {
+  for (const [nombre, cuerpo] of casos) declareTest(nombre, cuerpo);
 });
