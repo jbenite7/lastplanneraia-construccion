@@ -138,8 +138,40 @@ que publique el paquete.
 > silencio. Faltan además 5 librerías por vendorizar (`numeral`, `jspdf`, `html2canvas`,
 > `tabulator`, el plugin de checkboxes de gyrocode), lo que implica descargar dependencias nuevas.
 >
-> **No se tocó.** Merece su propia tarea: migrar la vista a jQuery 3 con verificación funcional, o
-> vendorizar 1.12.4 tal cual si se prefiere congelar. Lo que no cabe es un swap a ciegas.
+> **Parcialmente cerrado el 2026-08-07: 8 hosts → 7, con medición.**
+>
+> **Lo hecho, riesgo cero:** se localizaron las dos librerías cuya copia en `public/vendor/` es
+> **exactamente la misma versión** que pedía el CDN —`jquery-ui 1.10.1` y `bootstrap 4.3.1`,
+> verificado en el banner de cada archivo—. Además `jquery-ui` **se cargaba dos veces**, una a cada
+> lado de Google Charts; queda una. Fuera `stackpath.bootstrapcdn.com` entero.
+> Medido antes y después: 3 tablas, 1 fila de DataTable, `DataTable` y `select2` presentes,
+> **0 errores de consola**. Idéntico.
+>
+> **El experimento que decide lo que falta.** En vez de suponer el riesgo de jQuery, se midió:
+> se apuntó la vista a la copia local 3.6.0, se reconstruyó y se cargó la página.
+>
+> | | jQuery 1.12.4 (hoy) | jQuery 3.6.0 |
+> |---|---|---|
+> | Tablas en el DOM | 3 | **2** |
+> | Filas del DataTable | 1 | **0** |
+> | Errores de consola | 0 | **0** |
+>
+> **Se rompe en silencio**: la tabla desaparece sin un solo error en consola. Revertido y
+> reverificado en la línea base. Queda demostrado que no es un intercambio.
+>
+> **Lo que falta, y qué necesita:** los 7 hosts restantes sirven librerías **sin copia local**
+> (`jquery` 1.12.4, el núcleo de `dataTables` 1.11.4, `select2` —local 4.0.13 vs 4.0.6-rc.0 pedido—,
+> `numeral`, `jspdf`, `html2canvas`, `tabulator`, el plugin de checkboxes de gyrocode, Google Charts
+> y AnyChart). Traerlas exige **descargar dependencias nuevas**, que necesita el visto bueno del
+> usuario con la lista y las versiones exactas delante. Y para jQuery hay antes una decisión de
+> producto: **vendorizar 1.12.4 tal cual** (congela la página, riesgo nulo, deuda perpetua) o
+> **migrar la vista a jQuery 3** (la saca del legado, pero exige prueba funcional de DataTables,
+> select2, los filtros, la exportación a PDF y las gráficas).
+>
+> Nota aparte: `www.gstatic.com` (Google Charts) y `cdn.anychart.com` **no tienen versión
+> descargable equivalente** en el modelo de uso actual —AnyChart va con `hcode` de licencia y Google
+> Charts exige su loader—, así que esos dos no se resuelven vendorizando: piden decidir si se
+> sustituyen por una librería de gráficos ya vendorizada.
 
 ## B-7 · CSS sin capa y sin declarar en las 25 rutas de la app — severidad 3
 
