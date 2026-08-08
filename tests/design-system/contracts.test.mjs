@@ -883,3 +883,65 @@ test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo
   assert.notEqual(suplantado.status, 0);
   assert.match(suplantado.stderr, /auth\.json: moduleId declara "no-soy-auth" pero debe ser "auth"/);
 });
+
+// ---------------------------------------------------------------------------
+// El validador parcial, aplicado tambien fuera de los manifiestos (F2a-2a).
+// Hasta esta revision solo se cableaba a los manifiestos de modulo: los otros
+// siete esquemas del design system se comprobaban en su FORMA y nunca contra su
+// propio documento.
+// ---------------------------------------------------------------------------
+
+// `const` y `enum` comparaban por identidad: dos arrays de contenido identico
+// eran "distintos" para el gate. ui-groups-inventory.json declara
+// `themes: ["dark"]` en sus 87 grupos contra un `const: ["dark"]` del esquema,
+// asi que la sola conexion del validador producia 87 falsos positivos. Esta
+// prueba falla con la comparacion por identidad (primer bloque) y comprueba en
+// el segundo que la comparacion estructural no ablanda la regla.
+test('un const de array se compara por contenido, no por identidad', () => {
+  const intacto = runFixture(() => {});
+  assert.equal(intacto.status, 0, intacto.stderr || intacto.stdout);
+
+  const alterado = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/ui-groups-inventory.json');
+    const inventory = JSON.parse(readFileSync(file, 'utf8'));
+    inventory.groups[0].themes = ['linen'];
+    writeFileSync(file, `${JSON.stringify(inventory, null, 2)}\n`);
+  });
+
+  assert.notEqual(alterado.status, 0);
+  assert.match(
+    alterado.stderr,
+    /ui-groups-inventory\.json: groups\[0\]\.themes: valor \["linen"\] distinto del const del esquema/,
+  );
+});
+
+// El cableado en si: una propiedad inventada en un documento que antes no se
+// validaba, y un campo obligatorio ausente en un subobjeto. Los dos pasaban en
+// verde pese a que su esquema declara `additionalProperties: false` y `required`.
+test('el esquema se aplica a los documentos del design system, no solo a los manifiestos', () => {
+  const catalogo = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/component-catalog.json');
+    const catalog = JSON.parse(readFileSync(file, 'utf8'));
+    catalog.components[0].propiedadInventada = 'hola';
+    writeFileSync(file, `${JSON.stringify(catalog, null, 2)}\n`);
+  });
+
+  assert.notEqual(catalogo.status, 0);
+  assert.match(
+    catalogo.stderr,
+    /component-catalog\.json: components\[0\]: propiedad no declarada en el esquema: propiedadInventada/,
+  );
+
+  const semantica = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/state-semantics.json');
+    const semantics = JSON.parse(readFileSync(file, 'utf8'));
+    delete semantics.moduleMappings[0].states[0].level;
+    writeFileSync(file, `${JSON.stringify(semantics, null, 2)}\n`);
+  });
+
+  assert.notEqual(semantica.status, 0);
+  assert.match(
+    semantica.stderr,
+    /state-semantics\.json: moduleMappings\[0\]\.states\[0\]: falta el campo obligatorio level/,
+  );
+});

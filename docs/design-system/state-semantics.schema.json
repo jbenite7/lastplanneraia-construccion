@@ -144,6 +144,10 @@
                 },
                 "hue": {
                   "type": "string"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Anotacion opcional de procedencia: por que este estado tiene el level/hue que tiene cuando la eleccion no es obvia o corrige un mapeo anterior. Hoy la usa execution-blocked, que registra la ratificacion del propietario del producto del 2026-08-03 y el mapeo obsoleto que sustituye."
                 }
               }
             }

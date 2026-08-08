@@ -10,6 +10,10 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Declarado por el documento para que el editor resuelva este esquema. Se lista aqui porque el gate aplica additionalProperties: false sobre el documento y, sin esta entrada, la propia autorreferencia seria una propiedad no declarada."
+    },
     "schemaVersion": {
       "const": 2
     },

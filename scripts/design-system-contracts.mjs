@@ -291,7 +291,12 @@ for (const alias of aliases?.aliases || []) {
 }
 const manifestSchema = documents.get('docs/design-system/module-manifest.schema.json');
 
-// Validador de esquema DELIBERADAMENTE PARCIAL para los manifiestos.
+// Validador de esquema DELIBERADAMENTE PARCIAL.
+//
+// Se aplica a los manifiestos de modulo y, desde esta revision, tambien a los
+// siete pares esquema/documento del design system (SCHEMA_DOCUMENT_PAIRS, al
+// final del archivo), que hasta ahora se comprobaban en su forma pero nunca
+// contra su propio dato.
 //
 // Por que existe: hasta esta revision el gate solo leia `manifestSchema.required`
 // para comprobar *presencia* de campos, y nunca aplicaba nada mas del esquema.
@@ -324,6 +329,23 @@ const manifestSchema = documents.get('docs/design-system/module-manifest.schema.
 //   "los manifiestos estan validados contra su esquema".
 const SCHEMA_KEYWORDS_APPLIED = ['additionalProperties:false', 'enum', 'const', 'required', '$ref', 'items'];
 
+// `enum` y `const` comparaban con `includes`/`!==`, es decir por IDENTIDAD.
+// Para escalares da igual, pero en cuanto el valor es un array o un objeto dos
+// valores de contenido identico son referencias distintas y el gate reportaba
+// una violacion inexistente: `ui-groups-inventory.json` producia 87 falsos
+// positivos del tipo `themes: valor ["dark"] distinto del const del esquema
+// (["dark"])`. Un gate que miente asi es un gate que alguien desactiva, por eso
+// la comparacion es estructural.
+function deepEqual(a, b) {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a)) return a.length === b.length && a.every((item, i) => deepEqual(item, b[i]));
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length
+    && keys.every((key) => Object.hasOwn(b, key) && deepEqual(a[key], b[key]));
+}
+
 function resolveSchemaRef(schema, rootSchema) {
   let current = schema;
   const seen = new Set();
@@ -341,11 +363,11 @@ function schemaPartialFailures(value, schema, rootSchema, path, isRoot = false) 
   if (!resolved || typeof resolved !== 'object') return [];
   const found = [];
   const where = path || '(raiz)';
-  if (Array.isArray(resolved.enum) && !resolved.enum.includes(value)) {
+  if (Array.isArray(resolved.enum) && !resolved.enum.some((option) => deepEqual(option, value))) {
     found.push(`${where}: valor ${JSON.stringify(value)} fuera del enum del esquema `
       + `(${resolved.enum.map((option) => JSON.stringify(option)).join(', ')})`);
   }
-  if (Object.hasOwn(resolved, 'const') && value !== resolved.const) {
+  if (Object.hasOwn(resolved, 'const') && !deepEqual(value, resolved.const)) {
     found.push(`${where}: valor ${JSON.stringify(value)} distinto del const del esquema `
       + `(${JSON.stringify(resolved.const)})`);
   }
@@ -735,6 +757,35 @@ for (const [file, document] of documents) {
   if (file.endsWith('version.json') || file.includes('.schema.')) continue;
   if (document?.designSystemVersion !== version) {
     failures.push(`${file}: designSystemVersion must equal ${version}`);
+  }
+}
+
+// Cada esquema del design system con su documento. Hasta esta revision el
+// validador parcial de arriba solo se aplicaba a los manifiestos de modulo: los
+// otros siete esquemas se comprobaban en su FORMA (que declaren $schema, $id,
+// required y additionalProperties: false) pero nunca se aplicaban a su propio
+// documento. Es decir, `additionalProperties: false` estaba escrito en
+// component-catalog.schema.json y una propiedad inventada en
+// component-catalog.json pasaba en verde.
+const SCHEMA_DOCUMENT_PAIRS = [
+  ['docs/design-system/component-catalog.schema.json', 'docs/design-system/component-catalog.json'],
+  ['docs/design-system/stable-api.schema.json', 'docs/design-system/stable-api-1.0.0.json'],
+  ['docs/design-system/ui-groups-inventory.schema.json', 'docs/design-system/ui-groups-inventory.json'],
+  ['docs/design-system/state-semantics.schema.json', 'docs/design-system/state-semantics.json'],
+  ['docs/design-system/family-approvals.schema.json', 'docs/design-system/family-approvals.json'],
+  ['docs/design-system/a11y-baseline.schema.json', 'docs/design-system/a11y-baseline.json'],
+  ['docs/design-system/a11y-exceptions.schema.json', 'docs/design-system/a11y-exceptions.json'],
+];
+
+for (const [schemaFile, documentFile] of SCHEMA_DOCUMENT_PAIRS) {
+  const schema = documents.get(schemaFile);
+  const document = documents.get(documentFile);
+  if (!schema || !document) continue;
+  // `isRoot: false` a proposito, al reves que en los manifiestos: aqui no hay
+  // otro chequeo que cubra el `required` de primer nivel, asi que lo aplica
+  // este mismo recorrido.
+  for (const failure of schemaPartialFailures(document, schema, schema, '', false)) {
+    failures.push(`${documentFile}: ${failure}`);
   }
 }
 
