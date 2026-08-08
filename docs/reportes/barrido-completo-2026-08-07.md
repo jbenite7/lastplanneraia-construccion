@@ -161,11 +161,93 @@ Dos `h1`, y el primer encabezado del documento es un `h3` del carril.
 - **195 pruebas en verde**, incluidas las de PDC v2, escalamientos, selector de proyecto y la mayor
   parte del laboratorio.
 
-## Lo que este barrido NO cubrió
+## Cobertura: lo que faltaba y se cerró después
 
-- **Las specs que mutan datos** (`full-app-flow.spec.mjs`): su candado exige el stack de CI exacto.
-  Se **excluyeron** en vez de falsear el consentimiento.
-- **Los 17 specs de `e2e/`** (la biblia de flujos): comparten base con la corrida y habrían chocado.
-- **Roles denegados**: se barrió con `test.R` y `test.A`; no se cubrió `test.V`.
-- **Revalidación contra `main`**: esta rama va por detrás. B-3 sí se verificó en `main` (blob
-  idéntico); el resto se midió sobre `10969800`.
+La primera entrega de este informe declaró cuatro huecos. Al preguntarlos el usuario, **uno resultó
+falso y dos no eran impedimentos sino trabajo sin hacer**. Se cerraron los cuatro:
+
+### 1. Las specs que mutan datos — ya estaban cubiertas (la declaración era errónea)
+
+`full-app-flow.spec.mjs` **sí corrió** en la tanda principal (pruebas 150 y 151, 2 fallos): el
+entorno de esa corrida ya llevaba `E2E_REQUIRE_ISOLATED_DB=1`, `E2E_ALLOW_DB_MUTATION=design-system-ci`
+y el stack de CI exacto que exige el candado. La exclusión fue **sólo** en la re-corrida contra la
+copia de datos reales, donde el candado sí bloqueaba y no se falseó.
+
+### 2. Los 17 specs de `e2e/` — ejecutados: 53 pasan, 3 fallan
+
+Primera corrida: 41 pasan, **14 fallan por una sola causa** —falta `E2E_ADMIN_USERNAME`, que la
+suite exige y se niega a inventar—. Repetida con las credenciales sembradas que el propio repo
+declara en sus fixtures, sobre el contenedor desechable: **12 pasan, 3 fallan**.
+
+**Las cinco suites de la biblia de flujos pasaron enteras** (`transversal`, `cascada-lps`, `pdc`,
+`soporte`, `lectura`), igual que smoke y workflows. Son las que cubren «escenario por escenario».
+
+Los 3 fallos restantes destaparon B-9.
+
+## B-9 · Una columna que el código necesita no la crea ninguna migración — severidad 4
+
+Los tres fallos de `admin/proyectos-crud.spec.mjs` son un 500 al crear proyecto. Reproducido a mano:
+`POST /admin/proyectos/guardar` con CSRF válido devuelve **HTTP 500**, y `admin/logs/php_error.log`
+lo explica:
+
+```
+PHP Fatal error: Uncaught PDOException: SQLSTATE[42S22]:
+Column not found: 1054 Unknown column 'fechaInicioLineaBase' in 'field list'
+  #1 admin/src/Models/Project.php(356): Database->query('INSERT INTO gen...')
+  #2 admin/src/Controllers/ProjectController.php(333): Project->create(Array)
+```
+
+**No es un defecto de la aplicación, y por poco lo reporto como tal.** La comprobación decisiva fue
+mirar las dos bases:
+
+| Base | `fechaInicioLineaBase` / `fechaFinLineaBase` |
+|---|---|
+| Base real del proyecto | **existen** |
+| Fixture de CI (construido desde `database/migrations/`) | **no existen** |
+
+El código está bien; la base de pruebas se quedó atrás. **Pero la causa de fondo es peor que el
+síntoma:** `grep -rln "fechaInicioLineaBase" database/` no encuentra **ninguna migración** que cree
+esas columnas — sólo semillas las nombran. Existen en la base real porque se añadieron fuera del
+control de migraciones.
+
+Consecuencia: **cualquier entorno reconstruido desde `database/migrations/` nace roto.** Crear
+proyectos en el panel de admin y `src/Services/Pdc/FlujoCajaService.php` fallan con 500. Afecta a un
+alta de entorno, a una restauración desde cero y al propio CI, que por eso no puede cubrir esa área.
+
+También significa que **un verde del fixture de CI prueba menos de lo que aparenta** en todo lo que
+toque estas columnas.
+
+Se **reporta sin arreglar**: escribir la migración que falta toca el esquema, y `AGENTS.md` exige
+dry-run, gate de Plannotator, respaldo verificable y plan de restauración.
+
+### 3. Rol denegado `test.V` — verificado, y el RBAC está sano
+
+Contrato de AGENTS.md («un rol permitido y uno denegado») cumplido sobre
+`POST /programacion-intermedia/shared-constraints/apply`:
+
+| Rol | Respuesta |
+|---|---|
+| `test.V` (Visualizador) | **403 Acceso denegado** |
+| `test.R` (Residente) | 200, llega a la validación de negocio |
+
+`test.V` recibe 200 en las ocho vistas probadas, incluida `/programa-general-actualizar` — es
+**lectura**, y el servidor rechaza la escritura. Sin hallazgo.
+
+Sí confirma de paso el hallazgo `R-1` de la campaña, que sigue abierto: el 403 responde HTML pelado
+(`<h1>Error 403</h1><p>Acceso denegado.</p>`), sin página de error.
+
+### 4. Revalidación contra `main` — hecha: los seis hallazgos siguen vivos
+
+Verificado contra `main` (`dbc3536a`), no contra la rama del barrido:
+
+| Hallazgo | Estado en `main` |
+|---|---|
+| B-1 tres scripts con `process.exit` en el `testDir` | presentes |
+| B-3 goldens de PG y PI sin tocar desde el 6-ago 10:30 | confirmado |
+| B-4 `admin/views/` sin un solo `<main>` | cero coincidencias |
+| B-5 `is-zero` en PI y PS, **ausente en PG** | confirmado |
+| B-6 los ocho CDN de `/control-cambios` | presentes |
+| B-7 `core.css` sin capa en `/login`, `/password/forgot`, `/password/reset` | confirmado sirviendo |
+| B-8 dos `<h1>` en `controlCambios.view.php` | confirmado |
+
+**Ninguno es un fantasma ya arreglado.**
