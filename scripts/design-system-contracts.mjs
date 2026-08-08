@@ -290,15 +290,131 @@ for (const alias of aliases?.aliases || []) {
   }
 }
 const manifestSchema = documents.get('docs/design-system/module-manifest.schema.json');
+
+// Validador de esquema DELIBERADAMENTE PARCIAL para los manifiestos.
+//
+// Por que existe: hasta esta revision el gate solo leia `manifestSchema.required`
+// para comprobar *presencia* de campos, y nunca aplicaba nada mas del esquema.
+// Consecuencia medida: un escenario que declaraba el tema claro retirado (el
+// prohibido por contrato en DS-030) con su golden nombrado en consecuencia
+// pasaba el gate en verde, igual que propiedades inventadas pese al
+// `additionalProperties: false` del propio esquema.
+//
+// Por que no es un validador de JSON Schema completo: este repositorio tiene
+// tres dependencias en total y anadir un validador es una decision de producto,
+// no del gate. Se implementa a mano lo minimo que cierra el agujero.
+//
+// LO QUE SE APLICA (y solo esto):
+//   - `additionalProperties: false` -> ninguna propiedad no declarada.
+//   - `enum` -> el valor debe ser uno de los declarados (asi entra `theme`,
+//     `density` y `capture` desde el esquema, no reimplementados a mano).
+//   - `const` -> el valor debe ser exactamente el declarado.
+//   - `required` sobre subobjetos (escenarios y viewport); el `required` de
+//     primer nivel se sigue comprobando aparte, mas abajo, para conservar el
+//     mensaje `missing required field X` que ya cubren las pruebas.
+//   - Recorrido de `properties`, `items` y `$ref` local (`#/$defs/...`) para
+//     poder llegar a lo anterior.
+//
+// LO QUE NO SE APLICA (sigue sin comprobarse):
+//   `type`, `pattern`, `minimum`, `maxItems`, `minItems`, `format`, `oneOf`,
+//   `anyOf`, `allOf`, `not`, `if/then/else`, `$ref` remoto, `patternProperties`,
+//   `dependentRequired` y cualquier otra palabra clave. Algunas de ellas
+//   (`sha256` como hex de 64, el viewport minimo) las cubre por otro camino el
+//   propio gate; otras simplemente no estan cubiertas. No leer esto como
+//   "los manifiestos estan validados contra su esquema".
+const SCHEMA_KEYWORDS_APPLIED = ['additionalProperties:false', 'enum', 'const', 'required', '$ref', 'items'];
+
+function resolveSchemaRef(schema, rootSchema) {
+  let current = schema;
+  const seen = new Set();
+  while (current && typeof current.$ref === 'string') {
+    if (!current.$ref.startsWith('#/') || seen.has(current.$ref)) return null;
+    seen.add(current.$ref);
+    current = current.$ref.slice(2).split('/')
+      .reduce((node, segment) => (node ? node[segment] : undefined), rootSchema);
+  }
+  return current;
+}
+
+function schemaPartialFailures(value, schema, rootSchema, path, isRoot = false) {
+  const resolved = resolveSchemaRef(schema, rootSchema);
+  if (!resolved || typeof resolved !== 'object') return [];
+  const found = [];
+  const where = path || '(raiz)';
+  if (Array.isArray(resolved.enum) && !resolved.enum.includes(value)) {
+    found.push(`${where}: valor ${JSON.stringify(value)} fuera del enum del esquema `
+      + `(${resolved.enum.map((option) => JSON.stringify(option)).join(', ')})`);
+  }
+  if (Object.hasOwn(resolved, 'const') && value !== resolved.const) {
+    found.push(`${where}: valor ${JSON.stringify(value)} distinto del const del esquema `
+      + `(${JSON.stringify(resolved.const)})`);
+  }
+  if (Array.isArray(value) && resolved.items) {
+    value.forEach((item, index) => {
+      found.push(...schemaPartialFailures(item, resolved.items, rootSchema, `${path}[${index}]`));
+    });
+    return found;
+  }
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const properties = resolved.properties || {};
+    if (resolved.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!Object.hasOwn(properties, key)) {
+          found.push(`${where}: propiedad no declarada en el esquema: ${key}`);
+        }
+      }
+    }
+    // El `required` de primer nivel del manifiesto se comprueba aparte (mensaje
+    // `missing required field X`); aqui se cubren los subobjetos, que antes no
+    // tenian ninguna comprobacion de campos obligatorios.
+    if (!isRoot && Array.isArray(resolved.required)) {
+      for (const key of resolved.required) {
+        if (!Object.hasOwn(value, key)) {
+          found.push(`${where}: falta el campo obligatorio ${key}`);
+        }
+      }
+    }
+    for (const [key, entry] of Object.entries(value)) {
+      if (!Object.hasOwn(properties, key)) continue;
+      found.push(...schemaPartialFailures(entry, properties[key], rootSchema, path ? `${path}.${key}` : key, false));
+    }
+  }
+  return found;
+}
+
 const manifests = inventoryManifestFiles.map((name) => {
   const relPath = `${manifestsDir}/${name}`;
   if (!existsSync(join(root, relPath))) {
     failures.push(`${relPath}: missing`);
     return null;
   }
-  return readJson(relPath);
+  const document = readJson(relPath);
+  if (document) Object.defineProperty(document, '__file', { value: name, enumerable: false });
+  return document;
 }).filter(Boolean);
 enforceUnique(manifests, 'moduleId', 'module manifest moduleId');
+
+// `moduleId` era unico pero no estaba atado a nada: renombrar laboratory.json a
+// cualquier otro nombre conservando su `moduleId` pasaba en verde, y auth.json
+// podia declarar `moduleId: "no-soy-auth"` sin que nada lo notara. Se ata al
+// nombre del archivo, que es la unica correspondencia que hoy cumplen los 15
+// manifiestos sin excepciones.
+//
+// Se descarto atarlo a `inventory.modules[].moduleId` porque ese campo no
+// describe el archivo: project-selector.json declara `project-selector` mientras
+// el inventario lo llama `projects` (etiqueta de dominio que tambien usan
+// legacy-aliases.json y operational-fixtures.json), y laboratory.json y
+// foundation-shell.json no tienen entrada en `modules[]` en absoluto. Atarlo ahi
+// habria exigido renombrar datos vivos o inventar una lista de excepciones.
+for (const manifest of manifests) {
+  const expectedModuleId = manifest.__file.replace(/\.json$/, '');
+  if (manifest.moduleId !== expectedModuleId) {
+    failures.push(
+      `${manifest.__file}: moduleId declara "${manifest.moduleId}" pero debe ser `
+      + `"${expectedModuleId}", el nombre del archivo del manifiesto`,
+    );
+  }
+}
 // Sin esta comprobacion, un manifiesto intruso con un `moduleId` duplicado
 // queda invisible para `programManifest`/`laboratoryManifest` (que toman el
 // primer match con `find`) pero sigue aportando escenarios a las demas
@@ -311,6 +427,11 @@ for (const manifest of manifests) {
   for (const field of manifestSchema?.required || []) {
     if (!Object.hasOwn(manifest, field)) {
       failures.push(`${manifest.moduleId}: missing required field ${field}`);
+    }
+  }
+  if (manifestSchema) {
+    for (const failure of schemaPartialFailures(manifest, manifestSchema, manifestSchema, '', true)) {
+      failures.push(`${manifest.moduleId}: ${failure}`);
     }
   }
   for (const componentId of manifest.components || []) {
@@ -379,10 +500,36 @@ for (const manifest of manifests) {
 // comprueba dentro de cada manifiesto (`scenarioIds` se re-crea por manifiesto),
 // asi que indexar solo por `scenario.id` dejaba que cualquier otro modulo
 // reclamara el id de un escenario autorizado y heredara la excepcion de alto.
-const ELEMENT_CAPTURE_ALLOWLIST = new Set([
-  'laboratory/states-feedback-dark-1180x820',
-  'laboratory/states-feedback-dark-1440x900',
+//
+// La lista blanca protegia el QUIEN pero no el QUE: los dos escenarios
+// autorizados podian presentar cualquier PNG que no excediera el ancho del
+// viewport. Sustituir el golden de states-feedback-dark-1180x820 por un PNG de
+// 390x844 pasaba en verde. Por eso cada entrada declara ahora las dimensiones
+// exactas del recorte, no solo su nombre: la excepcion deja de ser "el alto no
+// se comprueba" y pasa a ser "el alto es este".
+//
+// Se eligieron dimensiones exactas y no un piso de alto porque un piso sigue
+// admitiendo cualquier PNG alto (un 1102x4000 pasaria) y porque el numero no
+// cuesta mantenerlo: cuando el recorte cambie legitimamente, el `sha256` del
+// escenario cambia y hay que editar el manifiesto de todas formas; esta linea
+// se actualiza en el mismo commit y entra en la misma revision. Un recorte que
+// cambia de tamano sin que nadie lo mire es exactamente lo que esta lista debe
+// impedir. El precio es que el gate falla si alguien regenera el golden sin
+// tocar esta constante: es el fallo deseado, y el mensaje dice el numero nuevo.
+const ELEMENT_CAPTURE_ALLOWLIST = new Map([
+  ['laboratory/states-feedback-dark-1180x820', { width: 1102, height: 1649 }],
+  ['laboratory/states-feedback-dark-1440x900', { width: 1362, height: 1577 }],
 ]);
+
+// `golden` era una ruta libre desde la raiz del repositorio: un escenario podia
+// apuntar a cualquier PNG del repo (incluido uno suelto en la raiz, creado a
+// medida con el nombre y las dimensiones correctas) y el `sha256` solo lo ataba
+// al archivo que el propio manifiesto habia elegido. Los 39 goldens declarados
+// hoy viven, sin excepcion, bajo el directorio donde los deja la suite de
+// navegador; ese es el unico origen legitimo y el que se exige aqui. Si en el
+// futuro otra suite deja goldens en otro sitio, se anade ese prefijo aqui, con
+// su justificacion, y no antes.
+const GOLDEN_ROOTS = ['tests/browser/__screenshots__/'];
 
 const goldenOwners = new Map();
 const goldenContentOwners = new Map();
@@ -409,6 +556,17 @@ for (const manifest of manifests) {
     const expectedDensity = scenario.viewport?.width >= 1200 ? 'compact' : 'touch';
     if (scenario.density !== expectedDensity) {
       failures.push(`${manifest.moduleId}/${scenario.id}: density must be ${expectedDensity}`);
+    }
+    // `..` se rechaza aparte: `startsWith` por si solo dejaria pasar
+    // `tests/browser/__screenshots__/../../../cualquier-cosa.png`.
+    if (scenario.golden
+      && (scenario.golden.split('/').includes('..')
+        || !GOLDEN_ROOTS.some((prefix) => scenario.golden.startsWith(prefix)))) {
+      failures.push(
+        `${manifest.moduleId}/${scenario.id}: golden ${scenario.golden} esta fuera de los `
+        + `directorios de evidencia permitidos (${GOLDEN_ROOTS.join(', ')})`,
+      );
+      continue;
     }
     const goldenPath = join(root, scenario.golden || '');
     if (!scenario.golden || !existsSync(goldenPath)) {
@@ -448,11 +606,21 @@ for (const manifest of manifests) {
         // el alto queda sin acotar, "element" solo esta permitido para los
         // escenarios de ELEMENT_CAPTURE_ALLOWLIST: cualquier otro que declare
         // "element" falla el gate en vez de heredar la excepcion en silencio.
-        if (!ELEMENT_CAPTURE_ALLOWLIST.has(`${manifest.moduleId}/${scenario.id}`)) {
+        const allowed = ELEMENT_CAPTURE_ALLOWLIST.get(`${manifest.moduleId}/${scenario.id}`);
+        if (!allowed) {
           failures.push(
             `${manifest.moduleId}/${scenario.id}: capture "element" no esta en la lista blanca `
             + `(ELEMENT_CAPTURE_ALLOWLIST en scripts/design-system-contracts.mjs); es una excepcion `
             + `al contrato de alto y solo se habilita por revision explicita`,
+          );
+        } else if (pngWidth !== allowed.width || pngHeight !== allowed.height) {
+          // La lista blanca no solo dice quien puede recortar a elemento: dice
+          // cuanto mide ese recorte. Cambiar el PNG por otro (aunque quepa en el
+          // viewport) rompe aqui.
+          failures.push(
+            `${manifest.moduleId}/${scenario.id}: golden mide ${pngWidth}x${pngHeight} px, `
+            + `pero la lista blanca de capture "element" declara `
+            + `${allowed.width}x${allowed.height} para este recorte`,
           );
         }
         if (pngWidth > scenario.viewport.width) {

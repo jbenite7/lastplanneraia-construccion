@@ -53,7 +53,16 @@ const componentContractFields = [
   'testSelector', 'consumers', 'replacement', 'golden',
 ];
 
-function runFixture(mutate) {
+/**
+ * `copyScreenshots` copia los 39 goldens reales (6,8 MB) en vez de enlazarlos.
+ * Solo hace falta cuando la mutacion necesita *escribir* dentro del directorio
+ * de goldens -- sustituir un golden, o fabricar uno nuevo ahi -- porque desde
+ * que el gate exige que todo `golden` viva bajo `tests/browser/__screenshots__/`
+ * ya no se puede fabricar evidencia sintetica en cualquier otra carpeta del
+ * fixture. Escribir a traves del symlink tocaria los PNG reales del repo, que es
+ * justo lo que ninguna prueba puede hacer.
+ */
+function runFixture(mutate, { copyScreenshots = false } = {}) {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'aia-ds-contract-'));
   cpSync(path.join(root, 'docs/design-system'), path.join(fixtureRoot, 'docs/design-system'), {
     recursive: true,
@@ -73,11 +82,19 @@ function runFixture(mutate) {
     mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
     cpSync(source, path.join(fixtureRoot, file));
   }
-  symlinkSync(
-    path.join(root, 'tests/browser/__screenshots__'),
-    path.join(fixtureRoot, 'tests/browser/__screenshots__'),
-    'dir',
-  );
+  if (copyScreenshots) {
+    cpSync(
+      path.join(root, 'tests/browser/__screenshots__'),
+      path.join(fixtureRoot, 'tests/browser/__screenshots__'),
+      { recursive: true },
+    );
+  } else {
+    symlinkSync(
+      path.join(root, 'tests/browser/__screenshots__'),
+      path.join(fixtureRoot, 'tests/browser/__screenshots__'),
+      'dir',
+    );
+  }
   mutate(fixtureRoot);
   const result = spawnSync(process.execPath, [path.join(root, 'scripts/design-system-contracts.mjs')], {
     cwd: fixtureRoot,
@@ -616,8 +633,11 @@ test('un modulo no puede heredar la excepcion reclamando el id de un escenario a
     const manifest = JSON.parse(readFileSync(file, 'utf8'));
     const scenario = manifest.scenarios.find((s) => s.viewport.width === 1180);
     // Un PNG sintetico de 390x844: mas bajo que el viewport declarado, algo que
-    // solo "element" tolera. Vive dentro del fixture, nunca en el repo.
-    const golden = 'docs/design-system/evidence/fixture-element-allowlist-dark-1180x820.png';
+    // solo "element" tolera. Vive dentro del fixture, nunca en el repo -- por eso
+    // el fixture copia los goldens en vez de enlazarlos: desde que el gate exige
+    // que todo golden viva bajo tests/browser/__screenshots__/, fabricarlo en
+    // cualquier otra carpeta lo haria fallar por la regla equivocada.
+    const golden = 'tests/browser/__screenshots__/fixture-element-allowlist-dark-1180x820.png';
     const png = syntheticPng(390, 844);
     const goldenPath = path.join(fixtureRoot, golden);
     mkdirSync(path.dirname(goldenPath), { recursive: true });
@@ -627,7 +647,7 @@ test('un modulo no puede heredar la excepcion reclamando el id de un escenario a
     scenario.golden = golden;
     scenario.sha256 = createHash('sha256').update(png).digest('hex');
     writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
-  });
+  }, { copyScreenshots: true });
 
   assert.notEqual(result.status, 0);
   assert.match(
@@ -692,4 +712,174 @@ test('dos manifiestos con el mismo moduleId hacen fallar el gate, sin importar e
     assert.notEqual(result.status, 0, `insertBeforeLaboratory=${insertBeforeLaboratory}`);
     assert.match(result.stderr, /duplicate module manifest moduleId: laboratory/);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Los cuatro candados de la re-revision de F2a-2a. Todos nacen de la misma
+// raiz: el gate leia `manifestSchema.required` para comprobar presencia de
+// campos y nunca aplicaba nada mas del esquema, y `golden` / `moduleId` /
+// la lista blanca de `capture: "element"` ataban el nombre pero no el
+// contenido. Cada bloque reproduce el vector con el que el revisor paso el
+// gate en verde.
+// ---------------------------------------------------------------------------
+
+// R1. `theme` solo admite "dark" en el esquema, pero el gate nunca aplicaba el
+// enum: un escenario con `theme: "linen"` y su golden nombrado en consecuencia
+// pasaba en verde, metiendo por la puerta de la evidencia un tema prohibido por
+// contrato (DS-030). linen-removal.test.mjs no lo atrapa: su lista fija cubre
+// esquemas y hojas de estilo, no los manifiestos.
+test('un escenario no puede declarar un tema fuera del enum del esquema', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios[0];
+    scenario.theme = 'linen';
+    // El golden se renombra al tema nuevo para que el chequeo de sufijo no sea
+    // el que dispare: lo que debe fallar es el enum, no el nombre del archivo.
+    const golden = 'tests/browser/__screenshots__/auth/login-linen-1180x820.png';
+    const png = syntheticPng(1180, 820);
+    mkdirSync(path.dirname(path.join(fixtureRoot, golden)), { recursive: true });
+    writeFileSync(path.join(fixtureRoot, golden), png);
+    scenario.golden = golden;
+    scenario.sha256 = createHash('sha256').update(png).digest('hex');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  }, { copyScreenshots: true });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /auth: scenarios\[0\]\.theme: valor "linen" fuera del enum del esquema/);
+});
+
+// R1 (bis). `additionalProperties: false` estaba escrito en el esquema y no se
+// aplicaba: cualquier propiedad inventada, en el manifiesto o en un escenario,
+// pasaba en verde.
+test('propiedades no declaradas en el esquema hacen fallar el gate', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.propiedadInventada = 'hola';
+    manifest.scenarios[0].otraInventada = 42;
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /auth: \(raiz\): propiedad no declarada en el esquema: propiedadInventada/);
+  assert.match(result.stderr, /auth: scenarios\[0\]: propiedad no declarada en el esquema: otraInventada/);
+});
+
+// R1 (ter). El enum de `capture` vivia solo en el esquema: un valor invalido no
+// coincidia con "element", caia en la rama por defecto y el escenario pasaba con
+// el chequeo de dimensiones exactas, que su golden cumplia.
+test('un valor de capture fuera del enum del esquema no cae en la rama por defecto', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.scenarios[0].capture = 'elemento';
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /auth: scenarios\[0\]\.capture: valor "elemento" fuera del enum del esquema \("viewport", "element"\)/,
+  );
+});
+
+// R2. La lista blanca de `capture: "element"` protegia el quien pero no el que:
+// el escenario autorizado podia presentar cualquier PNG que cupiera a lo ancho.
+// Sustituir el golden de states-feedback-dark-1180x820 (1102x1649 reales) por
+// uno de 390x844 pasaba en verde -- el agujero original, abierto *dentro* de la
+// lista blanca.
+test('un escenario autorizado a capture "element" no puede cambiar las dimensiones de su recorte', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/laboratory.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios.find(({ id }) => id === 'states-feedback-dark-1180x820');
+    const png = syntheticPng(390, 844);
+    writeFileSync(path.join(fixtureRoot, scenario.golden), png);
+    scenario.sha256 = createHash('sha256').update(png).digest('hex');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  }, { copyScreenshots: true });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /laboratory\/states-feedback-dark-1180x820: golden mide 390x844 px, pero la lista blanca de capture "element" declara 1102x1649/,
+  );
+});
+
+// R3. `golden` era una ruta libre desde la raiz del repositorio: bastaba con
+// dejar un PNG suelto con el nombre y las dimensiones correctas para que el
+// escenario lo presentara como evidencia. El sha256 solo lo ataba al archivo que
+// el propio manifiesto habia elegido.
+test('un golden fuera del directorio de la suite de navegador falla', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios[0];
+    const golden = 'golden-suelto-dark-1180x820.png';
+    const png = syntheticPng(1180, 820);
+    writeFileSync(path.join(fixtureRoot, golden), png);
+    scenario.golden = golden;
+    scenario.sha256 = createHash('sha256').update(png).digest('hex');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /auth\/auth-login-dark-1180x820: golden golden-suelto-dark-1180x820\.png esta fuera de los directorios de evidencia permitidos/,
+  );
+});
+
+// R3 (bis). El prefijo por si solo dejaria pasar una travesia con `..`.
+test('un golden que escapa del directorio permitido con .. falla', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    const scenario = manifest.scenarios[0];
+    const png = syntheticPng(1180, 820);
+    writeFileSync(path.join(fixtureRoot, 'fuga-dark-1180x820.png'), png);
+    scenario.golden = 'tests/browser/__screenshots__/../../../fuga-dark-1180x820.png';
+    scenario.sha256 = createHash('sha256').update(png).digest('hex');
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /auth\/auth-login-dark-1180x820: golden .* esta fuera de los directorios de evidencia permitidos/);
+});
+
+// R4. `moduleId` era unico pero no estaba atado a nada. Los dos vectores que
+// pasaban en verde: renombrar laboratory.json conservando su moduleId, y que
+// auth.json declarara `moduleId: "no-soy-auth"` mientras el inventario lo llama
+// auth. Se ata al nombre del archivo, la unica correspondencia que hoy cumplen
+// los 15 manifiestos (ver el comentario del gate para por que no se ato a
+// inventory.modules[].moduleId).
+test('el moduleId de un manifiesto debe corresponder con el nombre de su archivo', () => {
+  const renombrado = runFixture((fixtureRoot) => {
+    const dir = path.join(fixtureRoot, 'docs/design-system/manifests');
+    const laboratory = readFileSync(path.join(dir, 'laboratory.json'), 'utf8');
+    writeFileSync(path.join(dir, 'otro-nombre.json'), laboratory);
+    rmSync(path.join(dir, 'laboratory.json'));
+    const inventoryFile = path.join(dir, 'inventory.json');
+    const inventory = JSON.parse(readFileSync(inventoryFile, 'utf8'));
+    inventory.manifests = inventory.manifests
+      .map((name) => (name === 'laboratory.json' ? 'otro-nombre.json' : name));
+    writeFileSync(inventoryFile, `${JSON.stringify(inventory, null, 2)}\n`);
+  });
+
+  assert.notEqual(renombrado.status, 0);
+  assert.match(
+    renombrado.stderr,
+    /otro-nombre\.json: moduleId declara "laboratory" pero debe ser "otro-nombre"/,
+  );
+
+  const suplantado = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/manifests/auth.json');
+    const manifest = JSON.parse(readFileSync(file, 'utf8'));
+    manifest.moduleId = 'no-soy-auth';
+    writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+  });
+
+  assert.notEqual(suplantado.status, 0);
+  assert.match(suplantado.stderr, /auth\.json: moduleId declara "no-soy-auth" pero debe ser "auth"/);
 });
