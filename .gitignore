@@ -385,3 +385,10 @@ goals/pg-chip-de-estado/evidence/*
 !goals/cierre-version-1-1-0-design-system/
 goals/cierre-version-1-1-0-design-system/*
 !goals/cierre-version-1-1-0-design-system/goal.md
+
+# Goal de reapertura de movil/tablet y tema claro (2026-08-07). Como con los demas, hay que
+# re-permitir la carpeta y luego el archivo, porque `goals/*` ya excluyo el directorio y git
+# no desciende a un directorio excluido.
+!goals/reapertura-movil-y-tema-claro/
+goals/reapertura-movil-y-tema-claro/*
+!goals/reapertura-movil-y-tema-claro/goal.md
