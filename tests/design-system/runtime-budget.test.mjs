@@ -192,3 +192,22 @@ test('el esquema de presupuesto admite el viewport movil', async () => {
   assert.ok(viewport, 'no se encontro el enum de viewport');
   assert.ok(viewport.enum.includes('390x844'));
 });
+
+// runtime-budget.schema.json no esta en SCHEMA_DOCUMENT_PAIRS (design-system-contracts.mjs):
+// sus documentos se validan por scripts/design-system-runtime-budget*.mjs a mano, no por el
+// validador de esquema generico. Esa validacion manual es el contrato ejecutable real; el
+// esquema es su documentacion. Esta prueba evita que ambos diverjan en silencio comprobando
+// que measurementKind admite exactamente los mismos valores en los dos sitios.
+test('measurementKind admite los mismos valores en el esquema y en el validador manual', async () => {
+  const schema = JSON.parse(await readFile(
+    new URL('../../docs/design-system/runtime-budget.schema.json', import.meta.url), 'utf8',
+  ));
+  const measurementKind = schema['$defs'].artifactBase.properties.measurementKind;
+  assert.deepEqual(measurementKind.enum.slice().sort(), ['current', 'retrospective']);
+
+  const source = await readFile(
+    new URL('../../scripts/design-system-runtime-budget.mjs', import.meta.url), 'utf8',
+  );
+  assert.match(source, /\['retrospective', 'current'\]\.includes\(artifact\.measurementKind\)/);
+  assert.doesNotMatch(source, /'original'/);
+});

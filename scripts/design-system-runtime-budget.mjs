@@ -108,8 +108,8 @@ export function validateRuntimeBudgetArtifact(artifact) {
   if (!['baseline', 'measurement', 'sample'].includes(artifact.kind)) {
     fail('kind must be baseline, measurement or sample');
   }
-  if (!['original', 'retrospective', 'current'].includes(artifact.measurementKind)) {
-    fail('measurementKind must be original, retrospective or current');
+  if (!['retrospective', 'current'].includes(artifact.measurementKind)) {
+    fail('measurementKind must be retrospective or current');
   }
   const branchKeys = artifact.kind === 'baseline'
     ? ['approval', 'recovery', 'tolerances', 'reason']

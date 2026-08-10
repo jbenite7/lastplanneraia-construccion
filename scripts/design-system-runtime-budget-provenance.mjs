@@ -246,7 +246,8 @@ export function validateCurrentSampleShape(sample, index = 0) {
     for (const observation of probe.observations) {
       if (!observation || typeof observation !== 'object' || Array.isArray(observation)) fail(`${label} theme observation must be an object`);
       requireOnlyKeys(observation, ['phase', 'theme', 'at'], `${label} theme observation`);
-      if (typeof observation.phase !== 'string' || !(observation.theme === null || typeof observation.theme === 'string')
+      if (typeof observation.phase !== 'string' || observation.phase.length < 1
+        || !(observation.theme === null || typeof observation.theme === 'string')
         || !Number.isFinite(observation.at) || observation.at < 0) fail(`${label} theme observation has an invalid shape`);
     }
   }

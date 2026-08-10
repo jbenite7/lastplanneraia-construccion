@@ -87,7 +87,7 @@ test('schema constrains all sampling items and has no provenance-free measuremen
     'utf8',
   ));
   assert.throws(
-    () => validateRuntimeBudgetArtifact({ ...baseline, measurementKind: 'original' }),
+    () => validateRuntimeBudgetArtifact({ ...baseline, measurementKind: 'current' }),
     /baseline measurementKind must be retrospective/,
   );
   const provenanceMismatch = aggregate();
