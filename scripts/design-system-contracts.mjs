@@ -343,16 +343,70 @@ const manifestSchema = documents.get('docs/design-system/module-manifest.schema.
 //
 // LO QUE NO SE APLICA: las combinatorias (`oneOf`, `anyOf`, `allOf`, `not`,
 // `if/then/else`), `$ref` remoto, `patternProperties`, `dependentRequired` y
-// cualquier otra palabra clave que hoy no aparezca en ningun esquema del
-// repositorio. Si un esquema empieza a usar una de ellas, este validador la
-// ignorara en silencio: la prueba `el censo de palabras clave del validador
-// cubre las que usan los esquemas` de tests/design-system/contracts.test.mjs
-// vigila exactamente eso y se pone roja.
-const SCHEMA_KEYWORDS_APPLIED = [
-  'additionalProperties:false', 'enum', 'const', 'required', '$ref', 'items',
-  'type', 'pattern', 'format:date', 'minLength', 'minimum',
-  'minItems', 'maxItems', 'uniqueItems', 'prefixItems',
-];
+// cualquier otra palabra clave que no este en la lista de abajo. Ojo con el
+// alcance: la frase correcta es "ningun esquema EN ALCANCE la usa", no "ninguno
+// del repositorio". `docs/design-system/runtime-budget.schema.json` si usa
+// `maximum`, `oneOf`, `allOf` y `format: "date-time"`, y hoy no esta en
+// SCHEMA_DOCUMENT_PAIRS. Justo por eso el validador NO IGNORA lo que no
+// implementa: `assertSchemaSupported` recorre cada esquema en alcance y falla
+// ante cualquier palabra clave desconocida. Anadir runtime-budget.schema.json a
+// los pares dara un error explicito en vez de una validacion silenciosamente
+// incompleta.
+//
+// Estas dos listas no son documentacion: las lee `assertSchemaSupported`.
+const SCHEMA_KEYWORDS_APPLIED = new Set([
+  'type', 'enum', 'const', 'pattern', 'format', 'minLength', 'minimum',
+  'minItems', 'maxItems', 'uniqueItems', 'required', 'additionalProperties',
+  'properties', 'items', 'prefixItems', '$ref',
+]);
+
+// Palabras clave que NO validan nada: son anotacion o estructura de documento.
+// Ignorarlas es correcto; ignorar una que si valida seria el agujero.
+const SCHEMA_KEYWORDS_ANNOTATION = new Set([
+  '$schema', '$id', '$defs', '$comment', 'title', 'description', 'default', 'examples',
+  'deprecated', 'readOnly', 'writeOnly',
+]);
+
+// Los unicos valores soportados de las palabras clave que este validador
+// implementa solo en parte. `additionalProperties: true` o un subesquema, y
+// cualquier `format` distinto de "date", se rechazan en vez de ignorarse.
+const FORMATS_APPLIED = new Set(['date']);
+
+function assertSchemaSupported(node, file, pointer = '(raiz)') {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+  for (const [keyword, value] of Object.entries(node)) {
+    if (SCHEMA_KEYWORDS_ANNOTATION.has(keyword)) {
+      if (keyword === '$defs') {
+        for (const [name, sub] of Object.entries(value || {})) {
+          assertSchemaSupported(sub, file, `${pointer}/$defs/${name}`);
+        }
+      }
+      continue;
+    }
+    if (!SCHEMA_KEYWORDS_APPLIED.has(keyword)) {
+      failures.push(`${file}: ${pointer}: el gate no implementa la palabra clave de esquema `
+        + `"${keyword}"; validarla en silencio seria peor que no validar, asi que falla aqui `
+        + '(ver SCHEMA_KEYWORDS_APPLIED en scripts/design-system-contracts.mjs)');
+      continue;
+    }
+    if (keyword === 'format' && !FORMATS_APPLIED.has(value)) {
+      failures.push(`${file}: ${pointer}: el gate no implementa format "${value}" `
+        + `(solo ${[...FORMATS_APPLIED].join(', ')})`);
+    }
+    if (keyword === 'additionalProperties' && value !== false) {
+      failures.push(`${file}: ${pointer}: el gate solo implementa additionalProperties: false`);
+    }
+    if (keyword === 'properties') {
+      for (const [name, sub] of Object.entries(value || {})) {
+        assertSchemaSupported(sub, file, `${pointer}/properties/${name}`);
+      }
+    }
+    if (keyword === 'items') assertSchemaSupported(value, file, `${pointer}/items`);
+    if (keyword === 'prefixItems' && Array.isArray(value)) {
+      value.forEach((sub, index) => assertSchemaSupported(sub, file, `${pointer}/prefixItems/${index}`));
+    }
+  }
+}
 
 // Cache de expresiones regulares por texto del `pattern`. Sin ella cada valor
 // recompilaba su regex y el gate corre decenas de veces por la suite estatica.
@@ -607,9 +661,47 @@ for (const manifest of manifests) {
 // Ausencia de `visualEvidence` = rama estricta (>= 1 escenario propio), asi que
 // el silencio nunca afloja nada: los otros 14 manifiestos se comportan igual que
 // antes sin tocar una linea.
+//
+// LISTA BLANCA, y no una regla derivada de los datos. Comprobar solo que la
+// familia exista y este poblada dejaba la delegacion COMPROBABLE PERO NO
+// PERTINENTE: medido sobre los 15 manifiestos reales, 12 pasaban en verde sin un
+// solo escenario propio con solo escribir `family: "actions"`, y `auth`
+// delegando en `shell-navigation` -- que no tienen nada que ver -- tambien
+// pasaba. Es decir, la delegacion era una puerta abierta para todos en vez de
+// una excepcion para el shell.
+//
+// Se descarto la alternativa "el modulo debe declarar componentes de la familia
+// delegada": es pertinencia, no escasez. Medido sobre los manifiestos reales,
+// los 15 declaran componentes de alguna familia y -- peor -- los 15 declaran
+// componentes de `shell-navigation`, asi que esa regla habria dejado pasar
+// exactamente el vector que se queria cerrar (`auth` delegando en
+// `shell-navigation`) y la puerta seguiria abierta para los 15.
+// Exigir ademas que la familia cubra los viewports del modulo tampoco cierra
+// nada: las 10 familias cubren los dos viewports requeridos. La unica propiedad
+// que hace de esto una excepcion es que alguien la revise una por una, igual que
+// con ELEMENT_CAPTURE_ALLOWLIST.
+const VISUAL_EVIDENCE_DELEGATION_ALLOWLIST = new Map([
+  // foundation-shell no es una pantalla capturable sino el shell y la barra
+  // lateral de toda la aplicacion (20 rutas); su cobertura visual real son los
+  // dos escenarios de la familia shell-navigation en el laboratorio.
+  ['foundation-shell', 'shell-navigation'],
+]);
+
 for (const manifest of manifests) {
   const delegacion = manifest.visualEvidence;
   const propios = (manifest.scenarios || []).length;
+  if (delegacion) {
+    const autorizada = VISUAL_EVIDENCE_DELEGATION_ALLOWLIST.get(manifest.moduleId);
+    if (autorizada === undefined) {
+      failures.push(`${manifest.moduleId}: visualEvidence: el modulo no esta autorizado a delegar `
+        + 'su evidencia visual; delegar evidencia exige revision humana y alta explicita en '
+        + 'VISUAL_EVIDENCE_DELEGATION_ALLOWLIST');
+    } else if (autorizada !== delegacion.family) {
+      failures.push(`${manifest.moduleId}: visualEvidence.family: el modulo esta autorizado a `
+        + `delegar en "${autorizada}", no en "${delegacion.family}"; delegar evidencia en otra `
+        + 'familia exige revision humana');
+    }
+  }
   if (!delegacion) {
     if (propios === 0) {
       failures.push(`${manifest.moduleId}: scenarios: sin escenarios propios y sin visualEvidence; `
@@ -977,6 +1069,10 @@ for (const file of [
   if (schema?.additionalProperties !== false) {
     failures.push(`${file}: additionalProperties must be false`);
   }
+  // Un esquema en alcance no puede usar nada que el validador no aplique: si lo
+  // hiciera, la regla escrita en el esquema no existiria en la practica y nadie
+  // se enteraria.
+  assertSchemaSupported(schema, file);
 }
 
 // `process.exitCode` y no `process.exit(1)`: medido el 2026-08-07, `process.exit()`

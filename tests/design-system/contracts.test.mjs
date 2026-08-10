@@ -49,7 +49,7 @@ function syntheticPng(width, height) {
 const root = path.resolve(import.meta.dirname, '../..');
 
 /**
- * Las 60 pruebas de este archivo lanzan el gate en un proceso aparte (~730 ms
+ * Las 65 pruebas de este archivo lanzan el gate en un proceso aparte (~730 ms
  * cada una). El runner de Node corre en serie las pruebas de un mismo archivo,
  * asi que el archivo costaba ~35 s de pared y era el ultimo en terminar de toda
  * la suite estatica. Aqui se declaran dentro de un `describe` con concurrencia
@@ -1224,7 +1224,85 @@ test('delegar la evidencia visual trayendo escenarios propios falla', async () =
   );
 });
 
-// Declaracion final: las 60 pruebas acumuladas arriba, dentro de una suite con
+test('un modulo no autorizado no puede delegar su evidencia visual', async () => {
+  // Vector medido en la revision: sin lista blanca, 12 de los 15 manifiestos
+  // pasaban en verde sin un solo escenario propio con solo escribir una familia
+  // poblada cualquiera. `auth` no tiene nada que ver con `shell-navigation`.
+  const result = await runFixture((fixtureRoot) => {
+    const file = 'docs/design-system/manifests/auth.json';
+    const auth = leer(fixtureRoot, file);
+    auth.scenarios = [];
+    auth.visualEvidence = { source: 'delegated-family', family: 'shell-navigation' };
+    escribir(fixtureRoot, file, auth);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /auth: visualEvidence: el modulo no esta autorizado a delegar su evidencia visual/,
+  );
+  assert.match(result.stderr, /revision humana/);
+});
+
+test('un modulo autorizado no puede delegar en una familia distinta de la suya', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const shell = leer(fixtureRoot, FOUNDATION_SHELL);
+    // `actions` existe y esta poblada: lo que falla no es la familia, es que
+    // nadie ha revisado esa delegacion.
+    shell.visualEvidence.family = 'actions';
+    escribir(fixtureRoot, FOUNDATION_SHELL, shell);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /foundation-shell: visualEvidence\.family: el modulo esta autorizado a delegar en "shell-navigation", no en "actions"/,
+  );
+});
+
+test('un esquema en alcance no puede usar una palabra clave que el gate no implementa', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const file = 'docs/design-system/a11y-baseline.schema.json';
+    const schema = leer(fixtureRoot, file);
+    schema.properties.designSystemVersion.oneOf = [{ type: 'string' }];
+    escribir(fixtureRoot, file, schema);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /a11y-baseline\.schema\.json: \(raiz\)\/properties\/designSystemVersion: el gate no implementa la palabra clave de esquema "oneOf"/,
+  );
+});
+
+test('un esquema en alcance no puede usar un format que el gate no implementa', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const file = 'docs/design-system/family-approvals.schema.json';
+    const schema = leer(fixtureRoot, file);
+    schema.$defs.approval.properties.approvedAt.format = 'date-time';
+    escribir(fixtureRoot, file, schema);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /family-approvals\.schema\.json: \(raiz\)\/\$defs\/approval\/properties\/approvedAt: el gate no implementa format "date-time"/,
+  );
+});
+
+test('las anotaciones de un esquema no se confunden con reglas sin implementar', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const file = 'docs/design-system/a11y-baseline.schema.json';
+    const schema = leer(fixtureRoot, file);
+    schema.properties.fingerprints.description = 'anotacion anadida a proposito';
+    schema.properties.fingerprints.$comment = 'tampoco valida nada';
+    escribir(fixtureRoot, file, schema);
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+// Declaracion final: las 65 pruebas acumuladas arriba, dentro de una suite con
 // concurrencia. Ver el comentario de `gateConcurrency` al principio del archivo.
 describe('contratos ejecutables del design system', { concurrency: gateConcurrency }, () => {
   for (const [nombre, cuerpo] of casos) declareTest(nombre, cuerpo);
