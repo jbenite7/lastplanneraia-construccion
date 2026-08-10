@@ -377,8 +377,12 @@ class ReportProcessor
         $genIdx = 0;
 
         foreach ($result as $data1) {
+            // `$proyecto` se resuelve ANTES del try: el catch de abajo lo usa para el mensaje
+            // de error, y estando dentro del try quedaba indefinido si fallaba su propia
+            // asignacion — el manejador reventaba y TAPABA el error original.
+            // Detectado por PHPStan 2.2 al subir de version (2026-08-08).
+            $proyecto = (string) ($data1["Proyecto_Proceso"] ?? '(proyecto sin nombre)');
             try {
-                $proyecto = $data1["Proyecto_Proceso"];
                 $dbPrefix = $data1["Base_de_Datos"];
                 $genIdx++;
 
@@ -460,8 +464,12 @@ class ReportProcessor
         $restIdx = 0;
 
         foreach ($proyectos as $data1) {
+            // `$proyecto` se resuelve ANTES del try: el catch de abajo lo usa para el mensaje
+            // de error, y estando dentro del try quedaba indefinido si fallaba su propia
+            // asignacion — el manejador reventaba y TAPABA el error original.
+            // Detectado por PHPStan 2.2 al subir de version (2026-08-08).
+            $proyecto = (string) ($data1["Proyecto_Proceso"] ?? '(proyecto sin nombre)');
             try {
-                $proyecto = $data1["Proyecto_Proceso"];
                 $dbPrefix = $data1["Base_de_Datos"];
                 $restIdx++;
 
@@ -597,8 +605,12 @@ class ReportProcessor
         $subIdx = 0;
 
         foreach ($proyectos as $proyectoData) {
+            // `$proyecto` se resuelve ANTES del try: el catch de abajo lo usa para el mensaje
+            // de error, y estando dentro del try quedaba indefinido si fallaba su propia
+            // asignacion — el manejador reventaba y TAPABA el error original.
+            // Detectado por PHPStan 2.2 al subir de version (2026-08-08).
+            $proyecto = (string) ($proyectoData["Proyecto_Proceso"] ?? '(proyecto sin nombre)');
             try {
-                $proyecto = $proyectoData["Proyecto_Proceso"];
                 $base_de_datos = $proyectoData["Base_de_Datos"];
                 $projectId = $this->projectIdFromProjectRow($proyectoData);
                 $subIdx++;

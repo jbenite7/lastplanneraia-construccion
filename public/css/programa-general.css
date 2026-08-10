@@ -603,3 +603,23 @@ html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip {
 
 }
 }
+
+/* Chip contador en cero (B-9 del barrido del 2026-08-07): un chip que marca
+   cero no tiene nada que reclamar y cae a la superficie elevada neutra con
+   tinta secundaria. La clase `is-zero` la pone el JS al recontar
+   (`programa_general/hot.js`). Programa General se habia quedado fuera de la
+   Task 11 de la campana, que solo listaba las hojas de PI y PS: sus cuatro
+   ceros pesaban lo mismo que «Actividad Futura 238».
+
+   Copia literal de la receta ya validada en `programacion-intermedia.css`:
+   en `@layer components` de nivel superior y con !important, porque las reglas
+   de estado viven en `module.components`, una capa posterior, y en
+   declaraciones normales ganarian. Sin capa funcionaria, pero rompe el
+   contrato `unlayered-delivery`. */
+@layer components {
+    html.aia-theme-dark body.pg-page .pdc-legend-item.is-zero {
+        background-color: var(--ds-active-surface-raised) !important;
+        color: var(--ds-active-text-secondary) !important;
+        border-color: var(--ds-active-border) !important;
+    }
+}

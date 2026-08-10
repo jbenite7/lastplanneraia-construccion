@@ -126,7 +126,14 @@
   </aside>
 
   <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
+  <!-- <main>, no <div>: las 8 rutas de admin no declaraban NINGUN landmark principal
+       (grep de "<main" y role="main" sobre admin/views/ daba cero, frente a 19 archivos
+       en views/). El informe de cierre de la campana afirmaba «28/28 con <main> y h1
+       real»; medido el 2026-08-07, la app iba 23/23 pero admin 0/8. Hallazgo B-4.
+       Se cambia solo la etiqueta: AdminLTE engancha por la CLASE content-wrapper, y no
+       existe ningun selector `div.content-wrapper` en admin/ ni en public/, asi que no
+       se mueve un pixel. Al vivir en el layout compartido, cubre las 8 rutas. -->
+  <main class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <div class="container-fluid">
@@ -151,7 +158,7 @@
       </div>
     </section>
     <!-- /.content -->
-  </div>
+  </main>
   <!-- /.content-wrapper -->
 
   <footer class="main-footer">

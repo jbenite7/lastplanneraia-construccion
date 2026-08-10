@@ -160,9 +160,13 @@
 										<img src="/img/logoHorizontal.png" class="img-fluid" alt="Responsive image">
 									</div>
 									<div class="col-sm m-auto">
-										<h1 class="modal-title" id="modalordenDeCambioLabel">
+										<!-- h4, no h1: el h1 del documento es el de la linea 32. Este titulo de
+										     modal era el unico <h1 class="modal-title"> de todo views/ (los otros 16
+										     usan h4 o h5, incluido el de este mismo archivo en la 587), y dejaba la
+										     pagina con DOS h1. Hallazgo B-8 del barrido del 2026-08-07. -->
+										<h4 class="modal-title" id="modalordenDeCambioLabel">
 											<b><p class="modal-body-texto-ordenDeCambio text-center  mb-0" id="modal-body-texto-ordenDeCambio">Orden de Cambio</p></b>
-										</h1>
+										</h4>
 									</div>
 									<div class="col-sm-3 m-auto cc-logo-col">
 										<img src="/img/etiquetaConstructoraAIASAS.png" class="img-fluid" alt="Responsive image">
@@ -606,7 +610,7 @@
 	<!-- Iniciar Popper-->
 	<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<!-- Iniciar Bootstrap-->
-	<script type="text/javascript" charset="utf8" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" charset="utf8" src="/vendor/bootstrap/bootstrap.min.js"></script>
 	<!--Iniciar DataTables-->
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
 	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap4.min.js"></script>
@@ -616,10 +620,12 @@
 	<!--checkboxes DataTables-->
 	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/js/dataTables.checkboxes.min.js"></script>
 	<!--Selector de fechas -->
-	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+	<!-- jquery-ui local: la copia de public/vendor/ es EXACTAMENTE la misma version que pedia
+	     el CDN (1.10.1, verificado en el banner del archivo), asi que el cambio no altera
+	     comportamiento. Se cargaba DOS veces, una a cada lado de Google Charts; queda una. -->
+	<script src="/vendor/jquery-ui.min.js"></script>
 	<!--Google Charts-->
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 	<!--Any Chart-->
 	<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>
 	<script src="https://cdn.anychart.com/releases/v8/js/anychart-circular-gauge.min.js?hcode=c11e6e3cfefb406e8ce8d99fa8368d33"></script>

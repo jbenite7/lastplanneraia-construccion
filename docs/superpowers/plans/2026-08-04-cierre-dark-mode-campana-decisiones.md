@@ -1,6 +1,22 @@
 # Campaña de cierre de dark mode — Plan de implementación
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> # ✅ CAMPAÑA CERRADA — 2026-08-07 · 38 de 38
+>
+> **NO CUENTES LAS CASILLAS `- [ ]` DE ESTE DOCUMENTO. MIENTEN.**
+> Nunca se marcaron, ni una, mientras el trabajo se entregaba y se commiteaba. Quien las cuente
+> obtendrá «34 de 38» o parecido, y estará publicando una cifra falsa — ya pasó con
+> `docs/reportes/estado-desarrollo.html`.
+>
+> **La cifra real es 38 de 38: 36 tareas ejecutadas y 2 retiradas** por la deprecación del PDC V1.
+> Cero pendientes. La fuente de verdad es la tabla de la sección **«Cierre de la campaña —
+> disposición final»**, al final de este archivo: una fila por tarea, cada una con su commit,
+> verificada contra `git log` el 2026-08-07.
+>
+> Lo que la campaña deja abierto son **decisiones del usuario** (`docs/DESIGN-AUDIT.md` §Pendiente de
+> decisión), no trabajo. El relevo está en
+> `goals/cierre-version-1-1-0-design-system/goal.md`, cuya precondición D4 cumplió este cierre.
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. **Histórico: la campaña ya terminó — ver el aviso de arriba.**
 
 **Goal:** Ejecutar las 54 decisiones del registro de dark mode (5 fases F*) entrelazadas con el journey improve-app (6 tasks IA-*), hasta que ninguna entrada quede «pendiente de criterio».
 
@@ -604,6 +620,90 @@ Origen: la Task 7 dejó `/pdc` con encabezado sobrio (negrita + filete, luminanc
 - [ ] **Step 4: Medir con datos reales en solo lectura:** luminancia de la fila de capítulo ≤2× la normal en PG y PI, y captura que demuestre que los capítulos siguen encontrándose de un vistazo.
 - [ ] **Step 5: Recapturar los goldens de PG y PI** con `--update-snapshots=all`, **presentando el antes/después al usuario** (mueve dos líneas base que él ya aprobó una vez). Sincronizar sha256 de manifiestos.
 - [ ] **Step 6: Suite estática 8/8 + ciclo triple + commit.** `git commit -m "feat(tablas): PG y PI estrenan el encabezado sobrio del PDC — un solo lenguaje en las tres"`.
+
+---
+
+## Cierre de la campaña — disposición final de las 38 tareas (2026-08-07)
+
+**Las casillas `- [ ]` de este documento nunca se marcaron.** Se ejecutó tarea por tarea y se fue
+dejando constancia en prosa y en commits, pero nadie volvió a las casillas, así que a partir del
+2026-08-05 el documento decía «pendiente» de trabajo ya entregado. Esta sección es la fuente de
+verdad; **las casillas de arriba no lo son y no se marcan retroactivamente**, porque reescribir 200
+casillas sin haber presenciado cada paso sería fabricar evidencia. Cada fila de abajo se verificó el
+2026-08-07 contra `git log`, no contra la prosa del plan.
+
+Numeración: las tasks van de la 1 a la 37 más la 15b — **38 entradas**, que es de donde sale el
+denominador del informe de estado. Las tasks 17 y 25 están retiradas por la deprecación del PDC V1.
+
+| # | Task | Disposición | Evidencia |
+|---|---|---|---|
+| 1 | F1-1 fixtures suite PS | ejecutada | `9e11f612` |
+| 2 | F1-2 guard matiz leyenda PG | ejecutada | `82f5ea41`, `0e56a592`, `59d2957c` |
+| 3 | IA-1 jobs-to-be-done | ejecutada | `docs/CUSTOMER.md` (añadido en `7a5b738d`) |
+| 4 | F2-1 recaptura de goldens | ejecutada | `560a98fd` |
+| 5 | F3-1 variante B de bordes | ejecutada | `1835d379` |
+| 6 | F3-2 racimos tipográficos | ejecutada | `20321285` |
+| 7 | F3-3 capítulos del PDC | ejecutada, sobre módulo hoy eliminado | `1e479a94` |
+| 8 | F3-4 anchos de columna | ejecutada | `d877a76c` |
+| 9 | F3-5 caja de 44 px del gatillo de PS | ejecutada | `606f64bd` |
+| 10 | F3-6 hover del secundario | ejecutada | `293b2540` |
+| 11 | F3-7 chip contador en cero | ejecutada | `8bf5518c` |
+| 12 | F3-8 Recargar y BI Semanal a la barra | ejecutada | `9f4e9926` |
+| 13 | F3-9 excepciones puntuales | ejecutada (C-3 retirada: PDC V1) | `539aaf68` |
+| 14 | IA-2 volcado a artefactos | ejecutada | `39380f6a` |
+| 15 | F4-1a censo | cerrada como bloqueada por premisa falsa; dividida en 15b y 37 | prosa de la propia task |
+| 15b | F4-1b el PHP emite los ids | ejecutada | `67fe8001` |
+| 16 | F4-2 «Lista para Confirmar» | ejecutada tras aprobación del usuario | `db468067` |
+| 17 | — | **retirada**: PDC V1 deprecado (C-10, C-43 «no aplica») | decisión del usuario 2026-08-04 |
+| 18 | F4-4 `<main>` y `h1` | ejecutada | `a2d3f24b`, `ed0d7897` |
+| 19 | F4-5 Leyenda muerta | ejecutada | `828fa156` |
+| 20 | F4-6 tildes de la guía | ejecutada | `cc720907`, `e125e604` |
+| 21 | F4-7 marco del iframe de Power BI | ejecutada | `f192afee`, `b3860251` |
+| 22 | IA-3 lente de Norman | ejecutada | `16cf647d` |
+| 23 | F5-1 adaptador de admin + marca AIA | ejecutada | `8386c003` |
+| 24 | F5-2 campos opcionales | ejecutada | `5fed7e40` |
+| 25 | — | **retirada**: PDC V1 deprecado (C-36 «no aplica») | decisión del usuario 2026-08-04 |
+| 26 | F5-4 tabla equivalente de BI | ejecutada | `ab7fe120` |
+| 27 | F5-5 lote mecánico + 3 auditorías | ejecutada **salvo C-5**, cerrado como `no ejecutable` | `aeb58277`, `8fbcee64` |
+| 28 | F5-6 borrado de las 22 ramas | ejecutada; quedan 4 ramas locales, ninguna del censo | censo `e648e46c`; sin commit por diseño |
+| 29 | IA-4 microinteracciones | ejecutada; solo `M-1` aplicado, 5 al backlog | `d1557519`, `05b35aad` |
+| 30 | IA-5 copy con SUCCESs | ejecutada; 11 cadenas reescritas, C-33 provisional | `df8a5f03` |
+| 31 | Barrido final + IA-6 + cierre | Steps 1-4 en `690984f5`; **Steps 5 y 6 cerrados el 2026-08-07** | ver abajo |
+| 32 | Indicador de fase de PS | ejecutada | `00d71a2a` |
+| 33 | Tolerancia de goldens | ejecutada | `af162279` |
+| 34 | Columnas numéricas | ejecutada | `631c5bdd` |
+| 35 | Golden de PI con datos | ejecutada | `ac7949f6` |
+| 36 | Encabezado sobrio en PG y PI | ejecutada | `fb059385`, `1dab8584`, `1a4c0e9f` |
+| 37 | F4-1c retirar la inyección del JS | ejecutada | `bf1f2b66` |
+| 38 | Celda de PI bloqueada por falta de Responsable AIA (`N-1`) | ejecutada; **nunca se escribió como task en este plan** | `7ff39b54`, `58ba25ab`, `02670bfb` |
+
+**36 ejecutadas · 2 retiradas por deprecación · 0 pendientes.** La condición de hecho de la campaña
+queda cumplida.
+
+> **Sobre la Task 38 y por qué el denominador sigue siendo 38.** Las cabeceras `### Task N` de este
+> documento son 38 (las 37 numeradas más la 15b), y de ahí sale el denominador que usan los informes.
+> La «Task 38» que cita `docs/DESIGN-AUDIT.md` es trabajo real nacido del hallazgo `N-1` de la Task 22
+> que **se ejecutó sin darse de alta aquí**: no tiene cabecera, así que nunca entró en la cuenta. Se
+> registra en esta tabla para que la evidencia no quede huérfana, sin tocar el denominador —
+> hacerlo 39 rompería la comparación con todos los informes anteriores. **La lección: una task que se
+> ejecuta sin escribirse en el plan queda invisible para todo lo que cuenta cabeceras.**
+
+### Lo que la Task 31 dejó abierto, y no es trabajo
+
+Las diez decisiones del usuario recogidas en `docs/DESIGN-AUDIT.md` §Pendiente de decisión **no son
+deuda de esta campaña**: son preguntas que sólo él puede responder, y se dejan planteadas, no
+ejecutadas. Igual la tarea suya fuera del repositorio: **poner en modo oscuro el informe dentro de
+Power BI**, que ninguna task puede hacer desde aquí.
+
+### Trampa medida al verificar (2026-08-07)
+
+`npm run test:design-system:static` dio **7/8** desde un worktree secundario, con `node-tests` en
+rojo por `foundation.test.mjs:279` («entrypoint … is older than tokens …»). **No era una regresión.**
+`docker-compose.yml:1` fija `name: last-planner-aia`, así que `runPhpInApp()` hace `compose exec` **al
+contenedor del worktree principal**, que monta *otro* árbol: el PHP compara mtimes de archivos que no
+son los del worktree que ejecuta la prueba. Con `COMPOSE_PROJECT_NAME` propio la suite da **8/8**.
+Quien corra la suite estática desde un worktree secundario debe exportar `COMPOSE_PROJECT_NAME`
+antes, o estará midiendo el árbol de otra sesión.
 
 ---
 

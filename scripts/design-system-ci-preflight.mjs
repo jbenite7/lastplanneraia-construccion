@@ -37,6 +37,10 @@ const EXPECTED_INIT_COPIES = [
   ['database/bi/008_bi_riesgos.sql', '108-bi-view.sql'],
   ['database/bi/009_bi_control_tower_summary.sql', '109-bi-view.sql'],
   ['database/bi/010_bi_lineage.sql', '110-bi-view.sql'],
+  // B-9 (2026-08-07): la migracion que crea/repara `general_proyectos_procesos`. Se aplica
+  // DESPUES del fixture para arreglar su deriva (PK sin AUTO_INCREMENT y 3 columnas de
+  // menos), y de paso cada build de CI comprueba que la migracion hace lo que dice.
+  ['database/migrations/20260807_proyectos_lineabase_columns.sql', '120-proyectos-lineabase.sql'],
 ];
 
 function reject(detail) {

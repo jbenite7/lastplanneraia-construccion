@@ -30,3 +30,12 @@ COPY database/bi/007_bi_curva_s_duracion.sql /docker-entrypoint-initdb.d/107-bi-
 COPY database/bi/008_bi_riesgos.sql /docker-entrypoint-initdb.d/108-bi-view.sql
 COPY database/bi/009_bi_control_tower_summary.sql /docker-entrypoint-initdb.d/109-bi-view.sql
 COPY database/bi/010_bi_lineage.sql /docker-entrypoint-initdb.d/110-bi-view.sql
+
+# B-9 (2026-08-07): el fixture declaraba `general_proyectos_procesos` con un esquema derivado del
+# real —sin AUTO_INCREMENT en la PK y sin `fechaInicioLineaBase`, `fechaFinLineaBase` ni
+# `costoDiaRetraso`—, y por eso crear proyecto desde el panel de Admin moria con un 500 que
+# `e2e/tests/admin/proyectos-crud.spec.mjs` no podia pasar por mas que se arreglara el codigo.
+# En vez de parchear el fixture a mano, se aplica LA MIGRACION: una sola fuente de verdad, y de
+# paso cada build de CI comprueba que la migracion hace lo que dice. Va al final, despues de que
+# el fixture haya creado la tabla, porque sus ALTERs son condicionales.
+COPY database/migrations/20260807_proyectos_lineabase_columns.sql /docker-entrypoint-initdb.d/120-proyectos-lineabase.sql

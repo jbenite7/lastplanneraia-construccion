@@ -4,7 +4,21 @@ import { BASE_URL } from './tests/browser/fixtures/base-url.mjs';
 export default defineConfig({
   testDir: './tests/browser',
   testMatch: '*.mjs',
-  testIgnore: ['**/fixtures/**', '**/support/**'],
+  // Los tres `.mjs` de abajo NO son specs: son scripts autoejecutables que se lanzan con `node`
+  // (así los invocan `goals/sidebar-todos-modulos/plan.md:48` y los planes de F0/F1) y terminan
+  // llamando a `process.exit()`. Vivían dentro de este `testDir`, así que Playwright los importaba
+  // en la fase de RECOLECCIÓN y ese `exit(0)` mataba la corrida entera antes de ejecutar un solo
+  // spec, devolviendo código 0: `npx playwright test` daba VERDE habiendo probado NADA
+  // (`--list` reportaba `Total: 0 tests in 0 files`). Medido el 2026-08-07; el verde falso llevaba
+  // ocultos, entre otros, los goldens de PG/PI en rojo y ~75 specs desfasadas.
+  // Se excluyen en vez de moverlos para no invalidar las rutas que ya citan planes y goals.
+  testIgnore: [
+    '**/fixtures/**',
+    '**/support/**',
+    '**/handsontable-ancho-tabla.mjs',
+    '**/shell-sidebar-rollout.mjs',
+    '**/shell-week-admin.mjs',
+  ],
   timeout: 120_000,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),

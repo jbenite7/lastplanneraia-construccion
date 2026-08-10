@@ -113,6 +113,8 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     '108-bi-view.sql',
     '109-bi-view.sql',
     '110-bi-view.sql',
+    // B-9 (2026-08-07): migracion de `general_proyectos_procesos`, ver el Dockerfile.
+    '120-proyectos-lineabase.sql',
   ];
   assert.deepEqual(
     fixtureImage.split('\n')
