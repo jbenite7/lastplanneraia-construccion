@@ -37,7 +37,25 @@ class PasswordResetController
             return;
         }
 
-        $this->service->request($emailValue, 'app');
+        // El resultado se MIRA. Antes se descartaba y siempre se pintaba el mensaje de éxito, así
+        // que una caída total del correo se veía igual que un envío correcto (B-10).
+        $resultado = $this->service->request($emailValue, 'app');
+
+        if ($resultado === PasswordResetService::RESULTADO_FALLIDO) {
+            // Fallo de TRANSPORTE: el relay no responde, credenciales caducadas... Le pasaría a
+            // cualquier dirección, así que decirlo no revela si esta tiene cuenta. El token ya se
+            // borró en el servicio, de modo que reintentar es seguro.
+            $this->renderForgot(
+                'No pudimos enviar el correo en este momento por un problema técnico. '
+                . 'Vuelve a intentarlo en unos minutos; si sigue fallando, avisa al administrador.',
+                'danger',
+                $emailValue,
+            );
+            return;
+        }
+
+        // `enviado` e `ignorado` comparten mensaje A PROPÓSITO: es lo que impide averiguar qué
+        // correos tienen cuenta.
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
             'success',

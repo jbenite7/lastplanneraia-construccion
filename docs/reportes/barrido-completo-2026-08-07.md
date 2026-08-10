@@ -232,18 +232,55 @@ PasswordResetService::request SMTP Error: Could not connect to SMTP host.
 STARTTLS command failed Command not implemented
 ```
 
-Y el token **se creó igual** (1 fila en `password_reset_tokens`), así que queda un token vivo para
-un enlace que nunca salió.
+> **Corrección del 2026-08-08, al arreglarlo:** la redacción original decía que el token «se creó
+> igual y ahí se queda». **Era imprecisa.** `PasswordResetService` ya llamaba a `deleteToken()` en el
+> `catch` del envío, así que un fallo de correo sí limpiaba su token. El huérfano que vi venía de
+> **otro camino**: el `INSERT` estaba **fuera** del `try`, y `resolveAppUrl()` —que lanza si falta
+> `APP_URL`, justo lo que me pasó— se ejecutaba **entre** el `INSERT` y el `try`. Ese hueco sí dejaba
+> tokens vivos, y es un segundo defecto real. Ambos arreglados; ver abajo.
 
 El mensaje genérico es correcto **por seguridad**: no revela si esa dirección tiene cuenta, que es
 la defensa estándar contra enumeración de usuarios. El problema es otro: **una caída total del
 correo se ve exactamente igual que un envío correcto**. Quien pide recuperar su contraseña espera
 indefinidamente algo que no va a llegar, y nadie se entera salvo que alguien lea el log.
 
-No se arregla aquí por decisión del usuario: tocar ese mensaje es equilibrar dos cosas legítimas
-—no filtrar qué correos existen y no mentirle a quien espera— y eso es decisión de producto. La
-salida que no rompe el equilibrio: conservar el texto genérico cuando el envío sale bien, y mostrar
-un fallo técnico honesto («no pudimos enviarlo, inténtalo de nuevo») **sólo** cuando `send()` lanza.
+### ✅ ARREGLADO el 2026-08-08
+
+`PasswordResetService::request()` devolvía `bool` y **el controlador lo descartaba**. Ahora devuelve
+uno de tres resultados nombrados, y la clave está en separar dos cosas que no son iguales:
+
+| Resultado | Qué cuenta | Se muestra |
+|---|---|---|
+| `ignorado` | algo del **usuario** (si ese correo tiene cuenta) | mensaje genérico — se calla a propósito |
+| `enviado` | ídem, para no distinguirse | **el mismo** mensaje genérico |
+| `fallido` | algo del **sistema** (el relay no responde) | aviso honesto de problema técnico |
+
+El razonamiento que lo hace seguro: un fallo de transporte es **global** —le pasaría a cualquier
+dirección—, así que decirlo no revela nada sobre esa dirección en concreto. Lo que sí revelaría es
+distinguir «existe» de «no existe», y eso sigue callado.
+
+**Fuga residual, asumida y escrita en el código:** durante una caída del correo, una dirección
+registrada devuelve `fallido` y una inexistente `ignorado`, así que serían distinguibles mientras
+dure la avería. Cerrarlo exigiría sondear el SMTP también cuando no hay usuario: latencia en cada
+petición y un vector de saturación regalado. Se prefiere la fuga estrecha y transitoria a que un
+fallo total del correo sea **invisible**.
+
+**Segundo arreglo, el del token huérfano:** el enlace se construye ahora **antes** del `INSERT`, así
+que entre insertar y enviar ya no queda nada que pueda lanzar sin limpieza.
+
+**Se arregló también en `admin/`**, que comparte el mismo servicio y arrastraba idéntico el defecto.
+
+**Verificado** contra los cuatro caminos, con emisor inyectado y base real:
+
+| Caso | Resultado | Tokens |
+|---|---|---|
+| Registrado + envío OK | `enviado` | 1 (se conserva) |
+| Registrado + envío roto | `fallido` | **0 (se borra)** |
+| No registrado | `ignorado` | 0 |
+| Formato inválido | `ignorado` | 0 |
+
+Y de extremo a extremo por HTTP: con el relay caído la pantalla muestra el aviso rojo honesto; con
+una dirección no registrada, el genérico de siempre. PHPStan en verde.
 
 ### Y de paso, otro hueco del mismo patrón que B-9
 

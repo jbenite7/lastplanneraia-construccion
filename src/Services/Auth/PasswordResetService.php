@@ -20,26 +20,62 @@ class PasswordResetService
         $this->passwords = $passwords ?: new UserPasswordService($this->db);
     }
 
-    public function request(string $email, string $scope): bool
+    /** Se pidió y salió el correo. */
+    public const RESULTADO_ENVIADO = 'enviado';
+    /** No hay a quién enviar (correo inválido, inexistente o deshabilitado). Indistinguible a propósito. */
+    public const RESULTADO_IGNORADO = 'ignorado';
+    /** Había a quién enviar y el envío FALLÓ. Fallo de transporte, no del usuario. */
+    public const RESULTADO_FALLIDO = 'fallido';
+
+    /**
+     * Devuelve uno de los RESULTADO_*.
+     *
+     * Antes devolvía `bool` y el controlador lo descartaba, así que un fallo total del correo se
+     * veía EXACTAMENTE igual que un envío correcto: la pantalla decía «enviaremos un enlace» y el
+     * error solo quedaba en el log (hallazgo B-10 del barrido del 2026-08-07). Quien pedía recuperar
+     * su contraseña esperaba indefinidamente algo que no iba a llegar.
+     *
+     * Se separa `ignorado` de `fallido` porque son cosas distintas y solo una debe ocultarse:
+     *
+     * - `ignorado` cuenta algo del USUARIO (si ese correo tiene cuenta), así que se calla: es la
+     *   defensa estándar contra enumeración de cuentas.
+     * - `fallido` cuenta algo del SISTEMA (el relay no responde, credenciales caducadas). Es global
+     *   —le pasaría a cualquier dirección— y por eso decirlo no revela nada de esta en concreto.
+     *
+     * Fuga residual, asumida y documentada: durante una caída del correo, una dirección REGISTRADA
+     * devuelve `fallido` y una inexistente `ignorado`, así que un atacante podría distinguirlas
+     * mientras dure la avería. Cerrarlo del todo exigiría sondear el SMTP también cuando no hay
+     * usuario, lo que añade latencia a cada petición y regala un vector de saturación. Se prefiere
+     * la fuga estrecha y transitoria a que un fallo total del correo sea invisible.
+     */
+    public function request(string $email, string $scope): string
     {
         $scope = $this->normalizeScope($scope);
         $normalizedEmail = $this->normalizeEmail($email);
 
         if ($normalizedEmail === '' || !filter_var($normalizedEmail, FILTER_VALIDATE_EMAIL)) {
             $this->audit('RESET_CLAVE_SOLICITUD_INVALIDA', "Solicitud de restablecimiento descartada para correo inválido: {$normalizedEmail}");
-            return false;
+            return self::RESULTADO_IGNORADO;
         }
 
         $user = $this->findEligibleUserByEmail($normalizedEmail);
         if ($user === null) {
             $this->audit('RESET_CLAVE_SOLICITUD_IGNORADA', "Solicitud de restablecimiento ignorada para {$normalizedEmail} ({$scope})");
-            return false;
+            return self::RESULTADO_IGNORADO;
         }
 
         $plainToken = bin2hex(random_bytes(32));
         $tokenHash = hash('sha256', $plainToken);
         $expiresAt = date('Y-m-d H:i:s', time() + self::TOKEN_TTL_SECONDS);
         $requestedIp = substr((string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'), 0, 45);
+
+        // El enlace se construye ANTES de insertar el token. Estaba despues, y como estas dos
+        // lineas viven FUERA del try/catch, un fallo aqui —`resolveAppUrl()` lanza si falta
+        // APP_URL— dejaba el token insertado y sin borrar: un token vivo para un correo que nunca
+        // salio. Medido el 2026-08-08. Resolviendo primero, entre el INSERT y el envio ya no queda
+        // nada que pueda lanzar sin limpieza.
+        $appUrl = $this->resolveAppUrl();
+        $resetUrl = $this->buildResetUrl($appUrl, $scope, $plainToken);
 
         $this->invalidateTokensByUsername((string) $user['usuario'], $scope);
 
@@ -48,8 +84,6 @@ class PasswordResetService
         );
         $stmt->execute([(int) $user['id'], $scope, $tokenHash, $requestedIp, $expiresAt]);
         $tokenId = (int) $this->db->lastInsertId();
-        $appUrl = $this->resolveAppUrl();
-        $resetUrl = $this->buildResetUrl($appUrl, $scope, $plainToken);
 
         try {
             $this->mailer->send(
@@ -63,11 +97,11 @@ class PasswordResetService
             $this->deleteToken($tokenId);
             error_log('PasswordResetService::request ' . $e->getMessage());
             $this->audit('RESET_CLAVE_ENVIO_FALLIDO', "No fue posible enviar el correo de restablecimiento a {$normalizedEmail} ({$scope})");
-            return false;
+            return self::RESULTADO_FALLIDO;
         }
 
         $this->audit('RESET_CLAVE_ENVIADO', "Se envió un enlace de restablecimiento a {$normalizedEmail} ({$scope})");
-        return true;
+        return self::RESULTADO_ENVIADO;
     }
 
     public function findValidToken(string $plainToken, string $scope): ?array

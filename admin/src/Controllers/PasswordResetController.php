@@ -33,7 +33,24 @@ class PasswordResetController extends BaseController
             return;
         }
 
-        $this->service->request($email, 'admin');
+        // Mismo arreglo que en la app (B-10): el resultado se mira en vez de descartarse. Este
+        // panel comparte `PasswordResetService`, asi que arrastraba identico el defecto.
+        $resultado = $this->service->request($email, 'admin');
+
+        if ($resultado === PasswordResetService::RESULTADO_FALLIDO) {
+            // Fallo de transporte: le pasaria a cualquier direccion, asi que decirlo no revela si
+            // esta tiene cuenta. El token ya se borro en el servicio; reintentar es seguro.
+            $this->renderForgot(
+                'No pudimos enviar el correo en este momento por un problema técnico. '
+                . 'Vuelve a intentarlo en unos minutos; si sigue fallando, avisa al administrador.',
+                'danger',
+                $email,
+            );
+            return;
+        }
+
+        // `enviado` e `ignorado` comparten mensaje A PROPOSITO: es lo que impide averiguar que
+        // correos tienen cuenta.
         $this->renderForgot(
             'Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.',
             'success',
