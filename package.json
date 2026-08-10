@@ -23,6 +23,7 @@
     "test:performance:lab": "playwright test tests/browser/design-system-lab.performance.mjs --workers=1",
     "test:runtime-budget:measure": "playwright test tests/browser/design-system-runtime-budget.mjs --workers=1",
     "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.3.json test-output/design-system-runtime-budget.json",
+    "test:rbac-parity": "node --test 'tests/rbac/*.test.mjs'",
     "check:vendor": "node scripts/sync-vendor.mjs --check",
     "sync:vendor": "node scripts/sync-vendor.mjs --write"
   },
