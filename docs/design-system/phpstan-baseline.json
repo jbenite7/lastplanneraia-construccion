@@ -5,31 +5,5 @@
     "admin/src"
   ],
   "policy": "Only semantic fingerprints listed here are tolerated; line drift is ignored, duplicate counts are preserved, and any new fingerprint or global error fails.",
-  "fingerprints": [
-    {
-      "file": "src/Controllers/Api/ListadoActividadesApiController.php",
-      "identifier": "ignore.unmatchedIdentifier",
-      "messageHash": "e9380aac2fed360502fdee079b37aca32b2da925c2089e24d82c464ef6cd2c5c"
-    },
-    {
-      "file": "src/Services/SemiAutoService.php",
-      "identifier": "class.notFound",
-      "messageHash": "73a135dca1732e2d18ab0f7aa1dc545a81ca13a1b884d42531c4ed5ef4d3f3b1"
-    },
-    {
-      "file": "src/Services/SemiAutoService.php",
-      "identifier": "class.notFound",
-      "messageHash": "73a135dca1732e2d18ab0f7aa1dc545a81ca13a1b884d42531c4ed5ef4d3f3b1"
-    },
-    {
-      "file": "src/Services/SemiAutoService.php",
-      "identifier": "class.notFound",
-      "messageHash": "73a135dca1732e2d18ab0f7aa1dc545a81ca13a1b884d42531c4ed5ef4d3f3b1"
-    },
-    {
-      "file": "src/Services/SemiAutoService.php",
-      "identifier": "class.notFound",
-      "messageHash": "73a135dca1732e2d18ab0f7aa1dc545a81ca13a1b884d42531c4ed5ef4d3f3b1"
-    }
-  ]
+  "fingerprints": []
 }
