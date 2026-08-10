@@ -28,7 +28,9 @@ Tres cosas que la auditoría dio por ciertas y **la lectura del código desminti
 
 1. **El worktree ya está limpio.** El spec mandaba resolver 33 líneas sin commitear en `tests/browser/programacion-semanal-roles-phases.mjs`. `git status --short` y `git diff HEAD` sobre ese archivo salen vacíos: entre el arranque de la auditoría y ahora, alguien lo resolvió. **La tarea desaparece**, y la Task 0 lo verifica en vez de darlo por hecho.
 2. **La condición de hecho del goal de BI es imposible de cumplir tal como está escrita.** Pide «aprobación visual de la matriz de 6 modos (Mobile/Tablet/Desktop × Dark/**Linen**)», y el tema `linen` se retiró del producto el 2026-07-25 por DS-030. No se puede aprobar evidencia de un tema que no existe. Hay que redefinir la condición antes de pedir la aprobación: es la Task 5.
-3. **Cerrar el goal del design system no es papeleo.** `docs/design-system/closeout-evidence.json` declara sus 15 gates en `passed`, pero su `generatedAt` es **2026-07-15** mientras el archivo dice `designSystemVersion: 1.1.0`, versión que se publicó el 2026-08-07 (`a5223a0c`). O el campo de versión se subió sin regenerar la evidencia, o el sello de tiempo miente. Es exactamente la trampa de las identidades auto-declaradas que costó siete cierres en F2a. Hay que **medirlo**: Task 6.
+3. **B-10 ya está en `origin/main`, y el merge destapó una rotura publicada.** Al integrar `origin/main` (2026-08-10, 60 commits) resultó que `1af1471f` ya estaba publicado: **el cherry-pick de la Task 1 sobra** y esa tarea se queda solo con la red de pruebas, que sí falta — B-10 llegó a `main` sin ninguna prueba automática. Y el merge dejó la suite estática en **6/8**: `programa-general-actualizar` se quedó sin escenarios ni evidencia porque el remoto borró su golden en `221cae22` («evidencia que nadie comparaba»), mientras su ruta sigue viva en `public/index.php:138`. **El remoto estaba verde por no mirar**: ya tenía `minItems: 1` en `scenarios`, pero su gate no aplicaba los esquemas — que es justo la raíz P-H arreglada el 2026-08-08 y que solo existe en este lado. El merge no rompió nada: hizo honesto un informe que mentía. Se resuelve en la **Task 1b**.
+
+4. **Cerrar el goal del design system no es papeleo.** `docs/design-system/closeout-evidence.json` declara sus 15 gates en `passed`, pero su `generatedAt` es **2026-07-15** mientras el archivo dice `designSystemVersion: 1.1.0`, versión que se publicó el 2026-08-07 (`a5223a0c`). O el campo de versión se subió sin regenerar la evidencia, o el sello de tiempo miente. Es exactamente la trampa de las identidades auto-declaradas que costó siete cierres en F2a. Hay que **medirlo**: Task 6.
 
 ## File Structure
 
@@ -101,25 +103,26 @@ git commit -m "docs(spec): el censo del backlog se re-mide al arrancar el Frente
 
 ---
 
-### Task 1: B-10 llega a `main` con la red de pruebas que le faltaba
+### Task 1: La red de pruebas que a B-10 le falta
 
-El arreglo está verificado a mano por quien lo escribió, pero **no tiene ni una prueba automática**: `ls tests/ | grep -i password` no devuelve nada. Un arreglo de seguridad sin prueba se deshace solo en el siguiente refactor. Se trae y se le pone la red en el mismo movimiento.
+**Corregida el 2026-08-10 tras el merge:** el cherry-pick que decía esta tarea **ya no aplica**. `1af1471f` llegó a `main` por `origin/main`, así que el arreglo está dentro. Lo que sigue faltando es la red: `ls tests/ | grep -i password` no devuelve nada. Un arreglo de seguridad sin prueba se deshace solo en el siguiente refactor.
 
 **Files:**
-- Cherry-pick: `1af1471f` — toca `src/Services/Auth/PasswordResetService.php`, `src/Controllers/Auth/PasswordResetController.php`, `admin/src/Controllers/PasswordResetController.php`, `docs/reportes/barrido-completo-2026-08-07.md`
 - Create: `tests/test_password_reset_resultados.php`
+- Read: `src/Services/Auth/PasswordResetService.php` (ya en `main`)
 
 **Interfaces:**
 - Consumes: Task 0.
 - Produces: `PasswordResetService::request(string $email, string $scope): string`, que devuelve una de tres constantes: `RESULTADO_ENVIADO` (`'enviado'`), `RESULTADO_IGNORADO` (`'ignorado'`), `RESULTADO_FALLIDO` (`'fallido'`). El constructor acepta inyección: `__construct($db = null, ?SmtpMailer $mailer = null, ?UserPasswordService $passwords = null)`. `SmtpMailer::send(string $toEmail, string $toName, string $subject, string $htmlBody, string $textBody = ''): void` devuelve `void` y **lanza** cuando falla; por eso el doble de prueba se construye extendiendo `SmtpMailer` y sobrescribiendo `send()`.
 
-- [ ] **Step 1: Traer el arreglo**
+- [ ] **Step 1: Confirmar que el arreglo ya está dentro**
 
 ```bash
-git cherry-pick 1af1471f
+git log main --oneline --grep="B-10" | head -3
+grep -c "RESULTADO_FALLIDO" src/Services/Auth/PasswordResetService.php
 ```
 
-Esperado: aplica limpio. Si hay conflicto, **PARAR** y reportar: `main` avanzó sobre esos archivos y hay que resolverlo a la vista, no a ciegas.
+Esperado: `1af1471f` aparece, y la constante existe. Si no, **PARAR**: la premisa de esta tarea corregida sería falsa.
 
 - [ ] **Step 2: Comprobar sintaxis y análisis estático**
 
@@ -289,7 +292,93 @@ git add tests/test_password_reset_resultados.php
 git commit -m "test(auth): red de pruebas para los tres resultados de recuperar contrasena (B-10)"
 ```
 
-El cherry-pick del Step 1 ya es su propio commit; este añade la red encima.
+---
+
+### Task 1b: Devolver la evidencia visual de `/programa-general-actualizar`
+
+**PRIMERA TAREA DEL FRENTE. Bloquea el push.** La suite estática está en **6/8** y no se publica un árbol rojo.
+
+El remoto borró en `221cae22` el golden de este módulo y vació sus `scenarios` y `evidence`, con el argumento de que era «evidencia que nadie comparaba». Pero **la ruta sigue viva** (`public/index.php:138`) y el manifiesto sigue en el inventario, así que el módulo quedó incumpliendo su propio contrato: `scenarios` exige `minItems: 1`. Nadie lo vio porque el gate del remoto **no aplicaba los esquemas** — la raíz P-H, arreglada en este lado el 2026-08-08.
+
+**Decisión del usuario (2026-08-10): se captura evidencia fresca, no se restaura la vieja.** El merge trajo cambios en otros goldens (`programa-general-dark-1180x820.png` cambió de tamaño), así que la interfaz se movió: restaurar el PNG anterior pondría el gate en verde avalando una pantalla que quizá ya no se ve así. Un candado que avala algo falso es peor que un candado rojo.
+
+**Files:**
+- Create: `tests/browser/programa-general-actualizar.visual.mjs`
+- Create: `tests/browser/__screenshots__/programa-general-actualizar/programa-general-actualizar-dark-1180x820.png` (golden nuevo)
+- Modify: `docs/design-system/manifests/programa-general-actualizar.json` (`scenarios`, `evidence`, `tests`)
+
+**Interfaces:**
+- Consumes: Task 0.
+- Produces: suite estática en 8/8, que es la precondición del push y de las tareas 6 y 8.
+
+- [ ] **Step 1: Reproducir el rojo y quedarse con el mensaje exacto**
+
+```bash
+node scripts/design-system-contracts.mjs
+```
+
+Esperado: `FAIL` con `programa-general-actualizar: scenarios: sin escenarios propios y sin visualEvidence`.
+
+- [ ] **Step 2: Leer el patrón antes de escribir nada**
+
+Leer `tests/browser/programa-general.visual.mjs` entero. Es el módulo hermano y el patrón a copiar: lee sus escenarios **del manifiesto** (`MANIFEST.scenarios.filter(({ theme }) => theme === 'dark')`), y mockea las respuestas de API con `page.route()` para que la captura no dependa del estado de la base ni de la hora. Ese mock no es opcional: sin él, el golden retrata la base de hoy y falla mañana.
+
+Leer también el escenario que el módulo tenía antes de que el remoto lo borrara, que es la forma exacta que espera el esquema:
+
+```bash
+git show respaldo/main-pre-merge-20260810:docs/design-system/manifests/programa-general-actualizar.json | python3 -m json.tool
+```
+
+- [ ] **Step 3: Declarar el escenario en el manifiesto**
+
+En `docs/design-system/manifests/programa-general-actualizar.json`, poblar `scenarios` con un único escenario dark, `evidence` con el directorio de capturas y `tests` con el archivo nuevo. Los campos y sus valores permitidos salen de `docs/design-system/module-manifest.schema.json` — leerlo, no inventarlos. El `capture` es obligatorio desde `0fadef2c`: el golden debe medir **exactamente** su viewport salvo recorte declarado y autorizado.
+
+- [ ] **Step 4: Escribir el carril visual**
+
+Crear `tests/browser/programa-general-actualizar.visual.mjs` copiando la estructura de `programa-general.visual.mjs`: importar el manifiesto, filtrar los escenarios dark, abrir sesión con `loginAndSelectProject` (puerta de servicio, nunca `/login`), mockear las llamadas de API que use la vista, y comparar contra el golden.
+
+- [ ] **Step 5: Generar el golden y MIRARLO**
+
+```bash
+npx playwright test tests/browser/programa-general-actualizar.visual.mjs --workers=1 --update-snapshots
+```
+
+Después, **abrir el PNG generado y comprobar con los ojos** que retrata la pantalla real: la grilla con datos, no un tablero en blanco. El comentario de `programa-general.visual.mjs` documenta ese error exacto — un mock que devolvía `data: []` producía goldens ciegos que no detectaban ninguna regresión de color. Si la captura sale vacía, el mock está mal: arreglarlo, no aceptarla.
+
+- [ ] **Step 6: Enseñarle la captura al usuario**
+
+`AGENTS.md` §Verificación: los cambios visuales requieren aprobación explícita. Presentarle el PNG con `SendUserFile` y esperar su visto bueno antes de fijarlo como golden.
+
+- [ ] **Step 7: Verificar que el gate pasa a verde**
+
+```bash
+node scripts/design-system-contracts.mjs
+npm run test:design-system:static
+```
+
+Esperado: contratos `PASS` y la suite en **8/8**.
+
+- [ ] **Step 8: La mutación obligatoria — comprobar que el candado muerde**
+
+Vaciar temporalmente `scenarios` en el manifiesto:
+
+```bash
+python3 -c "
+import json; p='docs/design-system/manifests/programa-general-actualizar.json'
+d=json.load(open(p)); d['scenarios']=[]; json.dump(d,open(p,'w'),indent=2,ensure_ascii=False)"
+node scripts/design-system-contracts.mjs; echo "salida: $?"
+git checkout -- docs/design-system/manifests/programa-general-actualizar.json
+node scripts/design-system-contracts.mjs
+```
+
+Esperado: rojo con salida distinta de `0` en medio, y verde otra vez al restaurar. Sin esta comprobación la tarea no está hecha.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add docs/design-system/manifests/programa-general-actualizar.json tests/browser/programa-general-actualizar.visual.mjs tests/browser/__screenshots__/programa-general-actualizar/
+git commit -m "test(design-system): /programa-general-actualizar recupera su evidencia visual"
+```
 
 ---
 
