@@ -166,5 +166,4 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log('✅ Table Contract Gate PASSED: Tokens, 7-step semantic scale, shell rules & JS vocabulary are valid.');
-  process.exitCode = 0;
 }

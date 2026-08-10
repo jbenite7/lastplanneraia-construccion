@@ -45,5 +45,4 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log('✅ Plan de Compras CSS Bundle Gate PASSED.');
-  process.exitCode = 0;
 }

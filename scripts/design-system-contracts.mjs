@@ -577,6 +577,70 @@ function schemaPartialFailures(value, schema, rootSchema, path, isRoot = false) 
   return found;
 }
 
+// Cada esquema del design system con su documento. Hasta esta revision el
+// validador parcial de arriba solo se aplicaba a los manifiestos de modulo: los
+// otros siete esquemas se comprobaban en su FORMA (que declaren $schema, $id,
+// required y additionalProperties: false) pero nunca se aplicaban a su propio
+// documento. Es decir, `additionalProperties: false` estaba escrito en
+// component-catalog.schema.json y una propiedad inventada en
+// component-catalog.json pasaba en verde.
+//
+// Se valida aqui, inmediatamente despues de definir schemaPartialFailures y
+// ANTES de que nada consuma esos documentos (evidence-exceptions.json se lee
+// mas abajo para derivar ELEMENT_CAPTURE_ALLOWLIST y
+// VISUAL_EVIDENCE_DELEGATION_ALLOWLIST): antes vivia al final del archivo,
+// ~350 lineas despues de ese consumo, y aunque el gate fallaba igual (la
+// validacion tardia tambien suma a `failures`), un documento malformado se
+// leia y se usaba sin haber pasado por su esquema todavia.
+const SCHEMA_DOCUMENT_PAIRS = [
+  ['docs/design-system/component-catalog.schema.json', 'docs/design-system/component-catalog.json'],
+  ['docs/design-system/stable-api.schema.json', 'docs/design-system/stable-api-1.0.0.json'],
+  ['docs/design-system/ui-groups-inventory.schema.json', 'docs/design-system/ui-groups-inventory.json'],
+  ['docs/design-system/state-semantics.schema.json', 'docs/design-system/state-semantics.json'],
+  ['docs/design-system/family-approvals.schema.json', 'docs/design-system/family-approvals.json'],
+  ['docs/design-system/a11y-baseline.schema.json', 'docs/design-system/a11y-baseline.json'],
+  ['docs/design-system/a11y-exceptions.schema.json', 'docs/design-system/a11y-exceptions.json'],
+  ['docs/design-system/evidence-exceptions.schema.json', 'docs/design-system/evidence-exceptions.json'],
+];
+
+for (const [schemaFile, documentFile] of SCHEMA_DOCUMENT_PAIRS) {
+  const schema = documents.get(schemaFile);
+  const document = documents.get(documentFile);
+  if (!schema || !document) continue;
+  // `isRoot: false` a proposito, al reves que en los manifiestos: aqui no hay
+  // otro chequeo que cubra el `required` de primer nivel, asi que lo aplica
+  // este mismo recorrido.
+  for (const failure of schemaPartialFailures(document, schema, schema, '', false)) {
+    failures.push(`${documentFile}: ${failure}`);
+  }
+}
+
+for (const file of [
+  'docs/design-system/component-catalog.schema.json',
+  'docs/design-system/stable-api.schema.json',
+  'docs/design-system/ui-groups-inventory.schema.json',
+  'docs/design-system/state-semantics.schema.json',
+  'docs/design-system/family-approvals.schema.json',
+  'docs/design-system/a11y-baseline.schema.json',
+  'docs/design-system/a11y-exceptions.schema.json',
+  'docs/design-system/evidence-exceptions.schema.json',
+  'docs/design-system/module-manifest.schema.json',
+]) {
+  const schema = documents.get(file);
+  if (schema?.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
+    failures.push(`${file}: unsupported $schema`);
+  }
+  if (!schema?.$id) failures.push(`${file}: missing $id`);
+  if (!Array.isArray(schema?.required)) failures.push(`${file}: missing required`);
+  if (schema?.additionalProperties !== false) {
+    failures.push(`${file}: additionalProperties must be false`);
+  }
+  // Un esquema en alcance no puede usar nada que el validador no aplique: si lo
+  // hiciera, la regla escrita en el esquema no existiria en la practica y nadie
+  // se enteraria.
+  assertSchemaSupported(schema, file);
+}
+
 const manifests = inventoryManifestFiles.map((name) => {
   const relPath = `${manifestsDir}/${name}`;
   if (!existsSync(join(root, relPath))) {
@@ -695,6 +759,31 @@ const VISUAL_EVIDENCE_DELEGATION_ALLOWLIST = new Map(
     .map((entry) => [entry.moduleId, entry.delegatesToFamily]),
 );
 
+// Una excepcion que no apunta a nada real es basura o es una trampa: si
+// `moduleId` no existe hoy, la entrada es un permiso durmiente que nadie
+// revisa; y si manana nace un modulo con ese mismo id, hereda la delegacion
+// sin haber pasado revision. Igual con la familia: debe existir en
+// homologation.json y tener escenarios de verdad (scenariosPorFamilia, ya
+// calculado mas arriba), o la excepcion delega en el vacio.
+const manifestModuleIds = new Set(manifests.map((manifest) => manifest.moduleId));
+for (const entry of evidenceExceptions?.visualEvidenceDelegationAllowlist || []) {
+  if (!manifestModuleIds.has(entry.moduleId)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: `
+      + `visualEvidenceDelegationAllowlist: el modulo "${entry.moduleId}" no existe en ningun `
+      + 'manifiesto; esta entrada es un permiso durmiente que no resuelve a nada');
+  }
+  if (!homologatedFamilies.has(entry.delegatesToFamily)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: `
+      + `visualEvidenceDelegationAllowlist: la familia "${entry.delegatesToFamily}" (para `
+      + `"${entry.moduleId}") no existe en homologation.json`);
+  } else if (!scenariosPorFamilia.get(entry.delegatesToFamily)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: `
+      + `visualEvidenceDelegationAllowlist: la familia "${entry.delegatesToFamily}" (para `
+      + `"${entry.moduleId}") existe en homologation.json pero no tiene ningun escenario en `
+      + 'ningun manifiesto');
+  }
+}
+
 for (const manifest of manifests) {
   const delegacion = manifest.visualEvidence;
   const propios = (manifest.scenarios || []).length;
@@ -703,7 +792,7 @@ for (const manifest of manifests) {
     if (autorizada === undefined) {
       failures.push(`${manifest.moduleId}: visualEvidence: el modulo no esta autorizado a delegar `
         + 'su evidencia visual; delegar evidencia exige revision humana y alta explicita en '
-        + 'VISUAL_EVIDENCE_DELEGATION_ALLOWLIST');
+        + 'docs/design-system/evidence-exceptions.json (visualEvidenceDelegationAllowlist)');
     } else if (autorizada !== delegacion.family) {
       failures.push(`${manifest.moduleId}: visualEvidence.family: el modulo esta autorizado a `
         + `delegar en "${autorizada}", no en "${delegacion.family}"; delegar evidencia en otra `
@@ -814,6 +903,22 @@ const ELEMENT_CAPTURE_ALLOWLIST = new Map(
     .map((entry) => [`${entry.moduleId}/${entry.scenarioId}`, { width: entry.width, height: entry.height }]),
 );
 
+// Misma razon que la comprobacion de visualEvidenceDelegationAllowlist mas
+// arriba: una entrada que ya no corresponde a ningun escenario real (porque
+// se renombro o se borro) se pudre en silencio como permiso durmiente, y si
+// otro modulo llega a reclamar ese mismo par moduleId/scenarioId, lo hereda
+// sin revision.
+for (const entry of evidenceExceptions?.elementCaptureAllowlist || []) {
+  const owner = manifests.find((manifest) => manifest.moduleId === entry.moduleId);
+  if (!owner) {
+    failures.push(`docs/design-system/evidence-exceptions.json: elementCaptureAllowlist: `
+      + `el modulo "${entry.moduleId}" no existe en ningun manifiesto`);
+  } else if (!(owner.scenarios || []).some((scenario) => scenario.id === entry.scenarioId)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: elementCaptureAllowlist: `
+      + `el escenario "${entry.scenarioId}" no existe en el manifiesto "${entry.moduleId}"`);
+  }
+}
+
 // `golden` era una ruta libre desde la raiz del repositorio: un escenario podia
 // apuntar a cualquier PNG del repo (incluido uno suelto en la raiz, creado a
 // medida con el nombre y las dimensiones correctas) y el `sha256` solo lo ataba
@@ -903,8 +1008,8 @@ for (const manifest of manifests) {
         if (!allowed) {
           failures.push(
             `${manifest.moduleId}/${scenario.id}: capture "element" no esta en la lista blanca `
-            + `(ELEMENT_CAPTURE_ALLOWLIST en scripts/design-system-contracts.mjs); es una excepcion `
-            + `al contrato de alto y solo se habilita por revision explicita`,
+            + `(docs/design-system/evidence-exceptions.json, elementCaptureAllowlist); es una `
+            + `excepcion al contrato de alto y solo se habilita por revision explicita`,
           );
         } else if (pngWidth !== allowed.width || pngHeight !== allowed.height) {
           // La lista blanca no solo dice quien puede recortar a elemento: dice
@@ -1029,62 +1134,6 @@ for (const [file, document] of documents) {
   if (document?.designSystemVersion !== version) {
     failures.push(`${file}: designSystemVersion must equal ${version}`);
   }
-}
-
-// Cada esquema del design system con su documento. Hasta esta revision el
-// validador parcial de arriba solo se aplicaba a los manifiestos de modulo: los
-// otros siete esquemas se comprobaban en su FORMA (que declaren $schema, $id,
-// required y additionalProperties: false) pero nunca se aplicaban a su propio
-// documento. Es decir, `additionalProperties: false` estaba escrito en
-// component-catalog.schema.json y una propiedad inventada en
-// component-catalog.json pasaba en verde.
-const SCHEMA_DOCUMENT_PAIRS = [
-  ['docs/design-system/component-catalog.schema.json', 'docs/design-system/component-catalog.json'],
-  ['docs/design-system/stable-api.schema.json', 'docs/design-system/stable-api-1.0.0.json'],
-  ['docs/design-system/ui-groups-inventory.schema.json', 'docs/design-system/ui-groups-inventory.json'],
-  ['docs/design-system/state-semantics.schema.json', 'docs/design-system/state-semantics.json'],
-  ['docs/design-system/family-approvals.schema.json', 'docs/design-system/family-approvals.json'],
-  ['docs/design-system/a11y-baseline.schema.json', 'docs/design-system/a11y-baseline.json'],
-  ['docs/design-system/a11y-exceptions.schema.json', 'docs/design-system/a11y-exceptions.json'],
-  ['docs/design-system/evidence-exceptions.schema.json', 'docs/design-system/evidence-exceptions.json'],
-];
-
-for (const [schemaFile, documentFile] of SCHEMA_DOCUMENT_PAIRS) {
-  const schema = documents.get(schemaFile);
-  const document = documents.get(documentFile);
-  if (!schema || !document) continue;
-  // `isRoot: false` a proposito, al reves que en los manifiestos: aqui no hay
-  // otro chequeo que cubra el `required` de primer nivel, asi que lo aplica
-  // este mismo recorrido.
-  for (const failure of schemaPartialFailures(document, schema, schema, '', false)) {
-    failures.push(`${documentFile}: ${failure}`);
-  }
-}
-
-for (const file of [
-  'docs/design-system/component-catalog.schema.json',
-  'docs/design-system/stable-api.schema.json',
-  'docs/design-system/ui-groups-inventory.schema.json',
-  'docs/design-system/state-semantics.schema.json',
-  'docs/design-system/family-approvals.schema.json',
-  'docs/design-system/a11y-baseline.schema.json',
-  'docs/design-system/a11y-exceptions.schema.json',
-  'docs/design-system/evidence-exceptions.schema.json',
-  'docs/design-system/module-manifest.schema.json',
-]) {
-  const schema = documents.get(file);
-  if (schema?.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
-    failures.push(`${file}: unsupported $schema`);
-  }
-  if (!schema?.$id) failures.push(`${file}: missing $id`);
-  if (!Array.isArray(schema?.required)) failures.push(`${file}: missing required`);
-  if (schema?.additionalProperties !== false) {
-    failures.push(`${file}: additionalProperties must be false`);
-  }
-  // Un esquema en alcance no puede usar nada que el validador no aplique: si lo
-  // hiciera, la regla escrita en el esquema no existiria en la practica y nadie
-  // se enteraria.
-  assertSchemaSupported(schema, file);
 }
 
 // `process.exitCode` y no `process.exit(1)`: medido el 2026-08-07, `process.exit()`
