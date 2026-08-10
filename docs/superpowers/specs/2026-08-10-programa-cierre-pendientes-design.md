@@ -100,6 +100,18 @@ porque su salida (las 17 decisiones) es la entrada del Frente 1.
 Tres tandas por naturaleza del cambio, no por puntuación suelta: dentro de cada tanda el orden sí es
 por ICE descendente.
 
+**Recontado el 2026-08-10, tras la sesión de decisión del Frente 0.** Los 17 `decide: usuario` se
+resolvieron: 16 aprobados y 1 diferido (C-42, el tabulador de la barra lateral). El total sube de 39
+a **40 abiertos** porque el Frente 0 destapó uno nuevo al capturar el golden de
+`/programa-general-actualizar`: el chip «Auto-Guardado» no se oculta nunca, ICE 320.
+
+**Reparto real: 23 que ya eran ejecutables + 16 aprobados + 1 diferido = 40. Accionables: 39.**
+
+Uno cambió de naturaleza al preguntarlo y ya no pertenece a la tanda donde estaba: «reabrir semana»
+se había registrado como duda de producto y resultó un hallazgo de permisos con tres capas en
+desacuerdo — cliente, servidor y la regla que el usuario quiere. Su ICE sube de 140 a 400 y entra en
+la tanda 1A, no en la 1B.
+
 | Tanda | Cuántos | De ellos, `decide` | Qué agrupa |
 |---|---|---|---|
 | **1A · Seguridad y RBAC** | 12 | 5 | `canDeleteRows` inerte (490), sesión caducada que pierde trabajo (384), `canSeeReports` inerte (360), `guard(allowIfConfirmed)` sin comprobar (336), RBAC duplicado sin gate (315), los dos criterios divergentes del candado de semana (324), `rand(0,100)` del selector (400), `normalizeRoleCode` privado (288), la invariante incumplida del selector (280), BI-003, RBAC-001, RBAC-A |
