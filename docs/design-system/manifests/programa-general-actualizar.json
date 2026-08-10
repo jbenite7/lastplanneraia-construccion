@@ -50,8 +50,27 @@
   },
   "exceptions": [],
   "tests": [
-    "tests/browser/shell-sidebar-rollout.mjs"
+    "tests/browser/programa-general-actualizar.visual.mjs"
   ],
-  "evidence": [],
-  "scenarios": []
+  "evidence": [
+    "tests/browser/__screenshots__/programa-general-actualizar.visual.mjs/"
+  ],
+  "scenarios": [
+    {
+      "id": "programa-general-actualizar-dark-1180x820",
+      "family": null,
+      "route": "/programa-general-actualizar",
+      "fixture": "sanitized-pilot-v1",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "deterministic",
+      "role": "A",
+      "golden": "tests/browser/__screenshots__/programa-general-actualizar.visual.mjs/programa-general-actualizar-dark-1180x820.png",
+      "sha256": "5da6eedbf1c2422e21d41471b962643b480fa62c1fb137054540e5b03eb6f263"
+    }
+  ]
 }
