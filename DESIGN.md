@@ -727,10 +727,9 @@ Excel o Figma. Es lo que hace posible maximizar la densidad sin cruzar accesibil
   verificados. El piso duro de fuente (`11px`) es solo para elementos secundarios; el
   dato principal no baja de `13px`.
 - **Por qué es admisible:** el criterio de 44 px protege el acierto del dedo sobre un
-  cristal. Esta familia está fuera del alcance móvil del producto por contrato
-  (`AGENTS.md` §Routing: desktop ≥1180 px, dark, sin mobile ni tablet), así que el
-  riesgo que el mínimo de 44px previene no existe aquí — pero el suelo de **24×24px sí
-  aplica y no se cruza**.
+  cristal. Esta familia se valida en el viewport canónico desktop (`1180x820`, dark) y
+  hoy no se expone a táctil, así que el riesgo que el mínimo de 44px previene no existe
+  aquí — pero el suelo de **24×24px sí aplica y no se cruza**.
 - **Si alguna vez se abre a táctil:** esta excepción caduca y los controles vuelven a
   `44px` antes de exponer la superficie.
 
@@ -762,7 +761,7 @@ Excel o Figma. Es lo que hace posible maximizar la densidad sin cruzar accesibil
 - **Nunca** introduzcas hex sueltos, estilos inline, bloques `<style>`, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.
 - **Nunca** hagas que la interfaz se vea **decorativa, saturada de alertas o que exija lectura innecesaria antes de actuar** (anti-referencia de PRODUCT.md).
 - **Nunca** uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.
-- **Nunca** trabajes, generes cambios, pruebas o evidencia para **mobile o tablet**: fuera del alcance visual vigente. `linen` quedó **retirado del producto** en F0 del goal `dark-mode-todos-los-modulos`; dark es el único tema y no existe conmutador.
+- **Ojo con el tema claro:** `linen` quedó **retirado del producto** en F0 del goal `dark-mode-todos-los-modulos`; hoy dark es el único tema y no existe conmutador. Ya no está prohibido trabajar en claro, pero hacerlo es reconstruirlo desde los tokens, no reactivar una variante viva.
 - **Nunca** uses `clamp()` fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.
 - **Nunca** pintes en pantalla las variantes `--ds-color-state-*-light`: son reserva para impresos y XLSX. La escala de pantalla está invertida a oscuro.
 - **Nunca** trates la paleta de estado como una lista plana de cuatro tintes ni repitas matiz entre dos estados de un mismo módulo: son dos canales —nivel en el acento, matiz en el fondo— y el matiz es el único eje que los separa. Tampoco derives pasos de intensidad de un ancla: la paleta es nominal, se midió, y los pasos resultan indistinguibles.

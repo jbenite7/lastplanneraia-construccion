@@ -11,13 +11,17 @@ resumen: "Qué suites existen, cuáles están rojas de fábrica y cómo no perde
 ## Qué manda
 
 [[AGENTS]] §Verificación — primero la prueba enfocada, después se amplía según el riesgo ·
-`docs/qa/workflows.md` (no viaja en git) para flujos de extremo a extremo.
+`docs/qa/workflows.md` para flujos de extremo a extremo. **Corregido el 2026-08-07:** esta página
+decía que ese archivo «no viaja en git» y sí viaja (`git ls-files docs/qa/workflows.md` lo
+devuelve).
 
 ## Las suites
 
 - **PHP**: no hay PHPUnit. Los `tests/test_*.php` son scripts autoejecutables; se corren uno a uno
   con `docker compose exec app php tests/<archivo>.php`.
-- **Design system**: `npm run test:design-system:static`, `:phpstan` y `:runtime`.
+- **Design system**: `npm run test:design-system:static`, `:phpstan` y `:runtime`. La estática son
+  **ocho gates** que corren completos aunque alguno falle (`scripts/design-system-static-suite.mjs`)
+  y cierran con un resumen; el 2026-08-07 salía verde en los ocho.
 - **`tests/browser/`**: Playwright, orientado al laboratorio y al design system.
 - **`e2e/`**: suite **separada**, con su propia configuración y fixtures, para humo, admin y
   flujos. No confundir con la anterior al decidir dónde va una prueba nueva.

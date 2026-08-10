@@ -35,17 +35,17 @@
 
 /* Fuentes locales del design system (Inter + Montserrat, DS-007). Sin capa, igual
    que en `entrypoints/core.css`: solo aporta `@font-face`. */
-@import url("/css/design-system/fonts.css?v=1.0.0");
+@import url("/css/design-system/fonts.css?v=1.1.0");
 
 /* Tokens canonicos y tema activo. `tokens.css` trae su propio `@layer theme`;
    `theme-overrides.css` es quien publica los `--ds-active-*` en dark. */
-@import url("/css/tokens.css?v=1.0.0");
-@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.0.0");
+@import url("/css/tokens.css?v=1.1.0");
+@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.1.0");
 
 /* Adaptadores de vendor. */
-@import url("/css/design-system/adapters/sweetalert2.css?v=1.0.0");
-@import url("/css/design-system/adapters/select2.css?v=1.0.0");
-@import url("/css/design-system/adapters/admin-lte.css?v=1.0.0");
+@import url("/css/design-system/adapters/sweetalert2.css?v=1.1.0");
+@import url("/css/design-system/adapters/select2.css?v=1.1.0");
+@import url("/css/design-system/adapters/admin-lte.css?v=1.1.0");
 
 /* Piezas propias del panel. */
 @import url("/admin/public/css/admin-custom.css?v=2.0.0");

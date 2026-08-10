@@ -4,7 +4,7 @@ estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
 fuente: tests/design-system/state-token-pairing.test.mjs, tests/design-system/accessibility.test.mjs, scripts/design-system-contracts.mjs
-resumen: "Una excepción registrada es una desviación tolerada con dueño, motivo y caducidad; los cuatro inventarios cierran la lista — lo que no está inventariado, falla"
+resumen: "Una excepción registrada es una desviación tolerada con dueño, motivo y caducidad; los cuatro inventarios cierran la lista —lo que no está inventariado, falla— y desde 2026-08-04 los dos de estado anclan por firma, no por línea"
 ---
 # Excepciones registradas: la desviación con nombre y caducidad
 
@@ -19,17 +19,20 @@ Los cuatro inventarios, cada uno con su gate verificado:
 | `a11y-exceptions.json` | Un hallazgo axe concreto, identificado por fingerprint, con `owner`, `reason`, `milestone` y `expiresAt` | `tests/design-system/accessibility.test.mjs:176-222` |
 | `state-token-exceptions.json` | Un «medio par» de tokens de estado (`-bg` sin `-text` o viceversa), con `kind` y `reason` de al menos 80 caracteres | `tests/design-system/state-token-pairing.test.mjs:17,37` |
 | `state-tint-exceptions.json` | Un fondo `--ds-state-tint-*` sin color de texto en el mismo selector | `tests/design-system/state-tint-pairing.test.mjs:8` |
-| `legacy-aliases.json` | Un selector legado vivo, mapeado a su componente canónico (`legacySelector` → `catalogId`) | `scripts/design-system-contracts.mjs:232-238` |
+| `legacy-aliases.json` | Un selector legado vivo, mapeado a su componente canónico (`legacySelector` → `catalogId`) | `scripts/design-system-contracts.mjs:252-256` |
 
 **Para qué existe el mecanismo.** Deja avanzar sin mentir: el gate sigue en verde, pero la deuda
 queda contada, con un responsable y una fecha u versión en que revisitarla. Una excepción sin
 `reason` sustancial o con el motivo genérico no pasa — el mínimo de 80 caracteres de
 `state-token-pairing` existe justo para eso.
 
-**La asimetría que hay que conocer:** `state-token-exceptions.json` ancla sus entradas por
-**firma** (selector + token + `occurrence`), pero su hermano `state-tint-exceptions.json` sigue
-anclado por **número de línea**, que se corre con cualquier inserción encima. Mismo dato, dos
-robusteces distintas.
+**La asimetría se cerró.** Hasta el 2026-08-04, `state-token-exceptions.json` anclaba por **firma**
+(selector + token + `occurrence`) mientras su hermano `state-tint-exceptions.json` seguía anclado
+por **número de línea**. Verificado el 2026-08-07: `state-tint-exceptions.json` va por la `version`
+`2.0.0` y su `purpose` declara el mismo ancla por firma, y su guard
+(`tests/design-system/state-tint-pairing.test.mjs:6-12`) importa `resolveCssException` y
+`signatureKey` del mismo `scripts/design-system/state-token-locator.mjs` que usa el hermano. Los dos
+inventarios tienen hoy la misma robustez — y por tanto también la misma grieta residual.
 
 ## Dónde se rompe esto en la práctica
 

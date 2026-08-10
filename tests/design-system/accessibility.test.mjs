@@ -24,7 +24,9 @@ const readJson = async (file) => JSON.parse(await readFile(
 // —no es un escaneo vacio—. El tratamiento sobrio no relajo la accesibilidad: la arreglo.
 //
 // El choque que bloqueo la retirada entonces —«rehacer el registro exige el escenario aprobado
-// completo, que incluye 390x844, viewport prohibido por AGENTS.md»— no existia. `a11y-exceptions
+// completo, que incluye 390x844, viewport prohibido por AGENTS.md»— no existia. (Esa prohibicion
+// de AGENTS.md se retiro ademas el 2026-08-07: 390x844 quedo permitido pero no exigido, sin
+// evidencia todavia para ninguna familia.) `a11y-exceptions
 // .json` es un contrato escrito a mano: ningun script lo genera, asi que no hay «regeneracion»
 // que arrastre viewports. Los 390x844 salen de `approvedAccessibilityScenarios(homologation)`,
 // que alimenta al LABORATORIO (superficies `lab/...`) y es otra lista de entradas. Estas nueve
@@ -219,9 +221,13 @@ test('axe baseline and exceptions are separate versioned contracts', async () =>
   }
   const baseline = await readJson('a11y-baseline.json');
   const exceptions = await readJson('a11y-exceptions.json');
-  assert.equal(baseline.designSystemVersion, '1.0.0');
+  // Contra version.json, no contra un literal: lo que se afirma es que los dos
+  // contratos van SINCRONIZADOS con la version viva. Fijar '1.0.0' a mano hacia
+  // que el test se rompiera en cada bump sin detectar ninguna desincronizacion.
+  const { version: publicada } = await readJson('version.json');
+  assert.equal(baseline.designSystemVersion, publicada);
   assert.deepEqual(baseline.fingerprints, []);
-  assert.equal(exceptions.designSystemVersion, '1.0.0');
+  assert.equal(exceptions.designSystemVersion, publicada);
   assert.deepEqual(biPrimitivesExceptions(exceptions.exceptions), []);
   assert.deepEqual(programaGeneralExceptions(exceptions.exceptions), []);
 });
@@ -230,7 +236,8 @@ test('the shared helper loads the versioned baseline and exceptions', async () =
   const helper = await import(helperPath);
   assert.equal(typeof helper.loadAccessibilityGovernance, 'function');
   const governance = await helper.loadAccessibilityGovernance();
-  assert.equal(governance.designSystemVersion, '1.0.0');
+  const { version: publicada } = await readJson('version.json');
+  assert.equal(governance.designSystemVersion, publicada);
   assert.deepEqual(governance.baseline, []);
   // Lo que se afirma es que el helper carga el contrato versionado tal cual, no un
   // total escrito a mano que caduca con cada superficie nueva.

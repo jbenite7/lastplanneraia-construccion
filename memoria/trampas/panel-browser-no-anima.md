@@ -4,7 +4,7 @@ estado: vigente
 fecha: 2026-08-06
 areas: [qa, design-system]
 fuente: sesion
-resumen: "El panel Browser integrado tiene el reloj de animaciones congelado: nada que dependa de animationend o transitionend se puede juzgar ahí"
+resumen: "El panel Browser integrado tiene el reloj de animaciones congelado: ni los callbacks de animación llegan, ni las medidas de una propiedad en transición valen — devuelven su valor inicial"
 ---
 **El navegador integrado (`mcp__Claude_Browser__*`) no anima.** Medido el 2026-08-06:
 `document.timeline.currentTime` marcó `0` antes y después de esperar **1778 ms** de reloj real
@@ -25,11 +25,24 @@ Bootstrap cargado. Eso descarta a Bootstrap, no al navegador, y aun así se repo
 de la aplicación. La comprobación que sí cierra el caso es la sonda propia: **si una animación que
 tú acabas de escribir tampoco corre, el sospechoso no es la app**.
 
+**La segunda cara: no hacen falta callbacks para caer.** Medido de nuevo el 2026-08-07, esta vez
+sin ningún evento de por medio. En `/programa-general`, al pulsar `[data-sidebar-toggle]` el rail
+del shell pasaba a `data-sidebar-state="expanded"` y `--aia-sidebar-width` computaba `15rem`, pero
+`getComputedStyle(aside).width` seguía en `64px` y el `padding-left` del body también. Se reportó
+como defecto del shell y no lo era: `getAnimations()` devolvía dos `CSSTransition` de `width` y
+`min-width` en `playState: "running"` con sus keyframes correctos (`64px → 240px`, 220 ms) y
+`currentTime: 0`. Sin reloj, **una transición se queda clavada en su valor inicial**, y como una
+animación en curso gana sobre el estilo inline, ni siquiera `element.style.width = '15rem'` la
+mueve — lo que despista hacia buscar un `!important` inexistente. Con
+`document.getAnimations().forEach(a => a.finish())` el rail medía sus `240px` y el body seguía;
+con Playwright, el ciclo completo `64 → 240 → 64`.
+
 **Why:** el panel se usa como juez de comportamiento («esto funciona / esto no»), y para cualquier
 cosa que dependa de que una animación termine, su veredicto es siempre «no funciona». Ese falso
 negativo es indistinguible de una regresión real.
 
-**How to apply:** ante un componente que no desaparece, no avanza o no dispara su callback, medir
+**How to apply:** ante un componente que no desaparece, no avanza o no dispara su callback —o ante
+una medida geométrica que no cuadra con la regla CSS que sí existe y sí matchea—, medir
 `document.timeline.currentTime` dos veces separadas por un `setTimeout`. Si no avanza, el panel no
 puede juzgar: repetir con Playwright, que sí anima (`chromium.launch()`, mismo viewport 1180×820
 dark, contra el mismo contenedor). Vale para `animationend`, `transitionend`, `requestAnimationFrame`

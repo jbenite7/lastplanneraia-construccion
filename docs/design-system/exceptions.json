@@ -7,8 +7,8 @@
       "file": "public/css/design-system/adapters/handsontable.css",
       "selector": ".handsontable table",
       "owner": "design-system",
-      "reason": "Aislar la grilla canónica del selector móvil global legacy que fuerza display block con important.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aislar la grilla canónica del selector móvil global legacy que fuerza display block con important. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -16,8 +16,8 @@
       "file": "public/css/design-system/adapters/handsontable.css",
       "selector": ".handsontable thead",
       "owner": "design-system",
-      "reason": "Restaurar el grupo de cabecera vendor frente al layout móvil legacy.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Restaurar el grupo de cabecera vendor frente al layout móvil legacy. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -25,8 +25,8 @@
       "file": "public/css/design-system/adapters/handsontable.css",
       "selector": ".handsontable tbody",
       "owner": "design-system",
-      "reason": "Restaurar el grupo de filas vendor frente al layout móvil legacy.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Restaurar el grupo de filas vendor frente al layout móvil legacy. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -34,8 +34,8 @@
       "file": "public/css/design-system/adapters/handsontable.css",
       "selector": ".handsontable tbody tr",
       "owner": "design-system",
-      "reason": "Evitar tarjetas blancas y composición vertical heredadas en filas Handsontable.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Evitar tarjetas blancas y composición vertical heredadas en filas Handsontable. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -43,8 +43,8 @@
       "file": "public/css/design-system/adapters/handsontable.css",
       "selector": ".handsontable :where(th, td)",
       "owner": "design-system",
-      "reason": "Restaurar celdas tabulares y padding tokenizado frente al selector móvil legacy.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Restaurar celdas tabulares y padding tokenizado frente al selector móvil legacy. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -52,8 +52,8 @@
       "file": "public/css/design-system/adapters/legacy-bridge.css",
       "selector": ":where(.pg-page #pgLegend.pdc-legend-autoscaling .pdc-legend-item)",
       "owner": "design-system",
-      "reason": "Neutralizar dimensiones important del autoscaling legacy del piloto hasta retirar el puente de compatibilidad.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Neutralizar dimensiones important del autoscaling legacy del piloto hasta retirar el puente de compatibilidad. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -61,8 +61,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container, .pg-page #hot-container .handsontable,\n    .pg-page #hot-container .ht_master, .pg-page #hot-container .wtHolder,\n    .pg-page #hot-container .wtHider, .pg-page #hot-container .wtSpreader,\n    .pg-page #hot-container table.htCore)",
       "owner": "design-system",
-      "reason": "Aislar la superficie del piloto frente a reglas Handsontable legacy con important.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aislar la superficie del piloto frente a reglas Handsontable legacy con important. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -70,8 +70,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable th, .pg-page .handsontable td)",
       "owner": "design-system",
-      "reason": "Conservar bordes y texto semánticos del piloto frente a la piel Handsontable heredada.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Conservar bordes y texto semánticos del piloto frente a la piel Handsontable heredada. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -79,8 +79,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable thead th)",
       "owner": "design-system",
-      "reason": "Conservar la cabecera tokenizada del piloto frente a la piel Handsontable heredada.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Conservar la cabecera tokenizada del piloto frente a la piel Handsontable heredada. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -88,8 +88,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable .colHeader)",
       "owner": "design-system",
-      "reason": "Dejar transparente el span del texto de cabecera para que herede el fondo del th y no pinte un rectángulo propio.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Dejar transparente el span del texto de cabecera para que herede el fondo del th y no pinte un rectángulo propio. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -97,8 +97,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-actividad-futura)",
       "owner": "design-system",
-      "reason": "Aplicar el estado semántico actividad futura sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar el estado semántico actividad futura sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -106,8 +106,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-en-curso,\n    .pg-page .handsontable td.pg-state-a-tiempo-en-curso)",
       "owner": "design-system",
-      "reason": "Aplicar el estado semántico en curso sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar el estado semántico en curso sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -115,8 +115,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-debe-iniciar,\n    .pg-page .handsontable td.pg-state-restr-0)",
       "owner": "design-system",
-      "reason": "Aplicar el estado semántico debe iniciar sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar el estado semántico debe iniciar sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -124,8 +124,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-r0, .pg-page .handsontable td.pg-state-r1,\n    .pg-page .handsontable td.pg-state-r2-3, .pg-page .handsontable td.pg-state-r4-6)",
       "owner": "design-system",
-      "reason": "Aplicar la escala semántica de restricciones sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar la escala semántica de restricciones sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -133,8 +133,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-atrasado,\n    .pg-page .handsontable td.pg-state-atrasada)",
       "owner": "design-system",
-      "reason": "Aplicar el estado semántico atrasado sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar el estado semántico atrasado sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -142,8 +142,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page .handsontable td.pg-state-terminada,\n    .pg-page .handsontable td.pg-state-sin-datos)",
       "owner": "design-system",
-      "reason": "Aplicar estados semánticos terminal y sin datos sobre reglas de celda legacy del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Aplicar estados semánticos terminal y sin datos sobre reglas de celda legacy del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -151,8 +151,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container :is(td, th).force-wrap)",
       "owner": "design-system",
-      "reason": "Garantizar envoltura entre palabras sin fragmentarlas frente al comportamiento legacy de celdas.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Garantizar envoltura entre palabras sin fragmentarlas frente al comportamiento legacy de celdas. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -160,8 +160,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container td.pg-date-cell)",
       "owner": "design-system",
-      "reason": "Conservar fechas en una línea dentro del adaptador Handsontable del piloto.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Conservar fechas en una línea dentro del adaptador Handsontable del piloto. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -169,8 +169,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore, .pg-page #hot-container.hot-fixed-columns .wtHider, .pg-page #hot-container.hot-fixed-columns .wtSpreader)",
       "owner": "design-system",
-      "reason": "Fijar el ancho calculado de la grilla frente a los estilos inline del vendor; sustituye los style.setProperty !important que hot.js aplicaba fuera de gobernanza.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Fijar el ancho calculado de la grilla frente a los estilos inline del vendor; sustituye los style.setProperty !important que hot.js aplicaba fuera de gobernanza. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -178,8 +178,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container.hot-fixed-columns .handsontable table.htCore)",
       "owner": "design-system",
-      "reason": "Conservar table-layout fixed para columnas estables frente a los estilos inline del vendor; antes vivía como !important inline en hot.js.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Conservar table-layout fixed para columnas estables frente a los estilos inline del vendor; antes vivía como !important inline en hot.js. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "programa-general-pilot",
@@ -187,26 +187,8 @@
       "file": "public/css/design-system/adapters/programa-general-handsontable.css",
       "selector": ":where(.pg-page #hot-container .htAutocompleteArrow)",
       "owner": "design-system",
-      "reason": "Anular el glifo de texto vendor de las celdas dropdown (incompletes serios de contraste en Axe) y sustituirlo por una flecha dibujada con tokens.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "project-selector-legacy",
-      "rule": "unknown-css-layer",
-      "file": "public/css/project-selector.css",
-      "selector": "@layer states",
-      "owner": "project-selector",
-      "reason": "Capa histórica del selector de proyecto fuera del piloto autorizado; se aísla como deuda exacta.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "project-selector-legacy",
-      "rule": "unknown-css-layer",
-      "file": "public/css/project-selector.css",
-      "selector": "@layer responsive",
-      "owner": "project-selector",
-      "reason": "Capa histórica responsive fuera del piloto autorizado; se aísla como deuda exacta.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Anular el glifo de texto vendor de las celdas dropdown (incompletes serios de contraste en Axe) y sustituirlo por una flecha dibujada con tokens. Re-vencida 1.1.0→1.2.0: revisada una a una el 2026-08-07 contra /programa-general (1180x820 dark, datos reales en solo lectura). El opresor sigue vivo — el puente legacy y la piel del vendor siguen cargando con 226 declaraciones !important, y `#hot-container td` (1,0,1) gana por especificidad a `.handsontable :where(th, td)` (0,1,0) aun sin !important. La paga el retiro del puente legacy movil/vendor de Handsontable (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -214,8 +196,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.card, .project-card, .aia-card, .aia-panel, .aia-table-shell, .aia-grid-shell)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -223,8 +205,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.modal-content, .swal2-popup, .aia-modal-surface)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -232,8 +214,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.dropdown-menu, .popover, .toast, .tooltip-inner)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -241,8 +223,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.btn, .btn-pdc-modern, .btn-enter, .island-btn, .pdc-mobile-toggle, .btn-filter-toggle, .aia-btn)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -250,8 +232,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(\n    .form-control,\n    .custom-select,\n    .input-group-text,\n    .select2-selection,\n    .ts-control,\n    .ts-dropdown,\n    .aia-input,\n    .aia-select,\n    .aia-textarea\n  )",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -259,8 +241,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child))",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -268,8 +250,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .form-control:not(:last-child), .input-group > .custom-select:not(:last-child))",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -277,8 +259,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -286,44 +268,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .aia-input:not(:last-child)",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .aia-input:not(:last-child)",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .input-group-append > .input-group-text",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "design-system-core",
-      "rule": "unauthorized-important",
-      "file": "public/css/design-system/entrypoints/theme-overrides.css",
-      "selector": ".project-selector-page .input-group > .input-group-append > .input-group-text",
-      "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -331,8 +277,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     },
     {
       "module": "design-system-core",
@@ -340,17 +286,8 @@
       "file": "public/css/design-system/entrypoints/theme-overrides.css",
       "selector": ":where(.progress, .progress-bar, .progress-xs)",
       "owner": "design-system",
-      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan.",
-      "expiresAtVersion": "1.1.0"
-    },
-    {
-      "module": "legacy-palette-accent",
-      "rule": "hardcoded-hex",
-      "file": "public/css/styles.css",
-      "selector": ":root (--primary)",
-      "owner": "design-system",
-      "reason": "F1 Task 3 remapeo --surface-bg/--text-main a tokens activos, pero el acento azul Apple (--primary) no tiene equivalente semantico 1:1 en --ds-active-action-* (verde corporate): remapearlo es una decision de marca fuera del alcance de esta tarea (que solo corrige el fondo/texto claro heredado del body). F1 Task 5l retiro de esta excepcion --primary-dark, --primary-light y --text-inverse, y borro por completo las entradas legacy-palette-status y legacy-palette-services: sus doce tokens se eliminaron de styles.css tras censar cero consumidores por nombre exacto en public/css, views, public/js, src y admin (incluida la concatenacion de cadenas en JS: los 'color_token' de ControlTowerService resuelven contra el mapa --bi-* de public/js/modules/bi-spa.js, no contra estos). --primary se queda porque conserva consumidores vivos en esta misma hoja. Nota: el rule hardcoded-hex del audit no lleva selector (violacion sin scope de regla CSS), por lo que esta excepcion documenta la decision pero no suprime conteo alguno.",
-      "expiresAtVersion": "1.1.0"
+      "reason": "Copia verbatim plan-mandated de los bloques inline del agregador (goals/segmentacion-entrypoint-css); el gate de partición exige identidad textual mientras coexistan. Re-vencida 1.1.0→1.2.0: medido el 2026-08-07 en navegador (1180x820 dark) degradando la declaracion a normal — el opresor legacy sigue vivo y el radio cae a valores heredados (4px / 11.52px / 15.2px / esquinas inferiores a 0). La paga el retiro del puente legacy movil/vendor y la normalizacion de radios de las hojas legacy (obra de 1.2.0).",
+      "expiresAtVersion": "1.2.0"
     }
   ],
   "migratedPaths": [],

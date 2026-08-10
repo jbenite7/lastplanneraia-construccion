@@ -17,13 +17,13 @@ fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
 | Goal | Estado | Qué persigue |
 |---|---|---|
 | [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado** — falta aprobación visual explícita de la matriz de 6 modos; sin ella no hay commit | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
-| [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | **listo para arrancar** (abierto el 2026-08-04): la precondición D4 se cumplió el 2026-08-07 al cerrar la campaña dark mode —36 tareas ejecutadas, 2 retiradas, 0 pendientes— y el Step 6 de su Task 31 dejó el traspaso escrito en el propio `goal.md` | Publicar la 1.1.0 del design system: pagar o re-vencer las 39 excepciones que vencen en ella (migrando `/proyectos` a primitivas `aia-*`), gates a «al menos 1.0.0» y commit de activación atómico. Por qué el bump cobra deudas: [[subir-la-version-del-ds-cobra-deudas]] |
 | [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **indeterminado** — sin sección de cierre; la última entrada deja pendientes la revisión visual, los datos del piloto y el contrato de release | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
 
 ## Cerrados
 
 | Goal | Matiz |
 |---|---|
+| [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | Cerrado el 2026-08-07 con la publicación de la 1.1.0 (`a5223a0c`): suite estática 8/8 y cero excepciones venciendo en 1.1.0. De las 39, **7 pagadas y 32 re-vencidas a `1.2.0`** con evidencia medida. Su decisión D1 resultó falsa —las 15 de `theme-overrides.css` no eran del selector de proyecto sino normalizaciones globales del DS— así que ese grupo se resolvió con la regla de D3 en vez de migrando `/proyectos`, que no habría pagado ninguna. Detalle en [[subir-la-version-del-ds-cobra-deudas]] y [[version-escrita-a-mano-rompe-el-bump]] |
 | [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | Cerrado el 2026-08-06 sin ejecución propia: lo resolvió `51ccd5ca` de la campaña dark mode. Verificado antes de cerrar — `hot.js:1658` pinta el `ops-state-chip` con su matiz y `programa-general-state-hue.mjs` pasa |
 | [[goals/biblia-t1-transversal/goal|biblia-t1-transversal]] | Cerrado el 2026-08-06 formalizando el trabajo ya hecho el 2026-08-04: entrada a la app (autenticación, proyecto, RBAC), 17 capacidades con escenario y 7 pruebas en verde |
 | [[goals/biblia-t2-cascada-lps/goal|biblia-t2-cascada-lps]] | Cerrado el 2026-08-06 formalizando el trabajo del 2026-08-04: ciclo Last Planner completo, 26 escenarios, 5 pruebas en verde |

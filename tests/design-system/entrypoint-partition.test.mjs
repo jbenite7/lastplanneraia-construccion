@@ -46,10 +46,13 @@ test('el gate exige que core importe theme-overrides.css como último import', (
     join(root, 'public/css/design-system/entrypoints/core.css'),
     'utf8',
   );
+  // Sin anclar a una version concreta: el sello `?v=` sigue a version.json y
+  // fijarlo aqui hacia que este test se rompiera en cada bump.
   const coreWithoutThemeOverrides = realCore.replace(
-    '@import url("/css/design-system/entrypoints/theme-overrides.css?v=1.0.0");',
+    /@import url\("\/css\/design-system\/entrypoints\/theme-overrides\.css(\?v=[^"]*)?"\);\n?/,
     '',
   );
+  assert.notEqual(coreWithoutThemeOverrides, realCore, 'el import debia existir para poder quitarlo');
   const failures = partitionFailures({ root, coreOverride: coreWithoutThemeOverrides });
   assert.ok(failures.some((f) => f.includes('theme-overrides-missing')));
 });

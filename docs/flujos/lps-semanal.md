@@ -47,18 +47,16 @@ Las diez operaciones mutantes: `nuevo`, `modificar`, `eliminar`, `duplicar`, `au
   `semanal_save` recibe **403** y no escribe nada.
 - **Verificación:** lectura — `SemanalApiController.php:128-133`.
 
-> **Hallazgo del 2026-08-04 (registrado, no corregido).** Las dos listas **no coinciden**: la de
-> CSRF (`:128-129`) enumera nueve opciones y **omite `sanear`**, que sí está en `$mutatingOptions`
-> (`:145-148`) — y que efectivamente escribe: ejecuta un `DELETE FROM …programacion_semanal` y un
-> `INSERT` (`:1160-1230`). Conserva las otras defensas, así que sigue exigiendo sesión válida y
-> política de semana; lo que falta es la barrera contra una petición forjada desde otro sitio.
-> `AGENTS.md` exige CSRF en toda mutación autenticada. Está en `docs/EXPERIMENTS.md` con el ICE más
-> alto del backlog.
+> **Hallazgo del 2026-08-04 — CORREGIDO el 2026-08-06 en `32cccddf`.** Las dos listas no
+> coincidían: la de CSRF enumeraba nueve opciones y **omitía `sanear`**, que sí estaba en
+> `$mutatingOptions` y efectivamente escribe (`DELETE` + `INSERT`). Hoy `sanear` figura en las dos
+> (`SemanalApiController:128`), así que las diez mutaciones exigen token.
 >
-> **Confirmado en ejecución el 2026-08-04**, no solo por lectura: la prueba `PS-001` de
-> `e2e/tests/biblia/cascada-lps.spec.mjs` envía `opcion=sanear` **sin token** y la petición
-> atraviesa el punto donde las otras nueve son cortadas, llegando hasta la guardia de prefijo de
-> sesión (que sí la rechaza, por eso responde 403 y no escribe).
+> Queda escrito porque el patrón se repite y conviene reconocerlo: **dos listas paralelas que deben
+> decir lo mismo y nada las obliga**. El PDC previó el mismo riesgo con una red —`|| isset($_POST['columna'])`—
+> que Semanal no tenía. La prueba `PS-001` de `e2e/tests/biblia/cascada-lps.spec.mjs` tuvo que
+> adaptarse al arreglo: antes llegaba al guard de prefijo eligiendo `sanear` para esquivar el CSRF,
+> y ahora manda token válido a propósito.
 
 ## PS-003 · `modificar` se trata como calificación, y por eso puede tocar semanas confirmadas
 

@@ -1,10 +1,34 @@
 # Design System AIA changelog
 
-## Sin publicar (candidato a 1.1.0)
+## 1.1.0 - 2026-08-07
 
-> La versión viva sigue siendo `1.0.0` según `version.json`. Publicar `1.1.0` es un cierre de
-> versión completo: sincroniza `designSystemVersion` en los manifiestos y hace exigibles las 38
-> excepciones registradas con vencimiento «expira en 1.1.0» (`exceptions.json`).
+> Activada el 2026-08-07 junto con la revisión una a una de las 39 excepciones que vencían en esta
+> versión: **7 pagadas y 32 re-vencidas a `1.2.0`** con su evidencia medida. La activación deja de
+> ser un hito por versión: los gates ahora aceptan cualquier SemVer con major ≥1 y `status: stable`,
+> porque el hito fue único y se cumplió en `1.0.0`.
+
+Deuda saldada en este cierre:
+
+- **Las 2 reglas duplicadas del buscador de `/proyectos`** salen de `theme-overrides.css` y del
+  agregador: eran copia literal de las dos reglas genéricas que las preceden, y la forma del control
+  ya la fija `project-selector.css`. Medido: el `input-group` no mueve un píxel (4 excepciones).
+- **El acento `--primary` deja de ser un hex suelto** en `styles.css`: su valor pasa a
+  `--ds-color-accent-legacy-dark` en `tokens.css`, documentado como acento *legacy*, no de marca.
+  Mismo color resuelto, cero píxeles movidos (1 excepción).
+- **`project-selector.css` vuelve a la escalera canónica de capas**: `@layer responsive` estaba
+  declarada y vacía, y la única regla de `@layer states` pasa a `components` sin cambiar la cascada
+  (2 excepciones).
+
+Deuda re-vencida a `1.2.0`, con la medición que lo justifica:
+
+- **11 blindajes globales de `border-radius`** en `theme-overrides.css`. Al degradarlos, el radio cae
+  a los valores heredados de las hojas legacy (`4px`, `11.52px`, `15.2px`, esquinas inferiores a 0).
+- **21 blindajes de los adaptadores Handsontable.** El puente y la piel legacy siguen cargando con
+  226 declaraciones `!important`, y `#hot-container td` gana por especificidad al selector del
+  adaptador aunque nadie usara `!important`; dos de ellas combaten estilos inline del vendor, que
+  solo un `!important` puede batir.
+
+Las 32 las paga el retiro del puente legacy móvil/vendor, obra de `1.2.0`.
 
 Cambios contractuales entrados entre el 25 de julio y el 3 de agosto de 2026 (los fixes de
 módulos que solo consumen el sistema no se listan):

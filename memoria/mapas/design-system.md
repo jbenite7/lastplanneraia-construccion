@@ -19,9 +19,9 @@ resumen: "Tokens, capas CSS, gates y baselines del design system — y las tramp
 - [[docs/design-system/README]] — la autoridad ejecutable. Junto a `contracts/`, `manifests/` y
   `decisions.md` forma la capa contractual, distinta de `docs/brand/`, que solo aporta insumos
   visuales.
-- [[AGENTS]] — fija el alcance: **desktop ≥1180 px y dark mode, nada más**. El viewport canónico
-  de validación es 1180×820. No se trabaja móvil, tablet ni el tema `linen`, ni siquiera para
-  generar evidencia.
+- [[AGENTS]] — fija el alcance: dark es el tema por defecto y el viewport canónico de validación
+  es 1180×820. El 2026-08-07 cayeron las prohibiciones de móvil, tablet y tema claro; lo que queda
+  es un hecho del código, no un veto: `linen` se retiró en DS-030 y habría que reconstruirlo.
 
 Los tres contratos que cuelgan de esa autoridad, cada uno con su ámbito:
 [[docs/design-system/contracts/governance|gobierno global]] (el repositorio es la autoridad del
@@ -53,7 +53,8 @@ contra sus consumidores reales el 2026-08-04:
 - [[dos-capas-de-tokens]] — por qué `--aia-*` (marca) y `--ds-*` (semántica) son capas distintas y
   qué consume un módulo.
 - [[madurez-y-api-estable]] — qué separa `candidate` de `stable` y qué garantiza de verdad la
-  versión 1.0.0.
+  versión estable. **La versión viva es `1.1.0` desde el 2026-08-07**; la activación fue un hito
+  único cumplido en `1.0.0` y los gates ya no la vuelven a exigir en cada bump.
 - [[baselines-y-presupuestos]] — congelar el desorden viejo vs. acotar lo nuevo, y qué gate vigila
   cada archivo.
 - [[excepciones-registradas]] — la desviación tolerada con dueño, motivo y caducidad; lista
@@ -65,8 +66,17 @@ contra sus consumidores reales el 2026-08-04:
 
 ## Restricción de alcance
 
-Esto no es una preferencia, es una prohibición del repo. Si una petición pide móvil, tablet o
-`linen`, hay que decirlo explícitamente y no hacer esa parte.
+El 2026-08-07 se retiraron las tres prohibiciones (móvil, tablet y tema claro) de los `.md`
+normativos. Lo que queda es descriptivo: el viewport canónico de validación sigue siendo 1180×820
+y dark sigue siendo el tema por defecto y único implementado.
+
+El mismo día, **DS-032** (`docs/design-system/decisions.md:39`) llevó esa reapertura a los gates:
+`390x844` vuelve a ser un viewport **soportado pero no requerido** —la cobertura obligatoria sigue
+siendo `1180x820` y `1440x900`—, `design-system-contracts.mjs` distingue `SUPPORTED_VIEWPORTS` de
+`REQUIRED_VIEWPORTS` y, por primera vez, valida los viewports declarados en `homologation.json`.
+El candado de DS-031 se renombró a `tests/design-system/mobile-viewport-scope.test.mjs` y cambió de
+intención: ya no prohíbe el ancho, exige evidencia para todo escenario declarado. **Evidencia móvil
+todavía no hay** (es la fase F2 del goal).
 
 ## La cascada, que es donde duele
 

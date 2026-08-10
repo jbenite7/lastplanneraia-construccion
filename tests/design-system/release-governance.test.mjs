@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+import { ACTIVATED_VERSION_PATTERN } from '../../scripts/design-system-activation-git.mjs';
+
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
 
@@ -57,7 +59,7 @@ test('the stable API artifact has no fields outside its fail-closed schema', asy
   }
 });
 
-test('1.0.0 activation is equivalent to all exact closeout gates being passed', async () => {
+test('activation is equivalent to all exact closeout gates being passed', async () => {
   const [version, closeout, release] = await Promise.all([
     readJson('docs/design-system/version.json'),
     readJson('docs/design-system/closeout-evidence.json'),
@@ -71,7 +73,11 @@ test('1.0.0 activation is equivalent to all exact closeout gates being passed', 
       && evidence.length > 0
     ));
   const releaseActivated = release.releaseStatus === 'guaranteed';
-  const versionActivated = version.version === '1.0.0' && version.status === 'stable';
+  // D2 (spec 2026-08-04): la activacion fue un hito unico cumplido en 1.0.0, asi
+  // que cualquier SemVer con major >= 1 y status stable cuenta como activada. Se
+  // reusa el patron de los gates para que test y gate no puedan divergir.
+  const versionActivated = ACTIVATED_VERSION_PATTERN.test(version.version)
+    && version.status === 'stable';
 
   assert.equal(releaseActivated, allPassed);
   assert.equal(versionActivated, allPassed);

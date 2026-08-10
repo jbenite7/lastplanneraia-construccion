@@ -72,7 +72,20 @@ test('homologation covers every governed visual family', () => {
     assert.ok(family.description?.length >= 24, `${family.id} needs a description`);
     assert.ok(family.candidates.length >= 1, family.id);
     assert.deepEqual(family.themes, ['dark'], family.id);
-    assert.deepEqual(family.viewports, ['1180x820', '1440x900'], family.id);
+    const requiredViewports = ['1180x820', '1440x900'];
+    const supportedViewports = [...requiredViewports, '390x844'];
+    for (const viewport of requiredViewports) {
+      assert.ok(
+        family.viewports.includes(viewport),
+        `familia ${family.id} no cubre ${viewport}`,
+      );
+    }
+    for (const viewport of family.viewports) {
+      assert.ok(
+        supportedViewports.includes(viewport),
+        `familia ${family.id} declara el viewport no soportado ${viewport}`,
+      );
+    }
   }
 });
 
@@ -389,4 +402,58 @@ test('pilot manifest routes must exist in the front controller', () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /programa-general: route not registered \/missing-design-system-route/);
+});
+
+// Comparacion diferencial en vez de `status 0`: el fixture corre en un directorio
+// temporal sin `.git`, asi que el gate siempre falla ahi por `sourceRef must resolve
+// to a Git commit` (36 fallos, ajenos a viewports). Lo que importa es que declarar
+// 390x844 no anada ni un fallo respecto de la linea base.
+test('declarar el viewport movil no anade ningun fallo al gate', () => {
+  const baseline = runFixture(() => {});
+  const withMobile = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820', '1440x900', '390x844'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  const failures = (result) => (result.stderr || '')
+    .split('\n')
+    .filter((line) => line.startsWith('- '));
+
+  assert.deepEqual(
+    failures(withMobile), failures(baseline),
+    'declarar 390x844 cambio el resultado del gate',
+  );
+  assert.equal(
+    failures(baseline).some((line) => line.includes('390x844')), false,
+    'la linea base no deberia mencionar el viewport movil',
+  );
+});
+
+test('una familia no puede declarar un viewport no soportado', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820', '1440x900', '800x600'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /foundations: unsupported viewport 800x600/);
+});
+
+test('una familia no puede dejar de declarar un viewport requerido', () => {
+  const result = runFixture((fixtureRoot) => {
+    const file = path.join(fixtureRoot, 'docs/design-system/homologation.json');
+    const contract = JSON.parse(readFileSync(file, 'utf8'));
+    const foundations = contract.families.find(({ id }) => id === 'foundations');
+    foundations.viewports = ['1180x820'];
+    writeFileSync(file, `${JSON.stringify(contract, null, 2)}\n`);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /foundations: missing required viewport 1440x900/);
 });

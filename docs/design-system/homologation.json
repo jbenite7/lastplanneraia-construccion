@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "1.1.0",
   "approvalSurface": "/internal/design-system",
   "status": "candidate",
   "tests": [

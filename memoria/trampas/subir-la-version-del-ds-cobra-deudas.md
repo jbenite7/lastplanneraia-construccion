@@ -31,5 +31,24 @@ conciencia) las excepciones que expiran, sincronizar los manifiestos y decidir q
 gates de activación para versiones > 1.0.0. Mientras eso no se haga, los cambios contractuales se
 anotan en el changelog bajo «Sin publicar (candidato a 1.1.0)», como quedó el 2026-08-04.
 
+## Desenlace: 1.1.0 se publicó el 2026-08-07, y la lista se quedó corta
+
+Estos tres frentes eran reales, pero **no eran todos**: el bump destapó otros tres, con una causa
+raíz distinta que tiene nota propia — [[version-escrita-a-mano-rompe-el-bump]]. Súmale que el audit
+exige una **aprobación de baseline para la versión viva** (`design-system-audit.mjs:135-148`): si el
+baseline no cambia basta un arrastre con `beforeHash === afterHash`, como
+`baseline-approvals/1.1.0-carry-forward.json`, que **no es** una regeneración —esa seguiría pidiendo
+aprobación explícita del usuario.
+
+El recuento del cierre: de las 39 excepciones, **7 pagadas y 32 re-vencidas a `1.2.0`**. La trampa
+sigue **vigente para 1.2.0**, y con la factura ya conocida: esas 32 las cobra el retiro del puente
+legacy móvil/vendor de Handsontable.
+
+Aviso para ese cierre: el spec de 1.1.0 describía sus 15 excepciones de `theme-overrides.css` como
+«verbatim del selector de proyecto» y ordenaba pagarlas migrando `/proyectos`. Era falso —son
+normalizaciones globales de `border-radius` del propio DS, y `/proyectos` ni siquiera las necesita—,
+así que **el censo se hace leyendo `exceptions.json` y midiendo, nunca desde la descripción del
+plan**.
+
 Vecina: [[changelog-ds-encabeza-version-vieja]] — la misma pareja changelog/version.json, en la
 dirección contraria. Mapa del área: [[design-system]].

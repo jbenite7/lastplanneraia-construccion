@@ -151,6 +151,13 @@ for (const testFile of homologation?.tests || []) {
   }
 }
 
+// Viewports soportados: el conjunto que el sistema acepta. Requeridos: el que
+// toda familia debe cubrir con evidencia. Se separaron en F1 (DS-032) para
+// reabrir el ancho movil sin exigir goldens que aun no existen; DS-031 los
+// habia fundido en uno solo.
+const SUPPORTED_VIEWPORTS = new Set(['1180x820', '1440x900', '390x844']);
+const REQUIRED_VIEWPORTS = ['1180x820', '1440x900'];
+
 const approvalKeys = new Set();
 for (const approval of approvals?.approvals || []) {
   const key = `${approval.familyId}/${approval.candidateId}`;
@@ -160,13 +167,23 @@ for (const approval of approvals?.approvals || []) {
   const candidate = family?.candidates?.find((item) => item.id === approval.candidateId);
   if (!candidate) failures.push(`family approval: unknown candidate ${key}`);
   if (!approval.evidence?.length) failures.push(`${key}: approval requires evidence`);
-  // Toda aprobacion cubre el mismo alcance desktop dark: retirado 390x844, la
-  // distincion que introducia `scope: desktop-dark` dejo de tener efecto.
+  // Toda aprobacion sigue cubriendo dark unicamente; la distincion que
+  // introducia `scope: desktop-dark` dejo de tener efecto. 390x844 se reabrio
+  // el 2026-08-07 como viewport soportado pero no exigido (ver
+  // tests/design-system/mobile-viewport-scope.test.mjs): todavia ninguna
+  // familia lo declara.
   if (JSON.stringify(approval.themes) !== JSON.stringify(['dark'])) {
     failures.push(`${key}: approval must cover dark`);
   }
-  if (JSON.stringify(approval.viewports) !== JSON.stringify(['1180x820', '1440x900'])) {
-    failures.push(`${key}: approval must cover the canonical desktop viewports`);
+  for (const viewport of approval.viewports || []) {
+    if (!SUPPORTED_VIEWPORTS.has(viewport)) {
+      failures.push(`${key}: approval declares unsupported viewport ${viewport}`);
+    }
+  }
+  for (const viewport of REQUIRED_VIEWPORTS) {
+    if (!(approval.viewports || []).includes(viewport)) {
+      failures.push(`${key}: approval must cover ${viewport}`);
+    }
   }
 }
 for (const family of homologation?.families || []) {
@@ -177,6 +194,16 @@ for (const family of homologation?.families || []) {
     }
     if (candidate.status !== 'approved' && approvalKeys.has(key)) {
       failures.push(`${key}: approval recorded for non-approved candidate`);
+    }
+  }
+  for (const viewport of family.viewports || []) {
+    if (!SUPPORTED_VIEWPORTS.has(viewport)) {
+      failures.push(`${family.id}: unsupported viewport ${viewport}`);
+    }
+  }
+  for (const viewport of REQUIRED_VIEWPORTS) {
+    if (!(family.viewports || []).includes(viewport)) {
+      failures.push(`${family.id}: missing required viewport ${viewport}`);
     }
   }
 }
@@ -329,15 +356,12 @@ for (const manifest of manifests) {
   }
 }
 
-// Viewports soportados: solo desktop dark (AGENTS.md Routing). 390x844 se retiro
-// del sistema de diseno (DS-031), igual que el tema unico retirado en DS-030.
-const supportedViewportKeys = new Set(['1180x820', '1440x900']);
 const scenarioKey = (scenario) => `${scenario.theme}/${scenario.viewport.width}x${scenario.viewport.height}`;
 for (const familyId of governedFamilies) {
   const familyScenarios = (laboratoryManifest?.scenarios || [])
     .filter((scenario) => scenario.family === familyId);
   const keys = new Set(familyScenarios.map(scenarioKey));
-  for (const viewport of supportedViewportKeys) {
+  for (const viewport of REQUIRED_VIEWPORTS) {
     if (!keys.has(`dark/${viewport}`)) {
       failures.push(`laboratory: missing scenario ${familyId}/dark/${viewport}`);
     }
@@ -345,7 +369,7 @@ for (const familyId of governedFamilies) {
 }
 const pilotScenarioKeys = new Set((programManifest?.scenarios || []).map(scenarioKey));
 for (const theme of ['dark']) {
-  for (const viewport of supportedViewportKeys) {
+  for (const viewport of REQUIRED_VIEWPORTS) {
     if (!pilotScenarioKeys.has(`${theme}/${viewport}`)) {
       failures.push(`programa-general: missing scenario ${theme}/${viewport}`);
     }

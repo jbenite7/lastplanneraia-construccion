@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "designSystemVersion": "1.0.0",
+  "designSystemVersion": "1.1.0",
   "goalId": "design-system-nucleo-gobernanza",
   "sourceCommit": "9abedebc17de9a829a5b4f9096c3d3b4fab957dc",
   "canonicalSources": [

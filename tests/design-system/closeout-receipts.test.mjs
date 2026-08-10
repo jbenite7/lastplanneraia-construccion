@@ -83,7 +83,30 @@ test('uncommitted activation cannot pass in a temporary Git repository', () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /activation: worktree and index must be clean/);
   assert.match(result.stderr, /activation: docs\/design-system\/closeout-evidence.json must match HEAD exactly/);
-  assert.match(result.stderr, /activation: HEAD must contain the complete passed 1.0.0 activation/);
+  assert.match(result.stderr, /activation: HEAD must contain the complete passed activation/);
+});
+
+test('una version posterior a 1.0.0 sigue contando como sistema activado', () => {
+  // D2 (spec 2026-08-04): la activacion fue un hito UNICO cumplido en 1.0.0. Los
+  // gates no deben volver a exigirla en cada bump, pero SI deben seguir rechazando
+  // versiones pre-1.0.0 o no estables.
+  const versionDocument = readFixtureJson('docs/design-system/version.json');
+  const conVersion = (version, status = 'stable') => closeoutContractFailures({
+    root: fixtureRoot,
+    closeout: readFixtureJson('docs/design-system/closeout-evidence.json'),
+    stableApi: readFixtureJson('docs/design-system/stable-api-1.0.0.json'),
+    versionDocument: { ...versionDocument, version, status },
+    now: new Date('2026-07-15T22:00:00Z'),
+  });
+  const noActivada = /gates, version and stable API must activate together/;
+
+  assert.deepEqual(conVersion('1.1.0'), conVersion('1.0.0'));
+  assert.deepEqual(conVersion('2.3.4'), conVersion('1.0.0'));
+  assert.ok(!conVersion('1.1.0').some((f) => noActivada.test(f)));
+
+  // El gate no se ha vuelto permisivo: lo que no es activacion sigue fallando.
+  assert.ok(conVersion('0.9.0').some((f) => noActivada.test(f)));
+  assert.ok(conVersion('1.1.0', 'draft').some((f) => noActivada.test(f)));
 });
 
 test('committed structured receipts activate in a clean temporary Git repository', () => {

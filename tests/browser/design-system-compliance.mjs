@@ -33,8 +33,11 @@ const PRIORITY_OPERATIONAL_TABLE_ROUTES = [
 ];
 
 // AGENTS.md fija el alcance visual en desktop >=1180px y dark unicamente.
-// El viewport 390x844 (mobile) se retiro: no es un fallo que arreglar sino un
-// alcance que el repositorio no soporta. 1180x820 es el canonico; 1440x900 el
+// La prohibicion de 390x844 (mobile) que regia aqui se retiro el 2026-08-07:
+// el viewport quedo permitido pero no exigido, sin evidencia todavia para
+// ninguna familia (ver tests/design-system/mobile-viewport-scope.test.mjs).
+// Esta lista se mantiene en los dos viewports requeridos porque son los
+// unicos con cobertura real hoy: 1180x820 el canonico, 1440x900 el
 // secundario.
 const RESPONSIVE_VIEWPORTS = [
   { name: 'desktop', width: 1180, height: 820 },
@@ -333,8 +336,11 @@ test.describe('Design system foundation', () => {
           expect(state.fontBody, `${route.label} must use Inter body token`).toContain('Inter');
           expect(state.minTarget, `${route.label} must preserve 44px target token`).toBe('44px');
 
-          // La rama mobile se retiro con el viewport 390x844: fuera del alcance
-          // soportado (AGENTS.md). En desktop la grilla siempre debe verse.
+          // La rama mobile no se ejercita aqui: RESPONSIVE_VIEWPORTS solo cubre
+          // los dos viewports requeridos. 390x844 quedo permitido pero no
+          // exigido desde el 2026-08-07, sin evidencia todavia (ver
+          // tests/design-system/mobile-viewport-scope.test.mjs). En desktop la
+          // grilla siempre debe verse.
           expect(state.hotDisplay, `${route.label} ${viewport.name} grid must be visible`).not.toBe('none');
           expect(state.tableFillsDesktop, `${route.label} ${viewport.name} table must fill its grid shell`).toBe(true);
           }
@@ -365,8 +371,10 @@ test.describe('Design system foundation', () => {
           expect(state.fontBody, `${route.label} must use Inter body token`).toContain('Inter');
           expect(state.minTarget, `${route.label} must preserve 44px target token`).toBe('44px');
 
-          // Las aserciones de tarjetas moviles se retiraron con el viewport
-          // 390x844: mobile esta fuera del alcance soportado (AGENTS.md).
+          // Las aserciones de tarjetas moviles no se ejercitan aqui: solo se
+          // cubren los dos viewports requeridos. 390x844 quedo permitido pero
+          // no exigido desde el 2026-08-07, sin evidencia todavia (ver
+          // tests/design-system/mobile-viewport-scope.test.mjs).
           expect(state.gridDisplay, `${route.label} table shell must be visible on ${viewport.name}`).not.toBe('none');
           expect(state.gridWidth, `${route.label} table shell must have width on ${viewport.name}`).toBeGreaterThan(0);
 

@@ -35,6 +35,13 @@ function committedActivation(root, failures) {
   return documents;
 }
 
+// Version que cuenta como "sistema activado": cualquier SemVer con major >= 1.
+// La activacion fue un hito unico cumplido en 1.0.0 (D2 del spec 2026-08-04); las
+// versiones posteriores lo heredan en vez de volver a pedirlo. Vive aqui y se
+// comparte con design-system-closeout-contract.mjs para que los dos gates no
+// puedan divergir.
+export const ACTIVATED_VERSION_PATTERN = /^([1-9]\d*)\.\d+\.\d+$/;
+
 export function activationGitFailures(root, gateIds) {
   const failures = [];
   const status = git(root, ['status', '--porcelain=v1', '--untracked-files=all']);
@@ -52,9 +59,10 @@ export function activationGitFailures(root, gateIds) {
   const committedGateIds = closeout?.gates?.map(({ id }) => id);
   const committedPassed = JSON.stringify(committedGateIds) === JSON.stringify(gateIds)
     && closeout.gates.every(({ status: gateStatus }) => gateStatus === 'passed');
-  if (!committedPassed || version?.version !== '1.0.0' || version?.status !== 'stable'
+  if (!committedPassed || !ACTIVATED_VERSION_PATTERN.test(version?.version ?? '')
+    || version?.status !== 'stable'
     || stableApi?.releaseStatus !== 'guaranteed') {
-    failures.push('activation: HEAD must contain the complete passed 1.0.0 activation');
+    failures.push('activation: HEAD must contain the complete passed activation (SemVer major >= 1, stable)');
   }
   return failures;
 }

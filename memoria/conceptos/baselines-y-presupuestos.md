@@ -21,7 +21,7 @@ Quién es quién, con su consumidor verificado:
 |---|---|---|
 | `audit-baseline.json` | baseline | Más hallazgos de estilo (hex, inline, fuera de capa) que los contados por regla — `scripts/design-system-audit.mjs:11,338-352` |
 | `phpstan-baseline.json` | baseline | Cualquier fingerprint de PHPStan nuevo; hoy tolera cinco legacy — `scripts/design-system-phpstan-baseline.mjs:79-91` |
-| `a11y-baseline.json` | baseline | Hoy exige `fingerprints` **vacío**: tolerancia cero, todo pasa por excepción — `tests/design-system/accessibility.test.mjs:190-193` |
+| `a11y-baseline.json` | baseline | Hoy exige `fingerprints` **vacío**: tolerancia cero, todo pasa por excepción — `tests/design-system/accessibility.test.mjs:225` (verificado el 2026-08-07: el archivo sigue con `"fingerprints": []`) |
 | `lab-performance-budget.json` | presupuesto | Cada métrica del laboratorio (FCP, CLS, long tasks, peso CSS) contra su techo — `tests/browser/design-system-lab.performance.mjs:11,168` |
 | `runtime-baseline-0.3.3.json` | baseline con tolerancias | El peso runtime de Programa General (CSS/JS gzip, adapters) contra lo aprobado más su margen — `tests/design-system/runtime-budget.test.mjs:68,76-92`, corrido por `npm run test:runtime-budget:check` |
 

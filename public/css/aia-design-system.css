@@ -7,32 +7,32 @@
 @import url("/public/vendor/select2/select2.min.css") layer(vendor);
 @import url("/public/vendor/sweetalert2.min.css") layer(vendor);
 @import url("/public/vendor/handsontable/handsontable.full.min.css") layer(vendor);
-@import url("/css/handsontable-module.css?v=1.0.0") layer(vendor);
-@import url("/css/handsontable-header-global.css?v=1.0.0") layer(vendor);
-@import url("/css/design-system/fonts.css?v=1.0.0");
-@import url("/css/design-system/foundation.css?v=1.0.0");
-@import url("/css/design-system/core.css?v=1.0.0");
-@import url("/css/design-system/components/navigation.css?v=1.0.0");
-@import url("/css/design-system/components/page-header.css?v=1.0.0");
-@import url("/css/design-system/components/action-group.css?v=1.0.0");
-@import url("/css/design-system/components/filter-form.css?v=1.0.0");
-@import url("/css/design-system/components/states-feedback.css?v=1.0.0");
-@import url("/css/design-system/components/ops-state-chip.css?v=1.0.0");
-@import url("/css/design-system/components/data-display.css?v=1.0.0");
-@import url("/css/design-system/components/dialog.css?v=1.0.0");
-@import url("/css/design-system/components/bi-figure.css?v=1.0.0");
-@import url("/css/design-system/components/primitives.css?v=1.0.0");
-@import url("/css/design-system/components/ht-empty-state.css?v=1.0.0");
-@import url("/css/design-system/components/table-filter-trigger.css?v=1.0.0");
-@import url("/css/design-system/adapters/legacy-bridge.css?v=1.0.0");
-@import url("/css/design-system/adapters/handsontable.css?v=1.0.0");
-@import url("/css/design-system/adapters/programa-general-handsontable.css?v=1.0.0");
-@import url("/css/design-system/adapters/select2.css?v=1.0.0");
-@import url("/css/design-system/adapters/sweetalert2.css?v=1.0.0");
-@import url("/css/design-system/adapters/lps-drawer.css?v=1.0.0");
-@import url("/css/design-system/adapters/shell-sidebar.css?v=1.0.0");
-@import url("/css/styles.css?v=1.0.0") layer(module);
-@import url("/css/buttons.css?v=1.0.0") layer(components);
+@import url("/css/handsontable-module.css?v=1.1.0") layer(vendor);
+@import url("/css/handsontable-header-global.css?v=1.1.0") layer(vendor);
+@import url("/css/design-system/fonts.css?v=1.1.0");
+@import url("/css/design-system/foundation.css?v=1.1.0");
+@import url("/css/design-system/core.css?v=1.1.0");
+@import url("/css/design-system/components/navigation.css?v=1.1.0");
+@import url("/css/design-system/components/page-header.css?v=1.1.0");
+@import url("/css/design-system/components/action-group.css?v=1.1.0");
+@import url("/css/design-system/components/filter-form.css?v=1.1.0");
+@import url("/css/design-system/components/states-feedback.css?v=1.1.0");
+@import url("/css/design-system/components/ops-state-chip.css?v=1.1.0");
+@import url("/css/design-system/components/data-display.css?v=1.1.0");
+@import url("/css/design-system/components/dialog.css?v=1.1.0");
+@import url("/css/design-system/components/bi-figure.css?v=1.1.0");
+@import url("/css/design-system/components/primitives.css?v=1.1.0");
+@import url("/css/design-system/components/ht-empty-state.css?v=1.1.0");
+@import url("/css/design-system/components/table-filter-trigger.css?v=1.1.0");
+@import url("/css/design-system/adapters/legacy-bridge.css?v=1.1.0");
+@import url("/css/design-system/adapters/handsontable.css?v=1.1.0");
+@import url("/css/design-system/adapters/programa-general-handsontable.css?v=1.1.0");
+@import url("/css/design-system/adapters/select2.css?v=1.1.0");
+@import url("/css/design-system/adapters/sweetalert2.css?v=1.1.0");
+@import url("/css/design-system/adapters/lps-drawer.css?v=1.1.0");
+@import url("/css/design-system/adapters/shell-sidebar.css?v=1.1.0");
+@import url("/css/styles.css?v=1.1.0") layer(module);
+@import url("/css/buttons.css?v=1.1.0") layer(components);
 /* T-5 (2026-08-03): DESPUES de buttons.css a proposito — dentro de la misma
    capa components, sus reglas !important necesitan ser el encuentro mas
    tardio para ganarle a las de .pdc-legend-item/.btn-pdc-modern que ya
@@ -42,8 +42,8 @@
    auto-encapa por dentro con su propio @layer components; declararlo dos
    veces anida una subcapa components.components en vez de fundirse con
    la capa components de nivel superior. */
-@import url("/css/design-system/components/toolbar-controls.css?v=1.0.0");
-@import url("/css/access.css?v=1.0.0") layer(utilities);
+@import url("/css/design-system/components/toolbar-controls.css?v=1.1.0");
+@import url("/css/access.css?v=1.1.0") layer(utilities);
 
 @layer theme {
   :root,
@@ -120,17 +120,6 @@
   }
 
   :where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text) {
-    border-start-start-radius: var(--ds-radius-none) !important;
-    border-end-start-radius: var(--ds-radius-none) !important;
-  }
-
-  /* Project Selector composes a search control from Bootstrap's input-group. */
-  .project-selector-page .input-group > .aia-input:not(:last-child) {
-    border-start-end-radius: var(--ds-radius-none) !important;
-    border-end-end-radius: var(--ds-radius-none) !important;
-  }
-
-  .project-selector-page .input-group > .input-group-append > .input-group-text {
     border-start-start-radius: var(--ds-radius-none) !important;
     border-end-start-radius: var(--ds-radius-none) !important;
   }

@@ -8,10 +8,10 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
 - Usar Montserrat para titulos, metricas y jerarquia de alto impacto.
 - Usar Inter para cuerpo, navegacion, formularios, tablas, grillas y ayudas.
 - Mantener densidad operativa: la UI debe ayudar a leer, decidir y actuar.
-- En este repositorio, implementar y validar UI solo en desktop dark de al menos
-  1180 px; `1180x820` es el viewport canónico. Mobile y tablet quedan fuera del
-  alcance visual vigente; `linen` fue retirado del producto en F0 del goal
-  `dark-mode-todos-los-modulos` y no existe conmutador de tema.
+- En este repositorio, dark es el tema por defecto y el que se valida; `1180x820` es
+  el viewport canónico de validación. `linen` fue retirado del producto en F0 del goal
+  `dark-mode-todos-los-modulos` y no existe conmutador de tema: un tema claro no está
+  prohibido, pero hay que reconstruirlo.
 - Diseñar según los criterios accesibles definidos para el alcance, con foco visible, targets tactiles de 44px y `prefers-reduced-motion`.
 - Usar glass solo para jerarquia: shell, nav, modales, paneles y cards. Tablas y grillas priorizan legibilidad.
 - No crear componentes visuales ad hoc en modulos migrados. Registrar excepciones en `exceptions.json`.

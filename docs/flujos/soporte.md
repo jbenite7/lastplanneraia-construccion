@@ -52,27 +52,17 @@ Los módulos con backend propio son cuatro: **subcontratistas, profesionales, co
 - **Resultado esperado:** una petición de escritura sin token válido se rechaza y no escribe nada.
   Lo exige `AGENTS.md` §Seguridad para **toda** mutación autenticada.
 
-> **Hallazgo del 2026-08-04 (registrado, no corregido) — el de mayor alcance de la biblia hasta
-> ahora.** Ninguno de estos módulos valida CSRF, y **todos mutan**:
+> **Hallazgo del 2026-08-04 — CORREGIDO el 2026-08-06 en `88ba6e0d` (más `ca642189`).** Los seis
+> controladores mutaban sin validar CSRF: `CicApiController` (10 sentencias de escritura),
+> `ProfesionalesApiController` (5), `SubcontratistasApiController` (4), `ControlCambiosApiController`
+> (3), `CnpApiController` (2) y `CncApiController` (1). Todos autorizaban solo con
+> `rbac_guard_require_permission()`, que comprueba permiso pero **no valida token**. Verificado el
+> 2026-08-07: los seis validan ahora.
 >
-> | Controlador | Sentencias de escritura | ¿Valida CSRF? |
-> |---|---|---|
-> | `CicApiController` | 10 | no |
-> | `ProfesionalesApiController` | 5 | no |
-> | `SubcontratistasApiController` | 4 | no |
-> | `ControlCambiosApiController` | 3 | no |
-> | `CnpApiController` | 2 | no |
-> | `CncApiController` | 1 | no |
->
-> Los seis autorizan solo con `rbac_guard_require_permission()`, y **esa función no valida CSRF**:
-> comprobado sobre `src/Legacy/rbac_guard.php`, la validación no está dentro de ella.
->
-> Lo que cierra el caso: **la herramienta existe en ese mismo archivo**. `legacy_require_csrf()`
-> (`src/Legacy/rbac_guard.php:83-89`) valida el token contra `CsrfTokenManager`, y solo la usan dos
-> scripts legados (`nueva_semana.php` y `eliminar_semana.php`). Es decir, no falta la pieza: falta
-> llamarla.
->
-> Esto responde el pendiente que T2 dejó abierto sobre CIC/CNC/CNP, y lo amplía a seis módulos.
+> **La lección que deja, y por eso no se borra:** la pieza ya existía. `legacy_require_csrf()` vivía
+> en `src/Legacy/rbac_guard.php`, en el mismo archivo que los seis ya incluían, y solo la llamaban
+> dos scripts legados. No faltaba la herramienta: faltaba llamarla. Cuando una defensa depende de
+> que cada autor se acuerde de invocarla, seis módulos pueden olvidarla a la vez sin que nada avise.
 
 ## SOP-003 · El registro de subcontratistas alimenta la calificación
 

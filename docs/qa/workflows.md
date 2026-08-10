@@ -210,7 +210,7 @@ Esta seccion baja los flujos de Construccion al nivel de controles visibles, cam
    - `Integración`: `controlCambios`.
    - `Semanas del Proyecto`: selector de semanas, `Nueva Semana`, eliminar semana segun permisos.
    - `Programa General`, `Liberación de Restricciones`, `Programación Semanal`.
-4. En desktop se usan menus superiores; en mobile se abre `drawerToggle`, se cierra con `drawerClose` o `drawerOverlay`.
+4. La navegacion es el rail lateral del shell de sidebar (`[data-shell-pattern="sidebar"]`, destinos en `[data-destination-id]`). El cajon del navbar legacy (`drawerToggle` / `drawerClose` / `drawerOverlay`) se retiro con ese navbar: en viewports estrechos el mismo rail colapsado, fijo a la izquierda, es la navegacion critica.
 5. `maestroPermisos(permiso)` oculta botones segun rol. En roles `V`/`C` no se deben mostrar acciones de escritura.
 
 #### PG - Programa General
@@ -1162,7 +1162,7 @@ Pre-Construccion reutiliza la misma arquitectura de rutas y componentes, pero ca
    - `info_contratos`.
    - `planCompras`.
    - PDC/Plan de Compras.
-7. En mobile aplica el mismo drawer, pero sin los items ocultos.
+7. En viewports estrechos aplica el mismo rail colapsado, pero sin los items ocultos.
 
 #### PG PC
 
