@@ -265,6 +265,36 @@ con certificado autofirmado tampoco, porque el código no desactiva la verificac
 Lo que sí quedó probado bajo PHPMailer 7: la ruta, el CSRF, la creación del token, y que la librería
 **conecta y habla SMTP** (llegó a emitir `STARTTLS`, así que conexión y saludo funcionan).
 
+### Intento de envío REAL (2026-08-08): no se pudo completar, y el motivo es la red
+
+Con autorización explícita del usuario y un único destinatario por él indicado, se configuró el
+stack aislado con las credenciales reales de Brevo (ex-Sendinblue) del `.env`, tomadas por variable
+de entorno **sin escribirlas en ningún archivo**.
+
+Resultado: `POST /password/forgot` devolvió 200 **tras 15 segundos** y el log registró
+`SMTP Error: Could not connect to SMTP host. Failed to connect to server`.
+
+**No es defecto de la aplicación ni de PHPMailer 7.** Diagnosticado descartando hipótesis una a una:
+
+| Comprobación | Resultado |
+|---|---|
+| DNS de `smtp-relay.sendinblue.com` | resuelve a `1.179.117.2` |
+| ¿IP secuestrada? | **No.** `8.8.8.8` devuelve `1.179.118.1`, el mismo rango de Brevo |
+| ¿Puerto 587 bloqueado en general? | **No.** `smtp.gmail.com:587` **abre** desde el contenedor |
+| Salida HTTPS genérica | abre |
+| Brevo en 587 / 2525 / 465 / 25 | **los cuatro sin respuesta** |
+
+Es decir: **desde esta máquina no hay ruta hacia el rango de Brevo**, mientras el resto de la salida
+funciona. Un bloqueo de red (ISP o cortafuegos), ajeno al repositorio. **No se envió ningún correo y
+la cuenta de Brevo no llegó a usarse.**
+
+**Queda pendiente de verificar en un entorno con salida hacia Brevo.** Y conviene comprobarlo en el
+servidor de producción antes que en ningún otro sitio: si allí tampoco hay ruta a ese rango, la
+recuperación de contraseña está caída y —por **B-10**— nadie se estaría enterando.
+
+**Agravante medido:** `SmtpMailer` fija `Timeout = 15`. Con el relay inalcanzable, quien pide
+recuperar su contraseña espera **15 segundos** para recibir un mensaje de éxito que es falso.
+
 ## Lo que se verificó SANO
 
 - **23/23 superficies de la app**: HTTP 200, `<main>`, un `h1`, **0 errores de consola**, **0
