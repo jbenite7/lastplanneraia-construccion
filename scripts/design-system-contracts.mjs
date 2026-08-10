@@ -782,6 +782,18 @@ for (const entry of evidenceExceptions?.visualEvidenceDelegationAllowlist || [])
       + `"${entry.moduleId}") existe en homologation.json pero no tiene ningun escenario en `
       + 'ningun manifiesto');
   }
+  // Una excepcion concedida y nunca usada es un permiso latente que nadie
+  // revisa: si el manifiesto del modulo no declara visualEvidence, la entrada
+  // no protege nada hoy y, el dia que el modulo declare la delegacion, la
+  // encontrara ya aprobada sin que nadie mirara ese momento concreto. Toda
+  // entrada de esta lista exige que su manifiesto la use ahora mismo.
+  const ownerManifest = manifests.find((manifest) => manifest.moduleId === entry.moduleId);
+  if (ownerManifest && !ownerManifest.visualEvidence) {
+    failures.push(`docs/design-system/evidence-exceptions.json: `
+      + `visualEvidenceDelegationAllowlist: el modulo "${entry.moduleId}" tiene una excepcion `
+      + 'concedida pero su manifiesto no declara visualEvidence; la excepcion no esta en uso y '
+      + 'debe retirarse');
+  }
 }
 
 for (const manifest of manifests) {
@@ -916,6 +928,16 @@ for (const entry of evidenceExceptions?.elementCaptureAllowlist || []) {
   } else if (!(owner.scenarios || []).some((scenario) => scenario.id === entry.scenarioId)) {
     failures.push(`docs/design-system/evidence-exceptions.json: elementCaptureAllowlist: `
       + `el escenario "${entry.scenarioId}" no existe en el manifiesto "${entry.moduleId}"`);
+  } else {
+    // Misma logica que visualEvidenceDelegationAllowlist: una excepcion de
+    // captura que el escenario no reclama (capture !== "element") es un
+    // permiso durmiente. Debe retirarse hasta que el escenario la use.
+    const scenario = (owner.scenarios || []).find((candidate) => candidate.id === entry.scenarioId);
+    if (scenario?.capture !== 'element') {
+      failures.push(`docs/design-system/evidence-exceptions.json: elementCaptureAllowlist: `
+        + `el escenario "${entry.moduleId}/${entry.scenarioId}" tiene una excepcion concedida `
+        + 'pero no declara capture: "element"; la excepcion no esta en uso y debe retirarse');
+    }
   }
 }
 
