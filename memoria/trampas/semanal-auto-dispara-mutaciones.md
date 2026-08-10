@@ -14,7 +14,10 @@ interacción», y eso describe el peor caso como si fuera el único.
 Las dos condiciones, medidas en el origen:
 
 - **`POST /api/semanal/save`** con `opcion: 'sanear'` sale de `loadData()` en
-  `public/js/modules/programacion_semanal/hot.js:2095-2106`, tras un doble guardián:
+  `public/js/modules/programacion_semanal/hot.js:2074-2084`
+  (`if (!sanitizedOnLoad && canManageToolbarActions())` … `data: { opcion: 'sanear', ... }`,
+  cita corregida el 2026-08-10; el rango anterior había rotado a `normalizeCellValue()`), tras un
+  doble guardián:
   `!sanitizedOnLoad && canManageToolbarActions()`. **Depende del rol**: una cuenta sin permiso de
   gestión no lo dispara nunca.
 - **`POST /api/semanal/auto-program`** sale de `run()` en `changeMonitor.js:35-47`, guardado por

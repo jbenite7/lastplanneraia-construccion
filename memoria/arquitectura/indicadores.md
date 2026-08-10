@@ -14,8 +14,9 @@ no este módulo — es solo el marco que lo aloja.
 
 El informe es de **Power BI** (`publish-to-web`), no de Google Data Studio: la migración se decidió
 el 2026-07-23 y está registrada en [[powerbi-indicadores]]; la vista construye la URL
-`app.powerbi.com/view?r=…` en `views/indicadores/indicadores.view.php:99-111`. Esta página lo dijo
-mal durante tres días; corregido en el pase de veracidad del 2026-08-06.
+`app.powerbi.com/view?r=…` en `views/indicadores/indicadores.view.php:123-128` (cita corregida el
+2026-08-10; venía citando `:99-111`). Esta página lo dijo mal durante tres días; corregido en el
+pase de veracidad del 2026-08-06.
 
 **Dónde encaja.** En el flujo LPS. Ver [[flujo-lps]].
 

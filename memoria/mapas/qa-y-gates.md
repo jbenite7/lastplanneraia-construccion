@@ -26,7 +26,13 @@ devuelve).
 - **`e2e/`**: suite **separada**, con su propia configuración y fixtures, para humo, admin y
   flujos. No confundir con la anterior al decidir dónde va una prueba nueva.
 - **Análisis estático**: `docker compose exec app vendor/bin/phpstan analyse src admin/src
-  --memory-limit=1G`. No hay `phpstan.neon` en la raíz.
+  --memory-limit=1G`. **Corregido el 2026-08-10:** sí hay `phpstan.neon` en la raíz
+  (`level: 5`, `paths: [src, admin/src]`, `includes: phpstan-baseline.neon`) — esta página repetía
+  una afirmación falsa que también estaba en `CLAUDE.md` (corregida ahí el mismo día en `3a2ed78a`)
+  y que la wiki había heredado sin verificar contra el código. Ojo con dos listas de excepciones
+  independientes que suenan igual: `phpstan-baseline.neon` alimenta a PHPStan;
+  `docs/design-system/phpstan-baseline.json` alimenta al gate del design system. Una entrada muerta
+  en cada una rompe un gate distinto — ver [[baselines-y-presupuestos]].
 - **Frontend**: `npm run check:frontend` (Biome, solo `public/js`, `public/css`,
   `admin/public/css` — no analiza PHP).
 

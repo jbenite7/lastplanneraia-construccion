@@ -40,6 +40,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 
 ### Servicios
 - `NotificationService`
+- `ResponsableAiaPolicy`
 
 ### Tablas
 - `general_proyectos_procesos`

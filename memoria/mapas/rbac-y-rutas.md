@@ -49,6 +49,12 @@ rol que queda en sesión es el real de `project_members`.
 Si la sesión parece caerse durante QA en navegador, antes de diagnosticar lee
 [[sesion-cae-en-el-panel]]: casi siempre es el panel, no la aplicación.
 
+## Trampas medidas
+
+[[reabrir-semana-asimetria-cliente-servidor]] — reabrir semana esconde el botón en cliente salvo al
+rol `A`, pero el servidor solo exige una capacidad de edición genérica; el log además miente sobre
+quién reabrió.
+
 ## Vecinos
 
 [[arquitectura]] para el despacho de rutas · [[qa-y-gates]] para cómo probar esto.

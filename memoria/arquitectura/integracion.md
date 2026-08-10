@@ -38,9 +38,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Tablas
 - `cambios`
 - `general_curvas`
-- `general_curvas_pdc`
 - `general_informe_consolidado`
-- `general_informe_pdc`
 - `general_informe_restricciones_consolidado`
 - `general_informe_subcontratistas`
 - `general_proyectos_procesos`

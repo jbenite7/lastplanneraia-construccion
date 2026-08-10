@@ -28,8 +28,12 @@ diseño **inspirado en Apple, pero con el design system de AIA en dark mode**.
 
 - No se imitan colores, tipografías ni componentes de macOS/iOS. La identidad sigue siendo AIA:
   tokens `--ds-*`, primitivas `aia-*`, la paleta del repo, cero hex.
-- No se importa nada que choque con el alcance del repo: desktop ≥1180 px y dark mode
-  exclusivamente (`AGENTS.md`).
+- No se importa nada que choque con el alcance del repo: dark mode y `1180x820` siguen siendo el
+  **defecto y lo canónico a validar**. **Corrección del 2026-08-10:** desde DS-032, `AGENTS.md` ya
+  no lo plantea como veto exclusivo — dice «Otros viewports y un tema claro son admisibles cuando
+  la petición lo pida, sin prohibición previa». Lo que dejó de ser cierto es el «exclusivamente»,
+  no el defecto. Ver [[design-system]] (`memoria/mapas/design-system.md:22-24,69-71`), que ya lo
+  documentaba bien.
 
 ## Su límite duro
 

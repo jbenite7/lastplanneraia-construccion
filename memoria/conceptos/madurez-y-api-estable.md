@@ -37,10 +37,17 @@ obliga a pasar por el contrato de release.
 
 `docs/design-system/version.json` es la fuente que manda sobre la versión viva, que es **`1.1.0`
 desde el 2026-08-07**. Que diga `stable` no es una etiqueta suelta:
-`tests/design-system/release-governance.test.mjs` exige que **las quince gates de cierre** de
+`tests/design-system/release-governance.test.mjs:68-74` exige que **las quince gates de cierre** de
 `closeout-evidence.json` estén todas `blocking: true`, `status: 'passed'`, con `verifiedAt` y
-evidencia no vacía. Solo entonces `stable-api-1.0.0.json` puede declarar
+`evidence.length > 0`. Solo entonces `stable-api-1.0.0.json` puede declarar
 `releaseStatus: 'guaranteed'`.
+
+**Corrección del pase de veracidad del 2026-08-10:** ese `evidence.length > 0` comprueba **forma,
+no contenido**. Nunca mira qué hay dentro del array. Es exactamente el hueco que dejó pasar los 14
+recibos de `docs/design-system/evidence/` que resultaron ser stubs de dos claves
+(`{"gateId": "static", "result": "passed"}`), sin comando, sin salida, sin fecha — medido en la
+Task 6 del Frente 0 (2026-08-10). Los 15 gates de cierre **no están sustancialmente verificados**;
+solo están bien formados. Ver [[estado|Estado de los goals]] y el trabajo pendiente del Frente 1b.
 
 Ojo con el nombre del archivo: `stable-api-1.0.0.json` **no** se renombra en cada versión. Su
 `targetVersion` sigue siendo `1.0.0` porque enumera la API que ganó la garantía SemVer en aquel
@@ -52,8 +59,9 @@ cierre de la 1.1.0, los gates aceptan cualquier SemVer con major ≥1 más `stat
 sus tests. Antes comprobaban el literal `'1.0.0'` en tres sitios distintos y cualquier subida
 declaraba el sistema no activado — ver [[version-escrita-a-mano-rompe-el-bump]].
 
-Es decir: la garantía es verificable, no declarativa. Ver [[baselines-y-presupuestos]] para los
-gates que miden, y [[changelog-ds-encabeza-version-vieja]] para la fuente que **no** hay que leer
-para saber la versión.
+Es decir: la garantía es verificable **en su forma**, no en su contenido — ver la corrección de
+arriba. Ver [[baselines-y-presupuestos]] para los gates que miden, y
+[[changelog-ds-encabeza-version-vieja]] para la fuente que **no** hay que leer para saber la
+versión.
 
 Mapa del área: [[design-system]].

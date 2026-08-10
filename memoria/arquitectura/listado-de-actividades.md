@@ -14,10 +14,11 @@ resumen: "Listado de Actividades: CRUD de actividades del proyecto, base sobre l
 > vivo. El sucesor es [[plan-de-compras]] (`/plan-compras`).
 
 
-**Qué resuelve.** Es el CRUD de actividades del proyecto — la versión anterior al PDC v2 de
-[[plan-de-compras]], y todavía la fuente de las actividades que ese módulo consume. No se elimina
-mientras el PDC v2 no cubra todo lo que cubre este. Ver [[pdc]] y [[pdc-v2|docs/pdc-v2.md]] para el
-mapa completo de dónde encaja cada versión.
+**Qué resolvía (histórico).** Era el CRUD de actividades del proyecto — la versión anterior al PDC
+v2 de [[plan-de-compras]]. **Corregido el 2026-08-10:** el cuerpo seguía en presente pese al banner
+de derogación de arriba; se eliminó junto con el resto del PDC v1 el 2026-08-04, y el PDC v2 no
+depende de este código. Ver [[pdc]] y [[pdc-v2|docs/pdc-v2.md]] para el mapa completo de dónde
+encaja cada versión.
 
 **Dónde encaja.** En el flujo del Plan de Compras. Ver [[flujo-pdc]].
 
@@ -28,39 +29,25 @@ Su vista está catalogada en [[VISTAS-MODULOS|docs/VISTAS-MODULOS.md]].
 Lo de abajo lo genera `scripts/wiki-arquitectura.mjs` desde el código. **No lo edites a mano:**
 se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es tuyo.
 
+**Vaciado a mano el 2026-08-10** (patrón de `panel-admin.md`): el script no toca este bloque
+porque el módulo `listado-de-actividades` ya no está declarado en
+`scripts/wiki-arquitectura.modulos.mjs` — sus rutas se eliminaron con el PDC v1 y el generador no
+tiene de dónde extraerlas. El bloque de abajo llevaba desde el 2026-08-04 listando rutas,
+controladores, servicios y tablas que ya no existen, pese al banner de derogación en rojo arriba.
+
 <!-- generado:inicio -->
 ### Rutas
-| Verbo | Ruta | Destino |
-| --- | --- | --- |
-| GET | `/api/pdc/categorias-recurso` | `App\Controllers\Api\PdcPlantillaController::categorias` |
-| GET | `/api/pdc/duracion-sugerida` | `App\Controllers\Api\PdcApiController::duracionSugerida` |
-| POST | `/api/pdc/list` | `App\Controllers\Api\PdcApiController::list` |
-| GET | `/api/pdc/plantillas/{id}/items` | `App\Controllers\Api\PdcPlantillaController::items` |
-| GET | `/api/pdc/plantillas/{id}` | `App\Controllers\Api\PdcPlantillaController::show` |
-| GET | `/api/pdc/plantillas` | `App\Controllers\Api\PdcPlantillaController::list` |
-| POST | `/api/pdc/save` | `App\Controllers\Api\PdcApiController::save` |
-| POST | `/api/pdc/update-cell` | `App\Controllers\Api\PdcApiController::updateCell` |
-| GET | `/pdc` | `App\Controllers\Gestion\PdcController::index` |
+_Ninguno: código eliminado con el PDC v1 el 2026-08-04._
 
 ### Controladores
-- `App\Controllers\Api\PdcApiController`
-- `App\Controllers\Api\PdcPlantillaController`
-- `App\Controllers\Gestion\PdcController`
+_Ninguno: código eliminado con el PDC v1 el 2026-08-04._
 
 ### Servicios
-- `ModuleRequestContext`
+_Ninguno: código eliminado con el PDC v1 el 2026-08-04._
 
 ### Tablas
-- `general_dias_defaults_categoria`
-- `general_dias_procesos_contratacion`
-- `general_proyectos_procesos`
-- `papelera_pdc`
-- `pdc`
-- `semanas_activas`
-- `subcontratistas`
+_Ninguno: código eliminado con el PDC v1 el 2026-08-04._
 
 ### Quién puede
-| Capacidad | Roles que la tienen |
-| --- | --- |
-| `canManagePdC` | A, D, R, OT |
+_Ninguno: código eliminado con el PDC v1 el 2026-08-04._
 <!-- generado:fin -->

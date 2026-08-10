@@ -34,7 +34,10 @@ primitivas BI compartidas).
 **Los dos selladores del cierre**, hermanos de esta familia:
 
 - `closeout-evidence.json` — las **quince gates de cierre**, cada una `blocking`, `passed`, con
-  fecha y evidencia. Es lo que activa la garantía 1.0.0 (ver [[madurez-y-api-estable]]).
+  fecha y evidencia. Es lo que activa la garantía 1.0.0 (ver [[madurez-y-api-estable]]). Ojo: el
+  gate que las lee (`tests/design-system/release-governance.test.mjs:68-74`) solo comprueba que
+  `evidence.length > 0`, nunca su contenido — corregido el 2026-08-10 tras medir que 14 de los
+  recibos eran stubs de dos claves. La garantía es de forma, no de contenido.
 - `goal-provenance.json` — la trazabilidad hacia el goal de gobernanza: `sourceCommit` de 40 hex y
   el `sha256` de cada fuente (`goal.md`, `facts.md`, `plan.md`), verificado byte a byte
   (`design-system-contracts.mjs:373-406`). Reescribir el goal sin re-certificar rompe el gate: la

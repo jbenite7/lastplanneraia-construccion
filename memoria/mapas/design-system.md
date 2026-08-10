@@ -104,11 +104,14 @@ que apunta a una variable inexistente: los valores resueltos solo se ven en nave
 `state-token-exceptions.json` resiste inserciones salvo una: meter una regla nueva entre dos
 copias duplicadas del mismo selector+token corre el `occurrence` declarado).
 
-Y antes de citar una fuente como contrato, dos que afirman lo que el código no cumple:
+Y antes de citar una fuente como contrato, tres que afirman lo que el código no cumple:
 [[comentario-de-token-afirma-uso-inexistente]] (ocho tokens rotulados para un uso que su
-consumidor real nunca cableó) y [[guard-valida-declaracion-contra-si-misma]] (el guard de «un
+consumidor real nunca cableó), [[guard-valida-declaracion-contra-si-misma]] (el guard de «un
 matiz por estado» comprueba el JSON contra el JSON y nunca abre el CSS: Programa General pinta
-dos estados del mismo color con el test en verde).
+dos estados del mismo color con el test en verde) y
+[[gate-solo-cuenta-elementos-no-los-lee]] (el gate de gobernanza de release solo comprueba
+`evidence.length > 0`, nunca su contenido: 14 recibos de release resultaron ser stubs de dos
+claves, medido el 2026-08-10).
 
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
 [[lab-desktop-layout-suite]].
@@ -125,12 +128,12 @@ Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
 
 ## Goals que trabajaron esta área
 
-- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Sigue abierto.**
+- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Sigue abierto**: medido el 2026-08-10 que sus 15 gates de cierre NO están sustancialmente verificados — solo 2 pasan de verdad. Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]].
 - [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]] — núcleo sin vendors más adjuntos por vendor, para dejar de servir ~190 KB de CSS de grilla a superficies ligeras.
 - [[goals/shell-layout-design-system/goal|shell-layout-design-system]] — el paraguas que agrupó shell, layout y sistema.
 - [[goals/sidebar-todos-modulos/goal|sidebar-todos-modulos]] — el rollout del shell sidebar; sus `reports/` explican módulo por módulo.
 - [[goals/cierre-dark-mode-y-tablas/goal|cierre-dark-mode-y-tablas]] y [[goals/dark-mode-todos-los-modulos/goal|dark-mode-todos-los-modulos]] — el dark mode, absorbido el segundo en el primero.
-- [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] — dashboard de BI, **bloqueado** esperando aprobación visual de sus 6 modos.
+- [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] — dashboard de BI, **bloqueado por dependencia**: su condición de hecho pedía aprobar un tema (`linen`) retirado el 2026-07-25; corregida el 2026-08-10 para esperar el tema claro nuevo de F3 de `reapertura-movil-y-tema-claro`. Ver [[condicion-de-hecho-caduca-sin-aviso]].
 
 Estado de todos en [[estado|Estado de los goals]].
 

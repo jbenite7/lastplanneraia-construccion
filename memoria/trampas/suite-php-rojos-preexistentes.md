@@ -5,7 +5,7 @@ fecha: 2026-07-29
 areas: [qa]
 fuente: memoria-claude
 origen: lps-aia-suite-php-rojos-preexistentes
-resumen: "Rojos preexistentes de tests/test_*.php: 4/108 en main @1a75b19 (2026-07-29), pero el universo es hoy 126 archivos y no se ha vuelto a medir — cita siempre la fecha o re-mide; y las dos trampas al medirlos en macOS"
+resumen: "Rojos preexistentes de tests/test_*.php: 4/108 en main @1a75b19 (2026-07-29); universo re-medido el 2026-08-10 en 96 archivos tras el retiro del PDC v1 — cita siempre la fecha o re-mide; y las dos trampas al medirlos en macOS"
 ---
 Medido el 2026-07-28 en el worktree `lps-aia-pdc`, rama `pdc-a4-fechas` @ `2357b0a`, con árbol
 revertido a HEAD: de los 103 `tests/test_*.php`, **16 fallan sin que nadie los haya tocado**.
@@ -32,6 +32,11 @@ no 16 de 103.**
 > **Universo medido el 2026-08-03:** `ls tests/test_*.php | wc -l` da **126** archivos, no 108. La
 > cifra de fallos de arriba es de `main@1a75b19` (2026-07-29) y **no se ha vuelto a medir**. Cítala
 > siempre con su fecha, o vuelve a correr la suite.
+>
+> **Re-medido el 2026-08-10:** `ls tests/test_*.php | wc -l` da **96**, un 24 % menos que el
+> 2026-08-03. El retiro del PDC v1 del 2026-08-04 se llevó varios tests por delante; el universo de
+> 96 ya incluye `tests/test_password_reset_resultados.php`, creado ese mismo día. La cifra de
+> fallos sigue sin re-medirse sobre este universo — solo cambia cuántos archivos hay.
 
 La cifra de arriba es de una rama, y sobre `main` la mayoría ya estaba resuelta —así que
 **la lista de 16 no sirve como línea base de `main`**. Los 4 de `main`: `test_pdc_phpstan_nivel6` (roto

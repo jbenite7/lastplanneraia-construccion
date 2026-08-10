@@ -4,25 +4,28 @@ estado: vigente
 fecha: 2026-08-02
 areas: [proceso]
 fuente: sesion
-resumen: "Estado real de los 24 goals del repo, leído de cada goal.md — cuáles siguen abiertos y cuáles no viajan en git"
+resumen: "Estado real de los 26 goals del repo, leído de cada goal.md — cuáles siguen abiertos y cuáles no viajan en git. Corte del 2026-08-10, Frente 0"
 ---
 # Estado de los goals
 
-Leído de los `goal.md` y de la última entrada de cada `validation-log.md` el 2026-08-02, y
-repasado en el pase de veracidad del 2026-08-06 (entonces eran 16 carpetas; hoy son **24**). La
-fuente sigue siendo `goals/<slug>/`; esta página solo lo resume.
+Leído de los `goal.md` y de la última entrada de cada `validation-log.md` el 2026-08-02, repasado
+en el pase de veracidad del 2026-08-06 (entonces eran 16 carpetas; después 24) y actualizado el
+2026-08-10 tras el Frente 0 de higiene y decisiones (hoy **26 carpetas**). La fuente sigue siendo
+`goals/<slug>/`; esta página solo lo resume.
 
 ## Abiertos o bloqueados
 
 | Goal | Estado | Qué persigue |
 |---|---|---|
-| [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado** — falta aprobación visual explícita de la matriz de 6 modos; sin ella no hay commit | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
-| [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **indeterminado** — sin sección de cierre; la última entrada deja pendientes la revisión visual, los datos del piloto y el contrato de release | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
+| [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] | **bloqueado por dependencia, no por olvido** (corregido el 2026-08-10): la condición de hecho pedía aprobar seis modos, tres del tema `linen`, retirado el 2026-07-25. Nadie podía cumplirla. El usuario decidió esperar a que la fase F3 de `reapertura-movil-y-tema-claro` entregue el tema claro nuevo y aprobar los seis de verdad, en vez de recortar el alcance. Ver [[condicion-de-hecho-caduca-sin-aviso]] | Validar el dashboard de Torre de Control BI: radar de productividad, eficiencia y PAC, más cronograma de avance |
+| [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] | **NO se cierra** (medido el 2026-08-10, no solo redactado): de los 15 gates de cierre, solo 2 pasan de verdad, 4 fallan con evidencia real, 8 no son ejecutables en una sesión ad hoc y 1 (`accessibility-insights`) es un recibo sin comando real detrás. Los 14 artefactos de `docs/design-system/evidence/` resultaron ser stubs de dos claves — nunca fueron evidencia real. Dos hallazgos de PHPStan arreglados en el proceso (`9011c99c`). El usuario decidió reconstruir los 15 gates en un frente propio después del Frente 1 (Frente 1b). Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]] | Consolidar el design system como fuente de verdad única, versionada y con gates automáticos, con Programa General de piloto |
+| [[goals/reapertura-movil-y-tema-claro/goal|reapertura-movil-y-tema-claro]] | **abierto** — tres fases cerradas (F1 destrabar, F2a-1 precondiciones, F2a-2a deudas de arranque, todas 2026-08-07), tres pendientes (F2a-2b piloto móvil, F2b resto de módulos, F3 tema claro, F4 matriz diagonal). Condición de hecho: las cuatro fases con `npm run test:design-system:static` en 8/8 | Devolver al producto móvil, tablet y un tema claro, empezando por contratos, siguiendo por gates y terminando por interfaz |
 
 ## Cerrados
 
 | Goal | Matiz |
 |---|---|
+| [[goals/adopcion-logo-construccion/goal|adopcion-logo-construccion]] | Adoptó el ícono del kit Construcción en favicon, sidebar del shell, login y Admin (`4437fcfa`, `6b618964`). Sin `validation-log.md` propio; cerrado por evidencia de commit, no por sección de cierre formal. **No viaja en git**: sin excepción en `.gitignore` |
 | [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | Cerrado el 2026-08-07 con la publicación de la 1.1.0 (`a5223a0c`): suite estática 8/8 y cero excepciones venciendo en 1.1.0. De las 39, **7 pagadas y 32 re-vencidas a `1.2.0`** con evidencia medida. Su decisión D1 resultó falsa —las 15 de `theme-overrides.css` no eran del selector de proyecto sino normalizaciones globales del DS— así que ese grupo se resolvió con la regla de D3 en vez de migrando `/proyectos`, que no habría pagado ninguna. Detalle en [[subir-la-version-del-ds-cobra-deudas]] y [[version-escrita-a-mano-rompe-el-bump]] |
 | [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | Cerrado el 2026-08-06 sin ejecución propia: lo resolvió `51ccd5ca` de la campaña dark mode. Verificado antes de cerrar — `hot.js:1658` pinta el `ops-state-chip` con su matiz y `programa-general-state-hue.mjs` pasa |
 | [[goals/biblia-t1-transversal/goal|biblia-t1-transversal]] | Cerrado el 2026-08-06 formalizando el trabajo ya hecho el 2026-08-04: entrada a la app (autenticación, proyecto, RBAC), 17 capacidades con escenario y 7 pruebas en verde |
@@ -59,6 +62,14 @@ fresco. Recontado el 2026-08-06: hay **24 carpetas de goal** y **106 de los 108 
 versionados** (`git ls-files 'goals/*.md'`), así que la lista blanca se ha ido manteniendo — los
 tres goals nuevos (`repaso-usabilidad-no-tablas`, `pg-chip-de-estado`,
 `cierre-version-1-1-0-design-system`) tienen su excepción en `.gitignore`.
+
+**Actualizado el 2026-08-10:** dos carpetas más aparecieron desde entonces, con destinos
+opuestos. [[goals/reapertura-movil-y-tema-claro/goal|reapertura-movil-y-tema-claro]] sí tiene su
+excepción (`.gitignore:393-395`, solo `goal.md`, sin `facts.md`/`plan.md`/evidencia).
+[[goals/adopcion-logo-construccion/goal|adopcion-logo-construccion]] **no tiene ninguna**: `git
+ls-files goals/adopcion-logo-construccion` no devuelve nada pese a estar cerrado y ejecutado. Un
+clon fresco no lo ve. Mismo patrón que el que ya documentaba esta página con
+`shell-layout-design-system` y `sidebar-todos-modulos` antes del repaso del 2026-08-02.
 
 Antes de ese repaso faltaban tres cosas, y conviene saber por qué, porque el mismo patrón puede
 repetirse con cualquier goal nuevo:

@@ -41,6 +41,11 @@ Sembrar la bitácora con `test.A` falla por clave foránea; se intercepta con un
 Los módulos LPS usan Handsontable. La altura de `#hot-container` la resuelve JavaScript, no CSS:
 `calc(100vh - Npx)` sobre ese contenedor es siempre incorrecto — [[hot-container-height-ownership]].
 
+## Reabrir semana
+
+El cliente y el servidor no aplican la misma regla sobre quién puede reabrir una semana, y ninguna
+de las dos es la que el producto quiere — ver [[reabrir-semana-asimetria-cliente-servidor]].
+
 ## Vecinos
 
 [[design-system]] para tokens y cascada · [[rbac-y-rutas]] para quién puede editar qué semana.

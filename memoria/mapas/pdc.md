@@ -47,10 +47,12 @@ biblia, qué debe hacer.
 
 ## Estado
 
-`/contratos`, `/listado-actividades` y `/pdc` ya usan el shell sidebar
-([[compras-migrado-shell-sidebar]]). Las dos primeras superficies quedaron retiradas del producto
-por el goal `retiro-listado-contratos`; ver [[estado|Estado de los goals]] para el resto del
-recorrido A1–A4 y B1.
+**Corregido el 2026-08-10:** `/contratos`, `/listado-actividades` y `/pdc` — las **tres**, no solo
+las dos primeras — se eliminaron del repo el 2026-08-04 con el PDC v1
+([[compras-migrado-shell-sidebar]], ya derogada, lo documenta bien). `grep -nE
+"pdc|contratos|listado" public/index.php` hoy solo devuelve `/api/bi/report/pdc` y `/bi/pdc`, que
+son del módulo BI y no tienen relación. Ver [[estado|Estado de los goals]] para el resto del
+recorrido A1–A4 y B1 del PDC v2, que sí está vivo.
 
 ## Goals que trabajaron esta área
 

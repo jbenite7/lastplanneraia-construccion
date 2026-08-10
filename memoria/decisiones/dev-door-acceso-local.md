@@ -14,10 +14,14 @@ servicio, nunca `/login`:
 http://localhost:8081/dev/entrar?u=test.R&p=PDC%20Sandbox%20E2E
 ```
 
-`u` ∈ {`test.A` (rol A), `test.R` (rol R), `test.V` (rol V)}; `test.C` y `test.D` existen pero no
-están habilitados por defecto. Sin `p` aterriza en `/proyectos`. El rol que queda en sesión es el
-**real** de `project_members`, así que sirve para cubrir "un rol permitido y uno denegado" del
-contrato de `AGENTS.md`.
+`u` ∈ {`test.A` (rol A), `test.R` (rol R), `test.V` (rol V)}; `test.C` y `test.D` son cuentas
+sembradas que existen, pero cuáles quedan habilitadas depende de `DEV_DOOR_USERS` en `.env` —
+**configuración local, no versionada, que varía por máquina**. **Corregido el 2026-08-10:** en esta
+máquina hoy `DEV_DOOR_USERS=test.A,test.R,test.V,test.C,test.D` incluye las cinco (`test.D` se
+añadió ese mismo día para que el test del rol D pudiera correr por la puerta de servicio); no
+asumas que solo tres están activas sin mirar el `.env` real. Sin `p` aterriza en `/proyectos`. El
+rol que queda en sesión es el **real** de `project_members`, así que sirve para cubrir "un rol
+permitido y uno denegado" del contrato de `AGENTS.md`.
 
 **Why:** el usuario pidió esto explícitamente (2026-07-30) tras constatar que yo no puedo teclear
 credenciales y que el panel del navegador pierde la cookie cada 60-90 s ([[sesion-cae-en-el-panel]]),

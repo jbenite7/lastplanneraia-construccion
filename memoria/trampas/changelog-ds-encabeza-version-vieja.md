@@ -4,11 +4,18 @@ estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
 fuente: docs/design-system/version.json, docs/design-system/CHANGELOG.md, commit 58b850e7
-resumen: "La versión viva del design system es 1.0.0 stable en version.json; el CHANGELOG encabeza «0.3.6 - En construcción» desde el 16 de julio y engaña a quien lo lea"
+resumen: "Trampa histórica del 16 de julio al 2026-08-04: el CHANGELOG encabezaba «0.3.6 - En construcción» mientras version.json ya decía 1.0.0 stable. Corregido; la versión viva hoy es 1.1.0 (2026-08-07)"
 ---
 # El changelog del design system encabeza una versión que ya se activó
 
-**La versión viva es `1.0.0`**, y la fuente que manda es `docs/design-system/version.json`:
+**Nota histórica (corregida el 2026-08-10):** el cuerpo de abajo describe el estado entre el 16 de
+julio y el 2026-08-04, cuando la versión viva era `1.0.0`. **Hoy la versión viva es `1.1.0`**
+(desde el 2026-08-07, ver [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]]) y el CHANGELOG está sincronizado:
+`docs/design-system/CHANGELOG.md:3` encabeza `## 1.1.0 - 2026-08-07`. La trampa de fondo —confiar
+en el encabezado del changelog para saber la versión, en vez de leer `version.json`— sigue siendo
+válida como lección; el relato en presente que sigue es de un momento anterior.
+
+**La versión viva era `1.0.0`** (histórico), y la fuente que manda es `docs/design-system/version.json`:
 
 ```json
 { "version": "1.0.0", "status": "stable", "pilot": "/programa-general" }

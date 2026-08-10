@@ -9,7 +9,7 @@ resumen: "Las diez familias visuales avanzan por candidatos: homologation.json d
 # Homologación: cómo una familia visual gana su aspecto
 
 El design system no aprueba componentes sueltos sino **familias visuales**, y son exactamente diez
-(`scripts/design-system-contracts.mjs:132-135`): `foundations`, `shell-navigation`,
+(`scripts/design-system-contracts.mjs:167-170`): `foundations`, `shell-navigation`,
 `page-structure`, `actions`, `forms-filters`, `states-feedback`, `data-display`, `overlays`,
 `vendor-adapters` y `bi-primitives`.
 
@@ -21,11 +21,13 @@ Dos archivos se reparten el trabajo:
   (`approvedBy`), con qué referencia (`approvalRef`), cuándo, en qué temas y viewports, y con qué
   evidencia.
 
-**El gate cierra el círculo en ambos sentidos** (`scripts/design-system-contracts.mjs:154-218`):
+**El gate cierra el círculo en ambos sentidos** (`scripts/design-system-contracts.mjs:196-244`):
 un candidato no puede figurar `approved` sin su aprobación registrada, y una aprobación no puede
-apuntar a un candidato inexistente. Además la matriz está clavada al alcance del repo: solo tema
-`dark` y viewports `1180x820` / `1440x900` — una aprobación en otro tema o viewport es inválida
-por construcción.
+apuntar a un candidato inexistente. Toda aprobación sigue exigiendo tema `dark` y los viewports
+`1180x820`/`1440x900` como **requeridos** (`REQUIRED_VIEWPORTS`, `:194`) — pero desde DS-032
+(2026-08-07) `SUPPORTED_VIEWPORTS` (`:193`) también acepta `390x844`, así que una aprobación en ese
+viewport móvil **ya no** es inválida por construcción; sigue sin ser obligatoria y ninguna familia
+lo declara todavía (corregido el 2026-08-10, medido contra el código actual).
 
 **Dónde se ve.** El laboratorio (`/internal/design-system`) renderiza el estado real de cada
 familia leyendo estos dos archivos (`src/Controllers/Internal/DesignSystemLabController.php:19-53`).
