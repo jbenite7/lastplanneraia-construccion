@@ -49,6 +49,8 @@ const required = [
   'docs/design-system/a11y-baseline.json',
   'docs/design-system/a11y-exceptions.schema.json',
   'docs/design-system/a11y-exceptions.json',
+  'docs/design-system/evidence-exceptions.schema.json',
+  'docs/design-system/evidence-exceptions.json',
   'docs/design-system/module-manifest.schema.json',
   `${manifestsDir}/goal-provenance.json`,
   inventoryPath,
@@ -680,12 +682,18 @@ for (const manifest of manifests) {
 // nada: las 10 familias cubren los dos viewports requeridos. La unica propiedad
 // que hace de esto una excepcion es que alguien la revise una por una, igual que
 // con ELEMENT_CAPTURE_ALLOWLIST.
-const VISUAL_EVIDENCE_DELEGATION_ALLOWLIST = new Map([
-  // foundation-shell no es una pantalla capturable sino el shell y la barra
-  // lateral de toda la aplicacion (20 rutas); su cobertura visual real son los
-  // dos escenarios de la familia shell-navigation en el laboratorio.
-  ['foundation-shell', 'shell-navigation'],
-]);
+// Las dos listas blancas viven como contrato de datos en
+// docs/design-system/evidence-exceptions.json (con su esquema homonimo), no
+// como constantes de este script: gobiernan excepciones a contratos del
+// design system y DS-033 exige que toda excepcion sea revisada por una
+// persona con su motivo escrito, igual que exceptions.json y
+// a11y-exceptions.json. `documents` ya cargo y valido el archivo contra su
+// esquema mas arriba (SCHEMA_DOCUMENT_PAIRS); aqui solo se deriva de el.
+const evidenceExceptions = documents.get('docs/design-system/evidence-exceptions.json');
+const VISUAL_EVIDENCE_DELEGATION_ALLOWLIST = new Map(
+  (evidenceExceptions?.visualEvidenceDelegationAllowlist || [])
+    .map((entry) => [entry.moduleId, entry.delegatesToFamily]),
+);
 
 for (const manifest of manifests) {
   const delegacion = manifest.visualEvidence;
@@ -799,10 +807,12 @@ for (const manifest of manifests) {
 // cambia de tamano sin que nadie lo mire es exactamente lo que esta lista debe
 // impedir. El precio es que el gate falla si alguien regenera el golden sin
 // tocar esta constante: es el fallo deseado, y el mensaje dice el numero nuevo.
-const ELEMENT_CAPTURE_ALLOWLIST = new Map([
-  ['laboratory/states-feedback-dark-1180x820', { width: 1102, height: 1649 }],
-  ['laboratory/states-feedback-dark-1440x900', { width: 1362, height: 1577 }],
-]);
+// Tambien contrato de datos en evidence-exceptions.json; ver el comentario
+// junto a VISUAL_EVIDENCE_DELEGATION_ALLOWLIST mas arriba.
+const ELEMENT_CAPTURE_ALLOWLIST = new Map(
+  (evidenceExceptions?.elementCaptureAllowlist || [])
+    .map((entry) => [`${entry.moduleId}/${entry.scenarioId}`, { width: entry.width, height: entry.height }]),
+);
 
 // `golden` era una ruta libre desde la raiz del repositorio: un escenario podia
 // apuntar a cualquier PNG del repo (incluido uno suelto en la raiz, creado a
@@ -1036,6 +1046,7 @@ const SCHEMA_DOCUMENT_PAIRS = [
   ['docs/design-system/family-approvals.schema.json', 'docs/design-system/family-approvals.json'],
   ['docs/design-system/a11y-baseline.schema.json', 'docs/design-system/a11y-baseline.json'],
   ['docs/design-system/a11y-exceptions.schema.json', 'docs/design-system/a11y-exceptions.json'],
+  ['docs/design-system/evidence-exceptions.schema.json', 'docs/design-system/evidence-exceptions.json'],
 ];
 
 for (const [schemaFile, documentFile] of SCHEMA_DOCUMENT_PAIRS) {
@@ -1058,6 +1069,7 @@ for (const file of [
   'docs/design-system/family-approvals.schema.json',
   'docs/design-system/a11y-baseline.schema.json',
   'docs/design-system/a11y-exceptions.schema.json',
+  'docs/design-system/evidence-exceptions.schema.json',
   'docs/design-system/module-manifest.schema.json',
 ]) {
   const schema = documents.get(file);

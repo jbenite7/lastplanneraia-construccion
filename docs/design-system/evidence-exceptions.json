@@ -1,0 +1,29 @@
+{
+  "designSystemVersion": "1.1.0",
+  "elementCaptureAllowlist": [
+    {
+      "moduleId": "laboratory",
+      "scenarioId": "states-feedback-dark-1180x820",
+      "width": 1102,
+      "height": 1649,
+      "owner": "design-system",
+      "reason": "states-feedback es un mosaico de banners/toasts/inline-alerts que crece por scroll vertical mas alla del pliegue del viewport; un recorte a viewport completo lo trunca. capture: \"element\" es una excepcion al contrato de alto (que exige que el golden mida exactamente el viewport) y solo se habilita para este escenario tras revision humana explicita, con las dimensiones exactas del recorte fijadas para que un golden que crezca o encoja sin que nadie lo mire falle aqui."
+    },
+    {
+      "moduleId": "laboratory",
+      "scenarioId": "states-feedback-dark-1440x900",
+      "width": 1362,
+      "height": 1577,
+      "owner": "design-system",
+      "reason": "Misma excepcion que states-feedback-dark-1180x820, para el viewport requerido 1440x900: el mosaico de estados excede el alto del viewport y su cobertura visual real es el recorte al elemento, no a la pantalla completa."
+    }
+  ],
+  "visualEvidenceDelegationAllowlist": [
+    {
+      "moduleId": "foundation-shell",
+      "delegatesToFamily": "shell-navigation",
+      "owner": "design-system",
+      "reason": "foundation-shell no es una pantalla capturable: describe el shell y la barra lateral de toda la aplicacion (20 rutas), sin una superficie propia que recortar. Su cobertura visual real ya existe como los dos escenarios de la familia shell-navigation en el laboratorio (laboratory.json), asi que delegar ahi evita duplicar goldens de un mismo shell. Delegar es una excepcion al contrato de \"todo manifiesto trae al menos un escenario propio\" y exige revision humana caso por caso: la familia debe existir en homologation.json y tener escenarios de verdad, y ningun otro modulo queda autorizado a delegar sin su propia alta explicita aqui."
+    }
+  ]
+}
