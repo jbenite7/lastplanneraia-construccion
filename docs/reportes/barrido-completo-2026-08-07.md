@@ -325,9 +325,33 @@ Es decir: **desde esta máquina no hay ruta hacia el rango de Brevo**, mientras 
 funciona. Un bloqueo de red (ISP o cortafuegos), ajeno al repositorio. **No se envió ningún correo y
 la cuenta de Brevo no llegó a usarse.**
 
-**Queda pendiente de verificar en un entorno con salida hacia Brevo.** Y conviene comprobarlo en el
-servidor de producción antes que en ningún otro sitio: si allí tampoco hay ruta a ese rango, la
-recuperación de contraseña está caída y —por **B-10**— nadie se estaría enterando.
+**Producción sí alcanza Brevo** (comprobado el 2026-08-08 por SSH, sólo con sondas de lectura):
+puertos 587/2525/465 abiertos, saludo `220 smtp-relay.brevo.com ESMTP Service Ready`, `STARTTLS`
+ofrecido y `AUTH PLAIN LOGIN CRAM-MD5`. Su `.env` apunta a `smtp-relay.sendinblue.com:587` con `tls`
+y `APP_URL=https://lastplanneraia.com/`, todo correcto. El nombre viejo sigue sirviendo: el propio
+relay responde ya como `brevo.com`.
+
+### ✅ CERRADO el 2026-08-08: el envío real funciona de punta a punta
+
+Al cambiar de red, Brevo pasó a ser alcanzable (era un bloqueo del ISP hacia **sólo** ese rango:
+Gmail, Mailtrap, Resend y Office 365 respondían desde el mismo Docker). Repetida la prueba con las
+credenciales reales y el destinatario autorizado por el usuario:
+
+| Señal | Resultado |
+|---|---|
+| Tiempo de respuesta | **2,0 s** (antes: 15 s hasta agotar el plazo) |
+| Log SMTP | **sin errores** |
+| Auditoría | `RESET_CLAVE_ENVIADO … a <destinatario> (app)` |
+| Token | **conservado** (sólo se borra si el envío falla) |
+| Pantalla | mensaje genérico — que tras el arreglo significa «no falló» |
+| Recepción | **confirmada por el usuario en su bandeja** |
+
+Queda así verificado el último tramo de **PHPMailer 7.1.1**: conexión, `STARTTLS`, **autenticación
+real** y entrega aceptada por el relay.
+
+Y queda validado **B-10 en sus dos sentidos**, que es lo que le da valor: con el correo caído sale
+el aviso rojo honesto, y con el correo funcionando sale el genérico de siempre. **Dejaron de ser
+indistinguibles**, que era exactamente el defecto.
 
 **Agravante medido:** `SmtpMailer` fija `Timeout = 15`. Con el relay inalcanzable, quien pide
 recuperar su contraseña espera **15 segundos** para recibir un mensaje de éxito que es falso.
