@@ -4,7 +4,8 @@
 // ítem activo con aria-current); las demás reportan PENDING sin fallar el test.
 // Cada migración futura solo agrega su ruta a MIGRATED.
 import { chromium } from 'playwright';
-import { BASE_URL, CREDENTIALS } from './fixtures/projects.mjs';
+import { BASE_URL } from './fixtures/projects.mjs';
+import { login, selectFirstProject } from './support/session.mjs';
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -82,16 +83,9 @@ await page.route('**/api/cnp/reprogramar*', (route) => (
   route.fulfill({ contentType: 'application/json', body: '{"respuesta":"BIEN"}' })
 ));
 
-await page.goto(`${BASE_URL}/login`);
-await page.locator('#usuario').fill(CREDENTIALS.username);
-await page.locator('#password').fill(CREDENTIALS.password);
-await Promise.all([
-  page.waitForURL((u) => u.pathname === '/proyectos', { timeout: 45000 }),
-  page.locator('button[type="submit"]').click(),
-]);
-await page.locator('.project-item').first().waitFor({ timeout: 45000 });
-await page.locator('.project-item button[type="submit"], .project-item .btn-enter').first().click();
-await page.waitForURL((u) => !u.toString().includes('/proyectos'), { timeout: 45000 });
+// Este test no busca un proyecto concreto: entra al primero que haya, sea cual sea.
+await login(page);
+await selectFirstProject(page);
 
 for (const r of ALL_ROUTES) {
   if (!MIGRATED.has(r.route)) {

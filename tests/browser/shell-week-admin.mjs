@@ -1,7 +1,8 @@
 // Contrato runtime del flyout de gestión de Semanas y sus diálogos.
 // Endpoints interceptados: nunca muta la BD compartida.
 import { chromium } from 'playwright';
-import { BASE_URL, CREDENTIALS } from './fixtures/projects.mjs';
+import { BASE_URL } from './fixtures/projects.mjs';
+import { login, selectFirstProject } from './support/session.mjs';
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -36,16 +37,9 @@ await page.route('**/api/semanal/auto-program*', (route) => {
   return route.fulfill({ contentType: 'application/json', body: '{"respuesta":"OK"}' });
 });
 
-await page.goto(`${BASE_URL}/login`);
-await page.locator('#usuario').fill(CREDENTIALS.username);
-await page.locator('#password').fill(CREDENTIALS.password);
-await Promise.all([
-  page.waitForURL((u) => u.pathname === '/proyectos', { timeout: 45000 }),
-  page.locator('button[type="submit"]').click(),
-]);
-await page.locator('.project-item').first().waitFor({ timeout: 45000 });
-await page.locator('.project-item button[type="submit"], .project-item .btn-enter').first().click();
-await page.waitForURL((u) => !u.toString().includes('/proyectos'), { timeout: 45000 });
+// Este test no busca un proyecto concreto: entra al primero que haya, sea cual sea.
+await login(page);
+await selectFirstProject(page);
 await page.goto(`${BASE_URL}/programacion-intermedia`);
 await page.waitForSelector('[data-shell-pattern="sidebar"]', { timeout: 20000 });
 

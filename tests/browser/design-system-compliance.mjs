@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { CREDENTIALS, PROJECTS } from './fixtures/projects.mjs';
-import { loginAndSelectProject } from './support/session.mjs';
+import { PROJECTS } from './fixtures/projects.mjs';
+import { login, loginAndSelectProject } from './support/session.mjs';
 
 const PRIORITY_GRID_ROUTES = [
   { path: '/programa-general', label: 'Programa General' },
@@ -256,11 +256,7 @@ test.describe('Design system foundation', () => {
   });
 
   test('project selector follows migrated design system contract in dark', async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle', timeout: 30000 });
-    await page.locator('#usuario').fill(CREDENTIALS.username);
-    await page.locator('#password').fill(CREDENTIALS.password);
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('**/proyectos', { timeout: 45000 });
+    await login(page);
 
     for (const viewport of [
       { width: 1180, height: 820 },

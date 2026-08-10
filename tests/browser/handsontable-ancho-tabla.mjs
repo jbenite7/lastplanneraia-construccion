@@ -18,7 +18,8 @@
 // declaraciones `!important` el orden de capas se invierte, asi que
 // `layer(vendor)` gana a `layer(module)` y a lo no capado.
 import { chromium } from 'playwright';
-import { BASE_URL, CREDENTIALS } from './fixtures/projects.mjs';
+import { BASE_URL } from './fixtures/projects.mjs';
+import { login, selectFirstProject } from './support/session.mjs';
 
 const RUTAS = [
   '/programa-general',
@@ -35,16 +36,9 @@ const resultados = [];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1180, height: 820 } });
 
-await page.goto(`${BASE_URL}/login`);
-await page.locator('#usuario').fill(CREDENTIALS.username);
-await page.locator('#password').fill(CREDENTIALS.password);
-await Promise.all([
-  page.waitForURL((u) => u.pathname === '/proyectos', { timeout: 45000 }),
-  page.locator('button[type="submit"]').click(),
-]);
-await page.locator('.project-item').first().waitFor({ timeout: 45000 });
-await page.locator('.project-item button[type="submit"], .project-item .btn-enter').first().click();
-await page.waitForURL((u) => !u.toString().includes('/proyectos'), { timeout: 45000 });
+// Este test no busca un proyecto concreto: entra al primero que haya, sea cual sea.
+await login(page);
+await selectFirstProject(page);
 
 for (const ruta of RUTAS) {
   await page.goto(`${BASE_URL}${ruta}`, { waitUntil: 'load' });

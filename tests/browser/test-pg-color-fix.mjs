@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CREDENTIALS } from './fixtures/projects.mjs';
+import { loginAndSelectProject } from './support/session.mjs';
 
 /**
  * Test: PG color persistence after filter + scroll.
@@ -16,16 +16,8 @@ import { CREDENTIALS } from './fixtures/projects.mjs';
  */
 test.describe('PG color persistence after filter + scroll', () => {
   test('rows keep correct state class after filter and scroll', async ({ page }) => {
-    // 1. Login
-    await page.goto('http://localhost:8081/login');
-    await page.locator('#usuario').fill(CREDENTIALS.username);
-    await page.locator('#password').fill(CREDENTIALS.password);
-    await page.locator('button[type="submit"]').click();
-    await page.waitForURL('**/proyectos', { timeout: 15000 });
-
-    // 2. Select project
-    await page.locator('.project-item', { hasText: 'Prueba' }).locator('button[type="submit"]').click();
-    await page.waitForURL(url => !url.toString().includes('/proyectos'), { timeout: 15000 });
+    // 1. Login + 2. Select project
+    await loginAndSelectProject(page, { name: 'Prueba' });
 
     // 3. Navigate to PG
     await page.goto('http://localhost:8081/programa-general');

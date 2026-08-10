@@ -37,6 +37,21 @@ export async function selectProject(page, project) {
 }
 
 /**
+ * Entra a la primera tarjeta de `.project-item`, sin filtrar por nombre.
+ *
+ * Existe para los tests a los que el proyecto concreto les da igual — solo necesitan
+ * "cualquier proyecto, uno que sea". Nombrarles uno con `selectProject` los ataría a un
+ * orden de siembra que nadie garantiza: el primero de hoy no tiene por qué seguir
+ * siéndolo mañana, y esa dependencia implícita quedaría escondida en el test.
+ */
+export async function selectFirstProject(page) {
+  const card = page.locator('.project-item').first();
+  await expect(card, 'No project cards found').toBeVisible({ timeout: 45000 });
+  await card.locator('button[type="submit"], .btn-enter').click();
+  await page.waitForURL((url) => !url.toString().includes('/proyectos'), { timeout: 45000 });
+}
+
+/**
  * Marca el recorrido guiado del PDC como ya visto, antes de que cargue cualquier página.
  *
  * Cada test de Playwright arranca con un almacén limpio, así que para el módulo TODOS los tests son
