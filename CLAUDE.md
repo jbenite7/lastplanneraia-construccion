@@ -110,11 +110,16 @@ npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
 `e2e/support/`) covering smoke/admin/workflow tests — distinct from `tests/browser/`, which is
 design-system/lab-focused. Don't conflate the two when picking where a new browser test belongs.
 
-Static analysis: `phpstan` is a Composer dependency but there is **no `phpstan.neon`** at the repo
-root — its scope/invocation for the design system is managed through
-`scripts/design-system-phpstan-baseline.mjs` / `docs/design-system/phpstan-baseline.json`. For ad hoc
-runs use the command AGENTS.md gives: `docker compose exec app vendor/bin/phpstan analyse src
-admin/src --memory-limit=1G`. `biome.json` only covers `public/js`, `public/css`,
+Static analysis: `phpstan` is a Composer dependency, and there **are** three neon files at the repo
+root — `phpstan.neon` (level 5, paths `src` and `admin/src`, bootstraps
+`scripts/phpstan/constantes-entrypoint.php`), `phpstan-baseline.neon` (the tolerated-error list) and
+`phpstan-pdc.neon`. (This paragraph used to claim there was no `phpstan.neon`; corrected 2026-08-10
+after `phpstan-baseline.neon` turned out to be what was putting two design-system gates in the red.)
+There are **two** independent exception lists and they are easy to confuse: `phpstan-baseline.neon`
+feeds PHPStan itself, while `docs/design-system/phpstan-baseline.json` feeds the design-system gate
+through `scripts/design-system-phpstan-baseline.mjs`. A stale entry in either one fails a different
+gate. For ad hoc runs use the command AGENTS.md gives: `docker compose exec app vendor/bin/phpstan
+analyse src admin/src --memory-limit=1G`. `biome.json` only covers `public/js`, `public/css`,
 `admin/public/css` (no PHP linting there):
 
 ```bash
