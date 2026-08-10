@@ -39,13 +39,22 @@ Clasificación gate a gate (comandos y salidas de esta sesión, 2026-08-10):
   brand-mark filter). El chain `&&` del script nunca llegó a correr `test:a11y:lab`,
   `test:visual:lab` ni `test:performance:lab`, así que tampoco hay evidencia fresca de esas tres
   capas.
-- `phpstan-scoped` — `docker compose exec app vendor/bin/phpstan analyse src --memory-limit=1G`,
-  exit 1, «Found 7 errors».
-- `phpstan-global` — `npm run test:design-system:phpstan`, exit 1, «New PHPStan findings: 7».
-  Causa raíz encontrada y documentada en `facts.md`: `docs/design-system/phpstan-baseline.json`
-  sigue esperando 5 huellas sobre `ListadoActividadesApiController.php` y `SemiAutoService.php`,
-  archivos que ya no existen desde la eliminación del PDC v1 (2026-08-04). El baseline del design
-  system quedó huérfano de esa eliminación.
+- ~~`phpstan-scoped`~~ y ~~`phpstan-global`~~ — **ARREGLADOS el mismo 2026-08-10** (`9011c99c`),
+  con autorización del usuario. Fallaban con 7 errores y **ninguno era un defecto de código**: los
+  siete eran «Ignored error pattern … was not matched», excepciones concedidas para avisos que ya
+  no se producen. Dos listas muertas distintas, no una:
+  - `phpstan-baseline.neon` tenía 58 reglas, de las que **6 estaban muertas** y una séptima
+    declaraba `count: 2` para una comparación defensiva de `ActivityMatcherService` que hoy ocurre
+    una sola vez. Las 6 se retiran; la séptima se devuelve con el conteo real, porque lo que
+    sobraba era la cifra, no la tolerancia.
+  - `docs/design-system/phpstan-baseline.json` tenía **5 huellas, las 5** sobre
+    `ListadoActividadesApiController.php` y `SemiAutoService.php`, borrados con el PDC v1 el
+    2026-08-04. El baseline quedó huérfano de esa eliminación y nadie lo notó porque su gate ya
+    fallaba por la otra causa.
+
+  Verificado: PHPStan «No errors» y el gate «0 known, 0 new». Y **muerden**: con un defecto de tipo
+  inyectado dan 1 error y «New PHPStan findings: 1»; al retirarlo, verde. Quedan **2 gates
+  fallando**, no 4.
 - `git-preservation` — `npm run test:design-system:preservation`, exit 1, «Worktree preservation:
   FAIL» (repository/committedWork/unstaged/status cambiaron). El snapshot de
   `worktree-preservation.json` es del arranque del Sprint 00; con 1352 commits de distancia entre

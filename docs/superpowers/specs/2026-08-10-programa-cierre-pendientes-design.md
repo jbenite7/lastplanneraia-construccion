@@ -128,6 +128,46 @@ quedarse mudo.
 
 **→ Gate 2.**
 
+### Frente 1b — Reconstruir los quince gates del design system
+
+**Añadido el 2026-08-10 por decisión del usuario**, tras lo que midió la Task 6 del Frente 0. Va
+**después del Frente 1 y antes del móvil**, y el orden es deliberado: los frentes 2, 3 y 4 se van a
+apoyar en estos gates para afirmar «esto está bien», y hoy los gates no sirven para eso. Se arregla
+la balanza antes de pesar.
+
+**Lo que se midió, y no es «evidencia vieja»:** `closeout-evidence.json` declaraba sus 15 gates
+`passed`. Ejecutados contra el HEAD real: **2 pasan, 4 fallaban, 8 no son ejecutables y 1 apunta a
+una herramienta que no existe**. Los 14 archivos de `docs/design-system/evidence/` que hacían de
+recibo son **stubs de dos claves** —`{"gateId": "…", "result": "passed"}`— sin comando, sin salida,
+sin fecha y sin hash. El cierre se avalaba a sí mismo.
+
+**Dos de los cuatro fallos ya están pagados** en el Frente 0 (`9011c99c`): eran listas de
+excepciones de PHPStan apuntando a código borrado. Quedan dos.
+
+Alcance de este frente:
+
+- **Cada gate deja un recibo real** —comando, salida, fecha y hash del árbol medido— o **se retira
+  de la lista con su motivo escrito**. Un gate que no puede probar lo que afirma no es un gate.
+- **`git-preservation` se rediseña o se retira.** Compara contra el snapshot del arranque del
+  Sprint 00, a 1352 commits de HEAD: no es un gate re-ejecutable, es un candado de un solo uso que
+  ya se disparó y que ningún cierre futuro podrá pasar.
+- **`accessibility-insights` se resuelve:** su comando declarado no es un binario instalado ni un
+  script del repo. O se instala, o se sustituye por el carril de accesibilidad que sí existe, o se
+  retira.
+- **Los tres gates de datos** (`pg-roles`, `pg-persistence`, `data-restoration`) necesitan una
+  fixture aislada y el consentimiento explícito de mutación que hoy los bloquea en seguro. Se les
+  da esa fixture o se declaran no automatizables.
+- **`runtime-budgets` exige `CI_GIT_SHA` de una corrida de CI real.** Decidir si este repo tiene esa
+  CI o si el gate debe medir de otra forma.
+- **Cada gate reconstruido se entrega con su mutación en rojo, ejecutada**, igual que en F2a.
+
+**Condición de hecho:** `closeout-evidence.json` refleja el estado real, cada gate vivo tiene un
+recibo verificable de una ejecución concreta, y los retirados están fuera con su motivo. El goal
+`design-system-nucleo-gobernanza` puede entonces cerrarse o declararse inalcanzable con
+fundamento — hoy no se puede hacer ninguna de las dos cosas con honestidad.
+
+**→ Gate 2b.**
+
 ### Frente 2 — Móvil (F2a-2b y F2b)
 
 1. **F2a-2b-1** — la red de pruebas sobre las 22 reglas de habilitación de Programación Semanal e
