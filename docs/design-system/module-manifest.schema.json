@@ -102,9 +102,27 @@
     },
     "scenarios": {
       "type": "array",
-      "minItems": 1,
+      "description": "Escenarios propios del modulo. El minimo NO se declara aqui con minItems porque depende de visualEvidence: sin visualEvidence el gate exige al menos uno (regla por defecto, la estricta); con visualEvidence el modulo delega su evidencia en una familia de homologation.json y este array debe quedar vacio. Ambas ramas las aplica scripts/design-system-contracts.mjs.",
       "items": {
         "$ref": "#/$defs/scenario"
+      }
+    },
+    "visualEvidence": {
+      "type": "object",
+      "description": "Solo para modulos transversales que no tienen pantalla propia que capturar (hoy unicamente foundation-shell, que es el shell y la barra lateral de toda la aplicacion). Su ausencia es la regla por defecto y la estricta: el modulo debe traer sus propios escenarios. Declararlo no exime de evidencia, la senala en otro sitio, y el gate comprueba que ese sitio existe y no esta vacio.",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "family"
+      ],
+      "properties": {
+        "source": {
+          "const": "delegated-family"
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   },

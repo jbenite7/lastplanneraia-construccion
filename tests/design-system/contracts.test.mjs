@@ -49,7 +49,7 @@ function syntheticPng(width, height) {
 const root = path.resolve(import.meta.dirname, '../..');
 
 /**
- * Las 47 pruebas de este archivo lanzan el gate en un proceso aparte (~730 ms
+ * Las 60 pruebas de este archivo lanzan el gate en un proceso aparte (~730 ms
  * cada una). El runner de Node corre en serie las pruebas de un mismo archivo,
  * asi que el archivo costaba ~35 s de pared y era el ultimo en terminar de toda
  * la suite estatica. Aqui se declaran dentro de un `describe` con concurrencia
@@ -1001,7 +1001,230 @@ test('el esquema se aplica a los documentos del design system, no solo a los man
   );
 });
 
-// Declaracion final: las 47 pruebas acumuladas arriba, dentro de una suite con
+/**
+ * Una prueba por palabra clave del censo del validador de esquemas del gate.
+ *
+ * Todas MUTAN UN DOCUMENTO REAL del repositorio dentro del fixture para violar
+ * la palabra clave tal y como su propio esquema la declara. No hay objetos ni
+ * esquemas sinteticos a proposito: validar un objeto inventado contra un esquema
+ * inventado comprueba el validador contra si mismo, no contra este repositorio.
+ *
+ * Cada asercion exige que el mensaje identifique las tres cosas: el DOCUMENTO,
+ * la RUTA dentro del documento y la REGLA incumplida. Un gate que solo dice
+ * "invalido" obliga a bisecar a mano.
+ */
+const leer = (fixtureRoot, rel) => JSON.parse(readFileSync(path.join(fixtureRoot, rel), 'utf8'));
+const escribir = (fixtureRoot, rel, documento) => {
+  writeFileSync(path.join(fixtureRoot, rel), `${JSON.stringify(documento, null, 2)}\n`);
+};
+const MANIFIESTO_LAB = 'docs/design-system/manifests/laboratory.json';
+const STABLE_API = 'docs/design-system/stable-api-1.0.0.json';
+const A11Y_BASELINE = 'docs/design-system/a11y-baseline.json';
+const FINGERPRINT_VALIDO = 'laboratory|1180x820|dark|color-contrast|serious';
+
+test('el esquema aplica `type`: un viewport con la anchura en texto falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const lab = leer(fixtureRoot, MANIFIESTO_LAB);
+    lab.scenarios[0].viewport.width = '1180';
+    escribir(fixtureRoot, MANIFIESTO_LAB, lab);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /laboratory: scenarios\[0\]\.viewport\.width: valor "1180" incumple type del esquema \(esperado integer, encontrado string\)/,
+  );
+});
+
+test('el esquema aplica `pattern`: un fingerprint sin la forma declarada falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const baseline = leer(fixtureRoot, A11Y_BASELINE);
+    baseline.fingerprints = ['sin-tuberias-ninguna'];
+    escribir(fixtureRoot, A11Y_BASELINE, baseline);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /a11y-baseline\.json: fingerprints\[0\]: valor "sin-tuberias-ninguna" incumple pattern del esquema/,
+  );
+});
+
+test('el esquema aplica `minLength`: un fingerprint demasiado corto falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const baseline = leer(fixtureRoot, A11Y_BASELINE);
+    // Un fingerprint de 6 caracteres. No se puede violar solo `minLength`: el
+    // `pattern` del mismo esquema exige cinco campos no vacios, que ya suman 9
+    // caracteres como minimo, asi que el gate reportara las dos violaciones. Lo
+    // que esta prueba fija es que `minLength` es una de ellas.
+    baseline.fingerprints = ['a|b|c|'];
+    escribir(fixtureRoot, A11Y_BASELINE, baseline);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /a11y-baseline\.json: fingerprints\[0\]: valor "a\|b\|c\|" incumple minLength del esquema \(7, longitud 6\)/,
+  );
+});
+
+test('el esquema aplica `uniqueItems`: dos fingerprints identicos fallan', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const baseline = leer(fixtureRoot, A11Y_BASELINE);
+    baseline.fingerprints = [FINGERPRINT_VALIDO, FINGERPRINT_VALIDO];
+    escribir(fixtureRoot, A11Y_BASELINE, baseline);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /a11y-baseline\.json: fingerprints\[1\]: valor .+ duplicado de fingerprints\[0\] e incumple uniqueItems del esquema/,
+  );
+});
+
+test('el esquema aplica `minimum`: un viewport por debajo de 320 falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const lab = leer(fixtureRoot, MANIFIESTO_LAB);
+    lab.scenarios[0].viewport.width = -5;
+    escribir(fixtureRoot, MANIFIESTO_LAB, lab);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /laboratory: scenarios\[0\]\.viewport\.width: valor -5 incumple minimum del esquema \(320\)/,
+  );
+});
+
+test('el esquema aplica `minItems`: un componente de la API estable sin selectores falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const api = leer(fixtureRoot, STABLE_API);
+    api.components[0].api = [];
+    escribir(fixtureRoot, STABLE_API, api);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /stable-api-1\.0\.0\.json: components\[0\]\.api: el array tiene 0 elementos e incumple minItems del esquema \(1\)/,
+  );
+});
+
+test('el esquema aplica `maxItems`: una tercera superficie de evidencia falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const api = leer(fixtureRoot, STABLE_API);
+    api.components[0].evidenceSurfaces.push('inventada');
+    escribir(fixtureRoot, STABLE_API, api);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /stable-api-1\.0\.0\.json: components\[0\]\.evidenceSurfaces: el array tiene 3 elementos e incumple maxItems del esquema \(2\)/,
+  );
+});
+
+test('el esquema aplica `prefixItems`: cambiar la primera superficie de evidencia falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const api = leer(fixtureRoot, STABLE_API);
+    api.components[0].evidenceSurfaces[0] = 'programa-general';
+    escribir(fixtureRoot, STABLE_API, api);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /stable-api-1\.0\.0\.json: components\[0\]\.evidenceSurfaces\[0\]: valor "programa-general" distinto del const del esquema \("laboratory"\)/,
+  );
+});
+
+test('el esquema aplica `format: date`: una fecha de aprobacion inexistente falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const file = 'docs/design-system/family-approvals.json';
+    const aprobaciones = leer(fixtureRoot, file);
+    aprobaciones.approvals[0].approvedAt = '2026-13-45';
+    escribir(fixtureRoot, file, aprobaciones);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /family-approvals\.json: approvals\[0\]\.approvedAt: valor "2026-13-45" incumple format "date" del esquema/,
+  );
+});
+
+/**
+ * Delegacion de evidencia visual. `foundation-shell` es el unico manifiesto que
+ * la usa: no es una pantalla capturable sino el shell de toda la aplicacion, y su
+ * cobertura vive en la familia `shell-navigation` del laboratorio. La delegacion
+ * tiene que ser una afirmacion COMPROBABLE, no una exencion; estas pruebas son
+ * las que lo garantizan.
+ */
+const FOUNDATION_SHELL = 'docs/design-system/manifests/foundation-shell.json';
+
+test('un modulo sin escenarios y sin delegacion declarada falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const shell = leer(fixtureRoot, FOUNDATION_SHELL);
+    delete shell.visualEvidence;
+    escribir(fixtureRoot, FOUNDATION_SHELL, shell);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /foundation-shell: scenarios: sin escenarios propios y sin visualEvidence/,
+  );
+});
+
+test('delegar la evidencia visual en una familia inexistente falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const shell = leer(fixtureRoot, FOUNDATION_SHELL);
+    shell.visualEvidence.family = 'familia-que-no-existe';
+    escribir(fixtureRoot, FOUNDATION_SHELL, shell);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /foundation-shell: visualEvidence\.family: la familia "familia-que-no-existe" no existe en homologation\.json/,
+  );
+});
+
+test('delegar la evidencia visual en una familia sin escenarios falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    // `page-structure` existe en homologation.json; se le vacian los escenarios
+    // quitando la familia de los que hoy la declaran, para que delegar en ella
+    // sea delegar en el vacio.
+    const shell = leer(fixtureRoot, FOUNDATION_SHELL);
+    shell.visualEvidence.family = 'shell-navigation';
+    escribir(fixtureRoot, FOUNDATION_SHELL, shell);
+    const lab = leer(fixtureRoot, MANIFIESTO_LAB);
+    lab.scenarios = lab.scenarios.filter((s) => s.family !== 'shell-navigation');
+    escribir(fixtureRoot, MANIFIESTO_LAB, lab);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /foundation-shell: visualEvidence\.family: la familia "shell-navigation" existe en homologation\.json pero no tiene ningun escenario/,
+  );
+});
+
+test('delegar la evidencia visual trayendo escenarios propios falla', async () => {
+  const result = await runFixture((fixtureRoot) => {
+    const lab = leer(fixtureRoot, MANIFIESTO_LAB);
+    lab.visualEvidence = { source: 'delegated-family', family: 'shell-navigation' };
+    escribir(fixtureRoot, MANIFIESTO_LAB, lab);
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /laboratory: visualEvidence delega en la familia "shell-navigation" pero el manifiesto trae \d+ escenario\(s\) propio\(s\)/,
+  );
+});
+
+// Declaracion final: las 60 pruebas acumuladas arriba, dentro de una suite con
 // concurrencia. Ver el comentario de `gateConcurrency` al principio del archivo.
 describe('contratos ejecutables del design system', { concurrency: gateConcurrency }, () => {
   for (const [nombre, cuerpo] of casos) declareTest(nombre, cuerpo);

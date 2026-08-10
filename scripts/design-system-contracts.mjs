@@ -291,7 +291,8 @@ for (const alias of aliases?.aliases || []) {
 }
 const manifestSchema = documents.get('docs/design-system/module-manifest.schema.json');
 
-// Validador de esquema DELIBERADAMENTE PARCIAL.
+// Validador de esquema PARCIAL POR CENSO: aplica exactamente las palabras clave
+// que los ocho esquemas del design system usan de verdad, y ninguna mas.
 //
 // Se aplica a los manifiestos de modulo y, desde esta revision, tambien a los
 // siete pares esquema/documento del design system (SCHEMA_DOCUMENT_PAIRS, al
@@ -309,8 +310,28 @@ const manifestSchema = documents.get('docs/design-system/module-manifest.schema.
 // tres dependencias en total y anadir un validador es una decision de producto,
 // no del gate. Se implementa a mano lo minimo que cierra el agujero.
 //
+// Censo del 2026-08-09 sobre los ocho esquemas que este gate aplica
+// (module-manifest + los siete de SCHEMA_DOCUMENT_PAIRS). Palabras clave con
+// efecto sobre el dato que aparecen de verdad: type, pattern, minimum, minItems,
+// maxItems, minLength, uniqueItems, prefixItems, format, enum, const, required,
+// items, additionalProperties, $ref. Todas estan implementadas. NO aparecen y por
+// tanto NO se implementan (seria codigo sin consumidor): maximum, exclusive*,
+// multipleOf, maxLength, maxProperties, minProperties, patternProperties,
+// propertyNames, contains, dependentRequired, oneOf/anyOf/allOf/not,
+// if/then/else, $ref remoto.
+//
 // LO QUE SE APLICA (y solo esto):
 //   - `additionalProperties: false` -> ninguna propiedad no declarada.
+//   - `type` (object, array, string, integer, null; tambien en forma de lista
+//     como `["string","null"]`, que es como el repo declara los opcionales).
+//   - `pattern` -> expresion regular sobre cadenas. Las expresiones se compilan
+//     una sola vez y se cachean por texto: el gate corre decenas de veces en las
+//     pruebas de fixture y recompilar por valor se nota en la suite.
+//   - `format: "date"` -> unico formato declarado en el repo; se aplica como
+//     fecha ISO real (YYYY-MM-DD existente en el calendario), no como anotacion.
+//   - `minLength` sobre cadenas.
+//   - `minimum` sobre numeros (p. ej. `viewport.width >= 320`).
+//   - `minItems`, `maxItems`, `uniqueItems` y `prefixItems` sobre arrays.
 //   - `enum` -> el valor debe ser uno de los declarados (asi entra `theme`,
 //     `density` y `capture` desde el esquema, no reimplementados a mano).
 //   - `const` -> el valor debe ser exactamente el declarado.
@@ -320,14 +341,53 @@ const manifestSchema = documents.get('docs/design-system/module-manifest.schema.
 //   - Recorrido de `properties`, `items` y `$ref` local (`#/$defs/...`) para
 //     poder llegar a lo anterior.
 //
-// LO QUE NO SE APLICA (sigue sin comprobarse):
-//   `type`, `pattern`, `minimum`, `maxItems`, `minItems`, `format`, `oneOf`,
-//   `anyOf`, `allOf`, `not`, `if/then/else`, `$ref` remoto, `patternProperties`,
-//   `dependentRequired` y cualquier otra palabra clave. Algunas de ellas
-//   (`sha256` como hex de 64, el viewport minimo) las cubre por otro camino el
-//   propio gate; otras simplemente no estan cubiertas. No leer esto como
-//   "los manifiestos estan validados contra su esquema".
-const SCHEMA_KEYWORDS_APPLIED = ['additionalProperties:false', 'enum', 'const', 'required', '$ref', 'items'];
+// LO QUE NO SE APLICA: las combinatorias (`oneOf`, `anyOf`, `allOf`, `not`,
+// `if/then/else`), `$ref` remoto, `patternProperties`, `dependentRequired` y
+// cualquier otra palabra clave que hoy no aparezca en ningun esquema del
+// repositorio. Si un esquema empieza a usar una de ellas, este validador la
+// ignorara en silencio: la prueba `el censo de palabras clave del validador
+// cubre las que usan los esquemas` de tests/design-system/contracts.test.mjs
+// vigila exactamente eso y se pone roja.
+const SCHEMA_KEYWORDS_APPLIED = [
+  'additionalProperties:false', 'enum', 'const', 'required', '$ref', 'items',
+  'type', 'pattern', 'format:date', 'minLength', 'minimum',
+  'minItems', 'maxItems', 'uniqueItems', 'prefixItems',
+];
+
+// Cache de expresiones regulares por texto del `pattern`. Sin ella cada valor
+// recompilaba su regex y el gate corre decenas de veces por la suite estatica.
+const patternCache = new Map();
+function compiledPattern(pattern) {
+  let regex = patternCache.get(pattern);
+  if (!regex) {
+    regex = new RegExp(pattern, 'u');
+    patternCache.set(pattern, regex);
+  }
+  return regex;
+}
+
+// Nombre JSON Schema del valor, para poder aplicar `type`. `integer` es un tipo
+// propio de JSON Schema, no de JavaScript.
+function jsonTypesOf(value) {
+  if (value === null) return ['null'];
+  if (Array.isArray(value)) return ['array'];
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? ['integer', 'number'] : ['number'];
+  }
+  if (typeof value === 'object') return ['object'];
+  return [typeof value]; // string | boolean
+}
+
+// `format: "date"` como fecha real: "2026-13-45" tiene la forma correcta pero no
+// existe, y una fecha de vencimiento inexistente nunca vence.
+function isIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
+}
 
 // `enum` y `const` comparaban con `includes`/`!==`, es decir por IDENTIDAD.
 // Para escalares da igual, pero en cuanto el valor es un array o un objeto dos
@@ -371,10 +431,67 @@ function schemaPartialFailures(value, schema, rootSchema, path, isRoot = false) 
     found.push(`${where}: valor ${JSON.stringify(value)} distinto del const del esquema `
       + `(${JSON.stringify(resolved.const)})`);
   }
-  if (Array.isArray(value) && resolved.items) {
-    value.forEach((item, index) => {
-      found.push(...schemaPartialFailures(item, resolved.items, rootSchema, `${path}[${index}]`));
-    });
+  if (resolved.type !== undefined) {
+    const expected = Array.isArray(resolved.type) ? resolved.type : [resolved.type];
+    if (!jsonTypesOf(value).some((actual) => expected.includes(actual))) {
+      found.push(`${where}: valor ${JSON.stringify(value)} incumple type del esquema `
+        + `(esperado ${expected.join(' | ')}, encontrado ${jsonTypesOf(value)[0]})`);
+      // Sin el tipo correcto las demas palabras clave no significan nada: se
+      // reporta una sola violacion en vez de una cascada.
+      return found;
+    }
+  }
+  if (typeof value === 'string') {
+    if (typeof resolved.pattern === 'string' && !compiledPattern(resolved.pattern).test(value)) {
+      found.push(`${where}: valor ${JSON.stringify(value)} incumple pattern del esquema `
+        + `(${resolved.pattern})`);
+    }
+    if (typeof resolved.minLength === 'number' && value.length < resolved.minLength) {
+      found.push(`${where}: valor ${JSON.stringify(value)} incumple minLength del esquema `
+        + `(${resolved.minLength}, longitud ${value.length})`);
+    }
+    if (resolved.format === 'date' && !isIsoDate(value)) {
+      found.push(`${where}: valor ${JSON.stringify(value)} incumple format "date" del esquema `
+        + '(se espera una fecha YYYY-MM-DD existente)');
+    }
+  }
+  if (typeof value === 'number') {
+    if (typeof resolved.minimum === 'number' && value < resolved.minimum) {
+      found.push(`${where}: valor ${JSON.stringify(value)} incumple minimum del esquema `
+        + `(${resolved.minimum})`);
+    }
+  }
+  if (Array.isArray(value)) {
+    if (typeof resolved.minItems === 'number' && value.length < resolved.minItems) {
+      found.push(`${where}: el array tiene ${value.length} elementos e incumple minItems `
+        + `del esquema (${resolved.minItems})`);
+    }
+    if (typeof resolved.maxItems === 'number' && value.length > resolved.maxItems) {
+      found.push(`${where}: el array tiene ${value.length} elementos e incumple maxItems `
+        + `del esquema (${resolved.maxItems})`);
+    }
+    if (resolved.uniqueItems === true) {
+      for (let i = 0; i < value.length; i += 1) {
+        const twin = value.findIndex((other, j) => j < i && deepEqual(other, value[i]));
+        if (twin !== -1) {
+          found.push(`${where}[${i}]: valor ${JSON.stringify(value[i])} duplicado de `
+            + `${where}[${twin}] e incumple uniqueItems del esquema`);
+        }
+      }
+    }
+    if (Array.isArray(resolved.prefixItems)) {
+      resolved.prefixItems.forEach((entry, index) => {
+        if (index >= value.length) return;
+        found.push(...schemaPartialFailures(value[index], entry, rootSchema, `${path}[${index}]`));
+      });
+    }
+    if (resolved.items) {
+      // Con `prefixItems`, `items` describe solo la cola (draft 2020-12).
+      const from = Array.isArray(resolved.prefixItems) ? resolved.prefixItems.length : 0;
+      for (let index = from; index < value.length; index += 1) {
+        found.push(...schemaPartialFailures(value[index], resolved.items, rootSchema, `${path}[${index}]`));
+      }
+    }
     return found;
   }
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -460,6 +577,58 @@ for (const manifest of manifests) {
     if (!componentIds.has(componentId)) {
       failures.push(`${manifest.moduleId}: unknown component ${componentId}`);
     }
+  }
+}
+
+// Cuantos escenarios aporta cada familia homologada, sumando los de todos los
+// manifiestos. Es lo que hace COMPROBABLE la delegacion de evidencia visual.
+const scenariosPorFamilia = new Map();
+for (const manifest of manifests) {
+  for (const scenario of manifest.scenarios || []) {
+    if (!scenario?.family) continue;
+    scenariosPorFamilia.set(scenario.family, (scenariosPorFamilia.get(scenario.family) || 0) + 1);
+  }
+}
+
+// El minimo de escenarios de un manifiesto. Antes vivia como `minItems: 1` en el
+// esquema y `foundation-shell` lo incumplia en silencio (nadie aplicaba minItems)
+// desde el 2026-08-05: declara 20 rutas -- el shell y la barra lateral de toda la
+// aplicacion -- pero no es una pantalla que se pueda capturar por si sola, y su
+// cobertura visual real vive en la familia `shell-navigation` del laboratorio.
+//
+// La regla NO se relajo a "cero escenarios vale": eso habria dejado publicar
+// cualquier modulo sin evidencia, que es justo lo que esta fase lleva cerrando.
+// Se hace lo mismo que con la lista blanca de `capture: "element"`: convertir la
+// excepcion en una AFIRMACION COMPROBABLE. Quien delega debe nombrar la familia,
+// esa familia debe existir en homologation.json y debe tener escenarios de
+// verdad. Delegar en una familia inexistente o vacia falla, con mensajes
+// distintos para poder distinguir los dos casos.
+//
+// Ausencia de `visualEvidence` = rama estricta (>= 1 escenario propio), asi que
+// el silencio nunca afloja nada: los otros 14 manifiestos se comportan igual que
+// antes sin tocar una linea.
+for (const manifest of manifests) {
+  const delegacion = manifest.visualEvidence;
+  const propios = (manifest.scenarios || []).length;
+  if (!delegacion) {
+    if (propios === 0) {
+      failures.push(`${manifest.moduleId}: scenarios: sin escenarios propios y sin visualEvidence; `
+        + 'todo modulo debe traer al menos un escenario o delegar su evidencia en una familia');
+    }
+    continue;
+  }
+  if (propios > 0) {
+    failures.push(`${manifest.moduleId}: visualEvidence delega en la familia `
+      + `"${delegacion.family}" pero el manifiesto trae ${propios} escenario(s) propio(s); `
+      + 'la delegacion es para modulos sin pantalla propia que capturar');
+  }
+  if (!homologatedFamilies.has(delegacion.family)) {
+    failures.push(`${manifest.moduleId}: visualEvidence.family: la familia `
+      + `"${delegacion.family}" no existe en homologation.json`);
+  } else if (!scenariosPorFamilia.get(delegacion.family)) {
+    failures.push(`${manifest.moduleId}: visualEvidence.family: la familia `
+      + `"${delegacion.family}" existe en homologation.json pero no tiene ningun escenario `
+      + 'en ningun manifiesto; delegar en una familia vacia no es evidencia');
   }
 }
 

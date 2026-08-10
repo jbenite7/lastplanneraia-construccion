@@ -65,5 +65,9 @@
     "tests/browser/shell-week-admin.mjs"
   ],
   "evidence": [],
-  "scenarios": []
+  "scenarios": [],
+  "visualEvidence": {
+    "source": "delegated-family",
+    "family": "shell-navigation"
+  }
 }
