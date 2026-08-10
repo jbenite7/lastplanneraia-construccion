@@ -202,8 +202,15 @@ test.describe('Programación Semanal: permisos por rol', () => {
           await expect(button).toBeEnabled();
         }
       } else {
+        // Quien no gestiona no ve estos botones: se esconden, no se muestran en gris.
+        // Es deliberado desde 54834f2d («el Visualizador deja de ver botones que nunca pudo
+        // usar»): `syncPhaseUI` los oculta cuando `canManageToolbarActions()` es falso
+        // (public/js/modules/programacion_semanal/hot.js:3149-3157) y ademas los deshabilita
+        // (:3166-3168), de modo que la doble barrera sobrevive a que alguien fuerce el
+        // display desde el inspector. Esta prueba esperaba «visible pero deshabilitado», que
+        // era el comportamiento anterior a ese commit; confirmado con Felipe el 2026-08-08.
         for (const button of await manageButtons.all()) {
-          await expect(button).toBeVisible();
+          await expect(button).toBeHidden();
           await expect(button).toBeDisabled();
         }
       }
