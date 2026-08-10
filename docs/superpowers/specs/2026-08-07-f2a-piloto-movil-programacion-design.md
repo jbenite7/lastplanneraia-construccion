@@ -37,6 +37,57 @@ Lo que le falta no es existir: es el umbral (767 en vez de 1180), la evidencia m
 gates, y no saber alimentarse desde una grilla Handsontable. **Construir una card nueva
 desde cero habría tirado 435 líneas probadas y cinco specs vivas.**
 
+## Corrección de la premisa (2026-08-08)
+
+**Esta spec se escribió sobre un supuesto falso y se corrige aquí en vez de reescribirla.** El
+censo previo al plan —hecho por la lección de las fases anteriores: medir antes de afirmar—
+encontró que **las cards móviles ya existen en los dos módulos del piloto**.
+
+| | Cards | ¿Editan? | Umbral | ¿Monta Handsontable en móvil? |
+|---|---|---|---|---|
+| Semanal | `ps-mobile-card`, completas | **Sí**: Compromiso y Ejecutado Real, con guardado y estado de guardado | CSS a 768 | **Sí** |
+| Intermedia | `pi-mobile-card` | No, solo lectura | JS a 768 (`hot.js:4331`) | **Sí** |
+| CNP/CNC/CIC | `legacyCards.js` | Sí | JS a 767 | n/a (DataTables) |
+
+Consecuencias, cada una verificada:
+
+- **E6 queda sin objeto tal como estaba escrita.** «Promover `legacyCards` a primitiva
+  compartida» partía de que era la única implementación de cards. No lo es, y además está
+  acoplada a **DataTables** (`table.rows({search:'applied'}).data().toArray()`), no a un array:
+  no puede alimentarse de Handsontable sin un adaptador. Las cards de los módulos del piloto
+  ya se alimentan de `masterData`.
+- **E4 no está implementada.** Hoy las cards se pintan siempre en el DOM y el CSS esconde la
+  grilla, así que Handsontable **se monta igual en el celular**. El ahorro que justificaba la
+  decisión sigue sin existir.
+- **Hay tres umbrales distintos** (767, 768 en CSS, 768 en JS) donde la spec asumía uno.
+- Los dos manifiestos declaran `layouts: ["desktop"]`: móvil no está declarado como layout
+  soportado.
+
+Lo que de verdad falta, entonces, no es construir cards: es unificar el umbral en 1180, dejar
+de montar la grilla por debajo, hacer que las cards de Intermedia editen, y producir la
+evidencia móvil que F1 y F2a-1 dejaron posible.
+
+## Decisiones añadidas el 2026-08-08
+
+| # | Decisión | Alternativas descartadas |
+|---|---|---|
+| E7 | **Las reglas de habilitación se extraen antes de que las cards de Intermedia editen.** Hoy viven dentro de la configuración de Handsontable: 13 reglas en Semanal, 9 en Intermedia. Una card que edite tendría que replicarlas. | Piloto de solo lectura y editar después; editar solo los campos sin reglas. |
+| E8 | **Primero la red de pruebas, después la extracción, después el resto.** Las 22 reglas no tienen hoy cobertura: si la extracción rompiera S3, S4, S11, I3, I5 o I7, nadie se enteraría. Solo I4 tiene red, y es un snapshot visual. | Empezar por las ganancias baratas (umbral, no montar, evidencia); construir solo la red y revaluar. |
+
+### Riesgos medidos que condicionan la extracción
+
+- **La presentación consume la decisión por el DOM**: `piRestrictionRenderer` lee la clase
+  `pi-cell-locked-resp` que puso `cells()` para saber qué pintar. Cambiar el nombre o el
+  momento de esa clase apaga el candado sin romper ninguna prueba salvo un golden.
+- **Handsontable cachea `cellMeta`**: `cells()` no se re-evalúa, y Intermedia lo sortea
+  escribiendo meta a mano (`syncRestrictionLockForVisualRow`). Una función extraída que
+  devuelva un booleano no elimina ese bypass.
+- **El estado se lee del DOM en cada llamada** (`#permiso_canonico`, `#semana`,
+  `#Max_Semana`, `#Semanal_Confirmada`), y `cells()` corre por celda visible.
+- **Una regla de habilitación desemboca en un borrado**: en Semanal, `beforeChange` rechaza
+  un Compromiso entre 0 y 0.001 y dispara `deleteActivity`. Separar decisión de efecto es
+  parte del trabajo, no un extra.
+
 ## Decisiones
 
 | # | Decisión | Alternativas descartadas |
