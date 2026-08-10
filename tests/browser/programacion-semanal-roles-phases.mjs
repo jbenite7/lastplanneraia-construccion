@@ -107,12 +107,30 @@ async function resolveHistoricalWeek(page) {
   return historicalWeek;
 }
 
-async function openJmcQualification(page, week = 4) {
+// La semana de calificación se busca, no se fija. Fijarla en 4 hacía que estas pruebas
+// dependieran del estado del proyecto sembrado: en la base de desarrollo JMC iba por otra
+// semana, y en el fixture aislado de CI (`docker-compose.ci.yml`) va por la 5, así que el
+// literal fallaba en los dos sitios con «Expected 4, Received 5». Se recorre desde
+// `Max_Semana` hacia atrás hasta encontrar la primera semana ya cerrada, que es la que el
+// producto muestra en fase de calificación.
+async function resolveQualificationWeek(page) {
+  const maxWeek = await resolveMaxWeek(page);
+  for (let week = maxWeek; week >= 1; week -= 1) {
+    await changeWeek(page, week, '/programacion-semanal');
+    await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+    const phase = await page.locator('.ps-weekly-phase-title').textContent();
+    if (String(phase || '').includes('Calificación')) return week;
+  }
+  throw new Error(`Ninguna semana de ${JMC.name} está en fase de calificación (Max_Semana=${maxWeek})`);
+}
+
+async function openJmcQualification(page, week) {
   await page.setViewportSize({ width: 390, height: 844 });
   await loginAndSelectProject(page, JMC);
-  await changeWeek(page, week, '/programacion-semanal');
+  const targetWeek = week ?? await resolveQualificationWeek(page);
+  await changeWeek(page, targetWeek, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
-  return week;
+  return targetWeek;
 }
 
 async function openProgrammingWeek(
@@ -219,8 +237,8 @@ test.describe('Programación Semanal: permisos por rol', () => {
 });
 
 test('avance móvil y API rechazan una actividad sin responsables', async ({ page }) => {
-  await openJmcQualification(page);
-  const original = (await weeklyRows(page, 4)).find((row) => String(row.Actividad).includes('Descapote'));
+  const week = await openJmcQualification(page);
+  const original = (await weeklyRows(page, week)).find((row) => String(row.Actividad).includes('Descapote'));
   expect(original).toBeTruthy();
   try {
     runSql(`UPDATE programacion_semanal SET Sub_Contratista=NULL, Responsable_AIA=NULL WHERE project_id=${JMC.projectId} AND row_id=${Number(original.Consecutivo)};`);
@@ -233,33 +251,34 @@ test('avance móvil y API rechazan una actividad sin responsables', async ({ pag
     await card.locator('[data-mobile-save-prop="Ejecutado_Real"]').click();
     await expect(card.locator('[data-mobile-save-status]')).toContainText('Falta Sub-Contratista');
     expect(requests).toBe(0);
-    const direct = await postWeeklyUpdate(page, { ...original, Sub_Contratista: '', Responsable_AIA: '' }, 4, { Real: '61' });
+    const direct = await postWeeklyUpdate(page, { ...original, Sub_Contratista: '', Responsable_AIA: '' }, week, { Real: '61' });
     expect(direct.status()).toBe(422);
   } finally {
     restoreWeeklyRowSql(original);
-    const restored = (await weeklyRows(page, 4))
+    const restored = (await weeklyRows(page, week))
       .find((row) => String(row.Consecutivo) === String(original.Consecutivo));
     expect(weeklyState(restored)).toEqual(weeklyState(original));
   }
 });
 
 test('API semanal rechaza fase, CNC incompleta y semana suplantada', async ({ page }) => {
-  await openJmcQualification(page);
-  const original = (await weeklyRows(page, 4))
+  const week = await openJmcQualification(page);
+  const original = (await weeklyRows(page, week))
     .find((row) => String(row.Actividad).includes('Movilización general'));
   expect(original).toBeTruthy();
   try {
-    const cnc = await postWeeklyUpdate(page, original, 4, { Real: '39', Categoria_CNC: '', CNC: '', Observaciones_CNC: '' });
+    const cnc = await postWeeklyUpdate(page, original, week, { Real: '39', Categoria_CNC: '', CNC: '', Observaciones_CNC: '' });
     expect(cnc.status()).toBe(422);
-    const tnpSpoof = await postWeeklyUpdate(page, original, 4, {
+    const tnpSpoof = await postWeeklyUpdate(page, original, week, {
       Real: '39', Es_TNP: '1', Categoria_CNC: '', CNC: '', Observaciones_CNC: '',
     });
     expect(tnpSpoof.status()).toBe(422);
-    const phase = await postWeeklyUpdate(page, original, 4, { Compromiso: '41' });
+    const phase = await postWeeklyUpdate(page, original, week, { Compromiso: '41' });
     expect(phase.status()).toBe(409);
-    const spoof = await postWeeklyUpdate(page, original, 3);
+    // Semana suplantada: cualquiera distinta de la abierta, para que el servidor la rechace.
+    const spoof = await postWeeklyUpdate(page, original, week === 1 ? week + 1 : week - 1);
     expect(spoof.status()).toBe(422);
-    const after = (await weeklyRows(page, 4))
+    const after = (await weeklyRows(page, week))
       .find((row) => String(row.Consecutivo) === String(original.Consecutivo));
     expect(weeklyState(after)).toEqual(weeklyState(original));
   } finally {
