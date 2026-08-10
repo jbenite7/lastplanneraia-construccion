@@ -86,12 +86,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const report = routeChanges(files);
   if (report.uiFiles.length === 0) {
     console.log('design-system-router: sin cambios de UI relevantes.');
-    process.exit(0);
+  } else {
+    console.log('design-system-router: cambios de UI detectados.');
+    if (report.declared.length) console.log(`  Superficies declaradas: ${report.declared.join(', ')}`);
+    if (report.undeclared.length) console.log(`  Superficies sin manifiesto: ${report.undeclared.join(', ')}`);
+    for (const w of report.warnings) console.log(`  ⚠ ${w}`);
+    console.log('  Gates a ejecutar:');
+    for (const c of report.commands) console.log(`    - ${c}`);
   }
-  console.log('design-system-router: cambios de UI detectados.');
-  if (report.declared.length) console.log(`  Superficies declaradas: ${report.declared.join(', ')}`);
-  if (report.undeclared.length) console.log(`  Superficies sin manifiesto: ${report.undeclared.join(', ')}`);
-  for (const w of report.warnings) console.log(`  ⚠ ${w}`);
-  console.log('  Gates a ejecutar:');
-  for (const c of report.commands) console.log(`    - ${c}`);
 }

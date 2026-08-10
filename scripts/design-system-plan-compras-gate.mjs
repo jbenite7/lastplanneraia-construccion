@@ -16,6 +16,10 @@ console.log('🔍 Checking Plan de Compras v2 CSS Bundle Gate...\n');
 if (!existsSync(pdcCssPath)) {
   console.error('❌ Bundle missing: public/pdc-app/assets/pdc.css does not exist.');
   console.error('   Run `cd pdc-app && npm run build` to compile the app.');
+  // No se convierte a process.exitCode: el resto del script depende de
+  // leer pdcCssPath (readFileSync mas abajo), que reventaria con una
+  // excepcion sin capturar si el archivo no existe. Dejarlo como
+  // process.exit(1) es la salida temprana que evita ese crash.
   process.exit(1);
 }
 
@@ -38,8 +42,8 @@ if (errors.length > 0) {
   for (const err of errors) {
     console.error('  - ' + err);
   }
-  process.exit(1);
+  process.exitCode = 1;
 } else {
   console.log('✅ Plan de Compras CSS Bundle Gate PASSED.');
-  process.exit(0);
+  process.exitCode = 0;
 }

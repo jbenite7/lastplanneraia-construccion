@@ -184,15 +184,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const root = process.cwd();
   if (process.argv.includes('--report')) {
     console.log(JSON.stringify(staticDeliveries({ root }), null, 2));
-    process.exit(0);
+  } else {
+    const { failures, observed } = staticFailures({ root });
+    if (failures.length) {
+      console.error('Design system unlayered delivery (static): FAIL');
+      failures.forEach((failure) => console.error(`- ${failure}`));
+      console.error(`\nActualiza ${INVENTORY_PATH} solo si la entrega sin capa es`);
+      console.error('deliberada y revisada; la salida por defecto es eliminarla.');
+      process.exitCode = 1;
+    } else {
+      console.log(`Design system unlayered delivery (static): PASS (${observed.length} entrega/s declarada/s)`);
+    }
   }
-  const { failures, observed } = staticFailures({ root });
-  if (failures.length) {
-    console.error('Design system unlayered delivery (static): FAIL');
-    failures.forEach((failure) => console.error(`- ${failure}`));
-    console.error(`\nActualiza ${INVENTORY_PATH} solo si la entrega sin capa es`);
-    console.error('deliberada y revisada; la salida por defecto es eliminarla.');
-    process.exit(1);
-  }
-  console.log(`Design system unlayered delivery (static): PASS (${observed.length} entrega/s declarada/s)`);
 }

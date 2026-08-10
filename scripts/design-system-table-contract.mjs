@@ -163,8 +163,8 @@ if (errors.length > 0) {
   for (const err of errors) {
     console.error('  - ' + err);
   }
-  process.exit(1);
+  process.exitCode = 1;
 } else {
   console.log('✅ Table Contract Gate PASSED: Tokens, 7-step semantic scale, shell rules & JS vocabulary are valid.');
-  process.exit(0);
+  process.exitCode = 0;
 }

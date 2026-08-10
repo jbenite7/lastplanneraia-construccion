@@ -101,18 +101,18 @@ const generado = [INICIO, '', `_${resumen}. Generado por \`scripts/wiki-registro
 const previo = existsSync(SALIDA) ? readFileSync(SALIDA, 'utf8') : null;
 if (!previo) {
   console.error(`Falta ${SALIDA} con su prosa y sus marcadores. Créalo primero.`);
-  process.exit(1);
-}
-if (!previo.includes(INICIO) || !previo.includes(FIN)) {
+  process.exitCode = 1;
+} else if (!previo.includes(INICIO) || !previo.includes(FIN)) {
   console.error(`${SALIDA} no tiene los marcadores ${INICIO} … ${FIN}.`);
-  process.exit(1);
-}
-const nuevo = previo.replace(new RegExp(`${INICIO}[\\s\\S]*${FIN}`), generado);
-
-if (process.argv.includes('--escribir')) {
-  writeFileSync(SALIDA, nuevo);
-  console.log(`Escrito ${resumen}.`);
+  process.exitCode = 1;
 } else {
-  console.log(resumen);
-  console.log(nuevo === previo ? 'La zona generada está al día.' : 'La zona generada cambiaría: corre con --escribir.');
+  const nuevo = previo.replace(new RegExp(`${INICIO}[\\s\\S]*${FIN}`), generado);
+
+  if (process.argv.includes('--escribir')) {
+    writeFileSync(SALIDA, nuevo);
+    console.log(`Escrito ${resumen}.`);
+  } else {
+    console.log(resumen);
+    console.log(nuevo === previo ? 'La zona generada está al día.' : 'La zona generada cambiaría: corre con --escribir.');
+  }
 }

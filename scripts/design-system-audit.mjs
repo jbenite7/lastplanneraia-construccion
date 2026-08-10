@@ -13,6 +13,12 @@ const updateBaseline = process.argv.includes('--update-baseline');
 
 if (updateBaseline) {
   console.error('baseline updates require an approved file');
+  // No se convierte a process.exitCode: es una salida temprana al principio
+  // del script (linea 14 de 379), antes de todo el escaneo y el reporte que
+  // sigue. Cambiar a exitCode dejaria correr las ~360 lineas restantes -- el
+  // escaneo completo del arbol y el reporte JSON -- cuando la intencion es
+  // abortar sin hacer ese trabajo. Envolver el resto del archivo en un bloque
+  // if/else es una reestructuracion mayor fuera de alcance de esta tarea.
   process.exit(1);
 }
 
@@ -373,7 +379,7 @@ console.log(JSON.stringify(report, null, 2));
 if (failures.length > 0) {
   console.error('\nDesign system audit failed:');
   for (const failure of failures) console.error(`- ${failure}`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log('\nDesign system audit passed against baseline.');
 }
-
-console.log('\nDesign system audit passed against baseline.');

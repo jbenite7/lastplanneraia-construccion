@@ -252,7 +252,8 @@ function cobertura() {
   if (errores.length) {
     console.log('\n' + errores.join('\n'));
     console.log(`\n${errores.length} problemas de cobertura.`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
   console.log('\nCobertura completa: ninguna ruta queda sin módulo.');
 }
@@ -392,7 +393,8 @@ function escribir() {
     console.error(`\n${erroresCobertura.length} problemas de cobertura. Ejecuta `
       + '`node scripts/wiki-arquitectura.mjs --cobertura` para el detalle, asigna la ruta a un '
       + 'módulo de wiki-arquitectura.modulos.mjs (o resuelve el destino indeterminado) y reintenta.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   // Gate 2: esquema de base de datos alcanzable. Sin él, tablasDe() no puede
@@ -403,7 +405,8 @@ function escribir() {
     console.error('No se escribe: no se pudo leer el esquema real de la base de datos '
       + '(revisa que el contenedor `db` esté arriba y que DB_NAME/.env apunten a una base '
       + 'existente). Levanta `db` con `docker compose up -d db` y reintenta.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const rbac = leerRbac();
@@ -435,8 +438,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   else if (process.argv.includes('--datos')) {
     const slug = process.argv[process.argv.indexOf('--datos') + 1];
     const mod = MODULOS.find((m) => m.slug === slug);
-    if (!mod) { console.error(`Módulo desconocido: ${slug}`); process.exit(1); }
-    console.log(JSON.stringify(datosDe(mod, leerRutas(), leerRbac()), null, 2));
+    if (!mod) {
+      console.error(`Módulo desconocido: ${slug}`);
+      process.exitCode = 1;
+    } else {
+      console.log(JSON.stringify(datosDe(mod, leerRutas(), leerRbac()), null, 2));
+    }
   }
   else console.log('Uso: node scripts/wiki-arquitectura.mjs [--cobertura | --escribir | --datos <slug>]');
 }

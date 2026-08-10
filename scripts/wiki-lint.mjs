@@ -123,6 +123,7 @@ if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
 if (hallazgos.length) {
   console.log(hallazgos.join('\n'));
   console.log(`\n${hallazgos.length} hallazgos en ${paginas.length} páginas.`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(`Sin hallazgos. ${paginas.length} páginas revisadas.`);
 }
-console.log(`Sin hallazgos. ${paginas.length} páginas revisadas.`);

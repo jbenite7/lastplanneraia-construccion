@@ -197,7 +197,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error(`\nLa hoja ${SHEET} ya no describe`);
     console.error('a su superficie. Antes de anadirle una regla, comprueba si /bi/* deberia');
     console.error('usar una primitiva `aia-*`: el adaptador es compatibilidad, no un destino.');
-    process.exit(1);
+    process.exitCode = 1;
+  } else {
+    console.log(`Design system BI utilities: PASS (${declaredUtilities({ root }).size} utilidades declaradas y en uso)`);
   }
-  console.log(`Design system BI utilities: PASS (${declaredUtilities({ root }).size} utilidades declaradas y en uso)`);
 }

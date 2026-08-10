@@ -582,7 +582,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (failures.length) {
     console.error('Design system entrypoint partition: FAIL');
     failures.forEach((failure) => console.error(`- ${failure}`));
-    process.exit(1);
+    process.exitCode = 1;
+  } else {
+    console.log('Design system entrypoint partition: PASS');
   }
-  console.log('Design system entrypoint partition: PASS');
 }
