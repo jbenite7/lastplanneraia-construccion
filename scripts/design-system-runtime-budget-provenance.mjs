@@ -77,7 +77,10 @@ export function validateAssets(assets) {
     const canonicalAsset = canonicalJson(asset);
     if (entries.has(canonicalAsset)) fail('provenance.assets must not contain duplicate asset entries');
     entries.add(canonicalAsset);
-    if (typeof asset.path !== 'string' || !asset.path.startsWith('/')) fail('provenance asset paths must be absolute application paths');
+    if (typeof asset.path !== 'string' || !asset.path.startsWith('/')
+      || asset.path.includes('?') || asset.path.includes('#')) {
+      fail('provenance asset paths must be absolute application paths');
+    }
     if (!['css', 'js'].includes(asset.type)) fail('provenance asset type must be css or js');
     requireFiniteNonNegative(asset.rawBytes, `provenance.assets.${asset.path}.rawBytes`);
     requireFiniteNonNegative(asset.gzipBytes, `provenance.assets.${asset.path}.gzipBytes`);

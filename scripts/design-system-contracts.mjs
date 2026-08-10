@@ -754,6 +754,26 @@ for (const manifest of manifests) {
 // a11y-exceptions.json. `documents` ya cargo y valido el archivo contra su
 // esquema mas arriba (SCHEMA_DOCUMENT_PAIRS); aqui solo se deriva de el.
 const evidenceExceptions = documents.get('docs/design-system/evidence-exceptions.json');
+
+// `uniqueItems` en el esquema solo rechaza objetos identicos: dos entradas
+// con el mismo `moduleId` pero distinta `delegatesToFamily` (o, en captura,
+// el mismo `moduleId/scenarioId` con distintas dimensiones) no son
+// duplicados byte a byte, asi que el esquema las deja pasar. Colapsarlas en
+// un Map (mas abajo) hace que la ultima entrada gane en silencio: una
+// entrada "sombra" insertada antes de la real queda escrita en el contrato,
+// nadie la usa, nadie la denuncia -- y si el orden cambia algun dia, el
+// permiso que se aplica de verdad cambia con ella sin que nadie lo revise.
+// Por eso la clave de identidad (moduleId para delegacion, moduleId/scenarioId
+// para captura) debe ser unica en la lista antes de construir el Map.
+const delegationModuleIds = new Set();
+for (const entry of evidenceExceptions?.visualEvidenceDelegationAllowlist || []) {
+  if (delegationModuleIds.has(entry.moduleId)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: `
+      + `visualEvidenceDelegationAllowlist: el modulo "${entry.moduleId}" tiene mas de una `
+      + 'entrada; solo la ultima se aplica y las anteriores quedan como permisos sombra sin uso');
+  }
+  delegationModuleIds.add(entry.moduleId);
+}
 const VISUAL_EVIDENCE_DELEGATION_ALLOWLIST = new Map(
   (evidenceExceptions?.visualEvidenceDelegationAllowlist || [])
     .map((entry) => [entry.moduleId, entry.delegatesToFamily]),
@@ -910,6 +930,20 @@ for (const manifest of manifests) {
 // tocar esta constante: es el fallo deseado, y el mensaje dice el numero nuevo.
 // Tambien contrato de datos en evidence-exceptions.json; ver el comentario
 // junto a VISUAL_EVIDENCE_DELEGATION_ALLOWLIST mas arriba.
+// Misma trampa que VISUAL_EVIDENCE_DELEGATION_ALLOWLIST: dos entradas con el
+// mismo `moduleId/scenarioId` pero distintas dimensiones no son duplicados
+// para `uniqueItems`, y el Map de abajo deja ganar a la ultima en silencio.
+// Se exige unicidad de la clave compuesta antes de construir el Map.
+const captureKeys = new Set();
+for (const entry of evidenceExceptions?.elementCaptureAllowlist || []) {
+  const key = `${entry.moduleId}/${entry.scenarioId}`;
+  if (captureKeys.has(key)) {
+    failures.push(`docs/design-system/evidence-exceptions.json: elementCaptureAllowlist: `
+      + `el escenario "${key}" tiene mas de una entrada; solo la ultima se aplica y las `
+      + 'anteriores quedan como permisos sombra con dimensiones que nadie usa');
+  }
+  captureKeys.add(key);
+}
 const ELEMENT_CAPTURE_ALLOWLIST = new Map(
   (evidenceExceptions?.elementCaptureAllowlist || [])
     .map((entry) => [`${entry.moduleId}/${entry.scenarioId}`, { width: entry.width, height: entry.height }]),
