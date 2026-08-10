@@ -31,7 +31,7 @@
 | 6 | made-to-stick | done — score SUCCESs sobre el onboarding de Plan de Compras v2, estados vacíos, errores, CTAs y tooltips de PG→PI→PS; 6 hallazgos (`S-1`…`S-6`) y **11 cadenas reescritas** (S-1, S-2 y C-33). C-33 aplicado con la frase genérica del equipo, marcada **provisional** en el código. Lo de dominio se registra, no se toca | docs/POSITIONING.md, docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 7 | influence-psychology | skipped: app interna de empresa, sin paywall ni superficies de upsell | — | 2026-08-04 |
 | 8 | high-perf-browser | deferred: hasta que una medición o queja señale lentitud percibida | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
-| 9 | steve-jobs-design-review | pending — revisión final en frío del flujo PG→PI→PS, tras cerrar la campaña | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
+| 9 | steve-jobs-design-review | pending — enganchada al cierre del Frente 1 (`docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design.md`). **No es «done»**: la única revisión en frío que existe (`docs/PRODUCT.md`, Task 31, 2026-08-05) midió la cascada **antes** de los arreglos que el Frente 1 va a aplicar; revisarla de nuevo ahora repetiría defectos ya censados y a punto de repararse. `docs/PRODUCT.md` necesitará una pasada de refresco cuando el Frente 1 cierre, no una creación desde cero — ya existe | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
 
 Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reason> · skipped: <reason>
 
@@ -102,7 +102,15 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   de Control de Cambios, o la sustituye por la de su obra? Y de `S-6`: ¿abre alguno de los tres
   textos de dominio (vacío del filtro en PS, los dos avisos de «sin Responsable AIA», los rótulos de
   las acciones)?
-- [x] **Fase 9 (barrido final + revisión en frío) — cerrada el 2026-08-05 (Task 31).** Tres piezas:
+- [ ] **Fase 9 — no está cerrada; corrige una contradicción de esta misma tabla (Task 7 Frente 0,
+  2026-08-10).** Esta casilla decía `[x]` y «cerrada el 2026-08-05» mientras la fila de la tabla
+  `## Phase Status` de arriba seguía diciendo `pending` desde que se escribió el plan — las dos
+  frases nunca coincidieron. Lo que el Task 31 sí hizo, y que sigue en pie: el barrido consolidado de
+  las 28 superficies (contrato en verde) y una **primera** revisión en frío que produjo
+  `docs/PRODUCT.md`. Esa revisión midió la cascada **antes** de los arreglos que trae el Frente 1, así
+  que no cierra la fase 9: la revisión que sí la cierra es la que corre **al terminar el Frente 1**,
+  sobre la cascada ya arreglada (`docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design.md`).
+  Detalle de lo ya hecho por Task 31:
   1. **Barrido consolidado** de las 28 superficies vivas (22 de la app + 6 de `admin/`) a 1180×820
      dark con las tres lentes en orden. **Cero regresiones y cero rojos de contrato:** 28/28 en 200,
      **0 errores de consola**, **0 desbordamiento horizontal**, **28/28 con `<main>` y `h1` real**,

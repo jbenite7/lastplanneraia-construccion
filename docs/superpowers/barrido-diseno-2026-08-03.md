@@ -342,20 +342,23 @@ barridos de la campaña.
 Ninguno pertenece a las categorías que la campaña dio por cerradas *en las superficies que auditó*;
 los dos de severidad 3 son **residuos en superficies que el censo original no cubrió** (`/control-cambios`)
 o **canales que ninguna lente anterior midió** (los gatillos de ayuda de PI). Todos se **registran**
-en `docs/DESIGN-AUDIT.md` como `F-1` … `F-9` — **nada se aplicó**, por la regla de la campaña: a esta
-altura un cambio de píxel mueve goldens ya aprobados y un cambio de comportamiento necesita al usuario.
+en `docs/DESIGN-AUDIT.md` como `F-1` … `F-9`. **Al medir (2026-08-05) nada se había aplicado**, por la
+regla de la campaña: a esa altura un cambio de píxel movía goldens ya aprobados y un cambio de
+comportamiento necesitaba al usuario. **Actualización (Task 7 Frente 0, 2026-08-10):** tres de los
+nueve sí se aplicaron después, con su golden reaprobado — `F-1`, `F-2` y `F-3` — verificado contra
+`docs/DESIGN-AUDIT.md`, que es donde vive la disposición real; el resto sigue sin tocar.
 
-| Id | Severidad | Superficie | Qué se midió |
-|---|---|---|---|
-| `F-1` | 3 | `/control-cambios` | `word-break: normal` + columnas de 55-74 px parten «Priorid/ad», «Responsa/ble», «Intervento/ría»; cabecera de 94 px en 3 líneas |
-| `F-2` | 3 | `/programa-general` | la `htAutocompleteArrow` de 16 px se superpone al último dígito de la fecha: caja interna 84 px para 88-90 px de contenido en 3 de 4 celdas |
-| `F-3` | 3 | `/programacion-intermedia` | 8 `a.pi-help-trigger` de **8×8 px**, `tabIndex 0`, `aria-label` nulo y `title` vacío, con el tooltip atado solo a `mouseenter` |
-| `F-4` | 2 | 8 vistas de `/bi/*` | el botón «Quitar filtro» del chip mide **28×20 px** |
-| `F-5` | 2 | `/programacion-semanal/cic` | 7 ids repetidos (`cuadroModal`×3, `actualizacion`, `form_calidad`, `form_adm`, `form_GSA`, `form_sst`, `form_obs`) |
-| `F-6` | 1 | `/control-cambios` | dos estados vacíos apilados: `sEmptyTable` (C-33) y `sInfoEmpty` («Sin solicitudes») |
-| `F-7` | 2 | `/profesionales`, `/subcontratistas`, `/programacion-intermedia` | la casilla nativa de Handsontable mide **13×13 px** |
-| `F-8` | 1 | `/programa-general-actualizar` | `modal-eliminar-semana-body-texto` duplicado |
-| `F-9` | 1 | `public/css/programacion-intermedia.css:262` | `rgba(245, 158, 11, 0.24)` en crudo dentro de un módulo migrado |
+| Id | Severidad | Superficie | Qué se midió | Estado (2026-08-10) |
+|---|---|---|---|---|
+| `F-1` | 3 | `/control-cambios` | `word-break: normal` + columnas de 55-74 px parten «Priorid/ad», «Responsa/ble», «Intervento/ría»; cabecera de 94 px en 3 líneas | **done** (`d18d168d`) |
+| `F-2` | 3 | `/programa-general` | la `htAutocompleteArrow` de 16 px se superpone al último dígito de la fecha: caja interna 84 px para 88-90 px de contenido en 3 de 4 celdas | **done** (`b6d32f3e`), golden reaprobado |
+| `F-3` | 3 | `/programacion-intermedia` | 8 `a.pi-help-trigger` de **8×8 px**, `tabIndex 0`, `aria-label` nulo y `title` vacío, con el tooltip atado solo a `mouseenter` | **done** (`146ddf7d`) |
+| `F-4` | 2 | 8 vistas de `/bi/*` | el botón «Quitar filtro» del chip mide **28×20 px** | backlog ICE, sin aplicar |
+| `F-5` | 2 | `/programacion-semanal/cic` | 7 ids repetidos (`cuadroModal`×3, `actualizacion`, `form_calidad`, `form_adm`, `form_GSA`, `form_sst`, `form_obs`) | backlog ICE, sin aplicar |
+| `F-6` | 1 | `/control-cambios` | dos estados vacíos apilados: `sEmptyTable` (C-33) y `sInfoEmpty` («Sin solicitudes») | backlog ICE, sin aplicar — la ratificación de C-33 que lo bloqueaba ya llegó (2026-08-10) |
+| `F-7` | 2 | `/profesionales`, `/subcontratistas`, `/programacion-intermedia` | la casilla nativa de Handsontable mide **13×13 px** | backlog ICE, sin aplicar |
+| `F-8` | 1 | `/programa-general-actualizar` | `modal-eliminar-semana-body-texto` duplicado | backlog ICE, sin aplicar |
+| `F-9` | 1 | `public/css/programacion-intermedia.css:262` | `rgba(245, 158, 11, 0.24)` en crudo dentro de un módulo migrado | backlog ICE, sin aplicar |
 
 **Falsos positivos descartados y por qué**, para que la próxima pasada no los vuelva a levantar: los
 `label.sr-only` que el detector de recorte marca en `/proyectos`, CIC, CNC y CNP están
