@@ -5,7 +5,6 @@ import { changeWeek, login, loginAndSelectProject, selectProject } from './suppo
 const DA_PORTO = { name: 'Da Porto', dbPrefix: 'da_porto' };
 const JMC = { name: 'Optimización Aeropuerto JMC', dbPrefix: 'optimizacionJMC', projectId: 68 };
 const PRUEBA = { name: 'Prueba', dbPrefix: 'prueba', projectId: 27 };
-const PROGRAMMING_WEEK = 1;
 
 const ROLE_CASES = [
   { code: 'A', username: 'test.A', canView: true, canEdit: true },
@@ -82,27 +81,57 @@ function restoreCnpRowSql(row, projectId = JMC.projectId) {
     + `WHERE project_id=${projectId} AND row_id=${Number(row.Consecutivo)};`);
 }
 
-async function openJmcQualification(page) {
+// El proyecto sembrado avanza de semana con el tiempo (Max_Semana ya no es 1), así que la
+// "semana corriente" y la "semana histórica" se derivan del propio dato en vez de fijarse
+// como constante: si se fijaran, la prueba se pudre cada vez que el proyecto sube de semana.
+// `#Max_Semana` es el campo oculto que ya expone cada vista de programación semanal
+// (views/programacion-semanal/*.view.php) con el valor que el servidor calculó — el mismo que
+// consume la regla de semana histórica en public/js/modules/programacion_semanal/hot.js:355-365
+// (`Max_Semana - 2 >= semana`). Leerlo desde el DOM evita tocar la base de datos para algo que
+// la propia página ya resuelve.
+async function resolveMaxWeek(page) {
+  await changeWeek(page, 1, '/programacion-semanal');
+  await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+  const maxWeek = Number(await page.locator('#Max_Semana').inputValue());
+  expect(Number.isInteger(maxWeek) && maxWeek > 0, `Max_Semana inválido: ${maxWeek}`).toBe(true);
+  return maxWeek;
+}
+
+// Semana histórica según la misma regla que aplica el cliente: cualquier semana <= Max_Semana - 2.
+// Se toma el borde exacto porque es la semana histórica más reciente y, por diseño de LPS, una
+// semana ya cerrada permanece confirmada — no hace falta buscar entre varias.
+async function resolveHistoricalWeek(page) {
+  const maxWeek = await resolveMaxWeek(page);
+  const historicalWeek = maxWeek - 2;
+  expect(historicalWeek, `Sin margen histórico: Max_Semana=${maxWeek}`).toBeGreaterThan(0);
+  return historicalWeek;
+}
+
+async function openJmcQualification(page, week = 4) {
   await page.setViewportSize({ width: 390, height: 844 });
   await loginAndSelectProject(page, JMC);
-  await changeWeek(page, 4, '/programacion-semanal');
+  await changeWeek(page, week, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+  return week;
 }
 
 async function openProgrammingWeek(
   page,
   roleCase,
   viewport = { width: 1180, height: 820 },
+  week,
 ) {
   await page.setViewportSize(viewport);
   await login(page, { username: roleCase.username, password: 'aia2026' });
   await selectProject(page, DA_PORTO);
-  await changeWeek(page, PROGRAMMING_WEEK, '/programacion-semanal');
+  const targetWeek = week ?? await resolveMaxWeek(page);
+  await changeWeek(page, targetWeek, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
   await expect(page.locator('#permiso_canonico[aria-hidden="true"]')).toHaveValue(roleCase.code);
   await expect(page.locator('.ps-weekly-phase-title')).toHaveText(
     'Fase: Programación de Compromisos',
   );
+  return targetWeek;
 }
 
 async function expectSectionDropdown(page) {
@@ -124,16 +153,16 @@ async function expectSectionDropdown(page) {
   await expect(navigation).not.toHaveClass(/is-open/);
 }
 
-async function probeWeeklyPermissions(page, roleCase) {
+async function probeWeeklyPermissions(page, roleCase, week) {
   const list = await page.request.get(
-    `/api/semanal/list?db=${DA_PORTO.dbPrefix}&semana=${PROGRAMMING_WEEK}`,
+    `/api/semanal/list?db=${DA_PORTO.dbPrefix}&semana=${week}`,
   );
   expect(list.status()).toBe(roleCase.canView ? 200 : 403);
 
   const edit = await page.request.post(`/api/semanal/save?db=${DA_PORTO.dbPrefix}`, {
     form: {
       opcion: 'listar_excepciones_autoprogramacion',
-      semana: String(PROGRAMMING_WEEK),
+      semana: String(week),
     },
   });
   expect(edit.status()).toBe(roleCase.canEdit ? 200 : 403);
@@ -157,8 +186,8 @@ async function switchToClientQualificationPhase(page) {
 test.describe('Programación Semanal: permisos por rol', () => {
   for (const roleCase of ROLE_CASES) {
     test(`rol ${roleCase.code} respeta lectura y edición`, async ({ page }) => {
-      await openProgrammingWeek(page, roleCase);
-      await probeWeeklyPermissions(page, roleCase);
+      const week = await openProgrammingWeek(page, roleCase);
+      await probeWeeklyPermissions(page, roleCase, week);
 
       const manageButtons = page.locator([
         '#btn_autoprogramar',
@@ -259,33 +288,44 @@ test('API semanal rechaza un proyecto distinto al seleccionado', async ({ page }
 });
 
 test('rol R histórico solo puede calificar el compromiso confirmado', async ({ page }) => {
-  await openJmcQualification(page);
-  const original = (await weeklyRows(page, 4))
+  await page.setViewportSize({ width: 390, height: 844 });
+  await loginAndSelectProject(page, JMC);
+  // Esta prueba SÍ quiere una semana histórica (a diferencia de las que comparten
+  // openJmcQualification con semana=4 fija): se deriva para no asumir que la semana 4 seguirá
+  // siendo la histórica confirmada cuando Max_Semana avance.
+  const historicalWeek = await resolveHistoricalWeek(page);
+  await changeWeek(page, historicalWeek, '/programacion-semanal');
+  await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+  await expect(page.locator('.ps-weekly-phase-title')).toHaveText(
+    'Fase: Calificación de Compromisos',
+  );
+
+  const original = (await weeklyRows(page, historicalWeek))
     .find((row) => String(row.Actividad).includes('Movilización general'));
   expect(original).toBeTruthy();
   try {
-    const qualification = await postWeeklyUpdate(page, original, 4);
+    const qualification = await postWeeklyUpdate(page, original, historicalWeek);
     expect(qualification.status()).toBe(200);
-    const planning = await postWeeklyUpdate(page, original, 4, {
+    const planning = await postWeeklyUpdate(page, original, historicalWeek, {
       Descripcion: `${original.Descripcion || ''} QA histórico`,
     });
     expect(planning.status()).toBe(409);
     const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const blocked = [
       page.request.post(`/api/semanal/reabrir?db=${JMC.dbPrefix}`, {
-        form: { semana: '4', motivo: '', _csrf_token: csrf || '' },
+        form: { semana: String(historicalWeek), motivo: '', _csrf_token: csrf || '' },
       }),
       page.request.post('/api/cnp/save', { form: {
-        Id: '1', semana: '4', Categoria_CNP: 'Programación', CNP: 'QA', _csrf_token: csrf || '',
+        Id: '1', semana: String(historicalWeek), Categoria_CNP: 'Programación', CNP: 'QA', _csrf_token: csrf || '',
       } }),
-      page.request.post('/api/cnp/reprogramar', { form: { Id: '1', semana: '4', _csrf_token: csrf || '' } }),
+      page.request.post('/api/cnp/reprogramar', { form: { Id: '1', semana: String(historicalWeek), _csrf_token: csrf || '' } }),
       page.request.post('/api/cnc/save', { form: {
-        Id: '1', semana: '4', Categoria_CNC: 'Administrativas',
+        Id: '1', semana: String(historicalWeek), Categoria_CNC: 'Administrativas',
         CNC: 'Otra', Observaciones_CNC: 'QA política', _csrf_token: csrf || '',
       } }),
     ];
     for (const response of await Promise.all(blocked)) expect(response.status()).toBe(403);
-    const after = (await weeklyRows(page, 4))
+    const after = (await weeklyRows(page, historicalWeek))
       .find((row) => String(row.Consecutivo) === String(original.Consecutivo));
     expect(weeklyState(after)).toEqual(weeklyState(original));
   } finally {
@@ -315,7 +355,11 @@ test('API CNP no reprograma una semana confirmada', async ({ page }) => {
 });
 
 test('semana sin actividades no fabrica filas ni tarjetas', async ({ page }) => {
-  await openProgrammingWeek(page, ROLE_CASES[0], { width: 551, height: 750 });
+  // La semana 1 de Da Porto nunca tuvo actividades (solo las semanas 3 y 4 las tienen hoy) — es
+  // una propiedad del dato de esa semana puntual, no de "la semana corriente", así que aquí sí se
+  // pasa explícita: usar la semana corriente derivada rompería la premisa de "sin actividades" en
+  // cuanto el proyecto avance y esa semana ya tenga filas.
+  await openProgrammingWeek(page, ROLE_CASES[0], { width: 551, height: 750 }, 1);
   const response = await page.request.get('/api/semanal/list?db=da_porto&semana=1');
   expect(response.ok()).toBe(true);
   expect((await response.json()).data).toEqual([]);
