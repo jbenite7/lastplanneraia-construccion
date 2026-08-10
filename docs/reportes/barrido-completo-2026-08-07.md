@@ -217,6 +217,54 @@ Dos `h1`, y el primer encabezado del documento es un `h3` del carril.
 
 ---
 
+## B-10 · La recuperación de contraseña dice «enviaremos un enlace» aunque el envío falle — severidad 3
+
+Hallado el 2026-08-08 al probar el correo tras subir a PHPMailer 7, con un capturador local.
+
+`POST /password/forgot` con `admin@ci.invalid` devuelve **200** y pinta:
+
+> «Si el correo existe y está habilitado, enviaremos un enlace de restablecimiento en unos minutos.»
+
+Pero el envío **falló**. Sólo consta en el log del servidor:
+
+```
+PasswordResetService::request SMTP Error: Could not connect to SMTP host.
+STARTTLS command failed Command not implemented
+```
+
+Y el token **se creó igual** (1 fila en `password_reset_tokens`), así que queda un token vivo para
+un enlace que nunca salió.
+
+El mensaje genérico es correcto **por seguridad**: no revela si esa dirección tiene cuenta, que es
+la defensa estándar contra enumeración de usuarios. El problema es otro: **una caída total del
+correo se ve exactamente igual que un envío correcto**. Quien pide recuperar su contraseña espera
+indefinidamente algo que no va a llegar, y nadie se entera salvo que alguien lea el log.
+
+No se arregla aquí por decisión del usuario: tocar ese mensaje es equilibrar dos cosas legítimas
+—no filtrar qué correos existen y no mentirle a quien espera— y eso es decisión de producto. La
+salida que no rompe el equilibrio: conservar el texto genérico cuando el envío sale bien, y mostrar
+un fallo técnico honesto («no pudimos enviarlo, inténtalo de nuevo») **sólo** cuando `send()` lanza.
+
+### Y de paso, otro hueco del mismo patrón que B-9
+
+`password_reset_tokens` **no existe en el fixture de CI**, y por eso el primer intento dio 500. Su
+DDL vive en `database/patches/20260329_create_password_reset_tokens.sql` —un **patch**, no una
+migración— y el `Dockerfile` del fixture no lo copia. **Ninguna migración la menciona.**
+
+Consecuencia: **el flujo de recuperación de contraseña no se puede probar en CI**, lo que explica
+que B-10 llevara ahí sin que ninguna suite lo viera. Es el mismo defecto de fondo que B-9: DDL de
+tablas vivas fuera del control de migraciones.
+
+### Límite de la prueba con capturador local
+
+`SmtpMailer` **siempre exige TLS** —no tiene camino sin cifrar: si `MAIL_ENCRYPTION` no es `ssl`,
+fuerza `ENCRYPTION_STARTTLS`—. Un capturador local sin TLS no puede completar la conversación, y uno
+con certificado autofirmado tampoco, porque el código no desactiva la verificación del certificado.
+**Este camino sólo se verifica de extremo a extremo contra un SMTP con TLS real.**
+
+Lo que sí quedó probado bajo PHPMailer 7: la ruta, el CSRF, la creación del token, y que la librería
+**conecta y habla SMTP** (llegó a emitir `STARTTLS`, así que conexión y saludo funcionan).
+
 ## Lo que se verificó SANO
 
 - **23/23 superficies de la app**: HTTP 200, `<main>`, un `h1`, **0 errores de consola**, **0
