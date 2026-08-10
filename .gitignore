@@ -393,3 +393,6 @@ goals/cierre-version-1-1-0-design-system/*
 !goals/reapertura-movil-y-tema-claro/
 goals/reapertura-movil-y-tema-claro/*
 !goals/reapertura-movil-y-tema-claro/goal.md
+
+# OpenSpec: artefactos de flujo local (esquema Superspec). Instalado 2026-08-10.
+openspec/
