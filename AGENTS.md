@@ -46,5 +46,6 @@
 
 ## Publicación
 
-- No hagas commit, push ni deploy salvo petición explícita. Si se autoriza publicar, usa staging selectivo, diff revisado y commit atómico; nunca incluyas `.env`, evidencia local o trabajo ajeno.
+- **Al cerrar un sprint o frente de trabajo, commitea y haz `push` a `main` sin volver a pedir permiso.** Autorización permanente del usuario, 2026-08-10. La unidad es el **frente**, no la tarea ni la sesión: dentro de un frente se commitea por tarea, y el push va en el cierre, después de verificar la condición de hecho con salida real de comandos. Si el push se rechaza por divergencia, integra `origin/main` y vuelve a publicar — este repositorio tiene varias sesiones escribiendo a `origin/main` a la vez, y retrasar el push es precisamente lo que hace divergir las ramas.
+- Fuera de ese cierre, no hagas commit ni push salvo petición explícita. **El deploy sigue siendo otra cosa y necesita su propia autorización**, siempre. Usa staging selectivo, diff revisado y commit atómico; nunca incluyas `.env`, evidencia local o trabajo ajeno.
 - Sigue `docs/siteground-deploy-routine.md`: pruebas antes que producción, respaldo previo, `pull --ff-only`, Composer ejecutado con PHP 8.3 y smoke funcional del flujo afectado. Una publicación aprobada no autoriza limpiar drift del servidor ni desplegar otros cambios.
