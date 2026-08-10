@@ -2,13 +2,23 @@ import { expect } from '@playwright/test';
 import { BASE_URL, CREDENTIALS } from '../fixtures/projects.mjs';
 
 export async function login(page, credentials = CREDENTIALS) {
-  await page.goto(`${BASE_URL}/login`);
-  await page.locator('#usuario').fill(credentials.username);
-  await page.locator('#password').fill(credentials.password);
-  await Promise.all([
-    page.waitForURL((url) => url.pathname === '/proyectos', { timeout: 45000 }),
-    page.locator('button[type="submit"]').click(),
-  ]);
+  // `credentials.password` queda SIN USO a propósito: la puerta de desarrollo
+  // (`/dev/entrar`, ver src/Core/DevDoor.php) no pide contraseña, solo comprueba que
+  // `credentials.username` esté en DEV_DOOR_USERS. AGENTS.md §Seguridad prohíbe abrir
+  // sesión local tecleando credenciales en /login; esta función usa la puerta de
+  // servicio en su lugar. `password` se mantiene en la firma/objeto porque decenas de
+  // consumidores construyen `CREDENTIALS` con `{ username, password }` y no se les
+  // cambia el contrato.
+  await page.goto(`${BASE_URL}/dev/entrar?u=${encodeURIComponent(credentials.username)}`);
+  const landedPath = new URL(page.url()).pathname;
+  if (landedPath !== '/proyectos') {
+    throw new Error(
+      `La puerta de desarrollo (/dev/entrar) no autenticó a "${credentials.username}": `
+      + `aterrizó en "${landedPath}" en vez de "/proyectos". Revisa en el .env local que `
+      + 'DEV_DOOR=1 y que DEV_DOOR_USERS incluya esa cuenta (ver docs/superpowers/specs/'
+      + '2026-07-30-dev-door-design.md).',
+    );
+  }
   await expect(page.locator('.project-item').first()).toBeVisible({ timeout: 45000 });
 }
 
