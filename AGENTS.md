@@ -46,6 +46,41 @@
 
 ## Publicación
 
-- **Al cerrar un sprint o frente de trabajo, commitea y haz `push` a `main` sin volver a pedir permiso.** Autorización permanente del usuario, 2026-08-10. La unidad es el **frente**, no la tarea ni la sesión: dentro de un frente se commitea por tarea, y el push va en el cierre, después de verificar la condición de hecho con salida real de comandos. Si el push se rechaza por divergencia, integra `origin/main` y vuelve a publicar — este repositorio tiene varias sesiones escribiendo a `origin/main` a la vez, y retrasar el push es precisamente lo que hace divergir las ramas.
-- Fuera de ese cierre, no hagas commit ni push salvo petición explícita. **El deploy sigue siendo otra cosa y necesita su propia autorización**, siempre. Usa staging selectivo, diff revisado y commit atómico; nunca incluyas `.env`, evidencia local o trabajo ajeno.
+### El gate de cierre de frente es bloqueante
+
+**No se permite abrir un frente nuevo mientras el anterior no esté publicado en `main`.** Un frente
+no está cerrado cuando su trabajo funciona: está cerrado cuando su trabajo funciona **y está en el
+remoto**. Autorización y exigencia permanentes del usuario, 2026-08-10.
+
+La unidad es el **frente**, no la tarea ni la sesión. Dentro de un frente se commitea por tarea; el
+cierre es lo que se publica.
+
+**Procedimiento del gate, en este orden y sin saltarse pasos:**
+
+1. **Verificar la condición de hecho** del frente con salida real de comandos de esa sesión. Si algo
+   está rojo, el frente no cierra y no hay nada que publicar.
+2. **Commitear lo que quede suelto**, con staging selectivo y commits atómicos. `git status` debe
+   quedar limpio. Nunca `.env`, evidencia local ni trabajo ajeno.
+3. **`git fetch origin`** y mirar la divergencia (`git status -sb`). Este repositorio tiene varias
+   sesiones escribiendo a `origin/main` a la vez: asumir que nadie más avanzó es la vía rápida a
+   pisar trabajo ajeno.
+4. **Si hay divergencia, integrar** (`git merge origin/main`) y resolver los conflictos a la vista,
+   nunca a ciegas. Jamás `push --force` ni reescritura de historia publicada.
+5. **Re-verificar después de integrar, no antes.** Es el paso que más se salta y el que más caro
+   sale: traer trabajo ajeno puede romper un verde propio sin tocar tu diff. Medido el 2026-08-10
+   dos veces en la misma jornada — un merge dejó la suite estática en 6/8 al destapar un módulo sin
+   evidencia, y un segundo cierre la volvió a dejar en 6/8 porque el contrato fija por hash unos
+   archivos que el frente había editado. Ninguno de los dos lo detectó quien hizo el trabajo: los
+   detectó la verificación posterior a la integración.
+6. **`git push origin main`.** Si lo rechazan porque alguien publicó entre tu `fetch` y tu `push`,
+   repetir 3–5. No es un motivo para parar ni para preguntar: es parte del cierre.
+7. **Confirmar que quedó publicado**: `git status -sb` sin `ahead` ni `behind`.
+8. **Anotar el cierre** donde corresponda (ledger del plan, `memoria/`, el `goal.md` del frente).
+
+Solo entonces puede empezar el frente siguiente.
+
+**Lo que este gate NO autoriza:** el deploy a producción sigue siendo otra cosa y necesita su propia
+autorización explícita, siempre. Publicar en `main` y llevarlo a la obra no son lo mismo.
+
+Fuera del cierre de un frente, no hagas commit ni push salvo petición explícita.
 - Sigue `docs/siteground-deploy-routine.md`: pruebas antes que producción, respaldo previo, `pull --ff-only`, Composer ejecutado con PHP 8.3 y smoke funcional del flujo afectado. Una publicación aprobada no autoriza limpiar drift del servidor ni desplegar otros cambios.

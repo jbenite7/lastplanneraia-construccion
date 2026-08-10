@@ -232,6 +232,19 @@ Los seis frentes cerrados, y con ellos:
 - Producción sirviendo `main`, con brecha cero.
 - `memoria/goals/estado.md` y la wiki al día, `npm run test:wiki` en verde.
 
+## Qué significa «gate» en este programa
+
+Los siete gates no son pausas para informar: son **puertas cerradas**. Un frente no está cerrado
+cuando su trabajo funciona, sino cuando funciona **y está publicado en `main`**. Mientras un frente
+no haya pasado su gate completo, **el siguiente no empieza**.
+
+El procedimiento exacto —verificar, commitear, `fetch`, integrar, **re-verificar**, publicar,
+confirmar, anotar— está en `AGENTS.md` §Publicación y es obligatorio en los siete. El paso que más
+se salta es el quinto: re-verificar **después** de integrar. Integrar trabajo ajeno puede romper un
+verde propio sin tocar el diff de uno, y en el Frente 0 ocurrió dos veces en la misma jornada.
+
+Añadido el 2026-08-10 por instrucción del usuario, tras cerrar el Frente 0.
+
 ## Dos reglas de ejecución, heredadas de F2a
 
 Las dos se pagaron caras en la fase anterior y se aplican a todo este programa:
