@@ -129,9 +129,18 @@ Un mismo momento del ciclo se nombra tres veces:
 
 **Solo una cosa: cerrar la desviación código↔contrato en Intermedia.** Seis estados se muestran
 hoy con una cadena distinta de la que el contrato declara, y en dos casos (`Inicio Vencido`,
-`Ejecución Pendiente`) la leyenda de la vista y el chip de la fila **se contradicen en la misma
-pantalla**. El contrato ya decidió el nombre; el código no lo está proyectando. Corregirlo no
-elige vocabulario nuevo: aplica el que ya está aprobado.
+`Ejecución Pendiente`) la leyenda de la vista y el chip de la fila **nombran distinto el mismo
+`key` dentro de la misma pantalla**. El contrato ya decidió el nombre; el código no lo está
+proyectando. Corregirlo no elige vocabulario nuevo: aplica el que ya está aprobado.
+
+> **Corrección del 2026-08-11, después de publicar.** Una redacción anterior de este spec decía
+> «se contradicen en la misma pantalla», y el mensaje del commit `ca9c6bb7` —ya publicado, y no se
+> reescribe historia— dice lo mismo. La frase se lee como «el usuario ve los dos nombres a la vez»,
+> y eso es **falso** al viewport canónico: medido a 1180×820, el botón de filtro está en `x=86` y la
+> celda `ops-state-chip` del mismo estado en `x=1332`, fuera de la pantalla. Sí valía para el modal
+> de guía operativa, que se abre encima de la leyenda. El defecto y el recuento no dependen de esto
+> —los términos se cuentan, no se miran—, pero la premisa había viajado por tres sesiones sin que
+> nadie la comprobara. El mecanismo, en [[el-dom-dice-que-existe-no-que-se-ve]].
 
 Efecto medible: **35 → 29 términos**, sin tocar datos guardados, sin tocar lo que mide ninguna
 prueba, sin cambiar ninguna palabra que la obra no vea ya escrita en su propia leyenda.
