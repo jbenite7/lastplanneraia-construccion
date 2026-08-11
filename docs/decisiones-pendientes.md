@@ -463,7 +463,16 @@ de preguntar. Copia esta forma:
   `D-F1-6`»** — el acuse de Intermedia que nunca aparece, el estado vacío de Actualizar Cronograma,
   el selector de semana duplicado, los tres vocabularios de chips y el alto máximo de fila. Ninguno
   bloquea al Frente 1b.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, por el usuario, en la tanda de cierre del Frente 1b.
+- **Decisión: (a), el frente corto de forma, con la regla de quitar.** El frente **no puede cerrarse
+  sin haber eliminado algo**. Esa regla es la decisión, no un adorno de ella: el hallazgo de la
+  revisión no fue que faltaran arreglos, sino que **un ciclo entero produjo 28 adiciones y ninguna
+  resta**. Un frente de forma que solo añadiera orden repetiría el defecto que viene a corregir.
+- **Quién lo ejecuta:** turno propio, **no se pliega en el Frente 2**. Se abre cuando el Frente 1b
+  publique, según el gate bloqueante de `AGENTS.md` §Publicación.
+- **Qué se desbloquea:** los cinco hallazgos del backlog que esperaban con dueño «pendiente de
+  `D-F1-6`» pasan a ese frente. La `404` entra como la primera de la lista: barata, declarada
+  bloqueante desde el 2026-08-05, y la única que hoy echa al usuario fuera del producto.
 
 ### D-F1-7 · Hasta dónde llega el encargo de una sesión de ejecución
 
@@ -677,3 +686,5 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1b-1` | `git-preservation` se retira, con motivo escrito | Frente 1b · ejecutado en esta sesión |
 | `D-F1b-2` | `pg-roles`+`pg-persistence`+`data-restoration` se funden en `full-app-flow` | Frente 1b · ejecutado en esta sesión |
 | `D-F1b-3` | Los cuatro gates de herramienta inexistente se retiran | Frente 1b · ejecutado en esta sesión |
+| `D-F1b-4` | Arreglar los que no tocan `Database.php` ni legado; anotar el resto **con su motivo** | Frente 1b · aplicado en `3d72a8df` (2 arreglados, 4 anotados) |
+| `D-F1-6` | Frente corto de forma, **con la regla de no cerrar sin haber quitado algo** | Turno propio, al publicar el Frente 1b · no se pliega en el Frente 2 |
