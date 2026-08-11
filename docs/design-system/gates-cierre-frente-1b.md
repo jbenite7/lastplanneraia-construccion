@@ -88,3 +88,31 @@ Orden final en `docs/design-system/closeout-evidence.json` y
 `scripts/design-system-closeout-contract.mjs` (`closeoutGateIds`): `static`, `runtime`,
 `runtime-budgets`, `phpstan-scoped`, `phpstan-global`, `global-table-safety`,
 `full-app-flow`, `atomic-commit`.
+
+## Dos aclaraciones más, decididas el 2026-08-11
+
+### `runtime-budgets` deja de ser un gate independiente
+
+**No es un defecto suyo.** Falla con `ENOENT` sobre `test-output/` porque mide **los artefactos que
+produce la corrida de `runtime`**: no hay nada que medir hasta que esa corrida ocurre.
+
+Un gate que solo puede pasar si otro corrió antes **no es un gate independiente**, y contarlo como
+tal fue parte de por qué quince parecían quince. Se declara **dependiente de `runtime`**: su
+resultado solo significa algo dentro de esa corrida, y por sí solo no aporta una garantía separada.
+
+Sigue en la lista porque lo que mide —los presupuestos de rendimiento— es real; lo que cambia es que
+**deja de contarse como una garantía aparte**.
+
+### El recibo de `static` se mide en la corrida anterior, no en la propia
+
+`static` es la suite que **valida el índice que lo referencia**, así que no puede a la vez ser el
+recibo de sí misma: si se midiera en la propia corrida, cada actualización del índice invalidaría el
+recibo que acaba de escribir, y el proceso no convergería nunca.
+
+La salida adoptada es la más simple y no inventa nada: **su recibo describe la corrida anterior**.
+Es lo mismo que hace cualquier CI —el recibo de una ejecución nunca puede incluir el efecto de
+publicarlo—, y queda escrito aquí para que nadie lo lea como un descuido.
+
+**Lo que esto NO significa:** que `static` esté exento de decir la verdad. Su recibo lleva comando,
+código de salida, fecha y árbol medido como los demás; lo único que se acepta es que el árbol que
+describe sea el del commit inmediatamente anterior al que fija su propio hash.

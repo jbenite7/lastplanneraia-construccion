@@ -133,9 +133,9 @@
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
           "exitCode": 1,
           "artifact": "docs/design-system/evidence/full-app-flow.json",
-          "artifactSha256": "566c4b672ddd6a9b667719ad43a3624c0ee2ac8788c343e887eee1fb99032cd9",
-          "sourceRef": "042445a68f6794fc6d3fbadb7cefac689f98c7fe",
-          "sourceFingerprint": "0ec76acec1c8127e864cdbd87147b903ea26797b8a72b823af62b1a0daa63d00",
+          "artifactSha256": "7a9c401313b2d5254e70d8a3d2d14d19fca932688f48e3150bfbe2920a1deb50",
+          "sourceRef": "4c459d0fd18b2a142002097fc6e1874d2b8d9782",
+          "sourceFingerprint": "d972e14a39e3459d3c86c1f31a5e5e9fd0d805a2fc03e5c36010f8583f3ffcee",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
