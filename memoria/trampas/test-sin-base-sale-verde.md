@@ -6,7 +6,7 @@ areas: [qa]
 fuente: sesion
 resumen: "26 tests de la suite PHP salen 0 cuando NO hay base de datos: capturan el fallo de conexión y terminan bien. Correr la suite sin entorno da verdes que no comprobaron nada"
 ---
-Medido el 2026-08-10 sobre los 99 `tests/test_*.php` de `main@13d33af3`, en dos pasadas y **por
+Medido el 2026-08-10 sobre los 99 `tests/test_*.php` de `main@13d33af3` **(universo de entonces; el 2026-08-11 sobre `123a8bff` son 101 — la medición sigue valiendo, la cifra base no)**, en dos pasadas y **por
 código de salida**, nunca por grep del texto ([[suite-php-rojos-preexistentes]] explica por qué):
 
 | Pasada | Entorno | Pasan | Fallan |

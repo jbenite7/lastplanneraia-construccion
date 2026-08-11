@@ -23,17 +23,26 @@ devuelve).
 
   | Nivel | Necesita | Cuántos | Lo corre el CI |
   |---|---|---|---|
-  | `puro` | PHP y autoload | 21 | sí, job estático |
-  | `db` | base con el esquema del fixture | 47 | sí, job runtime |
+  | `puro` | PHP y autoload | 22 | sí, job estático |
+  | `db` | base con el esquema del fixture | 45 | sí, job runtime |
   | `http` | además la aplicación viva | 4 | sí, job runtime |
   | `datos-proyecto` | datos o evidencia que el CI no tiene | 30 | no |
+
+**Estas cuatro cifras caducan solas y ya lo hicieron tres veces en 24 h** — el universo pasó de 126
+a 96, a 99 y a 101 según entraban pruebas. Suman **101 el 2026-08-11 sobre `123a8bff`**. No las
+copies: re-mídelas.
+
+```bash
+ls -1 tests/test_*.php | wc -l
+for n in puro db http datos-proyecto; do echo -n "$n: "; grep -l "@requiere: $n" tests/test_*.php | wc -l; done
+```
 
   ```bash
   docker compose exec -T app php scripts/run-php-tests.php --nivel=http   # o: composer test
   ```
 
   Un test **sin etiqueta rompe el runner** (sale 2): así un test nuevo no puede nacer fuera del CI,
-  que es como llevaban ~96 de los 99. Antes de esa fecha el CI solo corría **tres**, listados a mano
+  que es como llevaban ~96 de los 99 de entonces. Antes de esa fecha el CI solo corría **tres**, listados a mano
   en `design-system.yml`. El runner también reporta aparte el verde sin respaldo y el test que se
   salta entero, para que el resumen no infle la cobertura.
 - **Antes de correr la suite sin entorno, lee [[test-sin-base-sale-verde]]**: 26 tests salen 0
