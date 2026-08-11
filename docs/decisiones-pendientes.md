@@ -140,7 +140,7 @@ de preguntar. Copia esta forma:
   volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
 - **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
   el paso explícito, que es lo que el contrato pide hoy.
-- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.`
+- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.` · **ejecutada 2026-08-11** por la sesión de CI: `visual-ci-contract.test.mjs` cruza el nivel que el workflow invoca con el que la prueba declara, y el paso explícito que la duplicaba se retiró del workflow. Puesta en rojo por tres vías que la aserción vieja no detectaba (nivel cambiado, etiqueta quitada, invocación quitada) y restaurada; suite estática en verde en los 8 gates.
 
 ### D-CI-2 · ¿Los tests nuevos deben escribirse en PHPUnit, o conviven los dos estilos?
 
