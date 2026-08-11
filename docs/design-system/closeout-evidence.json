@@ -7,7 +7,7 @@
       "id": "static",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "verifiedAt": "2026-08-11T17:27:34Z",
       "blocking": true,
       "evidence": [
         {
@@ -16,9 +16,9 @@
           "command": "npm run test:design-system:static",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/static.json",
-          "artifactSha256": "52fac8374851d6e289c982a55830604a6f51ac90e3e4b1803e4070d2d897b589",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
+          "artifactSha256": "11cfef3ed24b1f81e226ed6ed92ba632884332384069b923da34637b937abfd9",
+          "sourceRef": "08ed07cfa4f7609f6b2e8ba248e2aff0c3df9306",
+          "sourceFingerprint": "b65d4fbe6cf798a57a5f9def5f40c8a944f244a9d80694838902e6320a06eee7"
         }
       ]
     },
