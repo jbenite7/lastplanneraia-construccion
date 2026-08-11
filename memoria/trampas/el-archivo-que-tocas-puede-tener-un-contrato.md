@@ -44,3 +44,38 @@ commitear— disfrazado de dos. Commitea y vuelve a medir antes de diagnosticar.
 [[el-codigo-de-salida-se-pierde-en-la-tuberia]] y de
 [[un-verde-solo-vale-para-el-arbol-donde-se-midio]]. Relacionado: [[qa-y-gates]],
 [[branch-preexisting-red-gates]].
+
+---
+
+## Un segundo caso el mismo día, para que se vea que no es del CI
+
+`docs/design-system/manifests/goal-provenance.json` fija por `sha256` el `goal.md`, el `facts.md` y
+el `plan.md` del goal de gobernanza del design system. Una tarea editó los dos primeros **con
+autorización del usuario** y sin actualizar el manifiesto: la suite estática cayó a 6/8 con
+`goal provenance: hash mismatch`, y **ningún subagente lo detectó** — lo encontró la verificación
+final del coordinador.
+
+Mismo patrón, otro contrato, otro directorio. No es una particularidad del workflow de CI.
+
+## La comprobación, en un comando
+
+```bash
+grep -rn "<nombre-del-archivo>" tests/ scripts/ docs/design-system/ | grep -v node_modules
+```
+
+Si aparece dentro de una aserción, un manifiesto o un `sha256`, **ese contrato entra en tu condición
+de hecho** aunque tu tarea no lo mencione.
+
+## Contratos vigilantes conocidos
+
+| Contrato | Qué fija |
+|---|---|
+| `tests/design-system/visual-ci-contract.test.mjs` | Contenido literal de `.github/workflows/design-system.yml` y del compose |
+| `docs/design-system/manifests/goal-provenance.json` | `sha256` de `goal.md`, `facts.md` y `plan.md` del goal de gobernanza |
+| `docs/design-system/manifests/*.json` | `sha256`, viewport y dimensiones de cada golden |
+| `docs/design-system/evidence-exceptions.json` | Cada excepción debe **estar en uso**, o falla |
+| `docs/rbac-parity-exceptions.json` | Ídem para las divergencias RBAC declaradas |
+
+**La lista no es cerrada.** La comprobación es el `grep` de arriba, no esta tabla: cualquiera puede
+añadir un contrato nuevo mañana.
+
