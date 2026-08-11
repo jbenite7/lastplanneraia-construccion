@@ -343,6 +343,29 @@
     color: var(--ds-active-text-secondary);
     text-align: center;
   }
+
+  /* Modificador de página completa para `.aia-empty`.
+     `.aia-empty` está pensado para vivir DENTRO de una pantalla: con su
+     `min-height` de bloque, usado como página entera se pega arriba y deja el
+     resto del alto vacío. Las páginas de error (`views/errors/error.view.php`)
+     son el primer caso donde el estado vacío ES la pantalla, así que el
+     modificador vive aquí, en la capa canónica, y no en una hoja propia: una
+     hoja nueva habría añadido un `<link>` sin capa y su entrada al inventario
+     de `unlayered-delivery`. */
+  .aia-empty--page {
+    min-height: 100vh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: var(--ds-space-8);
+  }
+
+  .aia-empty--page > * {
+    display: grid;
+    gap: var(--ds-space-4);
+    justify-items: center;
+    max-width: 42rem;
+  }
 }
 
 @layer utilities {

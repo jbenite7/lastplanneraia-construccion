@@ -369,11 +369,16 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 try {
     $router->dispatch();
 } catch (Exception $e) {
-    // Manejo básico de errores 500
     error_log($e->getMessage());
-    http_response_code(500);
-    echo "<h1>Error Interno del Servidor</h1>";
-    if (ini_get('display_errors')) {
-        echo "<pre>{$e->getMessage()}</pre>";
-    }
+    // El detalle solo se muestra donde ya se mostraba —con display_errors—, pero
+    // ahora dentro de la página del producto en vez de sobre un <h1> pelado. En
+    // produccion display_errors esta apagado y el usuario ve el mensaje generico,
+    // que es lo que evita filtrar internos.
+    \App\Core\ErrorPage::render(
+        500,
+        'Algo se rompió de nuestro lado',
+        ini_get('display_errors')
+            ? $e->getMessage()
+            : 'El error quedó registrado. Puedes volver e intentarlo otra vez.'
+    );
 }

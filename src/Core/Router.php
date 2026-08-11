@@ -49,15 +49,18 @@ class Router
 
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
-                // Handle 404
-                http_response_code(404);
-                echo "404 Not Found";
+                ErrorPage::render(
+                    404,
+                    'Esta página no existe',
+                    'La dirección que abriste no corresponde a ninguna pantalla del producto. Puede que el enlace esté viejo o mal copiado.'
+                );
                 break;
             case Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $routeInfo[1];
-                // Handle 405
-                http_response_code(405);
-                echo "405 Method Not Allowed";
+                ErrorPage::render(
+                    405,
+                    'Esa acción no se puede hacer aquí',
+                    'La pantalla existe, pero no acepta este tipo de petición. Suele pasar al recargar tras enviar un formulario.'
+                );
                 break;
             case Dispatcher::FOUND:
                 $handler = $routeInfo[1];
