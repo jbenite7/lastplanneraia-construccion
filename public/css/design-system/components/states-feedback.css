@@ -144,4 +144,23 @@
     background: var(--ds-state-tint-red);
     color: var(--ds-active-text-primary);
   }
+
+  /* La excepcion, decidida el 2026-08-11: el matiz desempata en todos los
+     niveles MENOS en el critico. Va aqui, pegada a las reglas que gobierna,
+     porque a partir de ahora el matiz gana *salvo* en un caso y quien lea el
+     selector tiene que ver la excepcion sin ir a buscarla.
+
+     Por que: el nivel critico es el unico que no admite ambiguedad. Con el
+     matiz ganando siempre, un estado `high:now` con matiz naranja se leia como
+     una advertencia — mismo tinte que `attention`—, y eso convierte el aviso
+     mas grave en uno del monton. Los otros tres niveles no tienen ese problema:
+     ahi el matiz desempata sin que nadie confunda la urgencia.
+
+     Pesa 0,3,0 (tres atributos) para ganarle a las reglas de matiz de arriba,
+     que pesan 0,2,0. El matiz sigue vivo en lo critico: distingue por el acento
+     y por el texto, no por el fondo. */
+  [data-aia-hue][data-aia-severity="high"][data-aia-urgency="now"] {
+    background: var(--ds-color-state-critical-bg);
+    color: var(--ds-color-state-critical-text);
+  }
 }

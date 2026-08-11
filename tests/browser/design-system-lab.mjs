@@ -262,13 +262,48 @@ test('severity and urgency blocks keep distinct semantic backgrounds', async ({ 
   const mappedColors = await family.locator('.ds-state-module__state').evaluateAll((elements) => (
     elements.map((element) => ({
       key: `${element.dataset.aiaSeverity}:${element.dataset.aiaUrgency}`,
+      hue: element.dataset.aiaHue || null,
       background: getComputedStyle(element).backgroundColor,
     }))
   ));
-  const colorsByKey = new Map();
-  for (const { key, background } of mappedColors) {
-    if (colorsByKey.has(key)) expect(background).toBe(colorsByKey.get(key));
-    colorsByKey.set(key, background);
+  // El fondo crítico de referencia se lee del propio mapa de gravedad, que no
+  // lleva matiz: así el test compara contra lo que el sistema declara crítico
+  // en vez de contra un color escrito a mano aquí, que se quedaría atrás en
+  // cuanto el token cambie.
+  const criticalBackground = await family
+    .locator('.ds-state-semantics__level[data-aia-severity="high"][data-aia-urgency="now"]')
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  // Esta aserción exigía que dos estados con la misma clave `severity:urgency`
+  // tuvieran el MISMO fondo, y contradecía al eje de matiz: `data-aia-hue`
+  // existe justamente para que dos estados del mismo nivel se distingan
+  // (states-feedback.css:88-100 lo explica con el caso de /pdc). Se actualiza a
+  // la regla vigente, y la nueva comprueba MÁS que la vieja, no menos:
+  //   (1) dos estados del mismo nivel con matiz distinto NO comparten fondo
+  //       —lo contrario de lo que se pedía antes, y es el propósito del eje—;
+  //   (2) ningún estado crítico pierde su fondo crítico por llevar matiz, que
+  //       es la excepción decidida el 2026-08-11 y lo único que no admite
+  //       ambigüedad.
+  // La vieja no comprobaba (2) en absoluto.
+  const porClave = new Map();
+  for (const { key, hue, background } of mappedColors) {
+    if (!porClave.has(key)) porClave.set(key, []);
+    porClave.get(key).push({ hue, background });
+  }
+  for (const [key, estados] of porClave) {
+    // El nivel crítico queda fuera de (1) a propósito: es la excepción del
+    // 2026-08-11, y ahí el fondo es uniforme por diseño. Su comprobación es (2),
+    // abajo, que es más estricta — no admite ni una desviación.
+    if (key === 'high:now') continue;
+    const conMatiz = estados.filter(({ hue }) => hue);
+    const matices = new Set(conMatiz.map(({ hue }) => hue));
+    if (matices.size > 1) {
+      const fondos = new Set(conMatiz.map(({ background }) => background));
+      expect(fondos.size, `«${key}»: ${matices.size} matices distintos comparten fondo`).toBeGreaterThan(1);
+    }
+  }
+  const criticos = mappedColors.filter(({ key }) => key === 'high:now');
+  for (const { hue, background } of criticos) {
+    expect(background, `un estado crítico con matiz «${hue}» perdió su fondo crítico`).toBe(criticalBackground);
   }
   expect(new Set(mappedColors.map(({ background }) => background)).size).toBeGreaterThanOrEqual(3);
 });
