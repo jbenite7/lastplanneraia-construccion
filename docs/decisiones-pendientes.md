@@ -246,6 +246,44 @@ de preguntar. Copia esta forma:
 
 ---
 
+### D-F1-5 · El hueco reservado para el botón flotante no llega a cubrirlo del todo
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1C, Task 5.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si conviene ampliar el token de espacio del sistema (crear `--ds-space-16` u
+  otro mayor) para que el hueco reservado al final de las tablas Handsontable cubra por completo al
+  botón flotante `.lps-sidebar-trigger`, o si el solape residual medido es aceptable.
+- **Qué se midió** (dark, 1180×820, `public/css/handsontable-module.css:670-693`):
+  - El botón mide 50px y se posa a 20px del borde inferior: el hueco necesario es de al menos 70px.
+  - `public/css/tokens.css` no define `--ds-space-16`; el mayor token de espacio existente es
+    `--ds-space-12` (`3rem` = 48px, `tokens.css:459`). Se usó ese, documentado en el propio CSS
+    (líneas 671-683 de `handsontable-module.css`).
+  - Con `--ds-space-12` aplicado sobre `.wtHider` (con `box-sizing: border-box !important` forzado en
+    `.wtHolder` para que el padding no infle también el alto visible — ver el comentario en el propio
+    archivo), el `scrollHeight` de `.wtHolder` crece en 48px de forma consistente en ambos módulos
+    medidos. El solape se **reduce pero no se elimina**:
+    - `/programa-general` (proyecto "Da Porto", 29 filas): antes, última fila
+      `{top: 683.58, bottom: 814.58}` vs botón `{top: 750, bottom: 800}` → 50px de solape. Después,
+      última fila `{top: 635.58, bottom: 766.58}` → solape residual de **16.6px** (750 a 766.58).
+    - `/programacion-semanal` (proyecto "Optimización Aeropuerto JMC", 9 filas): antes, última fila
+      `{top: 725.8, bottom: 814.8}` vs botón `{top: 750, bottom: 800}` → 50px de solape (columna
+      «Acciones» en el mismo extremo que señalaba la ficha del Task 5, confirmado que **sí existía**).
+      Después, última fila `{top: 677.8, bottom: 766.8}` → solape residual de **16.8px**.
+- **Opciones:**
+  - **(a) Aceptar el solape residual (~17px)** como mejora suficiente: bajó de 50px a 17px, el botón
+    ya no cubre el valor completo de la celda, solo roza su borde inferior.
+  - **(b) Crear un token de espacio mayor** (p. ej. `--ds-space-16` = 4rem/64px, o uno específico
+    para este caso) en `tokens.css` y usarlo aquí, para eliminar el solape del todo.
+  - **(c) Combinar dos tokens** (p. ej. `--ds-space-12` + `--ds-space-4`) en la propiedad, aunque esto
+    se aparta de "un token, no un número suelto" que pide la ficha.
+- **Recomendación:** (b) si el equipo de diseño ya tiene planeado ampliar la escala de espaciado;
+  si no, (a) es razonable como cierre de esta tarea — el solape pasó de cubrir el valor completo de
+  la celda a rozar apenas su borde.
+- **Qué quedó saltado esperando:** no se creó ningún token nuevo ni se tocó `tokens.css`.
+- **Estado:** `abierta`
+
+---
+
 ## Resueltas
 
 *(Ninguna todavía.)*

@@ -668,6 +668,26 @@ body {
   }
 }
 
+/* El boton flotante (.lps-sidebar-trigger, 50px a 20px del borde) se posa sobre
+   la ultima fila y tapa parte de su valor. Desplazarlo no sirve: la tabla
+   virtualiza y siempre hay una fila al fondo, asi que el tapado es permanente
+   y solo cambia a que fila afecta. Se reserva hueco al final del area de
+   scroll para que ninguna fila quede debajo.
+   ds-space-16 no existe en el sistema de tokens; --ds-space-12 (3rem/48px) es
+   el mayor disponible y no llega a los 70px (50 del boton + 20 del margen).
+   Ver D-F1-5 en docs/decisiones-pendientes.md.
+   Medido: .wtHolder trae box-sizing: content-box por defecto de Handsontable
+   (handsontable.full.css:127) en algunos modulos (programacion-semanal) y
+   border-box en otros (programa-general, via una regla propia no localizada).
+   Con content-box, un padding-block-end en .wtHolder se suma a su altura fija
+   por JS y crece tambien clientHeight (visible), anulando la ganancia. Se
+   fuerza border-box aqui para que el padding quede dentro de la altura fija
+   y solo aumente scrollHeight, de forma consistente en ambos modulos. */
+#hot-container .wtHolder {
+  box-sizing: border-box !important;
+  padding-block-end: var(--ds-space-12);
+}
+
 /* Alertas de Crisis Activa AIA (Alto Contraste) */
 #hot-container td.pi-row-crisis,
 #hot-container td.pg-row-crisis,
