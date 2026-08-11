@@ -16,6 +16,20 @@
   var masterData = [];
   var visibleRows = [];
   var activeFilters = [];
+
+  /* Frente contadores-cero. Unico punto de reversion: en false vuelve el
+     comportamiento anterior -las ocho etiquetas visibles, las que marcan cero
+     atenuadas por `is-zero` (C-24)- sin tocar el HTML ni el CSS.
+
+     Por que no basta con mirar el numero: `updateLegendCounts` recibe las filas
+     YA filtradas, asi que con un filtro puesto las otras siete categorias
+     marcan (0) aunque tengan contenido. Ese cero significa "no en esta vista",
+     no "vacio". Y como cada etiqueta es tambien el boton de ese filtro,
+     ocultarlas por el valor a secas dejaria al usuario encerrado en el filtro
+     activo, sin ningun otro filtro al que saltar y con la pantalla pareciendo
+     vacia. Por eso solo se oculta el cero que significa vacio de verdad. */
+  var OCULTAR_CONTADORES_EN_CERO = true;
+
   var sharedSelectionIndex = {};
   var lastSharedPreviewKey = null;
   var lastSharedPreviewStats = null;
@@ -2892,10 +2906,18 @@
      y recupera su color saturado en cuanto vuelve a contar algo. */
   function setLegendCount(key, value) {
     var count = Number(value) || 0;
+    /* `is-zero` atenua (C-24) y `is-empty` ademas oculta. La guarda de
+       `activeFilters` es la que separa "vacio" de "cero porque estoy mirando
+       otra cosa"; el porque esta junto a OCULTAR_CONTADORES_EN_CERO. En
+       `view_all` los conteos llegan del servidor y si cubren el conjunto
+       entero, y ahi `activeFilters` esta vacio igualmente. */
+    var esVacioReal = count === 0 && activeFilters.length === 0;
+
     $('#count-' + key)
       .text('(' + value + ')')
       .closest('.pdc-legend-item')
-      .toggleClass('is-zero', count === 0);
+      .toggleClass('is-zero', count === 0)
+      .toggleClass('is-empty', OCULTAR_CONTADORES_EN_CERO && esVacioReal);
   }
 
   function buildListUrl(extraFlags) {

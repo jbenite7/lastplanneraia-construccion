@@ -398,3 +398,7 @@ goals/reapertura-movil-y-tema-claro/*
 # OpenSpec: artefactos de flujo local (esquema Superspec). Instalado 2026-08-10.
 openspec/
 /.phpunit.cache/
+
+# Andamiaje de coordinating-agent-sessions: cola por frente que duplicaria
+# docs/decisiones-pendientes.md, que es la cola canonica de este repo.
+decisiones/
