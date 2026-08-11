@@ -228,6 +228,32 @@ se degradaron al repetirse**, perdiendo por el camino la fecha, el árbol o el m
 usuario. El fallo no está en medir mal, está en el **reenvío**: una cifra pierde su contexto en cada
 salto y sigue sonando igual de firme. Quien la repite es quien la afirma.
 
+### Cuando te corrigen un dato, la pregunta no es si cambia tu conclusión
+
+*(Regla del 2026-08-11, levantada por la sesión del frente `vocabulario-estados-cascada`.)*
+
+**La pregunta es «¿dónde más lo afirmé?».** Una corrección no viaja sola a los sitios donde ese dato
+ya se usó.
+
+Ese mismo día, una medición leída mal —dos etiquetas que «se contradicen en la misma pantalla»,
+cuando una está fuera del viewport a 1180×820— viajó por **tres sesiones**. A la coordinadora se la
+corrigieron pronto; comprobó que su conclusión aguantaba —había que fundir dos frentes, aunque no
+por el motivo que creía— y cerró el asunto. **Pero la premisa seguía viva en el spec de otra sesión**,
+y nadie fue a buscarla. Se cazó de casualidad, cuando un tercero midió coordenadas para otra cosa.
+
+Comprobar que la conclusión aguanta cierra **tu** decisión; no retira el dato de circulación. Y una
+afirmación falsa que sostiene una conclusión correcta es la más difícil de encontrar, porque nada
+falla.
+
+**Qué hacer, en dos pasos:**
+
+1. **Al recibir una corrección**, busca dónde más afirmaste eso: mensajes a otras sesiones, specs,
+   mensajes de commit, informes al usuario. `git log -S` y una búsqueda de la frase bastan.
+2. **Corrige donde se lee, no donde se escribió.** La historia publicada no se reescribe: se corrige
+   el documento vigente y se deja dicho que el commit quedó inexacto y en qué.
+
+Relacionado: [[el-dom-dice-que-existe-no-que-se-ve]].
+
 ## Qué audita la coordinadora
 
 1. **Que los gates sigan verdes** — suite estática del design system, PHPStan, paridad RBAC, lint de
