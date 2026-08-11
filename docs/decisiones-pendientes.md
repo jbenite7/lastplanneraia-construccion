@@ -114,6 +114,18 @@ de preguntar. Copia esta forma:
   Ninguno de los cuatro tokens de fondo de estado que existen hoy llega ni cerca del 3:1. El elegido
   para esta tarea (`critical-bg`, el que aprobó el plan) es el **peor** de los cuatro por ese criterio
   específico, aunque es el correcto por severidad (ver `D-F1-1`).
+- **Cómo se ve, sin jerga —para poder decidir sin abrir el código:** la celda del aviso **sí** se
+  distingue de sus vecinas, pero **no por el fondo**. Lo que se ve es el texto «⚠ Sin asignar» en
+  rosa claro y en negrita, sobre un fondo rojo tan oscuro que a simple vista parece el mismo negro
+  verdoso que el resto de la tabla. El `1,02:1` significa literalmente eso: entre ese fondo y el de
+  al lado hay **un 2 % de diferencia de luminosidad**, y la norma pide un 200 %. El texto en sí se
+  lee perfectamente (esa es la otra cifra, `10,99:1`).
+  - Traducido a la pregunta que importa: **la celda se nota por su letra, no por su color de fondo.**
+    Si alguien mira la tabla entornando los ojos o de lejos, no verá un bloque rojo — verá una fila
+    con un texto distinto.
+  - Lo que esta tarea **sí** mejoró: antes esa letra no era negrita y el fondo no existía en absoluto
+    (la regla de estilo estaba escrita en el código pero no llegaba a aplicarse nunca). Ahora la letra
+    pesa y el fondo existe, aunque casi no se aprecie.
 - **Opciones:**
   - **(a) Aceptar que este canal no llega a 3:1** y dejar que la distinción de la celda dependa de lo
     que sí mide bien: la marca sobre su propio fondo da 10,99:1 (1.4.3, texto) y el peso 600 añade una

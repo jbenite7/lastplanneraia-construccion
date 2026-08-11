@@ -696,7 +696,16 @@ console.log({
 });
 ```
 
-Esperado: el fondo de la celda **difiere** del de las celdas vecinas, y `pesoMarca` es `600`. Calcula el contraste marca/fondo y **anótalo en el informe**: la ficha afirma cifras concretas (12,53:1, 16,90:1, 1,35:1) y el cierre tiene que decir en cuánto quedó. La ficha exige superar 3:1 entre la marca y el dato que la rodea.
+Esperado: el fondo de la celda **difiere** del de las celdas vecinas, y `pesoMarca` es `600`.
+
+**Cuidado con qué norma mide cada cifra — el propio backlog las confunde y este plan heredó la confusión hasta corregirla el 2026-08-10:**
+
+- **WCAG 1.4.3** (contraste de **texto**) mide la tinta contra el fondo sobre el que se lee. Aquí: la marca contra el fondo nuevo de su celda. Es la cifra fácil de sacar y **no** es la que la ficha exige.
+- **WCAG 1.4.11** (contraste de elementos **no textuales**) es la que la ficha exige, y mide el componente contra **lo que lo rodea**. Aquí: **el fondo de la celda de alerta contra el fondo de una celda normal vecina**. Ese es el número que sostiene la afirmación de la tarea —que la marca gana por fondo y no solo por matiz— y es el que hay que dar.
+
+Saca **las dos** y di cuál responde a cuál. El 1,35:1 que la ficha registra entre la marca y el texto de datos vecino **no se va a mover**, porque el contraste texto-a-texto es ciego al `font-weight`; dilo también, en vez de dejar creer que sí se movió.
+
+**Si la cifra fondo-contra-fondo no llega a 3:1, no cambies el token para que llegue.** Elegir otro fondo es decisión de design system: anótala en `docs/decisiones-pendientes.md`, deja el CSS como está y dilo. Un hallazgo honesto con su número vale más que un verde fabricado.
 
 - [ ] **Step 5: Verificar que no se rompió el golden visual**
 
