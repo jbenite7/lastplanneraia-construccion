@@ -93,6 +93,50 @@ de preguntar. Copia esta forma:
   solo visual» y no depende de esta decisión.
 - **Estado:** `abierta`
 
+### D-F1-2 · Ningún token de fondo de estado llega a 3:1 contra la superficie base de la tabla
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1B, Task 5 (ronda de arreglo 1/5).
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si vale la pena crear o ajustar un token de fondo de estado para que el aviso
+  «⚠ Sin asignar» de Programación Semanal cumpla el 3:1 de WCAG 1.4.11 **fondo-contra-fondo**, o si
+  se acepta que ese canal se queda por debajo y la distinción real corre por otra vía (forma + peso
+  + contraste de texto).
+- **Qué se midió:** en `/programacion-semanal`, dark, 1180×820, sobre el árbol real de Handsontable
+  (`--ds-active-surface` resuelto a `rgba(28,36,31,0.92)`, compuesto contra `--ds-active-bg-page`
+  `rgb(17,26,21)`, converge a `rgb(28,36,31)` opaco — verificado además leyendo `backgroundColor`
+  real de celdas vecinas ya renderizadas en Programación Intermedia, que comparte el mismo stack de
+  CSS: dan literalmente `rgba(28, 36, 31, 0.92)`). Contraste de luminancia WCAG de cada token de
+  fondo de estado (`tokens.css:241-244`) contra esa superficie base:
+  - `--ds-color-state-critical-bg` `rgb(67,20,20)` → **1,02:1**
+  - `--ds-color-state-warning-bg` `rgb(58,58,15)` → **1,36:1**
+  - `--ds-color-state-success-bg` `rgb(23,61,38)` → **1,31:1**
+  - `--ds-color-state-info-bg` `rgb(19,72,65)` → **1,54:1**
+  Ninguno de los cuatro tokens de fondo de estado que existen hoy llega ni cerca del 3:1. El elegido
+  para esta tarea (`critical-bg`, el que aprobó el plan) es el **peor** de los cuatro por ese criterio
+  específico, aunque es el correcto por severidad (ver `D-F1-1`).
+- **Opciones:**
+  - **(a) Aceptar que este canal no llega a 3:1** y dejar que la distinción de la celda dependa de lo
+    que sí mide bien: la marca sobre su propio fondo da 10,99:1 (1.4.3, texto) y el peso 600 añade una
+    señal de forma. Es lo que hay hoy tras esta tarea. No toca ningún token.
+  - **(b) Subir la saturación/luminancia del propio `critical-bg`** (o crear una variante «surface»
+    más clara solo para bordes de componente) hasta que separe 3:1 de la superficie base. Cambia un
+    token compartido por otras superficies (`--ds-cell-state-critico-bg` lo reutiliza en
+    `tokens.css:635`), así que el efecto se propaga fuera de esta celda — alcance de design system,
+    no de este módulo.
+  - **(c) Añadir un borde o contorno con un token de línea de estado** (`--ds-color-border-*` si
+    existe uno de severidad) en vez de depender del fondo para el 3:1 de componente. No se investigó
+    si ese token existe; queda para quien tome la decisión.
+  - Todas son reversibles: es CSS/tokens, sin dato de por medio.
+- **Recomendación:** **(a)** para esta tarea puntual — es la única que no reabre alcance de design
+  system ni afecta otras superficies que ya consumen `critical-bg`/`critico-bg`—, pero **(b)** o
+  **(c)** merecen mirarse a nivel de sistema porque el patrón se repite: los cuatro tokens de fondo de
+  estado están pensados para tinte de superficie completa, no para el contraste de borde de un
+  componente pequeño sobre una superficie ya oscura, y probablemente ningún uso futuro de estos
+  tokens en una celda pequeña vaya a llegar a 3:1 tal como están calibrados hoy.
+- **Qué quedó saltado esperando:** no se tocó ningún token ni se creó uno nuevo. El CSS de esta tarea
+  se queda con `--ds-color-state-critical-bg` tal como está.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
