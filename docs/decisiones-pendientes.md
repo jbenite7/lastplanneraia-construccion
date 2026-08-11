@@ -42,7 +42,9 @@ de preguntar. Copia esta forma:
 
 ---
 
-## Abiertas
+## Entradas
+
+*(Ninguna abierta ahora mismo: las tres se decidieron el 2026-08-11. Se conservan aquí con su estado; el índice de resueltas está al final.)*
 
 ### D-1 · Dos numeraciones de «frente» conviviendo en el repo
 
@@ -69,7 +71,7 @@ de preguntar. Copia esta forma:
   de ejecución leen para saber qué les toca; el informe describe. Cuando una descripción y un
   contrato discrepan, se corrige la descripción. Reversible: renumerar un informe no rompe nada.
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (a) — el informe de estado adopta la numeración del spec. El spec gobierna y el informe describe; cuando discrepan, se corrige la descripción.`
 
 ### D-2 · Qué se hace con los 30 tests que el CI no puede correr
 
@@ -105,7 +107,7 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** nada del frente cerrado. Los 30 están etiquetados
   `// @requiere: datos-proyecto`, el CI no los corre y su número aparece en el resumen de cada
   corrida. No se tocó ningún fixture ni ningún dato.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (b) — triarlos por tandas, sin urgencia. Fixture para los que aportan, reescritura para los que dependen de datos sin necesitarlo, retirada para los obsoletos. No es un frente propio: se hace por tandas cuando haya ocasión.`
 
 ### D-CI-1 · El contrato visual fija una forma donde debería medir un resultado
 
@@ -138,10 +140,17 @@ de preguntar. Copia esta forma:
   volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
 - **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
   el paso explícito, que es lo que el contrato pide hoy.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.`
 
 ---
 
 ## Resueltas
 
-*(Ninguna todavía.)*
+Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
+que la citan y pierde el contexto que la rodea. Este índice es para encontrarlas rápido.
+
+| Id | Decisión | Quién la ejecuta |
+|---|---|---|
+| `D-1` | El informe adopta la numeración del spec | La sesión que mantiene `docs/reportes/estado-desarrollo.html` |
+| `D-2` | Triar los 30 tests por tandas, sin urgencia | Sin dueño asignado; se recoge cuando haya ocasión |
+| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | Quien retome el contrato del design system, o el Frente 1b |
