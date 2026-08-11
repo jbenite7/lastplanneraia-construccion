@@ -3591,7 +3591,11 @@
     return summary;
   }
 
-  function renderSummaryList(title, items, extraClass) {
+  // Las cuatro listas se cortan a 8 elementos mientras su contador sigue
+  // subiendo. Con 30 bloqueantes el KPI decia 30 y el detalle ensenaba 8, asi
+  // que el usuario creia que arreglando esas ocho terminaba — en el momento de
+  // mayor consecuencia del ciclo semanal.
+  function renderSummaryList(title, items, extraClass, total) {
     if (!items || items.length === 0) {
       return '';
     }
@@ -3600,6 +3604,10 @@
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
       html += '<li><strong>' + item.actividad + '</strong><br><small>' + item.detalle + '</small></li>';
+    }
+    var ocultas = (typeof total === 'number' ? total : items.length) - items.length;
+    if (ocultas > 0) {
+      html += '<li class="ps-close-summary__mas">y ' + ocultas + ' más que no caben en esta lista</li>';
     }
     html += '</ul></div>';
     return html;
@@ -3618,10 +3626,10 @@
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.executionRestrictionsCount + "</strong><small>Ejecución con restricciones</small></div>" +
       "</div>";
 
-    html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking');
-    html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning');
-    html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning');
-    html += renderSummaryList('Detalle ejecución con restricciones', summary.executionRestrictionsItems, 'is-warning');
+    html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking', summary.blockingCount);
+    html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning', summary.warningLowCount);
+    html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning', summary.warningRestrictedCount);
+    html += renderSummaryList('Detalle ejecución con restricciones', summary.executionRestrictionsItems, 'is-warning', summary.executionRestrictionsCount);
     html += "<p class='ps-close-summary-note'>Al confirmar, no se podrán modificar compromisos ni eliminar actividades.</p></div>";
 
     $('#cerrar_compromisos_semana').html(html);
