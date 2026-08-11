@@ -29,46 +29,83 @@ $scope = new BiProjectScope($db);
 
 // Un usuario real que tenga al menos una obra visible en la Torre. Se replican las mismas
 // condiciones que authorizedProjects(): área, activo y acceso.
-$fila = $db->query(
-    "SELECT u.usuario, pm.project_id, pm.role
+//
+// El test necesita un par completo: un usuario con una obra propia Y al menos una obra ajena con
+// la que probar la mitad denegada. Hasta el 2026-08-10 tomaba el primer candidato que devolviera
+// `LIMIT 1` sin `ORDER BY` y daba por hecho que serviría; cuando le tocaba un usuario que las veía
+// todas, no había obra ajena y el test fallaba. En lote pasaba una de cada cuatro veces, porque el
+// estado de la base cambia qué fila sale primero.
+//
+// Ahora se recorren los candidatos en un orden fijo y se elige el primero que cumple las dos
+// condiciones. Lo que el test comprueba no cambia: cambia cómo elige los datos con los que
+// comprobarlo, y deja de depender de qué fila quiera devolver MySQL.
+$candidatos = $db->query(
+    "SELECT DISTINCT u.usuario, pm.project_id
      FROM project_members pm
      INNER JOIN general_usuarios u ON u.id = pm.user_id
      INNER JOIN general_proyectos_procesos p ON p.ID = pm.project_id
      WHERE p.Area IN ('Construccion', 'Pre-Construccion')
        AND p.Activo = 1
        AND (p.Acceso = 1 OR pm.role IN ('A', 'D', 'P'))
-     LIMIT 1",
-)->fetch(\PDO::FETCH_ASSOC);
+     ORDER BY u.usuario ASC, pm.project_id ASC",
+)->fetchAll(\PDO::FETCH_ASSOC);
 
-if (!$fila) {
+if ($candidatos === []) {
     fwrite(STDERR, "FAIL: no hay ningún usuario con obra visible en la Torre; sin eso no se puede probar nada.\n");
     exit(1);
 }
 
-$usuario   = (string) $fila['usuario'];
-$permitido = (int) $fila['project_id'];
-$session   = ['usuario' => $usuario, 'project_id' => $permitido];
+$usuario     = null;
+$permitido   = 0;
+$autorizados = [];
+$ajena       = 0;
+
+foreach ($candidatos as $candidato) {
+    $suSesion = [
+        'usuario' => (string) $candidato['usuario'],
+        'project_id' => (int) $candidato['project_id'],
+    ];
+    $suyas = array_map(
+        static fn(array $p): int => (int) $p['project_id'],
+        $scope->authorizedProjects($suSesion),
+    );
+
+    if (!in_array((int) $candidato['project_id'], $suyas, true)) {
+        continue;
+    }
+
+    $lista = $suyas === [] ? '0' : implode(',', array_map('intval', $suyas));
+    $obraAjena = (int) $db->query(
+        "SELECT ID FROM general_proyectos_procesos WHERE ID NOT IN ({$lista}) ORDER BY ID ASC LIMIT 1",
+    )->fetchColumn();
+
+    if ($obraAjena <= 0) {
+        continue;
+    }
+
+    $usuario     = (string) $candidato['usuario'];
+    $permitido   = (int) $candidato['project_id'];
+    $autorizados = $suyas;
+    $ajena       = $obraAjena;
+    break;
+}
+
+if ($usuario === null) {
+    fwrite(STDERR, "FAIL: ningún usuario tiene a la vez una obra propia y una ajena; la mitad denegada no se pudo probar.\n");
+    exit(1);
+}
+
+$session = ['usuario' => $usuario, 'project_id' => $permitido];
 
 // --- Rol permitido ----------------------------------------------------------------------------
-$autorizados = array_map(
-    static fn(array $p): int => (int) $p['project_id'],
-    $scope->authorizedProjects($session),
-);
 $assert(in_array($permitido, $autorizados, true), 'rol permitido: su obra está entre las autorizadas');
 
 $resuelto = $scope->resolve([$permitido], $session);
 $assert($resuelto === [$permitido], 'rol permitido: el usuario resuelve su propia obra sin error');
 
 // --- Rol denegado -----------------------------------------------------------------------------
-$ph = $autorizados === [] ? '0' : implode(',', array_map('intval', $autorizados));
-$ajena = (int) $db->query(
-    "SELECT ID FROM general_proyectos_procesos WHERE ID NOT IN ({$ph}) LIMIT 1",
-)->fetchColumn();
-
-if ($ajena <= 0) {
-    fwrite(STDERR, "FAIL: no hay ninguna obra ajena a este usuario; la mitad denegada no se pudo probar.\n");
-    $failures[] = 'no se pudo probar el caso denegado';
-} else {
+// $ajena ya quedó resuelta al elegir el candidato: es condición para haberlo elegido.
+{
     $lanzo = false;
     try {
         $scope->resolve([$ajena], $session);
