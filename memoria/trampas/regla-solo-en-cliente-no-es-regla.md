@@ -3,8 +3,8 @@ tipo: trampa
 estado: vigente
 fecha: 2026-08-06
 areas: [rbac, qa]
-fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md, docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md, commits 88ba6e0d, ca642189, 32cccddf, 23d27bb7, 4b1a2be0, 4ba845dc
-resumen: "Una regla que solo vive en el cliente no es una regla: declarar una capacidad en RbacManager y en rbac_capabilities.js no implica que el servidor la aplique — desde el 2026-08-10 hay un gate que lo mide, y está publicado en rojo a propósito"
+fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md, docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md, commits 88ba6e0d, ca642189, 32cccddf, 23d27bb7, 4b1a2be0, 4ba845dc, 80e25c35
+resumen: "Una regla que solo vive en el cliente no es una regla: declarar una capacidad en RbacManager y en rbac_capabilities.js no implica que nadie la aplique — desde el 2026-08-10 el gate de paridad lo mide, y sus dos primeras divergencias resultaron capacidades sin ningún consumidor"
 ---
 # Una regla que solo vive en el cliente no es una regla
 
@@ -53,22 +53,31 @@ dato):
 `4ba845dc`) compara la matriz de `RbacManager` con la del cliente y falla ante cualquier
 divergencia. Las justificadas se declaran en `docs/rbac-parity-exceptions.json` con motivo y fecha.
 
-**Está publicado en `main` en ROJO, y es deliberado.** Decisión explícita del usuario al cerrar el
-día. Reporta dos divergencias vivas, ambas del rol **R** (Residente):
+Nació en rojo con dos divergencias del rol **R** (Residente) y **se cerraron el mismo día** en
+`80e25c35`. Hoy el gate está en verde; si vuelve a rojo, es nuevo.
 
-| Capacidad | Servidor | Cliente |
-|---|---|---|
-| `canManageContracts` | `true` (`RbacManager.php:28`, rol `R` en la lista) | `false` |
-| `canManagePdC` | `true` (alias de la anterior, `RbacManager.php:48`) | `false` |
+| Capacidad | Servidor | Cliente (antes) | Cliente (hoy) |
+|---|---|---|---|
+| `canManageContracts` | `true` (`RbacManager.php:28`) | `false` | `true` |
+| `canManagePdC` | `true` (alias, `RbacManager.php:48`) | `false` | `true` |
 
-No son vestigios del PDC v1 borrado: `/plan-compras` (PDC **v2**) está vivo en
-`public/index.php:141`. Es el mismo patrón que [[reabrir-semana-asimetria-cliente-servidor]] —
-el cliente esconde, el servidor permite— y su cierre pertenece al Frente 1A de seguridad y permisos.
+**La lección no es la divergencia, es lo que se encontró al medirla.** Ninguna de las dos
+capacidades tenía **un solo consumidor**: ni en `src`, ni en `admin/src`, ni en `public/js`, ni en
+`pdc-app/src`, ni en `views` — solo sus dos declaraciones. Y `/plan-compras` no comprueba ninguna
+capacidad: exige `project_id` y pasa el rol al bootstrap de la SPA. O sea que **no había nada
+explotable**, al revés que en [[reabrir-semana-asimetria-cliente-servidor]], donde el endpoint sí
+concedía de más. La misma forma en la declaración, consecuencia distinta: aquí era una mina para el
+primero que cableara el permiso, no una puerta abierta.
 
-> **Aviso para la próxima sesión que lo vea rojo:** no es una regresión tuya y **no se apaga
-> metiendo las dos capacidades en `rbac-parity-exceptions.json`**. Eso convertiría un hallazgo de
-> permisos vivo en una excepción documentada, que es exactamente el error que esta página existe
-> para evitar. El gate en rojo está haciendo su trabajo.
+El cliente llevaba la duda escrita sin resolver desde su origen —
+`['A','D','OT']; // Asumiendo que… Ajustar si R necesita` — y **esa era la pregunta real**, de
+negocio, no de código: la respondió el usuario el 2026-08-10 (el Residente también compra en obra),
+así que el servidor estaba bien y se alineó el cliente.
+
+> **Si este gate vuelve a rojo:** no se apaga metiendo capacidades en
+> `docs/rbac-parity-exceptions.json`. Eso convierte un hallazgo vivo en excepción documentada, que
+> es el error que esta página existe para evitar. Averigua primero **quién consume** la capacidad:
+> si nadie, la pregunta es de negocio y la responde el usuario, no el código.
 
 Vecina de esta trampa por el lado de las pruebas: [[test-nuevo-rompe-en-silencio-suites-viejas]] —
 al blindar el servidor, las suites E2E que ya posteaban directo pueden quedar rotas o, peor, con
