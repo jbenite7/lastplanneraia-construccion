@@ -1,4 +1,6 @@
 <?php
+// @requiere: db
+
 
 // Contrato del partial shell_sidebar: ítem Semanas, RBAC de gestión y diálogos DS.
 define('PROJECT_ROOT', dirname(__DIR__));

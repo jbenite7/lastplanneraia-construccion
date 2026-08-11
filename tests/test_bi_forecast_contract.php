@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

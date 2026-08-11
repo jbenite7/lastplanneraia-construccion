@@ -4,6 +4,8 @@
  * Doc Section 5.3: D_y_E=100%, Materiales=100%, MdeO=100%, Equipos=100%, Predecesora=50%
  */
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

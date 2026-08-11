@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: db
+
 
 use Admin\Models\Project;
 use App\Controllers\Api\GeneralApiController;

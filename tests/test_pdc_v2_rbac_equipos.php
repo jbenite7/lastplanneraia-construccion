@@ -17,6 +17,8 @@
 // Uso:  docker compose exec app php tests/test_pdc_v2_rbac_equipos.php
 
 declare(strict_types=1);
+// @requiere: db
+
 
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

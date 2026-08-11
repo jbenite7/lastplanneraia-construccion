@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: db
+
 
 /**
  * El auto-match vivía sólo dentro de `generarVinculos()`, que se dispara desde el lado del

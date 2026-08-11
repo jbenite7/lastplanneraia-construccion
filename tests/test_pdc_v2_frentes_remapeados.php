@@ -13,6 +13,8 @@
 // La base local NO está remapeada, así que este test la simula: siembra encabezados con `unique_id`
 // en NULL. Es el único sitio donde ese camino se puede probar antes del servidor.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

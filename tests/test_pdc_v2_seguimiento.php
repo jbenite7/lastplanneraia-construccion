@@ -1,4 +1,6 @@
 <?php
+// @requiere: datos-proyecto
+
 /**
  * Gate de la fase B1 (Seguimiento al Plan de Compras).
  *

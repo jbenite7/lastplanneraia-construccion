@@ -10,6 +10,8 @@
 // funcionalidad, y además se comprobó sobre el proyecto real de Da Porto contra la foto
 // `goals/pdc-preparar-b1/evidence/linea-base-plan-antes-subpaquetes.txt`.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

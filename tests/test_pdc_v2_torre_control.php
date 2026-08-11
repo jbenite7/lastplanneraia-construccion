@@ -8,6 +8,8 @@
 // La aserción que más importa es la de coincidencia: si el agregado y vencimientos() dejan de
 // clasificar igual, tiene que fallar aquí y no en la pantalla de un gerente.
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

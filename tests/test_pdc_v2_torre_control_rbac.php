@@ -6,6 +6,8 @@
 // informe de compras ahora que ese informe trae datos del PDC v2. Es la comprobación que separa
 // esto de un incidente, y por eso se verifica con un rol permitido Y uno denegado.
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

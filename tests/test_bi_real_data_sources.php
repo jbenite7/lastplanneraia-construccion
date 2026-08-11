@@ -4,6 +4,8 @@
  * Test: every BI report and chart declares real database-backed sources.
  */
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

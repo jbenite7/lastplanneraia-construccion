@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_maestro_sinco_import.php
 
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

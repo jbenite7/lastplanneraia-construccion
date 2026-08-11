@@ -3,6 +3,8 @@
 //
 // Prueba la condición de hecho del spec `2026-07-29-flujo-caja-desembolsos-design.md`.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

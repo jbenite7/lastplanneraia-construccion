@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 // tests/test_design_system_head_component.php
 
 require_once __DIR__ . '/../vendor/autoload.php';

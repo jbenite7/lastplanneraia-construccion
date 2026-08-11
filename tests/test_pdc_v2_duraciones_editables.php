@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_duraciones_editables.php — A4.1 · diferido nº 4: cambiar una duración del
 // catálogo legacy sin entrar a la base, y que mueva la fecha que dependía de ella y SOLO esa.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

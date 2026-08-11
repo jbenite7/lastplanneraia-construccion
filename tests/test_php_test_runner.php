@@ -74,6 +74,12 @@ $r = correrRunner($runner, ['--dir=' . $fixtures . '/mudo', '--nivel=puro']);
 verificar('un verde sin respaldo se marca sospechoso', str_contains($r['salida'], 'SOSPECHOSO'));
 verificar('un verde sin respaldo no deja el runner en 0', $r['codigo'] !== 0);
 
+// Un test que se salta solo sale 0, pero no ha comprobado nada: contarlo entre
+// los que pasaron infla la cobertura que el CI dice tener.
+$r = correrRunner($runner, ['--dir=' . $fixtures . '/salta', '--nivel=puro']);
+verificar('un test que se salta solo se cuenta aparte', str_contains($r['salida'], 'se saltaron solos'));
+verificar('un test que se salta solo no se cuenta como que paso', str_contains($r['salida'], '0 pasaron'));
+
 echo "\n";
 if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";

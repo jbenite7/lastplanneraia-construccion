@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 
 $failed = 0;
 

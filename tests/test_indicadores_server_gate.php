@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 // /indicadores ocultaba el informe de Power BI solo en el navegador (EXPERIMENTS.md fila 49):
 // el 403 y la ausencia de la URL en el HTML deben resolverse en el servidor.
 // Permitido: V (Visualizador ve informes). Denegado: C (Subcontratista, rol restringido

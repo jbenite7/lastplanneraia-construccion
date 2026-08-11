@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_pasos_copiar.php — A4.1 · diferido nº 2: copiar la configuración de pasos de una
 // obra a otra. Copia explícita y PUNTUAL, no un vínculo vivo. Sobre MySQL real.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

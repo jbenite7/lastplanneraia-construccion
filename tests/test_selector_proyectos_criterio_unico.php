@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: db
+
 
 /**
  * Task 5 (frente 1a): un solo criterio de "proyecto cerrado visible para la jefatura",

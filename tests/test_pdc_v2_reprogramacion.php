@@ -4,6 +4,8 @@
 // docs/superpowers/specs/2026-07-29-rematching-reprogramacion-design.md y la medición previa en
 // goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29.md.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

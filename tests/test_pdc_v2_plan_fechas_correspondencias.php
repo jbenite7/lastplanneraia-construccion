@@ -4,6 +4,8 @@
 // Archivo aparte del test de A4 a propósito: aquél lo está tocando la tarea de pasos configurables,
 // y compartir fichero garantizaba un choque. Aquí solo vive el puente rama → nodo del cronograma.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

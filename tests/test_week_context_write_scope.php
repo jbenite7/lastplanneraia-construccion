@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 /**
  * Fija QUIÉN puede escribir la semana de la sesión.

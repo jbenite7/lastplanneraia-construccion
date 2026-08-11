@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 
 $root = dirname(__DIR__);
 $scanDirs = [

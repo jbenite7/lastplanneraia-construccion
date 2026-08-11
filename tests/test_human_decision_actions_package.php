@@ -1,4 +1,6 @@
 <?php
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/support/familias_revision_obligatoria.php';

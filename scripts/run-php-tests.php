@@ -268,23 +268,42 @@ function ejecutarTest(string $rutaTest, int $segundosDeEspera): array
 }
 
 /**
+ * Varios tests de la suite se saltan solos cuando la base no trae los datos que
+ * esperan («SKIP: el proyecto 73 no está sembrado…») y salen 0. Contarlos entre
+ * los que pasaron infla la cobertura que el CI dice tener, así que se cuentan
+ * aparte. Un test que se salta siempre en CI está mal etiquetado: su sitio es
+ * el nivel 'datos-proyecto'.
+ */
+function seSaltoSolo(int $codigo, string $salida): bool
+{
+    if ($codigo !== SALIDA_OK || preg_match('/^\s*SKIP\b/mi', $salida) !== 1) {
+        return false;
+    }
+
+    // Un test puede saltarse una parte y comprobar el resto: eso es un pase, no
+    // un salto. Sólo cuenta como salto si no comprobó nada en absoluto.
+    return !tieneSenalDeComprobacion($salida);
+}
+
+function tieneSenalDeComprobacion(string $salida): bool
+{
+    $enMinusculas = mb_strtolower($salida);
+    foreach (SENALES_DE_COMPROBACION as $senal) {
+        if (str_contains($enMinusculas, $senal)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Un test que sale 0 sin decir nada que respalde ese verde no ha demostrado
  * nada. Se reporta aparte en vez de contarlo como éxito.
  */
 function esVerdeSinRespaldo(int $codigo, string $salida): bool
 {
-    if ($codigo !== SALIDA_OK) {
-        return false;
-    }
-
-    $enMinusculas = mb_strtolower($salida);
-    foreach (SENALES_DE_COMPROBACION as $senal) {
-        if (str_contains($enMinusculas, $senal)) {
-            return false;
-        }
-    }
-
-    return true;
+    return $codigo === SALIDA_OK && !tieneSenalDeComprobacion($salida);
 }
 
 // ---------------------------------------------------------------------------
@@ -347,6 +366,7 @@ if ($loQueFalta !== null) {
 $pasaron = [];
 $fallaron = [];
 $sospechosos = [];
+$saltados = [];
 
 foreach ($seleccionados as $ruta => $nivel) {
     $nombre = basename($ruta);
@@ -355,6 +375,12 @@ foreach ($seleccionados as $ruta => $nivel) {
     if ($resultado['codigo'] !== SALIDA_OK) {
         $fallaron[$nombre] = $resultado;
         echo "  FALLA   {$nombre} (rc={$resultado['codigo']}, {$nivel})\n";
+        continue;
+    }
+
+    if (seSaltoSolo($resultado['codigo'], $resultado['salida'])) {
+        $saltados[$nombre] = $resultado;
+        echo "  se salta  {$nombre} (no comprobó nada, {$nivel})\n";
         continue;
     }
 
@@ -371,6 +397,7 @@ foreach ($seleccionados as $ruta => $nivel) {
 echo "\n";
 echo '=== ' . count($seleccionados) . ' corridos: ' . count($pasaron) . ' pasaron, '
     . count($fallaron) . ' fallaron, ' . count($sospechosos) . ' sospechosos, '
+    . count($saltados) . ' se saltaron solos, '
     . count($omitidos) . " omitidos por nivel ===\n";
 
 if ($fallaron !== []) {
@@ -382,6 +409,14 @@ if ($fallaron !== []) {
             echo "  {$linea}\n";
         }
     }
+}
+
+if ($saltados !== []) {
+    echo "\nSE SALTARON SOLOS — salieron 0 sin comprobar nada porque les faltaban datos:\n";
+    foreach (array_keys($saltados) as $nombre) {
+        echo "  - {$nombre}\n";
+    }
+    echo "  Si se saltan siempre en CI, su nivel es 'datos-proyecto'.\n";
 }
 
 if ($sospechosos !== []) {
