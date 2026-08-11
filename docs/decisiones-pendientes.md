@@ -724,7 +724,40 @@ de preguntar. Copia esta forma:
   probable es que el hover deba apuntar a `--aia-green-medium` o `--aia-green-primary` en vez de
   crear un nombre nuevo. Eso sí movería el color, así que necesita el visto del usuario.
 - **Qué quedó saltado esperando:** la línea 777 no se tocó. Tampoco las 155–156.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: el foco lo señala el anillo, no el relleno; el relleno pasa a
+  --aia-green-primary. Aplicado en el frente focus-visible-verde.`
+
+#### Cómo se resolvió, y por qué la primera respuesta era la equivocada
+
+La primera vuelta eligió `--aia-green-medium` (52%) sobre una premisa que resultó falsa: que ese
+verde **era** el indicador de foco de teclado. No lo es. Medido con `Tab` real a 1180×820 en dark, el
+foco lo señala el **anillo teal del sistema** —`outline: 2px solid var(--ds-active-focus-ring)`
+(`#2caa9f`) más `box-shadow` de 4px, en `public/css/design-system/adapters/lps-drawer.css:182`,
+compartido con todo el shell LPS—. El verde de `:777` es el **relleno** del botón, y su regla está
+compartida con `:hover`, no es exclusiva del foco.
+
+Eso invierte el criterio. Si el anillo carga la señal, el relleno debe **apartarse** del anillo, no
+acercársele. Aclarar el verde hacía lo contrario. Las tres candidatas, medidas con la misma fórmula
+WCAG sobre sRGB:
+
+| | anillo vs relleno (**la que manda**, 3:1) | relleno vs fondo (3:1) | enfocado vs reposo (3:1) | icono blanco (4,5:1) |
+|---|---|---|---|---|
+| `--aia-green-primary` (32%) | **4,34** ✅ | 1,44 | 1,17 | 12,37 |
+| verde suelto de hoy (43,86%) | 2,63 | 2,37 | 1,92 | 7,5 |
+| `--aia-green-medium` (52%) | 1,86 | 3,35 | 2,72 | 5,3 |
+
+`--aia-green-primary` es la única que cruza el umbral en la fila que gobierna, y con holgura. Se
+aplica esa.
+
+**El coste, dicho sin adornos:** con este verde el relleno enfocado queda casi indistinguible del de
+reposo (1,17). Es coherente con la decisión —la señal la lleva el anillo— pero significa que el
+**hover con ratón**, que no tiene anillo, se queda sin apenas cambio de color y se apoya en el
+`scale(1.08)` y la sombra. Si alguien decide más adelante que el hover necesita señal cromática
+propia, la salida es darle su propia regla, no volver a aclarar la compartida.
+
+**Y se retira la reserva:** `--aia-green-primary` sí existe (`public/css/tokens.css:7`), así que la
+declaración queda `var(--aia-green-primary)` sin reserva, en línea con el criterio del frente
+anterior. Con ello desaparece el último literal de color suelto de esta regla.
 
 ---
 
