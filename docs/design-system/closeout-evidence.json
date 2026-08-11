@@ -25,19 +25,19 @@
     {
       "id": "runtime",
       "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "status": "blocked",
+      "verifiedAt": null,
       "blocking": true,
       "evidence": [
         {
           "summary": "Objective receipt for runtime",
           "commandId": "ds.runtime.v1",
           "command": "npm run test:design-system:runtime",
-          "exitCode": 0,
+          "exitCode": 1,
           "artifact": "docs/design-system/evidence/runtime.json",
-          "artifactSha256": "52e43ebad1d6cd91aedc82fe894b26022c9d70dae84767422b8af51c5af3b4d3",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
+          "artifactSha256": "8228dbe19cdf6fac358b6b7b100e0417e2f2a7291591a9506bd8e75cbfe824bd",
+          "sourceRef": "fe772f097324e27ab3c90ca20a67bf050073b3eb",
+          "sourceFingerprint": "84e656df37e8048561b6037e52a51715ef06a6f66b8637a902f30b6ce2bc8361",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
@@ -132,7 +132,7 @@
           "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
           "exitCode": 1,
-          "artifact": "docs/design-system/evidence/pg-roles.json",
+          "artifact": "docs/design-system/evidence/full-app-flow.json",
           "artifactSha256": "566c4b672ddd6a9b667719ad43a3624c0ee2ac8788c343e887eee1fb99032cd9",
           "sourceRef": "042445a68f6794fc6d3fbadb7cefac689f98c7fe",
           "sourceFingerprint": "0ec76acec1c8127e864cdbd87147b903ea26797b8a72b823af62b1a0daa63d00",

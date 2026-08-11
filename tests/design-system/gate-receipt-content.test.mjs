@@ -54,17 +54,44 @@ test('un recibo que existe describe lo que el indice declara y lo que ocurrio', 
     if (!existsSync(new URL(`../../${ruta}`, import.meta.url))) continue;
 
     const recibo = await leer(ruta);
-    // Un recibo de la forma vieja —solo `gateId` y `result`— no puede validarse
-    // como contenido: se cuenta aparte para que la migracion sea visible y medible,
-    // en vez de romper el gate entero de golpe.
-    const esViejo = Object.keys(recibo).length <= 2;
-    if (esViejo) continue;
-
     const fallos = validarRecibo(recibo, gate);
     if (fallos.length) problemas.push(`${gate.id}: ${fallos.join('; ')}`);
   }
 
   assert.deepEqual(problemas, [], `recibos que no describen lo que dicen:\n${problemas.join('\n')}`);
+});
+
+/**
+ * El techo de recibos sin migrar, y por qué es un número y no un `continue`.
+ *
+ * La primera versión de este archivo se saltaba en silencio los recibos de la forma
+ * vieja —dos claves, `gateId` y `result`—, con un comentario que decía que se
+ * contaban «aparte para que la migración sea visible y medible». **Ese conteo no
+ * existía en ninguna parte.** Nada fallaba y nada informaba, así que el número podía
+ * quedarse donde estaba indefinidamente: exactamente la forma del problema que este
+ * frente vino a cerrar, un número que nadie mira. Lo cazó la coordinadora auditando.
+ *
+ * Ahora es un techo que solo puede bajar. Cuando llegue a cero, este test se retira y
+ * la validación de arriba cubre los ocho por sí sola.
+ */
+const RECIBOS_SIN_MIGRAR_MAXIMO = 0;
+
+test('el numero de recibos sin migrar solo puede bajar', async () => {
+  const indice = await leer('docs/design-system/closeout-evidence.json');
+  const viejos = [];
+
+  for (const gate of indice.gates) {
+    const ruta = ((gate.evidence || [])[0] || {}).artifact;
+    if (!ruta || !existsSync(new URL(`../../${ruta}`, import.meta.url))) continue;
+    const recibo = await leer(ruta);
+    if (Object.keys(recibo).length <= 2) viejos.push(gate.id);
+  }
+
+  assert.ok(
+    viejos.length <= RECIBOS_SIN_MIGRAR_MAXIMO,
+    `${viejos.length} recibos sin migrar (techo ${RECIBOS_SIN_MIGRAR_MAXIMO}): ${viejos.join(', ')}.`
+    + ' Si migras uno, baja el techo; nunca lo subas para que pase.',
+  );
 });
 
 test('la validacion de contenido falla cerrado ante un recibo que miente', () => {
