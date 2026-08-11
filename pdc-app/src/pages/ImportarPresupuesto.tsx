@@ -433,7 +433,7 @@ export default function ImportarPresupuesto() {
             autoSizeStrategy={autoSizeStrategy}
           {...ajusteDeAncho}
             getRowId={(p) => String(p.data.id)}
-            overlayNoRowsTemplate={vacioTabla("Todavía no se ha importado ningún presupuesto en este proyecto.")}
+            overlayNoRowsTemplate={vacioTabla("Todavía no se ha importado ningún presupuesto. Sube el Excel aquí arriba y esta lista guardará cada versión para que puedas compararlas.")}
             onCellClicked={onVersionClick}
           />
         </div>
