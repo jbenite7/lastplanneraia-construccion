@@ -620,9 +620,16 @@ de preguntar. Copia esta forma:
 - **Recomendación:** **(c)**, y **con la anotación de `:955` diciendo explícitamente que es un falso
   positivo y que el `rollBack` debe conservarse**. Ese comentario vale más que el arreglo: protege
   contra el próximo que pase por ahí con buena intención.
-- **Qué quedó saltado esperando:** solo `phpstan-global`. Los otros catorce gates siguen su curso, y
-  el mecanismo de recibos ya está entregado y probado.
-- **Estado:** `abierta`
+- **Qué quedó saltado esperando:** nada ya — ver el estado.
+- **Estado:** `resuelta 2026-08-11: (c), y estaba ejecutada antes de que nadie la marcara.` Medido el
+  2026-08-11 con el comando canónico de `AGENTS.md` sobre el HEAD del frente:
+  **`[OK] No errors`** — los 6 que esta ficha censaba son **cero**. Los cerró `3d72a8df` («el gate
+  phpstan-global pasa a verde — de 8 errores a 0»), con `96d194b9` y `9011c99c` antes, y el falso
+  positivo de `Database.php:955` **quedó anotado en `phpstan-baseline.neon:16-19` con el aviso
+  escrito de que el `rollBack` debe conservarse**, que era la parte que yo había señalado como más
+  valiosa que el arreglo. `bdffe9da` movió después ese comentario «donde lee quien puede romperlo».
+  Es decir: se hizo exactamente la opción (c) recomendada, y la contradicción del registro era solo
+  que **nadie volvió a escribir el resultado**. Manda el código: la ficha se corrige, no al revés.
 
 ### D-F1b-5 · El contrato obliga a declarar todos los gates «passed», o la suite entera se pone roja
 
