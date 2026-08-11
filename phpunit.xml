@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configuración de PHPUnit para los tests NUEVOS de este repositorio.
+
+  Los 101 tests/test_*.php siguen siendo scripts autoejecutables y no se tocan: los gobierna
+  scripts/run-php-tests.php, que es también quien invoca a PHPUnit. No se corre `phpunit` a mano
+  salvo para depurar, porque el runner es lo que comprueba el entorno antes de ejecutar nada.
+
+  Cada clase declara con #[Group('<nivel>')] qué entorno necesita: puro, db, http o datos-proyecto.
+  Una clase sin ese grupo hace fallar al runner.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnNotice="true"
+         cacheDirectory=".phpunit.cache">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
