@@ -202,6 +202,28 @@ body {
   overflow-wrap: normal !important;
 }
 
+/* Aprobado por el usuario: dos lineas maximo en «Actividad», con el detalle al
+   pasar el cursor. `.force-wrap` se conserva —existe para no partir nombres
+   largos como «HOMECENTER CALI»— y solo se acota su alto. Medido antes: la fila
+   mediana media 111px sobre un token de densidad de 24px, y lo que gobernaba el
+   alto era este texto envuelto, no la densidad.
+
+   No se puede fijar `display: -webkit-box` en el propio `td.force-wrap`:
+   `design-system/adapters/handsontable.css` fija `display: table-cell
+   !important` dentro de `@layer reset`, y esa capa es intencionalmente la de
+   mayor prioridad para `!important` (el orden de capas se invierte para
+   importants — ver el comentario del Task 8 en ese archivo). Ninguna capa
+   posterior, con o sin `!important`, le gana a `reset`. Por eso el recorte de
+   dos lineas se aplica a un `<span>` interno (`pi-actividad-clamp`, ver
+   `piActividadRenderer` en hot.js) en vez de al `td`: el `span` no hereda ese
+   pleito de capas porque nada mas lo referencia. */
+#hot-container td.force-wrap .pi-actividad-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* 6. Row headers
 
    El `box-sizing: content-box` NO sobra, aunque el clon izquierdo sea el unico

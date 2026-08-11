@@ -3158,8 +3158,9 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = getSourceRowDataByVisualRow(instance, row) || {};
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
-      td.innerHTML = prefix + sanitizeActividadHtml(value);
+      td.innerHTML = '<span class="pi-actividad-clamp">' + prefix + sanitizeActividadHtml(value) + '</span>';
       td.classList.add('htLeft');
+      td.title = prefix + (value == null ? '' : String(value));
     });
 
     Handsontable.renderers.registerRenderer('piStateRenderer', function (instance, td, row, col, prop, value) {
