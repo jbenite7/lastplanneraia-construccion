@@ -952,6 +952,16 @@ class Database
 
             return $next;
         } catch (Throwable $e) {
+            // El `inTransaction()` NO sobra, aunque lo parezca: entre el
+            // `beginTransaction()` de arriba y este `catch` puede haber ocurrido un
+            // DDL implicito (CREATE/ALTER/DROP), que en MySQL confirma la
+            // transaccion en curso y la cierra sin avisar. Llamar a `rollBack()`
+            // sobre una conexion sin transaccion activa lanza una excepcion, y aqui
+            // taparia la que de verdad importa: la que estamos manejando.
+            // PHPStan cree que esta condicion es siempre falsa —recuerda que
+            // `inTransaction()` valia false al fijar `$ownsTransaction` y no modela
+            // que `beginTransaction()` lo cambia—, y su aviso esta suprimido en
+            // `phpstan-baseline.neon` con esa explicacion. No lo simplifiques.
             if ($ownsTransaction && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }

@@ -161,3 +161,76 @@ baseline avisaba de que ya no describía el código— y se **retiró** en vez d
 Antes se comprobó la hipótesis grave, que era que la puntuación por ubicación del emparejador
 estuviera inerte: **es falsa**, las cuatro ramas se ejecutan (verificado invocando el método:
 1.000 / 0.300 / 0.700 / 0.500). Lo que sobraba era media condición ya garantizada por la anterior.
+
+
+## La causa del rojo de `runtime`, medida el 2026-08-11
+
+El fallo de `design-system-lab.mjs:252` («severity and urgency blocks keep distinct semantic
+backgrounds») tiene causa concreta:
+
+```
+Expected: "rgb(67, 20, 20)"   // #431414 — el ancla crítica de la escala de estado
+Received: "rgb(69, 42, 13)"   // #452a0d — --ds-state-tint-orange
+```
+
+Es decir: **el bloque que debería pintarse con el crítico se está pintando con el tinte naranja.**
+El último commit que tocó esa escala es `fff71ad9` (**2026-08-03**), «la escala de celda deriva de la
+de estado y el contrato se mide en runtime» — **anterior a todo este programa**: el Frente 1 y el 1b
+tienen cero commits en `views/design-system/families/states-feedback.php` y `public/css/design-system/lab.css`.
+
+**Y ese mismo commit dejó escrita la trampa que lo explica**, en
+`memoria/trampas/gate-estatico-no-ve-tokens-rotos.md`: un gate que lee archivos da verde con un token
+que apunta a una variable inexistente, porque la declaración es sintácticamente impecable y el fallo
+solo ocurre **al resolver la cascada**. Su conclusión —«todo contrato sobre valores resueltos
+necesita superficie de runtime»— es exactamente por lo que existe el carril `runtime`… **que lleva
+rojo desde entonces declarando `passed`.**
+
+O sea: alguien vio el problema, escribió el carril correcto para cazarlo, dejó la lección apuntada, y
+el carril nunca se ejecutó. **Es el mismo patrón que la regresión de las cabeceras**, en la otra
+punta del programa: el instrumento existe y nadie lo mira.
+
+Arreglar el mapeo de severidad no es trabajo de esta medición —toca la escala semántica del design
+system, que es capa contractual—, pero la causa queda localizada para quien lo tome.
+
+
+## `full-app-flow` no está roto: está negándose a correr, y hace bien
+
+Medido el 2026-08-11 tras fundir los tres gates de datos en uno:
+
+```
+Missing isolated E2E database mutation consent: set
+E2E_REQUIRE_ISOLATED_DB=1 and E2E_ALLOW_DB_MUTATION=design-system-ci.
+  at assertE2EMutationConsent (tests/browser/support/restoration.mjs:17)
+```
+
+**No es un fallo del gate: es su guardia funcionando.** La suite se niega a mutar datos sin que
+alguien declare explícitamente que la base es aislada y que consiente la mutación. El spec del
+programa ya lo anticipaba —«los tres gates de datos necesitan una fixture aislada y el consentimiento
+explícito de mutación que hoy los bloquea en seguro»—, y la medición lo confirma con su mensaje.
+
+**Y aquí no se le da ese consentimiento.** Este worktree corre contra el contenedor de base de datos
+**compartido** con el árbol principal y con las demás sesiones. Poner `E2E_ALLOW_DB_MUTATION` sobre
+una base compartida sería exactamente lo que esa guardia existe para impedir, y por un motivo que no
+es teórico: la variable se llama `design-system-ci` porque está pensada para una base efímera de CI,
+no para la de trabajo.
+
+**Reclasificación:** `full-app-flow` **no cuenta como rojo por defecto propio**. Cuenta como **no
+ejecutable en este entorno**, que es distinto y se arregla de otra forma: dándole una base aislada
+—una instancia efímera o un esquema propio sembrado y destruido por la propia suite—. Eso es
+infraestructura, no reparación de un gate, y merece decidirse antes de hacerse.
+
+**Recuento final de los ocho, medido:**
+
+| Gate | Estado real |
+|---|---|
+| `static` | **verde**, con recibo pendiente por circularidad (mide la suite que valida el índice que lo referencia) |
+| `phpstan-scoped` | **verde con recibo real** |
+| `phpstan-global` | **verde con recibo real** (de 8 errores a 0 el 2026-08-11) |
+| `global-table-safety` | **verde con recibo real** |
+| `atomic-commit` | **verde con recibo real** |
+| `runtime` | **rojo**, causa localizada: el bloque crítico se pinta con `--ds-state-tint-orange` |
+| `runtime-budgets` | **no ejecutable solo**: `ENOENT` sobre `test-output/`, necesita artefactos de una corrida previa |
+| `full-app-flow` | **no ejecutable aquí**: exige base aislada y consentimiento de mutación, y hace bien |
+
+**Cinco verdes de ocho**, cuatro de ellos con recibo real. Frente a los **tres verdes comprobables de
+quince** con que empezó el frente, y con la diferencia de que ahora los números describen algo.

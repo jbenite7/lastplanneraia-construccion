@@ -39,22 +39,6 @@ test('sprint close contract makes evidence and approval blocking', async () => {
   assert.doesNotMatch(source, /Plannotator/i);
 });
 
-test('Accessibility Insights exposes the machine-readable basic automated review contract', async () => {
-  const closeout = JSON.parse(await readFile(
-    new URL('../../docs/design-system/closeout-evidence.json', import.meta.url),
-    'utf8',
-  ));
-  const gate = closeout.gates.find(({ id }) => id === 'accessibility-insights');
-  assert.equal(gate.kind, 'automatic');
-  assert.deepEqual(closeout.accessibilityReview, {
-    kind: 'basic-automated-review',
-    surfaces: ['laboratory', 'pilot', 'revealed-states'],
-    requiredFailedRules: 0,
-    requiredFailedInstances: 0,
-  });
-  assert.doesNotMatch(JSON.stringify({ gate, review: closeout.accessibilityReview }), /FastPass|WCAG/i);
-});
-
 test('active closeout surfaces contain no prohibited accessibility claim', async () => {
   const paths = [
     'docs/design-system/README.md',

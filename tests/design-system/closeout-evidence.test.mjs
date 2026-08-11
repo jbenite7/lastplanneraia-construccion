@@ -8,22 +8,21 @@ const readJson = async (path) => JSON.parse(await readFile(
 ));
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
+// Frente 1b (D-F1b-1, D-F1b-2, D-F1b-3, 2026-08-11): bajó de 15 a 8 gates. Motivo
+// escrito de cada retiro/fusión en docs/design-system/gates-cierre-frente-1b.md.
 const REQUIRED_GATES = [
   'static', 'runtime', 'runtime-budgets', 'phpstan-scoped', 'phpstan-global',
-  'global-table-safety', 'pg-roles', 'pg-persistence', 'data-restoration',
-  'accessibility-insights',
-  'consolidated-lab', 'consolidated-pilot', 'git-preservation',
-  'review', 'atomic-commit',
+  'global-table-safety', 'full-app-flow', 'atomic-commit',
 ];
 
 function assertExactGateIds(gates) {
   const ids = gates.map(({ id }) => id);
-  assert.equal(gates.length, 15);
-  assert.equal(new Set(ids).size, 15, 'gate ids must be unique');
+  assert.equal(gates.length, 8);
+  assert.equal(new Set(ids).size, 8, 'gate ids must be unique');
   assert.deepEqual(ids, REQUIRED_GATES);
 }
 
-test('closeout evidence declares the exact ordered set of 15 blocking gates', async () => {
+test('closeout evidence declares the exact ordered set of 8 blocking gates', async () => {
   const evidence = await readJson('docs/design-system/closeout-evidence.json');
   assert.equal(evidence.schemaVersion, 1);
   assert.match(evidence.designSystemVersion, /^\d+\.\d+\.\d+$/);
@@ -39,23 +38,6 @@ test('closeout evidence declares the exact ordered set of 15 blocking gates', as
     assert.equal(gate.blocking, true, gate.id);
     assert.ok(Array.isArray(gate.evidence), gate.id);
   }
-});
-
-test('accessibility gate declares the basic automated review contract', async () => {
-  const evidence = await readJson('docs/design-system/closeout-evidence.json');
-  const gate = evidence.gates.find(({ id }) => id === 'accessibility-insights');
-
-  assert.equal(gate.kind, 'automatic');
-  assert.deepEqual(evidence.accessibilityReview, {
-    kind: 'basic-automated-review',
-    surfaces: ['laboratory', 'pilot', 'revealed-states'],
-    requiredFailedRules: 0,
-    requiredFailedInstances: 0,
-  });
-  assert.doesNotMatch(JSON.stringify({
-    review: evidence.accessibilityReview,
-    evidence: gate.evidence,
-  }), /FastPass|WCAG/i);
 });
 
 test('malformed, reordered, duplicate and missing gate arrays fail closed', () => {
@@ -83,13 +65,12 @@ test('passed gates require fresh timestamps and non-historical evidence', async 
   assert.doesNotMatch(JSON.stringify(evidence.gates), /\bPASS\b/);
 });
 
-test('git-preservation is passed in the activated closeout', async () => {
+test('full-app-flow is passed in the activated closeout', async () => {
   const evidence = await readJson('docs/design-system/closeout-evidence.json');
-  const gate = evidence.gates.find(({ id }) => id === 'git-preservation');
+  const gate = evidence.gates.find(({ id }) => id === 'full-app-flow');
   assert.equal(gate.status, 'passed');
   assert.equal(gate.evidence.length, 1);
-  assert.equal(gate.evidence[0].commandId, 'ds.git-preservation.v1');
-  assert.equal(gate.evidence[0].artifact, 'docs/design-system/evidence/git-preservation.json');
+  assert.equal(gate.evidence[0].commandId, 'ds.full-app-flow.v1');
   assert.match(gate.evidence[0].summary, /Objective receipt/i);
 });
 

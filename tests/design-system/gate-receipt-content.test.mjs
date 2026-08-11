@@ -26,17 +26,14 @@ test('cada gate declara un artefacto de recibo', async () => {
  * encolada en `docs/decisiones-pendientes.md`, y ninguna se queda aquí sin fecha: cuando
  * el usuario decida, o el gate se reconstruye y sale de esta lista, o se retira del
  * índice y deja de existir. Una exclusión sin dueño es cómo empezó el problema.
+ *
+ * D-F1b-1, D-F1b-2 y D-F1b-3 se resolvieron el 2026-08-11: `accessibility-insights`,
+ * `consolidated-lab`, `consolidated-pilot`, `review` y `git-preservation` se retiraron
+ * del índice (motivo en docs/design-system/gates-cierre-frente-1b.md); `pg-roles`,
+ * `pg-persistence` y `data-restoration` se fundieron en `full-app-flow`. Ningún gate
+ * pendiente de decisión queda hoy en el índice.
  */
-const PENDIENTES_DE_DECISION = new Map([
-  ['accessibility-insights', 'D-F1b-3: su comando no es un binario del PATH ni un script del repo'],
-  ['consolidated-lab', 'D-F1b-3: `local-review` no existe; además es un juicio humano declarado como comando'],
-  ['consolidated-pilot', 'D-F1b-3: idem'],
-  ['review', 'D-F1b-3: idem'],
-  ['git-preservation', 'D-F1b-1: compara contra el snapshot del Sprint 00; candado de un solo uso ya disparado'],
-  ['pg-roles', 'D-F1b-2: los tres declaran el mismo comando y no pueden dar veredictos distintos'],
-  ['pg-persistence', 'D-F1b-2: idem'],
-  ['data-restoration', 'D-F1b-2: idem'],
-]);
+const PENDIENTES_DE_DECISION = new Map();
 
 test('las exclusiones estan vivas: cada una nombra un gate que existe', async () => {
   const indice = await leer('docs/design-system/closeout-evidence.json');

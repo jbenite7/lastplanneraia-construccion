@@ -1,11 +1,15 @@
 import { evidenceReceiptFailures } from './design-system-evidence-receipt.mjs';
 import { ACTIVATED_VERSION_PATTERN, activationGitFailures } from './design-system-activation-git.mjs';
 
+// Frente 1b (D-F1b-1, D-F1b-2, D-F1b-3, 2026-08-11): la lista baja de 15 a 8 gates.
+// Retirados con motivo escrito (docs/design-system/gates-cierre-frente-1b.md):
+// `git-preservation` (candado de un solo uso ya disparado), `accessibility-insights`,
+// `consolidated-lab`, `consolidated-pilot` y `review` (herramienta inexistente o
+// juicio humano declarado como comando). Fundidos en `full-app-flow`: `pg-roles`,
+// `pg-persistence` y `data-restoration` (los tres declaraban el mismo comando).
 export const closeoutGateIds = [
   'static', 'runtime', 'runtime-budgets', 'phpstan-scoped', 'phpstan-global',
-  'global-table-safety', 'pg-roles', 'pg-persistence', 'data-restoration',
-  'accessibility-insights', 'consolidated-lab', 'consolidated-pilot',
-  'git-preservation', 'review', 'atomic-commit',
+  'global-table-safety', 'full-app-flow', 'atomic-commit',
 ];
 
 const closeoutGateKinds = {
@@ -15,24 +19,15 @@ const closeoutGateKinds = {
   'phpstan-scoped': 'automatic',
   'phpstan-global': 'automatic',
   'global-table-safety': 'automatic',
-  'pg-roles': 'automatic',
-  'pg-persistence': 'automatic',
-  'data-restoration': 'automatic',
-  'accessibility-insights': 'automatic',
-  'consolidated-lab': 'human',
-  'consolidated-pilot': 'human',
-  'git-preservation': 'automatic',
-  review: 'human',
+  'full-app-flow': 'automatic',
   'atomic-commit': 'automatic',
 };
 const closeoutFields = [
-  'accessibilityReview', 'designSystemVersion', 'gates', 'generatedAt', 'schemaVersion',
+  'designSystemVersion', 'gates', 'generatedAt', 'schemaVersion',
 ];
 const gateFields = ['blocking', 'evidence', 'id', 'kind', 'status', 'verifiedAt'];
-const accessibilitySurfaces = ['laboratory', 'pilot', 'revealed-states'];
 const fixtureGateIds = new Set([
-  'runtime', 'runtime-budgets', 'global-table-safety', 'pg-roles',
-  'pg-persistence', 'data-restoration', 'accessibility-insights',
+  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow',
 ]);
 const validGateStatuses = new Set(['passed', 'pending', 'blocked']);
 const maximumClockSkewMs = 5 * 60 * 1000;
@@ -56,17 +51,6 @@ export function closeoutContractFailures(input) {
     failures.push('closeout: gates must be the exact ordered blocking set');
     closeoutValid = false;
   }
-  const review = closeout?.accessibilityReview;
-  const validReview = sameFields(review, [
-    'kind', 'requiredFailedInstances', 'requiredFailedRules', 'surfaces',
-  ]) && review.kind === 'basic-automated-review'
-    && JSON.stringify(review.surfaces) === JSON.stringify(accessibilitySurfaces)
-    && review.requiredFailedRules === 0 && review.requiredFailedInstances === 0
-    && !/FastPass|WCAG/i.test(JSON.stringify(review));
-  if (!validReview) {
-    failures.push('accessibility-insights: invalid basic automated review contract');
-    closeoutValid = false;
-  }
   const generatedAt = /^\d{4}-\d{2}-\d{2}$/.test(String(closeout?.generatedAt ?? ''))
     ? Date.parse(`${closeout.generatedAt}T00:00:00Z`) : Number.NaN;
   if (!Number.isFinite(generatedAt)) {
@@ -81,10 +65,6 @@ export function closeoutContractFailures(input) {
     if (closeoutGateKinds[gate.id] !== gate.kind) failures.push(`${gate.id}: invalid kind ${gate.kind}`);
     if (!validGateStatuses.has(gate.status)) failures.push(`${gate.id}: invalid status ${gate.status}`);
     if (!Array.isArray(gate.evidence)) failures.push(`${gate.id}: evidence must be an array`);
-    if (gate.id === 'accessibility-insights'
-      && /FastPass|WCAG/i.test(JSON.stringify(gate.evidence))) {
-      failures.push('accessibility-insights: FastPass and WCAG claims are prohibited');
-    }
     if (gate.status === 'passed') {
       const verifiedAt = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(String(gate.verifiedAt ?? ''))
         ? Date.parse(gate.verifiedAt) : Number.NaN;
@@ -93,7 +73,7 @@ export function closeoutContractFailures(input) {
       } else if (!Number.isFinite(nowMs) || verifiedAt > nowMs + maximumClockSkewMs) {
         failures.push(`${gate.id}: verifiedAt is too far in the future`);
       }
-      const surfaces = gate.id === 'accessibility-insights' ? accessibilitySurfaces : [null];
+      const surfaces = [null];
       if (!Array.isArray(gate.evidence) || gate.evidence.length !== surfaces.length) {
         failures.push(`${gate.id}: passed requires fresh verifiedAt and structured evidence`);
       } else {

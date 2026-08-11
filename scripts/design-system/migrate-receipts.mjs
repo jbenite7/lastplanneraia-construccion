@@ -86,6 +86,13 @@ for (const gate of indice.gates) {
   ev.artifactSha256 = createHash('sha256').update(readFileSync(ruta)).digest('hex');
   ev.exitCode = recibo.exitCode;
   ev.sourceRef = sourceRef;
+  // El contrato compara este huella contra el sha256 del arbol COMPLETO del commit
+  // (`design-system-evidence-receipt.mjs:45-48`). Sin ella, `sourceRef` por si solo
+  // no ata el recibo a un contenido concreto: podria apuntar a un commit y describir
+  // otro arbol.
+  ev.sourceFingerprint = createHash('sha256')
+    .update(git('ls-tree', '-r', '--full-tree', sourceRef) + '\n')
+    .digest('hex');
   // El indice deja de poder afirmar `passed` cuando el recibo dice otra cosa.
   gate.status = recibo.result === 'passed' ? 'passed' : 'blocked';
   gate.verifiedAt = gate.status === 'passed' ? sinMilisegundos(recibo.measuredAt) : null;

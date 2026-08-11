@@ -65,7 +65,7 @@ test('activation is equivalent to all exact closeout gates being passed', async 
     readJson('docs/design-system/closeout-evidence.json'),
     readJson('docs/design-system/stable-api-1.0.0.json'),
   ]);
-  const allPassed = closeout.gates.length === 15
+  const allPassed = closeout.gates.length === 8
     && closeout.gates.every(({ blocking, evidence, status, verifiedAt }) => (
       blocking === true
       && status === 'passed'
