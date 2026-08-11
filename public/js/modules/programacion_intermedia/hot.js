@@ -2777,25 +2777,25 @@
           "<h6 class='pi-legend-quick-group-title'>P1 - Resolver hoy</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue-critical'></span>" +
-            "<div class='pi-legend-quick-state'><strong>RC inicio vencido</strong><small>Debió iniciar y requiere condiciones de habilitación en ruta crítica.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['blocked-overdue-critical']) + "</strong><small>Debió iniciar y requiere condiciones de habilitación en ruta crítica.</small></div>" +
             "<div class='pi-legend-quick-action'>Escalar hoy, asignar responsable y cerrar las acciones de habilitación.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-overdue'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Inicio Vencido</strong><small>Debió iniciar y aún tiene condiciones pendientes.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['blocked-overdue']) + "</strong><small>Debió iniciar y aún tiene condiciones pendientes.</small></div>" +
             "<div class='pi-legend-quick-action'>Definir responsable y fecha de cierre en la reunión diaria.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-blocked-due'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Inicio por Habilitar</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['blocked-due']) + "</strong><small>Inicia esta semana y requiere condiciones para comprometer.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar acciones de habilitación antes del inicio.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-execution-blocked'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Ejecución Pendiente</strong><small>Actividad iniciada con acciones de habilitación abiertas.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['execution-blocked']) + "</strong><small>Actividad iniciada con acciones de habilitación abiertas.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar condiciones pendientes para evitar retrabajos y paradas.</div>" +
             "<span class='pi-legend-quick-priority is-p1'>P1</span>" +
           "</div>" +
@@ -2805,13 +2805,13 @@
           "<h6 class='pi-legend-quick-group-title'>P2 - Gestión semanal</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-1-week'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento urgente</strong><small>Inicia en una semana y requiere acciones de habilitación.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['alert-1-week']) + "</strong><small>Inicia en una semana y requiere acciones de habilitación.</small></div>" +
             "<div class='pi-legend-quick-action'>Cerrar las condiciones pendientes esta semana.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-2-3-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento en riesgo</strong><small>Inicia en 2 a 3 semanas y aún requiere preparación.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['alert-2-3-weeks']) + "</strong><small>Inicia en 2 a 3 semanas y aún requiere preparación.</small></div>" +
             "<div class='pi-legend-quick-action'>Ejecutar plan preventivo de abastecimiento y recursos.</div>" +
             "<span class='pi-legend-quick-priority is-p2'>P2</span>" +
           "</div>" +
@@ -2821,13 +2821,13 @@
           "<h6 class='pi-legend-quick-group-title'>P3 - Seguimiento</h6>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-alert-4-6-weeks'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Alistamiento pendiente</strong><small>Inicia en 4 a 6 semanas y requiere seguimiento temprano.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['alert-4-6-weeks']) + "</strong><small>Inicia en 4 a 6 semanas y requiere seguimiento temprano.</small></div>" +
             "<div class='pi-legend-quick-action'>Monitorear preparación y anticipar condiciones pendientes.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
           "<div class='pi-legend-quick-row'>" +
             "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-state-liberated-control'></span>" +
-            "<div class='pi-legend-quick-state'><strong>Listo para comprometer</strong><small>Cumple la matriz de habilitación para pasar a Programación Semanal.</small></div>" +
+            "<div class='pi-legend-quick-state'><strong>" + escapeHtml(stateLabels['liberated-control']) + "</strong><small>Cumple la matriz de habilitación para pasar a Programación Semanal.</small></div>" +
             "<div class='pi-legend-quick-action'>Mantener control semanal y preparar compromiso viable.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>P3</span>" +
           "</div>" +
