@@ -69,6 +69,11 @@ verificar('sin base de datos, el nivel db aborta con 2', $r['codigo'] === 2);
 verificar('el error explica que falta la base', stripos($r['salida'], 'base de datos') !== false);
 verificar('la ausencia de entorno no se reporta como verde', stripos($r['salida'], 'OK:') === false);
 
+// Un test que sale 0 sin decir nada se reporta como sospechoso y no da verde global.
+$r = correrRunner($runner, ['--dir=' . $fixtures . '/mudo', '--nivel=puro']);
+verificar('un verde sin respaldo se marca sospechoso', str_contains($r['salida'], 'SOSPECHOSO'));
+verificar('un verde sin respaldo no deja el runner en 0', $r['codigo'] !== 0);
+
 echo "\n";
 if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";

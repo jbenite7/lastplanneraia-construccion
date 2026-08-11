@@ -213,11 +213,19 @@ function ejecutarTest(string $rutaTest, int $segundosDeEspera): array
         2 => ['pipe', 'w'],
     ];
 
+    // Ruta absoluta y directorio de trabajo fijo en la raíz del repositorio: los
+    // tests se escribieron para correrse desde ahí (`php tests/test_x.php`), y
+    // varios resuelven rutas relativas a ese punto.
+    $rutaAbsoluta = realpath($rutaTest);
+    if ($rutaAbsoluta === false) {
+        return ['codigo' => SALIDA_NO_OPERABLE, 'salida' => "no se encontró {$rutaTest}"];
+    }
+
     $proceso = proc_open(
-        [PHP_BINARY, $rutaTest],
+        [PHP_BINARY, $rutaAbsoluta],
         $descriptores,
         $tuberias,
-        dirname($rutaTest, 2)
+        dirname(__DIR__)
     );
 
     if (!is_resource($proceso)) {
