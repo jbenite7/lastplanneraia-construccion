@@ -561,6 +561,47 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** los cuatro. El resto del frente avanza sin ellos.
 - **Estado:** `abierta`
 
+### D-F1b-4 · Los 6 errores que quedan de `phpstan-global` viven en el archivo más delicado del repo
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** cómo se pone verde `phpstan-global`: **arreglando** los seis con prueba propia,
+  o **anotándolos en el baseline con su motivo escrito**, que es para lo que un baseline sirve.
+- **Qué se midió** (sobre `1f1df71b`, comando canónico de `AGENTS.md`): de los 8 iniciales quedan
+  **6**, repartidos así:
+  - `src/Core/Database.php` **:496, :502, :955** — la capa que garantiza el aislamiento por
+    `project_id` y las transacciones.
+  - `src/Legacy/estado_programacion_intermedia.php:237` — legado, que `AGENTS.md` manda tocar solo
+    con el cambio mínimo.
+  - `src/Services/ActivityMatcherService.php:465` y `src/Services/ControlTowerService.php:2746`.
+  - **Ninguno lo introdujo el Frente 1:** cero commits suyos en los cuatro archivos.
+- **El dato que cambia la pregunta, y por el que esto no es trabajo mecánico:** al menos uno de los
+  seis **es un falso positivo del analizador, y "arreglarlo" rompería el código**.
+  `Database.php:955` avisa «Right side of && is always false» sobre
+  `$ownsTransaction && $this->pdo->inTransaction()` dentro de un `catch`. PHPStan recuerda de `:930`
+  (`$ownsTransaction = !$this->pdo->inTransaction()`) que `inTransaction()` valía `false`, y **no
+  modela que `beginTransaction()` de `:932` lo cambia**. En ejecución real la condición sí se cumple
+  y el `rollBack()` sí ocurre. Quien tomara ese aviso al pie de la letra **quitaría el rollback de
+  una transacción fallida** en la capa de datos.
+- **En simple:** el analizador avisa de seis cosas en el archivo que protege que un proyecto no vea
+  los datos de otro. Al menos una de esas seis es equivocada, y hacerle caso causaría el problema en
+  vez de evitarlo.
+- **Opciones:**
+  - **(a) Anotar los seis en `phpstan-baseline.neon` con un motivo escrito por cada uno**, y dejar el
+    gate verde sobre esa base. Es el uso legítimo de un baseline: deuda reconocida, no oculta.
+    Barato y reversible. Riesgo: un baseline crece con facilidad y ya tuvimos una entrada caducada.
+  - **(b) Arreglar los seis con prueba de comportamiento por cada uno**, empezando por descartar
+    cuáles son falsos positivos. Es lo correcto de fondo, pero toca `Database.php`, y ahí un cambio
+    equivocado no da error: da datos de otro proyecto o una transacción sin deshacer.
+  - **(c) Mezcla: arreglar los tres que no están en `Database.php` ni en legado, y anotar los tres
+    restantes** con su motivo. Reduce la superficie de riesgo a la mitad sin tocar lo peligroso.
+- **Recomendación:** **(c)**, y **con la anotación de `:955` diciendo explícitamente que es un falso
+  positivo y que el `rollBack` debe conservarse**. Ese comentario vale más que el arreglo: protege
+  contra el próximo que pase por ahí con buena intención.
+- **Qué quedó saltado esperando:** solo `phpstan-global`. Los otros catorce gates siguen su curso, y
+  el mecanismo de recibos ya está entregado y probado.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
