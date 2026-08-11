@@ -91,6 +91,23 @@ suponer deja trabajo que quizá haya que deshacer.
 Se acepta a cambio de que ninguna sesión se quede parada y de que el usuario decida una vez, con
 todo delante, en vez de a cachos.
 
+## Toda afirmación sobre `main` viaja con el sha sobre el que se midió
+
+**Sin sha, una afirmación sobre `main` no es verificable y caduca en minutos.** Con varias sesiones
+publicando cada pocos minutos, «los gates están verdes» o «hay 96 tests» son ciertas durante un rato
+y falsas después, sin que nadie mienta.
+
+Escribe siempre `RC=0 sobre 3aa1fc65`, no «está verde». Quien lo lea puede entonces (1) comprobar si
+su árbol es ese, y (2) saber que la medida caducó si `main` avanzó.
+
+Pasó dos veces el 2026-08-10 en la misma tarde, y en las dos el emisor tenía razón cuando midió:
+
+- La coordinadora informó de un gate en rojo que ya estaba arreglado cuando el mensaje llegó.
+- La sesión de CI dio una cifra de tests —96— que era correcta al medirla y quedó vieja en horas.
+
+Las dos costaron una ida y vuelta de mensajes que el sha habría evitado. Propuesta de la sesión de
+CI, adoptada.
+
 ## Qué audita la coordinadora
 
 1. **Que los gates sigan verdes** — suite estática del design system, PHPStan, paridad RBAC, lint de
