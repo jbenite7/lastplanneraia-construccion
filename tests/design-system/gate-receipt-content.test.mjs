@@ -130,3 +130,28 @@ test('la validacion de contenido falla cerrado ante un recibo que miente', () =>
   const viejo = { gateId: 'static', result: 'passed' };
   assert.ok(validarRecibo(viejo, gate).length >= 3, 'un recibo de dos claves no puede validarse');
 });
+
+test('el índice no puede declarar `passed` un gate cuyo recibo dice `failed`', () => {
+  // La comprobación hermana de arriba mira que el recibo sea coherente consigo
+  // mismo. Esta mira que el ÍNDICE esté de acuerdo con él, que es otra cosa:
+  // sin ella, `runtime` podía figurar como `passed` mientras su propio recibo
+  // decía `failed`. Se descubrió mutándolo a mano el 2026-08-11 — los cinco
+  // tests de este archivo pasaban con la mentira puesta.
+  const recibo = {
+    gateId: 'runtime',
+    result: 'failed',
+    command: 'npm run test:design-system:runtime',
+    exitCode: 1,
+    measuredAt: '2026-08-11T17:00:00.000Z',
+    tree: { sha: '0123456789abcdef', dirty: false },
+    outputTail: 'falló',
+  };
+  const honesto = { id: 'runtime', status: 'blocked', evidence: [{ command: 'npm run test:design-system:runtime' }] };
+  assert.deepEqual(validarRecibo(recibo, honesto), []);
+
+  const mentiroso = { ...honesto, status: 'passed' };
+  assert.ok(
+    validarRecibo(recibo, mentiroso).some((f) => f.includes("como 'passed' y su recibo dice 'failed'")),
+    'el índice pudo declarar passed un gate cuyo recibo dice failed',
+  );
+});

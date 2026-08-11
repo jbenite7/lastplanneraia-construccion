@@ -102,6 +102,18 @@ export function validarRecibo(recibo, gateDeclarado) {
   if (recibo.result !== esperado) {
     fallos.push(`declara '${recibo.result}' con exitCode ${recibo.exitCode}; con ese código sería '${esperado}'`);
   }
+  // Y el índice tiene que estar de acuerdo con su propio recibo. Sin esto, la
+  // comprobación de arriba solo garantiza que el recibo sea coherente CONSIGO
+  // MISMO: un gate podía declararse `passed` en el índice mientras su recibo
+  // decía honestamente `failed`, y nadie protestaba. Medido el 2026-08-11
+  // mutando `runtime` a `passed` con su recibo en `failed`: los cinco tests
+  // pasaban. Es la misma forma de la enfermedad que este frente vino a curar
+  // —el cierre avalándose a sí mismo—, solo que una capa más adentro.
+  if (gateDeclarado.status === 'passed' && recibo.result !== 'passed') {
+    fallos.push(
+      `el índice declara '${gateDeclarado.id}' como 'passed' y su recibo dice '${recibo.result}'`,
+    );
+  }
   if (!recibo.tree || typeof recibo.tree.sha !== 'string' || recibo.tree.sha.length < 7) {
     fallos.push('el recibo no dice sobre qué árbol se midió');
   }
