@@ -236,6 +236,35 @@
     return $('#semana_PHP').val() || $('#semana').val() || '';
   }
 
+  function getFechaInicioSemanaActual() {
+    var dataEl = document.getElementById('shellWeekMenusData');
+    if (!dataEl) return '';
+    var data;
+    try {
+      data = JSON.parse(dataEl.textContent);
+    } catch (_e) {
+      return '';
+    }
+    var semana = parseInt(getSemana(), 10);
+    if (!Number.isFinite(semana) || !Array.isArray(data.weeks)) return '';
+    var match = data.weeks.find(function (w) { return w.semana === semana; });
+    return match ? String(match.inicio || '') : '';
+  }
+
+  // Refleja la misma regla que exige el servidor en SemanalReabrirPolicy::allows():
+  // A y D siempre, R solo hasta el fin del día de inicio de semana, cualquier otro rol nunca.
+  // El cliente refleja, no decide: el servidor es quien impide de verdad.
+  function puedeReabrirSemana() {
+    var permiso = getPermiso();
+    if (permiso === 'A' || permiso === 'D') return true;
+    if (permiso !== 'R') return false;
+    var inicio = getFechaInicioSemanaActual();
+    if (!inicio) return false;
+    var finDeVentana = new Date(inicio + 'T23:59:59');
+    if (Number.isNaN(finDeVentana.getTime())) return false;
+    return new Date() <= finDeVentana;
+  }
+
   function getPermiso() {
     var permiso = String($('#permiso_canonico').val() || '').trim().toUpperCase();
     return ({ P: 'D', U: 'V' }[permiso] || permiso);
@@ -3135,8 +3164,8 @@
       } else {
         $('#textoFechaCierreCompromisos').text('Compromisos cerrados. Semana en evaluación.');
       }
-      // Admin can reopen a closed week
-      if (getPermiso() === 'A') {
+      // Refleja SemanalReabrirPolicy::allows() del servidor; no decide, solo esconde.
+      if (puedeReabrirSemana()) {
         $('#btn_reabrir_semana').show();
       } else {
         $('#btn_reabrir_semana').hide();

@@ -5,6 +5,8 @@ namespace App\Controllers\Api;
 use App\Core\Lps\LpsService;
 use App\Security\CsrfTokenManager;
 use App\Security\LpsWeekEditPolicy;
+use App\Security\RbacService;
+use App\Security\SemanalReabrirPolicy;
 use App\Services\ProgramChangeDetector;
 use App\Services\ProgramaConsolidadoNormalizationService;
 use App\Services\RestrictionConfigResolver;
@@ -970,8 +972,32 @@ private function autoprogramar(string $dbPrefix, int $semana): void
             return;
         }
 
+        $projectId = $this->projectId($dbPrefix);
+        if (!$projectId) {
+            http_response_code(403);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(["respuesta" => "ERROR", "mensaje" => "No autorizado para reabrir esta semana."], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $role = (new RbacService($this->db))->resolveCurrentRole();
+        $fechaInicioSemana = $this->db->queryWithProject(
+            "SELECT Fecha_Inicio_Sem FROM " . $this->tbl($dbPrefix, 'semanas_activas') . " WHERE project_id = ? AND Semana = ? LIMIT 1",
+            [$projectId, $semana],
+            $projectId
+        )->fetchColumn();
+        $fechaInicioSemana = $fechaInicioSemana !== false ? (string) $fechaInicioSemana : null;
+
+        if (!SemanalReabrirPolicy::allows($role, $fechaInicioSemana)) {
+            http_response_code(403);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(["respuesta" => "ERROR", "mensaje" => "No autorizado para reabrir esta semana."], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $usuarioActual = (string) ($_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? 'desconocido'));
+
         try {
-            $projectId = $this->projectId($dbPrefix);
             $this->db->setProjectContext($projectId);
             $this->db->beginTransaction();
 
@@ -981,7 +1007,7 @@ private function autoprogramar(string $dbPrefix, int $semana): void
                 $projectId
             );
 
-            $this->db->logActivity('ProgramacionSemanal', 'REABRIR', "Semana {$semana} reabierta por Admin. Motivo: {$motivo}", $projectId);
+            $this->db->logActivity('ProgramacionSemanal', 'REABRIR', "Semana {$semana} reabierta por {$usuarioActual} ({$role}). Motivo: {$motivo}", $projectId);
 
             $this->db->commit();
             $this->jsonResponse("OK");
