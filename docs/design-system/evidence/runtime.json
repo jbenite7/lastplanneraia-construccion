@@ -1,4 +1,13 @@
 {
   "gateId": "runtime",
-  "result": "passed"
+  "result": "failed",
+  "command": "npm run test:design-system:runtime",
+  "exitCode": 1,
+  "measuredAt": "2026-08-11T17:52:48.955Z",
+  "durationMs": 956478,
+  "tree": {
+    "sha": "781fd619a2bac9137b906737c8aa7acfdfb4c98b",
+    "dirty": false
+  },
+  "outputTail": "    > 413 |   await expect(logo).not.toHaveCSS('filter', 'none');\n          |                          ^\n      414 |\n      415 |   for (const state of ['loading', 'empty', 'error', 'default']) {\n      416 |     await navigation.locator('xpath=..').locator(`[data-sidebar-state-action=\"${state}\"]`).click();\n        at /Volumes/Crucial X6/Developer/lps-aia/.claude/worktrees/elegant-jones-d4126a/tests/browser/design-system-lab.mjs:413:26\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-output/design-system-lab.mjs-side-c78c0-nd-theme-visible-brand-mark/test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────\n    test-output/design-system-lab.mjs-side-c78c0-nd-theme-visible-brand-mark/video.webm\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n    Error Context: test-output/design-system-lab.mjs-side-c78c0-nd-theme-visible-brand-mark/error-context.md\n    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-output/design-system-lab.mjs-side-c78c0-nd-theme-visible-brand-mark/trace.zip\n    Usage:\n        npx playwright show-trace test-output/design-system-lab.mjs-side-c78c0-nd-theme-visible-brand-mark/trace.zip\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n  5 failed\n    tests/browser/design-system-body-canvas-dark.mjs:91:1 › el body de cada ruta de la Tarea 3 usa su fondo oscuro, no el fallback claro \n    tests/browser/design-system-body-canvas-dark.mjs:158:1 › la superficie de la grilla Handsontable (no el body) usa fondo oscuro en cada ruta \n    tests/browser/design-system-lab.mjs:74:1 › laboratory first paint stays within the desktop performance budget \n    tests/browser/design-system-lab.mjs:252:1 › severity and urgency blocks keep distinct semantic backgrounds \n    tests/browser/design-system-lab.mjs:375:1 › sidebar shell keeps desktop width, context and theme-visible brand mark \n  26 passed (15.7m)"
 }
