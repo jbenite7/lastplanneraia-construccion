@@ -30,6 +30,19 @@ function verificar(string $descripcion, bool $condicion): void
 $runner = __DIR__ . '/../scripts/run-php-tests.php';
 $fixtures = __DIR__ . '/fixtures/runner';
 
+// Las comprobaciones que no van de PHPUnit apuntan a un directorio vacío de tests unitarios. Sin
+// esto quedan acopladas al tests/unit real del repositorio: si falta el binario de PHPUnit, o si
+// alguien añade ahí una clase rota, fallan por un motivo ajeno a lo que miden — y algunas pasarían
+// por casualidad, que es peor. Medido el 2026-08-11.
+$sinUnitarios = '--dir-unit=' . $fixtures . '/unit-vacio';
+
+// PHPUnit es dependencia de desarrollo y puede no estar. Tres comprobaciones lo necesitan de
+// verdad; el resto no. En vez de fallar con aserciones confusas, se declara qué no se pudo
+// comprobar y se sale con 2, que es lo mismo que hace el runner: no ejecutar algo no es un verde.
+$phpunit = __DIR__ . '/../vendor/bin/phpunit';
+$phpunitDisponible = is_file($phpunit) && is_executable($phpunit);
+$sinComprobar = [];
+
 function correrRunner(string $runner, array $args): array
 {
     $comando = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($runner);
@@ -44,23 +57,23 @@ function correrRunner(string $runner, array $args): array
 }
 
 // Un directorio con un test etiquetado y verde sale 0.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/con-etiqueta', '--nivel=puro']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/con-etiqueta', '--nivel=puro']);
 verificar('un test etiquetado y verde devuelve 0', $r['codigo'] === 0);
 verificar('el resumen dice cuantos corrieron', str_contains($r['salida'], '1'));
 
 // Un test sin etiqueta rompe el runner con codigo 2.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/sin-etiqueta', '--nivel=puro']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/sin-etiqueta', '--nivel=puro']);
 verificar('un test sin etiqueta devuelve 2', $r['codigo'] === 2);
 verificar('el error nombra el archivo sin etiqueta', str_contains($r['salida'], 'test_sin.php'));
 
 // Un nivel inventado se rechaza.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/con-etiqueta', '--nivel=inventado']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/con-etiqueta', '--nivel=inventado']);
 verificar('un nivel invalido devuelve 2', $r['codigo'] === 2);
 
 // Pedir un nivel db sin base de datos alcanzable aborta con 2, no da verde.
 // Es el guardarrail que nace de lo medido el 2026-08-10: 26 tests de la suite
 // salen 0 cuando no hay base de datos, porque capturan el fallo de conexion.
-$r = correrRunner($runner, [
+$r = correrRunner($runner, [$sinUnitarios, 
     '--dir=' . $fixtures . '/con-etiqueta',
     '--nivel=db',
     '--db-host=host.invalido.imposible',
@@ -70,13 +83,13 @@ verificar('el error explica que falta la base', stripos($r['salida'], 'base de d
 verificar('la ausencia de entorno no se reporta como verde', stripos($r['salida'], 'OK:') === false);
 
 // Un test que sale 0 sin decir nada se reporta como sospechoso y no da verde global.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/mudo', '--nivel=puro']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/mudo', '--nivel=puro']);
 verificar('un verde sin respaldo se marca sospechoso', str_contains($r['salida'], 'SOSPECHOSO'));
 verificar('un verde sin respaldo no deja el runner en 0', $r['codigo'] !== 0);
 
 // Un test que se salta solo sale 0, pero no ha comprobado nada: contarlo entre
 // los que pasaron infla la cobertura que el CI dice tener.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/salta', '--nivel=puro']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/salta', '--nivel=puro']);
 verificar('un test que se salta solo se cuenta aparte', str_contains($r['salida'], 'se saltaron solos'));
 verificar('un test que se salta solo no se cuenta como que paso', str_contains($r['salida'], '0 pasaron'));
 
@@ -92,20 +105,27 @@ verificar('una clase PHPUnit sin grupo devuelve 2', $r['codigo'] === 2);
 verificar('el error nombra la clase sin grupo', str_contains($r['salida'], 'SinGrupoTest.php'));
 
 // Un test PHPUnit verde no altera el resultado; uno rojo hace fallar al runner.
-$r = correrRunner($runner, [
-    '--dir=' . $fixtures . '/con-etiqueta',
-    '--dir-unit=' . $fixtures . '/unit-verde',
-    '--nivel=puro',
-]);
-verificar('con PHPUnit en verde el runner sale 0', $r['codigo'] === 0);
-verificar('el resumen cuenta los tests PHPUnit', stripos($r['salida'], 'phpunit') !== false);
+// Estas tres son las unicas que necesitan el binario de PHPUnit de verdad.
+if ($phpunitDisponible) {
+    $r = correrRunner($runner, [
+        '--dir=' . $fixtures . '/con-etiqueta',
+        '--dir-unit=' . $fixtures . '/unit-verde',
+        '--nivel=puro',
+    ]);
+    verificar('con PHPUnit en verde el runner sale 0', $r['codigo'] === 0);
+    verificar('el resumen cuenta los tests PHPUnit', stripos($r['salida'], 'phpunit') !== false);
 
-$r = correrRunner($runner, [
-    '--dir=' . $fixtures . '/con-etiqueta',
-    '--dir-unit=' . $fixtures . '/unit-rojo',
-    '--nivel=puro',
-]);
-verificar('un test PHPUnit rojo hace fallar al runner', $r['codigo'] === 1);
+    $r = correrRunner($runner, [
+        '--dir=' . $fixtures . '/con-etiqueta',
+        '--dir-unit=' . $fixtures . '/unit-rojo',
+        '--nivel=puro',
+    ]);
+    verificar('un test PHPUnit rojo hace fallar al runner', $r['codigo'] === 1);
+} else {
+    $sinComprobar[] = 'con PHPUnit en verde el runner sale 0';
+    $sinComprobar[] = 'el resumen cuenta los tests PHPUnit';
+    $sinComprobar[] = 'un test PHPUnit rojo hace fallar al runner';
+}
 
 // Sin el binario de PHPUnit y con tests suyos en el nivel, el runner aborta: no da verde.
 $r = correrRunner($runner, [
@@ -135,11 +155,11 @@ verificar('sin tests PHPUnit seleccionados, su ausencia no estorba', $r['codigo'
 // comprobaba de frente: cambiando el `<=` del runner por `===` el contrato seguía en verde y
 // test_global_table_safety dejaba de correr en el CI. Lo destapó la sesión coordinadora mutando el
 // supuesto en vez de las entradas.
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/dos-niveles', '--nivel=db', '--solo-listar']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/dos-niveles', '--nivel=db', '--solo-listar']);
 verificar('pedir db ejecuta el test de nivel db', str_contains($r['salida'], '[ejecuta] test_b_db.php'));
 verificar('pedir db ejecuta TAMBIEN el de nivel puro', str_contains($r['salida'], '[ejecuta] test_a_puro.php'));
 
-$r = correrRunner($runner, ['--dir=' . $fixtures . '/dos-niveles', '--nivel=puro', '--solo-listar']);
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/dos-niveles', '--nivel=puro', '--solo-listar']);
 verificar('pedir puro ejecuta el de nivel puro', str_contains($r['salida'], '[ejecuta] test_a_puro.php'));
 verificar('pedir puro NO ejecuta el de nivel db', str_contains($r['salida'], '[omite]   test_b_db.php'));
 
@@ -148,5 +168,17 @@ if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";
     exit(1);
 }
+
+if ($sinComprobar !== []) {
+    echo "ERROR: no hay binario ejecutable de PHPUnit en vendor/bin/phpunit,\n";
+    echo '  asi que ' . count($sinComprobar) . " comprobacion(es) no se pudieron hacer:\n";
+    foreach ($sinComprobar as $pendiente) {
+        echo "  - {$pendiente}\n";
+    }
+    echo "  Instalalo con 'composer install' incluyendo las dependencias de desarrollo.\n";
+    echo "  Las otras {$total} pasaron, pero no ejecutar algo no es un resultado verde.\n";
+    exit(2);
+}
+
 echo "OK: {$total} comprobaciones pasaron\n";
 exit(0);

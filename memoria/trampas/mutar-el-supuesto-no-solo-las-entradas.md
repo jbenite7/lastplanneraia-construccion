@@ -37,6 +37,28 @@ acumulatividad de frente, y ampliando `--solo-listar` para que marque `[ejecuta]
 el nivel pedido, de modo que se pueda comprobar sin necesitar el entorno de ese nivel. Con la
 mutación puesta, ahora falla por su propia razón: «pedir db ejecuta TAMBIEN el de nivel puro».
 
+## El mismo día, la variante de al lado: el test menos estricto que lo que prueba
+
+`tests/test_php_test_runner.php` declaraba `// @requiere: puro` —«solo PHP y autoload»— pero tres de
+sus comprobaciones necesitaban el binario de PHPUnit, que es dependencia de desarrollo. En un
+contenedor construido con `--no-dev` daba **RC=1 con cinco fallos**, sobre el mismo commit donde en
+otra máquina daba RC=0.
+
+Lo llamativo: **el runner era más estricto que su propio test.** Sin PHPUnit, el runner aborta con
+RC=2 y dice por qué; el test fallaba con cinco aserciones que no mencionaban PHPUnit por ningún
+lado, como «un test etiquetado y verde devuelve 0».
+
+Y al arreglarlo apareció la causa de fondo, que era peor: de esos cinco fallos, **tres no tenían
+nada que ver con PHPUnit**. Fallaban porque las comprobaciones no pasaban `--dir-unit` y el runner
+miraba entonces el `tests/unit/` **real** del repositorio. El test estaba acoplado a un directorio
+vivo que cualquiera puede cambiar — y dos comprobaciones más *pasaban por casualidad* en ese
+entorno, que es el fallo silencioso de la misma moneda.
+
+Cerrado aislando con un directorio de fixtures vacío todo lo que no va de PHPUnit, y declarando la
+precondición en las tres que sí: ahora salen con **2** nombrando lo que no se pudo comprobar, en vez
+de fingir un fallo de otra cosa. **Regla:** el test de un guardarraíl debe ser al menos tan estricto
+como el guardarraíl, y sus fixtures no deben tocar árboles vivos.
+
 **Why:** una aserción que se apoya en un invariante no comprobado es tan frágil como el invariante,
 y su verde tapa el hueco en vez de señalarlo. **How to apply:** cuando entregues un gate, pregúntate
 **de qué tiene que ser cierto para funcionar**, y muta eso además de sus entradas. Si la respuesta
