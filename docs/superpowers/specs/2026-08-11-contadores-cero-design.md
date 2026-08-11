@@ -1,0 +1,111 @@
+# Ocultar las etiquetas contadoras que marcan cero — diseño
+
+- Fecha: 2026-08-11
+- Frente: `contadores-cero` (sesión de ejecución 06e4383d)
+- Pantalla: `/programacion-intermedia`
+- Sha sobre el que se midió todo lo de aquí: `de02471a`
+
+## La medición, y sobre qué caso se hizo
+
+En vivo, proyecto **Da Porto**, 1180×820, tema dark, rol A por la puerta de servicio:
+
+| Qué se contó | Cuánto |
+|---|---|
+| Etiquetas contadoras en `#piLegend` | **8** |
+| De ellas, leyendo `(0)` a la vez | **7** |
+| La que contaba algo | `liberated-control` → `(1)` |
+| Controles visibles en toda la pantalla | **63** |
+
+Además hay un noveno elemento en cero fuera de la leyenda: el chip `0 selec.`
+(`#shared-selection-count`). Queda fuera del cambio; el porqué está en D-CERO-2.
+
+El reparto depende del proyecto y de la semana: con otro proyecto cargado las mismas 8 etiquetas
+pueden estar casi todas contando. El caso medido es el de arriba, y es representativo del estado
+normal de un proyecto en marcha, donde la mayoría de categorías de alerta están vacías.
+
+## La pregunta que el spec tiene que resolver: ¿ocultar, o mostrar apagado?
+
+**No son equivalentes, y aquí ya hay evidencia en vez de opinión: mostrar apagado ya está
+implementado y no quitó nada.**
+
+`setLegendCount` (`public/js/modules/programacion_intermedia/hot.js:2886`) ya pone la clase
+`is-zero`, y `public/css/programacion-intermedia.css:1726` ya la pinta atenuada — superficie
+neutra, tinta secundaria. Es el cambio **C-24**, del ciclo anterior. Funciona: el chip en cero
+deja de gritar. Pero **sigue ocupando exactamente el mismo sitio**, con su indicador, su etiqueta
+y su `(0)`. Ese ciclo se cerró con 28 arreglos que fueron 28 adiciones y ninguna resta, y C-24 es
+un ejemplo literal de eso: añadió un estado visual en vez de quitar un elemento.
+
+La condición de cierre de este frente es que **haya menos elementos en pantalla**. Atenuar no la
+cumple, porque atenuado ≠ ausente: el ojo sigue teniendo que recorrer y descartar ocho fichas.
+
+**Decisión: ocultar.** El atenuado no se borra — se queda como el comportamiento de reserva para
+el caso en que ocultar no aplica (ver más abajo), que es justo lo que hace que la vuelta atrás
+sea una línea y no un revert.
+
+## El coste, dicho sin rebajarlo
+
+Una etiqueta en cero **comunica algo real**: que esa categoría existe y ahora mismo está vacía.
+Al ocultarla:
+
+1. **La categoría desaparece del vocabulario visible.** Quien no conozca el sistema no sabrá que
+   «Alistamiento Urgente» existe hasta que algo caiga ahí. La leyenda es, de hecho, la única
+   enumeración de los ocho estados operativos que el usuario ve en esta pantalla.
+2. **Se pierde el «va bien» tácito.** Ver siete ceros es leer «no tengo nada vencido». Ver la
+   ausencia también lo dice, pero más flojo: ausencia se confunde con «no cargó».
+3. **Cada etiqueta es además un botón de filtro** (`role="button"`, `data-filter`). Ocultarla
+   retira un control, no solo una decoración.
+
+Se acepta ese coste porque la enumeración completa sigue disponible en el modal de leyenda de
+colores (`#modal_leyenda_colores`), que es donde corresponde consultar el vocabulario, y porque
+el precio de tenerla siempre desplegada lo paga cada usuario en cada carga.
+
+## «Vacío» y «cero» no son lo mismo aquí
+
+Esta es la distinción que hace correcta la implementación, y no es cosmética.
+
+`updateLegendCounts(filtered)` recibe las filas **ya filtradas**. O sea: en cuanto hay un filtro
+activo, las siete categorías que no son la filtrada marcan `(0)` **aunque tengan contenido**. Ese
+cero significa «no en esta vista», no «vacío».
+
+Si se ocultara por el valor a secas, activar un filtro haría desaparecer los otros siete botones
+de filtro y dejaría al usuario encerrado, sin forma de cambiar de filtro salvo desactivar el que
+puso. Es una trampa real, no hipotética.
+
+**Regla:** se oculta solo el cero que significa vacío de verdad — es decir, cuando **no hay
+ningún filtro activo** y el conteo cubre el conjunto entero. Con un filtro puesto, ningún chip se
+oculta: se conserva el atenuado de C-24, que ahí sí es la lectura correcta («no en esta vista»).
+
+Lo mismo aplica al modo `view_all`, donde los conteos vienen del servidor
+(`updateLegendCountsFromServer`) y sí cubren el conjunto entero: ahí ocultar es legítimo.
+
+## Reversibilidad: una condición en un sitio
+
+Nada de borrar marcado. La vuelta atrás es una constante:
+
+```js
+var OCULTAR_CONTADORES_EN_CERO = true;   // ← ponerla en false devuelve el atenuado de C-24
+```
+
+Con `false`, todo vuelve al estado previo al frente: los ocho chips visibles, los que marcan cero
+atenuados. No hay HTML que restaurar ni CSS que descomentar, porque el HTML de las ocho etiquetas
+se queda intacto en la vista y la regla de C-24 se queda intacta en el CSS.
+
+## Lo que este frente no toca, a propósito
+
+- El chip `0 selec.` — D-CERO-2 (lleva `aria-live`; ocultarlo rompe el anuncio).
+- `programa-general` y `programacion-semanal`, que tienen el patrón gemelo — D-CERO-3 (alcance).
+- Los goldens visuales fijados por `sha256` en el manifiesto del módulo — D-CERO-1, escalado.
+
+## Accesibilidad
+
+El chip oculto sale del árbol de accesibilidad junto con su `role="button"`, que es lo correcto:
+un filtro que no filtraría nada no debe estar en el orden de tabulación. Los chips restantes
+conservan su `aria-pressed` y su foco. No se toca `#shared-selection-count`, que es la única
+región viva de la leyenda.
+
+## Condición de hecho
+
+1. Con la pantalla sin filtros, los chips en cero no ocupan sitio.
+2. Con un filtro activo, siguen visibles (atenuados), y se puede cambiar de filtro.
+3. Antes/después con **conteo de controles visibles**, no solo capturas.
+4. `npm run test:design-system:static` sin regresión contra la base 7/8 de `de02471a`.

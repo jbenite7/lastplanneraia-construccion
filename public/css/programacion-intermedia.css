@@ -1732,4 +1732,33 @@ html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-zero {
 html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-zero .count-badge {
     color: var(--ds-active-text-secondary) !important;
 }
+
+/* Frente contadores-cero — la categoria vacia deja de ocupar sitio.
+   C-24 atenuo el chip en cero y no quito nada: atenuado sigue pidiendo que el
+   ojo lo recorra y lo descarte. `is-empty` lo saca del flujo.
+   `display:none` y no `visibility`/`opacity` a proposito: el objetivo es que no
+   ocupe sitio y que el boton salga del orden de tabulacion -un filtro que no
+   filtraria nada no debe ser tabulable-. Atenuar ya es trabajo de `is-zero`, y
+   confundir los dos estados es justo lo que este frente viene a deshacer.
+   La clase la pone `setLegendCount` en programacion_intermedia/hot.js, solo
+   cuando el cero significa vacio de verdad.
+
+   Por que va en la SUBcapa `components.components` y no en `components` a secas
+   como la regla de arriba: `buttons.css:971` declara
+   `.pdc-legend-item { display: inline-flex !important }`, y entra por
+   `@import ... layer(components)` envolviendo todo en otro `@layer components`,
+   o sea `components.components`. Para declaraciones `!important` el orden de
+   capas se invierte y la subcapa le gana a su capa madre -documentado y medido
+   en design-system/adapters/legacy-bridge.css-, asi que la regla de C-24 vive
+   donde vive porque nadie le disputa el color, pero un `display` puesto en
+   `components` a secas lo perdia contra buttons.css. Medido en el navegador:
+   `display` computaba `flex` con la regla presente en el CSSOM.
+   Aqui, en la misma subcapa, gana por especificidad y por orden de origen
+   -esta hoja carga despues de aia-design-system.css-, sin subir la apuesta de
+   `!important` ni tocar buttons.css, que es de todos los modulos. */
+@layer components {
+html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-empty {
+    display: none !important;
+}
+}
 }
