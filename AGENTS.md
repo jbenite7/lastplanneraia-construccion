@@ -73,7 +73,12 @@ cierre es lo que se publica.
    evidencia, y un segundo cierre la volvió a dejar en 6/8 porque el contrato fija por hash unos
    archivos que el frente había editado. Ninguno de los dos lo detectó quien hizo el trabajo: los
    detectó la verificación posterior a la integración.
-6. **`git push origin main`.** Si lo rechazan porque alguien publicó entre tu `fetch` y tu `push`,
+6. **`git push origin main`, en un comando aparte.** Nunca encadenado al paso 5 con `&&`, `;` ni
+   detrás de un `echo`: un gate solo gobierna si puede **impedir** la publicación, y encadenado ya
+   se ejecutó. Lee el código de salida de la verificación —sin tubería, que `$?` sería del último
+   tramo— y solo entonces publica. Ocurrió dos veces el 2026-08-10 y 11, a la misma sesión, y las
+   dos veces el árbol quedó sano por suerte, no por el procedimiento. La causa no es despiste: es
+   meter verificación y publicación en la misma línea. Si lo rechazan porque alguien publicó entre tu `fetch` y tu `push`,
    repetir 3–5. No es un motivo para parar ni para preguntar: es parte del cierre.
 7. **Confirmar que quedó publicado**: `git status -sb` sin `ahead` ni `behind`.
 8. **Anotar el cierre** donde corresponda (ledger del plan, `memoria/`, el `goal.md` del frente).
