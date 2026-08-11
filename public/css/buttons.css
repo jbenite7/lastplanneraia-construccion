@@ -974,8 +974,8 @@
 
 /* Individual legend chips — pill shape */
 .pdc-legend-item {
-  display: inline-flex !important;
-  align-items: center !important;
+  display: inline-flex;
+  align-items: center;
   white-space: normal !important;
   flex-shrink: 0 !important;
 
@@ -984,19 +984,19 @@
      (T-5, 2026-08-03) — no aqui, para no duplicarlo modulo a modulo. Estos
      chips son controles que filtran, no etiquetas: conservan foco visible
      (tambien en el componente compartido) y aria-pressed. */
-  height: auto !important;
-  max-height: none !important;
+  height: auto;
+  max-height: none;
   font-size: var(--ds-type-size-xs) !important;
-  padding: var(--ds-space-1) var(--ds-space-2) !important;
+  padding: var(--ds-space-1) var(--ds-space-2);
   line-height: normal !important;
-  overflow-wrap: normal !important;
-  word-break: normal !important;
+  overflow-wrap: normal;
+  word-break: normal;
 
-  cursor: pointer !important;
-  user-select: none !important;
+  cursor: pointer;
+  user-select: none;
 
   /* Pill style — different from buttons */
-  border-radius: var(--ds-radius-pill) !important;
+  border-radius: var(--ds-radius-pill);
 
   transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast) !important;
   border: 1px solid oklch(0% 0 0 / 0.1) !important;
