@@ -83,6 +83,32 @@ test('las etiquetas de Intermedia son las del contrato, no una variante local', 
   assert.deepEqual(extra, [], `el módulo etiqueta estados que el contrato no declara: ${extra}`);
 });
 
+test('la leyenda de Intermedia nombra los estados como el contrato', async () => {
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  const module = semantics.moduleMappings.find((m) => m.module === 'programacion-intermedia');
+  const view = await read('views/programacion-intermedia/programacion_intermedia.view.php');
+
+  const items = [...view.matchAll(
+    /data-filter="([\w-]+)"[^>]*>\s*<span class="indicator"><\/span>\s*([^<]+?)\s*<span/g,
+  )];
+  assert.ok(items.length, 'no se encontró ningún `pdc-legend-item` en la vista');
+
+  // Se comprueban los items que la leyenda tenga, no que estén todos: cuáles se
+  // ofrecen filtrar es decisión del módulo -`contadores-cero` retiró las
+  // categorías vacías el 2026-08-11- y este guard no debe congelarla. Lo que sí
+  // fija es que el botón de filtro y el chip de la fila llamen igual al estado:
+  // hasta hoy la leyenda decía «Inicio Vencido» y el chip «Inicio vencido».
+  for (const [, key, label] of items) {
+    const state = module.states.find((s) => s.key === key);
+    if (!state) continue;
+    assert.equal(
+      label,
+      state.label,
+      `leyenda \`${key}\`: la vista muestra «${label}» y el contrato declara «${state.label}»`,
+    );
+  }
+});
+
 test('la hoja del módulo no vuelve a pintar el chip por nombre de estado', async () => {
   const css = await read('public/css/programacion-intermedia.css');
 

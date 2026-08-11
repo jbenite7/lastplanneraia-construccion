@@ -68,7 +68,7 @@
                 <?php endif; ?>
                 <span class="pdc-legend-item blocked-overdue-critical" data-filter="blocked-overdue-critical" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> RC inicio vencido <span id="count-blocked-overdue-critical" class="count-badge">(...)</span></span>
 
-                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Inicio Vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
+                <span class="pdc-legend-item blocked-overdue" data-filter="blocked-overdue" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Inicio vencido <span id="count-blocked-overdue" class="count-badge">(...)</span></span>
 
                 <span class="pdc-legend-item blocked-due" data-filter="blocked-due" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Inicio por Habilitar <span id="count-blocked-due" class="count-badge">(...)</span></span>
                 <span class="pdc-legend-item alert-1-week" data-filter="alert-1-week" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Alistamiento Urgente <span id="count-alert-1-week" class="count-badge">(...)</span></span>
