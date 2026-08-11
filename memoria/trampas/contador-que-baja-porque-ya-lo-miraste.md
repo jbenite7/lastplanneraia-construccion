@@ -45,3 +45,22 @@ mundo: mide el estado de quien pregunta, y no sirve para decidir ni para informa
 Es la misma familia que [[medir-foco-de-teclado]] y [[captura-playwright-miente]]: herramientas que
 responden algo cierto a una pregunta distinta de la que creías hacer. Y el mismo defecto de fondo
 que [[gate-solo-cuenta-elementos-no-los-lee]] — contar no es leer.
+
+## La variante que muerde al comparar: `git stash` con el árbol limpio
+
+`git stash` sin cambios locales **no guarda nada y no falla**. Así que la maniobra habitual para
+medir un antes —`git stash`, ejecutar, `git stash pop`— devuelve, cuando el trabajo ya está
+commiteado, **una segunda medición del mismo árbol presentada como el «antes»**. Sale idéntica al
+después, que es justo el resultado que uno esperaba, y confirma la hipótesis sin haberla probado.
+
+Medido el 2026-08-11 en el frente `buttons-important-leyenda`: la comprobación de si un rojo de
+`npm run check:frontend` era preexistente dio «863 errores antes y después» y **las dos cifras eran
+del mismo código**. El `git stash pop` posterior avisó con un `No stash entries found` que es la
+única señal que hubo — y llega al final, cuando el número ya está anotado.
+
+Lo que sí compara: reponer el archivo desde el sha base (`git checkout <sha> -- <ruta>`), medir,
+y devolverlo con `git checkout HEAD -- <ruta>`.
+
+El patrón común con el hook: **un instrumento que ante «no hay nada que hacer» devuelve algo con
+forma de resultado.** El hook devuelve un total menor; `git stash` devuelve el presente disfrazado
+de pasado.

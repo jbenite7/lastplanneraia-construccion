@@ -64,9 +64,32 @@ docker run -d --name lps-wt-app --network last-planner-aia_default -p 8095:80 \
 docker exec -w /var/www/html lps-wt-app composer install --no-interaction
 ```
 
-Sirve para **leer**, que es lo que hace una verificación visual. Si el cambio escribe en la base, no
-vale: comparte el MySQL del otro stack y aplica la receta completa de arriba. Bórralo al terminar
-(`docker rm -f lps-wt-app`).
+Sirve para **leer con el navegador**, que es lo que hace una verificación visual a mano. Si el
+cambio escribe en la base, no vale: comparte el MySQL del otro stack y aplica la receta completa de
+arriba. Bórralo al terminar (`docker rm -f lps-wt-app`).
+
+**Y sirve solo para eso. Un contenedor lanzado con `docker run` no existe para `docker compose`**, y
+ahí está el filo peor de esta receta, medido el 2026-08-11 en el frente `buttons-important-leyenda`.
+`tests/browser/fixtures/base-url.mjs` deriva la URL de los e2e con `docker compose port app 80`
+precisamente para que cada worktree ataque su propio stack; pero un contenedor suelto no aparece en
+ese inventario, así que el comando responde `0.0.0.0:8081` y **Playwright corre contra el árbol
+principal**. La receta arregla el navegador y deja mintiendo a Playwright.
+
+Lo venenoso es la forma del fallo: la suite **pasa**, y su verde iba camino de un informe como
+evidencia del cambio. No hay error, no hay síntoma, y el número es correcto — de otro árbol. Con 25
+`!important` retirados, dos capturas visuales pasaron píxel a píxel… contra el código viejo.
+
+Para cualquier cosa que resuelva su URL por compose —Playwright, los e2e, un script que llame a
+`docker compose port`— hay dos salidas, y conviene elegir a sabiendas:
+
+```bash
+E2E_BASE_URL=http://localhost:8095 npx playwright test tests/browser/<spec>.mjs --workers=1
+```
+
+o montar el stack propio con `COMPOSE_PROJECT_NAME`/`COMPOSE_FILE`, que es la receta completa del
+principio y la única que hace que `docker compose` a secas apunte a lo tuyo.
+
+Regla corta: **el `docker run` suelto cubre el navegador y nada que deduzca el puerto por compose.**
 
 Los tres pasos son obligatorios, y los tres se descubrieron a base de `500` sin causa visible el
 2026-08-11 en el frente `vocabulario-estados-cascada`. **El `.env` no viaja al worktree** —esta nota
