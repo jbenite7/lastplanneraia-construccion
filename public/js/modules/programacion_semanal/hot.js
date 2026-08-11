@@ -18,6 +18,10 @@
   var pendingDeleteRow = null;
   var sanitizedOnLoad = false;
   var mobileSaveState = {};
+  var _saveStatus = null;
+  import('/js/design-system/save-status.js').then(function (mod) {
+    _saveStatus = mod.crearSaveStatus({});
+  });
 
   var options = window.PS_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas : [];
@@ -435,6 +439,7 @@
     }
 
     if (type === 'success') {
+      if (_saveStatus) { _saveStatus.guardado(); }
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
       } else {
@@ -2341,6 +2346,8 @@
       }
       return;
     }
+
+    if (_saveStatus) { _saveStatus.pendiente(1); }
 
     $.ajax({
       method: 'POST',

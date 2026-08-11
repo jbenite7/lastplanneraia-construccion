@@ -24,6 +24,10 @@
   var _rowMetaCache = [];
   var _stateViewCache = [];
   var _canEditGlobal = false;
+  var _saveStatus = null;
+  import('/js/design-system/save-status.js').then(function (mod) {
+    _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
+  });
 
   var options = window.PI_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas.slice() : [];
@@ -2718,6 +2722,7 @@
     $('#save-error').hide();
 
     if (type === 'success') {
+      if (_saveStatus) { _saveStatus.guardado(); }
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
       } else {
@@ -3001,6 +3006,8 @@
       showFeedback('error', payload.error);
       return;
     }
+
+    if (_saveStatus) { _saveStatus.pendiente(1); }
 
     $.ajax({
       method: 'POST',

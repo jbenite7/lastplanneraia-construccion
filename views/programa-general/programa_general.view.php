@@ -68,7 +68,7 @@
                 <?= \App\View\Components\BiAccessComponent::renderLink('programa-general', 'BI Programa', 'aia-btn aia-btn--secondary') ?>
             </div>
             <div class="pg-status-badges" aria-live="polite">
-                <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden">Guardado</span>
+                <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden" role="status">Guardado</span>
             </div>
         </div>
 

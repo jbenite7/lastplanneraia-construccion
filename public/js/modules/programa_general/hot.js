@@ -15,6 +15,10 @@
   var currentColumnWidths = [];
   var pendingViewportState = null;
   var currentFilteredRows = [];
+  var _saveStatus = null;
+  import('/js/design-system/save-status.js').then(function (mod) {
+    _saveStatus = mod.crearSaveStatus({});
+  });
 
   // Performance cache: pre-computed row classes to avoid per-cell classifyPGRow during render
   var _rowClassCache = [];
@@ -894,6 +898,7 @@
     $('#save-status').hide();
 
     if (type === 'success') {
+      if (_saveStatus) { _saveStatus.guardado(); }
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message || 'Guardado');
       } else {
@@ -1430,6 +1435,8 @@
       showFeedback('error', payload.error);
       return;
     }
+
+    if (_saveStatus) { _saveStatus.pendiente(1); }
 
     $.ajax({
       method: 'POST',

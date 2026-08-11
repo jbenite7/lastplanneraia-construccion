@@ -106,7 +106,7 @@
 					<button id="btn_autoAsociar" type="button" class="aia-btn aia-btn-ghost" title="Asociar automáticamente"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Asociar</button>
 				</div>
 				<div class="pg-status-badges">
-					<span id="save-status" class="aia-chip badge-badge-hidden" data-aia-severity="success">Auto-Guardado</span>
+					<span id="save-status" class="aia-chip badge-badge-hidden" data-aia-severity="success" role="status">Auto-Guardado</span>
 				</div>
 			</div>
 		</div>

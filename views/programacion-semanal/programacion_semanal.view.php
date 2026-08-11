@@ -98,7 +98,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
             <div class="ps-toolbar-right">
                 <div class="ps-status-badges">
-                    <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden">Guardado</span>
+                    <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden" role="status">Guardado</span>
                 </div>
                 <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">

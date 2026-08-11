@@ -22,6 +22,10 @@ window.HOTActualizarModule = (function() {
     var _reviewDecisions = null;      // { consecutivo: { action: 'accept'|'skip', candidateName: '...' } }
     var _reviewResultsRef = null;     // raw results data ref for re-rendering
     var _hasShownSavePrompt = false;  // guard for double-prompt
+    var _saveStatus = null;
+    import('/js/design-system/save-status.js').then(function (mod) {
+        _saveStatus = mod.crearSaveStatus({});
+    });
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;
@@ -480,8 +484,8 @@ window.HOTActualizarModule = (function() {
             .stop(true, true)
             .removeClass('badge-badge-hidden aia-chip--success')
             .addClass('aia-chip--warning')
-            .text('Guardando...')
             .fadeIn(120);
+        if (_saveStatus) { _saveStatus.pendiente(1); }
 
         var formData = new URLSearchParams();
         formData.append('Id', rowId);
@@ -891,13 +895,7 @@ window.HOTActualizarModule = (function() {
                 _saveTimer = setTimeout(flushPendingChanges, 800);
 
                 var pendingCount = Object.keys(_pendingChanges).length;
-                var $saveStatus = $('#save-status');
-                $saveStatus
-                    .stop(true, true)
-                    .removeClass('badge-badge-hidden aia-chip--success')
-                    .addClass('aia-chip--warning')
-                    .text('Guardando... (' + pendingCount + ')')
-                    .fadeIn(120);
+                if (_saveStatus) { _saveStatus.pendiente(pendingCount); }
 
             }
         };
