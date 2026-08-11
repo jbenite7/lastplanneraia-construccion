@@ -66,7 +66,7 @@
       "id": "phpstan-scoped",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "verifiedAt": "2026-08-11T17:08:41Z",
       "blocking": true,
       "evidence": [
         {
@@ -75,9 +75,9 @@
           "command": "docker compose exec app vendor/bin/phpstan analyse src --memory-limit=1G",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/phpstan-scoped.json",
-          "artifactSha256": "bd4d433d4a7a41d099419c1e0ba25ee00bc5e31d699dc5bc4ebc5a098a5f2b62",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
+          "artifactSha256": "6e4acec7f903e03e533260f69c33718f3bbd540607c66843515774a4377d2c46",
+          "sourceRef": "010d725371c0a22831cdb7d1805e0b29ad6e897d",
+          "sourceFingerprint": "8fb6737ffd6b2065d3beb7909b1c4b37ce4e50920d2719f7ef84f4e6913aee74"
         }
       ]
     },
@@ -85,7 +85,7 @@
       "id": "phpstan-global",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "verifiedAt": "2026-08-11T17:09:54Z",
       "blocking": true,
       "evidence": [
         {
@@ -94,9 +94,9 @@
           "command": "npm run test:design-system:phpstan",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/phpstan-global.json",
-          "artifactSha256": "9d7efccceccddc846c4c4e9cd60ae1baf203a88abb2ecc99bd06ad4d84d1c860",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
+          "artifactSha256": "21321add8cbd7dc8f5a27eef9ffbb6f7efc773ba5b208300043ffacd78788686",
+          "sourceRef": "010d725371c0a22831cdb7d1805e0b29ad6e897d",
+          "sourceFingerprint": "8fb6737ffd6b2065d3beb7909b1c4b37ce4e50920d2719f7ef84f4e6913aee74"
         }
       ]
     },
@@ -104,7 +104,7 @@
       "id": "global-table-safety",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "verifiedAt": "2026-08-11T17:08:39Z",
       "blocking": true,
       "evidence": [
         {
@@ -113,9 +113,9 @@
           "command": "docker compose exec app php tests/test_global_table_safety.php",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/global-table-safety.json",
-          "artifactSha256": "51db6fd990bcbf04ea692df6f39687e90cedd5dbe11018c89763aee50c621131",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
+          "artifactSha256": "154934066bd731b33173b30f810517c53c28a86ff49c42c8640f09dcec2240a1",
+          "sourceRef": "010d725371c0a22831cdb7d1805e0b29ad6e897d",
+          "sourceFingerprint": "8fb6737ffd6b2065d3beb7909b1c4b37ce4e50920d2719f7ef84f4e6913aee74",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
@@ -144,7 +144,7 @@
       "id": "atomic-commit",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "verifiedAt": "2026-08-11T17:08:39Z",
       "blocking": true,
       "evidence": [
         {
@@ -153,9 +153,9 @@
           "command": "git diff --cached --check",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/atomic-commit.json",
-          "artifactSha256": "dabeb35048d2c93ea26501b20365412deb58b4d79d13b8a5926f33c6ed30b25e",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
+          "artifactSha256": "040d0d58aa1d62816613b44290e63d5cf6a440c06862e0826a6eb1a118d22545",
+          "sourceRef": "010d725371c0a22831cdb7d1805e0b29ad6e897d",
+          "sourceFingerprint": "8fb6737ffd6b2065d3beb7909b1c4b37ce4e50920d2719f7ef84f4e6913aee74"
         }
       ]
     }
