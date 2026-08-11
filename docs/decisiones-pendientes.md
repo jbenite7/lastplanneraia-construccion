@@ -7,13 +7,27 @@ presenta la cola entera al cerrar cada frente, en una sola tanda de grilleo.
 El procedimiento está en [`coordinacion-sesiones.md`](coordinacion-sesiones.md). Regla que lo
 sostiene: **una sesión de ejecución nunca para** — anota, salta y continúa.
 
+## El id lleva su origen — no uses números sueltos
+
+**Formato: `D-<origen>-<n>`**, donde `<origen>` identifica a quien pregunta: `F1`, `F1b`, `CI`,
+`COORD`… Por ejemplo `D-F1-1`, `D-CI-1`.
+
+Las dos primeras entradas son `D-1` y `D-2` porque se escribieron antes de esta regla; se dejan como
+están para no romper lo ya publicado.
+
+**Por qué:** varias sesiones añaden a esta cola desde ramas distintas y no se ven entre sí. Con
+números sueltos, dos que empiecen a la vez eligen ambas el siguiente número y colisionan al
+integrar. Pasó el 2026-08-10, el mismo día que se creó la cola: dos sesiones escribieron su `D-2`
+sin saberlo. Un id que lleva su origen no puede chocar sin coordinación previa, que es justo lo que
+no hay.
+
 ## Cómo añadir una entrada
 
 Una entrada sirve si el usuario puede decidir **sin abrir el código**. Eso exige haber medido antes
 de preguntar. Copia esta forma:
 
 ```markdown
-### D-<n> · <título en una línea>
+### D-<origen>-<n> · <título en una línea>
 
 - **Quién pregunta:** <sesión / frente / tarea>
 - **Fecha:** <AAAA-MM-DD>
@@ -55,6 +69,75 @@ de preguntar. Copia esta forma:
   de ejecución leen para saber qué les toca; el informe describe. Cuando una descripción y un
   contrato discrepan, se corrige la descripción. Reversible: renumerar un informe no rompe nada.
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
+- **Estado:** `abierta`
+
+### D-2 · Qué se hace con los 30 tests que el CI no puede correr
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP» (cerrado y publicado en `2eccf15e`).
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si se les da al CI los datos que les faltan, si se reescriben para no
+  necesitarlos, o si algunos se retiran por obsoletos.
+- **Qué se midió:** los 101 `tests/test_*.php` corridos por código de salida contra el stack de
+  `docker-compose.ci.yml` (`php scripts/run-php-tests.php --nivel=datos-proyecto`): **71 pasan, 28
+  fallan, 1 se salta solo**. Ninguno de los 28 es código de producción roto; a todos les falta
+  entorno:
+  - **20** piden datos que el fixture no tiene — 14 son `test_pdc_v2_*`.
+  - **4** piden tablas que el fixture no crea (p. ej. `test_password_reset_resultados`).
+  - **4** leen evidencia de `docs/qa/evidence/` que no viaja en git
+    (`test_goal_close_blockers_manifest`, `test_human_decision_actions_package`,
+    `test_human_decision_approval_checklist`, `test_human_decision_matrix_coverage`).
+  - **2** se saltan solos cuando falta el proyecto 73 (`test_pdc_v2_amarre_cronograma`,
+    `test_pdc_v2_brecha_daporto`).
+  - `memoria/trampas/suite-php-rojos-preexistentes.md` ya da por obsoletos a
+    `test_pdc_v2_brecha_daporto` (fija la versión 292 de Da Porto, que desapareció al reimportarse
+    el presupuesto el 2026-07-29) y a `test_human_validation_matrix`.
+- **Opciones:**
+  - **(a)** Enriquecer el fixture de CI hasta que corran. Gana cobertura real, pero es un frente
+    propio y grande, y roza `memoria/trampas/no-enriquecer-daporto-para-medir.md`.
+  - **(b)** Triarlos uno a uno: fixture para los que aportan, reescritura para los que dependen de
+    datos reales sin necesitarlo, retirada para los obsoletos. Más lento, deja la suite honesta.
+  - **(c)** Dejarlos como están, declarados y fuera del CI. **Es la opción segura y reversible:** es
+    el estado actual, no rompe nada y su número sale contado en cada corrida del CI, así que no se
+    esconde.
+- **Recomendación:** **(b)**, pero sin urgencia. Hoy (c) ya evita el daño —nadie los confunde con
+  verdes— y (a) gastaría un frente entero en datos de prueba antes de saber cuáles de los 30 merecen
+  seguir vivos. El triaje es lo único que responde esa pregunta, y puede hacerse por tandas.
+- **Qué quedó saltado esperando:** nada del frente cerrado. Los 30 están etiquetados
+  `// @requiere: datos-proyecto`, el CI no los corre y su número aparece en el resumen de cada
+  corrida. No se tocó ningún fixture ni ningún dato.
+- **Estado:** `abierta`
+
+### D-CI-1 · El contrato visual fija una forma donde debería medir un resultado
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP».
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si una aserción del contrato del design system debe seguir exigiendo que el
+  workflow **nombre** un comando concreto, o pasar a comprobar que el CI **ejecuta** ese test.
+- **Qué se midió:**
+  - `tests/design-system/visual-ci-contract.test.mjs:156` exige
+    `assert.match(workflow, /php tests\/test_global_table_safety\.php/)`: una cadena literal.
+  - Al sustituir los tres tests listados a mano por el runner, esa cadena desapareció y el gate
+    `node-tests` quedó **rojo en `main`**, aunque el test seguía ejecutándose dentro de la selección
+    del runner. Es decir: el gate se puso rojo por un cambio que **aumentó** la cobertura de 3 tests
+    a 71.
+  - Arreglado por ahora conservando el paso explícito en `.github/workflows/design-system.yml`
+    además del runner. El test corre dos veces; cuesta menos de 1 s. Suite estática completa
+    verificada después: **los 8 gates en verde, RC=0**.
+- **Opciones:**
+  - **(a)** Dejarlo como está: paso explícito y runner conviviendo. **Es la opción segura:** es el
+    estado actual, está en verde y no toca ningún contrato. Coste: el workflow lleva un paso
+    redundante que hay que explicar a quien lo lea.
+  - **(b)** Cambiar la aserción para que compruebe que el CI invoca el runner y que su selección
+    incluye ese test. Queda **más fuerte** que hoy: comprobaría el resultado y no la forma. Coste:
+    toca un contrato del design system, y esos no se tocan sin decisión explícita.
+  - **(c)** Quitar la aserción. **No recomendable**: pierde la garantía de que esa frontera se
+    vigila en CI, que es justo lo que el contrato existe para sostener.
+- **Recomendación:** **(b)**, cuando haya ocasión. La aserción actual tiene un defecto real —premia
+  que el workflow escriba una cadena, no que ejecute la prueba—, y con el runner en medio ese
+  defecto va a volver a morder: cualquier reorganización futura del CI que siga ejecutando el test
+  volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
+- **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
+  el paso explícito, que es lo que el contrato pide hoy.
 - **Estado:** `abierta`
 
 ---

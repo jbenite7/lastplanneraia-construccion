@@ -101,10 +101,17 @@ jobs:
         run: npm run test:design-system:phpstan
       - name: Enforce PHPStan level 6 on the PDC module
         run: npm run test:pdc:phpstan
-      # Sustituye a los tres tests que antes se listaban aquí a mano
-      # (test_global_table_safety, test_dev_door_guard, test_dev_door_http):
-      # los tres siguen corriendo, ahora dentro de la selección del runner
-      # junto a los ~70 que nadie ejecutaba automáticamente.
+      # Este paso se conserva por contrato, no por necesidad: la aserción de
+      # tests/design-system/visual-ci-contract.test.mjs:156 exige que este workflow invoque
+      # literalmente `php tests/test_global_table_safety.php`. El runner del paso siguiente
+      # ya lo ejecuta dentro de su selección, así que aquí corre dos veces (<1 s). Si el
+      # contrato pasa a comprobar que el CI *ejercita* ese test en vez de que lo *nombra*,
+      # este paso sobra: ver D-CI-1 en docs/decisiones-pendientes.md.
+      - name: Enforce global-table safety
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
+      # Sustituye a los otros dos tests que antes se listaban aquí a mano
+      # (test_dev_door_guard, test_dev_door_http): siguen corriendo, ahora dentro de la
+      # selección del runner junto a los ~70 que nadie ejecutaba automáticamente.
       - name: Correr la suite PHP completa que el CI puede honrar
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
       - name: Run laboratory gates
