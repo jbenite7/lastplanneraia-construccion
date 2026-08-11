@@ -430,6 +430,7 @@
 	<script src="/public/js/modules/programa_actualizar/decision_logger.js?v=20260622"></script>
 
 	<!-- Módulos de Handsontable -->
+	<script src="/public/js/core/SessionExpiredHandler.js?v=20260811a"></script>
 	<script src="/public/js/modules/programa_actualizar/hot_actualizar.js?v=20260806b"></script>
 
 	<script>

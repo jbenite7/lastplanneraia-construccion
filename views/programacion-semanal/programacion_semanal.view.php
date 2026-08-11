@@ -554,6 +554,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         };
     </script>
     <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
+    <script src="/js/core/SessionExpiredHandler.js?v=20260811a"></script>
     <?php $psHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_semanal/hot.js') ?: 'hot50'; ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script src="/js/modules/programacion_semanal/hot.js?v=<?php echo urlencode((string) $psHotVersion); ?>"></script>

@@ -52,6 +52,26 @@ window.HOTActualizarModule = (function() {
         return meta && meta.content ? meta.content : '';
     }
 
+    /**
+     * Sesión caducada: en vez de dejar que el fetch reciba el HTML del login como si
+     * fueran datos, pedimos JSON explícitamente y delegamos el 401 al único sitio que
+     * decide qué hacer con `sessionExpired`: `AIA.SessionExpiredHandler`
+     * (public/js/core/SessionExpiredHandler.js).
+     */
+    function sessionExpiredFetchHeaders() {
+        if (window.AIA && window.AIA.SessionExpiredHandler) {
+            return window.AIA.SessionExpiredHandler.fetchHeaders();
+        }
+        return { 'X-AIA-Expect-Json': '1' };
+    }
+
+    function handleSessionExpiredResponse(res) {
+        if (!window.AIA || !window.AIA.SessionExpiredHandler) {
+            return Promise.resolve(false);
+        }
+        return window.AIA.SessionExpiredHandler.handleFetchResponse(res);
+    }
+
     // Obtenemos el JSON de opciones pre-cargado desde PHP
     var sourceDataHistorica = [];
     try {
@@ -271,8 +291,11 @@ window.HOTActualizarModule = (function() {
      */
     function fetchCodigosActividad() {
         var db = document.getElementById('baseDatos').value;
-        fetch("/api/general/codigos?db=" + db)
-            .then(res => res.json())
+        fetch("/api/general/codigos?db=" + db, { headers: sessionExpiredFetchHeaders() })
+            .then(res => handleSessionExpiredResponse(res).then(handled => {
+                if (handled) { throw new Error('session-expired'); }
+                return res.json();
+            }))
             .then(response => {
                 if (response.data && hot) {
                     var codes = response.data.map(c => c.codigo_actividad || c.codigo || '').filter(Boolean);
@@ -326,12 +349,13 @@ window.HOTActualizarModule = (function() {
 
         console.log("🔥 [MapeoManual] targetSemana calculado: ", targetSemana);
         console.log("🔥 [MapeoManual] Iniciando fetch GET: ", fullUrl);
-        fetch(fullUrl)
-            .then(res => {
+        fetch(fullUrl, { headers: sessionExpiredFetchHeaders() })
+            .then(res => handleSessionExpiredResponse(res).then(handled => {
+                if (handled) { throw new Error('session-expired'); }
                 console.log("🔥 [MapeoManual] Status: ", res.status, "| targetSemana requested: ", targetSemana);
                 if (!res.ok) throw new Error("HTTP error " + res.status);
                 return res.json();
-            })
+            }))
             .then(response => {
                 console.log("🔥 [MapeoManual] JSON parseado. Data length: ", (response.data ? response.data.length : 'NULL'));
                 if (response.data) {
@@ -548,12 +572,15 @@ window.HOTActualizarModule = (function() {
         fetch("/api/general/update?db=" + db + "&semana_objetivo=" + targetSemana, {
             method: 'POST',
             body: formData,
-            headers: {
+            headers: Object.assign({
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRF-Token': getCsrfToken()
-            }
+            }, sessionExpiredFetchHeaders())
         })
-        .then(res => res.json())
+        .then(res => handleSessionExpiredResponse(res).then(handled => {
+            if (handled) { throw new Error('session-expired'); }
+            return res.json();
+        }))
         .then(res => {
             if (res.respuesta === "BIEN") {
                 $saveStatus.removeClass('aia-chip--warning').addClass('aia-chip--success');
@@ -927,17 +954,20 @@ window.HOTActualizarModule = (function() {
 
         fetch("/api/general/auto-associate", {
             method: "POST",
-            headers: {
+            headers: Object.assign({
                 "Content-Type": "application/x-www-form-urlencoded",
                 "X-CSRF-Token": getCsrfToken()
-            },
+            }, sessionExpiredFetchHeaders()),
             body: new URLSearchParams({
                 db: db,
                 semana_objetivo: semanaObjetivo
             })
         })
         .then(function(response) {
-            return response.json();
+            return handleSessionExpiredResponse(response).then(function (handled) {
+                if (handled) { throw new Error('session-expired'); }
+                return response.json();
+            });
         })
         .then(function(data) {
             console.log("🔥 [AutoAssociate] Results:", data);

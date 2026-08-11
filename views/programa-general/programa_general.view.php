@@ -139,6 +139,7 @@
         window.__RESTRICTION_CONFIG__ = <?php echo json_encode($restrictionConfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     </script>
     <?php endif; ?>
+    <script src="/js/core/SessionExpiredHandler.js?v=20260811a"></script>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot14'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
     <script>
