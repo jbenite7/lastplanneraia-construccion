@@ -17,7 +17,7 @@ contra el HEAD de hoy:
 | Gate | Comando declarado | Resultado real |
 |---|---|---|
 | `static` | `npm run test:design-system:static` | **RC=0**, 8/8 |
-| `runtime` | `npm run test:design-system:runtime` | script existe; exige navegador y contenedor, no medido aquí |
+| `runtime` | `npm run test:design-system:runtime` | **RC=1** — **2 fallos de 31** (medido el 2026-08-11 sobre `9138386a`) |
 | `runtime-budgets` | `npm run test:runtime-budget:check` | **RC=1** — `ENOENT … test-output/`: no es ejecutable por sí solo, necesita los artefactos de una corrida previa |
 | `phpstan-scoped` | `docker compose exec app vendor/bin/phpstan analyse src` | ver `phpstan-global` |
 | `phpstan-global` | `npm run test:design-system:phpstan` | **RC=1** — «New PHPStan findings: **8**» |
@@ -81,7 +81,15 @@ son scripts del repositorio.
 - **3 rojos**, con causa medida: `phpstan-global`, `runtime-budgets`, `git-preservation`.
 - **4 no ejecutables** por herramienta inexistente.
 - **3 indistinguibles** entre sí por compartir comando.
-- **1 no medido aquí** (`runtime`, exige navegador).
+- **`runtime` medido el 2026-08-11 y también rojo**: RC=1, **2 fallos de 31** sobre `9138386a`. Falla
+  `design-system-lab.mjs:252` («severity and urgency blocks keep distinct semantic backgrounds») y
+  `:375` («sidebar shell keeps desktop width, context and theme-visible brand mark»). **No son del
+  Frente 1 ni del 1b:** cero commits suyos en `views/design-system/families/states-feedback.php` y
+  en `public/css/design-system/lab.css`; los últimos que los tocaron son `a3fee1fb`, `cf75c04b` y
+  `ed8f90b4`. Es decir, **el carril de runtime lleva rojo desde antes y declaraba `passed` desde
+  julio**, que es el mismo patrón de los otros tres.
+- **Recuento corregido: 4 rojos con causa medida** (`phpstan-global`, `runtime-budgets`,
+  `git-preservation`, `runtime`), no 3.
 
 Coincide en lo esencial con lo que el spec del programa había estimado —«2 pasan, 4 fallaban, 8 no
 son ejecutables y 1 apunta a una herramienta que no existe»— y **añade la causa concreta de cada
