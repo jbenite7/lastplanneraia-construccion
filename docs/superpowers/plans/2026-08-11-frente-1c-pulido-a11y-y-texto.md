@@ -677,6 +677,88 @@ medir: probado 1 de 12» y eso era la mitad del hallazgo."
 
 ---
 
+### Task 11: Aplicar las cinco decisiones que el usuario resolvió
+
+**Añadida el 2026-08-11**, después de escribirse el plan. Las cinco entradas de la cola volvieron resueltas por el usuario a través de la sesión coordinadora, así que dejan de ser «anotadas y saltadas» y pasan a ser trabajo. **Va antes de la Task 9**, para que la verificación de conjunto mida el estado final.
+
+**Files:**
+- Modify: `public/css/tokens.css` (familia nueva de estado de celda, y el token de espacio)
+- Modify: `public/css/programacion-semanal.css`, `public/css/handsontable-module.css`
+- Modify: `public/js/modules/programa_actualizar/hot_actualizar.js`, `public/js/modules/programacion_intermedia/hot.js`
+- Modify: `views/programacion-semanal/programacion_semanal.view.php`, `views/programa-general/programa_general.view.php`
+- Modify: `docs/decisiones-pendientes.md` (las cinco a `resuelta`)
+
+- [ ] **Step 1: `D-F1-1` — escribir por qué las dos severidades son distintas**
+
+Es la única de las cinco que **no toca CSS**. Deja constancia en `programacion-semanal.css` y en `programacion-intermedia.css`, junto a cada regla, de que la diferencia es deliberada:
+
+```css
+/* Deliberado, decidido el 2026-08-11 (D-F1-1): esta marca es `critical` y la
+   hermana de Programacion Intermedia es `warning`, para la MISMA falta. No es
+   una inconsistencia: aqui la falta frena el cierre de la semana entera, alli
+   solo bloquea unas celdas. No unificar sin volver a preguntar. */
+```
+
+- [ ] **Step 2: `D-F1-2` — familia nueva de tokens de estado para celdas**
+
+Los cuatro tokens de fondo de estado están calibrados para teñir superficies grandes y **ninguno llega a 3:1** contra el fondo de tabla (medido: 1,02 · 1,36 · 1,31 · 1,54). Se crea una familia **nueva** con ese trabajo declarado; los actuales **no se tocan**.
+
+En `public/css/tokens.css`, junto a los de estado:
+
+```css
+/* Familia de destaque de CELDA, decidida el 2026-08-11 (D-F1-2). Distinta de
+   `--ds-color-state-*-bg`, que sigue existiendo para tenir superficies grandes:
+   aquellos estan calibrados para eso y ninguno llega al 3:1 que WCAG 1.4.11
+   exige a un componente pequeno contra lo que lo rodea (medido 1,02 el peor).
+   Estos se calibran para ESE trabajo: 3:1 contra `--ds-active-surface`. */
+--ds-color-cell-critical-bg: <valor>;
+--ds-color-cell-warning-bg: <valor>;
+--ds-color-cell-success-bg: <valor>;
+--ds-color-cell-info-bg: <valor>;
+```
+
+**Los valores no están en este plan a propósito: se calculan.** Para cada uno, parte del tono del token de estado correspondiente y sube su luminancia hasta que el contraste contra `rgb(28,36,31)` (el fondo de tabla, ya medido) **alcance o supere 3:1**. Usa la fórmula de WCAG y **da las cuatro cifras finales en el informe**. Si algún tono no puede llegar a 3:1 sin dejar de parecerse a su estado, **dilo con su número** y usa el que más se acerque conservando la identidad del color.
+
+Después, apunta `.ps-cell-empty-alert` al nuevo `--ds-color-cell-critical-bg` (hoy usa `--ds-color-state-critical-bg`) y **vuelve a medir fondo-alerta contra fondo-vecino**: esa cifra es la que cierra del todo el ICE 448.
+
+- [ ] **Step 3: `D-F1-3` — los cuatro `--aia-*` apuntan a un token real**
+
+Los cuatro no existen: `--aia-text-muted`, `--aia-warning-soft-bg`, `--aia-warning-border`, `--aia-red-primary`. Sustitúyelos por el token del design system que corresponda y **retira la reserva en hexadecimal**.
+
+**Condición explícita de la coordinadora, y es bloqueante por línea:** antes de dar por buena cada sustitución, **comprueba en el navegador que el color computado no cambia**. Da el `getComputedStyle(...).color` antes y después de cada una. **Si alguno no tiene equivalente claro en el sistema, no lo fuerces**: anótalo, salta esa línea, y sigue con las demás.
+
+Las cinco ocurrencias están en `hot_actualizar.js` y `programacion_intermedia/hot.js`; **localízalas por contenido**, los números de línea se han movido tres veces.
+
+- [ ] **Step 4: `D-F1-4` — dos acciones primarias más**
+
+Aplícalas sin darle vueltas; el usuario dijo que las corregirá al verlas en pantalla:
+
+- Programación Semanal → **«Confirmar Compromisos»**. Es el momento firma, que él mismo eligió.
+- Programa General → **«Actualizar Ejecución»**. Es la única de las diecisiete que escribe.
+
+Usa la misma variante BEM que la Task 4 (`aia-btn--primary`), quitando `aia-btn--secondary`. **Comprueba que las dos siguen funcionando** tras el cambio, y mide su contraste igual que en la Task 4: texto sobre botón (**1.4.3**, piso 4.5) y botón contra fondo (**1.4.11**, piso 3). Da las cuatro cifras.
+
+- [ ] **Step 5: `D-F1-5` — el token de espacio que faltaba, y el hueco cierra**
+
+Lee la escala actual (`grep -n "ds-space-" public/css/tokens.css`) y **respeta su progresión**. El objetivo es ≥70 px: 72 px si encaja, y si rompe la escala, **el siguiente que la respete y llegue a 70**. Di cuál elegiste y por qué encaja.
+
+Luego cambia el `padding-block-end` de `#hot-container .wtHolder` a ese token y **vuelve a medir el solape** de la Task 5: última fila contra `.lps-sidebar-trigger`, con `getBoundingClientRect()` de las dos, en `/programa-general` **y** en `/programacion-semanal`. Esperado: **cero solape**. Esa cifra es la que cierra del todo el ICE 216.
+
+- [ ] **Step 6: Marcar las cinco como resueltas**
+
+En `docs/decisiones-pendientes.md`, mueve las cinco a la sección «Resueltas» con el formato del propio archivo: `resuelta 2026-08-11: <decisión>`. **No borres su medición**: es lo que hace auditable la decisión.
+
+- [ ] **Step 7: Gates y commit**
+
+```bash
+export COMPOSE_FILE=docker-compose.wt.yml
+npm run test:design-system:static
+```
+
+Esperado 8/8. **Este paso toca tokens del design system, así que es el más probable de toda la tanda para pedir recaptura de golden.** Si la pide, **no la regeneres**: anótalo, deja el cambio, y dilo — la aprobación de un cambio visual no es la aprobación de recapturar su evidencia.
+
+---
+
 ### Task 9: Verificación de conjunto del Frente 1
 
 No añade código: comprueba que las dos tandas juntas no se pisaron.
