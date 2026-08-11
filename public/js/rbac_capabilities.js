@@ -38,7 +38,12 @@ const RbacCapabilities = {
    * Determina si un usuario puede ver botones de acceso exclusivo administrativo u Oficina Técnica (ej. contratos, PDC).
    */
   canManageContracts: function (role) {
-    const allowedRoles = ['A', 'D', 'OT']; // Asumiendo que Admin, Director y Oficina Técnica gestionan esto. Ajustar si R necesita.
+    // Espejo de RbacManager::getCapabilities()['canManageContracts'] (src/Security/RbacManager.php:28).
+    // El Residente entra por decisión del usuario del 2026-08-10: en obra también gestiona el Plan
+    // de Compras. Antes decía ['A','D','OT'] con un «ajustar si R necesita» que nadie resolvió, y esa
+    // divergencia con el servidor la destapó el gate `npm run test:rbac-parity`.
+    // Si cambias esta lista, cambia también la del servidor: el gate falla si se separan.
+    const allowedRoles = ['A', 'D', 'OT', 'R'];
     return allowedRoles.includes(role);
   },
 
