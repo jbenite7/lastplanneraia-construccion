@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Security\RbacCatalog;
 use App\Security\RbacService;
 use Database;
 use DomainException;
@@ -70,6 +71,8 @@ final class BiProjectScope
             return $this->projectsPorUsuario[$usuario] = [];
         }
 
+        $closedVisibleRoles = RbacCatalog::closedProjectVisibleRoles();
+        $placeholders = implode(',', array_fill(0, count($closedVisibleRoles), '?'));
         $stmt = $this->db->prepare(
             "SELECT p.ID AS project_id, p.Proyecto_Proceso AS nombre, pm.role
              FROM project_members pm
@@ -78,10 +81,10 @@ final class BiProjectScope
              WHERE u.usuario = ?
                AND p.Area IN ('Construccion', 'Pre-Construccion')
                AND p.Activo = 1
-               AND (p.Acceso = 1 OR pm.role IN ('A', 'D', 'P'))
+               AND (p.Acceso = 1 OR pm.role IN ($placeholders))
              ORDER BY p.Proyecto_Proceso",
         );
-        $stmt->execute([$usuario]);
+        $stmt->execute([$usuario, ...$closedVisibleRoles]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         $proyectos = [];

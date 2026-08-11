@@ -3,6 +3,8 @@
 namespace App\Controllers\Core;
 
 use Admin\Core\RoleManager;
+use App\Security\RbacCatalog;
+use App\Security\RbacService;
 use App\Services\ProjectLandingService;
 use Database;
 use TableResolver;
@@ -10,11 +12,13 @@ use TableResolver;
 class ProjectSelectorController
 {
     private $db;
+    private RbacService $rbac;
     private ProjectLandingService $projectLandingService;
 
     public function __construct()
     {
         $this->db = Database::getInstance();
+        $this->rbac = new RbacService($this->db);
         $this->projectLandingService = new ProjectLandingService();
     }
 
@@ -31,6 +35,7 @@ class ProjectSelectorController
                        p.Proyecto_Proceso,
                        p.Area,
                        p.Activo,
+                       p.Acceso,
                        p.Base_de_Datos,
                        pm.role AS permiso
                 FROM project_members pm
@@ -39,17 +44,30 @@ class ProjectSelectorController
                 WHERE u.usuario = ?
                   AND p.Area IN ('Construccion', 'Pre-Construccion')
                   AND p.Activo = 1
-                  AND (p.Acceso = 1 OR pm.role IN ('A', 'D'))
                 ORDER BY p.Proyecto_Proceso ASC";
 
         $stmt = $this->db->queryWithProject($sql, [$usuario]);
-        $proyectos = $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
 
-        foreach ($proyectos as &$project) {
-            $project['progreso'] = rand(0, 100);
-            $normalizedRole = $this->normalizeRoleCode((string) ($project['permiso'] ?? 'V'));
+        $managementRoles = RbacCatalog::managementRoles();
+        $proyectos = [];
+
+        foreach ($rows as $project) {
+            $normalizedRole = $this->rbac->normalizeRole((string) ($project['permiso'] ?? ''));
+            $accesoAbierto = (int) ($project['Acceso'] ?? 1) === 1;
+
+            // Misma invariante que enterProject(): un proyecto con Acceso=0 solo es visible
+            // para quien normaliza a rol de jefatura (A/D). Antes index() filtraba en SQL con
+            // el rol crudo (perdía alias de texto como 'Director de Obra') y enterProject()
+            // comprobaba con el rol ya normalizado — divergían. Ahora ambos filtran/comprueban
+            // con el mismo rol normalizado por RbacService::normalizeRole().
+            if (!$accesoAbierto && !in_array($normalizedRole, $managementRoles, true)) {
+                continue;
+            }
+
             $project['permiso'] = $normalizedRole;
             $project['rol_nombre'] = RoleManager::getRoleName($normalizedRole);
+            $proyectos[] = $project;
         }
 
         require PROJECT_ROOT . '/views/core/project_selector.view.php';
@@ -118,9 +136,9 @@ class ProjectSelectorController
         }
 
         $dbName = (string) ($accessData['Base_de_Datos'] ?? '');
-        $permiso = $this->normalizeRoleCode((string) ($accessData['role'] ?? 'V'));
+        $permiso = $this->rbac->normalizeRole((string) ($accessData['role'] ?? ''));
 
-        if ((int) ($accessData['Acceso'] ?? 1) === 0 && !in_array($permiso, ['A', 'D'], true)) {
+        if ((int) ($accessData['Acceso'] ?? 1) === 0 && !in_array($permiso, RbacCatalog::managementRoles(), true)) {
             $_SESSION['error'] = 'El proyecto seleccionado se encuentra inactivo para tu perfil.';
             header('Location: /proyectos');
             exit();
@@ -156,25 +174,5 @@ class ProjectSelectorController
         header('Location: ' . ($landing['route'] ?? '/dashboard'));
 
         exit();
-    }
-
-    private function normalizeRoleCode(string $role): string
-    {
-        $role = strtoupper(trim($role));
-
-        if ($role === 'P') {
-            return 'D';
-        }
-
-        if ($role === 'U' || $role === '') {
-            return 'V';
-        }
-
-        $knownRoles = array_keys(RoleManager::getAll());
-        if (!in_array($role, $knownRoles, true)) {
-            return 'V';
-        }
-
-        return $role;
     }
 }

@@ -48,6 +48,27 @@ class RbacCatalog
         return ['A', 'D', 'R', 'DCV', 'OT', 'G', 'S', 'SG', 'C', 'V'];
     }
 
+    /**
+     * Roles canónicos (ya normalizados, post roleAliases()) de jefatura: quienes ven un
+     * proyecto con Acceso=0 (cerrado) pese a estar cerrado.
+     */
+    public static function managementRoles(): array
+    {
+        return ['A', 'D'];
+    }
+
+    /**
+     * Roles crudos de project_members.role que ven un proyecto con Acceso=0 (cerrado)
+     * en el selector y en Control Tower. Único criterio: antes vivía duplicado con listas
+     * distintas en ProjectSelectorController::index() (sin 'P') y en BiProjectScope (con 'P').
+     * 'P' es el alias legado de Director ('D') en roleAliases(). BiProjectScope sigue
+     * filtrando por rol crudo en SQL, así que necesita 'P' explícito además de los canónicos.
+     */
+    public static function closedProjectVisibleRoles(): array
+    {
+        return array_merge(self::managementRoles(), ['P']);
+    }
+
     public static function cicDisciplinesForRole(string $role): array
     {
         $role = strtoupper(trim($role));
