@@ -107,6 +107,39 @@ de preguntar. Copia esta forma:
   corrida. No se tocó ningún fixture ni ningún dato.
 - **Estado:** `abierta`
 
+### D-CI-1 · El contrato visual fija una forma donde debería medir un resultado
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP».
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si una aserción del contrato del design system debe seguir exigiendo que el
+  workflow **nombre** un comando concreto, o pasar a comprobar que el CI **ejecuta** ese test.
+- **Qué se midió:**
+  - `tests/design-system/visual-ci-contract.test.mjs:156` exige
+    `assert.match(workflow, /php tests\/test_global_table_safety\.php/)`: una cadena literal.
+  - Al sustituir los tres tests listados a mano por el runner, esa cadena desapareció y el gate
+    `node-tests` quedó **rojo en `main`**, aunque el test seguía ejecutándose dentro de la selección
+    del runner. Es decir: el gate se puso rojo por un cambio que **aumentó** la cobertura de 3 tests
+    a 71.
+  - Arreglado por ahora conservando el paso explícito en `.github/workflows/design-system.yml`
+    además del runner. El test corre dos veces; cuesta menos de 1 s. Suite estática completa
+    verificada después: **los 8 gates en verde, RC=0**.
+- **Opciones:**
+  - **(a)** Dejarlo como está: paso explícito y runner conviviendo. **Es la opción segura:** es el
+    estado actual, está en verde y no toca ningún contrato. Coste: el workflow lleva un paso
+    redundante que hay que explicar a quien lo lea.
+  - **(b)** Cambiar la aserción para que compruebe que el CI invoca el runner y que su selección
+    incluye ese test. Queda **más fuerte** que hoy: comprobaría el resultado y no la forma. Coste:
+    toca un contrato del design system, y esos no se tocan sin decisión explícita.
+  - **(c)** Quitar la aserción. **No recomendable**: pierde la garantía de que esa frontera se
+    vigila en CI, que es justo lo que el contrato existe para sostener.
+- **Recomendación:** **(b)**, cuando haya ocasión. La aserción actual tiene un defecto real —premia
+  que el workflow escriba una cadena, no que ejecute la prueba—, y con el runner en medio ese
+  defecto va a volver a morder: cualquier reorganización futura del CI que siga ejecutando el test
+  volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
+- **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
+  el paso explícito, que es lo que el contrato pide hoy.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
