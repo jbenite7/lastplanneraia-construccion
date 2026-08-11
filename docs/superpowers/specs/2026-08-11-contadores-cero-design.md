@@ -128,3 +128,46 @@ región viva de la leyenda.
 2. Con un filtro activo, siguen visibles (atenuados), y se puede cambiar de filtro.
 3. Antes/después con **conteo de controles visibles**, no solo capturas.
 4. `npm run test:design-system:static` sin regresión contra la base 7/8 de `de02471a`.
+
+---
+
+## Resultado medido (cierre del frente)
+
+En contenedor propio montando este worktree —el `docker compose` del repo sirve el árbol principal
+y daría un «después» falso; comprobado que el puerto principal no tenía este CSS y el propio sí—,
+proyecto Da Porto, 1180×820, dark, sesión por la puerta de servicio:
+
+| | Antes | Después |
+|---|---|---|
+| Chips de la leyenda visibles | 8 | **1** |
+| Controles visibles en pantalla | 64 | **57** |
+| Alto del bloque de leyenda | 88px | **44px** |
+
+- **Guarda del filtro verificada:** con un filtro activo vuelven los 8 y se puede saltar de uno a
+  otro. Sin ella, ocultar por el valor a secas habría borrado los siete botones de filtro justo
+  cuando hacen falta para salir del filtro puesto — un fallo que solo aparece en un estado al que
+  hay que llegar a propósito.
+- **Reversión verificada, no descrita:** `OCULTAR_CONTADORES_EN_CERO = false` devuelve 64 controles
+  y los 8 chips, con el atenuado de C-24 intacto.
+- **Gate:** `static` 7/8, `audit` verde en **170/175**, re-verificado **después** de integrar
+  `origin/main`. `node-tests` rojo preexistente (test de mtime, artefacto del worktree).
+
+### Dos cosas que el plan no podía prever
+
+1. **La regla acabó en la subcapa `components.components`.** `buttons.css:971` fuerza
+   `display: inline-flex !important` desde ahí, y para `!important` la subcapa gana a su capa
+   madre: la regla estaba en el CSSOM, casaba con el elemento, y el computado seguía siendo `flex`.
+   No se tocó `buttons.css`, que es de PG, PI y PS. Documentado en [[css-layer-cascade]].
+2. **Hubo que restar para poder sumar.** El `!important` necesario llevaba el módulo a 176 sobre un
+   presupuesto de 175. En vez de subir el techo, bajó la cifra: seis `!important` que no competían
+   con nadie salieron del módulo, confirmados **uno a uno** contra la línea base. No se tocaron las
+   de color (solo se midió dark) ni el `min-height` de la barra (piso AA de 24px).
+
+### Los goldens no se regeneraron, y esa es la conclusión correcta
+
+Había aprobación explícita del usuario para regenerarlos. **No se usó.** El fixture del test visual
+siembra los nueve estados, uno por fila, así que en esa captura ningún contador está en cero y este
+cambio no la altera. El test falla por deriva **preexistente** —el selector de semana y un botón—,
+confirmado ejecutando el mismo test contra el árbol principal **sin este código**: falla igual y en
+las mismas dos zonas. Regenerar habría congelado una deriva ajena, y un número de semana que cambia
+según cuándo se corra, bajo una firma nueva.
