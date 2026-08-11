@@ -422,6 +422,12 @@ echo '  ' . count($tests) . ' test(s) descubiertos, ' . count($seleccionados)
     . ' seleccionados, ' . count($omitidos) . " omitidos por nivel\n\n";
 
 if ($opciones['soloListar']) {
+    // Marca cada test con lo que haría el nivel pedido, no solo el nivel que declara. Así se puede
+    // comprobar de frente que el runner es ACUMULATIVO —que pedir 'db' ejecuta también los 'puro'—
+    // sin necesitar el entorno de ese nivel. Esa propiedad la da por buena la aserción de
+    // tests/design-system/visual-ci-contract.test.mjs, y hasta el 2026-08-11 nada la comprobaba:
+    // cambiando el '<=' de la selección por '===' el contrato seguía verde mientras
+    // test_global_table_safety dejaba de correr en el CI.
     foreach (array_keys(NIVELES) as $nivel) {
         $delNivel = array_keys($tests, $nivel, true);
         if ($delNivel === []) {
@@ -429,9 +435,17 @@ if ($opciones['soloListar']) {
         }
         echo '  ' . $nivel . ' (' . count($delNivel) . "):\n";
         foreach ($delNivel as $ruta) {
-            echo '    ' . basename($ruta) . "\n";
+            $marca = isset($seleccionados[$ruta]) ? '[ejecuta]' : '[omite]  ';
+            echo '    ' . $marca . ' ' . basename($ruta) . "\n";
         }
     }
+
+    $unitariosListados = descubrirTestsUnitarios($opciones['dirUnit']);
+    foreach ($unitariosListados as $ruta => $nivel) {
+        $marca = NIVELES[$nivel] <= $pesoPedido ? '[ejecuta]' : '[omite]  ';
+        echo '    ' . $marca . ' ' . basename($ruta) . " (PHPUnit, {$nivel})\n";
+    }
+
     exit(SALIDA_OK);
 }
 

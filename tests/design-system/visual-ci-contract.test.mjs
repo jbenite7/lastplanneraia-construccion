@@ -165,6 +165,12 @@ test('runtime CI continuously enforces the Programa General persistence boundary
   // Ahora se comprueba el resultado, y por eso es más estricta que antes: falla si desaparece la
   // invocación del runner, si la prueba deja de existir, si pierde su etiqueta de nivel, o si
   // alguien le pone un nivel que el CI no ejecuta.
+  //
+  // Esta comparación por nivel SUPONE que el runner es acumulativo: que `--nivel=http` ejecuta
+  // además lo `db` y lo `puro`. Ese supuesto no se comprueba aquí sino en
+  // `tests/test_php_test_runner.php` («pedir db ejecuta TAMBIEN el de nivel puro»), y hay que
+  // mantenerlo: sin él, esta aserción daría verde mientras la prueba deja de correr. Se descubrió
+  // el 2026-08-11 mutando el `<=` del runner por `===` — el contrato seguía en RC=0.
   const NIVELES = ['puro', 'db', 'http', 'datos-proyecto'];
 
   const nivelesInvocados = [...workflow.matchAll(/run-php-tests\.php --nivel=([a-z-]+)/g)]

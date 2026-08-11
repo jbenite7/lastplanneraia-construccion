@@ -127,6 +127,22 @@ $r = correrRunner($runner, [
 ]);
 verificar('sin tests PHPUnit seleccionados, su ausencia no estorba', $r['codigo'] === 0);
 
+// --- El runner es ACUMULATIVO: pedir un nivel ejecuta también los de debajo ----------------------
+//
+// Esta es la propiedad de la que depende la aserción de acumulatividad de
+// tests/design-system/visual-ci-contract.test.mjs, que da por bueno que si el CI invoca
+// `--nivel=http` entonces una prueba de nivel `db` se ejecuta. Hasta el 2026-08-11 nada la
+// comprobaba de frente: cambiando el `<=` del runner por `===` el contrato seguía en verde y
+// test_global_table_safety dejaba de correr en el CI. Lo destapó la sesión coordinadora mutando el
+// supuesto en vez de las entradas.
+$r = correrRunner($runner, ['--dir=' . $fixtures . '/dos-niveles', '--nivel=db', '--solo-listar']);
+verificar('pedir db ejecuta el test de nivel db', str_contains($r['salida'], '[ejecuta] test_b_db.php'));
+verificar('pedir db ejecuta TAMBIEN el de nivel puro', str_contains($r['salida'], '[ejecuta] test_a_puro.php'));
+
+$r = correrRunner($runner, ['--dir=' . $fixtures . '/dos-niveles', '--nivel=puro', '--solo-listar']);
+verificar('pedir puro ejecuta el de nivel puro', str_contains($r['salida'], '[ejecuta] test_a_puro.php'));
+verificar('pedir puro NO ejecuta el de nivel db', str_contains($r['salida'], '[omite]   test_b_db.php'));
+
 echo "\n";
 if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";
