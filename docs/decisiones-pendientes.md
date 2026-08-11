@@ -153,4 +153,4 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 |---|---|---|
 | `D-1` | El informe adopta la numeración del spec | La sesión que mantiene `docs/reportes/estado-desarrollo.html` |
 | `D-2` | Triar los 30 tests por tandas, sin urgencia | Sin dueño asignado; se recoge cuando haya ocasión |
-| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | Quien retome el contrato del design system, o el Frente 1b |
+| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | **Sesión de CI** (asignada por el usuario el 2026-08-11) |
