@@ -64,40 +64,14 @@ test('executable contract requires simultaneous release activation', () => {
   assert.match(result.stderr, /activation: gates, version and stable API must activate together/);
 });
 
-test('executable contract rejects a non-automatic accessibility gate', () => {
+test('executable contract rejects a gate with the wrong kind', () => {
   const result = runFixture((fixtureRoot) => updateJson(
     fixtureRoot,
     'docs/design-system/closeout-evidence.json',
     (closeout) => {
-      closeout.gates.find(({ id }) => id === 'accessibility-insights').kind = 'manual';
+      closeout.gates.find(({ id }) => id === 'full-app-flow').kind = 'manual';
     },
   ));
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /accessibility-insights: invalid kind manual/);
-});
-
-test('executable contract rejects a collapsed accessibility review matrix', () => {
-  const result = runFixture((fixtureRoot) => updateJson(
-    fixtureRoot,
-    'docs/design-system/closeout-evidence.json',
-    (closeout) => {
-      closeout.accessibilityReview.surfaces = ['laboratory'];
-    },
-  ));
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /accessibility-insights: invalid basic automated review contract/);
-});
-
-test('executable contract rejects prohibited accessibility claims before activation', () => {
-  const result = runFixture((fixtureRoot) => updateJson(
-    fixtureRoot,
-    'docs/design-system/closeout-evidence.json',
-    (closeout) => {
-      closeout.gates.find(({ id }) => id === 'accessibility-insights').evidence = [
-        'WCAG compliant via FastPass',
-      ];
-    },
-  ));
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /accessibility-insights: FastPass and WCAG claims are prohibited/);
+  assert.match(result.stderr, /full-app-flow: invalid kind manual/);
 });

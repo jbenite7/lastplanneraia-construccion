@@ -511,7 +511,9 @@ de preguntar. Copia esta forma:
 - **Recomendación:** **(a)**, y anotar (b) como candidato para más adelante. Retirar con motivo es
   honesto; conservar un candado imposible es lo que produjo el cierre que se avalaba a sí mismo.
 - **Qué quedó saltado esperando:** solo este gate. Los demás siguen su curso.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (a) — retirado del índice, con su motivo escrito en
+  docs/design-system/gates-cierre-frente-1b.md. Candidato (b), rediseñarlo contra el
+  cierre anterior en vez del Sprint 00, queda anotado para más adelante.`
 
 ### D-F1b-2 · Tres gates distintos ejecutan exactamente el mismo comando
 
@@ -534,7 +536,11 @@ de preguntar. Copia esta forma:
   verifica en este repo de rutina y es barato de aislar; **(b) o (c) para los otros dos**, que
   necesitan mutar datos y hoy están bloqueados en seguro por eso.
 - **Qué quedó saltado esperando:** los tres gates. No bloquean a los otros doce.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (b) — fundidos en un solo gate, "full-app-flow",
+  nombrado por lo que el spec ejerce (roles, persistencia y restauración en un mismo
+  full-app-flow.spec.mjs). Cobertura perdida documentada en
+  docs/design-system/gates-cierre-frente-1b.md: con tres gates se podía saber cuál de
+  las tres dimensiones falló sin abrir el log; con uno, hay que leer la salida del spec.`
 
 ### D-F1b-3 · Cuatro gates invocan herramientas que no existen
 
@@ -559,7 +565,14 @@ de preguntar. Copia esta forma:
   problema no es que falte la herramienta, es que un juicio humano **no debería declararse como un
   comando**. Y para accesibilidad existe carril propio, así que sustituir no pierde cobertura real.
 - **Qué quedó saltado esperando:** los cuatro. El resto del frente avanza sin ellos.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (c) — los cuatro retirados del índice, con motivo
+  escrito en docs/design-system/gates-cierre-frente-1b.md. Medido antes de retirar
+  accessibility-insights: el repo sí cubre accesibilidad por otra vía (test:a11y:lab y
+  test:a11y:pilot, con Playwright + axe, ya corren dentro del gate runtime) — no es
+  "nadie lo cubre", es "lo cubre otra cosa con otro nombre", salvo la superficie
+  revealed-states, que queda sin sustituto y así se deja escrito. Los tres local-review
+  (consolidated-lab, consolidated-pilot, review) no tienen sustituto: era revisión
+  humana declarada como comando, y esa ausencia queda visible, no disimulada.`
 
 ### D-F1b-4 · Los 6 errores que quedan de `phpstan-global` viven en el archivo más delicado del repo
 
@@ -621,3 +634,6 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1-4` | «Confirmar Compromisos» y «Actualizar Ejecución» pasan a primaria | Frente 1 · aplicado en `66facd23` |
 | `D-F1-7` | Una sesión de ejecución hace su frente y se detiene; no encadena los siguientes | Regla general · aplica a todas las sesiones de ejecución |
 | `D-F1-5` | Añadir un token de espacio de 72 px (`--ds-space-18`) | Frente 1 · aplicado en `66facd23` |
+| `D-F1b-1` | `git-preservation` se retira, con motivo escrito | Frente 1b · ejecutado en esta sesión |
+| `D-F1b-2` | `pg-roles`+`pg-persistence`+`data-restoration` se funden en `full-app-flow` | Frente 1b · ejecutado en esta sesión |
+| `D-F1b-3` | Los cuatro gates de herramienta inexistente se retiran | Frente 1b · ejecutado en esta sesión |

@@ -5,14 +5,10 @@ const entries = [
   ['phpstan-scoped', 'ds.phpstan-scoped.v1', 'docker compose exec app vendor/bin/phpstan analyse src --memory-limit=1G'],
   ['phpstan-global', 'ds.phpstan-global.v1', 'npm run test:design-system:phpstan'],
   ['global-table-safety', 'ds.global-table-safety.v1', 'docker compose exec app php tests/test_global_table_safety.php'],
-  ['pg-roles', 'ds.pg-roles.v1', 'npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1'],
-  ['pg-persistence', 'ds.pg-persistence.v1', 'npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1'],
-  ['data-restoration', 'ds.data-restoration.v1', 'npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1'],
-  ['accessibility-insights', 'ds.accessibility-insights.v1', 'accessibility-insights basic-automated-review'],
-  ['consolidated-lab', 'ds.consolidated-lab.v1', 'local-review consolidated-lab'],
-  ['consolidated-pilot', 'ds.consolidated-pilot.v1', 'local-review consolidated-pilot'],
-  ['git-preservation', 'ds.git-preservation.v1', 'npm run test:design-system:preservation'],
-  ['review', 'ds.review.v1', 'local-review exact-release-diff'],
+  // `full-app-flow` funde `pg-roles` + `pg-persistence` + `data-restoration` (D-F1b-2,
+  // 2026-08-11): los tres declaraban literalmente el mismo comando y no podian dar
+  // veredictos distintos entre si. Un solo gate con el nombre de lo que de verdad mide.
+  ['full-app-flow', 'ds.full-app-flow.v1', 'npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1'],
   ['atomic-commit', 'ds.atomic-commit.v1', 'git diff --cached --check'],
 ];
 

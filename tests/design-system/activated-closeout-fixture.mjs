@@ -10,10 +10,8 @@ import {
   createCloseoutFixture, repositoryRoot, updateJson,
 } from './closeout-contract-fixture.mjs';
 
-const accessibilitySurfaces = ['laboratory', 'pilot', 'revealed-states'];
 const fixtureGateIds = new Set([
-  'runtime', 'runtime-budgets', 'global-table-safety', 'pg-roles',
-  'pg-persistence', 'data-restoration', 'accessibility-insights',
+  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow',
 ]);
 
 export function git(fixtureRoot, args) {
@@ -33,18 +31,8 @@ export function writeArtifact(fixtureRoot, relativePath, value) {
 function writeCandidateArtifacts(fixtureRoot) {
   updateJson(fixtureRoot, 'docs/design-system/closeout-evidence.json', (closeout) => {
     for (const gate of closeout.gates) {
-      const paths = gate.id === 'accessibility-insights'
-        ? accessibilitySurfaces.map((surface) => `docs/design-system/evidence/${gate.id}/${surface}.json`)
-        : [`docs/design-system/evidence/${gate.id}.json`];
-      for (const artifact of paths) {
-        const surface = path.basename(artifact, '.json');
-        writeArtifact(fixtureRoot, artifact, gate.id === 'accessibility-insights' ? {
-          reviewKind: 'basic-automated-review',
-          surface,
-          failedRules: 0,
-          failedInstances: 0,
-        } : { gateId: gate.id, result: 'passed' });
-      }
+      const artifact = `docs/design-system/evidence/${gate.id}.json`;
+      writeArtifact(fixtureRoot, artifact, { gateId: gate.id, result: 'passed' });
     }
   });
 }
@@ -66,27 +54,21 @@ function writeActivationDocuments(fixtureRoot, source) {
   });
   updateJson(fixtureRoot, 'docs/design-system/closeout-evidence.json', (closeout) => {
     for (const gate of closeout.gates) {
-      const surfaces = gate.id === 'accessibility-insights' ? accessibilitySurfaces : [null];
       gate.status = 'passed';
       gate.verifiedAt = '2026-07-15T12:00:00Z';
-      gate.evidence = surfaces.map((surface) => {
-        const artifact = surface
-          ? `docs/design-system/evidence/${gate.id}/${surface}.json`
-          : `docs/design-system/evidence/${gate.id}.json`;
-        const canonicalCommand = canonicalGateCommand(gate.id);
-        return {
-          summary: `Objective receipt for ${gate.id}${surface ? ` ${surface}` : ''}`,
-          commandId: canonicalCommand.commandId,
-          command: canonicalCommand.command,
-          exitCode: 0,
-          artifact,
-          artifactSha256: sha256(readFileSync(path.join(fixtureRoot, artifact))),
-          sourceRef: source.ref,
-          sourceFingerprint: source.fingerprint,
-          ...(fixtureGateIds.has(gate.id) ? { fixtureSha256: source.fixtureSha256 } : {}),
-          ...(surface ? { surface } : {}),
-        };
-      });
+      const artifact = `docs/design-system/evidence/${gate.id}.json`;
+      const canonicalCommand = canonicalGateCommand(gate.id);
+      gate.evidence = [{
+        summary: `Objective receipt for ${gate.id}`,
+        commandId: canonicalCommand.commandId,
+        command: canonicalCommand.command,
+        exitCode: 0,
+        artifact,
+        artifactSha256: sha256(readFileSync(path.join(fixtureRoot, artifact))),
+        sourceRef: source.ref,
+        sourceFingerprint: source.fingerprint,
+        ...(fixtureGateIds.has(gate.id) ? { fixtureSha256: source.fixtureSha256 } : {}),
+      }];
     }
   });
 }

@@ -2,16 +2,6 @@
   "schemaVersion": 1,
   "designSystemVersion": "1.1.0",
   "generatedAt": "2026-07-15",
-  "accessibilityReview": {
-    "kind": "basic-automated-review",
-    "surfaces": [
-      "laboratory",
-      "pilot",
-      "revealed-states"
-    ],
-    "requiredFailedRules": 0,
-    "requiredFailedInstances": 0
-  },
   "gates": [
     {
       "id": "static",
@@ -131,15 +121,15 @@
       ]
     },
     {
-      "id": "pg-roles",
+      "id": "full-app-flow",
       "kind": "automatic",
       "status": "passed",
       "verifiedAt": "2026-07-15T12:00:00Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Objective receipt for pg-roles",
-          "commandId": "ds.pg-roles.v1",
+          "summary": "Objective receipt for full-app-flow (roles + persistence + restoration)",
+          "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/pg-roles.json",
@@ -147,167 +137,6 @@
           "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
           "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
-        }
-      ]
-    },
-    {
-      "id": "pg-persistence",
-      "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for pg-persistence",
-          "commandId": "ds.pg-persistence.v1",
-          "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/pg-persistence.json",
-          "artifactSha256": "8fd0a133f6d133d8fb425d84102e0797d802d2148b3a3c2e88580ee9e26c45e3",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
-        }
-      ]
-    },
-    {
-      "id": "data-restoration",
-      "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for data-restoration",
-          "commandId": "ds.data-restoration.v1",
-          "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/data-restoration.json",
-          "artifactSha256": "9def267048cea69004979221417a259aa0b265d8c135dabe2f03e9f46cf6008d",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
-        }
-      ]
-    },
-    {
-      "id": "accessibility-insights",
-      "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for accessibility-insights laboratory",
-          "commandId": "ds.accessibility-insights.v1",
-          "command": "accessibility-insights basic-automated-review",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/accessibility-insights/laboratory.json",
-          "artifactSha256": "167d5960f9031ef0a1df27d5777d6fc6b0f3185a0f9bdd2ed0be13059f5322ef",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d",
-          "surface": "laboratory"
-        },
-        {
-          "summary": "Objective receipt for accessibility-insights pilot",
-          "commandId": "ds.accessibility-insights.v1",
-          "command": "accessibility-insights basic-automated-review",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/accessibility-insights/pilot.json",
-          "artifactSha256": "73061c87ec1e88b753b449bf40b15e10eaeb9cadef0d03c645e186ad70d69313",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d",
-          "surface": "pilot"
-        },
-        {
-          "summary": "Objective receipt for accessibility-insights revealed-states",
-          "commandId": "ds.accessibility-insights.v1",
-          "command": "accessibility-insights basic-automated-review",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/accessibility-insights/revealed-states.json",
-          "artifactSha256": "34a1df20bc649d28aa1b219c941b07cef2f938c3044edd289b1adbe8fd47fb27",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d",
-          "surface": "revealed-states"
-        }
-      ]
-    },
-    {
-      "id": "consolidated-lab",
-      "kind": "human",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for consolidated-lab",
-          "commandId": "ds.consolidated-lab.v1",
-          "command": "local-review consolidated-lab",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/consolidated-lab.json",
-          "artifactSha256": "bd604cb0a3204c3e3db295b79c9c7a3091718811982ee5081c8455e15da04793",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
-        }
-      ]
-    },
-    {
-      "id": "consolidated-pilot",
-      "kind": "human",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for consolidated-pilot",
-          "commandId": "ds.consolidated-pilot.v1",
-          "command": "local-review consolidated-pilot",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/consolidated-pilot.json",
-          "artifactSha256": "0b8d71b65eafeae608d0a43842f504a29fafec1350f1fbfbc4371048963a297e",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
-        }
-      ]
-    },
-    {
-      "id": "git-preservation",
-      "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for git-preservation",
-          "commandId": "ds.git-preservation.v1",
-          "command": "npm run test:design-system:preservation",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/git-preservation.json",
-          "artifactSha256": "f8ae437255451bcc759dd0c40647db1642aad9c1693424e8da5c17f2118de012",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
-        }
-      ]
-    },
-    {
-      "id": "review",
-      "kind": "human",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
-      "blocking": true,
-      "evidence": [
-        {
-          "summary": "Objective receipt for review",
-          "commandId": "ds.review.v1",
-          "command": "local-review exact-release-diff",
-          "exitCode": 0,
-          "artifact": "docs/design-system/evidence/review.json",
-          "artifactSha256": "3211250aa389798903b6549f263fde2a49d8e12da497aa221ca679ced57d7fe8",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27"
         }
       ]
     },
