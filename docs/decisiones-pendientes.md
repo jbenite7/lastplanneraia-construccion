@@ -840,6 +840,86 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
 
 ---
 
+### D-VOC-1 · ¿Un vocabulario único para toda la cascada, o tres explícitamente distintos?
+
+- **Quién pregunta:** sesión de ejecución del frente `vocabulario-estados-cascada`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si los tres vocabularios se funden en uno solo que atraviese Programa General,
+  Intermedia y Semanal, o si cada eslabón nombra un eje distinto (avance / alistamiento / compromiso)
+  y lo que se unifica es solo la **forma** de nombrarlos.
+- **Qué se midió** (sobre `de02471a`, contrato `docs/design-system/state-semantics.json` + literales
+  del código): **35 cadenas distintas** en los cuatro módulos. Siete momentos del ciclo se nombran
+  dos o tres veces — «le toca y no puede arrancar» es `Debe Iniciar` (PG), `Inicio por Habilitar`
+  (PI) y `Condiciones Pendientes` (PS).
+- **Opciones:**
+  - **(a) Vocabulario único de ~7 estados** para toda la cascada. Máxima reducción (35 → ~10).
+    Cambia el idioma de tres pantallas a la vez para la obra.
+  - **(b) Tres ejes declarados, un vocabulario por eje**, sin solapes. Reducción media; cada
+    pantalla sigue hablando de lo suyo y desaparecen los sinónimos dentro de cada eje.
+  - **(c) Solo higiene**: cerrar desviaciones y quitar duplicados, sin tocar nombres aprendidos.
+- **Recomendación:** **(b)**. Los tres ejes son reales en LPS —avance físico, liberación de
+  restricciones y confiabilidad del compromiso son cosas distintas, y `GLOSARIO.md` las distingue—,
+  así que fundirlos perdería información. Lo que sobra no son los ejes: son los sinónimos dentro de
+  cada uno.
+- **Qué quedó saltado esperando:** cualquier renombrado. Solo se ejecuta la higiene que no elige
+  vocabulario.
+- **Estado:** `abierta`
+
+### D-VOC-2 · La columna `Estado` de Programa General está persistida
+
+- **Quién pregunta:** sesión de ejecución del frente `vocabulario-estados-cascada`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si el vocabulario de Programa General puede renombrarse, dado que sus valores
+  **no son solo etiquetas de pantalla**: se escriben en la base de datos en cada guardado.
+- **Qué se midió** (sobre `de02471a`): `src/Legacy/guardar_programacion_intermedia.php:361` hace
+  `UPDATE ... SET Semanas_Inicio = ?, Estado = ?`. Los siete valores (`Actividad Futura`, `Debe
+  Iniciar`, `En Curso`, `Atrasada`, `Terminada`, `Sin Datos`, `Capítulo`) los leen además
+  `LpsService`, `GeneralApiController`, `SemanalApiController`, `ProgramChangeDetector`,
+  `ReportProcessor` y `tests/test_weekly_governance.php`.
+- **Opciones:**
+  - **(a)** Renombrar solo la etiqueta y dejar el valor guardado. Introduce una capa de traducción:
+    **suma** un vocabulario en vez de restarlo.
+  - **(b)** Renombrar valor y etiqueta **con migración de datos** — `UPDATE` sobre histórico, con
+    dry-run, respaldo y gate de Plannotator según `docs/global-tables-architecture.md`.
+  - **(c)** No tocarlo.
+- **Recomendación:** **(c) en esta pasada**, y (b) como frente propio si `D-VOC-1` sale «unificar».
+  La (a) está descartada: contradice la condición de cierre, que exige **menos** términos.
+- **Qué quedó saltado esperando:** todo el vocabulario de Programa General.
+- **Estado:** `abierta`
+
+### D-VOC-3 · `Bloqueado` existe en Actualizar y no en Programa General
+
+- **Quién pregunta:** sesión de ejecución del frente `vocabulario-estados-cascada`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si `Bloqueado` se conserva o se absorbe en el `Debe Iniciar` / `Con Alerta
+  Restricciones` de Programa General.
+- **Qué se midió** (sobre `de02471a`): el contrato declara seis estados para
+  `programa-general-actualizar`; cinco son idénticos a los de PG y el sexto es `Bloqueado`, que en PG
+  no existe. **Es la única divergencia entre dos pantallas que muestran la misma tabla.**
+- **Opciones:** (a) absorberlo y quedar en cinco; (b) añadirlo también a PG y tener dos listas
+  iguales; (c) dejarlo.
+- **Recomendación:** **(a)** — dos vistas de la misma tabla no deberían clasificar distinto. Pero es
+  un término que la obra ve a diario, así que no se toca sin decisión del usuario.
+- **Qué quedó saltado esperando:** la vista de Programa General Actualizar y su entrada en el
+  contrato.
+- **Estado:** `abierta`
+
+### D-VOC-4 · Tres estados que se muestran y no existen en el contrato
+
+- **Quién pregunta:** sesión de ejecución del frente `vocabulario-estados-cascada`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si `Control` (Intermedia), `Capítulo` (Intermedia y PG) y `Programada
+  Manualmente` (Semanal) se declaran en el contrato o se retiran de la interfaz.
+- **Qué se midió** (sobre `de02471a`): los tres se muestran al usuario y ninguno está en
+  `state-semantics.json`; `ops-state-contract.test.mjs` exceptúa `neutral` a mano por eso. `Capítulo`
+  además es un **valor persistido** (ver `D-VOC-2`), no un estado de interfaz.
+- **Recomendación:** `Capítulo` **no es un estado, es un tipo de fila**, y mezclarlo con los estados
+  es parte de por qué hay 35 términos. Separarlo sería la resta más limpia del frente — y toca datos
+  guardados, así que se consulta.
+- **Qué quedó saltado esperando:** los tres términos.
+- **Estado:** `abierta`
+
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
