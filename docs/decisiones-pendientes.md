@@ -179,7 +179,7 @@ de preguntar. Copia esta forma:
   no una decisión técnica: la impone quien va a escribir las pruebas.
 - **Qué quedó saltado esperando:** nada. Las dos suites funcionan y el CI corre ambas. No se migró
   ningún test existente, que era condición del encargo.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (c) — PHPUnit obligatorio para lógica pura, scripts para lo que necesita base de datos o la aplicación viva. Es lo que ya pasaba de hecho; la decisión lo hace explícito para que la elección deje de depender de quién escriba. Recomendación de la sesión de CI, adoptada.`
 
 ### D-F1-1 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
 
@@ -572,7 +572,8 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 |---|---|---|
 | `D-1` | El informe adopta la numeración del spec | La sesión que mantiene `docs/reportes/estado-desarrollo.html` |
 | `D-2` | Triar los 30 tests por tandas, sin urgencia | Sin dueño asignado; se recoge cuando haya ocasión |
-| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | **Sesión de CI** (asignada por el usuario el 2026-08-11) |
+| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | **Sesión de CI** — ejecutada y verificada, sesión archivada |
+| `D-CI-2` | PHPUnit para lógica pura, scripts para lo que necesita entorno | Sin dueño: es una regla, se aplica al escribir el próximo test |
 | `D-F1-1` | Las dos severidades se quedan distintas, y se escribe por qué | Frente 1 · aplicado en `66facd23` |
 | `D-F1-2` | Familia nueva de tokens de fondo para destacar celdas, calibrada a 3:1 | Frente 1 · aplicado en `66facd23` |
 | `D-F1-3` | Apuntar los cuatro `--aia-*` al token real y retirar la reserva hex | **Sin aplicar**: ningún token conserva el color; vuelve al usuario |
