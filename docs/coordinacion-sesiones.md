@@ -38,15 +38,22 @@ mcp__ccd_session_mgmt__send_message  →  session_id de la coordinadora
 ```
 
 **Cómo identificar a la coordinadora:** llama a `mcp__ccd_session_mgmt__list_sessions` y busca la
-sesión que cumple las tres cosas a la vez:
+sesión cuyo `cwd` es exactamente `/Volumes/Crucial X6/Developer/lps-aia` — la **raíz** del repo, no
+un worktree de `.claude/worktrees/`— y que no es la tuya. Entre las que queden, la de
+`lastActivityAt` más reciente.
 
-1. `cwd` es exactamente `/Volumes/Crucial X6/Developer/lps-aia` — la **raíz** del repo, no un
-   worktree de `.claude/worktrees/`;
-2. `isRunning: true`;
-3. no es la tuya.
+**No filtres por `isRunning`.** La primera versión de esta página lo exigía y estaba mal: ese campo
+vale `false` para una sesión que está esperando entre turnos, que es el estado normal de la
+coordinadora casi todo el tiempo. Lo midió la sesión de CI el 2026-08-10: siguiendo la regla al pie
+de la letra no encajaba **ninguna** sesión, ni siquiera la coordinadora real.
 
-Si encaja exactamente una, esa es. **Si encajan cero o varias, pregúntale al usuario en el chat cuál
-es** en vez de adivinar: mandar una decisión a la sesión equivocada es peor que no mandarla.
+**Si encajan cero o varias, pregúntale al usuario en el chat cuál es** en vez de adivinar: mandar una
+decisión a la sesión equivocada es peor que no mandarla.
+
+**Y antes de atribuirle un commit a una sesión, compruébalo.** El 2026-08-10 la coordinadora le pasó
+a la sesión de CI tres observaciones sobre un informe que esa sesión no había escrito; lo demostró
+con `git merge-base --is-ancestor` y `git log --first-parent`. Un commit puede llegar a tu rama por
+un merge sin ser tuyo. Verifica la autoría con git antes de pedirle cuentas a nadie.
 
 ### Qué se consulta y qué no
 
