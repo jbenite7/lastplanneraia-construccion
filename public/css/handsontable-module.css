@@ -712,8 +712,17 @@ body {
    SIN @layer -- una regla sin capa gana siempre sobre cualquier regla en
    capa, sin importar el orden de capas ni la especificidad, así que el
    content-box de Handsontable ahi gana a la reserva de foundation.css. El
-   override de box-sizing se acota a esa pagina en vez de ir global. */
-#hot-container .wtHolder {
+   override de box-sizing se acota a esa pagina en vez de ir global.
+   Corregido 2026-08-11: la regla original apuntaba a *todos* los .wtHolder,
+   y Handsontable no crea uno solo -- crea el maestro (.ht_master, el que
+   scrollea) mas los clones de cabecera/columna fija (.ht_clone_top,
+   .ht_clone_left, .ht_clone_top_left_corner, ...). Con box-sizing: border-box
+   los 72px de padding sobre una caja de 72px de alto dejaban el area de
+   contenido del clon de cabecera en cero, y overflow: hidden recortaba la
+   cabecera entera -- las cuatro rejillas se quedaron sin cabecera visible.
+   El hueco de abajo solo tiene sentido en el holder que scrollea de verdad:
+   se acota a .ht_master. */
+#hot-container .ht_master .wtHolder {
   padding-block-end: var(--ds-space-18);
 }
 
