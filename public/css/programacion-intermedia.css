@@ -135,8 +135,8 @@ html.aia-theme-dark .pi-page {
 #hot-container {
     height: calc(100vh - 280px);
     margin-top: 4px;
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -215,9 +215,9 @@ html.aia-theme-dark .pi-page {
 }
 
 .pi-page #hot-container td.ops-state-td {
-    padding: 4px 6px !important;
-    overflow: visible !important;
-    vertical-align: middle !important;
+    padding: 4px 6px;
+    overflow: visible;
+    vertical-align: middle;
 }
 
 .pi-page .ops-state-zoom {
@@ -618,7 +618,7 @@ html.aia-theme-dark .pi-page {
     display: block;
     flex: 1 1 auto;
     min-width: 0;
-    padding: 0 !important;
+    padding: 0;
     margin: 0;
     line-height: 1.15;
     /* Task 19 (2026-08-03): 0.66rem (10.56px) quedaba por debajo del piso duro de
