@@ -31,7 +31,7 @@
 | 6 | made-to-stick | done — score SUCCESs sobre el onboarding de Plan de Compras v2, estados vacíos, errores, CTAs y tooltips de PG→PI→PS; 6 hallazgos (`S-1`…`S-6`) y **11 cadenas reescritas** (S-1, S-2 y C-33). C-33 aplicado con la frase genérica del equipo, marcada **provisional** en el código. Lo de dominio se registra, no se toca | docs/POSITIONING.md, docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 7 | influence-psychology | skipped: app interna de empresa, sin paywall ni superficies de upsell | — | 2026-08-04 |
 | 8 | high-perf-browser | deferred: hasta que una medición o queja señale lentitud percibida | DESIGN.md, EXPERIMENTS.md | 2026-08-04 |
-| 9 | steve-jobs-design-review | pending — enganchada al cierre del Frente 1 (`docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design.md`). **No es «done»**: la única revisión en frío que existe (`docs/PRODUCT.md`, Task 31, 2026-08-05) midió la cascada **antes** de los arreglos que el Frente 1 va a aplicar; revisarla de nuevo ahora repetiría defectos ya censados y a punto de repararse. `docs/PRODUCT.md` necesitará una pasada de refresco cuando el Frente 1 cierre, no una creación desde cero — ya existe | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
+| 9 | steve-jobs-design-review | **done 2026-08-11** — ejecutada al cerrar el Frente 1, en frío, sobre la cascada PG → PI → PS ya arreglada, que era su momento natural. **`done` significa que la revisión corrió, no que la aprobara: el veredicto es 6/10, «NO ESTÁ HECHO».** Pasan 4 de 7 filas; fallan las tres que miden la forma del recorrido — siguen 13 pasos y una semana hasta el primer dato útil (los 28 arreglos no quitaron ninguno), **no se quitó nada en todo el ciclo** (los 28 son 28 adiciones), y la `404` sigue devolviendo 52 bytes sin un enlace. Conclusión textual: «lista de parches bien hechos», no producto — lo siguiente no es más reparación, es una decisión de forma. Abrió 5 hallazgos, uno de ellos una **regresión de este mismo frente** (las cabeceras de columna sin pintar), confirmada en navegador real y arreglada en `6790a3ae`. `docs/PRODUCT.md` refrescado sobre `66facd23` | PRODUCT.md, DESIGN.md, EXPERIMENTS.md | |
 
 Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reason> · skipped: <reason>
 
@@ -102,8 +102,9 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   de Control de Cambios, o la sustituye por la de su obra? Y de `S-6`: ¿abre alguno de los tres
   textos de dominio (vacío del filtro en PS, los dos avisos de «sin Responsable AIA», los rótulos de
   las acciones)?
-- [ ] **Fase 9 — no está cerrada; corrige una contradicción de esta misma tabla (Task 7 Frente 0,
-  2026-08-10).** Esta casilla decía `[x]` y «cerrada el 2026-08-05» mientras la fila de la tabla
+- [x] **Fase 9 — cerrada el 2026-08-11**, al terminar el Frente 1 y sobre la cascada ya arreglada, que es
+  justo lo que este párrafo exigía. La casilla y la fila de `## Phase Status` dicen ya lo mismo. Corrigió en su día
+  una contradicción de esta misma tabla (Task 7 Frente 0, 2026-08-10): Esta casilla decía `[x]` y «cerrada el 2026-08-05» mientras la fila de la tabla
   `## Phase Status` de arriba seguía diciendo `pending` desde que se escribió el plan — las dos
   frases nunca coincidieron. Lo que el Task 31 sí hizo, y que sigue en pie: el barrido consolidado de
   las 28 superficies (contrato en verde) y una **primera** revisión en frío que produjo
