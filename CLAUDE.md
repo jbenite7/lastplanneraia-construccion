@@ -9,6 +9,22 @@ rules restated for other assistants/humans; where they overlap, `AGENTS.md` wins
 additional orientation that isn't already in those files: commands and where things actually live in
 the code.
 
+## Herramientas externas (ECC) — qué aplica aquí y qué no
+
+El entorno global tiene ECC instalado (perfil `developer`, ~/.claude). Buena parte de su catálogo
+asume stacks que este repo **no** usa, así que:
+
+- **Esto no es Laravel.** No hay `artisan`, ni Eloquent, ni service container: el routing es FastRoute
+  y el acceso a datos es `src/Core/Database.php`, con autoload PSR-4 `App\ -> src/`. Las skills
+  `laravel-patterns`, `laravel-tdd`, `laravel-verification` y `laravel-plugin-discovery` **no aplican**;
+  no las invoques ni razones desde sus supuestos.
+- **No hay PHPUnit ni Pest** (ver `### Tests`). No propongas migrar los `tests/test_*.php` a un runner
+  de terceros como parte de otra tarea — eso es un cambio con plan y gate propios.
+- **De ECC sí sirve aquí:** las reglas PHP en `~/.claude/rules/ecc/php/` (léelas bajo demanda), los
+  agentes `php-reviewer`, `security-reviewer` y `silent-failure-hunter`, y el comando `/security-scan`.
+- **El proceso lo manda Superpowers**, no ECC: planificar es `writing-plans` + gate, revisar es
+  `requesting-code-review`. No uses `/plan` ni `/code-review` de ECC, que duplican ese flujo.
+
 ## Memoria del proyecto (wiki en `memoria/`)
 
 **Empieza por `memoria/index.md`.** Es la wiki del proyecto: el porqué de las decisiones, las
