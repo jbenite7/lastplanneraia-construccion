@@ -156,6 +156,51 @@ function descubrirTests(string $directorio): array
 }
 
 /**
+ * Comprueba que el entorno que exige un nivel está disponible.
+ *
+ * Existe por algo medido, no por prudencia teórica: el 2026-08-10 se comprobó
+ * que 26 tests de la suite salen 0 cuando no hay base de datos, porque capturan
+ * el fallo de conexión y terminan bien. Ejecutarlos sin base daría 26 verdes
+ * que no comprobaron nada. Por eso la ausencia de entorno es un error del
+ * runner y nunca un resultado verde.
+ *
+ * @return string|null null si el entorno está; si no, qué falta
+ */
+function entornoDisponible(string $nivel, ?string $anfitrionDeBase): ?string
+{
+    if ($nivel === 'puro') {
+        return null;
+    }
+
+    $anfitrion = $anfitrionDeBase ?? (getenv('DB_HOST') ?: 'db');
+    $puerto = getenv('DB_PORT') ?: '3306';
+    $base = (string) getenv('DB_NAME');
+
+    try {
+        new PDO(
+            "mysql:host={$anfitrion};port={$puerto};dbname={$base}",
+            (string) getenv('DB_USER'),
+            (string) getenv('DB_PASS'),
+            [PDO::ATTR_TIMEOUT => 5, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        );
+    } catch (Throwable $error) {
+        return 'no hay base de datos alcanzable: ' . $error->getMessage();
+    }
+
+    if ($nivel === 'db') {
+        return null;
+    }
+
+    $contexto = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
+    $respuesta = @file_get_contents('http://127.0.0.1/login', false, $contexto);
+    if ($respuesta === false) {
+        return 'la aplicacion no responde por HTTP en 127.0.0.1';
+    }
+
+    return null;
+}
+
+/**
  * Ejecuta un test como subproceso y devuelve su código de salida y su salida
  * combinada. El timeout evita que un test colgado bloquee el CI.
  *
@@ -278,6 +323,17 @@ if ($opciones['soloListar']) {
 if ($seleccionados === []) {
     echo "No hay nada que ejecutar en este nivel.\n";
     exit(SALIDA_OK);
+}
+
+// Se comprueba el nivel PEDIDO, no el de los tests seleccionados: si alguien
+// pide 'db' y no hay base, la respuesta honesta es abortar, no correr los
+// 'puro' y devolver un verde que nadie pidió.
+$loQueFalta = entornoDisponible($opciones['nivel'], $opciones['dbHost']);
+if ($loQueFalta !== null) {
+    abortar(
+        "el entorno del nivel '{$opciones['nivel']}' no está disponible: {$loQueFalta}\n"
+        . '  No se ejecutó ningún test. La ausencia de entorno no es un resultado verde.'
+    );
 }
 
 $pasaron = [];

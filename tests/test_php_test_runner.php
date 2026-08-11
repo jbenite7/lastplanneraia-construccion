@@ -57,6 +57,18 @@ verificar('el error nombra el archivo sin etiqueta', str_contains($r['salida'], 
 $r = correrRunner($runner, ['--dir=' . $fixtures . '/con-etiqueta', '--nivel=inventado']);
 verificar('un nivel invalido devuelve 2', $r['codigo'] === 2);
 
+// Pedir un nivel db sin base de datos alcanzable aborta con 2, no da verde.
+// Es el guardarrail que nace de lo medido el 2026-08-10: 26 tests de la suite
+// salen 0 cuando no hay base de datos, porque capturan el fallo de conexion.
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--nivel=db',
+    '--db-host=host.invalido.imposible',
+]);
+verificar('sin base de datos, el nivel db aborta con 2', $r['codigo'] === 2);
+verificar('el error explica que falta la base', stripos($r['salida'], 'base de datos') !== false);
+verificar('la ausencia de entorno no se reporta como verde', stripos($r['salida'], 'OK:') === false);
+
 echo "\n";
 if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";
