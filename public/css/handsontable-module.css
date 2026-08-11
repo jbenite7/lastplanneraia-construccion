@@ -82,7 +82,7 @@ body {
   height: calc(100vh - 180px);
   background: var(--ds-active-surface);
   box-shadow: var(--ds-shadow-xs);
-  border-radius: var(--ds-radius-table, 4px);
+  border-radius: var(--ds-radius-table, 1rem);
   overflow: hidden;
   margin-top: 10px;
   box-sizing: border-box !important;
@@ -299,7 +299,7 @@ body {
   background-color: var(--ds-cell-state-ok-bg) !important;
   border: 1px solid var(--ds-active-border) !important;
   color: var(--ds-cell-state-ok-fg) !important;
-  border-radius: var(--ds-radius-pill, 12px) !important;
+  border-radius: var(--ds-radius-pill) !important;
   padding: 2px 6px 2px 20px !important; /* Espacio para la x a la izquierda */
   position: relative;
   font-size: var(--ds-type-size-sm);
@@ -349,7 +349,7 @@ body {
 /* Mobile Card Styling */
 .mobile-card {
   background: var(--ds-active-surface);
-  border-radius: var(--ds-radius-card, 12px);
+  border-radius: var(--ds-radius-card, 1rem);
   padding: 15px;
   margin-bottom: 15px;
   box-shadow: var(--ds-shadow-sm);
@@ -550,7 +550,7 @@ body {
   background: color-mix(in srgb, var(--aia-blue-primary) 14%, transparent);
 }
 .lps-state-neutral {
-  border: 1px solid var(--ds-active-border, #eaeaea) !important;
+  border: 1px solid var(--ds-active-border) !important;
 }
 
 .lps-badge {
@@ -755,7 +755,7 @@ body.ps-page #hot-container .wtHolder {
      lo mismo sin entrar en una guerra de `!important` y respetando ese piso. */
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--aia-green-dark, oklch(35.5% 0.09 143.5)); /* Verde Oscuro Oficial AIA */
+  background: var(--aia-green-dark, oklch(27.8% 0.05 147.1)); /* Verde Oscuro Oficial AIA */
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.2);

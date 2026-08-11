@@ -693,6 +693,39 @@ de preguntar. Copia esta forma:
   estática sigue en **RC=0**. Antes eso era imposible: declarar un solo gate honesto tumbaba la
   suite entera. Es el fin del incentivo que creó los quince `passed` falsos.
 
+### D-RES-1 · `--aia-green` no existe: su reserva es lo único que pinta el hover del disparador LPS
+
+- **Quién pregunta:** sesión de ejecución del frente «reservas contradictorias» (a187ccda).
+- **Fecha:** 2026-08-11.
+- **Qué se decide:** qué hacer con `public/css/handsontable-module.css:777`,
+  `background: var(--aia-green, oklch(43.86% 0.084 142.5))` — el estado hover del botón circular que
+  abre el cajón LPS. Es el único caso de los siete medidos que queda sin resolver.
+- **Qué se midió** (en vivo, `/programacion-semanal`, 1180×820, tema dark, cuenta `test.A`):
+  - `getComputedStyle(document.documentElement).getPropertyValue('--aia-green')` devuelve **cadena
+    vacía**: el token no está definido en ningún archivo de `public/css/`. La reserva es el color
+    real del hover, no una duplicación.
+  - No es lo mismo que el token vecino `--aia-green-dark`, que sí existe
+    (`public/css/tokens.css:6`, `oklch(27.8% 0.05 147.1)`) y es el fondo en reposo del mismo botón.
+  - El otro token inexistente del archivo, `--hot-table-width` (líneas 155–156), **no es un caso
+    equivalente y no entra aquí**: lo fija JavaScript en tiempo de ejecución sobre el contenedor
+    (`public/js/modules/aia_ui/hot_table_width.js:66` y cuatro módulos más), y su reserva `100%` es
+    el valor correcto mientras no se haya medido el ancho. Ahí la reserva no miente: está bien y se
+    deja.
+- **Opciones:**
+  - **(a) Dejar la línea como está.** Cero riesgo, nada cambia en pantalla. El código sigue citando
+    un token que no existe, que es justo lo que este programa desmonta.
+  - **(b) Dar de alta `--aia-green` en `public/css/tokens.css`** con el valor que hoy tiene su
+    reserva (`oklch(43.86% 0.084 142.5)`) y quitar la reserva. Es el mismo criterio que el usuario
+    ya eligió en `D-F1-3`: definir el token con el valor de su reserva, sin mover un píxel. Pero dar
+    de alta un token es tocar el sistema de diseño, y hay que decidir si `--aia-green` es un nombre
+    que el sistema quiere (ya existen `--aia-green-primary`, `--aia-green-dark`, `--aia-green-light`,
+    `--aia-green-medium`; un `--aia-green` a secas puede sobrar o pedir otro nombre).
+- **Recomendación:** **(b)**, por coherencia con `D-F1-3`, pero decidiendo antes el nombre: lo más
+  probable es que el hover deba apuntar a `--aia-green-medium` o `--aia-green-primary` en vez de
+  crear un nombre nuevo. Eso sí movería el color, así que necesita el visto del usuario.
+- **Qué quedó saltado esperando:** la línea 777 no se tocó. Tampoco las 155–156.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
