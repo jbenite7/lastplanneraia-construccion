@@ -755,7 +755,7 @@ body.ps-page #hot-container .wtHolder {
      lo mismo sin entrar en una guerra de `!important` y respetando ese piso. */
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--aia-green-dark, oklch(27.8% 0.05 147.1)); /* Verde Oscuro Oficial AIA */
+  background: var(--aia-green-dark); /* Verde Oscuro Oficial AIA */
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.2);
