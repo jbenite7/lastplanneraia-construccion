@@ -58,7 +58,7 @@ Los comandos de operación del agente ahora están definidos como workflows form
 1. **Mobile First**: Todo desarrollo debe pensarse y probarse primero para dispositivos móviles.
 2. **Ediciones Atómicas**: **Nunca** generar bloques de código de más de 20 líneas en una sola edición. Dividir en pasos lógicos.
 3. **Conexiones DB**: Siempre utilizar la clase `Database.php` (Singleton) expuesta por `src/Core/Database.php`.
-4. **Normalización de Cargos**: Toda lógica relacionada con cargos debe pasar por `Admin\Core\RoleManager::cleanCargo()`.
+4. **Normalización de roles**: toda lógica que compare un rol debe normalizarlo antes con `App\Security\RbacService::normalizeRole()`. *(Corregido el 2026-08-10: esta línea decía `Admin\Core\RoleManager::cleanCargo()`, que no normaliza roles — limpia texto de cargos para emparejarlos por aproximación y devuelve `"director obra"`, nunca `'D'`.)* `cleanCargo()` sigue siendo la correcta para lo que sí hace: emparejar un **cargo escrito a mano** con un rol, dentro de `suggestRoleByCargo()`.
 5. **Scripts Críticos**: Antes de ejecutar scripts masivos, mostrar resumen y pedir confirmación explícita.
 6. **Control de Versiones**: NO hacer git push sin aprobación explícita. Antes de publicar validar repo original, rama `main`, worktree principal y remoto `origin`.
 7. **Validación Browser/E2E**: Se permite Playwright para pruebas locales en `localhost:8081`; no reemplaza pruebas PHP ni revisión de BD.

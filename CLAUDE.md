@@ -165,8 +165,16 @@ map for legacy names, and permission constants (`PERM_AUTO_DEFINIR_CONTRATOS`, e
 is intentionally simple: `getCapabilities(string $role)` returns a flat boolean map
 (`canManageWeeks`, `canManageGeneralProgram`, `canManagePdC`, …) computed from hardcoded
 `in_array($role, [...])` lists — there is no DB-backed permission table. `hasCapability($role, $cap)`
-just reads that map. Always normalize an incoming role/cargo through
-`Admin\Core\RoleManager::cleanCargo()` before checking capabilities.
+just reads that map. Always normalize an incoming role through
+`App\Security\RbacService::normalizeRole()` before checking capabilities.
+
+**Corrected 2026-08-10:** this used to say `Admin\Core\RoleManager::cleanCargo()`, and that is the
+wrong function. `cleanCargo()` lowercases, strips accents and normalizes gendered job titles
+(`admin/src/Core/RoleManager.php:67`) — it returns cleaned *text* like `"director obra"` for the
+fuzzy matching inside `suggestRoleByCargo()`, never a role code. Feeding it where a code is expected
+would break `$_SESSION['permiso']` and every `hasCapability()` call. `RbacService::normalizeRole()`
+(`src/Security/RbacService.php:18`) is the one that maps aliases to a canonical code via
+`RbacCatalog::roleAliases()`.
 
 ### `admin/` is a separate mini-app
 

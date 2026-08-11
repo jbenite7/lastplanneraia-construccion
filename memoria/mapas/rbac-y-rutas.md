@@ -31,8 +31,15 @@ alias legados y las constantes de permiso.
 
 `RbacManager::getCapabilities($rol)` devuelve un mapa plano de booleanos calculado con listas
 `in_array` escritas a mano. **No hay tabla de permisos en la base de datos.** Normaliza siempre el
-cargo entrante con `Admin\Core\RoleManager::cleanCargo()` antes de comprobar nada, y deja solo
+rol entrante con `App\Security\RbacService::normalizeRole()` antes de comprobar nada, y deja solo
 lectura como respaldo seguro.
+
+**Corregido el 2026-08-10.** Esta página decía `Admin\Core\RoleManager::cleanCargo()` porque lo
+copiaba de `AGENTS.md`, y allí era un error: `cleanCargo()` limpia **texto** de cargos —minúsculas,
+sin acentos, géneros normalizados— para emparejarlos por aproximación dentro de
+`suggestRoleByCargo()`, y devuelve `"director obra"`, nunca `'D'`. La que traduce alias a código
+canónico es `RbacService::normalizeRole()`. Se corrigieron a la vez `AGENTS.md`, `CLAUDE.md` y
+`GEMINI.md`: el error estaba en los tres contratos y la wiki lo heredó.
 
 Políticas específicas viven aparte: `LpsWeekEditPolicy`, `DesignSystemLabAccessPolicy`,
 `CommitmentLockGuard`.

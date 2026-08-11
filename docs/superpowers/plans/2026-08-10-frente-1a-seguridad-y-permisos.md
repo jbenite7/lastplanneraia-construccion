@@ -16,7 +16,7 @@
 - **La sesión local se abre por la puerta de servicio**, nunca por `/login`: `http://localhost:8081/dev/entrar?u=<cuenta>`. Cuentas habilitadas: `test.A`, `test.R`, `test.V`, `test.C`, `test.D`.
 - **Prepared statements siempre** a través de la capa `Database`. Nada de SQL con datos de usuario.
 - **CSRF en toda mutación autenticada.** No se retira de ningún endpoint.
-- **Normaliza roles con `Admin\Core\RoleManager::cleanCargo()`**, y conserva solo lectura como fallback seguro (`AGENTS.md` §Seguridad).
+- **Normaliza roles con `App\Security\RbacService::normalizeRole()`**, y conserva solo lectura como fallback seguro. *(Corregido el 2026-08-10 durante la Task 5: este plan decía `cleanCargo()`, copiándolo de `AGENTS.md`, y era la función equivocada — limpia texto de cargos, no traduce a código de rol.)*
 - **Un rol permitido y uno denegado** verificados en toda ruta protegida que se toque (`AGENTS.md` §Routing).
 - **Todo gate se entrega con una mutación que lo pone rojo, ejecutada.**
 - **Todo paso que quite algo de una lista mide qué cobertura pierde**, no solo qué gana.
@@ -298,7 +298,7 @@ Esperado: FALLA en los casos de `D` y de `R` fuera de plazo — hoy el servidor 
 
 - [ ] **Step 3: Implementar la regla en el servidor**
 
-En `SemanalApiController::reabrir()`, tras el guard existente y **antes** de la mutación. Normaliza el rol con `RoleManager::cleanCargo()`. La ventana del Residente se calcula contra la fecha de inicio de la semana; si esa fecha no se puede resolver, **denegar** — es la misma decisión que la Task 4 unifica para todo el candado, y aquí se aplica ya.
+En `SemanalApiController::reabrir()`, tras el guard existente y **antes** de la mutación. Normaliza el rol con `RbacService::normalizeRole()`. La ventana del Residente se calcula contra la fecha de inicio de la semana; si esa fecha no se puede resolver, **denegar** — es la misma decisión que la Task 4 unifica para todo el candado, y aquí se aplica ya.
 
 - [ ] **Step 4: Corregir el registro de auditoría**
 
@@ -401,7 +401,7 @@ Casos: una cuenta con `role = 'Director de Obra'` en texto debe entrar como `D`,
 
 - [ ] **Step 2: Correrla, verla fallar, implementar**
 
-Sustituye `normalizeRoleCode()` por `RoleManager::cleanCargo()` y unifica el criterio de visibilidad en **una sola función** que los tres sitios consuman. `BiProjectScope` es hoy el que acierta —incluye `'P'`, que es Director en `RbacCatalog::roleAliases()`—, así que el criterio correcto es el suyo, no el del selector.
+Sustituye `normalizeRoleCode()` por `RbacService::normalizeRole()` y unifica el criterio de visibilidad en **una sola función** que los tres sitios consuman. `BiProjectScope` es hoy el que acierta —incluye `'P'`, que es Director en `RbacCatalog::roleAliases()`—, así que el criterio correcto es el suyo, no el del selector.
 
 - [ ] **Step 3: Retirar la barra inventada**
 
