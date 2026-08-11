@@ -40,3 +40,32 @@ Receta que funcionó el 2026-07-29 para aislar de verdad:
 
 Trampa aparte: `$DC="docker compose -p …"` en zsh da `rc=127` («command not found»); escribe el
 comando literal en cada llamada.
+
+## La consecuencia al **verificar**, que es la que muerde de verdad
+
+Lo de arriba se lee como higiene de datos, y el filo peor no es ese. Si trabajas en un worktree y
+el stack que corre es el del árbol principal, **`localhost:8081` sirve los archivos del árbol
+principal, no los tuyos**. Entonces una captura «del después» muestra el archivo **viejo**: verificas
+un cambio que no es el tuyo y sale verde. Es un falso verde silencioso, sin ningún síntoma — el
+mismo defecto que [[captura-playwright-miente]], por otra puerta.
+
+Medido el 2026-08-11 en el frente `focus-visible-verde`: el cambio movía píxeles a propósito y la
+página en `:8081` seguía pintando el valor anterior.
+
+**Receta ligera cuando solo hace falta ver tu árbol, sin base propia ni aislamiento de datos** —para
+un cambio de CSS o de vista, donde clonar la base es gasto puro—: un contenedor suelto con la misma
+imagen, montando el worktree y **entrando a la red del stack que ya corre**, para reutilizar su
+MySQL sin tocarlo.
+
+```bash
+docker run -d --name lps-wt-app --network last-planner-aia_default -p 8095:80 \
+  -v "$PWD":/var/www/html -e DB_HOST=db -e DB_PORT=3306 \
+  -e DB_NAME=lastplanneraia_dev -e DB_USER=root -e DB_PASS='<el de .env>' \
+  -e APP_ENV=development -e USE_GLOBAL_TABLES=true last-planner-aia-app
+```
+
+Sirve para **leer**, que es lo que hace una verificación visual. Si el cambio escribe en la base, no
+vale: comparte el MySQL del otro stack y aplica la receta completa de arriba. Dos detalles que
+cuestan un rato: elige el puerto comprobando antes que está libre —el fallo por puerto ocupado no
+dice cuál—, y el `.env` **sí viaja** al worktree, así que la puerta de servicio funciona sin
+configurar nada. Bórralo al terminar (`docker rm -f lps-wt-app`).
