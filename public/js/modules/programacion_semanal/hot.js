@@ -3641,7 +3641,7 @@
 
     var html = "<div class='ps-close-summary'>" +
       "<div class='ps-close-summary-kpis'>" +
-      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Por completar</small></div>" +
+      "<div id='ps-close-summary-kpi-por-completar' class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Por completar</small></div>" +
       "<div class='ps-close-summary-kpi is-ready'><strong>" + summary.readyCount + "</strong><small>Listas para confirmar</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningLowCount + "</strong><small>Compromiso menor a sugerido</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con condiciones pendientes</small></div>" +
@@ -3655,7 +3655,20 @@
     html += "<p class='ps-close-summary-note'>Al confirmar, no se podrán modificar compromisos ni eliminar actividades.</p></div>";
 
     $('#cerrar_compromisos_semana').html(html);
-    $('#btn_confirmar_compromisos_semana').prop('disabled', hasBlocking).toggleClass('disabled', hasBlocking);
+    var $btn = $('#btn_confirmar_compromisos_semana');
+    $btn.prop('disabled', hasBlocking).toggleClass('disabled', hasBlocking);
+
+    // El motivo vivia en un KPI a media pantalla y el boton no lo nombraba: se
+    // sabia que estaba bloqueado, no por que. `aria-describedby` lo ata al KPI
+    // que lo causa, y la etiqueta propia lo dice en claro para quien no navega
+    // por la pagina entera.
+    if (hasBlocking) {
+      $btn.attr('aria-describedby', 'ps-close-summary-kpi-por-completar');
+      $btn.attr('aria-label', 'Confirmar cerrar compromisos. Faltan ' + summary.blockingCount + ' por completar');
+    } else {
+      $btn.removeAttr('aria-describedby');
+      $btn.attr('aria-label', 'Confirmar cerrar compromisos');
+    }
   }
 
   // El borde rojo y el aviso global de #formulario_nuevo ya existian, pero nada ataba
@@ -4147,7 +4160,7 @@
     var today = new Date();
     var dateText = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    $('#btn_confirmar_compromisos_semana').prop('disabled', true).val('Confirmando...');
+    $('#btn_confirmar_compromisos_semana').prop('disabled', true).val('Confirmando...').attr('aria-busy', 'true');
 
     $.ajax({
       method: 'POST',
@@ -4187,6 +4200,17 @@
         $('#Semanal_Confirmada').val('1');
         syncPhaseUI();
         loadData();
+
+        // La barra de fase ya cambiaba de Programacion a Calificacion; el sello
+        // solo acusa ese cambio que ya ocurria, no anade un momento nuevo.
+        var $phaseBar = $('#ctxWeeklyPhase');
+        if ($phaseBar.length) {
+          $phaseBar.removeClass('is-sellada');
+          void $phaseBar[0].offsetWidth;
+          $phaseBar.addClass('is-sellada').one('animationend', function () {
+            $phaseBar.removeClass('is-sellada');
+          });
+        }
       } else {
         $('#aceptar_cerrar_compromisos_semana').html('<p>Se detectaron actividades sin compromiso o sin asignaciones obligatorias.</p><p>Asigne compromisos > 0, Responsable AIA y Sub-Contratista en todas las actividades activas para continuar.</p>');
 
@@ -4200,7 +4224,7 @@
     }).fail(function () {
       showFeedback('error', 'Error confirmando compromisos');
     }).always(function () {
-      $('#btn_confirmar_compromisos_semana').prop('disabled', false).val('Confirmar');
+      $('#btn_confirmar_compromisos_semana').prop('disabled', false).val('Confirmar').removeAttr('aria-busy');
     });
   }
 

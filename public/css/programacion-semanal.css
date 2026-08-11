@@ -2502,6 +2502,27 @@ body.ps-page #hot-container td.ps-cell-shake {
     animation: ps-cell-shake 180ms ease-out 2;
 }
 
+/* El acto mas consecuente del ciclo semanal se acusaba con un modal de texto
+   plano. El sello marca el cambio de fase que YA ocurre —Programacion pasa a
+   Calificacion— en vez de anadir un momento nuevo. hot.js pone y quita
+   `is-sellada` en #ctxWeeklyPhase al confirmar. El guard global de
+   reduced-motion (mas abajo en este archivo) la anula igual que a
+   ps-cell-shake; el override explicito de aqui es belt-and-suspenders. */
+.context-weekly-phase.is-sellada {
+    animation: ps-sello-fase var(--ds-motion-standard) both;
+}
+
+@keyframes ps-sello-fase {
+    from { transform: scale(1.06); opacity: 0.4; }
+    to   { transform: scale(1);    opacity: 1;   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .context-weekly-phase.is-sellada {
+        animation: none;
+    }
+}
+
 html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
     --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
     --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
