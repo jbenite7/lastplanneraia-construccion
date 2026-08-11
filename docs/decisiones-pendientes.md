@@ -759,6 +759,47 @@ propia, la salida es darle su propia regla, no volver a aclarar la compartida.
 declaración queda `var(--aia-green-primary)` sin reserva, en línea con el criterio del frente
 anterior. Con ello desaparece el último literal de color suelto de esta regla.
 
+### D-FORMA-1 · La lista de qué se quita: cuatro candidatos medidos, y ninguno lo puede decidir el ejecutor
+
+- **Quién pregunta:** sesión de ejecución del frente corto de forma (`forma-quitar-pasos`, a187ccda).
+- **Fecha:** 2026-08-11.
+- **Qué se decide:** cuál de los cuatro candidatos medidos se quita. Es la **tercera pieza** del
+  alcance de `D-F1-6` —«una lista explícita de qué se quita»— y la que hace que el frente pueda
+  cerrarse, porque su condición es que **no cierra sin haber eliminado algo**.
+- **El problema, dicho claro:** la regla obliga a quitar, pero **los cuatro candidatos que la
+  medición encuentra están marcados en el backlog como decisión de usuario o de navegación**. El
+  ejecutor no puede resolverlo sin invadir eso, y quitar «algo» solo para cumplir la regla sería
+  peor que no quitar nada: convertiría una decisión de producto en un trámite.
+
+**Qué se midió** (en vivo, `/programacion-intermedia`, 1180×820, dark, `test.A`, sirviendo el
+worktree en un contenedor propio):
+
+| Candidato | Medida | Quién decide, y por qué |
+|---|---|---|
+| **Chips en cero** | 8 chips de estado, **7 leen `(0)`**. Solo «Listo para Comprometer (1)» tiene dato | **Usuario.** Un chip en cero no es ruido puro: dice que la categoría existe y está vacía. Quitarlos u ocultarlos cambia qué se aprende de un vistazo |
+| **Selector de semana repetido** | **4** elementos `.shell-week-flyout`, uno por ítem de navegación con submenú, más `ctxWeekMenu` en la cabecera: **5 sitios** para cambiar de semana, y 16 botones «Semana N» en el DOM para 4 semanas | **Navegación.** No es un fallo: cada flyout cuelga de su propio ítem. Unificarlos quita capacidad a tres de ellos, y el del carril tiene «+ Nueva semana», que los otros no |
+| **Término duplicado en pantalla** | «Listo para Comprometer (1)» como chip **y** «Listo para comprometer» como leyenda, a la vez | **Usuario**, aunque es el más barato: dos rótulos para lo mismo en la misma pantalla |
+| **Tres vocabularios de estado** | 21 términos para el mismo ciclo (7 en PG, 9 en PI, 5 en PS) | **Usuario, ya declarado así en el backlog:** toca vocabulario compartido con la obra (`GLOSARIO.md`) |
+
+- **Opciones:**
+  - **(a) Quitar el término duplicado** (chip y leyenda dicen lo mismo). Es el más barato, no toca
+    vocabulario ni navegación, y cumple la regla con una resta real y visible.
+  - **(b) Ocultar los chips que leen `(0)`.** El de mayor efecto sobre la densidad —quita 7 de 8
+    controles de esa fila— pero cambia qué se aprende de un vistazo, y es reversible.
+  - **(c) Unificar los cinco sitios donde se cambia de semana.** El de más peso de mantenimiento y
+    el más arriesgado: toca el shell compartido por todas las pantallas.
+  - **(d) Declarar que la primera pieza ya cumple la regla.** Las páginas de error quitaron código
+    muerto —la variable `$allowedMethods` sin usar y el `<pre>` de la excepción sobre un `<h1>`
+    pelado—. Defendible, pero **no es una resta del recorrido**, que es lo que la revisión señalaba:
+    el usuario sigue dando los mismos 13 pasos.
+- **Recomendación:** **(a) y (b) juntas**, en ese orden. (a) es gratis y no discute con nadie. (b) es
+  la que de verdad mueve la densidad, y su riesgo es bajo porque se deshace cambiando una línea. (c)
+  merece frente propio, no la cola de este. **(d) no**, y conviene decirlo: aceptar código muerto
+  como «la resta» vacía la regla justo en su primera aplicación.
+- **Qué quedó saltado esperando:** los cuatro candidatos siguen en pie, sin tocar. La primera pieza
+  del frente —las páginas de error— sí está hecha y commiteada; no depende de esta decisión.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
