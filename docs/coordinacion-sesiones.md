@@ -213,7 +213,7 @@ se degradaron al repetirse**, perdiendo por el camino la fecha, el árbol o el m
   el mismo mensaje en que corregía a un ejecutor por usar un proxy en vez de medir. Reales: **48**.
 - **El recuento del hook** (40, 38, 37, 22, 2, 1) — el peor, porque **no es una medición en absoluto**:
   el hook suprime lo ya señalado, así que el total depende de cuántas veces se disparó antes. Ver
-  [[contador-que-baja-porque-ya-lo-miraste]].
+  [[el-contador-no-mide-el-archivo]].
 
 **Lo que se hace, y aplica también —sobre todo— a la coordinadora:**
 

@@ -124,7 +124,7 @@ mismo selector es deuda antes que prioridad.
   (caído en ello durante este frente).
 - El auditor de diseño **no se mueve, y era lo esperado**: `buttons.css` no está en
   `exceptions.json`. El hook de Impeccable pasó de 137 a 121 a 16 hallazgos sin que se tocara
-  ninguna de esas líneas — es `memoria/trampas/contador-que-baja-porque-ya-lo-miraste.md`.
+  ninguna de esas líneas — es `memoria/trampas/el-contador-no-mide-el-archivo.md`.
 
 ## Nota de método sobre este propio censo
 

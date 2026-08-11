@@ -39,7 +39,7 @@ contamina todas las mediciones posteriores con falsos «hace falta». Si se prue
 que restaurar `style.cssText` entero y **verificar que la línea base vuelve idéntica** antes de
 fiarse del resultado.
 
-Familia: [[contador-que-baja-porque-ya-lo-miraste]], [[gate-solo-cuenta-elementos-no-los-lee]],
+Familia: [[el-contador-no-mide-el-archivo]], [[gate-solo-cuenta-elementos-no-los-lee]],
 [[captura-playwright-miente]], [[css-layer-cascade]], [[el-dom-dice-que-existe-no-que-se-ve]],
 [[gate-visual-tolerancia-enganosa]].
 
