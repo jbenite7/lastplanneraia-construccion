@@ -24,7 +24,9 @@
 - **No repitas lógica en varios módulos.** Si un arreglo cae en `programa_general/hot.js`, `programacion_intermedia/hot.js`, `programacion_semanal/hot.js` y `programa_actualizar/hot_actualizar.js`, va a **una** pieza compartida. Copiarlo cuatro veces siembra el defecto que esta tanda arranca. Medido en la tanda 1A: una tarea hubo que devolverla por repetir 26 líneas idénticas en cuatro `hot.js`.
 - **Todo cambio visible se valida en navegador** contra el contenedor servido, con consola revisada.
 - Commits atómicos, uno por tarea. Nunca `.env`, nunca `docker-compose.wt.yml`.
-- **Consulta hacia arriba** toda decisión que cambie alcance, toque un contrato o baseline, borre algo, altere lo que una prueba mide, o se desvíe del plan. **Anotar una duda en el informe no es consultarla** (`docs/coordinacion-sesiones.md`).
+- **Las decisiones del usuario se acumulan y esta sesión no para nunca** (`docs/coordinacion-sesiones.md`, actualizado el 2026-08-10). Cuando un paso necesite su criterio —cambia alcance, toca un contrato o baseline, borra algo, altera lo que una prueba mide, o se desvía del plan—: **(1)** anótalo en `docs/decisiones-pendientes.md` con la plantilla de ese archivo, **(2)** **sáltate ese hallazgo** sin tocarlo, y **(3)** sigue con los demás.
+  - **No lo resuelvas con el supuesto más conservador.** Saltar deja el hallazgo intacto y barato de retomar; suponer deja trabajo que quizá haya que deshacer. El 2026-08-10 hubo que devolver una tarea por exactamente eso.
+  - **Mide antes de anotar.** Una entrada que diga «no sé si X o Y» sin datos le devuelve el trabajo al usuario, que es lo que este reparto existe para evitar. Cada entrada debe poder decidirse **sin abrir el código**.
 
 ## Los 12 hallazgos y dónde caen
 
@@ -1085,6 +1087,8 @@ Programacion Semanal, no Intermedia."
 
 **Solape declarado:** la T3 Step 4 y la T4 Step 2 editan **el mismo bloque** (`applyFiltersAndRender`). La T3 lo muestra ya en su forma final con una nota explícita para que no haya que escribirlo dos veces ni se pisen entre sí.
 
-**Puntos de consulta hacia arriba, marcados en su paso y no al final:** la severidad de la marca de Responsable AIA (T5 Step 2-3, con trabajo independiente disponible mientras espera), un tercer consumidor de `No_Bloqueado` (T7 Step 1), la ausencia de token de superficie de estado (T5 Step 2) o de motion (T8 Step 3), cualquier recaptura de golden (T5 Step 5, T8 Step 5), y cualquier `200` donde se espera `403` (T1 Step 5, T7 Step 4).
+**Puntos que van a la cola de decisiones y se saltan, marcados en su paso y no al final:** la divergencia de severidad entre PI y PS (anotada ya como D-2, no se toca), un tercer consumidor de `No_Bloqueado` (T7 Step 1), la ausencia de token de superficie de estado (T5 Step 2) o de motion (T8 Step 3), y cualquier recaptura de golden (T5 Step 5, T8 Step 5).
+
+**La única excepción a «anota y sigue»:** un `200` donde se espera `403` (T1 Step 5, T7 Step 4). Eso no es una decisión de producto, es un agujero de permisos abierto, y se avisa **de inmediato** hacia arriba en vez de encolarse.
 
 **Lo que este plan no cubre:** los 16 hallazgos de la tanda 1C, que reciben su propio plan al cerrar esta —escribirlo por adelantado repetiría el error de la 1A, cuyo plan se quedó obsoleto a mitad porque el repo se movió mientras se ejecutaba—. Tampoco la fase 9 de `improve-app`, que corre en frío al cerrar el frente entero.

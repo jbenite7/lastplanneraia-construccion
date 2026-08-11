@@ -57,6 +57,42 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
 - **Estado:** `abierta`
 
+### D-2 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1B, Task 5.
+- **Fecha:** 2026-08-10
+- **Qué se decide:** cuando una actividad no tiene Responsable AIA asignado, ¿eso es un **error
+  grave** (rojo) o un **aviso** (ámbar)? Hoy Programación Semanal lo pinta rojo y Programación
+  Intermedia lo pinta ámbar, y es exactamente la misma falta.
+- **Qué se midió:**
+  - Programación Semanal: `.ps-missing-assignment` usa `--ds-color-state-critical-text` y **no
+    declara peso de fuente** (`public/css/programacion-semanal.css:1690-1693`).
+  - Programación Intermedia: `.pi-missing-resp` usa `--ds-color-state-warning-text` y **pesa 600**
+    (`public/css/programacion-intermedia.css:532-537`).
+  - Las dos marcan la misma condición y las dos bloquean: en Semanal impide cerrar la semana, en
+    Intermedia impide gestionar restricciones.
+  - **Esta divergencia no estaba registrada en ninguna parte.** La ficha del backlog (ICE 392)
+    afirmaba lo contrario —que Intermedia «no marca esa celda de ninguna forma»—, y es falso desde
+    el commit `7ff39b54` del 2026-08-05.
+- **Opciones:**
+  - **(a) Las dos en «crítico» (rojo).** Coherente con que la falta bloquea en las dos pantallas.
+    Hace Intermedia más alarmante de lo que es hoy.
+  - **(b) Las dos en «aviso» (ámbar).** Reserva el rojo para lo que ya no tiene arreglo dentro de la
+    pantalla. Baja el tono de Semanal, que es donde más consecuencia tiene.
+  - **(c) Dejarlas distintas y escribir por qué.** Defendible si el rojo de Semanal es deliberado
+    porque ahí la falta bloquea el cierre del ciclo, y en Intermedia solo bloquea una columna.
+  - Las tres son reversibles: es un token de color en una hoja de estilo, sin efecto sobre datos.
+- **Recomendación:** **(c)**, escribiendo el motivo. La consecuencia real **no** es la misma en las
+  dos pantallas —en Semanal la falta frena el cierre de la semana entera, en Intermedia solo impide
+  editar unas celdas—, así que dos tonos distintos comunican algo cierto en vez de una
+  inconsistencia. Lo que hoy falta no es que coincidan: es que nadie escribió que la diferencia era
+  a propósito.
+- **Qué quedó saltado esperando:** solo la elección de severidad. **Sí se hizo** lo que el usuario ya
+  había aprobado para el ICE 448 —dar regla a la clase de fondo `.ps-cell-empty-alert`, que no tenía
+  ninguna en todo el árbol, y subir el peso del glifo de Semanal—, porque esa disposición dice «es
+  solo visual» y no depende de esta decisión.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
