@@ -36,3 +36,13 @@ test('los chips de filtro de Programacion Semanal declaran su estado', async () 
   assert.ok(sync, 'no se encontro syncLegendVisualState()');
   assert.match(sync[0], /aria-pressed/, 'syncLegendVisualState no actualiza aria-pressed');
 });
+
+test('el boton bloqueado de /profesionales es alcanzable pero no actua', async () => {
+  const vista = await read('views/profesionales/profesionales.view.php');
+  // aria-disabled devuelve el boton a pulsable: sin guard en el manejador, un
+  // boton inerte se convierte en un boton que borra.
+  if (!/aria-disabled/.test(vista)) return; // aun no migrado
+  assert.match(vista, /aria-disabled=["']true["']/);
+  assert.match(vista, /getAttribute\(['"]aria-disabled['"]\)|\.ariaDisabled/,
+    'hay aria-disabled pero ningun guard que lo compruebe en el manejador');
+});
