@@ -58,6 +58,9 @@ export function closeoutContractFailures(input) {
     closeoutValid = false;
   }
   const nowMs = now instanceof Date ? now.getTime() : Number.NaN;
+  // `allPassed` ya no decide la activacion (ver abajo), pero se conserva porque
+  // sigue siendo el resumen de si TODOS los gates pasan hoy, y las validaciones
+  // por gate lo alimentan. Quitarlo obligaria a reescribir el bucle entero.
   let allPassed = exactIds;
   for (const gate of gates) {
     const initialFailureCount = failures.length;
@@ -109,9 +112,31 @@ export function closeoutContractFailures(input) {
   const passStateRequested = gates.some(({ status }) => status === 'passed')
     || stableApiActivated || versionPartiallyActivated;
   if (passStateRequested) failures.push(...activationGitFailures(root, closeoutGateIds));
+  // `allPassed` SALIO de esta identidad el 2026-08-11, y el motivo importa mas
+  // que el cambio. Antes se exigia que `allPassed`, `stableApiActivated` y
+  // `versionActivated` valieran los tres lo mismo. Con la version estable en
+  // 1.x los dos ultimos son `true` para siempre, asi que **un solo gate
+  // declarado `blocked` —es decir, un solo gate honesto— rompia la igualdad y
+  // tumbaba la activacion entera**.
+  //
+  // Eso convertia decir la verdad en imposible: con ocho gates de los que tres
+  // no pasan, la unica forma de tener la suite verde era afirmar que los ocho
+  // pasaban. **Ese acoplamiento fue el incentivo que produjo quince recibos
+  // `passed` sin haberse ejecutado nunca** — no fue solo descuido: era la unica
+  // salida que este contrato dejaba abierta.
+  //
+  // Y contradecia al comentario de arriba, que declara la activacion un hito
+  // UNICO cumplido en 1.0.0: el codigo comprobaba en cada corrida algo que el
+  // mismo define como inmutable. Esto no relaja el contrato; hace que haga lo
+  // que dice que hace.
+  //
+  // Lo que NO cambia, y es lo que sostiene el arreglo: un gate en `blocked`
+  // sigue poniendo rojo **su propio carril**, ruidosamente, por las
+  // validaciones de arriba. Si alguna vez dejan de fallar, este contrato habra
+  // pasado a mentir de otra forma. No lo vuelvas a acoplar aqui.
   if (versionPartiallyActivated !== versionActivated
-    || new Set([allPassed, stableApiActivated, versionActivated]).size !== 1) {
-    failures.push('activation: gates, version and stable API must activate together');
+    || new Set([stableApiActivated, versionActivated]).size !== 1) {
+    failures.push('activation: version and stable API must activate together');
   }
   return failures;
 }

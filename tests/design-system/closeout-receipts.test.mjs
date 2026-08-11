@@ -98,7 +98,7 @@ test('una version posterior a 1.0.0 sigue contando como sistema activado', () =>
     versionDocument: { ...versionDocument, version, status },
     now: new Date('2026-07-15T22:00:00Z'),
   });
-  const noActivada = /gates, version and stable API must activate together/;
+  const noActivada = /version and stable API must activate together/;
 
   assert.deepEqual(conVersion('1.1.0'), conVersion('1.0.0'));
   assert.deepEqual(conVersion('2.3.4'), conVersion('1.0.0'));
