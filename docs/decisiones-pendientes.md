@@ -140,6 +140,36 @@ de preguntar. Copia esta forma:
   el paso explícito, que es lo que el contrato pide hoy.
 - **Estado:** `abierta`
 
+### D-CI-2 · ¿Los tests nuevos deben escribirse en PHPUnit, o conviven los dos estilos?
+
+- **Quién pregunta:** sesión del frente «PHPUnit incremental».
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si a partir de ahora una prueba nueva **tiene que** ser una clase de PHPUnit en
+  `tests/unit/`, o si sigue valiendo escribir un script `tests/test_*.php` como hasta hoy.
+- **Qué se midió:** la fase 2 dejó las dos suites funcionando bajo el mismo runner y con las mismas
+  garantías; ninguna de las dos está en desventaja técnica. Verificado: `--nivel=puro` corre 22
+  scripts **y** la clase de PHPUnit en una sola pasada, rc=0. Los 101 scripts existentes siguen
+  ejecutándose igual. Escribir el primer test con PHPUnit costó 18 casos y 40 aserciones en un
+  archivo; el equivalente en script habría exigido reimplementar contadores, `verificar()` y el
+  `exit()` a mano, sin proveedores de datos.
+- **Opciones:**
+  - **(a)** PHPUnit obligatorio para todo test nuevo. Unifica el estilo y hace que la suite vieja se
+    vacíe sola con el tiempo. Coste: quien solo quiera comprobar algo rápido tiene que aprender el
+    andamiaje de PHPUnit.
+  - **(b)** Los dos estilos conviven sin regla. **Es la opción segura y es el estado actual:** no
+    rompe nada y no obliga a nadie. Coste: dos formas de hacer lo mismo, y la elección se decide por
+    costumbre en vez de por criterio.
+  - **(c)** PHPUnit obligatorio solo para lógica pura, y scripts para lo que necesite datos o la
+    aplicación viva. Reconoce que los tests `db` y `http` del repo son más guiones de integración
+    que pruebas unitarias. Coste: la frontera hay que explicarla, y los casos dudosos vuelven.
+- **Recomendación:** **(c)**. Es lo que ya pasa de hecho: los 22 de nivel `puro` son los que se
+  benefician de proveedores de datos y aserciones ricas, y los de `db`/`http` son guiones que
+  dependen del estado de una base y encajan mal en el molde unitario. Pero es una regla de equipo,
+  no una decisión técnica: la impone quien va a escribir las pruebas.
+- **Qué quedó saltado esperando:** nada. Las dos suites funcionan y el CI corre ambas. No se migró
+  ningún test existente, que era condición del encargo.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas

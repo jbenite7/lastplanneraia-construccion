@@ -17,9 +17,18 @@ devuelve).
 
 ## Las suites
 
-- **PHP**: no hay PHPUnit —sigue sin haberlo—, pero desde el **2026-08-10 ya hay runner**:
-  `scripts/run-php-tests.php`. Cada `tests/test_*.php` declara en su cabecera qué entorno necesita
-  con `// @requiere: <nivel>`, y el runner ejecuta los que ese entorno puede honrar:
+- **PHP**: **desde el 2026-08-11 sí hay PHPUnit** (12.5.33, `require-dev`), y conviven dos suites
+  bajo un mismo runner, `scripts/run-php-tests.php`, que existe desde el 2026-08-10.
+
+  | Suite | Dónde | Declara su entorno con | Se usa para |
+  |---|---|---|---|
+  | Scripts autoejecutables | `tests/test_*.php` | `// @requiere: <nivel>` en la cabecera | lo que ya existe; **no se migra** |
+  | PHPUnit | `tests/unit/*Test.php` | `#[Group('<nivel>')]` en la clase | **lo nuevo** |
+
+  **El runner es la puerta única**: comprueba el entorno, corre los scripts del nivel y además
+  invoca PHPUnit con los grupos que ese nivel selecciona, agregando ambos códigos de salida. No se
+  llama a `vendor/bin/phpunit` a mano salvo para depurar, porque entonces nadie comprueba el entorno
+  antes. Los cuatro niveles son los mismos para ambas suites:
 
   | Nivel | Necesita | Cuántos | Lo corre el CI |
   |---|---|---|---|
@@ -41,10 +50,18 @@ for n in puro db http datos-proyecto; do echo -n "$n: "; grep -l "@requiere: $n"
   docker compose exec -T app php scripts/run-php-tests.php --nivel=http   # o: composer test
   ```
 
-  Un test **sin etiqueta rompe el runner** (sale 2): así un test nuevo no puede nacer fuera del CI,
-  que es como llevaban ~96 de los 99 de entonces. Antes de esa fecha el CI solo corría **tres**, listados a mano
-  en `design-system.yml`. El runner también reporta aparte el verde sin respaldo y el test que se
+  Un test **sin etiqueta rompe el runner** (sale 2), y una clase de PHPUnit **sin `#[Group]` de
+  nivel, también: así un test nuevo no puede nacer fuera del CI, que es como llevaban ~96 de los 99
+  de entonces. Antes de esa fecha el CI solo corría **tres**, listados a mano en
+  `design-system.yml`. El runner también reporta aparte el verde sin respaldo y el test que se
   salta entero, para que el resumen no infle la cobertura.
+
+  **Si falta el binario de PHPUnit y el nivel pedido incluye tests suyos, el runner sale 2**, no
+  los omite: misma regla que con la base de datos ausente. Por eso el job estático del CI construye
+  con `--build-arg COMPOSER_INSTALL_FLAGS=""`; sin eso la imagen se construye `--no-dev` y no trae
+  PHPUnit. Las tres líneas de esa variable en `docker/php/Dockerfile` y `docker-compose.ci.yml`
+  están fijadas por `tests/design-system/visual-ci-contract.test.mjs:143-145` y **no se tocan** —
+  ver [[el-archivo-que-tocas-puede-tener-un-contrato]].
 - **Antes de correr la suite sin entorno, lee [[test-sin-base-sale-verde]]**: 26 tests salen 0
   cuando no hay base de datos. Por eso el runner comprueba el entorno antes de ejecutar y aborta si
   falta, en vez de producir verdes que no comprobaron nada.
