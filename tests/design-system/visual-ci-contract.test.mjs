@@ -153,7 +153,40 @@ test('runtime CI continuously enforces the Programa General persistence boundary
   assert.ok(preflightIndex >= 0, 'isolated runtime preflight must be present');
   assert.ok(preflightIndex < startIndex, 'preflight must run before Docker starts');
   assert.match(workflow, /node tests\/test_programa_general_sprint_contract\.mjs/);
-  assert.match(workflow, /php tests\/test_global_table_safety\.php/);
+
+  // La frontera de tablas globales la vigila tests/test_global_table_safety.php, y lo que hay que
+  // garantizar es que el CI la EJECUTE, no que el workflow escriba su nombre.
+  //
+  // Hasta el 2026-08-11 esta comprobación era `assert.match(workflow, /php tests\/…\.php/)`, una
+  // cadena literal. Cuando el CI pasó de listar tres pruebas a mano a invocar el runner, que
+  // ejecuta 71, la cadena desapareció y este gate se puso rojo: un cambio que multiplicó por más de
+  // veinte la cobertura hacía fallar al contrato que la protegía. Decisión D-CI-1 del usuario.
+  //
+  // Ahora se comprueba el resultado, y por eso es más estricta que antes: falla si desaparece la
+  // invocación del runner, si la prueba deja de existir, si pierde su etiqueta de nivel, o si
+  // alguien le pone un nivel que el CI no ejecuta.
+  const NIVELES = ['puro', 'db', 'http', 'datos-proyecto'];
+
+  const nivelesInvocados = [...workflow.matchAll(/run-php-tests\.php --nivel=([a-z-]+)/g)]
+    .map(([, nivel]) => NIVELES.indexOf(nivel))
+    .filter((indice) => indice >= 0);
+  assert.ok(
+    nivelesInvocados.length > 0,
+    'el CI debe invocar scripts/run-php-tests.php con un nivel declarado',
+  );
+  const nivelMaximoDelCi = Math.max(...nivelesInvocados);
+
+  const guardiaDeTablasGlobales = await read('tests/test_global_table_safety.php');
+  const nivelDeclarado = /^\s*\/\/\s*@requiere:\s*([a-z-]+)\s*$/m.exec(guardiaDeTablasGlobales);
+  assert.ok(
+    nivelDeclarado,
+    'tests/test_global_table_safety.php debe declarar su nivel con // @requiere:',
+  );
+  assert.ok(
+    NIVELES.indexOf(nivelDeclarado[1]) <= nivelMaximoDelCi,
+    `test_global_table_safety.php declara el nivel '${nivelDeclarado[1]}', que el CI no ejecuta `
+      + `(su nivel máximo es '${NIVELES[nivelMaximoDelCi]}'): la frontera de tablas globales dejaría de vigilarse`,
+  );
   assert.match(
     workflow,
     /--config=e2e\/playwright\.config\.mjs\s+e2e\/tests\/workflows\/pg-interactions\.spec\.mjs\s+--workers=1/,
