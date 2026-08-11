@@ -7,13 +7,27 @@ presenta la cola entera al cerrar cada frente, en una sola tanda de grilleo.
 El procedimiento está en [`coordinacion-sesiones.md`](coordinacion-sesiones.md). Regla que lo
 sostiene: **una sesión de ejecución nunca para** — anota, salta y continúa.
 
+## El id lleva su origen — no uses números sueltos
+
+**Formato: `D-<origen>-<n>`**, donde `<origen>` identifica a quien pregunta: `F1`, `F1b`, `CI`,
+`COORD`… Por ejemplo `D-F1-1`, `D-CI-1`.
+
+Las dos primeras entradas son `D-1` y `D-2` porque se escribieron antes de esta regla; se dejan como
+están para no romper lo ya publicado.
+
+**Por qué:** varias sesiones añaden a esta cola desde ramas distintas y no se ven entre sí. Con
+números sueltos, dos que empiecen a la vez eligen ambas el siguiente número y colisionan al
+integrar. Pasó el 2026-08-10, el mismo día que se creó la cola: dos sesiones escribieron su `D-2`
+sin saberlo. Un id que lleva su origen no puede chocar sin coordinación previa, que es justo lo que
+no hay.
+
 ## Cómo añadir una entrada
 
 Una entrada sirve si el usuario puede decidir **sin abrir el código**. Eso exige haber medido antes
 de preguntar. Copia esta forma:
 
 ```markdown
-### D-<n> · <título en una línea>
+### D-<origen>-<n> · <título en una línea>
 
 - **Quién pregunta:** <sesión / frente / tarea>
 - **Fecha:** <AAAA-MM-DD>
