@@ -3,22 +3,29 @@
 declare(strict_types=1);
 
 /**
- * Runner de la suite tests/test_*.php.
+ * Runner de las pruebas PHP. Puerta única de las dos suites que conviven:
  *
- * Los tests de este repositorio son scripts autoejecutables sin framework. Este
- * runner los descubre, lee de cada uno la etiqueta `// @requiere: <nivel>` que
- * declara qué entorno necesita, y ejecuta los que el entorno actual puede
- * honrar.
+ *   - los `tests/test_*.php`, scripts autoejecutables sin framework, que declaran su entorno
+ *     con `// @requiere: <nivel>` en la cabecera;
+ *   - los `tests/unit/*Test.php`, clases de PHPUnit, que lo declaran con `#[Group('<nivel>')]`.
+ *
+ * Se escriben nuevas con PHPUnit; las de scripts no se migran. Es una sola puerta a propósito: con
+ * dos comandos, cada job del CI tendría que acordarse de invocar los dos, que es el defecto que
+ * este runner vino a cerrar.
+ *
+ * Los cuatro niveles, de menos a más exigente: puro < db < http < datos-proyecto. `--nivel=X`
+ * ejecuta lo de nivel X y lo de los niveles por debajo, en ambas suites.
  *
  * Uso:
  *   php scripts/run-php-tests.php --nivel=http
  *   php scripts/run-php-tests.php --nivel=puro --solo-listar
  *
  * Códigos de salida:
- *   0  todos los tests seleccionados pasaron
- *   1  algún test falló
- *   2  el runner no puede operar (falta una etiqueta, el nivel no existe,
- *      el entorno del nivel pedido no está disponible)
+ *   0  todo lo seleccionado pasó
+ *   1  algo falló
+ *   2  el runner no puede operar: falta una etiqueta o un grupo, el nivel no existe, el entorno
+ *      del nivel pedido no está disponible, o falta el binario de PHPUnit habiendo tests suyos.
+ *      Nunca se traduce una ausencia en un resultado verde.
  */
 
 const NIVELES = [
@@ -48,6 +55,9 @@ function leerOpciones(array $argv): array
 {
     $opciones = [
         'dir' => dirname(__DIR__) . '/tests',
+        'dirUnit' => dirname(__DIR__) . '/tests/unit',
+        'dirUnitPorDefecto' => true,
+        'phpunit' => dirname(__DIR__) . '/vendor/bin/phpunit',
         'nivel' => 'puro',
         'timeout' => 120,
         'soloListar' => false,
@@ -73,6 +83,15 @@ function leerOpciones(array $argv): array
         }
         if (preg_match('/^--db-host=(.+)$/', $argumento, $coincidencia) === 1) {
             $opciones['dbHost'] = $coincidencia[1];
+            continue;
+        }
+        if (preg_match('/^--dir-unit=(.+)$/', $argumento, $coincidencia) === 1) {
+            $opciones['dirUnit'] = rtrim($coincidencia[1], '/');
+            $opciones['dirUnitPorDefecto'] = false;
+            continue;
+        }
+        if (preg_match('/^--phpunit=(.+)$/', $argumento, $coincidencia) === 1) {
+            $opciones['phpunit'] = $coincidencia[1];
             continue;
         }
 
@@ -156,6 +175,61 @@ function descubrirTests(string $directorio): array
 }
 
 /**
+ * Descubre las clases de test de PHPUnit y su nivel.
+ *
+ * Mismo trato que los scripts: el nivel se declara y sin declaración no se corre. Aquí se lee del
+ * atributo `#[Group('<nivel>')]` de la clase en vez de un comentario, pero la garantía es la misma
+ * —un test nuevo no puede quedar fuera del CI en silencio—, y se comprueba escaneando el archivo
+ * para no depender de la API de PHPUnit.
+ *
+ * El nivel se declara en la CLASE, no en el método: un caso que necesite otro entorno va a otra
+ * clase. Es la regla simple que basta hoy.
+ *
+ * @return array<string, string> ruta => nivel
+ */
+function descubrirTestsUnitarios(string $directorio): array
+{
+    if (!is_dir($directorio)) {
+        return [];
+    }
+
+    $rutas = glob($directorio . '/*Test.php');
+    if ($rutas === false || $rutas === []) {
+        return [];
+    }
+    sort($rutas);
+
+    $sinGrupo = [];
+    $clases = [];
+    foreach ($rutas as $ruta) {
+        $cabecera = (string) file_get_contents($ruta);
+
+        if (preg_match('/#\[Group\(\s*[\'"]([a-z-]+)[\'"]\s*\)\]/', $cabecera, $coincidencia) !== 1) {
+            $sinGrupo[] = basename($ruta);
+            continue;
+        }
+        if (!isset(NIVELES[$coincidencia[1]])) {
+            abortar(
+                basename($ruta) . " declara un grupo que no es un nivel: '{$coincidencia[1]}'.\n"
+                . '  Niveles válidos: ' . implode(', ', array_keys(NIVELES))
+            );
+        }
+        $clases[$ruta] = $coincidencia[1];
+    }
+
+    if ($sinGrupo !== []) {
+        $lista = implode("\n  - ", $sinGrupo);
+        abortar(
+            count($sinGrupo) . " clase(s) de PHPUnit sin el atributo #[Group('<nivel>')]:\n  - {$lista}\n"
+            . '  Niveles válidos: ' . implode(', ', array_keys(NIVELES)) . "\n"
+            . '  Sin declarar su entorno, un test nuevo queda fuera del CI sin que nadie se entere.'
+        );
+    }
+
+    return $clases;
+}
+
+/**
  * Comprueba que el entorno que exige un nivel está disponible.
  *
  * Existe por algo medido, no por prudencia teórica: el 2026-08-10 se comprobó
@@ -208,11 +282,6 @@ function entornoDisponible(string $nivel, ?string $anfitrionDeBase): ?string
  */
 function ejecutarTest(string $rutaTest, int $segundosDeEspera): array
 {
-    $descriptores = [
-        1 => ['pipe', 'w'],
-        2 => ['pipe', 'w'],
-    ];
-
     // Ruta absoluta y directorio de trabajo fijo en la raíz del repositorio: los
     // tests se escribieron para correrse desde ahí (`php tests/test_x.php`), y
     // varios resuelven rutas relativas a ese punto.
@@ -221,8 +290,27 @@ function ejecutarTest(string $rutaTest, int $segundosDeEspera): array
         return ['codigo' => SALIDA_NO_OPERABLE, 'salida' => "no se encontró {$rutaTest}"];
     }
 
+    return ejecutarProceso([PHP_BINARY, $rutaAbsoluta], $segundosDeEspera);
+}
+
+/**
+ * Lanza un subproceso y devuelve su código de salida y su salida combinada.
+ *
+ * Siempre desde la raíz del repositorio, y leyendo el código de salida del proceso, nunca de una
+ * tubería — ver `memoria/trampas/el-codigo-de-salida-se-pierde-en-la-tuberia.md`.
+ *
+ * @param list<string> $argumentos
+ * @return array{codigo: int, salida: string}
+ */
+function ejecutarProceso(array $argumentos, int $segundosDeEspera): array
+{
+    $descriptores = [
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+
     $proceso = proc_open(
-        [PHP_BINARY, $rutaAbsoluta],
+        $argumentos,
         $descriptores,
         $tuberias,
         dirname(__DIR__)
@@ -394,11 +482,60 @@ foreach ($seleccionados as $ruta => $nivel) {
     echo "  pasa    {$nombre} ({$nivel})\n";
 }
 
+// --- PHPUnit -----------------------------------------------------------------------------------
+// Los tests nuevos se escriben con PHPUnit y viven en tests/unit/. El runner sigue siendo la puerta
+// única: si fueran dos comandos, cada job del CI tendría que acordarse de invocar los dos, que es
+// exactamente el defecto que este runner vino a cerrar.
+$unitarios = descubrirTestsUnitarios($opciones['dirUnit']);
+$unitariosSeleccionados = [];
+foreach ($unitarios as $ruta => $nivel) {
+    if (NIVELES[$nivel] <= $pesoPedido) {
+        $unitariosSeleccionados[$ruta] = $nivel;
+    }
+}
+
+$resultadoPhpunit = null;
+if ($unitariosSeleccionados !== []) {
+    if (!is_file($opciones['phpunit']) || !is_executable($opciones['phpunit'])) {
+        abortar(
+            "el nivel '{$opciones['nivel']}' incluye " . count($unitariosSeleccionados)
+            . " test(s) de PHPUnit, pero no hay binario ejecutable en {$opciones['phpunit']}.\n"
+            . "  Instálalo con 'composer install' incluyendo las dependencias de desarrollo.\n"
+            . '  No ejecutarlos no es un resultado verde.'
+        );
+    }
+
+    $grupos = implode(',', array_values(array_unique($unitariosSeleccionados)));
+    $argumentos = [$opciones['phpunit'], '--group=' . $grupos];
+    if (!$opciones['dirUnitPorDefecto']) {
+        // Con un directorio explícito no vale phpunit.xml, que apunta a tests/unit.
+        array_push($argumentos, '--no-configuration', '--bootstrap', dirname(__DIR__) . '/vendor/autoload.php', $opciones['dirUnit']);
+    }
+
+    echo "\n";
+    echo '  PHPUnit: ' . count($unitariosSeleccionados) . ' clase(s) en los grupos ' . $grupos . "\n";
+    $resultadoPhpunit = ejecutarProceso($argumentos, $opciones['timeout']);
+    foreach (explode("\n", trim($resultadoPhpunit['salida'])) as $linea) {
+        if (trim($linea) !== '') {
+            echo '    ' . $linea . "\n";
+        }
+    }
+}
+
 echo "\n";
 echo '=== ' . count($seleccionados) . ' corridos: ' . count($pasaron) . ' pasaron, '
     . count($fallaron) . ' fallaron, ' . count($sospechosos) . ' sospechosos, '
     . count($saltados) . ' se saltaron solos, '
     . count($omitidos) . " omitidos por nivel ===\n";
+
+if ($resultadoPhpunit !== null) {
+    echo '=== PHPUnit: ' . count($unitariosSeleccionados) . ' clase(s), '
+        . ($resultadoPhpunit['codigo'] === SALIDA_OK ? 'en verde' : 'CON FALLOS')
+        . " (rc={$resultadoPhpunit['codigo']}) ===\n";
+} elseif ($unitarios !== []) {
+    echo '=== PHPUnit: ninguna de sus ' . count($unitarios)
+        . " clase(s) entra en este nivel ===\n";
+}
 
 if ($fallaron !== []) {
     echo "\nDetalle de los que fallaron:\n";
@@ -427,4 +564,6 @@ if ($sospechosos !== []) {
     echo "  Un test que no puede fallar no está comprobando nada. Dale aserciones.\n";
 }
 
-exit($fallaron === [] && $sospechosos === [] ? SALIDA_OK : SALIDA_FALLO);
+$phpunitFallo = $resultadoPhpunit !== null && $resultadoPhpunit['codigo'] !== SALIDA_OK;
+
+exit($fallaron === [] && $sospechosos === [] && !$phpunitFallo ? SALIDA_OK : SALIDA_FALLO);

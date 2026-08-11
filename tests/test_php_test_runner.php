@@ -80,6 +80,53 @@ $r = correrRunner($runner, ['--dir=' . $fixtures . '/salta', '--nivel=puro']);
 verificar('un test que se salta solo se cuenta aparte', str_contains($r['salida'], 'se saltaron solos'));
 verificar('un test que se salta solo no se cuenta como que paso', str_contains($r['salida'], '0 pasaron'));
 
+// --- PHPUnit: los mismos dos guardarraíles, trasladados -----------------------------------------
+
+// Una clase PHPUnit sin grupo de nivel rompe el runner, igual que un script sin @requiere.
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-sin-grupo',
+    '--nivel=puro',
+]);
+verificar('una clase PHPUnit sin grupo devuelve 2', $r['codigo'] === 2);
+verificar('el error nombra la clase sin grupo', str_contains($r['salida'], 'SinGrupoTest.php'));
+
+// Un test PHPUnit verde no altera el resultado; uno rojo hace fallar al runner.
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-verde',
+    '--nivel=puro',
+]);
+verificar('con PHPUnit en verde el runner sale 0', $r['codigo'] === 0);
+verificar('el resumen cuenta los tests PHPUnit', stripos($r['salida'], 'phpunit') !== false);
+
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-rojo',
+    '--nivel=puro',
+]);
+verificar('un test PHPUnit rojo hace fallar al runner', $r['codigo'] === 1);
+
+// Sin el binario de PHPUnit y con tests suyos en el nivel, el runner aborta: no da verde.
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-verde',
+    '--nivel=puro',
+    '--phpunit=/ruta/que/no/existe/phpunit',
+]);
+verificar('sin el binario de PHPUnit el runner aborta con 2', $r['codigo'] === 2);
+verificar('el error explica que falta PHPUnit', stripos($r['salida'], 'phpunit') !== false);
+verificar('la ausencia de PHPUnit no se reporta como verde', stripos($r['salida'], 'OK:') === false);
+
+// Pero si el nivel no selecciona ningún test PHPUnit, su ausencia da igual.
+$r = correrRunner($runner, [
+    '--dir=' . $fixtures . '/con-etiqueta',
+    '--dir-unit=' . $fixtures . '/unit-vacio',
+    '--nivel=puro',
+    '--phpunit=/ruta/que/no/existe/phpunit',
+]);
+verificar('sin tests PHPUnit seleccionados, su ausencia no estorba', $r['codigo'] === 0);
+
 echo "\n";
 if ($fallos > 0) {
     echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";
