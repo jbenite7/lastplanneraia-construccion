@@ -91,17 +91,40 @@ Orden final en `docs/design-system/closeout-evidence.json` y
 
 ## Dos aclaraciones más, decididas el 2026-08-11
 
-### `runtime-budgets` deja de ser un gate independiente
+### `runtime-budgets` no corre fuera de CI, y la razón no es la que se escribió primero
 
-**No es un defecto suyo.** Falla con `ENOENT` sobre `test-output/` porque mide **los artefactos que
-produce la corrida de `runtime`**: no hay nada que medir hasta que esa corrida ocurre.
+**Corregido el 2026-08-11, después de medirlo. La versión anterior de esta sección era falsa y la
+dictó la coordinadora sin comprobarla.** Decía que `runtime-budgets` mide «los artefactos que produce
+la corrida de `runtime`» y que por eso se declaraba **dependiente de `runtime`**. Nada de eso es
+cierto.
 
-Un gate que solo puede pasar si otro corrió antes **no es un gate independiente**, y contarlo como
-tal fue parte de por qué quince parecían quince. Se declara **dependiente de `runtime`**: su
-resultado solo significa algo dentro de esa corrida, y por sí solo no aporta una garantía separada.
+**Lo medido, sobre `2f060464`:**
 
-Sigue en la lista porque lo que mide —los presupuestos de rendimiento— es real; lo que cambia es que
-**deja de contarse como una garantía aparte**.
+- El gate declara `npm run test:runtime-budget:check`, que compara un baseline contra
+  `test-output/design-system-runtime-budget.json`.
+- **La corrida de `runtime` no produce ese archivo.** Su etapa de rendimiento escribe
+  `design-system-lab-performance.json`, que es **otro archivo**. Con `runtime` recién pasado en verde
+  y sus cuatro etapas medidas, el `check` sigue dando `ENOENT`.
+- Quien lo produce es **su propio paso**, `npm run test:runtime-budget:measure`, que el gate no
+  declara.
+
+**Y ese paso se niega a correr en local, a propósito.** Exige un contexto de procedencia completo —
+`CI_RUN_ID`, `CI_GIT_SHA`, `CI_WORKTREE_FINGERPRINT`, `CI_FIXTURE_SHA256`— validado contra un árbol
+limpio, y descarta muestras de más de 15 minutos
+(`scripts/design-system-runtime-budget-provenance.mjs:133-148`). Con el árbol limpio y `CI_GIT_SHA`
+correcto sigue negándose, porque faltan las otras dos.
+
+**Esa negativa es la guarda haciendo su trabajo, no un defecto.** Un presupuesto de rendimiento
+medido en una máquina de desarrollo, con otros contenedores compitiendo por CPU, no es comparable
+con un baseline de CI. Fabricar esas variables a mano para que pase sería **inventar una procedencia
+de CI**, que es exactamente el gesto que este programa desmonta.
+
+**Estado correcto: `blocked`, no ejecutable fuera de CI.** No es dependiente de `runtime` —son
+carriles distintos con artefactos distintos— y su rojo no dice nada sobre el rendimiento del
+producto: dice que **nadie lo ha medido donde se puede medir**.
+
+Lo que haría falta para sacarlo de ahí es que el CI lo corra con su contexto, o declarar el `measure`
+como parte del gate. Las dos cosas son trabajo propio y ninguna se decide aquí.
 
 ### El recibo de `static` se mide en la corrida anterior, no en la propia
 
