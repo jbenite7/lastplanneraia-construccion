@@ -21,6 +21,8 @@ final class LpsWeekEditPolicy
 
         $projectId = TableResolver::getProjectIdByPrefix($dbPrefix);
         if (!$projectId) {
+            // Si no se puede resolver el proyecto, deniega — misma decisión que unifica
+            // la Task 4 para todo el candado de semana: un candado que no sabe, cierra.
             return false;
         }
         $weeksTable = TableResolver::resolveByPrefix($dbPrefix, 'semanas_activas');
