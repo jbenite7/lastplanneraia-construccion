@@ -74,10 +74,39 @@ async function mockDeterministicData(page) {
   }));
 }
 
+// La semana del proyecto NO la controlaba el escenario, y por eso este golden fallaba por algo que
+// no mide: la imagen retrata «Semana 1» y la corrida decia «Semana 4», segun la semana en la que
+// estuviera el proyecto el dia que se ejecutara. Una alarma que suena siempre es una que nadie
+// mira, asi que la variable se fija aqui.
+//
+// Se fija AQUI y no regenerando la imagen porque la causa esta en el escenario: recapturar con la
+// semana de hoy volveria a derivar en cuanto el proyecto avance, con el baseline dependiendo del
+// calendario.
+//
+// Y se fija por HTTP y no con `page.route` porque este dato no pasa por el cliente: lo pinta el
+// servidor en `views/partials/shell_sidebar.php:24`
+// (`$shellSemana = (int) ($semana ?? ($_SESSION['semana'] ?? 0))`), asi que cuando llega al
+// navegador ya esta en el HTML. `POST /context/week` es la via que la propia aplicacion usa
+// (`ContextController::setWeek`, ruta en public/index.php); solo exige sesion, y `page.request`
+// comparte las cookies del contexto, de modo que basta llamarla despues del login.
+const SEMANA_DEL_GOLDEN = 1;
+
+async function fijarSemanaDelEscenario(page) {
+  const respuesta = await page.request.post('/context/week', { data: { semana: SEMANA_DEL_GOLDEN } });
+  if (!respuesta.ok()) {
+    throw new Error(
+      `No se pudo fijar la semana del escenario: POST /context/week respondio ${respuesta.status()}. `
+      + 'Sin esto la captura retrata la semana en la que este el proyecto y el golden falla por una '
+      + 'razon que no mide nada.',
+    );
+  }
+}
+
 for (const scenario of VISUAL_SCENARIOS) {
   test(`${scenario.id} remains stable`, async ({ page }) => {
     await mockDeterministicData(page);
     await loginAndSelectProject(page, PROJECTS[0]);
+    await fijarSemanaDelEscenario(page);
     await page.setViewportSize(scenario.viewport);
     await page.evaluate((value) => localStorage.setItem('aia-theme', value), scenario.theme);
     await page.goto(scenario.route, { waitUntil: 'domcontentloaded' });
