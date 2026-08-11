@@ -4773,6 +4773,11 @@
       bindResize();
       bindCncModal();
       bindTnpModal();
+      // Sesión caducada: la decisión de qué hacer ante un 401 con `sessionExpired`
+      // vive en AIA.SessionExpiredHandler (public/js/core/SessionExpiredHandler.js).
+      if (window.AIA && window.AIA.SessionExpiredHandler) {
+        window.AIA.SessionExpiredHandler.bindWithShowFeedback($, showFeedback);
+      }
       initialized = true;
     }
 

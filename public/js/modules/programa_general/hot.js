@@ -275,6 +275,18 @@
     return permiso === 'A' || permiso === 'D' || permiso === 'R' || permiso === 'DCV';
   }
 
+  // Capacidad (no rol literal) que decide si la toolbar ofrece «Actualizar Ejecución»:
+  // el mismo endpoint /api/general/update-batch exige lps.programa_general.editar en el
+  // servidor (GeneralApiController::updateBatch), así que ocultar el botón solo evita el
+  // viaje de red inútil para quien de todas formas recibiría 403.
+  function canManageGeneralProgram() {
+    var permiso = getPermiso();
+    if (window.RbacCapabilities && typeof window.RbacCapabilities.canManageGeneralProgram === 'function') {
+      return Boolean(window.RbacCapabilities.canManageGeneralProgram(permiso));
+    }
+    return isProgramaGeneralEditorRole(permiso);
+  }
+
   function getMaxSemana() {
     var value = parseInt($('#Max_Semana').val(), 10);
     return Number.isFinite(value) ? value : 0;
@@ -3451,7 +3463,11 @@
   function bindActions() {
     $('#btn-refresh').off('click.pgRefresh').on('click.pgRefresh', loadData);
     $('#btn-export').off('click.pgExport').on('click.pgExport', exportCsv);
-    $('#actualizarEjecucion').off('click.pgRecalc').on('click.pgRecalc', actualizarEjecucion);
+    if (canManageGeneralProgram()) {
+      $('#actualizarEjecucion').off('click.pgRecalc').on('click.pgRecalc', actualizarEjecucion);
+    } else {
+      $('#actualizarEjecucion').remove();
+    }
     $('#descargarCorteProgramacion')
       .off('click.pgCut')
       .on('click.pgCut', descargarCorteProgramacion);
@@ -3523,6 +3539,11 @@
       bindResize();
       fetchCodigosActividad();
       bindAutoUpdateOnNavigation();
+      // Sesión caducada: la decisión de qué hacer ante un 401 con `sessionExpired`
+      // vive en AIA.SessionExpiredHandler (public/js/core/SessionExpiredHandler.js).
+      if (window.AIA && window.AIA.SessionExpiredHandler) {
+        window.AIA.SessionExpiredHandler.bindWithShowFeedback($, showFeedback);
+      }
       initialized = true;
     }
 
@@ -3531,7 +3552,7 @@
     }
 
     syncLegendVisualState();
-    var shouldAutoUpdate = shouldAutoUpdateOnEntry();
+    var shouldAutoUpdate = shouldAutoUpdateOnEntry() && canManageGeneralProgram();
     if (shouldAutoUpdate) {
       fetchRestrictionConfig().always(function () {
         actualizarEjecucion();

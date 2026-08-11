@@ -87,7 +87,18 @@ class SessionMiddleware
     {
         $header = strtolower((string) ($_SERVER['HTTP_X_AIA_EXPECT_JSON'] ?? ''));
 
-        return in_array($header, ['1', 'true', 'json'], true);
+        if (in_array($header, ['1', 'true', 'json'], true)) {
+            return true;
+        }
+
+        // Cubre a cualquier consumidor (fetch, $.ajax con dataType 'json', etc.) que pida
+        // JSON por la cabecera estándar `Accept`, sin depender de que además mande la
+        // cabecera propietaria X-AIA-Expect-Json. Aditivo: no cambia el comportamiento de
+        // quien ya manda la cabecera propietaria, y no afecta a navegaciones normales de
+        // página, cuyo Accept es text/html primero.
+        $accept = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));
+
+        return str_contains($accept, 'application/json');
     }
 
     private static function finishUnauthorized(string $redirectUrl, string $reason): void
