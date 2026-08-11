@@ -1687,9 +1687,21 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     font-size: 0.9em;
 }
 
+/* La clase la aplicaba `hot.js:2602` desde siempre y no existia ninguna regla
+   para ella en todo el arbol: el segundo canal que el codigo pretendia —el
+   fondo— nunca llego a pintarse. Con solo color, la marca daba 1,35:1 contra
+   el dato que la rodea, por debajo del 3:1 que pide WCAG 1.4.11. */
+.ps-page #hot-container td.ps-cell-empty-alert {
+    background-color: var(--ds-color-state-critical-bg);
+}
+
 .ps-missing-assignment {
     color: var(--ds-color-state-critical-text);
     font-size: var(--ds-type-size-sm);
+    /* Sin peso, la marca tenia el mismo tamano y el mismo peso que la tinta
+       de datos: ganaba solo por matiz. Paridad con `.pi-missing-resp`
+       (programacion-intermedia.css:532-537), que ya pesa 600. */
+    font-weight: 600;
 }
 
 .ps-empty-icon {

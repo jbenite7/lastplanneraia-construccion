@@ -227,6 +227,13 @@
       "token": "--ds-color-state-warning-text",
       "kind": "by-design",
       "reason": "Candado que marca la celda de restriccion bloqueada por falta de Responsable AIA (N-1). Es un glifo de Font Awesome ANTEPUESTO al valor que la celda sigue mostrando: el fondo de esa celda pertenece al estado de la fila (.pi-state-*) y al tinte de solo-lectura, asi que no hay superficie propia donde declarar el warning-bg pareado sin borrar informacion que ya esta ahi. Mismo rango medido que la marca hermana en los nueve estados a 1180x820 en dark: de 9,31:1 a 15,59:1. Va en Font Awesome y no en emoji precisamente para que el token de color aplique y el contraste sea medible."
+    },
+    {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page #hot-container td.ps-cell-empty-alert",
+      "token": "--ds-color-state-critical-bg",
+      "kind": "by-design",
+      "reason": "Fondo de la celda «Responsable AIA» cuando la fila no tiene responsable asignado (ICE 448/392). El critical-text pareado NO va en este mismo bloque porque la tinta la lleva el glifo hijo .ps-missing-assignment (linea 1690), que es el que el usuario lee; el td solo aporta la superficie. Es un par cruzado entre padre e hijo, no un medio par sin contraparte: la otra mitad existe, solo que en otro selector del mismo archivo. Medido a 1180x820 en dark con la clase inyectada sobre el arbol real de handsontable: fondo de celda rgb(67,20,20), marca rgb(255,205,200) peso 600 -> 10,99:1 marca/fondo-propio, muy por encima del 3:1 de WCAG 1.4.11. Antes del cambio la marca no tenia fondo propio y competia por matiz solo (1,35:1 contra el texto de datos vecino); ese numero no se mueve porque el contraste texto-a-texto es ciego al font-weight, pero ya no es el canal que carga la senal: ahora la distingue su propio fondo, no su tinta contra la de al lado."
     }
   ]
 }
