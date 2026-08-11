@@ -25,19 +25,19 @@
     {
       "id": "runtime",
       "kind": "automatic",
-      "status": "blocked",
-      "verifiedAt": null,
+      "status": "passed",
+      "verifiedAt": "2026-08-11T23:45:04Z",
       "blocking": true,
       "evidence": [
         {
           "summary": "Objective receipt for runtime",
           "commandId": "ds.runtime.v1",
           "command": "npm run test:design-system:runtime",
-          "exitCode": 1,
+          "exitCode": 0,
           "artifact": "docs/design-system/evidence/runtime.json",
-          "artifactSha256": "8228dbe19cdf6fac358b6b7b100e0417e2f2a7291591a9506bd8e75cbfe824bd",
-          "sourceRef": "fe772f097324e27ab3c90ca20a67bf050073b3eb",
-          "sourceFingerprint": "84e656df37e8048561b6037e52a51715ef06a6f66b8637a902f30b6ce2bc8361",
+          "artifactSha256": "32129bf84f41e7a4bf24f19cd7ac38dfed822095853876c10e2942764135bf0c",
+          "sourceRef": "1cb83128d1ecfba8606f697fb8617db4f9bc75eb",
+          "sourceFingerprint": "e13113836b001b329cd251ba9c1c9ffd0bc2d94a5265e683109a65f19cf2109b",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
