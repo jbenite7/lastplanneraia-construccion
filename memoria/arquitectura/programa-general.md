@@ -69,5 +69,4 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | --- | --- |
 | `canManageGeneralProgram` | A, D, R, DCV |
 | `canEditPastGeneralProgram` | A, D |
-| `canDeleteRows` | A, D |
 <!-- generado:fin -->

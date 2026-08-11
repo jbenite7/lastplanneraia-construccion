@@ -28,7 +28,6 @@ class RbacManager
             'isSystemAdmin' => $isSystemAdmin,
             RbacCatalog::PERM_INTERNAL_DESIGN_SYSTEM_VIEW => $isSystemAdmin,
             'canManageWeeks' => in_array($role, ['A', 'D', 'OT', 'R', 'DCV']),
-            'canDeleteRows' => in_array($role, ['A', 'D']),
             'canManageGeneralProgram' => in_array($role, ['A', 'D', 'R', 'DCV']),
             'canEditPastGeneralProgram' => in_array($role, ['A', 'D']),
             'canManageWeeklyProgram' => in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG']),
@@ -38,7 +37,6 @@ class RbacManager
             'canEditSST' => in_array($role, ['A', 'S', 'SG']),
             'canEditAmbiental' => in_array($role, ['A', 'G', 'SG']),
             'canManagePdC' => in_array($role, ['A', 'D', 'OT', 'R']),
-            'canSeeReports' => true,
             'isExternal' => ($role === 'C'),
             'isReadOnly' => $isVisualizer || $isSubcontractor,
         ];

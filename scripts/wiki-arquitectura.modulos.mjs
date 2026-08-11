@@ -36,7 +36,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programa-general', '/api/general', '/api/pg'],
-    capacidades: ['canManageGeneralProgram', 'canEditPastGeneralProgram', 'canDeleteRows'],
+    capacidades: ['canManageGeneralProgram', 'canEditPastGeneralProgram'],
     nota: '',
   },
   {
@@ -137,8 +137,8 @@ export const MODULOS = [
     areas: ['lps', 'bi', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/indicadores', '/api/indicadores'],
-    capacidades: ['canSeeReports'],
-    nota: '',
+    capacidades: [],
+    nota: 'No se gobierna por capacidad RBAC: el control real es `authorizePermission(\'lps.indicadores.ver\')` en `IndicadoresController:27`. Antes declaraba `canSeeReports`, que valia true para los diez roles y no restringia nada; se retiro el 2026-08-10.',
   },
   {
     slug: 'torre-de-control-bi',
@@ -146,8 +146,8 @@ export const MODULOS = [
     areas: ['bi', 'arquitectura'],
     flujo: 'ambos',
     rutas: ['/bi', '/api/bi'],
-    capacidades: ['canSeeReports'],
-    nota: '',
+    capacidades: [],
+    nota: 'Sin capacidad RBAC que lo gobierne. Antes declaraba `canSeeReports`, retirada el 2026-08-10 por ser inerte. No se sustituyo por otra porque no se encontro un guard por capacidad en `src/Controllers/Bi/`: el alcance por proyecto lo aplica `BiProjectScope`. Verificar antes de apoyarse en esta linea.',
   },
   {
     slug: 'integracion',
@@ -155,8 +155,8 @@ export const MODULOS = [
     areas: ['datos', 'arquitectura'],
     flujo: null,
     rutas: ['/reportes'],
-    capacidades: ['canSeeReports'],
-    nota: '',
+    capacidades: [],
+    nota: 'Sin capacidad RBAC que lo gobierne. Antes declaraba `canSeeReports`, retirada el 2026-08-10 por ser inerte. No se encontro guard por capacidad en `src/Controllers/Integracion/`. Verificar antes de apoyarse en esta linea.',
   },
   {
     slug: 'escalamientos-y-crisis',

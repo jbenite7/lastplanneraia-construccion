@@ -47,7 +47,5 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 - `system_notifications`
 
 ### Quién puede
-| Capacidad | Roles que la tienen |
-| --- | --- |
-| `canSeeReports` | A, D, R, DCV, OT, G, S, SG, C, V |
+_Sin capacidad propia: la ruta exige sesión y proyecto, no una capacidad específica._
 <!-- generado:fin -->
