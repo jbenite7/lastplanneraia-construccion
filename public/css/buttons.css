@@ -1008,24 +1008,24 @@
 
 .pdc-legend-item .indicator {
   display: block !important;
-  flex-shrink: 0 !important;
-  margin-right: 2px !important;
+  flex-shrink: 0;
+  margin-right: 2px;
   width: 5px !important;
   height: 5px !important;
-  border-radius: var(--ds-radius-pill) !important;
+  border-radius: var(--ds-radius-pill);
 }
 
 .pdc-legend-item .count-badge {
-  display: inline-block !important;
-  flex-shrink: 0 !important;
-  margin-left: var(--ds-space-1) !important;
+  display: inline-block;
+  flex-shrink: 0;
+  margin-left: var(--ds-space-1);
   font-size: var(--ds-type-size-xs) !important;
-  font-weight: 700 !important;
+  font-weight: 700;
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
-  padding: var(--ds-space-1) var(--ds-space-2) !important;
-  border: var(--ds-border-width) solid var(--ds-active-border) !important;
-  border-radius: var(--ds-radius-pill) !important;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: var(--ds-border-width) solid var(--ds-active-border);
+  border-radius: var(--ds-radius-pill);
 }
 
 /* Aqui vivian dos reglas `.pg-page #pgLegend .pdc-legend-item.sin-datos` y
