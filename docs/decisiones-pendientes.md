@@ -324,17 +324,7 @@ de preguntar. Copia esta forma:
   decidir de paso en un refactor de formato.
 - **Qué quedó saltado esperando:** no se tocó ninguna de las cinco líneas con reserva. `hot.js` y
   `hot_actualizar.js` quedan sin cambios de esta tarea.
-- **Estado:** `resuelta 2026-08-11: se repitió la comprobación en el navegador (canvas 2D contra
-  tokens.css real, ya que Chromium serializa oklch en getComputedStyle en vez de convertir a rgb).
-  Ninguno de los cuatro --aia-* tiene un token real con el MISMO color computado: --aia-text-muted
-  (fallback #6c757d/#666 → rgb(108,117,125) y rgb(102,102,102)) frente a --ds-active-text-secondary
-  → rgb(199,212,204), cambia. --aia-warning-soft-bg (#fef3c7 → rgb(254,243,199)) frente a
-  --aia-warning-background → rgb(255,247,226), cambia. --aia-warning-border (#f59e0b →
-  rgb(245,158,11)) frente a --aia-warning-high → rgb(255,194,0) o --aia-warning-critical →
-  rgb(156,102,0), cambia en ambos casos. --aia-red-primary (#dc3545 → rgb(220,53,69)) frente a
-  --aia-alert-high → rgb(212,11,30), cambia. Condición bloqueante de la coordinadora incumplida en
-  las cinco líneas: no se forzó ninguna sustitución, las cinco quedan sin tocar. Sigue siendo (b) la
-  solución de fondo, ahora con los valores computados que faltaban.`
+- **Estado:** `resuelta 2026-08-11: definirlos como tokens de verdad, con el valor que hoy tiene su reserva en hexadecimal. Nada cambia en pantalla y el código deja de citar tokens inexistentes. Vino de vuelta al usuario porque ninguno de los cuatro tenía sustituto que conservara el color exacto, y su condición era no mover píxeles.`
 
 ### D-F1-4 · Programa General y Programación Semanal tampoco marcan una acción primaria
 
