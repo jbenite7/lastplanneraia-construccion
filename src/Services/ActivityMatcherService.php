@@ -742,13 +742,19 @@ class ActivityMatcherService
             return max(0.0, min(1.0, $proximityScore + $directionBonus));
         }
 
-        // Target has location, source does not → penalize
-        if ($targetLoc !== null && $sourceLoc === null) {
+        // Target has location, source does not → penalize.
+        // El `$sourceLoc === null` que acompanaba a esta condicion sobraba: el bloque
+        // anterior ya retorna cuando los dos son no-nulos, asi que llegar aqui con
+        // `$targetLoc !== null` implica que `$sourceLoc` es null. Comportamiento
+        // identico; se quita porque PHPStan la contaba como error y su entrada de
+        // baseline habia caducado (esperaba 1 aparicion y habia 2).
+        if ($targetLoc !== null) {
             return 0.3;
         }
 
-        // Target has no location, source does → weak preference for data
-        if ($targetLoc === null && $sourceLoc !== null) {
+        // Target has no location, source does → weak preference for data.
+        // Simetrico: si se llega aqui, `$targetLoc` ya es null por descarte.
+        if ($sourceLoc !== null) {
             return 0.7;
         }
 

@@ -127,12 +127,6 @@ parameters:
 			path: src/Controllers/Programacion/ProgramacionIntermediaController.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between null and null will always evaluate to true\.$#'
-			identifier: identical.alwaysTrue
-			count: 1
-			path: src/Services/ActivityMatcherService.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 5
