@@ -3035,6 +3035,14 @@
     updateLegendCounts(filtered);
     updateOrInitHot(filtered);
     renderMobileCards(filtered);
+
+    // WCAG 4.1.3: pasar de 57 filas a 0 cambia toda la pantalla sin mover el
+    // foco. Sin este anuncio, quien usa lector de pantalla no se entera de que
+    // el filtro hizo algo.
+    var texto = weeklyAlertFilters.length === 0
+      ? filtered.length + ' actividades, sin filtros'
+      : filtered.length + ' de ' + masterData.length + ' actividades con el filtro aplicado';
+    $('#psFilterAnnounce').text(texto);
   }
 
   function renderAlertLegend() {
@@ -3042,7 +3050,7 @@
     var html = '';
     for (var i = 0; i < config.length; i++) {
       var item = config[i];
-      html += "<span class='pdc-legend-item " + escapeHtml(item.className) + "' data-filter='" + escapeHtml(item.key) + "' role='button' tabindex='0'><span class='indicator'></span>" +
+      html += "<span class='pdc-legend-item " + escapeHtml(item.className) + "' data-filter='" + escapeHtml(item.key) + "' role='button' tabindex='0' aria-pressed='false'><span class='indicator'></span>" +
         escapeHtml(item.label) + " <span id='count-" + escapeHtml(item.key) + "' class='count-badge'>(...)</span></span>";
     }
     $('#psAlertsLegend').html(html);
@@ -3124,6 +3132,14 @@
         $("#psAlertsLegend .pdc-legend-item[data-filter='" + weeklyAlertFilters[i] + "']").removeClass('inactive-filter');
       }
     }
+
+    // El estado accesible se calcula en el mismo sitio que el visual, para que no
+    // puedan divergir: `inactive-filter` y `aria-pressed` son la misma verdad
+    // contada a dos publicos distintos.
+    $items.each(function () {
+      var clave = $(this).attr('data-filter');
+      $(this).attr('aria-pressed', weeklyAlertFilters.indexOf(clave) > -1 ? 'true' : 'false');
+    });
 
     $('#mobileAlertCount').text(weeklyAlertFilters.length);
   }

@@ -23,3 +23,16 @@ test('el chip de guardado se anuncia en las cuatro rejillas de la cascada', asyn
     assert.match(chip[0], /role="status"/, `${vista}: #save-status sin role="status"`);
   }
 });
+
+test('los chips de filtro de Programacion Semanal declaran su estado', async () => {
+  const js = await read('public/js/modules/programacion_semanal/hot.js');
+  // renderAlertLegend arma el chip como cadena; el atributo tiene que salir de ahi.
+  const legend = js.match(/function renderAlertLegend\(\)[\s\S]*?\n  \}/);
+  assert.ok(legend, 'no se encontro renderAlertLegend()');
+  assert.match(legend[0], /aria-pressed/, 'los chips de PS no emiten aria-pressed');
+
+  // Y el estado tiene que seguir al filtro, no quedarse fijo en el markup inicial.
+  const sync = js.match(/function syncLegendVisualState\(\)[\s\S]*?\n  \}/);
+  assert.ok(sync, 'no se encontro syncLegendVisualState()');
+  assert.match(sync[0], /aria-pressed/, 'syncLegendVisualState no actualiza aria-pressed');
+});

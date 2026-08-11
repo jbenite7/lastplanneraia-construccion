@@ -120,6 +120,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
         <div class="collapse d-md-block" id="psAlertsMobile">
             <div class="pdc-legend ps-legend pdc-legend-autoscaling" id="psAlertsLegend"></div>
+            <span id="psFilterAnnounce" class="sr-only" role="status" aria-live="polite"></span>
         </div>
 
         <span id="textoFechaCierreCompromisos" class="d-none" aria-live="polite"></span>
