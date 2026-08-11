@@ -197,6 +197,37 @@ Pasó dos veces el 2026-08-10 en la misma tarde, y en las dos el emisor tenía r
 Las dos costaron una ida y vuelta de mensajes que el sha habría evitado. Propuesta de la sesión de
 CI, adoptada.
 
+## Una cifra que repites es tuya, aunque la midiera otro
+
+*(Regla del 2026-08-11, después de que tres números distintos mordieran el mismo día.)*
+
+**Toda afirmación sobre `main` viaja con su sha** —regla de arriba— y **toda cifra viaja con cómo se
+obtuvo**. Si no puedes decir con qué comando salió, no la publiques: descríbela como lo que es, una
+referencia de segunda mano.
+
+Los tres que fallaron el 2026-08-11 no los inventó nadie. **Los tres se midieron bien en su origen y
+se degradaron al repetirse**, perdiendo por el camino la fecha, el árbol o el método:
+
+- **El backlog** («35 hallazgos restantes») — cierto al medirlo, viejo dos frentes después.
+- **Los literales de color** («el archivo queda en cero») — dicho por la coordinadora sin medirlo, en
+  el mismo mensaje en que corregía a un ejecutor por usar un proxy en vez de medir. Reales: **48**.
+- **El recuento del hook** (40, 38, 37, 22, 2, 1) — el peor, porque **no es una medición en absoluto**:
+  el hook suprime lo ya señalado, así que el total depende de cuántas veces se disparó antes. Ver
+  [[contador-que-baja-porque-ya-lo-miraste]].
+
+**Lo que se hace, y aplica también —sobre todo— a la coordinadora:**
+
+- **Antes de usar un número como indicador de avance, córrelo dos veces sobre el mismo contenido.**
+  Si no coincide, no mide el mundo: mide el estado de quien pregunta.
+- **Al repetir una cifra ajena, o la remides o la atribuyes** — «según la entrega de X sobre `<sha>`».
+  Las dos son honestas; lo que no lo es es adoptarla como propia y perder su procedencia.
+- **La cifra que va a un informe del usuario tiene el listón más alto**, no el más bajo. Es la que
+  más lejos viaja y la que menos posibilidades tiene de que alguien la contraste.
+
+**Por qué esta regla y no «mide más»:** nadie mintió, y aun así los tres números llegaron falsos al
+usuario. El fallo no está en medir mal, está en el **reenvío**: una cifra pierde su contexto en cada
+salto y sigue sonando igual de firme. Quien la repite es quien la afirma.
+
 ## Qué audita la coordinadora
 
 1. **Que los gates sigan verdes** — suite estática del design system, PHPStan, paridad RBAC, lint de
