@@ -15,6 +15,7 @@
   var masterData = [];
   var weeklyAlertFilters = [];
   var weeklyPhaseKey = 'programacion';
+  var _htEmptyState = null;
   var pendingDeleteRow = null;
   var sanitizedOnLoad = false;
   var mobileSaveState = {};
@@ -2405,7 +2406,9 @@
 
         setMobileSaveState(visualRow, prop, 'success', 'Guardado');
         if (!isMobileSave) { hot.render(); }
-        updateLegendCounts(getFilteredRows());
+        // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+        // cuanto sobrevive al filtro actual. Ver comentario en applyFiltersAndRender.
+        updateLegendCounts(masterData);
         renderMobileCards(getFilteredRows());
 
         if (response.alerta_bolsa) {
@@ -2912,10 +2915,8 @@
 
     import('/js/design-system/ht-empty-state.js').then(function (mod) {
       if (!hot || hot.isDestroyed) { return; }
-      mod.attachHtEmptyState(hot, {
-        titulo: 'Sin actividades programadas esta semana',
-        cuerpo: 'Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia.',
-      });
+      _htEmptyState = mod.attachHtEmptyState;
+      syncEmptyState();
     });
 
     // Fix: Asegurar que HOT mantenga el listening activo.
@@ -3029,12 +3030,38 @@
     return filtered;
   }
 
+  // Dos vacios distintos que hasta el 2026-08-10 se contaban igual: la semana
+  // sin actividades, y el filtro que no devuelve ninguna. El segundo se
+  // presentaba como el primero y ofrecia «Agregar Actividad» y «Autoprogramar»,
+  // que anaden actividades — cuando la unica salida que recupera el dato es
+  // quitar el filtro.
+  function syncEmptyState() {
+    if (!_htEmptyState) { return; }
+    if (weeklyAlertFilters.length > 0) {
+      _htEmptyState(hot, {
+        titulo: 'Ninguna actividad coincide con el filtro',
+        cuerpo: 'Esta semana tiene ' + masterData.length + ' actividades. Quita el filtro pulsando de nuevo el chip activo para volver a verlas.',
+      });
+      return;
+    }
+    _htEmptyState(hot, {
+      titulo: 'Sin actividades programadas esta semana',
+      cuerpo: 'Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia.',
+    });
+  }
+
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
 
-    updateLegendCounts(filtered);
+    // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+    // cuanto sobrevive al filtro actual. Contar sobre `filtered` hacia que los
+    // cinco chips leyeran (0) a la vez en cuanto un filtro no devolvia filas, y
+    // la unica salida era volver a pulsar el mismo chip. Que un filtro este
+    // activo ya lo dicen `inactive-filter` y `aria-pressed`.
+    updateLegendCounts(masterData);
     updateOrInitHot(filtered);
     renderMobileCards(filtered);
+    syncEmptyState();
 
     // WCAG 4.1.3: pasar de 57 filas a 0 cambia toda la pantalla sin mover el
     // foco. Sin este anuncio, quien usa lector de pantalla no se entera de que
@@ -3224,7 +3251,9 @@
     applyLegacyColumnVisibility();
 
     renderAlertLegend();
-    updateLegendCounts(getFilteredRows());
+    // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+    // cuanto sobrevive al filtro actual. Ver comentario en applyFiltersAndRender.
+    updateLegendCounts(masterData);
     renderLegendModal();
     syncLegendVisualState();
   }
