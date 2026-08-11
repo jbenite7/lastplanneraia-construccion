@@ -196,6 +196,54 @@ de preguntar. Copia esta forma:
   `hot_actualizar.js` quedan sin cambios de esta tarea.
 - **Estado:** `abierta`
 
+### D-F1-4 · Programa General y Programación Semanal tampoco marcan una acción primaria
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1C, Task 4.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si a las toolbars de Programa General (`/programa-general/actualizar`) y
+  Programación Semanal (`/programacion-semanal`) también les conviene declarar una acción primaria,
+  como ya se hizo en esta tarea con «Restricción Compartida» de Programación Intermedia por decisión
+  explícita del usuario. La ficha original del ICE 180 daba por hecho que «en las otras tres toolbars
+  se pudo señalar cuál es la principal» — **eso es falso hoy**, medido al aplicar el cambio.
+- **Qué se midió** (dark, código actual, sin tocar ninguno de los dos archivos):
+  - **Programa General** (`views/programa-general-actualizar/programaGeneralActualizar.view.php:98-110`,
+    `.pg-toolbar-buttons`): **4 botones**. `btn_cargarCronogramaExcel` («Cargar desde Excel») ya lleva
+    `aia-btn-primary` (variante guion simple, la misma familia que «Actualizar Cronograma»); los otros
+    tres (`btn_eliminarActualizacion`, `btn_toggleFiltroMapeo`, `btn_autoAsociar`) llevan
+    `aia-btn-ghost`. Es decir, **Programa General ya tiene una acción marcada como distinta** de las
+    demás — no es una toolbar plana como PI lo era. El candidato razonable a «primaria real» sigue
+    siendo «Cargar desde Excel»: es la acción que dispara el flujo completo del módulo (las otras tres
+    son eliminar, alternar vista y auto-asociar, todas de apoyo).
+  - **Programación Semanal** (`views/programacion-semanal/programacion_semanal.view.php:70-110`,
+    `.ps-hot-toolbar-actions`, excluyendo el botón de colapso móvil): **7 controles visibles en
+    desktop** — `btn_autoprogramar`, `btn_agregar_actividad`, `btn_cerrar_compromisos_semana`,
+    `btn_reabrir_semana` (oculto en runtime normal), `btn_tnp` (ídem), `btn-refresh`, el enlace BI
+    Semanal, más dos disparadores de dropdown («Más» y «Ver Secciones»). De estos,
+    `btn_cerrar_compromisos_semana` («Confirmar Compromisos») **ya lleva `class="aia-btn"` sin
+    `--secondary`**, así que hoy ya renderiza con el estilo relleno/primario de `core.css` — es, de
+    hecho, el único botón de las tres toolbars que ya se comporta como «primaria» sin que esta tarea
+    lo tocara. Los otros seis controles de la barra sí son `aia-btn--secondary`.
+  - Conclusión de la medición: la premisa de la ficha («las otras tres ya señalan la suya») es
+    correcta a medias — Programa General y Programación Semanal **sí tienen ya, cada una, un botón
+    visualmente distinto del resto** (por variante de clase, no por decisión de jerarquía explícita
+    documentada), pero Programación Intermedia no tenía ninguno hasta este cambio.
+- **Opciones:**
+  - **(a) No tocar nada.** PG y PS ya tienen, de hecho, un botón que destaca (aunque llegó ahí por
+    variantes de clase preexistentes, no por un rediseño de jerarquía). Aceptar eso como suficiente.
+  - **(b) Formalizar la jerarquía en las dos**: migrar `aia-btn-primary` (PG) y el `aia-btn` pelado de
+    PS a `aia-btn--primary` (BEM) para que ambas usen la misma convención que PI y evitar la
+    convivencia de variantes documentada en `D-F1-`(hallazgo de Task 4, ver informe) sin cambiar el
+    botón elegido.
+  - **(c) Revisar si el botón que hoy destaca en cada una (`Cargar desde Excel` en PG, `Confirmar
+    Compromisos` en PS) es de verdad la acción primaria correcta**, en vez de asumir que la variante
+    de clase heredada acertó por accidente.
+- **Recomendación:** ninguna — es criterio de negocio sobre cuál debe ser la acción primaria de cada
+  pantalla, no algo que esta tarea deba decidir. Sí se anota que **(b)** es de bajo riesgo si se
+  decide seguir: no cambia qué botón destaca, solo unifica la clase.
+- **Qué quedó saltado esperando:** no se tocó ni `programaGeneralActualizar.view.php` ni
+  `programacion_semanal.view.php`. El cambio de esta tarea se limitó a Programación Intermedia.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas

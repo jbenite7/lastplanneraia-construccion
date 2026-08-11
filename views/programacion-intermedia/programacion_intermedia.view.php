@@ -47,7 +47,7 @@
                         <label class="custom-control-label" for="piViewAllToggle"></label>
                     </div>
                 </div>
-                <button id="btn-shared-constraint" class="aia-btn aia-btn--secondary">Restricción Compartida</button>
+                <button id="btn-shared-constraint" class="aia-btn aia-btn--primary">Restricción Compartida</button>
                 <button id="btn-refresh-listas" class="aia-btn aia-btn--secondary" title="Recargar listas de Subcontratistas y Profesionales"><i class="fas fa-sync" aria-hidden="true"></i> Listas</button>
                 <button id="btn-shared-select-visible" class="aia-btn aia-btn--secondary">Seleccionar visibles</button>
                 <button id="btn-shared-clear-selection" class="aia-btn aia-btn--secondary">Limpiar selección</button>
