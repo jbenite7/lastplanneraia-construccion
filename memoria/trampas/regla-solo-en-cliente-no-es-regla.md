@@ -3,8 +3,8 @@ tipo: trampa
 estado: vigente
 fecha: 2026-08-06
 areas: [rbac, qa]
-fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md, docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md, commits 88ba6e0d, ca642189, 32cccddf, 23d27bb7, 4b1a2be0
-resumen: "Una regla que solo vive en el cliente no es una regla: declarar una capacidad en RbacManager y en rbac_capabilities.js no implica que el servidor la aplique — hay que buscar el consumidor PHP"
+fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md, docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md, commits 88ba6e0d, ca642189, 32cccddf, 23d27bb7, 4b1a2be0, 4ba845dc
+resumen: "Una regla que solo vive en el cliente no es una regla: declarar una capacidad en RbacManager y en rbac_capabilities.js no implica que el servidor la aplique — desde el 2026-08-10 hay un gate que lo mide, y está publicado en rojo a propósito"
 ---
 # Una regla que solo vive en el cliente no es una regla
 
@@ -46,6 +46,29 @@ dato):
    como decoración de UX, no como seguridad ni como regla de negocio cumplida.
 3. Al cerrar el hallazgo, añade una prueba de servidor que golpee el endpoint sin el control de
    cliente — es la única forma de que la regresión no vuelva en silencio.
+
+## Desde el 2026-08-10 hay un gate que mide esta familia
+
+`npm run test:rbac-parity` (`scripts/rbac-parity.mjs`, `tests/rbac/parity.test.mjs`, commit
+`4ba845dc`) compara la matriz de `RbacManager` con la del cliente y falla ante cualquier
+divergencia. Las justificadas se declaran en `docs/rbac-parity-exceptions.json` con motivo y fecha.
+
+**Está publicado en `main` en ROJO, y es deliberado.** Decisión explícita del usuario al cerrar el
+día. Reporta dos divergencias vivas, ambas del rol **R** (Residente):
+
+| Capacidad | Servidor | Cliente |
+|---|---|---|
+| `canManageContracts` | `true` (`RbacManager.php:28`, rol `R` en la lista) | `false` |
+| `canManagePdC` | `true` (alias de la anterior, `RbacManager.php:48`) | `false` |
+
+No son vestigios del PDC v1 borrado: `/plan-compras` (PDC **v2**) está vivo en
+`public/index.php:141`. Es el mismo patrón que [[reabrir-semana-asimetria-cliente-servidor]] —
+el cliente esconde, el servidor permite— y su cierre pertenece al Frente 1A de seguridad y permisos.
+
+> **Aviso para la próxima sesión que lo vea rojo:** no es una regresión tuya y **no se apaga
+> metiendo las dos capacidades en `rbac-parity-exceptions.json`**. Eso convertiría un hallazgo de
+> permisos vivo en una excepción documentada, que es exactamente el error que esta página existe
+> para evitar. El gate en rojo está haciendo su trabajo.
 
 Vecina de esta trampa por el lado de las pruebas: [[test-nuevo-rompe-en-silencio-suites-viejas]] —
 al blindar el servidor, las suites E2E que ya posteaban directo pueden quedar rotas o, peor, con
