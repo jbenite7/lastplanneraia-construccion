@@ -143,6 +143,14 @@ proyecto Da Porto, 1180×820, dark, sesión por la puerta de servicio:
 | Controles visibles en pantalla | 64 | **57** |
 | Alto del bloque de leyenda | 88px | **44px** |
 
+Nota sobre el 64 y el 63: la primera medición de este spec dio **63**, tomada en el árbol
+principal antes de existir el worktree; el «antes» de esta tabla dio **64**, tomado en el
+contenedor propio poniendo `OCULTAR_CONTADORES_EN_CERO = false`. La diferencia es de instrumento,
+no del cambio. **La comparación válida es la de esta tabla**, porque sus dos extremos se midieron
+con el mismo contenedor, el mismo proyecto y el mismo contador; comparar 63 con 57 mezclaría dos
+montajes distintos, que es justo el error que este frente documenta en
+[[valor-declarado-no-es-valor-computado]].
+
 - **Guarda del filtro verificada:** con un filtro activo vuelven los 8 y se puede saltar de uno a
   otro. Sin ella, ocultar por el valor a secas habría borrado los siete botones de filtro justo
   cuando hacen falta para salir del filtro puesto — un fallo que solo aparece en un estado al que
