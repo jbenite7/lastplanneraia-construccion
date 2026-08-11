@@ -475,6 +475,30 @@ de preguntar. Copia esta forma:
   bloquea al Frente 1b.
 - **Estado:** `abierta`
 
+### D-F1-7 · Hasta dónde llega el encargo de una sesión de ejecución
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, al cerrarlo.
+- **Fecha:** 2026-08-11
+- **Qué se decidió:** una sesión de ejecución **hace el frente que le asignan y se detiene ahí**. No
+  encadena los siguientes por su cuenta, aunque su objetivo esté redactado como «termina el plan
+  entero».
+- **Por qué se preguntó:** el objetivo de la sesión pedía «cumplimiento al 100 % del spec», y el spec
+  son **seis** frentes. Eso choca de frente con dos contratos del repo:
+  - `docs/coordinacion-sesiones.md:23` — «la coordinadora abre la siguiente… por turnos, no en
+    paralelo». Autoasignarse un frente es exactamente lo que ese contrato existe para evitar, y el
+    2026-08-10 ya costó tres integraciones y un trabajo sobrescrito.
+  - `AGENTS.md:88` — el Frente 5 es el despliegue a producción y «necesita su propia autorización
+    explícita, siempre».
+  - Y el propio reparto: «lo declara el usuario, no lo reclama nadie» (`coordinacion-sesiones.md:9`).
+- **Decisión del usuario, 2026-08-11:**
+  - **Alcance:** se sigue el turno. Solo lo que asigne la coordinadora.
+  - **Producción:** no se toca sin una autorización aparte. Un objetivo de sesión **no** es esa
+    autorización.
+- **Qué significa en la práctica:** un objetivo redactado como «termina todo» **no amplía el
+  encargo**. Si la condición de terminación de una sesión abarca más frentes de los que tiene
+  asignados, la condición se cumple entregando **su** frente y pidiendo el siguiente — no tomándolo.
+- **Estado:** `resuelta 2026-08-11: se sigue el turno; producción exige autorización aparte.`
+
 ---
 
 ## Resueltas
@@ -491,4 +515,5 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1-2` | Familia nueva de tokens de fondo para destacar celdas, calibrada a 3:1 | Frente 1 · aplicado en `66facd23` |
 | `D-F1-3` | Apuntar los cuatro `--aia-*` al token real y retirar la reserva hex | **Sin aplicar**: ningún token conserva el color; vuelve al usuario |
 | `D-F1-4` | «Confirmar Compromisos» y «Actualizar Ejecución» pasan a primaria | Frente 1 · aplicado en `66facd23` |
+| `D-F1-7` | Una sesión de ejecución hace su frente y se detiene; no encadena los siguientes | Regla general · aplica a todas las sesiones de ejecución |
 | `D-F1-5` | Añadir un token de espacio de 72 px (`--ds-space-18`) | Frente 1 · aplicado en `66facd23` |
