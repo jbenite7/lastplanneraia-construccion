@@ -615,6 +615,46 @@ de preguntar. Copia esta forma:
   el mecanismo de recibos ya está entregado y probado.
 - **Estado:** `abierta`
 
+### D-F1b-5 · El contrato obliga a declarar todos los gates «passed», o la suite entera se pone roja
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b, al hacer honesto el índice.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si el estado «activado» del design system puede convivir con gates que hoy no
+  pasan, o si cualquier rojo honesto debe tumbar la suite estática entera.
+- **Qué se midió, y es la causa raíz de todo este frente:** al poner `runtime`, `runtime-budgets` y
+  `full-app-flow` en `blocked` —que es la verdad, medida— la suite estática pasa de RC=0 a **RC=1**,
+  con `activation: gates, version and stable API must activate together`.
+  - `scripts/design-system-closeout-contract.mjs:96` — `allPassed` exige que **todos** los gates
+    estén `passed`.
+  - `:113` — la activación exige que `allPassed`, la versión y la API estable **valgan lo mismo**.
+    La versión es 1.x estable y la API está garantizada, así que en cuanto **un solo gate** deja de
+    estar `passed`, los tres divergen y la suite cae.
+- **Lo que eso significa, dicho sin rodeos:** el contrato **no deja declarar la verdad y seguir en
+  verde**. Con ocho gates de los que tres no pasan, la única forma de tener la suite verde es
+  **afirmar que los ocho pasan**. Es decir: **la razón por la que quince recibos decían `passed` sin
+  haberse ejecutado no era solo descuido — era la única salida que el contrato dejaba abierta.**
+- **Y el propio contrato se contradice**, lo que hace la decisión más fácil: `:122-124` documenta que
+  «la activación del design system fue un hito **ÚNICO**, cumplido en 1.0.0 (D2 del spec
+  2026-08-04). A partir de ahí el sistema no se "reactiva" en cada versión». Si la activación es un
+  hito histórico ya cumplido, **no debería depender de que todos los gates estén verdes hoy**.
+- **Opciones:**
+  - **(a) Desacoplar la activación del estado de hoy.** «Activado» pasa a significar lo que su propio
+    comentario dice —un hito alcanzado en 1.0.0—, y el estado diario de los gates se informa aparte.
+    Un gate rojo pondría rojo **su** carril, no la activación entera.
+  - **(b) Dejarlo como está y no declarar `blocked` nunca.** Es el estado anterior, y es el que
+    produjo quince `passed` falsos. No lo recomiendo, pero hay que nombrarlo para descartarlo a
+    propósito.
+  - **(c) Arreglar o retirar los tres rojos hasta que los ocho pasen de verdad**, y solo entonces
+    publicar. Es lo más limpio de fondo, pero `runtime` depende de una decisión de producto abierta,
+    y `full-app-flow` de infraestructura: el frente quedaría bloqueado hasta las dos.
+- **Recomendación:** **(a)**, y con urgencia, porque hasta que se decida **el repositorio premia
+  mentir**: cualquier sesión que mida un gate y escriba la verdad verá su suite en rojo, y la salida
+  cómoda será volver a poner `passed`. Es exactamente el incentivo que creó el problema.
+- **Qué quedó saltado esperando:** la **publicación** del índice honesto. El trabajo está hecho y
+  commiteado en la rama, pero **no se publica en rojo** — hacerlo sería lo mismo que este programa
+  vino a desmontar. Los ocho recibos ya son reales y el techo de recibos sin migrar está en cero.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
