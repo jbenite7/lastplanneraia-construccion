@@ -14,10 +14,21 @@
   var pendingViewportState = null;
   var masterData = [];
   var weeklyAlertFilters = [];
+  // Ids que el servidor senalo como bloqueantes al intentar cerrar
+  // compromisos (bloquearCompromisos). Null cuando no hay filtro activo.
+  var weeklyBlockingIds = null;
   var weeklyPhaseKey = 'programacion';
+  var _htEmptyState = null;
   var pendingDeleteRow = null;
   var sanitizedOnLoad = false;
   var mobileSaveState = {};
+  var _saveStatus = null;
+  import('/js/design-system/save-status.js').then(function (mod) {
+    _saveStatus = mod.crearSaveStatus({});
+  });
+  import('/js/design-system/modal-escape.js').then(function (mod) {
+    mod.activarEscapeEnModales();
+  });
 
   var options = window.PS_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas : [];
@@ -435,6 +446,7 @@
     }
 
     if (type === 'success') {
+      if (_saveStatus) { _saveStatus.guardado(); }
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
       } else {
@@ -2342,6 +2354,8 @@
       return;
     }
 
+    if (_saveStatus) { _saveStatus.pendiente(1); }
+
     $.ajax({
       method: 'POST',
       url: '/api/semanal/save?db=' + encodeURIComponent(db),
@@ -2398,7 +2412,9 @@
 
         setMobileSaveState(visualRow, prop, 'success', 'Guardado');
         if (!isMobileSave) { hot.render(); }
-        updateLegendCounts(getFilteredRows());
+        // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+        // cuanto sobrevive al filtro actual. Ver comentario en applyFiltersAndRender.
+        updateLegendCounts(masterData);
         renderMobileCards(getFilteredRows());
 
         if (response.alerta_bolsa) {
@@ -2905,10 +2921,8 @@
 
     import('/js/design-system/ht-empty-state.js').then(function (mod) {
       if (!hot || hot.isDestroyed) { return; }
-      mod.attachHtEmptyState(hot, {
-        titulo: 'Sin actividades programadas esta semana',
-        cuerpo: 'Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia.',
-      });
+      _htEmptyState = mod.attachHtEmptyState;
+      syncEmptyState();
     });
 
     // Fix: Asegurar que HOT mantenga el listening activo.
@@ -2973,6 +2987,10 @@
   }
 
   function rowMatchesFilters(row) {
+    if (weeklyBlockingIds !== null) {
+      return weeklyBlockingIds.indexOf(String(row && row.Id)) > -1;
+    }
+
     if (weeklyAlertFilters.length > 0) {
       var stateKey = getStateKey(row);
       if (weeklyAlertFilters.indexOf(stateKey) === -1) {
@@ -3022,12 +3040,60 @@
     return filtered;
   }
 
+  // Dos vacios distintos que hasta el 2026-08-10 se contaban igual: la semana
+  // sin actividades, y el filtro que no devuelve ninguna. El segundo se
+  // presentaba como el primero y ofrecia «Agregar Actividad» y «Autoprogramar»,
+  // que anaden actividades — cuando la unica salida que recupera el dato es
+  // quitar el filtro.
+  function syncEmptyState() {
+    if (!_htEmptyState) { return; }
+    if (weeklyAlertFilters.length > 0) {
+      _htEmptyState(hot, {
+        titulo: 'Ninguna actividad coincide con el filtro',
+        cuerpo: 'Esta semana tiene ' + masterData.length + ' actividades. Quita el filtro pulsando de nuevo el chip activo para volver a verlas.',
+      });
+      return;
+    }
+    _htEmptyState(hot, {
+      titulo: 'Sin actividades programadas esta semana',
+      cuerpo: 'Usa «Agregar Actividad» para programar una, o «Autoprogramar Actividades» para traerlas desde la programación intermedia.',
+    });
+  }
+
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
 
-    updateLegendCounts(filtered);
+    // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+    // cuanto sobrevive al filtro actual. Contar sobre `filtered` hacia que los
+    // cinco chips leyeran (0) a la vez en cuanto un filtro no devolvia filas, y
+    // la unica salida era volver a pulsar el mismo chip. Que un filtro este
+    // activo ya lo dicen `inactive-filter` y `aria-pressed`.
+    updateLegendCounts(masterData);
     updateOrInitHot(filtered);
     renderMobileCards(filtered);
+    syncEmptyState();
+
+    // WCAG 4.1.3: pasar de 57 filas a 0 cambia toda la pantalla sin mover el
+    // foco. Sin este anuncio, quien usa lector de pantalla no se entera de que
+    // el filtro hizo algo.
+    var texto;
+    if (weeklyBlockingIds !== null) {
+      texto = filtered.length + ' actividades sin compromiso o sin asignaciones obligatorias';
+    } else if (weeklyAlertFilters.length === 0) {
+      texto = filtered.length + ' actividades, sin filtros';
+    } else {
+      texto = filtered.length + ' de ' + masterData.length + ' actividades con el filtro aplicado';
+    }
+    $('#psFilterAnnounce').text(texto);
+  }
+
+  // El servidor bloqueo el cierre y dijo cuales filas le faltan. Antes el
+  // usuario recibia un texto generico y recorria las 57 filas a mano; ahora
+  // la rejilla se filtra a exactamente esas.
+  function mostrarFilasBloqueantes(ids) {
+    weeklyAlertFilters = [];
+    weeklyBlockingIds = (Array.isArray(ids) ? ids : []).map(String);
+    applyFiltersAndRender();
   }
 
   function renderAlertLegend() {
@@ -3035,7 +3101,7 @@
     var html = '';
     for (var i = 0; i < config.length; i++) {
       var item = config[i];
-      html += "<span class='pdc-legend-item " + escapeHtml(item.className) + "' data-filter='" + escapeHtml(item.key) + "' role='button' tabindex='0'><span class='indicator'></span>" +
+      html += "<span class='pdc-legend-item " + escapeHtml(item.className) + "' data-filter='" + escapeHtml(item.key) + "' role='button' tabindex='0' aria-pressed='false'><span class='indicator'></span>" +
         escapeHtml(item.label) + " <span id='count-" + escapeHtml(item.key) + "' class='count-badge'>(...)</span></span>";
     }
     $('#psAlertsLegend').html(html);
@@ -3118,11 +3184,20 @@
       }
     }
 
+    // El estado accesible se calcula en el mismo sitio que el visual, para que no
+    // puedan divergir: `inactive-filter` y `aria-pressed` son la misma verdad
+    // contada a dos publicos distintos.
+    $items.each(function () {
+      var clave = $(this).attr('data-filter');
+      $(this).attr('aria-pressed', weeklyAlertFilters.indexOf(clave) > -1 ? 'true' : 'false');
+    });
+
     $('#mobileAlertCount').text(weeklyAlertFilters.length);
   }
 
   function toggleWeeklyAlertFilter(filterKey, event) {
     event = event || {};
+    weeklyBlockingIds = null;
     var index = weeklyAlertFilters.indexOf(filterKey);
 
     if (!event.ctrlKey && !event.metaKey) {
@@ -3201,7 +3276,9 @@
     applyLegacyColumnVisibility();
 
     renderAlertLegend();
-    updateLegendCounts(getFilteredRows());
+    // Los contadores dicen cuanto hay DETRAS de cada estado esta semana, no
+    // cuanto sobrevive al filtro actual. Ver comentario en applyFiltersAndRender.
+    updateLegendCounts(masterData);
     renderLegendModal();
     syncLegendVisualState();
   }
@@ -3539,7 +3616,11 @@
     return summary;
   }
 
-  function renderSummaryList(title, items, extraClass) {
+  // Las cuatro listas se cortan a 8 elementos mientras su contador sigue
+  // subiendo. Con 30 bloqueantes el KPI decia 30 y el detalle ensenaba 8, asi
+  // que el usuario creia que arreglando esas ocho terminaba — en el momento de
+  // mayor consecuencia del ciclo semanal.
+  function renderSummaryList(title, items, extraClass, total) {
     if (!items || items.length === 0) {
       return '';
     }
@@ -3548,6 +3629,10 @@
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
       html += '<li><strong>' + item.actividad + '</strong><br><small>' + item.detalle + '</small></li>';
+    }
+    var ocultas = (typeof total === 'number' ? total : items.length) - items.length;
+    if (ocultas > 0) {
+      html += '<li class="ps-close-summary__mas">y ' + ocultas + ' más que no caben en esta lista</li>';
     }
     html += '</ul></div>';
     return html;
@@ -3559,21 +3644,34 @@
 
     var html = "<div class='ps-close-summary'>" +
       "<div class='ps-close-summary-kpis'>" +
-      "<div class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Por completar</small></div>" +
+      "<div id='ps-close-summary-kpi-por-completar' class='ps-close-summary-kpi is-blocking'><strong>" + summary.blockingCount + "</strong><small>Por completar</small></div>" +
       "<div class='ps-close-summary-kpi is-ready'><strong>" + summary.readyCount + "</strong><small>Listas para confirmar</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningLowCount + "</strong><small>Compromiso menor a sugerido</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.warningRestrictedCount + "</strong><small>Compromiso con condiciones pendientes</small></div>" +
       "<div class='ps-close-summary-kpi is-warning'><strong>" + summary.executionRestrictionsCount + "</strong><small>Ejecución con restricciones</small></div>" +
       "</div>";
 
-    html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking');
-    html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning');
-    html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning');
-    html += renderSummaryList('Detalle ejecución con restricciones', summary.executionRestrictionsItems, 'is-warning');
+    html += renderSummaryList('Detalle por completar', summary.blockingItems, 'is-blocking', summary.blockingCount);
+    html += renderSummaryList('Detalle compromiso menor a sugerido', summary.warningLowItems, 'is-warning', summary.warningLowCount);
+    html += renderSummaryList('Detalle con condiciones pendientes', summary.warningRestrictedItems, 'is-warning', summary.warningRestrictedCount);
+    html += renderSummaryList('Detalle ejecución con restricciones', summary.executionRestrictionsItems, 'is-warning', summary.executionRestrictionsCount);
     html += "<p class='ps-close-summary-note'>Al confirmar, no se podrán modificar compromisos ni eliminar actividades.</p></div>";
 
     $('#cerrar_compromisos_semana').html(html);
-    $('#btn_confirmar_compromisos_semana').prop('disabled', hasBlocking).toggleClass('disabled', hasBlocking);
+    var $btn = $('#btn_confirmar_compromisos_semana');
+    $btn.prop('disabled', hasBlocking).toggleClass('disabled', hasBlocking);
+
+    // El motivo vivia en un KPI a media pantalla y el boton no lo nombraba: se
+    // sabia que estaba bloqueado, no por que. `aria-describedby` lo ata al KPI
+    // que lo causa, y la etiqueta propia lo dice en claro para quien no navega
+    // por la pagina entera.
+    if (hasBlocking) {
+      $btn.attr('aria-describedby', 'ps-close-summary-kpi-por-completar');
+      $btn.attr('aria-label', 'Confirmar cerrar compromisos. Faltan ' + summary.blockingCount + ' por completar');
+    } else {
+      $btn.removeAttr('aria-describedby');
+      $btn.attr('aria-label', 'Confirmar cerrar compromisos');
+    }
   }
 
   // El borde rojo y el aviso global de #formulario_nuevo ya existian, pero nada ataba
@@ -4065,7 +4163,7 @@
     var today = new Date();
     var dateText = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    $('#btn_confirmar_compromisos_semana').prop('disabled', true).val('Confirmando...');
+    $('#btn_confirmar_compromisos_semana').prop('disabled', true).val('Confirmando...').attr('aria-busy', 'true');
 
     $.ajax({
       method: 'POST',
@@ -4105,13 +4203,31 @@
         $('#Semanal_Confirmada').val('1');
         syncPhaseUI();
         loadData();
+
+        // La barra de fase ya cambiaba de Programacion a Calificacion; el sello
+        // solo acusa ese cambio que ya ocurria, no anade un momento nuevo.
+        var $phaseBar = $('#ctxWeeklyPhase');
+        if ($phaseBar.length) {
+          $phaseBar.removeClass('is-sellada');
+          void $phaseBar[0].offsetWidth;
+          $phaseBar.addClass('is-sellada').one('animationend', function () {
+            $phaseBar.removeClass('is-sellada');
+          });
+        }
       } else {
         $('#aceptar_cerrar_compromisos_semana').html('<p>Se detectaron actividades sin compromiso o sin asignaciones obligatorias.</p><p>Asigne compromisos > 0, Responsable AIA y Sub-Contratista en todas las actividades activas para continuar.</p>');
+
+        // El texto generico obligaba a buscar a mano cual de las 57 filas
+        // faltaba. Ahora el servidor dice cuales y la rejilla las ensena.
+        var ids = (response && Array.isArray(response.ids)) ? response.ids : [];
+        if (ids.length > 0) {
+          mostrarFilasBloqueantes(ids);
+        }
       }
     }).fail(function () {
       showFeedback('error', 'Error confirmando compromisos');
     }).always(function () {
-      $('#btn_confirmar_compromisos_semana').prop('disabled', false).val('Confirmar');
+      $('#btn_confirmar_compromisos_semana').prop('disabled', false).val('Confirmar').removeAttr('aria-busy');
     });
   }
 

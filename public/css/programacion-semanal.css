@@ -1687,9 +1687,26 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     font-size: 0.9em;
 }
 
+/* La clase la aplicaba `hot.js:2602` desde siempre y no existia ninguna regla
+   para ella en todo el arbol: el segundo canal que el codigo pretendia —el
+   fondo— nunca llego a pintarse. Con solo color, la marca daba 1,35:1 contra
+   el dato que la rodea, por debajo del 3:1 que pide WCAG 1.4.11. */
+/* Deliberado, decidido el 2026-08-11 (D-F1-1): esta marca es `critical` y la
+   hermana de Programacion Intermedia (`.pi-missing-resp`) es `warning`, para
+   la MISMA falta. No es una inconsistencia: aqui la falta frena el cierre de
+   la semana entera, alli solo bloquea unas celdas. No unificar sin volver a
+   preguntar. */
+.ps-page #hot-container td.ps-cell-empty-alert {
+    background-color: var(--ds-color-cell-critical-bg);
+}
+
 .ps-missing-assignment {
     color: var(--ds-color-state-critical-text);
     font-size: var(--ds-type-size-sm);
+    /* Sin peso, la marca tenia el mismo tamano y el mismo peso que la tinta
+       de datos: ganaba solo por matiz. Paridad con `.pi-missing-resp`
+       (programacion-intermedia.css:532-537), que ya pesa 600. */
+    font-weight: 600;
 }
 
 .ps-empty-icon {
@@ -2488,6 +2505,27 @@ body.ps-page #hot-container .ops-state-summary {
 
 body.ps-page #hot-container td.ps-cell-shake {
     animation: ps-cell-shake 180ms ease-out 2;
+}
+
+/* El acto mas consecuente del ciclo semanal se acusaba con un modal de texto
+   plano. El sello marca el cambio de fase que YA ocurre —Programacion pasa a
+   Calificacion— en vez de anadir un momento nuevo. hot.js pone y quita
+   `is-sellada` en #ctxWeeklyPhase al confirmar. El guard global de
+   reduced-motion (mas abajo en este archivo) la anula igual que a
+   ps-cell-shake; el override explicito de aqui es belt-and-suspenders. */
+.context-weekly-phase.is-sellada {
+    animation: ps-sello-fase var(--ds-motion-standard) both;
+}
+
+@keyframes ps-sello-fase {
+    from { transform: scale(1.06); opacity: 0.4; }
+    to   { transform: scale(1);    opacity: 1;   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .context-weekly-phase.is-sellada {
+        animation: none;
+    }
 }
 
 html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {

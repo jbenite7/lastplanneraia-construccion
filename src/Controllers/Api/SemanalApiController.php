@@ -925,9 +925,22 @@ private function autoprogramar(string $dbPrefix, int $semana): void
     private function bloquearCompromisos(string $dbPrefix, int $semana): void
     {
         $projectId = $this->projectId($dbPrefix);
-        $queryCount = "SELECT COUNT(*) FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
-        if ($this->db->queryWithProject($queryCount, [$projectId, $semana], $projectId)->fetchColumn() > 0) {
-            echo json_encode(["respuesta" => "No_Bloqueado", "mensaje" => "Hay actividades sin compromiso o sin asignaciones obligatorias."]);
+        // Antes se hacia COUNT(*) y se respondia "hay actividades sin compromiso",
+        // sin decir cuales: el usuario atravesaba el modal entero y salia sin saber
+        // donde mirar. Mismo criterio, mismo aislamiento por proyecto; lo que
+        // cambia es que ahora se devuelve el Id de cada fila para que la rejilla
+        // pueda senalarlas.
+        $queryIds = "SELECT Id FROM " . $this->tbl($dbPrefix, 'programacion_semanal') . " WHERE project_id = ? AND Semana = ? AND Activa = 1 AND (Compromiso IS NULL OR Compromiso <= 0 OR TRIM(COALESCE(Sub_Contratista, '')) = '' OR LOWER(TRIM(COALESCE(Sub_Contratista, ''))) = 'null' OR TRIM(COALESCE(Responsable_AIA, '')) = '' OR LOWER(TRIM(COALESCE(Responsable_AIA, ''))) = 'null')";
+        $idsSinCompromiso = $this->db->queryWithProject($queryIds, [$projectId, $semana], $projectId)->fetchAll(\PDO::FETCH_COLUMN);
+        if (count($idsSinCompromiso) > 0) {
+            // `Id` es varchar(500), no un entero (hay codigos de actividad no
+            // numericos): se transmite tal cual, sin intval, para no perder
+            // filas al truncarlas a 0.
+            echo json_encode([
+                "respuesta" => "No_Bloqueado",
+                "mensaje"   => "Hay actividades sin compromiso o sin asignaciones obligatorias.",
+                "ids"       => array_values(array_map('strval', $idsSinCompromiso)),
+            ]);
             return;
         }
         $res = $this->db->queryWithProject("UPDATE " . $this->tbl($dbPrefix, 'semanas_activas') . " SET Semanal_Confirmada = 1, fechaCierreCompromisos = ? WHERE project_id = ? AND Semana = ?", [$_POST["fechaCierreCompromisos"] ?: null, $projectId, $semana], $projectId);

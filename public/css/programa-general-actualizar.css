@@ -732,3 +732,16 @@
     }
   }
 }
+
+/* El chip nace con `badge-badge-hidden` y el selector de
+   `programa-general.css:231` casa perfectamente con el —el body lleva
+   `pg-page` y el padre es `.pg-status-badges`—, pero esa hoja NO se carga en
+   Actualizar Cronograma: aqui llega `programa-general-actualizar.css`. La
+   regla existia en el repo y nunca se encontraba con su elemento, asi que el
+   chip anunciaba un guardado que no habia ocurrido desde que la pantalla
+   existe. Medido el 2026-08-11. */
+@layer module {
+  .pg-page .pg-status-badges .badge-badge-hidden {
+    display: none;
+  }
+}

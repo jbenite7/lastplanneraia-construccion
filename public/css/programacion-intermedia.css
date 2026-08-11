@@ -529,6 +529,11 @@ html.aia-theme-dark .pi-page {
     color: var(--ds-color-state-warning-text);
 }
 
+/* Deliberado, decidido el 2026-08-11 (D-F1-1): esta marca es `warning` y la
+   hermana de Programacion Semanal (`.ps-cell-empty-alert`) es `critical`,
+   para la MISMA falta. No es una inconsistencia: alli la falta frena el
+   cierre de la semana entera, aqui solo bloquea unas celdas. No unificar
+   sin volver a preguntar. */
 .pi-page #hot-container td .pi-missing-resp {
     display: inline-block;
     font-size: inherit;

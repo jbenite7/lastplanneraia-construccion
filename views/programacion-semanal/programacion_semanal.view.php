@@ -77,7 +77,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
                 <div class="ps-hot-toolbar-actions">
                     <button id="btn_autoprogramar" class="aia-btn aia-btn--secondary" aria-label="Autoprogramar Actividades"><i aria-hidden="true" class="fas fa-magic"></i> <span>Autoprogramar Actividades</span></button>
                     <button id="btn_agregar_actividad" type="button" class="aia-btn aia-btn--secondary" aria-label="Agregar Actividad Manual"><i aria-hidden="true" class="fas fa-plus"></i> <span>Agregar Actividad</span></button>
-                    <button id="btn_cerrar_compromisos_semana" type="button" class="aia-btn" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
+                    <button id="btn_cerrar_compromisos_semana" type="button" class="aia-btn aia-btn--primary" data-toggle="modal" data-target="#modal_cerrar_compromisos" aria-label="Confirmar Compromisos de la Semana"><i aria-hidden="true" class="fas fa-lock"></i> <span>Confirmar Compromisos</span></button>
                     <button type="button" id="btn_reabrir_semana" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Reabrir semana para edición"><i aria-hidden="true" class="fas fa-unlock"></i> <span>Reabrir Semana</span></button>
                     <button id="btn_tnp" type="button" class="aia-btn aia-btn--secondary ps-runtime-hidden" aria-label="Registrar Trabajo No Planificado"><i aria-hidden="true" class="fas fa-bolt"></i> <span>Registrar TNP</span></button>
                     <!-- Recargar es accion de recuperacion: se busca cuando los datos no cuadran, el peor momento para tener que abrir un desplegable (C-17). -->
@@ -98,7 +98,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
             <div class="ps-toolbar-right">
                 <div class="ps-status-badges">
-                    <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden">Guardado</span>
+                    <span id="save-status" class="aia-chip aia-chip--success badge-badge-hidden" role="status">Guardado</span>
                 </div>
                 <div id="ps-toast-container" aria-live="polite"></div>
                 <div class="ps-dropdown-nav" aria-label="Navegacion Programacion Semanal">
@@ -120,6 +120,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
 
         <div class="collapse d-md-block" id="psAlertsMobile">
             <div class="pdc-legend ps-legend pdc-legend-autoscaling" id="psAlertsLegend"></div>
+            <span id="psFilterAnnounce" class="sr-only" role="status" aria-live="polite"></span>
         </div>
 
         <span id="textoFechaCierreCompromisos" class="d-none" aria-live="polite"></span>

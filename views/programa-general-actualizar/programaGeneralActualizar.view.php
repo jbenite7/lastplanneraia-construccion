@@ -106,7 +106,7 @@
 					<button id="btn_autoAsociar" type="button" class="aia-btn aia-btn-ghost" title="Asociar automáticamente"><i class="fas fa-magic" aria-hidden="true"></i> Auto-Asociar</button>
 				</div>
 				<div class="pg-status-badges">
-					<span id="save-status" class="aia-chip badge-badge-hidden" data-aia-severity="success">Auto-Guardado</span>
+					<span id="save-status" class="aia-chip badge-badge-hidden" data-aia-severity="success" role="status">Auto-Guardado</span>
 				</div>
 			</div>
 		</div>
@@ -450,6 +450,15 @@
 		var guardarCargarExcel = function() {
 		  $("#modalCargarExcel form").off("submit").on("submit", function(e) {
 		    e.preventDefault();
+
+				// Acuse de recibo de la operacion mas larga de la app: sin esto, entre
+				// pulsar «Guardar» y ver el resultado no cambia nada en pantalla, y un
+				// segundo clic lanza una segunda importacion sobre el mismo cronograma.
+				// Mismo patron que «Crear Semana LPS» (funcionesGenerales6.js:68-69).
+				var $submit = $(this).find('input[type="submit"]');
+				$submit.prop('disabled', true);
+				$('#modal_spinner').modal('show');
+
 				var db = document.getElementById('baseDatos').value;
 				var semanaBaseInput = document.getElementById('semanaBaseActualizacion') || document.getElementById('semana');
 				var semana = semanaBaseInput ? semanaBaseInput.value : document.getElementById('semana').value;
@@ -534,6 +543,12 @@
 				} else {
 					alert(mensaje);
 				}
+		    }).always(function () {
+		      // Pase lo que pase —exito, error de red o 500— el spinner se cierra y
+		      // el boton vuelve. Sin este `always` un fallo deja la pantalla
+		      // bloqueada para siempre y la unica salida es recargar.
+		      $('#modal_spinner').modal('hide');
+		      $submit.prop('disabled', false);
 		    });
 		  });
 

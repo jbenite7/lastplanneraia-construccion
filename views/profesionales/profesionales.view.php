@@ -310,7 +310,7 @@
 
                               if (rowData && rowData.id && !rowData.can_delete) {
                                   const reason = rowData.delete_reason || 'Registro bloqueado';
-                                  td.innerHTML = `<button class="aia-btn aia-btn--secondary aia-btn--sm" disabled title="${reason}"><i class="fas fa-lock"></i></button>`;
+                                  td.innerHTML = `<button class="aia-btn aia-btn--secondary aia-btn--sm btn-delete" aria-disabled="true" title="${reason}" aria-label="Eliminar. Bloqueado: ${reason}"><i class="fas fa-lock" aria-hidden="true"></i></button>`;
                               } else {
                                   td.innerHTML = '<button class="aia-btn aia-btn--critical aia-btn--sm btn-delete" aria-label="Eliminar profesional" title="Eliminar profesional"><i class="fas fa-trash" aria-hidden="true"></i></button>';
                               }
@@ -402,6 +402,15 @@
             container.addEventListener('click', function(e) {
                 const btn = e.target.closest('.btn-delete');
                 if (btn) {
+                    if (btn.getAttribute('aria-disabled') === 'true') {
+                        // El boton es focalizable a proposito para que su motivo llegue con
+                        // teclado y lector de pantalla; el bloqueo real vive aqui, no en el
+                        // atributo `disabled`.
+                        if (window.AIA && window.AIA.Notice) {
+                            window.AIA.Notice.error(btn.title);
+                        }
+                        return;
+                    }
                     const td = btn.closest('td');
                     // Use getCoords to safe find row index
                     const coords = hot.getCoords(td);

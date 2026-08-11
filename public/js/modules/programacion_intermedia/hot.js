@@ -24,6 +24,13 @@
   var _rowMetaCache = [];
   var _stateViewCache = [];
   var _canEditGlobal = false;
+  var _saveStatus = null;
+  import('/js/design-system/save-status.js').then(function (mod) {
+    _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
+  });
+  import('/js/design-system/modal-escape.js').then(function (mod) {
+    mod.activarEscapeEnModales();
+  });
 
   var options = window.PI_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas.slice() : [];
@@ -2718,6 +2725,7 @@
     $('#save-error').hide();
 
     if (type === 'success') {
+      if (_saveStatus) { _saveStatus.guardado(); }
       if (window.AIA && window.AIA.Notice && window.AIA.Notice.badge) {
         window.AIA.Notice.badge('success', message);
       } else {
@@ -3002,6 +3010,8 @@
       return;
     }
 
+    if (_saveStatus) { _saveStatus.pendiente(1); }
+
     $.ajax({
       method: 'POST',
       url: '/api/pi/save?db=' + encodeURIComponent(db) + '&semana=' + encodeURIComponent(semana),
@@ -3151,8 +3161,9 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = getSourceRowDataByVisualRow(instance, row) || {};
       var prefix = parseInt(rowData.alerta_crisis, 10) === 1 ? '🔥 ' : '';
-      td.innerHTML = prefix + sanitizeActividadHtml(value);
+      td.innerHTML = '<span class="pi-actividad-clamp">' + prefix + sanitizeActividadHtml(value) + '</span>';
       td.classList.add('htLeft');
+      td.title = prefix + (value == null ? '' : String(value));
     });
 
     Handsontable.renderers.registerRenderer('piStateRenderer', function (instance, td, row, col, prop, value) {
@@ -4662,19 +4673,6 @@
       resetSharedConstraintModal();
       $('#modal_shared_constraint').modal('show');
     });
-
-    // Escape cierra los modales PI: el backdrop estático los dejaba sin salida de teclado.
-    $(document)
-      .off('keydown.piModalEscape')
-      .on('keydown.piModalEscape', function (event) {
-        if (event.key !== 'Escape' && event.keyCode !== 27) {
-          return;
-        }
-        var $open = $('#modal_shared_constraint.show, #modal_leyenda_colores.show').last();
-        if ($open.length) {
-          $open.modal('hide');
-        }
-      });
 
     $('#piViewAllToggle')
       .off('change.piViewAll')

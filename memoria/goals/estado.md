@@ -25,7 +25,7 @@ en el pase de veracidad del 2026-08-06 (entonces eran 16 carpetas; después 24) 
 
 | Goal | Matiz |
 |---|---|
-| [[goals/adopcion-logo-construccion/goal|adopcion-logo-construccion]] | Adoptó el ícono del kit Construcción en favicon, sidebar del shell, login y Admin (`4437fcfa`, `6b618964`). Sin `validation-log.md` propio; cerrado por evidencia de commit, no por sección de cierre formal. **No viaja en git**: sin excepción en `.gitignore` |
+| `adopcion-logo-construccion` | Adoptó el ícono del kit Construcción en favicon, sidebar del shell, login y Admin (`4437fcfa`, `6b618964`). Sin `validation-log.md` propio; cerrado por evidencia de commit, no por sección de cierre formal. **No viaja en git**: sin excepción en `.gitignore` |
 | [[goals/cierre-version-1-1-0-design-system/goal|cierre-version-1-1-0-design-system]] | Cerrado el 2026-08-07 con la publicación de la 1.1.0 (`a5223a0c`): suite estática 8/8 y cero excepciones venciendo en 1.1.0. De las 39, **7 pagadas y 32 re-vencidas a `1.2.0`** con evidencia medida. Su decisión D1 resultó falsa —las 15 de `theme-overrides.css` no eran del selector de proyecto sino normalizaciones globales del DS— así que ese grupo se resolvió con la regla de D3 en vez de migrando `/proyectos`, que no habría pagado ninguna. Detalle en [[subir-la-version-del-ds-cobra-deudas]] y [[version-escrita-a-mano-rompe-el-bump]] |
 | [[goals/pg-chip-de-estado/goal|pg-chip-de-estado]] | Cerrado el 2026-08-06 sin ejecución propia: lo resolvió `51ccd5ca` de la campaña dark mode. Verificado antes de cerrar — `hot.js:1658` pinta el `ops-state-chip` con su matiz y `programa-general-state-hue.mjs` pasa |
 | [[goals/biblia-t1-transversal/goal|biblia-t1-transversal]] | Cerrado el 2026-08-06 formalizando el trabajo ya hecho el 2026-08-04: entrada a la app (autenticación, proyecto, RBAC), 17 capacidades con escenario y 7 pruebas en verde |
@@ -66,7 +66,7 @@ tres goals nuevos (`repaso-usabilidad-no-tablas`, `pg-chip-de-estado`,
 **Actualizado el 2026-08-10:** dos carpetas más aparecieron desde entonces, con destinos
 opuestos. [[goals/reapertura-movil-y-tema-claro/goal|reapertura-movil-y-tema-claro]] sí tiene su
 excepción (`.gitignore:393-395`, solo `goal.md`, sin `facts.md`/`plan.md`/evidencia).
-[[goals/adopcion-logo-construccion/goal|adopcion-logo-construccion]] **no tiene ninguna**: `git
+`goals/adopcion-logo-construccion/goal.md` **no tiene ninguna**: `git
 ls-files goals/adopcion-logo-construccion` no devuelve nada pese a estar cerrado y ejecutado. Un
 clon fresco no lo ve. Mismo patrón que el que ya documentaba esta página con
 `shell-layout-design-system` y `sidebar-todos-modulos` antes del repaso del 2026-08-02.

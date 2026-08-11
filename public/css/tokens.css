@@ -245,6 +245,19 @@
     --ds-color-state-info-bg: var(--ds-state-tint-teal);
     --ds-color-state-info-text: #bbdcfb;
 
+    /* Familia de destaque de CELDA, decidida el 2026-08-11 (D-F1-2). Distinta de
+       `--ds-color-state-*-bg`, que sigue existiendo para tenir superficies grandes:
+       aquellos estan calibrados para eso y ninguno llega al 3:1 que WCAG 1.4.11
+       exige a un componente pequeno contra lo que lo rodea (medido contra el
+       fondo de tabla `rgb(28,36,31)`: 1,02 rojo, 1,36 ambar, 1,31 verde, 1,54
+       teal — el peor 1,02). Estos se calibran para ESE trabajo: cada uno parte
+       del tono de su estado y sube luminancia hasta 3:1 o mas contra
+       `--ds-active-surface`. */
+    --ds-color-cell-critical-bg: #c43b3b;
+    --ds-color-cell-warning-bg: #71711d;
+    --ds-color-cell-success-bg: #2e7b4d;
+    --ds-color-cell-info-bg: #207a6e;
+
     /* RESERVA SIN CABLEAR — no los consume nadie (medido el 2026-08-03: un grep
        sobre todo el repositorio devuelve solo estas ocho declaraciones).
        Se pensaron para impresos y XLSX, donde el fondo es papel. Ese uso existe
@@ -458,6 +471,12 @@
     --ds-space-6: 1.5rem;
     --ds-space-8: 2rem;
     --ds-space-12: 3rem;
+    /* Anadido 2026-08-11 (D-F1-5): la escala nombra cada paso como N * 4px
+       (1=4px, 2=8px, 3=12px, 4=16px, 6=24px, 8=32px, 12=48px). 72px / 4 = 18,
+       asi que 72 encaja exacto en la progresion sin romperla. Cierra el hueco
+       que ds-space-12 (48px) dejaba por debajo del piso de 70px que pide el
+       ICE 216 (50px de boton + 20px de margen). */
+    --ds-space-18: 4.5rem;
 
     --ds-type-size-xs: 0.75rem;
     --ds-type-size-sm: 0.875rem;

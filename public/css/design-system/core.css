@@ -257,6 +257,27 @@
     color: var(--ds-active-text-primary);
   }
 
+  /* F1C-T7 — el boton bloqueado pasa de `disabled` nativo a `aria-disabled`
+     para que su motivo llegue con teclado y lector de pantalla (el atributo
+     nativo lo saca del arbol de foco). Eso lo devuelve a "pulsable" en el
+     DOM, asi que el bloqueo real vive en el manejador de clic (ver
+     profesionales.view.php); aqui solo se restauran los canales visuales que
+     `[disabled]` traia gratis del navegador: atenuacion, cursor bloqueado y
+     que no reaccione al pasar el mouse ni al soltar clic. Token mas cercano:
+     no existe `--ds-opacity-disabled`, se usa `--opacity-disabled` (unico
+     token de opacidad-deshabilitado del repo, tokens.css:111). */
+  .aia-btn[aria-disabled="true"] {
+    opacity: var(--opacity-disabled, 0.6);
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  .aia-btn[aria-disabled="true"]:hover {
+    border-color: inherit;
+    background: inherit;
+    color: inherit;
+  }
+
   .aia-btn--construction {
     border-color: var(--ds-color-brand-construction);
     background: var(--ds-color-brand-construction);
