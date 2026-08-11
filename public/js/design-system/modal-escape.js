@@ -18,13 +18,17 @@
  * primer `Escape` sin bloquear que Handsontable siga cancelando la edicion.
  */
 export function activarEscapeEnModales() {
-  document.addEventListener('keydown', (ev) => {
-    if (ev.key !== 'Escape') return;
-    const abierto = document.querySelector('.modal.show');
-    if (!abierto) return;
-    // `data-aia-escape="off"` deja la puerta abierta a un modal que de verdad
-    // no deba cerrarse asi (una confirmacion destructiva a medias, por ejemplo).
-    if (abierto.dataset.aiaEscape === 'off') return;
-    window.jQuery(abierto).modal('hide');
-  }, true);
+  document.addEventListener(
+    "keydown",
+    (ev) => {
+      if (ev.key !== "Escape") return;
+      const abierto = document.querySelector(".modal.show");
+      if (!abierto) return;
+      // `data-aia-escape="off"` deja la puerta abierta a un modal que de verdad
+      // no deba cerrarse asi (una confirmacion destructiva a medias, por ejemplo).
+      if (abierto.dataset.aiaEscape === "off") return;
+      window.jQuery(abierto).modal("hide");
+    },
+    true,
+  );
 }

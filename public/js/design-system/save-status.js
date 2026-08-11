@@ -15,16 +15,16 @@
  * @returns {{ pendiente: (n: number) => void, guardado: () => void, error: (mensaje?: string) => void }}
  */
 export function crearSaveStatus({
-  selector = '#save-status',
-  etiquetaGuardado = 'Guardado',
-  claseOculta = 'badge-badge-hidden',
+  selector = "#save-status",
+  etiquetaGuardado = "Guardado",
+  claseOculta = "badge-badge-hidden",
 } = {}) {
   const nodo = () => document.querySelector(selector);
 
   const pintar = (texto, severidad) => {
     const el = nodo();
     if (!el) return;
-    el.classList.remove(claseOculta, 'aia-chip--success', 'aia-chip--warning', 'aia-chip--danger');
+    el.classList.remove(claseOculta, "aia-chip--success", "aia-chip--warning", "aia-chip--danger");
     if (severidad) el.classList.add(`aia-chip--${severidad}`);
     el.textContent = texto;
     el.hidden = false;
@@ -35,13 +35,13 @@ export function crearSaveStatus({
     // seguidas debe leerse como una sola operacion con tres pendientes, no
     // como tres parpadeos.
     pendiente(n) {
-      pintar(`Guardando... (${n})`, 'warning');
+      pintar(`Guardando... (${n})`, "warning");
     },
     guardado() {
-      pintar(etiquetaGuardado, 'success');
+      pintar(etiquetaGuardado, "success");
     },
     error(mensaje) {
-      pintar(mensaje || 'No se pudo guardar', 'danger');
+      pintar(mensaje || "No se pudo guardar", "danger");
     },
   };
 }
