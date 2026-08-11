@@ -676,16 +676,27 @@ body {
    ds-space-16 no existe en el sistema de tokens; --ds-space-12 (3rem/48px) es
    el mayor disponible y no llega a los 70px (50 del boton + 20 del margen).
    Ver D-F1-5 en docs/decisiones-pendientes.md.
-   Medido: .wtHolder trae box-sizing: content-box por defecto de Handsontable
-   (handsontable.full.css:127) en algunos modulos (programacion-semanal) y
-   border-box en otros (programa-general, via una regla propia no localizada).
-   Con content-box, un padding-block-end en .wtHolder se suma a su altura fija
-   por JS y crece tambien clientHeight (visible), anulando la ganancia. Se
-   fuerza border-box aqui para que el padding quede dentro de la altura fija
-   y solo aumente scrollHeight, de forma consistente en ambos modulos. */
+   Medido en los seis modulos que comparten #hot-container (2026-08-11, ronda
+   de arreglo 1/5): .wtHolder ya es box-sizing: border-box por defecto en
+   programa-general, programacion-intermedia, profesionales, subcontratistas
+   y programa-general-actualizar, via la reserva global de
+   public/css/design-system/foundation.css:2 (`:where(*, *::before, *::after)
+   { box-sizing: border-box; }`, @layer base). El padding de abajo basta ahi
+   solo: no hace falta forzar nada, y las mediciones lo confirman (clientHeight
+   y numero de filas identicos con y sin el override). El unico modulo donde
+   .wtHolder queda en content-box es programacion-semanal, porque su vista
+   (views/programacion-semanal/programacion_semanal.view.php:38) carga
+   /public/vendor/handsontable/handsontable.full.min.css con un <link> crudo,
+   SIN @layer -- una regla sin capa gana siempre sobre cualquier regla en
+   capa, sin importar el orden de capas ni la especificidad, así que el
+   content-box de Handsontable ahi gana a la reserva de foundation.css. El
+   override de box-sizing se acota a esa pagina en vez de ir global. */
 #hot-container .wtHolder {
-  box-sizing: border-box !important;
   padding-block-end: var(--ds-space-12);
+}
+
+body.ps-page #hot-container .wtHolder {
+  box-sizing: border-box !important;
 }
 
 /* Alertas de Crisis Activa AIA (Alto Contraste) */
