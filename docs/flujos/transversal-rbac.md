@@ -28,7 +28,7 @@ Los diez roles del catálogo: `A` Admin · `D` Director de Obra · `R` Residente
 | RBAC-012 | `canEditSST` | **A · S · SG** | los otros siete (incluido D) |
 | RBAC-013 | `canEditAmbiental` | **A · G · SG** | los otros siete (incluido D) |
 | RBAC-014 | `canManageContracts` | A · D · OT · R | DCV · G · S · SG · C · V |
-| RBAC-015 | `canAutoDefineContracts` | **alias exacto de `canManageContracts`** | ídem |
+| RBAC-015 | ~~`canAutoDefineContracts`~~ | **retirada el 2026-08-10**: alias sin ningún consumidor, borrada de `RbacManager` | — |
 | RBAC-016 | `canManagePdC` | **alias exacto de `canManageContracts`** | ídem |
 | RBAC-017 | `canSeeReports` | **todos, siempre** | ninguno |
 
@@ -67,7 +67,7 @@ Cuatro nombres de la tabla **no tienen lógica propia**: toman el valor de otro.
 - `canManageGeneralProgram` ← `canEditGeneralProgram`
 - `canManageWeeklyProgram` ← `canEditWeeklyProgram`
 - `canManageMediumTermProgram` ← `canEditMediumTerm`
-- `canAutoDefineContracts` y `canManagePdC` ← `canManageContracts`
+- `canManagePdC` ← `canManageContracts` (`canAutoDefineContracts` se retiró el 2026-08-10)
 
 - **Resultado esperado:** quien comprueba `canManage*` obtiene exactamente lo mismo que quien
   comprueba `canEdit*`. **No existe** un permiso de «gestionar» separado del de «editar»: el
