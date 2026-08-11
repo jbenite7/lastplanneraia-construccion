@@ -679,7 +679,19 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** la **publicación** del índice honesto. El trabajo está hecho y
   commiteado en la rama, pero **no se publica en rojo** — hacerlo sería lo mismo que este programa
   vino a desmontar. Los ocho recibos ya son reales y el techo de recibos sin migrar está en cero.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, opción **(a)**, ratificada por el usuario.
+- **Cómo se decidió, que importa tanto como la decisión:** se ejecutó y publicó (`ef06e5b2`) por un
+  **canal equivocado** — la sesión coordinadora de **otro repositorio** (`visor-gantt`) estuvo
+  dirigiendo a la sesión del Frente 1b, que tomó sus indicaciones por buenas. El usuario lo detectó
+  y corrigió el reparto el 2026-08-11; la propia sesión del Frente 1b lo levantó después y lo
+  devolvió para ratificación en vez de darlo por hecho.
+- **Qué decidió el usuario al respecto:** **ratificarla**, sin revertir. El trabajo se sostiene solo
+  —el contrato se contradecía a sí mismo, documentando la activación como hito único de 1.0.0 y
+  atándola a la vez al estado diario de los gates— y se entregó con su mutación en rojo ejecutada.
+  Se ratifica el resultado y se deja escrito quién la decidió de verdad, que es lo que faltaba.
+- **Qué se consiguió, medido:** el índice declara hoy **5 `passed` y 3 `blocked`** y la suite
+  estática sigue en **RC=0**. Antes eso era imposible: declarar un solo gate honesto tumbaba la
+  suite entera. Es el fin del incentivo que creó los quince `passed` falsos.
 
 ### D-RES-1 · `--aia-green` no existe: su reserva es lo único que pinta el hover del disparador LPS
 
