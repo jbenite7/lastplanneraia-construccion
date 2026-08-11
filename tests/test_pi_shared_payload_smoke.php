@@ -15,8 +15,21 @@ $method = $reflection->getMethod('resolveSharedConstraintPayload');
 $method->setAccessible(true);
 $controller = $reflection->newInstanceWithoutConstructor();
 
-function runTest(ReflectionMethod $method, $controller, array $post, string $label): void
+$total = 0;
+$fallos = 0;
+
+/**
+ * Ejecuta un caso y comprueba el resultado contra lo que se espera.
+ *
+ * Hasta el 2026-08-10 esta función solo imprimía el resultado y el test salía
+ * 0 pasara lo que pasara: no podía fallar, así que no comprobaba nada. La
+ * expectativa ya estaba escrita en el rótulo de cada caso («debe OK», «debe
+ * FALLAR»); ahora es el parámetro $seEspera y se verifica.
+ */
+function runTest(ReflectionMethod $method, $controller, array $post, string $label, bool $seEspera): void
 {
+    global $total, $fallos;
+
     $_POST = $post;
     $result = $method->invoke($controller, true);
     echo "Test: {$label}\n";
@@ -29,7 +42,16 @@ function runTest(ReflectionMethod $method, $controller, array $post, string $lab
         echo "  subContratista: '" . ($result['subContratista'] ?? '') . "'\n";
         echo "  responsableAia: '" . ($result['responsableAia'] ?? '') . "'\n";
     }
-    echo "\n";
+
+    $total++;
+    if ($result['ok'] === $seEspera) {
+        echo "  PASS\n\n";
+        return;
+    }
+
+    $fallos++;
+    $esperado = $seEspera ? 'ok' : 'rechazo';
+    echo "  FAIL: se esperaba {$esperado} y no fue así\n\n";
 }
 
 // Test 1: S3 - solo restricción, sin asignaciones (debe pasar)
@@ -45,7 +67,7 @@ runTest($method, $controller, [
     'sub_contratista' => '',
     'responsable_aia' => '',
     'note' => '',
-], 'S3: solo restricción, sin asignaciones (debe OK)');
+], 'S3: solo restricción, sin asignaciones (debe OK)', true);
 
 // Test 2: applyAssignments=true sin valores (debe fallar)
 runTest($method, $controller, [
@@ -60,7 +82,7 @@ runTest($method, $controller, [
     'sub_contratista' => '',
     'responsable_aia' => '',
     'note' => '',
-], 'applyAssignments=true sin sub ni resp (debe FALLAR)');
+], 'applyAssignments=true sin sub ni resp (debe FALLAR)', false);
 
 // Test 3: applyAssignments=true con sub (debe pasar)
 runTest($method, $controller, [
@@ -75,7 +97,7 @@ runTest($method, $controller, [
     'sub_contratista' => 'SubA',
     'responsable_aia' => '',
     'note' => '',
-], 'applyAssignments=true con sub (debe OK, sub vacío en respAia)');
+], 'applyAssignments=true con sub (debe OK, sub vacío en respAia)', true);
 
 // Test 4: applyAssignments=true con resp (debe pasar)
 runTest($method, $controller, [
@@ -90,4 +112,12 @@ runTest($method, $controller, [
     'sub_contratista' => '',
     'responsable_aia' => 'RespX',
     'note' => '',
-], 'applyAssignments=true con resp (debe OK)');
+], 'applyAssignments=true con resp (debe OK)', true);
+
+echo "\n";
+if ($fallos > 0) {
+    echo "FAIL: {$fallos} de {$total} comprobaciones fallaron\n";
+    exit(1);
+}
+echo "OK: {$total} comprobaciones pasaron\n";
+exit(0);
