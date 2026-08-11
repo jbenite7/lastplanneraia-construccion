@@ -14,6 +14,9 @@
   var pendingViewportState = null;
   var masterData = [];
   var weeklyAlertFilters = [];
+  // Ids que el servidor senalo como bloqueantes al intentar cerrar
+  // compromisos (bloquearCompromisos). Null cuando no hay filtro activo.
+  var weeklyBlockingIds = null;
   var weeklyPhaseKey = 'programacion';
   var _htEmptyState = null;
   var pendingDeleteRow = null;
@@ -2981,6 +2984,10 @@
   }
 
   function rowMatchesFilters(row) {
+    if (weeklyBlockingIds !== null) {
+      return weeklyBlockingIds.indexOf(String(row && row.Id)) > -1;
+    }
+
     if (weeklyAlertFilters.length > 0) {
       var stateKey = getStateKey(row);
       if (weeklyAlertFilters.indexOf(stateKey) === -1) {
@@ -3066,10 +3073,24 @@
     // WCAG 4.1.3: pasar de 57 filas a 0 cambia toda la pantalla sin mover el
     // foco. Sin este anuncio, quien usa lector de pantalla no se entera de que
     // el filtro hizo algo.
-    var texto = weeklyAlertFilters.length === 0
-      ? filtered.length + ' actividades, sin filtros'
-      : filtered.length + ' de ' + masterData.length + ' actividades con el filtro aplicado';
+    var texto;
+    if (weeklyBlockingIds !== null) {
+      texto = filtered.length + ' actividades sin compromiso o sin asignaciones obligatorias';
+    } else if (weeklyAlertFilters.length === 0) {
+      texto = filtered.length + ' actividades, sin filtros';
+    } else {
+      texto = filtered.length + ' de ' + masterData.length + ' actividades con el filtro aplicado';
+    }
     $('#psFilterAnnounce').text(texto);
+  }
+
+  // El servidor bloqueo el cierre y dijo cuales filas le faltan. Antes el
+  // usuario recibia un texto generico y recorria las 57 filas a mano; ahora
+  // la rejilla se filtra a exactamente esas.
+  function mostrarFilasBloqueantes(ids) {
+    weeklyAlertFilters = [];
+    weeklyBlockingIds = (Array.isArray(ids) ? ids : []).map(String);
+    applyFiltersAndRender();
   }
 
   function renderAlertLegend() {
@@ -3173,6 +3194,7 @@
 
   function toggleWeeklyAlertFilter(filterKey, event) {
     event = event || {};
+    weeklyBlockingIds = null;
     var index = weeklyAlertFilters.indexOf(filterKey);
 
     if (!event.ctrlKey && !event.metaKey) {
@@ -4167,6 +4189,13 @@
         loadData();
       } else {
         $('#aceptar_cerrar_compromisos_semana').html('<p>Se detectaron actividades sin compromiso o sin asignaciones obligatorias.</p><p>Asigne compromisos > 0, Responsable AIA y Sub-Contratista en todas las actividades activas para continuar.</p>');
+
+        // El texto generico obligaba a buscar a mano cual de las 57 filas
+        // faltaba. Ahora el servidor dice cuales y la rejilla las ensena.
+        var ids = (response && Array.isArray(response.ids)) ? response.ids : [];
+        if (ids.length > 0) {
+          mostrarFilasBloqueantes(ids);
+        }
       }
     }).fail(function () {
       showFeedback('error', 'Error confirmando compromisos');
