@@ -17,8 +17,28 @@ devuelve).
 
 ## Las suites
 
-- **PHP**: no hay PHPUnit. Los `tests/test_*.php` son scripts autoejecutables; se corren uno a uno
-  con `docker compose exec app php tests/<archivo>.php`.
+- **PHP**: no hay PHPUnit —sigue sin haberlo—, pero desde el **2026-08-10 ya hay runner**:
+  `scripts/run-php-tests.php`. Cada `tests/test_*.php` declara en su cabecera qué entorno necesita
+  con `// @requiere: <nivel>`, y el runner ejecuta los que ese entorno puede honrar:
+
+  | Nivel | Necesita | Cuántos | Lo corre el CI |
+  |---|---|---|---|
+  | `puro` | PHP y autoload | 21 | sí, job estático |
+  | `db` | base con el esquema del fixture | 47 | sí, job runtime |
+  | `http` | además la aplicación viva | 4 | sí, job runtime |
+  | `datos-proyecto` | datos o evidencia que el CI no tiene | 30 | no |
+
+  ```bash
+  docker compose exec -T app php scripts/run-php-tests.php --nivel=http   # o: composer test
+  ```
+
+  Un test **sin etiqueta rompe el runner** (sale 2): así un test nuevo no puede nacer fuera del CI,
+  que es como llevaban ~96 de los 99. Antes de esa fecha el CI solo corría **tres**, listados a mano
+  en `design-system.yml`. El runner también reporta aparte el verde sin respaldo y el test que se
+  salta entero, para que el resumen no infle la cobertura.
+- **Antes de correr la suite sin entorno, lee [[test-sin-base-sale-verde]]**: 26 tests salen 0
+  cuando no hay base de datos. Por eso el runner comprueba el entorno antes de ejecutar y aborta si
+  falta, en vez de producir verdes que no comprobaron nada.
 - **Design system**: `npm run test:design-system:static`, `:phpstan` y `:runtime`. La estática son
   **ocho gates** que corren completos aunque alguno falle (`scripts/design-system-static-suite.mjs`)
   y cierran con un resumen; el 2026-08-07 salía verde en los ocho.
@@ -44,6 +64,8 @@ Hay rojos que ya estaban ahí. Lee primero:
   validarlos en un worktree.
 - [[suite-php-rojos-preexistentes]] — cuántos `tests/test_*.php` fallan solos, y las dos trampas
   al medirlos en macOS (`timeout` no existe, y `grep "^FAIL"` miente).
+- [[test-sin-base-sale-verde]] — los 26 que pasan sin base y fallan con ella, y los tres que abren
+  la base sin nombrarla en su fuente.
 - [[visual-baselines-estado-real]] — las baselines del lab están rojas y algunas ni se comparan.
 - [[lab-desktop-layout-suite]] — corre fuera del carril `runtime`, así que no figura donde
   esperarías.
