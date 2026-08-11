@@ -1087,7 +1087,7 @@ Programacion Semanal, no Intermedia."
 
 **Solape declarado:** la T3 Step 4 y la T4 Step 2 editan **el mismo bloque** (`applyFiltersAndRender`). La T3 lo muestra ya en su forma final con una nota explícita para que no haya que escribirlo dos veces ni se pisen entre sí.
 
-**Puntos que van a la cola de decisiones y se saltan, marcados en su paso y no al final:** la divergencia de severidad entre PI y PS (anotada ya como D-2, no se toca), un tercer consumidor de `No_Bloqueado` (T7 Step 1), la ausencia de token de superficie de estado (T5 Step 2) o de motion (T8 Step 3), y cualquier recaptura de golden (T5 Step 5, T8 Step 5).
+**Puntos que van a la cola de decisiones y se saltan, marcados en su paso y no al final:** la divergencia de severidad entre PI y PS (anotada ya como D-F1-1, no se toca), un tercer consumidor de `No_Bloqueado` (T7 Step 1), la ausencia de token de superficie de estado (T5 Step 2) o de motion (T8 Step 3), y cualquier recaptura de golden (T5 Step 5, T8 Step 5).
 
 **La única excepción a «anota y sigue»:** un `200` donde se espera `403` (T1 Step 5, T7 Step 4). Eso no es una decisión de producto, es un agujero de permisos abierto, y se avisa **de inmediato** hacia arriba en vez de encolarse.
 

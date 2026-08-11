@@ -57,7 +57,7 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
 - **Estado:** `abierta`
 
-### D-2 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
+### D-F1-1 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
 
 - **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1B, Task 5.
 - **Fecha:** 2026-08-10
