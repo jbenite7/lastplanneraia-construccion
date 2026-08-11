@@ -494,15 +494,22 @@
     columnShrinkPriority[totalCols - 1] = 0;
   }
 
+  // Etiquetas visibles de cada estado. Proyeccion literal de los `label` del
+  // contrato (docs/design-system/state-semantics.json, modulo
+  // `programacion-intermedia`): no es una segunda fuente. Seis de ellas
+  // divergian del contrato -y dos contradecian a la leyenda de la propia
+  // vista, que si usaba la forma contractual-, asi que el mismo estado se
+  // llamaba de dos maneras en la misma pantalla. `ops-state-contract.test.mjs`
+  // lo impide desde 2026-08-11.
   var stateLabels = {
     'blocked-overdue-critical': 'RC inicio vencido',
-    'blocked-overdue': 'Inicio Vencido',
+    'blocked-overdue': 'Inicio vencido',
     'blocked-due': 'Inicio por Habilitar',
-    'alert-1-week': 'Alistamiento urgente',
-    'alert-2-3-weeks': 'Alistamiento en riesgo',
-    'alert-4-6-weeks': 'Alistamiento pendiente',
-    'execution-blocked': 'Ejecución Pendiente',
-    'liberated-control': 'Listo para comprometer',
+    'alert-1-week': 'Alistamiento Urgente',
+    'alert-2-3-weeks': 'Alistamiento en Riesgo',
+    'alert-4-6-weeks': 'Alistamiento Pendiente',
+    'execution-blocked': 'En Ejecución Pendiente',
+    'liberated-control': 'Listo para Comprometer',
     neutral: 'Control',
     header: 'Capítulo',
   };

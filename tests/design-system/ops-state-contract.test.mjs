@@ -11,9 +11,14 @@ const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8
 // de significar lo que el laboratorio documenta.
 //
 // La union se hace por `key` -el vocabulario con el que el modulo nombra sus
-// estados- y no por etiqueta, porque las etiquetas difieren entre los dos lados:
-// el JS dice 'Ejecución Pendiente' donde el contrato dice 'En Ejecución
-// Pendiente', y varias cambian de mayusculas.
+// estados-, y desde 2026-08-11 se comprueba tambien la etiqueta. Hasta esa
+// fecha el test lo daba por perdido: seis etiquetas del JS divergian de las del
+// contrato ('Ejecución Pendiente' contra 'En Ejecución Pendiente', y cinco que
+// solo cambiaban de mayusculas). No era cosmetico. La leyenda de la vista si
+// usaba la forma contractual, asi que el mismo estado se llamaba de dos maneras
+// en la misma pantalla, y el censo del ciclo contaba seis terminos de mas por
+// puro desajuste. Una etiqueta que el contrato no reconoce es un estado que el
+// producto nombra por su cuenta.
 
 function parsePresentation(source) {
   const block = source.match(/var statePresentation = \{([\s\S]*?)\n {2}\};/);
@@ -22,6 +27,13 @@ function parsePresentation(source) {
     /'?([\w-]+)'?:\s*\{\s*level:\s*'([\w-]+)',\s*hue:\s*'([\w-]+)'\s*\}/g,
   )];
   return Object.fromEntries(entries.map(([, key, level, hue]) => [key, { level, hue }]));
+}
+
+function parseLabels(source) {
+  const block = source.match(/var stateLabels = \{([\s\S]*?)\n {2}\};/);
+  assert.ok(block, 'no se encontró `var stateLabels` en el módulo');
+  const entries = [...block[1].matchAll(/'?([\w-]+)'?:\s*'([^']+)'/g)];
+  return Object.fromEntries(entries.map(([, key, label]) => [key, label]));
 }
 
 test('la tabla de presentación de Intermedia proyecta el contrato', async () => {
@@ -47,6 +59,28 @@ test('la tabla de presentación de Intermedia proyecta el contrato', async () =>
   const extra = Object.keys(presentation)
     .filter((key) => key !== 'neutral' && !module.states.some((s) => s.key === key));
   assert.deepEqual(extra, [], `el módulo presenta estados que el contrato no declara: ${extra}`);
+});
+
+test('las etiquetas de Intermedia son las del contrato, no una variante local', async () => {
+  const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
+  const module = semantics.moduleMappings.find((m) => m.module === 'programacion-intermedia');
+  const labels = parseLabels(await read('public/js/modules/programacion_intermedia/hot.js'));
+
+  for (const state of module.states) {
+    assert.equal(
+      labels[state.key],
+      state.label,
+      `\`${state.key}\`: el módulo muestra «${labels[state.key]}» y el contrato declara «${state.label}»`,
+    );
+  }
+
+  // `neutral` («Control») y `header` («Capítulo») son del modulo y no del
+  // contrato: uno es la fila sin clasificar y el otro un tipo de fila, no un
+  // estado operativo. Que sigan fuera esta encolado como D-VOC-4.
+  const extra = Object.keys(labels)
+    .filter((key) => key !== 'neutral' && key !== 'header')
+    .filter((key) => !module.states.some((s) => s.key === key));
+  assert.deepEqual(extra, [], `el módulo etiqueta estados que el contrato no declara: ${extra}`);
 });
 
 test('la hoja del módulo no vuelve a pintar el chip por nombre de estado', async () => {
