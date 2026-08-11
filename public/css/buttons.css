@@ -1128,9 +1128,13 @@
     gap: 2px !important;
   }
 
+  /* `font-size` y `padding` vivian tambien aqui, declarando el MISMO valor que
+     la regla base de :970 (`--ds-type-size-xs`, `--ds-space-1 --ds-space-2`).
+     Repetir un valor identico por debajo de 992 no cambiaba el computado a
+     ningun ancho: era redundancia, no prioridad. `min-height` se queda porque
+     es lo unico que este breakpoint aporta. Medido el 2026-08-11 sobre
+     f1f5bd87: computado identico en las tres pantallas antes y despues. */
   .pdc-legend-item {
-    font-size: var(--ds-type-size-xs) !important;
-    padding: var(--ds-space-1) var(--ds-space-2) !important;
     min-height: var(--ds-target-min) !important;
   }
 }

@@ -920,6 +920,29 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
 - **Estado:** `abierta`
 
 
+### D-BTN-1 · Un `!important` que no gana, y quizá la regla que lo pisa tampoco hace falta
+
+- **Quién pregunta:** sesión de ejecución del frente `buttons-important-leyenda`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si se investiga y se retira el par «declaración que no gana + regla que la
+  pisa», o si el frente se queda en las declaraciones que sí compiten.
+- **Qué se midió** (sobre `f1f5bd87`, 1180×820 dark, las tres pantallas): `public/css/buttons.css:970`
+  declara `display: inline-flex !important` para `.pdc-legend-item`, y el valor **computado** en
+  Programa General, Intermedia y Semanal es **`flex`**. Es decir, ese `!important` **no gana a
+  nadie**. No estaba en la lista de doce sobrantes con la que se encargó el frente.
+- **Opciones:**
+  1. **Dejarlo anotado y seguir** (lo que se está haciendo). Seguro y reversible.
+  2. **Averiguar quién gana y retirar los dos si la otra regla existe solo para vencer a esta.**
+     Sería la resta más grande del frente, pero entra en la cascada de capas — el mecanismo
+     `components.components` de `memoria/trampas/css-layer-cascade.md`, donde para `!important` el
+     orden de capas se invierte— que este frente excluyó a propósito por riesgo.
+- **Recomendación:** la **1** dentro de este frente, y la 2 como frente propio con su enunciado. Es
+  tentador precisamente porque está a la vista y luce; por eso conviene que lo decida alguien que no
+  esté dentro del frente.
+- **Qué quedó saltado esperando:** `display` de `buttons.css:970` y quienquiera que lo esté pisando.
+- **Estado:** `abierta`
+
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
