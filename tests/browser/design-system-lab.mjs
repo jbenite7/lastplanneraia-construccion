@@ -445,7 +445,59 @@ test('sidebar shell keeps desktop width, context and theme-visible brand mark', 
   expect(dark.collapsedWidth).toBeGreaterThan(0);
   expect(dark.expandedWidth).toBeGreaterThan(dark.collapsedWidth);
   expect(dark.background).not.toBe('rgba(0, 0, 0, 0)');
-  await expect(logo).not.toHaveCSS('filter', 'none');
+  // La marca ya NO se tiñe con el tema, y eso es diseño, no regresión: `4437fcfa`
+  // cambió `filter: var(--ds-active-nav-mark-filter)` por `filter: none` en
+  // navigation.css:172-178, porque «el ícono Construcción es a color; no se tiñe
+  // con el tema». El filtro era el MEDIO —teñir una marca monocroma según el
+  // tema— y la marca dejó de ser monocroma; el fin, que es el que da nombre a
+  // este test, sigue vivo: que la marca esté y se reconozca.
+  //
+  // La aserción anterior (`filter !== none`) no protegía de nada: `filter` es una
+  // propiedad CSS del elemento y no sabe si la imagen cargó, así que un SVG roto
+  // que no pinta un solo píxel la cumplía y pasaba en verde. Era ciega justo al
+  // fallo del que decía proteger.
+  //
+  // Se comprueba en PANTALLA y no en el DOM: `querySelector` encuentra igual de
+  // bien lo que se ve y lo que no (memoria/trampas/el-dom-dice-que-existe-no-que-se-ve).
+  // Por eso entran `naturalWidth` —que caza el SVG vacío y el 404— y el
+  // `elementFromPoint`, que separa «está» de «se ve».
+  // Hay que traerla a la vista ANTES de preguntar por ella: en el laboratorio el
+  // carril vive muy abajo -medido en y=931 con un viewport de 900-, y
+  // `elementFromPoint` solo responde dentro del viewport. Sin esto devuelve
+  // `null` y «no he llegado a mirar ahí» se leería como «algo la tapa», que son
+  // cosas distintas.
+  await logo.scrollIntoViewIfNeeded();
+
+  const marca = await logo.evaluate((element, railSelector) => {
+    const caja = element.getBoundingClientRect();
+    const estilo = getComputedStyle(element);
+    const centro = document.elementFromPoint(
+      caja.left + (caja.width / 2),
+      caja.top + (caja.height / 2),
+    );
+    const carril = element.closest(railSelector).getBoundingClientRect();
+    return {
+      cargo: element.naturalWidth > 0 && element.naturalHeight > 0,
+      ancho: caja.width,
+      alto: caja.height,
+      display: estilo.display,
+      visibility: estilo.visibility,
+      opacidad: Number(estilo.opacity),
+      destapada: centro === element || element.contains(centro) || Boolean(centro?.contains(element)),
+      dentroDelCarril: caja.left >= carril.left - 1 && caja.right <= carril.right + 1
+        && caja.top >= carril.top - 1 && caja.bottom <= carril.bottom + 1,
+    };
+  }, '[data-shell-pattern="sidebar"]');
+
+  await expect(logo).toHaveCount(1);
+  expect(marca.cargo, 'la marca no cargó: el SVG está vacío o no resuelve').toBe(true);
+  expect(marca.ancho, 'la marca no ocupa ancho').toBeGreaterThan(0);
+  expect(marca.alto, 'la marca no ocupa alto').toBeGreaterThan(0);
+  expect(marca.display, 'la marca está en display:none').not.toBe('none');
+  expect(marca.visibility, 'la marca está en visibility:hidden').not.toBe('hidden');
+  expect(marca.opacidad, 'la marca es transparente').toBeGreaterThan(0.1);
+  expect(marca.destapada, 'algo tapa la marca en el centro de su caja').toBe(true);
+  expect(marca.dentroDelCarril, 'la marca cae fuera de la caja del carril').toBe(true);
 
   for (const state of ['loading', 'empty', 'error', 'default']) {
     await navigation.locator('xpath=..').locator(`[data-sidebar-state-action="${state}"]`).click();
