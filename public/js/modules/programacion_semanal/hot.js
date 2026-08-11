@@ -26,6 +26,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/modal-escape.js').then(function (mod) {
+    mod.activarEscapeEnModales();
+  });
 
   var options = window.PS_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas : [];

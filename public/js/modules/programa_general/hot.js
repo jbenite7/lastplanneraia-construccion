@@ -19,6 +19,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/modal-escape.js').then(function (mod) {
+    mod.activarEscapeEnModales();
+  });
 
   // Performance cache: pre-computed row classes to avoid per-cell classifyPGRow during render
   var _rowClassCache = [];
@@ -3512,12 +3515,6 @@
       })
       .on('shown.bs.modal.pgLegend', '#modal_leyenda_colores', function () {
         this.focus();
-      })
-      .on('keydown.pgLegend', '#modal_leyenda_colores', function (event) {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          $(this).modal('hide');
-        }
       })
       .on('hidden.bs.modal.pgLegend', '#modal_leyenda_colores', function () {
         if (this.__pgLegendTrigger && document.contains(this.__pgLegendTrigger)) {

@@ -26,6 +26,9 @@ window.HOTActualizarModule = (function() {
     import('/js/design-system/save-status.js').then(function (mod) {
         _saveStatus = mod.crearSaveStatus({ etiquetaGuardado: 'Auto-Guardado' });
     });
+    import('/js/design-system/modal-escape.js').then(function (mod) {
+        mod.activarEscapeEnModales();
+    });
 
     // Configuración de validadores y regexs
     const regexNumerico = /^-?\d*(\.\d+)?$/;

@@ -28,6 +28,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
   });
+  import('/js/design-system/modal-escape.js').then(function (mod) {
+    mod.activarEscapeEnModales();
+  });
 
   var options = window.PI_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas.slice() : [];
@@ -4670,19 +4673,6 @@
       resetSharedConstraintModal();
       $('#modal_shared_constraint').modal('show');
     });
-
-    // Escape cierra los modales PI: el backdrop estático los dejaba sin salida de teclado.
-    $(document)
-      .off('keydown.piModalEscape')
-      .on('keydown.piModalEscape', function (event) {
-        if (event.key !== 'Escape' && event.keyCode !== 27) {
-          return;
-        }
-        var $open = $('#modal_shared_constraint.show, #modal_leyenda_colores.show').last();
-        if ($open.length) {
-          $open.modal('hide');
-        }
-      });
 
     $('#piViewAllToggle')
       .off('change.piViewAll')
