@@ -774,7 +774,14 @@ body.ps-page #hot-container .wtHolder {
 .lps-sidebar-trigger:hover,
 .lps-sidebar-trigger:focus-visible {
   transform: scale(1.08);
-  background: var(--aia-green, oklch(43.86% 0.084 142.5)); /* Feedback interactivo con Verde Primario */
+  /* Verde Primario real. Antes decia `var(--aia-green, oklch(43.86% ...))`, y
+     `--aia-green` no existe en ningun CSS: pintaba la reserva, un verde suelto
+     que no era ningun token. El foco de este boton lo senala el anillo teal del
+     sistema (`adapters/lps-drawer.css:182`), no el relleno, asi que el relleno
+     debe apartarse del anillo en vez de acercarsele. Medido a 1180x820 en dark,
+     anillo contra relleno: 4,34:1 aqui, frente a 2,63:1 con el verde suelto y
+     1,86:1 con `--aia-green-medium`. Es la unica de las tres que pasa el 3:1. */
+  background: var(--aia-green-primary);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
 }
 
