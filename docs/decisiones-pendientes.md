@@ -798,7 +798,45 @@ worktree en un contenedor propio):
   como «la resta» vacía la regla justo en su primera aplicación.
 - **Qué quedó saltado esperando:** los cuatro candidatos siguen en pie, sin tocar. La primera pieza
   del frente —las páginas de error— sí está hecha y commiteada; no depende de esta decisión.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: las tres primeras salen a frentes propios con spec y plan; la
+  cuarta no se toca porque la premisa era falsa. Este frente cierra como «medir y repartir».`
+
+#### Cómo se resolvió
+
+| Candidato | Destino |
+|---|---|
+| Término duplicado (chip y leyenda) | **Frente propio** |
+| Contadores en cero (7 de 8 chips) | **Frente propio** |
+| Los 21 términos / tres vocabularios | **Frente propio**, el grande |
+| Selector de semana | **No se toca** — ver abajo |
+
+**El selector de semana no tenía nada que quitar, y la premisa venía mal desde el backlog.** El
+backlog lo describía como «dos menús que rinden las mismas semanas». Esta sesión midió que eran
+cuatro flyouts más el de cabecera, y **también se quedó corta**. Verificado sobre
+`views/partials/shell_sidebar.php`, son **tres cosas distintas que se parecen por fuera**:
+
+- **`:140`, `ctxWeekMenu`** — la pastilla «Semana N» de la barra superior. Dice **dónde estás**.
+- **`:258`** — un bucle sobre los módulos que crea un flyout **por módulo**, rotulado «Semanas de
+  {módulo}», con las semanas **de ese módulo**.
+- **`:317`** — el que cuelga de «Semanas del Proyecto». Es el de **gestión**: incluye el botón de
+  crear, bajo `$shellCanCreate`.
+
+No hay duplicados. Ni siquiera es «arriesgado unificarlos»: es que no había nada que unificar. Si un
+selector por módulo aporta o no es **rediseño de navegación**, no limpieza, y no entra aquí.
+
+#### La condición de resta se cumple fuera de este frente, no dentro
+
+`D-F1-6` exigía que el frente **no cerrara sin haber eliminado algo**. Con las tres candidatas
+derivadas a frentes propios, **este frente no elimina nada del recorrido**: entrega las páginas de
+error, que **añaden**, y esta lista, que mide. La regla **no se relajó: se trasladó** — cada frente
+derivado nace con ella dentro, con el conteo antes/después como resultado, así que habrá tres restas
+medidas en vez de una.
+
+Queda dicho sin maquillar, porque escribirlo como si este frente hubiera quitado algo vaciaría la
+regla por la vía de la redacción, que es la más difícil de detectar. **Lo que no cuenta como resta:**
+el código muerto que sí quitó la pieza 1 —la variable `$allowedMethods` sin usar y el `<pre>` de la
+excepción sobre un `<h1>` pelado—. Borrar código muerto no le quita **ni un paso** al usuario, y el
+hallazgo de la revisión en frío era que sigue dando los mismos 13.
 
 ---
 
