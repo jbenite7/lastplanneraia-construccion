@@ -61,7 +61,7 @@
         <div class="pg-actions-row">
             <div class="aia-action-group pg-toolbar-buttons" role="group" aria-label="Acciones del programa">
                 <button type="button" class="aia-btn aia-btn--secondary leyenda_colores" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1" aria-hidden="true"></i></button>
-                <button type="button" id="actualizarEjecucion" class="aia-btn">Actualizar Ejecución <i class="fas fa-sync ml-1" aria-hidden="true"></i></button>
+                <button type="button" id="actualizarEjecucion" class="aia-btn aia-btn--primary">Actualizar Ejecución <i class="fas fa-sync ml-1" aria-hidden="true"></i></button>
                 <button type="button" id="descargarCorteProgramacion" class="aia-btn aia-btn--secondary">Descargar Corte <i class="fas fa-download ml-1" aria-hidden="true"></i></button>
                 <button id="btn-export" class="aia-btn aia-btn--secondary">Exportar CSV</button>
                 <button id="btn-refresh" class="aia-btn aia-btn--secondary">Recargar</button>

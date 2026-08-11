@@ -57,6 +57,10 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
 - **Estado:** `abierta`
 
+---
+
+## Resueltas
+
 ### D-F1-1 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
 
 - **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1B, Task 5.
@@ -91,7 +95,9 @@ de preguntar. Copia esta forma:
   había aprobado para el ICE 448 —dar regla a la clase de fondo `.ps-cell-empty-alert`, que no tenía
   ninguna en todo el árbol, y subir el peso del glifo de Semanal—, porque esa disposición dice «es
   solo visual» y no depende de esta decisión.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (c) — las dos severidades se quedan distintas (crítico en Semanal,
+  aviso en Intermedia) y el motivo queda escrito junto a cada regla (programacion-semanal.css y
+  programacion-intermedia.css, junto a .ps-cell-empty-alert y .pi-missing-resp). Cero CSS tocado.`
 
 ### D-F1-2 · Ningún token de fondo de estado llega a 3:1 contra la superficie base de la tabla
 
@@ -147,7 +153,11 @@ de preguntar. Copia esta forma:
   tokens en una celda pequeña vaya a llegar a 3:1 tal como están calibrados hoy.
 - **Qué quedó saltado esperando:** no se tocó ningún token ni se creó uno nuevo. El CSS de esta tarea
   se queda con `--ds-color-state-critical-bg` tal como está.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: familia nueva --ds-color-cell-*-bg (critical #c43b3b, warning
+  #71711d, success #2e7b4d, info #207a6e), calibrada a ≥3:1 contra rgb(28,36,31) (medidos: 3,054 ·
+  3,089 · 3,07 · 3,08). Los cuatro --ds-color-state-*-bg no se tocaron. .ps-cell-empty-alert ahora
+  usa --ds-color-cell-critical-bg; fondo-alerta contra fondo-vecino subió de 1,02:1 a 3,054:1, que
+  cierra el ICE 448.`
 
 ### D-F1-3 · Los cinco tokens con reserva hex en `public/js/` no están definidos en ningún CSS
 
@@ -194,7 +204,17 @@ de preguntar. Copia esta forma:
   decidir de paso en un refactor de formato.
 - **Qué quedó saltado esperando:** no se tocó ninguna de las cinco líneas con reserva. `hot.js` y
   `hot_actualizar.js` quedan sin cambios de esta tarea.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: se repitió la comprobación en el navegador (canvas 2D contra
+  tokens.css real, ya que Chromium serializa oklch en getComputedStyle en vez de convertir a rgb).
+  Ninguno de los cuatro --aia-* tiene un token real con el MISMO color computado: --aia-text-muted
+  (fallback #6c757d/#666 → rgb(108,117,125) y rgb(102,102,102)) frente a --ds-active-text-secondary
+  → rgb(199,212,204), cambia. --aia-warning-soft-bg (#fef3c7 → rgb(254,243,199)) frente a
+  --aia-warning-background → rgb(255,247,226), cambia. --aia-warning-border (#f59e0b →
+  rgb(245,158,11)) frente a --aia-warning-high → rgb(255,194,0) o --aia-warning-critical →
+  rgb(156,102,0), cambia en ambos casos. --aia-red-primary (#dc3545 → rgb(220,53,69)) frente a
+  --aia-alert-high → rgb(212,11,30), cambia. Condición bloqueante de la coordinadora incumplida en
+  las cinco líneas: no se forzó ninguna sustitución, las cinco quedan sin tocar. Sigue siendo (b) la
+  solución de fondo, ahora con los valores computados que faltaban.`
 
 ### D-F1-4 · Programa General y Programación Semanal tampoco marcan una acción primaria
 
@@ -242,9 +262,13 @@ de preguntar. Copia esta forma:
   decide seguir: no cambia qué botón destaca, solo unifica la clase.
 - **Qué quedó saltado esperando:** no se tocó ni `programaGeneralActualizar.view.php` ni
   `programacion_semanal.view.php`. El cambio de esta tarea se limitó a Programación Intermedia.
-- **Estado:** `abierta`
-
----
+- **Estado:** `resuelta 2026-08-11: el usuario eligió sin darle vueltas — «Confirmar Compromisos» en
+  Programación Semanal y «Actualizar Ejecución» en Programa General pasan a aia-btn--primary (BEM),
+  quitando aia-btn--secondary donde existía. Verificado que ambas siguen funcionando (render con
+  clases y estilo primario aplicado, sin error de consola). Contraste medido en /programa-general
+  (proyecto Da Porto): texto sobre botón rgb(20,28,24) contra rgb(108,144,119) → 4,87:1 (1.4.3, piso
+  4.5, pasa); botón contra fondo rgb(108,144,119) contra rgba(28,36,31,0.92) → 4,46:1 (1.4.11, piso
+  3, pasa). Mismos valores de token en ambos botones, misma clase.`
 
 ### D-F1-5 · El hueco reservado para el botón flotante no llega a cubrirlo del todo
 
@@ -280,10 +304,11 @@ de preguntar. Copia esta forma:
   si no, (a) es razonable como cierre de esta tarea — el solape pasó de cubrir el valor completo de
   la celda a rozar apenas su borde.
 - **Qué quedó saltado esperando:** no se creó ningún token nuevo ni se tocó `tokens.css`.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-11: (b) — se añadió --ds-space-18 (4.5rem/72px) a tokens.css, que
+  respeta la progresión N*4px de la escala (72/4=18) y llega al piso de 70px. Aplicado al
+  padding-block-end de #hot-container .wtHolder. Solape vuelto a medir con getBoundingClientRect():
+  /programa-general (Da Porto, 34 filas) gap de 7,42px entre última fila y el botón flotante;
+  /programacion-semanal (proyecto Prueba, 15 filas) gap de 7,20px. overlap: false en ambas — cero
+  solape, cierra el ICE 216.`
 
 ---
-
-## Resueltas
-
-*(Ninguna todavía.)*

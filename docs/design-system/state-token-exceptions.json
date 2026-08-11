@@ -227,13 +227,6 @@
       "token": "--ds-color-state-warning-text",
       "kind": "by-design",
       "reason": "Candado que marca la celda de restriccion bloqueada por falta de Responsable AIA (N-1). Es un glifo de Font Awesome ANTEPUESTO al valor que la celda sigue mostrando: el fondo de esa celda pertenece al estado de la fila (.pi-state-*) y al tinte de solo-lectura, asi que no hay superficie propia donde declarar el warning-bg pareado sin borrar informacion que ya esta ahi. Mismo rango medido que la marca hermana en los nueve estados a 1180x820 en dark: de 9,31:1 a 15,59:1. Va en Font Awesome y no en emoji precisamente para que el token de color aplique y el contraste sea medible."
-    },
-    {
-      "file": "public/css/programacion-semanal.css",
-      "selector": ".ps-page #hot-container td.ps-cell-empty-alert",
-      "token": "--ds-color-state-critical-bg",
-      "kind": "by-design",
-      "reason": "Fondo de la celda «Responsable AIA» cuando la fila no tiene responsable asignado (ICE 448/392). El critical-text pareado NO va en este mismo bloque porque la tinta la lleva el glifo hijo .ps-missing-assignment (linea 1690), que es el que el usuario lee; el td solo aporta la superficie. Es un par cruzado entre padre e hijo, no un medio par sin contraparte: la otra mitad existe, solo que en otro selector del mismo archivo. Dos medidas distintas, dos normas distintas -no confundirlas-: (1) marca sobre su propio fondo nuevo, rgb(255,205,200) sobre rgb(67,20,20) -> 10,99:1, que es 1.4.3 (contraste de texto), muy por encima del minimo de texto normal. (2) fondo-alerta contra el fondo de una celda vecina normal, rgb(67,20,20) contra rgb(28,36,31) -> apenas 1,02:1, que es la metrica que en realidad pide 1.4.11 (contraste de componente/no-texto) y a la que ESTE token NO llega ni de lejos: de hecho es el peor de los cuatro fondos de estado del sistema en esa comparacion especifica (ver D-F1-2 en docs/decisiones-pendientes.md, que mide los cuatro y dejo el token sin tocar). La distincion de esta celda no depende de ese 3:1 de fondo: depende de la forma (glifo + peso 600) y del 10,99:1 de su propia tinta, canales que si funcionan hoy."
     }
   ]
 }
