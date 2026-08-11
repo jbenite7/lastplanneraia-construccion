@@ -149,6 +149,53 @@ de preguntar. Copia esta forma:
   se queda con `--ds-color-state-critical-bg` tal como está.
 - **Estado:** `abierta`
 
+### D-F1-3 · Los cinco tokens con reserva hex en `public/js/` no están definidos en ningún CSS
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, tanda 1C, Task 3.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** las cinco ocurrencias `var(--token, #hex)` de `public/js/` (frente a las 12 sin
+  reserva) iban a perder su reserva porque esa es la política dominante del repo — pero el paso de
+  seguridad exigido por la propia tarea (Step 3: quitar la reserva solo si el token existe) dio
+  negativo para **las cinco**. No hay ninguna que se pueda tocar sin cambiar el color en pantalla.
+- **Qué se midió:**
+  - Recuento repetido y confirmado: `grep -rn "var(--[a-z-]*, *#" public/js/` → 5 ocurrencias con
+    reserva; `grep -ro "var(--[a-z-]*)" public/js/ | wc -l` → 12 sin reserva. La dirección «quitar
+    reserva» sigue siendo la que gana.
+  - Las cinco ocurrencias con reserva, hoy (los números de línea se movieron otra vez):
+    - `public/js/modules/programacion_intermedia/hot.js:2088` → `--aia-text-muted`
+    - `public/js/modules/programacion_intermedia/hot.js:2829` → `--aia-warning-soft-bg` y
+      `--aia-warning-border` (dos en la misma línea)
+    - `public/js/modules/programa_actualizar/hot_actualizar.js:1266` → `--aia-red-primary`
+    - `public/js/modules/programa_actualizar/hot_actualizar.js:1374` → `--aia-text-muted`
+  - Búsqueda de cada uno en `public/css/` (`grep -rn -- "--<token>:" public/css/` y una pasada sin
+    ancla por si el nombre variaba): **ninguno de los cuatro nombres existe** —
+    `--aia-text-muted`, `--aia-warning-soft-bg`, `--aia-warning-border` y `--aia-red-primary` no
+    aparecen definidos en ningún archivo de `public/css/`. Solo el token de la línea vecina sin
+    reserva, `--aia-green-primary`, sí está definido (`public/css/tokens.css:7`,
+    `oklch(32% 0.07 148.5)`).
+  - Es decir: la asimetría original entre `:1374` (con reserva) y `:1377` (sin reserva) **no era
+    arbitraria** — la línea con reserva usa un token que de verdad no existe, y la reserva es lo
+    único que le pone color hoy. Lo mismo pasa en los otros tres consumos con reserva.
+- **Opciones:**
+  - **(a) Dejar las cinco líneas como están.** Es lo seguro: nadie pierde color. La asimetría de
+    estilo queda, pero documentada, y ya no es un misterio — tiene una causa medida.
+  - **(b) Definir los cuatro tokens que faltan** (`--aia-text-muted`, `--aia-warning-soft-bg`,
+    `--aia-warning-border`, `--aia-red-primary`) en `public/css/tokens.css` con un valor equivalente
+    al hex que hoy los sustituye, y **entonces sí** quitar la reserva en las cinco líneas. Alinea el
+    JS con la política del repo sin cambiar ningún color, pero es una tarea de sistema de diseño (dar
+    de alta tokens, decidir su valor definitivo, ver si otras superficies ya los necesitan), no un
+    refactor de una línea.
+  - **(c) Quitar la reserva igual, aceptando el cambio de color a lo que el navegador resuelva por
+    defecto** para una variable CSS no definida (que normalmente es `unset`/heredado, no un color
+    visible). Descartada: es exactamente lo que la tarea pedía evitar.
+- **Recomendación:** **(a)** para esta tarea. **(b)** es la solución de fondo y probablemente valga
+  la pena — cuatro tokens usados como reserva-sin-definición es una señal de que faltan en el sistema
+  de tokens, no solo en estas cinco líneas — pero es un frente propio con su propio plan, no algo que
+  decidir de paso en un refactor de formato.
+- **Qué quedó saltado esperando:** no se tocó ninguna de las cinco líneas con reserva. `hot.js` y
+  `hot_actualizar.js` quedan sin cambios de esta tarea.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
