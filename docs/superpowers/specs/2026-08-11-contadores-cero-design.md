@@ -90,6 +90,25 @@ Con `false`, todo vuelve al estado previo al frente: los ocho chips visibles, lo
 atenuados. No hay HTML que restaurar ni CSS que descomentar, porque el HTML de las ocho etiquetas
 se queda intacto en la vista y la regla de C-24 se queda intacta en el CSS.
 
+## El término duplicado «Listo para Comprometer» — sale de este frente
+
+Llegó como segunda decisión y **no se resuelve aquí**; pasa al frente
+`vocabulario-estados-cascada`. El porqué, medido, no opinado:
+
+- **La premisa heredada no se sostiene.** A 1180×820 el filtro está en `x=86` (dentro del
+  viewport) y la celda `ops-state-chip` en **`x=1332`, fuera**: hay que desplazar la tabla para
+  verla. No coexisten a la vista. (Yo mismo afirmé antes que estaban a 140px; era falso, mi
+  primera comprobación no miraba los límites del viewport.)
+- **No son dos copias de lo mismo.** Una es el **botón de filtro**; la otra, la **lectura de
+  estado de esa fila** (`stateLabels`, `hot.js:505`), más una tercera en el modal
+  (`hot.js:2823`). Borrar cualquiera quita función, no ruido. Lo duplicado es la cadena de texto,
+  en tres sitios y dos capitalizaciones.
+- **`GLOSARIO.md` no define el término.** Sin autoridad local, elegir capitalización canónica es
+  **fijar vocabulario**, y hay un frente vivo haciendo justo eso.
+
+Tampoco aporta a la condición de cierre: quitar la copia de la celda no reduce elementos, porque
+es dato por fila y vive tras el desplazamiento horizontal.
+
 ## Lo que este frente no toca, a propósito
 
 - El chip `0 selec.` — D-CERO-2 (lleva `aria-live`; ocultarlo rompe el anuncio).
