@@ -2743,7 +2743,10 @@ class ControlTowerService
             : null;
         $executionStatus = match (true) {
             $completionPct === null => 'unknown',
-            $executed !== null && $executed <= 0 => 'not_executed',
+            // El brazo anterior ya retorna cuando `$completionPct` es null, y ese
+            // solo deja de serlo si `$executed` no lo es (ver su calculo arriba),
+            // asi que el `$executed !== null` que acompanaba sobraba.
+            $executed <= 0 => 'not_executed',
             $completionPct < 100 => 'partial',
             default => 'met',
         };

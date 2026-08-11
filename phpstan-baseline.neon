@@ -1,5 +1,48 @@
 parameters:
 	ignoreErrors:
+
+		# ── Anotadas el 2026-08-11 por decision del usuario (D-F1b-4) ────────────────
+		# Las cuatro viven en `src/Core/Database.php` —la capa que garantiza el
+		# aislamiento por project_id y las transacciones— y en `src/Legacy/`, que
+		# AGENTS.md manda tocar solo con el cambio minimo. Se anotan CON MOTIVO en vez
+		# de editarse: poner un gate en verde tocando a ciegas la capa de datos causa
+		# el problema que pretende evitar.
+
+		# ⚠️ FALSO POSITIVO. NO "ARREGLAR" ESTA LINEA: quitar el `inTransaction()`
+		# quitaria el rollBack de una transaccion fallida en la capa de datos.
+		# `:930` fija `$ownsTransaction = !$this->pdo->inTransaction()` cuando es false,
+		# `:932` llama a `beginTransaction()` —que CAMBIA ese estado— y PHPStan no
+		# modela ese efecto, asi que sigue creyendo que `inTransaction()` vale false en
+		# `:955`. En ejecucion la condicion SI se cumple y el rollBack SI ocurre.
+		# Verificado el 2026-08-11 leyendo el flujo completo (Frente 1b).
+		-
+			message: '#^Right side of && is always false\.$#'
+			identifier: booleanAnd.rightAlwaysFalse
+			count: 1
+			path: src/Core/Database.php
+
+		# Redundancias reales, sin efecto en ejecucion, en la capa de datos. Se anotan
+		# porque el riesgo de editarlas no compensa el de dejarlas: un cambio erroneo
+		# aqui no da error, da datos de otro proyecto.
+		-
+			message: '#^Call to function in_array\(\) with arguments ''DELETE''\|''SELECT''\|''UPDATE'', array\{''SELECT'', ''UPDATE'', ''DELETE''\} and true will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Core/Database.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: src/Core/Database.php
+
+		# Legado: AGENTS.md manda corregir la causa con el cambio minimo y no
+		# modernizar el area. Anotada hasta que algo mas la obligue a cambiar.
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Legacy/estado_programacion_intermedia.php
 		-
 			message: '#^Call to function is_array\(\) with non\-empty\-array\<string, string\|null\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType

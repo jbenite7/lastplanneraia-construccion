@@ -462,7 +462,10 @@ class ActivityMatcherService
             if ($dateA !== null && $dateB === null) {
                 return -1;
             }
-            if ($dateA !== null && $dateB !== null) {
+            // Los dos `if` anteriores ya retornan en los casos mixtos, asi que aqui
+            // solo quedan «los dos nulos» o «los dos con fecha»: comprobar `$dateA`
+            // basta, y el `$dateB !== null` que acompanaba sobraba.
+            if ($dateA !== null) {
                 $cmp = strcmp($dateA, $dateB);
                 if ($cmp !== 0) {
                     return $cmp;
