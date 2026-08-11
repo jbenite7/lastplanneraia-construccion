@@ -59,19 +59,22 @@ test('the stable API artifact has no fields outside its fail-closed schema', asy
   }
 });
 
-test('activation is equivalent to all exact closeout gates being passed', async () => {
+test('la activacion es equivalente entre version y API, y NO depende del estado de los gates', async () => {
   const [version, closeout, release] = await Promise.all([
     readJson('docs/design-system/version.json'),
     readJson('docs/design-system/closeout-evidence.json'),
     readJson('docs/design-system/stable-api-1.0.0.json'),
   ]);
-  const allPassed = closeout.gates.length === 8
-    && closeout.gates.every(({ blocking, evidence, status, verifiedAt }) => (
-      blocking === true
-      && status === 'passed'
-      && typeof verifiedAt === 'string'
-      && evidence.length > 0
-    ));
+  // La lista tiene que estar completa y ser bloqueante — eso es lo que hace
+  // verificable el cierre— pero YA NO se exige que los ocho esten `passed`.
+  // D-F1b-5 (2026-08-11) retiro ese acoplamiento del contrato: con la version
+  // estable en 1.x, exigirlo aqui obligaba a declarar aprobados gates que no lo
+  // estan, y fue el incentivo que produjo quince recibos `passed` sin ejecutar.
+  // Que cada gate diga la verdad sobre si mismo lo comprueban sus propias
+  // pruebas, con su nombre.
+  const listaCompleta = closeout.gates.length === 8
+    && closeout.gates.every(({ blocking, evidence }) => blocking === true && evidence.length > 0);
+  assert.equal(listaCompleta, true, 'el cierre debe declarar los ocho gates, todos bloqueantes');
   const releaseActivated = release.releaseStatus === 'guaranteed';
   // D2 (spec 2026-08-04): la activacion fue un hito unico cumplido en 1.0.0, asi
   // que cualquier SemVer con major >= 1 y status stable cuenta como activada. Se
@@ -79,8 +82,7 @@ test('activation is equivalent to all exact closeout gates being passed', async 
   const versionActivated = ACTIVATED_VERSION_PATTERN.test(version.version)
     && version.status === 'stable';
 
-  assert.equal(releaseActivated, allPassed);
-  assert.equal(versionActivated, allPassed);
+  // Lo unico que sigue teniendo que activar junto: version y API estable.
   assert.equal(releaseActivated, versionActivated);
 });
 

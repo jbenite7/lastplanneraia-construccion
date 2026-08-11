@@ -83,7 +83,7 @@ test('uncommitted activation cannot pass in a temporary Git repository', () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /activation: worktree and index must be clean/);
   assert.match(result.stderr, /activation: docs\/design-system\/closeout-evidence.json must match HEAD exactly/);
-  assert.match(result.stderr, /activation: HEAD must contain the complete passed activation/);
+  assert.match(result.stderr, /activation: HEAD must contain the complete gate list/);
 });
 
 test('una version posterior a 1.0.0 sigue contando como sistema activado', () => {

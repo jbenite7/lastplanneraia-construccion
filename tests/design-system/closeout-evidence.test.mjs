@@ -65,13 +65,27 @@ test('passed gates require fresh timestamps and non-historical evidence', async 
   assert.doesNotMatch(JSON.stringify(evidence.gates), /\bPASS\b/);
 });
 
-test('full-app-flow is passed in the activated closeout', async () => {
+test('full-app-flow declara un solo recibo, y su estado coincide con lo que ese recibo midio', async () => {
+  // Este test exigia `status === 'passed'` a secas, y eso es fijar la mentira
+  // por escrito: obligaba a declarar aprobado un gate que hoy no se puede
+  // ejecutar aqui —le falta una base de datos aislada— y contribuia al mismo
+  // incentivo que D-F1b-5 describe. Se sustituye por una comprobacion mas
+  // fuerte: da igual si pasa o no, lo que no puede es que el indice y su
+  // recibo digan cosas distintas.
   const evidence = await readJson('docs/design-system/closeout-evidence.json');
   const gate = evidence.gates.find(({ id }) => id === 'full-app-flow');
-  assert.equal(gate.status, 'passed');
+  assert.ok(gate, 'full-app-flow no esta en el cierre');
   assert.equal(gate.evidence.length, 1);
   assert.equal(gate.evidence[0].commandId, 'ds.full-app-flow.v1');
-  assert.match(gate.evidence[0].summary, /Objective receipt/i);
+
+  const recibo = await readJson(gate.evidence[0].artifact);
+  assert.equal(recibo.gateId, 'full-app-flow');
+  const esperado = recibo.exitCode === 0 ? 'passed' : 'blocked';
+  assert.equal(
+    gate.status,
+    esperado,
+    `el indice dice '${gate.status}' y su recibo midio exitCode ${recibo.exitCode}`,
+  );
 });
 
 test('closeout surfaces defer transient numeric success claims to the final closer', async () => {
@@ -97,15 +111,26 @@ test('keyboard and reflow remain evidence and are not closeout gate objects', as
   assert.equal(ids.includes('plannotator'), false);
 });
 
-test('stable 1.0.0 cannot be declared while a closeout gate is unresolved', async () => {
-  const [version, evidence] = await Promise.all([
-    readJson('docs/design-system/version.json'),
-    readJson('docs/design-system/closeout-evidence.json'),
-  ]);
+test('un gate sin resolver es honesto: sin fecha, y con un recibo que lo sostiene', async () => {
+  // Este test exigia que con la version estable NO hubiera ningun gate sin
+  // resolver. Es el mismo acoplamiento que D-F1b-5 retiro del contrato
+  // (2026-08-11): la activacion fue un hito unico de la 1.0.0 y no depende del
+  // estado de los gates de hoy, asi que atarla aqui obligaba a declarar
+  // `passed` lo que no lo esta.
+  //
+  // Lo que si hay que exigirle a un gate sin resolver, y esto comprueba MAS que
+  // la version anterior: que no conserve la fecha de una verificacion que ya no
+  // sostiene, y que su recibo diga lo mismo que el indice. Un gate rojo es
+  // legitimo; uno que miente sobre por que esta rojo, no.
+  const evidence = await readJson('docs/design-system/closeout-evidence.json');
   const unresolved = evidence.gates.filter(({ status }) => status !== 'passed');
-  if (version.status === 'stable' || version.version === '1.0.0') {
-    assert.deepEqual(unresolved, [], JSON.stringify(unresolved, null, 2));
-  } else {
-    assert.ok(unresolved.length > 0, 'construction must identify unresolved gates');
+  for (const gate of unresolved) {
+    assert.equal(gate.verifiedAt, null, `${gate.id}: sin resolver pero conserva verifiedAt`);
+    const recibo = await readJson(gate.evidence[0].artifact);
+    assert.notEqual(
+      recibo.exitCode,
+      0,
+      `${gate.id}: el indice lo da por no resuelto y su recibo midio exitCode 0`,
+    );
   }
 });

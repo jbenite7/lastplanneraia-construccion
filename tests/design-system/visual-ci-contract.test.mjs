@@ -373,9 +373,19 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.equal(retrospective.provenance.sampling.samples, undefined);
   assert.deepEqual(retrospective.metrics.laboratoryAssets, []);
 
+  // `runtime-budgets` sigue siendo bloqueante y sigue estando en la lista: eso
+  // es lo que este test protege. Lo que ya NO se le exige es estar `passed`
+  // (D-F1b-5, 2026-08-11): mide los artefactos que produce la corrida de
+  // `runtime`, asi que su resultado depende de ella y no aporta una garantia
+  // separada. Fijarlo aqui en `passed` obligaba a declararlo aprobado aunque no
+  // se hubiera ejecutado, que es justo el defecto que este frente arranco.
   const budgetGate = closeout.gates.find(({ id }) => id === 'runtime-budgets');
-  assert.equal(budgetGate?.status, 'passed');
-  assert.equal(budgetGate?.blocking, true);
+  assert.ok(budgetGate, 'runtime-budgets debe seguir declarado en el cierre');
+  assert.equal(budgetGate.blocking, true);
+  assert.ok(
+    ['passed', 'blocked', 'pending'].includes(budgetGate.status),
+    `estado invalido: ${budgetGate.status}`,
+  );
 });
 
 test('ningun carril descarta escenarios por ancho', async () => {

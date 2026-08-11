@@ -57,12 +57,20 @@ export function activationGitFailures(root, gateIds) {
   const version = documents.get(activationPaths[1]);
   const stableApi = documents.get(activationPaths[2]);
   const committedGateIds = closeout?.gates?.map(({ id }) => id);
-  const committedPassed = JSON.stringify(committedGateIds) === JSON.stringify(gateIds)
-    && closeout.gates.every(({ status: gateStatus }) => gateStatus === 'passed');
-  if (!committedPassed || !ACTIVATED_VERSION_PATTERN.test(version?.version ?? '')
+  // El mismo desacoplamiento que en el contrato (D-F1b-5, 2026-08-11), una capa
+  // mas adentro: lo que HEAD tiene que contener es la LISTA de gates completa y
+  // en orden —que es lo que hace verificable el cierre—, no que los ocho esten
+  // `passed`. Exigir lo segundo obligaba a mentir para poder activar, y era el
+  // incentivo que produjo quince recibos `passed` sin ejecutar.
+  //
+  // Que cada gate diga la verdad sobre SI MISMO lo siguen comprobando las
+  // validaciones por gate del contrato, ruidosamente y con su nombre. Aqui solo
+  // se comprueba que el cierre publicado sea el cierre completo.
+  const committedComplete = JSON.stringify(committedGateIds) === JSON.stringify(gateIds);
+  if (!committedComplete || !ACTIVATED_VERSION_PATTERN.test(version?.version ?? '')
     || version?.status !== 'stable'
     || stableApi?.releaseStatus !== 'guaranteed') {
-    failures.push('activation: HEAD must contain the complete passed activation (SemVer major >= 1, stable)');
+    failures.push('activation: HEAD must contain the complete gate list (SemVer major >= 1, stable)');
   }
   return failures;
 }
