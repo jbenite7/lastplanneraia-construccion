@@ -58,14 +58,24 @@ imagen, montando el worktree y **entrando a la red del stack que ya corre**, par
 MySQL sin tocarlo.
 
 ```bash
+cp "<ruta-del-arbol-principal>/.env" .env      # el .env NO viaja al worktree
 docker run -d --name lps-wt-app --network last-planner-aia_default -p 8095:80 \
-  -v "$PWD":/var/www/html -e DB_HOST=db -e DB_PORT=3306 \
-  -e DB_NAME=lastplanneraia_dev -e DB_USER=root -e DB_PASS='<el de .env>' \
-  -e APP_ENV=development -e USE_GLOBAL_TABLES=true last-planner-aia-app
+  -v "$PWD":/var/www/html -e APP_ENV=development last-planner-aia-app
+docker exec -w /var/www/html lps-wt-app composer install --no-interaction
 ```
 
 Sirve para **leer**, que es lo que hace una verificación visual. Si el cambio escribe en la base, no
-vale: comparte el MySQL del otro stack y aplica la receta completa de arriba. Dos detalles que
-cuestan un rato: elige el puerto comprobando antes que está libre —el fallo por puerto ocupado no
-dice cuál—, y el `.env` **sí viaja** al worktree, así que la puerta de servicio funciona sin
-configurar nada. Bórralo al terminar (`docker rm -f lps-wt-app`).
+vale: comparte el MySQL del otro stack y aplica la receta completa de arriba. Bórralo al terminar
+(`docker rm -f lps-wt-app`).
+
+Los tres pasos son obligatorios, y los tres se descubrieron a base de `500` sin causa visible el
+2026-08-11 en el frente `vocabulario-estados-cascada`. **El `.env` no viaja al worktree** —esta nota
+afirmaba lo contrario hasta esa fecha—, así que sin copiarlo no hay conexión ni puerta de servicio;
+está gitignoreado y copiarlo no ensucia el árbol. **El worktree tampoco trae `vendor/`**, y sin
+`composer install` dentro del contenedor `public/index.php` muere en el `require_once` del autoload.
+Y las `DB_*` **no se pasan por `-e`**, aunque la receta original las llevara: los valores del `.env`
+vienen entrecomillados (`DB_USER="root"`), el `-e` los propaga con las comillas dentro y el
+contenedor gana porque `Dotenv::createImmutable()` no sobrescribe lo que ya está en el entorno, así
+que MySQL recibe el usuario `'"root"'` y responde `Access denied` — un mensaje que no se parece en
+nada a la causa. Elige además el puerto comprobando antes que está libre: el fallo por puerto
+ocupado no dice cuál.
