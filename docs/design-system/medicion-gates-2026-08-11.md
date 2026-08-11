@@ -93,3 +93,63 @@ retira con su motivo escrito.
 No arregla ningún gate, no retira ninguno, no toca `closeout-evidence.json` ni los recibos, y no
 decide nada. Esas cuatro cosas son el Frente 1b, y **ese frente lo abre la coordinadora**
 (`docs/coordinacion-sesiones.md`): una sola sesión de ejecución activa a la vez.
+
+---
+
+## Lo que se construyó el 2026-08-11 (Frente 1b, primera entrega)
+
+**`scripts/design-system/gate-receipt.mjs`** — genera el recibo de un gate **ejecutándolo**. No
+acepta el resultado como parámetro: lo **deriva** del código de salida, que es la única forma de que
+un recibo no pueda afirmar algo distinto de lo que ocurrió. Lee el comando del propio
+`closeout-evidence.json`, para que no pueda medir algo distinto de lo que el índice declara. Anota
+comando, código de salida, fecha, **el árbol medido y si estaba sucio**, y la cola de la salida real.
+
+**`tests/design-system/gate-receipt-content.test.mjs`** — el candado que faltaba. El gate de
+gobernanza que ya existía comprueba que haya quince gates, que sus ids no se repitan y que estén en
+orden: **cuenta y comprueba nombres**. Nunca abría el recibo. Este valida **contenido**, y falla
+cerrado ante las cuatro mentiras posibles: declararse `passed` con el comando en rojo (que es la
+forma exacta que tenían los quince recibos de julio), medir un comando distinto del declarado, no
+decir sobre qué árbol se midió, y la forma vieja de dos claves.
+
+**Entregado con su mutación en rojo, ejecutada:** el test comprueba explícitamente que un recibo con
+`exitCode: 1` y `result: 'passed'` es rechazado. Sin esa comprobación, el candado no prueba que muerda.
+
+**Las exclusiones van por nombre y con motivo**, y con un test propio que falla si una exclusión
+nombra un gate que ya no existe. Los ocho excluidos son los que tienen decisión encolada
+(`D-F1b-1`, `D-F1b-2`, `D-F1b-3`): una exclusión sin dueño es como empezó este problema.
+
+### Lo que falta para migrar los recibos, medido al intentarlo
+
+Regenerar los recibos **no basta**, y conviene que quede escrito porque no es evidente. El contrato
+de `scripts/design-system-closeout-contract.mjs` es **más estricto de lo que esta medición supuso al
+principio**, y eso es una buena noticia: sí verifica contenido y procedencia.
+
+Al sustituir los cuatro recibos ejecutables por recibos reales, el gate `contracts` cae con:
+
+```
+- global-table-safety: artifactSha256 does not match the evidence artifact
+- global-table-safety: evidence artifact is stale relative to sourceRef
+- static: unresolved gate must have null verifiedAt
+- atomic-commit: passed requires fresh verifiedAt and structured evidence
+```
+
+De donde salen tres requisitos que la migración tiene que cumplir:
+
+1. **`verifiedAt` con formato exacto** `YYYY-MM-DDTHH:MM:SSZ` —sin milisegundos— y **posterior** a
+   `generatedAt`. Un gate que no esté `passed` debe tener `verifiedAt: null`.
+2. **El artefacto tiene que estar commiteado**, y `sourceRef` resolver al commit donde ese archivo
+   coincide (`design-system-evidence-receipt.mjs:120-130`). Es decir, la migración es de **dos
+   tiempos**: commitear los recibos y solo entonces apuntarles el `sourceRef`.
+3. **`artifactSha256` se recalcula** con cada recibo nuevo.
+
+**Por eso esta entrega no migra el índice todavía:** ocho de los quince gates están esperando las
+decisiones `D-F1b-1`, `D-F1b-2` y `D-F1b-3`, y migrar los siete restantes por separado dejaría el
+índice en un estado mixto durante días. El mecanismo ya está y probado; la migración se hace de una
+vez cuando las tres decisiones aterricen.
+
+**Lo que sí se pagó ya:** el gate `phpstan-global` baja de **8 errores a 6** (`96d194b9`). Uno de los
+dos era una **entrada de baseline caducada** —esperaba una aparición y había dos, así que el propio
+baseline avisaba de que ya no describía el código— y se **retiró** en vez de subirle el contador.
+Antes se comprobó la hipótesis grave, que era que la puntuación por ubicación del emparejador
+estuviera inerte: **es falsa**, las cuatro ramas se ejecutan (verificado invocando el método:
+1.000 / 0.300 / 0.700 / 0.500). Lo que sobraba era media condición ya garantizada por la anterior.
