@@ -489,6 +489,78 @@ de preguntar. Copia esta forma:
   asignados, la condición se cumple entregando **su** frente y pidiendo el siguiente — no tomándolo.
 - **Estado:** `resuelta 2026-08-11: se sigue el turno; producción exige autorización aparte.`
 
+### D-F1b-1 · `git-preservation` es un candado de un solo uso que ya se disparó
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** ese gate se **retira** de la lista de cierre, o se **rediseña** para medir otra cosa.
+- **Qué se midió** (sobre `b313de3f`, `npm run test:design-system:preservation` → **RC=1**): la salida
+  es `Worktree preservation: FAIL`, con `unstaged changed`, `status changed`,
+  `ignoredControlSurfaces changed` y `classification does not cover the current status exactly once`.
+  Compara contra el snapshot del arranque del **Sprint 00**, a más de **1.300 commits** de HEAD.
+  Declara `passed` con fecha del 2026-07-15.
+- **En simple:** es una foto del día uno usada como examen permanente. Cada commit que se hace lo
+  aleja más de pasar, y ningún cierre futuro podrá aprobarlo tal como está.
+- **Opciones:**
+  - **(a) Retirarlo**, con su motivo escrito en el índice de gates. Un gate que ningún cierre puede
+    pasar no informa: solo obliga a ignorarlo, y un gate que se ignora enseña a ignorar los demás.
+  - **(b) Rediseñarlo** para que compare contra el cierre **anterior** en vez de contra el Sprint 00.
+    Mide algo real —qué se perdió entre dos cierres— pero es un gate nuevo, no una reparación.
+  - **(c) Dejarlo rojo y documentado.** Lo desaconsejo: es la vía por la que quince gates acabaron
+    declarando `passed` sin que nadie los ejecutara.
+- **Recomendación:** **(a)**, y anotar (b) como candidato para más adelante. Retirar con motivo es
+  honesto; conservar un candado imposible es lo que produjo el cierre que se avalaba a sí mismo.
+- **Qué quedó saltado esperando:** solo este gate. Los demás siguen su curso.
+- **Estado:** `abierta`
+
+### D-F1b-2 · Tres gates distintos ejecutan exactamente el mismo comando
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si `pg-roles`, `pg-persistence` y `data-restoration` reciben **objetivo propio**
+  o se **funden en uno**.
+- **Qué se midió** (`closeout-evidence.json` sobre `b313de3f`): los tres declaran, literalmente,
+  `npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1`. Los tres constan `passed`.
+- **En simple:** son tres asignaturas con el mismo examen. Sea cual sea la nota, **es la misma nota
+  tres veces**: no pueden dar veredictos distintos porque no miden cosas distintas.
+- **Opciones:**
+  - **(a) Un objetivo propio a cada uno** — roles, persistencia y restauración de datos son tres
+    preguntas de verdad distintas, y el spec les pide además una fixture aislada y consentimiento de
+    mutación. Es el más caro y el que más cobertura da.
+  - **(b) Fundirlos en un gate** llamado por lo que realmente hace, y decir qué cobertura se pierde
+    al pasar de tres nombres a uno.
+  - **(c) Declararlos no automatizables** y sacarlos de la lista con su motivo.
+- **Recomendación:** **(a) para `pg-roles`**, que es el único cuyo objeto —qué ve cada rol— ya se
+  verifica en este repo de rutina y es barato de aislar; **(b) o (c) para los otros dos**, que
+  necesitan mutar datos y hoy están bloqueados en seguro por eso.
+- **Qué quedó saltado esperando:** los tres gates. No bloquean a los otros doce.
+- **Estado:** `abierta`
+
+### D-F1b-3 · Cuatro gates invocan herramientas que no existen
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** qué pasa con `accessibility-insights` (uno) y `local-review` (tres:
+  `consolidated-lab`, `consolidated-pilot`, `review`). **Retirarlos cambia lo que el cierre promete
+  cubrir**, y eso no es decisión técnica.
+- **Qué se midió** (sobre `b313de3f`): ninguno de los dos comandos es un binario del `PATH` ni un
+  script del repositorio. Los cuatro gates constan `passed` con fecha del 2026-07-15, así que
+  **nunca pudieron ejecutarse tal como están declarados**.
+- **En simple:** cuatro de los quince exámenes citan un libro que no está en la biblioteca. Constan
+  aprobados igualmente.
+- **Opciones:**
+  - **(a) Sustituir `accessibility-insights` por el carril de accesibilidad que sí existe** en el
+    repo, y **retirar los tres `local-review`** dejando escrito que eran revisiones humanas y que su
+    recibo es la aprobación de una persona, no la salida de un comando.
+  - **(b) Instalar la herramienta** y cablear los tres `local-review` a algo ejecutable. Es el
+    camino más caro y añade una dependencia externa al cierre.
+  - **(c) Retirar los cuatro** con su motivo. El más simple y el que más cobertura declarada quita.
+- **Recomendación:** **(a)**. Los tres `local-review` son de tipo `human` en el propio índice: su
+  problema no es que falte la herramienta, es que un juicio humano **no debería declararse como un
+  comando**. Y para accesibilidad existe carril propio, así que sustituir no pierde cobertura real.
+- **Qué quedó saltado esperando:** los cuatro. El resto del frente avanza sin ellos.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
