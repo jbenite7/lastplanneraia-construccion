@@ -77,6 +77,55 @@ mismo selector es deuda antes que prioridad.
   una regla en `components` a secas pierde contra esta aunque tenga mucha más especificidad
   (`memoria/trampas/css-layer-cascade.md`).
 
+## Resultado
+
+**41 → 16.** Se quitaron **25**: quedan 10 en el chip y 6 en los descendientes.
+
+| Paso | Qué se quitó | Total |
+|---|---|---|
+| T2 | `font-size` y `padding` de `@media ≤992`, que repetían el valor de :970 | 41 → 39 |
+| T3 | el chip sale del `:where` de :48, cuyas 3 declaraciones ignoraba | 39 → 36 |
+| T4 | 10 de los 16 del chip | 36 → 26 |
+| T5 | 10 de los 16 de `.indicator` y `.count-badge` | 26 → 16 |
+
+**Los que se quedan, con quién los necesita** — y ninguno lo necesitan las tres pantallas a la vez:
+
+| Declaración | Pantallas donde hace falta |
+|---|---|
+| chip `white-space`, `font-size`, `transition`, `border` | las tres |
+| chip `flex-shrink`, `line-height` | solo Programa General |
+| chip `min-height` (`@media ≤992`) | las tres, bajo 992 |
+| `.indicator display` | Intermedia y Semanal (en PG el punto de color desaparecía) |
+| `.indicator width`, `height` | solo Programa General (5px → 8px sin ellos) |
+| `.count-badge font-size` | Intermedia y Semanal |
+| `.count-badge color` | solo Semanal |
+| `.count-badge background-color` | solo Programa General |
+
+**La lista heredada decía cuatro necesarias y se quedaba corta por dos**: `flex-shrink` y
+`transition` también pierden sin `!important`.
+
+### Dos cifras, las dos ciertas, y no son la misma
+
+- **41 → 16** es lo que pesa sobre la leyenda, que es lo que el frente perseguía.
+- **160 → 138** es el total de `!important` del archivo: **22 menos**, no 25. La diferencia son las
+  3 de T3, que **siguen en el archivo** —la regla vive para `.badge`, `.aia-chip` y compañía— y solo
+  dejaron de alcanzar al chip.
+- Biome lo corrobora sin haberlo buscado: sus avisos bajan **2626 → 2604**, exactamente 22.
+  `noImportantStyles` es *warning*, no *error*, así que los 863 errores de `npm run check:frontend`
+  no se mueven — y ya estaban ahí antes del frente, medidos sobre `f1f5bd87`.
+
+### Verificación
+
+- `npm run test:design-system:static` **RC=0, 8/8**.
+- Computado contra la base en **las tres pantallas y a 1180 y 900**, antes y después de cada paso.
+- `npm run check:frontend` sale **RC=1 antes y después**: rojo preexistente del repo, no de este
+  frente. Comprobado poniendo `buttons.css` en su versión de `f1f5bd87` y volviendo a medir — no
+  con `git stash`, que **con el árbol limpio no guarda nada y devuelve una comparación falsa**
+  (caído en ello durante este frente).
+- El auditor de diseño **no se mueve, y era lo esperado**: `buttons.css` no está en
+  `exceptions.json`. El hook de Impeccable pasó de 137 a 121 a 16 hallazgos sin que se tocara
+  ninguna de esas líneas — es `memoria/trampas/contador-que-baja-porque-ya-lo-miraste.md`.
+
 ## Nota de método sobre este propio censo
 
 La primera pasada de este censo dio **41 repartidas en 7 reglas pero atribuyó a la regla del chip
