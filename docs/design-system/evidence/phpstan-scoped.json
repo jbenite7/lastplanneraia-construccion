@@ -1,4 +1,13 @@
 {
   "gateId": "phpstan-scoped",
-  "result": "passed"
+  "result": "passed",
+  "command": "docker compose exec app vendor/bin/phpstan analyse src --memory-limit=1G",
+  "exitCode": 0,
+  "measuredAt": "2026-08-11T17:08:41.214Z",
+  "durationMs": 72776,
+  "tree": {
+    "sha": "943d8ea5d3eedd21b4aecfdca68746eea6454e46",
+    "dirty": true
+  },
+  "outputTail": " [OK] No errors                                                                 \nNote: Using configuration file /var/www/html/phpstan.neon.\n   0/124 [░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%\u001b[1G\u001b[2K  18/124 [▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░]  14%\u001b[1G\u001b[2K  36/124 [▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░]  29%\u001b[1G\u001b[2K  54/124 [▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░]  43%\u001b[1G\u001b[2K  72/124 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░]  58%\u001b[1G\u001b[2K  90/124 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░]  72%\u001b[1G\u001b[2K 107/124 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░]  86%\u001b[1G\u001b[2K 124/124 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%"
 }
