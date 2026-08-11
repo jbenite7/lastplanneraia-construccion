@@ -57,6 +57,42 @@ de preguntar. Copia esta forma:
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
 - **Estado:** `abierta`
 
+### D-2 · Qué se hace con los 30 tests que el CI no puede correr
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP» (cerrado y publicado en `2eccf15e`).
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si se les da al CI los datos que les faltan, si se reescriben para no
+  necesitarlos, o si algunos se retiran por obsoletos.
+- **Qué se midió:** los 101 `tests/test_*.php` corridos por código de salida contra el stack de
+  `docker-compose.ci.yml` (`php scripts/run-php-tests.php --nivel=datos-proyecto`): **71 pasan, 28
+  fallan, 1 se salta solo**. Ninguno de los 28 es código de producción roto; a todos les falta
+  entorno:
+  - **20** piden datos que el fixture no tiene — 14 son `test_pdc_v2_*`.
+  - **4** piden tablas que el fixture no crea (p. ej. `test_password_reset_resultados`).
+  - **4** leen evidencia de `docs/qa/evidence/` que no viaja en git
+    (`test_goal_close_blockers_manifest`, `test_human_decision_actions_package`,
+    `test_human_decision_approval_checklist`, `test_human_decision_matrix_coverage`).
+  - **2** se saltan solos cuando falta el proyecto 73 (`test_pdc_v2_amarre_cronograma`,
+    `test_pdc_v2_brecha_daporto`).
+  - `memoria/trampas/suite-php-rojos-preexistentes.md` ya da por obsoletos a
+    `test_pdc_v2_brecha_daporto` (fija la versión 292 de Da Porto, que desapareció al reimportarse
+    el presupuesto el 2026-07-29) y a `test_human_validation_matrix`.
+- **Opciones:**
+  - **(a)** Enriquecer el fixture de CI hasta que corran. Gana cobertura real, pero es un frente
+    propio y grande, y roza `memoria/trampas/no-enriquecer-daporto-para-medir.md`.
+  - **(b)** Triarlos uno a uno: fixture para los que aportan, reescritura para los que dependen de
+    datos reales sin necesitarlo, retirada para los obsoletos. Más lento, deja la suite honesta.
+  - **(c)** Dejarlos como están, declarados y fuera del CI. **Es la opción segura y reversible:** es
+    el estado actual, no rompe nada y su número sale contado en cada corrida del CI, así que no se
+    esconde.
+- **Recomendación:** **(b)**, pero sin urgencia. Hoy (c) ya evita el daño —nadie los confunde con
+  verdes— y (a) gastaría un frente entero en datos de prueba antes de saber cuáles de los 30 merecen
+  seguir vivos. El triaje es lo único que responde esa pregunta, y puede hacerse por tandas.
+- **Qué quedó saltado esperando:** nada del frente cerrado. Los 30 están etiquetados
+  `// @requiere: datos-proyecto`, el CI no los corre y su número aparece en el resumen de cada
+  corrida. No se tocó ningún fixture ni ningún dato.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
