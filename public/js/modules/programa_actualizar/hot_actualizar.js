@@ -480,11 +480,6 @@ window.HOTActualizarModule = (function() {
         }
 
         var $saveStatus = $('#save-status');
-        $saveStatus
-            .stop(true, true)
-            .removeClass('badge-badge-hidden aia-chip--success')
-            .addClass('aia-chip--warning')
-            .fadeIn(120);
         if (_saveStatus) { _saveStatus.pendiente(1); }
 
         var formData = new URLSearchParams();
