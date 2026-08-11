@@ -324,17 +324,7 @@ de preguntar. Copia esta forma:
   decidir de paso en un refactor de formato.
 - **Qué quedó saltado esperando:** no se tocó ninguna de las cinco líneas con reserva. `hot.js` y
   `hot_actualizar.js` quedan sin cambios de esta tarea.
-- **Estado:** `resuelta 2026-08-11: se repitió la comprobación en el navegador (canvas 2D contra
-  tokens.css real, ya que Chromium serializa oklch en getComputedStyle en vez de convertir a rgb).
-  Ninguno de los cuatro --aia-* tiene un token real con el MISMO color computado: --aia-text-muted
-  (fallback #6c757d/#666 → rgb(108,117,125) y rgb(102,102,102)) frente a --ds-active-text-secondary
-  → rgb(199,212,204), cambia. --aia-warning-soft-bg (#fef3c7 → rgb(254,243,199)) frente a
-  --aia-warning-background → rgb(255,247,226), cambia. --aia-warning-border (#f59e0b →
-  rgb(245,158,11)) frente a --aia-warning-high → rgb(255,194,0) o --aia-warning-critical →
-  rgb(156,102,0), cambia en ambos casos. --aia-red-primary (#dc3545 → rgb(220,53,69)) frente a
-  --aia-alert-high → rgb(212,11,30), cambia. Condición bloqueante de la coordinadora incumplida en
-  las cinco líneas: no se forzó ninguna sustitución, las cinco quedan sin tocar. Sigue siendo (b) la
-  solución de fondo, ahora con los valores computados que faltaban.`
+- **Estado:** `resuelta 2026-08-11: definirlos como tokens de verdad, con el valor que hoy tiene su reserva en hexadecimal. Nada cambia en pantalla y el código deja de citar tokens inexistentes. Vino de vuelta al usuario porque ninguno de los cuatro tenía sustituto que conservara el color exacto, y su condición era no mover píxeles.`
 
 ### D-F1-4 · Programa General y Programación Semanal tampoco marcan una acción primaria
 
@@ -475,6 +465,102 @@ de preguntar. Copia esta forma:
   bloquea al Frente 1b.
 - **Estado:** `abierta`
 
+### D-F1-7 · Hasta dónde llega el encargo de una sesión de ejecución
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, al cerrarlo.
+- **Fecha:** 2026-08-11
+- **Qué se decidió:** una sesión de ejecución **hace el frente que le asignan y se detiene ahí**. No
+  encadena los siguientes por su cuenta, aunque su objetivo esté redactado como «termina el plan
+  entero».
+- **Por qué se preguntó:** el objetivo de la sesión pedía «cumplimiento al 100 % del spec», y el spec
+  son **seis** frentes. Eso choca de frente con dos contratos del repo:
+  - `docs/coordinacion-sesiones.md:23` — «la coordinadora abre la siguiente… por turnos, no en
+    paralelo». Autoasignarse un frente es exactamente lo que ese contrato existe para evitar, y el
+    2026-08-10 ya costó tres integraciones y un trabajo sobrescrito.
+  - `AGENTS.md:88` — el Frente 5 es el despliegue a producción y «necesita su propia autorización
+    explícita, siempre».
+  - Y el propio reparto: «lo declara el usuario, no lo reclama nadie» (`coordinacion-sesiones.md:9`).
+- **Decisión del usuario, 2026-08-11:**
+  - **Alcance:** se sigue el turno. Solo lo que asigne la coordinadora.
+  - **Producción:** no se toca sin una autorización aparte. Un objetivo de sesión **no** es esa
+    autorización.
+- **Qué significa en la práctica:** un objetivo redactado como «termina todo» **no amplía el
+  encargo**. Si la condición de terminación de una sesión abarca más frentes de los que tiene
+  asignados, la condición se cumple entregando **su** frente y pidiendo el siguiente — no tomándolo.
+- **Estado:** `resuelta 2026-08-11: se sigue el turno; producción exige autorización aparte.`
+
+### D-F1b-1 · `git-preservation` es un candado de un solo uso que ya se disparó
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** ese gate se **retira** de la lista de cierre, o se **rediseña** para medir otra cosa.
+- **Qué se midió** (sobre `b313de3f`, `npm run test:design-system:preservation` → **RC=1**): la salida
+  es `Worktree preservation: FAIL`, con `unstaged changed`, `status changed`,
+  `ignoredControlSurfaces changed` y `classification does not cover the current status exactly once`.
+  Compara contra el snapshot del arranque del **Sprint 00**, a más de **1.300 commits** de HEAD.
+  Declara `passed` con fecha del 2026-07-15.
+- **En simple:** es una foto del día uno usada como examen permanente. Cada commit que se hace lo
+  aleja más de pasar, y ningún cierre futuro podrá aprobarlo tal como está.
+- **Opciones:**
+  - **(a) Retirarlo**, con su motivo escrito en el índice de gates. Un gate que ningún cierre puede
+    pasar no informa: solo obliga a ignorarlo, y un gate que se ignora enseña a ignorar los demás.
+  - **(b) Rediseñarlo** para que compare contra el cierre **anterior** en vez de contra el Sprint 00.
+    Mide algo real —qué se perdió entre dos cierres— pero es un gate nuevo, no una reparación.
+  - **(c) Dejarlo rojo y documentado.** Lo desaconsejo: es la vía por la que quince gates acabaron
+    declarando `passed` sin que nadie los ejecutara.
+- **Recomendación:** **(a)**, y anotar (b) como candidato para más adelante. Retirar con motivo es
+  honesto; conservar un candado imposible es lo que produjo el cierre que se avalaba a sí mismo.
+- **Qué quedó saltado esperando:** solo este gate. Los demás siguen su curso.
+- **Estado:** `abierta`
+
+### D-F1b-2 · Tres gates distintos ejecutan exactamente el mismo comando
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si `pg-roles`, `pg-persistence` y `data-restoration` reciben **objetivo propio**
+  o se **funden en uno**.
+- **Qué se midió** (`closeout-evidence.json` sobre `b313de3f`): los tres declaran, literalmente,
+  `npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1`. Los tres constan `passed`.
+- **En simple:** son tres asignaturas con el mismo examen. Sea cual sea la nota, **es la misma nota
+  tres veces**: no pueden dar veredictos distintos porque no miden cosas distintas.
+- **Opciones:**
+  - **(a) Un objetivo propio a cada uno** — roles, persistencia y restauración de datos son tres
+    preguntas de verdad distintas, y el spec les pide además una fixture aislada y consentimiento de
+    mutación. Es el más caro y el que más cobertura da.
+  - **(b) Fundirlos en un gate** llamado por lo que realmente hace, y decir qué cobertura se pierde
+    al pasar de tres nombres a uno.
+  - **(c) Declararlos no automatizables** y sacarlos de la lista con su motivo.
+- **Recomendación:** **(a) para `pg-roles`**, que es el único cuyo objeto —qué ve cada rol— ya se
+  verifica en este repo de rutina y es barato de aislar; **(b) o (c) para los otros dos**, que
+  necesitan mutar datos y hoy están bloqueados en seguro por eso.
+- **Qué quedó saltado esperando:** los tres gates. No bloquean a los otros doce.
+- **Estado:** `abierta`
+
+### D-F1b-3 · Cuatro gates invocan herramientas que no existen
+
+- **Quién pregunta:** sesión de ejecución del Frente 1b.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** qué pasa con `accessibility-insights` (uno) y `local-review` (tres:
+  `consolidated-lab`, `consolidated-pilot`, `review`). **Retirarlos cambia lo que el cierre promete
+  cubrir**, y eso no es decisión técnica.
+- **Qué se midió** (sobre `b313de3f`): ninguno de los dos comandos es un binario del `PATH` ni un
+  script del repositorio. Los cuatro gates constan `passed` con fecha del 2026-07-15, así que
+  **nunca pudieron ejecutarse tal como están declarados**.
+- **En simple:** cuatro de los quince exámenes citan un libro que no está en la biblioteca. Constan
+  aprobados igualmente.
+- **Opciones:**
+  - **(a) Sustituir `accessibility-insights` por el carril de accesibilidad que sí existe** en el
+    repo, y **retirar los tres `local-review`** dejando escrito que eran revisiones humanas y que su
+    recibo es la aprobación de una persona, no la salida de un comando.
+  - **(b) Instalar la herramienta** y cablear los tres `local-review` a algo ejecutable. Es el
+    camino más caro y añade una dependencia externa al cierre.
+  - **(c) Retirar los cuatro** con su motivo. El más simple y el que más cobertura declarada quita.
+- **Recomendación:** **(a)**. Los tres `local-review` son de tipo `human` en el propio índice: su
+  problema no es que falte la herramienta, es que un juicio humano **no debería declararse como un
+  comando**. Y para accesibilidad existe carril propio, así que sustituir no pierde cobertura real.
+- **Qué quedó saltado esperando:** los cuatro. El resto del frente avanza sin ellos.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
@@ -491,4 +577,5 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1-2` | Familia nueva de tokens de fondo para destacar celdas, calibrada a 3:1 | Frente 1 · aplicado en `66facd23` |
 | `D-F1-3` | Apuntar los cuatro `--aia-*` al token real y retirar la reserva hex | **Sin aplicar**: ningún token conserva el color; vuelve al usuario |
 | `D-F1-4` | «Confirmar Compromisos» y «Actualizar Ejecución» pasan a primaria | Frente 1 · aplicado en `66facd23` |
+| `D-F1-7` | Una sesión de ejecución hace su frente y se detiene; no encadena los siguientes | Regla general · aplica a todas las sesiones de ejecución |
 | `D-F1-5` | Añadir un token de espacio de 72 px (`--ds-space-18`) | Frente 1 · aplicado en `66facd23` |

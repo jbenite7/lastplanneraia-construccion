@@ -22,6 +22,26 @@ mientras el anterior no esté publicado en `main`**. Eso serializa el programa a
 Por tanto: **una sola sesión de FRENTE activa a la vez**. Cuando cierra su frente y publica, la
 coordinadora abre la siguiente. Varias sesiones de frente existen, pero por turnos, no en paralelo.
 
+### Un objetivo redactado como «termina todo» no amplía el encargo
+
+*(Decidido por el usuario el 2026-08-11, `D-F1-7`.)*
+
+**Una sesión de ejecución hace el frente que le asignan y se detiene ahí.** No encadena los
+siguientes por su cuenta, aunque su objetivo de sesión diga «cumplir el spec al 100 %» y el spec
+tenga seis frentes.
+
+Si la condición de terminación abarca más frentes de los que tiene asignados, **se cumple entregando
+el suyo y pidiendo el siguiente** — no tomándolo. Quien reparte turnos es la coordinadora; que un
+objetivo mencione trabajo futuro no es una asignación.
+
+**Y el Frente 5 tiene una barrera propia:** es el despliegue a producción y `AGENTS.md` §Publicación
+exige **autorización explícita y aparte, siempre**. Un objetivo de sesión no es esa autorización, ni
+aunque diga «hasta el final».
+
+Levantado por la sesión del Frente 1, que podía haberse encadenado los cinco frentes restantes
+amparándose en su propio objetivo y en vez de eso preguntó. El bloqueo se va a repetir cada vez que
+un encargo se redacte en términos de resultado final en lugar de alcance.
+
 ### La serialización es de frentes, no de todo trabajo
 
 *(Precisión del 2026-08-11, después de que la regla se leyera más ancha de lo que era.)*
