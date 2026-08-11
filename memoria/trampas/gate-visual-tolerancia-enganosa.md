@@ -36,3 +36,21 @@ antes de proponer bajar `maxDiffPixelRatio`, medir el ruido con el piso en `0` �
 depende del peor escenario no determinista, no del gusto.
 
 Relacionado: [[bitacora-drawer-sin-profesional]], [[reset-legacy-pisa-adaptadores]].
+
+**Ampliación del 2026-08-11 (frente `semana-fija-visual`): la mutación con la que compruebas el
+gate también depende del viewport.** Al recapturar los goldens de PI se probó que supieran fallar
+alargando el texto de «Seleccionar visibles». Resultado: **1180×820 falló (1649 px) y 1440×900
+pasó**. No es que el golden ancho fuera ciego — es que en ese ancho ese botón queda **último de su
+fila**, así que ensancharlo no desplaza nada detrás y el cambio se queda por debajo del
+`maxDiffPixels: 100`; a 1180×820 el mismo botón va en la segunda fila y arrastra todo lo que le
+sigue.
+
+Regla: **una mutación que se apoya en el reflujo de la fila no demuestra nada en el viewport donde
+ese elemento no reflúe.** Elige un elemento que arrastre su fila en todos los anchos que el
+escenario cubre —en PI sirvió una etiqueta de la leyenda, que hizo fallar los dos (4031 px en el
+ancho)— y **comprueba el rojo en cada resolución, no en una**. Con una sola en rojo se da por
+demostrado algo que en la otra no lo está.
+
+Ver también [[el-dom-dice-que-existe-no-que-se-ve]] y
+[[valor-declarado-no-es-valor-computado]]: las tres son la misma familia — el instrumento contesta
+a lo que le preguntas, no a lo que quieres saber.

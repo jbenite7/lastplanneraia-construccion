@@ -40,4 +40,9 @@ que restaurar `style.cssText` entero y **verificar que la línea base vuelve id�
 fiarse del resultado.
 
 Familia: [[contador-que-baja-porque-ya-lo-miraste]], [[gate-solo-cuenta-elementos-no-los-lee]],
-[[captura-playwright-miente]], [[css-layer-cascade]].
+[[captura-playwright-miente]], [[css-layer-cascade]], [[el-dom-dice-que-existe-no-que-se-ve]],
+[[gate-visual-tolerancia-enganosa]].
+
+Todas comparten la forma: **el instrumento contesta a lo que le preguntas, no a lo que quieres
+saber.** `querySelector` responde «existe», no «se ve»; el CSS declarado responde «pide», no
+«gana»; y un gate visual responde «cambió más que el umbral», no «cambió algo que importa».
