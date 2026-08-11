@@ -72,6 +72,23 @@ sobre el directorio principal. El 2026-08-10 hubo que integrar `origin/main` tre
 jornada por trabajar todos sobre el mismo árbol, y una vez el trabajo de una sesión sobrescribió el
 de otra sin aviso.
 
+### El nombre de una sesión dice lo que hace ahora, no con qué nació
+
+*(Petición del usuario, 2026-08-11.)*
+
+La coordinadora **renombra cada sesión de ejecución al asignarle un frente**, con
+`mcp__ccd_session_mgmt__set_session_title`. Formato: `Frente <n> · <qué hace, en una línea>`.
+
+**Por qué:** una sesión sobrevive a su encargo inicial. La del Frente 1 siguió llamándose «tandas 1B
+y 1C» mientras reconstruía los gates del design system, así que la lista de sesiones —que es como el
+usuario ve de un vistazo qué hay en marcha— mostraba trabajo terminado en vez del vivo.
+
+Es el mismo defecto que este programa persigue en el backlog y en la wiki: **una etiqueta que
+describe el pasado y se lee como si describiera el presente.** Si el nombre no se actualiza, la
+lista de sesiones se convierte en otro mapa que miente.
+
+Renombrar es gratis y reversible; si el usuario ha puesto un título a mano, ese gana.
+
 ## Cómo se consulta una decisión del usuario
 
 **Ninguna sesión de ejecución le pregunta al usuario directamente.** Las preguntas se mandan a la
