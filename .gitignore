@@ -304,6 +304,7 @@ tests/browser/*
 !tests/browser/design-system-unlayered-delivery.mjs
 !tests/browser/design-system-table-contract.runtime.mjs
 !tests/browser/programa-general-state-hue.mjs
+!tests/browser/programa-general-visualizador.mjs
 .playwright-mcp/
 .tmp-e2e/
 
