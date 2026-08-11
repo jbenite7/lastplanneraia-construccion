@@ -60,3 +60,17 @@ anchos, y ahí sí fallaron los dos escenarios.
 
 Un golden que ya no detecta nada es peor que el que había — y uno que solo detecta en un viewport
 lo parece sin serlo.
+
+### Y una mutación que vale más que las dos anteriores: ¿el arreglo es la causa?
+
+Cambiar un texto y ver el rojo solo demuestra que la comparación de píxeles funciona, cosa que ya
+se sabía. Lo que de verdad había que comprobar es que **este golden vigila la pantalla que dice
+vigilar**, porque su problema nunca fue fallar: fue ser inútil mientras el ruido de la semana lo
+tapaba.
+
+Así que se quitó la llamada a `fijarSemanaDelEscenario` y se volvió a correr. Resultado: **falla
+otra vez, con el rojo únicamente en la esquina del selector de semana** —369 px, y ni un píxel en
+el resto de la pantalla—. Es la reproducción exacta del fallo original.
+
+Eso es lo que cierra el argumento: si sin la llamada hubiera seguido en verde, la semana la estaría
+fijando **otra cosa** y este arreglo no sería la causa de nada. Con la llamada puesta, `2 passed`.

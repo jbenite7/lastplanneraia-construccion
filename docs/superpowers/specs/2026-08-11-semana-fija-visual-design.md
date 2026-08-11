@@ -86,6 +86,21 @@ ese elemento no reflúe.** La mutación válida se hizo sobre una etiqueta de la
 su fila en ambos anchos: 1180×820 y 1440×900 fallaron los dos (4031 px en el ancho). Con una sola
 resolución roja se habría dado por demostrado algo que en la otra no lo estaba.
 
+### La mutación que más vale: ¿el arreglo es la causa?
+
+Cambiar un texto y ver el rojo demuestra que la comparación de píxeles funciona — algo que ya se
+sabía. La pregunta buena es otra: **¿este golden vigila la pantalla que dice vigilar?** Su problema
+nunca fue fallar, sino ser inútil mientras el ruido lo tapaba, y una comparación que siempre falla
+y una que compara lo que no toca son igual de ciegas.
+
+Así que se quitó la llamada a `fijarSemanaDelEscenario` y se volvió a correr: **`2 failed`, con el
+rojo únicamente en la esquina del selector de semana** —369 px, ni un píxel en el resto—. Es la
+reproducción exacta del fallo original. Si sin la llamada hubiera seguido en verde, la semana la
+estaría fijando otra cosa y este arreglo no sería la causa de nada.
+
+Con la llamada restaurada: `2 passed`. Solo con esas dos corridas puede decirse que el golden
+**vigila**, y no únicamente que coincide.
+
 ## Alcance
 
 Este golden vive en el gate `runtime`, declarado `blocked` por otras causas. **No se pretende
