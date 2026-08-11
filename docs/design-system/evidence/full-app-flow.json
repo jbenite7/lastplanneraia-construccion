@@ -3,11 +3,11 @@
   "result": "failed",
   "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
   "exitCode": 1,
-  "measuredAt": "2026-08-11T17:33:56.045Z",
-  "durationMs": 3656,
+  "measuredAt": "2026-08-11T18:09:52.698Z",
+  "durationMs": 6480,
   "tree": {
-    "sha": "2624ea2d987de948920386b5a05f0225420f6087",
-    "dirty": true
+    "sha": "789a7feac52da7cbd97f2bdc8924c1e08c6cc423",
+    "dirty": false
   },
   "outputTail": "Error: Missing isolated E2E database mutation consent: set E2E_REQUIRE_ISOLATED_DB=1 and E2E_ALLOW_DB_MUTATION=design-system-ci.\n   at support/restoration.mjs:17\n  15 |     || env.E2E_ALLOW_DB_MUTATION !== 'design-system-ci'\n  16 |   ) {\n> 17 |     throw new Error(\n     |           ^\n  18 |       'Missing isolated E2E database mutation consent: set '\n  19 |       + 'E2E_REQUIRE_ISOLATED_DB=1 and E2E_ALLOW_DB_MUTATION=design-system-ci.',\n  20 |     );\n    at assertE2EMutationConsent (/Volumes/Crucial X6/Developer/lps-aia/.claude/worktrees/elegant-jones-d4126a/tests/browser/support/restoration.mjs:17:11)\n    at /Volumes/Crucial X6/Developer/lps-aia/.claude/worktrees/elegant-jones-d4126a/tests/browser/full-app-flow.spec.mjs:14:1\nError: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
 }
