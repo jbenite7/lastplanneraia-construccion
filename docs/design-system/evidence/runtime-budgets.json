@@ -1,4 +1,13 @@
 {
   "gateId": "runtime-budgets",
-  "result": "passed"
+  "result": "failed",
+  "command": "npm run test:runtime-budget:check",
+  "exitCode": 1,
+  "measuredAt": "2026-08-11T17:33:54.712Z",
+  "durationMs": 1130,
+  "tree": {
+    "sha": "2624ea2d987de948920386b5a05f0225420f6087",
+    "dirty": false
+  },
+  "outputTail": "> test:runtime-budget:check\n> node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.3.json test-output/design-system-runtime-budget.json\nENOENT: no such file or directory, open '/Volumes/Crucial X6/Developer/lps-aia/.claude/worktrees/elegant-jones-d4126a/test-output/design-system-runtime-budget.json'"
 }
