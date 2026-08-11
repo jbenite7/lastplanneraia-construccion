@@ -3,7 +3,9 @@
 Escenarios `RBAC-*`. Qué permite cada capacidad, a qué roles, y dónde se comprueba.
 
 Formato y reglas: `docs/flujos/README.md`. **La matriz de abajo se leyó de
-`src/Security/RbacManager.php` el 2026-08-04**, no de memoria ni de la documentación.
+`src/Security/RbacManager.php` el 2026-08-04**, no de memoria ni de la documentación, y se
+reconcilió el 2026-08-10 al colapsar los alias (ver `RBAC-A`). Las filas tachadas conservan su
+número para que las referencias viejas sigan resolviendo; ya no existen en el código.
 
 Los diez roles del catálogo: `A` Admin · `D` Director de Obra · `R` Residente de Obra · `DCV` ·
 `OT` · `G` Ambiental · `S` SST · `SG` · `C` Subcontratista · `V` Visualizador.
@@ -16,20 +18,20 @@ Los diez roles del catálogo: `A` Admin · `D` Director de Obra · `R` Residente
 |---|---|---|---|
 | RBAC-001 | `canManageWeeks` | A · D · OT · R · DCV | G · S · SG · C · V |
 | RBAC-002 | `canDeleteRows` | **A · D** | los otros ocho |
-| RBAC-003 | `canEditGeneralProgram` | A · D · R · DCV | OT · G · S · SG · C · V |
-| RBAC-004 | `canManageGeneralProgram` | **alias exacto de `canEditGeneralProgram`** | ídem |
+| RBAC-003 | ~~`canEditGeneralProgram`~~ | **colapsada el 2026-08-10** en `canManageGeneralProgram` (RBAC-004): era su alias exacto | — |
+| RBAC-004 | `canManageGeneralProgram` | A · D · R · DCV | OT · G · S · SG · C · V |
 | RBAC-005 | `canEditPastGeneralProgram` | **A · D** | los otros ocho |
-| RBAC-006 | `canEditWeeklyProgram` | A · D · R · S · G · SG | OT · DCV · C · V |
-| RBAC-007 | `canManageWeeklyProgram` | **alias exacto de `canEditWeeklyProgram`** | ídem |
-| RBAC-008 | `canEditMediumTerm` | A · D · R · DCV | OT · G · S · SG · C · V |
-| RBAC-009 | `canManageMediumTermProgram` | **alias exacto de `canEditMediumTerm`** | ídem |
+| RBAC-006 | ~~`canEditWeeklyProgram`~~ | **colapsada el 2026-08-10** en `canManageWeeklyProgram` (RBAC-007) | — |
+| RBAC-007 | `canManageWeeklyProgram` | A · D · R · S · G · SG | OT · DCV · C · V |
+| RBAC-008 | ~~`canEditMediumTerm`~~ | **colapsada el 2026-08-10** en `canManageMediumTermProgram` (RBAC-009) | — |
+| RBAC-009 | `canManageMediumTermProgram` | A · D · R · DCV | OT · G · S · SG · C · V |
 | RBAC-010 | `canEditConstraints` | A · D · R · DCV · S · G · SG · OT | C · V |
 | RBAC-011 | `canEditFinancial` | A · D · OT | los otros siete |
 | RBAC-012 | `canEditSST` | **A · S · SG** | los otros siete (incluido D) |
 | RBAC-013 | `canEditAmbiental` | **A · G · SG** | los otros siete (incluido D) |
-| RBAC-014 | `canManageContracts` | A · D · OT · R | DCV · G · S · SG · C · V |
+| RBAC-014 | ~~`canManageContracts`~~ | **colapsada el 2026-08-10** en `canManagePdC` (RBAC-016) | — |
 | RBAC-015 | ~~`canAutoDefineContracts`~~ | **retirada el 2026-08-10**: alias sin ningún consumidor, borrada de `RbacManager` | — |
-| RBAC-016 | `canManagePdC` | **alias exacto de `canManageContracts`** | ídem |
+| RBAC-016 | `canManagePdC` | A · D · OT · R | DCV · G · S · SG · C · V |
 | RBAC-017 | `canSeeReports` | **todos, siempre** | ninguno |
 
 Además, tres banderas derivadas: `isSystemAdmin`, `isExternal` (solo `C`) e `isReadOnly`
@@ -60,21 +62,33 @@ Además, tres banderas derivadas: `isSystemAdmin`, `isExternal` (solo `C`) e `is
 > de solo lectura por definición— vea un botón llamado «Actualizar Ejecución» merece comprobarse:
 > registrado como escenario pendiente, porque confirmarlo exige pulsarlo y eso mutaría datos.
 
-## RBAC-A · Los alias no son capacidades distintas
+## RBAC-A · Los alias no eran capacidades distintas — cerrado el 2026-08-10
 
-Cuatro nombres de la tabla **no tienen lógica propia**: toman el valor de otro.
+Cuatro nombres de la tabla **no tenían lógica propia**: tomaban el valor de otro. El vocabulario
+prometía una distinción «editar» vs «gestionar» que el código nunca hizo, así que cada par se
+colapsó en un solo nombre.
 
-- `canManageGeneralProgram` ← `canEditGeneralProgram`
-- `canManageWeeklyProgram` ← `canEditWeeklyProgram`
-- `canManageMediumTermProgram` ← `canEditMediumTerm`
-- `canManagePdC` ← `canManageContracts` (`canAutoDefineContracts` se retiró el 2026-08-10)
+| Par colapsado | Superviviente | Por qué gana |
+|---|---|---|
+| `canEditGeneralProgram` / `canManageGeneralProgram` | `canManageGeneralProgram` | es el único con consumidor de runtime (`views/indicadores/indicadores.view.php`); el otro solo lo citaba el generador de la wiki |
+| `canEditWeeklyProgram` / `canManageWeeklyProgram` | `canManageWeeklyProgram` | ídem |
+| `canEditMediumTerm` / `canManageMediumTermProgram` | `canManageMediumTermProgram` | ídem |
+| `canManageContracts` / `canManagePdC` | `canManagePdC` | ninguno tiene consumidor de runtime; «Contratos» es un módulo eliminado con el PDC v1 el 2026-08-04, y `/plan-compras` sigue vivo |
 
-- **Resultado esperado:** quien comprueba `canManage*` obtiene exactamente lo mismo que quien
-  comprueba `canEdit*`. **No existe** un permiso de «gestionar» separado del de «editar»: el
-  vocabulario sugiere una distinción que el código no hace.
-- **Por qué importa:** un desarrollador que quiera dar edición sin gestión —o al revés— creerá que
-  puede, y no puede sin cambiar la lógica. Toda regla de negocio que dependa de esa distinción está
-  hoy sin implementar.
+La regla de elección —del plan `2026-08-10-frente-1a-seguridad-y-permisos.md`— era conservar el
+nombre con más consumidores. **El conteo crudo no bastó:** los cuatro pares quedaban casi en empate
+y hubo que pesar los consumidores, no contarlos. Un `grep` que acierta en
+`scripts/wiki-arquitectura.modulos.mjs` (generador de documentación) no vale lo que uno que acierta
+en una vista que se le sirve al usuario.
+
+- **Resultado esperado hoy:** existe un solo nombre por capacidad. Quien busque `canEdit*` para
+  programa general, semanal, intermedio o compras no lo encontrará: no hay un permiso de «gestionar»
+  separado del de «editar», y ahora tampoco lo aparenta.
+- **Por qué importaba:** un desarrollador que quisiera dar edición sin gestión —o al revés— creería
+  que podía, y no podía sin cambiar la lógica. Cualquier regla de negocio que necesite esa
+  distinción hay que implementarla, no reactivarla.
+- **Verificación:** `src/Security/RbacManager.php` (doce capacidades, ningún alias) y
+  `public/js/rbac_capabilities.js`; `npm run test:rbac-parity` en verde tras el colapso.
 
 ## RBAC-B · `canSeeReports` no discrimina nada, y nadie la consulta
 
@@ -104,13 +118,14 @@ Escenario contraintuitivo y por eso obligatorio.
 
 - **En servidor:** `RbacManager::getCapabilities($role)` / `hasCapability()`.
 - **En cliente:** `public/js/rbac_capabilities.js` reimplementa las mismas reglas en JavaScript
-  (por ejemplo `canManagePdC` en `:45` y `:156-159`).
+  (por ejemplo `canManagePdC`, en el objeto `RbacCapabilities` y en `buildLegacyCapabilities()`).
 - **Resultado esperado:** las dos implementaciones coinciden siempre. Cualquier divergencia produce
   una interfaz que ofrece acciones que el servidor rechaza, o que esconde acciones permitidas.
-- **Riesgo estructural:** son dos fuentes de la misma verdad, sin gate que las contraste. **Candidato
-  a prueba ejecutable de alto valor**: comparar ambas matrices rol a rol.
-- **Verificación:** lectura — `src/Security/RbacManager.php` y `public/js/rbac_capabilities.js:45`,
-  `:156-159`.
+- **Riesgo estructural:** son dos fuentes de la misma verdad. Desde el 2026-08-10 **sí hay gate**:
+  `npm run test:rbac-parity` (`scripts/rbac-parity.mjs`) compara ambas matrices rol a rol y falla
+  ante cualquier divergencia de valores.
+- **Verificación:** lectura — `src/Security/RbacManager.php` y `public/js/rbac_capabilities.js`;
+  ejecutable — `npm run test:rbac-parity`.
 
 ## RBAC-E · Un rol desconocido debe quedarse en solo lectura
 
@@ -125,9 +140,10 @@ Escenario contraintuitivo y por eso obligatorio.
 
 ## Escenarios pendientes de esta pasada
 
-- **Un consumidor real citado por cada una de las 17 capacidades.** Solo se comprobaron
-  `canSeeReports` (ninguno) y `canManagePdC` (cliente). Las quince restantes están sin rastrear, y
-  cada una sin consumidor sería un hallazgo como el de `RBAC-B`.
+- **Un consumidor real citado por cada una de las doce capacidades vivas.** Se comprobaron
+  `canSeeReports` (ninguno), `canManagePdC` (solo cliente) y, al colapsar los alias el 2026-08-10,
+  las cuatro parejas de `RBAC-A`. Las restantes están sin rastrear, y cada una sin consumidor sería
+  un hallazgo como el de `RBAC-B`.
 - **Los permisos con clave `lps.*`** de `RbacCatalog::fallbackPermissionsByRole()`, que es un
   sistema **distinto** de estas capacidades booleanas y el que usa el PDC. Merece su propia sección
   cuando se ejecute T3.

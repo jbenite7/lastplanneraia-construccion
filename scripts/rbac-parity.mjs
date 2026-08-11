@@ -14,7 +14,8 @@
  *   - "valores distintos": la capacidad existe en servidor y cliente pero
  *     no coincide. FALLO DURO, sin excepción posible — es el corazón del
  *     gate y hoy son las únicas dos divergencias reales encontradas
- *     (canManageContracts/canManagePdC para el rol R).
+ *     (canManageContracts/canManagePdC para el rol R; los dos nombres eran
+ *     alias exactos y se colapsaron en canManagePdC el 2026-08-10).
  *   - "solo existe en cliente": la interfaz se inventa una capacidad que el
  *     servidor no conoce. FALLA salvo excepción declarada con motivo —
  *     puede ser un ayudante de UI legítimo (ver nota sobre canEditLps más

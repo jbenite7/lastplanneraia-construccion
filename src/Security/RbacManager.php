@@ -21,30 +21,23 @@ class RbacManager
         $isProfesionalDCV = ($role === 'DCV');
         $isVisualizer = ($role === 'V');
         $isSubcontractor = ($role === 'C');
-        $canManageWeeks = in_array($role, ['A', 'D', 'OT', 'R', 'DCV']);
-        $canEditGeneralProgram = in_array($role, ['A', 'D', 'R', 'DCV']);
-        $canEditWeeklyProgram = in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG']);
-        $canEditMediumTerm = in_array($role, ['A', 'D', 'R', 'DCV']);
-        $canManageContracts = in_array($role, ['A', 'D', 'OT', 'R']);
-
+        // Un solo nombre por capacidad: los pares canEdit*/canManage* eran alias exactos y el
+        // vocabulario prometía una distinción «editar» vs «gestionar» que el código nunca hizo
+        // (RBAC-A, 2026-08-10). Sobrevive `canManage*` porque es el nombre que consume el runtime.
         return [
             'isSystemAdmin' => $isSystemAdmin,
             RbacCatalog::PERM_INTERNAL_DESIGN_SYSTEM_VIEW => $isSystemAdmin,
-            'canManageWeeks' => $canManageWeeks,
+            'canManageWeeks' => in_array($role, ['A', 'D', 'OT', 'R', 'DCV']),
             'canDeleteRows' => in_array($role, ['A', 'D']),
-            'canEditGeneralProgram' => $canEditGeneralProgram,
-            'canManageGeneralProgram' => $canEditGeneralProgram,
+            'canManageGeneralProgram' => in_array($role, ['A', 'D', 'R', 'DCV']),
             'canEditPastGeneralProgram' => in_array($role, ['A', 'D']),
-            'canEditWeeklyProgram' => $canEditWeeklyProgram,
-            'canManageWeeklyProgram' => $canEditWeeklyProgram,
-            'canEditMediumTerm' => $canEditMediumTerm,
-            'canManageMediumTermProgram' => $canEditMediumTerm,
+            'canManageWeeklyProgram' => in_array($role, ['A', 'D', 'R', 'S', 'G', 'SG']),
+            'canManageMediumTermProgram' => in_array($role, ['A', 'D', 'R', 'DCV']),
             'canEditConstraints' => in_array($role, ['A', 'D', 'R', 'DCV', 'S', 'G', 'SG', 'OT']),
             'canEditFinancial' => in_array($role, ['A', 'D', 'OT']),
             'canEditSST' => in_array($role, ['A', 'S', 'SG']),
             'canEditAmbiental' => in_array($role, ['A', 'G', 'SG']),
-            'canManageContracts' => $canManageContracts,
-            'canManagePdC' => $canManageContracts,
+            'canManagePdC' => in_array($role, ['A', 'D', 'OT', 'R']),
             'canSeeReports' => true,
             'isExternal' => ($role === 'C'),
             'isReadOnly' => $isVisualizer || $isSubcontractor,

@@ -4,7 +4,7 @@
     {
       "rol": "*",
       "capacidad": "canEditLps",
-      "motivo": "Ayudante de UI que recibe role, currentWeek y maxWeek, no un espejo booleano de una capacidad puntual del servidor: la lógica equivalente vive repartida entre canEditGeneralProgram/canEditWeeklyProgram y la ventana de semanas editables (RbacCatalog::canEditLpsWeek), así que no hay una capacidad del servidor con este nombre exacto para comparar 1:1. Al llamarla solo con el rol no lanza excepción — calcula con currentWeek/maxWeek en NaN y devuelve un booleano sin sentido real para ese caso, así que el valor mostrado en la divergencia tampoco debe leerse como la lógica real de semana.",
+      "motivo": "Ayudante de UI que recibe role, currentWeek y maxWeek, no un espejo booleano de una capacidad puntual del servidor: la lógica equivalente vive repartida entre canManageGeneralProgram/canManageWeeklyProgram y la ventana de semanas editables (RbacCatalog::canEditLpsWeek), así que no hay una capacidad del servidor con este nombre exacto para comparar 1:1. Al llamarla solo con el rol no lanza excepción — calcula con currentWeek/maxWeek en NaN y devuelve un booleano sin sentido real para ese caso, así que el valor mostrado en la divergencia tampoco debe leerse como la lógica real de semana.",
       "fecha": "2026-08-10"
     }
   ]

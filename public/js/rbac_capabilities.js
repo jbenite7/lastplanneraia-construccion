@@ -35,10 +35,12 @@ const RbacCapabilities = {
   },
 
   /**
-   * Determina si un usuario puede ver botones de acceso exclusivo administrativo u Oficina Técnica (ej. contratos, PDC).
+   * Determina si un usuario puede ver botones de acceso exclusivo administrativo u Oficina Técnica
+   * (Plan de Compras). Absorbió a `canManageContracts`, que era su alias exacto y nombraba un
+   * módulo eliminado con el PDC v1 el 2026-08-04 (RBAC-A, colapsado el 2026-08-10).
    */
-  canManageContracts: function (role) {
-    // Espejo de RbacManager::getCapabilities()['canManageContracts'] (src/Security/RbacManager.php:28).
+  canManagePdC: function (role) {
+    // Espejo de RbacManager::getCapabilities()['canManagePdC'] (src/Security/RbacManager.php:40).
     // El Residente entra por decisión del usuario del 2026-08-10: en obra también gestiona el Plan
     // de Compras. Antes decía ['A','D','OT'] con un «ajustar si R necesita» que nadie resolvió, y esa
     // divergencia con el servidor la destapó el gate `npm run test:rbac-parity`.
@@ -47,16 +49,8 @@ const RbacCapabilities = {
     return allowedRoles.includes(role);
   },
 
-  canManagePdC: function (role) {
-    return this.canManageContracts(role);
-  },
-
   canManageWeeks: function (role) {
     return ['A', 'D', 'OT', 'R', 'DCV'].includes(role);
-  },
-
-  canEditGeneralProgram: function (role) {
-    return ['A', 'D', 'R', 'DCV'].includes(role);
   },
 
   canEditPastGeneralProgram: function (role) {
@@ -64,7 +58,7 @@ const RbacCapabilities = {
   },
 
   canManageGeneralProgram: function (role) {
-    return this.canEditGeneralProgram(role);
+    return ['A', 'D', 'R', 'DCV'].includes(role);
   },
 
   canManageMediumTermProgram: function (role) {
@@ -122,12 +116,6 @@ function buildLegacyCapabilities() {
         return RbacCapabilities.canManageWeeks(resolveRole());
       },
     },
-    canEditGeneralProgram: {
-      enumerable: true,
-      get: function () {
-        return RbacCapabilities.canEditGeneralProgram(resolveRole());
-      },
-    },
     canManageGeneralProgram: {
       enumerable: true,
       get: function () {
@@ -150,12 +138,6 @@ function buildLegacyCapabilities() {
       enumerable: true,
       get: function () {
         return RbacCapabilities.canManageWeeklyProgram(resolveRole());
-      },
-    },
-    canManageContracts: {
-      enumerable: true,
-      get: function () {
-        return RbacCapabilities.canManageContracts(resolveRole());
       },
     },
     canManagePdC: {

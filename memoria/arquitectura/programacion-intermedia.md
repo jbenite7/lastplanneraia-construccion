@@ -51,7 +51,6 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Quién puede
 | Capacidad | Roles que la tienen |
 | --- | --- |
-| `canEditMediumTerm` | A, D, R, DCV |
 | `canManageMediumTermProgram` | A, D, R, DCV |
 | `canEditConstraints` | A, D, R, DCV, OT, G, S, SG |
 <!-- generado:fin -->

@@ -43,5 +43,5 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Quién puede
 | Capacidad | Roles que la tienen |
 | --- | --- |
-| `canEditWeeklyProgram` | A, D, R, G, S, SG |
+| `canManageWeeklyProgram` | A, D, R, G, S, SG |
 <!-- generado:fin -->

@@ -10,7 +10,8 @@ Formato y reglas: `docs/flujos/README.md`. Verificado por lectura el **2026-08-0
 ## Lo primero que hay que saber: aquí mandan los permisos `lps.*`, no las capacidades
 
 Medido el 2026-08-04 sobre `src/Controllers/Api/GeneralApiController.php`: **ninguno de sus
-endpoints consulta `canEditGeneralProgram`, `canDeleteRows` ni `canEditPastGeneralProgram`**. Todos
+endpoints consulta `canManageGeneralProgram` (llamada `canEditGeneralProgram` hasta el colapso de
+alias del 2026-08-10), `canDeleteRows` ni `canEditPastGeneralProgram`**. Todos
 autorizan con `authorizePermission('lps.programa_general.<accion>')`, es decir el catálogo de
 permisos por clave de `RbacCatalog`, que es un **sistema distinto** de las capacidades booleanas de
 `RbacManager` descritas en `docs/flujos/transversal-rbac.md`.

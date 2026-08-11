@@ -165,5 +165,4 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | Capacidad | Roles que la tienen |
 | --- | --- |
 | `canManagePdC` | A, D, R, OT |
-| `canManageContracts` | A, D, R, OT |
 <!-- generado:fin -->

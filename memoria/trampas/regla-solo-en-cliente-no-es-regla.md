@@ -58,8 +58,13 @@ Nació en rojo con dos divergencias del rol **R** (Residente) y **se cerraron el
 
 | Capacidad | Servidor | Cliente (antes) | Cliente (hoy) |
 |---|---|---|---|
-| `canManageContracts` | `true` (`RbacManager.php:28`) | `false` | `true` |
-| `canManagePdC` | `true` (alias, `RbacManager.php:48`) | `false` | `true` |
+| `canManageContracts` | `true` | `false` | — |
+| `canManagePdC` | `true` (era alias de la anterior) | `false` | `true` |
+
+**Los dos nombres ya no existen por separado:** el 2026-08-10, después de este cierre, los cuatro
+pares de alias exactos se colapsaron a un solo nombre cada uno (RBAC-A) y `canManageContracts`
+quedó absorbida por `canManagePdC`. La lección de abajo no cambia: la capacidad sigue sin tener un
+solo consumidor en PHP.
 
 **La lección no es la divergencia, es lo que se encontró al medirla.** Ninguna de las dos
 capacidades tenía **un solo consumidor**: ni en `src`, ni en `admin/src`, ni en `public/js`, ni en

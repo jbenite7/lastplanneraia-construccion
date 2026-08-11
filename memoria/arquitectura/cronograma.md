@@ -40,5 +40,5 @@ _indeterminado_
 ### Quién puede
 | Capacidad | Roles que la tienen |
 | --- | --- |
-| `canEditGeneralProgram` | A, D, R, DCV |
+| `canManageGeneralProgram` | A, D, R, DCV |
 <!-- generado:fin -->

@@ -43,5 +43,5 @@ _indeterminado_
 ### Quién puede
 | Capacidad | Roles que la tienen |
 | --- | --- |
-| `canManageContracts` | A, D, R, OT |
+| `canManagePdC` | A, D, R, OT |
 <!-- generado:fin -->

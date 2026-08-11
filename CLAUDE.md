@@ -163,7 +163,7 @@ mentioned in AGENTS.md/GEMINI.md, not a bug.
 `DCV`, `OT`, `G` Ambiental, `S` SST, `SG`, `C` Subcontratista, `V` Visualizador), a `roleAliases()`
 map for legacy names, and permission constants (`PERM_AUTO_DEFINIR_CONTRATOS`, etc.). `RbacManager`
 is intentionally simple: `getCapabilities(string $role)` returns a flat boolean map
-(`canManageWeeks`, `canEditGeneralProgram`, `canManageContracts`, …) computed from hardcoded
+(`canManageWeeks`, `canManageGeneralProgram`, `canManagePdC`, …) computed from hardcoded
 `in_array($role, [...])` lists — there is no DB-backed permission table. `hasCapability($role, $cap)`
 just reads that map. Always normalize an incoming role/cargo through
 `Admin\Core\RoleManager::cleanCargo()` before checking capabilities.

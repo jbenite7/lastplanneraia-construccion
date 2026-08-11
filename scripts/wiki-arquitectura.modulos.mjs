@@ -36,8 +36,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programa-general', '/api/general', '/api/pg'],
-    capacidades: ['canEditGeneralProgram', 'canManageGeneralProgram',
-      'canEditPastGeneralProgram', 'canDeleteRows'],
+    capacidades: ['canManageGeneralProgram', 'canEditPastGeneralProgram', 'canDeleteRows'],
     nota: '',
   },
   {
@@ -46,7 +45,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programa-general-actualizar'],
-    capacidades: ['canEditGeneralProgram'],
+    capacidades: ['canManageGeneralProgram'],
     nota: '',
   },
   {
@@ -55,7 +54,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programacion-intermedia', '/api/pi'],
-    capacidades: ['canEditMediumTerm', 'canManageMediumTermProgram', 'canEditConstraints'],
+    capacidades: ['canManageMediumTermProgram', 'canEditConstraints'],
     nota: '',
   },
   {
@@ -64,7 +63,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programacion-semanal', '/api/semanal'],
-    capacidades: ['canEditWeeklyProgram', 'canManageWeeklyProgram', 'canManageWeeks'],
+    capacidades: ['canManageWeeklyProgram', 'canManageWeeks'],
     nota: '',
   },
   {
@@ -73,7 +72,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programacion-semanal/cnp', '/api/cnp'],
-    capacidades: ['canEditWeeklyProgram'],
+    capacidades: ['canManageWeeklyProgram'],
     nota: '',
   },
   {
@@ -82,7 +81,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programacion-semanal/cnc', '/api/cnc'],
-    capacidades: ['canEditWeeklyProgram'],
+    capacidades: ['canManageWeeklyProgram'],
     nota: '',
   },
   {
@@ -91,7 +90,7 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'lps',
     rutas: ['/programacion-semanal/cic', '/api/cic'],
-    capacidades: ['canEditWeeklyProgram'],
+    capacidades: ['canManageWeeklyProgram'],
     nota: '',
   },
   {
@@ -100,7 +99,7 @@ export const MODULOS = [
     areas: ['pdc', 'arquitectura'],
     flujo: 'pdc',
     rutas: ['/plan-compras'],
-    capacidades: ['canManagePdC', 'canManageContracts'],
+    capacidades: ['canManagePdC'],
     nota: 'SPA React en pdc-app/, bundle en public/pdc-app/. Sub-router por hash.',
   },
   // Listado de Actividades, Contratos y el PDC v1 (`/pdc`, `/api/pdc/*`) se eliminaron el
@@ -120,8 +119,8 @@ export const MODULOS = [
     areas: ['lps', 'arquitectura'],
     flujo: 'ambos',
     rutas: ['/subcontratistas', '/api/subcontratistas'],
-    capacidades: ['canManageContracts'],
-    nota: '',
+    capacidades: ['canManagePdC'],
+    nota: 'Figuraba bajo `canManageContracts`, que el 2026-08-10 se colapsó en `canManagePdC` por ser su alias exacto.',
   },
   {
     slug: 'control-de-cambios',

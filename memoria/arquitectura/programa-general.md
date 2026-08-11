@@ -67,7 +67,6 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 ### Quién puede
 | Capacidad | Roles que la tienen |
 | --- | --- |
-| `canEditGeneralProgram` | A, D, R, DCV |
 | `canManageGeneralProgram` | A, D, R, DCV |
 | `canEditPastGeneralProgram` | A, D |
 | `canDeleteRows` | A, D |
