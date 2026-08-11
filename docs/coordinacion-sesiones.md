@@ -60,11 +60,29 @@ encargo. Eso se resuelve y se sigue.
 vio que su cambio alteraba lo que medían tres pruebas, lo escribió como duda y siguió adelante; hubo
 que devolverle la tarea. Si cambia algo de lo anterior, se pregunta **antes** de actuar.
 
-### Mientras espera la respuesta
+### Las decisiones se acumulan; no se interrumpe al usuario una a una
 
-**Sigue con lo que no dependa de ella y para solo en lo que sí.** La regla de «corrido» se mantiene:
-no se para el trabajo entero por una pregunta abierta. Si no queda trabajo independiente, entonces
-sí, para y espera.
+Decidido por el usuario el 2026-08-10, después de las primeras horas del programa.
+
+**Una sesión de ejecución nunca para.** Cuando encuentra algo que necesita criterio del usuario:
+
+1. **Lo anota en la cola** — `docs/decisiones-pendientes.md`, con el formato que esa página define:
+   qué se decide, qué se midió, las opciones reales y la recomendación de quien pregunta.
+2. **Se salta ese hallazgo** y sigue con los demás. No lo toca, no lo decide con un supuesto, no lo
+   deja a medias.
+3. **Sigue hasta terminar su frente.** No espera respuesta, no pregunta al usuario, no se detiene.
+
+La coordinadora presenta **la cola entera al usuario al cerrar el frente**, en una sola tanda de
+grilleo. Lo que quedó saltado se retoma con sus respuestas, en una segunda pasada.
+
+**Por qué así, y no avanzando con un supuesto conservador:** el 2026-08-10 un implementador vio que
+su cambio alteraba lo que medían tres pruebas, eligió lo que le pareció más seguro, lo anotó como
+duda y siguió. Hubo que devolverle la tarea. Saltar deja el hallazgo intacto y barato de retomar;
+suponer deja trabajo que quizá haya que deshacer.
+
+**El coste, dicho claro:** algunos hallazgos se cierran en una segunda pasada en vez de la primera.
+Se acepta a cambio de que ninguna sesión se quede parada y de que el usuario decida una vez, con
+todo delante, en vez de a cachos.
 
 ## Qué audita la coordinadora
 
