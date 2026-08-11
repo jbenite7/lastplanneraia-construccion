@@ -19,8 +19,33 @@ reclama nadie: ninguna sesión pasa a ser «de ejecución» porque otra lo diga.
 El gate de cierre de frente es bloqueante (`AGENTS.md` §Publicación): **no se abre un frente nuevo
 mientras el anterior no esté publicado en `main`**. Eso serializa el programa a propósito.
 
-Por tanto: **una sola sesión de ejecución activa a la vez**. Cuando cierra su frente y publica, la
-coordinadora abre la siguiente. Varias sesiones existen, pero por turnos, no en paralelo.
+Por tanto: **una sola sesión de FRENTE activa a la vez**. Cuando cierra su frente y publica, la
+coordinadora abre la siguiente. Varias sesiones de frente existen, pero por turnos, no en paralelo.
+
+### La serialización es de frentes, no de todo trabajo
+
+*(Precisión del 2026-08-11, después de que la regla se leyera más ancha de lo que era.)*
+
+**Un frente es grande y toca muchos archivos**; dos a la vez se pisan. Eso es lo que el turno evita.
+
+**Una tarea suelta no es un frente.** Triar unos tests, corregir un informe o decidir una regla de
+equipo pueden correr en paralelo con un frente abierto, siempre que **no compartan archivos** con él
+ni entre sí. La comprobación no es «¿hay un frente abierto?» sino **«¿qué archivos toca esto y quién
+más los está tocando?»**.
+
+**Antes de arrancar una tarea suelta, mira la contención real:**
+
+```bash
+git log --oneline --since='<hoy>' -- <archivo-que-vas-a-tocar> | wc -l
+```
+
+Ejemplo medido el 2026-08-11: `docs/reportes/estado-desarrollo.html` acumulaba **15 commits en unas
+horas**, de varias sesiones. Cualquier tarea que lo edite necesita integrar justo antes de publicar,
+y conviene que sea corta. En cambio `scripts/`, `tests/unit/` o un fixture concreto no los estaba
+tocando nadie.
+
+Quien lleva la cuenta de los turnos y de la contención es la **coordinadora**. Si dudas, pregúntale
+antes de arrancar en vez de después de chocar.
 
 Cada sesión de ejecución trabaja en **su propio worktree** (`superpowers:using-git-worktrees`), no
 sobre el directorio principal. El 2026-08-10 hubo que integrar `origin/main` tres veces en una
