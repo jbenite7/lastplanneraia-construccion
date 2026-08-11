@@ -24,7 +24,7 @@ window.HOTActualizarModule = (function() {
     var _hasShownSavePrompt = false;  // guard for double-prompt
     var _saveStatus = null;
     import('/js/design-system/save-status.js').then(function (mod) {
-        _saveStatus = mod.crearSaveStatus({});
+        _saveStatus = mod.crearSaveStatus({ etiquetaGuardado: 'Auto-Guardado' });
     });
 
     // Configuración de validadores y regexs
