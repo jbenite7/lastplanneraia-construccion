@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 
 // Contrato del guard CSRF legacy: valida $_POST['_csrf_token'] contra un formKey.
 // El helper hace exit tras responder; se ejecuta cada caso en un subproceso PHP.

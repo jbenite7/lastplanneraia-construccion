@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_import_parser.php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/pdc_fixture_presupuesto.php';

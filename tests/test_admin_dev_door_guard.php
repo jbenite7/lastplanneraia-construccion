@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: http
+
 
 /**
  * Verifica que la puerta de servicio de desarrollo de `admin/` (`GET /dev/entrar` registrada

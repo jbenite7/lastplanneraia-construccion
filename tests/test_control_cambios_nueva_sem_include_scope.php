@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 
 // Contrato de ámbito del legacy `modificar_sem_estado.php`, que es include-scoped: no recibe
 // argumentos, sino que lee `$dbName` y `$semana` del ámbito de quien lo incluye.

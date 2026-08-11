@@ -10,6 +10,8 @@
 // Le pasó a `prueba-lps` (proyecto 27) el 2026-07-29 al ejecutar
 // `database/migrations/20260712_remap_consolidado_unique_id.php`, cuya premisa caducó.
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

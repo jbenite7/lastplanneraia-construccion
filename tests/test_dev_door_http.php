@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: http
+
 
 /**
  * Verifica la puerta de servicio EXTREMO A EXTREMO, por HTTP contra la app servida.

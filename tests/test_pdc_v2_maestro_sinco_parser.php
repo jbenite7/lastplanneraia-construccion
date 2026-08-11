@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_maestro_sinco_parser.php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/support/pdc_fixture_maestro_sinco.php';

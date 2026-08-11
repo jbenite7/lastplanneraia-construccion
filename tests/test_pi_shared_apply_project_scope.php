@@ -1,4 +1,6 @@
 <?php
+// @requiere: puro
+
 
 $source = file_get_contents(__DIR__ . '/../src/Controllers/Programacion/ProgramacionIntermediaController.php');
 $failures = [];

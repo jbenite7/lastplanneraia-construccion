@@ -397,3 +397,4 @@ goals/reapertura-movil-y-tema-claro/*
 
 # OpenSpec: artefactos de flujo local (esquema Superspec). Instalado 2026-08-10.
 openspec/
+/.phpunit.cache/

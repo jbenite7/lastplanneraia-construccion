@@ -4,6 +4,8 @@
 // insumosDeVersion (filtros + omitido + tipoRecurso) y resumen (cobertura = asignados+omitidos).
 
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

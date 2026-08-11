@@ -15,6 +15,8 @@
 // Además de los conteos, mide el TIEMPO y el número de consultas del plan completo: la forma más
 // probable de que esto se degrade no es un número mal contado sino una consulta por destino.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

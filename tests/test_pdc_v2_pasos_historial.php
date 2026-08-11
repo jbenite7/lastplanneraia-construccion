@@ -2,6 +2,8 @@
 // tests/test_pdc_v2_pasos_historial.php — A4.1 · diferido nº 3: quién cambió la configuración de
 // pasos, cuándo y a qué. Tabla de solo anexar.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// @requiere: puro
+
 /**
  * Verifica que `SessionMiddleware` anuncie una sesión caducada como error JSON (401) a
  * cualquier petición que pida JSON por `Accept`, no solo a las que mandan la cabecera

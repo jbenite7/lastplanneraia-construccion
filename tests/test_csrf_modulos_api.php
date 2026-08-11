@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 // Verifica que las mutaciones de los 6 módulos exijan token CSRF (biblia, EXPERIMENTS.md fila 24).
 // HTTP real contra el contenedor, sesión por dev door. Requiere DEV_DOOR=1.
 

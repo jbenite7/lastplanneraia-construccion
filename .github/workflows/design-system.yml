@@ -27,8 +27,18 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # --build-arg COMPOSER_INSTALL_FLAGS="" para que la imagen traiga PHPUnit, que es
+      # dependencia de desarrollo y sin ella el runner del paso siguiente aborta con 2 en
+      # cuanto exista un test de nivel `puro` en tests/unit/. No se toca docker/php/Dockerfile
+      # ni docker-compose.ci.yml: sus tres líneas de COMPOSER_INSTALL_FLAGS están fijadas por
+      # tests/design-system/visual-ci-contract.test.mjs:143-145.
       - name: Build the PHP test runtime
-        run: docker compose build app
+        run: docker compose -f docker-compose.yml build --build-arg COMPOSER_INSTALL_FLAGS="" app
+      # -f docker-compose.yml a propósito, para NO aplicar docker-compose.override.yml:
+      # el override monta el checkout sobre /var/www/html y taparía el vendor/ que trae
+      # la imagen, y este job no ejecuta composer install (vendor/ está en .gitignore).
+      - name: Correr los tests PHP que no necesitan entorno
+        run: docker compose -f docker-compose.yml run --rm --no-deps app php scripts/run-php-tests.php --nivel=puro
       - name: Enforce design-system static gates
         env:
           DS_ACTIVATION_STRICT: "1"
@@ -96,12 +106,13 @@ jobs:
         run: npm run test:design-system:phpstan
       - name: Enforce PHPStan level 6 on the PDC module
         run: npm run test:pdc:phpstan
-      - name: Enforce global-table safety
-        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_global_table_safety.php
-      - name: Enforce dev-door guard (prod must stay closed)
-        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_dev_door_guard.php
-      - name: Enforce dev-door end-to-end behaviour
-        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php tests/test_dev_door_http.php
+      # Sustituye a los tres tests que antes se listaban aquí a mano (test_global_table_safety,
+      # test_dev_door_guard, test_dev_door_http): los tres siguen corriendo, ahora dentro de la
+      # selección del runner junto a los ~70 que nadie ejecutaba automáticamente. El paso
+      # explícito que duplicaba el primero se retiró el 2026-08-11 (decisión D-CI-1), cuando el
+      # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
+      - name: Correr la suite PHP completa que el CI puede honrar
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
       - name: Run laboratory gates
         id: blocking-runtime
         env:

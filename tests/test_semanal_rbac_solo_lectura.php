@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 /**
  * Candado de autorización de Programación Semanal para los roles de solo lectura.

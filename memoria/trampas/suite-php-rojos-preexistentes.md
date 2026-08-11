@@ -5,7 +5,7 @@ fecha: 2026-07-29
 areas: [qa]
 fuente: memoria-claude
 origen: lps-aia-suite-php-rojos-preexistentes
-resumen: "Rojos preexistentes de tests/test_*.php: 4/108 en main @1a75b19 (2026-07-29); universo re-medido el 2026-08-10 en 96 archivos tras el retiro del PDC v1 — cita siempre la fecha o re-mide; y las dos trampas al medirlos en macOS"
+resumen: "Rojos preexistentes de tests/test_*.php: 4/108 en main @1a75b19 (2026-07-29); universo re-medido el 2026-08-11 en 101 archivos (96 el 2026-08-10, tras el retiro del PDC v1) — cita siempre la fecha o re-mide; y las dos trampas al medirlos en macOS"
 ---
 Medido el 2026-07-28 en el worktree `lps-aia-pdc`, rama `pdc-a4-fechas` @ `2357b0a`, con árbol
 revertido a HEAD: de los 103 `tests/test_*.php`, **16 fallan sin que nadie los haya tocado**.
@@ -33,7 +33,7 @@ no 16 de 103.**
 > cifra de fallos de arriba es de `main@1a75b19` (2026-07-29) y **no se ha vuelto a medir**. Cítala
 > siempre con su fecha, o vuelve a correr la suite.
 >
-> **Re-medido el 2026-08-10:** `ls tests/test_*.php | wc -l` da **96**, un 24 % menos que el
+> **Re-medido el 2026-08-11 sobre `123a8bff`: da 101.** El 2026-08-10 daba **96**, un 24 % menos que el
 > 2026-08-03. El retiro del PDC v1 del 2026-08-04 se llevó varios tests por delante; el universo de
 > 96 ya incluye `tests/test_password_reset_resultados.php`, creado ese mismo día. La cifra de
 > fallos sigue sin re-medirse sobre este universo — solo cambia cuántos archivos hay.
@@ -57,3 +57,13 @@ producen lecturas que parecen regresiones masivas o suites impolutas, ambas fals
 antes de atribuirte un fallo, revierte tus archivos a HEAD (`git checkout HEAD -- <archivos>`, nunca
 `git stash` en este worktree: suele haber ediciones ajenas en curso) y re-mide por `rc`. Relacionado:
 [[branch-preexisting-red-gates]], [[pdc-e2e-sandbox]].
+
+## La cifra se ha movido tres veces en 24 horas
+
+126 → 96 → 99 → **101**. El retiro del PDC v1 se llevó treinta; el frente de seguridad y el del
+runner trajeron cinco y una. Cada una de esas cifras fue correcta al medirla.
+
+Por eso esta página insiste en citar la fecha **y el commit**: una afirmación sobre el tamaño de la
+suite sin sha no es verificable y caduca en horas, no en meses. Es el mismo motivo por el que
+`docs/coordinacion-sesiones.md` exige que toda afirmación sobre `main` viaje con su sha.
+

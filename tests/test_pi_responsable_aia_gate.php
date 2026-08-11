@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 /**
  * N-1: sin Responsable AIA asignado no se gestionan restricciones.

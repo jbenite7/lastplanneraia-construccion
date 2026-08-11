@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 /**
  * Autorización de "reabrir una semana" en Programación Semanal.

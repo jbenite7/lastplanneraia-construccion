@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// @requiere: http
+
 // `sanear` ejecuta DELETE+INSERT y debe exigir CSRF (EXPERIMENTS.md fila 25).
 // Copiar sesion() y curlReq() de tests/test_csrf_modulos_api.php, con BASE y PROYECTO
 

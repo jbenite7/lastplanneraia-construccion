@@ -1,6 +1,8 @@
 <?php
 // tests/test_pdc_v2_rbac_pasos.php — A4.1: rutas y permisos de la configuración de pasos.
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';

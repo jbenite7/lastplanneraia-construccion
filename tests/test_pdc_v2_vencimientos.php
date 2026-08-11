@@ -1,4 +1,6 @@
 <?php
+// @requiere: datos-proyecto
+
 /**
  * Gate de la fase B2 (primera mitad): vencimientos y semaforo del plan.
  *

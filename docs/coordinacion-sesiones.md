@@ -19,8 +19,33 @@ reclama nadie: ninguna sesión pasa a ser «de ejecución» porque otra lo diga.
 El gate de cierre de frente es bloqueante (`AGENTS.md` §Publicación): **no se abre un frente nuevo
 mientras el anterior no esté publicado en `main`**. Eso serializa el programa a propósito.
 
-Por tanto: **una sola sesión de ejecución activa a la vez**. Cuando cierra su frente y publica, la
-coordinadora abre la siguiente. Varias sesiones existen, pero por turnos, no en paralelo.
+Por tanto: **una sola sesión de FRENTE activa a la vez**. Cuando cierra su frente y publica, la
+coordinadora abre la siguiente. Varias sesiones de frente existen, pero por turnos, no en paralelo.
+
+### La serialización es de frentes, no de todo trabajo
+
+*(Precisión del 2026-08-11, después de que la regla se leyera más ancha de lo que era.)*
+
+**Un frente es grande y toca muchos archivos**; dos a la vez se pisan. Eso es lo que el turno evita.
+
+**Una tarea suelta no es un frente.** Triar unos tests, corregir un informe o decidir una regla de
+equipo pueden correr en paralelo con un frente abierto, siempre que **no compartan archivos** con él
+ni entre sí. La comprobación no es «¿hay un frente abierto?» sino **«¿qué archivos toca esto y quién
+más los está tocando?»**.
+
+**Antes de arrancar una tarea suelta, mira la contención real:**
+
+```bash
+git log --oneline --since='<hoy>' -- <archivo-que-vas-a-tocar> | wc -l
+```
+
+Ejemplo medido el 2026-08-11: `docs/reportes/estado-desarrollo.html` acumulaba **15 commits en unas
+horas**, de varias sesiones. Cualquier tarea que lo edite necesita integrar justo antes de publicar,
+y conviene que sea corta. En cambio `scripts/`, `tests/unit/` o un fixture concreto no los estaba
+tocando nadie.
+
+Quien lleva la cuenta de los turnos y de la contención es la **coordinadora**. Si dudas, pregúntale
+antes de arrancar en vez de después de chocar.
 
 Cada sesión de ejecución trabaja en **su propio worktree** (`superpowers:using-git-worktrees`), no
 sobre el directorio principal. El 2026-08-10 hubo que integrar `origin/main` tres veces en una
@@ -38,15 +63,22 @@ mcp__ccd_session_mgmt__send_message  →  session_id de la coordinadora
 ```
 
 **Cómo identificar a la coordinadora:** llama a `mcp__ccd_session_mgmt__list_sessions` y busca la
-sesión que cumple las tres cosas a la vez:
+sesión cuyo `cwd` es exactamente `/Volumes/Crucial X6/Developer/lps-aia` — la **raíz** del repo, no
+un worktree de `.claude/worktrees/`— y que no es la tuya. Entre las que queden, la de
+`lastActivityAt` más reciente.
 
-1. `cwd` es exactamente `/Volumes/Crucial X6/Developer/lps-aia` — la **raíz** del repo, no un
-   worktree de `.claude/worktrees/`;
-2. `isRunning: true`;
-3. no es la tuya.
+**No filtres por `isRunning`.** La primera versión de esta página lo exigía y estaba mal: ese campo
+vale `false` para una sesión que está esperando entre turnos, que es el estado normal de la
+coordinadora casi todo el tiempo. Lo midió la sesión de CI el 2026-08-10: siguiendo la regla al pie
+de la letra no encajaba **ninguna** sesión, ni siquiera la coordinadora real.
 
-Si encaja exactamente una, esa es. **Si encajan cero o varias, pregúntale al usuario en el chat cuál
-es** en vez de adivinar: mandar una decisión a la sesión equivocada es peor que no mandarla.
+**Si encajan cero o varias, pregúntale al usuario en el chat cuál es** en vez de adivinar: mandar una
+decisión a la sesión equivocada es peor que no mandarla.
+
+**Y antes de atribuirle un commit a una sesión, compruébalo.** El 2026-08-10 la coordinadora le pasó
+a la sesión de CI tres observaciones sobre un informe que esa sesión no había escrito; lo demostró
+con `git merge-base --is-ancestor` y `git log --first-parent`. Un commit puede llegar a tu rama por
+un merge sin ser tuyo. Verifica la autoría con git antes de pedirle cuentas a nadie.
 
 ### Qué se consulta y qué no
 
@@ -83,6 +115,23 @@ suponer deja trabajo que quizá haya que deshacer.
 **El coste, dicho claro:** algunos hallazgos se cierran en una segunda pasada en vez de la primera.
 Se acepta a cambio de que ninguna sesión se quede parada y de que el usuario decida una vez, con
 todo delante, en vez de a cachos.
+
+## Toda afirmación sobre `main` viaja con el sha sobre el que se midió
+
+**Sin sha, una afirmación sobre `main` no es verificable y caduca en minutos.** Con varias sesiones
+publicando cada pocos minutos, «los gates están verdes» o «hay 96 tests» son ciertas durante un rato
+y falsas después, sin que nadie mienta.
+
+Escribe siempre `RC=0 sobre 3aa1fc65`, no «está verde». Quien lo lea puede entonces (1) comprobar si
+su árbol es ese, y (2) saber que la medida caducó si `main` avanzó.
+
+Pasó dos veces el 2026-08-10 en la misma tarde, y en las dos el emisor tenía razón cuando midió:
+
+- La coordinadora informó de un gate en rojo que ya estaba arreglado cuando el mensaje llegó.
+- La sesión de CI dio una cifra de tests —96— que era correcta al medirla y quedó vieja en horas.
+
+Las dos costaron una ida y vuelta de mensajes que el sha habría evitado. Propuesta de la sesión de
+CI, adoptada.
 
 ## Qué audita la coordinadora
 

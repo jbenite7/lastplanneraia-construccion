@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 
 /**
  * Clasificación de equipos: alquilado / comprado / sin clasificar — PDC v2, Ola 2.

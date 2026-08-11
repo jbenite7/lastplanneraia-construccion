@@ -17,6 +17,8 @@
  * Cubre el caso general: retirar un tipo de la lista sin podar a sus consumidores.
  */
 declare(strict_types=1);
+// @requiere: puro
+
 
 $root = dirname(__DIR__);
 

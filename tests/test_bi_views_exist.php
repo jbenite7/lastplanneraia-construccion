@@ -4,6 +4,8 @@
  * Phase 1 verification.
  */
 declare(strict_types=1);
+// @requiere: db
+
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

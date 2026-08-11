@@ -15,8 +15,19 @@
             "src/Core/TableResolver.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Unit\\": "tests/unit/"
+        }
+    },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.93",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12"
+    },
+    "scripts": {
+        "test": "php scripts/run-php-tests.php --nivel=http",
+        "test:puro": "php scripts/run-php-tests.php --nivel=puro",
+        "test:datos-proyecto": "php scripts/run-php-tests.php --nivel=datos-proyecto"
     }
 }

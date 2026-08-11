@@ -7,13 +7,36 @@ presenta la cola entera al cerrar cada frente, en una sola tanda de grilleo.
 El procedimiento está en [`coordinacion-sesiones.md`](coordinacion-sesiones.md). Regla que lo
 sostiene: **una sesión de ejecución nunca para** — anota, salta y continúa.
 
+## El id lleva su origen — no uses números sueltos
+
+**Formato: `D-<origen>-<n>`**, donde `<origen>` identifica a quien pregunta: `F1`, `F1b`, `CI`,
+`COORD`… Por ejemplo `D-F1-1`, `D-CI-1`.
+
+Las dos primeras entradas son `D-1` y `D-2` porque se escribieron antes de esta regla; se dejan como
+están para no romper lo ya publicado.
+
+**Añadir una entrada propia es seguro y no hace falta pedir permiso.** Lo que colisiona es editar
+lo que no escribiste: cambiar el estado de una entrada ajena, marcar una resolución o reordenar.
+Eso lo hace la coordinadora, que es quien habla con el usuario y sabe qué está decidido.
+
+*(Regla afinada el 2026-08-11. La primera versión decía «no toques la cola» a secas, y era
+demasiado: la sesión de CI añadió dos entradas impecables creyendo que infringía algo. Añadir es
+justo lo que la cola necesita.)*
+
+**Por qué el id lleva su origen:** varias sesiones añaden a esta cola desde ramas distintas y no se
+ven entre sí. Con
+números sueltos, dos que empiecen a la vez eligen ambas el siguiente número y colisionan al
+integrar. Pasó el 2026-08-10, el mismo día que se creó la cola: dos sesiones escribieron su `D-2`
+sin saberlo. Un id que lleva su origen no puede chocar sin coordinación previa, que es justo lo que
+no hay.
+
 ## Cómo añadir una entrada
 
 Una entrada sirve si el usuario puede decidir **sin abrir el código**. Eso exige haber medido antes
 de preguntar. Copia esta forma:
 
 ```markdown
-### D-<n> · <título en una línea>
+### D-<origen>-<n> · <título en una línea>
 
 - **Quién pregunta:** <sesión / frente / tarea>
 - **Fecha:** <AAAA-MM-DD>
@@ -28,7 +51,9 @@ de preguntar. Copia esta forma:
 
 ---
 
-## Abiertas
+## Entradas
+
+*(Ninguna abierta ahora mismo: las tres se decidieron el 2026-08-11. Se conservan aquí con su estado; el índice de resueltas está al final.)*
 
 ### D-1 · Dos numeraciones de «frente» conviviendo en el repo
 
@@ -55,11 +80,106 @@ de preguntar. Copia esta forma:
   de ejecución leen para saber qué les toca; el informe describe. Cuando una descripción y un
   contrato discrepan, se corrige la descripción. Reversible: renumerar un informe no rompe nada.
 - **Qué quedó saltado esperando:** nada. Es documental y no bloquea a nadie.
+- **Estado:** `resuelta 2026-08-11: (a) — el informe de estado adopta la numeración del spec. El spec gobierna y el informe describe; cuando discrepan, se corrige la descripción.`
+
+### D-2 · Qué se hace con los 30 tests que el CI no puede correr
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP» (cerrado y publicado en `2eccf15e`).
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si se les da al CI los datos que les faltan, si se reescriben para no
+  necesitarlos, o si algunos se retiran por obsoletos.
+- **Qué se midió:** los 101 `tests/test_*.php` corridos por código de salida contra el stack de
+  `docker-compose.ci.yml` (`php scripts/run-php-tests.php --nivel=datos-proyecto`): **71 pasan, 28
+  fallan, 1 se salta solo**. Ninguno de los 28 es código de producción roto; a todos les falta
+  entorno:
+  - **20** piden datos que el fixture no tiene — 14 son `test_pdc_v2_*`.
+  - **4** piden tablas que el fixture no crea (p. ej. `test_password_reset_resultados`).
+  - **4** leen evidencia de `docs/qa/evidence/` que no viaja en git
+    (`test_goal_close_blockers_manifest`, `test_human_decision_actions_package`,
+    `test_human_decision_approval_checklist`, `test_human_decision_matrix_coverage`).
+  - **2** se saltan solos cuando falta el proyecto 73 (`test_pdc_v2_amarre_cronograma`,
+    `test_pdc_v2_brecha_daporto`).
+  - `memoria/trampas/suite-php-rojos-preexistentes.md` ya da por obsoletos a
+    `test_pdc_v2_brecha_daporto` (fija la versión 292 de Da Porto, que desapareció al reimportarse
+    el presupuesto el 2026-07-29) y a `test_human_validation_matrix`.
+- **Opciones:**
+  - **(a)** Enriquecer el fixture de CI hasta que corran. Gana cobertura real, pero es un frente
+    propio y grande, y roza `memoria/trampas/no-enriquecer-daporto-para-medir.md`.
+  - **(b)** Triarlos uno a uno: fixture para los que aportan, reescritura para los que dependen de
+    datos reales sin necesitarlo, retirada para los obsoletos. Más lento, deja la suite honesta.
+  - **(c)** Dejarlos como están, declarados y fuera del CI. **Es la opción segura y reversible:** es
+    el estado actual, no rompe nada y su número sale contado en cada corrida del CI, así que no se
+    esconde.
+- **Recomendación:** **(b)**, pero sin urgencia. Hoy (c) ya evita el daño —nadie los confunde con
+  verdes— y (a) gastaría un frente entero en datos de prueba antes de saber cuáles de los 30 merecen
+  seguir vivos. El triaje es lo único que responde esa pregunta, y puede hacerse por tandas.
+- **Qué quedó saltado esperando:** nada del frente cerrado. Los 30 están etiquetados
+  `// @requiere: datos-proyecto`, el CI no los corre y su número aparece en el resumen de cada
+  corrida. No se tocó ningún fixture ni ningún dato.
+- **Estado:** `resuelta 2026-08-11: (b) — triarlos por tandas, sin urgencia. Fixture para los que aportan, reescritura para los que dependen de datos sin necesitarlo, retirada para los obsoletos. No es un frente propio: se hace por tandas cuando haya ocasión.`
+
+### D-CI-1 · El contrato visual fija una forma donde debería medir un resultado
+
+- **Quién pregunta:** sesión del frente «runner de tests PHP».
+- **Fecha:** 2026-08-10
+- **Qué se decide:** si una aserción del contrato del design system debe seguir exigiendo que el
+  workflow **nombre** un comando concreto, o pasar a comprobar que el CI **ejecuta** ese test.
+- **Qué se midió:**
+  - `tests/design-system/visual-ci-contract.test.mjs:156` exige
+    `assert.match(workflow, /php tests\/test_global_table_safety\.php/)`: una cadena literal.
+  - Al sustituir los tres tests listados a mano por el runner, esa cadena desapareció y el gate
+    `node-tests` quedó **rojo en `main`**, aunque el test seguía ejecutándose dentro de la selección
+    del runner. Es decir: el gate se puso rojo por un cambio que **aumentó** la cobertura de 3 tests
+    a 71.
+  - Arreglado por ahora conservando el paso explícito en `.github/workflows/design-system.yml`
+    además del runner. El test corre dos veces; cuesta menos de 1 s. Suite estática completa
+    verificada después: **los 8 gates en verde, RC=0**.
+- **Opciones:**
+  - **(a)** Dejarlo como está: paso explícito y runner conviviendo. **Es la opción segura:** es el
+    estado actual, está en verde y no toca ningún contrato. Coste: el workflow lleva un paso
+    redundante que hay que explicar a quien lo lea.
+  - **(b)** Cambiar la aserción para que compruebe que el CI invoca el runner y que su selección
+    incluye ese test. Queda **más fuerte** que hoy: comprobaría el resultado y no la forma. Coste:
+    toca un contrato del design system, y esos no se tocan sin decisión explícita.
+  - **(c)** Quitar la aserción. **No recomendable**: pierde la garantía de que esa frontera se
+    vigila en CI, que es justo lo que el contrato existe para sostener.
+- **Recomendación:** **(b)**, cuando haya ocasión. La aserción actual tiene un defecto real —premia
+  que el workflow escriba una cadena, no que ejecute la prueba—, y con el runner en medio ese
+  defecto va a volver a morder: cualquier reorganización futura del CI que siga ejecutando el test
+  volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
+- **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
+  el paso explícito, que es lo que el contrato pide hoy.
+- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.` · **ejecutada 2026-08-11** por la sesión de CI: `visual-ci-contract.test.mjs · **verificado por la coordinadora sobre `e66e7672`**: el paso explícito retirado (`grep -c` da 0), la cadena literal fuera del contrato, suite estática RC=0, y la mutación comprobada de forma independiente — cambiarle el nivel a la prueba a uno que el CI no corre pone el gate en RC=1 y lo restaura en RC=0. El candado nuevo muerde.` cruza el nivel que el workflow invoca con el que la prueba declara, y el paso explícito que la duplicaba se retiró del workflow. Puesta en rojo por tres vías que la aserción vieja no detectaba (nivel cambiado, etiqueta quitada, invocación quitada) y restaurada; suite estática en verde en los 8 gates.
+
+### D-CI-2 · ¿Los tests nuevos deben escribirse en PHPUnit, o conviven los dos estilos?
+
+- **Quién pregunta:** sesión del frente «PHPUnit incremental».
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si a partir de ahora una prueba nueva **tiene que** ser una clase de PHPUnit en
+  `tests/unit/`, o si sigue valiendo escribir un script `tests/test_*.php` como hasta hoy.
+- **Qué se midió:** la fase 2 dejó las dos suites funcionando bajo el mismo runner y con las mismas
+  garantías; ninguna de las dos está en desventaja técnica. Verificado: `--nivel=puro` corre 22
+  scripts **y** la clase de PHPUnit en una sola pasada, rc=0. Los 101 scripts existentes siguen
+  ejecutándose igual. Escribir el primer test con PHPUnit costó 18 casos y 40 aserciones en un
+  archivo; el equivalente en script habría exigido reimplementar contadores, `verificar()` y el
+  `exit()` a mano, sin proveedores de datos.
+- **Opciones:**
+  - **(a)** PHPUnit obligatorio para todo test nuevo. Unifica el estilo y hace que la suite vieja se
+    vacíe sola con el tiempo. Coste: quien solo quiera comprobar algo rápido tiene que aprender el
+    andamiaje de PHPUnit.
+  - **(b)** Los dos estilos conviven sin regla. **Es la opción segura y es el estado actual:** no
+    rompe nada y no obliga a nadie. Coste: dos formas de hacer lo mismo, y la elección se decide por
+    costumbre en vez de por criterio.
+  - **(c)** PHPUnit obligatorio solo para lógica pura, y scripts para lo que necesite datos o la
+    aplicación viva. Reconoce que los tests `db` y `http` del repo son más guiones de integración
+    que pruebas unitarias. Coste: la frontera hay que explicarla, y los casos dudosos vuelven.
+- **Recomendación:** **(c)**. Es lo que ya pasa de hecho: los 22 de nivel `puro` son los que se
+  benefician de proveedores de datos y aserciones ricas, y los de `db`/`http` son guiones que
+  dependen del estado de una base y encajan mal en el molde unitario. Pero es una regla de equipo,
+  no una decisión técnica: la impone quien va a escribir las pruebas.
+- **Qué quedó saltado esperando:** nada. Las dos suites funcionan y el CI corre ambas. No se migró
+  ningún test existente, que era condición del encargo.
 - **Estado:** `abierta`
-
----
-
-## Resueltas
 
 ### D-F1-1 · La misma falta se pinta como «crítico» en una pantalla y como «aviso» en la otra
 
@@ -312,3 +432,19 @@ de preguntar. Copia esta forma:
   solape, cierra el ICE 216.`
 
 ---
+
+## Resueltas
+
+Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
+que la citan y pierde el contexto que la rodea. Este índice es para encontrarlas rápido.
+
+| Id | Decisión | Quién la ejecuta |
+|---|---|---|
+| `D-1` | El informe adopta la numeración del spec | La sesión que mantiene `docs/reportes/estado-desarrollo.html` |
+| `D-2` | Triar los 30 tests por tandas, sin urgencia | Sin dueño asignado; se recoge cuando haya ocasión |
+| `D-CI-1` | La aserción comprueba que el CI ejecuta la prueba | **Sesión de CI** (asignada por el usuario el 2026-08-11) |
+| `D-F1-1` | Las dos severidades se quedan distintas, y se escribe por qué | Frente 1 · aplicado en `66facd23` |
+| `D-F1-2` | Familia nueva de tokens de fondo para destacar celdas, calibrada a 3:1 | Frente 1 · aplicado en `66facd23` |
+| `D-F1-3` | Apuntar los cuatro `--aia-*` al token real y retirar la reserva hex | **Sin aplicar**: ningún token conserva el color; vuelve al usuario |
+| `D-F1-4` | «Confirmar Compromisos» y «Actualizar Ejecución» pasan a primaria | Frente 1 · aplicado en `66facd23` |
+| `D-F1-5` | Añadir un token de espacio de 72 px (`--ds-space-18`) | Frente 1 · aplicado en `66facd23` |

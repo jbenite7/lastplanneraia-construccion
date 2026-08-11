@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+// @requiere: puro
+
 
 /**
  * Verifica que la puerta de servicio de desarrollo (`App\Core\DevDoor`) permanezca cerrada

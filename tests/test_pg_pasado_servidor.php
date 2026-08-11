@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// @requiere: datos-proyecto
+
 // «Editar el pasado del PG» debe existir en servidor, no solo como capacidad declarada
 // (EXPERIMENTS.md fila 26). Rol permitido: A. Rol denegado: R.
 //
