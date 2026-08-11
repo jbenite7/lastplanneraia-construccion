@@ -15,7 +15,16 @@ sostiene: **una sesión de ejecución nunca para** — anota, salta y continúa.
 Las dos primeras entradas son `D-1` y `D-2` porque se escribieron antes de esta regla; se dejan como
 están para no romper lo ya publicado.
 
-**Por qué:** varias sesiones añaden a esta cola desde ramas distintas y no se ven entre sí. Con
+**Añadir una entrada propia es seguro y no hace falta pedir permiso.** Lo que colisiona es editar
+lo que no escribiste: cambiar el estado de una entrada ajena, marcar una resolución o reordenar.
+Eso lo hace la coordinadora, que es quien habla con el usuario y sabe qué está decidido.
+
+*(Regla afinada el 2026-08-11. La primera versión decía «no toques la cola» a secas, y era
+demasiado: la sesión de CI añadió dos entradas impecables creyendo que infringía algo. Añadir es
+justo lo que la cola necesita.)*
+
+**Por qué el id lleva su origen:** varias sesiones añaden a esta cola desde ramas distintas y no se
+ven entre sí. Con
 números sueltos, dos que empiecen a la vez eligen ambas el siguiente número y colisionan al
 integrar. Pasó el 2026-08-10, el mismo día que se creó la cola: dos sesiones escribieron su `D-2`
 sin saberlo. Un id que lleva su origen no puede chocar sin coordinación previa, que es justo lo que
@@ -140,7 +149,7 @@ de preguntar. Copia esta forma:
   volverá a poner el gate rojo. Pero es un contrato ajeno a este frente y no urge: hoy está verde.
 - **Qué quedó saltado esperando:** no se tocó `visual-ci-contract.test.mjs`. El workflow quedó con
   el paso explícito, que es lo que el contrato pide hoy.
-- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.` · **ejecutada 2026-08-11** por la sesión de CI: `visual-ci-contract.test.mjs` cruza el nivel que el workflow invoca con el que la prueba declara, y el paso explícito que la duplicaba se retiró del workflow. Puesta en rojo por tres vías que la aserción vieja no detectaba (nivel cambiado, etiqueta quitada, invocación quitada) y restaurada; suite estática en verde en los 8 gates.
+- **Estado:** `resuelta 2026-08-11: (b) — la aserción pasa a comprobar que el CI ejecuta la prueba, no que la nombra. Queda más fuerte. Sin prisa, pero antes de que otra reorganización del CI la vuelva a poner roja.` · **ejecutada 2026-08-11** por la sesión de CI: `visual-ci-contract.test.mjs · **verificado por la coordinadora sobre `e66e7672`**: el paso explícito retirado (`grep -c` da 0), la cadena literal fuera del contrato, suite estática RC=0, y la mutación comprobada de forma independiente — cambiarle el nivel a la prueba a uno que el CI no corre pone el gate en RC=1 y lo restaura en RC=0. El candado nuevo muerde.` cruza el nivel que el workflow invoca con el que la prueba declara, y el paso explícito que la duplicaba se retiró del workflow. Puesta en rojo por tres vías que la aserción vieja no detectaba (nivel cambiado, etiqueta quitada, invocación quitada) y restaurada; suite estática en verde en los 8 gates.
 
 ### D-CI-2 · ¿Los tests nuevos deben escribirse en PHPUnit, o conviven los dos estilos?
 
