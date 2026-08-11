@@ -630,6 +630,16 @@ de preguntar. Copia esta forma:
   valiosa que el arreglo. `bdffe9da` movió después ese comentario «donde lee quien puede romperlo».
   Es decir: se hizo exactamente la opción (c) recomendada, y la contradicción del registro era solo
   que **nadie volvió a escribir el resultado**. Manda el código: la ficha se corrige, no al revés.
+- **Qué se hizo exactamente**, recuperado del commit `61364926` del checkout principal, que quedó sin
+  publicar y decía cosas que este registro no: **2 arreglados** con comportamiento verificado
+  (`ActivityMatcherService:465` y `ControlTowerService:2746`) y **4 anotados con su motivo escrito**
+  en `phpstan-baseline.neon` — `Database.php:955` (el falso positivo, con el aviso en mayúsculas de
+  no tocarlo), `Database.php:496` y `:502` (redundancias sin efecto en la capa que garantiza el
+  aislamiento por `project_id`), y `estado_programacion_intermedia.php:237` (legado, cambio mínimo
+  por `AGENTS.md`).
+- **Por qué el baseline creciendo de 51 a 55 entradas no es un silenciamiento:** cada entrada añadida
+  lleva su razón por escrito, que es exactamente lo que la opción (c) pedía. Se auditó el 2026-08-11
+  sobre `d5311fae` **precisamente por sospecha de lo contrario**, y la sospecha no se sostuvo.
 
 ### D-F1b-5 · El contrato obliga a declarar todos los gates «passed», o la suite entera se pone roja
 
