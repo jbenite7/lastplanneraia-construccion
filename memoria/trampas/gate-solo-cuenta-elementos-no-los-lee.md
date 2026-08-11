@@ -38,3 +38,31 @@ que solo una ejecución verdadera puede producir (comando, salida, hash del arte
 
 Relacionado: [[condicion-de-hecho-caduca-sin-aviso]] — la misma sesión midió que la condición de
 hecho del goal se apoyaba en esta evidencia falsa. Mapa del área: [[design-system]].
+
+## Precisión del 2026-08-11: no todo el cierre se avalaba a sí mismo
+
+La primera redacción de esta página, y varias notas que la citaron, decían que **el cierre del design
+system se avalaba a sí mismo**. Dicho así es más ancho de lo que los hechos aguantan, y lo corrigió
+la sesión del Frente 1b al intentar migrar los recibos.
+
+Lo que de verdad ocurría, separado:
+
+| Pieza | Qué hace |
+|---|---|
+| `tests/design-system/release-governance.test.mjs:68-74` | Comprueba `evidence.length > 0`. **Nunca abre el recibo.** Aquí sí, un stub pasa igual que una ejecución real. |
+| `scripts/design-system-closeout-contract.mjs` | **Es estricto**: exige `verifiedAt` con formato exacto, posterior a `generatedAt`, `null` en los no resueltos, y delega en `design-system-evidence-receipt.mjs`, que **resuelve el `sourceRef` a un commit y recalcula el `sha256`**. Y corre en la suite, vía `design-system-contracts.mjs`. |
+
+Así que el contrato **sí verificaba contenido y procedencia**. Lo que fallaba es que el artefacto al
+que apuntaba era un sello de 47 bytes: **la cadena de verificación era buena y el eslabón final
+estaba vacío.**
+
+Eso cambia el diagnóstico y lo hace más útil. No era «nadie comprobaba nada», que invita a
+reconstruirlo todo. Era **una comprobación que contaba en vez de leer, y un artefacto sin contenido
+que alimentaba a las demás**. Reconstruir el mecanismo que genera el recibo —que ahora deriva el
+resultado del código de salida en vez de aceptarlo como parámetro— arregla la cadena entera sin
+tocar lo que ya era estricto.
+
+**La lección de segundo orden:** al encontrar un gate que no mira, comprueba **cuáles de sus vecinos
+sí miraban** antes de declarar que el conjunto no verificaba nada. Un diagnóstico demasiado ancho
+lleva a reconstruir piezas sanas.
+
