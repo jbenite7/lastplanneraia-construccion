@@ -161,3 +161,33 @@ baseline avisaba de que ya no describía el código— y se **retiró** en vez d
 Antes se comprobó la hipótesis grave, que era que la puntuación por ubicación del emparejador
 estuviera inerte: **es falsa**, las cuatro ramas se ejecutan (verificado invocando el método:
 1.000 / 0.300 / 0.700 / 0.500). Lo que sobraba era media condición ya garantizada por la anterior.
+
+
+## La causa del rojo de `runtime`, medida el 2026-08-11
+
+El fallo de `design-system-lab.mjs:252` («severity and urgency blocks keep distinct semantic
+backgrounds») tiene causa concreta:
+
+```
+Expected: "rgb(67, 20, 20)"   // #431414 — el ancla crítica de la escala de estado
+Received: "rgb(69, 42, 13)"   // #452a0d — --ds-state-tint-orange
+```
+
+Es decir: **el bloque que debería pintarse con el crítico se está pintando con el tinte naranja.**
+El último commit que tocó esa escala es `fff71ad9` (**2026-08-03**), «la escala de celda deriva de la
+de estado y el contrato se mide en runtime» — **anterior a todo este programa**: el Frente 1 y el 1b
+tienen cero commits en `views/design-system/families/states-feedback.php` y `public/css/design-system/lab.css`.
+
+**Y ese mismo commit dejó escrita la trampa que lo explica**, en
+`memoria/trampas/gate-estatico-no-ve-tokens-rotos.md`: un gate que lee archivos da verde con un token
+que apunta a una variable inexistente, porque la declaración es sintácticamente impecable y el fallo
+solo ocurre **al resolver la cascada**. Su conclusión —«todo contrato sobre valores resueltos
+necesita superficie de runtime»— es exactamente por lo que existe el carril `runtime`… **que lleva
+rojo desde entonces declarando `passed`.**
+
+O sea: alguien vio el problema, escribió el carril correcto para cazarlo, dejó la lección apuntada, y
+el carril nunca se ejecutó. **Es el mismo patrón que la regresión de las cabeceras**, en la otra
+punta del programa: el instrumento existe y nadie lo mira.
+
+Arreglar el mapeo de severidad no es trabajo de esta medición —toca la escala semántica del design
+system, que es capa contractual—, pero la causa queda localizada para quien lo tome.
