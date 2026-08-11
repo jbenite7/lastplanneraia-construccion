@@ -45,19 +45,19 @@
     {
       "id": "runtime-budgets",
       "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "status": "blocked",
+      "verifiedAt": null,
       "blocking": true,
       "evidence": [
         {
           "summary": "Objective receipt for runtime-budgets",
           "commandId": "ds.runtime-budgets.v1",
           "command": "npm run test:runtime-budget:check",
-          "exitCode": 0,
+          "exitCode": 1,
           "artifact": "docs/design-system/evidence/runtime-budgets.json",
-          "artifactSha256": "6632754f81b811a13a9a5e9c2dbc16ffd47cec533f3372af3ccfc9e6118f2e87",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
+          "artifactSha256": "442bab51ffec92d3a0fcc6eff6cc9939d8d2735920591ada65271fe739c90e04",
+          "sourceRef": "042445a68f6794fc6d3fbadb7cefac689f98c7fe",
+          "sourceFingerprint": "0ec76acec1c8127e864cdbd87147b903ea26797b8a72b823af62b1a0daa63d00",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
@@ -123,19 +123,19 @@
     {
       "id": "full-app-flow",
       "kind": "automatic",
-      "status": "passed",
-      "verifiedAt": "2026-07-15T12:00:00Z",
+      "status": "blocked",
+      "verifiedAt": null,
       "blocking": true,
       "evidence": [
         {
           "summary": "Objective receipt for full-app-flow (roles + persistence + restoration)",
           "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
-          "exitCode": 0,
+          "exitCode": 1,
           "artifact": "docs/design-system/evidence/pg-roles.json",
-          "artifactSha256": "3e537fb1d5c9d04d1109c529c674b3071e862d41fa45950e8939c65b1bd3f386",
-          "sourceRef": "8b79bfd2dcbea2aa24f9fa6655749f683191fd49",
-          "sourceFingerprint": "43d5a2747a8defdd3aa0e9c8bb6f1fdca689d29f52c814ee4cb96eca1babde27",
+          "artifactSha256": "566c4b672ddd6a9b667719ad43a3624c0ee2ac8788c343e887eee1fb99032cd9",
+          "sourceRef": "042445a68f6794fc6d3fbadb7cefac689f98c7fe",
+          "sourceFingerprint": "0ec76acec1c8127e864cdbd87147b903ea26797b8a72b823af62b1a0daa63d00",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]
