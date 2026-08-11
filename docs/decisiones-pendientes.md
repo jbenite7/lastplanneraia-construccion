@@ -431,6 +431,50 @@ de preguntar. Copia esta forma:
   /programacion-semanal (proyecto Prueba, 15 filas) gap de 7,20px. overlap: false en ambas — cero
   solape, cierra el ICE 216.`
 
+### D-F1-6 · La cascada necesita una decisión de forma, no más reparaciones
+
+- **Quién pregunta:** sesión de ejecución del Frente 1, al cerrarlo (fase 9, `steve-jobs-design-review`).
+- **Fecha:** 2026-08-11
+- **Qué se decide:** los 28 arreglos del Frente 1 subieron el suelo de cada pantalla, pero **no
+  cambiaron la forma del recorrido**. La pregunta es qué hacer con eso: ¿se abre un frente para
+  **acortar y quitar**, o se acepta la cascada como está y el programa sigue al móvil?
+- **Qué se midió** (revisión en frío sobre `66facd23`, 1180×820 dark, Da Porto, por la puerta de
+  servicio). Veredicto **6/10 — «NO ESTÁ HECHO»**; pasan 4 de 7 filas y fallan tres, todas de forma:
+  - **Camino hasta el primer dato útil: 13 pasos, 4 pantallas y una semana de calendario.** Los 28
+    arreglos **no quitaron ni uno**.
+  - **No se quitó nada en todo el ciclo.** Los 28 son **28 adiciones** — un chip, una etiqueta, un
+    sello, un contador, un anuncio. Un ciclo entero sin una sola resta.
+  - **La página `404` sigue devolviendo 52 bytes sin un solo enlace.** Era la **única fila
+    bloqueante** del roadmap del 2026-08-05 y pasaron 28 arreglos por encima sin tocarla.
+  - Densidad medida: **49 controles por encima del dato**, y **18 de los 21 chips leían `(0)` a la
+    vez**. Programación Intermedia tiene **20 controles sobre una fila de datos**.
+  - Conclusión textual de la revisión: **«lista de parches bien hechos», no producto.** Y los parches
+    son buenos —arreglados en el sitio correcto, con tres fichas cerradas midiendo que el defecto ni
+    existía—; lo que no cambió es la **forma**.
+- **Cómo se ve, sin jerga:** es una casa a la que se le lijaron y barnizaron todas las puertas sin
+  cambiar que para llegar a la cocina hay que pasar por cuatro habitaciones. Cada puerta abre mejor
+  que antes. El camino es el mismo.
+- **Opciones:**
+  - **(a) Un frente corto de forma, antes del móvil.** Tres cosas concretas y acotadas: las páginas
+    de error dentro del shell (dos plantillas sobre el shell que ya existe), unificar los tres
+    vocabularios de estado de la cascada, y **una lista de qué se quita**. Retrasa el móvil.
+  - **(b) Meterlo dentro del Frente 2 (móvil).** El móvil ya reescribe cómo se presentan esas
+    pantallas, así que decidir la forma ahí evita hacerlo dos veces. Riesgo: el móvil tiene su propio
+    alcance y esto puede diluirse en él.
+  - **(c) Aceptar la cascada como está y seguir.** Defendible: el suelo subió de verdad y el
+    despliegue lleva 1.255 commits de retraso. Coste: la próxima revisión en frío dirá lo mismo.
+  - **Sea cual sea, lo barato y sin discusión es la `404`**: dos plantillas dentro del shell que ya
+    existe. Puede hacerse en cualquiera de las tres.
+- **Recomendación:** **(a), pero muy corto**, y con la regla que la propia revisión echa en falta:
+  **que el frente no pueda cerrarse sin haber quitado algo.** Un ciclo entero sin una sola resta es
+  el hallazgo, no el síntoma. Si hay que elegir una sola cosa, la `404`: es barata, está declarada
+  bloqueante desde agosto, y es la única que hoy echa al usuario fuera del producto.
+- **Qué quedó saltado esperando:** cinco hallazgos del backlog quedan con dueño **«pendiente de
+  `D-F1-6`»** — el acuse de Intermedia que nunca aparece, el estado vacío de Actualizar Cronograma,
+  el selector de semana duplicado, los tres vocabularios de chips y el alto máximo de fila. Ninguno
+  bloquea al Frente 1b.
+- **Estado:** `abierta`
+
 ---
 
 ## Resueltas
