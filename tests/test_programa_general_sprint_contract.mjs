@@ -147,11 +147,26 @@ assert.match(
   /\.pdc-legend-item\s*\{[^}]*transition:\s*transform var\(--ds-motion-fast\),\s*box-shadow var\(--ds-motion-fast\) !important;/s,
   'los chips no deben interpolar color o superficie durante el cambio de tema',
 );
-assert.match(
-  buttonsCss,
-  /\.pdc-legend-item\s*\{\s*display:\s*inline-flex !important;[\s\S]*?white-space:\s*normal !important;[\s\S]*?overflow-wrap:\s*normal !important;[\s\S]*?word-break:\s*normal !important;/,
-  'los chips canónicos deben envolver entre palabras sin fragmentarlas al ampliar',
-);
+// D-GAC-3 (2026-08-12): esto exigía las cuatro declaraciones CON `!important`. El frente
+// `buttons-important-leyenda` retiró tres de esos `!important` a propósito el 2026-08-11, con su
+// sonda escrita en buttons.css:52-58, y dejó al contrato midiendo el mecanismo en vez del
+// resultado — el mismo defecto que resolvió `D-CI-1`. Lo que este contrato quiere garantizar es
+// que el chip no fragmente palabras, así que ahora exige los VALORES y le da igual cómo ganen.
+// Se conservan las cuatro declaraciones, no tres: quitar `display` del contrato sería perder
+// cobertura de paso, y no es lo que la decisión pedía retirar.
+const legendChipRule = (buttonsCss.match(/^\.pdc-legend-item\s*\{[\s\S]*?^\}/m) || [''])[0];
+for (const [property, value] of [
+  ['display', 'inline-flex'],
+  ['white-space', 'normal'],
+  ['overflow-wrap', 'normal'],
+  ['word-break', 'normal'],
+]) {
+  assert.match(
+    legendChipRule,
+    new RegExp(`(?:^|;|\\{)\\s*${property}:\\s*${value}\\s*(?:!important)?\\s*;`, 'm'),
+    `los chips canónicos deben declarar ${property}: ${value} para envolver entre palabras sin fragmentarlas al ampliar`,
+  );
+}
 assert.match(
   coreCss,
   /\.aia-btn\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/,
