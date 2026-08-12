@@ -254,6 +254,38 @@ falla.
 
 Relacionado: [[el-dom-dice-que-existe-no-que-se-ve]].
 
+### Comprueba la premisa del encargo, no solo los datos que contiene
+
+*(Regla del 2026-08-11, levantada por la sesión que se la encontró.)*
+
+**Antes de ejecutar un encargo, comprueba que sigue haciendo falta.** No solo los datos que trae:
+**el encargo mismo.**
+
+Ese día la coordinadora asignó un frente para aplicar una decisión del usuario sobre el mapeo de
+severidad. La sesión de ejecución verificó los cuatro puntos antes de escribir spec, y encontró que
+**el trabajo ya estaba hecho y publicado desde hacía horas** — el commit incluso llevaba la decisión
+escrita en su mensaje. Peor: **estaba en el contexto de arranque de la propia coordinadora**, en la
+lista de commits recientes, desde el primer minuto.
+
+Sin esa comprobación, la sesión habría reescrito una excepción que ya existía **y estaba mejor
+explicada** de lo que el encargo pedía.
+
+**Lo que falla aquí no es un dato dentro de la tarea: es la tarea.** Un encargo bien redactado, con
+sus condiciones y sus límites, no lleva ninguna marca de estar caducado.
+
+**Dos comprobaciones baratas antes de arrancar:**
+
+- **En un frente que nace de un gate rojo**, compara la **fecha del recibo** con la del **último
+  commit del área**. Un gate rojo puede serlo porque algo está roto o porque **nadie lo volvió a
+  medir tras arreglarlo**, y las dos cosas se ven igual desde fuera. Ese día pasó con `runtime` y con
+  `runtime-budgets`: cuarenta minutos entre el recibo y el arreglo.
+- **`git log --grep`** con la decisión que vas a aplicar. Si alguien ya la aplicó, su mensaje de
+  commit probablemente la nombra.
+
+**Y esto obliga sobre todo a quien reparte**, no a quien ejecuta: mirar lo que ya se tiene delante
+antes de encargarlo. La coordinadora falló dos veces el mismo día —una premisa caducada y un encargo
+entero sobre trabajo ya hecho— y las dos las paró quien lo recibió.
+
 ## Qué audita la coordinadora
 
 1. **Que los gates sigan verdes** — suite estática del design system, PHPStan, paridad RBAC, lint de
