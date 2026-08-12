@@ -272,6 +272,39 @@ verde en Actions** — el `RC=0` local no lo sustituye, porque el rojo era de CI
 
 ---
 
+### ## Cierre de F-0 — anotado el 2026-08-12 (paso 9)
+
+**Sha publicado:** `65c44435` (el cambio, en `b10a3298`). **Sha verificado:** `65c44435`, medido
+después de integrar.
+
+**Condición de hecho, con lo que se cumplió y lo que no:**
+
+- ✅ La aserción de `:150` mide los valores y no el `!important`. `node tests/test_programa_general_sprint_contract.mjs` → **`RC=0`**, primera vez que el archivo pasa entero desde el **2026-07-17**.
+- ✅ `design-system-static` en CI → **`success`** (corrida `31561660136`), también primera vez desde el 2026-07-17. Con ello **`design-system-runtime` se ejecutó por primera vez en un mes**.
+- ❌ **La corrida completa NO está verde.** Falla en «Run laboratory gates» por `D-GAC-4`, que **el plan preveía por escrito antes de que ocurriera**: «si el static pasa pero el runtime falla, eso no reabre esta fase». Se cierra en su alcance, **no se declara CI verde**.
+
+**Mutaciones ejecutadas (3, no 1):** quitar el valor del bloque → rojo, y cae la aserción que lo
+nombra; ponerle `!important` → sigue verde, luego la regla no se invirtió; el valor **fuera** del
+bloque → rojo, que es lo que descubre una regex laxa.
+
+**Comprobación en navegador**, 1180×820 dark, `/programa-general` (Da Porto): **7 chips**, los 7 con
+`overflow-wrap`, `word-break` y `white-space` en `normal`. Ganan sin `!important`.
+
+**Lo que destapó, y vale más que el arreglo:** el gate `runtime` llevaba un mes con un recibo verde
+**honesto** que solo valía en la máquina que lo midió. Es `D-GAC-4`, abierta.
+
+**Hallazgos reportados en contra del propio trabajo:** `display` computa `flex`, no `inline-flex` —
+esa línea del contrato vigila una declaración inerte, preexistente, **no arreglada de paso**.
+
+**Excepción de protocolo:** la implementó y la avaló **la misma sesión coordinadora**. Registrada en
+`D-GAC-3`. No es el modo normal y no debe tomarse como precedente.
+
+**Dos errores propios en el tramo, anotados para que no se pierdan:** se commiteó una vez con el gate
+en rojo por encadenar la verificación al `commit`; y se dio por barata una decisión (`D-GAC-4` (a))
+que rompía un contrato, revertida en `949bb644` sin publicar.
+
+---
+
 ## Fase F-AB · Cablear los dos gates bloqueados al CI que ya existe
 
 **Frente:** `gates-al-ci`. **Cierra:** `runtime-budgets` y `full-app-flow` en verde, 8/8.
