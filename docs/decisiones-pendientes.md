@@ -1006,7 +1006,20 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   tentador precisamente porque está a la vista y luce; por eso conviene que lo decida alguien que no
   esté dentro del frente.
 - **Qué quedó saltado esperando:** `display` de `buttons.css:970` y quienquiera que lo esté pisando.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-12: la opción 2 la eligió el usuario — y ya estaba ejecutada antes de
+  que nadie la marcara.` Medido por la coordinadora el 2026-08-12, antes de asignar la fase, para no
+  repetir el encargo caducado: **el `display: inline-flex !important` de `:970` ya no existe.** Lo
+  retiró `0a228a39` (2026-08-11), verificado ancestro de `origin/main` con
+  `git merge-base --is-ancestor`. Y lo hizo mejor de lo que esta ficha pedía: retiró **los dieciséis**
+  del chip de golpe, midió el valor computado, **repuso los seis que sí hacen trabajo** y verificó en
+  las tres pantallas a 1180 y 900 — idéntico en las 17 propiedades observadas. La lista heredada de
+  «cuatro que ganan» se quedaba corta por dos (`flex-shrink` y `transition`), y **medir en una sola
+  pantalla habría dejado dos regresiones fuera del radar**. Al chip le quedan seis `!important`, los
+  seis medidos como necesarios.
+  **Consecuencia que cierra el círculo:** tres de los diez retirados —`display`, `overflow-wrap`,
+  `word-break`— eran justo los que `test_programa_general_sprint_contract.mjs:150` exigía con
+  `!important`. Ese contrato se rompió **el día en que alguien hizo lo correcto**, y quedó escondido
+  detrás de otros dos rojos hasta hoy. Ver `D-GAC-3`.
 
 
 ### D-GAC-1 · Dos contratos del repo se contradicen y llevan el CI un mes en rojo
@@ -1142,3 +1155,4 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-GAC-1` | `!important` permitido dentro de `@layer`, prohibido fuera — para desbloquear el CI | Fase **F-0** del plan de cierre, frente `ci-en-verde` |
 | `D-GAC-2` | La regex de los chips tolera clases intermedias; el markup no se toca | Fase **F-0**, Tarea 2b · mismo frente |
 | `D-GAC-3` | La aserción mide los valores, no el `!important` — y se comprueba en navegador | Fase **F-0**, Tarea 2c · mismo frente |
+| `D-BTN-1` | Investigar y retirar lo que no gana — **ya ejecutado** en `0a228a39` | Frente `buttons-important-leyenda` · F-D se retira del plan |

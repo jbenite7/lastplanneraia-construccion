@@ -11,10 +11,10 @@ publicado en producción.
 
 **Spec:** [2026-08-11-plan-cierre-hasta-produccion-design.md](../specs/2026-08-11-plan-cierre-hasta-produccion-design.md)
 
-**Arquitectura:** **cinco** fases, cada una **un frente** con worktree propio, ciclo de visto y el
+**Arquitectura:** **cuatro** fases vivas (F-D se retiró el 2026-08-12, ya estaba hecha), cada una **un frente** con worktree propio, ciclo de visto y el
 gate de nueve pasos de `AGENTS.md` §Publicación. Ninguna empieza hasta que la anterior está publicada
 **y anotada** (paso 9). El orden no es estético: **F-0** devuelve el CI a verde —sin él nada de lo
-que sigue se puede verificar—, F-AB deja los ocho gates verdes, y solo entonces el verde de F-C y F-D
+que sigue se puede verificar—, F-AB deja los ocho gates verdes, y solo entonces el verde de F-C
 significa algo.
 
 > **Cambio del 2026-08-12.** Este plan nació con cuatro fases y empezaba por F-AB. La sesión de F-AB
@@ -22,8 +22,8 @@ significa algo.
 > exactamente lo que esa tarea existía para provocar. Se añadió **F-0** delante. El plan funcionó por
 > donde se esperaba que fallara.
 
-**Stack tocado:** GitHub Actions + Docker Compose (F-AB), JSON Schema + Node test runner (F-C), CSS
-en capas (F-D), rutina de SiteGround (F-E).
+**Stack tocado:** GitHub Actions + Docker Compose (F-0, F-AB), JSON Schema + Node test runner (F-C),
+rutina de SiteGround (F-E).
 
 ## Restricciones globales
 
@@ -679,96 +679,24 @@ realmente se hizo, y se añade su fila al índice de resueltas del final. **Corr
 
 ---
 
-## Fase F-D · `D-BTN-1` — la resta del `!important`
+## Fase F-D · RETIRADA el 2026-08-12 — ya estaba hecha
 
-**Frente:** `important-que-no-gana`. **Decisión del usuario:** opción **(2)**, investigar y retirar
-los dos si procede.
+**No la asignes.** La coordinadora comprobó su premisa antes de repartirla, y estaba caducada: el
+`display: inline-flex !important` de `buttons.css:970` que esta fase iba a retirar **ya no existe**.
 
-**Qué está medido** (sobre `f1f5bd87`, 1180×820 dark): `public/css/buttons.css:970` declara
-`display: inline-flex !important` para `.pdc-legend-item`, y el valor **computado** en Programa
-General, Intermedia y Semanal es `flex`. Ese `!important` no le gana a nadie.
+Lo hizo `0a228a39` (2026-08-11), verificado ancestro de `origin/main` con
+`git merge-base --is-ancestor`. Y lo hizo **mejor de lo que esta fase pedía**: retiró los **dieciséis**
+`!important` del chip de golpe, midió el valor computado, **repuso los seis que sí hacen trabajo** y
+verificó en las tres pantallas a 1180 y 900, idéntico en las 17 propiedades observadas. La lista
+heredada de «cuatro que ganan» se quedaba corta por dos —`flex-shrink` y `transition`—, y **medir en
+una sola pantalla habría dejado dos regresiones fuera del radar**.
 
-**Riesgo declarado:** entra en la cascada de capas (`memoria/trampas/css-layer-cascade.md`), donde
-para `!important` el orden de capas **se invierte**. El frente que lo levantó excluyó esa zona a
-propósito. Se mide, no se supone.
+**El cierre del círculo:** tres de los diez retirados —`display`, `overflow-wrap`, `word-break`— eran
+exactamente los que `test_programa_general_sprint_contract.mjs:150` exigía con `!important`. Ese
+contrato **se rompió el día en que alguien hizo lo correcto**, y estuvo escondido detrás de otros dos
+rojos hasta el 2026-08-12. Es lo que resuelve `D-GAC-3`, en la Tarea 2c de F-0.
 
-**Archivos:** `public/css/buttons.css` y la hoja de quien lo pise.
-
-### Tarea 1: Medir el estado de partida antes de tocar nada
-
-- [ ] **Paso 1: abrir sesión por la puerta de servicio**
-
-```
-http://localhost:8081/dev/entrar?u=test.A&p=<Proyecto_Proceso>
-```
-
-Nunca por `/login`.
-
-- [ ] **Paso 2: leer el valor computado en las tres pantallas**
-
-A 1180×820, tema dark, en `/programa-general`, `/programacion-intermedia` y
-`/programacion-semanal`, sobre un `.pdc-legend-item` real. Anota el valor y **cuántos elementos
-encontraste**.
-
-**Trampa medida:** si el selector devuelve cero elementos, eso **no** es «no se aplica» — es «no lo
-encontraste». Distínguelo por escrito. Igual que `elementFromPoint` fuera del viewport devuelve
-`null`, que no significa «está tapado».
-
-- [ ] **Paso 3: averiguar qué regla gana**
-
-Usa la lista de reglas coincidentes del navegador, no la deducción. Anota el archivo, la línea y la
-capa de la ganadora.
-
-- [ ] **Paso 4: dejarlo escrito antes de cambiar nada**
-
-Es la línea base contra la que se compara después.
-
-### Tarea 2: Retirar lo que sobre, con la salida honesta ya prevista
-
-- [ ] **Paso 1: decidir con lo medido, no con lo esperado**
-
-- Si la regla ganadora **existe solo para vencer a este `!important`**: se retiran **las dos**.
-- Si la ganadora **hace falta por sí misma**: se retira **solo la declaración muerta** de
-  `buttons.css:970` y **se escribe por qué** junto a la regla. Eso **no** incumple la decisión del
-  usuario: es lo que la medición permite. Dilo en la entrega.
-- Si la medición no distingue los dos casos: **escala a la coordinadora.** No elijas el conservador y
-  lo anotes como duda — anotar no es consultar.
-
-- [ ] **Paso 2: aplicar el cambio**
-
-- [ ] **Paso 3: volver a medir las tres pantallas**
-
-Mismo viewport, mismo tema, mismo selector. Esperado: **el mismo valor computado que en la Tarea 1**.
-Cualquier diferencia es una regresión visual, y esas necesitan aprobación explícita.
-
-- [ ] **Paso 4: la suite que cubre esta zona**
-
-```bash
-npm run test:design-system:static
-echo "RC=$?"
-```
-
-- [ ] **Paso 5: commit**
-
-```bash
-git add public/css/buttons.css
-git commit -m "refactor(css): retira el !important de .pdc-legend-item, que no ganaba a nadie"
-```
-
-### Tarea 3: Cerrar `D-BTN-1` y entregar
-
-- [ ] **Paso 1: marcar la ficha** en `docs/decisiones-pendientes.md` con lo que realmente se hizo, y
-  añadir su fila al índice de resueltas.
-
-- [ ] **Paso 2: comprobar que la cola queda vacía**
-
-```bash
-grep -c "Estado:\*\* \`abierta\`" docs/decisiones-pendientes.md
-```
-
-Esperado: `0`.
-
-- [ ] **Paso 3: los nueve pasos del gate de cierre, y la entrega con sus seis campos.**
+Ficha cerrada: `D-BTN-1`.
 
 ---
 
@@ -823,7 +751,7 @@ servidor ni desplegar otros cambios. Una publicación aprobada aprueba **esa** p
    real.
 2. `grep -c "Estado:\*\* \`abierta\`" docs/decisiones-pendientes.md` → `0`.
 3. El trabajo está en producción, con smoke del flujo afectado y respaldo previo verificable.
-4. Las cinco fases tienen su `## Cierre` anotado.
+4. Las fases vivas tienen su `## Cierre` anotado.
 
 **Fuera de alcance, dicho explícitamente:** el frente de forma de `D-F1-6` (páginas de error dentro
 del shell, unificar los vocabularios de estado, y la regla de no cerrar sin haber quitado algo) va
