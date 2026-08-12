@@ -18,7 +18,17 @@ const coreCss = fs.readFileSync(path.join(root, 'public/css/design-system/core.c
 const buttonsCss = fs.readFileSync(path.join(root, 'public/css/buttons.css'), 'utf8');
 const bridgeCss = fs.readFileSync(path.join(root, 'public/css/design-system/adapters/legacy-bridge.css'), 'utf8');
 
-const filterMarkup = view.match(/class="aia-chip pg-filter-chip[^"]*"[^>]*data-filter="[^"]+"[^>]*>/g) || [];
+// D-GAC-2 (2026-08-12): esto exigía `aia-chip` y `pg-filter-chip` CONTIGUAS y contaba 0 de 14
+// desde 47dda844 (2026-08-04), cuando el markup adoptó `pdc-legend-item` —la clase canónica del
+// chip— entre ambas. Cedió la prueba, no el markup. Se comparan tokens de clase en vez de una
+// cadena literal: así el contrato sigue exigiendo las dos clases pero no el orden ni la vecindad,
+// que es lo que caducaba con cada variante legítima.
+const filterMarkup = [...view.matchAll(/<[^>]*class="([^"]*)"[^>]*data-filter="[^"]+"[^>]*>/g)]
+  .filter(([, classAttribute]) => {
+    const classes = classAttribute.trim().split(/\s+/);
+    return classes.includes('aia-chip') && classes.includes('pg-filter-chip');
+  })
+  .map(([tag]) => tag);
 
 // El shell canonico admite modificadores: PG lleva `aia-shell--sidebar` desde
 // da792e8 («Programa General usa el shell sidebar»). Se asierta la presencia de
@@ -38,7 +48,42 @@ assert.doesNotMatch(view, /handsontable\.full\.min\.css/, 'PG no debe cargar el 
 assert.doesNotMatch(css, /--spacing-/, 'PG solo puede consumir tokens semánticos --ds-*');
 assert.doesNotMatch(css, /\.btn-pdc-modern/, 'PG no debe redefinir la primitiva de botón');
 assert.doesNotMatch(css, /\.handsontable|\.ht(?:Core|_master|Dropdown|Filters)/, 'PG no debe contener overrides del vendor');
-assert.doesNotMatch(css, /!important/, 'PG no debe usar important local');
+// D-GAC-1 (2026-08-12): `!important` FUERA de toda `@layer` sigue prohibido; DENTRO se
+// permite. Las reglas de estado de PG (`.is-zero`, programa-general.css:619-624) viven en
+// `@layer components` precisamente porque `module.components` es una capa posterior y en
+// declaraciones normales ganarían; prohibirlo sin excepción dejaba el CI en rojo desde el
+// 2026-07-17 sin que hubiera defecto. Se quitan los comentarios antes de mirar, porque el
+// que razona esas tres declaraciones cita la palabra fuera de la capa.
+const cssOutsideLayers = (() => {
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const openLayer = /@layer\b[^{;]*\{/g;
+  let outside = '';
+  let index = 0;
+  for (;;) {
+    openLayer.lastIndex = index;
+    const found = openLayer.exec(withoutComments);
+    if (!found) {
+      outside += withoutComments.slice(index);
+      return outside;
+    }
+    outside += withoutComments.slice(index, found.index);
+    let depth = 1;
+    let cursor = openLayer.lastIndex;
+    while (cursor < withoutComments.length && depth > 0) {
+      const char = withoutComments[cursor];
+      if (char === '{') depth += 1;
+      else if (char === '}') depth -= 1;
+      cursor += 1;
+    }
+    assert.equal(depth, 0, 'la CSS de PG tiene una @layer sin cerrar: el contrato no puede leerla');
+    index = cursor;
+  }
+})();
+assert.doesNotMatch(
+  cssOutsideLayers,
+  /!important/,
+  'PG solo puede usar !important dentro de una @layer, nunca fuera de toda capa',
+);
 assert.doesNotMatch(css, /overflow-wrap:\s*anywhere|word-break:\s*break-word/, 'PG nunca debe fragmentar palabras');
 assert.match(css, /^@layer module\s*\{/, 'la CSS piloto debe quedar contenida en layer module');
 
