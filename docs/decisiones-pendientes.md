@@ -983,7 +983,31 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   se apoya en que es «un término que la obra ve a diario». Medido sobre `44917bc1`, **no se ve en
   ninguna parte**: la pregunta se cae con la premisa. No cambio su estado —eso lo hace la
   coordinadora—, pero conviene leerlas juntas.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-12: (a) — superficie obligatoria, y ejecutada.` El esquema exige
+  `surface` (`state-semantics.schema.json`, `required: [module, surface, states]`), los **10** módulos
+  vivos la declaran con su ruta medida en `public/index.php`, y el gate comprueba que **esa ruta
+  existe de verdad**, no solo que el campo esté.
+
+  **Corrección a esta ficha:** decía «los trece módulos». Eran **12** al escribirla —el
+  decimotercero era el fantasma que ese mismo frente retiró— y quedan **10**.
+
+  **Se retiran `contratos` y `listado-actividades`**, la interfaz del PDC v1 eliminado el 2026-08-04:
+  `grep -c` da 0 en `public/index.php` y `shell_sidebar.php:93-96` lo dice por escrito.
+  **Cobertura que se pierde, medida: 7 estados** — que no cubrían nada, porque no los pintaba nadie.
+  El matiz que justifica la fase entera: dos de esas etiquetas —«Cambios guardados», «Error de
+  conexión»— **sí existen** en el repo, pero en `ProfesionalesApiController`,
+  `SubcontratistasApiController` y el laboratorio. **Por la etiqueta sola no se sabe de quién es un
+  estado.**
+
+  **Cuatro mutaciones ejecutadas:** (A) módulo con superficie inexistente → rojo; (B) sustituir un
+  módulo real por uno inventado **manteniendo el total en 10** → rojo, nombrando al intruso; (C)
+  quitarle la superficie a un módulo real → rojo; (D) lo mismo contra el validador de esquema → rojo,
+  «falta el campo obligatorio surface». La **(B)** es la que vale: el censo pasó de `length === N` más
+  un bucle de `includes` a un `deepEqual` del conjunto, así que ahora **cambiar qué se cuenta también
+  cae**, no solo cambiar cuántos.
+
+  Ejecutada por la coordinadora bajo la autonomía delegada, con la misma excepción registrada en
+  `D-GAC-3`.
 
 
 ### D-BTN-1 · Un `!important` que no gana, y quizá la regla que lo pisa tampoco hace falta
@@ -1185,6 +1209,253 @@ por costumbre.
   git. Pero `(c)` toca el andamiaje del plugin, que es otro repositorio y otro mando.
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada por esto.
 - **Estado:** `abierta`
+
+### D-COORD-2 · El mapa de estado devuelve 40 filas y ningún dato dentro
+
+- **Quién pregunta:** levantado por la sesión `Linen mode y mobile + tablet` fuera de su encargo, el
+  2026-08-12, mientras esperaba turno. **No verificado aún por la coordinadora**, y así se declara:
+  lo que sigue es la medición de esa sesión, atribuida, no adoptada como propia.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si el mapa de estado del plugin se arregla, se declara inservible en este repo, o
+  se retira de la documentación como fuente.
+- **Qué midió esa sesión** (sobre `58f7263c`): `cas-estado.sh` devuelve **RC=0** y lista **40
+  frentes**; los 40 salen con señal «sin rama resoluble» y avance «❓ no medible».
+- **Por qué importa, y no es que falte una función:** el script **sale en verde**. Devuelve cuarenta
+  filas con forma de inventario y ningún dato dentro. **Un mapa vacío se nota; uno que responde a todo
+  «no medible» con RC=0 se lee como si midiera** y se cita como fuente. Es la misma criatura que
+  atravesó toda la jornada del 2026-08-11 —el instrumento que ante «no hay dato» devuelve algo con
+  forma de resultado— en su versión más grande.
+- **Lo que NO se sostiene, y conviene dejarlo escrito:** esa sesión añadió que «la auditoría de la
+  coordinadora depende de él». **Es falso.** La coordinadora no lo usó ni una vez en toda la jornada:
+  midió contra git directamente (`git log`, `git status -sb`, `git worktree list`,
+  `merge-base --is-ancestor`) y contra la salida real de cada sesión. El mapa ciego **no deja ciega a
+  la coordinación**, y creerlo podría llevar a alguien a pararse pensando que se quedó sin
+  instrumentos.
+- **Opciones:** (a) arreglar la resolución de ramas; (b) que el script **falle ruidosamente** cuando
+  no puede resolver, en vez de devolver RC=0 con filas vacías —es la corrección de fondo, y vale
+  aunque (a) no se haga—; (c) declararlo no aplicable a este repo y quitarlo de la documentación.
+- **Recomendación:** **(b) primero**, y luego (a). Un instrumento que no puede medir debe decirlo con
+  un código de salida distinto de cero; mientras devuelva verde, cualquier arreglo posterior seguirá
+  siendo indistinguible de un fallo silencioso.
+- **De quién es:** el script vive en el repositorio `coordinating-agent-sessions`, **otro mando**.
+  Aquí solo se registra el hallazgo; no se toca desde `lps-aia`.
+**Verificado de primera mano por la coordinadora el 2026-08-12, sobre `ad1551cb`.** Antes esta ficha
+recogía la medición de otra sesión, atribuida y sin comprobar. Comprobada, y **es peor de lo que
+decía**:
+
+- `cas-estado.sh` da **RC=0** y lista **40 frentes**; **39** salen «sin rama resoluble / ❓ no
+  medible». Eso confirma lo reportado.
+- **Lo nuevo, y es lo grave:** el mapa **contradice el estado real de los dos únicos frentes de los
+  que hay conocimiento directo**. Marca `ci-en-verde` como **`ENCOLADA`** y `gates-al-ci` como
+  **`ENTREGADA`, 3 de 8** — y los dos están **cerrados y publicados** en `origin/main`. La fila de
+  `gates-al-ci` mide una **rama vieja de worktree**, no el trabajo que se publicó.
+- Es decir: no es solo que se quede sin datos. **Emite fases concretas y equivocadas**, con la misma
+  cara que las correctas. Un «no medible» avisa; un `ENCOLADA` sobre algo cerrado, no.
+
+**Esto refuerza la recomendación (b) y le añade urgencia:** mientras el script devuelva `RC=0` con
+filas que afirman fases falsas, es **peor que no tenerlo** — un mapa vacío se nota; uno que miente
+con seguridad se cita.
+
+- **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
+- **Estado:** `abierta`
+
+### D-GAC-4 · El gate `runtime` tiene un recibo verde que solo vale en la máquina que lo midió
+
+- **Quién pregunta:** la coordinadora, 2026-08-12, al ver la primera corrida de CI que llegó al job
+  de runtime desde el 2026-07-17.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** qué se hace con los goldens visuales, que pasan en local y fallan en CI.
+- **Qué se midió** (corrida `31561660136`, sobre `65c44435`):
+  - `design-system-static` → **success**, por primera vez desde el 2026-07-17.
+  - `design-system-runtime` → **failure**, en el paso «Run laboratory gates»
+    (`npm run test:design-system:runtime`): **18 pruebas visuales fallidas de 20.**
+  - Las diferencias: **`ratio 0.03`** contra una tolerancia de `maxDiffPixelRatio: 0.002`
+    (`playwright.config.mjs:39`) — **quince veces el umbral**, ~27.000 píxeles.
+  - **La uniformidad es el dato clave:** 26952, 27211, 25536, 27012… todas las familias difieren casi
+    en la misma cantidad. Un cambio de diseño real variaría mucho entre una pantalla de formularios y
+    una de overlays; esto no. Es coherente con un render de plataforma distinto, **aunque no está
+    probado**: probarlo exige capturar en CI y comparar, que es parte de lo que se decide aquí.
+  - **Los 60 goldens están versionados y no llevan sufijo de plataforma**
+    (`tests/browser/__screenshots__/auth/login-dark-1180x820.png`): un solo juego para macOS y Linux.
+  - **El recibo de `runtime` es honesto, no falso:** `closeout-evidence.json` lo declara `passed` con
+    `exitCode: 0`, `verifiedAt: 2026-08-11T23:45:04Z`, `sourceRef: 1cb83128`. Pasó de verdad — en la
+    máquina donde se midió.
+- **Por qué no se vio antes, y es lo que más enseña:** el job de runtime **no se ejecutaba desde el
+  2026-07-17** porque `needs: design-system-static` lo mantenía apagado. El recibo verde y la
+  imposibilidad de contrastarlo convivieron un mes. **Arreglar el static es lo que lo destapó**: no es
+  una regresión nueva, es una ceguera vieja que acaba de abrir los ojos.
+- **Opciones:**
+  - **(a) Goldens por plataforma** — Playwright admite `{platform}` en `snapshotPathTemplate`. Local
+    y CI conservan cada uno su juego y los dos vigilan de verdad. Coste: una pasada de captura en CI,
+    y el doble de archivos.
+  - **(b) Recapturar los goldens en CI** y que Linux sea la referencia única. Más simple, pero
+    **invierte el problema**: pasarían a fallar en local, que es donde se trabaja a diario.
+  - **(c) Declarar el carril visual no ejecutable en CI**, como `runtime-budgets`, con su motivo
+    escrito. Honesto, pero renuncia a vigilar lo visual donde de verdad importa.
+  - **(d) Subir la tolerancia hasta que pase.** **Descartada, y conviene decir por qué:** haría falta
+    pasar de `0.002` a más de `0.03`, quince veces, y eso deja pasar cambios de diseño reales. El
+    comentario del propio archivo dice que la tolerancia se **bajó** de `0.005` a `0.002` precisamente
+    porque una amplia dejaba pasar cambios ciertos. Sería deshacer una decisión medida para tapar
+    esto.
+- **Recomendación:** **(a)**. Es lo único que deja los dos entornos vigilando de verdad, y no fabrica
+  ningún verde.
+- **Lo que NO se ha hecho, y no se hará sin decisión explícita:** regenerar goldens.
+  `AGENTS.md` §Verificación lo prohíbe —«no regeneres snapshots ni baselines para forzar un resultado
+  verde; los cambios visuales requieren aprobación explícita»— y aquí sería exactamente eso.
+- **Qué queda saltado esperando:** el gate `runtime` sigue declarado `passed` con su recibo local.
+  **No se toca ese recibo:** no es falso, es de otra plataforma, y cambiarlo sin decidir esto sería
+  sustituir un dato honesto por otro.
+
+**Dos mediciones añadidas el 2026-08-12, y la segunda corrige a la coordinadora.**
+
+1. **La causa está probada, no supuesta.** `npm run test:visual:lab` en local, sobre el **mismo sha**
+   que falla en CI → **`20 passed`, RC=0**. Mismo código, mismos goldens: verde en macOS, rojo en
+   Linux. Corolario que importa para elegir: **si hubiera un cambio visual real escondido, local
+   también fallaría**, porque los goldens son la referencia aprobada.
+
+2. **El coste de (a) es mucho mayor de lo que esta ficha decía, y el error era mío.** Escribí que era
+   «una pasada de captura y el doble de archivos». Lo intenté —`snapshotPathTemplate` con
+   `{platform}` y los 59 movidos con `git mv`, sin alterar un byte: hash idéntico al de `HEAD`— y el
+   **gate estático se puso rojo**: `golden hash mismatch` y `missing golden` en cadena. **Un
+   manifiesto del contrato del design system ancla cada golden por ruta y por hash.** Mover la carpeta
+   rompe ese contrato.
+   - Revertido en `949bb644`. Medido después: `STATIC_RC=0`, `PILOTO_RC=0`, 60 goldens en su sitio,
+     árbol limpio. Nada publicado.
+   - **Coste real de (a):** cambiar la plantilla **y** el manifiesto que ancla los 59 — es decir,
+     **tocar un contrato**, de las cosas que escalan siempre. Sigue siendo la opción correcta de
+     fondo, pero es **un frente con su propio plan**, no un retoque.
+   - **Cómo se coló:** encadené la verificación al `commit` en la misma línea, así que el commit se
+     hizo con el gate en rojo. Es la trampa que `AGENTS.md` documenta para el `push`, en su versión de
+     `commit`. Lo cazó la verificación posterior, no yo al escribirlo.
+
+- **Estado:** `abierta` — con el coste corregido. La opción (a) sigue siendo la recomendada, pero
+  ahora se sabe que es un frente, no una línea.
+
+### D-GAC-5 · El presupuesto de runtime se congeló el día que el CI se rompió
+
+- **Quién pregunta:** la coordinadora, 2026-08-12, tras enchufar `runtime-budgets` al CI (fase F-AB).
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si el baseline `runtime-baseline-0.3.3.json` se re-aprueba con las cifras de hoy,
+  o si estas violaciones se tratan como deuda de rendimiento a corregir.
+- **Qué se midió** (corrida `31563364701`, sobre `0b2cb1f8`, procedencia real de CI):
+  - `Measure runtime budgets` → **success**. `Check runtime budgets against the baseline` →
+    **failure**, con `"pass": false` y **violaciones reales, no de procedencia**:
+
+    | Métrica | Baseline | Máximo | Medido |
+    |---|---|---|---|
+    | `cssGzipBytes` | 136.933 | 138.981 | **194.554** (+42 % sobre el baseline) |
+    | ~~`initializationMs`~~ | ~~991~~ | ~~1.101,5~~ | ~~1.644,4~~ **— RETIRADA, ver abajo** |
+    | `adapterAssets` | 7 rutas | tolerancia 0 | lista distinta |
+
+  - En `adapterAssets`, el baseline **todavía lista `semi-auto-review.css`**, que se eliminó con el
+    **PDC v1 el 2026-08-04** (`AGENTS.md`). Y faltan dos que sí existen hoy: `shell-sidebar.css` y
+    `datatables.css`. Verificado contra `public/css/design-system/adapters/`.
+  - **El dato que lo explica todo:** el último commit del baseline es `1cfc6e2c`, del **2026-07-17** —
+    **el mismo día de la última corrida verde del workflow**. El gate perdió la capacidad de correr y
+    el baseline dejó de actualizarse **la misma fecha**. Un mes de cambios legítimos quedó fuera de su
+    vista.
+- **Lo que NO se puede concluir, y conviene decirlo:** **no** que la aplicación «se degradó un 42 %».
+  Lo medido es la **divergencia contra un baseline de hace un mes**, que incluye altas y bajas
+  legítimas. Cuánto de ese 42 % es crecimiento real y cuánto es baseline obsoleto **no está medido**.
+- **Opciones:**
+  - **(a) Re-aprobar el baseline con las cifras de hoy**, dejando escrito qué cambió y por qué. Pone
+    el gate en verde y lo devuelve a vigilar desde hoy. **Riesgo:** si parte del 42 % es una
+    regresión real, se hornea como normal — y eso es exactamente lo que un baseline no debe hacer.
+  - **(b) Tratarlo como deuda:** investigar de dónde salen los 57 KB y los 650 ms antes de tocar el
+    baseline. Es lo correcto de fondo y es un frente propio con medición por módulo.
+  - **(c) Mezcla:** corregir `adapterAssets` ya —es un hecho, no una opinión: un archivo que no existe
+    y dos que sí— y dejar las dos métricas numéricas abiertas hasta (b).
+- **Recomendación:** **(c)**, y luego (b). La lista de adaptadores no es un juicio: está objetivamente
+  desfasada. Las dos cifras sí necesitan saber cuánto es crecimiento y cuánto es baseline viejo, y
+  aprobarlas a ciegas convertiría una posible regresión en la nueva normalidad.
+- **Por qué no lo decido yo, teniendo autonomía:** **tocar un baseline escala siempre**, sin aplicar
+  la prueba del bloqueo (`AGENTS.md`, `coordinacion-sesiones.md`). Y aquí el riesgo es el del propio
+  protocolo: sería fabricar el verde con el gesto más inocente que existe.
+- **Qué queda saltado esperando:** el gate `runtime-budgets` se queda **rojo y honesto**. No se toca
+  el baseline ni el recibo.
+**Corrección del 2026-08-12, y el dato equivocado lo di yo.** La primera medición se tomó en la
+corrida `31563364701`, **con el árbol sucio** — `gate-receipt.mjs` escribía el recibo dentro del
+worktree, efecto secundario que introduje al cablearlo. Repetida en `31565443070` **con el árbol
+limpio**, el resultado cambia:
+
+- **Violaciones: dos, no tres.** `cssGzipBytes` (**194.553** contra un máximo de 138.981) y
+  `adapterAssets`. `grep -c initializationMs` sobre el log da **0**.
+- **`initializationMs` NO está violado.** Aquel `1.644,4 ms` era del árbol sucio y **no mide el
+  rendimiento de la aplicación**. Lo repetí al usuario como si lo midiera.
+- `cssGzipBytes` se sostiene y varía en **1 byte** entre las dos corridas (194.554 → 194.553): esa
+  sí es una medición estable.
+- `adapterAssets` se sostiene entera: el baseline sigue nombrando `semi-auto-review.css`, borrado con
+  el PDC v1.
+
+**Segundo hallazgo, del 2026-08-12, aportado por la sesión `2db2fa49` fuera de su encargo:** en
+`adapterAssets` no solo cambió el **tamaño**, cambió la **composición**, y las tres diferencias son de
+naturaleza distinta:
+
+1. **`semi-auto-review.css` falta** — borrado con el PDC v1 el 2026-08-04. Baja legítima: el baseline
+   está viejo.
+2. **`shell-sidebar.css` entra** — alta legítima: adaptador nuevo y real.
+3. **`datatables.css` entra con la ruta escrita de otra forma** — `/public/css/design-system/adapters/datatables.css`
+   frente a `/css/design-system/adapters/…` en todas las demás. Eso **huele a inconsistencia del propio
+   medidor**, no a un cambio del código.
+
+**Por qué esto cambia la decisión y no es un detalle:** si (3) es un defecto de la medición, entonces
+**una de las tres diferencias que hoy tumban el gate no es real**. Aprobar el baseline de un plumazo
+taparía las tres con el mismo gesto: una baja legítima, un alta legítima y un posible error de
+instrumento. **Hay que separarlas antes de mover nada** — y (3) se verifica leyendo cómo compone esa
+ruta el medidor, sin tocar el baseline.
+
+**Lo que esto cambia en la decisión:** el problema es **el peso del CSS y la composición de la lista**,
+no el tiempo de arranque. La opción (c) —corregir la lista ya, medir el CSS antes de aprobar— sigue
+siendo la recomendada, y ahora con un frente más estrecho: **un solo número que investigar**, no dos.
+
+- **Estado:** `abierta`
+
+### D-COORD-3 · La wiki pide un pase de veracidad, y yo publiqué tres veces con la verificación sin leer
+
+- **Quién pregunta:** la coordinadora, 2026-08-12, al final de la jornada.
+- **Fecha:** 2026-08-12
+- **Dos cosas, y la segunda es una falta mía.**
+
+**1. La alarma de veracidad se disparó, y es legítima.**
+`npm run test:wiki` → **RC=1**, con un hallazgo:
+`VERACIDAD memoria/log.md: 213 commits de código desde el último pase del 2026-08-11, por encima del
+umbral de 40`. No hay nada roto en la wiki: es el contador que existe precisamente para que la alarma
+llegue sola. Hoy se cruzó, en parte por los commits de código de esta misma sesión (workflow,
+contrato de estados, aserciones). **Toca un pase de veracidad por rotación de áreas**, verificando
+cada afirmación contra el código en vez de sospecharla. No se hizo: es trabajo propio, no un remate.
+
+**2. Publiqué tres veces con la verificación encadenada al comando de publicar.**
+`AGENTS.md` §Publicación lo dice explícito para el `push` —«en un comando aparte, nunca encadenado
+con `&&`, `;` ni detrás de un `echo`»— y lo incumplí en tres formas distintas:
+
+- Un `commit` con el gate estático en rojo (goldens por plataforma), cazado por la verificación
+  posterior y revertido en `949bb644`.
+- Un `push` con este mismo hallazgo de veracidad en rojo, sin leerlo (`a8d32edc`).
+- Y un tercer encadenamiento en el que el `echo` intermedio devolvió 0 y tapó el código real.
+
+**Las tres veces el resultado fue benigno. Eso es suerte, no procedimiento** — que es literalmente lo
+que `AGENTS.md` dice sobre las dos veces que ocurrió el 2026-08-10 y el 11. La causa no es despiste:
+es meter verificación y publicación en la misma línea, y ninguna cantidad de intención lo arregla.
+
+- **Qué haría falta para que no dependa de la intención:** un hook de `pre-push` que corra la
+  verificación y **deniegue**. Mientras el gate solo viva en la prosa de un documento, se incumple
+  sin querer — como lleva pasando tres jornadas seguidas, con tres sesiones distintas.
+- **La segunda mitad, hecha el 2026-08-12:** existe `scripts/publicar.sh`. Verifica y **deniega**;
+  el `push` solo ocurre si nada bloqueante está rojo, no hay commits entrantes y el árbol está limpio.
+  Lee cada código de salida **en su propia línea**, sin tubería, que es donde estaba el fallo.
+  - **La wiki avisa y no bloquea, a propósito:** su hallazgo típico es la alarma de veracidad —un
+    contador de commits—, que pide trabajo pero no dice que lo que vas a publicar esté mal.
+    Bloquear con ella enseñaría a saltarse el script, y un gate que se ignora enseña a ignorar los demás.
+  - **Entregado con sus mutaciones, ejecutadas:** con el contrato piloto en rojo → `DENEGADO`, `RC=1`;
+    con el árbol sucio → `DENEGADO`, `RC=1`; restaurado → `RC=0`. La primera destapó además que un
+    `!important` fuera de capa tumba **dos** comprobaciones, no una: el estático también lo vigila
+    desde `D-CI-1`.
+  - **Lo que NO hace, y es deliberado:** no toca `core.hooksPath` ni instala nada en `.git/hooks`.
+    Eso cambiaría el entorno de quien clone el repo sin que lo haya pedido. Es un script que se
+    invoca, no una trampa que se dispara sola — y por eso sigue dependiendo de que alguien lo use.
+- **Estado:** `abierta` — queda **una** cosa por decidir: cuándo se hace el pase de veracidad, y si
+  `scripts/publicar.sh` pasa a ser obligatorio para las sesiones (o incluso un `pre-push` de verdad,
+  que ya sí cambiaría el entorno y por eso no lo hago por mi cuenta).
 
 ## Resueltas
 

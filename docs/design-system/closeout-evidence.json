@@ -123,19 +123,19 @@
     {
       "id": "full-app-flow",
       "kind": "automatic",
-      "status": "blocked",
-      "verifiedAt": null,
+      "status": "passed",
+      "verifiedAt": "2026-08-12T05:00:34Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Objective receipt for full-app-flow (roles + persistence + restoration)",
+          "summary": "Recibo producido por la corrida real de GitHub Actions 31564632414 (paso \"Enforce full-app-flow gate\"), no escrito a mano. Primera ejecucion de este gate: hasta el 2026-08-12 constaba blocked.",
           "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
-          "exitCode": 1,
+          "exitCode": 0,
           "artifact": "docs/design-system/evidence/full-app-flow.json",
-          "artifactSha256": "7a9c401313b2d5254e70d8a3d2d14d19fca932688f48e3150bfbe2920a1deb50",
-          "sourceRef": "4c459d0fd18b2a142002097fc6e1874d2b8d9782",
-          "sourceFingerprint": "d972e14a39e3459d3c86c1f31a5e5e9fd0d805a2fc03e5c36010f8583f3ffcee",
+          "artifactSha256": "3a4699b6493896684a69820859a67c486e2e5a51a59ed4ab37045cbd30df0c2a",
+          "sourceRef": "a0caa11b461499f4f3772afba7e053be5697ffb7",
+          "sourceFingerprint": "d7339418eb27837a356a583e589734c610ca512b27b5ac6ee8f324af547ba77b",
           "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
         }
       ]

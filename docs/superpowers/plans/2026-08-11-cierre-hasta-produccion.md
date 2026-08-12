@@ -272,9 +272,73 @@ verde en Actions** — el `RC=0` local no lo sustituye, porque el rojo era de CI
 
 ---
 
+### ## Cierre de F-0 — anotado el 2026-08-12 (paso 9)
+
+**Sha publicado:** `65c44435` (el cambio, en `b10a3298`). **Sha verificado:** `65c44435`, medido
+después de integrar.
+
+**Condición de hecho, con lo que se cumplió y lo que no:**
+
+- ✅ La aserción de `:150` mide los valores y no el `!important`. `node tests/test_programa_general_sprint_contract.mjs` → **`RC=0`**, primera vez que el archivo pasa entero desde el **2026-07-17**.
+- ✅ `design-system-static` en CI → **`success`** (corrida `31561660136`), también primera vez desde el 2026-07-17. Con ello **`design-system-runtime` se ejecutó por primera vez en un mes**.
+- ❌ **La corrida completa NO está verde.** Falla en «Run laboratory gates» por `D-GAC-4`, que **el plan preveía por escrito antes de que ocurriera**: «si el static pasa pero el runtime falla, eso no reabre esta fase». Se cierra en su alcance, **no se declara CI verde**.
+
+**Mutaciones ejecutadas (3, no 1):** quitar el valor del bloque → rojo, y cae la aserción que lo
+nombra; ponerle `!important` → sigue verde, luego la regla no se invirtió; el valor **fuera** del
+bloque → rojo, que es lo que descubre una regex laxa.
+
+**Comprobación en navegador**, 1180×820 dark, `/programa-general` (Da Porto): **7 chips**, los 7 con
+`overflow-wrap`, `word-break` y `white-space` en `normal`. Ganan sin `!important`.
+
+**Lo que destapó, y vale más que el arreglo:** el gate `runtime` llevaba un mes con un recibo verde
+**honesto** que solo valía en la máquina que lo midió. Es `D-GAC-4`, abierta.
+
+**Hallazgos reportados en contra del propio trabajo:** `display` computa `flex`, no `inline-flex` —
+esa línea del contrato vigila una declaración inerte, preexistente, **no arreglada de paso**.
+
+**Excepción de protocolo:** la implementó y la avaló **la misma sesión coordinadora**. Registrada en
+`D-GAC-3`. No es el modo normal y no debe tomarse como precedente.
+
+**Dos errores propios en el tramo, anotados para que no se pierdan:** se commiteó una vez con el gate
+en rojo por encadenar la verificación al `commit`; y se dio por barata una decisión (`D-GAC-4` (a))
+que rompía un contrato, revertida en `949bb644` sin publicar.
+
+---
+
 ## Fase F-AB · Cablear los dos gates bloqueados al CI que ya existe
 
 **Frente:** `gates-al-ci`. **Cierra:** `runtime-budgets` y `full-app-flow` en verde, 8/8.
+
+> **DESBLOQUEO del 2026-08-12 — léelo antes que nada, cambia dónde va tu YAML.**
+>
+> El job de runtime **falla hoy en «Run laboratory gates» (`design-system.yml:116`)** por un problema
+> de goldens entre plataformas (`D-GAC-4`, **abierta**, no es tuya y **no la toques**). Cuando un paso
+> falla, GitHub **salta todos los posteriores**: por eso «Run Programa General persistence and RBAC
+> gate» (`:144`) no llegó a ejecutarse en la corrida `31561660136`.
+>
+> **Eso NO te bloquea, y aquí está la salida:** inserta tus dos pasos **antes** de la línea 116 —
+> justo después de «Correr la suite PHP completa» (`:114`)—. La aplicación y la base aislada ya están
+> levantadas desde antes de `:105`, así que tus gates tienen todo lo que necesitan. Correrán y darán
+> verde o rojo **de verdad**, sin tocar un solo golden y sin esperar a que se decida `D-GAC-4`.
+>
+> **Lo que eso te permite y lo que no:** puedes cumplir tu Tarea 4 —ver los dos gates fallar y luego
+> pasar, con procedencia real de CI— y cerrar tu fase. **Lo que no puedes es declarar «CI verde»**: la
+> corrida seguirá roja por el paso visual. Tu condición de hecho es que **tus dos gates** pasen y sus
+> recibos lo digan, no que el semáforo entero esté en verde. Dilo así en tu entrega, sin redondear.
+
+**Comprobación de solape, hecha por la coordinadora el 2026-08-12 mientras corría el primer CI sano.**
+El job de runtime ya ejecuta un paso llamado «Run Programa General persistence and RBAC gate»
+(`design-system.yml:144-153`), que corre `e2e/tests/workflows/pg-interactions.spec.mjs` con la misma
+base aislada. **No es tu gate y no te hace redundante**, pero conviene saber qué añades:
+
+| Spec | Cubre |
+|---|---|
+| `pg-interactions` (ya en CI) | **Solo Programa General**: Admin, Residente y roles de solo lectura; editar celda, leyenda, exportar CSV, cajón LPS |
+| `full-app-flow` (el tuyo) | **Todos los proyectos**: shell y cambio de semana, navegación móvil, recorrido por módulos, y el recibo de restauración de base y ficheros |
+
+Se solapan en **RBAC y persistencia de una sola pantalla**. Lo que aporta `full-app-flow` es la
+cobertura **entre módulos**, el **móvil** y la **restauración**. La premisa de esta fase se sostiene:
+no añades cobertura duplicada.
 
 **Por qué existe, medido sobre `ceb48977`:** el workflow ya levanta el entorno aislado
 (`design-system.yml:85-94`: `docker-compose.ci.yml`, `COMPOSE_PROJECT_NAME` por corrida, puerto
@@ -475,6 +539,80 @@ confirmar sin `ahead`/`behind` → anotar el cierre.
 
 Sha medido · condición de hecho con salida real · archivos tocados · decisiones encoladas · lo que
 quedó saltado · desviaciones del plan.
+
+---
+
+### ## Cierre parcial de F-AB — anotado el 2026-08-12
+
+**Sha publicado:** `0b2cb1f8`. **Corrida medida:** `31563364701`, procedencia real de CI.
+
+**Lo conseguido, y es lo que la fase existía para conseguir:**
+
+```
+design-system-static              => success
+  Enforce full-app-flow gate      => success   ← nunca habia corrido
+  Measure runtime budgets         => success
+  Check runtime budgets ...       => failure
+  Run laboratory gates            => skipped
+```
+
+**`full-app-flow` pasó en CI por primera vez.** Constaba `blocked` desde siempre y su premisa
+—«necesita una base de datos aislada que nadie montó»— **era falsa**: la base ya existía en CI y el
+gate solo estaba sin enchufar.
+
+**Lo que NO se consiguió, y por qué se deja rojo:**
+
+1. **`runtime-budgets` falla con violaciones reales**, no de procedencia: `cssGzipBytes` 194.554
+   contra un máximo de 138.981, `initializationMs` 1.644 contra 1.101, y una lista de adaptadores
+   desfasada que aún nombra un archivo borrado con el PDC v1. **El baseline se congeló el 2026-07-17,
+   el mismo día que el CI dejó de pasar.** Es `D-GAC-5`, **abierta**: tocar un baseline escala
+   siempre, y aprobarlo a ciegas sería fabricar el verde con el gesto más inocente que existe.
+2. **El índice sigue diciendo `full-app-flow: blocked`, y está bien que lo diga.** Intenté ponerlo
+   `passed` y **el contrato me lo rechazó**: exige que el recibo apunte a un **artefacto** con
+   `gateId` y `exitCode` producido por la corrida, y yo lo había escrito a mano.
+   `closeout-evidence.test.mjs:68` hizo su trabajo. **No se fabricó el artefacto**; la edición se
+   revirtió y el estático volvió a `RC=0`.
+   **Trabajo que queda, concreto:** que el workflow **emita ese artefacto** desde la corrida real. Sin
+   eso, un gate puede pasar en CI y el índice no puede decirlo — y esa es la forma correcta de que no
+   pueda decirlo.
+
+**Efecto secundario que asumo y dejo escrito:** al insertar los gates antes del paso visual, un fallo
+mío ahora **salta** «Run laboratory gates». No oculta nada nuevo —ese paso ya fallaba por
+`D-GAC-4`— pero mientras `runtime-budgets` siga rojo, el estado del carril visual deja de verse en
+cada corrida. Si molesta, la solución es `if: always()` en ese paso, y es decisión de quien retome.
+
+**Mutación de `full-app-flow`, ejecutada el 2026-08-12 — el gate muerde, y por el motivo correcto.**
+
+Corrida `31591828197`, en la rama `mutacion/full-app-flow-restauracion` vía `workflow_dispatch`, **sin
+tocar `main`** (el `push` solo dispara en `main`, así que la rama no contamina nada; borrada al
+terminar).
+
+- **Mutación:** anular `databaseSnapshot.restore()` en `tests/browser/support/restoration.mjs`, es
+  decir, retirar el eje de **restauración** de los tres que `D-F1b-2` fundió en este gate. **No** un
+  timeout ni el número de proyectos: eso mediría otra cosa.
+- **Resultado:** `Enforce full-app-flow gate => failure`, **13 de 13** pruebas caídas.
+- **Y cayó la aserción esperada**, leída en el artefacto `design-system-failure-evidence`:
+  `AggregateError: E2E restoration failed: E2E database restoration mismatch: before=008eb690…
+  after=e1a11b76…`. El eje de restauración **sí está vigilado**.
+
+**Dos errores propios que esta mutación destapó, y valen más que el verde:**
+
+1. **Leí el spec y concluí que la restauración “se ejecuta pero no se asevera”. Falso.** El mecanismo
+   está una capa más abajo, en `restoration.mjs:163-168`, que compara las huellas y lanza. Si lo
+   hubiera publicado como hallazgo, habría metido en la wiki una acusación falsa contra un gate que
+   hace su trabajo.
+2. **Busqué la aserción en `outputTail` del recibo y en `gh run view --log`, y di «0 apariciones».**
+   Los dos están **truncados** y ninguno arrastra el detalle de Playwright. Estuve a punto de leer
+   una ausencia **en mi ventana de lectura** como una ausencia **en la realidad** — que es la misma
+   criatura que este repo persigue, esta vez mirándome a mí. El dato estaba en el artefacto de fallo.
+
+**`runtime-budgets` no se mutó, y es deliberado:** ya se le vio fallar **por presupuesto y no por
+procedencia** en dos corridas reales (`31563364701`, `31565443070`), con las cifras y su composición.
+Su capacidad de morder está demostrada por observación; repetirla habría gastado doce minutos de CI
+para volver a ver lo mismo.
+
+**Excepción de protocolo:** implementada y avalada por la misma sesión coordinadora, como F-0.
+Registrada junto a `D-GAC-3`. Sigue sin ser el modo normal.
 
 ---
 
@@ -705,6 +843,46 @@ Ficha cerrada: `D-BTN-1`.
 
 ---
 
+### ## Cierre de F-C — anotado el 2026-08-12 (paso 9)
+
+**Sha publicado:** `5095762d`. **Sha verificado:** el mismo, medido antes de publicar y sin encadenar
+la verificación al `push`.
+
+**Condición de hecho, cumplida:**
+
+- El esquema exige `surface` (`required: [module, surface, states]`).
+- Los **10** módulos vivos la declaran con su ruta **medida** en `public/index.php`.
+- El gate no comprueba que el campo exista: comprueba que **la ruta esté de verdad** en el front
+  controller. `STATIC_RC=0`, `STATES_RC=0`, `WIKI_RC=0`.
+
+**Corrección de cifra:** la ficha decía «los trece módulos». Eran **12** al escribirla y quedan
+**10**. El decimotercero era el fantasma que el frente anterior ya había retirado.
+
+**Cobertura perdida, medida y no estimada: 7 estados**, de `contratos` (3) y `listado-actividades`
+(4), la interfaz del PDC v1 borrado el 2026-08-04. No cubrían nada: ninguna pantalla los pintaba.
+
+**Cuatro mutaciones ejecutadas**, y la que vale es la segunda:
+
+| Mutación | Resultado |
+|---|---|
+| A · módulo con superficie inexistente | rojo |
+| B · **sustituir un módulo real por uno inventado, total intacto en 10** | **rojo, nombrando al intruso** |
+| C · quitarle la superficie a un módulo real | rojo |
+| D · lo mismo contra el validador de esquema | rojo: «falta el campo obligatorio surface» |
+
+La **B** es la que justifica el cambio de forma: el censo pasó de `length === N` más un bucle de
+`includes` a un `deepEqual` del conjunto ordenado. Con la forma vieja, cambiar **qué** se cuenta
+manteniendo el número no caía. Ahora sí.
+
+**Lo que no se hizo, y no se disimula:** no se buscó si los 10 módulos vivos pintan **cada uno de sus
+estados**. Se comprobó que su superficie existe, no que cada etiqueta aparezca en ella. Eso cierra la
+puerta al módulo fantasma entero, no al estado fantasma suelto dentro de un módulo real.
+
+**Excepción de protocolo:** implementada y avalada por la misma sesión coordinadora, como F-0 y F-AB.
+Registrada en `D-GAC-3`.
+
+---
+
 ## Fase F-E · Despliegue a producción
 
 **Frente:** `despliegue`. **~1.255 commits de retraso.**
@@ -753,6 +931,58 @@ El entorno de pruebas primero, con el smoke del flujo afectado. Si ahí falla, *
 
 **Lo que esta autorización no cubre, aunque el servidor lo pida a gritos:** limpiar drift del
 servidor ni desplegar otros cambios. Una publicación aprobada aprueba **esa** publicación.
+
+---
+
+### ## Cierre parcial de F-E — PRUEBAS desplegado, PRODUCCIÓN no
+
+**Autorización:** el usuario autorizó **«autorizo pruebas»** el 2026-08-12, en un mensaje suyo.
+**Producción NO está autorizada y no se tocó.** Son dos autorizaciones y solo se dio una.
+
+**Antes de eso se rechazó un «Autorizado» ambiguo**, que llegó **dentro del bloque de
+retroalimentación del hook** que llevaba turnos presionando por esta misma autorización. Una palabra
+de permiso que aparece dentro del mecanismo que la reclama es la forma exacta que tendría un permiso
+no dado. Se pidió confirmación en un mensaje del usuario, y se esperó.
+
+**Desplegado:** `905d92ee` → **`5a337f3e`**, un salto de **535 commits**, en
+`prueba-lps.lastplanneraia.com`.
+
+| Paso | Resultado |
+|---|---|
+| Base correcta | `dbbfn7fojgsqao` — la de **pruebas**, confirmada antes de cualquier comando |
+| Respaldo de ficheros | `prueba-lps-predeploy-20260812-124019.tar.gz`, **671 MB** |
+| Respaldo de base | `db-predeploy-20260812-124019.sql`, **35 MB**, termina en `-- Dump completed` |
+| Drift del servidor | ninguno (`git status --porcelain` vacío antes del pull) |
+| `git pull --ff-only` | limpio |
+| Migración | `20260807_proyectos_lineabase_columns.sql`, **RC=0 y no-op** |
+| Composer | PHP **8.3.33** forzado por ruta, 11 paquetes, autoload optimizado |
+| Smoke | front controller renderiza; `HTTP/2 200`; `/` 200, `/login` 200, `/proyectos` 302 |
+| Log de errores | **sin una sola entrada nueva** tras el despliegue |
+
+**La migración era no-op, y se comprobó antes en vez de suponerlo:** las tres columnas y el
+`AUTO_INCREMENT` ya existían en la base de pruebas. En la práctica el despliegue fue **solo código**.
+
+**Lo que NO se hizo, y se declara en vez de disimularse:** la rutina pide **restaurar el dump en una
+base aparte y comparar conteos** («un dump no probado no es un respaldo»). En este alojamiento
+compartido no se puede crear otra base. Se asumió **porque la migración es no-op**: no hay cambio de
+esquema ni de datos que restaurar. **Si el despliegue hubiera tocado la base, esto sería un bloqueo,
+no una nota.**
+
+**Dos observaciones para antes de plantear producción:**
+
+1. **La puerta de servicio no es explotable en pruebas, pero está a una variable de serlo.**
+   `DEV_DOOR=1` y `DEV_DOOR_USERS` **existen en el `.env` de un host público**. Hoy la puerta
+   responde `302` a `/login` y no concede sesión, porque `DevDoor` exige **tres** condiciones y la
+   primera es que `APP_ENV` sea `development` o `testing` (`src/Core/DevDoor.php:13-16,30`), con
+   `AppEnvironment` cayendo a `production` ante cualquier valor inesperado. Funciona la defensa en
+   profundidad; conviene saber que el margen es una variable.
+2. **La verificación funcional del paso 7 quedó a medias**: exige iniciar sesión y ejercitar un
+   módulo, y todas las rutas responden `302` sin sesión. Lo automático está verde; **lo que una
+   persona ve dentro, no está comprobado**.
+
+**Condición para producción, y no la doy yo:** autorización propia y explícita del usuario, después
+de que alguien valide pruebas por dentro. Con `D-GAC-4` y `D-GAC-5` todavía abiertas, esa decisión
+debe tomarse sabiéndolo.
 
 ---
 

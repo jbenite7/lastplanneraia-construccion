@@ -113,6 +113,58 @@ jobs:
       # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
       - name: Correr la suite PHP completa que el CI puede honrar
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
+      # F-AB (2026-08-12): los dos gates que constaban `blocked` se enchufan AQUI,
+      # antes de «Run laboratory gates», y no despues. Motivo medido: ese paso
+      # falla hoy por goldens de una sola plataforma (D-GAC-4, abierta), y cuando
+      # un paso falla GitHub salta todos los posteriores — por eso el gate de
+      # persistencia de :144 no llego a ejecutarse en la corrida 31561660136.
+      # Puestos aqui corren de verdad y dan procedencia real sin tocar un golden.
+      # La app y la base aislada ya estan levantadas desde antes de :105, y las
+      # cuatro variables CI_* ya vienen de «Capture runtime provenance» (:60-83):
+      # NO se redeclaran, porque redeclararlas es el primer paso hacia fabricarlas.
+      # Se ejecuta a traves de `gate-receipt.mjs` y no con el comando pelado, para
+      # que la corrida deje su recibo: hasta hoy `full-app-flow` no podia declararse
+      # `passed` en el indice aunque pasara, porque el contrato exige un artefacto
+      # con `gateId` y `exitCode` producido por la ejecucion — y escribirlo a mano
+      # es justo lo que ese contrato existe para impedir.
+      #
+      # OJO: `gate-receipt.mjs` **siempre sale 0** a proposito («su trabajo es
+      # levantar acta, no aprobar»). Cableado tal cual, este paso saldria verde con
+      # el gate en rojo. Por eso la segunda linea lee el recibo y propaga su
+      # `exitCode`: el acta la levanta el script, el veredicto lo da el recibo.
+      - name: Enforce full-app-flow gate
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+          E2E_PROJECT_KEYS: construction
+          E2E_REQUIRE_ISOLATED_DB: "1"
+          E2E_ALLOW_DB_MUTATION: design-system-ci
+        run: |
+          node scripts/design-system/gate-receipt.mjs full-app-flow
+          node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
+      - name: Preserve the full-app-flow receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-app-flow-receipt
+          path: docs/design-system/evidence/full-app-flow.json
+          if-no-files-found: error
+      # `gate-receipt.mjs` escribe el recibo DENTRO del arbol, y eso lo ensucia.
+      # `runtime-budgets` se niega a medir sobre un arbol sucio —«CI_WORKTREE_FINGERPRINT
+      # must match the current clean worktree»— y hace bien: su procedencia dejaria
+      # de ser comprobable. Medido en la corrida 31564632414, donde el paso de
+      # medicion cayo por esto y no por presupuesto. Se restaura despues de subir
+      # el recibo, que es cuando ya esta a salvo.
+      - name: Restore the worktree after writing the receipt
+        if: always()
+        run: git checkout -- docs/design-system/evidence/full-app-flow.json && git status --porcelain
+      - name: Measure runtime budgets
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+        run: npm run test:runtime-budget:measure
+      - name: Check runtime budgets against the baseline
+        run: npm run test:runtime-budget:check
       - name: Run laboratory gates
         id: blocking-runtime
         env:
