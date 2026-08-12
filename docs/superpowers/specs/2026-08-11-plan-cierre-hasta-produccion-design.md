@@ -43,39 +43,51 @@ en `/Volumes/Crucial X6/Developer/lps-aia` — verificado con `list_sessions` y 
 —dos sesiones, una con frente abierto— **no se sostuvo al medirlo**, y es un caso más del patrón
 recogido en `memoria/trampas/`: un instrumento que ante «no hay dato» devuelve algo verosímil.
 
-## Las cinco fases
+## Las cuatro fases
 
 Cada fase es **un frente**, con su worktree propio, su ciclo de visto y el gate de nueve pasos de
 `AGENTS.md` §Publicación. **Ninguna empieza hasta que la anterior está publicada y anotada** — el
 paso 9, no el 8.
 
-### F-A · Base de datos aislada para `full-app-flow`
+### F-AB · Cablear los dos gates bloqueados al CI que ya existe
 
-- **Por qué:** el gate se niega a correr contra la base compartida, y hace bien. El usuario ya
-  aprobó montar una aislada; nadie la montó.
-- **Condición de hecho:** `npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1`
-  corre contra una base propia y pasa, con salida real; su recibo en `closeout-evidence.json` pasa a
-  `passed` con fecha y sha.
-- **Mutación exigida:** apuntar el spec a un rol sin permiso —o retirar uno de los tres ejes que el
-  gate fundió (roles, persistencia, restauración)— tiene que ponerlo rojo, y restaurarlo, verde.
-- **Archivos previstos:** `e2e/`/`tests/browser/`, fixtures, configuración de base para pruebas.
-  Nada de `src/`.
-- **Riesgo:** el gate funde tres dimensiones en una (`D-F1b-2`), así que un rojo no dice cuál falló.
-  Está documentado y aceptado; no se reabre aquí.
+> **Corrección del 2026-08-11, antes de escribir el plan.** Este spec se commiteó en `ef6d55dd` con
+> **dos** fases aquí —«montar una base aislada» y «hacer correr `runtime-budgets`»— y las declaraba
+> disjuntas por tocar ficheros distintos. **Las dos afirmaciones eran falsas**, y se cayeron al medir
+> el árbol para escribir los pasos. El commit `ef6d55dd` queda inexacto en este punto; se corrige
+> aquí, que es donde se lee. Fundidas en una sola fase por decisión del usuario.
 
-### F-B · `runtime-budgets` corriendo en CI de verdad
-
-- **Por qué:** el gate exige `CI_RUN_ID`, `CI_GIT_SHA`, `CI_WORKTREE_FINGERPRINT` y
-  `CI_FIXTURE_SHA256` contra un árbol limpio, y descarta muestras de más de 15 minutos. Es
-  deliberado, y está escrito en `docs/design-system/gates-cierre-frente-1b.md`.
-- **Prohibido, y esta línea es la fase entera:** fabricar esas variables en local. Sería inventar
-  una procedencia de CI, que es exactamente el fraude que el gate existe para impedir.
-- **Condición de hecho:** el workflow corre en GitHub Actions sobre un sha de `main` y su recibo
-  verde trae la procedencia real de esa corrida.
-- **Comprobación previa, antes de asignar la fase:** que el CI de este repositorio funcione hoy. **No
-  está medido.** Si el workflow no corre, F-B deja de ser «disparar una corrida» y pasa a ser
-  «arreglar el CI», que es otro tamaño y exige volver a hablarlo con el usuario.
-- **Archivos previstos:** `.github/workflows/`.
+- **Qué se midió** (sobre el árbol de `ef6d55dd`):
+  - `.github/workflows/design-system.yml:85-94` **ya levanta un entorno aislado**: `docker-compose.ci.yml`,
+    un `COMPOSE_PROJECT_NAME` propio por corrida, puerto 18081, y exporta `E2E_REQUIRE_ISOLATED_DB=1`
+    y `E2E_ALLOW_DB_MUTATION=design-system-ci` — las dos variables exactas que
+    `tests/browser/support/restoration.mjs:14-19` exige para dejar correr `full-app-flow`.
+  - El mismo workflow (`:60-83`) **ya calcula las cuatro variables de procedencia** que
+    `runtime-budgets` pide, con `scripts/design-system-ci-preflight.mjs --print-provenance`.
+  - Y aun así: `grep -n "full-app-flow" .github/workflows/design-system.yml` → **cero**.
+    `grep -n "budget"` en el mismo archivo → **cero**. Los scripts existen (`package.json:24-25`);
+    nadie los llama desde CI.
+- **Por qué es una fase y no dos:** los dos gates comparten causa —están sin enchufar al job que ya
+  tiene lo que necesitan— y comparten fichero. Dos frentes en fila sobre el mismo archivo gastan dos
+  ciclos de visto y dos corridas de CI para nada.
+- **No hay ninguna base de datos que montar.** Esa era la premisa caducada.
+- **Prohibido, y esto es lo que más importa de la fase:** fabricar `CI_RUN_ID`, `CI_GIT_SHA`,
+  `CI_WORKTREE_FINGERPRINT` o `CI_FIXTURE_SHA256` en local para ver verde. Sería inventar una
+  procedencia de CI, que es exactamente el fraude que el gate existe para impedir. El motivo está en
+  `docs/design-system/gates-cierre-frente-1b.md`.
+- **Condición de hecho:** una corrida real de GitHub Actions sobre un sha de `main` ejecuta los dos
+  gates y los dos pasan; sus recibos en `closeout-evidence.json` pasan a `passed` con la procedencia
+  de esa corrida. Ocho de ocho.
+- **Mutación exigida, una por gate:** para `full-app-flow`, retirar uno de los tres ejes que el gate
+  fundió (roles, persistencia, restauración) tiene que ponerlo rojo. Para `runtime-budgets`, una
+  muestra fuera de presupuesto tiene que ponerlo rojo. Las dos, restauradas después.
+- **Comprobación previa, antes de asignar la fase:** que el workflow corra verde hoy tal como está.
+  **No está medido** — desde aquí no se puede disparar Actions. Si resulta que el workflow ya falla
+  por otra causa, la fase cambia de tamaño y hay que volver a hablarlo con el usuario.
+- **Archivos previstos:** `.github/workflows/design-system.yml` y, si hiciera falta,
+  `package.json`. Nada de `src/`.
+- **Riesgo aceptado:** `full-app-flow` funde tres dimensiones en una (`D-F1b-2`), así que un rojo no
+  dice cuál falló. Está documentado y no se reabre aquí.
 
 ### F-C · `D-CEF-1` — superficie obligatoria en el contrato de estados
 
@@ -135,11 +147,12 @@ de cada publicación, escribiéndolo **dentro** de `.claude/vistos/<frente>`. Si
 el visto se reemite. Cada fase necesita que el usuario abra una sesión de ejecución; hoy no hay
 ninguna viva sobre este repo.
 
-**Contención.** Con una fase a la vez y los ficheros previstos arriba, las cuatro primeras son
-disjuntas entre sí. La única expuesta a trabajo ajeno es F-E, que por eso integra inmediatamente
-antes de publicar.
+**Contención.** Con una fase a la vez y los ficheros previstos arriba, las tres primeras son
+disjuntas entre sí: F-AB toca el workflow, F-C el contrato de estados y su test, F-D el CSS de
+botones. La única expuesta a trabajo ajeno es F-E, que por eso integra inmediatamente antes de
+publicar.
 
-**Verificación, igual en las cuatro primeras:**
+**Verificación, igual en las tres primeras:**
 
 - Condición de hecho con **salida real de comandos** de esa sesión.
 - **La mutación en rojo, ejecutada.** No basta con que el gate pase: hay que ver que sabe fallar, y
@@ -167,7 +180,7 @@ antes de publicar.
 2. `docs/decisiones-pendientes.md` no tiene ninguna entrada `abierta`.
 3. El trabajo está en producción, desplegado por la rutina de SiteGround, con smoke del flujo
    afectado y respaldo previo verificable.
-4. Las cinco fases tienen su `## Cierre` anotado.
+4. Las cuatro fases tienen su `## Cierre` anotado.
 
 ## Archivos de este goal
 
