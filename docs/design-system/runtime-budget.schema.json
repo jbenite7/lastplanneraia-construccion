@@ -814,6 +814,16 @@
       "additionalProperties": false
     },
     "baseline": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/retrospectiveBaseline"
+        },
+        {
+          "$ref": "#/$defs/currentBaseline"
+        }
+      ]
+    },
+    "retrospectiveBaseline": {
       "allOf": [
         {
           "$ref": "#/$defs/artifactBase"
@@ -938,6 +948,137 @@
         }
       ],
       "unevaluatedProperties": false
+    },
+    "currentBaseline": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/artifactBase"
+        },
+        {
+          "required": [
+            "approval",
+            "recovery",
+            "tolerances"
+          ],
+          "properties": {
+            "kind": {
+              "const": "baseline"
+            },
+            "measurementKind": {
+              "const": "current"
+            },
+            "designSystemVersion": {
+              "const": "0.3.4"
+            },
+            "approval": {
+              "$ref": "#/$defs/approval"
+            },
+            "recovery": {
+              "$ref": "#/$defs/currentRecovery"
+            },
+            "tolerances": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/tolerances"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason": {
+              "type": "string"
+            },
+            "justification": {
+              "type": "object",
+              "required": [
+                "attributionPath",
+                "decisionRef",
+                "summary"
+              ],
+              "properties": {
+                "attributionPath": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decisionRef": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "summary": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "status": {
+                  "const": "approved"
+                },
+                "sourceRef": {
+                  "$ref": "#/$defs/sha1"
+                },
+                "sourceTreeHash": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "recordedAt": {
+                  "$ref": "#/$defs/timestamp"
+                },
+                "metrics": {
+                  "$ref": "#/$defs/metrics"
+                },
+                "tolerances": {
+                  "$ref": "#/$defs/tolerances"
+                },
+                "approval": {
+                  "properties": {
+                    "status": {
+                      "const": "approved"
+                    },
+                    "approvedBy": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "approvalRef": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "currentRecovery": {
+      "type": "object",
+      "required": [
+        "manifestPath",
+        "manifestSha256",
+        "measurementPath",
+        "measurementSha256"
+      ],
+      "properties": {
+        "manifestPath": {
+          "const": "docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json"
+        },
+        "manifestSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "measurementPath": {
+          "const": "docs/design-system/runtime-measurements/0.3.4-measurement.json"
+        },
+        "measurementSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

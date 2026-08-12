@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { readdir } from 'node:fs/promises';
 import test from 'node:test';
@@ -288,7 +289,7 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   ]);
 
   assert.match(packageJson.scripts['test:runtime-budget:measure'], /design-system-runtime-budget\.mjs/);
-  assert.match(packageJson.scripts['test:runtime-budget:check'], /runtime-baseline-0\.3\.3\.json/);
+  assert.match(packageJson.scripts['test:runtime-budget:check'], /runtime-baseline-0\.3\.4\.json/);
   assert.match(packageJson.scripts['test:performance:lab'], /design-system-lab\.performance\.mjs/);
   assert.match(packageJson.scripts['test:design-system:runtime'], /test:performance:lab/);
   assert.doesNotMatch(packageJson.scripts['test:design-system:runtime'], /test:runtime-budget/);
@@ -372,6 +373,61 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.equal(retrospective.provenance.sampling.reportedAggregation, 'median-of-three');
   assert.equal(retrospective.provenance.sampling.samples, undefined);
   assert.deepEqual(retrospective.metrics.laboratoryAssets, []);
+
+  // El baseline VIGENTE es el 0.3.4, medido en CI (D-GAC-5(b), aprobado por el usuario el
+  // 2026-08-12). El 0.3.3 de arriba se sigue comprobando entero **como historico**: no se
+  // reescribe ni se borra, porque es la unica prueba de que aquel presupuesto existio.
+  //
+  // Lo que este bloque protege del 0.3.4 es lo mismo que el 0.3.3 tenia y por el mismo motivo:
+  // que el baseline NO se pueda editar a mano. Alli la atadura era a una retrospectiva fijada por
+  // sha256; aqui es a una medicion de CI fijada por sha256 **y** por el commit que la produjo,
+  // que es una atadura mas fuerte, no mas floja: aquella no se podia reproducir y esta si.
+  const currentBaseline = await readJson('docs/design-system/runtime-baseline-0.3.4.json');
+  const currentMeasurement = await readJson('docs/design-system/runtime-measurements/0.3.4-measurement.json');
+  const currentManifest = await readJson('docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json');
+
+  assert.equal(currentBaseline.designSystemVersion, '0.3.4');
+  assert.equal(currentBaseline.measurementKind, 'current');
+  assert.equal(currentBaseline.status, 'approved');
+  assert.equal(currentBaseline.approval.status, 'approved');
+  assert.equal(currentBaseline.approval.approvedBy, 'user');
+  assert.match(currentBaseline.sourceRef, /^[a-f0-9]{40}$/);
+  assert.equal(
+    currentBaseline.recovery.measurementPath,
+    'docs/design-system/runtime-measurements/0.3.4-measurement.json',
+  );
+  assert.equal(
+    currentBaseline.recovery.manifestPath,
+    'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json',
+  );
+  assert.equal(
+    createHash('sha256')
+      .update(await read(currentBaseline.recovery.measurementPath))
+      .digest('hex'),
+    currentBaseline.recovery.measurementSha256,
+  );
+  assert.equal(
+    createHash('sha256')
+      .update(await read(currentBaseline.recovery.manifestPath))
+      .digest('hex'),
+    currentBaseline.recovery.manifestSha256,
+  );
+  // Las cifras del baseline son las medidas, sin editar. Es la aserción que impide «ajustar» un
+  // numero para que el gate pase: cambiar un byte aqui rompe la igualdad con la medicion.
+  assert.deepEqual(currentBaseline.metrics, currentMeasurement.metrics);
+  assert.equal(currentBaseline.sourceRef, currentMeasurement.sourceRef);
+  assert.equal(currentManifest.sourceHistory.sourceRef, currentMeasurement.sourceRef);
+  assert.equal(currentManifest.sourceHistory.originCommitAvailable, true);
+  assert.equal(currentManifest.rawSamplesPreserved, true);
+  // Las dos versiones que conviven, atadas y nombradas: la del presupuesto y la del producto.
+  assert.equal(currentManifest.designSystemVersion, '0.3.4');
+  assert.equal(currentManifest.measuredDesignSystemVersion, currentMeasurement.designSystemVersion);
+  // La justificacion no es decorativa: apunta al informe que descarto la regresion.
+  assert.match(currentBaseline.justification.attributionPath, /atribucion-css-gzip/);
+  assert.equal(existsSync(new URL(`../../${currentBaseline.justification.attributionPath}`, import.meta.url)), true);
+  // El historico y el vigente no pueden confundirse: distinta generacion, distinto modo.
+  assert.notEqual(currentBaseline.designSystemVersion, baseline.designSystemVersion);
+  assert.equal(baseline.measurementKind, 'retrospective');
 
   // `runtime-budgets` sigue siendo bloqueante y sigue estando en la lista: eso
   // es lo que este test protege. Lo que ya NO se le exige es estar `passed`

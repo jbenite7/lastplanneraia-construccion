@@ -45,6 +45,35 @@ const COMMON_ARTIFACT_KEYS = [
   'recordedAt', 'metrics',
 ];
 
+// Generaciones de baseline aceptadas. Es una LISTA BLANCA a proposito: una generacion nueva se
+// declara aqui con sus archivos de recuperacion, y cualquier version que no este en la tabla se
+// rechaza. Preguntar por la version "mala" —el patron que ya costo tres defectos en este repo—
+// dejaria pasar un baseline inventado con solo ponerle otro numero.
+//
+// `0.3.3` es la generacion retrospectiva historica: no tiene commit de origen (`sourceRef: null`)
+// y su medicion no es reproducible. `0.3.4` es la primera generacion medida en CI, asi que SI
+// tiene commit y su medicion es un artefacto `current` con las tres muestras conservadas. Los dos
+// modos conviven porque el historico no se reescribe: esta anclado por sha256 y borrarlo seria
+// perder la unica prueba de que aquel presupuesto existio.
+const BASELINE_GENERATIONS = {
+  '0.3.3': {
+    measurementKind: 'retrospective',
+    measurementPath: 'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
+    manifestPath: 'docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json',
+  },
+  '0.3.4': {
+    measurementKind: 'current',
+    measurementPath: 'docs/design-system/runtime-measurements/0.3.4-measurement.json',
+    manifestPath: 'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json',
+  },
+};
+
+export function baselineGeneration(version) {
+  return Object.prototype.hasOwnProperty.call(BASELINE_GENERATIONS, version)
+    ? BASELINE_GENERATIONS[version]
+    : null;
+}
+
 function fail(message) {
   throw new Error(`Runtime budget contract: ${message}`);
 }
@@ -112,7 +141,7 @@ export function validateRuntimeBudgetArtifact(artifact) {
     fail('measurementKind must be retrospective or current');
   }
   const branchKeys = artifact.kind === 'baseline'
-    ? ['approval', 'recovery', 'tolerances', 'reason']
+    ? ['approval', 'recovery', 'tolerances', 'reason', 'justification']
     : artifact.measurementKind === 'current'
       ? ['ciRunId', 'fixtureSha256', 'provenance']
       : ['provenance'];
@@ -142,10 +171,13 @@ export function validateRuntimeBudgetArtifact(artifact) {
   }
 
   if (artifact.kind === 'baseline') {
-    requireEqual(artifact.designSystemVersion, '0.3.3', 'baseline designSystemVersion');
+    const generation = baselineGeneration(artifact.designSystemVersion);
+    if (!generation) {
+      fail(`baseline designSystemVersion must be one of ${Object.keys(BASELINE_GENERATIONS).join(', ')}`);
+    }
     requireEqual(artifact.viewport, '1440x900', 'baseline viewport');
     requireEqual(artifact.theme, 'dark', 'baseline theme');
-    requireEqual(artifact.measurementKind, 'retrospective', 'baseline measurementKind');
+    requireEqual(artifact.measurementKind, generation.measurementKind, 'baseline measurementKind');
     if (!artifact.approval || typeof artifact.approval !== 'object' || Array.isArray(artifact.approval)) {
       fail('baseline approval must be an object');
     }
@@ -159,9 +191,23 @@ export function validateRuntimeBudgetArtifact(artifact) {
     if ('reason' in artifact && typeof artifact.reason !== 'string') {
       fail('baseline reason must be a string');
     }
+    if ('justification' in artifact) {
+      if (!artifact.justification || typeof artifact.justification !== 'object'
+        || Array.isArray(artifact.justification)) {
+        fail('baseline justification must be an object');
+      }
+      requireOnlyKeys(artifact.justification, [
+        'attributionPath', 'decisionRef', 'summary',
+      ], 'baseline justification');
+      for (const key of ['attributionPath', 'decisionRef', 'summary']) {
+        if (typeof artifact.justification[key] !== 'string' || !artifact.justification[key]) {
+          fail(`baseline justification ${key} must be a non-empty string`);
+        }
+      }
+    }
     requireEqual(
       artifact.recovery.manifestPath,
-      'docs/design-system/runtime-measurements/0.3.3-recovery-manifest.json',
+      generation.manifestPath,
       'recovery.manifestPath',
     );
     if (!/^[a-f0-9]{64}$/.test(String(artifact.recovery.manifestSha256 ?? ''))) {
@@ -169,7 +215,7 @@ export function validateRuntimeBudgetArtifact(artifact) {
     }
     requireEqual(
       artifact.recovery.measurementPath,
-      'docs/design-system/runtime-measurements/0.3.3-retrospective.json',
+      generation.measurementPath,
       'recovery.measurementPath',
     );
     if (!/^[a-f0-9]{64}$/.test(String(artifact.recovery.measurementSha256 ?? ''))) {
@@ -199,7 +245,13 @@ export function validateRuntimeBudgetArtifact(artifact) {
     if (typeof artifact.approval?.approvalRef !== 'string' || !artifact.approval.approvalRef) {
       fail('approved baseline requires approvalRef');
     }
-    if (artifact.sourceRef !== null) fail('retrospective baseline cannot claim an origin Git commit');
+    if (generation.measurementKind === 'retrospective') {
+      if (artifact.sourceRef !== null) fail('retrospective baseline cannot claim an origin Git commit');
+    } else if (!/^[a-f0-9]{40}$/.test(String(artifact.sourceRef ?? ''))) {
+      // El extremo laxo de la regla de arriba: un baseline medido en CI **tiene** commit de
+      // origen, y omitirlo lo volveria irreproducible — el defecto exacto que 0.3.3 documenta.
+      fail('current baseline must record the origin Git commit it was measured on');
+    }
     if (!/^[a-f0-9]{64}$/.test(String(artifact.sourceTreeHash ?? ''))) fail('baseline sourceTreeHash must be a SHA-256 checksum');
     try {
       parseRfc3339Utc(artifact.recordedAt, 'recordedAt');
@@ -297,7 +349,7 @@ function compareRuntimeBudgetWithValidator(baseline, measurement, validateMeasur
   validateRuntimeBudgetArtifact(baseline);
   validateRuntimeBudgetArtifact(measurement);
   if (baseline.kind !== 'baseline' || baseline.status !== 'approved') {
-    fail('an approved 0.3.3 runtime baseline is required');
+    fail('an approved runtime baseline is required');
   }
   if (measurement.kind !== 'measurement') fail('current artifact must be a measurement');
   validateApprovedBaselineProvenance(baseline);

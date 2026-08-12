@@ -367,15 +367,70 @@ export function validateRetrospectiveRecoveryManifest(manifest) {
   return true;
 }
 
+// Recibo de una generacion de baseline MEDIDA EN CI. No relaja al retrospectivo: es su contrario
+// exigente. Donde aquel tiene que **negar** el commit de origen (no existe, y fingirlo seria la
+// mentira que 0.3.3 documenta), este tiene que **probarlo** — commit, corrida y muestras crudas.
+export function validateCurrentRecoveryManifest(manifest, measurementPath) {
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    fail('current recovery manifest must be an object');
+  }
+  requireOnlyKeys(manifest, [
+    'schemaVersion', 'kind', 'designSystemVersion', 'measuredDesignSystemVersion', 'status',
+    'recordedAt', 'measurementPath', 'measurementSha256', 'assetInventorySha256', 'metricsSha256',
+    'rawSamplesPreserved', 'versionEvidence', 'sourceHistory',
+  ], 'current recovery manifest');
+  if (manifest.schemaVersion !== 1
+    || manifest.kind !== 'current-measurement-receipt'
+    || manifest.status !== 'ci-measured') {
+    fail('current recovery manifest identity is invalid');
+  }
+  parseRfc3339Utc(manifest.recordedAt, 'current recovery manifest recordedAt');
+  if (manifest.measurementPath !== measurementPath
+    || !SHA256.test(String(manifest.measurementSha256 ?? ''))
+    || !SHA256.test(String(manifest.assetInventorySha256 ?? ''))
+    || !SHA256.test(String(manifest.metricsSha256 ?? ''))) {
+    fail('current recovery manifest checksums are invalid');
+  }
+  if (manifest.rawSamplesPreserved !== true) {
+    fail('current recovery manifest must preserve the raw samples');
+  }
+  if (typeof manifest.versionEvidence !== 'string' || !manifest.versionEvidence) {
+    fail('current recovery manifest versionEvidence must be a string');
+  }
+  const sourceHistory = manifest.sourceHistory;
+  if (!sourceHistory || typeof sourceHistory !== 'object' || Array.isArray(sourceHistory)) {
+    fail('current recovery manifest sourceHistory must be an object');
+  }
+  requireOnlyKeys(sourceHistory, [
+    'originCommitAvailable', 'recoveryFromOriginGitHistory', 'sourceRef', 'ciRunId', 'note',
+  ], 'current recovery manifest sourceHistory');
+  if (sourceHistory.originCommitAvailable !== true
+    || sourceHistory.recoveryFromOriginGitHistory !== true
+    || !SHA1.test(String(sourceHistory.sourceRef ?? ''))
+    || !/^run-[a-z0-9][a-z0-9-]{5,48}$/.test(String(sourceHistory.ciRunId ?? ''))
+    || typeof sourceHistory.note !== 'string' || !sourceHistory.note) {
+    fail('current recovery manifest must prove the origin commit and the CI run');
+  }
+  return true;
+}
+
 export function validateApprovedBaselineProvenance(baseline) {
   const recovery = baseline.recovery;
+  const isCurrent = baseline.measurementKind === 'current';
+  const expectedManifestPath = isCurrent
+    ? 'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json'
+    : BASELINE_MANIFEST_PATH;
+  const expectedMeasurementPath = isCurrent
+    ? 'docs/design-system/runtime-measurements/0.3.4-measurement.json'
+    : BASELINE_MEASUREMENT_PATH;
   if (!recovery
-    || recovery.manifestPath !== BASELINE_MANIFEST_PATH
+    || recovery.manifestPath !== expectedManifestPath
     || !SHA256.test(String(recovery.manifestSha256 ?? ''))
-    || recovery.measurementPath !== BASELINE_MEASUREMENT_PATH
+    || recovery.measurementPath !== expectedMeasurementPath
     || !SHA256.test(String(recovery.measurementSha256 ?? ''))) {
     fail('approved baseline recovery provenance is required');
   }
+  if (isCurrent) return validateApprovedCurrentBaselineProvenance(baseline, recovery);
 
   const rawManifest = readFileSync(path.resolve(recovery.manifestPath), 'utf8');
   const manifestChecksum = createHash('sha256').update(rawManifest).digest('hex');
@@ -409,6 +464,68 @@ export function validateApprovedBaselineProvenance(baseline) {
     || measurement.provenance.assetInventorySha256 !== assetHash
     || manifest.assetInventorySha256 !== assetHash) {
     fail('approved baseline asset inventory checksum mismatch');
+  }
+  return true;
+}
+
+// Procedencia de un baseline medido en CI. Se separa del retrospectivo en tres puntos, y cada uno
+// tiene su motivo medido, no estetico:
+//
+//  1. `designSystemVersion` NO se compara entre baseline y medicion. El baseline nombra la
+//     **generacion del presupuesto** (0.3.4) y la medicion nombra la **version del producto**
+//     (1.1.0). Son dos magnitudes con el mismo nombre — el error que este repo ya pago tres veces —
+//     asi que en vez de callarlo, el manifiesto declara `measuredDesignSystemVersion` y aqui se
+//     comprueba que coincide con la medicion. La correspondencia se verifica; no se supone.
+//  2. `sourceTreeHash` del baseline es la huella del arbol medido, no el hash del inventario de
+//     activos. En el retrospectivo coincidian porque no habia arbol que huellar.
+//  3. El inventario se ata igual, pero contra la medicion y el manifiesto, que es donde vive.
+function validateApprovedCurrentBaselineProvenance(baseline, recovery) {
+  const rawManifest = readFileSync(path.resolve(recovery.manifestPath), 'utf8');
+  if (createHash('sha256').update(rawManifest).digest('hex') !== recovery.manifestSha256) {
+    fail('approved baseline manifest checksum mismatch');
+  }
+  const manifest = JSON.parse(rawManifest);
+  validateCurrentRecoveryManifest(manifest, recovery.measurementPath);
+
+  const rawMeasurement = readFileSync(path.resolve(recovery.measurementPath), 'utf8');
+  if (createHash('sha256').update(rawMeasurement).digest('hex') !== recovery.measurementSha256) {
+    fail('approved baseline recovery checksum mismatch');
+  }
+  if (manifest.measurementPath !== recovery.measurementPath
+    || manifest.measurementSha256 !== recovery.measurementSha256) {
+    fail('approved baseline recovery manifest does not identify the recovery measurement');
+  }
+  const measurement = JSON.parse(rawMeasurement);
+  if (measurement.kind !== 'measurement' || measurement.measurementKind !== 'current') {
+    fail('approved current baseline requires a current measurement');
+  }
+  if (manifest.designSystemVersion !== baseline.designSystemVersion
+    || manifest.measuredDesignSystemVersion !== measurement.designSystemVersion) {
+    fail('approved current baseline manifest does not bind both versions');
+  }
+  for (const key of [
+    'route', 'viewport', 'theme', 'density', 'fixture', 'sourceRef', 'sourceTreeHash', 'recordedAt',
+  ]) {
+    if (measurement[key] !== baseline[key]) {
+      fail(`approved baseline ${key} does not match recovery measurement`);
+    }
+  }
+  if (manifest.recordedAt !== measurement.recordedAt
+    || manifest.metricsSha256 !== sha256Canonical(measurement.metrics)) {
+    fail('approved baseline recovery manifest does not match the current measurement');
+  }
+  if (manifest.sourceHistory.sourceRef !== measurement.sourceRef
+    || manifest.sourceHistory.ciRunId !== measurement.ciRunId) {
+    fail('approved baseline recovery manifest does not identify the measured commit and run');
+  }
+  validateAssets(measurement.provenance?.assets);
+  const assetHash = createHash('sha256').update(JSON.stringify(measurement.provenance.assets)).digest('hex');
+  if (measurement.provenance.assetInventorySha256 !== assetHash
+    || manifest.assetInventorySha256 !== assetHash) {
+    fail('approved baseline asset inventory checksum mismatch');
+  }
+  if (canonicalJson(baseline.metrics) !== canonicalJson(measurement.metrics)) {
+    fail('approved current baseline metrics must be the measured metrics, unedited');
   }
   return true;
 }

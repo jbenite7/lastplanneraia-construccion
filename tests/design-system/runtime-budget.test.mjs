@@ -38,7 +38,7 @@ test('accepts a measured retrospective 0.3.3 artifact without treating it as app
   assert.equal(validateRuntimeBudgetArtifact(retrospective), true);
   assert.throws(
     () => compare(retrospective, CURRENT_MEASUREMENT),
-    /approved 0\.3\.3 runtime baseline is required/,
+    /approved runtime baseline is required/,
   );
 });
 
@@ -60,7 +60,7 @@ test('rejects a pending or unapproved baseline instead of inventing values', () 
   assert.equal(validateRuntimeBudgetArtifact(pending), true);
   assert.throws(
     () => compare(pending, CURRENT_MEASUREMENT),
-    /approved 0\.3\.3 runtime baseline is required/,
+    /approved runtime baseline is required/,
   );
 });
 

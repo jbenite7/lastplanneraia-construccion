@@ -1,0 +1,60 @@
+{
+  "$schema": "./runtime-budget.schema.json",
+  "schemaVersion": 1,
+  "kind": "baseline",
+  "measurementKind": "current",
+  "status": "approved",
+  "designSystemVersion": "0.3.4",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "sourceRef": "73df32dcec8c923e923b5b27f1e4fc57f128b74a",
+  "sourceTreeHash": "f6467374e2ee035b3ac8ac11d990582340cbde7a4837a5568e0293c603b45b95",
+  "recordedAt": "2026-08-12T16:24:42.258Z",
+  "approval": {
+    "status": "approved",
+    "approvedBy": "user",
+    "approvalRef": "user-approved-runtime-budget-0.3.4-2026-08-12"
+  },
+  "justification": {
+    "attributionPath": "docs/design-system/runtime-measurements/2026-08-12-atribucion-css-gzip-0.3.3.md",
+    "decisionRef": "D-GAC-5(b) / D-GAC-6",
+    "summary": "El delta de cssGzipBytes contra 0.3.3 quedo atribuido al 100% (altas +17367 B, bajas -8314 B, crecimiento con commit nombrado +48567 B) sin regresion; duplicateRequestCount bajo de 3 a 0."
+  },
+  "recovery": {
+    "manifestPath": "docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json",
+    "manifestSha256": "e143d41e68cb4620f69ed482bd6c813f2c33228b765ca4ad05d1285a53b843e4",
+    "measurementPath": "docs/design-system/runtime-measurements/0.3.4-measurement.json",
+    "measurementSha256": "d758d9bd812f674e1192889a232628218cfd18fcdc74ce2b6003d230f8d6632d"
+  },
+  "metrics": {
+    "adapterAssets": [
+      "/css/design-system/adapters/datatables.css",
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/shell-sidebar.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "laboratoryAssets": [],
+    "cssGzipBytes": 194564,
+    "jsGzipBytes": 633393,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 1070.6,
+    "handsontableInteractionMs": 134.6
+  },
+  "tolerances": {
+    "cssGzipBytes": 2048,
+    "jsGzipBytes": 4096,
+    "addedAdapterAssets": 0,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 110,
+    "handsontableInteractionMs": 45
+  }
+}

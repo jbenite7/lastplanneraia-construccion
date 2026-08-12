@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "current-measurement-receipt",
+  "designSystemVersion": "0.3.4",
+  "measuredDesignSystemVersion": "1.1.0",
+  "status": "ci-measured",
+  "recordedAt": "2026-08-12T16:24:42.258Z",
+  "measurementPath": "docs/design-system/runtime-measurements/0.3.4-measurement.json",
+  "measurementSha256": "d758d9bd812f674e1192889a232628218cfd18fcdc74ce2b6003d230f8d6632d",
+  "assetInventorySha256": "a722008480f5cd2ce289e28220fe98328a85c8398ee9ee0fb71880df5c5897a5",
+  "metricsSha256": "c7c405f5c15eb4cab9d638a589e86e9ca7474e33c3792c764821bf4d2fc78b28",
+  "rawSamplesPreserved": true,
+  "versionEvidence": "docs/design-system/version.json records 1.1.0; 0.3.4 is the runtime-budget generation label, not the product version",
+  "sourceHistory": {
+    "originCommitAvailable": true,
+    "recoveryFromOriginGitHistory": true,
+    "sourceRef": "73df32dcec8c923e923b5b27f1e4fc57f128b74a",
+    "ciRunId": "run-31616614996-1",
+    "note": "Measured by GitHub Actions run 31616614996 on the isolated CI runtime; recoverable from origin Git history at the recorded commit."
+  }
+}
