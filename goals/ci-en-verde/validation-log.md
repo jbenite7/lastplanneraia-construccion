@@ -32,3 +32,22 @@ murió sin escribirla aquí.
 - Dato conocido y no reabierto: `display` computa `flex` (no el `inline-flex` declarado) porque el
   padre `#pgLegend` es `display: flex` y `inline-flex` se blockifica — ya perseguido y disuelto en
   el `goal.md` del frente. D-GAC-4 queda en su cola; aquí no se toca.
+
+## 2026-08-12 · Cierre del frente publicado y desplegado a pruebas
+
+- **Publicación:** `3bc3a662` (baseline 0.3.4, D-GAC-5(b)) y `e40f113e` (decisiones) en
+  `origin/main`; `git status -sb` sin `ahead/behind`.
+- **Verificación local previa al push:** `npm run test:design-system:static` 8/8 (`EXIT=0`)
+  con el stack Docker levantado. `npm run test:performance:lab` **verde** (`1 passed`,
+  `EXIT=0`): el baseline 0.3.4 cierra el rojo de `runtime-budgets`.
+- **CI (corrida 31619568581):** `design-system-static` verde; `design-system-runtime` en
+  failure **solo** por los 18 goldens del carril visual (D-GAC-4, tolerado y en cola). Matiz
+  operativo: el `&&` del job hace que `test:performance:lab` no llegue a correr en CI mientras
+  el carril visual esté rojo — el verde de presupuestos quedó demostrado localmente.
+- **Despliegue a pruebas** (autorizado por el usuario el 2026-08-12, solo pruebas):
+  `prueba-lps` pasó de `5a337f3e` a `e40f113e` (14 commits, sin migraciones, sin drift).
+  Respaldo previo `prueba-lps-predeploy-20260812-170514.tar.gz` (~706 MB) y SHA de rollback
+  anotado. `composer install` con PHP 8.3 regeneró el autoloader. Smoke: `/` y `/login`
+  HTTP 200 interno y externo, `/proyectos` 302 a login (protección intacta),
+  `vendor-datatables-legacy.css` 200. `php_errorlog` sin entradas nuevas (las últimas son
+  del 2026-07-30). Producción **no** se tocó.
