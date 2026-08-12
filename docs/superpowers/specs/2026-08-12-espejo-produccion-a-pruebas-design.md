@@ -34,3 +34,22 @@ su origen (producción para lo espejado; export para lo conservado).
 - Cada base que se pisa tiene respaldo restaurable ANTES, y el dump se prueba (conteos exactos).
 - `$DB_NAME` se imprime antes de todo comando destructivo (pruebas y producción comparten cuenta SSH).
 - `20260712_remap_consolidado_unique_id.php` NO se ejecuta (obsoleta y destructiva).
+
+## Cierre (2026-08-12, mismo día)
+
+Las tres fases se ejecutaron y verificaron; además, con autorización posterior del usuario y
+producción en mantenimiento, la reparación y la nivelación se aplicaron también en producción:
+
+- **Local**: espejo de producción + reparación A/B (25.708 consolidado, 1.422 semanal; 7.691+336
+  históricos quedan NULL) + esquema nivelado con las 31 tablas/vistas rescatadas del snapshot de
+  pruebas + seeds `test.*` y sandbox. Tests canónicos en verde; smoke guardar→releer→revertir BIEN.
+- **Pruebas**: clon verificado de la local (conteos idénticos); el smoke sobre la actividad 1.1.2
+  de Da Porto —la del error original— guardó sin «Id de actividad inválido».
+- **Producción**: dry-run idéntico a lo medido, apply con los mismos totales, nivelación 71→102
+  objetos con conteos uno a uno contra local; sin sandbox ni cuentas test. Respaldo previo
+  `db-produccion-COMPLETO-pre-mantenimiento-20260812-224822.sql` (repo `backups/` + servidor).
+- **Pendiente fuera de este frente**: salir de mantenimiento (decisión del usuario) y el release
+  de código que consuma las tablas PDC v2 ya presentes.
+
+Condición de hecho: **cumplida** (edición en PI de pruebas sin error, conteos cuadrados).
+Bitácora de la wiki: `memoria/referencias/espejo-y-reparacion-unique-id.md`.
