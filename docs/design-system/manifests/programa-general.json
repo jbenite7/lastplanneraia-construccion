@@ -82,7 +82,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "a4d4cbbd5c050003c5f7030e218159f7448db606a0bac0198982ca343535847a"
+      "sha256": "a4d4cbbd5c050003c5f7030e218159f7448db606a0bac0198982ca343535847a",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1180x820.png",
+          "sha256": "cb53e9e5fdb2b067810e0697ce693259ca61705449d3362ef39477a532e2fb21"
+        }
+      }
     },
     {
       "id": "programa-general-dark-1440x900",
@@ -98,7 +104,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
-      "sha256": "2b322c01c45885e5f54cde60079bc6ffb8bb18e782b13b7045ab6f5169975a7b"
+      "sha256": "2b322c01c45885e5f54cde60079bc6ffb8bb18e782b13b7045ab6f5169975a7b",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1440x900.png",
+          "sha256": "a335c96d845f8b68017dcedd0d4a7df33e39582fb1afc55ea97f57bc67308b9c"
+        }
+      }
     }
   ]
 }
