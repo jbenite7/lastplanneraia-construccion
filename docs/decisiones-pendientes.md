@@ -1290,6 +1290,50 @@ por costumbre.
 - **Estado:** `abierta` — con el coste corregido. La opción (a) sigue siendo la recomendada, pero
   ahora se sabe que es un frente, no una línea.
 
+### D-GAC-5 · El presupuesto de runtime se congeló el día que el CI se rompió
+
+- **Quién pregunta:** la coordinadora, 2026-08-12, tras enchufar `runtime-budgets` al CI (fase F-AB).
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si el baseline `runtime-baseline-0.3.3.json` se re-aprueba con las cifras de hoy,
+  o si estas violaciones se tratan como deuda de rendimiento a corregir.
+- **Qué se midió** (corrida `31563364701`, sobre `0b2cb1f8`, procedencia real de CI):
+  - `Measure runtime budgets` → **success**. `Check runtime budgets against the baseline` →
+    **failure**, con `"pass": false` y **violaciones reales, no de procedencia**:
+
+    | Métrica | Baseline | Máximo | Medido |
+    |---|---|---|---|
+    | `cssGzipBytes` | 136.933 | 138.981 | **194.554** (+42 % sobre el baseline) |
+    | `initializationMs` | 991 | 1.101,5 | **1.644,4** (+66 %) |
+    | `adapterAssets` | 7 rutas | tolerancia 0 | lista distinta |
+
+  - En `adapterAssets`, el baseline **todavía lista `semi-auto-review.css`**, que se eliminó con el
+    **PDC v1 el 2026-08-04** (`AGENTS.md`). Y faltan dos que sí existen hoy: `shell-sidebar.css` y
+    `datatables.css`. Verificado contra `public/css/design-system/adapters/`.
+  - **El dato que lo explica todo:** el último commit del baseline es `1cfc6e2c`, del **2026-07-17** —
+    **el mismo día de la última corrida verde del workflow**. El gate perdió la capacidad de correr y
+    el baseline dejó de actualizarse **la misma fecha**. Un mes de cambios legítimos quedó fuera de su
+    vista.
+- **Lo que NO se puede concluir, y conviene decirlo:** **no** que la aplicación «se degradó un 42 %».
+  Lo medido es la **divergencia contra un baseline de hace un mes**, que incluye altas y bajas
+  legítimas. Cuánto de ese 42 % es crecimiento real y cuánto es baseline obsoleto **no está medido**.
+- **Opciones:**
+  - **(a) Re-aprobar el baseline con las cifras de hoy**, dejando escrito qué cambió y por qué. Pone
+    el gate en verde y lo devuelve a vigilar desde hoy. **Riesgo:** si parte del 42 % es una
+    regresión real, se hornea como normal — y eso es exactamente lo que un baseline no debe hacer.
+  - **(b) Tratarlo como deuda:** investigar de dónde salen los 57 KB y los 650 ms antes de tocar el
+    baseline. Es lo correcto de fondo y es un frente propio con medición por módulo.
+  - **(c) Mezcla:** corregir `adapterAssets` ya —es un hecho, no una opinión: un archivo que no existe
+    y dos que sí— y dejar las dos métricas numéricas abiertas hasta (b).
+- **Recomendación:** **(c)**, y luego (b). La lista de adaptadores no es un juicio: está objetivamente
+  desfasada. Las dos cifras sí necesitan saber cuánto es crecimiento y cuánto es baseline viejo, y
+  aprobarlas a ciegas convertiría una posible regresión en la nueva normalidad.
+- **Por qué no lo decido yo, teniendo autonomía:** **tocar un baseline escala siempre**, sin aplicar
+  la prueba del bloqueo (`AGENTS.md`, `coordinacion-sesiones.md`). Y aquí el riesgo es el del propio
+  protocolo: sería fabricar el verde con el gesto más inocente que existe.
+- **Qué queda saltado esperando:** el gate `runtime-budgets` se queda **rojo y honesto**. No se toca
+  el baseline ni el recibo.
+- **Estado:** `abierta`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces

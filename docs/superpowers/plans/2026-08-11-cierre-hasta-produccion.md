@@ -542,6 +542,50 @@ quedó saltado · desviaciones del plan.
 
 ---
 
+### ## Cierre parcial de F-AB — anotado el 2026-08-12
+
+**Sha publicado:** `0b2cb1f8`. **Corrida medida:** `31563364701`, procedencia real de CI.
+
+**Lo conseguido, y es lo que la fase existía para conseguir:**
+
+```
+design-system-static              => success
+  Enforce full-app-flow gate      => success   ← nunca habia corrido
+  Measure runtime budgets         => success
+  Check runtime budgets ...       => failure
+  Run laboratory gates            => skipped
+```
+
+**`full-app-flow` pasó en CI por primera vez.** Constaba `blocked` desde siempre y su premisa
+—«necesita una base de datos aislada que nadie montó»— **era falsa**: la base ya existía en CI y el
+gate solo estaba sin enchufar.
+
+**Lo que NO se consiguió, y por qué se deja rojo:**
+
+1. **`runtime-budgets` falla con violaciones reales**, no de procedencia: `cssGzipBytes` 194.554
+   contra un máximo de 138.981, `initializationMs` 1.644 contra 1.101, y una lista de adaptadores
+   desfasada que aún nombra un archivo borrado con el PDC v1. **El baseline se congeló el 2026-07-17,
+   el mismo día que el CI dejó de pasar.** Es `D-GAC-5`, **abierta**: tocar un baseline escala
+   siempre, y aprobarlo a ciegas sería fabricar el verde con el gesto más inocente que existe.
+2. **El índice sigue diciendo `full-app-flow: blocked`, y está bien que lo diga.** Intenté ponerlo
+   `passed` y **el contrato me lo rechazó**: exige que el recibo apunte a un **artefacto** con
+   `gateId` y `exitCode` producido por la corrida, y yo lo había escrito a mano.
+   `closeout-evidence.test.mjs:68` hizo su trabajo. **No se fabricó el artefacto**; la edición se
+   revirtió y el estático volvió a `RC=0`.
+   **Trabajo que queda, concreto:** que el workflow **emita ese artefacto** desde la corrida real. Sin
+   eso, un gate puede pasar en CI y el índice no puede decirlo — y esa es la forma correcta de que no
+   pueda decirlo.
+
+**Efecto secundario que asumo y dejo escrito:** al insertar los gates antes del paso visual, un fallo
+mío ahora **salta** «Run laboratory gates». No oculta nada nuevo —ese paso ya fallaba por
+`D-GAC-4`— pero mientras `runtime-budgets` siga rojo, el estado del carril visual deja de verse en
+cada corrida. Si molesta, la solución es `if: always()` en ese paso, y es decisión de quien retome.
+
+**Excepción de protocolo:** implementada y avalada por la misma sesión coordinadora, como F-0.
+Registrada junto a `D-GAC-3`. Sigue sin ser el modo normal.
+
+---
+
 ## Fase F-C · `D-CEF-1` — cada módulo declara dónde se pintan sus estados
 
 **Frente:** `superficie-de-estados`. **Decisión del usuario:** opción **(a)**, obligatorio.
