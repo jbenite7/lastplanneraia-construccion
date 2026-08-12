@@ -18,7 +18,17 @@ const coreCss = fs.readFileSync(path.join(root, 'public/css/design-system/core.c
 const buttonsCss = fs.readFileSync(path.join(root, 'public/css/buttons.css'), 'utf8');
 const bridgeCss = fs.readFileSync(path.join(root, 'public/css/design-system/adapters/legacy-bridge.css'), 'utf8');
 
-const filterMarkup = view.match(/class="aia-chip pg-filter-chip[^"]*"[^>]*data-filter="[^"]+"[^>]*>/g) || [];
+// D-GAC-2 (2026-08-12): esto exigía `aia-chip` y `pg-filter-chip` CONTIGUAS y contaba 0 de 14
+// desde 47dda844 (2026-08-04), cuando el markup adoptó `pdc-legend-item` —la clase canónica del
+// chip— entre ambas. Cedió la prueba, no el markup. Se comparan tokens de clase en vez de una
+// cadena literal: así el contrato sigue exigiendo las dos clases pero no el orden ni la vecindad,
+// que es lo que caducaba con cada variante legítima.
+const filterMarkup = [...view.matchAll(/<[^>]*class="([^"]*)"[^>]*data-filter="[^"]+"[^>]*>/g)]
+  .filter(([, classAttribute]) => {
+    const classes = classAttribute.trim().split(/\s+/);
+    return classes.includes('aia-chip') && classes.includes('pg-filter-chip');
+  })
+  .map(([tag]) => tag);
 
 // El shell canonico admite modificadores: PG lleva `aia-shell--sidebar` desde
 // da792e8 («Programa General usa el shell sidebar»). Se asierta la presencia de
