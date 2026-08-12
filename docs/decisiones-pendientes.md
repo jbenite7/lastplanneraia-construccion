@@ -1447,7 +1447,11 @@ siendo decisión del usuario por D-GAC-6.
   (worktree desechable sin `.env` ni daemon Docker), no del commit. Visto emitido:
   `.claude/vistos/gates-al-ci` → `365c486e`. El gate `runtime-budgets` queda **rojo y honesto**
   (`cssGzipBytes` y `adapterAssets`) hasta que el usuario decida el 0.3.4.
-- **Estado:** `resuelta` — pendiente solo de ejecutar el descarte y el push de `365c486e`.
+- **Estado:** `resuelta y desbloqueada` — `365c486e` publicado (`b3d65ddd`); `0f968d2f` descartado.
+  **El usuario aprobó el 2026-08-12 crear el baseline 0.3.4** según la recomendación del informe de
+  atribución (medición fresca con procedencia, `adapterAssets` con las 8 rutas, atribución adjunta,
+  punteros de `package.json` y del contrato a 0.3.4). Encargado al frente `gates-al-ci`; detalle en
+  su `goal.md`, sección «Encargo del baseline 0.3.4».
 
 ### D-GAC-7 · El gate de PG usa `test.C` y el runtime aislado de CI no lo habilita — resuelta por la coordinadora: se añade
 
