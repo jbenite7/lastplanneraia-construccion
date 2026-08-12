@@ -113,6 +113,30 @@ jobs:
       # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
       - name: Correr la suite PHP completa que el CI puede honrar
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
+      # F-AB (2026-08-12): los dos gates que constaban `blocked` se enchufan AQUI,
+      # antes de «Run laboratory gates», y no despues. Motivo medido: ese paso
+      # falla hoy por goldens de una sola plataforma (D-GAC-4, abierta), y cuando
+      # un paso falla GitHub salta todos los posteriores — por eso el gate de
+      # persistencia de :144 no llego a ejecutarse en la corrida 31561660136.
+      # Puestos aqui corren de verdad y dan procedencia real sin tocar un golden.
+      # La app y la base aislada ya estan levantadas desde antes de :105, y las
+      # cuatro variables CI_* ya vienen de «Capture runtime provenance» (:60-83):
+      # NO se redeclaran, porque redeclararlas es el primer paso hacia fabricarlas.
+      - name: Enforce full-app-flow gate
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+          E2E_PROJECT_KEYS: construction
+          E2E_REQUIRE_ISOLATED_DB: "1"
+          E2E_ALLOW_DB_MUTATION: design-system-ci
+        run: npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
+      - name: Measure runtime budgets
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+        run: npm run test:runtime-budget:measure
+      - name: Check runtime budgets against the baseline
+        run: npm run test:runtime-budget:check
       - name: Run laboratory gates
         id: blocking-runtime
         env:
