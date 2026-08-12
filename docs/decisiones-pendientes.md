@@ -1006,7 +1006,20 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   tentador precisamente porque está a la vista y luce; por eso conviene que lo decida alguien que no
   esté dentro del frente.
 - **Qué quedó saltado esperando:** `display` de `buttons.css:970` y quienquiera que lo esté pisando.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-12: la opción 2 la eligió el usuario — y ya estaba ejecutada antes de
+  que nadie la marcara.` Medido por la coordinadora el 2026-08-12, antes de asignar la fase, para no
+  repetir el encargo caducado: **el `display: inline-flex !important` de `:970` ya no existe.** Lo
+  retiró `0a228a39` (2026-08-11), verificado ancestro de `origin/main` con
+  `git merge-base --is-ancestor`. Y lo hizo mejor de lo que esta ficha pedía: retiró **los dieciséis**
+  del chip de golpe, midió el valor computado, **repuso los seis que sí hacen trabajo** y verificó en
+  las tres pantallas a 1180 y 900 — idéntico en las 17 propiedades observadas. La lista heredada de
+  «cuatro que ganan» se quedaba corta por dos (`flex-shrink` y `transition`), y **medir en una sola
+  pantalla habría dejado dos regresiones fuera del radar**. Al chip le quedan seis `!important`, los
+  seis medidos como necesarios.
+  **Consecuencia que cierra el círculo:** tres de los diez retirados —`display`, `overflow-wrap`,
+  `word-break`— eran justo los que `test_programa_general_sprint_contract.mjs:150` exigía con
+  `!important`. Ese contrato se rompió **el día en que alguien hizo lo correcto**, y quedó escondido
+  detrás de otros dos rojos hasta hoy. Ver `D-GAC-3`.
 
 
 ### D-GAC-1 · Dos contratos del repo se contradicen y llevan el CI un mes en rojo
@@ -1030,6 +1043,11 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   - `design-system-runtime` lleva `needs: design-system-static`
     (`.github/workflows/design-system.yml:51`), así que el job donde F-AB tenía que enchufar los dos
     gates **no llega a ejecutarse nunca**. El bloqueo es total, no una molestia.
+  - **Corrección del 2026-08-12, error de la coordinadora:** esta ficha atribuía el rojo a «la suite
+    estática». **Es falso.** `npm run test:design-system:static` da `RC=0`, 8/8, también con
+    `DS_ACTIVATION_STRICT=1`. Lo que tumba el job es un paso aparte, `Enforce Programa General pilot
+    contract` (`design-system.yml:46-47`). Lo midió la sesión de F-0 al llegar. La conclusión
+    aguanta; la atribución no.
   - **El dato que reencuadra la pregunta:** `!important` por hoja —
     `programacion-semanal.css` **433**, `programacion-intermedia.css` **182**, `buttons.css` **138**,
     `programa-general.css` **4**. Y existe **un solo** contrato de este tipo en el repo, que aplica
@@ -1055,6 +1073,95 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   !important sin capa tiene que poner el gate rojo, y si no lo pone, la aserción nueva no vigila nada
   y se rehace. Reordena el plan: la reparación del CI pasa a ser la fase 1 y F-AB baja a segunda.`
 
+### D-GAC-2 · La regex de los chips de PG quedó vieja y contaba cero de catorce
+
+- **Quién pregunta:** sesión de ejecución del frente `ci-en-verde` (fase F-0), 2026-08-12;
+  confirmado de forma independiente por la coordinadora.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si cede la prueba o cede el markup, en el segundo rojo que apareció detrás del
+  primero al resolver `D-GAC-1`.
+- **Qué se midió** (sobre `f743c29b`): `tests/test_programa_general_sprint_contract.mjs:21` exige
+  `class="aia-chip pg-filter-chip[^"]*"` con las dos clases **contiguas**, y el markup real es
+  `class="aia-chip pdc-legend-item pg-filter-chip …"`. Los 14 chips existen (`grep -c pg-filter-chip`
+  → 14); lo que da `0` es la forma contigua, y la aserción de `:101` falla con `0 !== 14`. Se rompió
+  en **`47dda844` (2026-08-04)**, ancestro de `main`; el fallo del `!important` lo tapaba porque
+  dispara antes en el archivo.
+- **Opciones:** (a) la regex tolera clases intermedias; (b) se quita `pdc-legend-item` del markup
+  para que la regex vuelva a casar; (c) frente propio.
+- **Recomendación:** **(a)**. El markup no está mal — `pdc-legend-item` es la clase canónica del
+  chip; la que se quedó atrás es la prueba, y lleva ocho días midiendo una forma que ya nadie
+  escribe. **(b)** sería borrar la clase canónica para complacer a una expresión regular. **(c)** es
+  honesto pero parte en dos un frente sobre el mismo archivo, que ya fundimos una vez en este plan.
+- **Qué quedó saltado esperando:** la Tarea 3 de F-0 entera — el gate de cierre y el verde en
+  Actions. Nada publicado.
+- **Estado:** `resuelta 2026-08-12: (a) — la regex tolera clases intermedias; el markup no se toca.
+  Se pliega en F-0 como Tarea 2b, con dos mutaciones exigidas: quitar un chip real debe dar 13≠14, y
+  quitarle la clase pg-filter-chip a un chip debe dar rojo también. Cambiar el número de la aserción
+  no cuenta como mutación.`
+
+### D-GAC-3 · Tercer rojo: el contrato exige `!important` donde debería exigir el resultado
+
+- **Quién decide:** la coordinadora, **con la autonomía delegada por el usuario el 2026-08-12**
+  («termina todas las fases, tienes autonomía para decidir»), y aplicando el precedente que él ya
+  fijó en `D-CI-1`. No se le devuelve porque no depende de su criterio de negocio: es la misma
+  pregunta ya resuelta, en otro archivo.
+- **Fecha:** 2026-08-12
+- **Qué se midió** (sobre `54e5f474`, worktree `beautiful-blackwell-414f09`):
+  - Al caer el segundo rojo apareció un **tercero**: `:150` exige que `.pdc-legend-item` declare
+    `display`, `white-space`, `overflow-wrap` y `word-break` **con `!important`**.
+  - `public/css/buttons.css:977-993` **tiene las cuatro declaraciones con sus valores correctos**;
+    lo que no tienen es el `!important`. Lo retiró a propósito el frente `buttons-important-leyenda`
+    el **2026-08-11**, dejando escrita en el archivo la sonda que lo justifica (`:52-58`).
+  - **Cuántos rojos quedan escondidos: exactamente uno, éste.** Medido neutralizando aserciones una
+    a una sobre una copia en `scratchpad/`, sin tocar el repo: **1 rota de 28**. El archivo aborta en
+    la primera, así que sin esta medición cada arreglo destapaba otro y nadie sabía cuántos faltaban.
+- **Qué se decide y por qué:** la aserción pasa a exigir **los valores** (`white-space: normal`,
+  `overflow-wrap: normal`, `word-break: normal`) y **no el `!important`**. El objetivo declarado de
+  esa aserción es que los chips no fragmenten palabras; el `!important` es el mecanismo, no el
+  resultado. Es literalmente el defecto de `D-CI-1` —«el contrato fija una forma donde debería medir
+  un resultado»— que el usuario resolvió con (b).
+- **Lo que se añade y el contrato no tenía:** exigir los valores en la hoja **no prueba que ganen**.
+  Se comprueba en navegador, a 1180×820 dark, el **valor computado** de `overflow-wrap` y
+  `word-break` sobre un chip real. Si no ganan, el hallazgo es otro y se escala.
+- **Relación con `D-BTN-1` (fase F-D):** esta ficha **cambia el enunciado de esa fase**. F-D iba a
+  retirar un `!important` de `.pdc-legend-item` creyendo que no lo protegía nadie; en realidad este
+  contrato lo exigía. Al quitar esa exigencia, F-D deja de chocar con él.
+- **Estado:** `resuelta 2026-08-12: la aserción mide los valores, no el !important, y se añade la
+  comprobación del valor computado en navegador. Decidida por la coordinadora bajo autonomía
+  delegada, con el precedente de D-CI-1.`
+
+### D-COORD-1 · Las colas de decisiones de las sesiones no están versionadas
+
+- **Quién pregunta:** levantado por la sesión del frente `gates-al-ci` fuera de su encargo, el
+  2026-08-12; **remedido por la coordinadora, que encontró la afirmación a medias.**
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si `decisiones/` sale del `.gitignore` para que git detecte las colisiones entre
+  sesiones, o se acepta el riesgo.
+- **Qué se midió** (`git check-ignore -v`, sobre `3fa087b8`):
+  - `decisiones/` → **ignorado** (`.gitignore:404`).
+  - `.claude/` → **ignorado** (`.gitignore:219`).
+  - `goals/` → **NO ignorado.** Está versionado, con 40 entradas.
+  - **Corrección:** la escalada original decía que los tres estaban ignorados y citaba `.gitignore:62`
+    para `goals/`. Es falso, y **la coordinadora lo repitió al usuario antes de comprobarlo** — el
+    defecto exacto que esta cola persigue: una cifra ajena se adopta como propia y pierde su
+    procedencia. Quien la repite es quien la afirma.
+  - Hay **10 colas vivas** en `decisiones/`, una por frente, ninguna versionada.
+- **Por qué importa, y no es teórico:** el 2026-08-11 una sesión escribió con `Write` sobre la cola de
+  otra y **se llevó doce hallazgos sin conflicto, sin diff y sin rastro** — precisamente porque el
+  archivo no estaba versionado. Versionarlo convierte una pérdida muda en un conflicto ruidoso. La
+  convención de nombres por rol ayuda, pero **depende de que todos la recuerden; git no depende de que
+  nadie recuerde nada**. La cola compartida de este repo acumuló 27 commits en un día entre varias
+  sesiones sin perder nada, por estar versionada.
+- **Opciones:** (a) sacar `decisiones/` del `.gitignore` y versionarla; (b) dejarlo y confiar en la
+  convención de nombres; (c) suprimir `decisiones/` y que todo vaya a esta cola única, que ya está
+  versionada.
+- **Recomendación:** **(a)**, y **(c) merece mirarse**: este repo ya tiene una cola canónica
+  versionada, y el andamiaje del plugin crea una segunda en `decisiones/` que está ignorada a
+  propósito. **Dos colas es cómo se pierde una decisión**, y una de las dos además es invisible para
+  git. Pero `(c)` toca el andamiaje del plugin, que es otro repositorio y otro mando.
+- **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada por esto.
+- **Estado:** `abierta`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
@@ -1078,3 +1185,6 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1b-4` | Arreglar los que no tocan `Database.php` ni legado; anotar el resto **con su motivo** | Frente 1b · aplicado en `3d72a8df` (2 arreglados, 4 anotados) |
 | `D-F1-6` | Frente corto de forma, **con la regla de no cerrar sin haber quitado algo** | Turno propio, al publicar el Frente 1b · no se pliega en el Frente 2 |
 | `D-GAC-1` | `!important` permitido dentro de `@layer`, prohibido fuera — para desbloquear el CI | Fase **F-0** del plan de cierre, frente `ci-en-verde` |
+| `D-GAC-2` | La regex de los chips tolera clases intermedias; el markup no se toca | Fase **F-0**, Tarea 2b · mismo frente |
+| `D-GAC-3` | La aserción mide los valores, no el `!important` — y se comprueba en navegador | Fase **F-0**, Tarea 2c · mismo frente |
+| `D-BTN-1` | Investigar y retirar lo que no gana — **ya ejecutado** en `0a228a39` | Frente `buttons-important-leyenda` · F-D se retira del plan |

@@ -11,10 +11,10 @@ publicado en producción.
 
 **Spec:** [2026-08-11-plan-cierre-hasta-produccion-design.md](../specs/2026-08-11-plan-cierre-hasta-produccion-design.md)
 
-**Arquitectura:** **cinco** fases, cada una **un frente** con worktree propio, ciclo de visto y el
+**Arquitectura:** **cuatro** fases vivas (F-D se retiró el 2026-08-12, ya estaba hecha), cada una **un frente** con worktree propio, ciclo de visto y el
 gate de nueve pasos de `AGENTS.md` §Publicación. Ninguna empieza hasta que la anterior está publicada
 **y anotada** (paso 9). El orden no es estético: **F-0** devuelve el CI a verde —sin él nada de lo
-que sigue se puede verificar—, F-AB deja los ocho gates verdes, y solo entonces el verde de F-C y F-D
+que sigue se puede verificar—, F-AB deja los ocho gates verdes, y solo entonces el verde de F-C
 significa algo.
 
 > **Cambio del 2026-08-12.** Este plan nació con cuatro fases y empezaba por F-AB. La sesión de F-AB
@@ -22,8 +22,8 @@ significa algo.
 > exactamente lo que esa tarea existía para provocar. Se añadió **F-0** delante. El plan funcionó por
 > donde se esperaba que fallara.
 
-**Stack tocado:** GitHub Actions + Docker Compose (F-AB), JSON Schema + Node test runner (F-C), CSS
-en capas (F-D), rutina de SiteGround (F-E).
+**Stack tocado:** GitHub Actions + Docker Compose (F-0, F-AB), JSON Schema + Node test runner (F-C),
+rutina de SiteGround (F-E).
 
 ## Restricciones globales
 
@@ -60,9 +60,18 @@ Aplican a **todas** las tareas de todas las fases. No se repiten en cada una.
 midió en su Tarea 1 que el workflow lleva rojo desde el **2026-07-17** y escaló en vez de seguir.
 
 **Por qué va primera:** `design-system-runtime` lleva `needs: design-system-static`
-(`.github/workflows/design-system.yml:51`). Con el static en rojo, el job donde F-AB tiene que
+(`.github/workflows/design-system.yml:51`). Con ese job en rojo, aquel donde F-AB tiene que
 enchufar los dos gates **no se ejecuta nunca** — no habría forma de verlos fallar ni de sacar
 procedencia real. Sin esta fase, **ninguna de las siguientes se puede verificar**.
+
+> **Corrección del 2026-08-12, y el error era de la coordinadora.** Esta sección decía que «la suite
+> estática está en rojo». **Es falso, y lo midió la sesión de F-0 al llegar:**
+> `npm run test:design-system:static` da **`RC=0`, 8/8**, también con `DS_ACTIVATION_STRICT=1` como en
+> CI, y `node-tests` ni siquiera barre este archivo. Lo que tumba el job es un **paso aparte**,
+> `Enforce Programa General pilot contract` (`.github/workflows/design-system.yml:46-47`), que invoca
+> el contrato piloto directamente. La conclusión aguanta —el job falla y el `needs` corta la cadena—
+> pero la atribución era mía y estaba mal. **Importa para F-AB:** el static que va a tocar ya está
+> verde, y si lo encuentra rojo es un hallazgo nuevo, no éste.
 
 **Decisión del usuario (`D-GAC-1`, 2026-08-12):** opción **(a) en su forma estrecha** — la aserción
 pasa a permitir `!important` **dentro de `@layer`** y a seguir prohibiéndolo **fuera**.
@@ -139,6 +148,109 @@ echo "RC=$?"
 
 Escala a la coordinadora con la salida literal. Un segundo defecto escondido detrás del primero es un
 hallazgo, no una tarea más de esta fase.
+
+### Tarea 2b: El segundo rojo — la regex de los chips quedó vieja (`D-GAC-2`)
+
+**Añadida el 2026-08-12**, cuando la Tarea 2 destapó lo que el `!important` venía tapando. Se pliega
+aquí y no abre frente propio: F-0 no puede cerrar sin esto —su condición de hecho es ver `success` en
+Actions y este paso seguiría tumbando el job— y serían dos frentes en fila sobre el mismo archivo.
+
+**Qué está medido** (por la sesión de F-0 y confirmado por la coordinadora): la línea 21 exige
+`class="aia-chip pg-filter-chip[^"]*"` con las dos clases **contiguas**, y el markup real es
+`class="aia-chip pdc-legend-item pg-filter-chip …"`. Los 14 chips existen (`grep -c pg-filter-chip`
+→ 14); lo que da `0` es la forma contigua. Se rompió en **`47dda844` (2026-08-04)**, y el fallo del
+`!important` lo tapaba porque dispara antes en el archivo.
+
+**Decisión del usuario (`D-GAC-2`, 2026-08-12):** **(a)** — cede el contrato. La regex tolera clases
+intermedias. El markup usa `pdc-legend-item`, que es la clase canónica del chip; la que se quedó
+atrás es la prueba. **No se toca el markup.**
+
+- [ ] **Paso 1: ajustar la regex de la línea 21** para que acepte clases entre `aia-chip` y
+  `pg-filter-chip`, sin dejar de exigir que ambas estén y que el chip lleve su `data-filter`.
+
+- [ ] **Paso 2: correr y ver los 14**
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: `RC=0`.
+
+- [ ] **Paso 3: la mutación — y aquí no vale cambiar el número**
+
+Quita **un chip de verdad** del markup, temporalmente. Esperado: **`RC=1`** con `13 !== 14`. Cambiar
+el `14` de la aserción no prueba nada: probaría que sabes editar un número. **Lo que hay que mutar es
+qué se cuenta.**
+
+Y una segunda, que es la que descubre una regex demasiado laxa: deja el chip pero **quítale la clase
+`pg-filter-chip`**. Debe dar rojo también. Si pasa en verde, la regex nueva ya no exige lo que decía
+exigir.
+
+- [ ] **Paso 4: restaurar el markup byte a byte y confirmar `RC=0`**
+
+```bash
+git status --porcelain
+```
+
+Esperado: **solo** el `.mjs` listado. Ningún archivo de `views/` tocado.
+
+- [ ] **Paso 5: commit**
+
+```bash
+git add tests/test_programa_general_sprint_contract.mjs
+git commit -m "test(pg): la regex de los chips tolera clases intermedias (D-GAC-2)"
+```
+
+### Tarea 2c: El tercer y último rojo — `!important` como forma, no como resultado (`D-GAC-3`)
+
+**Y es el último: está medido.** La coordinadora neutralizó las aserciones una a una sobre una copia
+en `scratchpad/`, sin tocar el repo: **queda 1 rota de 28**. El archivo aborta en la primera, así que
+sin esa medición cada arreglo destapaba otro y nadie sabía cuántos faltaban.
+
+**Qué está medido:** `:150` exige que `.pdc-legend-item` declare `display`, `white-space`,
+`overflow-wrap` y `word-break` **con `!important`**. `public/css/buttons.css:977-993` **tiene las
+cuatro con sus valores correctos**; lo que falta es el `!important`, que **retiró a propósito** el
+frente `buttons-important-leyenda` el 2026-08-11, dejando su sonda escrita en `buttons.css:52-58`.
+
+**Decisión (`D-GAC-3`, coordinadora bajo autonomía delegada, precedente `D-CI-1`):** la aserción pasa
+a exigir **los valores** y no el `!important`. El objetivo declarado es que los chips no fragmenten
+palabras; el `!important` es el mecanismo. **El CSS no se toca.**
+
+- [ ] **Paso 1: reescribir la aserción de `:150`** para exigir `white-space: normal`,
+  `overflow-wrap: normal` y `word-break: normal` en `.pdc-legend-item`, **sin** exigir `!important`.
+
+- [ ] **Paso 2: correr y ver el archivo entero en verde**
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: `RC=0`. **Es la primera vez que este archivo pasa entero desde el 2026-07-17.**
+
+- [ ] **Paso 3: la mutación** — quítale a `.pdc-legend-item` uno de los tres valores en
+  `buttons.css`, temporalmente. Esperado: **`RC=1`**. Restaura byte a byte y confirma que
+  `git status --porcelain` **no** lista `public/css/buttons.css`.
+
+- [ ] **Paso 4: la comprobación que el contrato no tenía, y que es el motivo de esta tarea**
+
+Exigir los valores en la hoja **no prueba que ganen**. Abre `/programa-general` por la puerta de
+servicio (`/dev/entrar?u=test.A&p=<Proyecto>`), a **1180×820 dark**, y lee el **valor computado** de
+`overflow-wrap` y `word-break` sobre un chip real de la leyenda.
+
+**Trampa:** si el selector devuelve cero elementos, eso **no** es «no aplica» — es «no lo
+encontraste». Distínguelo por escrito, y anota cuántos chips encontraste.
+
+Si los valores computados **no** son `normal`, entonces el `!important` sí hacía falta y el hallazgo
+es otro: **para y escálamelo**, no lo arregles.
+
+- [ ] **Paso 5: commit**
+
+```bash
+git add tests/test_programa_general_sprint_contract.mjs
+git commit -m "test(pg): la asercion mide los valores del chip, no el !important (D-GAC-3)"
+```
 
 ### Tarea 3: Verlo verde en CI de verdad, y entregar
 
@@ -390,7 +502,44 @@ suma.
    estados) dan `grep -c` **0** en `public/index.php`, y `AGENTS.md` dice que el PDC v1 —Listado de
    Actividades y Contratos— **se eliminó el 2026-08-04**.
 
-### Tarea 1: Censar los doce antes de tocar el esquema
+**Censo previo hecho por la coordinadora el 2026-08-12** (lectura, sin tocar nada). No lo repitas:
+verifícalo y sigue.
+
+| Módulo | Rutas en `index.php` | Vista | Veredicto |
+|---|---|---|---|
+| `programacion-semanal` | 4 | `views/programacion-semanal` | vivo |
+| `programa-general` | 12 | `views/programa-general` | vivo |
+| `programacion-intermedia` | 6 | `views/programacion-intermedia` | vivo |
+| `auth` | — | `views/auth` | vivo (sus rutas son `/login`, `/logout`…, no llevan la palabra) |
+| `bi` | 36 | `views/bi` | vivo |
+| `pdc` | 4 | — (SPA en `pdc-app/`) | vivo; su superficie es la isla React, no una vista PHP |
+| `control-cambios` | 3 | `views/control-cambios` | vivo |
+| `dashboard` | 2 | `views/dashboard` | vivo |
+| `profesionales` | 4 | `views/profesionales` | vivo |
+| `subcontratistas` | 4 | `views/subcontratistas` | vivo |
+| **`contratos`** | **0** | **ninguna** | **fantasma** |
+| **`listado-actividades`** | **0** | **ninguna** | **fantasma** |
+
+**Los dos fantasmas están confirmados por una fuente que no es el conteo de rutas:**
+`views/partials/shell_sidebar.php:93-96` dice que «Familias de Actividades» (`/listado-actividades`) y
+«Paquetes de Contratación» (`/contratos`) salieron del rail el **2026-07-29**, y que el **2026-08-04**
+se completó el apagado del PDC v1 — rutas, controladores, servicios y datos eliminados del repo.
+Concuerda con `AGENTS.md`.
+
+**El matiz que justifica la fase entera, y que casi me engaña a mí:** la etiqueta de `contratos`
+«Duraciones pendientes» da **0 archivos** en todo el repo, pero las de `listado-actividades`
+—«Cambios guardados», «Error de conexión»— aparecen en **4 y 5** archivos… que son
+`ProfesionalesApiController`, `SubcontratistasApiController` y el laboratorio. **Son de otros
+módulos.** Por la etiqueta sola no se distingue a quién pertenece un estado; por eso hace falta
+declarar la superficie, y por eso el conteo de rutas es un proxy y no una medición.
+
+**Autorizado por la coordinadora:** retirar esas dos entradas **no** necesita volver al usuario. Es
+la aplicación directa de `D-CEF-1` (a), que él ya decidió: un módulo sin superficie no puede estar en
+el contrato. Retíralas **con su motivo escrito** y **mide qué cobertura se pierde** (7 estados entre
+las dos) en vez de solo qué se gana. Si al medir encuentras que alguna sí tiene superficie, **para y
+dímelo**: entonces mi censo estaba mal.
+
+### Tarea 1: Censar los diez vivos y verificar los dos fantasmas
 
 Primero se mide, luego se decide la forma del campo. Al revés, el esquema fija una forma que el censo
 no puede rellenar.
@@ -459,11 +608,16 @@ clave `surface` de tipo `string`, añadida a `properties` **y** a `required`.
 
 **Ojo, y esto rompe la tarea si se salta:** el esquema es `additionalProperties: false` en todos sus
 niveles, así que si añades `surface` a los datos **sin** declararla en `properties`, la validación de
-los doce falla a la vez. Quien valida el esquema es `scripts/design-system-contracts.mjs` — léelo
-antes de tocar nada:
+los doce falla a la vez.
+
+**Y una buena noticia medida por la coordinadora el 2026-08-12: no tienes que tocar el validador.**
+`scripts/design-system-contracts.mjs:599` empareja esquema y documento dentro de una tabla
+(`SCHEMA_DOCUMENT_PAIRS`), y `:606-616` la recorre entera aplicando el esquema al documento. El par
+`state-semantics` **ya está en esa tabla**. Es decir: en cuanto declares `surface` en el esquema, el
+gate estático la exige solo. Comprueba que sigue siendo así antes de fiarte:
 
 ```bash
-grep -n "state-semantics" scripts/design-system-contracts.mjs
+sed -n '594,616p' scripts/design-system-contracts.mjs
 ```
 
 - [ ] **Paso 4: correr la prueba y verla pasar**
@@ -484,7 +638,7 @@ git commit -m "feat(contrato-estados): el esquema exige que cada modulo declare 
 
 - [ ] **Paso 1: rellenar con lo censado en la Tarea 1**
 
-Cada entrada, con la superficie que **mediste**, no la que parezca razonable. Un valor inventado aquí
+Cada entrada viva, con la superficie que **mediste**, no la que parezca razonable. Un valor inventado aquí
 es exactamente el defecto que la fase viene a cerrar.
 
 - [ ] **Paso 2: la aserción del gate — que compruebe el resultado, no la forma**
@@ -530,96 +684,24 @@ realmente se hizo, y se añade su fila al índice de resueltas del final. **Corr
 
 ---
 
-## Fase F-D · `D-BTN-1` — la resta del `!important`
+## Fase F-D · RETIRADA el 2026-08-12 — ya estaba hecha
 
-**Frente:** `important-que-no-gana`. **Decisión del usuario:** opción **(2)**, investigar y retirar
-los dos si procede.
+**No la asignes.** La coordinadora comprobó su premisa antes de repartirla, y estaba caducada: el
+`display: inline-flex !important` de `buttons.css:970` que esta fase iba a retirar **ya no existe**.
 
-**Qué está medido** (sobre `f1f5bd87`, 1180×820 dark): `public/css/buttons.css:970` declara
-`display: inline-flex !important` para `.pdc-legend-item`, y el valor **computado** en Programa
-General, Intermedia y Semanal es `flex`. Ese `!important` no le gana a nadie.
+Lo hizo `0a228a39` (2026-08-11), verificado ancestro de `origin/main` con
+`git merge-base --is-ancestor`. Y lo hizo **mejor de lo que esta fase pedía**: retiró los **dieciséis**
+`!important` del chip de golpe, midió el valor computado, **repuso los seis que sí hacen trabajo** y
+verificó en las tres pantallas a 1180 y 900, idéntico en las 17 propiedades observadas. La lista
+heredada de «cuatro que ganan» se quedaba corta por dos —`flex-shrink` y `transition`—, y **medir en
+una sola pantalla habría dejado dos regresiones fuera del radar**.
 
-**Riesgo declarado:** entra en la cascada de capas (`memoria/trampas/css-layer-cascade.md`), donde
-para `!important` el orden de capas **se invierte**. El frente que lo levantó excluyó esa zona a
-propósito. Se mide, no se supone.
+**El cierre del círculo:** tres de los diez retirados —`display`, `overflow-wrap`, `word-break`— eran
+exactamente los que `test_programa_general_sprint_contract.mjs:150` exigía con `!important`. Ese
+contrato **se rompió el día en que alguien hizo lo correcto**, y estuvo escondido detrás de otros dos
+rojos hasta el 2026-08-12. Es lo que resuelve `D-GAC-3`, en la Tarea 2c de F-0.
 
-**Archivos:** `public/css/buttons.css` y la hoja de quien lo pise.
-
-### Tarea 1: Medir el estado de partida antes de tocar nada
-
-- [ ] **Paso 1: abrir sesión por la puerta de servicio**
-
-```
-http://localhost:8081/dev/entrar?u=test.A&p=<Proyecto_Proceso>
-```
-
-Nunca por `/login`.
-
-- [ ] **Paso 2: leer el valor computado en las tres pantallas**
-
-A 1180×820, tema dark, en `/programa-general`, `/programacion-intermedia` y
-`/programacion-semanal`, sobre un `.pdc-legend-item` real. Anota el valor y **cuántos elementos
-encontraste**.
-
-**Trampa medida:** si el selector devuelve cero elementos, eso **no** es «no se aplica» — es «no lo
-encontraste». Distínguelo por escrito. Igual que `elementFromPoint` fuera del viewport devuelve
-`null`, que no significa «está tapado».
-
-- [ ] **Paso 3: averiguar qué regla gana**
-
-Usa la lista de reglas coincidentes del navegador, no la deducción. Anota el archivo, la línea y la
-capa de la ganadora.
-
-- [ ] **Paso 4: dejarlo escrito antes de cambiar nada**
-
-Es la línea base contra la que se compara después.
-
-### Tarea 2: Retirar lo que sobre, con la salida honesta ya prevista
-
-- [ ] **Paso 1: decidir con lo medido, no con lo esperado**
-
-- Si la regla ganadora **existe solo para vencer a este `!important`**: se retiran **las dos**.
-- Si la ganadora **hace falta por sí misma**: se retira **solo la declaración muerta** de
-  `buttons.css:970` y **se escribe por qué** junto a la regla. Eso **no** incumple la decisión del
-  usuario: es lo que la medición permite. Dilo en la entrega.
-- Si la medición no distingue los dos casos: **escala a la coordinadora.** No elijas el conservador y
-  lo anotes como duda — anotar no es consultar.
-
-- [ ] **Paso 2: aplicar el cambio**
-
-- [ ] **Paso 3: volver a medir las tres pantallas**
-
-Mismo viewport, mismo tema, mismo selector. Esperado: **el mismo valor computado que en la Tarea 1**.
-Cualquier diferencia es una regresión visual, y esas necesitan aprobación explícita.
-
-- [ ] **Paso 4: la suite que cubre esta zona**
-
-```bash
-npm run test:design-system:static
-echo "RC=$?"
-```
-
-- [ ] **Paso 5: commit**
-
-```bash
-git add public/css/buttons.css
-git commit -m "refactor(css): retira el !important de .pdc-legend-item, que no ganaba a nadie"
-```
-
-### Tarea 3: Cerrar `D-BTN-1` y entregar
-
-- [ ] **Paso 1: marcar la ficha** en `docs/decisiones-pendientes.md` con lo que realmente se hizo, y
-  añadir su fila al índice de resueltas.
-
-- [ ] **Paso 2: comprobar que la cola queda vacía**
-
-```bash
-grep -c "Estado:\*\* \`abierta\`" docs/decisiones-pendientes.md
-```
-
-Esperado: `0`.
-
-- [ ] **Paso 3: los nueve pasos del gate de cierre, y la entrega con sus seis campos.**
+Ficha cerrada: `D-BTN-1`.
 
 ---
 
@@ -628,6 +710,12 @@ Esperado: `0`.
 **Frente:** `despliegue`. **~1.255 commits de retraso.**
 
 > **ALTO. Esta fase no se abre sin autorización explícita, propia y en el momento, del usuario.**
+>
+> **Precisión del 2026-08-12.** Ese día el usuario dio sus autorizaciones **por adelantado para todo
+> lo demás** —publicar en `main` incluido— y excluyó expresamente **el despliegue a pruebas y a
+> producción**. Ojo a la consecuencia: la rutina de esta fase **empieza** desplegando a pruebas
+> (Tarea 1, Paso 4), así que F-E queda bloqueada **desde su primer paso**, no solo en el último. Son
+> **dos** autorizaciones, no una: pruebas primero, producción después, cada una pedida en su momento.
 > Que esté escrita aquí **no la concede**. Ni el spec, ni este plan, ni un objetivo de sesión que
 > diga «hasta el final» cuentan como autorización (`AGENTS.md` §Publicación, `D-F1-7`).
 > **La pide la coordinadora, no la sesión de ejecución.**
@@ -674,7 +762,7 @@ servidor ni desplegar otros cambios. Una publicación aprobada aprueba **esa** p
    real.
 2. `grep -c "Estado:\*\* \`abierta\`" docs/decisiones-pendientes.md` → `0`.
 3. El trabajo está en producción, con smoke del flujo afectado y respaldo previo verificable.
-4. Las cinco fases tienen su `## Cierre` anotado.
+4. Las fases vivas tienen su `## Cierre` anotado.
 
 **Fuera de alcance, dicho explícitamente:** el frente de forma de `D-F1-6` (páginas de error dentro
 del shell, unificar los vocabularios de estado, y la regla de no cerrar sin haber quitado algo) va
