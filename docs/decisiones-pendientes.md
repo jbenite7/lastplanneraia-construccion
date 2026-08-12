@@ -1218,6 +1218,54 @@ por costumbre.
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
 - **Estado:** `abierta`
 
+### D-GAC-4 · El gate `runtime` tiene un recibo verde que solo vale en la máquina que lo midió
+
+- **Quién pregunta:** la coordinadora, 2026-08-12, al ver la primera corrida de CI que llegó al job
+  de runtime desde el 2026-07-17.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** qué se hace con los goldens visuales, que pasan en local y fallan en CI.
+- **Qué se midió** (corrida `31561660136`, sobre `65c44435`):
+  - `design-system-static` → **success**, por primera vez desde el 2026-07-17.
+  - `design-system-runtime` → **failure**, en el paso «Run laboratory gates»
+    (`npm run test:design-system:runtime`): **18 pruebas visuales fallidas de 20.**
+  - Las diferencias: **`ratio 0.03`** contra una tolerancia de `maxDiffPixelRatio: 0.002`
+    (`playwright.config.mjs:39`) — **quince veces el umbral**, ~27.000 píxeles.
+  - **La uniformidad es el dato clave:** 26952, 27211, 25536, 27012… todas las familias difieren casi
+    en la misma cantidad. Un cambio de diseño real variaría mucho entre una pantalla de formularios y
+    una de overlays; esto no. Es coherente con un render de plataforma distinto, **aunque no está
+    probado**: probarlo exige capturar en CI y comparar, que es parte de lo que se decide aquí.
+  - **Los 60 goldens están versionados y no llevan sufijo de plataforma**
+    (`tests/browser/__screenshots__/auth/login-dark-1180x820.png`): un solo juego para macOS y Linux.
+  - **El recibo de `runtime` es honesto, no falso:** `closeout-evidence.json` lo declara `passed` con
+    `exitCode: 0`, `verifiedAt: 2026-08-11T23:45:04Z`, `sourceRef: 1cb83128`. Pasó de verdad — en la
+    máquina donde se midió.
+- **Por qué no se vio antes, y es lo que más enseña:** el job de runtime **no se ejecutaba desde el
+  2026-07-17** porque `needs: design-system-static` lo mantenía apagado. El recibo verde y la
+  imposibilidad de contrastarlo convivieron un mes. **Arreglar el static es lo que lo destapó**: no es
+  una regresión nueva, es una ceguera vieja que acaba de abrir los ojos.
+- **Opciones:**
+  - **(a) Goldens por plataforma** — Playwright admite `{platform}` en `snapshotPathTemplate`. Local
+    y CI conservan cada uno su juego y los dos vigilan de verdad. Coste: una pasada de captura en CI,
+    y el doble de archivos.
+  - **(b) Recapturar los goldens en CI** y que Linux sea la referencia única. Más simple, pero
+    **invierte el problema**: pasarían a fallar en local, que es donde se trabaja a diario.
+  - **(c) Declarar el carril visual no ejecutable en CI**, como `runtime-budgets`, con su motivo
+    escrito. Honesto, pero renuncia a vigilar lo visual donde de verdad importa.
+  - **(d) Subir la tolerancia hasta que pase.** **Descartada, y conviene decir por qué:** haría falta
+    pasar de `0.002` a más de `0.03`, quince veces, y eso deja pasar cambios de diseño reales. El
+    comentario del propio archivo dice que la tolerancia se **bajó** de `0.005` a `0.002` precisamente
+    porque una amplia dejaba pasar cambios ciertos. Sería deshacer una decisión medida para tapar
+    esto.
+- **Recomendación:** **(a)**. Es lo único que deja los dos entornos vigilando de verdad, y no fabrica
+  ningún verde.
+- **Lo que NO se ha hecho, y no se hará sin decisión explícita:** regenerar goldens.
+  `AGENTS.md` §Verificación lo prohíbe —«no regeneres snapshots ni baselines para forzar un resultado
+  verde; los cambios visuales requieren aprobación explícita»— y aquí sería exactamente eso.
+- **Qué queda saltado esperando:** el gate `runtime` sigue declarado `passed` con su recibo local.
+  **No se toca ese recibo:** no es falso, es de otra plataforma, y cambiarlo sin decidir esto sería
+  sustituir un dato honesto por otro.
+- **Estado:** `abierta`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
