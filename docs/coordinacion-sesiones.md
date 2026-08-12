@@ -76,8 +76,42 @@ de otra sin aviso.
 
 *(Petición del usuario, 2026-08-11.)*
 
-La coordinadora **renombra cada sesión de ejecución al asignarle un frente**, con
-`mcp__ccd_session_mgmt__set_session_title`. Formato: `Frente <n> · <qué hace, en una línea>`.
+La coordinadora **renombra cada sesión de ejecución al asignarle un frente y al cambiar de fase**, con
+`mcp__ccd_session_mgmt__set_session_title`.
+
+**Gramática adoptada el 2026-08-11** (viene del plugin `coordinating-agent-sessions`, frentes
+`titulos-de-sesion` y `mapa-estado`; sustituye al anterior `Frente <n> · <qué hace>`):
+
+```
+[ETIQUETA] <frente>: <qué hace ahora> · ~NN%
+[COORDINA] <qué hace ahora>
+```
+
+El juego de etiquetas es **cerrado**, y lo que lo hace útil es que **entre «funciona» y «cerrada» hay
+cuatro**, no una:
+
+| Etiqueta | Cuándo | Paso del gate |
+|---|---|---|
+| `[ENCOLADA]` | frente declarado, nadie trabajándolo | antes del 1 |
+| `[EN EJECUCIÓN]` | sesión trabajando el frente | 1 |
+| `[BLOQUEADA]` | escaló una decisión y espera | 1, parado |
+| `[ENTREGADA]` | condición de hecho verificada, visto pedido sobre un sha | 2–6 |
+| `[VISTO CADUCO]` | se commiteó después de pedir el visto | 6 roto |
+| `[PUBLICANDO]` | visto dado, empujando ese sha | 7 |
+| `[PUBLICADA]` | el push pasó, sin `ahead`/`behind` | 7–8 |
+| `[CERRADA]` | además el cierre está anotado | 9 completo |
+| `[DESCARTADA]` | abandonado sin publicar | fuera del gate |
+| `[COORDINA]` | la coordinadora, siempre | — |
+
+**`[PUBLICADA]` no es `[CERRADA]`**, y ese corte es el que más rinde: el paso 9 —anotar el cierre— es
+el que se olvida, y plegado dentro de una sola etiqueta «publiqué y no anoté» sería indistinguible de
+«terminado del todo».
+
+**La coordinadora no puede ponerse su propia etiqueta.** La API rechaza renombrar la sesión propia, y
+además el id del registro **no es** el id de MCP —son dos espacios distintos y ninguno resuelve en el
+otro—, así que ni siquiera puede localizarse. Un título de coordinadora sin etiqueta **es el estado
+esperado, no un incumplimiento**; si hace falta, lo pone el usuario. Ninguna sesión de ejecución la
+renombra por su cuenta.
 
 **Por qué:** una sesión sobrevive a su encargo inicial. La del Frente 1 siguió llamándose «tandas 1B
 y 1C» mientras reconstruía los gates del design system, así que la lista de sesiones —que es como el
