@@ -147,24 +147,29 @@ assert.match(
   /\.pdc-legend-item\s*\{[^}]*transition:\s*transform var\(--ds-motion-fast\),\s*box-shadow var\(--ds-motion-fast\) !important;/s,
   'los chips no deben interpolar color o superficie durante el cambio de tema',
 );
-// D-GAC-3 (2026-08-12): esto exigía las cuatro declaraciones CON `!important`. El frente
-// `buttons-important-leyenda` retiró tres de esos `!important` a propósito el 2026-08-11, con su
-// sonda escrita en buttons.css:52-58, y dejó al contrato midiendo el mecanismo en vez del
-// resultado — el mismo defecto que resolvió `D-CI-1`. Lo que este contrato quiere garantizar es
-// que el chip no fragmente palabras, así que ahora exige los VALORES y le da igual cómo ganen.
-// Se conservan las cuatro declaraciones, no tres: quitar `display` del contrato sería perder
-// cobertura de paso, y no es lo que la decisión pedía retirar.
-const legendChipRule = (buttonsCss.match(/^\.pdc-legend-item\s*\{[\s\S]*?^\}/m) || [''])[0];
-for (const [property, value] of [
+// D-GAC-3 (2026-08-12): esta asercion exigia las cuatro declaraciones **con
+// `!important`**, y eso es la forma, no el resultado. El objetivo declarado es
+// que el chip envuelva entre palabras sin fragmentarlas, y eso lo dan los
+// valores. El `!important` lo retiro a proposito `0a228a39`, que midio el
+// computado de los dieciseis y repuso solo los seis que hacian trabajo: exigirlo
+// aqui obligaba a deshacer una resta bien medida. Mismo defecto que `D-CI-1`.
+// Que los valores **ganen** no lo puede probar una hoja de estilo: se comprueba
+// en navegador, y esa medicion vive en la entrega del frente `ci-en-verde`.
+const chipBlock = buttonsCss.match(/^\.pdc-legend-item\s*\{([\s\S]*?)^\}/m)?.[1] ?? '';
+assert.ok(
+  chipBlock.length > 0,
+  'el bloque .pdc-legend-item debe existir en buttons.css',
+);
+for (const [prop, value] of [
   ['display', 'inline-flex'],
   ['white-space', 'normal'],
   ['overflow-wrap', 'normal'],
   ['word-break', 'normal'],
 ]) {
   assert.match(
-    legendChipRule,
-    new RegExp(`(?:^|;|\\{)\\s*${property}:\\s*${value}\\s*(?:!important)?\\s*;`, 'm'),
-    `los chips canónicos deben declarar ${property}: ${value} para envolver entre palabras sin fragmentarlas al ampliar`,
+    chipBlock,
+    new RegExp(`(^|;|\\s)${prop}:\\s*${value}\\s*(!important)?\\s*;`, 'm'),
+    `los chips canónicos deben declarar ${prop}: ${value} para envolver entre palabras sin fragmentarlas`,
   );
 }
 assert.match(
