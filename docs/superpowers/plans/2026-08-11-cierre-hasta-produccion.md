@@ -705,6 +705,12 @@ Ficha cerrada: `D-BTN-1`.
 **Frente:** `despliegue`. **~1.255 commits de retraso.**
 
 > **ALTO. Esta fase no se abre sin autorización explícita, propia y en el momento, del usuario.**
+>
+> **Precisión del 2026-08-12.** Ese día el usuario dio sus autorizaciones **por adelantado para todo
+> lo demás** —publicar en `main` incluido— y excluyó expresamente **el despliegue a pruebas y a
+> producción**. Ojo a la consecuencia: la rutina de esta fase **empieza** desplegando a pruebas
+> (Tarea 1, Paso 4), así que F-E queda bloqueada **desde su primer paso**, no solo en el último. Son
+> **dos** autorizaciones, no una: pruebas primero, producción después, cada una pedida en su momento.
 > Que esté escrita aquí **no la concede**. Ni el spec, ni este plan, ni un objetivo de sesión que
 > diga «hasta el final» cuentan como autorización (`AGENTS.md` §Publicación, `D-F1-7`).
 > **La pide la coordinadora, no la sesión de ejecución.**
