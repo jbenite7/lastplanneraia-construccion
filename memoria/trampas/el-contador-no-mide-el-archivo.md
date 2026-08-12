@@ -15,6 +15,13 @@ Dos series medidas el 2026-08-11, ambas sobre archivos que no se tocaron entre l
 - Sobre `public/css/buttons.css`, en el frente `buttons-important-leyenda`: **137, 121 y 16** — y
   después, con el árbol ya limpio y publicado, **121 y 16 otra vez**. Es decir, **volvió a subir**.
 
+**Y no habla siquiera de lo que estás cambiando.** En el frente `contador-no-mide-el-archivo`
+(`1a482a6c`), cuyo diff son cinco archivos de `memoria/` y `docs/`, el hook informó de **121 y 16
+hallazgos sobre `public/css/buttons.css`** — un archivo que **no entraba en el cambio**. Las dos
+series de arriba dicen que el número es inestable; esto dice algo más útil: **no leas su salida
+como si hablara de tu diff.** No es que el termómetro vaya mal, es que no está midiendo esta
+habitación.
+
 **La causa, comprobada:** el hook guarda estado de sesión y **suprime lo que ya señaló**. Ejecutado
 dos veces seguidas sobre el mismo contenido, la primera devuelve un número y **la segunda devuelve
 vacío**. El total es un artefacto del historial de la sesión, no una propiedad del archivo.
