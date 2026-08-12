@@ -122,6 +122,16 @@ jobs:
       # La app y la base aislada ya estan levantadas desde antes de :105, y las
       # cuatro variables CI_* ya vienen de «Capture runtime provenance» (:60-83):
       # NO se redeclaran, porque redeclararlas es el primer paso hacia fabricarlas.
+      # Se ejecuta a traves de `gate-receipt.mjs` y no con el comando pelado, para
+      # que la corrida deje su recibo: hasta hoy `full-app-flow` no podia declararse
+      # `passed` en el indice aunque pasara, porque el contrato exige un artefacto
+      # con `gateId` y `exitCode` producido por la ejecucion — y escribirlo a mano
+      # es justo lo que ese contrato existe para impedir.
+      #
+      # OJO: `gate-receipt.mjs` **siempre sale 0** a proposito («su trabajo es
+      # levantar acta, no aprobar»). Cableado tal cual, este paso saldria verde con
+      # el gate en rojo. Por eso la segunda linea lee el recibo y propaga su
+      # `exitCode`: el acta la levanta el script, el veredicto lo da el recibo.
       - name: Enforce full-app-flow gate
         env:
           APP_URL: http://127.0.0.1:18081
@@ -129,7 +139,16 @@ jobs:
           E2E_PROJECT_KEYS: construction
           E2E_REQUIRE_ISOLATED_DB: "1"
           E2E_ALLOW_DB_MUTATION: design-system-ci
-        run: npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
+        run: |
+          node scripts/design-system/gate-receipt.mjs full-app-flow
+          node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
+      - name: Preserve the full-app-flow receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-app-flow-receipt
+          path: docs/design-system/evidence/full-app-flow.json
+          if-no-files-found: error
       - name: Measure runtime budgets
         env:
           APP_URL: http://127.0.0.1:18081
