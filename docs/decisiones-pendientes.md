@@ -1370,7 +1370,24 @@ limpio**, el resultado cambia:
 - `adapterAssets` se sostiene entera: el baseline sigue nombrando `semi-auto-review.css`, borrado con
   el PDC v1.
 
-**Lo que esto cambia en la decisión:** el problema es **el peso del CSS y la lista de adaptadores**,
+**Segundo hallazgo, del 2026-08-12, aportado por la sesión `2db2fa49` fuera de su encargo:** en
+`adapterAssets` no solo cambió el **tamaño**, cambió la **composición**, y las tres diferencias son de
+naturaleza distinta:
+
+1. **`semi-auto-review.css` falta** — borrado con el PDC v1 el 2026-08-04. Baja legítima: el baseline
+   está viejo.
+2. **`shell-sidebar.css` entra** — alta legítima: adaptador nuevo y real.
+3. **`datatables.css` entra con la ruta escrita de otra forma** — `/public/css/design-system/adapters/datatables.css`
+   frente a `/css/design-system/adapters/…` en todas las demás. Eso **huele a inconsistencia del propio
+   medidor**, no a un cambio del código.
+
+**Por qué esto cambia la decisión y no es un detalle:** si (3) es un defecto de la medición, entonces
+**una de las tres diferencias que hoy tumban el gate no es real**. Aprobar el baseline de un plumazo
+taparía las tres con el mismo gesto: una baja legítima, un alta legítima y un posible error de
+instrumento. **Hay que separarlas antes de mover nada** — y (3) se verifica leyendo cómo compone esa
+ruta el medidor, sin tocar el baseline.
+
+**Lo que esto cambia en la decisión:** el problema es **el peso del CSS y la composición de la lista**,
 no el tiempo de arranque. La opción (c) —corregir la lista ya, medir el CSS antes de aprobar— sigue
 siendo la recomendada, y ahora con un frente más estrecho: **un solo número que investigar**, no dos.
 
