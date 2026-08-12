@@ -1186,6 +1186,38 @@ por costumbre.
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada por esto.
 - **Estado:** `abierta`
 
+### D-COORD-2 · El mapa de estado devuelve 40 filas y ningún dato dentro
+
+- **Quién pregunta:** levantado por la sesión `Linen mode y mobile + tablet` fuera de su encargo, el
+  2026-08-12, mientras esperaba turno. **No verificado aún por la coordinadora**, y así se declara:
+  lo que sigue es la medición de esa sesión, atribuida, no adoptada como propia.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si el mapa de estado del plugin se arregla, se declara inservible en este repo, o
+  se retira de la documentación como fuente.
+- **Qué midió esa sesión** (sobre `58f7263c`): `cas-estado.sh` devuelve **RC=0** y lista **40
+  frentes**; los 40 salen con señal «sin rama resoluble» y avance «❓ no medible».
+- **Por qué importa, y no es que falte una función:** el script **sale en verde**. Devuelve cuarenta
+  filas con forma de inventario y ningún dato dentro. **Un mapa vacío se nota; uno que responde a todo
+  «no medible» con RC=0 se lee como si midiera** y se cita como fuente. Es la misma criatura que
+  atravesó toda la jornada del 2026-08-11 —el instrumento que ante «no hay dato» devuelve algo con
+  forma de resultado— en su versión más grande.
+- **Lo que NO se sostiene, y conviene dejarlo escrito:** esa sesión añadió que «la auditoría de la
+  coordinadora depende de él». **Es falso.** La coordinadora no lo usó ni una vez en toda la jornada:
+  midió contra git directamente (`git log`, `git status -sb`, `git worktree list`,
+  `merge-base --is-ancestor`) y contra la salida real de cada sesión. El mapa ciego **no deja ciega a
+  la coordinación**, y creerlo podría llevar a alguien a pararse pensando que se quedó sin
+  instrumentos.
+- **Opciones:** (a) arreglar la resolución de ramas; (b) que el script **falle ruidosamente** cuando
+  no puede resolver, en vez de devolver RC=0 con filas vacías —es la corrección de fondo, y vale
+  aunque (a) no se haga—; (c) declararlo no aplicable a este repo y quitarlo de la documentación.
+- **Recomendación:** **(b) primero**, y luego (a). Un instrumento que no puede medir debe decirlo con
+  un código de salida distinto de cero; mientras devuelva verde, cualquier arreglo posterior seguirá
+  siendo indistinguible de un fallo silencioso.
+- **De quién es:** el script vive en el repositorio `coordinating-agent-sessions`, **otro mando**.
+  Aquí solo se registra el hallazgo; no se toca desde `lps-aia`.
+- **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
+- **Estado:** `abierta`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
