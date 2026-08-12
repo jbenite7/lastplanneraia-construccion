@@ -140,9 +140,6 @@ export class ProjectDbSnapshot {
   restore() {
     if (this.requireComposeIsolation) assertIsolatedComposeEnvironment(this.environment);
     if (!this.captured || this.existingTables.length === 0) return;
-    // MUTACION F-AB (temporal, se revierte): restauracion de base convertida en no-op
-    // para comprobar que el gate full-app-flow sabe ponerse rojo por el eje de restauracion.
-    return;
 
     const deletes = this.existingTables
       .map((table) => (this.allTables
