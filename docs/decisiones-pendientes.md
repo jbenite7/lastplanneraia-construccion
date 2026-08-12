@@ -1128,7 +1128,31 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   contrato lo exigía. Al quitar esa exigencia, F-D deja de chocar con él.
 - **Estado:** `resuelta 2026-08-12: la aserción mide los valores, no el !important, y se añade la
   comprobación del valor computado en navegador. Decidida por la coordinadora bajo autonomía
-  delegada, con el precedente de D-CI-1.`
+  delegada, con el precedente de D-CI-1.` · **ejecutada en `b10a3298`.**
+
+**EXCEPCIÓN AL PROTOCOLO, AUTORIZADA Y ESCRITA PARA QUE NO SIENTE PRECEDENTE EN SILENCIO.**
+Este cambio lo **implementó la coordinadora**, que es también quien dio el visto. Es el «autor que
+avala su propio trabajo» contra el que está construido el resto de este protocolo, y no debe repetirse
+por costumbre.
+
+- **Por qué:** las dos sesiones de ejecución dejaron de producir avance —tres reactivaciones, dos
+  chips, ~40 min con los worktrees limpios y sin merge—, y abrir una sesión nueva exige una acción del
+  usuario que no llegaba. El usuario había dado sus autorizaciones **por adelantado salvo el
+  despliegue a pruebas y producción** (2026-08-12) y mantuvo la directiva de terminar las fases
+  después de que la coordinadora **levantara expresamente esta objeción**. Eso es una decisión suya,
+  no un descuido.
+- **Qué se hizo para compensar la falta de un segundo par de ojos**, ya que no había revisor
+  independiente: **tres** mutaciones ejecutadas en vez de una —quitar el valor (rojo, y cae la
+  aserción que lo nombra), ponerle `!important` (sigue verde, luego la regla no se invirtió), y el
+  valor **fuera** del bloque del chip (rojo, que es lo que descubre una regex laxa)— más la
+  comprobación en navegador que el contrato no tenía: **7 chips a 1180×820 dark, los 7 con
+  `overflow-wrap`, `word-break` y `white-space` en `normal`**. Ganan sin `!important`.
+- **Hallazgo reportado en contra del propio cambio:** `display` computa **`flex`**, no `inline-flex`.
+  La aserción exige que `inline-flex` esté *declarado* y lo está, pero **en pantalla pierde**: esa
+  línea del contrato vigila una declaración inerte. Es previo a este cambio —lo midió `D-BTN-1`— y
+  **no se arregló de paso**. Queda anotado.
+- **Lo que esta excepción NO cubre:** el despliegue a pruebas y a producción, que siguen necesitando
+  autorización propia y explícita, cada uno por separado.
 
 ### D-COORD-1 · Las colas de decisiones de las sesiones no están versionadas
 
