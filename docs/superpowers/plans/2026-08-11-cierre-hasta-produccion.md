@@ -813,6 +813,46 @@ Ficha cerrada: `D-BTN-1`.
 
 ---
 
+### ## Cierre de F-C — anotado el 2026-08-12 (paso 9)
+
+**Sha publicado:** `5095762d`. **Sha verificado:** el mismo, medido antes de publicar y sin encadenar
+la verificación al `push`.
+
+**Condición de hecho, cumplida:**
+
+- El esquema exige `surface` (`required: [module, surface, states]`).
+- Los **10** módulos vivos la declaran con su ruta **medida** en `public/index.php`.
+- El gate no comprueba que el campo exista: comprueba que **la ruta esté de verdad** en el front
+  controller. `STATIC_RC=0`, `STATES_RC=0`, `WIKI_RC=0`.
+
+**Corrección de cifra:** la ficha decía «los trece módulos». Eran **12** al escribirla y quedan
+**10**. El decimotercero era el fantasma que el frente anterior ya había retirado.
+
+**Cobertura perdida, medida y no estimada: 7 estados**, de `contratos` (3) y `listado-actividades`
+(4), la interfaz del PDC v1 borrado el 2026-08-04. No cubrían nada: ninguna pantalla los pintaba.
+
+**Cuatro mutaciones ejecutadas**, y la que vale es la segunda:
+
+| Mutación | Resultado |
+|---|---|
+| A · módulo con superficie inexistente | rojo |
+| B · **sustituir un módulo real por uno inventado, total intacto en 10** | **rojo, nombrando al intruso** |
+| C · quitarle la superficie a un módulo real | rojo |
+| D · lo mismo contra el validador de esquema | rojo: «falta el campo obligatorio surface» |
+
+La **B** es la que justifica el cambio de forma: el censo pasó de `length === N` más un bucle de
+`includes` a un `deepEqual` del conjunto ordenado. Con la forma vieja, cambiar **qué** se cuenta
+manteniendo el número no caía. Ahora sí.
+
+**Lo que no se hizo, y no se disimula:** no se buscó si los 10 módulos vivos pintan **cada uno de sus
+estados**. Se comprobó que su superficie existe, no que cada etiqueta aparezca en ella. Eso cierra la
+puerta al módulo fantasma entero, no al estado fantasma suelto dentro de un módulo real.
+
+**Excepción de protocolo:** implementada y avalada por la misma sesión coordinadora, como F-0 y F-AB.
+Registrada en `D-GAC-3`.
+
+---
+
 ## Fase F-E · Despliegue a producción
 
 **Frente:** `despliegue`. **~1.255 commits de retraso.**
