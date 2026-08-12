@@ -27,14 +27,7 @@ export default defineConfig({
     ['html', { outputFolder: './test-results/report', open: 'never' }],
     ['list'],
   ],
-  // D-GAC-4 (2026-08-12): los goldens se separan por plataforma. Habia un solo
-  // juego para macOS y Linux, y eso hacia que el carril visual pasara en local
-  // y fallara en CI: 18 de 20 con ratio 0,03 contra una tolerancia de 0,002,
-  // todas las familias con casi el mismo numero de pixeles distintos. El recibo
-  // verde de `runtime` era honesto y solo valia en la maquina que lo midio.
-  // Nadie lo vio en un mes porque `needs: design-system-static` mantenia el job
-  // apagado. Los 60 aprobados NO se tocan: se mueven a su carpeta de plataforma.
-  snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{testFilePath}/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
   expect: {
     toHaveScreenshot: {
       animations: 'disabled',

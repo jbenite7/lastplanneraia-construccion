@@ -1264,25 +1264,7 @@ por costumbre.
 - **Qué queda saltado esperando:** el gate `runtime` sigue declarado `passed` con su recibo local.
   **No se toca ese recibo:** no es falso, es de otra plataforma, y cambiarlo sin decidir esto sería
   sustituir un dato honesto por otro.
-- **La medición que faltaba, hecha el 2026-08-12 después de escribir esta ficha:**
-  `npm run test:visual:lab` en local, sobre el **mismo sha** que falla en CI → **`20 passed`, RC=0**.
-  Mismo código, mismos goldens: **verde en macOS, rojo en Linux**. Queda probado que la causa es el
-  entorno y no el producto. Y hay un corolario que reduce el riesgo de la opción (a): **si existiera
-  un cambio visual real escondido, local también fallaría**, porque los goldens son la referencia
-  aprobada. Que local pase significa que el código coincide con el diseño aprobado en la plataforma de
-  referencia.
-- **Estado:** `resuelta 2026-08-12: (a) — goldens por plataforma.` Decidida por la coordinadora bajo
-  la autorización adelantada del usuario («doy mis autorizaciones por adelantado, excepto el deploy a
-  pruebas ni a producción», 2026-08-12) y con la medición de arriba, que es la que la hace segura.
-  **Revocable y barata de deshacer:** es un cambio de ruta en la configuración, sin tocar una sola
-  imagen aprobada.
-
-  **Lo que esta decisión NO autoriza, y hay que decirlo porque es la frontera:** no se sobrescribe
-  ningún golden existente. Los 60 aprobados se conservan tal cual, movidos a la carpeta de su
-  plataforma. **El juego de Linux no se inventa ni se captura a ciegas para poner el CI en verde**: se
-  captura en una pasada deliberada, y **las imágenes se revisan antes de commitearlas**. Hasta que eso
-  ocurra, el CI seguirá rojo en ese paso — y así debe ser, porque un rojo honesto vale más que un
-  verde fabricado.
+- **Estado:** `abierta`
 
 ## Resueltas
 
@@ -1310,4 +1292,3 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-GAC-2` | La regex de los chips tolera clases intermedias; el markup no se toca | Fase **F-0**, Tarea 2b · mismo frente |
 | `D-GAC-3` | La aserción mide los valores, no el `!important` — y se comprueba en navegador | Fase **F-0**, Tarea 2c · mismo frente |
 | `D-BTN-1` | Investigar y retirar lo que no gana — **ya ejecutado** en `0a228a39` | Frente `buttons-important-leyenda` · F-D se retira del plan |
-| `D-GAC-4` | Goldens por plataforma; los aprobados no se tocan y los de Linux se revisan antes de entrar | Fase **F-AB** · captura deliberada, no automática |
