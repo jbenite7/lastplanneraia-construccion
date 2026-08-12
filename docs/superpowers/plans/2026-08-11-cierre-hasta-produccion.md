@@ -276,6 +276,20 @@ verde en Actions** — el `RC=0` local no lo sustituye, porque el rojo era de CI
 
 **Frente:** `gates-al-ci`. **Cierra:** `runtime-budgets` y `full-app-flow` en verde, 8/8.
 
+**Comprobación de solape, hecha por la coordinadora el 2026-08-12 mientras corría el primer CI sano.**
+El job de runtime ya ejecuta un paso llamado «Run Programa General persistence and RBAC gate»
+(`design-system.yml:144-153`), que corre `e2e/tests/workflows/pg-interactions.spec.mjs` con la misma
+base aislada. **No es tu gate y no te hace redundante**, pero conviene saber qué añades:
+
+| Spec | Cubre |
+|---|---|
+| `pg-interactions` (ya en CI) | **Solo Programa General**: Admin, Residente y roles de solo lectura; editar celda, leyenda, exportar CSV, cajón LPS |
+| `full-app-flow` (el tuyo) | **Todos los proyectos**: shell y cambio de semana, navegación móvil, recorrido por módulos, y el recibo de restauración de base y ficheros |
+
+Se solapan en **RBAC y persistencia de una sola pantalla**. Lo que aporta `full-app-flow` es la
+cobertura **entre módulos**, el **móvil** y la **restauración**. La premisa de esta fase se sostiene:
+no añades cobertura duplicada.
+
 **Por qué existe, medido sobre `ceb48977`:** el workflow ya levanta el entorno aislado
 (`design-system.yml:85-94`: `docker-compose.ci.yml`, `COMPOSE_PROJECT_NAME` por corrida, puerto
 18081, `E2E_REQUIRE_ISOLATED_DB=1`, `E2E_ALLOW_DB_MUTATION=design-system-ci`) y ya calcula las cuatro
