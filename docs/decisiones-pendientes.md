@@ -1239,6 +1239,23 @@ por costumbre.
   siendo indistinguible de un fallo silencioso.
 - **De quién es:** el script vive en el repositorio `coordinating-agent-sessions`, **otro mando**.
   Aquí solo se registra el hallazgo; no se toca desde `lps-aia`.
+**Verificado de primera mano por la coordinadora el 2026-08-12, sobre `ad1551cb`.** Antes esta ficha
+recogía la medición de otra sesión, atribuida y sin comprobar. Comprobada, y **es peor de lo que
+decía**:
+
+- `cas-estado.sh` da **RC=0** y lista **40 frentes**; **39** salen «sin rama resoluble / ❓ no
+  medible». Eso confirma lo reportado.
+- **Lo nuevo, y es lo grave:** el mapa **contradice el estado real de los dos únicos frentes de los
+  que hay conocimiento directo**. Marca `ci-en-verde` como **`ENCOLADA`** y `gates-al-ci` como
+  **`ENTREGADA`, 3 de 8** — y los dos están **cerrados y publicados** en `origin/main`. La fila de
+  `gates-al-ci` mide una **rama vieja de worktree**, no el trabajo que se publicó.
+- Es decir: no es solo que se quede sin datos. **Emite fases concretas y equivocadas**, con la misma
+  cara que las correctas. Un «no medible» avisa; un `ENCOLADA` sobre algo cerrado, no.
+
+**Esto refuerza la recomendación (b) y le añade urgencia:** mientras el script devuelva `RC=0` con
+filas que afirman fases falsas, es **peor que no tenerlo** — un mapa vacío se nota; uno que miente
+con seguridad se cita.
+
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
 - **Estado:** `abierta`
 
