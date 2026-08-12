@@ -138,6 +138,15 @@ sesión cuyo `cwd` es exactamente `/Volumes/Crucial X6/Developer/lps-aia` — la
 un worktree de `.claude/worktrees/`— y que no es la tuya. Entre las que queden, la de
 `lastActivityAt` más reciente.
 
+**Y no la busques por la etiqueta `[COORDINA]`.** *(Precisión del 2026-08-11, el mismo día que se
+adoptaron las etiquetas.)* La etiqueta describe el papel, **no identifica la sesión**: `list_sessions`
+mezcla repos y ahora mismo hay **dos** sesiones con `[COORDINA]`, una por repositorio. Hoy las separa
+el `cwd`; si dos coordinadoras del **mismo** repo coincidieran, el título no ayudaría en nada.
+
+Lo que identifica es el **`cwd`** y, cuando lo tienes, el **id del remitente de sus mensajes** — que
+es confirmación independiente y no una deducción. La etiqueta es para leer de un vistazo qué hay en
+marcha, no para enrutar.
+
 **No filtres por `isRunning`.** La primera versión de esta página lo exigía y estaba mal: ese campo
 vale `false` para una sesión que está esperando entre turnos, que es el estado normal de la
 coordinadora casi todo el tiempo. Lo midió la sesión de CI el 2026-08-10: siguiendo la regla al pie
