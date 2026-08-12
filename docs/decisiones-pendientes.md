@@ -1406,8 +1406,22 @@ es meter verificación y publicación en la misma línea, y ninguna cantidad de 
 - **Qué haría falta para que no dependa de la intención:** un hook de `pre-push` que corra la
   verificación y **deniegue**. Mientras el gate solo viva en la prosa de un documento, se incumple
   sin querer — como lleva pasando tres jornadas seguidas, con tres sesiones distintas.
-- **Estado:** `abierta` — dos cosas que decidir: cuándo se hace el pase de veracidad, y si el gate de
-  publicación pasa de prosa a candado ejecutable.
+- **La segunda mitad, hecha el 2026-08-12:** existe `scripts/publicar.sh`. Verifica y **deniega**;
+  el `push` solo ocurre si nada bloqueante está rojo, no hay commits entrantes y el árbol está limpio.
+  Lee cada código de salida **en su propia línea**, sin tubería, que es donde estaba el fallo.
+  - **La wiki avisa y no bloquea, a propósito:** su hallazgo típico es la alarma de veracidad —un
+    contador de commits—, que pide trabajo pero no dice que lo que vas a publicar esté mal.
+    Bloquear con ella enseñaría a saltarse el script, y un gate que se ignora enseña a ignorar los demás.
+  - **Entregado con sus mutaciones, ejecutadas:** con el contrato piloto en rojo → `DENEGADO`, `RC=1`;
+    con el árbol sucio → `DENEGADO`, `RC=1`; restaurado → `RC=0`. La primera destapó además que un
+    `!important` fuera de capa tumba **dos** comprobaciones, no una: el estático también lo vigila
+    desde `D-CI-1`.
+  - **Lo que NO hace, y es deliberado:** no toca `core.hooksPath` ni instala nada en `.git/hooks`.
+    Eso cambiaría el entorno de quien clone el repo sin que lo haya pedido. Es un script que se
+    invoca, no una trampa que se dispara sola — y por eso sigue dependiendo de que alguien lo use.
+- **Estado:** `abierta` — queda **una** cosa por decidir: cuándo se hace el pase de veracidad, y si
+  `scripts/publicar.sh` pasa a ser obligatorio para las sesiones (o incluso un `pre-push` de verdad,
+  que ya sí cambiaría el entorno y por eso no lo hago por mi cuenta).
 
 ## Resueltas
 
