@@ -5,7 +5,7 @@ fecha: 2026-07-23
 areas: [qa, design-system]
 fuente: memoria-claude
 origen: lps-aia-branch-preexisting-red-gates
-resumen: "El 2026-08-07 la suite estática del design system corre verde en sus ocho gates y ya no es una cadena && que corte en el primer rojo; lo que sigue rojo es biome (859 errores). Debajo, la historia de los rojos tolerados de main 541953e y cómo validar gates en worktrees"
+resumen: "El 2026-08-07 la suite estática del design system corre verde en sus ocho gates y ya no es una cadena && que corte en el primer rojo; lo que sigue rojo es biome (863 errores, re-medidos el 2026-08-12). Debajo, la historia de los rojos tolerados de main 541953e y cómo validar gates en worktrees"
 ---
 **Reverificado el 2026-08-07: los dos rojos que esta nota daba por tolerados ya no existen, y la
 cadena que los ocultaba tampoco.**
@@ -19,7 +19,7 @@ cadena que los ocultaba tampoco.**
   tras el primer rojo. Ya no hace falta correr esos tres a mano.
 - `tests/design-system/laboratory-hardening.test.mjs` pasa **7/7**.
 - **Biome sigue sin ser un gate verde, y peor de lo que decía esta nota:** `npm run check:frontend`
-  reporta **859 errores, 2.610 avisos y 397 infos**, no dos errores. La cifra de dos era del estado
+  reporta **863 errores, 2.604 avisos y 404 infos** (`npm run check:frontend`, re-medido el 2026-08-12; eran 859/2.610/397 el 2026-08-07 y 879 errores el 2026-07-27 — la cifra se mueve, la conclusión no), no dos errores. La cifra de dos era del estado
   de main en `541953e`.
 
 Lo de abajo se conserva como historia del estado de gates en main `541953e` (2026-07-22) y su

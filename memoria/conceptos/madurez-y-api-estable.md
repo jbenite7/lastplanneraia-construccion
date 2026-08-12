@@ -37,17 +37,22 @@ obliga a pasar por el contrato de release.
 
 `docs/design-system/version.json` es la fuente que manda sobre la versión viva, que es **`1.1.0`
 desde el 2026-08-07**. Que diga `stable` no es una etiqueta suelta:
-`tests/design-system/release-governance.test.mjs:68-74` exige que **las quince gates de cierre** de
-`closeout-evidence.json` estén todas `blocking: true`, `status: 'passed'`, con `verifiedAt` y
-`evidence.length > 0`. Solo entonces `stable-api-1.0.0.json` puede declarar
-`releaseStatus: 'guaranteed'`.
+`tests/design-system/release-governance.test.mjs:75-76` exige que **las ocho gates de cierre** de
+`closeout-evidence.json` estén declaradas todas, `blocking: true` y con `evidence.length > 0`. Solo
+entonces `stable-api-1.0.0.json` puede declarar `releaseStatus: 'guaranteed'`.
 
 **Corrección del pase de veracidad del 2026-08-10:** ese `evidence.length > 0` comprueba **forma,
 no contenido**. Nunca mira qué hay dentro del array. Es exactamente el hueco que dejó pasar los 14
 recibos de `docs/design-system/evidence/` que resultaron ser stubs de dos claves
 (`{"gateId": "static", "result": "passed"}`), sin comando, sin salida, sin fecha — medido en la
-Task 6 del Frente 0 (2026-08-10). Los 15 gates de cierre **no están sustancialmente verificados**;
-solo están bien formados. Ver [[estado|Estado de los goals]] y el trabajo pendiente del Frente 1b.
+Task 6 del Frente 0 (2026-08-10). Ver [[estado|Estado de los goals]] y el Frente 1b.
+
+**Corrección del pase del 2026-08-12:** ese diagnóstico se pagó. Hoy son **ocho** gates, no quince,
+sus ocho recibos traen `command`, `exitCode`, `durationMs` y `outputTail` (ya no son stubs), y el
+contrato **dejó de exigir `status: 'passed'`** — `D-F1b-5`, 2026-08-11, porque exigirlo empujaba a
+declarar aprobado lo que no lo estaba. Uno de los ocho está hoy `blocked` y eso es legítimo. Lo que
+sigue siendo cierto es la forma del gate: cuenta elementos, no los lee
+(ver [[gate-solo-cuenta-elementos-no-los-lee]]).
 
 Ojo con el nombre del archivo: `stable-api-1.0.0.json` **no** se renombra en cada versión. Su
 `targetVersion` sigue siendo `1.0.0` porque enumera la API que ganó la garantía SemVer en aquel

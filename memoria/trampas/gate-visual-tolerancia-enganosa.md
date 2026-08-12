@@ -16,12 +16,12 @@ el diff cae dentro de tolerancia) y actualizar los `sha256` del manifiesto.
 
 **Corregido después, sin invalidar la lección** (verificado el 2026-08-06): la tolerancia bajó de
 0.03 → 0.005 → **0.002**, y el propio archivo cita este hallazgo como motivo
-(`playwright.config.mjs:25`, y los dos specs de rejilla `programa-general.visual.mjs:95` y
+(`playwright.config.mjs:50`, y los dos specs de rejilla `programa-general.visual.mjs:95` y
 `programacion-intermedia.visual.mjs:95`). La cifra 0.03 es histórica; lo que sigue vigente es que
 un verde del gate no prueba que el golden esté al día.
 
 **Medido el 2026-08-06: 0.002 ya está cerca del suelo de ruido, no sobra margen.** El comentario de
-`playwright.config.mjs:22-24` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar
+`playwright.config.mjs:44-47` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar
 nada no produjeron ni un pixel de diferencia». Se comprobó bajando el piso a `0` y corriendo dos
 veces `design-system-lab.visual.mjs` + `lps-drawer-design-system.mjs`: **dos escenarios sí difieren
 sin que nadie toque el código** — `data-display-dark-1180x820` con 141 px (ratio 0,000146) y

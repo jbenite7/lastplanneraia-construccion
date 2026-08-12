@@ -4,7 +4,7 @@ estado: derogada
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
 fuente: public/index.php
-resumen: "Listado de Actividades: CRUD de actividades del proyecto, base sobre la que se arma el PDC v1"
+resumen: "Listado de Actividades (PDC v1): era el CRUD de actividades sobre el que se armaba el PDC v1; eliminado del repositorio el 2026-08-04"
 ---
 # Listado de Actividades (PDC v1)
 

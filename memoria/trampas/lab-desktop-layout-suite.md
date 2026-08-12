@@ -8,7 +8,7 @@ origen: lps-aia-lab-desktop-layout-suite
 resumen: design-system-lab-desktop-layout.mjs corre en el carril evidence/reflow, fuera de runtime; volvio a estar roja en la asercion de 44px hasta el 2026-08-04
 ---
 `tests/browser/design-system-lab-desktop-layout.mjs` NO lo ejecuta
-`npm run test:design-system:runtime`: `tests/design-system/accessibility.test.mjs:273`
+`npm run test:design-system:runtime`: `tests/design-system/accessibility.test.mjs:294,306`
 asierta explicitamente que runtime **no** casa con `/keyboard|reflow|desktop-layout/`.
 Vive solo en `test:design-system:evidence` y `test:reflow`. Por eso estuvo roja
 meses sin aparecer en ninguna lista de rojos conocidos: ningun gate habitual la

@@ -19,17 +19,25 @@ Medido el 2026-07-27 sobre `main`. Antes de aceptar que un cambio de CSS rompió
 > tolerancia de `0.002` — y las diferencias son casi idénticas entre familias (26952, 27211, 25536,
 > 27012 píxeles), que es lo que descarta un cambio de diseño y apunta al render de plataforma.
 >
-> **Causa medida:** los 60 goldens están versionados **sin sufijo de plataforma**
+> **Causa medida** (estado del 2026-08-11, ya corregido — ver la nota del final): los 60 goldens
+> estaban versionados **sin sufijo de plataforma**
 > (`tests/browser/__screenshots__/auth/login-dark-1180x820.png`): un solo juego para macOS y Linux.
 > El recibo verde de `runtime` es **honesto** y solo vale en la máquina que lo midió.
 >
 > **Por qué nadie lo vio en un mes:** el job de CI que lo comprobaría no se ejecutaba desde el
 > **2026-07-17** (`needs: design-system-static`, con el static rojo). No es una regresión nueva: es
-> una ceguera vieja que se destapó al arreglar el static. Ficha: `D-GAC-4`, **abierta**.
+> una ceguera vieja que se destapó al arreglar el static. Ficha: `D-GAC-4`.
 >
 > **Y un intento fallido que conviene no repetir:** mover los goldens a carpeta por plataforma pone el
 > gate estático en rojo — un manifiesto del contrato los ancla **por ruta y por hash**. Revertido en
 > `949bb644`. La opción sigue siendo la correcta, pero es un frente, no un retoque.
+
+> [!check] Cerrada el 2026-08-12 — `D-GAC-4`, opción (a)
+> `docs/decisiones-pendientes.md` la da por **resuelta y ejecutada**, y el commit `00f1ad59` la
+> implementó: el juego sin sufijo se queda para macOS y CI compara contra el suyo en
+> `tests/browser/__screenshots__/<suite>/linux/`. Lo que sigue vigente de esta página es la
+> **lección**, no el estado: un recibo visual verde vale solo para la plataforma que lo midió, y
+> antes de culpar a tu cambio conviene medir el delta contra el árbol limpio.
 
 - **`design-system-lab.visual.mjs`: todas las familias fallan** (actions, bi-primitives, data-display, forms-filters, foundations, overlays…). `actions-dark-1180x820` da 68.014 px con el árbol limpio. No es tu cambio.
 - **`states-feedback-dark-*.png` no se compara nunca.** En `design-system-lab.visual.mjs`, la rama `if (scenario.family === STATES_FEEDBACK_FAMILY)` hace `return` tras `assertStatesFeedbackVisualContract` + `captureEvidence`, **antes** de `toHaveScreenshot`. Los golden existen en `__screenshots__` pero están muertos: tocar esa familia no requiere aprobación visual.

@@ -18,6 +18,14 @@ como paso 1 y «evidencia visual» como paso 6, y eso no se puede ejecutar en es
 contenedor, en el mismo paso. Los goldens viven en `tests/browser/__screenshots__/<moduleId>/`
 (decisión del usuario, 2026-07-29), no en `evidence/`.
 
+**Matiz del 2026-08-12, y no es menor:** esa regla es hoy la **rama por defecto**, no la única. El
+schema (`module-manifest.schema.json:105`) explica que el mínimo **no** se fija con `minItems`
+porque depende de `visualEvidence`: sin `visualEvidence` el gate exige al menos un escenario; **con**
+`visualEvidence` el módulo delega su evidencia en una familia de `homologation.json` y `scenarios`
+debe quedar **vacío**. Las dos ramas las aplica `scripts/design-system-contracts.mjs:727,769-811`,
+con su lista blanca de delegación. O sea: puede haber manifiesto sin golden propio, pero solo por
+delegación declarada — no «en seco».
+
 Dos trampas más al añadir manifiestos:
 - `tests/design-system/contracts.test.mjs` tiene un **censo cerrado** de `inventory.manifests` con
   `deepEqual`: cada manifiesto nuevo obliga a actualizar esa lista.

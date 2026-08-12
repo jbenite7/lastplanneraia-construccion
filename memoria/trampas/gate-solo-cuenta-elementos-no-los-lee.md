@@ -4,7 +4,7 @@ estado: vigente
 fecha: 2026-08-10
 areas: [design-system, qa]
 fuente: tests/design-system/release-governance.test.mjs, Frente 0 (Task 6, 2026-08-10)
-resumen: "El gate de gobernanza del design system solo comprueba evidence.length > 0, nunca su contenido; 14 stubs de dos claves pasaron como evidencia de release durante semanas"
+resumen: "El gate de gobernanza del design system solo comprueba evidence.length > 0, nunca su contenido; 14 stubs de dos claves pasaron como evidencia de release durante semanas (corregido el 2026-08-11: 8 gates con recibos reales, y el contrato ya no exige status passed)"
 ---
 # Un gate puede estar verde por no mirar
 
@@ -66,3 +66,21 @@ tocar lo que ya era estricto.
 sí miraban** antes de declarar que el conjunto no verificaba nada. Un diagnóstico demasiado ancho
 lleva a reconstruir piezas sanas.
 
+> [!check] Corregido el 2026-08-11 — `D-F1b-5`, verificado el 2026-08-12
+> Lo de arriba describe el estado del 2026-08-10 y **ya no es el de hoy**, en dos puntos:
+>
+> - **Son 8 gates, no 15.** `docs/design-system/closeout-evidence.json` declara `static`, `runtime`,
+>   `runtime-budgets`, `phpstan-scoped`, `phpstan-global`, `global-table-safety`, `full-app-flow` y
+>   `atomic-commit`; `release-governance.test.mjs:75` comprueba `closeout.gates.length === 8`.
+> - **Ya no se exige `status: 'passed'`.** El comentario del propio test (`:72-74`) explica por qué se
+>   retiró el acoplamiento: con la versión estable en 1.x, exigirlo **obligaba a declarar aprobados
+>   gates que no lo estaban, y fue el incentivo que produjo los quince recibos `passed` sin ejecutar**.
+>   Hoy uno de los ocho está `blocked` y el contrato lo admite. Que cada gate diga la verdad sobre sí
+>   mismo lo comprueban sus propias pruebas.
+>
+> Y el eslabón vacío se llenó: los ocho artefactos referenciados traen `command`, `exitCode`,
+> `durationMs`, `tree` y `outputTail` (de 288 a 7.832 bytes), no las dos claves de antes.
+>
+> **La lección aguanta y de hecho sale reforzada:** el arreglo no fue mirar más fuerte, sino **quitar
+> el requisito que premiaba mentir**. Un gate que exige un verde que nadie puede dar honestamente no
+> produce verdes honestos, produce recibos falsos.

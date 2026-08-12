@@ -10,7 +10,8 @@ resumen: "Subcontratistas: catálogo editable de subcontratistas/proveedores, co
 
 **Qué resuelve.** Mantiene el catálogo de subcontratistas y proveedores en una grilla editable en
 vivo. Lo usan ambos flujos: [[submodulo-cic]] los califica dentro del LPS, y
-[[plan-de-compras]]/[[contratos]] los usan como destino de un paquete de contratación.
+[[plan-de-compras]] los usa como destino de un paquete de contratación (su antecesor,
+[[contratos]], se eliminó con el PDC v1 el 2026-08-04).
 
 **Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
 
