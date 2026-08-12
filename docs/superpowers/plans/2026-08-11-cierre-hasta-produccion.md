@@ -581,6 +581,36 @@ mío ahora **salta** «Run laboratory gates». No oculta nada nuevo —ese paso 
 `D-GAC-4`— pero mientras `runtime-budgets` siga rojo, el estado del carril visual deja de verse en
 cada corrida. Si molesta, la solución es `if: always()` en ese paso, y es decisión de quien retome.
 
+**Mutación de `full-app-flow`, ejecutada el 2026-08-12 — el gate muerde, y por el motivo correcto.**
+
+Corrida `31591828197`, en la rama `mutacion/full-app-flow-restauracion` vía `workflow_dispatch`, **sin
+tocar `main`** (el `push` solo dispara en `main`, así que la rama no contamina nada; borrada al
+terminar).
+
+- **Mutación:** anular `databaseSnapshot.restore()` en `tests/browser/support/restoration.mjs`, es
+  decir, retirar el eje de **restauración** de los tres que `D-F1b-2` fundió en este gate. **No** un
+  timeout ni el número de proyectos: eso mediría otra cosa.
+- **Resultado:** `Enforce full-app-flow gate => failure`, **13 de 13** pruebas caídas.
+- **Y cayó la aserción esperada**, leída en el artefacto `design-system-failure-evidence`:
+  `AggregateError: E2E restoration failed: E2E database restoration mismatch: before=008eb690…
+  after=e1a11b76…`. El eje de restauración **sí está vigilado**.
+
+**Dos errores propios que esta mutación destapó, y valen más que el verde:**
+
+1. **Leí el spec y concluí que la restauración “se ejecuta pero no se asevera”. Falso.** El mecanismo
+   está una capa más abajo, en `restoration.mjs:163-168`, que compara las huellas y lanza. Si lo
+   hubiera publicado como hallazgo, habría metido en la wiki una acusación falsa contra un gate que
+   hace su trabajo.
+2. **Busqué la aserción en `outputTail` del recibo y en `gh run view --log`, y di «0 apariciones».**
+   Los dos están **truncados** y ninguno arrastra el detalle de Playwright. Estuve a punto de leer
+   una ausencia **en mi ventana de lectura** como una ausencia **en la realidad** — que es la misma
+   criatura que este repo persigue, esta vez mirándome a mí. El dato estaba en el artefacto de fallo.
+
+**`runtime-budgets` no se mutó, y es deliberado:** ya se le vio fallar **por presupuesto y no por
+procedencia** en dos corridas reales (`31563364701`, `31565443070`), con las cifras y su composición.
+Su capacidad de morder está demostrada por observación; repetirla habría gastado doce minutos de CI
+para volver a ver lo mismo.
+
 **Excepción de protocolo:** implementada y avalada por la misma sesión coordinadora, como F-0.
 Registrada junto a `D-GAC-3`. Sigue sin ser el modo normal.
 
