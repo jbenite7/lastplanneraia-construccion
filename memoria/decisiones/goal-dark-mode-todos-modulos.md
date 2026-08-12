@@ -27,7 +27,9 @@ Decisiones vinculantes del usuario (grilleo de Plannotator, 17 preguntas, en
 - **F6 consolida en Tom Select y elimina Select2** (decidido en chat, invierte lo que proponía
   la primera redacción). Razón: Select2 arrastra jQuery, Tom Select no. Cuesta más —Select2
   está en 9 vistas y es el único con adaptador DS—, pero de paso obliga a registrar
-  `tom-select` en `VENDOR_ATTACHMENTS`, hoy ausente pese a que dos manifiestos ya lo declaran.
+  `tom-select` en `VENDOR_ATTACHMENTS`. (Ese registro ya se hizo: verificado el 2026-08-12,
+  `src/View/Components/DesignSystemHeadComponent.php:125` lo trae, y
+  `design-system-entrypoint-partition.mjs` lo conoce.)
 - Orden: F0 → (F1 ∥ F4) → (F2 ∥ F3) → F6; F5 en cualquier momento tras F0.
 - **F1 cierra con `styles.css` VIVO, no borrado** (decidido el 2026-07-28, corrige al plan). El
   archivo sobrevive reducido a los literales ya adjudicados como excepción (10 hex + 6 `rgba()`).

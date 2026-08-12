@@ -18,7 +18,7 @@ En lps-aia, `aia-design-system.css` declara `@layer reset, vendor, theme, base, 
 contra una SUBcapa de la propia `components`**. Medido: `buttons.css` entra por
 `@import url("/css/buttons.css") layer(components)` (`aia-design-system.css:35`) y **se envuelve a
 sí mismo** en `@layer components { }`, así que sus reglas quedan en `components.components`. Su
-`.pdc-legend-item { display: inline-flex !important }` (`buttons.css:971`) derrotó a una regla
+`.pdc-legend-item { display: inline-flex !important }` (entonces `buttons.css:971`) derrotó a una regla
 `!important` de mucha más especificidad puesta en `components` a secas — la regla estaba en el
 CSSOM, casaba con el elemento, y el computado seguía siendo `flex`.
 
@@ -29,3 +29,10 @@ components { … } }` en el CSS del módulo, donde gana por especificidad y por 
 Regla práctica: antes de dar por hecho que una capa gana, **averigua si el rival vive en una
 subcapa**, y recuerda que un `@import ... layer(X)` sobre un archivo que ya anida `@layer X` da
 `X.X`, no `X`. Ver también [[valor-declarado-no-es-valor-computado]].
+
+Nota del pase 8 (2026-08-12, sobre `0e45ba1d`): el ejemplo concreto ya no se reproduce tal cual —
+`.pdc-legend-item` está hoy en `buttons.css:976` y su `display: inline-flex` perdió el
+`!important` (`:977`); un refactor del mismo 2026-08-11 lo sacó además de un `:where()` compartido
+(comentario en `buttons.css:52-58`). El mecanismo sigue vigente y verificado:
+`aia-design-system.css:35` importa `buttons.css` con `layer(components)` y `buttons.css:1` se
+envuelve en `@layer components`, así que sus reglas siguen viviendo en `components.components`.

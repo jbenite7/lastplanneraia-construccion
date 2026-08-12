@@ -43,5 +43,8 @@ que ya no existe, no es "casi cerrado" — hay que **redefinir la condición**, 
 de seguir midiendo contra ella.
 
 Ambos casos se resolvieron el 2026-08-10, no cerrando el goal sino corrigiendo por qué seguía
-bloqueado: ver [[estado|Estado de los goals]] para su estado actualizado. Mapa del área:
+bloqueado: ver [[estado|Estado de los goals]] para su estado actualizado. (Nota del pase 8,
+2026-08-12: `closeout-evidence.json` declara hoy **8** gates, no 15, y aunque su `generatedAt` de
+cabecera sigue en 2026-07-15, los `verifiedAt` por gate ya son del 2026-08-11/12 con recibos
+reales — el segundo caso quedó saneado por el Frente 1b.) Mapa del área:
 [[design-system]] y [[qa-y-gates]].

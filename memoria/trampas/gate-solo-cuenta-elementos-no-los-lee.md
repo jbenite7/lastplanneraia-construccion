@@ -4,14 +4,15 @@ estado: vigente
 fecha: 2026-08-10
 areas: [design-system, qa]
 fuente: tests/design-system/release-governance.test.mjs, Frente 0 (Task 6, 2026-08-10)
-resumen: "El gate de gobernanza del design system solo comprueba evidence.length > 0, nunca su contenido; 14 stubs de dos claves pasaron como evidencia de release durante semanas"
+resumen: "Un gate que cuenta evidence.length > 0 sin abrir el recibo dejó pasar 14 stubs durante semanas; el hueco se cerró el 2026-08-11 con gate-receipt-content, que sí abre cada recibo"
 ---
 # Un gate puede estar verde por no mirar
 
-`tests/design-system/release-governance.test.mjs:68-74` valida los 15 gates de cierre de
-`closeout-evidence.json` exigiendo `blocking === true`, `status === 'passed'`, `verifiedAt` como
-string y `evidence.length > 0`. **Nunca abre el contenido de `evidence`.** Un array con un stub
-dentro pasa exactamente igual que uno con la salida real de un comando.
+Cuando se escribió esta página, `tests/design-system/release-governance.test.mjs` validaba los
+(entonces) 15 gates de cierre de `closeout-evidence.json` exigiendo `blocking === true`,
+`status === 'passed'`, `verifiedAt` como string y `evidence.length > 0`. **Nunca abría el contenido
+de `evidence`.** Un array con un stub dentro pasaba exactamente igual que uno con la salida real de
+un comando.
 
 Eso es lo que pasó: los 14 artefactos referenciados en `docs/design-system/evidence/*.json` eran
 stubs literales de dos claves — `{"gateId": "static", "result": "passed"}`, 47–60 bytes cada uno —
@@ -19,11 +20,11 @@ sin comando, sin salida, sin fecha, sin hash. No era evidencia vieja que caducó
 evidencia real**. El gate llevaba semanas en verde sin haberlo notado, porque «verde» solo
 significaba «el array no está vacío».
 
-Medido en la Task 6 del Frente 0 (2026-08-10): de los 15 gates, solo 2 pasan de verdad hoy
-(`static`, `global-table-safety`), 4 fallan con evidencia real, 8 no son ejecutables en una sesión
-ad hoc y 1 es un recibo sin comando real detrás — `accessibility-insights`, que cita un binario que
-nunca estuvo instalado. Detalle completo en `goals/design-system-nucleo-gobernanza/goal.md`
-(«Por qué sigue abierto — 2026-08-10»).
+Medido en la Task 6 del Frente 0 (2026-08-10): de los 15 gates de entonces, solo 2 pasaban de
+verdad (`static`, `global-table-safety`), 4 fallaban con evidencia real, 8 no eran ejecutables en
+una sesión ad hoc y 1 era un recibo sin comando real detrás — `accessibility-insights`, que citaba
+un binario que nunca estuvo instalado. Detalle completo en
+`goals/design-system-nucleo-gobernanza/goal.md` («Por qué sigue abierto — 2026-08-10»).
 
 **Why:** un gate que cuenta elementos de un array en vez de inspeccionar su contenido no distingue
 entre «se ejecutó y produjo evidencia» y «alguien escribió dos líneas de JSON». Es la misma familia
@@ -49,7 +50,7 @@ Lo que de verdad ocurría, separado:
 
 | Pieza | Qué hace |
 |---|---|
-| `tests/design-system/release-governance.test.mjs:68-74` | Comprueba `evidence.length > 0`. **Nunca abre el recibo.** Aquí sí, un stub pasa igual que una ejecución real. |
+| `tests/design-system/release-governance.test.mjs` | Comprueba `evidence.length > 0`. **Nunca abre el recibo.** Aquí sí, un stub pasa igual que una ejecución real. |
 | `scripts/design-system-closeout-contract.mjs` | **Es estricto**: exige `verifiedAt` con formato exacto, posterior a `generatedAt`, `null` en los no resueltos, y delega en `design-system-evidence-receipt.mjs`, que **resuelve el `sourceRef` a un commit y recalcula el `sha256`**. Y corre en la suite, vía `design-system-contracts.mjs`. |
 
 Así que el contrato **sí verificaba contenido y procedencia**. Lo que fallaba es que el artefacto al
@@ -65,4 +66,23 @@ tocar lo que ya era estricto.
 **La lección de segundo orden:** al encontrar un gate que no mira, comprueba **cuáles de sus vecinos
 sí miraban** antes de declarar que el conjunto no verificaba nada. Un diagnóstico demasiado ancho
 lleva a reconstruir piezas sanas.
+
+## Estado a 2026-08-12 (pase 8 de veracidad): el hueco está cerrado
+
+El cierre del Frente 1b movió todo lo que este cuerpo describía como vigente, verificado sobre
+`0e45ba1d`:
+
+- `closeout-evidence.json` declara **8 gates, no 15** (`release-governance.test.mjs:75-77` exige
+  `gates.length === 8`).
+- El test **ya no exige `status: 'passed'`** en todos: D-F1b-5 (2026-08-11) retiró ese
+  acoplamiento — el comentario en `release-governance.test.mjs:68-74` explica que exigirlo fue el
+  incentivo que produjo los quince recibos `passed` sin ejecutar. Hoy `runtime-budgets` está
+  `blocked` con `exitCode: 1` y el gate pasa, porque dice la verdad.
+- Los stubs de 47–60 bytes **ya no existen**: los recibos de `docs/design-system/evidence/` llevan
+  `command`, `exitCode`, `artifactSha256`, `sourceRef` y `outputTail` reales.
+- Y la pieza que faltaba existe: `tests/design-system/gate-receipt-content.test.mjs` abre cada
+  recibo con `validarRecibo()` (`scripts/design-system/gate-receipt.mjs`) y falla si no coincide
+  con lo que el índice declara — exactamente el gate que este cuerpo describía como ausente.
+
+La trampa queda como lección de diseño de gates; el estado del sistema que describía ya no es este.
 
