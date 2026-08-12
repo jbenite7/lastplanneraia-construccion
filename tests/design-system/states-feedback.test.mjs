@@ -58,11 +58,23 @@ test('state semantics map module labels to shared urgency colors', async () => {
     // pasar un mes. Con `===` y la lista literal de abajo el conjunto queda cerrado por los dos
     // lados. Si algun dia entra un modulo nuevo, este numero se sube a mano a proposito: ese es
     // el punto donde alguien tiene que mirar si el modulo pinta de verdad sus estados.
-    assert.equal(semantics.moduleMappings.length, 12);
+    // 2026-08-12 (D-CEF-1): de 12 a 10. Se retiran `contratos` y
+    // `listado-actividades`, que eran la interfaz del PDC v1: sus rutas,
+    // controladores y datos se eliminaron el 2026-08-04 y hoy dan `grep -c` 0 en
+    // `public/index.php`. Entre las dos declaraban **7 estados** que ya no pinta
+    // nadie: esa es la cobertura que se pierde, y se pierde porque no cubria nada.
+    // Confirmado por `views/partials/shell_sidebar.php:93-96`, no por el conteo de
+    // rutas, que es un proxy: dos de sus etiquetas —«Cambios guardados», «Error de
+    // conexion»— si existen en el repo, pero en Profesionales, Subcontratistas y el
+    // laboratorio. Por la etiqueta sola no se sabe de quien es un estado; por eso
+    // ahora cada modulo declara su `surface`.
     const modules = semantics.moduleMappings.map(({ module }) => module);
-    for (const module of ['programacion-semanal', 'programa-general', 'programacion-intermedia', 'auth', 'bi', 'pdc', 'control-cambios', 'contratos', 'listado-actividades', 'dashboard', 'profesionales', 'subcontratistas']) {
-      assert.ok(modules.includes(module), `missing state mapping for ${module}`);
-    }
+    const esperados = ['programacion-semanal', 'programa-general', 'programacion-intermedia', 'auth', 'bi', 'pdc', 'control-cambios', 'dashboard', 'profesionales', 'subcontratistas'];
+    // deepEqual sobre el conjunto ordenado, no `length` mas un bucle de `includes`:
+    // asi la mutacion util —cambiar QUE se cuenta— tambien cae. Con `length === N`
+    // y `includes`, sustituir un modulo real por uno inventado mantenia el numero
+    // y solo fallaba por el que faltaba; ahora falla nombrando al intruso.
+    assert.deepEqual([...modules].sort(), [...esperados].sort());
   assert.equal(semantics.moduleMappings.find(({ module }) => module === 'programa-general').states.find(({ label }) => label === 'Atrasada').level, 'urgent');
   assert.match(css, /\[data-aia-severity="high"\]\[data-aia-urgency="now"\]/);
 });
@@ -176,4 +188,32 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
     { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green' },
     { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue' },
   ]);
+});
+
+// D-CEF-1 (2026-08-12): cada modulo declara donde se pintan sus estados, y el
+// gate comprueba que esa superficie EXISTE en el front controller. Sin esto,
+// `programa-general-actualizar` declaro seis estados que ninguna pantalla
+// pintaba y estuvo en verde desde el 2026-07-15: el esquema es
+// `additionalProperties: false` con solo `module` y `states`, asi que no habia
+// nada contra lo que contrastar. El contrato vigilaba la resta -retirar un
+// modulo rompia el censo- y no la suma.
+test('cada modulo de estados declara una superficie que existe en el front controller', async () => {
+  const semantics = await readJson('state-semantics.json');
+  const frontController = await readFile(
+    new URL('../../public/index.php', import.meta.url), 'utf8',
+  );
+
+  assert.ok(semantics.moduleMappings.length > 0, 'no hay modulos que comprobar');
+
+  for (const entry of semantics.moduleMappings) {
+    assert.ok(
+      typeof entry.surface === 'string' && entry.surface.length > 0,
+      `${entry.module} no declara superficie`,
+    );
+    // La comprobacion util no es que el campo exista, es que apunte a algo real.
+    assert.ok(
+      frontController.includes(`'${entry.surface}'`),
+      `${entry.module} declara la superficie ${entry.surface}, que no esta en public/index.php`,
+    );
+  }
 });

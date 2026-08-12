@@ -983,7 +983,31 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   se apoya en que es «un término que la obra ve a diario». Medido sobre `44917bc1`, **no se ve en
   ninguna parte**: la pregunta se cae con la premisa. No cambio su estado —eso lo hace la
   coordinadora—, pero conviene leerlas juntas.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-12: (a) — superficie obligatoria, y ejecutada.` El esquema exige
+  `surface` (`state-semantics.schema.json`, `required: [module, surface, states]`), los **10** módulos
+  vivos la declaran con su ruta medida en `public/index.php`, y el gate comprueba que **esa ruta
+  existe de verdad**, no solo que el campo esté.
+
+  **Corrección a esta ficha:** decía «los trece módulos». Eran **12** al escribirla —el
+  decimotercero era el fantasma que ese mismo frente retiró— y quedan **10**.
+
+  **Se retiran `contratos` y `listado-actividades`**, la interfaz del PDC v1 eliminado el 2026-08-04:
+  `grep -c` da 0 en `public/index.php` y `shell_sidebar.php:93-96` lo dice por escrito.
+  **Cobertura que se pierde, medida: 7 estados** — que no cubrían nada, porque no los pintaba nadie.
+  El matiz que justifica la fase entera: dos de esas etiquetas —«Cambios guardados», «Error de
+  conexión»— **sí existen** en el repo, pero en `ProfesionalesApiController`,
+  `SubcontratistasApiController` y el laboratorio. **Por la etiqueta sola no se sabe de quién es un
+  estado.**
+
+  **Cuatro mutaciones ejecutadas:** (A) módulo con superficie inexistente → rojo; (B) sustituir un
+  módulo real por uno inventado **manteniendo el total en 10** → rojo, nombrando al intruso; (C)
+  quitarle la superficie a un módulo real → rojo; (D) lo mismo contra el validador de esquema → rojo,
+  «falta el campo obligatorio surface». La **(B)** es la que vale: el censo pasó de `length === N` más
+  un bucle de `includes` a un `deepEqual` del conjunto, así que ahora **cambiar qué se cuenta también
+  cae**, no solo cambiar cuántos.
+
+  Ejecutada por la coordinadora bajo la autonomía delegada, con la misma excepción registrada en
+  `D-GAC-3`.
 
 
 ### D-BTN-1 · Un `!important` que no gana, y quizá la regla que lo pisa tampoco hace falta

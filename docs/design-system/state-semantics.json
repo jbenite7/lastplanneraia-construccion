@@ -132,6 +132,7 @@
   "moduleMappings": [
     {
       "module": "programacion-semanal",
+      "surface": "/programacion-semanal",
       "states": [
         {
           "label": "RC con restricciones",
@@ -197,6 +198,7 @@
     },
     {
       "module": "programa-general",
+      "surface": "/programa-general",
       "states": [
         {
           "label": "Actividad Futura",
@@ -244,6 +246,7 @@
     },
     {
       "module": "programacion-intermedia",
+      "surface": "/programacion-intermedia",
       "states": [
         {
           "label": "RC inicio vencido",
@@ -298,6 +301,7 @@
     },
     {
       "module": "auth",
+      "surface": "/login",
       "states": [
         {
           "label": "Credenciales inválidas",
@@ -311,6 +315,7 @@
     },
     {
       "module": "bi",
+      "surface": "/bi/control-tower",
       "states": [
         {
           "label": "Atrasado",
@@ -332,6 +337,7 @@
     },
     {
       "module": "pdc",
+      "surface": "/plan-compras",
       "states": [
         {
           "label": "Información pendiente",
@@ -372,6 +378,7 @@
     },
     {
       "module": "control-cambios",
+      "surface": "/control-cambios",
       "states": [
         {
           "label": "En Estudio",
@@ -396,45 +403,8 @@
       ]
     },
     {
-      "module": "contratos",
-      "states": [
-        {
-          "label": "Duraciones pendientes",
-          "level": "attention"
-        },
-        {
-          "label": "Guardado",
-          "level": "healthy"
-        },
-        {
-          "label": "Error al guardar",
-          "level": "urgent"
-        }
-      ]
-    },
-    {
-      "module": "listado-actividades",
-      "states": [
-        {
-          "label": "Cambios guardados",
-          "level": "healthy"
-        },
-        {
-          "label": "Información pendiente",
-          "level": "attention"
-        },
-        {
-          "label": "Error al guardar",
-          "level": "urgent"
-        },
-        {
-          "label": "Error de conexión",
-          "level": "urgent"
-        }
-      ]
-    },
-    {
       "module": "dashboard",
+      "surface": "/dashboard",
       "states": [
         {
           "label": "Crisis bloqueada",
@@ -456,6 +426,7 @@
     },
     {
       "module": "profesionales",
+      "surface": "/profesionales",
       "states": [
         {
           "label": "Activo",
@@ -477,6 +448,7 @@
     },
     {
       "module": "subcontratistas",
+      "surface": "/subcontratistas",
       "states": [
         {
           "label": "Activo",
