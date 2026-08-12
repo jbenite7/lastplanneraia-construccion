@@ -402,3 +402,9 @@ openspec/
 # Andamiaje de coordinating-agent-sessions: cola por frente que duplicaria
 # docs/decisiones-pendientes.md, que es la cola canonica de este repo.
 decisiones/
+
+# ci-en-verde (F-0): solo el validation-log viaja — la medición en navegador que el
+# cierre cita. Como arriba: re-permitir carpeta y archivo porque `goals/*` excluye.
+!goals/ci-en-verde/
+goals/ci-en-verde/*
+!goals/ci-en-verde/validation-log.md
