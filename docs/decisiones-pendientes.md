@@ -1327,7 +1327,7 @@ por costumbre.
     | Métrica | Baseline | Máximo | Medido |
     |---|---|---|---|
     | `cssGzipBytes` | 136.933 | 138.981 | **194.554** (+42 % sobre el baseline) |
-    | `initializationMs` | 991 | 1.101,5 | **1.644,4** (+66 %) |
+    | ~~`initializationMs`~~ | ~~991~~ | ~~1.101,5~~ | ~~1.644,4~~ **— RETIRADA, ver abajo** |
     | `adapterAssets` | 7 rutas | tolerancia 0 | lista distinta |
 
   - En `adapterAssets`, el baseline **todavía lista `semi-auto-review.css`**, que se eliminó con el
@@ -1356,6 +1356,24 @@ por costumbre.
   protocolo: sería fabricar el verde con el gesto más inocente que existe.
 - **Qué queda saltado esperando:** el gate `runtime-budgets` se queda **rojo y honesto**. No se toca
   el baseline ni el recibo.
+**Corrección del 2026-08-12, y el dato equivocado lo di yo.** La primera medición se tomó en la
+corrida `31563364701`, **con el árbol sucio** — `gate-receipt.mjs` escribía el recibo dentro del
+worktree, efecto secundario que introduje al cablearlo. Repetida en `31565443070` **con el árbol
+limpio**, el resultado cambia:
+
+- **Violaciones: dos, no tres.** `cssGzipBytes` (**194.553** contra un máximo de 138.981) y
+  `adapterAssets`. `grep -c initializationMs` sobre el log da **0**.
+- **`initializationMs` NO está violado.** Aquel `1.644,4 ms` era del árbol sucio y **no mide el
+  rendimiento de la aplicación**. Lo repetí al usuario como si lo midiera.
+- `cssGzipBytes` se sostiene y varía en **1 byte** entre las dos corridas (194.554 → 194.553): esa
+  sí es una medición estable.
+- `adapterAssets` se sostiene entera: el baseline sigue nombrando `semi-auto-review.css`, borrado con
+  el PDC v1.
+
+**Lo que esto cambia en la decisión:** el problema es **el peso del CSS y la lista de adaptadores**,
+no el tiempo de arranque. La opción (c) —corregir la lista ya, medir el CSS antes de aprobar— sigue
+siendo la recomendada, y ahora con un frente más estrecho: **un solo número que investigar**, no dos.
+
 - **Estado:** `abierta`
 
 ## Resueltas
