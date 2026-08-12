@@ -1264,7 +1264,31 @@ por costumbre.
 - **Qué queda saltado esperando:** el gate `runtime` sigue declarado `passed` con su recibo local.
   **No se toca ese recibo:** no es falso, es de otra plataforma, y cambiarlo sin decidir esto sería
   sustituir un dato honesto por otro.
-- **Estado:** `abierta`
+
+**Dos mediciones añadidas el 2026-08-12, y la segunda corrige a la coordinadora.**
+
+1. **La causa está probada, no supuesta.** `npm run test:visual:lab` en local, sobre el **mismo sha**
+   que falla en CI → **`20 passed`, RC=0**. Mismo código, mismos goldens: verde en macOS, rojo en
+   Linux. Corolario que importa para elegir: **si hubiera un cambio visual real escondido, local
+   también fallaría**, porque los goldens son la referencia aprobada.
+
+2. **El coste de (a) es mucho mayor de lo que esta ficha decía, y el error era mío.** Escribí que era
+   «una pasada de captura y el doble de archivos». Lo intenté —`snapshotPathTemplate` con
+   `{platform}` y los 59 movidos con `git mv`, sin alterar un byte: hash idéntico al de `HEAD`— y el
+   **gate estático se puso rojo**: `golden hash mismatch` y `missing golden` en cadena. **Un
+   manifiesto del contrato del design system ancla cada golden por ruta y por hash.** Mover la carpeta
+   rompe ese contrato.
+   - Revertido en `949bb644`. Medido después: `STATIC_RC=0`, `PILOTO_RC=0`, 60 goldens en su sitio,
+     árbol limpio. Nada publicado.
+   - **Coste real de (a):** cambiar la plantilla **y** el manifiesto que ancla los 59 — es decir,
+     **tocar un contrato**, de las cosas que escalan siempre. Sigue siendo la opción correcta de
+     fondo, pero es **un frente con su propio plan**, no un retoque.
+   - **Cómo se coló:** encadené la verificación al `commit` en la misma línea, así que el commit se
+     hizo con el gate en rojo. Es la trampa que `AGENTS.md` documenta para el `push`, en su versión de
+     `commit`. Lo cazó la verificación posterior, no yo al escribirlo.
+
+- **Estado:** `abierta` — con el coste corregido. La opción (a) sigue siendo la recomendada, pero
+  ahora se sabe que es un frente, no una línea.
 
 ## Resueltas
 
