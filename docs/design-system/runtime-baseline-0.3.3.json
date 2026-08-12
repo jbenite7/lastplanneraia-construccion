@@ -28,12 +28,13 @@
     "cssGzipBytes": 136933,
     "jsGzipBytes": 650886,
     "adapterAssets": [
+      "/css/design-system/adapters/datatables.css",
       "/css/design-system/adapters/handsontable.css",
       "/css/design-system/adapters/legacy-bridge.css",
       "/css/design-system/adapters/lps-drawer.css",
       "/css/design-system/adapters/programa-general-handsontable.css",
       "/css/design-system/adapters/select2.css",
-      "/css/design-system/adapters/semi-auto-review.css",
+      "/css/design-system/adapters/shell-sidebar.css",
       "/css/design-system/adapters/sweetalert2.css"
     ],
     "duplicateRequestCount": 3,
