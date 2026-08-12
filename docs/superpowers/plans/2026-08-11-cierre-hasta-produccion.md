@@ -934,6 +934,58 @@ servidor ni desplegar otros cambios. Una publicación aprobada aprueba **esa** p
 
 ---
 
+### ## Cierre parcial de F-E — PRUEBAS desplegado, PRODUCCIÓN no
+
+**Autorización:** el usuario autorizó **«autorizo pruebas»** el 2026-08-12, en un mensaje suyo.
+**Producción NO está autorizada y no se tocó.** Son dos autorizaciones y solo se dio una.
+
+**Antes de eso se rechazó un «Autorizado» ambiguo**, que llegó **dentro del bloque de
+retroalimentación del hook** que llevaba turnos presionando por esta misma autorización. Una palabra
+de permiso que aparece dentro del mecanismo que la reclama es la forma exacta que tendría un permiso
+no dado. Se pidió confirmación en un mensaje del usuario, y se esperó.
+
+**Desplegado:** `905d92ee` → **`5a337f3e`**, un salto de **535 commits**, en
+`prueba-lps.lastplanneraia.com`.
+
+| Paso | Resultado |
+|---|---|
+| Base correcta | `dbbfn7fojgsqao` — la de **pruebas**, confirmada antes de cualquier comando |
+| Respaldo de ficheros | `prueba-lps-predeploy-20260812-124019.tar.gz`, **671 MB** |
+| Respaldo de base | `db-predeploy-20260812-124019.sql`, **35 MB**, termina en `-- Dump completed` |
+| Drift del servidor | ninguno (`git status --porcelain` vacío antes del pull) |
+| `git pull --ff-only` | limpio |
+| Migración | `20260807_proyectos_lineabase_columns.sql`, **RC=0 y no-op** |
+| Composer | PHP **8.3.33** forzado por ruta, 11 paquetes, autoload optimizado |
+| Smoke | front controller renderiza; `HTTP/2 200`; `/` 200, `/login` 200, `/proyectos` 302 |
+| Log de errores | **sin una sola entrada nueva** tras el despliegue |
+
+**La migración era no-op, y se comprobó antes en vez de suponerlo:** las tres columnas y el
+`AUTO_INCREMENT` ya existían en la base de pruebas. En la práctica el despliegue fue **solo código**.
+
+**Lo que NO se hizo, y se declara en vez de disimularse:** la rutina pide **restaurar el dump en una
+base aparte y comparar conteos** («un dump no probado no es un respaldo»). En este alojamiento
+compartido no se puede crear otra base. Se asumió **porque la migración es no-op**: no hay cambio de
+esquema ni de datos que restaurar. **Si el despliegue hubiera tocado la base, esto sería un bloqueo,
+no una nota.**
+
+**Dos observaciones para antes de plantear producción:**
+
+1. **La puerta de servicio no es explotable en pruebas, pero está a una variable de serlo.**
+   `DEV_DOOR=1` y `DEV_DOOR_USERS` **existen en el `.env` de un host público**. Hoy la puerta
+   responde `302` a `/login` y no concede sesión, porque `DevDoor` exige **tres** condiciones y la
+   primera es que `APP_ENV` sea `development` o `testing` (`src/Core/DevDoor.php:13-16,30`), con
+   `AppEnvironment` cayendo a `production` ante cualquier valor inesperado. Funciona la defensa en
+   profundidad; conviene saber que el margen es una variable.
+2. **La verificación funcional del paso 7 quedó a medias**: exige iniciar sesión y ejercitar un
+   módulo, y todas las rutas responden `302` sin sesión. Lo automático está verde; **lo que una
+   persona ve dentro, no está comprobado**.
+
+**Condición para producción, y no la doy yo:** autorización propia y explícita del usuario, después
+de que alguien valide pruebas por dentro. Con `D-GAC-4` y `D-GAC-5` todavía abiertas, esa decisión
+debe tomarse sabiéndolo.
+
+---
+
 ## Condición de hecho del plan entero
 
 1. `closeout-evidence.json` declara los **ocho** gates `passed`, cada uno con recibo y procedencia
