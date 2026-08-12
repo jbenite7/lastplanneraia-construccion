@@ -1328,8 +1328,35 @@ con seguridad se cita.
      hizo con el gate en rojo. Es la trampa que `AGENTS.md` documenta para el `push`, en su versión de
      `commit`. Lo cazó la verificación posterior, no yo al escribirlo.
 
-- **Estado:** `abierta` — con el coste corregido. La opción (a) sigue siendo la recomendada, pero
-  ahora se sabe que es un frente, no una línea.
+- **Estado:** `resuelta y ejecutada 2026-08-12: (a), elegida por el usuario.`
+
+**Tercera medición, y corrige el coste otra vez — a la baja.**
+
+1. **Son 20 goldens, no 59.** Los manifiestos anclan **39** repartidos en 14 módulos, pero el job de
+   runtime solo ejecuta el carril del laboratorio: los **20** de `laboratory.json`. Los otros 19
+   pertenecen a suites que ese job no corre. El intento revertido en `949bb644` fracasó porque movió
+   los 60 archivos; bastaba con no tocar ninguno.
+2. **La causa está vista, no deducida.** El diff no es antialiasing: en Linux el texto es levemente
+   más ancho, «Navegación y estructura global» pasa de una línea a dos y **todo lo de abajo se
+   desplaza**. Estructura, colores y componentes idénticos. Es métrica de fuente entre plataformas.
+3. **El cambio es aditivo, no una mudanza.** `snapshotPathTemplate` se hizo condicional
+   (`process.platform === 'darwin'`): macOS conserva su ruta histórica **a propósito**, así que las
+   39 anclas existentes no se tocan, y Linux estrena su propio subdirectorio. Ninguna entrada previa
+   cambió de ruta ni de hash.
+4. **Los goldens de Linux no se regeneraron a ciegas.** Salen de la evidencia que la propia corrida
+   fallida `31619568581` ya había subido; los 2 que ya pasaban heredan los bytes de macOS.
+5. **Los gemelos quedan anclados igual que el principal.** `goldenPlatforms` en el esquema y en
+   `scripts/design-system-contracts.mjs` exige ruta dentro de `GOLDEN_ROOTS`, existencia y `sha256`.
+   **Comprobado que falla cerrado**: alterar un byte de un golden de Linux deja el gate en `RC=1`, y
+   restaurarlo lo devuelve a `RC=0`. Sin eso, el carril visual de CI vigilaría su propia copia.
+
+- **Lo que sigue siendo cierto de la ficha original:** no se subió la tolerancia (d), no se invirtió
+  la referencia (b) y no se apagó el carril (c). Ninguno de los dos entornos dejó de vigilar.
+- **Verificado en macOS antes de publicar:** `npm run test:design-system:static` 8/8 (`RC=0`) y
+  `npm run test:visual:lab` **20 passed** (`RC=0`). Publicado en `00f1ad59`.
+- **Deuda anotada, no tocada:** quedan **18 PNG del tema `linen`** en
+  `tests/browser/__screenshots__/design-system-lab.visual.mjs/`, huérfanos desde que DS-030 retiró
+  el tema el 2026-07-25. Ningún manifiesto los declara y ninguna prueba los usa.
 
 ### D-GAC-5 · El presupuesto de runtime se congeló el día que el CI se rompió
 
