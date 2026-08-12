@@ -60,9 +60,18 @@ Aplican a **todas** las tareas de todas las fases. No se repiten en cada una.
 midió en su Tarea 1 que el workflow lleva rojo desde el **2026-07-17** y escaló en vez de seguir.
 
 **Por qué va primera:** `design-system-runtime` lleva `needs: design-system-static`
-(`.github/workflows/design-system.yml:51`). Con el static en rojo, el job donde F-AB tiene que
+(`.github/workflows/design-system.yml:51`). Con ese job en rojo, aquel donde F-AB tiene que
 enchufar los dos gates **no se ejecuta nunca** — no habría forma de verlos fallar ni de sacar
 procedencia real. Sin esta fase, **ninguna de las siguientes se puede verificar**.
+
+> **Corrección del 2026-08-12, y el error era de la coordinadora.** Esta sección decía que «la suite
+> estática está en rojo». **Es falso, y lo midió la sesión de F-0 al llegar:**
+> `npm run test:design-system:static` da **`RC=0`, 8/8**, también con `DS_ACTIVATION_STRICT=1` como en
+> CI, y `node-tests` ni siquiera barre este archivo. Lo que tumba el job es un **paso aparte**,
+> `Enforce Programa General pilot contract` (`.github/workflows/design-system.yml:46-47`), que invoca
+> el contrato piloto directamente. La conclusión aguanta —el job falla y el `needs` corta la cadena—
+> pero la atribución era mía y estaba mal. **Importa para F-AB:** el static que va a tocar ya está
+> verde, y si lo encuentra rojo es un hallazgo nuevo, no éste.
 
 **Decisión del usuario (`D-GAC-1`, 2026-08-12):** opción **(a) en su forma estrecha** — la aserción
 pasa a permitir `!important` **dentro de `@layer`** y a seguir prohibiéndolo **fuera**.
@@ -139,6 +148,59 @@ echo "RC=$?"
 
 Escala a la coordinadora con la salida literal. Un segundo defecto escondido detrás del primero es un
 hallazgo, no una tarea más de esta fase.
+
+### Tarea 2b: El segundo rojo — la regex de los chips quedó vieja (`D-GAC-2`)
+
+**Añadida el 2026-08-12**, cuando la Tarea 2 destapó lo que el `!important` venía tapando. Se pliega
+aquí y no abre frente propio: F-0 no puede cerrar sin esto —su condición de hecho es ver `success` en
+Actions y este paso seguiría tumbando el job— y serían dos frentes en fila sobre el mismo archivo.
+
+**Qué está medido** (por la sesión de F-0 y confirmado por la coordinadora): la línea 21 exige
+`class="aia-chip pg-filter-chip[^"]*"` con las dos clases **contiguas**, y el markup real es
+`class="aia-chip pdc-legend-item pg-filter-chip …"`. Los 14 chips existen (`grep -c pg-filter-chip`
+→ 14); lo que da `0` es la forma contigua. Se rompió en **`47dda844` (2026-08-04)**, y el fallo del
+`!important` lo tapaba porque dispara antes en el archivo.
+
+**Decisión del usuario (`D-GAC-2`, 2026-08-12):** **(a)** — cede el contrato. La regex tolera clases
+intermedias. El markup usa `pdc-legend-item`, que es la clase canónica del chip; la que se quedó
+atrás es la prueba. **No se toca el markup.**
+
+- [ ] **Paso 1: ajustar la regex de la línea 21** para que acepte clases entre `aia-chip` y
+  `pg-filter-chip`, sin dejar de exigir que ambas estén y que el chip lleve su `data-filter`.
+
+- [ ] **Paso 2: correr y ver los 14**
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: `RC=0`.
+
+- [ ] **Paso 3: la mutación — y aquí no vale cambiar el número**
+
+Quita **un chip de verdad** del markup, temporalmente. Esperado: **`RC=1`** con `13 !== 14`. Cambiar
+el `14` de la aserción no prueba nada: probaría que sabes editar un número. **Lo que hay que mutar es
+qué se cuenta.**
+
+Y una segunda, que es la que descubre una regex demasiado laxa: deja el chip pero **quítale la clase
+`pg-filter-chip`**. Debe dar rojo también. Si pasa en verde, la regex nueva ya no exige lo que decía
+exigir.
+
+- [ ] **Paso 4: restaurar el markup byte a byte y confirmar `RC=0`**
+
+```bash
+git status --porcelain
+```
+
+Esperado: **solo** el `.mjs` listado. Ningún archivo de `views/` tocado.
+
+- [ ] **Paso 5: commit**
+
+```bash
+git add tests/test_programa_general_sprint_contract.mjs
+git commit -m "test(pg): la regex de los chips tolera clases intermedias (D-GAC-2)"
+```
 
 ### Tarea 3: Verlo verde en CI de verdad, y entregar
 

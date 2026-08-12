@@ -1030,6 +1030,11 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   - `design-system-runtime` lleva `needs: design-system-static`
     (`.github/workflows/design-system.yml:51`), así que el job donde F-AB tenía que enchufar los dos
     gates **no llega a ejecutarse nunca**. El bloqueo es total, no una molestia.
+  - **Corrección del 2026-08-12, error de la coordinadora:** esta ficha atribuía el rojo a «la suite
+    estática». **Es falso.** `npm run test:design-system:static` da `RC=0`, 8/8, también con
+    `DS_ACTIVATION_STRICT=1`. Lo que tumba el job es un paso aparte, `Enforce Programa General pilot
+    contract` (`design-system.yml:46-47`). Lo midió la sesión de F-0 al llegar. La conclusión
+    aguanta; la atribución no.
   - **El dato que reencuadra la pregunta:** `!important` por hoja —
     `programacion-semanal.css` **433**, `programacion-intermedia.css` **182**, `buttons.css` **138**,
     `programa-general.css` **4**. Y existe **un solo** contrato de este tipo en el repo, que aplica
@@ -1055,6 +1060,32 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   !important sin capa tiene que poner el gate rojo, y si no lo pone, la aserción nueva no vigila nada
   y se rehace. Reordena el plan: la reparación del CI pasa a ser la fase 1 y F-AB baja a segunda.`
 
+### D-GAC-2 · La regex de los chips de PG quedó vieja y contaba cero de catorce
+
+- **Quién pregunta:** sesión de ejecución del frente `ci-en-verde` (fase F-0), 2026-08-12;
+  confirmado de forma independiente por la coordinadora.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si cede la prueba o cede el markup, en el segundo rojo que apareció detrás del
+  primero al resolver `D-GAC-1`.
+- **Qué se midió** (sobre `f743c29b`): `tests/test_programa_general_sprint_contract.mjs:21` exige
+  `class="aia-chip pg-filter-chip[^"]*"` con las dos clases **contiguas**, y el markup real es
+  `class="aia-chip pdc-legend-item pg-filter-chip …"`. Los 14 chips existen (`grep -c pg-filter-chip`
+  → 14); lo que da `0` es la forma contigua, y la aserción de `:101` falla con `0 !== 14`. Se rompió
+  en **`47dda844` (2026-08-04)**, ancestro de `main`; el fallo del `!important` lo tapaba porque
+  dispara antes en el archivo.
+- **Opciones:** (a) la regex tolera clases intermedias; (b) se quita `pdc-legend-item` del markup
+  para que la regex vuelva a casar; (c) frente propio.
+- **Recomendación:** **(a)**. El markup no está mal — `pdc-legend-item` es la clase canónica del
+  chip; la que se quedó atrás es la prueba, y lleva ocho días midiendo una forma que ya nadie
+  escribe. **(b)** sería borrar la clase canónica para complacer a una expresión regular. **(c)** es
+  honesto pero parte en dos un frente sobre el mismo archivo, que ya fundimos una vez en este plan.
+- **Qué quedó saltado esperando:** la Tarea 3 de F-0 entera — el gate de cierre y el verde en
+  Actions. Nada publicado.
+- **Estado:** `resuelta 2026-08-12: (a) — la regex tolera clases intermedias; el markup no se toca.
+  Se pliega en F-0 como Tarea 2b, con dos mutaciones exigidas: quitar un chip real debe dar 13≠14, y
+  quitarle la clase pg-filter-chip a un chip debe dar rojo también. Cambiar el número de la aserción
+  no cuenta como mutación.`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
@@ -1078,3 +1109,4 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1b-4` | Arreglar los que no tocan `Database.php` ni legado; anotar el resto **con su motivo** | Frente 1b · aplicado en `3d72a8df` (2 arreglados, 4 anotados) |
 | `D-F1-6` | Frente corto de forma, **con la regla de no cerrar sin haber quitado algo** | Turno propio, al publicar el Frente 1b · no se pliega en el Frente 2 |
 | `D-GAC-1` | `!important` permitido dentro de `@layer`, prohibido fuera — para desbloquear el CI | Fase **F-0** del plan de cierre, frente `ci-en-verde` |
+| `D-GAC-2` | La regex de los chips tolera clases intermedias; el markup no se toca | Fase **F-0**, Tarea 2b · mismo frente |
