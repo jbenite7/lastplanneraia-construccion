@@ -1,6 +1,7 @@
 ---
 tipo: concepto
 estado: vigente
+verificado: 2026-08-12
 fecha: 2026-08-04
 areas: [design-system, qa]
 fuente: scripts/design-system-audit.mjs, tests/design-system/runtime-budget.test.mjs, scripts/design-system-phpstan-baseline.mjs
@@ -45,3 +46,24 @@ Mismo patrón que [[comentario-de-token-afirma-uso-inexistente]]: documentado no
 - [[branch-preexisting-red-gates]] — rojos preexistentes que no son tuyos.
 
 Mapa del área: [[design-system]] · vecino: [[qa-y-gates]].
+
+
+## Pase de veracidad del 2026-08-12: `runtime-baseline-0.3.3.json` se congeló con el CI
+
+Medido en las corridas `31563364701` y `31565443070`, las **primeras** que ejecutaron este
+presupuesto en CI:
+
+- **Su último commit es `1cfc6e2c`, del 2026-07-17 — el mismo día de la última corrida verde del
+  workflow.** El gate perdió la capacidad de correr y su referencia dejó de actualizarse a la vez.
+- **Dos violaciones**, medidas sobre árbol limpio: `cssGzipBytes` **194.553** contra un máximo de
+  138.981, y `adapterAssets`, cuya lista **aún nombra `semi-auto-review.css`**, borrado con el PDC v1
+  el 2026-08-04, y **no** incluye `shell-sidebar.css` ni `datatables.css`, que sí existen.
+- **`initializationMs` NO está violado.** Una primera medición dio 1.644 ms y era del **árbol sucio**;
+  repetida en limpio, no aparece. Se corrigió en `D-GAC-5` — la cifra viajó a un informe antes de
+  reverificarse.
+- **`cssGzipBytes` varía un byte entre corridas** (194.554 → 194.553): eso es lo que la hace creíble
+  como medición, frente a un número que cambia según quién pregunta.
+
+**Lo que este pase NO establece:** cuánto de esos 57 KB es crecimiento real y cuánto es baseline
+obsoleto. **No está medido**, y aprobar el baseline sin medirlo convertiría una posible regresión en
+la nueva normalidad. Decisión abierta: `D-GAC-5`.
