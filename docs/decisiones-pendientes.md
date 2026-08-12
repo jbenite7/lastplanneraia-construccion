@@ -863,7 +863,13 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   cada uno.
 - **Qué quedó saltado esperando:** cualquier renombrado. Solo se ejecuta la higiene que no elige
   vocabulario.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, opción **(b)**, por el usuario.
+- **Decisión: tres ejes declarados, un vocabulario por eje.** Avance físico, liberación de
+  restricciones y confiabilidad del compromiso son tres cosas distintas y `GLOSARIO.md` las
+  distingue; fundirlas perdería información. Lo que sobra no son los ejes, son **los sinónimos dentro
+  de cada uno**.
+- **Qué arrastra:** al no unificar, **`D-VOC-2` se resuelve sola en (c)** — no se renombra la columna
+  persistida y **no hay migración de datos**.
 
 ### D-VOC-2 · La columna `Estado` de Programa General está persistida
 
@@ -885,7 +891,11 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
 - **Recomendación:** **(c) en esta pasada**, y (b) como frente propio si `D-VOC-1` sale «unificar».
   La (a) está descartada: contradice la condición de cierre, que exige **menos** términos.
 - **Qué quedó saltado esperando:** todo el vocabulario de Programa General.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, opción **(c)**, por arrastre de `D-VOC-1`.
+- **Decisión: no se toca el vocabulario de Programa General.** Su recomendación decía «(c) en esta
+  pasada, y (b) como frente propio **si `D-VOC-1` sale unificar**». Salió «tres ejes», así que la
+  condición no se cumple: la columna `Estado` de `{prog_consolidado}` **se queda como está y no hay
+  migración**.
 
 ### D-VOC-3 · `Bloqueado` existe en Actualizar y no en Programa General
 
@@ -902,7 +912,20 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   un término que la obra ve a diario, así que no se toca sin decisión del usuario.
 - **Qué quedó saltado esperando:** la vista de Programa General Actualizar y su entrada en el
   contrato.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, y **la premisa era falsa**.
+- **El usuario corrigió la pregunta en vez de elegir opción:** «en `/programa-general-actualizar` no
+  hay estados». Verificado: la vista no menciona «estado» ni una vez, el JS no contiene ninguna de las
+  seis etiquetas, la única aparición de «Bloqueado» es un **título de modal**, y la única columna
+  parecida (`hot_actualizar.js:717`) es un **porcentaje** (`type: 'numeric'`, `pgPercentRenderer`).
+- **No eran seis estados de más: eran seis entradas fantasma.** Entraron en `3a139499` (2026-07-15) y
+  **ese mismo día** la vista tampoco las pintaba. Nunca existieron.
+- **Ejecutado** en el frente `contrato-estados-modulo-fantasma` (`c25ac63d`): el módulo sale del
+  contrato y la aserción del censo pasa de suelo (`>= 13`) a **igualdad (`=== 12`)**. Censo del
+  vocabulario **29 → 28** — la resta es **una**, `Bloqueado`, porque las otras cinco etiquetas ya se
+  contaban por `programa-general`.
+- **Lo que destapó, medido:** con el suelo antiguo restaurado y el módulo de vuelta, la suite **pasa
+  en verde**. El contrato admitía módulos fantasma sin que nada lo notara. La corrección de fondo es
+  **`D-CEF-1`**, que sigue abierta.
 
 ### D-VOC-4 · Tres estados que se muestran y no existen en el contrato
 
@@ -917,7 +940,12 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   es parte de por qué hay 35 términos. Separarlo sería la resta más limpia del frente — y toca datos
   guardados, así que se consulta.
 - **Qué quedó saltado esperando:** los tres términos.
-- **Estado:** `abierta`
+- **Estado:** `resuelta` — 2026-08-11, opción **(a)**, por el usuario.
+- **Decisión: sí se separa `Capítulo` del eje de estado, pero en frente propio y con autorización
+  aparte.** Es un **tipo de fila**, no un estado, y mezclarlo es parte de por qué hay tantos términos
+  — sería la resta más limpia. Pero **está persistido en datos reales de obra**, así que exige
+  migración con dry-run, respaldo verificable y gate propio según
+  `docs/global-tables-architecture.md`. **No se mete dentro de otro frente.**
 
 
 ### D-CEF-1 · ¿El contrato de estados debe exigir que cada módulo declare su superficie?
