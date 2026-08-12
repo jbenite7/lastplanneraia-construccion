@@ -1086,6 +1086,37 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   quitarle la clase pg-filter-chip a un chip debe dar rojo también. Cambiar el número de la aserción
   no cuenta como mutación.`
 
+### D-GAC-3 · Tercer rojo: el contrato exige `!important` donde debería exigir el resultado
+
+- **Quién decide:** la coordinadora, **con la autonomía delegada por el usuario el 2026-08-12**
+  («termina todas las fases, tienes autonomía para decidir»), y aplicando el precedente que él ya
+  fijó en `D-CI-1`. No se le devuelve porque no depende de su criterio de negocio: es la misma
+  pregunta ya resuelta, en otro archivo.
+- **Fecha:** 2026-08-12
+- **Qué se midió** (sobre `54e5f474`, worktree `beautiful-blackwell-414f09`):
+  - Al caer el segundo rojo apareció un **tercero**: `:150` exige que `.pdc-legend-item` declare
+    `display`, `white-space`, `overflow-wrap` y `word-break` **con `!important`**.
+  - `public/css/buttons.css:977-993` **tiene las cuatro declaraciones con sus valores correctos**;
+    lo que no tienen es el `!important`. Lo retiró a propósito el frente `buttons-important-leyenda`
+    el **2026-08-11**, dejando escrita en el archivo la sonda que lo justifica (`:52-58`).
+  - **Cuántos rojos quedan escondidos: exactamente uno, éste.** Medido neutralizando aserciones una
+    a una sobre una copia en `scratchpad/`, sin tocar el repo: **1 rota de 28**. El archivo aborta en
+    la primera, así que sin esta medición cada arreglo destapaba otro y nadie sabía cuántos faltaban.
+- **Qué se decide y por qué:** la aserción pasa a exigir **los valores** (`white-space: normal`,
+  `overflow-wrap: normal`, `word-break: normal`) y **no el `!important`**. El objetivo declarado de
+  esa aserción es que los chips no fragmenten palabras; el `!important` es el mecanismo, no el
+  resultado. Es literalmente el defecto de `D-CI-1` —«el contrato fija una forma donde debería medir
+  un resultado»— que el usuario resolvió con (b).
+- **Lo que se añade y el contrato no tenía:** exigir los valores en la hoja **no prueba que ganen**.
+  Se comprueba en navegador, a 1180×820 dark, el **valor computado** de `overflow-wrap` y
+  `word-break` sobre un chip real. Si no ganan, el hallazgo es otro y se escala.
+- **Relación con `D-BTN-1` (fase F-D):** esta ficha **cambia el enunciado de esa fase**. F-D iba a
+  retirar un `!important` de `.pdc-legend-item` creyendo que no lo protegía nadie; en realidad este
+  contrato lo exigía. Al quitar esa exigencia, F-D deja de chocar con él.
+- **Estado:** `resuelta 2026-08-12: la aserción mide los valores, no el !important, y se añade la
+  comprobación del valor computado en navegador. Decidida por la coordinadora bajo autonomía
+  delegada, con el precedente de D-CI-1.`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
@@ -1110,3 +1141,4 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1-6` | Frente corto de forma, **con la regla de no cerrar sin haber quitado algo** | Turno propio, al publicar el Frente 1b · no se pliega en el Frente 2 |
 | `D-GAC-1` | `!important` permitido dentro de `@layer`, prohibido fuera — para desbloquear el CI | Fase **F-0** del plan de cierre, frente `ci-en-verde` |
 | `D-GAC-2` | La regex de los chips tolera clases intermedias; el markup no se toca | Fase **F-0**, Tarea 2b · mismo frente |
+| `D-GAC-3` | La aserción mide los valores, no el `!important` — y se comprueba en navegador | Fase **F-0**, Tarea 2c · mismo frente |

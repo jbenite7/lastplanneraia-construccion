@@ -202,6 +202,56 @@ git add tests/test_programa_general_sprint_contract.mjs
 git commit -m "test(pg): la regex de los chips tolera clases intermedias (D-GAC-2)"
 ```
 
+### Tarea 2c: El tercer y último rojo — `!important` como forma, no como resultado (`D-GAC-3`)
+
+**Y es el último: está medido.** La coordinadora neutralizó las aserciones una a una sobre una copia
+en `scratchpad/`, sin tocar el repo: **queda 1 rota de 28**. El archivo aborta en la primera, así que
+sin esa medición cada arreglo destapaba otro y nadie sabía cuántos faltaban.
+
+**Qué está medido:** `:150` exige que `.pdc-legend-item` declare `display`, `white-space`,
+`overflow-wrap` y `word-break` **con `!important`**. `public/css/buttons.css:977-993` **tiene las
+cuatro con sus valores correctos**; lo que falta es el `!important`, que **retiró a propósito** el
+frente `buttons-important-leyenda` el 2026-08-11, dejando su sonda escrita en `buttons.css:52-58`.
+
+**Decisión (`D-GAC-3`, coordinadora bajo autonomía delegada, precedente `D-CI-1`):** la aserción pasa
+a exigir **los valores** y no el `!important`. El objetivo declarado es que los chips no fragmenten
+palabras; el `!important` es el mecanismo. **El CSS no se toca.**
+
+- [ ] **Paso 1: reescribir la aserción de `:150`** para exigir `white-space: normal`,
+  `overflow-wrap: normal` y `word-break: normal` en `.pdc-legend-item`, **sin** exigir `!important`.
+
+- [ ] **Paso 2: correr y ver el archivo entero en verde**
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: `RC=0`. **Es la primera vez que este archivo pasa entero desde el 2026-07-17.**
+
+- [ ] **Paso 3: la mutación** — quítale a `.pdc-legend-item` uno de los tres valores en
+  `buttons.css`, temporalmente. Esperado: **`RC=1`**. Restaura byte a byte y confirma que
+  `git status --porcelain` **no** lista `public/css/buttons.css`.
+
+- [ ] **Paso 4: la comprobación que el contrato no tenía, y que es el motivo de esta tarea**
+
+Exigir los valores en la hoja **no prueba que ganen**. Abre `/programa-general` por la puerta de
+servicio (`/dev/entrar?u=test.A&p=<Proyecto>`), a **1180×820 dark**, y lee el **valor computado** de
+`overflow-wrap` y `word-break` sobre un chip real de la leyenda.
+
+**Trampa:** si el selector devuelve cero elementos, eso **no** es «no aplica» — es «no lo
+encontraste». Distínguelo por escrito, y anota cuántos chips encontraste.
+
+Si los valores computados **no** son `normal`, entonces el `!important` sí hacía falta y el hallazgo
+es otro: **para y escálamelo**, no lo arregles.
+
+- [ ] **Paso 5: commit**
+
+```bash
+git add tests/test_programa_general_sprint_contract.mjs
+git commit -m "test(pg): la asercion mide los valores del chip, no el !important (D-GAC-3)"
+```
+
 ### Tarea 3: Verlo verde en CI de verdad, y entregar
 
 - [ ] **Paso 1: los nueve pasos del gate de cierre**, con re-verificación **después** de integrar.
