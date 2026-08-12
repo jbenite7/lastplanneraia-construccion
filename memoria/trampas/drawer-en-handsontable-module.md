@@ -7,7 +7,7 @@ fuente: memoria-claude
 origen: lps-aia-drawer-en-handsontable-module
 resumen: toda la geometría del Cajón Contextual LPS vive dentro de handsontable-module.css, que core.css no importa; migrar un head a renderForModule sin declarar el vendor handsontable tumba el drawer
 ---
-`public/css/handsontable-module.css:399+` contiene **toda** la geometría de `.lps-drawer` y su
+`public/css/handsontable-module.css:426+` contiene **toda** la geometría de `.lps-drawer` y su
 overlay (`position: fixed`, `translateX(100%)`, z-index). El nombre del archivo miente: no es sólo
 Handsontable.
 

@@ -19,8 +19,9 @@ del proceso de contratación con sus duraciones, amarrados a las actividades de 
 en operación llega el **seguimiento**: vencimientos, desfases y flujo de caja.
 
 Todo eso vive en **[[plan-de-compras]]** (SPA React, sub-router por hash).
-**[[listado-de-actividades]]** es la superficie anterior, PDC v1, y **[[contratos]]** es el motor
-semiautomático que propone qué contratar. **[[subcontratistas]]** aporta a quién se contrata y
+**[[listado-de-actividades]]** y **[[contratos]]** eran la superficie y el motor semiautomático del
+PDC v1: se eliminaron del repositorio el 2026-08-04 y no tienen sucesor directo en v2 (ver
+[[semi-auto-solo-lo-usa-pdc]]). **[[subcontratistas]]** aporta a quién se contrata y
 **[[torre-de-control-bi]]** lo mira desde arriba.
 
 El flujo de programación corre al lado: ver [[flujo-lps]].

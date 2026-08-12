@@ -35,13 +35,32 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_75 trabajos · 29 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_94 trabajos · 37 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Los !important de .pdc-legend-item en buttons.css — spec | [[docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design|spec]] · [[docs/superpowers/plans/2026-08-11-buttons-important-leyenda|plan]] | — |
+| Plan de cierre hasta producción | [[docs/superpowers/plans/2026-08-11-cierre-hasta-produccion|plan]] | — |
+| Ocultar las etiquetas contadoras que marcan cero — diseño | [[docs/superpowers/specs/2026-08-11-contadores-cero-design|spec]] · [[docs/superpowers/plans/2026-08-11-contadores-cero|plan]] | — |
+| Retirar del contrato de estados el módulo fantasma programa-general-actualizar — spec | [[docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design|spec]] · [[docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma|plan]] | — |
+| Frente 1 · Tanda 1C — Pulido visual, accesibilidad y texto: plan de implementación | [[docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto|plan]] | — |
+| La aserción de la marca del carril comprueba que se vea, no que declare un filtro | [[docs/superpowers/specs/2026-08-11-marca-carril-visible-design|spec]] · [[docs/superpowers/plans/2026-08-11-marca-carril-visible|plan]] | — |
+| PHPUnit incremental, conviviendo con la suite de scripts | [[docs/superpowers/specs/2026-08-11-phpunit-incremental-design|spec]] · [[docs/superpowers/plans/2026-08-11-phpunit-incremental|plan]] | — |
+| Plan de cierre hasta producción — diseño | [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design|spec]] | — |
+| Fijar la semana en la prueba visual de Programación Intermedia — diseño | [[docs/superpowers/specs/2026-08-11-semana-fija-visual-design|spec]] · [[docs/superpowers/plans/2026-08-11-semana-fija-visual|plan]] | — |
+| Unificar los vocabularios de estado de la cascada — spec | [[docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design|spec]] · [[docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada|plan]] | — |
+| Frente 0 — Higiene y decisiones: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-0-higiene-y-decisiones|plan]] | — |
+| Frente 1 · Tanda 1A — Seguridad y permisos: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos|plan]] | — |
+| Frente 1 · Tanda 1B — La cascada LPS: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps|plan]] | — |
+| Programa de cierre de pendientes — diseño | [[docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design|spec]] | — |
+| Runner para los tests PHP y su conexión al CI | [[docs/superpowers/specs/2026-08-10-runner-tests-php-design|spec]] · [[docs/superpowers/plans/2026-08-10-runner-tests-php|plan]] | — |
+| F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: plan de implementación | [[docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion|plan]] | — |
 | F1 — Destrabar el viewport móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil|plan]] | — |
+| F2a-1 — Precondiciones de la evidencia móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil|plan]] | — |
+| F2a-2a — Deudas de arranque: plan de implementación | [[docs/superpowers/plans/2026-08-07-f2a-2a-deudas-de-arranque|plan]] | — |
+| F2a — Precondiciones y piloto móvil (Programación Intermedia y Semanal) | [[docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design|spec]] | — |
 | Reapertura de móvil/tablet y tema claro — diseño | [[docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design|spec]] | — |
 | Adopción del logo «Last Planner · línea Construcción» — Diseño | [[docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design|spec]] · [[docs/superpowers/plans/2026-08-06-adopcion-logo-construccion|plan]] | — |
 | Cierre de los hallazgos de seguridad de la biblia de flujos — diseño | [[docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design|spec]] · [[docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia|plan]] | — |
