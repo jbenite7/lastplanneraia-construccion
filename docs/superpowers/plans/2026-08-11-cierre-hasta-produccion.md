@@ -11,10 +11,16 @@ publicado en producción.
 
 **Spec:** [2026-08-11-plan-cierre-hasta-produccion-design.md](../specs/2026-08-11-plan-cierre-hasta-produccion-design.md)
 
-**Arquitectura:** cuatro fases, cada una **un frente** con worktree propio, ciclo de visto y el gate
-de nueve pasos de `AGENTS.md` §Publicación. Ninguna empieza hasta que la anterior está publicada **y
-anotada** (paso 9). El orden no es estético: F-AB deja los ocho gates verdes, y solo entonces el
-verde de F-C y F-D significa algo.
+**Arquitectura:** **cinco** fases, cada una **un frente** con worktree propio, ciclo de visto y el
+gate de nueve pasos de `AGENTS.md` §Publicación. Ninguna empieza hasta que la anterior está publicada
+**y anotada** (paso 9). El orden no es estético: **F-0** devuelve el CI a verde —sin él nada de lo
+que sigue se puede verificar—, F-AB deja los ocho gates verdes, y solo entonces el verde de F-C y F-D
+significa algo.
+
+> **Cambio del 2026-08-12.** Este plan nació con cuatro fases y empezaba por F-AB. La sesión de F-AB
+> midió en su Tarea 1 que el CI lleva rojo desde el **2026-07-17** y escaló en vez de seguir, que era
+> exactamente lo que esa tarea existía para provocar. Se añadió **F-0** delante. El plan funcionó por
+> donde se esperaba que fallara.
 
 **Stack tocado:** GitHub Actions + Docker Compose (F-AB), JSON Schema + Node test runner (F-C), CSS
 en capas (F-D), rutina de SiteGround (F-E).
@@ -45,6 +51,112 @@ Aplican a **todas** las tareas de todas las fases. No se repiten en cada una.
   coordinadora. Tampoco si urge: la urgencia también se le manda a ella.
 - **Entorno:** todo PHP corre dentro del contenedor `app`. Sesión local solo por la puerta de
   servicio (`/dev/entrar`), nunca tecleando credenciales en `/login`.
+
+---
+
+## Fase F-0 · Poner el CI en verde — `D-GAC-1`
+
+**Frente:** `ci-en-verde`. **Añadida el 2026-08-12**, delante de todo, cuando la sesión de F-AB
+midió en su Tarea 1 que el workflow lleva rojo desde el **2026-07-17** y escaló en vez de seguir.
+
+**Por qué va primera:** `design-system-runtime` lleva `needs: design-system-static`
+(`.github/workflows/design-system.yml:51`). Con el static en rojo, el job donde F-AB tiene que
+enchufar los dos gates **no se ejecuta nunca** — no habría forma de verlos fallar ni de sacar
+procedencia real. Sin esta fase, **ninguna de las siguientes se puede verificar**.
+
+**Decisión del usuario (`D-GAC-1`, 2026-08-12):** opción **(a) en su forma estrecha** — la aserción
+pasa a permitir `!important` **dentro de `@layer`** y a seguir prohibiéndolo **fuera**.
+
+**Qué está medido** (sobre `4dc4631a`, por dos sesiones independientes):
+`test_programa_general_sprint_contract.mjs:41` prohíbe `!important` sin excepción;
+`programa-general.css:620-624` tiene tres dentro de `@layer components`, razonados en su comentario;
+`node tests/test_programa_general_sprint_contract.mjs` → **RC=1**. Y el reencuadre:
+`programacion-semanal.css` tiene **433** `!important`, `programacion-intermedia.css` **182**,
+`buttons.css` **138**, `programa-general.css` **4**, con **un solo** contrato de este tipo en el repo.
+Es disciplina de piloto, no principio del repositorio.
+
+**Archivos:** `tests/test_programa_general_sprint_contract.mjs`. **No** se toca
+`public/css/programa-general.css`: el CSS no cede, esa fue la decisión.
+
+### Tarea 1: Cambiar la aserción, y verla rechazar lo que debe
+
+- [ ] **Paso 1: leer la aserción y su vecindad**
+
+```bash
+sed -n '30,50p' tests/test_programa_general_sprint_contract.mjs
+```
+
+- [ ] **Paso 2: sustituirla por la versión con excepción de capa**
+
+La regla es: `!important` **fuera** de cualquier `@layer` sigue prohibido; **dentro**, permitido. La
+forma exacta la eliges tú según cómo esté leído el CSS en ese archivo, pero el mensaje de la
+aserción tiene que decir la regla nueva, no la vieja.
+
+- [ ] **Paso 3: correrla y verla pasar sobre el CSS de hoy**
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: `RC=0`. Los tres `!important` de `:620-624` están dentro de `@layer components`.
+
+- [ ] **Paso 4: la mutación, que es lo que da valor a la tarea**
+
+Añade **temporalmente** un `!important` **fuera** de toda capa en `programa-general.css`.
+
+```bash
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+Esperado: **`RC=1`**. **Si sigue en 0, la aserción nueva no vigila nada y hay que rehacerla** — no la
+des por buena porque el caso normal pase. Anota qué mensaje salió.
+
+- [ ] **Paso 5: retirar la mutación y confirmar `RC=0`**
+
+- [ ] **Paso 6: commit**
+
+```bash
+git add tests/test_programa_general_sprint_contract.mjs
+git commit -m "test(pg): !important permitido dentro de @layer, prohibido fuera (D-GAC-1)"
+```
+
+### Tarea 2: Comprobar que el static pasa entero, no solo esta prueba
+
+Una prueba verde no es el gate verde. El job corre varias cosas.
+
+- [ ] **Paso 1: correr lo que corre el job**
+
+```bash
+npm run test:design-system:static
+echo "RC=$?"
+node tests/test_programa_general_sprint_contract.mjs
+echo "RC=$?"
+```
+
+- [ ] **Paso 2: si aparece otro rojo distinto, no lo arregles de paso**
+
+Escala a la coordinadora con la salida literal. Un segundo defecto escondido detrás del primero es un
+hallazgo, no una tarea más de esta fase.
+
+### Tarea 3: Verlo verde en CI de verdad, y entregar
+
+- [ ] **Paso 1: los nueve pasos del gate de cierre**, con re-verificación **después** de integrar.
+
+- [ ] **Paso 2: tras publicar, mirar la corrida que dispara tu propio push**
+
+```bash
+gh run list --workflow=design-system.yml --limit 1
+```
+
+Esperado: la primera **`success`** desde el 2026-07-17. **Esta fase no está cerrada hasta ver ese
+verde en Actions** — el `RC=0` local no lo sustituye, porque el rojo era de CI.
+
+- [ ] **Paso 3: si el job `design-system-static` pasa pero `design-system-runtime` falla**, eso **no
+  reabre esta fase**: es el terreno de F-AB. Anótalo en la entrega y déjalo.
+
+- [ ] **Paso 4: la entrega con sus seis campos.**
 
 ---
 
@@ -562,7 +674,7 @@ servidor ni desplegar otros cambios. Una publicación aprobada aprueba **esa** p
    real.
 2. `grep -c "Estado:\*\* \`abierta\`" docs/decisiones-pendientes.md` → `0`.
 3. El trabajo está en producción, con smoke del flujo afectado y respaldo previo verificable.
-4. Las cuatro fases tienen su `## Cierre` anotado.
+4. Las cinco fases tienen su `## Cierre` anotado.
 
 **Fuera de alcance, dicho explícitamente:** el frente de forma de `D-F1-6` (páginas de error dentro
 del shell, unificar los vocabularios de estado, y la regla de no cerrar sin haber quitado algo) va

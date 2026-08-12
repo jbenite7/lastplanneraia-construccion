@@ -1009,6 +1009,52 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
 - **Estado:** `abierta`
 
 
+### D-GAC-1 · Dos contratos del repo se contradicen y llevan el CI un mes en rojo
+
+- **Quién pregunta:** sesión de ejecución del frente `gates-al-ci` (fase F-AB), escalado el
+  2026-08-12; verificado de forma independiente por la coordinadora antes de llevarlo al usuario.
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si cede el contrato que prohíbe `!important` en la hoja de Programa General, o
+  si cede el CSS que lo usa.
+- **Qué se midió** (sobre `4dc4631a`, salida real de dos sesiones distintas):
+  - `tests/test_programa_general_sprint_contract.mjs:41` exige
+    `assert.doesNotMatch(css, /!important/)` — **sin excepción por capa**.
+  - `public/css/programa-general.css:620-624` declara tres `!important` dentro de
+    `@layer components`, y el comentario que los precede razona por qué: las reglas de estado viven
+    en `module.components`, una capa posterior, y en declaraciones normales ganarían. Los introdujo
+    `20f08dd2` (2026-08-07) como «copia literal de la receta ya validada en
+    `programacion-intermedia.css`».
+  - `node tests/test_programa_general_sprint_contract.mjs` → **RC=1**, mismo fallo que el log de CI.
+  - **La última corrida verde del workflow es del 2026-07-17** (id `29577390968`). De las 30 últimas:
+    22 `failure`, 7 `cancelled`, 0 `success`.
+  - `design-system-runtime` lleva `needs: design-system-static`
+    (`.github/workflows/design-system.yml:51`), así que el job donde F-AB tenía que enchufar los dos
+    gates **no llega a ejecutarse nunca**. El bloqueo es total, no una molestia.
+  - **El dato que reencuadra la pregunta:** `!important` por hoja —
+    `programacion-semanal.css` **433**, `programacion-intermedia.css` **182**, `buttons.css` **138**,
+    `programa-general.css` **4**. Y existe **un solo** contrato de este tipo en el repo, que aplica
+    solo a PG. La prohibición no es un principio del repositorio que alguien viole: es la disciplina
+    de un **piloto** chocando con una receta copiada de un módulo que tiene 182.
+- **Opciones:** (a) afinar la aserción para permitir `!important` **solo dentro de `@layer`**,
+  manteniendo la prohibición fuera; (b) retirar los tres y resolver la cascada sin `!important`,
+  aceptando que puede cambiar lo que se ve; (c) una tanda corta que solo mida cuál de los dos
+  contratos está equivocado.
+- **Recomendación:** **(a)**, en su forma estrecha — no «permitir `!important` en capa» a secas, que
+  abriría PG a las 400 de sus vecinas, sino exactamente la distinción que el comentario del código ya
+  hace: dentro de capa se permite, fuera se prohíbe. Es lo que separa «gano la cascada donde la
+  arquitectura me obliga y lo dejo escrito» de «tapo un problema a martillazos». **(b)** cambia
+  píxeles —los chips en cero dejarían de atenuarse— y eso exige aprobación aparte; **(c)** mediría
+  algo que ya está medido.
+- **Límite reconocido de la medición:** no se comprobó **en pantalla** que sin los tres `!important`
+  los chips dejen de atenuarse. Se toma del comentario del código y del mecanismo de capas, no de una
+  observación en el navegador.
+- **Qué quedó saltado esperando:** las Tareas 2 a 5 de F-AB. La sesión paró en la Tarea 1 con el
+  worktree limpio y nada commiteado, que es lo que el plan ordenaba para este caso.
+- **Estado:** `resuelta 2026-08-12: (a) en su forma estrecha — la aserción pasa a permitir
+  !important dentro de @layer y a seguir prohibiéndolo fuera. Se entrega con su mutación: un
+  !important sin capa tiene que poner el gate rojo, y si no lo pone, la aserción nueva no vigila nada
+  y se rehace. Reordena el plan: la reparación del CI pasa a ser la fase 1 y F-AB baja a segunda.`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
@@ -1031,3 +1077,4 @@ que la citan y pierde el contexto que la rodea. Este índice es para encontrarla
 | `D-F1b-3` | Los cuatro gates de herramienta inexistente se retiran | Frente 1b · ejecutado en esta sesión |
 | `D-F1b-4` | Arreglar los que no tocan `Database.php` ni legado; anotar el resto **con su motivo** | Frente 1b · aplicado en `3d72a8df` (2 arreglados, 4 anotados) |
 | `D-F1-6` | Frente corto de forma, **con la regla de no cerrar sin haber quitado algo** | Turno propio, al publicar el Frente 1b · no se pliega en el Frente 2 |
+| `D-GAC-1` | `!important` permitido dentro de `@layer`, prohibido fuera — para desbloquear el CI | Fase **F-0** del plan de cierre, frente `ci-en-verde` |
