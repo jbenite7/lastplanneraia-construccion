@@ -920,6 +920,44 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
 - **Estado:** `abierta`
 
 
+### D-CEF-1 · ¿El contrato de estados debe exigir que cada módulo declare su superficie?
+
+- **Quién pregunta:** sesión de ejecución del frente `contrato-estados-modulo-fantasma`.
+- **Fecha:** 2026-08-11
+- **Qué se decide:** si una entrada de `moduleMappings` en
+  `docs/design-system/state-semantics.json` debe declarar **dónde se pintan** sus estados —una
+  ruta, una vista o un selector— de modo que un módulo que no pinta ninguno no pueda entrar en el
+  contrato. Cambia el esquema para los **trece** módulos, no solo para el que este frente retira.
+- **Qué se midió** (sobre `44917bc1`): el módulo `programa-general-actualizar` declaraba seis
+  estados que **ninguna pantalla pinta**. La vista no menciona «estado» ni una vez
+  (`grep -c "estado\|Estado" views/programa-general-actualizar/*.php` → `0`); el JS del módulo no
+  contiene ninguna de las seis etiquetas; la única «Bloqueado» de la vista es el título de un modal
+  (`:303`, «Programa General Bloqueado»); la única columna parecida a un estado,
+  `hot_actualizar.js:717`, es `type: 'numeric'` con `pgPercentRenderer` — un porcentaje. Entraron
+  en `3a139499` (2026-07-15) y **ese mismo día** la vista ya solo tenía el título de modal: no
+  caducaron, se inventaron.
+- **Por qué nada lo detectó:** el esquema (`state-semantics.schema.json`) es
+  `additionalProperties: false` y las claves de una entrada son exactamente `module` y `states`.
+  **Sin superficie declarada no hay nada contra lo que contrastar**, así que ningún gate podía
+  notarlo. Lo que sí detecta el contrato es la retirada de un módulo, porque
+  `states-feedback.test.mjs` fija el censo a mano: la asimetría es que se vigila la resta y no la
+  suma.
+- **Opciones:** (a) añadir al esquema un campo de superficie **obligatorio** por módulo y hacerlo
+  cumplir en el gate estático, censando los trece; (b) hacerlo **opcional** y verificarlo solo
+  donde exista, que atrapa menos pero no obliga a un censo previo; (c) no cambiar el esquema y
+  aceptar que un módulo fantasma solo se descubre a mano.
+- **Recomendación:** la **(a)**, pero como frente propio con su medición: cada uno de los trece
+  módulos tendría que declarar su superficie, y en varios eso no es un dato que ya exista escrito
+  —hay que ir a buscarlo—. Es la corrección de fondo del defecto, y por eso no se pliega dentro
+  del frente que solo retira una entrada.
+- **Qué quedó saltado esperando:** el esquema entero. Este frente **no lo toca ni lo insinúa**.
+- **Relación con `D-VOC-3`:** aquella entrada pregunta si `Bloqueado` se conserva o se absorbe, y
+  se apoya en que es «un término que la obra ve a diario». Medido sobre `44917bc1`, **no se ve en
+  ninguna parte**: la pregunta se cae con la premisa. No cambio su estado —eso lo hace la
+  coordinadora—, pero conviene leerlas juntas.
+- **Estado:** `abierta`
+
+
 ### D-BTN-1 · Un `!important` que no gana, y quizá la regla que lo pisa tampoco hace falta
 
 - **Quién pregunta:** sesión de ejecución del frente `buttons-important-leyenda`.

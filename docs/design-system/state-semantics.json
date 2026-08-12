@@ -434,35 +434,6 @@
       ]
     },
     {
-      "module": "programa-general-actualizar",
-      "states": [
-        {
-          "label": "Actividad Futura",
-          "level": "healthy"
-        },
-        {
-          "label": "En Curso",
-          "level": "healthy"
-        },
-        {
-          "label": "Terminada",
-          "level": "healthy"
-        },
-        {
-          "label": "Atrasada",
-          "level": "urgent"
-        },
-        {
-          "label": "Bloqueado",
-          "level": "urgent"
-        },
-        {
-          "label": "Sin Datos",
-          "level": "neutral"
-        }
-      ]
-    },
-    {
       "module": "dashboard",
       "states": [
         {

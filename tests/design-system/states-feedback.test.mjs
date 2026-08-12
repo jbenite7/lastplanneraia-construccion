@@ -52,9 +52,15 @@ test('state semantics map module labels to shared urgency colors', async () => {
   const css = await readFile('public/css/design-system/components/states-feedback.css', 'utf8');
   assert.deepEqual(semantics.levels.map(({ id }) => id), ['neutral', 'healthy', 'attention', 'urgent']);
   assert.equal(semantics.levels.find(({ id }) => id === 'urgent').token, 'critical');
-    assert.ok(semantics.moduleMappings.length >= 13);
+    // Igualdad, no suelo. Hasta el 2026-08-11 esto era `>= 13`, y un suelo solo caza que falte un
+    // modulo: no caza que se cuele uno inventado. Uno se colo —`programa-general-actualizar`
+    // declaraba seis estados que ninguna pantalla pinta, retirado ese dia— y el suelo lo dejo
+    // pasar un mes. Con `===` y la lista literal de abajo el conjunto queda cerrado por los dos
+    // lados. Si algun dia entra un modulo nuevo, este numero se sube a mano a proposito: ese es
+    // el punto donde alguien tiene que mirar si el modulo pinta de verdad sus estados.
+    assert.equal(semantics.moduleMappings.length, 12);
     const modules = semantics.moduleMappings.map(({ module }) => module);
-    for (const module of ['programacion-semanal', 'programa-general', 'programacion-intermedia', 'auth', 'bi', 'pdc', 'control-cambios', 'contratos', 'listado-actividades', 'programa-general-actualizar', 'dashboard', 'profesionales', 'subcontratistas']) {
+    for (const module of ['programacion-semanal', 'programa-general', 'programacion-intermedia', 'auth', 'bi', 'pdc', 'control-cambios', 'contratos', 'listado-actividades', 'dashboard', 'profesionales', 'subcontratistas']) {
       assert.ok(modules.includes(module), `missing state mapping for ${module}`);
     }
   assert.equal(semantics.moduleMappings.find(({ module }) => module === 'programa-general').states.find(({ label }) => label === 'Atrasada').level, 'urgent');
