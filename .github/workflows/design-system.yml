@@ -149,6 +149,15 @@ jobs:
           name: full-app-flow-receipt
           path: docs/design-system/evidence/full-app-flow.json
           if-no-files-found: error
+      # `gate-receipt.mjs` escribe el recibo DENTRO del arbol, y eso lo ensucia.
+      # `runtime-budgets` se niega a medir sobre un arbol sucio —«CI_WORKTREE_FINGERPRINT
+      # must match the current clean worktree»— y hace bien: su procedencia dejaria
+      # de ser comprobable. Medido en la corrida 31564632414, donde el paso de
+      # medicion cayo por esto y no por presupuesto. Se restaura despues de subir
+      # el recibo, que es cuando ya esta a salvo.
+      - name: Restore the worktree after writing the receipt
+        if: always()
+        run: git checkout -- docs/design-system/evidence/full-app-flow.json && git status --porcelain
       - name: Measure runtime budgets
         env:
           APP_URL: http://127.0.0.1:18081
