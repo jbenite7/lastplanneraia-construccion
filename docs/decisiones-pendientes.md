@@ -1415,7 +1415,17 @@ dónde salen los ~57 KB, y solo después crear el baseline 0.3.4. Frente abierto
 (lista limpia tras `365c486e`, publicado en `b3d65ddd`); el baseline no se toca hasta que el
 informe exista (D-GAC-6).
 
-- **Estado:** `decidida` — en ejecución en `css-presupuesto-57kb`
+**Investigación terminada el mismo día:** informe publicado en
+`docs/design-system/runtime-measurements/2026-08-12-atribucion-css-gzip-0.3.3.md` (`4bf26500`,
+vía `df4bf7b3`). Atribución exacta (error 0 %): +17.367 B de altas legítimas, −8.314 B de bajas,
++48.567 B de crecimiento trazado a commits con nombre. **Sin señal de regresión**;
+`duplicateRequestCount` incluso mejoró de 3 a 0. El riesgo que (a) temía —hornear una regresión—
+queda descartado con evidencia. Frente `css-presupuesto-57kb` cerrado. **Lo que queda es (a) con
+red de seguridad:** crear el baseline 0.3.4 (medición fresca sobre sha ≥ `ef4780b0`, imagen
+reconstruida, `adapterAssets` con las 8 rutas, esta atribución adjunta como justificación) — sigue
+siendo decisión del usuario por D-GAC-6.
+
+- **Estado:** `decidida e investigada` — pendiente solo el sí/no del usuario al baseline 0.3.4
 
 ### D-GAC-6 · La actualización autorizada del baseline choca con el contrato que lo fija por hash — resuelta por la coordinadora: se revierte y la re-aprobación será un baseline versionado
 
@@ -1450,7 +1460,8 @@ informe exista (D-GAC-6).
   (medido por el ejecutor: 0 anclajes), y la puerta de desarrollo no concede permisos por encima
   de los de la cuenta. Lo ejecuta el frente `gates-al-ci` como commit propio aparte, con la
   re-medición del gate de PG en el mismo runtime.
-- **Estado:** `resuelta` — pendiente de ejecutar.
+- **Estado:** `ejecutada` — `b14664d1` publicado el 2026-08-12 por la coordinadora; la corrida de
+  CI disparada por ese push es la re-medición con procedencia real.
 
 ### D-COORD-3 · La wiki pide un pase de veracidad, y yo publiqué tres veces con la verificación sin leer
 
