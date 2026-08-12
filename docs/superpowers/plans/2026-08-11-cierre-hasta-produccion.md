@@ -276,6 +276,23 @@ verde en Actions** — el `RC=0` local no lo sustituye, porque el rojo era de CI
 
 **Frente:** `gates-al-ci`. **Cierra:** `runtime-budgets` y `full-app-flow` en verde, 8/8.
 
+> **DESBLOQUEO del 2026-08-12 — léelo antes que nada, cambia dónde va tu YAML.**
+>
+> El job de runtime **falla hoy en «Run laboratory gates» (`design-system.yml:116`)** por un problema
+> de goldens entre plataformas (`D-GAC-4`, **abierta**, no es tuya y **no la toques**). Cuando un paso
+> falla, GitHub **salta todos los posteriores**: por eso «Run Programa General persistence and RBAC
+> gate» (`:144`) no llegó a ejecutarse en la corrida `31561660136`.
+>
+> **Eso NO te bloquea, y aquí está la salida:** inserta tus dos pasos **antes** de la línea 116 —
+> justo después de «Correr la suite PHP completa» (`:114`)—. La aplicación y la base aislada ya están
+> levantadas desde antes de `:105`, así que tus gates tienen todo lo que necesitan. Correrán y darán
+> verde o rojo **de verdad**, sin tocar un solo golden y sin esperar a que se decida `D-GAC-4`.
+>
+> **Lo que eso te permite y lo que no:** puedes cumplir tu Tarea 4 —ver los dos gates fallar y luego
+> pasar, con procedencia real de CI— y cerrar tu fase. **Lo que no puedes es declarar «CI verde»**: la
+> corrida seguirá roja por el paso visual. Tu condición de hecho es que **tus dos gates** pasen y sus
+> recibos lo digan, no que el semáforo entero esté en verde. Dilo así en tu entrega, sin redondear.
+
 **Comprobación de solape, hecha por la coordinadora el 2026-08-12 mientras corría el primer CI sano.**
 El job de runtime ya ejecuta un paso llamado «Run Programa General persistence and RBAC gate»
 (`design-system.yml:144-153`), que corre `e2e/tests/workflows/pg-interactions.spec.mjs` con la misma
