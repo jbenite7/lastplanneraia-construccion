@@ -1408,7 +1408,14 @@ ruta el medidor, sin tocar el baseline.
 no el tiempo de arranque. La opción (c) —corregir la lista ya, medir el CSS antes de aprobar— sigue
 siendo la recomendada, y ahora con un frente más estrecho: **un solo número que investigar**, no dos.
 
-- **Estado:** `abierta`
+**Decisión del usuario, 2026-08-12 (vía coordinadora 01a82dae):** **(b)** — investigar primero de
+dónde salen los ~57 KB, y solo después crear el baseline 0.3.4. Frente abierto:
+`css-presupuesto-57kb` (sin plan, deliberado), asignado a la sesión `cc2c531d`, encargo en
+`goals/css-presupuesto-57kb/goal.md`. La parte de `adapterAssets` ya quedó resuelta por los hechos
+(lista limpia tras `365c486e`, publicado en `b3d65ddd`); el baseline no se toca hasta que el
+informe exista (D-GAC-6).
+
+- **Estado:** `decidida` — en ejecución en `css-presupuesto-57kb`
 
 ### D-GAC-6 · La actualización autorizada del baseline choca con el contrato que lo fija por hash — resuelta por la coordinadora: se revierte y la re-aprobación será un baseline versionado
 
