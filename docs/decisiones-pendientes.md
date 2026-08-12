@@ -1130,6 +1130,38 @@ hallazgo de la revisión en frío era que sigue dando los mismos 13.
   comprobación del valor computado en navegador. Decidida por la coordinadora bajo autonomía
   delegada, con el precedente de D-CI-1.`
 
+### D-COORD-1 · Las colas de decisiones de las sesiones no están versionadas
+
+- **Quién pregunta:** levantado por la sesión del frente `gates-al-ci` fuera de su encargo, el
+  2026-08-12; **remedido por la coordinadora, que encontró la afirmación a medias.**
+- **Fecha:** 2026-08-12
+- **Qué se decide:** si `decisiones/` sale del `.gitignore` para que git detecte las colisiones entre
+  sesiones, o se acepta el riesgo.
+- **Qué se midió** (`git check-ignore -v`, sobre `3fa087b8`):
+  - `decisiones/` → **ignorado** (`.gitignore:404`).
+  - `.claude/` → **ignorado** (`.gitignore:219`).
+  - `goals/` → **NO ignorado.** Está versionado, con 40 entradas.
+  - **Corrección:** la escalada original decía que los tres estaban ignorados y citaba `.gitignore:62`
+    para `goals/`. Es falso, y **la coordinadora lo repitió al usuario antes de comprobarlo** — el
+    defecto exacto que esta cola persigue: una cifra ajena se adopta como propia y pierde su
+    procedencia. Quien la repite es quien la afirma.
+  - Hay **10 colas vivas** en `decisiones/`, una por frente, ninguna versionada.
+- **Por qué importa, y no es teórico:** el 2026-08-11 una sesión escribió con `Write` sobre la cola de
+  otra y **se llevó doce hallazgos sin conflicto, sin diff y sin rastro** — precisamente porque el
+  archivo no estaba versionado. Versionarlo convierte una pérdida muda en un conflicto ruidoso. La
+  convención de nombres por rol ayuda, pero **depende de que todos la recuerden; git no depende de que
+  nadie recuerde nada**. La cola compartida de este repo acumuló 27 commits en un día entre varias
+  sesiones sin perder nada, por estar versionada.
+- **Opciones:** (a) sacar `decisiones/` del `.gitignore` y versionarla; (b) dejarlo y confiar en la
+  convención de nombres; (c) suprimir `decisiones/` y que todo vaya a esta cola única, que ya está
+  versionada.
+- **Recomendación:** **(a)**, y **(c) merece mirarse**: este repo ya tiene una cola canónica
+  versionada, y el andamiaje del plugin crea una segunda en `decisiones/` que está ignorada a
+  propósito. **Dos colas es cómo se pierde una decisión**, y una de las dos además es invisible para
+  git. Pero `(c)` toca el andamiaje del plugin, que es otro repositorio y otro mando.
+- **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada por esto.
+- **Estado:** `abierta`
+
 ## Resueltas
 
 Se quedan arriba, en su sitio, con el estado cambiado: mover una entrada resuelta rompe los enlaces
