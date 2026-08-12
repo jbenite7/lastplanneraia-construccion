@@ -105,7 +105,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1180x820.png",
-      "sha256": "6ab179f4f4f0bd851e2c400f2a7e11afed783431a7ea7f369fe56a385648f2e9"
+      "sha256": "6ab179f4f4f0bd851e2c400f2a7e11afed783431a7ea7f369fe56a385648f2e9",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/actions-dark-1180x820.png",
+          "sha256": "48bbe050fa3360e3de08843df5c5dea8f0d2741991540e26527594b351ddf328"
+        }
+      }
     },
     {
       "id": "actions-dark-1440x900",
@@ -121,7 +127,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/actions-dark-1440x900.png",
-      "sha256": "3c1d9ea799eb1f843fa957e46a107fcd79623fb1bcfe82c38e81a6dbc1eb7961"
+      "sha256": "3c1d9ea799eb1f843fa957e46a107fcd79623fb1bcfe82c38e81a6dbc1eb7961",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/actions-dark-1440x900.png",
+          "sha256": "d15523737560810ff6fa507e6eb1dc86ffb26ee98899abb630f51d9a8c8a15c6"
+        }
+      }
     },
     {
       "id": "bi-primitives-dark-1180x820",
@@ -137,7 +149,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1180x820.png",
-      "sha256": "82bd49b13bda5259f05c787d8d2b6d21b1a65087ba579457cd666d8c003c4e17"
+      "sha256": "82bd49b13bda5259f05c787d8d2b6d21b1a65087ba579457cd666d8c003c4e17",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/bi-primitives-dark-1180x820.png",
+          "sha256": "a71253d1d2f65f4f0e9c5f4670a70fce37b37746d771d9aa460a76265150f884"
+        }
+      }
     },
     {
       "id": "bi-primitives-dark-1440x900",
@@ -153,7 +171,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/bi-primitives-dark-1440x900.png",
-      "sha256": "cc90bc5d4f6ab099265e5078a0f3f9049e96fbc3e7ff9f626aedccb4744b7abe"
+      "sha256": "cc90bc5d4f6ab099265e5078a0f3f9049e96fbc3e7ff9f626aedccb4744b7abe",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/bi-primitives-dark-1440x900.png",
+          "sha256": "7bed5690c8896c6c36abc957347fa07c6c0f389d9ba468beab9f69bbcfa4c7f0"
+        }
+      }
     },
     {
       "id": "data-display-dark-1180x820",
@@ -169,7 +193,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1180x820.png",
-      "sha256": "c53e2337c2e22537a4c2b1003457fd7c422828eb5545932c538eed4c07deb767"
+      "sha256": "c53e2337c2e22537a4c2b1003457fd7c422828eb5545932c538eed4c07deb767",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/data-display-dark-1180x820.png",
+          "sha256": "d468a4b287afcc9ed25505df48a8e14d752b03cd2256faad0459c5f2bc6a82dc"
+        }
+      }
     },
     {
       "id": "data-display-dark-1440x900",
@@ -185,7 +215,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/data-display-dark-1440x900.png",
-      "sha256": "9e5137f8262088558feb3bcf2c588cb809503e92f20d200a960b2b673d10a30d"
+      "sha256": "9e5137f8262088558feb3bcf2c588cb809503e92f20d200a960b2b673d10a30d",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/data-display-dark-1440x900.png",
+          "sha256": "457f0010e34513c2c5e66d745d818c7bbaa79d5a56d2846bb09e62d24149512d"
+        }
+      }
     },
     {
       "id": "forms-filters-dark-1180x820",
@@ -201,7 +237,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1180x820.png",
-      "sha256": "b3ec385bc4090928f899c61dcf598f72d64a7a479c7c3a5469ba329cbde0fb33"
+      "sha256": "b3ec385bc4090928f899c61dcf598f72d64a7a479c7c3a5469ba329cbde0fb33",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/forms-filters-dark-1180x820.png",
+          "sha256": "611d11a60ddcf7a3edc7c1f2378230f7306906a2ed97d8ab92be8086a9688a12"
+        }
+      }
     },
     {
       "id": "forms-filters-dark-1440x900",
@@ -217,7 +259,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/forms-filters-dark-1440x900.png",
-      "sha256": "4888307c2aa35b054c38ef488a1076d981d387c94c9063c87d908a154b61230e"
+      "sha256": "4888307c2aa35b054c38ef488a1076d981d387c94c9063c87d908a154b61230e",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/forms-filters-dark-1440x900.png",
+          "sha256": "05f24a0d719baaa4c92c56ead8e5eb5725b76113c2ba084e51b15b5cd7cf0d68"
+        }
+      }
     },
     {
       "id": "foundations-dark-1180x820",
@@ -233,7 +281,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1180x820.png",
-      "sha256": "e171cb6411f116ba084c34ed862a7df0f6b3ff84e285d810b06ec5f58be4247c"
+      "sha256": "e171cb6411f116ba084c34ed862a7df0f6b3ff84e285d810b06ec5f58be4247c",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/foundations-dark-1180x820.png",
+          "sha256": "133467f58a94e30897e93e9cbab5f9da0d1ade22a7c0ea689e9245cc1fc3e3c0"
+        }
+      }
     },
     {
       "id": "foundations-dark-1440x900",
@@ -249,7 +303,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/foundations-dark-1440x900.png",
-      "sha256": "39d9837c417681aa6d5e9255272e51ddd9b4a593ab7e16bb4033cbd53787d4b7"
+      "sha256": "39d9837c417681aa6d5e9255272e51ddd9b4a593ab7e16bb4033cbd53787d4b7",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/foundations-dark-1440x900.png",
+          "sha256": "4c27dee435706d3bca1fb74f5048fbf07644584b4def71fe9e2e9985ac17195e"
+        }
+      }
     },
     {
       "id": "overlays-dark-1180x820",
@@ -265,7 +325,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1180x820.png",
-      "sha256": "0da408a43b4358ee308b800c9aaa261802d3881b4f9c743054b9bbf30ef9d60a"
+      "sha256": "0da408a43b4358ee308b800c9aaa261802d3881b4f9c743054b9bbf30ef9d60a",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/overlays-dark-1180x820.png",
+          "sha256": "e6c77cbac9e6271dd7a0819506569e3f3e63f2eafcc4ed0d166a2633cf80a813"
+        }
+      }
     },
     {
       "id": "overlays-dark-1440x900",
@@ -281,7 +347,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/overlays-dark-1440x900.png",
-      "sha256": "1d553427c242cd7addbad26f1cca2b81668ad5e80bbb88460e518564466560d3"
+      "sha256": "1d553427c242cd7addbad26f1cca2b81668ad5e80bbb88460e518564466560d3",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/overlays-dark-1440x900.png",
+          "sha256": "608564073bb99bd9c501eef2929130fa36647444a7b816a895a2fbb8c71eccce"
+        }
+      }
     },
     {
       "id": "page-structure-dark-1180x820",
@@ -297,7 +369,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1180x820.png",
-      "sha256": "4dfd6691d471a8ab9dcddec5fd067e8ffc17866168dcdf669c5afb01c8abd8e6"
+      "sha256": "4dfd6691d471a8ab9dcddec5fd067e8ffc17866168dcdf669c5afb01c8abd8e6",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/page-structure-dark-1180x820.png",
+          "sha256": "09ed124a32eee9e3a99fd8ba5bf887cd714146066807b071c0617d329939f906"
+        }
+      }
     },
     {
       "id": "page-structure-dark-1440x900",
@@ -313,7 +391,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/page-structure-dark-1440x900.png",
-      "sha256": "bf3fe0d044c7f8ea2bd697eed6d04cb758d6a82d107d0c0613a1e34f1d9caf07"
+      "sha256": "bf3fe0d044c7f8ea2bd697eed6d04cb758d6a82d107d0c0613a1e34f1d9caf07",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/page-structure-dark-1440x900.png",
+          "sha256": "762b2576b955c40b52bd4511247d99e33d6c695e0f2535a8438e6df711ac2be6"
+        }
+      }
     },
     {
       "id": "shell-navigation-dark-1180x820",
@@ -329,7 +413,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1180x820.png",
-      "sha256": "b3813dd72cad55403fd9baefad273821a669ed0fb1394b8d8060d153dd8df495"
+      "sha256": "b3813dd72cad55403fd9baefad273821a669ed0fb1394b8d8060d153dd8df495",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/shell-navigation-dark-1180x820.png",
+          "sha256": "22d52869ad68895ce9439e56e0f9249afb10a4b06ebe8debfac840d47deeb88a"
+        }
+      }
     },
     {
       "id": "shell-navigation-dark-1440x900",
@@ -345,7 +435,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/shell-navigation-dark-1440x900.png",
-      "sha256": "c508a946d329ac07c6f8fbb9fc9d3c65d39c4331b1669f646972eac03aab6d7f"
+      "sha256": "c508a946d329ac07c6f8fbb9fc9d3c65d39c4331b1669f646972eac03aab6d7f",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/shell-navigation-dark-1440x900.png",
+          "sha256": "a966450283ae19b9541337b41965cbba42ec3a1a4e72f3fd441db41250929b59"
+        }
+      }
     },
     {
       "id": "states-feedback-dark-1180x820",
@@ -362,7 +458,13 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1180x820.png",
       "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483",
-      "capture": "element"
+      "capture": "element",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1180x820.png",
+          "sha256": "277f7921d5e6acdce89b8c2f3c7732a7009e231d3b0e6ddbd8d9db13a4db6483"
+        }
+      }
     },
     {
       "id": "states-feedback-dark-1440x900",
@@ -379,7 +481,13 @@
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/states-feedback-dark-1440x900.png",
       "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7",
-      "capture": "element"
+      "capture": "element",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/states-feedback-dark-1440x900.png",
+          "sha256": "c26420f0fd75c8ec64ac2cfd104805d52a62a43d301ddc5264ab651b440a8ef7"
+        }
+      }
     },
     {
       "id": "vendor-adapters-dark-1180x820",
@@ -395,7 +503,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1180x820.png",
-      "sha256": "0eb762a0d59c57b6c9801629fcb70c022332241582e5f2aaaf5b12d256d7cb15"
+      "sha256": "0eb762a0d59c57b6c9801629fcb70c022332241582e5f2aaaf5b12d256d7cb15",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1180x820.png",
+          "sha256": "4d2c3f104265600484f06cdce3598a8231b11c228a985a3aae4d542c35cf5da0"
+        }
+      }
     },
     {
       "id": "vendor-adapters-dark-1440x900",
@@ -411,7 +525,13 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/vendor-adapters-dark-1440x900.png",
-      "sha256": "0387ec787e84afc6f3bbf1ac4e65a64b19158345fae9e1e98253789a3573d281"
+      "sha256": "0387ec787e84afc6f3bbf1ac4e65a64b19158345fae9e1e98253789a3573d281",
+      "goldenPlatforms": {
+        "linux": {
+          "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1440x900.png",
+          "sha256": "8f6397146ecccbef92588405933dd6918c0dfeb999183fec767e68a2657bfecd"
+        }
+      }
     }
   ]
 }

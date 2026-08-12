@@ -1099,6 +1099,30 @@ for (const manifest of manifests) {
       );
     }
     goldenOwners.set(scenario.golden, `${manifest.moduleId}/${scenario.id}`);
+    // Gemelos por plataforma (D-GAC-4). El juego de CI se ancla con el mismo rigor que el
+    // principal —existe, esta dentro de GOLDEN_ROOTS y su sha256 cuadra—; si no, un golden de
+    // Linux podria regenerarse en silencio y el carril visual de CI vigilaria su propia copia.
+    for (const [platform, twin] of Object.entries(scenario.goldenPlatforms || {})) {
+      const label = `${manifest.moduleId}/${scenario.id} (${platform})`;
+      if (twin.golden.split('/').includes('..')
+        || !GOLDEN_ROOTS.some((prefix) => twin.golden.startsWith(prefix))) {
+        failures.push(`${label}: golden ${twin.golden} esta fuera de los directorios permitidos`);
+        continue;
+      }
+      const twinPath = join(root, twin.golden);
+      if (!existsSync(twinPath)) {
+        failures.push(`${label}: missing golden ${twin.golden}`);
+        continue;
+      }
+      const twinHash = createHash('sha256').update(readFileSync(twinPath)).digest('hex');
+      if (twinHash !== twin.sha256) failures.push(`${label}: golden hash mismatch`);
+      if (goldenOwners.has(twin.golden)) {
+        failures.push(
+          `${label}: golden reused by another scenario (${goldenOwners.get(twin.golden)})`,
+        );
+      }
+      goldenOwners.set(twin.golden, label);
+    }
     // Indexar solo por ruta deja pasar la copia con otro nombre: el contenido
     // es el mismo y el sha256 tambien, asi que el hash es la clave que de
     // verdad identifica un golden.

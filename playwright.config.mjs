@@ -27,7 +27,18 @@ export default defineConfig({
     ['html', { outputFolder: './test-results/report', open: 'never' }],
     ['list'],
   ],
-  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
+  // Los goldens se separan por plataforma porque el trazado de fuentes difiere entre macOS y
+  // Linux: en CI el texto es levemente mas ancho, cambia el salto de linea y todo lo de abajo se
+  // desplaza (medido en la corrida 31619568581 — 18 de 20 fallando con ratio ~0,03 frente a una
+  // tolerancia de 0,002, y las mismas 20 en verde en macOS sobre el mismo sha). No es un cambio de
+  // diseno: la estructura, los colores y los componentes son identicos. D-GAC-4, opcion (a).
+  //
+  // macOS conserva la ruta historica A PROPOSITO: los 39 goldens anclados por ruta y sha256 en
+  // docs/design-system/manifests/*.json seguirian rotos si se moviera la carpeta — ese fue el
+  // intento revertido en 949bb644. Asi el cambio es aditivo y ningun ancla existente se toca.
+  snapshotPathTemplate: process.platform === 'darwin'
+    ? '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}'
+    : '{testDir}/__screenshots__/{testFilePath}/{platform}/{arg}{ext}',
   expect: {
     toHaveScreenshot: {
       animations: 'disabled',

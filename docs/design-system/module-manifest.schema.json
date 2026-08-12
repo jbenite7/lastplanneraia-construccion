@@ -205,8 +205,35 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "capture": {
-          "enum": ["viewport", "element"],
+          "enum": [
+            "viewport",
+            "element"
+          ],
           "description": "viewport: captura de pantalla completa, el PNG mide exactamente el viewport declarado. element: recorte a un elemento, el PNG puede ser menor. Si se omite, viewport."
+        },
+        "goldenPlatforms": {
+          "type": "object",
+          "description": "Gemelos del golden en otras plataformas. macOS usa `golden`/`sha256`; aqui se declara el juego que rinde CI. Existe porque el trazado de fuentes difiere entre plataformas y un solo juego no puede vigilar las dos (D-GAC-4). Cada gemelo se ancla por ruta y sha256 igual que el principal: ninguno queda sin vigilancia.",
+          "additionalProperties": false,
+          "properties": {
+            "linux": {
+              "type": "object",
+              "required": [
+                "golden",
+                "sha256"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "golden": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          }
         }
       }
     }
