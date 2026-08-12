@@ -149,7 +149,10 @@ assert.match(
 );
 assert.match(
   buttonsCss,
-  /\.pdc-legend-item\s*\{\s*display:\s*inline-flex !important;[\s\S]*?white-space:\s*normal !important;[\s\S]*?overflow-wrap:\s*normal !important;[\s\S]*?word-break:\s*normal !important;/,
+  // Lo que el contrato protege son los VALORES, no el `!important`: `0a228a39`
+  // midio el computado y retiro los `!important` que no hacian trabajo. Exigirlos
+  // aqui obligaria a reponer ruido que la cascada no necesita (D-GAC-3, 2026-08-11).
+  /\.pdc-legend-item\s*\{[^}]*?display:\s*inline-flex\b[^;]*;[^}]*?white-space:\s*normal\b[^;]*;[^}]*?overflow-wrap:\s*normal\b[^;]*;[^}]*?word-break:\s*normal\b[^;]*;/,
   'los chips canónicos deben envolver entre palabras sin fragmentarlas al ampliar',
 );
 assert.match(
