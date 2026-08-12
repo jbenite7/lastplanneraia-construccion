@@ -1410,6 +1410,41 @@ siendo la recomendada, y ahora con un frente más estrecho: **un solo número qu
 
 - **Estado:** `abierta`
 
+### D-GAC-6 · La actualización autorizada del baseline choca con el contrato que lo fija por hash — resuelta por la coordinadora: se revierte y la re-aprobación será un baseline versionado
+
+- **Quién pregunta:** la sesión `bbd231db` (frente `gates-al-ci`), 2026-08-12, sobre `0f968d2f`.
+- **Qué pasó:** con la autorización de D-GAC-5(c) editó `adapterAssets` en
+  `runtime-baseline-0.3.3.json` (`0f968d2f`) y la suite estática cayó a `RC=1`:
+  `tests/design-system/visual-ci-contract.test.mjs:354` exige que el baseline 0.3.3 sea **idéntico**
+  a la medición retrospectiva `0.3.3-retrospective.json`, fijada por sha256 dentro del propio
+  baseline. El contrato existe exactamente para eso: que un baseline no se edite a mano.
+- **Resolución (coordinadora, 2026-08-12):** opción **(c)** de la escalada — **`0f968d2f` se
+  descarta sin publicar**. Editar la retrospectiva sería falsificar una medición histórica, y
+  relajar el assert dejaría el baseline editable a mano, que es lo que el contrato impide. La única
+  vía compatible con el diseño es un **baseline nuevo versionado (0.3.4)** con medición propia —
+  y eso obliga a decidir a la vez qué se hace con `cssGzipBytes`, así que **vuelve al usuario junto
+  con D-GAC-5(b), como una sola decisión**, no dos.
+- **Lo que sí se publica:** `365c486e` (la línea de `vendor-datatables-legacy.css`, autorizada por
+  el usuario). Verificado por la coordinadora por segundo camino: `visual-ci-contract` 12/12 sobre
+  ese sha en worktree limpio; el único rojo de la estática en ese entorno fue del instrumento
+  (worktree desechable sin `.env` ni daemon Docker), no del commit. Visto emitido:
+  `.claude/vistos/gates-al-ci` → `365c486e`. El gate `runtime-budgets` queda **rojo y honesto**
+  (`cssGzipBytes` y `adapterAssets`) hasta que el usuario decida el 0.3.4.
+- **Estado:** `resuelta` — pendiente solo de ejecutar el descarte y el push de `365c486e`.
+
+### D-GAC-7 · El gate de PG usa `test.C` y el runtime aislado de CI no lo habilita — resuelta por la coordinadora: se añade
+
+- **Quién pregunta:** la misma sesión, mismo sha. `pg-interactions.spec.mjs:15` autentica `test.C`;
+  `docker-compose.ci.yml:21` fija `DEV_DOOR_USERS: "test.A,test.R,test.V"`. Medido: tal cual,
+  `PG_GATE_RC=1` («no autenticó a test.C»); con `test.C` añadido en local, `PG_GATE_RC=0`
+  (3 passed / 1 skipped). El RBAC está sano; lo roto es configuración del runtime de CI.
+- **Resolución (coordinadora, 2026-08-12):** **añadir `test.C`** a `DEV_DOOR_USERS` en
+  `docker-compose.ci.yml:21`. Es config del runtime de pruebas, ningún contrato ancla esa línea
+  (medido por el ejecutor: 0 anclajes), y la puerta de desarrollo no concede permisos por encima
+  de los de la cuenta. Lo ejecuta el frente `gates-al-ci` como commit propio aparte, con la
+  re-medición del gate de PG en el mismo runtime.
+- **Estado:** `resuelta` — pendiente de ejecutar.
+
 ### D-COORD-3 · La wiki pide un pase de veracidad, y yo publiqué tres veces con la verificación sin leer
 
 - **Quién pregunta:** la coordinadora, 2026-08-12, al final de la jornada.
