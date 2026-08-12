@@ -608,11 +608,16 @@ clave `surface` de tipo `string`, añadida a `properties` **y** a `required`.
 
 **Ojo, y esto rompe la tarea si se salta:** el esquema es `additionalProperties: false` en todos sus
 niveles, así que si añades `surface` a los datos **sin** declararla en `properties`, la validación de
-los doce falla a la vez. Quien valida el esquema es `scripts/design-system-contracts.mjs` — léelo
-antes de tocar nada:
+los doce falla a la vez.
+
+**Y una buena noticia medida por la coordinadora el 2026-08-12: no tienes que tocar el validador.**
+`scripts/design-system-contracts.mjs:599` empareja esquema y documento dentro de una tabla
+(`SCHEMA_DOCUMENT_PAIRS`), y `:606-616` la recorre entera aplicando el esquema al documento. El par
+`state-semantics` **ya está en esa tabla**. Es decir: en cuanto declares `surface` en el esquema, el
+gate estático la exige solo. Comprueba que sigue siendo así antes de fiarte:
 
 ```bash
-grep -n "state-semantics" scripts/design-system-contracts.mjs
+sed -n '594,616p' scripts/design-system-contracts.mjs
 ```
 
 - [ ] **Paso 4: correr la prueba y verla pasar**
