@@ -452,7 +452,44 @@ suma.
    estados) dan `grep -c` **0** en `public/index.php`, y `AGENTS.md` dice que el PDC v1 —Listado de
    Actividades y Contratos— **se eliminó el 2026-08-04**.
 
-### Tarea 1: Censar los doce antes de tocar el esquema
+**Censo previo hecho por la coordinadora el 2026-08-12** (lectura, sin tocar nada). No lo repitas:
+verifícalo y sigue.
+
+| Módulo | Rutas en `index.php` | Vista | Veredicto |
+|---|---|---|---|
+| `programacion-semanal` | 4 | `views/programacion-semanal` | vivo |
+| `programa-general` | 12 | `views/programa-general` | vivo |
+| `programacion-intermedia` | 6 | `views/programacion-intermedia` | vivo |
+| `auth` | — | `views/auth` | vivo (sus rutas son `/login`, `/logout`…, no llevan la palabra) |
+| `bi` | 36 | `views/bi` | vivo |
+| `pdc` | 4 | — (SPA en `pdc-app/`) | vivo; su superficie es la isla React, no una vista PHP |
+| `control-cambios` | 3 | `views/control-cambios` | vivo |
+| `dashboard` | 2 | `views/dashboard` | vivo |
+| `profesionales` | 4 | `views/profesionales` | vivo |
+| `subcontratistas` | 4 | `views/subcontratistas` | vivo |
+| **`contratos`** | **0** | **ninguna** | **fantasma** |
+| **`listado-actividades`** | **0** | **ninguna** | **fantasma** |
+
+**Los dos fantasmas están confirmados por una fuente que no es el conteo de rutas:**
+`views/partials/shell_sidebar.php:93-96` dice que «Familias de Actividades» (`/listado-actividades`) y
+«Paquetes de Contratación» (`/contratos`) salieron del rail el **2026-07-29**, y que el **2026-08-04**
+se completó el apagado del PDC v1 — rutas, controladores, servicios y datos eliminados del repo.
+Concuerda con `AGENTS.md`.
+
+**El matiz que justifica la fase entera, y que casi me engaña a mí:** la etiqueta de `contratos`
+«Duraciones pendientes» da **0 archivos** en todo el repo, pero las de `listado-actividades`
+—«Cambios guardados», «Error de conexión»— aparecen en **4 y 5** archivos… que son
+`ProfesionalesApiController`, `SubcontratistasApiController` y el laboratorio. **Son de otros
+módulos.** Por la etiqueta sola no se distingue a quién pertenece un estado; por eso hace falta
+declarar la superficie, y por eso el conteo de rutas es un proxy y no una medición.
+
+**Autorizado por la coordinadora:** retirar esas dos entradas **no** necesita volver al usuario. Es
+la aplicación directa de `D-CEF-1` (a), que él ya decidió: un módulo sin superficie no puede estar en
+el contrato. Retíralas **con su motivo escrito** y **mide qué cobertura se pierde** (7 estados entre
+las dos) en vez de solo qué se gana. Si al medir encuentras que alguna sí tiene superficie, **para y
+dímelo**: entonces mi censo estaba mal.
+
+### Tarea 1: Censar los diez vivos y verificar los dos fantasmas
 
 Primero se mide, luego se decide la forma del campo. Al revés, el esquema fija una forma que el censo
 no puede rellenar.
@@ -546,7 +583,7 @@ git commit -m "feat(contrato-estados): el esquema exige que cada modulo declare 
 
 - [ ] **Paso 1: rellenar con lo censado en la Tarea 1**
 
-Cada entrada, con la superficie que **mediste**, no la que parezca razonable. Un valor inventado aquí
+Cada entrada viva, con la superficie que **mediste**, no la que parezca razonable. Un valor inventado aquí
 es exactamente el defecto que la fase viene a cerrar.
 
 - [ ] **Paso 2: la aserción del gate — que compruebe el resultado, no la forma**
