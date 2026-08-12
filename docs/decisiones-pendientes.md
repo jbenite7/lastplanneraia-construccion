@@ -1354,9 +1354,22 @@ con seguridad se cita.
   la referencia (b) y no se apagó el carril (c). Ninguno de los dos entornos dejó de vigilar.
 - **Verificado en macOS antes de publicar:** `npm run test:design-system:static` 8/8 (`RC=0`) y
   `npm run test:visual:lab` **20 passed** (`RC=0`). Publicado en `00f1ad59`.
-- **Deuda anotada, no tocada:** quedan **18 PNG del tema `linen`** en
-  `tests/browser/__screenshots__/design-system-lab.visual.mjs/`, huérfanos desde que DS-030 retiró
-  el tema el 2026-07-25. Ningún manifiesto los declara y ninguna prueba los usa.
+- **Deuda anotada:** quedaban **18 PNG del tema `linen`**, huérfanos desde que DS-030 retiró el
+  tema el 2026-07-25. Retirados aparte en `7f76015a` por la sesión a la que se derivó.
+
+**El primer intento dejó un rojo nuevo, y la causa fue un supuesto mío.** Al hacer condicional
+`snapshotPathTemplate` di por hecho que en CI solo corría el carril del laboratorio. **No es cierto:**
+el workflow tiene un paso propio, `Run pilot lab gates (Programa General)`, que ejecuta
+`test:visual:pilot`. Sus 2 escenarios pasaron de verdes a `A snapshot doesn't exist` — no por el
+cambio de plataforma, sino porque les faltaba el gemelo que sí se creó para el laboratorio.
+Corregido en `6cf8d28c`, con la misma comprobación a ojo (datos, colores, chips y conteos idénticos;
+solo cambia el ancho del texto) y el mismo anclaje por hash. **Lo destapó el CI, no la revisión
+previa:** el inventario de goldens contaba manifiestos, y lo que decide qué corre es el workflow.
+
+- **Resultado, medido:** corrida `31634040471` sobre `a2f0f639` → **`success`**, los dos jobs en
+  verde por primera vez desde el 2026-07-17. `Check runtime budgets` (baseline 0.3.4, D-GAC-5) y
+  `Run laboratory gates` (20/20 visuales) incluidos. **El CI del design system queda completamente
+  verde y sin ningún gate apagado para conseguirlo.**
 
 ### D-GAC-5 · El presupuesto de runtime se congeló el día que el CI se rompió
 
