@@ -143,8 +143,22 @@ vale `false` para una sesión que está esperando entre turnos, que es el estado
 coordinadora casi todo el tiempo. Lo midió la sesión de CI el 2026-08-10: siguiendo la regla al pie
 de la letra no encajaba **ninguna** sesión, ni siquiera la coordinadora real.
 
-**Si encajan cero o varias, pregúntale al usuario en el chat cuál es** en vez de adivinar: mandar una
-decisión a la sesión equivocada es peor que no mandarla.
+**Si encajan cero, pregúntale al usuario en el chat cuál es** en vez de adivinar: mandar una decisión
+a la sesión equivocada es peor que no mandarla.
+
+**Si encajan varias, desempata por `lastActivityAt` — y dilo.** *(Precisión del 2026-08-11: esta
+página decía a la vez «la de `lastActivityAt` más reciente» y «si encajan varias, pregunta», que son
+instrucciones opuestas. Una sesión aplicó el desempate y luego se acusó de haber tomado un atajo,
+cuando era lo que la página mandaba.)*
+
+El desempate vale, y en la práctica hace falta: las sesiones cerradas de días anteriores conservan su
+`cwd` en la raíz y siguen apareciendo hasta que se archivan. Descartar una de hace una semana frente
+a una activa no es adivinar.
+
+**Lo que no vale es desempatar en silencio.** Un desempate callado es indistinguible de una
+coincidencia única, y quien lea el mensaje no sabrá que hubo elección. Escribe cuántas encajaron y
+por qué elegiste esa — una línea basta. Si las candidatas son del mismo día y ninguna destaca,
+entonces sí: **para y pregunta.**
 
 **Y antes de atribuirle un commit a una sesión, compruébalo.** El 2026-08-10 la coordinadora le pasó
 a la sesión de CI tres observaciones sobre un informe que esa sesión no había escrito; lo demostró
