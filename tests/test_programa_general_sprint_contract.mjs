@@ -147,11 +147,31 @@ assert.match(
   /\.pdc-legend-item\s*\{[^}]*transition:\s*transform var\(--ds-motion-fast\),\s*box-shadow var\(--ds-motion-fast\) !important;/s,
   'los chips no deben interpolar color o superficie durante el cambio de tema',
 );
-assert.match(
-  buttonsCss,
-  /\.pdc-legend-item\s*\{\s*display:\s*inline-flex !important;[\s\S]*?white-space:\s*normal !important;[\s\S]*?overflow-wrap:\s*normal !important;[\s\S]*?word-break:\s*normal !important;/,
-  'los chips canónicos deben envolver entre palabras sin fragmentarlas al ampliar',
+// D-GAC-3 (2026-08-12): esta asercion exigia las cuatro declaraciones **con
+// `!important`**, y eso es la forma, no el resultado. El objetivo declarado es
+// que el chip envuelva entre palabras sin fragmentarlas, y eso lo dan los
+// valores. El `!important` lo retiro a proposito `0a228a39`, que midio el
+// computado de los dieciseis y repuso solo los seis que hacian trabajo: exigirlo
+// aqui obligaba a deshacer una resta bien medida. Mismo defecto que `D-CI-1`.
+// Que los valores **ganen** no lo puede probar una hoja de estilo: se comprueba
+// en navegador, y esa medicion vive en la entrega del frente `ci-en-verde`.
+const chipBlock = buttonsCss.match(/^\.pdc-legend-item\s*\{([\s\S]*?)^\}/m)?.[1] ?? '';
+assert.ok(
+  chipBlock.length > 0,
+  'el bloque .pdc-legend-item debe existir en buttons.css',
 );
+for (const [prop, value] of [
+  ['display', 'inline-flex'],
+  ['white-space', 'normal'],
+  ['overflow-wrap', 'normal'],
+  ['word-break', 'normal'],
+]) {
+  assert.match(
+    chipBlock,
+    new RegExp(`(^|;|\\s)${prop}:\\s*${value}\\s*(!important)?\\s*;`, 'm'),
+    `los chips canónicos deben declarar ${prop}: ${value} para envolver entre palabras sin fragmentarlas`,
+  );
+}
 assert.match(
   coreCss,
   /\.aia-btn\s*\{[^}]*min-height:\s*var\(--ds-target-min\)/,
