@@ -117,7 +117,8 @@ if ($crossRoleCandidate === null) {
     ];
     try {
         // Las dos comprobaciones de BiAccessComponent que había aquí afirmaban que el
-        // acceso global se veía y el contextual no. Desde el 2026-08-13 el componente
+        // acceso global se veía y el contextual no. Desde el 2026-08-13
+        // (docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md) el componente
         // devuelve false siempre —el módulo está oculto de la navegación mientras se
         // desarrolla— así que ya no distinguen nada. Lo que este test debe seguir
         // protegiendo es el ALCANCE, que no ha cambiado: se comprueba contra

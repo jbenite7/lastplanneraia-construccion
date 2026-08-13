@@ -74,6 +74,29 @@ Cuando el módulo esté listo: devolver a `canAccess()`/`canAccessAny()` su cuer
 (el `git show` del commit lo tiene), quitar el gate de los dos controladores y borrar
 `BiPreviewAccessPolicy` + su test. La capacidad puede quedarse o retirarse del catálogo.
 
+También hay que revertir `src/Legacy/datosGeneralesPagina.php`, que ahora calcula
+`$canAccessBi` llamando a `BiAccessComponent::canAccess()` para que el JSON que consume el
+JS diga lo mismo que la barra lateral. Antes del frente, ese valor salía de
+`can('lps.indicadores.ver')`, un permiso por rol; al revertir, volverá a salir de ahí, y
+`BiAccessComponent::canAccess()` volverá a resolver por alcance de proyecto (vía
+`BiProjectScope`) en vez de por el gate actual. Son dos criterios distintos: la reversión
+deja al legado alineado otra vez con el permiso de rol, no con el alcance de proyecto que
+usa hoy la barra lateral. Probablemente es lo correcto, pero es una decisión que sobrevive
+a la reversión y conviene tenerla anotada en vez de redescubrirla.
+
+## Límites conocidos
+
+- `views/design-system/families/shell-navigation.php:21` sigue mostrando un enlace a
+  Control Tower con `href` hardcodeado. No es una fuga: el laboratorio de design system
+  está detrás de `DesignSystemLabAccessPolicy` (Admin + entorno development/testing), y
+  `tests/design-system/shell-navigation.test.mjs:49` depende de esa etiqueta. Se deja así
+  a propósito.
+- `RbacService::resolveRoleForUser()` sin proyecto devuelve el rol más alto que el usuario
+  tenga en **cualquier** proyecto, así que quien sea Admin en uno solo pasa el gate en
+  todos. El alcance de datos lo sigue protegiendo `BiProjectScope` después del gate — es el
+  mismo comportamiento que ya tiene el laboratorio del design system, y es coherente con
+  que la condición del gate sea global.
+
 ## Archivos de este goal
 
 Sin carpeta `goals/`: frente corto con spec propio. El cierre se anota en `memoria/log.md`.

@@ -27,7 +27,8 @@ if ($projectId) {
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);
 // Pasa por el mismo interruptor que la vista: si el módulo está oculto, el JSON que
-// consume el JS tiene que decir lo mismo que la barra lateral.
+// consume el JS tiene que decir lo mismo que la barra lateral (spec del 2026-08-13:
+// docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
 $canAccessBi = \App\View\Components\BiAccessComponent::canAccess();
 
 // Re-leer el cargo de general_usuarios en cada request para que los cambios

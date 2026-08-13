@@ -19,7 +19,8 @@ class BiAccessComponent
 
     /**
      * El módulo BI está oculto de la navegación mientras se termina de desarrollar
-     * (spec del 2026-08-13). Devolver false apaga de una vez: barra lateral, selector
+     * (spec del 2026-08-13: docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
+     * Devolver false apaga de una vez: barra lateral, selector
      * de proyectos, tarjeta del cajón contextual, los cinco botones «BI …» de los
      * módulos y los boot-configs de JS.
      *
