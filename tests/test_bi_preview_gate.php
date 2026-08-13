@@ -45,5 +45,32 @@ foreach (['D', 'R', 'V', 'C', 'DCV', 'OT', 'S', 'G', 'SG'] as $rol) {
     comprobar("rol {$rol} no la tiene", RbacManager::hasCapability($rol, RbacCatalog::PERM_INTERNAL_BI_PREVIEW), false);
 }
 
+echo "\nGate de las rutas (BiPreviewAccessPolicy::canOpen):\n";
+comprobar(
+    'sesion de Admin abre',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.A'], 'A'),
+    true
+);
+comprobar(
+    'sesion de Residente no abre',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.R'], 'R'),
+    false
+);
+comprobar(
+    'sesion de Visualizador no abre',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.V'], 'V'),
+    false
+);
+comprobar(
+    'sesion vacia no abre',
+    \App\Security\BiPreviewAccessPolicy::canOpen([], ''),
+    false
+);
+comprobar(
+    'alias de rol se normaliza (RESIDENTE DE OBRA -> R) y no abre',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'x'], 'RESIDENTE DE OBRA'),
+    false
+);
+
 echo "\nResultado: " . ($total - $fallos) . "/{$total}\n";
 exit($fallos === 0 ? 0 : 1);
