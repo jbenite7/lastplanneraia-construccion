@@ -30,3 +30,12 @@ porque la excepcion se convierte en pagina despues de empezar a emitir. Dos moti
 fiarse del codigo HTTP: hay que mirar el cuerpo, y hay que navegar como navega una persona.
 Emparejada con [[el-dom-dice-que-existe-no-que-se-ve]] y
 [[valor-declarado-no-es-valor-computado]].
+
+**Anexo del 2026-08-13, misma jornada, otra trampa de medicion.** Al verificar el
+despliegue por `curl`, pedir `/programacion-semanal` **sin proyecto en sesion** devuelve
+**302 a `/proyectos`**: sin `-L`, lo que se guarda es el cuerpo vacio de la redireccion, y
+cualquier `grep -c` sobre el da 0. Ese 0 parece «no hay accesos BI» y en realidad es «no
+hay pagina». Se cazo cuando el 0 aparecio justo despues de un cambio que debia producir lo
+contrario. Para medir presencia o ausencia en una ruta protegida hacen falta las dos
+cosas: seguir la redireccion (`-L`) y **tener proyecto en sesion** (`p=<Proyecto_Proceso>`
+en la puerta dev); y conviene imprimir el `<title>` para saber que pagina se midio.
