@@ -1717,8 +1717,13 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding-block: var(--spacing-xs);
 }
 
+/* La tinta hereda de la opcion select2 que la envuelve: texto primario en
+   reposo y tinta inversa cuando el adaptador pinta el resaltado verde
+   corporativo. El valor anterior (brand-primary-dark) es un verde de marca
+   pensado como fondo, no como tinta: sobre las superficies oscuras del
+   desplegable daba ~1,4:1 y el titulo desaparecia. */
 .tnp-option-title {
-    color: var(--ds-color-brand-primary-dark);
+    color: inherit;
     font-size: 0.95rem;
     font-weight: 600;
 }

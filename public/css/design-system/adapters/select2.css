@@ -68,6 +68,30 @@
     overflow: hidden;
   }
 
+  /* El campo de busqueda del desplegable no tenia ninguna regla en el arbol:
+     quedaba con el par del user-agent segun su color-scheme (caja clara con
+     borde #aaa en claro, #3b3b3b en oscuro), ajeno a los tokens y medido como
+     ilegible en /programacion-semanal (modal TNP). Mismo par que el resto de
+     campos del sistema. */
+  .select2-search--dropdown {
+    padding: var(--ds-space-2) var(--ds-space-2) 0;
+  }
+
+  .select2-search--dropdown .select2-search__field {
+    min-height: var(--ds-target-min);
+    padding-inline: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+
+  .select2-search--dropdown .select2-search__field:focus {
+    outline: none;
+    border-color: var(--ds-color-brand-primary);
+    box-shadow: var(--ds-shadow-focus);
+  }
+
   .select2-results__options {
     margin: 0;
     padding: var(--ds-space-1);
