@@ -8,6 +8,9 @@ class RbacCatalog
     // PERM_AUTO_DEFINIR_CONTRATOS ('lps.contratos.auto_definir') se retiró el 2026-08-04 con el
     // módulo de Contratos del PDC v1: era el permiso del flujo auto/preview·apply·undo.
     public const PERM_INTERNAL_DESIGN_SYSTEM_VIEW = 'internal.design-system.view';
+    // Vigente mientras el módulo BI se termina de desarrollar: la navegación no lo
+    // muestra a nadie y solo Admin puede abrirlo por URL. Ver el spec del 2026-08-13.
+    public const PERM_INTERNAL_BI_PREVIEW = 'internal.bi.preview';
 
     public static function roleAliases(): array
     {
@@ -114,6 +117,7 @@ class RbacCatalog
             ['key' => 'admin.auditoria.ver', 'module' => 'admin', 'action' => 'ver_auditoria', 'description' => 'Ver auditoria'],
             ['key' => 'admin.matching.config.editar', 'module' => 'admin', 'action' => 'editar_config_matching', 'description' => 'Editar configuracion de matching semantico'],
             ['key' => self::PERM_INTERNAL_DESIGN_SYSTEM_VIEW, 'module' => 'internal', 'action' => 'ver_design_system', 'description' => 'Ver laboratorio interno del design system'],
+            ['key' => self::PERM_INTERNAL_BI_PREVIEW, 'module' => 'internal', 'action' => 'ver_bi_preview', 'description' => 'Abrir el modulo BI mientras esta oculto de la navegacion'],
 
             ['key' => 'lps.programa_general.ver', 'module' => 'lps', 'action' => 'programa_general_ver', 'description' => 'Ver programa general'],
             ['key' => 'lps.programa_general.editar', 'module' => 'lps', 'action' => 'programa_general_editar', 'description' => 'Editar programa general'],
