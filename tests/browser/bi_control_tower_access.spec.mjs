@@ -27,7 +27,12 @@ async function expectBiLinkToNavigate(page, locator, target) {
   ]);
 }
 
-test.describe(`Control Tower access points — ${project.name}`, () => {
+// SUSPENDIDA el 2026-08-13, no borrada: esta suite comprueba los seis botones «BI …» de
+// los módulos, y esos botones están ocultos a propósito mientras el Control Tower se
+// termina de desarrollar (docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
+// Su contenido sigue siendo el contrato correcto para cuando el módulo vuelva a la
+// navegación: quitar el `.skip` es toda la reversión que necesita.
+test.describe.skip(`Control Tower access points — ${project.name}`, () => {
   test.afterEach(async ({ page }) => {
     await logout(page).catch(() => {});
   });
@@ -118,7 +123,12 @@ const ROLE_ACCESS = [
   { code: 'C', expected: false },
 ];
 
-test.describe('Control Tower RBAC entry point', () => {
+// SUSPENDIDA el 2026-08-13 junto con la suite anterior: por el mismo ocultamiento
+// deliberado (canAccess()/canAccessAny() en false) el enlace nunca es visible para
+// ningún rol, y además /bi/* y /api/bi/* ya solo los abre Admin, así que los roles no-A
+// devuelven 404 en vez del 403 que este bloque esperaba. No es una regresión nueva: es
+// la misma causa que la suite de arriba. Revertir junto con ella quitando el `.skip`.
+test.describe.skip('Control Tower RBAC entry point', () => {
   for (const roleCase of ROLE_ACCESS) {
     test(roleCase.code + ' visibility follows lps.indicadores.ver', async ({ page }) => {
       await login(page, {

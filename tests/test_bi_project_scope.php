@@ -116,11 +116,18 @@ if ($crossRoleCandidate === null) {
         'project_id' => $deniedProjectId,
     ];
     try {
-        if (!BiAccessComponent::canAccessAny()) {
-            $failures[] = 'global BI access was hidden despite an allowed project';
+        // Las dos comprobaciones de BiAccessComponent que había aquí afirmaban que el
+        // acceso global se veía y el contextual no. Desde el 2026-08-13 el componente
+        // devuelve false siempre —el módulo está oculto de la navegación mientras se
+        // desarrolla— así que ya no distinguen nada. Lo que este test debe seguir
+        // protegiendo es el ALCANCE, que no ha cambiado: se comprueba contra
+        // BiProjectScope directamente, que es su dueño.
+        // Al revertir el ocultamiento, restaurar las dos líneas desde el historial.
+        if (!$candidateScope->hasAnyAccess($_SESSION)) {
+            $failures[] = 'global BI scope was hidden despite an allowed project';
         }
-        if (BiAccessComponent::canAccess()) {
-            $failures[] = 'contextual BI access was shown for the denied active project';
+        if ($candidateScope->canAccessProject($deniedProjectId, $_SESSION)) {
+            $failures[] = 'denied active project was reported as accessible';
         }
         if ($candidateScope->resolve($allowedProjectId, $_SESSION) !== [$allowedProjectId]) {
             $failures[] = 'allowed BI project was blocked by denied active project';
