@@ -49,6 +49,17 @@ class BiViewController extends BaseController
      */
     private function renderView(string $reportKey, string $viewFile): void
     {
+        // El módulo está oculto mientras se desarrolla: solo Admin lo abre por URL.
+        // 404 y no 403, para no confirmar que la pantalla existe.
+        if (!\App\Security\BiPreviewAccessPolicy::canOpen($_SESSION)) {
+            \App\Core\ErrorPage::render(
+                404,
+                'Esta página no existe',
+                'La dirección que abriste no corresponde a ninguna pantalla del producto. Puede que el enlace esté viejo o mal copiado.'
+            );
+            exit;
+        }
+
         $this->requireAuth();
 
         $projectIdsRaw = $_GET['project_ids'] ?? $_GET['project_id'] ?? [];

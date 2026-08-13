@@ -29,6 +29,16 @@ class BiControlTowerApiController extends BaseController
         parent::__construct();
         $this->bi = new ControlTowerService();
         $this->projectScope = new BiProjectScope($this->db);
+
+        // Mismo gate que las vistas. ErrorPage devuelve JSON para las rutas /api/*.
+        if (!\App\Security\BiPreviewAccessPolicy::canOpen($_SESSION)) {
+            \App\Core\ErrorPage::render(
+                404,
+                'Esta página no existe',
+                'La dirección que abriste no corresponde a ninguna pantalla del producto.'
+            );
+            exit;
+        }
     }
 
     // -----------------------------------------------------------------
