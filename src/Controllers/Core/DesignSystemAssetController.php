@@ -25,6 +25,24 @@ final class DesignSystemAssetController
         'attach-handsontable' => '/css/design-system/entrypoints/attach-handsontable.css',
     ];
 
+    /**
+     * Rutas HTTP publicas que sirve este controlador, derivadas de ENTRYPOINTS.
+     *
+     * Es la unica fuente: `public/index.php` las enruta y `App\Core\MaintenanceMode` las exime
+     * del cartel de mantenimiento. Antes cada sitio llevaba su propia copia escrita a mano y se
+     * desincronizaron — las hojas de estilo quedaron fuera de la exencion y la pantalla de
+     * entrada se servia a medio estilizar. Ver tests/test_maintenance_asset_exemption.php.
+     *
+     * @return list<string>
+     */
+    public static function publicRoutePaths(): array
+    {
+        return array_map(
+            static fn (string $ruta): string => '/runtime' . $ruta,
+            array_values(self::ENTRYPOINTS),
+        );
+    }
+
     public function main(): void
     {
         $this->serve(self::ENTRYPOINTS['main']);

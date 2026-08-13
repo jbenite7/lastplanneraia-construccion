@@ -11,12 +11,25 @@ class MaintenanceMode
         return file_exists(PROJECT_ROOT . '/.maintenance');
     }
 
+    /**
+     * Rutas que se sirven aunque el mantenimiento este activo.
+     *
+     * Incluye los entrypoints CSS del design system: la ruta oculta sirve la pantalla de
+     * entrada, pero sus hojas de estilo son peticiones aparte y las que pasan por PHP caian en
+     * el cartel, devolviendo HTML con 503 donde el navegador esperaba CSS. Las rutas se piden a
+     * su dueño en vez de copiarse aqui, que es como se desincronizaron la primera vez.
+     */
     public static function isExemptRoute(string $uri): bool
     {
-        return in_array($uri, [
-            '/runtime/frontend-config.js',
-            self::SECRET_PATH,
-        ], true);
+        $exentas = array_merge(
+            [
+                '/runtime/frontend-config.js',
+                self::SECRET_PATH,
+            ],
+            \App\Controllers\Core\DesignSystemAssetController::publicRoutePaths(),
+        );
+
+        return in_array($uri, $exentas, true);
     }
 
     public static function renderPage(): void
