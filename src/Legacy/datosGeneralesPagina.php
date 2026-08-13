@@ -1,7 +1,6 @@
 <?php
 
 use App\Security\RbacCatalog;
-use App\Security\RbacService;
 
 session_start();
 require_once __DIR__ . "/conexion.php";
@@ -27,7 +26,9 @@ if ($projectId) {
 
 $permisoCodigo = $_SESSION['permiso'] ?? '';
 $rolHumano = RbacCatalog::getRoleName($permisoCodigo);
-$canAccessBi = (new RbacService($dbInstance))->can('lps.indicadores.ver');
+// Pasa por el mismo interruptor que la vista: si el módulo está oculto, el JSON que
+// consume el JS tiene que decir lo mismo que la barra lateral.
+$canAccessBi = \App\View\Components\BiAccessComponent::canAccess();
 
 // Re-leer el cargo de general_usuarios en cada request para que los cambios
 // hechos desde el Admin se reflejen sin necesidad de re-login.

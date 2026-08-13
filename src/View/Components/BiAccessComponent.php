@@ -2,9 +2,7 @@
 
 namespace App\View\Components;
 
-use App\Security\RbacService;
 use App\Support\BiProjectScope;
-use Database;
 
 class BiAccessComponent
 {
@@ -19,24 +17,24 @@ class BiAccessComponent
         'indicadores' => '/bi/curva-s',
     ];
 
+    /**
+     * El módulo BI está oculto de la navegación mientras se termina de desarrollar
+     * (spec del 2026-08-13). Devolver false apaga de una vez: barra lateral, selector
+     * de proyectos, tarjeta del cajón contextual, los cinco botones «BI …» de los
+     * módulos y los boot-configs de JS.
+     *
+     * Admin sigue entrando por URL directa: eso lo gobierna BiPreviewAccessPolicy,
+     * no este componente. Para revertir, restaurar el cuerpo original de ambos
+     * métodos, que está en el historial de git.
+     */
     public static function canAccess(?string $role = null): bool
     {
-        $db = Database::getInstance();
-        if ($role !== null) {
-            return (new RbacService($db))->can('lps.indicadores.ver', $role);
-        }
-
-        $scope = new BiProjectScope($db);
-        $projectId = (int) ($_SESSION['project_id'] ?? 0);
-
-        return $projectId > 0
-            ? $scope->canAccessProject($projectId, $_SESSION)
-            : $scope->hasAnyAccess($_SESSION);
+        return false;
     }
 
     public static function canAccessAny(): bool
     {
-        return (new BiProjectScope(Database::getInstance()))->hasAnyAccess($_SESSION);
+        return false;
     }
 
     public static function globalUrl(string $module = 'control-tower'): string
