@@ -72,7 +72,12 @@ $shellItem = static function (string $id, string $label, string $href, string $i
 };
 
 $shellInformacion = array_values(array_filter([
-    \App\View\Components\BiAccessComponent::canAccess()
+    // Igual que $shellHidden más arriba: nunca ocultar el módulo en el que el usuario ya
+    // está. BiAccessComponent::canAccess() es false mientras el módulo esté oculto de la
+    // navegación, pero dentro de /bi/* el sidebar necesita pintar su propio destino activo
+    // o revienta con "unknown active sidebar destination". No lo simplifiques a solo la
+    // primera condición.
+    (\App\View\Components\BiAccessComponent::canAccess() || $shellActive === 'control-tower')
         ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::url('control-tower'), 'icon' => 'chart']
         : null,
     ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
