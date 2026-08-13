@@ -27,12 +27,12 @@ async function expectBiLinkToNavigate(page, locator, target) {
   ]);
 }
 
-// SUSPENDIDA el 2026-08-13, no borrada: esta suite comprueba los seis botones «BI …» de
-// los módulos, y esos botones están ocultos a propósito mientras el Control Tower se
-// termina de desarrollar (docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
-// Su contenido sigue siendo el contrato correcto para cuando el módulo vuelva a la
-// navegación: quitar el `.skip` es toda la reversión que necesita.
-test.describe.skip(`Control Tower access points — ${project.name}`, () => {
+// Reactivada el 2026-08-13, el mismo día que se suspendió: el ocultamiento del Control
+// Tower pasó a mostrar los accesos a Admin, y esta suite entra con `test.A`
+// (tests/browser/fixtures/projects.mjs), que es Admin, así que su contrato vuelve a
+// valer tal cual. Ver docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md.
+// La suite de más abajo sigue suspendida porque comprueba roles que ya no entran.
+test.describe(`Control Tower access points — ${project.name}`, () => {
   test.afterEach(async ({ page }) => {
     await logout(page).catch(() => {});
   });
@@ -48,7 +48,14 @@ test.describe.skip(`Control Tower access points — ${project.name}`, () => {
     assertNoRuntimeErrors(errors);
   });
 
-  test('opens Control Tower from the main navigation and contextual drawer', async ({ page }) => {
+  // DEUDA PREVIA, no relacionada con el ocultamiento del Control Tower: este caso pincha
+  // `#informacionGeneral`, `ul.main-links` y `#informacionGeneralMenu`, que son el menú
+  // viejo. Ese marcado ya no existe en el producto —comprobado en el DOM el 2026-08-13:
+  // los tres selectores dan `false` y la navegación real es `[data-sidebar-item]`—, así
+  // que el caso lleva roto desde la migración al shell sidebar. Reescribirlo contra la
+  // navegación nueva es trabajo propio, con su plan; suspenderlo aquí solo evita que un
+  // rojo viejo se confunda con uno nuevo.
+  test.skip('opens Control Tower from the main navigation and contextual drawer', async ({ page }) => {
     const errors = installErrorCollectors(page);
     await loginAndSelectProject(page, project);
     await page.goto('/programa-general', { waitUntil: 'domcontentloaded' });
@@ -102,7 +109,13 @@ test.describe.skip(`Control Tower access points — ${project.name}`, () => {
   });
 
   for (const item of MODULE_ACCESS) {
-    test(`opens contextual BI view from ${item.path}`, async ({ page }) => {
+    // Misma deuda previa que el caso de arriba, en su otra cara: `/indicadores` nunca
+    // llegó a pintar un botón «BI Curva S» con `renderLink()` —su vista solo emite
+    // `renderBootConfig('indicadores')` (views/indicadores/indicadores.view.php:80)— y el
+    // enlace que este caso busca vivía en el menú viejo. Los otros cinco módulos sí
+    // tienen su `renderLink()` y se comprueban de verdad.
+    const ejecutar = item.path === '/indicadores' ? test.skip : test;
+    ejecutar(`opens contextual BI view from ${item.path}`, async ({ page }) => {
       const errors = installErrorCollectors(page);
       await loginAndSelectProject(page, project);
       await page.goto(item.path, { waitUntil: 'domcontentloaded' });

@@ -2,7 +2,10 @@
 
 namespace App\View\Components;
 
+use App\Security\BiPreviewAccessPolicy;
+use App\Security\RbacService;
 use App\Support\BiProjectScope;
+use Database;
 
 class BiAccessComponent
 {
@@ -20,22 +23,45 @@ class BiAccessComponent
     /**
      * El módulo BI está oculto de la navegación mientras se termina de desarrollar
      * (spec del 2026-08-13: docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
-     * Devolver false apaga de una vez: barra lateral, selector
-     * de proyectos, tarjeta del cajón contextual, los cinco botones «BI …» de los
-     * módulos y los boot-configs de JS.
+     * Sus accesos —barra lateral, selector de proyectos, tarjeta del cajón contextual,
+     * los cinco botones «BI …» y los boot-configs de JS— solo se pintan para quien
+     * además puede abrir el módulo, que hoy es únicamente Admin.
      *
-     * Admin sigue entrando por URL directa: eso lo gobierna BiPreviewAccessPolicy,
-     * no este componente. Para revertir, restaurar el cuerpo original de ambos
-     * métodos, que está en el historial de git.
+     * Corregido el 2026-08-13, mismo día: la primera versión devolvía `false` para
+     * todos, y dejaba al propio Admin teniendo que teclear la URL. Lo reportó el
+     * usuario al no ver los accesos en producción entrando como administrador.
+     *
+     * El gate va PRIMERO y el alcance por proyecto después: un Admin sin acceso al
+     * proyecto activo no debe ver un enlace que luego le rechazaría BiProjectScope.
+     * Para revertir el ocultamiento, quitar la llamada a BiPreviewAccessPolicy de
+     * ambos métodos; el resto del cuerpo es el original.
      */
     public static function canAccess(?string $role = null): bool
     {
-        return false;
+        if (!BiPreviewAccessPolicy::canOpen($_SESSION ?? [])) {
+            return false;
+        }
+
+        $db = Database::getInstance();
+        if ($role !== null) {
+            return (new RbacService($db))->can('lps.indicadores.ver', $role);
+        }
+
+        $scope = new BiProjectScope($db);
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+
+        return $projectId > 0
+            ? $scope->canAccessProject($projectId, $_SESSION)
+            : $scope->hasAnyAccess($_SESSION);
     }
 
     public static function canAccessAny(): bool
     {
-        return false;
+        if (!BiPreviewAccessPolicy::canOpen($_SESSION ?? [])) {
+            return false;
+        }
+
+        return (new BiProjectScope(Database::getInstance()))->hasAnyAccess($_SESSION);
     }
 
     public static function globalUrl(string $module = 'control-tower'): string

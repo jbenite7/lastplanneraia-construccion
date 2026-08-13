@@ -24,12 +24,22 @@ funcionando** por URL directa para quien lo está desarrollando.
 4. **Sin flag en `.env`.** Se descartó `BI_ENABLED` para no añadir otra llave de
    configuración no versionada que derive por máquina.
 
-## Los enlaces se ocultan para todos, incluido Admin
+## Los enlaces se ocultan para todos MENOS Admin
 
-Es deliberado y es lo que pidió el usuario: «ocultar los accesos desde el frontend, pero
-dejar el módulo habilitado». Admin entra tecleando `/bi/control-tower`, no desde la
-barra lateral. Así la interfaz queda igual de limpia para todos y no hay dos versiones de
-la navegación que mantener.
+**Corregido el 2026-08-13, el mismo día.** La primera versión ocultaba los accesos también
+a Admin, con este razonamiento: el usuario había pedido «ocultar los accesos desde el
+frontend, pero dejar el módulo habilitado», y se leyó como que los enlaces desaparecían
+para todos y él entraba tecleando la URL.
+
+No era eso. Lo reportó él mismo al entrar como administrador en producción y no ver los
+accesos: dio por hecho que su rol seguiría viéndolos, porque el ocultamiento era para que
+**el equipo** no tropezara con trabajo a medias, no para estorbarse a sí mismo. Desde la
+corrección, los accesos se pintan exactamente para quien puede abrir el módulo —hoy solo
+el rol `A`— y el resto del equipo sigue sin verlos ni poder entrar.
+
+La lección, para no repetirla: «ocultar del frontend» no dice **a quién**, y la respuesta
+por defecto —todos— era la que dejaba al propio solicitante fuera. Cuando la petición
+recorta visibilidad, hay que preguntar explícitamente si el que pide se incluye.
 
 ## Cambios
 
@@ -38,13 +48,20 @@ la navegación que mantener.
 | `src/Security/BiPreviewAccessPolicy.php` (nuevo) | Unidad única del gate. `canOpen(array $session): bool` resuelve el rol como hace `DesignSystemLabAccessPolicy::resolveRole()` (por usuario, no por el proyecto seleccionado) y responde a la nueva capacidad. |
 | `src/Security/RbacCatalog.php` | Constante `PERM_INTERNAL_BI_PREVIEW = 'internal.bi.preview'` + su fila en el catálogo de permisos (junto a la del design system, línea ~116). |
 | `src/Security/RbacManager.php:29` | La capacidad se concede con `$isSystemAdmin`, misma línea que `PERM_INTERNAL_DESIGN_SYSTEM_VIEW`. |
-| `src/View/Components/BiAccessComponent.php` | `canAccess()` y `canAccessAny()` devuelven `false` siempre. Con eso desaparecen: barra lateral (`shell_sidebar.php:76`), selector de proyectos (`project_selector.view.php:30,56`), tarjeta del cajón (`drawer_unificado.php:23`), los 5 botones «BI …» (`renderLink`) y los boot-configs JS (`renderBootConfig`). |
+| `src/View/Components/BiAccessComponent.php` | `canAccess()` y `canAccessAny()` exigen primero `BiPreviewAccessPolicy::canOpen()` y después mantienen su lógica original de alcance por proyecto. Con eso los accesos —barra lateral (`shell_sidebar.php:76`), selector de proyectos (`project_selector.view.php:30,56`), tarjeta del cajón (`drawer_unificado.php:23`), los 5 botones «BI …» (`renderLink`) y los boot-configs JS (`renderBootConfig`)— quedan solo para Admin. El gate va primero a propósito: un Admin sin acceso al proyecto activo no debe ver un enlace que luego le rechazaría `BiProjectScope`. |
 | `src/Controllers/Bi/BiViewController.php` | En `renderView()` —choke point de las 8 vistas `/bi/*`— si `BiPreviewAccessPolicy::canOpen($_SESSION)` es falso, responde 404 vía `ErrorPage::render()` y termina. 404 y no 403, como el laboratorio del design system: no confirma que la pantalla existe. |
 | `src/Controllers/Api/BiControlTowerApiController.php` | Mismo gate en el constructor, que es el punto común de las ~20 acciones. `ErrorPage` ya devuelve JSON para rutas `/api/*`. |
 | `src/Legacy/datosGeneralesPagina.php:30` | `canAccessBi` deja de calcularse con RBAC directo y pasa por `BiAccessComponent::canAccess()`, para que el JSON que consume el JS diga lo mismo que la vista. |
 | `tests/test_bi_preview_gate.php` (nuevo) | Test autónomo estilo `test_dev_door_guard.php`. Declara `// @requiere: db`: `RbacService::__construct()` llama a `Database::getInstance()` aunque `normalizeRole()` no consulte nada. |
 | `tests/test_bi_project_scope.php:119-127` | Dos comprobaciones afirman que el acceso global BI **se ve**; con el componente apagado dejan de distinguir nada. Se reescriben contra `BiProjectScope` directamente, que es el dueño del alcance y no cambia. |
-| `tests/browser/bi_control_tower_access.spec.mjs` | Suite dedicada a los seis botones «BI …». Se suspende con `test.describe.skip` y un comentario que apunta a este spec; quitar el `.skip` es toda la reversión. No se borra: su contenido sigue siendo el contrato correcto para después. |
+| `tests/browser/bi_control_tower_access.spec.mjs` | Se suspendió entera al ocultar los accesos y se **reactivó** con la corrección: entra con `test.A`, que es Admin, así que su contrato vuelve a valer. Quedan suspendidos el bloque `Control Tower RBAC entry point` (comprueba roles `D` y `R`, que ya no entran) y dos casos de **deuda previa** que apuntan al menú retirado. |
+
+**Deuda previa destapada, no causada, por este frente** (comprobado en el DOM el 2026-08-13):
+dos casos de esa suite dependen del menú viejo —`#informacionGeneral`, `ul.main-links`,
+`#informacionGeneralMenu`, que ya no existen en el producto— y uno de ellos espera un botón
+«BI Curva S» en `/indicadores` que esa vista nunca pintó (solo emite `renderBootConfig`).
+Llevan rotos desde la migración al shell sidebar. Reescribirlos contra la navegación actual
+es trabajo con plan propio.
 
 **Suites que NO hay que tocar** (comprobado): `bi_control_tower.spec.mjs`, `bi-kpi-copy.spec.mjs`
 y `shell-sidebar-rollout.mjs` entran con `test.A` (`tests/browser/fixtures/projects.mjs:16`),
