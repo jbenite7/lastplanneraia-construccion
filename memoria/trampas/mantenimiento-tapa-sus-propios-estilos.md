@@ -43,4 +43,10 @@ la comprobación**. Bajo el cartel todo devuelve 503, así que ese código no di
 donde esperabas `text/css` es el fallo, y sale a la vista con
 `curl -s -o /dev/null -w "%{http_code} %{content_type}"`, nunca con el código a secas.
 
+**Desplegado y confirmado en producción** el 2026-08-12 (`9ae7cb19`), con el cartel todavía puesto:
+las **cinco** hojas de la pantalla de entrada responden `200 text/css` —eran tres de cinco— y `/`,
+`/login`, `/plan-compras` y `/programacion-intermedia` siguen en `503`. La prueba corre también
+allí con PHP 8.3: 25/25. No hizo falta `composer install`, porque el cambio no trae clases nuevas
+y ambas ya estaban en el classmap.
+
 Ver [[produccion-deploy]] y [[el-archivo-que-tocas-puede-tener-un-contrato]].
