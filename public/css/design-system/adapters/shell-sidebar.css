@@ -321,6 +321,25 @@
     .shell-menu-velo[hidden] {
       display: none;
     }
+
+    /* El disparador vive fuera de .context-bar a proposito (ver
+       shell_sidebar.php): esa barra crea su propio contexto de apilamiento
+       (position:sticky + z-index), y un descendiente no puede escapar de el
+       subiendo su propio z-index -queda atrapado por debajo del contexto
+       padre pase lo que pase. Medido el 2026-08-14: con el boton dentro,
+       el velo lo tapaba y el segundo clic (para cerrar) nunca llegaba a
+       disparar. Sacarlo del subarbol y fijarlo con position:fixed en su
+       propio nivel es lo que permite superar al velo. */
+    .shell-menu-trigger {
+      position: fixed;
+      top: var(--ds-space-3);
+      left: var(--ds-space-3);
+      z-index: calc(var(--ds-z-shell-overlay) + 1);
+    }
+
+    .shell-menu-trigger[hidden] {
+      display: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

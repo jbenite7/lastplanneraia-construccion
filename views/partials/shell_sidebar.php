@@ -12,6 +12,10 @@
  * La vista consumidora debe además: añadir la clase `aia-shell--sidebar` al body,
  * definir `window.__AIA_SHELL_SIDEBAR__ = true` antes de cargarDatosGeneralesPagina2.js
  * y cargar /js/modules/aia_ui/sidebar_navigation.js.
+ *
+ * El menú flotante bajo 1180px (spec 2026-08-14) se carga aquí, en el propio
+ * partial, en vez de en cada una de las 16 vistas: es un único punto y evita
+ * repetir el bloque de versión en cada una.
  */
 
 $shellActive = $shellActive ?? '';
@@ -138,13 +142,14 @@ $shellGroups = array_values(array_filter([
 ]) ?>
 </div>
 
+<button type="button" class="aia-btn aia-btn--secondary shell-menu-trigger" id="shellMenuTrigger"
+  aria-controls="app-shell" aria-expanded="false" aria-label="Abrir menú de navegación" hidden>
+  <i class="fas fa-bars" aria-hidden="true"></i><span>Menú</span>
+</button>
 <div class="shell-menu-velo" id="shellMenuVelo" hidden></div>
+<?= \App\View\Components\DesignSystemHeadComponent::renderModuleScript('/js/modules/aia_ui/shell-drawer.js') ?>
 
 <div class="context-bar" id="shellContextBar">
-  <button type="button" class="aia-btn aia-btn--secondary shell-menu-trigger" id="shellMenuTrigger"
-    aria-controls="app-shell" aria-expanded="false" aria-label="Abrir menú de navegación" hidden>
-    <i class="fas fa-bars" aria-hidden="true"></i><span>Menú</span>
-  </button>
   <span id="ctxProyecto"><?= htmlspecialchars($shellProyecto, ENT_QUOTES, 'UTF-8') ?></span>
   <span aria-hidden="true">/</span>
   <span id="ctxModulo"><?= htmlspecialchars($shellModuleLabel, ENT_QUOTES, 'UTF-8') ?></span>
