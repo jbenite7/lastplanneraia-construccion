@@ -343,6 +343,8 @@
     $piRulesVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/enablement-rules.js') ?: 'rules1';
     ?>
     <script type="module" src="/js/modules/aia_ui/enablement-rules.js?v=<?php echo urlencode((string) $piRulesVersion); ?>"></script>
+    <?php $piViewSwitchVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/view-switch.js') ?: 'vs1'; ?>
+    <script type="module" src="/js/modules/aia_ui/view-switch.js?v=<?php echo urlencode((string) $piViewSwitchVersion); ?>"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>
     <script src="/js/modules/programacion_intermedia/hot.js?v=<?php echo urlencode((string) $piHotVersion); ?>"></script>
 

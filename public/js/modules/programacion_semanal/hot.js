@@ -2330,8 +2330,13 @@
   function saveRow(visualRow, prop, oldValue, overrides, saveContext) {
     var db = getDb();
     var isMobileSave = Boolean(saveContext && saveContext.mobile);
-    var physicalRow = hot.toPhysicalRow(visualRow);
-    var row = hot.getSourceDataAtRow(physicalRow);
+    // Sin grilla montada (E4), `visualRow` es el indice dentro de
+    // getFilteredRows() que ya uso renderMobileCards() para pintar esa card:
+    // es la misma fuente, sin una segunda verdad. `hot.toPhysicalRow` no
+    // aplica sin instancia, y no hace falta: no hay filtro propio de HOT que
+    // reordene nada bajo el umbral.
+    var physicalRow = hot ? hot.toPhysicalRow(visualRow) : null;
+    var row = hot ? hot.getSourceDataAtRow(physicalRow) : getFilteredRows()[visualRow];
     var syncHotProp = function (targetProp, value) {
       if (!isMobileSave) {
         hot.setDataAtRowProp(visualRow, targetProp, value, 'internal-update');
@@ -3049,7 +3054,10 @@
   // que anaden actividades — cuando la unica salida que recupera el dato es
   // quitar el filtro.
   function syncEmptyState() {
-    if (!_htEmptyState) { return; }
+    // Sin grilla montada (bajo el umbral, E4) no hay `hot.rootElement` donde
+    // anclar el panel de vacio de Handsontable. El vacio de las cards ya lo
+    // resuelve renderMobileCards() con su propio `.ps-mobile-empty`.
+    if (!_htEmptyState || !hot) { return; }
     if (weeklyAlertFilters.length > 0) {
       _htEmptyState(hot, {
         titulo: 'Ninguna actividad coincide con el filtro',
@@ -3072,7 +3080,13 @@
     // la unica salida era volver a pulsar el mismo chip. Que un filtro este
     // activo ya lo dicen `inactive-filter` y `aria-pressed`.
     updateLegendCounts(masterData);
-    updateOrInitHot(filtered);
+    // E4 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md): bajo el
+    // umbral no se instancia Handsontable. `hot` queda null/undefined y el
+    // resto del modulo (saveRow, commitMobileCardValue, syncEmptyState) sabe
+    // degradar a masterData/getFilteredRows en vez de asumir que existe.
+    if (!window.AIAViewSwitch || window.AIAViewSwitch.shouldRenderCards(window.innerWidth) !== true) {
+      updateOrInitHot(filtered);
+    }
     renderMobileCards(filtered);
     syncEmptyState();
 
@@ -3466,8 +3480,13 @@
   }
 
   function commitMobileCardValue(rowIndex, prop, value) {
-    if (!hot || !Number.isInteger(rowIndex) || !prop) { return; }
-    var row = getSourceRowDataByVisualRow(hot, rowIndex) || {};
+    // Antes de E4 esta funcion bailaba si `hot` no existia. Bajo el umbral
+    // hot es null a proposito (no se monta), y la card debe seguir
+    // guardando: getFilteredRows() es la misma fuente que alimenta las
+    // cards, y sin HOT no hay un `visualRow` propio de la grilla que
+    // reindexe nada.
+    if (!Number.isInteger(rowIndex) || !prop) { return; }
+    var row = (hot ? getSourceRowDataByVisualRow(hot, rowIndex) : getFilteredRows()[rowIndex]) || {};
     if (prop === 'Ejecutado_Real'
         && (isBlank(row.Sub_Contratista) || isBlank(row.Responsable_AIA))) {
       var assigneeMessage = 'Falta Sub-Contratista o Responsable AIA para registrar avance';
