@@ -3,11 +3,11 @@
   "result": "passed",
   "command": "docker compose exec app php tests/test_global_table_safety.php",
   "exitCode": 0,
-  "measuredAt": "2026-08-11T17:08:39.286Z",
-  "durationMs": 1811,
+  "measuredAt": "2026-08-14T15:31:42.478Z",
+  "durationMs": 340,
   "tree": {
-    "sha": "943d8ea5d3eedd21b4aecfdca68746eea6454e46",
-    "dirty": true
+    "sha": "8a0d5e466458e8f0724ab67c3d7d145be37882bb",
+    "dirty": false
   },
   "outputTail": "=== Global Table Safety: OK ===\nNo hay TRUNCATE ni CREATE runtime inseguro sobre tablas globales.\nINSERT SELECT global conserva project_id e IDs por proyecto."
 }
