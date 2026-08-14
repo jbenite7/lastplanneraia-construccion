@@ -35,7 +35,13 @@ foreach ($users as [$username, $name, $email, $cargo, $role]) {
     // listado de proyectos pasó a filtrar por `project_members` la tarjeta desapareció y una
     // docena de casos empezó a morir en «Project card not found: Prueba». No es un proyecto
     // nuevo: es el dato real al que ya apuntaban los fixtures.
-    $projectIds = $username === 'test.A' ? [27, 73, 75, 76] : [27, 73, 75];
+    // 68 «Optimización Aeropuerto JMC» es el otro banco de pruebas de la suite de navegador:
+    // siete specs lo nombran por su fixture `jmc` (tests/browser/fixtures/projects.mjs) porque es
+    // el proyecto sembrado que llega hasta la semana 6, y esas fases avanzadas son justo lo que
+    // miden — calificación, semana confirmada, histórico. Le pasó lo mismo que al 27: nunca se
+    // sembró la membresía, así que desde que el listado filtra por `project_members` la tarjeta
+    // no existe y los casos mueren en «Project card not found: Optimización Aeropuerto JMC».
+    $projectIds = $username === 'test.A' ? [27, 68, 73, 75, 76] : [27, 68, 73, 75];
     foreach ($projectIds as $projectId) {
         $exists = (int) $db->query('SELECT COUNT(*) FROM general_proyectos_procesos WHERE Id = ?', [$projectId])->fetchColumn();
         if ($exists !== 1) {
