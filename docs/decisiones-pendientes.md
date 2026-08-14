@@ -1256,8 +1256,47 @@ decía**:
 filas que afirman fases falsas, es **peor que no tenerlo** — un mapa vacío se nota; uno que miente
 con seguridad se cita.
 
+**Re-medido el 2026-08-14 sobre `ef49b6a0` (base al día, verificada contra `origin/main`), y esta
+vez con la causa raíz localizada.** Lo primero es que **los dos ejemplos concretos que esta ficha
+citaba están arreglados**: `ci-en-verde` ya sale `CERRADA 5 de 5` y `gates-al-ci` sale `PUBLICADA
+6 de 7`, no `ENCOLADA` ni `ENTREGADA 3 de 8`. El script se ha trabajado desde entonces y eso se
+nota. Pero el defecto de fondo sigue, y ya no hay que buscarlo:
+
+- `cas-estado.sh` sigue devolviendo **RC=0**. Hoy lista **42** filas: **4** con dato real y **38**
+  con «sin rama resoluble · ❓ no medible».
+- De esas 38, **20 corresponden a metas que la wiki declara cerradas** (`memoria/goals/estado.md`)
+  y salen pintadas **`ENCOLADA`** — la etiqueta que el propio script define como «hay contrato y
+  ninguna sesión lo está trabajando», es decir, lo contrario de lo que pasó.
+- **La causa, en una línea:** `cas_cierre()` decide el cierre con
+  `cas_tiene_seccion "$g" '## Cierre'`, y esa función compara con **igualdad exacta** (`$0 == s`,
+  `scripts/lib.sh`). Este repo escribe el encabezado con sufijo: **19** metas ponen
+  `## Cierre formal`, una `## Cierre formal (2026-08-07)` y solo **2** el literal `## Cierre`.
+- **La correlación cierra el caso, y es completa:** esas **2** metas con el encabezado literal
+  —`ci-en-verde` y `css-presupuesto-57kb`— son **exactamente las 2** que el mapa pinta `CERRADA`.
+  No es una interpretación: es 2 de 2.
+- **Por qué falla aquí y no allá:** en el repo del propio plugin, **24 de 24** metas usan el literal
+  exacto. El instrumento está validado solo contra su propia casa, y en cuanto lo miran los goals de
+  otro repo con otra costumbre de encabezado, deja de ver los cierres sin decir que dejó de verlos.
+- **Comprobado en aislado, sin tocar el otro repo:** cambiar la igualdad por un prefijo lleva la
+  detección de cierres de **2 a 22** metas. Quedarían 18 filas sin dato —metas sin sección de cierre
+  y sin rama—, y eso es correcto; lo que no es correcto es que salgan en verde.
+
+- **Recomendación, actualizada y con orden:** **(b) primero, (a) después.** El código de salida va
+  delante a propósito: mientras el script devuelva `RC=0` sin poder medir, **cualquier arreglo
+  posterior seguirá siendo indistinguible de un fallo silencioso**, incluido el del prefijo. **(c)
+  se descarta**: no es inapplicable aquí, es una comparación demasiado estricta, y ya está ubicada.
+- **Lo que se recomienda NO hacer:** normalizar los 20 encabezados de este repo para que el script
+  los vea. Sería doblar 20 archivos fuente ante la rigidez de un instrumento, y `cas-estado.sh`
+  lleva escrito en un comentario que una meta cerrada jamás debe pintarse como encolada — la
+  corrección le toca a quien mide, no a lo medido.
+- **De quién es, otra vez:** los dos arreglos viven en `coordinating-agent-sessions`. Desde aquí no
+  se toca; el hallazgo queda preparado para el traspaso en
+  `docs/reportes/2026-08-14-hallazgo-cas-estado-encabezado-cierre.md`. Comprobado que allá **no está
+  registrado**: ni `decisiones/` ni los `goals/` mencionan el problema de la variante del encabezado.
+
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
-- **Estado:** `abierta`
+- **Estado:** `abierta` — con la causa raíz ya medida; lo que falta es tu sí/no a (b)+(a) y que
+  alguien lo lleve al otro repo.
 
 ### D-GAC-4 · El gate `runtime` tiene un recibo verde que solo vale en la máquina que lo midió
 
