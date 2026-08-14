@@ -392,40 +392,47 @@
     return numeric.toFixed(1);
   }
 
-  function isUserAllowedToEdit() {
-    var permiso = getPermiso();
-    var semana = parseInt(getSemana(), 10);
-    var maxSemana = getMaxSemana();
+  // El modulo de reglas se carga con `type="module"`, que es diferido: se ejecuta
+  // DESPUES que este archivo, que es un script clasico. Hoy no hay ninguna
+  // llamada a las reglas antes de `$(document).ready` —cells() corre al montar la
+  // grilla— asi que el orden real es correcto. Pero si el modulo no llegara a
+  // cargar (404, red, error de sintaxis), sin este guard cada celda lanzaria una
+  // excepcion.
+  //
+  // El fallback deniega: solo lectura y sin acciones de barra. Es la misma
+  // decision que ya toma el servidor en LpsWeekEditPolicy cuando no puede
+  // resolver el proyecto — un candado que no sabe, cierra. Degrada a una vista
+  // inerte y visible en vez de a un error por celda.
+  var REGLAS_DENEGADAS = {
+    isUserAllowedToEdit: function () { return false; },
+    canManageToolbarActions: function () { return false; },
+    isPropReadOnly: function () { return true; },
+  };
 
-    if (Number.isFinite(semana) && Number.isFinite(maxSemana) && (maxSemana - 2) >= semana) {
-      return isDirectorRole(permiso);
+  function reglasActuales() {
+    var fabrica = window.AIAEnablementRules && window.AIAEnablementRules.crearReglasSemanal;
+    if (typeof fabrica !== 'function') {
+      return REGLAS_DENEGADAS;
     }
 
-    return isSemanalEditorRole(permiso);
+    return fabrica({
+      permiso: getPermiso(),
+      semana: getSemana(),
+      maxSemana: getMaxSemana(),
+      semanalConfirmada: getSemanalConfirmada(),
+    });
+  }
+
+  function isUserAllowedToEdit() {
+    return reglasActuales().isUserAllowedToEdit();
   }
 
   function canManageToolbarActions() {
-    return isUserAllowedToEdit();
+    return reglasActuales().canManageToolbarActions();
   }
 
   function isPropReadOnly(prop) {
-    if (!editableProps[prop]) {
-      return true;
-    }
-
-    if (prop === 'Ejecutado_Real') {
-      return getSemanalConfirmada() !== 1 || !isSemanalEditorRole(getPermiso());
-    }
-
-    if (!isUserAllowedToEdit()) {
-      return true;
-    }
-
-    if ((prop === 'Compromiso' || prop === 'Sub_Contratista' || prop === 'Responsable_AIA') && getSemanalConfirmada() === 1) {
-      return true;
-    }
-
-    return false;
+    return reglasActuales().isPropReadOnly(prop);
   }
 
   function showLoading(show) {
