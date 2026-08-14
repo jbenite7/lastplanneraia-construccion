@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { runSql } from './support/dbSnapshot.mjs';
+import { assertE2EMutationConsent } from './support/restoration.mjs';
 import { changeWeek, login, loginAndSelectProject, selectProject } from './support/session.mjs';
 
 const DA_PORTO = { name: 'Da Porto', dbPrefix: 'da_porto' };
@@ -12,6 +13,37 @@ const ROLE_CASES = [
   { code: 'R', username: 'test.R', canView: true, canEdit: true },
   { code: 'C', username: 'test.C', canView: false, canEdit: false },
 ];
+
+// Las cuatro pruebas que escriben en la base pasan por `runSql`, y `runSql` exige el stack
+// aislado de CI: `dbSnapshot.mjs` enruta cada comando por `isolatedComposeArgs`, que llama a
+// `assertIsolatedComposeEnvironment` y revienta si `COMPOSE_PROJECT_NAME` no empieza por
+// `lps-aia-design-system-ci-`. Ese candado NO se relaja: existe para que un e2e no escriba
+// sobre la base de desarrollo compartida. Fuera de ese entorno las cuatro se saltan con motivo
+// en vez de fallar, que es lo único honesto que se puede hacer sin tocar el candado.
+//
+// OJO, deuda medida el 2026-08-13 y que este `skip` no resuelve: el fixture versionado del
+// stack aislado (`database/fixtures/design-system-ci.sql`) tampoco alcanza para estas cuatro —
+// del proyecto 68 siembra UNA semana (la 5) sin confirmar, y el proyecto 27 no existe allí—,
+// así que hoy no hay ningún entorno donde puedan correr: el de desarrollo tiene el dato y no
+// el permiso, y el aislado tiene el permiso y no el dato. Cerrar el hueco es ampliar el
+// fixture (semana confirmada + semana histórica para 68, y una semana confirmada con CNP), y
+// eso es trabajo con plan propio porque el fixture es contrato versionado. Mientras tanto, la
+// composición de `LpsWeekEditPolicy` que cubría el caso de :316 sí está cubierta en puro por
+// `tests/test_lps_week_edit_policy.php` (c9f602e4), así que la regla no queda sin prueba.
+const MUTACION_HABILITADA = (() => {
+  try {
+    assertE2EMutationConsent(process.env);
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
+const MOTIVO_SIN_ENTORNO_AISLADO = 'Escribe en la base: exige el stack aislado de CI '
+  + '(COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-*, COMPOSE_FILE=docker-compose.yml:'
+  + 'docker-compose.ci.yml, E2E_REQUIRE_ISOLATED_DB=1, E2E_ALLOW_DB_MUTATION=design-system-ci). '
+  + 'Ver el comentario de MUTACION_HABILITADA: el fixture de ese stack todavía no trae el dato '
+  + 'que estas pruebas necesitan.';
 
 function sqlValue(value) {
   if (value === null || value === undefined) return 'NULL';
@@ -124,6 +156,49 @@ async function resolveQualificationWeek(page) {
   throw new Error(`Ninguna semana de ${JMC.name} está en fase de calificación (Max_Semana=${maxWeek})`);
 }
 
+// La fila tampoco se fija por nombre. Atarla a 'Movilización general' o 'Descapote' era la
+// misma pudrición que el comentario de `resolveMaxWeek` dice haber evitado para la semana, un
+// nivel más abajo: medido el 2026-08-13, esos dos nombres solo existen en las semanas 1-4, 10 y
+// 11 del proyecto sembrado, así que en cuanto la semana resuelta fue otra (Max_Semana=11 →
+// histórica 9, calificación 10) el `find` devolvió `undefined`. Se elige por la PRECONDICIÓN
+// que cada caso necesita, y si ninguna fila la cumple la prueba falla diciendo cuál falta —
+// nunca se salta por dato ausente, que sería tapar una regresión.
+function tieneResponsables(row) {
+  return String(row.Sub_Contratista || '').trim() !== ''
+    && String(row.Responsable_AIA || '').trim() !== '';
+}
+
+// «Compromiso confirmado»: fila con responsables y con un compromiso mayor que cero. Es la
+// precondición de los tres casos de API, porque sin compromiso el servidor rechazaría por otro
+// motivo y el 422/409 que se mide dejaría de probar lo que dice probar.
+function esCompromisoConfirmado(row) {
+  return tieneResponsables(row) && Number(row.Compromiso) > 0;
+}
+
+async function pickWeeklyRow(page, week, predicate, precondicion) {
+  const rows = await weeklyRows(page, week);
+  const row = rows.find(predicate);
+  expect(
+    row,
+    `Ninguna fila de la semana ${week} de ${JMC.name} cumple la precondición: ${precondicion}`,
+  ).toBeTruthy();
+  return row;
+}
+
+// Semana confirmada del proyecto abierto, derivada igual que la de calificación: se recorre
+// desde `Max_Semana` hacia atrás leyendo el `#Semanal_Confirmada` que ya emite la vista. Antes
+// estaba fija en 4 para el proyecto «Prueba», que hoy solo tiene las semanas 1 y 2 — la prueba
+// ni llegaba a la aserción: se caía en `changeWeek` esperando `#semana_PHP` con valor 4.
+async function resolveConfirmedWeek(page) {
+  const maxWeek = await resolveMaxWeek(page);
+  for (let week = maxWeek; week >= 1; week -= 1) {
+    await changeWeek(page, week, '/programacion-semanal');
+    await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+    if (await page.locator('#Semanal_Confirmada').inputValue() === '1') return week;
+  }
+  throw new Error(`Ninguna semana del proyecto abierto está confirmada (Max_Semana=${maxWeek})`);
+}
+
 async function openJmcQualification(page, week) {
   await page.setViewportSize({ width: 390, height: 844 });
   await loginAndSelectProject(page, JMC);
@@ -150,6 +225,26 @@ async function openProgrammingWeek(
     'Fase: Programación de Compromisos',
   );
   return targetWeek;
+}
+
+// Bootstrap 4.3.1 ignora el cierre mientras la apertura sigue en transición: `Modal.prototype.hide`
+// sale sin hacer nada si `_isTransitioning` es verdadero. Y `toBeVisible()` pasa en cuanto el
+// modal se pinta, antes de que termine el fundido, así que el clic en Cancelar/Cerrar se perdía y
+// el modal quedaba abierto. Eso —no un cambio del producto— es el intermitente medido el
+// 2026-08-13: el mismo caso de calificación salió verde y rojo en corridas seguidas sin tocar
+// nada. Se espera a que Bootstrap declare terminada la transición y solo entonces se cierra.
+async function dismissModal(page, modal, dismiss) {
+  const modalId = await modal.getAttribute('id');
+  await page.waitForFunction(
+    (id) => {
+      const data = window.jQuery(`#${id}`).data('bs.modal');
+      return Boolean(data) && data._isTransitioning !== true;
+    },
+    modalId,
+    { timeout: 15000 },
+  );
+  await dismiss();
+  await expect(modal).toBeHidden();
 }
 
 async function expectSectionDropdown(page) {
@@ -237,14 +332,25 @@ test.describe('Programación Semanal: permisos por rol', () => {
 });
 
 test('avance móvil y API rechazan una actividad sin responsables', async ({ page }) => {
+  test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
   const week = await openJmcQualification(page);
-  const original = (await weeklyRows(page, week)).find((row) => String(row.Actividad).includes('Descapote'));
-  expect(original).toBeTruthy();
+  // Precondición: la fila tiene responsables (los que la prueba va a quitar) y compromiso, para
+  // que la tarjeta móvil ofrezca el campo de avance real.
+  const original = await pickWeeklyRow(
+    page, week, esCompromisoConfirmado, 'responsables y compromiso > 0',
+  );
   try {
     runSql(`UPDATE programacion_semanal SET Sub_Contratista=NULL, Responsable_AIA=NULL WHERE project_id=${JMC.projectId} AND row_id=${Number(original.Consecutivo)};`);
     await page.reload();
     await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
-    const card = page.locator('article.ps-mobile-card').filter({ hasText: 'Descapote' });
+    // La tarjeta se localiza por el identificador que imprime `renderMobileCard`
+    // (`.ps-mobile-id` = Id o Consecutivo), no por el nombre de la actividad: dos filas pueden
+    // compartir nombre y el filtro por texto devolvería dos tarjetas.
+    const card = page.locator('article.ps-mobile-card').filter({
+      has: page.locator('.ps-mobile-id', {
+        hasText: new RegExp(`^${String(original.Id || original.Consecutivo)}$`),
+      }),
+    });
     let requests = 0;
     page.on('request', (request) => { if (request.url().includes('/api/semanal/save')) requests += 1; });
     await card.locator('input[data-mobile-prop="Ejecutado_Real"]').fill('61');
@@ -262,10 +368,11 @@ test('avance móvil y API rechazan una actividad sin responsables', async ({ pag
 });
 
 test('API semanal rechaza fase, CNC incompleta y semana suplantada', async ({ page }) => {
+  test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
   const week = await openJmcQualification(page);
-  const original = (await weeklyRows(page, week))
-    .find((row) => String(row.Actividad).includes('Movilización general'));
-  expect(original).toBeTruthy();
+  const original = await pickWeeklyRow(
+    page, week, esCompromisoConfirmado, 'responsables y compromiso > 0',
+  );
   try {
     const cnc = await postWeeklyUpdate(page, original, week, { Real: '39', Categoria_CNC: '', CNC: '', Observaciones_CNC: '' });
     expect(cnc.status()).toBe(422);
@@ -314,6 +421,7 @@ test('API semanal rechaza un proyecto distinto al seleccionado', async ({ page }
 });
 
 test('rol R histórico solo puede calificar el compromiso confirmado', async ({ page }) => {
+  test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
   await page.setViewportSize({ width: 390, height: 844 });
   await loginAndSelectProject(page, JMC);
   // Esta prueba SÍ quiere una semana histórica (a diferencia de las que comparten
@@ -326,9 +434,9 @@ test('rol R histórico solo puede calificar el compromiso confirmado', async ({ 
     'Fase: Calificación de Compromisos',
   );
 
-  const original = (await weeklyRows(page, historicalWeek))
-    .find((row) => String(row.Actividad).includes('Movilización general'));
-  expect(original).toBeTruthy();
+  const original = await pickWeeklyRow(
+    page, historicalWeek, esCompromisoConfirmado, 'responsables y compromiso > 0',
+  );
   try {
     const qualification = await postWeeklyUpdate(page, original, historicalWeek);
     expect(qualification.status()).toBe(200);
@@ -360,19 +468,21 @@ test('rol R histórico solo puede calificar el compromiso confirmado', async ({ 
 });
 
 test('API CNP no reprograma una semana confirmada', async ({ page }) => {
+  test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
   await loginAndSelectProject(page, PRUEBA);
-  await changeWeek(page, 4, '/programacion-semanal/cnp');
+  const week = await resolveConfirmedWeek(page);
+  await changeWeek(page, week, '/programacion-semanal/cnp');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
-  const original = (await cnpRows(page, 4))[0];
-  expect(original).toBeTruthy();
+  const original = (await cnpRows(page, week))[0];
+  expect(original, `La semana confirmada ${week} de ${PRUEBA.name} no tiene filas CNP`).toBeTruthy();
   try {
     const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const response = await page.request.post('/api/cnp/reprogramar', { form: {
-      Id: String(original.Consecutivo), semana: '4', _csrf_token: csrf || '',
+      Id: String(original.Consecutivo), semana: String(week), _csrf_token: csrf || '',
     } });
     expect(response.status()).toBe(409);
     expect((await response.json()).respuesta).toBe('ERROR');
-    const after = (await cnpRows(page, 4))
+    const after = (await cnpRows(page, week))
       .find((row) => String(row.Consecutivo) === String(original.Consecutivo));
     expect(after).toBeTruthy();
   } finally {
@@ -405,8 +515,12 @@ test('semana sin actividades no fabrica filas ni tarjetas', async ({ page }) => 
 
 test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) => {
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
+  // `.btn-pdc-modern` ya no existe en esta toolbar: la migración al design system la cambió por
+  // `.aia-btn` el 2026-08-01 (ed9ca6db, «impeccable polish on programacion semanal»), y desde
+  // entonces el selector no encontraba nada y `labels.length` era 0. Era pudrición del test, no
+  // una regresión del producto: los botones siguen ahí, visibles y con texto.
   const state = await page.evaluate(() => {
-    const visible = [...document.querySelectorAll('.ps-hot-toolbar-actions .btn-pdc-modern')]
+    const visible = [...document.querySelectorAll('.ps-hot-toolbar-actions .aia-btn')]
       .filter((button) => getComputedStyle(button).display !== 'none');
     return {
       labels: visible.map((button) => button.innerText.trim()),
@@ -422,7 +536,7 @@ test('tabla semanal tablet usa superficies dark cuando el tema es dark', async (
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
   await expect.poll(() => page.evaluate(() => [
     '#hot-container', '.ps-hot-toolbar-shell',
-    '.ps-hot-toolbar-actions .btn-pdc-modern',
+    '.ps-hot-toolbar-actions .aia-btn',
     '.ps-toolbar-right .btn-filter-toggle',
     '#hot-container .handsontable thead th',
   ].every((selector) => {
@@ -436,6 +550,12 @@ test('filtro sin resultados conserva dropdown y modales operables', async ({ pag
   await openProgrammingWeek(page, ROLE_CASES[0]);
   await expectSectionDropdown(page);
 
+  // La leyenda se movió al menú de desbordamiento «Mas» el 2026-08-03 (f61f9661), igual que
+  // Imprimir y Exportar: hay que abrirlo antes de tocarla. El caso de calificación (más abajo)
+  // ya lo hacía; este se quedó clicando un botón invisible y agotaba el timeout.
+  const moreMenu = page.locator('.ps-hot-overflow-nav');
+  await moreMenu.locator('.btn-dropdown-trigger').click();
+  await expect(moreMenu).toHaveClass(/is-open/);
   await page.locator('.leyenda_colores').click();
   const legendModal = page.locator('#modal_leyenda_colores_ps');
   await expect(legendModal).toBeVisible();
@@ -445,8 +565,9 @@ test('filtro sin resultados conserva dropdown y modales operables', async ({ pag
   await expect(legendModal.locator('.modal-body')).toContainText(
     'Defina compromisos viables',
   );
-  await legendModal.locator('button[aria-label="Cerrar"]').click();
-  await expect(legendModal).toBeHidden();
+  await dismissModal(page, legendModal, () => (
+    legendModal.locator('button[aria-label="Cerrar"]').click()
+  ));
 
   let saveRequests = 0;
   page.on('request', (request) => {
@@ -456,8 +577,9 @@ test('filtro sin resultados conserva dropdown y modales operables', async ({ pag
   const closeModal = page.locator('#modal_cerrar_compromisos');
   await expect(closeModal).toBeVisible();
   await expect(closeModal.locator('.modal-title')).toContainText('Cierre de Compromisos');
-  await closeModal.locator('#btn_cancelar_compromisos_semana').click();
-  await expect(closeModal).toBeHidden();
+  await dismissModal(page, closeModal, () => (
+    closeModal.locator('#btn_cancelar_compromisos_semana').click()
+  ));
   expect(saveRequests).toBe(0);
 
   const legendItems = page.locator('#psAlertsLegend .pdc-legend-item');
@@ -526,22 +648,25 @@ test('calificación expone controles y modales sin escribir datos', async ({ pag
   await expect(legendModal.locator('.modal-body')).toContainText(
     'Cierre incumplidas con CNC',
   );
-  await legendModal.locator('button[aria-label="Cerrar"]').click();
-  await expect(legendModal).toBeHidden();
+  await dismissModal(page, legendModal, () => (
+    legendModal.locator('button[aria-label="Cerrar"]').click()
+  ));
 
   await page.locator('#btn_reabrir_semana').click();
   const reopenModal = page.locator('#modal_reabrir_semana');
   await expect(reopenModal).toBeVisible();
   await expect(reopenModal.locator('#btn_confirmar_reabrir')).toBeDisabled();
-  await reopenModal.getByRole('button', { name: 'Cancelar' }).click();
-  await expect(reopenModal).toBeHidden();
+  await dismissModal(page, reopenModal, () => (
+    reopenModal.getByRole('button', { name: 'Cancelar' }).click()
+  ));
 
   await page.locator('#btn_tnp').click();
   const tnpModal = page.locator('#modal_tnp');
   await expect(tnpModal).toBeVisible();
   await expect(tnpModal.locator('#tnp_actividad_select')).toBeAttached();
   expect(await tnpModal.locator('#tnp_categoria_cp option').count()).toBeGreaterThan(1);
-  await tnpModal.getByRole('button', { name: 'Cerrar' }).click();
-  await expect(tnpModal).toBeHidden();
+  await dismissModal(page, tnpModal, () => (
+    tnpModal.getByRole('button', { name: 'Cerrar' }).click()
+  ));
   expect(saveRequests).toBe(0);
 });

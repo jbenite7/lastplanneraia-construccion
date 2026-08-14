@@ -81,6 +81,13 @@ const ALL_PROJECTS = [
     projectId: 68,
     dbPrefix: 'optimizacionJMC',
     area: 'Construccion',
+    // `maxWeek` de este proyecto es un dato muerto y desactualizado, y se deja anotado en vez de
+    // corregido: hoy nadie lo lee (el único consumidor es `programa-general-state-hue.mjs`, y usa
+    // `PROJECTS[0].maxWeek`, que es Da Porto), y el número no coincide con ninguno de los dos
+    // entornos — la base de desarrollo va por 11 y el fixture aislado de CI siembra la semana 5.
+    // Ponerle otro literal solo cambiaría la fecha en que vuelve a quedar viejo: la semana se
+    // deriva del `#Max_Semana` que emite la vista (ver `resolveMaxWeek` en
+    // `programacion-semanal-roles-phases.mjs`). Medido el 2026-08-13.
     maxWeek: 6,
     operationalWeek: 5,
     purchasingWeek: 5,
