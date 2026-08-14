@@ -134,6 +134,8 @@ que el método funciona.
 
 | **Migrar el laboratorio de diseño a `shell-drawer.js`.** `design_system_lab.js` tiene su propia implementación de menú flotante (`data-shell-drawer-toggle`/`data-shell-drawer-panel`, umbral 1200px) que hoy convive con la pieza canónica del shell (`shell-drawer.js`, umbral 1180px). Decisión D4 de la spec del menú flotante: no se tocó al construir la pieza porque el laboratorio está cubierto por gates visuales y de accesibilidad que hoy están verdes, y el riesgo de romperlos no se justificaba dentro de ese plan | D4 (spec 2026-08-14-shell-menu-flotante-responsive-design) | 5 | 8 | 5 | 200 | — | abierto · sin dueño asignado |
 
+| **`programacion-semanal.json` declara dos goldens de escritorio que ningún test captura ni compara.** El manifiesto lista `programacion-semanal-dark-1180x820.png` y `-1440x900.png` (`docs/design-system/manifests/programacion-semanal.json:105,121`), y los PNG existen en disco, pero no hay `programacion-semanal.visual.mjs` ni ninguna otra spec con `toHaveScreenshot` que los ejercite — a diferencia de Intermedia, que sí lo tiene. Mismo patrón que [[golden-huerfano-no-lo-ve-ningun-gate]]: la suite estática valida la correspondencia manifiesto/hash, no si algo los compara de verdad. Destapado al cerrar el plan del umbral único (F2a-2b-2), verificando la condición de hecho «goldens de escritorio sin cambios» en vez de asumirla | F2a-2b-2, cierre | 6 | 9 | 5 | 270 | — | abierto |
+
 ## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
 
 Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)
