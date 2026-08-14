@@ -409,6 +409,35 @@ no cabía y se dejó crecer lo que sí. Por eso desaparecen los contadores y los
 tarjetas se estiran a 562 px: nadie decidió qué es lo esencial en un teléfono. Esa decisión es
 anterior a cualquier ajuste de tamaño.
 
+## Detector de impeccable sobre URL — cuatro hallazgos del sistema de diseño (2026-08-14)
+
+**Cómo se obtuvieron, porque condiciona la lectura:** el detector de impeccable necesita `puppeteer`
+para escanear URLs, y no estaba instalado. Se instaló **en el directorio del skill**
+(`~/.claude/skills/impeccable`), no en el `package.json` del repo —es herramienta del asistente, no
+dependencia del proyecto— y **sin descargar Chromium**: `PUPPETEER_SKIP_DOWNLOAD=1` más
+`PUPPETEER_EXECUTABLE_PATH` apuntando al Chrome del sistema, para no traer ~300 MB de un motor que
+duplicaría el que Playwright ya tiene. El árbol del repo quedó sin tocar.
+
+**El control que da sentido a la tabla:** cada ruta se escaneó a **390×844 y a 1440×900**. Los
+cuatro hallazgos salen **idénticos en los dos anchos y en las dos rutas**, así que no son del
+trabajo móvil: son del sistema de diseño y anteceden al piloto. Sin la corrida de escritorio se
+habrían atribuido a móvil por estar mirando móvil — el mismo error que ya costó una tarde con las
+baselines visuales (ver [[visual-baselines-estado-real]]).
+
+| Issue | Heuristic | Severity (0-4) | Fix | Status |
+|---|---|---|---|---|
+| **DET-1** · **Interlineado 1.15× donde el mínimo legible es 1.3×** (dos ocurrencias por ruta). Afecta al texto multilínea, que en las tarjetas móviles es casi todo: los títulos de actividad ocupan tres y cuatro líneas | Legibilidad tipográfica | 2 | Sin proponer: tocar `line-height` global es cambio de sistema, no de módulo | backlog ICE |
+| **DET-2** · **Jerarquía tipográfica plana, y en móvil peor.** Seis tamaños entre 12,8 y 24,8 px con ratio **1.9:1** en escritorio, que en móvil se aplana a **1.5:1** (12,8–19,2 px) porque el tamaño mayor encoge. Es el único de los cuatro con matiz propio de móvil, y explica que la tarjeta de 562 px se lea como un bloque indiferenciado: no hay contraste de tamaño que separe el dato principal del secundario | Jerarquía visual | 3 | Sin proponer. **Se resuelve junto con la decisión de qué va en la tarjeta** (`M-A4`/`M-A5`/`M-A8`): elegir qué es lo esencial es lo que da a qué darle el tamaño mayor | backlog ICE |
+| **DET-3** · **Tarjetas anidadas** (tarjeta dentro de tarjeta) en las dos rutas y los dos anchos. En móvil la anidación es visible a simple vista: cada métrica de la card va en su propio recuadro dentro del recuadro de la actividad | Diseño estético y minimalista (N8) | 2 | Sin proponer | backlog ICE |
+
+**Límite declarado del detector, medido:** **ninguno** de los tres hallazgos de severidad 4 del
+audit móvil (`M-A1`, `M-A2`, `M-A3`) aparece en esta corrida. El detector lee patrones de CSS y
+estructura; no mide geometría contra el viewport ni detecta **ausencias**. Por eso no vio el chip de
+semana pintado en `x=391` sobre 390, ni los 34 controles bajo el mínimo táctil, ni que los chips
+contadores y los filtros no existan. Las dos herramientas son complementarias y **ninguna sola da el
+cuadro**: la medición directa encuentra lo que falta y lo que se sale; el detector encuentra el
+patrón repetido que se ha normalizado.
+
 ## Recuento
 
 | Estado | Entradas |
@@ -417,11 +446,11 @@ anterior a cualquier ajuste de tamaño.
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | **0** |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 53 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 56 |
 | `cerrado sin código` | 6 |
 | `en plan` (F2a-2b-2) | 1 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **104** |
+| **Total** | **107** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.

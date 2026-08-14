@@ -149,6 +149,36 @@ De la grilla real (`public/js/modules/programacion_semanal/hot.js`): `Código Ac
 En la cara visible de la card: código, actividad, chip de `Estado` y barra de avance
 (`Ej. Real` sobre `Cant. PPTO`). Los otros ocho, en el desplegable.
 
+## Adenda del 2026-08-14 — E2 revisada tras medir la tarjeta implementada
+
+**E2 nunca se implementó.** Decidía el modelo **A · Resumen con detalle desplegable**, y lo que se
+construyó fue la ficha completa siempre abierta — justo la alternativa que E2 descartó por escrito.
+Medido el 2026-08-14 a 390 px: **354×562 px por tarjeta en Semanal** (1,5 por pantalla, 31
+tarjetas, ~17.000 px de scroll para recorrerlas) y 342×360-403 px en Intermedia **con 78**. Ninguna
+de las dos pliega nada: en Intermedia, `details` (`hot.js:4359`) es el nombre de una variable para
+un `<div>` de campos siempre visibles, no un elemento plegable.
+
+**E2-bis (2026-08-14, decisión del usuario).** El modelo A se confirma —resumen con detalle
+desplegable— con **dos cambios sobre la cara visible**, ambos ampliándola:
+
+| # | Decisión | Alcance | Efecto sobre E2 |
+|---|---|---|---|
+| E2-bis-a | La cara visible lleva **cinco** elementos: código, actividad, chip de estado, barra de avance y **Responsable AIA**. | Semanal e Intermedia | **Amplía** E2, que dejaba el responsable entre los ocho plegados. Razón: en obra se busca por persona antes que por actividad, y desplegar solo para saber a quién reclamar es el gesto más repetido. |
+| E2-bis-b | En Semanal, **la edición del compromiso vive en la cara visible**, no dentro del desplegable. | Solo Semanal | **Revoca** la parte de E2 que mandaba «y la edición, dentro del desplegable». Razón: capturar el compromiso en obra debe ser de un toque. Intermedia no se ve afectada: sus tarjetas son de solo lectura (`createMobileCard`, `hot.js:4328`, no monta ningún control de escritura). |
+
+**Consecuencia declarada, no disimulada:** ampliar la cara visible reduce el ahorro. La estimación
+por composición es **280-320 px** por tarjeta frente a los 562 actuales —de 1,5 a unas 2,8 tarjetas
+por pantalla—, no los 120-150 px que daría el modelo A estricto. Es estimación, no medición: se
+verifica al implementar y si se desvía, se reporta.
+
+**Lo que sigue plegado en Semanal:** los siete campos de lectura restantes (`Sem. Inicio`,
+`Fecha Inicio`, `Fecha Fin`, `Crítica`, `Unidad`, `Cant. PPTO`, `Ej. Teórico`). Siete campos
+justifican el desplegable de sobra, aunque la edición haya salido de él.
+
+**Atado a esta decisión, del audit del 2026-08-14:** `DET-2` (la jerarquía tipográfica se aplana a
+1.5:1 en móvil) no se ataca por separado. Elegir qué es lo esencial es exactamente lo que dice a
+qué darle el tamaño mayor, así que la escala se ajusta al implementar esta tarjeta, no antes.
+
 ## Pruebas
 
 **Sin navegador (TDD, `node --test`):**

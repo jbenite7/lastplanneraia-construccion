@@ -142,6 +142,10 @@ que el método funciona.
 | **La barra de acciones consume ~200 px de 844 antes del contenido en Intermedia** (nueve botones en cuatro filas). En Semanal colapsa a un único botón de 28 px de alto | M-A6 (audit móvil) | 7 | 10 | 5 | 350 | — | abierto |
 | **El encabezado gasta 111 px (13 % de la pantalla) para tres datos**, con el nombre del módulo partido en dos líneas por caber en 92 px | M-A7 (audit móvil) | 6 | 10 | 6 | 360 | — | abierto |
 
+| **La jerarquía tipográfica se aplana en móvil: ratio 1.5:1 contra 1.9:1 en escritorio.** Seis tamaños entre 12,8 y 19,2 px, sin contraste que separe el dato principal del secundario — es por lo que la tarjeta de 562 px se lee como un bloque indiferenciado. **No se ataca sola:** se resuelve al decidir qué va en la tarjeta, que es lo que dice a qué darle el tamaño mayor | DET-2 (detector impeccable) | 7 | 9 | 4 | 252 | — | abierto · atado a la decisión de la tarjeta |
+| **Interlineado 1.15× donde el mínimo legible es 1.3×**, en las dos rutas y los dos anchos. Afecta al texto multilínea, que en las tarjetas móviles es casi todo (los títulos de actividad ocupan tres y cuatro líneas). Tocar `line-height` global es cambio de sistema, no de módulo | DET-1 (detector impeccable) | 5 | 9 | 4 | 180 | — | abierto |
+| **Tarjetas anidadas** (tarjeta dentro de tarjeta) en las dos rutas y los dos anchos: en móvil cada métrica va en su propio recuadro dentro del recuadro de la actividad | DET-3 (detector impeccable) | 5 | 9 | 5 | 225 | — | abierto |
+
 ## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
 
 Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)

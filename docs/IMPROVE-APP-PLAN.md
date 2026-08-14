@@ -58,6 +58,8 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-05 | Fase 6 | La regla de aplicación del copy es **no-dominio se reescribe, dominio se registra**; `GLOSARIO.md` es la autoridad de nomenclatura | Reescribir «compromiso», «restricción» o «Autoprogramar» rompería el vocabulario compartido con la obra, que es justo lo que sostiene los tres jobs |
 | 2026-08-05 | Fase 6 | `docs/POSITIONING.md` se escribe como **esqueleto mínimo**: solo `## Key Messages`, derivado de los tres job statements de `CUSTOMER.md` | App interna sin superficie de venta (la misma razón por la que la fase 7 está `skipped`); rellenar audiencia, categoría y diferenciadores sería inventar |
 | 2026-08-05 | Fase 6 | El hallazgo de la fase: **el copy no falla por tono ni por longitud, sino por ausencia de paso siguiente** en los momentos de error y de vacío | Es la misma forma que encontró la fase 5 con las microinteracciones —el hueco siempre del mismo lado—, ahora en palabras |
+| 2026-08-14 | Fase 2 (tarjeta) | **E2 se confirma pero se amplía: cinco elementos en la cara visible** (código, actividad, estado, avance y Responsable AIA), y **en Semanal la edición del compromiso sale del desplegable a la cara visible** (revoca esa parte de E2) | Decisión del usuario. En obra se busca por persona antes que por actividad, y capturar el compromiso debe ser de un toque. Consecuencia declarada: la tarjeta baja a ~280-320 px estimados, no a 120-150 |
+| 2026-08-14 | Fase 2 (tarjeta) | **E2 nunca se había implementado**: lo construido era la ficha completa siempre abierta, la alternativa que E2 descartó por escrito | Medido: 562 px por tarjeta y ningún mecanismo de plegado en ninguno de los dos módulos. La decisión existía desde el 2026-08-07 y no llegó al código |
 | 2026-08-14 | Fase 2 (audit) | **La excepción de densidad de 24 px queda acotada a >1180 px.** Su premisa era literal —«esta familia está fuera del alcance móvil por contrato»— y caducó al abrir móvil. Por debajo del umbral rige 44×44 sin excepción; por encima se mantiene la densidad, que existe por una razón real | Decisión del usuario. Sin esto, cualquier arreglo de tamaño en móvil sería discutible contra el propio contrato de producto |
 | 2026-08-14 | Fase 2 (audit) | La golden móvil del piloto **se rechaza**, no se aprueba como línea base | Decisión del usuario. Fijarla habría grabado como «correcto» un estado con tres hallazgos de severidad 4 |
 | 2026-08-13 | Fase 2 (móvil) | El recorrido se reanuda por **auditar móvil y tablet**, no por las decisiones abiertas ni por el veredicto de la fase 9 | Decisión del usuario; es la superficie que el piloto F2a-2b está a punto de entregar y la única que ninguna fase había mirado |
@@ -153,11 +155,23 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   botones, interacción, tamaño de cards). Audit en **7/20**. Tres de severidad 4: la excepción
   caducada (ya cerrada), el chip de semana que se pinta fuera de la pantalla y no se alcanza ni con
   scroll, y los 34 controles bajo el mínimo táctil. Total del audit 96 → **104**.
-- [ ] **La decisión de forma que ordena el resto, heredada del audit:** los contadores y los filtros
-  **no existen** en móvil y las tarjetas miden 562 px. No es un problema de tamaños: nadie decidió
-  qué es lo esencial de una actividad en un teléfono. Rediseñar la tarjeta desde esa decisión
-  resuelve `M-A4`, `M-A5` y `M-A8` a la vez; ajustar tamaños sin ella es pulir la pantalla
-  equivocada.
+- [x] **Detector de impeccable sobre URL — 2026-08-14.** Se instaló `puppeteer` **en el directorio
+  del skill**, no en el `package.json` del repo, y sin descargar Chromium (apuntado al Chrome del
+  sistema): el árbol del repo quedó intacto. Tres hallazgos `DET-1`…`DET-3`, todos **del sistema de
+  diseño, no del trabajo móvil** — se comprobó escaneando cada ruta a 390 y a 1440 y saliendo
+  idénticos. `DET-2` (jerarquía tipográfica) es el único con matiz móvil y queda **atado a la
+  decisión de la tarjeta**, no se ataca solo. **Límite medido del detector:** no vio ninguno de los
+  tres hallazgos de severidad 4 del audit móvil, porque lee patrones de CSS y no mide geometría
+  contra el viewport ni detecta ausencias. Total del audit 104 → **107**.
+- [x] **La decisión de forma, tomada el 2026-08-14 (`E2-bis` en la spec del piloto).** Resultó que
+  **no había que decidir de cero: E2 ya lo decidía desde el 2026-08-07 y nunca se implementó** —lo
+  construido era la ficha completa siempre abierta, justo la alternativa descartada—. El usuario
+  confirma el modelo A (resumen + desplegable) y lo amplía: cinco elementos en la cara visible
+  (añade Responsable AIA) y, solo en Semanal, la edición del compromiso sube a la cara visible.
+  Intermedia no se ve afectada por lo segundo: sus tarjetas son de solo lectura.
+- [ ] **Pendiente de esa decisión:** implementarla. Resuelve `M-A8` (altura de tarjeta) y da el
+  marco a `M-A4`/`M-A5` (contadores y filtros ausentes) y a `DET-2` (jerarquía plana), que se ajusta
+  al implementar la tarjeta y no antes.
 - [ ] **Lo que queda abierto no es trabajo, son decisiones.** Diez, recogidas una a una en
   `docs/DESIGN-AUDIT.md` §Pendiente de decisión del usuario: las 9 excepciones de a11y de
   `.pdc-header`, los dos goldens ciegos (fila de capítulo en PG, estado bloqueado en PI), la
