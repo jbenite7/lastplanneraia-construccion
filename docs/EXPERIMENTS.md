@@ -136,6 +136,12 @@ que el método funciona.
 
 | **`programacion-semanal.json` declara dos goldens de escritorio que ningún test captura ni compara.** El manifiesto lista `programacion-semanal-dark-1180x820.png` y `-1440x900.png` (`docs/design-system/manifests/programacion-semanal.json:105,121`), y los PNG existen en disco, pero no hay `programacion-semanal.visual.mjs` ni ninguna otra spec con `toHaveScreenshot` que los ejercite — a diferencia de Intermedia, que sí lo tiene. Mismo patrón que [[golden-huerfano-no-lo-ve-ningun-gate]]: la suite estática valida la correspondencia manifiesto/hash, no si algo los compara de verdad. Destapado al cerrar el plan del umbral único (F2a-2b-2), verificando la condición de hecho «goldens de escritorio sin cambios» en vez de asumirla | F2a-2b-2, cierre | 6 | 9 | 5 | 270 | — | abierto |
 
+| **Decidir qué es lo esencial de una actividad en un teléfono, y rediseñar la tarjeta desde ahí.** Es la decisión anterior a cualquier ajuste de tamaño: hoy las tarjetas miden 562 px porque nadie eligió qué se muestra y qué se pliega. Resolver esto resuelve de paso M-A8 (scroll de 17.000 px), y da el marco para M-A4 y M-A5 —los contadores y filtros desaparecieron en vez de rediseñarse | M-A4/A5/A8 (audit móvil) | 9 | 9 | 3 | 243 | — | abierto · **decisión de forma del usuario** |
+| **Subir los controles al mínimo táctil bajo 1180 px.** Habilitado por la acotación de la excepción (PRODUCT.md, 2026-08-14): 34 controles en Semanal y 11 en Intermedia por debajo de 44×44, incluido un conmutador de 13×13 | M-A3 (audit móvil) | 8 | 10 | 6 | 480 | — | abierto |
+| **El chip de semana se pinta fuera de la pantalla y no se alcanza ni con scroll** (`x=391` sobre 390 en Semanal). Hay que decidir qué hace el contexto de semana en móvil antes de reubicarlo | M-A2 (audit móvil) | 9 | 10 | 6 | 540 | — | abierto · **el más grave de los medidos** |
+| **La barra de acciones consume ~200 px de 844 antes del contenido en Intermedia** (nueve botones en cuatro filas). En Semanal colapsa a un único botón de 28 px de alto | M-A6 (audit móvil) | 7 | 10 | 5 | 350 | — | abierto |
+| **El encabezado gasta 111 px (13 % de la pantalla) para tres datos**, con el nombre del módulo partido en dos líneas por caber en 92 px | M-A7 (audit móvil) | 6 | 10 | 6 | 360 | — | abierto |
+
 ## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
 
 Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)

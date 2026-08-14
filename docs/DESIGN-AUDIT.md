@@ -378,19 +378,50 @@ natural de esta fase.
 tarjetas están bien construidas; lo que las inutiliza es el shell que las rodea. Entregar tarjetas en
 tablet sin resolver `V-1`/`V-2` movería el problema de sitio en vez de arreglarlo.
 
+## Audit móvil de la cascada — 390 px (impeccable audit, 2026-08-14)
+
+**Encargo del usuario**, tras rechazar la golden móvil del piloto: ocho puntos concretos a resolver.
+Medido con Playwright a 390×844 dark, cuenta `test.A`, proyecto `Preconstrucción Da Porto`, rutas
+`/programacion-semanal` y `/programacion-intermedia`. El detector de impeccable no pudo escanear por
+URL (falta `puppeteer` y no se instaló solo para esto); las cifras salen de medición directa del DOM.
+
+**Puntuación del audit: 7/20 — Pobre.** No es acabado: estas pantallas nunca se diseñaron para este
+ancho, y lo que hay es la versión de escritorio comprimida.
+
+| Issue | Heuristic | Severity (0-4) | Fix | Status |
+|---|---|---|---|---|
+| **M-A1** · **La excepción de densidad caducó y nadie la revisó.** `PRODUCT.md` autorizaba 24 px con una justificación literal —«esta familia está fuera del alcance móvil del producto por contrato»— que dejó de ser cierta al abrir móvil. Por eso los botones miden 28 px en un teléfono: no es que el CSS esté mal, es que la regla que lo autoriza ya no aplica | Integridad del sistema de diseño | **4** | **Cerrado el 2026-08-14** por decisión del usuario: la excepción queda acotada a >1180 px; por debajo rige 44×44 sin excepción. `PRODUCT.md` actualizado | done |
+| **M-A2** · **El chip de semana se pinta fuera de la pantalla.** `x=391` sobre un viewport de 390 en Semanal, `x=349` con 118 px de ancho en Intermedia. `scrollWidth` es exactamente 390, así que **no se alcanza ni con scroll**: es inaccesible, no incómodo | Visibilidad del estado (N1); Responsive | **4** | Sin proponer: es decisión de forma —qué hace el contexto de semana en móvil— | backlog ICE |
+| **M-A3** · **34 de 129 controles bajo el mínimo táctil en Semanal, 11 de 44 en Intermedia.** El peor: el conmutador «Ver Todas las Actividades» a **13×13 px**. Nueve botones de la barra de Intermedia miden 28 px de alto | Objetivos táctiles (WCAG 2.5.8/2.5.5) | **4** | Habilitado por M-A1: ahora hay contrato que lo exige | backlog ICE |
+| **M-A4** · **Los chips contadores de estado no existen en móvil.** Cero elementos encontrados en las dos rutas. En escritorio son lo primero que se lee —cuánto hay detrás de cada estado—; en el teléfono esa lectura desaparece entera, no se degrada | Visibilidad del estado (N1) | 3 | Sin proponer | backlog ICE |
+| **M-A5** · **Los filtros tampoco existen en móvil.** Cero controles de filtro presentes. «Ver Secciones» sobrevive en Semanal, a 162×**25 px** | Flexibilidad y eficiencia (N7) | 3 | Sin proponer | backlog ICE |
+| **M-A6** · **La barra de acciones se come la pantalla antes de que empiece el contenido.** En Intermedia, nueve botones apilados en cuatro filas ocupan ~200 px de los 844. En Semanal la barra entera colapsa a un solo botón de 358×28 px | Diseño estético y minimalista (N8) | 3 | Sin proponer | backlog ICE |
+| **M-A7** · **El encabezado gasta 111 px (13 % de la pantalla) para tres datos**, y el indicador de módulo queda comprimido a 92 px partido en dos líneas: «Programación Semanal» no cabe en una línea | Diseño estético y minimalista (N8) | 2 | Sin proponer | backlog ICE |
+| **M-A8** · **Las tarjetas son enormes: 354×562 px en Semanal** (caben 1,5 por pantalla, con 31 tarjetas) y 342×360-403 px en Intermedia **con 78 tarjetas**. Recorrer Semanal entero exige ~17 000 px de scroll | Eficiencia de uso (N7) | 3 | Sin proponer | backlog ICE |
+
+**Lo que sí está bien, y conviene no romperlo:** cero desbordamiento horizontal en las dos rutas
+(`scrollWidth` == `innerWidth` == 390); la grilla de Handsontable ya no se instancia bajo el umbral;
+el menú flotante abre, cierra y devuelve el foco; y el solapamiento del disparador con el texto de
+contexto —detectado y corregido el mismo día— tiene ahora prueba propia.
+
+**El patrón que une a M-A4, M-A5 y M-A8:** en móvil no se rediseñó la información, se ocultó lo que
+no cabía y se dejó crecer lo que sí. Por eso desaparecen los contadores y los filtros mientras las
+tarjetas se estiran a 562 px: nadie decidió qué es lo esencial en un teléfono. Esa decisión es
+anterior a cualquier ajuste de tamaño.
+
 ## Recuento
 
 | Estado | Entradas |
 |---|---|
-| `done` | 35 |
+| `done` | 36 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | **0** |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 46 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 53 |
 | `cerrado sin código` | 6 |
 | `en plan` (F2a-2b-2) | 1 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **96** |
+| **Total** | **104** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.
