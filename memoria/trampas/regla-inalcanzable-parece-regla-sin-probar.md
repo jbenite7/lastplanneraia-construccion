@@ -41,8 +41,9 @@ Los otros dos hallazgos de la misma red, por si se cruzan con ellos:
 - **`Ejecutado_Real` ignora la restricción de semana histórica** en Semanal: su cláusula
   tiene un `return` propio *antes* de `isUserAllowedToEdit()`
   (`programacion_semanal/hot.js:416-418`), así que en fase de calificación un rol `R` edita
-  el avance de una semana que no puede tocar en ninguna otra columna. Caracterizado, no
-  corregido.
+  el avance de una semana que no puede tocar en ninguna otra columna. **Revisado el mismo
+  día: es deliberado y el servidor implementa la misma regla** — ver
+  [[un-if-de-autorizacion-no-es-toda-la-autorizacion]].
 - **`editableProps` declara nueve props y la grilla monta ocho**: `Descripcion` no está en
   el array `columns`, así que esa entrada no gobierna ninguna celda.
 

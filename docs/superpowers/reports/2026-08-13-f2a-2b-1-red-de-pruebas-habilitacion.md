@@ -59,11 +59,32 @@ No se corrigieron —el plan lo prohíbe expresamente—. Quedan escritos con su
 
 | # | Qué | Dónde | Por qué importa |
 |---|---|---|---|
-| 1 | **`Ejecutado_Real` ignora la restricción de semana histórica.** Su cláusula tiene un `return` propio que se evalúa **antes** de `isUserAllowedToEdit()`, así que en fase de calificación un rol `R` edita el avance de una semana histórica que no puede tocar en ninguna otra columna. | `public/js/modules/programacion_semanal/hot.js:416-418` | Puede ser deliberado (calificar lo ya ejecutado) o un olvido de orden. Caracterizado en una prueba con nombre explícito. |
+| 1 | **`Ejecutado_Real` ignora la restricción de semana histórica.** Su cláusula tiene un `return` propio que se evalúa **antes** de `isUserAllowedToEdit()`, así que en fase de calificación un rol `R` edita el avance de una semana histórica que no puede tocar en ninguna otra columna. | `public/js/modules/programacion_semanal/hot.js:416-418` | **Resuelto el mismo día: es deliberado y correcto.** Ver la sección siguiente. |
 | 2 | **`editableProps` declara nueve props y la grilla monta ocho.** `Descripcion` no está en el array `columns`, así que esa entrada no gobierna ninguna celda. | `hot.js:37-47` frente a `:2641-2667` | Al extraer las reglas, una lista de nueve haría pensar que hay nueve columnas que atender. Son ocho. |
 | 3 | **La rama `meta.isHeader` de Intermedia es código inalcanzable desde esta vista**, porque el listado filtra `Titulo = 0` en el servidor. | `ProgramacionIntermediaController.php:182` frente a `programacion_intermedia/hot.js:956-961` | Se descubrió al intentar cubrir I3. Es la diferencia entre «no hay datos sembrados» y «no puede haberlos», y solo la segunda justifica no cubrir la regla. |
 
 **El censo del plan también se corrigió en dos puntos:** los números de línea de S1–S13 estaban corridos respecto al archivo actual, y S5 no se lee por `prop` sino por `renderer`, así que no encaja en el mismo lector que las demás.
+
+### Seguimiento del hallazgo 1, el mismo día: era deliberado, y la sospecha que levantó era infundada
+
+El hallazgo 1 se revisó contra el servidor a petición del usuario. **No es un descuido del cliente: es el espejo de una regla de negocio implementada en las dos capas.**
+
+- `LpsWeekEditPolicy::allows()` (`src/Security/LpsWeekEditPolicy.php:16-48`) recibe un parámetro `$qualification`. Cuando `canEditLpsWeek()` deniega por semana histórica, todavía permite si el rol puede calificar (A/D/R/DCV, `RbacCatalog:104-107`) **y** la semana tiene `Semanal_Confirmada = 1`.
+- `SemanalApiController.php:156-158` pasa `$qualification = true` para `$opcion === 'modificar'`.
+
+La revisión levantó entonces una sospecha razonable —«el guard autoriza por semana y rol, sin mirar el campo, así que por API se podría cambiar `Compromiso` en una semana histórica confirmada»— y **resultó falsa**. Hay una segunda capa que acota por campo (`SemanalApiController.php:309-315`):
+
+```php
+if ($confirmed && ($commitmentChanged || $assigneesChanged || $planningFieldsChanged)) {
+    $this->jsonError('Los datos de planificación solo se editan en programación.', 409);
+}
+```
+
+Con la semana confirmada, el servidor rechaza compromiso, responsables y campos de planificación, y solo deja pasar el avance real: **exactamente la frontera que dibuja la interfaz**. Y ya estaba cubierto de extremo a extremo por `tests/browser/programacion-semanal-roles-phases.mjs:316` («rol R histórico solo puede calificar el compromiso confirmado»: 200 en la calificación, 409 al tocar planificación).
+
+**Conclusión: no hay brecha de autorización y no hay nada que corregir.** La prueba que caracteriza el comportamiento se queda tal cual, porque lo que fija es correcto. Lo único que quedó abierto es un hueco de cobertura menor —`tests/test_lps_week_edit_policy.php` prueba las dos funciones por separado pero nunca su composición—, encargado como tarea aparte.
+
+**La lección de método, que vale más que el dato:** la sospecha se formó leyendo una capa (el guard de semana) y habría producido un encargo con premisa falsa si no se hubiera bajado a la siguiente. Un `if` de autorización rara vez es toda la autorización.
 
 ## Verificación
 
