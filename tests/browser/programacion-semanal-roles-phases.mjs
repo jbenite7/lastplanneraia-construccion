@@ -39,8 +39,8 @@ const MUTACION_HABILITADA = (() => {
 const MOTIVO_SIN_ENTORNO_AISLADO = 'Escribe en la base: exige el stack aislado de CI '
   + '(COMPOSE_PROJECT_NAME=lps-aia-design-system-ci-*, COMPOSE_FILE=docker-compose.yml:'
   + 'docker-compose.ci.yml, E2E_REQUIRE_ISOLATED_DB=1, E2E_ALLOW_DB_MUTATION=design-system-ci). '
-  + 'Ver el comentario de MUTACION_HABILITADA: el fixture de ese stack todavía no trae el dato '
-  + 'que estas pruebas necesitan.';
+  + 'Ese stack ya trae el dato desde 8a0d5e46, así que allí los cuatro casos corren y pasan; '
+  + 'aquí se saltan solo por el candado de escritura, no por falta de fixture.';
 
 function sqlValue(value) {
   if (value === null || value === undefined) return 'NULL';
