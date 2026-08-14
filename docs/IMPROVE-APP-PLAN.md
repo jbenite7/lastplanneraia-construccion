@@ -153,6 +153,14 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   botones, interacción, tamaño de cards). Audit en **7/20**. Tres de severidad 4: la excepción
   caducada (ya cerrada), el chip de semana que se pinta fuera de la pantalla y no se alcanza ni con
   scroll, y los 34 controles bajo el mínimo táctil. Total del audit 96 → **104**.
+- [x] **Detector de impeccable sobre URL — 2026-08-14.** Se instaló `puppeteer` **en el directorio
+  del skill**, no en el `package.json` del repo, y sin descargar Chromium (apuntado al Chrome del
+  sistema): el árbol del repo quedó intacto. Tres hallazgos `DET-1`…`DET-3`, todos **del sistema de
+  diseño, no del trabajo móvil** — se comprobó escaneando cada ruta a 390 y a 1440 y saliendo
+  idénticos. `DET-2` (jerarquía tipográfica) es el único con matiz móvil y queda **atado a la
+  decisión de la tarjeta**, no se ataca solo. **Límite medido del detector:** no vio ninguno de los
+  tres hallazgos de severidad 4 del audit móvil, porque lee patrones de CSS y no mide geometría
+  contra el viewport ni detecta ausencias. Total del audit 104 → **107**.
 - [ ] **La decisión de forma que ordena el resto, heredada del audit:** los contadores y los filtros
   **no existen** en móvil y las tarjetas miden 562 px. No es un problema de tamaños: nadie decidió
   qué es lo esencial de una actividad en un teléfono. Rediseñar la tarjeta desde esa decisión
