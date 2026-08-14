@@ -74,6 +74,19 @@
     });
   }
 
+  // AIAShellDrawer se carga como <script type="module">, diferido: se
+  // ejecuta despues que este script clasico en el marcado, pero ANTES de
+  // DOMContentLoaded (los modulos, como `defer`, terminan antes de ese
+  // evento). init() se dispara en DOMContentLoaded, asi que en el camino
+  // normal ya deberia existir. El guard cubre el caso en que no cargo -red,
+  // bloqueador de scripts- sin que eso rompa el colapsar/expandir de
+  // siempre: sin la pieza, simplemente no hay modo flotante.
+  function estaEnModoFlotante() {
+    const drawer = global.AIAShellDrawer;
+    if (!drawer || typeof drawer.debeSerFlotante !== "function") return false;
+    return drawer.debeSerFlotante(global.innerWidth);
+  }
+
   function setCollapsed(shell, collapsed, restoreFocus) {
     const toggle = shell.querySelector("[data-sidebar-toggle]");
     const label = shell.querySelector(".aia-sidebar__toggle-label");
@@ -83,7 +96,10 @@
     toggle.setAttribute("aria-label", collapsed ? "Expandir menú" : "Colapsar menú");
     if (label) label.textContent = collapsed ? "Expandir menú" : "Colapsar menú";
     syncNativeTitles(shell, collapsed);
-    if (shouldPersist(shell)) {
+    // D3 (spec 2026-08-14): por debajo del umbral el menu flotante no debe
+    // ensuciar la preferencia de escritorio. Abrir/cerrar en movil aplica en
+    // la pagina actual pero no se escribe.
+    if (shouldPersist(shell) && !estaEnModoFlotante()) {
       try {
         global.localStorage.setItem(storageKey, collapsed ? "collapsed" : "expanded");
       } catch (_error) {
@@ -101,7 +117,7 @@
     const candidate = shell.closest(".ds-shell-candidate");
 
     const persisted = readPersistedState(shell);
-    if (persisted !== null && persisted !== shell.dataset.sidebarState) {
+    if (persisted !== null && persisted !== shell.dataset.sidebarState && !estaEnModoFlotante()) {
       setCollapsed(shell, persisted === "collapsed", false);
     } else {
       syncNativeTitles(shell, shell.dataset.sidebarState === "collapsed");
@@ -125,6 +141,12 @@
           setPreviewState(candidate, button.dataset.sidebarStateAction);
         });
       });
+    }
+
+    const disparador = document.getElementById("shellMenuTrigger");
+    const velo = document.getElementById("shellMenuVelo");
+    if (disparador && global.AIAShellDrawer && typeof global.AIAShellDrawer.crearShellDrawer === "function") {
+      global.AIAShellDrawer.crearShellDrawer({ contenedor: shell, disparador, velo });
     }
   }
 

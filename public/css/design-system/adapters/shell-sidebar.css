@@ -279,6 +279,74 @@
   .shell-week-dialog__actions {
     margin-block-start: var(--ds-space-4);
   }
+
+  /* Menu flotante bajo 1180px (spec 2026-08-14, D1-D4). El umbral es el mismo
+     que separa tabla de tarjetas en el piloto movil: un solo corte para toda
+     la app. Bajo el, la navegacion deja de ocupar columna -el body pierde el
+     padding-left del que salen los 240px- y el aside pasa a flotar sobre el
+     contenido, desplazado fuera de vista hasta que shell-drawer.js lo marca
+     data-shell-drawer-open. */
+  @media (max-width: 1179px) {
+    /* Selector duplicado a proposito: la regla del estado colapsado
+       (:has([data-sidebar-state="collapsed"])) tiene mas especificidad que
+       un simple `body.aia-shell--sidebar` y gana sin importar el viewport.
+       Igualar la especificidad en vez de recurrir a !important. Medido el
+       2026-08-14: sin este duplicado, el padding se quedaba en 64px bajo el
+       umbral con el estado por defecto (colapsado). */
+    body.aia-shell--sidebar,
+    body.aia-shell--sidebar:has([data-shell-pattern="sidebar"][data-sidebar-state="collapsed"]) {
+      padding-left: 0;
+    }
+
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      transform: translateX(-100%);
+      transition: transform var(--ds-motion-standard);
+      box-shadow: none;
+    }
+
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-drawer-open="true"] {
+      transform: translateX(0);
+      z-index: var(--ds-z-shell-overlay);
+    }
+
+    .shell-menu-velo {
+      position: fixed;
+      inset: 0;
+      /* Mismo patron que el backdrop del dialogo del sistema
+         (components/dialog.css:38-40), no un hex nuevo. */
+      background: color-mix(in srgb, var(--ds-color-text-primary) 60%, transparent);
+      z-index: calc(var(--ds-z-shell-overlay) - 1);
+    }
+
+    .shell-menu-velo[hidden] {
+      display: none;
+    }
+
+    /* El disparador vive fuera de .context-bar a proposito (ver
+       shell_sidebar.php): esa barra crea su propio contexto de apilamiento
+       (position:sticky + z-index), y un descendiente no puede escapar de el
+       subiendo su propio z-index -queda atrapado por debajo del contexto
+       padre pase lo que pase. Medido el 2026-08-14: con el boton dentro,
+       el velo lo tapaba y el segundo clic (para cerrar) nunca llegaba a
+       disparar. Sacarlo del subarbol y fijarlo con position:fixed en su
+       propio nivel es lo que permite superar al velo. */
+    .shell-menu-trigger {
+      position: fixed;
+      top: var(--ds-space-3);
+      left: var(--ds-space-3);
+      z-index: calc(var(--ds-z-shell-overlay) + 1);
+    }
+
+    .shell-menu-trigger[hidden] {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.aia-shell--sidebar .aia-navigation--sidebar[data-shell-pattern="sidebar"] {
+      transition: none;
+    }
+  }
 }
 
 /* ===== Rail colapsado del shell: cero scroll + flyouts + jerarquía =====

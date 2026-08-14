@@ -210,6 +210,26 @@ final class DesignSystemHeadComponent
     }
 
     /**
+     * Igual que renderScript(), pero como modulo ES (necesario para archivos
+     * con `export`). Los modulos son diferidos: se ejecutan DESPUES que los
+     * scripts clasicos, asi que un consumidor script clasico que dependa de
+     * lo que este modulo expone en `window` debe tolerar su ausencia hasta
+     * que cargue.
+     */
+    public static function renderModuleScript(string $url): string
+    {
+        $root = dirname(__DIR__, 3);
+        $relative = str_starts_with($url, '/public/')
+            ? $url
+            : '/public' . $url;
+        $file = $root . $relative;
+        $version = self::assetVersion($file, $url);
+        $src = htmlspecialchars($url . '?v=' . $version, ENT_QUOTES, 'UTF-8');
+
+        return '<script type="module" src="' . $src . '"></script>';
+    }
+
+    /**
      * Los entrypoints con @import anidados se sirven vía PHP para que cada
      * import lleve el mtime real de su archivo (los `?v=1.0.0` del fuente son
      * la versión publicada y no bustean caché). Ver DesignSystemAssetController.
