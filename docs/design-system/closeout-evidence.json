@@ -26,19 +26,19 @@
       "id": "runtime",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-08-11T23:45:04Z",
+      "verifiedAt": "2026-08-14T15:35:00Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Objective receipt for runtime",
+          "summary": "Recibo regenerado tras ampliar database/fixtures/design-system-ci.sql (8a0d5e46) para que programacion-semanal-roles-phases.mjs corra en el stack aislado; invalidaba el fixtureSha256 anterior.",
           "commandId": "ds.runtime.v1",
           "command": "npm run test:design-system:runtime",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/runtime.json",
-          "artifactSha256": "32129bf84f41e7a4bf24f19cd7ac38dfed822095853876c10e2942764135bf0c",
-          "sourceRef": "1cb83128d1ecfba8606f697fb8617db4f9bc75eb",
-          "sourceFingerprint": "e13113836b001b329cd251ba9c1c9ffd0bc2d94a5265e683109a65f19cf2109b",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
+          "artifactSha256": "827a18518c091a34e9f9b52b80c4ce6c3efaed8faa11efd59cb73fac8730cbaa",
+          "sourceRef": "79debf2831e26647db30bed28d7cba8c50112142",
+          "sourceFingerprint": "1c4088d345ca3091b0c61f45d779d59a193531724ec4131b1df6431891cd5619",
+          "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
         }
       ]
     },
@@ -104,19 +104,19 @@
       "id": "global-table-safety",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-08-11T17:08:39Z",
+      "verifiedAt": "2026-08-14T15:31:42Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Objective receipt for global-table-safety",
+          "summary": "Recibo regenerado tras ampliar database/fixtures/design-system-ci.sql (8a0d5e46) para que programacion-semanal-roles-phases.mjs corra en el stack aislado; invalidaba el fixtureSha256 anterior.",
           "commandId": "ds.global-table-safety.v1",
           "command": "docker compose exec app php tests/test_global_table_safety.php",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/global-table-safety.json",
-          "artifactSha256": "154934066bd731b33173b30f810517c53c28a86ff49c42c8640f09dcec2240a1",
-          "sourceRef": "010d725371c0a22831cdb7d1805e0b29ad6e897d",
-          "sourceFingerprint": "8fb6737ffd6b2065d3beb7909b1c4b37ce4e50920d2719f7ef84f4e6913aee74",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
+          "artifactSha256": "0c7e09ca28c47214d6becde067e965f26108eeb266f33e5093546be248b37cc0",
+          "sourceRef": "79debf2831e26647db30bed28d7cba8c50112142",
+          "sourceFingerprint": "1c4088d345ca3091b0c61f45d779d59a193531724ec4131b1df6431891cd5619",
+          "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
         }
       ]
     },
@@ -124,19 +124,19 @@
       "id": "full-app-flow",
       "kind": "automatic",
       "status": "passed",
-      "verifiedAt": "2026-08-12T05:00:34Z",
+      "verifiedAt": "2026-08-14T15:32:50Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Recibo producido por la corrida real de GitHub Actions 31564632414 (paso \"Enforce full-app-flow gate\"), no escrito a mano. Primera ejecucion de este gate: hasta el 2026-08-12 constaba blocked.",
+          "summary": "Recibo regenerado localmente (13 tests, 1.0m) tras ampliar database/fixtures/design-system-ci.sql (8a0d5e46) para que programacion-semanal-roles-phases.mjs corra en el stack aislado; invalidaba el fixtureSha256 anterior.",
           "commandId": "ds.full-app-flow.v1",
           "command": "npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1",
           "exitCode": 0,
           "artifact": "docs/design-system/evidence/full-app-flow.json",
-          "artifactSha256": "3a4699b6493896684a69820859a67c486e2e5a51a59ed4ab37045cbd30df0c2a",
-          "sourceRef": "a0caa11b461499f4f3772afba7e053be5697ffb7",
-          "sourceFingerprint": "d7339418eb27837a356a583e589734c610ca512b27b5ac6ee8f324af547ba77b",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
+          "artifactSha256": "59e060947ec21c6efa74006182dec76ad70c9bc7ad94f6398fbc407d022d2cfa",
+          "sourceRef": "79debf2831e26647db30bed28d7cba8c50112142",
+          "sourceFingerprint": "1c4088d345ca3091b0c61f45d779d59a193531724ec4131b1df6431891cd5619",
+          "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
         }
       ]
     },
