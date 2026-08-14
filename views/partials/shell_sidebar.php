@@ -138,7 +138,13 @@ $shellGroups = array_values(array_filter([
 ]) ?>
 </div>
 
+<div class="shell-menu-velo" id="shellMenuVelo" hidden></div>
+
 <div class="context-bar" id="shellContextBar">
+  <button type="button" class="aia-btn aia-btn--secondary shell-menu-trigger" id="shellMenuTrigger"
+    aria-controls="app-shell" aria-expanded="false" aria-label="Abrir menú de navegación" hidden>
+    <i class="fas fa-bars" aria-hidden="true"></i><span>Menú</span>
+  </button>
   <span id="ctxProyecto"><?= htmlspecialchars($shellProyecto, ENT_QUOTES, 'UTF-8') ?></span>
   <span aria-hidden="true">/</span>
   <span id="ctxModulo"><?= htmlspecialchars($shellModuleLabel, ENT_QUOTES, 'UTF-8') ?></span>
