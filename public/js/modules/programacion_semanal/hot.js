@@ -281,10 +281,6 @@
     return ({ P: 'D', U: 'V' }[permiso] || permiso);
   }
 
-  function isDirectorRole(permiso) {
-    return permiso === 'A' || permiso === 'D';
-  }
-
   function isSemanalEditorRole(permiso) {
     return permiso === 'A' || permiso === 'D' || permiso === 'R' || permiso === 'DCV';
   }

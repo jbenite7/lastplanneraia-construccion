@@ -49,6 +49,35 @@ export function crearReglasSemanal(contexto) {
   };
 }
 
+const esEditorIntermedia = (p) => ['A', 'D', 'R', 'DCV'].includes(p);
+
+export function crearReglasIntermedia(contexto) {
+  const permiso = normalizarPermiso(contexto.permiso);
+  const semana = parseInt(contexto.semana, 10);
+  const maxSemana = parseInt(contexto.maxSemana, 10);
+  const confirmada = parseInt(contexto.semanalConfirmada, 10) || 0;
+  const editableProps = contexto.editableProps || {};
+
+  function isUserAllowedToEdit() {
+    if (confirmada === 1) return false;
+    if (Number.isFinite(semana) && Number.isFinite(maxSemana) && (maxSemana - 2) >= semana) {
+      return esDirector(permiso);
+    }
+    return esEditorIntermedia(permiso);
+  }
+
+  function puedeEditarCelda({ prop, esHeader, tieneResponsable, esRestriccion }) {
+    if (prop === '__shared_selected') return !esHeader;
+    const bloqueadaPorResponsable = Boolean(esRestriccion) && !esHeader && tieneResponsable === false;
+    return Boolean(editableProps[prop]) && !esHeader && isUserAllowedToEdit() && !bloqueadaPorResponsable;
+  }
+
+  return { isUserAllowedToEdit, puedeEditarCelda };
+}
+
 if (typeof window !== 'undefined') {
-  window.AIAEnablementRules = Object.assign(window.AIAEnablementRules || {}, { crearReglasSemanal });
+  window.AIAEnablementRules = Object.assign(window.AIAEnablementRules || {}, {
+    crearReglasSemanal,
+    crearReglasIntermedia,
+  });
 }

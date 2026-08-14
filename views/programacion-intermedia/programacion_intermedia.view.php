@@ -337,6 +337,12 @@
     <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
     <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
     <script src="/js/core/SessionExpiredHandler.js?v=20260811a"></script>
+    <?php
+    // Version propia: con el mtime de hot.js, un cambio en las reglas no invalidaria
+    // la cache mientras hot.js no se tocara, y el navegador serviria reglas viejas.
+    $piRulesVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/enablement-rules.js') ?: 'rules1';
+    ?>
+    <script type="module" src="/js/modules/aia_ui/enablement-rules.js?v=<?php echo urlencode((string) $piRulesVersion); ?>"></script>
     <?php $piHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programacion_intermedia/hot.js') ?: 'hot38'; ?>
     <script src="/js/modules/programacion_intermedia/hot.js?v=<?php echo urlencode((string) $piHotVersion); ?>"></script>
 

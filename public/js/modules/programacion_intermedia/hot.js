@@ -37,7 +37,6 @@
   var _rowClassCache = [];
   var _rowMetaCache = [];
   var _stateViewCache = [];
-  var _canEditGlobal = false;
   var _saveStatus = null;
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
@@ -598,14 +597,6 @@
     return ({ P: 'D', U: 'V' }[permiso] || permiso);
   }
 
-  function isDirectorRole(permiso) {
-    return permiso === 'A' || permiso === 'D';
-  }
-
-  function isIntermediaEditorRole(permiso) {
-    return permiso === 'A' || permiso === 'D' || permiso === 'R' || permiso === 'DCV';
-  }
-
   function getMaxSemana() {
     var value = parseInt($('#Max_Semana').val(), 10);
     return Number.isFinite(value) ? value : 0;
@@ -616,21 +607,32 @@
     return Number.isFinite(value) ? value : 0;
   }
 
+  // Igual que en programacion_semanal/hot.js: el modulo de reglas se carga con
+  // `type="module"` (diferido) mientras este archivo es un script clasico, asi
+  // que sin este guard un fallo de carga del modulo tumbaria cada celda con una
+  // excepcion. El fallback deniega: solo lectura, sin acciones de barra.
+  var REGLAS_DENEGADAS_PI = {
+    isUserAllowedToEdit: function () { return false; },
+    puedeEditarCelda: function () { return false; },
+  };
+
+  function reglasIntermediaActuales() {
+    var fabrica = window.AIAEnablementRules && window.AIAEnablementRules.crearReglasIntermedia;
+    if (typeof fabrica !== 'function') {
+      return REGLAS_DENEGADAS_PI;
+    }
+
+    return fabrica({
+      permiso: getPermiso(),
+      semana: getSemana(),
+      maxSemana: getMaxSemana(),
+      semanalConfirmada: getSemanalConfirmada(),
+      editableProps: editableProps,
+    });
+  }
+
   function isUserAllowedToEdit() {
-    var permiso = getPermiso();
-
-    if (getSemanalConfirmada() === 1) {
-      return false;
-    }
-
-    var semana = parseInt(getSemana(), 10);
-    var maxSemana = getMaxSemana();
-
-    if (Number.isFinite(semana) && Number.isFinite(maxSemana) && (maxSemana - 2) >= semana) {
-      return isDirectorRole(permiso);
-    }
-
-    return isIntermediaEditorRole(permiso);
+    return reglasIntermediaActuales().isUserAllowedToEdit();
   }
 
   function toNumber(value, fallback) {
@@ -956,9 +958,12 @@
     var isSharedSelector = prop === '__shared_selected';
     var isRestrictionCell = restrictionProps.indexOf(prop) > -1 && !meta.isHeader;
     var isLockedByResponsable = isRestrictionCell && meta.hasResponsable === false;
-    var canEdit = isSharedSelector
-      ? !meta.isHeader
-      : (Boolean(editableProps[prop]) && !meta.isHeader && _canEditGlobal && !isLockedByResponsable);
+    var canEdit = reglasIntermediaActuales().puedeEditarCelda({
+      prop: prop,
+      esHeader: meta.isHeader,
+      tieneResponsable: meta.hasResponsable,
+      esRestriccion: isRestrictionCell,
+    });
     var isDropdownCell = Boolean(dropdownProps[prop]) && !meta.isHeader && !isLockedByResponsable;
     var interactionClass = canEdit ? 'pi-cell-editable' : 'pi-cell-readonly';
 
@@ -1082,7 +1087,6 @@
 
   function buildRowClassCache(data) {
     var rows = Array.isArray(data) ? data : [];
-    _canEditGlobal = isUserAllowedToEdit();
     _rowStateCache = new Array(rows.length);
     _rowClassCache = new Array(rows.length);
     _rowMetaCache = new Array(rows.length);
