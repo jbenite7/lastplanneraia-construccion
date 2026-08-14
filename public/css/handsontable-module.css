@@ -321,7 +321,7 @@ body {
 /* ========================================
    MOBILE - VISTA DE TARJETAS
    ======================================== */
-@media (max-width: 768px) {
+@media (max-width: 1179px) {
   #hot-container {
     display: none !important;
   }
@@ -340,7 +340,7 @@ body {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1180px) {
   #mobile-card-view {
     display: none !important;
   }

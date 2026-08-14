@@ -24,7 +24,7 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done — GATE abierto; fases 2-9 desbloqueadas | CUSTOMER.md | 2026-08-04 |
-| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición. **Reabierta y ampliada el 2026-08-13 sobre móvil**, superficie que ninguna fase había mirado: 8 hallazgos `V-1`…`V-8`, dos de ellos severidad 4. Tablet (700–1180 px) queda pendiente | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 · 2026-08-13 |
+| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición. **Reabierta y ampliada el 2026-08-13 sobre móvil**, superficie que ninguna fase había mirado: 8 hallazgos `V-1`…`V-8`, dos de ellos severidad 4. **Ampliada otra vez el 2026-08-14** con `/impeccable audit` sobre la lista de ocho puntos del usuario: 8 hallazgos `M-A1`…`M-A8`, tres de severidad 4, y el audit en **7/20**. Tablet (700–1180 px) sigue pendiente | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 · 2026-08-13 · 2026-08-14 |
 | 3 | design-everyday-things | done — lente de Norman sobre PG→PI→PS; 7 hallazgos nuevos (`N-1`…`N-7`) con severidad y C-14 medido y absorbido. **Nada aplicado:** todo es cambio de comportamiento, se registra y se pregunta | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 5 | microinteractions | done — las 4 acciones diarias desmontadas en Trigger/Rules/Feedback/Loops **midiendo en navegador**; 6 hallazgos (`M-1`…`M-6`), momento firma = confirmar compromisos. Solo `M-1` era CSS puro y se aplicó; los otros 5 tocan comportamiento y van al backlog | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
@@ -58,6 +58,8 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-05 | Fase 6 | La regla de aplicación del copy es **no-dominio se reescribe, dominio se registra**; `GLOSARIO.md` es la autoridad de nomenclatura | Reescribir «compromiso», «restricción» o «Autoprogramar» rompería el vocabulario compartido con la obra, que es justo lo que sostiene los tres jobs |
 | 2026-08-05 | Fase 6 | `docs/POSITIONING.md` se escribe como **esqueleto mínimo**: solo `## Key Messages`, derivado de los tres job statements de `CUSTOMER.md` | App interna sin superficie de venta (la misma razón por la que la fase 7 está `skipped`); rellenar audiencia, categoría y diferenciadores sería inventar |
 | 2026-08-05 | Fase 6 | El hallazgo de la fase: **el copy no falla por tono ni por longitud, sino por ausencia de paso siguiente** en los momentos de error y de vacío | Es la misma forma que encontró la fase 5 con las microinteracciones —el hueco siempre del mismo lado—, ahora en palabras |
+| 2026-08-14 | Fase 2 (audit) | **La excepción de densidad de 24 px queda acotada a >1180 px.** Su premisa era literal —«esta familia está fuera del alcance móvil por contrato»— y caducó al abrir móvil. Por debajo del umbral rige 44×44 sin excepción; por encima se mantiene la densidad, que existe por una razón real | Decisión del usuario. Sin esto, cualquier arreglo de tamaño en móvil sería discutible contra el propio contrato de producto |
+| 2026-08-14 | Fase 2 (audit) | La golden móvil del piloto **se rechaza**, no se aprueba como línea base | Decisión del usuario. Fijarla habría grabado como «correcto» un estado con tres hallazgos de severidad 4 |
 | 2026-08-13 | Fase 2 (móvil) | El recorrido se reanuda por **auditar móvil y tablet**, no por las decisiones abiertas ni por el veredicto de la fase 9 | Decisión del usuario; es la superficie que el piloto F2a-2b está a punto de entregar y la única que ninguna fase había mirado |
 | 2026-08-13 | Fase 2 (móvil) | **Nada se aplica en esta pasada.** Los 8 hallazgos se registran con severidad y van al backlog ICE | Los dos de severidad 4 son cambio de comportamiento del shell y afectan a los 11 módulos: es una decisión de forma del usuario, no un arreglo de acabado |
 | 2026-08-13 | Fase 2 (móvil) | `/programacion-semanal` se excluye de la medición | Un subagente editaba su `hot.js` mientras se medía; medir un árbol a medio cambiar produce hallazgos falsos (misma razón que `B-2`) |
@@ -146,6 +148,16 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   el umbral de 1180 mueve el problema de sitio en vez de arreglarlo.
 - [ ] **Siguiente paso natural de la fase 2:** auditar el tramo de tablet (700–1180 px), que es
   exactamente la superficie que el umbral convierte en tarjetas y que esta pasada no midió.
+- [x] **Fase 2 ampliada con `/impeccable audit` — 2026-08-14.** Ocho hallazgos `M-A1`…`M-A8` sobre
+  la lista del usuario (botones de acción, chips contadores, filtros, header, indicador de módulo,
+  botones, interacción, tamaño de cards). Audit en **7/20**. Tres de severidad 4: la excepción
+  caducada (ya cerrada), el chip de semana que se pinta fuera de la pantalla y no se alcanza ni con
+  scroll, y los 34 controles bajo el mínimo táctil. Total del audit 96 → **104**.
+- [ ] **La decisión de forma que ordena el resto, heredada del audit:** los contadores y los filtros
+  **no existen** en móvil y las tarjetas miden 562 px. No es un problema de tamaños: nadie decidió
+  qué es lo esencial de una actividad en un teléfono. Rediseñar la tarjeta desde esa decisión
+  resuelve `M-A4`, `M-A5` y `M-A8` a la vez; ajustar tamaños sin ella es pulir la pantalla
+  equivocada.
 - [ ] **Lo que queda abierto no es trabajo, son decisiones.** Diez, recogidas una a una en
   `docs/DESIGN-AUDIT.md` §Pendiente de decisión del usuario: las 9 excepciones de a11y de
   `.pdc-header`, los dos goldens ciegos (fila de capítulo en PG, estado bloqueado en PI), la

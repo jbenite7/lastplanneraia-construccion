@@ -514,7 +514,7 @@ test('API CNP no reprograma una semana confirmada', async ({ page }) => {
   }
 });
 
-test('semana sin actividades no fabrica filas ni tarjetas', async ({ page }) => {
+test('semana sin actividades no fabrica tarjetas', async ({ page }) => {
   await page.setViewportSize({ width: 551, height: 750 });
   await login(page, { username: ROLE_CASES[0].username, password: 'aia2026' });
   await selectProject(page, DA_PORTO);
@@ -528,9 +528,21 @@ test('semana sin actividades no fabrica filas ni tarjetas', async ({ page }) => 
   expect((await response.json()).data).toEqual([]);
   await expect(page.locator('article.ps-mobile-card')).toHaveCount(0);
   await expect(page.locator('#mobile-card-view .ps-mobile-empty')).toBeVisible();
+});
 
+// E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla en tablet: con
+// el umbral en 1180px, 787px ya no monta la grilla de Handsontable, sino tarjetas. La mitad de
+// escritorio de esta prueba (antes en el mismo test que la de arriba, separada aqui) verificaba
+// PSHotModule.getHotInstance().countRows() a 787px, que deja de tener sentido bajo el umbral
+// nuevo. Reescribir contra las tarjetas es trabajo de la tanda de evidencia movil (F2a-2b), no
+// de este cambio de umbral. Decision del usuario, 2026-08-14.
+test.skip('semana sin actividades no fabrica filas en la grilla (tablet)', async ({ page }) => {
+  await page.setViewportSize({ width: 551, height: 750 });
+  await login(page, { username: ROLE_CASES[0].username, password: 'aia2026' });
+  await selectProject(page, DA_PORTO);
+  const emptyWeek = await resolveEmptyWeek(page, DA_PORTO);
   await page.setViewportSize({ width: 787, height: 750 });
-  await page.reload();
+  await changeWeek(page, emptyWeek, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
   const grid = await page.evaluate(() => ({
     rows: window.PSHotModule.getHotInstance().countRows(),
@@ -559,7 +571,12 @@ test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) 
   expect(state.overflow).toBeLessThanOrEqual(1);
 });
 
-test('tabla semanal tablet usa superficies dark cuando el tema es dark', async ({ page }) => {
+// E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla en tablet: con
+// el umbral en 1180px, 787px ya no monta #hot-container .handsontable, sino tarjetas. Este
+// escenario deja de existir en el producto. Reescribir contra las tarjetas es trabajo de la
+// tanda de evidencia movil (F2a-2b), no de este cambio de umbral. Decision del usuario,
+// 2026-08-14.
+test.skip('tabla semanal tablet usa superficies dark cuando el tema es dark', async ({ page }) => {
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
   await expect.poll(() => page.evaluate(() => [
     '#hot-container', '.ps-hot-toolbar-shell',

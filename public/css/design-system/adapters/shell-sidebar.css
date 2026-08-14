@@ -340,6 +340,19 @@
     .shell-menu-trigger[hidden] {
       display: none;
     }
+
+    /* El disparador es `position: fixed` en la esquina superior izquierda
+       (arriba) y NO participa del flujo de `.context-bar` -es un hermano
+       fuera de su subarbol, por la misma razon de apilamiento explicada
+       arriba-, asi que sin este padding su texto (#ctxProyecto, "Programa
+       cion Semanal"...) se renderiza DEBAJO del boton en vez de a su lado.
+       Confirmado con captura real a 390px el 2026-08-14: el boton tapaba
+       "Preconstruccion Da Porto" en los dos modulos del piloto. El valor
+       reserva el ancho medido del boton (96px hasta su borde derecho) mas
+       aire, con dos tokens de la escala en vez de un pixel suelto. */
+    body.aia-shell--sidebar .context-bar {
+      padding-inline-start: calc(var(--ds-space-18) + var(--ds-space-8));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

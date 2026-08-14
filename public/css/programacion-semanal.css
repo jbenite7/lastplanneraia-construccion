@@ -933,7 +933,7 @@ body.ps-page .ps-hot-toolbar-shell {
     line-height: 1;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1179px) {
     .ps-page .ps-hot-toolbar-shell {
         --ps-mobile-control-min: var(--ds-target-min);
         padding: var(--spacing-sm);

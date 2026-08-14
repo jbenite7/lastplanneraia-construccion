@@ -4372,7 +4372,7 @@
       return;
     }
 
-    var isMobile = window.matchMedia('(max-width: 768px)').matches;
+    var isMobile = window.matchMedia('(max-width: 1179px)').matches;
     container.replaceChildren();
     if (!isMobile) {
       return;
@@ -4405,7 +4405,15 @@
     } else {
       updateLegendCounts(filtered);
     }
-    updateOrInitHot(filtered);
+    // E4 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md): bajo el
+    // umbral no se instancia Handsontable. Las cards de Intermedia son de
+    // solo lectura (createMobileCard/getStateView no dependen de
+    // buildRowClassCache ni de ninguna otra cosa que updateOrInitHot deje de
+    // correr), asi que no hace falta un camino de guardado alterno como en
+    // Semanal.
+    if (!window.AIAViewSwitch || window.AIAViewSwitch.shouldRenderCards(window.innerWidth) !== true) {
+      updateOrInitHot(filtered);
+    }
     renderMobileCards(filtered);
     updateSharedSelectionCountIndicator();
   }

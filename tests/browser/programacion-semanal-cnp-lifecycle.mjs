@@ -34,7 +34,7 @@ test('PSLegacyCards conserva un solo listener mobile al repetir attach', async (
     const addEventListener = prototype.addEventListener;
     window.__qaMobileChangeListeners = [];
     prototype.addEventListener = function (type, listener, options) {
-      if (type === 'change' && this.media === '(max-width: 767px)') {
+      if (type === 'change' && this.media === '(max-width: 1179px)') {
         window.__qaMobileChangeListeners.push(listener);
       }
       return addEventListener.call(this, type, listener, options);

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { crearReglasSemanal, crearReglasIntermedia } from '../../public/js/modules/aia_ui/enablement-rules.js';
+import { shouldRenderCards, UMBRAL_CARDS } from '../../public/js/modules/aia_ui/view-switch.js';
 
 const ctx = (over = {}) => ({
   permiso: 'A', semana: 5, maxSemana: 5, semanalConfirmada: 0, ...over,
@@ -77,4 +78,12 @@ test('I5: __shared_selected ignora rol y fase en fila normal', () => {
   const reglas = crearReglasIntermedia(ctxPI({ permiso: 'V', semanalConfirmada: 1 }));
   assert.equal(reglas.puedeEditarCelda(celda()), false);
   assert.equal(reglas.puedeEditarCelda(celda({ prop: '__shared_selected' })), true);
+});
+
+test('el umbral es 1180 y el borde cae del lado de la grilla', () => {
+  assert.equal(UMBRAL_CARDS, 1180);
+  assert.equal(shouldRenderCards(1179), true);
+  assert.equal(shouldRenderCards(1180), false);
+  assert.equal(shouldRenderCards(390), true);
+  assert.equal(shouldRenderCards(1440), false);
 });

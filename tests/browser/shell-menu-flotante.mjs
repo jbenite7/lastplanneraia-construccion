@@ -53,3 +53,20 @@ test('en 1440 el comportamiento es el de siempre y el disparador no se ve', asyn
   const padding = await page.evaluate(() => getComputedStyle(document.body).paddingLeft);
   expect(padding).not.toBe('0px');
 });
+
+// Detectado el 2026-08-14 al generar la evidencia móvil del piloto: el
+// disparador, fijo en la esquina superior izquierda, tapaba el texto de
+// contexto (#ctxProyecto) porque .context-bar no reservaba su sitio. La
+// captura lo mostraba a simple vista; esta prueba lo hubiera cazado sin
+// necesidad de mirarla.
+test('el disparador no se solapa con el texto de contexto en 390', async ({ page }) => {
+  await abrir(page, 390);
+  const solapa = await page.evaluate(() => {
+    const trigger = document.getElementById('shellMenuTrigger');
+    const ctx = document.getElementById('ctxProyecto');
+    const tr = trigger.getBoundingClientRect();
+    const cr = ctx.getBoundingClientRect();
+    return !(tr.right < cr.left || tr.left > cr.right || tr.bottom < cr.top || tr.top > cr.bottom);
+  });
+  expect(solapa, 'El disparador tapa el texto de contexto').toBe(false);
+});

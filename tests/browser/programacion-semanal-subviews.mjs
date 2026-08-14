@@ -78,7 +78,7 @@ async function waitForSection(page) {
     const data = table.settings()[0]?.json?.data;
     if (!Array.isArray(data)) return false;
     const applied = table.rows({ search: 'applied' }).count();
-    if (!window.matchMedia('(max-width: 768px)').matches) {
+    if (!window.matchMedia('(max-width: 1179px)').matches) {
       return data.length === 0
         ? Boolean(document.querySelector('#dt_cliente .dataTables_empty'))
         : applied > 0;
@@ -389,7 +389,13 @@ test('CNP tablet reserva ancho legible para la búsqueda', async ({ page }) => {
   expect(layout.clearRight).toBeLessThanOrEqual(layout.toolbarRight + 1);
 });
 
-test('CNP 787 reúne la barra en una fila con Secciones a la derecha', async ({ page }) => {
+  // E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla
+  // en tablet: con el umbral en 1180px, CNP a 787px ya no renderiza
+  // .dataTables_scrollHead ni table.dataTable, sino tarjetas. Este escenario deja
+  // de existir en el producto. Reescribir contra las tarjetas es trabajo de la
+  // tanda de evidencia movil (F2a-2b), no de este cambio de umbral. Decision del
+  // usuario, 2026-08-14.
+test.skip('CNP 787 reúne la barra en una fila con Secciones a la derecha', async ({ page }) => {
   const section = SECTIONS.find(({ key }) => key === 'CNP');
   await openSection(page, section, { width: 787, height: 750 }, 1, DA_PORTO, CREDENTIALS);
   const layout = await page.evaluate(() => {
@@ -806,7 +812,13 @@ test('CIC respeta la semana seleccionada aunque exista una posterior', async ({ 
   expect(new Set(renderedWeeks)).toEqual(new Set([6]));
 });
 
-test('CNP tablet mantiene todas las superficies dark, sin claras residuales', async ({ page }) => {
+  // E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla
+  // en tablet: con el umbral en 1180px, CNP a 787px ya no renderiza
+  // .dataTables_scrollHead ni table.dataTable, sino tarjetas. Este escenario deja
+  // de existir en el producto. Reescribir contra las tarjetas es trabajo de la
+  // tanda de evidencia movil (F2a-2b), no de este cambio de umbral. Decision del
+  // usuario, 2026-08-14.
+test.skip('CNP tablet mantiene todas las superficies dark, sin claras residuales', async ({ page }) => {
   const section = SECTIONS.find(({ key }) => key === 'CNP');
   await openSection(page, section, { width: 787, height: 750 }, 7, PRUEBA, CREDENTIALS);
   await expectTheme(page, 'dark');
@@ -824,7 +836,13 @@ test('CNP tablet mantiene todas las superficies dark, sin claras residuales', as
   }), { timeout: 2000 }).toEqual({ surfaces: true, info: true });
 });
 
-test('CNP tablet contiene las acciones dentro de su columna', async ({ page }) => {
+  // E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla
+  // en tablet: con el umbral en 1180px, CNP a 787px ya no renderiza
+  // .dataTables_scrollHead ni table.dataTable, sino tarjetas. Este escenario deja
+  // de existir en el producto. Reescribir contra las tarjetas es trabajo de la
+  // tanda de evidencia movil (F2a-2b), no de este cambio de umbral. Decision del
+  // usuario, 2026-08-14.
+test.skip('CNP tablet contiene las acciones dentro de su columna', async ({ page }) => {
   const section = SECTIONS.find(({ key }) => key === 'CNP');
   await openSection(page, section, { width: 787, height: 750 }, 7, PRUEBA, CREDENTIALS);
   await expectTheme(page, 'dark');
