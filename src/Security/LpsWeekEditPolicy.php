@@ -32,6 +32,33 @@ final class LpsWeekEditPolicy
             $projectId,
         )->fetchColumn();
         $role = (new RbacService($this->db))->resolveCurrentRole();
+
+        return self::decide($role, $week, $maxWeek, $qualification, function () use ($weeksTable, $projectId, $week): bool {
+            $confirmed = $this->db->queryWithProject(
+                "SELECT Semanal_Confirmada FROM {$weeksTable} WHERE project_id = ? AND Semana = ?",
+                [$projectId, $week],
+                $projectId,
+            )->fetchColumn();
+
+            return (int) $confirmed === 1;
+        });
+    }
+
+    /**
+     * Composicion pura de las dos reglas de habilitacion, sin sesion ni base de datos.
+     *
+     * $isWeekConfirmed se invoca de forma perezosa: solo cuando la edicion normal ya
+     * denego y la excepcion de calificacion sigue en juego, igual que antes de extraerla.
+     *
+     * @param callable():bool $isWeekConfirmed
+     */
+    public static function decide(
+        string $role,
+        int $week,
+        int $maxWeek,
+        bool $qualification,
+        callable $isWeekConfirmed
+    ): bool {
         if (RbacCatalog::canEditLpsWeek($role, $week, $maxWeek)) {
             return true;
         }
@@ -39,12 +66,6 @@ final class LpsWeekEditPolicy
             return false;
         }
 
-        $confirmed = $this->db->queryWithProject(
-            "SELECT Semanal_Confirmada FROM {$weeksTable} WHERE project_id = ? AND Semana = ?",
-            [$projectId, $week],
-            $projectId,
-        )->fetchColumn();
-
-        return (int) $confirmed === 1;
+        return $isWeekConfirmed();
     }
 }
