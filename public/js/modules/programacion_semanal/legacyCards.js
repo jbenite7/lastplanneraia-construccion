@@ -1,7 +1,7 @@
 (function (window, $) {
   'use strict';
 
-  var mobileQuery = window.matchMedia('(max-width: 767px)');
+  var mobileQuery = window.matchMedia('(max-width: 1179px)');
   var responsiveBindings = Object.create(null);
 
   function escapeHtml(value) {

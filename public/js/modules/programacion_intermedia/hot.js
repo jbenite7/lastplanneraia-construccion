@@ -4372,7 +4372,7 @@
       return;
     }
 
-    var isMobile = window.matchMedia('(max-width: 768px)').matches;
+    var isMobile = window.matchMedia('(max-width: 1179px)').matches;
     container.replaceChildren();
     if (!isMobile) {
       return;
