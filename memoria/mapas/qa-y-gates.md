@@ -108,6 +108,8 @@ Hay rojos que ya estaban ahí. Lee primero:
 - [[captura-playwright-miente]] — capturas de fallo que mienten cuando el spec cierra sesión en
   el `finally`.
 - [[gate-visual-tolerancia-enganosa]] — goldens que pasan en verde con un rediseño real.
+- [[regla-inalcanzable-parece-regla-sin-probar]] — antes de saltar una prueba por falta de un
+  caso, averigua quién lo impide: si es el propio producto, la regla está muerta en esa vista.
 
 ## Regla de fondo
 
