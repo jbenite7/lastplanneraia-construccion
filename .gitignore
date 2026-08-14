@@ -404,6 +404,10 @@ openspec/
 # Andamiaje de coordinating-agent-sessions: cola por frente que duplicaria
 # docs/decisiones-pendientes.md, que es la cola canonica de este repo.
 decisiones/
+# ...pero el patron va sin ancla, asi que tambien se tragaba `memoria/decisiones/`, que es
+# wiki y SI viaja. Las paginas viejas de ahi sobrevivian solo por estar ya trackeadas: el
+# patron unicamente mordia a las nuevas, que desaparecian sin aviso de `git status`.
+!memoria/decisiones/
 
 # ci-en-verde (F-0): solo el validation-log viaja — la medición en navegador que el
 # cierre cita. Como arriba: re-permitir carpeta y archivo porque `goals/*` excluye.
