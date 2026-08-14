@@ -71,7 +71,7 @@ Cinco unidades, en orden, cada una verificable sola:
    fijar la semana 1.
 4. **Quitar los cuatro `test.skip`** y el andamio que sobre, conservando el candado intacto.
 5. **Cablear el paso** en `.github/workflows/design-system.yml`, después de que la app aislada esté
-   arriba, con las cuatro variables de consentimiento y recibo vía `scripts/gate-receipt.mjs`.
+   arriba, con las cuatro variables de consentimiento y recibo vía `scripts/design-system/gate-receipt.mjs`.
 
 ## Verificación
 
