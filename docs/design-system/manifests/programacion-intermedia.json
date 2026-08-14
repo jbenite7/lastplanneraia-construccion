@@ -78,7 +78,8 @@
   "tests": [
     "tests/browser/design-system-compliance.mjs",
     "tests/browser/design-system-consumer-smoke.mjs",
-    "tests/browser/programacion-intermedia.visual.mjs"
+    "tests/browser/programacion-intermedia.visual.mjs",
+    "tests/browser/programacion-intermedia-enablement.mjs"
   ],
   "evidence": [
     "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/"

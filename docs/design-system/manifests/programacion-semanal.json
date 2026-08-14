@@ -82,7 +82,8 @@
     "tests/browser/programacion-semanal-cnp-lifecycle.mjs",
     "tests/browser/programacion-semanal-roles-phases.mjs",
     "tests/browser/programacion-semanal-sprint.mjs",
-    "tests/browser/design-system-compliance.mjs"
+    "tests/browser/design-system-compliance.mjs",
+    "tests/browser/programacion-semanal-enablement.mjs"
   ],
   "evidence": [
     "tests/browser/__screenshots__/programacion-semanal/"
