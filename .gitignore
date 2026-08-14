@@ -274,6 +274,8 @@ tests/browser/*
 !tests/browser/programacion-semanal-nueva-actividad-a11y.mjs
 !tests/browser/programacion-intermedia-mobile-runtime.mjs
 !tests/browser/programacion-intermedia.visual.mjs
+!tests/browser/programacion-semanal-enablement.mjs
+!tests/browser/programacion-intermedia-enablement.mjs
 !tests/browser/programa-general-actualizar.visual.mjs
 !tests/browser/ops-state-chip-hue.mjs
 !tests/browser/cic-role-disciplines.mjs
