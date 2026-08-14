@@ -24,7 +24,7 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done — GATE abierto; fases 2-9 desbloqueadas | CUSTOMER.md | 2026-08-04 |
-| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
+| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición. **Reabierta y ampliada el 2026-08-13 sobre móvil**, superficie que ninguna fase había mirado: 8 hallazgos `V-1`…`V-8`, dos de ellos severidad 4. Tablet (700–1180 px) queda pendiente | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 · 2026-08-13 |
 | 3 | design-everyday-things | done — lente de Norman sobre PG→PI→PS; 7 hallazgos nuevos (`N-1`…`N-7`) con severidad y C-14 medido y absorbido. **Nada aplicado:** todo es cambio de comportamiento, se registra y se pregunta | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 5 | microinteractions | done — las 4 acciones diarias desmontadas en Trigger/Rules/Feedback/Loops **midiendo en navegador**; 6 hallazgos (`M-1`…`M-6`), momento firma = confirmar compromisos. Solo `M-1` era CSS puro y se aplicó; los otros 5 tocan comportamiento y van al backlog | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
@@ -58,6 +58,9 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-05 | Fase 6 | La regla de aplicación del copy es **no-dominio se reescribe, dominio se registra**; `GLOSARIO.md` es la autoridad de nomenclatura | Reescribir «compromiso», «restricción» o «Autoprogramar» rompería el vocabulario compartido con la obra, que es justo lo que sostiene los tres jobs |
 | 2026-08-05 | Fase 6 | `docs/POSITIONING.md` se escribe como **esqueleto mínimo**: solo `## Key Messages`, derivado de los tres job statements de `CUSTOMER.md` | App interna sin superficie de venta (la misma razón por la que la fase 7 está `skipped`); rellenar audiencia, categoría y diferenciadores sería inventar |
 | 2026-08-05 | Fase 6 | El hallazgo de la fase: **el copy no falla por tono ni por longitud, sino por ausencia de paso siguiente** en los momentos de error y de vacío | Es la misma forma que encontró la fase 5 con las microinteracciones —el hueco siempre del mismo lado—, ahora en palabras |
+| 2026-08-13 | Fase 2 (móvil) | El recorrido se reanuda por **auditar móvil y tablet**, no por las decisiones abiertas ni por el veredicto de la fase 9 | Decisión del usuario; es la superficie que el piloto F2a-2b está a punto de entregar y la única que ninguna fase había mirado |
+| 2026-08-13 | Fase 2 (móvil) | **Nada se aplica en esta pasada.** Los 8 hallazgos se registran con severidad y van al backlog ICE | Los dos de severidad 4 son cambio de comportamiento del shell y afectan a los 11 módulos: es una decisión de forma del usuario, no un arreglo de acabado |
+| 2026-08-13 | Fase 2 (móvil) | `/programacion-semanal` se excluye de la medición | Un subagente editaba su `hot.js` mientras se medía; medir un árbol a medio cambiar produce hallazgos falsos (misma razón que `B-2`) |
 | 2026-08-04 | Encaje | La biblia de flujos (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md`) comparte backlog con este tracker: la matriz esfuerzo/impacto **es** EXPERIMENTS.md | Un solo backlog; evita dos listas de pendientes divergentes |
 
 ## Next Actions
@@ -132,6 +135,17 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
      de cierre**: las 11 filas `pendiente (Task N)` a `done`, `N-1` a `done` y `N-2` a
      `cerrado sin código` por decisión del usuario, y 15 entradas nuevas. Total 73 → **88**, con
      `pendiente` en **cero**.
+- [x] **Fase 2 ampliada a móvil — 2026-08-13.** Medido en navegador a 390×844 dark sobre el stack
+  local: 8 hallazgos `V-1`…`V-8` en `docs/DESIGN-AUDIT.md` y 7 tarjetas ICE nuevas. **El hallazgo que
+  ordena a los demás: «las tarjetas ya existen» no significa «móvil funciona»** — las tarjetas están
+  bien construidas y lo que las inutiliza es el shell, cuyo sidebar nunca colapsa por ancho y se come
+  240 de 390 px, dejando el contenido en 203 px con el texto partido letra a letra. Total del audit
+  88 → **96**.
+- [ ] **Pregunta abierta al usuario, de la fase 2 móvil:** ¿se colapsa el sidebar por ancho —cambio
+  de comportamiento del shell que toca los 11 módulos— antes de entregar tarjetas en tablet? Sin eso,
+  el umbral de 1180 mueve el problema de sitio en vez de arreglarlo.
+- [ ] **Siguiente paso natural de la fase 2:** auditar el tramo de tablet (700–1180 px), que es
+  exactamente la superficie que el umbral convierte en tarjetas y que esta pasada no midió.
 - [ ] **Lo que queda abierto no es trabajo, son decisiones.** Diez, recogidas una a una en
   `docs/DESIGN-AUDIT.md` §Pendiente de decisión del usuario: las 9 excepciones de a11y de
   `.pdc-header`, los dos goldens ciegos (fila de capítulo en PG, estado bloqueado en PI), la

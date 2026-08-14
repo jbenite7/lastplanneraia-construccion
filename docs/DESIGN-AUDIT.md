@@ -345,6 +345,39 @@ a uno (`S-2`), y el estado vacío de Control de Cambios (C-33, redacción **prov
 trabajo de esta campaña, así que su desktop hermano quedó reescrito y él no. Es inconsistencia
 deliberada y anotada, no un olvido.
 
+## Lente de usabilidad sobre móvil y tablet (fase 2 de `improve-app`, 2026-08-13)
+
+**Por qué existe esta sección:** las nueve fases del journey se auditaron a **1180×820 en escritorio**.
+Móvil y tablet no pasaron nunca por una lente, y el piloto F2a-2b está a punto de entregar tarjetas
+en tablet. Medido en el navegador integrado sobre el stack local, ruta `/programacion-intermedia` y
+`/programa-general`, viewport **390×844**, dark, cuenta `test.A`, proyecto `Preconstrucción Da Porto`.
+
+**Aviso de método, porque condiciona la lectura:** el emulador dispara un falso positivo de la
+detección de tablet (ver `V-4`), así que la app aplicaba escala 0.85 y medía 458 px CSS donde debía
+medir 390. Las cifras de abajo se tomaron **tras neutralizar ese efecto** salvo donde se dice lo
+contrario. Lo que el falso positivo destapó es en sí mismo un hallazgo, no un estorbo.
+
+| Issue | Heuristic | Severity (0-4) | Fix | Status |
+|---|---|---|---|---|
+| **V-1** · En 390 px con el sidebar expandido, la navegación ocupa **240 px (60 % del ancho)** y el contenido queda en una columna de **203 px**: las tarjetas de Intermedia miden 171 px de ancho por **944 px de alto** y el texto se parte **letra por letra** («Co / ntr / at / o»). La barra de acciones se desborda y corta sus botones | Diseño estético y minimalista (N8); Flexibilidad y eficiencia (N7) | **4** | Sin proponer: la decisión de forma es del usuario. El arreglo evidente —colapsar el sidebar por ancho— es cambio de comportamiento del shell, que afecta a los 11 módulos | backlog ICE |
+| **V-2** · **Causa raíz de V-1:** el sidebar **no colapsa nunca por ancho de pantalla**. `public/js/modules/aia_ui/sidebar_navigation.js` no consulta `matchMedia` ni `innerWidth` en ninguna línea, y `public/css/design-system/adapters/shell-sidebar.css` solo tiene media queries de `prefers-reduced-motion`. El estado vive en `localStorage` (`aia-sidebar-state`) y **se comparte entre escritorio y móvil**: quien lo expandió en su portátil se lo encuentra expandido en el teléfono | Flexibilidad y eficiencia de uso (N7) | **4** | Sin proponer (ver V-1) | backlog ICE |
+| **V-3** · Con el **mismo** `aia-sidebar-state=expanded`, `/programa-general` deja el sidebar en **64 px** y `/programacion-intermedia` en **240 px**. Re-medido con la misma espera en las dos rutas para descartar prisa de medición. En PG, además, el botón declara `aria-expanded="true"` mientras la navegación se ve colapsada a iconos: **el estado que anuncia el lector de pantalla contradice al visible** | Consistencia y estándares (N4); Visibilidad del estado (N1) | 3 | Sin proponer | backlog ICE |
+| **V-4** · La detección de tablet de `public/js/tablet-viewport-scale.js:37` usa `navigator.platform === 'MacIntel' && touchPoints > 1` —`navigator.platform` está **deprecado**— y se evalúa **antes** que las comprobaciones de tamaño (`:40-45`), así que un falso positivo aplica el viewport de tablet **a cualquier ancho**, teléfono o escritorio. Lo disparó el propio emulador de esta auditoría | Prevención de errores (N5) | 3 | Sin proponer | backlog ICE |
+| **V-5** · El viewport de tablet fija **`maximum-scale=1.2`** (`tablet-viewport-scale.js:4`). Aunque declara `user-scalable=yes`, el tope impide ampliar hasta el 200 % que exige **WCAG 2.2 SC 1.4.4 (Resize Text)** | Accesibilidad — WCAG 1.4.4 | 3 | Sin proponer | backlog ICE |
+| **V-6** · La misma señal significa dos cosas: la clase `tablet-scale-70` se traduce como factor **0,85 en Semanal** (`programacion_semanal/hot.js:1491`) y **0,7 en Intermedia** (`programacion_intermedia/hot.js:3287`), mientras el meta declara **0,85**. El cálculo de altura del contenedor de Intermedia parte de un factor que no coincide con la escala real | Consistencia y estándares (N4) | 2 | Sin proponer | backlog ICE |
+| **V-7** · En la barra de acciones de Intermedia a 390 px hay **11 objetivos táctiles por debajo de 44×44 px**: los botones miden 28 px de alto («Leyenda», «Descargar Corte», «Exportar CSV», «Recargar», «Listas»…) y el conmutador «Ver Todas las Actividades» mide **13×13** | Objetivos táctiles (WCAG 2.5.8 / móvil) | 2 | Sin proponer | backlog ICE |
+| **V-8** · En 390 px, `#hot-container` está oculto por CSS pero **Handsontable se instancia igual**: 6 nodos montados que nadie ve. Confirma en vivo que la decisión E4 de la spec no estaba implementada | Eficiencia (N7) | 3 | **Ya en curso:** es exactamente lo que quita la Task 5 del plan `2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje.md` | en plan |
+
+**Lo que esta pasada NO midió, y por qué:** `/programacion-semanal` quedó fuera porque un subagente
+estaba editando su `hot.js` mientras se medía, y medir un árbol a medio cambiar produce hallazgos
+falsos —la misma razón que ya dejó escrita `B-2`—. Tampoco se auditó tablet real (700–1180 px), que
+es la superficie que el umbral de 1180 va a convertir en tarjetas: queda como el siguiente paso
+natural de esta fase.
+
+**La conclusión que ordena las demás:** «las tarjetas ya existen» no significa «móvil funciona». Las
+tarjetas están bien construidas; lo que las inutiliza es el shell que las rodea. Entregar tarjetas en
+tablet sin resolver `V-1`/`V-2` movería el problema de sitio en vez de arreglarlo.
+
 ## Recuento
 
 | Estado | Entradas |
@@ -353,10 +386,11 @@ deliberada y anotada, no un olvido.
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | **0** |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 39 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 46 |
 | `cerrado sin código` | 6 |
+| `en plan` (F2a-2b-2) | 1 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **88** |
+| **Total** | **96** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.

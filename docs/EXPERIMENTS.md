@@ -124,6 +124,14 @@ que el método funciona.
 
 ---
 
+| **El sidebar no colapsa nunca por ancho: en 390 px se come el 60 % de la pantalla.** `sidebar_navigation.js` no consulta `matchMedia` ni `innerWidth`, y su CSS solo tiene media queries de `prefers-reduced-motion`; el estado vive en `localStorage` y se comparte entre escritorio y móvil. Consecuencia medida en `/programacion-intermedia` a 390 px: contenido en 203 px, tarjetas de 944 px de alto y texto partido letra a letra. **Es la causa raíz de que móvil sea inusable, no las tarjetas** | V-1/V-2 (fase 2 móvil) | 9 | 10 | 4 | 360 | — | abierto · **decisión del usuario:** colapsar por ancho es cambio de comportamiento del shell y toca los 11 módulos |
+| **Con el mismo estado guardado, PG deja el sidebar en 64 px y PI en 240 px**, y en PG el botón declara `aria-expanded="true"` con la navegación colapsada a iconos: lo que anuncia el lector de pantalla contradice lo que se ve | V-3 (fase 2 móvil) | 6 | 9 | 5 | 270 | — | abierto |
+| **La detección de tablet usa `navigator.platform`, deprecado, y se evalúa antes que el tamaño.** `tablet-viewport-scale.js:37` da falso positivo en cualquier Mac con puntero táctil —lo disparó el emulador de la propia auditoría— y entonces aplica el viewport de tablet a cualquier ancho, teléfono o escritorio | V-4 (fase 2 móvil) | 6 | 9 | 6 | 324 | — | abierto |
+| **`maximum-scale=1.2` impide ampliar hasta el 200 % que exige WCAG 2.2 SC 1.4.4.** El viewport de tablet declara `user-scalable=yes` pero pone tope en 1,2× (`tablet-viewport-scale.js:4`) | V-5 (fase 2 móvil) | 7 | 10 | 9 | 630 | — | abierto · **el más barato de los ocho:** es una constante |
+| **La clase `tablet-scale-70` significa 0,85 en Semanal y 0,7 en Intermedia**, mientras el meta declara 0,85: el cálculo de altura de PI parte de un factor que no coincide con la escala real | V-6 (fase 2 móvil) | 5 | 9 | 7 | 315 | — | abierto |
+| **11 objetivos táctiles por debajo de 44×44 px en la barra de Intermedia a 390 px**: los botones miden 28 px de alto y el conmutador «Ver Todas las Actividades», 13×13 | V-7 (fase 2 móvil) | 6 | 10 | 6 | 360 | — | abierto |
+| **Auditar tablet real (700–1180 px), que es la superficie que el umbral de 1180 convierte en tarjetas.** Esta pasada midió 390 px; el tramo de tablet quedó sin medir y es justo donde el piloto cambia el producto | V-* (límite declarado de la fase 2 móvil) | 8 | 10 | 8 | 640 | — | abierto · **siguiente paso natural de la fase** |
+
 ## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
 
 Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)
