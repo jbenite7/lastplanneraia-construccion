@@ -373,7 +373,10 @@ VALUES
   (2, 'CI Residente', 'resident@ci.invalid', 'Residente de Obra', 'test.R', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1),
   (3, 'CI Contratista', 'contractor@ci.invalid', 'Subcontratista', 'test.C', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1),
   (4, 'CI Visualizador', 'viewer@ci.invalid', 'Visualizador', 'test.V', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1),
-  (5, 'CI Oficina Tecnica', 'technical@ci.invalid', 'Oficina Tecnica', 'test.OT', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1);
+  (5, 'CI Oficina Tecnica', 'technical@ci.invalid', 'Oficina Tecnica', 'test.OT', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1),
+  -- ROLE_CASES de programacion-semanal-roles-phases.mjs incluye el rol D; sin este usuario y su
+  -- membresia (mas abajo) ese caso no podia siquiera autenticar en el stack aislado.
+  (6, 'CI Director de Obra', 'director@ci.invalid', 'Director de Obra', 'test.D', '$2y$10$vdbXz3NfKDv5Ctyr/ijIVOk9uhCsjNC1dMG3MxMQmBJr/yCLlueJO', 0, 1);
 
 INSERT INTO `general_proyectos_procesos`
   (`Id`, `Proyecto_Proceso`, `Base_de_Datos`, `Area`, `pc_restr_2_nombre`, `pc_restr_3_nombre`, `pc_restr_4_nombre`, `Activo`, `Acceso`, `pdcActivo`)
@@ -455,6 +458,11 @@ VALUES
   (7, 75, 2, 'R', '2026-01-01 00:00:00'),
   (8, 75, 4, 'V', '2026-01-01 00:00:00'),
   (9, 68, 1, 'A', '2026-01-01 00:00:00'),
+  -- test.R en JMC: el caso "rol R histórico solo puede calificar el compromiso confirmado" abre
+  -- sesion con este rol sobre el proyecto 68, que hasta ahora solo tenia a test.A como miembro.
+  (11, 68, 2, 'R', '2026-01-01 00:00:00'),
+  -- test.D en Da Porto: ROLE_CASES itera los cuatro roles sobre DA_PORTO (73).
+  (12, 73, 6, 'D', '2026-01-01 00:00:00'),
   (10, 76, 1, 'A', '2026-01-01 00:00:00');
 
 INSERT INTO `general_codigos_actividades` (`codigo_actividad`, `actividad`, `unidad`)
@@ -525,6 +533,22 @@ INSERT INTO `semanas_activas`
   (`project_id`, `Id`, `Semana`, `Fecha_Inicio_Sem`, `Fecha_Fin_Sem`, `Semanal_Confirmada`, `fechaCreacionSemana`)
 VALUES
   (73, 1, 1, '2026-07-06', '2026-07-12', 0, '2026-07-01'),
+  -- Semana 2 de Da Porto, deliberadamente SIN filas en programacion_semanal: sostiene el caso
+  -- "semana sin actividades no fabrica filas ni tarjetas". Sube Max_Semana de Da Porto a 2 (antes
+  -- 1); revisado que ningun golden ni gate depende de que sea exactamente 1 (grep por "maxWeek",
+  -- y full-app-flow.spec.mjs / los .visual.mjs navegan por route explicita, no por historicidad
+  -- —la regla `maxWeek - 2` no se activa hasta maxWeek=3—). Ver spec 2026-08-14.
+  (73, 2, 2, '2026-07-13', '2026-07-19', 0, '2026-07-08'),
+  -- JMC crece hacia atras (semanas 1-4), nunca hacia adelante: la 5 sigue siendo la maxima y
+  -- abierta, que es lo que da por bueno `full-operational-cycle.spec.mjs`. Las cuatro nuevas van
+  -- confirmadas para que `programacion-semanal-roles-phases.mjs` tenga semana historica (3) y
+  -- semana de calificacion (4) sin fijar ningun literal — las deriva del propio `#Max_Semana` y
+  -- `#Semanal_Confirmada` que la vista ya expone. Ver docs/superpowers/specs/
+  -- 2026-08-14-fixture-ci-semanal-roles-design.md.
+  (68, 2, 1, '2026-06-29', '2026-07-05', 1, '2026-06-24'),
+  (68, 3, 2, '2026-07-06', '2026-07-12', 1, '2026-07-01'),
+  (68, 4, 3, '2026-07-13', '2026-07-19', 1, '2026-07-08'),
+  (68, 5, 4, '2026-07-20', '2026-07-26', 1, '2026-07-15'),
   (68, 1, 5, '2026-07-27', '2026-08-02', 0, '2026-07-01'),
   (75, 1, 3, '2026-07-20', '2026-07-26', 0, '2026-07-01'),
   (76, 1, 1, '2026-07-06', '2026-07-12', 0, '2026-07-01');
@@ -551,6 +575,12 @@ VALUES
   (73, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, 1, 0.5, 0.5, 1, 0.5, 1, '1', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (73, 103, 101, 'CI.FK.101', 'Ancla sintetica de identidad semanal', 0, '2026-07-06', '2026-07-06', 0, 0.00, 'No Requerida', 0, 1.00, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI Construccion', '0%', '0%', '0%', '0%'),
   (68, 11058, 1, 'JMC.1', 'Actividad sintetica JMC', 0, '2026-07-27', '2026-08-09', 1, 0.20, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0, 0, '1', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
+  -- Semana 3 (historica confirmada) y semana 4 (calificacion): sostienen a
+  -- programacion-semanal-roles-phases.mjs. La de Consecutivo 5 es la fila de CNP (Activa=0 en
+  -- `programacion_semanal`, mas abajo), no una tabla aparte.
+  (68, 11060, 3, 'JMC.3', 'Actividad sintetica JMC semana 3', 0, '2026-07-13', '2026-07-19', 0, 0.30, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0, 0, '1', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
+  (68, 11061, 4, 'JMC.4', 'Actividad sintetica JMC semana 4', 0, '2026-07-20', '2026-07-26', 0, 0.40, 'En Curso', 0, 0.80, 1, 1, 1, 1, 0, 0, '1', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
+  (68, 11062, 5, 'JMC.5', 'Causa no programacion sintetica JMC', 0, '2026-07-20', '2026-07-26', 0, 0.00, 'No Requerida', 0, 1.00, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
   (68, 11059, 2, 'JMC.2', 'Actividad sintetica JMC dos', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 0, 0.50, 1, 1, 1, 1, 0, 0, '0', 'Profesional CI JMC', '0%', '0%', '0%', '0%'),
   (75, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 0, '2026-07-20', '2026-08-09', 1, 0.20, 'En Ejecucion', 0, 0.50, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '50%', '50%', '0%'),
   (75, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, 0, 0, 0, 0, 0, 0, '0', 'Profesional CI Preconstruccion', '100%', '0%', '0%', '0%'),
@@ -564,6 +594,14 @@ VALUES
   (73, 1002, 2, 1, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, '1', '0.5', '0.5', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
   (68, 11001, 1, 5, 11058, 1, 'JMC.1', 'Actividad sintetica JMC', 0, '2026-07-27', '2026-08-09', 1, 0.20, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (68, 11002, 2, 5, 11059, 2, 'JMC.2', 'Actividad sintetica JMC dos', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 0, 0.50, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
+  -- Sin esta pareja de filas, ProgramChangeDetector::run() (disparado automaticamente por
+  -- changeMonitor.js en cada carga de pagina, sin mirar si la semana esta confirmada) trata las
+  -- filas de programacion_semanal de las semanas 3 y 4 como huerfanas -no tienen match en
+  -- programa_consolidado por unique_id+Semana- y las BORRA en el primer render. Medido el
+  -- 2026-08-14: la fila de CNP (Activa=0) no corre este riesgo porque loadPsConsecutivos() solo
+  -- mira Activa IN ('1','NA').
+  (68, 11003, 3, 3, 11060, 3, 'JMC.2', 'Actividad sintetica JMC semana 3', 0, '2026-07-13', '2026-07-19', 0, 0.30, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
+  (68, 11004, 4, 4, 11061, 4, 'JMC.3', 'Actividad sintetica JMC semana 4', 0, '2026-07-20', '2026-07-26', 0, 0.40, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (75, 2001, 1, 3, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 0, '2026-07-20', '2026-08-09', 1, 0.20, 'En Ejecucion', 0, 0.50, '0', '0', '0', '0', '0', '0', '0', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 1, 'CI-001', 1, 50, 'und', '100%', '50%', '50%', '0%'),
   (75, 2002, 2, 3, 202, 2, 'PC.2', 'Presupuesto sintetico coordinado', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 1, 0.25, '0', '0', '0', '0', '0', '0', '0', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 1, 'CI-002', 1, 60, 'und', '100%', '0%', '0%', '0%'),
   (76, 76001, 1, 1, 7601, 1, 'PC.DP.1', 'Actividad sintetica Preconstruccion Da Porto', 0, '2026-07-06', '2026-07-19', 1, 0.20, 'En Ejecucion', 0, 0.50, '0', '0', '0', '0', '0', '0', '0', 'Interesado CI Da Porto', 'Profesional CI Preconstruccion Da Porto', 1, 'CI-001', 1, 50, 'und', '100%', '0%', '0%', '0%'),
@@ -572,8 +610,28 @@ VALUES
 INSERT INTO `programacion_semanal`
   (`project_id`, `row_id`, `Consecutivo`, `Semana`, `unique_id`, `Consecutivo_En_Programa`, `Id`, `Actividad`, `Descripcion`, `Ubicacion`, `Fecha_Inicio`, `Fecha_Fin`, `Sub_Contratista`, `Responsable_AIA`, `Empresa`, `Ejecutado`, `Unidad`, `cantidad_ppto`, `Compromiso`, `Ejecutado_Real`, `P_Completado`, `PAC`, `Critica`, `Atrasada`, `Activa`, `Es_TNP`, `Prog_Sin_Restricciones_100`, `Categoria_CNC`, `CNC`, `Observaciones_CNC`)
 VALUES
-  (73, 3001, 1, 1, 101, 1, '1.1', 'Pintura sintetica nivel uno', 'Compromiso CI', 'Nivel 1', '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion', 'AIA', 0.25, 'm2', 100, 25, 20, 0.80, 0, 1, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico'),
+  -- `Critica=0`: hasta el 2026-08-14 era 1, y esa era la unica fila de Da Porto — hacia que el
+  -- chip "Ruta Critica" de la leyenda de alertas contara distinto de cero, y el caso 383 («filtro
+  -- sin resultados conserva dropdown y modales operables») exige que los cinco chips lean (0).
+  -- Sin consumidor conocido que dependa de que sea critica (revisado: legend-honesty lee tokens
+  -- CSS, no esta fila; ningun golden visual la referencia). Ver spec 2026-08-14.
+  (73, 3001, 1, 1, 101, 1, '1.1', 'Pintura sintetica nivel uno', 'Compromiso CI', 'Nivel 1', '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion', 'AIA', 0.25, 'm2', 100, 25, 20, 0.80, 0, 0, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico'),
   (68, 3002, 1, 5, 11058, 1, 'JMC.1', 'Actividad semanal sintetica JMC', 'Compromiso JMC CI', 'Nivel 1', '2026-07-27', '2026-08-02', 'Proveedor CI JMC', 'Profesional CI JMC', 'AIA', 0.20, 'm2', 100, 25, 20, 0.80, 0, 1, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico JMC'),
+  -- Semana 3 (historica confirmada): responsables + Compromiso > 0, precondicion de
+  -- `esCompromisoConfirmado` en programacion-semanal-roles-phases.mjs.
+  (68, 3003, 2, 3, 11060, 3, 'JMC.2', 'Actividad semanal sintetica JMC semana 3', 'Compromiso JMC CI semana 3', 'Nivel 1', '2026-07-13', '2026-07-19', 'Proveedor CI JMC', 'Profesional CI JMC', 'AIA', 0.30, 'm2', 100, 30, 24, 0.80, 0, 0, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico JMC semana 3'),
+  -- Semana 4 (calificacion, la que abren openJmcQualification y resolveConfirmedWeek):
+  -- Compromiso=50 y Es_TNP=0 a proposito. El caso "API semanal rechaza fase, CNC incompleta..."
+  -- postea Real=39 esperando 422 por incumplimiento sin CNC — esa rama del controlador
+  -- (SemanalApiController.php:322) se salta entera si Es_TNP=1, y solo dispara si
+  -- Real(39) < Compromiso. Compromiso=25 (como en las demas filas synteticas) habria hecho que
+  -- 39 < 25 fuera falso y el 422 no ocurriera por el motivo que la prueba dice probar.
+  (68, 3004, 3, 4, 11061, 4, 'JMC.3', 'Actividad semanal sintetica JMC semana 4', 'Compromiso JMC CI semana 4', 'Nivel 1', '2026-07-20', '2026-07-26', 'Proveedor CI JMC', 'Profesional CI JMC', 'AIA', 0.40, 'm2', 100, 50, 20, 0.80, 0, 0, 0, '1', 0, 1, 'Programacion', 'Coordinacion pendiente', 'Registro sintetico JMC semana 4'),
+  -- Fila de CNP (Activa=0, semana 4 confirmada): /api/semanal/list filtra Activa IN ('1','NA'),
+  -- asi que esta fila nunca aparece ahi y no interfiere con la de arriba; /api/cnp/list filtra
+  -- exactamente Activa=0. Sostiene el caso "API CNP no reprograma una semana confirmada", movido
+  -- de un proyecto 27 que no existe en este fixture al 68 (decision de la sesion, 2026-08-14).
+  (68, 3005, 4, 4, 11062, 5, 'JMC.4', 'Causa no programacion sintetica JMC', 'Causa no programacion JMC', 'Nivel 1', '2026-07-20', '2026-07-26', 'Proveedor CI JMC', 'Profesional CI JMC', 'AIA', 0.00, 'm2', 100, 0, 0, 0.00, 0, 0, 0, '0', 0, 0, NULL, NULL, NULL),
   (75, 4001, 1, 3, 201, 1, 'PC.1', 'Diseno sintetico de especialidad', 'Compromiso PC CI', 'Mesa tecnica', '2026-07-20', '2026-07-26', 'Consultor CI Preconstruccion', 'Profesional CI Preconstruccion', 'AIA', 0.20, 'und', 50, 10, 8, 0.80, 1, 1, 0, '1', 0, 1, NULL, NULL, NULL),
   (76, 6001, 1, 1, 7601, 1, 'PC.DP.1', 'Actividad semanal sintetica Preconstruccion', 'Compromiso PC Da Porto', 'Mesa tecnica', '2026-07-06', '2026-07-12', 'Interesado CI Da Porto', 'Profesional CI Preconstruccion Da Porto', 'AIA', 0.20, 'und', 50, 10, 8, 0.80, 1, 1, 0, '1', 0, 1, NULL, NULL, NULL);
 
