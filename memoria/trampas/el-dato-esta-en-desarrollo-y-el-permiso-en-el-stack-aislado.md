@@ -1,11 +1,18 @@
 ---
 tipo: trampa
-estado: vigente
+estado: derogada
 fecha: 2026-08-13
 areas: [qa, docker, datos]
 fuente: tests/browser/support/dbSnapshot.mjs, database/fixtures/design-system-ci.sql, corrida de programacion-semanal-roles-phases.mjs
-resumen: un e2e que escribe en la base solo puede correr en el stack aislado de CI, pero el fixture de ese stack no trae el dato rico de desarrollo, así que no hay ningún entorno donde pase
+resumen: DEROGADA 2026-08-14 — se amplió el fixture (commit 8a0d5e46); el hueco que describe ya no existe. Diagnóstico conservado como referencia de qué mirar ante el mismo síntoma.
 ---
+
+**Derogada el 2026-08-14**: el hueco que esta nota describía se cerró ampliando
+`database/fixtures/design-system-ci.sql` (commit `8a0d5e46`) — JMC ganó las semanas 1-4
+confirmadas con filas que cumplen la precondición de cada caso, y el caso de CNP se movió al
+proyecto 68. Los 14 casos de `programacion-semanal-roles-phases.mjs` corren y pasan en el stack
+aislado. El diagnóstico de abajo queda como referencia: la misma forma de trampa puede repetirse
+con otro spec que necesite dato que el fixture no trae todavía.
 `runSql` (`tests/browser/support/dbSnapshot.mjs`) enruta **todo** comando de base por
 `isolatedComposeArgs`, que llama a `assertIsolatedComposeEnvironment` y revienta si
 `COMPOSE_PROJECT_NAME` no empieza por `lps-aia-design-system-ci-`. El candado es deliberado: evita

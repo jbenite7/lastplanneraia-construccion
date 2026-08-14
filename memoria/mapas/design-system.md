@@ -128,7 +128,7 @@ Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
 
 ## Goals que trabajaron esta área
 
-- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Sigue abierto**: medido el 2026-08-10 que sus 15 gates de cierre NO están sustancialmente verificados — solo 2 pasan de verdad. Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]].
+- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Corregido 2026-08-14:** el hallazgo del 2026-08-10 (15 gates, solo 2 verificados de verdad) es histórico — el Frente 1b bajó el índice de 15 a 8 gates, cada uno con recibo real (`command`/`exitCode`/`outputTail`). A 2026-08-14, `docs/design-system/closeout-evidence.json` tiene 7/8 en `passed` con recibo verificado (tres regenerados ese mismo día) y solo `runtime-budgets` en `blocked`. Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]].
 - [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]] — núcleo sin vendors más adjuntos por vendor, para dejar de servir ~190 KB de CSS de grilla a superficies ligeras.
 - [[goals/shell-layout-design-system/goal|shell-layout-design-system]] — el paraguas que agrupó shell, layout y sistema.
 - [[goals/sidebar-todos-modulos/goal|sidebar-todos-modulos]] — el rollout del shell sidebar; sus `reports/` explican módulo por módulo.

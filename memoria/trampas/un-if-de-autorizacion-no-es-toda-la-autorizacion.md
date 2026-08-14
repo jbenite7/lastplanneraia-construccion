@@ -31,10 +31,11 @@ están en archivos distintos —`src/Security/` y el controlador—, así que le
 cuadro incompleto y convincente. El coste de no hacerlo no es solo el susto: casi se encarga una
 tarea entera sobre una premisa que no existía.
 
-Lo que sí quedó abierto, y es mucho menor: `tests/test_lps_week_edit_policy.php` prueba
-`canEditLpsWeek()` y `canQualifyWeeklyCommitment()` **por separado**, nunca su composición, que
-es donde nace el comportamiento observable. Está cubierta de facto por el e2e, no por un
-unitario.
+**Cerrado el 2026-08-13** (`c9f602e4`): se extrajo `LpsWeekEditPolicy::decide()`
+(`src/Security/LpsWeekEditPolicy.php:55`), la composición pura de las dos reglas sin sesión ni
+base, y `tests/test_lps_week_edit_policy.php` la prueba directamente — incluido el caso «R/DCV
+califican avance en semana histórica confirmada aunque `canEditLpsWeek()` los deniegue». Ya no
+depende solo del e2e.
 
 Ver también [[regla-inalcanzable-parece-regla-sin-probar]], de la misma sesión: el otro caso en
 que lo que parecía un agujero de pruebas era en realidad una propiedad del diseño.

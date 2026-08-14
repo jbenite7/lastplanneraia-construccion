@@ -5,7 +5,6 @@ import { changeWeek, login, loginAndSelectProject, selectProject } from './suppo
 
 const DA_PORTO = { name: 'Da Porto', dbPrefix: 'da_porto' };
 const JMC = { name: 'Optimización Aeropuerto JMC', dbPrefix: 'optimizacionJMC', projectId: 68 };
-const PRUEBA = { name: 'Prueba', dbPrefix: 'prueba', projectId: 27 };
 
 const ROLE_CASES = [
   { code: 'A', username: 'test.A', canView: true, canEdit: true },
@@ -21,15 +20,13 @@ const ROLE_CASES = [
 // sobre la base de desarrollo compartida. Fuera de ese entorno las cuatro se saltan con motivo
 // en vez de fallar, que es lo único honesto que se puede hacer sin tocar el candado.
 //
-// OJO, deuda medida el 2026-08-13 y que este `skip` no resuelve: el fixture versionado del
-// stack aislado (`database/fixtures/design-system-ci.sql`) tampoco alcanza para estas cuatro —
-// del proyecto 68 siembra UNA semana (la 5) sin confirmar, y el proyecto 27 no existe allí—,
-// así que hoy no hay ningún entorno donde puedan correr: el de desarrollo tiene el dato y no
-// el permiso, y el aislado tiene el permiso y no el dato. Cerrar el hueco es ampliar el
-// fixture (semana confirmada + semana histórica para 68, y una semana confirmada con CNP), y
-// eso es trabajo con plan propio porque el fixture es contrato versionado. Mientras tanto, la
-// composición de `LpsWeekEditPolicy` que cubría el caso de :316 sí está cubierta en puro por
-// `tests/test_lps_week_edit_policy.php` (c9f602e4), así que la regla no queda sin prueba.
+// Corregido 2026-08-14: hasta entonces el fixture del stack aislado tampoco alcanzaba para
+// estas cuatro — del proyecto 68 solo sembraba la semana 5 sin confirmar, y el proyecto 27 no
+// existía allí —, así que no había ningún entorno donde pudieran correr. Se amplió el fixture
+// (`database/fixtures/design-system-ci.sql`): JMC ganó las semanas 1-4 confirmadas, con filas
+// que cumplen la precondición de cada caso, y el de CNP se movió al 68. Ver
+// docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md. `MUTACION_HABILITADA`
+// se conserva: sigue siendo cierto que estas pruebas solo pueden correr en el stack aislado.
 const MUTACION_HABILITADA = (() => {
   try {
     assertE2EMutationConsent(process.env);
@@ -197,6 +194,22 @@ async function resolveConfirmedWeek(page) {
     if (await page.locator('#Semanal_Confirmada').inputValue() === '1') return week;
   }
   throw new Error(`Ninguna semana del proyecto abierto está confirmada (Max_Semana=${maxWeek})`);
+}
+
+// La semana sin actividades se busca, no se fija: fijar la 1 se pudrio en cuanto Da Porto
+// gano una segunda semana vacia sembrada aparte (2026-08-14) para sostener este mismo caso, y
+// se pudriria de nuevo si alguna semana ganara filas mas adelante. Se recorre desde la 1 porque
+// "la primera semana vacia" es la propiedad que el caso necesita, no un numero concreto.
+async function resolveEmptyWeek(page, project) {
+  const maxWeek = await resolveMaxWeek(page);
+  for (let week = 1; week <= maxWeek; week += 1) {
+    const response = await page.request.get(
+      `/api/semanal/list?db=${encodeURIComponent(project.dbPrefix)}&semana=${week}`,
+    );
+    expect(response.ok()).toBe(true);
+    if ((await response.json()).data.length === 0) return week;
+  }
+  throw new Error(`Ninguna semana de ${project.name} está vacía (Max_Semana=${maxWeek})`);
 }
 
 async function openJmcQualification(page, week) {
@@ -423,7 +436,13 @@ test('API semanal rechaza un proyecto distinto al seleccionado', async ({ page }
 test('rol R histórico solo puede calificar el compromiso confirmado', async ({ page }) => {
   test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
   await page.setViewportSize({ width: 390, height: 844 });
-  await loginAndSelectProject(page, JMC);
+  // Bug preexistente destapado el 2026-08-14 al sembrar la membresía de test.R en JMC (Task 2
+  // del plan): `loginAndSelectProject` sin tercer argumento entra con `CREDENTIALS` por defecto
+  // (test.A), así que este caso —pese a su nombre— corría como Admin y nunca ejercitaba la
+  // regla que dice probar. Quedaba enmascarado porque test.R nunca había sido miembro de JMC:
+  // sin membresía, pasar sus credenciales habría hecho fallar `selectProject` con un error
+  // distinto, así que nadie lo notó. Bug del propio test, no del producto.
+  await loginAndSelectProject(page, JMC, { username: 'test.R', password: 'aia2026' });
   // Esta prueba SÍ quiere una semana histórica (a diferencia de las que comparten
   // openJmcQualification con semana=4 fija): se deriva para no asumir que la semana 4 seguirá
   // siendo la histórica confirmada cuando Max_Semana avance.
@@ -467,14 +486,19 @@ test('rol R histórico solo puede calificar el compromiso confirmado', async ({ 
   }
 });
 
+// Se mueve al proyecto abierto (JMC) el 2026-08-14: el caso original usaba el proyecto 27
+// («Prueba»), que no existe en el fixture aislado de CI. Sembrar «Prueba» entero para una sola
+// fila de CNP era más caro que reaprovechar las semanas confirmadas que este mismo archivo ya
+// siembra para JMC. Decisión de la sesión, ver docs/superpowers/specs/
+// 2026-08-14-fixture-ci-semanal-roles-design.md.
 test('API CNP no reprograma una semana confirmada', async ({ page }) => {
   test.skip(!MUTACION_HABILITADA, MOTIVO_SIN_ENTORNO_AISLADO);
-  await loginAndSelectProject(page, PRUEBA);
+  await loginAndSelectProject(page, JMC);
   const week = await resolveConfirmedWeek(page);
   await changeWeek(page, week, '/programacion-semanal/cnp');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
   const original = (await cnpRows(page, week))[0];
-  expect(original, `La semana confirmada ${week} de ${PRUEBA.name} no tiene filas CNP`).toBeTruthy();
+  expect(original, `La semana confirmada ${week} de ${JMC.name} no tiene filas CNP`).toBeTruthy();
   try {
     const csrf = await page.locator('meta[name="csrf-token"]').getAttribute('content');
     const response = await page.request.post('/api/cnp/reprogramar', { form: {
@@ -486,17 +510,20 @@ test('API CNP no reprograma una semana confirmada', async ({ page }) => {
       .find((row) => String(row.Consecutivo) === String(original.Consecutivo));
     expect(after).toBeTruthy();
   } finally {
-    restoreCnpRowSql(original, PRUEBA.projectId);
+    restoreCnpRowSql(original);
   }
 });
 
 test('semana sin actividades no fabrica tarjetas', async ({ page }) => {
-  // La semana 1 de Da Porto nunca tuvo actividades (solo las semanas 3 y 4 las tienen hoy) — es
-  // una propiedad del dato de esa semana puntual, no de "la semana corriente", así que aquí sí se
-  // pasa explícita: usar la semana corriente derivada rompería la premisa de "sin actividades" en
-  // cuanto el proyecto avance y esa semana ya tenga filas.
-  await openProgrammingWeek(page, ROLE_CASES[0], { width: 551, height: 750 }, 1);
-  const response = await page.request.get('/api/semanal/list?db=da_porto&semana=1');
+  await page.setViewportSize({ width: 551, height: 750 });
+  await login(page, { username: ROLE_CASES[0].username, password: 'aia2026' });
+  await selectProject(page, DA_PORTO);
+  const emptyWeek = await resolveEmptyWeek(page, DA_PORTO);
+  await changeWeek(page, emptyWeek, '/programacion-semanal');
+  await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+  const response = await page.request.get(
+    `/api/semanal/list?db=${DA_PORTO.dbPrefix}&semana=${emptyWeek}`,
+  );
   expect(response.ok()).toBe(true);
   expect((await response.json()).data).toEqual([]);
   await expect(page.locator('article.ps-mobile-card')).toHaveCount(0);
@@ -510,7 +537,13 @@ test('semana sin actividades no fabrica tarjetas', async ({ page }) => {
 // nuevo. Reescribir contra las tarjetas es trabajo de la tanda de evidencia movil (F2a-2b), no
 // de este cambio de umbral. Decision del usuario, 2026-08-14.
 test.skip('semana sin actividades no fabrica filas en la grilla (tablet)', async ({ page }) => {
-  await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 }, 1);
+  await page.setViewportSize({ width: 551, height: 750 });
+  await login(page, { username: ROLE_CASES[0].username, password: 'aia2026' });
+  await selectProject(page, DA_PORTO);
+  const emptyWeek = await resolveEmptyWeek(page, DA_PORTO);
+  await page.setViewportSize({ width: 787, height: 750 });
+  await changeWeek(page, emptyWeek, '/programacion-semanal');
+  await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
   const grid = await page.evaluate(() => ({
     rows: window.PSHotModule.getHotInstance().countRows(),
     text: document.querySelector('#hot-container').textContent,

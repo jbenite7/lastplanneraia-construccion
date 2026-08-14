@@ -18,7 +18,7 @@ services:
       # blindaje de producción lo demuestra tests/test_dev_door_guard.php, que no depende
       # de este entorno.
       DEV_DOOR: "1"
-      DEV_DOOR_USERS: "test.A,test.R,test.V,test.C"
+      DEV_DOOR_USERS: "test.A,test.R,test.V,test.C,test.D"
       DB_HOST: db
       DB_PORT: 3306
       DB_NAME: lastplanneraia_ci

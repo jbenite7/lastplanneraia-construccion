@@ -4,14 +4,17 @@ estado: vigente
 fecha: 2026-08-03
 areas: [bi, arquitectura]
 fuente: public/index.php
-resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos"
+resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos — oculto de la navegación desde 2026-08-13, visible solo para Admin"
 ---
 # Torre de Control BI
 
 **Qué resuelve.** Da una vista de arriba hacia abajo del proyecto: cumplimiento, avance, curva S y
 desempeño de contratistas, todo leído desde las mismas tablas operativas de LPS y PDC pero sin
-escribir en ellas. Es adonde manda `Control Tower - Informes` del sidebar, y es el módulo que casi
-todos los roles pueden ver aunque no puedan editar nada.
+escribir en ellas. Es adonde manda `Control Tower - Informes` del sidebar. **Corregido
+2026-08-14:** desde el 2026-08-13 (`44632801`, `9483cd5a`) está oculto de la navegación y de las
+rutas mientras se desarrolla — solo el rol Admin lo ve y puede abrirlo, gateado por la capacidad
+`internal.bi.preview` (`src/Security/RbacCatalog.php:120`) a través de
+`BiPreviewAccessPolicy::canOpen()`. Ver [[control-tower-oculto-mientras-se-desarrolla]].
 
 **Dónde encaja.** En los dos flujos. Ver [[flujo-lps]] y [[flujo-pdc]].
 
