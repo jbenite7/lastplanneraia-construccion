@@ -211,7 +211,16 @@ test.describe('comportamientos a revisar (caracterizados, no corregidos)', () =>
    * `Ejecutado_Real` se resuelve con un `return` propio ANTES de la comprobación
    * de semana histórica, así que en fase de calificación un rol R edita el
    * avance de una semana histórica que no puede tocar en ninguna otra columna.
-   * No se corrige aquí (el plan lo prohíbe): se fija tal cual y se anota.
+   *
+   * COMPROBADO EL 2026-08-13: es deliberado, no un olvido de orden. El servidor
+   * implementa la misma regla en dos capas — `LpsWeekEditPolicy::allows()` abre
+   * la semana histórica confirmada a quien puede calificar, y
+   * `SemanalApiController.php:309-315` devuelve 409 si en esa semana se toca
+   * compromiso, responsables o planificación. La frontera del cliente y la del
+   * servidor coinciden: solo pasa el avance real.
+   *
+   * Esta prueba, por tanto, no marca una deuda: fija una regla de negocio real,
+   * y se pondrá roja si la extracción de reglas la pierde por el camino.
    */
   test('Ejecutado_Real ignora la restricción de semana histórica', async ({ page }) => {
     const { semana } = await openSemanal(page);
