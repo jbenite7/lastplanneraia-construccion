@@ -132,6 +132,8 @@ que el método funciona.
 | **11 objetivos táctiles por debajo de 44×44 px en la barra de Intermedia a 390 px**: los botones miden 28 px de alto y el conmutador «Ver Todas las Actividades», 13×13 | V-7 (fase 2 móvil) | 6 | 10 | 6 | 360 | — | abierto |
 | **Auditar tablet real (700–1180 px), que es la superficie que el umbral de 1180 convierte en tarjetas.** Esta pasada midió 390 px; el tramo de tablet quedó sin medir y es justo donde el piloto cambia el producto | V-* (límite declarado de la fase 2 móvil) | 8 | 10 | 8 | 640 | — | abierto · **siguiente paso natural de la fase** |
 
+| **Migrar el laboratorio de diseño a `shell-drawer.js`.** `design_system_lab.js` tiene su propia implementación de menú flotante (`data-shell-drawer-toggle`/`data-shell-drawer-panel`, umbral 1200px) que hoy convive con la pieza canónica del shell (`shell-drawer.js`, umbral 1180px). Decisión D4 de la spec del menú flotante: no se tocó al construir la pieza porque el laboratorio está cubierto por gates visuales y de accesibilidad que hoy están verdes, y el riesgo de romperlos no se justificaba dentro de ese plan | D4 (spec 2026-08-14-shell-menu-flotante-responsive-design) | 5 | 8 | 5 | 200 | — | abierto · sin dueño asignado |
+
 ## Cierre de la campaña de dark mode — tarjetas del Task 31 (2026-08-05)
 
 Quince entradas nuevas, todas **registradas y no aplicadas**: nueve del barrido final (`F-1` … `F-9`)
