@@ -66,20 +66,22 @@ en `localStorage`.**
 **Al cruzar el umbral en caliente** — se recalcula el modo; si el menú estaba abierto se cierra y se
 restaura la preferencia guardada.
 
-## El obstáculo que el plan debe resolver primero
+## El obstáculo que parecía existir, y no existía
 
-En `/programa-general` el ancho del menú **no obedece al estado del componente**. Medido el
-2026-08-13 sobre el stack local: `--aia-sidebar-width` computa **15rem (240 px)**,
-`data-sidebar-state` vale **`expanded`**, no hay estilo inline, y el ancho real es **64 px**. Alguna
-regla lo fuerza por detrás y gana a `width: var(--aia-sidebar-width)`.
+**Corrección del 2026-08-14, Task 1 de su propio plan.** Esta sección afirmaba que en
+`/programa-general` el ancho del menú «no obedecía al estado del componente»: variable en 240 px,
+estado `expanded`, ancho real 64 px. Al perseguirlo con la Task 1, resultó ser **un artefacto del
+navegador integrado de la sesión de brainstorming**, no un bug del producto — ni siquiera un
+`width: 240px !important` inline movía el ancho medido ahí, lo que ya no era CSS.
 
-Consecuencia directa: **si el modo flotante se implementa cambiando solo el estado, en esa pantalla
-no se vería el efecto.** La primera tarea del plan es localizar esa regla y decidir si se retira o
-se respeta. No es opcional ni se difiere.
+**Reproducido en Chromium real vía Playwright, el mismo día:** el ancho sigue al estado en los dos
+sentidos. Con `aia-sidebar-state` ausente, el shell nace `collapsed` (64 px, `--aia-sidebar-width:
+4rem`); con la preferencia en `expanded`, pasa a 240 px con `--aia-sidebar-width: 15rem`. Sin
+código nuevo, sin retirar ninguna regla.
 
-Un barrido de `document.styleSheets` desde el navegador **no la encontró** —devolvió lista vacía—,
-así que la localización tendrá que hacerse por otra vía: inspección de la cascada en el navegador o
-bisección de hojas.
+**La lección, que vale más que el hallazgo falso:** una anomalía de CSS que resiste incluso a un
+`!important` inline no es CSS — es una señal de que el entorno de medición es sospechoso. Se
+verifica en el motor real antes de escribirla en una spec como obstáculo bloqueante.
 
 ## Pruebas
 
@@ -104,9 +106,7 @@ golden movido. Si un golden de escritorio se mueve, es una regresión, no un efe
    clave antes y después.
 3. Por encima de 1180 px el comportamiento es indistinguible del actual, con los goldens de
    escritorio sin cambios.
-4. La regla que fuerza el ancho en `/programa-general` está **localizada y resuelta**, con su
-   decisión escrita.
-5. `npm run test:design-system:static` en sus ocho puertas.
+4. `npm run test:design-system:static` en sus ocho puertas.
 
 ## Fuera de alcance
 
@@ -119,7 +119,6 @@ y el montaje condicional de Handsontable, que son las Tasks 4 y 5 del plan `f2a-
 
 | Riesgo | Mitigación |
 |---|---|
-| La regla fantasma de `/programa-general` resulta ser intencionada y algo depende de ella. | Se localiza **antes** de tocar nada (Task 1 del plan) y la decisión se escribe. No se retira a ciegas. |
 | El menú flotante tapa contenido o atrapa el foco mal, y en móvil no hay forma de salir. | El cierre tiene tres vías —velo, `Escape` y elegir destino— y la prueba de teclado es parte de la condición de hecho, no un extra. |
 | Quitar el `padding-left` del `body` descoloca módulos que asumen ese offset. | El cambio es de una sola declaración en el adaptador y se verifica con los goldens de escritorio, que no deben moverse, más una pasada en 390 px por los módulos de la cascada. |
 | Dos implementaciones de menú flotante conviviendo (shell y laboratorio) divergen. | La del shell nace como canónica y la migración del laboratorio queda anotada con dueño, no como intención. |

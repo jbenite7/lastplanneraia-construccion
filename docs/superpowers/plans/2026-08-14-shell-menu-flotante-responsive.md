@@ -44,52 +44,22 @@
 
 ---
 
-### Task 1: Localizar la regla que fuerza el ancho en Programa General
+### Task 1 — CERRADA el 2026-08-14, sin código: el supuesto obstáculo era del entorno de medición
 
-**Bloqueante y primera.** Si el modo flotante se implementa sobre un ancho que no obedece al estado, en esa pantalla no se vería el efecto. Medido el 2026-08-13: en `/programa-general`, `--aia-sidebar-width` computa `15rem`, `data-sidebar-state` vale `expanded`, no hay estilo inline, y `getComputedStyle(aside).width` da **64px**.
+**Verificado antes de tocar nada, como el plan exigía.** El paso 1 (reproducir la contradicción en
+el navegador integrado de la sesión de brainstorming) reprodujo la anomalía otra vez, pero un
+`width: 240px !important` inline **no la movía** — eso ya no es CSS, es la primera señal de que el
+entorno de medición era el sospechoso, no el producto.
 
-**Files:**
-- Investigación; posible modificación de la hoja que resulte responsable.
+Reproducido entonces en Chromium real vía Playwright (`tests/browser/tmp-sidebar-diagnostico.mjs`,
+temporal, borrado tras medir): el ancho **sí** sigue al estado, en los dos sentidos. Sin
+`aia-sidebar-state` en `localStorage`, el shell nace `collapsed` (64px, `--aia-sidebar-width: 4rem`).
+Con la preferencia puesta a `expanded`, pasa a 240px con `--aia-sidebar-width: 15rem`. No hay
+ninguna regla que retirar ni que respetar: el mecanismo ya funciona.
 
-**Interfaces:**
-- Produces: la decisión escrita —qué regla es, si se retira o se respeta— que las Tasks 3 y 4 asumen.
-
-- [ ] **Step 1: Reproducir la contradicción**
-
-Levanta el stack, abre sesión por la puerta de desarrollo y ve a `/programa-general` con el viewport en 1180 o menos. En la consola:
-
-```js
-const aside = document.querySelector('.aia-navigation--sidebar');
-({
-  varAncho: getComputedStyle(aside).getPropertyValue('--aia-sidebar-width'),
-  width: getComputedStyle(aside).width,
-  estado: aside.dataset.sidebarState,
-  inline: aside.getAttribute('style'),
-})
-```
-
-Esperado: variable `15rem`, `width` `64px`, estado `expanded`, sin inline. Si **no** reproduce, para y repórtalo: la premisa de esta tarea habría caducado.
-
-- [ ] **Step 2: Localizar la regla ganadora**
-
-Un barrido de `document.styleSheets` **ya se intentó y devolvió lista vacía**, así que no repitas esa vía. Usa el panel de estilos del navegador sobre el `aside` y busca la declaración de `width`/`min-width` que gana, con su archivo y línea. Alternativa si el panel no basta: bisección — ir deshabilitando hojas con `document.styleSheets[i].disabled = true` hasta que el ancho salte a 240 px.
-
-- [ ] **Step 3: Decidir y escribir la decisión**
-
-Con la regla localizada, decide entre:
-- **Retirarla**, si resulta ser un resto sin dueño. Comprueba antes qué depende de ella: `grep -rn "<selector>" public/css/ views/`.
-- **Respetarla**, si es intencionada, y entonces el modo flotante tendrá que actuar sobre ese mismo mecanismo en vez de sobre el estado.
-
-Escribe la decisión en el informe con su porqué. **No la retires a ciegas.**
-
-- [ ] **Step 4: Commit (solo si hubo cambio de código)**
-
-```bash
-git add public/css/
-git commit -m "fix(shell): el ancho del sidebar vuelve a obedecer a su estado"
-```
-
-Si la decisión fue respetarla, no hay commit: es una tarea de diagnóstico y su salida es la decisión escrita.
+**No queda ningún riesgo abierto para las Tasks 3–4** por este lado: el modo flotante se construye
+sobre `data-sidebar-state`, que sí es la fuente de verdad del ancho. La spec y su tabla de riesgos
+se corrigieron en el mismo commit que esta nota.
 
 ---
 
@@ -475,9 +445,8 @@ git commit -m "docs(experiments): la migracion del laboratorio al menu flotante 
 1. En `390x844` el contenido dispone del ancho completo (`body` sin `padding-left`) y el menú es alcanzable y cerrable con ratón y con teclado.
 2. Abrir el menú por debajo del umbral **no modifica** `aia-sidebar-state`, comprobado leyendo la clave antes y después.
 3. Por encima de 1180 px el comportamiento es indistinguible del actual: disparador oculto, `padding-left` intacto, goldens de escritorio sin cambios.
-4. La regla que fuerza el ancho en `/programa-general` está localizada y resuelta, con su decisión escrita.
-5. `npm run test:design-system:static` en sus ocho puertas y las dos redes de habilitación en 14/14.
-6. Las cuatro pruebas nuevas pasan tres veces seguidas sin intermitencias.
+4. `npm run test:design-system:static` en sus ocho puertas y las dos redes de habilitación en 14/14.
+5. Las cuatro pruebas nuevas pasan tres veces seguidas sin intermitencias.
 
 ## Fuera de alcance
 
@@ -487,7 +456,6 @@ Migrar el laboratorio (deuda anotada en la Task 5). El umbral de las tarjetas y 
 
 | Riesgo | Mitigación |
 |---|---|
-| La regla fantasma de `/programa-general` resulta intencionada y algo depende de ella. | Task 1 la localiza **antes** de tocar nada y su salida es una decisión escrita. No se retira a ciegas. |
 | El menú flotante se abre y no hay forma de salir en un teléfono. | Tres vías de cierre —velo, `Escape` y elegir destino— y la prueba de teclado forma parte de la condición de hecho. |
 | Quitar el `padding-left` descoloca módulos que asumían ese offset. | Task 5 Step 1 recorre los tres módulos de la cascada a 390 px, y Step 2 comprueba que escritorio no se movió. |
 | El módulo diferido aún no está cuando el script clásico lo busca. | Mismo patrón ya resuelto en `programacion_semanal/hot.js`: el consumidor tolera su ausencia en vez de lanzar. |
