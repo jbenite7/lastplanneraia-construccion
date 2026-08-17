@@ -166,6 +166,80 @@ desplegable— con **dos cambios sobre la cara visible**, ambos ampliándola:
 | E2-bis-a | La cara visible lleva **cinco** elementos: código, actividad, chip de estado, barra de avance y **Responsable AIA**. | Semanal e Intermedia | **Amplía** E2, que dejaba el responsable entre los ocho plegados. Razón: en obra se busca por persona antes que por actividad, y desplegar solo para saber a quién reclamar es el gesto más repetido. |
 | E2-bis-b | En Semanal, **la edición del compromiso vive en la cara visible**, no dentro del desplegable. | Solo Semanal | **Revoca** la parte de E2 que mandaba «y la edición, dentro del desplegable». Razón: capturar el compromiso en obra debe ser de un toque. Intermedia no se ve afectada: sus tarjetas son de solo lectura (`createMobileCard`, `hot.js:4328`, no monta ningún control de escritura). |
 
+**E2-bis-c (2026-08-14, decisión del usuario) — las restricciones de Intermedia.** Destapado al
+maquetar: **la tarjeta móvil de Intermedia no muestra ninguna de las siete restricciones**
+(`createMobileCard`, `hot.js:4328-4364`, solo pinta Subcontratista, Responsable AIA, Inicio y
+Ejecutado), que son editables en escritorio y son *para lo que existe el módulo*. El análisis previo
+de esta adenda contó los siete campos presentes y concluyó que «caben todos» sin comprobar si
+faltaba algo: lo que faltaba era el núcleo.
+
+Las siete, desde `/api/general/restriction-config`
+(`GeneralApiController.php:1563+`): Diseños y Especificaciones, Materiales, Mano de Obra, Equipos y
+Herramienta, Actividad Predecesora (duras); Procedimiento Constructivo y Modelación BIM (blandas).
+En Pre-Construcción son hasta cuatro, con nombres configurables por proyecto.
+
+**Decisión: resumen visible y edición en el desplegable.** La cara visible lleva un contador de
+liberación («3 de 7») y cuáles faltan; al desplegar aparecen las siete con su control. Descartadas:
+solo-lectura con edición en escritorio (cierra el caso de liberar una restricción parado frente al
+frente de trabajo, que es lo que haría útil el móvil) y mostrar solo las bloqueantes (esconde el
+resto y no resuelve qué pasa cuando están todas liberadas).
+
+**Lo que E2-bis-c arrastra, dicho por delante:**
+
+- **La tarjeta desplegada de Intermedia será la más alta de las dos**, del orden de 550-600 px
+  estimados —siete controles con etiqueta— frente a los ~440 de Semanal. Sigue siendo ganancia:
+  hoy son 78 tarjetas de 360-403 px **sin poder ver ni editar las restricciones**, y solo una
+  estaría abierta a la vez.
+- **La tarjeta de Intermedia pasa de solo lectura a editable**, así que deja de bastar con
+  `createMobileCard`: hay que atarla a las reglas I1–I7, que es exactamente lo que la extracción
+  del 2026-08-14 dejó disponible en `enablement-rules.js`
+  (`crearReglasIntermedia().puedeEditarCelda()`). Sin esa extracción, esta decisión habría exigido
+  replicar las reglas en la card — el desincronizado contra el que la red monta guardia.
+- **I4 (candado por Responsable AIA) se ve en móvil por primera vez**: una fila sin responsable
+  tiene sus restricciones bloqueadas, y la card debe mostrarlo, no solo impedirlo.
+- **La red necesita el equivalente de S13 para Intermedia**: hoy S13 ata la card de Semanal a la
+  misma regla que la grilla; no existe su gemela para Intermedia porque hasta ahora no editaba.
+
+**E2-bis-d (2026-08-14) — la forma común, y los tres puntos resueltos contra el código.** Al comparar
+las dos tarjetas maquetadas, la de Intermedia resultó mejor por una razón que no es de maquetación:
+**responde «qué hago con esto» en vez de «qué es esto»**. Semanal describía una fase que comparten
+las 31 tarjetas; Intermedia decía qué falta en *esa*. Las dos adoptan la misma forma:
+
+| Elemento | Semanal | Intermedia |
+|---|---|---|
+| Chip | `N pend.` — cifra accionable; el **color** conserva la máquina de estados (cumplida, incumplida, TNP, sin calificar) | `N de 7` — restricciones liberadas |
+| Línea de foco | El texto real de `getOperationalStateSummary().focus` | Las restricciones sin liberar |
+| Desplegable | «Ver fechas y presupuesto» | «Liberar restricciones» |
+
+**No se traslada** la barra segmentada de siete: en Intermedia cada segmento es una restricción y
+contarlas significa algo; en Semanal el avance es continuo y segmentarlo inventaría una precisión
+que el dato no tiene.
+
+**Hallazgo que hizo esto casi gratis:** `focus` —cuál es el asunto pendiente más urgente— **ya se
+calcula** (`hot.js:976-996`) y hoy **solo se entrega al lector de pantalla** (`:1020`); la tarjeta
+visible pinta únicamente el número (`:3438`). Quien ve la pantalla obtiene menos que quien la
+escucha. Publicarlo es exponer dato existente, no producirlo.
+
+**Los tres puntos que quedaban abiertos, resueltos contra el código antes de escribir esto:**
+
+1. **El capítulo se separa, no se trunca.** El dato ya trae `[Capítulo: …]` envuelto en `<small>` y
+   existe `ActivityMatcherService::extractChapter()` (`:104`) que lo aísla. El título queda limpio y
+   el capítulo baja a una línea secundaria atenuada. **Cuesta ~25 px**: Semanal pasa a ≈325 y
+   Intermedia a ≈275.
+2. **Las frases de «qué falta» son reales y cambian con la fase.** No son etiquetas sueltas sino
+   frases completas (`makeActionItem`, `:681`): en **programación**, restricciones sin liberar más
+   «Definir compromiso mayor a cero» / «Asignar responsable»; en **calificación**, avance real y
+   causa de no cumplimiento (`getOperationalActionItems`, `:902-924`). La maqueta previa decía
+   «Falta liberar materiales · sin sub-contratista»: la forma era correcta, **el texto estaba
+   inventado**. Se usa el que da `focus`.
+   **Consecuencia:** en Semanal el campo editable de la cara visible también cambia — `Compromiso`
+   en programación, `Ejecutado_Real` en calificación—, que es lo que ya decide `isPropReadOnly`
+   (regla S3).
+3. **En Intermedia conviven contador y estado.** «Listo para comprometer» no se pierde: es lo que
+   dice la barra segmentada entera en verde, anticipado por el color del chip. Distinto de Semanal,
+   cuya máquina de estados tiene nombre propio y por eso el chip conserva su color como portador del
+   estado.
+
 **Consecuencia declarada, no disimulada:** ampliar la cara visible reduce el ahorro. La estimación
 por composición es **280-320 px** por tarjeta frente a los 562 actuales —de 1,5 a unas 2,8 tarjetas
 por pantalla—, no los 120-150 px que daría el modelo A estricto. Es estimación, no medición: se
