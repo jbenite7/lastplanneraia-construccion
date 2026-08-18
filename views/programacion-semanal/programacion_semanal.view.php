@@ -566,6 +566,8 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
     <script type="module" src="/js/modules/aia_ui/enablement-rules.js?v=<?php echo urlencode((string) $psRulesVersion); ?>"></script>
     <?php $psViewSwitchVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/view-switch.js') ?: 'vs1'; ?>
     <script type="module" src="/js/modules/aia_ui/view-switch.js?v=<?php echo urlencode((string) $psViewSwitchVersion); ?>"></script>
+    <?php $psCardTitleVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/card-title.js') ?: 'ct1'; ?>
+    <script type="module" src="/js/modules/aia_ui/card-title.js?v=<?php echo urlencode((string) $psCardTitleVersion); ?>"></script>
     <script src="/js/modules/programacion_semanal/hot.js?v=<?php echo urlencode((string) $psHotVersion); ?>"></script>
     <script src="/js/modules/programacion_semanal/changeMonitor.js?v=ap1"></script>
 

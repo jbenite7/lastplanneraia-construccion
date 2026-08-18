@@ -1139,6 +1139,36 @@ body.ps-page .ps-hot-toolbar-shell {
         font-size: 0.72rem;
     }
 
+    .ps-page .ps-mobile-capitulo {
+      margin: var(--ds-space-1) 0 0;
+      font-size: var(--ds-type-size-xs);
+      color: var(--ds-active-text-secondary);
+    }
+
+    .ps-page .ps-mobile-foco {
+      margin: 0 0 var(--ds-space-3);
+      font-size: var(--ds-type-size-xs);
+      color: var(--ds-color-state-warning-text, var(--ds-active-text-secondary));
+      line-height: 1.5;
+    }
+
+    .ps-page .ps-mobile-responsable {
+      margin: 0 0 var(--ds-space-3);
+      font-size: var(--ds-type-size-sm);
+      color: var(--ds-active-text-primary);
+    }
+
+    .ps-page .ps-mobile-detalle > summary {
+      cursor: pointer;
+      padding: var(--ds-space-2) 0;
+      font-size: var(--ds-type-size-sm);
+      color: var(--ds-active-text-secondary);
+      min-height: var(--ds-target-min);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .ps-page .ps-mobile-metrics {
         display: grid;
         grid-template-columns: 1fr 1fr;

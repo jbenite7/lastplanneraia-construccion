@@ -3441,23 +3441,46 @@
   function renderMobileCard(row, rowIndex) {
     var alertClass = getAlertClassForRow(row);
     var unidad = isBlank(row.Unidad) ? '' : String(row.Unidad);
-    var title = getPlainActivityLabel(row.Actividad);
+    var partes = window.AIACardTitle
+      ? window.AIACardTitle.separarCapitulo(row.Actividad)
+      : { titulo: getPlainActivityLabel(row.Actividad), capitulo: null };
+    var view = getStateView(row);
+    var summary = getOperationalStateSummary(view);
+
     var html = '<article class="ps-mobile-card ps-row-state ' + escapeHtml(alertClass) + '" data-mobile-row="' + rowIndex + '">';
-    html += '<header><div><span class="ps-mobile-id">' + escapeHtml(row.Id || row.Consecutivo || '') + '</span><h3>' + escapeHtml(title) + '</h3></div>' + renderMobileStateButton(row, rowIndex) + '</header>';
-    html += '<div class="ps-mobile-metrics">';
+
+    html += '<header><div class="ps-mobile-identidad">'
+      + '<span class="ps-mobile-id">' + escapeHtml(row.Id || row.Consecutivo || '') + '</span>'
+      + '<h3>' + escapeHtml(partes.titulo) + '</h3>'
+      + (partes.capitulo ? '<p class="ps-mobile-capitulo">' + escapeHtml(partes.capitulo) + '</p>' : '')
+      + '</div>' + renderMobileStateButton(row, rowIndex) + '</header>';
+
+    if (summary.status !== 'ready') {
+      html += '<p class="ps-mobile-foco">' + escapeHtml(summary.focus) + '</p>';
+    }
+
+    html += renderMobileProgressMetric('Avance', row, 'Ejecutado');
+    html += '<p class="ps-mobile-responsable">' + escapeHtml(isBlank(row.Responsable_AIA) ? 'Sin responsable' : row.Responsable_AIA) + '</p>';
+
+    html += '<div class="ps-mobile-edicion">';
+    if (weeklyPhaseKey === 'calificacion') {
+      html += renderMobileRealMetric(row, rowIndex);
+    } else {
+      html += renderMobileEditableMetric('Compromiso', 'Compromiso', row, rowIndex);
+    }
+    html += '</div>';
+
+    html += '<details class="ps-mobile-detalle"><summary>Ver fechas y presupuesto</summary><div class="ps-mobile-metrics">';
     html += renderMobileMetric('Subcontratista', row.Sub_Contratista);
-    html += renderMobileMetric('Resp. AIA', row.Responsable_AIA);
     html += renderMobileMetric('Unidad', unidad || row.Unidad);
-    html += renderMobileProgressMetric('Ejecutado actual', row, 'Ejecutado');
+    html += renderMobileMetric('Sugerida', formatWeeklyQuantity(row.cantidad_sugerida_auto, unidad));
     html += renderMobileProgressMetric('Ej. fin semana', row, 'Ejecutado_Fin_Semana');
     if (weeklyPhaseKey === 'calificacion') {
       html += renderMobileEditableMetric('Compromiso', 'Compromiso', row, rowIndex);
-      html += renderMobileRealMetric(row, rowIndex);
-    } else {
-      html += renderMobileMetric('Sugerida', formatWeeklyQuantity(row.cantidad_sugerida_auto, unidad));
-      html += renderMobileEditableMetric('Compromiso', 'Compromiso', row, rowIndex);
     }
-    html += '</div></article>';
+    html += '</div></details>';
+
+    html += '</article>';
     return html;
   }
 
