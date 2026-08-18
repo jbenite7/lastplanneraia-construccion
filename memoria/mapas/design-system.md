@@ -94,8 +94,9 @@ Y el reset legado pisa adaptadores: el spacing de adaptadores va en `@layer lega
 ## Gates
 
 Antes de dar nada por verde, lee [[branch-preexisting-red-gates]]: hay rojos preexistentes que no
-son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (el audit lee texto crudo,
-así que un hex citado en un comentario rompe el presupuesto),
+son tuyos. Otras trampas del carril: [[audit-ve-color-en-comentarios]] (un gate que lee texto
+crudo mide el texto: un hex citado en un comentario rompe el presupuesto, y un test que
+cuenta menciones de un script no cuenta cargas),
 [[manifiesto-ds-exige-golden]] (un manifiesto no se crea en seco),
 [[visual-baselines-estado-real]] (las baselines del lab están rojas; mide el delta antes de
 culparte), [[gate-estatico-no-ve-tokens-rotos]] (un gate que lee archivos da verde con un token
