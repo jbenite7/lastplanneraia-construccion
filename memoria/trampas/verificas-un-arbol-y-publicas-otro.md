@@ -56,6 +56,11 @@ trabajo estaba a medias, el gate que debía protegerlo lo publica en su nombre.
   coinciden, no has verificado lo que estás publicando.
 - Vale la pena aunque trabajes solo: cuesta un comando y elimina la ventana entera.
 
+Desde el 2026-08-18 esto no es solo recomendación: el **paso 6** del gate (`AGENTS.md`
+§Publicación) exige `git push origin HEAD:main` desde el worktree propio, el **paso 5** manda anotar
+el SHA verificado y el **paso 7** confirma comparándolo con `origin/main`. Ante conflicto entre esta
+nota y ese archivo, manda el archivo.
+
 Relacionado: [[worktree-compartido-arrastra-commits]],
 [[el-codigo-de-salida-se-pierde-en-la-tuberia]], [[un-verde-solo-vale-para-el-arbol-donde-se-midio]],
 [[branch-preexisting-red-gates]].
