@@ -1,0 +1,13 @@
+{
+  "gateId": "semanal-roles-phases",
+  "result": "passed",
+  "command": "npx playwright test tests/browser/programacion-semanal-roles-phases.mjs --workers=1",
+  "exitCode": 0,
+  "measuredAt": "2026-08-18T15:12:03.249Z",
+  "durationMs": 46104,
+  "tree": {
+    "sha": "84dbd2b048c22bc6c83b6ce504a939eca2bf48e7",
+    "dirty": false
+  },
+  "outputTail": "Running 15 tests using 1 worker\n  ✓   1 tests/browser/programacion-semanal-roles-phases.mjs:314:5 › Programación Semanal: permisos por rol › rol A respeta lectura y edición (1.9s)\n  ✓   2 tests/browser/programacion-semanal-roles-phases.mjs:314:5 › Programación Semanal: permisos por rol › rol D respeta lectura y edición (3.7s)\n  ✓   3 tests/browser/programacion-semanal-roles-phases.mjs:314:5 › Programación Semanal: permisos por rol › rol R respeta lectura y edición (4.7s)\n  ✓   4 tests/browser/programacion-semanal-roles-phases.mjs:314:5 › Programación Semanal: permisos por rol › rol C respeta lectura y edición (2.5s)\n  ✓   5 tests/browser/programacion-semanal-roles-phases.mjs:347:1 › avance móvil y API rechazan una actividad sin responsables (7.0s)\n  ✓   6 tests/browser/programacion-semanal-roles-phases.mjs:383:1 › API semanal rechaza fase, CNC incompleta y semana suplantada (2.7s)\n  ✓   7 tests/browser/programacion-semanal-roles-phases.mjs:409:1 › API semanal rechaza un proyecto distinto al seleccionado (3.0s)\n  ✓   8 tests/browser/programacion-semanal-roles-phases.mjs:436:1 › rol R histórico solo puede calificar el compromiso confirmado (1.8s)\n  ✓   9 tests/browser/programacion-semanal-roles-phases.mjs:494:1 › API CNP no reprograma una semana confirmada (3.8s)\n  ✓  10 tests/browser/programacion-semanal-roles-phases.mjs:517:1 › semana sin actividades no fabrica tarjetas (1.7s)\n  -  11 tests/browser/programacion-semanal-roles-phases.mjs:539:6 › semana sin actividades no fabrica filas en la grilla (tablet)\n  ✓  12 tests/browser/programacion-semanal-roles-phases.mjs:555:1 › toolbar tablet muestra texto comprensible sin overflow (1.8s)\n  -  13 tests/browser/programacion-semanal-roles-phases.mjs:579:6 › tabla semanal tablet usa superficies dark cuando el tema es dark\n  ✓  14 tests/browser/programacion-semanal-roles-phases.mjs:593:1 › filtro sin resultados conserva dropdown y modales operables (4.2s)\n  ✓  15 tests/browser/programacion-semanal-roles-phases.mjs:654:1 › calificación expone controles y modales sin escribir datos (5.3s)\n  2 skipped\n  13 passed (44.9s)"
+}
