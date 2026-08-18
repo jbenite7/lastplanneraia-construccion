@@ -10,6 +10,42 @@ En el stack aislado, `npx playwright test tests/browser/programacion-semanal-rol
 saltándose por el candado, y los otros diez siguen verdes. El paso está cableado en el workflow con
 su recibo, y `npm run test:design-system:static` está verde.
 
+## Estado real al 2026-08-18 — este plan está cerrado, y no como se escribió
+
+Contrastado tarea por tarea contra el código. **No lo ejecutes de nuevo:** las Tasks 0-3 ya están
+hechas, y las Tasks 4 y 5 fueron descartadas a propósito, no por descuido.
+
+| Tarea | Estado | Dónde se ve |
+|---|---|---|
+| 0 · medir la línea base | hecha | `memoria/log.md:129-131` |
+| 1 · semanas confirmadas de JMC | hecha | `database/fixtures/design-system-ci.sql:542` |
+| 2 · accesos `test.R` y `test.D` | hecha | `database/fixtures/design-system-ci.sql:463` |
+| 3 · semana vacía de Da Porto | hecha | `resolveEmptyWeek()`, `…roles-phases.mjs:517` |
+| 4 · retirar los cuatro `test.skip` | **descartada** | las cuatro líneas siguen vivas, a propósito |
+| 5 · cablear un gate nuevo en CI | **descartada** | decisión del usuario, `memoria/log.md:131` |
+| 6 · cierre e ingest | hecha | trampa marcada `estado: derogada` |
+
+**Por qué la Task 4 no se hizo, y está bien así.** El plan pedía borrar los `test.skip(!MUTACION_HABILITADA, …)`.
+El código los conserva con un comentario que explica el motivo (`…roles-phases.mjs:28-29`): sigue
+siendo cierto que esas cuatro pruebas solo pueden correr en el stack aislado, porque escriben. Borrar
+el guard no las habría habilitado en desarrollo — las habría dejado fallar ahí. El plan se
+contradecía a sí mismo: pedía quitar las líneas *y* que en desarrollo siguieran saltándose. La
+implementación resolvió la contradicción a favor del candado.
+
+**Por qué la Task 5 no se hizo.** Sumar un noveno gate habría revertido la consolidación de 15→8
+gates del Frente 1b. Decisión del usuario registrada en `memoria/log.md:131`.
+
+**La condición de hecho de arriba ya no es alcanzable, y no por un fallo.** Pedía «14 en verde y 0
+`skip`». Hoy el spec declara **15** casos: cuatro del bucle de roles (`ROLE_CASES`, línea 9) más nueve
+sueltos, y dos de tabla en tablet —líneas 539 y 579— saltados **en firme**, porque la tabla en tablet se retiró del producto (spec
+`2026-08-07-f2a-piloto-movil-programacion-design.md`). Ese `skip` es la decisión, no una deuda.
+
+**La condición de hecho vigente**, en el stack aislado: **13 en verde y 2 saltadas**, las dos por el
+retiro de la tabla en tablet. En desarrollo, las cuatro que escriben se saltan además por el candado,
+y eso también es correcto.
+
+---
+
 ## Antes de empezar: levantar el stack aislado
 
 El plan entero se verifica ahí, así que esto se hace una vez y se deja arriba. Las cuatro variables
