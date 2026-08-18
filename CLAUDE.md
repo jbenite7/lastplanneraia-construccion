@@ -80,6 +80,14 @@ There is no `.env.example` — `.env` must be created from scratch or copied fro
 see GEMINI.md §Base de Datos for required keys, and README.md §3.1 for the extra mail vars needed if
 enabling password recovery.
 
+**`MAIL_TRANSPORT` decide por dónde sale el correo** (`smtp` por defecto, o `sendmail`). En
+producción es `sendmail`: entrega por el MTA local del hosting y **no usa MAIL_HOST/USERNAME/
+PASSWORD**. Se cambió el 2026-08-18 porque el relay externo (Brevo) no llegaba a los buzones
+corporativos del destinatario — su filtro aceptaba el mensaje con un 250 y lo hacía desaparecer,
+sin rebote y sin cuarentena visible — mientras el mismo remitente por `sendmail` sí entraba en
+bandeja. No es un problema de autenticación (ambos caminos firman igual): es la categoría de la IP
+de origen, pool de envío masivo frente a IP de hosting. Lo cubre `tests/test_mail_transport.php`.
+
 **En un worktree nuevo, enlaza el `.env` de la raíz antes de usar Docker:**
 
 ```bash
