@@ -24,6 +24,6 @@ services:
   app:
     volumes:
       - type: bind
-        source: ${LPS_CODE_ROOT:-/Volumes/Crucial X6/Developer/lps-aia}
+        source: ${LPS_CODE_ROOT:-/Users/felipebenitez/Developer/lps-aia}
         target: /var/www/html
         consistency: delegated
