@@ -10,9 +10,9 @@
   "theme": "dark",
   "density": "compact",
   "fixture": "sanitized-pilot-v1",
-  "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-  "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
-  "recordedAt": "2026-08-18T15:21:22.531Z",
+  "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+  "sourceTreeHash": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
+  "recordedAt": "2026-08-18T15:25:56.734Z",
   "approval": {
     "status": "approved",
     "approvedBy": "user",
@@ -25,9 +25,9 @@
   },
   "recovery": {
     "manifestPath": "docs/design-system/runtime-measurements/0.3.5-recovery-manifest.json",
-    "manifestSha256": "2fe36cbb34d55588f23a375104c7b215e834cfb9721af0a854344a6918dd0e31",
+    "manifestSha256": "17230a5f275b5f7ff5dea379505329a2324ddd8e333f14ed9d88af6a90580148",
     "measurementPath": "docs/design-system/runtime-measurements/0.3.5-measurement.json",
-    "measurementSha256": "6d565346ef861093403f3128cc5a3a2bc09731f65a8a4b9ef577b3c90bca06cb"
+    "measurementSha256": "ee78818b01a3e694968ad2f8654340546be8f61a2ee7e9ac0e9c417bcd6ef458"
   },
   "metrics": {
     "adapterAssets": [
@@ -45,8 +45,8 @@
     "jsGzipBytes": 634284,
     "duplicateRequestCount": 0,
     "themeFlashCount": 0,
-    "initializationMs": 167.8,
-    "handsontableInteractionMs": 280.8
+    "initializationMs": 191.4,
+    "handsontableInteractionMs": 259
   },
   "tolerances": {
     "cssGzipBytes": 2048,

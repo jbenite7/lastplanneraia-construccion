@@ -10,11 +10,11 @@
   "theme": "dark",
   "density": "compact",
   "fixture": "sanitized-pilot-v1",
-  "ciRunId": "run-local-6995b322",
-  "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-  "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+  "ciRunId": "run-local-01428901",
+  "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+  "sourceTreeHash": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
   "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8",
-  "recordedAt": "2026-08-18T15:21:22.531Z",
+  "recordedAt": "2026-08-18T15:25:56.734Z",
   "metrics": {
     "adapterAssets": [
       "/css/design-system/adapters/datatables.css",
@@ -31,8 +31,8 @@
     "jsGzipBytes": 634284,
     "duplicateRequestCount": 0,
     "themeFlashCount": 0,
-    "initializationMs": 167.8,
-    "handsontableInteractionMs": 280.8
+    "initializationMs": 191.4,
+    "handsontableInteractionMs": 259
   },
   "provenance": {
     "assets": [
@@ -584,18 +584,18 @@
       "rawReceipts": [
         {
           "index": 1,
-          "sha256": "633a4c0d7aa78a64adde14be634d26fdcaae64c6fd3490ccf3b0a050fad1c0f2"
+          "sha256": "bceb8a14bee2b754037a46391634de1bcbe50330efd4a3694f413c3741eb3459"
         },
         {
           "index": 2,
-          "sha256": "22979149df947bfe19a20706b04704ff98674892b95c4e2b79a21f1bf71983a9"
+          "sha256": "30f82c111051ac9487f4983cb45ae115846169f86b2737892087fb9499eff34b"
         },
         {
           "index": 3,
-          "sha256": "810cb79ba4e9eef0cb25f881a357874f65a28bca202fac2944bc4efcbbfa5bf0"
+          "sha256": "7efbb91b3caf19f72c6f9b73cedff2de9c5ac43665f30cb3aca726578b70a07a"
         }
       ],
-      "aggregateReceiptSha256": "3867b68671082ab6ed343b0d1aca3417c1f0b7d311b98b6aa7f16d9cec7b0cbf",
+      "aggregateReceiptSha256": "9cee13ad04a403a28cb0fccd0ac353545acec8ea4af1eddf13c702e168e8bfde",
       "samples": [
         {
           "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
@@ -609,11 +609,11 @@
           "theme": "dark",
           "density": "compact",
           "fixture": "sanitized-pilot-v1",
-          "ciRunId": "run-local-6995b322",
-          "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-          "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+          "ciRunId": "run-local-01428901",
+          "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+          "sourceTreeHash": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
           "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8",
-          "recordedAt": "2026-08-18T15:21:17.415Z",
+          "recordedAt": "2026-08-18T15:25:45.072Z",
           "metrics": {
             "cssGzipBytes": 196733,
             "jsGzipBytes": 634284,
@@ -629,13 +629,13 @@
             ],
             "duplicateRequestCount": 0,
             "themeFlashCount": 0,
-            "initializationMs": 167.8,
-            "handsontableInteractionMs": 280.8,
+            "initializationMs": 194.9,
+            "handsontableInteractionMs": 259,
             "laboratoryAssets": []
           },
           "provenance": {
             "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
-            "htmlSha256": "7d795d25dedcdc9eae41f9e4abe0212247f6395e0dbb34f8c9c3d5927c3c3916",
+            "htmlSha256": "bde8f89c5c9f4477e3effff25a0f2ba54766c40aa7ad3b862d739e93e3e6c9ae",
             "assets": [
               {
                 "path": "/css/access.css",
@@ -1185,27 +1185,27 @@
                 {
                   "phase": "initial",
                   "theme": null,
-                  "at": 17.799999997019768
+                  "at": 34.20000000298023
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 19.799999997019768
+                  "at": 36.20000000298023
                 },
                 {
                   "phase": "first-paint",
                   "theme": "dark",
-                  "at": 69.5
+                  "at": 128.5
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 132.90000000596046
+                  "at": 154.40000000596046
                 },
                 {
                   "phase": "dom-content-loaded",
                   "theme": "dark",
-                  "at": 144.29999999701977
+                  "at": 155.6000000089407
                 }
               ],
               "attached": true
@@ -1214,10 +1214,10 @@
             "node": "v26.5.0",
             "playwrightProject": "",
             "runtime": {
-              "ciRunId": "run-local-6995b322",
-              "gitHead": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
+              "ciRunId": "run-local-01428901",
+              "gitHead": "01428901ba3f4b2fb559675df0f23c8effb5b803",
               "worktreeClean": true,
-              "sourceTreeSha256": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+              "sourceTreeSha256": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
               "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
             }
           }
@@ -1234,11 +1234,11 @@
           "theme": "dark",
           "density": "compact",
           "fixture": "sanitized-pilot-v1",
-          "ciRunId": "run-local-6995b322",
-          "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-          "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+          "ciRunId": "run-local-01428901",
+          "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+          "sourceTreeHash": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
           "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8",
-          "recordedAt": "2026-08-18T15:21:19.120Z",
+          "recordedAt": "2026-08-18T15:25:54.676Z",
           "metrics": {
             "cssGzipBytes": 196733,
             "jsGzipBytes": 634284,
@@ -1254,13 +1254,13 @@
             ],
             "duplicateRequestCount": 0,
             "themeFlashCount": 0,
-            "initializationMs": 161.1,
-            "handsontableInteractionMs": 268.3,
+            "initializationMs": 191.4,
+            "handsontableInteractionMs": 278.5,
             "laboratoryAssets": []
           },
           "provenance": {
             "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
-            "htmlSha256": "f6ab4f0d48e1253f3a0a566c1cf47c02ceac98e8f575dbdc7d529c4df96de9b5",
+            "htmlSha256": "02be15ac713468e4aaba1592e1c378e602492df63256b05ffc89bcf037fd1b85",
             "assets": [
               {
                 "path": "/css/access.css",
@@ -1810,27 +1810,27 @@
                 {
                   "phase": "initial",
                   "theme": null,
-                  "at": 21.5
+                  "at": 28.299999997019768
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 23.399999991059303
+                  "at": 30.200000002980232
                 },
                 {
                   "phase": "first-paint",
                   "theme": "dark",
-                  "at": 102.69999998807907
+                  "at": 78.5
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 132.29999999701977
+                  "at": 140.59999999403954
                 },
                 {
                   "phase": "dom-content-loaded",
                   "theme": "dark",
-                  "at": 139.69999998807907
+                  "at": 146.20000000298023
                 }
               ],
               "attached": true
@@ -1839,10 +1839,10 @@
             "node": "v26.5.0",
             "playwrightProject": "",
             "runtime": {
-              "ciRunId": "run-local-6995b322",
-              "gitHead": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
+              "ciRunId": "run-local-01428901",
+              "gitHead": "01428901ba3f4b2fb559675df0f23c8effb5b803",
               "worktreeClean": true,
-              "sourceTreeSha256": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+              "sourceTreeSha256": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
               "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
             }
           }
@@ -1859,11 +1859,11 @@
           "theme": "dark",
           "density": "compact",
           "fixture": "sanitized-pilot-v1",
-          "ciRunId": "run-local-6995b322",
-          "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-          "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+          "ciRunId": "run-local-01428901",
+          "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+          "sourceTreeHash": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
           "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8",
-          "recordedAt": "2026-08-18T15:21:22.531Z",
+          "recordedAt": "2026-08-18T15:25:56.734Z",
           "metrics": {
             "cssGzipBytes": 196733,
             "jsGzipBytes": 634284,
@@ -1879,13 +1879,13 @@
             ],
             "duplicateRequestCount": 0,
             "themeFlashCount": 0,
-            "initializationMs": 188.9,
-            "handsontableInteractionMs": 281.2,
+            "initializationMs": 157.4,
+            "handsontableInteractionMs": 258.2,
             "laboratoryAssets": []
           },
           "provenance": {
             "cacheMode": "navigation-resource-timing-plus-normalized-fetch",
-            "htmlSha256": "530b3142025002ec18236ced38f4c61f17c73bf72539bebd4745b0f993633428",
+            "htmlSha256": "e7be7dff655ef60ac07af6f14716e50acae2c813e9c19c3ce083e2d2ef2fd6f9",
             "assets": [
               {
                 "path": "/css/access.css",
@@ -2435,27 +2435,27 @@
                 {
                   "phase": "initial",
                   "theme": null,
-                  "at": 31.5
+                  "at": 16.400000005960464
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 33.3999999910593
+                  "at": 18.400000005960464
                 },
                 {
                   "phase": "first-paint",
                   "theme": "dark",
-                  "at": 88.5
+                  "at": 65.90000000596046
                 },
                 {
                   "phase": "theme-mutation",
                   "theme": "dark",
-                  "at": 126.59999999403954
+                  "at": 124.40000000596046
                 },
                 {
                   "phase": "dom-content-loaded",
                   "theme": "dark",
-                  "at": 149.29999999701977
+                  "at": 135.79999999701977
                 }
               ],
               "attached": true
@@ -2464,10 +2464,10 @@
             "node": "v26.5.0",
             "playwrightProject": "",
             "runtime": {
-              "ciRunId": "run-local-6995b322",
-              "gitHead": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
+              "ciRunId": "run-local-01428901",
+              "gitHead": "01428901ba3f4b2fb559675df0f23c8effb5b803",
               "worktreeClean": true,
-              "sourceTreeSha256": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+              "sourceTreeSha256": "e8001d2612671709322d303163e1f4f993a172cb2f9dd11719199e9f83520c62",
               "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
             }
           }

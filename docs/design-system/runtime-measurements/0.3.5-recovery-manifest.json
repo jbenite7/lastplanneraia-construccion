@@ -4,18 +4,18 @@
   "designSystemVersion": "0.3.5",
   "measuredDesignSystemVersion": "1.1.0",
   "status": "ci-measured",
-  "recordedAt": "2026-08-18T15:21:22.531Z",
+  "recordedAt": "2026-08-18T15:25:56.734Z",
   "measurementPath": "docs/design-system/runtime-measurements/0.3.5-measurement.json",
-  "measurementSha256": "6d565346ef861093403f3128cc5a3a2bc09731f65a8a4b9ef577b3c90bca06cb",
-  "assetInventorySha256": "bfd01c921a04ca55a8a651ada7f5015d02884d95e5b2a9120f093c71e1fee497",
-  "metricsSha256": "3af1a0586cb070308c70334fc68a4122b3a419b6d0c22885ac9377a9cb6404fe",
+  "measurementSha256": "ee78818b01a3e694968ad2f8654340546be8f61a2ee7e9ac0e9c417bcd6ef458",
+  "assetInventorySha256": "be43005c76d423148be81f26c9a0bd19542110750e4b14b62421bfe39356f472",
+  "metricsSha256": "b07386278e09ccf524425c4e58855f9dd63e12d29b3be7f6a409b310de1fcff0",
   "rawSamplesPreserved": true,
   "versionEvidence": "docs/design-system/version.json records 1.1.0; 0.3.5 is the runtime-budget generation label, not the product version",
   "sourceHistory": {
     "originCommitAvailable": true,
     "recoveryFromOriginGitHistory": true,
-    "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
-    "ciRunId": "run-local-6995b322",
-    "note": "Measured by GitHub Actions run 31616614996 on the isolated CI runtime; recoverable from origin Git history at the recorded commit."
+    "sourceRef": "01428901ba3f4b2fb559675df0f23c8effb5b803",
+    "ciRunId": "run-local-01428901",
+    "note": "Medido en el stack aislado de CI el 2026-08-18 sobre el worktree limpio del frente 3, con los puertos desplazados para no chocar con el stack de otra sesion."
   }
 }
