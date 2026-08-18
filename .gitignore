@@ -416,3 +416,4 @@ goals/ci-en-verde/*
 !goals/ci-en-verde/validation-log.md
 !tests/browser/shell-menu-flotante.mjs
 !tests/browser/programacion-movil-sin-grilla.mjs
+!tests/browser/programacion-movil-tarjeta.mjs
