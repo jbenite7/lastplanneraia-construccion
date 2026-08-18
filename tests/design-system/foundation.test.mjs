@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import test from 'node:test';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -275,7 +275,11 @@ test('stylesheet versions follow nested CSS changes', () => {
     + ' echo App\\View\\Components\\DesignSystemHeadComponent::render(true);';
   const html = runPhpInApp(php);
   const version = Number(html.match(/aia-design-system\.css\?v=(\d+)/)?.[1]);
-  const tokensMtime = Math.floor(statSync(new URL('../../public/css/tokens.css', import.meta.url)).mtimeMs / 1000);
+  // Leido por la misma via que la version: PHP corre dentro del contenedor, que no siempre monta
+  // el worktree desde el que se lanza esta suite. Con statSync se comparaban dos copias distintas
+  // del repo — falso rojo desde un worktree, y falso verde si el arbol montado llevara el CSS mas
+  // reciente. Medido el 2026-08-18.
+  const tokensMtime = Number(runPhpInApp('echo filemtime("public/css/tokens.css");').trim());
   assert.ok(version >= tokensMtime, `entrypoint ${version} is older than tokens ${tokensMtime}`);
   // The entrypoint is served through PHP so its nested imports can carry real
   // file mtimes; the static file keeps the published semver untouched.
