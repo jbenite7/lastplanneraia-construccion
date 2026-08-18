@@ -18,8 +18,10 @@ asume stacks que este repo **no** usa, así que:
   y el acceso a datos es `src/Core/Database.php`, con autoload PSR-4 `App\ -> src/`. Las skills
   `laravel-patterns`, `laravel-tdd`, `laravel-verification` y `laravel-plugin-discovery` **no aplican**;
   no las invoques ni razones desde sus supuestos.
-- **No hay PHPUnit ni Pest** (ver `### Tests`). No propongas migrar los `tests/test_*.php` a un runner
-  de terceros como parte de otra tarea — eso es un cambio con plan y gate propios.
+- **Sí hay PHPUnit, y no hay Pest** (ver `### Tests`). Esta línea afirmaba lo contrario hasta el
+  2026-08-18: PHPUnit se incorporó el 2026-08-11 y convive con los scripts sueltos, sin sustituirlos.
+  No propongas migrar en masa los `tests/test_*.php` como parte de otra tarea — la migración es
+  incremental y por decisión propia.
 - **De ECC sí sirve aquí:** las reglas PHP en `~/.claude/rules/ecc/php/` (léelas bajo demanda), los
   agentes `php-reviewer`, `security-reviewer` y `silent-failure-hunter`, y el comando `/security-scan`.
 - **El proceso lo manda Superpowers**, no ECC: planificar es `writing-plans` + gate, revisar es
@@ -105,8 +107,25 @@ and it grants no permissions beyond the account's own.
 
 ### Tests
 
-There is no PHPUnit. `tests/test_*.php` files are standalone self-executing scripts (no runner) — run
-one directly:
+**Corrected 2026-08-18:** this section used to open with "There is no PHPUnit." That stopped being
+true on 2026-08-11. Both suites coexist and both run through the same entry point:
+
+- `tests/test_*.php` — standalone self-executing scripts, each declaring its environment level with a
+  `// @requiere: <nivel>` comment. Levels are cumulative: `puro`, `db`, `http`, `datos-proyecto`.
+- `tests/unit/*Test.php` — PHPUnit 12 classes (`composer.json`, `phpunit.xml`, autoload-dev
+  `Tests\Unit\`). **Every class must declare a `#[Group(...)]`** naming its level, or
+  `scripts/run-php-tests.php` aborts — a test without a declared level would otherwise run where its
+  dependencies don't exist. Migration is incremental: 103 loose scripts, 1 PHPUnit class so far.
+
+`scripts/run-php-tests.php` runs both in one pass and aggregates the exit codes; it is what CI calls
+(`.github/workflows/design-system.yml`, `--nivel=puro` and `--nivel=http`). The CI image is built with
+`COMPOSER_INSTALL_FLAGS=""` so dev dependencies — PHPUnit among them — exist in the container.
+
+```bash
+docker compose exec app php scripts/run-php-tests.php --nivel=puro    # both suites, level `puro`
+```
+
+A single loose script still runs directly:
 
 ```bash
 docker compose exec app php tests/test_global_table_safety.php
