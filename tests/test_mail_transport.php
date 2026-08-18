@@ -34,6 +34,27 @@ final class MailerInspeccionable extends SmtpMailer
     }
 }
 
+/**
+ * Limpia una variable de los TRES sitios de los que lee `SmtpMailer::env()`.
+ *
+ * `Dotenv::safeLoad()` puebla `$_ENV` y `$_SERVER`, asi que borrar solo `$_ENV` deja el valor
+ * vivo y la prueba pasa en falso. Se descubrio el 2026-08-18 al re-verificar tras integrar: el
+ * caso 3 daba verde donde el .env no cargaba y rojo donde si.
+ */
+function limpiar(string $clave): void
+{
+    unset($_ENV[$clave], $_SERVER[$clave]);
+    putenv($clave);
+}
+
+/** Fija una variable en los mismos tres sitios, para que no gane un valor residual. */
+function poner(string $clave, string $valor): void
+{
+    $_ENV[$clave] = $valor;
+    $_SERVER[$clave] = $valor;
+    putenv("{$clave}={$valor}");
+}
+
 $fallos = [];
 $originales = $_ENV;
 
@@ -59,28 +80,28 @@ echo "=== Transporte de correo ===\n";
 
 // Caso 1: sendmail no necesita credenciales SMTP.
 caso('MAIL_TRANSPORT=sendmail construye sin host ni credenciales', function (): void {
-    $_ENV['MAIL_TRANSPORT'] = 'sendmail';
-    $_ENV['MAIL_FROM_ADDRESS'] = 'no-responder@ejemplo.test';
-    unset($_ENV['MAIL_HOST'], $_ENV['MAIL_USERNAME'], $_ENV['MAIL_PASSWORD']);
+    poner('MAIL_TRANSPORT', 'sendmail');
+    poner('MAIL_FROM_ADDRESS', 'no-responder@ejemplo.test');
+    limpiar('MAIL_HOST'); limpiar('MAIL_USERNAME'); limpiar('MAIL_PASSWORD');
     $m = (new MailerInspeccionable())->inspeccionar();
     afirmar($m->Mailer === 'sendmail', "esperaba Mailer=sendmail, obtuve '{$m->Mailer}'");
 }, $fallos);
 
 // Caso 2: el remitente se respeta en sendmail.
 caso('sendmail conserva MAIL_FROM_ADDRESS', function (): void {
-    $_ENV['MAIL_TRANSPORT'] = 'sendmail';
-    $_ENV['MAIL_FROM_ADDRESS'] = 'no-responder@ejemplo.test';
-    unset($_ENV['MAIL_HOST'], $_ENV['MAIL_USERNAME'], $_ENV['MAIL_PASSWORD']);
+    poner('MAIL_TRANSPORT', 'sendmail');
+    poner('MAIL_FROM_ADDRESS', 'no-responder@ejemplo.test');
+    limpiar('MAIL_HOST'); limpiar('MAIL_USERNAME'); limpiar('MAIL_PASSWORD');
     $m = (new MailerInspeccionable())->inspeccionar();
     afirmar($m->From === 'no-responder@ejemplo.test', "esperaba el remitente configurado, obtuve '{$m->From}'");
 }, $fallos);
 
 // Caso 3: el camino SMTP sigue exigiendo sus credenciales (no se afloja la validacion).
 caso('SMTP sigue exigiendo MAIL_HOST', function (): void {
-    $_ENV['MAIL_TRANSPORT'] = 'smtp';
-    unset($_ENV['MAIL_HOST']);
-    $_ENV['MAIL_USERNAME'] = 'u';
-    $_ENV['MAIL_PASSWORD'] = 'p';
+    poner('MAIL_TRANSPORT', 'smtp');
+    limpiar('MAIL_HOST');
+    poner('MAIL_USERNAME', 'u');
+    poner('MAIL_PASSWORD', 'p');
     try {
         (new MailerInspeccionable())->inspeccionar();
     } catch (\RuntimeException $e) {
@@ -92,10 +113,10 @@ caso('SMTP sigue exigiendo MAIL_HOST', function (): void {
 
 // Caso 4: sin MAIL_TRANSPORT el comportamiento historico (SMTP) se mantiene.
 caso('sin MAIL_TRANSPORT el defecto sigue siendo SMTP', function (): void {
-    unset($_ENV['MAIL_TRANSPORT']);
-    $_ENV['MAIL_HOST'] = 'smtp.ejemplo.test';
-    $_ENV['MAIL_USERNAME'] = 'u';
-    $_ENV['MAIL_PASSWORD'] = 'p';
+    limpiar('MAIL_TRANSPORT');
+    poner('MAIL_HOST', 'smtp.ejemplo.test');
+    poner('MAIL_USERNAME', 'u');
+    poner('MAIL_PASSWORD', 'p');
     $m = (new MailerInspeccionable())->inspeccionar();
     afirmar($m->Mailer === 'smtp', "esperaba Mailer=smtp, obtuve '{$m->Mailer}'");
 }, $fallos);
