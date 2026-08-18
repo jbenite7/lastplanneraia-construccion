@@ -12,13 +12,18 @@ services:
       APP_ENV: ${APP_ENV:-development}
       DB_HOST: ${DOCKER_APP_DB_HOST:-db}
       DB_PORT: ${DOCKER_APP_DB_PORT:-3306}
-      # DB_NAME, DB_USER y DB_PASS NO se inyectan aqui a proposito. Se inyectaban con
-      # `${DB_NAME}` y compania, sin valor por defecto, asi que al ejecutar compose desde un
-      # worktree —que no tiene .env— llegaban como cadena VACIA. Y una variable vacia cuenta como
-      # "ya definida": `Dotenv::createImmutable()` no la sobrescribe, de modo que la app se quedaba
-      # sin credenciales aunque el .env estuviera montado y correcto. Comprobado el 2026-08-18.
-      # Ahora las lee del .env montado, igual que ya hacia con las MAIL_*. DB_HOST y DB_PORT si se
-      # quedan: son topologia del contenedor, tienen defecto literal y no pueden salir vacias.
+      # NO QUITES estas tres de aqui. Parece que sobran —la app tambien las leeria del .env
+      # montado, como hace con las MAIL_*— y el 2026-08-18 se quitaron por eso. Fue un error:
+      # `public/index.php` carga Dotenv, pero los `tests/test_*.php` NO, asi que el PHP de CLI
+      # depende de este bloque y solo de este. Quitarlas dejaba la web en verde y reventaba
+      # `docker compose exec app php tests/test_global_table_safety.php` —la via canonica de
+      # AGENTS.md— con «Access denied for user ''». Ver memoria/trampas/.
+      # El problema que aquello intentaba resolver (llegan VACIAS al ejecutar compose desde un
+      # worktree, y una variable vacia cuenta como "ya definida" para Dotenv) se resuelve con el
+      # enlace del .env en cada worktree, documentado en CLAUDE.md.
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
       USE_GLOBAL_TABLES: "true"
     restart: unless-stopped
 
