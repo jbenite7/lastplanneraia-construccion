@@ -438,19 +438,88 @@ contadores y los filtros no existan. Las dos herramientas son complementarias y 
 cuadro**: la medición directa encuentra lo que falta y lo que se sale; el detector encuentra el
 patrón repetido que se ha normalizado.
 
+## Lente de usabilidad sobre el tramo de tablet — 700–1180 px (fase 2 de `improve-app`, 2026-08-18)
+
+**Por qué existe esta sección:** era el único hueco declarado de la fase 2. Escritorio se auditó a
+1180×820, móvil a 390 el 2026-08-13 y el 14, y el tramo intermedio —el que el umbral de 1180
+convierte en tarjetas— no lo había medido nadie. Medido con **Playwright** contra el stack local
+(`localhost:8081`), dark, cuenta `test.R`, proyecto `PDC Sandbox E2E`, rutas
+`/programacion-semanal`, `/programacion-intermedia` y `/programa-general`. Cinco anchos: **768, 834
+y 1024 emulando tablet táctil real** (`hasTouch`, `isMobile`, user-agent de iPad, `screen` a juego) y
+**900 y 1180 con ratón**, para separar «tablet física» de «ventana estrecha en escritorio», que el
+código trata distinto (`tablet-scale-70` frente a `desktop-tablet-scale-70`).
+
+**Aviso de método, porque lo cambia todo:** en tablet táctil, `public/js/tablet-viewport-scale.js`
+fija `initial-scale=0.85`, lo que **ensancha el ancho CSS un 17,6 %** respecto al físico. Medido:
+
+| Pantalla física | Ancho CSS que reporta | Qué recibe |
+|---|---|---|
+| 768 | 903 | tarjetas |
+| 834 | 981–982 | tarjetas, con 1 px de desbordamiento |
+| 1024 (iPad Pro) | **1204** | **grilla** |
+
+| Issue | Heuristic | Severity (0-4) | Fix | Status |
+|---|---|---|---|---|
+| **TB-1** · **El iPad Pro cae del lado de escritorio del umbral y recibe la grilla, siendo el dispositivo para el que se pensaron las tarjetas.** Sus 1024 px físicos se convierten en **1204 px CSS** por el escalado 0.85, y `shouldRenderCards()` (`view-switch.js:8`) corta en `< 1180`. Medido en las tres rutas: `htmlClass` lleva `tablet-scale-70` —la app **sabe** que es una tablet— y sin embargo pinta grilla, con el menú lateral en columna y el disparador flotante **invisible** (`0×0`). El coste no es estético: los controles bajo 44×44 px pasan de 8/36 a **39/61** en Semanal, de 11/42 a **62/85** en Intermedia y de 7/37 a **40/62** en Programa General, todos manejados con el dedo. **Son dos piezas correctas por separado que nunca se midieron juntas**: el escalado se escribió para que quepa más, y el umbral para decidir la forma; nadie comprobó que el primero empuja al segundo | Flexibilidad y eficiencia (N7); Objetivos táctiles (WCAG 2.5.8) | **4** | **Aplicado el 2026-08-18** por decisión del usuario: se mide contra el **ancho físico**. El arreglo no compensa el escalado en cada consumidor —el umbral vive también en las media queries de cuatro hojas de estilo, que no pueden leer `screen.width`—, sino que **retira el escalado del tramo donde no hay grilla que encoger**: por debajo de 1180 px físicos el viewport queda a escala 1, el ancho CSS vuelve a ser el físico, y JS y CSS deciden lo mismo sin duplicar la regla. Por encima se conserva, que es donde hace caber columnas. `tablet-viewport-scale.js`, con `tests/design-system/tablet-viewport-scale.test.mjs` atando las dos reglas | done |
+| **TB-2** · **`/programa-general` bajo el umbral no enseña nada: ni grilla, ni tarjetas, ni mensaje.** Con el proyecto de prueba, la grilla queda oculta y `#mobile-card-view` se queda en **0 hijos y 16 px de alto**. No es falta de datos: la misma vista a 1400 px trae **2 filas**. La causa está en `programa_general/hot.js:2033-2057` — `renderMobileCards()` **salta toda fila de capítulo** (`Titulo === 1`) pero solo pinta «No hay actividades para mostrar» cuando `rows.length === 0`. Con filas que existen y son todas de capítulo, el resultado es cero tarjetas y **cero explicación**. Arrastra un segundo hecho: **las filas de capítulo desaparecen enteras en modo tarjeta**, así que la estructura del programa no existe por debajo de 1180 | Visibilidad del estado (N1); Ayuda a reconocer y diagnosticar (N9) | **4** | **Mitad aplicada el 2026-08-18** con el sí del usuario: el aviso ya distingue el vacío real del vacío por filtrado y dice cuántas filas de capítulo se omitieron. **Y al verificarlo se destapó que el diagnóstico de esta fila estaba incompleto: ver `TB-8`.** El aviso solo alcanza por debajo de 700 px; de 700 a 1179 la causa es otra y sigue abierta | parcial |
+| **TB-3** · **La regla de 44×44 se declara contra un ancho que el propio escalado infla.** La excepción de densidad se acotó el 2026-08-14 a «>1180 px» (`M-A1`), y ese 1180 se lee en px **CSS**. En una tablet táctil el CSS va 17,6 % por encima del físico, así que un iPad Pro de 1024 mide 1204 y **queda fuera del contrato que se escribió para protegerlo**. Y en las que sí quedan dentro, el escalado encoge lo que se mide: los botones de 28 px CSS de la barra de Intermedia se dibujan a **~24 px físicos**, y el conmutador «Ver Todas las Actividades» (13×13 CSS) a ~11 px. A 768 físico hay **7–11 controles bajo el mínimo** por ruta | Objetivos táctiles (WCAG 2.5.8/2.5.5) | **4** | **Mitigado por `TB-1`, no cerrado.** Con el escalado fuera, el iPad Pro reporta 1024 px CSS y **vuelve a caer dentro** del contrato de 44×44, y ningún control se dibuja ya más pequeño que su medida. Lo que queda es el residuo real, medido tras el arreglo: **7-11 controles bajo el mínimo** por ruta a 768-1024 px, los mismos que `M-A3` cuenta en móvil. Eso sigue en el backlog | backlog ICE |
+| **TB-4** · **A 834 px físicos hay desbordamiento horizontal en las tres rutas**: `scrollWidth` 982 contra `clientWidth` 981, con `<main>` en 981 sobre un `innerWidth` de 982. Es 1 px, y es el sub-píxel que deja el escalado 0.85 sobre un ancho impar; a 768 y a 1024 no ocurre. Importa porque el contrato de este repo exige **cero** desbordamiento horizontal en el viewport permitido, y aquí el mismo código lo cumple o no según la paridad del ancho | Consistencia y estándares (N4) | 2 | **Cerrado de rebote por `TB-1`**: sin escalado no hay reparto sub-píxel. Re-medido el 2026-08-18 tras el arreglo, a 834 px físicos y en las tres rutas: `scrollWidth` == `clientWidth` == **834**, cero desbordamiento | done |
+| **TB-5** · **Texto de 11,52 px CSS presente en las cinco medidas y las tres rutas**, que en tablet táctil se dibuja a **~9,8 px físicos** por el escalado. A 1204 aparecen además tamaños de 11,2 px en Intermedia. Es el mismo aplanamiento que `DET-2` describía en móvil, ahora con un multiplicador que lo empeora en vez de compensarlo | Legibilidad tipográfica; WCAG 1.4.4 | 2 | **Atenuado por `TB-1`, no cerrado:** sin escalado, esos 11,52 px CSS se dibujan a 11,52 px físicos y no a ~9,8. El texto sigue siendo pequeño; tocar la escala tipográfica es cambio de sistema y se resuelve con `DET-2`, no aparte | backlog ICE |
+| **TB-6** · **A exactamente 1180 px no hay ninguna regla que autorice la densidad que se aplica.** `shouldRenderCards()` corta en `< 1180`, así que 1180 recibe grilla; la excepción de densidad se acotó a **`>` 1180**, así que 1180 no está exenta. Medido con ratón a 1180: **39 de 61 controles bajo 44×44 px** en Semanal y **62 de 85** en Intermedia, sin contrato detrás. Es un borde de un solo píxel y por eso nadie lo ha visto, pero 1180×820 es justamente el viewport canónico de validación del repo | Consistencia y estándares (N4) | 2 | Alinear los dos textos: o la excepción dice `>=`, o el umbral dice `<=`. Es una palabra en `PRODUCT.md` o un operador en `view-switch.js`, pero cambia qué se considera conforme: se pregunta | backlog ICE |
+| **TB-7** · **`desktop-tablet-scale-70` ya no escala nada, y sigue llamándose 70.** `tablet-viewport-scale.js:5` fija `DESKTOP_SCALE = 1`, así que en ventana estrecha de escritorio (900 y 1180 medidos) la clase se aplica, se escribe `zoom: 1` y `width: 100%`, y el efecto es nulo. El nombre —y su gemelo `tablet-scale-70`, que en tablet real vale 0,85— dice un factor que ningún camino usa ya. Es exactamente la ambigüedad que `V-6` registró desde el otro lado | Consistencia y estándares (N4) | 1 | Renombrar por lo que hacen, o retirar la rama de escritorio si su factor es 1. Cambio mecánico, pero toca clases que el CSS consume: se registra | backlog ICE |
+| **TB-8** · **Hay una tercera copia del umbral, y es la que deja `/programa-general` en blanco en todo el tramo de tablet.** `programa_general/hot.js:1862` decide con `width < 700`, no con los 1180 del umbral compartido, mientras el CSS oculta la grilla desde `max-width: 1179px`. Entre esos dos números el módulo **esconde la tabla y se niega a construir tarjetas**: el contenedor queda en 16 px de alto y no se pinta ni el aviso de vacío. Frontera medida al píxel el 2026-08-18 con el aviso ya aplicado: a **699 px el aviso se ve**; a **700 px la pantalla queda en blanco**. Es el mismo defecto que `TB-1` —una regla que existe por triplicado y no coincide consigo misma—, ahora en un tercer sitio, y explica por qué `TB-2` parecía un problema de mensaje y no lo era del todo | Consistencia y estándares (N4); Visibilidad del estado (N1) | **4** | **Aplicado el 2026-08-18** con el sí del usuario: `isMobileGridViewport()` consume `AIAViewSwitch.shouldRenderCards()`, y la vista de Programa General **carga `view-switch.js`, que no cargaba** —sin ese añadido el módulo habría caído siempre al repliegue de grilla y el arreglo habría empeorado el defecto—. Verificado en tres proyectos y siete anchos. **Con su coste medido:** en el proyecto grande, entregar tarjetas donde antes no había nada pasa el DOM de **613 a 69 939 nodos** (1475 tarjetas), +951 ms de carga y +5 MB de heap; el scroll sigue fluido (17 ms). Es peor que virtualizar y mucho mejor que una pantalla en blanco. La paginación va al backlog con `M-A8` | done |
+
+**Lo que sí funciona en este tramo, y conviene no romperlo:** el **menú flotante se comporta como
+debe** por debajo de 1180 en las tres rutas y en los dos modos de puntero —disparador visible de
+**84×44 px** en `12,12`, `aria-expanded="false"`, el `aside` desplazado a `x = -64` y el `body` sin
+`padding-left`—, lo que deja **caduca** la pregunta abierta del audit móvil sobre si el sidebar
+colapsa por ancho: ya colapsa. **Cero desbordamiento horizontal a 768, 900, 1024 y 1180.** Y las
+tarjetas de Intermedia se entregan bien en el tramo: la `pi-mobile-card` mide 855×267 px a 903 CSS,
+con su desplegable de restricciones, su línea de foco y su responsable.
+
+**La conclusión que ordena a las demás:** el tramo de tablet no falla por acabado, falla porque
+**dos decisiones correctas se contradicen sin saberlo**. El escalado del viewport y el umbral de
+1180 se escribieron por separado, y su suma manda el iPad Pro —el aparato que motivó las tarjetas—
+al camino de escritorio, saca al mismo aparato del contrato táctil que se acababa de escribir para
+él, y decide por paridad del ancho si hay desbordamiento o no. `TB-1`, `TB-3` y `TB-4` son el mismo
+hallazgo visto desde tres sitios. `TB-2` es independiente y es el otro rojo: un módulo entero que
+por debajo del umbral se queda en blanco sin decir por qué.
+
+**Corrección del mismo día, y la trampa que enseña.** `TB-2` atribuía el blanco de
+`/programa-general` al filtrado de capítulos. Eso es cierto **solo por debajo de 700 px**. Al
+aplicar el aviso y verificarlo apareció `TB-8`: de 700 a 1179 el módulo ni siquiera intenta
+construir tarjetas, porque guarda su propia copia del umbral en `width < 700`. El primer
+diagnóstico se hizo leyendo `renderMobileCards()`, que era el sitio correcto para el síntoma y el
+equivocado para la causa; lo que lo destapó fue **medir el arreglo, no razonarlo**. Es la misma
+lección que ya dejó escrita el recuento de premisas falsas del backlog.
+
+**Lo aplicado el mismo día, y lo que eso confirma.** El usuario decidió `TB-1` a favor de medir por
+ancho físico, y al implementarlo apareció el dato que el audit no tenía: **el umbral no vive solo en
+el JS**. `shouldRenderCards()` únicamente decide si se *construyen* las tarjetas; quien las enseña o
+las esconde es CSS —`handsontable-module.css:324,343`, `programacion-semanal.css:936`,
+`programacion-intermedia.css:1070`, `shell-sidebar.css:289`—, y una media query no puede leer
+`screen.width`. Compensar el escalado solo en el JS habría dejado al iPad Pro **construyendo
+tarjetas que el CSS oculta**: una pantalla en blanco, peor que el defecto original. Por eso el
+arreglo va a la raíz —no escalar donde no hay grilla— en vez de a los consumidores. Verificado en
+navegador en las tres rutas a 768, 834, 1024 y 1366 táctiles y a 390, 900, 1180 y 1440: el corte cae
+donde debe en los ocho anchos, cero desbordamiento horizontal, y los controles bajo 44×44 px del
+iPad Pro pasan de **39/61 a 13/36** en Semanal y de **40/62 a 14/37** en Programa General.
+
+
 ## Recuento
 
 | Estado | Entradas |
 |---|---|
-| `done` | 36 |
+| `done` | 39 |
 | `informe emitido (Task 27)` | 3 |
 | `no ejecutable (Task 27)` | 1 |
 | `pendiente (Task N)` | **0** |
-| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 56 |
+| `backlog ICE` (sin task, en `docs/EXPERIMENTS.md`) | 60 |
+| `parcial` (mitad aplicada, mitad abierta) | 1 |
 | `cerrado sin código` | 6 |
 | `en plan` (F2a-2b-2) | 1 |
 | `no aplica: módulo eliminado` | 4 |
-| **Total** | **107** |
+| **Total** | **115** |
 
 C-31 y C-49 cuentan una sola vez, en el estado de su parte principal (`done` y `pendiente`
 respectivamente); sus mitades restantes están anotadas en su propia fila.

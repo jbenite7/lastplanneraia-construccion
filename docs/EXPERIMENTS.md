@@ -193,3 +193,21 @@ cuatro tablas.
 | `T-6` | **El resumen ejecutivo deja de decir «riesgo bajo» con 174 compras vencidas** — `composeExecutiveBrief()` mira también el PDC | 4 | 5 | 2 | Cambia el diagnóstico, no la presentación: pide el sí del usuario |
 | `T-8` | Auditar el último `status-critical` usado como color de serie (`bi-spa.js:3704`) | 2 | 4 | 1 | Misma trampa que ya se corrigió en el horizonte de compras |
 | `T-7` | Reemplazar el gráfico de cobertura por la cifra cuando el filtro trae una sola obra | 1 | 4 | 1 | Diferible: solo molesta en proyecto único |
+
+## Tramo de tablet · fase 2 de `improve-app` ampliada (2026-08-18)
+
+De `docs/DESIGN-AUDIT.md` §«Lente de usabilidad sobre el tramo de tablet». Medido con Playwright
+contra `localhost:8081`, dark, `test.R` / `PDC Sandbox E2E`, a 768/834/1024 táctiles y 900/1180 con
+ratón. **Nada aplicado en esta pasada:** los siete tocan comportamiento o contrato, no CSS puro.
+
+| Id | Cambio | I | C | E | Nota |
+|---|---|---|---|---|---|
+| ~~`TB-1`~~ | ~~Que el iPad Pro reciba tarjetas, no la grilla~~ | — | — | — | **Aplicado y verificado el 2026-08-18**, con el sí del usuario: se mide por ancho físico, retirando el escalado del tramo donde no hay grilla que encoger. Cierra `TB-4` de rebote y mitiga `TB-3` y `TB-5`. Ver `docs/DESIGN-AUDIT.md` §tramo de tablet |
+| `TB-2` | **Que `/programa-general` deje de quedarse en blanco bajo 1180** | 8 | 10 | 5 | **Mitad aplicada el 2026-08-18:** el aviso de vacío ya dice cuántas filas de capítulo se omitieron, verificado a 390 y 699 px. Lo que queda **no era un problema de mensaje**: de 700 a 1179 px la causa es `TB-8`, y la forma del capítulo en modo tarjeta sigue sin decidir |
+| `TB-3` | Que los 7-11 controles bajo 44×44 px de cada ruta a 768-1024 px alcancen el mínimo táctil | 6 | 10 | 4 | **Mitad resuelta por `TB-1`:** el iPad Pro ya cae dentro del contrato y ningún control se dibuja más chico que su medida. Lo que queda es el mismo residuo que `M-A3` cuenta en móvil, y se ataca con él |
+| ~~`TB-4`~~ | ~~Que a 834 px físicos no haya 1 px de desbordamiento horizontal~~ | — | — | — | **Cerrado de rebote por `TB-1` el 2026-08-18.** Sin escalado no hay reparto sub-píxel: re-medido, `scrollWidth` == `clientWidth` == 834 en las tres rutas |
+| `TB-5` | Que no haya texto de 11,52 px en las tres rutas | 3 | 9 | 3 | **Atenuado por `TB-1`:** ya no encoge a ~9,8 px físicos. Sigue siendo pequeño; se resuelve con `DET-2` (escala tipográfica), no aparte |
+| `TB-6` | Que 1180 px exactos queden dentro de alguna regla: hoy recibe grilla (`< 1180`) y no está exento de 44×44 (`> 1180`) | 3 | 10 | 9 | Una palabra en `PRODUCT.md` o un operador en `view-switch.js`, pero cambia qué se considera conforme: pide el sí del usuario. Y 1180×820 es el viewport canónico de validación |
+| `TB-7` | Que `desktop-tablet-scale-70` no se llame 70 cuando su factor es 1 | 2 | 10 | 7 | Mecánico, pero toca clases que consume el CSS. Mismo problema que `V-6` desde el otro lado |
+| ~~`TB-8`~~ | ~~Que `/programa-general` use el umbral compartido en vez de su copia `< 700`~~ | — | — | — | **Aplicado y verificado el 2026-08-18**, con el sí del usuario. Arrastró un segundo arreglo que el hallazgo no preveía: la vista **no cargaba `view-switch.js`**. Ver `docs/DESIGN-AUDIT.md` §tramo de tablet |
+| `TB-9` | **Que Programa General no monte 1475 tarjetas de una vez** — paginar o virtualizar la lista | 5 | 10 | 3 | Coste medido al aplicar `TB-8`: 613 → **69 939 nodos** de DOM, +951 ms de carga, +5 MB de heap en el proyecto grande. El scroll aguanta (17 ms), así que no es bloqueante. Es el mismo problema que `M-A8` describe en móvil, y se ataca con él |

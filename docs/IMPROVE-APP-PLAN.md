@@ -24,7 +24,7 @@
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
 | 1 | jobs-to-be-done | done — GATE abierto; fases 2-9 desbloqueadas | CUSTOMER.md | 2026-08-04 |
-| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición. **Reabierta y ampliada el 2026-08-13 sobre móvil**, superficie que ninguna fase había mirado: 8 hallazgos `V-1`…`V-8`, dos de ellos severidad 4. **Ampliada otra vez el 2026-08-14** con `/impeccable audit` sobre la lista de ocho puntos del usuario: 8 hallazgos `M-A1`…`M-A8`, tres de severidad 4, y el audit en **7/20**. Tablet (700–1180 px) sigue pendiente | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 · 2026-08-13 · 2026-08-14 |
+| 2 | ux-heuristics | done — la corrió la campaña (ciclo triple + 8 barridos); 54 hallazgos volcados con severidad y disposición. **Reabierta y ampliada el 2026-08-13 sobre móvil**, superficie que ninguna fase había mirado: 8 hallazgos `V-1`…`V-8`, dos de ellos severidad 4. **Ampliada otra vez el 2026-08-14** con `/impeccable audit` sobre la lista de ocho puntos del usuario: 8 hallazgos `M-A1`…`M-A8`, tres de severidad 4, y el audit en **7/20**. **Ampliada por tercera vez el 2026-08-18 sobre el tramo de tablet (700–1180 px)**, el último hueco de la fase: 7 hallazgos `TB-1`…`TB-7`, tres de severidad 4. Total del audit **115** (`TB-8` salió al verificar el arreglo de `TB-2`); `TB-1`, `TB-2` y `TB-8` aplicados; `TB-1` aplicado el mismo día por decisión del usuario | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 · 2026-08-13 · 2026-08-14 · 2026-08-18 |
 | 3 | design-everyday-things | done — lente de Norman sobre PG→PI→PS; 7 hallazgos nuevos (`N-1`…`N-7`) con severidad y C-14 medido y absorbido. **Nada aplicado:** todo es cambio de comportamiento, se registra y se pregunta | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
 | 4 | refactoring-ui | done — ídem fase 2, dentro del ciclo triple de la campaña; volcada en la misma tabla | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-04 |
 | 5 | microinteractions | done — las 4 acciones diarias desmontadas en Trigger/Rules/Feedback/Loops **midiendo en navegador**; 6 hallazgos (`M-1`…`M-6`), momento firma = confirmar compromisos. Solo `M-1` era CSS puro y se aplicó; los otros 5 tocan comportamiento y van al backlog | docs/DESIGN-AUDIT.md, EXPERIMENTS.md | 2026-08-05 |
@@ -65,6 +65,8 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
 | 2026-08-14 | Fase 2 (tarjeta) | **E2 nunca se había implementado**: lo construido era la ficha completa siempre abierta, la alternativa que E2 descartó por escrito | Medido: 562 px por tarjeta y ningún mecanismo de plegado en ninguno de los dos módulos. La decisión existía desde el 2026-08-07 y no llegó al código |
 | 2026-08-14 | Fase 2 (audit) | **La excepción de densidad de 24 px queda acotada a >1180 px.** Su premisa era literal —«esta familia está fuera del alcance móvil por contrato»— y caducó al abrir móvil. Por debajo del umbral rige 44×44 sin excepción; por encima se mantiene la densidad, que existe por una razón real | Decisión del usuario. Sin esto, cualquier arreglo de tamaño en móvil sería discutible contra el propio contrato de producto |
 | 2026-08-14 | Fase 2 (audit) | La golden móvil del piloto **se rechaza**, no se aprueba como línea base | Decisión del usuario. Fijarla habría grabado como «correcto» un estado con tres hallazgos de severidad 4 |
+| 2026-08-18 | Fase 2 (tablet) | **Nada se aplica en esta pasada.** Los 7 hallazgos `TB-*` se registran con severidad y van al backlog ICE | Ninguno es CSS puro: los tres de severidad 4 son decisiones de forma —qué magnitud gobierna el umbral y el contrato táctil, y qué es un capítulo en modo tarjeta—, y la regla de la fase es registrar y preguntar |
+| 2026-08-18 | Fase 2 (tablet) | Se miden **tablet táctil y ventana estrecha de escritorio por separado**, no un solo tramo de anchos | El código los trata distinto (`tablet-scale-70` frente a `desktop-tablet-scale-70`) y solo el primero sufre el escalado de viewport: medirlos juntos habría escondido `TB-1`, que es el hallazgo que ordena la pasada |
 | 2026-08-13 | Fase 2 (móvil) | El recorrido se reanuda por **auditar móvil y tablet**, no por las decisiones abiertas ni por el veredicto de la fase 9 | Decisión del usuario; es la superficie que el piloto F2a-2b está a punto de entregar y la única que ninguna fase había mirado |
 | 2026-08-13 | Fase 2 (móvil) | **Nada se aplica en esta pasada.** Los 8 hallazgos se registran con severidad y van al backlog ICE | Los dos de severidad 4 son cambio de comportamiento del shell y afectan a los 11 módulos: es una decisión de forma del usuario, no un arreglo de acabado |
 | 2026-08-13 | Fase 2 (móvil) | `/programacion-semanal` se excluye de la medición | Un subagente editaba su `hot.js` mientras se medía; medir un árbol a medio cambiar produce hallazgos falsos (misma razón que `B-2`) |
@@ -148,11 +150,57 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   bien construidas y lo que las inutiliza es el shell, cuyo sidebar nunca colapsa por ancho y se come
   240 de 390 px, dejando el contenido en 203 px con el texto partido letra a letra. Total del audit
   88 → **96**.
-- [ ] **Pregunta abierta al usuario, de la fase 2 móvil:** ¿se colapsa el sidebar por ancho —cambio
-  de comportamiento del shell que toca los 11 módulos— antes de entregar tarjetas en tablet? Sin eso,
-  el umbral de 1180 mueve el problema de sitio en vez de arreglarlo.
-- [ ] **Siguiente paso natural de la fase 2:** auditar el tramo de tablet (700–1180 px), que es
-  exactamente la superficie que el umbral convierte en tarjetas y que esta pasada no midió.
+- [x] **Esta pregunta ya no está abierta: se decidió y se implementó.** El sidebar **sí colapsa por
+  ancho** desde `af951c0d`/`11f2c415` (pieza `shell-drawer.js`, umbral 1180, y la media query
+  `max-width: 1179px` de `shell-sidebar.css:289`). Comprobado en navegador el 2026-08-18 en las tres
+  rutas del piloto y en los dos modos de puntero: disparador visible de 84×44 px, `aside` desplazado
+  a `x = -64` y `body` sin `padding-left`. Corregido al pasar; no se vuelve a implementar.
+- [x] **Fase 2 ampliada al tramo de tablet — 2026-08-18.** Medido con Playwright a 768, 834 y 1024
+  emulando tablet táctil (`hasTouch`, `isMobile`, UA de iPad) y a 900 y 1180 con ratón, dark, sobre
+  `test.R` / `PDC Sandbox E2E`, en las tres rutas del piloto. Siete hallazgos `TB-1`…`TB-7` en
+  `docs/DESIGN-AUDIT.md` y siete tarjetas ICE. Total del audit 107 → **114**. **Nada aplicado.**
+  **El hallazgo que ordena a los demás: el escalado de viewport y el umbral de 1180 se contradicen
+  sin saberlo.** `initial-scale=0.85` ensancha el ancho CSS un 17,6 %, así que un iPad Pro de 1024 px
+  reporta **1204** y cae del lado de escritorio del umbral: recibe la grilla, con 39-62 controles bajo
+  44×44 px manejados con el dedo, siendo el aparato para el que se pensaron las tarjetas. El segundo
+  rojo es independiente: **`/programa-general` bajo 1180 se queda en blanco** —ni grilla, ni tarjetas,
+  ni mensaje— porque `renderMobileCards()` salta las filas de capítulo y solo avisa del vacío cuando
+  no hay ninguna fila.
+- [x] **`TB-1` decidido y aplicado el 2026-08-18: el umbral se mide contra el ancho físico.**
+  Al implementarlo apareció lo que el audit no tenía: **el umbral no vive solo en el JS**. Quien
+  enseña u oculta la grilla y las tarjetas son las media queries de cuatro hojas de estilo, que no
+  pueden leer `screen.width`; compensar el escalado solo en `shouldRenderCards()` habría dejado al
+  iPad Pro construyendo tarjetas que el CSS esconde —una pantalla en blanco, peor que el defecto—.
+  Así que el arreglo va a la raíz: **el viewport deja de escalarse por debajo de 1180 px físicos**,
+  que es justo el tramo donde no hay grilla que encoger, y el ancho CSS vuelve a ser el físico.
+  Verificado en navegador en las tres rutas a 768, 834, 1024 y 1366 táctiles y a 390, 900, 1180 y
+  1440: el corte cae donde debe en los ocho anchos, cero desbordamiento, y los controles bajo 44×44
+  del iPad Pro pasan de 39/61 a 13/36 en Semanal. Cierra `TB-4` de rebote, mitiga `TB-3` y `TB-5`.
+  Suite estática 8/8 y prueba nueva `tests/design-system/tablet-viewport-scale.test.mjs` (4/4,
+  comprobada por mutación).
+- [x] **`TB-2`, mitad barata aplicada el 2026-08-18** con el sí del usuario: el aviso de vacío de
+  `/programa-general` ya distingue el vacío real del vacío por filtrado y dice cuántas filas de
+  capítulo se omitieron. Verificado en navegador a 390 y 699 px, sin errores de consola ni
+  desbordamiento, y sin tocar 1440.
+- [ ] **Lo que destapó ese arreglo, y es más grave que él (`TB-8`):** el aviso solo se ve por debajo
+  de 700 px. `programa_general/hot.js:1862` guarda una **tercera copia del umbral** (`width < 700`)
+  mientras el CSS esconde la grilla desde `max-width: 1179px`, así que entre 700 y 1179 px el módulo
+  no enseña tabla, ni tarjetas, ni aviso. Frontera medida al píxel: a **699 el aviso se ve, a 700 la
+  pantalla queda en blanco**. Es el mismo defecto que `TB-1` en un tercer sitio, y significa que el
+  diagnóstico original de `TB-2` —«es el filtrado de capítulos»— era cierto solo por debajo de 700.
+  Lo destapó **medir el arreglo, no razonarlo**.
+- [x] **`TB-8` aplicado el 2026-08-18** con el sí del usuario: `isMobileGridViewport()` consume el
+  umbral compartido. **No era una línea:** la vista de Programa General **no cargaba
+  `view-switch.js`**, así que el cambio solo habría activado el repliegue de grilla y habría dejado
+  el módulo igual de blanco. Se añadió el script como ya lo hacen Semanal e Intermedia. Verificado en
+  navegador en **tres proyectos y siete anchos**: de 390 a 1179 px salen tarjetas (239 y 1475 según
+  el proyecto) o el aviso de vacío cuando el corte es solo de capítulos; a 1180 y 1440 vuelve la
+  grilla con sus filas. Cero desbordamiento y cero errores de consola en todos. **Coste medido, no
+  estimado:** el DOM pasa de 613 a 69 939 nodos en el proyecto grande, +951 ms de carga y +5 MB de
+  heap, con el scroll aún fluido (17 ms) → `TB-9` en el backlog, junto a `M-A8`.
+- [ ] **Pregunta abierta al usuario, de la fase 2 tablet:** ¿qué forma tiene una fila de capítulo en
+  modo tarjeta —tarjeta propia, encabezado de grupo, o ninguna? Hoy desaparecen, y por eso un corte
+  compuesto solo de capítulos enseña el aviso en vez de contenido.
 - [x] **Fase 2 ampliada con `/impeccable audit` — 2026-08-14.** Ocho hallazgos `M-A1`…`M-A8` sobre
   la lista del usuario (botones de acción, chips contadores, filtros, header, indicador de módulo,
   botones, interacción, tamaño de cards). Audit en **7/20**. Tres de severidad 4: la excepción
@@ -172,9 +220,11 @@ Statuses: pending · in-progress · awaiting-evidence · done · deferred: <reas
   confirma el modelo A (resumen + desplegable) y lo amplía: cinco elementos en la cara visible
   (añade Responsable AIA) y, solo en Semanal, la edición del compromiso sube a la cara visible.
   Intermedia no se ve afectada por lo segundo: sus tarjetas son de solo lectura.
-- [ ] **Pendiente de esa decisión:** implementarla. Resuelve `M-A8` (altura de tarjeta) y da el
-  marco a `M-A4`/`M-A5` (contadores y filtros ausentes) y a `DET-2` (jerarquía plana), que se ajusta
-  al implementar la tarjeta y no antes.
+- [x] **Esa decisión ya está implementada y publicada**, no pendiente: `90dc5a5d` (la tarjeta móvil
+  de Semanal adopta el modelo E2-bis), `cb26382c` (el capítulo se separa del título), `3e9ec4da` y
+  `2dfa6ca5`. Comprobado el 2026-08-18: la `pi-mobile-card` mide 855×267 px a 903 CSS con su
+  desplegable de restricciones, su línea de foco y su responsable. Corregido al pasar. Lo que sigue
+  abierto de aquel bloque es `DET-2` (la escala tipográfica), que es de sistema, no de la tarjeta.
 - [ ] **Lo que queda abierto no es trabajo, son decisiones.** Diez, recogidas una a una en
   `docs/DESIGN-AUDIT.md` §Pendiente de decisión del usuario: las 9 excepciones de a11y de
   `.pdc-header`, los dos goldens ciegos (fila de capítulo en PG, estado bloqueado en PI), la
