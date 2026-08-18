@@ -66,6 +66,15 @@ const BASELINE_GENERATIONS = {
     measurementPath: 'docs/design-system/runtime-measurements/0.3.4-measurement.json',
     manifestPath: 'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json',
   },
+  // 0.3.5 (2026-08-18): re-aprobacion tras el menu flotante. Ojo con el nombre —
+  // estas claves son la generacion del presupuesto, no la version de producto,
+  // que ya iba por 1.1.0 cuando se creo 0.3.4. Confundirlas fue el primer intento
+  // de esta misma re-aprobacion; el manifiesto de 0.3.4 ya lo advertia.
+  '0.3.5': {
+    measurementKind: 'current',
+    measurementPath: 'docs/design-system/runtime-measurements/0.3.5-measurement.json',
+    manifestPath: 'docs/design-system/runtime-measurements/0.3.5-recovery-manifest.json',
+  },
 };
 
 export function baselineGeneration(version) {

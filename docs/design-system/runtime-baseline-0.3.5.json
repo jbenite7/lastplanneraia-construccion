@@ -1,0 +1,60 @@
+{
+  "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+  "schemaVersion": 1,
+  "kind": "baseline",
+  "measurementKind": "current",
+  "status": "approved",
+  "designSystemVersion": "0.3.5",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "sourceRef": "6995b322bf1d4b64494775f7538d80b5c4a39e45",
+  "sourceTreeHash": "36a6c0ec5ed19ff0d93a3451df8f0bbe1563fa652079d0f7c1aa315d0df6e50f",
+  "recordedAt": "2026-08-18T15:21:22.531Z",
+  "approval": {
+    "status": "approved",
+    "approvedBy": "user",
+    "approvalRef": "user-approved-runtime-budget-0.3.5-2026-08-18"
+  },
+  "justification": {
+    "attributionPath": "docs/design-system/runtime-measurements/2026-08-18-atribucion-0.3.5.md",
+    "decisionRef": "D-GAC-5 / re-aprobacion 2026-08-18",
+    "summary": "cssGzipBytes +121 B (0,06 %) sobre el techo de 0.3.4, determinista en siete corridas y atribuido al menu flotante bajo 1180px (81 lineas en adapters/shell-sidebar.css). handsontableInteractionMs 271-277 frente a los 134,6 de 0.3.4, que es el minimo de toda la serie (280,7 en 0.3.3, 180,4 en 0.3.6, 234,2 en 1.0.0): el atipico era el baseline. Hipotesis de equipo lento descartada porque initializationMs bajo de 1070,6 a ~230 en la misma maquina. Sin regresion."
+  },
+  "recovery": {
+    "manifestPath": "docs/design-system/runtime-measurements/0.3.5-recovery-manifest.json",
+    "manifestSha256": "2fe36cbb34d55588f23a375104c7b215e834cfb9721af0a854344a6918dd0e31",
+    "measurementPath": "docs/design-system/runtime-measurements/0.3.5-measurement.json",
+    "measurementSha256": "6d565346ef861093403f3128cc5a3a2bc09731f65a8a4b9ef577b3c90bca06cb"
+  },
+  "metrics": {
+    "adapterAssets": [
+      "/css/design-system/adapters/datatables.css",
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/shell-sidebar.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "laboratoryAssets": [],
+    "cssGzipBytes": 196733,
+    "jsGzipBytes": 634284,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 167.8,
+    "handsontableInteractionMs": 280.8
+  },
+  "tolerances": {
+    "cssGzipBytes": 2048,
+    "jsGzipBytes": 4096,
+    "addedAdapterAssets": 0,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 110,
+    "handsontableInteractionMs": 45
+  }
+}
