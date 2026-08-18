@@ -11,7 +11,17 @@ resumen: "Panel admin: crear proyectos, usuarios y familias de catálogo — min
 **Qué resuelve.** Es donde se da de alta un proyecto nuevo, se crean usuarios y se les asigna un
 rol por proyecto, y se mantiene el catálogo de familias. No es una sección más de la app: es una
 mini-app aparte (ver [[admin-adminlte-adaptador]] antes de tocarla), con su propio login, su propio
-router y su propio estilo AdminLTE — nada de lo de `src/` se reutiliza aquí.
+router y su propio estilo AdminLTE.
+
+**Corregido 2026-08-18:** esta línea decía «nada de lo de `src/` se reutiliza aquí», y dejó de ser
+cierto el 2026-08-03. `admin/` comparte a propósito las piezas de sesión y permisos:
+`App\Security\RbacService` y `App\Security\EventService` en `admin/src/Controllers/AdminController.php:5-6`
+y `AuthController.php:7-8`, `App\Core\ProgressTracker` en `DashboardController.php:8`,
+`App\Core\DevDoor` en `admin/public/index.php:69-73` y `RbacCatalog` en `admin/views/layouts/main.php:52`.
+Es compartición deliberada y documentada (`docs/superpowers/specs/2026-08-03-admin-dev-door-design.md`),
+no un descuido: duplicar la normalización de roles habría abierto la puerta a que las dos apps
+discreparan sobre quién puede qué. Lo que sí sigue siendo propio y **no** se reutiliza: el router, los
+modelos, las vistas y el CSS.
 
 **Dónde encaja.** Fuera de los dos flujos de negocio: es infraestructura de la aplicación.
 

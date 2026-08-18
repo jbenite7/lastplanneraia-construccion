@@ -37,7 +37,7 @@ obliga a pasar por el contrato de release.
 
 `docs/design-system/version.json` es la fuente que manda sobre la versión viva, que es **`1.1.0`
 desde el 2026-08-07**. Que diga `stable` no es una etiqueta suelta:
-`tests/design-system/release-governance.test.mjs:75-76` exige que **las ocho gates de cierre** de
+`tests/design-system/release-governance.test.mjs:76-79` exige que **todas las gates de cierre** de
 `closeout-evidence.json` estén declaradas todas, `blocking: true` y con `evidence.length > 0`. Solo
 entonces `stable-api-1.0.0.json` puede declarar `releaseStatus: 'guaranteed'`.
 

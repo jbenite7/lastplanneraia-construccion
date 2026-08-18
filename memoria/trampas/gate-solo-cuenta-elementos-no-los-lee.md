@@ -69,9 +69,12 @@ lleva a reconstruir piezas sanas.
 > [!check] Corregido el 2026-08-11 — `D-F1b-5`, verificado el 2026-08-12
 > Lo de arriba describe el estado del 2026-08-10 y **ya no es el de hoy**, en dos puntos:
 >
-> - **Son 8 gates, no 15.** `docs/design-system/closeout-evidence.json` declara `static`, `runtime`,
+> - **Son 8 gates, no 15.** (Nueve desde el 2026-08-18, al entrar `semanal-roles-phases`.)
+>   `docs/design-system/closeout-evidence.json` declara `static`, `runtime`,
 >   `runtime-budgets`, `phpstan-scoped`, `phpstan-global`, `global-table-safety`, `full-app-flow` y
->   `atomic-commit`; `release-governance.test.mjs:75` comprueba `closeout.gates.length === 8`.
+>   `atomic-commit`; `release-governance.test.mjs:76-79` ya **no** fija el número: compara contra
+>   `closeoutGateIds.length`, para que añadir o retirar un gate no deje la prueba midiendo una cifra
+>   que nadie mantiene.
 > - **Ya no se exige `status: 'passed'`.** El comentario del propio test (`:72-74`) explica por qué se
 >   retiró el acoplamiento: con la versión estable en 1.x, exigirlo **obligaba a declarar aprobados
 >   gates que no lo estaban, y fue el incentivo que produjo los quince recibos `passed` sin ejecutar**.

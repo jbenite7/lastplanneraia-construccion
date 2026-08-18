@@ -4,7 +4,7 @@ estado: vigente
 fecha: 2026-08-07
 areas: [qa, design-system, worktrees, docker]
 fuente: sesion
-resumen: "npm run test:design-system:static da un rojo falso en node-tests desde un worktree secundario: docker-compose.yml fija name: last-planner-aia, así que el PHP se ejecuta en el contenedor del worktree principal y compara mtimes de otro árbol"
+resumen: "npm run test:design-system:static da un rojo falso en node-tests desde un worktree secundario, por dos caminos: docker-compose.yml fija name: last-planner-aia (el PHP corre en el contenedor ajeno) y el override monta LPS_CODE_ROOT con ruta absoluta al checkout principal por defecto; hacen falta las dos variables, no una"
 ---
 **Desde un worktree secundario, `npm run test:design-system:static` puede dar 7/8 sin que nada esté
 roto.** Medido el 2026-08-07 al cerrar la campaña de dark mode: `node-tests` en rojo con
@@ -26,15 +26,30 @@ renderiza `DesignSystemHeadComponent` leyendo los mtimes del árbol ajeno y los 
 `statSync` local de `public/css/tokens.css`, que sí es del worktree que ejecuta. Dos árboles
 distintos dentro de la misma aserción.
 
-**El arreglo es una variable de entorno, no un cambio de código:**
+**El arreglo son dos variables de entorno, no una.** Hasta el 2026-08-18 esta página decía que
+bastaba con `COMPOSE_PROJECT_NAME`, y **no basta**:
 
 ```bash
-COMPOSE_PROJECT_NAME=<nombre-propio> npm run test:design-system:static
+COMPOSE_PROJECT_NAME=<nombre-propio> LPS_CODE_ROOT="$PWD" npm run test:design-system:static
 ```
 
-Con eso la suite dio **8/8** sobre el mismo árbol, sin tocar un solo archivo. No hace falta publicar
-puertos ni levantar el stack: sin servicios corriendo en tu proyecto, el propio helper cae a
-`compose run --rm --no-deps app`, que no publica nada y no colisiona con el stack del humano.
+`COMPOSE_PROJECT_NAME` resuelve **a qué contenedor** vas, pero no **qué árbol monta ese contenedor**:
+`docker-compose.override.yml:26-28` hace el bind desde
+`${LPS_CODE_ROOT:-/Volumes/Crucial X6/Developer/lps-aia}`, una **ruta absoluta al checkout principal
+como valor por defecto**. Sin `LPS_CODE_ROOT`, el contenedor efímero es tuyo pero sigue sirviendo el
+árbol de otro, y la aserción vuelve a comparar dos árboles — el mismo síntoma exacto, por un segundo
+camino.
+
+Medido el 2026-08-18 desde un worktree limpio: solo con `COMPOSE_PROJECT_NAME` propio, `node --test
+tests/design-system/foundation.test.mjs` da 27/28 con el mismo `entrypoint … is older than tokens`, y
+el `filemtime` que devuelve el PHP dentro del contenedor es el del checkout principal, no el del
+worktree. Añadiendo `LPS_CODE_ROOT="$PWD`", **28/28 y la suite entera en 8/8**. El síntoma es
+idéntico en los dos casos, así que no se distingue por el mensaje: si el rojo persiste tras poner el
+nombre de proyecto, lo que falta es la ruta.
+
+No hace falta publicar puertos ni levantar el stack: sin servicios corriendo en tu proyecto, el
+propio helper cae a `compose run --rm --no-deps app`, que no publica nada y no colisiona con el stack
+del humano.
 
 **Por qué importa más allá de esta prueba:** cualquier verificación que ejecute PHP dentro del
 contenedor tiene el mismo defecto desde un worktree secundario, y falla del lado peligroso —
