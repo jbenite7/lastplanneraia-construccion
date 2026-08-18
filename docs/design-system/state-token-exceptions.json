@@ -215,6 +215,13 @@
       "reason": "Mensaje de error de campo, hoy en tres sitios: /admin/usuarios/crear (2 campos) y el dashboard (progreso de consolidacion y alertas de integridad). Es una linea de texto suelta bajo el input o la lista, sin chip ni superficie propia, asi que no hay bloque donde declarar el critical-bg pareado: medio par a proposito. Toma el token de texto critico SIN aclarar porque el aclarado al 35% de la regla hermana .text-danger da rgb(250,234,231) -practicamente blanco, indistinguible del texto normal, y un error que no se ve rojo no se lee como error-. El contraste nunca fue el problema: medido a 1180x820 en dark, #ffcdc8 sobre la superficie compuesta del formulario rgb(27,34,30) da 11,42:1, muy por encima de AA. El aclarado sigue vigente para .text-danger sin este gancho -por ejemplo el enlace «Salir» de la navbar, donde el matiz no carga significado-."
     },
     {
+      "file": "public/css/programacion-semanal.css",
+      "selector": ".ps-page .ps-mobile-foco",
+      "token": "--ds-color-state-warning-text",
+      "kind": "by-design",
+      "reason": "Linea de texto suelta en la tarjeta movil de PS que dice que le falta a la actividad, sin chip de fondo propio: la superficie es .ps-mobile-card, pintada con --ds-active-surface (theme-aware), no un token crudo fijo. No hay bloque donde declarar el warning-bg pareado sin inventar un chip que el diseno no pide. Medido a 1180x820 en dark: #f2e79c sobre la superficie compuesta de la tarjeta rgb(27,35,30) da 12,78:1, muy por encima de AA."
+    },
+    {
       "file": "public/css/programacion-intermedia.css",
       "selector": ".pi-page #hot-container td .pi-missing-resp",
       "token": "--ds-color-state-warning-text",
