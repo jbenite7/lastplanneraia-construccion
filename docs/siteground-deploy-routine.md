@@ -537,3 +537,38 @@ apunta 10 de 22 paquetes activos a su fila de duraciones y deja 12 en `NULL` (es
   datos, repaso (paso 5.1). Repetir las que fallan hasta que pasen no es un plan de deploy.
 - Un respaldo de base **sin restauracion probada y conteos comparados** no cuenta como respaldo
   (paso 3.1). Si no se puede volver atras, no se despliega.
+
+## Clones shallow: probado y descartado el 2026-08-18
+
+Se intento convertir `prueba-lps` en clon shallow para bajar su `.git` de 362 MB. **No funciona con
+esta rutina.** Los dos hallazgos, en orden:
+
+**1. Podar no libera nada por si solo.** `git fetch --depth=1 origin main`, `reflog expire
+--expire=now --all` y `gc --prune=now` dejaron el `.git` exactamente igual: 362 MB antes y despues.
+La rama local seguia apuntando al commit anterior, y desde ahi toda la historia sigue alcanzable,
+asi que `gc` no puede podar nada. El espacio solo se liberaria despues de mover la rama al nuevo
+extremo.
+
+**2. Y mover la rama es justo lo que deja de poder hacerse.**
+
+```
+fatal: Not possible to fast-forward, aborting.
+```
+
+En un clon shallow, `origin/main` queda injertado **sin padres**. Git no puede demostrar que la
+rama local sea antepasada suya, y `git pull --ff-only` —el comando del paso 5, el que esta rutina
+exige siempre— aborta. Podar el clon y desplegar con `--ff-only` son incompatibles.
+
+Revertido con `git fetch --unshallow origin`: historia completa, `pull --ff-only` funcionando y el
+sitio en HTTP 200.
+
+> [!CAUTION]
+> **La unica salida seria cambiar `--ff-only` por `git reset --hard origin/main`, y eso no es un
+> detalle de forma.** `--ff-only` se niega a descartar trabajo local; `reset --hard` lo descarta en
+> silencio. En un servidor donde el drift se guarda a mano con `git stash` (paso 4), esa diferencia
+> es la que separa perder trabajo de no perderlo. No se cambia sin decision explicita.
+
+Efecto colateral que conviene conocer aunque el shallow se haya descartado: `reflog expire` deja
+`HEAD@{1}` sin destino hasta el siguiente `pull`, y `HEAD@{1}` es lo que usa el paso 5.1 para
+detectar migraciones nuevas. En un clon recien podado esa deteccion devuelve vacio y parece que el
+deploy no trae migraciones.
