@@ -35,12 +35,19 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_94 trabajos · 37 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_101 trabajos · 41 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design|spec]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground|plan]] | — |
+| Diseño: el fixture aislado alcanza para programacion-semanal-roles-phases | [[docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design|spec]] · [[docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles|plan]] | — |
+| Menú flotante del shell por debajo de 1180 px | [[docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design|spec]] · [[docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive|plan]] | — |
+| Tarjeta móvil E2-bis: plan de implementación | [[docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis|plan]] | — |
+| F2a-2b-2 — Extracción de reglas, umbral único y montaje condicional: plan de implementación | [[docs/superpowers/plans/2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje|plan]] | — |
+| Ocultar Control Tower de la navegación, dejándolo accesible a Admin | [[docs/superpowers/specs/2026-08-13-ocultar-control-tower-design|spec]] · [[docs/superpowers/plans/2026-08-13-ocultar-control-tower|plan]] | — |
+| Espejo de producción → local → pruebas (2026-08-12) | [[docs/superpowers/specs/2026-08-12-espejo-produccion-a-pruebas-design|spec]] | — |
 | Los !important de .pdc-legend-item en buttons.css — spec | [[docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design|spec]] · [[docs/superpowers/plans/2026-08-11-buttons-important-leyenda|plan]] | — |
 | Plan de cierre hasta producción | [[docs/superpowers/plans/2026-08-11-cierre-hasta-produccion|plan]] | — |
 | Ocultar las etiquetas contadoras que marcan cero — diseño | [[docs/superpowers/specs/2026-08-11-contadores-cero-design|spec]] · [[docs/superpowers/plans/2026-08-11-contadores-cero|plan]] | — |
