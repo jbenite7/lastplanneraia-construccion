@@ -12,6 +12,8 @@
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260722pi1" charset="utf-8"></script>
     <?php $piCssVersion = @filemtime(dirname(__DIR__, 2) . '/public/css/programacion-intermedia.css') ?: 'piDark1'; ?>
     <link rel="stylesheet" href="/css/programacion-intermedia.css?v=<?php echo urlencode((string) $piCssVersion); ?>" />
+    <?php $piCardTitleVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/card-title.js') ?: 'ct1'; ?>
+    <script type="module" src="/js/modules/aia_ui/card-title.js?v=<?php echo urlencode((string) $piCardTitleVersion); ?>"></script>
 </head>
 <body class="aia-shell aia-shell--sidebar pi-page">
     <div id="loading"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div></div>

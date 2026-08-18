@@ -4308,61 +4308,166 @@
     return filtered;
   }
 
-  function appendMobileField(container, label, value) {
-    var field = document.createElement('div');
-    field.className = 'pi-mobile-card__field';
+  function contarDurasLiberadas(row) {
+    var duras = Array.isArray(hardRestrictionProps) ? hardRestrictionProps : [];
+    var liberadas = 0;
+    var faltantes = [];
+    for (var i = 0; i < duras.length; i++) {
+      var clave = duras[i];
+      var entrada = null;
+      for (var j = 0; j < _activeRestrictions.length; j++) {
+        if (_activeRestrictions[j].key === clave) { entrada = _activeRestrictions[j]; break; }
+      }
+      var umbral = (entrada && entrada.threshold ? entrada.threshold : 100) / 100;
+      var bruto = String((row && row[clave]) === null || (row && row[clave]) === undefined ? '' : row[clave]).trim().toUpperCase();
+      // `N/A` cuenta como LIBERADA, no como faltante: es lo que hace
+      // restrictionMeets() (stateMachine.js:114-116), del que depende
+      // isReadyToCommit(). Si el contador lo tratara como pendiente, diria
+      // "4 de 5" en una actividad que su propio chip da por lista — el mismo
+      // desajuste que E2-bis-e vino a corregir.
+      if (bruto === 'N/A' || bruto === 'NO APLICA') {
+        liberadas += 1;
+        continue;
+      }
+      var valor = normalizePercentRatio(row && row[clave]);
+      if (valor !== null && valor + 0.0001 >= umbral) {
+        liberadas += 1;
+      } else {
+        faltantes.push((entrada && entrada.label) ? entrada.label : clave);
+      }
+    }
+    return { liberadas: liberadas, total: duras.length, faltantes: faltantes };
+  }
 
-    var term = document.createElement('dt');
-    term.className = 'pi-mobile-card__label';
-    term.textContent = label;
+  function construirDetalleRestricciones(row, index) {
+    var detalle = document.createElement('details');
+    detalle.className = 'pi-mobile-card__detalle';
 
-    var detail = document.createElement('dd');
-    detail.className = 'pi-mobile-card__value';
-    detail.textContent = String(value === null || value === undefined || value === '' ? '—' : value);
+    var resumen = document.createElement('summary');
+    resumen.textContent = 'Liberar restricciones';
+    detalle.appendChild(resumen);
 
-    field.appendChild(term);
-    field.appendChild(detail);
-    container.appendChild(field);
+    var meta = getPIRowMeta(getPhysicalRowFromVisualRow(hot, index), row || {});
+    var reglas = reglasIntermediaActuales();
+
+    for (var i = 0; i < restrictionProps.length; i++) {
+      var clave = restrictionProps[i];
+      var entrada = null;
+      for (var j = 0; j < _activeRestrictions.length; j++) {
+        if (_activeRestrictions[j].key === clave) { entrada = _activeRestrictions[j]; break; }
+      }
+      var puedeEditar = reglas.puedeEditarCelda({
+        prop: clave,
+        esHeader: meta.isHeader,
+        tieneResponsable: meta.hasResponsable,
+        esRestriccion: true,
+      });
+
+      var fila = document.createElement('div');
+      fila.className = 'pi-mobile-card__restriccion';
+
+      var etiqueta = document.createElement('label');
+      etiqueta.className = 'pi-mobile-card__restriccion-label';
+      etiqueta.textContent = (entrada && entrada.label) ? entrada.label : clave;
+      etiqueta.setAttribute('for', 'pi-restr-' + index + '-' + clave);
+      fila.appendChild(etiqueta);
+
+      var control = document.createElement('select');
+      control.id = 'pi-restr-' + index + '-' + clave;
+      control.dataset.piRestriccion = clave;
+      control.dataset.rowIndex = String(index);
+      control.disabled = !puedeEditar;
+      var opciones = (entrada && Array.isArray(entrada.options)) ? [''].concat(entrada.options) : [''];
+      for (var k = 0; k < opciones.length; k++) {
+        var opt = document.createElement('option');
+        opt.value = opciones[k];
+        opt.textContent = opciones[k] === '' ? '—' : opciones[k];
+        if (String(row && row[clave] || '') === opciones[k]) opt.selected = true;
+        control.appendChild(opt);
+      }
+      fila.appendChild(control);
+      detalle.appendChild(fila);
+    }
+
+    if (!meta.hasResponsable) {
+      var aviso = document.createElement('p');
+      aviso.className = 'pi-mobile-card__aviso';
+      aviso.textContent = 'Asigna un Responsable AIA para liberar restricciones.';
+      detalle.appendChild(aviso);
+    }
+
+    var pie = document.createElement('p');
+    pie.className = 'pi-mobile-card__pie';
+    pie.textContent = ((row && row.Sub_Contratista) ? row.Sub_Contratista : 'Sin sub-contratista')
+      + ' · Inicio ' + ((row && row.Semanas_Inicio !== undefined && row.Semanas_Inicio !== null) ? row.Semanas_Inicio : '—');
+    detalle.appendChild(pie);
+
+    return detalle;
   }
 
   function createMobileCard(row, index) {
     var view = getStateView(row || {});
+    var partes = window.AIACardTitle
+      ? window.AIACardTitle.separarCapitulo(row && row.Actividad)
+      : { titulo: view.activity, capitulo: null };
+    var conteo = contarDurasLiberadas(row || {});
+
     var card = document.createElement('article');
     card.className = 'pi-mobile-card';
     card.dataset.rowIndex = String(index);
 
     var header = document.createElement('header');
     header.className = 'pi-mobile-card__header';
-
     var identity = document.createElement('div');
     identity.className = 'pi-mobile-card__identity';
 
     var id = document.createElement('span');
     id.className = 'pi-mobile-card__id';
     id.textContent = row && row.Id ? 'ID ' + row.Id : 'Actividad';
+    identity.appendChild(id);
 
     var title = document.createElement('h3');
     title.className = 'pi-mobile-card__title';
-    title.textContent = view.activity || 'Actividad sin nombre';
+    title.textContent = partes.titulo || 'Actividad sin nombre';
+    identity.appendChild(title);
+
+    if (partes.capitulo) {
+      var cap = document.createElement('p');
+      cap.className = 'pi-mobile-card__capitulo';
+      cap.textContent = partes.capitulo;
+      identity.appendChild(cap);
+    }
 
     var state = document.createElement('span');
     state.className = 'pi-mobile-card__state';
-    state.textContent = view.label;
+    state.textContent = conteo.liberadas + ' de ' + conteo.total;
 
-    identity.appendChild(id);
-    identity.appendChild(title);
     header.appendChild(identity);
     header.appendChild(state);
     card.appendChild(header);
 
-    var details = document.createElement('dl');
-    details.className = 'pi-mobile-card__details';
-    appendMobileField(details, 'Subcontratista', row && row.Sub_Contratista);
-    appendMobileField(details, 'Responsable AIA', row && row.Responsable_AIA);
-    appendMobileField(details, 'Inicio', row && row.Semanas_Inicio);
-    appendMobileField(details, 'Ejecutado', formatPercent(row && row.Ejecutado));
-    card.appendChild(details);
+    var barra = document.createElement('div');
+    barra.className = 'pi-mobile-card__barra';
+    for (var b = 0; b < conteo.total; b++) {
+      var seg = document.createElement('span');
+      seg.className = b < conteo.liberadas ? 'is-liberada' : 'is-pendiente';
+      barra.appendChild(seg);
+    }
+    card.appendChild(barra);
 
+    if (conteo.faltantes.length) {
+      var foco = document.createElement('p');
+      foco.className = 'pi-mobile-card__foco';
+      foco.textContent = 'Faltan ' + conteo.faltantes.join(', ');
+      card.appendChild(foco);
+    }
+
+    var resp = document.createElement('p');
+    resp.className = 'pi-mobile-card__responsable';
+    resp.textContent = (row && row.Responsable_AIA) ? row.Responsable_AIA : 'Sin responsable';
+    card.appendChild(resp);
+
+    card.appendChild(construirDetalleRestricciones(row, index));
     return card;
   }
 

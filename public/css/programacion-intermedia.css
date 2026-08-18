@@ -1174,6 +1174,75 @@ html.aia-theme-dark .pi-page {
             text-align: center;
         }
 
+        .pi-mobile-card__capitulo {
+            margin: var(--ds-space-1) 0 0;
+            font-size: var(--ds-type-size-xs);
+            color: var(--ds-active-text-secondary);
+        }
+
+        .pi-mobile-card__barra {
+            display: flex;
+            gap: var(--ds-space-1);
+            margin-block: var(--ds-space-2);
+        }
+
+        .pi-mobile-card__barra span {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--ds-active-border);
+        }
+
+        .pi-mobile-card__barra span.is-liberada {
+            background: var(--ds-color-state-success-text, var(--ds-active-text-primary));
+        }
+
+        .pi-mobile-card__foco {
+            margin: 0 0 var(--ds-space-2);
+            font-size: var(--ds-type-size-xs);
+            color: var(--ds-active-text-secondary);
+        }
+
+        .pi-mobile-card__responsable {
+            margin: 0 0 var(--ds-space-2);
+            color: var(--ds-active-text-secondary);
+        }
+
+        .pi-mobile-card__restriccion {
+            display: flex;
+            align-items: center;
+            gap: var(--ds-space-2);
+            padding-block: var(--ds-space-1);
+        }
+
+        .pi-mobile-card__restriccion-label {
+            flex: 1;
+            font-size: var(--ds-type-size-sm);
+        }
+
+        .pi-mobile-card__restriccion select {
+            flex: none;
+            min-height: var(--ds-target-min);
+            min-width: 5.5rem;
+        }
+
+        .pi-mobile-card__detalle > summary {
+            cursor: pointer;
+            min-height: var(--ds-target-min);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--ds-type-size-sm);
+            color: var(--ds-active-text-secondary);
+        }
+
+        .pi-mobile-card__aviso,
+        .pi-mobile-card__pie {
+            margin: var(--ds-space-2) 0 0;
+            font-size: var(--ds-type-size-xs);
+            color: var(--ds-active-text-secondary);
+        }
+
         }
 
     @media (min-width: 600px) and (max-width: 768px) {
