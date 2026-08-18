@@ -158,6 +158,39 @@ jobs:
       - name: Restore the worktree after writing the receipt
         if: always()
         run: git checkout -- docs/design-system/evidence/full-app-flow.json && git status --porcelain
+      # Roles y fases de la Semanal. Entra el 2026-08-14 y va DESPUES de full-app-flow por el
+      # mismo motivo que aquel: la app aislada ya esta arriba y las cuatro variables CI_* vienen
+      # de «Capture runtime provenance» — no se redeclaran, porque redeclararlas es el primer
+      # paso hacia fabricarlas.
+      #
+      # Por que existe este paso: ampliar el fixture aislado (8a0d5e46) volvio ejecutable esta
+      # suite, pero nada la ejecutaba. Cobertura disponible no es cobertura vigente.
+      #
+      # `E2E_PROJECT_KEYS` NO se pone a proposito: esta suite no itera `PROJECTS`, nombra sus
+      # proyectos (Da Porto y JMC), y fijar la clave dejaria fuera al segundo.
+      #
+      # Las dos lineas del `run` son las de siempre y por la misma razon: `gate-receipt.mjs`
+      # SIEMPRE sale 0 —su trabajo es levantar acta, no aprobar—, asi que la segunda lee el
+      # recibo y propaga su `exitCode`. Sin ella, el paso saldria verde con el gate en rojo.
+      - name: Enforce semanal roles and phases gate
+        env:
+          APP_URL: http://127.0.0.1:18081
+          E2E_BASE_URL: http://127.0.0.1:18081
+          E2E_REQUIRE_ISOLATED_DB: "1"
+          E2E_ALLOW_DB_MUTATION: design-system-ci
+        run: |
+          node scripts/design-system/gate-receipt.mjs semanal-roles-phases
+          node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
+      - name: Preserve the semanal roles and phases receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semanal-roles-phases-receipt
+          path: docs/design-system/evidence/semanal-roles-phases.json
+          if-no-files-found: error
+      - name: Restore the worktree after writing the semanal receipt
+        if: always()
+        run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
       - name: Measure runtime budgets
         env:
           APP_URL: http://127.0.0.1:18081

@@ -141,6 +141,26 @@
       ]
     },
     {
+      "id": "semanal-roles-phases",
+      "kind": "automatic",
+      "status": "passed",
+      "verifiedAt": "PENDIENTE",
+      "blocking": true,
+      "evidence": [
+        {
+          "summary": "Suite de roles y fases de Programacion Semanal, medida en el stack aislado: los cuatro casos que escriben en la base corren alli y se saltan fuera, por el candado de escritura.",
+          "commandId": "ds.semanal-roles-phases.v1",
+          "command": "npx playwright test tests/browser/programacion-semanal-roles-phases.mjs --workers=1",
+          "exitCode": 0,
+          "artifact": "docs/design-system/evidence/semanal-roles-phases.json",
+          "artifactSha256": "PENDIENTE",
+          "sourceRef": "PENDIENTE",
+          "sourceFingerprint": "PENDIENTE",
+          "fixtureSha256": "PENDIENTE"
+        }
+      ]
+    },
+    {
       "id": "atomic-commit",
       "kind": "automatic",
       "status": "passed",

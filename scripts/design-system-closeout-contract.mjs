@@ -7,9 +7,12 @@ import { ACTIVATED_VERSION_PATTERN, activationGitFailures } from './design-syste
 // `consolidated-lab`, `consolidated-pilot` y `review` (herramienta inexistente o
 // juicio humano declarado como comando). Fundidos en `full-app-flow`: `pg-roles`,
 // `pg-persistence` y `data-restoration` (los tres declaraban el mismo comando).
+// 2026-08-14: sube a 9 con `semanal-roles-phases`. La lista bajo de 15 a 8 por gates que no
+// median nada; este sube a 9 por lo contrario — una suite que si mide y que hasta hoy no corria
+// en ningun sitio.
 export const closeoutGateIds = [
   'static', 'runtime', 'runtime-budgets', 'phpstan-scoped', 'phpstan-global',
-  'global-table-safety', 'full-app-flow', 'atomic-commit',
+  'global-table-safety', 'full-app-flow', 'semanal-roles-phases', 'atomic-commit',
 ];
 
 const closeoutGateKinds = {
@@ -20,14 +23,17 @@ const closeoutGateKinds = {
   'phpstan-global': 'automatic',
   'global-table-safety': 'automatic',
   'full-app-flow': 'automatic',
+  'semanal-roles-phases': 'automatic',
   'atomic-commit': 'automatic',
 };
 const closeoutFields = [
   'designSystemVersion', 'gates', 'generatedAt', 'schemaVersion',
 ];
 const gateFields = ['blocking', 'evidence', 'id', 'kind', 'status', 'verifiedAt'];
+// Depende del fixture aislado: su `fixtureSha256` ata el recibo al dato con el que se midio,
+// y `semanal-roles-phases` no existiria sin la ampliacion de ese fixture.
 const fixtureGateIds = new Set([
-  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow',
+  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow', 'semanal-roles-phases',
 ]);
 const validGateStatuses = new Set(['passed', 'pending', 'blocked']);
 const maximumClockSkewMs = 5 * 60 * 1000;

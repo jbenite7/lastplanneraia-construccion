@@ -9,6 +9,12 @@ const entries = [
   // 2026-08-11): los tres declaraban literalmente el mismo comando y no podian dar
   // veredictos distintos entre si. Un solo gate con el nombre de lo que de verdad mide.
   ['full-app-flow', 'ds.full-app-flow.v1', 'npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1'],
+  // `semanal-roles-phases` entra el 2026-08-14, y entra por un motivo concreto: ampliar el
+  // fixture aislado (8a0d5e46) volvio ejecutable esa suite, pero **nada la ejecutaba**. Un gate
+  // que nadie corre deja la cobertura disponible, no vigente — que es justo la diferencia que
+  // este indice existe para no perder de vista. Ver
+  // docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md.
+  ['semanal-roles-phases', 'ds.semanal-roles-phases.v1', 'npx playwright test tests/browser/programacion-semanal-roles-phases.mjs --workers=1'],
   ['atomic-commit', 'ds.atomic-commit.v1', 'git diff --cached --check'],
 ];
 

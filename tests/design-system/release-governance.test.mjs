@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import { ACTIVATED_VERSION_PATTERN } from '../../scripts/design-system-activation-git.mjs';
+import { closeoutGateIds } from '../../scripts/design-system-closeout-contract.mjs';
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
@@ -72,9 +73,12 @@ test('la activacion es equivalente entre version y API, y NO depende del estado 
   // estan, y fue el incentivo que produjo quince recibos `passed` sin ejecutar.
   // Que cada gate diga la verdad sobre si mismo lo comprueban sus propias
   // pruebas, con su nombre.
-  const listaCompleta = closeout.gates.length === 8
+  // 2026-08-14: nueve desde que entro `semanal-roles-phases`. La cifra se lee del contrato en
+  // vez de repetirse aqui, para que anadir o retirar un gate no deje esta prueba midiendo un
+  // numero que ya nadie mantiene.
+  const listaCompleta = closeout.gates.length === closeoutGateIds.length
     && closeout.gates.every(({ blocking, evidence }) => blocking === true && evidence.length > 0);
-  assert.equal(listaCompleta, true, 'el cierre debe declarar los ocho gates, todos bloqueantes');
+  assert.equal(listaCompleta, true, 'el cierre debe declarar todos los gates, todos bloqueantes');
   const releaseActivated = release.releaseStatus === 'guaranteed';
   // D2 (spec 2026-08-04): la activacion fue un hito unico cumplido en 1.0.0, asi
   // que cualquier SemVer con major >= 1 y status stable cuenta como activada. Se
