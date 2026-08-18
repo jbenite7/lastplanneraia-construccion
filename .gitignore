@@ -401,12 +401,17 @@ goals/reapertura-movil-y-tema-claro/*
 openspec/
 /.phpunit.cache/
 
-# Andamiaje de coordinating-agent-sessions: cola por frente que duplicaria
-# docs/decisiones-pendientes.md, que es la cola canonica de este repo.
-decisiones/
-# ...pero el patron va sin ancla, asi que tambien se tragaba `memoria/decisiones/`, que es
-# wiki y SI viaja. Las paginas viejas de ahi sobrevivian solo por estar ya trackeadas: el
-# patron unicamente mordia a las nuevas, que desaparecian sin aviso de `git status`.
+# Andamiaje de coordinating-agent-sessions: la cola por frente de cada sesion.
+# Estuvo ignorada hasta el 2026-08-18 por duplicar docs/decisiones-pendientes.md, que
+# es la cola canonica. **Decision del usuario (D-COORD-1, 2026-08-18): entra en git.**
+# El motivo no es el respaldo: es que sin versionar, dos sesiones escribiendo la misma
+# cola se pisaban sin dejar rastro — el choque era una perdida silenciosa en vez de un
+# conflicto que alguien pueda ver y resolver. Duplicar la cola canonica es el precio
+# aceptado a cambio de eso.
+# El patron iba sin ancla y tambien se tragaba `memoria/decisiones/`, que es wiki y SI
+# viaja: las paginas viejas de ahi sobrevivian solo por estar ya trackeadas, y las
+# nuevas desaparecian sin aviso de `git status`. La negacion se conserva por si el
+# patron vuelve.
 !memoria/decisiones/
 
 # ci-en-verde (F-0): solo el validation-log viaja — la medición en navegador que el
