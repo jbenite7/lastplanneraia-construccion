@@ -2045,15 +2045,38 @@
     }
     var fragment = document.createDocumentFragment();
     var rows = currentFilteredRows.length ? currentFilteredRows : [];
-    if (!rows.length) {
-      fragment.appendChild(createTextNode('p', 'pg-mobile-card-list__empty', 'No hay actividades para mostrar.'));
-    }
+    var capitulosOmitidos = 0;
+    var tarjetasPintadas = 0;
+
     rows.forEach(function (rowData, rowIndex) {
       if (Number(rowData.Titulo) === 1) {
+        capitulosOmitidos += 1;
         return;
       }
       fragment.appendChild(createMobileCard(rowData, rowIndex));
+      tarjetasPintadas += 1;
     });
+
+    /*
+     * Un corte sin tarjetas tiene DOS causas distintas y hasta el 2026-08-18
+     * decia lo mismo en una y callaba en la otra (hallazgo TB-2): el aviso solo
+     * se pintaba con `rows.length === 0`, asi que un corte con filas que fueran
+     * todas de capitulo dejaba la pantalla en blanco, sin grilla, sin tarjetas y
+     * sin una linea que lo explicara. Aqui se distingue el vacio real del vacio
+     * por filtrado, y se dice cuantas filas se omitieron y por que.
+     */
+    if (!tarjetasPintadas) {
+      fragment.appendChild(
+        createTextNode(
+          'p',
+          'pg-mobile-card-list__empty',
+          capitulosOmitidos
+            ? 'Este corte solo trae ' + capitulosOmitidos + (capitulosOmitidos === 1 ? ' fila de capítulo' : ' filas de capítulo') + ', y los capítulos no se muestran como tarjeta. Abre el Programa General en una pantalla más ancha para ver la tabla completa.'
+            : 'No hay actividades para mostrar.',
+        ),
+      );
+    }
+
     cards.replaceChildren(fragment);
   }
 
