@@ -423,3 +423,25 @@ goals/ci-en-verde/*
 !tests/browser/shell-menu-flotante.mjs
 !tests/browser/programacion-movil-sin-grilla.mjs
 !tests/browser/programacion-movil-tarjeta.mjs
+
+# Los goals entran en git — decision del usuario, 2026-08-18, misma razon que
+# `decisiones/` (D-COORD-1): sin versionar, dos sesiones escribiendo el mismo goal se
+# pisan sin dejar diff, y la perdida es muda en vez de un conflicto que alguien vea.
+#
+# Regla general y al final del archivo, a proposito. Arriba hay ~25 excepciones escritas
+# a mano, una por goal (`goals/<slug>/*` y luego `!goals/<slug>/goal.md`), porque
+# `goals/*` excluye el directorio y git no desciende a un directorio excluido. Ese
+# patron obligaba a recordar cinco lineas cada vez que nacia un goal, y por eso habia 19
+# `goal.md` sin versionar. Va al final porque en .gitignore gana la ultima regla que
+# casa: puesta arriba, cada `goals/<slug>/*` posterior la anularia.
+!goals/**/
+!goals/**/*.md
+!goals/**/*.json
+
+# Las capturas de `evidence/` NO entran. El valor a conservar es el texto —contrato,
+# plan, decisiones—; los 14 MB de PNG serian irreversibles una vez en la historia de git,
+# y no es la perdida que esta decision existe para evitar. Las que ya estaban versionadas
+# por una excepcion explicita siguen igual: git no desversiona por .gitignore.
+goals/**/*.png
+goals/**/*.jpg
+goals/**/*.jpeg

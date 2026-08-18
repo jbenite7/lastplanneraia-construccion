@@ -1,0 +1,25 @@
+{
+  "stage": "interview",
+  "title": "F1 — seis modales cuya piel vive fuera del tramo 5c",
+  "goalSlug": "dark-mode-todos-los-modulos",
+  "decision": "submitted",
+  "answers": [
+    { "questionId": "cc_css_home", "selectedOptionIds": ["cc_new_file"], "answer": "Crear public/css/control-cambios.css y enlazarlo desde la vista", "completed": true },
+    { "questionId": "cc_surface_polarity", "selectedOptionIds": ["cc_label_raised"], "answer": "Etiqueta = surface-raised, valor = surface (como el thead ya migrado)", "completed": true },
+    { "questionId": "cc_class_naming", "selectedOptionIds": ["cc_semantic"], "answer": "Clases semánticas del módulo (.cc-field-label / .cc-field-value)", "completed": true },
+    { "questionId": "pga_css_home", "selectedOptionIds": ["pga_new_file_modals_only"], "answer": "Archivo nuevo, solo las reglas de los dos modales; el <style> queda como deuda anotada", "completed": true },
+    { "questionId": "pga_autoasociar_header", "selectedOptionIds": ["pga_delete_inline_header"], "answer": "Borrarlos y dejar que gane el shell .aia-modal (acepta el degradado)", "completed": true },
+    { "questionId": "pga_exito_success_circle", "selectedOptionIds": ["pga_success_fixed_tokens"], "answer": "Tokenizar a los estados fijos state-success-bg/text (mismo aspecto, −2 hex)", "completed": true },
+    { "questionId": "cm_state_tints", "selectedOptionIds": ["cm_use_state_bg"], "answer": "Mezclar con state-*-bg (mitad clara del par), porcentaje fijado por medición", "completed": true },
+    { "questionId": "cm_architecture_ink", "selectedOptionIds": ["cm_arch_on_dark"], "answer": "Conmutar a la variante on-dark (--ds-active-domain-* / architecture-on-dark)", "completed": true },
+    { "questionId": "pdc_readonly_fields", "selectedOptionIds": ["pdc_ro_glass_dashed"], "answer": "surface-glass + dashed --ds-active-border + tinta secundaria; sin gradiente", "completed": true },
+    { "questionId": "pdc_header_inverse", "selectedOptionIds": ["pdc_header_untouched"], "answer": "Intactas: la cabecera verde es idéntica en los dos temas", "completed": true },
+    { "questionId": "verification_depth", "selectedOptionIds": ["verify_probe_cdp"], "answer": "Sonda Playwright con ratios antes/después + CDP getMatchedStylesForNode en los 6", "completed": true },
+    { "questionId": "regression_test", "selectedOptionIds": ["test_add_six"], "answer": "Test nuevo para los 6 modales (con su ! en .gitignore en el mismo commit)", "completed": true },
+    { "questionId": "commit_granularity", "selectedOptionIds": ["commit_per_owner"], "answer": "Uno por dueño de cascada (5 commits), con los botones aparte", "completed": true }
+  ],
+  "chatDecisions": [
+    { "id": "depth", "answer": "Piel completa del modal: migrar TODAS las declaraciones de color de cada modal de --ds-color-* a --ds-active-*, no solo lo que mide por debajo de AA" },
+    { "id": "buttons_scope", "answer": "Cambiar la regla entera de styles.css:1637 (6 clases, 58 pies) a la receta canónica de .aia-btn--secondary; sin tratamiento propio para danger" }
+  ]
+}

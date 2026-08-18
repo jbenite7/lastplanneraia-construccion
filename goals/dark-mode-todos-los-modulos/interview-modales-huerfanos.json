@@ -1,0 +1,186 @@
+{
+  "stage": "interview",
+  "title": "F1 — seis modales cuya piel vive fuera del tramo 5c",
+  "goalSlug": "dark-mode-todos-los-modulos",
+  "questions": [
+    {
+      "id": "cc_css_home",
+      "prompt": "/control-cambios no tiene archivo CSS propio, ni manifiesto, ni presupuesto de audit; su `<style>` en la vista está VACÍO (líneas 141-142). ¿Dónde aterrizan las reglas que sustituyen a `bg-light`/`bg-white`?",
+      "description": "Las tres opciones son legales hoy: el módulo no está declarado, así que ningún gate falla cerradamente. Cambian el coste futuro. Un archivo propio es el paso previo natural a darle manifiesto y presupuesto cuando le toque su tramo; el `<style>` de la vista ya cuenta como `embedded-style-block` (hoy vacío, así que llenarlo NO añade una violación nueva, pero consolida un patrón que DESIGN.md prohíbe); `styles.css` es global y ya alberga el shell `.aia-modal`, pero mezcla piel de un módulo con la capa compartida.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Crear `public/css/control-cambios.css` y enlazarlo desde la vista. Es el único de los tres que deja el módulo en condiciones de recibir manifiesto y presupuesto cero sin volver a moverlo todo.",
+      "recommendedOptionIds": ["cc_new_file"],
+      "options": [
+        { "id": "cc_new_file", "label": "Crear public/css/control-cambios.css y enlazarlo desde la vista" },
+        { "id": "cc_style_block", "label": "Rellenar el <style> vacío que ya existe en la vista" },
+        { "id": "cc_styles_css", "label": "Añadirlo a public/css/styles.css, junto al shell .aia-modal" }
+      ],
+      "required": true
+    },
+    {
+      "id": "cc_surface_polarity",
+      "prompt": "En /control-cambios hoy la ETIQUETA es `bg-light` (gris claro) y el VALOR es `bg-white` (blanco): el valor es la superficie MÁS clara. Al pasar a dark, ¿se conserva ese orden o se invierte?",
+      "description": "En claro, «más claro = más importante» hace que el valor destaque. En dark la escala se invierte perceptualmente: `--ds-active-surface-raised` (más claro) es lo que sube, `--ds-active-surface` (más oscuro) es lo que retrocede. Conservar literalmente el mapeo (valor = raised) mantiene el énfasis en el dato; invertirlo (etiqueta = raised) reproduce el aspecto de «cabecera de tabla» que tienen las etiquetas en el resto de modales ya migrados, donde `.aia-modal .table thead` es `surface-raised`.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Etiqueta = `--ds-active-surface-raised`, valor = `--ds-active-surface`. Coincide con la decisión ya tomada en `.aia-modal .table thead` del tramo 5c y hace que la rejilla se lea como tabla, que es lo que es.",
+      "recommendedOptionIds": ["cc_label_raised"],
+      "options": [
+        { "id": "cc_label_raised", "label": "Etiqueta = surface-raised, valor = surface (como el thead ya migrado)" },
+        { "id": "cc_value_raised", "label": "Valor = surface-raised, etiqueta = surface (conserva el énfasis actual en el dato)" },
+        { "id": "cc_flat", "label": "Las dos a surface; separar solo con borde --ds-active-border" }
+      ],
+      "required": true
+    },
+    {
+      "id": "cc_class_naming",
+      "prompt": "¿Con qué se sustituyen en el markup las utilidades `bg-light`/`bg-white` (16 + 12 ocurrencias)?",
+      "description": "`bg-light` y `bg-white` son utilidades de presentación pura de Bootstrap. Reemplazarlas por otras utilidades («`aia-bg-raised`») reproduce el mismo antipatrón con otro nombre; reemplazarlas por clases semánticas del módulo describe el papel de la celda y sobrevive a un cambio de escala. También existe la vía de no tocar cada celda y colgar las reglas de la estructura (`#modalordenDeCambio .col-sm-3`), que no toca el markup pero acopla la piel a la rejilla de Bootstrap.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Clases semánticas del módulo, p.ej. `.cc-field-label` y `.cc-field-value`, sustituyendo la utilidad en cada celda. Nombran el papel, no el color, y permiten cambiar la escala sin volver al markup.",
+      "recommendedOptionIds": ["cc_semantic"],
+      "options": [
+        { "id": "cc_semantic", "label": "Clases semánticas del módulo (.cc-field-label / .cc-field-value)" },
+        { "id": "cc_utility", "label": "Utilidades propias equivalentes del design system (aia-surface / aia-surface-raised)" },
+        { "id": "cc_structural", "label": "No tocar el markup: colgar las reglas de la estructura (#modalordenDeCambio .col-sm-3, etc.)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pga_css_home",
+      "prompt": "/programa-general-actualizar arrastra un `<style>` de 405 líneas en la vista (24-429) y tampoco tiene CSS propio. Los puntos 3 y 4 exigen sacar estilos en línea. ¿Hasta dónde?",
+      "description": "Sacar solo los estilos en línea de los dos modales es lo que pide el encargo. Extraer además el bloque `<style>` entero a un archivo elimina de golpe una violación `embedded-style-block` y 405 líneas de CSS invisible al audit por ruta, pero es un refactor que nadie pidió y que ensancha mucho el diff de un arreglo de contraste.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Crear `public/css/programa-general-actualizar.css` solo con las reglas de los dos modales; dejar el `<style>` de 405 líneas intacto y anotarlo como deuda para su propio tramo.",
+      "recommendedOptionIds": ["pga_new_file_modals_only"],
+      "options": [
+        { "id": "pga_new_file_modals_only", "label": "Archivo nuevo, solo las reglas de los dos modales; el <style> queda como deuda anotada" },
+        { "id": "pga_into_style_block", "label": "Meter las reglas nuevas dentro del <style> que ya existe" },
+        { "id": "pga_extract_all", "label": "Extraer el <style> completo a un archivo nuevo y añadir ahí las reglas" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pga_autoasociar_header",
+      "prompt": "La cabecera de `#modalAutoAsociar` trae `style=\"background: #1a5633; color: white\"` en línea, replicando a mano lo que el shell `.aia-modal .modal-header` ya pinta (degradado verde + tinta clara). ¿Se borra sin sustituto?",
+      "description": "Si se borra, gana la regla del shell, que ya está tokenizada y medida en 8,25:1 sobre 48 modales. El riesgo es que el shell pinte un degradado y el inline pinta un plano: el aspecto cambia ligeramente. Replicarlo en el CSS del módulo conserva el plano exacto pero duplica una decisión que ya vive en la capa compartida.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Borrar los cuatro `style=` de la cabecera (fondo, tinta del eyebrow, tinta del h5, tinta del close) y dejar que gane el shell. Es el propósito de tener un shell.",
+      "recommendedOptionIds": ["pga_delete_inline_header"],
+      "options": [
+        { "id": "pga_delete_inline_header", "label": "Borrarlos y dejar que gane el shell .aia-modal (acepta el degradado)" },
+        { "id": "pga_replicate_flat", "label": "Replicar el verde plano en el CSS del módulo con tokens, para no cambiar el aspecto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pga_exito_success_circle",
+      "prompt": "`#modalImportacionExitosa` tiene un círculo `background:#d5e5db` con un icono `#1a5633` dentro. Ese par mide 8,7:1 y NO está roto. ¿Se toca?",
+      "description": "DESIGN.md declara los estados semánticos (success/info/warning/critical) como «tintes fijos, independientes del tema». El par verde claro + verde oscuro es exactamente `state-success-bg` / `state-success-text`. Dejarlo como hex suelto conserva el aspecto pero mantiene dos violaciones `hardcoded-hex`; tokenizarlo a los estados fijos conserva el aspecto Y las retira; pasarlo a tokens `active` lo oscurecería y perdería el sello de «éxito».",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Tokenizar a `--ds-color-state-success-bg` / `--ds-color-state-success-text` (fijos, no `active`). Mismo aspecto, mismo ratio, dos hex menos.",
+      "recommendedOptionIds": ["pga_success_fixed_tokens"],
+      "options": [
+        { "id": "pga_success_fixed_tokens", "label": "Tokenizar a los estados fijos state-success-bg/text (mismo aspecto, −2 hex)" },
+        { "id": "pga_success_active", "label": "Pasarlo a tokens --ds-active-* como el resto del modal" },
+        { "id": "pga_success_untouched", "label": "No tocarlo: no está roto y está fuera del encargo" }
+      ],
+      "required": true
+    },
+    {
+      "id": "cm_state_tints",
+      "prompt": "En el bloque `.cm-*` las filas se tiñen con `color-mix(in srgb, var(--ds-color-state-success-text) 10%, transparent)` (y las variantes critical/warning). Un 10% de una tinta OSCURA sobre superficie oscura es casi invisible. ¿Qué se hace?",
+      "description": "Estos tres tintes son el único canal que distingue una fila conforme de una crítica en el change monitor. Sobre parchment funcionaban; sobre `--ds-active-surface` se pierden. Subir el porcentaje mantiene el mecanismo pero es un número escogido a ojo salvo que se mida. Cambiar a la tinta clara del par (`state-*-bg`, que sí es clara) da un wash visible en dark y mantiene el matiz semántico. La tercera vía es no depender del color, que es lo que DESIGN.md ya exige («el color nunca es el único canal»), pero eso es rediseño.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Mezclar con `--ds-color-state-*-bg` (la mitad clara del par) en vez de `-text`, y fijar el porcentaje por medición hasta que el wash se distinga de la superficie. Conserva el matiz semántico y funciona sobre oscuro.",
+      "recommendedOptionIds": ["cm_use_state_bg"],
+      "options": [
+        { "id": "cm_use_state_bg", "label": "Mezclar con state-*-bg (mitad clara del par), porcentaje fijado por medición" },
+        { "id": "cm_raise_pct", "label": "Mantener state-*-text y subir el porcentaje hasta que se vea" },
+        { "id": "cm_untouched", "label": "Dejarlo: no figura entre lo medido como roto" }
+      ],
+      "required": true
+    },
+    {
+      "id": "cm_architecture_ink",
+      "prompt": "`.cm-*` usa `--ds-color-brand-architecture` (violeta #6752bf) como TINTA sobre superficies que pasan a oscuras. Existe la variante `architecture-on-dark` (#877cd1). ¿Se conmuta?",
+      "description": "La Regla On-Dark de DESIGN.md dice que en dark los acentos suben en luminosidad y que el matiz oficial se preserva. `--ds-active-domain-*` existe para justo esto. Es exactamente el mismo movimiento que el tramo 5c aplicó a las pills de modalidad.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí: conmutar los tres usos como tinta a la variante on-dark. Es la Regla On-Dark aplicada al pie de la letra.",
+      "recommendedOptionIds": ["cm_arch_on_dark"],
+      "options": [
+        { "id": "cm_arch_on_dark", "label": "Conmutar a la variante on-dark (--ds-active-domain-* / architecture-on-dark)" },
+        { "id": "cm_arch_keep", "label": "Conservar el violeta oscuro y compensar aclarando la superficie de detrás" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_readonly_fields",
+      "prompt": "En `#modalContrato` los campos de solo lectura llevan borde dashed + gradiente `surface-tint → state-success-bg` (verde muy claro) con `!important`. ¿Cómo se resuelve «solo lectura» en dark?",
+      "description": "Ese gradiente verde pálido es la señal de «este campo no se edita». Sobre oscuro deja de ser pálido: se vuelve el elemento más claro del modal, justo el que menos debería llamar la atención. El borde dashed sí sobrevive al cambio de tema y ya transporta el significado por un canal no cromático.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Retirar el gradiente y resolverlo con `--ds-active-surface-glass` (retrocede respecto al campo editable) + borde dashed `--ds-active-border` + tinta `--ds-active-text-secondary`. El dashed sigue siendo el canal principal.",
+      "recommendedOptionIds": ["pdc_ro_glass_dashed"],
+      "options": [
+        { "id": "pdc_ro_glass_dashed", "label": "surface-glass + dashed --ds-active-border + tinta secundaria; sin gradiente" },
+        { "id": "pdc_ro_keep_success", "label": "Conservar el tinte success, adaptado a una mezcla oscura del mismo verde" },
+        { "id": "pdc_ro_same_as_editable", "label": "Misma superficie que el campo editable; distinguir solo por el borde dashed" }
+      ],
+      "required": true
+    },
+    {
+      "id": "pdc_header_inverse",
+      "prompt": "`pdc.css` usa `--ds-color-text-inverse` 10 veces y `--ds-color-brand-primary-dark/primary` 17, casi todas sobre el degradado verde de la cabecera de `#modalContrato`. ¿Entran en la migración a `--ds-active-*`?",
+      "description": "La cabecera verde no cambia entre temas: es el mismo degradado corporativo en claro y en oscuro, y el tramo 5c lo dejó intacto en los 48 modales del shell. `text-inverse` sobre ese verde es correcto en ambos temas. Conmutarlos a `active` cambiaría el color de la cabecera de /pdc y la desalinearía del resto.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "No. La cabecera y su tinta inversa quedan intactas; la migración a `active` afecta solo a cuerpo, pie, campos, tablas y bordes.",
+      "recommendedOptionIds": ["pdc_header_untouched"],
+      "options": [
+        { "id": "pdc_header_untouched", "label": "Intactas: la cabecera verde es idéntica en los dos temas" },
+        { "id": "pdc_header_migrate", "label": "Migrarlas también, para que /pdc no tenga ningún --ds-color-* residual" }
+      ],
+      "required": true
+    },
+    {
+      "id": "verification_depth",
+      "prompt": "¿Qué evidencia se exige antes de dar por bueno cada modal?",
+      "description": "El tramo 5c dejó una sonda que abre cada modal, compone alpha y gradientes vía canvas, y comprueba con `CSS.getMatchedStylesForNode` qué regla gana de verdad. Reutilizarla acotada a estos seis da cifras comparables con las del informe; sin ella, «se ve bien» no es evidencia y la trampa de la cascada (que ya mordió cinco veces aquí) queda sin cubrir. El coste es levantar de nuevo el arnés de Playwright con sesión.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sonda Playwright acotada a los 6 modales, con ratio antes/después de cada rol medido en el informe y confirmación por CDP de qué regla gana. Es el mismo listón que se aplicó al tramo que destapó el problema.",
+      "recommendedOptionIds": ["verify_probe_cdp"],
+      "options": [
+        { "id": "verify_probe_cdp", "label": "Sonda Playwright con ratios antes/después + CDP getMatchedStylesForNode en los 6" },
+        { "id": "verify_cdp_only", "label": "Solo confirmación por CDP de que la regla gana, sin tabla de ratios" },
+        { "id": "verify_screenshots", "label": "Capturas de los 6 modales abiertos y revisión visual" }
+      ],
+      "required": true
+    },
+    {
+      "id": "regression_test",
+      "prompt": "¿Se deja un test de regresión permanente que impida que estos seis vuelvan a quedarse en claro?",
+      "description": "Nada en la suite actual habría detectado esto: `design-system-body-canvas-dark.mjs` cubre el body de 10 rutas, no el interior de un modal. Un test que abra los seis y asierte un contraste mínimo cerraría el agujero. Advertencia registrada: `tests/browser/` está en `.gitignore` con allowlist, así que un archivo nuevo ahí NO se commitea si no se añade su `!` — es un fallo ya vivido en este repo. Y añadir un test a la suite runtime tiene coste de mantenimiento en cada tramo posterior del goal.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, un test acotado a los seis modales que asierte contraste ≥4,5:1 en los roles medidos, con su `!` añadido al `.gitignore` en el mismo commit.",
+      "recommendedOptionIds": ["test_add_six"],
+      "options": [
+        { "id": "test_add_six", "label": "Test nuevo para los 6 modales (con su ! en .gitignore en el mismo commit)" },
+        { "id": "test_extend_existing", "label": "Extender design-system-body-canvas-dark.mjs para que entre en modales" },
+        { "id": "test_none", "label": "Sin test permanente: la sonda del tramo basta como evidencia puntual" }
+      ],
+      "required": true
+    },
+    {
+      "id": "commit_granularity",
+      "prompt": "¿Cómo se reparten los commits?",
+      "description": "Son cinco archivos de piel distintos más el bloque de botones compartido. Un commit por modal permite revertir uno sin tocar los demás y deja bisect útil; un commit único cuenta la historia completa de una vez. El bloque de botones (`styles.css:1637`) afecta a los 58 pies, así que su blast radius es distinto del resto y aísla bien por separado.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Un commit por dueño de cascada (control-cambios, pdc, programa-general-actualizar, programacion-semanal, botones de styles.css), con el de botones separado por tener el mayor alcance.",
+      "recommendedOptionIds": ["commit_per_owner"],
+      "options": [
+        { "id": "commit_per_owner", "label": "Uno por dueño de cascada (5 commits), con los botones aparte" },
+        { "id": "commit_single", "label": "Uno solo con los seis" },
+        { "id": "commit_two", "label": "Dos: uno para los botones compartidos y otro para las cinco pieles" }
+      ],
+      "required": true
+    }
+  ]
+}

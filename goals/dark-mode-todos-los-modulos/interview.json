@@ -1,0 +1,246 @@
+{
+  "stage": "interview",
+  "title": "Dark mode en todos los módulos — decisiones transversales F0–F6",
+  "goalSlug": "dark-mode-todos-los-modulos",
+  "questions": [
+    {
+      "id": "root_default_theme",
+      "prompt": "Hoy `:root` es linen y el dark se pinta encima vía `[data-aia-theme=\"dark\"]`. ¿Se invierte el default?",
+      "description": "Consecuencia directa: con `:root` = linen, toda superficie que no cargue theme-bootstrap.js cae en CLARO por omisión (así están hoy las 14 vistas de admin/). Con `:root` = dark, lo no migrado cae en OSCURO y el bug se vuelve visible sólo donde el vendor pinta blanco. Es la decisión que más cambia F0 y el coste de F4.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Invertir: `:root` pasa a dark y linen queda como override explícito `[data-aia-theme=\"linen\"]`. Lo no declarado cae en oscuro, que es el modo operativo (DS-009), y admin/ mejora sin tocarlo.",
+      "recommendedOptionIds": ["invert_root_dark"],
+      "options": [
+        { "id": "invert_root_dark", "label": "Invertir: :root = dark, linen como override explícito" },
+        { "id": "keep_root_linen", "label": "Mantener :root = linen y forzar dark superficie por superficie" },
+        { "id": "root_neutral_required", "label": ":root sin tema; fallar ruidosamente si falta data-aia-theme" }
+      ],
+      "required": true
+    },
+    {
+      "id": "linen_fate",
+      "prompt": "¿Qué pasa con el tema `linen`? Hoy se envía, el usuario lo activa por toggle y ningún gate lo valida.",
+      "description": "DESIGN.md lo declara deuda consciente. Si la meta es migración completa al DS, linen deja de ser gratis: o se retira (y se simplifican tokens y gates a la mitad), o se mantiene y CADA superficie de F1–F6 debe validarse en dos temas, duplicando la evidencia visual.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Retirar linen del producto: quitar el toggle, borrar las ramas `[data-aia-theme=\"linen\"]` y dejar dark como único tema. Reduce a la mitad la superficie de tokens, gates y evidencia de F1–F6, y es coherente con el alcance desktop-dark de AGENTS.md.",
+      "recommendedOptionIds": ["remove_linen"],
+      "options": [
+        { "id": "remove_linen", "label": "Retirar linen del producto (un solo tema: dark)" },
+        { "id": "freeze_linen", "label": "Congelar linen: se envía, no se toca, no se valida (statu quo)" },
+        { "id": "promote_linen", "label": "Promover linen a tema soportado con gates propios" }
+      ],
+      "required": true
+    },
+    {
+      "id": "dead_theme_removal",
+      "prompt": "`NavbarComponent.php` está huérfano (nadie lo instancia) y arrastra `dark-mode.css` (`body.dark-mode`, `--surface-bg`, `--text-main`) y `navbar.css`. ¿Se borran?",
+      "description": "Es un segundo vocabulario de tema completo, paralelo al `--ds-*`. Aporta ruido al audit y riesgo de que alguien lo reviva por copia-pega. Borrarlo es barato pero es borrado de código: conviene decidirlo explícitamente, no de tapadillo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Borrar los tres en F0, en un commit propio y reversible, tras verificar por grep que ninguna ruta ni vista los referencia.",
+      "recommendedOptionIds": ["delete_dead_theme"],
+      "options": [
+        { "id": "delete_dead_theme", "label": "Borrar NavbarComponent + dark-mode.css + navbar.css en F0" },
+        { "id": "quarantine_dead_theme", "label": "Moverlos a src/Legacy y excluirlos del audit, sin borrar" },
+        { "id": "keep_dead_theme", "label": "Dejarlos donde están" }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_audit_budget",
+      "prompt": "Al meter `admin/` en `scanRoots` del audit, ¿con qué presupuesto entra?",
+      "description": "admin/ hoy es invisible para el audit. Al incluirlo aparecerán cientos de hallazgos de golpe. Entrar con presupuesto cero deja CI rojo hasta terminar F4; entrar congelado al baseline actual da visibilidad sin bloquear, pero tolera que la deuda no baje.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Entrar congelado al baseline medido en F0, con la regla de que el número sólo puede bajar (gate monotónico). Da visibilidad inmediata, no bloquea el resto de fases y fuerza progreso en F4.",
+      "recommendedOptionIds": ["admin_frozen_monotonic"],
+      "options": [
+        { "id": "admin_frozen_monotonic", "label": "Congelado al baseline actual, sólo puede bajar" },
+        { "id": "admin_zero_budget", "label": "Presupuesto cero desde el día 1 (CI rojo hasta F4)" },
+        { "id": "admin_warn_only", "label": "Sólo advertencia, sin gate, hasta que F4 termine" }
+      ],
+      "required": true
+    },
+    {
+      "id": "styles_css_strategy",
+      "prompt": "`styles.css`: 6.802 líneas, 483 hex, cero `--ds-active-*`, importado en `layer(module)` — que gana a `components`. ¿Estrategia de F1?",
+      "description": "Es la causa raíz de la fuga a claro y de los 2.245 `!important` no autorizados. Mientras siga en `module`, ninguna migración de superficie es limpia.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Desmontaje incremental por secciones: cada bloque de styles.css se reclasifica a su capa correcta o se absorbe en un componente canónico, con el archivo encogiendo commit a commit hasta desaparecer. Permite verificar por tramos en vez de un big-bang.",
+      "recommendedOptionIds": ["incremental_dismantle"],
+      "options": [
+        { "id": "incremental_dismantle", "label": "Desmantelar por secciones hasta borrarlo" },
+        { "id": "relayer_only", "label": "Sólo reclasificar de layer(module) a layer(legacy-overrides) y congelar" },
+        { "id": "freeze_and_override", "label": "Congelarlo y ganarle desde components con especificidad" },
+        { "id": "bigbang_rewrite", "label": "Reescritura completa en un solo cambio" }
+      ],
+      "required": true
+    },
+    {
+      "id": "f1_regression_tolerance",
+      "prompt": "F1 toca la cascada de toda la app. ¿Se tolera regresión visual temporal en superficies hoy verdes?",
+      "description": "Reclasificar capas cambia quién gana. Cero-regresión estricto es más seguro pero mucho más lento (obliga a screenshot before/after de las 6 superficies con gate en cada tramo). Tolerar regresión acotada acelera pero puede dejar el piloto /programa-general roto entre commits, y DESIGN.md lo declara protegido.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cero-regresión estricto sobre las 6 superficies con manifiesto (auth, project-selector, programa-general, intermedia, semanal, laboratorio): evidencia visual before/after en cada tramo. En el resto se acepta regresión temporal documentada.",
+      "recommendedOptionIds": ["zero_regression_gated_only"],
+      "options": [
+        { "id": "zero_regression_gated_only", "label": "Cero-regresión sólo en las 6 con manifiesto; resto documentado" },
+        { "id": "zero_regression_all", "label": "Cero-regresión estricto en las 31 superficies" },
+        { "id": "tolerate_with_log", "label": "Tolerar regresión en todo, con bitácora y cierre al final de F1" }
+      ],
+      "required": true
+    },
+    {
+      "id": "f2_manifest_granularity",
+      "prompt": "Las 9 superficies del agregador (`inventory-only`) necesitan manifiesto. ¿Uno por superficie o agrupado?",
+      "description": "Nueve manifiestos dan presupuestos y evidencia por superficie (falla quirúrgico, cada equipo ve lo suyo) a costa de nueve archivos que mantener. Un manifiesto agrupado es menos mantenimiento pero un fallo no dice qué superficie lo causó.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Uno por superficie, siguiendo el patrón ya establecido por los siete manifiestos existentes. La coherencia con lo que ya hay vale más que ahorrar archivos.",
+      "recommendedOptionIds": ["one_per_surface"],
+      "options": [
+        { "id": "one_per_surface", "label": "Un manifiesto por superficie (9 nuevos)" },
+        { "id": "grouped_manifest", "label": "Un manifiesto agrupado para las inventory-only" },
+        { "id": "grouped_by_domain", "label": "Agrupados por dominio (gestión, programación, dashboard)" }
+      ],
+      "required": true
+    },
+    {
+      "id": "semanal_red_timing",
+      "prompt": "`programacion-semanal` está en rojo AHORA (1 `embedded-style-block` sobre presupuesto 0). ¿Cuándo se cierra?",
+      "description": "Es un gate ya activo fallando en main. Mientras siga rojo, cualquier verificación de las fases siguientes arranca sucia y no se distingue lo que rompemos nosotros de lo que ya estaba roto.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Cerrarlo primero, como tarea inicial de F0, para que todas las fases arranquen desde CI verde y cualquier rojo posterior sea atribuible.",
+      "recommendedOptionIds": ["fix_first_in_f0"],
+      "options": [
+        { "id": "fix_first_in_f0", "label": "Primero, como tarea inicial de F0" },
+        { "id": "fix_in_f2", "label": "Dentro de F2, con el resto de superficies" },
+        { "id": "fix_standalone_now", "label": "Hotfix aparte, fuera de este plan" }
+      ],
+      "required": true
+    },
+    {
+      "id": "bi_tailwind",
+      "prompt": "BI inyecta configuración de Tailwind por CDN inline en `views/bi/_layout.php`. ¿Qué hacemos en F3?",
+      "description": "DESIGN.md prohíbe nuevas CDN y skins de vendors en módulos migrados. Eliminar Tailwind obliga a reescribir las utilidades usadas en las 8 rutas /bi/* a primitivas `aia-*`; mantenerlo adaptado es más rápido pero deja un segundo sistema de utilidades vivo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Eliminar Tailwind: reescribir las utilidades usadas a primitivas `aia-*` y utilidades del DS. BI ya tiene 302 usos de `var(--ds-*)` en bi-control-tower.css, así que la mayor parte del trabajo visual está hecha.",
+      "recommendedOptionIds": ["remove_tailwind"],
+      "options": [
+        { "id": "remove_tailwind", "label": "Eliminar Tailwind y reescribir a primitivas aia-*" },
+        { "id": "vendor_tailwind", "label": "Vendorizar Tailwind a /public/vendor y adaptarlo" },
+        { "id": "keep_tailwind_cdn", "label": "Mantener el CDN con excepción registrada" }
+      ],
+      "required": true
+    },
+    {
+      "id": "chart_color_source",
+      "prompt": "`bi_chart_theme.js` tiene 15 hex + 3 `rgba()` hardcodeados para las series de Chart.js. ¿De dónde deben salir los colores?",
+      "description": "JS no puede leer un token CSS sin resolverlo. Leerlos en runtime con getComputedStyle mantiene una sola fuente de verdad pero añade coste de arranque y falla si el CSS no cargó. Un mapa JS sincronizado por gate es más rápido pero es duplicación que hay que vigilar.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Leer en runtime desde `getComputedStyle(document.documentElement)` sobre las variables `--ds-active-data-*`, con fallback al valor del token si la variable resuelve vacío. Una sola fuente de verdad y sobrevive a cualquier cambio de paleta.",
+      "recommendedOptionIds": ["runtime_computed"],
+      "options": [
+        { "id": "runtime_computed", "label": "getComputedStyle en runtime sobre --ds-active-data-*" },
+        { "id": "generated_map", "label": "Mapa JS generado desde tokens.css por script, con gate de sincronía" },
+        { "id": "manual_map_gated", "label": "Mapa JS a mano con test que compara contra tokens.css" }
+      ],
+      "required": true
+    },
+    {
+      "id": "adminlte_fate",
+      "prompt": "F4 · panel admin: 14 vistas sobre AdminLTE 3.2 desde CDN, con `navbar-white navbar-light`. ¿Se retira AdminLTE?",
+      "description": "Es la decisión que define el tamaño de F4. Retirarlo significa reescribir el shell de admin sobre el sidebar canónico y las primitivas `aia-*` — semanas de trabajo, pero admin queda dentro del DS de verdad. Adaptarlo es una capa de tema sobre un framework ajeno: rápido, pero perpetúa dos sistemas y contradice el criterio de \"migración completa\" ya elegido.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Retirar AdminLTE y reconstruir admin/ sobre el shell canónico (sidebar colapsable DS-027) y primitivas `aia-*`. Es coherente con el criterio de migración completa; si el coste resulta prohibitivo, se replantea con datos en el spec de F4.",
+      "recommendedOptionIds": ["remove_adminlte"],
+      "options": [
+        { "id": "remove_adminlte", "label": "Retirar AdminLTE; admin/ sobre el shell canónico" },
+        { "id": "adapt_adminlte", "label": "Mantener AdminLTE con un adaptador dark en design-system/adapters/" },
+        { "id": "rewrite_admin_into_src", "label": "Absorber admin/ dentro de src/ y eliminar la mini-app" }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_tokens_unification",
+      "prompt": "`admin/public/css/tokens.css` son 126 líneas y 37 hex sin ninguna relación con `--ds-*`. ¿Se unifica con `public/css/tokens.css`?",
+      "description": "AGENTS.md describe admin/ como arquitectónicamente aislado (no reusa src/Core ni src/Security). Compartir el CSS de tokens rompe ese aislamiento en la capa de estilos, pero mantener dos vocabularios de tokens garantiza que los temas diverjan con el tiempo.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Unificar: admin/ consume `public/css/tokens.css` y su tokens.css propio se elimina. El aislamiento de AGENTS.md es de PHP (routing, RBAC, modelos), no de design system — y DESIGN.md declara los tokens contractuales para toda la app.",
+      "recommendedOptionIds": ["unify_tokens"],
+      "options": [
+        { "id": "unify_tokens", "label": "Unificar en public/css/tokens.css y borrar el de admin" },
+        { "id": "admin_imports_generated", "label": "Generar el de admin desde el canónico por script, con gate de sincronía" },
+        { "id": "keep_separate", "label": "Mantener dos sets de tokens separados" }
+      ],
+      "required": true
+    },
+    {
+      "id": "admin_cdn_vendoring",
+      "prompt": "admin/ carga Google Fonts, FontAwesome, DataTables, Toastr y AdminLTE desde CDN externas. ¿Se vendorizan?",
+      "description": "El resto de la app sirve sus vendors desde `/public/vendor`. Las CDN además impiden que las fuentes locales con hash y licencia OFL (DS-007) apliquen en admin, y dejan la tipografía fuera del contrato.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Vendorizar todo a `/public/vendor`, reutilizando lo que ya está servido ahí (font-awesome, bootstrap, sweetalert2) en lugar de duplicar. Cierra la brecha de fuentes y elimina dependencia de red externa.",
+      "recommendedOptionIds": ["vendor_all"],
+      "options": [
+        { "id": "vendor_all", "label": "Vendorizar todo a /public/vendor, reutilizando lo existente" },
+        { "id": "vendor_fonts_only", "label": "Sólo fuentes; el resto sigue en CDN" },
+        { "id": "keep_cdn", "label": "Mantener las CDN con excepción registrada" }
+      ],
+      "required": true
+    },
+    {
+      "id": "plan_compras_authority",
+      "prompt": "F5 · plan-compras: el CSS del bundle se compila en el repositorio externo `plan-de-compras`. ¿Cuál es nuestro margen de acción?",
+      "description": "La isla React fija `data-aia-theme=\"dark\"` a mano y carga `pdc.css` desde otro repo, invisible a todos los gates de este. La respuesta determina si F5 es un spec de implementación o sólo de contrato y verificación.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Necesito saberlo antes de escribir F5. Si hay acceso al repo, F5 incluye migrar su CSS a tokens compartidos; si no, F5 se limita a definir el contrato de consumo y un gate de verificación en runtime desde este repo.",
+      "recommendedOptionIds": ["have_access"],
+      "options": [
+        { "id": "have_access", "label": "Tenemos acceso y autoridad sobre plan-de-compras" },
+        { "id": "contract_only", "label": "Sin acceso: F5 sólo define contrato y verificación en runtime" },
+        { "id": "defer_f5", "label": "Aplazar F5 fuera de este programa" }
+      ],
+      "required": true
+    },
+    {
+      "id": "vendor_adapters_f6",
+      "prompt": "F6 · vendors sin adaptador: `tom-select-premium-aia.css` (16 hex, 0 tokens), `change-monitor.css` (23 hex, 0 tokens), `handsontable-module.css` (54 hex). ¿Adaptar o retirar?",
+      "description": "Tom Select y Select2 conviven hoy resolviendo el mismo problema (select enriquecido). Handsontable es insustituible. change-monitor es CSS propio, no vendor: no necesita adaptador sino tokenización.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Tokenizar change-monitor y handsontable-module contra `--ds-active-*`; consolidar en un solo select enriquecido retirando el otro vendor. Reduce superficie de mantenimiento y elimina un vocabulario duplicado.",
+      "recommendedOptionIds": ["tokenize_and_consolidate"],
+      "options": [
+        { "id": "tokenize_and_consolidate", "label": "Tokenizar los propios y consolidar en un solo select enriquecido" },
+        { "id": "adapt_all_keep", "label": "Adaptar los tres y mantener ambos selects" },
+        { "id": "tokenize_only", "label": "Sólo tokenizar; no tocar qué vendors existen" }
+      ],
+      "required": true
+    },
+    {
+      "id": "global_debt_gate",
+      "prompt": "El audit reporta 7.230 hallazgos vivos. ¿Se instala un gate numérico global de no-regresión?",
+      "description": "Sin gate global, cada fase puede bajar su presupuesto local mientras la deuda total sube por otro lado. Con gate monotónico, el total sólo puede bajar y cualquier subida exige justificación explícita — pero añade fricción a cambios legítimos que temporalmente empeoran el número.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "Sí, gate monotónico sobre el total del audit, con override explícito y documentado en `exceptions.json` cuando una fase necesite empeorar temporalmente. Es lo que convierte 7 fases en progreso medible y no en trabajo que se deshace.",
+      "recommendedOptionIds": ["monotonic_global"],
+      "options": [
+        { "id": "monotonic_global", "label": "Gate monotónico global con override documentado" },
+        { "id": "per_phase_only", "label": "Sólo presupuestos por fase; sin gate global" },
+        { "id": "monotonic_per_rule", "label": "Monotónico por regla, no por total" }
+      ],
+      "required": true
+    },
+    {
+      "id": "execution_order",
+      "prompt": "¿Orden de ejecución de las 7 fases una vez escritos los specs?",
+      "description": "F0 desbloquea todo. F1 bloquea a F2/F3. F4 (admin) es independiente de styles.css porque admin/ no lo carga, así que puede ir en paralelo. F5 depende de una respuesta externa.",
+      "answerMode": "single-custom",
+      "recommendedAnswer": "F0 primero y en solitario; luego F1 y F4 en paralelo (no comparten archivos); luego F2 y F3; F6 en cualquier hueco; F5 en cuanto se resuelva el acceso al repo externo.",
+      "recommendedOptionIds": ["f0_then_parallel"],
+      "options": [
+        { "id": "f0_then_parallel", "label": "F0 → (F1 ∥ F4) → (F2 ∥ F3) → F6, F5 cuando se desbloquee" },
+        { "id": "strict_sequential", "label": "Estrictamente secuencial F0→F1→F2→F3→F4→F5→F6" },
+        { "id": "value_first", "label": "F0 → F4 (el hueco más visible) → F1 → resto" }
+      ],
+      "required": true
+    }
+  ]
+}

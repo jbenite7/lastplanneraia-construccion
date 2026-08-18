@@ -1,0 +1,1372 @@
+{
+ "results": [
+  {
+   "url": "/proyectos",
+   "title": "Seleccionar Proyecto - Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Buscar proyecto",
+     "sw": 124,
+     "cw": 1
+    }
+   ],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H3:Navegación",
+    "H1:Tus proyectos",
+    "H2:Da Porto",
+    "H2:PDC Sandbox E2E"
+   ],
+   "lowContrast": [],
+   "interCount": 9,
+   "requested": "/proyectos",
+   "finalUrl": "http://localhost:8081/proyectos"
+  },
+  {
+   "url": "/programacion-semanal",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Leyenda",
+     "sw": 67,
+     "cw": 40
+    },
+    {
+     "t": "Recargar",
+     "sw": 71,
+     "cw": 43
+    },
+    {
+     "t": "Unidad",
+     "sw": 36,
+     "cw": 19
+    },
+    {
+     "t": "Compromiso",
+     "sw": 65,
+     "cw": 49
+    },
+    {
+     "t": "Acciones",
+     "sw": 48,
+     "cw": 34
+    }
+   ],
+   "overlaps": [
+    {
+     "a": "Ver Secciones",
+     "b": "💡\n    CONCURRENCIA LPS\n  \n  🔥",
+     "w": 44,
+     "h": 45
+    },
+    {
+     "a": "Responsable AIA",
+     "b": " ",
+     "w": 12,
+     "h": 44
+    }
+   ],
+   "small": [
+    {
+     "t": "lps-sim-checkbox",
+     "w": 20,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "Ninguna actividad seleccionada"
+   ],
+   "headings": [
+    "H3:Cajón Contextual LPS",
+    "H4:Control Tower BI",
+    "H4:Ninguna actividad seleccionada",
+    "H4:Weekly Digest (Consolidado)"
+   ],
+   "lowContrast": [],
+   "interCount": 57,
+   "requested": "/dashboard",
+   "finalUrl": "http://localhost:8081/programacion-semanal"
+  },
+  {
+   "url": "/dashboard/escalamientos",
+   "title": "Dashboard de Escalamientos AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "lps-sim-checkbox",
+     "w": 20,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "Ninguna actividad seleccionada"
+   ],
+   "headings": [
+    "H1:Dashboard Corporativo de Escalamientos A",
+    "H2:Director de Obra",
+    "H2:Coordinador Integración",
+    "H2:Gerente de Construcción",
+    "H2:Gerente General",
+    "H3:Cajón Contextual LPS",
+    "H4:Control Tower BI",
+    "H4:Ninguna actividad seleccionada",
+    "H4:Weekly Digest (Consolidado)"
+   ],
+   "lowContrast": [],
+   "interCount": 6,
+   "requested": "/dashboard/escalamientos",
+   "finalUrl": "http://localhost:8081/dashboard/escalamientos"
+  },
+  {
+   "url": "/indicadores",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 15,
+   "requested": "/indicadores",
+   "finalUrl": "http://localhost:8081/indicadores"
+  },
+  {
+   "url": "/control-cambios",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 27,
+   "requested": "/control-cambios",
+   "finalUrl": "http://localhost:8081/control-cambios"
+  },
+  {
+   "url": "/profesionales",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Checked",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "Checked",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "Checked",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "Unchecked",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "Nombre",
+     "w": 267,
+     "h": 22
+    },
+    {
+     "t": "Correo",
+     "w": 321,
+     "h": 22
+    },
+    {
+     "t": "Cargo",
+     "w": 267,
+     "h": 22
+    },
+    {
+     "t": "Activo",
+     "w": 107,
+     "h": 22
+    },
+    {
+     "t": "Acciones",
+     "w": 107,
+     "h": 22
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle afterHiddenColumn htDi"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "BUTTON",
+     "cls": "aia-btn aia-btn--critical aia-btn--sm bt"
+    }
+   ],
+   "dupes": [
+    {
+     "n": "Checked",
+     "c": 3
+    }
+   ],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H4:Profesionales (Live Edición)"
+   ],
+   "lowContrast": [],
+   "interCount": 50,
+   "requested": "/profesionales",
+   "finalUrl": "http://localhost:8081/profesionales"
+  },
+  {
+   "url": "/subcontratistas",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Activo",
+     "sw": 40,
+     "cw": 37
+    }
+   ],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Unchecked",
+     "w": 13,
+     "h": 13
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle force-wrap afterHidden"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle force-wrap"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle force-wrap"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle"
+    },
+    {
+     "tag": "TD",
+     "cls": "htCenter htMiddle htDimmed"
+    },
+    {
+     "tag": "BUTTON",
+     "cls": "aia-btn aia-btn--critical aia-btn--sm bt"
+    }
+   ],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H4:Subcontratistas (Live Edición)"
+   ],
+   "lowContrast": [],
+   "interCount": 33,
+   "requested": "/subcontratistas",
+   "finalUrl": "http://localhost:8081/subcontratistas"
+  },
+  {
+   "url": "/programa-general",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Programa General",
+     "sw": 336,
+     "cw": 1
+    },
+    {
+     "t": "Sem. Inicio",
+     "sw": 69,
+     "cw": 37
+    },
+    {
+     "t": "Crítica",
+     "sw": 41,
+     "cw": 29
+    },
+    {
+     "t": "Unidad",
+     "sw": 45,
+     "cw": 29
+    },
+    {
+     "t": "Cant. PPTO",
+     "sw": 72,
+     "cw": 55
+    },
+    {
+     "t": "Ej. Teórico",
+     "sw": 66,
+     "cw": 63
+    },
+    {
+     "t": "Lib. Restr.",
+     "sw": 62,
+     "cw": 51
+    }
+   ],
+   "overlaps": [
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Id",
+     "w": 56,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Actividad",
+     "w": 139,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Sem. Inicio",
+     "w": 64,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Fecha Inicio",
+     "w": 104,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Fecha Fin",
+     "w": 104,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Crítica",
+     "w": 56,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Unidad",
+     "w": 56,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Cant. PPTO",
+     "w": 82,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Ej. Teórico",
+     "w": 90,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": "Ej. Real",
+     "w": 90,
+     "h": 32
+    },
+    {
+     "a": "IdActividadSem. InicioFecha InicioFecha FinCr",
+     "b": " ",
+     "w": 13,
+     "h": 13
+    }
+   ],
+   "small": [
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "lps-sim-checkbox",
+     "w": 20,
+     "h": 20
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pg-row-state pdc-heade"
+    }
+   ],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "Ninguna actividad seleccionada"
+   ],
+   "headings": [
+    "H1:Programa General",
+    "H3:Cajón Contextual LPS",
+    "H4:Control Tower BI",
+    "H4:Ninguna actividad seleccionada",
+    "H4:Weekly Digest (Consolidado)"
+   ],
+   "lowContrast": [],
+   "interCount": 82,
+   "requested": "/programa-general",
+   "finalUrl": "http://localhost:8081/programa-general"
+  },
+  {
+   "url": "/programacion-intermedia",
+   "title": "Programación Intermedia · Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Procedimiento Constructivo",
+     "sw": 50,
+     "cw": 37
+    },
+    {
+     "t": "Modelación BIM",
+     "sw": 50,
+     "cw": 37
+    }
+   ],
+   "overlaps": [
+    {
+     "a": "ControlDiseñosMateriales+3",
+     "b": "💡\n    CONCURRENCIA LPS\n  \n  🔥",
+     "w": 42,
+     "h": 144
+    },
+    {
+     "a": "ControlDiseñosMateriales+3",
+     "b": "💡\n    CONCURRENCIA LPS\n  \n  🔥",
+     "w": 42,
+     "h": 142
+    },
+    {
+     "a": "Estado Operativo",
+     "b": "💡\n    CONCURRENCIA LPS\n  \n  🔥",
+     "w": 42,
+     "h": 125
+    }
+   ],
+   "small": [
+    {
+     "t": "Unchecked",
+     "w": 14,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 8,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "pi-help-trigger",
+     "w": 8,
+     "h": 8
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "pi-help-trigger",
+     "w": 8,
+     "h": 8
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "pi-help-trigger",
+     "w": 8,
+     "h": 8
+    },
+    {
+     "t": " ",
+     "w": 13,
+     "h": 13
+    },
+    {
+     "t": "pi-help-trigger",
+     "w": 8,
+     "h": 8
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-readonly htDim"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-shared-select-cell "
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htLeft force-wrap pi-cell-reado"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter force-wrap pi-cell-edi"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter force-wrap pi-cell-edi"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-readonly htDim"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-readonly htDim"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-editable pi-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-editable pi-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-editable pi-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-editable pi-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-cell-editable pi-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-soft-restriction-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htCenter pi-soft-restriction-ce"
+    },
+    {
+     "tag": "TD",
+     "cls": "htMiddle htLeft force-wrap pi-cell-edita"
+    }
+   ],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "Ninguna actividad seleccionada"
+   ],
+   "headings": [
+    "H3:Cajón Contextual LPS",
+    "H4:Control Tower BI",
+    "H4:Ninguna actividad seleccionada",
+    "H4:Weekly Digest (Consolidado)"
+   ],
+   "lowContrast": [],
+   "interCount": 97,
+   "requested": "/programacion-intermedia",
+   "finalUrl": "http://localhost:8081/programacion-intermedia"
+  },
+  {
+   "url": "/programacion-semanal/cic",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Buscar subcontratista",
+     "sw": 165,
+     "cw": 1
+    }
+   ],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 18,
+   "requested": "/programacion-semanal/cic",
+   "finalUrl": "http://localhost:8081/programacion-semanal/cic"
+  },
+  {
+   "url": "/programacion-semanal/cnc",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Buscar actividad o causa",
+     "sw": 190,
+     "cw": 1
+    }
+   ],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 18,
+   "requested": "/programacion-semanal/cnc",
+   "finalUrl": "http://localhost:8081/programacion-semanal/cnc"
+  },
+  {
+   "url": "/programacion-semanal/cnp",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "Buscar actividad o causa",
+     "sw": 190,
+     "cw": 1
+    }
+   ],
+   "overlaps": [],
+   "small": [],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 18,
+   "requested": "/programacion-semanal/cnp",
+   "finalUrl": "http://localhost:8081/programacion-semanal/cnp"
+  },
+  {
+   "url": "/plan-compras",
+   "title": "Plan de Compras — Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [
+    {
+     "a": "Control Tower - Informes",
+     "b": "Omitir",
+     "w": 28,
+     "h": 12
+    },
+    {
+     "a": "Semanas del Proyecto",
+     "b": "Omitir",
+     "w": 28,
+     "h": 17
+    }
+   ],
+   "small": [
+    {
+     "t": "pdc-sr-only",
+     "w": 1,
+     "h": 1
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "DIV",
+     "cls": "ag-header-cell ag-column-last ag-header-"
+    }
+   ],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "Todavía no se ha importado ningún presupuesto en este proyecto."
+   ],
+   "headings": [
+    "H1:Importar presupuesto",
+    "H2:Historial de versiones",
+    "H2:Todo empieza con el presupuesto"
+   ],
+   "lowContrast": [],
+   "interCount": 36,
+   "requested": "/plan-compras",
+   "finalUrl": "http://localhost:8081/plan-compras#/ensamble/importar"
+  },
+  {
+   "url": "/pdc",
+   "title": "Last Planner AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [
+    {
+     "t": "MODALIDAD DE CONTRATACION",
+     "sw": 207,
+     "cw": 81
+    },
+    {
+     "t": "PAQUETE DE CONTRATACION",
+     "sw": 188,
+     "cw": 110
+    },
+    {
+     "t": "FAMILIAS ASOCIADAS",
+     "sw": 141,
+     "cw": 75
+    },
+    {
+     "t": "ESTADO DEL PROCESO",
+     "sw": 146,
+     "cw": 98
+    },
+    {
+     "t": "INICIO DEL PROCESO DE CONTRATACIÓN",
+     "sw": 262,
+     "cw": 75
+    },
+    {
+     "t": "INICIO EN OBRA SEGUN CRONOGRAMA",
+     "sw": 250,
+     "cw": 64
+    },
+    {
+     "t": "INICIO EN OBRA PROYECTADO",
+     "sw": 194,
+     "cw": 64
+    },
+    {
+     "t": "INICIO EN OBRA REAL",
+     "sw": 137,
+     "cw": 53
+    },
+    {
+     "t": "OBSERVACIONES",
+     "sw": 110,
+     "cw": 103
+    }
+   ],
+   "overlaps": [],
+   "small": [
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    },
+    {
+     "t": " ",
+     "w": 18,
+     "h": 13
+    }
+   ],
+   "unnamed": [
+    {
+     "tag": "TH",
+     "cls": ""
+    }
+   ],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "No hay paquetes de contratación para mostrar."
+   ],
+   "headings": [],
+   "lowContrast": [],
+   "interCount": 40,
+   "requested": "/pdc",
+   "finalUrl": "http://localhost:8081/pdc"
+  },
+  {
+   "url": "/bi/control-tower",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Resumen Ejecutivo",
+    "H3:Resumen Ejecutivo",
+    "H3:PPC por Semana",
+    "H3:PAC vs Programado",
+    "H3:Acciones recomendadas"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/control-tower",
+   "finalUrl": "http://localhost:8081/bi/control-tower"
+  },
+  {
+   "url": "/bi/semanal",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Programación Semanal",
+    "H3:Programación Semanal"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/semanal",
+   "finalUrl": "http://localhost:8081/bi/semanal"
+  },
+  {
+   "url": "/bi/intermedia",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Programación Intermedia",
+    "H3:Programación Intermedia (6 Semanas)"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/intermedia",
+   "finalUrl": "http://localhost:8081/bi/intermedia"
+  },
+  {
+   "url": "/bi/programa-general",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [
+    {
+     "n": "Cómo se calcula",
+     "c": 3
+    }
+   ],
+   "bigVoid": [],
+   "emptyMsgs": [
+    "No hay actividades que coincidan con los filtros para este proyecto.",
+    "No hay actividades con CNP para los filtros activos.",
+    "No hay CNC registradas para los filtros activos. El gráfico no inventa causas para este co",
+    "No hay actividades válidas para los filtros activos."
+   ],
+   "headings": [
+    "H2:Programa General",
+    "H3:Curva S Ejecución",
+    "H3:% Avance de Obra",
+    "H3:% Cumplimiento Cronograma",
+    "H3:Variación probable de fecha final",
+    "H3:Causas de No Programación",
+    "H3:Causas de No Cumplimiento",
+    "H3:Radar de Programa General",
+    "H4:Avance promedio",
+    "H4:Cumplimiento normalizado de cantidades",
+    "H4:PAC",
+    "H3:Cronograma de actividades que explica el"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 35,
+   "requested": "/bi/programa-general",
+   "finalUrl": "http://localhost:8081/bi/programa-general"
+  },
+  {
+   "url": "/bi/curva-s",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Curva S",
+    "H3:Curva S — Programado vs Ejecutado"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/curva-s",
+   "finalUrl": "http://localhost:8081/bi/curva-s"
+  },
+  {
+   "url": "/bi/contratistas",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Proveedores",
+    "H3:Proveedores (CIC)"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/contratistas",
+   "finalUrl": "http://localhost:8081/bi/contratistas"
+  },
+  {
+   "url": "/bi/responsables",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Responsables",
+    "H3:Responsables (CIP)"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/responsables",
+   "finalUrl": "http://localhost:8081/bi/responsables"
+  },
+  {
+   "url": "/bi/pdc",
+   "title": "BI Control Tower — LPS AIA",
+   "hOverflow": false,
+   "scrollW": 1180,
+   "clipped": [],
+   "overlaps": [],
+   "small": [
+    {
+     "t": "Quitar filtro",
+     "w": 28,
+     "h": 20
+    }
+   ],
+   "unnamed": [],
+   "dupes": [],
+   "bigVoid": [],
+   "emptyMsgs": [],
+   "headings": [
+    "H2:Plan de Compras",
+    "H3:Plan de Compras (PDC)",
+    "H4:Cobertura y vencimientos por obra",
+    "H4:Avance de contratación por paso",
+    "H4:Carga por responsable"
+   ],
+   "lowContrast": [
+    {
+     "t": "PDC Sandbox E2E",
+     "r": 1.17,
+     "min": 4.5,
+     "px": 12
+    }
+   ],
+   "interCount": 25,
+   "requested": "/bi/pdc",
+   "finalUrl": "http://localhost:8081/bi/pdc"
+  }
+ ],
+ "consoleErrs": [
+  {
+   "url": "http://localhost:8081/dashboard/escalamientos",
+   "msg": "PAGEERROR hot.addHook is not a function"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+{
+  "stage": "interview",
+  "mode": "grilled",
+  "title": "Rollout del shell sidebar a todos los módulos",
+  "goalSlug": "sidebar-todos-modulos",
+  "decisions": {
+    "alcance": "Rollout completo: mapear + migrar todos hasta que todos los módulos tengan la sidebar en ambos estados.",
+    "universo": {
+      "referencia_correcta": "/programacion-intermedia (único con el shell hoy)",
+      "core_9": ["programa-general", "programacion-semanal", "actualizar-cronograma (programa-general-actualizar)", "profesionales", "subcontratistas", "control-cambios", "listado-actividades (familias)", "contratos", "pdc (/pdc = Plan de Compras)"],
+      "casos_borde_incluidos": ["indicadores (embed Power BI, ajustar ancho)", "control-tower (dashboard BI, conservar sub-nav BI)"],
+      "excluidos": ["/plan-compras (isla React v2, en desarrollo activo)", "selector de proyectos (sidebar propia)", "login/auth", "dashboard", "design-system lab"],
+      "total_a_migrar": 11
+    },
+    "nav_legacy": "Reemplazar la navbar superior legacy con el shell sidebar + context-bar; CONSERVAR el cajón LPS derecho (coexiste, como en PI).",
+    "verificacion": "Test automatizado data-driven que recorre las 12 rutas (PI + 11) + gates del foundation-shell + spot-check visual a 1180x820 dark.",
+    "criterio_correctamente_implementada": "Ruta declarada en docs/design-system/manifests/foundation-shell.json + gates del foundation-shell verdes + sidebar funcional en ambos estados (colapsada default / expandida).",
+    "comportamiento_referencia_PI": "Flyouts desplegables sin recorte, paneles de menú opacos, cero-scroll en ambos estados, toggle compacto junto al logo, marca sin truncar, sin contexto duplicado en el header, default colapsado con persistencia en localStorage."
+  }
+}

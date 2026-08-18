@@ -1,0 +1,126 @@
+{
+ "out": [
+  {
+   "u": "/login",
+   "title": "Iniciar Sesión | Last Planner AIA",
+   "h": [
+    "H1:Bienvenido a Last Planner AIA"
+   ],
+   "inputs": [
+    {
+     "n": "usuario",
+     "t": "text",
+     "ph": "Ingresa tu usuario",
+     "lab": true,
+     "req": true,
+     "ac": "username"
+    },
+    {
+     "n": "password",
+     "t": "password",
+     "ph": "Contraseña",
+     "lab": true,
+     "req": true,
+     "ac": "current-password"
+    }
+   ],
+   "links": [
+    "¿Olvidaste tu contraseña? -> /password/forgot"
+   ],
+   "btns": [
+    "",
+    "INICIAR SESIÓN"
+   ],
+   "bodyText": "Last Planner AIA | Bienvenido a Last Planner AIA | Ingresa tus credenciales para continuar | Usuario | Contraseña | INICIAR SESIÓN | ¿Olvidaste tu contraseña? | © 2026 Arquitectos e Ingenieros Asociados | Construyendo con +CERTEZA"
+  },
+  {
+   "u": "/password/forgot",
+   "title": "Restablecer Contraseña | Last Planner AIA",
+   "h": [
+    "H1:Restablecer contraseña"
+   ],
+   "inputs": [
+    {
+     "n": "email",
+     "t": "email",
+     "ph": "nombre@empresa.com",
+     "lab": true,
+     "req": true,
+     "ac": "email"
+    }
+   ],
+   "links": [
+    "Volver al inicio de sesión -> /login"
+   ],
+   "btns": [
+    "ENVIAR ENLACE"
+   ],
+   "bodyText": "Last Planner AIA | Restablecer contraseña | Ingresa tu correo y te enviaremos un enlace seguro para crear una nueva contraseña. | Correo electrónico | ENVIAR ENLACE | Volver al inicio de sesión | © 2026 Arquitectos e Ingenieros Asociados | Construyendo con +CERTEZA"
+  },
+  {
+   "u": "/admin/login",
+   "title": "Iniciar Sesión - Admin Panel",
+   "h": [
+    "H1:Last Planner AIA"
+   ],
+   "inputs": [
+    {
+     "n": "usuario",
+     "t": "text",
+     "ph": "Usuario",
+     "lab": false,
+     "req": true,
+     "ac": ""
+    },
+    {
+     "n": "password",
+     "t": "password",
+     "ph": "Contraseña",
+     "lab": false,
+     "req": true,
+     "ac": ""
+    },
+    {
+     "n": "",
+     "t": "checkbox",
+     "ph": "",
+     "lab": true,
+     "req": false,
+     "ac": ""
+    }
+   ],
+   "links": [
+    "¿Olvidaste tu contraseña? -> /admin/password/forgot"
+   ],
+   "btns": [
+    "Ingresar"
+   ],
+   "bodyText": "Last Planner AIA | Inicia sesión en Last Planner AIA para acceder al panel | Recuérdame | Ingresar | ¿Olvidaste tu contraseña? | © 2026 Arquitectos e Ingenieros Asociados | Construyendo con +CERTEZA"
+  },
+  {
+   "u": "/admin/password/forgot",
+   "title": "Restablecer Contraseña - Admin Panel",
+   "h": [
+    "H1:Restablecer contraseña"
+   ],
+   "inputs": [
+    {
+     "n": "email",
+     "t": "email",
+     "ph": "Correo electrónico",
+     "lab": false,
+     "req": true,
+     "ac": "email"
+    }
+   ],
+   "links": [
+    "Volver al inicio de sesión -> /admin/login"
+   ],
+   "btns": [
+    "Enviar enlace"
+   ],
+   "bodyText": "Restablecer contraseña | Ingresa tu correo y te enviaremos un enlace para acceder nuevamente al panel. | Enviar enlace | Volver al inicio de sesión | © 2026 Arquitectos e Ingenieros Asociados | Construyendo con +CERTEZA"
+  }
+ ],
+ "errs": []
+}

@@ -1,0 +1,158 @@
+{
+  "stage": "interview",
+  "title": "Dark mode en todos los módulos — decisiones transversales F0–F6",
+  "goalSlug": "dark-mode-todos-los-modulos",
+  "answers": [
+    {
+      "questionId": "root_default_theme",
+      "selectedOptionIds": [
+        "invert_root_dark"
+      ],
+      "customAnswer": "",
+      "answer": "Invertir: :root = dark, linen como override explícito",
+      "completed": true
+    },
+    {
+      "questionId": "linen_fate",
+      "selectedOptionIds": [
+        "remove_linen"
+      ],
+      "customAnswer": "",
+      "answer": "Retirar linen del producto (un solo tema: dark)",
+      "completed": true
+    },
+    {
+      "questionId": "dead_theme_removal",
+      "selectedOptionIds": [
+        "delete_dead_theme"
+      ],
+      "customAnswer": "",
+      "answer": "Borrar NavbarComponent + dark-mode.css + navbar.css en F0",
+      "completed": true
+    },
+    {
+      "questionId": "admin_audit_budget",
+      "selectedOptionIds": [
+        "admin_frozen_monotonic"
+      ],
+      "customAnswer": "",
+      "answer": "Congelado al baseline actual, sólo puede bajar",
+      "completed": true
+    },
+    {
+      "questionId": "styles_css_strategy",
+      "selectedOptionIds": [
+        "incremental_dismantle"
+      ],
+      "customAnswer": "",
+      "answer": "Desmantelar por secciones hasta borrarlo",
+      "completed": true
+    },
+    {
+      "questionId": "f1_regression_tolerance",
+      "selectedOptionIds": [
+        "tolerate_with_log"
+      ],
+      "customAnswer": "",
+      "answer": "Tolerar regresión en todo, con bitácora y cierre al final de F1",
+      "completed": true
+    },
+    {
+      "questionId": "f2_manifest_granularity",
+      "selectedOptionIds": [
+        "one_per_surface"
+      ],
+      "customAnswer": "",
+      "answer": "Un manifiesto por superficie (9 nuevos)",
+      "completed": true
+    },
+    {
+      "questionId": "semanal_red_timing",
+      "selectedOptionIds": [
+        "fix_first_in_f0"
+      ],
+      "customAnswer": "",
+      "answer": "Primero, como tarea inicial de F0",
+      "completed": true
+    },
+    {
+      "questionId": "bi_tailwind",
+      "selectedOptionIds": [
+        "remove_tailwind"
+      ],
+      "customAnswer": "",
+      "answer": "Eliminar Tailwind y reescribir a primitivas aia-*",
+      "completed": true
+    },
+    {
+      "questionId": "chart_color_source",
+      "selectedOptionIds": [
+        "runtime_computed"
+      ],
+      "customAnswer": "",
+      "answer": "getComputedStyle en runtime sobre --ds-active-data-*",
+      "completed": true
+    },
+    {
+      "questionId": "adminlte_fate",
+      "selectedOptionIds": [],
+      "customAnswer": "Mejor no lo toquemos en este goal",
+      "answer": "Mejor no lo toquemos en este goal",
+      "completed": true
+    },
+    {
+      "questionId": "admin_tokens_unification",
+      "selectedOptionIds": [
+        "unify_tokens"
+      ],
+      "customAnswer": "",
+      "answer": "Unificar en public/css/tokens.css y borrar el de admin",
+      "completed": true
+    },
+    {
+      "questionId": "admin_cdn_vendoring",
+      "selectedOptionIds": [
+        "vendor_all"
+      ],
+      "customAnswer": "",
+      "answer": "Vendorizar todo a /public/vendor, reutilizando lo existente",
+      "completed": true
+    },
+    {
+      "questionId": "plan_compras_authority",
+      "selectedOptionIds": [
+        "have_access"
+      ],
+      "customAnswer": "",
+      "answer": "Tenemos acceso y autoridad sobre plan-de-compras",
+      "completed": true
+    },
+    {
+      "questionId": "vendor_adapters_f6",
+      "selectedOptionIds": [
+        "tokenize_and_consolidate"
+      ],
+      "customAnswer": "",
+      "answer": "Tokenizar los propios y consolidar en un solo select enriquecido",
+      "completed": true
+    },
+    {
+      "questionId": "global_debt_gate",
+      "selectedOptionIds": [
+        "monotonic_global"
+      ],
+      "customAnswer": "",
+      "answer": "Gate monotónico global con override documentado",
+      "completed": true
+    },
+    {
+      "questionId": "execution_order",
+      "selectedOptionIds": [
+        "f0_then_parallel"
+      ],
+      "customAnswer": "",
+      "answer": "F0 → (F1 ∥ F4) → (F2 ∥ F3) → F6, F5 cuando se desbloquee",
+      "completed": true
+    }
+  ]
+}

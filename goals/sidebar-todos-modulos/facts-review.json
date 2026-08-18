@@ -1,0 +1,103 @@
+{
+  "stage": "facts",
+  "title": "Rollout del shell sidebar a todos los módulos",
+  "goalSlug": "sidebar-todos-modulos",
+  "facts": [
+    {
+      "id": "fact-mapa",
+      "text": "Existe un mapa/inventario que, para los 12 módulos con sidebar (PI + los 11 a migrar), indica el estado del shell sidebar: correctamente implementado (declarado en foundation-shell.json + gates verdes + ambos estados) o las brechas pendientes por módulo.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": false,
+      "automatedVerification": false
+    },
+    {
+      "id": "fact-render",
+      "text": "Los 11 módulos objetivo (Programa General, Prog. Semanal, Actualizar Cronograma, Profesionales, Subcontratistas, Control de Cambios, Familias de Actividades, Contratos, PDC /pdc, Indicadores, Control Tower) renderizan el shell sidebar canónico (mismo partial shell_sidebar.php que PI), con la navbar superior legacy reemplazada.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-cajon-lps",
+      "text": "En los módulos que hoy tienen cajón LPS derecho ('Concurrencia LPS'), este se conserva y coexiste con el shell sidebar, igual que en PI.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-ambos-estados",
+      "text": "En cada módulo migrado la sidebar funciona en ambos estados —colapsada (default) y expandida— alternables con el toggle, y el estado persiste en localStorage (aia-sidebar-state).",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-cero-scroll",
+      "text": "En cada módulo migrado, a 1180x820 dark y en ambos estados, la sidebar no hace scroll y la página no tiene overflow horizontal.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-flyouts",
+      "text": "En cada módulo migrado los flyouts de la sidebar (menús de semana y menú de cuenta) se despliegan sin recorte y con paneles opacos, igual que en PI.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-activo-rbac",
+      "text": "En cada módulo migrado el ítem de nav activo corresponde al módulo actual (aria-current='page') y la visibilidad por RBAC se respeta (un rol permitido ve sus ítems; uno denegado no).",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-manifest-gates",
+      "text": "Cada ruta migrada está declarada en docs/design-system/manifests/foundation-shell.json (routes) y los gates del foundation-shell (contract mjs, shell-navigation, partial php, shell-week-admin) quedan verdes.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-test-datadriven",
+      "text": "Un test automatizado data-driven recorre las 12 rutas (PI + 11) y verifica: sidebar presente, ambos estados, cero-scroll, sin overflow horizontal, ítem activo y default colapsado.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-indicadores",
+      "text": "En /indicadores el embed de Power BI se ajusta para coexistir con la sidebar sin generar overflow horizontal.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-control-tower",
+      "text": "En Control Tower el shell sidebar reemplaza la navbar de app superior conservando la sub-navegación BI intra-sección (tabs overview/PG/PI/PS).",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    },
+    {
+      "id": "fact-paridad",
+      "text": "El comportamiento del sidebar es idéntico a PI en todos los módulos: default colapsado, toggle compacto junto al logo, marca 'Last Planner AIA' sin truncar, paneles de menú opacos y sin bloque de contexto duplicado en el header.",
+      "accepted": false,
+      "removed": false,
+      "recommendedAutomatedVerification": true,
+      "automatedVerification": true
+    }
+  ]
+}
