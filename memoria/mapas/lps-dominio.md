@@ -57,6 +57,15 @@ genérica, que el Residente también tiene, así que esconder el botón era cosm
 [[reabrir-semana-asimetria-cliente-servidor|derogada]] desde el 2026-08-11. Lo que sobrevive al
 caso es la lección: el cliente puede esconder, solo el servidor puede impedir.
 
+## En móvil no hay grilla
+
+Por debajo de **1180 px** Semanal e Intermedia no pintan Handsontable: pintan tarjetas, y la tablet
+entra en ese lado del umbral. Las dos comparten forma —cinco elementos visibles y un desplegable
+nombrado por su contenido— y difieren en qué se edita: Semanal el compromiso, en la cara visible;
+Intermedia las siete restricciones, dentro del desplegable. El modelo y sus porqués están en
+[[tarjeta-movil-e2-bis]]; por qué hubo que decidirlo dos veces, en
+[[una-decision-escrita-no-llega-sola-al-codigo]].
+
 ## Vecinos
 
 [[design-system]] para tokens y cascada · [[rbac-y-rutas]] para quién puede editar qué semana.
