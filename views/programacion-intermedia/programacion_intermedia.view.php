@@ -12,7 +12,7 @@
              Select2 pero no el de Tom Select: este vendor lo enlaza la vista,
              igual que ya hacía `programaGeneralActualizar.view.php`. Sin este
              link el desplegable se pintaba claro dentro de la app oscura. */ ?>
-    <link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260818" />
+    <link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260818dark3" />
     <script src="/public/vendor/tom-select/tom-select.complete.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260722pi1" charset="utf-8"></script>
