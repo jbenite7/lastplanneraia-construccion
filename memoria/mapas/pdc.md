@@ -32,10 +32,13 @@ biblia, qué debe hacer.
 
 - SPA en `pdc-app/` (React + Vite + AG Grid); publica su bundle en `public/pdc-app/`.
 - PHP en `src/Services/Pdc/`.
-- Los contratos `auto/preview`, `auto/apply`, `auto/undo`, `auto/feedback` y `auto/metrics` se
-  comparten con Listado de Actividades y Contratos. Reutiliza
-  `public/js/modules/semi_auto_review.js`; no montes un flujo paralelo sin evidencia de que hace
-  falta.
+- **Corregido 2026-08-18:** este mapa mandaba reutilizar los contratos `auto/preview`, `auto/apply`,
+  `auto/undo`, `auto/feedback` y `auto/metrics`, y el módulo `public/js/modules/semi_auto_review.js`.
+  **Nada de eso existe**: se borró entero con el PDC v1 el 2026-08-04 (`public/index.php` no declara
+  ninguna de esas rutas; el archivo JS no está en disco). Era la instrucción más peligrosa de la
+  página, porque este mapa es justo el que se lee antes de tocar el PDC — mandaba a reutilizar un
+  flujo inexistente. El asistente semiautomático no tiene sucesor en v2; si hace falta algo así,
+  se diseña de cero. Ver [[semi-auto-solo-lo-usa-pdc]], derogada por el mismo borrado.
 
 ## Antes de correr nada
 

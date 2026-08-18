@@ -10,9 +10,16 @@ resumen: DEROGADA 2026-08-14 — se amplió el fixture (commit 8a0d5e46); el hue
 **Derogada el 2026-08-14**: el hueco que esta nota describía se cerró ampliando
 `database/fixtures/design-system-ci.sql` (commit `8a0d5e46`) — JMC ganó las semanas 1-4
 confirmadas con filas que cumplen la precondición de cada caso, y el caso de CNP se movió al
-proyecto 68. Los 14 casos de `programacion-semanal-roles-phases.mjs` corren y pasan en el stack
-aislado. El diagnóstico de abajo queda como referencia: la misma forma de trampa puede repetirse
+proyecto 68. El diagnóstico de abajo queda como referencia: la misma forma de trampa puede repetirse
 con otro spec que necesite dato que el fixture no trae todavía.
+
+**Recuento actualizado el 2026-08-18.** Esta nota decía «los 14 casos corren y pasan», y la cifra se
+movió dos veces desde entonces, así que conviene leerla desglosada en vez de como un número suelto.
+Hoy el spec declara **15 casos**: doce `test(...)`, uno de ellos dentro del bucle de cuatro roles de
+`ROLE_CASES`. **Ninguno está saltado en firme** — los dos de tabla en tablet llegaron a estarlo por
+el retiro de esa tabla y volvieron al gate cuando E3 cerró el hueco. Los cuatro `test.skip` que
+siguen en el archivo son **condicionales dentro de un caso**, no casos excluidos: saltan solo fuera
+del stack aislado, que es exactamente lo que esta página explica y sigue siendo correcto.
 `runSql` (`tests/browser/support/dbSnapshot.mjs`) enruta **todo** comando de base por
 `isolatedComposeArgs`, que llama a `assertIsolatedComposeEnvironment` y revienta si
 `COMPOSE_PROJECT_NAME` no empieza por `lps-aia-design-system-ci-`. El candado es deliberado: evita
