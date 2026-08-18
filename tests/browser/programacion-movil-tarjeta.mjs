@@ -1,6 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { login } from './support/session.mjs';
 
+function escaparId(id) {
+  // Los ids de restriccion llevan el patron `pi-restr-{index}-{clave}`, sin
+  // caracteres que exijan un escape real de CSS.escape; alcanza con negar
+  // los pocos que podrian romper el selector.
+  return String(id).replace(/([^a-zA-Z0-9_-])/g, '\\$1');
+}
+
+async function localizarControlHabilitado(page) {
+  return page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.pi-mobile-card')];
+    for (const card of cards) {
+      const control = card.querySelector('[data-pi-restriccion]:not([disabled])');
+      if (!control) continue;
+      const opciones = [...control.querySelectorAll('option')].map((o) => o.value).filter(Boolean);
+      if (opciones.length < 2) continue;
+      return {
+        rowIndex: control.dataset.rowIndex,
+        prop: control.dataset.piRestriccion,
+        controlId: control.id,
+        valorActual: control.value,
+        opciones,
+      };
+    }
+    return null;
+  });
+}
+
 const CANDIDATOS = ['Preconstrucción Da Porto', 'Optimización Aeropuerto JMC', 'Da Porto', 'Prueba'];
 
 // `Preconstrucción Da Porto` (área Pre-Construcción) solo tiene UNA restricción
@@ -120,4 +147,87 @@ test('intermedia: sin responsable, las restricciones se bloquean Y se explica', 
   }
   expect(hallazgo.bloqueado, 'Sin responsable las restricciones deben estar bloqueadas (I4)').toBe(true);
   expect(hallazgo.aviso, 'Se bloquean sin decir por que').toBe(true);
+});
+
+// Hallazgos 1 y 2 de la revision del 2026-08-14: ninguna prueba anterior
+// cambiaba un <select> de restriccion desde la tarjeta movil, asi que 22
+// pruebas en verde no vieron ni el valor rechazado que sobrevivia en el
+// modelo (1) ni el desplegable que se cerraba en cada guardado (2).
+test('intermedia: liberar una restriccion desde la tarjeta persiste tras recargar', async ({ page }) => {
+  await abrir(page, '/programacion-intermedia', CANDIDATOS_CONSTRUCCION);
+
+  const localizado = await localizarControlHabilitado(page);
+  if (!localizado) {
+    test.skip(true, 'El proyecto sembrado no tiene ninguna restriccion editable en la primera pantalla');
+  }
+
+  const otroValor = localizado.opciones.find((v) => v !== localizado.valorActual) || localizado.opciones[0];
+  const control = page.locator(`#${escaparId(localizado.controlId)}`);
+
+  try {
+    await control.evaluate((el) => el.closest('details.pi-mobile-card__detalle').setAttribute('open', ''));
+
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/pi/save') && r.status() === 200),
+      control.selectOption(otroValor),
+    ]);
+    await page.waitForTimeout(300);
+
+    await page.reload();
+    await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+
+    const persistido = await page.locator(`#${escaparId(localizado.controlId)}`).inputValue();
+    expect(persistido, 'El valor liberado no sobrevivio a la recarga').toBe(otroValor);
+  } finally {
+    const controlFinal = page.locator(`#${escaparId(localizado.controlId)}`);
+    if (await controlFinal.count()) {
+      await controlFinal.evaluate((el) => el.closest('details.pi-mobile-card__detalle').setAttribute('open', ''));
+      const valorAlCerrar = await controlFinal.inputValue();
+      if (valorAlCerrar !== localizado.valorActual) {
+        await Promise.all([
+          page.waitForResponse((r) => r.url().includes('/api/pi/save')).catch(() => {}),
+          controlFinal.selectOption(localizado.valorActual),
+        ]);
+      }
+    }
+  }
+});
+
+test('intermedia: el desplegable de restricciones sigue abierto tras guardar', async ({ page }) => {
+  await abrir(page, '/programacion-intermedia', CANDIDATOS_CONSTRUCCION);
+
+  const localizado = await localizarControlHabilitado(page);
+  if (!localizado) {
+    test.skip(true, 'El proyecto sembrado no tiene ninguna restriccion editable en la primera pantalla');
+  }
+
+  const otroValor = localizado.opciones.find((v) => v !== localizado.valorActual) || localizado.opciones[0];
+  const control = page.locator(`#${escaparId(localizado.controlId)}`);
+
+  try {
+    await control.evaluate((el) => el.closest('details.pi-mobile-card__detalle').setAttribute('open', ''));
+
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/pi/save') && r.status() === 200),
+      control.selectOption(otroValor),
+    ]);
+    await page.waitForTimeout(300);
+
+    const sigueAbierto = await page
+      .locator(`#${escaparId(localizado.controlId)}`)
+      .evaluate((el) => el.closest('details.pi-mobile-card__detalle').hasAttribute('open'));
+    expect(sigueAbierto, 'El desplegable se cerro tras un guardado exitoso').toBe(true);
+  } finally {
+    const controlFinal = page.locator(`#${escaparId(localizado.controlId)}`);
+    if (await controlFinal.count()) {
+      const valorAlCerrar = await controlFinal.inputValue();
+      if (valorAlCerrar !== localizado.valorActual) {
+        await Promise.all([
+          page.waitForResponse((r) => r.url().includes('/api/pi/save')).catch(() => {}),
+          controlFinal.selectOption(localizado.valorActual),
+        ]);
+      }
+    }
+  }
 });

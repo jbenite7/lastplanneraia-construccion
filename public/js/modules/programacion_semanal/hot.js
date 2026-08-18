@@ -3584,9 +3584,18 @@
     });
     $('#mobile-card-view').off('click.psMobileState').on('click.psMobileState', '[data-mobile-ops-row]', function () {
       var rowIndex = Number(this.getAttribute('data-mobile-ops-row'));
-      var row = hot && Number.isInteger(rowIndex) ? getSourceRowDataByVisualRow(hot, rowIndex) : null;
+      if (!Number.isInteger(rowIndex)) {
+        return;
+      }
+      // Hallazgo 5 (revision 2026-08-14): sin grilla montada (bajo 1180px)
+      // `hot` es null, asi que antes esta rama devolvia `null` y el boton
+      // (con aria-label "... Ver detalle operativo") no abria nada. La
+      // fuente sin malla es `getFilteredRows()`, la misma que pinta esta
+      // tarjeta. De paso corrige la llamada a una funcion inexistente
+      // (`showOperationalStateDrawer`): la real es `openOperationalStateDrawer`.
+      var row = hot ? getSourceRowDataByVisualRow(hot, rowIndex) : getFilteredRows()[rowIndex];
       if (row) {
-        showOperationalStateDrawer(getStateView(row));
+        openOperationalStateDrawer(row);
       }
     });
   }

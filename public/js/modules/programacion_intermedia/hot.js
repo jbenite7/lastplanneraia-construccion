@@ -3022,6 +3022,16 @@
 
   function revertCell(visualRow, prop, oldValue) {
     if (!hot) {
+      // Sin grilla montada (E4), el modelo es `visibleRows`, la misma
+      // fuente que pinta la tarjeta. Revisor N-1 (2026-08-14, hallazgo 1):
+      // sin este revert, un valor rechazado por el servidor sobrevivia en
+      // `fila[prop]` y viajaba en el siguiente POST de `buildPayload`,
+      // porque este arma el payload con TODAS las restricciones de la fila.
+      var fila = visibleRows[visualRow];
+      if (fila) {
+        fila[prop] = oldValue;
+      }
+      renderMobileCards(visibleRows);
       return;
     }
     var col = hot.propToCol(prop);
@@ -4360,6 +4370,7 @@
   function construirDetalleRestricciones(row, index) {
     var detalle = document.createElement('details');
     detalle.className = 'pi-mobile-card__detalle';
+    detalle.dataset.rowIndex = String(index);
 
     var resumen = document.createElement('summary');
     resumen.textContent = 'Liberar restricciones';
@@ -4496,6 +4507,27 @@
     }
 
     var isMobile = window.matchMedia('(max-width: 1179px)').matches;
+
+    // Hallazgo 2 (revision 2026-08-14): cada guardado exitoso repintaba las
+    // siete tarjetas de restriccion sin `open`, asi que liberar una
+    // actividad completa cerraba el desplegable siete veces. Se captura el
+    // estado abierto y el control con foco ANTES de vaciar el contenedor,
+    // para reponerlos despues de reconstruir el DOM.
+    var indicesAbiertos = {};
+    var activo = document.activeElement;
+    var focoRowIndex = null;
+    var focoRestriccion = null;
+    if (activo && container.contains(activo) && activo.dataset && activo.dataset.piRestriccion) {
+      focoRowIndex = activo.dataset.rowIndex;
+      focoRestriccion = activo.dataset.piRestriccion;
+    }
+    var detallesAbiertos = container.querySelectorAll('details.pi-mobile-card__detalle[open]');
+    for (var d = 0; d < detallesAbiertos.length; d++) {
+      if (detallesAbiertos[d].dataset.rowIndex !== undefined) {
+        indicesAbiertos[detallesAbiertos[d].dataset.rowIndex] = true;
+      }
+    }
+
     container.replaceChildren();
     if (!isMobile) {
       return;
@@ -4514,6 +4546,20 @@
         if (!Number.isInteger(visualRow) || !prop) return;
         var fila = visibleRows[visualRow];
         if (!fila) return;
+
+        // N-1 (Task 38): la misma red que el listener de escritorio
+        // (hot.js:4229-4243) para pegados o cambios programaticos que no
+        // pasan por el editor. Por la UI no se llega aqui, porque el
+        // control ya nace `disabled` sin Responsable AIA, pero el servidor
+        // (ProgramacionIntermediaController::save) no valida esta regla, asi
+        // que se conserva como red de seguridad.
+        var meta = getPIRowMeta(null, fila);
+        if (!meta.hasResponsable) {
+          showFeedback('error', 'No puede gestionar restricciones de una actividad sin asignar Responsable AIA');
+          renderMobileCards(visibleRows);
+          return;
+        }
+
         var anterior = fila[prop];
         fila[prop] = control.value;
         saveRow(visualRow, prop, anterior);
@@ -4538,6 +4584,29 @@
     }
     list.appendChild(fragment);
     container.appendChild(list);
+
+    var tieneAbiertos = false;
+    for (var key in indicesAbiertos) {
+      if (Object.prototype.hasOwnProperty.call(indicesAbiertos, key)) {
+        tieneAbiertos = true;
+        break;
+      }
+    }
+    if (tieneAbiertos) {
+      var detallesNuevos = list.querySelectorAll('details.pi-mobile-card__detalle');
+      for (var n = 0; n < detallesNuevos.length; n++) {
+        if (indicesAbiertos[detallesNuevos[n].dataset.rowIndex]) {
+          detallesNuevos[n].open = true;
+        }
+      }
+    }
+    if (focoRowIndex !== null && focoRestriccion !== null) {
+      var selectorFoco = '[data-pi-restriccion="' + focoRestriccion + '"][data-row-index="' + focoRowIndex + '"]';
+      var controlAFocar = list.querySelector(selectorFoco);
+      if (controlAFocar) {
+        controlAFocar.focus();
+      }
+    }
   }
 
   function applyFiltersAndRender() {
@@ -4550,9 +4619,9 @@
     }
     // E4 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md): bajo el
     // umbral no se instancia Handsontable. Las cards de Intermedia SI editan
-    // restricciones (ver renderMobileEditableMetric/renderMobileRealMetric),
-    // pero lo hacen contra la misma capa de guardado que usa la tarjeta
-    // desktop (createMobileCard/getStateView no dependen de
+    // restricciones (ver construirDetalleRestricciones/renderMobileCards, en
+    // este mismo modulo), pero lo hacen contra la misma capa de guardado que
+    // usa la tarjeta desktop (createMobileCard/getStateView no dependen de
     // buildRowClassCache ni de ninguna otra cosa que updateOrInitHot deje de
     // correr), asi que no hace falta un camino de guardado alterno como en
     // Semanal.
