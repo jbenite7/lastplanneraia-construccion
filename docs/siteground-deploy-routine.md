@@ -60,20 +60,93 @@ URL de validacion: `https://lastplanneraia.com/`.
 
 ## 3. Backup antes del deploy
 
+El tar excluye lo que git o Composer reponen (`.git`, `vendor`, `node_modules`, `docs`, `tests`,
+`goals`, `e2e`, `.github`, `memoria`) y conserva lo que nadie mas puede reponer: `.env`,
+`public/storage` y el drift del servidor. **De ~677 MB a 5.1 MB**, medido en `prueba-lps` el
+2026-08-18.
+
+> [!IMPORTANT]
+> **El `.manifest.txt` no es opcional.** Sin `.git` dentro, el tar por si solo no sabe de que commit
+> salio, y un respaldo que no se puede situar en la historia no es un respaldo. Restaurar es
+> `git clone` en ese SHA mas descomprimir el tar encima.
+
+La rotacion va en el mismo comando y deja 3 por sitio. En agosto de 2026 su ausencia acumulo 29
+tarballs, lleno la cuota de la cuenta y bloqueo el acceso a Site Tools.
+
 ### Pruebas
 
 ```bash
 mkdir -p ~/backups
-tar -czf ~/backups/prueba-lps-predeploy-$(date +%Y%m%d-%H%M%S).tar.gz -C ~/www/prueba-lps.lastplanneraia.com public_html
-ls -lt ~/backups | head -n 3
+STAMP=$(date +%Y%m%d-%H%M%S)
+
+tar -czf ~/backups/prueba-lps-predeploy-$STAMP.tar.gz \
+  --exclude='public_html/.git' \
+  --exclude='public_html/vendor' \
+  --exclude='public_html/node_modules' \
+  --exclude='public_html/pdc-app/node_modules' \
+  --exclude='public_html/docs' \
+  --exclude='public_html/tests' \
+  --exclude='public_html/goals' \
+  --exclude='public_html/e2e' \
+  --exclude='public_html/.github' \
+  --exclude='public_html/memoria' \
+  -C ~/www/prueba-lps.lastplanneraia.com public_html
+
+cd ~/www/prueba-lps.lastplanneraia.com/public_html
+{ echo "commit: $(git rev-parse HEAD)"
+  echo "rama:   $(git rev-parse --abbrev-ref HEAD)"
+  echo "fecha:  $(date -Iseconds)"
+  echo "origen: $(git config --get remote.origin.url)"
+} > ~/backups/prueba-lps-predeploy-$STAMP.manifest.txt
+
+# Comprobar que el respaldo sirve, antes de confiar en el
+T=~/backups/prueba-lps-predeploy-$STAMP.tar.gz
+echo "storage: $(tar -tzf $T | grep -c '^public_html/public/storage/')"   # > 0
+echo ".env:    $(tar -tzf $T | grep -cx 'public_html/.env')"              # = 1
+echo ".git:    $(tar -tzf $T | grep -c '^public_html/.git/')"             # = 0
+
+# Rotacion: dejar 3, cada uno con su manifiesto
+ls -t ~/backups/prueba-lps-predeploy-*.tar.gz | tail -n +4 | while read -r f; do
+  rm -f -- "$f" "${f%.tar.gz}.manifest.txt"
+done
+ls -lht ~/backups/prueba-lps-predeploy-* | head -n 6
 ```
 
 ### Produccion
 
 ```bash
 mkdir -p ~/backups
-tar -czf ~/backups/lastplanneraia-predeploy-$(date +%Y%m%d-%H%M%S).tar.gz -C ~/www/lastplanneraia.com public_html
-ls -lt ~/backups | head -n 3
+STAMP=$(date +%Y%m%d-%H%M%S)
+
+tar -czf ~/backups/lastplanneraia-predeploy-$STAMP.tar.gz \
+  --exclude='public_html/.git' \
+  --exclude='public_html/vendor' \
+  --exclude='public_html/node_modules' \
+  --exclude='public_html/pdc-app/node_modules' \
+  --exclude='public_html/docs' \
+  --exclude='public_html/tests' \
+  --exclude='public_html/goals' \
+  --exclude='public_html/e2e' \
+  --exclude='public_html/.github' \
+  --exclude='public_html/memoria' \
+  -C ~/www/lastplanneraia.com public_html
+
+cd ~/www/lastplanneraia.com/public_html
+{ echo "commit: $(git rev-parse HEAD)"
+  echo "rama:   $(git rev-parse --abbrev-ref HEAD)"
+  echo "fecha:  $(date -Iseconds)"
+  echo "origen: $(git config --get remote.origin.url)"
+} > ~/backups/lastplanneraia-predeploy-$STAMP.manifest.txt
+
+T=~/backups/lastplanneraia-predeploy-$STAMP.tar.gz
+echo "storage: $(tar -tzf $T | grep -c '^public_html/public/storage/')"   # > 0
+echo ".env:    $(tar -tzf $T | grep -cx 'public_html/.env')"              # = 1
+echo ".git:    $(tar -tzf $T | grep -c '^public_html/.git/')"             # = 0
+
+ls -t ~/backups/lastplanneraia-predeploy-*.tar.gz | tail -n +4 | while read -r f; do
+  rm -f -- "$f" "${f%.tar.gz}.manifest.txt"
+done
+ls -lht ~/backups/lastplanneraia-predeploy-* | head -n 6
 ```
 
 Esto permite rollback rapido aun si el repo queda en un estado inconsistente.
