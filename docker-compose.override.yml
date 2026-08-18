@@ -1,4 +1,29 @@
+# El codigo se monta por RUTA ABSOLUTA, no con `./`.
+#
+# Antes era `./:/var/www/html`, es decir "la carpeta desde la que se ejecuta el comando". Como
+# docker-compose.yml fija `name: last-planner-aia`, todas las sesiones comparten los mismos
+# contenedores: la ultima que ejecutaba `docker compose up` desde su worktree se llevaba el
+# montaje, y las demas quedaban servidas desde una carpeta ajena. Peor aun, si ese worktree se
+# borraba, el contenedor apuntaba al vacio y localhost:8081 respondia 404 en TODAS las rutas sin
+# que nada avisara. Medido el 2026-08-18: el bind apuntaba a un worktree inexistente
+# (`cranky-dhawan-aa8725`) y hasta `docker exec` fallaba con "current working directory is outside
+# of container mount namespace root".
+#
+# Con la ruta absoluta, ejecutar compose desde un worktree ya NO cambia que se sirve: siempre la
+# raiz del repo, que es la unica ruta que no puede borrarse bajo los pies del contenedor y la unica
+# que tiene el .env. `docker compose exec app ...` —la via documentada en AGENTS.md para correr las
+# pruebas— sigue funcionando desde cualquier worktree.
+#
+# Para servir un worktree A PROPOSITO (probar una rama en el navegador), hazlo explicito:
+#
+#   LPS_CODE_ROOT="$(pwd)" docker compose up -d app
+#
+# y devuelvelo a la raiz al terminar. En otra maquina, define LPS_CODE_ROOT en tu .env con la ruta
+# de tu clon; el valor por defecto de abajo es el de la maquina de desarrollo actual.
 services:
   app:
     volumes:
-      - ./:/var/www/html:delegated
+      - type: bind
+        source: ${LPS_CODE_ROOT:-/Volumes/Crucial X6/Developer/lps-aia}
+        target: /var/www/html
+        consistency: delegated
