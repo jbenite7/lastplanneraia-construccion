@@ -7,6 +7,12 @@
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <link href="/public/vendor/tom-select/tom-select.bootstrap4.min.css" rel="stylesheet">
+    <?php /* Piel oscura tokenizada del editor flotante. Va aquí, y no en el
+             agregador, porque `aia-design-system.css` importa el adaptador de
+             Select2 pero no el de Tom Select: este vendor lo enlaza la vista,
+             igual que ya hacía `programaGeneralActualizar.view.php`. Sin este
+             link el desplegable se pintaba claro dentro de la app oscura. */ ?>
+    <link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260818" />
     <script src="/public/vendor/tom-select/tom-select.complete.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260722pi1" charset="utf-8"></script>
@@ -336,7 +342,7 @@
     };
     </script>
 
-    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
+    <script type="text/javascript" src="/js/HandsontableTomSelectEditor.js?v=20260818teclado3"></script>
     <script src="/js/modules/lps_drawer.js?v=20260722shell1"></script>
     <script src="/js/core/SessionExpiredHandler.js?v=20260811a"></script>
     <?php

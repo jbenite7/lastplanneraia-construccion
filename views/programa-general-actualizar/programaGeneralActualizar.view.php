@@ -423,7 +423,7 @@
 	<script src="/public/vendor/handsontable/es-MX.js"></script>
 
 	<!-- Handsontable Plugin para TomSelect (Requiere Hot y TomSelect cargados) -->
-	<script src="/js/HandsontableTomSelectEditor.js?v=tomselect30"></script>
+	<script src="/js/HandsontableTomSelectEditor.js?v=20260818teclado3"></script>
 
 	<!-- Reglas Progresivas ML-Ready -->
 	<script src="/public/js/modules/programa_actualizar/rule_engine.js?v=20260622"></script>
