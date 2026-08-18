@@ -1504,7 +1504,26 @@ red de seguridad:** crear el baseline 0.3.4 (medición fresca sobre sha ≥ `ef4
 reconstruida, `adapterAssets` con las 8 rutas, esta atribución adjunta como justificación) — sigue
 siendo decisión del usuario por D-GAC-6.
 
-- **Estado:** `decidida e investigada` — pendiente solo el sí/no del usuario al baseline 0.3.4
+- **Estado:** `resuelta 2026-08-18: el usuario aprobó la generación 0.3.5 con las cifras de hoy`
+
+**Cierre, 2026-08-18.** Al remedir salió a la luz que el gate no estaba en rojo por el código: su
+recibo se midió el **2026-08-11** contra el baseline `0.3.3`, y `0.3.4` se aprobó el **12**. El
+recibo nunca se regeneró, así que el bloqueo llevaba una semana siendo de un papel viejo. Las dos
+métricas que superaban el techo de 0.3.4 quedaron atribuidas sin regresión —el CSS, a las 81 líneas
+del menú flotante bajo 1180px; el tiempo de interacción, a que 0.3.4 congeló el mínimo de toda la
+serie— en `docs/design-system/runtime-measurements/2026-08-18-atribucion-0.3.5.md`.
+
+Aprobada la generación **0.3.5**. Tres barreras impedían registrarla y las tres eran deuda del
+tiempo en que solo existía una generación: la lista blanca de `BASELINE_GENERATIONS`, las rutas
+literales a `0.3.4` dentro del validador de procedencia, y cinco aserciones que fijaban el nombre
+del baseline en `visual-ci-contract.test.mjs`. Las tres quedaron parametrizadas por generación.
+
+**Lo que este cierre NO resuelve, y abre cuestión propia:** el medidor toma una sola muestra, y las
+métricas de tiempo varían de 174 a 744 ms entre corridas en la misma máquina y el mismo commit. Por
+eso el recibo válido de esta generación lo tiene que producir CI, no un portátil. La trampa quedó en
+`memoria/trampas/baseline-de-una-muestra-congela-el-atipico.md`, y el arreglo de fondo —medir varias
+veces y quedarse con la mediana— es un cambio en el diseño del gate con plan propio, por decisión
+del usuario del 2026-08-18.
 
 ### D-GAC-6 · La actualización autorizada del baseline choca con el contrato que lo fija por hash — resuelta por la coordinadora: se revierte y la re-aprobación será un baseline versionado
 
