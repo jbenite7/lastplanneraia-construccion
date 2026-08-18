@@ -264,29 +264,27 @@ test.describe('Editor Tom Select · contrato de teclado y anclaje', () => {
     await restaurarCelda(page, 0, col, original);
   });
 
-  test('la ventana flotante sigue a su celda al desplazar la grilla', async ({ page }) => {
-    const col = await indiceColumna(page);
-    const filas = await countGridRows(page, 'PI');
-    test.skip(filas < 4, 'hacen falta filas suficientes para desplazar');
-
-    await abrirEditor(page, 0, col);
-    const antes = await page.evaluate(() => {
-      const w = document.querySelector('.htTomSelectWrapper');
-      const td = document.querySelector('#hot-container .ht_master td.current');
-      return { editor: parseFloat(w.style.top), celda: td.getBoundingClientRect().top };
-    });
-    expect(Math.abs(antes.editor - antes.celda), 'al abrir ya está pegado').toBeLessThan(2);
-
-    // Se desplaza por la API de la grilla, no con la rueda: la rueda depende de
-    // dónde caiga el puntero y en una corrida sin cabeza puede no desplazar
-    // nada, con lo que la prueba pasaría sin haber comprobado nada.
-    await page.evaluate(() => {
+  /** Desplaza el cuerpo de la grilla como lo hace la rueda, y confirma que se movio. */
+  async function desplazarGrilla(page, pixeles) {
+    const movimiento = await page.evaluate((px) => {
       const hot = window.PIHotModule.getHotInstance();
-      hot.scrollViewportTo({ row: Math.min(3, hot.countRows() - 1), verticalSnap: 'top' });
-    });
+      const holder = hot.rootElement.querySelector('.ht_master .wtHolder');
+      const antes = holder.scrollTop;
+      holder.scrollTop = antes + px;
+      return { antes, despues: holder.scrollTop };
+    }, pixeles);
     await page.waitForTimeout(400);
+    // Precondicion explicita: sin desplazamiento real la prueba no comprueba
+    // nada y debe decirlo, en vez de pasar en verde por no haber pasado nada.
+    expect(
+      movimiento.despues,
+      'la grilla tiene que haberse desplazado de verdad',
+    ).toBeGreaterThan(movimiento.antes);
+    return movimiento;
+  }
 
-    const despues = await page.evaluate(() => {
+  function posiciones(page) {
+    return page.evaluate(() => {
       const w = document.querySelector('.htTomSelectWrapper');
       const abierto = !!w && getComputedStyle(w).display !== 'none';
       if (!abierto) return { abierto };
@@ -297,18 +295,40 @@ test.describe('Editor Tom Select · contrato de teclado y anclaje', () => {
         celda: td ? td.getBoundingClientRect().top : null,
       };
     });
+  }
 
-    // Dos desenlaces admisibles, y ninguno es «quedarse clavado sobre otra
-    // fila»: o el editor sigue a su celda, o se cierra porque la celda dejó de
-    // estar a la vista.
-    if (despues.abierto) {
-      expect(despues.celda, 'la celda sigue existiendo si el editor sigue abierto').not.toBeNull();
-      expect(
-        Math.abs(despues.editor - despues.celda),
-        'tras desplazar, el editor sigue sobre su celda',
-      ).toBeLessThan(2);
-    }
+  test('la ventana flotante sigue a su celda al desplazar la grilla', async ({ page }) => {
+    const col = await indiceColumna(page);
+    test.skip((await countGridRows(page, 'PI')) < 4, 'hacen falta filas para desplazar');
+
+    await abrirEditor(page, 0, col);
+    const antes = await posiciones(page);
+    expect(Math.abs(antes.editor - antes.celda), 'al abrir ya esta pegado').toBeLessThan(2);
+
+    await desplazarGrilla(page, 30);   // corto: la celda sigue a la vista
+
+    const despues = await posiciones(page);
+    expect(despues.abierto, 'con la celda aun visible, el editor sigue abierto').toBe(true);
+    expect(
+      Math.abs(despues.editor - despues.celda),
+      'y sigue pegado a su celda, que es lo que fallaba: se quedaba clavado sobre otra fila',
+    ).toBeLessThan(2);
+    expect(despues.editor, 'se ha movido de donde estaba').not.toBe(antes.editor);
 
     await page.keyboard.press('Escape');
   });
+
+  test('la ventana flotante se cierra si su celda sale de vista', async ({ page }) => {
+    const col = await indiceColumna(page);
+    test.skip((await countGridRows(page, 'PI')) < 4, 'hacen falta filas para desplazar');
+
+    await abrirEditor(page, 0, col);
+    await desplazarGrilla(page, 200);  // largo: la celda deja de estar a la vista
+
+    const despues = await posiciones(page);
+    // Seguir editando algo que ya no se ve es peor que cerrar: se confirma y
+    // se cierra, nunca se queda flotando sobre la fila equivocada.
+    expect(despues.abierto, 'con la celda fuera de vista, el editor se cierra').toBe(false);
+  });
+
 });
