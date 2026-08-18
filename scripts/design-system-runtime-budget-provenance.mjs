@@ -417,11 +417,17 @@ export function validateCurrentRecoveryManifest(manifest, measurementPath) {
 export function validateApprovedBaselineProvenance(baseline) {
   const recovery = baseline.recovery;
   const isCurrent = baseline.measurementKind === 'current';
+  // Las rutas de la rama `current` estaban escritas a mano apuntando a 0.3.4, que
+  // era la unica generacion `current` que existia cuando se escribio esto. Con ese
+  // literal, aprobar una generacion nueva era imposible: el validador exigia el
+  // manifiesto de 0.3.4 aunque el baseline fuera otro. Se derivan de la generacion
+  // declarada (2026-08-18, al aprobar 0.3.5), que es lo que el literal representaba.
+  const generation = baseline.designSystemVersion;
   const expectedManifestPath = isCurrent
-    ? 'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json'
+    ? `docs/design-system/runtime-measurements/${generation}-recovery-manifest.json`
     : BASELINE_MANIFEST_PATH;
   const expectedMeasurementPath = isCurrent
-    ? 'docs/design-system/runtime-measurements/0.3.4-measurement.json'
+    ? `docs/design-system/runtime-measurements/${generation}-measurement.json`
     : BASELINE_MEASUREMENT_PATH;
   if (!recovery
     || recovery.manifestPath !== expectedManifestPath

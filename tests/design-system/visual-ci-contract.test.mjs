@@ -289,7 +289,16 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   ]);
 
   assert.match(packageJson.scripts['test:runtime-budget:measure'], /design-system-runtime-budget\.mjs/);
-  assert.match(packageJson.scripts['test:runtime-budget:check'], /runtime-baseline-0\.3\.4\.json/);
+  // La generacion vigente se lee del propio script en vez de fijarse por nombre. Clavar aqui un
+  // numero concreto convertia cada re-aprobacion en una edicion de esta prueba, y fue una de las
+  // tres barreras que bloquearon la de 0.3.5 el 2026-08-18 (las otras dos: la lista blanca de
+  // BASELINE_GENERATIONS y las rutas literales del validador de procedencia). Lo que importa
+  // proteger no es que la generacion sea una en particular, sino que exista, este registrada y
+  // cumpla el contrato entero, que es lo que asegura el bloque de abajo.
+  const runtimeGeneration = packageJson.scripts['test:runtime-budget:check']
+    .match(/runtime-baseline-(\d+\.\d+\.\d+)\.json/)?.[1];
+  assert.ok(runtimeGeneration, 'test:runtime-budget:check debe apuntar a un baseline versionado');
+  assert.match(packageJson.scripts['test:runtime-budget:check'], /design-system-runtime-budget\.mjs/);
   assert.match(packageJson.scripts['test:performance:lab'], /design-system-lab\.performance\.mjs/);
   assert.match(packageJson.scripts['test:design-system:runtime'], /test:performance:lab/);
   assert.doesNotMatch(packageJson.scripts['test:design-system:runtime'], /test:runtime-budget/);
@@ -382,11 +391,11 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   // que el baseline NO se pueda editar a mano. Alli la atadura era a una retrospectiva fijada por
   // sha256; aqui es a una medicion de CI fijada por sha256 **y** por el commit que la produjo,
   // que es una atadura mas fuerte, no mas floja: aquella no se podia reproducir y esta si.
-  const currentBaseline = await readJson('docs/design-system/runtime-baseline-0.3.4.json');
-  const currentMeasurement = await readJson('docs/design-system/runtime-measurements/0.3.4-measurement.json');
-  const currentManifest = await readJson('docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json');
+  const currentBaseline = await readJson(`docs/design-system/runtime-baseline-${runtimeGeneration}.json`);
+  const currentMeasurement = await readJson(`docs/design-system/runtime-measurements/${runtimeGeneration}-measurement.json`);
+  const currentManifest = await readJson(`docs/design-system/runtime-measurements/${runtimeGeneration}-recovery-manifest.json`);
 
-  assert.equal(currentBaseline.designSystemVersion, '0.3.4');
+  assert.equal(currentBaseline.designSystemVersion, runtimeGeneration);
   assert.equal(currentBaseline.measurementKind, 'current');
   assert.equal(currentBaseline.status, 'approved');
   assert.equal(currentBaseline.approval.status, 'approved');
@@ -394,11 +403,11 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.match(currentBaseline.sourceRef, /^[a-f0-9]{40}$/);
   assert.equal(
     currentBaseline.recovery.measurementPath,
-    'docs/design-system/runtime-measurements/0.3.4-measurement.json',
+    `docs/design-system/runtime-measurements/${runtimeGeneration}-measurement.json`,
   );
   assert.equal(
     currentBaseline.recovery.manifestPath,
-    'docs/design-system/runtime-measurements/0.3.4-recovery-manifest.json',
+    `docs/design-system/runtime-measurements/${runtimeGeneration}-recovery-manifest.json`,
   );
   assert.equal(
     createHash('sha256')
@@ -420,10 +429,16 @@ test('pilot runtime budgets remain available while the canonical runtime uses th
   assert.equal(currentManifest.sourceHistory.originCommitAvailable, true);
   assert.equal(currentManifest.rawSamplesPreserved, true);
   // Las dos versiones que conviven, atadas y nombradas: la del presupuesto y la del producto.
-  assert.equal(currentManifest.designSystemVersion, '0.3.4');
+  assert.equal(currentManifest.designSystemVersion, runtimeGeneration);
   assert.equal(currentManifest.measuredDesignSystemVersion, currentMeasurement.designSystemVersion);
-  // La justificacion no es decorativa: apunta al informe que descarto la regresion.
-  assert.match(currentBaseline.justification.attributionPath, /atribucion-css-gzip/);
+  // La justificacion no es decorativa: apunta a un informe de atribucion que existe de verdad y
+  // que descarta la regresion. El patron exigia `atribucion-css-gzip` porque en 0.3.4 el unico
+  // numero investigado era el del CSS; en 0.3.5 fueron dos —el CSS y el tiempo de interaccion de
+  // Handsontable— y ese nombre habria quedado enganoso. Lo que el contrato protege es que haya
+  // informe y que sea legible desde aqui, no como se llama la metrica de aquella vez.
+  assert.match(currentBaseline.justification.attributionPath, /^docs\/design-system\/runtime-measurements\/.+atribucion.+\.md$/);
+  assert.ok(existsSync(currentBaseline.justification.attributionPath),
+    `el informe de atribucion ${currentBaseline.justification.attributionPath} debe existir`);
   assert.equal(existsSync(new URL(`../../${currentBaseline.justification.attributionPath}`, import.meta.url)), true);
   // El historico y el vigente no pueden confundirse: distinta generacion, distinto modo.
   assert.notEqual(currentBaseline.designSystemVersion, baseline.designSystemVersion);

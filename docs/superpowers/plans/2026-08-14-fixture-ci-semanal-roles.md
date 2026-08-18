@@ -10,6 +10,39 @@ En el stack aislado, `npx playwright test tests/browser/programacion-semanal-rol
 saltándose por el candado, y los otros diez siguen verdes. El paso está cableado en el workflow con
 su recibo, y `npm run test:design-system:static` está verde.
 
+## Estado real al 2026-08-18 — este plan está cerrado
+
+Contrastado tarea por tarea contra el código. **No lo ejecutes de nuevo: las siete tareas están
+hechas.**
+
+| Tarea | Estado | Dónde se ve |
+|---|---|---|
+| 0 · medir la línea base | hecha | `memoria/log.md` |
+| 1 · semanas confirmadas de JMC | hecha | `database/fixtures/design-system-ci.sql` |
+| 2 · accesos `test.R` y `test.D` | hecha | `database/fixtures/design-system-ci.sql` |
+| 3 · semana vacía de Da Porto | hecha | `resolveEmptyWeek()` en el spec |
+| 4 · las cuatro pruebas que escriben | hecha, por otra vía | ver abajo |
+| 5 · gate propio en CI | hecha | `semanal-roles-phases`, noveno gate del índice |
+| 6 · cierre e ingest | hecha | trampa marcada `estado: derogada` |
+
+**La Task 4 no se hizo como estaba escrita, y está bien así.** El plan pedía borrar los
+`test.skip(!MUTACION_HABILITADA, …)` y a la vez que en desarrollo esas cuatro siguieran saltándose:
+se contradecía. El código conservó el guard, que es lo único que cumple las dos mitades — borrarlo
+no las habría habilitado en desarrollo, las habría dejado fallar ahí.
+
+**La condición de hecho decía «14 en verde y 0 `skip`»; la real es 15 y 15.** El spec declara hoy
+quince casos: cuatro del bucle de roles (`ROLE_CASES`) más once sueltos. Los dos de tabla en tablet
+llegaron a estar saltados en firme por el retiro de esa tabla, y volvieron al gate cuando E3 cerró
+ese hueco. Hoy no queda ninguno saltado.
+
+**Aviso a quien lea esta sección por el historial:** entre el 14 y el 18 de agosto este bloque llegó
+a decir que las Tasks 4 y 5 estaban descartadas y que lo alcanzable era «13 verdes y 2 saltadas».
+Era cierto cuando se escribió y dejó de serlo mientras se escribía, porque otra sesión cerró la
+Task 5 y devolvió los dos casos de tablet en paralelo. Lo detectó la re-verificación posterior a
+integrar `origin/main`, que es exactamente para lo que existe ese paso del gate de cierre.
+
+---
+
 ## Antes de empezar: levantar el stack aislado
 
 El plan entero se verifica ahí, así que esto se hace una vez y se deja arriba. Las cuatro variables
