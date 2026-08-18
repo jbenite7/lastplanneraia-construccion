@@ -275,6 +275,25 @@ justifican el desplegable de sobra, aunque la edición haya salido de él.
 1.5:1 en móvil) no se ataca por separado. Elegir qué es lo esencial es exactamente lo que dice a
 qué darle el tamaño mayor, así que la escala se ajusta al implementar esta tarjeta, no antes.
 
+### Medición final contra la estimación
+
+Medido tras la Task 7 (2026-08-14), en `390x844`, tarjeta cerrada:
+
+| Tarjeta | Estimación | Real | Desviación |
+|---|---|---|---|
+| Semanal | ≈325 px | **360 px** | +10,8% |
+| Intermedia | ≈275 px | **269 px** | -2,2% |
+
+Semanal se desvía por encima del 10% de la estimación (aunque queda cómodamente bajo el
+umbral de 380 px fijado en el plan); Intermedia queda dentro del margen. La estimación de
+Semanal falló porque **se calculó sumando los bloques de contenido (header, barra, foco,
+responsable) sin contar el espaciado entre ellos** — márgenes, paddings y gaps entre bloques,
+que en la primera implementación (antes de apretar el espaciado) resultaron ser el mayor
+consumidor de altura: 138 px de los 521 px iniciales, más que cualquier bloque de contenido
+individual. Apretar ese espaciado —no recortar contenido— fue lo que bajó la tarjeta de 521 a
+360 px. La lección para la próxima estimación por composición: el espaciado entre bloques no es
+un residuo del cálculo, hay que presupuestarlo explícitamente, no descontarlo del total.
+
 ## Pruebas
 
 **Sin navegador (TDD, `node --test`):**

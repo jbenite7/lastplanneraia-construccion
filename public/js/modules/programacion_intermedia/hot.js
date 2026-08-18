@@ -4549,8 +4549,10 @@
       updateLegendCounts(filtered);
     }
     // E4 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md): bajo el
-    // umbral no se instancia Handsontable. Las cards de Intermedia son de
-    // solo lectura (createMobileCard/getStateView no dependen de
+    // umbral no se instancia Handsontable. Las cards de Intermedia SI editan
+    // restricciones (ver renderMobileEditableMetric/renderMobileRealMetric),
+    // pero lo hacen contra la misma capa de guardado que usa la tarjeta
+    // desktop (createMobileCard/getStateView no dependen de
     // buildRowClassCache ni de ninguna otra cosa que updateOrInitHot deje de
     // correr), asi que no hace falta un camino de guardado alterno como en
     // Semanal.
