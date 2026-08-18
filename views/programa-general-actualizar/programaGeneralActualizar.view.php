@@ -21,7 +21,7 @@
 
 	<!-- TomSelect CSS -->
 	<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap4.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260314" />
+	<link rel="stylesheet" href="/css/tom-select-premium-aia.css?v=20260818dark3" />
 
 	<link rel="stylesheet" href="/css/handsontable-header-global.css?v=20260313" />
 	<script>

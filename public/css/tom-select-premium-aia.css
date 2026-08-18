@@ -15,28 +15,60 @@
 @layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
 
 @layer vendor {
+  /* Respaldo OPACO del panel flotante.
+     Antes era `transparent`, y por eso el editor no acababa de leerse como un
+     panel: las superficies interiores son translucidas (alfa 0.86), asi que sin
+     respaldo la grilla se transparentaba a traves de ellas. Es el mismo remedio
+     que ya documenta `components/dialog.css` para el dialogo no modal, y por la
+     misma razon: aqui tampoco hay backdrop que aisle. */
   .htTomSelectWrapper {
-    background: transparent !important;
+    background: var(--ds-active-bg-canvas) !important;
     border: none !important;
+    border-radius: var(--ds-radius-sm) !important;
     z-index: var(--ds-z-modal) !important;
     box-shadow: var(--ds-shadow-lg) !important;
     pointer-events: auto !important;
     font-family: var(--ds-font-body) !important;
   }
 
-  /* Input & Control Area */
+  /* Input & Control Area
+     Va en `surface-raised`, no en `bg-canvas`: `bg-canvas` es el SUELO de la
+     pagina, y pintar con el una ventana que flota sobre la tabla la hacia leer
+     como un agujero en la grilla en vez de como un panel por encima. La
+     elevacion la da la superficie, igual que en modales y drawer. */
   .htTomSelectWrapper .ts-control {
-    background: var(--ds-active-bg-canvas) !important;
+    background: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
     border: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
     border-bottom: none !important;
     border-radius: var(--ds-radius-sm) var(--ds-radius-sm) 0 0 !important;
-    min-height: 36px !important;
+    min-height: var(--ds-control-compact-min) !important;
     padding: var(--ds-space-1) var(--ds-space-2) !important;
     display: flex !important;
     flex-wrap: wrap !important;
     gap: var(--ds-space-1) !important;
     box-sizing: border-box !important;
     transition: border-color var(--ds-motion-fast);
+  }
+
+  /* Lo que se teclea en el buscador.
+     Sin esta regla el texto lo pintaba el skin de Bootstrap con su gris oscuro
+     de formulario, que sobre la superficie oscura da **1,67:1** —medido el
+     2026-08-18—: se escribia a ciegas. El piso es 4,5:1 (AA) y no admite
+     excepcion, porque es el dato que la persona esta introduciendo.
+     (El valor exacto no se cita: el audit del design system cuenta los hex
+     tambien dentro de los comentarios, y esta hoja tiene presupuesto cero.) */
+  .htTomSelectWrapper .ts-control input {
+    background: transparent !important;
+    color: var(--ds-active-text-primary) !important;
+    caret-color: var(--ds-active-domain-construction) !important;
+    font-family: var(--ds-font-body) !important;
+    font-size: var(--ds-table-cell-font-size) !important;
+  }
+
+  .htTomSelectWrapper .ts-control input::placeholder {
+    color: var(--ds-active-text-secondary) !important;
+    opacity: 1 !important;
   }
 
   /* Selected Item Chips */
@@ -65,9 +97,9 @@
     padding-left: var(--ds-space-1) !important;
   }
 
-  /* Dropdown UI */
+  /* Dropdown UI — misma superficie elevada que el control, por lo mismo. */
   .htTomSelectWrapper .ts-dropdown {
-    background: var(--ds-active-bg-canvas) !important;
+    background: var(--ds-active-surface-raised) !important;
     border: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
     border-top: none !important;
     border-radius: 0 0 var(--ds-radius-sm) var(--ds-radius-sm) !important;
@@ -95,10 +127,22 @@
        propio gris claro y la opción no seleccionada se ve más clara que el
        desplegable que la contiene. */
     background: transparent !important;
-    font-size: var(--ds-type-size-sm) !important;
+    /* El cuerpo de la familia de tablas densas (13px), que es lo que edita este
+       desplegable: con `--ds-type-size-sm` (14px) el texto de la lista salía más
+       grande que el de la celda que estaba modificando. */
+    font-size: var(--ds-table-cell-font-size) !important;
     line-height: var(--ds-type-line-body) !important;
     color: var(--ds-active-text-primary) !important;
-    border-bottom: var(--ds-border-width) solid var(--ds-active-border) !important;
+    /* El token de SEPARADOR por su nombre, y no el ambiental `--ds-active-border`.
+       Trampa medida el 2026-08-18: cada opción de Tom Select lleva
+       `role="option"`, que está en la lista de CONTROLES de
+       `design-system/core.css:76`, así que dentro de ella `--ds-active-border`
+       se resuelve a `--ds-active-border-control` —alfa 0,4 en vez de 0,22—.
+       Ese valor es correcto para el CONTORNO de un control, pero aquí se estaba
+       usando para la línea entre filas de una lista, y sobre superficie oscura
+       la rejilla resultante competía con el texto. La regla era mía y la única
+       que pintaba ese borde: lo que fallaba era el token pedido, no la cascada. */
+    border-bottom: var(--ds-border-width) solid var(--ds-color-border-separator-dark) !important;
     transition: background var(--ds-motion-fast) !important;
     white-space: normal !important;
     word-break: break-word !important;
