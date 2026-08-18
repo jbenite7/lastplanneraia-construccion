@@ -141,6 +141,41 @@ class LoginController
         exit();
     }
 
+    /**
+     * Abandonar el cambio obligatorio de contraseña y volver al formulario de login.
+     *
+     * La sesión pendiente (`usuario_temp` + `must_change_password`) es previa a la
+     * autenticación completa, así que descartarla entera es lo seguro. Si no hay cambio
+     * pendiente no toca nada: así esta ruta pública no sirve para cerrarle la sesión a un
+     * usuario ya autenticado desde fuera.
+     */
+    public function cancelPasswordChange()
+    {
+        $redirectUrl = '/login';
+
+        if (!empty($_SESSION['must_change_password'])) {
+            $usuario = $_SESSION['usuario_temp'] ?? $_SESSION['usuario'] ?? 'desconocido';
+
+            if (method_exists($this->db, 'logActivity')) {
+                $this->db->logActivity('Login', 'CAMBIO_CLAVE_CANCELADO', "Usuario $usuario abandonó el cambio obligatorio de contraseña.");
+            }
+
+            $maintenanceActive = MaintenanceMode::isActive();
+
+            session_unset();
+            session_destroy();
+
+            // Durante mantenimiento, /login muestra la página de mantenimiento: devolver al
+            // usuario a la ruta oculta, que sí está exenta y vuelve a mostrar el formulario.
+            if ($maintenanceActive) {
+                $redirectUrl = MaintenanceMode::SECRET_PATH;
+            }
+        }
+
+        header("Location: {$redirectUrl}");
+        exit();
+    }
+
     // Método iniciarSesion eliminado ya que la lógica se movió a ProjectSelectorController::select()
 
     /**

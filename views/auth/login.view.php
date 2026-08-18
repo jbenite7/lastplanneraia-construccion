@@ -144,8 +144,13 @@ $(document).ready(function() {
         },
         buttonsStyling: false,
         allowOutsideClick: false,
+        // Escape sigue desactivado: en esta version de SweetAlert2 (11.4.24) no dispara el
+        // cierre ni con el flag activo — comprobado en el navegador — y la salida real es el
+        // boton explicito, que ademas evita descartar el formulario por un Escape accidental.
         allowEscapeKey: false,
         confirmButtonText: 'Actualizar y Acceder',
+        showCancelButton: true,
+        cancelButtonText: 'Volver al inicio de sesión',
         showLoaderOnConfirm: true,
         preConfirm: () => {
             const password = document.getElementById('new_password').value;
@@ -185,6 +190,13 @@ $(document).ready(function() {
             });
         }
     }).then((result) => {
+        if (result.dismiss) {
+            // Sin esto el modal es una trampa: la sesión pendiente lo vuelve a abrir en cada
+            // recarga y /logout no la limpia porque exige sesión completa.
+            window.location.href = '/login/cancelar';
+            return;
+        }
+
         if (result.isConfirmed && result.value.success) {
             AIA.Notice.success(result.value.message).then(() => {
                 window.location.href = '/proyectos';

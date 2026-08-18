@@ -43,7 +43,7 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
 }
 
 // 3.5 Verificar Sesión y Timeout (Protección Universal)
-$publicRoutes = ['/', '/login', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
+$publicRoutes = ['/', '/login', '/login/cancelar', '/password/forgot', '/password/reset', '/password/update', '/runtime/frontend-config.js', '/runtime/css/aia-design-system.css', '/runtime/css/design-system/lab-entrypoint.css', '/runtime/css/design-system/entrypoints/core.css', '/runtime/css/design-system/entrypoints/attach-jquery-ui.css', '/runtime/css/design-system/entrypoints/attach-anychart.css', '/runtime/css/design-system/entrypoints/attach-select2.css', '/runtime/css/design-system/entrypoints/attach-sweetalert2.css', '/runtime/css/design-system/entrypoints/attach-handsontable.css', MaintenanceMode::SECRET_PATH];
 
 // Puerta de servicio de desarrollo: solo existe si el candado triple lo permite
 // (APP_ENV development/testing + petición local + DEV_DOOR=1). Ver src/Core/DevDoor.php.
@@ -95,6 +95,7 @@ $router->post('/password/forgot', [\App\Controllers\Auth\PasswordResetController
 $router->get('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'reset']);
 $router->post('/password/reset', [\App\Controllers\Auth\PasswordResetController::class, 'update']);
 $router->post('/password/update', [\App\Controllers\Auth\LoginController::class, 'updatePassword']);
+$router->get('/login/cancelar', [\App\Controllers\Auth\LoginController::class, 'cancelPasswordChange']);
 $router->get('/logout', [\App\Controllers\Auth\LoginController::class, 'logout']);
 
 // Project Selector (Phase 2)
