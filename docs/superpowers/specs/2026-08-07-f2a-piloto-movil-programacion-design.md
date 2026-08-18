@@ -240,6 +240,28 @@ escucha. Publicarlo es exponer dato existente, no producirlo.
    cuya máquina de estados tiene nombre propio y por eso el chip conserva su color como portador del
    estado.
 
+**E2-bis-e (2026-08-14) — el contador cuenta las cinco duras, en los dos módulos.** Al poner las dos
+tarjetas juntas apareció que `N pend.` (Semanal) y `N de 7` (Intermedia) no medían lo mismo. La
+investigación mostró que **la asimetría no era entre módulos sino dentro de Intermedia**:
+`stateMachine.js:150-159` — `isReadyToCommit()` recorre **solo** `getHardRestrictions()`, así que el
+estado «listo para comprometer» lo deciden las duras, igual que en Semanal
+(`getConfigRestrictions()`, `hot.js:633-650`, lee `hardRestrictions`). El contador «3 de 7» que
+proponía la maqueta habría mostrado **un número que no es el que determina el estado de su propia
+tarjeta**: podría leerse «faltan 2» en una actividad que sí se puede comprometer.
+
+**Decisión: el chip cuenta las cinco duras** (Diseños y Especificaciones, Materiales, Mano de Obra,
+Equipos y Herramienta, Actividad Predecesora). Las dos blandas —Procedimiento Constructivo y
+Modelación BIM— **siguen visibles y editables en el desplegable**, con su valor; dejan de contar
+como bloqueo, que es lo que el código ya hace. Razón: el chip responde «¿puedo comprometer esto?»,
+y eso lo deciden las duras.
+
+**Tensión que esto deja escrita, no resuelta:** `GLOSARIO.md:47` define la liberación de
+restricciones como «asegurar la disponibilidad de los **7** recursos previos» — el vocabulario de
+obra cuenta siete y el código bloquea con cinco. La tarjeta sigue al código porque es lo que
+determina si se puede comprometer, pero **la discrepancia entre el glosario y el comportamiento es
+real y precede a este trabajo**. Si el criterio de obra es que las siete bloquean, lo que hay que
+cambiar es `isReadyToCommit()`, no el contador de la tarjeta.
+
 **Consecuencia declarada, no disimulada:** ampliar la cara visible reduce el ahorro. La estimación
 por composición es **280-320 px** por tarjeta frente a los 562 actuales —de 1,5 a unas 2,8 tarjetas
 por pantalla—, no los 120-150 px que daría el modelo A estricto. Es estimación, no medición: se
