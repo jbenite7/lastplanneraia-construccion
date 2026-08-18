@@ -14,11 +14,13 @@ en `decisiones/<frente>.md` (sin versionar) y en cada `goals/<slug>/goal.md`.
 
 ## Primero, antes de ejecutar todo lo demás (orden del usuario, 2026-08-18)
 
-1. **Fase 0 — mudanza del repositorio** (repo + control de versiones + contenedores) fuera del
-   SSD externo. Destino propuesto por el usuario: `CloudDocs/Dev/lps-aia` (iCloud). Advertido el
-   riesgo de `.git` bajo sync de iCloud; falta que el usuario confirme destino (iCloud / interno
-   `~/Developer` / híbrido). La base de datos no se mueve: vive en el volumen Docker
-   `htdocs_db_data`. Tras mover: `git worktree repair`, `LPS_CODE_ROOT`, re-crear chips.
+1. **Fase 0 — mudanza del repositorio: HECHA (2026-08-18).** El repo vive en
+   `/Users/felipebenitez/Developer/lps-aia` (interno, elegido por el usuario tras descartar
+   iCloud por el riesgo de `.git` bajo sync). Copia verificada (fsck limpio, status idéntico,
+   2.7G), 6 worktrees reparados, montaje Docker actualizado, web 200, PHP 24/24, estática y wiki
+   en verde. El original quedó como respaldo en
+   `/Volumes/Crucial X6/Developer/lps-aia.pre-mudanza-2026-08-18` (borrarlo es decisión aparte).
+   La base de datos no se movió: vive en el volumen Docker `htdocs_db_data`.
 2. **Fase 0b — replanteo completo de la wiki** (metodología Karpathy intacta, Obsidian visual,
    todo el vault etiquetado). Decidido el 2026-08-18: **con plugins de comunidad** y **frontmatter
    en todas las fuentes** (solo metadato; el cuerpo sigue intocable). Spec y plan **al gate**:
