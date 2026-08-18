@@ -25,6 +25,13 @@ export APP_URL=http://127.0.0.1:18081 E2E_BASE_URL=http://127.0.0.1:18081
 export E2E_REQUIRE_ISOLATED_DB=1 E2E_ALLOW_DB_MUTATION=design-system-ci
 ```
 
+**Esperar a la base, no a la app.** `curl /login` responde 200 sin tocar la base, y el healthcheck
+de `db` se pone verde contra el servidor temporal con el que MySQL carga las semillas: hay una
+ventana de ~8 s en la que `app` ya está arriba y la base no. Medido el 2026-08-18 — el primer
+recibo del gate salió rojo con 13 de 13 casos caídos en 8.072 ms, y el segundo pasó sin cambiar
+nada. Antes de medir, preguntarle a la base por un dato que solo existe tras las semillas
+(ver [[el-healthcheck-de-db-responde-al-servidor-temporal]]).
+
 La imagen de `db` **se construye desde el fixture** (`database/fixtures/design-system-ci.Dockerfile`),
 así que cada vez que cambie el `.sql` hay que reconstruirla: `docker compose ... up -d --build db`.
 Editar el `.sql` y reusar el contenedor es la vía rápida a medir el fixture viejo — el mismo error
