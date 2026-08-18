@@ -3021,6 +3021,9 @@
   }
 
   function revertCell(visualRow, prop, oldValue) {
+    if (!hot) {
+      return;
+    }
     var col = hot.propToCol(prop);
     if (col >= 0) {
       hot.setDataAtCell(visualRow, col, oldValue, 'revert');
@@ -3030,8 +3033,13 @@
   function saveRow(visualRow, prop, oldValue) {
     var db = getDb();
     var semana = getSemana();
-    var row = getSourceRowDataByVisualRow(hot, visualRow);
-    var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
+    // Sin grilla montada (E4), `visualRow` es el indice dentro de
+    // `visibleRows`, que es la misma fuente que usa renderMobileCards() para
+    // pintar esa card: sin una segunda verdad. `getSourceRowDataByVisualRow`/
+    // `getPhysicalRowFromVisualRow` ya devuelven null sin instancia, pero eso
+    // dejaba `row` vacio y el payload invalido en cada guardado movil.
+    var row = hot ? getSourceRowDataByVisualRow(hot, visualRow) : (visibleRows[visualRow] || null);
+    var physicalRow = hot ? getPhysicalRowFromVisualRow(hot, visualRow) : null;
 
     var payload = buildPayload(row || {});
     if (!payload.valid) {
@@ -3065,13 +3073,17 @@
             if (response.estado_restricciones !== undefined && response.estado_restricciones !== null && response.estado_restricciones !== '') {
               row.Estado_Restricciones = response.estado_restricciones;
               invalidatePIRowCache(physicalRow, row);
-              hot.setDataAtRowProp(visualRow, 'Estado_Restricciones', response.estado_restricciones, 'internal-update');
+              if (hot) {
+                hot.setDataAtRowProp(visualRow, 'Estado_Restricciones', response.estado_restricciones, 'internal-update');
+              }
             }
 
             if (response.semanas_inicio !== undefined && response.semanas_inicio !== null && response.semanas_inicio !== '') {
               row.Semanas_Inicio = response.semanas_inicio;
               invalidatePIRowCache(physicalRow, row);
-              hot.setDataAtRowProp(visualRow, 'Semanas_Inicio', response.semanas_inicio, 'internal-update');
+              if (hot) {
+                hot.setDataAtRowProp(visualRow, 'Semanas_Inicio', response.semanas_inicio, 'internal-update');
+              }
             }
 
             if (response.estado !== undefined && response.estado !== null && response.estado !== '') {
@@ -3081,7 +3093,9 @@
 
             row.estado_operativo = getStateDisplay(row);
             invalidatePIRowCache(physicalRow, row);
-            hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
+            if (hot) {
+              hot.setDataAtRowProp(visualRow, 'estado_operativo', row.estado_operativo, 'internal-update');
+            }
             refreshCellMetaForVisualRow(visualRow);
           }
         } finally {
@@ -3090,11 +3104,15 @@
           }
         }
 
-        hot.render();
+        if (hot) {
+          hot.render();
 
-        var fp = hot.getPlugin('filters');
-        if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
-            fp.filter();
+          var fp = hot.getPlugin('filters');
+          if (fp && fp.isEnabled() && fp.conditionCollection && typeof fp.conditionCollection.isEmpty === 'function' && !fp.conditionCollection.isEmpty()) {
+              fp.filter();
+          }
+        } else {
+          renderMobileCards(visibleRows);
         }
 
         if (savedViewport) {
@@ -4481,6 +4499,26 @@
     container.replaceChildren();
     if (!isMobile) {
       return;
+    }
+
+    // Un solo listener delegado en el contenedor, enganchado una vez: esta
+    // funcion se llama en cada filtro y repinta todas las tarjetas, asi que
+    // engancharlo por control multiplicaria los listeners en cada repintado
+    // (el mismo fallo que ya tuvieron las tarjetas de CNP).
+    if (!container.dataset.piRestriccionBound) {
+      container.addEventListener('change', function (evento) {
+        var control = evento.target.closest('[data-pi-restriccion]');
+        if (!control || control.disabled) return;
+        var visualRow = Number(control.dataset.rowIndex);
+        var prop = control.dataset.piRestriccion;
+        if (!Number.isInteger(visualRow) || !prop) return;
+        var fila = visibleRows[visualRow];
+        if (!fila) return;
+        var anterior = fila[prop];
+        fila[prop] = control.value;
+        saveRow(visualRow, prop, anterior);
+      }, false);
+      container.dataset.piRestriccionBound = 'true';
     }
 
     var items = Array.isArray(rows) ? rows : [];
