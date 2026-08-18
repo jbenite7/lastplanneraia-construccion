@@ -26,7 +26,13 @@ for (const view of views) {
   assert.match(view, /data-loading-text=/);
 }
 
-assert.equal((login.match(/AiaAlertInterceptor\.js/g) || []).length, 1);
+// Cuenta cargas reales del script, no menciones del nombre: el comentario PHP de la
+// vista cita `AiaAlertInterceptor.js` al documentar por que jQuery sigue siendo local.
+assert.equal(
+  (login.match(/<script\b[^>]*\bsrc=["'][^"']*AiaAlertInterceptor\.js/g) || []).length,
+  1,
+  'login.view.php must load AiaAlertInterceptor.js exactly once',
+);
 assert.doesNotMatch(login, /oncontextmenu/);
 assert.match(login, /data-password-toggle="password"/);
 assert.match(reset, /data-password-toggle="password"/);
