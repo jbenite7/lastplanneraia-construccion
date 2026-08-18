@@ -76,8 +76,21 @@ cierre es lo que se publica.
    archivos que el frente había editado. Ninguno de los dos lo detectó quien hizo el trabajo: los
    detectó la verificación posterior a la integración. **Anota el SHA que verificas**
    (`git rev-parse HEAD`): es el que debes publicar, y el paso 7 lo compara.
-6. **Publicar el commit exacto que verificaste, en un comando aparte**, desde tu worktree:
-   `git push origin HEAD:main`. Dos reglas, cada una con su medida detrás:
+6. **Publicar el commit exacto que verificaste, en un comando aparte**, desde tu worktree.
+
+   **Desde el 2026-08-18 la forma obligatoria es `bash scripts/publicar.sh`** (decisión del usuario,
+   D-COORD-3). El script hace los pasos 5, 6 y parte del 3: verifica, lee cada código de salida **en
+   su propia línea**, comprueba que no haya commits entrantes ni árbol sucio, y **solo entonces**
+   publica con `HEAD:main`. Deniega con `RC=1`. Se obliga porque las dos reglas de abajo llevaban tres
+   jornadas incumpliéndose por sesiones distintas: mientras el gate viva solo en esta prosa, se salta
+   sin querer. Lo que el script **no** hace, a propósito: no instala nada en `.git/hooks` ni toca
+   `core.hooksPath`, así que no cambia el entorno de quien clone el repo — es un comando que se
+   invoca, y por eso esta línea existe.
+
+   `git push origin HEAD:main` a mano sigue siendo válido cuando el script no aplique (por ejemplo,
+   un repo sin sus dependencias instaladas), y entonces las dos reglas de abajo se cumplen a pulso:
+
+   Dos reglas, cada una con su medida detrás:
    - **Nunca encadenado al paso 5** con `&&`, `;` ni detrás de un `echo`: un gate solo gobierna si
      puede **impedir** la publicación, y encadenado ya se ejecutó. Lee el código de salida de la
      verificación —sin tubería, que `$?` sería del último tramo, y en zsh `PIPESTATUS` no existe:

@@ -13,6 +13,21 @@
 set -u  # -e NO: aqui se leen codigos de salida a proposito, uno por uno.
 
 cd "$(dirname "$0")/.." || exit 2
+
+# Aislar el entorno de verificacion al arbol de ESTE worktree. Sin esto, el gate
+# miente del lado peligroso: `docker-compose.yml` fija `name: last-planner-aia`, asi
+# que `docker compose exec app` de cualquier worktree aterriza en el contenedor
+# compartido, y `docker-compose.override.yml` lo monta desde
+# `${LPS_CODE_ROOT:-<checkout principal>}`. Resultado medido el 2026-08-18: este
+# script dio los tres verdes desde un worktree en `06627082` mientras el contenedor
+# servia el principal en `081a33c8` -commits distintos-. Un gate obligatorio que
+# avala con evidencia de otro arbol es peor que no tener gate.
+# Hacen falta las DOS variables: el nombre resuelve a que contenedor vas, la ruta
+# resuelve que arbol monta. Ver
+# memoria/trampas/suite-estatica-miente-en-worktree-secundario.md
+export LPS_CODE_ROOT="$PWD"
+export COMPOSE_PROJECT_NAME="lps-aia-publicar-$(git rev-parse --short HEAD)"
+
 solo_verificar=0
 [ "${1:-}" = "--solo-verificar" ] && solo_verificar=1
 
@@ -75,4 +90,10 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 echo "Publicando…"
-git push origin main
+# `HEAD:main`, no `main`: publica el SHA que se acaba de verificar y nada mas. Con
+# `git push origin main` se publica a donde apunte `main` en el instante del push, y
+# `main` es estado compartido — el 2026-08-18 otra sesion fusiono su rama entre una
+# verificacion y su push, y el push se llevo dos commits ajenos que ninguna
+# verificacion habia tocado. Es la regla del paso 6 de AGENTS.md, que este script
+# incumplia en su ultima linea mientras existia para hacerla cumplir.
+git push origin HEAD:main

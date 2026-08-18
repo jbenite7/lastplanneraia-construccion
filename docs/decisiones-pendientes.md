@@ -1208,7 +1208,14 @@ por costumbre.
   propósito. **Dos colas es cómo se pierde una decisión**, y una de las dos además es invisible para
   git. Pero `(c)` toca el andamiaje del plugin, que es otro repositorio y otro mando.
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada por esto.
-- **Estado:** `abierta`
+- **Estado:** `resuelta 2026-08-18: decidido versionarlas`
+
+**Cierre, 2026-08-18.** El usuario decidió que `decisiones/` sale del `.gitignore`. El motivo que
+pesó no es el respaldo de los 16 archivos, sino que un choque entre sesiones pasa a ser un conflicto
+**visible** en vez de trabajo que desaparece sin rastro. El precio aceptado es duplicar esta cola
+canónica. Revisados antes de subirlos: ninguno lleva secretos —las únicas coincidencias son nombres
+de cuentas de prueba y de variables que ya viajan en `docker-compose.ci.yml`—. La negación
+`!memoria/decisiones/` se conserva por si el patrón sin ancla vuelve.
 
 ### D-COORD-2 · El mapa de estado devuelve 40 filas y ningún dato dentro
 
@@ -1295,7 +1302,16 @@ nota. Pero el defecto de fondo sigue, y ya no hay que buscarlo:
   registrado**: ni `decisiones/` ni los `goals/` mencionan el problema de la variante del encabezado.
 
 - **Qué quedó saltado esperando:** nada. Ninguna sesión está bloqueada.
-- **Estado:** `abierta` — con la causa raíz ya medida; lo que falta es tu sí/no a (b)+(a) y que
+- **Estado:** `resuelta 2026-08-18: retirado como fuente en este repo`
+
+**Cierre, 2026-08-18.** El usuario decidió **retirarlo como fuente aquí**. No se normalizan los 20
+encabezados de este repo —sería doblar archivos fuente ante la rigidez de un instrumento ajeno— y no
+se arregla desde aquí, porque el script vive en otro repositorio. Comprobado al cerrar: **ningún
+documento operativo de este repo lo cita como fuente**; solo aparece en esta ficha y en el informe de
+traspaso `docs/reportes/2026-08-14-hallazgo-cas-estado-encabezado-cierre.md`, que queda listo con el
+diagnóstico y el orden de los dos arreglos (primero el código de salida distinto de cero, después el
+prefijo; al revés, el arreglo sería indistinguible de un fallo silencioso). Si alguien vuelve a
+proponerlo como fuente de estado, esta decisión es la respuesta.
   alguien lo lleve al otro repo.
 
 ### D-GAC-4 · El gate `runtime` tiene un recibo verde que solo vale en la máquina que lo midió
@@ -1608,9 +1624,40 @@ es meter verificación y publicación en la misma línea, y ninguna cantidad de 
   - **Lo que NO hace, y es deliberado:** no toca `core.hooksPath` ni instala nada en `.git/hooks`.
     Eso cambiaría el entorno de quien clone el repo sin que lo haya pedido. Es un script que se
     invoca, no una trampa que se dispara sola — y por eso sigue dependiendo de que alguien lo use.
-- **Estado:** `abierta` — queda **una** cosa por decidir: cuándo se hace el pase de veracidad, y si
-  `scripts/publicar.sh` pasa a ser obligatorio para las sesiones (o incluso un `pre-push` de verdad,
-  que ya sí cambiaría el entorno y por eso no lo hago por mi cuenta).
+- **Estado:** `resuelta 2026-08-18: pase hecho y publicar.sh obligatorio`
+
+**Cierre, 2026-08-18, las dos mitades.**
+
+**La primera, hecha:** el décimo pase de veracidad se ejecutó ese día sobre `424e45b2` —áreas
+`design-system`, `qa`, `proceso`, `deploy` y las cuatro más quietas—, con 7 páginas corregidas. La
+alarma quedó en 0 commits. Detalle en `memoria/log.md`.
+
+**La segunda, decidida por el usuario:** `scripts/publicar.sh` pasa a ser **obligatorio para las
+sesiones**, declarado en `AGENTS.md` §Publicación paso 6. **No** se instala un `pre-push`: eso
+cambiaría el entorno de quien clone el repo, y se descartó a propósito.
+
+**Al declararlo obligatorio aparecieron dos defectos del propio script, y los dos se arreglaron
+antes:**
+
+1. **Su última línea era `git push origin main`** — exactamente lo que el paso 6 prohíbe desde el
+   mismo 2026-08-18. El script que existía para hacer cumplir la regla la incumplía. Ahora publica
+   `HEAD:main`.
+2. **Verificaba el árbol de otra sesión.** `docker-compose.yml` fija `name: last-planner-aia` y el
+   override monta desde `${LPS_CODE_ROOT:-<checkout principal>}`, así que desde un worktree las
+   comprobaciones se medían contra el contenedor compartido. **Medido:** dio los tres verdes desde un
+   worktree en `06627082` mientras el contenedor servía el principal en `081a33c8`, commits distintos.
+   Falla del lado peligroso —avala en vez de bloquear—, que en un gate obligatorio es peor que no
+   tener gate. Ahora exporta `LPS_CODE_ROOT` y un `COMPOSE_PROJECT_NAME` propio; comprobado que tras
+   el arreglo el conteo de violaciones del audit responde al árbol local (4078 → 4081 al mutarlo).
+
+**Entregado con su mutación, ejecutada**, como exige la regla del repo: con el árbol sucio →
+`DENEGADO`, `RC=1` leído sin tubería.
+
+**Laguna anotada, no cerrada aquí:** la mutación de CSS que se usó para la prueba —un hex crudo con
+`!important` en un adaptador— **no tumbó el gate estático**, porque `docs/design-system/audit-baseline.json`
+tolera `totalViolations: 7161` y el código va por 4081: hay ~3.080 violaciones nuevas de margen antes
+de que el audit bloquee. Es una baseline congelada muy por encima del estado real, y merece frente
+propio.
 
 ## Resueltas
 
