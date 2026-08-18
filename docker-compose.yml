@@ -12,9 +12,13 @@ services:
       APP_ENV: ${APP_ENV:-development}
       DB_HOST: ${DOCKER_APP_DB_HOST:-db}
       DB_PORT: ${DOCKER_APP_DB_PORT:-3306}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
+      # DB_NAME, DB_USER y DB_PASS NO se inyectan aqui a proposito. Se inyectaban con
+      # `${DB_NAME}` y compania, sin valor por defecto, asi que al ejecutar compose desde un
+      # worktree —que no tiene .env— llegaban como cadena VACIA. Y una variable vacia cuenta como
+      # "ya definida": `Dotenv::createImmutable()` no la sobrescribe, de modo que la app se quedaba
+      # sin credenciales aunque el .env estuviera montado y correcto. Comprobado el 2026-08-18.
+      # Ahora las lee del .env montado, igual que ya hacia con las MAIL_*. DB_HOST y DB_PORT si se
+      # quedan: son topologia del contenedor, tienen defecto literal y no pueden salir vacias.
       USE_GLOBAL_TABLES: "true"
     restart: unless-stopped
 
