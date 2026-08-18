@@ -1853,13 +1853,29 @@
     return baseHiddenColumns.slice();
   }
 
+  /*
+   * El corte entre grilla y tarjetas lo decide `AIAViewSwitch`, que es la misma
+   * pieza que consumen Semanal e Intermedia. Hasta el 2026-08-18 este modulo
+   * guardaba su propia copia -`width < 700`- mientras el CSS escondia la grilla
+   * desde `max-width: 1179px` (`handsontable-module.css:324`), asi que entre 700
+   * y 1179 px no enseñaba tabla, ni tarjetas, ni el aviso de vacio: la pantalla
+   * quedaba en blanco (hallazgo TB-8, con la frontera medida al pixel). Un umbral
+   * que existe por triplicado no coincide consigo mismo; este era el tercer sitio.
+   *
+   * Sin el modulo cargado se responde `false` -grilla-, que es el mismo repliegue
+   * seguro que ya hacen los otros dos consumidores.
+   */
   function isMobileGridViewport() {
+    if (!window.AIAViewSwitch || typeof window.AIAViewSwitch.shouldRenderCards !== 'function') {
+      return false;
+    }
+
     var width = Math.max(
       window.innerWidth || 0,
       (document.documentElement && document.documentElement.clientWidth) || 0
     );
 
-    return width > 0 && width < 700;
+    return window.AIAViewSwitch.shouldRenderCards(width) === true;
   }
 
   function syncResponsiveModeClasses() {

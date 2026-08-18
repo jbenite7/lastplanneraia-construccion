@@ -140,6 +140,8 @@
     </script>
     <?php endif; ?>
     <script src="/js/core/SessionExpiredHandler.js?v=20260811a"></script>
+    <?php $pgViewSwitchVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/aia_ui/view-switch.js') ?: 'vs1'; ?>
+    <script type="module" src="/js/modules/aia_ui/view-switch.js?v=<?php echo urlencode((string) $pgViewSwitchVersion); ?>"></script>
     <?php $pgHotVersion = @filemtime(dirname(__DIR__, 2) . '/public/js/modules/programa_general/hot.js') ?: 'hot14'; ?>
     <script src="/js/modules/programa_general/hot.js?v=<?php echo urlencode((string) $pgHotVersion); ?>"></script>
     <script>
