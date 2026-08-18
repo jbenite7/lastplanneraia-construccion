@@ -27,6 +27,38 @@
     window.dispatchEvent(event);
   }
 
+  /**
+   * Ancho FISICO de la pantalla, en px de dispositivo.
+   *
+   * Es la magnitud contra la que se decide, y no `innerWidth`: el escalado de
+   * abajo infla el ancho CSS un 17,6 %, asi que medir el corte contra el CSS es
+   * medirlo contra un numero que este mismo archivo acaba de inventar. Medido el
+   * 2026-08-18 (hallazgo TB-1): un iPad Pro de 1024 px reportaba 1204 px CSS y
+   * caia del lado de escritorio del umbral, recibiendo la grilla justo en el
+   * aparato para el que se hicieron las tarjetas.
+   */
+  function anchoFisico() {
+    var ancho = (window.screen && window.screen.width) || 0;
+    return ancho > 0 ? ancho : getViewportWidth();
+  }
+
+  /**
+   * El escalado solo se aplica donde hay una grilla que encoger.
+   *
+   * Por debajo del umbral la pantalla recibe tarjetas, no tabla: ahi el 0.85 no
+   * hace caber nada, solo desplaza el ancho CSS por encima del corte y arrastra
+   * consigo el contrato tactil (TB-3), el desbordamiento sub-pixel de los anchos
+   * impares (TB-4) y el texto de 11,52 px dibujado a ~9,8 (TB-5). Dejando el
+   * viewport a escala 1 en ese tramo, el ancho CSS vuelve a ser el fisico y las
+   * media queries de `1179px` deciden lo mismo que el JS sin tener que
+   * duplicar la regla en cada hoja de estilo.
+   */
+  function debeEscalarViewport(ancho) {
+    var medido = Number(ancho);
+    if (!isFinite(medido)) return false;
+    return medido >= TABLET_WIDTH_MAX;
+  }
+
   function isTabletDevice() {
     var ua = navigator.userAgent || '';
     var minEdge = Math.min(window.screen.width || 0, window.screen.height || 0);
@@ -137,7 +169,7 @@
 
     var tabletDevice = isTabletDevice();
 
-    if (tabletDevice) {
+    if (tabletDevice && debeEscalarViewport(anchoFisico())) {
       viewport.setAttribute('content', TABLET_VIEWPORT);
       document.documentElement.classList.add('tablet-scale-70');
       resetDesktopScale();
@@ -169,6 +201,12 @@
   } else {
     applyTabletViewportScale();
   }
+
+  window.AIATabletViewport = {
+    anchoFisico: anchoFisico,
+    debeEscalarViewport: debeEscalarViewport,
+    UMBRAL: TABLET_WIDTH_MAX,
+  };
 
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', applyTabletViewportScale);
