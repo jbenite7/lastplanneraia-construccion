@@ -1108,8 +1108,8 @@ body.ps-page .ps-hot-toolbar-shell {
 
     .ps-page .ps-mobile-card {
         display: grid;
-        gap: var(--spacing-md);
-        padding: var(--spacing-md);
+        gap: var(--ds-space-0) var(--ds-space-1);
+        padding: var(--ds-space-0) var(--ds-space-3) var(--ds-space-1);
         border: 1px solid var(--ds-active-border);
         border-radius: var(--ds-radius-card);
         background: var(--ds-active-surface);
@@ -1146,21 +1146,21 @@ body.ps-page .ps-hot-toolbar-shell {
     }
 
     .ps-page .ps-mobile-foco {
-      margin: 0 0 var(--ds-space-3);
+      margin: 0;
       font-size: var(--ds-type-size-xs);
       color: var(--ds-color-state-warning-text, var(--ds-active-text-secondary));
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     .ps-page .ps-mobile-responsable {
-      margin: 0 0 var(--ds-space-3);
+      margin: 0;
       font-size: var(--ds-type-size-sm);
       color: var(--ds-active-text-primary);
     }
 
     .ps-page .ps-mobile-detalle > summary {
       cursor: pointer;
-      padding: var(--ds-space-2) 0;
+      padding: var(--ds-space-1) 0;
       font-size: var(--ds-type-size-sm);
       color: var(--ds-active-text-secondary);
       min-height: var(--ds-target-min);
@@ -1172,15 +1172,15 @@ body.ps-page .ps-hot-toolbar-shell {
     .ps-page .ps-mobile-metrics {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--spacing-sm);
+        gap: var(--ds-space-2);
         min-width: 0;
     }
 
     .ps-page .ps-mobile-metric {
         display: grid;
-        gap: var(--spacing-xs);
+        gap: var(--ds-space-1);
         min-width: 0;
-        padding: var(--spacing-sm);
+        padding: var(--ds-space-1) var(--ds-space-2);
         border: 1px solid var(--ds-active-border);
         border-radius: var(--ds-radius-sm);
         background: var(--ds-active-surface-raised);
@@ -1200,10 +1200,10 @@ body.ps-page .ps-hot-toolbar-shell {
     .ps-page .ps-mobile-edit-controls {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(8rem, auto);
-        gap: var(--spacing-xs);
+        gap: var(--ds-space-0);
         align-items: stretch;
         min-width: 0;
-        padding-right: calc(var(--lps-rail-safe-width) + var(--spacing-md));
+        padding-right: calc(var(--lps-rail-safe-width) + var(--ds-space-2));
     }
 
     .ps-page .ps-mobile-metric input {
@@ -1220,9 +1220,9 @@ body.ps-page .ps-hot-toolbar-shell {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: var(--spacing-xs);
+        gap: var(--ds-space-1);
         min-height: var(--ds-target-min);
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--ds-space-1) var(--ds-space-2);
         border: 1px solid var(--ds-color-brand-primary);
         border-radius: var(--ds-radius-control);
         background: var(--ds-color-brand-primary);
@@ -1232,7 +1232,7 @@ body.ps-page .ps-hot-toolbar-shell {
     }
 
     .ps-page .ps-mobile-save-status {
-        min-height: var(--spacing-md);
+        min-height: var(--ds-space-1);
         color: var(--ds-active-text-secondary);
         font-weight: 700;
         overflow-wrap: anywhere;

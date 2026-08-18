@@ -651,8 +651,30 @@
 
   function getConfigLabels() {
     var cached = window.__RESTRICTION_CONFIG__;
-    return (cached && cached.labels && typeof cached.labels === 'object' && Object.keys(cached.labels).length > 0)
-      ? cached.labels : CONSTRUCTION_DEFAULTS.labels;
+    if (cached && cached.labels && typeof cached.labels === 'object' && Object.keys(cached.labels).length > 0) {
+      return cached.labels;
+    }
+    // `/api/general/restriction-config` nunca manda un `.labels` propio: manda
+    // `.restrictions`, un array de {key, label, ...} (ver
+    // GeneralApiController::restrictionConfig). Para Pre-Construccion eso
+    // dejaba `cached.labels` siempre vacio y este getter caia al fallback de
+    // Construccion, que no conoce `restriccion_pc_1..4` — la tarjeta mostraba
+    // la clave cruda en vez de "Predecesora" o el nombre configurado por
+    // proyecto. `programacion_intermedia/hot.js` ya deriva sus labels de
+    // `restrictions` en vez de esperar un `.labels`; aqui se hace lo mismo.
+    if (cached && Array.isArray(cached.restrictions) && cached.restrictions.length > 0) {
+      var derived = {};
+      for (var i = 0; i < cached.restrictions.length; i++) {
+        var entry = cached.restrictions[i];
+        if (entry && typeof entry.key === 'string' && typeof entry.label === 'string' && entry.label) {
+          derived[entry.key] = entry.label;
+        }
+      }
+      if (Object.keys(derived).length > 0) {
+        return derived;
+      }
+    }
+    return CONSTRUCTION_DEFAULTS.labels;
   }
 
   function getConfigDoneTexts() {
@@ -3432,8 +3454,15 @@
 
   function renderMobileStateButton(row, rowIndex) {
     var view = getStateView(row || {});
+    view.actions = Array.isArray(view.actions) ? view.actions : [];
     var summary = getOperationalStateSummary(view);
-    return '<button type="button" class="ps-mobile-state ops-state-zoom is-' + escapeHtml(summary.status) + '" data-mobile-ops-row="' + rowIndex + '">'
+    // Mismo criterio que la celda de escritorio (renderOperationalStateCell,
+    // linea ~1042): el aria incluye "Primer foco: " + summary.focus, que es
+    // el mismo texto que pinta `.ps-mobile-foco` en la cara visible de la
+    // tarjeta. Antes este boton no llevaba aria-label en absoluto.
+    var stateLabel = view.label || 'Control';
+    var aria = view.actions.length ? (stateLabel + '. ' + summary.countAriaText + '. Primer foco: ' + summary.focus) : stateLabel;
+    return '<button type="button" class="ps-mobile-state ops-state-zoom is-' + escapeHtml(summary.status) + '" data-mobile-ops-row="' + rowIndex + '" aria-label="' + escapeHtml(aria + '. Ver detalle operativo') + '">'
       + '<span class="ops-state-topline"><span class="ops-state-dot" aria-hidden="true"></span><span class="ops-state-chip">' + escapeHtml(view.label) + '</span></span>'
       + '<span class="ops-state-summary"><span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span></span></button>';
   }
