@@ -63,12 +63,6 @@
   },
   "exceptions": [
     {
-      "id": "tom-select-editor-light-skin",
-      "reason": "El editor flotante Tom Select conserva su skin claro de marca (compartido con Listado de Actividades); su migracion a tokens dark se hara como lote transversal de vendor.",
-      "scope": "public/css/programacion-intermedia.css (.htTomSelectWrapper)",
-      "date": "2026-07-22"
-    },
-    {
       "id": "cdn-delivery-tom-select-sweetalert2",
       "reason": "vendors.json declara delivery cdn para tom-select y cdn-js para sweetalert2; vendorizarlos requiere descarga aprobada y actualizacion del contrato de vendors.",
       "scope": "views/programacion-intermedia/programacion_intermedia.view.php, public/js/linksComunesHead2.js",

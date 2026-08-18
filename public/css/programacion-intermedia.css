@@ -1299,195 +1299,23 @@ html.aia-theme-dark .pi-page {
     padding: 10px 14px;
 }
 
-/* ── Tom Select · Línea Construcción AIA ──────────────────
-   Paleta: Naranja #b55211 (main) · #e87722 (mid) · #fbead9 (very light)
-   Fondo:  Alabaster #fafafa · Parchment #f4f1ea
-   Tipografía: Inter (contenido) · sin abuso de uppercase
+/* ── Tom Select · el skin claro se retiró el 2026-08-18 ──────────────────
+   Aquí vivían ~190 líneas con 37 hex sueltos (#fafafa, #1c1c1e, #fbead9…)
+   que pintaban el editor flotante de Sub-Contratista y Responsable AIA en
+   claro DENTRO de una aplicación oscura. Se veía en la pantalla y estaba
+   registrado como excepción `tom-select-editor-light-skin` en el manifiesto
+   del módulo desde el 2026-07-22.
+
+   La excepción decía que la migración esperaba «un lote transversal de
+   vendor». Resultó que ese lote ya existía a medias: `tom-select-premium-aia.css`
+   lleva la misma piel tokenizada y en `@layer vendor`, y la pantalla hermana
+   `/programa-general-actualizar` ya la cargaba. Lo único que faltaba era el
+   `<link>` en esta vista, porque `aia-design-system.css` importa el adaptador
+   de Select2 pero no el de Tom Select.
+
+   Su otra razón —«compartido con Listado de Actividades»— había caducado: ese
+   módulo se eliminó el 2026-08-04 junto con el PDC v1.
    ──────────────────────────────────────────────────────── */
-
-/* Wrapper flotante: sin borde propio - lo ponen .ts-control y .ts-dropdown */
-/* El ancho lo fija el JS: Math.max(300, anchoColumna) */
-.htTomSelectWrapper {
-    background: transparent !important;
-    border: none !important;
-    z-index: 10000 !important;
-    box-shadow: 0 10px 30px rgba(181,82,17,0.18) !important;
-    pointer-events: auto !important;
-}
-
-/* Control principal (input + pills) */
-.htTomSelectWrapper .ts-wrapper {
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-/* Control: borde 3 lados (top + left + right) + radio arriba */
-.htTomSelectWrapper .ts-control {
-    background: #fafafa !important;
-    border: 1px solid #b55211 !important;
-    border-bottom: none !important;
-    border-radius: 4px 4px 0 0 !important;
-    min-height: 24px !important;
-    min-width: 100% !important;
-    box-sizing: border-box !important;
-    font-size: 0.83rem !important;
-    font-family: var(--ds-font-body) !important;
-    color: #1c1c1e !important;
-    padding: 2px 4px 0 4px !important; /* Removed bottom padding, the button will be the floor */
-    box-shadow: none !important;
-    overflow: hidden !important; /* Clips the button to the control border radius if needed */
-}
-.htTomSelectWrapper .ts-control input {
-    width: 90% !important;
-    font-size: 0.83rem !important;
-    font-family: var(--ds-font-body) !important;
-    color: #1c1c1e !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-.htTomSelectWrapper .ts-control input::placeholder {
-    color: #a1a1aa !important;
-}
-
-/* Pills (ítems seleccionados) */
-.htTomSelectWrapper .ts-control .item {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    background: #fbead9 !important;   /* very light naranja AIA */
-    border: 1px solid #e87722 !important; /* mid naranja AIA */
-    color: #8b4011 !important;         /* dark naranja AIA */
-    border-radius: 4px !important;
-    font-size: var(--ds-type-size-xs) !important;
-    font-weight: 500 !important;
-    padding: 2px 6px !important;
-    margin: 2px !important;
-}
-.htTomSelectWrapper .ts-control .item .remove {
-    margin-left: auto !important;
-    color: #b55211 !important;
-    border-left: none !important;
-    padding-left: 8px !important;
-}
-.htTomSelectWrapper .ts-control .item .remove:hover {
-    background: #f6c79b !important;
-}
-
-/* Dropdown: borde 3 lados (left + right + bottom) + radio abajo */
-.htTomSelectWrapper .ts-dropdown {
-    background: #fafafa !important;
-    border: 1.5px solid #b55211 !important;
-    border-top: none !important;
-    border-radius: 0 0 6px 6px !important;
-    box-shadow: 0 8px 16px rgba(181,82,17,0.15) !important;
-    min-width: 100% !important;
-    box-sizing: border-box !important;
-    left: 0 !important;
-    max-height: 220px !important;
-    overflow-y: auto !important;
-    font-size: 0.83rem !important;
-    font-family: var(--ds-font-body) !important;
-    z-index: 99999 !important;
-}
-.htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
-    max-height: 210px !important;
-    overflow-y: auto !important;
-}
-
-/* Auto-flip: dropdown hacia arriba cuando la celda esta cerca del bottom */
-.htTomSelectWrapper[data-flip="up"] .ts-dropdown {
-    top: auto !important;
-    bottom: 100% !important;
-    border-top: 1.5px solid #b55211 !important;
-    border-bottom: none !important;
-    border-radius: 6px 6px 0 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: -1px !important;
-}
-
-/* Opción normal */
-.htTomSelectWrapper .ts-dropdown .ts-option {
-    padding: 8px 12px !important;
-    cursor: pointer !important;
-    color: #1c1c1e !important;
-    font-family: var(--ds-font-body) !important;
-    border-bottom: 1px solid #f4f1ea !important; /* Parchment separator */
-    transition: background 0.12s ease !important;
-}
-.htTomSelectWrapper .ts-dropdown .ts-option:hover,
-.htTomSelectWrapper .ts-dropdown .ts-option.active,
-.htTomSelectWrapper .ts-dropdown .ts-option.focused {
-    background: #f6c79b !important; /* Más intenso que el beige para feedback claro */
-    color: #b55211 !important;
-    font-weight: 500 !important;
-}
-.htTomSelectWrapper .ts-dropdown .ts-option:last-child {
-    border-bottom: none !important;
-}
-
-/* Opción especial "+ Crear" (Estilo Botón de Acción AIA) */
-.htTomSelectWrapper .ts-dropdown .ts-create-option {
-    display: block !important;
-    color: #ffffff !important; /* Texto blanco obligatorio */
-    font-weight: 700 !important;
-    background: #b55211 !important; /* Naranja AIA */
-    border-radius: 4px !important;
-    padding: 8px 12px !important;
-    text-align: center !important;
-    letter-spacing: 0.5px !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
-    margin: 4px 6px !important;
-    border-bottom: none !important;
-}
-/* Garantizar que el texto sea blanco incluso si hay herencia */
-.htTomSelectWrapper .ts-dropdown .ts-create-option * {
-    color: #ffffff !important;
-}
-.htTomSelectWrapper .ts-dropdown .ts-option:hover .ts-create-option,
-.htTomSelectWrapper .ts-dropdown .ts-option.active .ts-create-option,
-.htTomSelectWrapper .ts-dropdown .ts-option.focused .ts-create-option {
-    background: #e87722 !important;
-    cursor: pointer !important;
-}
-
-.htTomSelectWrapper .ts-control .clear-button.aia-clear-btn {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    margin: 0 !important;
-    margin-top: 0 !important; /* Flush with content */
-    margin-bottom: 0 !important;
-    background: #fff9f5 !important;
-    border: none !important;
-    border-top: 1px solid #f6c79b !important;
-    border-radius: 0 !important;
-    color: #b55211 !important;
-    padding: 8px 12px !important;
-    width: calc(100% + 8px) !important; /* Expands to cover padding */
-    margin-left: -4px !important; /* Offsets padding */
-    font-size: var(--ds-type-size-xs) !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    position: relative !important;
-    float: left !important;
-    clear: both !important;
-    visibility: visible !important;
-    box-sizing: border-box !important;
-}
-.htTomSelectWrapper .ts-control .clear-button.aia-clear-btn i {
-    font-size: var(--ds-type-size-xs) !important;
-    color: #b55211 !important;
-}
-.htTomSelectWrapper .ts-control .clear-button.aia-clear-btn:hover {
-    background: #b55211 !important;
-    color: #ffffff !important;
-}
-.htTomSelectWrapper .ts-control .clear-button.aia-clear-btn:hover i {
-    color: #ffffff !important;
-}
-/* ─────────────────────────────────────────────────────── */
 
 /* programacion_intermedia.view.php style block 2 */
       /* Brand Manual AIA: Green (#1a5633) para acciones de creación */
