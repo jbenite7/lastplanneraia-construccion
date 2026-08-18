@@ -77,9 +77,12 @@ binario.
 ## Frente A — El repositorio deja de cargar binarios
 
 Los 20 `trace.zip` y 26 `.webm` se copian a `/Volumes/Crucial X6/Developer/lps-aia-evidencia/`
-conservando la estructura de `docs/qa/evidence/`, y se sacan del repo con `git rm`. Se amplía
-`.gitignore` con `docs/qa/evidence/**/*.zip` (la regla de `.webm` ya existe en la línea 212, puesta
-después de haberlos commiteado, que es por lo que siguen dentro).
+conservando la estructura de `docs/qa/evidence/`, y se sacan del repo con `git rm`.
+
+**No hay que tocar `.gitignore`.** Al escribir el plan se comprobó que la línea 210 ya ignora
+`docs/qa/` entera, y la 211 repite el caso de `.webm`. Los binarios seguían dentro por un motivo
+distinto del que supuse al diseñar: git no deja de rastrear lo que ya rastreaba, y las dos reglas
+se añadieron después de commitearlos. Añadir una tercera no habría cambiado nada.
 
 En `docs/qa/evidence/ARCHIVO.md` queda el índice de lo movido: qué corrida, qué archivo, cuánto
 pesaba, su `sha256` y dónde está ahora. Sin ese índice el archivado es una pérdida con pasos
