@@ -10,39 +10,36 @@ En el stack aislado, `npx playwright test tests/browser/programacion-semanal-rol
 saltándose por el candado, y los otros diez siguen verdes. El paso está cableado en el workflow con
 su recibo, y `npm run test:design-system:static` está verde.
 
-## Estado real al 2026-08-18 — este plan está cerrado, y no como se escribió
+## Estado real al 2026-08-18 — este plan está cerrado
 
-Contrastado tarea por tarea contra el código. **No lo ejecutes de nuevo:** las Tasks 0-3 ya están
-hechas, y las Tasks 4 y 5 fueron descartadas a propósito, no por descuido.
+Contrastado tarea por tarea contra el código. **No lo ejecutes de nuevo: las siete tareas están
+hechas.**
 
 | Tarea | Estado | Dónde se ve |
 |---|---|---|
-| 0 · medir la línea base | hecha | `memoria/log.md:129-131` |
-| 1 · semanas confirmadas de JMC | hecha | `database/fixtures/design-system-ci.sql:542` |
-| 2 · accesos `test.R` y `test.D` | hecha | `database/fixtures/design-system-ci.sql:463` |
-| 3 · semana vacía de Da Porto | hecha | `resolveEmptyWeek()`, `…roles-phases.mjs:517` |
-| 4 · retirar los cuatro `test.skip` | **descartada** | las cuatro líneas siguen vivas, a propósito |
-| 5 · cablear un gate nuevo en CI | **descartada** | decisión del usuario, `memoria/log.md:131` |
+| 0 · medir la línea base | hecha | `memoria/log.md` |
+| 1 · semanas confirmadas de JMC | hecha | `database/fixtures/design-system-ci.sql` |
+| 2 · accesos `test.R` y `test.D` | hecha | `database/fixtures/design-system-ci.sql` |
+| 3 · semana vacía de Da Porto | hecha | `resolveEmptyWeek()` en el spec |
+| 4 · las cuatro pruebas que escriben | hecha, por otra vía | ver abajo |
+| 5 · gate propio en CI | hecha | `semanal-roles-phases`, noveno gate del índice |
 | 6 · cierre e ingest | hecha | trampa marcada `estado: derogada` |
 
-**Por qué la Task 4 no se hizo, y está bien así.** El plan pedía borrar los `test.skip(!MUTACION_HABILITADA, …)`.
-El código los conserva con un comentario que explica el motivo (`…roles-phases.mjs:28-29`): sigue
-siendo cierto que esas cuatro pruebas solo pueden correr en el stack aislado, porque escriben. Borrar
-el guard no las habría habilitado en desarrollo — las habría dejado fallar ahí. El plan se
-contradecía a sí mismo: pedía quitar las líneas *y* que en desarrollo siguieran saltándose. La
-implementación resolvió la contradicción a favor del candado.
+**La Task 4 no se hizo como estaba escrita, y está bien así.** El plan pedía borrar los
+`test.skip(!MUTACION_HABILITADA, …)` y a la vez que en desarrollo esas cuatro siguieran saltándose:
+se contradecía. El código conservó el guard, que es lo único que cumple las dos mitades — borrarlo
+no las habría habilitado en desarrollo, las habría dejado fallar ahí.
 
-**Por qué la Task 5 no se hizo.** Sumar un noveno gate habría revertido la consolidación de 15→8
-gates del Frente 1b. Decisión del usuario registrada en `memoria/log.md:131`.
+**La condición de hecho decía «14 en verde y 0 `skip`»; la real es 15 y 15.** El spec declara hoy
+quince casos: cuatro del bucle de roles (`ROLE_CASES`) más once sueltos. Los dos de tabla en tablet
+llegaron a estar saltados en firme por el retiro de esa tabla, y volvieron al gate cuando E3 cerró
+ese hueco. Hoy no queda ninguno saltado.
 
-**La condición de hecho de arriba ya no es alcanzable, y no por un fallo.** Pedía «14 en verde y 0
-`skip`». Hoy el spec declara **15** casos: cuatro del bucle de roles (`ROLE_CASES`, línea 9) más nueve
-sueltos, y dos de tabla en tablet —líneas 539 y 579— saltados **en firme**, porque la tabla en tablet se retiró del producto (spec
-`2026-08-07-f2a-piloto-movil-programacion-design.md`). Ese `skip` es la decisión, no una deuda.
-
-**La condición de hecho vigente**, en el stack aislado: **13 en verde y 2 saltadas**, las dos por el
-retiro de la tabla en tablet. En desarrollo, las cuatro que escriben se saltan además por el candado,
-y eso también es correcto.
+**Aviso a quien lea esta sección por el historial:** entre el 14 y el 18 de agosto este bloque llegó
+a decir que las Tasks 4 y 5 estaban descartadas y que lo alcanzable era «13 verdes y 2 saltadas».
+Era cierto cuando se escribió y dejó de serlo mientras se escribía, porque otra sesión cerró la
+Task 5 y devolvió los dos casos de tablet en paralelo. Lo detectó la re-verificación posterior a
+integrar `origin/main`, que es exactamente para lo que existe ese paso del gate de cierre.
 
 ---
 
@@ -60,6 +57,13 @@ docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compos
 export APP_URL=http://127.0.0.1:18081 E2E_BASE_URL=http://127.0.0.1:18081
 export E2E_REQUIRE_ISOLATED_DB=1 E2E_ALLOW_DB_MUTATION=design-system-ci
 ```
+
+**Esperar a la base, no a la app.** `curl /login` responde 200 sin tocar la base, y el healthcheck
+de `db` se pone verde contra el servidor temporal con el que MySQL carga las semillas: hay una
+ventana de ~8 s en la que `app` ya está arriba y la base no. Medido el 2026-08-18 — el primer
+recibo del gate salió rojo con 13 de 13 casos caídos en 8.072 ms, y el segundo pasó sin cambiar
+nada. Antes de medir, preguntarle a la base por un dato que solo existe tras las semillas
+(ver [[el-healthcheck-de-db-responde-al-servidor-temporal]]).
 
 La imagen de `db` **se construye desde el fixture** (`database/fixtures/design-system-ci.Dockerfile`),
 así que cada vez que cambie el `.sql` hay que reconstruirla: `docker compose ... up -d --build db`.

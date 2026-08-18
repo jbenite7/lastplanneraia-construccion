@@ -66,21 +66,37 @@ cierre es lo que se publica.
    sesiones escribiendo a `origin/main` a la vez: asumir que nadie más avanzó es la vía rápida a
    pisar trabajo ajeno.
 4. **Si hay divergencia, integrar** (`git merge origin/main`) y resolver los conflictos a la vista,
-   nunca a ciegas. Jamás `push --force` ni reescritura de historia publicada.
+   nunca a ciegas. Jamás `push --force` ni reescritura de historia publicada. **Integra en tu propia
+   rama, dentro de tu worktree.** No fusiones en el `main` del worktree principal: está checkouteado
+   ahí y es estado compartido que otras sesiones mueven — el porqué está en el paso 6.
 5. **Re-verificar después de integrar, no antes.** Es el paso que más se salta y el que más caro
    sale: traer trabajo ajeno puede romper un verde propio sin tocar tu diff. Medido el 2026-08-10
    dos veces en la misma jornada — un merge dejó la suite estática en 6/8 al destapar un módulo sin
    evidencia, y un segundo cierre la volvió a dejar en 6/8 porque el contrato fija por hash unos
    archivos que el frente había editado. Ninguno de los dos lo detectó quien hizo el trabajo: los
-   detectó la verificación posterior a la integración.
-6. **`git push origin main`, en un comando aparte.** Nunca encadenado al paso 5 con `&&`, `;` ni
-   detrás de un `echo`: un gate solo gobierna si puede **impedir** la publicación, y encadenado ya
-   se ejecutó. Lee el código de salida de la verificación —sin tubería, que `$?` sería del último
-   tramo— y solo entonces publica. Ocurrió dos veces el 2026-08-10 y 11, a la misma sesión, y las
-   dos veces el árbol quedó sano por suerte, no por el procedimiento. La causa no es despiste: es
-   meter verificación y publicación en la misma línea. Si lo rechazan porque alguien publicó entre tu `fetch` y tu `push`,
-   repetir 3–5. No es un motivo para parar ni para preguntar: es parte del cierre.
-7. **Confirmar que quedó publicado**: `git status -sb` sin `ahead` ni `behind`.
+   detectó la verificación posterior a la integración. **Anota el SHA que verificas**
+   (`git rev-parse HEAD`): es el que debes publicar, y el paso 7 lo compara.
+6. **Publicar el commit exacto que verificaste, en un comando aparte**, desde tu worktree:
+   `git push origin HEAD:main`. Dos reglas, cada una con su medida detrás:
+   - **Nunca encadenado al paso 5** con `&&`, `;` ni detrás de un `echo`: un gate solo gobierna si
+     puede **impedir** la publicación, y encadenado ya se ejecutó. Lee el código de salida de la
+     verificación —sin tubería, que `$?` sería del último tramo, y en zsh `PIPESTATUS` no existe:
+     es `pipestatus` y va 1-indexado, así que la lectura sale vacía y no gobierna nada— y solo
+     entonces publica. Ocurrió tres veces: el 2026-08-10 y el 11 **una misma sesión** encadenó el
+     push detrás de un `echo` y publicó pese a una verificación que había devuelto `2` —el árbol
+     quedó sano por suerte, no por el procedimiento—; el 2026-08-18 **otra** leyó la suite con
+     `${PIPESTATUS[0]}` bajo zsh, obtuvo una lectura vacía y la cazó a tiempo. La causa no es
+     despiste: es meter verificación y publicación en la misma línea.
+   - **Nunca `git push origin main` después de fusionar en el worktree principal.** Ese comando no
+     publica lo que mediste: publica **a dónde apunte `main` en el instante del push**, y `main` es
+     estado compartido. Medido el 2026-08-18 — entre la verificación (10:15:32) y el push (~10:16)
+     otra sesión fusionó su rama en ese mismo `main`, y el push se llevó dos commits ajenos que
+     ninguna verificación había tocado. `HEAD:main` publica el SHA que mediste y nada más.
+   Si lo rechazan porque alguien publicó entre tu `fetch` y tu `push`, repetir 3–5. **El rechazo es
+   el guardarraíl funcionando**: no es motivo para parar ni para preguntar, es parte del cierre.
+7. **Confirmar que quedó publicado**: tras `git fetch origin`, `git rev-parse origin/main` debe
+   coincidir con el SHA que anotaste en el paso 5. Si trabajaste en el worktree principal,
+   `git status -sb` sin `ahead` ni `behind` dice lo mismo.
 8. **Anotar el cierre** donde corresponda (ledger del plan, `memoria/`, el `goal.md` del frente).
 
 Solo entonces puede empezar el frente siguiente.

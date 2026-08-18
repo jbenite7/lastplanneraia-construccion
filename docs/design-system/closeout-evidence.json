@@ -141,6 +141,26 @@
       ]
     },
     {
+      "id": "semanal-roles-phases",
+      "kind": "automatic",
+      "status": "passed",
+      "verifiedAt": "2026-08-18T15:31:10Z",
+      "blocking": true,
+      "evidence": [
+        {
+          "summary": "Suite de roles y fases de Programacion Semanal, medida en el stack aislado: los 15 casos pasan sin excepciones desde que los dos de tablet se reescribieron contra las tarjetas (E3 dejo 787px sin grilla).",
+          "commandId": "ds.semanal-roles-phases.v1",
+          "command": "npx playwright test tests/browser/programacion-semanal-roles-phases.mjs --workers=1",
+          "exitCode": 0,
+          "artifact": "docs/design-system/evidence/semanal-roles-phases.json",
+          "artifactSha256": "70e07c72ef6609b2013f08e23a88dce60b7169781aff9996cc22abe631018f7c",
+          "sourceRef": "2dbc69ecadf5ace1831303cf6b733a163c5a3fce",
+          "sourceFingerprint": "901f7caf57871180847a1e10bcad0620b165e3bb679a8ee1dbff2c4d02b41a0f",
+          "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
+        }
+      ]
+    },
+    {
       "id": "atomic-commit",
       "kind": "automatic",
       "status": "passed",

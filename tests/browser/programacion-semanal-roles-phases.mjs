@@ -200,6 +200,21 @@ async function resolveConfirmedWeek(page) {
 // gano una segunda semana vacia sembrada aparte (2026-08-14) para sostener este mismo caso, y
 // se pudriria de nuevo si alguna semana ganara filas mas adelante. Se recorre desde la 1 porque
 // "la primera semana vacia" es la propiedad que el caso necesita, no un numero concreto.
+// El espejo del anterior: la primera semana que SI tiene filas. Hace falta porque la semana
+// maxima de Da Porto es hoy la vacia que se sembro para el caso de arriba, asi que
+// `openProgrammingWeek` sin semana explicita aterriza justo donde no hay tarjetas que mirar.
+async function resolveWeekWithActivities(page, project) {
+  const maxWeek = await resolveMaxWeek(page);
+  for (let week = 1; week <= maxWeek; week += 1) {
+    const response = await page.request.get(
+      `/api/semanal/list?db=${encodeURIComponent(project.dbPrefix)}&semana=${week}`,
+    );
+    expect(response.ok()).toBe(true);
+    if ((await response.json()).data.length > 0) return week;
+  }
+  throw new Error(`Ninguna semana de ${project.name} tiene actividades (Max_Semana=${maxWeek})`);
+}
+
 async function resolveEmptyWeek(page, project) {
   const maxWeek = await resolveMaxWeek(page);
   for (let week = 1; week <= maxWeek; week += 1) {
@@ -530,13 +545,20 @@ test('semana sin actividades no fabrica tarjetas', async ({ page }) => {
   await expect(page.locator('#mobile-card-view .ps-mobile-empty')).toBeVisible();
 });
 
-// E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla en tablet: con
-// el umbral en 1180px, 787px ya no monta la grilla de Handsontable, sino tarjetas. La mitad de
-// escritorio de esta prueba (antes en el mismo test que la de arriba, separada aqui) verificaba
-// PSHotModule.getHotInstance().countRows() a 787px, que deja de tener sentido bajo el umbral
-// nuevo. Reescribir contra las tarjetas es trabajo de la tanda de evidencia movil (F2a-2b), no
-// de este cambio de umbral. Decision del usuario, 2026-08-14.
-test.skip('semana sin actividades no fabrica filas en la grilla (tablet)', async ({ page }) => {
+// E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla en tablet: bajo
+// el umbral de 1180px (`UMBRAL_CARDS`, public/js/modules/aia_ui/view-switch.js:6) la Semanal
+// monta tarjetas, no la grilla. Esta prueba medía `getHotInstance().countRows()` a 787px y quedó
+// sin objeto, saltada el 2026-08-14.
+//
+// Reescrita el 2026-08-18 contra lo que el producto hace hoy, y midiendo algo que la hermana de
+// 551px NO mide: que a 787px la grilla **no llegue a montarse**. Esa es la conducta que E3
+// introdujo, y sin esta prueba nadie la vigila — el caso móvil pasaría igual si la grilla
+// volviera a montarse por debajo del umbral.
+//
+// Deliberadamente NO toca el interior de la tarjeta (ni su chip, ni su avance, ni su título):
+// eso lo está rehaciendo E2-bis, y una aserción sobre su contenido convertiría este gate en un
+// freno para ese trabajo. Aquí solo se mira lo estructural, que E2-bis conserva.
+test('bajo el umbral la semanal monta tarjetas y no grilla (tablet)', async ({ page }) => {
   await page.setViewportSize({ width: 551, height: 750 });
   await login(page, { username: ROLE_CASES[0].username, password: 'aia2026' });
   await selectProject(page, DA_PORTO);
@@ -544,12 +566,17 @@ test.skip('semana sin actividades no fabrica filas en la grilla (tablet)', async
   await page.setViewportSize({ width: 787, height: 750 });
   await changeWeek(page, emptyWeek, '/programacion-semanal');
   await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
-  const grid = await page.evaluate(() => ({
-    rows: window.PSHotModule.getHotInstance().countRows(),
-    text: document.querySelector('#hot-container').textContent,
-  }));
-  expect(grid.rows).toBe(0);
-  expect(grid.text).not.toContain('Programada Manualmente');
+
+  // La grilla no se monta: ni instancia de Handsontable, ni su tabla en el DOM.
+  await expect(page.locator('#hot-container .handsontable')).toHaveCount(0);
+  expect(await page.evaluate(() => Boolean(
+    window.PSHotModule && window.PSHotModule.getHotInstance
+      && window.PSHotModule.getHotInstance(),
+  ))).toBe(false);
+
+  // Y la semana vacía sigue sin fabricar nada, también en tablet.
+  await expect(page.locator('article.ps-mobile-card')).toHaveCount(0);
+  await expect(page.locator('#mobile-card-view .ps-mobile-empty')).toBeVisible();
 });
 
 test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) => {
@@ -571,20 +598,32 @@ test('toolbar tablet muestra texto comprensible sin overflow', async ({ page }) 
   expect(state.overflow).toBeLessThanOrEqual(1);
 });
 
-// E3 (spec 2026-08-07-f2a-piloto-movil-programacion-design.md) retiro la tabla en tablet: con
-// el umbral en 1180px, 787px ya no monta #hot-container .handsontable, sino tarjetas. Este
-// escenario deja de existir en el producto. Reescribir contra las tarjetas es trabajo de la
-// tanda de evidencia movil (F2a-2b), no de este cambio de umbral. Decision del usuario,
-// 2026-08-14.
-test.skip('tabla semanal tablet usa superficies dark cuando el tema es dark', async ({ page }) => {
+// Misma historia que la anterior: dos de los cinco selectores que miraba —`#hot-container` y
+// `#hot-container .handsontable thead th`— dejaron de existir a 787px con E3, y el primero que
+// `querySelector` no encuentra revienta `getComputedStyle` con «parameter 1 is not of type
+// Element». Saltada el 2026-08-14, reescrita el 2026-08-18.
+//
+// Ahora mide las superficies que SI hay bajo el umbral: la barra, sus botones, el filtro y la
+// tarjeta. La tarjeta entra por su contenedor (`article.ps-mobile-card`), no por su contenido,
+// para no estorbar a E2-bis.
+//
+// La semana se deriva y se pasa explícita: la máxima de Da Porto es hoy la semana vacía sembrada
+// para el caso de arriba, y sin filas no hay tarjeta que medir.
+test('superficies dark en tablet, con la tarjeta dentro', async ({ page }) => {
   await openProgrammingWeek(page, ROLE_CASES[0], { width: 787, height: 750 });
+  const week = await resolveWeekWithActivities(page, DA_PORTO);
+  await changeWeek(page, week, '/programacion-semanal');
+  await page.locator('#loading').waitFor({ state: 'hidden', timeout: 45000 });
+  await expect(page.locator('article.ps-mobile-card').first()).toBeVisible();
   await expect.poll(() => page.evaluate(() => [
-    '#hot-container', '.ps-hot-toolbar-shell',
+    '.ps-hot-toolbar-shell',
     '.ps-hot-toolbar-actions .aia-btn',
     '.ps-toolbar-right .btn-filter-toggle',
-    '#hot-container .handsontable thead th',
+    'article.ps-mobile-card',
   ].every((selector) => {
-    const color = getComputedStyle(document.querySelector(selector)).backgroundColor;
+    const elemento = document.querySelector(selector);
+    if (!elemento) return false;
+    const color = getComputedStyle(elemento).backgroundColor;
     const channels = color.match(/[\d.]+/g).slice(0, 3).map(Number);
     return channels.reduce((sum, value) => sum + value, 0) / 3 < 140;
   })), { timeout: 2000 }).toBe(true);

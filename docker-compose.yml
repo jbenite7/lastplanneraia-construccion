@@ -12,6 +12,15 @@ services:
       APP_ENV: ${APP_ENV:-development}
       DB_HOST: ${DOCKER_APP_DB_HOST:-db}
       DB_PORT: ${DOCKER_APP_DB_PORT:-3306}
+      # NO QUITES estas tres de aqui. Parece que sobran —la app tambien las leeria del .env
+      # montado, como hace con las MAIL_*— y el 2026-08-18 se quitaron por eso. Fue un error:
+      # `public/index.php` carga Dotenv, pero los `tests/test_*.php` NO, asi que el PHP de CLI
+      # depende de este bloque y solo de este. Quitarlas dejaba la web en verde y reventaba
+      # `docker compose exec app php tests/test_global_table_safety.php` —la via canonica de
+      # AGENTS.md— con «Access denied for user ''». Ver memoria/trampas/.
+      # El problema que aquello intentaba resolver (llegan VACIAS al ejecutar compose desde un
+      # worktree, y una variable vacia cuenta como "ya definida" para Dotenv) se resuelve con el
+      # enlace del .env en cada worktree, documentado en CLAUDE.md.
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}

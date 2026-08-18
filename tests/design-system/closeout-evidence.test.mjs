@@ -10,19 +10,21 @@ const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8
 
 // Frente 1b (D-F1b-1, D-F1b-2, D-F1b-3, 2026-08-11): bajó de 15 a 8 gates. Motivo
 // escrito de cada retiro/fusión en docs/design-system/gates-cierre-frente-1b.md.
+// 2026-08-14: sube a 9 con `semanal-roles-phases`, la suite de roles y fases de la semanal.
+// Entra despues de `full-app-flow` y antes de `atomic-commit`, que es el orden en que corren.
 const REQUIRED_GATES = [
   'static', 'runtime', 'runtime-budgets', 'phpstan-scoped', 'phpstan-global',
-  'global-table-safety', 'full-app-flow', 'atomic-commit',
+  'global-table-safety', 'full-app-flow', 'semanal-roles-phases', 'atomic-commit',
 ];
 
 function assertExactGateIds(gates) {
   const ids = gates.map(({ id }) => id);
-  assert.equal(gates.length, 8);
-  assert.equal(new Set(ids).size, 8, 'gate ids must be unique');
+  assert.equal(gates.length, REQUIRED_GATES.length);
+  assert.equal(new Set(ids).size, REQUIRED_GATES.length, 'gate ids must be unique');
   assert.deepEqual(ids, REQUIRED_GATES);
 }
 
-test('closeout evidence declares the exact ordered set of 8 blocking gates', async () => {
+test('closeout evidence declares the exact ordered set of blocking gates', async () => {
   const evidence = await readJson('docs/design-system/closeout-evidence.json');
   assert.equal(evidence.schemaVersion, 1);
   assert.match(evidence.designSystemVersion, /^\d+\.\d+\.\d+$/);
