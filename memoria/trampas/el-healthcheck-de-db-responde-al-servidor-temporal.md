@@ -37,8 +37,13 @@ base.
 ```bash
 until docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml \
   exec -T db mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -e \
-  "SELECT COUNT(*) FROM lastplanneraia_ci.usuarios;" 2>/dev/null | grep -qE '^[1-9]'; do sleep 2; done
+  "SELECT COUNT(*) FROM lastplanneraia_ci.general_usuarios;" 2>/dev/null | grep -qE '^[1-9]'; do sleep 2; done
 ```
+
+**La tabla es `general_usuarios`, no `usuarios`** — comprobado el 2026-08-18 contra el fixture, y
+corregido aquí después de que la primera versión de esta nota se lo inventara por analogía: el
+`SELECT` fallaba con «Table doesn't exist» y el bucle de espera habría girado en vano hasta agotar
+sus intentos, que es el peor modo de fallo posible para una espera.
 
 En el workflow de CI el gate no está expuesto: corre después de varios pasos largos y la ventana
 quedó atrás hace rato. Quien sí se la come es **quien levanta el stack en local y mide acto
