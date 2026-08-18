@@ -43,8 +43,19 @@ Los módulos LPS usan Handsontable. La altura de `#hot-container` la resuelve Ja
 
 ## Reabrir semana
 
-El cliente y el servidor no aplican la misma regla sobre quién puede reabrir una semana, y ninguna
-de las dos es la que el producto quiere — ver [[reabrir-semana-asimetria-cliente-servidor]].
+**La regla la aplica el servidor**, y es la que el producto quiere:
+`SemanalReabrirPolicy::allows($role, $fechaInicioSemana)` guarda dentro de
+`SemanalApiController::reabrir()` y responde 403 antes de mutar nada
+(`src/Controllers/Api/SemanalApiController.php:1003`). Reabren Admin y Director siempre; el
+Residente solo hasta el fin del día de inicio de la semana; cualquier otro rol, nunca.
+
+**Corregido el 2026-08-18.** Aquí decía en presente que cliente y servidor no aplicaban la misma
+regla «y ninguna de las dos es la que el producto quiere». Fue cierto hasta el 2026-08-10: el
+cliente escondía el botón salvo al rol `A` y el servidor solo exigía la capacidad de edición
+genérica, que el Residente también tiene, así que esconder el botón era cosmético. Lo cerró
+`6dcec299`, y la página que lo describía está
+[[reabrir-semana-asimetria-cliente-servidor|derogada]] desde el 2026-08-11. Lo que sobrevive al
+caso es la lección: el cliente puede esconder, solo el servidor puede impedir.
 
 ## Vecinos
 

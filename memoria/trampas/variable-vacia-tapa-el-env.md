@@ -19,7 +19,8 @@ orden en que muerden.
 tapándolo.
 
 `docker-compose.yml` inyecta `DB_NAME: ${DB_NAME}` sin valor por defecto. Ejecutar `docker compose`
-desde un worktree —que nace sin `.env`, ver [[cada-worktree-tiene-su-copia-congelada]]— resuelve esa
+desde un worktree —que nace sin `.env`, porque está en `.gitignore`; el remedio es enlazarlo, no
+copiarlo, y lo documenta [[CLAUDE]] (§Runtime & commands)— resuelve esa
 interpolación a cadena vacía, y a partir de ahí el `.env` montado ya no puede rellenarla aunque sea
 correcto y esté ahí mismo.
 

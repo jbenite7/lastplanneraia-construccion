@@ -58,9 +58,13 @@ Si la sesión parece caerse durante QA en navegador, antes de diagnosticar lee
 
 ## Trampas medidas
 
-[[reabrir-semana-asimetria-cliente-servidor]] — reabrir semana esconde el botón en cliente salvo al
-rol `A`, pero el servidor solo exige una capacidad de edición genérica; el log además miente sobre
-quién reabrió.
+[[reabrir-semana-asimetria-cliente-servidor]] — **derogada, y aquí se citaba en presente hasta el
+2026-08-18.** Describía que reabrir semana escondía el botón en cliente salvo al rol `A` mientras el
+servidor solo exigía una capacidad de edición genérica —que el Residente tiene—, y que el log
+escribía siempre «reabierta por Admin». `6dcec299` (2026-08-10) lo cerró extrayendo
+`SemanalReabrirPolicy`, que decide en el servidor antes de mutar
+(`src/Controllers/Api/SemanalApiController.php:1003`). Se conserva por la lección: el cliente puede
+esconder, solo el servidor puede impedir.
 
 [[logout-no-limpia-la-sesion-pendiente-de-clave]] — la sesión a medias del cambio obligatorio de
 contraseña no se limpia con `/logout`: esa ruta no es pública, así que el middleware la redirige a

@@ -32,6 +32,7 @@ se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es 
 | POST | `/_aia/operacion/7f3c9b` | `App\Controllers\Auth\LoginController::maintenanceLogin` |
 | GET | `/dev/entrar` | `App\Controllers\Core\DevDoorController::enter` |
 | GET | `/` | `App\Controllers\Auth\LoginController::index` |
+| GET | `/login/cancelar` | `App\Controllers\Auth\LoginController::cancelPasswordChange` |
 | GET | `/login` | `App\Controllers\Auth\LoginController::index` |
 | POST | `/login` | `App\Controllers\Auth\LoginController::login` |
 | GET | `/logout` | `App\Controllers\Auth\LoginController::logout` |
