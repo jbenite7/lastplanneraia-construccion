@@ -11,7 +11,7 @@ import {
 } from './closeout-contract-fixture.mjs';
 
 const fixtureGateIds = new Set([
-  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow',
+  'runtime', 'runtime-budgets', 'global-table-safety', 'full-app-flow', 'semanal-roles-phases',
 ]);
 
 export function git(fixtureRoot, args) {

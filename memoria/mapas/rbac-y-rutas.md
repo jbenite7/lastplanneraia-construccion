@@ -62,6 +62,11 @@ Si la sesión parece caerse durante QA en navegador, antes de diagnosticar lee
 rol `A`, pero el servidor solo exige una capacidad de edición genérica; el log además miente sobre
 quién reabrió.
 
+[[logout-no-limpia-la-sesion-pendiente-de-clave]] — la sesión a medias del cambio obligatorio de
+contraseña no se limpia con `/logout`: esa ruta no es pública, así que el middleware la redirige a
+`/login` sin destruir nada. Regla general: lo que deba funcionar sin sesión completa va en
+`$publicRoutes`.
+
 ## Vecinos
 
 [[arquitectura]] para el despacho de rutas · [[qa-y-gates]] para cómo probar esto.

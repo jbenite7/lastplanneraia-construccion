@@ -78,6 +78,26 @@ There is no `.env.example` — `.env` must be created from scratch or copied fro
 see GEMINI.md §Base de Datos for required keys, and README.md §3.1 for the extra mail vars needed if
 enabling password recovery.
 
+**En un worktree nuevo, enlaza el `.env` de la raíz antes de usar Docker:**
+
+```bash
+ln -s "/Volumes/Crucial X6/Developer/lps-aia/.env" .env
+```
+
+`.env` está en `.gitignore`, así que los worktrees nacen sin él y `docker compose` resuelve
+`${DB_NAME}` y `${DB_PASS}` a cadena vacía. **Enlace, no copia:** las copias se quedan viejas en
+silencio en cuanto se edita el `.env` de la raíz (el 2026-08-18 había seis copias sueltas).
+
+Esto **no es opcional**: `public/index.php` carga Dotenv, pero los `tests/test_*.php` no, así que el
+PHP de línea de comandos toma las credenciales del bloque `environment:` de `docker-compose.yml` y
+de ningún otro sitio. Sin el enlace, ese bloque se rellena con cadenas vacías y
+`docker compose exec app php tests/test_global_table_safety.php` muere con
+«Access denied for user ''», mientras la web sigue en verde porque ella sí lee el `.env`.
+
+El código que sirve `localhost:8081` es **siempre el de la raíz del repo**, no el del worktree
+(`docker-compose.override.yml` monta la raíz por ruta absoluta). Para ver tu rama en el navegador:
+`LPS_CODE_ROOT="$(pwd)" docker compose up -d app`, y devuélvelo a la raíz al terminar.
+
 ### Authenticating locally — always use the dev door
 
 **Never type credentials into `/login`, and never ask a human to log in for you.** To get an

@@ -43,6 +43,16 @@ comando literal en cada llamada.
 
 ## La consecuencia al **verificar**, que es la que muerde de verdad
 
+**Actualizado el 2026-08-18 —** lo que sigue describe un accidente («el stack que corre resultó ser
+el del árbol principal»); desde esa fecha es **el comportamiento garantizado**.
+`docker-compose.override.yml` monta la raíz por **ruta absoluta**, así que ejecutar compose desde un
+worktree ya no cambia qué código se sirve: siempre el de la raíz. Se hizo porque el montaje relativo
+dejó el contenedor apuntando a un worktree ya borrado, con `localhost:8081` en 404 para todas las
+rutas y sin ningún aviso. La escotilla explícita, cuando de verdad quieres ver tu rama, es
+`LPS_CODE_ROOT="$(pwd)" docker compose up -d app` — y devolverlo a la raíz al terminar. El falso
+verde que describe esta sección **sigue siendo el riesgo**; lo que cambia es que ahora es predecible
+y tiene una palanca con nombre. Ver [[variable-vacia-tapa-el-env]].
+
 Lo de arriba se lee como higiene de datos, y el filo peor no es ese. Si trabajas en un worktree y
 el stack que corre es el del árbol principal, **`localhost:8081` sirve los archivos del árbol
 principal, no los tuyos**. Entonces una captura «del después» muestra el archivo **viejo**: verificas

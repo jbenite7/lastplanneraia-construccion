@@ -144,8 +144,24 @@ $(document).ready(function() {
         },
         buttonsStyling: false,
         allowOutsideClick: false,
+        // Escape desactivado a proposito, y NO porque la libreria falle: la afirmacion que
+        // estaba escrita aqui —«SweetAlert2 11.4.24 no dispara el cierre ni con el flag
+        // activo»— era falsa, y se corrigio el 2026-08-18. Con Playwright contra este mismo
+        // contenedor, Escape cierra este modal, `AIA.Notice.confirm` y `Swal.fire` en
+        // /login y en /programacion-semanal. Lo que fallaba era el instrumento: el panel
+        // Browser integrado tiene el reloj de animaciones congelado, y SweetAlert2 desmonta
+        // el popup en `animationend`, asi que alli ningun dialogo se cierra nunca. Ver
+        // `memoria/trampas/panel-browser-no-anima.md`.
+        //
+        // El motivo real de dejarlo en false: un Escape accidental cae en el `.then()` de
+        // abajo como `dismiss` y navega a `/login/cancelar`, que destruye la sesion
+        // pendiente. Descartaria la contrasena a medio teclear y ademas cerraria la sesion.
+        // No es trampa de teclado (WCAG 2.1.2): la salida es el boton «Volver al inicio de
+        // sesion», alcanzable con Tab.
         allowEscapeKey: false,
         confirmButtonText: 'Actualizar y Acceder',
+        showCancelButton: true,
+        cancelButtonText: 'Volver al inicio de sesión',
         showLoaderOnConfirm: true,
         preConfirm: () => {
             const password = document.getElementById('new_password').value;
@@ -185,6 +201,13 @@ $(document).ready(function() {
             });
         }
     }).then((result) => {
+        if (result.dismiss) {
+            // Sin esto el modal es una trampa: la sesión pendiente lo vuelve a abrir en cada
+            // recarga y /logout no la limpia porque exige sesión completa.
+            window.location.href = '/login/cancelar';
+            return;
+        }
+
         if (result.isConfirmed && result.value.success) {
             AIA.Notice.success(result.value.message).then(() => {
                 window.location.href = '/proyectos';
