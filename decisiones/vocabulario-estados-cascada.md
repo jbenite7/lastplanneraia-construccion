@@ -97,3 +97,24 @@ parte de por qué hay 35 términos. Separarlo del eje de estado sería la resta 
 frente — y toca datos guardados, así que se consulta.
 
 **Qué quedó saltado.** Los tres términos.
+
+---
+
+## Respuestas del usuario, relatadas por la coordinadora — 2026-08-18
+
+- **D-VOC-1:** el usuario ve bien la dirección (tres ejes) pero pide **replantear el diseño antes
+  de ejecutar**. No ejecutar el plan tal como está: se reabre la fase de diseño y se vuelve a
+  presentar. Consecuencia: el censo final (¿29?) queda sin fijar hasta el replanteo.
+- **D-VOC-3:** el usuario corrige la premisa de la medición: `programa-general` es **el cronograma
+  del proyecto** y `programa-general-actualizar` es **el actualizador de cronogramas a nuevas
+  versiones desde Project**. No son dos vistas equivalentes de la misma tabla: son dos herramientas
+  distintas. La recomendación de absorber `Bloqueado` pierde su base — un estado propio del
+  actualizador (p. ej. una fila que la nueva versión no puede mover) puede tener sentido allí.
+  **Reevaluar con ese contexto antes de tocar nada.**
+- **D-VOC-4:** el usuario pide **revisar esto más a fondo** antes de decidir. Preparar un análisis
+  ampliado de los tres términos (`Control`, `Capítulo`, `Programada Manualmente`): dónde aparecen,
+  qué significan para la obra, qué costaría cada opción — incluido el impacto en datos de
+  `Capítulo` (D-VOC-2). Ninguna acción hasta ese análisis.
+- Nota de la coordinadora (observación propia, no decisión del usuario): D-1 del frente
+  `contrato-estados-modulo-fantasma` (aserciones de censo) quedó aprobada en su opción (a), pero su
+  número final depende de este replanteo — coordinar ambos cierres.

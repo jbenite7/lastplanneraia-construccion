@@ -72,10 +72,12 @@ El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 | [[entorno-y-despliegue]] | Docker, puerta de servicio, worktrees, SiteGround |
 | [[qa-y-gates]] | Suites de prueba, rojos preexistentes, evidencia |
 
-Además: **[[estado|Estado de los goals]]** (qué goal está abierto, cerrado o absorbido),
-**[[registro-de-trabajo|Registro de trabajo]]** (cada spec de diseño con el plan que la ejecutó,
-por mes, incluido lo archivado) y **[[log]]** (bitácora cronológica de lo que se ha ingerido y
-verificado).
+Además: **[[cola-de-pendientes|Cola de pendientes]]** (el tablero de control: qué corre ya, qué
+se replantea y qué espera, en el orden que fijó el usuario), **[[estado|Estado de los goals]]**
+(qué goal está abierto, cerrado o absorbido), **[[registro-de-trabajo|Registro de trabajo]]**
+(cada spec de diseño con el plan que la ejecutó, por mes, incluido lo archivado) y **[[log]]**
+(bitácora cronológica de lo que se ha ingerido y verificado). En el catálogo, la vista
+**«Abierto ahora»** lista todo lo `estado: abierto` — es la foto operativa del momento.
 
 ## La biblia de flujos: qué **debe** hacer la aplicación
 

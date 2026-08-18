@@ -18,3 +18,11 @@ coordinadora por mensaje 2026-08-12 ~15:58Z.
 El goal afirmaba que el artefacto de CI guarda solo `assetInventorySha256`. Medido sobre la corrida
 `31566518358`: los `sample-N.json` traen `provenance.assets` completo. Corregido en el informe;
 no se montó runtime nuevo porque la medición instrumentada con sha ya existía (`c014874c`).
+
+---
+
+## Cierre relatado por la coordinadora — 2026-08-18
+
+La escalada de titularidad quedó resuelta por el usuario el 2026-08-12: ed7ffb0f entregó (informe
+de atribución publicado); cc2c531d descartó su copia. El usuario confirmó hoy el cierre. Sin
+pendientes en este archivo.

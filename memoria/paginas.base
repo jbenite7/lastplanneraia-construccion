@@ -10,6 +10,16 @@ properties:
     displayName: Fecha
 views:
   - type: table
+    name: Abierto ahora
+    filters:
+      and:
+        - note.estado == "abierto"
+    order:
+      - file.name
+      - resumen
+      - areas
+      - fecha
+  - type: table
     name: Decisiones
     filters:
       and:

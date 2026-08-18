@@ -237,3 +237,14 @@ la línea `DEV_DOOR_USERS` (grep sobre tests/design-system y tests/*.php: 0 ancl
   cambia por integrar, entrega de nuevo). Después reubica tu rama sin `0f968d2f`.
 - Verificación mía por segundo camino sobre `365c486e`: `visual-ci-contract` 12/12; el rojo restante
   de mi corrida estática fue del instrumento (worktree sin `.env`/Docker), no del commit.
+
+---
+
+## Respuesta del usuario, relatada por la coordinadora — 2026-08-18
+
+- **D-7:** confirmado — añadir `test.C` a `DEV_DOOR_USERS` en `docker-compose.ci.yml` y re-medir.
+- **D-GAC-5(b):** confirmado — ejecutar el encargo del baseline 0.3.4 tal como está descrito.
+- **Contexto nuevo:** el usuario percibe el sistema de gates como «un palo en la rueda» y pidió
+  argumentos para mejorarlo y optimizarlo. La coordinadora abrió una línea de trabajo aparte
+  (optimización del pipeline de gates dentro del programa de design system); este frente cierra
+  con lo suyo (8/8) sin ampliar alcance.

@@ -36,3 +36,12 @@
 - **Qué NO se hace aquí:** tocar `.gitignore` está fuera del alcance de este frente y afecta a
   todas las sesiones vivas. Queda dicho, no hecho.
 - **Estado:** informada a la coordinadora en la escalada.
+
+---
+
+## Respuesta del usuario, relatada por la coordinadora — 2026-08-18
+
+**D-1 aprobada en la opción (a):** ajustar ambas aserciones al censo que quede. **Condición
+añadida por la coordinadora:** el número final depende del **replanteo** que el usuario pidió en
+D-VOC-1 (el diseño de vocabulario se reabre), así que no fijar `>= 12` hasta que ese replanteo
+entregue el censo definitivo — ajustar entonces, en un solo movimiento.
