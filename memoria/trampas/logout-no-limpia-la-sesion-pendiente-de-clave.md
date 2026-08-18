@@ -30,10 +30,21 @@ Dos detalles del arreglo que conviene no deshacer:
 completa —salir, cancelar, recuperar— tiene que estar en `$publicRoutes`. Si no, el middleware la
 convierte en una redirección silenciosa a `/login` y el efecto que esperabas nunca ocurre.
 
-Al medirlo salió otro hallazgo aparte, que **no** es de este flujo: con SweetAlert2 11.4.24 la
-tecla Escape no cierra **ningún** diálogo de la aplicación, ni con `allowEscapeKey: true` ni con un
-evento sintético. Por eso el modal deja el flag en `false` con el hallazgo escrito al lado, y la
-salida real es el botón. Queda como trabajo con sesión propia.
+**Corregido el 2026-08-18.** Aquí decía que al medirlo había salido otro hallazgo aparte —que con
+SweetAlert2 11.4.24 la tecla Escape no cierra **ningún** diálogo de la aplicación, ni con
+`allowEscapeKey: true` ni con un evento sintético—. **Era falso, y lo eran las dos mediciones que
+lo sostenían.** Con Playwright contra este mismo contenedor, Escape cierra el diálogo en `/login`
+—incluida la forma exacta de este modal con el flag en `true`— y en `/programacion-semanal`. Las
+dos medidas fallaron por su instrumento, no por la aplicación: la pulsación real se hizo en el
+panel Browser integrado, que tiene el reloj de animaciones congelado
+([[panel-browser-no-anima]] — reincidencia, la página ya describía este mismo síntoma con
+SweetAlert2 desde el 2026-08-06), y el evento sintético se lanzó sobre `document`, donde
+SweetAlert2 no escucha ([[evento-sintetico-no-alcanza-al-popup]]).
+
+El modal sigue con `allowEscapeKey: false`, pero por el motivo real, ya escrito en la vista: un
+Escape accidental cae en el `.then()` como `dismiss` y navega a `/login/cancelar`, que destruye la
+sesión pendiente; descartaría la contraseña a medio teclear y además cerraría la sesión. No es
+trampa de teclado, porque el botón «Volver al inicio de sesión» es alcanzable con Tab.
 
 Ver también [[dev-door-acceso-local]], la otra ruta que vive fuera del middleware, y
 [[un-if-de-autorizacion-no-es-toda-la-autorizacion]], que es la misma pregunta —quién comprueba

@@ -49,5 +49,19 @@ dark, contra el mismo contenedor). Vale para `animationend`, `transitionend`, `r
 y cualquier callback encadenado a ellos. Para lo estático —capas, tokens, texto, red— el panel sigue
 siendo válido y más barato.
 
+**Reincidencia del 2026-08-18, con máscara nueva: «Escape no cierra los modales».** Es este mismo
+diálogo de SweetAlert2 y este mismo desmontaje, medido esta vez desde el teclado en vez de desde el
+botón, y volvió a reportarse como defecto de la aplicación —esta vez culpando a la versión de la
+librería, y llegando a escribirse como comentario en `views/auth/login.view.php`—. Lo que se ve
+cuando la máscara es el teclado: `Swal.isVisible()` se queda en `true` para siempre y parece que la
+tecla no hizo nada. **La sonda que lo destapa en un paso: `event.defaultPrevented`.** Salió `true`,
+o sea que el handler de Escape sí corrió y sí llamó a `preventDefault()` — el teclado estaba bien y
+lo que no terminaba era el cierre. Con Playwright, el mismo Escape cierra el diálogo en `/login`
+—incluida la forma exacta del modal de cambio obligatorio de contraseña— y en
+`/programacion-semanal`.
+
+El otro falso negativo del mismo informe no era del panel y tiene ficha aparte:
+[[evento-sintetico-no-alcanza-al-popup]].
+
 Relacionado: [[captura-playwright-miente]] (la otra herramienta de inspección que miente, por el
 motivo contrario: sí corre, pero retrata el momento equivocado), [[auth-capado-y-sin-red-externa]].
