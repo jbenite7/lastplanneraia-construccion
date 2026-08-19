@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-a41-diferidos-configuracion-pasos-design.md
+resumen: goals/pdc-preparar-b1 - Origen: decisión del grilleo de A4.1 (2026-07-28), que los registró fuera de alcance dejando constancia de que ninguno bloquea B1. El…
+---
+
 # PDC v2 — Los cuatro diferidos de A4.1 (configuración de pasos) — Design
 
 - **Fecha:** 2026-07-29

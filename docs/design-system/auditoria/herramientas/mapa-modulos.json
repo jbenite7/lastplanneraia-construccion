@@ -1,0 +1,259 @@
+{
+  "_nota": "Modulo -> archivos que le pertenecen. Derivado del grafo de <link>/@import (README §grafo) y del grep de vistas; verificado archivo a archivo, no adivinado por nombre.",
+  "autenticacion": {
+    "vistas": [
+      "views/auth/"
+    ],
+    "css": [
+      "public/css/login-brand-unified.css"
+    ],
+    "js": []
+  },
+  "selector-de-proyectos": {
+    "vistas": [
+      "views/core/project_selector.view.php"
+    ],
+    "css": [
+      "public/css/project-selector.css"
+    ],
+    "js": []
+  },
+  "programa-general": {
+    "vistas": [
+      "views/programa-general/"
+    ],
+    "css": [
+      "public/css/programa-general.css",
+      "public/css/design-system/adapters/programa-general-handsontable.css"
+    ],
+    "js": [
+      "public/js/modules/programa_general"
+    ]
+  },
+  "cronograma": {
+    "vistas": [
+      "views/programa-general-actualizar/"
+    ],
+    "css": [
+      "public/css/programa-general-actualizar.css",
+      "public/css/tom-select-premium-aia.css"
+    ],
+    "js": [
+      "public/js/modules/programa_actualizar"
+    ]
+  },
+  "programacion-intermedia": {
+    "vistas": [
+      "views/programacion-intermedia/"
+    ],
+    "css": [
+      "public/css/programacion-intermedia.css"
+    ],
+    "js": [
+      "public/js/modules/programacion_intermedia"
+    ]
+  },
+  "programacion-semanal": {
+    "vistas": [
+      "views/programacion-semanal/programacion_semanal.view.php"
+    ],
+    "css": [
+      "public/css/programacion-semanal.css",
+      "public/css/change-monitor.css"
+    ],
+    "js": [
+      "public/js/modules/programacion_semanal"
+    ]
+  },
+  "submodulo-cnp": {
+    "vistas": [
+      "views/programacion-semanal/CNP.view.php"
+    ],
+    "css": [
+      "public/css/programacion-semanal.css"
+    ],
+    "js": []
+  },
+  "submodulo-cnc": {
+    "vistas": [
+      "views/programacion-semanal/CNC.view.php"
+    ],
+    "css": [
+      "public/css/programacion-semanal.css"
+    ],
+    "js": []
+  },
+  "submodulo-cic": {
+    "vistas": [
+      "views/programacion-semanal/CIC.view.php"
+    ],
+    "css": [
+      "public/css/programacion-semanal.css"
+    ],
+    "js": []
+  },
+  "plan-de-compras": {
+    "vistas": [
+      "views/plan-compras/"
+    ],
+    "css": [
+      "pdc-app/src/styles.css"
+    ],
+    "js": [
+      "pdc-app/src"
+    ]
+  },
+  "profesionales": {
+    "vistas": [
+      "views/profesionales/"
+    ],
+    "css": [
+      "public/css/profesionales.css"
+    ],
+    "js": []
+  },
+  "subcontratistas": {
+    "vistas": [
+      "views/subcontratistas/"
+    ],
+    "css": [
+      "public/css/subcontratistas.css"
+    ],
+    "js": []
+  },
+  "control-de-cambios": {
+    "vistas": [
+      "views/control-cambios/"
+    ],
+    "css": [
+      "public/css/control-cambios.css"
+    ],
+    "js": []
+  },
+  "indicadores": {
+    "vistas": [
+      "views/indicadores/"
+    ],
+    "css": [
+      "public/css/indicadores.css"
+    ],
+    "js": []
+  },
+  "torre-de-control-bi": {
+    "vistas": [
+      "views/bi/"
+    ],
+    "css": [
+      "public/css/bi-control-tower.css",
+      "public/css/bi-filter-drawer.css",
+      "public/css/design-system/adapters/bi-utilities.css"
+    ],
+    "js": [
+      "public/js/modules/bi_chart_theme.js"
+    ]
+  },
+  "escalamientos-y-crisis": {
+    "vistas": [
+      "views/dashboard/"
+    ],
+    "css": [
+      "public/css/escalamientos.css"
+    ],
+    "js": []
+  },
+  "panel-admin": {
+    "vistas": [
+      "admin/views/"
+    ],
+    "css": [
+      "admin/public/css/admin-custom.css",
+      "admin/public/css/utilities.css",
+      "admin/public/css/admin-entrypoint.css",
+      "admin/public/css/admin-auth-entrypoint.css",
+      "public/css/design-system/adapters/admin-lte.css"
+    ],
+    "js": []
+  },
+  "laboratorio-design-system": {
+    "vistas": [
+      "views/design-system/"
+    ],
+    "css": [
+      "public/css/design-system/lab.css",
+      "public/css/design-system/laboratory-foundation.css",
+      "public/css/design-system/lab-entrypoint.css"
+    ],
+    "js": []
+  },
+  "_compartido": {
+    "vistas": [
+      "views/partials/"
+    ],
+    "css": [
+      "public/css/styles.css",
+      "public/css/buttons.css",
+      "public/css/access.css",
+      "public/css/tokens.css",
+      "public/css/design-system/core.css",
+      "public/css/design-system/foundation.css",
+      "public/css/design-system/fonts.css"
+    ],
+    "js": [
+      "public/js/modules/aia_ui"
+    ]
+  },
+  "_vendor": {
+    "vistas": [],
+    "css": [
+      "public/css/handsontable-module.css",
+      "public/css/handsontable-header-global.css",
+      "public/css/design-system/adapters/handsontable.css",
+      "public/css/design-system/vendor-datatables-legacy.css",
+      "public/css/design-system/adapters/datatables.css",
+      "public/css/design-system/adapters/select2.css",
+      "public/css/design-system/adapters/sweetalert2.css",
+      "public/css/design-system/adapters/tom-select.css",
+      "public/css/design-system/adapters/legacy-bridge.css"
+    ],
+    "js": []
+  },
+  "_sistema": {
+    "vistas": [],
+    "css": [
+      "public/css/design-system/adapters/lps-drawer.css",
+      "public/css/design-system/adapters/shell-sidebar.css",
+      "public/css/design-system/components/action-group.css",
+      "public/css/design-system/components/bi-figure.css",
+      "public/css/design-system/components/data-display.css",
+      "public/css/design-system/components/dialog.css",
+      "public/css/design-system/components/filter-form.css",
+      "public/css/design-system/components/ht-empty-state.css",
+      "public/css/design-system/components/navigation.css",
+      "public/css/design-system/components/ops-state-chip.css",
+      "public/css/design-system/components/page-header.css",
+      "public/css/design-system/components/primitives.css",
+      "public/css/design-system/components/states-feedback.css",
+      "public/css/design-system/components/table-filter-trigger.css",
+      "public/css/design-system/components/toolbar-controls.css"
+    ],
+    "js": [
+      "public/js/modules/aia_ui/theme.js",
+      "public/js/modules/aia_ui/theme-bootstrap.js"
+    ]
+  },
+  "_entrypoints": {
+    "vistas": [],
+    "css": [
+      "public/css/design-system/entrypoints/attach-adminlte.css",
+      "public/css/design-system/entrypoints/attach-anychart.css",
+      "public/css/design-system/entrypoints/attach-handsontable.css",
+      "public/css/design-system/entrypoints/attach-jquery-ui.css",
+      "public/css/design-system/entrypoints/attach-select2.css",
+      "public/css/design-system/entrypoints/attach-sweetalert2.css",
+      "public/css/design-system/entrypoints/core.css",
+      "public/css/design-system/entrypoints/theme-overrides.css",
+      "public/css/aia-design-system.css"
+    ],
+    "js": []
+  }
+}

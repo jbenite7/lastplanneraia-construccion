@@ -1,0 +1,57 @@
+{
+  "muestras": [
+    {
+      "clase": "pi-state-blocked-overdue-critical",
+      "etiqueta": "RC inicio vencido",
+      "fondo": "#431414"
+    },
+    {
+      "clase": "pi-state-blocked-overdue",
+      "etiqueta": "Inicio vencido",
+      "fondo": "#452501"
+    },
+    {
+      "clase": "pi-state-blocked-due",
+      "etiqueta": "Inicio por Habilitar",
+      "fondo": "#3a3a0f"
+    },
+    {
+      "clase": "pi-state-execution-blocked",
+      "etiqueta": "En Ejecución Pendiente",
+      "fondo": "#173d26"
+    },
+    {
+      "clase": "pi-state-alert-1-week",
+      "etiqueta": "Alistamiento Urgente",
+      "fondo": "#3a3a0f"
+    },
+    {
+      "clase": "pi-state-alert-2-3-weeks",
+      "etiqueta": "Alistamiento en Riesgo",
+      "fondo": "#3a3a0f"
+    },
+    {
+      "clase": "pi-state-alert-4-6-weeks",
+      "etiqueta": "Alistamiento Pendiente",
+      "fondo": "#1c241f"
+    },
+    {
+      "clase": "pi-state-liberated-control",
+      "etiqueta": "Listo para Comprometer",
+      "fondo": "#173d26"
+    },
+    {
+      "clase": "(sin estado)",
+      "etiqueta": "Pdto. Constructivo y Modelo BIM",
+      "fondo": "#fef3c7"
+    }
+  ],
+  "coloresDistintos": [
+    "#431414",
+    "#452501",
+    "#3a3a0f",
+    "#173d26",
+    "#1c241f",
+    "#fef3c7"
+  ]
+}

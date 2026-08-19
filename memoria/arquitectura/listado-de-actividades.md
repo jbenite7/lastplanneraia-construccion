@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: derogada
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Listado de Actividades (PDC v1): era el CRUD de actividades sobre el que se armaba el PDC v1; eliminado del repositorio el 2026-08-04"
 ---

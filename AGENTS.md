@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-30
+tags: [leer-antes-de-tocar]
+fuente: AGENTS.md
+resumen: Contrato del repo para asistentes: runtime Docker, tablas globales con project_id, RBAC, routing por tipo de cambio y el gate de publicacion de nueve pasos.
+---
+
 # AGENTS.md — Last Planner AIA
 
 ## Autoridad y alcance

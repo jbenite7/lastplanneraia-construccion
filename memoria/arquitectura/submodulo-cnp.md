@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "CNP: registra por qué una actividad del look-ahead no entró a la semana comprometida"
 ---

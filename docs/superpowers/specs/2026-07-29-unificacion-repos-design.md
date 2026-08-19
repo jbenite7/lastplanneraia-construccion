@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-unificacion-repos-design.md
+resumen: Unificar plan-de-compras dentro de lastplanneraia-construccion — diseño
+---
+
 # Unificar `plan-de-compras` dentro de `lastplanneraia-construccion` — diseño
 
 Fecha: 2026-07-29. Decidido con el usuario en el grilleo de esta fecha.

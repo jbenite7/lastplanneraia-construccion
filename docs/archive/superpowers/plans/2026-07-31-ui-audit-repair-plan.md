@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-31
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-31-ui-audit-repair-plan.md
+resumen: Elevar el puntaje de diseño y jerarquía visual de todas las 18+ superficies de Last Planner AIA a 10/10 bajo los principios de Refactoring UI y el contrato…
+---
+
 # Plan de Reparación UI End-to-End (Auditoría 10/10)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

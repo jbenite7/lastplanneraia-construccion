@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: goal
 estado: vigente
 fecha: 2026-08-02

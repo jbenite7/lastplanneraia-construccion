@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/plans/F1-styles-css.plan.md
+resumen: Que public/css/styles.css deje de existir, repartiendo su contenido entre las capas correctas y los componentes canónicos, sin dejar un archivo residual…
+---
+
 # F1 · Desmantelar `styles.css` — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

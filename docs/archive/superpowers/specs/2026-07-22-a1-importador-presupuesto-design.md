@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-22
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-22-a1-importador-presupuesto-design.md
+resumen: Diseño: Fase A1 — Importador de presupuesto
+---
+
 # Diseño: Fase A1 — Importador de presupuesto
 
 **Fecha:** 2026-07-22

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -69,6 +70,12 @@ Recorrido A1–A4 y B1, todos cerrados:
 - [[goals/retiro-listado-contratos/goal|retiro-listado-contratos]] — retiró las dos superficies viejas, lo que dejó sin objeto a [[goals/validar-migracion-handsontable/goal|validar-migracion-handsontable]].
 
 Estado y matices en [[estado|Estado de los goals]].
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-pdc.base]]
 
 ## Vecinos
 

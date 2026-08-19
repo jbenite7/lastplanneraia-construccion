@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-11
+areas: [design-system]
+fuente: docs/design-system/medicion-gates-2026-08-11.md
+resumen: Medido sobre b313de3f, en el worktree elegant-jones-d4126a, con COMPOSEFILE=docker-compose.wt.yml (sin eso, docker compose exec app resuelve al contenedor del…
+---
+
 # Medición de los quince gates de cierre — 2026-08-11
 
 **Medido sobre `b313de3f`**, en el worktree `elegant-jones-d4126a`, con

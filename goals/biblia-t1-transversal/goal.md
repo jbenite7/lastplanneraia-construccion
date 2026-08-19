@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: goals/biblia-t1-transversal/goal.md
+resumen: Que la entrada a la aplicación —autenticación, selección de proyecto y resolución de capacidades por rol— tenga cada escenario descrito con detalle atómico…
+---
+
 # Goal — Biblia de flujos · T1 transversal
 
 **Slug:** `biblia-t1-transversal`

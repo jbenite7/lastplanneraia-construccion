@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-30
+areas: [pdc, rbac, bi]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-30-b3-torre-control-pdc.md
+resumen: Que la Torre de Control (/bi/control-tower) responda «cómo van las compras en todas mis obras» con los cuatro indicadores del comité, consumiendo los cálculos…
+---
+
 # Fase B3 — El plan de compras en la Torre de Control — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

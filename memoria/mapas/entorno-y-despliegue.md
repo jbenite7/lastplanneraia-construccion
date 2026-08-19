@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -53,6 +54,13 @@ No se puede navegar el entorno remoto como si fuera local:
 
 No se hace commit, push ni deploy sin petición explícita. Una publicación aprobada no autoriza
 limpiar deriva del servidor ni desplegar de paso otros cambios.
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-docker.base]]
+![[area-deploy.base]]
 
 ## Vecinos
 

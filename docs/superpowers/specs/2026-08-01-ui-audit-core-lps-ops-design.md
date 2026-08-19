@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-01
+areas: [lps]
+fuente: docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design.md
+resumen: Aplicar los estándares de la skill impeccable (audit, harden, polish) de manera sistemática a todo el frontend heredado (Legacy) de la aplicación, abarcando…
+---
+
 # Impeccable Audit & Refactor Design: Core LPS & Ops
 
 ## Objetivo

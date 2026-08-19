@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-a2-maestro-insumos.md
+resumen: Catálogo global único de insumos de AIA (generalmaestroinsumos) alimentado desde los presupuestos importados: consolidación de insumos únicos por versión…
+---
+
 # Fase A2: Maestro de Insumos — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-a25-importador-maestro-sinco.md
+resumen: Sembrar generalmaestroinsumos con el maestro autoritativo de AIA exportado de SINCO (3.088 insumos, con código estable, Agrupación, Tipo de recurso y valor)…
+---
+
 # Fase A2.5: Importador del maestro SINCO — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

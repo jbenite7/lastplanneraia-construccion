@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-18
+areas: [deploy]
+fuente: docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design.md
+resumen: Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda
+---
+
 # Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda
 
 - **Fecha:** 2026-08-18

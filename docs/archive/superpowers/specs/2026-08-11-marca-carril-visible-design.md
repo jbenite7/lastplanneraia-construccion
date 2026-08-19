@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-08-11
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-08-11-marca-carril-visible-design.md
+resumen: La aserción de la marca del carril comprueba que se vea, no que declare un filtro
+---
+
 # La aserción de la marca del carril comprueba que se vea, no que declare un filtro
 
 - Fecha: 2026-08-11

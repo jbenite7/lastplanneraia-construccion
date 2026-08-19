@@ -1,16 +1,26 @@
 <?php
 
 /**
- * Reconciles the historical BI view contract against its global sources.
- * All database assertions are read-only SELECT statements.
+ * Reconciles the historical BI view contract against deterministic fixture data.
+ *
+ * Database assertions run only against the sacrificial fixture projects: the contract under
+ * test is the VIEW LOGIC (grain, populations, duration math), not the health of the shared
+ * dev database. Reconciling against every live project made the test fail whenever another
+ * session restored dirty data (e.g. rows with a NULL Consecutivo_en_Programa in projects
+ * 62/65/68, measured 2026-08-19) — failures unrelated to the SQL contracts this test guards.
+ * The fixture writes happen inside a transaction that rolls back on shutdown.
  */
 declare(strict_types=1);
 // @requiere: db
 
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/support/BiContractFixture.php';
 
 $db = \Database::getInstance();
+BiContractFixture::seedCausalRows($db);
+BiContractFixture::seedProgramSnapshots($db);
+$fixtureProjectsSql = BiContractFixture::PROYECTO_A . ', ' . BiContractFixture::PROYECTO_B;
 $passed = 0;
 $failed = 0;
 
@@ -98,11 +108,21 @@ if ($curveSql === false || substr_count($curveSql, $clampedProgress) !== 3) {
     biReconciliationPass('Curva S clamps every weighted real-progress calculation to [0,1]');
 }
 
+// Guardia anti-vacuidad: si el fixture dejara de sembrar, las reconciliaciones de abajo
+// pasarían en verde sobre cero filas sin medir nada.
+$fixtureRowCount = (int) $db->query(
+    "SELECT COUNT(*) FROM bi_pg_semana WHERE project_id IN ({$fixtureProjectsSql})",
+)->fetchColumn();
+$fixtureRowCount > 0
+    ? biReconciliationPass('fixture projects expose rows through bi_pg_semana')
+    : biReconciliationFail('fixture projects expose rows through bi_pg_semana');
+
 biAssertZero(
     $db,
     "SELECT COUNT(*) FROM (
         SELECT project_id, Semana, unique_id
         FROM bi_pg_semana
+        WHERE project_id IN ({$fixtureProjectsSql})
         GROUP BY project_id, Semana, unique_id
         HAVING COUNT(*) > 1
     ) AS duplicate_grains",
@@ -116,9 +136,11 @@ biAssertZero(
                1 AS source_row, 0 AS view_row
         FROM programa_consolidado
         WHERE COALESCE(Titulo, 0) = 0
+          AND project_id IN ({$fixtureProjectsSql})
         UNION ALL
         SELECT project_id, Semana, unique_id, 0, 1
         FROM bi_pg_semana
+        WHERE project_id IN ({$fixtureProjectsSql})
     ) AS grains
     GROUP BY project_id, Semana, unique_id
     HAVING SUM(source_row) <> 1 OR SUM(view_row) <> 1",
@@ -129,9 +151,11 @@ biAssertZero(
     $db,
     "SELECT COUNT(*) FROM (
         SELECT project_id, Semana, Consecutivo AS row_id, 1 AS source_row, 0 AS view_row
-        FROM programacion_semanal WHERE Activa IN ('0', '1', 'NA')
+        FROM programacion_semanal
+        WHERE Activa IN ('0', '1', 'NA') AND project_id IN ({$fixtureProjectsSql})
         UNION ALL
         SELECT project_id, Semana, row_id, 0, 1 FROM bi_ps_compromisos
+        WHERE project_id IN ({$fixtureProjectsSql})
     ) AS grains
     GROUP BY project_id, Semana, row_id
     HAVING SUM(source_row) <> 1 OR SUM(view_row) <> 1",
@@ -148,6 +172,7 @@ if ($weeklyPopulationContract) {
           AND bi.Semana = ps.Semana
           AND bi.row_id = ps.Consecutivo
          WHERE ps.Activa IN ('0', '1', 'NA')
+           AND ps.project_id IN ({$fixtureProjectsSql})
            AND (
                COALESCE(bi.is_cnp_population, -1) <> CASE WHEN ps.Activa = '0' AND COALESCE(TRIM(ps.CNP), '') <> '' THEN 1 ELSE 0 END
             OR COALESCE(bi.is_cnc_population, -1) <> CASE WHEN ps.Activa IN ('1', 'NA') AND COALESCE(TRIM(ps.CNC), '') <> '' THEN 1 ELSE 0 END
@@ -162,11 +187,15 @@ if ($weeklyPopulationContract) {
             SELECT project_id, Semana,
                 SUM(Activa = '0' AND COALESCE(TRIM(CNP), '') <> '') AS source_cnp,
                 SUM(Activa IN ('1', 'NA') AND COALESCE(TRIM(CNC), '') <> '') AS source_cnc
-            FROM programacion_semanal GROUP BY project_id, Semana
+            FROM programacion_semanal
+            WHERE project_id IN ({$fixtureProjectsSql})
+            GROUP BY project_id, Semana
         ) source
         LEFT JOIN (
             SELECT project_id, Semana, SUM(is_cnp_population) AS view_cnp, SUM(is_cnc_population) AS view_cnc
-            FROM bi_ps_compromisos GROUP BY project_id, Semana
+            FROM bi_ps_compromisos
+            WHERE project_id IN ({$fixtureProjectsSql})
+            GROUP BY project_id, Semana
         ) view USING (project_id, Semana)
         WHERE source.source_cnp <> COALESCE(view.view_cnp, 0)
            OR source.source_cnc <> COALESCE(view.view_cnc, 0)",
@@ -183,6 +212,7 @@ biAssertZero(
        AND pg.Semana = pc.Semana
        AND pg.unique_id = pc.Consecutivo_en_Programa
      WHERE COALESCE(pc.Titulo, 0) = 0
+       AND pc.project_id IN ({$fixtureProjectsSql})
        AND pc.Fecha_Inicio IS NOT NULL
        AND pc.Fecha_Inicio = pc.Fecha_Fin
        AND pg.duration_days <> 1",

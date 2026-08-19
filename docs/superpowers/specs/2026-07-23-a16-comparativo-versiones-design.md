@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-23
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-23-a16-comparativo-versiones-design.md
+resumen: Diseño: Fase A1.6 — Comparativo de versiones del presupuesto
+---
+
 # Diseño: Fase A1.6 — Comparativo de versiones del presupuesto
 
 **Fecha:** 2026-07-23

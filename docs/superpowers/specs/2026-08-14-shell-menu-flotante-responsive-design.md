@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-14
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design.md
+resumen: Menú flotante del shell por debajo de 1180 px
+---
+
 # Menú flotante del shell por debajo de 1180 px
 
 - Fecha: 2026-08-14

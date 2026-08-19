@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [pdc]
+fuente: goals/biblia-t3-pdc/goal.md
+resumen: Que el Plan de Compras v2 —presupuesto → maestro de insumos → paquetes de contratación → plan con fechas → seguimiento— tenga cada escenario descrito…
+---
+
 # Goal — Biblia de flujos · T3 PDC
 
 **Slug:** `biblia-t3-pdc`

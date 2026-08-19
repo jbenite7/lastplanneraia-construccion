@@ -1,9 +1,12 @@
 ---
-project: lps-aia
-type: readme
-status: activo
-updated: 2026-08-19
-tags: [proyecto, php]
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso, arquitectura]
+tags: [leer-antes-de-tocar]
+fuente: README.md
+resumen: Puerta de entrada al repo — qué es Last Planner AIA, con qué stack corre, cómo se levanta y dónde está cada cosa.
 ---
 
 # Last Planner AIA
@@ -46,7 +49,8 @@ puede sostener.
 ## Cómo correr
 
 ```bash
-# 1. .env desde .env.example (credenciales de prueba en GEMINI.md §5; roles: test.A, test.D, test.R…)
+# 1. .env: NO hay .env.example — se copia de un .env existente. Claves en GEMINI.md §Base de Datos
+#    y README §3.1 (correo). En un worktree se enlaza el de la raíz, no se copia.
 # 2. Levantar el stack
 docker compose up -d --build db app adminer
 
@@ -55,6 +59,11 @@ docker compose exec app php scripts/run-php-tests.php --nivel=puro
 docker compose exec app vendor/bin/phpstan analyse src admin/src --memory-limit=1G
 npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
 ```
+
+**La sesión local se abre por la puerta de servicio, nunca tecleando credenciales en `/login`:**
+`http://localhost:8081/dev/entrar?u=test.R&p=<Proyecto_Proceso>` (`test.A` Admin, `test.R`
+Residente, `test.V` Visualizador; sin `p` aterriza en `/proyectos`). Necesita `DEV_DOOR=1` y
+`DEV_DOOR_USERS` en `.env`. No existe en producción — ver `src/Core/DevDoor.php`.
 
 Recuperación de contraseña necesita `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`,
 `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` y el patch

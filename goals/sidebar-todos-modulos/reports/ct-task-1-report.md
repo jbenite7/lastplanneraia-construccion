@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/ct-task-1-report.md
+resumen: node tests/browser/shell-sidebar-rollout.mjs → 60/60 checks OK, exit 0 (los 5 checks de /bi/control-tower pasan: default colapsado, toggle, cero-scroll del…
+---
+
 # Control Tower — Tarea 1: chrome del shell + tabs de hojas
 
 **Status:** DONE

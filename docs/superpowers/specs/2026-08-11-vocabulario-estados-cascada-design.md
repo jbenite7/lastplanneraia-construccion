@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design.md
+resumen: Unificar los vocabularios de estado de la cascada — spec
+---
+
 # Unificar los vocabularios de estado de la cascada — spec
 
 - Frente: `vocabulario-estados-cascada` · sesión ejecutora `36422d59`

@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [arquitectura, design-system]
+tags: [generado]
 fuente: public/index.php
 resumen: "Núcleo y runtime: sesión, contexto de semana activa y los assets del design system que sirve cada request"
 ---

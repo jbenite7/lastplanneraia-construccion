@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/ci-en-verde/goal.md
+resumen: Devolver el workflow design-system.yml a verde, rojo desde el 2026-07-17, aplicando D-GAC-1: la aserción del contrato de Programa General permite !important…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: ci-en-verde
 

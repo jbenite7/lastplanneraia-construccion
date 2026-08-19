@@ -189,5 +189,14 @@ function pg_calculate_status(
         return 'Debe Iniciar';
     }
 
+    // Fuera del lookahead: la actividad no entra todavia en la ventana de planificacion. Es una
+    // posicion en el tiempo, no un grado de urgencia, y por eso el contrato la declara SIN nivel
+    // de gravedad (docs/design-system/ds-f1a-escala-estado.json). El umbral son las 6 semanas de
+    // PG_LOOKAHEAD_DAYS = 42: a partir de la septima, fuera.
+    $offset = pg_calculate_week_offset($fechaInicioActividad, $fechaInicioSemana);
+    if ($offset !== null && $offset >= 7) {
+        return 'Fuera de Ventana';
+    }
+
     return 'Actividad Futura';
 }

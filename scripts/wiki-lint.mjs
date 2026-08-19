@@ -1,29 +1,39 @@
 #!/usr/bin/env node
-// Operación `lint` de la wiki `memoria/` (patrón LLM Wiki).
-// Comprueba y reporta; nunca corrige. Ver memoria/index.md.
+// Operación `lint` del vault (patrón LLM Wiki), esquema v2.
+// Comprueba y reporta; nunca corrige. Ver docs/wiki-operacion.md.
+//
+// v2 lintea las tres capas, pero no con las mismas reglas:
+//   · `wiki`    (memoria/)            — frontmatter, enlaces, un-hecho-por-nota, alcanzabilidad.
+//   · `fuente`  (docs/, goals/, raíz) — SOLO el frontmatter. El cuerpo no se mira ni se toca.
+//   · `esquema` (docs/wiki-operacion.md) — como fuente.
+//
+// Retrocompatible a propósito: `capa` y `tags` se validan si están, y una fuente entra al lint
+// SOLO si su frontmatter declara `capa:`. El backfill de las fuentes es otra tanda; hasta que
+// corra, exigirlo pondría en rojo doscientos archivos que nadie ha tocado todavía. Con
+// `--estricto` se exige a toda fuente declararse, que es como quedará el lint cuando el backfill
+// termine.
+//
+// La activación es por `capa:` y no por «tiene un bloque ---» por un caso real: `DESIGN.md` ya
+// lleva frontmatter, pero es de otra herramienta (el linter Stitch y el panel live leen ahí sus
+// tokens). Medirlo con la vara de la wiki lo ponía en rojo por cuatro campos que no le tocan.
+// Un bloque de metadatos no es una declaración de pertenecer a este esquema; `capa:` sí lo es.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, extname, dirname } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { estadoVeracidad, mensajeVeracidad } from './wiki-veracidad.mjs';
+import { bloqueFrontmatter, campo, deducirCapa, lista, revisarFrontmatter } from './wiki-esquema.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
-
-const AREAS = new Set(['design-system', 'qa', 'docker', 'worktrees', 'pdc',
-  'lps', 'datos', 'rbac', 'deploy', 'bi', 'admin', 'proceso', 'arquitectura']);
-const TIPOS = new Set(['decision', 'trampa', 'mapa', 'goal', 'concepto', 'referencia', 'log',
-  'modulo', 'flujo']);
-const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
-
-function listarMd(dir) {
-  const salida = [];
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) salida.push(...listarMd(p));
-    else if (extname(e.name) === '.md') salida.push(p);
-  }
-  return salida;
-}
+const ESTRICTO = process.argv.includes('--estricto');
+// `--sin-alarma` calla la alarma de veracidad y deja solo la comprobación de FORMA.
+//
+// Existe para poder separar dos cosas que no son iguales y que estaban en el mismo semáforo: un
+// enlace roto o una fuente sin declarar son **defectos de lo que vas a publicar**; la alarma de
+// veracidad es un **contador de commits** que pide trabajo pero no dice que lo tuyo esté mal.
+// Mezcladas, o bloqueas por un contador —y se aprende a saltarse el gate— o no bloqueas por un
+// defecto real. Separadas, cada una puede tener la severidad que le toca.
+const SIN_ALARMA = process.argv.includes('--sin-alarma');
 
 // Índice del vault entero (la raíz del repo), aplicando los filtros de Obsidian.
 const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8')).userIgnoreFilters;
@@ -37,15 +47,16 @@ const vault = [];
     const rel = relative(RAIZ, p);
     if (ignorado(rel + (e.isDirectory() ? '/' : ''))) continue;
     if (e.isDirectory()) recorrer(p);
-    else if (extname(e.name) === '.md' || extname(e.name) === '.base') vault.push(rel);
+    // `.canvas` cuenta como destino enlazable: un canvas es una página del vault como otra
+    // cualquiera. Faltaba, y por eso un enlace correcto a un canvas se reportaba como roto.
+    else if (['.md', '.base', '.canvas'].includes(extname(e.name))) vault.push(rel);
   }
 })(RAIZ);
 
-const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base)$/, '')));
+const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base|canvas)$/, '')));
 const porNombre = new Map();
 for (const f of vault) {
-  const ext = extname(f);
-  const corto = basename(f, ext);
+  const corto = basename(f, extname(f));
   if (!porNombre.has(corto)) porNombre.set(corto, []);
   porNombre.get(corto).push(f);
 }
@@ -53,7 +64,18 @@ for (const f of vault) {
 const hallazgos = [];
 const anota = (cat, archivo, detalle) => hallazgos.push(`${cat} ${archivo}: ${detalle}`);
 
-const paginas = listarMd(WIKI);
+// Archivos que un contrato congela por sha256: se leen, no se les exige nada. Ver
+// `wiki-frontmatter.mjs`, que los excluye por la misma razón y desde el mismo manifiesto.
+const CONGELADOS = (() => {
+  try {
+    const m = JSON.parse(readFileSync(join(RAIZ, 'docs/design-system/manifests/goal-provenance.json'), 'utf8'));
+    return new Set([...(m.canonicalSources ?? []), ...(m.historicalSources ?? [])].map((s) => s.path));
+  } catch { return new Set(); }
+})();
+
+const md = vault.filter((f) => extname(f) === '.md');
+const paginas = md.filter((f) => deducirCapa(f) === 'wiki');
+const fuentes = md.filter((f) => deducirCapa(f) !== 'wiki');
 const indice = readFileSync(join(WIKI, 'index.md'), 'utf8');
 
 // Tipos cubiertos por alguna vista de paginas.base: esas páginas no necesitan enlace desde index.md.
@@ -64,32 +86,24 @@ if (existsSync(rutaBase)) {
   for (const m of base.matchAll(/note\.tipo\s*==\s*"([^"]+)"/g)) tiposCubiertos.add(m[1]);
 }
 
-for (const p of paginas) {
-  const rel = relative(RAIZ, p);
-  const texto = readFileSync(p, 'utf8');
-  const fm = texto.match(/^---\n([\s\S]*?)\n---/)?.[1];
+// ── Capa wiki: frontmatter + cuerpo ──────────────────────────────────────────────────────────
+for (const rel of paginas) {
+  const texto = readFileSync(join(RAIZ, rel), 'utf8');
+  const fm = bloqueFrontmatter(texto);
 
-  if (!fm) { anota('FRONTMATTER', rel, 'sin bloque de frontmatter'); continue; }
+  if (fm === null) { anota('FRONTMATTER', rel, 'sin bloque de frontmatter'); continue; }
 
-  const campo = (k) => fm.match(new RegExp(`^${k}:\\s*(.*)$`, 'm'))?.[1]?.trim();
-  for (const k of ['tipo', 'estado', 'fecha', 'resumen']) {
-    if (!campo(k)) anota('FRONTMATTER', rel, `falta o está vacío: ${k}`);
+  // Una plantilla no es una página de la wiki: es el molde del que salen páginas. Se le comprueba
+  // el vocabulario y nada más — ni sus huecos, ni su cuerpo, ni que esté enlazada desde el índice,
+  // porque un molde no es contenido al que haya que llegar navegando. La exención se apoya en el
+  // tag `plantilla`, que ya está en el vocabulario cerrado que fija la spec de v2, y no en una
+  // regla ad-hoc por carpeta: mover la carpeta no debe cambiar cómo se mide.
+  const molde = lista(fm, 'tags').includes('plantilla');
+
+  for (const f of revisarFrontmatter(fm, { rel, molde, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] })) {
+    anota(f.campo === 'areas' ? 'AREA' : 'FRONTMATTER', rel, f.detalle);
   }
-  if (campo('tipo') && !TIPOS.has(campo('tipo'))) anota('FRONTMATTER', rel, `tipo desconocido: ${campo('tipo')}`);
-  if (campo('estado') && !ESTADOS.has(campo('estado'))) anota('FRONTMATTER', rel, `estado desconocido: ${campo('estado')}`);
-  if (campo('fecha') && !/^\d{4}-\d{2}-\d{2}$/.test(campo('fecha'))) anota('FRONTMATTER', rel, `fecha no ISO: ${campo('fecha')}`);
-
-  let areas = [];
-  const areasInline = fm.match(/^areas:\s*\[(.*)\]$/m)?.[1];
-  if (areasInline !== undefined) {
-    areas = areasInline.split(',').map((s) => s.trim()).filter(Boolean);
-  } else {
-    const areasBloque = fm.match(/^areas:\s*\n((?:^\s*-\s*.+\n?)+)/m)?.[1];
-    if (areasBloque) {
-      areas = [...areasBloque.matchAll(/^\s*-\s*(.+)$/gm)].map((m) => m[1].trim()).filter(Boolean);
-    }
-  }
-  for (const a of areas) if (!AREAS.has(a)) anota('AREA', rel, `fuera de la lista cerrada: ${a}`);
+  if (molde) continue;
 
   // Una nota, un hecho: más de tres hechos numerados delata una nota que debería partirse.
   const numerados = (texto.match(/^(?:\d+\.|\*\*\d+\.)\s/gm) ?? []).length;
@@ -97,8 +111,12 @@ for (const p of paginas) {
 
   // Enlaces
   const limpio = texto.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  for (const m of limpio.matchAll(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g)) {
-    const destino = m[1].trim().replace(/\.(md|base)$/, '');
+  // El separador de alias puede venir escapado (`\|`): dentro de una tabla de Markdown, una
+  // barra sin escapar cortaría la celda, así que `[[destino\|Alias]]` es la forma CORRECTA y no
+  // una errata. Sin contemplarlo, el `\` se colaba en el destino y el enlace salía roto —
+  // medido el 2026-08-19 sobre los tres canvas enlazados desde `index.md`.
+  for (const m of limpio.matchAll(/\[\[([^\]|#\\]+)(?:\\?[|#][^\]]*)?\]\]/g)) {
+    const destino = m[1].trim().replace(/\.(md|base|canvas)$/, '');
     if (porRuta.has(destino)) continue;
     const cand = porNombre.get(basename(destino));
     if (!cand) anota('ENLACE', rel, `roto: [[${destino}]]`);
@@ -106,24 +124,69 @@ for (const p of paginas) {
   }
 
   // Toda página debe ser alcanzable desde el índice o desde una vista de la base.
-  const nombre = basename(p, '.md');
+  const nombre = basename(rel, '.md');
   const enlazadaEnIndice = new RegExp(`\\[\\[${nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\]\\]|[|#])`).test(indice);
   if (!['index', 'log'].includes(nombre)
       && !enlazadaEnIndice
-      && !tiposCubiertos.has(campo('tipo'))) {
+      && !tiposCubiertos.has(campo(fm, 'tipo'))) {
     anota('INDICE', rel, 'no aparece en index.md y ninguna vista de paginas.base la lista');
   }
 }
 
+// ── Capas fuente y esquema: solo el frontmatter ──────────────────────────────────────────────
+let fuentesConFm = 0;
+for (const rel of fuentes) {
+  const fm = bloqueFrontmatter(readFileSync(join(RAIZ, rel), 'utf8'));
+  if (fm === null || !campo(fm, 'capa')) {
+    // Un archivo que un contrato congela por hash no puede declararse, y exigírselo en estricto
+    // pondría en rojo a quien cumple el contrato. Ver CONGELADOS en `wiki-frontmatter.mjs`.
+    if (ESTRICTO && !CONGELADOS.has(rel)) {
+      // El mensaje lleva el remedio dentro a propósito: quien se lo encuentra suele ser alguien
+      // de otro frente que acaba de crear un documento y no tiene por qué conocer este esquema.
+      //
+      // Y cabe en TRES líneas a propósito: `publicar.sh` solo enseña las cuatro últimas de un
+      // gate en rojo, así que un mensaje más largo pierde justo su cabecera —medido—. El ensayo
+      // con `--detalle` se quedó fuera por eso; vive en `docs/wiki-operacion.md`.
+      anota('FUENTE', rel, 'sin frontmatter del esquema v2. El backfill se lo pone, y solo añade '
+        + `metadato: no toca el cuerpo.\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --escribir`
+        + '\n    Si el archivo aún no está en git no hay alta de la que deducir la `fecha`: '
+        + 'esa se pone a mano, y es lo único que el backfill no puede saber.');
+    }
+    continue;
+  }
+  fuentesConFm++;
+  // A una fuente se le exige `resumen` igual que a una página de wiki: es la columna «De qué va»
+  // del catálogo, y un catálogo de 391 filas con esa columna vacía no sirve para filtrar nada.
+  //
+  // Se pudo exigir porque el coste dejó de ser el que parecía. Con una sola regla de deducción
+  // quedaban 222 fuentes sin resumen, y eso hacía ver la Tanda 2 como 222 textos escritos a mano.
+  // Medido el 2026-08-19, esos 222 eran un fallo de la deducción y no del repositorio: los planes
+  // abren con una cita (`> **For agentic workers:**`) y la regla se paraba justo antes del
+  // `**Goal:**` que era el resumen buscado. Con la cascada de cuatro respaldos de
+  // `wiki-frontmatter.reglas.mjs` quedan 17. Ese es el coste real de esta línea.
+  for (const f of revisarFrontmatter(fm, { rel, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] })) {
+    anota('FUENTE', rel, f.detalle);
+  }
+}
+
 // Edad del último pase de veracidad, medida en commits de código (no en días).
-const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
-if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
-if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+if (!SIN_ALARMA) {
+  const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
+  if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
+  if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+}
+
+const censo = `${paginas.length} páginas de wiki y ${fuentesConFm} de ${fuentes.length} fuentes declaradas`
+  + `${ESTRICTO ? ' (modo estricto)' : ''}`;
 
 if (hallazgos.length) {
+  // El recuento va ANTES y los hallazgos al final, no al revés: `scripts/publicar.sh` solo
+  // enseña las cuatro últimas líneas de un gate en rojo, y con el resumen abajo esas cuatro se
+  // las comían el resumen y una línea en blanco. Con este orden, lo último que se lee es el
+  // hallazgo con su remedio, que es lo que hay que hacer.
+  console.log(`${hallazgos.length} hallazgos en ${censo}:\n`);
   console.log(hallazgos.join('\n'));
-  console.log(`\n${hallazgos.length} hallazgos en ${paginas.length} páginas.`);
   process.exitCode = 1;
 } else {
-  console.log(`Sin hallazgos. ${paginas.length} páginas revisadas.`);
+  console.log(`Sin hallazgos. ${censo}.`);
 }

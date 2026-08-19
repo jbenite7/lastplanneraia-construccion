@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-03-saneamiento-deudas-usabilidad-design.md
+resumen: Saneamiento de las deudas abiertas del goal de usabilidad
+---
+
 # Saneamiento de las deudas abiertas del goal de usabilidad
 
 **Fecha:** 2026-08-03

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: referencia
 estado: vigente
 verificado: 2026-08-18

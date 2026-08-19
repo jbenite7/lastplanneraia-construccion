@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-a42-frentes-cobertura/plan.md
+resumen: Hechos acordados: facts.md (33, todos aceptados). Línea base medida antes de tocar nada: 45 sin propuesta · ALTA 3 · MEDIA 37 · BAJA 0 (2026-07-28 22:38:41)…
+---
+
 # Plan — A4.2: que el plan de compras sepa a qué frente va cada paquete
 
 Hechos acordados: [`facts.md`](facts.md) (33, todos aceptados).

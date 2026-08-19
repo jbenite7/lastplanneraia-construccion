@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Carril legado: rutas que aún hacen require_once de scripts procedurales; mantenimiento, no lugar para features nuevas"
 ---

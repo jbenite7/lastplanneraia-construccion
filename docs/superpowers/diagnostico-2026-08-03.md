@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/diagnostico-2026-08-03.md
+resumen: Diagnóstico del 3 de agosto de 2026 — avance, pendientes y lo que enseñó la jornada
+---
+
 # Diagnóstico del 3 de agosto de 2026 — avance, pendientes y lo que enseñó la jornada
 
 **Alcance:** el día completo, desde el saneamiento del goal de tablas hasta el cierre de la línea G.

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -70,6 +71,12 @@ esconder, solo el servidor puede impedir.
 contraseña no se limpia con `/logout`: esa ruta no es pública, así que el middleware la redirige a
 `/login` sin destruir nada. Regla general: lo que deba funcionar sin sesión completa va en
 `$publicRoutes`.
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-rbac.base]]
 
 ## Vecinos
 

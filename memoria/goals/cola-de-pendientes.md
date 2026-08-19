@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: goal
 estado: abierto
 fecha: 2026-08-18
@@ -33,19 +34,32 @@ Orden del usuario, 2026-08-18: los frentes y chips no arrancan hasta cerrar esta
 | Fase | Qué es | Estado |
 |---|---|---|
 | **Fase 0** | Mudanza del repositorio a `~/Developer/lps-aia` | **HECHA** (2026-08-18). Copia verificada (fsck limpio, 2.7G), 6 worktrees reparados, montaje Docker actualizado, web 200, PHP 24/24. Respaldo en `/Volumes/Crucial X6/Developer/lps-aia.pre-mudanza-2026-08-18`; borrarlo es decisión aparte. La BD no se movió: vive en el volumen Docker `htdocs_db_data` |
-| **Fase 0b** | Replanteo completo de la wiki: metodología Karpathy intacta, Obsidian visual, vault entero etiquetado, con plugins de comunidad y frontmatter en todas las fuentes (solo metadato; el cuerpo sigue intocable) | **AL GATE, SIN EJECUTAR.** Spec y plan escritos; solo hecha la primera pasada (esta página, vista «Abierto ahora», decisiones del día ingeridas) |
+| **Fase 0b** | Replanteo completo de la wiki: metodología Karpathy intacta, Obsidian visual, vault entero etiquetado y frontmatter en todas las fuentes (solo metadato; el cuerpo sigue intocable) | **HECHA** (2026-08-19), las seis tandas, publicadas. `wiki-lint.mjs --estricto` verde sobre 156 páginas y 414 de 417 fuentes. **Con dos salvedades declaradas:** los plugins de comunidad quedaron fuera por decisión del usuario, y los grupos de color del grafo quedaron pendientes por no poder verificarse sin abrir Obsidian |
 
 Las seis tandas de la 0b, en `docs/superpowers/plans/2026-08-18-wiki-v2-visual.md` (~2 jornadas;
 cada tanda cierra en verde antes de la siguiente):
 
-| Tanda | Qué hace |
+| Tanda | Qué hizo | Cerrada en |
+|---|---|---|
+| **1 · Esquema y herramientas** | `wiki-operacion.md` a v2, lint v2, `wiki-frontmatter.mjs`, 5 moldes | `7208edf9` |
+| **2 · Frontmatter a las fuentes** | 413 archivos por lotes, con revisión entre uno y otro. **Cero borrados**: solo se añadió metadato | `e5c540c3` |
+| **3 · Retag fino** | `capa: wiki` en las 151 páginas, `generado` en 26, `trampa` en 4 | `26a8fe80` |
+| **5 · MOCs completos** | 5 mapas nuevos; las 13 áreas tienen MOC. `moc` sale del vocabulario | `58240c2c` |
+| **4 · Capa visual** | 13 vistas Bases, 3 canvas, dashboard, snippet de severidad. **Sin plugins** | `66012929` |
+| **6 · Cierre** | Regeneración, línea `ingest`, esta tabla | esta tanda |
+
+La 5 se cerró antes que la 4 porque el usuario reordenó: la 4 tocaba plugins de terceros y quedó
+esperando su decisión.
+
+**Lo que la Fase 0b deja pendiente**, para que no se pierda al marcarla hecha:
+
+| Pendiente | Por qué quedó fuera |
 |---|---|
-| **1 · Esquema y herramientas** | `wiki-operacion.md` a v2, lint v2, `wiki-frontmatter.mjs` con `--dry-run`, plantillas por tipo |
-| **2 · Frontmatter a las fuentes** | Por lotes: raíz+contratos → `docs/flujos/` y `docs/design-system/` → resto de `docs/` → `goals/` → `docs/archive/`. Revisión humana del 10% por lote |
-| **3 · Retag fino** | Las 145 páginas de la wiki |
-| **4 · Capa visual** | Canvas, grupos de color del grafo, plugins versionados, home dashboard |
-| **5 · MOCs completos** | Los 13 de área (hoy 7) |
-| **6 · Cierre** | Regenerar arquitectura, `wiki-registro.mjs --escribir`, línea `ingest`, gate de publicación |
+| Plugins de comunidad (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage, tema Minimal) | Decisión del usuario: los decide aparte. Con ellos quedan fuera el Kanban de esta cola y el arranque automático del dashboard |
+| Grupos de color del grafo (`.obsidian/graph.json`) | No hay forma de comprobar que la consulta hace lo que dice sin abrir Obsidian, y el criterio de la tanda fue que sin verificación no se escribe |
+| Enchufar `--estricto` a `npm run test:wiki` | Es decisión de contrato: a partir de ahí toda fuente nueva nace con frontmatter o el gate se pone rojo. **Ya se midió el hueco**: una fuente entró sin declarar por un merge y el gate no lo detuvo |
+| 3 archivos del design system sin frontmatter | Están congelados por sha256 en `goal-provenance.json`. Ratificado por el usuario |
+| 8 `goal.md` que son andamiajes sin objetivo escrito | Salen ahora en el catálogo con un resumen que lo dice. Hay que decidir cuáles siguen vivos |
 
 ## Bloque 1 — Programa Design System (cuatro fases)
 

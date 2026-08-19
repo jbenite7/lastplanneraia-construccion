@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: goals/repaso-usabilidad-no-tablas/goal.md
+resumen: Ejecutar el hallazgo H-08 que cierre-dark-mode-y-tablas dejó diferido: revisar la usabilidad de las superficies que no son tablas, en los ejes que ningún…
+---
+
 # Goal — Repaso de usabilidad de superficies ajenas a tablas (H-08)
 
 ## Objetivo

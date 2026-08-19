@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-a42-frentes-cobertura/facts.md
+resumen: Acordados en el grilleo del 2026-07-28 (14 preguntas) y revisados en Plannotator: 33 hechos, 33 aceptados. auto marca los que llevan comprobación automática.
+---
+
 # Hechos — A4.2: que el plan de compras sepa a qué frente va cada paquete
 
 Acordados en el grilleo del 2026-07-28 (14 preguntas) y revisados en Plannotator: **33 hechos, 33 aceptados**.

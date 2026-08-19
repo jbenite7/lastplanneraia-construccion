@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+fuente: docs/CUSTOMER.md
+resumen: Quién usa Last Planner AIA y para qué lo contrata. Producido en la fase 1 (jobs-to-be-done) del journey improve-app, el 2026-08-04, en entrevista con el…
+---
+
 # Customer
 
 Quién usa Last Planner AIA y para qué lo contrata. Producido en la fase 1 (`jobs-to-be-done`) del

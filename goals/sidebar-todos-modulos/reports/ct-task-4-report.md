@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/ct-task-4-report.md
+resumen: CT Task 4 — Dark polish del dashboard (CSS) + QA de las 8 hojas
+---
+
 # CT Task 4 — Dark polish del dashboard (CSS) + QA de las 8 hojas
 
 - **Status:** DONE

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: decision
 estado: derogada
 fecha: 2026-07-29

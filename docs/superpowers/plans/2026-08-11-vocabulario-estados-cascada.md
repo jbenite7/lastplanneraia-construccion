@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada.md
+resumen: Cola de decisiones: decisiones/vocabulario-estados-cascada.md (D-VOC-1 … D-VOC-4)
+---
+
 # Plan — unificar los vocabularios de estado de la cascada
 
 Spec: [2026-08-11-vocabulario-estados-cascada-design.md](../specs/2026-08-11-vocabulario-estados-cascada-design.md)

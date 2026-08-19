@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-23
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-23-a17-versionamiento-inteligente-design.md
+resumen: Diseño: Fase A1.7 — Versionamiento inteligente del importador
+---
+
 # Diseño: Fase A1.7 — Versionamiento inteligente del importador
 
 **Fecha:** 2026-07-23

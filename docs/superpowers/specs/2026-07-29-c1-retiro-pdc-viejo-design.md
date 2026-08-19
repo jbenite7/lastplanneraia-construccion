@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design.md
+resumen: goals/pdc-preparar-b1 - Origen: roadmap maestro (fase C1) + un conflicto detectado al reunir los pendientes. - Estado (2026-08-04): EJECUTADO, y con más…
+---
+
 # PDC · Fase C1 — Retirar el PDC viejo, y qué hacer con su dark a medias — Design
 
 - **Fecha:** 2026-07-29

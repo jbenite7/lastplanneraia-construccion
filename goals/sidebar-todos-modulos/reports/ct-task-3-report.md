@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/ct-task-3-report.md
+resumen: CT Task 3 — Chart.js dark: defaults globales + paleta de series DS
+---
+
 # CT Task 3 — Chart.js dark: defaults globales + paleta de series DS
 
 - **Status:** DONE

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-24
+areas: [rbac, bi]
+fuente: docs/superpowers/plans/2026-07-24-control-tower-shell-dark.md
+resumen: Integrar Control Tower (SPA BI) al shell sidebar canónico en dark, reubicando su nav de hojas y sus filtros, sin tocar la lógica de la SPA…
+---
+
 # Control Tower en el shell dark — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

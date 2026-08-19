@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-10
+fuente: docs/decisiones-pendientes.md
+resumen: Cola de decisiones que necesitan el criterio del usuario y no interrumpen el trabajo. Cualquier sesión de ejecución añade aquí lo que encuentre, se salta ese…
+---
+
 # Decisiones pendientes del usuario
 
 Cola de decisiones que necesitan el criterio del usuario y **no interrumpen el trabajo**. Cualquier

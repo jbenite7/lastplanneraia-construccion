@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/validation-log.md
+resumen: las dos creadas desde pdc-a4-fechas — no desde main, como decían los planes: en los dos repos main va por detrás y ramificar desde ahí habría dejado fuera todo…
+---
+
 # Registro de verificación — los 30 hechos
 
 Fecha: 2026-07-28. Rama `pdc-revision-ux` en los dos repos (`plan-de-compras` y `lps-aia-pdc`),

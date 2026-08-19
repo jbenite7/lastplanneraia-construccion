@@ -1,9 +1,11 @@
 ---
-project: lps-aia
-type: changelog
-status: activo
-updated: 2026-08-19
-tags: [proyecto, php]
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-03-09
+tags: [generado]
+fuente: CHANGELOG.md
+resumen: Todos los cambios notables en este proyecto serán documentados en este archivo.
 ---
 
 # Registro de Cambios (Changelog)

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md
+resumen: Hoy el repositorio sabe dónde está cada cosa y por qué se decidió, pero no qué debe pasar:
+---
+
 # La biblia de flujos: describir, verificar y auditar el comportamiento de la app
 
 **Fecha:** 2026-08-04

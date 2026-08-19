@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-08-02
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-08-02-obsidian-memoria-proyecto-design.md
+resumen: El conocimiento del proyecto vive en tres sitios que no se comunican:
+---
+
 # Wiki de proyecto en Obsidian (patrón LLM Wiki)
 
 **Fecha:** 2026-08-02

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [datos]
+fuente: docs/plan-migracion-shared-schema-sin-reporteria.md
+resumen: Plan Maestro de Migracion a Esquema Compartido (Sin Tablas de Reporteria)
+---
+
 # Plan Maestro de Migracion a Esquema Compartido (Sin Tablas de Reporteria)
 
 > 🚀 **Arquitectura Futura / Ready for Development**

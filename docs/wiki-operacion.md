@@ -1,7 +1,23 @@
-# Cómo se opera la wiki `memoria/`
+---
+capa: esquema
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+tags: [generado]
+fuente: docs/wiki-operacion.md
+resumen: Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes, no dentro de la wiki que describe. CLAUDE.md lleva un…
+---
+
+# Cómo se opera la wiki (esquema v2)
 
 Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes,
 no dentro de la wiki que describe. `CLAUDE.md` lleva un resumen y apunta aquí.
+
+**Qué cambió en v2** (2026-08-19, spec `docs/superpowers/specs/2026-08-18-wiki-v2-visual-design.md`):
+el frontmatter deja de ser solo de `memoria/` y se extiende a **todo el vault**; aparecen el campo
+`capa` y el vocabulario cerrado de `tags`; se añaden ocho `tipo` para documentos de fuente; y cae la
+regla «solo plugins nativos». La metodología no cambia: siguen las mismas tres capas, las mismas
+cuatro operaciones y la misma precedencia.
 
 ## Qué es la wiki y qué no es
 
@@ -9,11 +25,11 @@ no dentro de la wiki que describe. `CLAUDE.md` lleva un resumen y apunta aquí.
 área que enlaza con la documentación que ya existe. Sigue el patrón
 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f), en tres capas:
 
-| Capa | Dónde | Regla |
+| Capa (`capa:`) | Dónde | Regla |
 |---|---|---|
-| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. Su contenido no se edita desde la wiki. |
-| Wiki | `memoria/` | La escribe el asistente. Nunca se edita a mano. |
-| Esquema | este archivo | Explica la estructura y las operaciones. |
+| `fuente` | `docs/`, `goals/`, `decisiones/`, los `.md` de la raíz, el código | Se leen. **Su cuerpo no se edita desde la wiki**; solo ganan frontmatter. |
+| `wiki` | `memoria/` | La escribe el asistente. Nunca se edita a mano. |
+| `esquema` | este archivo | Explica la estructura y las operaciones. |
 
 **Precedencia ante conflictos: código > `AGENTS.md` > `memoria/`.** Nada de lo que hay en la wiki es
 contrato. Si una nota contradice al repo, gana el repo: se corrige la nota y se marca
@@ -21,13 +37,21 @@ contrato. Si una nota contradice al repo, gana el repo: se corrige la nota y se 
 
 El vault de Obsidian es la **raíz del repo**, no `memoria/`. Por eso los wikilinks alcanzan a
 `docs/`, `goals/` y a los `.md` de la raíz sin copiarlos. La configuración compartida está en
-`.obsidian/` y no se usan plugins de comunidad: el vault debe funcionar en cualquier máquina.
-Obsidian Bases sí se usa —es nativo— para generar el catálogo del índice desde el frontmatter.
+`.obsidian/`.
 
-Una excepción a la inmutabilidad de las fuentes, decidida el 2026-08-02: cada `goals/<slug>/goal.md`
-termina con una sección «Archivos de este goal» que enlaza a sus hermanos versionados y a
-`memoria/goals/estado.md`. Es navegación añadida al pie, no contenido modificado. Al crear un goal
-nuevo, añade esa sección. `docs/` no se toca.
+### El frontmatter en fuentes es metadato añadido, no contenido editado
+
+Que una fuente lleve frontmatter no rompe la inmutabilidad de la capa: es **un bloque delante del
+cuerpo**, de la misma naturaleza que el pie «Archivos de este goal» que se decidió el 2026-08-02.
+El cuerpo no se toca, y el lint tampoco lo mira. Dos reglas que lo sostienen:
+
+- Si un archivo **ya trae frontmatter de otra herramienta**, el backfill **fusiona**: añade las
+  claves del esquema que falten y no reordena ni reescribe ninguna clave ajena. El caso real es
+  `DESIGN.md`, cuyo frontmatter leen el linter Stitch y el panel live; reescribirlo rompería otra
+  herramienta sin que nada se pusiera rojo aquí.
+- Una fuente entra al lint **solo si declara `capa:`**. Tener un bloque `---` no es declararse parte
+  de este esquema; `capa:` sí lo es. Sin ese matiz, `DESIGN.md` salía en rojo por cuatro campos que
+  no le tocan.
 
 ## Las cuatro operaciones
 
@@ -50,19 +74,85 @@ faltaba.
 ### `lint` — la forma
 
 ```bash
-node scripts/wiki-lint.mjs      # o: npm run test:wiki (incluye las pruebas del módulo)
+npm run test:wiki         # pruebas del módulo + lint estricto + alarma de veracidad
+npm run test:wiki:forma   # SOLO la forma: estricto, sin la alarma. Apto para un gate bloqueante
+node scripts/wiki-lint.mjs            # permisivo: no exige que las fuentes se declaren
+node scripts/wiki-lint.mjs --estricto --sin-alarma
 ```
 
-Comprueba **la forma** y sale con código 1 si hay hallazgos:
+**Desde el 2026-08-19, `npm run test:wiki` corre en modo estricto.** Una fuente nueva sin
+frontmatter deja el lint en rojo. Se enchufó porque el hueco se midió tres veces: un merge traía un
+documento sin declarar, el estricto lo reportaba y el modo por defecto seguía en verde, así que la
+publicación no se detenía y el arreglo llegaba siempre **después** de publicar.
 
-- enlaces rotos o ambiguos;
-- frontmatter incompleto, y `tipo`, `estado` o `areas` fuera de sus listas cerradas;
-- notas que empaquetan más de tres hechos;
-- páginas que no aparecen en `memoria/index.md` ni las cubre una vista de `memoria/paginas.base`;
-- la edad del último pase de `veracidad` (ver más abajo).
+**Y por qué hay dos comandos y no uno.** El lint mezclaba dos cosas de naturaleza distinta en un
+mismo semáforo:
+
+| | Qué es | Qué merece |
+|---|---|---|
+| **Forma** — enlaces rotos, frontmatter incompleto, fuente sin declarar | un **defecto de lo que vas a publicar** | bloquear |
+| **Alarma de veracidad** — el contador de commits | una **petición de trabajo**; no dice que lo tuyo esté mal | avisar |
+
+Juntas, o se bloquea por un contador —y se aprende a saltarse el gate— o no se bloquea por un
+defecto real. `--sin-alarma` las separa, y `npm run test:wiki:forma` es la mitad que un gate puede
+bloquear sin enseñar a nadie a ignorarlo.
+
+**Y desde el 2026-08-19 `scripts/publicar.sh` las trata distinto**, que es lo que de verdad cierra
+el hueco:
+
+```
+comprobar "wiki (forma)"               1 npm run test:wiki:forma     # BLOQUEA
+comprobar "wiki (veracidad + pruebas)" 0 npm run test:wiki           # avisa
+```
+
+Comprobado en las dos direcciones antes de darlo por bueno: con una fuente sin declarar, el gate
+**deniega**; con la alarma por encima del umbral, **avisa y deja publicar**.
+
+**Un detalle de presentación que resultó no serlo.** `publicar.sh` enseña solo las **cuatro últimas
+líneas** de un gate en rojo. El lint imprimía el recuento al final, así que esas cuatro líneas se
+las comían el recuento y una línea en blanco, y el hallazgo con su remedio **se perdía justo cuando
+alguien lo necesitaba**. Ahora el recuento va primero y los hallazgos al final. El mensaje del
+hallazgo cabe en tres líneas por la misma razón, y por eso el ensayo con `--detalle` no está en él
+sino aquí.
+
+Sale con código 1 si hay hallazgos. **Lintea las tres capas, pero no con las mismas reglas:**
+
+| Capa | Qué se comprueba |
+|---|---|
+| `wiki` | frontmatter completo, enlaces, un-hecho-por-nota y alcanzabilidad desde el índice |
+| `fuente` y `esquema` | **solo el frontmatter**. El cuerpo no se mira |
+
+En la capa wiki, como siempre: enlaces rotos o ambiguos; frontmatter incompleto; `tipo`, `estado`,
+`areas`, `tags` y `capa` fuera de sus listas cerradas; notas que empaquetan más de tres hechos;
+páginas que no aparecen en `memoria/index.md` ni las cubre una vista de `memoria/paginas.base`; y la
+edad del último pase de `veracidad` (ver más abajo).
 
 **Comprueba y reporta; nunca corrige.** Y no comprueba la verdad: un verde no significa que la wiki
 sea correcta, solo que está bien formada.
+
+Cuatro decisiones del lint v2 que conviene conocer antes de discutir con él:
+
+1. **`capa` y `tags` se validan solo si están.** Son opcionales a propósito mientras el backfill de
+   las fuentes no haya terminado; exigirlos de golpe pondría en rojo cientos de archivos que nadie
+   ha tocado. `--estricto` es la forma final, para encenderla cuando el backfill acabe.
+2. **`capa` tiene que coincidir con la que implica la ruta.** Una página de `memoria/` que se
+   declarase `fuente` conseguiría que el lint dejara de mirarle el cuerpo — justo lo que no debe
+   pasar.
+3. **Una página con `tags: [plantilla]` es un molde, no una página.** Se le comprueba el
+   vocabulario —un `tipo` inventado en un molde se copiaría a cada página que salga de él— y nada
+   más: ni sus huecos, ni el marcador `{{date:YYYY-MM-DD}}` que rellena Obsidian, ni que su `capa`
+   case con dónde vive (la plantilla de una spec declara `capa: fuente` y vive en `memoria/`), ni
+   que esté enlazada desde el índice. La exención cuelga del tag y no de la carpeta: mover
+   `memoria/templates/` no debe cambiar cómo se mide.
+4. **A una fuente se le exige `resumen` igual que a una página de wiki.** Es la columna «De qué
+   va» del catálogo, y 391 filas con esa columna vacía no sirven para filtrar nada.
+
+   Costó decidirlo porque la primera medida decía otra cosa. Con una sola regla de deducción
+   quedaban **222** fuentes sin resumen, y eso hacía ver el backfill como 222 textos escritos a
+   mano. Medido el 2026-08-19, esos 222 eran un fallo de la deducción y no del repositorio: los
+   planes abren con una cita para agentes y la regla se paraba justo antes del `**Goal:**` que era
+   el resumen buscado. Con la cascada de cuatro respaldos quedan **17**. La lección, que vale más
+   que el número: antes de aceptar que algo es caro, comprueba si lo caro es la medida.
 
 ### `veracidad` — la verdad
 
@@ -94,7 +184,67 @@ El pase no depende de que alguien se acuerde. `scripts/wiki-lint.mjs` localiza l
 |---|---|
 | Rutas que cuentan | `src/`, `admin/`, `public/`, `tests/`, `scripts/`, `docs/`, `AGENTS.md` |
 | Rutas que no cuentan | todo lo demás, en particular `memoria/` |
+| Commits que no cuentan | los que **solo añaden frontmatter**, los **merges que solo unen**, y los que **solo tocan documentos de intención o historia** (ver abajo) |
 | Umbral | **más de 40 commits → hallazgo `VERACIDAD`**, salida en rojo |
+
+**Un commit de solo-metadato no es deriva de código, y desde el 2026-08-19 no cuenta.** La regla
+siempre fue «commits que tocan código o contratos», y añadir frontmatter no toca ninguno de los
+dos: por construcción no puede volver falsa una página. Sin esta exclusión, la wiki disparaba su
+propia alarma al escribirse — que es justo lo que la exclusión de `memoria/` ya evitaba.
+
+Para descontar un commit hay que **demostrar** que es metadato, y se exigen tres cosas a la vez:
+que todos sus archivos sean `.md`, que todos sus hunks empiecen en la línea 1 —el frontmatter vive
+en la cabecera— y que toda línea añadida o quitada sea una clave del esquema, un `---`, un elemento
+de lista indentado o una línea en blanco. **Ante la duda, cuenta.** Un merge sin archivos listados,
+un diff ilegible o un `.md` con el cuerpo tocado cuentan todos. Una alarma que se calla de más
+falla en silencio; una que suena de más solo molesta.
+
+**Un merge que solo une tampoco cuenta, desde el 2026-08-19.** Su contenido ya está contado en los
+commits originales, que `git log` recorre igualmente: contarlo es contarlo dos veces. Pero **un
+merge que resolvió un conflicto con contenido propio sí cuenta**, porque ese contenido no existe en
+ningún otro sitio.
+
+Los dos se distinguen con `--cc`: para el que solo une, `git log --cc --name-only` no lista
+archivos; para el que aportó algo, sí. **Eso se comprobó con un control positivo** —un repo de
+juguete con un merge de resolución propia y otro limpio— antes de apoyarse en ello, en vez de
+deducirlo de la documentación.
+
+**Cuánto cambian los dos descuentos, medido el 2026-08-19** sobre los commits que hicieron saltar
+la alarma: de **70** se pasa a **57**. Doce eran merges que solo unían y **uno solo** era de puro
+frontmatter.
+
+Ese «uno» merece decirse, porque desmiente el diagnóstico con el que se pidió el primer arreglo:
+se creyó que la alarma sonaba por el backfill de la wiki, que tocó 413 archivos. **No era eso.**
+Aquellos commits traían además cambios en `scripts/` y `tests/`, así que contaban como código y
+con razón. Lo que de verdad inflaba el recuento eran los merges.
+
+**Un commit que solo toca documentos de intención tampoco cuenta, desde el 2026-08-19.** No todo
+`.md` de `docs/` pesa igual sobre la wiki:
+
+| | `tipo` | Por qué |
+|---|---|---|
+| **Mandan** | `contrato` · `guia` · `biblia` | los mapas dicen literalmente «Qué manda: <documento>». Si cambia, la página que lo cita puede quedar falsa — y eso es deriva **más** directa que un cambio de código, no menos |
+| **No mandan** | `spec` · `plan` · `reporte` · `evidencia` · `goal-doc` | registran intención o historia. Escribir una spec hoy no cambia nada de lo que la wiki afirma: describe algo que aún no se ha construido |
+
+Un commit de solo `.md` cuenta si toca **al menos uno** de los que mandan.
+
+**Cómo se decidió, porque el atajo obvio era el equivocado.** El planteamiento inicial fue «la
+prosa no debería contar». Medido sobre 404 commits: 232 tocaban código, **118 tocaban un documento
+con autoridad** y solo 54 eran pura intención. Excluir «la prosa» en bloque habría silenciado esos
+118. El eje bueno no es prosa contra código, es **autoridad contra intención**.
+
+**Falla hacia el ruido a propósito.** Un archivo que no declara `tipo` —o que el commit borró o
+renombró— cuenta como si mandara. Es la debilidad conocida de esta regla: apoya la alarma en un
+metadato que mantiene la propia wiki y que en su mayoría dedujo un script desde la ruta, así que
+un documento mal tipado se silenciaría a sí mismo. Ante la duda, que suene.
+
+**Efecto medido:** de 404 commits a 370 sobre la ventana amplia; un 8%.
+
+**Lo que sigue abierto, y ya no es un ajuste sino un rediseño:** la alarma cuenta *commits* como
+aproximación de «la wiki pudo quedar desactualizada», y **no sabe de qué habla la wiki**: pesa
+igual un commit en un área con quince páginas que uno en un área sin ninguna. Ahora sería posible
+afinarlo —las trece áreas tienen mapa y las fuentes declaran su `areas`—, pero es cambiar el proxy
+entero, no recortarlo.
 
 Se mide en commits y no en días a propósito: este repo hace 100 o más commits en un día de sprint y
 ninguno en un fin de semana, así que el reloj de pared no dice nada sobre cuánta deriva entró. Los
@@ -110,21 +260,21 @@ nacer en rojo entrena a ignorar el rojo. El primer pase siembra la línea y arma
 **Limitación conocida:** el conteo se hace sobre la rama actual. Con varias sesiones trabajando en
 worktrees distintos, el número es aproximado.
 
-## Escribir una página
+## El frontmatter, campo por campo
 
 **Una nota, un hecho.** Si no cabe en una pantalla, probablemente son dos.
 
-Frontmatter obligatorio:
-
-| Campo | Qué es |
-|---|---|
-| `tipo` | `decision`, `trampa`, `mapa`, `goal`, `concepto`, `referencia`, `log`, `modulo` o `flujo` |
-| `estado` | `vigente`, `derogada`, `abierto` o `cerrado` |
-| `fecha` | del hecho, no de la escritura; fechas absolutas, nunca «la semana pasada» |
-| `areas` | una o varias de las trece válidas |
-| `fuente` | de dónde salió el hecho: un archivo, un comando, una sesión |
-| `resumen` | una línea; **es la columna que se ve en el catálogo del índice** |
-| `origen` | opcional, si la nota viene de la memoria privada previa |
+| Campo | Qué es | ¿Obligatorio? |
+|---|---|---|
+| `capa` | `fuente`, `wiki` o `esquema`. Le dice al lint qué reglas aplicar | en fuentes, es lo que las mete al lint |
+| `tipo` | uno de los diecisiete de abajo. **`mapa` significa MOC de área** | sí |
+| `estado` | `vigente`, `derogada`, `abierto` o `cerrado` | sí |
+| `fecha` | del hecho, no de la escritura; ISO, nunca «la semana pasada» | sí |
+| `areas` | una o varias de las trece válidas | recomendable |
+| `tags` | del vocabulario cerrado de abajo; transversales | no |
+| `fuente` | de dónde salió el hecho: un archivo, un comando, una sesión | recomendable |
+| `resumen` | una línea; **es la columna que se ve en el catálogo del índice** | en la wiki, sí; en fuentes, no |
+| `origen` | opcional, si la nota viene de la memoria privada previa | no |
 
 `resumen` merece atención aparte: si corriges el cuerpo de una nota y no el resumen, la afirmación
 vieja sigue circulando por el catálogo aunque la página ya diga otra cosa.
@@ -133,28 +283,93 @@ Enlaza con `[[nombre]]` a las notas relacionadas. Un wikilink a una nota que aú
 aceptable como señal de trabajo pendiente, pero el lint lo reporta como enlace roto: escríbelo solo
 si vas a crear la nota en la misma pasada.
 
-## Las trece áreas
+### Los diecisiete `tipo`
 
-Lista cerrada, comprobada por el script:
+**Nueve de la wiki**, los de siempre:
+`decision` · `trampa` · `mapa` · `goal` · `concepto` · `referencia` · `log` · `modulo` · `flujo`
+
+**Ocho de fuente**, nuevos en v2:
+
+| `tipo` | Qué documento es | Dónde vive |
+|---|---|---|
+| `contrato` | manda sobre el trabajo; incumplirlo es un error | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `DESIGN.md`, `docs/design-system/contracts/` |
+| `spec` | qué se va a construir y por qué | `docs/superpowers/specs/`, `goals/*/specs/` |
+| `plan` | en qué orden y con qué verificación | `docs/superpowers/plans/`, `goals/*/plan.md` |
+| `reporte` | qué pasó, fechado | `docs/reportes/`, `goals/*/reports/`, `decisiones/` |
+| `evidencia` | una medida cruda que respalda una afirmación | `evidence/`, `runtime-measurements/`, `goals/*/facts.md` |
+| `biblia` | referencia de dominio, no de proceso | `GLOSARIO.md`, `PRODUCT.md`, `ROADMAP.md` |
+| `guia` | cómo se hace algo | el grueso de `docs/` |
+| `goal-doc` | pieza de un goal que no es spec, plan ni evidencia | `goals/*/goal.md` y hermanos |
+
+### Los siete `tags`
+
+Lista cerrada, comprobada por el script. Son **transversales**: no duplican `tipo` ni `areas`.
+
+**`moc` estuvo en esta lista y salió el 2026-08-19.** La spec de v2 lo traía para marcar los MOCs
+de área, y sobra desde que **`tipo: mapa` significa MOC**: un mapa de área tiene estructura propia
+y fija —«Qué manda», «Trampas», «Vecinos»—, así que es una **clase** de página, y las clases viven
+en `tipo`. El tag habría existido solo para parchear que una página estaba mal tipada: en su día
+`registro-de-trabajo.md` era `tipo: mapa` sin ser un mapa de área, y se corrigió a `referencia`,
+que es lo que de verdad es. La simetría que lo confirma: la **clase** la dice `tipo`, y la
+**portada** la dice un tag (`dashboard`). Cada campo hace un trabajo distinto en vez de solaparse.
+
+**La regla que gobierna los ocho: un tag nunca duplica el `tipo` ni el `estado`.** Etiquetar
+`trampa` una página que ya dice `tipo: trampa` no añade nada — filtrar por el tag devolvería
+exactamente lo mismo que filtrar por el tipo, y una columna que nunca discrimina es ruido con coste
+de mantenimiento. Los tags valen justo cuando **cruzan** la clasificación: `trampa` en una página
+que NO es una trampa, y por eso nadie esperaría encontrar una allí.
+
+Decidido el 2026-08-19 porque la spec de v2 y su plan se contradecían: la spec pedía tags «que no
+duplican `tipo` ni `areas`» y el plan pedía «trampas → `trampa`, mapas → `moc`». Las dos frases no
+podían ser ciertas, y de cuál ganaba dependían 95 de las 151 páginas. Ganó la spec.
+
+| Tag | Cuándo |
+|---|---|
+| `dashboard` | es un tablero, no un texto |
+| `plantilla` | es un molde para escribir otras |
+| `pendiente` | queda trabajo abierto dentro **y no basta `estado: abierto` para verlo** |
+| `trampa` | documenta una trampa **sin ser `tipo: trampa`** — p. ej. un concepto con una sección «dónde se rompe esto» |
+| `leer-antes-de-tocar` | hay que leerla antes de editar el área que cubre |
+| `generado` | la escribe un script; editarla a mano se pierde |
+| `archivo` | trabajo cerrado que se conserva por historia |
+
+### Las trece áreas
+
+Lista cerrada, sin cambios en v2:
 
 `design-system` · `qa` · `docker` · `worktrees` · `pdc` · `lps` · `datos` · `rbac` · `deploy` ·
 `bi` · `admin` · `proceso` · `arquitectura`
 
-Para añadir una: edita primero `AREAS` en `scripts/wiki-lint.mjs` y explica en `memoria/index.md`
-qué cubre. Una lista que crece sin control deja de servir para filtrar.
+Para añadir una: edita primero `AREAS` en `scripts/wiki-esquema.mjs` y explica en
+`memoria/index.md` qué cubre. Una lista que crece sin control deja de servir para filtrar.
+
+## Plugins de Obsidian
+
+**Regla nueva en v2, que sustituye a la de «solo nativo»:** se permiten plugins de comunidad,
+versionados en `.obsidian/plugins/` para que cualquier máquina los tenga al clonar, **pero la wiki
+tiene que seguir leyéndose sin ninguno.** Markdown puro y Obsidian Bases —que es nativo— son la
+base; los plugins amplifican, no sostienen.
+
+En la práctica: si una página solo dice lo que dice cuando Dataview la renderiza, esa página está
+mal escrita. El dato tiene que estar en el frontmatter o en el texto, y la consulta ser una vista
+más cómoda del mismo dato, nunca su único portador.
 
 ## Los scripts
 
 | Script | Qué hace |
 |---|---|
+| `scripts/wiki-esquema.mjs` | El vocabulario cerrado y la lectura de frontmatter. Funciones puras. |
 | `scripts/wiki-lint.mjs` | La operación `lint` y la alarma de veracidad. Comprueba y reporta. |
 | `scripts/wiki-veracidad.mjs` | Funciones puras de la alarma. No imprime; lo consume el lint. |
+| `scripts/wiki-frontmatter.mjs` | Backfill del frontmatter en fuentes. **No escribe si no se lo piden.** |
+| `scripts/wiki-frontmatter.reglas.mjs` | Las reglas por ruta del backfill. Funciones puras. |
 | `scripts/wiki-arquitectura.mjs` | Genera las páginas de módulo desde el código. |
 | `scripts/wiki-registro.mjs` | Genera el catálogo del trabajo fechado de `docs/superpowers/`. |
-| `tests/wiki/veracidad.test.mjs` | Pruebas del módulo, con `node --test`. |
+| `tests/wiki/*.test.mjs` | Pruebas de los módulos puros, con `node --test`. |
+| `memoria/templates/` | Un molde por `tipo` frecuente. Ver más abajo. |
 
 ```bash
-npm run test:wiki                                # pruebas del módulo + lint
+npm run test:wiki                                # pruebas de los módulos + lint
 node scripts/wiki-arquitectura.mjs --cobertura   # ninguna ruta sin módulo
 node scripts/wiki-arquitectura.mjs --escribir    # actualiza las zonas generadas
 node scripts/wiki-registro.mjs --escribir        # actualiza el registro de trabajo
@@ -162,6 +377,60 @@ node scripts/wiki-registro.mjs --escribir        # actualiza el registro de trab
 
 Corre `wiki-registro.mjs` cuando escribas una spec o un plan nuevos, o cuando archives trabajo
 cerrado: empareja spec y plan por su slug y marca lo que vive en `docs/archive/superpowers/`.
+
+### El backfill de frontmatter
+
+```bash
+node scripts/wiki-frontmatter.mjs                       # censo, no escribe nada
+node scripts/wiki-frontmatter.mjs --detalle             # además, el frontmatter que escribiría
+node scripts/wiki-frontmatter.mjs --solo docs/flujos    # acota a un prefijo de ruta
+node scripts/wiki-frontmatter.mjs --solo docs/flujos --escribir
+```
+
+**El modo por defecto es el ensayo.** Un backfill que toca cientos de archivos tiene que poder
+mirarse entero antes de correr, y por eso `--escribir` es explícito y `--solo` existe: se aplica por
+tandas, con revisión entre una y otra.
+
+Deduce de la ruta y del propio texto: `capa`, `tipo`, `estado`, `fecha` (del nombre del archivo si
+lo lleva, si no del alta en `git log`), `areas`, `tags` y `resumen`. **Cuando no puede deducir, deja
+el campo vacío y lo cuenta en el informe** — nunca inventa un valor. Es idempotente: solo añade las
+claves que faltan, así que correrlo dos veces no cambia nada la segunda.
+
+El `resumen` sale de una **cascada de cuatro respaldos**, de más informativo a menos. Ninguno
+inventa nada: los cuatro toman palabras que el propio documento ya escribió.
+
+Medido el 2026-08-19 sobre 412 fuentes. Las cifras envejecen con el repo; la que importa y se
+mantuvo estable al crecer el árbol es la última fila.
+
+| # | De dónde | Cubre | Para qué documento es |
+|---|---|---|---|
+| 1 | el párrafo tras el `# título` | 190 | el caso normal |
+| 2 | la línea `**Goal:** / **Objetivo:**` | 77 | los planes, que abren con una cita para agentes |
+| 3 | el párrafo bajo `## Objetivo` | 44 | los `goal.md` y `facts.md` de los frentes |
+| 4 | el propio `# título` | 84 | último recurso |
+| — | nada; hueco visible | 17 | los rellena una persona |
+
+El informe cuenta cuántos salieron de cada respaldo, para que se vea de un vistazo cuántos son
+prosa de verdad (311) y cuántos son solo el título (84). El respaldo 4 es el más pobre y aun así
+vale la pena: en el catálogo la otra columna es el nombre del archivo, que muestra el slug
+(`2026-07-20-sidebar-canonico-laboratorio`), así que el título añade legibilidad en vez de
+repetirla. Un título de una o dos palabras no añade nada y se descarta — mejor un hueco visible.
+
+### Las plantillas
+
+`memoria/templates/` tiene un molde por cada `tipo` que se escribe a menudo: `decision`, `trampa`,
+`concepto`, `spec` y `plan`. Los dos últimos son de capa fuente: los escribe una persona en
+`docs/superpowers/`, y la plantilla vive aquí solo porque aquí es donde Obsidian las busca.
+
+Cada molde lleva `tags: [plantilla]`, que es lo que lo exime del lint (ver más arriba). Su valor no
+está en el frontmatter —eso lo genera el backfill— sino en **las preguntas del cuerpo**: qué se
+descartó y por qué, qué desmentiría esta nota, cuánto costó la trampa. Son las que se olvidan
+cuando se escribe deprisa, y las que hacen que la nota sirva dentro de seis meses.
+
+Al añadir un molde nuevo: `tags: [plantilla]` y una entrada en esta lista. Si el molde no responde
+ninguna pregunta que no esté ya en otro, no hace falta.
+
+### Las zonas generadas
 
 Las páginas de `memoria/arquitectura/` y `memoria/flujos/` tienen dos zonas. Entre
 `<!-- generado:inicio -->` y `<!-- generado:fin -->` manda `scripts/wiki-arquitectura.mjs`, que

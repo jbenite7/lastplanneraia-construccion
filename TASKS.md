@@ -1,9 +1,12 @@
 ---
-project: lps-aia
-type: tasks
-status: activo
-updated: 2026-08-19
-tags: [proyecto, php]
+capa: fuente
+tipo: goal-doc
+estado: abierto
+fecha: 2026-08-19
+areas: [proceso]
+tags: [pendiente]
+fuente: TASKS.md
+resumen: Pendientes vivos del proyecto — la vista consolidada de los frentes abiertos, sus bloqueos y lo diferido.
 ---
 
 # Tareas

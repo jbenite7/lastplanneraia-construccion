@@ -11,11 +11,26 @@ test('tinted semantic states are approved and canonical', async () => {
   const approvals = await readJson('family-approvals.json');
   const catalog = await readJson('component-catalog.json');
   const family = homologation.families.find(({ id }) => id === 'states-feedback');
-  const approval = approvals.approvals.find(({ familyId }) => familyId === 'states-feedback');
+  // Se busca por el PAR familia+candidato, no por familia sola. Mientras la
+  // familia tuvo una unica aprobacion, `find` por `familyId` devolvia la que
+  // tocaba por casualidad; desde que tiene dos (2026-08-19) devolveria la
+  // primera del archivo y el assert de abajo pasaria mirando otra cosa. El
+  // cambio lo destapo: el defecto ya estaba, latente.
+  const approval = approvals.approvals.find(
+    ({ familyId, candidateId }) => familyId === 'states-feedback' && candidateId === 'tinted-status',
+  );
   const state = catalog.components.find(({ id }) => id === 'state');
   const feedback = catalog.components.find(({ id }) => id === 'feedback');
 
-  assert.deepEqual(family.candidates.filter(({ status }) => status === 'approved').map(({ id }) => id), ['tinted-status']);
+  // DOS candidatos aprobados desde el 2026-08-19, no uno. `severity-rail` lo
+  // aprobo el usuario por su nombre tras ver la captura de /programacion-intermedia
+  // a 1180x820 dark (frente `ds-f1a-estados-severidad`). El assert se amplia
+  // porque la familia crecio, no para que pase: sigue siendo una lista cerrada,
+  // asi que un tercer candidato aprobado sin registrar lo enseña igual que antes.
+  assert.deepEqual(
+    family.candidates.filter(({ status }) => status === 'approved').map(({ id }) => id),
+    ['tinted-status', 'severity-rail'],
+  );
   assert.equal(approval.candidateId, 'tinted-status');
   assert.equal(state.maturity, 'stable');
   assert.equal(state.visualApproval.status, 'approved');
@@ -97,14 +112,30 @@ test('programación intermedia exposes its eight real states with action priorit
   // ambares aqui, y `Alistamiento Urgente` y `Alistamiento en Riesgo` -dos
   // filtros de la leyenda- eran bit-identicos en pantalla. La justificacion de
   // cada asignacion vive en public/css/programacion-intermedia.css.
+  //
+  // NIVELES ACTUALIZADOS EL 2026-08-19 (frente `ds-f1a-estados-severidad`).
+  // CUATRO de los ocho cambiaron, y este assert cambia con ellos porque el
+  // CONTRATO cambio, no para que pase: `blocked-due` y `execution-blocked`
+  // suben a urgent, `alert-1-week` baja a attention y `alert-4-6-weeks` baja a
+  // healthy. Los matices NO se tocaron.
+  //
+  // Que mide este assert ahora, y que no: fija los ocho estados ENTEROS -label,
+  // key, level y hue- contra el contrato. Lo que ya NO es su trabajo exclusivo
+  // es vigilar los niveles: eso lo comparte con severity-rail.test.mjs, que
+  // ademas comprueba que `statePresentation` de hot.js no se desvie. Aqui la
+  // aportacion propia son la forma completa de cada entrada y el cableado de la
+  // vista del laboratorio.
+  //
+  // Procedencia de cada nivel -cual decidio el usuario y cuales propuso el
+  // implementador y el confirmo- en goals/bug-coloreado-severidad/respuestas-ds-f1.md.
   assert.deepEqual(intermediate.states, [
     { label: 'RC inicio vencido', key: 'blocked-overdue-critical', level: 'urgent', hue: 'red' },
     { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'orange' },
-    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'attention', hue: 'violet' },
-    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'urgent', hue: 'amber' },
+    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'urgent', hue: 'violet' },
+    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'attention', hue: 'amber' },
     { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
-    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'neutral' },
-    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'blue', note: 'Ratificado 2026-08-03 por el propietario del producto: attention/blue para actividad en ejecución sin liberar (stateMachine.js getState). El mapeo a ok que registró el inventario G0 quedó obsoleto antes del repaso.' },
+    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'healthy', hue: 'neutral' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'urgent', hue: 'blue', note: 'Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md.' },
     { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green' },
   ]);
   assert.equal(
@@ -176,15 +207,20 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
   // `key` es el vocabulario con el que el modulo nombra sus estados -las
   // claves de `WEEKLY_ALERT_MODEL` en hot.js-, igual que en Intermedia: sin
   // el, unir el renderer con el contrato exige comparar etiquetas.
+  // MATICES REASIGNADOS EL 2026-08-19, por decision del usuario: «Por Comprometer»
+  // pasa de ambar a VIOLETA y «Sin Calificar» de ambar a GRIS. Compartian ambar
+  // con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo y
+  // dos filtros distintos de la leyenda eran indistinguibles. Este assert cambia
+  // porque el CONTRATO cambio, no para que pase.
   assert.deepEqual(weekly.states, [
     { label: 'RC con restricciones', key: 'prog-bloqueo-critico-sin-compromiso', level: 'urgent', hue: 'red' },
     { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange' },
     { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber' },
-    { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'amber' },
+    { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'violet', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto.' },
     { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green' },
     { label: 'Incumplida (RC)', key: 'cal-incumplida-critica', level: 'urgent', hue: 'red' },
     { label: 'Incumplida', key: 'cal-incumplida', level: 'attention', hue: 'amber' },
-    { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'amber' },
+    { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'neutral', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema.' },
     { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green' },
     { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue' },
   ]);

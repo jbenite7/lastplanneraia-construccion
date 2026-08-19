@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [lps]
+fuente: docs/last-planner-programacion-semanal-estados.md
+resumen: Definir una clasificacion unica para la semana de compromisos y su fase de calificacion.
+---
+
 # Last Planner - Estados Operativos de Actividades (Programacion Semanal)
 
 ## Objetivo

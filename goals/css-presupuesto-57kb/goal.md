@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/css-presupuesto-57kb/goal.md
+resumen: Decisión del usuario D-GAC-5(b), 2026-08-12: investigar de dónde salen los ~57 KB de CSS gzip de más (cssGzipBytes medido 194.553–195.402 contra baseline…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: css-presupuesto-57kb
 

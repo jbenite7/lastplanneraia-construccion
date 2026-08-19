@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design.md
+resumen: Cerrar el registro de decisiones pendientes del cierre de dark mode: cada una de las 54 entradas queda ejecutada, convertida en chip para otra sesión, o…
+---
+
 # Spec — Campaña de cierre de dark mode: las 54 decisiones convertidas en trabajo
 
 **Fecha:** 2026-08-04 · **Estado:** aprobado en diseño, pendiente de plan

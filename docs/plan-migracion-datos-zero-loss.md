@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [datos]
+fuente: docs/plan-migracion-datos-zero-loss.md
+resumen: Plan de Migracion de Datos Zero-Loss (RPO=0)
+---
+
 # Plan de Migracion de Datos Zero-Loss (RPO=0)
 
 > 🚀 **Arquitectura Futura / Ready for Development**

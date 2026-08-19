@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-28
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-28-a41-pasos-configurables-design.md
+resumen: A4.1 — Pasos del proceso de contratación configurables por proyecto
+---
+
 # A4.1 — Pasos del proceso de contratación configurables por proyecto
 
 **Fecha:** 2026-07-28

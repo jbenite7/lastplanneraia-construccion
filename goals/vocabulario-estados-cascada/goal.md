@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/vocabulario-estados-cascada/goal.md
+resumen: La cascada LPS nombra el mismo ciclo de una actividad con tres vocabularios que conviven: 35 cadenas distintas medidas sobre de02471a. El frente reduce ese…
+---
+
 # Frente: vocabulario-estados-cascada
 
 ## Objetivo

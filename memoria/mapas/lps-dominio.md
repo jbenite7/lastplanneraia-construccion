@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -65,6 +66,12 @@ nombrado por su contenido— y difieren en qué se edita: Semanal el compromiso,
 Intermedia las siete restricciones, dentro del desplegable. El modelo y sus porqués están en
 [[tarjeta-movil-e2-bis]]; por qué hubo que decidirlo dos veces, en
 [[una-decision-escrita-no-llega-sola-al-codigo]].
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-lps.base]]
 
 ## Vecinos
 

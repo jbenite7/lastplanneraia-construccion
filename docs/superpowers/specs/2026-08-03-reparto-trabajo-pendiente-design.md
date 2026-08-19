@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design.md
+resumen: Reparto del trabajo pendiente tras el saneamiento del goal de tablas
+---
+
 # Reparto del trabajo pendiente tras el saneamiento del goal de tablas
 
 **Fecha:** 2026-08-03 · **Última revisión:** 2026-08-03, al cerrar la jornada

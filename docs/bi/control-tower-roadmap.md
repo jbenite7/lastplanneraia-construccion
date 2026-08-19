@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [bi, rbac]
+fuente: docs/bi/control-tower-roadmap.md
+resumen: Roadmap BI Control Tower
+---
+
 # Roadmap BI Control Tower
 
 ## Curva S Valor Ganado financiero

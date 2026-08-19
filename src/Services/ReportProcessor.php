@@ -866,8 +866,11 @@ class ReportProcessor
             // Check if record exists for this week
             $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cic')} WHERE Semana = ? AND subcontratista = ?", [$semana, $subcontratista], $this->pid($dbName))->fetchColumn();
             if ($check == 0) {
-                $sql = "INSERT INTO {$this->t($dbName, 'cic')} (Semana, subcontratista) VALUES (?, ?)";
-                [$sql, $params] = $this->db->insertProjectId($sql, $this->pid($dbName) ?? 0, [$semana, $subcontratista]);
+                // cic.Id no es auto_increment: es una secuencia por proyecto (mismo patrón que
+                // CicApiController); sin él, el INSERT muere en modo estricto.
+                $nextId = (int) $this->db->queryWithProject("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$this->t($dbName, 'cic')} WHERE project_id = ?", [$this->pid($dbName) ?? 0], $this->pid($dbName))->fetchColumn();
+                $sql = "INSERT INTO {$this->t($dbName, 'cic')} (Id, Semana, subcontratista) VALUES (?, ?, ?)";
+                [$sql, $params] = $this->db->insertProjectId($sql, $this->pid($dbName) ?? 0, [$nextId, $semana, $subcontratista]);
                 $this->db->query($sql, $params);
             }
         }
@@ -884,8 +887,11 @@ class ReportProcessor
             // Check if record exists for this week
             $check = $this->db->queryWithProject("SELECT COUNT(*) FROM {$this->t($dbName, 'cip')} WHERE Semana = ? AND profesional = ?", [$semana, $profesional], $this->pid($dbName))->fetchColumn();
             if ($check == 0) {
-                $sql = "INSERT INTO {$this->t($dbName, 'cip')} (Semana, profesional) VALUES (?, ?)";
-                [$sql, $params] = $this->db->insertProjectId($sql, $this->pid($dbName) ?? 0, [$semana, $profesional]);
+                // cip.Id tampoco es auto_increment, y a diferencia de cic su PRIMARY KEY es
+                // global (solo Id, sin project_id): la secuencia se calcula sobre toda la tabla.
+                $nextId = (int) $this->db->query("SELECT COALESCE(MAX(Id), 0) + 1 FROM {$this->t($dbName, 'cip')}")->fetchColumn();
+                $sql = "INSERT INTO {$this->t($dbName, 'cip')} (Id, Semana, profesional) VALUES (?, ?, ?)";
+                [$sql, $params] = $this->db->insertProjectId($sql, $this->pid($dbName) ?? 0, [$nextId, $semana, $profesional]);
                 $this->db->query($sql, $params);
             }
         }
@@ -1167,6 +1173,17 @@ class ReportProcessor
 
     private function calculatePACConsolidado($pac, $crit, $nocrit, $atr)
     {
+        // Las columnas de `cip` son texto y mezclan numeros con 'NA', 'NR', NULL y vacios;
+        // en PHP 8 multiplicar cadenas no numericas es TypeError, asi que todo lo no
+        // numerico se colapsa a 'NA' y un PAC no numerico consolida en 0.
+        $pac = is_numeric($pac) ? (float) $pac : null;
+        $crit = is_numeric($crit) ? (float) $crit : 'NA';
+        $nocrit = is_numeric($nocrit) ? (float) $nocrit : 'NA';
+        $atr = is_numeric($atr) ? (float) $atr : 'NA';
+        if ($pac === null) {
+            return 0;
+        }
+
         if ($crit != 'NA' && $nocrit != 'NA' && $atr != 'NA') {
             return round($pac * ($crit * 0.4 + $nocrit * 0.2 + $atr * 0.4), 3);
         }

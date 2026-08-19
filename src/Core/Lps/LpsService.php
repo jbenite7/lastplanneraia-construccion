@@ -145,7 +145,14 @@ class LpsService
         $fsTs = $this->toTimestamp($fechaInicioSemana);
 
         if ($fiTs === null || $ffTs === null || $fsTs === null) {
-            return ($ej > 0.1) ? 'En Curso' : 'Sin Datos';
+            // 0.001 es PG_STATUS_EPS, el umbral canonico que usa el resto de las ramas de las
+            // DOS implementaciones de esta clasificacion. Aqui habia un 0.1 suelto -la unica rama
+            // donde diferian-, asi que una actividad sin fechas con avance entre 0,1% y 10% salia
+            // `En Curso` por `pg_calculate_status` y `Sin Datos` por aqui. Medido el 2026-08-19:
+            // cero filas caian en esa ventana y solo 4 del cronograma no tienen fechas, asi que
+            // era deuda latente y no un fallo activo. Lo vigila la prueba de paridad de
+            // `tests/unit/EstadoProgramaGeneralTest.php`.
+            return ($ej > 0.001) ? 'En Curso' : 'Sin Datos';
         }
 
         if ($ffTs < $fiTs) {
@@ -170,6 +177,18 @@ class LpsService
 
         if ($ej > 0.001) {
             return 'En Curso';
+        }
+
+        // Va ANTES de los dos `return 'Actividad Futura'` de este metodo, no entre ellos: el
+        // primero cubre el caso sin avance con inicio posterior a la semana, que es justamente
+        // por donde sale una actividad lejana. Colocarla despues la dejaba inalcanzable para el
+        // caso que viene a clasificar — medido el 2026-08-19, con la prueba en rojo.
+        //
+        // Misma regla que `pg_calculate_status`, y la prueba de paridad de
+        // `tests/unit/EstadoProgramaGeneralTest.php` existe para que no vuelvan a separarse.
+        $dias = (int) floor(($fiTs - $fsTs) / 86400);
+        if ((int) floor($dias / 7) >= 7) {
+            return 'Fuera de Ventana';
         }
 
         if ($ej <= 0.001 && $fiTs > $feTs) {

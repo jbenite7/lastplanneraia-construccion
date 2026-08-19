@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-03-09
+tags: [leer-antes-de-tocar]
+fuente: GEMINI.md
+resumen: Este documento establece las reglas y configuraciones específicas para que los asistentes de IA operen de forma segura y eficiente en este entorno.
+---
+
 # GEMINI.md - Constitución de IA para el Proyecto
 
 Este documento establece las reglas y configuraciones específicas para que los asistentes de IA operen de forma segura y eficiente en este entorno.

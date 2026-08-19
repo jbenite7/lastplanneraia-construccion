@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/plans/F1-modales-huerfanos.plan.md
+resumen: Homologar al tema dark los seis modales que el tramo 5c (c4fe9a4) dejó combinando superficie oscura con tinta oscura, arreglando cada uno en el archivo que…
+---
+
 # F1 · Seis modales huérfanos a dark — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

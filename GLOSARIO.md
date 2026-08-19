@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: biblia
+estado: vigente
+fecha: 2026-03-09
+areas: [lps]
+fuente: GLOSARIO.md
+resumen: Este documento constituye la fuente oficial de términos técnicos y de negocio para el proyecto. Facilita la alineación entre el equipo de desarrollo, los…
+---
+
 # GLOSARIO DE TÉRMINOS - AIA LAST PLANNER
 
 Este documento constituye la fuente oficial de términos técnicos y de negocio para el proyecto. Facilita la alineación entre el equipo de desarrollo, los residentes de obra y la dirección estratégica.

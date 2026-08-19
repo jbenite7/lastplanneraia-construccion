@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-24
+areas: [deploy]
+fuente: docs/siteground-deploy-routine.md
+resumen: Checklist operativo para desplegar este proyecto primero en pruebas prueba-lps.lastplanneraia.com y luego en produccion lastplanneraia.com, siempre desde la…
+---
+
 # Rutina de despliegue a SiteGround
 
 Checklist operativo para desplegar este proyecto primero en pruebas

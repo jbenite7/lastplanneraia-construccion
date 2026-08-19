@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-11-manifest-gates.md
+resumen: Declarar las 11 rutas ya migradas al shell sidebar en docs/design-system/manifests/foundation-shell.json (routes) y dejar verdes los gates del…
+---
+
 # Task 11 — Registrar rutas migradas en foundation-shell.json + gates verdes
 
 ## Objetivo

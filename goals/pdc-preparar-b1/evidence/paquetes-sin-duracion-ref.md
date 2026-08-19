@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/paquetes-sin-duracion-ref.md
+resumen: Los paquetes sin duracionref — medición y decisión
+---
+
 # Los paquetes sin `duracion_ref` — medición y decisión
 
 - **Fecha:** 2026-07-29

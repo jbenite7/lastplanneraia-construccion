@@ -16,6 +16,38 @@ concurrency:
 jobs:
   design-system-static:
     runs-on: ubuntu-latest
+    # Sin esto, `docker-compose.override.yml` monta sobre /var/www/html la ruta absoluta de la
+    # máquina de desarrollo, que en un runner NO EXISTE. Docker no protesta: crea el directorio
+    # vacío y lo monta igual, así que el código desaparece del contenedor y los cuatro tests de
+    # tests/design-system/foundation.test.mjs que ejecutan PHP caen con «Failed opening required
+    # 'src/...'». El carril `node-tests` se pone rojo, y como design-system-runtime lleva
+    # `needs: design-system-static`, el job de runtime deja de arrancar entero — con el measure y
+    # el check de runtime-budgets dentro, que es como ese gate se quedó sin poder medirse nunca.
+    #
+    # Regresión del 2026-08-18: 86fdca41 cambió el bind de `./:/var/www/html` (que en CI
+    # funcionaba) a `${LPS_CODE_ROOT:-<ruta del host>}`, y 81debea8 lo reapuntó al repo mudado.
+    # No se toca el override: resuelve un problema local real —varios worktrees compartiendo los
+    # mismos contenedores— y no existe una ruta que valga a la vez aquí y en un runner. La
+    # variable ES la salida que aquel commit dejó prevista y que CLAUDE.md documenta («en otra
+    # maquina, define LPS_CODE_ROOT en tu .env con la ruta de tu clon»); un runner es otra
+    # máquina, y su clon es el workspace.
+    #
+    # Va en el job y no en un paso a propósito: los pasos que invocan compose con
+    # `-f docker-compose.yml` explícito NO aplican el override y siguen sin montar nada, que es lo
+    # que quieren —el montaje taparía el vendor/ que trae la imagen—. Esta variable solo cambia
+    # las llamadas a `docker compose` pelado, que son las que hacen los tests.
+    #
+    # Y NO se replica en design-system-runtime, también a propósito: ese job fija
+    # COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml, así que el override nunca se le
+    # aplica; montar el checkout ahí taparía el vendor/ de la imagen y rompería PHPStan y la
+    # suite PHP. Allí el arreglo sería el daño.
+    #
+    # Comprobado en las dos direcciones ANTES de escribirlo, en un proyecto de compose aparte:
+    # con la ruta inexistente sale el «Failed opening required» idéntico al del CI; con la
+    # variable puesta, DesignSystemHeadComponent::render() y DesignSystemAssetController::main()
+    # devuelven su HTML y su CSS.
+    env:
+      LPS_CODE_ROOT: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
         with:

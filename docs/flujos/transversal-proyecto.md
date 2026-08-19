@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/transversal-proyecto.md
+resumen: Escenarios PROY-. Qué proyectos debe ver cada cuenta, qué pasa al entrar en uno, y qué queda en sesión — el estado del que dependen las otras cuatro tandas.
+---
+
 # Biblia · Transversal · Selección de proyecto
 
 Escenarios `PROY-*`. Qué proyectos debe ver cada cuenta, qué pasa al entrar en uno, y qué queda en

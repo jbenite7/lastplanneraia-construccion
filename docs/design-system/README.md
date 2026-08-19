@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/README.md
+resumen: Este directorio define la parte versionada del design system. Stitch y docs/brand/ son insumos visuales; el contrato ejecutable vive en el repo.
+---
+
 # Design system innegociable AIA
 
 Este directorio define la parte versionada del design system. Stitch y `docs/brand/` son insumos visuales; el contrato ejecutable vive en el repo.
@@ -40,6 +50,10 @@ Este directorio define la parte versionada del design system. Stitch y `docs/bra
   manifiesto); `observed-frozen` (bajo observación de auditoría con baseline
   congelado; sin manifiesto y sin presupuesto de rutas — el contador solo
   puede bajar).
+- `ds-f1a-escala-estado.json` y `ds-f1a-escala-estado.md`: contrato de la escala de estado
+  (DS-F1a). El JSON es la fuente ejecutable y el Markdown lo explica; si divergen, manda el JSON, y
+  `tests/design-system/ds-f1a-escala-estado.test.mjs` comprueba que no diverjan. Convive con
+  `state-semantics.json`, que este contrato **no** sustituye todavía.
 - `public/css/tokens.css`: tokens base AIA y alias semanticos `--ds-*`.
 - `public/css/design-system/core.css`: componentes y utilidades canónicas
   `aia-*`, compartidas por los entrypoints productivo y del laboratorio.

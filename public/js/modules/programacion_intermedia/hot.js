@@ -554,17 +554,43 @@
   //
   // `neutral` (fila sin clasificar) no toma tinte de estado: usa la superficie
   // elevada, que no es un matiz.
+  // Los NIVELES se revisaron uno por uno con el usuario el 2026-08-18 y cuatro
+  // de los ocho cambiaron. Los matices NO se tocaron: siguen siendo los ocho del
+  // catalogo, uno por estado. La procedencia de cada nivel —cual decidio el
+  // usuario y cuales propuso el implementador y el confirmo— esta en
+  // goals/bug-coloreado-severidad/respuestas-ds-f1.md, y se conserva a proposito.
   var statePresentation = {
     'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
     'blocked-overdue': { level: 'urgent', hue: 'orange' },
-    'blocked-due': { level: 'attention', hue: 'violet' },
-    'alert-1-week': { level: 'urgent', hue: 'amber' },
+    'blocked-due': { level: 'urgent', hue: 'violet' },
+    'alert-1-week': { level: 'attention', hue: 'amber' },
     'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
-    'alert-4-6-weeks': { level: 'attention', hue: 'neutral' },
-    'execution-blocked': { level: 'attention', hue: 'blue' },
+    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral' },
+    'execution-blocked': { level: 'urgent', hue: 'blue' },
     'liberated-control': { level: 'healthy', hue: 'green' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
+
+  var PESO_NIVEL = { urgent: 3, attention: 2, healthy: 1, neutral: 0 };
+  var agrupadoPorGravedad = false;
+
+  // Devuelve una COPIA. La rejilla no ordena por si sola (columnSorting: false),
+  // asi que el orden es del dato, y mutar el array original perderia la
+  // secuencia del programa sin poder volver.
+  function agruparPorGravedad(filas) {
+    return filas
+      .map(function (fila, i) { return { fila: fila, i: i }; })
+      .sort(function (a, b) {
+        // `getState` es la del modulo de reglas ya cargado
+        // (public/js/modules/programacion_intermedia/stateMachine.js), la misma
+        // que usa buildRowClassCache para resolver la clase de la fila. No se
+        // introduce ninguna funcion nueva.
+        var pa = PESO_NIVEL[(statePresentation[getState(a.fila)] || {}).level] || 0;
+        var pb = PESO_NIVEL[(statePresentation[getState(b.fila)] || {}).level] || 0;
+        return (pb - pa) || (a.i - b.i);
+      })
+      .map(function (x) { return x.fila; });
+  }
 
   function stateChipAttrs(state) {
     var presentation = statePresentation[state];
@@ -877,11 +903,17 @@
       rowClass += ' pi-row-crisis';
     }
 
+    // El nivel viaja como atributo y no como clase: es lo que consume la
+    // primitiva compartida del filete (severity-rail.css), y una clase
+    // obligaria a cada modulo a inventar su propio nombre para el mismo eje.
+    var rowSeverity = isHeader ? null : ((statePresentation[resolvedState] || {}).level || 'neutral');
+
     return {
       state: resolvedState,
       isHeader: isHeader,
       rowStateClass: rowStateClass,
       rowClass: rowClass,
+      rowSeverity: rowSeverity,
       // N-1 (Task 38, 2026-08-05): sin Responsable AIA no se gestionan
       // restricciones. Antes se dejaba escribir y se revertia despues; ahora
       // la fila nace sabiendo si esta bloqueada, y `cells()` lo traduce a
@@ -1004,6 +1036,25 @@
     element.className = (cleanClass + ' ' + rowClass).trim();
   }
 
+  // El fondo (via clases pi-state-*) dice QUE estado es; este atributo dice
+  // CUAN grave es, y lo traduce la primitiva compartida severity-rail.css.
+  // Es un dato de fila, pero `[data-aia-severity-rail]` no tiene selector de
+  // descendiente (Task 2): solo pinta el elemento que lo lleva puesto. Se
+  // escribe en el <tr> y en cada <td>, exactamente como `applyPIRowStateClass`
+  // ya replica `rowClass` en ambos — el mismo mecanismo que el modulo usa para
+  // cualquier atributo de fila, no uno nuevo.
+  function applyPIRowSeverityAttr(element, rowSeverity) {
+    if (!element) {
+      return;
+    }
+
+    if (rowSeverity) {
+      element.setAttribute('data-aia-severity-rail', rowSeverity);
+    } else {
+      element.removeAttribute('data-aia-severity-rail');
+    }
+  }
+
   function applyRowClassesToDOM(instance) {
     if (!instance || !instance.rootElement || instance.rootElement.getClientRects().length === 0) return;
     var data = instance.getSourceData();
@@ -1018,10 +1069,22 @@
       var tr = td.closest ? td.closest('tr') : td.parentNode;
       if (!tr) continue;
       applyPIRowStateClass(tr, meta.rowClass);
+      applyPIRowSeverityAttr(tr, meta.rowSeverity);
 
       var cells = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
       for (var col = 0; col < cells.length; col++) {
         applyPIRowStateClass(cells[col], meta.rowClass);
+        // El filete va SOLO en la primera celda, no en todas. La clase de
+        // estado si se replica en las 17 -es el fondo, y el fondo es de la fila
+        // entera-, pero el filete es UNA marca en el borde de la fila. Puesto en
+        // cada celda dibuja diecisiete barras verticales y la tabla se lee como
+        // un pijama; se vio en pantalla el 2026-08-19 antes de aceptarlo.
+        //
+        // Va en la celda y no solo en el `<tr>` porque con `border-collapse` el
+        // `box-shadow` de una fila no pinta de forma fiable. El `<tr>` conserva
+        // el atributo igualmente: es el que declara el nivel para quien lea el
+        // DOM o lo pruebe.
+        applyPIRowSeverityAttr(cells[col], col === 0 ? meta.rowSeverity : null);
       }
     }
   }
@@ -4611,6 +4674,9 @@
 
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
+    if (agrupadoPorGravedad) {
+      filtered = agruparPorGravedad(filtered);
+    }
     visibleRows = filtered;
     if (piViewAll) {
       updateLegendCountsFromServer();
@@ -4903,6 +4969,11 @@
   function bindActions() {
     bindHeaderTooltips();
     $('#btn-refresh').off('click.piRefresh').on('click.piRefresh', loadData);
+    $('#btn-agrupar-gravedad').off('click.piAgruparGravedad').on('click.piAgruparGravedad', function () {
+      agrupadoPorGravedad = !agrupadoPorGravedad;
+      $(this).attr('aria-pressed', agrupadoPorGravedad ? 'true' : 'false');
+      applyFiltersAndRender();
+    });
     $('#btn-refresh-listas').off('click.piRefreshListas').on('click.piRefreshListas', refreshDropdownSources);
     $('#btn-export').off('click.piExport').on('click.piExport', exportCsv);
     $('#btn_informe_compromisos').off('click.piReport').on('click.piReport', descargarReporte);

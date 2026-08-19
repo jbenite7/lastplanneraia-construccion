@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [arquitectura]
+tags: [generado]
+fuente: docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design.md
+resumen: La wiki explica por qué se decidieron las cosas y qué trampas tiene el repositorio, pero no responde a las preguntas de orientación: qué módulos existen, qué…
+---
+
 # Arquitectura del proyecto en la wiki, generada desde el código
 
 **Fecha:** 2026-08-03

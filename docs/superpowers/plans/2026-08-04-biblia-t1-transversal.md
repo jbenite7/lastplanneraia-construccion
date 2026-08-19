@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-04-biblia-t1-transversal.md
+resumen: Que la entrada a la aplicación —autenticación, selección de proyecto y resolución de capacidades por rol— tenga cada uno de sus escenarios descrito, verificado…
+---
+
 # Biblia de flujos · Tanda T1 (transversal) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

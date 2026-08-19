@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [lps]
+fuente: docs/last-planner-programacion-intermedia-estados.md
+resumen: Definir una taxonomia unica para seguimiento de restricciones en la ventana de 6 semanas.
+---
+
 # Last Planner - Estados Operativos de Restricciones (Programacion Intermedia)
 
 ## Objetivo

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/reserva-redundante-green-dark/goal.md
+resumen: Andamiaje del frente reserva-redundante-green-dark: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: reserva-redundante-green-dark
 
 ## Objetivo

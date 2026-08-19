@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/lps-cascada.md
+resumen: Escenarios CAS-. Las reglas que atraviesan más de un eslabón del ciclo, descritas aquí una vez para que los demás documentos las citen en vez de repetirlas.
+---
+
 # Biblia · Cascada LPS · Invariantes
 
 Escenarios `CAS-*`. Las reglas que atraviesan más de un eslabón del ciclo, descritas aquí una vez

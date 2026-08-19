@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-08-04
+areas: [design-system]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-08-04-conceptos-design-system-en-la-wiki-design.md
+resumen: El design system es el área mejor sembrada de la wiki memoria/: 27 páginas, más que ninguna otra. Pero la composición está escorada, medida el 2026-08-04:
+---
+
 # Sembrar los conceptos del design system en la wiki
 
 **Fecha:** 2026-08-04

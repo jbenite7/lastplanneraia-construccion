@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-07-29-despliegue-pdc-v2-produccion-design.md
+resumen: goals/pdc-preparar-b1 - Origen: decisión del comité del 2026-07-29: no lanzar todavía, una semana más, y entonces sí. - Rutina obligatoria…
+---
+
 # PDC v2 — Despliegue a producción — Design
 
 - **Fecha:** 2026-07-29

@@ -7,6 +7,7 @@
     "designSystemVersion",
     "purpose",
     "dimensions",
+    "axisRules",
     "levels",
     "hues",
     "translationRules",
@@ -34,6 +35,15 @@
           "type": "array"
         }
       }
+    },
+    "axisRules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Reglas de reparto de ejes: que codifica cada canal visual. Se anade el 2026-08-19 con el frente ds-f1a-estados-severidad. Es requerida a proposito: un contrato de estados que no diga que hace cada canal deja el reparto al criterio de cada hoja, y eso es exactamente lo que produjo que el fondo intentara decir identidad y gravedad a la vez."
     },
     "levels": {
       "type": "array",

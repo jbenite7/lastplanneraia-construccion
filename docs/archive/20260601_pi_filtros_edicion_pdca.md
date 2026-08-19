@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: guia
+estado: cerrado
+fecha: 2026-06-02
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/20260601_pi_filtros_edicion_pdca.md
+resumen: Método: PDCA (Plan-Do-Check-Act) Target: public/js/modules/programacionintermedia/hot.js
+---
+
 # PDCA: Edición en PI con filtros nativos activos — no guarda, no actualiza estado, no colorea
 
 Fecha: 2026-06-01

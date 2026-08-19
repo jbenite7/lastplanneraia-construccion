@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/buttons-important-leyenda/goal.md
+resumen: Andamiaje del frente buttons-important-leyenda: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: buttons-important-leyenda
 
 ## Objetivo

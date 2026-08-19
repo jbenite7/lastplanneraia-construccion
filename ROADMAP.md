@@ -1,9 +1,11 @@
 ---
-project: lps-aia
-type: roadmap
-status: activo
-updated: 2026-08-19
-tags: [proyecto, php]
+capa: fuente
+tipo: biblia
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: ROADMAP.md
+resumen: Rumbo del producto — las fases entregadas, las que corren hoy y las pendientes, con las decisiones de rumbo que las explican.
 ---
 
 # Roadmap

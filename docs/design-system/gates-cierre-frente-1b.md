@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-11
+areas: [design-system]
+fuente: docs/design-system/gates-cierre-frente-1b.md
+resumen: Este documento registra, con su motivo, por qué la lista de gates blocantes de docs/design-system/closeout-evidence.json bajó de 15 a 8. Es la ejecución de…
+---
+
 # De 15 a 8 gates de cierre — Frente 1b, 2026-08-11
 
 Este documento registra, con su motivo, por qué la lista de gates blocantes de

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/cierre-prelanzamiento-2026-07-29.md
+resumen: Cierre pre-lanzamiento del PDC v2 — bitácora de verificación
+---
+
 # Cierre pre-lanzamiento del PDC v2 — bitácora de verificación
 
 - **Fecha:** 2026-07-29

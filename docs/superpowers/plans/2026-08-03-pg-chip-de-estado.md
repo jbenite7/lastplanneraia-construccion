@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-03-pg-chip-de-estado.md
+resumen: Que /programa-general distinga en pantalla los siete estados que su contrato declara, dándole el chip de estado que Programación Intermedia y Programación…
+---
+
 # Chip de estado de Programa General — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

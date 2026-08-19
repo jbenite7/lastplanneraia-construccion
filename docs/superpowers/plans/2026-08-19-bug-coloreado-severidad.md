@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-bug-coloreado-severidad.md
+resumen: Plan — Diagnóstico del coloreado por severidad
+---
+
 # Plan — Diagnóstico del coloreado por severidad
 
 **Spec:** `docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design.md` · **Estado:**

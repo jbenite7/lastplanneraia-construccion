@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/listas-por-modalidad-no-se-construye.md
+resumen: Listas de pasos por modalidad — no se construye (2026-07-29)
+---
+
 # Listas de pasos por modalidad — no se construye (2026-07-29)
 
 **Decisión:** no se implementa el diferido nº 1 de A4.1.

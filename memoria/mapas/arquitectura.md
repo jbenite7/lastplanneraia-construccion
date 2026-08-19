@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -53,6 +54,12 @@ ellas, ni construyas SQL dinámico apoyándote en `Base_de_Datos` o `dbPrefix`.
 
 Trampas medidas al tocar datos: [[dos-stacks-docker]],
 [[stack-principal-migraciones-pdc-pendientes]], [[no-enriquecer-daporto-para-medir]].
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-arquitectura.base]]
 
 ## Vecinos
 

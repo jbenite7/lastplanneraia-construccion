@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/transversal-autenticacion.md
+resumen: Escenarios AUTH-. Qué debe pasar al entrar, al permanecer y al caducar.
+---
+
 # Biblia · Transversal · Autenticación y sesión
 
 Escenarios `AUTH-*`. Qué debe pasar al entrar, al permanecer y al caducar.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil.md
+resumen: Que 390x844 vuelva a ser un viewport permitido en los esquemas, contratos y gates del design system, sin que ninguna familia lo exija todavía y sin generar…
+---
+
 # F1 — Destrabar el viewport móvil: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

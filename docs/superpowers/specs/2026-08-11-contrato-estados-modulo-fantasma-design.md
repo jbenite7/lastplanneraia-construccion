@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design.md
+resumen: Retirar del contrato de estados el módulo fantasma programa-general-actualizar — spec
+---
+
 # Retirar del contrato de estados el módulo fantasma `programa-general-actualizar` — spec
 
 - Frente: `contrato-estados-modulo-fantasma` · sesión ejecutora `69ee4d31`

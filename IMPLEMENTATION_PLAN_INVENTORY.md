@@ -1,9 +1,11 @@
 ---
-project: lps-aia
-type: plan-inventory
-status: activo
-updated: 2026-08-19
-tags: [proyecto, php]
+capa: fuente
+tipo: referencia
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: IMPLEMENTATION_PLAN_INVENTORY.md
+resumen: Índice con estado de los planes y specs de docs/superpowers/ — propuesto, en curso, ejecutado o abandonado. No duplica contenido.
 ---
 
 # Inventario de planes

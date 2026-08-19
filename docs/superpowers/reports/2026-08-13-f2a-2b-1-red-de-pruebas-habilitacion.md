@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-13
+areas: [proceso]
+fuente: docs/superpowers/reports/2026-08-13-f2a-2b-1-red-de-pruebas-habilitacion.md
+resumen: F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: informe de cierre
+---
+
 <!-- cas:cita-textual — informe de cierre: cita comandos y salidas tal como se midieron -->
 # F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: informe de cierre
 

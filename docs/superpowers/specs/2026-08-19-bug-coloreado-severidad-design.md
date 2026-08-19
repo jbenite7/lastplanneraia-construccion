@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design.md
+resumen: El coloreado en cascada por severidad — diseño del diagnóstico
+---
+
 # El coloreado en cascada por severidad — diseño del diagnóstico
 
 **Alimenta:** DS-F0. **Frente:** `bug-coloreado-severidad`.

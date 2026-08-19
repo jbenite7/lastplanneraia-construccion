@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-01
+areas: [lps]
+fuente: docs/superpowers/plans/2026-08-01-ui-audit-core-lps-ops-plan.md
+resumen: Estandarizar al 100% las pantallas de Auth, Selector de Proyecto, Core LPS y Operaciones Legadas usando el Design System AIA (harden y polish visual), logrando…
+---
+
 # LPS Core & Ops UI Refactor Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

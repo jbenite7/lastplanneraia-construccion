@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: flujo
 estado: vigente
 fecha: 2026-08-03

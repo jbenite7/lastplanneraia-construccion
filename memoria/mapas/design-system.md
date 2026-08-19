@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
@@ -137,6 +138,12 @@ Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
 - [[goals/bi-control-tower-gemini/goal|bi-control-tower-gemini]] — dashboard de BI, **bloqueado por dependencia**: su condición de hecho pedía aprobar un tema (`linen`) retirado el 2026-07-25; corregida el 2026-08-10 para esperar el tema claro nuevo de F3 de `reapertura-movil-y-tema-claro`. Ver [[condicion-de-hecho-caduca-sin-aviso]].
 
 Estado de todos en [[estado|Estado de los goals]].
+
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-design-system.base]]
 
 ## Vecinos
 

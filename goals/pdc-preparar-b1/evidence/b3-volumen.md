@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/b3-volumen.md
+resumen: El punto 4 dice «los indicadores cargan con el volumen real de las obras activas». La Ola 1 declaró que su regla se validó con 4 paquetes y 21 pasos, no con…
+---
+
 # B3 — Medición de volumen (punto 4 de la condición de hecho)
 
 **Fecha:** 2026-07-30 · **Base:** `lastplanneraia_dev` del stack `last-planner-aia` · **Rama:** `worktree-pdc-b3-torre-control`

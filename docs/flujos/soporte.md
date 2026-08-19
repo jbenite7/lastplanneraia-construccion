@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/soporte.md
+resumen: Escenarios SOP-. Los módulos que alimentan la cascada sin gobernarla: contratos, listado de actividades, subcontratistas, profesionales, control de cambios y…
+---
+
 # Biblia · Módulos de soporte
 
 Escenarios `SOP-*`. Los módulos que alimentan la cascada sin gobernarla: contratos, listado de

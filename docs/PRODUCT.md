@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-05
+fuente: docs/PRODUCT.md
+resumen: Segunda revisión en frío: 2026-08-11, sobre 66facd23 (fase 9 del IMPROVE-APP-PLAN, cierre del Frente 1). Sustituye —sin borrarla— a la primera, del 2026-08-05…
+---
+
 # PRODUCT — la Única Cosa, y qué falta para que se note
 
 **Segunda revisión en frío: 2026-08-11, sobre `66facd23`** (fase 9 del `IMPROVE-APP-PLAN`, cierre del
