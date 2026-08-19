@@ -3,8 +3,10 @@
 
 ## Fase del plan
 Plan: docs/superpowers/plans/2026-08-18-wiki-v2-visual.md
-Fase: Tanda 1 — Esquema y herramientas (base de todo)
-Sha verificado: 0de2f902 (npm run test:wiki → RC=0, 51 tests, «Sin hallazgos. 145 páginas de wiki y 0 de 383 fuentes declaradas.»)
+Fase: Fase 1 · Tanda 1 — Esquema y herramientas (base de todo)
+Sha verificado: 5057f877 — re-verificado DESPUES de integrar origin/main (4 commits entrantes).
+`npm run test:wiki` → RC=0 · 55 tests, 0 fallos · «Sin hallazgos. 151 páginas de wiki y 0 de 391 fuentes declaradas.»
+Antes de integrar, sobre 6d3b72f3: RC=0 · 55 tests · 150 páginas y 383 fuentes.
 Presupuesto: ?
 
 ## Objetivo
