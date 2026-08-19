@@ -154,32 +154,48 @@ test('el catalogo de matices del contrato es exactamente la paleta', async () =>
 // mismo matiz pintan el mismo fondo, y con la paleta reducida a anclas ya no
 // hay un escalon con el que separarlos.
 //
-// La excepcion viva y declarada es /programacion-semanal, que no entro en esta
-// reasignacion: sus diez estados son CINCO POR FASE (Programacion y
-// Calificacion) sobre las cinco clases que la hoja publica, asi que el contrato
-// los lista juntos y las repeticiones que se ven aqui son en parte del cruce de
-// fases y en parte colisiones reales dentro de una misma fase
-// («Condiciones Pendientes» con «Por Comprometer», «Incumplida» con «Sin
-// Calificar»). Se declara el estado exacto en vez de excluir el modulo: si
-// aparece una repeticion nueva -en Semanal o en cualquier otro- este assert la
-// enseña.
-const KNOWN_HUE_COLLISIONS = {
-  'programacion-semanal': ['amber', 'green', 'red'],
-};
+// LO QUE CUENTA ES LA FASE, NO EL MODULO. Reescrito el 2026-08-19: hasta hoy
+// este guard comparaba los diez estados de /programacion-semanal como si
+// convivieran, y tapaba el resultado con una lista de matices tolerados
+// -['amber','green','red']- que mezclaba dos cosas distintas: repeticiones
+// INOCUAS entre fases y colisiones REALES dentro de una fase.
+//
+// Las dos mitades no conviven nunca: `stateMachine.js:58` resuelve `calificacion`
+// si la semana esta confirmada y `programacion` si no, asi que en pantalla hay
+// cinco estados, no diez. Que `red` lo usen «RC con restricciones» (programacion)
+// y «Incumplida (RC)» (calificacion) no confunde a nadie.
+//
+// Las dos colisiones que SI eran reales -«Condiciones Pendientes» con «Por
+// Comprometer», e «Incumplida» con «Sin Calificar», cada una dentro de su propia
+// fase- se resolvieron el 2026-08-19 por decision del usuario: «Por Comprometer»
+// pasa a violeta y «Sin Calificar» a gris.
+//
+// Asi que la excepcion no se renueva: se sustituye por el predicado correcto, que
+// es mas estricto que el anterior y no necesita lista de tolerados. La fase se
+// deduce del prefijo de `key` (`prog-` / `cal-`); un modulo sin prefijos de fase
+// se compara entero, que es el caso de todos los demas.
+const FASE_POR_PREFIJO = (key) => (/^(prog|cal)-/.exec(key) ?? [null, ''])[1];
 
-test('ningun modulo asigna el mismo matiz a dos estados', async () => {
+test('ningun modulo asigna el mismo matiz a dos estados de la misma fase', async () => {
   const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
   const collisions = {};
   for (const { module, states } of semantics.moduleMappings) {
-    const seen = new Map();
-    for (const { hue } of states) {
+    const porFase = new Map();
+    for (const { hue, key } of states) {
       if (hue === undefined) continue;
+      const fase = FASE_POR_PREFIJO(key ?? '');
+      if (!porFase.has(fase)) porFase.set(fase, new Map());
+      const seen = porFase.get(fase);
       seen.set(hue, (seen.get(hue) ?? 0) + 1);
     }
-    const repeated = [...seen.entries()].filter(([, n]) => n > 1).map(([hue]) => hue).sort();
+    const repeated = [...porFase.entries()]
+      .flatMap(([fase, seen]) => [...seen.entries()]
+        .filter(([, n]) => n > 1)
+        .map(([hue]) => (fase ? `${fase}:${hue}` : hue)))
+      .sort();
     if (repeated.length) collisions[module] = repeated;
   }
-  assert.deepEqual(collisions, KNOWN_HUE_COLLISIONS);
+  assert.deepEqual(collisions, {});
 });
 
 // Los tres modulos operativos que declaran matiz estado por estado tienen que

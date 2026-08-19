@@ -163,7 +163,8 @@
           "label": "Por Comprometer",
           "key": "prog-sin-compromiso",
           "level": "attention",
-          "hue": "amber"
+          "hue": "violet",
+          "note": "Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto."
         },
         {
           "label": "Lista para Confirmar",
@@ -187,7 +188,8 @@
           "label": "Sin Calificar",
           "key": "cal-sin-calificar",
           "level": "attention",
-          "hue": "amber"
+          "hue": "neutral",
+          "note": "Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema."
         },
         {
           "label": "Cumplida Control",
