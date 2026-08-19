@@ -1,34 +1,34 @@
 [
   {
-    "estado": "ps-state-prog-sin-compromiso",
+    "estado": "ps-state-cal-tnp",
+    "cubo": "ps-alert-tnp",
+    "fondo": "#17334f",
+    "rail": "neutral",
+    "railShadow": "none"
+  },
+  {
+    "estado": "ps-state-cal-sin-calificar",
     "cubo": "ps-alert-medium",
-    "fondo": "#33204a",
+    "fondo": "#2b2f2d",
     "rail": "attention",
     "railShadow": "rgb(242, 231, 156) 4px 0px 0px 0px inset"
   },
   {
-    "estado": "ps-state-prog-sin-compromiso",
+    "estado": "ps-state-cal-incumplida-critica",
+    "cubo": "ps-alert-critical-route",
+    "fondo": "#431414",
+    "rail": "urgent",
+    "railShadow": "rgb(255, 205, 200) 6px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-cal-incumplida",
     "cubo": "ps-alert-medium",
-    "fondo": "#33204a",
+    "fondo": "#3a3a0f",
     "rail": "attention",
     "railShadow": "rgb(242, 231, 156) 4px 0px 0px 0px inset"
   },
   {
-    "estado": "ps-state-prog-lista-para-confirmar",
-    "cubo": "ps-alert-control",
-    "fondo": "#173d26",
-    "rail": "healthy",
-    "railShadow": "none"
-  },
-  {
-    "estado": "ps-state-prog-lista-para-confirmar",
-    "cubo": "ps-alert-control",
-    "fondo": "#173d26",
-    "rail": "healthy",
-    "railShadow": "none"
-  },
-  {
-    "estado": "ps-state-prog-lista-para-confirmar",
+    "estado": "ps-state-cal-cumplida-control",
     "cubo": "ps-alert-control",
     "fondo": "#173d26",
     "rail": "healthy",
