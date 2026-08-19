@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0-f1a",
+  "base": "1af2e9ac",
+  "medicion": "50966 actividades reales de programa_consolidado (65549 filas menos 14583 capitulos), 16 proyectos",
+  "etiquetas": "Cada `etiqueta` es el literal EXACTO de la columna `Estado`, con tildes, verificado contra la base sobre 1af2e9ac. Un contrato cuya etiqueta no case con el literal guardado no puede unirse con los datos.",
+  "convive_con": "docs/design-system/state-semantics.json, que este contrato NO sustituye todavia",
+  "canales": {
+    "fondo": {
+      "transporta": "identidad-y-horizonte",
+      "porque": "fuera-de-ventana, actividad-futura y terminada tienen urgencia cero las tres; si el fondo codificara gravedad se pintarian igual y se perderia la distincion de horizonte"
+    },
+    "barra": {
+      "transporta": "gravedad",
+      "posicion": "borde de la fila",
+      "porque": "solo aparece en el 21,3% que pide algo; la ausencia de barra es la senal de que no pide nada"
+    }
+  },
+  "niveles": {
+    "urgente": { "orden": 1, "barra": true, "accion": "Atender ahora" },
+    "atencion": { "orden": 2, "barra": true, "accion": "Revisar antes del siguiente hito" },
+    "controlado": { "orden": 3, "barra": false, "accion": "Continuar segun el ciclo normal" }
+  },
+  "estados": [
+    { "id": "atrasada", "etiqueta": "Atrasada", "nivel": "urgente", "porcentaje": 8.0, "origen": "pg_calculate_status" },
+    { "id": "debe-iniciar-esta-semana-y-restricciones-pendientes", "etiqueta": "Debe Iniciar esta Semana y Restricciones Pendientes", "nivel": "urgente", "porcentaje": 1.5, "origen": "legacy-sin-productor" },
+    { "id": "en-liberacion-de-restricciones", "etiqueta": "En Liberación de Restricciones", "nivel": "atencion", "porcentaje": 10.7, "origen": "legacy-sin-productor", "revocable": true, "nota": "asignacion propuesta por la spec, no decidida por el usuario: parece el sustituto vivo de Con Alerta Restricciones, que state-semantics.json declara como atencion y que no existe en ninguna de las 65549 filas" },
+    { "id": "debe-iniciar", "etiqueta": "Debe Iniciar", "nivel": "atencion", "porcentaje": 0.9, "origen": "pg_calculate_status" },
+    { "id": "debe-iniciar-esta-semana", "etiqueta": "Debe Iniciar esta Semana", "nivel": "atencion", "porcentaje": 0.2, "origen": "legacy-sin-productor", "revocable": true, "nota": "asignacion propuesta por la spec: lo separa de su hermano con restricciones pendientes el que algo lo bloquee; si en obra le toca esta semana ya es urgente, se mueve" },
+    { "id": "actividad-futura", "etiqueta": "Actividad Futura", "nivel": "controlado", "porcentaje": 33.6, "origen": "pg_calculate_status" },
+    { "id": "terminada", "etiqueta": "Terminada", "nivel": "controlado", "porcentaje": 19.0, "origen": "pg_calculate_status" },
+    { "id": "en-curso", "etiqueta": "En Curso", "nivel": "controlado", "porcentaje": 0.7, "origen": "pg_calculate_status" },
+    { "id": "terminada-antes", "etiqueta": "Terminada Antes", "nivel": "controlado", "porcentaje": 0.6, "origen": "legacy-sin-productor" },
+    { "id": "a-tiempo", "etiqueta": "A Tiempo", "nivel": "controlado", "porcentaje": 0.4, "origen": "legacy-sin-productor" },
+    { "id": "adelantada", "etiqueta": "Adelantada", "nivel": "controlado", "porcentaje": 0.0, "origen": "legacy-sin-productor" },
+    { "id": "fuera-de-ventana", "etiqueta": "Fuera de Ventana", "nivel": null, "porcentaje": 24.2, "origen": "legacy-sin-productor", "definicion": "actividad que comienza en 7 semanas o mas respecto a la fecha de inicio de la semana actual, es decir fuera de PG_LOOKAHEAD_DAYS = 42", "sustituye": "No Requerida", "pendiente": "declarar si es etiqueta de pantalla o valor persistido: si es lo segundo, renombrarlo es una migracion sobre 16 proyectos con respaldo y gate" },
+    { "id": "sin-datos", "etiqueta": "Sin Datos", "nivel": null, "porcentaje": 0.1, "origen": "pg_calculate_status" }
+  ]
+}
