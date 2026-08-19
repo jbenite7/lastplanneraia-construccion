@@ -196,3 +196,65 @@ test('un commit de .md con cuerpo tocado sigue contando', () => {
   const ejecutor = (args) => (args[0] === 'log' ? log : cuerpo);
   assert.equal(contarCommits('2026-08-01', ejecutor), 1);
 });
+
+// ── Autoridad contra intención ───────────────────────────────────────────────────────────────
+// Decidido el 2026-08-19 tras medir 404 commits: 232 tocaban código, **118 tocaban un documento
+// con autoridad** y solo 54 eran pura intención. Excluir «la prosa» en bloque habría silenciado
+// esos 118, que sí pueden volver falsa una página de la wiki.
+
+import { TIPOS_CON_AUTORIDAD, mandaSobreElCodigo } from '../../scripts/wiki-veracidad.mjs';
+
+const tipos = (mapa) => (f) => (f in mapa ? mapa[f] : null);
+
+test('los tres tipos con autoridad, y solo esos tres', () => {
+  assert.deepEqual([...TIPOS_CON_AUTORIDAD].sort(), ['biblia', 'contrato', 'guia']);
+});
+
+test('una guía manda: si cambia, la página que la cita puede quedar falsa', () => {
+  assert.equal(mandaSobreElCodigo(['docs/pdc-v2.md'], tipos({ 'docs/pdc-v2.md': 'guia' })), true);
+  assert.equal(mandaSobreElCodigo(['AGENTS.md'], tipos({ 'AGENTS.md': 'contrato' })), true);
+  assert.equal(mandaSobreElCodigo(['GLOSARIO.md'], tipos({ 'GLOSARIO.md': 'biblia' })), true);
+});
+
+test('una spec o un plan no mandan: describen lo que aún no se ha construido', () => {
+  const m = { 'docs/superpowers/specs/x.md': 'spec', 'docs/superpowers/plans/x.md': 'plan' };
+  assert.equal(mandaSobreElCodigo(Object.keys(m), tipos(m)), false);
+});
+
+test('reporte, evidencia y goal-doc tampoco: son historia', () => {
+  const m = { 'a.md': 'reporte', 'b.md': 'evidencia', 'c.md': 'goal-doc' };
+  assert.equal(mandaSobreElCodigo(Object.keys(m), tipos(m)), false);
+});
+
+test('basta UNO con autoridad para que el commit entero cuente', () => {
+  const m = { 'plan.md': 'plan', 'spec.md': 'spec', 'docs/pdc-v2.md': 'guia' };
+  assert.equal(mandaSobreElCodigo(Object.keys(m), tipos(m)), true);
+});
+
+test('un archivo sin `tipo` declarado cuenta: la regla falla hacia el ruido', () => {
+  // La alarma se apoya en un metadato que mantiene la propia wiki y que dedujo un script desde
+  // la ruta. Un documento mal tipado se silenciaría a sí mismo, así que ante la duda, suena.
+  assert.equal(mandaSobreElCodigo(['docs/recien-creado.md'], tipos({})), true);
+  const m = { 'plan.md': 'plan', 'docs/sin-declarar.md': null };
+  assert.equal(mandaSobreElCodigo(Object.keys(m), tipos(m)), true);
+});
+
+test('un archivo borrado o renombrado cuenta, por la misma razón', () => {
+  assert.equal(mandaSobreElCodigo(['docs/ya-no-existe.md'], () => { throw new Error('ENOENT'); }), true);
+});
+
+test('el filtro completo: una spec no cuenta, una guía sí', () => {
+  const log = (f) => `${sha(1)}\n\n${f}\n`;
+  const conDiff = (args) => (args[0] === 'show' ? '--- a/x\n+++ b/x\n+prosa nueva\n' : log(ARCHIVO));
+  let ARCHIVO = 'docs/superpowers/specs/x.md';
+  assert.equal(contarCommits('2026-08-01', conDiff, tipos({ 'docs/superpowers/specs/x.md': 'spec' })), 0);
+  ARCHIVO = 'docs/pdc-v2.md';
+  assert.equal(contarCommits('2026-08-01', conDiff, tipos({ 'docs/pdc-v2.md': 'guia' })), 1);
+});
+
+test('un commit que toca código no pasa por la regla de tipos', () => {
+  // Si tocara, un `.php` sin `tipo` declarado entraría por la puerta de «sin declarar» en vez de
+  // por la suya, y el día que alguien invierta esa guarda dejaría de contar sin que se note.
+  const log = `${sha(1)}\n\nsrc/Core/Database.php\n`;
+  assert.equal(contarCommits('2026-08-01', () => log, () => { throw new Error('no se llama'); }), 1);
+});
