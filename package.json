@@ -5,7 +5,7 @@
     "format:frontend": "biome format --write public/js public/css admin/public/css",
     "lint:frontend": "biome lint public/js public/css admin/public/css",
     "test:design-system:preservation": "node scripts/design-system-worktree-preservation.mjs check goals/design-system-nucleo-gobernanza/worktree-preservation.json",
-    "test:wiki": "node --test 'tests/wiki/*.test.mjs' && node scripts/wiki-lint.mjs",
+    "test:wiki": "node --test 'tests/wiki/*.test.mjs' && node scripts/wiki-lint.mjs --estricto",
     "test:design-system:static": "node scripts/design-system-static-suite.mjs",
     "test:design-system:consumers": "node scripts/design-system-consumer-contract.mjs",
     "test:design-system:phpstan": "node scripts/design-system-phpstan-baseline.mjs",
@@ -25,7 +25,8 @@
     "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.5.json test-output/design-system-runtime-budget.json",
     "test:rbac-parity": "node --test 'tests/rbac/*.test.mjs'",
     "check:vendor": "node scripts/sync-vendor.mjs --check",
-    "sync:vendor": "node scripts/sync-vendor.mjs --write"
+    "sync:vendor": "node scripts/sync-vendor.mjs --write",
+    "test:wiki:forma": "node scripts/wiki-lint.mjs --estricto --sin-alarma"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

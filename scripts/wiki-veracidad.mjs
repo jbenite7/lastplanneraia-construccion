@@ -96,16 +96,29 @@ export function partirCommits(salida) {
  * commit de solo-metadato no toca ninguno de los dos: contarlo hacía que la wiki disparase su
  * propia alarma por escribirse, que es justo lo que la exclusión de `memoria/` ya evitaba.
  *
- * **Es conservadora a propósito.** Un commit solo se descuenta si se puede demostrar que es
- * metadato: si no lista archivos (un merge), si toca algo que no sea `.md`, o si el diff no se
- * puede leer, cuenta. Se prefiere que suene de más a que se calle de menos.
+ * **Es conservadora a propósito.** Un commit solo se descuenta si se puede demostrar que sobra:
+ * si toca algo que no sea `.md`, o si el diff no se puede leer, cuenta. Se prefiere que suene de
+ * más a que se calle de menos.
+ *
+ * Descuenta dos cosas, y solo esas dos: los commits de **solo frontmatter**, y los **merges que
+ * únicamente unen** —cuyo contenido ya está contado en los commits originales que `git log`
+ * recorre igualmente—. Un merge que resolvió un conflicto con contenido propio sigue contando:
+ * ese contenido no existe en ningún otro sitio.
  */
 export function contarCommits(desde, ejecutor = gitPorDefecto) {
-  const args = ['log', `--since=${desde}`, '--pretty=%H', '--name-only', '--', ...RUTAS_CONTADAS];
+  // `--cc` es lo que permite distinguir un merge que solo une de uno que resolvió un conflicto
+  // con contenido propio: para el primero no lista archivos, para el segundo sí. Comprobado con
+  // un control positivo antes de apoyarse en ello, no deducido de la documentación.
+  const args = ['log', `--since=${desde}`, '--pretty=%H', '--name-only', '--cc', '--', ...RUTAS_CONTADAS];
   const commits = partirCommits(ejecutor(args));
 
   return commits.filter((c) => {
-    if (c.archivos.length === 0) return true;                       // merge o sin datos: cuenta
+    // Sin archivos bajo `--cc` es un merge que solo une: su contenido ya está contado en los
+    // commits originales, que `git log` también recorre. Contarlo es contarlo dos veces —13 de
+    // los 69 que hicieron saltar la alarma el 2026-08-19 eran esto—. Un merge que SÍ resolvió un
+    // conflicto con contenido propio lista sus archivos y sigue contando, que es lo correcto:
+    // ese contenido no existe en ningún otro commit.
+    if (c.archivos.length === 0) return false;
     if (!c.archivos.every((f) => f.endsWith('.md'))) return true;   // toca algo que no es prosa
     const diff = ejecutor(['show', '--unified=0', '--format=', c.sha, '--', ...RUTAS_CONTADAS]);
     return !esSoloFrontmatter(diff);

@@ -74,9 +74,32 @@ faltaba.
 ### `lint` — la forma
 
 ```bash
-node scripts/wiki-lint.mjs             # o: npm run test:wiki (incluye las pruebas del módulo)
-node scripts/wiki-lint.mjs --estricto  # además exige que toda fuente declare `capa:`
+npm run test:wiki         # pruebas del módulo + lint estricto + alarma de veracidad
+npm run test:wiki:forma   # SOLO la forma: estricto, sin la alarma. Apto para un gate bloqueante
+node scripts/wiki-lint.mjs            # permisivo: no exige que las fuentes se declaren
+node scripts/wiki-lint.mjs --estricto --sin-alarma
 ```
+
+**Desde el 2026-08-19, `npm run test:wiki` corre en modo estricto.** Una fuente nueva sin
+frontmatter deja el lint en rojo. Se enchufó porque el hueco se midió tres veces: un merge traía un
+documento sin declarar, el estricto lo reportaba y el modo por defecto seguía en verde, así que la
+publicación no se detenía y el arreglo llegaba siempre **después** de publicar.
+
+**Y por qué hay dos comandos y no uno.** El lint mezclaba dos cosas de naturaleza distinta en un
+mismo semáforo:
+
+| | Qué es | Qué merece |
+|---|---|---|
+| **Forma** — enlaces rotos, frontmatter incompleto, fuente sin declarar | un **defecto de lo que vas a publicar** | bloquear |
+| **Alarma de veracidad** — el contador de commits | una **petición de trabajo**; no dice que lo tuyo esté mal | avisar |
+
+Juntas, o se bloquea por un contador —y se aprende a saltarse el gate— o no se bloquea por un
+defecto real. `--sin-alarma` las separa, y `npm run test:wiki:forma` es la mitad que un gate puede
+bloquear sin enseñar a nadie a ignorarlo.
+
+**Lo que esto todavía NO hace:** `scripts/publicar.sh` declara la comprobación de la wiki como **no
+bloqueante**, y con razón mientras fuera una sola cosa. Cambiarla a `test:wiki:forma` bloqueante es
+una línea, pero afecta a toda sesión que publique, así que no se hace de paso.
 
 Sale con código 1 si hay hallazgos. **Lintea las tres capas, pero no con las mismas reglas:**
 
@@ -147,7 +170,7 @@ El pase no depende de que alguien se acuerde. `scripts/wiki-lint.mjs` localiza l
 |---|---|
 | Rutas que cuentan | `src/`, `admin/`, `public/`, `tests/`, `scripts/`, `docs/`, `AGENTS.md` |
 | Rutas que no cuentan | todo lo demás, en particular `memoria/` |
-| Commits que no cuentan | los que **solo añaden frontmatter** (ver abajo) |
+| Commits que no cuentan | los que **solo añaden frontmatter** y los **merges que solo unen** (ver abajo) |
 | Umbral | **más de 40 commits → hallazgo `VERACIDAD`**, salida en rojo |
 
 **Un commit de solo-metadato no es deriva de código, y desde el 2026-08-19 no cuenta.** La regla
@@ -162,13 +185,29 @@ de lista indentado o una línea en blanco. **Ante la duda, cuenta.** Un merge si
 un diff ilegible o un `.md` con el cuerpo tocado cuentan todos. Una alarma que se calla de más
 falla en silencio; una que suena de más solo molesta.
 
-**Cuánto cambia en la práctica: poco, y conviene saberlo.** Medido el 2026-08-19 sobre los 69
-commits que hicieron saltar la alarma: **1** era de solo frontmatter. De los otros 68, 39 tocaban
-algo que no es `.md`, 16 eran `.md` con cuerpo modificado (specs, planes, `goal.md`) y 13 eran
-merges. Es decir: **lo que infla el recuento no es el metadato, son los commits de prosa y los
-merges**, que se cuentan dos veces —una en el merge y otra en su commit original—. Las dos cosas
-siguen abiertas a propósito: ampliar la exclusión es cambiar qué mide la alarma, y eso no se decide
-de paso.
+**Un merge que solo une tampoco cuenta, desde el 2026-08-19.** Su contenido ya está contado en los
+commits originales, que `git log` recorre igualmente: contarlo es contarlo dos veces. Pero **un
+merge que resolvió un conflicto con contenido propio sí cuenta**, porque ese contenido no existe en
+ningún otro sitio.
+
+Los dos se distinguen con `--cc`: para el que solo une, `git log --cc --name-only` no lista
+archivos; para el que aportó algo, sí. **Eso se comprobó con un control positivo** —un repo de
+juguete con un merge de resolución propia y otro limpio— antes de apoyarse en ello, en vez de
+deducirlo de la documentación.
+
+**Cuánto cambian los dos descuentos, medido el 2026-08-19** sobre los commits que hicieron saltar
+la alarma: de **70** se pasa a **57**. Doce eran merges que solo unían y **uno solo** era de puro
+frontmatter.
+
+Ese «uno» merece decirse, porque desmiente el diagnóstico con el que se pidió el primer arreglo:
+se creyó que la alarma sonaba por el backfill de la wiki, que tocó 413 archivos. **No era eso.**
+Aquellos commits traían además cambios en `scripts/` y `tests/`, así que contaban como código y
+con razón. Lo que de verdad inflaba el recuento eran los merges.
+
+**Lo que sigue abierto:** 16 de los que quedan son `.md` con el cuerpo modificado —specs, planes,
+`goal.md`—. Editar una spec no es deriva de código, pero `docs/` está en las rutas contadas y no
+hay forma barata de distinguir una spec de un contrato. Ampliar la exclusión ahí es volver a
+cambiar qué mide la alarma, y eso no se decide de paso.
 
 Se mide en commits y no en días a propósito: este repo hace 100 o más commits en un día de sprint y
 ninguno en un fin de semana, así que el reloj de pared no dice nada sobre cuánta deriva entró. Los

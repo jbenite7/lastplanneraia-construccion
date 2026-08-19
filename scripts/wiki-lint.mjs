@@ -26,6 +26,14 @@ import { bloqueFrontmatter, campo, deducirCapa, lista, revisarFrontmatter } from
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
 const ESTRICTO = process.argv.includes('--estricto');
+// `--sin-alarma` calla la alarma de veracidad y deja solo la comprobación de FORMA.
+//
+// Existe para poder separar dos cosas que no son iguales y que estaban en el mismo semáforo: un
+// enlace roto o una fuente sin declarar son **defectos de lo que vas a publicar**; la alarma de
+// veracidad es un **contador de commits** que pide trabajo pero no dice que lo tuyo esté mal.
+// Mezcladas, o bloqueas por un contador —y se aprende a saltarse el gate— o no bloqueas por un
+// defecto real. Separadas, cada una puede tener la severidad que le toca.
+const SIN_ALARMA = process.argv.includes('--sin-alarma');
 
 // Índice del vault entero (la raíz del repo), aplicando los filtros de Obsidian.
 const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8')).userIgnoreFilters;
@@ -132,7 +140,15 @@ for (const rel of fuentes) {
   if (fm === null || !campo(fm, 'capa')) {
     // Un archivo que un contrato congela por hash no puede declararse, y exigírselo en estricto
     // pondría en rojo a quien cumple el contrato. Ver CONGELADOS en `wiki-frontmatter.mjs`.
-    if (ESTRICTO && !CONGELADOS.has(rel)) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
+    if (ESTRICTO && !CONGELADOS.has(rel)) {
+      // El mensaje lleva el remedio dentro a propósito: quien se lo encuentra suele ser alguien
+      // de otro frente que acaba de crear un documento y no tiene por qué conocer este esquema.
+      anota('FUENTE', rel, 'sin frontmatter del esquema v2. Se lo pone el backfill, que solo '
+        + `añade metadato y no toca el cuerpo:\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --detalle   # ensayo`
+        + `\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --escribir`
+        + '\n  Si el archivo aún no está en git, la `fecha` queda vacía —no hay alta de la que '
+        + 'deducirla— y se pone a mano. Es lo único que el backfill no puede saber.');
+    }
     continue;
   }
   fuentesConFm++;
@@ -151,9 +167,11 @@ for (const rel of fuentes) {
 }
 
 // Edad del último pase de veracidad, medida en commits de código (no en días).
-const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
-if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
-if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+if (!SIN_ALARMA) {
+  const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
+  if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
+  if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+}
 
 const censo = `${paginas.length} páginas de wiki y ${fuentesConFm} de ${fuentes.length} fuentes declaradas`
   + `${ESTRICTO ? ' (modo estricto)' : ''}`;

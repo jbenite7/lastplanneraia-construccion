@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-ds-f1a-estado-design.md
+resumen: DS-F1a · La escala de estado: vocabulario y lectura — diseño
+---
+
 # DS-F1a · La escala de estado: vocabulario y lectura — diseño
 
 **Fase:** DS-F1, primer contrato de cuatro. **Frente:** `ds-f1a-estado`.

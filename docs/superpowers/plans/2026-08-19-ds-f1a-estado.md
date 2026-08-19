@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-ds-f1a-estado.md
+resumen: publicar el contrato de la escala de estado —vocabulario, tres niveles de gravedad y la regla de los dos canales— en formato legible y consultable por máquina…
+---
+
 # DS-F1a · La escala de estado — plan de implementación
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usá `superpowers:subagent-driven-development`
