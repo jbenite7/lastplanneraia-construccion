@@ -353,7 +353,7 @@
       "golden": null,
       "maturity": "candidate",
       "visualApproval": {
-        "status": "pending",
+        "status": "approved",
         "familyId": "states-feedback",
         "candidateId": "severity-rail"
       }

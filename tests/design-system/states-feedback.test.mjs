@@ -11,11 +11,26 @@ test('tinted semantic states are approved and canonical', async () => {
   const approvals = await readJson('family-approvals.json');
   const catalog = await readJson('component-catalog.json');
   const family = homologation.families.find(({ id }) => id === 'states-feedback');
-  const approval = approvals.approvals.find(({ familyId }) => familyId === 'states-feedback');
+  // Se busca por el PAR familia+candidato, no por familia sola. Mientras la
+  // familia tuvo una unica aprobacion, `find` por `familyId` devolvia la que
+  // tocaba por casualidad; desde que tiene dos (2026-08-19) devolveria la
+  // primera del archivo y el assert de abajo pasaria mirando otra cosa. El
+  // cambio lo destapo: el defecto ya estaba, latente.
+  const approval = approvals.approvals.find(
+    ({ familyId, candidateId }) => familyId === 'states-feedback' && candidateId === 'tinted-status',
+  );
   const state = catalog.components.find(({ id }) => id === 'state');
   const feedback = catalog.components.find(({ id }) => id === 'feedback');
 
-  assert.deepEqual(family.candidates.filter(({ status }) => status === 'approved').map(({ id }) => id), ['tinted-status']);
+  // DOS candidatos aprobados desde el 2026-08-19, no uno. `severity-rail` lo
+  // aprobo el usuario por su nombre tras ver la captura de /programacion-intermedia
+  // a 1180x820 dark (frente `ds-f1a-estados-severidad`). El assert se amplia
+  // porque la familia crecio, no para que pase: sigue siendo una lista cerrada,
+  // asi que un tercer candidato aprobado sin registrar lo enseña igual que antes.
+  assert.deepEqual(
+    family.candidates.filter(({ status }) => status === 'approved').map(({ id }) => id),
+    ['tinted-status', 'severity-rail'],
+  );
   assert.equal(approval.candidateId, 'tinted-status');
   assert.equal(state.maturity, 'stable');
   assert.equal(state.visualApproval.status, 'approved');

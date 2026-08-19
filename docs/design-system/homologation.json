@@ -177,7 +177,7 @@
         {
           "id": "severity-rail",
           "intent": "Filete del borde inicial que codifica la gravedad en cuatro escalones de grosor, separada del matiz que codifica la identidad",
-          "status": "candidate"
+          "status": "approved"
         }
       ]
     },
