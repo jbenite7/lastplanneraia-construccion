@@ -14,6 +14,18 @@ leer y sembrar la línea base declarada. `ControlTowerService` lo consume en vez
 cohorte vigente. El camino que consolida una semana lo invoca con una línea, y un script de migración
 cubre de una vez los proyectos ya cargados.
 
+**Cómo se corren las pruebas en este frente, y por qué NO con `docker compose exec`:** el contenedor
+`app` es compartido por cuatro sesiones y monta la raíz del repo, no este worktree — `exec` correría
+el código de otra rama. Se usa un contenedor efímero que monta este árbol y alcanza la misma base:
+
+```bash
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/<archivo>.php
+```
+
+Comprobado el 2026-08-19: alcanza `general_proyectos_procesos` y sirve este worktree. No hace falta
+reapuntar el contenedor compartido para nada de las Tareas 1-6; solo `publicar.sh`, en la Tarea 7,
+exige el montaje y se coordina entonces.
+
 **Stack:** PHP 8.3 sin framework, PDO por `Database` (singleton, `\Database::getInstance()`),
 PSR-4 `App\ -> src/`. Pruebas: scripts sueltos `tests/test_*.php` que declaran su nivel con
 `// @requiere: <nivel>`, ejecutados por `scripts/run-php-tests.php`. Todo dentro de Docker.
@@ -31,6 +43,10 @@ Copiadas de la spec. **Los requisitos de toda tarea las incluyen implícitamente
 - Toda escritura en base de datos va por sentencias preparadas a través de `Database`.
 - Toda consulta operativa se aísla por `project_id`.
 - **Cada aserción se entrega con la mutación que la pone roja, ejecutada**, y se pega la salida.
+- **Toda prueba que escriba en la base GUARDA el valor original y lo RESTAURA al terminar**, también
+  si falla. La base de desarrollo es compartida con otras sesiones: dejarla alterada les fabrica
+  rojos y verdes ajenos. Se usa `register_shutdown_function` para que la restauración ocurra aunque
+  la prueba muera a mitad.
 
 ---
 
@@ -62,9 +78,24 @@ use App\Services\LineaBaseContractualService;
 
 $fallos = [];
 $svc = new LineaBaseContractualService();
+$db = \Database::getInstance();
+
+// La base de desarrollo es COMPARTIDA con otras sesiones. Se guarda el estado del proyecto 68 y se
+// restaura pase lo que pase — incluso si la prueba muere a mitad.
+$original = $db->query(
+    'SELECT fechaInicioLineaBase AS inicio, fechaFinLineaBase AS fin
+       FROM general_proyectos_procesos WHERE Id = 68',
+)->fetch(\PDO::FETCH_ASSOC) ?: ['inicio' => null, 'fin' => null];
+
+register_shutdown_function(static function () use ($db, $original): void {
+    $db->query(
+        'UPDATE general_proyectos_procesos
+            SET fechaInicioLineaBase = ?, fechaFinLineaBase = ? WHERE Id = 68',
+        [$original['inicio'], $original['fin']],
+    );
+});
 
 // 1. Un proyecto con línea base declarada la devuelve tal cual.
-$db = \Database::getInstance();
 $db->query("UPDATE general_proyectos_procesos
             SET fechaInicioLineaBase = '2020-01-01', fechaFinLineaBase = '2020-12-31'
             WHERE Id = 68");
@@ -109,7 +140,7 @@ echo "OK: linea base contractual — declarada, deducida y sembrado write-once\n
 - [ ] **Paso 2: correrla y ver que falla**
 
 ```bash
-docker compose exec app php tests/test_linea_base_contractual_service.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_contractual_service.php
 ```
 
 Esperado: FAIL con `Class "App\Services\LineaBaseContractualService" not found`.
@@ -233,7 +264,7 @@ final class LineaBaseContractualService
 - [ ] **Paso 4: correrla y ver que pasa**
 
 ```bash
-docker compose exec app php tests/test_linea_base_contractual_service.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_contractual_service.php
 ```
 
 Esperado: `OK: linea base contractual — declarada, deducida y sembrado write-once`
@@ -287,6 +318,19 @@ $db = \Database::getInstance();
 $svc = new LineaBaseContractualService();
 $ct = new ControlTowerService();
 
+// Base compartida: se guarda y se restaura (ver restricciones globales).
+$original = $db->query(
+    'SELECT fechaInicioLineaBase AS inicio, fechaFinLineaBase AS fin
+       FROM general_proyectos_procesos WHERE Id = 68',
+)->fetch(\PDO::FETCH_ASSOC) ?: ['inicio' => null, 'fin' => null];
+register_shutdown_function(static function () use ($db, $original): void {
+    $db->query(
+        'UPDATE general_proyectos_procesos
+            SET fechaInicioLineaBase = ?, fechaFinLineaBase = ? WHERE Id = 68',
+        [$original['inicio'], $original['fin']],
+    );
+});
+
 // Proyecto 68: sus actividades de la primera semana y la última NO se solapan.
 // Con línea base declarada, la fecha contractual tiene que sobrevivir igual.
 $db->query("UPDATE general_proyectos_procesos
@@ -336,7 +380,7 @@ echo "OK: la linea base contractual sobrevive a la reprogramacion y al filtro\n"
 - [ ] **Paso 2: correrla y ver que falla**
 
 ```bash
-docker compose exec app php tests/test_linea_base_sobrevive_reprogramacion.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_sobrevive_reprogramacion.php
 ```
 
 Esperado: FAIL con `contractual_finish deberia ser la declarada 2026-07-19, y es: NULL` — que es el
@@ -395,8 +439,8 @@ retira**: se deja y se anota el porqué en el `goal.md`.
 - [ ] **Paso 5: correr las dos pruebas, la nueva y la que el CI tiene en rojo**
 
 ```bash
-docker compose exec app php tests/test_linea_base_sobrevive_reprogramacion.php
-docker compose exec app php tests/test_bi_programa_general_chart_values.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_sobrevive_reprogramacion.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_bi_programa_general_chart_values.php
 ```
 
 Esperado: la primera en `OK`. La segunda **ya no debe emitir** `FAIL: baseline-drift:` — sin haberla
@@ -439,6 +483,20 @@ use App\Services\ControlTowerService;
 
 $fallos = [];
 $db = \Database::getInstance();
+
+// Base compartida: se guarda y se restaura (ver restricciones globales).
+$original = $db->query(
+    'SELECT fechaInicioLineaBase AS inicio, fechaFinLineaBase AS fin
+       FROM general_proyectos_procesos WHERE Id = 68',
+)->fetch(\PDO::FETCH_ASSOC) ?: ['inicio' => null, 'fin' => null];
+register_shutdown_function(static function () use ($db, $original): void {
+    $db->query(
+        'UPDATE general_proyectos_procesos
+            SET fechaInicioLineaBase = ?, fechaFinLineaBase = ? WHERE Id = 68',
+        [$original['inicio'], $original['fin']],
+    );
+});
+
 $db->query("UPDATE general_proyectos_procesos
             SET fechaInicioLineaBase='2026-06-01', fechaFinLineaBase='2026-07-19' WHERE Id=68");
 
@@ -455,7 +513,7 @@ echo "OK: el grafico declara que la fecha contractual es del proyecto\n";
 - [ ] **Paso 2: correrla y ver que falla**
 
 ```bash
-docker compose exec app php tests/test_linea_base_rotulo.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_rotulo.php
 ```
 
 Esperado: FAIL con `falta contractual_finish_scope=proyecto en las metricas`.
@@ -474,7 +532,7 @@ Junto a `'contractual_finish_basis' => 'declared_project_baseline',`, en los dos
 - [ ] **Paso 4: correr y ver que pasa**
 
 ```bash
-docker compose exec app php tests/test_linea_base_rotulo.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_rotulo.php
 ```
 
 Esperado: `OK: el grafico declara que la fecha contractual es del proyecto`
@@ -536,7 +594,7 @@ echo "OK: la consolidacion de semana siembra la linea base\n";
 - [ ] **Paso 2: correrla y ver que falla**
 
 ```bash
-docker compose exec app php tests/test_linea_base_sembrado_al_consolidar.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_sembrado_al_consolidar.php
 ```
 
 Esperado: FAIL con `nueva_semana.php no invoca el sembrado de la linea base`.
@@ -555,7 +613,7 @@ En `src/Legacy/nueva_semana.php`, justo después de `$carryoverService->syncWeek
 - [ ] **Paso 4: correr y ver que pasa**
 
 ```bash
-docker compose exec app php tests/test_linea_base_sembrado_al_consolidar.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_sembrado_al_consolidar.php
 ```
 
 Esperado: `OK: la consolidacion de semana siembra la linea base`
@@ -612,7 +670,7 @@ echo "OK: la migracion en seco no escribe y enumera lo que tocaria\n";
 - [ ] **Paso 2: correrla y ver que falla**
 
 ```bash
-docker compose exec app php tests/test_linea_base_migracion_dry_run.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_migracion_dry_run.php
 ```
 
 Esperado: FAIL, porque el script todavía no existe.
@@ -686,14 +744,18 @@ echo "\nResumen: " . count($proyectos) . " candidatos, {$tocados} "
 - [ ] **Paso 4: correr la prueba y el dry-run**
 
 ```bash
-docker compose exec app php tests/test_linea_base_migracion_dry_run.php
-docker compose exec app php scripts/sembrar-linea-base-contractual.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_linea_base_migracion_dry_run.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php scripts/sembrar-linea-base-contractual.php
 ```
 
 Esperado: la prueba en `OK`, y el dry-run enumerando los proyectos 68, 69 y 77 con sus fechas.
 **Pegar esa salida en el `goal.md` antes de aplicar nada.**
 
-- [ ] **Paso 5: respaldo verificable, y recién entonces aplicar**
+- [ ] **Paso 5: respaldo verificable — y PARAR AQUÍ**
+
+**El subagente NO aplica la migración.** Decisión de Felipe del 2026-08-19: el momento de escribir en
+datos lo elige él, con la salida del dry-run delante. El subagente deja el respaldo hecho y
+verificado, pega la salida del dry-run en su informe, y **termina la tarea ahí**.
 
 ```bash
 docker compose exec db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" general_proyectos_procesos \
@@ -703,19 +765,21 @@ docker compose exec db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" general_pr
 Comprobar que el respaldo no está vacío y que contiene `INSERT INTO`. **Sin respaldo verificado no se
 aplica** (`AGENTS.md` §Arquitectura y datos).
 
+- [ ] **Paso 6: aplicar — SOLO con autorización explícita de Felipe, y lo hace el controlador**
+
 ```bash
-docker compose exec app php scripts/sembrar-linea-base-contractual.php --aplicar
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php scripts/sembrar-linea-base-contractual.php --aplicar
 ```
 
-- [ ] **Paso 6: verificar después de aplicar**
+- [ ] **Paso 7: verificar después de aplicar**
 
 ```bash
-docker compose exec app php scripts/sembrar-linea-base-contractual.php
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php scripts/sembrar-linea-base-contractual.php
 ```
 
 Esperado: `0 a escribir` — no queda ningún proyecto con cronograma y sin línea base. Pegar la salida.
 
-- [ ] **Paso 7: commit**
+- [ ] **Paso 8: commit**
 
 ```bash
 git add scripts/sembrar-linea-base-contractual.php tests/test_linea_base_migracion_dry_run.php
@@ -777,7 +841,7 @@ git commit -m "docs(pdc): auditoria de la linea base con evidencia, punto por pu
 - [ ] **Paso 1: la suite completa en el nivel que el CI honra**
 
 ```bash
-docker compose exec app php scripts/run-php-tests.php --nivel=http
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php scripts/run-php-tests.php --nivel=http
 ```
 
 Esperado: sin `FAIL: baseline-drift:`, y `test_bi_programa_general_chart_values.php` pasando **sin
