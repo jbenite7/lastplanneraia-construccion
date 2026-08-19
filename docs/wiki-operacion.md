@@ -74,9 +74,46 @@ faltaba.
 ### `lint` — la forma
 
 ```bash
-node scripts/wiki-lint.mjs             # o: npm run test:wiki (incluye las pruebas del módulo)
-node scripts/wiki-lint.mjs --estricto  # además exige que toda fuente declare `capa:`
+npm run test:wiki         # pruebas del módulo + lint estricto + alarma de veracidad
+npm run test:wiki:forma   # SOLO la forma: estricto, sin la alarma. Apto para un gate bloqueante
+node scripts/wiki-lint.mjs            # permisivo: no exige que las fuentes se declaren
+node scripts/wiki-lint.mjs --estricto --sin-alarma
 ```
+
+**Desde el 2026-08-19, `npm run test:wiki` corre en modo estricto.** Una fuente nueva sin
+frontmatter deja el lint en rojo. Se enchufó porque el hueco se midió tres veces: un merge traía un
+documento sin declarar, el estricto lo reportaba y el modo por defecto seguía en verde, así que la
+publicación no se detenía y el arreglo llegaba siempre **después** de publicar.
+
+**Y por qué hay dos comandos y no uno.** El lint mezclaba dos cosas de naturaleza distinta en un
+mismo semáforo:
+
+| | Qué es | Qué merece |
+|---|---|---|
+| **Forma** — enlaces rotos, frontmatter incompleto, fuente sin declarar | un **defecto de lo que vas a publicar** | bloquear |
+| **Alarma de veracidad** — el contador de commits | una **petición de trabajo**; no dice que lo tuyo esté mal | avisar |
+
+Juntas, o se bloquea por un contador —y se aprende a saltarse el gate— o no se bloquea por un
+defecto real. `--sin-alarma` las separa, y `npm run test:wiki:forma` es la mitad que un gate puede
+bloquear sin enseñar a nadie a ignorarlo.
+
+**Y desde el 2026-08-19 `scripts/publicar.sh` las trata distinto**, que es lo que de verdad cierra
+el hueco:
+
+```
+comprobar "wiki (forma)"               1 npm run test:wiki:forma     # BLOQUEA
+comprobar "wiki (veracidad + pruebas)" 0 npm run test:wiki           # avisa
+```
+
+Comprobado en las dos direcciones antes de darlo por bueno: con una fuente sin declarar, el gate
+**deniega**; con la alarma por encima del umbral, **avisa y deja publicar**.
+
+**Un detalle de presentación que resultó no serlo.** `publicar.sh` enseña solo las **cuatro últimas
+líneas** de un gate en rojo. El lint imprimía el recuento al final, así que esas cuatro líneas se
+las comían el recuento y una línea en blanco, y el hallazgo con su remedio **se perdía justo cuando
+alguien lo necesitaba**. Ahora el recuento va primero y los hallazgos al final. El mensaje del
+hallazgo cabe en tres líneas por la misma razón, y por eso el ensayo con `--detalle` no está en él
+sino aquí.
 
 Sale con código 1 si hay hallazgos. **Lintea las tres capas, pero no con las mismas reglas:**
 
@@ -147,7 +184,44 @@ El pase no depende de que alguien se acuerde. `scripts/wiki-lint.mjs` localiza l
 |---|---|
 | Rutas que cuentan | `src/`, `admin/`, `public/`, `tests/`, `scripts/`, `docs/`, `AGENTS.md` |
 | Rutas que no cuentan | todo lo demás, en particular `memoria/` |
+| Commits que no cuentan | los que **solo añaden frontmatter** y los **merges que solo unen** (ver abajo) |
 | Umbral | **más de 40 commits → hallazgo `VERACIDAD`**, salida en rojo |
+
+**Un commit de solo-metadato no es deriva de código, y desde el 2026-08-19 no cuenta.** La regla
+siempre fue «commits que tocan código o contratos», y añadir frontmatter no toca ninguno de los
+dos: por construcción no puede volver falsa una página. Sin esta exclusión, la wiki disparaba su
+propia alarma al escribirse — que es justo lo que la exclusión de `memoria/` ya evitaba.
+
+Para descontar un commit hay que **demostrar** que es metadato, y se exigen tres cosas a la vez:
+que todos sus archivos sean `.md`, que todos sus hunks empiecen en la línea 1 —el frontmatter vive
+en la cabecera— y que toda línea añadida o quitada sea una clave del esquema, un `---`, un elemento
+de lista indentado o una línea en blanco. **Ante la duda, cuenta.** Un merge sin archivos listados,
+un diff ilegible o un `.md` con el cuerpo tocado cuentan todos. Una alarma que se calla de más
+falla en silencio; una que suena de más solo molesta.
+
+**Un merge que solo une tampoco cuenta, desde el 2026-08-19.** Su contenido ya está contado en los
+commits originales, que `git log` recorre igualmente: contarlo es contarlo dos veces. Pero **un
+merge que resolvió un conflicto con contenido propio sí cuenta**, porque ese contenido no existe en
+ningún otro sitio.
+
+Los dos se distinguen con `--cc`: para el que solo une, `git log --cc --name-only` no lista
+archivos; para el que aportó algo, sí. **Eso se comprobó con un control positivo** —un repo de
+juguete con un merge de resolución propia y otro limpio— antes de apoyarse en ello, en vez de
+deducirlo de la documentación.
+
+**Cuánto cambian los dos descuentos, medido el 2026-08-19** sobre los commits que hicieron saltar
+la alarma: de **70** se pasa a **57**. Doce eran merges que solo unían y **uno solo** era de puro
+frontmatter.
+
+Ese «uno» merece decirse, porque desmiente el diagnóstico con el que se pidió el primer arreglo:
+se creyó que la alarma sonaba por el backfill de la wiki, que tocó 413 archivos. **No era eso.**
+Aquellos commits traían además cambios en `scripts/` y `tests/`, así que contaban como código y
+con razón. Lo que de verdad inflaba el recuento eran los merges.
+
+**Lo que sigue abierto:** 16 de los que quedan son `.md` con el cuerpo modificado —specs, planes,
+`goal.md`—. Editar una spec no es deriva de código, pero `docs/` está en las rutas contadas y no
+hay forma barata de distinguir una spec de un contrato. Ampliar la exclusión ahí es volver a
+cambiar qué mide la alarma, y eso no se decide de paso.
 
 Se mide en commits y no en días a propósito: este repo hace 100 o más commits en un día de sprint y
 ninguno en un fin de semana, así que el reloj de pared no dice nada sobre cuánta deriva entró. Los
@@ -170,7 +244,7 @@ worktrees distintos, el número es aproximado.
 | Campo | Qué es | ¿Obligatorio? |
 |---|---|---|
 | `capa` | `fuente`, `wiki` o `esquema`. Le dice al lint qué reglas aplicar | en fuentes, es lo que las mete al lint |
-| `tipo` | uno de los diecisiete de abajo | sí |
+| `tipo` | uno de los diecisiete de abajo. **`mapa` significa MOC de área** | sí |
 | `estado` | `vigente`, `derogada`, `abierto` o `cerrado` | sí |
 | `fecha` | del hecho, no de la escritura; ISO, nunca «la semana pasada» | sí |
 | `areas` | una o varias de las trece válidas | recomendable |
@@ -204,9 +278,17 @@ si vas a crear la nota en la misma pasada.
 | `guia` | cómo se hace algo | el grueso de `docs/` |
 | `goal-doc` | pieza de un goal que no es spec, plan ni evidencia | `goals/*/goal.md` y hermanos |
 
-### Los ocho `tags`
+### Los siete `tags`
 
 Lista cerrada, comprobada por el script. Son **transversales**: no duplican `tipo` ni `areas`.
+
+**`moc` estuvo en esta lista y salió el 2026-08-19.** La spec de v2 lo traía para marcar los MOCs
+de área, y sobra desde que **`tipo: mapa` significa MOC**: un mapa de área tiene estructura propia
+y fija —«Qué manda», «Trampas», «Vecinos»—, así que es una **clase** de página, y las clases viven
+en `tipo`. El tag habría existido solo para parchear que una página estaba mal tipada: en su día
+`registro-de-trabajo.md` era `tipo: mapa` sin ser un mapa de área, y se corrigió a `referencia`,
+que es lo que de verdad es. La simetría que lo confirma: la **clase** la dice `tipo`, y la
+**portada** la dice un tag (`dashboard`). Cada campo hace un trabajo distinto en vez de solaparse.
 
 **La regla que gobierna los ocho: un tag nunca duplica el `tipo` ni el `estado`.** Etiquetar
 `trampa` una página que ya dice `tipo: trampa` no añade nada — filtrar por el tag devolvería
@@ -220,7 +302,6 @@ podían ser ciertas, y de cuál ganaba dependían 95 de las 151 páginas. Ganó 
 
 | Tag | Cuándo |
 |---|---|
-| `moc` | la página es el mapa de un área **sin ser `tipo: mapa`** |
 | `dashboard` | es un tablero, no un texto |
 | `plantilla` | es un molde para escribir otras |
 | `pendiente` | queda trabajo abierto dentro **y no basta `estado: abierto` para verlo** |

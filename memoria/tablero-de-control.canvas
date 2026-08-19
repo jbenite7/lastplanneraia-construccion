@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "t-cimientos",
+      "type": "text",
+      "x": -40,
+      "y": -360,
+      "width": 340,
+      "height": 60,
+      "text": "## Cimientos\nDónde vive el código y el dato",
+      "color": "4"
+    },
+    {
+      "id": "t-producto",
+      "type": "text",
+      "x": 360,
+      "y": -360,
+      "width": 340,
+      "height": 60,
+      "text": "## Producto\nLo que ve la obra",
+      "color": "5"
+    },
+    {
+      "id": "t-oficio",
+      "type": "text",
+      "x": 760,
+      "y": -360,
+      "width": 340,
+      "height": 60,
+      "text": "## Oficio\nCómo se trabaja aquí",
+      "color": "6"
+    },
+    {
+      "id": "n-arquitectura",
+      "type": "file",
+      "x": -40,
+      "y": -260,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/arquitectura.md"
+    },
+    {
+      "id": "n-datos",
+      "type": "file",
+      "x": -40,
+      "y": -130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/datos.md"
+    },
+    {
+      "id": "n-rbac-y-rutas",
+      "type": "file",
+      "x": -40,
+      "y": 0,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/rbac-y-rutas.md"
+    },
+    {
+      "id": "n-admin",
+      "type": "file",
+      "x": -40,
+      "y": 130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/admin.md"
+    },
+    {
+      "id": "n-bi",
+      "type": "file",
+      "x": 360,
+      "y": -260,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/bi.md"
+    },
+    {
+      "id": "n-pdc",
+      "type": "file",
+      "x": 360,
+      "y": -130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/pdc.md"
+    },
+    {
+      "id": "n-lps-dominio",
+      "type": "file",
+      "x": 360,
+      "y": 0,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/lps-dominio.md"
+    },
+    {
+      "id": "n-design-system",
+      "type": "file",
+      "x": 360,
+      "y": 130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/design-system.md"
+    },
+    {
+      "id": "n-qa-y-gates",
+      "type": "file",
+      "x": 760,
+      "y": -260,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/qa-y-gates.md"
+    },
+    {
+      "id": "n-worktrees",
+      "type": "file",
+      "x": 760,
+      "y": -130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/worktrees.md"
+    },
+    {
+      "id": "n-entorno-y-despliegue",
+      "type": "file",
+      "x": 760,
+      "y": 0,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/entorno-y-despliegue.md"
+    },
+    {
+      "id": "n-procesos-y-sesiones",
+      "type": "file",
+      "x": 760,
+      "y": 130,
+      "width": 340,
+      "height": 110,
+      "file": "memoria/mapas/procesos-y-sesiones.md"
+    }
+  ],
+  "edges": []
+}

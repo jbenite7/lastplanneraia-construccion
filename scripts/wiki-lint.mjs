@@ -26,6 +26,14 @@ import { bloqueFrontmatter, campo, deducirCapa, lista, revisarFrontmatter } from
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
 const ESTRICTO = process.argv.includes('--estricto');
+// `--sin-alarma` calla la alarma de veracidad y deja solo la comprobación de FORMA.
+//
+// Existe para poder separar dos cosas que no son iguales y que estaban en el mismo semáforo: un
+// enlace roto o una fuente sin declarar son **defectos de lo que vas a publicar**; la alarma de
+// veracidad es un **contador de commits** que pide trabajo pero no dice que lo tuyo esté mal.
+// Mezcladas, o bloqueas por un contador —y se aprende a saltarse el gate— o no bloqueas por un
+// defecto real. Separadas, cada una puede tener la severidad que le toca.
+const SIN_ALARMA = process.argv.includes('--sin-alarma');
 
 // Índice del vault entero (la raíz del repo), aplicando los filtros de Obsidian.
 const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8')).userIgnoreFilters;
@@ -39,11 +47,13 @@ const vault = [];
     const rel = relative(RAIZ, p);
     if (ignorado(rel + (e.isDirectory() ? '/' : ''))) continue;
     if (e.isDirectory()) recorrer(p);
-    else if (extname(e.name) === '.md' || extname(e.name) === '.base') vault.push(rel);
+    // `.canvas` cuenta como destino enlazable: un canvas es una página del vault como otra
+    // cualquiera. Faltaba, y por eso un enlace correcto a un canvas se reportaba como roto.
+    else if (['.md', '.base', '.canvas'].includes(extname(e.name))) vault.push(rel);
   }
 })(RAIZ);
 
-const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base)$/, '')));
+const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base|canvas)$/, '')));
 const porNombre = new Map();
 for (const f of vault) {
   const corto = basename(f, extname(f));
@@ -101,8 +111,12 @@ for (const rel of paginas) {
 
   // Enlaces
   const limpio = texto.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  for (const m of limpio.matchAll(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g)) {
-    const destino = m[1].trim().replace(/\.(md|base)$/, '');
+  // El separador de alias puede venir escapado (`\|`): dentro de una tabla de Markdown, una
+  // barra sin escapar cortaría la celda, así que `[[destino\|Alias]]` es la forma CORRECTA y no
+  // una errata. Sin contemplarlo, el `\` se colaba en el destino y el enlace salía roto —
+  // medido el 2026-08-19 sobre los tres canvas enlazados desde `index.md`.
+  for (const m of limpio.matchAll(/\[\[([^\]|#\\]+)(?:\\?[|#][^\]]*)?\]\]/g)) {
+    const destino = m[1].trim().replace(/\.(md|base|canvas)$/, '');
     if (porRuta.has(destino)) continue;
     const cand = porNombre.get(basename(destino));
     if (!cand) anota('ENLACE', rel, `roto: [[${destino}]]`);
@@ -126,7 +140,18 @@ for (const rel of fuentes) {
   if (fm === null || !campo(fm, 'capa')) {
     // Un archivo que un contrato congela por hash no puede declararse, y exigírselo en estricto
     // pondría en rojo a quien cumple el contrato. Ver CONGELADOS en `wiki-frontmatter.mjs`.
-    if (ESTRICTO && !CONGELADOS.has(rel)) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
+    if (ESTRICTO && !CONGELADOS.has(rel)) {
+      // El mensaje lleva el remedio dentro a propósito: quien se lo encuentra suele ser alguien
+      // de otro frente que acaba de crear un documento y no tiene por qué conocer este esquema.
+      //
+      // Y cabe en TRES líneas a propósito: `publicar.sh` solo enseña las cuatro últimas de un
+      // gate en rojo, así que un mensaje más largo pierde justo su cabecera —medido—. El ensayo
+      // con `--detalle` se quedó fuera por eso; vive en `docs/wiki-operacion.md`.
+      anota('FUENTE', rel, 'sin frontmatter del esquema v2. El backfill se lo pone, y solo añade '
+        + `metadato: no toca el cuerpo.\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --escribir`
+        + '\n    Si el archivo aún no está en git no hay alta de la que deducir la `fecha`: '
+        + 'esa se pone a mano, y es lo único que el backfill no puede saber.');
+    }
     continue;
   }
   fuentesConFm++;
@@ -145,16 +170,22 @@ for (const rel of fuentes) {
 }
 
 // Edad del último pase de veracidad, medida en commits de código (no en días).
-const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
-if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
-if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+if (!SIN_ALARMA) {
+  const veracidad = mensajeVeracidad(estadoVeracidad(readFileSync(join(WIKI, 'log.md'), 'utf8')));
+  if (veracidad.hallazgo) anota('VERACIDAD', 'memoria/log.md', veracidad.hallazgo);
+  if (veracidad.aviso) console.log(`${veracidad.aviso}\n`);
+}
 
 const censo = `${paginas.length} páginas de wiki y ${fuentesConFm} de ${fuentes.length} fuentes declaradas`
   + `${ESTRICTO ? ' (modo estricto)' : ''}`;
 
 if (hallazgos.length) {
+  // El recuento va ANTES y los hallazgos al final, no al revés: `scripts/publicar.sh` solo
+  // enseña las cuatro últimas líneas de un gate en rojo, y con el resumen abajo esas cuatro se
+  // las comían el resumen y una línea en blanco. Con este orden, lo último que se lee es el
+  // hallazgo con su remedio, que es lo que hay que hacer.
+  console.log(`${hallazgos.length} hallazgos en ${censo}:\n`);
   console.log(hallazgos.join('\n'));
-  console.log(`\n${hallazgos.length} hallazgos en ${censo}.`);
   process.exitCode = 1;
 } else {
   console.log(`Sin hallazgos. ${censo}.`);

@@ -18,7 +18,7 @@ tres capas, y el asistente mantiene la de en medio.
 
 | Capa | Dónde | Regla |
 |---|---|---|
-| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Su contenido no se edita desde aquí.** |
+| Fuentes | `docs/`, `goals/`, los `.md` de la raíz, el código | Se leen. **Su cuerpo no se edita desde aquí**; desde el 2026-08-19 llevan frontmatter, que es metadato añadido y no contenido tocado. |
 | Wiki | `memoria/` | La escribe el asistente. **Nunca se edita a mano.** |
 | Esquema | [[wiki-operacion|Cómo se opera la wiki]] | Explica esta estructura y las cuatro operaciones. [[CLAUDE]] lo resume. |
 
@@ -29,6 +29,34 @@ navegación añadida al pie, no contenido modificado, y es lo único que hace qu
 
 El vault de Obsidian es la **raíz del repo**, no esta carpeta. Por eso los enlaces alcanzan a
 `docs/`, `goals/` y a los `.md` de la raíz sin copiarlos aquí.
+
+## Tablero
+
+> [!abstract] Dónde estoy
+> Tres capas: **fuentes** (se leen), **wiki** (la escribe el asistente) y **esquema**
+> ([[wiki-operacion|cómo se opera]]). Nada de aquí es contrato: ante un conflicto, gana el repo.
+
+> [!tip] Por dónde empezar
+> ¿Vas a tocar un área? Abre su mapa antes que el código — están en la tabla de más abajo.
+> ¿Buscas algo concreto? El catálogo del final lista **todas** las páginas y se filtra por columna.
+
+> [!warning] Antes de dar algo por verde
+> [[procesos-y-sesiones]] recoge once formas medidas en que un verde miente en este repo, y
+> [[worktrees]] doce más. Casi todas son la misma: **se mide en un árbol y se concluye sobre otro.**
+
+### Los tres tableros visuales
+
+| Canvas | Qué muestra |
+|---|---|
+| [[tablero-de-control.canvas\|Tablero de control]] | Las trece áreas repartidas en cimientos, producto y oficio |
+| [[mapa-del-sistema.canvas\|Mapa del sistema]] | Front controller, `src/`, el legado, la mini-app `admin/` y la capa de datos |
+| [[cascada-lps.canvas\|Cascada LPS]] | Programa General → Intermedia → Semanal, y de dónde salen los indicadores |
+
+### Lo que está abierto
+
+- [[cola-de-pendientes]] — la fuente única de pendientes.
+- [[estado]] — el estado real de cada goal, leído de su `goal.md`.
+- [[log]] — la bitácora de las cuatro operaciones.
 
 ## Precedencia
 
@@ -73,6 +101,11 @@ El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 | [[rbac-y-rutas]] | Roles, capacidades, rutas protegidas, sesión |
 | [[entorno-y-despliegue]] | Docker, puerta de servicio, worktrees, SiteGround |
 | [[qa-y-gates]] | Suites de prueba, rojos preexistentes, evidencia |
+| [[worktrees]] | Qué comparte un worktree con la raíz y qué no |
+| [[datos]] | Tablas globales, `project_id`, migraciones y respaldos |
+| [[bi]] | Indicadores y Torre de Control: qué cifra, para quién |
+| [[admin]] | El panel admin como mini-app aparte de `src/` |
+| [[procesos-y-sesiones]] | El gate de cierre, la coordinación y cómo miente un verde |
 
 Además: **[[cola-de-pendientes|Cola de pendientes]]** (el tablero de control: qué corre ya, qué
 se replantea y qué espera, en el orden que fijó el usuario), **[[estado|Estado de los goals]]**
