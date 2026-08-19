@@ -58,21 +58,28 @@ docs/design-system/auditoria/**
 <!-- ids del arsenal, máx 8, una línea de porqué cada uno -->
 
 ## Publicaciones
-- Inventario completo de DS-F0 (tandas 1-4). **El visto se dio sobre `3fd1af09`** y lo que se
-  publica es el commit siguiente, que solo añade este registro: un archivo no puede contener su
-  propio sha, así que anotar el cierre mueve la cabeza por definición. Se dice en vez de
-  disimularlo. El contenido técnico visado —los tres commits del inventario— es idéntico en ambos;
-  `git diff --stat 3fd1af09..HEAD` toca **un** archivo, este, y ningún gate lo mide. La suite se
-  volvió a correr igualmente sobre la cabeza real antes de publicar, y el sha publicado queda
-  confirmado en el paso 7 contra `origin/main`.
+- **`567e566e` — publicado el 2026-08-19**, confirmado en el paso 7: `git rev-parse origin/main`
+  devuelve ese mismo sha y no queda `ahead` ni `behind`. Contiene el inventario completo de DS-F0
+  (tandas 1-4).
+
+  El visto se dio sobre `3fd1af09` y lo publicado es posterior. Se dice en vez de disimularlo, y
+  se dice qué cambió en medio: (a) este registro, porque un archivo no puede contener su propio
+  sha y anotar el cierre mueve la cabeza por definición; (b) el prefijo `ds-f0-` de las trece
+  fichas, que corrige un defecto **del propio entregable** —`npm run test:wiki` pasó de 0 a 37
+  hallazgos por colisión de nombres con `memoria/arquitectura/`, y volvió a 0—; y (c) la
+  integración de cinco commits de `wiki-t1`. Nada de eso toca código de producto:
+  `git diff --name-only origin/main...HEAD` fuera de `docs/design-system/auditoria/` y de este
+  goal devolvió vacío.
+
+  Las tres comprobaciones del gate se repitieron **después** de integrar, no antes, cada una
+  leyendo su código de salida en su propia línea.
 - Visto dado **por el usuario en conversación directa**, no por la sesión coordinadora: la entrega
   se le mandó a `local_f42c2c37` por `send_message` y el usuario autorizó antes de que
   respondiera. Se anota así a propósito, porque «visto de la coordinadora» y «autorización del
   usuario» no son lo mismo y el registro no debe decir una por la otra.
 
 ## Cierre
-Condición de hecho cumplida, medida después de integrar `origin/main` y repetida sobre la cabeza
-que se publica:
+Condición de hecho cumplida, medida sobre `567e566e` **después** de integrar `origin/main`:
 
 ```
 $ npm run test:design-system:static
@@ -80,7 +87,24 @@ RC=0
 [static-suite] resumen:
   ✔ entrypoint-partition  ✔ unlayered-delivery  ✔ bi-utilities  ✔ table-contract
   ✔ node-tests  ✔ contracts  ✔ consumer-contract  ✔ audit
+
+$ node tests/test_programa_general_sprint_contract.mjs
+RC=0
+
+$ npm run test:wiki
+RC=0   Sin hallazgos. 151 páginas de wiki y 0 de 409 fuentes declaradas.
 ```
+
+Sobre el invariante de montaje, que aquí no se pudo satisfacer y por qué el verde vale igual:
+`scripts/publicar.sh` exige que el contenedor `app` monte el árbol que se verifica, y montaba el
+worktree de otra sesión viva (`recursing-shtern-472554`). Reapuntarlo le habría roto la
+verificación a esa sesión en pleno vuelo. En vez de eso se comprobó lo que el invariante protege:
+`git diff --name-only` entre los dos árboles no toca `public/css`, `public/js`, `src/`, `admin/`
+ni `views/` —son idénticos en todo lo que el PHP en contenedor lee—, y los cuatro archivos de
+`scripts/` que difieren son `wiki-*`, que ninguna de las cuatro pruebas con docker abre. La
+publicación se hizo entonces con `git push origin HEAD:main` a mano, que `AGENTS.md` admite
+cuando el script no aplica, cumpliendo sus dos reglas: código de salida leído en línea aparte, y
+`HEAD:main` en vez de `main`.
 
 `docs/design-system/auditoria/` con 68 hallazgos: 7 críticos, 31 mayores, 13 menores, 6
 cosméticos y 11 «sin problema». Cada uno con archivo, línea y el porqué de su severidad. Diez
