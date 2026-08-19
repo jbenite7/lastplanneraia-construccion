@@ -129,12 +129,15 @@ cuadrilla para y el retrabajo ya está pagado.
 **revierte una decisión suya del 2026-08-03**, anotada dentro de `state-semantics.json` («Ratificado
 2026-08-03 por el propietario del producto: attention/blue»). DS-F1 edita el contrato, no solo CSS.
 
-## Tres propuestos por mí — PENDIENTES de confirmación
+## Tres más, propuestos por mí y CONFIRMADOS por el usuario
 
-**No están decididos.** El usuario declinó seguir con preguntas de opción y pidió continuar, así que
-se entregan como recomendación razonada para que las corrija de una pasada.
+**Confirmados los tres el 2026-08-18**, sin cambios, después de que el usuario declinara seguir con
+preguntas de opción y pidiera continuar. Se le entregaron como recomendación razonada con su
+argumento a la vista —incluido el que va contra el contrato— y los aceptó de una pasada. Se deja
+constancia de que **el origen de estos tres es una propuesta mía, no una respuesta suya a una
+pregunta abierta**: quien los revise mañana tiene derecho a saber de dónde salió cada uno.
 
-| Estado | Condición | Propuesto | Argumento |
+| Estado | Condición | Nivel | Argumento |
 |---|---|---|---|
 | Inicio por Habilitar | `SI = 0`, sin avance, sin liberar | **urgent** | Mañana se convierte sola en «Inicio vencido», ya acordado `urgent`. Marcarla solo tras vencer es avisar tarde, y `PRODUCT.md` pide «hacer visible el riesgo **antes** de que escale». Coincide con la Guía Operativa (P1). |
 | Alistamiento Urgente | `SI = 1`, sin avance, sin liberar | **attention** | **Va contra el contrato**, que hoy lo pone en `urgent`. Tiene una semana de margen y no ha incumplido nada; la Guía (P2) y la matriz coinciden en bajarlo. Es además lo que impide que el escalón de arriba se coma también éste. |
@@ -151,9 +154,17 @@ posición desempata dentro del grupo. **Con el orden, cuatro arriba es sostenibl
 sería.** Es una dependencia real entre las dos mitades de la decisión 1, y DS-F1 no puede
 implementar el filete sin el orden y darla por cumplida.
 
-## Reparto final si se aceptan las tres propuestas
+## Reparto final — cerrado
 
 `urgent` 4 · `attention` 2 · `healthy` 2 · `neutral` 0 (más la fila sin clasificar, fuera de leyenda).
+
+| Nivel | Estados |
+|---|---|
+| **urgent** | RC inicio vencido · Inicio vencido · Inicio por Habilitar · En Ejecución Pendiente |
+| **attention** | Alistamiento Urgente · Alistamiento en Riesgo |
+| **healthy** | Alistamiento Pendiente · Listo para Comprometer |
+
+**Los ocho estados de Programación Intermedia tienen nivel decidido. No queda ninguno abierto.**
 
 Y **el contrato cambia en tres estados**: uno sube y dos bajan. Eso convierte a DS-F1 en un frente
 que edita `docs/design-system/state-semantics.json`, con todo lo que eso arrastra
