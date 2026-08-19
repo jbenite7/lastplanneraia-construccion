@@ -97,9 +97,22 @@ foreach ($st as $r) fputcsv($out, $r);
 wc -l goals/migracion-estados/113-contradictorias-capturadas.csv
 ```
 
-Esperado: **114 líneas** (cabecera + 113). Si el número no es 113, **parar y reportar**: significa
-que los datos se movieron desde la medición del frente (A), y el diagnóstico heredado ya no
-describe lo que hay.
+Esperado: **114 líneas** (cabecera + 113) si nada se movió. **Se sabe que algo se movió**: la tabla
+pasó de 65 549 a 65 557 filas mientras corría el frente (A).
+
+**El freno no es el número, es la naturaleza.** Comparar contra el diagnóstico heredado y reportar
+la deriva:
+
+- **Si las familias siguen siendo las mismas** (`En Curso`, `Terminada`, `A Tiempo`,
+  `Terminada Antes`) y los proyectos también (68 y 63), la deriva es ruido de sesiones de
+  desarrollo escribiendo: se anota el número nuevo y **se sigue**.
+- **Si aparece una familia nueva, un proyecto nuevo, o desaparece una de las anteriores**, la
+  naturaleza de las contradicciones cambió: **parar y reportar**, porque el diagnóstico heredado ya
+  no describe lo que hay.
+
+Nota sobre el paso 0 en esta tarea: la captura va por PDO directo contra `db`, así que **el árbol
+que monte el contenedor es irrelevante aquí** — la base es la misma. El paso 0 vuelve a ser
+obligatorio en la Task 2, que ejecuta un script del worktree.
 
 - [ ] **Step 3: Escribir el acta de la captura**
 
