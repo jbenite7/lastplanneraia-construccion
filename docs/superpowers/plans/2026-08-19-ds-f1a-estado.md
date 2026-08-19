@@ -32,6 +32,10 @@ cualquier `tests/design-system/*.test.mjs`, así que la prueba entra sola en
   **no son niveles**: son estados sin gravedad.
 - **Las dos asignaciones marcadas `revocable: true` conservan esa marca.** Quitarla es decisión del
   usuario, no del implementador.
+- **Las `etiqueta` son los literales EXACTOS de la columna `Estado`**, con tildes, verificados
+  contra la base sobre `1af2e9ac`. Un contrato cuya etiqueta no case con el literal guardado no
+  puede unirse con los datos. (Corregido durante la ejecución: el plan escribía «En Liberacion»
+  sin tilde.)
 - **Porcentajes medidos sobre 50 966 actividades reales** (65 549 filas de `programa_consolidado`
   menos 14 583 capítulos), base `1af2e9ac`. No se recalculan en este plan.
 
@@ -163,7 +167,7 @@ Crear `docs/design-system/ds-f1a-escala-estado.json`:
   "estados": [
     { "id": "atrasada", "etiqueta": "Atrasada", "nivel": "urgente", "porcentaje": 8.0, "origen": "pg_calculate_status" },
     { "id": "debe-iniciar-esta-semana-y-restricciones-pendientes", "etiqueta": "Debe Iniciar esta Semana y Restricciones Pendientes", "nivel": "urgente", "porcentaje": 1.5, "origen": "legacy-sin-productor" },
-    { "id": "en-liberacion-de-restricciones", "etiqueta": "En Liberacion de Restricciones", "nivel": "atencion", "porcentaje": 10.7, "origen": "legacy-sin-productor", "revocable": true, "nota": "asignacion propuesta por la spec, no decidida por el usuario: parece el sustituto vivo de Con Alerta Restricciones, que el contrato declara como atencion y que no existe en ninguna fila" },
+    { "id": "en-liberacion-de-restricciones", "etiqueta": "En Liberación de Restricciones", "nivel": "atencion", "porcentaje": 10.7, "origen": "legacy-sin-productor", "revocable": true, "nota": "asignacion propuesta por la spec, no decidida por el usuario: parece el sustituto vivo de Con Alerta Restricciones, que el contrato declara como atencion y que no existe en ninguna fila" },
     { "id": "debe-iniciar", "etiqueta": "Debe Iniciar", "nivel": "atencion", "porcentaje": 0.9, "origen": "pg_calculate_status" },
     { "id": "debe-iniciar-esta-semana", "etiqueta": "Debe Iniciar esta Semana", "nivel": "atencion", "porcentaje": 0.2, "origen": "legacy-sin-productor", "revocable": true, "nota": "asignacion propuesta por la spec: lo separa de su hermano con restricciones pendientes el que algo lo bloquee; si en obra le toca esta semana ya es urgente, se mueve" },
     { "id": "actividad-futura", "etiqueta": "Actividad Futura", "nivel": "controlado", "porcentaje": 33.6, "origen": "pg_calculate_status" },
