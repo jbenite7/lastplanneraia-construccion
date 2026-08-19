@@ -102,6 +102,9 @@ final class BiContractFixture
     {
         self::begin($db);
         self::seedPadres($db);
+        // La quinta fila ('CI.CNP.STALE.A') es un compromiso ACTIVO (Activa='1') con un CNP viejo
+        // anotado: existe para que los tests puedan comprobar que el universo causal de CNP
+        // excluye filas activas sin depender de que la base compartida tenga una así.
         $statement = $db->prepare(sprintf(
             "INSERT INTO programacion_semanal (
                 project_id, row_id, Consecutivo, Semana, unique_id, Consecutivo_En_Programa,
@@ -125,11 +128,57 @@ final class BiContractFixture
                 (%1\$d, 9302, 9302, 1, 102, 2, 'CI.CNC.A', 'Entrega sintetica CI', 'Nivel CNC',
                  '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion',
                  'AIA', 0.3, 'ml', 10, 10, 3, 0.3, 0, 1, 1, 'NA', 1,
-                 NULL, NULL, 'Materiales', 'Entrega incompleta')",
+                 NULL, NULL, 'Materiales', 'Entrega incompleta'),
+                (%1\$d, 9304, 9304, 1, 102, 2, 'CI.CNP.STALE.A', 'Compromiso activo CI', 'Nivel CNC',
+                 '2026-07-06', '2026-07-12', 'Proveedor CI Construccion', 'Profesional CI Construccion',
+                 'AIA', 0, 'und', 5, 5, 0, 0, 0, 0, 0, '1', 1,
+                 'Programacion', 'Causa vieja anotada', NULL, NULL)",
             self::PROYECTO_A,
             self::PROYECTO_B,
         ));
         $statement->execute();
+    }
+
+    /**
+     * Registra los proyectos sacrificables en `general_proyectos_procesos` y siembra la metadata
+     * de `subcontratistas`/`profesionales` que el flujo CIC/CIP de `ReportProcessor` consume.
+     *
+     * `updateCICProyectos()` itera los proyectos de esa tabla, así que sin este registro los
+     * proyectos del fixture son invisibles para él. El proyecto B lleva filas centinela con los
+     * MISMOS nombres y metadata distinta: si un JOIN pierde el aislamiento por `project_id`,
+     * la metadata del centinela contamina al proyecto A y el test lo ve.
+     */
+    public static function seedCicScenario(Database $db): void
+    {
+        self::begin($db);
+        self::seedPadres($db);
+
+        $db->prepare(sprintf(
+            "INSERT INTO general_proyectos_procesos (Id, Proyecto_Proceso, Base_de_Datos, Area, Activo, Acceso)
+             VALUES
+                (%1\$d, 'CI Sandbox A', 'ciSandboxA', 'Construccion', 1, 1),
+                (%2\$d, 'CI Sandbox B', 'ciSandboxB', 'Construccion', 1, 1)",
+            self::PROYECTO_A,
+            self::PROYECTO_B,
+        ))->execute();
+
+        $db->prepare(sprintf(
+            "INSERT INTO subcontratistas (project_id, Id, subcontratista, correo_contacto, NIT, alcance, tipo_proveedor, activo)
+             VALUES
+                (%1\$d, 9601, 'Proveedor CI Construccion', 'proveedor-a@ci.invalid', 900990200, 'Obra CI', 'Construccion', 1),
+                (%2\$d, 9601, 'Proveedor CI Construccion', 'cross-project-sentinel@ci.invalid', 999999999, 'Sentinel', 'Sentinel', 1)",
+            self::PROYECTO_A,
+            self::PROYECTO_B,
+        ))->execute();
+
+        $db->prepare(sprintf(
+            "INSERT INTO profesionales (project_id, id, nombre, email, cargo, activo)
+             VALUES
+                (%1\$d, 9601, 'Profesional CI Construccion', 'profesional-a@ci.invalid', 'Residente CI', 1),
+                (%2\$d, 9601, 'Profesional CI Construccion', 'cross-project-sentinel@ci.invalid', 'Sentinel', 1)",
+            self::PROYECTO_A,
+            self::PROYECTO_B,
+        ))->execute();
     }
 
     public static function seedProgramSnapshots(Database $db): void
@@ -140,6 +189,10 @@ final class BiContractFixture
         // La cuarta fila vive en B y comparte cohorte con las de A: es la que da contenido al
         // escenario multi-proyecto. Antes se intentaba con un UPDATE sobre el proyecto 75, que al
         // no existir lo dejaba en un no-op silencioso.
+        //
+        // La sexta ('Hito de un dia CI') tiene Fecha_Inicio = Fecha_Fin: existe para que la
+        // reconciliación de `duration_days = 1` en `test_bi_source_reconciliation` tenga al menos
+        // una fila propia cuando se ancla a los proyectos sacrificables.
         //
         // La quinta está en la semana 1 con 'Proveedor CI Construccion' y es la cohorte
         // SOLO-HISTÓRICA: consultada en la semana 3 no aparece como actual (`Semana = 3`) pero sí
@@ -167,7 +220,10 @@ final class BiContractFixture
                  'Cohorte CI Compartida', 'Responsable CI Compartido', 1, 1, 50, 'und'),
                 (%1\$d, 9104, 9104, 1, 101, 1, 'CI.PG.A.0', 'Cohorte retirada CI', 0,
                  '2026-07-06', '2026-07-12', 1, 0.00, 'En Curso', 0.50,
-                 'Proveedor CI Construccion', 'Responsable CI Compartido', 1, 1, 10, 'm2')",
+                 'Proveedor CI Construccion', 'Responsable CI Compartido', 1, 1, 10, 'm2'),
+                (%1\$d, 9105, 9105, 1, 103, 101, 'CI.PG.A.4', 'Hito de un dia CI', 0,
+                 '2026-07-08', '2026-07-08', 0, 1.00, 'Terminado', 1.00,
+                 'Proveedor CI Construccion', 'Responsable CI Compartido', 1, 1, 5, 'und')",
             self::PROYECTO_A,
             self::PROYECTO_B,
         ))->execute();
