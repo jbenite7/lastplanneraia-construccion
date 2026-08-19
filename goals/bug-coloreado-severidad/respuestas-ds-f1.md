@@ -87,3 +87,74 @@ el filete es una **primitiva nueva** del design system y necesita su ficha y su 
 
 ## Archivos de este goal
 - [[diagnostico]] · [[insumo-ds-f1]] · [[propuesta-arreglo-3-estados]] · [[goal]]
+
+---
+
+# Anexo — el nivel de cada estado, repasado uno por uno
+
+**2026-08-18, misma sesión.** El usuario pidió repasar los ocho estados de Programación Intermedia
+uno por uno, con el conflicto entre las tres fuentes delante. Lo que sigue distingue **lo decidido
+por él** de **lo que yo propongo y está pendiente de su palabra**. No se mezcla a propósito.
+
+## Contexto que hacía falta: qué dispara cada estado
+
+Leído de `public/js/modules/programacion_intermedia/stateMachine.js` (`getState`), no supuesto.
+`SI` = semanas al inicio, `EJ` = ejecutado, «liberada» = restricciones duras cumplidas
+(D_y_E, Materiales, MdeO, Equipos al 100 %; Predecesora al 50 %).
+
+## Cuatro estados sin disputa — confirmados
+
+Las tres fuentes coinciden, o dos contra una muy vieja. No se preguntaron.
+
+| Estado | Condición | Nivel |
+|---|---|---|
+| RC inicio vencido | `SI < 0`, sin avance, sin liberar, ruta crítica | **urgent** |
+| Inicio vencido | igual, fuera de ruta crítica | **urgent** |
+| Alistamiento en Riesgo | `SI` 2-3, sin avance, sin liberar | **attention** |
+| Listo para Comprometer | liberada | **healthy** |
+
+> En «Inicio vencido» solo discrepa la matriz de mayo (dice `attention`), contra la Guía Operativa y
+> el contrato juntos. Se resolvió por mayoría y se dijo en voz alta, no en silencio.
+
+## Uno decidido por el usuario
+
+**«En Ejecución Pendiente» (`execution-blocked`) → `urgent`.** Condición: la actividad **ya tiene
+avance** (`0 < EJ < 99,9 %`) y sus restricciones duras **siguen sin liberar**.
+
+Razón que pesó: es el único estado donde el daño **se está produciendo** en vez de anticiparse — se
+construye sobre condiciones que nadie liberó, y si falta material o mano de obra a mitad, la
+cuadrilla para y el retrabajo ya está pagado.
+
+**Consecuencia que se le advirtió antes de que decidiera, para que fuera deliberada:** esto
+**revierte una decisión suya del 2026-08-03**, anotada dentro de `state-semantics.json` («Ratificado
+2026-08-03 por el propietario del producto: attention/blue»). DS-F1 edita el contrato, no solo CSS.
+
+## Tres propuestos por mí — PENDIENTES de confirmación
+
+**No están decididos.** El usuario declinó seguir con preguntas de opción y pidió continuar, así que
+se entregan como recomendación razonada para que las corrija de una pasada.
+
+| Estado | Condición | Propuesto | Argumento |
+|---|---|---|---|
+| Inicio por Habilitar | `SI = 0`, sin avance, sin liberar | **urgent** | Mañana se convierte sola en «Inicio vencido», ya acordado `urgent`. Marcarla solo tras vencer es avisar tarde, y `PRODUCT.md` pide «hacer visible el riesgo **antes** de que escale». Coincide con la Guía Operativa (P1). |
+| Alistamiento Urgente | `SI = 1`, sin avance, sin liberar | **attention** | **Va contra el contrato**, que hoy lo pone en `urgent`. Tiene una semana de margen y no ha incumplido nada; la Guía (P2) y la matriz coinciden en bajarlo. Es además lo que impide que el escalón de arriba se coma también éste. |
+| Alistamiento Pendiente | `SI` 4-6, sin avance, sin liberar | **healthy** | El contrato dice `attention` y creo que se equivoca: la matriz abre nombrando ese fallo exacto —«sobredimensionar alertas futuras, **especialmente actividades a 4-6 semanas**»—. Pide seguimiento del ciclo normal, no alerta. |
+
+## El hallazgo que salió de sumar, y que conviene no perder
+
+Con «En Ejecución Pendiente» arriba y «Inicio por Habilitar» también, **cuatro de los ocho estados
+quedan en el nivel máximo**. Un nivel que contiene la mitad de la tabla no prioriza nada.
+
+**Lo salva el segundo canal que el usuario eligió: el orden.** Dentro de «actuar ahora», lo vencido
+en ruta crítica sigue subiendo por encima del resto, así que el filete dice *cuán grave* y la
+posición desempata dentro del grupo. **Con el orden, cuatro arriba es sostenible; sin él, no lo
+sería.** Es una dependencia real entre las dos mitades de la decisión 1, y DS-F1 no puede
+implementar el filete sin el orden y darla por cumplida.
+
+## Reparto final si se aceptan las tres propuestas
+
+`urgent` 4 · `attention` 2 · `healthy` 2 · `neutral` 0 (más la fila sin clasificar, fuera de leyenda).
+
+Y **el contrato cambia en tres estados**: uno sube y dos bajan. Eso convierte a DS-F1 en un frente
+que edita `docs/design-system/state-semantics.json`, con todo lo que eso arrastra
+(`ops-state-contract.test.mjs` y `state-tint-ladder.test.mjs` leen ese archivo).
