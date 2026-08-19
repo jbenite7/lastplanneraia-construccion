@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: biblia
+estado: vigente
+fecha: 2026-07-18
+fuente: PRODUCT.md
+resumen: Contrato de producto: para quién es Last Planner AIA, qué promete, su personalidad de marca y el piso de accesibilidad con sus excepciones fechadas.
+---
+
 # Product
 
 ## Register

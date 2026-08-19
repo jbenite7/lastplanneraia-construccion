@@ -1,4 +1,12 @@
 ---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-19
+areas: [design-system]
+tags: [leer-antes-de-tocar]
+fuente: DESIGN.md
+resumen: Contrato de consumo del design system: que tokens y primitivas aia-* usar y el flujo obligatorio antes de editar una superficie migrada.
 name: Last Planner AIA
 description: Sistema operativo de Last Planner para anticipar puntos críticos de obra — desktop, dark, denso y accionable.
 # Nota de fuente de verdad: este frontmatter refleja tokens.css para consumo de

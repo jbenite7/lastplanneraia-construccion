@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/contracts/sprint-review-close.md
+resumen: El cierre es una decisión verificable, no una inferencia basada en apariencia. Cada gate conserva evidencia esencial y la aprobación humana es bloqueante.
+---
+
 # Contrato de revisión y cierre de sprint
 
 El cierre es una decisión verificable, no una inferencia basada en apariencia.

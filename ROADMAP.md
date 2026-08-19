@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: biblia
+estado: vigente
+fecha: 2026-03-09
+areas: [proceso]
+fuente: ROADMAP.md
+resumen: Visión unificada y plan de adopción metodológica de Last Planner System (LPS) con Arquitectura Híbrida, Control de Acceso (RBAC) y futuras integraciones…
+---
+
 # ROADMAP - Implementación Híbrida y Gobernanza Transversal
 
 Fecha: 2026-03-02
