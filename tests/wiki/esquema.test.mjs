@@ -19,7 +19,16 @@ test('las trece áreas no cambian en v2', () => {
 
 test('el vocabulario de tags es el cerrado de la spec', () => {
   assert.deepEqual([...TAGS].sort(), ['archivo', 'dashboard', 'generado', 'leer-antes-de-tocar',
-    'pendiente', 'plantilla', 'trampa']);
+    'pendiente', 'plantilla', 'proyecto', 'trampa']);
+});
+
+test('`proyecto` marca los cinco de la wiki LLM, y el dominio lo sigue llevando `areas`', () => {
+  // Dos esquemas pedían mandar sobre la clave `tags`. No se abrió la lista para meter dominios
+  // («php», «datos», «infra»): eso es lo que `areas` ya hace con una lista cerrada. Solo entró la
+  // marca transversal, que es lo único que `areas` no puede decir.
+  assert.ok(TAGS.has('proyecto'));
+  assert.deepEqual(revisarFrontmatter('tags: [proyecto]\nareas: [proceso]', { rel: 'README.md' }), []);
+  assert.equal(revisarFrontmatter('tags: [proyecto, php]', { rel: 'README.md' }).length, 1);
 });
 
 test('`moc` ya no es un tag: `tipo: mapa` significa MOC', () => {

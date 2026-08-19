@@ -1,5 +1,10 @@
 #!/usr/bin/env node
-// Genera memoria/registro-de-trabajo.md: el catálogo del trabajo fechado de docs/superpowers/.
+// Genera IMPLEMENTATION_PLAN_INVENTORY.md: el catálogo del trabajo fechado de docs/superpowers/.
+//
+// Vivía en `memoria/registro-de-trabajo.md` y se mudó a la raíz el 2026-08-19, por decisión del
+// usuario: la wiki LLM del proyecto exige cinco archivos en la raíz y este cumplía ese papel con
+// otro nombre. Tener los dos habría sido fabricar dos inventarios que divergen; que el de la raíz
+// esté GENERADO y no escrito a mano es justamente lo que evita que envejezca.
 // Empareja cada spec con su plan por slug y agrupa por mes. Escribe SOLO entre marcadores.
 // Ver docs/wiki-operacion.md.
 import { readFileSync, existsSync, readdirSync, writeFileSync } from 'node:fs';
@@ -7,7 +12,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SALIDA = join(RAIZ, 'memoria/registro-de-trabajo.md');
+const SALIDA = join(RAIZ, 'IMPLEMENTATION_PLAN_INVENTORY.md');
 const INICIO = '<!-- generado:inicio -->';
 const FIN = '<!-- generado:fin -->';
 

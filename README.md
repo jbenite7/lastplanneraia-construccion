@@ -2,96 +2,273 @@
 capa: fuente
 tipo: guia
 estado: vigente
-fecha: 2026-08-19
-areas: [proceso, arquitectura]
-tags: [leer-antes-de-tocar]
+fecha: 2026-03-09
+areas: [proceso]
+tags: [proyecto]
 fuente: README.md
-resumen: Puerta de entrada al repo — qué es Last Planner AIA, con qué stack corre, cómo se levanta y dónde está cada cosa.
+resumen: Puerta de entrada al repo: qué es Last Planner AIA, cómo se levanta el stack local y dónde está cada cosa.
+project: lps-aia
+type: readme
+status: activo
+updated: 2026-08-19
 ---
-
-# Last Planner AIA
-
-Plataforma web para operar **Last Planner System (LPS)**: planificación jalada (Programa General →
-Programación Intermedia/Lookahead → Programación Semanal) con RBAC, medición PAC/CNC y un módulo de
-Plan de Compras (PDC v2) integrado. Reemplaza planificación empujada por compromisos que el terreno
-puede sostener.
-
-## Metodología en una línea por fase
-
-- **Programa General:** lo que se DEBERÍA hacer — plan maestro, hitos, cantidades/costos teóricos.
-- **Programación Intermedia (Lookahead, 4-6 semanas):** lo que se PUEDE hacer — detecta y libera
-  restricciones (diseño, materiales, mano de obra, equipos, trámites).
-- **Programación Semanal:** lo que se HARÁ — compromisos reales medibles.
-- **PAC** (Porcentaje de Asignaciones Completadas, binario por compromiso) y **CNC** (Causas de No
-  Cumplimiento) cierran el ciclo de mejora cada semana.
-
-## Stack
-
-- **Backend:** PHP 8.3, MVC propio sin framework (`src/Core/Router.php`, Front Controller en
-  `public/index.php`). Persistencia MySQL 8 / MariaDB, **global-only**: tablas compartidas con
-  `project_id`; prohibido agregar consultas runtime nuevas a tablas `{prefix}_*` (son solo metadato
-  histórico/migración).
-- **Libs clave:** `phpoffice/phpspreadsheet` (reportería), `vlucas/phpdotenv`, `phpmailer/phpmailer`
-  (recuperación de contraseña vía MTA local del hosting, no relay externo).
-- **Frontend:** Handsontable para grillas LPS, JS ES5/módulos en `public/js/modules/`, design system
-  propio en `public/css/design-system/` con tokens `--ds-*`/`--aia-*` (ver [[DESIGN]]).
-- **PDC v2:** isla React en `pdc-app/` + `src/Services/Pdc/`, documentada en `docs/pdc-v2.md`. El
-  PDC v1 (Listado de Actividades, Contratos, `/pdc`) se eliminó el 2026-08-04; no reintroducir.
-- **QA:** PHPUnit + suite propia (`scripts/run-php-tests.php`, niveles `puro`/`http`), PHPStan
-  (`phpstan.neon`, `phpstan-pdc.neon`), Playwright E2E (`tests/browser/`), Biome para JS/CSS del
-  design system.
-- **Runtime:** exclusivamente Docker Compose — nunca MAMP/XAMPP ni PHP del host. Servicios
-  declarados: `app`, `db`, `adminer`. App en `http://localhost:8081`, Adminer en
-  `http://localhost:8082`, MySQL host en puerto `3307`. El compose monta desde
-  `${LPS_CODE_ROOT:-<checkout principal>}` — desde un worktree hay que exportar `LPS_CODE_ROOT`
-  propio (ver `docker-compose.override.yml`).
-
-## Cómo correr
-
-```bash
-# 1. .env: NO hay .env.example — se copia de un .env existente. Claves en GEMINI.md §Base de Datos
-#    y README §3.1 (correo). En un worktree se enlaza el de la raíz, no se copia.
-# 2. Levantar el stack
-docker compose up -d --build db app adminer
-
-# 3. Correr PHP/tests dentro del contenedor, nunca en el host
-docker compose exec app php scripts/run-php-tests.php --nivel=puro
-docker compose exec app vendor/bin/phpstan analyse src admin/src --memory-limit=1G
-npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
-```
-
-**La sesión local se abre por la puerta de servicio, nunca tecleando credenciales en `/login`:**
-`http://localhost:8081/dev/entrar?u=test.R&p=<Proyecto_Proceso>` (`test.A` Admin, `test.R`
-Residente, `test.V` Visualizador; sin `p` aterriza en `/proyectos`). Necesita `DEV_DOOR=1` y
-`DEV_DOOR_USERS` en `.env`. No existe en producción — ver `src/Core/DevDoor.php`.
-
-Recuperación de contraseña necesita `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`,
-`MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` y el patch
-`database/patches/20260329_create_password_reset_tokens.sql`.
-
-## Gobernanza y coordinación multi-sesión
-
-El desarrollo lo llevan agentes IA en sesiones paralelas sobre worktrees
-(`.claude/worktrees/`), coordinadas por las reglas de [[docs/coordinacion-sesiones]]: una sesión
-**coordinadora** (audita, autoriza publicaciones, único punto de contacto con el usuario) y
-sesiones **de ejecución** (un frente cada una, worktree propio). Publicación a `main` pasa siempre
-por `scripts/publicar.sh` (gate de invariante de montaje). Deploy a producción exige autorización
-explícita y aparte, siempre — nunca la da un objetivo de sesión por sí solo.
 
 ## Mapa
 
-- [[ROADMAP]] — rumbo, fases entregadas y en curso.
-- [[TASKS]] — pendientes vivos, incluida la coordinación entre sesiones.
-- [[CHANGELOG]] — historial de cambios (Keep a Changelog).
-- [[IMPLEMENTATION_PLAN_INVENTORY]] — índice de planes/specs de `docs/superpowers/`.
-- [[AGENTS]] / `GEMINI.md` — constitución operativa de los agentes IA (reglas, credenciales, runtime).
-- [[DESIGN]] (`DESIGN.md`) — contrato de consumo del design system; léelo antes de tocar UI. El
-  nombre completo va escrito a propósito: `tests/design-system/design-doc-wiring.test.mjs` exige la
-  cadena literal `DESIGN.md` en este archivo, y un wikilink de Obsidian solo no la satisface.
-- [[docs/coordinacion-sesiones]] — cómo se reparten frentes entre sesiones paralelas.
-- [[docs/decisiones-pendientes]] — cola de decisiones que esperan criterio del usuario.
-- `docs/pdc-v2.md` — Plan de Compras v2 (sucesor del PDC v1, eliminado).
-- `docs/global-tables-architecture.md` — regla vigente de BD global con `project_id`.
-- `memoria/` — wiki LLM de segunda capa (decisiones, trampas ya pisadas); ver `docs/wiki-operacion.md`
-  para su esquema. No confundir con estos 5 archivos raíz, que son la wiki de primer nivel.
-- `GLOSARIO.md` — diccionario de términos LPS.
+Los cinco archivos vivos de este repositorio. Se actualizan en el mismo turno que el hecho que los
+afecta, no al final.
+
+- [[ROADMAP]] — el rumbo y sus fases, y las decisiones que lo cambiaron.
+- [[TASKS]] — la cola de pendientes. **Fuente única**: si no está aquí, no está pendiente.
+- [[CHANGELOG]] — el historial de cambios, formato Keep a Changelog.
+- [[IMPLEMENTATION_PLAN_INVENTORY]] — índice de specs y planes con su estado. **Lo genera
+  `scripts/wiki-registro.mjs`**; no se escribe a mano.
+- [[AGENTS]] — el contrato del repo para quien trabaje aquí, humano o asistente. Manda sobre esta
+  página.
+
+Y la memoria del proyecto, que es otra cosa: [[memoria/index|la wiki]] guarda el porqué de las
+decisiones y las trampas que ya costaron tiempo. Empieza por ahí antes de tocar un área.
+
+
+# Last Planner AIA: Construyendo con +CERTEZA
+
+> Este repositorio no es solo código; es el motor de transformación cultural y productiva en
+> nuestros proyectos de construcción.
+
+A continuación, te guiamos a través de la metodología técnica y filosófica que sustenta la
+plataforma, estructurada en el arco de tres actos que rige nuestra visión operativa organizacional.
+
+---
+
+## 📑 Índice de Navegación
+
+- [🎬 Acto 1: El Comienzo (El Conflicto y el Llamado)](#-acto-1-el-comienzo-el-conflicto-y-el-llamado)
+- [🎬 Acto 2: El Nudo (Filosofía Metodológica y Arquitectura)](#-acto-2-el-nudo-filosofía-metodológica-y-arquitectura)
+  - [2.1 El Flujo Operativo Last Planner (LPS)](#21-el-flujo-operativo-last-planner-lps)
+  - [2.2 Mejora Continua: El Ciclo de Medición (PAC y CNC)](#22-mejora-continua-el-ciclo-de-medición-pac-y-cnc)
+  - [2.3 El Reflejo Técnico: Arquitectura Híbrida (Patrón Estrangulador)](#23-el-reflejo-técnico-arquitectura-híbrida-patrón-estrangulador)
+- [🎬 Acto 3: El Desenlace (Apropiación y Gobernanza)](#-acto-3-el-desenlace-apropiación-y-gobernanza)
+  - [3.1 Despliegue y Entorno (Exclusivo Docker)](#31-despliegue-y-entorno-exclusivo-docker)
+  - [3.2 Gobernanza de Inteligencia Artificial ("Antigravity")](#32-gobernanza-de-inteligencia-artificial-antigravity)
+  - [3.3 El Guardián del Estilo (VS Code Workspace)](#33-el-guardián-del-estilo-vs-code-workspace)
+
+---
+
+## 🎬 Acto 1: El Comienzo (El Conflicto y el Llamado)
+
+> [!WARNING]
+> **El Problema Operativo**  
+> Las obras de construcción tradicionales sufren de islas de información,
+> promesas rotas y un enfoque de planificación empujada ("Push") donde el cronograma maestro impone
+> fechas que la realidad del sitio de obra no puede sostener. Las consecuencias son sobrecostos,
+> estrés operativo, y cuellos de botella derivados de una planificación desintegrada y asilada del
+> equipo de terreno.
+
+> [!TIP]
+> **La Gran Idea (+CERTEZA)**  
+> Implementar _Last Planner System_ (LPS) no es instalar un software de
+> gestión de proyectos. Es adoptar una **filosofía organizacional** donde el "Último Planificador"
+> (residentes, maestros, subcontratistas) tiene el poder y la responsabilidad de comprometerse
+> **únicamente** con lo que puede cumplir. Last Planner AIA es la respuesta corporativa para erradicar las
+> promesas vacías, garantizando flujos de trabajo predecibles y continuos.
+
+### Documentación Complementaria (El Manual de Supervivencia)
+
+- **[Constitución y Reglas (GEMINI.md)](GEMINI.md)**: Reglas core y workflows de desarrollo.
+- **[Glosario (GLOSARIO.md)](GLOSARIO.md)**: Diccionario oficial de más de 100 términos técnicos y
+  de la metodología LPS (Indispensable para todo colaborador).
+- **[Roadmap (ROADMAP.md)](ROADMAP.md)**: Planificación a largo plazo, hitos aprobados y sprints de
+  modernización.
+- **[Rutas del Sistema (memoria/arquitectura/)](memoria/arquitectura/)**: inventario de rutas por
+  módulo y matriz de navegación, generado desde el código; sustituye al retirado `docs/ROUTES.md`.
+- **[Contrato de consumo del Design System (DESIGN.md)](DESIGN.md)**: Tokens `--ds-*`/`--aia-*`,
+  primitivas `aia-*` y flujo obligatorio antes de tocar UI. Léelo antes de cualquier cambio visual;
+  la autoridad ejecutable vive en `docs/design-system/`.
+- **[Guía de Stitch (docs/STITCH.md)](docs/STITCH.md)**: Conexión, autenticación e interacción con
+  Stitch para generar el design system y las pantallas de la app.
+- **[Rutina de despliegue SiteGround](docs/siteground-deploy-routine.md)**: Checklist operativo para
+  desplegar desde `main`, validar el sitio y tener rollback rápido.
+- **[Arquitectura de tablas globales](docs/global-tables-architecture.md)**: Regla vigente de BD
+  global con `project_id`, sin dependencias runtime a tablas por proyecto.
+
+---
+
+## 🎬 Acto 2: El Nudo (Filosofía Metodológica y Arquitectura)
+
+Para que el llamado a la acción se concrete, la organización despliega la metodología a través de
+tres horizontes de planeación. El rol del software es capturar empíricamente estas fases.
+
+### 2.1 El Flujo Operativo Last Planner (LPS)
+
+La metodología transforma progresivamente la teoría del cronograma en realidades de obra mediante un
+esquema de filtros estructurados:
+
+1. **Programa General / Máster (Lo que se DEBERÍA hacer):** Establece el plan maestro de alto
+    contraste. Mapea los hitos del proyecto, las secuencias constructivas ideales y las metas
+    presupuestales (Cantidades y Costos Teóricos). Fija la hoja de ruta a largo plazo y determina si
+    una tarea _debería_ ejecutarse en una ventana futura.
+2. **Programación Intermedia o _Lookahead_ (Lo que se PUEDE hacer):** El escudo protector de la
+    obra. Evaluamos una ventana de tiempo (típicamente 4-6 semanas adelante) para identificar toda
+    barrera que pueda bloquear la ejecución de la tarea. Aquí se detectan y remueven las
+    **Restricciones** (Problemas de Diseños, Materiales, Mano de Obra, Equipos, Trámites, etc.).
+    Solo las tareas cuyas restricciones se han resuelto ("Liberadas") pueden avanzar.
+3. **Programación Semanal (Lo que se HARÁ):** El terreno de juego táctico. Aquí, residentes y
+    subcontratistas analizan los frentes sin restricciones y asumen **compromisos reales** (medibles
+    en cantidades y horas). En la Programación Semanal no se planifica, se firman acuerdos de
+    palabra y datos sobre lo que efectivamente se va a ejecutar esa semana.
+
+### 2.2 Mejora Continua: El Ciclo de Medición (PAC y CNC)
+
+El sistema madura mediante el componente de medición empírica al final de la semana, haciéndonos la
+pregunta crítica: ¿Cumplimos lo prometido?
+
+- **PAC (Porcentaje de Asignaciones Completadas):** Un indicador implacable de confiabilidad. Cada
+  compromiso evaluado solo tiene dos estados: se cumplió (PAC = 1) o no se cumplió (PAC = 0).
+- **CNC (Causas de No Cumplimiento):** Si PAC = 0, el equipo debe obligatoriamente rootear la falla.
+  ¿Falló el Diseño? ¿No llegó el Material? ¿Faltó Personal? El análisis CNC alimenta la mejora
+  continua para que los errores corporativos no se repitan la semana entrante.
+
+---
+
+### 2.3 El Reflejo Técnico: Arquitectura Híbrida (Patrón Estrangulador)
+
+El desafío de modernizar esta metodología requirió migrar de scripts legacy hacia un ecosistema
+robusto validado por **RBAC** (Control de Acceso Basado en Roles). El software intercepta cada
+petición e inyecta la seguridad y rutas hacia la lógica de negocio moderna, delegando lo antiguo en
+aislamiento controlado:
+
+La persistencia aprobada es **global-only**: cada módulo debe leer y escribir tablas compartidas con
+`project_id`. Los prefijos de proyecto se conservan solo como metadato histórico o fuente de migración;
+no se deben agregar nuevas consultas runtime a tablas `{prefix}_*`.
+
+El PDC v1 —Listado de Actividades, Contratos y el módulo `/pdc`, con su asistente semi-automático—
+se eliminó el 2026-08-04. Su sucesor es el **Plan de Compras v2** (`/plan-compras`), la isla React
+documentada en `docs/pdc-v2.md`.
+
+<details>
+<summary><b>🗺️ Ver Diagrama de Arquitectura Híbrida</b></summary>
+
+```mermaid
+graph TD
+    User("👨‍💻 Usuario / 🤖 Bot") -->|"1. Petición Web"| FC
+    subgraph "✨ ARQUITECTURA MODERNA (MVC)"
+        FC["Front Controller (/public/index.php)"]
+        Router{"Enrutador (src/Core/Router.php)"}
+        Controllers["Controladores (Ej: ReportController.php)"]
+        Services["Servicios Negocio (Ej: ReportProcessor.php)"]
+        DB_PDOM["Core BD (src/Core/Database.php)"]
+        FC --> Router
+        Router -- "Ruta Registrada" --> Controllers
+        Controllers --> Services
+        Services --> DB_PDOM
+    end
+    subgraph "⚠️ SISTEMA LEGACY (Procedural)"
+        LegacyScripts["Scripts Planos PHP (/construccion/index.php)"]
+        LegacyViews["Vistas Acopladas (HTML + BD)"]
+        DB_Legacy["Database Singleton compartido (src/Core/Database.php)"]
+        Router -- "Ruta No Registrada (Fallback)" --> LegacyScripts
+        LegacyScripts --> LegacyViews
+        LegacyScripts --> DB_Legacy
+    end
+    subgraph "🗄️ PERSISTENCIA (Docker)"
+        MySQL[("MySQL 8.0 (Puerto: 3307)")]
+    end
+    DB_PDOM -.-> |"PDO Preparado"| MySQL
+    DB_Legacy -.-> |"PDO Preparado"| MySQL
+    classDef modern fill:#d4edda,stroke:#28a745,color:#155724;
+    classDef legacy fill:#f8d7da,stroke:#dc3545,color:#721c24;
+    classDef db fill:#cce5ff,stroke:#007bff,color:#004085;
+    classDef core fill:#fff3cd,stroke:#ffc107,color:#856404;
+    FC,Router:::core
+    Controllers,Services,DB_PDOM:::modern
+    LegacyScripts,LegacyViews,DB_Legacy:::legacy
+    MySQL:::db
+```
+
+</details>
+
+#### Ecosistema Base PHP
+
+El backend corre en un entorno estandarizado sin frameworks comerciales que engorden el bundle,
+priorizando eficiencia transaccional para operaciones con alta densidad de datos.
+
+- **Core:** PHP 8.3 + MariaDB/MySQL 8.
+- **Librerías Críticas:** `phpoffice/phpspreadsheet` (Reportería), `vlucas/phpdotenv` (Seguridad), `phpmailer/phpmailer` (correo transaccional para recuperación de contraseña).
+- **Seguridad Central:** Inyección protegida contra consultas (Prepared Statements mandatory),
+  denegación explícita (HTTP 403) liderada por RBAC para roles restrictivos de la obra (`D`, `R`,
+  `C`, `G`, etc.).
+
+---
+
+## 🎬 Acto 3: El Desenlace (Apropiación y Gobernanza)
+
+La transición a la modernidad culmina cuando el desarrollador toma el volante de la infraestructura.
+Esta etapa finaliza las dependencias caóticas e implementa Docker y Agentes IA como única directriz.
+
+### 3.1 Despliegue y Entorno (Exclusivo Docker)
+
+> [!CAUTION] > **El fin del caos local.** Prohibido terminantemente el uso de MAMP, XAMPP o
+> servidores Apache instalados en la máquina host. Todo el entorno está rigurosamente
+> contenedorizado. No instales dependencias base ni uses Composer globalmente; el stack lo hará por
+> ti.
+
+<details>
+<summary><b>🐳 Ver Instrucciones de Despegue Rápido Local</b></summary>
+
+1. Clona el repositorio a tu máquina.
+2. Crea tu archivo `.env` basado en `.env.example`. (Ver `GEMINI.md` para credenciales).
+   Si vas a habilitar recuperación de contraseña, configura también `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS` y `MAIL_FROM_NAME`.
+3. Despierta el stack:
+
+```bash
+# Construye la imagen, resuelve composer y levanta bases de datos en DB y App.
+docker compose up -d --build db app adminer
+```
+
+</details>
+
+**Credenciales de Prueba (Testing Out-Of-The-Box)**: Para validar interfaces o probar las
+ramificaciones del PAC y las Restricciones, debes emular la vida real de los roles. Ya existen
+múltiples perfiles `RBAC` inyectados en la base de datos de Docker listos para iniciar sesión y
+depurar módulos. Por ejemplo: `test.A` (Administración global), `test.D` (Director), `test.R`
+(Residente).
+
+- _Localiza todas las contraseñas e IDs en el ecosistema **`GEMINI.md`** (Sección 5)._
+- _Puntos de acceso:_ App -> `http://localhost:8081` | DB UI -> `http://localhost:8082`.
+
+#### Recuperación de contraseña y SMTP
+
+- **Variables requeridas:** `APP_URL`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`.
+- **Base URL pública:** `APP_URL` se usa para construir los enlaces de restablecimiento (`/password/reset` y `/admin/password/reset`).
+- **Dependencia SMTP:** el flujo de recuperación no funciona si el contenedor/app no puede abrir conexión saliente al servidor SMTP configurado.
+- **Parche de base de datos:** aplica `database/patches/20260329_create_password_reset_tokens.sql` antes de usar el flujo en un entorno nuevo o clonado.
+- **Rutas nuevas:** app pública `GET|POST /password/forgot` y `GET|POST /password/reset`; panel admin `GET|POST /admin/password/forgot` y `GET|POST /admin/password/reset`.
+
+### 3.2 Gobernanza de Inteligencia Artificial ("Antigravity")
+
+> [!WARNING] Este repositorio extirpó los workflows manuales estándar. No utilizamos Forks caóticos
+> ni PRs directos sin automatización. El desarrollo y la mutación del código están gobernados por
+> **nuestros Agentes de IA locales (Antigravity)**.
+
+Si aportas código a la refactorización arquitectónica o los reportes métricos, tu iteración con
+nuestro asistente de IA debe estar parametrizada:
+
+- `/plan [tarea]`: Desencadena el análisis de requerimientos del modelo para crear tu
+  `implementation_plan.md` libre de riegos y protegido.
+- `/run` o `/exec`: Permite a la IA ejecutar atómicamente la refactorización una vez hayas validado
+  técnicamente el documento de planificación.
+- `/fast [tarea]`: Vía rápida para delegarle fixes menores a la IA (< 20 líneas).
+- `/smart-git-workflow`: El asistente orquesta todo tu historial, versiones y actualiza ramas con
+  los estándares de _Conventional Commits_.
+
+**Regla de Oro en Arquitectura Híbrida:** Prohibido bypassear a los Agentes ingresando bloques
+inmensos de código manual de dudosa procedencia.
+
+### 3.3 El Guardián del Estilo (VS Code Workspace)
+
+Para certificar consistencia, la plataforma requiere de manera silenciosa que instales las
+extensiones sugeridas en `.vscode/extensions.json` cuando abras el workspace (Ej. Linters avanzados:
+`php-cs-fixer`, `eslint` y el enforcer de estilo `Prettier`).
+
+> [!IMPORTANT]
+> **Bienvenido al ecosistema. Construyamos con certeza.**

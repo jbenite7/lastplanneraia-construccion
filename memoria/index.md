@@ -54,7 +54,7 @@ El vault de Obsidian es la **raíz del repo**, no esta carpeta. Por eso los enla
 
 ### Lo que está abierto
 
-- [[cola-de-pendientes]] — la fuente única de pendientes.
+- [[TASKS|Cola de pendientes]] — la fuente única de pendientes.
 - [[estado]] — el estado real de cada goal, leído de su `goal.md`.
 - [[log]] — la bitácora de las cuatro operaciones.
 
@@ -107,9 +107,9 @@ El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 | [[admin]] | El panel admin como mini-app aparte de `src/` |
 | [[procesos-y-sesiones]] | El gate de cierre, la coordinación y cómo miente un verde |
 
-Además: **[[cola-de-pendientes|Cola de pendientes]]** (el tablero de control: qué corre ya, qué
+Además: **[[TASKS|Cola de pendientes]]** (el tablero de control: qué corre ya, qué
 se replantea y qué espera, en el orden que fijó el usuario), **[[estado|Estado de los goals]]**
-(qué goal está abierto, cerrado o absorbido), **[[registro-de-trabajo|Registro de trabajo]]**
+(qué goal está abierto, cerrado o absorbido), **[[IMPLEMENTATION_PLAN_INVENTORY|Registro de trabajo]]**
 (cada spec de diseño con el plan que la ejecutó, por mes, incluido lo archivado) y **[[log]]**
 (bitácora cronológica de lo que se ha ingerido y verificado). En el catálogo, la vista
 **«Abierto ahora»** lista todo lo `estado: abierto` — es la foto operativa del momento.
@@ -169,7 +169,7 @@ hace falta un embebido por tabla.
 sueltos a 25**. Primero se tejieron a mano los 25 que sí mandan hoy —contratos del design system,
 referencias de infraestructura, los `.md` de la raíz—; después, los 74 planes y specs de trabajo
 fechado dejaron de estar sueltos sin escribir un solo enlace a mano, porque
-[[registro-de-trabajo|el registro de trabajo]] los cataloga y empareja cada spec con su plan. Y los
+[[IMPLEMENTATION_PLAN_INVENTORY|el registro de trabajo]] los cataloga y empareja cada spec con su plan. Y los
 30 documentos ya cerrados que nadie citaba se movieron a `docs/archive/superpowers/`.
 
 Los 25 que quedan son documentos sueltos de `docs/` y entregables de goals cerrados. Se quedan así:

@@ -3,10 +3,49 @@ capa: fuente
 tipo: reporte
 estado: vigente
 fecha: 2026-03-09
-tags: [generado]
+areas: [proceso]
+tags: [proyecto, generado]
 fuente: CHANGELOG.md
 resumen: Todos los cambios notables en este proyecto serán documentados en este archivo.
+project: lps-aia
+type: changelog
+status: activo
+updated: 2026-08-19
 ---
+
+# Changelog
+
+## [Unreleased]
+
+### Added
+- Esquema v2 de la wiki: campo `capa`, diecisiete `tipo`, ocho `tags` de vocabulario cerrado, y
+  frontmatter en las 431 fuentes del vault. Detalle en [[docs/wiki-operacion]].
+- `scripts/wiki-frontmatter.mjs` — backfill idempotente del frontmatter, en ensayo por defecto.
+- `scripts/wiki-esquema.mjs` — el vocabulario cerrado en un solo sitio.
+- `scripts/wiki-vistas.mjs` — censa qué lista cada vista de `paginas.base` y falla si alguna cambia.
+  Existe porque el lint en verde **no** prueba que una página siga en el catálogo.
+- 13 mapas de área (antes 7), 13 vistas Bases por área, 3 canvas y un dashboard en la portada.
+- `npm run test:wiki:forma` — la mitad de la comprobación que un gate puede bloquear.
+
+### Changed
+- **`scripts/publicar.sh` bloquea por la forma de la wiki** y solo avisa por la alarma de
+  veracidad. Antes toda la wiki avisaba, y por eso tres veces entró una fuente sin declarar sin
+  que la publicación se detuviera.
+- `npm run test:wiki` corre en modo estricto.
+- La alarma de veracidad deja de contar tres cosas que no son deriva de código: commits de solo
+  frontmatter, merges que solo unen, y commits que solo tocan documentos de intención
+  (`spec`, `plan`, `reporte`, `evidencia`, `goal-doc`).
+- Los cinco archivos de la wiki del proyecto viven en la raíz: `memoria/goals/cola-de-pendientes.md`
+  pasó a [[TASKS]] y `memoria/registro-de-trabajo.md` a [[IMPLEMENTATION_PLAN_INVENTORY]].
+
+### Fixed
+- `campo()` del lint devolvía **la línea siguiente** como valor de un campo vacío: `\s*` incluye el
+  salto de línea. Defecto heredado del lint v1, invisible hasta que hubo campos vacíos.
+- El lint daba por roto un enlace a un `.canvas` y un alias con barra escapada (`[[x\|Alias]]`),
+  que es la forma correcta dentro de una tabla.
+
+### Removed
+- El tag `moc`: `tipo: mapa` significa MOC, y un tag que repite el tipo no discrimina nada.
 
 # Registro de Cambios (Changelog)
 

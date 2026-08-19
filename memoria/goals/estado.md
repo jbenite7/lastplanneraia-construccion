@@ -17,9 +17,9 @@ desfase, en la página que existe justo para responder «¿dónde quedó X?».
 La fuente sigue siendo `goals/<slug>/`; esta página solo lo resume. **La regla de lectura es una:
 un goal está cerrado si su `goal.md` tiene una sección `## Cierre` con contenido** —salida de
 comandos, no prosa—. No se deduce de que lleve días quieto ni de que su plan tenga casillas
-marcadas: las casillas [[goals/cola-de-pendientes|no miden nada]].
+marcadas: las casillas [[TASKS|no miden nada]].
 
-Para saber **en qué fase va cada programa**, no mires aquí: [[goals/cola-de-pendientes]]. Para los
+Para saber **en qué fase va cada programa**, no mires aquí: [[TASKS|Cola de pendientes]]. Para los
 **pendientes vivos**, [[TASKS]].
 
 ## El reparto

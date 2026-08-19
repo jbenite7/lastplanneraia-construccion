@@ -10,7 +10,7 @@ resumen: runtime-budgets al CI, recortado a andamio — diseño
 
 # runtime-budgets al CI, recortado a andamio — diseño
 
-**Fase:** CP-F-AB del bloque 2 de [[cola-de-pendientes]], **recortada**. **Frente:** `runtime-budgets-al-ci`.
+**Fase:** CP-F-AB del bloque 2 de [[TASKS|Cola de pendientes]], **recortada**. **Frente:** `runtime-budgets-al-ci`.
 
 ## La premisa vieja caducó, y esto es lo que queda
 

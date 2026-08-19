@@ -2,136 +2,166 @@
 capa: fuente
 tipo: referencia
 estado: vigente
-fecha: 2026-08-19
+fecha: 2026-08-03
 areas: [proceso]
-fuente: IMPLEMENTATION_PLAN_INVENTORY.md
-resumen: Índice con estado de los planes y specs de docs/superpowers/ — propuesto, en curso, ejecutado o abandonado. No duplica contenido.
+tags: [proyecto, generado]
+fuente: docs/superpowers
+resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la ejecutó, por mes, incluido lo archivado"
+project: lps-aia
+type: plan-inventory
+status: activo
+updated: 2026-08-19
 ---
+# Registro de trabajo
 
-# Inventario de planes
+Cada cambio de peso de este repositorio deja dos papeles: una **spec** que decide qué se hace y por
+qué, y un **plan** que dice cómo. Viven en `docs/superpowers/` y, cuando el trabajo terminó y nadie
+los cita, en `docs/archive/superpowers/`. Son historia, no contrato: para saber qué manda hoy,
+[[index|el índice]] y los mapas por área.
 
-Índice de los 92 planes/specs de `docs/superpowers/specs/` y `docs/superpowers/plans/` (patrón
-`YYYY-MM-DD-slug[-design].md`; spec = diseño, plan = ejecución del mismo slug). No duplica
-contenido: solo estado y enlace. Trabajo del enjambre activo hoy: ver [[TASKS]].
+Esta página existe porque esos papeles estaban en el disco y no había forma de saber qué existía
+sin listar un directorio. Aquí se ve la genealogía completa —qué se decidió, con qué plan se
+ejecutó, y si ya está archivado— sin escribir a mano un enlace por documento.
 
-**Método de inferencia (2026-08-19):** el estado de los ítems anteriores al 18-ago se infirió por
-fecha y por el hecho de que [[ROADMAP]]/[[CHANGELOG]] documentan una historia continua de entregas
-sin huecos hasta hoy — **no se abrió cada archivo uno por uno**. `ejecutado (inferido)` significa
-eso: alta confianza, no verificación línea a línea. `revisar` marca los que mencionan textualmente
-alguna forma de cancelación/no-ejecución (`grep -l "abandonad\|se descarta\|no se hizo\|cancelad"`)
-y necesitan una lectura real antes de confiar en su estado. `en curso` y el `ejecutado` sin
-calificar son los frentes recientes, verificados contra `goal.md` y git log.
+**Cómo se lee.** «Archivado: sí» significa que el trabajo terminó y sus dos mitades se movieron a
+`docs/archive/superpowers/`; se mueven solo los que ningún otro archivo cita, así que un trabajo sin
+archivar puede estar igual de cerrado y seguir donde estaba porque alguien lo nombra. Un trabajo con
+una sola mitad es normal: no todo lo que se diseña se ejecuta, y algunos planes son anteriores a la
+costumbre de escribir la spec.
 
-**Repasado el 2026-08-19 contra `origin/main`**, que iba 114 commits por delante del árbol donde se
-escribió este archivo: se añadieron 4 slugs que faltaban y se corrigieron 3 que decían «en curso»
-estando cerrados y publicados (`wiki-v2-visual`, `ds-f0-auditoria-total`, `bug-coloreado-severidad`).
+## Catálogo
 
-**Qué contiene esta página y qué no.** Aquí vive el **estado** de cada plan, que es lo único que
-ningún script puede deducir. El **catálogo** —qué spec se empareja con qué plan, agrupado por mes—
-lo genera `scripts/wiki-registro.mjs` en [[memoria/registro-de-trabajo]] y no se copia aquí: dos
-catálogos del mismo dato divergen, y entonces no sirve ninguno.
+Lo de abajo lo genera `scripts/wiki-registro.mjs` emparejando spec y plan por su slug. **No lo
+edites a mano:** se sobrescribe en cada regeneración. Todo lo de fuera de los marcadores sí es tuyo.
 
-| Plan | Estado | Spec / Plan |
+```bash
+node scripts/wiki-registro.mjs              # comprueba si la zona quedó desfasada
+node scripts/wiki-registro.mjs --escribir   # la actualiza
+```
+
+<!-- generado:inicio -->
+
+_111 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+
+### agosto de 2026
+
+| Trabajo | Documentos | Archivado |
 |---|---|---|
-| 2026-07-20-sidebar-canonico-laboratorio | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio]] |
-| 2026-07-21-stack-plan-de-compras | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-21-stack-plan-de-compras-design]] |
-| 2026-07-22-lab-colapsado-primitiva | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-22-lab-colapsado-primitiva]] · [[docs/superpowers/plans/2026-07-22-lab-colapsado-primitiva]] |
-| 2026-07-22-roadmap-pdc-v2 | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-22-roadmap-pdc-v2]] |
-| 2026-07-23-a16-comparativo-versiones | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-23-a16-comparativo-versiones-design]] |
-| 2026-07-23-a17-versionamiento-inteligente | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-23-a17-versionamiento-inteligente-design]] |
-| 2026-07-23-a25-importador-maestro-sinco | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-23-a25-importador-maestro-sinco-design]] |
-| 2026-07-23-a3-paquetes-contratacion | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design]] |
-| 2026-07-24-control-tower-shell-dark | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-24-control-tower-shell-dark]] |
-| 2026-07-28-chips-tonos-pdc-y-punto-de-nivel | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel]] |
-| 2026-07-28-paleta-estado-oscura | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-28-paleta-estado-oscura]] |
-| 2026-07-28-responsable-usuario-proyecto | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-28-responsable-usuario-proyecto-design]] |
-| 2026-07-29-a41-diferidos-configuracion-pasos | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-a41-diferidos-configuracion-pasos-design]] |
-| 2026-07-29-ayuda-in-app-pdc | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-ayuda-in-app-pdc-design]] |
-| 2026-07-29-b2-semaforos-lookahead | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-b2-semaforos-lookahead-design]] |
-| 2026-07-29-b3-torre-control-pdc | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-b3-torre-control-pdc-design]] |
-| 2026-07-29-c1-retiro-pdc-viejo | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design]] |
-| 2026-07-29-cierre-prelanzamiento-pdc | revisar | [[docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design]] |
-| 2026-07-29-despliegue-pdc-v2-produccion | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-despliegue-pdc-v2-produccion-design]] |
-| 2026-07-29-equipo-alquilado-comprado | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-equipo-alquilado-comprado-design]] · [[docs/superpowers/plans/2026-07-29-equipo-alquilado-comprado]] |
-| 2026-07-29-flujo-caja-desembolsos | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-flujo-caja-desembolsos-design]] |
-| 2026-07-29-impacto-reimport-presupuesto | revisar | [[docs/superpowers/specs/2026-07-29-impacto-reimport-presupuesto-design]] |
-| 2026-07-29-impacto-reimport-y-tamiz-presupuesto | revisar | [[docs/superpowers/plans/2026-07-29-impacto-reimport-y-tamiz-presupuesto]] |
-| 2026-07-29-pdc-b1-seguimiento | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-pdc-b1-seguimiento-design]] |
-| 2026-07-29-rematching-reprogramacion | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-rematching-reprogramacion-design]] |
-| 2026-07-29-subpaquetes-obra | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-subpaquetes-obra-design]] |
-| 2026-07-29-tamiz-presupuesto | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-tamiz-presupuesto-design]] |
-| 2026-07-29-unificacion-repos | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-29-unificacion-repos-design]] |
-| 2026-07-30-dev-door | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-30-dev-door-design]] |
-| 2026-07-30-shell-layout-design-system | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-30-shell-layout-design-system-design]] |
-| 2026-07-31-cierre-de-diseno-impeccable | ejecutado (inferido) | [[docs/superpowers/plans/2026-07-31-cierre-de-diseno-impeccable]] |
-| 2026-07-31-ui-audit-and-repair-plan | ejecutado (inferido) | [[docs/superpowers/specs/2026-07-31-ui-audit-and-repair-plan-design]] |
-| 2026-08-01-ui-audit-core-lps-ops | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design]] |
-| 2026-08-01-ui-audit-core-lps-ops-plan | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-01-ui-audit-core-lps-ops-plan]] |
-| 2026-08-03-admin-dev-door | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-admin-dev-door-design]] |
-| 2026-08-03-arquitectura-en-la-wiki | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design]] |
-| 2026-08-03-cierre-dark-mode | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-cierre-dark-mode-design]] |
-| 2026-08-03-cierre-dark-mode-fases-0-3 | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-03-cierre-dark-mode-fases-0-3]] |
-| 2026-08-03-lint-wiki-memoria | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design]] |
-| 2026-08-03-pg-chip-de-estado | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-03-pg-chip-de-estado]] |
-| 2026-08-03-reparto-trabajo-pendiente | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design]] |
-| 2026-08-03-saneamiento-deudas-usabilidad | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-03-saneamiento-deudas-usabilidad-design]] · [[docs/superpowers/plans/2026-08-03-saneamiento-deudas-usabilidad]] |
-| 2026-08-03-usabilidad-altas-y-medias | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias]] |
-| 2026-08-04-biblia-de-flujos | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-04-biblia-de-flujos-design]] |
-| 2026-08-04-biblia-t1-transversal | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-biblia-t1-transversal]] |
-| 2026-08-04-biblia-t2-cascada-lps | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps]] |
-| 2026-08-04-biblia-t3-pdc | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]] |
-| 2026-08-04-biblia-t4-soporte | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-biblia-t4-soporte]] |
-| 2026-08-04-biblia-t5-lectura | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-biblia-t5-lectura]] |
-| 2026-08-04-c1-retiro-pdc-viejo | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo]] |
-| 2026-08-04-cierre-dark-mode-campana-decisiones | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design]] · [[docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones]] |
-| 2026-08-04-cierre-version-1-1-0-design-system | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design]] · [[docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system]] |
-| 2026-08-04-semana-en-sesion-solo-por-navegacion | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion]] |
-| 2026-08-06-adopcion-logo-construccion | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design]] · [[docs/superpowers/plans/2026-08-06-adopcion-logo-construccion]] |
-| 2026-08-06-cierre-hallazgos-seguridad-biblia | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design]] · [[docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia]] |
-| 2026-08-06-pdc-filtros-y-buscadores | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-06-pdc-filtros-y-buscadores-design]] · [[docs/superpowers/plans/2026-08-06-pdc-filtros-y-buscadores]] |
-| 2026-08-07-f1-destrabar-viewport-movil | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil]] |
-| 2026-08-07-f2a-1-precondiciones-evidencia-movil | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil]] |
-| 2026-08-07-f2a-2a-deudas-de-arranque | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-07-f2a-2a-deudas-de-arranque]] |
-| 2026-08-07-f2a-piloto-movil-programacion | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design]] |
-| 2026-08-07-reapertura-movil-y-tema-claro | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design]] |
-| 2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion]] |
-| 2026-08-10-frente-0-higiene-y-decisiones | revisar | [[docs/superpowers/plans/2026-08-10-frente-0-higiene-y-decisiones]] |
-| 2026-08-10-frente-1a-seguridad-y-permisos | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos]] |
-| 2026-08-10-frente-1b-cascada-lps | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps]] |
-| 2026-08-10-programa-cierre-pendientes | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design]] |
-| 2026-08-10-runner-tests-php | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-10-runner-tests-php-design]] |
-| 2026-08-11-buttons-important-leyenda | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design]] · [[docs/superpowers/plans/2026-08-11-buttons-important-leyenda]] |
-| 2026-08-11-cierre-hasta-produccion | revisar | [[docs/superpowers/plans/2026-08-11-cierre-hasta-produccion]] |
-| 2026-08-11-contadores-cero | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-11-contadores-cero-design]] · [[docs/superpowers/plans/2026-08-11-contadores-cero]] |
-| 2026-08-11-contrato-estados-modulo-fantasma | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design]] · [[docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma]] |
-| 2026-08-11-frente-1c-pulido-a11y-y-texto | revisar | [[docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto]] |
-| 2026-08-11-plan-cierre-hasta-produccion | revisar | [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design]] |
-| 2026-08-11-semana-fija-visual | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-11-semana-fija-visual-design]] · [[docs/superpowers/plans/2026-08-11-semana-fija-visual]] |
-| 2026-08-11-vocabulario-estados-cascada | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design]] · [[docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada]] |
-| 2026-08-12-espejo-produccion-a-pruebas | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-12-espejo-produccion-a-pruebas-design]] |
-| 2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje]] |
-| 2026-08-13-ocultar-control-tower | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-13-ocultar-control-tower-design]] · [[docs/superpowers/plans/2026-08-13-ocultar-control-tower]] |
-| 2026-08-14-fixture-ci-semanal-roles | revisar | [[docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design]] · [[docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles]] |
-| 2026-08-14-shell-menu-flotante-responsive | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design]] · [[docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive]] |
-| 2026-08-14-tarjeta-movil-e2bis | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis]] |
-| 2026-08-18-espacio-cuenta-siteground | revisar | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground]] |
-| 2026-08-18-wiki-v2-visual | ejecutado (Fase 0b, seis tandas, publicadas) | [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]] · [[docs/superpowers/plans/2026-08-18-wiki-v2-visual]] |
-| 2026-08-19-bug-coloreado-severidad | ejecutado | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad]] |
-| 2026-08-19-ds-f0-auditoria-total | ejecutado (DS-F0 cerrada, `567e566e`) | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total]] |
-| 2026-08-19-ds-f1a-estado | ejecutado | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado]] |
-| 2026-08-19-estados-fuera-de-ventana | ejecutado | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana]] |
-| 2026-08-19-estados-severidad-contrato | retirado | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato]] |
-| 2026-08-19-migracion-estados | ejecutado (prepara; el apply no corre aquí) | [[docs/superpowers/plans/2026-08-19-migracion-estados]] |
-| 2026-08-19-organizar-la-casa | en curso | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design]] |
-| 2026-08-19-publicar-sh-invariante-de-montaje | ejecutado | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design]] |
-| 2026-08-19-runtime-budgets-al-ci | en curso | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci]] |
+| El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
+| DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
+| DS-F1a · La escala de estado: vocabulario y lectura — diseño | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado|plan]] | — |
+| «Fuera de Ventana» en los dos calculadores | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana|plan]] | — |
+| Estados, severidad y color — el contrato — diseño | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design|spec]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato|plan]] | — |
+| Migración de la columna Estado | [[docs/superpowers/plans/2026-08-19-migracion-estados|plan]] | — |
+| Organizar la casa — el repo y sus sesiones | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design|spec]] | — |
+| publicar.sh: el invariante es el montaje, no el nombre del proyecto — diseño | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design|spec]] | — |
+| runtime-budgets al CI, recortado a andamio — diseño | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|spec]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci|plan]] | — |
+| Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design|spec]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground|plan]] | — |
+| Wiki v2 — visual, etiquetada, misma metodología | [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design|spec]] · [[docs/superpowers/plans/2026-08-18-wiki-v2-visual|plan]] | — |
+| Diseño: el fixture aislado alcanza para programacion-semanal-roles-phases | [[docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design|spec]] · [[docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles|plan]] | — |
+| Menú flotante del shell por debajo de 1180 px | [[docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design|spec]] · [[docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive|plan]] | — |
+| Tarjeta móvil E2-bis: plan de implementación | [[docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis|plan]] | — |
+| F2a-2b-2 — Extracción de reglas, umbral único y montaje condicional: plan de implementación | [[docs/superpowers/plans/2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje|plan]] | — |
+| Ocultar Control Tower de la navegación, dejándolo accesible a Admin | [[docs/superpowers/specs/2026-08-13-ocultar-control-tower-design|spec]] · [[docs/superpowers/plans/2026-08-13-ocultar-control-tower|plan]] | — |
+| Espejo de producción → local → pruebas (2026-08-12) | [[docs/superpowers/specs/2026-08-12-espejo-produccion-a-pruebas-design|spec]] | — |
+| Los !important de .pdc-legend-item en buttons.css — spec | [[docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design|spec]] · [[docs/superpowers/plans/2026-08-11-buttons-important-leyenda|plan]] | — |
+| Plan de cierre hasta producción | [[docs/superpowers/plans/2026-08-11-cierre-hasta-produccion|plan]] | — |
+| Ocultar las etiquetas contadoras que marcan cero — diseño | [[docs/superpowers/specs/2026-08-11-contadores-cero-design|spec]] · [[docs/superpowers/plans/2026-08-11-contadores-cero|plan]] | — |
+| Retirar del contrato de estados el módulo fantasma programa-general-actualizar — spec | [[docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design|spec]] · [[docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma|plan]] | — |
+| Frente 1 · Tanda 1C — Pulido visual, accesibilidad y texto: plan de implementación | [[docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto|plan]] | — |
+| La aserción de la marca del carril comprueba que se vea, no que declare un filtro | [[docs/archive/superpowers/specs/2026-08-11-marca-carril-visible-design|spec]] · [[docs/archive/superpowers/plans/2026-08-11-marca-carril-visible|plan]] | sí |
+| PHPUnit incremental, conviviendo con la suite de scripts | [[docs/archive/superpowers/specs/2026-08-11-phpunit-incremental-design|spec]] · [[docs/archive/superpowers/plans/2026-08-11-phpunit-incremental|plan]] | sí |
+| Plan de cierre hasta producción — diseño | [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design|spec]] | — |
+| Fijar la semana en la prueba visual de Programación Intermedia — diseño | [[docs/superpowers/specs/2026-08-11-semana-fija-visual-design|spec]] · [[docs/superpowers/plans/2026-08-11-semana-fija-visual|plan]] | — |
+| Unificar los vocabularios de estado de la cascada — spec | [[docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design|spec]] · [[docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada|plan]] | — |
+| Frente 0 — Higiene y decisiones: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-0-higiene-y-decisiones|plan]] | — |
+| Frente 1 · Tanda 1A — Seguridad y permisos: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos|plan]] | — |
+| Frente 1 · Tanda 1B — La cascada LPS: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps|plan]] | — |
+| Programa de cierre de pendientes — diseño | [[docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design|spec]] | — |
+| Runner para los tests PHP y su conexión al CI | [[docs/superpowers/specs/2026-08-10-runner-tests-php-design|spec]] · [[docs/archive/superpowers/plans/2026-08-10-runner-tests-php|plan]] | — |
+| F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: plan de implementación | [[docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion|plan]] | — |
+| F1 — Destrabar el viewport móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil|plan]] | — |
+| F2a-1 — Precondiciones de la evidencia móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil|plan]] | — |
+| F2a-2a — Deudas de arranque: plan de implementación | [[docs/superpowers/plans/2026-08-07-f2a-2a-deudas-de-arranque|plan]] | — |
+| F2a — Precondiciones y piloto móvil (Programación Intermedia y Semanal) | [[docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design|spec]] | — |
+| Reapertura de móvil/tablet y tema claro — diseño | [[docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design|spec]] | — |
+| Adopción del logo «Last Planner · línea Construcción» — Diseño | [[docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design|spec]] · [[docs/superpowers/plans/2026-08-06-adopcion-logo-construccion|plan]] | — |
+| Cierre de los hallazgos de seguridad de la biblia de flujos — diseño | [[docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design|spec]] · [[docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia|plan]] | — |
+| Plan de Compras: filtros de columna, buscadores rápidos y selects buscables | [[docs/superpowers/specs/2026-08-06-pdc-filtros-y-buscadores-design|spec]] · [[docs/superpowers/plans/2026-08-06-pdc-filtros-y-buscadores|plan]] | — |
+| La biblia de flujos: describir, verificar y auditar el comportamiento de la app | [[docs/superpowers/specs/2026-08-04-biblia-de-flujos-design|spec]] | — |
+| Biblia de flujos · Tanda T1 (transversal) | [[docs/superpowers/plans/2026-08-04-biblia-t1-transversal|plan]] | — |
+| Biblia de flujos · Tanda T2 (cascada LPS) | [[docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps|plan]] | — |
+| Biblia de flujos · Tanda T3 (PDC — Plan de Compras v2) | [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc|plan]] | — |
+| Biblia de flujos · Tanda T4 (soporte) | [[docs/superpowers/plans/2026-08-04-biblia-t4-soporte|plan]] | — |
+| Biblia de flujos · Tanda T5 (lectura) | [[docs/superpowers/plans/2026-08-04-biblia-t5-lectura|plan]] | — |
+| Spec — Campaña de cierre de dark mode: las 54 decisiones convertidas en trabajo | [[docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones|plan]] | — |
+| Cierre de la versión 1.1.0 del design system — Diseño | [[docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system|plan]] | — |
+| Sembrar los conceptos del design system en la wiki | [[docs/archive/superpowers/specs/2026-08-04-conceptos-design-system-en-la-wiki-design|spec]] | sí |
+| La semana en sesión solo la escribe una navegación | [[docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion|plan]] | — |
+| Puerta de servicio de desarrollo para admin/ | [[docs/superpowers/specs/2026-08-03-admin-dev-door-design|spec]] | — |
+| Arquitectura del proyecto en la wiki, generada desde el código | [[docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-arquitectura-en-la-wiki|plan]] | — |
+| Cierre de dark mode — diseño validado | [[docs/superpowers/specs/2026-08-03-cierre-dark-mode-design|spec]] | — |
+| Cierre de dark mode | [[docs/superpowers/plans/2026-08-03-cierre-dark-mode-fases-0-3|plan]] | — |
+| Pasada de lint sobre la wiki memoria/ | [[docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-lint-wiki-memoria|plan]] | — |
+| Chip de estado de Programa General | [[docs/superpowers/plans/2026-08-03-pg-chip-de-estado|plan]] | — |
+| Reparto del trabajo pendiente tras el saneamiento del goal de tablas | [[docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design|spec]] | — |
+| Saneamiento de las deudas abiertas del goal de usabilidad | [[docs/superpowers/specs/2026-08-03-saneamiento-deudas-usabilidad-design|spec]] · [[docs/superpowers/plans/2026-08-03-saneamiento-deudas-usabilidad|plan]] | — |
+| Usabilidad: altas y medias | [[docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias|plan]] | — |
+| Cierre de los tres pendientes de la wiki memoria/ | [[docs/archive/superpowers/specs/2026-08-03-wiki-veracidad-y-grafo-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-wiki-veracidad-y-grafo|plan]] | sí |
+| Wiki de proyecto en Obsidian (patrón LLM Wiki) | [[docs/archive/superpowers/specs/2026-08-02-obsidian-memoria-proyecto-design|spec]] | sí |
+| Impeccable Audit & Refactor Design: Core LPS & Ops | [[docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design|spec]] | — |
+| LPS Core & Ops UI Refactor Implementation Plan | [[docs/superpowers/plans/2026-08-01-ui-audit-core-lps-ops-plan|plan]] | — |
 
-## Notas
+### julio de 2026
 
-- `2026-08-19-organizar-la-casa`: spec sin commitear todavía (`docs/superpowers/specs/2026-08-19-organizar-la-casa-design.md`
-  está `??` en `git status`); su paso 2 (`docs/coordinacion-sesiones.md`) ya existe en el repo desde
-  el 2026-08-10, su paso 1 (registros versionados en `decisiones/`) sigue untracked.
-- `2026-08-19-publicar-sh-invariante-de-montaje` es el único de hoy confirmado `ejecutado` sin
-  calificar: el commit `b334604e` en `main` coincide exactamente con lo que pide el spec.
-- Los 9 marcados `revisar` no tienen evidencia de haberse completado y su texto menciona
-  cancelación/no-ejecución en algún punto — antes de asumir `ejecutado`, ábrelos.
+| Trabajo | Documentos | Archivado |
+|---|---|---|
+| Plan de Cierre de Diseño e Integración Impeccable | [[docs/superpowers/plans/2026-07-31-cierre-de-diseno-impeccable|plan]] | — |
+| Auditoría Visual Canónica y Plan de Reparación End-to-End (DESIGN.md + *Refactoring UI*) | [[docs/superpowers/specs/2026-07-31-ui-audit-and-repair-plan-design|spec]] | — |
+| Plan de Reparación UI End-to-End (Auditoría 10/10) | [[docs/archive/superpowers/plans/2026-07-31-ui-audit-repair-plan|plan]] | sí |
+| Puerta de servicio de desarrollo (DevDoor) | [[docs/superpowers/specs/2026-07-30-dev-door-design|spec]] | — |
+| Diseñó — Unificación de Shell, Layout y Design System | [[docs/superpowers/specs/2026-07-30-shell-layout-design-system-design|spec]] · [[docs/archive/superpowers/plans/2026-07-30-shell-layout-design-system|plan]] | — |
+| PDC v2 — Los cuatro diferidos de A4.1 (configuración de pasos) — Design | [[docs/superpowers/specs/2026-07-29-a41-diferidos-configuracion-pasos-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-a41-diferidos-configuracion-pasos|plan]] | — |
+| PDC v2 — Ayuda dentro de la aplicación — Design | [[docs/superpowers/specs/2026-07-29-ayuda-in-app-pdc-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-ayuda-in-app-pdc|plan]] | — |
+| PDC v2 · Fase B2 (primera mitad) — Semáforos y look-ahead de contratación — Design | [[docs/superpowers/specs/2026-07-29-b2-semaforos-lookahead-design|spec]] | — |
+| PDC v2 · B2 (primera mitad) — Vencimientos y semáforo del plan | [[docs/archive/superpowers/plans/2026-07-29-b2-vencimientos-lookahead|plan]] | sí |
+| PDC v2 · Fase B3 — El plan de compras en la Torre de Control — Design | [[docs/superpowers/specs/2026-07-29-b3-torre-control-pdc-design|spec]] · [[docs/archive/superpowers/plans/2026-07-30-b3-torre-control-pdc|plan]] | — |
+| PDC · Fase C1 — Retirar el PDC viejo, y qué hacer con su dark a medias — Design | [[docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design|spec]] · [[docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo|plan]] | — |
+| PDC v2 — Cierre pre-lanzamiento: los pendientes que bloquean decir «verificado» — Design | [[docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design|spec]] | — |
+| PDC v2 — Despliegue a producción — Design | [[docs/superpowers/specs/2026-07-29-despliegue-pdc-v2-produccion-design|spec]] | — |
+| PDC v2 — Equipo alquilado vs equipo comprado — Design | [[docs/superpowers/specs/2026-07-29-equipo-alquilado-comprado-design|spec]] · [[docs/superpowers/plans/2026-07-29-equipo-alquilado-comprado|plan]] | — |
+| PDC v2 — Flujo de caja: curva de desembolsos por mes — Design | [[docs/superpowers/specs/2026-07-29-flujo-caja-desembolsos-design|spec]] | — |
+| PDC v2 — Informe de impacto al recargar el presupuesto — Design | [[docs/superpowers/specs/2026-07-29-impacto-reimport-presupuesto-design|spec]] | — |
+| Impacto al recargar el presupuesto + tamiz y cifras honestas | [[docs/superpowers/plans/2026-07-29-impacto-reimport-y-tamiz-presupuesto|plan]] | — |
+| PDC v2 · Fase B1 — Seguimiento al Plan de Compras — Design | [[docs/superpowers/specs/2026-07-29-pdc-b1-seguimiento-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-pdc-b1-seguimiento|plan]] | — |
+| PDC v2 · Fase B2 (segunda mitad) — Re-matching al reprogramar — Design | [[docs/superpowers/specs/2026-07-29-rematching-reprogramacion-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-rematching-reprogramacion|plan]] | — |
+| Retiro del modo legacy (USE_GLOBAL_TABLES=false / tablas zleg_*) | [[docs/archive/superpowers/specs/2026-07-29-retiro-modo-legacy-design|spec]] | sí |
+| PDC v2 — Subpaquetes: del paquete de preconstrucción al contrato real de la obra — Design | [[docs/superpowers/specs/2026-07-29-subpaquetes-obra-design|spec]] | — |
+| PDC v2 — El presupuesto se explica solo: tamiz y cifras honestas — Design | [[docs/superpowers/specs/2026-07-29-tamiz-presupuesto-design|spec]] | — |
+| Unificar plan-de-compras dentro de lastplanneraia-construccion — diseño | [[docs/superpowers/specs/2026-07-29-unificacion-repos-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-unificacion-repos|plan]] | — |
+| A4.1 — Pasos del proceso de contratación configurables por proyecto | [[docs/archive/superpowers/specs/2026-07-28-a41-pasos-configurables-design|spec]] · [[docs/archive/superpowers/plans/2026-07-28-a41-pasos-configurables|plan]] | sí |
+| Adoptar los tonos de PDC y el punto de nivel en todos los chips | [[docs/superpowers/plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel|plan]] | — |
+| Invertir la paleta de estado del design system a oscuro | [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design|spec]] · [[docs/superpowers/plans/2026-07-28-paleta-estado-oscura|plan]] | — |
+| PDC A4 → preparar B1: upsert de pasos y responsable como usuario | [[docs/archive/superpowers/plans/2026-07-28-pdc-preparar-b1|plan]] | sí |
+| Responsable de paquete como usuario | [[docs/archive/superpowers/plans/2026-07-28-pdc-responsable-usuario|plan]] | sí |
+| Responsable de paquete: de texto libre a usuario del proyecto | [[docs/superpowers/specs/2026-07-28-responsable-usuario-proyecto-design|spec]] · [[docs/archive/superpowers/plans/2026-07-28-responsable-usuario-proyecto|plan]] | — |
+| A4 · El plan de compras con fechas — diseño | [[docs/archive/superpowers/specs/2026-07-27-a4-plan-fechas-design|spec]] · [[docs/archive/superpowers/plans/2026-07-27-a4-plan-fechas|plan]] | sí |
+| Control Tower en el shell dark — diseño | [[docs/archive/superpowers/specs/2026-07-24-control-tower-shell-dark-design|spec]] · [[docs/superpowers/plans/2026-07-24-control-tower-shell-dark|plan]] | — |
+| Fase A1.5: Visor del Presupuesto | [[docs/archive/superpowers/plans/2026-07-23-a15-visor-presupuesto|plan]] | sí |
+| Diseño: Fase A1.6 — Comparativo de versiones del presupuesto | [[docs/superpowers/specs/2026-07-23-a16-comparativo-versiones-design|spec]] · [[docs/archive/superpowers/plans/2026-07-23-a16-comparativo-versiones|plan]] | — |
+| Diseño: Fase A1.7 — Versionamiento inteligente del importador | [[docs/superpowers/specs/2026-07-23-a17-versionamiento-inteligente-design|spec]] · [[docs/archive/superpowers/plans/2026-07-23-a17-versionamiento-inteligente|plan]] | — |
+| Fase A2: Maestro de Insumos | [[docs/archive/superpowers/plans/2026-07-23-a2-maestro-insumos|plan]] | sí |
+| Diseño: Fase A2.5 — Importador del maestro SINCO | [[docs/superpowers/specs/2026-07-23-a25-importador-maestro-sinco-design|spec]] · [[docs/archive/superpowers/plans/2026-07-23-a25-importador-maestro-sinco|plan]] | — |
+| Diseño: Fase A3 — Paquetes de contratación + asistente de empaquetamiento | [[docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design|spec]] · [[docs/archive/superpowers/plans/2026-07-23-a3-paquetes-contratacion|plan]] | — |
+| CSRF en endpoints legacy de mutación de semanas | [[docs/archive/superpowers/plans/2026-07-23-csrf-endpoints-semanas|plan]] | sí |
+| Follow-ups del review final A2 (maestro de insumos) | [[docs/archive/superpowers/plans/2026-07-23-pdc-a2-followups|plan]] | sí |
+| Diseño: Fase A1 — Importador de presupuesto | [[docs/archive/superpowers/specs/2026-07-22-a1-importador-presupuesto-design|spec]] · [[docs/archive/superpowers/plans/2026-07-22-a1-importador-presupuesto|plan]] | sí |
+| Fundación PDC v2 (isla React en lps-aia) | [[docs/archive/superpowers/plans/2026-07-22-fundacion-pdc-v2|plan]] | sí |
+| Colapsado del sidebar como primitiva canónica adoptada en el laboratorio | [[docs/superpowers/specs/2026-07-22-lab-colapsado-primitiva|spec]] · [[docs/superpowers/plans/2026-07-22-lab-colapsado-primitiva|plan]] | — |
+| Roadmap PDC v2 — producto en 2 submódulos y fases de desarrollo | [[docs/superpowers/plans/2026-07-22-roadmap-pdc-v2|plan]] | — |
+| Semanas del Proyecto en el sidebar canónico: flyout de gestión con crear/eliminar | [[docs/archive/superpowers/specs/2026-07-22-semanas-sidebar-design|spec]] | sí |
+| Flyout "Semanas del Proyecto" con crear/eliminar | [[docs/archive/superpowers/plans/2026-07-22-semanas-sidebar-flyout|plan]] | sí |
+| Diseño: stack del módulo Plan de Compras (PDC v2) | [[docs/superpowers/specs/2026-07-21-stack-plan-de-compras-design|spec]] | — |
+| Sidebar canónico del laboratorio | [[docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio|plan]] | — |
+
+<!-- generado:fin -->

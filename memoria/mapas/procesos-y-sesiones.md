@@ -28,8 +28,8 @@ trabajo ajeno puede romper un verde propio sin tocar tu diff, y quien hizo el tr
 ## Dónde está el estado
 
 - [[estado]] — el estado real de los goals, leído de cada `goal.md`.
-- [[cola-de-pendientes]] — fuente única de pendientes.
-- [[registro-de-trabajo]] — catálogo del trabajo fechado, spec con su plan.
+- [[TASKS|Cola de pendientes]] — fuente única de pendientes.
+- [[IMPLEMENTATION_PLAN_INVENTORY|Registro de trabajo]] — catálogo del trabajo fechado, spec con su plan.
 
 ## Trampas — las formas en que un verde miente
 
