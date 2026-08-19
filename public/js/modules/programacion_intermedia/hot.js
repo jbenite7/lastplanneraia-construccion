@@ -554,14 +554,19 @@
   //
   // `neutral` (fila sin clasificar) no toma tinte de estado: usa la superficie
   // elevada, que no es un matiz.
+  // Los NIVELES se revisaron uno por uno con el usuario el 2026-08-18 y cuatro
+  // de los ocho cambiaron. Los matices NO se tocaron: siguen siendo los ocho del
+  // catalogo, uno por estado. La procedencia de cada nivel —cual decidio el
+  // usuario y cuales propuso el implementador y el confirmo— esta en
+  // goals/bug-coloreado-severidad/respuestas-ds-f1.md, y se conserva a proposito.
   var statePresentation = {
     'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
     'blocked-overdue': { level: 'urgent', hue: 'orange' },
-    'blocked-due': { level: 'attention', hue: 'violet' },
-    'alert-1-week': { level: 'urgent', hue: 'amber' },
+    'blocked-due': { level: 'urgent', hue: 'violet' },
+    'alert-1-week': { level: 'attention', hue: 'amber' },
     'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
-    'alert-4-6-weeks': { level: 'attention', hue: 'neutral' },
-    'execution-blocked': { level: 'attention', hue: 'blue' },
+    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral' },
+    'execution-blocked': { level: 'urgent', hue: 'blue' },
     'liberated-control': { level: 'healthy', hue: 'green' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
