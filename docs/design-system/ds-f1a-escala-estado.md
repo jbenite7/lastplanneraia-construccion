@@ -75,7 +75,7 @@ la base. Un contrato cuya etiqueta no case con el literal guardado no puede cruz
 | `Terminada Antes` | Controlado | 0,6% | nadie hoy |
 | `A Tiempo` | Controlado | 0,4% | nadie hoy |
 | `Adelantada` | Controlado | 0,0% | nadie hoy |
-| `Fuera de Ventana` | *sin gravedad* | 24,2% | nadie hoy |
+| `Fuera de Ventana` | *sin gravedad* | 24,2% | `pg_calculate_status` |
 | `Sin Datos` | *sin gravedad* | 0,1% | `pg_calculate_status` |
 
 ### «Quién lo produce» no es un dato de archivo
@@ -115,12 +115,29 @@ semana actual — es decir, fuera de `PG_LOOKAHEAD_DAYS = 42`.
   estado, y son la causa de las 7 705 filas «vacías» — el 100% de ellas tiene `Titulo = 1`.
 - **No implementa CSS.** Construir los dos canales es DS-F2.
 
-## Pendiente de decisión del usuario
+## `Fuera de Ventana` es un valor persistido
 
-**Si `Fuera de Ventana` es etiqueta de pantalla o valor persistido.** No es un detalle:
+**Decisión del usuario, 2026-08-19.** No es una etiqueta de presentación: la columna `Estado` lo
+guarda, y desde ese día **los dos calculadores lo producen** con la regla de offset ≥ 7 semanas —
+`pg_calculate_status()` y `LpsService::calculateGeneralStatus()`.
 
-- **Etiqueta de pantalla** — la columna `Estado` sigue guardando lo que guarda y la traducción vive
-  en la capa de presentación. Barato y reversible; a cambio, suma un vocabulario en vez de restarlo.
-- **Valor persistido** — `pg_calculate_status` pasa a producirlo y las 12 338 filas de
-  `No Requerida` se migran. Es una migración sobre 16 proyectos, con respaldo verificable, dry-run
-  y gate de tablas globales.
+La decisión se tomó **conociendo su alcance real**, que es mayor de lo que parecía: la regla no
+reclasifica las 12 338 filas que hoy llevan la etiqueta, sino **26 084**, porque 13 664 actividades
+que hoy se llaman `Actividad Futura` también empiezan a siete o más semanas. Tras la migración,
+`Fuera de Ventana` pasa de 24,2% a **~51%** de la tabla y `Actividad Futura` baja a ~6,8%.
+
+> **Los porcentajes de la tabla de arriba son los del reparto ANTERIOR a la migración**, medidos
+> sobre `1af2e9ac`. Se conservan porque describen el estado real de los datos hasta que el frente
+> de migración corra. Ese frente los actualizará.
+
+## Los estados sin nivel de gravedad
+
+`Fuera de Ventana` y `Sin Datos` declaran `nivel: null`, y el contrato lo dice con texto propio
+porque tras este frente son **~51% de la tabla**: no es un caso de borde.
+
+- **No dibujan barra.** Un estado sin nivel no pide acción.
+- **Es la misma ausencia visual que `controlado`, y no significa lo mismo.** `controlado` es «va
+  bien»; `null` es «esto no se mide por urgencia». Un cronograma con la mitad de sus actividades
+  fuera de ventana no está medio sano: está medio fuera de la conversación.
+- **La distinción se lee en el eje matiz**, que ya existe en el fondo — **no en un canal nuevo**.
+  El fondo es el canal de identidad y horizonte, y distinguir esto es exactamente su tarea.
