@@ -179,6 +179,18 @@ class LpsService
             return 'En Curso';
         }
 
+        // Va ANTES de los dos `return 'Actividad Futura'` de este metodo, no entre ellos: el
+        // primero cubre el caso sin avance con inicio posterior a la semana, que es justamente
+        // por donde sale una actividad lejana. Colocarla despues la dejaba inalcanzable para el
+        // caso que viene a clasificar — medido el 2026-08-19, con la prueba en rojo.
+        //
+        // Misma regla que `pg_calculate_status`, y la prueba de paridad de
+        // `tests/unit/EstadoProgramaGeneralTest.php` existe para que no vuelvan a separarse.
+        $dias = (int) floor(($fiTs - $fsTs) / 86400);
+        if ((int) floor($dias / 7) >= 7) {
+            return 'Fuera de Ventana';
+        }
+
         if ($ej <= 0.001 && $fiTs > $feTs) {
             return 'Actividad Futura';
         }

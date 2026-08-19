@@ -56,6 +56,14 @@ final class EstadoProgramaGeneralTest extends TestCase
             'sin fechas con avance del 5%: aqui los dos discrepan hoy' => [
                 ['titulo' => 0, 'ej' => 0.05, 'fi' => null, 'ff' => null,
                  'fs' => '2026-08-17', 'fe' => '2026-08-23'], 'En Curso'],
+            // El borde exacto de la regla de 7+ semanas, probado por los dos lados. Sobre la
+            // semana del 17-ago: 2026-09-28 son 42 dias = offset 6, y 2026-10-05 son 49 = offset 7.
+            'empieza en 6 semanas: sigue siendo actividad futura' => [
+                ['titulo' => 0, 'ej' => 0.0, 'fi' => '2026-09-28', 'ff' => '2026-10-09',
+                 'fs' => '2026-08-17', 'fe' => '2026-08-23'], 'Actividad Futura'],
+            'empieza en 7 semanas justas: fuera de ventana' => [
+                ['titulo' => 0, 'ej' => 0.0, 'fi' => '2026-10-05', 'ff' => '2026-10-16',
+                 'fs' => '2026-08-17', 'fe' => '2026-08-23'], 'Fuera de Ventana'],
             'empieza en tres semanas: actividad futura' => [
                 ['titulo' => 0, 'ej' => 0.0, 'fi' => '2026-09-07', 'ff' => '2026-09-18',
                  'fs' => '2026-08-17', 'fe' => '2026-08-23'], 'Actividad Futura'],
