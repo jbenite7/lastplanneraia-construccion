@@ -3,10 +3,8 @@
 
 ## Fase del plan
 Plan: docs/superpowers/plans/2026-08-18-wiki-v2-visual.md
-Fase: Fase 1 · Tanda 1 — Esquema y herramientas (base de todo)
-Sha verificado: 5057f877 — re-verificado DESPUES de integrar origin/main (4 commits entrantes).
-`npm run test:wiki` → RC=0 · 55 tests, 0 fallos · «Sin hallazgos. 151 páginas de wiki y 0 de 391 fuentes declaradas.»
-Antes de integrar, sobre 6d3b72f3: RC=0 · 55 tests · 150 páginas y 383 fuentes.
+Fase: Tanda 1 — Esquema y herramientas (base de todo)
+Sha verificado: 0de2f902 (npm run test:wiki → RC=0, 51 tests, «Sin hallazgos. 145 páginas de wiki y 0 de 383 fuentes declaradas.»)
 Presupuesto: ?
 
 ## Objetivo
@@ -44,3 +42,75 @@ Medido el 2026-08-19 sobre `main`: ninguna otra sesión declara estos globs en `
 ## Cadena de herramientas
 - `npm run test:wiki` — la condición de hecho, tal cual la declara el plan.
 - `node --test tests/wiki/*.test.mjs` — pruebas del módulo, sin el lint, para iterar rápido.
+
+## Publicaciones
+
+- **2026-08-19 · `f705e549` → `origin/main`.** Un solo push, con `bash scripts/publicar.sh`.
+  Verificación previa sobre ese mismo sha, los tres gates del script en verde:
+
+  ```
+  Verificando sobre f705e549…
+    ✔ design-system:static               RC=0
+    ✔ contrato piloto PG                 RC=0
+    ✔ wiki (lint + veracidad)            RC=0
+  Publicando…
+     720b27b9..f705e549  HEAD -> main
+  ```
+
+  Confirmado con `git fetch origin`: `git rev-parse origin/main` = `f705e549`, el sha medido.
+
+  Para verificar hubo que apuntar el contenedor compartido a este worktree
+  (`LPS_CODE_ROOT="$(pwd)" docker compose up -d app`), porque `publicar.sh` deniega cuando `app`
+  monta otro árbol. **Devuelto a la raíz al terminar**, comprobado por `docker inspect`. Las otras
+  sesiones vivas durante esa ventana no podían recibir un verde falso: el mismo invariante las
+  habría denegado a ellas.
+
+  El worktree nacía sin `.env` (está en `.gitignore`); se enlazó al de la raíz, no se copió.
+
+## Cierre
+
+**Fase 1 · Tanda 1 cerrada el 2026-08-19 sobre `f705e549`.** Los cuatro puntos del plan, hechos:
+
+1. `docs/wiki-operacion.md` reescrito al esquema v2 — tres capas con el campo `capa`, diecisiete
+   `tipo`, ocho `tags`, y la regla nueva de plugins de comunidad («amplifican, no sostienen»).
+2. `scripts/wiki-lint.mjs` v2 — lintea las tres capas con reglas distintas: a las fuentes solo el
+   frontmatter, nunca el cuerpo. Bandera `--estricto` para cuando la Tanda 2 termine.
+3. `scripts/wiki-frontmatter.mjs` + `.reglas.mjs` — backfill idempotente, ensayo por defecto,
+   `--escribir` explícito y `--solo` para ir por tandas.
+4. Cinco moldes en `memoria/templates/` (`decision`, `trampa`, `concepto`, `spec`, `plan`).
+
+Condición de hecho, cumplida: `npm run test:wiki` → RC=0, 55 tests, «Sin hallazgos. 151 páginas de
+wiki y 0 de 391 fuentes declaradas», con la wiki intacta y **cero fuentes tocadas**; y
+`node scripts/wiki-frontmatter.mjs` imprimiendo el censo de las 391 sin escribir nada.
+
+### Lo que este frente descubrió y la Tanda 2 necesita
+
+- **Censo:** 391 fuentes. Por tipo deducido: 92 `plan` · 79 `spec` · 74 `guia` · 64 `goal-doc` ·
+  35 `reporte` · 29 `evidencia` · 7 `contrato` · 3 `biblia`.
+- **Lo que las reglas NO pueden deducir:** 4 sin fecha · **217 sin resumen** · 29 sin área.
+- **`DESIGN.md` ya tenía frontmatter, y es de otra herramienta** (el linter Stitch y el panel live
+  leen ahí los tokens). Por eso una fuente entra al lint solo si declara `capa:` —tener un bloque
+  `---` no es declararse parte de este esquema— y por eso el backfill **fusiona** en vez de
+  reescribir. Hay una prueba que fija ese comportamiento.
+
+### Decisión abierta que hereda la Tanda 2
+
+**¿`resumen` obligatorio en fuentes?** Hoy el lint no lo exige (sí `tipo`, `estado`, `fecha`).
+Si pasa a exigirse, la Tanda 2 deja de ser mecánica y se convierte en 217 decisiones de redacción.
+Es una línea en `wiki-lint.mjs` en cualquiera de los dos sentidos. Escalada a la coordinadora el
+2026-08-19; sin respuesta al cerrar este frente.
+
+### Residuo
+
+`decisiones/wiki-t1-coordinadora.md` quedó vacío: lo creó `cas-frente.sh` al deducir mal el rol de
+esta sesión (sin MCP en su cascada). La cola real es `decisiones/wiki-t1-ejecutor.md`. No se borra
+desde aquí: borrar es de la lista que bloquea.
+
+### Nota de infraestructura
+
+El módulo CAS no existe en la versión instalada del plugin (`loop-engineering/0.3.0`); solo en el
+caché de `0.2.0`, y `.claude/cas-root` apunta a una ruta que ya no está. Los gates de rutas,
+presupuesto y push **no estuvieron activos** durante este frente: el cumplimiento fue disciplina,
+no mecánica. El frente se declaró con el `cas-frente.sh` de 0.2.0 usando `--sin-plan`, porque ese
+script solo reconoce encabezados `Task N`/`Fase N` y el plan usaba `Tanda N` — lo que otra sesión
+corrigió después en `7b7c2b9d`.
