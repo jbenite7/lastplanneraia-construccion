@@ -1053,7 +1053,17 @@
       var cells = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
       for (var col = 0; col < cells.length; col++) {
         applyPIRowStateClass(cells[col], meta.rowClass);
-        applyPIRowSeverityAttr(cells[col], meta.rowSeverity);
+        // El filete va SOLO en la primera celda, no en todas. La clase de
+        // estado si se replica en las 17 -es el fondo, y el fondo es de la fila
+        // entera-, pero el filete es UNA marca en el borde de la fila. Puesto en
+        // cada celda dibuja diecisiete barras verticales y la tabla se lee como
+        // un pijama; se vio en pantalla el 2026-08-19 antes de aceptarlo.
+        //
+        // Va en la celda y no solo en el `<tr>` porque con `border-collapse` el
+        // `box-shadow` de una fila no pinta de forma fiable. El `<tr>` conserva
+        // el atributo igualmente: es el que declara el nivel para quien lea el
+        // DOM o lo pruebe.
+        applyPIRowSeverityAttr(cells[col], col === 0 ? meta.rowSeverity : null);
       }
     }
   }
