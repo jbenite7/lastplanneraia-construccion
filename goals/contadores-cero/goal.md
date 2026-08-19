@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/contadores-cero/goal.md
+resumen: Que las etiquetas contadoras de /programacion-intermedia dejen de ocupar sitio cuando marcan cero, con la vuelta atrás en un solo punto del código. El frente…
+---
+
 # Frente: contadores-cero
 
 ## Objetivo

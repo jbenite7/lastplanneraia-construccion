@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-tanda34-pulido/goal.md
+resumen: Goal — Tandas 3 y 4: la primera impresión y el pulido
+---
+
 # Goal — Tandas 3 y 4: la primera impresión y el pulido
 
 ## El objetivo

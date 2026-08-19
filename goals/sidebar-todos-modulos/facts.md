@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/facts.md
+resumen: Facts — Rollout del shell sidebar a todos los módulos
+---
+
 # Facts — Rollout del shell sidebar a todos los módulos
 
 - Existe un mapa/inventario que, para los 12 módulos con sidebar (PI + los 11 a migrar), indica el estado del shell sidebar: correctamente implementado (declarado en foundation-shell.json + gates verdes + ambos estados) o las brechas pendientes por módulo.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-1-report.md
+resumen: Task 1 — Harness data-driven de verificación del shell sidebar
+---
+
 # Task 1 — Harness data-driven de verificación del shell sidebar
 
 ## Qué hice

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-31
+areas: [proceso]
+fuente: goals/cierre-dark-mode-y-tablas/inventario.md
+resumen: Goal — Cierre de dark mode y ajuste de tablas
+---
+
 # Goal — Cierre de dark mode y ajuste de tablas
 ## Reporte de Inventario y Censo de Estados Semánticos (Fase G0)
 

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/wiki-t2/goal.md
+resumen: Aplicar el backfill de frontmatter a la capa de fuentes, por lotes y con revisión entre uno y otro, usando la herramienta que dejó lista la Fase 1. Al…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: wiki-t2
 
@@ -56,3 +66,67 @@ o en una pasada final sin coste.
 - `node scripts/wiki-frontmatter.mjs --solo <ruta> --escribir` — el lote.
 - `npm run test:wiki` — la condición de hecho.
 - `git diff -U0` filtrado — la prueba de que no se tocó ningún cuerpo.
+
+## Cierre
+
+**Fase 2 · Tanda 2 cerrada el 2026-08-19.** Las 413 fuentes del vault llevan frontmatter del
+esquema v2, y `node scripts/wiki-lint.mjs --estricto` pasa sobre todo el vault:
+
+```
+Sin hallazgos. 151 páginas de wiki y 413 de 413 fuentes declaradas (modo estricto).
+```
+
+**Ningún cuerpo tocado, y no es una promesa sino una cuenta:** `git diff --shortstat` sobre los
+cuatro lotes da `413 files changed, 4171 insertions(+)` y **cero borrados**. Un backfill que solo
+añade no puede haber modificado una línea de contenido.
+
+`DESIGN.md` conserva intacto su frontmatter de otra herramienta (el que leen el linter Stitch y el
+panel live): las claves del esquema se le antepusieron, no lo sustituyeron.
+
+### Cinco defectos que destapó aplicar, no diseñar
+
+El repaso muestral entre lotes es lo que los encontró. Ninguno se maquilló: cada uno se arregló en
+la regla y se volvió a medir, como manda la Posture.
+
+1. **Una cabecera de metadatos no es prosa.** `ROADMAP.md` resumía «Fecha: 2026-03-02» y las specs
+   cogían la cabecera empezando donde acababa la etiqueta.
+2. **La etiqueta de tesis va a media línea, no al principio.** `**Fecha:** … · **Decisión del
+   usuario:** …` — anclarla al inicio dejaba fuera justo los documentos que el arreglo 1 mandaba
+   allí.
+3. **La etiqueta se cortaba al final de la línea:** devolvía «replantear toda la wiki sin perder
+   la», una frase partida a la mitad.
+4. **`campo()` leía la línea siguiente como valor de un campo vacío**, porque `\s*` incluye el
+   salto de línea. Trece archivos con `fecha:` vacía se reportaron como
+   «fecha no ISO: areas: [design-system]». **El defecto venía heredado del lint v1**, donde llevaba
+   sin verse desde que se escribió: nunca hubo un campo vacío hasta este backfill.
+5. **Una línea administrativa sin negritas descartaba el párrafo entero.** `Spec: [enlace]` abre
+   casi todos los planes, y detrás venía la frase buena — «Medido sobre f1f5bd87. 41 !important en
+   7 reglas», tirada junto con la etiqueta. 12 archivos afectados.
+
+Y una carencia de la herramienta que el propio lote convirtió en bloqueo: `--rellenar`, para
+completar las claves escritas pero vacías. El modo normal las respeta a propósito —para no pisar
+lo que escribió una persona— y eso dejaba atrapado un lote aplicado antes de arreglar una regla.
+
+### De dónde salió cada resumen
+
+```
+113  parrafo      el caso normal
+107  titulo       último recurso
+102  etiqueta     los planes, que abren con cabecera administrativa
+ 75  seccion      los goal.md y facts.md
+ 16  ninguno      escritos a mano
+```
+
+Los 17 escritos a mano: `PRODUCT.md`, `AGENTS.md`, `DESIGN.md`, `README.md` y
+`docs/design-system/components.md`, `docs/20260325_general_feature_flags.md`, tres `facts.md`, un
+HANDOFF, y **ocho `goal.md` que son andamiajes con el objetivo sin escribir**. A esos ocho no se
+les inventó un objetivo: su resumen dice exactamente eso, que el andamiaje se creó y nadie lo
+rellenó. Ahora se ven en el catálogo, que es donde deben verse.
+
+### Lo que queda para las tandas siguientes
+
+- **Tanda 3** — retag fino de las 151 páginas de la wiki.
+- **`--estricto` no está enchufado a `npm run test:wiki`.** Se dejó a propósito: encenderlo es una
+  decisión de contrato (a partir de ahí, **toda fuente nueva nace con frontmatter o el gate se
+  pone rojo**), y esa decisión no es de este frente. La verificación de hoy corre el modo normal;
+  el estricto se corre a mano y está en verde.

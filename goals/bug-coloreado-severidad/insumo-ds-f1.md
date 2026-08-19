@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/bug-coloreado-severidad/insumo-ds-f1.md
+resumen: Qué es esto. El frente bug-coloreado-severidad es de diagnóstico y termina aquí; la spec dice que su resultado «es entrada para DS-F1». Este archivo es esa…
+---
+
 # Insumo medido para DS-F1 — rediseño de la escala de estado
 
 **Qué es esto.** El frente `bug-coloreado-severidad` es de diagnóstico y termina aquí; la spec dice

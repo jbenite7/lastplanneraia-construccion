@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-6-actualizar-cronograma.md
+resumen: Que /programa-general-actualizar use el shell sidebar canónico en ambos estados, suprimiendo su navbar superior legacy. El delta clave: recalcular la geometría…
+---
+
 # Task 6 — Migrar Actualizar Cronograma al shell sidebar
 
 ## Objetivo

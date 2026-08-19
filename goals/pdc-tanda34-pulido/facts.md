@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-tanda34-pulido/facts.md
+resumen: Del grilleo del 2026-07-29 (interview-result.json, 14 preguntas, las 14 recomendaciones aceptadas sin divergencias). Todo en la SPA: ninguna migración, ningún…
+---
+
 # Hechos — Tandas 3 y 4: la primera impresión y el pulido
 
 Del grilleo del 2026-07-29 (`interview-result.json`, 14 preguntas, las 14 recomendaciones aceptadas

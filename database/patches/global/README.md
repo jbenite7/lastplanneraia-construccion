@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-06-26
+fuente: database/patches/global/README.md
+resumen: This directory contains global-table equivalents of the per-project SQL patches in ../.
+---
+
 # Global Patch Equivalents
 
 This directory contains global-table equivalents of the per-project SQL patches in `../`.

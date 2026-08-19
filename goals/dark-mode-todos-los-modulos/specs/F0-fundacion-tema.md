@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/specs/F0-fundacion-tema.md
+resumen: Dejar un único mecanismo de aplicación de tema, con dark como default de la cascada, y poner admin/ bajo observación del audit. Ninguna fase posterior debe…
+---
+
 # F0 · Fundación de tema
 
 **Depende de:** nada. Bloquea a F1, F2, F3, F4, F5, F6.

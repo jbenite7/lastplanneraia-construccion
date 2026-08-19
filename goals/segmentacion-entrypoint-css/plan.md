@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: goals/segmentacion-entrypoint-css/plan.md
+resumen: Partir public/css/aia-design-system.css en un core sin vendors de grilla más 5 adjuntos por vendor, servidos vía renderForModule(moduleId) según el manifiesto…
+---
+
 # Segmentación del entrypoint CSS — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

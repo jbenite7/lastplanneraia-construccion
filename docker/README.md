@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [docker]
+fuente: docker/README.md
+resumen: Compose stack name: last-planner-aia.
+---
+
 # Docker Operation Guide
 
 Compose stack name: `last-planner-aia`.

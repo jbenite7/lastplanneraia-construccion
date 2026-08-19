@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/hallazgos-e2e-usuario.md
+resumen: local (md5 20e81fd0…). Proyecto Da Porto (datos reales), stack del worktree en :8091.
+---
+
 # Recorrido de usuario final — hallazgos y plan
 
 Fecha: 2026-07-29. Rama `pdc-revision-ux` (SPA + `lps-aia-pdc`), bundle desplegado idéntico al build

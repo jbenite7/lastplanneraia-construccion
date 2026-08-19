@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: goals/segmentacion-entrypoint-css/facts.md
+resumen: Hechos medidos del entrypoint CSS: que importa aia-design-system.css en layer(vendor) y con que peso, y los overrides que se compensan entre si.
+---
+
 # Facts
 
 ## Estado de partida verificado

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: goals/design-system-nucleo-gobernanza/goal.md
+resumen: Continuar y cerrar el Sprint 00 transversal —sin reiniciarlo, crear otro Epic ni rehacer el trabajo ya válido— para convertir el design system AIA en una…
+---
+
 # Núcleo y gobernanza del Design System AIA
 
 Continuar y cerrar el Sprint 00 transversal —sin reiniciarlo, crear otro Epic ni rehacer el trabajo ya válido— para convertir el design system AIA en una fuente de verdad global, versionada y ejecutable, con homologación previa de cada familia visual, cascada determinista, tokens y componentes canónicos, adaptadores, laboratorio protegido, gates continuos y Programa General como único piloto. La evaluación accesible se gobierna con Playwright + `@axe-core/playwright`, baseline y excepciones verificables, más revisiones automatizadas básicas separadas de Accessibility Insights para laboratorio, piloto y estados revelados; no mediante un framework frontend nuevo.

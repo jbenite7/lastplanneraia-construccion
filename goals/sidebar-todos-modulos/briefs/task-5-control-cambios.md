@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [rbac]
+fuente: goals/sidebar-todos-modulos/briefs/task-5-control-cambios.md
+resumen: Que /control-cambios use el shell sidebar canónico en ambos estados, suprimiendo su navbar superior legacy. Es el módulo más divergente del Grupo A: usa…
+---
+
 # Task 5 — Migrar Control de Cambios al shell sidebar
 
 ## Objetivo

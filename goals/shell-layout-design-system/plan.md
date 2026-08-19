@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-02
+areas: [design-system]
+fuente: goals/shell-layout-design-system/plan.md
+resumen: Unificar en una sola unidad de ejecución la segmentación CSS, el rollout del menú lateral canónico en los 11 módulos, la paleta oscura de estados/chips y la…
+---
+
 # Plan de Implementación — Unificación de Shell, Layout y Design System
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

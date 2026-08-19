@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/retiro-listado-contratos/goal.md
+resumen: Retirar del producto las dos superficies del PDC viejo que el usuario declaró deprecadas el 2026-07-29: /listado-actividades (Familias de Actividades) y…
+---
+
 # Goal — Retiro de `/listado-actividades` y `/contratos`
 
 **Slug:** `retiro-listado-contratos`

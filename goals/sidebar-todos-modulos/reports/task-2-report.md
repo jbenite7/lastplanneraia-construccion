@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-2-report.md
+resumen: Task 2 — Migrar Programa General al shell sidebar
+---
+
 # Task 2 — Migrar Programa General al shell sidebar
 
 ## Status

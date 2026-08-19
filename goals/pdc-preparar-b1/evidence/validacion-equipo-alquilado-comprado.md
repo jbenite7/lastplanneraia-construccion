@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/validacion-equipo-alquilado-comprado.md
+resumen: revisado y anotado como hecho aparte, no implementado. No hay dato perdido (los capítulos del presupuesto son sólo COSTO DIRECTO / COSTO INDIRECTO); hay dato…
+---
+
 # Validación — Equipo alquilado vs comprado (Ola 2, fila 5)
 
 **Fecha:** 2026-07-29 · **Rama:** `worktree-pdc-ola2-equipo-alq-comp`

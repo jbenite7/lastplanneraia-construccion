@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-3-report.md
+resumen: Task 3 — Profesionales → shell sidebar
+---
+
 # Task 3 — Profesionales → shell sidebar
 
 **Status:** DONE

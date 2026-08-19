@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: goals/biblia-t2-cascada-lps/goal.md
+resumen: Que el ciclo Last Planner —Programa General, actualizar cronograma, Programación Intermedia, Programación Semanal y los submódulos CIC/CNC/CNP— tenga cada…
+---
+
 # Goal — Biblia de flujos · T2 cascada LPS
 
 **Slug:** `biblia-t2-cascada-lps`

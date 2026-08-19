@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-15
+areas: [datos]
+fuente: goals/validar-migracion-handsontable/validation-log.md
+resumen: Registro de validación
+---
+
 # Registro de validación
 
 > **Aviso de vigencia (2026-07-13):** las evidencias y resultados anteriores a la sección “Reauditoría del worktree actual” quedaron invalidados por deriva del código y desaparición de pruebas/artefactos. No deben usarse para cerrar Contratos hasta que cada flujo sea repetido contra el worktree y runtime actuales.

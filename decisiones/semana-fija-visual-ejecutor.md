@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/semana-fija-visual-ejecutor.md
+resumen: Decisiones pendientes — frente semana-fija-visual
+---
+
 # Decisiones pendientes — frente semana-fija-visual
 
 <!-- Una entrada por decisión, con estos campos:

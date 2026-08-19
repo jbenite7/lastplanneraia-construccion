@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-01
+areas: [pdc]
+fuente: goals/pdc-a41-pasos-configurables/goal.md
+resumen: Permitir configurar los pasos del proceso de contratación por obra: lista maestra de la empresa, días fijos por paso, alias opcional, reordenar/apagar/agregar…
+---
+
 # Goal — A4.1: Pasos del proceso de contratación configurables por proyecto
 
 **Slug:** `pdc-a41-pasos-configurables`

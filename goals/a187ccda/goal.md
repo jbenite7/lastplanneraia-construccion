@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/a187ccda/goal.md
+resumen: Andamiaje del frente a187ccda: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: a187ccda
 
 ## Objetivo

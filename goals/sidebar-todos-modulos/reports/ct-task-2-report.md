@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/ct-task-2-report.md
+resumen: CT Task 2 — Filtros en cajón derecho (componente propio)
+---
+
 # CT Task 2 — Filtros en cajón derecho (componente propio)
 
 - **Status:** DONE

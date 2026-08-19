@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-12
+areas: [proceso]
+fuente: goals/ci-en-verde/validation-log.md
+resumen: Validación en navegador — frente ci-en-verde (D-GAC-3)
+---
+
 <!-- cas:cita-textual — registro de validación: cita comandos y salidas tal como se midieron -->
 # Validación en navegador — frente ci-en-verde (D-GAC-3)
 

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/contadores-cero.md
+resumen: Sesión 06e4383d (ejecutor). Sha de arranque: de02471a.
+---
+
 # Decisiones encoladas — frente `contadores-cero`
 
 Sesión 06e4383d (ejecutor). Sha de arranque: `de02471a`.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/specs/F6-vendors.md
+resumen: Cerrar los tres archivos de estilo que hoy pintan colores propios sin pasar por tokens, y eliminar la duplicidad de tener dos librerías resolviendo el mismo…
+---
+
 # F6 · Vendors sin adaptador
 
 **Depende de:** F0. **Requiere F1 cerrado** antes de T6.3 — `styles.css` pisa hoy tanto Select2

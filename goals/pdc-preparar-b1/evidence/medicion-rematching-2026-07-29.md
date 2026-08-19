@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/medicion-rematching-2026-07-29.md
+resumen: Medición — qué hace hoy el sistema al mover un frente del cronograma
+---
+
 # Medición — qué hace hoy el sistema al mover un frente del cronograma
 
 - **Fecha:** 2026-07-29

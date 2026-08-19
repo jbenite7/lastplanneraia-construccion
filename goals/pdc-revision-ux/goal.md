@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/goal.md
+resumen: Que el módulo de Plan de Compras deje de estorbar a quien lo usa: tablas que no recortan ni esconden nada, decisiones que se pueden deshacer, y una navegación…
+---
+
 # Objetivo — Resolver los 15 hallazgos de la revisión del módulo
 
 Que el módulo de Plan de Compras deje de estorbar a quien lo usa: tablas que no recortan ni

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-15
+areas: [rbac, bi]
+fuente: goals/bi-control-tower-gemini/validation-log.md
+resumen: Registro de validacion - BI Control Tower
+---
+
 # Registro de validacion - BI Control Tower
 
 ## 2026-07-14 - Programa General / Radar

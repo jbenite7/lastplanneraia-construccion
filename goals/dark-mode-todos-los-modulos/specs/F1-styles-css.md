@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/specs/F1-styles-css.md
+resumen: Que public/css/styles.css deje de existir, repartiendo su contenido entre las capas correctas y los componentes canónicos, sin dejar un archivo residual…
+---
+
 # F1 · Desmantelar `styles.css`
 
 **Depende de:** F0. Bloquea a F2 y F3. Puede correr en paralelo con F4.

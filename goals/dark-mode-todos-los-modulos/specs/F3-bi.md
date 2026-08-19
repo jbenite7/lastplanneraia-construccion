@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [bi]
+fuente: goals/dark-mode-todos-los-modulos/specs/F3-bi.md
+resumen: Que las ocho rutas /bi/ entren en el contrato de consumo del design system: head canónico, manifiesto propio, sin CDN externas y sin un segundo sistema de…
+---
+
 # F3 · BI
 
 **Depende de:** F1. Puede correr en paralelo con F2.

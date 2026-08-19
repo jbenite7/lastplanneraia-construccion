@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/facts.md
+resumen: Decisiones del usuario, recogidas en el grilleo de Plannotator del 2026-07-25. Fuente cruda: interview.json (bundle) e interview-result.json (respuestas)…
+---
+
 # Facts aceptados — dark-mode-todos-los-modulos
 
 Decisiones del usuario, recogidas en el grilleo de Plannotator del 2026-07-25.

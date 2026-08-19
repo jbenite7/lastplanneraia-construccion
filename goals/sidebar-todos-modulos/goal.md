@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/goal.md
+resumen: Mapear todas las secciones operativas de la app y llevar el shell sidebar canónico —tomando /programacion-intermedia como la referencia correcta— a todos los…
+---
+
 # Goal — Rollout del shell sidebar a todos los módulos
 
 ## Objetivo

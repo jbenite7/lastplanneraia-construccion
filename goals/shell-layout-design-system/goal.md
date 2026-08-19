@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [design-system]
+fuente: goals/shell-layout-design-system/goal.md
+resumen: Goal — Unificación de Shell, Layout y Design System
+---
+
 # Goal — Unificación de Shell, Layout y Design System
 
 **Slug:** `shell-layout-design-system`  

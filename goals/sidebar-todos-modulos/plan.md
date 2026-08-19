@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/plan.md
+resumen: Plan — Rollout del shell sidebar a todos los módulos
+---
+
 # Plan — Rollout del shell sidebar a todos los módulos
 
 ## Enfoque

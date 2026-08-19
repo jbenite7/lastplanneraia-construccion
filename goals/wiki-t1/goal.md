@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/wiki-t1/goal.md
+resumen: que era exactamente el resumen que buscaba. 73 de los 92 planes estaban en ese caso.
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: wiki-t1
 
