@@ -298,14 +298,14 @@ frente** y dentro de las que declaró `wiki-t2` (`docs/**`). Ampliar el frente c
 `cas-frente.sh` y avisar a la coordinadora **antes** de editarlo. Si la coordinadora lo deniega,
 esta tarea se salta y el plan se da por completo con las dos primeras.
 
-- [ ] **Step 1: Ampliar las rutas del frente**
+- [x] **Step 1: Ampliar las rutas del frente**
 
 ```bash
 bash <ruta-de-cas-frente.sh> --sin-plan --verificacion "npm run test:design-system:static" \
   ds-f1a-estado "docs/superpowers/specs/*-ds-f1a-*,docs/superpowers/plans/*-ds-f1a-*,goals/ds-f1a-estado/**,docs/design-system/ds-f1a-*,tests/design-system/ds-f1a-*,docs/design-system/README.md" <sesion>
 ```
 
-- [ ] **Step 2: Añadir las dos entradas al índice**
+- [x] **Step 2: Añadir las dos entradas al índice**
 
 En `docs/design-system/README.md`, dentro de la lista «Archivos canonicos», añadir:
 
@@ -316,7 +316,7 @@ En `docs/design-system/README.md`, dentro de la lista «Archivos canonicos», a�
   `state-semantics.json`, que este contrato **no** sustituye todavía.
 ```
 
-- [ ] **Step 3: Verificar la suite completa**
+- [x] **Step 3: Verificar la suite completa**
 
 ```bash
 npm run test:design-system:static
@@ -324,7 +324,7 @@ npm run test:design-system:static
 
 Esperado: RC=0, 8/8 pasos en verde.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/design-system/README.md
