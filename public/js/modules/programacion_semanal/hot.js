@@ -1177,6 +1177,70 @@
     return getAlertClassByState(stateKey);
   }
 
+  // Clase de IDENTIDAD, una por estado. Convive con la de cubo (`ps-alert-*`),
+  // que no se retira porque otras reglas la usan para forma y tipografia: lo que
+  // cambia es quien pinta el FONDO. El cubo agrupaba diez estados en cinco, asi
+  // que dos parejas —«Condiciones Pendientes» con «Por Comprometer», e
+  // «Incumplida» con «Sin Calificar»— pintaban igual aunque su chip ya se
+  // hubiera desempatado en el contrato (37479689). La fila decia una cosa y el
+  // chip otra sobre la misma actividad.
+  //
+  // A DIFERENCIA del cubo, esta clase NO aplica el realce de ruta critica de
+  // arriba: la ruta critica es una condicion del dato, no un estado, y el
+  // contrato declara `prog-ejecucion-con-restricciones` como UN estado con UN
+  // matiz. Meter aqui la bifurcacion inventaria un estado que nadie declaro.
+  // Queda anotado como hallazgo en goals/semanal-fondo-por-matiz/goal.md.
+  function getStateClassForRow(row) {
+    var stateKey = getStateKey(row || {});
+    if (!stateKey || stateKey === 'ps-no-activa') {
+      return '';
+    }
+    return 'ps-state-' + stateKey;
+  }
+
+  // Nivel del estado, para el filete. Sale de `statePresentation`, que es la
+  // proyeccion del contrato; si el estado no esta declarado no se inventa nivel.
+  function getSeverityLevelForRow(row) {
+    var stateKey = getStateKey(row || {});
+    var presentation = statePresentation[stateKey];
+    return presentation ? presentation.level : '';
+  }
+
+  // El filete va en el `<tr>` y en la PRIMERA celda, nunca en todas.
+  //
+  // Puesto en cada celda, la primitiva dibuja un `box-shadow: inset` a la
+  // izquierda de las diecisiete columnas y la tabla se lee como un pijama. Paso
+  // el 2026-08-19 en Intermedia, y lo peor es que las medidas estaban en verde
+  // —los cuatro grosores correctos, cero pares identicos—: lo cazo una captura.
+  //
+  // Va tambien en la celda y no solo en el `<tr>` porque con `border-collapse`
+  // el `box-shadow` de una fila no pinta de forma fiable; el `<tr>` conserva el
+  // atributo para quien lea el DOM o lo pruebe.
+  function applyPSSeverityRail(instance) {
+    if (!instance || !instance.rootElement || instance.rootElement.getClientRects().length === 0) {
+      return;
+    }
+    var filas = instance.rootElement.querySelectorAll('.ht_master tbody tr');
+    for (var i = 0; i < filas.length; i++) {
+      var tr = filas[i];
+      var rowData = getSourceRowDataByVisualRow(instance, i) || {};
+      var nivel = getSeverityLevelForRow(rowData);
+      var celdas = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
+      for (var c = 0; c < celdas.length; c++) {
+        if (c === 0 && nivel) {
+          celdas[c].setAttribute('data-aia-severity-rail', nivel);
+        } else {
+          celdas[c].removeAttribute('data-aia-severity-rail');
+        }
+      }
+      if (nivel) {
+        tr.setAttribute('data-aia-severity-rail', nivel);
+      } else {
+        tr.removeAttribute('data-aia-severity-rail');
+      }
+    }
+  }
+
   function getStateLabelByKey(stateKey) {
     if (!stateKey || stateKey === 'ps-no-activa') {
       return 'Programada Manualmente';
@@ -2766,6 +2830,7 @@
         syncRenderedTableWidth(this);
         // C-19: necesita el ancho ya aplicado, por eso no va en el renderer.
         refreshHeaderTitles(this);
+        applyPSSeverityRail(this);
       },
       afterGetColHeader: function (col, TH) {
         if (!TH || !TH.querySelector) {
@@ -2822,7 +2887,7 @@
         var baseClass = columnMeta.className || '';
 
         var isReadOnly = false;
-        var finalClass = (baseClass + ' ' + 'ps-row-state ' + alertClass).trim();
+        var finalClass = (baseClass + ' ' + 'ps-row-state ' + alertClass + ' ' + getStateClassForRow(rowData)).trim();
 
         if (columnMeta.renderer === 'psActionsRenderer') {
           isReadOnly = true;
