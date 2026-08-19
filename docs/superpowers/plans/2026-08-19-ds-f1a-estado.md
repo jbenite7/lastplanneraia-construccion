@@ -347,13 +347,13 @@ git commit -m "docs(ds-f1a): el índice del design system nombra el contrato de 
 
 No es una tarea del plan: es el gate de `AGENTS.md` §Publicación, que se aplica igual.
 
-- [ ] Verificar la condición de hecho con salida real: `npm run test:design-system:static` y
+- [x] Verificar la condición de hecho con salida real: `npm run test:design-system:static` y
       `npm run test:wiki`.
-- [ ] `git status` limpio.
-- [ ] `git fetch origin` y mirar la divergencia.
-- [ ] Integrar si la hay, resolviendo a la vista.
-- [ ] **Re-verificar después de integrar, no antes.** Anotar el sha.
-- [ ] Pedir el visto a la coordinadora con el sha medido.
-- [ ] Publicar el sha exacto visado, en comando aparte.
-- [ ] Confirmar que `origin/main` coincide con el sha anotado.
-- [ ] Anotar el cierre en `goals/ds-f1a-estado/goal.md`.
+- [x] `git status` limpio.
+- [x] `git fetch origin` y mirar la divergencia.
+- [x] Integrar si la hay, resolviendo a la vista.
+- [x] **Re-verificar después de integrar, no antes.** Anotar el sha.
+- [x] Pedir el visto a la coordinadora con el sha medido.
+- [x] Publicar el sha exacto visado, en comando aparte.
+- [x] Confirmar que `origin/main` coincide con el sha anotado.
+- [x] Anotar el cierre en `goals/ds-f1a-estado/goal.md`.

@@ -56,3 +56,54 @@ antes de editar. Ella avisó a `wiki-t2` para que no lo reescribiera debajo.
 
 `memoria/log.md` dio conflicto al integrar: dos líneas de este frente contra dos de wiki, pura
 adición por ambos lados. Resuelto conservando las cuatro. Trivial, así que no se devolvió.
+
+## Publicaciones
+- **`4a152a54` — publicado el 2026-08-19** con `bash scripts/publicar.sh`, el camino oficial.
+  Confirmado en el paso 7: `git rev-parse origin/main` devuelve ese sha y no queda `ahead` ni
+  `behind`.
+
+  **El visto se emitió dos veces y la primera caducó sin usarse.** El de `5716c15d` quedó
+  inválido cuando entró `70dd3946` a `origin/main` y hubo que integrar; se pidió uno nuevo en vez
+  de publicar con el viejo, porque «incluye lo revisado» no es «es lo revisado». El segundo,
+  `.claude/vistos/ds-f1a-estado-4a152a54.md`, lleva el sha dentro y es el que el gate comparó.
+
+  **La ventana del contenedor la autorizó la coordinadora**, que congeló su uso por otras
+  sesiones mientras duró: se reapuntó `app` a este worktree con `LPS_CODE_ROOT`, se corrió
+  `publicar.sh` completo y **se devolvió a la raíz al terminar** — verificado, monta
+  `/Users/felipebenitez/Developer/lps-aia`.
+
+## Cierre
+Condición de hecho cumplida sobre `4a152a54`, medida después de integrar y confirmada por el
+propio gate de publicación:
+
+```
+$ bash scripts/publicar.sh
+Verificando sobre 4a152a54…
+  ✔ design-system:static               RC=0
+  ✔ contrato piloto PG                 RC=0
+  ✔ wiki (lint + veracidad)            RC=0
+Publicando…
+   70dd3946..4a152a54  HEAD -> main
+```
+
+Entregado: `docs/design-system/ds-f1a-escala-estado.{json,md}` —trece estados, tres niveles de
+gravedad, la regla de los dos canales y el origen de cada estado—, la prueba de nueve casos que
+ata los dos archivos, y el contrato nombrado desde el índice del design system. Cero cambios en
+código de producto en todo el frente.
+
+**Dos incidentes que costaron tiempo y quedan dichos**, porque los dos son de entorno y no de
+código:
+
+1. **La re-verificación posterior a integrar salió RC=1 y no era un defecto.** El fallo fue
+   `foundation.test.mjs:273` con `service "app" is not running`: el contenedor se estaba
+   recreando en ese instante — llevaba 41 segundos arriba al mirarlo. Con él sano, verde. El
+   paso 5 hizo su trabajo dos veces: cazó el rojo y permitió distinguir que era una carrera.
+2. **A este worktree le faltaba el enlace del `.env`** que `CLAUDE.md` manda crear en cada
+   worktree nuevo, y llevaba así todo el frente. No causó el fallo —el test solo hacía
+   `filemtime`— pero lo habría causado en cuanto una prueba tocara la base, con un diagnóstico
+   mucho más confuso. Enlazado.
+
+**Lo que este frente deja abierto y no le toca decidir:** si `Fuera de Ventana` es etiqueta de
+pantalla o valor persistido. Si es lo segundo, es una migración sobre 16 proyectos con respaldo,
+dry-run y gate de tablas globales. Está escrito en el contrato legible, sección «Pendiente de
+decisión del usuario», y la coordinadora lo sube con el parte del cierre.
