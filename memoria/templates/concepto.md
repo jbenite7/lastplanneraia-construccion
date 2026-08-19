@@ -9,6 +9,13 @@ fuente:
 resumen:
 ---
 
+<!-- `areas` y `tags` son LISTAS CERRADAS: el lint rechaza cualquier valor fuera de ellas.
+     areas: design-system · qa · docker · worktrees · pdc · lps · datos · rbac · deploy ·
+            bi · admin · proceso · arquitectura
+     tags:  dashboard · plantilla · pendiente · trampa · leer-antes-de-tocar · generado ·
+            archivo   — y nunca duplican `tipo` ni `estado`.
+     La lista viva está en `scripts/wiki-esquema.mjs`; el porqué, en `docs/wiki-operacion.md`. -->
+
 # {{title}}
 
 <!-- Un concepto explica una idea del dominio o del sistema. Si estás explicando qué hace un

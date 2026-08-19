@@ -40,6 +40,12 @@ rompe `$_SESSION['permiso']` y toda llamada a `hasCapability()` — está correg
 
 - [[admin-adminlte-adaptador]] — `admin/` tiene entrypoint CSS propio por aislamiento de PHP.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-admin.base]]
+
 ## Vecinos
 
 [[rbac-y-rutas]] para los roles de verdad · [[arquitectura]] para la separación de las dos apps ·

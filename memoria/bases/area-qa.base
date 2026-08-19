@@ -1,0 +1,33 @@
+filters:
+  and:
+    - note.areas.containsAny("qa")
+properties:
+  note.resumen:
+    displayName: De qué va
+  note.tipo:
+    displayName: Tipo
+  note.estado:
+    displayName: Estado
+  note.fecha:
+    displayName: Fecha
+views:
+  - type: table
+    name: En la wiki
+    filters:
+      and:
+        - note.capa == "wiki"
+    order:
+      - file.name
+      - tipo
+      - resumen
+      - fecha
+  - type: table
+    name: Fuentes del área
+    filters:
+      and:
+        - note.capa == "fuente"
+    order:
+      - file.name
+      - tipo
+      - resumen
+      - fecha

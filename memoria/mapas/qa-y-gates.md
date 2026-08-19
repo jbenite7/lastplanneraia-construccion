@@ -119,6 +119,12 @@ Hay rojos que ya estaban ahí. Lee primero:
 No se regeneran snapshots ni baselines para forzar un verde, y un cambio visual requiere
 aprobación explícita. Si algo pasa a verde sin que sepas por qué, todavía no está verificado.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-qa.base]]
+
 ## Vecinos
 
 [[design-system]] para los gates propios del sistema · [[entorno-y-despliegue]] para levantar lo
