@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [datos, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Integración: procesa reportes externos (ReportProcessor) para alimentar otros módulos, sin vista propia"
 ---

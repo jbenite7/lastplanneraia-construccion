@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: derogada
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Contratos (PDC v1): vinculaba actividades con paquetes de contratación usando el motor semi-auto; eliminado del repositorio el 2026-08-04"
 ---

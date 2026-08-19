@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: log
 estado: vigente
 fecha: 2026-08-02
 areas: []
+tags: [generado]
 fuente: sesion
 resumen: "Bitácora cronológica de la wiki: qué se ingirió, qué se consultó y qué se verificó"
 ---

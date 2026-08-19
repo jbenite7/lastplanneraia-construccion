@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: concepto
 estado: vigente
 fecha: 2026-08-04

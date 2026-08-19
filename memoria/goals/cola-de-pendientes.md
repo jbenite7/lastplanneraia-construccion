@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: goal
 estado: abierto
 fecha: 2026-08-18

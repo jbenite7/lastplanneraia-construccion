@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-03
 areas: [proceso]
+tags: [generado]
 fuente: docs/superpowers
 resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la ejecutó, por mes, incluido lo archivado"
 ---

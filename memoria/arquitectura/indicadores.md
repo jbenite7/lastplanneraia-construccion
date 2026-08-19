@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [lps, bi, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Indicadores LPS: dashboard de KPIs que embebe un informe de Power BI publicado en la web"
 ---

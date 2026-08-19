@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Programación Semanal: la grilla de compromisos de los próximos 7 días y sus tres píldoras CNP/CNC/CIC"
 ---

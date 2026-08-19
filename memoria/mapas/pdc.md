@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: trampa
 estado: derogada
 fecha: 2026-08-04

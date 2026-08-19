@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [rbac, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Selector de proyectos: pantalla tras el login para elegir en qué proyecto trabajar"
 ---

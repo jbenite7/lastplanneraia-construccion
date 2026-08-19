@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Programación Intermedia: el look-ahead a 6 semanas que libera restricciones antes de comprometer la semana"
 ---

@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [bi, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos — oculto de la navegación desde 2026-08-13, visible solo para Admin"
 ---
