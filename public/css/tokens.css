@@ -352,14 +352,20 @@
        PRODUCT.md: 6/4/2/1. El mas bajo mide 1 px y no 0 a proposito — un filete
        de cero no es un escalon sino ausencia, y entonces `neutral` deja de
        decir «medido y sin problema» para decir «no se midio». */
+       SOLO DOS ESCALONES LLEVAN FILETE, y la ausencia es el tercer valor.
+       Corregido el 2026-08-19: nacio con cuatro -6/4/2/1- y `healthy` y
+       `neutral` lo perdieron por decision del usuario, adoptando el contrato de
+       `ds-f1a-escala-estado.json`, que declara `barra: false` para `controlado`.
+       El numero que lo decidio: con la regla de 7+ semanas ratificada, «Fuera de
+       Ventana» pasa a ~51% de las actividades, asi que un filete universal
+       pondria marca de gravedad en mas de MEDIA TABLA para filas que no piden
+       nada — ruido de fondo, no senal.
+       Aqui solo quedan los dos que si marcan; que `healthy` y `neutral` no
+       tengan token no es un olvido, es el contrato. */
     --ds-severity-rail-width-urgent: 6px;
     --ds-severity-rail-width-attention: 4px;
-    --ds-severity-rail-width-healthy: 2px;
-    --ds-severity-rail-width-neutral: 1px;
     --ds-severity-rail-color-urgent: var(--ds-color-state-critical-text);
     --ds-severity-rail-color-attention: var(--ds-color-state-warning-text);
-    --ds-severity-rail-color-healthy: var(--ds-color-state-success-text);
-    --ds-severity-rail-color-neutral: var(--ds-active-border);
 
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)

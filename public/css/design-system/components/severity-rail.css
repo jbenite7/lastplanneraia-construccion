@@ -26,12 +26,29 @@
     box-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
   }
 
-  [data-aia-severity-rail="healthy"] {
-    box-shadow: inset var(--ds-severity-rail-width-healthy) 0 0 0 var(--ds-severity-rail-color-healthy);
-  }
+  /* LA AUSENCIA ES LA SEÑAL, y por eso se declara en vez de omitirse.
+     `controlado` -y todo lo que no tiene gravedad, como «Fuera de Ventana» o
+     «Sin Datos», que el contrato marca con nivel nulo- NO lleva filete. Adoptado
+     el 2026-08-19 del contrato `ds-f1a-escala-estado.json`, que declara
+     `barra: false` para `controlado` y define el nivel nulo como ausencia de
+     gravedad y no como un grado mas.
 
+     El numero que lo decidio: con la regla de 7+ semanas, «Fuera de Ventana»
+     pasa a ~51% de las actividades. Un filete universal marcaria mas de media
+     tabla por filas que no piden nada, y una marca que llevan todos deja de
+     marcar.
+
+     Se declara `none` en vez de borrar las reglas: estas celdas conviven con
+     superposiciones de Handsontable que tambien usan `box-shadow: inset`
+     -`pg-cell-editable`, `pi-cell-readonly`-, y sin una declaracion explicita el
+     «sin filete» dependeria de cual gane la cascada. Un silencio deliberado se
+     escribe; uno por omision se rompe solo.
+
+     La identidad de estos estados no se pierde: la lleva el matiz en el fondo,
+     que es un eje aparte. Cero canales nuevos. */
+  [data-aia-severity-rail="healthy"],
   [data-aia-severity-rail="neutral"] {
-    box-shadow: inset var(--ds-severity-rail-width-neutral) 0 0 0 var(--ds-severity-rail-color-neutral);
+    box-shadow: none;
   }
 
   [dir="rtl"] [data-aia-severity-rail="urgent"] {
@@ -42,11 +59,6 @@
     box-shadow: inset calc(-1 * var(--ds-severity-rail-width-attention)) 0 0 0 var(--ds-severity-rail-color-attention);
   }
 
-  [dir="rtl"] [data-aia-severity-rail="healthy"] {
-    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-healthy)) 0 0 0 var(--ds-severity-rail-color-healthy);
-  }
-
-  [dir="rtl"] [data-aia-severity-rail="neutral"] {
-    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-neutral)) 0 0 0 var(--ds-severity-rail-color-neutral);
-  }
+  /* `healthy` y `neutral` no tienen variante RTL: `box-shadow: none` no tiene
+     lado, y la regla de arriba ya vale para las dos direcciones. */
 }
