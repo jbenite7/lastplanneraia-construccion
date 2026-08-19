@@ -2,7 +2,7 @@
 capa: fuente
 tipo: goal-doc
 estado: vigente
-fecha: 
+fecha: 2026-08-19
 areas: [lps]
 fuente: goals/semanal-fondo-por-matiz/goal.md
 resumen: Llevar el fondo de fila de /programacion-semanal del sistema propio de cubos de alerta al modelo de tres canales ya publicado: el matiz dice qué estado es, el…
