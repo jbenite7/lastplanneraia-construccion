@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { deducirAreas, deducirEstado, deducirResumen, deducirTags, deducirTipo, fechaDelNombre }
+import { deducirAreas, deducirEstado, deducirResumen, deducirTags, deducirTipo, fechaDelNombre,
+  resumenDeEtiqueta, resumenDeSeccion, resumenDelTitulo, resumenEnCascada }
   from '../../scripts/wiki-frontmatter.reglas.mjs';
 import { AREAS, TAGS, TIPOS } from '../../scripts/wiki-esquema.mjs';
 
@@ -151,4 +152,70 @@ test('el backfill es idempotente: la segunda pasada no cambia nada', () => {
 
 test('aplicar con cero claves devuelve el texto tal cual', () => {
   assert.equal(aplicar('# T\n', PROP, []), '# T\n');
+});
+
+// ── La cascada de cuatro respaldos ───────────────────────────────────────────────────────────
+
+// El caso que destapó todo: un plan de `writing-plans` abre con una cita para agentes, y el
+// respaldo 1 se para ahí — justo antes del `**Goal:**`, que es el resumen que se buscaba.
+const PLAN_REAL = `# Colapsado del sidebar como primitiva canónica — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: use superpowers:executing-plans.
+
+**Goal:** Mover el pulido del rail colapsado del scope del shell al componente canónico.
+`;
+
+test('respaldo 2: la etiqueta en negrita rescata lo que el párrafo no alcanza', () => {
+  assert.equal(deducirResumen(PLAN_REAL), '');
+  assert.equal(resumenDeEtiqueta(PLAN_REAL),
+    'Mover el pulido del rail colapsado del scope del shell al componente canónico.');
+  assert.deepEqual(resumenEnCascada(PLAN_REAL), {
+    texto: 'Mover el pulido del rail colapsado del scope del shell al componente canónico.',
+    origen: 'etiqueta',
+  });
+});
+
+test('respaldo 2 reconoce las etiquetas que este repo usa de verdad', () => {
+  for (const k of ['Goal', 'Objetivo', 'Meta', 'Problema', 'Resumen']) {
+    assert.equal(resumenDeEtiqueta(`# T\n\n**${k}:** La tesis.`), 'La tesis.', k);
+  }
+  assert.equal(resumenDeEtiqueta('# T\n\n**Decisión del usuario D-5:** Lo que pidió.'), 'Lo que pidió.');
+  assert.equal(resumenDeEtiqueta('# T\n\n**Nota al pie:** irrelevante.'), '');
+});
+
+test('respaldo 3: el párrafo bajo `## Objetivo` de un goal.md', () => {
+  const goal = '# Frente: x\n\n## Fase del plan\nPlan: -\n\n## Objetivo\nDevolver el workflow a verde.\n';
+  assert.equal(resumenDeSeccion(goal), 'Devolver el workflow a verde.');
+  assert.equal(resumenEnCascada(goal).origen, 'seccion');
+});
+
+test('respaldo 3 no se traga una sección que empieza por lista o encabezado', () => {
+  assert.equal(resumenDeSeccion('# T\n\n## Objetivo\n- un punto\n'), '');
+  assert.equal(resumenDeSeccion('# T\n\n## Objetivo\n\n### Sub\n'), '');
+});
+
+test('respaldo 4: el título, solo si dice algo más que dos palabras', () => {
+  assert.equal(resumenDelTitulo('# Sidebar canónico del laboratorio\n'), 'Sidebar canónico del laboratorio');
+  assert.equal(resumenDelTitulo('# Notas\n'), '');
+  assert.equal(resumenDelTitulo('# Dos palabras\n'), '');
+});
+
+test('la cascada respeta el orden: gana el más informativo que responda', () => {
+  const todo = '# Un título largo de verdad\n\nEl párrafo.\n\n**Goal:** La tesis.\n\n## Objetivo\nOtra cosa.\n';
+  assert.deepEqual(resumenEnCascada(todo), { texto: 'El párrafo.', origen: 'parrafo' });
+  const sinParrafo = '# Un título largo de verdad\n\n> cita\n\n**Goal:** La tesis.\n';
+  assert.equal(resumenEnCascada(sinParrafo).origen, 'etiqueta');
+  const soloTitulo = '# Un título largo de verdad\n\n- solo una lista\n';
+  assert.equal(resumenEnCascada(soloTitulo).origen, 'titulo');
+});
+
+test('sin nada de donde sacarlo, la cascada deja un hueco visible y lo dice', () => {
+  assert.deepEqual(resumenEnCascada('# Notas\n\n- a\n- b\n'), { texto: '', origen: 'ninguno' });
+  assert.deepEqual(resumenEnCascada('sin encabezado'), { texto: '', origen: 'ninguno' });
+});
+
+test('los cuatro respaldos limpian markdown y recortan igual', () => {
+  assert.equal(resumenDeEtiqueta('# T\n\n**Goal:** Ver **esto** y [[aquello]].'), 'Ver esto y aquello.');
+  const largo = resumenDelTitulo(`# ${'palabra '.repeat(40)}`, 40);
+  assert.ok(largo.length <= 41 && largo.endsWith('…'), largo);
 });

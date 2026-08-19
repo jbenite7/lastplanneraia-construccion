@@ -21,8 +21,8 @@ import { join, relative, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { bloqueFrontmatter, deducirCapa } from './wiki-esquema.mjs';
-import { ORDEN, aplicar, deducirAreas, deducirEstado, deducirResumen, deducirTags, deducirTipo,
-  faltantes, fechaDelNombre, render } from './wiki-frontmatter.reglas.mjs';
+import { ORDEN, aplicar, deducirAreas, deducirEstado, deducirTags, deducirTipo,
+  faltantes, fechaDelNombre, render, resumenEnCascada } from './wiki-frontmatter.reglas.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
@@ -81,6 +81,7 @@ const ALTA = altasGit();
 function propuesta(rel, texto) {
   const areas = deducirAreas(rel);
   const tags = deducirTags(rel, texto);
+  const resumen = resumenEnCascada(texto);
   const p = {
     capa: deducirCapa(rel),
     tipo: deducirTipo(rel),
@@ -89,8 +90,9 @@ function propuesta(rel, texto) {
     areas: `[${areas.join(', ')}]`,
     tags: `[${tags.join(', ')}]`,
     fuente: rel,
-    resumen: deducirResumen(texto),
+    resumen: resumen.texto,
   };
+  p.__origen = resumen.origen;
   if (!areas.length) delete p.areas;
   if (!tags.length) delete p.tags;
   return p;
@@ -102,6 +104,7 @@ const porTipo = new Map();
 const cuenta = (m, k) => m.set(k, (m.get(k) ?? 0) + 1);
 
 let alDia = 0, pendientes = 0, fusiones = 0, sinFecha = 0, sinResumen = 0, sinArea = 0;
+const porOrigen = new Map();
 const escritos = [];
 
 for (const rel of elegidos) {
@@ -114,6 +117,7 @@ for (const rel of elegidos) {
   const carpeta = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '(raíz)';
   cuenta(porCarpeta, carpeta);
   cuenta(porTipo, prop.tipo);
+  cuenta(porOrigen, prop.__origen);
 
   if (!claves.length) { alDia++; continue; }
   pendientes++;
@@ -141,6 +145,7 @@ console.log(`Censo de la capa fuente${SOLO ? ` bajo '${SOLO}'` : ''}: ${elegidos
   + `${SOLO ? ` de ${fuentes.length}` : ''}.`);
 tabla(porCarpeta, 'Por carpeta:');
 tabla(porTipo, 'Por tipo deducido:');
+tabla(porOrigen, 'De dónde sale el resumen:');
 
 console.log(`\n${alDia} ya declarados · ${pendientes} pendientes`
   + `${fusiones ? ` (${fusiones} con frontmatter ajeno, se fusionaría)` : ''}.`);

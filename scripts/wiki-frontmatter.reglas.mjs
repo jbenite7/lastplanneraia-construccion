@@ -103,43 +103,28 @@ export function deducirEstado(rel) {
   return rel.replaceAll('\\', '/').startsWith('docs/archive/') ? 'cerrado' : 'vigente';
 }
 
-/**
- * Resumen de una línea: el primer párrafo de prosa que sigue al `# título`, recortado.
- *
- * Se para en cuanto aparece otro encabezado. Es deliberado y cuesta cobertura: sin ese corte,
- * un archivo cuyo H1 va seguido de un `##` y una lista devolvía un párrafo de mitad del
- * documento como si fuera su resumen —medido en `AGENTS.md`, que así resumía el gate de
- * publicación—. Devuelve `''` cuando no hay párrafo que valga, y el censo lo cuenta como
- * pendiente de mano humana: un resumen equivocado circula por el catálogo como si fuera cierto,
- * y uno vacío se ve.
- */
-export function deducirResumen(texto, limite = 160) {
-  const cuerpo = texto
+// ── Resumen: una cascada de cuatro respaldos ─────────────────────────────────────────────────
+//
+// Ninguno inventa nada: los cuatro toman palabras que el propio documento ya escribió. Se
+// ordenan de más informativo a menos, y el que responde primero gana.
+//
+// Medido sobre las 391 fuentes del repo el 2026-08-19: párrafo 169 · `**Goal:**` 82 ·
+// `## Objetivo` 8 · título 115 · sin nada 17. Con solo el primero eran 222 los que quedaban sin
+// resumen, y ese número —no el trabajo real— es lo que hacía parecer cara la Tanda 2.
+
+const LIMITE = 160;
+
+/** Quita frontmatter, comentarios HTML y bloques de código. */
+function cuerpo(texto) {
+  return texto
     .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/^```[\s\S]*?^```/gm, '');
-  const lineas = cuerpo.split('\n');
+}
 
-  let i = 0;
-  while (i < lineas.length && !/^#\s/.test(lineas[i])) i++;
-  if (i === lineas.length) return '';   // sin H1 no hay de dónde colgar el resumen
-  i++;
-
-  const parrafo = [];
-  for (; i < lineas.length; i++) {
-    const l = lineas[i].trim();
-    if (!parrafo.length) {
-      if (l === '') continue;
-      if (/^#{1,6}\s/.test(l)) return '';            // otro encabezado antes de la prosa
-      if (/^([-*+]\s|\d+\.\s|>|\||!\[|\[!)/.test(l)) return '';  // lista, cita, tabla, callout
-      parrafo.push(l);
-    } else {
-      if (l === '') break;
-      parrafo.push(l);
-    }
-  }
-
-  const plano = parrafo.join(' ')
+/** Markdown a texto plano, recortado por palabra. */
+function limpiar(bruto, limite = LIMITE) {
+  const plano = bruto
     .replace(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g, '$1')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/[*_`]/g, '')
@@ -149,6 +134,87 @@ export function deducirResumen(texto, limite = 160) {
   if (plano.length <= limite) return plano;
   const corte = plano.slice(0, limite);
   return `${corte.slice(0, corte.lastIndexOf(' ')).replace(/[,;:.]$/, '')}…`;
+}
+
+/** Respaldo 1 — el párrafo de prosa que sigue al `# título`.
+ *
+ * Se para en cuanto aparece otro encabezado, una lista o una cita. Es deliberado y cuesta
+ * cobertura: sin ese corte, un archivo cuyo H1 va seguido de un `##` y una lista devolvía un
+ * párrafo de mitad del documento como si fuera su resumen —medido en `AGENTS.md`, que así
+ * resumía el gate de publicación—. Lo que ese corte deja fuera lo recogen los respaldos
+ * siguientes, que van a buscar el dato donde el documento sí lo puso.
+ */
+export function deducirResumen(texto, limite = LIMITE) {
+  const lineas = cuerpo(texto).split('\n');
+  let i = 0;
+  while (i < lineas.length && !/^#\s/.test(lineas[i])) i++;
+  if (i === lineas.length) return '';
+  i++;
+
+  const parrafo = [];
+  for (; i < lineas.length; i++) {
+    const l = lineas[i].trim();
+    if (!parrafo.length) {
+      if (l === '') continue;
+      if (/^#{1,6}\s/.test(l)) return '';
+      if (/^([-*+]\s|\d+\.\s|>|\||!\[|\[!)/.test(l)) return '';
+      parrafo.push(l);
+    } else {
+      if (l === '') break;
+      parrafo.push(l);
+    }
+  }
+  return limpiar(parrafo.join(' '), limite);
+}
+
+// Etiquetas en negrita con las que los documentos de este repo declaran su tesis. `Goal:` es la
+// que usan los planes de `writing-plans`, y sola cubre 73 de los 92.
+const ETIQUETAS = /^\*\*(Goal|Objetivo|Meta|Problema|Resumen|Qué se busca|Decisión del usuario)[^:]*:\*\*\s*(.+)$/im;
+
+/** Respaldo 2 — la línea `**Goal:** …` con la que el documento se declara a sí mismo. */
+export function resumenDeEtiqueta(texto, limite = LIMITE) {
+  return limpiar(cuerpo(texto).match(ETIQUETAS)?.[2] ?? '', limite);
+}
+
+// Secciones con las que un `goal.md` o un `facts.md` abren su contenido.
+// La mirada adelantada descarta la sección que abre con lista, cita o encabezado: una lista de
+// tareas no es un resumen, y sin ese filtro `## Objetivo\n- un punto` devolvía «- un punto».
+const SECCIONES = new RegExp(
+  '^##\\s+(?:Objetivo|Contexto|Problema|Resumen|Meta)[^\\n]*\\n+'
+  + '(?!\\s*(?:[-*+]\\s|\\d+\\.\\s|#|>|\\|))'
+  + '((?:[^\\n#>|].*\\n?)+)', 'im');
+
+/** Respaldo 3 — el primer párrafo bajo `## Objetivo` o su equivalente. */
+export function resumenDeSeccion(texto, limite = LIMITE) {
+  return limpiar(cuerpo(texto).match(SECCIONES)?.[1] ?? '', limite);
+}
+
+/** Respaldo 4 — el propio `# título`, si dice algo más que una o dos palabras.
+ *
+ * Es el más pobre de los cuatro y aun así vale la pena: en el catálogo la otra columna es el
+ * nombre del archivo, que muestra el slug (`2026-07-20-sidebar-canonico-laboratorio`), así que
+ * el título añade legibilidad en vez de repetirla. Un título de una o dos palabras no añade
+ * nada y se descarta: mejor un hueco visible.
+ */
+export function resumenDelTitulo(texto, limite = LIMITE) {
+  const t = cuerpo(texto).split('\n').find((l) => /^#\s/.test(l))?.replace(/^#\s+/, '').trim() ?? '';
+  return t.split(/\s+/).length >= 3 ? limpiar(t, limite) : '';
+}
+
+/**
+ * La cascada completa. Devuelve `{ texto, origen }`, donde `origen` nombra qué respaldo
+ * respondió — el informe del backfill lo cuenta, para que se vea de un vistazo cuántos resúmenes
+ * son prosa de verdad y cuántos son solo el título.
+ * Con `{ texto: '', origen: 'ninguno' }` cuando no hay de dónde sacarlo: un hueco visible, nunca
+ * un valor inventado.
+ */
+export function resumenEnCascada(texto, limite = LIMITE) {
+  for (const [origen, fn] of [['parrafo', deducirResumen], ['etiqueta', resumenDeEtiqueta],
+    ['seccion', resumenDeSeccion], ['titulo', resumenDelTitulo]]) {
+    const r = fn(texto, limite);
+    if (r) return { texto: r, origen };
+  }
+  return { texto: '', origen: 'ninguno' };
 }
 
 /** Fecha del nombre del archivo (`2026-08-18-loquesea.md`), o `''` si no la lleva. */
