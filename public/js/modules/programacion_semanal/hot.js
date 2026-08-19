@@ -217,15 +217,25 @@
     urgent: { severity: 'high', urgency: 'now' },
   };
 
+  // Los diez estados son CINCO POR FASE y nunca conviven: `stateMachine.js:58`
+  // resuelve `calificacion` si la semana esta confirmada y `programacion` si no.
+  // Por eso `red` y `green` se repiten entre fases sin confundir a nadie, y el
+  // guard de matices compara por fase y no por modulo
+  // (tests/design-system/state-tint-ladder.test.mjs).
+  //
+  // Reasignados el 2026-08-19 por decision del usuario: «Por Comprometer» pasa
+  // de ambar a VIOLETA y «Sin Calificar» de ambar a GRIS. Cada uno compartia
+  // ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo
+  // fondo y dos filtros distintos de la leyenda eran indistinguibles.
   var statePresentation = {
     'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red' },
     'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange' },
     'prog-condiciones-pendientes': { level: 'attention', hue: 'amber' },
-    'prog-sin-compromiso': { level: 'attention', hue: 'amber' },
+    'prog-sin-compromiso': { level: 'attention', hue: 'violet' },
     'prog-lista-para-confirmar': { level: 'healthy', hue: 'green' },
     'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
     'cal-incumplida': { level: 'attention', hue: 'amber' },
-    'cal-sin-calificar': { level: 'attention', hue: 'amber' },
+    'cal-sin-calificar': { level: 'attention', hue: 'neutral' },
     'cal-cumplida-control': { level: 'healthy', hue: 'green' },
     'cal-tnp': { level: 'neutral', hue: 'blue' },
     neutral: { level: 'neutral', hue: 'neutral' },

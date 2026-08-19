@@ -343,6 +343,26 @@
        siete. */
     --ds-state-tint-neutral: #2b2f2d;
 
+    /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
+       color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
+       a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
+       distinguen QUE estado es y no pueden decir CUAN GRAVE es. Eso lo lleva el
+       grosor, que si escala.
+       SOLO DOS ESCALONES LLEVAN FILETE, y la ausencia es el tercer valor.
+       Corregido el 2026-08-19: nacio con cuatro -6/4/2/1- y `healthy` y
+       `neutral` lo perdieron por decision del usuario, adoptando el contrato de
+       `ds-f1a-escala-estado.json`, que declara `barra: false` para `controlado`.
+       El numero que lo decidio: con la regla de 7+ semanas ratificada, «Fuera de
+       Ventana» pasa a ~51% de las actividades, asi que un filete universal
+       pondria marca de gravedad en mas de MEDIA TABLA para filas que no piden
+       nada — ruido de fondo, no senal.
+       Aqui solo quedan los dos que si marcan; que `healthy` y `neutral` no
+       tengan token no es un olvido, es el contrato. */
+    --ds-severity-rail-width-urgent: 6px;
+    --ds-severity-rail-width-attention: 4px;
+    --ds-severity-rail-color-urgent: var(--ds-color-state-critical-text);
+    --ds-severity-rail-color-attention: var(--ds-color-state-warning-text);
+
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
      ========================================

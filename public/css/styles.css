@@ -3661,61 +3661,67 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   --pi-tooltip-fg: var(--aia-bg-alabaster);
 }
 
+/* El fondo dice QUE estado es, no cuan grave. Cada estado toma su matiz del
+   catalogo; la gravedad la lleva el filete (severity-rail.css). Antes esto
+   mapeaba los ocho estados a cinco peldanos de --ds-cell-state-*, una
+   escalera ordinal que ningun contrato gobernaba: tres pares pintaban
+   identico y «En Ejecucion Pendiente» salia en el verde de «controlado»
+   siendo P1. Ver docs/design-system/state-semantics.json. */
 .pi-page .handsontable td.pi-state-blocked-overdue-critical,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-cell-state-critico-bg) !important;
-  color: var(--ds-cell-state-critico-fg) !important;
-  border-color: var(--ds-cell-state-critico-fg) !important;
+  background-color: var(--ds-state-tint-red) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
   font-weight: 600;
 }
 
 .pi-page .handsontable td.pi-state-blocked-overdue,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue {
-  background-color: var(--ds-cell-state-riesgo-bg) !important;
-  color: var(--ds-cell-state-riesgo-fg) !important;
-  border-color: var(--ds-cell-state-riesgo-fg) !important;
+  background-color: var(--ds-state-tint-orange) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-blocked-due,
 .pi-page #hot-container .handsontable td.pi-state-blocked-due {
-  background-color: var(--ds-cell-state-atencion-bg) !important;
-  color: var(--ds-cell-state-atencion-fg) !important;
-  border-color: var(--ds-cell-state-atencion-fg) !important;
+  background-color: var(--ds-state-tint-violet) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-1-week,
 .pi-page #hot-container .handsontable td.pi-state-alert-1-week {
-  background-color: var(--ds-cell-state-atencion-bg) !important;
-  color: var(--ds-cell-state-atencion-fg) !important;
-  border-color: var(--ds-cell-state-atencion-fg) !important;
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-2-3-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-cell-state-atencion-bg) !important;
-  color: var(--ds-cell-state-atencion-fg) !important;
-  border-color: var(--ds-cell-state-atencion-fg) !important;
+  background-color: var(--ds-state-tint-teal) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-4-6-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-tint-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-execution-blocked,
 .pi-page #hot-container .handsontable td.pi-state-execution-blocked {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-tint-blue) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-liberated-control,
 .pi-page #hot-container .handsontable td.pi-state-liberated-control {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-tint-green) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 /* La fila sin clasificar no toma tinte de estado: pareja fondo/texto sobre la
@@ -3883,44 +3889,54 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   margin-top: 0.2rem;
 }
 
+/* Los mismos matices que las celdas de arriba: la leyenda describe la tabla,
+   no un vocabulario aparte (F0-012). */
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-cell-state-critico-bg);
-  border-color: var(--ds-cell-state-critico-fg);
+  background-color: var(--ds-state-tint-red);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue {
-  background-color: var(--ds-cell-state-riesgo-bg);
-  border-color: var(--ds-cell-state-riesgo-fg);
+  background-color: var(--ds-state-tint-orange);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-due {
-  background-color: var(--ds-cell-state-atencion-bg);
-  border-color: var(--ds-cell-state-atencion-fg);
+  background-color: var(--ds-state-tint-violet);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-1-week {
-  background-color: var(--ds-cell-state-atencion-bg);
-  border-color: var(--ds-cell-state-atencion-fg);
+  background-color: var(--ds-state-tint-amber);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-cell-state-atencion-bg);
-  border-color: var(--ds-cell-state-atencion-fg);
+  background-color: var(--ds-state-tint-teal);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-cell-state-neutral-bg);
+  background-color: var(--ds-state-tint-neutral);
   border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-execution-blocked {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-blue);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-liberated-control {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-green);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pi-page .tooltip {

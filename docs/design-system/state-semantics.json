@@ -14,6 +14,13 @@
       "now"
     ]
   },
+  "axisRules": [
+    "Un canal, un eje: ningun canal visual codifica dos cosas a la vez. Es lo que se rompio antes de esta regla — el fondo decia identidad y gravedad al mismo tiempo y acabo sin decir ninguna de las dos.",
+    "El fondo de la fila y del chip codifica IDENTIDAD: que estado es. Se pinta con el matiz, un tinte por matiz.",
+    "El filete del borde inicial codifica GRAVEDAD: el nivel, en cuatro escalones de grosor y brillo. El color no puede llevarlo: las ocho anclas son equiluminantes a proposito y no tienen eje ordinal.",
+    "El orden de las filas DESEMPATA dentro de un mismo nivel. Es opcional y arranca apagado: la secuencia del programa es informacion y no se pierde por defecto.",
+    "El significado nunca depende solo del color: cada estado muestra texto completo y, cuando aplica, icono o aria-label."
+  ],
   "levels": [
     {
       "id": "neutral",
@@ -156,7 +163,8 @@
           "label": "Por Comprometer",
           "key": "prog-sin-compromiso",
           "level": "attention",
-          "hue": "amber"
+          "hue": "violet",
+          "note": "Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto."
         },
         {
           "label": "Lista para Confirmar",
@@ -180,7 +188,8 @@
           "label": "Sin Calificar",
           "key": "cal-sin-calificar",
           "level": "attention",
-          "hue": "amber"
+          "hue": "neutral",
+          "note": "Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema."
         },
         {
           "label": "Cumplida Control",
@@ -263,13 +272,13 @@
         {
           "label": "Inicio por Habilitar",
           "key": "blocked-due",
-          "level": "attention",
+          "level": "urgent",
           "hue": "violet"
         },
         {
           "label": "Alistamiento Urgente",
           "key": "alert-1-week",
-          "level": "urgent",
+          "level": "attention",
           "hue": "amber"
         },
         {
@@ -281,15 +290,15 @@
         {
           "label": "Alistamiento Pendiente",
           "key": "alert-4-6-weeks",
-          "level": "attention",
+          "level": "healthy",
           "hue": "neutral"
         },
         {
           "label": "En Ejecución Pendiente",
           "key": "execution-blocked",
-          "level": "attention",
+          "level": "urgent",
           "hue": "blue",
-          "note": "Ratificado 2026-08-03 por el propietario del producto: attention/blue para actividad en ejecución sin liberar (stateMachine.js getState). El mapeo a ok que registró el inventario G0 quedó obsoleto antes del repaso."
+          "note": "Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md."
         },
         {
           "label": "Listo para Comprometer",

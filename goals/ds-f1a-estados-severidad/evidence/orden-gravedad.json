@@ -1,0 +1,119 @@
+{
+  "apagadoAriaPressed": "false",
+  "encendidoAriaPressed": "true",
+  "ordenAntes": [
+    {
+      "id": 101,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 102,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 103,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 104,
+      "railNivel": "attention"
+    },
+    {
+      "id": 105,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 106,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 107,
+      "railNivel": "attention"
+    },
+    {
+      "id": 108,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 109,
+      "railNivel": "neutral"
+    }
+  ],
+  "ordenDespues": [
+    {
+      "id": 101,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 102,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 103,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 105,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 104,
+      "railNivel": "attention"
+    },
+    {
+      "id": 107,
+      "railNivel": "attention"
+    },
+    {
+      "id": 106,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 108,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 109,
+      "railNivel": "neutral"
+    }
+  ],
+  "ordenAlVolver": [
+    {
+      "id": 101,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 102,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 103,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 104,
+      "railNivel": "attention"
+    },
+    {
+      "id": 105,
+      "railNivel": "urgent"
+    },
+    {
+      "id": 106,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 107,
+      "railNivel": "attention"
+    },
+    {
+      "id": 108,
+      "railNivel": "healthy"
+    },
+    {
+      "id": 109,
+      "railNivel": "neutral"
+    }
+  ],
+  "vueltaExacta": true
+}

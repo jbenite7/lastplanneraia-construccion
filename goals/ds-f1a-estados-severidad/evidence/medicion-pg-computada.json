@@ -1,0 +1,242 @@
+{
+  "tema": "dark",
+  "viewport": {
+    "width": 1180,
+    "height": 820
+  },
+  "filas": [
+    {
+      "estado": "actividad-futura",
+      "etiqueta": "Actividad Futura",
+      "hue": "green",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#173d26",
+      "celdaFondoDeclarado": "rgb(23, 61, 38)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#173d26",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(183, 232, 198) 2px 0px 0px 0px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "en-curso",
+      "etiqueta": "En Curso",
+      "hue": "blue",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#17334f",
+      "celdaFondoDeclarado": "rgb(23, 51, 79)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#17334f",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(183, 232, 198) 2px 0px 0px 0px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "terminada",
+      "etiqueta": "Terminada",
+      "hue": "neutral",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#2b2f2d",
+      "celdaFondoDeclarado": "rgb(43, 47, 45)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#2b2f2d",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(183, 232, 198) 2px 0px 0px 0px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "debe-iniciar",
+      "etiqueta": "Debe Iniciar",
+      "hue": "orange",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#452a0d",
+      "celdaFondoDeclarado": "rgb(69, 42, 13)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#452a0d",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(242, 231, 156) 4px 0px 0px 0px inset",
+      "railNivel": "attention",
+      "railNivelCelda": "attention"
+    },
+    {
+      "estado": "atrasada",
+      "etiqueta": "Atrasada",
+      "hue": "red",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#431414",
+      "celdaFondoDeclarado": "rgb(67, 20, 20)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#431414",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(255, 205, 200) 6px 0px 0px 0px inset",
+      "railNivel": "urgent",
+      "railNivelCelda": "urgent"
+    },
+    {
+      "estado": "sin-datos",
+      "etiqueta": "Sin Datos",
+      "hue": "violet",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#33204a",
+      "celdaFondoDeclarado": "rgb(51, 32, 74)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#33204a",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgba(221, 239, 230, 0.22) 1px 0px 0px 0px inset",
+      "railNivel": "neutral",
+      "railNivelCelda": "neutral"
+    },
+    {
+      "estado": "r1",
+      "etiqueta": "Con Alerta Restricciones",
+      "hue": "amber",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#3a3a0f",
+      "celdaFondoDeclarado": "rgb(58, 58, 15)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#3a3a0f",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "rgb(242, 231, 156) 4px 0px 0px 0px inset",
+      "railNivel": "attention",
+      "railNivelCelda": "attention"
+    }
+  ],
+  "pares": [
+    {
+      "a": "actividad-futura",
+      "b": "en-curso",
+      "celdaVsCelda": 1.067,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "terminada",
+      "celdaVsCelda": 1.119,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.089,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "atrasada",
+      "celdaVsCelda": 1.284,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.198,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "r1",
+      "celdaVsCelda": 1.035,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "terminada",
+      "celdaVsCelda": 1.049,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.021,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "atrasada",
+      "celdaVsCelda": 1.203,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.122,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "r1",
+      "celdaVsCelda": 1.104,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.028,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "atrasada",
+      "celdaVsCelda": 1.147,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.07,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "r1",
+      "celdaVsCelda": 1.158,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "atrasada",
+      "celdaVsCelda": 1.179,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.099,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "r1",
+      "celdaVsCelda": 1.127,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.072,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "r1",
+      "celdaVsCelda": 1.329,
+      "celdaIdentica": false
+    },
+    {
+      "a": "sin-datos",
+      "b": "r1",
+      "celdaVsCelda": 1.239,
+      "celdaIdentica": false
+    }
+  ]
+}

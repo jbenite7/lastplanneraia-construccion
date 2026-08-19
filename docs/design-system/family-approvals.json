@@ -217,6 +217,25 @@
         "tests/design-system/bi-primitives.test.mjs",
         "tests/test_design_system_components.php"
       ]
+    },
+    {
+      "familyId": "states-feedback",
+      "candidateId": "severity-rail",
+      "approvedBy": "user",
+      "approvalRef": "chat-2026-08-19-approved-severity-rail-and-pi-goldens",
+      "approvedAt": "2026-08-19",
+      "themes": [
+        "dark"
+      ],
+      "viewports": [
+        "1180x820",
+        "1440x900"
+      ],
+      "evidence": [
+        "tests/design-system/severity-rail.test.mjs",
+        "goals/ds-f1a-estados-severidad/evidence/pi-nueve-estados-1180x820-dark.png",
+        "docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design.md"
+      ]
     }
   ]
 }
