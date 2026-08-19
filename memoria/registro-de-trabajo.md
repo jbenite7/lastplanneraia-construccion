@@ -1,6 +1,6 @@
 ---
 capa: wiki
-tipo: mapa
+tipo: referencia
 estado: vigente
 fecha: 2026-08-03
 areas: [proceso]

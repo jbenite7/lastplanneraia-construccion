@@ -73,6 +73,11 @@ El procedimiento completo está en [[wiki-operacion|Cómo se opera la wiki]].
 | [[rbac-y-rutas]] | Roles, capacidades, rutas protegidas, sesión |
 | [[entorno-y-despliegue]] | Docker, puerta de servicio, worktrees, SiteGround |
 | [[qa-y-gates]] | Suites de prueba, rojos preexistentes, evidencia |
+| [[worktrees]] | Qué comparte un worktree con la raíz y qué no |
+| [[datos]] | Tablas globales, `project_id`, migraciones y respaldos |
+| [[bi]] | Indicadores y Torre de Control: qué cifra, para quién |
+| [[admin]] | El panel admin como mini-app aparte de `src/` |
+| [[procesos-y-sesiones]] | El gate de cierre, la coordinación y cómo miente un verde |
 
 Además: **[[cola-de-pendientes|Cola de pendientes]]** (el tablero de control: qué corre ya, qué
 se replantea y qué espera, en el orden que fijó el usuario), **[[estado|Estado de los goals]]**

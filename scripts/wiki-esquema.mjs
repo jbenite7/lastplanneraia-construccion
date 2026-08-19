@@ -19,7 +19,12 @@ export const TIPOS = new Set([...TIPOS_WIKI, ...TIPOS_FUENTE]);
 export const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
 
 // Vocabulario cerrado de `tags`: transversales, no duplican `tipo` ni `areas`.
-export const TAGS = new Set(['moc', 'dashboard', 'plantilla', 'pendiente', 'trampa',
+//
+// `moc` salió el 2026-08-19. La spec de v2 lo traía para marcar los MOCs de área, y sobra desde
+// que `tipo: mapa` SIGNIFICA MOC: un mapa de área tiene estructura propia y fija («Qué manda»,
+// «Trampas», «Vecinos»), así que es una clase de página, y las clases viven en `tipo`. El tag
+// habría existido solo para parchear que una página estaba mal tipada.
+export const TAGS = new Set(['dashboard', 'plantilla', 'pendiente', 'trampa',
   'leer-antes-de-tocar', 'generado', 'archivo']);
 
 export const CAPAS = new Set(['fuente', 'wiki', 'esquema']);

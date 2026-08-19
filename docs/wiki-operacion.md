@@ -170,7 +170,7 @@ worktrees distintos, el número es aproximado.
 | Campo | Qué es | ¿Obligatorio? |
 |---|---|---|
 | `capa` | `fuente`, `wiki` o `esquema`. Le dice al lint qué reglas aplicar | en fuentes, es lo que las mete al lint |
-| `tipo` | uno de los diecisiete de abajo | sí |
+| `tipo` | uno de los diecisiete de abajo. **`mapa` significa MOC de área** | sí |
 | `estado` | `vigente`, `derogada`, `abierto` o `cerrado` | sí |
 | `fecha` | del hecho, no de la escritura; ISO, nunca «la semana pasada» | sí |
 | `areas` | una o varias de las trece válidas | recomendable |
@@ -204,9 +204,17 @@ si vas a crear la nota en la misma pasada.
 | `guia` | cómo se hace algo | el grueso de `docs/` |
 | `goal-doc` | pieza de un goal que no es spec, plan ni evidencia | `goals/*/goal.md` y hermanos |
 
-### Los ocho `tags`
+### Los siete `tags`
 
 Lista cerrada, comprobada por el script. Son **transversales**: no duplican `tipo` ni `areas`.
+
+**`moc` estuvo en esta lista y salió el 2026-08-19.** La spec de v2 lo traía para marcar los MOCs
+de área, y sobra desde que **`tipo: mapa` significa MOC**: un mapa de área tiene estructura propia
+y fija —«Qué manda», «Trampas», «Vecinos»—, así que es una **clase** de página, y las clases viven
+en `tipo`. El tag habría existido solo para parchear que una página estaba mal tipada: en su día
+`registro-de-trabajo.md` era `tipo: mapa` sin ser un mapa de área, y se corrigió a `referencia`,
+que es lo que de verdad es. La simetría que lo confirma: la **clase** la dice `tipo`, y la
+**portada** la dice un tag (`dashboard`). Cada campo hace un trabajo distinto en vez de solaparse.
 
 **La regla que gobierna los ocho: un tag nunca duplica el `tipo` ni el `estado`.** Etiquetar
 `trampa` una página que ya dice `tipo: trampa` no añade nada — filtrar por el tag devolvería
@@ -220,7 +228,6 @@ podían ser ciertas, y de cuál ganaba dependían 95 de las 151 páginas. Ganó 
 
 | Tag | Cuándo |
 |---|---|
-| `moc` | la página es el mapa de un área **sin ser `tipo: mapa`** |
 | `dashboard` | es un tablero, no un texto |
 | `plantilla` | es un molde para escribir otras |
 | `pendiente` | queda trabajo abierto dentro **y no basta `estado: abierto` para verlo** |
