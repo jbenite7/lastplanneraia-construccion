@@ -519,8 +519,16 @@ if ($unitariosSeleccionados !== []) {
         );
     }
 
-    $grupos = implode(',', array_values(array_unique($unitariosSeleccionados)));
-    $argumentos = [$opciones['phpunit'], '--group=' . $grupos];
+    // PHPUnit 12 no trata "--group=a,b" como un OR entre grupos (visto el 2026-08-19: con
+    // TableResolverTest.php como primera clase no-'puro', el runner pasó a pedir dos grupos a la
+    // vez y PHPUnit devolvió "No tests executed!" en vez de ejecutar ninguno). Cada grupo va en su
+    // propia bandera `--group=X`, que es la forma que sí filtra por OR.
+    $listaDeGrupos = array_values(array_unique($unitariosSeleccionados));
+    $grupos = implode(',', $listaDeGrupos);
+    $argumentos = [$opciones['phpunit']];
+    foreach ($listaDeGrupos as $grupo) {
+        $argumentos[] = '--group=' . $grupo;
+    }
     if (!$opciones['dirUnitPorDefecto']) {
         // Con un directorio explícito no vale phpunit.xml, que apunta a tests/unit.
         array_push($argumentos, '--no-configuration', '--bootstrap', dirname(__DIR__) . '/vendor/autoload.php', $opciones['dirUnit']);
