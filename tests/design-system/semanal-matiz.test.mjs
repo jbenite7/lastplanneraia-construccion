@@ -26,7 +26,13 @@ test('cada fase de Semanal pinta cinco matices distintos en el CSS', async () =>
     assert.equal(deLaFase.length, 5, `la fase ${FASES[prefijo]} debe tener cinco estados`);
 
     const tintes = deLaFase.map(({ key, hue }) => {
-      const regla = css.match(new RegExp(`\\.ps-state-${key}\\b[^{]*\\{([^}]*)\\}`))?.[1];
+      // `(?![\w-])` y no `\b`: hay claves que son PREFIJO de otras
+      // -`cal-incumplida` de `cal-incumplida-critica`- y `\b` casa antes del
+      // guion, asi que el guard leia la regla equivocada y comparaba el matiz de
+      // otro estado. Lo destapo la primera corrida en verde-falso-al-reves:
+      // acusaba al CSS de pintar `red` donde el contrato decia `amber`, y el CSS
+      // estaba bien.
+      const regla = css.match(new RegExp(`\\.ps-state-${key}(?![\\w-])[^{]*\\{([^}]*)\\}`))?.[1];
       assert.ok(regla, `programacion-semanal.css no pinta .ps-state-${key}`);
       const tinte = regla.match(/--ds-state-tint-([a-z]+)/)?.[1];
       assert.equal(tinte, hue, `.ps-state-${key} pinta ${tinte} y el contrato dice ${hue}`);

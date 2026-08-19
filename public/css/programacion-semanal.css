@@ -3486,3 +3486,120 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
     color: var(--ds-active-text-secondary) !important;
 }
 }
+
+/* FONDO POR MATIZ — identidad, no gravedad.
+   Diez reglas generadas desde docs/design-system/state-semantics.json (modulo
+   `programacion-semanal`), una por estado. Antes el fondo lo pintaba el cubo de
+   alerta `ps-alert-*`, que agrupa los diez estados en cinco: dos parejas —una
+   por fase— pintaban identico aunque su chip ya estuviera desempatado, asi que
+   la fila y el chip de la misma actividad decian cosas distintas.
+
+   Las repeticiones ENTRE fases son inocuas: stateMachine.js:58 resuelve una u
+   otra segun `semanalConfirmada`, nunca conviven.
+
+   El `color` se declara en la misma regla a proposito: state-tint-pairing exige
+   que toda regla que pinte un fondo de matiz declare su tinta, y con razon. */
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-bloqueo-critico-sin-compromiso {
+  background-color: var(--ds-state-tint-red) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-ejecucion-con-restricciones {
+  background-color: var(--ds-state-tint-orange) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-condiciones-pendientes {
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-sin-compromiso {
+  background-color: var(--ds-state-tint-violet) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-lista-para-confirmar {
+  background-color: var(--ds-state-tint-green) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida-critica {
+  background-color: var(--ds-state-tint-red) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida {
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-sin-calificar {
+  background-color: var(--ds-state-tint-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-cumplida-control {
+  background-color: var(--ds-state-tint-green) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+.ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-tnp {
+  background-color: var(--ds-state-tint-blue) !important;
+  color: var(--ds-active-text-primary) !important;
+}
+
+
+/* Muestrarios de la leyenda: el mismo matiz que su fila, o la leyenda deja de
+   describir la tabla (defecto F0-012). La clase de cubo se conserva en el markup
+   para la forma; el color lo pone el estado. */
+.ps-page .ps-legend-modal-swatch.ps-state-prog-bloqueo-critico-sin-compromiso {
+  background-color: var(--ds-state-tint-red);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-prog-ejecucion-con-restricciones {
+  background-color: var(--ds-state-tint-orange);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-prog-condiciones-pendientes {
+  background-color: var(--ds-state-tint-amber);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-prog-sin-compromiso {
+  background-color: var(--ds-state-tint-violet);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-prog-lista-para-confirmar {
+  background-color: var(--ds-state-tint-green);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida-critica {
+  background-color: var(--ds-state-tint-red);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida {
+  background-color: var(--ds-state-tint-amber);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-cal-sin-calificar {
+  background-color: var(--ds-state-tint-neutral);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-cal-cumplida-control {
+  background-color: var(--ds-state-tint-green);
+  color: var(--ds-active-text-primary);
+}
+
+.ps-page .ps-legend-modal-swatch.ps-state-cal-tnp {
+  background-color: var(--ds-state-tint-blue);
+  color: var(--ds-active-text-primary);
+}
+

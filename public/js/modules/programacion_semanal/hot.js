@@ -3262,8 +3262,13 @@
 
       for (var j = 0; j < list.length; j++) {
         var state = list[j];
+        // El muestrario lleva la clase de ESTADO ademas de la de cubo, o la
+        // leyenda deja de describir la tabla: es el defecto F0-012. Con solo el
+        // cubo, «Condiciones Pendientes» y «Por Comprometer» se enseñaban con el
+        // mismo cuadrito mientras sus filas ya pintaban distinto.
         html += "<div class='ps-legend-quick-row'>" +
-          "<span class='ps-legend-modal-swatch ps-legend-quick-swatch " + escapeHtml(state.className) + "'></span>" +
+          "<span class='ps-legend-modal-swatch ps-legend-quick-swatch " + escapeHtml(state.className)
+            + ' ps-state-' + escapeHtml(state.key) + "'></span>" +
           "<div class='ps-legend-quick-state'><strong>" + escapeHtml(state.label) + '</strong><small>' + escapeHtml(state.description || '') + '</small></div>' +
           "<div class='ps-legend-quick-action'><strong>Acción:</strong> " + escapeHtml(state.action || 'Gestionar según plan de obra.') + '</div>' +
         '</div>';

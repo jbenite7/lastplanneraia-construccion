@@ -3052,24 +3052,34 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--ds-cell-state-critico-fg) !important;
 }
 
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-high {
-  background-color: var(--ds-cell-state-riesgo-bg) !important;
-  color: var(--ds-cell-state-riesgo-fg) !important;
-}
+/* `high`, `medium` y `control` YA NO PINTAN EL FONDO: lo pinta el matiz por
+   estado, en programacion-semanal.css. Se retiran las declaraciones en vez de
+   dejarlas: estas viven en `@layer components` y las de matiz en `@layer module`,
+   y con `!important` el orden de capas se INVIERTE, asi que estas ganarian y la
+   regla nueva quedaria inerte. Es el mismo mecanismo que confundio a quien
+   convirtio Programa General el 2026-08-19: edito la hoja del modulo, midio, y
+   la pantalla no cambio porque el bloque gemelo de aqui seguia ganando.
 
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-medium {
-  background-color: var(--ds-cell-state-atencion-bg) !important;
-  color: var(--ds-cell-state-atencion-fg) !important;
-}
+   `medium` es el que importaba: agrupaba TRES estados —«Condiciones Pendientes»,
+   «Por Comprometer» e «Incumplida»/«Sin Calificar» segun la fase— en un solo
+   ambar, y por eso dos parejas ya desempatadas en el contrato seguian
+   indistinguibles en la fila.
 
+   `ps-alert-critical`, `ps-alert-info` y `ps-alert-neutral` se conservan tal cual
+   (los dos primeros ya declarados mas arriba): no los usa ninguno de los diez
+   estados declarados, sino otras filas —no activas, informativas—.
+
+   Y `ps-alert-critical-route` tambien se conserva, con una razon propia: ademas
+   de los dos estados criticos —cuyo matiz ES rojo, asi que da igual quien pinte—
+   lo aplica un REALCE que el contrato no declara, `prog-ejecucion-con-restricciones`
+   cuando `Critica >= 1`. Retirarle el fondo dejaria esas filas en naranja como su
+   hermana no critica, y eso es perder una distincion que el producto hace hoy.
+   Es el mismo caso que el `r0` de Programa General: el modulo pinta mas estados
+   de los que el contrato declara. Se conserva el comportamiento y se escala la
+   decision; no se inventa un estado aqui. */
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-info {
   background-color: var(--ds-cell-state-neutral-bg) !important;
   color: var(--ds-cell-state-neutral-fg) !important;
-}
-
-.ps-page #hot-container .handsontable td.ps-row-state.ps-alert-control {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-alert-neutral {
