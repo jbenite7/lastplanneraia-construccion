@@ -101,8 +101,16 @@ de origen, pool de envío masivo frente a IP de hosting. Lo cubre `tests/test_ma
 **En un worktree nuevo, enlaza el `.env` de la raíz antes de usar Docker:**
 
 ```bash
-ln -s "/Volumes/Crucial X6/Developer/lps-aia/.env" .env
+ln -s ~/Developer/lps-aia/.env .env
 ```
+
+**Corregido el 2026-08-19.** Esta línea mandaba enlazar desde
+`/Volumes/Crucial X6/Developer/lps-aia/.env`, y esa ruta **dejó de existir con la mudanza del
+2026-08-18**. El fallo es traicionero porque no se parece a su causa: `ln -s` a un destino
+inexistente **no da error**, así que el enlace queda creado apuntando a la nada, `docker compose`
+resuelve `${DB_NAME}` y `${DB_PASS}` a cadena vacía, y lo que se ve es
+«Access denied for user ''» — que parece un problema de base de datos y es un renglón de
+documentación caducado. Costó una vuelta entera a una sesión el 2026-08-19.
 
 `.env` está en `.gitignore`, así que los worktrees nacen sin él y `docker compose` resuelve
 `${DB_NAME}` y `${DB_PASS}` a cadena vacía. **Enlace, no copia:** las copias se quedan viejas en
