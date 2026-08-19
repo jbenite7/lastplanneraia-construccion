@@ -10,7 +10,7 @@ resumen: Índice con estado de los planes y specs de docs/superpowers/ — propu
 
 # Inventario de planes
 
-Índice de los 88 planes/specs de `docs/superpowers/specs/` y `docs/superpowers/plans/` (patrón
+Índice de los 92 planes/specs de `docs/superpowers/specs/` y `docs/superpowers/plans/` (patrón
 `YYYY-MM-DD-slug[-design].md`; spec = diseño, plan = ejecución del mismo slug). No duplica
 contenido: solo estado y enlace. Trabajo del enjambre activo hoy: ver [[TASKS]].
 
@@ -20,8 +20,16 @@ sin huecos hasta hoy — **no se abrió cada archivo uno por uno**. `ejecutado (
 eso: alta confianza, no verificación línea a línea. `revisar` marca los que mencionan textualmente
 alguna forma de cancelación/no-ejecución (`grep -l "abandonad\|se descarta\|no se hizo\|cancelad"`)
 y necesitan una lectura real antes de confiar en su estado. `en curso` y el `ejecutado` sin
-calificar son los 6 frentes de hoy (2026-08-19), verificados contra `goal.md`/git log en este mismo
-bootstrap.
+calificar son los frentes recientes, verificados contra `goal.md` y git log.
+
+**Repasado el 2026-08-19 contra `origin/main`**, que iba 114 commits por delante del árbol donde se
+escribió este archivo: se añadieron 4 slugs que faltaban y se corrigieron 3 que decían «en curso»
+estando cerrados y publicados (`wiki-v2-visual`, `ds-f0-auditoria-total`, `bug-coloreado-severidad`).
+
+**Qué contiene esta página y qué no.** Aquí vive el **estado** de cada plan, que es lo único que
+ningún script puede deducir. El **catálogo** —qué spec se empareja con qué plan, agrupado por mes—
+lo genera `scripts/wiki-registro.mjs` en [[memoria/registro-de-trabajo]] y no se copia aquí: dos
+catálogos del mismo dato divergen, y entonces no sirve ninguno.
 
 | Plan | Estado | Spec / Plan |
 |---|---|---|
@@ -107,9 +115,13 @@ bootstrap.
 | 2026-08-14-shell-menu-flotante-responsive | ejecutado (inferido) | [[docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design]] · [[docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive]] |
 | 2026-08-14-tarjeta-movil-e2bis | ejecutado (inferido) | [[docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis]] |
 | 2026-08-18-espacio-cuenta-siteground | revisar | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground]] |
-| 2026-08-18-wiki-v2-visual | en curso | [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]] · [[docs/superpowers/plans/2026-08-18-wiki-v2-visual]] |
-| 2026-08-19-bug-coloreado-severidad | en curso | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad]] |
-| 2026-08-19-ds-f0-auditoria-total | en curso | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total]] |
+| 2026-08-18-wiki-v2-visual | ejecutado (Fase 0b, seis tandas, publicadas) | [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]] · [[docs/superpowers/plans/2026-08-18-wiki-v2-visual]] |
+| 2026-08-19-bug-coloreado-severidad | ejecutado | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad]] |
+| 2026-08-19-ds-f0-auditoria-total | ejecutado (DS-F0 cerrada, `567e566e`) | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total]] |
+| 2026-08-19-ds-f1a-estado | ejecutado | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado]] |
+| 2026-08-19-estados-fuera-de-ventana | ejecutado | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana]] |
+| 2026-08-19-estados-severidad-contrato | retirado | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato]] |
+| 2026-08-19-migracion-estados | ejecutado (prepara; el apply no corre aquí) | [[docs/superpowers/plans/2026-08-19-migracion-estados]] |
 | 2026-08-19-organizar-la-casa | en curso | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design]] |
 | 2026-08-19-publicar-sh-invariante-de-montaje | ejecutado | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design]] |
 | 2026-08-19-runtime-budgets-al-ci | en curso | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci]] |

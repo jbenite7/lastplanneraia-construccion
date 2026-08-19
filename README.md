@@ -85,7 +85,9 @@ explícita y aparte, siempre — nunca la da un objetivo de sesión por sí solo
 - [[CHANGELOG]] — historial de cambios (Keep a Changelog).
 - [[IMPLEMENTATION_PLAN_INVENTORY]] — índice de planes/specs de `docs/superpowers/`.
 - [[AGENTS]] / `GEMINI.md` — constitución operativa de los agentes IA (reglas, credenciales, runtime).
-- [[DESIGN]] — contrato de consumo del design system; léelo antes de tocar UI.
+- [[DESIGN]] (`DESIGN.md`) — contrato de consumo del design system; léelo antes de tocar UI. El
+  nombre completo va escrito a propósito: `tests/design-system/design-doc-wiring.test.mjs` exige la
+  cadena literal `DESIGN.md` en este archivo, y un wikilink de Obsidian solo no la satisface.
 - [[docs/coordinacion-sesiones]] — cómo se reparten frentes entre sesiones paralelas.
 - [[docs/decisiones-pendientes]] — cola de decisiones que esperan criterio del usuario.
 - `docs/pdc-v2.md` — Plan de Compras v2 (sucesor del PDC v1, eliminado).

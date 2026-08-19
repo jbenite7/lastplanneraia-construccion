@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: guia
+estado: cerrado
+fecha: 2026-08-19
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/roadmap-historial-completo-2026-08-19.md
+resumen: Copia verbatim de ROADMAP.md tal como estaba antes del bootstrap de la wiki LLM (ROADMAP ahora resume por fases y enlaza aquí para el detalle…
+---
+
 # Historial completo de ROADMAP.md (archivado 2026-08-19)
 
 Copia verbatim de `ROADMAP.md` tal como estaba antes del bootstrap de la wiki LLM (`[[ROADMAP]]`

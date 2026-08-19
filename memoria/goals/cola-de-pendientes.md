@@ -2,16 +2,21 @@
 capa: wiki
 tipo: goal
 estado: abierto
-fecha: 2026-08-18
+fecha: 2026-08-19
 areas: [proceso]
-fuente: sesión de coordinación 2026-08-18 (inventario de planes, specs y sesiones + 22 decisiones del usuario); consolidación de fases 2026-08-18
-resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su orden y su estado"
+tags: [pendiente]
+fuente: sesión de coordinación 2026-08-18 (inventario de planes, specs y sesiones + 22 decisiones del usuario); consolidación de fases 2026-08-18; repaso contra `origin/main` del 2026-08-19
+resumen: "Ledger de fases: los cuatro programas, sus 22 fases, el orden entre ellas y qué bloquea a qué"
 ---
-# Cola de pendientes (fuente única)
+# Cola de fases de los cuatro programas
 
-**Esta página manda.** Es el único sitio donde se mira qué está pendiente y en qué orden. El
-detalle de cada decisión sigue en `decisiones/<frente>.md` y en cada `goals/<slug>/goal.md`, pero
-el **estado y la prioridad** se leen aquí y no se deducen de ningún otro lado.
+**Esta página responde una pregunta y solo una: ¿en qué fase va cada programa y qué bloquea a
+qué?** El orden entre bloques se lee aquí y no se deduce de ningún otro lado.
+
+**Los pendientes sueltos no viven aquí, viven en [[TASKS]]**, que es la fuente única de pendientes
+del proyecto. Hasta el 2026-08-19 las dos páginas decían ser «la fuente única», que es una
+contradicción con coste: dos listas divergen, y entonces no manda ninguna. El reparto es por
+pregunta — fases y su orden, aquí; frentes vivos y tareas, en `TASKS.md`.
 
 Se actualiza al cerrar o reordenar, no se deja derivar. Nada de lo que hay aquí es contrato:
 precedencia **código > `AGENTS.md` > `memoria/`**.
@@ -23,9 +28,11 @@ tres cosas distintas llamadas «F0» y dos llamadas «F1». Nadie podía respond
 fase X?» sin abrir cuatro archivos y adivinar a cuál se refería. Consolidado el 2026-08-18.
 
 Segundo hallazgo de esa consolidación, que vale por sí solo: **las casillas de los planes no miden
-nada.** De 435 casillas repartidas en 17 planes, hay **0 marcadas** — incluidos planes cuyo trabajo
-está en producción. Es el mismo defecto que `coordinating-agent-sessions` tiene medido en su propio
-plan. Para saber si algo está hecho, se verifica **contra el código**, no contra su casilla.
+nada.** El 2026-08-18 eran 0 marcadas de 435 en 17 planes, incluidos planes cuyo trabajo estaba en
+producción. Re-medido el 2026-08-19 sobre los 54 planes: **96 marcadas de 1.680, un 5,7%** — sigue
+sin medir nada, solo que ahora con más muestra. Es el mismo defecto que `coordinating-agent-sessions`
+tiene medido en su propio plan. Para saber si algo está hecho, se verifica **contra el código**, no
+contra su casilla.
 
 ## Bloque 0 — Arranque (bloquea todo lo demás)
 
@@ -59,7 +66,7 @@ esperando su decisión.
 | Grupos de color del grafo (`.obsidian/graph.json`) | No hay forma de comprobar que la consulta hace lo que dice sin abrir Obsidian, y el criterio de la tanda fue que sin verificación no se escribe |
 | Enchufar `--estricto` a `npm run test:wiki` | Es decisión de contrato: a partir de ahí toda fuente nueva nace con frontmatter o el gate se pone rojo. **Ya se midió el hueco**: una fuente entró sin declarar por un merge y el gate no lo detuvo |
 | 3 archivos del design system sin frontmatter | Están congelados por sha256 en `goal-provenance.json`. Ratificado por el usuario |
-| 8 `goal.md` que son andamiajes sin objetivo escrito | Salen ahora en el catálogo con un resumen que lo dice. Hay que decidir cuáles siguen vivos |
+| 9 `goal.md` que son andamiajes sin objetivo escrito | Salen en el catálogo con un resumen que lo dice. Recontados el 2026-08-19: son nueve, no ocho. Hay que decidir cuáles siguen vivos — ver «El triaje que espera criterio de Felipe» |
 
 ## Bloque 1 — Programa Design System (cuatro fases)
 
@@ -69,10 +76,30 @@ manda sobre los gates.**
 
 | Fase | Qué es | Estado |
 |---|---|---|
-| **DS-F0 · Auditoría total** | Toda la app: módulo, objeto, variable y escenario. Absorbe como semilla las 48 decisiones del 3-ago y F-4…F-9 de `docs/DESIGN-AUDIT.md`. Entregable: inventario por severidad «Crítico → Sin problema», verificando de paso el bug de coloreado que el usuario sospecha | No empezada |
-| **DS-F1 · Redefinición del contrato** | Tokens, primitivas `aia-*`, escalas de estado/severidad y escala de stacking (z-index). Arranca con brainstorming con el usuario: el contrato es decisión de negocio | No empezada |
-| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0 | No empezada |
+| **DS-F0 · Auditoría total** | Toda la app: módulo, objeto, variable y escenario. Absorbe como semilla las 48 decisiones del 3-ago y F-4…F-9 de `docs/DESIGN-AUDIT.md` | **CERRADA y publicada** (2026-08-19, `567e566e`). `docs/design-system/auditoria/` con **68 hallazgos** —7 críticos, 31 mayores, 13 menores, 6 cosméticos, 11 sin problema— sobre un censo de **257 rutas**. Cero cambios en código de producto, como exigía su posture |
+| **DS-F1 · Redefinición del contrato** | Tokens, primitivas `aia-*`, escalas de estado/severidad y escala de stacking (z-index). El contrato es decisión de negocio, así que arranca con brainstorming | **EN CURSO.** La escala de estado (F1a) cerró; queda el resto: tokens, primitivas, severidad y z-index. Ver «Dónde va DS-F1» abajo |
+| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0 | No empezada. Ya tiene de qué partir: los 68 hallazgos de DS-F0 |
 | **DS-F3 · Control** | Gates nuevos derivados del contrato. **Los 15 actuales se reemplazan, no se arreglan.** Cinco principios: pocos y atados a contratos que duelan; nunca bloquean el flujo local, solo el merge; actualizar un baseline cuesta un comando con diff visible; todo rojo dice qué archivo y qué hacer; cuarentena explícita para gates ruidosos | No empezada |
+
+### Dónde va DS-F1
+
+Cuatro frentes corrieron el 2026-08-19 sobre la escala de estado. Tres cerraron y están publicados;
+el cuarto espera una ventana de base, no una decisión.
+
+| Frente | Estado |
+|---|---|
+| [[goals/ds-f1a-estado/goal\|ds-f1a-estado]] | **Cerrado** sobre `4a152a54`. Fijó la escala de estado del contrato midiendo contra 50.966 actividades reales |
+| [[goals/ds-f1a-estados-severidad/goal\|ds-f1a-estados-severidad]] | **RETIRADO** el mismo día que se escribió: publicaba una escala de cuatro niveles que contradecía la de tres de su frente hermano. Se conserva con su `## Cierre` sustituido, no borrado, porque el mapa de estado deriva de esa sección |
+| [[goals/estados-fuera-de-ventana/goal\|estados-fuera-de-ventana]] | **Cerrado** sobre `aeaa7a77`. Los dos calculadores producen `Fuera de Ventana` desde la séptima semana, y por primera vez tienen pruebas — de ellos depende el `Estado` de 65.549 filas |
+| [[goals/migracion-estados/goal\|migracion-estados]] | **Cerrado.** Prepara y ensaya la migración; **no la aplica, y su guarda deniega el `--apply` con `RC=1`**. Dry-run: 40.664 filas cambiarían. Respaldo probado restaurando 2.024 filas estropeadas, no declarado |
+| [[goals/apply-recalculo-estados/goal\|apply-recalculo-estados]] | **AUTORIZADO Y SIN EJECUTAR.** Felipe autorizó el apply completo, las tres familias, con el informe del dry-run delante. Su `goal.md` sigue en plantilla |
+
+**El riesgo que hereda el apply, y hay que correrlo antes:** 24 de las 113 filas contradictorias
+están al 100% de avance con fecha de inicio futura. Un recálculo masivo las manda a
+`Fuera de Ventana` y **se pierde el dato de que estaban terminadas**. La consulta que las captura
+vive en `goals/estados-fuera-de-ventana/diagnostico-113-contradictorias.md` y hay que correrla
+**antes** de migrar: después ya no hay forma de saber cuáles eran. Solo cubre la base de
+DESARROLLO — producción es deploy y va aparte.
 
 Consecuencia de secuencia ya decidida: **la Torre de Control BI no se recaptura**, se reconstruye
 con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería construirla dos veces.
@@ -116,13 +143,33 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
   DS-F3 va a reemplazar solo se justifica porque sin CI verde no hay forma de medir nada de DS-F0.
   Es andamio declarado, no inversión.
 
-## Frentes en espera (no arrancan hasta cerrar el bloque 0)
+  **Matiz del 2026-08-19:** DS-F0 cerró **sin** que CP-F-AB llegara a ejecutarse, así que esa
+  justificación ya no aplica tal cual. Lo que queda vivo es el gate `runtime-budgets`, el único
+  `blocked` de los nueve de `closeout-evidence.json`, que persigue el frente
+  [[goals/runtime-budgets-al-ci/goal|runtime-budgets-al-ci]]. El resto del andamio se revisa antes
+  de invertirle nada: no se cablea un gate que DS-F3 va a tirar salvo que desbloquee una medida
+  concreta que alguien necesite hoy.
 
+## Frentes en espera
+
+El bloque 0 cerró el 2026-08-19, así que estos ya no están bloqueados por él. El orden lo manda el
+bloque 1.
+
+- [[goals/apply-recalculo-estados/goal|apply-recalculo-estados]] — autorizado; espera ventana de base exclusiva y la captura previa de las 24 filas en riesgo.
 - [[goals/gates-al-ci/goal|gates-al-ci]] — CP-F-AB recortado: `test.C` en CI + baseline, re-medir 8/8, publicar.
 - [[goals/contadores-cero/goal|contadores-cero]] — visto concedido; localizar rama, re-verificar, publicar.
 - **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
-- **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
+- **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, y el triaje de abajo.
+
+## El triaje que espera criterio de Felipe
+
+**Nueve `goal.md` son andamiajes con el objetivo sin redactar** y nadie sabe cuáles siguen vivos:
+`a187ccda`, `buttons-important-leyenda`, `contador-no-mide-el-archivo`, `focus-visible-verde`,
+`forma-quitar-pasos`, `reserva-redundante-green-dark`, `reservas-contradictorias-var`,
+`severidad-runtime` y `veracidad-8`. Todos tienen su `decisiones/<slug>.md`, ninguno tiene cierre.
+No se cierran ni se borran por cuenta propia: decidir que un frente murió es criterio del usuario,
+no deducción de que lleve días quieto.
 
 ## Replanteo antes de ejecutar
 

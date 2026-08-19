@@ -25,6 +25,15 @@ para el estado de los planes en curso.
 
 ### Añadido
 
+- **Wiki de proyecto al día y depurada (2026-08-19):** `memoria/goals/estado.md` releído contra
+  `origin/main` —iba nueve días y treinta goals atrasado— y `memoria/goals/cola-de-pendientes.md`
+  actualizado con DS-F0 cerrada y los cuatro frentes de estados. `TASKS.md` reescrito: la versión
+  anterior se escribió desde un árbol 114 commits atrasado y daba por activos cinco frentes ya
+  publicados. `cola-de-pendientes` y `TASKS.md` decían ambos ser «la fuente única»; ahora se
+  reparten por pregunta —fases y su orden en la cola, pendientes en `TASKS.md`—.
+- **`openspec/` y `backups/` salen del vault de Obsidian:** son artefactos ignorados por git
+  (tooling vendorizado y volcados locales de BD) y metían 12 hallazgos falsos en el lint de la
+  wiki. Excluidos en `.obsidian/app.json`, que es donde se define el universo que el lint recorre.
 - **Arquitectura global-only documentada:** La BD activa queda formalizada como tablas globales con `project_id`; `{prefix}_*` queda limitado a respaldos, fuentes de migración o deuda aislada sin dependencia runtime.
 - **Asistente semi-automático compartido:** Listado de Actividades, Contratos y PDC comparten `preview/apply/undo/feedback/metrics`, trazabilidad global y bandeja guiada por seguridad.
 - **Trazabilidad semi-auto:** Nuevas tablas globales para corridas, sugerencias, decisiones, feedback y configuración por proyecto.
