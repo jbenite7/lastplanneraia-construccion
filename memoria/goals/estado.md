@@ -5,8 +5,8 @@ estado: vigente
 fecha: 2026-08-19
 areas: [proceso]
 tags: [dashboard]
-fuente: los 56 `goals/<slug>/goal.md` leídos el 2026-08-19 contra `origin/main`, más `git ls-files` y el lint de la wiki
-resumen: "Estado de los 56 goals del repo, leído de la sección `## Cierre` de cada goal.md: 34 cerrados, 12 abiertos y 10 que son plantilla sin objetivo redactado"
+fuente: los 55 `goals/<slug>/goal.md` leídos el 2026-08-19 contra `origin/main`, más `git ls-files` y el lint de la wiki
+resumen: "Estado de los 55 goals del repo, leído de la sección `## Cierre` de cada goal.md: 42 cerrados, 13 abiertos y 1 en plantilla"
 ---
 # Estado de los goals
 
@@ -26,9 +26,13 @@ Para las **fases de los cuatro programas y los pendientes vivos**, [[TASKS]], qu
 
 | | Cuántos | Qué significa |
 |---|---|---|
-| **Cerrados** | 34 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
-| **Abiertos** | 12 | objetivo redactado, sin cierre |
-| **Plantilla** | 10 | `goal.md` es el andamiaje con el objetivo sin escribir |
+| **Cerrados** | 42 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
+| **Abiertos** | 13 | objetivo redactado, sin cierre |
+| **Plantilla** | 1 | `goal.md` es el andamiaje con el objetivo sin escribir |
+
+**Eran 56 goals y 10 plantillas hasta el 2026-08-19.** Ocho de esas plantillas recibieron su
+objetivo y su cierre con evidencia re-medida ese día, y una carpeta —`a187ccda`— se borró por no ser
+un frente. La única que queda es `apply-recalculo-estados`, cuyo trabajo sí corrió.
 
 ## Abiertos o bloqueados
 
@@ -88,11 +92,12 @@ sus decisiones siguen vigentes aunque ninguna fase corriera bajo su nombre. Ver
   número de niveles distinto. Su `## Cierre` se sustituyó en vez de borrarse, a propósito: el mapa
   de estado deriva de la presencia de esa sección, y quitarla haría mentir a dos sitios a la vez.
 
-## Los diez que son plantilla — y no significan lo que parecían
+## Los nueve que parecían muertos y estaban solo sin firmar
 
-`goal.md` existe pero el objetivo sigue siendo `<!-- 1-3 frases -->`. Esta página decía hasta el
-2026-08-19 que **«nueve no se sabe si siguen vivos»**. Se fue a buscar el rastro de los nueve en
-`docs/decisiones-pendientes.md` y `memoria/log.md`, y **los nueve habían corrido**:
+Hasta el 2026-08-19 esta página decía que de los goals en plantilla **«nueve no se sabe si siguen
+vivos»**. Se fue a buscar su rastro en `docs/decisiones-pendientes.md` y `memoria/log.md`, y **los
+nueve habían corrido**. Ocho recibieron ese día su objetivo y su cierre, con la evidencia re-medida
+contra el código; el noveno resultó no ser un frente:
 
 | Frente | Rastro |
 |---|---|
