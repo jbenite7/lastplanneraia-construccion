@@ -110,9 +110,27 @@ que el recálculo les quita el estado.
 **Cómo se distingue, y es medible:** un capítulo **agrupa filas debajo**; una actividad no. Si esas
 296 no tienen hijos, son actividades mal marcadas.
 
-> **Medición pendiente.** Requiere una ventana de contenedor que la coordinadora todavía no ha
-> concedido. **Este hueco no se rellena con una estimación**: hasta medirlo, no se sabe cuál de las
-> dos lecturas es la correcta, y de eso depende si estas 296 filas se migran o se apartan.
+**Medido el 2026-08-19, y la respuesta es que son capítulos de verdad.** Tres señales:
+
+| Señal | Los 296 | Capítulos normales | Actividades |
+|---|---:|---:|---:|
+| Tienen una actividad justo debajo | **87,5%** | 72,4% | — |
+| Avance medio (`Ejecutado`) | **0,005** | 0,000 | 0,214 |
+| Proyectos donde viven | 62 (203) y 63 (93) | todos | todos |
+
+Se comportan como capítulos **más claramente que los propios capítulos normales**: agrupan una
+actividad debajo con más frecuencia, y su avance es prácticamente cero, cuarenta veces menor que el
+de una actividad media. Un capítulo marcado `Terminada` con avance 0,005 no está terminado: arrastra
+un estado que no le corresponde.
+
+**Conclusión: limpiarlas es correcto y no destruye información.** El estado que pierden es residuo,
+no dato. Se recomienda **migrarlas con el resto**, sin excepción — el respaldo las conserva igual, y
+sus `Consecutivo` quedan recuperables por si alguien quiere revisarlas.
+
+**Nota sobre el método:** la tabla no tiene columna de jerarquía, así que «tener hijos» se aproxima
+mirando si la fila siguiente por `Consecutivo` es una actividad. Es una heurística sobre el orden de
+exportación de Project, no una verdad estructural — pero la segunda señal, el avance, es directa y
+apunta al mismo sitio.
 
 ### Y 31 filas más, menores pero del mismo tipo
 
@@ -120,8 +138,20 @@ que el recálculo les quita el estado.
 reconoce como terminadas. Aquí el recálculo **añade** información en vez de quitarla, así que no
 son un riesgo — se anotan por simetría con las otras dos familias.
 
+## La guarda del `--apply`, comprobada
+
+```
+$ docker compose exec -T app php database/migrations/20260819_recalculo_estados.php --apply
+RC=1
+DENEGADO: el --apply del recalculo esta bloqueado en este frente.
+Exige el si explicito del usuario sobre el resultado del dry-run.
+
+diferencias contra el respaldo tras el intento: 0
+```
+
+No solo deniega: **no escribe nada al hacerlo.**
+
 ## Lo que falta antes de poder aplicar
 
-1. La medición de hijos de las 296.
-2. Los gates obligatorios de `docs/global-tables-architecture.md` (Task 5).
+1. Los gates obligatorios de `docs/global-tables-architecture.md` (Task 5).
 3. **El sí explícito del usuario sobre este informe.**
