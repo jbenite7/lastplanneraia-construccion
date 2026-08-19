@@ -882,11 +882,17 @@
       rowClass += ' pi-row-crisis';
     }
 
+    // El nivel viaja como atributo y no como clase: es lo que consume la
+    // primitiva compartida del filete (severity-rail.css), y una clase
+    // obligaria a cada modulo a inventar su propio nombre para el mismo eje.
+    var rowSeverity = isHeader ? null : ((statePresentation[resolvedState] || {}).level || 'neutral');
+
     return {
       state: resolvedState,
       isHeader: isHeader,
       rowStateClass: rowStateClass,
       rowClass: rowClass,
+      rowSeverity: rowSeverity,
       // N-1 (Task 38, 2026-08-05): sin Responsable AIA no se gestionan
       // restricciones. Antes se dejaba escribir y se revertia despues; ahora
       // la fila nace sabiendo si esta bloqueada, y `cells()` lo traduce a
@@ -1009,6 +1015,25 @@
     element.className = (cleanClass + ' ' + rowClass).trim();
   }
 
+  // El fondo (via clases pi-state-*) dice QUE estado es; este atributo dice
+  // CUAN grave es, y lo traduce la primitiva compartida severity-rail.css.
+  // Es un dato de fila, pero `[data-aia-severity-rail]` no tiene selector de
+  // descendiente (Task 2): solo pinta el elemento que lo lleva puesto. Se
+  // escribe en el <tr> y en cada <td>, exactamente como `applyPIRowStateClass`
+  // ya replica `rowClass` en ambos — el mismo mecanismo que el modulo usa para
+  // cualquier atributo de fila, no uno nuevo.
+  function applyPIRowSeverityAttr(element, rowSeverity) {
+    if (!element) {
+      return;
+    }
+
+    if (rowSeverity) {
+      element.setAttribute('data-aia-severity-rail', rowSeverity);
+    } else {
+      element.removeAttribute('data-aia-severity-rail');
+    }
+  }
+
   function applyRowClassesToDOM(instance) {
     if (!instance || !instance.rootElement || instance.rootElement.getClientRects().length === 0) return;
     var data = instance.getSourceData();
@@ -1023,10 +1048,12 @@
       var tr = td.closest ? td.closest('tr') : td.parentNode;
       if (!tr) continue;
       applyPIRowStateClass(tr, meta.rowClass);
+      applyPIRowSeverityAttr(tr, meta.rowSeverity);
 
       var cells = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
       for (var col = 0; col < cells.length; col++) {
         applyPIRowStateClass(cells[col], meta.rowClass);
+        applyPIRowSeverityAttr(cells[col], meta.rowSeverity);
       }
     }
   }
