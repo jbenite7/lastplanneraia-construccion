@@ -1,0 +1,84 @@
+{
+  "generado": "DS-F0 · frente ds-f0-auditoria · tanda 1",
+  "base": "6abe2436",
+  "escala": "docs/design-system/auditoria/escala-severidad.md",
+  "hallazgos": [
+    {
+      "id": "F0-001",
+      "modulo": "transversal",
+      "titulo": "Tres modulos con pantalla no aparecen en ninguna parte del inventario del design system",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Mayor y no critico: son modulos que NO declaran estar migrados, asi que no incumplen una declaracion propia. Es deuda estructural porque el inventario del sistema afirma cubrir el producto y hay pantallas que no alcanza. 'integracion' y 'legado' no rinden pantalla (verificado: JSON y redireccion), asi que el hallazgo real son 'laboratorio-design-system' —que si tiene manifiesto pero no fila en modules[], ver F0-002— y la ausencia general de los submodulos como entidad propia.",
+      "ubicaciones": [
+        { "archivo": "docs/design-system/manifests/inventory.json", "fragmento": "modules[] tiene 14 filas; el censo de rutas da 22 modulos" }
+      ],
+      "evidencia": "node docs/design-system/auditoria/herramientas/censo.mjs — 22 modulos, 14 con moduleId en inventory.json",
+      "origen": "DS-F0",
+      "salidaConocida": "Declarar en modules[] los modulos que rinden pantalla y hoy no figuran, con su status real."
+    },
+    {
+      "id": "F0-002",
+      "modulo": "transversal",
+      "titulo": "laboratory.json y foundation-shell.json son manifiestos sin fila en modules[]",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "declaracion-incumplida",
+      "porQue": "El propio README del design system define modules[] como el arreglo que declara el status de cada modulo. Dos manifiestos existen, estan listados en manifests[] y no tienen status: cualquier consulta que parta de modules[] —que es la forma documentada de preguntar por el estado— no los ve. No es critico porque no rompe pixel; es mayor porque deja un hueco estructural en el mecanismo de gobierno.",
+      "ubicaciones": [
+        { "archivo": "docs/design-system/manifests/inventory.json", "fragmento": "manifests[] lista laboratory.json y foundation-shell.json; modules[] no los incluye" },
+        { "archivo": "docs/design-system/manifests/laboratory.json" },
+        { "archivo": "docs/design-system/manifests/foundation-shell.json" }
+      ],
+      "evidencia": "node -e 'const j=require(\"./docs/design-system/manifests/inventory.json\"); j.manifests.length===15 && j.modules.length===14'",
+      "origen": "DS-F0",
+      "salidaConocida": "Anadir su fila a modules[] con el status que corresponda, o documentar por que un manifiesto puede no tener estado."
+    },
+    {
+      "id": "F0-003",
+      "modulo": "transversal",
+      "titulo": "foundation-shell.json declara 20 rutas y cero escenarios",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Es el manifiesto de mayor alcance del repositorio —cubre 20 de las 41 pantallas— y el unico sin ninguna evidencia visual atada. Un manifiesto sin escenario declara alcance sin declarar como se comprueba, que es justo lo que el contrato de migracion por modulo pide.",
+      "ubicaciones": [
+        { "archivo": "docs/design-system/manifests/foundation-shell.json", "fragmento": "routes[] con 20 entradas; scenarios[] vacio o ausente" }
+      ],
+      "evidencia": "cruce de routes[] contra scenarios[] de los 15 manifiestos — foundation-shell es el unico con rutas y sin escenarios",
+      "origen": "DS-F0",
+      "salidaConocida": "Decidir en DS-F1 si un manifiesto de shell debe llevar escenarios propios o si su cobertura la heredan los modulos."
+    },
+    {
+      "id": "F0-004",
+      "modulo": "escalamientos-y-crisis",
+      "titulo": "/dashboard, la home autenticada, no la nombra ningun manifiesto",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Es la primera pantalla que ve cualquiera que entra a la aplicacion y ningun manifiesto la declara. El modulo si esta como pilot (escalamientos), pero su manifiesto declara solo /dashboard/escalamientos. Mayor y no critico porque la ausencia es de cobertura, no una regla del contrato incumplida en el CSS.",
+      "ubicaciones": [
+        { "archivo": "docs/design-system/manifests/escalamientos.json", "fragmento": "routes: [\"/dashboard/escalamientos\"] — /dashboard no aparece" },
+        { "archivo": "public/index.php", "fragmento": "$router->get('/dashboard', ...)" }
+      ],
+      "evidencia": "cruce de las 41 pantallas contra routes[] de los 15 manifiestos: /dashboard queda sin manifiesto",
+      "escenario": ["reposo"],
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-005",
+      "modulo": "transversal",
+      "titulo": "24 de las 41 pantallas (59%) no tienen escenario que las cubra",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Cifra agregada de F0-002/003/004 y del cruce completo. Mayor y no critico porque no describe un defecto concreto sino el tamano del hueco: 16 pantallas con escenario, 10 declaradas sin el, 15 sin manifiesto. Es el denominador con el que DS-F1 tiene que decidir que significa 'cubierto'.",
+      "ubicaciones": [
+        { "archivo": "docs/design-system/auditoria/censo-modulos.md", "fragmento": "seccion «La cobertura real de las 41 pantallas»" }
+      ],
+      "evidencia": "cruce automatico pantallas x manifests: 16 con escenario, 10 declaradas sin escenario, 15 sin manifiesto",
+      "origen": "DS-F0"
+    }
+  ]
+}

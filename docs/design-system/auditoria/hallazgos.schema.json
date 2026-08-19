@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "docs/design-system/auditoria/hallazgos.schema.json",
+  "title": "Inventario DS-F0",
+  "description": "Forma de un hallazgo de la auditoria total del design system. Inventario, nunca reparacion: ningun campo describe un cambio aplicado.",
+  "type": "object",
+  "required": ["generado", "base", "escala", "hallazgos"],
+  "properties": {
+    "generado": { "type": "string" },
+    "base": { "type": "string", "description": "sha sobre el que se midio" },
+    "escala": { "type": "string", "const": "docs/design-system/auditoria/escala-severidad.md" },
+    "hallazgos": { "type": "array", "items": { "$ref": "#/definitions/hallazgo" } }
+  },
+  "definitions": {
+    "hallazgo": {
+      "type": "object",
+      "required": ["id", "modulo", "titulo", "severidad", "porQue", "ubicaciones", "evidencia"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^F0-[0-9]{3}$" },
+        "modulo": { "type": "string", "description": "slug del censo, o 'transversal' / 'vendor:<nombre>'" },
+        "titulo": { "type": "string" },
+        "severidad": { "enum": ["critico", "mayor", "menor", "cosmetico", "sin-problema"] },
+        "nivel": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "categoria": {
+          "enum": [
+            "token-roto", "token-no-consumido", "color-crudo", "important",
+            "fuera-de-capa", "cascada", "vendor-sin-tokenizar", "estilo-en-linea",
+            "primitiva-ad-hoc", "accesibilidad", "gate-ciego", "declaracion-incumplida",
+            "escenario-sin-cobertura", "consistencia"
+          ]
+        },
+        "porQue": {
+          "type": "string",
+          "description": "Por que cae en ESA severidad segun escala-severidad.md. Obligatorio: sin esto el nivel no es reinterpretable."
+        },
+        "ubicaciones": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["archivo"],
+            "properties": {
+              "archivo": { "type": "string" },
+              "linea": { "type": "integer" },
+              "fragmento": { "type": "string" }
+            }
+          }
+        },
+        "evidencia": { "type": "string", "description": "comando o lectura que lo demuestra" },
+        "escenario": {
+          "type": "array",
+          "items": { "enum": ["reposo", "vacio", "cargando", "error", "hover", "focus", "seleccion", "deshabilitado"] }
+        },
+        "origen": { "type": "string", "description": "id de la semilla: C-20, F-7, ... o 'DS-F0' si es nuevo" },
+        "salidaConocida": { "type": "string", "description": "Que lo arreglaria. NO SE APLICA en DS-F0." },
+        "bloqueadoPor": { "type": "string", "description": "frente del que depende medirlo, p.ej. runtime-budgets-al-ci" },
+        "estimado": { "type": "boolean", "description": "true si la severidad se estimo por no poder medirla todavia" }
+      }
+    }
+  }
+}

@@ -1,0 +1,537 @@
+{
+  "generado": "scratchpad/censo.mjs (DS-F0, tanda 1)",
+  "fuente": [
+    "public/index.php via scripts/wiki-arquitectura.mjs",
+    "docs/design-system/manifests/inventory.json"
+  ],
+  "totalRutas": 257,
+  "totalRutasIndexPhp": 201,
+  "totalRutasAdmin": 56,
+  "modulos": [
+    {
+      "slug": "autenticacion",
+      "titulo": "Autenticación",
+      "prefijos": [
+        "/",
+        "/login",
+        "/logout",
+        "/password",
+        "/dev/entrar",
+        "/_aia/operacion/7f3c9b"
+      ],
+      "rutas": 13,
+      "rutasGet": 8,
+      "superficies": [
+        "/login",
+        "/password/forgot",
+        "/password/reset"
+      ],
+      "alias": [
+        {
+          "ruta": "/_aia/operacion/7f3c9b",
+          "de": "/login en modo mantenimiento (misma vista, otro formAction)"
+        },
+        {
+          "ruta": "/",
+          "de": "/login (LoginController::index -> views/auth/login.view.php)"
+        }
+      ],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/dev/entrar",
+          "porQue": "DevDoor: abre sesion y redirige"
+        },
+        {
+          "ruta": "/login/cancelar",
+          "porQue": "LoginController::cancelPasswordChange redirige a /login"
+        },
+        {
+          "ruta": "/logout",
+          "porQue": "LoginController::logout redirige a /login"
+        }
+      ],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "auth",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "selector-de-proyectos",
+      "titulo": "Selector de proyectos",
+      "prefijos": [
+        "/proyectos",
+        "/proyecto"
+      ],
+      "rutas": 2,
+      "rutasGet": 1,
+      "superficies": [
+        "/proyectos"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "projects",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "programa-general",
+      "titulo": "Programa General",
+      "prefijos": [
+        "/programa-general",
+        "/api/general",
+        "/api/pg"
+      ],
+      "rutas": 15,
+      "rutasGet": 5,
+      "superficies": [
+        "/programa-general"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/programa-general/set-filtro",
+          "porQue": "ProgramaGeneralController::setFilter muta $_SESSION y redirige"
+        }
+      ],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "programa-general",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "cronograma",
+      "titulo": "Actualizar cronograma",
+      "prefijos": [
+        "/programa-general-actualizar"
+      ],
+      "rutas": 1,
+      "rutasGet": 1,
+      "superficies": [
+        "/programa-general-actualizar"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "programa-general-actualizar",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "programacion-intermedia",
+      "titulo": "Programación Intermedia",
+      "prefijos": [
+        "/programacion-intermedia",
+        "/api/pi"
+      ],
+      "rutas": 8,
+      "rutasGet": 4,
+      "superficies": [
+        "/programacion-intermedia"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/programacion-intermedia/set-filtro",
+          "porQue": "ProgramacionIntermediaController::setFilter muta $_SESSION y redirige"
+        },
+        {
+          "ruta": "/programacion-intermedia/set-view-all",
+          "porQue": "ProgramacionIntermediaController::setViewAll muta $_SESSION; responde JSON si es ajax"
+        }
+      ],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "programacion-intermedia",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "programacion-semanal",
+      "titulo": "Programación Semanal",
+      "prefijos": [
+        "/programacion-semanal",
+        "/api/semanal"
+      ],
+      "rutas": 9,
+      "rutasGet": 4,
+      "superficies": [
+        "/programacion-semanal"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "programacion-semanal",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "submodulo-cnp",
+      "titulo": "CNP — Causas de No Programación",
+      "prefijos": [
+        "/programacion-semanal/cnp",
+        "/api/cnp"
+      ],
+      "rutas": 4,
+      "rutasGet": 1,
+      "superficies": [
+        "/programacion-semanal/cnp"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "submodulo-cnc",
+      "titulo": "CNC — Causas de No Cumplimiento",
+      "prefijos": [
+        "/programacion-semanal/cnc",
+        "/api/cnc"
+      ],
+      "rutas": 4,
+      "rutasGet": 1,
+      "superficies": [
+        "/programacion-semanal/cnc"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "submodulo-cic",
+      "titulo": "CIC — Cumplimiento de Actividades",
+      "prefijos": [
+        "/programacion-semanal/cic",
+        "/api/cic"
+      ],
+      "rutas": 3,
+      "rutasGet": 1,
+      "superficies": [
+        "/programacion-semanal/cic"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "plan-de-compras",
+      "titulo": "Plan de Compras v2",
+      "prefijos": [
+        "/plan-compras"
+      ],
+      "rutas": 70,
+      "rutasGet": 37,
+      "superficies": [
+        "/plan-compras"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "plan-compras-v2",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "profesionales",
+      "titulo": "Profesionales",
+      "prefijos": [
+        "/profesionales",
+        "/api/profesionales"
+      ],
+      "rutas": 4,
+      "rutasGet": 2,
+      "superficies": [
+        "/profesionales"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "profesionales",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "subcontratistas",
+      "titulo": "Subcontratistas",
+      "prefijos": [
+        "/subcontratistas",
+        "/api/subcontratistas"
+      ],
+      "rutas": 4,
+      "rutasGet": 2,
+      "superficies": [
+        "/subcontratistas"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "subcontratistas",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "control-de-cambios",
+      "titulo": "Control de Cambios",
+      "prefijos": [
+        "/control-cambios",
+        "/api/control-cambios"
+      ],
+      "rutas": 3,
+      "rutasGet": 1,
+      "superficies": [
+        "/control-cambios"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "control-cambios",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "indicadores",
+      "titulo": "Indicadores LPS",
+      "prefijos": [
+        "/indicadores",
+        "/api/indicadores"
+      ],
+      "rutas": 2,
+      "rutasGet": 1,
+      "superficies": [
+        "/indicadores"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "indicadores",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "torre-de-control-bi",
+      "titulo": "Torre de Control BI",
+      "prefijos": [
+        "/bi",
+        "/api/bi"
+      ],
+      "rutas": 27,
+      "rutasGet": 27,
+      "superficies": [
+        "/bi/contratistas",
+        "/bi/control-tower",
+        "/bi/curva-s",
+        "/bi/intermedia",
+        "/bi/pdc",
+        "/bi/programa-general",
+        "/bi/responsables",
+        "/bi/semanal"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "bi-runtime",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "integracion",
+      "titulo": "Integración de reportes",
+      "prefijos": [
+        "/reportes"
+      ],
+      "rutas": 2,
+      "rutasGet": 1,
+      "superficies": [],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/reportes/{tipo}",
+          "porQue": "ReportController::generate responde json_encode"
+        }
+      ],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "escalamientos-y-crisis",
+      "titulo": "Escalamientos, crisis y avisos",
+      "prefijos": [
+        "/dashboard",
+        "/api/lps",
+        "/api/notifications"
+      ],
+      "rutas": 10,
+      "rutasGet": 4,
+      "superficies": [
+        "/dashboard/escalamientos",
+        "/dashboard"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "escalamientos",
+        "estado": "pilot"
+      }
+    },
+    {
+      "slug": "nucleo-y-runtime",
+      "titulo": "Núcleo, sesión y runtime",
+      "prefijos": [
+        "/session",
+        "/context",
+        "/runtime"
+      ],
+      "rutas": 12,
+      "rutasGet": 9,
+      "superficies": [],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "legado",
+      "titulo": "Carril legado",
+      "prefijos": [
+        "/legacy"
+      ],
+      "rutas": 7,
+      "rutasGet": 1,
+      "superficies": [],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/legacy/cambiar_pagina.php",
+          "porQue": "src/Legacy/Endpoints/cambiar_pagina.php solo hace header(Location)"
+        }
+      ],
+      "destinosLegado": 7,
+      "designSystem": {
+        "moduleId": null,
+        "estado": "ausente-del-inventario"
+      }
+    },
+    {
+      "slug": "panel-admin",
+      "titulo": "Panel de administración",
+      "prefijos": [],
+      "rutas": 56,
+      "rutasGet": 24,
+      "superficies": [
+        "/admin/login",
+        "/admin/password/forgot",
+        "/admin/password/reset",
+        "/admin",
+        "/admin/usuarios",
+        "/admin/usuarios/crear",
+        "/admin/usuarios/editar",
+        "/admin/proyectos",
+        "/admin/proyectos/crear",
+        "/admin/proyectos/editar",
+        "/admin/proyectos/miembros",
+        "/admin/matching/config",
+        "/admin/matching/family-catalog",
+        "/admin/pdc/limpieza"
+      ],
+      "alias": [
+        {
+          "ruta": "/admin/dashboard",
+          "de": "/admin (DashboardController@index)"
+        }
+      ],
+      "rutasQueNoRindenPantalla": [
+        {
+          "ruta": "/admin/logout",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/dev/entrar",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/dashboard/report-progress",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/usuarios/cargos",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/usuarios/sugerir-usuario",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/proyectos/sugerir-rol",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/proyectos/respaldar",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/matching/family-catalog/export",
+          "porQue": "endpoint de datos o redireccion"
+        },
+        {
+          "ruta": "/admin/pdc/limpieza/conteos",
+          "porQue": "endpoint de datos o redireccion"
+        }
+      ],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "admin",
+        "estado": "inventory-only"
+      },
+      "fuente": "admin/public/index.php"
+    },
+    {
+      "slug": "laboratorio-design-system",
+      "titulo": "Laboratorio del design system",
+      "prefijos": [
+        "/internal"
+      ],
+      "rutas": 1,
+      "rutasGet": 1,
+      "superficies": [
+        "/internal/design-system"
+      ],
+      "alias": [],
+      "rutasQueNoRindenPantalla": [],
+      "destinosLegado": 0,
+      "designSystem": {
+        "moduleId": "laboratory",
+        "estado": "ausente-del-inventario"
+      }
+    }
+  ]
+}
