@@ -17,9 +17,42 @@ anota en el campo `salidaConocida` y **no se aplica**.
 | `escala-severidad.md` | Con qué regla se está clasificando aquí — **operativa, no del producto** | 1 |
 | `hallazgos.schema.json` | La forma exacta de un hallazgo | 1 |
 | `hallazgos.json` | El inventario acumulado, consultable por máquina | 2–4 |
+| `inventario.md` | La cascada «Crítico → Sin problema», **generada** desde el JSON | 4 |
+| `transversal.md` | El sistema, sus hojas compartidas y sus gates. **Es donde está lo crítico** | 2 |
 | `modulos/<slug>.md` | Una ficha por módulo, legible | 2 |
 | `vendors/<vendor>.md` | Handsontable y DataTables, aparte | 3 |
 | `herramientas/` | Los scripts que produjeron las cifras, para que sean reproducibles y no haya que creerlas | — |
+
+## El resultado, en una tabla
+
+| Severidad | Hallazgos |
+|---|---:|
+| Crítico | 7 |
+| Mayor | 31 |
+| Menor | 13 |
+| Cosmético | 6 |
+| Sin problema | 11 |
+| **Total** | **68** |
+
+Diez esperan a `runtime-budgets-al-ci`; dos llevan severidad estimada y lo dicen; veintiuno vienen
+de la semilla con su identificador original intacto. El detalle está en `inventario.md`.
+
+**Los siete críticos, en una línea cada uno:**
+
+1. `F0-030` — el baseline tolera 7 161 hallazgos y la deuda real es 3 896: ninguna regresión menor
+   del 84% pone nada en rojo.
+2. `F0-031` — una regla ausente del presupuesto de un módulo no se evalúa nunca; quince de los
+   dieciocho presupuestos no nombran `unauthorized-important`.
+3. `F0-051` — el gate estático no escanea `pdc-app/`: cero de los 3 896 hallazgos vienen del Plan
+   de Compras.
+4. `F0-052` — el gate propio del PDC comprueba dos condiciones y no lo ejecuta ningún script ni CI.
+5. `F0-032` — cinco hex de la paleta clara, con `!important`, en un módulo `pilot` de un producto
+   que solo tiene tema oscuro.
+6. `F0-200` — 63 de los 85 selectores de Handsontable no los alcanza ninguna hoja nuestra.
+7. `F0-201` — y el vendor trae su propia paleta clara, con la que pinta esos 63.
+
+**Cuatro de los siete son de mecanismo, no de código**: el sistema no puede ver su propia deuda.
+Esa es la parte de «ni bien controlado» de la frase que abrió este frente.
 
 ## Por qué el censo se verifica y no se hereda
 
