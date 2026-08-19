@@ -76,9 +76,9 @@ saber cuáles eran. Es una exigencia del plan, no una recomendación.
 - Create: `goals/migracion-estados/113-contradictorias-capturadas.csv`
 - Create: `goals/migracion-estados/113-contradictorias-capturadas.md`
 
-- [ ] **Step 1: Paso 0 — comprobar el montaje del contenedor**
+- [x] **Step 1: Paso 0 — comprobar el montaje del contenedor**
 
-- [ ] **Step 2: Capturar las filas con su identidad**
+- [x] **Step 2: Capturar las filas con su identidad**
 
 ```bash
 docker compose exec -T app php -r '
@@ -114,13 +114,13 @@ Nota sobre el paso 0 en esta tarea: la captura va por PDO directo contra `db`, a
 que monte el contenedor es irrelevante aquí** — la base es la misma. El paso 0 vuelve a ser
 obligatorio en la Task 2, que ejecuta un script del worktree.
 
-- [ ] **Step 3: Escribir el acta de la captura**
+- [x] **Step 3: Escribir el acta de la captura**
 
 Crear `goals/migracion-estados/113-contradictorias-capturadas.md` con: la consulta exacta, la fecha,
 el sha, el conteo obtenido, y **por qué existe este archivo** — que es el único registro de qué eran
 esas filas antes de que el recálculo las reescriba. Enlazar al diagnóstico del frente (A).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add goals/migracion-estados/113-contradictorias-capturadas.csv goals/migracion-estados/113-contradictorias-capturadas.md
@@ -139,9 +139,9 @@ git commit -m "docs(migracion): captura las 113 contradictorias antes de que el 
   `respaldar(Database $db, bool $apply): array` y `restaurar(Database $db, bool $apply): array`,
   que la Task 3 reutiliza.
 
-- [ ] **Step 1: Paso 0 — comprobar el montaje**
+- [x] **Step 1: Paso 0 — comprobar el montaje**
 
-- [ ] **Step 2: Escribir la parte de respaldo del script**
+- [x] **Step 2: Escribir la parte de respaldo del script**
 
 Crear `database/migrations/20260819_recalculo_estados.php` con la cabecera del patrón del
 repositorio (`--apply` explícito, dry-run por defecto) y estas dos operaciones:
@@ -191,7 +191,7 @@ function respaldar(Database $db, bool $apply): array
 }
 ```
 
-- [ ] **Step 3: Correr el dry-run del respaldo**
+- [x] **Step 3: Correr el dry-run del respaldo**
 
 ```bash
 docker compose exec -T app php database/migrations/20260819_recalculo_estados.php
@@ -199,7 +199,7 @@ docker compose exec -T app php database/migrations/20260819_recalculo_estados.ph
 
 Esperado: informa cuántas filas respaldaría y que la tabla no existe todavía. **Sin escribir nada.**
 
-- [ ] **Step 4: Crear el respaldo de verdad y verificar que restaura**
+- [x] **Step 4: Crear el respaldo de verdad y verificar que restaura**
 
 El respaldo **sí se crea** en este frente: crear una tabla nueva no modifica `programa_consolidado`
 y es la única forma de probar que la restauración funciona.
@@ -222,7 +222,7 @@ Esperado: `origen` y `respaldo` iguales, y `diferencias=0`. **`<=>` y no `=`**: 
 para nulos, porque 7 705 filas tienen `Estado` vacío y `NULL = NULL` es `NULL`, no verdadero — con
 `=` esas filas no se compararían y el respaldo parecería correcto sin serlo.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add database/migrations/20260819_recalculo_estados.php
@@ -241,9 +241,9 @@ git commit -m "feat(migracion): el respaldo de la columna Estado, verificado fil
 - Produces: la función `recalcular(Database $db, bool $apply): array`, con el resumen de
   transiciones que la Task 4 convierte en informe.
 
-- [ ] **Step 1: Paso 0 — comprobar el montaje**
+- [x] **Step 1: Paso 0 — comprobar el montaje**
 
-- [ ] **Step 2: Escribir el recálculo, en modo informe**
+- [x] **Step 2: Escribir el recálculo, en modo informe**
 
 Añadir al script:
 
@@ -317,7 +317,7 @@ function recalcular(Database $db, bool $apply): array
 }
 ```
 
-- [ ] **Step 3: Correr el dry-run completo**
+- [x] **Step 3: Correr el dry-run completo**
 
 ```bash
 docker compose exec -T app php database/migrations/20260819_recalculo_estados.php
@@ -325,7 +325,7 @@ docker compose exec -T app php database/migrations/20260819_recalculo_estados.ph
 
 Esperado: el resumen de transiciones, **sin una sola escritura**.
 
-- [ ] **Step 4: Demostrar que el dry-run no escribió**
+- [x] **Step 4: Demostrar que el dry-run no escribió**
 
 ```bash
 docker compose exec -T app php -r '
@@ -339,7 +339,7 @@ foreach ($pdo->query("SELECT COUNT(*) n FROM programa_consolidado p
 
 Esperado: **0**. Es la prueba de que el dry-run es dry: compara contra el respaldo tomado antes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add database/migrations/20260819_recalculo_estados.php
@@ -353,13 +353,13 @@ git commit -m "feat(migracion): el recalculo en modo informe, con la prueba de q
 **Files:**
 - Create: `goals/migracion-estados/informe-dry-run.md`
 
-- [ ] **Step 1: Escribir el informe con los números reales del dry-run**
+- [x] **Step 1: Escribir el informe con los números reales del dry-run**
 
 Crear `goals/migracion-estados/informe-dry-run.md` con: el comando y su salida literal; la tabla de
 transiciones ordenada por volumen; el reparto por proyecto; cuántas filas quedan igual; y cuántas se
 saltaron por no tener semana activa.
 
-- [ ] **Step 2: Proponer el tratamiento de las 24, sin ejecutarlo**
+- [x] **Step 2: Proponer el tratamiento de las 24, sin ejecutarlo**
 
 Añadir al informe una sección con **tres opciones y una recomendación**, dejando claro que **decide
 el usuario**:
@@ -375,7 +375,7 @@ ser cierto en cuanto el respaldo exista y esté verificado; y dejar 24 filas fue
 crearía una excepción permanente que nadie recordaría en la siguiente migración. Pero **es decisión
 del usuario** y el informe se la presenta con las tres.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add goals/migracion-estados/informe-dry-run.md
@@ -388,9 +388,9 @@ git commit -m "docs(migracion): el informe del dry-run y las tres opciones para 
 
 `docs/global-tables-architecture.md` §Gates Obligatorios. Van **antes** del apply, no después.
 
-- [ ] **Step 1: Paso 0 — comprobar el montaje**
+- [x] **Step 1: Paso 0 — comprobar el montaje**
 
-- [ ] **Step 2: Correr los gates de tablas globales**
+- [x] **Step 2: Correr los gates de tablas globales**
 
 ```bash
 docker compose exec -T app php tests/test_global_table_safety.php
@@ -399,7 +399,7 @@ docker compose exec -T app php tests/test_global_table_reconciliation.php
 
 Cada uno **leyendo su código de salida en su propia línea**, sin encadenar.
 
-- [ ] **Step 3: Correr la suite PHP y PHPStan**
+- [x] **Step 3: Correr la suite PHP y PHPStan**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=http
@@ -411,7 +411,7 @@ docker compose exec -T app vendor/bin/phpstan analyse src admin/src --memory-lim
 `test_equipment_families_require_review`, `test_report_processor_cic_project_scope`—. **Cualquier
 fallo distinto de esos cinco para el plan y se reporta.**
 
-- [ ] **Step 4: Anotar los resultados en el informe y commitear**
+- [x] **Step 4: Anotar los resultados en el informe y commitear**
 
 ---
 
@@ -425,13 +425,13 @@ sustituye ni el visto de la coordinadora ni una autorización relatada.
 
 ## Cierre del frente
 
-- [ ] Verificar la condición de hecho con salida real, incluida la prueba de que
+- [x] Verificar la condición de hecho con salida real, incluida la prueba de que
       `programa_consolidado` no cambió.
-- [ ] `git status` limpio.
-- [ ] `git fetch origin` y mirar la divergencia.
-- [ ] Integrar si la hay.
-- [ ] **Re-verificar después de integrar.** Anotar el sha.
-- [ ] Pedir el visto a la coordinadora.
-- [ ] Publicar el sha visado. Con él viajan `5759b13d` y `a7ac08d0`.
-- [ ] Confirmar `origin/main`.
-- [ ] Anotar el cierre en `goals/migracion-estados/goal.md`.
+- [x] `git status` limpio.
+- [x] `git fetch origin` y mirar la divergencia.
+- [x] Integrar si la hay.
+- [x] **Re-verificar después de integrar.** Anotar el sha.
+- [x] Pedir el visto a la coordinadora.
+- [x] Publicar el sha visado. Con él viajan `5759b13d` y `a7ac08d0`.
+- [x] Confirmar `origin/main`.
+- [x] Anotar el cierre en `goals/migracion-estados/goal.md`.
