@@ -35,7 +35,7 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_102 trabajos · 42 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
@@ -54,8 +54,8 @@ _102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archiv
 | Ocultar las etiquetas contadoras que marcan cero — diseño | [[docs/superpowers/specs/2026-08-11-contadores-cero-design|spec]] · [[docs/superpowers/plans/2026-08-11-contadores-cero|plan]] | — |
 | Retirar del contrato de estados el módulo fantasma programa-general-actualizar — spec | [[docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design|spec]] · [[docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma|plan]] | — |
 | Frente 1 · Tanda 1C — Pulido visual, accesibilidad y texto: plan de implementación | [[docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto|plan]] | — |
-| La aserción de la marca del carril comprueba que se vea, no que declare un filtro | [[docs/superpowers/specs/2026-08-11-marca-carril-visible-design|spec]] · [[docs/superpowers/plans/2026-08-11-marca-carril-visible|plan]] | — |
-| PHPUnit incremental, conviviendo con la suite de scripts | [[docs/superpowers/specs/2026-08-11-phpunit-incremental-design|spec]] · [[docs/superpowers/plans/2026-08-11-phpunit-incremental|plan]] | — |
+| La aserción de la marca del carril comprueba que se vea, no que declare un filtro | [[docs/archive/superpowers/specs/2026-08-11-marca-carril-visible-design|spec]] · [[docs/archive/superpowers/plans/2026-08-11-marca-carril-visible|plan]] | sí |
+| PHPUnit incremental, conviviendo con la suite de scripts | [[docs/archive/superpowers/specs/2026-08-11-phpunit-incremental-design|spec]] · [[docs/archive/superpowers/plans/2026-08-11-phpunit-incremental|plan]] | sí |
 | Plan de cierre hasta producción — diseño | [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design|spec]] | — |
 | Fijar la semana en la prueba visual de Programación Intermedia — diseño | [[docs/superpowers/specs/2026-08-11-semana-fija-visual-design|spec]] · [[docs/superpowers/plans/2026-08-11-semana-fija-visual|plan]] | — |
 | Unificar los vocabularios de estado de la cascada — spec | [[docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design|spec]] · [[docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada|plan]] | — |
@@ -63,7 +63,7 @@ _102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archiv
 | Frente 1 · Tanda 1A — Seguridad y permisos: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos|plan]] | — |
 | Frente 1 · Tanda 1B — La cascada LPS: plan de implementación | [[docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps|plan]] | — |
 | Programa de cierre de pendientes — diseño | [[docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design|spec]] | — |
-| Runner para los tests PHP y su conexión al CI | [[docs/superpowers/specs/2026-08-10-runner-tests-php-design|spec]] · [[docs/superpowers/plans/2026-08-10-runner-tests-php|plan]] | — |
+| Runner para los tests PHP y su conexión al CI | [[docs/superpowers/specs/2026-08-10-runner-tests-php-design|spec]] · [[docs/archive/superpowers/plans/2026-08-10-runner-tests-php|plan]] | — |
 | F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: plan de implementación | [[docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion|plan]] | — |
 | F1 — Destrabar el viewport móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil|plan]] | — |
 | F2a-1 — Precondiciones de la evidencia móvil: plan de implementación | [[docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil|plan]] | — |
@@ -81,19 +81,19 @@ _102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archiv
 | Biblia de flujos · Tanda T5 (lectura) | [[docs/superpowers/plans/2026-08-04-biblia-t5-lectura|plan]] | — |
 | Spec — Campaña de cierre de dark mode: las 54 decisiones convertidas en trabajo | [[docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones|plan]] | — |
 | Cierre de la versión 1.1.0 del design system — Diseño | [[docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design|spec]] · [[docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system|plan]] | — |
-| Sembrar los conceptos del design system en la wiki | [[docs/superpowers/specs/2026-08-04-conceptos-design-system-en-la-wiki-design|spec]] | — |
+| Sembrar los conceptos del design system en la wiki | [[docs/archive/superpowers/specs/2026-08-04-conceptos-design-system-en-la-wiki-design|spec]] | sí |
 | La semana en sesión solo la escribe una navegación | [[docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion|plan]] | — |
 | Puerta de servicio de desarrollo para admin/ | [[docs/superpowers/specs/2026-08-03-admin-dev-door-design|spec]] | — |
-| Arquitectura del proyecto en la wiki, generada desde el código | [[docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design|spec]] · [[docs/superpowers/plans/2026-08-03-arquitectura-en-la-wiki|plan]] | — |
+| Arquitectura del proyecto en la wiki, generada desde el código | [[docs/superpowers/specs/2026-08-03-arquitectura-en-la-wiki-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-arquitectura-en-la-wiki|plan]] | — |
 | Cierre de dark mode — diseño validado | [[docs/superpowers/specs/2026-08-03-cierre-dark-mode-design|spec]] | — |
 | Cierre de dark mode | [[docs/superpowers/plans/2026-08-03-cierre-dark-mode-fases-0-3|plan]] | — |
-| Pasada de lint sobre la wiki memoria/ | [[docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design|spec]] · [[docs/superpowers/plans/2026-08-03-lint-wiki-memoria|plan]] | — |
+| Pasada de lint sobre la wiki memoria/ | [[docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-lint-wiki-memoria|plan]] | — |
 | Chip de estado de Programa General | [[docs/superpowers/plans/2026-08-03-pg-chip-de-estado|plan]] | — |
 | Reparto del trabajo pendiente tras el saneamiento del goal de tablas | [[docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design|spec]] | — |
 | Saneamiento de las deudas abiertas del goal de usabilidad | [[docs/superpowers/specs/2026-08-03-saneamiento-deudas-usabilidad-design|spec]] · [[docs/superpowers/plans/2026-08-03-saneamiento-deudas-usabilidad|plan]] | — |
 | Usabilidad: altas y medias | [[docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias|plan]] | — |
-| Cierre de los tres pendientes de la wiki memoria/ | [[docs/superpowers/specs/2026-08-03-wiki-veracidad-y-grafo-design|spec]] · [[docs/superpowers/plans/2026-08-03-wiki-veracidad-y-grafo|plan]] | — |
-| Wiki de proyecto en Obsidian (patrón LLM Wiki) | [[docs/superpowers/specs/2026-08-02-obsidian-memoria-proyecto-design|spec]] | — |
+| Cierre de los tres pendientes de la wiki memoria/ | [[docs/archive/superpowers/specs/2026-08-03-wiki-veracidad-y-grafo-design|spec]] · [[docs/archive/superpowers/plans/2026-08-03-wiki-veracidad-y-grafo|plan]] | sí |
+| Wiki de proyecto en Obsidian (patrón LLM Wiki) | [[docs/archive/superpowers/specs/2026-08-02-obsidian-memoria-proyecto-design|spec]] | sí |
 | Impeccable Audit & Refactor Design: Core LPS & Ops | [[docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design|spec]] | — |
 | LPS Core & Ops UI Refactor Implementation Plan | [[docs/superpowers/plans/2026-08-01-ui-audit-core-lps-ops-plan|plan]] | — |
 
@@ -123,7 +123,7 @@ _102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archiv
 | Retiro del modo legacy (USE_GLOBAL_TABLES=false / tablas zleg_*) | [[docs/archive/superpowers/specs/2026-07-29-retiro-modo-legacy-design|spec]] | sí |
 | PDC v2 — Subpaquetes: del paquete de preconstrucción al contrato real de la obra — Design | [[docs/superpowers/specs/2026-07-29-subpaquetes-obra-design|spec]] | — |
 | PDC v2 — El presupuesto se explica solo: tamiz y cifras honestas — Design | [[docs/superpowers/specs/2026-07-29-tamiz-presupuesto-design|spec]] | — |
-| Unificar plan-de-compras dentro de lastplanneraia-construccion — diseño | [[docs/superpowers/specs/2026-07-29-unificacion-repos-design|spec]] · [[docs/superpowers/plans/2026-07-29-unificacion-repos|plan]] | — |
+| Unificar plan-de-compras dentro de lastplanneraia-construccion — diseño | [[docs/superpowers/specs/2026-07-29-unificacion-repos-design|spec]] · [[docs/archive/superpowers/plans/2026-07-29-unificacion-repos|plan]] | — |
 | A4.1 — Pasos del proceso de contratación configurables por proyecto | [[docs/archive/superpowers/specs/2026-07-28-a41-pasos-configurables-design|spec]] · [[docs/archive/superpowers/plans/2026-07-28-a41-pasos-configurables|plan]] | sí |
 | Adoptar los tonos de PDC y el punto de nivel en todos los chips | [[docs/superpowers/plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel|plan]] | — |
 | Invertir la paleta de estado del design system a oscuro | [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design|spec]] · [[docs/superpowers/plans/2026-07-28-paleta-estado-oscura|plan]] | — |
@@ -140,7 +140,7 @@ _102 trabajos · 42 con spec y plan emparejados · 14 archivados en `docs/archiv
 | Diseño: Fase A3 — Paquetes de contratación + asistente de empaquetamiento | [[docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design|spec]] · [[docs/archive/superpowers/plans/2026-07-23-a3-paquetes-contratacion|plan]] | — |
 | CSRF en endpoints legacy de mutación de semanas | [[docs/archive/superpowers/plans/2026-07-23-csrf-endpoints-semanas|plan]] | sí |
 | Follow-ups del review final A2 (maestro de insumos) | [[docs/archive/superpowers/plans/2026-07-23-pdc-a2-followups|plan]] | sí |
-| Diseño: Fase A1 — Importador de presupuesto | [[docs/superpowers/specs/2026-07-22-a1-importador-presupuesto-design|spec]] · [[docs/archive/superpowers/plans/2026-07-22-a1-importador-presupuesto|plan]] | — |
+| Diseño: Fase A1 — Importador de presupuesto | [[docs/archive/superpowers/specs/2026-07-22-a1-importador-presupuesto-design|spec]] · [[docs/archive/superpowers/plans/2026-07-22-a1-importador-presupuesto|plan]] | sí |
 | Fundación PDC v2 (isla React en lps-aia) | [[docs/archive/superpowers/plans/2026-07-22-fundacion-pdc-v2|plan]] | sí |
 | Colapsado del sidebar como primitiva canónica adoptada en el laboratorio | [[docs/superpowers/specs/2026-07-22-lab-colapsado-primitiva|spec]] · [[docs/superpowers/plans/2026-07-22-lab-colapsado-primitiva|plan]] | — |
 | Roadmap PDC v2 — producto en 2 submódulos y fases de desarrollo | [[docs/superpowers/plans/2026-07-22-roadmap-pdc-v2|plan]] | — |
