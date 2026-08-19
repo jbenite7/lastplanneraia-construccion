@@ -831,6 +831,7 @@
         key: 'sin-datos',
         baseKey: 'sin-datos',
         rowClass: 'pg-state-sin-datos',
+        rowSeverity: (statePresentation['sin-datos'] || {}).level || 'neutral',
         isCritical: false,
         restrictionAlertKey: '',
       };
@@ -849,6 +850,8 @@
         key: 'header',
         baseKey: 'header',
         rowClass: 'pdc-header',
+        // Un capitulo no es un estado del contrato: sin nivel, como en PI.
+        rowSeverity: null,
         isCritical: false,
         restrictionAlertKey: '',
       };
@@ -874,13 +877,24 @@
       terminada: 'pg-state-terminada',
       'sin-datos': 'pg-state-sin-datos',
     };
+    var restrictionAlertKey = getRestrictionAlertKey(data);
+    // La alerta de restricciones PINTA el fondo (sustituye el matiz del estado
+    // base por el amber de `con-alerta-restricciones`), asi que el filete tiene
+    // que contar la misma historia que el fondo: el nivel que el contrato fija
+    // para `con-alerta-restricciones`, sin importar si la alerta es r0 o r4-6
+    // -esa graduacion no vive en el contrato, y "no inventes ninguno" aplica
+    // aqui igual que a un matiz-.
+    var rowSeverity = restrictionAlertKey
+      ? ((statePresentation['con-alerta-restricciones'] || {}).level || 'attention')
+      : ((statePresentation[stateKey] || {}).level || 'neutral');
 
     var result = {
       key: stateKey,
       baseKey: baseKey,
       rowClass: rowClassMap[stateKey] || 'pg-state-actividad-futura',
+      rowSeverity: rowSeverity,
       isCritical: isCritical,
-      restrictionAlertKey: getRestrictionAlertKey(data),
+      restrictionAlertKey: restrictionAlertKey,
     };
 
     setCachedPGClassification(data, result);
@@ -1389,6 +1403,53 @@
       className += ' htDimmed';
     }
     cell.className = normalizeClassList(className);
+  }
+
+  // El fondo (via clases pg-state-*) dice QUE estado es; este atributo dice
+  // CUAN grave es, y lo traduce la primitiva compartida severity-rail.css.
+  // Mismo mecanismo que programacion-intermedia (applyPIRowSeverityAttr):
+  // `[data-aia-severity-rail]` no tiene selector de descendiente, asi que se
+  // escribe en el <tr> y en la primera celda, directo sobre el DOM.
+  function applyPGRowSeverityAttr(element, rowSeverity) {
+    if (!element) {
+      return;
+    }
+
+    if (rowSeverity) {
+      element.setAttribute('data-aia-severity-rail', rowSeverity);
+    } else {
+      element.removeAttribute('data-aia-severity-rail');
+    }
+  }
+
+  function applyPGRowSeverityToDOM(instance) {
+    if (!instance || !instance.rootElement || instance.rootElement.getClientRects().length === 0) {
+      return;
+    }
+    if (typeof instance.countRows !== 'function' || typeof instance.getCell !== 'function') {
+      return;
+    }
+
+    var rowCount = instance.countRows();
+    for (var visualRow = 0; visualRow < rowCount; visualRow++) {
+      var rowData = getSourceRowDataByVisualRow(instance, visualRow);
+      if (!rowData) continue;
+
+      var cls = classifyPGRow(rowData);
+      var td = instance.getCell(visualRow, 0);
+      if (!td) continue;
+      var tr = td.closest ? td.closest('tr') : td.parentNode;
+      if (!tr) continue;
+
+      applyPGRowSeverityAttr(tr, cls.rowSeverity);
+
+      var cells = tr.querySelectorAll ? tr.querySelectorAll('td') : [];
+      for (var col = 0; col < cells.length; col++) {
+        // El filete va SOLO en la primera celda -misma razon que en PI: puesto
+        // en cada columna se ve como un pijama de barras verticales-.
+        applyPGRowSeverityAttr(cells[col], col === 0 ? cls.rowSeverity : null);
+      }
+    }
   }
 
   function refreshVisiblePGCellMeta(instance) {
@@ -3161,6 +3222,7 @@
         var hotInstance = this;
         window.requestAnimationFrame(function () {
           refreshVisiblePGCellMeta(hotInstance);
+          applyPGRowSeverityToDOM(hotInstance);
           syncRenderedTableWidth(hotInstance);
           // C-19: el barrido de titles necesita el ancho ya aplicado, asi que
           // va aqui y no en el renderer. (C-37 vive en `afterGetColHeader`.)

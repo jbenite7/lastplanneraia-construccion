@@ -347,7 +347,8 @@
       ],
       "testSelector": "[data-aia-severity-rail]",
       "consumers": [
-        "programacion-intermedia"
+        "programacion-intermedia",
+        "programa-general"
       ],
       "replacement": null,
       "golden": null,

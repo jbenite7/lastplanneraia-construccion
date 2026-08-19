@@ -3350,38 +3350,53 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--ds-active-text-secondary);
 }
 
-/* Fila tintada por estado. Los `--pg-*` los resuelve `public/css/programa-general.css`
-   (@layer module sin subcapa, gana a este archivo) contra la escalera `--ds-state-tint-*`. */
+/* Fila tintada por estado. ESTA es la regla que de verdad gana el pixel, no la
+   de `public/css/design-system/adapters/programa-general-handsontable.css`
+   (@layer module): las dos usan `!important`, y para `!important` el orden de
+   capas se INVIERTE -exactamente el patron F-2 que ya documenta el comentario
+   de esa misma hoja para otro selector-. `components` (aqui) se declara antes
+   que `module` en `aia-design-system.css:1`, asi que con !important
+   `components` gana. Medido en pantalla el 2026-08-19: editar solo la hoja de
+   `module` no cambiaba nada -en-curso seguia pintando el verde de
+   actividad-futura, y terminada/sin-datos ni siquiera mostraban un tinte de
+   estado, porque esta regla los pisaba a los cinco peldanos viejos-. El fondo
+   dice QUE estado es -identidad-; la gravedad la lleva el filete
+   (`data-aia-severity-rail`), no el fondo. */
 .pg-page #hot-container .handsontable td.pg-state-atrasado,
 .pg-page #hot-container .handsontable td.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg) !important;
-  color: var(--ds-cell-state-critico-fg) !important;
-  border-color: var(--ds-cell-state-critico-fg) !important;
+  background-color: var(--ds-state-tint-red) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
+/* `con-alerta-restricciones` (amber) es un solo estado del contrato: r0
+   (inicio vencido/inmediato) y r1/r2-3/r4-6 (ventanas de riesgo) son la misma
+   identidad, no cuatro. La graduacion R0..R4-6 la dice el texto de la fila,
+   no un segundo color -esa graduacion no vive en `state-semantics.json`, y
+   "no inventes ninguno" aplica igual que a un matiz nuevo-. */
 .pg-page #hot-container .handsontable td.pg-state-restr-0 {
-  background-color: var(--ds-cell-state-bloqueado-bg) !important;
-  color: var(--ds-cell-state-bloqueado-fg) !important;
-  border-color: var(--ds-cell-state-bloqueado-fg) !important;
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg) !important;
-  color: var(--ds-cell-state-riesgo-fg) !important;
-  border-color: var(--ds-cell-state-riesgo-fg) !important;
+  background-color: var(--ds-state-tint-orange) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-tint-green) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable tbody td.pg-row-state.pg-state-r0,
 .pg-page #hot-container .handsontable tbody td.pg-row-state[class~="pg-state-r0"] {
-  background-color: var(--ds-cell-state-bloqueado-bg) !important;
-  color: var(--ds-cell-state-bloqueado-fg) !important;
-  border-color: var(--ds-cell-state-bloqueado-fg) !important;
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable tbody td.pg-row-state.pg-state-r1,
@@ -3390,27 +3405,27 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 .pg-page #hot-container .handsontable tbody td.pg-row-state[class~="pg-state-r1"],
 .pg-page #hot-container .handsontable tbody td.pg-row-state[class~="pg-state-r2-3"],
 .pg-page #hot-container .handsontable tbody td.pg-row-state[class~="pg-state-r4-6"] {
-  background-color: var(--ds-cell-state-atencion-bg) !important;
-  color: var(--ds-cell-state-atencion-fg) !important;
-  border-color: var(--ds-cell-state-atencion-fg) !important;
+  background-color: var(--ds-state-tint-amber) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-a-tiempo-en-curso,
 .pg-page #hot-container .handsontable td.pg-state-en-curso {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-tint-blue) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-tint-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg) !important;
-  color: var(--ds-cell-state-sin-datos-fg) !important;
+  background-color: var(--ds-state-tint-violet) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   border-style: dashed !important;
 }
@@ -3421,52 +3436,68 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border: 1px solid transparent;
 }
 
+/* Los ocho matices de abajo son los mismos que pinta la fila real de la tabla
+   (public/css/design-system/adapters/programa-general-handsontable.css): si
+   la leyenda usara otro color, describiria una tabla que ya no existe -el
+   defecto F0-012 que este frente corrige-. `restr-0/1/2-3/4-6` son un solo
+   estado del contrato (`con-alerta-restricciones`, amber), no cuatro: la
+   graduacion R0..R4-6 la explica el texto de cada fila del modal, no el
+   color. */
 .pg-page .pg-legend-modal-swatch.pg-state-atrasado,
 .pg-page .pg-legend-modal-swatch.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg);
-  border-color: var(--ds-cell-state-critico-fg);
+  background-color: var(--ds-state-tint-red);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg);
-  border-color: var(--ds-cell-state-riesgo-fg);
+  background-color: var(--ds-state-tint-orange);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-green);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-en-curso {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-blue);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-restr-0 {
-  background-color: var(--ds-cell-state-bloqueado-bg);
-  border-color: var(--ds-cell-state-bloqueado-fg);
+  background-color: var(--ds-state-tint-amber);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-restr-1,
 .pg-page .pg-legend-modal-swatch.pg-state-restr-2-3,
 .pg-page .pg-legend-modal-swatch.pg-state-restr-4-6 {
-  background-color: var(--ds-cell-state-atencion-bg);
-  border-color: var(--ds-cell-state-atencion-fg);
+  background-color: var(--ds-state-tint-amber);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-a-tiempo-en-curso {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-blue);
+  border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg);
+  background-color: var(--ds-state-tint-neutral);
   border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg);
+  background-color: var(--ds-state-tint-violet);
   border-color: var(--ds-active-border);
+  color: var(--ds-active-text-primary);
   border-style: dashed;
 }
 
