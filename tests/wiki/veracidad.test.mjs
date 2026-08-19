@@ -38,8 +38,24 @@ test('contarCommits cuenta los commits que devuelve git', () => {
   assert.equal(contarCommits('2026-08-01', () => salidaLog(3)), 3);
 });
 
-test('un commit sin archivos listados cuenta: es un merge y no se puede descartar', () => {
-  assert.equal(contarCommits('2026-08-01', () => `${sha(1)}\n\n${sha(2)}\n`), 2);
+// Un merge que solo une no lista archivos bajo `--cc`; uno que resolvió un conflicto con
+// contenido propio sí. Comprobado con un control positivo en un repo de juguete antes de
+// apoyarse en ello: se creó un merge con resolución propia y otro limpio, y `--cc --name-only`
+// solo listó el primero.
+test('un merge que solo une no cuenta: su contenido ya está en los commits originales', () => {
+  assert.equal(contarCommits('2026-08-01', () => `${sha(1)}\n\n${sha(2)}\n`), 0);
+});
+
+test('un merge que resolvió un conflicto SÍ cuenta: ese contenido no está en ningún otro sitio', () => {
+  // Bajo `--cc`, listar archivos es precisamente la señal de que el merge aportó algo propio.
+  const log = `${sha(1)}\n\n${sha(2)}\n\nsrc/x.php\n`;
+  assert.equal(contarCommits('2026-08-01', () => log), 1);
+});
+
+test('contarCommits pide --cc, que es lo que hace distinguibles los dos merges', () => {
+  let recibido = null;
+  contarCommits('2026-08-01', (args) => { recibido = args; return ''; });
+  assert.ok(recibido.includes('--cc'), 'sin --cc los dos tipos de merge son indistinguibles');
 });
 
 test('contarCommits devuelve 0 con salida vacía', () => {
