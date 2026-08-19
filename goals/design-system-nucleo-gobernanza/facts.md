@@ -1,13 +1,3 @@
----
-capa: fuente
-tipo: evidencia
-estado: vigente
-fecha: 2026-07-15
-areas: [design-system]
-fuente: goals/design-system-nucleo-gobernanza/facts.md
-resumen: Hechos aceptados del Sprint 00: nucleo global versionado, laboratorio visual, gates y piloto en Programa General; no migra la app entera.
----
-
 # Facts
 
 - El Sprint 00 entrega un núcleo global versionado, un laboratorio visual, gates automáticos, manifiestos contractuales y una integración piloto en Programa General; no migra toda la aplicación.

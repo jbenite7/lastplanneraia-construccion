@@ -44,6 +44,26 @@ const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8'
 const ignorado = (rel) => filtros.some((f) => rel === f.replace(/\/$/, '') || rel.startsWith(f))
   || rel.startsWith('.git/');
 
+// Archivos que un contrato congela por hash: no se tocan, ni para añadirles metadato.
+//
+// `docs/design-system/manifests/goal-provenance.json` fija por sha256 los tres documentos que son
+// el registro canónico del goal del design system, y el gate `design-system:static` los comprueba.
+// Medido el 2026-08-19: el lote 4 les puso frontmatter y el gate se puso rojo con
+// «goal provenance: hash mismatch» — la trampa que `AGENTS.md` ya documentaba.
+//
+// La exclusión se lee **del propio manifiesto**, no de una lista de rutas escrita aquí: lo que hay
+// que respetar no son esos tres archivos, sino la regla de que un contrato puede congelar
+// cualquiera. Si mañana congela otro, esto ya lo respeta sin que nadie se acuerde de venir.
+function congelados() {
+  const rutas = new Set();
+  try {
+    const m = JSON.parse(readFileSync(join(RAIZ, 'docs/design-system/manifests/goal-provenance.json'), 'utf8'));
+    for (const s of [...(m.canonicalSources ?? []), ...(m.historicalSources ?? [])]) rutas.add(s.path);
+  } catch { /* sin manifiesto no hay nada congelado */ }
+  return rutas;
+}
+const CONGELADOS = congelados();
+
 const fuentes = [];
 (function recorrer(dir) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -51,7 +71,7 @@ const fuentes = [];
     const rel = relative(RAIZ, p);
     if (ignorado(rel + (e.isDirectory() ? '/' : ''))) continue;
     if (e.isDirectory()) recorrer(p);
-    else if (extname(e.name) === '.md' && deducirCapa(rel) !== 'wiki') fuentes.push(rel);
+    else if (extname(e.name) === '.md' && deducirCapa(rel) !== 'wiki' && !CONGELADOS.has(rel)) fuentes.push(rel);
   }
 })(RAIZ);
 fuentes.sort();

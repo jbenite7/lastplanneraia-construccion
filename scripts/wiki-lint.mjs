@@ -54,6 +54,15 @@ for (const f of vault) {
 const hallazgos = [];
 const anota = (cat, archivo, detalle) => hallazgos.push(`${cat} ${archivo}: ${detalle}`);
 
+// Archivos que un contrato congela por sha256: se leen, no se les exige nada. Ver
+// `wiki-frontmatter.mjs`, que los excluye por la misma razón y desde el mismo manifiesto.
+const CONGELADOS = (() => {
+  try {
+    const m = JSON.parse(readFileSync(join(RAIZ, 'docs/design-system/manifests/goal-provenance.json'), 'utf8'));
+    return new Set([...(m.canonicalSources ?? []), ...(m.historicalSources ?? [])].map((s) => s.path));
+  } catch { return new Set(); }
+})();
+
 const md = vault.filter((f) => extname(f) === '.md');
 const paginas = md.filter((f) => deducirCapa(f) === 'wiki');
 const fuentes = md.filter((f) => deducirCapa(f) !== 'wiki');
@@ -115,7 +124,9 @@ let fuentesConFm = 0;
 for (const rel of fuentes) {
   const fm = bloqueFrontmatter(readFileSync(join(RAIZ, rel), 'utf8'));
   if (fm === null || !campo(fm, 'capa')) {
-    if (ESTRICTO) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
+    // Un archivo que un contrato congela por hash no puede declararse, y exigírselo en estricto
+    // pondría en rojo a quien cumple el contrato. Ver CONGELADOS en `wiki-frontmatter.mjs`.
+    if (ESTRICTO && !CONGELADOS.has(rel)) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
     continue;
   }
   fuentesConFm++;

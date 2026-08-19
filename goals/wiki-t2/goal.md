@@ -69,12 +69,15 @@ o en una pasada final sin coste.
 
 ## Cierre
 
-**Fase 2 · Tanda 2 cerrada el 2026-08-19.** Las 413 fuentes del vault llevan frontmatter del
-esquema v2, y `node scripts/wiki-lint.mjs --estricto` pasa sobre todo el vault:
+**Fase 2 · Tanda 2 cerrada el 2026-08-19.** 410 de las 413 fuentes del vault llevan frontmatter
+del esquema v2, y `node scripts/wiki-lint.mjs --estricto` pasa sobre todo el vault:
 
 ```
-Sin hallazgos. 151 páginas de wiki y 413 de 413 fuentes declaradas (modo estricto).
+Sin hallazgos. 151 páginas de wiki y 410 de 413 fuentes declaradas (modo estricto).
 ```
+
+**Las tres que faltan no son un descuido: están congeladas por contrato.** Ver «El sexto defecto»
+más abajo.
 
 **Ningún cuerpo tocado, y no es una promesa sino una cuenta:** `git diff --shortstat` sobre los
 cuatro lotes da `413 files changed, 4171 insertions(+)` y **cero borrados**. Un backfill que solo
@@ -106,6 +109,28 @@ la regla y se volvió a medir, como manda la Posture.
 Y una carencia de la herramienta que el propio lote convirtió en bloqueo: `--rellenar`, para
 completar las claves escritas pero vacías. El modo normal las respeta a propósito —para no pisar
 lo que escribió una persona— y eso dejaba atrapado un lote aplicado antes de arreglar una regla.
+
+### El sexto defecto, y el único que rompió un gate ajeno
+
+`docs/design-system/manifests/goal-provenance.json` **congela por sha256** los tres documentos que
+son el registro canónico del goal del design system (`goal.md`, `facts.md`, `plan.md` de
+`design-system-nucleo-gobernanza`). El lote 4 les puso frontmatter y el gate `design-system:static`
+se puso rojo con `goal provenance: hash mismatch` — exactamente la trampa que `AGENTS.md` ya tenía
+escrita: «el contrato fija por hash unos archivos que el frente había editado».
+
+**Se deshizo el cambio en esos tres y se dejaron fuera del backfill.** No se tocaron los hashes:
+actualizarlos es tocar un contrato, y eso bloquea. Y aunque no bloqueara, sería la respuesta
+equivocada — añadir metadato a un archivo cuyo propósito entero es estar congelado byte a byte
+incumple la intención del contrato aunque el hash cuadre después.
+
+La exclusión **se lee del propio manifiesto**, no de una lista de rutas escrita en el script: lo que
+hay que respetar no son esos tres archivos, sino la regla de que un contrato puede congelar
+cualquiera. Si mañana congela otro, el backfill ya lo respeta sin que nadie se acuerde de venir a
+añadirlo. El lint hace lo mismo en modo estricto, y desde el mismo manifiesto.
+
+**Pendiente de ratificación:** que esos tres queden permanentemente sin frontmatter es una decisión
+sobre un contrato ajeno, no mía. Escalada a la coordinadora el 2026-08-19. La alternativa —
+regenerar los hashes tras el backfill— necesita el visto de quien gobierna el design system.
 
 ### De dónde salió cada resumen
 

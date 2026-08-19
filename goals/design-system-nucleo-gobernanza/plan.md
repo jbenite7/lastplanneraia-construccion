@@ -1,13 +1,3 @@
----
-capa: fuente
-tipo: plan
-estado: vigente
-fecha: 2026-07-15
-areas: [design-system]
-fuente: goals/design-system-nucleo-gobernanza/plan.md
-resumen: Plan: Sprint 00 — Núcleo y gobernanza del Design System AIA
----
-
 # Plan: Sprint 00 — Núcleo y gobernanza del Design System AIA
 
 ## Solution Approach
