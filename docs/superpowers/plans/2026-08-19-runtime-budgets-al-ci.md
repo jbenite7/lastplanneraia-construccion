@@ -3,7 +3,7 @@
 **Spec:** `docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design.md` · **Estado:** aprobado
 el 2026-08-19, listo para ejecutar. **Esfuerzo:** media jornada.
 
-## Tanda 1 — Por qué está `blocked`, medido y no recordado
+## Fase 1 · Tanda 1 — Por qué está `blocked`, medido y no recordado
 
 Leer el recibo de `runtime-budgets` en `closeout-evidence.json` y ejecutar el gate a mano para ver
 el fallo real. **No se supone la causa: se reproduce.** Si el motivo del bloqueo resultó caducado
@@ -11,14 +11,14 @@ el fallo real. **No se supone la causa: se reproduce.** Si el motivo del bloqueo
 
 - **Verifica:** salida del gate pegada en el `goal.md`, con el sha.
 
-## Tanda 2 — Desbloquear
+## Fase 2 · Tanda 2 — Desbloquear
 
 Arreglar la causa con el cambio mínimo. Si la única salida pasa por tocar un baseline o cambiar lo
 que el gate mide, **PARAR y escalar**: las dos cosas están en la lista de bloqueo incondicional.
 
 - **Verifica:** el gate en verde localmente; `npm run test:design-system:static` en `RC=0`.
 
-## Tanda 3 — Procedencia de CI
+## Fase 3 · Tanda 3 — Procedencia de CI
 
 Publicar y observar una corrida real de Actions. Tomar de ella la procedencia de `full-app-flow` y
 de `runtime-budgets`, y escribirla en `closeout-evidence.json`.
