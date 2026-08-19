@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: concepto
 estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
+tags: [trampa]
 fuente: public/css/tokens.css, docs/design-system/tokens.md
 resumen: "Los tokens tienen dos capas: --aia-* es la paleta de marca y --ds-* el alias semántico; un módulo consume --ds-*, nunca --aia-* ni un hex"
 ---

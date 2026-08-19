@@ -208,13 +208,23 @@ si vas a crear la nota en la misma pasada.
 
 Lista cerrada, comprobada por el script. Son **transversales**: no duplican `tipo` ni `areas`.
 
+**La regla que gobierna los ocho: un tag nunca duplica el `tipo` ni el `estado`.** Etiquetar
+`trampa` una página que ya dice `tipo: trampa` no añade nada — filtrar por el tag devolvería
+exactamente lo mismo que filtrar por el tipo, y una columna que nunca discrimina es ruido con coste
+de mantenimiento. Los tags valen justo cuando **cruzan** la clasificación: `trampa` en una página
+que NO es una trampa, y por eso nadie esperaría encontrar una allí.
+
+Decidido el 2026-08-19 porque la spec de v2 y su plan se contradecían: la spec pedía tags «que no
+duplican `tipo` ni `areas`» y el plan pedía «trampas → `trampa`, mapas → `moc`». Las dos frases no
+podían ser ciertas, y de cuál ganaba dependían 95 de las 151 páginas. Ganó la spec.
+
 | Tag | Cuándo |
 |---|---|
-| `moc` | la página es el mapa de un área |
+| `moc` | la página es el mapa de un área **sin ser `tipo: mapa`** |
 | `dashboard` | es un tablero, no un texto |
 | `plantilla` | es un molde para escribir otras |
-| `pendiente` | queda trabajo abierto dentro |
-| `trampa` | describe algo que ya costó tiempo |
+| `pendiente` | queda trabajo abierto dentro **y no basta `estado: abierto` para verlo** |
+| `trampa` | documenta una trampa **sin ser `tipo: trampa`** — p. ej. un concepto con una sección «dónde se rompe esto» |
 | `leer-antes-de-tocar` | hay que leerla antes de editar el área que cubre |
 | `generado` | la escribe un script; editarla a mano se pierde |
 | `archivo` | trabajo cerrado que se conserva por historia |

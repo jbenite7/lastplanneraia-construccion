@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: mapa
 estado: vigente
 fecha: 2026-08-02
 areas: []
+tags: [generado]
 fuente: sesion
 resumen: "Puerta de entrada a la wiki: qué es, cómo se opera y catálogo de todas sus páginas"
 ---

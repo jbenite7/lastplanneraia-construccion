@@ -128,9 +128,8 @@ hay que respetar no son esos tres archivos, sino la regla de que un contrato pue
 cualquiera. Si mañana congela otro, el backfill ya lo respeta sin que nadie se acuerde de venir a
 añadirlo. El lint hace lo mismo en modo estricto, y desde el mismo manifiesto.
 
-**Pendiente de ratificación:** que esos tres queden permanentemente sin frontmatter es una decisión
-sobre un contrato ajeno, no mía. Escalada a la coordinadora el 2026-08-19. La alternativa —
-regenerar los hashes tras el backfill— necesita el visto de quien gobierna el design system.
+**Ratificado el 2026-08-19:** esos tres quedan permanentemente sin frontmatter. La alternativa
+—regenerar los hashes tras el backfill— se descartó.
 
 ### De dónde salió cada resumen
 

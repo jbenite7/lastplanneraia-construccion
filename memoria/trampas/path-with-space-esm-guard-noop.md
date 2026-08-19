@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: trampa
 estado: vigente
 fecha: 2026-07-21

@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: decision
 estado: vigente
 fecha: 2026-08-18
