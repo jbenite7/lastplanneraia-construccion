@@ -1,0 +1,96 @@
+{
+  "nodes": [
+    {
+      "id": "l-pg",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 110,
+      "text": "# Programa General\nLa línea base del proyecto.\nQué actividades hay y cuándo deben pasar.",
+      "color": "4"
+    },
+    {
+      "id": "l-pi",
+      "type": "text",
+      "x": 0,
+      "y": 220,
+      "width": 320,
+      "height": 110,
+      "text": "# Programación Intermedia\nMirar adelante y **liberar restricciones**\nantes de comprometer.",
+      "color": "5"
+    },
+    {
+      "id": "l-ps",
+      "type": "text",
+      "x": 0,
+      "y": 440,
+      "width": 320,
+      "height": 110,
+      "text": "# Programación Semanal\nEl compromiso de la semana.\nLo que de verdad se va a hacer.",
+      "color": "6"
+    },
+    {
+      "id": "l-medida",
+      "type": "text",
+      "x": 420,
+      "y": 440,
+      "width": 320,
+      "height": 110,
+      "text": "## La medida\nLo comprometido contra lo cumplido.\nDe ahí salen los indicadores.",
+      "color": "1"
+    },
+    {
+      "id": "l-map",
+      "type": "file",
+      "x": 420,
+      "y": 0,
+      "width": 320,
+      "height": 110,
+      "file": "memoria/mapas/lps-dominio.md"
+    },
+    {
+      "id": "l-bi",
+      "type": "file",
+      "x": 420,
+      "y": 220,
+      "width": 320,
+      "height": 110,
+      "file": "memoria/mapas/bi.md"
+    }
+  ],
+  "edges": [
+    {
+      "id": "f1",
+      "fromNode": "l-pg",
+      "fromSide": "bottom",
+      "toNode": "l-pi",
+      "toSide": "top",
+      "label": "se desmenuza"
+    },
+    {
+      "id": "f2",
+      "fromNode": "l-pi",
+      "fromSide": "bottom",
+      "toNode": "l-ps",
+      "toSide": "top",
+      "label": "se compromete"
+    },
+    {
+      "id": "f3",
+      "fromNode": "l-ps",
+      "fromSide": "right",
+      "toNode": "l-medida",
+      "toSide": "left",
+      "label": "se mide"
+    },
+    {
+      "id": "f4",
+      "fromNode": "l-medida",
+      "fromSide": "top",
+      "toNode": "l-bi",
+      "toSide": "bottom",
+      "label": "alimenta"
+    }
+  ]
+}

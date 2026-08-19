@@ -71,6 +71,12 @@ Recorrido A1–A4 y B1, todos cerrados:
 
 Estado y matices en [[estado|Estado de los goals]].
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-pdc.base]]
+
 ## Vecinos
 
 [[arquitectura]] para el modelo de datos · [[qa-y-gates]] para las suites e2e.

@@ -45,6 +45,12 @@ distintos: se mide en un árbol y se concluye sobre otro.
   propia cuando de verdad hace falta.
 - [[variable-vacia-tapa-el-env]] — una variable inyectada vacía cuenta como definida.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-worktrees.base]]
+
 ## Vecinos
 
 [[entorno-y-despliegue]] para Docker y publicación · [[qa-y-gates]] para qué suite creer ·

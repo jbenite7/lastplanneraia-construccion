@@ -39,11 +39,13 @@ const vault = [];
     const rel = relative(RAIZ, p);
     if (ignorado(rel + (e.isDirectory() ? '/' : ''))) continue;
     if (e.isDirectory()) recorrer(p);
-    else if (extname(e.name) === '.md' || extname(e.name) === '.base') vault.push(rel);
+    // `.canvas` cuenta como destino enlazable: un canvas es una página del vault como otra
+    // cualquiera. Faltaba, y por eso un enlace correcto a un canvas se reportaba como roto.
+    else if (['.md', '.base', '.canvas'].includes(extname(e.name))) vault.push(rel);
   }
 })(RAIZ);
 
-const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base)$/, '')));
+const porRuta = new Set(vault.map((f) => f.replace(/\.(md|base|canvas)$/, '')));
 const porNombre = new Map();
 for (const f of vault) {
   const corto = basename(f, extname(f));
@@ -101,8 +103,12 @@ for (const rel of paginas) {
 
   // Enlaces
   const limpio = texto.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  for (const m of limpio.matchAll(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g)) {
-    const destino = m[1].trim().replace(/\.(md|base)$/, '');
+  // El separador de alias puede venir escapado (`\|`): dentro de una tabla de Markdown, una
+  // barra sin escapar cortaría la celda, así que `[[destino\|Alias]]` es la forma CORRECTA y no
+  // una errata. Sin contemplarlo, el `\` se colaba en el destino y el enlace salía roto —
+  // medido el 2026-08-19 sobre los tres canvas enlazados desde `index.md`.
+  for (const m of limpio.matchAll(/\[\[([^\]|#\\]+)(?:\\?[|#][^\]]*)?\]\]/g)) {
+    const destino = m[1].trim().replace(/\.(md|base|canvas)$/, '');
     if (porRuta.has(destino)) continue;
     const cand = porNombre.get(basename(destino));
     if (!cand) anota('ENLACE', rel, `roto: [[${destino}]]`);

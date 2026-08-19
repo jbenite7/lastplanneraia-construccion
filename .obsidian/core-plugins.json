@@ -15,7 +15,7 @@
   "outline": true,
   "word-count": true,
   "file-recovery": true,
-  "canvas": false,
+  "canvas": true,
   "daily-notes": false,
   "templates": false,
   "zk-prefixer": false,

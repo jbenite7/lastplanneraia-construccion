@@ -148,3 +148,28 @@ test('un campo vacio no se traga la linea siguiente', () => {
   assert.equal(campo(fm, 'resumen'), 'Algo');
   assert.deepEqual(revisarFrontmatter(fm, { rel: 'docs/x.md' }), []);
 });
+
+// ── Enlaces: las dos formas que el lint reportaba mal ────────────────────────────────────────
+// Viven aquí y no en el lint porque el lint no exporta nada; se prueba el patrón que usa, que es
+// lo que falló. Si el patrón del lint cambia, este test deja de cubrirlo — está dicho a propósito.
+
+const PATRON_ENLACE = /\[\[([^\]|#\\]+)(?:\\?[|#][^\]]*)?\]\]/g;
+const destinos = (t) => [...t.matchAll(PATRON_ENLACE)].map((m) => m[1].trim());
+
+test('un alias con barra escapada no ensucia el destino', () => {
+  // Dentro de una tabla de Markdown la barra DEBE escaparse o corta la celda, así que
+  // `[[x\|Alias]]` es la forma correcta. Sin contemplarlo, el destino salía como `x\`.
+  assert.deepEqual(destinos('| [[tablero-de-control.canvas\\|Tablero]] | algo |'),
+    ['tablero-de-control.canvas']);
+  assert.deepEqual(destinos('[[pdc|Plan de Compras]]'), ['pdc']);
+  assert.deepEqual(destinos('[[pdc]]'), ['pdc']);
+  assert.deepEqual(destinos('[[pdc#Trampas]]'), ['pdc']);
+});
+
+test('la extensión se recorta igual en las tres clases de destino', () => {
+  const recorta = (d) => d.replace(/\.(md|base|canvas)$/, '');
+  assert.equal(recorta('memoria/index.md'), 'memoria/index');
+  assert.equal(recorta('area-pdc.base'), 'area-pdc');
+  assert.equal(recorta('cascada-lps.canvas'), 'cascada-lps');
+  assert.equal(recorta('docs/pdc-v2'), 'docs/pdc-v2');
+});

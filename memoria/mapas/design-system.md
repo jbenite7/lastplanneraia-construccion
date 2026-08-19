@@ -139,6 +139,12 @@ Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
 
 Estado de todos en [[estado|Estado de los goals]].
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-design-system.base]]
+
 ## Vecinos
 
 [[qa-y-gates]] para las suites · [[lps-dominio]] para las superficies que consumen todo esto.
