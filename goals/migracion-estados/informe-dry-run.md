@@ -155,3 +155,44 @@ No solo deniega: **no escribe nada al hacerlo.**
 
 1. Los gates obligatorios de `docs/global-tables-architecture.md` (Task 5).
 3. **El sí explícito del usuario sobre este informe.**
+
+## Los gates obligatorios
+
+`docs/global-tables-architecture.md` §Gates Obligatorios. Corridos con **contenedor efímero**
+(`docker compose run --rm --no-deps`), que monta este worktree y alcanza la misma base sin tocar el
+contenedor compartido — la regla de tráfico adoptada el 2026-08-19.
+
+```
+$ ... php tests/test_global_table_safety.php
+RC=0   === Global Table Safety: OK ===
+       No hay TRUNCATE ni CREATE runtime inseguro sobre tablas globales.
+       INSERT SELECT global conserva project_id e IDs por proyecto.
+
+$ ... php tests/test_global_table_reconciliation.php
+RC=0   === Global Table Reconciliation: OK ===
+       Tablas legacy verificadas: 0
+       No hay claves legacy sin equivalente global por project_id.
+
+$ ... vendor/bin/phpstan analyse src admin/src --memory-limit=1G
+RC=0   [OK] No errors
+
+$ ... php scripts/run-php-tests.php --nivel=db
+RC=1   OK (45 tests, 68 assertions) en PHPUnit, y 4 scripts sueltos en rojo:
+       test_bi_programa_general_chart_values · test_bi_source_reconciliation
+       test_equipment_families_require_review · test_report_processor_cic_project_scope
+```
+
+**Los cuatro rojos son preexistentes**, de la misma lista medida A/B en el frente anterior con
+`git stash`: fallan igual con y sin los cambios de este trabajo. `test_bi_programa_general_chart_values`
+es además el intermitente conocido — una aserción con cifras fijas que depende de datos vivos.
+
+### Lo que falta y por qué no se corrió
+
+**El nivel `http` de la suite.** Su comprobación previa hace
+`file_get_contents('http://127.0.0.1/login')` **dentro del contenedor**, y un contenedor efímero
+lanzado con `--no-deps` no levanta Apache: la petición fallaría por el método, no por el código.
+Correrlo exige el contenedor compartido sirviendo este worktree, o sea **ventana coordinada**.
+
+**No se da por verde ni se estima.** Queda como el único gate pendiente del frente, y su resultado
+esperado son los mismos 5 preexistentes de la medición A/B — pero eso es una expectativa, no una
+medida.
