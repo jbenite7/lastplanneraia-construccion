@@ -10,7 +10,7 @@ resumen: DS-F0 · Auditoría total del design system — diseño
 
 # DS-F0 · Auditoría total del design system — diseño
 
-**Fase:** DS-F0, bloque 1 de [[cola-de-pendientes]]. **Frente:** `ds-f0-auditoria`.
+**Fase:** DS-F0, bloque 1 de [[TASKS|Cola de pendientes]]. **Frente:** `ds-f0-auditoria`.
 
 ## De dónde sale
 

@@ -1,13 +1,69 @@
 ---
-capa: wiki
+capa: fuente
 tipo: goal
-estado: abierto
+estado: vigente
 fecha: 2026-08-18
 areas: [proceso]
+tags: [proyecto]
 fuente: sesión de coordinación 2026-08-18 (inventario de planes, specs y sesiones + 22 decisiones del usuario); consolidación de fases 2026-08-18
 resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su orden y su estado"
+project: lps-aia
+type: tasks
+status: activo
+updated: 2026-08-19
 ---
-# Cola de pendientes (fuente única)
+
+# Tareas
+
+**Fuente única de pendientes del proyecto.** Las cuatro secciones de abajo son la vista operativa;
+el detalle por bloques y fases, más abajo, es el mismo trabajo visto por programa. Si algo no está
+aquí, no está pendiente.
+
+## Bloqueantes
+
+- [ ] **Decidir los plugins de comunidad de Obsidian.** La Tanda 4 se hizo solo con lo nativo por
+  decisión del usuario (2026-08-19). Mientras no se decida, quedan fuera el Kanban de esta cola,
+  el arranque automático del dashboard (Homepage), los iconos por carpeta y el tema Minimal.
+  Versionarlos mete dependencias de terceros en el árbol: por eso no se hizo de paso.
+
+## Ahora
+
+- [ ] **Ocho `goal.md` son andamiajes con el objetivo sin escribir** — `a187ccda`,
+  `buttons-important-leyenda`, `contador-no-mide-el-archivo`, `focus-visible-verde`,
+  `forma-quitar-pasos`, `reserva-redundante-green-dark`, `reservas-contradictorias-var`,
+  `severidad-runtime`, `veracidad-8`. Salen en el catálogo con un resumen que dice exactamente eso.
+  Hay que decidir cuáles siguen vivos y cuáles se descartan.
+- [ ] **El módulo CAS no existe en el plugin instalado** (`loop-engineering/0.3.0`), y el caché de
+  `0.2.0` desapareció a mitad de jornada. **Los gates de rutas, presupuesto y push no están
+  activos**: el cumplimiento es disciplina, no mecánica. Con varias sesiones en paralelo, cuesta.
+- [ ] **Ordenar `CHANGELOG.md`.** No está en orden cronológico inverso: `[1.1.1]` y `[1.1.0]`
+  aparecen antes que `[Sin publicar]` y que `[1.2.0]`. Se detectó el 2026-08-19 y **no se corrigió
+  en el mismo turno a propósito**: reordenar 400 líneas de historia ajena a mano arriesga perder
+  contenido, y eso pide su propia pasada con verificación.
+
+## Diferibles
+
+- [ ] **Grupos de color del grafo** (`.obsidian/graph.json`). Se difirió porque no hay forma de
+  comprobar que la consulta de color hace lo que dice sin abrir Obsidian, y el criterio de la
+  Tanda 4 fue que sin verificación no se escribe.
+- [ ] **Rediseñar el proxy de la alarma de veracidad.** Hoy cuenta commits y **no sabe de qué habla
+  la wiki**: pesa igual un commit en un área con quince páginas que uno en un área sin ninguna.
+  Ahora sería afinable —las 13 áreas tienen mapa y las fuentes declaran su `areas`—, pero es
+  cambiar el proxy entero, no recortarlo. Los tres descuentos de 2026-08-19 ya exprimieron el atajo.
+- [ ] **Versionar el estado de coordinación.** `.claude/vistos/` está en `.gitignore:219` y
+  `decisiones/gobierno-relato-de-autorizaciones.md` está sin commitear, así que ninguna sesión que
+  trabaje en un worktree los ve. Precedente medido el 2026-08-11: un archivo de estado compartido
+  sin versionar se llevó doce hallazgos sin diff y sin rastro. Lo lleva la coordinadora.
+
+## Hechas (últimas 10)
+
+- [x] 2026-08-19 — **Fase 0b completa**: las seis tandas de la wiki v2, publicadas por separado.
+- [x] 2026-08-19 — El gate de publicación bloquea por la forma de la wiki y solo avisa por la alarma.
+- [x] 2026-08-19 — La alarma deja de contar frontmatter, merges que solo unen y documentos de intención.
+- [x] 2026-08-19 — Los cinco archivos de la wiki del proyecto, en la raíz y con frontmatter fusionado.
+- [x] 2026-08-18 — **Fase 0**: mudanza del repositorio a `~/Developer/lps-aia`, verificada antes del cutover.
+
+## El detalle, por bloques
 
 **Esta página manda.** Es el único sitio donde se mira qué está pendiente y en qué orden. El
 detalle de cada decisión sigue en `decisiones/<frente>.md` y en cada `goals/<slug>/goal.md`, pero

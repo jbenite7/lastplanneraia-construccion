@@ -50,7 +50,7 @@ pagar la verificación dos veces.
 3. Instalar y versionar plugins: Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage, tema
    Minimal + Style Settings. Ajustar `.gitignore` si excluye `.obsidian/plugins`.
 4. Home dashboard: `memoria/index.md` renovado (callouts, Bases embebidos, accesos) + Homepage
-   apuntándole. Kanban de la cola enlazado con [[cola-de-pendientes]].
+   apuntándole. Kanban de la cola enlazado con [[TASKS|Cola de pendientes]].
 - **Verifica:** clon frío en carpeta temporal abre el vault con tema, iconos, dashboard y canvas
   operativos; sin plugins, el contenido sigue legible (Bases/Markdown).
 
@@ -64,7 +64,7 @@ pagar la verificación dos veces.
 
 1. `node scripts/wiki-arquitectura.mjs --cobertura` y `--escribir` (zonas generadas con tag).
 2. `wiki-registro.mjs --escribir`; línea `ingest` en `memoria/log.md`; actualizar
-   [[cola-de-pendientes]] (Fase 0b cerrada).
+   [[TASKS|Cola de pendientes]] (Fase 0b cerrada).
 3. Gate de publicación de AGENTS.md (verificar → integrar → re-verificar → `scripts/publicar.sh`).
 - **Verifica:** condición de hecho de la spec completa, con salidas pegadas en el goal.
 

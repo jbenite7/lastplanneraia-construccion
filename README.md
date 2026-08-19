@@ -3,9 +3,32 @@ capa: fuente
 tipo: guia
 estado: vigente
 fecha: 2026-03-09
+areas: [proceso]
+tags: [proyecto]
 fuente: README.md
-resumen: Puerta de entrada al repo: que es Last Planner AIA, como se levanta el stack local y donde esta cada cosa.
+resumen: Puerta de entrada al repo: qué es Last Planner AIA, cómo se levanta el stack local y dónde está cada cosa.
+project: lps-aia
+type: readme
+status: activo
+updated: 2026-08-19
 ---
+
+## Mapa
+
+Los cinco archivos vivos de este repositorio. Se actualizan en el mismo turno que el hecho que los
+afecta, no al final.
+
+- [[ROADMAP]] — el rumbo y sus fases, y las decisiones que lo cambiaron.
+- [[TASKS]] — la cola de pendientes. **Fuente única**: si no está aquí, no está pendiente.
+- [[CHANGELOG]] — el historial de cambios, formato Keep a Changelog.
+- [[IMPLEMENTATION_PLAN_INVENTORY]] — índice de specs y planes con su estado. **Lo genera
+  `scripts/wiki-registro.mjs`**; no se escribe a mano.
+- [[AGENTS]] — el contrato del repo para quien trabaje aquí, humano o asistente. Manda sobre esta
+  página.
+
+Y la memoria del proyecto, que es otra cosa: [[memoria/index|la wiki]] guarda el porqué de las
+decisiones y las trampas que ya costaron tiempo. Empieza por ahí antes de tocar un área.
+
 
 # Last Planner AIA: Construyendo con +CERTEZA
 
