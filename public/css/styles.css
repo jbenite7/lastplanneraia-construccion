@@ -3406,10 +3406,22 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 .pg-page #hot-container .handsontable td.pg-state-a-tiempo-en-curso,
+/* «En Curso» deja de compartir color con «Actividad Futura». Los dos pintaban
+   `--ds-cell-state-ok-bg`, asi que dos estados que el usuario filtra por separado
+   eran el mismo pixel en la tabla Y en la leyenda.
+
+   Azul porque es lo que el contrato ya declara para este estado en
+   state-semantics.json —«en marcha»—, no una eleccion nueva. Es el mismo azul
+   que significa «en marcha» en /pdc y en Intermedia.
+
+   Cambio minimo y deliberado: NO es el remapeo de Programa General, que va
+   detras del frente B. Entra solo porque `actividad-futura` y `en-curso` son de
+   los OCHO estados que produce el calculador y no de los cinco legacy con fecha
+   de defuncion, asi que este arreglo no se rehace con la migracion. */
 .pg-page #hot-container .handsontable td.pg-state-en-curso {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-tint-blue) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-terminada {
@@ -3447,9 +3459,11 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-cell-state-ok-fg);
 }
 
+/* El muestrario sigue a su fila, o la leyenda deja de describir la tabla. */
 .pg-page .pg-legend-modal-swatch.pg-state-en-curso {
-  background-color: var(--ds-cell-state-ok-bg);
-  border-color: var(--ds-cell-state-ok-fg);
+  background-color: var(--ds-state-tint-blue);
+  color: var(--ds-active-text-primary);
+  border-color: var(--ds-active-border);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-restr-0 {
