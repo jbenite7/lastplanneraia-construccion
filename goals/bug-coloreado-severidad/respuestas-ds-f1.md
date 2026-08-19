@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/bug-coloreado-severidad/respuestas-ds-f1.md
+resumen: Recogidas el 2026-08-18, con brainstorming, de a una y en simple, después de cerrar el frente bug-coloreado-severidad. No son un diseño: son las tres…
+---
+
 # Respuestas del usuario — la dirección de DS-F1
 
 **Recogidas el 2026-08-18**, con `brainstorming`, de a una y en simple, después de cerrar el frente
