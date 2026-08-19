@@ -184,7 +184,7 @@ El pase no depende de que alguien se acuerde. `scripts/wiki-lint.mjs` localiza l
 |---|---|
 | Rutas que cuentan | `src/`, `admin/`, `public/`, `tests/`, `scripts/`, `docs/`, `AGENTS.md` |
 | Rutas que no cuentan | todo lo demás, en particular `memoria/` |
-| Commits que no cuentan | los que **solo añaden frontmatter** y los **merges que solo unen** (ver abajo) |
+| Commits que no cuentan | los que **solo añaden frontmatter**, los **merges que solo unen**, y los que **solo tocan documentos de intención o historia** (ver abajo) |
 | Umbral | **más de 40 commits → hallazgo `VERACIDAD`**, salida en rojo |
 
 **Un commit de solo-metadato no es deriva de código, y desde el 2026-08-19 no cuenta.** La regla
@@ -218,10 +218,33 @@ se creyó que la alarma sonaba por el backfill de la wiki, que tocó 413 archivo
 Aquellos commits traían además cambios en `scripts/` y `tests/`, así que contaban como código y
 con razón. Lo que de verdad inflaba el recuento eran los merges.
 
-**Lo que sigue abierto:** 16 de los que quedan son `.md` con el cuerpo modificado —specs, planes,
-`goal.md`—. Editar una spec no es deriva de código, pero `docs/` está en las rutas contadas y no
-hay forma barata de distinguir una spec de un contrato. Ampliar la exclusión ahí es volver a
-cambiar qué mide la alarma, y eso no se decide de paso.
+**Un commit que solo toca documentos de intención tampoco cuenta, desde el 2026-08-19.** No todo
+`.md` de `docs/` pesa igual sobre la wiki:
+
+| | `tipo` | Por qué |
+|---|---|---|
+| **Mandan** | `contrato` · `guia` · `biblia` | los mapas dicen literalmente «Qué manda: <documento>». Si cambia, la página que lo cita puede quedar falsa — y eso es deriva **más** directa que un cambio de código, no menos |
+| **No mandan** | `spec` · `plan` · `reporte` · `evidencia` · `goal-doc` | registran intención o historia. Escribir una spec hoy no cambia nada de lo que la wiki afirma: describe algo que aún no se ha construido |
+
+Un commit de solo `.md` cuenta si toca **al menos uno** de los que mandan.
+
+**Cómo se decidió, porque el atajo obvio era el equivocado.** El planteamiento inicial fue «la
+prosa no debería contar». Medido sobre 404 commits: 232 tocaban código, **118 tocaban un documento
+con autoridad** y solo 54 eran pura intención. Excluir «la prosa» en bloque habría silenciado esos
+118. El eje bueno no es prosa contra código, es **autoridad contra intención**.
+
+**Falla hacia el ruido a propósito.** Un archivo que no declara `tipo` —o que el commit borró o
+renombró— cuenta como si mandara. Es la debilidad conocida de esta regla: apoya la alarma en un
+metadato que mantiene la propia wiki y que en su mayoría dedujo un script desde la ruta, así que
+un documento mal tipado se silenciaría a sí mismo. Ante la duda, que suene.
+
+**Efecto medido:** de 404 commits a 370 sobre la ventana amplia; un 8%.
+
+**Lo que sigue abierto, y ya no es un ajuste sino un rediseño:** la alarma cuenta *commits* como
+aproximación de «la wiki pudo quedar desactualizada», y **no sabe de qué habla la wiki**: pesa
+igual un commit en un área con quince páginas que uno en un área sin ninguna. Ahora sería posible
+afinarlo —las trece áreas tienen mapa y las fuentes declaran su `areas`—, pero es cambiar el proxy
+entero, no recortarlo.
 
 Se mide en commits y no en días a propósito: este repo hace 100 o más commits en un día de sprint y
 ninguno en un fin de semana, así que el reloj de pared no dice nada sobre cuánta deriva entró. Los
