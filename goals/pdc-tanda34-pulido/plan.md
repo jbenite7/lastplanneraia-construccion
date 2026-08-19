@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-tanda34-pulido/plan.md
+resumen: For agentic workers. Repo /Volumes/Crucial X6/Developer/plan-de-compras, rama pdc-revision-ux. Bundle al worktree /Volumes/Crucial…
+---
+
 # Plan — Tandas 3 y 4: la primera impresión y el pulido
 
 For agentic workers. Repo `/Volumes/Crucial X6/Developer/plan-de-compras`, rama `pdc-revision-ux`.

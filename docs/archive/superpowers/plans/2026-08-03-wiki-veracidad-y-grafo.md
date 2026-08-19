@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-03
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-08-03-wiki-veracidad-y-grafo.md
+resumen: Que la wiki memoria/ avise sola cuando lleva demasiados commits sin verificarse contra el código, que sus nodos sueltos estén clasificados y declarados, y que…
+---
+
 # Cierre de los tres pendientes de la wiki — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

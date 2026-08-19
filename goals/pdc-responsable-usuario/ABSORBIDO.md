@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-responsable-usuario/ABSORBIDO.md
+resumen: Este goal (responsable de paquete: arreglar el guardado y darle un selector de personas) se cerró y se absorbió.
+---
+
 # Goal absorbido — 2026-07-29
 
 Este goal (**responsable de paquete: arreglar el guardado y darle un selector de personas**) se cerró y

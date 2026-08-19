@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/matriz-dark-mode-2026-08-03.md
+resumen: Matriz de hallazgos — estado real del dark mode
+---
+
 # Matriz de hallazgos — estado real del dark mode
 
 **Fecha:** 2026-08-03 · **Alcance:** repositorio `lps-aia` únicamente.

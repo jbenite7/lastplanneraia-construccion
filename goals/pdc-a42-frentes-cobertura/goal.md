@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-a42-frentes-cobertura/goal.md
+resumen: Goal — A4.2: que el plan de compras sepa a qué frente va cada paquete
+---
+
 # Goal — A4.2: que el plan de compras sepa a qué frente va cada paquete
 
 ## El objetivo

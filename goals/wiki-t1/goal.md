@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/wiki-t1/goal.md
+resumen: que era exactamente el resumen que buscaba. 73 de los 92 planes estaban en ese caso.
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: wiki-t1
 
@@ -87,18 +97,42 @@ wiki y 0 de 391 fuentes declaradas», con la wiki intacta y **cero fuentes tocad
 
 - **Censo:** 391 fuentes. Por tipo deducido: 92 `plan` · 79 `spec` · 74 `guia` · 64 `goal-doc` ·
   35 `reporte` · 29 `evidencia` · 7 `contrato` · 3 `biblia`.
-- **Lo que las reglas NO pueden deducir:** 4 sin fecha · **217 sin resumen** · 29 sin área.
+- **Lo que las reglas NO pueden deducir:** 4 sin fecha · **17 sin resumen** · 29 sin área.
+  *(Corregido el 2026-08-19: esta línea decía «217 sin resumen» y era un fallo de la deducción, no
+  del repositorio — ver la addenda al final.)*
 - **`DESIGN.md` ya tenía frontmatter, y es de otra herramienta** (el linter Stitch y el panel live
   leen ahí los tokens). Por eso una fuente entra al lint solo si declara `capa:` —tener un bloque
   `---` no es declararse parte de este esquema— y por eso el backfill **fusiona** en vez de
   reescribir. Hay una prueba que fija ese comportamiento.
 
-### Decisión abierta que hereda la Tanda 2
+### Decisión que estaba abierta, y su addenda — resuelta el 2026-08-19
 
-**¿`resumen` obligatorio en fuentes?** Hoy el lint no lo exige (sí `tipo`, `estado`, `fecha`).
-Si pasa a exigirse, la Tanda 2 deja de ser mecánica y se convierte en 217 decisiones de redacción.
-Es una línea en `wiki-lint.mjs` en cualquiera de los dos sentidos. Escalada a la coordinadora el
-2026-08-19; sin respuesta al cerrar este frente.
+**`resumen` es obligatorio en fuentes.** Decisión del usuario, tomada tras medir el coste real.
+
+Al cerrar este frente la pregunta quedó abierta con una cifra equivocada: «217 sin resumen», y con
+ella la Tanda 2 parecía costar 217 textos escritos a mano. **Esos 217 eran un fallo de mi
+deducción, no del repositorio.** Los planes de `writing-plans` abren con una cita para agentes
+(`> **For agentic workers:**`) y mi regla se paraba justo ahí — una línea antes del `**Goal:**`
+que era exactamente el resumen que buscaba. 73 de los 92 planes estaban en ese caso.
+
+Con una cascada de cuatro respaldos —párrafo · `**Goal:**` · párrafo bajo `## Objetivo` · el
+propio título— el reparto real sobre las 391 fuentes es:
+
+```
+De dónde sale el resumen:
+   169  parrafo
+    84  titulo
+    77  etiqueta
+    44  seccion
+    17  ninguno
+```
+
+**290 con prosa de verdad, 84 con su título, 17 a mano.** De esos 17, catorce son `goal.md` y
+`facts.md` de otros frentes, que sus dueños rellenan en su propio cierre.
+
+La lección, que vale más que el número: **antes de aceptar que algo es caro, comprueba si lo caro
+es la medida.** Estuve a punto de dejar un campo opcional para siempre por un coste que no
+existía.
 
 ### Residuo
 

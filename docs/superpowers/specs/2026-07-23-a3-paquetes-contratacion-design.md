@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-23
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design.md
+resumen: Indicador prominente de cobertura = (asignados + omitidos) / total de la versión activa. 100% = "no queda nada suelto". Solo lectura/semáforo en A3 (el bloqueo…
+---
+
 # Diseño: Fase A3 — Paquetes de contratación + asistente de empaquetamiento
 
 **Fecha:** 2026-07-23 (revisado el 2026-07-23 tras destilar la app externa de Tomás)

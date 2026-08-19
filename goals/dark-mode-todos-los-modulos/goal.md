@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/goal.md
+resumen: Que las 31 superficies HTML de la aplicación adopten el tema dark del design system, eliminando los mecanismos de tema paralelos y las fuentes de fuga a claro…
+---
+
 # Goal — Dark mode en todos los módulos
 
 **Slug:** `dark-mode-todos-los-modulos`

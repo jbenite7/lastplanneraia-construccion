@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-06-02
+fuente: docs/analisis-productividad-feb-jun-2026.md
+resumen: Lo que cambió para ti
+---
+
 # Lo que cambió para ti
 
 ## Un viaje de cinco meses en Last Planner AIA

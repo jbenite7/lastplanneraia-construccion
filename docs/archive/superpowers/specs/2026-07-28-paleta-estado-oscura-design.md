@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-28
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design.md
+resumen: Invertir la paleta de estado del design system a oscuro
+---
+
 # Invertir la paleta de estado del design system a oscuro
 
 Fecha: 2026-07-28 · Base: `e32e7e8`

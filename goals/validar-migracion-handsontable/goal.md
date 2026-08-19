@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-15
+areas: [datos]
+fuente: goals/validar-migracion-handsontable/goal.md
+resumen: Validar integralmente la migración a Handsontable
+---
+
 # Validar integralmente la migración a Handsontable
 
 **Estado:** descartado / no aplica (2026-07-30) — el retiro de `/listado-actividades` y `/contratos` dejó sin efecto esta validación; las tablas restantes se gobiernan mediante PDC V2 y `cierre-dark-mode-y-tablas`.

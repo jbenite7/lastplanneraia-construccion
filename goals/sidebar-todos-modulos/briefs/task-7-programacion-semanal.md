@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [lps]
+fuente: goals/sidebar-todos-modulos/briefs/task-7-programacion-semanal.md
+resumen: Que /programacion-semanal (la vista BASE) use el shell sidebar canónico en ambos estados, suprimiendo su navbar superior legacy. Las subvistas CIC/CNC/CNP son…
+---
+
 # Task 7 — Migrar Programación Semanal (vista base) al shell sidebar
 
 ## Objetivo

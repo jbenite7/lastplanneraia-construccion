@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-31
+fuente: docs/walkthrough_ia_agile.md
+resumen: Se han implementado correcciones estructurales en el motor de planeación (task-planner) para resolver el problema de congelamiento reportado por el usuario.
+---
+
 # Walkthrough - Optimización IA Agile 2026
 
 Se han implementado correcciones estructurales en el motor de planeación (**task-planner**) para resolver el problema de congelamiento reportado por el usuario.

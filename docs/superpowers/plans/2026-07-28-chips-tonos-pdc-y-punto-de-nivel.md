@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: docs/superpowers/plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel.md
+resumen: Con la fase anterior el sistema de estado quedó con dos ejes —nivel para prioridad de acción, matiz para identidad— y una escalera compartida en la capa de…
+---
+
 # Adoptar los tonos de PDC y el punto de nivel en todos los chips
 
 > **TRASPASO 2026-07-28 · de la sesión «Chips y matices» a «F1 dark-mode fase estilos CSS».**

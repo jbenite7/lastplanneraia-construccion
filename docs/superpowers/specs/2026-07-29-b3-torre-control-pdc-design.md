@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc, rbac, bi]
+fuente: docs/superpowers/specs/2026-07-29-b3-torre-control-pdc-design.md
+resumen: goals/pdc-preparar-b1 - Origen: roadmap maestro (fase B3) + decisión del comité del 2026-07-29 de llevar los indicadores a BI después de tener la pestaña…
+---
+
 # PDC v2 · Fase B3 — El plan de compras en la Torre de Control — Design
 
 - **Fecha:** 2026-07-29

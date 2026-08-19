@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/b3-aislamiento-http.md
+resumen: worktree-pdc-b3-torre-control · Usuario: jbenitez (rol A, miembro de Da Porto / 73)
+---
+
 # B3 — Aislamiento por obra, verificado por HTTP (punto 2 de la condición de hecho)
 
 **Fecha:** 2026-07-30 · **Servidor:** contenedor propio del worktree en `:8113`, sirviendo

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-10
+areas: [qa]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-08-10-runner-tests-php.md
+resumen: Dar a los 99 tests/test.php un runner único con código de salida correcto, categorías de entorno, y conectarlo al CI en lugar de los tres tests listados a mano.
+---
+
 # Runner de tests PHP — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

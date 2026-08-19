@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/goal.md
+resumen: Goal — Del comité al lanzamiento: cerrar el PDC v2 y ponerlo a trabajar
+---
+
 # Goal — Del comité al lanzamiento: cerrar el PDC v2 y ponerlo a trabajar
 
 ## El objetivo

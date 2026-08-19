@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/decisions.md
+resumen: Las variantes permanecen como candidate hasta aprobación en el laboratorio.
+---
+
 # Decisiones del Design System AIA
 
 Las variantes permanecen como `candidate` hasta aprobación en el laboratorio.

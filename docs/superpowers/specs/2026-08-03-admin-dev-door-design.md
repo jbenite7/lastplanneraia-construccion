@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [admin]
+fuente: docs/superpowers/specs/2026-08-03-admin-dev-door-design.md
+resumen: Igual que src/Core/DevDoor.php (GET /dev/entrar) para la app principal, una ruta GET /admin/dev/entrar?u=<cuenta> que abra una sesión válida del panel admin/…
+---
+
 # Puerta de servicio de desarrollo para `admin/`
 
 Fecha: 2026-08-03

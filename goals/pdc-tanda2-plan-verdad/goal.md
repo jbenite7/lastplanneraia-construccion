@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-tanda2-plan-verdad/goal.md
+resumen: Goal — Tanda 2: que el Plan de compras diga la verdad
+---
+
 # Goal — Tanda 2: que el Plan de compras diga la verdad
 
 ## El objetivo

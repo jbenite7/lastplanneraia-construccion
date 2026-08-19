@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-03-cierre-dark-mode-fases-0-3.md
+resumen: Consolidar el árbol en main, hacer que los gates del design system digan la verdad, abrir la puerta de servicio de admin/ y dejar PG, PI, PS y PDC v2 en verde…
+---
+
 # Cierre de dark mode — Plan de implementación, fases 0–3
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

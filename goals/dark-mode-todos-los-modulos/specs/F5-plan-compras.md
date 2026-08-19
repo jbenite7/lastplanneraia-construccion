@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/dark-mode-todos-los-modulos/specs/F5-plan-compras.md
+resumen: Que la isla React de Plan de Compras consuma los tokens canónicos y quede bajo gate verificable, en lugar de fijar el tema a mano y esconder su CSS fuera del…
+---
+
 # F5 · plan-compras
 
 **Depende de:** F0. Independiente del resto; puede correr en cualquier momento tras F0.

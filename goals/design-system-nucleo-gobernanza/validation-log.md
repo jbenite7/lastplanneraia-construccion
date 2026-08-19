@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: goals/design-system-nucleo-gobernanza/validation-log.md
+resumen: Este registro conserva decisiones y capacidades seleccionadas durante la construcción. No sustituye los gates ni convierte resultados automáticos en aprobación…
+---
+
 # Trazabilidad de capacidades — Sprint 00
 
 Este registro conserva decisiones y capacidades seleccionadas durante la construcción. No sustituye los gates ni convierte resultados automáticos en aprobación humana. Las observaciones anteriores al contrato vigente están superseded y no pueden activar `1.0.0`. El closer final es el único responsable de registrar resultados, conteos y timestamps frescos sobre el árbol exacto de release.

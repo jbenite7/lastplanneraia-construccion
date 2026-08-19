@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-7-report.md
+resumen: node tests/browser/shell-sidebar-rollout.mjs → 35/35 checks OK, exit 0 (7 módulos migrados en PASS: Programación Intermedia, Programa General, Profesionales…
+---
+
 # Task 7 — Programación Semanal (vista base) — Reporte
 
 **Status:** DONE

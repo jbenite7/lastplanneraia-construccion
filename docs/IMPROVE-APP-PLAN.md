@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+fuente: docs/IMPROVE-APP-PLAN.md
+resumen: Improve App Plan
+---
+
 # Improve App Plan
 
 ## Context

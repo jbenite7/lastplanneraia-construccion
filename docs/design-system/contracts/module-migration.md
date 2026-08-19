@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/contracts/module-migration.md
+resumen: Cada migración posterior cubre un módulo por sprint. Debe consumir los componentes canónicos y adaptadores aprobados; nunca crea una primitiva local para…
+---
+
 # Contrato de migración por módulo
 
 Cada migración posterior cubre un módulo por sprint. Debe consumir los

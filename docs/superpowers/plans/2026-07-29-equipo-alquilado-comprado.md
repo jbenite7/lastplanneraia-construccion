@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-29-equipo-alquilado-comprado.md
+resumen: Partir el tipo de recurso «Equipo» del maestro global de insumos en alquilado y comprado, dejando los 167 equipos existentes en un estado de tránsito sin…
+---
+
 # Equipo alquilado vs equipo comprado — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

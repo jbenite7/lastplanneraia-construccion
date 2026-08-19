@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-31
+fuente: docs/walkthrough_ia_agile_os.md
+resumen: Walkthrough - IA Agile Operative OS 2026
+---
+
 # Walkthrough - IA Agile Operative OS 2026
 
 ## Cambios Realizados

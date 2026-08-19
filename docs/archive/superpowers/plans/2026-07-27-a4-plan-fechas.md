@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-27
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-27-a4-plan-fechas.md
+resumen: Que cada paquete de contratación tenga fecha: amarrado a un frente del cronograma, con el proceso de contratación programado hacia atrás paso a paso.
+---
+
 # A4 · El plan de compras con fechas — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

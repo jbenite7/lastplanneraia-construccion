@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-10
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design.md
+resumen: Programa de cierre de pendientes — diseño
+---
+
 # Programa de cierre de pendientes — diseño
 
 **Fecha:** 2026-08-10

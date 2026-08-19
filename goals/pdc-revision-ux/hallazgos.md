@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/hallazgos.md
+resumen: Feedback del dueño del producto recorriendo el módulo en el navegador (proyecto Da Porto, stack del worktree en el puerto 8091). Registrados en el orden en que…
+---
+
 # Hallazgos de la revisión de la SPA — 2026-07-28
 
 Feedback del dueño del producto recorriendo el módulo en el navegador (proyecto Da Porto, stack

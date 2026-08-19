@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [design-system]
+fuente: goals/cierre-version-1-1-0-design-system/goal.md
+resumen: Publicar la versión 1.1.0 del design system: pagar o re-vencer con evidencia las 39 excepciones que expiran en ella (migración de /proyectos incluida)…
+---
+
 # Goal: Cierre de la versión 1.1.0 del design system
 
 **Objetivo:** Publicar la versión 1.1.0 del design system: pagar o re-vencer con evidencia las 39

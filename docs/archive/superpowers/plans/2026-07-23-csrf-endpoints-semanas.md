@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-csrf-endpoints-semanas.md
+resumen: Exigir un token CSRF válido en las mutaciones autenticadas nuevasemana.php y eliminarsemana.php, distribuyendo el token a sus dos callers (shell nuevo y navbar…
+---
+
 # CSRF en endpoints legacy de mutación de semanas — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

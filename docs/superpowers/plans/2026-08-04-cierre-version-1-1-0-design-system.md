@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [design-system]
+fuente: docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system.md
+resumen: Publicar la versión 1.1.0 del design system pagando o re-venciendo con evidencia las 39 excepciones que expiran en ella, con la suite estática en 8/8.
+---
+
 # Cierre de la versión 1.1.0 del design system — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-02
+areas: [design-system]
+fuente: goals/shell-layout-design-system/facts.md
+resumen: Facts — Shell, Layout & Design System Unificado
+---
+
 # Facts — Shell, Layout & Design System Unificado
 
 1. El alcance está estrictamente limitado a vistas **desktop (viewport canónico 1180×820 px)** en **Dark Mode**.

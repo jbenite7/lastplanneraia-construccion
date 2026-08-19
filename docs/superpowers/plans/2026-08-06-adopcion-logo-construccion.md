@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-06
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-06-adopcion-logo-construccion.md
+resumen: Adoptar el ícono nuevo en favicon, sidebar del shell, login y Admin, sin tocar la paleta del design system.
+---
+
 # Adopción del logo «Last Planner · línea Construcción» — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

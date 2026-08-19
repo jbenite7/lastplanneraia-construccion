@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/evidence/mapa-sidebar.md
+resumen: Fuente: inventario con 3 subagentes Explore (grupos A/B/C) sobre las vistas, controladores y JS. Referencia correcta = /programacion-intermedia (único con el…
+---
+
 # Mapa / inventario — estado del shell sidebar por módulo
 
 Fuente: inventario con 3 subagentes Explore (grupos A/B/C) sobre las vistas, controladores y JS. Referencia correcta = `/programacion-intermedia` (único con el shell hoy). Ninguno de los 11 objetivo tiene `aia-shell--sidebar` ni está en `foundation-shell.json → routes` (solo PI).

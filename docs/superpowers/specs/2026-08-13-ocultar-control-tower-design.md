@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-13
+areas: [rbac, bi]
+fuente: docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md
+resumen: Mientras el módulo BI (Control Tower) se termina de desarrollar, no debe aparecer en ninguna parte de la interfaz: ni en la barra lateral, ni en el selector de…
+---
+
 # Ocultar Control Tower de la navegación, dejándolo accesible a Admin
 
 **Fecha:** 2026-08-13 · **Estado:** aprobado en chat

@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-05-30
+fuente: docs/ESTADOS-PG-PI-PS.md
+resumen: Catálogo de Estados — PG / PI / PS
+---
+
 # Catálogo de Estados — PG / PI / PS
 
 > Documentación hiperdetallada de todos los estados del Programa General (PG), Programación Intermedia (PI) y Programación Semanal (PS), incluyendo lógica de clasificación, labels, severidad, colores, acciones y fuentes.

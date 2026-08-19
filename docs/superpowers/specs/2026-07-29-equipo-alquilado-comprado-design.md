@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-equipo-alquilado-comprado-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — petición de Tomás Trujillo, con motivo contable explícito. - Estado: implementado y en main (fila 5 del…
+---
+
 # PDC v2 — Equipo alquilado vs equipo comprado — Design
 
 - **Fecha:** 2026-07-29

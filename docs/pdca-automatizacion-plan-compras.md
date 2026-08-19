@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-06-12
+areas: [pdc]
+fuente: docs/pdca-automatizacion-plan-compras.md
+resumen: El auto-generador PDC detecta solo 11 familias en Da Porto cuando debería detectar 30+. Causas raíz:
+---
+
 # PDCA: Automatización del Plan de Compras
 
 > **Proyecto:** Last Planner AIA — Automatización PDC  

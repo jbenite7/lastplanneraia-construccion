@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-05
+fuente: docs/DESIGN-AUDIT.md
+resumen: Registro de hallazgos de UX y diseño de la aplicación, con su severidad y su disposición real.
+---
+
 # Design Audit — hallazgos medidos
 
 Registro de hallazgos de UX y diseño de la aplicación, con su severidad y su disposición real.

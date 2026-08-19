@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/tokens.md
+resumen: Los tokens canonicos tienen dos capas:
+---
+
 # Tokens
 
 Los tokens canonicos tienen dos capas:

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-28
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-28-responsable-usuario-proyecto-design.md
+resumen: pdcplanpaquete.responsable es hoy VARCHAR(100) NOT NULL DEFAULT '': la pestaña «Plan» lo escribe a mano. B1 va a colgar de ese campo el filtro «mis paquetes» y…
+---
+
 # Responsable de paquete: de texto libre a usuario del proyecto
 
 **Fecha:** 2026-07-28

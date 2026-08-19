@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-6-report.md
+resumen: Task 6 — Actualizar Cronograma usa el shell sidebar
+---
+
 # Task 6 — Actualizar Cronograma usa el shell sidebar
 
 ## Cableado

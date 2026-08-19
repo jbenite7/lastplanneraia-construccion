@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-12
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-12-espejo-produccion-a-pruebas-design.md
+resumen: Reconstruir la base de prueba-lps a partir de producción, porque pruebas tiene 98 filas de programaconsolidado con uniqueid NULL (proyecto Da Porto 73) que…
+---
+
 # Espejo de producción → local → pruebas (2026-08-12)
 
 ## Objetivo

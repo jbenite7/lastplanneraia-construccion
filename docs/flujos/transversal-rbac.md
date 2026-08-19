@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps, rbac]
+fuente: docs/flujos/transversal-rbac.md
+resumen: Escenarios RBAC-. Qué permite cada capacidad, a qué roles, y dónde se comprueba.
+---
+
 # Biblia · Transversal · Capacidades por rol
 
 Escenarios `RBAC-*`. Qué permite cada capacidad, a qué roles, y dónde se comprueba.

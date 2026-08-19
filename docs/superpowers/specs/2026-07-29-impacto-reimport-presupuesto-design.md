@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-impacto-reimport-presupuesto-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — el «punto gris» que el dueño del producto no supo resolver en vivo. - Depende de: A1 (importador con…
+---
+
 # PDC v2 — Informe de impacto al recargar el presupuesto — Design
 
 - **Fecha:** 2026-07-29

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/forma-quitar-pasos.md
+resumen: Decisiones pendientes — frente forma-quitar-pasos
+---
+
 # Decisiones pendientes — frente forma-quitar-pasos
 
 <!-- Una entrada por decisión, con estos campos:

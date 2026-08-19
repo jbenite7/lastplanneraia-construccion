@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-11-report.md
+resumen: Task 11 — Registrar rutas migradas en foundation-shell.json + gates
+---
+
 # Task 11 — Registrar rutas migradas en foundation-shell.json + gates
 
 ## Status

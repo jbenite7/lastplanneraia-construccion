@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: concepto
 estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
+tags: [trampa]
 fuente: scripts/design-system-unlayered-delivery.mjs, scripts/design-system-contracts.mjs, src/Controllers/Internal/DesignSystemLabController.php
 resumen: "Cuatro censos con carácter distinto: vendors homologa terceros con hash, unlayered-delivery es lista cerrada de lo que puede vivir sin capa, ui-groups y operational-fixtures alimentan el laboratorio"
 ---

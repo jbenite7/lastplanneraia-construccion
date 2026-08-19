@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [admin, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Panel admin: crear proyectos, usuarios y familias de catálogo — mini-app aislada con su propio router"
 ---

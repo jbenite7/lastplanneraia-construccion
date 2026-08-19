@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-06
+areas: [pdc]
+fuente: docs/superpowers/plans/2026-08-06-pdc-filtros-y-buscadores.md
+resumen: Que las once grillas del Plan de Compras se puedan filtrar por columna y buscar, y que los treinta y un <select> del módulo se puedan buscar escribiendo.
+---
+
 # Plan de Compras: filtros de columna, buscadores y selects buscables — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

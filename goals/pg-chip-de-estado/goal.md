@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: goals/pg-chip-de-estado/goal.md
+resumen: Que /programa-general distinga en pantalla los siete estados que su contrato declara, dándole el chip de estado que Programación Intermedia y Programación…
+---
+
 # Goal — Programa General recupera su chip de estado
 
 **Slug:** `pg-chip-de-estado`

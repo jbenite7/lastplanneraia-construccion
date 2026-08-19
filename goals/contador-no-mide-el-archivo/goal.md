@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/contador-no-mide-el-archivo/goal.md
+resumen: Andamiaje del frente contador-no-mide-el-archivo: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: contador-no-mide-el-archivo
 

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-30
+areas: [design-system]
+fuente: docs/superpowers/specs/2026-07-30-shell-layout-design-system-design.md
+resumen: Diseñó — Unificación de Shell, Layout y Design System
+---
+
 # Diseñó — Unificación de Shell, Layout y Design System
 
 **Fecha:** 2026-07-30  

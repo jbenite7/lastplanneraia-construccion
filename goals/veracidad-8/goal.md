@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/veracidad-8/goal.md
+resumen: Andamiaje del frente veracidad-8: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: veracidad-8
 

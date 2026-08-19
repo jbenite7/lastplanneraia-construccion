@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-rematching-reprogramacion.md
+resumen: Que mover un frente en el cronograma se pueda aplicar al plan de compras — viendo antes qué paquetes se mueven y cuántos días — sin que se borre nunca lo que…
+---
+
 # Re-matching al reprogramar (PDC v2 · fase B2, segunda mitad) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

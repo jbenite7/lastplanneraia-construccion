@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/contrato-estados-modulo-fantasma-ejecutor.md
+resumen: Decisiones pendientes — frente contrato-estados-modulo-fantasma
+---
+
 <!-- cas:cita-textual — registro de hallazgos: cita comandos defectuosos tal como se dieron -->
 # Decisiones pendientes — frente contrato-estados-modulo-fantasma
 

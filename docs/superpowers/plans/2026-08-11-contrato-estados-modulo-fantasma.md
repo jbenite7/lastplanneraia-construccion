@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma.md
+resumen: Retirar el módulo fantasma del contrato de estados — plan
+---
+
 # Retirar el módulo fantasma del contrato de estados — plan
 
 - Frente: `contrato-estados-modulo-fantasma` · sesión ejecutora `69ee4d31` · sha de arranque `44917bc1`

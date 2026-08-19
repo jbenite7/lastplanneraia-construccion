@@ -19,7 +19,12 @@ export const TIPOS = new Set([...TIPOS_WIKI, ...TIPOS_FUENTE]);
 export const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
 
 // Vocabulario cerrado de `tags`: transversales, no duplican `tipo` ni `areas`.
-export const TAGS = new Set(['moc', 'dashboard', 'plantilla', 'pendiente', 'trampa',
+//
+// `moc` salió el 2026-08-19. La spec de v2 lo traía para marcar los MOCs de área, y sobra desde
+// que `tipo: mapa` SIGNIFICA MOC: un mapa de área tiene estructura propia y fija («Qué manda»,
+// «Trampas», «Vecinos»), así que es una clase de página, y las clases viven en `tipo`. El tag
+// habría existido solo para parchear que una página estaba mal tipada.
+export const TAGS = new Set(['dashboard', 'plantilla', 'pendiente', 'trampa',
   'leer-antes-de-tocar', 'generado', 'archivo']);
 
 export const CAPAS = new Set(['fuente', 'wiki', 'esquema']);
@@ -48,7 +53,11 @@ export function bloqueFrontmatter(texto) {
 
 /** Valor escalar de un campo del frontmatter, o `undefined` si no está o está vacío. */
 export function campo(fm, clave) {
-  const v = fm.match(new RegExp(`^${clave}:\\s*(.*)$`, 'm'))?.[1]?.trim();
+  // `[^\\S\\n]*` y no `\\s*`: `\\s` incluye el salto de línea, así que con `\\s*(.*)$` un campo
+  // vacío se comía su propio salto y devolvía como valor **la línea siguiente**. Medido el
+  // 2026-08-19 sobre trece archivos con `fecha:` vacío, que el lint reportó como
+  // «fecha no ISO: areas: [design-system]». El defecto venía heredado del lint v1.
+  const v = fm.match(new RegExp(`^${clave}:[^\\S\\n]*(.*)$`, 'm'))?.[1]?.trim();
   return v ? v : undefined;
 }
 

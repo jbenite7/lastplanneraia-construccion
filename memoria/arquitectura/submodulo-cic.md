@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [lps, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "CIC: califica a cada subcontratista en 4 dimensiones dentro de Programación Semanal"
 ---

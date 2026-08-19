@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [rbac, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Autenticación: login, recuperar contraseña y la puerta de desarrollo que evita teclear credenciales en local"
 ---

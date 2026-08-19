@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-28
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-28-pdc-preparar-b1.md
+resumen: Que un recálculo del plan de fechas deje de destruir las filas de pdcplanpaso, y que el responsable de un paquete sea una referencia a un usuario del proyecto…
+---
+
 # PDC A4 → preparar B1: upsert de pasos y responsable como usuario — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

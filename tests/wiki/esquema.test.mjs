@@ -19,7 +19,14 @@ test('las trece áreas no cambian en v2', () => {
 
 test('el vocabulario de tags es el cerrado de la spec', () => {
   assert.deepEqual([...TAGS].sort(), ['archivo', 'dashboard', 'generado', 'leer-antes-de-tocar',
-    'moc', 'pendiente', 'plantilla', 'trampa']);
+    'pendiente', 'plantilla', 'trampa']);
+});
+
+test('`moc` ya no es un tag: `tipo: mapa` significa MOC', () => {
+  // Salió el 2026-08-19. Un mapa de área es una CLASE de página, con estructura propia y fija;
+  // las clases viven en `tipo`. El tag habría existido solo para parchear una página mal tipada.
+  assert.ok(!TAGS.has('moc'));
+  assert.equal(revisarFrontmatter('tags: [moc]', { rel: 'memoria/x.md' }).length, 1);
 });
 
 test('deducirCapa reparte las tres capas por ruta', () => {
@@ -81,7 +88,7 @@ test('un tipo de fuente es válido también en una página de wiki y al revés',
 test('rechaza tipo, estado, fecha, área y tag fuera de sus listas', () => {
   const fallos = revisarFrontmatter(fm({
     tipo: 'inventado', estado: 'quizas', fecha: '18/08/2026',
-    areas: '[pdc, marketing]', tags: '[moc, brillante]',
+    areas: '[pdc, marketing]', tags: '[brillante]',
   }), { rel: 'memoria/x.md' });
   assert.deepEqual(fallos.map((f) => f.campo).sort(), ['areas', 'estado', 'fecha', 'tags', 'tipo']);
 });
@@ -131,4 +138,13 @@ test('la exención del molde es estrecha: el vocabulario se le sigue exigiendo',
   const fallos = revisarFrontmatter('tipo: inventado\nestado: quizas\nareas: [marketing]\ntags: [plantilla, brillante]\ncapa: intermedia',
     { rel: 'memoria/templates/x.md', molde: true });
   assert.deepEqual(fallos.map((f) => f.campo).sort(), ['areas', 'capa', 'estado', 'tags', 'tipo']);
+});
+
+test('un campo vacio no se traga la linea siguiente', () => {
+  // Devolvía `areas: [design-system]` como si fuera la fecha, y el lint lo reportaba así.
+  const fm = 'tipo: guia\nfecha: \nareas: [design-system]\nresumen: Algo';
+  assert.equal(campo(fm, 'fecha'), undefined);
+  assert.equal(campo(fm, 'tipo'), 'guia');
+  assert.equal(campo(fm, 'resumen'), 'Algo');
+  assert.deepEqual(revisarFrontmatter(fm, { rel: 'docs/x.md' }), []);
 });

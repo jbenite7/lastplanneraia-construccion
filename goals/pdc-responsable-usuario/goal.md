@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-01
+areas: [pdc]
+fuente: goals/pdc-responsable-usuario/goal.md
+resumen: Sustituir el campo de texto libre para el responsable de paquete por una asociación formal a un usuario del proyecto, con selector UI, migración de BD y…
+---
+
 # Goal — Responsable de paquete como usuario del proyecto
 
 **Slug:** `pdc-responsable-usuario`

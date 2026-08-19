@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-07-29-ayuda-in-app-pdc-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — planteado por Daniela Betancur y respaldado por Tomás, que ya tiene el patrón funcionando en el visor…
+---
+
 # PDC v2 — Ayuda dentro de la aplicación — Design
 
 - **Fecha:** 2026-07-29

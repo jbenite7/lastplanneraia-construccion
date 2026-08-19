@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-rematching-reprogramacion-design.md
+resumen: goals/pdc-preparar-b1 - Origen: roadmap maestro, fase B2. No lo pidió el comité: lo exige el uso real, porque los cronogramas se reprograman todas las semanas…
+---
+
 # PDC v2 · Fase B2 (segunda mitad) — Re-matching al reprogramar — Design
 
 - **Fecha:** 2026-07-29

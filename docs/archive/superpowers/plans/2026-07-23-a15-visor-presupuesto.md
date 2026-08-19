@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-a15-visor-presupuesto.md
+resumen: Vista de solo lectura del presupuesto importado: árbol jerárquico expandible (capítulos → subcapítulos → grupos → actividades → insumos de APU) con selector de…
+---
+
 # Fase A1.5: Visor del Presupuesto — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

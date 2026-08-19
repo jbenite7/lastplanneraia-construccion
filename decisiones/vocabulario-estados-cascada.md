@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/vocabulario-estados-cascada.md
+resumen: Censo completo y razonamiento: docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design.md.
+---
+
 # Decisiones pendientes — frente vocabulario-estados-cascada
 
 <!-- Una entrada por decisión, con estos campos:

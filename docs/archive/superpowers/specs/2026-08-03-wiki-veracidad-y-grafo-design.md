@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-08-03
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-08-03-wiki-veracidad-y-grafo-design.md
+resumen: La wiki memoria/ funciona: 78 páginas, lint en verde, bitácora que demuestra uso real. El diagnóstico de esta sesión encontró tres huecos, ninguno estructural…
+---
+
 # Cierre de los tres pendientes de la wiki `memoria/`
 
 **Fecha:** 2026-08-03

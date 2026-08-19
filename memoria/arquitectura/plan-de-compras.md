@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [pdc, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Plan de Compras v2: del presupuesto al paquete de contratación, con fechas y seguimiento por hash"
 ---

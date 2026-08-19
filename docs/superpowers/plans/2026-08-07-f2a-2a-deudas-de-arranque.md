@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-07-f2a-2a-deudas-de-arranque.md
+resumen: Cerrar los tres pendientes que dejó F2a-1 antes de que el piloto genere un solo golden móvil.
+---
+
 # F2a-2a — Deudas de arranque: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

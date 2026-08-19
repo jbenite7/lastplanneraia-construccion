@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-21
+tags: [leer-antes-de-tocar]
+fuente: CLAUDE.md
+resumen: This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

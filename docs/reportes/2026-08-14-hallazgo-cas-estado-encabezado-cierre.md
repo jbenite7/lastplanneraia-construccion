@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-14
+areas: [proceso]
+fuente: docs/reportes/2026-08-14-hallazgo-cas-estado-encabezado-cierre.md
+resumen: Hallazgo para coordinating-agent-sessions: cas-estado.sh no ve los cierres de otro repo
+---
+
 # Hallazgo para `coordinating-agent-sessions`: `cas-estado.sh` no ve los cierres de otro repo
 
 **Origen:** sesión de `lps-aia`, 2026-08-14. Medido sobre `lps-aia@ef49b6a0` con el script en

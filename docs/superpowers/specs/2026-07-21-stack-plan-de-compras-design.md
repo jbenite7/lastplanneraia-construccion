@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-21
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-21-stack-plan-de-compras-design.md
+resumen: El módulo de plan de compras (PDC) de AIA se reimplementa con el modelo nuevo (presupuesto → maestro de insumos → Pareto → paquetes de contratación → matching…
+---
+
 # Diseño: stack del módulo Plan de Compras (PDC v2)
 
 **Fecha:** 2026-07-21

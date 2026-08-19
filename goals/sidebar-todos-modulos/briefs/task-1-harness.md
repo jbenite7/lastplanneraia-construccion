@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-1-harness.md
+resumen: Crear tests/browser/shell-sidebar-rollout.mjs: un test Playwright standalone (estilo tests/browser/shell-week-admin.mjs) que recorre una lista de rutas y, para…
+---
+
 # Task 1 — Harness data-driven de verificación del shell sidebar
 
 ## Objetivo

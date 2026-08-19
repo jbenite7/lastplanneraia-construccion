@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-2-programa-general.md
+resumen: Que /programa-general renderice el shell sidebar canónico en ambos estados, igual que /programacion-intermedia, reemplazando/rellenando su navegación superior…
+---
+
 # Task 2 — Migrar Programa General al shell sidebar
 
 ## Objetivo

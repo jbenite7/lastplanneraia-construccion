@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-4-report.md
+resumen: Task 4 — Subcontratistas → shell sidebar
+---
+
 # Task 4 — Subcontratistas → shell sidebar
 
 **Status:** DONE

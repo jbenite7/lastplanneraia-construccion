@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [pdc]
+fuente: docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo.md
+resumen: retirar del código el módulo Plan de Compras v1 (/pdc, su API de núcleo, su vista Handsontable, sus assets, su navegación, su manifiesto de diseño y sus…
+---
+
 # C1 — Retiro del PDC viejo · Plan de implementación
 
 > ## ⛔ ARCHIVADO SIN EJECUTAR — 2026-08-04

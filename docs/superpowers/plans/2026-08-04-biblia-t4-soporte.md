@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-04-biblia-t4-soporte.md
+resumen: Que los seis módulos de soporte que alimentan la cascada LPS sin gobernarla —contratos, listado de actividades, subcontratistas, profesionales, control de…
+---
+
 # Biblia de flujos · Tanda T4 (soporte) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-04-07
+fuente: docs/STITCH.md
+resumen: Guía permanente para conectar, autenticar e interactuar con Stitch desde este workspace.
+---
+
 # Stitch
 
 Guía permanente para conectar, autenticar e interactuar con Stitch desde este workspace.

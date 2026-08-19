@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/validation-log.md
+resumen: Registro de verificaciones ejecutadas y de regresiones toleradas durante F1. Ninguna fase cierra con entradas abiertas.
+---
+
 # Bitácora de validación — dark-mode-todos-los-modulos
 
 Registro de verificaciones ejecutadas y de regresiones toleradas durante F1.

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-28
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-28-pdc-responsable-usuario.md
+resumen: Reparar el endpoint POST /plan-compras/api/plan/responsable, que sigue escribiendo en la columna responsable eliminada por la migración…
+---
+
 # Responsable de paquete como usuario — Plan de implementación
 
 > **For agentic workers:** Ejecución **inline con TDD estricto** (`superpowers:test-driven-development`). El harness de esta sesión prohíbe despachar subagentes salvo petición explícita del usuario, así que NO se usa `superpowers:subagent-driven-development`. Los pasos usan checkbox (`- [ ]`) para seguimiento.

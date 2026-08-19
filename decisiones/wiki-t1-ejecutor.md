@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/wiki-t1-ejecutor.md
+resumen: Formato: una entrada por decisión que no me toca. escalada = se mandó a la coordinadora y el trabajo que dependía quedó saltado. anotada = no bloquea, seguí…
+---
+
 # Cola de decisiones — frente `wiki-t1` (ejecutor)
 
 Formato: una entrada por decisión que no me toca. `escalada` = se mandó a la coordinadora y el

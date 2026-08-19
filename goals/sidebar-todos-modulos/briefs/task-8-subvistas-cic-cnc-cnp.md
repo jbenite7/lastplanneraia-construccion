@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-8-subvistas-cic-cnc-cnp.md
+resumen: Que las 3 subvistas de Programación Semanal —/programacion-semanal/cic, /cnc, /cnp— usen el shell sidebar canónico en ambos estados, suprimiendo su navbar…
+---
+
 # Task 8 — Migrar subvistas CIC / CNC / CNP al shell sidebar
 
 ## Objetivo

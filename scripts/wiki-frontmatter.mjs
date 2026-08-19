@@ -21,14 +21,18 @@ import { join, relative, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { bloqueFrontmatter, deducirCapa } from './wiki-esquema.mjs';
-import { ORDEN, aplicar, deducirAreas, deducirEstado, deducirResumen, deducirTags, deducirTipo,
-  faltantes, fechaDelNombre, render } from './wiki-frontmatter.reglas.mjs';
+import { ORDEN, aplicar, deducirAreas, deducirEstado, deducirTags, deducirTipo,
+  faltantes, fechaDelNombre, rellenarVacias, render, resumenEnCascada } from './wiki-frontmatter.reglas.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
 const ESCRIBIR = argv.includes('--escribir');
 const DETALLE = argv.includes('--detalle');
 const SOLO = argv.includes('--solo') ? argv[argv.indexOf('--solo') + 1] : null;
+// `--rellenar` completa las claves que quedaron ESCRITAS PERO VACÍAS. Existe porque el modo normal
+// las respeta a propósito —para no pisar lo que escribió una persona—, y eso deja atrapado un lote
+// aplicado antes de arreglar una regla de deducción. Sigue sin pisar nunca un valor no vacío.
+const RELLENAR = argv.includes('--rellenar');
 
 if (argv.includes('--solo') && !SOLO) {
   console.error('wiki-frontmatter: --solo necesita un prefijo de ruta.');
@@ -40,6 +44,26 @@ const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8'
 const ignorado = (rel) => filtros.some((f) => rel === f.replace(/\/$/, '') || rel.startsWith(f))
   || rel.startsWith('.git/');
 
+// Archivos que un contrato congela por hash: no se tocan, ni para añadirles metadato.
+//
+// `docs/design-system/manifests/goal-provenance.json` fija por sha256 los tres documentos que son
+// el registro canónico del goal del design system, y el gate `design-system:static` los comprueba.
+// Medido el 2026-08-19: el lote 4 les puso frontmatter y el gate se puso rojo con
+// «goal provenance: hash mismatch» — la trampa que `AGENTS.md` ya documentaba.
+//
+// La exclusión se lee **del propio manifiesto**, no de una lista de rutas escrita aquí: lo que hay
+// que respetar no son esos tres archivos, sino la regla de que un contrato puede congelar
+// cualquiera. Si mañana congela otro, esto ya lo respeta sin que nadie se acuerde de venir.
+function congelados() {
+  const rutas = new Set();
+  try {
+    const m = JSON.parse(readFileSync(join(RAIZ, 'docs/design-system/manifests/goal-provenance.json'), 'utf8'));
+    for (const s of [...(m.canonicalSources ?? []), ...(m.historicalSources ?? [])]) rutas.add(s.path);
+  } catch { /* sin manifiesto no hay nada congelado */ }
+  return rutas;
+}
+const CONGELADOS = congelados();
+
 const fuentes = [];
 (function recorrer(dir) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -47,7 +71,7 @@ const fuentes = [];
     const rel = relative(RAIZ, p);
     if (ignorado(rel + (e.isDirectory() ? '/' : ''))) continue;
     if (e.isDirectory()) recorrer(p);
-    else if (extname(e.name) === '.md' && deducirCapa(rel) !== 'wiki') fuentes.push(rel);
+    else if (extname(e.name) === '.md' && deducirCapa(rel) !== 'wiki' && !CONGELADOS.has(rel)) fuentes.push(rel);
   }
 })(RAIZ);
 fuentes.sort();
@@ -74,6 +98,25 @@ function altasGit() {
 }
 const ALTA = altasGit();
 
+/**
+ * Respaldo por archivo, para los pocos que el barrido masivo no ve.
+ *
+ * `git log --name-only` sin ruta omite la lista de archivos de los commits de merge, así que un
+ * archivo que solo entró al historial por esa vía no aparece en el barrido — medido el 2026-08-19
+ * sobre los trece de `docs/design-system/auditoria/`, que el lint reportó como «falta o está
+ * vacío: fecha» mientras `git log -- <ruta>` sí devolvía su fecha. Consultar archivo por archivo
+ * los 413 costaría un minuto largo; consultar solo los que faltan cuesta nada.
+ */
+function altaDe(rel) {
+  if (ALTA.has(rel)) return ALTA.get(rel);
+  try {
+    const d = execFileSync('git', ['log', '--diff-filter=A', '--date=short', '--format=%ad',
+      '-1', '--', rel], { cwd: RAIZ, encoding: 'utf8' }).trim().split('\n')[0];
+    ALTA.set(rel, /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '');
+  } catch { ALTA.set(rel, ''); }
+  return ALTA.get(rel);
+}
+
 // ── Qué frontmatter le tocaría a cada archivo ────────────────────────────────────────────────
 // El cómo se escribe (`ORDEN`, `faltantes`, `render`, `aplicar`) vive en el módulo de reglas,
 // para que se pueda probar sin tocar el disco.
@@ -81,16 +124,18 @@ const ALTA = altasGit();
 function propuesta(rel, texto) {
   const areas = deducirAreas(rel);
   const tags = deducirTags(rel, texto);
+  const resumen = resumenEnCascada(texto);
   const p = {
     capa: deducirCapa(rel),
     tipo: deducirTipo(rel),
     estado: deducirEstado(rel),
-    fecha: fechaDelNombre(rel) || ALTA.get(rel) || '',
+    fecha: fechaDelNombre(rel) || altaDe(rel) || '',
     areas: `[${areas.join(', ')}]`,
     tags: `[${tags.join(', ')}]`,
     fuente: rel,
-    resumen: deducirResumen(texto),
+    resumen: resumen.texto,
   };
+  p.__origen = resumen.origen;
   if (!areas.length) delete p.areas;
   if (!tags.length) delete p.tags;
   return p;
@@ -102,6 +147,7 @@ const porTipo = new Map();
 const cuenta = (m, k) => m.set(k, (m.get(k) ?? 0) + 1);
 
 let alDia = 0, pendientes = 0, fusiones = 0, sinFecha = 0, sinResumen = 0, sinArea = 0;
+const porOrigen = new Map();
 const escritos = [];
 
 for (const rel of elegidos) {
@@ -109,11 +155,12 @@ for (const rel of elegidos) {
   const texto = readFileSync(ruta, 'utf8');
   const fm = bloqueFrontmatter(texto);
   const prop = propuesta(rel, texto);
-  const claves = faltantes(fm, prop);
+  const claves = faltantes(fm, prop, { rellenar: RELLENAR });
 
   const carpeta = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '(raíz)';
   cuenta(porCarpeta, carpeta);
   cuenta(porTipo, prop.tipo);
+  cuenta(porOrigen, prop.__origen);
 
   if (!claves.length) { alDia++; continue; }
   pendientes++;
@@ -126,7 +173,10 @@ for (const rel of elegidos) {
     console.log(`\n── ${rel}${fm !== null ? '  (fusión: ya tiene frontmatter ajeno)' : ''}`);
     console.log(render(prop, claves).split('\n').map((l) => `   ${l}`).join('\n'));
   }
-  if (ESCRIBIR) { writeFileSync(ruta, aplicar(texto, prop, claves), 'utf8'); escritos.push(rel); }
+  if (ESCRIBIR) {
+    const nuevo = RELLENAR && fm !== null ? rellenarVacias(texto, prop, claves) : aplicar(texto, prop, claves);
+    writeFileSync(ruta, nuevo, 'utf8'); escritos.push(rel);
+  }
 }
 
 // ── Informe ──────────────────────────────────────────────────────────────────────────────────
@@ -141,6 +191,7 @@ console.log(`Censo de la capa fuente${SOLO ? ` bajo '${SOLO}'` : ''}: ${elegidos
   + `${SOLO ? ` de ${fuentes.length}` : ''}.`);
 tabla(porCarpeta, 'Por carpeta:');
 tabla(porTipo, 'Por tipo deducido:');
+tabla(porOrigen, 'De dónde sale el resumen:');
 
 console.log(`\n${alDia} ya declarados · ${pendientes} pendientes`
   + `${fusiones ? ` (${fusiones} con frontmatter ajeno, se fusionaría)` : ''}.`);

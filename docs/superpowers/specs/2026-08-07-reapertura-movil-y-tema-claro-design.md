@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design.md
+resumen: Que el viewport 390x844 vuelva a ser un valor válido en los esquemas, contratos y gates del design system, sin que ninguna familia lo declare todavía y sin…
+---
+
 # Reapertura de móvil/tablet y tema claro — diseño
 
 - Fecha: 2026-08-07

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-03-cierre-dark-mode-design.md
+resumen: Llevar el dark mode de la aplicación a cero hallazgos fuera de excepciones inventariadas, en todo el árbol (app principal, BI, admin/, PDC v2), con gates que…
+---
+
 # Cierre de dark mode — diseño validado
 
 **Fecha:** 2026-08-03 · **Alcance:** repositorio `lps-aia` únicamente.

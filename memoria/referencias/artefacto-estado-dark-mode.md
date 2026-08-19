@@ -1,4 +1,5 @@
 ---
+capa: wiki
 tipo: referencia
 estado: vigente
 fecha: 2026-07-29

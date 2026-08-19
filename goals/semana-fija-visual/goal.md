@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/semana-fija-visual/goal.md
+resumen: Que la prueba visual de /programacion-intermedia deje de fallar por el número de semana, que cambia solo con el calendario. Se fija la semana en el fixture, no…
+---
+
 # Frente: semana-fija-visual
 
 ## Objetivo

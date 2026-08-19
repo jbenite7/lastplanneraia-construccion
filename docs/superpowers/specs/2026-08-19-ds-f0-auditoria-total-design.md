@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design.md
+resumen: DS-F0 · Auditoría total del design system — diseño
+---
+
 # DS-F0 · Auditoría total del design system — diseño
 
 **Fase:** DS-F0, bloque 1 de [[cola-de-pendientes]]. **Frente:** `ds-f0-auditoria`.

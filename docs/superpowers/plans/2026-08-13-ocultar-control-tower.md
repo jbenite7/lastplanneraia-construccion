@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-13
+areas: [rbac, bi]
+fuente: docs/superpowers/plans/2026-08-13-ocultar-control-tower.md
+resumen: Quitar Control Tower de toda la navegación de la app, dejando sus rutas abiertas únicamente para el rol Admin (A), que las abre por URL directa.
+---
+
 # Ocultar Control Tower de la navegación — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

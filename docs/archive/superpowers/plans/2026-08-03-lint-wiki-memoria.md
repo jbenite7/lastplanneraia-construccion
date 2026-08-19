@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-03
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-08-03-lint-wiki-memoria.md
+resumen: Corregir las tres afirmaciones de la wiki que el repositorio ya desmiente, repartir la nota que empaqueta diez hechos, cerrar el vocabulario de areas y…
+---
+
 # Pasada de lint sobre la wiki `memoria/` — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

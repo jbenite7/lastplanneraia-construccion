@@ -1,0 +1,1506 @@
+{
+  "generado": "DS-F0 · frente ds-f0-auditoria · tandas 1-4",
+  "base": "6abe2436",
+  "escala": "docs/design-system/auditoria/escala-severidad.md",
+  "hallazgos": [
+    {
+      "id": "F0-001",
+      "modulo": "transversal",
+      "titulo": "Tres modulos con pantalla no aparecen en ninguna parte del inventario del design system",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Mayor y no critico: son modulos que NO declaran estar migrados, asi que no incumplen una declaracion propia. Es deuda estructural porque el inventario del sistema afirma cubrir el producto y hay pantallas que no alcanza. 'integracion' y 'legado' no rinden pantalla (verificado: JSON y redireccion), asi que el hallazgo real son 'laboratorio-design-system' —que si tiene manifiesto pero no fila en modules[], ver F0-002— y la ausencia general de los submodulos como entidad propia.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/inventory.json",
+          "fragmento": "modules[] tiene 14 filas; el censo de rutas da 22 modulos"
+        }
+      ],
+      "evidencia": "node docs/design-system/auditoria/herramientas/censo.mjs — 22 modulos, 14 con moduleId en inventory.json",
+      "origen": "DS-F0",
+      "salidaConocida": "Declarar en modules[] los modulos que rinden pantalla y hoy no figuran, con su status real."
+    },
+    {
+      "id": "F0-002",
+      "modulo": "transversal",
+      "titulo": "laboratory.json y foundation-shell.json son manifiestos sin fila en modules[]",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "declaracion-incumplida",
+      "porQue": "El propio README del design system define modules[] como el arreglo que declara el status de cada modulo. Dos manifiestos existen, estan listados en manifests[] y no tienen status: cualquier consulta que parta de modules[] —que es la forma documentada de preguntar por el estado— no los ve. No es critico porque no rompe pixel; es mayor porque deja un hueco estructural en el mecanismo de gobierno.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/inventory.json",
+          "fragmento": "manifests[] lista laboratory.json y foundation-shell.json; modules[] no los incluye"
+        },
+        {
+          "archivo": "docs/design-system/manifests/laboratory.json"
+        },
+        {
+          "archivo": "docs/design-system/manifests/foundation-shell.json"
+        }
+      ],
+      "evidencia": "node -e 'const j=require(\"./docs/design-system/manifests/inventory.json\"); j.manifests.length===15 && j.modules.length===14'",
+      "origen": "DS-F0",
+      "salidaConocida": "Anadir su fila a modules[] con el status que corresponda, o documentar por que un manifiesto puede no tener estado."
+    },
+    {
+      "id": "F0-003",
+      "modulo": "transversal",
+      "titulo": "foundation-shell.json declara 20 rutas y cero escenarios",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Es el manifiesto de mayor alcance del repositorio —cubre 20 de las 41 pantallas— y el unico sin ninguna evidencia visual atada. Un manifiesto sin escenario declara alcance sin declarar como se comprueba, que es justo lo que el contrato de migracion por modulo pide.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/foundation-shell.json",
+          "fragmento": "routes[] con 20 entradas; scenarios[] vacio o ausente"
+        }
+      ],
+      "evidencia": "cruce de routes[] contra scenarios[] de los 15 manifiestos — foundation-shell es el unico con rutas y sin escenarios",
+      "origen": "DS-F0",
+      "salidaConocida": "Decidir en DS-F1 si un manifiesto de shell debe llevar escenarios propios o si su cobertura la heredan los modulos."
+    },
+    {
+      "id": "F0-004",
+      "modulo": "escalamientos-y-crisis",
+      "titulo": "/dashboard, la home autenticada, no la nombra ningun manifiesto",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Es la primera pantalla que ve cualquiera que entra a la aplicacion y ningun manifiesto la declara. El modulo si esta como pilot (escalamientos), pero su manifiesto declara solo /dashboard/escalamientos. Mayor y no critico porque la ausencia es de cobertura, no una regla del contrato incumplida en el CSS.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/escalamientos.json",
+          "fragmento": "routes: [\"/dashboard/escalamientos\"] — /dashboard no aparece"
+        },
+        {
+          "archivo": "public/index.php",
+          "fragmento": "$router->get('/dashboard', ...)"
+        }
+      ],
+      "evidencia": "cruce de las 41 pantallas contra routes[] de los 15 manifiestos: /dashboard queda sin manifiesto",
+      "escenario": [
+        "reposo"
+      ],
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-005",
+      "modulo": "transversal",
+      "titulo": "24 de las 41 pantallas (59%) no tienen escenario que las cubra",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Cifra agregada de F0-002/003/004 y del cruce completo. Mayor y no critico porque no describe un defecto concreto sino el tamano del hueco: 16 pantallas con escenario, 10 declaradas sin el, 15 sin manifiesto. Es el denominador con el que DS-F1 tiene que decidir que significa 'cubierto'.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/auditoria/censo-modulos.md",
+          "fragmento": "seccion «La cobertura real de las 41 pantallas»"
+        }
+      ],
+      "evidencia": "cruce automatico pantallas x manifests: 16 con escenario, 10 declaradas sin escenario, 15 sin manifiesto",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-011",
+      "modulo": "programa-general",
+      "titulo": "Los 8 ids duplicados de Programa General son falso positivo del escaneo estatico",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme. `pgLegend` y los siete `count-*` aparecen dos veces en el archivo porque viven en las dos ramas de un if/else de PHP ($area === 'Pre-Construccion'), excluyentes en el HTML rendido. Se registra a proposito para que nadie lo persiga como deuda: un escaner que lee el archivo no puede distinguirlo.",
+      "ubicaciones": [
+        {
+          "archivo": "views/programa-general/programa_general.view.php",
+          "linea": 76,
+          "fragmento": "<?php if ($area === 'Pre-Construccion'): ?> ... <?php else: ?>"
+        }
+      ],
+      "evidencia": "lectura de views/programa-general/programa_general.view.php:70-95",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-012",
+      "modulo": "programa-general",
+      "titulo": "Las dos ramas de la leyenda nombran los mismos siete estados con dos vocabularios distintos",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "consistencia",
+      "porQue": "Menor: no rompe contraste ni funcion, y el equivalente correcto existe (los data-filter ya son unicos). Es inconsistencia de nomenclatura sobre el mismo dato. NO se decide cual vocabulario gana: eso es DS-F1.",
+      "ubicaciones": [
+        {
+          "archivo": "views/programa-general/programa_general.view.php",
+          "linea": 78,
+          "fragmento": "Con Restriccion Pendiente / Por Iniciar / En Ejecucion / Completada"
+        },
+        {
+          "archivo": "views/programa-general/programa_general.view.php",
+          "linea": 88,
+          "fragmento": "Con Alerta Restricciones / Debe Iniciar / En Curso / Terminada"
+        }
+      ],
+      "evidencia": "lectura de views/programa-general/programa_general.view.php:76-95; mismos data-filter, distinto texto",
+      "escenario": [
+        "reposo"
+      ],
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-020",
+      "modulo": "programacion-semanal",
+      "titulo": "167 de los 435 !important de Programacion Semanal apuntan a selectores propios del modulo",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor y no critico: el contrato exime el !important de los adaptadores frente a proveedores, y 250 de los 435 si van contra vendor. Los 167 restantes no tienen proveedor al que ganarle (.ps-*, #ps*, body.ps-page): son cascada rota dentro del propio modulo, que ningun adaptador arregla. Es deuda estructural, no una regla de color incumplida.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "linea": 399,
+          "fragmento": ".ps-dropdown-item.is-active"
+        },
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "linea": 2004,
+          "fragmento": "html body.ps-page #dt_cliente .ps-cnp-row-actions"
+        },
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "linea": 3443,
+          "fragmento": "body.ps-page #dt_cliente_wrapper .ps-actions-row > .ps-toolbar-nav-wrap"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py sobre public/css/programacion-semanal.css: 167 propio-del-modulo, 159 datatables, 46 bootstrap, 38 handsontable, 18 primitiva-aia, 7 sweetalert2",
+      "origen": "C-2"
+    },
+    {
+      "id": "F0-021",
+      "modulo": "submodulo-cic",
+      "titulo": "/programacion-semanal/cic repite siete ids entre dos modales que coexisten en el DOM",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "accesibilidad",
+      "porQue": "Menor: rompe la asociacion etiqueta-campo y hace ambiguo cualquier getElementById, pero no impide operar la pantalla. No son ramas excluyentes —verificado: formulario_cic_si en la linea 155 y formulario_cic_mdo en la 594 estan los dos en el HTML rendido.",
+      "ubicaciones": [
+        {
+          "archivo": "views/programacion-semanal/CIC.view.php",
+          "linea": 154,
+          "fragmento": "id=\"cuadroModal\" (modal cic_si)"
+        },
+        {
+          "archivo": "views/programacion-semanal/CIC.view.php",
+          "linea": 593,
+          "fragmento": "id=\"cuadroModal\" (modal cic_mdo)"
+        }
+      ],
+      "evidencia": "grep -c 'id=\"cuadroModal\"' views/programacion-semanal/CIC.view.php -> 2; los otros seis (actualizacion, form_calidad, form_adm, form_GSA, form_sst, form_obs) tambien x2. CNC.view.php y CNP.view.php: cero duplicados.",
+      "origen": "F-5",
+      "salidaConocida": "Renombrar por modal. Toca el cableado JS de los modales, no la apariencia."
+    },
+    {
+      "id": "F0-022",
+      "modulo": "programacion-semanal",
+      "titulo": "Las tres pantallas de CNP, CNC y CIC estan declaradas en el manifiesto y ningun escenario las cubre",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Mayor: el modulo declara estar migrado (pilot) y declara las cuatro rutas, pero sus dos escenarios apuntan solo a /programacion-semanal. Tres de las cuatro pantallas que promete no tienen con que compararse, ni en estatico ni en runtime.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/programacion-semanal.json",
+          "fragmento": "routes[] con las 4 rutas; scenarios[] solo /programacion-semanal"
+        }
+      ],
+      "evidencia": "cruce routes[] x scenarios[] de los 15 manifiestos",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-023",
+      "modulo": "programacion-semanal",
+      "titulo": "18 !important de Programacion Semanal apuntan a primitivas aia-*",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor: es un modulo pilot pisando con !important las primitivas del sistema que declara consumir. No es critico porque no deja ninguna superficie rota por si mismo, pero invierte la relacion entre sistema y consumidor, que es lo que el contrato de migracion por modulo prohibe.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "fragmento": "18 reglas con !important sobre selectores .aia-*"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py: familia primitiva-aia = 18 en public/css/programacion-semanal.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-030",
+      "modulo": "transversal",
+      "titulo": "El baseline de deuda tolera 7161 hallazgos y la deuda real es 3896: el gate no puede detectar una regresion menor del 84%",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "gate-ciego",
+      "porQue": "Critico por la definicion de la escala: deja al sistema sin poder detectar su propio incumplimiento. El gate estatico compara la deuda actual contra audit-baseline.json y falla solo si la supera. Con 3265 hallazgos de margen ocioso, hardcoded-hex puede pasar de 110 a 806 —siete veces mas— sin que ningun gate se ponga rojo. El baseline se genero el 2026-07-25 y su propia nota dice «reducir por modulo migrado»; desde entonces se migraron trece modulos y no bajo.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/audit-baseline.json",
+          "linea": 1,
+          "fragmento": "totalViolations: 7161, generatedAt: 2026-07-25"
+        },
+        {
+          "archivo": "scripts/design-system-audit.mjs",
+          "linea": 343,
+          "fragmento": "if (data.total > allowed) failures.push(...)"
+        }
+      ],
+      "evidencia": "node scripts/design-system-audit.mjs -> totalViolations 3896 contra baseline 7161. Por regla: unauthorized-important 1447/2166, css-outside-layer 504/829, raw-token-in-module 458/791, off-scale-spacing 457/733, hardcoded-color-function 208/547, hardcoded-hex 110/806.",
+      "origen": "DS-F0",
+      "salidaConocida": "Regenerar el baseline contra la deuda real. Es un cambio de baseline: exige hashes before/after, excepcion exacta y aprobacion explicita, y NO se hace en DS-F0."
+    },
+    {
+      "id": "F0-031",
+      "modulo": "transversal",
+      "titulo": "Una regla ausente del presupuesto de un modulo no se evalua nunca para ese modulo",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "gate-ciego",
+      "porQue": "Critico: el gate itera Object.entries(budget.maxViolations), asi que una regla que el presupuesto no nombra no produce ninguna comprobacion —no es un cero implicito, es silencio. Quince de los dieciocho presupuestos no nombran unauthorized-important, off-scale-spacing, off-scale-typography, off-scale-shadow, local-vendor-override ni duplicate-canonical-primitive. Programacion Semanal, con 435 !important, no tiene techo por modulo para esa regla; solo la contiene el baseline global, que es el de F0-030.",
+      "ubicaciones": [
+        {
+          "archivo": "scripts/design-system-audit.mjs",
+          "linea": 369,
+          "fragmento": "for (const [rule, allowed] of Object.entries(budget.maxViolations))"
+        },
+        {
+          "archivo": "docs/design-system/exceptions.json",
+          "linea": 374,
+          "fragmento": "pathBudgets: 18 entradas; solo programacion-intermedia declara las doce reglas"
+        }
+      ],
+      "evidencia": "lectura de scripts/design-system-audit.mjs:311-325 y 364-375; censo de las 18 entradas de pathBudgets",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-032",
+      "modulo": "programacion-intermedia",
+      "titulo": "Cinco hex de la paleta clara, fijados con !important, en un modulo pilot de un producto dark",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "color-crudo",
+      "porQue": "Critico: rompe la regla innegociable «no introducir colores hex sueltos en modulos migrados» en un modulo que declara pilot, y lo hace con !important, de modo que ningun token puede corregirlo desde el sistema. El bloque es un fondo casi blanco con texto verde oscuro en el unico tema implementado, que es dark. El verde de marca ya existe como token.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 1323,
+          "fragmento": "background-color: #e8f0eb !important;"
+        },
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 1324,
+          "fragmento": "color: #1a5633 !important;"
+        },
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 1326,
+          "fragmento": "border-top: 1px solid #c8ddd0 !important;"
+        },
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 1329,
+          "fragmento": "background-color: #1a5633 !important;"
+        },
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 1330,
+          "fragmento": "color: #fff !important;"
+        }
+      ],
+      "evidencia": "lectura de public/css/programacion-intermedia.css:1319-1331; el comentario del bloque dice «programacion_intermedia.view.php style block 2», o sea migrado desde un <style> de la vista sin tokenizar",
+      "escenario": [
+        "reposo",
+        "hover"
+      ],
+      "origen": "C-2",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-033",
+      "modulo": "programacion-intermedia",
+      "titulo": "rgba() crudo dentro de un box-shadow, en modulo migrado, donde el token ya existe",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "color-crudo",
+      "porQue": "Menor: el equivalente existe (--pi-due-bg es el mismo ambar) y el efecto visual es correcto hoy; lo que falla es que el color no viaja por el sistema, asi que un cambio de token no lo alcanza. El censo de color del gate no lo persigue porque va dentro de box-shadow.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 262,
+          "fragmento": "box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.24)"
+        }
+      ],
+      "evidencia": "lectura de la linea; confirmado que el gate no lo marca (hardcoded-color-function real = 208, ninguno en esta linea)",
+      "origen": "F-9"
+    },
+    {
+      "id": "F0-034",
+      "modulo": "programacion-intermedia",
+      "titulo": "Segunda sombra con rgb() crudo, esta no registrada en ninguna fuente anterior",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "color-crudo",
+      "porQue": "Mismo mecanismo que F0-033 y misma severidad: color fuera del sistema dentro de un box-shadow, invisible al censo de color. Se registra aparte porque F-9 solo nombra la linea 262 y esta lleva un azul de la paleta clara.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-intermedia.css",
+          "linea": 378,
+          "fragmento": "box-shadow: -20px 0 40px rgba(15, 23, 42, 0.18)"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs, campo rgbHsl de public/css/programacion-intermedia.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-040",
+      "modulo": "cronograma",
+      "titulo": "tom-select-premium-aia.css concentra 99 !important en 230 lineas y su presupuesto no declara la regla",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Mayor: un !important cada 2,3 lineas es la densidad mas alta del repositorio. El archivo es piel de un vendor (Tom Select) escrita dentro del contenedor de otro (Handsontable), lo que lo hace defendible en parte; pero su presupuesto tom-select-skin de exceptions.json no nombra unauthorized-important, asi que —por F0-031— esa densidad no la controla ningun techo por modulo.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/tom-select-premium-aia.css",
+          "fragmento": "99 !important en 230 lineas; selectores .htTomSelectWrapper .ts-*"
+        },
+        {
+          "archivo": "docs/design-system/exceptions.json",
+          "fragmento": "presupuesto tom-select-skin: seis reglas a cero, ninguna es unauthorized-important"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs y clasificar-important.py sobre public/css/tom-select-premium-aia.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-041",
+      "modulo": "cronograma",
+      "titulo": "El id duplicado de F-8 sigue en pie, y ademas el duplicado lo inyecta JavaScript",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "consistencia",
+      "porQue": "Cosmetico: es un id de texto de modal sin lector de script que dependa de su unicidad —funcionesGenerales6.js lo escribe con $('#...').text(), que toma el primero y funciona. Se confirma que sigue en pie, y se corrige la lectura de F-8: el segundo no esta en la vista, lo inyecta un blob de HTML desde JS, asi que ningun escaneo de views/ lo veria.",
+      "ubicaciones": [
+        {
+          "archivo": "views/programa-general-actualizar/programaGeneralActualizar.view.php",
+          "linea": 204,
+          "fragmento": "<p class='modal-eliminar-semana-body-texto' id='modal-eliminar-semana-body-texto'>"
+        },
+        {
+          "archivo": "public/js/funcionesGenerales6.js",
+          "linea": 11,
+          "fragmento": "blob de HTML que declara el mismo id"
+        }
+      ],
+      "evidencia": "grep -rn 'modal-eliminar-semana-body-texto' views/ public/js -> dos declaraciones y un lector en funcionesGenerales6.js:148",
+      "origen": "F-8"
+    },
+    {
+      "id": "F0-042",
+      "modulo": "transversal",
+      "titulo": "Hay HTML con estilo en linea y color literal inyectado desde JavaScript, fuera del alcance de cualquier lectura de vistas",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "estilo-en-linea",
+      "porQue": "Mayor: las vistas PHP salen casi limpias —cuatro atributos style= y cero bloques <style> en 56 archivos— y esa limpieza es enganosa si se lee sola. La deuda equivalente vive en blobs de HTML dentro de JS, con literales como color: white o width: 300px. No es critico porque el gate estatico SI escanea public/js (scanRoots lo incluye) y su regla inline-style los cuenta; lo que falla es que un auditor humano que mire views/ concluya que no hay deuda de estilo en linea.",
+      "ubicaciones": [
+        {
+          "archivo": "public/js/funcionesGenerales6.js",
+          "linea": 11,
+          "fragmento": "style='width: 300px; height: 300px; color: white'"
+        },
+        {
+          "archivo": "public/js/modules/programa_actualizar/hot_actualizar.js",
+          "fragmento": "18 atributos style= en HTML inyectado"
+        }
+      ],
+      "evidencia": "grep -rhoE \"style\\\\s*=\\\\s*['\\\"][^'\\\"]{3,80}\" public/js pdc-app/src | wc -l -> 41, repartidos en 6 archivos; scripts/design-system-audit.mjs:25 confirma que public/js esta en scanRoots",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-050",
+      "modulo": "plan-de-compras",
+      "titulo": "Los 26 hex y el @layer ausente del PDC son decisiones escritas, no deuda",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "color-crudo",
+      "porQue": "Medido y conforme. Los 26 hex son los segundos argumentos de var(): el fallback de cada token para cuando la SPA corre con npm run dev fuera de lps-aia. El @layer ausente tampoco es olvido: declarar los --pdc-* sin capa es lo que impide que redefinan los --ds-active-*, que el sistema declara en @layer theme y que una hoja sin capa ganaria. Coste declarado que si queda: un fallback es una copia, y si un token deriva los 26 respaldos se quedan viejos en silencio.",
+      "ubicaciones": [
+        {
+          "archivo": "pdc-app/src/styles.css",
+          "linea": 22,
+          "fragmento": "--pdc-bg: var(--ds-active-bg-canvas, #0b100d);"
+        }
+      ],
+      "evidencia": "lectura de pdc-app/src/styles.css:1-40, cabecera que documenta ambas decisiones",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-051",
+      "modulo": "plan-de-compras",
+      "titulo": "El gate estatico no escanea pdc-app/: ninguno de los 3896 hallazgos viene del Plan de Compras",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "gate-ciego",
+      "porQue": "Critico: deja al sistema sin poder detectar su propio incumplimiento en un modulo declarado pilot. scanRoots no incluye ni la fuente (pdc-app/src) ni el bundle (public/pdc-app/), asi que el modulo no aporta un solo hallazgo al censo del gate — no por no tener, sino por no mirarse.",
+      "ubicaciones": [
+        {
+          "archivo": "scripts/design-system-audit.mjs",
+          "linea": 25,
+          "fragmento": "const scanRoots = ['views', 'public/js', 'public/css', 'src/View/Components', 'admin'];"
+        }
+      ],
+      "evidencia": "lectura de scripts/design-system-audit.mjs:25; pdc-app/src/styles.css tiene 1166 lineas y no aparece en el informe del gate",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-052",
+      "modulo": "plan-de-compras",
+      "titulo": "El gate propio del PDC comprueba dos condiciones y no lo ejecuta ningun script ni CI",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "gate-ciego",
+      "porQue": "Critico por la misma razon que F0-051 y ademas por partida doble: el unico control del modulo verifica (a) que el bundle no redefina --ds-active-bg-canvas en un :root sin capa y (b) que la cadena 'var(--ds-' aparezca AL MENOS UNA VEZ. Un bundle con cuarenta colores sueltos y un solo var(--ds-x) pasa. Y no esta cableado: las unicas referencias vivas son dos documentos que cuentan que se corrio a mano en julio.",
+      "ubicaciones": [
+        {
+          "archivo": "scripts/design-system-plan-compras-gate.mjs",
+          "linea": 30,
+          "fragmento": "if (!content.includes('var(--ds-')) errors.push('Bundle does not reference any --ds-* tokens');"
+        },
+        {
+          "archivo": "package.json",
+          "fragmento": "ningun script lo invoca"
+        },
+        {
+          "archivo": ".github/workflows/design-system.yml",
+          "fragmento": "no aparece"
+        }
+      ],
+      "evidencia": "grep -rn 'plan-compras-gate' sobre todo el repo: solo goals/cierre-dark-mode-y-tablas/goal.md y docs/superpowers/matriz-dark-mode-2026-08-03.md, ambos historicos",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-053",
+      "modulo": "plan-de-compras",
+      "titulo": "El shell de la SPA declara <main> y no declara <h1>",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "accesibilidad",
+      "porQue": "Cosmetico y estimado: views/plan-compras/app.view.php es el shell de una SPA React, asi que el encabezado real lo pinta el bundle en tiempo de ejecucion. No se puede afirmar que la pantalla carezca de h1 sin abrirla. Se registra como medicion pendiente, no como defecto confirmado.",
+      "ubicaciones": [
+        {
+          "archivo": "views/plan-compras/app.view.php",
+          "fragmento": "47 lineas, <main> presente, <h1> ausente"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs sobre views/plan-compras/",
+      "origen": "DS-F0",
+      "estimado": true,
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-060",
+      "modulo": "control-de-cambios",
+      "titulo": "Profesionales, Subcontratistas y Control de Cambios cumplen el contrato entero",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme, y registrado a proposito: un inventario que solo lista deuda no dice donde NO la hay. Los tres: cero hex, cero rgb() crudo, cero estilo en linea, cero bloques <style>, cero ids duplicados, @layer declarado, <main> y <h1>, y presupuesto cero en todas las reglas que declaran. Entre los tres, dos !important en 420 lineas. Control de Cambios es el extremo: 64 lineas de CSS, ningun !important, cinco tokens, vista de 925 lineas con doce primitivas aia-*.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/control-cambios.css",
+          "fragmento": "64 lineas, 0 !important"
+        },
+        {
+          "archivo": "public/css/profesionales.css",
+          "fragmento": "173 lineas, 1 !important"
+        },
+        {
+          "archivo": "public/css/subcontratistas.css",
+          "fragmento": "183 lineas, 1 !important"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs y scan-vistas.mjs sobre los tres modulos",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-061",
+      "modulo": "control-de-cambios",
+      "titulo": "Dos estados vacios apilados en /control-cambios, el segundo le quita fuerza al primero",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "consistencia",
+      "porQue": "Cosmetico: no rompe funcion ni contraste. DataTables pinta el sEmptyTable largo y justo debajo el dataTables_info con sInfoEmpty, que no anade nada. La ratificacion de la frase larga ya llego (2026-08-10) y F-6 seguia sin aplicar; sigue sin aplicar y aqui tampoco se aplica.",
+      "ubicaciones": [
+        {
+          "archivo": "views/control-cambios/controlCambios.view.php",
+          "linea": 729,
+          "fragmento": "\"sEmptyTable\": \"Las solicitudes de cambio nacen en obra...\""
+        },
+        {
+          "archivo": "views/control-cambios/controlCambios.view.php",
+          "linea": 731,
+          "fragmento": "\"sInfoEmpty\": \"Sin solicitudes\""
+        }
+      ],
+      "evidencia": "lectura de views/control-cambios/controlCambios.view.php:729-731",
+      "escenario": [
+        "vacio"
+      ],
+      "origen": "F-6",
+      "salidaConocida": "sInfoEmpty a cadena vacia. Una linea."
+    },
+    {
+      "id": "F0-070",
+      "modulo": "autenticacion",
+      "titulo": "login-brand-unified.css no entra en ninguna capa y llega por <link> directo",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "fuera-de-capa",
+      "porQue": "Mayor: una hoja sin capa gana a TODAS las capas del sistema, asi que sus 440 lineas de reglas de aspecto se sientan por encima de theme, components y utilities enteras. Es la unica hoja de modulo del repositorio en esa situacion —pdc-app/src/styles.css tampoco lleva capa, pero ahi es una decision escrita y acotada a declarar variables. Ademas la comparten la app y admin/, asi que el efecto se paga dos veces.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/login-brand-unified.css",
+          "linea": 1,
+          "fragmento": "440 lineas, cero @layer"
+        },
+        {
+          "archivo": "views/auth/login.view.php",
+          "fragmento": "<link> directo, fuera del grafo de @import"
+        },
+        {
+          "archivo": "admin/views/pages/login.php",
+          "fragmento": "la misma hoja"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs: campo layer = 0 para public/css/login-brand-unified.css; grep de <link> en views/auth y admin/views/pages",
+      "origen": "C-2"
+    },
+    {
+      "id": "F0-071",
+      "modulo": "autenticacion",
+      "titulo": "Catorce !important en una hoja que ya gana por estar fuera de capa",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "cascada",
+      "porQue": "Menor: es redundancia, no un defecto que rompa nada. Catorce de los treinta !important apuntan a selectores propios dentro de una hoja sin capa, que ya gana a todo el sistema por posicion. Los doce contra SweetAlert2 si estan justificados.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/login-brand-unified.css",
+          "fragmento": "30 !important: 14 propio-del-modulo, 12 sweetalert2, 4 primitiva-aia"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py sobre public/css/login-brand-unified.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-072",
+      "modulo": "autenticacion",
+      "titulo": "login-brand-unified.css:148 consume --ds-active-text-tertiary, que no existe",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "token-roto",
+      "porQue": "Mayor: la declaracion no tiene fallback, asi que el navegador la descarta entera y el color lo hereda del padre. No es el color que el autor escribio. Ver F0-124 para el conjunto de los cinco tokens rotos.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/login-brand-unified.css",
+          "linea": 148,
+          "fragmento": "color: var(--ds-active-text-tertiary);"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs: --ds-active-text-tertiary consumido en 4 sitios, definido en 0 de las 66 hojas; grep en public/js y src: sin resultados",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-073",
+      "modulo": "autenticacion",
+      "titulo": "/password/forgot y /password/reset estan declaradas en auth.json y ningun escenario las cubre",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Mayor: modulo pilot que declara tres rutas y cubre una. Los estados de error de validacion y el de enlace enviado no son alcanzables por lectura estatica ni tienen con que compararse.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/auth.json",
+          "fragmento": "routes: /login, /password/forgot, /password/reset; scenarios: solo /login"
+        }
+      ],
+      "evidencia": "cruce routes[] x scenarios[] de los 15 manifiestos",
+      "escenario": [
+        "error",
+        "vacio"
+      ],
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-080",
+      "modulo": "selector-de-proyectos",
+      "titulo": "project-selector.css: cero !important en 342 lineas y 48 tokens consumidos",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme. Es la hoja de modulo mejor tokenizada del repositorio en proporcion a su tamano y no gasta un solo !important. Se registra como referencia de que el contrato es cumplible tal como esta escrito.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/project-selector.css",
+          "fragmento": "342 lineas, 0 !important, 0 hex, 48 tokens"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-081",
+      "modulo": "escalamientos-y-crisis",
+      "titulo": "Escalamientos consume los tokens y casi no consume el catalogo de componentes",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "primitiva-ad-hoc",
+      "porQue": "Menor: no rompe nada y el modulo esta correctamente tokenizado (53 tokens, cero !important, cero color crudo). Lo que mide es otra cosa: dos primitivas aia-* en 170 lineas de vista, contra 10-16 de los demas pilot. Construye lo suyo con clases .esc-* propias. Es la diferencia entre consumir los tokens y consumir el sistema.",
+      "ubicaciones": [
+        {
+          "archivo": "views/dashboard/escalamientos.php",
+          "fragmento": "170 lineas, 2 clases aia-*"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs, campo aia",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-082",
+      "modulo": "indicadores",
+      "titulo": "El «sin deuda» de /indicadores no significa lo mismo que en los demas modulos",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme en lo que le corresponde, con una salvedad que hay que decir para que la cifra no engane: 60 lineas de CSS y cinco tokens no significan que el modulo cumpla el contrato en toda su superficie, sino que casi toda su superficie esta fuera del alcance del contrato. C-22 midio que el contenido central es un iframe servido desde app.powerbi.com: otro origen, no tematizable desde aqui.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/indicadores.css",
+          "fragmento": "60 lineas, 0 !important, 5 tokens"
+        },
+        {
+          "archivo": "views/indicadores/indicadores.view.php",
+          "fragmento": "iframe a app.powerbi.com"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs; C-22 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "origen": "C-22"
+    },
+    {
+      "id": "F0-090",
+      "modulo": "torre-de-control-bi",
+      "titulo": "38 de los 51 !important de BI apuntan a selectores propios y 10 a primitivas aia-*",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor: solo tres de los 51 pelean contra Bootstrap. Los otros 48 no tienen proveedor al que ganarle, en la segunda hoja mas grande del repositorio (2041 lineas). Mismo mecanismo que F0-020 en Programacion Semanal, en un modulo que si tiene el color impecable.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/bi-control-tower.css",
+          "fragmento": "51 !important: 38 propio-del-modulo, 10 primitiva-aia, 3 bootstrap"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py sobre public/css/bi-control-tower.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-091",
+      "modulo": "torre-de-control-bi",
+      "titulo": "BI escribe su markup con dos vocabularios a la vez: 88 utilidades tipo Tailwind y el catalogo aia-*",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "primitiva-ad-hoc",
+      "porQue": "Mayor y con matiz importante: bi-utilities.css es una victoria, no un descuido. Sustituyo al Play CDN de Tailwind, que inyectaba su salida en un <style> SIN CAPA y derrotaba a las nueve capas del sistema en las ocho rutas de BI, con un preflight que rompia las cinco primitivas aia-* de la superficie. Lo que queda como deuda es la otra cara: un modulo pilot con 88 utilidades ajenas al catalogo es un segundo sistema conviviendo con el primero. views/bi/_nav.php:6 usa cinco utilidades y cero primitivas. QUE SE HACE CON ESO ES DS-F1.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/design-system/adapters/bi-utilities.css",
+          "fragmento": "88 utilidades en @layer utilities"
+        },
+        {
+          "archivo": "views/bi/_nav.php",
+          "linea": 6,
+          "fragmento": "class=\"bi-tabs-nav flex items-center gap-1 flex-shrink-0 overflow-x-auto whitespace-nowrap\""
+        }
+      ],
+      "evidencia": "lectura de la cabecera de bi-utilities.css y de views/bi/_nav.php; 88 reglas de clase contadas con grep",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-092",
+      "modulo": "torre-de-control-bi",
+      "titulo": "Cuatro de las cinco vistas de BI no declaran <main> ni <h1>, y es correcto",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "accesibilidad",
+      "porQue": "Medido y conforme. _layout.php los declara y envuelve al resto, asi que el HTML rendido los tiene una vez. Se registra porque el conteo por archivo, leido solo, sugeriria lo contrario — el mismo error de lectura que F0-011.",
+      "ubicaciones": [
+        {
+          "archivo": "views/bi/_layout.php",
+          "fragmento": "<main> y <h1> presentes; _filters, _nav, control-tower e index son parciales"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs sobre views/bi/",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-093",
+      "modulo": "torre-de-control-bi",
+      "titulo": "Tres de las ocho pestanas de BI quedan fuera de vista a 1180x820",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "accesibilidad",
+      "porQue": "Mayor y estimado: la medicion es de C-23 (las pestanas suman 1626 px en un carril de 1116) y no se re-mide aqui. El carril declara overflow-x-auto, asi que hay scroll; lo que no hay es senal de que exista. Se conserva la severidad estimada y se marca como tal en vez de rebajarla por no poder medirla.",
+      "ubicaciones": [
+        {
+          "archivo": "views/bi/_nav.php",
+          "linea": 6,
+          "fragmento": "nav con las ocho hojas del reporte"
+        },
+        {
+          "archivo": "public/css/bi-control-tower.css",
+          "fragmento": ".bi-tabs-rail"
+        }
+      ],
+      "evidencia": "C-23 de docs/superpowers/decisiones-pendientes-2026-08-03.md, medido a 1180x820",
+      "origen": "C-23",
+      "estimado": true,
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-094",
+      "modulo": "torre-de-control-bi",
+      "titulo": "El boton «Quitar filtro» de los chips mide 28x20 px en las ocho vistas",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "accesibilidad",
+      "porQue": "Menor: es accesibilidad AA de geometria (WCAG 2.5.8), cuatro px por debajo del piso de 24 en el eje corto. Tiene nombre accesible correcto, asi que es solo geometria.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/bi-control-tower.css",
+          "fragmento": "button[aria-label=\"Quitar filtro\"] dentro de .bi-chip"
+        }
+      ],
+      "evidencia": "F-4 de docs/DESIGN-AUDIT.md, medido en las ocho superficies de BI",
+      "escenario": [
+        "reposo"
+      ],
+      "origen": "F-4",
+      "bloqueadoPor": "runtime-budgets-al-ci",
+      "salidaConocida": "Subir el alto del boton sin tocar el alto del chip."
+    },
+    {
+      "id": "F0-095",
+      "modulo": "torre-de-control-bi",
+      "titulo": "Los graficos de BI se nombran y no se leen",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "accesibilidad",
+      "porQue": "Mayor: es accesibilidad nivel A. Los graficos traen aria-label correcto, pero un <canvas> no expone sus datos, asi que la etiqueta describe que hay un grafico y no que dice. La escala reserva critico para nivel A roto sin ninguna via alternativa; aqui la leyenda y el tooltip dan una via parcial.",
+      "ubicaciones": [
+        {
+          "archivo": "public/js/modules/bi_chart_theme.js",
+          "fragmento": "Chart.js sobre <canvas>"
+        }
+      ],
+      "evidencia": "C-32 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "origen": "C-32",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-096",
+      "modulo": "torre-de-control-bi",
+      "titulo": "La paleta de los graficos es el mejor caso de color del repositorio",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "color-crudo",
+      "porQue": "Medido y conforme, y vale como referencia de como se declara bien una excepcion de color. Los 21 hex de bi_chart_theme.js son fallbacks de seis tokens, con el valor que Canvas pinta de verdad —no el aproximado del comentario de tokens.css, porque los tokens se declaran en oklch() y el gamut-mapping difiere por motor— validados contra banda de luminosidad, piso de croma, separacion CVD y contraste >= 3:1. Su presupuesto tolera exactamente 15 hex y 3 funciones de color.",
+      "ubicaciones": [
+        {
+          "archivo": "public/js/modules/bi_chart_theme.js",
+          "linea": 1,
+          "fragmento": "cabecera con la validacion y el comando que la produjo"
+        },
+        {
+          "archivo": "docs/design-system/exceptions.json",
+          "fragmento": "presupuesto bi-chart-theme-fallbacks: 15 hardcoded-hex, 3 hardcoded-color-function"
+        }
+      ],
+      "evidencia": "lectura de public/js/modules/bi_chart_theme.js:1-45",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-097",
+      "modulo": "torre-de-control-bi",
+      "titulo": "Cinco de las ocho pantallas de BI no tienen escenario",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "escenario-sin-cobertura",
+      "porQue": "Mayor: es el modulo con mas pantallas del repositorio y el que mas superficie deja sin cubrir. bi-runtime.json declara las ocho rutas y sus escenarios apuntan a tres.",
+      "ubicaciones": [
+        {
+          "archivo": "docs/design-system/manifests/bi-runtime.json",
+          "fragmento": "escenarios en /bi/control-tower, /bi/curva-s y /bi/semanal; sin escenario: contratistas, intermedia, pdc, programa-general, responsables"
+        }
+      ],
+      "evidencia": "cruce routes[] x scenarios[] de los 15 manifiestos",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-100",
+      "modulo": "panel-admin",
+      "titulo": "admin/ cumple lo que promete: dark y tokenizado, sin migrar",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme CONTRA SU PROPIA DECLARACION, que es lo que corresponde: por decision explicita del usuario admin/ no se migra al design system. Contra ese contrato cumple: cero hex, cero rgb() crudo, cero estilo en linea, cero bloques <style>, cero ids duplicados en 3937 lineas de vista, 54 tokens en el adaptador. Los 36 !important del adaptador de AdminLTE remapean clases de Bootstrap a tokens, que es para lo que el contrato exime a los adaptadores.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/design-system/adapters/admin-lte.css",
+          "fragmento": "898 lineas, 36 !important, 54 tokens"
+        },
+        {
+          "archivo": "docs/design-system/manifests/inventory.json",
+          "fragmento": "nota del modulo admin: «no debe leerse como un olvido»"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs y scan-vistas.mjs sobre admin/",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-101",
+      "modulo": "panel-admin",
+      "titulo": "Trece de las catorce vistas de admin/ no declaran <main> y once no declaran <h1>",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "accesibilidad",
+      "porQue": "Mayor: el <main> lo aporta el layout, pero su <h1> es el de la marca, no el de la pagina, de modo que cada pantalla de administracion se presenta sin encabezado de primer nivel propio. Es la instancia de C-30 que sobrevive: aquel barrido midio tres <main> en toda la app y hoy son 21, pero admin/ no participo de esa correccion.",
+      "ubicaciones": [
+        {
+          "archivo": "admin/views/layouts/main.php",
+          "fragmento": "unico con <main> y <h1>"
+        },
+        {
+          "archivo": "admin/views/pages/users/index.php",
+          "fragmento": "sin <main> ni <h1>; igual las otras doce"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs sobre admin/views/: main en 1 de 15 archivos, h1 en 4",
+      "origen": "C-30"
+    },
+    {
+      "id": "F0-102",
+      "modulo": "panel-admin",
+      "titulo": "Catorce pantallas, el 34% del producto, fuera del catalogo de componentes",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "primitiva-ad-hoc",
+      "porQue": "Mayor, y no es un reproche al modulo: es el dato que mide el tamano de la excepcion que el usuario aprobo. Cada vista de admin/ declara 2 o 3 clases aia-*, contra las 10-16 de los modulos pilot, y las que tiene vienen del layout. Sin esta cifra, «admin no se migra» es una frase; con ella es una superficie medida.",
+      "ubicaciones": [
+        {
+          "archivo": "admin/views/pages/",
+          "fragmento": "14 vistas, 2-4 clases aia-* cada una"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs, campo aia, sobre admin/views/",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-103",
+      "modulo": "panel-admin",
+      "titulo": "La marca «AIA» de admin/ se queda a 0,04 del minimo de contraste",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "accesibilidad",
+      "porQue": "Menor: 4,46:1 donde AA pide 4,5 para texto normal. Son 16 px en negrita, que no cuenta como texto grande. Afecta a las ocho rutas de admin. Medicion de navegador, no re-medida aqui.",
+      "ubicaciones": [
+        {
+          "archivo": "admin/views/layouts/main.php",
+          "fragmento": "marca AIA del layout"
+        }
+      ],
+      "evidencia": "C-25 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "origen": "C-25",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-110",
+      "modulo": "laboratorio-design-system",
+      "titulo": "El laboratorio es el unico conjunto de hojas con cero !important, cero hex y cero rgb() crudo",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "consistencia",
+      "porQue": "Medido y conforme, y defendido por un gate: la regla noImportantStyles de Biome esta activa para el laboratorio y ninguna de estas hojas esta exenta, asi que el cero no es casualidad. 2033 lineas de CSS, 84 tokens, diez familias demostradas. Es el mejor material de referencia del sistema.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/design-system/lab.css",
+          "fragmento": "1966 lineas, 0 !important, 0 hex, 84 tokens"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs sobre las tres hojas del laboratorio; docs/design-system/README.md seccion Gate",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-111",
+      "modulo": "laboratorio-design-system",
+      "titulo": "El unico style= del laboratorio esta en la familia que concentra las excepciones del contrato de evidencia",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "estilo-en-linea",
+      "porQue": "Cosmetico: un atributo style= sin efecto sobre el resto. Se registra por la coincidencia, que es informativa: states-feedback es la familia cuyos dos escenarios validan geometria, contraste y overflow SIN snapshot, y cuyos dos recortes son los unicos escenarios 'element' de ELEMENT_CAPTURE_ALLOWLIST.",
+      "ubicaciones": [
+        {
+          "archivo": "views/design-system/families/states-feedback.php",
+          "fragmento": "un atributo style="
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs; docs/design-system/README.md seccion capture",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-112",
+      "modulo": "transversal",
+      "titulo": "El catalogo de componentes esta limpio y probado; lo que falta es que los modulos lo consuman",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "primitiva-ad-hoc",
+      "porQue": "Mayor y es la conclusion agregada de la tanda 2: la distancia entre el laboratorio y el producto no esta en la calidad de las primitivas. escalamientos declara 2 primitivas en 170 lineas de vista, las 14 vistas de admin/ declaran 2 o 3 cada una, y views/bi/_nav.php declara 0 y cinco utilidades de Tailwind. El sistema existe; el consumo es el que falta. Es el hallazgo que mas directamente alimenta a DS-F1.",
+      "ubicaciones": [
+        {
+          "archivo": "views/dashboard/escalamientos.php",
+          "fragmento": "2 clases aia-* en 170 lineas"
+        },
+        {
+          "archivo": "views/bi/_nav.php",
+          "fragmento": "0 clases aia-*"
+        },
+        {
+          "archivo": "admin/views/pages/",
+          "fragmento": "2-3 por vista"
+        }
+      ],
+      "evidencia": "herramientas/scan-vistas.mjs, campo aia, sobre los 56 archivos de vista",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-120",
+      "modulo": "transversal",
+      "titulo": "El 41% de los !important del repositorio no pelea contra ningun proveedor",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor y es la cifra que faltaba: de los 1520, 903 (59%) van contra CSS de proveedor —la salida que el contrato preve y exime— y 617 (41%) van contra selectores propios (543) o contra primitivas aia-* (74). Esa segunda mitad se puede cerrar sin tocar a ningun proveedor, y contarla junto con la primera era lo que impedia verlo.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "fragmento": "167 propios"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "fragmento": "102 propios"
+        },
+        {
+          "archivo": "public/css/buttons.css",
+          "fragmento": "80 propios"
+        },
+        {
+          "archivo": "public/css/bi-control-tower.css",
+          "fragmento": "38 propios"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py sobre los 66 CSS: handsontable 449, datatables 230, bootstrap/adminlte 168, tom-select 22, sweetalert2 21, select2 13, propio-del-modulo 543, primitiva-aia 74",
+      "origen": "C-2"
+    },
+    {
+      "id": "F0-121",
+      "modulo": "transversal",
+      "titulo": "Quince de los 74 !important contra aia-* son el patron canonico correcto",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "cascada",
+      "porQue": "Medido y conforme. Los quince de design-system/core.css:373-378 son las declaraciones de .aia-visually-hidden, donde !important es lo correcto: una clase de ocultado accesible tiene que ganar siempre. Se registra porque contarlos con los doce de components/navigation.css —que si son cascada interna— habria producido el mismo error de agregacion que F0-120 viene a corregir.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/design-system/core.css",
+          "linea": 373,
+          "fragmento": ".aia-visually-hidden, seis declaraciones con !important"
+        },
+        {
+          "archivo": "public/css/design-system/components/navigation.css",
+          "linea": 148,
+          "fragmento": ".aia-sidebar__footer y once mas: cascada interna real"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py y lectura de las dos zonas",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-122",
+      "modulo": "transversal",
+      "titulo": "Cuatro archivos quedan en un sub-escalon de capa que nadie decidio",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor: el @import pone la capa y el archivo abre la suya dentro sin saberlo, asi que sus reglas acaban anidadas (module.components, components.components, utilities.utilities) y pierden contra las reglas planas de su capa madre. C-15 lo midio en buttons.css el 3-ago y sigue en pie, ampliado a cuatro.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 1,
+          "fragmento": "@layer theme, layout, components — importado con layer(module)"
+        },
+        {
+          "archivo": "public/css/buttons.css",
+          "linea": 1,
+          "fragmento": "@layer components — importado con layer(components)"
+        },
+        {
+          "archivo": "public/css/access.css",
+          "linea": 1,
+          "fragmento": "@layer utilities — importado con layer(utilities)"
+        },
+        {
+          "archivo": "public/css/handsontable-module.css",
+          "fragmento": "abre capa propia — importado con layer(vendor)"
+        }
+      ],
+      "evidencia": "cruce de las lineas @import de aia-design-system.css y entrypoints/core.css contra la primera @layer de cada archivo",
+      "origen": "C-15"
+    },
+    {
+      "id": "F0-123",
+      "modulo": "transversal",
+      "titulo": "handsontable-header-global.css afirma tres veces estar fuera de capa y el agregador lo encapsula",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "declaracion-incumplida",
+      "porQue": "Mayor: funciona hoy —entra en vendor, la misma capa que el CSS de Handsontable, despues que el, y usa !important en sus 65 reglas— pero NO por la razon que sus comentarios afirman. Quien reordene los @import rompera la hoja y leera tres comentarios que le dicen que el archivo esta fuera de capa. Una explicacion falsa en el sitio donde se busca la verdad es peor que ninguna.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/handsontable-header-global.css",
+          "linea": 6,
+          "fragmento": "ESTE ARCHIVO NO LLEVA @layer: Si se encapsula perderia contra el vendor."
+        },
+        {
+          "archivo": "public/css/handsontable-header-global.css",
+          "linea": 132,
+          "fragmento": "vive fuera de @layer a proposito para no perder la pelea"
+        },
+        {
+          "archivo": "public/css/aia-design-system.css",
+          "linea": 11,
+          "fragmento": "@import url(\"/css/handsontable-header-global.css?v=1.1.0\") layer(vendor);"
+        }
+      ],
+      "evidencia": "grep -n '@layer' public/css/handsontable-header-global.css -> tres menciones, las tres en comentarios; el archivo no abre ninguna capa y el @import le pone layer(vendor)",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-124",
+      "modulo": "transversal",
+      "titulo": "Cinco tokens se consumen y nadie los define; tres no tienen fallback",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "token-roto",
+      "porQue": "Mayor: en los tres sin fallback el navegador descarta la declaracion entera, asi que hay tres propiedades escritas que no se aplican, en tres superficies distintas. No es critico porque ninguna deja una superficie rota por si sola —el color hereda, la opacidad se queda a 1— pero es exactamente la clase de defecto que un gate que lee archivos no puede ver, porque el valor resuelto solo existe en el navegador.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/login-brand-unified.css",
+          "linea": 148,
+          "fragmento": "color: var(--ds-active-text-tertiary); — sin fallback"
+        },
+        {
+          "archivo": "public/css/programa-general-actualizar.css",
+          "linea": 450,
+          "fragmento": "border-color: var(--ds-active-text-tertiary); — sin fallback"
+        },
+        {
+          "archivo": "public/css/programa-general-actualizar.css",
+          "linea": 588,
+          "fragmento": "background: var(--ds-active-text-tertiary); — sin fallback"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/tom-select.css",
+          "linea": 11,
+          "fragmento": "font-size: var(--ds-font-size-sm) !important; — sin fallback"
+        },
+        {
+          "archivo": "public/css/design-system/components/navigation.css",
+          "linea": 331,
+          "fragmento": "opacity: var(--ds-opacity-disabled); — sin fallback"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/tom-select.css",
+          "linea": 40,
+          "fragmento": "--ds-active-surface-hover — con fallback, benigno"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/shell-sidebar.css",
+          "linea": 48,
+          "fragmento": "--ds-context-bar-height — con fallback 2.5rem, benigno"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs sobre las 66 hojas: 600 tokens definidos, 6 consumidos sin definicion; grep de los seis en public/js, src, admin y pdc-app: solo --hot-table-width aparece (ver F0-125)",
+      "origen": "DS-F0",
+      "salidaConocida": "--ds-active-text-secondary existe y es el hermano del roto: el nombre era el equivocado, no el concepto."
+    },
+    {
+      "id": "F0-125",
+      "modulo": "transversal",
+      "titulo": "--hot-table-width parece roto en CSS y lo escribe JavaScript en tiempo de ejecucion",
+      "severidad": "sin-problema",
+      "nivel": 0,
+      "categoria": "token-roto",
+      "porQue": "Medido y conforme, y registrado para que no se persiga: ningun CSS lo define, asi que un censo que solo mirara hojas lo habria reportado como roto. Lo escribe hot_table_width.js con style.setProperty sobre el contenedor. Es un token de runtime legitimo.",
+      "ubicaciones": [
+        {
+          "archivo": "public/js/modules/aia_ui/hot_table_width.js",
+          "linea": 66,
+          "fragmento": "container.style.setProperty('--hot-table-width', ancho + 'px');"
+        },
+        {
+          "archivo": "public/css/handsontable-module.css",
+          "linea": 155,
+          "fragmento": "var(--hot-table-width)"
+        }
+      ],
+      "evidencia": "grep de --hot-table-width en public/js: tres modulos lo escriben",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-126",
+      "modulo": "transversal",
+      "titulo": "Los 31 hex de buttons.css son 31 veces color: #ffffff",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "color-crudo",
+      "porQue": "Mayor: es una hoja compartida por todo el producto, y el blanco literal como color de texto en el unico tema implementado, que es dark, no puede corregirse desde ningun token. Conviven con la linea de al lado haciendo lo correcto: background-color: var(--aia-green-primary, ...) y debajo color: #ffffff. --ds-color-text-inverse ya existe.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/buttons.css",
+          "linea": 197,
+          "fragmento": ".btn-primary { background-color: var(--aia-green-primary, ...); color: #ffffff; }"
+        }
+      ],
+      "evidencia": "grep -coE 'color:\\s*#ffffff' public/css/buttons.css -> 31, y son los 31 hex del archivo",
+      "origen": "C-2"
+    },
+    {
+      "id": "F0-127",
+      "modulo": "transversal",
+      "titulo": "Tres iconos de estado en hex crudo dentro de la hoja compartida",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "color-crudo",
+      "porQue": "Menor: la escalera de estado del sistema ya tiene las tres familias (rojo, ambar, verde), asi que el equivalente existe y el efecto visual es correcto hoy. Lo que falla es que el color no viaja por el sistema.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 398,
+          "fragmento": ".iconoContratoRojo { color: #c22f2f; }"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 402,
+          "fragmento": ".iconoContratoNaranja { color: #c2ac2f; }"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 406,
+          "fragmento": ".iconoContratoVerde { color: #48c22f; }"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs sobre public/css/styles.css",
+      "origen": "C-2"
+    },
+    {
+      "id": "F0-128",
+      "modulo": "transversal",
+      "titulo": "Cuatro primitivas aia-* estan coloreadas con la paleta literal de Bootstrap 4",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "color-crudo",
+      "porQue": "Mayor: son clases con el prefijo del sistema —el que declara que una superficie consume el design system— definidas con los hex de secondary, info, primary y dark de Bootstrap 4. No es color crudo cualquiera: es color de otro sistema publicado bajo el nombre del propio. Que una primitiva aia-* traiga la paleta de un proveedor invierte lo que el prefijo promete.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 1486,
+          "fragmento": ".aia-tipo-pill--s { --tipo-brand: #6c757d; }  /* bootstrap secondary */"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 1491,
+          "fragmento": ".aia-tipo-pill--mo { --tipo-brand: #17a2b8; }  /* bootstrap info */"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 1496,
+          "fragmento": ".aia-tipo-pill--si { --tipo-brand: #007bff; }  /* bootstrap primary */"
+        },
+        {
+          "archivo": "public/css/styles.css",
+          "linea": 1501,
+          "fragmento": ".aia-tipo-pill--oc { --tipo-brand: #343a40; }  /* bootstrap dark */"
+        }
+      ],
+      "evidencia": "lectura de public/css/styles.css:1483-1503",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-129",
+      "modulo": "transversal",
+      "titulo": "Nueve literales white en la hoja compartida",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "color-crudo",
+      "porQue": "Menor: mismo mecanismo que F0-126 y menor volumen. background: white y color: white en un producto dark, con --ds-color-text-inverse disponible. El censo de hex del gate no los ve porque no son hex.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/styles.css",
+          "fragmento": "nueve declaraciones con la palabra clave white"
+        }
+      ],
+      "evidencia": "grep -coE ':\\s*white\\b' public/css/styles.css -> 9",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-200",
+      "modulo": "vendor:handsontable",
+      "titulo": "63 de los 85 selectores de Handsontable no los alcanza ninguna hoja nuestra",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Critico: no es un modulo que se desvia del contrato, es un sistema entero que nunca entro, y cinco modulos pilot dependen de el. Los 63 sin alcanzar no son residuos: son el menu de filtros (15), los controles de UI (7), el menu contextual (4), los comentarios (5), los estados de celda (6), el anidamiento y movimiento (14), los clones y la estructura (7) y cinco mas. Es la mitad de la superficie interactiva de la grilla.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/handsontable/handsontable.full.min.css",
+          "fragmento": "85 selectores .ht*/.handsontable/.wt*"
+        },
+        {
+          "archivo": "public/css/handsontable-module.css",
+          "fragmento": "una de las cuatro hojas que alcanzan 22 de esos 85"
+        }
+      ],
+      "evidencia": "comm entre los selectores del vendor y los de las ocho hojas nuestras que tocan la grilla: 85 en el vendor, 22 alcanzados, 63 sin alcanzar",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-201",
+      "modulo": "vendor:handsontable",
+      "titulo": "El vendor trae su propia paleta clara y pinta con ella todo lo que ningun token alcanza",
+      "severidad": "critico",
+      "nivel": 4,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Critico y es la consecuencia visible de F0-200: la grilla en reposo esta tematizada; el menu de filtros, el menu contextual, los comentarios y los editores no. En un producto cuyo unico tema es dark, cada uno de los 63 selectores sin alcanzar se pinta con grises claros del vendor y un azul de seleccion que no pertenece a ninguna escalera del sistema.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/handsontable/handsontable.full.min.css",
+          "fragmento": "29x #ccc, 20x #fff, 11x #999, 9x #777, 8x #eee, 7x #bbb, 7x #5292f7, 5x #000"
+        }
+      ],
+      "evidencia": "grep -oE '#[0-9a-fA-F]{3,6}' sobre el CSS del vendor, contado y ordenado",
+      "escenario": [
+        "hover",
+        "focus",
+        "seleccion",
+        "error"
+      ],
+      "origen": "DS-F0",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-202",
+      "modulo": "vendor:handsontable",
+      "titulo": "1545 lineas y 247 !important para gobernar 22 selectores de los 85",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Mayor: mide el coste del metodo actual. Cuatro hojas —handsontable-module.css (1022 lineas), handsontable-header-global.css (188), adapters/handsontable.css (144) y adapters/programa-general-handsontable.css (191)— suman 1545 lineas y 247 !important para 22 selectores. Alcanzar los otros 63 con el mismo metodo multiplicaria por tres ese CSS, y ese es el argumento para tratarlo como sistema y no como deuda por modulo.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/handsontable-module.css",
+          "fragmento": "1022 lineas, 107 !important, 22 hex"
+        },
+        {
+          "archivo": "public/css/handsontable-header-global.css",
+          "fragmento": "188 lineas, 65 !important"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/handsontable.css",
+          "fragmento": "144 lineas, 35 !important"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/programa-general-handsontable.css",
+          "fragmento": "191 lineas, 40 !important"
+        }
+      ],
+      "evidencia": "herramientas/scan-css.mjs sobre las cuatro hojas",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-203",
+      "modulo": "vendor:handsontable",
+      "titulo": "La casilla nativa mide 13x13 px, la mitad del piso de 24",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "accesibilidad",
+      "porQue": "Menor: accesibilidad AA de geometria (WCAG 2.5.8). Su selector, .htCheckboxRendererInput, es uno de los 63 que ningun adaptador alcanza, asi que es instancia de F0-200 y no un defecto suelto. La salida conocida cambia el alto de celda y por tanto los goldens: NO se aplica aqui.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/handsontable/handsontable.full.min.css",
+          "fragmento": "input.htCheckboxRendererInput"
+        }
+      ],
+      "evidencia": "F-7 de docs/DESIGN-AUDIT.md: medido en /profesionales (4 casos), /subcontratistas (2) y /programacion-intermedia (1)",
+      "escenario": [
+        "reposo"
+      ],
+      "origen": "F-7",
+      "bloqueadoPor": "runtime-budgets-al-ci",
+      "salidaConocida": "Una regla en handsontable-module.css que agrande la caja sin cambiar el alto de fila."
+    },
+    {
+      "id": "F0-204",
+      "modulo": "vendor:handsontable",
+      "titulo": "La caja interna de la cabecera desperdicia 23 px por columna",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Menor con beneficio medido: el .colHeader renderiza 33 px donde el th mide 56. Es estructural y afecta a cuantas columnas caben, pero no rompe ninguna regla del contrato ni deja nada ilegible hoy.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/handsontable-header-global.css",
+          "fragmento": ".colHeader dentro de thead th"
+        }
+      ],
+      "evidencia": "C-16 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "origen": "C-16",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-205",
+      "modulo": "vendor:handsontable",
+      "titulo": "La mitad de los gatillos decorativos de Programa General no estan marcados como decorativos",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "accesibilidad",
+      "porQue": "Cosmetico: 12 de los 24 botones .changeType llevan aria-hidden y doce no. Es inconsistencia de marcado sin efecto funcional; el elemento es decorativo en los 24 casos.",
+      "ubicaciones": [
+        {
+          "archivo": "public/js/modules/programa_general/hot.js",
+          "fragmento": "renderer del indicador .changeType"
+        }
+      ],
+      "evidencia": "C-37 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "origen": "C-37"
+    },
+    {
+      "id": "F0-210",
+      "modulo": "vendor:datatables",
+      "titulo": "26 de los 48 selectores de DataTables no los alcanza ninguna hoja nuestra",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Mayor y no critico como su gemelo de Handsontable: el volumen es la mitad y catorce de los 26 son utilidades de alineacion (.dt-body-*, .dt-head-*, .dt-center/left/right/justify) que no pintan color y por tanto no rompen el tema. Los doce restantes si: botones y colecciones, casillas, ordenacion deshabilitada y estados de tabla.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/datatables/",
+          "fragmento": "cinco hojas, 33 KB, 48 selectores"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/datatables.css",
+          "fragmento": "168 lineas, alcanza parte de los 22"
+        }
+      ],
+      "evidencia": "comm entre los selectores de public/vendor/datatables/*.css y los de adapters/datatables.css + vendor-datatables-legacy.css + programacion-semanal.css + styles.css + legacy-bridge.css",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-211",
+      "modulo": "vendor:datatables",
+      "titulo": ".dataTables_processing, el indicador de cargando de toda tabla con carga por servidor, no lo alcanza ningun token",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Mayor: es el escenario 'cargando' de un vendor que usan cuatro modulos, y es uno de los estados que este recorrido pide mirar explicitamente. Ninguna hoja nuestra lo nombra, asi que se pinta con la paleta del vendor.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/datatables/jquery.dataTables.css",
+          "fragmento": ".dataTables_processing"
+        }
+      ],
+      "evidencia": "censo de selectores: aparece en el vendor y en ninguna hoja nuestra",
+      "escenario": [
+        "cargando"
+      ],
+      "origen": "DS-F0",
+      "bloqueadoPor": "runtime-budgets-al-ci"
+    },
+    {
+      "id": "F0-212",
+      "modulo": "vendor:datatables",
+      "titulo": "Los cuatro estados de ordenacion deshabilitada estan escritos y nadie los ha visto en accion",
+      "severidad": "cosmetico",
+      "nivel": 1,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Cosmetico: .sorting_, .sorting_asc_disabled, .sorting_desc_disabled y .sorting_disabled no los alcanza ningun token, pero C-7 ya midio que ninguna tabla alcanzable tiene ordenacion activa hoy. La regla esta escrita y no se manifiesta. Se registra para que el dia que se active la ordenacion se sepa que esto viene sin tematizar.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/datatables/jquery.dataTables.css",
+          "fragmento": ".sorting_, .sorting_asc_disabled, .sorting_desc_disabled, .sorting_disabled"
+        }
+      ],
+      "evidencia": "censo de selectores; C-7 de docs/superpowers/decisiones-pendientes-2026-08-03.md",
+      "escenario": [
+        "deshabilitado"
+      ],
+      "origen": "C-7"
+    },
+    {
+      "id": "F0-213",
+      "modulo": "vendor:datatables",
+      "titulo": "La paleta del vendor mezcla grises casi negros con grises muy claros",
+      "severidad": "menor",
+      "nivel": 2,
+      "categoria": "vendor-sin-tokenizar",
+      "porQue": "Menor: son cinco hojas de tres origenes distintos (jquery.dataTables, los adaptadores de bootstrap4 y checkboxes), asi que conviven #111 y #0c0c0c con #dcdcdc y #ddd. No hay un solo tema que respetar aunque se quisiera heredar.",
+      "ubicaciones": [
+        {
+          "archivo": "public/vendor/datatables/",
+          "fragmento": "13x #111, 7x #585858, 7x #2b2b2b, 6x #dcdcdc, 6x #0c0c0c, 5x #ddd, 4x #d33333, 4x #444"
+        }
+      ],
+      "evidencia": "grep -oE '#[0-9a-fA-F]{3,6}' sobre las cinco hojas del vendor",
+      "origen": "DS-F0"
+    },
+    {
+      "id": "F0-214",
+      "modulo": "vendor:datatables",
+      "titulo": "La deuda de DataTables no esta en su adaptador: esta en el modulo que lo esquiva",
+      "severidad": "mayor",
+      "nivel": 3,
+      "categoria": "cascada",
+      "porQue": "Mayor: 230 de los 1520 !important del repositorio apuntan a selectores de DataTables y 159 estan en un solo archivo, public/css/programacion-semanal.css. El adaptador canonico —adapters/datatables.css, 168 lineas— tiene cero, y el puente de compatibilidad —vendor-datatables-legacy.css, 60 lineas— tiene siete. Eso invierte la lectura habitual y dice donde hay que mirar.",
+      "ubicaciones": [
+        {
+          "archivo": "public/css/programacion-semanal.css",
+          "fragmento": "159 !important contra selectores de DataTables"
+        },
+        {
+          "archivo": "public/css/design-system/adapters/datatables.css",
+          "fragmento": "168 lineas, 0 !important"
+        }
+      ],
+      "evidencia": "herramientas/clasificar-important.py: familia datatables = 230 en total, 159 en programacion-semanal.css",
+      "origen": "DS-F0"
+    }
+  ]
+}

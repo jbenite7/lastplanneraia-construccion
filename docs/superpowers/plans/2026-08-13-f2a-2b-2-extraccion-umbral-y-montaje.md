@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-13
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje.md
+resumen: Sacar las reglas de habilitación de dentro de la configuración de Handsontable a un módulo propio y probado, unificar en 1180px los cuatro umbrales que hoy…
+---
+
 # F2a-2b-2 — Extracción de reglas, umbral único y montaje condicional: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

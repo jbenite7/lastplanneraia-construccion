@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-03-usabilidad-altas-y-medias.md
+resumen: Cerrar los 26 hallazgos de severidad alta y media del inventario de usabilidad de superficies sin tabla…
+---
+
 # Usabilidad: altas y medias — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

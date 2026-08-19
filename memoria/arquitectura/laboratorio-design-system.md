@@ -1,8 +1,10 @@
 ---
+capa: wiki
 tipo: modulo
 estado: vigente
 fecha: 2026-08-03
 areas: [design-system, arquitectura]
+tags: [generado]
 fuente: public/index.php
 resumen: "Laboratorio del design system: banco de pruebas visual para tokens y componentes aia-*, no es una vista de negocio"
 ---

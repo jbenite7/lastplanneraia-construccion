@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-04
+areas: [design-system]
+fuente: docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design.md
+resumen: version.json sigue en 1.0.0 mientras el changelog acumula 5 cambios contractuales sin publicar. Declarar 1.1.0 hoy rompe la suite estática por tres frentes: 39…
+---
+
 # Cierre de la versión 1.1.0 del design system — Diseño
 
 **Fecha:** 2026-08-04 · **Estado:** aprobado en brainstorming (4 decisiones del usuario)

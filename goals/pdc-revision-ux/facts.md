@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/facts.md
+resumen: Treinta hechos verificables, agrupados por el plan que los cumple. Aceptados el 2026-07-28.
+---
+
 # Hechos aceptados — revisión de UX del módulo
 
 Treinta hechos verificables, agrupados por el plan que los cumple. Aceptados el 2026-07-28.

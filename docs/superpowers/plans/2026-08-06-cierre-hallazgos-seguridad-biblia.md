@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-06
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md
+resumen: Hacer reales en servidor las cuatro reglas de seguridad de la biblia: CSRF en 6 módulos, CSRF en sanear, candado de semana pasada en Programa General, y 403 de…
+---
+
 # Cierre de los hallazgos de seguridad de la biblia — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

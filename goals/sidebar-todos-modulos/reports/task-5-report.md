@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-5-report.md
+resumen: node tests/browser/shell-sidebar-rollout.mjs → 25/25 checks OK, exit 0: PI, Programa General, Profesionales, Subcontratistas y Control de Cambios en PASS…
+---
+
 # Task 5 — Control de Cambios → shell sidebar
 
 ## Status

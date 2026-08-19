@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/lps-semanal.md
+resumen: Escenarios PS-. El compromiso de la semana: qué se va a hacer de verdad, quién lo confirma y qué pasa después. Es el eslabón donde el ciclo se cierra y donde…
+---
+
 # Biblia · Cascada LPS · Programación Semanal
 
 Escenarios `PS-*`. El compromiso de la semana: qué se va a hacer de verdad, quién lo confirma y qué

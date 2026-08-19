@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design.md
+resumen: Los !important de .pdc-legend-item en buttons.css — spec
+---
+
 # Los `!important` de `.pdc-legend-item` en `buttons.css` — spec
 
 - Frente: `buttons-important-leyenda` · sesión ejecutora `36422d59`

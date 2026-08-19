@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-31
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-31-cierre-de-diseno-impeccable.md
+resumen: Remediar los fallos estáticos del Design System (entrypoint-partition), eliminar la deuda visual de anti-patrones en programaactualizar…
+---
+
 # Plan de Cierre de Diseño e Integración Impeccable
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

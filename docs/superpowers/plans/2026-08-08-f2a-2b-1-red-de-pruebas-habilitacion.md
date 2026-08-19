@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-08
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion.md
+resumen: Fijar por escrito, con pruebas que fallen si algo cambia, el comportamiento actual de las 22 reglas que deciden si una celda es editable en Programación…
+---
+
 # F2a-2b-1 — Red de pruebas sobre las reglas de habilitación: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

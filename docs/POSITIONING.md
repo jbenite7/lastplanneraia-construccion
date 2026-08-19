@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-05
+fuente: docs/POSITIONING.md
+resumen: Artefacto de la fase 6 (made-to-stick) del journey improve-app (docs/IMPROVE-APP-PLAN.md), escrito el 2026-08-05 en el Task 30 (IA-5).
+---
+
 # Positioning
 
 Artefacto de la fase 6 (`made-to-stick`) del journey `improve-app` (`docs/IMPROVE-APP-PLAN.md`),

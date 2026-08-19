@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/hallazgos-piloto.md
+resumen: Hueco reservado por el spec cierre-prelanzamiento-pdc. Cada hallazgo lleva decisión: se arregla en la Ola 1, se difiere con fecha, o se descarta con motivo.
+---
+
 # Hallazgos del piloto — Da Porto, plan de compras real
 
 Hueco reservado por el spec [`cierre-prelanzamiento-pdc`](../../docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design.md).

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-11
+areas: [qa]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-08-11-phpunit-incremental.md
+resumen: Que se puedan escribir tests nuevos con PHPUnit sin migrar los 101 scripts existentes, conservando las dos garantías de la fase 1: nada corre sin entorno…
+---
+
 # PHPUnit incremental — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-06
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design.md
+resumen: Adoptar el ícono del kit «Last Planner · línea Construcción» en las cuatro superficies de marca visibles de la app — favicon, sidebar del shell, login y panel…
+---
+
 # Adopción del logo «Last Planner · línea Construcción» — Diseño
 
 **Fecha:** 2026-08-06 · **Estado:** aprobado en conversación (enfoque A) · **Alcance:** marca visible, sin cambios de paleta

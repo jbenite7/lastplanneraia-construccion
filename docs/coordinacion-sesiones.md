@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-10
+fuente: docs/coordinacion-sesiones.md
+resumen: Cómo trabajan juntas varias sesiones de Claude Code sobre este repositorio. Decidido por el usuario el 2026-08-10, al abrir el programa de cierre de pendientes…
+---
+
 # Coordinación entre sesiones
 
 Cómo trabajan juntas varias sesiones de Claude Code sobre este repositorio. Decidido por el usuario

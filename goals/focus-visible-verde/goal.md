@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/focus-visible-verde/goal.md
+resumen: Andamiaje del frente focus-visible-verde: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: focus-visible-verde
 
 ## Objetivo

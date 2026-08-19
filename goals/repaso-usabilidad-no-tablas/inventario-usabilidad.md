@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: goals/repaso-usabilidad-no-tablas/inventario-usabilidad.md
+resumen: Medido el 2026-08-03 contra el contenedor app (http://localhost:8081), a 1180×820, dark, con sesión abierta por la puerta de servicio como test.R en el…
+---
+
 # Inventario de usabilidad — superficies ajenas a tablas (H-08)
 
 Medido el **2026-08-03** contra el contenedor `app` (`http://localhost:8081`), a **1180×820, dark**,

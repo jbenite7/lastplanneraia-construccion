@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-11
+fuente: docs/despliegue-plan-restauracion-2026-08-12.md
+resumen: Plan de restauración para el despliegue pendiente
+---
+
 # Plan de restauración para el despliegue pendiente
 
 - **Escrito el:** 2026-08-12, por la sesión coordinadora, **antes** de tener autorización.

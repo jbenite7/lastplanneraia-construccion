@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion.md
+resumen: que una petición de fondo con ?semana= en la URL deje de reescribir la semana de la sesión del usuario, y que solo la escriban las navegaciones de página…
+---
+
 # La semana en sesión solo la escribe una navegación — Plan de implementación
 
 > **Para agentes ejecutores:** SUB-SKILL OBLIGATORIA: usa `superpowers:subagent-driven-development`

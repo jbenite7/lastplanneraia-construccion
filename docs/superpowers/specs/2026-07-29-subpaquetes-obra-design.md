@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-subpaquetes-obra-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — la observación más de fondo de toda la reunión. - Estado: implementado (2026-07-29). El grilleo propio…
+---
+
 # PDC v2 — Subpaquetes: del paquete de preconstrucción al contrato real de la obra — Design
 
 - **Fecha:** 2026-07-29

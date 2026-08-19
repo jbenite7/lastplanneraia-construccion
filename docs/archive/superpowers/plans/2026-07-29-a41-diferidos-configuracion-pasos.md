@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-a41-diferidos-configuracion-pasos.md
+resumen: Que montar la segunda obra no obligue a reconfigurar los pasos a mano ni a entrar a la base de datos para cambiar un número de días — sin que una obra sin…
+---
+
 # Los cuatro diferidos de A4.1 (configuración de pasos) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) o superpowers:executing-plans para ejecutar tarea por tarea. Los pasos usan checkbox (`- [ ]`).

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-22
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-22-fundacion-pdc-v2.md
+resumen: Montar el esqueleto andante del módulo Plan de Compras v2: SPA React+Vite+TS+AG Grid desarrollada en plan-de-compras, servida como "isla" dentro de lps-aia con…
+---
+
 # Fundación PDC v2 (isla React en lps-aia) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

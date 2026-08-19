@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-b2-semaforos-lookahead-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité Semanal de Innovación del 2026-07-29 — petición explícita y primera en la lista de Tomás Trujillo. Transcripción en…
+---
+
 # PDC v2 · Fase B2 (primera mitad) — Semáforos y look-ahead de contratación — Design
 
 - **Fecha:** 2026-07-29

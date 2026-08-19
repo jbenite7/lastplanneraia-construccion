@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design.md
+resumen: F2a — Precondiciones y piloto móvil (Programación Intermedia y Semanal)
+---
+
 # F2a — Precondiciones y piloto móvil (Programación Intermedia y Semanal)
 
 - Fecha: 2026-08-07
