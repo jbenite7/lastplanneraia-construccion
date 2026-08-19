@@ -147,7 +147,28 @@ El pase no depende de que alguien se acuerde. `scripts/wiki-lint.mjs` localiza l
 |---|---|
 | Rutas que cuentan | `src/`, `admin/`, `public/`, `tests/`, `scripts/`, `docs/`, `AGENTS.md` |
 | Rutas que no cuentan | todo lo demás, en particular `memoria/` |
+| Commits que no cuentan | los que **solo añaden frontmatter** (ver abajo) |
 | Umbral | **más de 40 commits → hallazgo `VERACIDAD`**, salida en rojo |
+
+**Un commit de solo-metadato no es deriva de código, y desde el 2026-08-19 no cuenta.** La regla
+siempre fue «commits que tocan código o contratos», y añadir frontmatter no toca ninguno de los
+dos: por construcción no puede volver falsa una página. Sin esta exclusión, la wiki disparaba su
+propia alarma al escribirse — que es justo lo que la exclusión de `memoria/` ya evitaba.
+
+Para descontar un commit hay que **demostrar** que es metadato, y se exigen tres cosas a la vez:
+que todos sus archivos sean `.md`, que todos sus hunks empiecen en la línea 1 —el frontmatter vive
+en la cabecera— y que toda línea añadida o quitada sea una clave del esquema, un `---`, un elemento
+de lista indentado o una línea en blanco. **Ante la duda, cuenta.** Un merge sin archivos listados,
+un diff ilegible o un `.md` con el cuerpo tocado cuentan todos. Una alarma que se calla de más
+falla en silencio; una que suena de más solo molesta.
+
+**Cuánto cambia en la práctica: poco, y conviene saberlo.** Medido el 2026-08-19 sobre los 69
+commits que hicieron saltar la alarma: **1** era de solo frontmatter. De los otros 68, 39 tocaban
+algo que no es `.md`, 16 eran `.md` con cuerpo modificado (specs, planes, `goal.md`) y 13 eran
+merges. Es decir: **lo que infla el recuento no es el metadato, son los commits de prosa y los
+merges**, que se cuentan dos veces —una en el merge y otra en su commit original—. Las dos cosas
+siguen abiertas a propósito: ampliar la exclusión es cambiar qué mide la alarma, y eso no se decide
+de paso.
 
 Se mide en commits y no en días a propósito: este repo hace 100 o más commits en un día de sprint y
 ninguno en un fin de semana, así que el reloj de pared no dice nada sobre cuánta deriva entró. Los
