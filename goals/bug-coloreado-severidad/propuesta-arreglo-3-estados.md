@@ -113,8 +113,16 @@ atencion vs neutral   1,372      ok       vs neutral   1,326
 
 **Ningún par pasa de 1,372:1.** Mover un estado de un peldaño a otro cambia el tono, casi nunca la
 sensación de gravedad. Cualquier arreglo que se quede dentro de esta escalera es correcto en el
-código y sigue siendo ilegible en pantalla — que es la respuesta (3) del diagnóstico, y no se
-resuelve reasignando peldaños.
+código y sigue sin comunicar gravedad — que es la respuesta (3) del diagnóstico, y no se resuelve
+reasignando peldaños.
+
+> **Corrección del 2026-08-18, misma jornada.** Aquí escribí «sigue siendo ilegible en pantalla» y
+> era una exageración: el contraste WCAG solo mide luminancia, así que un 1,03:1 entre dos tonos
+> distintos **no** significa que no se distingan. Medido en ΔE-OK —la métrica que este repo ya usa—
+> el mínimo entre peldaños distintos es **0,0487**, casi el triple del umbral de percepción del
+> propio repo (0,0168): **se distinguen bien**. Lo que las cifras prueban es otra cosa, y está en
+> `insumo-ds-f1.md`: no hay eje de intensidad, y el poco recorrido de luminosidad que existe va
+> **al revés** (`atencion` es el peldaño más claro; `critico`, el penúltimo más oscuro).
 
 ---
 
