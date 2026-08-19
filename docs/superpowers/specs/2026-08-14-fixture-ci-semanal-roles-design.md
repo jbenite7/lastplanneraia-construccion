@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-14
+areas: [rbac, lps]
+fuente: docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md
+resumen: Cuatro casos de tests/browser/programacion-semanal-roles-phases.mjs quedaron con test.skip el 2026-08-13 porque no existe entorno donde puedan correr:
+---
+
 # Diseño: el fixture aislado alcanza para `programacion-semanal-roles-phases`
 
 Fecha: 2026-08-14 · Estado: aprobado en sesión · Origen: cierre del 2026-08-13 (`8359fb36`)

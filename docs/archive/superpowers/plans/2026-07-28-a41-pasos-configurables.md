@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-28
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-28-a41-pasos-configurables.md
+resumen: Que cada proyecto pueda definir los pasos de su proceso de contratación (agregar, reordenar, apagar, renombrar, incluidas las variantes Licify y Aprobación del…
+---
+
 # A4.1 — Pasos de contratación configurables por proyecto · Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

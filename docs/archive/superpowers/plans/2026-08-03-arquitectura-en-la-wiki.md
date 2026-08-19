@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-03
+areas: [arquitectura]
+tags: [archivo, generado]
+fuente: docs/archive/superpowers/plans/2026-08-03-arquitectura-en-la-wiki.md
+resumen: Que la wiki memoria/ responda «qué módulos hay, qué expone cada uno, quién puede usarlo y dónde encaja en el flujo», con el inventario extraído del código por…
+---
+
 # Arquitectura del proyecto en la wiki — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

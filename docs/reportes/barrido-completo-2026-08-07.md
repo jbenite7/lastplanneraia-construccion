@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/reportes/barrido-completo-2026-08-07.md
+resumen: Encargo del usuario: barrer la app entera, «módulo por módulo, función por función, escenario por escenario», tras el cierre de la campaña de dark mode. Este…
+---
+
 # Barrido completo de la aplicación — 2026-08-07
 
 Encargo del usuario: barrer la app entera, «módulo por módulo, función por función, escenario por

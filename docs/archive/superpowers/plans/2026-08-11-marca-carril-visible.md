@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-08-11
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-08-11-marca-carril-visible.md
+resumen: Plan — la aserción de la marca comprueba que se vea
+---
+
 # Plan — la aserción de la marca comprueba que se vea
 
 - Spec: [`2026-08-11-marca-carril-visible-design.md`](../specs/2026-08-11-marca-carril-visible-design.md)

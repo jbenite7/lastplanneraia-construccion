@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-14
+areas: [rbac, lps]
+fuente: docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles.md
+resumen: Diseño: docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md Fecha: 2026-08-14 · Base: ebf09954
+---
+
 # Plan: el fixture aislado alcanza para `programacion-semanal-roles-phases`
 
 Diseño: `docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md`

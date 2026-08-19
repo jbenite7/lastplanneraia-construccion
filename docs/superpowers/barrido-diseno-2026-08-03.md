@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/barrido-diseno-2026-08-03.md
+resumen: Alcance: todas las rutas HTML servidas de la app principal (~25 vistas navegables desde el router, sesión test.R / test.A vía dev door) y las vistas de admin/…
+---
+
 # Barrido único de auditoría de diseño — 2026-08-03
 
 Alcance: todas las rutas HTML servidas de la app principal (~25 vistas navegables desde el router,

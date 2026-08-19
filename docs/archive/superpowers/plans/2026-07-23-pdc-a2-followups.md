@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-pdc-a2-followups.md
+resumen: Aplicar los 4 follow-ups triados del FINAL REVIEW A2: captura de errno 1062 en creación de insumos del maestro, batch multi-fila del upsert de generarVinculos…
+---
+
 # Follow-ups del review final A2 (maestro de insumos) — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design.md
+resumen: runtime-budgets al CI, recortado a andamio — diseño
+---
+
 # runtime-budgets al CI, recortado a andamio — diseño
 
 **Fase:** CP-F-AB del bloque 2 de [[cola-de-pendientes]], **recortada**. **Frente:** `runtime-budgets-al-ci`.

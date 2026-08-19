@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-unificacion-repos.md
+resumen: Mover la SPA del repo plan-de-compras a lastplanneraia-construccion, bajo pdc-app/, conservando los 114 commits de historia y dejando el build escribiendo…
+---
+
 # Unificación de repos (PDC dentro de lps-aia) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

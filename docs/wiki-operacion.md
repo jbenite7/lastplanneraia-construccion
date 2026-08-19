@@ -1,3 +1,13 @@
+---
+capa: esquema
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+tags: [generado]
+fuente: docs/wiki-operacion.md
+resumen: Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes, no dentro de la wiki que describe. CLAUDE.md lleva un…
+---
+
 # Cómo se opera la wiki (esquema v2)
 
 Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes,

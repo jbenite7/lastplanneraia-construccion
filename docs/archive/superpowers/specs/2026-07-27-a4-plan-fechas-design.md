@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-27
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-27-a4-plan-fechas-design.md
+resumen: A4 · El plan de compras con fechas — diseño
+---
+
 # A4 · El plan de compras con fechas — diseño
 
 **Fecha:** 2026-07-27 · **Fase:** A4 (cierra el submódulo de Ensamble) · **Estado:** aprobado, pendiente de plan

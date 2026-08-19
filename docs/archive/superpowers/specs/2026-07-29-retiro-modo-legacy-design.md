@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-29
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-29-retiro-modo-legacy-design.md
+resumen: Las tablas globales ya son la única fuente de verdad. El modelo anterior de una tabla por proyecto ({prefix}tabla, archivado como zleg{prefix}tabla) sobrevive…
+---
+
 # Retiro del modo legacy (`USE_GLOBAL_TABLES=false` / tablas `zleg_*`)
 
 - **Fecha:** 2026-07-29

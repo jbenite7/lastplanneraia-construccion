@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-07-29-pdc-b1-seguimiento-design.md
+resumen: El plan de compras dice cuándo debería ocurrir cada paso de contratación de cada paquete. Nadie puede decir todavía cuándo ocurrió. Sin ese dato no hay atraso…
+---
+
 # PDC v2 · Fase B1 — Seguimiento al Plan de Compras — Design
 
 **Fecha:** 2026-07-29

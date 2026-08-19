@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design.md
+resumen: opción (a). Cada entrada de moduleMappings declara dónde se pintan sus estados (ruta, vista o selector), obligatorio, y el gate estático lo hace cumplir. - Por…
+---
+
 # Plan de cierre hasta producción — diseño
 
 - **Fecha:** 2026-08-11

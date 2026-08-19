@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-flujo-caja-desembolsos-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — necesidad de negocio con dolor actual y nombre propio. - Estado: implementado (2026-07-29), después de…
+---
+
 # PDC v2 — Flujo de caja: curva de desembolsos por mes — Design
 
 - **Fecha:** 2026-07-29

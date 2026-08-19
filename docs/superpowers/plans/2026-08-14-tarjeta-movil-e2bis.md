@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-14
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis.md
+resumen: Que las tarjetas móviles de Programación Semanal e Intermedia adopten el modelo decidido —resumen accionable arriba, detalle plegado— bajando de 562 y 380 px a…
+---
+
 # Tarjeta móvil E2-bis: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

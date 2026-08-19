@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-semana-fija-visual-design.md
+resumen: Fijar la semana en la prueba visual de Programación Intermedia — diseño
+---
+
 # Fijar la semana en la prueba visual de Programación Intermedia — diseño
 
 - Fecha: 2026-08-11

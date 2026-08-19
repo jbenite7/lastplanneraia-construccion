@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-10
+areas: [qa]
+fuente: docs/superpowers/specs/2026-08-10-runner-tests-php-design.md
+resumen: Runner para los tests PHP y su conexión al CI
+---
+
 # Runner para los tests PHP y su conexión al CI
 
 - **Fecha:** 2026-08-10

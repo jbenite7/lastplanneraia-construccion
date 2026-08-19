@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-b2-vencimientos-lookahead.md
+resumen: Que el plan de compras responda «qué se me vence» —por paso y por responsable— en una pestaña nueva de Seguimiento, con el mismo color en el plan, y declarando…
+---
+
 # PDC v2 · B2 (primera mitad) — Vencimientos y semáforo del plan — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

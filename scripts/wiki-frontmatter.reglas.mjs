@@ -114,6 +114,11 @@ export function deducirEstado(rel) {
 
 const LIMITE = 160;
 
+// Etiquetas con las que los documentos de este repo abren su cabecera administrativa, con o sin
+// negritas. No confundir con `ETIQUETAS` más abajo, que son las que llevan la TESIS: estas son las
+// que hay que saltar, aquellas las que hay que leer.
+const ADMIN = /^(\*\*)?(Spec|Plan|Fecha|Estado|Esfuerzo(\s+\w+)?|Origen|Autor|Sha|Rama|Goal)\b[^:\n]{0,24}:(\*\*)?(\s|$)/i;
+
 /** Quita frontmatter, comentarios HTML y bloques de código. */
 function cuerpo(texto) {
   return texto
@@ -163,12 +168,17 @@ export function deducirResumen(texto, limite = LIMITE) {
       // «Fecha: 2026-03-02» en `ROADMAP.md`, y en las specs una frase cortada por la mitad que
       // empezaba donde acababa la etiqueta. Se deja pasar para que la recoja el respaldo 2, que
       // sabe qué etiqueta lleva la tesis y cuál es solo administrativa.
+      // Una línea administrativa no es prosa, y este repo abre casi todo con una o dos:
+      // `**Fecha:** … · **Decisión del usuario:** …` en las specs, `Spec: [enlace]` en los planes,
+      // `Fecha: 2026-03-02` a secas en `ROADMAP.md`. Se SALTAN, no descartan el párrafo: detrás
+      // suele venir la frase buena — en `2026-08-11-buttons-important-leyenda.md` era «Medido
+      // sobre f1f5bd87. 41 !important en 7 reglas…», que el descarte tiraba junto con la etiqueta.
+      // Si el párrafo entero eran etiquetas, queda vacío y lo recoge el respaldo 2, que sabe cuál
+      // de ellas lleva la tesis.
+      if (ADMIN.test(l)) continue;
+      // Una etiqueta en negrita que no reconocemos: se descarta el párrafo entero, porque no
+      // sabemos si lo que sigue en esa línea es administrativo o no.
       if (/^\*\*[^*:]+:\*\*/.test(l)) return '';
-      // Y su variante sin negritas: `Fecha: 2026-03-02` a secas, que es como abre `ROADMAP.md`.
-      // Se exige que sea una línea corta y sola para no confundirla con prosa que use dos puntos;
-      // el párrafo de verdad estaba tres líneas más abajo, bajo `## Objetivo Estratégico`.
-      const sola = lineas[i + 1] === undefined || lineas[i + 1].trim() === '';
-      if (sola && l.length <= 60 && /^[^\s:]{1,24}:\s+\S/.test(l)) return '';
       parrafo.push(l);
     } else {
       if (l === '') break;

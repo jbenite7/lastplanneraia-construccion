@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-18-wiki-v2-visual-design.md
+resumen: replantear toda la wiki sin perder la metodología LLM Wiki (Karpathy), con un Obsidian altamente visual y todos los documentos del vault organizados y…
+---
+
 # Wiki v2 — visual, etiquetada, misma metodología
 
 **Fecha:** 2026-08-18 · **Decisión del usuario:** replantear toda la wiki sin perder la

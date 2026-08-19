@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+fuente: docs/EXPERIMENTS.md
+resumen: Backlog único de este repositorio. Lo comparten el journey improve-app (docs/IMPROVE-APP-PLAN.md) y la biblia de flujos (docs/flujos/): una sola lista de…
+---
+
 # Experiments
 
 Backlog único de este repositorio. Lo comparten el journey `improve-app`

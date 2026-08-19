@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-06
+areas: [pdc]
+fuente: docs/PDC-AUDIT.md
+resumen: Registro de auditoría del pase improve-app sobre /plan-compras#/ensamble/. Tracker: docs/IMPROVE-PDC-PLAN.md. Backlog ICE compartido: docs/EXPERIMENTS.md.
+---
+
 # PDC · Auditoría del módulo de ensamble
 
 Registro de auditoría del pase `improve-app` sobre `/plan-compras#/ensamble/*`. Tracker:

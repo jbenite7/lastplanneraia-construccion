@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-18
+areas: [deploy]
+fuente: docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md
+resumen: que la cuenta de SiteGround deje de guardar en disco lo que git y Composer ya reponen, y que no vuelva a llenarse sola.
+---
+
 # Espacio de la cuenta de SiteGround — Plan de implementación
 
 > **Para agentes ejecutores:** SUB-SKILL OBLIGATORIA: usa `superpowers:subagent-driven-development`

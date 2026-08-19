@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-28
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-28-responsable-usuario-proyecto.md
+resumen: Que el responsable de cada paquete del plan de compras sea un usuario real del proyecto en vez de un nombre escrito a mano, antes de que B1 (Seguimiento) lo…
+---
+
 # Responsable de paquete como usuario del proyecto — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

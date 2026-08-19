@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-29-impacto-reimport-y-tamiz-presupuesto.md
+resumen: Que recargar una versión del presupuesto informe del impacto sobre el trabajo ya hecho antes de confirmar, y que el visor señale insumos vacíos y partidas…
+---
+
 # Impacto al recargar el presupuesto + tamiz y cifras honestas — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-08-11
+areas: [qa]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-08-11-phpunit-incremental-design.md
+resumen: PHPUnit incremental, conviviendo con la suite de scripts
+---
+
 # PHPUnit incremental, conviviendo con la suite de scripts
 
 - **Fecha:** 2026-08-11

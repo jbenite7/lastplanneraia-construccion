@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [rbac]
+fuente: docs/rbac_cargos_roles_dictionary.md
+resumen: Este documento centraliza la correspondencia estándar entre los cargos profesionales (títulos elegibles en la plataforma) y el permiso (Rol RBAC) que el…
+---
+
 # Diccionario de Cargos y Roles Sugeridos (RBAC)
 
 Este documento centraliza la correspondencia estándar entre los cargos profesionales (títulos elegibles en la plataforma) y el permiso (Rol RBAC) que el sistema de Inteligencia (`role_intelligence`) sugerirá por defecto al crear o editar un usuario.

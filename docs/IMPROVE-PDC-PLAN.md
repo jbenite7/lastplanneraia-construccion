@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-06
+areas: [pdc]
+fuente: docs/IMPROVE-PDC-PLAN.md
+resumen: Tracker propio, separado del de PG→PI→PS (docs/IMPROVE-APP-PLAN.md), por decisión del usuario del 2026-08-06. Alcance: /plan-compras#/ensamble/, con foco en…
+---
+
 # Improve App Plan · Módulo de ensamble del Plan de Compras
 
 Tracker propio, separado del de PG→PI→PS (`docs/IMPROVE-APP-PLAN.md`), por decisión del usuario

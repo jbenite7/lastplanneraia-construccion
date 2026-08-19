@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design.md
+resumen: Autorizado por el usuario el 2026-08-19. Toca un gate, y los gates son contrato: por eso lleva spec.
+---
+
 # `publicar.sh`: el invariante es el montaje, no el nombre del proyecto — diseño
 
 **Autorizado por el usuario el 2026-08-19.** Toca un gate, y los gates son contrato: por eso lleva

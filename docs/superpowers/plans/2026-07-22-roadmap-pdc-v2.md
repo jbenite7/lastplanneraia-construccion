@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-22
+areas: [pdc]
+fuente: docs/superpowers/plans/2026-07-22-roadmap-pdc-v2.md
+resumen: La fundación técnica (isla React en lps-aia + endpoint de contexto) está mergeada a main. El usuario corrigió el rumbo: antes de seguir codificando, fijar el…
+---
+
 # Roadmap PDC v2 — producto en 2 submódulos y fases de desarrollo
 
 ## Contexto

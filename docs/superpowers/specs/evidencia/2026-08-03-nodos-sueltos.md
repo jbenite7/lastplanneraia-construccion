@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/specs/evidencia/2026-08-03-nodos-sueltos.md
+resumen: Medido con un script de un solo uso que reutiliza el recorrido y los filtros de scripts/wiki-lint.mjs: cuenta enlaces wikilink entrantes y salientes de cada…
+---
+
 # Nodos sueltos del vault — clasificación del 2026-08-03
 
 Medido con un script de un solo uso que reutiliza el recorrido y los filtros de

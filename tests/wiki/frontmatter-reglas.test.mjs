@@ -249,3 +249,20 @@ test('respaldo 2 sigue hasta el final del parrafo, no de la linea', () => {
   const spec = '# Wiki v2\n\n**Fecha:** 2026-08-18 · **Decisión del usuario:** replantear toda la wiki\nsin perder la metodología.\n\nOtro párrafo.\n';
   assert.equal(resumenDeEtiqueta(spec), 'replantear toda la wiki sin perder la metodología.');
 });
+
+test('las lineas administrativas se saltan, no descartan el parrafo', () => {
+  // El plan real: `Spec: [enlace]` y justo debajo la frase que sí es el resumen.
+  const plan = '# Plan — los !important\n\nSpec: [x](../specs/x.md)\nMedido sobre `f1f5bd87`. 41 `!important` en 7 reglas.\n';
+  assert.equal(deducirResumen(plan), 'Medido sobre f1f5bd87. 41 !important en 7 reglas.');
+});
+
+test('un parrafo que es solo etiquetas cae al respaldo 2, no a la nada', () => {
+  const spec = '# T\n\n**Fecha:** 2026-08-18 · **Objetivo:** hacer la cosa bien.\n';
+  assert.equal(deducirResumen(spec), '');
+  assert.equal(resumenEnCascada(spec).origen, 'etiqueta');
+});
+
+test('«Especificar» no es «Spec:»: la guarda mira palabras completas', () => {
+  assert.equal(deducirResumen('# T\n\nEspecificaciones: las tres que ya estaban.'),
+    'Especificaciones: las tres que ya estaban.');
+});

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-28
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-28-paleta-estado-oscura.md
+resumen: Que los cuatro colores de estado del design system dejen de ser los del tema claro y pasen a los valores oscuros que /pdc ya tiene medidos, para que las…
+---
+
 # Invertir la paleta de estado del design system a oscuro — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

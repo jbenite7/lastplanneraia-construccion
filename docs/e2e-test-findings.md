@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-05
+areas: [qa]
+fuente: docs/e2e-test-findings.md
+resumen: E2E Test Findings
+---
+
 # E2E Test Findings
 
 ## Resumen

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-semana-fija-visual.md
+resumen: Plan — fijar la semana en la prueba visual de PI
+---
+
 # Plan — fijar la semana en la prueba visual de PI
 
 - Spec: [`2026-08-11-semana-fija-visual-design.md`](../specs/2026-08-11-semana-fija-visual-design.md)

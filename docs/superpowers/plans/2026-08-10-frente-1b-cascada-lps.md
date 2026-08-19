@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-10
+areas: [lps]
+fuente: docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps.md
+resumen: Cerrar los 12 hallazgos abiertos de la cascada LPS — Programa General, Actualizar Cronograma, Programación Intermedia y Programación Semanal —, que es lo que…
+---
+
 # Frente 1 · Tanda 1B — La cascada LPS: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

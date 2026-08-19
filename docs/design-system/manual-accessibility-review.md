@@ -5,7 +5,7 @@ estado: vigente
 fecha: 2026-07-15
 areas: [design-system]
 fuente: docs/design-system/manual-accessibility-review.md
-resumen: Estado: Axe desktop dark y revisión manual independiente aprobados — 2026-07-19.
+resumen: Superficies autorizadas: las diez familias aprobadas del laboratorio. No se revisan otros módulos.
 ---
 
 # Revisión automatizada básica de accesibilidad — Sprint 00

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-22-lab-colapsado-primitiva.md
+resumen: El pulido del rail colapsado (sin-scroll, píldora de label al hover/foco, separadores hairline, iconos a 20px, jerarquía de color de icono, anillo del activo)…
+---
+
 # Colapsado del sidebar como primitiva canónica adoptada en el laboratorio
 
 **Fecha:** 2026-07-22 · **Estado:** aprobado por el usuario (chat) · **Alcance:** desktop ≥1180px, dark (+ linen para coherencia de árbol)

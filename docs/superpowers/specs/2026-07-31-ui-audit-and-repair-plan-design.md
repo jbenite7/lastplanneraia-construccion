@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-31
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-31-ui-audit-and-repair-plan-design.md
+resumen: Elevar el score de todas las superficies principales de trabajo en obra a ≥ 9/10. Superficies: - /programacion-semanal/cnp, /cnc, /cic: Reemplazar clases de…
+---
+
 # Auditoría Visual Canónica y Plan de Reparación End-to-End (`DESIGN.md` + *Refactoring UI*)
 
 **Fecha:** 2026-07-31  

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-05-22
+areas: [lps]
+fuente: docs/matriz-severidad-cajon-contextual-lps.md
+resumen: Definir una matriz unica para diagnosticar, colorear y escalar actividades en el Cajon Contextual LPS de Programa General (PG), Programacion Intermedia (PI) y…
+---
+
 # Matriz de severidad del Cajon Contextual LPS
 
 ## Objetivo

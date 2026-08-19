@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-17
+fuente: docs/DESIGN.md
+resumen: El contrato canónico de tokens y componentes vive en design-system/. Este documento concreta la superficie del laboratorio interno.
+---
+
 # Laboratorio AIA: contrato de diseño
 
 El contrato canónico de tokens y componentes vive en [`design-system/`](design-system/README.md). Este documento concreta la superficie del laboratorio interno.

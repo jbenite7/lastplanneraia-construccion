@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: guia
+estado: cerrado
+fecha: 2026-06-02
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/20260601_pi_filtros_edicion_pdca_ciclo3.md
+resumen: Método: PDCA (Plan-Do-Check-Act) Target: public/js/modules/programacionintermedia/hot.js
+---
+
 # PDCA: Re-evaluación automática de filtros nativos tras editar celda filtrada
 
 Fecha: 2026-06-01

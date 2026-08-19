@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-05
+areas: [datos]
+fuente: docs/global-tables-unique-ids.md
+resumen: Sistema de Unique IDs en Tablas Globales
+---
+
 # Sistema de Unique IDs en Tablas Globales
 
 ## Propósito

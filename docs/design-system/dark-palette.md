@@ -5,7 +5,7 @@ estado: vigente
 fecha: 2026-07-15
 areas: [design-system]
 fuente: docs/design-system/dark-palette.md
-resumen: Estado: approved con anotaciones de tema y densidad, 2026-07-12.
+resumen: Paleta AIA sobre superficies oscuras
 ---
 
 # Paleta AIA sobre superficies oscuras

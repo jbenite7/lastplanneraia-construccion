@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-11-contadores-cero-design.md
+resumen: Ocultar las etiquetas contadoras que marcan cero — diseño
+---
+
 # Ocultar las etiquetas contadoras que marcan cero — diseño
 
 - Fecha: 2026-08-11

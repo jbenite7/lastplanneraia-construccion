@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design.md
+resumen: La wiki se fundó el 2026-08-02 con 42 páginas, 31 de ellas migradas desde la memoria privada del asistente. Un lint —la tercera operación del patrón LLM Wiki…
+---
+
 # Pasada de lint sobre la wiki `memoria/`
 
 **Fecha:** 2026-08-03
