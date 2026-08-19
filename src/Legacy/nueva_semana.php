@@ -192,6 +192,11 @@ try {
             $carryoverService = new \App\Services\WeeklyRealProgressCarryoverService($dbInstance);
             $carryoverService->syncWeek($db, $conteo, $semana_crear);
 
+            // La línea base contractual se siembra sola la primera vez que un proyecto tiene
+            // programa. Write-once: si ya está declarada, esto no hace nada. La lógica vive en el
+            // servicio, no aquí — `src/Legacy/` es mantenimiento (AGENTS.md).
+            (new \App\Services\LineaBaseContractualService($dbInstance))->sembrarSiFalta((int) $projectId);
+
             // El arrastre semanal del PDC v1 (copia de filas de `pdc` + paquetes, subcontratos
             // y estado de proceso) se eliminó el 2026-08-04 junto con el módulo. `pdcActivo`
             // sigue siendo un atributo del proyecto y viaja en la respuesta como `$conteoPDC`.
