@@ -2,7 +2,7 @@
 capa: fuente
 tipo: goal-doc
 estado: vigente
-fecha: 
+fecha: 2026-08-19
 areas: [datos]
 fuente: goals/migracion-estados/goal.md
 resumen: Dejar la columna Estado de los 16 proyectos diciendo lo que los calculadores canónicos dicen: ocho estados, sin legacy y sin vacíos. Este frente prepara y…
