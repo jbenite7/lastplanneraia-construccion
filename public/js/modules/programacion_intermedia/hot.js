@@ -571,6 +571,27 @@
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 
+  var PESO_NIVEL = { urgent: 3, attention: 2, healthy: 1, neutral: 0 };
+  var agrupadoPorGravedad = false;
+
+  // Devuelve una COPIA. La rejilla no ordena por si sola (columnSorting: false),
+  // asi que el orden es del dato, y mutar el array original perderia la
+  // secuencia del programa sin poder volver.
+  function agruparPorGravedad(filas) {
+    return filas
+      .map(function (fila, i) { return { fila: fila, i: i }; })
+      .sort(function (a, b) {
+        // `getState` es la del modulo de reglas ya cargado
+        // (public/js/modules/programacion_intermedia/stateMachine.js), la misma
+        // que usa buildRowClassCache para resolver la clase de la fila. No se
+        // introduce ninguna funcion nueva.
+        var pa = PESO_NIVEL[(statePresentation[getState(a.fila)] || {}).level] || 0;
+        var pb = PESO_NIVEL[(statePresentation[getState(b.fila)] || {}).level] || 0;
+        return (pb - pa) || (a.i - b.i);
+      })
+      .map(function (x) { return x.fila; });
+  }
+
   function stateChipAttrs(state) {
     var presentation = statePresentation[state];
     if (!presentation) {
@@ -4653,6 +4674,9 @@
 
   function applyFiltersAndRender() {
     var filtered = getFilteredRows();
+    if (agrupadoPorGravedad) {
+      filtered = agruparPorGravedad(filtered);
+    }
     visibleRows = filtered;
     if (piViewAll) {
       updateLegendCountsFromServer();
@@ -4945,6 +4969,11 @@
   function bindActions() {
     bindHeaderTooltips();
     $('#btn-refresh').off('click.piRefresh').on('click.piRefresh', loadData);
+    $('#btn-agrupar-gravedad').off('click.piAgruparGravedad').on('click.piAgruparGravedad', function () {
+      agrupadoPorGravedad = !agrupadoPorGravedad;
+      $(this).attr('aria-pressed', agrupadoPorGravedad ? 'true' : 'false');
+      applyFiltersAndRender();
+    });
     $('#btn-refresh-listas').off('click.piRefreshListas').on('click.piRefreshListas', refreshDropdownSources);
     $('#btn-export').off('click.piExport').on('click.piExport', exportCsv);
     $('#btn_informe_compromisos').off('click.piReport').on('click.piReport', descargarReporte);

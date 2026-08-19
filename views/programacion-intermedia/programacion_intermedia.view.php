@@ -48,6 +48,7 @@
                 <button id="btn_informe_compromisos" type="button" class="aia-btn aia-btn--secondary">Descargar Corte <i class="fas fa-download ml-1"></i></button>
                 <button id="btn-export" class="aia-btn aia-btn--secondary">Exportar CSV</button>
                 <button id="btn-refresh" class="aia-btn aia-btn--secondary">Recargar</button>
+                <button id="btn-agrupar-gravedad" type="button" class="aia-btn aia-btn--secondary" aria-pressed="false">Agrupar por gravedad <i class="fas fa-sort-amount-down ml-1"></i></button>
                 <div class="pi-view-all-toggle d-inline-flex align-items-center mx-2 <?= $viewAll ? 'is-on' : '' ?>" title="<?= $viewAll ? 'Volver a la ventana de 6 semanas de liberación de restricciones' : 'Mostrar todas las actividades, incluyendo las que aún no entran en la ventana de 6 semanas' ?>">
                     <span class="pi-view-all-toggle-label"><i class="fas fa-layer-group mr-1"></i>Ver Todas las Actividades</span>
                     <div class="custom-control custom-switch mb-0 ml-2">
