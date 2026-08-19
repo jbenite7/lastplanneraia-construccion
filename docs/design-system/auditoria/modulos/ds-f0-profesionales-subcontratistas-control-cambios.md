@@ -102,4 +102,4 @@ llegó** (2026-08-10) y que `F-6` seguía sin aplicar. Sigue sin aplicar, y aqu�
 
 Los estados `hover`, `focus` y `selección` de las tres tablas los pinta DataTables, y su apariencia
 final depende de la hoja de vendor y de los adaptadores — no de estos tres archivos. Se audita en
-la ficha del vendor. → `vendors/datatables.md`
+la ficha del vendor. → `vendors/ds-f0-datatables.md`

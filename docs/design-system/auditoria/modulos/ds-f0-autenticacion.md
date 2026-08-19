@@ -46,7 +46,7 @@ por `<link>` directo desde la vista, no por el grafo de `@import` del entrypoint
 gana a **todas** las capas del sistema, así que sus 440 líneas se sientan por encima de `theme`,
 `components` y `utilities` enteras. Es la única hoja de módulo del repositorio en esa situación —
 `pdc-app/src/styles.css` tampoco lleva capa, pero ahí es una decisión escrita y acotada a declarar
-variables (ver `plan-de-compras.md`); aquí son reglas de aspecto. → `F0-070`
+variables (ver `ds-f0-plan-de-compras.md`); aquí son reglas de aspecto. → `F0-070`
 
 Y explica los 30 `!important`: catorce apuntan a selectores propios en una hoja que **ya gana por
 estar fuera de capa**. → `F0-071`

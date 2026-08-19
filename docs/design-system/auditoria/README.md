@@ -19,9 +19,16 @@ anota en el campo `salidaConocida` y **no se aplica**.
 | `hallazgos.json` | El inventario acumulado, consultable por máquina | 2–4 |
 | `inventario.md` | La cascada «Crítico → Sin problema», **generada** desde el JSON | 4 |
 | `transversal.md` | El sistema, sus hojas compartidas y sus gates. **Es donde está lo crítico** | 2 |
-| `modulos/<slug>.md` | Una ficha por módulo, legible | 2 |
-| `vendors/<vendor>.md` | Handsontable y DataTables, aparte | 3 |
+| `modulos/ds-f0-<slug>.md` | Una ficha por módulo, legible | 2 |
+| `vendors/ds-f0-<vendor>.md` | Handsontable y DataTables, aparte | 3 |
 | `herramientas/` | Los scripts que produjeron las cifras, para que sean reproducibles y no haya que creerlas | — |
+
+**Por qué las fichas llevan el prefijo `ds-f0-`.** El vault de Obsidian es la raíz del repo, así que
+`modulos/programa-general.md` y `memoria/arquitectura/programa-general.md` compiten por el mismo
+wikilink `[[programa-general]]`. Sin prefijo, `npm run test:wiki` pasó de cero hallazgos a **37**, y
+los 37 eran de este directorio: cada nota de la wiki que enlazaba a un módulo quedaba ambigua. El
+prefijo es la corrección, y se anota aquí porque el nombre de un archivo dejó de ser una decisión
+libre en cuanto el repositorio entero se volvió un vault.
 
 ## El resultado, en una tabla
 
