@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design.md
+resumen: Estados, severidad y color — el contrato — diseño
+---
+
 # Estados, severidad y color — el contrato — diseño
 
 **Frente:** `ds-f1a-estados-severidad`. **Programa:** DS-F1. **Entrada:** DS-F0 (`docs/design-system/auditoria/`)

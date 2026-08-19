@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: goals/ds-f1a-estados-severidad/goal.md
+resumen: Que cada canal visual de las tablas de estado codifique un solo eje: el color dice qué estado es, el filete dice cuán grave, el orden desempata. Es el primero…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: ds-f1a-estados-severidad
 

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-estados-severidad-contrato.md
+resumen: Que cada canal visual de las tablas de estado codifique un solo eje — el color dice qué estado es, el filete dice cuán grave, el orden desempata — empezando…
+---
+
 # Estados, severidad y color — plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
