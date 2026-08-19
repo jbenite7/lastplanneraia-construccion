@@ -74,9 +74,32 @@ faltaba.
 ### `lint` — la forma
 
 ```bash
-node scripts/wiki-lint.mjs             # o: npm run test:wiki (incluye las pruebas del módulo)
-node scripts/wiki-lint.mjs --estricto  # además exige que toda fuente declare `capa:`
+npm run test:wiki         # pruebas del módulo + lint estricto + alarma de veracidad
+npm run test:wiki:forma   # SOLO la forma: estricto, sin la alarma. Apto para un gate bloqueante
+node scripts/wiki-lint.mjs            # permisivo: no exige que las fuentes se declaren
+node scripts/wiki-lint.mjs --estricto --sin-alarma
 ```
+
+**Desde el 2026-08-19, `npm run test:wiki` corre en modo estricto.** Una fuente nueva sin
+frontmatter deja el lint en rojo. Se enchufó porque el hueco se midió tres veces: un merge traía un
+documento sin declarar, el estricto lo reportaba y el modo por defecto seguía en verde, así que la
+publicación no se detenía y el arreglo llegaba siempre **después** de publicar.
+
+**Y por qué hay dos comandos y no uno.** El lint mezclaba dos cosas de naturaleza distinta en un
+mismo semáforo:
+
+| | Qué es | Qué merece |
+|---|---|---|
+| **Forma** — enlaces rotos, frontmatter incompleto, fuente sin declarar | un **defecto de lo que vas a publicar** | bloquear |
+| **Alarma de veracidad** — el contador de commits | una **petición de trabajo**; no dice que lo tuyo esté mal | avisar |
+
+Juntas, o se bloquea por un contador —y se aprende a saltarse el gate— o no se bloquea por un
+defecto real. `--sin-alarma` las separa, y `npm run test:wiki:forma` es la mitad que un gate puede
+bloquear sin enseñar a nadie a ignorarlo.
+
+**Lo que esto todavía NO hace:** `scripts/publicar.sh` declara la comprobación de la wiki como **no
+bloqueante**, y con razón mientras fuera una sola cosa. Cambiarla a `test:wiki:forma` bloqueante es
+una línea, pero afecta a toda sesión que publique, así que no se hace de paso.
 
 Sale con código 1 si hay hallazgos. **Lintea las tres capas, pero no con las mismas reglas:**
 
