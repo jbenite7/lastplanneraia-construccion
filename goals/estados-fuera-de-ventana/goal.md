@@ -108,3 +108,47 @@ tiene un solo return y ahí funcionó a la primera.
 hecho sin la caracterización de la Task 1 —que es lo que había: cero pruebas sobre estos dos
 archivos— el resultado habría sido un `Fuera de Ventana` que funciona en un calculador y no en el
 otro, y los dos escriben la misma columna.
+
+## Publicaciones
+- **`aeaa7a77` — publicado el 2026-08-19** con `bash scripts/publicar.sh`. Confirmado en el paso 7:
+  `git rev-parse origin/main` devuelve ese sha y no queda `ahead` ni `behind`. El gate comprobó
+  cuatro cosas antes de empujar —`design-system:static`, contrato piloto PG, wiki (forma) y wiki
+  (veracidad + pruebas)—, una más que por la mañana: la partición de la wiki llegó al gate mientras
+  corría este frente.
+- La coordinadora dejó el contenedor montando este worktree a propósito para que el invariante
+  pasara sin abrir otra ventana. **Devuelto a la raíz inmediatamente después del push**, antes de
+  confirmar nada, porque había una verificación visual esperando detrás.
+
+## Cierre
+Condición de hecho cumplida sobre `aeaa7a77`, con el paso 0 comprobado en cada medición:
+
+```
+$ docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
+RC=0   OK (45 tests, 68 assertions)
+
+$ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
+RC=0   9 pass, 0 fail
+
+$ npm run test:wiki
+RC=0   sin hallazgos, 159 páginas (modo estricto)
+
+$ git diff origin/main...HEAD | grep -icE '^\+.*(UPDATE |DELETE |INSERT )'
+0
+```
+
+**Lo que este frente cambió de verdad:** `Fuera de Ventana` dejó de ser una etiqueta que se borraba
+sola. Los dos calculadores la producen a partir de la séptima semana, y por primera vez existen
+pruebas sobre ellos — no tenían ninguna, y de ellos depende el `Estado` de 65 549 filas.
+
+**Lo que dejó sin tocar, a propósito:** ni un dato guardado, `Con Alerta Restricciones` en ningún
+archivo, y las 113 contradictorias, que se diagnosticaron sin corregirse.
+
+**El riesgo que hereda el frente (B), y es el único que puede destruir información:** 24 de esas 113
+filas están al 100% de avance con fecha de inicio futura. Un recálculo masivo las mandaría a
+`Fuera de Ventana` y **se perdería el dato de que estaban terminadas**. La consulta que las captura
+está en `diagnostico-113-contradictorias.md` y hay que correrla **antes** de migrar: después ya no
+hay forma de saber cuáles eran.
+
+**Pendiente de publicar:** este commit de cierre es posterior al sha publicado —un archivo no puede
+contener su propio sha— y viaja con el próximo push, junto a `5759b13d`, que quedó igual del frente
+anterior.
