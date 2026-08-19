@@ -16,7 +16,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#431414",
       "chipTexto": "#f7faf8",
-      "railGrosor": "none",
+      "railGrosor": "rgb(255, 205, 200) 6px 0px 0px 0px inset",
       "railNivel": "urgent"
     },
     {
@@ -30,7 +30,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#452a0d",
       "chipTexto": "#f7faf8",
-      "railGrosor": "none",
+      "railGrosor": "rgb(255, 205, 200) 6px 0px 0px 0px inset",
       "railNivel": "urgent"
     },
     {
@@ -44,7 +44,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#33204a",
       "chipTexto": "#f7faf8",
-      "railGrosor": "none",
+      "railGrosor": "rgb(255, 205, 200) 6px 0px 0px 0px inset",
       "railNivel": "urgent"
     },
     {
@@ -72,7 +72,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#17334f",
       "chipTexto": "#f7faf8",
-      "railGrosor": "none",
+      "railGrosor": "rgb(255, 205, 200) 6px 0px 0px 0px inset",
       "railNivel": "urgent"
     },
     {

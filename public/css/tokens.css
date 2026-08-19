@@ -348,10 +348,6 @@
        a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
        distinguen QUE estado es y no pueden decir CUAN GRAVE es. Eso lo lleva el
        grosor, que si escala.
-       Cuatro escalones sobre la fila de 24 px de la excepcion de densidad de
-       PRODUCT.md: 6/4/2/1. El mas bajo mide 1 px y no 0 a proposito — un filete
-       de cero no es un escalon sino ausencia, y entonces `neutral` deja de
-       decir «medido y sin problema» para decir «no se midio». */
        SOLO DOS ESCALONES LLEVAN FILETE, y la ausencia es el tercer valor.
        Corregido el 2026-08-19: nacio con cuatro -6/4/2/1- y `healthy` y
        `neutral` lo perdieron por decision del usuario, adoptando el contrato de
