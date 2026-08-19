@@ -87,11 +87,14 @@ en este entorno y su propio mensaje lo dice), `test_semanal_sanear_csrf`,
 
 El sexto, **`test_bi_programa_general_chart_values`, oscila**: apareció solo en la corrida sin los
 cambios. Ejecutado suelto **falla idéntico con y sin ellos** —mismos números,
-`actual=[70.7,-4.1] expected=[66.2,-4.9]`—, así que no lo arregla ni lo rompe este frente. Se anota
-porque **es el mismo test que está rojo en el CI de `main`** por el defecto de línea base que
-trabaja el frente `runtime-budgets`/`elated-golick` (cohortes disjuntas vacían el baseline
-contractual): que en local oscile con datos vivos encaja con ese diagnóstico y le sirve de
-evidencia.
+`actual=[70.7,-4.1] expected=[66.2,-4.9]`—, así que no lo arregla ni lo rompe este frente.
+
+**Corregido el 2026-08-19:** esta nota decía que era «el mismo test que está rojo en el CI de
+`main` por el defecto de línea base», y fundía dos problemas distintos. Lo que aquí osciló es la
+aserción `multi-project-same-week-distinct-cutoffs`, que **fija cifras concretas y depende de datos
+vivos** — ese es el hallazgo, y es propio. La aserción de deriva de línea base que investiga el
+frente `elated-golick` **no falla en local** y es otro asunto. Se separa porque atar un hallazgo al
+diagnóstico equivocado le da falsa confirmación a los dos.
 
 La coordinadora ratificó seguir: la razón por la que ese paso existía —descartar consumidores rotos
 por el octavo estado— queda respondida por la medición, y parar por la letra habría sido proceso
