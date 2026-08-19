@@ -219,3 +219,33 @@ test('los cuatro respaldos limpian markdown y recortan igual', () => {
   const largo = resumenDelTitulo(`# ${'palabra '.repeat(40)}`, 40);
   assert.ok(largo.length <= 41 && largo.endsWith('…'), largo);
 });
+
+test('respaldo 1 no toma una cabecera de metadatos por prosa', () => {
+  // `ROADMAP.md` resumía «Fecha: 2026-03-02»; las specs, una frase cortada por la mitad.
+  assert.equal(deducirResumen('# Roadmap\n\n**Fecha:** 2026-03-02\n'), '');
+  const spec = '# Wiki v2\n\n**Fecha:** 2026-08-18 · **Decisión del usuario:** replantear la wiki entera.\n';
+  assert.equal(deducirResumen(spec), '');
+  assert.deepEqual(resumenEnCascada(spec), { texto: 'replantear la wiki entera.', origen: 'etiqueta' });
+});
+
+test('una frase que solo empieza con negrita sigue siendo prosa', () => {
+  // La guarda mira `**Etiqueta:**`, no cualquier negrita: si no, se comería medio repo.
+  assert.equal(deducirResumen('# T\n\n**Esto** es prosa de verdad.'), 'Esto es prosa de verdad.');
+});
+
+test('respaldo 1 tampoco toma una linea de metadato sin negritas', () => {
+  // `ROADMAP.md`: `# Título` / `Fecha: 2026-03-02` / `## Objetivo Estratégico` / la prosa buena.
+  const roadmap = '# ROADMAP - Gobernanza\n\nFecha: 2026-03-02\n\n## Objetivo Estratégico\n\nVisión unificada del plan.\n';
+  assert.equal(deducirResumen(roadmap), '');
+  assert.deepEqual(resumenEnCascada(roadmap), { texto: 'Visión unificada del plan.', origen: 'seccion' });
+});
+
+test('una frase larga con dos puntos sigue siendo prosa', () => {
+  const t = '# T\n\nLa regla es esta: nada de lo que hay en la wiki es contrato, y gana el repo.\n';
+  assert.equal(deducirResumen(t), 'La regla es esta: nada de lo que hay en la wiki es contrato, y gana el repo.');
+});
+
+test('respaldo 2 sigue hasta el final del parrafo, no de la linea', () => {
+  const spec = '# Wiki v2\n\n**Fecha:** 2026-08-18 · **Decisión del usuario:** replantear toda la wiki\nsin perder la metodología.\n\nOtro párrafo.\n';
+  assert.equal(resumenDeEtiqueta(spec), 'replantear toda la wiki sin perder la metodología.');
+});

@@ -158,6 +158,17 @@ export function deducirResumen(texto, limite = LIMITE) {
       if (l === '') continue;
       if (/^#{1,6}\s/.test(l)) return '';
       if (/^([-*+]\s|\d+\.\s|>|\||!\[|\[!)/.test(l)) return '';
+      // Una cabecera de metadatos no es prosa. Este repo abre casi todo con una:
+      // `**Fecha:** … · **Decisión del usuario:** …`. Tomarla como resumen daba
+      // «Fecha: 2026-03-02» en `ROADMAP.md`, y en las specs una frase cortada por la mitad que
+      // empezaba donde acababa la etiqueta. Se deja pasar para que la recoja el respaldo 2, que
+      // sabe qué etiqueta lleva la tesis y cuál es solo administrativa.
+      if (/^\*\*[^*:]+:\*\*/.test(l)) return '';
+      // Y su variante sin negritas: `Fecha: 2026-03-02` a secas, que es como abre `ROADMAP.md`.
+      // Se exige que sea una línea corta y sola para no confundirla con prosa que use dos puntos;
+      // el párrafo de verdad estaba tres líneas más abajo, bajo `## Objetivo Estratégico`.
+      const sola = lineas[i + 1] === undefined || lineas[i + 1].trim() === '';
+      if (sola && l.length <= 60 && /^[^\s:]{1,24}:\s+\S/.test(l)) return '';
       parrafo.push(l);
     } else {
       if (l === '') break;
@@ -169,11 +180,20 @@ export function deducirResumen(texto, limite = LIMITE) {
 
 // Etiquetas en negrita con las que los documentos de este repo declaran su tesis. `Goal:` es la
 // que usan los planes de `writing-plans`, y sola cubre 73 de los 92.
-const ETIQUETAS = /^\*\*(Goal|Objetivo|Meta|Problema|Resumen|Qué se busca|Decisión del usuario)[^:]*:\*\*\s*(.+)$/im;
+// Sin ancla al principio de línea a propósito: la tesis suele ir en la segunda mitad de la
+// cabecera de metadatos —`**Fecha:** … · **Decisión del usuario:** replantear la wiki entera`—,
+// y anclarla dejaba fuera justo los documentos que la guarda del respaldo 1 acababa de mandar aquí.
+const ETIQUETAS = /\*\*(Goal|Objetivo|Meta|Problema|Resumen|Qué se busca|Decisión del usuario)[^:]*:\*\*\s*(.+)$/im;
 
 /** Respaldo 2 — la línea `**Goal:** …` con la que el documento se declara a sí mismo. */
 export function resumenDeEtiqueta(texto, limite = LIMITE) {
-  return limpiar(cuerpo(texto).match(ETIQUETAS)?.[2] ?? '', limite);
+  const c = cuerpo(texto);
+  const m = c.match(ETIQUETAS);
+  if (!m) return '';
+  // Se sigue hasta el final del párrafo, no de la línea: la tesis casi nunca cabe en una, y
+  // cortarla ahí devolvía «replantear toda la wiki sin perder la» — una frase partida a la mitad.
+  const desde = c.indexOf(m[0]) + m[0].length - m[2].length;
+  return limpiar(c.slice(desde).split(/\n[ \t]*\n/)[0], limite);
 }
 
 // Secciones con las que un `goal.md` o un `facts.md` abren su contenido.
