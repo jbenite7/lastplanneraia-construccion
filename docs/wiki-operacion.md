@@ -275,16 +275,19 @@ claves que faltan, así que correrlo dos veces no cambia nada la segunda.
 El `resumen` sale de una **cascada de cuatro respaldos**, de más informativo a menos. Ninguno
 inventa nada: los cuatro toman palabras que el propio documento ya escribió.
 
+Medido el 2026-08-19 sobre 412 fuentes. Las cifras envejecen con el repo; la que importa y se
+mantuvo estable al crecer el árbol es la última fila.
+
 | # | De dónde | Cubre | Para qué documento es |
 |---|---|---|---|
-| 1 | el párrafo tras el `# título` | 169 | el caso normal |
+| 1 | el párrafo tras el `# título` | 190 | el caso normal |
 | 2 | la línea `**Goal:** / **Objetivo:**` | 77 | los planes, que abren con una cita para agentes |
 | 3 | el párrafo bajo `## Objetivo` | 44 | los `goal.md` y `facts.md` de los frentes |
 | 4 | el propio `# título` | 84 | último recurso |
 | — | nada; hueco visible | 17 | los rellena una persona |
 
 El informe cuenta cuántos salieron de cada respaldo, para que se vea de un vistazo cuántos son
-prosa de verdad (290) y cuántos son solo el título (84). El respaldo 4 es el más pobre y aun así
+prosa de verdad (311) y cuántos son solo el título (84). El respaldo 4 es el más pobre y aun así
 vale la pena: en el catálogo la otra columna es el nombre del archivo, que muestra el slug
 (`2026-07-20-sidebar-canonico-laboratorio`), así que el título añade legibilidad en vez de
 repetirla. Un título de una o dos palabras no añade nada y se descarta — mejor un hueco visible.
