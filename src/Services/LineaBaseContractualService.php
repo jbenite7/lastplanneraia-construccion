@@ -96,7 +96,7 @@ final class LineaBaseContractualService
             return false;
         }
 
-        $this->db->query(
+        $resultado = $this->db->query(
             'UPDATE general_proyectos_procesos
                 SET fechaInicioLineaBase = ?, fechaFinLineaBase = ?
               WHERE Id = ?
@@ -104,6 +104,11 @@ final class LineaBaseContractualService
             [$deducida['inicio'], $deducida['fin'], $projectId],
         );
 
-        return true;
+        // La guarda de arriba y el WHERE del UPDATE cubren cosas distintas: la guarda evita hacer el
+        // trabajo si ya sabíamos que había una declarada; el WHERE evita el pisado si otra
+        // consolidación concurrente escribió entre la guarda y este UPDATE. Ese segundo caso hace
+        // que el UPDATE se ejecute pero afecte cero filas — y el retorno tiene que reportar lo que
+        // de verdad pasó en la base, no lo que se intentó.
+        return $resultado->rowCount() > 0;
     }
 }

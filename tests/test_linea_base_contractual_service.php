@@ -4,6 +4,60 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Services\LineaBaseContractualService;
 
+/**
+ * Doble de prueba de \Database para el caso 4: simula que el UPDATE de sembrarSiFalta llega a
+ * ejecutarse pero afecta cero filas, como pasaría si otra consolidación concurrente ya escribió la
+ * línea base entre la guarda en PHP y el UPDATE. No abre conexión real (el constructor del padre no
+ * se llama a propósito), así que no toca la base — puede correr aunque haya un congelamiento vigente
+ * sobre `general_proyectos_procesos` o `programa_consolidado`.
+ */
+final class DatabaseFalsaConCarrera extends \Database
+{
+    private int $llamada = 0;
+
+    public function __construct()
+    {
+        // Sin llamar a parent::__construct(): este doble nunca abre PDO ni toca la red.
+    }
+
+    public function query($sql, $params = [])
+    {
+        $this->llamada++;
+
+        return match ($this->llamada) {
+            // 1: declaradaDe() dentro de la guarda — nadie había declarado nada todavía.
+            1 => new class {
+                public function fetch($modo = null)
+                {
+                    return false;
+                }
+            },
+            // 2: deducidaDelPrimerCorte() — MIN(Semana).
+            2 => new class {
+                public function fetchColumn()
+                {
+                    return 1;
+                }
+            },
+            // 3: deducidaDelPrimerCorte() — MIN/MAX de fechas de esa semana.
+            3 => new class {
+                public function fetch($modo = null)
+                {
+                    return ['inicio' => '2020-01-01', 'fin' => '2020-01-07'];
+                }
+            },
+            // 4: el UPDATE de sembrarSiFalta — llega tarde, otra escritura ya ganó la carrera.
+            4 => new class {
+                public function rowCount()
+                {
+                    return 0;
+                }
+            },
+            default => throw new \RuntimeException('DatabaseFalsaConCarrera: llamada inesperada #' . $this->llamada),
+        };
+    }
+}
+
 $fallos = [];
 $svc = new LineaBaseContractualService();
 $db = \Database::getInstance();
@@ -56,6 +110,18 @@ if ($svc->sembrarSiFalta(68) !== true) {
 }
 if ($svc->declaradaDe(68) != $deducida) {
     $fallos[] = 'lo sembrado no coincide con lo deducido del primer corte';
+}
+
+// 4. Race concurrente simulada con un doble de \Database, sin tocar la base real: la guarda en PHP
+// pasa (nadie había declarado todavía cuando se leyó), pero el UPDATE llega después de que otra
+// consolidación concurrente ya escribió, así que afecta cero filas. sembrarSiFalta tiene que
+// reportar false — "true solo si escribió", no "true si se intentó" — aunque la guarda haya dado
+// luz verde. Esto no lo cubre el caso 2 de arriba: ahí la guarda ya detecta la declarada y ni
+// siquiera llega a ejecutar el UPDATE; acá la guarda no detecta nada porque la lee de un mock, no
+// hay forma de que lo haga, y lo único que decide el resultado es el rowCount() del UPDATE.
+$svcConCarrera = new LineaBaseContractualService(new DatabaseFalsaConCarrera());
+if ($svcConCarrera->sembrarSiFalta(999) !== false) {
+    $fallos[] = 'sembrarSiFalta devolvió true aunque el UPDATE afectó cero filas (carrera perdida)';
 }
 
 if ($fallos) {
