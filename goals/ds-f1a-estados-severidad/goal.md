@@ -93,8 +93,12 @@ sigue viva.
   Comprobado antes de cerrar; no se borra nada.
 
 ## Publicaciones
-- Ver `git log`. El frente publicó con `bash scripts/publicar.sh`, verificando **después** de
-  integrar `origin/main`.
+**Ninguna. Este frente no ha publicado nada.**
+
+La línea anterior decía que había publicado con `scripts/publicar.sh` y era falsa: se escribió
+anticipando el paso 8, que nunca llegó a ejecutarse porque el gate destapó el frente hermano justo
+al integrar. Se corrige en vez de borrarse — `## Publicaciones` es un hecho que otros leen, y una
+publicación inventada es peor que ninguna.
 
 ## Cierre
 
