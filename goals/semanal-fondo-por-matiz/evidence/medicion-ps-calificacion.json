@@ -1,0 +1,37 @@
+[
+  {
+    "estado": "ps-state-prog-sin-compromiso",
+    "cubo": "ps-alert-medium",
+    "fondo": "#33204a",
+    "rail": "attention",
+    "railShadow": "rgb(242, 231, 156) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-sin-compromiso",
+    "cubo": "ps-alert-medium",
+    "fondo": "#33204a",
+    "rail": "attention",
+    "railShadow": "rgb(242, 231, 156) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-lista-para-confirmar",
+    "cubo": "ps-alert-control",
+    "fondo": "#173d26",
+    "rail": "healthy",
+    "railShadow": "none"
+  },
+  {
+    "estado": "ps-state-prog-lista-para-confirmar",
+    "cubo": "ps-alert-control",
+    "fondo": "#173d26",
+    "rail": "healthy",
+    "railShadow": "none"
+  },
+  {
+    "estado": "ps-state-prog-lista-para-confirmar",
+    "cubo": "ps-alert-control",
+    "fondo": "#173d26",
+    "rail": "healthy",
+    "railShadow": "none"
+  }
+]
