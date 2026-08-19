@@ -40,13 +40,13 @@ estados; los otros cuatro hallazgos delegados **no entran**.
 |---|---|---|
 | **Color de fondo de la fila** | *Qué* estado es — identidad | Los ocho tintes de `--ds-state-tint-*`, uno por estado. **Sus hex no se tocan** |
 | **Filete del borde izquierdo** | *Cuán grave* es — prioridad | Cuatro escalones de grosor y brillo |
+| **Orden de las filas** | Desempata dentro de un mismo escalón | Botón en la barra, **apagado por defecto** |
 
 Los **valores exactos** de los cuatro escalones —grosor en px y brillo— no se fijan aquí a
 propósito: se eligen contra la fila real de 24 px de alto (la excepción de densidad de `PRODUCT.md`)
 y se validan midiendo, no razonando. Lo que sí fija este spec es que sean **cuatro**, que el más
 bajo siga siendo visible y que la diferencia entre escalones contiguos se compruebe en pantalla
 antes de darla por buena.
-| **Orden de las filas** | Desempata dentro de un mismo escalón | Botón en la barra, **apagado por defecto** |
 
 **La regla dura que hay que escribir en el contrato y que hoy no existe:**
 
@@ -58,8 +58,9 @@ consecuencia.
 
 ### Por qué la gravedad sale del color
 
-Descartado teñir la fila por gravedad, que era lo que el usuario esperaba al abrir el frente. Tres de
-los ocho estados de Intermedia son `urgent`, así que en obra real eso no son tres filas sino media
+Descartado teñir la fila por gravedad, que era lo que el usuario esperaba al abrir el frente. **Cuatro**
+de los ocho estados de Intermedia quedan en `urgent` con los niveles decididos —eran tres cuando se
+tomó esta decisión, y el cambio la refuerza—, así que en obra real eso no son cuatro filas sino media
 tabla: **un muro rojo no comunica gravedad, la anula.** `PRODUCT.md` lo prohíbe por su nombre en las
 anti-referencias («no debe verse decorativa, **saturada de alertas**»). Además obligaba a rehacer la
 paleta oscura entera y empeoraba por debajo de 1180 px, alcance que Intermedia ganó el 2026-08-14.
@@ -90,10 +91,22 @@ Nivel de los ocho estados de Programación Intermedia, cerrado el 2026-08-18:
 Pendiente» lo decidió el usuario**; los tres en negrita restantes **los propuse yo y él los
 confirmó**. Borrar esa distinción convertiría mi criterio en el suyo sin dejar rastro.
 
-**Tres estados cambian de nivel**, así que este frente **edita `state-semantics.json`**:
-`execution-blocked` sube a `urgent` —lo que **revierte una ratificación del propietario del producto
-del 2026-08-03 anotada dentro del propio archivo**, advertido antes de decidir—, `alert-1-week` baja
-a `attention`, y `alert-4-6-weeks` baja a `healthy`.
+**Cuatro estados cambian de nivel**, así que este frente **edita `state-semantics.json`**:
+
+| Estado | Antes | Ahora |
+|---|---|---|
+| `blocked-due` (Inicio por Habilitar) | attention | **urgent** |
+| `alert-1-week` (Alistamiento Urgente) | urgent | **attention** |
+| `alert-4-6-weeks` (Alistamiento Pendiente) | attention | **healthy** |
+| `execution-blocked` (En Ejecución Pendiente) | attention | **urgent** |
+
+`execution-blocked` **revierte una ratificación del propietario del producto del 2026-08-03 anotada
+dentro del propio archivo**, advertida antes de decidir.
+
+> **Corrección del 2026-08-18, en la misma sesión.** Este spec decía «tres estados cambian» y lo
+> repetí varias veces de viva voz. Son **cuatro**: se me caía `blocked-due`, que el usuario subió a
+> `urgent` junto con los otros. Contado contra el archivo, no de memoria. La cifra importa porque es
+> el tamaño del cambio de contrato, y cuatro de ocho es la mitad del módulo.
 
 ### Consecuencia aceptada: cuatro de ocho en el escalón de arriba
 
