@@ -75,7 +75,11 @@ Las repeticiones **entre** fases (`critical-route` en las dos, `control` en las 
 goals/semanal-fondo-por-matiz/**, docs/superpowers/specs/*-semanal-fondo-por-matiz*,
 docs/superpowers/plans/*-semanal-fondo-por-matiz*, public/css/programacion-semanal.css,
 public/js/modules/programacion_semanal/hot.js, public/css/styles.css,
-tests/design-system/**, tests/browser/__screenshots__/**
+tests/design-system/**, tests/browser/__screenshots__/**,
+memoria/trampas/important-invierte-el-orden-de-capas.md, memoria/log.md
+
+> Los dos últimos se añadieron el 2026-08-19 **por autorización expresa de la coordinadora**, por
+> nombre exacto y no como glob abierto, para escribir la trampa de capas medida al convertir.
 
 ## Contención — medida el 2026-08-19 antes de arrancar
 - `public/css/programacion-semanal.css` → **0 commits hoy**
