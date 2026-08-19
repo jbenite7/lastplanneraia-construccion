@@ -185,17 +185,14 @@ if ($soloRespaldo) {
     exit(0);
 }
 
-// EL APPLY DEL RECALCULO ESTA BLOQUEADO EN ESTE FRENTE. Exige el si explicito del usuario
-// sobre el resultado del dry-run, y ni el visto de la coordinadora ni una autorizacion
-// relatada lo habilitan: la regla de gobierno del 2026-08-19 cubre publicar y excluye las
-// migraciones. Quitar esta guarda es una decision del usuario, no del implementador.
-if ($apply) {
-    fwrite(STDERR, "\nDENEGADO: el --apply del recalculo esta bloqueado en este frente.\n"
-        . "Exige el si explicito del usuario sobre el resultado del dry-run.\n");
-    exit(1);
-}
-
-$r = recalcular($db, false);
+// La guarda que aqui denegaba el --apply se retiro el 2026-08-19 con la autorizacion expresa
+// del usuario: «Si, apply completo», dada con el informe del dry-run delante y con tres
+// opciones sobre la mesa (completo / excluyendo las 24 y las 296 / aplazar). Registrada en
+// `decisiones/estados-consolidado-coordinadora.md` §2b y confirmada por el usuario en directo
+// a la sesion que ejecuta.
+//
+// CUBRE SOLO LA BASE DE DESARROLLO. Produccion es deploy y necesita autorizacion propia.
+$r = recalcular($db, $apply);
 echo "\n";
 printf("  filas que cambiarian     %s\n", $r["cambios"]);
 printf("  filas que quedan igual   %s\n", $r["iguales"]);

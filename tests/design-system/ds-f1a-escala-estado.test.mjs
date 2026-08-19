@@ -51,10 +51,22 @@ test('los porcentajes suman 100 con medio punto de tolerancia', async () => {
   assert.ok(Math.abs(suma - 100) <= 0.5, `suman ${suma.toFixed(1)}, no 100`);
 });
 
-test('las dos asignaciones propuestas conservan su marca de revocables', async () => {
+// Esta prueba nacio afirmando que DOS asignaciones concretas conservaban su marca de
+// revocables: `en-liberacion-de-restricciones` y `debe-iniciar-esta-semana`, que la spec habia
+// propuesto y el usuario no habia decidido. La marca existia para que nadie las diera por
+// firmes sin que el las mirara.
+//
+// El 2026-08-19 el usuario decidio, y la migracion que autorizo retiro esos dos estados: hoy no
+// tienen ni una fila. La prueba se reescribio entonces -decision de la coordinadora, tecnica,
+// con la de negocio ya tomada- para afirmar lo que ahora vigila: que NO queda ninguna asignacion
+// marcada como pendiente de decidir. No afloja nada; actualiza el predicado a la realidad
+// autorizada y sigue protegiendo el mismo principio: una asignacion que el usuario no ha
+// decidido tiene que llevar su marca, y hoy no hay ninguna.
+test('ninguna asignacion queda pendiente de decidir', async () => {
   const c = await contrato();
   const revocables = c.estados.filter((e) => e.revocable === true).map((e) => e.id);
-  assert.deepEqual(revocables.sort(), ['debe-iniciar-esta-semana', 'en-liberacion-de-restricciones']);
+  assert.deepEqual(revocables, [],
+    'un estado con `revocable: true` es una asignacion que el usuario no ha decidido: o se decide, o se marca aqui');
 });
 
 // El spec exige que cada estado declare su origen. No es adorno: siete de los trece los produce
