@@ -97,15 +97,46 @@ sigue viva.
   integrar `origin/main`.
 
 ## Cierre
-El frente termina aquí: su condición de hecho está cumplida sobre las superficies que aplican, y lo
-que queda vivo son los pendientes de arriba, que pertenecen a otros frentes.
 
-**Dos cosas que se dicen sin adornos:**
+**RETIRADO el 2026-08-19, el mismo día que se escribió.** Esta sección afirmaba que el frente
+terminaba aquí, y dejó de ser cierta media hora después. Se sustituye en vez de borrarse, porque la
+presencia de `## Cierre` es el hecho que derivan el mapa de estado y el aviso de fase previa: dejarla
+puesta haría mentir a los dos a la vez, y ninguno se pondría rojo.
 
-1. **El alcance de la spec estaba mal y lo escribí yo.** Dio `/plan-compras` por dentro leyendo el
-   contrato sin comprobar que algo lo pintara. Corregido en la propia spec, no en silencio.
-2. **`/programacion-semanal` queda a medias a propósito**, con el usuario informado del tamaño real
-   antes de decidir. Media conversión declarada es mejor que una entera improvisada.
+**Por qué se retira.** Al integrar `origin/main` para publicar apareció el frente hermano
+`ds-f1a-estado` (worktree `bold-neumann-485f23`), que había publicado un contrato de **la misma
+escala** midiendo contra **50.966 actividades reales**. Los dos frentes se contradicen:
+
+| | Este frente | `ds-f1a-estado` |
+|---|---|---|
+| Niveles | cuatro | **tres** |
+| Filete | en todas las filas | **solo en el 21,3% que pide algo**; la ausencia es la señal |
+| Medido contra | el contrato y 9 filas de fixture | **50.966 actividades, 16 proyectos** |
+
+Y sus mediciones invalidan parte de lo que este frente pintó en Programa General:
+**`Con Alerta Restricciones` no existe en ninguna de las 65.549 filas** —y aquí se le dio color y se
+aplanó `r0` dentro— mientras **`Fuera de Ventana`, el 24,2%**, no está declarado ni pintado.
+
+**Decisión de Felipe, 2026-08-19, con las dos propuestas delante:** manda el contrato del frente
+hermano —tres niveles y su vocabulario de trece estados—; esta maquinaria se adapta (filete apagado
+en `controlado`, Programa General remapeado a los estados reales); y **se coordina con esa sesión
+antes de tocar nada**.
+
+**Causa raíz, sin adornos:** no se midió la contención antes de arrancar. La regla existe —«¿qué
+archivos toca esto y quién más los está tocando?»— y un `git log` de dos minutos lo habría cazado.
+Los dos frentes actuaron de buena fe con decisiones directas del usuario, en la ventana en que no
+había coordinadora.
+
+## Estado real
+**Pausado, integrado y sin publicar.** La rama tiene `origin/main` integrado, el conflicto de
+`memoria/log.md` resuelto conservando las dos ramas, y la suite en verde. Espera respuesta de
+`bold-neumann-485f23`, que además tiene **vivo** el frente `estados-fuera-de-ventana` tocando
+`src/Legacy/estado_programa_general.php` y `LpsService.php`: remapear los colores de Programa
+General mientras cambia su cálculo sería construir sobre terreno que se mueve.
+
+**Lo que sobrevive intacto**, porque es maquinaria y no vocabulario: la primitiva `severity-rail` con
+su aprobación visual, `axisRules`, `/programacion-intermedia` entera con sus goldens aprobados —su
+vocabulario no lo toca el frente hermano—, el botón de agrupar, y los dos guards mejorados.
 
 ## Archivos de este goal
 - [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design]]
