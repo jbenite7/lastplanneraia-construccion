@@ -41,7 +41,7 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_110 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_111 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
@@ -53,6 +53,7 @@ _110 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archiv
 | «Fuera de Ventana» en los dos calculadores | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana|plan]] | — |
 | Estados, severidad y color — el contrato — diseño | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design|spec]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato|plan]] | — |
 | Migración de la columna Estado | [[docs/superpowers/plans/2026-08-19-migracion-estados|plan]] | — |
+| Organizar la casa — el repo y sus sesiones | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design|spec]] | — |
 | publicar.sh: el invariante es el montaje, no el nombre del proyecto — diseño | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design|spec]] | — |
 | runtime-budgets al CI, recortado a andamio — diseño | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|spec]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci|plan]] | — |
 | Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design|spec]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground|plan]] | — |
