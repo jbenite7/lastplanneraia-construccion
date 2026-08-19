@@ -88,19 +88,32 @@ sus decisiones siguen vigentes aunque ninguna fase corriera bajo su nombre. Ver
   número de niveles distinto. Su `## Cierre` se sustituyó en vez de borrarse, a propósito: el mapa
   de estado deriva de la presencia de esa sección, y quitarla haría mentir a dos sitios a la vez.
 
-## Los diez que son plantilla
+## Los diez que son plantilla — y no significan lo que parecían
 
-`goal.md` existe pero el objetivo sigue siendo `<!-- 1-3 frases -->`. **Nueve de ellos no se sabe si
-siguen vivos** y el triaje es criterio del usuario, no deducción: `a187ccda`,
-`buttons-important-leyenda`, `contador-no-mide-el-archivo`, `focus-visible-verde`,
-`forma-quitar-pasos`, `reserva-redundante-green-dark`, `reservas-contradictorias-var`,
-`severidad-runtime`, `veracidad-8`. Todos tienen su `decisiones/<slug>.md`.
+`goal.md` existe pero el objetivo sigue siendo `<!-- 1-3 frases -->`. Esta página decía hasta el
+2026-08-19 que **«nueve no se sabe si siguen vivos»**. Se fue a buscar el rastro de los nueve en
+`docs/decisiones-pendientes.md` y `memoria/log.md`, y **los nueve habían corrido**:
 
-El décimo, [[goals/apply-recalculo-estados/goal|apply-recalculo-estados]], **sí está vivo y es el de
-mayor riesgo del repo**: Felipe autorizó el apply completo del recálculo de la columna `Estado`
-—40.664 filas, 16 proyectos— con el informe del dry-run delante. Espera ventana de base exclusiva,
-y **antes hay que capturar las 24 filas terminadas con fecha futura**: el recálculo las mandaría a
-`Fuera de Ventana` y se perdería el dato de que estaban terminadas.
+| Frente | Rastro |
+|---|---|
+| `buttons-important-leyenda` | 41 `!important` → 16 (11-ago). Medido hoy: `buttons.css` en 138, el número que declaró |
+| `focus-visible-verde` | `D-F1-3` resuelta: el foco lo señala el anillo, no el relleno. `:777` sin reserva |
+| `reservas-contradictorias-var` | `D-RES-1`, misma resolución, aplicada dentro del frente anterior |
+| `reserva-redundante-green-dark` | La reserva de `:758` retirada; hoy es `var(--aia-green-dark)` limpio |
+| `contador-no-mide-el-archivo` | Produjo [[el-contador-no-mide-el-archivo]], «el hallazgo más caro del día» |
+| `veracidad-8` | El octavo pase está en `log.md`; van once |
+| `forma-quitar-pasos` | `D-FORMA-1` resuelta: cerró como «medir y repartir» y engendró tres frentes hijos |
+| `a187ccda` | **No es un frente: es un id de sesión.** Aparece como autora de dos frentes distintos |
+| `severidad-runtime` | Corrió; dejó la trampa del reescalado de capturas que `bug-coloreado-severidad` hereda |
+
+**La lección no es sobre estos nueve, es sobre la regla de lectura:** un `goal.md` en plantilla no
+dice «frente muerto», dice «nadie rellenó el papel al terminar». Deducir muerte del silencio habría
+tirado nueve entregas reales.
+
+El décimo, [[goals/apply-recalculo-estados/goal|apply-recalculo-estados]], **ya se ejecutó** sobre
+la base de **desarrollo** (`aa965bf5`, 13:40): 40.664 filas migradas, ventana exclusiva,
+reconciliación exacta, acta en `goals/apply-recalculo-estados/acta-del-apply.md`. **Producción
+sigue sin tocar** y necesita autorización propia.
 
 ## Qué viaja en git — resuelto el 2026-08-18
 

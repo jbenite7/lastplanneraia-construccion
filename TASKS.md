@@ -39,13 +39,13 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Ahora
 
-- [ ] **apply-recalculo-estados** — el de mayor riesgo del repo, y el único autorizado y sin
-  ejecutar. Felipe dio el «sí, apply completo» con el informe del dry-run delante: 40.664 filas de
-  la columna `Estado` en 16 proyectos. **Antes de migrar hay que correr la captura de las 24 filas
-  terminadas con fecha de inicio futura** (`goals/estados-fuera-de-ventana/diagnostico-113-contradictorias.md`);
-  después ya no hay forma de saber cuáles eran. Exige los gates de
-  `docs/global-tables-architecture.md` y ventana de base exclusiva. **Solo base de desarrollo** —
-  producción es deploy y necesita su propia autorización. Su `goal.md` sigue en plantilla.
+- [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó
+  (`aa965bf5`, 2026-08-19 13:40): 40.664 filas migradas, acta en
+  `goals/apply-recalculo-estados/acta-del-apply.md`, reconciliación exacta. **Producción sigue sin
+  tocar y necesita su propia autorización explícita** — publicar en `main` no la concede. Cuando
+  llegue, la lección del apply de desarrollo aplica: **el respaldo probado horas antes ya no cubría
+  la base** (8 filas nuevas sin respaldo), así que se rehace y se vuelve a probar la restauración
+  inmediatamente antes, no la víspera.
 - [ ] **runtime-budgets-al-ci** — Fase 1 de `docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci.md`,
   sha verificado `c23b1c6a`. Desbloquea el único gate `blocked` de los nueve de
   `closeout-evidence.json`. Andamio declarado, no inversión: DS-F3 lo reemplaza.
