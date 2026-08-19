@@ -109,10 +109,25 @@ comprobar() {
 echo "Verificando sobre $(git rev-parse --short HEAD)…"
 comprobar "design-system:static" 1 npm run test:design-system:static
 comprobar "contrato piloto PG"   1 node tests/test_programa_general_sprint_contract.mjs
-# La wiki avisa y no bloquea a proposito: su hallazgo tipico es la alarma de
-# veracidad -un contador de commits-, que pide trabajo pero no dice que lo que
-# vas a publicar este mal. Bloquear con ella ensenaria a saltarse el script.
-comprobar "wiki (lint + veracidad)" 0 npm run test:wiki
+# La wiki va en DOS comprobaciones porque mezclaba dos cosas de naturaleza distinta,
+# y una sola severidad no podia servir a las dos:
+#
+#   - La FORMA (enlaces rotos, frontmatter incompleto, una fuente sin declarar) es un
+#     defecto de lo que vas a publicar. Bloquea.
+#   - La ALARMA DE VERACIDAD es un contador de commits: pide trabajo, pero no dice que
+#     lo que vas a publicar este mal. Avisa, y bloquear con ella ensenaria a saltarse
+#     el script entero -razon original de que la wiki no bloqueara, y sigue siendo cierta-.
+#
+# Juntas, o se bloqueaba por un contador o no se bloqueaba por un defecto real. Se separaron
+# el 2026-08-19, despues de medir TRES veces el mismo hueco: un merge traia un documento sin
+# declarar, el lint estricto lo reportaba, el semaforo de avisos lo dejaba pasar, y el arreglo
+# llegaba siempre DESPUES de publicar.
+#
+# El mensaje del hallazgo lleva dentro el comando exacto que lo arregla, porque a quien le cae
+# encima suele ser alguien de otro frente que acaba de crear un documento y no tiene por que
+# conocer este esquema.
+comprobar "wiki (forma)"            1 npm run test:wiki:forma
+comprobar "wiki (veracidad + pruebas)" 0 npm run test:wiki
 
 echo
 if [ "$fallos" -gt 0 ]; then
