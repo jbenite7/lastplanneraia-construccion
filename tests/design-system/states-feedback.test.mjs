@@ -97,14 +97,30 @@ test('programación intermedia exposes its eight real states with action priorit
   // ambares aqui, y `Alistamiento Urgente` y `Alistamiento en Riesgo` -dos
   // filtros de la leyenda- eran bit-identicos en pantalla. La justificacion de
   // cada asignacion vive en public/css/programacion-intermedia.css.
+  //
+  // NIVELES ACTUALIZADOS EL 2026-08-19 (frente `ds-f1a-estados-severidad`).
+  // CUATRO de los ocho cambiaron, y este assert cambia con ellos porque el
+  // CONTRATO cambio, no para que pase: `blocked-due` y `execution-blocked`
+  // suben a urgent, `alert-1-week` baja a attention y `alert-4-6-weeks` baja a
+  // healthy. Los matices NO se tocaron.
+  //
+  // Que mide este assert ahora, y que no: fija los ocho estados ENTEROS -label,
+  // key, level y hue- contra el contrato. Lo que ya NO es su trabajo exclusivo
+  // es vigilar los niveles: eso lo comparte con severity-rail.test.mjs, que
+  // ademas comprueba que `statePresentation` de hot.js no se desvie. Aqui la
+  // aportacion propia son la forma completa de cada entrada y el cableado de la
+  // vista del laboratorio.
+  //
+  // Procedencia de cada nivel -cual decidio el usuario y cuales propuso el
+  // implementador y el confirmo- en goals/bug-coloreado-severidad/respuestas-ds-f1.md.
   assert.deepEqual(intermediate.states, [
     { label: 'RC inicio vencido', key: 'blocked-overdue-critical', level: 'urgent', hue: 'red' },
     { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'orange' },
-    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'attention', hue: 'violet' },
-    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'urgent', hue: 'amber' },
+    { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'urgent', hue: 'violet' },
+    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'attention', hue: 'amber' },
     { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
-    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'attention', hue: 'neutral' },
-    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'attention', hue: 'blue', note: 'Ratificado 2026-08-03 por el propietario del producto: attention/blue para actividad en ejecución sin liberar (stateMachine.js getState). El mapeo a ok que registró el inventario G0 quedó obsoleto antes del repaso.' },
+    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'healthy', hue: 'neutral' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'urgent', hue: 'blue', note: 'Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md.' },
     { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green' },
   ]);
   assert.equal(

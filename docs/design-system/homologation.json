@@ -173,6 +173,11 @@
           "id": "solid-status",
           "intent": "Estado sólido de alto contraste",
           "status": "candidate"
+        },
+        {
+          "id": "severity-rail",
+          "intent": "Filete del borde inicial que codifica la gravedad en cuatro escalones de grosor, separada del matiz que codifica la identidad",
+          "status": "candidate"
         }
       ]
     },

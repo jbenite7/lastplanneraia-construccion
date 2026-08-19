@@ -52,3 +52,41 @@ test('statePresentation de hot.js declara los mismos niveles que el contrato', a
   }
   assert.deepEqual(real, NIVELES_PI);
 });
+
+const NIVELES = ['urgent', 'attention', 'healthy', 'neutral'];
+
+test('los cuatro escalones del filete existen y son grosores distintos', async () => {
+  const tokens = await read('public/css/tokens.css');
+  const anchos = NIVELES.map((n) => {
+    const v = tokens.match(new RegExp(`--ds-severity-rail-width-${n}:\\s*([^;]+);`))?.[1]?.trim();
+    assert.ok(v, `falta --ds-severity-rail-width-${n}`);
+    return parseFloat(v);
+  });
+  assert.equal(new Set(anchos).size, 4, `los cuatro escalones deben ser distintos: ${anchos}`);
+  // Monotono descendente: mas grave, mas grueso. Es el eje ordinal entero, y es
+  // lo unico que el color no puede dar.
+  assert.deepEqual(anchos, [...anchos].sort((a, b) => b - a), `los grosores no bajan con la gravedad: ${anchos}`);
+  // El escalon mas bajo sigue siendo visible: un filete de 0 no es un escalon,
+  // es ausencia, y entonces `neutral` deja de decir «medido y sin problema»
+  // para decir «no se midio».
+  assert.ok(anchos[3] > 0, 'el escalon `neutral` no puede medir 0');
+});
+
+test('la primitiva traduce cada nivel a su grosor y su color', async () => {
+  const css = await read('public/css/design-system/components/severity-rail.css');
+  for (const n of NIVELES) {
+    const regla = css.match(new RegExp(`\\[data-aia-severity-rail="${n}"\\][^{]*\\{([^}]*)\\}`))?.[1];
+    assert.ok(regla, `severity-rail.css no traduce [data-aia-severity-rail="${n}"]`);
+    assert.match(regla, new RegExp(`--ds-severity-rail-width-${n}`), `${n} no usa su token de grosor`);
+    assert.match(regla, new RegExp(`--ds-severity-rail-color-${n}`), `${n} no usa su token de color`);
+  }
+});
+
+test('el catalogo publica la ficha del filete', async () => {
+  const catalogo = JSON.parse(await read('docs/design-system/component-catalog.json'));
+  const arr = Array.isArray(catalogo) ? catalogo : catalogo.components;
+  const ficha = arr.find((c) => c.id === 'severity-rail');
+  assert.ok(ficha, 'component-catalog.json no publica la ficha `severity-rail`');
+  assert.equal(ficha.family, 'states-feedback');
+  assert.equal(ficha.maturity, 'candidate');
+});

@@ -313,6 +313,52 @@
       }
     },
     {
+      "id": "severity-rail",
+      "family": "states-feedback",
+      "kind": "canonical",
+      "purpose": "Communicate severity as an ordinal step, independent of hue",
+      "doNotUseFor": "State identity - that is the tint",
+      "api": [
+        "[data-aia-severity-rail]"
+      ],
+      "markup": "inset rail on the row's inline start",
+      "variants": [
+        "urgent",
+        "attention",
+        "healthy",
+        "neutral"
+      ],
+      "states": [
+        "normal"
+      ],
+      "densities": [
+        "compact"
+      ],
+      "tokens": [
+        "--ds-severity-rail-width-urgent",
+        "--ds-severity-rail-color-urgent"
+      ],
+      "responsive": [
+        "desktop",
+        "wide"
+      ],
+      "accessibility": [
+        "text-meaning"
+      ],
+      "testSelector": "[data-aia-severity-rail]",
+      "consumers": [
+        "programacion-intermedia"
+      ],
+      "replacement": null,
+      "golden": null,
+      "maturity": "candidate",
+      "visualApproval": {
+        "status": "pending",
+        "familyId": "states-feedback",
+        "candidateId": "severity-rail"
+      }
+    },
+    {
       "id": "card",
       "family": "data-display",
       "kind": "canonical",

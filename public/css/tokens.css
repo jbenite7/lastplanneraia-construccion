@@ -343,6 +343,24 @@
        siete. */
     --ds-state-tint-neutral: #2b2f2d;
 
+    /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
+       color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
+       a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
+       distinguen QUE estado es y no pueden decir CUAN GRAVE es. Eso lo lleva el
+       grosor, que si escala.
+       Cuatro escalones sobre la fila de 24 px de la excepcion de densidad de
+       PRODUCT.md: 6/4/2/1. El mas bajo mide 1 px y no 0 a proposito — un filete
+       de cero no es un escalon sino ausencia, y entonces `neutral` deja de
+       decir «medido y sin problema» para decir «no se midio». */
+    --ds-severity-rail-width-urgent: 6px;
+    --ds-severity-rail-width-attention: 4px;
+    --ds-severity-rail-width-healthy: 2px;
+    --ds-severity-rail-width-neutral: 1px;
+    --ds-severity-rail-color-urgent: var(--ds-color-state-critical-text);
+    --ds-severity-rail-color-attention: var(--ds-color-state-warning-text);
+    --ds-severity-rail-color-healthy: var(--ds-color-state-success-text);
+    --ds-severity-rail-color-neutral: var(--ds-active-border);
+
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
      ========================================
