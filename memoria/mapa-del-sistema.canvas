@@ -1,0 +1,142 @@
+{
+  "nodes": [
+    {
+      "id": "c-front",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 300,
+      "height": 90,
+      "text": "# public/index.php\nFront controller · FastRoute\n~150 rutas",
+      "color": "4"
+    },
+    {
+      "id": "c-src",
+      "type": "text",
+      "x": -360,
+      "y": 180,
+      "width": 300,
+      "height": 120,
+      "text": "## src/\nControllers · Services · Core\nSecurity · Support · View",
+      "color": "5"
+    },
+    {
+      "id": "c-legacy",
+      "type": "text",
+      "x": 0,
+      "y": 180,
+      "width": 300,
+      "height": 120,
+      "text": "## src/Legacy/\nScripts procedurales aún enrutados.\n**Mantenimiento, no funcionalidad nueva.**",
+      "color": "2"
+    },
+    {
+      "id": "c-admin",
+      "type": "text",
+      "x": 360,
+      "y": 180,
+      "width": 300,
+      "height": 120,
+      "text": "## admin/\n**Mini-app aparte.** Router, RoleManager y\nSecurity propios. NO reutiliza src/.",
+      "color": "3"
+    },
+    {
+      "id": "c-db",
+      "type": "text",
+      "x": 0,
+      "y": 420,
+      "width": 300,
+      "height": 120,
+      "text": "## MySQL\nTablas globales compartidas,\naisladas por `project_id`.\n`{prefix}_*` es histórico.",
+      "color": "1"
+    },
+    {
+      "id": "n-arq",
+      "type": "file",
+      "x": -360,
+      "y": 600,
+      "width": 300,
+      "height": 100,
+      "file": "memoria/mapas/arquitectura.md"
+    },
+    {
+      "id": "n-datos",
+      "type": "file",
+      "x": 0,
+      "y": 600,
+      "width": 300,
+      "height": 100,
+      "file": "memoria/mapas/datos.md"
+    },
+    {
+      "id": "n-admin",
+      "type": "file",
+      "x": 360,
+      "y": 600,
+      "width": 300,
+      "height": 100,
+      "file": "memoria/mapas/admin.md"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "c-front",
+      "fromSide": "bottom",
+      "toNode": "c-src",
+      "toSide": "top"
+    },
+    {
+      "id": "e2",
+      "fromNode": "c-front",
+      "fromSide": "bottom",
+      "toNode": "c-legacy",
+      "toSide": "top"
+    },
+    {
+      "id": "e3",
+      "fromNode": "c-src",
+      "fromSide": "bottom",
+      "toNode": "c-db",
+      "toSide": "top",
+      "label": "project_id"
+    },
+    {
+      "id": "e4",
+      "fromNode": "c-legacy",
+      "fromSide": "bottom",
+      "toNode": "c-db",
+      "toSide": "top",
+      "label": "project_id"
+    },
+    {
+      "id": "e5",
+      "fromNode": "c-admin",
+      "fromSide": "bottom",
+      "toNode": "c-db",
+      "toSide": "top",
+      "label": "mismo esquema"
+    },
+    {
+      "id": "e6",
+      "fromNode": "c-src",
+      "fromSide": "bottom",
+      "toNode": "n-arq",
+      "toSide": "top"
+    },
+    {
+      "id": "e7",
+      "fromNode": "c-db",
+      "fromSide": "bottom",
+      "toNode": "n-datos",
+      "toSide": "top"
+    },
+    {
+      "id": "e8",
+      "fromNode": "c-admin",
+      "fromSide": "bottom",
+      "toNode": "n-admin",
+      "toSide": "top"
+    }
+  ]
+}

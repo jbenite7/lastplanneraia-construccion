@@ -45,6 +45,12 @@ trabajo ajeno puede romper un verde propio sin tocar tu diff, y quien hizo el tr
 - [[autoria-por-coincidencia-de-hora]] — la hora de actividad no prueba autoría.
 - [[path-with-space-esm-guard-noop]] — el repo vive en una ruta con espacio.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-proceso.base]]
+
 ## Vecinos
 
 [[worktrees]] para el aislamiento · [[qa-y-gates]] para qué suite creer ·

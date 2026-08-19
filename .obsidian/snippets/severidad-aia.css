@@ -1,0 +1,64 @@
+/* Cascada de severidad de AIA dentro del vault.
+ *
+ * Espeja la escala de `docs/design-system/auditoria/escala-severidad.md`
+ * (Crítico 4 → Sin problema 0) para que la wiki hable el mismo idioma visual que la auditoría.
+ *
+ * DOS AVISOS QUE HAY QUE LEER ANTES DE TOCAR ESTO:
+ *
+ * 1. Esa escala NO es el contrato del producto. El propio documento lo dice en su primera línea:
+ *    fijar vocabulario y escalas es DS-F1, y esto es con lo que se clasificó en DS-F0. Si DS-F1
+ *    decide otra escala, este snippet se remapea; no es una fuente de verdad, es un espejo.
+ * 2. Los colores de estado del producto viven en `public/css/tokens.css` y su canónico es OKLCH.
+ *    Aquí van en sRGB porque Obsidian no resuelve las variables del producto, y el vault no puede
+ *    importar la hoja de la app. Son una traducción, no el original: si divergen, gana tokens.css.
+ *
+ * La paleta corporativa (#1a3c2a · #1a5633 · #4a7c64 · #8cb4a1 · #d5e5db) queda para lo neutro;
+ * la severidad necesita su propio eje o el crítico no se distingue del fondo.
+ */
+
+.theme-dark {
+  --aia-sev-4: #c43b3b; /* critico     — rompe una regla innegociable en superficie `pilot` */
+  --aia-sev-3: #d98324; /* mayor       — la rompe fuera de `pilot`, o es deuda estructural */
+  --aia-sev-2: #c9a227; /* menor       — desviación local con equivalente ya existente */
+  --aia-sev-1: #6b7f92; /* cosmetico   — sin efecto funcional ni de contraste */
+  --aia-sev-0: #4a7c64; /* sin-problema — medido y conforme. La mitad del mapa que sí funciona */
+  --aia-sev-texto: #f4f6f5;
+}
+
+.theme-light {
+  --aia-sev-4: #a32f2f;
+  --aia-sev-3: #a8631a;
+  --aia-sev-2: #8a6f12;
+  --aia-sev-1: #4e5f70;
+  --aia-sev-0: #1a5633;
+  --aia-sev-texto: #ffffff;
+}
+
+/* Callouts. Se apoyan en los tipos nativos para que el contenido siga siendo legible sin este
+ * snippet: un callout sin CSS propio se ve como un callout, no como texto roto. */
+.callout[data-callout="critico"]      { --callout-color: 196, 59, 59; }
+.callout[data-callout="mayor"]        { --callout-color: 217, 131, 36; }
+.callout[data-callout="menor"]        { --callout-color: 201, 162, 39; }
+.callout[data-callout="cosmetico"]    { --callout-color: 107, 127, 146; }
+.callout[data-callout="sin-problema"] { --callout-color: 74, 124, 100; }
+
+/* Distintivos en línea: `<span class="sev sev-4">crítico</span>` */
+.sev {
+  display: inline-block;
+  padding: 0 .5em;
+  border-radius: 4px;
+  font-size: .85em;
+  font-weight: 500;
+  color: var(--aia-sev-texto);
+}
+.sev-4 { background: var(--aia-sev-4); }
+.sev-3 { background: var(--aia-sev-3); }
+.sev-2 { background: var(--aia-sev-2); }
+.sev-1 { background: var(--aia-sev-1); }
+.sev-0 { background: var(--aia-sev-0); }
+
+/* Una página derogada se ve derogada antes de leerla: es la regla de «no se borra, se marca». */
+.markdown-preview-view:has([data-property-key="estado"][data-property-value="derogada"]) h1 {
+  text-decoration: line-through;
+  opacity: .65;
+}

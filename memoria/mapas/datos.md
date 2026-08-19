@@ -45,6 +45,12 @@ SQL dinámico nuevo. El acceso va por `src/Core/Database.php`, con prepared stat
 - [[espejo-y-reparacion-unique-id]] — la operación producción→local→pruebas del 2026-08-12.
 - [[no-enriquecer-daporto-para-medir]] — por qué no se toca el proyecto real para tener línea base.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-datos.base]]
+
 ## Vecinos
 
 [[arquitectura]] para dónde vive la capa de datos · [[entorno-y-despliegue]] para los stacks ·

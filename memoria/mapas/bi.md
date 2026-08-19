@@ -33,6 +33,12 @@ fuente. El alcance por proyecto lo resuelve `App\Support\BiProjectScope`.
 - [[indicadores-oculta-en-cliente-bi-en-servidor]] — **derogada** el 2026-08-06; se conserva porque
   saber que algo dejó de ser cierto también es memoria.
 
+## El área, en una tabla
+
+<!-- Vista nativa de Obsidian Bases. Si no renderiza, el contenido de arriba sigue siendo
+     legible: los plugins y las vistas amplifican, no sostienen. -->
+![[area-bi.base]]
+
 ## Vecinos
 
 [[lps-dominio]] para de dónde salen las cifras · [[rbac-y-rutas]] para quién puede verlas ·

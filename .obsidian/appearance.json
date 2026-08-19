@@ -1,4 +1,7 @@
 {
   "theme": "obsidian",
-  "accentColor": ""
+  "accentColor": "",
+  "enabledCssSnippets": [
+    "severidad-aia"
+  ]
 }
