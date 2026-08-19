@@ -53,7 +53,7 @@ cualquier `tests/design-system/*.test.mjs`, así que la prueba entra sola en
   superior `version`, `base`, `canales`, `niveles` y `estados`. La Task 2 lee `estados[].id`,
   `estados[].etiqueta`, `estados[].nivel` y `estados[].porcentaje`; la Task 3 lee `canales`.
 
-- [ ] **Step 1: Escribir la prueba que falla**
+- [x] **Step 1: Escribir la prueba que falla**
 
 Crear `tests/design-system/ds-f1a-escala-estado.test.mjs`:
 
@@ -131,7 +131,7 @@ test('cada canal declara que dato transporta', async () => {
 });
 ```
 
-- [ ] **Step 2: Correr la prueba y comprobar que falla**
+- [x] **Step 2: Correr la prueba y comprobar que falla**
 
 ```bash
 node --test tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -139,7 +139,7 @@ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
 
 Esperado: FALLA en los ocho casos con `ENOENT` — el JSON todavía no existe.
 
-- [ ] **Step 3: Escribir el contrato**
+- [x] **Step 3: Escribir el contrato**
 
 Crear `docs/design-system/ds-f1a-escala-estado.json`:
 
@@ -182,7 +182,7 @@ Crear `docs/design-system/ds-f1a-escala-estado.json`:
 }
 ```
 
-- [ ] **Step 4: Correr la prueba y comprobar que pasa**
+- [x] **Step 4: Correr la prueba y comprobar que pasa**
 
 ```bash
 node --test tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -190,7 +190,7 @@ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
 
 Esperado: `pass 8`, `fail 0`.
 
-- [ ] **Step 5: Comprobar que entra sola en la suite**
+- [x] **Step 5: Comprobar que entra sola en la suite**
 
 ```bash
 npm run test:design-system:static
@@ -199,7 +199,7 @@ npm run test:design-system:static
 Esperado: RC=0 y el paso `node-tests` en verde. La prueba entra por el glob de
 `scripts/design-system-static-suite.mjs:13`, sin registrarla en ningún sitio.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/design-system/ds-f1a-escala-estado.json tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -218,7 +218,7 @@ git commit -m "feat(ds-f1a): el contrato ejecutable de la escala de estado, con 
 - Consumes: de Task 1, `estados[].etiqueta` y `estados[].nivel` del JSON.
 - Produces: `docs/design-system/ds-f1a-escala-estado.md`, que la Task 3 enlaza desde el índice.
 
-- [ ] **Step 1: Escribir la prueba que falla**
+- [x] **Step 1: Escribir la prueba que falla**
 
 Añadir al final de `tests/design-system/ds-f1a-escala-estado.test.mjs`:
 
@@ -232,7 +232,7 @@ test('el markdown nombra cada estado del contrato con su etiqueta exacta', async
 });
 ```
 
-- [ ] **Step 2: Correr la prueba y comprobar que falla**
+- [x] **Step 2: Correr la prueba y comprobar que falla**
 
 ```bash
 node --test tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -240,7 +240,7 @@ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
 
 Esperado: 8 pasan, 1 falla con `ENOENT` sobre `ds-f1a-escala-estado.md`.
 
-- [ ] **Step 3: Escribir el contrato legible**
+- [x] **Step 3: Escribir el contrato legible**
 
 Crear `docs/design-system/ds-f1a-escala-estado.md`. Debe contener, y en este orden:
 
@@ -257,7 +257,7 @@ Crear `docs/design-system/ds-f1a-escala-estado.md`. Debe contener, y en este ord
 7. Una sección «Pendiente de decisión» con el punto abierto: si `Fuera de Ventana` es etiqueta de
    pantalla o valor persistido, y qué implica cada opción.
 
-- [ ] **Step 4: Correr la prueba y comprobar que pasa**
+- [x] **Step 4: Correr la prueba y comprobar que pasa**
 
 ```bash
 node --test tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -265,7 +265,7 @@ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
 
 Esperado: `pass 9`, `fail 0`.
 
-- [ ] **Step 5: Comprobar el lint de la wiki**
+- [x] **Step 5: Comprobar el lint de la wiki**
 
 ```bash
 npm run test:wiki
@@ -275,7 +275,7 @@ Esperado: ningún hallazgo nuevo atribuible a este archivo. La alarma de veracid
 desde el pase del 2026-08-18) **es preexistente y no la resuelve esta tarea**; si aparece sola, se
 considera verde para este plan.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/design-system/ds-f1a-escala-estado.md tests/design-system/ds-f1a-escala-estado.test.mjs

@@ -74,3 +74,15 @@ test('cada canal declara que dato transporta', async () => {
   assert.equal(c.canales.fondo.transporta, 'identidad-y-horizonte');
   assert.equal(c.canales.barra.transporta, 'gravedad');
 });
+
+// El Markdown explica el contrato y el JSON lo ejecuta. Esta prueba los ata: si alguien anade
+// un estado al JSON y se olvida del Markdown, o renombra una etiqueta en uno solo, la suite se
+// pone roja. Sin esto, los dos archivos se separan en silencio -que es exactamente como el
+// repositorio llego a tener cuatro documentos de estados que no coinciden entre si.
+test('el markdown nombra cada estado del contrato con su etiqueta exacta', async () => {
+  const c = await contrato();
+  const md = await read('docs/design-system/ds-f1a-escala-estado.md');
+  for (const e of c.estados) {
+    assert.ok(md.includes(e.etiqueta), `el markdown no nombra "${e.etiqueta}"`);
+  }
+});
