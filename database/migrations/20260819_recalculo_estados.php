@@ -100,6 +100,74 @@ function restaurar(Database $db, bool $apply): array
             'diferencias_tras_restaurar' => diferenciasContraRespaldo($db)];
 }
 
+/**
+ * Recorre las filas y compara el Estado guardado con el que producen los calculadores canonicos.
+ * En dry-run NO escribe: acumula las transiciones y las devuelve.
+ *
+ * Usa `pg_calculate_status()` y no `LpsService`: son la misma clasificacion y su paridad la
+ * vigila `tests/unit/EstadoProgramaGeneralTest.php`, asi que basta con una — y la del legacy es
+ * la que declara sus umbrales como constantes con nombre.
+ *
+ * @return array<string, mixed>
+ */
+function recalcular(Database $db, bool $apply): array
+{
+    $filas = $db->query(
+        "SELECT p.project_id, p.Consecutivo, p.Semana, p.Estado, p.Titulo, p.Ejecutado,
+                p.Fecha_Inicio, p.Fecha_Fin, s.Fecha_Inicio_Sem, s.Fecha_Fin_Sem
+         FROM programa_consolidado p
+         LEFT JOIN semanas_activas s
+           ON s.project_id = p.project_id AND s.Semana = p.Semana
+         ORDER BY p.project_id, p.Consecutivo",
+    );
+
+    $transiciones = [];
+    $porProyecto = [];
+    $sinSemana = 0;
+    $cambios = 0;
+    $iguales = 0;
+
+    foreach ($filas as $f) {
+        if ($f["Fecha_Inicio_Sem"] === null) {
+            // Sin semana activa no hay contra que calcular: se cuenta y se deja intacta.
+            $sinSemana++;
+            continue;
+        }
+
+        $nuevo = pg_calculate_status(
+            $f["Titulo"], $f["Ejecutado"], $f["Fecha_Inicio"], $f["Fecha_Fin"],
+            $f["Fecha_Inicio_Sem"], $f["Fecha_Fin_Sem"],
+        );
+        $viejo = (string) ($f["Estado"] ?? "");
+
+        if ($nuevo === $viejo) {
+            $iguales++;
+            continue;
+        }
+
+        $cambios++;
+        $clave = ($viejo === "" ? "(vacio)" : $viejo) . " -> " . $nuevo;
+        $transiciones[$clave] = ($transiciones[$clave] ?? 0) + 1;
+        $porProyecto[$f["project_id"]] = ($porProyecto[$f["project_id"]] ?? 0) + 1;
+
+        if ($apply) {
+            // Clave: la PK real (project_id, Consecutivo). Ver la cabecera de respaldar().
+            $db->query(
+                "UPDATE programa_consolidado SET Estado = ?
+                 WHERE project_id = ? AND Consecutivo = ?",
+                [$nuevo, $f["project_id"], $f["Consecutivo"]],
+            );
+        }
+    }
+
+    arsort($transiciones);
+    ksort($porProyecto);
+
+    return ["modo" => $apply ? "APPLY" : "DRY-RUN", "cambios" => $cambios, "iguales" => $iguales,
+            "sin_semana_activa" => $sinSemana, "transiciones" => $transiciones,
+            "por_proyecto" => $porProyecto];
+}
+
 echo "=== recalculo de estados · " . ($apply ? 'APPLY' : 'DRY-RUN') . " ===\n\n";
 
 if ($restaurar) {
@@ -117,4 +185,26 @@ if ($soloRespaldo) {
     exit(0);
 }
 
-echo "\n  (el recalculo llega en la Task 3; este script todavia no lo implementa)\n";
+// EL APPLY DEL RECALCULO ESTA BLOQUEADO EN ESTE FRENTE. Exige el si explicito del usuario
+// sobre el resultado del dry-run, y ni el visto de la coordinadora ni una autorizacion
+// relatada lo habilitan: la regla de gobierno del 2026-08-19 cubre publicar y excluye las
+// migraciones. Quitar esta guarda es una decision del usuario, no del implementador.
+if ($apply) {
+    fwrite(STDERR, "\nDENEGADO: el --apply del recalculo esta bloqueado en este frente.\n"
+        . "Exige el si explicito del usuario sobre el resultado del dry-run.\n");
+    exit(1);
+}
+
+$r = recalcular($db, false);
+echo "\n";
+printf("  filas que cambiarian     %s\n", $r["cambios"]);
+printf("  filas que quedan igual   %s\n", $r["iguales"]);
+printf("  sin semana activa        %s\n", $r["sin_semana_activa"]);
+echo "\n  transiciones:\n";
+foreach ($r["transiciones"] as $k => $v) {
+    printf("    %-56s %6d\n", $k, $v);
+}
+echo "\n  por proyecto:\n";
+foreach ($r["por_proyecto"] as $k => $v) {
+    printf("    proyecto %-6s %6d\n", $k, $v);
+}
