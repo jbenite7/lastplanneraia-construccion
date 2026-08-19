@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+fuente: README.md
+resumen: Puerta de entrada al repo: que es Last Planner AIA, como se levanta el stack local y donde esta cada cosa.
+---
+
 # Last Planner AIA: Construyendo con +CERTEZA
 
 > Este repositorio no es solo código; es el motor de transformación cultural y productiva en

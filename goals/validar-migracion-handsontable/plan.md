@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-15
+areas: [datos]
+fuente: goals/validar-migracion-handsontable/plan.md
+resumen: Plan efectivo: sprint exclusivo de Contratos
+---
+
 <!-- plannotator:gate -->
 # Plan efectivo: sprint exclusivo de Contratos
 

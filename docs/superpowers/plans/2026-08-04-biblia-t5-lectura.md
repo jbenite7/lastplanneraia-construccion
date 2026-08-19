@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-04-biblia-t5-lectura.md
+resumen: Que Indicadores LPS y la Torre de Control BI —los dos módulos de solo lectura— tengan sus escenarios de aislamiento por projectid, visibilidad por rol y…
+---
+
 # Biblia de flujos · Tanda T5 (lectura) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

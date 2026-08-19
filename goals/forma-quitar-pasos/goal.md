@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/forma-quitar-pasos/goal.md
+resumen: Andamiaje del frente forma-quitar-pasos: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: forma-quitar-pasos
 
 ## Objetivo

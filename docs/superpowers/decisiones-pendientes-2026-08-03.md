@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/decisiones-pendientes-2026-08-03.md
+resumen: Decisiones pendientes del usuario — cierre de dark mode
+---
+
 # Decisiones pendientes del usuario — cierre de dark mode
 
 **Modo acordado el 2026-08-03:** el usuario pidió no ser interrumpido durante la ejecución. Todo

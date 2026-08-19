@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total.md
+resumen: Plan — DS-F0 · Auditoría total
+---
+
 # Plan — DS-F0 · Auditoría total
 
 **Spec:** `docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design.md` · **Estado:** aprobado

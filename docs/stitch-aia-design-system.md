@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-04-07
+areas: [design-system]
+fuente: docs/stitch-aia-design-system.md
+resumen: AIA Last Planner Design System Brief
+---
+
 # AIA Last Planner Design System Brief
 
 ## Purpose

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps.md
+resumen: Que el ciclo Last Planner —Programa General, actualizar cronograma, Programación Intermedia, Programación Semanal y los tres submódulos de aprendizaje— tenga…
+---
+
 # Biblia de flujos · Tanda T2 (cascada LPS) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-15
+areas: [datos]
+fuente: goals/validar-migracion-handsontable/facts.md
+resumen: Hechos aceptados de la migracion a Handsontable: alcance en Listado de Actividades, Contratos y PDC; BI fuera, y PG/PI/PS solo revisados al final.
+---
+
 # Facts
 
 - El trabajo cubre exclusivamente Listado de Actividades, Contratos y PDC, incluyendo la tabla principal y dt_definirContratos de PDC.

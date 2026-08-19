@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: guia
+estado: cerrado
+fecha: 2026-06-02
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/20260601_pi_coloreado_incorrecto_filtros_pdca_ciclo4.md
+resumen: Método: PDCA (Plan-Do-Check-Act) Target: public/js/modules/programacionintermedia/hot.js, stateMachine.js Contexto: Sigue a Ciclo 1-3 (edición con filtros…
+---
+
 # PDCA: Coloreado incorrecto en PI con filtros de input activos (Ciclo 4)
 
 Fecha: 2026-06-01

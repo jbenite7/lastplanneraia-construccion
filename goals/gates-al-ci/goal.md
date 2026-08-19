@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/gates-al-ci/goal.md
+resumen: Enchufar full-app-flow y runtime-budgets al job design-system-runtime de .github/workflows/design-system.yml y pasarlos a passed en…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: gates-al-ci
 

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-24
+areas: [rbac, bi]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-24-control-tower-shell-dark-design.md
+resumen: unificación al shell dark (rediseño), no solo un enlace de regreso. 2. Layout A: sidebar de app (izq) + context-bar (top) + tira de tabs horizontal para las 8…
+---
+
 # Control Tower en el shell dark — diseño
 
 **Fecha:** 2026-07-24 · **Estado:** aprobado en decisiones clave (chat), pendiente revisión del spec escrito · **Alcance:** desktop ≥1180px, dark. Sub-goal derivado del rollout `sidebar-todos-modulos` (Control Tower quedó diferido allí por ser un rediseño, no una migración mecánica).

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-10
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-10-frente-0-higiene-y-decisiones.md
+resumen: Desbloquear los cinco frentes siguientes del programa resolviendo lo barato que los tiene parados: el arreglo B-10 que no llegó a main, las ramas muertas, las…
+---
+
 # Frente 0 — Higiene y decisiones: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

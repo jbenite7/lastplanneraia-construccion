@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-contadores-cero.md
+resumen: Plan — ocultar las etiquetas contadoras que marcan cero
+---
+
 # Plan — ocultar las etiquetas contadoras que marcan cero
 
 - Spec: [`2026-08-11-contadores-cero-design.md`](../specs/2026-08-11-contadores-cero-design.md)

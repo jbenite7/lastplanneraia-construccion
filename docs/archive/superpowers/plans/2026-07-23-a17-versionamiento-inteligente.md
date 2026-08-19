@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-23
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-23-a17-versionamiento-inteligente.md
+resumen: Que cada cargue del presupuesto reciba un identificador automático (Versión N secuencial por proyecto + fecha), no cree versiones idénticas (anti-duplicado por…
+---
+
 # Fase A1.7: Versionamiento inteligente del importador — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

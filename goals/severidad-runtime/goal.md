@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/severidad-runtime/goal.md
+resumen: Andamiaje del frente severidad-runtime: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: severidad-runtime
 

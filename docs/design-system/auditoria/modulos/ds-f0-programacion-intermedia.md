@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-programacion-intermedia.md
+resumen: Módulo · Programación Intermedia
+---
+
 # Módulo · Programación Intermedia
 
 **Estado declarado:** `pilot` (`programacion-intermedia.json`) · **Pantalla:**

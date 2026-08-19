@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/plans/F0-fundacion-tema.plan.md
+resumen: Dejar un único mecanismo de aplicación de tema con dark como default de la cascada, retirar el tema linen y el tema muerto, y poner admin/ bajo el audit del…
+---
+
 # F0 · Fundación de tema — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

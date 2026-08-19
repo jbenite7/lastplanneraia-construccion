@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/transversal.md
+resumen: Lo que no pertenece a ningún módulo: las hojas que todos cargan, los tokens, los entrypoints y los mecanismos que deberían detectar la deuda. Es donde está lo…
+---
+
 # Lo transversal — el sistema, sus hojas compartidas y sus gates
 
 Lo que no pertenece a ningún módulo: las hojas que todos cargan, los tokens, los entrypoints y los

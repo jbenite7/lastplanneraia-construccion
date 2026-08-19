@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-18-wiki-v2-visual.md
+resumen: Plan — Wiki v2 visual y etiquetada
+---
+
 # Plan — Wiki v2 visual y etiquetada
 
 **Spec:** `docs/superpowers/specs/2026-08-18-wiki-v2-visual-design.md` · **Estado:** al gate,

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/impacto-y-tamiz-validacion.md
+resumen: goals/pdc-preparar-b1 · fila 2 del tablero de relevos - Specs: impacto-reimport-presupuesto · tamiz-presupuesto - Plan…
+---
+
 # Ola 1 · Frente B — Impacto al recargar el presupuesto + tamiz y cifras honestas · bitácora de validación
 
 - **Fecha:** 2026-07-29

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/plan-3-navegacion.md
+resumen: Que el módulo viva dentro del shell del sistema de diseño y que sus tablas dejen de estar apiladas una debajo de otra. Cumple f26–f29.
+---
+
 # Plan 3 — Rediseño de navegación — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) o superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [datos]
+fuente: docs/checklist-cutover-shared-schema.md
+resumen: Ejecutar el cambio de tablas por prefijo ({proyecto}) a tablas compartidas con projectid, sin tablas de reporteria persistida, con minimo riesgo operativo.
+---
+
 # Checklist Operativo de Cutover a Shared Schema
 
 ## Objetivo

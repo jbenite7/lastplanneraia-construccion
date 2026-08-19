@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-4-subcontratistas.md
+resumen: Que /subcontratistas use el shell sidebar canónico en ambos estados, suprimiendo su navbar superior legacy. Es casi idéntico a Profesionales.
+---
+
 # Task 4 — Migrar Subcontratistas al shell sidebar
 
 ## Objetivo

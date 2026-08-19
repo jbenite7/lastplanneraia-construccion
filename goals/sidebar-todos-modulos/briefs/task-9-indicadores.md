@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/briefs/task-9-indicadores.md
+resumen: Que /indicadores use el shell sidebar canónico en ambos estados, suprimiendo su navbar superior legacy, y reanclando el embed de Power BI para que coexista con…
+---
+
 # Task 9 — Migrar Indicadores al shell sidebar
 
 ## Objetivo

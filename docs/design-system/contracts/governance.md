@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/contracts/governance.md
+resumen: Este contrato hace del repositorio la autoridad del Design System AIA. El catálogo, los manifiestos, las decisiones, los tokens, los componentes y sus pruebas…
+---
+
 # Contrato de gobierno global
 
 Este contrato hace del repositorio la autoridad del Design System AIA. El

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/ds-f0-auditoria/goal.md
+resumen: Producir el inventario total del design system —módulo por módulo, objeto por objeto, variable por variable, escenario por escenario— en…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: ds-f0-auditoria
 

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/bug-coloreado-severidad/goal.md
+resumen: Averiguar por qué la tabla de /programacion-intermedia no ordena el color por severidad de «Crítico» a «Sin problema», como espera el usuario, y demostrarlo…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: bug-coloreado-severidad
 

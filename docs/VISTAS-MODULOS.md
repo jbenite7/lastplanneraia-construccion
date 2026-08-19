@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-04-07
+fuente: docs/VISTAS-MODULOS.md
+resumen: Catálogo de Módulos de Vistas — Last Planner AIA
+---
+
 # Catálogo de Módulos de Vistas — Last Planner AIA
 
 > Fuente de verdad para la UI del proyecto. Describe cada módulo de vistas, su propósito, dependencias, estilo visual y arquitectura técnica.

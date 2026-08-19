@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/specs/F2-superficies-agregador.md
+resumen: Que las siete superficies hoy marcadas inventory-only pasen a tener manifiesto, presupuesto y evidencia propios, de modo que ninguna pueda regresar a claro sin…
+---
+
 # F2 · Las siete superficies del agregador
 
 **Depende de:** F1. Puede correr en paralelo con F3.

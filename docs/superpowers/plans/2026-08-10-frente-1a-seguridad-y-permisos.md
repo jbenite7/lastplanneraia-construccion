@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-10
+areas: [rbac]
+fuente: docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos.md
+resumen: Cerrar los 13 hallazgos de seguridad y permisos del backlog — los únicos donde un fallo no molesta, sino que permite lo que no debe o esconde lo que sí.
+---
+
 # Frente 1 · Tanda 1A — Seguridad y permisos: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

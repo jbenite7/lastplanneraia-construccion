@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-plan-de-compras.md
+resumen: Módulo · Plan de Compras v2
+---
+
 # Módulo · Plan de Compras v2
 
 **Estado declarado:** `pilot` (`plan-compras-v2.json`) · **Pantalla:** `/plan-compras`

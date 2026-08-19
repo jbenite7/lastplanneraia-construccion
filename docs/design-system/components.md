@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/components.md
+resumen: Catalogo de componentes aia-*: superficies, controles y estados, con la clase canonica de cada uno.
+---
+
 # Componentes AIA
 
 ## Superficies

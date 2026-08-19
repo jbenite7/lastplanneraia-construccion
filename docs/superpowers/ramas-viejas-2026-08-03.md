@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/ramas-viejas-2026-08-03.md
+resumen: Censo de ramas viejas — 2026-08-03
+---
+
 # Censo de ramas viejas — 2026-08-03
 
 **Realizado:** 2026-08-03 tras cierre dark mode fases 0–3 (Task 3)  

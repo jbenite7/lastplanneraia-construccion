@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-buttons-important-leyenda.md
+resumen: Medido sobre f1f5bd87. 41 !important en 7 reglas: 25 en el chip, 16 en .indicator y .count-badge.
+---
+
 # Plan — los `!important` de `.pdc-legend-item`
 
 Spec: [2026-08-11-buttons-important-leyenda-design.md](../specs/2026-08-11-buttons-important-leyenda-design.md)

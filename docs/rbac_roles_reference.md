@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+areas: [rbac]
+fuente: docs/rbac_roles_reference.md
+resumen: Este documento establece la definición oficial de los roles canónicos del sistema Last Planner AIA tras la migración a la arquitectura RBAC moderna (Fase 1…
+---
+
 # Referencia de Roles y Permisos RBAC (Moderno)
 
 Este documento establece la definición oficial de los roles canónicos del sistema Last Planner AIA tras la migración a la arquitectura RBAC moderna (Fase 1 completada en Base de Datos).

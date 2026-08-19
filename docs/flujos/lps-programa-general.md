@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/lps-programa-general.md
+resumen: Escenarios PG- y CRO-. La línea base del proyecto: qué actividades hay, cuándo deberían pasar, y cómo se actualiza cuando la obra se mueve.
+---
+
 # Biblia · Cascada LPS · Programa General y actualización del cronograma
 
 Escenarios `PG-*` y `CRO-*`. La línea base del proyecto: qué actividades hay, cuándo deberían pasar,

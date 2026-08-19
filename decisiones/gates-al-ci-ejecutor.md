@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/gates-al-ci-ejecutor.md
+resumen: Decisiones encoladas — frente gates-al-ci (Fase F-AB), rol ejecutor
+---
+
 # Decisiones encoladas — frente `gates-al-ci` (Fase F-AB), rol ejecutor
 
 ## D-1 · ESCALADA (bloqueante, ya enviada) — el static del CI lleva en rojo desde el 2026-07-17

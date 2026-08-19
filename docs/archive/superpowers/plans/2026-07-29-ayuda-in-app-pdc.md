@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-ayuda-in-app-pdc.md
+resumen: Que cualquiera que entre a una pantalla del Plan de Compras pueda responderse solo «qué hace esto, qué tengo que hacer yo y qué pasa después», sin preguntarle…
+---
+
 # Ayuda dentro de la aplicación (PDC v2) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

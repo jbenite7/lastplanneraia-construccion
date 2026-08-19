@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/plan-2-funcionalidad.md
+resumen: Deshacer un amarre y cambiar de frente sin perder al responsable, elegir a mano cuál versión del presupuesto es la oficial, ver el presupuesto y el comparador…
+---
+
 # Plan 2 — Lo que falta poder hacer — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

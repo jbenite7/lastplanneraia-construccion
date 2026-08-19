@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-31
+areas: [proceso]
+fuente: goals/cierre-dark-mode-y-tablas/goal.md
+resumen: Terminar el dark mode que quedó abierto y hacer que las tres librerías de tabla de la aplicación —Handsontable, DataTables y AG Grid— se vean como una sola…
+---
+
 # Goal — Cierre de dark mode y ajuste de tablas
 
 **Slug:** `cierre-dark-mode-y-tablas`

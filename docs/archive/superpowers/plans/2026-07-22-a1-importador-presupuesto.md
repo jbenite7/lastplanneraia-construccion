@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-22
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-22-a1-importador-presupuesto.md
+resumen: Importar el presupuesto Excel (hoja Presupuesto) a 3 tablas MySQL por projectid en lps-aia, con flujo preview→confirmar, versionado con única activa…
+---
+
 # Fase A1: Importador de Presupuesto — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

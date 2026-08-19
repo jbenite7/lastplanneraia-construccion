@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/lps-aprendizaje.md
+resumen: Escenarios APR-. CNP, CNC y CIC: por qué una actividad no llegó a programarse, por qué no se cumplió, y cómo se califica a quien la ejecuta. Cierran el ciclo y…
+---
+
 # Biblia · Cascada LPS · Los tres submódulos de aprendizaje
 
 Escenarios `APR-*`. CNP, CNC y CIC: por qué una actividad no llegó a programarse, por qué no se

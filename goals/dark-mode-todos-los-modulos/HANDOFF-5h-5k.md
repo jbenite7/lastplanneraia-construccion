@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/HANDOFF-5h-5k.md
+resumen: Traspaso de la fase F1 de dark-mode-todos-los-modulos: que leer y en que orden para retomar el trabajo desde el ledger.
+---
+
 Continúo la fase F1 del goal `dark-mode-todos-los-modulos` en /Volumes/Crucial X6/Developer/lps-aia.
 
 LEE PRIMERO, EN ESTE ORDEN:

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/cierre-dark-mode-y-tablas/specs/diseno.md
+resumen: Este documento es la fuente de la que cuelgan los specs de cada fase.
+---
+
 # Diseño validado — cierre de dark mode y ajuste de tablas
 
 **Fecha:** 2026-07-30 · **Estado:** aprobado por el usuario, sección por sección.

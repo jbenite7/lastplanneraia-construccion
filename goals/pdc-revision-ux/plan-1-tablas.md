@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-revision-ux/plan-1-tablas.md
+resumen: Que las tablas del módulo dejen de recortar texto, se ajusten al contenido, se editen con un solo clic, y que las pantallas señalen el trabajo pendiente en vez…
+---
+
 # Plan 1 — Arreglos de tabla — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

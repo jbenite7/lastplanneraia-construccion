@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-06
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md
+resumen: Hacer reales en el servidor cuatro reglas que hoy existen solo como declaración o solo en el navegador: CSRF en seis módulos que mutan datos, CSRF en la…
+---
+
 # Cierre de los hallazgos de seguridad de la biblia de flujos — diseño
 
 - **Fecha:** 2026-08-06

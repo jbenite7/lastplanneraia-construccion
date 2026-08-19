@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-06
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-08-06-pdc-filtros-y-buscadores-design.md
+resumen: Módulo: Plan de Compras v2 (pdc-app/, ver docs/pdc-v2.md)
+---
+
 # Plan de Compras: filtros de columna, buscadores rápidos y selects buscables
 
 Fecha: 2026-08-06

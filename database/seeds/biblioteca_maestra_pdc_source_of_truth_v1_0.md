@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-07
+fuente: database/seeds/biblioteca_maestra_pdc_source_of_truth_v1_0.md
+resumen: Biblioteca Maestra PDC — Source of Truth v1.0 (Coverage Improved)
+---
+
 # Biblioteca Maestra PDC — Source of Truth v1.0 (Coverage Improved)
 
 ## Resumen Ejecutivo

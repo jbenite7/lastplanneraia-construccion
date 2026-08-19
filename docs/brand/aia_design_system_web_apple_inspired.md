@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/brand/aia_design_system_web_apple_inspired.md
+resumen: AIA Web Design System — Apple-inspired
+---
+
 # AIA Web Design System — Apple-inspired
 
 **Versión:** 1.0.0

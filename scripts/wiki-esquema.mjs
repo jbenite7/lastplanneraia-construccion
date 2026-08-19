@@ -48,7 +48,11 @@ export function bloqueFrontmatter(texto) {
 
 /** Valor escalar de un campo del frontmatter, o `undefined` si no está o está vacío. */
 export function campo(fm, clave) {
-  const v = fm.match(new RegExp(`^${clave}:\\s*(.*)$`, 'm'))?.[1]?.trim();
+  // `[^\\S\\n]*` y no `\\s*`: `\\s` incluye el salto de línea, así que con `\\s*(.*)$` un campo
+  // vacío se comía su propio salto y devolvía como valor **la línea siguiente**. Medido el
+  // 2026-08-19 sobre trece archivos con `fecha:` vacío, que el lint reportó como
+  // «fecha no ISO: areas: [design-system]». El defecto venía heredado del lint v1.
+  const v = fm.match(new RegExp(`^${clave}:[^\\S\\n]*(.*)$`, 'm'))?.[1]?.trim();
   return v ? v : undefined;
 }
 

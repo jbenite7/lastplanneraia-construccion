@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: goals/dark-mode-todos-los-modulos/specs/F1-modales-huerfanos.md
+resumen: Que los seis modales que el tramo 5c dejó combinando superficie oscura con tinta oscura (o al revés) queden homologados al tema operativo dark, arreglando cada…
+---
+
 # F1 · Seis modales cuya piel vive fuera del tramo 5c
 
 **Depende de:** tramo 5c (commit `c4fe9a4`, shell `.aia-modal` a oscuro).

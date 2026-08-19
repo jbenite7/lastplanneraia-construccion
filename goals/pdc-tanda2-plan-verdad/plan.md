@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-28
+areas: [pdc]
+fuente: goals/pdc-tanda2-plan-verdad/plan.md
+resumen: For agentic workers. Repo: /Volumes/Crucial X6/Developer/plan-de-compras, rama pdc-revision-ux. Bundle al worktree /Volumes/Crucial…
+---
+
 # Plan — Tanda 2: que el Plan de compras diga la verdad
 
 For agentic workers. Repo: `/Volumes/Crucial X6/Developer/plan-de-compras`, rama `pdc-revision-ux`.

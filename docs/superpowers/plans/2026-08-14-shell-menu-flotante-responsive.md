@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-14
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive.md
+resumen: Que por debajo de 1180 px la navegación deje de ocupar 240 px de ancho y pase a abrirse por botón sobre el contenido, sin tocar el comportamiento de escritorio…
+---
+
 # Menú flotante del shell bajo 1180 px: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil.md
+resumen: Que un escenario 390x844 declarado en un manifiesto produzca evidencia real o falle ruidosamente — hoy se declara, nadie lo captura y todos los gates dan verde.
+---
+
 # F2a-1 — Precondiciones de la evidencia móvil: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-selector-escalamientos-indicadores.md
+resumen: Tres módulos pilot sin deuda de cascada ni de color. Se registran como lo que son —la otra mitad del mapa— con la única salvedad que cada uno tiene.
+---
+
 # Módulos · Selector de proyectos, Escalamientos e Indicadores
 
 Tres módulos `pilot` sin deuda de cascada ni de color. Se registran como lo que son —**la otra

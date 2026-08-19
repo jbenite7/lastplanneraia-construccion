@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system, lps]
+fuente: docs/design-system/auditoria/modulos/ds-f0-programacion-semanal.md
+resumen: Módulo · Programación Semanal (y sus tres submódulos)
+---
+
 # Módulo · Programación Semanal (y sus tres submódulos)
 
 **Estado declarado:** `pilot` (`programacion-semanal.json`) · **Pantallas:** `/programacion-semanal`

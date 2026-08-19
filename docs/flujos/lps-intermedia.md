@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/lps-intermedia.md
+resumen: Escenarios PI-. La ventana de medio plazo: bajar actividades del programa general y levantarles restricciones antes de que lleguen a la semana. Es donde se…
+---
+
 # Biblia · Cascada LPS · Programación Intermedia
 
 Escenarios `PI-*`. La ventana de medio plazo: bajar actividades del programa general y levantarles

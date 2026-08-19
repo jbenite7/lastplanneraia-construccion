@@ -1,3 +1,13 @@
+---
+capa: esquema
+tipo: guia
+estado: vigente
+fecha: 2026-08-03
+tags: [generado]
+fuente: docs/wiki-operacion.md
+resumen: Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes, no dentro de la wiki que describe. CLAUDE.md lleva un…
+---
+
 # Cómo se opera la wiki (esquema v2)
 
 Manual de la memoria del proyecto. Lo puede leer y editar una persona: vive en la capa de fuentes,
@@ -97,10 +107,15 @@ Cuatro decisiones del lint v2 que conviene conocer antes de discutir con él:
    case con dónde vive (la plantilla de una spec declara `capa: fuente` y vive en `memoria/`), ni
    que esté enlazada desde el índice. La exención cuelga del tag y no de la carpeta: mover
    `memoria/templates/` no debe cambiar cómo se mide.
-4. **A una fuente no se le exige `resumen`.** Lo obligatorio en fuente es lo que la hace filtrable:
-   `tipo`, `estado` y `fecha`. El censo del backfill mide 217 fuentes cuyo `# título` va seguido de
-   otro encabezado, sin párrafo del que deducir un resumen; exigirlo convertiría el backfill en 217
-   resúmenes escritos por compromiso, y uno escrito por compromiso miente igual que uno vacío.
+4. **A una fuente se le exige `resumen` igual que a una página de wiki.** Es la columna «De qué
+   va» del catálogo, y 391 filas con esa columna vacía no sirven para filtrar nada.
+
+   Costó decidirlo porque la primera medida decía otra cosa. Con una sola regla de deducción
+   quedaban **222** fuentes sin resumen, y eso hacía ver el backfill como 222 textos escritos a
+   mano. Medido el 2026-08-19, esos 222 eran un fallo de la deducción y no del repositorio: los
+   planes abren con una cita para agentes y la regla se paraba justo antes del `**Goal:**` que era
+   el resumen buscado. Con la cascada de cuatro respaldos quedan **17**. La lección, que vale más
+   que el número: antes de aceptar que algo es caro, comprueba si lo caro es la medida.
 
 ### `veracidad` — la verdad
 
@@ -266,6 +281,26 @@ Deduce de la ruta y del propio texto: `capa`, `tipo`, `estado`, `fecha` (del nom
 lo lleva, si no del alta en `git log`), `areas`, `tags` y `resumen`. **Cuando no puede deducir, deja
 el campo vacío y lo cuenta en el informe** — nunca inventa un valor. Es idempotente: solo añade las
 claves que faltan, así que correrlo dos veces no cambia nada la segunda.
+
+El `resumen` sale de una **cascada de cuatro respaldos**, de más informativo a menos. Ninguno
+inventa nada: los cuatro toman palabras que el propio documento ya escribió.
+
+Medido el 2026-08-19 sobre 412 fuentes. Las cifras envejecen con el repo; la que importa y se
+mantuvo estable al crecer el árbol es la última fila.
+
+| # | De dónde | Cubre | Para qué documento es |
+|---|---|---|---|
+| 1 | el párrafo tras el `# título` | 190 | el caso normal |
+| 2 | la línea `**Goal:** / **Objetivo:**` | 77 | los planes, que abren con una cita para agentes |
+| 3 | el párrafo bajo `## Objetivo` | 44 | los `goal.md` y `facts.md` de los frentes |
+| 4 | el propio `# título` | 84 | último recurso |
+| — | nada; hueco visible | 17 | los rellena una persona |
+
+El informe cuenta cuántos salieron de cada respaldo, para que se vea de un vistazo cuántos son
+prosa de verdad (311) y cuántos son solo el título (84). El respaldo 4 es el más pobre y aun así
+vale la pena: en el catálogo la otra columna es el nombre del archivo, que muestra el slug
+(`2026-07-20-sidebar-canonico-laboratorio`), así que el título añade legibilidad en vez de
+repetirla. Un título de una o dos palabras no añade nada y se descarta — mejor un hueco visible.
 
 ### Las plantillas
 

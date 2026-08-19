@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-a42-frentes-cobertura/coordinacion-sesiones.md
+resumen: Las cuatro tareas corren a la vez sobre un worktree (/Volumes/Crucial X6/Developer/lps-aia-pdc), un Docker (8091) y una base MySQL. Este archivo registra lo…
+---
+
 # Coordinación con las otras tres sesiones PDC
 
 Las cuatro tareas corren a la vez sobre **un** worktree (`/Volumes/Crucial X6/Developer/lps-aia-pdc`),

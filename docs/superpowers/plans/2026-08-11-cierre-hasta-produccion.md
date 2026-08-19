@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-cierre-hasta-produccion.md
+resumen: llevar el repositorio a ocho gates verdes, cola de decisiones vacía y el trabajo publicado en producción.
+---
+
 # Plan de cierre hasta producción
 
 > **Para sesiones de ejecución:** SUB-SKILL OBLIGATORIA — usa `superpowers:executing-plans` para

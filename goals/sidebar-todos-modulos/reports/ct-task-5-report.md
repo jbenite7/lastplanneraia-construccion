@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/ct-task-5-report.md
+resumen: Control Tower — Task 5: registrar las 8 rutas /bi/ en foundation-shell.json
+---
+
 # Control Tower — Task 5: registrar las 8 rutas /bi/* en foundation-shell.json
 
 ## Status

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones.md
+resumen: Ejecutar las 54 decisiones del registro de dark mode (5 fases F) entrelazadas con el journey improve-app (6 tasks IA-), hasta que ninguna entrada quede…
+---
+
 # Campaña de cierre de dark mode — Plan de implementación
 
 > # ✅ CAMPAÑA CERRADA — 2026-08-07 · 38 de 38

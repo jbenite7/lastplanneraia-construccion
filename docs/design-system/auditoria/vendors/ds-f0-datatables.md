@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/vendors/ds-f0-datatables.md
+resumen: Mismo patrón que Handsontable y menor tamaño: 26 de los 48 selectores del vendor no los alcanza ninguna hoja nuestra.
+---
+
 # Vendor · DataTables
 
 Mismo patrón que Handsontable y menor tamaño: **26 de los 48 selectores del vendor no los alcanza

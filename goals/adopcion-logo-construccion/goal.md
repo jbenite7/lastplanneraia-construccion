@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/adopcion-logo-construccion/goal.md
+resumen: Adoptar el ícono nuevo del kit Construcción en las cuatro superficies de marca visibles (favicon, sidebar del shell, login y Admin), con wordmark como texto…
+---
+
 # Goal: Adopción del logo «Last Planner · línea Construcción»
 
 **Objetivo:** Adoptar el ícono nuevo del kit Construcción en las cuatro superficies de marca

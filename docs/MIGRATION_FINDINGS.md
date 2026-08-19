@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-09
+fuente: docs/MIGRATION_FINDINGS.md
+resumen: 10 módulos pendientes → 0 módulos pendientes - Tiempo estimado: 2-3 semanas (1-2 módulos/día considerando complejidad) - Reducción de código: ~120 líneas…
+---
+
 # Hallazgos y Patrones de Migración a Front Controller
 
 > **Última actualización:** 2026-02-04  

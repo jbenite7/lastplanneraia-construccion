@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-23
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-23-a25-importador-maestro-sinco-design.md
+resumen: Diseño: Fase A2.5 — Importador del maestro SINCO
+---
+
 # Diseño: Fase A2.5 — Importador del maestro SINCO
 
 **Fecha:** 2026-07-23

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: goals/segmentacion-entrypoint-css/validation-log.md
+resumen: Validation log — segmentación entrypoint CSS
+---
+
 # Validation log — segmentación entrypoint CSS
 
 ## Baseline (Task 1)

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: spec
+estado: cerrado
+fecha: 2026-07-22
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/specs/2026-07-22-semanas-sidebar-design.md
+resumen: El shell sidebar (DS-027) reemplazó al navbar legacy, pero perdió el dropdown "Semanas del Proyecto": la lista de semanas con los botones de crear y eliminar…
+---
+
 # Semanas del Proyecto en el sidebar canónico: flyout de gestión con crear/eliminar
 
 **Fecha:** 2026-07-22 · **Estado:** aprobado por el usuario (chat) · **Alcance:** desktop ≥1180px, dark

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/bug-coloreado-severidad/diagnostico.md
+resumen: Diagnóstico — el coloreado en cascada por severidad en /programacion-intermedia
+---
+
 # Diagnóstico — el coloreado en cascada por severidad en /programacion-intermedia
 
 **Frente:** `bug-coloreado-severidad` · **Alimenta:** DS-F0 · **Spec:**

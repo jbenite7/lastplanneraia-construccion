@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-25
+fuente: docs/css-desacoplamiento-plan.md
+resumen: Objetivo: Hacer que un refresh de marca se resuelva principalmente desde CSS, sin tocar lógica ni romper el legacy/frontend ni el admin. Principio rector: cero…
+---
+
 # Plan de Implementación: Desacoplamiento Visual CSS
 
 **Objetivo**: Hacer que un refresh de marca se resuelva principalmente desde CSS, sin tocar lógica ni romper el legacy/frontend ni el admin.  

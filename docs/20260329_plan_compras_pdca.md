@@ -1,3 +1,12 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-03-29
+fuente: docs/20260329_plan_compras_pdca.md
+resumen: Este documento es la fuente de trabajo para esta sesion.
+---
+
 # Plan de ejecucion - Plan de Compras
 
 Este documento es la fuente de trabajo para esta sesion.

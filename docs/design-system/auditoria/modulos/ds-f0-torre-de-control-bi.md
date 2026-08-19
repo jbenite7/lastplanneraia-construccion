@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system, rbac, bi]
+fuente: docs/design-system/auditoria/modulos/ds-f0-torre-de-control-bi.md
+resumen: Módulo · Torre de Control (BI)
+---
+
 # Módulo · Torre de Control (BI)
 
 **Estado declarado:** `pilot` (`bi-runtime.json`) · **Pantallas:** ocho (`/bi/control-tower`,

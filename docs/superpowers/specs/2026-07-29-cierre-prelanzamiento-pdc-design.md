@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design.md
+resumen: goals/pdc-preparar-b1 - Origen: el comité mandó «arreglar los bugs que tengas identificados» antes de lanzar. En la reunión no se nombró ninguno, así que este…
+---
+
 # PDC v2 — Cierre pre-lanzamiento: los pendientes que bloquean decir «verificado» — Design
 
 - **Fecha:** 2026-07-29

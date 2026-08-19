@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/bug-coloreado-severidad/propuesta-arreglo-3-estados.md
+resumen: Pedido del usuario, 2026-08-18 (botón del panel): «Arreglar solo los 3 estados mal asignados en el mapeo de styles.css:3664-3725, sin rediseñar la escala de…
+---
+
 # Propuesta — arreglar los 3 estados mal asignados en `styles.css:3664-3725`
 
 **Pedido del usuario, 2026-08-18** (botón del panel): *«Arreglar solo los 3 estados mal asignados en

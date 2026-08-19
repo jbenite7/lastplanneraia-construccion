@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: goals/biblia-t4-soporte/goal.md
+resumen: Que los módulos que alimentan la cascada sin gobernarla —contratos, listado de actividades, subcontratistas, profesionales, control de cambios y escalamientos—…
+---
+
 # Goal — Biblia de flujos · T4 soporte
 
 **Slug:** `biblia-t4-soporte`

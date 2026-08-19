@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-11
+areas: [design-system]
+fuente: docs/design-system/manifests/programacion-intermedia.goldens.md
+resumen: Un golden regenerado sin constancia es indistinguible de uno regenerado para forzar un verde. Este archivo existe para que no lo sea. Acompaña a…
+---
+
 # Procedencia de los goldens de `programacion-intermedia`
 
 Un golden regenerado sin constancia es indistinguible de uno regenerado para forzar un verde. Este

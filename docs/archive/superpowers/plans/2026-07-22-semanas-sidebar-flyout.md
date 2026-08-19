@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-22
+areas: [proceso]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-22-semanas-sidebar-flyout.md
+resumen: Ítem "Semanas del Proyecto" en el sidebar canónico con flyout de gestión (lista de semanas + crear + eliminar) usando diálogos del design system, contra los…
+---
+
 # Flyout "Semanas del Proyecto" con crear/eliminar — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

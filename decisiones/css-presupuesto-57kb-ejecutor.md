@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/css-presupuesto-57kb-ejecutor.md
+resumen: Decisiones pendientes — frente css-presupuesto-57kb
+---
+
 <!-- cas:cita-textual — registro de hallazgos: cita comandos defectuosos tal como se dieron -->
 # Decisiones pendientes — frente css-presupuesto-57kb
 

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [admin]
+fuente: goals/dark-mode-todos-los-modulos/specs/F4-admin.md
+resumen: F4 · Panel admin
+---
+
 # F4 · Panel admin
 
 **Depende de:** F0. Puede correr en paralelo con F1 — `admin/` no carga `styles.css`.

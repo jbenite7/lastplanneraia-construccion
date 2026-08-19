@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/ds-f0-auditoria-ejecutor.md
+resumen: Decisiones pendientes — frente ds-f0-auditoria
+---
+
 <!-- cas:cita-textual — registro de hallazgos: cita comandos defectuosos tal como se dieron -->
 # Decisiones pendientes — frente ds-f0-auditoria
 

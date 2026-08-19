@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/escala-severidad.md
+resumen: Esto no fija la escala del producto. Fijar vocabulario y escalas es DS-F1, y arranca con brainstorming con el usuario. Lo que declara este archivo es con qué…
+---
+
 # La escala con la que se clasifica aquí
 
 **Esto no fija la escala del producto.** Fijar vocabulario y escalas es **DS-F1**, y arranca con

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-02
+areas: [proceso]
+fuente: goals/sidebar-todos-modulos/reports/task-8-report.md
+resumen: Task 8 — Subvistas CIC/CNC/CNP al shell sidebar
+---
+
 # Task 8 — Subvistas CIC/CNC/CNP al shell sidebar
 
 ## Status

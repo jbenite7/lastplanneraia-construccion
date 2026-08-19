@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/evidence/censo-consumidores-pdc-v1.md
+resumen: goals/pdc-preparar-b1 · tarea 10 (C1) - Spec: docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design.md - Cubre: puntos 1 y 2 de la condición de hecho…
+---
+
 # C1 · Censo de consumidores del PDC v1 y medición de sus datos
 
 - **Fecha:** 2026-07-29

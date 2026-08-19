@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-07
+areas: [proceso]
+fuente: goals/reapertura-movil-y-tema-claro/goal.md
+resumen: Devolver al producto los alcances que el repositorio se había prohibido —móvil, tablet y un tema claro— empezando por los contratos, siguiendo por los gates y…
+---
+
 # Goal: Reapertura de móvil/tablet y tema claro
 
 **Objetivo:** Devolver al producto los alcances que el repositorio se había prohibido —móvil,

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-02
+areas: [rbac, bi]
+fuente: goals/bi-control-tower-gemini/goal.md
+resumen: Implementación y validación del dashboard de la Torre de Control BI (Programa General, Radar de Productividad/Eficiencia/PAC y Cronograma de Avance).
+---
+
 # Goal — BI Control Tower / Programa General (Radar y Cronograma)
 
 **Slug:** `bi-control-tower-gemini`

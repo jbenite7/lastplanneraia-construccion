@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-04
+areas: [proceso]
+fuente: goals/biblia-t5-lectura/goal.md
+resumen: Que los módulos de consulta —indicadores y Torre de Control BI— tengan sus escenarios descritos, verificados con cita, y los críticos con prueba ejecutable.
+---
+
 # Goal — Biblia de flujos · T5 lectura
 
 **Slug:** `biblia-t5-lectura`

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps, bi]
+fuente: docs/flujos/lectura-bi.md
+resumen: Escenarios BI-. Los módulos de consulta: qué cifras se muestran, a quién, y de qué proyectos.
+---
+
 # Biblia · Lectura · Indicadores y Torre de Control BI
 
 Escenarios `BI-*`. Los módulos de consulta: qué cifras se muestran, a quién, y de qué proyectos.

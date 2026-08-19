@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-04
+areas: [pdc]
+fuente: docs/superpowers/plans/2026-08-04-biblia-t3-pdc.md
+resumen: Que la cadena presupuesto → maestro de insumos → paquetes de contratación → plan con fechas → seguimiento tenga cada uno de sus escenarios descrito, verificado…
+---
+
 # Biblia de flujos · Tanda T3 (PDC — Plan de Compras v2) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci.md
+resumen: Plan — runtime-budgets al CI (andamio)
+---
+
 # Plan — runtime-budgets al CI (andamio)
 
 **Spec:** `docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design.md` · **Estado:** aprobado

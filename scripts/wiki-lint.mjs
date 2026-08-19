@@ -54,6 +54,15 @@ for (const f of vault) {
 const hallazgos = [];
 const anota = (cat, archivo, detalle) => hallazgos.push(`${cat} ${archivo}: ${detalle}`);
 
+// Archivos que un contrato congela por sha256: se leen, no se les exige nada. Ver
+// `wiki-frontmatter.mjs`, que los excluye por la misma razón y desde el mismo manifiesto.
+const CONGELADOS = (() => {
+  try {
+    const m = JSON.parse(readFileSync(join(RAIZ, 'docs/design-system/manifests/goal-provenance.json'), 'utf8'));
+    return new Set([...(m.canonicalSources ?? []), ...(m.historicalSources ?? [])].map((s) => s.path));
+  } catch { return new Set(); }
+})();
+
 const md = vault.filter((f) => extname(f) === '.md');
 const paginas = md.filter((f) => deducirCapa(f) === 'wiki');
 const fuentes = md.filter((f) => deducirCapa(f) !== 'wiki');
@@ -115,16 +124,22 @@ let fuentesConFm = 0;
 for (const rel of fuentes) {
   const fm = bloqueFrontmatter(readFileSync(join(RAIZ, rel), 'utf8'));
   if (fm === null || !campo(fm, 'capa')) {
-    if (ESTRICTO) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
+    // Un archivo que un contrato congela por hash no puede declararse, y exigírselo en estricto
+    // pondría en rojo a quien cumple el contrato. Ver CONGELADOS en `wiki-frontmatter.mjs`.
+    if (ESTRICTO && !CONGELADOS.has(rel)) anota('FUENTE', rel, 'no declara `capa:`; el backfill no ha pasado por aquí');
     continue;
   }
   fuentesConFm++;
-  // A una fuente se le exige `resumen` — la columna del catálogo — solo si ya lo trae: el censo
-  // del backfill mide 217 fuentes cuyo H1 va seguido de otro encabezado, sin párrafo del que
-  // deducirlo. Exigirlo de entrada convertiría la Tanda 2 en 217 resúmenes escritos a mano, y un
-  // resumen escrito por compromiso miente igual que uno vacío. Lo obligatorio de una fuente es lo
-  // que la hace filtrable: `tipo`, `estado` y `fecha`.
-  for (const f of revisarFrontmatter(fm, { rel, obligatorios: ['tipo', 'estado', 'fecha'] })) {
+  // A una fuente se le exige `resumen` igual que a una página de wiki: es la columna «De qué va»
+  // del catálogo, y un catálogo de 391 filas con esa columna vacía no sirve para filtrar nada.
+  //
+  // Se pudo exigir porque el coste dejó de ser el que parecía. Con una sola regla de deducción
+  // quedaban 222 fuentes sin resumen, y eso hacía ver la Tanda 2 como 222 textos escritos a mano.
+  // Medido el 2026-08-19, esos 222 eran un fallo de la deducción y no del repositorio: los planes
+  // abren con una cita (`> **For agentic workers:**`) y la regla se paraba justo antes del
+  // `**Goal:**` que era el resumen buscado. Con la cascada de cuatro respaldos de
+  // `wiki-frontmatter.reglas.mjs` quedan 17. Ese es el coste real de esta línea.
+  for (const f of revisarFrontmatter(fm, { rel, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] })) {
     anota('FUENTE', rel, f.detalle);
   }
 }

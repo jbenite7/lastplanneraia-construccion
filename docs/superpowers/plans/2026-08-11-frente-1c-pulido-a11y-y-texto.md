@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-11
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto.md
+resumen: Cerrar los 16 hallazgos abiertos de pulido visual, accesibilidad y texto — y con ellos el Frente 1 entero.
+---
+
 # Frente 1 · Tanda 1C — Pulido visual, accesibilidad y texto: plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

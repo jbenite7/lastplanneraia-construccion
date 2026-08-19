@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-22-lab-colapsado-primitiva.md
+resumen: Mover el pulido del rail colapsado del scope del shell (body.aia-shell--sidebar en shell-sidebar.css) al componente canónico (navigation.css), y adoptarlo en…
+---
+
 # Colapsado del sidebar como primitiva canónica — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

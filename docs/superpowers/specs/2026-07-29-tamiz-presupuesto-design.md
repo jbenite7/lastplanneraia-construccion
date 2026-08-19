@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-29
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-29-tamiz-presupuesto-design.md
+resumen: goals/pdc-preparar-b1 - Origen: Comité del 2026-07-29 — dos observaciones del dueño del producto hechas en vivo, mirando Da Porto. - Estado: implementado y en…
+---
+
 # PDC v2 — El presupuesto se explica solo: tamiz y cifras honestas — Design
 
 - **Fecha:** 2026-07-29

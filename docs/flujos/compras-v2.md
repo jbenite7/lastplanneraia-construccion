@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/compras-v2.md
+resumen: Escenarios PDC-. La cadena presupuesto → maestro de insumos → paquetes de contratación → subpaquetes → plan con fechas → seguimiento.
+---
+
 # Biblia · Plan de Compras v2
 
 Escenarios `PDC-*`. La cadena presupuesto → maestro de insumos → paquetes de contratación →

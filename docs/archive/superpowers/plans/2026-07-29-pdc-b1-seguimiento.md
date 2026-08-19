@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: plan
+estado: cerrado
+fecha: 2026-07-29
+areas: [pdc]
+tags: [archivo]
+fuente: docs/archive/superpowers/plans/2026-07-29-pdc-b1-seguimiento.md
+resumen: Que cada paso de contratación de cada paquete pueda registrar cuándo ocurrió de verdad, se vea junto a lo programado y junto a una proyección calculada al…
+---
+
 # PDC v2 · Fase B1 — Seguimiento al Plan de Compras — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-06-30
+areas: [datos]
+fuente: docs/global-tables-architecture.md
+resumen: Arquitectura De Tablas Globales
+---
+
 # Arquitectura De Tablas Globales
 
 ## Estado

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: goals/pdc-preparar-b1/estado-olas.md
+resumen: Estado de las olas — acta de cierre
+---
+
 # Estado de las olas — acta de cierre
 
 > **GOAL CERRADO el 2026-08-03.** Este archivo dejó de ser un tablero vivo. Nació para que diez sesiones

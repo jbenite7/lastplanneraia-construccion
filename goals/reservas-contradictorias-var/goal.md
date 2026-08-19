@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/reservas-contradictorias-var/goal.md
+resumen: Andamiaje del frente reservas-contradictorias-var: el goal.md se creo y su objetivo nunca se escribio.
+---
+
 # Frente: reservas-contradictorias-var
 
 ## Objetivo

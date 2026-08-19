@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-07-30
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-07-30-dev-door-design.md
+resumen: Validar cambios en el navegador exige una sesión autenticada. Hoy la única forma de obtenerla es teclear usuario y contraseña en /login. Eso tiene tres costes…
+---
+
 # Puerta de servicio de desarrollo (`DevDoor`)
 
 Fecha: 2026-07-30

@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: reporte
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+tags: [pendiente]
+fuente: decisiones/bug-coloreado-severidad-ejecutor.md
+resumen: ---
+---
+
 <!-- cas:cita-textual — registro de hallazgos: cita comandos defectuosos tal como se dieron -->
 # Decisiones pendientes — frente bug-coloreado-severidad
 

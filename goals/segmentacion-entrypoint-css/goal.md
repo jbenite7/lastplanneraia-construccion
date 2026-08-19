@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-07-22
+areas: [proceso]
+fuente: goals/segmentacion-entrypoint-css/goal.md
+resumen: Segmentar el entrypoint productivo public/css/aia-design-system.css en un núcleo sin vendors de grilla más adjuntos por vendor declarados en el manifiesto de…
+---
+
 # Segmentación del entrypoint CSS del design system
 
 Segmentar el entrypoint productivo `public/css/aia-design-system.css` en un núcleo sin vendors de grilla más adjuntos por vendor declarados en el manifiesto de cada superficie, de modo que ninguna superficie cargue CSS de vendors que no usa ni herede side-effects globales ajenos (en particular el bloqueo de scroll de documento de `handsontable-module.css`). El goal ataca por igual tres drivers: corrección (eliminar side-effects globales impuestos por vendors no usados), gobernanza (convertir el campo `vendors` de los manifiestos en contrato ejecutable validado por gate) y rendimiento (dejar de servir ~190 KB de CSS de grilla a superficies ligeras).

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-03
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-03-saneamiento-deudas-usabilidad.md
+resumen: cerrar las tres deudas de entorno y verificación que aparecieron ejecutando las cuatro primeras tareas del goal de usabilidad, antes de recorrer las 23…
+---
+
 # Saneamiento de las deudas abiertas del goal de usabilidad — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

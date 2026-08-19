@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-18
+areas: [proceso]
+fuente: goals/contrato-estados-modulo-fantasma/goal.md
+resumen: Retirar de docs/design-system/state-semantics.json —la autoridad del vocabulario de estados— el módulo programa-general-actualizar, que declaraba seis estados…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: contrato-estados-modulo-fantasma
 

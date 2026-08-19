@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-07-20
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio.md
+resumen: Crear en /internal/design-system la plantilla high-fi del sidebar canónico de AIA como reemplazo desktop del navbar, lista para una migración productiva…
+---
+
 # Sidebar canónico del laboratorio — Plan de implementación
 
 > **For agentic workers:** ejecutar por tareas y verificar cada checkpoint antes de continuar.

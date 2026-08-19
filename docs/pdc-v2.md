@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-29
+areas: [pdc]
+fuente: docs/pdc-v2.md
+resumen: Referencia del módulo PDC v2: modelo de dominio, fases A1–A4, decisiones de datos y las trampas ya medidas. Vive aquí y no en CLAUDE.md porque son 290 líneas…
+---
+
 # Plan de Compras (PDC) v2 — conocimiento del módulo
 
 Referencia del módulo PDC v2: modelo de dominio, fases A1–A4, decisiones de datos y las trampas ya
