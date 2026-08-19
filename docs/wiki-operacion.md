@@ -83,7 +83,7 @@ edad del último pase de `veracidad` (ver más abajo).
 **Comprueba y reporta; nunca corrige.** Y no comprueba la verdad: un verde no significa que la wiki
 sea correcta, solo que está bien formada.
 
-Tres decisiones del lint v2 que conviene conocer antes de discutir con él:
+Cuatro decisiones del lint v2 que conviene conocer antes de discutir con él:
 
 1. **`capa` y `tags` se validan solo si están.** Son opcionales a propósito mientras el backfill de
    las fuentes no haya terminado; exigirlos de golpe pondría en rojo cientos de archivos que nadie
@@ -91,7 +91,13 @@ Tres decisiones del lint v2 que conviene conocer antes de discutir con él:
 2. **`capa` tiene que coincidir con la que implica la ruta.** Una página de `memoria/` que se
    declarase `fuente` conseguiría que el lint dejara de mirarle el cuerpo — justo lo que no debe
    pasar.
-3. **A una fuente no se le exige `resumen`.** Lo obligatorio en fuente es lo que la hace filtrable:
+3. **Una página con `tags: [plantilla]` es un molde, no una página.** Se le comprueba el
+   vocabulario —un `tipo` inventado en un molde se copiaría a cada página que salga de él— y nada
+   más: ni sus huecos, ni el marcador `{{date:YYYY-MM-DD}}` que rellena Obsidian, ni que su `capa`
+   case con dónde vive (la plantilla de una spec declara `capa: fuente` y vive en `memoria/`), ni
+   que esté enlazada desde el índice. La exención cuelga del tag y no de la carpeta: mover
+   `memoria/templates/` no debe cambiar cómo se mide.
+4. **A una fuente no se le exige `resumen`.** Lo obligatorio en fuente es lo que la hace filtrable:
    `tipo`, `estado` y `fecha`. El censo del backfill mide 217 fuentes cuyo `# título` va seguido de
    otro encabezado, sin párrafo del que deducir un resumen; exigirlo convertiría el backfill en 217
    resúmenes escritos por compromiso, y uno escrito por compromiso miente igual que uno vacío.
@@ -231,6 +237,7 @@ más cómoda del mismo dato, nunca su único portador.
 | `scripts/wiki-arquitectura.mjs` | Genera las páginas de módulo desde el código. |
 | `scripts/wiki-registro.mjs` | Genera el catálogo del trabajo fechado de `docs/superpowers/`. |
 | `tests/wiki/*.test.mjs` | Pruebas de los módulos puros, con `node --test`. |
+| `memoria/templates/` | Un molde por `tipo` frecuente. Ver más abajo. |
 
 ```bash
 npm run test:wiki                                # pruebas de los módulos + lint
@@ -259,6 +266,20 @@ Deduce de la ruta y del propio texto: `capa`, `tipo`, `estado`, `fecha` (del nom
 lo lleva, si no del alta en `git log`), `areas`, `tags` y `resumen`. **Cuando no puede deducir, deja
 el campo vacío y lo cuenta en el informe** — nunca inventa un valor. Es idempotente: solo añade las
 claves que faltan, así que correrlo dos veces no cambia nada la segunda.
+
+### Las plantillas
+
+`memoria/templates/` tiene un molde por cada `tipo` que se escribe a menudo: `decision`, `trampa`,
+`concepto`, `spec` y `plan`. Los dos últimos son de capa fuente: los escribe una persona en
+`docs/superpowers/`, y la plantilla vive aquí solo porque aquí es donde Obsidian las busca.
+
+Cada molde lleva `tags: [plantilla]`, que es lo que lo exime del lint (ver más arriba). Su valor no
+está en el frontmatter —eso lo genera el backfill— sino en **las preguntas del cuerpo**: qué se
+descartó y por qué, qué desmentiría esta nota, cuánto costó la trampa. Son las que se olvidan
+cuando se escribe deprisa, y las que hacen que la nota sirva dentro de seis meses.
+
+Al añadir un molde nuevo: `tags: [plantilla]` y una entrada en esta lista. Si el molde no responde
+ninguna pregunta que no esté ya en otro, no hace falta.
 
 ### Las zonas generadas
 

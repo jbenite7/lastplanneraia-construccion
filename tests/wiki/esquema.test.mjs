@@ -106,3 +106,29 @@ test('capa presente tiene que coincidir con la que implica la ruta', () => {
 test('sin ruta, capa se valida contra el vocabulario pero no contra la ruta', () => {
   assert.deepEqual(revisarFrontmatter('capa: fuente'), []);
 });
+
+// ── Moldes (plantillas) ──────────────────────────────────────────────────────────────────────
+
+test('un molde no tiene que rellenar ningún campo obligatorio', () => {
+  assert.deepEqual(revisarFrontmatter('tipo: decision\nfecha:\nresumen:',
+    { rel: 'memoria/templates/decision.md', molde: true, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] }), []);
+});
+
+test('un molde puede llevar el marcador de fecha de Obsidian', () => {
+  assert.deepEqual(revisarFrontmatter('fecha: {{date:YYYY-MM-DD}}',
+    { rel: 'memoria/templates/x.md', molde: true }), []);
+  // La misma fecha en una página de verdad sigue siendo un hallazgo.
+  assert.equal(revisarFrontmatter('fecha: {{date:YYYY-MM-DD}}', { rel: 'memoria/x.md' }).length, 1);
+});
+
+test('un molde declara la capa del documento que produce, no la suya', () => {
+  // La plantilla de una spec vive en memoria/ y declara `capa: fuente`.
+  assert.deepEqual(revisarFrontmatter('capa: fuente',
+    { rel: 'memoria/templates/spec.md', molde: true }), []);
+});
+
+test('la exención del molde es estrecha: el vocabulario se le sigue exigiendo', () => {
+  const fallos = revisarFrontmatter('tipo: inventado\nestado: quizas\nareas: [marketing]\ntags: [plantilla, brillante]\ncapa: intermedia',
+    { rel: 'memoria/templates/x.md', molde: true });
+  assert.deepEqual(fallos.map((f) => f.campo).sort(), ['areas', 'capa', 'estado', 'tags', 'tipo']);
+});

@@ -71,12 +71,20 @@ export function lista(fm, clave) {
  * Vale para las tres capas: la diferencia entre ellas no está aquí, sino en qué campos exige
  * quien llama (`obligatorios`). El cuerpo del archivo no se mira nunca.
  */
-export function revisarFrontmatter(fm, { rel, obligatorios = [] } = {}) {
+export function revisarFrontmatter(fm, { rel, obligatorios = [], molde = false } = {}) {
   const fallos = [];
   const anota = (c, d) => fallos.push({ campo: c, detalle: d });
 
-  for (const k of obligatorios) {
-    if (!campo(fm, k) && lista(fm, k).length === 0) anota(k, `falta o está vacío: ${k}`);
+  // Un molde (una plantilla) se mide distinto: sus campos son huecos por definición, así que no
+  // se le exige ninguno, ni que `fecha` sea una fecha —lleva el marcador `{{date:…}}` que
+  // rellena Obsidian—, ni que su `capa` case con dónde vive: la plantilla de una spec declara
+  // `capa: fuente` porque eso es lo que valdrá el documento que salga de ella, y la plantilla
+  // misma vive en `memoria/`. Lo que sí se le comprueba es el vocabulario: un `tipo` inventado
+  // en un molde se copiaría a cada página que salga de él.
+  if (!molde) {
+    for (const k of obligatorios) {
+      if (!campo(fm, k) && lista(fm, k).length === 0) anota(k, `falta o está vacío: ${k}`);
+    }
   }
 
   const tipo = campo(fm, 'tipo');
@@ -86,7 +94,7 @@ export function revisarFrontmatter(fm, { rel, obligatorios = [] } = {}) {
   if (estado && !ESTADOS.has(estado)) anota('estado', `estado desconocido: ${estado}`);
 
   const fecha = campo(fm, 'fecha');
-  if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) anota('fecha', `fecha no ISO: ${fecha}`);
+  if (!molde && fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) anota('fecha', `fecha no ISO: ${fecha}`);
 
   // `capa` es opcional mientras el backfill no haya pasado, pero si está tiene que ser una de las
   // tres y tiene que coincidir con la que la ruta implica: una wiki declarándose `fuente` haría
@@ -94,7 +102,7 @@ export function revisarFrontmatter(fm, { rel, obligatorios = [] } = {}) {
   const capa = campo(fm, 'capa');
   if (capa) {
     if (!CAPAS.has(capa)) anota('capa', `capa desconocida: ${capa}`);
-    else if (rel && capa !== deducirCapa(rel)) {
+    else if (!molde && rel && capa !== deducirCapa(rel)) {
       anota('capa', `dice '${capa}' y su ruta implica '${deducirCapa(rel)}'`);
     }
   }

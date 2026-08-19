@@ -21,7 +21,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { estadoVeracidad, mensajeVeracidad } from './wiki-veracidad.mjs';
-import { bloqueFrontmatter, campo, deducirCapa, revisarFrontmatter } from './wiki-esquema.mjs';
+import { bloqueFrontmatter, campo, deducirCapa, lista, revisarFrontmatter } from './wiki-esquema.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WIKI = join(RAIZ, 'memoria');
@@ -74,9 +74,17 @@ for (const rel of paginas) {
 
   if (fm === null) { anota('FRONTMATTER', rel, 'sin bloque de frontmatter'); continue; }
 
-  for (const f of revisarFrontmatter(fm, { rel, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] })) {
+  // Una plantilla no es una página de la wiki: es el molde del que salen páginas. Se le comprueba
+  // el vocabulario y nada más — ni sus huecos, ni su cuerpo, ni que esté enlazada desde el índice,
+  // porque un molde no es contenido al que haya que llegar navegando. La exención se apoya en el
+  // tag `plantilla`, que ya está en el vocabulario cerrado que fija la spec de v2, y no en una
+  // regla ad-hoc por carpeta: mover la carpeta no debe cambiar cómo se mide.
+  const molde = lista(fm, 'tags').includes('plantilla');
+
+  for (const f of revisarFrontmatter(fm, { rel, molde, obligatorios: ['tipo', 'estado', 'fecha', 'resumen'] })) {
     anota(f.campo === 'areas' ? 'AREA' : 'FRONTMATTER', rel, f.detalle);
   }
+  if (molde) continue;
 
   // Una nota, un hecho: más de tres hechos numerados delata una nota que debería partirse.
   const numerados = (texto.match(/^(?:\d+\.|\*\*\d+\.)\s/gm) ?? []).length;
