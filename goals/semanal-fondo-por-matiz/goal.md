@@ -98,6 +98,23 @@ niveles — solo lleva una superficie más al modelo que ya existe. La spec que 
 `docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design.md`. Sí lleva **plan**, porque
 el gate lo exige y porque hay goldens de por medio.
 
+## Biome: medido y decidido, no ignorado
+`npm run check:frontend` no es carril del gate (ni de `publicar.sh` ni de la suite estática) y el
+repo está en **905 errores / 113 archivos** de base. Medido lo mío contra `origin/main`, archivo por
+archivo:
+
+| Archivo | Antes | Ahora |
+|---|---|---|
+| `programacion-semanal.css` | 0 | **0** |
+| `styles.css` | 3 | **3** |
+| `programacion_semanal/hot.js` | 207 | **213** |
+
+Los seis que añadí son **`noInnerDeclarations`** —regla que este archivo ya incumple **201 veces**,
+porque es un IIFE de estilo ES5 con funciones internas— más uno de `useTemplate`, por concatenar
+cadenas como hace todo el archivo. **Mis funciones siguen el estilo circundante a propósito.**
+Refactorizar el estilo del módulo para bajar seis diagnósticos de una regla incumplida 201 veces
+sería un refactor de cortesía dentro de un frente ajeno a eso.
+
 ## Hallazgo encargado
 La coordinadora pidió anotar, si aparecen al convertir, **cuántas filas de Semanal serían «detenido
 por otro»** — el dato que ayuda a decidir el `r0` de Programa General, hoy en la mesa de Felipe.
