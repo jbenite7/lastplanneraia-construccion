@@ -60,6 +60,32 @@ un escenario que ya no ocurre. Se anota explícitamente porque lo propuso quien 
 tocar el fixture**. El fixture monta cohortes disjuntas, que es justamente el caso que debe
 funcionar. No estaba mal: estaba destapando esto.
 
+> **CORRECCIÓN del 2026-08-19, medida al implementar la Tarea 2 — el párrafo de arriba era FALSO.**
+>
+> Se escribió como deducción y se presentó como hecho, que es la forma exacta en que una causa
+> plausible se cuela sin que nadie la choque. Arreglar el cálculo **no basta**: el test compara
+> `contractual_finish` contra el fin del primer snapshot, y con el arreglo esa fecha sale de la línea
+> base **declarada**. En el CI **ningún proyecto la tiene declarada**:
+>
+> ```
+> $ grep -c "fechaInicioLineaBase\|fechaFinLineaBase" database/fixtures/design-system-ci.sql
+> 0
+> ```
+>
+> El CI carga `20260807_proyectos_lineabase_columns.sql`, que **crea las columnas y no las rellena**,
+> así que la fecha sale `NULL` y el test sigue rojo. El sembrado diseñado vive en `nueva_semana.php`,
+> y el fixture inserta filas directo en la base sin pasar por ahí.
+>
+> Lo destapó el corte «si la Tarea 2 no pone verde el test sin tocarlo, parar y escalar». El corte
+> funcionó: paró un arreglo correcto que no cerraba, en vez de dejar que alguien ajustara el test.
+>
+> **Consecuencia de diseño:** el sembrado pasa de script PHP a **migración SQL**, porque
+> `database/fixtures/design-system-ci.Dockerfile` sí aplica migraciones (línea 41 carga justamente la
+> de estas columnas). Un solo mecanismo cubre CI y producción, sin tocar el fixture ni el test.
+>
+> No se borra el párrafo original: se marca. Una spec que esconde por dónde se equivocó no enseña
+> nada al que la lea dentro de tres meses.
+
 ## Qué se decide
 
 ### 1. Una sola fuente de verdad
