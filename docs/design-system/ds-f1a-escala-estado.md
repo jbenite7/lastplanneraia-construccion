@@ -1,3 +1,14 @@
+---
+capa: fuente
+tipo: contrato
+estado: vigente
+fecha: 2026-08-19
+areas: [design-system]
+tags: [leer-antes-de-tocar]
+fuente: docs/design-system/ds-f1a-escala-estado.md
+resumen: La escala de estado — contrato DS-F1a
+---
+
 # La escala de estado — contrato DS-F1a
 
 > **La fuente ejecutable es `ds-f1a-escala-estado.json`, no este archivo.** Aquí se explica el

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: goals/ds-f1a-estado/goal.md
+resumen: Publicar el contrato de la escala de estado —vocabulario, tres niveles de gravedad y la regla de los dos canales— en formato legible y consultable por máquina…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: ds-f1a-estado
 
