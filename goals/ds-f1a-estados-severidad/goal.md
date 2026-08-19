@@ -77,6 +77,13 @@ sigue viva.
   familia+candidato. **El defecto ya estaba, latente.**
 
 ## Pendientes
+- **VERIFICACIÓN EN PANTALLA PENDIENTE del apagado del filete (`1ff946f8`).** Está verificado en
+  estático —`severity-rail` 7/7, suite 8/8— pero **sin captura**. Falta confirmar en
+  `/programacion-intermedia` a 1180×820 dark que las filas `healthy`/`neutral` dejaron de llevar
+  filete y que ninguna superposición de Handsontable (`pi-cell-readonly`, `pi-cell-editable`) se
+  coló en su sitio. Ventana de contenedor concedida por la coordinadora **con turno**: espera a que
+  `bold-neumann` publique y restaure. **No se toma el contenedor sin esa confirmación** — hacerlo
+  hoy ya costó una medición entera a otro frente.
 - **`/programacion-semanal`, conversión del fondo** → frente propio. No es «aplicar lo mismo»: su
   fondo usa un sistema propio de cubos de alerta (`ps-alert-*`), otra escalera ordinal como la que
   se retiró de Intermedia, y hay que rehacerlo en sus dos fases con sus goldens.
