@@ -143,11 +143,14 @@ for (const rel of fuentes) {
     if (ESTRICTO && !CONGELADOS.has(rel)) {
       // El mensaje lleva el remedio dentro a propósito: quien se lo encuentra suele ser alguien
       // de otro frente que acaba de crear un documento y no tiene por qué conocer este esquema.
-      anota('FUENTE', rel, 'sin frontmatter del esquema v2. Se lo pone el backfill, que solo '
-        + `añade metadato y no toca el cuerpo:\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --detalle   # ensayo`
-        + `\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --escribir`
-        + '\n  Si el archivo aún no está en git, la `fecha` queda vacía —no hay alta de la que '
-        + 'deducirla— y se pone a mano. Es lo único que el backfill no puede saber.');
+      //
+      // Y cabe en TRES líneas a propósito: `publicar.sh` solo enseña las cuatro últimas de un
+      // gate en rojo, así que un mensaje más largo pierde justo su cabecera —medido—. El ensayo
+      // con `--detalle` se quedó fuera por eso; vive en `docs/wiki-operacion.md`.
+      anota('FUENTE', rel, 'sin frontmatter del esquema v2. El backfill se lo pone, y solo añade '
+        + `metadato: no toca el cuerpo.\n    node scripts/wiki-frontmatter.mjs --solo ${rel} --escribir`
+        + '\n    Si el archivo aún no está en git no hay alta de la que deducir la `fecha`: '
+        + 'esa se pone a mano, y es lo único que el backfill no puede saber.');
     }
     continue;
   }
@@ -177,8 +180,12 @@ const censo = `${paginas.length} páginas de wiki y ${fuentesConFm} de ${fuentes
   + `${ESTRICTO ? ' (modo estricto)' : ''}`;
 
 if (hallazgos.length) {
+  // El recuento va ANTES y los hallazgos al final, no al revés: `scripts/publicar.sh` solo
+  // enseña las cuatro últimas líneas de un gate en rojo, y con el resumen abajo esas cuatro se
+  // las comían el resumen y una línea en blanco. Con este orden, lo último que se lee es el
+  // hallazgo con su remedio, que es lo que hay que hacer.
+  console.log(`${hallazgos.length} hallazgos en ${censo}:\n`);
   console.log(hallazgos.join('\n'));
-  console.log(`\n${hallazgos.length} hallazgos en ${censo}.`);
   process.exitCode = 1;
 } else {
   console.log(`Sin hallazgos. ${censo}.`);

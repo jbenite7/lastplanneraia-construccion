@@ -97,9 +97,23 @@ Juntas, o se bloquea por un contador —y se aprende a saltarse el gate— o no 
 defecto real. `--sin-alarma` las separa, y `npm run test:wiki:forma` es la mitad que un gate puede
 bloquear sin enseñar a nadie a ignorarlo.
 
-**Lo que esto todavía NO hace:** `scripts/publicar.sh` declara la comprobación de la wiki como **no
-bloqueante**, y con razón mientras fuera una sola cosa. Cambiarla a `test:wiki:forma` bloqueante es
-una línea, pero afecta a toda sesión que publique, así que no se hace de paso.
+**Y desde el 2026-08-19 `scripts/publicar.sh` las trata distinto**, que es lo que de verdad cierra
+el hueco:
+
+```
+comprobar "wiki (forma)"               1 npm run test:wiki:forma     # BLOQUEA
+comprobar "wiki (veracidad + pruebas)" 0 npm run test:wiki           # avisa
+```
+
+Comprobado en las dos direcciones antes de darlo por bueno: con una fuente sin declarar, el gate
+**deniega**; con la alarma por encima del umbral, **avisa y deja publicar**.
+
+**Un detalle de presentación que resultó no serlo.** `publicar.sh` enseña solo las **cuatro últimas
+líneas** de un gate en rojo. El lint imprimía el recuento al final, así que esas cuatro líneas se
+las comían el recuento y una línea en blanco, y el hallazgo con su remedio **se perdía justo cuando
+alguien lo necesitaba**. Ahora el recuento va primero y los hallazgos al final. El mensaje del
+hallazgo cabe en tres líneas por la misma razón, y por eso el ensayo con `--detalle` no está en él
+sino aquí.
 
 Sale con código 1 si hay hallazgos. **Lintea las tres capas, pero no con las mismas reglas:**
 
