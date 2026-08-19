@@ -68,3 +68,43 @@ tiene cuatro llamadores conocidos (`GeneralApiController` ×3, `SemanalApiContro
 **Y no tienen ninguna prueba hoy.** Esa es la contención real: cambiar la clasificación de 65 549
 filas sin red. Por eso la primera tarea del plan es escribir la caracterización del comportamiento
 actual **antes** de tocar nada.
+
+## Evidencia de la Task 3: el rojo de `--nivel=http` es preexistente
+
+El plan mandaba parar si esa suite salía roja, con la hipótesis de que sería un consumidor que
+asumía siete estados. **Se midió en vez de deducirse**, con `git stash` de los tres archivos de la
+Task 3 sobre el mismo árbol:
+
+```
+sin los cambios de la Task 3 : 6 fallos
+con los cambios              : 5 fallos   ← los mismos 5, ninguno nuevo
+```
+
+Los cinco constantes son ajenos al frente: `test_dev_door_http` (el candado `DEV_DOOR` está cerrado
+en este entorno y su propio mensaje lo dice), `test_semanal_sanear_csrf`,
+`test_bi_source_reconciliation`, `test_equipment_families_require_review` y
+`test_report_processor_cic_project_scope`.
+
+El sexto, **`test_bi_programa_general_chart_values`, oscila**: apareció solo en la corrida sin los
+cambios. Ejecutado suelto **falla idéntico con y sin ellos** —mismos números,
+`actual=[70.7,-4.1] expected=[66.2,-4.9]`—, así que no lo arregla ni lo rompe este frente. Se anota
+porque **es el mismo test que está rojo en el CI de `main`** por el defecto de línea base que
+trabaja el frente `runtime-budgets`/`elated-golick` (cohortes disjuntas vacían el baseline
+contractual): que en local oscile con datos vivos encaja con ese diagnóstico y le sirve de
+evidencia.
+
+La coordinadora ratificó seguir: la razón por la que ese paso existía —descartar consumidores rotos
+por el octavo estado— queda respondida por la medición, y parar por la letra habría sido proceso
+por el proceso.
+
+## El return inalcanzable, que es el argumento de por qué la caracterización va primero
+
+`LpsService::calculateGeneralStatus` tiene **dos** `return 'Actividad Futura'`. La regla nueva se
+puso entre los dos y quedó **inalcanzable**: el primero cubre el caso sin avance con inicio
+posterior a la semana, que es justamente por donde sale una actividad lejana. El calculador legacy
+tiene un solo return y ahí funcionó a la primera.
+
+**La prueba de paridad lo cazó en rojo antes de que se notara en pantalla.** Si el cambio se hubiera
+hecho sin la caracterización de la Task 1 —que es lo que había: cero pruebas sobre estos dos
+archivos— el resultado habría sido un `Fuera de Ventana` que funciona en un calculador y no en el
+otro, y los dos escriben la misma columna.

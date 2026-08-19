@@ -80,7 +80,7 @@ conocido, **se para y se reporta**: sería un hallazgo, no un detalle.
 - Produces: la clase `Tests\Unit\EstadoProgramaGeneralTest` y su proveedor de datos
   `casosDeEstado()`, que la Task 2 amplía con los casos de `Fuera de Ventana`.
 
-- [ ] **Step 1: Escribir la prueba de caracterización**
+- [x] **Step 1: Escribir la prueba de caracterización**
 
 Crear `tests/unit/EstadoProgramaGeneralTest.php`:
 
@@ -176,7 +176,7 @@ final class EstadoProgramaGeneralTest extends TestCase
 }
 ```
 
-- [ ] **Step 2: Correr y ver qué dice del estado actual**
+- [x] **Step 2: Correr y ver qué dice del estado actual**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
@@ -187,7 +187,7 @@ Esperado: **todo en verde.** Es caracterización, no TDD: describe lo que ya hac
 **Si algún caso falla, PARAR y reportar** — significaría que los dos calculadores divergen en algo
 que no habíamos medido, y eso cambia el alcance.
 
-- [ ] **Step 3: Añadir el caso que expone la divergencia conocida**
+- [x] **Step 3: Añadir el caso que expone la divergencia conocida**
 
 Añadir a `casosDeEstado()`:
 
@@ -197,7 +197,7 @@ Añadir a `casosDeEstado()`:
                  'fs' => '2026-08-17', 'fe' => '2026-08-23'], 'En Curso'],
 ```
 
-- [ ] **Step 4: Correr y confirmar que la paridad falla**
+- [x] **Step 4: Correr y confirmar que la paridad falla**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
@@ -208,7 +208,7 @@ Esperado: **falla `testLosDosCalculadoresCoinciden`** para ese caso, y falla
 0.001, y 0.05 > 0.001); `LpsService` dice `Sin Datos` (su literal es 0.1, y 0.05 < 0.1). Es la
 divergencia medida, ahora con una prueba que la nombra.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add tests/unit/EstadoProgramaGeneralTest.php
@@ -226,14 +226,14 @@ git commit -m "test(estados): caracteriza los dos calculadores, que no tenian ni
 - Consumes: de Task 1, la clase de prueba y su proveedor.
 - Produces: `LpsService::calculateGeneralStatus()` con el mismo umbral que el legacy.
 
-- [ ] **Step 1: Elegir el canónico y dejarlo escrito**
+- [x] **Step 1: Elegir el canónico y dejarlo escrito**
 
 El canónico es **`PG_STATUS_EPS = 0.001`, el del legacy**, por dos razones que van en el comentario
 del código: es el que está declarado como constante con nombre en vez de un literal suelto, y es el
 que se aplica en el resto de las ramas de **ambas** implementaciones — el `0.1` de `LpsService`
 aparece **solo** en la rama de fechas nulas, así que es la excepción, no la regla.
 
-- [ ] **Step 2: Cambiar el literal por el umbral canónico**
+- [x] **Step 2: Cambiar el literal por el umbral canónico**
 
 En `src/Core/Lps/LpsService.php`, sustituir:
 
@@ -252,7 +252,7 @@ por:
             return ($ej > 0.001) ? 'En Curso' : 'Sin Datos';
 ```
 
-- [ ] **Step 3: Correr y confirmar que la paridad vuelve al verde**
+- [x] **Step 3: Correr y confirmar que la paridad vuelve al verde**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
@@ -260,7 +260,7 @@ docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
 
 Esperado: **todo verde**, incluido el caso del 5% que fallaba en la Task 1.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/Core/Lps/LpsService.php
@@ -280,7 +280,7 @@ git commit -m "fix(estados): los dos calculadores comparten el umbral de la rama
 - Consumes: de Task 1 y 2, la prueba en verde y los umbrales unificados.
 - Produces: los dos calculadores devolviendo un octavo estado, `'Fuera de Ventana'`.
 
-- [ ] **Step 1: Escribir los casos que fallan**
+- [x] **Step 1: Escribir los casos que fallan**
 
 Añadir a `casosDeEstado()`:
 
@@ -296,7 +296,7 @@ Añadir a `casosDeEstado()`:
 El primero cae a 49 días de la semana, o sea offset 7. El segundo a 42 días, offset 6: **el borde
 exacto de la regla**, y por eso están los dos.
 
-- [ ] **Step 2: Correr y verlos fallar**
+- [x] **Step 2: Correr y verlos fallar**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
@@ -305,7 +305,7 @@ docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
 Esperado: los dos casos nuevos fallan en las tres pruebas, con `Actividad Futura` donde se espera
 `Fuera de Ventana`.
 
-- [ ] **Step 3: Añadir la regla al calculador legacy**
+- [x] **Step 3: Añadir la regla al calculador legacy**
 
 En `src/Legacy/estado_programa_general.php`, sustituir la última línea de `pg_calculate_status`:
 
@@ -328,7 +328,7 @@ por:
     return 'Actividad Futura';
 ```
 
-- [ ] **Step 4: Añadir la misma regla a `LpsService`**
+- [x] **Step 4: Añadir la misma regla a `LpsService`**
 
 En `src/Core/Lps/LpsService.php`, sustituir la última línea de `calculateGeneralStatus`:
 
@@ -349,7 +349,7 @@ por:
         return 'Actividad Futura';
 ```
 
-- [ ] **Step 5: Correr y confirmar el verde**
+- [x] **Step 5: Correr y confirmar el verde**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
@@ -357,7 +357,7 @@ docker compose exec -T app php scripts/run-php-tests.php --nivel=puro
 
 Esperado: **todo verde**, los ocho estados en las dos implementaciones y la paridad intacta.
 
-- [ ] **Step 6: Comprobar que no rompe el resto de la suite PHP**
+- [x] **Step 6: Comprobar que no rompe el resto de la suite PHP**
 
 ```bash
 docker compose exec -T app php scripts/run-php-tests.php --nivel=http
@@ -366,7 +366,7 @@ docker compose exec -T app php scripts/run-php-tests.php --nivel=http
 Esperado: RC=0. Si algo se pone rojo aquí, es un consumidor que asumía siete estados: **parar y
 reportar** antes de tocarlo.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/Legacy/estado_programa_general.php src/Core/Lps/LpsService.php tests/unit/EstadoProgramaGeneralTest.php
@@ -385,7 +385,7 @@ git commit -m "feat(estados): los dos calculadores producen Fuera de Ventana a p
 - Consumes: de Task 3, el hecho de que los calculadores ya lo producen.
 - Produces: el contrato sin pregunta abierta.
 
-- [ ] **Step 1: Cerrar la pregunta en el JSON**
+- [x] **Step 1: Cerrar la pregunta en el JSON**
 
 En el estado `fuera-de-ventana`, sustituir la clave `pendiente` por:
 
@@ -396,7 +396,7 @@ En el estado `fuera-de-ventana`, sustituir la clave `pendiente` por:
 
 y cambiar su `origen` de `"legacy-sin-productor"` a `"pg_calculate_status"`.
 
-- [ ] **Step 2: Correr la prueba del contrato**
+- [x] **Step 2: Correr la prueba del contrato**
 
 ```bash
 node --test tests/design-system/ds-f1a-escala-estado.test.mjs
@@ -405,7 +405,7 @@ node --test tests/design-system/ds-f1a-escala-estado.test.mjs
 Esperado: **9 pass**. El caso `cada estado declara quien lo produce` acepta el valor nuevo porque
 `pg_calculate_status` ya está en su lista de orígenes válidos.
 
-- [ ] **Step 3: Actualizar el contrato legible**
+- [x] **Step 3: Actualizar el contrato legible**
 
 En `docs/design-system/ds-f1a-escala-estado.md`:
 1. Sustituir la sección «Pendiente de decisión del usuario» por una que diga la decisión tomada,
@@ -415,7 +415,7 @@ En `docs/design-system/ds-f1a-escala-estado.md`:
 3. Añadir un aviso: **los porcentajes de la tabla son del reparto anterior a la migración**; el
    frente (B) los actualizará cuando los datos se recalculen.
 
-- [ ] **Step 4: Verificar el lint de la wiki**
+- [x] **Step 4: Verificar el lint de la wiki**
 
 ```bash
 npm run test:wiki
@@ -423,7 +423,7 @@ npm run test:wiki
 
 Esperado: RC=0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/design-system/ds-f1a-escala-estado.json docs/design-system/ds-f1a-escala-estado.md
@@ -443,7 +443,7 @@ Se **diagnostican, no se corrigen**. Corregirlas es del frente (B).
 - Consumes: nada de las tareas anteriores.
 - Produces: el informe. No lo consume ninguna tarea de este plan.
 
-- [ ] **Step 1: Medir las 113 y clasificarlas**
+- [x] **Step 1: Medir las 113 y clasificarlas**
 
 ```bash
 docker compose exec -T app php -r '
@@ -456,7 +456,7 @@ foreach ($pdo->query("SELECT Estado, COUNT(*) n, MIN(Semanas_Inicio) mn, MAX(Sem
 '
 ```
 
-- [ ] **Step 2: Escribir el informe**
+- [x] **Step 2: Escribir el informe**
 
 Crear `goals/estados-fuera-de-ventana/diagnostico-113-contradictorias.md` con: la consulta exacta y
 su salida literal; qué hace contradictoria a cada familia (una actividad `Terminada` que empieza
@@ -465,7 +465,7 @@ están repartidas; y **tres hipótesis con lo que cada una implicaría para el f
 mal importadas desde Project, `Semanas_Inicio` calculada contra una semana activa distinta de la
 actual, o estados escritos a mano. **Sin elegir una**: eso exige datos que este frente no tiene.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add goals/estados-fuera-de-ventana/diagnostico-113-contradictorias.md
@@ -480,7 +480,7 @@ git commit -m "docs(estados): el diagnostico de las 113 filas contradictorias, s
 - Create: `memoria/trampas/contenedor-compartido-durante-verificacion.md`
 - Modify: `memoria/log.md`
 
-- [ ] **Step 1: Escribir la nota**
+- [x] **Step 1: Escribir la nota**
 
 Crear `memoria/trampas/contenedor-compartido-durante-verificacion.md` con el molde de
 `memoria/templates/trampa.md` y el **vocabulario cerrado** de `scripts/wiki-esquema.mjs` —`tags`
@@ -492,7 +492,7 @@ recreándolo o usándolo con otro worktree montado; cómo se sale, mirando `dock
 lleva segundos arriba, era una carrera) y `docker inspect` para ver qué monta; y cuánto costó: el
 2026-08-19, una re-verificación en rojo que no era del código.
 
-- [ ] **Step 2: Verificar el lint**
+- [x] **Step 2: Verificar el lint**
 
 ```bash
 npm run test:wiki
@@ -501,7 +501,7 @@ npm run test:wiki
 Esperado: RC=0, sin hallazgos. **Si sale «tag fuera del vocabulario cerrado», corregir el
 frontmatter** — es el error que ya costó una vuelta el 2026-08-19.
 
-- [ ] **Step 3: Añadir la línea de bitácora y commitear**
+- [x] **Step 3: Añadir la línea de bitácora y commitear**
 
 ```bash
 git add memoria/trampas/contenedor-compartido-durante-verificacion.md memoria/log.md
@@ -512,13 +512,13 @@ git commit -m "docs(memoria): la trampa del contenedor compartido durante una ve
 
 ## Cierre del frente
 
-- [ ] Verificar con salida real: `--nivel=puro`, `--nivel=http`, `node --test` del contrato y
+- [x] Verificar con salida real: `--nivel=puro`, `--nivel=http`, `node --test` del contrato y
       `npm run test:wiki`.
-- [ ] `git status` limpio. **Comprobar que no hay ni un `UPDATE` en el diff.**
-- [ ] `git fetch origin` y mirar la divergencia.
-- [ ] Integrar si la hay, resolviendo a la vista.
-- [ ] **Re-verificar después de integrar, no antes.** Anotar el sha.
-- [ ] Pedir el visto a la coordinadora con el sha medido.
-- [ ] Publicar el sha exacto visado. `5759b13d` viaja en este cierre.
-- [ ] Confirmar que `origin/main` coincide con el sha anotado.
-- [ ] Anotar el cierre en `goals/estados-fuera-de-ventana/goal.md`.
+- [x] `git status` limpio. **Comprobar que no hay ni un `UPDATE` en el diff.**
+- [x] `git fetch origin` y mirar la divergencia.
+- [x] Integrar si la hay, resolviendo a la vista.
+- [x] **Re-verificar después de integrar, no antes.** Anotar el sha.
+- [x] Pedir el visto a la coordinadora con el sha medido.
+- [x] Publicar el sha exacto visado. `5759b13d` viaja en este cierre.
+- [x] Confirmar que `origin/main` coincide con el sha anotado.
+- [x] Anotar el cierre en `goals/estados-fuera-de-ventana/goal.md`.
