@@ -48,7 +48,7 @@
 **Interfaces:**
 - Produces: en `state-semantics.json`, la clave `axisRules` (array de strings) y los `level` corregidos de **cuatro** estados del módulo `programacion-intermedia`: `blocked-due`, `alert-1-week`, `alert-4-6-weeks` y `execution-blocked`. Los otros cuatro no se tocan.
 
-- [ ] **Step 1: Escribe el test que falla**
+- [x] **Step 1: Escribe el test que falla**
 
 Crea `tests/design-system/severity-rail.test.mjs`:
 
@@ -105,7 +105,7 @@ test('statePresentation de hot.js declara los mismos niveles que el contrato', a
 });
 ```
 
-- [ ] **Step 2: Corre el test y comprueba que falla**
+- [x] **Step 2: Corre el test y comprueba que falla**
 
 ```bash
 docker compose exec -T app true 2>/dev/null; node --test tests/design-system/severity-rail.test.mjs
@@ -113,7 +113,7 @@ docker compose exec -T app true 2>/dev/null; node --test tests/design-system/sev
 
 Esperado: FAIL — `state-semantics.json no declara axisRules`, y los dos `deepEqual` en rojo por los cuatro niveles viejos.
 
-- [ ] **Step 3: Añade `axisRules` al contrato**
+- [x] **Step 3: Añade `axisRules` al contrato**
 
 En `docs/design-system/state-semantics.json`, después de `"dimensions"`, añade:
 
@@ -127,7 +127,7 @@ En `docs/design-system/state-semantics.json`, después de `"dimensions"`, añade
   ],
 ```
 
-- [ ] **Step 4: Corrige los cuatro niveles en el contrato**
+- [x] **Step 4: Corrige los cuatro niveles en el contrato**
 
 En el módulo `programacion-intermedia` de `moduleMappings`, cambia **solo** el campo `level` de estos cuatro, dejando `label`, `key` y `hue` intactos:
 
@@ -144,7 +144,7 @@ En `execution-blocked`, **sustituye** el campo `note` por:
 "note": "Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Procedencia y argumento en goals/bug-coloreado-severidad/respuestas-ds-f1.md."
 ```
 
-- [ ] **Step 5: Corrige `statePresentation` en `hot.js`**
+- [x] **Step 5: Corrige `statePresentation` en `hot.js`**
 
 En `public/js/modules/programacion_intermedia/hot.js`, dentro de `var statePresentation`:
 
@@ -162,7 +162,7 @@ En `public/js/modules/programacion_intermedia/hot.js`, dentro de `var statePrese
   };
 ```
 
-- [ ] **Step 6: Corre los tests y comprueba que pasan**
+- [x] **Step 6: Corre los tests y comprueba que pasan**
 
 ```bash
 node --test tests/design-system/severity-rail.test.mjs
@@ -170,7 +170,7 @@ node --test tests/design-system/severity-rail.test.mjs
 
 Esperado: PASS, 3/3.
 
-- [ ] **Step 7: Corre los dos guards que leen el contrato**
+- [x] **Step 7: Corre los dos guards que leen el contrato**
 
 ```bash
 node --test tests/design-system/ops-state-contract.test.mjs tests/design-system/state-tint-ladder.test.mjs
@@ -178,7 +178,7 @@ node --test tests/design-system/ops-state-contract.test.mjs tests/design-system/
 
 Esperado: PASS. Si `ops-state-contract` falla, es que `hot.js` y el contrato divergen — corrige el que esté mal, **nunca el test**.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add docs/design-system/state-semantics.json public/js/modules/programacion_intermedia/hot.js tests/design-system/severity-rail.test.mjs
@@ -199,7 +199,7 @@ git commit -m "feat(contrato): un canal un eje, y tres estados de PI cambian de 
 - Consumes: los `level` del contrato de la Task 1.
 - Produces: el atributo `data-aia-severity-rail="urgent|attention|healthy|neutral"`, los tokens `--ds-severity-rail-width-{urgent,attention,healthy,neutral}` y `--ds-severity-rail-color-{…}`, y la ficha `severity-rail` en el catálogo.
 
-- [ ] **Step 1: Escribe los tests que fallan**
+- [x] **Step 1: Escribe los tests que fallan**
 
 Añade al final de `tests/design-system/severity-rail.test.mjs`:
 
@@ -240,7 +240,7 @@ test('el catalogo publica la ficha del filete', async () => {
 });
 ```
 
-- [ ] **Step 2: Corre los tests y comprueba que fallan**
+- [x] **Step 2: Corre los tests y comprueba que fallan**
 
 ```bash
 node --test tests/design-system/severity-rail.test.mjs
@@ -248,7 +248,7 @@ node --test tests/design-system/severity-rail.test.mjs
 
 Esperado: FAIL — `falta --ds-severity-rail-width-urgent`.
 
-- [ ] **Step 3: Añade los tokens**
+- [x] **Step 3: Añade los tokens**
 
 En `public/css/tokens.css`, dentro del mismo bloque `html.aia-theme-dark` donde viven los `--ds-state-tint-*`:
 
@@ -268,7 +268,7 @@ En `public/css/tokens.css`, dentro del mismo bloque `html.aia-theme-dark` donde 
     --ds-severity-rail-color-neutral: var(--ds-active-border);
 ```
 
-- [ ] **Step 4: Crea la primitiva**
+- [x] **Step 4: Crea la primitiva**
 
 Crea `public/css/design-system/components/severity-rail.css`:
 
@@ -301,7 +301,7 @@ Crea `public/css/design-system/components/severity-rail.css`:
 }
 ```
 
-- [ ] **Step 5: Publica la ficha en el catálogo**
+- [x] **Step 5: Publica la ficha en el catálogo**
 
 En `docs/design-system/component-catalog.json`, añade después de la ficha `state`:
 
@@ -329,7 +329,7 @@ En `docs/design-system/component-catalog.json`, añade después de la ficha `sta
   },
 ```
 
-- [ ] **Step 6: Asegúrate de que la hoja se entrega**
+- [x] **Step 6: Asegúrate de que la hoja se entrega**
 
 ```bash
 grep -rn "states-feedback.css" public/css/aia-design-system.css scripts/ | head
@@ -343,7 +343,7 @@ npm run test:design-system:static
 
 Esperado: PASS en `unlayered-delivery` y `entrypoint-partition`. Si `unlayered-delivery` protesta, la hoja no está declarando su `@layer` o no está en el punto de entrada.
 
-- [ ] **Step 7: Corre los tests y comprueba que pasan**
+- [x] **Step 7: Corre los tests y comprueba que pasan**
 
 ```bash
 node --test tests/design-system/severity-rail.test.mjs
@@ -351,7 +351,7 @@ node --test tests/design-system/severity-rail.test.mjs
 
 Esperado: PASS, 6/6.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add public/css/tokens.css public/css/design-system/components/severity-rail.css docs/design-system/component-catalog.json tests/design-system/severity-rail.test.mjs public/css/aia-design-system.css
@@ -371,7 +371,7 @@ git commit -m "feat(ds): la primitiva del filete de gravedad, cuatro escalones"
 - Consumes: `data-aia-severity-rail` de la Task 2 y los `level`/`hue` de la Task 1.
 - Produces: en cada `<tr>` de la rejilla, las clases `pi-row-state pi-state-<estado>` (ya existían) y el atributo `data-aia-severity-rail="<nivel>"`.
 
-- [ ] **Step 1: Escribe la sonda que falla**
+- [x] **Step 1: Escribe la sonda que falla**
 
 Copia `goals/bug-coloreado-severidad/evidence/sonda-severidad.mjs` a
 `goals/ds-f1a-estados-severidad/evidence/sonda-despues.mjs` y cambia solo el bloque final para que
@@ -382,7 +382,7 @@ además lea el filete:
       railNivel: tr.getAttribute('data-aia-severity-rail'),
 ```
 
-- [ ] **Step 2: Córrela y guarda el ANTES**
+- [x] **Step 2: Córrela y guarda el ANTES**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose up -d app
@@ -391,7 +391,7 @@ node goals/ds-f1a-estados-severidad/evidence/sonda-despues.mjs
 
 Esperado: `railNivel` es `null` en las nueve filas, y los fondos siguen siendo los cinco peldaños viejos. **Guarda esta salida**: es el antes contra el que se compara, computado contra computado.
 
-- [ ] **Step 3: Pon el atributo de nivel en la fila**
+- [x] **Step 3: Pon el atributo de nivel en la fila**
 
 En `public/js/modules/programacion_intermedia/hot.js`, donde hoy se compone `rowClass` (~línea 870):
 
@@ -406,7 +406,7 @@ En `public/js/modules/programacion_intermedia/hot.js`, donde hoy se compone `row
 
 y aplícalo con el resto de atributos de fila que el módulo ya escribe.
 
-- [ ] **Step 4: Cambia el fondo de estado→peldaño por estado→matiz**
+- [x] **Step 4: Cambia el fondo de estado→peldaño por estado→matiz**
 
 En `public/css/styles.css`, sustituye los ocho bloques de `3664-3725` por uno solo que delegue en el matiz que la fila ya declara. Ejemplo para dos, repite el patrón para los ocho:
 
@@ -433,11 +433,11 @@ En `public/css/styles.css`, sustituye los ocho bloques de `3664-3725` por uno so
 
 Los ocho matices, del contrato: `red`, `orange`, `violet`, `amber`, `teal`, `neutral`, `blue`, `green` para `blocked-overdue-critical`, `blocked-overdue`, `blocked-due`, `alert-1-week`, `alert-2-3-weeks`, `alert-4-6-weeks`, `execution-blocked`, `liberated-control`.
 
-- [ ] **Step 5: Alinea los muestrarios de la leyenda**
+- [x] **Step 5: Alinea los muestrarios de la leyenda**
 
 En `public/css/styles.css:3886-3925`, cambia cada `.pi-legend-modal-swatch.pi-state-*` para que use el **mismo** `--ds-state-tint-*` que su fila. Si no, la leyenda deja de describir la tabla — que es el defecto F0-012.
 
-- [ ] **Step 6: Mide el DESPUÉS y compáralo con el ANTES**
+- [x] **Step 6: Mide el DESPUÉS y compáralo con el ANTES**
 
 ```bash
 node goals/ds-f1a-estados-severidad/evidence/sonda-despues.mjs
@@ -448,7 +448,7 @@ Esperado, y compruébalo entrada por entrada:
 - `railNivel` es el nivel del contrato en las nueve filas,
 - la leyenda da **ocho colores**, no cinco.
 
-- [ ] **Step 7: Corre la suite estática y anota qué goldens se movieron**
+- [x] **Step 7: Corre la suite estática y anota qué goldens se movieron**
 
 ```bash
 npm run test:design-system:static
@@ -457,7 +457,7 @@ npx playwright test tests/browser/programacion-intermedia.visual.mjs --workers=1
 
 El golden **va a fallar**: el color cambió a propósito. **NO lo regeneres.** Anota el diff, guarda la captura nueva y **pídele al usuario aprobación visual por su nombre** antes de tocar el baseline.
 
-- [ ] **Step 8: Commit (sin el golden)**
+- [x] **Step 8: Commit (sin el golden)**
 
 ```bash
 git add public/js/modules/programacion_intermedia/hot.js public/css/styles.css goals/ds-f1a-estados-severidad/evidence
@@ -476,7 +476,7 @@ git commit -m "feat(pi): el fondo dice que estado es y el filete cuan grave"
 - Consumes: `statePresentation[...].level` de la Task 1.
 - Produces: `window.PIOrden.agrupar(datos)` — recibe el array de filas y devuelve **una copia nueva** ordenada por nivel descendente, estable dentro de cada nivel.
 
-- [ ] **Step 1: Escribe el test que falla**
+- [x] **Step 1: Escribe el test que falla**
 
 Crea `tests/design-system/orden-gravedad.test.mjs`:
 
@@ -509,7 +509,7 @@ test('no muta el array original', () => {
 });
 ```
 
-- [ ] **Step 2: Corre el test y comprueba que pasa el modelo**
+- [x] **Step 2: Corre el test y comprueba que pasa el modelo**
 
 ```bash
 node --test tests/design-system/orden-gravedad.test.mjs
@@ -517,7 +517,7 @@ node --test tests/design-system/orden-gravedad.test.mjs
 
 Esperado: PASS, 2/2. (Este test fija el **contrato del orden**; el paso siguiente lo implementa igual en `hot.js`.)
 
-- [ ] **Step 3: Añade el botón a la barra**
+- [x] **Step 3: Añade el botón a la barra**
 
 En `views/programacion-intermedia/programacion_intermedia.view.php`, junto a los otros `aia-btn`:
 
@@ -525,7 +525,7 @@ En `views/programacion-intermedia/programacion_intermedia.view.php`, junto a los
 <button id="btn-agrupar-gravedad" type="button" class="aia-btn aia-btn--secondary" aria-pressed="false">Agrupar por gravedad <i class="fas fa-sort-amount-down ml-1"></i></button>
 ```
 
-- [ ] **Step 4: Implementa el orden en `hot.js`**
+- [x] **Step 4: Implementa el orden en `hot.js`**
 
 ```javascript
   var PESO_NIVEL = { urgent: 3, attention: 2, healthy: 1, neutral: 0 };
@@ -552,7 +552,7 @@ En `views/programacion-intermedia/programacion_intermedia.view.php`, junto a los
 
 y engancha el botón para alternar entre `agruparPorGravedad(datosOriginales)` y `datosOriginales`, actualizando `aria-pressed`.
 
-- [ ] **Step 5: Compruébalo en el navegador**
+- [x] **Step 5: Compruébalo en el navegador**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose up -d app
@@ -560,7 +560,7 @@ LPS_CODE_ROOT="$(pwd)" docker compose up -d app
 
 Abre `http://localhost:8081/dev/entrar?u=test.R&p=<proyecto>`, ve a `/programacion-intermedia`, pulsa el botón y comprueba: sube lo grave, `aria-pressed` pasa a `true`, y al pulsar otra vez vuelve el orden del programa **exactamente** como estaba.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add views/programacion-intermedia/programacion_intermedia.view.php public/js/modules/programacion_intermedia/hot.js tests/design-system/orden-gravedad.test.mjs
@@ -571,7 +571,7 @@ git commit -m "feat(pi): boton para agrupar por gravedad, apagado por defecto"
 
 ### Task 5: Conciliar el golden de Intermedia
 
-- [ ] **Step 1: Genera la captura nueva y enséñasela al usuario**
+- [x] **Step 1: Genera la captura nueva y enséñasela al usuario**
 
 ```bash
 npx playwright test tests/browser/programacion-intermedia.visual.mjs --workers=1
@@ -579,11 +579,11 @@ npx playwright test tests/browser/programacion-intermedia.visual.mjs --workers=1
 
 Guarda la imagen de `test-output/` y **enséñale al usuario el antes y el después a tamaño real**, sin reescalar.
 
-- [ ] **Step 2: Pide aprobación visual por su nombre**
+- [x] **Step 2: Pide aprobación visual por su nombre**
 
 Literal: «¿Apruebo el golden `<nombre exacto>` de `programacion-intermedia.visual.mjs`?». **Sin un sí explícito, para aquí.**
 
-- [ ] **Step 3: Solo con el sí, actualiza el baseline y commitea**
+- [x] **Step 3: Solo con el sí, actualiza el baseline y commitea**
 
 ```bash
 npx playwright test tests/browser/programacion-intermedia.visual.mjs --workers=1 --update-snapshots
@@ -648,14 +648,14 @@ ningún par de sus siete estados comparte matiz.
 - Modify: `tests/design-system/state-tint-ladder.test.mjs` (`KNOWN_HUE_COLLISIONS`)
 - Modify: `public/css/programacion-semanal.css`
 
-- [ ] **Step 1: Asigna un matiz libre a cada pareja empatada**
+- [x] **Step 1: Asigna un matiz libre a cada pareja empatada**
 
 Fase `programacion` usa hoy `red, orange, amber, amber, green` → libres: `violet`, `blue`, `teal`, `neutral`.
 Fase `calificacion` usa hoy `red, amber, amber, green, blue` → libres: `violet`, `orange`, `teal`, `neutral`.
 
 Propuesta a confirmar con el usuario antes de escribirla: «Por Comprometer» → `violet` (no puede comprometerse con lo que tiene, mismo gesto que `/pdc`), y «Sin Calificar» → `neutral` (ausencia de dato, no problema).
 
-- [ ] **Step 2: Reescribe la excepción, no la borres**
+- [x] **Step 2: Reescribe la excepción, no la borres**
 
 En `tests/design-system/state-tint-ladder.test.mjs`, `KNOWN_HUE_COLLISIONS` pasa a declarar que las repeticiones que quedan son **entre fases** y por tanto inocuas, con el porqué escrito: `stateMachine.js:58` resuelve una fase u otra según `semanalConfirmada`, así que las dos mitades nunca conviven.
 
