@@ -57,46 +57,39 @@ Los tres niveles son conceptuales: **la barra dibuja dos y la ausencia de barra 
 `Controlado`:** no es que su gravedad sea baja, es que **no tienen gravedad**. Se distinguen en el
 fondo, que es su canal.
 
-## Los trece estados
+## Los siete estados
 
-Las etiquetas son los literales **exactos** de la columna `Estado`, con tildes, verificados contra
-la base. Un contrato cuya etiqueta no case con el literal guardado no puede cruzarse con los datos.
+Medidos sobre **50 976 actividades reales** después de la migración del 2026-08-19. Las etiquetas
+son los literales exactos de la columna `Estado`.
 
-| Estado | Nivel | % de actividades | Quién lo produce |
-|---|---|---:|---|
-| `Atrasada` | Urgente | 8,0% | `pg_calculate_status` |
-| `Debe Iniciar esta Semana y Restricciones Pendientes` | Urgente | 1,5% | nadie hoy |
-| `En Liberación de Restricciones` | Atención · **revocable** | 10,7% | nadie hoy |
-| `Debe Iniciar` | Atención | 0,9% | `pg_calculate_status` |
-| `Debe Iniciar esta Semana` | Atención · **revocable** | 0,2% | nadie hoy |
-| `Actividad Futura` | Controlado | 33,6% | `pg_calculate_status` |
-| `Terminada` | Controlado | 19,0% | `pg_calculate_status` |
-| `En Curso` | Controlado | 0,7% | `pg_calculate_status` |
-| `Terminada Antes` | Controlado | 0,6% | nadie hoy |
-| `A Tiempo` | Controlado | 0,4% | nadie hoy |
-| `Adelantada` | Controlado | 0,0% | nadie hoy |
-| `Fuera de Ventana` | *sin gravedad* | 24,2% | `pg_calculate_status` |
-| `Sin Datos` | *sin gravedad* | 0,1% | `pg_calculate_status` |
+| Estado | Nivel | % de actividades |
+|---|---|---:|
+| `Atrasada` | Urgente | 8,0% |
+| `Debe Iniciar` | Atención | 2,6% |
+| `Actividad Futura` | Controlado | 17,8% |
+| `Terminada` | Controlado | 19,7% |
+| `En Curso` | Controlado | 1,1% |
+| `Fuera de Ventana` | *sin gravedad* | 50,6% |
+| `Sin Datos` | *sin gravedad* | 0,1% |
 
-### «Quién lo produce» no es un dato de archivo
+**Los siete estados legacy quedaron sin una sola fila:** `No Requerida`,
+`En Liberación de Restricciones`, `Terminada Antes`, `A Tiempo`, `Adelantada`,
+`Debe Iniciar esta Semana` y `Debe Iniciar esta Semana y Restricciones Pendientes`. La columna
+`Estado` ya solo contiene lo que los calculadores canónicos producen, y todos sus valores tienen
+nivel declarado — el 51,1% que el contrato no reconocía es cero.
 
-Seis de los trece estados **no los produce nadie hoy**: `pg_calculate_status` tiene siete salidas
-posibles y esas seis no están entre ellas. Eso significa que cada vez que se guarda una actividad,
-su estado se reescribe con uno de los siete que sí produce — y los otros seis **se borran solos**.
+### Lo que la migración enseñó y el contrato no decía
 
-Es exactamente lo que le estaba pasando a `Fuera de Ventana` antes de este contrato.
-
-### Las dos asignaciones revocables
-
-Estas dos las propuso la spec y **el usuario no las ha decidido**. La marca `revocable` del JSON las
-protege, y quitarla es decisión suya:
-
-- **`En Liberación de Restricciones` → Atención.** Parece el sustituto vivo de
-  `Con Alerta Restricciones`, que `state-semantics.json` declara como atención y que **no existe en
-  ninguna de las 65 549 filas**.
-- **`Debe Iniciar esta Semana` → Atención.** Su hermano *con restricciones pendientes* va a
-  urgente; lo que los separa es si algo lo bloquea. Si en obra «le toca esta semana» ya es urgente,
-  se mueve.
+- **La mitad del cronograma está fuera de ventana.** `Fuera de Ventana` es el estado más frecuente
+  con diferencia. Es coherente con un cronograma largo, y significa que la tabla, leída de un
+  vistazo, habla sobre todo de trabajo que todavía no entra en la conversación.
+- **Dos predicciones del informe fallaron.** Se dijo que `Actividad Futura` bajaría a ~6,8% y quedó
+  en 17,8%: no se contó con que los 5 391 `En Liberación de Restricciones` entrarían ahí. La de
+  `Fuera de Ventana` (~51% contra 50,6% real) sí acertó.
+- **Una actividad terminada nunca es «fuera de ventana»**, aunque empiece a siete semanas: el
+  calculador comprueba el avance completo antes que la regla de horizonte
+  (`src/Legacy/estado_programa_general.php:148`). Por eso las 24 filas que se temía perder
+  conservaron su `Terminada`.
 
 ## `Fuera de Ventana`
 

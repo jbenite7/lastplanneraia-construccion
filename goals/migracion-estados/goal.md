@@ -117,3 +117,16 @@ Y una tercera, que no es riesgo: **31 filas** `No Requerida -> Terminada`, donde
 **añade** información en vez de quitarla.
 
 **El `--apply` no lo habilita este frente.** Su guarda deniega con `RC=1` sin escribir, comprobado.
+
+## Publicaciones
+- **`7da358a7` — publicado el 2026-08-19** con `bash scripts/publicar.sh`, cuatro comprobaciones en
+  verde antes del push. Confirmado: `origin/main` es ese sha, sin `ahead` ni `behind`. Contenedor
+  devuelto a la raíz inmediatamente después.
+
+**Lo publicado NO incluye ninguna migración de datos.** Son el script con su dry-run, el respaldo,
+las capturas y los informes. La columna `Estado` de los 16 proyectos sigue exactamente como estaba:
+`0` diferencias contra el respaldo, medido después de todo el trabajo.
+
+**El `--apply` sigue bloqueado en el código publicado.** Su guarda deniega con `RC=1` sin escribir.
+Desbloquearlo exige el sí explícito del usuario sobre el informe, y ni el visto de la coordinadora
+ni una autorización relatada lo sustituyen — está escrito así en el propio script, no solo aquí.
