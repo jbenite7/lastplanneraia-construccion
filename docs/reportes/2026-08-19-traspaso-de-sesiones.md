@@ -36,6 +36,33 @@ recoge—, así que era cobertura que no protegía nada.
 `#[Group('a')]`. El runner **no podía correr dos niveles a la vez**. Estaba latente porque todos los
 `tests/unit/*Test.php` eran nivel `puro`; el primer test de otro nivel lo destapa.
 
+## El recálculo de estados YA SE APLICÓ, y está sin publicar
+
+`aa965bf5`, a las 13:40, en `claude/bold-neumann-485f23`. **40.664 filas migradas sobre la base de
+desarrollo**, con acta en `goals/apply-recalculo-estados/acta-del-apply.md`. Se hizo como pedía el
+procedimiento: autorización directa de Felipe además de la relatada, ventana de base exclusiva,
+dry-run coincidiendo exactamente con el informe autorizado, y reconciliación exacta contra el
+respaldo.
+
+**El detalle que vale la pena copiar:** el respaldo probado horas antes **ya no cubría la base** —
+`origen=65.565 · respaldo=65.557 · sin_respaldo=8`. Ocho filas nuevas habían entrado entre la
+prueba y el apply. Se rehízo el respaldo y se volvió a probar la restauración antes de seguir. Un
+respaldo verificado no es un respaldo vigente: **entre verificarlo y usarlo, la base sigue viva.**
+
+Cualquier página que diga que este apply está «autorizado y sin ejecutar» quedó caduca el 2026-08-19
+a las 13:40.
+
+## El hook de pre-commit es inerte hasta que se registra a mano
+
+`11150fee` trae `scripts/hooks/pre-commit-tests.sh`, que es **solo la lógica**. Lo que lo activa es
+un bloque `PreToolUse` en `.claude/settings.json`, y `.claude/` está en `.gitignore`. El reparto es
+deliberado —la lógica viaja, la configuración personal no— pero tiene un filo:
+
+**quien recoja ese commit se encuentra un script que nunca se ejecuta, y puede creer que tiene la
+red puesta cuando no la tiene.** Hoy solo está activo en el worktree que lo escribió; en la raíz del
+repo, no. Activarlo en la raíz cambia la configuración de las sesiones que estén corriendo allí, así
+que el orden importa.
+
 ## El gate de rutas lleva toda la jornada caído
 
 Medido dos veces, por dos sesiones distintas:
