@@ -70,3 +70,50 @@ legacy o vacío (`No Requerida` 12 338, vacío 7 705, `En Liberación de Restric
 `Debe Iniciar esta Semana y Restricciones Pendientes` 771, `Terminada Antes` 317, `A Tiempo` 229,
 `Debe Iniciar esta Semana` 110, `Adelantada` 13). Y **13 664** más que hoy son `Actividad Futura`
 pasarán a `Fuera de Ventana`. El número exacto lo dirá el dry-run: esto es la cota, no la medida.
+
+## Cierre
+
+**El frente prepara y ensaya la migración. No la aplica, y no puede aplicarla.**
+
+Condición de hecho, punto por punto:
+
+1. **Las 113 capturadas antes de nada** — `113-contradictorias-capturadas.csv`, con `Consecutivo`
+   para poder reencontrarlas. Deriva contra el diagnóstico heredado: **cero**.
+2. **Script con dry-run por defecto** — `database/migrations/20260819_recalculo_estados.php`.
+   40 664 filas cambiarían, 24 777 quedan igual, 116 se saltan por no tener semana activa.
+3. **Respaldo verificable y restauración probada** — 65 557 = 65 557, cero diferencias, y los
+   7 705 estados vacíos respaldados. La restauración se **probó** sobre una copia: 2 024 filas
+   estropeadas —algunas a `NULL`— devueltas todas a su valor.
+4. **Gates obligatorios** — safety `RC=0`, reconciliación `RC=0`, PHPStan sin errores, suite `db`
+   con 45 tests OK y 4 rojos preexistentes, suite `http` con 7 rojos: 6 conocidos y **uno nuevo,
+   medido y ajeno**.
+5. **Informe con las dos familias** — `informe-dry-run.md`, con recomendación para cada una y sin
+   ejecutar ninguna.
+6. **Cero filas modificadas** — comprobado contra el respaldo al final de todo: `0` diferencias.
+
+### El rojo nuevo, y cómo se determinó que es ajeno
+
+`test_bi_filters_apply_to_charts.php` apareció solo en el nivel `http`. A/B con reversión real
+—`git checkout 7594fb49~1 --` sobre los dos calculadores, `grep -c` confirmando que
+`Fuera de Ventana` desaparecía de ambos, y restauración verificada—: **falla idéntico en los dos
+lados**. Y el test no menciona ninguno de los calculadores.
+
+**El primer intento de ese A/B no midió nada** y casi pasa por prueba: `git stash push` no guardó
+nada porque los archivos ya estaban commiteados, así que las dos corridas ejecutaron el mismo
+código. Queda escrito en `memoria/trampas/ab-que-no-mide-nada.md`, porque la conclusión resultó ser
+**cierta** y por eso mismo el error no habría dejado rastro.
+
+### Lo que le llega al usuario para decidir
+
+Dos familias, medidas y con recomendación:
+
+- **24 filas** terminadas al 100% con fecha de inicio futura → migrarlas conservando el estado
+  anterior en el respaldo.
+- **296 filas** con `Titulo = 1` y estado de actividad → migrarlas sin excepción: se comportan como
+  capítulos (87,5% agrupa una actividad debajo, avance medio 0,005 contra 0,214 de una actividad),
+  así que el estado que pierden es residuo y no dato.
+
+Y una tercera, que no es riesgo: **31 filas** `No Requerida -> Terminada`, donde el recálculo
+**añade** información en vez de quitarla.
+
+**El `--apply` no lo habilita este frente.** Su guarda deniega con `RC=1` sin escribir, comprobado.
