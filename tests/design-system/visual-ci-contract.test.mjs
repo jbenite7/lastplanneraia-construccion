@@ -116,6 +116,10 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     '110-bi-view.sql',
     // B-9 (2026-08-07): migracion de `general_proyectos_procesos`, ver el Dockerfile.
     '120-proyectos-lineabase.sql',
+    // linea-base-contractual (2026-08-19): la 120 CREA las columnas de linea base y no las
+    // rellena. Sin esta, el CI las tiene vacias, la fecha contractual sale NULL y `baseline-drift`
+    // sigue rojo aunque el calculo sea correcto. Va despues de la 120 por esa dependencia.
+    '121-sembrar-linea-base.sql',
   ];
   assert.deepEqual(
     fixtureImage.split('\n')

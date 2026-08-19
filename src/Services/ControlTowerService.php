@@ -26,6 +26,7 @@ class ControlTowerService
     private LineageService $lineage;
     private ForecastService $forecast;
     private ActionRecommendationService $actionRec;
+    private LineaBaseContractualService $lineaBase;
 
     public function __construct()
     {
@@ -35,6 +36,7 @@ class ControlTowerService
         $this->lineage = new LineageService();
         $this->forecast = new ForecastService();
         $this->actionRec = new ActionRecommendationService();
+        $this->lineaBase = new LineaBaseContractualService($this->db);
     }
 
     /**
@@ -199,7 +201,6 @@ class ControlTowerService
         $trend = $this->fetchProgramaGeneralForecastTrend($projectIds, $semana, $filters);
         $context = $this->programaCurveContext($trend);
         $progress = $this->programaProgressSeries($trend, $context);
-        $contractualBaseline = $this->programaContractualBaselineForCurrentCohort($projectIds, $context);
         $forecast = $this->programaDelayForecast(
             $trend,
             $context,
@@ -207,7 +208,6 @@ class ControlTowerService
             $projectIds,
             $semana,
             $filters,
-            $contractualBaseline,
         );
         $observed = $this->programaObservedDelayPayload($context);
         $activities = $observed['activities'];
@@ -962,10 +962,8 @@ class ControlTowerService
         $compliancePayload = $this->programaCompliancePayload($trend, $context);
         $complianceSummary = $compliancePayload['summary'];
         $forecastProgress = $this->programaProgressSeries($forecastTrend, $forecastContext);
-        $contractualBaseline = $this->programaContractualBaselineForCurrentCohort($projectIds, $forecastContext);
         $delayForecast = $this->programaDelayForecast(
             $forecastTrend, $forecastContext, $forecastProgress, $projectIds, $semana, $filters,
-            $contractualBaseline,
         );
         $cumplimientoCronograma = $this->scheduleCompliancePct($curveRealProgress, $curveTheoreticalProgress);
         $progressRange = array_merge(
@@ -1772,7 +1770,6 @@ class ControlTowerService
         array $projectIds,
         string $semana,
         array $filters,
-        array $contractualBaselineByProject,
     ): array {
         $rowsByProject = [];
         foreach ($trend as $row) {
@@ -1788,7 +1785,6 @@ class ControlTowerService
                 $projectId,
                 $projectContext,
                 $projectProgress,
-                $contractualBaselineByProject[$projectId] ?? [],
             );
         }
 
@@ -1838,7 +1834,7 @@ class ControlTowerService
                 'availability' => $available,
                 'reason' => $reason,
                 'contractual_finish' => $contractualFinish,
-                'contractual_finish_basis' => 'first_available_snapshot_per_project',
+                'contractual_finish_basis' => 'declared_project_baseline',
                 'forecast' => $forecast,
                 'forecast_distribution_basis' => 'completion_date_samples_by_simulation',
                 'portfolio_aggregation' => 'max_completion_date_per_simulation_then_percentiles',
@@ -1864,40 +1860,13 @@ class ControlTowerService
         ];
     }
 
-    private function programaContractualBaselineForCurrentCohort(array $projectIds, array $context): array
-    {
-        $cohortByProject = [];
-        foreach ($context['baseline'] ?? [] as $row) {
-            $projectId = (int) ($row['project_id'] ?? 0);
-            $uniqueId = (int) ($row['unique_id'] ?? 0);
-            if ($projectId > 0 && $uniqueId > 0) {
-                $cohortByProject[$projectId][$uniqueId] = true;
-            }
-        }
-
-        $contractualContext = $this->programaCurveContext(
-            $this->fetchProgramaGeneralTrend($projectIds, '', $this->normalizeFilters([])),
-        );
-        $baseline = [];
-        foreach ($contractualContext['contractual_baseline_by_project'] ?? [] as $projectId => $rows) {
-            $cohort = $cohortByProject[(int) $projectId] ?? [];
-            $baseline[(int) $projectId] = array_values(array_filter(
-                $rows,
-                static fn(array $row): bool => isset($cohort[(int) ($row['unique_id'] ?? 0)]),
-            ));
-        }
-        foreach ($projectIds as $projectId) {
-            $baseline[(int) $projectId] ??= [];
-        }
-
-        return $baseline;
-    }
-
-    private function programaProjectForecast(int $projectId, array $context, array $progress, array $contractualBaseline): array
+    private function programaProjectForecast(int $projectId, array $context, array $progress): array
     {
         $hasFilteredCohort = ($context['baseline'] ?? []) !== [];
-        [, $contractualDate] = $this->programaBaselineDates($contractualBaseline);
-        $contractualFinish = $contractualDate?->format('Y-m-d');
+        // La línea base NO se deduce de lo vigente: se lee de lo declarado. Deducirla y cruzarla con
+        // la cohorte de la semana hacía que una reprogramación la borrara —medido el 2026-08-19 en
+        // el proyecto 68, con intersección de actividades en cero— justo cuando más falta hace.
+        $contractualFinish = $this->lineaBase->declaradaDe($projectId)['fin'] ?? null;
         $meta = $progress['projection_meta'] ?? [];
         $completionDates = $this->completionDateSamples(
             $progress['completion_week_samples'] ?? [],
@@ -1926,6 +1895,7 @@ class ControlTowerService
                     ? 'No hay actividades que coincidan con los filtros para este proyecto.'
                     : (string) ($meta['reason'] ?? 'No fue posible calcular la fecha final probabilística.')),
             'contractual_finish' => $contractualFinish,
+            'contractual_finish_basis' => 'declared_project_baseline',
             'p10_finish' => $available ? $forecast['p10_finish'] : null,
             'p50_finish' => $available ? $forecast['p50_finish'] : null,
             'p90_finish' => $available ? $forecast['p90_finish'] : null,

@@ -39,3 +39,10 @@ COPY database/bi/010_bi_lineage.sql /docker-entrypoint-initdb.d/110-bi-view.sql
 # paso cada build de CI comprueba que la migracion hace lo que dice. Va al final, despues de que
 # el fixture haya creado la tabla, porque sus ALTERs son condicionales.
 COPY database/migrations/20260807_proyectos_lineabase_columns.sql /docker-entrypoint-initdb.d/120-proyectos-lineabase.sql
+
+# La siembra de la linea base contractual, y va DESPUES de 120 a proposito: aquella crea las
+# columnas y esta las rellena. Sin este paso el CI tendria las columnas vacias, la fecha
+# contractual saldria NULL y `baseline-drift` seguiria rojo aunque el calculo fuera correcto —
+# que es exactamente lo que paso al implementar, y lo que obligo a que el sembrado fuera migracion
+# en vez de script PHP. Es write-once: reejecutarla no pisa una linea base ya declarada.
+COPY database/migrations/20260819_sembrar_linea_base_contractual.sql /docker-entrypoint-initdb.d/121-sembrar-linea-base.sql
