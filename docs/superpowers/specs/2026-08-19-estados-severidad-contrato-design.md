@@ -126,7 +126,7 @@ no cumple esta decisión, aunque lo parezca.
 |---|---|---|
 | `/programacion-intermedia` | 8 | Exacto: ocho estados, ocho matices. **Se diseña y valida aquí primero** |
 | `/programa-general` | 7 | Encaja |
-| `/plan-compras` (pdc) | 7 | Encaja |
+| `/plan-compras` (pdc) | 7 declarados | **NO APLICA — ninguna superficie los pinta** (ver abajo) |
 | `/programacion-semanal` | 10 → **5 + 5** | Encaja por fase (ver abajo) |
 
 **Programación Semanal cabe, contra lo que parecía.** Sus diez estados son **cinco por fase**:
@@ -136,6 +136,28 @@ hoy comparten ámbar —«Condiciones Pendientes» con «Por Comprometer» en Pr
 «Sin Calificar» en Calificación—, y hay cuatro matices libres en cada fase. Las colisiones
 **entre** fases son inocuas y la excepción `KNOWN_HUE_COLLISIONS` de
 `tests/design-system/state-tint-ladder.test.mjs` se reescribe para reflejar eso, no se borra.
+
+> **Corrección del 2026-08-19, medida al ejecutar la Task 6.** Este spec dio `/plan-compras` por
+> dentro del alcance diciendo que «sus siete fondos ya consumen la paleta vía `--pdc-*-bg`». **Es
+> falso, y el error es mío: leí el contrato sin comprobar que algo lo pintara.** Medido:
+>
+> - Las siete etiquetas del módulo `pdc` **no aparecen en ninguna vista ni componente** del repo,
+>   solo en la prosa del laboratorio (`views/design-system/families/states-feedback.php:75`).
+> - Los tokens `--pdc-*-bg` los consumen `#tabla_excepciones_no_autoprogramadas` y
+>   `#formulario_nuevo` (`public/css/styles.css:2358, 2382`), que son superficies de
+>   **/programacion-semanal**, no de Compras.
+> - El módulo `pdc` es el único de los grandes cuyos estados **no declaran `key`** — justo el campo
+>   que existe para unir contrato y renderer. No lo declaran porque no hay renderer.
+> - La única columna «Estado» viva en `/plan-compras` (`Seguimiento.tsx`) usa tres valores de texto
+>   plano sin color.
+>
+> **`/plan-compras` sale del alcance como no aplicable.** Quedan tres superficies, no cuatro.
+>
+> Y queda un hallazgo que este frente no resuelve: **el contrato declara siete estados que no pinta
+> nadie**, y el guard `state-tint-ladder` los da por buenos porque comprueba que los tokens nombren
+> la paleta —una declaración contra sí misma, la trampa que la wiki ya tiene fichada como
+> `guard-valida-declaracion-contra-si-misma`—. Es entrada para el cajón de DS-F1 que decide qué
+> significa «cubierto».
 
 Los módulos que declaran nivel pero **no** matiz (`auth`, `bi`, `control-cambios`, `dashboard`,
 `profesionales`, `subcontratistas`) **quedan fuera**: no son tablas de estado y el modelo no les
