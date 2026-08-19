@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/migration.md
+resumen: Migracion del design system
+---
+
 # Migracion del design system
 
 > Este orden describe migraciones posteriores. Sprint 00 homologa familias en el

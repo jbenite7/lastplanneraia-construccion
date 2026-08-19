@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system, admin]
+fuente: docs/design-system/auditoria/modulos/ds-f0-panel-admin.md
+resumen: Módulo · Panel de administración
+---
+
 # Módulo · Panel de administración
 
 **Estado declarado:** `inventory-only` (`admin`, **sin manifiesto y sin cobertura golden**)

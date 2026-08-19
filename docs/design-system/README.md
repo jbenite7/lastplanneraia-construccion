@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/README.md
+resumen: Este directorio define la parte versionada del design system. Stitch y docs/brand/ son insumos visuales; el contrato ejecutable vive en el repo.
+---
+
 # Design system innegociable AIA
 
 Este directorio define la parte versionada del design system. Stitch y `docs/brand/` son insumos visuales; el contrato ejecutable vive en el repo.

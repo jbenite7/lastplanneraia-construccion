@@ -252,10 +252,20 @@ export const ORDEN = ['capa', 'tipo', 'estado', 'fecha', 'areas', 'tags', 'fuent
  * Una clave presente pero vacía cuenta como puesta: rellenarla es trabajo de mano humana, y
  * volver a escribirla en cada pasada haría que el backfill dejara de ser idempotente.
  */
-export function faltantes(fm, propuesta) {
+export function faltantes(fm, propuesta, { rellenar = false } = {}) {
   if (fm === null) return ORDEN.filter((k) => k in propuesta);
+  if (rellenar) return ORDEN.filter((k) => k in propuesta && propuesta[k] && !campo(fm, k));
   return ORDEN.filter((k) => k in propuesta && !campo(fm, k)
-    && !new RegExp(`^${k}:\\s*$`, 'm').test(fm));
+    && !new RegExp(`^${k}:[^\\S\\n]*$`, 'm').test(fm));
+}
+
+/** Reescribe en su sitio una clave que ya está pero vacía. Para `--rellenar`. */
+export function rellenarVacias(texto, propuesta, claves) {
+  let salida = texto;
+  for (const k of claves) {
+    salida = salida.replace(new RegExp(`^${k}:[^\\S\\n]*$`, 'm'), `${k}: ${propuesta[k]}`);
+  }
+  return salida;
 }
 
 export function render(propuesta, claves) {

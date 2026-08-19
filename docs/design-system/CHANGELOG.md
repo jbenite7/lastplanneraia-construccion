@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/CHANGELOG.md
+resumen: Design System AIA changelog
+---
+
 # Design System AIA changelog
 
 ## 1.1.0 - 2026-08-07

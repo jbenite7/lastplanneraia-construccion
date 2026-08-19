@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/README.md
+resumen: Esto es un inventario, no un arreglo. Nada de lo que hay aquí se ha reparado, y ninguna cifra de este directorio autoriza a repararlo: reparar es DS-F2, y…
+---
+
 # DS-F0 · Auditoría total del design system
 
 **Esto es un inventario, no un arreglo.** Nada de lo que hay aquí se ha reparado, y ninguna cifra

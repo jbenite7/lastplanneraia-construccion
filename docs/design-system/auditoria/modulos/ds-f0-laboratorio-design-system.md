@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-laboratorio-design-system.md
+resumen: Módulo · Laboratorio del design system
+---
+
 # Módulo · Laboratorio del design system
 
 **Estado declarado:** `laboratory.json` existe y **no tiene fila en `modules[]`**, así que el módulo

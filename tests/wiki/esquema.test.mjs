@@ -132,3 +132,12 @@ test('la exención del molde es estrecha: el vocabulario se le sigue exigiendo',
     { rel: 'memoria/templates/x.md', molde: true });
   assert.deepEqual(fallos.map((f) => f.campo).sort(), ['areas', 'capa', 'estado', 'tags', 'tipo']);
 });
+
+test('un campo vacio no se traga la linea siguiente', () => {
+  // Devolvía `areas: [design-system]` como si fuera la fecha, y el lint lo reportaba así.
+  const fm = 'tipo: guia\nfecha: \nareas: [design-system]\nresumen: Algo';
+  assert.equal(campo(fm, 'fecha'), undefined);
+  assert.equal(campo(fm, 'tipo'), 'guia');
+  assert.equal(campo(fm, 'resumen'), 'Algo');
+  assert.deepEqual(revisarFrontmatter(fm, { rel: 'docs/x.md' }), []);
+});

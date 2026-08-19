@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/inventario.md
+resumen: Generado por herramientas/inventario-md.mjs desde hallazgos.json. No se edita a mano. La regla con la que se clasifica está en escala-severidad.md; cada…
+---
+
 # Inventario por severidad
 
 **Generado por `herramientas/inventario-md.mjs` desde `hallazgos.json`. No se edita a mano.**

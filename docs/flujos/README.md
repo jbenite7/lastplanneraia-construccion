@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-04
+areas: [lps]
+fuente: docs/flujos/README.md
+resumen: Qué debe hacer esta aplicación, escenario por escenario. No qué hace: qué debe hacer.
+---
+
 # La biblia de flujos
 
 Qué **debe** hacer esta aplicación, escenario por escenario. No qué hace: qué debe hacer.

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-autenticacion.md
+resumen: Módulo · Autenticación
+---
+
 # Módulo · Autenticación
 
 **Estado declarado:** `pilot` (`auth.json`) · **Pantallas:** `/login`, `/password/forgot`,

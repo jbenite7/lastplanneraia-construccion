@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-07-15
+areas: [design-system]
+fuente: docs/design-system/dark-palette.md
+resumen: Estado: approved con anotaciones de tema y densidad, 2026-07-12.
+---
+
 # Paleta AIA sobre superficies oscuras
 
 Estado: `approved` con anotaciones de tema y densidad, 2026-07-12.

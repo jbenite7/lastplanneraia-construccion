@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/vendors/ds-f0-handsontable.md
+resumen: Va en ficha aparte porque su patrón es distinto: no es un módulo que se desvía del contrato, es un sistema entero que nunca entró.
+---
+
 # Vendor · Handsontable
 
 Va en ficha aparte porque **su patrón es distinto**: no es un módulo que se desvía del contrato, es

@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/censo-modulos.md
+resumen: Generado por herramientas/censo.mjs y verificado contra public/index.php y admin/public/index.php (ver README.md §Por qué el censo se verifica y no se hereda)…
+---
+
 # Censo de módulos — el universo a recorrer
 
 Generado por `herramientas/censo.mjs` y verificado contra `public/index.php` y

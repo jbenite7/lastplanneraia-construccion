@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-cronograma.md
+resumen: Módulo · Actualizar cronograma
+---
+
 # Módulo · Actualizar cronograma
 
 **Estado declarado:** `pilot` (`programa-general-actualizar.json`) · **Pantalla:**

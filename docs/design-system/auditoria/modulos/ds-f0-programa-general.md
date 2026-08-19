@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system]
+fuente: docs/design-system/auditoria/modulos/ds-f0-programa-general.md
+resumen: Módulo · Programa General
+---
+
 # Módulo · Programa General
 
 **Estado declarado:** `pilot` (`programa-general.json`) · **Pantalla:** `/programa-general`

@@ -22,13 +22,17 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { bloqueFrontmatter, deducirCapa } from './wiki-esquema.mjs';
 import { ORDEN, aplicar, deducirAreas, deducirEstado, deducirTags, deducirTipo,
-  faltantes, fechaDelNombre, render, resumenEnCascada } from './wiki-frontmatter.reglas.mjs';
+  faltantes, fechaDelNombre, rellenarVacias, render, resumenEnCascada } from './wiki-frontmatter.reglas.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
 const ESCRIBIR = argv.includes('--escribir');
 const DETALLE = argv.includes('--detalle');
 const SOLO = argv.includes('--solo') ? argv[argv.indexOf('--solo') + 1] : null;
+// `--rellenar` completa las claves que quedaron ESCRITAS PERO VACÍAS. Existe porque el modo normal
+// las respeta a propósito —para no pisar lo que escribió una persona—, y eso deja atrapado un lote
+// aplicado antes de arreglar una regla de deducción. Sigue sin pisar nunca un valor no vacío.
+const RELLENAR = argv.includes('--rellenar');
 
 if (argv.includes('--solo') && !SOLO) {
   console.error('wiki-frontmatter: --solo necesita un prefijo de ruta.');
@@ -74,6 +78,25 @@ function altasGit() {
 }
 const ALTA = altasGit();
 
+/**
+ * Respaldo por archivo, para los pocos que el barrido masivo no ve.
+ *
+ * `git log --name-only` sin ruta omite la lista de archivos de los commits de merge, así que un
+ * archivo que solo entró al historial por esa vía no aparece en el barrido — medido el 2026-08-19
+ * sobre los trece de `docs/design-system/auditoria/`, que el lint reportó como «falta o está
+ * vacío: fecha» mientras `git log -- <ruta>` sí devolvía su fecha. Consultar archivo por archivo
+ * los 413 costaría un minuto largo; consultar solo los que faltan cuesta nada.
+ */
+function altaDe(rel) {
+  if (ALTA.has(rel)) return ALTA.get(rel);
+  try {
+    const d = execFileSync('git', ['log', '--diff-filter=A', '--date=short', '--format=%ad',
+      '-1', '--', rel], { cwd: RAIZ, encoding: 'utf8' }).trim().split('\n')[0];
+    ALTA.set(rel, /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '');
+  } catch { ALTA.set(rel, ''); }
+  return ALTA.get(rel);
+}
+
 // ── Qué frontmatter le tocaría a cada archivo ────────────────────────────────────────────────
 // El cómo se escribe (`ORDEN`, `faltantes`, `render`, `aplicar`) vive en el módulo de reglas,
 // para que se pueda probar sin tocar el disco.
@@ -86,7 +109,7 @@ function propuesta(rel, texto) {
     capa: deducirCapa(rel),
     tipo: deducirTipo(rel),
     estado: deducirEstado(rel),
-    fecha: fechaDelNombre(rel) || ALTA.get(rel) || '',
+    fecha: fechaDelNombre(rel) || altaDe(rel) || '',
     areas: `[${areas.join(', ')}]`,
     tags: `[${tags.join(', ')}]`,
     fuente: rel,
@@ -112,7 +135,7 @@ for (const rel of elegidos) {
   const texto = readFileSync(ruta, 'utf8');
   const fm = bloqueFrontmatter(texto);
   const prop = propuesta(rel, texto);
-  const claves = faltantes(fm, prop);
+  const claves = faltantes(fm, prop, { rellenar: RELLENAR });
 
   const carpeta = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '(raíz)';
   cuenta(porCarpeta, carpeta);
@@ -130,7 +153,10 @@ for (const rel of elegidos) {
     console.log(`\n── ${rel}${fm !== null ? '  (fusión: ya tiene frontmatter ajeno)' : ''}`);
     console.log(render(prop, claves).split('\n').map((l) => `   ${l}`).join('\n'));
   }
-  if (ESCRIBIR) { writeFileSync(ruta, aplicar(texto, prop, claves), 'utf8'); escritos.push(rel); }
+  if (ESCRIBIR) {
+    const nuevo = RELLENAR && fm !== null ? rellenarVacias(texto, prop, claves) : aplicar(texto, prop, claves);
+    writeFileSync(ruta, nuevo, 'utf8'); escritos.push(rel);
+  }
 }
 
 // ── Informe ──────────────────────────────────────────────────────────────────────────────────

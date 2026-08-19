@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-18
+areas: [design-system, rbac]
+fuente: docs/design-system/auditoria/modulos/ds-f0-profesionales-subcontratistas-control-cambios.md
+resumen: Se auditan juntos porque comparten forma —una tabla de gestión sobre el shell canónico— y porque los tres dan el mismo resultado: son la parte sana del…
+---
+
 # Módulos · Profesionales, Subcontratistas y Control de Cambios
 
 Se auditan juntos porque comparten forma —una tabla de gestión sobre el shell canónico— y porque
