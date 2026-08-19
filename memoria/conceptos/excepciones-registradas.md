@@ -4,6 +4,7 @@ tipo: concepto
 estado: vigente
 fecha: 2026-08-04
 areas: [design-system]
+tags: [trampa]
 fuente: tests/design-system/state-token-pairing.test.mjs, tests/design-system/accessibility.test.mjs, scripts/design-system-contracts.mjs
 resumen: "Una excepción registrada es una desviación tolerada con dueño, motivo y caducidad; los cuatro inventarios cierran la lista —lo que no está inventariado, falla— y desde 2026-08-04 los dos de estado anclan por firma, no por línea"
 ---

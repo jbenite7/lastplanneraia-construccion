@@ -5,6 +5,7 @@ estado: vigente
 verificado: 2026-08-18
 fecha: 2026-08-04
 areas: [design-system, qa]
+tags: [trampa]
 fuente: scripts/design-system-audit.mjs, tests/design-system/runtime-budget.test.mjs, scripts/design-system-phpstan-baseline.mjs
 resumen: "Una baseline congela el desorden existente para que solo lo nuevo bloquee; un presupuesto fija un techo absoluto; cada uno tiene su gate y su archivo"
 ---
