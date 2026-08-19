@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana.md
+resumen: que Fuera de Ventana deje de borrarse sola — los dos calculadores de estado la producen con la regla de 7+ semanas — y que por primera vez existan pruebas que…
+---
+
 # «Fuera de Ventana» en los dos calculadores — plan de implementación
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usá `superpowers:subagent-driven-development`
@@ -20,6 +30,25 @@ divergir.
 **Spec:** decisiones del usuario del 2026-08-19 en `decisiones/estados-consolidado-coordinadora.md`;
 contrato en `docs/design-system/ds-f1a-escala-estado.md`.
 
+## Paso 0 de TODA tarea que ejecute PHP
+
+**Antes de aceptar cualquier `RC=0`, comprobar qué árbol monta el contenedor:**
+
+```bash
+docker inspect $(docker compose ps -q app) \
+  --format '{{range .Mounts}}{{if eq .Destination "/var/www/html"}}{{.Source}}{{end}}{{end}}'
+```
+
+Si no devuelve **este** worktree, el resultado no mide este trabajo y **no cuenta como
+verificación**, ni en verde ni en rojo.
+
+Existe porque pasó el 2026-08-19, ejecutando este mismo plan: `run-php-tests.php --nivel=puro`
+devolvió `RC=0` y `OK (18 tests, 41 assertions)` mientras el contenedor servía el worktree
+`reverent-golick-aaf932`. La prueba de caracterización **no se ejecutó ninguna de las dos veces**;
+los 18 tests eran de la única clase que existía en aquel árbol. Lo delató que el conteo siguiera
+en 18 al añadir un caso que debía subirlo a 21 — es decir, por casualidad. **Un verde que no
+distingue «pasó» de «no se ejecutó» no es un verde.**
+
 ## Global Constraints
 
 - **Ni un `UPDATE`.** Este frente no migra ni corrige datos: eso es el frente (B).
@@ -29,6 +58,11 @@ contrato en `docs/design-system/ds-f1a-escala-estado.md`.
   26 084 actividades y no 12 338, y que deja `Fuera de Ventana` en ~51%.
 - **Los ocho estados y sus etiquetas exactas** salen de `docs/design-system/ds-f1a-escala-estado.json`.
 - **Sin dependencias nuevas.**
+- **El «goteo» es una decisión diferida al deploy, no de este plan.** A partir del despliegue, cada
+  actividad que se guarde a 7+ semanas pasará sola a `Fuera de Ventana`, migrando la base por uso
+  antes del frente (B). **Publicar en `main` no despliega**, y el deploy a producción exige
+  autorización expresa del usuario siempre; goteo-vs-atómico se decide en ese momento y con él
+  delante. Aprobado así por la coordinadora el 2026-08-19.
 - **Nivel de las pruebas: `puro`.** Ninguna de las dos funciones consulta la base.
 
 ---

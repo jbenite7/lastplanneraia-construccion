@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: goals/estados-fuera-de-ventana/goal.md
+resumen: Que Fuera de Ventana deje de ser una etiqueta que se borra sola: los dos calculadores de estado la producen con la regla de 7+ semanas, el contrato cierra su…
+---
+
 <!-- cas:cita-textual — registro del frente: cita salidas y comandos tal como se midieron -->
 # Frente: estados-fuera-de-ventana
 
