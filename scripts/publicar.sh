@@ -14,19 +14,68 @@ set -u  # -e NO: aqui se leen codigos de salida a proposito, uno por uno.
 
 cd "$(dirname "$0")/.." || exit 2
 
-# Aislar el entorno de verificacion al arbol de ESTE worktree. Sin esto, el gate
-# miente del lado peligroso: `docker-compose.yml` fija `name: last-planner-aia`, asi
-# que `docker compose exec app` de cualquier worktree aterriza en el contenedor
-# compartido, y `docker-compose.override.yml` lo monta desde
-# `${LPS_CODE_ROOT:-<checkout principal>}`. Resultado medido el 2026-08-18: este
-# script dio los tres verdes desde un worktree en `06627082` mientras el contenedor
-# servia el principal en `081a33c8` -commits distintos-. Un gate obligatorio que
+# El invariante que hay que garantizar antes de verificar nada:
+#
+#     el contenedor que responde tiene que montar EL ARBOL QUE ESTOY VERIFICANDO.
+#
+# `docker-compose.yml` fija `name: last-planner-aia`, asi que `docker compose exec app`
+# de cualquier worktree aterriza en el contenedor compartido, y
+# `docker-compose.override.yml` lo monta desde `${LPS_CODE_ROOT:-<checkout principal>}`.
+# Medido el 2026-08-18: este script dio tres verdes desde un worktree en `06627082`
+# mientras el contenedor servia el principal en `081a33c8`. Un gate obligatorio que
 # avala con evidencia de otro arbol es peor que no tener gate.
-# Hacen falta las DOS variables: el nombre resuelve a que contenedor vas, la ruta
-# resuelve que arbol monta. Ver
-# memoria/trampas/suite-estatica-miente-en-worktree-secundario.md
+#
+# Ese defecto se ataco fabricando un `COMPOSE_PROJECT_NAME` propio por sha. Fallo por
+# el otro lado, medido el 2026-08-19: ese proyecto no tiene NINGUN contenedor, y
+# `tests/design-system/foundation.test.mjs:12-19` elige camino preguntandole a docker
+# que servicios corren — sin `app` arriba cae a `compose run`, que levanta un
+# contenedor nuevo y revienta el tope de 180 s de `node-tests`. 445 tests, 444 pasaron,
+# 0 fallaron, 1 cancelado, y el gate denegaba. Levantar el stack aislado tampoco vale:
+# 8081, 3307 y 8082 son puertos fijos y chocarian.
+#
+# Un entorno vacio miente igual que uno ajeno: dice «aqui no hay nada que te
+# contradiga» cuando lo que pasa es que no hay nada. Asi que el invariante se
+# COMPRUEBA en vez de fabricarse. Ver
+# memoria/trampas/publicar-sh-se-aisla-y-se-rompe-en-la-raiz.md y su hermana
+# suite-estatica-miente-en-worktree-secundario.md
 export LPS_CODE_ROOT="$PWD"
-export COMPOSE_PROJECT_NAME="lps-aia-publicar-$(git rev-parse --short HEAD)"
+
+# Principal o enlazado. En el principal `--absolute-git-dir` y `--git-common-dir`
+# resuelven a la misma ruta; en uno enlazado el primero cuelga de
+# `.git/worktrees/<nombre>`. No decide SI se comprueba —se comprueba siempre— sino
+# que remedio se imprime cuando falla, que es distinto en cada caso.
+GIT_DIR_ABS=$(cd "$(git rev-parse --absolute-git-dir 2>/dev/null || echo .)" && pwd -P 2>/dev/null || echo "?")
+GIT_COMMON_ABS=$(cd "$(git rev-parse --git-common-dir 2>/dev/null || echo .)" && pwd -P 2>/dev/null || echo "?")
+if [ "$GIT_DIR_ABS" = "$GIT_COMMON_ABS" ]; then ES_PRINCIPAL=1; else ES_PRINCIPAL=0; fi
+
+# Que monta ahora mismo el contenedor `app`, si es que corre alguno.
+CID=$(docker compose ps -q app 2>/dev/null | head -1)
+if [ -n "$CID" ]; then
+  MONTADO=$(docker inspect "$CID" \
+    --format '{{range .Mounts}}{{if eq .Destination "/var/www/html"}}{{.Source}}{{end}}{{end}}' \
+    2>/dev/null)
+  MONTADO_REAL=$(cd "$MONTADO" 2>/dev/null && pwd -P || echo "$MONTADO")
+  AQUI=$(pwd -P)
+  if [ "$MONTADO_REAL" != "$AQUI" ]; then
+    echo "DENEGADO: el contenedor 'app' no sirve el arbol que ibas a verificar."
+    echo "  monta:    ${MONTADO_REAL:-<no se pudo leer>}"
+    echo "  verificas: $AQUI"
+    echo
+    echo "Un verde medido contra otro arbol no dice nada de este. Apunta el contenedor aqui:"
+    echo "  LPS_CODE_ROOT=\"\$(pwd)\" docker compose up -d app"
+    if [ "$ES_PRINCIPAL" -eq 1 ]; then
+      echo "Estas en el worktree principal: al terminar no hace falta devolverlo, ya es su sitio."
+    else
+      echo "Estas en un worktree enlazado: al terminar devuelvelo a la raiz del repo,"
+      echo "o la proxima sesion que verifique alli se encontrara con el tuyo."
+    fi
+    exit 1
+  fi
+else
+  echo "AVISO: no hay contenedor 'app' corriendo. Las pruebas que hablan con docker"
+  echo "levantaran uno por invocacion ('compose run'), y 'node-tests' puede agotar su"
+  echo "tope de 180 s. Si eso pasa, arranca el stack: docker compose up -d app"
+fi
 
 solo_verificar=0
 [ "${1:-}" = "--solo-verificar" ] && solo_verificar=1

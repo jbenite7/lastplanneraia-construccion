@@ -7,7 +7,7 @@ cambio de cientos de archivos conviene hacerlo con el repo ya asentado en su sit
 las rutas internas no cambian con la mudanza, pero verificar tandas mientras el árbol se muda es
 pagar la verificación dos veces.
 
-## Tanda 1 — Esquema y herramientas (base de todo)
+## Fase 1 · Tanda 1 — Esquema y herramientas (base de todo)
 
 1. Reescribir `docs/wiki-operacion.md` al esquema v2 (capa, tags, tipos nuevos, regla de plugins).
 2. `scripts/wiki-lint.mjs` v2: `capa`, vocabulario `tags`, tipos de fuente; modo fuente =
@@ -17,7 +17,7 @@ pagar la verificación dos veces.
 - **Verifica:** `npm run test:wiki` verde con la wiki actual intacta (retrocompatible antes de
   tocar fuentes); `--dry-run` del backfill imprime el censo completo sin escribir.
 
-## Tanda 2 — Frontmatter a las fuentes (por lotes)
+## Fase 2 · Tanda 2 — Frontmatter a las fuentes (por lotes)
 
 1. Medir el censo real (`--dry-run`): cuántos `.md` por carpeta (docs/, goals/, raíz).
 2. Aplicar por lotes: raíz+contratos → `docs/flujos/` y `docs/design-system/` → resto de `docs/`
@@ -26,13 +26,13 @@ pagar la verificación dos veces.
 - **Verifica:** lint v2 verde tras cada lote; `git diff --stat` solo muestra bloques frontmatter
   (ningún cuerpo tocado — comprobado con `git diff -U0 | grep -v '^[+-]---\|^[+-][a-z]*:'` vacío).
 
-## Tanda 3 — Retag fino de la wiki (145 páginas)
+## Fase 3 · Tanda 3 — Retag fino de la wiki (145 páginas)
 
 1. Añadir `capa: wiki` y `tags` donde apliquen (trampas → `trampa`, mapas → `moc`, etc.) por
    script + pasada manual sobre las que el script no clasifique.
 - **Verifica:** lint verde; vista «Abierto ahora» y catálogo siguen completos.
 
-## Tanda 4 — Capa visual
+## Fase 4 · Tanda 4 — Capa visual
 
 1. Activar Canvas; crear `tablero-de-control.canvas`, `mapa-del-sistema.canvas`,
    `cascada-lps.canvas` en `memoria/`.
@@ -44,13 +44,13 @@ pagar la verificación dos veces.
 - **Verifica:** clon frío en carpeta temporal abre el vault con tema, iconos, dashboard y canvas
   operativos; sin plugins, el contenido sigue legible (Bases/Markdown).
 
-## Tanda 5 — MOCs completos
+## Fase 5 · Tanda 5 — MOCs completos
 
 1. Completar los 13 MOCs de área (hoy 7), cada uno con Bases embebido de su área y trampas
    arriba; taggear `moc`.
 - **Verifica:** lint verde (ninguna página fuera de índice/vistas); cada área lista ≥1 MOC.
 
-## Tanda 6 — Cierre
+## Fase 6 · Tanda 6 — Cierre
 
 1. `node scripts/wiki-arquitectura.mjs --cobertura` y `--escribir` (zonas generadas con tag).
 2. `wiki-registro.mjs --escribir`; línea `ingest` en `memoria/log.md`; actualizar
