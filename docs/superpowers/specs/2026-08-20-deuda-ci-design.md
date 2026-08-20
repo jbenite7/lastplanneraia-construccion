@@ -1,6 +1,11 @@
 ---
+capa: fuente
+tipo: spec
+fecha: 2026-08-20
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-20-deuda-ci-design.md
 resumen: Eliminación de la deuda del CI detectada en el contraste con la mejor práctica (2026-08-20) — dos frentes atómicos: seguridad de cadena de suministro (G1+G3+G5) y cache de capas Docker (G2); el resto diferido con dueño.
-estado: aprobado-diseño
+estado: vigente
 ---
 
 # Deuda del CI — diseño de eliminación
