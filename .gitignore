@@ -446,6 +446,14 @@ goals/**/*.png
 goals/**/*.jpg
 goals/**/*.jpeg
 
-# Copias sin comentarios que genera scripts/css-minify.mjs (ver public/.htaccess §1b).
-# Son artefacto de build: se regeneran, no se versionan.
-public/dist-css/
+# `public/dist-css/` SI se versiona. Ver .gitattributes y public/.htaccess §1b.
+#
+# Estuvo aqui el 2026-08-20, por el reflejo razonable de que un artefacto de build
+# no va en git. Duro un dia: medido contra el sitio real, produccion seguia
+# sirviendo el CSS con sus 179 comentarios, porque el codigo llega alli por
+# `git pull` y lo ignorado no viaja. El gate media 126.885 B mientras el usuario
+# recibia unos 200.000 — un guard midiendo algo distinto de la realidad, que es
+# justo lo que ese frente vino a corregir.
+#
+# Versionarlo no lo deja sin vigilancia: `css-minify-freshness.test.mjs` pone la
+# suite en rojo si una copia no corresponde a su fuente.

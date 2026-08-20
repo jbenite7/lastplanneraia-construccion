@@ -48,14 +48,21 @@ estado por defecto mientras Felipe no reparta.
      `decisiones/vistos/`, historial de sesiones versionado, plantillas borradas, las siete
      reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
      Ver [[goals/organizar-la-casa/goal]].
-  2. **`estados-severidad-contrato` hay que reescribirla bajo el contrato de 3 niveles** de
-     `ds-f1a-estado` (decisión de Felipe del 2026-08-19): el frente implementó `severity-rail` e
-     Intermedia completa pero nunca publicó y su cierre se retiró por el choque de vocabularios.
-  3. **Verificación puntual de `/indicadores` y CNP/CNC/CIC** — dos planes de UI-audit (2026-07-31
-     y 2026-08-01) sin cierre formal y con evidencia mixta; un `impeccable:audit` dirigido decide
-     si hay trabajo real o solo falta escribir el cierre. Cruzar antes con las tandas biblia.
-  4. **Humo autenticado del PDC v2 en `prueba-lps`** — nadie lo ha verificado con sesión real
-     (`estado-olas.md:82-86`); es paso previo de CP-F-E, no parte del despliegue mismo.
+  2. ~~`estados-severidad-contrato` bajo 3 niveles~~ — **HECHO (2026-08-20)**: spec reescrita
+     con notas de revisión fechadas; la ejecución del frente sigue **pausada a propósito** — la
+     coordinación previa con la sesión del contrato hermano es parte de la decisión, y la
+     saturación del filete en Intermedia (6 de 8 con barra) es material de esa coordinación.
+  3. ~~Verificación de `/indicadores` y CNP/CNC/CIC~~ — **HECHO (2026-08-20)**: `/indicadores`
+     está migrada (pilot; su contenido es un iframe). **CNP/CNC/CIC son legacy real**: el shell es
+     `aia-*` pero `legacyCards.js` pinta todo con clases legacy. F0-022 (mayor) lo detectó sin
+     tarea que lo cierre → la migración entra a **DS-F2** con dueño (fila nueva abajo) y los dos
+     planes de UI-audit (2026-07-31, 2026-08-01) quedan **superados como vehículo**.
+  4. **Humo del PDC v2 en `prueba-lps`** — la mitad anónima **HECHA (2026-08-20)** con códigos
+     crudos: `/plan-compras` 302→login (enrutado y protegido), bundle `pdc.js` 200, `/dev/entrar`
+     302→login (candado puesto). **La mitad autenticada queda bloqueada por diseño**: exige
+     credenciales que ninguna sesión puede teclear — la hace Felipe a mano o se decide un
+     mecanismo autorizado. Evidencia:
+     [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
 
 - [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó
   (`aa965bf5`, 2026-08-19 13:40): 40.664 filas migradas, acta en
@@ -150,6 +157,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Deploy · recálculo de estados pendiente solo en producción** — `20260819_recalculo_estados.php`
+  ya se aplicó en pruebas el 2026-08-20 con el sí de Felipe sobre el dry-run (40.664 filas
+  recalculadas, respaldo verificado, dry-run posterior en 0). Producción espera su revisión
+  visual de pruebas y su visto propio; su dry-run reporta 40.198 filas a cambiar.
+- [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
+  (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
+  2026-07-23 en `public_html`. Confirmar y borrar.
+
 - [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
   `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
   [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
@@ -213,6 +228,9 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-20 — **Los tres pendientes restantes de la auditoría de specs**: spec de severidad
+  reescrita a 3 niveles, veredicto de indicadores/CNP-CNC-CIC (legacy real → DS-F2), humo anónimo
+  de `prueba-lps` en verde. [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
 - [x] 2026-08-20 — **Auditoría de estado real de las 61 specs** contra el código, publicada en
   `3144ca5e`: 44 ejecutadas · 16 parciales · 1 pendiente · 12 cerradas. Informe con evidencia:
   [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]].
@@ -309,7 +327,7 @@ manda sobre los gates.**
 |---|---|---|
 | **DS-F0 · Auditoría total** | Toda la app: módulo, objeto, variable y escenario. Absorbe como semilla las 48 decisiones del 3-ago y F-4…F-9 de `docs/DESIGN-AUDIT.md`. Entregable: inventario por severidad «Crítico → Sin problema», verificando de paso el bug de coloreado que el usuario sospecha | No empezada |
 | **DS-F1 · Redefinición del contrato** | Tokens, primitivas `aia-*`, escalas de estado/severidad y escala de stacking (z-index). Arranca con brainstorming con el usuario: el contrato es decisión de negocio | No empezada |
-| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0 | No empezada |
+| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0. **Entrada añadida el 2026-08-20:** CNP/CNC/CIC (`legacyCards.js` entero es legacy bajo shell `aia-*`, hallazgo F0-022 sin dueño hasta hoy) | No empezada |
 | **DS-F3 · Control** | Gates nuevos derivados del contrato. **Los 15 actuales se reemplazan, no se arreglan.** Cinco principios: pocos y atados a contratos que duelan; nunca bloquean el flujo local, solo el merge; actualizar un baseline cuesta un comando con diff visible; todo rojo dice qué archivo y qué hacer; cuarentena explícita para gates ruidosos | No empezada |
 
 Consecuencia de secuencia ya decidida: **la Torre de Control BI no se recaptura**, se reconstruye

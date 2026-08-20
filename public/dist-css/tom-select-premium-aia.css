@@ -1,0 +1,150 @@
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+@layer vendor {
+  .htTomSelectWrapper {
+    background: var(--ds-active-bg-canvas) !important;
+    border: none !important;
+    border-radius: var(--ds-radius-sm) !important;
+    z-index: var(--ds-z-modal) !important;
+    box-shadow: var(--ds-shadow-lg) !important;
+    pointer-events: auto !important;
+    font-family: var(--ds-font-body) !important;
+  }
+  .htTomSelectWrapper .ts-control {
+    background: var(--ds-active-surface-raised) !important;
+    color: var(--ds-active-text-primary) !important;
+    border: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
+    border-bottom: none !important;
+    border-radius: var(--ds-radius-sm) var(--ds-radius-sm) 0 0 !important;
+    min-height: var(--ds-control-compact-min) !important;
+    padding: var(--ds-space-1) var(--ds-space-2) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: var(--ds-space-1) !important;
+    box-sizing: border-box !important;
+    transition: border-color var(--ds-motion-fast);
+  }
+  .htTomSelectWrapper .ts-control input {
+    background: transparent !important;
+    color: var(--ds-active-text-primary) !important;
+    caret-color: var(--ds-active-domain-construction) !important;
+    font-family: var(--ds-font-body) !important;
+    font-size: var(--ds-table-cell-font-size) !important;
+  }
+  .htTomSelectWrapper .ts-control input::placeholder {
+    color: var(--ds-active-text-secondary) !important;
+    opacity: 1 !important;
+  }
+  .htTomSelectWrapper .ts-control .item {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: var(--ds-state-tint-orange) !important;
+    border: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-radius: var(--ds-radius-xs) !important;
+    font-size: var(--ds-type-size-xs) !important;
+    font-weight: var(--ds-type-weight-medium) !important;
+    padding: var(--ds-space-1) var(--ds-space-2) !important;
+    margin: 0 !important;
+    max-width: 100%;
+    line-height: var(--ds-type-line-compact);
+  }
+  .htTomSelectWrapper .ts-control .item .remove {
+    color: var(--ds-active-domain-construction) !important;
+    border-left: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
+    margin-left: var(--ds-space-2) !important;
+    padding-left: var(--ds-space-1) !important;
+  }
+  .htTomSelectWrapper .ts-dropdown {
+    background: var(--ds-active-surface-raised) !important;
+    border: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--ds-radius-sm) var(--ds-radius-sm) !important;
+    box-shadow: var(--ds-shadow-md) !important;
+    margin-top: calc(var(--ds-border-width) * -1) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-dropdown-content {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-option,
+  .htTomSelectWrapper .ts-dropdown .option {
+    padding: var(--ds-space-3) var(--ds-space-4) !important;
+    background: transparent !important;
+    font-size: var(--ds-table-cell-font-size) !important;
+    line-height: var(--ds-type-line-body) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-bottom: var(--ds-border-width) solid var(--ds-color-border-separator-dark) !important;
+    transition: background var(--ds-motion-fast) !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-option:last-child,
+  .htTomSelectWrapper .ts-dropdown .option:last-child {
+    border-bottom: none !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-option.active,
+  .htTomSelectWrapper .ts-dropdown .ts-option:hover,
+  .htTomSelectWrapper .ts-dropdown .option.active,
+  .htTomSelectWrapper .ts-dropdown .option:hover {
+    background: var(--ds-state-tint-orange) !important;
+    color: var(--ds-active-text-primary) !important;
+    font-weight: var(--ds-type-weight-semibold) !important;
+  }
+  .htTomSelectWrapper .ts-control .aia-clear-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: var(--ds-space-2) !important;
+    background: var(--ds-active-surface-raised) !important;
+    border: none !important;
+    border-top: var(--ds-border-width) dashed var(--ds-active-domain-construction) !important;
+    color: var(--ds-active-domain-construction) !important;
+    padding: var(--ds-space-2) var(--ds-space-3) !important;
+    width: calc(100% + var(--ds-space-4)) !important;
+    margin: var(--ds-space-1) calc(var(--ds-space-2) * -1) calc(var(--ds-space-1) * -1)
+      calc(var(--ds-space-2) * -1) !important;
+    font-family: var(--ds-font-display) !important;
+    font-size: var(--ds-type-size-xs) !important;
+    font-weight: var(--ds-type-weight-bold) !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: background-color var(--ds-motion-fast), color var(--ds-motion-fast) !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  .htTomSelectWrapper .ts-control .aia-clear-btn:hover {
+    background: var(--ds-active-domain-construction) !important;
+    color: var(--ds-active-domain-construction-text) !important;
+    border-top-style: solid;
+  }
+  .htTomSelectWrapper[data-flip="up"] .ts-dropdown {
+    top: auto !important;
+    bottom: 100% !important;
+    border-top: var(--ds-border-width) solid var(--ds-active-domain-construction) !important;
+    border-bottom: none !important;
+    border-radius: var(--ds-radius-sm) var(--ds-radius-sm) 0 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: calc(var(--ds-border-width) * -1) !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-create-option,
+  .htTomSelectWrapper .ts-dropdown .create {
+    background: var(--ds-active-domain-construction) !important;
+    color: var(--ds-active-domain-construction-text) !important;
+    font-family: var(--ds-font-display) !important;
+    font-weight: var(--ds-type-weight-bold) !important;
+    text-transform: uppercase;
+    font-size: var(--ds-type-size-xs);
+    border-radius: var(--ds-radius-xs) !important;
+    margin: var(--ds-space-2) !important;
+    padding: var(--ds-space-2) !important;
+    text-align: center !important;
+    box-shadow: var(--ds-shadow-sm);
+    border: none !important;
+  }
+  .htTomSelectWrapper .ts-dropdown .ts-create-option i,
+  .htTomSelectWrapper .ts-dropdown .create i {
+    margin-right: var(--ds-space-1);
+  }
+}

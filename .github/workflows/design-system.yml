@@ -149,24 +149,22 @@ jobs:
           E2E_REQUIRE_ISOLATED_DB: "1"
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: node scripts/design-system-ci-preflight.mjs
-      # El espejo sin comentarios se genera ANTES de construir la imagen, y el
-      # orden es el hallazgo: `docker/php/Dockerfile` hace `COPY . /var/www/html`
-      # en tiempo de build, asi que lo que no este en el arbol cuando se
-      # construye no entra. Con el paso puesto DESPUES de arrancar el runtime, el
-      # navegador siguio recibiendo el CSS con comentarios y el presupuesto solo
-      # bajo 788 B de los 73.422 esperados.
+      # El espejo sin comentarios viene YA en el checkout: `public/dist-css/` se
+      # versiona (ver .gitignore y .gitattributes), porque el codigo llega a
+      # produccion por `git pull` y el servidor no corre Node.
       #
-      # Va despues de `Capture runtime provenance`: el espejo esta en .gitignore
-      # y no ensucia el arbol, pero la huella se toma antes igualmente.
+      # Aqui NO se genera, se VERIFICA. Generarlo enmascararia el unico fallo que
+      # importa: si alguien edita una hoja y no regenera su copia, la URL cambia su
+      # `?v=` y el cuerpo no —cache envenenada—. Un CI que lo arregla en silencio
+      # deja pasar a `main` un desfase que el usuario si sufriria.
       #
       # El nombre del paso evita las palabras que `visual-ci-contract.test.mjs`
       # veta en este archivo: ese guard existe para que el CI no tenga camino de
       # despliegue, y un guard que se ablanda por comodidad deja de valer.
-      - name: Generate comment-free CSS as the live site serves it
-        run: npm run css:minify && npm run css:minify:check && git status --porcelain
-      # DESPUES del CSS a proposito: COPY . entra en tiempo de build, y lo que
-      # no este en el arbol al construir no llega a la imagen (regresion ya
-      # medida en este mismo workflow).
+      - name: Verify the comment-free CSS matches its source
+        run: npm run css:minify:check
+      # El espejo de CSS viaja versionado desde 10dd634e, asi que el arbol ya
+      # esta completo al construir; el build va tras la verificacion igualmente.
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
       - name: Build the isolated app image

@@ -1,0 +1,28 @@
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+@import url("/public/vendor/datatables/jquery.dataTables.css") layer(vendor);
+@import url("/public/vendor/datatables/dataTables.bootstrap4.min.css") layer(vendor);
+@import url("/public/vendor/datatables/buttons.bootstrap4.min.css") layer(vendor);
+@import url("/public/vendor/datatables/dataTables.checkboxes.css") layer(vendor);
+@import url("/css/design-system/adapters/datatables.css?v=1.1.0") layer(components);
+@layer legacy-overrides {
+  .dataTables_wrapper {
+    color: var(--ds-active-text-primary);
+  }
+  .dataTables_wrapper,
+  .dataTables_scroll {
+    max-width: 100% !important;
+    width: 100%;
+  }
+  .dataTables_scrollHead {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  .dataTables_scrollBody {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+  .dataTables_scrollFoot {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}

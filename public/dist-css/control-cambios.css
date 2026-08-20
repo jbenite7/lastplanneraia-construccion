@@ -1,0 +1,30 @@
+@layer module {
+  .cc-field-row {
+    border: 1px solid var(--ds-active-border);
+  }
+  .cc-field-label {
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    border-right: 1px solid var(--ds-active-border);
+  }
+  .cc-field-value {
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+  .cc-field-block {
+    border: 2px solid var(--ds-active-border);
+  }
+  .cc-field-edge {
+    border-right: 1px solid var(--ds-active-border);
+  }
+  .cc-field-divider {
+    border-bottom: 1px solid var(--ds-active-border);
+  }
+  .cc-field-counter {
+    border-top: 1px solid var(--ds-active-border);
+    color: var(--ds-active-text-secondary);
+  }
+  .cc-textarea-fixed {
+    resize: none;
+  }
+}

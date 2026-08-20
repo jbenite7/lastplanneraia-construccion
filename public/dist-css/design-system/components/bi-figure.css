@@ -1,0 +1,388 @@
+@layer components {
+  .aia-bi :where(figcaption h3, figcaption p) {
+    margin: var(--ds-space-0);
+  }
+  .aia-bi__plot {
+    display: block;
+    width: 100%;
+    height: 12rem;
+    margin-block: var(--ds-space-4);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+  }
+  .aia-bi__grid {
+    stroke: var(--ds-active-border);
+    stroke-width: 0.2;
+    opacity: 0.3;
+    vector-effect: non-scaling-stroke;
+  }
+  .aia-bi__bar--plan,
+  .aia-bi__legend-mark--plan {
+    fill: var(--ds-active-data-plan);
+    background: var(--ds-active-data-plan);
+  }
+  .aia-bi__bar--executed,
+  .aia-bi__legend-mark--executed {
+    fill: var(--ds-active-data-executed);
+    background: var(--ds-active-data-executed);
+  }
+  .aia-bi__line {
+    fill: none;
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .aia-bi__point {
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+  }
+  .aia-bi__line--plan {
+    stroke: var(--ds-active-data-plan);
+    stroke-dasharray: var(--ds-space-2);
+  }
+  .aia-bi__line--executed {
+    stroke: var(--ds-active-data-executed);
+  }
+  .aia-bi__point--plan {
+    fill: var(--ds-active-data-plan);
+    stroke: var(--ds-active-surface);
+  }
+  .aia-bi__point--executed {
+    fill: var(--ds-active-data-executed);
+    stroke: var(--ds-active-surface);
+  }
+  .aia-bi-radar {
+    display: block;
+    width: min(100%, 22rem);
+    height: auto;
+    margin-inline: auto;
+  }
+  .aia-bi-radar__grid,
+  .aia-bi-radar__axis {
+    fill: none;
+    stroke: var(--ds-active-border);
+    stroke-width: 0.35;
+  }
+  .aia-bi-radar__shape {
+    fill: color-mix(in srgb, var(--ds-active-action-primary) 24%, transparent);
+    stroke: var(--ds-active-action-primary);
+    stroke-width: 0.8;
+  }
+  .aia-bi-radar__point {
+    fill: var(--ds-active-surface);
+    stroke: var(--ds-active-action-primary);
+    stroke-width: 0.6;
+  }
+  .aia-bi-radar__label {
+    fill: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    font-size: 3.5px;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+  .aia-bi-gauge {
+    display: grid;
+    justify-items: center;
+    gap: var(--ds-space-3);
+    text-align: center;
+  }
+  .aia-bi-gauge__meter {
+    display: grid;
+    position: relative;
+    width: min(72vw, 15rem);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: visible;
+    place-items: center;
+    background: conic-gradient(var(--ds-active-action-primary) 0 64%, var(--ds-active-border) 64% 100%);
+    color: var(--ds-active-text-primary);
+  }
+  .aia-bi-gauge__meter span {
+    display: grid;
+    position: relative;
+    width: 58%;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    place-items: center;
+    background: var(--ds-active-bg-page);
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-2xl);
+    font-weight: var(--ds-type-weight-bold);
+  }
+  .aia-bi__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-6);
+    padding: var(--ds-space-0);
+    list-style: none;
+  }
+  .aia-bi__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+  .aia-bi__legend-mark {
+    width: var(--ds-space-3);
+    height: var(--ds-space-3);
+    border-radius: var(--ds-radius-sm);
+  }
+  .aia-bi__data table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .aia-bi__data :where(th, td) {
+    padding: var(--ds-space-2);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    text-align: start;
+    color: var(--ds-active-text-primary);
+  }
+  .aia-bi__data summary {
+    min-height: var(--ds-target-min);
+    padding-block: var(--ds-space-3);
+    color: var(--ds-active-text-primary);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+  .aia-bi--metrics,
+  .aia-bi--ranked,
+  .aia-bi--matrix {
+    display: grid;
+    gap: var(--ds-space-4);
+  }
+  .aia-bi > header {
+    display: grid;
+    gap: var(--ds-space-1);
+  }
+  .aia-bi > header :where(h3, p) {
+    margin: var(--ds-space-0);
+  }
+  .aia-bi-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ds-space-3);
+    margin: var(--ds-space-0);
+  }
+  .aia-bi-metrics > div {
+    display: grid;
+    gap: var(--ds-space-1);
+    min-width: 0;
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control-sm);
+    background: var(--ds-active-surface);
+  }
+  .aia-bi-metrics dt {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+  .aia-bi-metrics dd {
+    display: grid;
+    gap: var(--ds-space-1);
+    margin: var(--ds-space-0);
+    color: var(--ds-active-text-primary);
+  }
+  .aia-bi-metrics strong {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-2xl);
+    font-variant-numeric: tabular-nums;
+  }
+  .aia-bi-metrics span {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    line-height: var(--ds-type-line-body);
+  }
+  .aia-bi-ranked__plot {
+    display: block;
+    width: 100%;
+    height: 12rem;
+  }
+  .aia-bi-ranked__track {
+    fill: var(--ds-active-border);
+    opacity: 0.45;
+  }
+  .aia-bi-ranked__bar {
+    fill: var(--ds-active-action-primary);
+  }
+  .aia-bi-ranked__label,
+  .aia-bi-ranked__value {
+    fill: var(--ds-active-text-secondary);
+    font-family: var(--ds-font-body);
+    font-size: 3.6px;
+    font-weight: var(--ds-type-weight-semibold);
+  }
+  .aia-bi-ranked__value {
+    fill: var(--ds-active-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .aia-bi--matrix .aia-table-shell {
+    overflow-x: auto;
+  }
+  .aia-bi--matrix table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .aia-bi--matrix :where(th, td) {
+    padding: var(--ds-space-3);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    color: var(--ds-active-text-primary);
+    text-align: start;
+  }
+  .aia-bi--matrix thead th {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    text-transform: uppercase;
+  }
+}
+@layer components {
+  .aia-bi--radar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .aia-bi--radar > .aia-bi-radar {
+    justify-self: center;
+    margin-inline: 0;
+  }
+  .aia-bi__guidance {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+  .aia-bi__data tr {
+    background: transparent;
+  }
+  .aia-bi__data :where(th, td) {
+    color: var(--ds-active-text-primary);
+  }
+}
+@layer legacy-overrides {
+  .aia-bi--gauge,
+  .aia-bi--funnel {
+    display: grid;
+    gap: var(--ds-space-4);
+  }
+  .aia-bi--gauge > header :where(h3, p) {
+    margin: var(--ds-space-0);
+  }
+  .aia-bi-gauge__meter--caution {
+    background: conic-gradient(
+      var(--ds-active-action-primary) 0 78%,
+      var(--ds-color-state-warning-text) 78% 85%,
+      var(--ds-active-border) 85% 100%
+    );
+  }
+  .aia-bi-gauge__summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-3);
+    width: 100%;
+    margin: var(--ds-space-0);
+  }
+  .aia-bi-gauge__summary > div {
+    display: grid;
+    gap: var(--ds-space-1);
+    padding-block-start: var(--ds-space-2);
+    border-block-start: var(--ds-border-width) solid var(--ds-active-border);
+  }
+  .aia-bi-gauge__summary dt {
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-type-size-xs);
+    font-weight: var(--ds-type-weight-semibold);
+  }
+  .aia-bi-gauge__summary dd {
+    margin: var(--ds-space-0);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-xl);
+    font-variant-numeric: tabular-nums;
+  }
+  .aia-bi-funnel {
+    display: grid;
+    gap: var(--ds-space-2);
+    margin: var(--ds-space-0);
+    padding: var(--ds-space-0);
+    list-style: none;
+  }
+  .aia-bi-funnel__item {
+    position: relative;
+    display: grid;
+    justify-items: center;
+  }
+  .aia-bi-funnel__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--ds-target-min);
+    padding-inline: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    cursor: help;
+    font-weight: var(--ds-type-weight-semibold);
+    outline: none;
+    transition:
+      transform var(--ds-motion-fast),
+      border-color var(--ds-motion-fast),
+      background-color var(--ds-motion-fast);
+  }
+  .aia-bi-funnel__trigger strong {
+    font-family: var(--ds-font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .aia-bi-funnel__item--committed .aia-bi-funnel__trigger {
+    width: 100%;
+  }
+  .aia-bi-funnel__item--ready .aia-bi-funnel__trigger {
+    width: 86%;
+  }
+  .aia-bi-funnel__item--active .aia-bi-funnel__trigger {
+    width: 72%;
+  }
+  .aia-bi-funnel__item--completed .aia-bi-funnel__trigger {
+    width: 58%;
+  }
+  .aia-bi-funnel__trigger:hover,
+  .aia-bi-funnel__trigger:focus-visible {
+    border-color: var(--ds-active-action-primary);
+    background: var(--ds-active-surface-raised);
+    transform: translateY(calc(var(--ds-space-1) * -1));
+  }
+  .aia-bi-funnel__trigger:focus-visible {
+    box-shadow: var(--ds-shadow-focus);
+  }
+  .aia-bi-funnel__tooltip {
+    position: absolute;
+    z-index: var(--ds-z-dropdown);
+    inset-block-end: calc(100% + var(--ds-space-2));
+    inline-size: min(100%, 20rem);
+    padding: var(--ds-space-3);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-control);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-md);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-sm);
+    line-height: var(--ds-type-line-body);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(var(--ds-space-1));
+    transition:
+      opacity var(--ds-motion-fast),
+      transform var(--ds-motion-fast),
+      visibility var(--ds-motion-fast);
+    visibility: hidden;
+  }
+  .aia-bi-funnel__trigger:hover + .aia-bi-funnel__tooltip,
+  .aia-bi-funnel__trigger:focus-visible + .aia-bi-funnel__tooltip {
+    position: static;
+    margin-block-start: var(--ds-space-2);
+    opacity: 1;
+    transform: translateY(var(--ds-space-0));
+    visibility: visible;
+  }
+  .aia-bi__guidance {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+  @media (max-width: 48rem) {
+    .aia-bi__data tbody tr {
+      background-color: var(--ds-active-surface-raised);
+      color: var(--ds-active-text-primary);
+    }
+  }
+}

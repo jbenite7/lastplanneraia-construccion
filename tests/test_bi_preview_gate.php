@@ -41,7 +41,12 @@ comprobar(
     RbacManager::hasCapability('A', RbacCatalog::PERM_INTERNAL_BI_PREVIEW),
     true
 );
-foreach (['D', 'R', 'V', 'C', 'DCV', 'OT', 'S', 'G', 'SG'] as $rol) {
+comprobar(
+    'rol D la tiene (ampliado el 2026-08-20)',
+    RbacManager::hasCapability('D', RbacCatalog::PERM_INTERNAL_BI_PREVIEW),
+    true
+);
+foreach (['R', 'V', 'C', 'DCV', 'OT', 'S', 'G', 'SG'] as $rol) {
     comprobar("rol {$rol} no la tiene", RbacManager::hasCapability($rol, RbacCatalog::PERM_INTERNAL_BI_PREVIEW), false);
 }
 
@@ -49,6 +54,11 @@ echo "\nGate de las rutas (BiPreviewAccessPolicy::canOpen):\n";
 comprobar(
     'sesion de Admin abre',
     \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.A'], 'A'),
+    true
+);
+comprobar(
+    'sesion de Director abre (ampliado el 2026-08-20)',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.D'], 'D'),
     true
 );
 comprobar(

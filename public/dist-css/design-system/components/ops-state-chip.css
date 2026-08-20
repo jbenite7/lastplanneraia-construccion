@@ -1,0 +1,25 @@
+@layer components {
+  .ops-state-chip {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-xs);
+    color: inherit;
+    font-weight: 900;
+    font-size: 0.78rem;
+    line-height: 1.18;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: normal;
+  }
+  td.ops-state-td {
+    padding: var(--ds-space-1) var(--ds-space-2);
+    overflow: visible;
+    vertical-align: middle;
+  }
+}

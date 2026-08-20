@@ -1,0 +1,56 @@
+@layer base {
+  :where(*, *::before, *::after) {
+    box-sizing: border-box;
+  }
+  :where(html) {
+    font-family: var(--ds-font-body);
+    color: var(--ds-active-text-primary, var(--ds-color-text-primary));
+    background: var(--ds-active-bg-canvas, var(--ds-color-bg-canvas));
+  }
+  :where(.aia-state, .aia-chip, [data-aia-state]) {
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+}
+@layer reset {
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: auto;
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+@layer base {
+  html,
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+@layer base {
+  body {
+    font-size: 1rem;
+    font-family: var(--font-main);
+    background-color: var(--surface-bg);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+  }
+}
