@@ -3365,8 +3365,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 .pg-page #hot-container .handsontable td.pg-state-atrasado,
 .pg-page #hot-container .handsontable td.pg-state-atrasada {
   background-color: var(--ds-state-row-red) !important;
-  color: var(--ds-cell-state-critico-fg) !important;
-  border-color: var(--ds-cell-state-critico-fg) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-restr-0 {
@@ -3377,14 +3377,14 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 
 .pg-page #hot-container .handsontable td.pg-state-debe-iniciar {
   background-color: var(--ds-state-row-orange) !important;
-  color: var(--ds-cell-state-riesgo-fg) !important;
-  border-color: var(--ds-cell-state-riesgo-fg) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-actividad-futura {
   background-color: var(--ds-state-row-green) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable tbody td.pg-row-state.pg-state-r0,
