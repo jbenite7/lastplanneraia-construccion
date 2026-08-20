@@ -3221,7 +3221,18 @@
       hiddenColumns: getResponsiveHiddenColumnsConfig(),
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
-      stretchH: 'none',
+      // `last` y no `none` (2026-08-20, defecto reportado por Felipe: «los border
+      // radius de las esquinas de las tablas no son homogeneos en todas sus
+      // direcciones»). Medido antes de tocar: los cuatro radios del contenedor
+      // SI eran iguales (16px); lo que fallaba es que la tabla no llenaba su
+      // contenedor a lo ancho — en Programa General 1074px dentro de 1100 —, y
+      // como la cabecera lleva fondo propio, el sobrante dejaba un escalon en la
+      // esquina superior derecha mientras abajo el contenido si llegaba al
+      // borde. El ojo lo lee como radios distintos segun la direccion.
+      // `last` hace que la ULTIMA columna absorba el sobrante y respeta los
+      // anchos medidos a mano de las demas, que estan documentados con su
+      // medicion en los arrays de arriba. Si la tabla ya desborda, no hace nada.
+      stretchH: 'last',
       autoColumnSize: false,
       manualColumnResize: false,
       manualRowResize: true,

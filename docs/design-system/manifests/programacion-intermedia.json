@@ -109,7 +109,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programacion-intermedia.visual.mjs/programacion-intermedia-dark-1440x900.png",
-      "sha256": "7e24cea39ca2af2fdaf99f89496486206d52cc090017f1a6042e7e71c0c3600c"
+      "sha256": "63ba4cefab6c31bdc1be398e1395283bde429bf48ffcc2f1feff048b2dd2d6d8"
     }
   ]
 }
