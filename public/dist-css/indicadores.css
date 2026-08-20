@@ -1,0 +1,28 @@
+@layer module {
+  .ind-section-title {
+    text-align: start;
+  }
+  #contenedorInformePowerBI {
+    text-align: center;
+    margin-top: var(--ds-space-1);
+    margin-bottom: var(--ds-space-3);
+  }
+  .ind-powerbi-marco {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    padding: var(--ds-space-3);
+  }
+  .ind-powerbi-frame {
+    border: 0;
+    display: block;
+    margin-inline: auto;
+    border-radius: var(--ds-radius-xs);
+  }
+  .ind-powerbi-denied {
+    padding: var(--ds-space-6);
+    text-align: center;
+    color: var(--ds-active-text-secondary);
+  }
+}

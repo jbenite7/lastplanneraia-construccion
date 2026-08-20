@@ -439,6 +439,19 @@ ningún usuario en las notas del repo; lo que sí se usa a diario es el móvil.
 `b289a822`. Resultado medido en CI: **200.488 → 126.885 B gzip**, un ahorro del 36,7 % que deja el
 presupuesto con **69.848 B de margen**. El techo no se tocó.
 
+> **Corrección del 2026-08-20, al reanalizar: la primera versión no llegaba a producción.**
+> El espejo estaba en `.gitignore` como artefacto de build, y el código llega al servidor por
+> `git pull`: lo ignorado no viaja. Comprobado contra el sitio real —`lastplanneraia.com/css/styles.css`
+> devolvía 132.101 B con 179 comentarios—, **el gate medía 126.885 B mientras el usuario recibía unos
+> 200.000**. Un guard midiendo algo distinto de la realidad, que es justo el defecto que esta jornada
+> vino a corregir. Se arregló versionando el espejo (decisión de Felipe, misma fecha), y el CI pasó de
+> generarlo a **verificarlo**: generar habría enmascarado un desfase en vez de bloquearlo.
+>
+> **Queda un pendiente que este arreglo destapa:** con el espejo activo el margen es de 69.848 B sobre
+> un techo de 198.781 —un 35 %—, y un presupuesto con esa holgura no puede ponerse rojo por nada
+> realista. **El techo de `cssGzipBytes` hay que recalibrarlo hacia abajo**, o deja de vigilar. Va
+> junto con D-11, que pide lo mismo para la otra métrica.
+
 Lo que sigue es el planteamiento tal como se elevó.
 
 ### Lo que pasó, en orden

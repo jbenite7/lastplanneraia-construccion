@@ -1,0 +1,43 @@
+@layer theme {
+  :root,
+  [data-aia-theme="dark"],
+  .aia-theme-dark {
+    color-scheme: dark;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas-dark);
+    --ds-active-bg-page: var(--ds-color-bg-page-dark);
+    --ds-active-surface: var(--ds-color-surface-dark);
+    --ds-active-surface-raised: var(--ds-color-surface-raised-dark);
+    --ds-active-surface-glass: var(--ds-color-surface-glass-dark);
+    --ds-active-text-primary: var(--ds-color-text-primary-dark);
+    --ds-active-text-secondary: var(--ds-color-text-secondary-dark);
+    --ds-active-border: var(--ds-color-border-separator-dark);
+    --ds-active-border-control: var(--ds-color-border-control-dark);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-dark);
+    --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-action-primary-hover: var(--aia-green-light);
+    --ds-active-action-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-data-plan: var(--ds-color-domain-real-estate-on-dark);
+    --ds-active-data-executed: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-active-text-primary);
+    --ds-active-nav-text-muted: var(--ds-active-text-secondary);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}
+@layer base {
+  :where(html, body) {
+    min-height: 100%;
+    margin: 0;
+  }
+  :where(button, input, select, textarea) {
+    font: inherit;
+  }
+}
+@layer components {
+  .ds-lab .aia-page-header__breadcrumb a {
+    display: inline-flex;
+    min-height: var(--ds-target-min);
+    align-items: center;
+  }
+}

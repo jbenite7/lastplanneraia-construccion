@@ -1,0 +1,18 @@
+@layer components {
+  [data-aia-severity-rail="urgent"] {
+    box-shadow: inset var(--ds-severity-rail-width-urgent) 0 0 0 var(--ds-severity-rail-color-urgent);
+  }
+  [data-aia-severity-rail="attention"] {
+    box-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+  [data-aia-severity-rail="healthy"],
+  [data-aia-severity-rail="neutral"] {
+    box-shadow: none;
+  }
+  [dir="rtl"] [data-aia-severity-rail="urgent"] {
+    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-urgent)) 0 0 0 var(--ds-severity-rail-color-urgent);
+  }
+  [dir="rtl"] [data-aia-severity-rail="attention"] {
+    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-attention)) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+}

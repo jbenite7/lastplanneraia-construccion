@@ -1,0 +1,77 @@
+@layer theme {
+  :root,
+  [data-aia-theme="dark"],
+  .aia-theme-dark {
+    color-scheme: dark;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas-dark);
+    --ds-active-bg-page: var(--ds-color-bg-page-dark);
+    --ds-active-surface: var(--ds-color-surface-dark);
+    --ds-active-surface-raised: var(--ds-color-surface-raised-dark);
+    --ds-active-surface-glass: var(--ds-color-surface-glass-dark);
+    --ds-active-text-primary: var(--ds-color-text-primary-dark);
+    --ds-active-text-secondary: var(--ds-color-text-secondary-dark);
+    --ds-active-border: var(--ds-color-border-separator-dark);
+    --ds-active-border-control: var(--ds-color-border-control-dark);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-dark);
+    --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-action-primary-hover: var(--aia-green-light);
+    --ds-active-action-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-domain-construction: var(--ds-color-domain-construction-on-dark);
+    --ds-active-domain-construction-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-data-plan: var(--ds-color-domain-real-estate-on-dark);
+    --ds-active-data-executed: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-active-text-primary);
+    --ds-active-nav-text-muted: var(--ds-active-text-secondary);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}
+@layer legacy-overrides {
+  :where(.card, .project-card, .aia-card, .aia-panel, .aia-table-shell, .aia-grid-shell) {
+    border-radius: var(--ds-radius-card) !important;
+  }
+  :where(.aia-card, .aia-panel) {
+    padding: var(--ds-space-4);
+  }
+  :where(.modal-content, .swal2-popup, .aia-modal-surface) {
+    border-radius: var(--ds-radius-modal) !important;
+  }
+  :where(.dropdown-menu, .popover, .toast, .tooltip-inner) {
+    border-radius: var(--ds-radius-popover) !important;
+  }
+  :where(.btn, .btn-pdc-modern, .btn-enter, .island-btn, .pdc-mobile-toggle, .btn-filter-toggle, .aia-btn) {
+    border-radius: var(--ds-radius-control) !important;
+  }
+  :where(
+    .form-control,
+    .custom-select,
+    .input-group-text,
+    .select2-selection,
+    .ts-control,
+    .ts-dropdown,
+    .aia-input,
+    .aia-select,
+    .aia-textarea
+  ) {
+    border-radius: var(--ds-radius-control) !important;
+  }
+  :where(
+    .input-group > .form-control:not(:last-child),
+    .input-group > .custom-select:not(:last-child),
+    .input-group > .aia-input:not(:last-child)
+  ) {
+    border-start-end-radius: var(--ds-radius-none) !important;
+    border-end-end-radius: var(--ds-radius-none) !important;
+  }
+  :where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text) {
+    border-start-start-radius: var(--ds-radius-none) !important;
+    border-end-start-radius: var(--ds-radius-none) !important;
+  }
+  :where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip) {
+    border-radius: var(--ds-radius-pill) !important;
+  }
+  :where(.progress, .progress-bar, .progress-xs) {
+    border-radius: var(--ds-radius-progress) !important;
+  }
+}

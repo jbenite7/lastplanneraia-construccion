@@ -1,0 +1,99 @@
+@layer module {
+  html:has(> body.prof-page),
+  body.prof-page {
+    block-size: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  body.prof-page {
+    display: flex;
+    flex-direction: column;
+  }
+  .prof-page main > .row {
+    margin-inline: 0;
+  }
+  .prof-page > main {
+    display: contents;
+  }
+  .prof-page #encabezado,
+  .prof-page .direccionSeccion {
+    flex: 0 0 auto;
+  }
+  .prof-page .header-actions {
+    flex: 0 0 auto;
+    padding: var(--ds-space-3);
+    background: var(--ds-active-surface-raised);
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+  .prof-page .header-actions h4 {
+    margin: 0;
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-type-size-lg);
+    line-height: var(--ds-type-line-compact);
+    color: var(--ds-active-text-primary);
+  }
+  .prof-page .header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+  .prof-page #hot-container {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--ds-space-3);
+    background: var(--ds-active-bg-page);
+    box-shadow: var(--ds-shadow-xs);
+    border-radius: var(--ds-radius-table);
+  }
+  .prof-page #loading {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--ds-active-bg-page) 95%, transparent);
+    z-index: var(--ds-z-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .prof-page #loading .spinner-border {
+    color: var(--ds-color-brand-primary) !important;
+  }
+  .prof-page .prof-save-flag {
+    display: none;
+  }
+  .prof-page .btn-delete {
+    border-radius: var(--ds-radius-pill);
+    inline-size: 28px;
+    block-size: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border: none;
+    box-shadow: var(--ds-shadow-xs);
+    transition: transform var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+  }
+  .prof-page .btn-delete:hover {
+    transform: scale(1.1);
+    box-shadow: var(--ds-shadow-sm);
+  }
+  .prof-page .btn-delete i {
+    font-size: var(--ds-type-size-xs);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .prof-page .btn-delete {
+      transition-duration: var(--ds-motion-reduced-duration);
+    }
+    .prof-page .btn-delete:hover {
+      transform: none;
+    }
+  }
+}

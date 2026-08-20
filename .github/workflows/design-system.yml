@@ -135,21 +135,20 @@ jobs:
           E2E_REQUIRE_ISOLATED_DB: "1"
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: node scripts/design-system-ci-preflight.mjs
-      # El espejo sin comentarios se genera ANTES de construir la imagen, y el
-      # orden es el hallazgo: `docker/php/Dockerfile` hace `COPY . /var/www/html`
-      # en tiempo de build, asi que lo que no este en el arbol cuando se
-      # construye no entra. Con el paso puesto DESPUES de arrancar el runtime, el
-      # navegador siguio recibiendo el CSS con comentarios y el presupuesto solo
-      # bajo 788 B de los 73.422 esperados.
+      # El espejo sin comentarios viene YA en el checkout: `public/dist-css/` se
+      # versiona (ver .gitignore y .gitattributes), porque el codigo llega a
+      # produccion por `git pull` y el servidor no corre Node.
       #
-      # Va despues de `Capture runtime provenance`: el espejo esta en .gitignore
-      # y no ensucia el arbol, pero la huella se toma antes igualmente.
+      # Aqui NO se genera, se VERIFICA. Generarlo enmascararia el unico fallo que
+      # importa: si alguien edita una hoja y no regenera su copia, la URL cambia su
+      # `?v=` y el cuerpo no —cache envenenada—. Un CI que lo arregla en silencio
+      # deja pasar a `main` un desfase que el usuario si sufriria.
       #
       # El nombre del paso evita las palabras que `visual-ci-contract.test.mjs`
       # veta en este archivo: ese guard existe para que el CI no tenga camino de
       # despliegue, y un guard que se ablanda por comodidad deja de valer.
-      - name: Generate comment-free CSS as the live site serves it
-        run: npm run css:minify && npm run css:minify:check && git status --porcelain
+      - name: Verify the comment-free CSS matches its source
+        run: npm run css:minify:check
       - name: Start isolated runtime
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
       - name: Wait for the application

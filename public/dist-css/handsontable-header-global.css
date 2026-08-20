@@ -1,0 +1,119 @@
+body.ps-page #hot-container .handsontable thead th,
+body.pi-page #hot-container .handsontable thead th,
+body.pg-page #hot-container .handsontable thead th,
+body.pdc-page #dt_cliente .handsontable thead th,
+body #hot-container .handsontable thead th {
+  position: relative !important;
+  padding: 0 !important;
+  text-align: center !important;
+  height: auto !important;
+  min-height: var(--ds-table-header-h, 1.5rem) !important;
+  white-space: normal !important;
+}
+body.ps-page #hot-container .handsontable thead th .relative,
+body.pi-page #hot-container .handsontable thead th .relative,
+body.pg-page #hot-container .handsontable thead th .relative,
+body #hot-container .handsontable thead th .relative {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px !important;
+  width: 100% !important;
+  padding: 0 1px !important;
+  box-sizing: border-box !important;
+}
+body.ps-page #hot-container .handsontable thead th .relative > .colHeader,
+body.pi-page #hot-container .handsontable thead th .relative > .colHeader,
+body.pg-page #hot-container .handsontable thead th .relative > .colHeader,
+body #hot-container .handsontable thead th .relative > .colHeader {
+  order: 1 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  width: 100% !important;
+}
+body.ps-page #hot-container .handsontable thead th .colHeader,
+body.pi-page #hot-container .handsontable thead th .colHeader,
+body.pg-page #hot-container .handsontable thead th .colHeader,
+body.pdc-page #dt_cliente .handsontable thead th .colHeader,
+body #hot-container .handsontable thead th .colHeader {
+  text-align: center !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  font-size: var(--ds-table-header-font-size, 0.75rem) !important;
+  line-height: 1.15 !important;
+  hot.js. */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+body.pi-page #hot-container .handsontable thead th .colHeader.pi-soft-restriction-header,
+body.pi-page #hot-container .handsontable thead th .relative > .colHeader.pi-soft-restriction-header {
+  display: block !important;
+  -webkit-line-clamp: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+body.ps-page #hot-container .handsontable thead th .relative > .changeType,
+body.pi-page #hot-container .handsontable thead th .relative > .changeType,
+body.pg-page #hot-container .handsontable thead th .relative > .changeType,
+body #hot-container .handsontable thead th .relative > .changeType {
+  order: 2 !important;
+  align-self: flex-end !important;
+  margin: 1px 0 0 0 !important;
+}
+body.ps-page #hot-container .handsontable thead th .changeType,
+body.pi-page #hot-container .handsontable thead th .changeType,
+body.pg-page #hot-container .handsontable thead th .changeType,
+body.pdc-page #dt_cliente .handsontable thead th .changeType,
+body #hot-container .handsontable thead th .changeType {
+  float: none !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  transform: none !important;
+  width: var(--ds-table-filter-trigger-size, 13px) !important;
+  height: var(--ds-table-filter-trigger-size, 13px) !important;
+  margin: 1px 0 0 0 !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--ds-active-text-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  z-index: 2 !important;
+}
+body.ps-page #hot-container .handsontable thead th .changeType:before,
+body.pi-page #hot-container .handsontable thead th .changeType:before,
+body.pg-page #hot-container .handsontable thead th .changeType:before,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:before,
+body #hot-container .handsontable thead th .changeType:before {
+  content: "\f0b0" !important;
+  font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-size: var(--ds-table-filter-trigger-icon-size, 6px) !important;
+  line-height: 1 !important;
+}
+body.ps-page #hot-container .handsontable thead th .changeType:hover,
+body.ps-page #hot-container .handsontable thead th .changeType:focus,
+body.pi-page #hot-container .handsontable thead th .changeType:hover,
+body.pi-page #hot-container .handsontable thead th .changeType:focus,
+body.pg-page #hot-container .handsontable thead th .changeType:hover,
+body.pg-page #hot-container .handsontable thead th .changeType:focus,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:hover,
+body.pdc-page #dt_cliente .handsontable thead th .changeType:focus,
+body #hot-container .handsontable thead th .changeType:hover,
+body #hot-container .handsontable thead th .changeType:focus {
+  border-color: var(--ds-active-focus-ring) !important;
+  background: var(--ds-active-surface-raised) !important;
+  color: var(--ds-active-focus-ring) !important;
+  cursor: pointer !important;
+}
