@@ -3424,17 +3424,27 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-active-border) !important;
 }
 
+/* Consumen el tint de su matiz: los dos `--ds-cell-state-*-bg` resolvian al
+   mismo color y se pintaban igual. Porque: commit 8418449a. */
 .pg-page #hot-container .handsontable td.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-tint-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg) !important;
-  color: var(--ds-cell-state-sin-datos-fg) !important;
+  background-color: var(--ds-state-tint-violet) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   border-style: dashed !important;
+}
+
+/* `Fuera de Ventana`, 39,3% de la tabla: nivel `null` en ds-f1a-escala-estado,
+   matiz teal por horizonte lejano. Porque: commit 8418449a. */
+.pg-page #hot-container .handsontable td.pg-state-fuera-de-ventana {
+  background-color: var(--ds-state-tint-teal) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 /* Muestras del modal: la geometria la fija `.pg-legend-quick-swatch`; de esta
@@ -3961,6 +3971,14 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   background-color: var(--ds-state-tint-green);
   border-color: var(--ds-active-border);
   color: var(--ds-active-text-primary);
+}
+
+/* No es un estado: no toma matiz del catalogo, se distingue por FORMA.
+   Sustituye un `style=` embebido con hex claro. Porque: commit 7c287d3a. */
+.pi-page .pi-legend-modal-swatch.pi-legend-soft-restriction {
+  background-color: var(--ds-active-surface-raised);
+  border: 1px dashed var(--ds-active-border-control);
+  color: var(--ds-active-text-secondary);
 }
 
 .pi-page .tooltip {

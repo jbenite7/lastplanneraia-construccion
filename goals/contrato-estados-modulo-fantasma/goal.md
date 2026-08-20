@@ -68,6 +68,21 @@ implementó ni se insinuó en el código.
 - Observación fuera de alcance, informada y no tocada: `decisiones/` está en `.gitignore:404`; la
   coordinadora confirmó que es deliberado y que la cola que sobrevive es `docs/decisiones-pendientes.md`.
 
+## Cierre
+
+**Cerrado y publicado el 2026-08-11** en `c25ac63d`, con `npm run test:design-system:static` en
+`RC=0` 8/8 **después** de integrar `origin/main` y con el código de salida leído sin tubería. El
+encabezado se añade el 2026-08-19: la declaración estaba en la primera línea del documento y no bajo
+un `## Cierre`, que es de donde el mapa de estado deriva si un frente cerró — así que ocho días
+contó como abierto estando publicado.
+
+**Lo que este frente descubrió tiene ahora un guard que lo impide.** Retiró del contrato el módulo
+`programa-general-actualizar` porque declaraba seis estados que ninguna pantalla pinta, y ese defecto
+solo se encontró mirando. Desde el 2026-08-19 lo caza
+`tests/design-system/state-key-consumption.test.mjs`: un estado con `key` y sin consumidor pone el
+gate en rojo, y el censo que lo motivó encontró el mismo patrón en otros siete módulos.
+
+
 ## Archivos de este goal
 
 - [goal.md](goal.md) — este archivo

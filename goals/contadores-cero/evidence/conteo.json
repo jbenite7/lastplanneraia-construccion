@@ -1,0 +1,19 @@
+{
+  "conBandera": {
+    "total": 8,
+    "visibles": 5,
+    "enCero": 3,
+    "enCeroVisibles": 0,
+    "ocupanSitio": 881
+  },
+  "conFiltro": {
+    "total": 8,
+    "visibles": 8,
+    "enCero": 7,
+    "enCeroVisibles": 7,
+    "ocupanSitio": 1384
+  },
+  "sinBandera": {
+    "visibles": 8
+  }
+}

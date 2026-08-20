@@ -1,0 +1,39 @@
+@layer components {
+  .pg-page .pg-toolbar-buttons .aia-btn {
+    min-height: var(--ds-control-compact-min);
+    padding-block: var(--ds-space-1);
+  }
+  .pg-page #pgLegend .pg-filter-chip {
+    min-height: var(--ds-control-compact-min);
+  }
+  .pdc-legend-item {
+    min-height: var(--ds-control-compact-min) !important;
+  }
+  .pdc-legend-item:focus-visible {
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring) !important;
+    outline-offset: var(--ds-outline-offset) !important;
+  }
+  .btn-pdc-modern {
+    min-height: var(--ds-control-compact-min);
+  }
+  .btn-pdc-modern {
+    background-color: var(--ds-active-surface-raised);
+    border-color: var(--ds-active-border-control);
+    color: var(--ds-active-text-secondary);
+  }
+  .btn-pdc-modern:hover {
+    background-color: var(--ds-active-surface-raised);
+    border-color: var(--ds-active-text-secondary);
+    color: var(--ds-active-text-primary);
+  }
+  .btn-pdc-modern:active {
+    background-color: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+  }
+  .btn-pdc-modern i {
+    color: var(--ds-active-text-secondary);
+  }
+  .btn-pdc-modern:hover i {
+    color: var(--ds-active-text-primary);
+  }
+}

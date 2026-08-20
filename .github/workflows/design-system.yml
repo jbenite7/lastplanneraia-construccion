@@ -16,6 +16,7 @@ concurrency:
 jobs:
   design-system-static:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # Sin esto, `docker-compose.override.yml` monta sobre /var/www/html la ruta absoluta de la
     # máquina de desarrollo, que en un runner NO EXISTE. Docker no protesta: crea el directorio
     # vacío y lo monta igual, así que el código desaparece del contenedor y los cuatro tests de
@@ -49,12 +50,23 @@ jobs:
     env:
       LPS_CODE_ROOT: ${{ github.workspace }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
+      # Fija versión y checksum a propósito: un linter que se descarga mutable
+      # es la misma brecha que vino a cerrar.
+      - name: Lint the workflow definitions
+        run: |
+          set -euo pipefail
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt
+          grep ' actionlint_1.7.12_linux_amd64.tar.gz$' actionlint_1.7.12_checksums.txt | sha256sum -c -
+          tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
+          ./actionlint -color
+          rm -f actionlint actionlint_1.7.12_linux_amd64.tar.gz actionlint_1.7.12_checksums.txt
       - name: Fetch main history for design-system contracts
         run: git fetch origin main:refs/remotes/origin/main
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -80,10 +92,11 @@ jobs:
 
   design-system-runtime:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: design-system-static
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -122,11 +135,25 @@ jobs:
           E2E_REQUIRE_ISOLATED_DB: "1"
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: node scripts/design-system-ci-preflight.mjs
+      # El espejo sin comentarios viene YA en el checkout: `public/dist-css/` se
+      # versiona (ver .gitignore y .gitattributes), porque el codigo llega a
+      # produccion por `git pull` y el servidor no corre Node.
+      #
+      # Aqui NO se genera, se VERIFICA. Generarlo enmascararia el unico fallo que
+      # importa: si alguien edita una hoja y no regenera su copia, la URL cambia su
+      # `?v=` y el cuerpo no —cache envenenada—. Un CI que lo arregla en silencio
+      # deja pasar a `main` un desfase que el usuario si sufriria.
+      #
+      # El nombre del paso evita las palabras que `visual-ci-contract.test.mjs`
+      # veta en este archivo: ese guard existe para que el CI no tenga camino de
+      # despliegue, y un guard que se ablanda por comodidad deja de valer.
+      - name: Verify the comment-free CSS matches its source
+        run: npm run css:minify:check
       - name: Start isolated runtime
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
       - name: Wait for the application
         run: |
-          for attempt in {1..60}; do
+          for _ in {1..60}; do
             if curl -fsS http://127.0.0.1:18081/login > /dev/null; then
               exit 0
             fi
@@ -176,7 +203,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the full-app-flow receipt
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: full-app-flow-receipt
           path: docs/design-system/evidence/full-app-flow.json
@@ -215,7 +242,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the semanal roles and phases receipt
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: semanal-roles-phases-receipt
           path: docs/design-system/evidence/semanal-roles-phases.json
@@ -250,7 +277,7 @@ jobs:
         run: npm run test:design-system:evidence
       - name: Preserve non-blocking evidence failures
         if: steps.keyboard-reflow-evidence.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: design-system-keyboard-reflow-evidence
           path: |
@@ -275,7 +302,7 @@ jobs:
           docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs --no-color > test-output/docker-compose.log || true
       - name: Preserve failure evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: design-system-failure-evidence
           path: |

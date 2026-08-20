@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-19
+updated: 2026-08-20
 ---
 
 # Tareas
@@ -39,6 +39,32 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **Auditoría de specs 2026-08-20 — pendientes nuevos que no estaban en esta lista.** Las 61
+  specs vigentes se verificaron contra el código; el informe completo, con evidencia y cada
+  pendiente atado a su plan, está en
+  [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]]. Lo que no estaba anotado en
+  ningún lado:
+  1. ~~`organizar-la-casa` sin ejecutar~~ — **HECHO (2026-08-20)**: vistos en
+     `decisiones/vistos/`, historial de sesiones versionado, plantillas borradas, las siete
+     reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
+     Ver [[goals/organizar-la-casa/goal]].
+  2. ~~`estados-severidad-contrato` bajo 3 niveles~~ — **HECHO (2026-08-20)**: spec reescrita
+     con notas de revisión fechadas; la ejecución del frente sigue **pausada a propósito** — la
+     coordinación previa con la sesión del contrato hermano es parte de la decisión, y la
+     saturación del filete en Intermedia (6 de 8 con barra) es material de esa coordinación.
+  3. ~~Verificación de `/indicadores` y CNP/CNC/CIC~~ — **HECHO (2026-08-20)**: `/indicadores`
+     está migrada (pilot; su contenido es un iframe). **CNP/CNC/CIC son legacy real**: el shell es
+     `aia-*` pero `legacyCards.js` pinta todo con clases legacy. F0-022 (mayor) lo detectó sin
+     tarea que lo cierre → la migración entra a **DS-F2** con dueño (fila nueva abajo) y los dos
+     planes de UI-audit (2026-07-31, 2026-08-01) quedan **superados como vehículo**.
+  4. **Humo del PDC v2 en `prueba-lps`** — la mitad anónima **HECHA (2026-08-20)** con códigos
+     crudos: `/plan-compras` 302→login (enrutado y protegido), bundle `pdc.js` 200, `/dev/entrar`
+     302→login (candado puesto). **La mitad autenticada quedó HECHA el mismo día**: Felipe
+     abrió sesión (`test.R`) en el navegador integrado y sobre ella se verificó SPA con datos
+     reales, APIs en 200, RBAC permitido/denegado y consola limpia. El paso previo de CP-F-E
+     está cumplido. Evidencia:
+     [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
+
 - [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó
   (`aa965bf5`, 2026-08-19 13:40): 40.664 filas migradas, acta en
   `goals/apply-recalculo-estados/acta-del-apply.md`, reconciliación exacta. **Producción sigue sin
@@ -52,12 +78,56 @@ estado por defecto mientras Felipe no reparta.
 - [ ] **DS-F1, lo que queda del contrato** — la escala de estado cerró (F1a). Faltan tokens,
   primitivas `aia-*`, escala de severidad y escala de z-index. Arranca con brainstorming: el
   contrato es decisión de negocio. Entrada lista: los 68 hallazgos de DS-F0.
-- [ ] **Cerrar antes de integrar: `linea-base-contractual` y `semanal-fondo-por-matiz`.** Los dos
-  entraron en el `main` local el 2026-08-19 sin haber declarado su condición de hecho, y **Felipe
-  ordenó sacarlos: «que se cierren primero»**. Su trabajo está intacto en
-  `claude/elated-golick-e27253` y `claude/reverent-golick-aaf932`, 10 cambios cada una. Lo que les
-  falta no es código: es la sección `## Cierre` con la verificación que demuestre que terminaron.
-  `semanal-fondo-por-matiz` además toca pantallas, así que su cierre exige comprobación visual.
+- [ ] **Cerrar antes de integrar: `linea-base-contractual`.** Entró en el `main` local el
+  2026-08-19 sin haber declarado su condición de hecho, y **Felipe ordenó sacarlo: «que se cierre
+  primero»**. Su trabajo está intacto en `claude/elated-golick-e27253`, 10 cambios. Lo que le falta
+  no es código: es la sección `## Cierre` con la verificación que demuestre que terminó.
+
+  **`semanal-fondo-por-matiz` ya cerró y está publicado** (`2fc5998e`, 2026-08-19): las dos fases
+  con cinco fondos distintos, filete solo en `urgent` y `attention`, capturas miradas a 1180×820
+  dark, suite del gate 4/4 en `RC=0` **después** de integrar. Su cierre destapó que la sonda de la
+  fase Calificación **no forzaba la fase** y lo declaraba igual, porque comprobaba su propia
+  sustitución de texto: ver `## Cierre` en [[goals/semanal-fondo-por-matiz/goal]].
+
+- [x] 2026-08-19 — **cola de estados, severidad y color**: los siete pendientes atendidos. Cuatro
+  ejecutados (remapeo de Programa General con `Fuera de Ventana` —el 39,3 % de la tabla, que se
+  pintaba igual que `Actividad Futura`—, la crema de la leyenda de Intermedia, y dos guards que antes
+  no podían ponerse rojos) y cinco decisiones medidas y elevadas en [[DECISIONES_PENDIENTES]].
+  Registro: [[goals/cola-estados-severidad/goal]].
+
+- [x] 2026-08-19 — **repaso de TODOS los specs y frentes**: de 13 `goals` sin cerrar quedaron **6**.
+  Siete se cerraron con verificación de hoy: `adopcion-logo-construccion`, `pdc-tanda2-plan-verdad`,
+  `apply-recalculo-estados` (solo desarrollo), `contadores-cero`, `semana-fija-visual`,
+  `repaso-usabilidad-no-tablas` y `contrato-estados-modulo-fantasma`. Los dos últimos estaban
+  cerrados y firmados en prosa, **sin el encabezado `## Cierre` que el mapa de estado lee**.
+
+- [x] 2026-08-19 — **el CI llevaba 40 corridas sin pasar** (23 `failure`, 17 `cancelled`, ni una
+  verde) por una sola aserción: `full-app-flow` exigía en móvil que el `body` reservara sitio para
+  el carril, justo lo que la spec del menú flotante derogó el 2026-08-14. Arreglado en `ab2c34f1`.
+  Y el lint de wiki denegaba publicaciones por basura que git ignora: arreglado preguntándole a git.
+
+- [ ] **`runtime-budgets-al-ci` y `gates-al-ci` están encadenados a una corrida verde de CI.**
+  Fase 1 reproducida: el gate `runtime-budgets` no es un baseline caducado — su medición **solo
+  puede producirse dentro de GitHub Actions**, porque exige `CI_RUN_ID`, `CI_GIT_SHA` y dos huellas
+  más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
+  la Fase 3 puede tomar la procedencia y los dos frentes cierran.
+
+- [ ] **Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+  condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
+  `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
+  `navigation` · **D-6** el vocabulario de la cascada, cuyo objetivo numérico ya se cumplió solo
+  (25 cadenas contra las 29 que pedía) · **D-7** `bi-control-tower-gemini`, parado mes y medio por
+  una condición imposible · **D-8** `design-system-nucleo-gobernanza`, que exige quince gates donde
+  el archivo declara nueve · **D-9** hasta dónde llega la reapertura móvil y el tema claro.
+  Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+
+- [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
+  tercera vez que se mide la misma familia en este repo —hermana de
+  [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y
+  [[memoria/trampas/guard-valida-declaracion-contra-si-misma]]— y le falta ficha propia en
+  `memoria/trampas/`. El caso nuevo, con su medición, está en el `## Cierre` de
+  [[goals/semanal-fondo-por-matiz/goal]]: no se escribió allí porque ese frente no declaraba la
+  ruta `memoria/trampas/**`.
 
 - [ ] **linea-base-contractual** — sembrado por migración SQL, con `database/migrations/**`
   autorizado explícitamente por Felipe para este frente. **No tiene `goals/<slug>/` propio**: su
@@ -88,6 +158,32 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
+  (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
+  2026-07-23 en `public_html`. Confirmar y borrar.
+
+- [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
+  `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
+  [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
+- [ ] **CI · renombrar `design-system.yml` → `ci.yml`** — el nombre quedó pequeño: el workflow
+  custodia el repo entero (suite PHP, RBAC, E2E, presupuestos), no solo el design system. Exige
+  barrido de referencias por ruta (`visual-ci-contract.test.mjs`, scripts, docs, comandos
+  `gh run list --workflow=`) y parte el historial de corridas. Hacerlo como micro-frente propio,
+  idealmente junto a G4, que también toca los triggers. Decisión de Felipe 2026-08-20.
+- [ ] **CI · G7 paralelización** — medir duración por paso primero; candidato: PHPStan como job
+  paralelo (no necesita la app levantada). Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · G8 job summaries** — volcar recibos y presupuestos ya generados a
+  `GITHUB_STEP_SUMMARY`. Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · zizmor** — auditoría de seguridad del YAML complementaria a actionlint; exige tooling
+  extra. Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · Frente 2 (G2, cache de capas Docker)** — su plan se escribe cuando el Frente 1 esté
+  publicado; objetivo y límites duros ya fijados en la spec.
+- [ ] **DECISIÓN (Felipe) · G6 branch protection / merge queue** — cambia el flujo de publicación
+  de todas las sesiones (`publicar.sh` → PRs). No aplicar sin visto explícito. Origen: spec
+  2026-08-20-deuda-ci-design.
+- [ ] **PROPUESTA (Felipe) · hook `task-completed-verify.sh`** — corre `composer test` en el host,
+  donde composer no existe (repo Docker-only): rojo falso en toda tarea sin código. Es `~/.claude`:
+  proponer el fix, no aplicarlo.
 - [ ] **Escribir el cierre de dos goals ya ejecutados** — `pdc-tanda2-plan-verdad` y
   `adopcion-logo-construccion` tienen el trabajo hecho y ninguna sección `## Cierre`, así que la
   regla de lectura los cuenta como abiertos. Es escribir el cierre, no re-ejecutar.
@@ -129,6 +225,14 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-20 — **Los tres pendientes restantes de la auditoría de specs**: spec de severidad
+  reescrita a 3 niveles, veredicto de indicadores/CNP-CNC-CIC (legacy real → DS-F2), humo anónimo
+  de `prueba-lps` en verde. [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
+- [x] 2026-08-20 — **Auditoría de estado real de las 61 specs** contra el código, publicada en
+  `3144ca5e`: 44 ejecutadas · 16 parciales · 1 pendiente · 12 cerradas. Informe con evidencia:
+  [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]].
+- [x] 2026-08-20 — **organizar-la-casa** ejecutada: coordinación versionada y las siete reglas
+  escritas ([[docs/coordinacion-sesiones]]).
 - [x] 2026-08-19 — **El gate de publicación frena las integraciones**: publicar con merges exige
   `--con-merges` y lista qué frentes entran y cuáles declaran cierre. Nace del cuarto choque del
   día: dos frentes a medio terminar entraron en `main` y solo los detectó una revisión a mano.
@@ -225,7 +329,7 @@ manda sobre los gates.**
 |---|---|---|
 | **DS-F0 · Auditoría total** | Toda la app: módulo, objeto, variable y escenario. Absorbe como semilla las 48 decisiones del 3-ago y F-4…F-9 de `docs/DESIGN-AUDIT.md`. Entregable: inventario por severidad «Crítico → Sin problema», verificando de paso el bug de coloreado que el usuario sospecha | No empezada |
 | **DS-F1 · Redefinición del contrato** | Tokens, primitivas `aia-*`, escalas de estado/severidad y escala de stacking (z-index). Arranca con brainstorming con el usuario: el contrato es decisión de negocio | No empezada |
-| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0 | No empezada |
+| **DS-F2 · Reimplementación por adaptadores** | Primero Handsontable y DataTables, que concentran la deuda; luego módulo a módulo según DS-F0. **Entrada añadida el 2026-08-20:** CNP/CNC/CIC (`legacyCards.js` entero es legacy bajo shell `aia-*`, hallazgo F0-022 sin dueño hasta hoy) | No empezada |
 | **DS-F3 · Control** | Gates nuevos derivados del contrato. **Los 15 actuales se reemplazan, no se arreglan.** Cinco principios: pocos y atados a contratos que duelan; nunca bloquean el flujo local, solo el merge; actualizar un baseline cuesta un comando con diff visible; todo rojo dice qué archivo y qué hacer; cuarentena explícita para gates ruidosos | No empezada |
 
 Consecuencia de secuencia ya decidida: **la Torre de Control BI no se recaptura**, se reconstruye

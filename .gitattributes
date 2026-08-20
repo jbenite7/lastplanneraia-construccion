@@ -1,0 +1,7 @@
+
+# El espejo sin comentarios que sirve `public/.htaccess` §1b. Se versiona para que
+# llegue a produccion por `git pull` —el servidor no corre Node—, pero es
+# generado: no se edita a mano y no tiene por que ensuciar los diffs ni contar
+# como codigo propio.
+public/dist-css/** linguist-generated=true
+public/dist-css/** -diff

@@ -1,0 +1,39 @@
+@layer vendor {
+  .ts-control {
+    background-color: var(--ds-active-surface) !important;
+    border-color: var(--ds-active-border) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-radius: var(--ds-radius-control) !important;
+    font-family: inherit !important;
+    font-size: var(--ds-font-size-sm) !important;
+    min-height: var(--ds-target-min) !important;
+    box-shadow: var(--ds-shadow-xs) !important;
+  }
+  .ts-control .item {
+    color: var(--ds-active-text-primary) !important;
+  }
+  .ts-control input {
+    color: var(--ds-active-text-primary) !important;
+  }
+  .ts-dropdown {
+    background-color: var(--ds-active-surface-raised) !important;
+    border-color: var(--ds-active-border) !important;
+    color: var(--ds-active-text-primary) !important;
+    border-radius: var(--ds-radius-popover) !important;
+    box-shadow: var(--ds-shadow-md) !important;
+    z-index: 99999 !important;
+  }
+  .ts-dropdown .option {
+    color: var(--ds-active-text-primary) !important;
+    padding: var(--ds-space-2) var(--ds-space-3) !important;
+  }
+  .ts-dropdown .option:hover,
+  .ts-dropdown .option.active {
+    background-color: var(--ds-active-surface-hover, var(--ds-table-row-hover)) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+  .ts-dropdown .option.selected {
+    background-color: var(--ds-table-row-selected) !important;
+    color: var(--ds-active-text-primary) !important;
+  }
+}

@@ -1,0 +1,115 @@
+@layer reset, vendor, theme, base, layout, components, utilities, module, legacy-overrides;
+@import url("/public/vendor/font-awesome/css/all.css") layer(vendor);
+@import url("/public/vendor/bootstrap/bootstrap.min.css") layer(vendor);
+@import url("/public/vendor/jquery-ui.css") layer(vendor);
+@import url("/public/vendor/anychart/anychart-ui.min.css") layer(vendor);
+@import url("/public/vendor/anychart/anychart-font.min.css") layer(vendor);
+@import url("/public/vendor/select2/select2.min.css") layer(vendor);
+@import url("/public/vendor/sweetalert2.min.css") layer(vendor);
+@import url("/public/vendor/handsontable/handsontable.full.min.css") layer(vendor);
+@import url("/css/handsontable-module.css?v=1.1.0") layer(vendor);
+@import url("/css/handsontable-header-global.css?v=1.1.0") layer(vendor);
+@import url("/css/design-system/fonts.css?v=1.1.0");
+@import url("/css/design-system/foundation.css?v=1.1.0");
+@import url("/css/design-system/core.css?v=1.1.0");
+@import url("/css/design-system/components/navigation.css?v=1.1.0");
+@import url("/css/design-system/components/page-header.css?v=1.1.0");
+@import url("/css/design-system/components/action-group.css?v=1.1.0");
+@import url("/css/design-system/components/filter-form.css?v=1.1.0");
+@import url("/css/design-system/components/states-feedback.css?v=1.1.0");
+@import url("/css/design-system/components/ops-state-chip.css?v=1.1.0");
+@import url("/css/design-system/components/severity-rail.css?v=1.1.0");
+@import url("/css/design-system/components/data-display.css?v=1.1.0");
+@import url("/css/design-system/components/dialog.css?v=1.1.0");
+@import url("/css/design-system/components/bi-figure.css?v=1.1.0");
+@import url("/css/design-system/components/primitives.css?v=1.1.0");
+@import url("/css/design-system/components/ht-empty-state.css?v=1.1.0");
+@import url("/css/design-system/components/table-filter-trigger.css?v=1.1.0");
+@import url("/css/design-system/adapters/legacy-bridge.css?v=1.1.0");
+@import url("/css/design-system/adapters/handsontable.css?v=1.1.0");
+@import url("/css/design-system/adapters/programa-general-handsontable.css?v=1.1.0");
+@import url("/css/design-system/adapters/select2.css?v=1.1.0");
+@import url("/css/design-system/adapters/sweetalert2.css?v=1.1.0");
+@import url("/css/design-system/adapters/lps-drawer.css?v=1.1.0");
+@import url("/css/design-system/adapters/shell-sidebar.css?v=1.1.0");
+@import url("/css/styles.css?v=1.1.0") layer(module);
+@import url("/css/buttons.css?v=1.1.0") layer(components);
+@import url("/css/design-system/components/toolbar-controls.css?v=1.1.0");
+@import url("/css/access.css?v=1.1.0") layer(utilities);
+@layer theme {
+  :root,
+  [data-aia-theme="dark"],
+  .aia-theme-dark {
+    color-scheme: dark;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas-dark);
+    --ds-active-bg-page: var(--ds-color-bg-page-dark);
+    --ds-active-surface: var(--ds-color-surface-dark);
+    --ds-active-surface-raised: var(--ds-color-surface-raised-dark);
+    --ds-active-surface-glass: var(--ds-color-surface-glass-dark);
+    --ds-active-text-primary: var(--ds-color-text-primary-dark);
+    --ds-active-text-secondary: var(--ds-color-text-secondary-dark);
+    --ds-active-border: var(--ds-color-border-separator-dark);
+    --ds-active-border-control: var(--ds-color-border-control-dark);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-dark);
+    --ds-active-action-primary: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-action-primary-hover: var(--aia-green-light);
+    --ds-active-action-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-domain-construction: var(--ds-color-domain-construction-on-dark);
+    --ds-active-domain-construction-text: var(--ds-color-text-on-domain-dark);
+    --ds-active-data-plan: var(--ds-color-domain-real-estate-on-dark);
+    --ds-active-data-executed: var(--ds-color-domain-corporate-on-dark);
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-active-text-primary);
+    --ds-active-nav-text-muted: var(--ds-active-text-secondary);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}
+@layer legacy-overrides {
+  :where(.card, .project-card, .aia-card, .aia-panel, .aia-table-shell, .aia-grid-shell) {
+    border-radius: var(--ds-radius-card) !important;
+  }
+  :where(.aia-card, .aia-panel) {
+    padding: var(--ds-space-4);
+  }
+  :where(.modal-content, .swal2-popup, .aia-modal-surface) {
+    border-radius: var(--ds-radius-modal) !important;
+  }
+  :where(.dropdown-menu, .popover, .toast, .tooltip-inner) {
+    border-radius: var(--ds-radius-popover) !important;
+  }
+  :where(.btn, .btn-pdc-modern, .btn-enter, .island-btn, .pdc-mobile-toggle, .btn-filter-toggle, .aia-btn) {
+    border-radius: var(--ds-radius-control) !important;
+  }
+  :where(
+    .form-control,
+    .custom-select,
+    .input-group-text,
+    .select2-selection,
+    .ts-control,
+    .ts-dropdown,
+    .aia-input,
+    .aia-select,
+    .aia-textarea
+  ) {
+    border-radius: var(--ds-radius-control) !important;
+  }
+  :where(
+    .input-group > .form-control:not(:last-child),
+    .input-group > .custom-select:not(:last-child),
+    .input-group > .aia-input:not(:last-child)
+  ) {
+    border-start-end-radius: var(--ds-radius-none) !important;
+    border-end-end-radius: var(--ds-radius-none) !important;
+  }
+  :where(.input-group > .input-group-append > .btn, .input-group > .input-group-append > .input-group-text) {
+    border-start-start-radius: var(--ds-radius-none) !important;
+    border-end-start-radius: var(--ds-radius-none) !important;
+  }
+  :where(.badge, .badge-status, .count-badge, .pdc-legend-item, .aia-chip) {
+    border-radius: var(--ds-radius-pill) !important;
+  }
+  :where(.progress, .progress-bar, .progress-xs) {
+    border-radius: var(--ds-radius-progress) !important;
+  }
+}

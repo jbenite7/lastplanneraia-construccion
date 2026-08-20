@@ -28,6 +28,22 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Control Tower abierto al Director de Obra (2026-08-20)
+
+#### Changed
+- La capacidad `internal.bi.preview` pasa de solo `A` a `A` y `D`: el Director de Obra ya ve los
+  accesos y abre `/bi/*` mientras el módulo sigue oculto para el resto de roles. Decisión de
+  Felipe 2026-08-20; desplegado a pruebas y producción el mismo día (`828483a4`).
+
+
+### Deuda del CI — Frente 1 (2026-08-20)
+
+#### Security
+- CI: las actions quedan ancladas por SHA de commit (con Dependabot vigilándolas por PR semanal),
+  ambos jobs con `timeout-minutes`, y el propio workflow pasa por actionlint con binario fijado
+  por checksum. El contrato visual-ci ahora exige la forma pineada. Origen:
+  [[docs/superpowers/specs/2026-08-20-deuda-ci-design]], Frente 1.
+
 ### Wiki v2 — esquema, lint y migración de la wiki (2026-08-19)
 
 #### Added
@@ -105,6 +121,54 @@ para el estado de los planes en curso.
 - **Detección de conflictos de asignación en Preview (PI):** El preview del modal "Aplicar Restricción Compartida" calcula conflictos por actividad (Sub-Contratista o Responsable AIA distintos al objetivo) y los muestra como panel de badges, KPI en rojo y resaltado de filas. No bloquea la operación; sirve como guía visual antes de aplicar.
 - **Confirmación contextual al aplicar lote PI (PI):** Al hacer click en "Aplicar en Lote" se despliega `AIA.Notice.confirm` con 4 variantes según el estado del Preview: (1) **sin alerta** cuando el check "Aplicar asignaciones comunes" está desactivado, ya que no puede haber sobreescritura de Sub-Contratista/Responsable AIA; (2) "Conflictos de asignación" cuando el Preview previo detectó diferencias, listando conteo por columna con el texto literal acordado; (3) "Aplicar restricción compartida" cuando el Preview fue limpio; (4) "Preview desactualizado" o "No se validaron conflictos" según si la configuración cambió desde el último Preview o nunca se ejecutó. Todos los textos están redactados a prueba de bobos: mencionan cuántas actividades se modificarán, qué columnas se sobreescribirán y ofrecen cancelar para ejecutar "Ver Conflictos" antes de continuar. El botón Aplicar **nunca se bloquea**; el usuario siempre decide.
 - **Botón renombrado a "Ver Conflictos" (PI):** El botón antes llamado "Preview" en el modal "Aplicar Restricción Compartida" ahora se llama "Ver Conflictos" para comunicar con precisión que su función es detectar sobreescrituras de Sub-Contratista o Responsable AIA, no solo previsualizar restricciones.
+
+## [2026-08-19] — Repaso de todos los specs pendientes
+
+### Fixed
+- **El CI llevaba 40 corridas sin pasar** (23 `failure`, 17 `cancelled`, ni una verde) por una sola
+  aserción: `full-app-flow` exigía en móvil que el `body` reservara sitio para el carril, justo lo
+  que la spec del menú flotante derogó el 2026-08-14. Comprobado antes de tocar el test que no
+  escondía una regresión: a 390 px el carril está fuera de pantalla, no tapa contenido y no hay
+  desbordamiento.
+- El lint de wiki denegaba publicaciones por basura que git ignora (un residuo de Playwright en
+  `test-results/`). Ahora le pregunta a git en vez de parsear `.gitignore`, que se saltaba las reglas
+  negativas y podaba las 57 páginas de `goals/`.
+
+### Changed
+- Siete `goals` cerrados con verificación de hoy; de 13 abiertos quedan 6. Dos de ellos estaban
+  cerrados y firmados **en prosa**, sin el encabezado `## Cierre` del que el mapa de estado deriva:
+  dieciséis y ocho días contando como abiertos con el trabajo hecho.
+- `DECISIONES_PENDIENTES.md` pasa de cinco a nueve decisiones, todas medidas.
+
+## [2026-08-19] — Cola de estados, severidad y color
+
+### Added
+- `tests/design-system/state-key-consumption.test.mjs`: un estado declarado que nadie pinta ahora se
+  pone rojo. Censo que lo motivó: 25 estados con `key` (los 25 consumidos) y 30 sin ella, en siete de
+  los diez módulos. Deuda congelada en `docs/design-system/state-key-debt.json`.
+- `tests/design-system/coverage-closure.test.mjs`: una pantalla que ningún manifiesto declara ya no
+  pasa desapercibida. 32 pantallas reales, 3 sin manifiesto, y `foundation-shell` con 20 rutas y cero
+  escenarios. Deuda en `docs/design-system/coverage-debt.json`.
+- `DECISIONES_PENDIENTES.md`: las cinco decisiones de producto/diseño que la cola dejó abiertas, cada
+  una con su medición y su recomendación.
+- Programa General gana el chip de filtro «Fuera de Ventana», que no tenía pese a ser el 39,3 % de la
+  tabla.
+
+### Changed
+- Programa General pasa al vocabulario vivo: entra `Fuera de Ventana` (25.778 filas, se pintaba igual
+  que `Actividad Futura`) y sale `Con Alerta Restricciones` (cero filas; sigue vivo como filtro, que
+  es lo que siempre fue: un realce por condición del dato, no un estado).
+- `Terminada` y `Sin Datos` dejan de compartir fondo: declaraban matices distintos y ambos tokens
+  resolvían a `var(--ds-active-surface)`.
+- `rowClassMap` se deriva de `statePresentation` en vez de repetirlo. Había dos listas del mismo
+  vocabulario y una se quedaba atrás.
+
+### Fixed
+- La leyenda de Programación Intermedia deja de tener una mancha crema sobre tema oscuro: el
+  muestrario de «Restricciones blandas» reservaba `#fef3c7` para dos variables inexistentes, así que
+  la reserva se aplicaba siempre. Luminancia 0,893 → 0,0263.
+- La sonda de la fase Calificación de Semanal, que declaraba forzar la fase sin forzarla: comprobaba
+  su propia sustitución de texto y no el efecto.
 
 ## [1.1.1] - 2026-03-31
 

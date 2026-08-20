@@ -29,6 +29,10 @@
   --pg-dot-future: var(--ds-color-state-success-text);
   --pg-dot-progress: var(--ds-color-state-info-text);
   --pg-dot-delayed: var(--ds-color-state-critical-text);
+  /* Teal no tiene par `--ds-color-state-*-text`: se deriva del ancla subiendo
+     luminosidad, y se canaliza por token del modulo porque el tint es escalera
+     de FONDO (state-tint-pairing.test.mjs). Porque: commit 8418449a. */
+  --pg-dot-out-of-window: oklch(from var(--ds-state-tint-teal) 0.55 calc(c * 3) h);
   max-inline-size: 100%;
   overflow-x: clip;
   background: var(--ds-active-bg-page);
@@ -114,6 +118,7 @@ html.aia-theme-dark .pg-page {
   --pg-dot-future: oklch(from var(--ds-color-state-success-text) 0.68 calc(c * 1.75) h);
   --pg-dot-progress: oklch(from var(--ds-color-state-info-text) 0.68 calc(c * 1.4) h);
   --pg-dot-delayed: oklch(from var(--ds-color-state-critical-text) 0.68 calc(c * 1.4) h);
+  --pg-dot-out-of-window: oklch(from var(--ds-state-tint-teal) 0.68 calc(c * 3) h);
   /* R0-R1-R2/3-R4/6 son la ALERTA SECUNDARIA de restricciones -en cuantas
      semanas hay que liberarlas-, no el estado principal, y viven en su propia
      columna. Eran el unico gradiente ordinal del modulo y la unica familia
@@ -292,6 +297,10 @@ html.aia-theme-dark .pg-page {
 .pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-dot-future); }
 .pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-dot-progress); }
 .pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-dot-delayed); }
+/* El chip que faltaba para el 39,3% de la tabla. Porque: commit 8418449a. */
+.pg-page #pgLegend .pg-filter-chip.fuera-de-ventana .indicator {
+  background: var(--pg-dot-out-of-window);
+}
 
 .pg-page #pgLegend .pg-filter-chip[aria-pressed="true"] {
   border-color: var(--ds-active-text-secondary);

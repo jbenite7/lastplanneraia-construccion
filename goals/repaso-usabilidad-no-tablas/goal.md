@@ -48,6 +48,27 @@ no por falta de tiempo: la puerta de servicio (`/dev/entrar`) solo abre sesión 
 `admin/` exige su propio `/admin/login`, y las reglas del repo prohíben teclear credenciales o pedir
 que una persona entre. Ver §1 para la lista exacta de lo no cubierto.
 
+## Cierre
+
+**Cerrado el 2026-08-03; el encabezado se añade el 2026-08-19.** El frente había terminado —su
+condición de hecho está entera en `[x]`, el entregable es `inventario-usabilidad.md` con 39 hallazgos
+(15 altas, 15 medias, 9 bajas) y las capturas están en `evidence/`— pero **la palabra «Cerrado»
+vivía dentro de otra sección**, no bajo un `## Cierre`. El mapa de estado y el gate de fase previa
+derivan de ese encabezado, así que durante dieciséis días este frente contó como abierto teniendo el
+trabajo hecho y firmado.
+
+Es el mismo modo de fallo que [[memoria/trampas/condicion-de-hecho-caduca-sin-aviso]] describe desde
+el otro lado: **un dato correcto en el sitio equivocado no lo lee nadie.**
+
+Lo que este frente decidió y **no ejecutó a propósito** —cada una genera trabajo propio, según
+`inventario-usabilidad.md` §7— sigue vivo: el embebido de `/indicadores`, el panel de inicio de
+`/dashboard` que absorbe H-24, y la extensión de la puerta de servicio a `admin/`.
+
+**Límite declarado y que sigue siendo cierto: 26 superficies de 45.** Las 14 internas de `admin/`
+quedaron fuera por una razón dura y no por falta de tiempo — la puerta de servicio no abre sesión
+allí, y las reglas del repo prohíben teclear credenciales o pedirle a una persona que entre.
+
+
 ## Archivos de este goal
 
 - [inventario-usabilidad.md](inventario-usabilidad.md) — el entregable.

@@ -56,3 +56,22 @@ frente se queda en `tests/browser/`; si acabara necesitando la vista o ese CSS, 
 ## Estado
 
 Spec y plan escritos sobre `6dd69bb7`. **Enviados al gate; no se toca código sin aprobación.**
+
+## Cierre
+
+**Cerrado el 2026-08-19.** Verificado con salida real de hoy:
+
+| Hecho | Medición |
+|---|---|
+| La semana la fija el test, no el estado del proyecto | `POST /context/week` con `SEMANA_DEL_GOLDEN`, y **comprueba la respuesta**: si el POST no devuelve OK, el test aborta con el motivo en vez de retratar la semana equivocada (`tests/browser/programacion-intermedia.visual.mjs:95`) |
+| El escenario no depende de datos vivos | las filas se siembran con `Semanas_Inicio` fijos y las tres rutas de datos van interceptadas |
+| Los dos goldens | **2 passed** a 1180×820 y 1440×900 |
+| ¿Se regeneraron goldens? | **No.** El último commit sobre `tests/browser/__screenshots__/` es de otro frente, así que la cláusula de aprobación previa no aplica aquí |
+
+**La mutación ejecutada, que era la parte que no se podía suponer:** con un
+`letter-spacing: 3px !important` metido a propósito en la tabla de Intermedia, **los dos goldens
+fallan**; al revertirlo, los dos vuelven a pasar. La captura sabe fallar — comprobado, no afirmado.
+
+**Límite declarado y respetado:** el gate `runtime` sigue `blocked` por otras causas y este frente
+**no pretendía ponerlo verde**.
+

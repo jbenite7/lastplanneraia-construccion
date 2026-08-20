@@ -18,6 +18,8 @@ resumen: Contrato del repo para asistentes: runtime Docker, tablas globales con 
 - Conserva el worktree existente. Antes de editar, revisa estado y diff; no reviertas, limpies ni incluyas cambios ajenos. Evita refactors de cortesía y mantén cada cambio ligado al objetivo activo.
 - `memoria/` es la wiki del proyecto: contexto, nunca contrato. Precedencia ante conflictos: **código > este archivo > `memoria/`**. Una nota que contradiga al repo se corrige y se marca `estado: derogada`. La escribe el asistente, no se edita a mano, y su esquema está en `CLAUDE.md`.
 
+- Las reglas de coordinación entre sesiones (frentes, vistos, relato de autorizaciones, contenedor compartido y efímero, base de dev, paso 0) viven en `docs/coordinacion-sesiones.md`: toda sesión las lee al arrancar.
+
 ## Runtime local
 
 - Docker Compose es la fuente de verdad local. Los servicios declarados son `app`, `db` y `adminer`; la app se sirve en `http://localhost:8081`, Adminer en `http://localhost:8082` y MySQL en el host por el puerto `3307`.

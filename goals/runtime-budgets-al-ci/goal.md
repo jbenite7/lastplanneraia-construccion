@@ -122,6 +122,128 @@ Sobre **4e6d63e3**, que es el sha a publicar.
 - Fase 3: bajar de una corrida verde la procedencia real y escribirla en `closeout-evidence.json`.
   Depende de que el CI llegue a verde, que es lo que este cierre habilita.
 
+## Fase 1 — por qué está `blocked`, reproducido y no recordado
+
+**Medido el 2026-08-19 sobre `ab2c34f1`.** El plan exigía ejecutar el gate a mano y ver el fallo
+real. Hecho:
+
+```
+npm run test:runtime-budget:check
+> node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.5.json test-output/design-system-runtime-budget.json
+ENOENT: no such file or directory, open '.../test-output/design-system-runtime-budget.json'
+RC=1
+```
+
+**No es un baseline caducado.** Falta el archivo de medición, así que se ejecutó su productor:
+
+```
+npm run test:runtime-budget:measure
+Error: Runtime budget aggregation: CI_GIT_SHA must match the current clean worktree
+  at scripts/design-system-runtime-budget-provenance.mjs:36
+```
+
+**La causa, entonces, es de diseño y no un defecto:** `readCurrentRuntimeContext`
+(`scripts/design-system-runtime-budget-provenance.mjs:125-143`) exige que `CI_RUN_ID`,
+`CI_GIT_SHA`, `CI_WORKTREE_FINGERPRINT` y `CI_FIXTURE_SHA256` coincidan con un worktree limpio, y
+`CI_RUN_ID` va validado contra una expresión regular. **La medición no se puede producir fuera de
+GitHub Actions, y eso es intencional**: el recibo tiene que ser objetivo.
+
+**Consecuencia para el plan: la Fase 2 —«arreglar la causa con el cambio mínimo»— no tiene nada que
+arreglar.** No hay causa local. La única vía es la Fase 3: una corrida real de Actions.
+
+### Y ahí apareció el problema de verdad
+
+`gh run list --workflow=design-system.yml --branch=main --limit 40` devuelve
+**23 `failure` y 17 `cancelled`. Ni una verde.** El CI de este repositorio no pasa desde hace
+decenas de corridas, y no se había notado porque la suite local sí pasa.
+
+La causa era **una sola aserción**: `tests/browser/full-app-flow.spec.mjs:92` exigía en móvil que el
+`body` reservara sitio para el carril, justo lo que la spec del menú flotante derogó el 2026-08-14.
+Arreglado en `ab2c34f1`, con la comprobación previa de que no escondía una regresión.
+
+**Este frente queda a la espera de esa corrida**: si CI se pone verde, la Fase 3 puede tomar la
+procedencia de `full-app-flow` y de `runtime-budgets` de una corrida real, que es lo único que le
+falta para cerrar. Y con ella cierra también [[goals/gates-al-ci/goal]], que depende del mismo gate.
+
+
+## Fase 2 — PARADA Y ESCALADA, que es lo que el plan manda aquí
+
+**El gate corrió por fin, y falla por dos presupuestos excedidos.** No es fontanería: es el
+producto pasándose de lo que su propio contrato permite. Corrida `32329166643` sobre `79e438e7`:
+
+| Métrica | Baseline | Máximo | Real | Exceso |
+|---|---:|---:|---:|---:|
+| `cssGzipBytes` | 196.733 | 198.781 | **200.488** | **+1.707 B** |
+| `initializationMs` | 191,4 | 301,9 | **593** | **+291 ms** |
+
+Antes de escalar se midió **de quién es el exceso de CSS**, comparando el gzip de cada hoja:
+
+| Origen | Aporte |
+|---|---:|
+| `semanal-fondo-por-matiz` (publicado el 2026-08-19; escrito por otra sesión) | **+1.716 B** |
+| El trabajo de la cola de estados de hoy, ya con los comentarios recortados | +527 B |
+
+**El frente de Semanal, solo, se comió el presupuesto entero** (1.716 ≈ los 1.707 de exceso). Y no lo
+supo nadie porque **el gate llevaba 40 corridas sin llegar a ejecutarse**: lo tapaba el fallo de
+`full-app-flow`, arreglado hoy en `ab2c34f1`. El CI roto escondió que dos frentes consecutivos
+publicaron por encima del presupuesto de CSS.
+
+**Lo que sí se hizo sin preguntar**, porque es responsabilidad propia y no toca el contrato: recortar
+los comentarios que este trabajo había añadido a las hojas —el CSS **se sirve sin minificar**, con
+sus 187 comentarios, así que la prosa pesa—. Recuperó **799 B**; el porqué extenso vive en los
+commits y en los `goal.md`, que es donde no cuesta bytes servidos.
+
+**Y aquí para.** El plan lo dice sin ambigüedad: «Si la única salida pasa por tocar un baseline o
+cambiar lo que el gate mide, **PARAR y escalar**: las dos cosas están en la lista de bloqueo
+incondicional». La decisión está en [[DECISIONES_PENDIENTES]] como **D-10**.
+
+`initializationMs` es harina de otro costal y **no lo causa el CSS**: 593 ms contra un máximo de
+301,9. Puede ser deriva real o ruido del runner, y no se puede distinguir con una sola corrida —
+hasta hoy no había ninguna con la que comparar.
+
+
+## Resultado — el presupuesto de CSS ya pasa; queda uno solo
+
+**Medido en CI, corrida `32380299365` sobre `b289a822`** (no en la máquina de nadie):
+
+| Métrica | Antes | Ahora | Máximo | |
+|---|---:|---:|---:|---|
+| `cssGzipBytes` | 200.488 | **126.885** | 198.781 | **pasa, con 69.848 B de margen** |
+| `initializationMs` | 593 | **639,4** | 301,9 | sigue rojo |
+
+El ahorro de CSS —**73.603 B, el 36,7 %**— salió de dejar de servir al navegador los 187 comentarios
+del repositorio (D-10, decidida por Felipe el 2026-08-20). El detalle está en `35ef3059`.
+
+**Y costó una segunda vuelta que merece quedar escrita:** el primer intento generaba el espejo
+*después* de arrancar el runtime, y `docker/php/Dockerfile` hace `COPY . /var/www/html` **en tiempo
+de build**. Lo que no está en el árbol cuando se construye la imagen, no entra. El presupuesto bajó
+788 B de los 73.422 esperados, y el paso decía «62 hojas minificadas» tan campante. Un paso que
+informa de su propio éxito sin comprobar el efecto: la misma familia de trampa que esta jornada ya
+había cazado dos veces.
+
+### `initializationMs`: ni ruido ni CSS
+
+Seis muestras, dos corridas independientes:
+
+| | muestras | media |
+|---|---|---:|
+| Sin minificar (`32379202973`) | 589,4 · 657,2 · 593,0 | ~613 |
+| Con CSS minificado (`32380299365`) | 639,4 · 627,2 · 666,1 | ~644 |
+
+**La dispersión interna es de ±5 %**, así que la métrica es estable: no se puede llamar ruido del
+runner. Y **minificar el CSS no la mejoró** —de hecho subió—, lo que dice que el cuello no está en el
+peso de las hojas.
+
+Mide `performance.now()` en el instante en que Handsontable queda montado en `/programa-general`: es
+tiempo hasta rejilla lista, sensible a la máquina que lo corre. Con seis muestras al doble del máximo
+y al triple del baseline, o el producto se volvió tres veces más lento en algún momento sin que nadie
+lo midiera, o **el baseline de 191,4 ms se tomó en un entorno que ya no es este**.
+
+Distinguir una cosa de la otra exige historia que no existe: hasta hoy **ninguna corrida llegaba a
+medir**. Y tocar el baseline está en la lista de bloqueo incondicional del plan, así que **para aquí
+otra vez**: es **D-11**.
+
+
 ## Archivos de este goal
 
 - [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|Spec]]

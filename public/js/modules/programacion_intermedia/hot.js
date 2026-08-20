@@ -2917,7 +2917,7 @@
         "<section class='pi-legend-quick-group'>" +
           "<h6 class='pi-legend-quick-group-title'>Restricciones blandas</h6>" +
           "<div class='pi-legend-quick-row'>" +
-            "<span class='pi-legend-modal-swatch pi-legend-quick-swatch' style='background:var(--aia-warning-soft-bg, #fef3c7);border-color:var(--aia-warning-border, #f59e0b);'></span>" +
+            "<span class='pi-legend-modal-swatch pi-legend-quick-swatch pi-legend-soft-restriction'></span>" +
             "<div class='pi-legend-quick-state'><strong>Pdto. Constructivo y Modelo BIM</strong><small>Seguimiento blando: no bloquean habilitación, estado operativo ni autoprogramación.</small></div>" +
             "<div class='pi-legend-quick-action'>Completar para control técnico, sin detener compromisos listos.</div>" +
             "<span class='pi-legend-quick-priority is-p3'>Blanda</span>" +

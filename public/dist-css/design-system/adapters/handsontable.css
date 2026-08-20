@@ -1,0 +1,101 @@
+@layer reset {
+  .handsontable table {
+    display: table !important;
+    width: 100% !important;
+  }
+  .handsontable thead {
+    display: table-header-group !important;
+  }
+  .handsontable tbody {
+    display: table-row-group !important;
+  }
+  .handsontable tbody tr {
+    display: table-row !important;
+    width: auto !important;
+    height: var(--ds-table-row-h);
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .handsontable thead tr {
+    background: transparent !important;
+    height: auto !important;
+    min-height: var(--ds-table-header-h);
+  }
+  .handsontable :where(th, td) {
+    display: table-cell !important;
+    width: auto !important;
+    padding-block: 0 !important;
+    padding-inline: var(--ds-table-cell-pad-x) !important;
+  }
+  .handsontable thead th {
+    padding-inline: var(--ds-table-header-pad-x) !important;
+  }
+}
+@layer components {
+  :where(.handsontable, .handsontable .htCore) {
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+    font-family: var(--ds-font-body);
+  }
+  :where(.handsontable td) {
+    font-size: var(--ds-table-cell-font-size);
+  }
+  :where(.handsontable th, .handsontable td) {
+    border-color: var(--ds-table-border);
+    background: var(--ds-active-surface);
+    color: var(--ds-active-text-primary);
+  }
+  :where(.handsontable th) {
+    background: var(--ds-table-header-bg);
+    color: var(--ds-table-header-fg);
+    font-weight: var(--ds-type-weight-semibold);
+    font-size: var(--ds-table-header-font-size);
+  }
+  .handsontable table {
+    display: table !important;
+    width: 100% !important;
+  }
+  .handsontable thead {
+    display: table-header-group !important;
+  }
+  .handsontable tbody {
+    display: table-row-group !important;
+  }
+  .handsontable tbody tr {
+    display: table-row !important;
+    width: auto !important;
+    height: var(--ds-table-row-h);
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .handsontable :where(th, td) {
+    display: table-cell !important;
+    width: auto !important;
+    padding-block: 0 !important;
+    padding-inline: var(--ds-table-cell-pad-x) !important;
+  }
+  :where(.handsontable tbody tr:nth-child(even) td:not([class*="-state-"])) {
+    background: var(--ds-table-zebra);
+  }
+  :where(.handsontable tbody tr:hover td:not([class*="-state-"])) {
+    background: var(--ds-table-row-hover);
+  }
+  :where(.handsontable tbody tr.htRowSelection td, .handsontable tbody tr.highlight td) {
+    background: var(--ds-table-row-selected);
+  }
+  :where(.handsontable .current, .handsontable .area) {
+    box-shadow: inset 0 0 0 var(--ds-border-width) var(--ds-table-cell-focus);
+  }
+  :where(.handsontable .htEmptyState, .handsontable td.htEmpty, .handsontable .htNoData) {
+    background: var(--ds-table-empty-bg);
+    color: var(--ds-table-empty-fg);
+  }
+}

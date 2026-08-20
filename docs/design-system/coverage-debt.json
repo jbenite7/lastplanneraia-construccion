@@ -1,0 +1,20 @@
+{
+  "porque": "Un modulo sin manifiesto no aparece como descubierto: simplemente NO APARECE. Los guards existentes comprueban que lo declarado sea coherente y este probado, pero ninguno comprobaba que lo declarado ABARQUE la aplicacion. Este archivo congela la brecha medida el 2026-08-19 para que no pueda crecer; no la autoriza.",
+  "medicion": "2026-08-19: 32 pantallas reales (GET, sin APIs ni assets). 3 sin manifiesto. 5 rutas declaradas que ya no responden a GET. 1 manifiesto con rutas y cero escenarios (foundation-shell, que declara 20 rutas, el 37% del total).",
+  "regla": "Quitar entradas es bueno y no requiere permiso. Anadirlas exige decision explicita: significa que la aplicacion crecio sin que el sistema de diseno se enterara.",
+  "pantallas_sin_manifiesto": [
+    "/",
+    "/dashboard",
+    "/reportes/{tipo}"
+  ],
+  "rutas_declaradas_sin_get": [
+    "/programa-general/filtros",
+    "/programacion-intermedia/filtros",
+    "/programacion-intermedia/shared-constraints/apply",
+    "/programacion-intermedia/shared-constraints/preview",
+    "/proyecto/seleccionar"
+  ],
+  "manifiestos_sin_escenario": [
+    "foundation-shell.json"
+  ]
+}

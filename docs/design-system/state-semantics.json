@@ -228,10 +228,10 @@
           "hue": "neutral"
         },
         {
-          "label": "Con Alerta Restricciones",
-          "key": "con-alerta-restricciones",
-          "level": "attention",
-          "hue": "amber"
+          "label": "Fuera de Ventana",
+          "key": "fuera-de-ventana",
+          "level": "neutral",
+          "hue": "teal"
         },
         {
           "label": "Debe Iniciar",

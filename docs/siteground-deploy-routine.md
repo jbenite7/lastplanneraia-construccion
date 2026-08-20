@@ -226,6 +226,30 @@ Notas:
 - Usa siempre `--ff-only` para evitar merges manuales en cualquier servidor.
 - Si `git pull --ff-only origin main` falla, aborta el deploy y resuelve fuera del servidor.
 
+### 5.0-bis El CSS sin comentarios ya viaja en el `git pull`
+
+Desde el 2026-08-20 el sitio sirve una copia de cada hoja **sin comentarios**, que `public/.htaccess`
+usa en lugar del original. Vive en `public/dist-css/` y **está versionada**, así que llega sola con el
+`git pull` del paso 5. **No hay nada que ejecutar aquí.**
+
+Se versiona a propósito, y el porqué se midió: durante un día estuvo en `.gitignore` como artefacto de
+build, y producción siguió sirviendo el CSS completo —132.101 B con 179 comentarios, comprobado
+contra el sitio real— porque lo ignorado no viaja. El presupuesto de CI marcaba 126.885 B mientras el
+usuario recibía unos 200.000.
+
+**Si alguna vez faltara, no se rompe nada:** la regla del `.htaccess` comprueba con `-f` que la copia
+exista antes de reescribir, así que sin ella se sirven los originales igual que siempre. Lo único que
+se pierde es el ahorro — medido en **73.603 B gzip, el 36,7 % del CSS de la página**.
+
+Quien edite un CSS en el repositorio sí tiene que regenerar antes de commitear:
+
+```bash
+npm run css:minify
+```
+
+`tests/design-system/css-minify-freshness.test.mjs` pone la suite en rojo si se olvida, y el CI lo
+verifica sin arreglarlo: un desfase tiene que bloquear, no repararse en silencio.
+
 ### 5.1 Migraciones de base de datos
 
 > [!CAUTION]

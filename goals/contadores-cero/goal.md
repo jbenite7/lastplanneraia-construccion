@@ -94,6 +94,34 @@ intacto). `static` **7/8** con `audit` verde en **170/175**, re-verificado **des
 - `buttons.css`: sus 16 `!important` son causa real pero no cuentan para este presupuesto. Van a
   frente propio con la medición ya hecha: **sobran 12, hacen falta 4**.
 
+## Cierre
+
+**Cerrado el 2026-08-19.** El trabajo estaba hecho y publicado; lo que faltaba era localizar la rama
+—está en `main`— y demostrar la condición, que en este frente es **un número, no una captura**.
+
+Medido hoy en `/programacion-intermedia`, Da Porto, 1180×820 dark, sesión por la puerta de servicio
+(`evidence/sonda-conteo.mjs`):
+
+| | Etiquetas visibles |
+|---|---:|
+| con el efecto apagado | **8** |
+| con `OCULTAR_CONTADORES_EN_CERO = true` | **5** (0 de ellas en cero) |
+| **ahorro real** | **3 etiquetas menos**, 881 px de ancho ocupado |
+
+**La guarda queda verificada, no supuesta**, que es lo que el goal exigía: al activar un filtro
+—comprobando `aria-pressed="true"` antes de contar, para que un clic que no activa nada no dé un
+falso verde— **vuelven a verse las 8, con 7 en cero**. Es la regla de `setLegendCount`:
+`esVacioReal = count === 0 && activeFilters.length === 0`, que distingue «vacío» de «cero porque
+estoy mirando otra cosa».
+
+**Un número no cuadra con la medición original y no se disfraza:** el goal decía «8 etiquetas, 7 en
+cero» y hoy son 8 con 3 en cero. Los datos del proyecto cambiaron en tres semanas; el mecanismo es el
+mismo y su efecto se midió entero. Los 7 en cero reaparecen, de hecho, en cuanto se activa el filtro.
+
+**Alcance, para que no se lea de más:** este frente era solo `/programacion-intermedia`. En Programa
+General y Semanal la clase `is-zero` **atenúa pero no oculta**, y eso es lo que allí se decidió.
+
+
 ## Archivos de este goal
 
 - [[decisiones/contadores-cero]]

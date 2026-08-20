@@ -43,6 +43,22 @@ juntos — cada uno solo cuenta media verdad, y el de conteo es el que dice cuá
 
 ---
 
+## Cierre
+
+**Cerrado el 2026-08-19.** La condición de hecho se cumplió el 2026-07-29 y quedó medida arriba, pero
+el frente nunca escribió su sección de cierre: por la regla de lectura del repo contaba como abierto
+con el trabajo hecho. Re-verificado hoy lo que es re-verificable por comando:
+
+| Hecho | Entonces | Hoy |
+|---|---|---|
+| Suite de `pdc-app` | 197/197 | **444/444 en 30 archivos** — la suite creció, y sigue verde |
+| `npm run build` de `pdc-app` | ✅ | **✅** (solo el aviso conocido de tamaño de chunk) |
+
+Las mediciones de interfaz (cobertura, franja, confianza, comparador, texto y ancho) son las del
+2026-07-29 y no se repiten: sus entradas no han cambiado y el repo no repite una validación cuyas
+entradas siguen iguales.
+
+
 ## Archivos de este goal
 
 [[goals/pdc-tanda2-plan-verdad/facts|facts.md]] · [[goals/pdc-tanda2-plan-verdad/plan|plan.md]]

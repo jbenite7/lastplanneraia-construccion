@@ -1,0 +1,74 @@
+[
+  {
+    "estado": "RC inicio vencido",
+    "clase": "pi-state-blocked-overdue-critical",
+    "fondo": "#431414",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0174
+  },
+  {
+    "estado": "Inicio vencido",
+    "clase": "pi-state-blocked-overdue",
+    "fondo": "#452a0d",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0295
+  },
+  {
+    "estado": "Inicio por Habilitar",
+    "clase": "pi-state-blocked-due",
+    "fondo": "#33204a",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0223
+  },
+  {
+    "estado": "En Ejecución Pendiente",
+    "clase": "pi-state-execution-blocked",
+    "fondo": "#17334f",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0311
+  },
+  {
+    "estado": "Alistamiento Urgente",
+    "clase": "pi-state-alert-1-week",
+    "fondo": "#3a3a0f",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0396
+  },
+  {
+    "estado": "Alistamiento en Riesgo",
+    "clase": "pi-state-alert-2-3-weeks",
+    "fondo": "#134841",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0515
+  },
+  {
+    "estado": "Alistamiento Pendiente",
+    "clase": "pi-state-alert-4-6-weeks",
+    "fondo": "#2b2f2d",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0274
+  },
+  {
+    "estado": "Listo para Comprometer",
+    "clase": "pi-state-liberated-control",
+    "fondo": "#173d26",
+    "borde": "#ddefe6",
+    "estiloBorde": "solid",
+    "luminancia": 0.0366
+  },
+  {
+    "estado": "Pdto. Constructivo y Modelo BIM",
+    "clase": "(sin clase de estado)",
+    "fondo": "#233029",
+    "borde": "#ddefe6",
+    "estiloBorde": "dashed",
+    "luminancia": 0.0263
+  }
+]
