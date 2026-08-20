@@ -82,5 +82,44 @@ comprobar(
     false
 );
 
+echo "\nInterruptor global (general_flags via FlagsService):\n";
+
+\App\Core\FlagsService::overrideForTests(['bi.control_tower.visible' => false]);
+comprobar(
+    'flag apagado: Admin sigue entrando',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.A'], 'A'),
+    true
+);
+comprobar(
+    'flag apagado: Director NO entra',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.D'], 'D'),
+    false
+);
+
+\App\Core\FlagsService::overrideForTests(['bi.control_tower.visible' => true]);
+comprobar(
+    'flag encendido: Director entra',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.D'], 'D'),
+    true
+);
+comprobar(
+    'flag encendido: Residente sigue sin entrar (no tiene la capacidad)',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.R'], 'R'),
+    false
+);
+
+\App\Core\FlagsService::overrideForTests([]);
+comprobar(
+    'flag ilegible (override vacio = todo false): Director NO entra',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.D'], 'D'),
+    false
+);
+comprobar(
+    'flag ilegible: Admin sigue entrando',
+    \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.A'], 'A'),
+    true
+);
+\App\Core\FlagsService::overrideForTests(null);
+
 echo "\nResultado: " . ($total - $fallos) . "/{$total}\n";
 exit($fallos === 0 ? 0 : 1);
