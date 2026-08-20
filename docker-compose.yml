@@ -2,6 +2,9 @@ name: last-planner-aia
 
 services:
   app:
+    # Tag fijo: en CI la imagen se pre-construye con buildx (cache gha) y el
+    # `up` sin --build la encuentra por este nombre. En local no cambia nada.
+    image: lps-aia-app-ci:local
     build:
       context: .
       dockerfile: docker/php/Dockerfile

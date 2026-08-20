@@ -90,8 +90,15 @@ Entra **solo cuando el Frente 1 esté publicado** (gate de cierre bloqueante). S
 implementación se escribe en ese momento; este spec fija el objetivo y los límites:
 
 - **Objetivo:** la imagen PHP deja de construirse desde cero dos veces por corrida. Buildx con
-  cache (`type=gha`, `mode=max` para capas intermedias) o mecanismo equivalente, empezando por
-  el job estático, que no tiene el compose de CI encadenado.
+  cache `type=gha` o mecanismo equivalente, empezando por el job estático.
+- **Corrección medida (2026-08-20, al revisar antes de planear):** el Dockerfile
+  (`docker/php/Dockerfile`) **no es multi-etapa** — la referencia a `mode=max` para capas
+  intermedias no aplica tal cual. Y el premio real es menor que el de los casos del corpus:
+  medido sobre la corrida `32394566769`, «Build the PHP test runtime» tarda **81 s** y «Start
+  isolated runtime» **93 s** (incluye el fixture de MySQL y el arranque), sobre ~8 min de
+  corrida total. La capa cacheable estable es el `apt-get` + `docker-php-ext-install` inicial;
+  `composer install` se invalida en cada commit porque `COPY . /var/www/html` lo precede —
+  cachearlo exigiría reordenar el Dockerfile y ajustar el contrato que fija sus líneas por hash.
 - **Condición de hecho:** medición antes/después de la duración de ambos jobs sobre corridas
   reales, con mejora demostrada y sin regresión funcional (pipeline completo verde).
 - **Límites duros:** no se tocan las líneas de `COMPOSER_INSTALL_FLAGS` fijadas por hash en

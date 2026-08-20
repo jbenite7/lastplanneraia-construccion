@@ -36,6 +36,14 @@ para el estado de los planes en curso.
   Felipe 2026-08-20; desplegado a pruebas y producción el mismo día (`828483a4`).
 
 
+### Deuda del CI — Frente 2 (2026-08-20)
+
+#### Changed
+- CI: la imagen PHP se pre-construye con buildx y cache `type=gha`; compose ya no la
+  reconstruye. Medido en caliente: 81 s → 20 s (estático, −75 %) y 93 s → 72 s (runtime,
+  −23 %). Alcance A del spec [[docs/superpowers/specs/2026-08-20-deuda-ci-design]] — el
+  Dockerfile no se tocó.
+
 ### Deuda del CI — Frente 1 (2026-08-20)
 
 #### Security

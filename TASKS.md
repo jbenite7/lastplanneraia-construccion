@@ -49,9 +49,10 @@ estado por defecto mientras Felipe no reparta.
      reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
      Ver [[goals/organizar-la-casa/goal]].
   2. ~~`estados-severidad-contrato` bajo 3 niveles~~ — **HECHO (2026-08-20)**: spec reescrita
-     con notas de revisión fechadas; la ejecución del frente sigue **pausada a propósito** — la
-     coordinación previa con la sesión del contrato hermano es parte de la decisión, y la
-     saturación del filete en Intermedia (6 de 8 con barra) es material de esa coordinación.
+     con notas de revisión fechadas. La ejecución del frente **también cerró el mismo día** (ver
+     el cierre de `ds-f1a-estados-severidad` más abajo): la contención se midió, los frentes de
+     `bold-neumann` ya habían terminado, y la saturación del filete en Intermedia **no se confirmó
+     en pantalla** — capturas en `goals/ds-f1a-estados-severidad/evidence/` para veto de Felipe.
   3. ~~Verificación de `/indicadores` y CNP/CNC/CIC~~ — **HECHO (2026-08-20)**: `/indicadores`
      está migrada (pilot; su contenido es un iframe). **CNP/CNC/CIC son legacy real**: el shell es
      `aia-*` pero `legacyCards.js` pinta todo con clases legacy. F0-022 (mayor) lo detectó sin
@@ -176,8 +177,10 @@ estado por defecto mientras Felipe no reparta.
   `GITHUB_STEP_SUMMARY`. Origen: spec 2026-08-20-deuda-ci-design.
 - [ ] **CI · zizmor** — auditoría de seguridad del YAML complementaria a actionlint; exige tooling
   extra. Origen: spec 2026-08-20-deuda-ci-design.
-- [ ] **CI · Frente 2 (G2, cache de capas Docker)** — su plan se escribe cuando el Frente 1 esté
-  publicado; objetivo y límites duros ya fijados en la spec.
+- [x] 2026-08-20 — **CI · Frente 2 (G2, cache de capas Docker)**: ejecutado en alcance A
+  (cache buildx `type=gha` de la capa base, Dockerfile intacto). Medido en caliente: build del
+  estático 81 s → 20 s (−75 %); runtime 93 s → 72 s (−23 %). Cierre en
+  [[goals/deuda-ci-frente-2/goal]].
 - [ ] **DECISIÓN (Felipe) · G6 branch protection / merge queue** — cambia el flujo de publicación
   de todas las sesiones (`publicar.sh` → PRs). No aplicar sin visto explícito. Origen: spec
   2026-08-20-deuda-ci-design.
@@ -246,6 +249,11 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
+  niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
+  `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en
+  `goals/ds-f1a-estados-severidad/evidence/`). Los pendientes que sobreviven son frentes propios
+  (`r0` de PG, fantasmas de `/plan-compras`, `states-feedback.css:162`).
 - [x] 2026-08-19 — **Fase 0b, wiki v2**: las seis tandas cerradas y publicadas, lint estricto verde.
 - [x] 2026-08-19 — `ds-f1a-estado` (`4a152a54`): la escala de estado del contrato, medida contra
   50.966 actividades reales.
