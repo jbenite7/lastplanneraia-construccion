@@ -29,7 +29,7 @@ const FILAS = [
 ];
 
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, colorScheme: 'dark' });
 const page = await context.newPage();
 
 await page.route('**/api/general/restriction-config**', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ success: false }) }));
@@ -140,6 +140,11 @@ for (let i = 0; i < datos.length; i++) {
 }
 
 writeFileSync(`${OUT}medicion-pg-postfix.json`, JSON.stringify(salida, null, 2));
+await page.waitForFunction(() => {
+  const html = document.documentElement;
+  return html.classList.contains('aia-theme-dark') || html.getAttribute('data-aia-theme') === 'dark';
+}, null, { timeout: 20000 });
+await page.waitForTimeout(250);
 await page.screenshot({ path: `${OUT}pg-siete-estados-postfix-1180x820-dark.png` });
 console.log(JSON.stringify(salida.filas, null, 2));
 console.log('\nPARES IDENTICOS (celda):', salida.pares.filter((p) => p.celdaIdentica).map((p) => `${p.a} = ${p.b}`).join(' | ') || 'ninguno');

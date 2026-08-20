@@ -330,30 +330,29 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 .ps-page .ops-state-zoom {
     --ops-state-accent: var(--ds-active-text-secondary);
-    --ops-state-bg: var(--ds-active-surface-raised);
     --ops-state-border: var(--ds-active-border);
     --ops-state-count-bg: var(--ds-active-surface);
     --ops-state-count-text: var(--ds-active-text-secondary);
     display: grid;
-    gap: var(--spacing-xs);
+    gap: var(--ds-space-1);
     width: 100%;
     min-width: 0;
     min-height: var(--ds-target-min);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--ds-space-1) var(--ds-space-2);
     border: 1px solid var(--ops-state-border);
     border-radius: var(--ds-radius-sm);
-    background: var(--ops-state-bg);
-    color: var(--ops-state-count-text, var(--ds-active-text-primary));
+    background: transparent;
+    color: var(--ds-active-text-primary);
     font: inherit;
     text-align: left;
     cursor: zoom-in;
-    box-shadow: var(--ds-shadow-xs);
-    transition: transform var(--ds-motion-fast), border-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+    box-shadow: none;
+    transition: border-color var(--ds-motion-fast), background-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
 }
 .ps-page .ops-state-zoom:hover {
     border-color: var(--ops-state-accent);
-    box-shadow: var(--ds-shadow-sm);
-    transform: translateY(-1px);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
 }
 .ps-page .ops-state-zoom:focus-visible {
     outline: 0;
@@ -368,11 +367,10 @@ body.ps-page .ps-hot-toolbar-shell {
     min-width: 0;
 }
 .ps-page .ops-state-dot {
-    width: 0.56rem;
-    height: 0.56rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: var(--ds-radius-pill);
     background: var(--ops-state-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-state-accent) 18%, transparent);
 }
 .ps-page .ops-state-chip:not([data-aia-hue]) {
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
@@ -400,9 +398,6 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-zoom,
 .ps-page .ops-state-zoom.is-critical {
     --ops-state-accent: var(--ds-color-state-critical-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-bg) 76%, var(--ds-active-surface) 24%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-border) 62%);
-    --ops-state-count-bg: var(--ds-color-state-critical-bg);
     --ops-state-count-text: var(--ds-color-state-critical-text);
 }
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-zoom,
@@ -410,17 +405,11 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .ops-state-zoom.is-pending,
 .ps-page .ops-state-zoom.is-partial {
     --ops-state-accent: var(--ds-color-state-warning-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 72%, var(--ds-active-surface) 28%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-border) 70%);
-    --ops-state-count-bg: var(--ds-color-state-warning-bg);
     --ops-state-count-text: var(--ds-color-state-warning-text);
 }
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-zoom,
 .ps-page .ops-state-zoom.is-ready {
     --ops-state-accent: var(--ds-color-state-success-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-bg) 70%, var(--ds-active-surface) 30%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-success-text) 28%, var(--ds-active-border) 72%);
-    --ops-state-count-bg: var(--ds-color-state-success-bg);
     --ops-state-count-text: var(--ds-color-state-success-text);
 }
 .ps-page .ops-state-zoom .ops-state-count {
@@ -2023,21 +2012,6 @@ body.ps-page #hot-container td.ps-cell-shake {
         animation: none;
     }
 }
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-html.aia-theme-dark body.ps-page #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
 @layer components {
     body.ps-page #hot-container .ps-action-btn {
         display: grid !important;
@@ -2053,14 +2027,24 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         width: 2rem;
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
-        background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ds-color-text-inverse);
+        border: 1px solid var(--ds-active-border);
+        background: var(--ds-active-surface-raised);
+        color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+        transition: border-color var(--ds-motion-fast), color var(--ds-motion-fast);
     }
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-text);
+        --ps-action-icon-fg: var(--ds-color-state-success-text);
     }
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-text);
+        --ps-action-icon-fg: var(--ds-color-state-critical-text);
+    }
+    body.ps-page #hot-container .ps-action-btn:hover .ps-action-icon,
+    body.ps-page #hot-container .ps-action-btn:focus-visible .ps-action-icon {
+        border-color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+    }
+    body.ps-page #hot-container .ps-action-btn:focus-visible {
+        outline: 0;
+        box-shadow: var(--ds-shadow-focus) !important;
     }
     html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item {
         border-color: var(--ds-active-border) !important;

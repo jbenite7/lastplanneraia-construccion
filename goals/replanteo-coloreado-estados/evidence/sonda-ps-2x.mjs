@@ -146,4 +146,6 @@ if (fallos.length) {
 } else {
   console.log('\nSONDA EN VERDE: fase correcta y un fondo distinto por estado.');
 }
+
+await page.screenshot({ path: `${OUT}ps-detalle-estado-acciones-2x.png`, clip: { x: 920, y: 225, width: 250, height: 450 } });
 await b.close();

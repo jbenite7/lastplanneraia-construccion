@@ -438,33 +438,39 @@ body.ps-page .ps-hot-toolbar-shell {
     vertical-align: middle !important;
 }
 
+/* Rediseno 2026-08-20 (auditoria de Felipe: «horrible y desproporcionado»).
+   El widget era tarjeta-dentro-de-celda: fondo elevado TENIDO POR NIVEL, borde
+   tenido, sombra, halo en el punto y chip solido encima — tres cajas anidadas
+   y el nivel codificado dos veces (el filete ya lo lleva). Ahora es un control
+   QUIETO del sistema: transparente en reposo, hairline neutro, y el color del
+   nivel vive solo en el punto y en el contador. La afordancia de zoom llega
+   por hover/focus, no por gritar en reposo. */
 .ps-page .ops-state-zoom {
     --ops-state-accent: var(--ds-active-text-secondary);
-    --ops-state-bg: var(--ds-active-surface-raised);
     --ops-state-border: var(--ds-active-border);
     --ops-state-count-bg: var(--ds-active-surface);
     --ops-state-count-text: var(--ds-active-text-secondary);
     display: grid;
-    gap: var(--spacing-xs);
+    gap: var(--ds-space-1);
     width: 100%;
     min-width: 0;
     min-height: var(--ds-target-min);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--ds-space-1) var(--ds-space-2);
     border: 1px solid var(--ops-state-border);
     border-radius: var(--ds-radius-sm);
-    background: var(--ops-state-bg);
-    color: var(--ops-state-count-text, var(--ds-active-text-primary));
+    background: transparent;
+    color: var(--ds-active-text-primary);
     font: inherit;
     text-align: left;
     cursor: zoom-in;
-    box-shadow: var(--ds-shadow-xs);
-    transition: transform var(--ds-motion-fast), border-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+    box-shadow: none;
+    transition: border-color var(--ds-motion-fast), background-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
 }
 
 .ps-page .ops-state-zoom:hover {
     border-color: var(--ops-state-accent);
-    box-shadow: var(--ds-shadow-sm);
-    transform: translateY(-1px);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
 }
 
 .ps-page .ops-state-zoom:focus-visible {
@@ -482,11 +488,10 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 
 .ps-page .ops-state-dot {
-    width: 0.56rem;
-    height: 0.56rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: var(--ds-radius-pill);
     background: var(--ops-state-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-state-accent) 18%, transparent);
 }
 
 /* Variante densa de tabla: ancho auto (el componente usa 100%), sin borde ni
@@ -541,9 +546,6 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-zoom,
 .ps-page .ops-state-zoom.is-critical {
     --ops-state-accent: var(--ds-color-state-critical-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-bg) 76%, var(--ds-active-surface) 24%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-border) 62%);
-    --ops-state-count-bg: var(--ds-color-state-critical-bg);
     --ops-state-count-text: var(--ds-color-state-critical-text);
 }
 
@@ -552,18 +554,12 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .ops-state-zoom.is-pending,
 .ps-page .ops-state-zoom.is-partial {
     --ops-state-accent: var(--ds-color-state-warning-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 72%, var(--ds-active-surface) 28%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-border) 70%);
-    --ops-state-count-bg: var(--ds-color-state-warning-bg);
     --ops-state-count-text: var(--ds-color-state-warning-text);
 }
 
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-zoom,
 .ps-page .ops-state-zoom.is-ready {
     --ops-state-accent: var(--ds-color-state-success-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-bg) 70%, var(--ds-active-surface) 30%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-success-text) 28%, var(--ds-active-border) 72%);
-    --ops-state-count-bg: var(--ds-color-state-success-bg);
     --ops-state-count-text: var(--ds-color-state-success-text);
 }
 
@@ -2570,23 +2566,9 @@ body.ps-page #hot-container td.ps-cell-shake {
     }
 }
 
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-
-html.aia-theme-dark body.ps-page #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
+/* Los remix oscuros del contenedor por nivel se retiraron con el rediseno del
+   2026-08-20: el contenedor ya no se tine (el nivel vive en el filete, el
+   punto y el contador), asi que no queda nada que remezclar en dark. */
 
 @layer components {
     body.ps-page #hot-container .ps-action-btn {
@@ -2598,22 +2580,41 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         box-shadow: none !important;
     }
 
+    /* Rediseno 2026-08-20 (auditoria de Felipe): los iconos iban sobre un
+       RELLENO pastel con texto invertido — una variante que DESIGN.md no
+       declara y que en dark parecia un parche del vendor. Ahora son el
+       secondary del contrato: superficie elevada + borde activo, y la accion
+       habla por el COLOR DEL ICONO (par semantico de texto), no por un fondo
+       que grita. Hover: borde al color de la accion, mismo criterio que el
+       resto de controles del sistema. */
     body.ps-page #hot-container .ps-action-icon {
         display: grid;
         place-items: center;
         width: 2rem;
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
-        background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ds-color-text-inverse);
+        border: 1px solid var(--ds-active-border);
+        background: var(--ds-active-surface-raised);
+        color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+        transition: border-color var(--ds-motion-fast), color var(--ds-motion-fast);
     }
 
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-text);
+        --ps-action-icon-fg: var(--ds-color-state-success-text);
     }
 
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-text);
+        --ps-action-icon-fg: var(--ds-color-state-critical-text);
+    }
+
+    body.ps-page #hot-container .ps-action-btn:hover .ps-action-icon,
+    body.ps-page #hot-container .ps-action-btn:focus-visible .ps-action-icon {
+        border-color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+    }
+
+    body.ps-page #hot-container .ps-action-btn:focus-visible {
+        outline: 0;
+        box-shadow: var(--ds-shadow-focus) !important;
     }
 
     /* C-48: aqui vivia una sobrescritura exclusiva de PS que pintaba el `::before`

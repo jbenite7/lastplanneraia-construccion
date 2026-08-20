@@ -130,11 +130,6 @@ console.log(`FASE ${fase.toUpperCase()} — ${datos.length} filas, ${unicos.size
 console.log('estado'.padEnd(40) + 'cubo'.padEnd(24) + 'fondo'.padEnd(10) + 'rail');
 for (const d of datos) console.log(String(d.estado).padEnd(40) + String(d.cubo).padEnd(24) + String(d.fondo).padEnd(10) + String(d.rail || '-'));
 writeFileSync(`${OUT}medicion-ps-${fase}.json`, JSON.stringify(datos, null, 2));
-await page.waitForFunction(() => {
-  const html = document.documentElement;
-  return html.classList.contains('aia-theme-dark') || html.getAttribute('data-aia-theme') === 'dark';
-}, null, { timeout: 20000 });
-await page.waitForTimeout(250);
 await page.screenshot({ path: `${OUT}ps-fase-${fase}-1180x820-dark.png` });
 if (datos.length && unicos.size !== datos.length) {
   fallos.push(`${datos.length} filas pero solo ${unicos.size} fondos distintos: hay colision`);
@@ -146,4 +141,58 @@ if (fallos.length) {
 } else {
   console.log('\nSONDA EN VERDE: fase correcta y un fondo distinto por estado.');
 }
+
+const diagZoom = await page.evaluate(() => {
+  const z = document.querySelector('#hot-container .ops-state-zoom');
+  const td = z ? z.closest('td') : null;
+  const count = document.querySelector('#hot-container .ops-state-count');
+  const icon = document.querySelector('#hot-container .ps-action-icon');
+  const cs = (el) => el ? getComputedStyle(el) : null;
+  return {
+    zoomBg: z ? cs(z).backgroundColor : null,
+    zoomBorder: z ? cs(z).borderColor : null,
+    zoomPad: z ? cs(z).padding : null,
+    tdBg: td ? cs(td).backgroundColor : null,
+    tdClases: td ? td.className : null,
+    countBg: count ? cs(count).backgroundColor : null,
+    iconBg: icon ? cs(icon).backgroundColor : null,
+    iconColor: icon ? cs(icon).color : null,
+  };
+});
+console.log('DIAGZOOM', JSON.stringify(diagZoom, null, 1));
+
+const zEl = await page.$('#hot-container .ops-state-zoom');
+if (zEl) { await zEl.screenshot({ path: `${OUT}zoom-crop.png` }); }
+const tdEl = await page.$('#hot-container td.ops-state-td');
+if (tdEl) { await tdEl.screenshot({ path: `${OUT}zoom-td-crop.png` }); }
+
+await page.screenshot({ path: `${OUT}ps-final-check.png` });
+
+const clones = await page.evaluate(() => {
+  return [...document.querySelectorAll('#hot-container .ops-state-zoom')].map((z) => {
+    const overlay = z.closest('[class*="ht_clone"], .ht_master');
+    return {
+      capa: overlay ? overlay.className.split(' ').find((c) => c.startsWith('ht_')) : '?',
+      bg: getComputedStyle(z).backgroundColor,
+      tdBg: getComputedStyle(z.closest('td')).backgroundColor,
+      tdClases: z.closest('td').className.slice(0, 70),
+    };
+  }).slice(0, 8);
+});
+console.log('CLONES', JSON.stringify(clones, null, 1));
+
+const bajoCursor = await page.evaluate(() => {
+  const puntos = [[970, 288], [1000, 268], [1120, 245]];
+  return puntos.map(([x, y]) => {
+    const el = document.elementFromPoint(x, y);
+    const pila = [];
+    let n = el;
+    while (n && n !== document.body && pila.length < 5) {
+      pila.push(n.tagName.toLowerCase() + '.' + String(n.className).split(' ').slice(0, 3).join('.'));
+      n = n.parentElement;
+    }
+    return { x, y, bg: el ? getComputedStyle(el).backgroundColor : null, pila };
+  });
+});
+console.log('BAJO', JSON.stringify(bajoCursor, null, 1));
 await b.close();

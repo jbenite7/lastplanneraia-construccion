@@ -24,7 +24,7 @@ const FILAS = [
 ];
 
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, colorScheme: 'dark' });
 const page = await context.newPage();
 
 await page.route('**/api/general/restriction-config**', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ success: false }) }));
@@ -130,6 +130,11 @@ for (let i = 0; i < datos.length; i++) {
 }
 
 writeFileSync(`${OUT}medicion-computada-postfix.json`, JSON.stringify(salida, null, 2));
+await page.waitForFunction(() => {
+  const html = document.documentElement;
+  return html.classList.contains('aia-theme-dark') || html.getAttribute('data-aia-theme') === 'dark';
+}, null, { timeout: 20000 });
+await page.waitForTimeout(250);
 await page.screenshot({ path: `${OUT}pi-nueve-estados-postfix-1180x820-dark.png` }); await page.evaluate(() => { const w = document.querySelector('#hot-container .ht_master .wtHolder'); if (w) w.scrollTop = w.scrollHeight; }); await page.waitForTimeout(800); await page.screenshot({ path: `${OUT}pi-filete-apagado-postfix-1180x820-dark.png` });
 console.log(JSON.stringify(salida.filas, null, 2));
 console.log('\nPARES IDENTICOS (celda):', salida.pares.filter((p) => p.celdaIdentica).map((p) => `${p.a} = ${p.b}`).join(' | ') || 'ninguno');
