@@ -61,8 +61,13 @@ En orden, y cada paso con salida real:
    (`tests/design-system/visual-ci-contract.test.mjs`) veta palabras dentro del propio
    `design-system.yml` y fija archivos por hash; se comprueba **antes** de empujar.
 3. Rama propia + push + PR: el pipeline completo (ambos jobs) corre con el YAML nuevo por el
-   trigger `pull_request` y termina en verde. El PR es evidencia, no gate de plataforma:
-   el flujo de publicación a `main` no cambia.
+   trigger `pull_request` y termina **sin rojos nuevos**. Matiz medido el 2026-08-20 al
+   escribir el plan: las últimas 7 corridas de `main` ya fallan en un único paso —
+   «Check runtime budgets against the baseline», por `initializationMs`, deuda documentada de
+   otro frente — así que el verde exigible a este frente es: todos los pasos verdes salvo, a lo
+   sumo, ese mismo paso fallando por esa misma causa. Cualquier otro rojo es de este frente y
+   lo bloquea. El PR es evidencia, no gate de plataforma: el flujo de publicación a `main`
+   no cambia.
 4. Cierre de frente estándar: `bash scripts/publicar.sh` desde la rama (pasos 3–7 del gate de
    `AGENTS.md`), y la primera corrida de `main` con el YAML nuevo también en verde.
 
