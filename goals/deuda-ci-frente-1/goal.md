@@ -36,5 +36,10 @@ against the baseline» por `initializationMs` — el mismo paso y causa preexist
 deuda de otro frente. Cero rojos nuevos: condición de hecho cumplida. Publicado vía
 `scripts/publicar.sh` (el SHA queda anotado bajo esta línea al confirmar).
 
+**Publicado:** `13ae83f1` en `origin/main` (confirmado con fetch + rev-parse). Primera corrida
+de `main` con el YAML nuevo (`32394566769`): estático `success` completo, único rojo el paso de
+presupuestos por `initializationMs` — sin rojos nuevos. PR #6 quedó MERGED; `dependabot.yml`
+visible en `main`.
+
 ## Archivos de este goal
 - [[goal.md]] · estado en [[memoria/goals/estado]]
