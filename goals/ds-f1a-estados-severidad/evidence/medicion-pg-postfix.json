@@ -1,0 +1,242 @@
+{
+  "tema": "dark",
+  "viewport": {
+    "width": 1180,
+    "height": 820
+  },
+  "filas": [
+    {
+      "estado": "actividad-futura",
+      "etiqueta": "Actividad Futura",
+      "hue": "green",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#173d26",
+      "celdaFondoDeclarado": "rgb(23, 61, 38)",
+      "celdaTexto": "#b7e8c6",
+      "chipFondo": "#173d26",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "en-curso",
+      "etiqueta": "En Curso",
+      "hue": "blue",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#17334f",
+      "celdaFondoDeclarado": "rgb(23, 51, 79)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#17334f",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "terminada",
+      "etiqueta": "Terminada",
+      "hue": "neutral",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#2b2f2d",
+      "celdaFondoDeclarado": "rgb(43, 47, 45)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#2b2f2d",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "debe-iniciar",
+      "etiqueta": "Debe Iniciar",
+      "hue": "orange",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#452501",
+      "celdaFondoDeclarado": "oklch(0.299816 0.0679174 62.0433)",
+      "celdaTexto": "#ffd4ae",
+      "chipFondo": "#452a0d",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "atrasada",
+      "etiqueta": "Atrasada",
+      "hue": "red",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#431414",
+      "celdaFondoDeclarado": "rgb(67, 20, 20)",
+      "celdaTexto": "#ffcdc8",
+      "chipFondo": "#431414",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "sin-datos",
+      "etiqueta": "Sin Datos",
+      "hue": "violet",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#33204a",
+      "celdaFondoDeclarado": "rgb(51, 32, 74)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#33204a",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    },
+    {
+      "estado": "fuera-de-ventana",
+      "etiqueta": "Fuera de Ventana",
+      "hue": "teal",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#134841",
+      "celdaFondoDeclarado": "rgb(19, 72, 65)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#134841",
+      "chipTexto": "#f7faf8",
+      "railGrosor": "color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railNivel": null,
+      "railNivelCelda": null
+    }
+  ],
+  "pares": [
+    {
+      "a": "actividad-futura",
+      "b": "en-curso",
+      "celdaVsCelda": 1.067,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "terminada",
+      "celdaVsCelda": 1.119,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.141,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "atrasada",
+      "celdaVsCelda": 1.284,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.198,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.173,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "terminada",
+      "celdaVsCelda": 1.049,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.069,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "atrasada",
+      "celdaVsCelda": 1.203,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.122,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.251,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.019,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "atrasada",
+      "celdaVsCelda": 1.147,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.07,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.313,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "atrasada",
+      "celdaVsCelda": 1.126,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.05,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.338,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.072,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.506,
+      "celdaIdentica": false
+    },
+    {
+      "a": "sin-datos",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.404,
+      "celdaIdentica": false
+    }
+  ]
+}

@@ -49,9 +49,10 @@ estado por defecto mientras Felipe no reparta.
      reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
      Ver [[goals/organizar-la-casa/goal]].
   2. ~~`estados-severidad-contrato` bajo 3 niveles~~ — **HECHO (2026-08-20)**: spec reescrita
-     con notas de revisión fechadas; la ejecución del frente sigue **pausada a propósito** — la
-     coordinación previa con la sesión del contrato hermano es parte de la decisión, y la
-     saturación del filete en Intermedia (6 de 8 con barra) es material de esa coordinación.
+     con notas de revisión fechadas. La ejecución del frente **también cerró el mismo día** (ver
+     el cierre de `ds-f1a-estados-severidad` más abajo): la contención se midió, los frentes de
+     `bold-neumann` ya habían terminado, y la saturación del filete en Intermedia **no se confirmó
+     en pantalla** — capturas en `goals/ds-f1a-estados-severidad/evidence/` para veto de Felipe.
   3. ~~Verificación de `/indicadores` y CNP/CNC/CIC~~ — **HECHO (2026-08-20)**: `/indicadores`
      está migrada (pilot; su contenido es un iframe). **CNP/CNC/CIC son legacy real**: el shell es
      `aia-*` pero `legacyCards.js` pinta todo con clases legacy. F0-022 (mayor) lo detectó sin
@@ -59,9 +60,10 @@ estado por defecto mientras Felipe no reparta.
      planes de UI-audit (2026-07-31, 2026-08-01) quedan **superados como vehículo**.
   4. **Humo del PDC v2 en `prueba-lps`** — la mitad anónima **HECHA (2026-08-20)** con códigos
      crudos: `/plan-compras` 302→login (enrutado y protegido), bundle `pdc.js` 200, `/dev/entrar`
-     302→login (candado puesto). **La mitad autenticada queda bloqueada por diseño**: exige
-     credenciales que ninguna sesión puede teclear — la hace Felipe a mano o se decide un
-     mecanismo autorizado. Evidencia:
+     302→login (candado puesto). **La mitad autenticada quedó HECHA el mismo día**: Felipe
+     abrió sesión (`test.R`) en el navegador integrado y sobre ella se verificó SPA con datos
+     reales, APIs en 200, RBAC permitido/denegado y consola limpia. El paso previo de CP-F-E
+     está cumplido. Evidencia:
      [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
 
 - [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó
@@ -157,10 +159,6 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **Deploy · recálculo de estados pendiente solo en producción** — `20260819_recalculo_estados.php`
-  ya se aplicó en pruebas el 2026-08-20 con el sí de Felipe sobre el dry-run (40.664 filas
-  recalculadas, respaldo verificado, dry-run posterior en 0). Producción espera su revisión
-  visual de pruebas y su visto propio; su dry-run reporta 40.198 filas a cambiar.
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
@@ -251,6 +249,11 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
+  niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
+  `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en
+  `goals/ds-f1a-estados-severidad/evidence/`). Los pendientes que sobreviven son frentes propios
+  (`r0` de PG, fantasmas de `/plan-compras`, `states-feedback.css:162`).
 - [x] 2026-08-19 — **Fase 0b, wiki v2**: las seis tandas cerradas y publicadas, lint estricto verde.
 - [x] 2026-08-19 — `ds-f1a-estado` (`4a152a54`): la escala de estado del contrato, medida contra
   50.966 actividades reales.

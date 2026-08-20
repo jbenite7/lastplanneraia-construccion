@@ -87,35 +87,46 @@ sigue viva.
   familia+candidato. **El defecto ya estaba, latente.**
 
 ## Pendientes
-- **VERIFICACIÓN EN PANTALLA PENDIENTE del apagado del filete (`1ff946f8`).** Está verificado en
-  estático —`severity-rail` 7/7, suite 8/8— pero **sin captura**. Falta confirmar en
-  `/programacion-intermedia` a 1180×820 dark que las filas `healthy`/`neutral` dejaron de llevar
-  filete y que ninguna superposición de Handsontable (`pi-cell-readonly`, `pi-cell-editable`) se
-  coló en su sitio. Ventana de contenedor concedida por la coordinadora **con turno**: espera a que
-  `bold-neumann` publique y restaure. **No se toma el contenedor sin esa confirmación** — hacerlo
-  hoy ya costó una medición entera a otro frente.
-- **`/programacion-semanal`, conversión del fondo** → frente propio. No es «aplicar lo mismo»: su
-  fondo usa un sistema propio de cubos de alerta (`ps-alert-*`), otra escalera ordinal como la que
-  se retiró de Intermedia, y hay que rehacerlo en sus dos fases con sus goldens.
+- **RESUELTO el 2026-08-20 — verificación en pantalla del apagado del filete (`1ff946f8`).**
+  `sonda-postfix.mjs` reejecutada contra el árbol publicado (raíz conteniendo `origin/main`
+  `0a944cd4`), 1180×820 dark por `/dev/entrar`: los nueve estados dan `railGrosor: none` en
+  `healthy`/`neutral` y solo dos tratamientos dibujados —urgente 6px `rgb(255,205,200)`, atención
+  4px `rgb(242,231,156)`—; capturas `pi-nueve-estados-postfix-…` y `pi-filete-apagado-postfix-…`
+  (fila 106 `liberated-control` sin barra entre vecinas con filete). La tensión anotada en la spec
+  —6 de 9 filas del fixture dibujan barra— **no satura en pantalla a juicio del ejecutor**: el
+  filete es un canto fino y la ausencia se lee de inmediato; las capturas quedan para que Felipe
+  vete si discrepa. También verificado PG post-remapeo (`8418449a`): `sonda-pg-postfix.mjs`, siete
+  estados vivos, cero pares idénticos, `fuera-de-ventana` teal `#134841`, `Con Alerta
+  Restricciones` reducido a chip de filtro con 0 filas (`medicion-pg-postfix.json`,
+  `pg-siete-estados-postfix-…`).
+- **RESUELTO — `/programacion-semanal`, conversión del fondo.** Lo ejecutó y cerró el frente
+  `semanal-fondo-por-matiz` (`35d842d4`…`2fc5998e`), con sus dos fases medidas en pantalla.
 - **`r0` de Programa General perdió su color propio** → frente propio. Significaba «detenido por
   otro» y tenía el único ancla propia de la escala (`--ds-cell-state-bloqueado-bg`); ahora es ámbar
   como sus tres vecinos, porque el contrato declara **un** estado donde el módulo pinta **cuatro**.
-  Devolvérselo es **añadir un estado al contrato**, y `teal` está libre en esa superficie.
+  Devolvérselo es **añadir un estado al contrato** — y ojo: `teal` **ya no está libre** en esa
+  superficie desde `8418449a`, lo ocupa `fuera-de-ventana`.
 - **Los siete estados fantasma de `/plan-compras`** → cajón de DS-F1 que decide qué significa
   «cubierto». El contrato los declara y **nadie los pinta**; el guard los da por buenos porque
   comprueba que los tokens nombren la paleta, que es una declaración validándose contra sí misma.
 - **`states-feedback.css:162`** sigue siendo letra muerta por `legacy-bridge.css:104-142`.
-- **`#fef3c7` embebido en `hot.js:2857`**, crema clara sobre tema oscuro en la leyenda de Intermedia.
+- **RESUELTO — `#fef3c7` embebido en `hot.js`** (crema clara sobre tema oscuro en la leyenda de
+  Intermedia): arreglado en `7c287d3a`.
 - **`--ds-cell-state-*` NO queda huérfano**: lo sigue consumiendo `public/css/handsontable-module.css`.
   Comprobado antes de cerrar; no se borra nada.
 
 ## Publicaciones
-**Ninguna. Este frente no ha publicado nada.**
+**Publicado.** La rama `claude/reverent-golick-aaf932` quedó íntegramente contenida en
+`origin/main` (verificado el 2026-08-20: `git merge-base --is-ancestor HEAD origin/main` con
+`HEAD=2fc5998e` y `origin/main=0a944cd4`). Incluye la adaptación al contrato de 3 niveles:
+filete apagado en `Controlado` (`1ff946f8` + fix `feafc211`), Programa General remapeado al
+vocabulario vivo con `Fuera de Ventana` (`8418449a`), los dos guards nuevos (`0a87dcba`,
+`79740dfd`) y la mancha crema de la leyenda (`7c287d3a`).
 
-La línea anterior decía que había publicado con `scripts/publicar.sh` y era falsa: se escribió
-anticipando el paso 8, que nunca llegó a ejecutarse porque el gate destapó el frente hermano justo
-al integrar. Se corrige en vez de borrarse — `## Publicaciones` es un hecho que otros leen, y una
-publicación inventada es peor que ninguna.
+**Historial conservado a propósito:** hasta el 2026-08-19 esta sección decía —con razón— que el
+frente no había publicado nada, corrigiendo una afirmación anterior que se escribió anticipando un
+paso 8 que el gate frenó al destapar al frente hermano. La publicación llegó después, ya adaptada
+a la decisión de Felipe del 2026-08-19 (manda el contrato de 3 niveles del frente `ds-f1a-estado`).
 
 ## Cierre
 
@@ -149,11 +160,13 @@ Los dos frentes actuaron de buena fe con decisiones directas del usuario, en la 
 había coordinadora.
 
 ## Estado real
-**Pausado, integrado y sin publicar.** La rama tiene `origin/main` integrado, el conflicto de
-`memoria/log.md` resuelto conservando las dos ramas, y la suite en verde. Espera respuesta de
-`bold-neumann-485f23`, que además tiene **vivo** el frente `estados-fuera-de-ventana` tocando
-`src/Legacy/estado_programa_general.php` y `LpsService.php`: remapear los colores de Programa
-General mientras cambia su cálculo sería construir sobre terreno que se mueve.
+**Cerrado el 2026-08-20: adaptado al contrato de 3 niveles, publicado y verificado en pantalla.**
+El párrafo anterior («pausado, integrado y sin publicar») dejó de ser cierto la noche del
+2026-08-19: los frentes de `bold-neumann` terminaron (recálculo de estados cerrado en producción,
+`0a944cd4`), la maquinaria se adaptó y publicó, y el 2026-08-20 se cerró el único pendiente que
+quedaba del encargo — la verificación en pantalla post-fix, documentada arriba en `## Pendientes`.
+Los pendientes que siguen abiertos (`r0` de PG, fantasmas de `/plan-compras`,
+`states-feedback.css:162`) son frentes propios, no de este.
 
 **Lo que sobrevive intacto**, porque es maquinaria y no vocabulario: la primitiva `severity-rail` con
 su aprobación visual, `axisRules`, `/programacion-intermedia` entera con sus goldens aprobados —su
