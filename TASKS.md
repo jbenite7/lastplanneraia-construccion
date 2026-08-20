@@ -59,9 +59,10 @@ estado por defecto mientras Felipe no reparta.
      planes de UI-audit (2026-07-31, 2026-08-01) quedan **superados como vehículo**.
   4. **Humo del PDC v2 en `prueba-lps`** — la mitad anónima **HECHA (2026-08-20)** con códigos
      crudos: `/plan-compras` 302→login (enrutado y protegido), bundle `pdc.js` 200, `/dev/entrar`
-     302→login (candado puesto). **La mitad autenticada queda bloqueada por diseño**: exige
-     credenciales que ninguna sesión puede teclear — la hace Felipe a mano o se decide un
-     mecanismo autorizado. Evidencia:
+     302→login (candado puesto). **La mitad autenticada quedó HECHA el mismo día**: Felipe
+     abrió sesión (`test.R`) en el navegador integrado y sobre ella se verificó SPA con datos
+     reales, APIs en 200, RBAC permitido/denegado y consola limpia. El paso previo de CP-F-E
+     está cumplido. Evidencia:
      [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
 
 - [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó

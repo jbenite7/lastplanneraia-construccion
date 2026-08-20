@@ -62,3 +62,23 @@ sesión, que las API respondan datos, RBAC permitido/denegado) exige una sesión
 sesión de asistente puede abrir allí — lo hace Felipe a mano, o se decide un mecanismo autorizado
 (p. ej. sembrar una cuenta de prueba y validarla él). Es paso previo de CP-F-E y queda anotado
 así en [[TASKS]].
+
+## 3-bis · Humo autenticado — HECHO el mismo día
+
+Felipe abrió la sesión en el navegador integrado (cuenta `test.R`, rol Residente — las cuentas de
+`database/seeds/dev_test_users.php` sí existen en pruebas) y el asistente corrió el humo sobre esa
+sesión, sin tocar credenciales:
+
+| Check | Resultado |
+|---|---|
+| Selector de proyectos | 3 proyectos (Da Porto, PDC Sandbox E2E, Prueba), rol real `Residente de Obra` |
+| `/plan-compras` (Da Porto) | **La SPA carga con datos reales**: presupuesto V1 (403 actividades, 820 apariciones APU, $29.492.804.354), onboarding paso 1 de 6 |
+| APIs del PDC | `GET /plan-compras/api/presupuesto/versiones` → 200 · `GET /plan-compras/api/seguimiento` → 200 |
+| Pestaña Seguimiento | Renderiza; «No hay paquetes con plan calculado» — dato honesto de esa base, no error |
+| RBAC denegado | `/admin` exige su propio login: la sesión de Residente no entra al panel |
+| RBAC permitido | `/programacion-semanal` carga con rol R |
+| Consola | Sin errores en todo el recorrido |
+
+**El paso previo de CP-F-E queda cumplido.** Lo único que este humo no cubre: flujos de
+mutación (subir presupuesto, registrar pasos) — son pruebas de escritura sobre la base de
+pruebas y se hacen dentro de CP-F-E si se consideran necesarias.
