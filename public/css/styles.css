@@ -3963,6 +3963,23 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--ds-active-text-primary);
 }
 
+/* «Restricciones blandas» NO es un estado: no bloquea habilitacion, estado
+   operativo ni autoprogramacion. Por eso no toma matiz del catalogo -el matiz
+   es el canal de identidad de estado- y se distingue por FORMA, con borde
+   discontinuo sobre la superficie elevada.
+
+   Sustituye a un `style=` embebido en `programacion_intermedia/hot.js:2920` que
+   reservaba `#fef3c7` para dos variables que no existen en ninguna hoja
+   (`--aia-warning-soft-bg`, `--aia-warning-border`), asi que la reserva era lo
+   que se aplicaba siempre. Medido el 2026-08-19 a 1180x820 dark: luminancia
+   0,893 frente a un maximo de 0,0515 en los ocho estados vecinos -diecisiete
+   veces mas claro-, la unica mancha clara del modal. */
+.pi-page .pi-legend-modal-swatch.pi-legend-soft-restriction {
+  background-color: var(--ds-active-surface-raised);
+  border: 1px dashed var(--ds-active-border-control);
+  color: var(--ds-active-text-secondary);
+}
+
 .pi-page .tooltip {
   pointer-events: auto !important;
 }
