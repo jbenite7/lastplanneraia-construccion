@@ -252,7 +252,9 @@ test('CI tolerates keyboard and reflow evidence and uploads its failures', async
     artifact?.if,
     "steps.keyboard-reflow-evidence.outcome == 'failure'",
   );
-  assert.equal(artifact?.uses, 'actions/upload-artifact@v4');
+  // Anclado por SHA desde el frente 1 de deuda de CI (spec 2026-08-20): un tag
+  // mutable aquí sería reintroducir la brecha que ese frente cerró.
+  assert.match(artifact?.uses ?? '', /^actions\/upload-artifact@[0-9a-f]{40} # v\d+\.\d+\.\d+$/);
   assert.match(artifact?.with?.path, /test-results\//);
   assert.match(artifact?.with?.path, /test-output\//);
 });
