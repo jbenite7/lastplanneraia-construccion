@@ -1418,6 +1418,25 @@
     cell.className = normalizeClassList(className);
   }
 
+  // El fondo (pg-state-*) dice QUE estado es; este atributo dice CUAN grave, y
+  // lo traduce la primitiva compartida severity-rail.css. Igual que Intermedia
+  // y Semanal: va en el <tr> y en la PRIMERA celda rendida, nunca en todas —
+  // puesto en cada celda dibuja un filete por columna y la tabla se lee como un
+  // pijama (medido en Intermedia el 2026-08-19). `rail` (p. ej. 'ready') gana
+  // sobre el nivel: es el marcador declarado por estado. PG lo estrena el
+  // 2026-08-20 (replanteo direccion B): declaraba niveles desde el remapeo
+  // 8418449a y ninguna fila los dibujaba.
+  function applyPGRowSeverityAttr(element, rowSeverity) {
+    if (!element) {
+      return;
+    }
+    if (rowSeverity) {
+      element.setAttribute('data-aia-severity-rail', rowSeverity);
+    } else {
+      element.removeAttribute('data-aia-severity-rail');
+    }
+  }
+
   function refreshVisiblePGCellMeta(instance) {
     if (!instance || typeof instance.countRows !== 'function' || typeof instance.countCols !== 'function') {
       return;
@@ -1432,6 +1451,20 @@
           var cellProperties = buildPGCellProperties(instance, visualRow, col, null, rowData);
           instance.setCellMeta(visualRow, col, 'className', cellProperties.className);
           instance.setCellMeta(visualRow, col, 'readOnly', cellProperties.readOnly);
+        }
+      }
+
+      if (typeof instance.getCell === 'function') {
+        var clasificacion = classifyPGRow(rowData);
+        var presentacion = statePresentation[clasificacion.key] || null;
+        var rowSeverity = presentacion ? (presentacion.rail || presentacion.level) : null;
+        var primeraCelda = null;
+        for (var c = 0; c < colCount && !primeraCelda; c++) {
+          primeraCelda = instance.getCell(visualRow, c, true);
+        }
+        if (primeraCelda) {
+          applyPGRowSeverityAttr(primeraCelda, rowSeverity);
+          applyPGRowSeverityAttr(primeraCelda.parentElement, rowSeverity);
         }
       }
     }
