@@ -3507,52 +3507,52 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
    El `color` se declara en la misma regla a proposito: state-tint-pairing exige
    que toda regla que pinte un fondo de matiz declare su tinta, y con razon. */
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
@@ -3561,52 +3561,52 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
    describir la tabla (defecto F0-012). La clase de cubo se conserva en el markup
    para la forma; el color lo pone el estado. */
 .ps-page .ps-legend-modal-swatch.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
 }
 

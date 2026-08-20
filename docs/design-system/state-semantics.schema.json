@@ -94,7 +94,10 @@
         "required": [
           "id",
           "label",
-          "tint"
+          "tint",
+          "solid",
+          "solidText",
+          "row"
         ],
         "properties": {
           "id": {
@@ -108,6 +111,18 @@
           },
           "text": {
             "type": "string"
+          },
+          "solid": {
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
+          },
+          "solidText": {
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
+          },
+          "row": {
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
           }
         }
       }
@@ -164,12 +179,21 @@
                 "note": {
                   "type": "string",
                   "description": "Anotacion opcional de procedencia: por que este estado tiene el level/hue que tiene cuando la eleccion no es obvia o corrige un mapeo anterior. Hoy la usa execution-blocked, que registra la ratificacion del propietario del producto del 2026-08-03 y el mapeo obsoleto que sustituye."
+                },
+                "rail": {
+                  "enum": [
+                    "ready"
+                  ],
+                  "description": "Marcador positivo escaso (Felipe 2026-08-20): filete verde 3px solo en lo activamente listo, declarado por estado — nunca derivado de nivel+matiz ni aplicado a todo Controlado."
                 }
               }
             }
           }
         }
       }
+    },
+    "brandAudit": {
+      "type": "string"
     }
   }
 }

@@ -3364,7 +3364,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    (@layer module sin subcapa, gana a este archivo) contra la escalera `--ds-state-tint-*`. */
 .pg-page #hot-container .handsontable td.pg-state-atrasado,
 .pg-page #hot-container .handsontable td.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-cell-state-critico-fg) !important;
   border-color: var(--ds-cell-state-critico-fg) !important;
 }
@@ -3376,13 +3376,13 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 .pg-page #hot-container .handsontable td.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-cell-state-riesgo-fg) !important;
   border-color: var(--ds-cell-state-riesgo-fg) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-cell-state-ok-fg) !important;
   border-color: var(--ds-cell-state-ok-fg) !important;
 }
@@ -3419,7 +3419,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    los OCHO estados que produce el calculador y no de los cinco legacy con fecha
    de defuncion, asi que este arreglo no se rehace con la migracion. */
 .pg-page #hot-container .handsontable td.pg-state-en-curso {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
@@ -3427,13 +3427,13 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 /* Consumen el tint de su matiz: los dos `--ds-cell-state-*-bg` resolvian al
    mismo color y se pintaban igual. Porque: commit 8418449a. */
 .pg-page #hot-container .handsontable td.pg-state-terminada {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-sin-datos {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   border-style: dashed !important;
@@ -3442,7 +3442,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 /* `Fuera de Ventana`, 39,3% de la tabla: nivel `null` en ds-f1a-escala-estado,
    matiz teal por horizonte lejano. Porque: commit 8418449a. */
 .pg-page #hot-container .handsontable td.pg-state-fuera-de-ventana {
-  background-color: var(--ds-state-tint-teal) !important;
+  background-color: var(--ds-state-row-teal) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
@@ -3455,24 +3455,24 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 
 .pg-page .pg-legend-modal-swatch.pg-state-atrasado,
 .pg-page .pg-legend-modal-swatch.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg);
-  border-color: var(--ds-cell-state-critico-fg);
+  background-color: var(--ds-state-solid-red);
+  border-color: var(--ds-active-border);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg);
+  background-color: var(--ds-state-solid-orange);
   border-color: var(--ds-cell-state-riesgo-fg);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg);
+  background-color: var(--ds-state-solid-green);
   border-color: var(--ds-cell-state-ok-fg);
 }
 
 /* El muestrario sigue a su fila, o la leyenda deja de describir la tabla. */
 .pg-page .pg-legend-modal-swatch.pg-state-en-curso {
-  background-color: var(--ds-state-tint-blue);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
   border-color: var(--ds-active-border);
 }
 
@@ -3489,17 +3489,17 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-a-tiempo-en-curso {
-  background-color: var(--ds-cell-state-ok-bg);
+  background-color: var(--ds-state-solid-blue);
   border-color: var(--ds-cell-state-ok-fg);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg);
+  background-color: var(--ds-state-solid-neutral);
   border-color: var(--ds-active-border);
 }
 
 .pg-page .pg-legend-modal-swatch.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg);
+  background-color: var(--ds-state-solid-violet);
   border-color: var(--ds-active-border);
   border-style: dashed;
 }
@@ -3703,7 +3703,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    siendo P1. Ver docs/design-system/state-semantics.json. */
 .pi-page .handsontable td.pi-state-blocked-overdue-critical,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   font-weight: 600;
@@ -3711,49 +3711,49 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 
 .pi-page .handsontable td.pi-state-blocked-overdue,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue {
-  background-color: var(--ds-state-tint-orange) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-blocked-due,
 .pi-page #hot-container .handsontable td.pi-state-blocked-due {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-1-week,
 .pi-page #hot-container .handsontable td.pi-state-alert-1-week {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-2-3-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-state-tint-teal) !important;
+  background-color: var(--ds-state-row-teal) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-alert-4-6-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-execution-blocked,
 .pi-page #hot-container .handsontable td.pi-state-execution-blocked {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pi-page .handsontable td.pi-state-liberated-control,
 .pi-page #hot-container .handsontable td.pi-state-liberated-control {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
@@ -3762,55 +3762,55 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
    superficie elevada neutra, via los `--pi-neutral-*` del modulo. */
 .pi-page .handsontable td.pi-state-neutral,
 .pi-page #hot-container .handsontable td.pi-state-neutral {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-row-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
 }
 
 .pi-page .pi-legend .pdc-legend-item.blocked-overdue-critical {
-  background-color: var(--pi-critical-bg);
-  color: var(--pi-critical-text);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
   border-color: var(--pi-critical-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.blocked-overdue {
-  background-color: var(--pi-overdue-bg);
-  color: var(--pi-overdue-text);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
   border-color: var(--pi-overdue-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.blocked-due {
-  background-color: var(--pi-due-bg);
-  color: var(--pi-due-text);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
   border-color: var(--pi-due-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.alert-1-week {
-  background-color: var(--pi-alert1-bg);
-  color: var(--pi-alert1-text);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
   border-color: var(--pi-alert1-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.alert-2-3-weeks {
-  background-color: var(--pi-alert23-bg);
-  color: var(--pi-alert23-text);
+  background-color: var(--ds-state-solid-teal);
+  color: var(--ds-state-solid-teal-text);
   border-color: var(--pi-alert23-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.alert-4-6-weeks {
-  background-color: var(--pi-alert46-bg);
-  color: var(--pi-alert46-text);
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
   border-color: var(--pi-alert46-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.execution-blocked {
-  background-color: var(--pi-exec-blocked-bg);
-  color: var(--pi-exec-blocked-text);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
   border-color: var(--pi-exec-blocked-border);
 }
 
 .pi-page .pi-legend .pdc-legend-item.liberated-control {
-  background-color: var(--pi-control-bg);
-  color: var(--pi-control-text);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
   border-color: var(--pi-control-border);
 }
 
@@ -3926,51 +3926,51 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 /* Los mismos matices que las celdas de arriba: la leyenda describe la tabla,
    no un vocabulario aparte (F0-012). */
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-state-tint-red);
+  background-color: var(--ds-state-solid-red);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-red-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue {
-  background-color: var(--ds-state-tint-orange);
+  background-color: var(--ds-state-solid-orange);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-orange-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-due {
-  background-color: var(--ds-state-tint-violet);
+  background-color: var(--ds-state-solid-violet);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-violet-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-1-week {
-  background-color: var(--ds-state-tint-amber);
+  background-color: var(--ds-state-solid-amber);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-amber-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-state-tint-teal);
+  background-color: var(--ds-state-solid-teal);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-teal-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-state-tint-neutral);
+  background-color: var(--ds-state-solid-neutral);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-neutral-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-execution-blocked {
-  background-color: var(--ds-state-tint-blue);
+  background-color: var(--ds-state-solid-blue);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-blue-text);
 }
 
 .pi-page .pi-legend-modal-swatch.pi-state-liberated-control {
-  background-color: var(--ds-state-tint-green);
+  background-color: var(--ds-state-solid-green);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-green-text);
 }
 
 /* No es un estado: no toma matiz del catalogo, se distingue por FORMA.

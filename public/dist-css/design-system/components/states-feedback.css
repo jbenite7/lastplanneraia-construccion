@@ -73,39 +73,35 @@
 }
 @layer components {
   [data-aia-hue="neutral"][data-aia-severity] {
-    background: var(--ds-state-tint-neutral);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-neutral);
+    color: var(--ds-state-solid-neutral-text);
   }
   [data-aia-hue="teal"][data-aia-severity] {
-    background: var(--ds-state-tint-teal);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-teal);
+    color: var(--ds-state-solid-teal-text);
   }
   [data-aia-hue="blue"][data-aia-severity] {
-    background: var(--ds-state-tint-blue);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-blue);
+    color: var(--ds-state-solid-blue-text);
   }
   [data-aia-hue="violet"][data-aia-severity] {
-    background: var(--ds-state-tint-violet);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-violet);
+    color: var(--ds-state-solid-violet-text);
   }
   [data-aia-hue="green"][data-aia-severity] {
-    background: var(--ds-state-tint-green);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-green);
+    color: var(--ds-state-solid-green-text);
   }
   [data-aia-hue="amber"][data-aia-severity] {
-    background: var(--ds-state-tint-amber);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-amber);
+    color: var(--ds-state-solid-amber-text);
   }
   [data-aia-hue="orange"][data-aia-severity] {
-    background: var(--ds-state-tint-orange);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-orange);
+    color: var(--ds-state-solid-orange-text);
   }
   [data-aia-hue="red"][data-aia-severity] {
-    background: var(--ds-state-tint-red);
-    color: var(--ds-active-text-primary);
-  }
-  [data-aia-hue][data-aia-severity="high"][data-aia-urgency="now"] {
-    background: var(--ds-color-state-critical-bg);
-    color: var(--ds-color-state-critical-text);
+    background: var(--ds-state-solid-red);
+    color: var(--ds-state-solid-red-text);
   }
 }

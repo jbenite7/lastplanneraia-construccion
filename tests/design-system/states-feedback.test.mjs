@@ -136,7 +136,7 @@ test('programación intermedia exposes its eight real states with action priorit
     { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
     { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'healthy', hue: 'neutral' },
     { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'urgent', hue: 'blue', note: 'Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md.' },
-    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green' },
+    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green', rail: 'ready', note: 'rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo.' },
   ]);
   assert.equal(
     new Set(intermediate.states.map(({ hue }) => hue)).size,
@@ -217,11 +217,11 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
     { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange' },
     { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber' },
     { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'violet', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto.' },
-    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green' },
+    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green', rail: 'ready' },
     { label: 'Incumplida (RC)', key: 'cal-incumplida-critica', level: 'urgent', hue: 'red' },
     { label: 'Incumplida', key: 'cal-incumplida', level: 'attention', hue: 'amber' },
     { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'neutral', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema.' },
-    { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green' },
+    { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green', rail: 'ready' },
     { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue' },
   ]);
 });

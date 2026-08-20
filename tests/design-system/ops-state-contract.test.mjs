@@ -23,10 +23,16 @@ const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8
 function parsePresentation(source) {
   const block = source.match(/var statePresentation = \{([\s\S]*?)\n {2}\};/);
   assert.ok(block, 'no se encontró `var statePresentation` en el módulo');
+  // Desde 2026-08-20 una entrada puede declarar `rail: 'ready'` (marcador
+  // positivo escaso, decision de Felipe): el parser lo captura y la proyeccion
+  // lo compara — un rail que el contrato declare y el modulo omita (o al
+  // reves) tiene que poner esto en rojo.
   const entries = [...block[1].matchAll(
-    /'?([\w-]+)'?:\s*\{\s*level:\s*'([\w-]+)',\s*hue:\s*'([\w-]+)'\s*\}/g,
+    /'?([\w-]+)'?:\s*\{\s*level:\s*'([\w-]+)',\s*hue:\s*'([\w-]+)'(?:,\s*rail:\s*'([\w-]+)')?\s*\}/g,
   )];
-  return Object.fromEntries(entries.map(([, key, level, hue]) => [key, { level, hue }]));
+  return Object.fromEntries(entries.map(
+    ([, key, level, hue, rail]) => [key, rail ? { level, hue, rail } : { level, hue }],
+  ));
 }
 
 function parseLabels(source) {
@@ -49,7 +55,7 @@ test('la tabla de presentación de Intermedia proyecta el contrato', async () =>
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      { level: state.level, hue: state.hue },
+      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }
@@ -147,7 +153,7 @@ test('la tabla de presentación de Semanal proyecta el contrato', async () => {
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      { level: state.level, hue: state.hue },
+      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }
@@ -204,7 +210,7 @@ test('la tabla de presentación de Programa General proyecta el contrato', async
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      { level: state.level, hue: state.hue },
+      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }

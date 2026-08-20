@@ -194,7 +194,8 @@
           "label": "Lista para Confirmar",
           "key": "prog-lista-para-confirmar",
           "level": "healthy",
-          "hue": "green"
+          "hue": "green",
+          "rail": "ready"
         },
         {
           "label": "Incumplida (RC)",
@@ -219,7 +220,8 @@
           "label": "Cumplida Control",
           "key": "cal-cumplida-control",
           "level": "healthy",
-          "hue": "green"
+          "hue": "green",
+          "rail": "ready"
         },
         {
           "label": "Trabajo No Planificado",
@@ -328,7 +330,9 @@
           "label": "Listo para Comprometer",
           "key": "liberated-control",
           "level": "healthy",
-          "hue": "green"
+          "hue": "green",
+          "rail": "ready",
+          "note": "rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo."
         }
       ]
     },
