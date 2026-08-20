@@ -75,6 +75,26 @@ colors:
   cell-bloqueado-bg: "oklch(0.35 0.05 260)"
   cell-bloqueado-fg: "oklch(0.85 0.03 260)"
 typography:
+  # La rampa enumerada que el detector consume, ademas de los roles de abajo.
+  # Aqui viven los pasos que los roles no nombran: la rampa densa de la familia
+  # de tablas (consagrada 2026-08-20 con aprobacion de Felipe) y las dos escalas
+  # de superficie declaradas en la seccion 3 -Admin y Plan de Compras-, que no
+  # son deriva sino decisiones medidas. Declararlas AQUI es lo que hace que el
+  # sistema las reconozca; silenciarlas en la configuracion del detector seria
+  # esconder el contrato en otro archivo.
+  scale:
+    denseLabel: "0.72rem"
+    denseMeta: "0.70rem"
+    denseFloor: "0.62rem"
+    adminXs: "0.75rem"
+    adminSm: "0.875rem"
+    adminBase: "1rem"
+    pdcXs: "11px"
+    pdcSm: "12px"
+    pdcMd: "13px"
+    pdcLg: "15px"
+    pdcXl: "18px"
+    pdcCifra: "22px"
   display:
     fontFamily: "Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     fontSize: "1.875rem"

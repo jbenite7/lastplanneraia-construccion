@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-20T00:00:00Z",
+  "generatedAt": "2026-08-20T18:30:00Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -289,7 +289,8 @@
           "prefers-reduced-motion"
         ],
         "expiresIf": "la superficie se abre a táctil",
-        "source": "DESIGN.md §5 bis / PRODUCT.md §Accesibilidad"
+        "source": "DESIGN.md §5 bis / PRODUCT.md §Accesibilidad",
+        "scaleRef": "extensions.surfaceScales.scales[id=pdc-v2-scale]"
       }
     },
     "stateChannels": {
@@ -381,6 +382,108 @@
         "tooltip": "Todo chip de estado lleva tooltip explicativo (state-tooltip.css + public/js/design-system/state-tooltip.js): hover Y foco muestran el porqué, Escape descarta, se voltea cuando no cabe (WCAG 1.4.13). En PG el chip es focuseable con role=\"note\" + aria-label; bajo 1180px el área táctil sube a 44px sin crecer visualmente.",
         "denseChip": "En celda densa de PS el chip corre a 0.72rem/600 en una línea con elipsis — excepción declarada a la Regla de Palabra Íntegra: el label entero vive en tooltip, aria-label y drawer."
       }
+    },
+    "surfaceScales": {
+      "note": "Tres escalas tipográficas conviven en el producto y son EXCLUYENTES POR SUPERFICIE: dentro de una misma superficie se usa una sola y no se mezclan. Un literal fuera de la escala que gobierna esa superficie sigue siendo deriva. Declaradas en DESIGN.md §3 «Escalas de superficie reconocidas» (2026-08-20).",
+      "detectorNote": "El detector de Impeccable construye su rampa permitida SOLO desde el frontmatter `typography` de DESIGN.md (los `fontSize` de cada rol y, si existiera, `typography.scale`); no hay lector de tamaños de letra para este sidecar (design-system.mjs tiene addSidecarColors y addSidecarRadii, pero ningún addSidecarFontSizes). Estas tres escalas quedan aquí como registro del sistema, no como supresión: la supresión operativa vive en `.impeccable/config.json` → `detector.ignoreValues` (ya cubre 0.72rem, 0.7rem y 0.62rem).",
+      "scales": [
+        {
+          "id": "dense-table-ramp",
+          "displayName": "Rampa densa de tablas",
+          "status": "consagrada 2026-08-20",
+          "governs": "Familia de tablas desktop de obra (/programa-general, /programacion-intermedia, /programacion-semanal, /plan-compras) — manda dentro de esa familia, no fuera de ella.",
+          "basis": "Extiende la escala rem fija del sistema (--ds-type-size-xs…3xl, 0.75 → 1.875rem) tres pasos por debajo de xs. Realidad medida de la excepción de densidad; piso duro 11px de PRODUCT.md.",
+          "unit": "rem",
+          "steps": [
+            {
+              "name": "dense-label",
+              "value": "0.72rem",
+              "approxPx": "~11.5px",
+              "purpose": "Chip de estado en celda densa (PS) y texto del tooltip de estado (--ds-chip-font-size)."
+            },
+            {
+              "name": "dense-meta",
+              "value": "0.70rem",
+              "approxPx": "~11.2px",
+              "purpose": "Metadatos de leyenda y cabeceras auxiliares."
+            },
+            {
+              "name": "dense-floor",
+              "value": "0.62rem",
+              "approxPx": "~9.9px",
+              "purpose": "SOLO elementos secundarios no textuales-clave ya existentes (contadores del drawer). Está bajo el piso de 11px: se hereda, no se imita — cero usos nuevos; ningún dato principal baja aquí."
+            }
+          ],
+          "pending": "Tokenizar como --ds-type-dense-* cuando un frente tipográfico recorra sus usos; hoy se documentan para que el sistema y el detector digan lo mismo.",
+          "source": "DESIGN.md §3 → Rampa densa de tablas (consagrada 2026-08-20)"
+        },
+        {
+          "id": "admin-panel-scale",
+          "displayName": "Escala del Panel Admin",
+          "status": "declarada 2026-08-20",
+          "governs": "admin/public/css/** (panel administrativo, mini-app aparte de src/).",
+          "basis": "Consume --ds-type-size-xs/sm del design system. Es un panel administrativo de uso ocasional, no una tabla densa de obra: su densidad no tiene por qué ser la de la familia de tablas. Admin NO es una isla — ya consume tokens de color, espaciado y z-index del sistema; lo único que difiere es la escala tipográfica.",
+          "unit": "rem",
+          "steps": [
+            {
+              "name": "--ds-type-size-xs",
+              "value": "0.75rem"
+            },
+            {
+              "name": "--ds-type-size-sm",
+              "value": "0.875rem"
+            },
+            {
+              "name": "--ds-type-size-base",
+              "value": "1rem"
+            }
+          ],
+          "verdict": "No es deriva: decisión medida por el censo del frente de estados. No \"corregir\" hacia la rampa densa.",
+          "source": "DESIGN.md §3 → Escalas de superficie reconocidas (declaradas 2026-08-20)"
+        },
+        {
+          "id": "pdc-v2-scale",
+          "displayName": "Escala del Plan de Compras v2",
+          "status": "declarada 2026-08-20 (justificación fechada 2026-07-29)",
+          "governs": "pdc-app/src/styles.css — SPA del Plan de Compras v2 (/plan-compras).",
+          "basis": "Densidad tipo hoja de cálculo con medición propia en su SPA (referencia Excel: la letra no se encoge, el aire alrededor sí). Declarada en px, no en rem. Piso duro 11px; el contraste AA se verifica medido, no estimado.",
+          "unit": "px",
+          "steps": [
+            {
+              "name": "--pdc-fs-xs",
+              "value": "11px",
+              "purpose": "Rótulos en versalitas."
+            },
+            {
+              "name": "--pdc-fs-sm",
+              "value": "12px",
+              "purpose": "Ayudas, notas al pie de un dato, encabezado de tabla."
+            },
+            {
+              "name": "--pdc-fs-md",
+              "value": "13px",
+              "purpose": "Cuerpo: controles, celdas, navegación."
+            },
+            {
+              "name": "--pdc-fs-lg",
+              "value": "15px",
+              "purpose": "Subtítulos de sección."
+            },
+            {
+              "name": "--pdc-fs-xl",
+              "value": "18px",
+              "purpose": "Título de pantalla."
+            },
+            {
+              "name": "--pdc-fs-cifra",
+              "value": "22px",
+              "purpose": "El único número que manda en la pantalla."
+            }
+          ],
+          "verdict": "No es deriva: decisión medida y fechada. Los --ds-state-tint-* viejos también quedan para esta superficie.",
+          "source": "DESIGN.md §3 → Escalas de superficie reconocidas; §5 bis → Escala tipográfica de superficie densa"
+        }
+      ]
     }
   },
   "components": [
@@ -533,6 +636,11 @@
       {
         "name": "La Rampa Densa Consagrada",
         "body": "La familia de tablas desktop opera tres pasos bajo --ds-type-size-xs, consagrados el 2026-08-20: dense-label 0.72rem (chip denso, tooltip de estado), dense-meta 0.70rem (leyendas, cabeceras auxiliares) y dense-floor 0.62rem — este último solo para elementos secundarios no textuales-clave ya existentes: está bajo el piso de 11px, se hereda y no se imita. Pendiente: tokenizar como --ds-type-dense-*.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de Escalas Excluyentes por Superficie",
+        "body": "La rampa densa no es la escala universal de la app: manda en la familia de tablas de obra, no fuera de ella. Tres escalas conviven y son excluyentes por superficie — rampa densa (tablas de obra), escala del Panel Admin (--ds-type-size-xs/sm → 0.75 / 0.875 / 1rem, admin/public/css/**) y escala del Plan de Compras v2 (--pdc-fs-* en px: 11, 12, 13, 15, 18 y 22 para cifras, pdc-app/src/styles.css). Dentro de una misma superficie se usa una sola y no se mezclan. Las dos últimas son decisiones medidas, no deriva: se declaran para que nadie las «corrija» por error. Un literal fuera de la escala que gobierna esa superficie sigue siendo deriva.",
         "section": "typography"
       },
       {
