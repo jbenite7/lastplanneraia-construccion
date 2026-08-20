@@ -69,10 +69,31 @@ estado por defecto mientras Felipe no reparta.
   no podían ponerse rojos) y cinco decisiones medidas y elevadas en [[DECISIONES_PENDIENTES]].
   Registro: [[goals/cola-estados-severidad/goal]].
 
-- [ ] **Las cinco decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+- [x] 2026-08-19 — **repaso de TODOS los specs y frentes**: de 13 `goals` sin cerrar quedaron **6**.
+  Siete se cerraron con verificación de hoy: `adopcion-logo-construccion`, `pdc-tanda2-plan-verdad`,
+  `apply-recalculo-estados` (solo desarrollo), `contadores-cero`, `semana-fija-visual`,
+  `repaso-usabilidad-no-tablas` y `contrato-estados-modulo-fantasma`. Los dos últimos estaban
+  cerrados y firmados en prosa, **sin el encabezado `## Cierre` que el mapa de estado lee**.
+
+- [x] 2026-08-19 — **el CI llevaba 40 corridas sin pasar** (23 `failure`, 17 `cancelled`, ni una
+  verde) por una sola aserción: `full-app-flow` exigía en móvil que el `body` reservara sitio para
+  el carril, justo lo que la spec del menú flotante derogó el 2026-08-14. Arreglado en `ab2c34f1`.
+  Y el lint de wiki denegaba publicaciones por basura que git ignora: arreglado preguntándole a git.
+
+- [ ] **`runtime-budgets-al-ci` y `gates-al-ci` están encadenados a una corrida verde de CI.**
+  Fase 1 reproducida: el gate `runtime-budgets` no es un baseline caducado — su medición **solo
+  puede producirse dentro de GitHub Actions**, porque exige `CI_RUN_ID`, `CI_GIT_SHA` y dos huellas
+  más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
+  la Fase 3 puede tomar la procedencia y los dos frentes cierran.
+
+- [ ] **Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
   condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
   `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
-  `navigation`. Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+  `navigation` · **D-6** el vocabulario de la cascada, cuyo objetivo numérico ya se cumplió solo
+  (25 cadenas contra las 29 que pedía) · **D-7** `bi-control-tower-gemini`, parado mes y medio por
+  una condición imposible · **D-8** `design-system-nucleo-gobernanza`, que exige quince gates donde
+  el archivo declara nueve · **D-9** hasta dónde llega la reapertura móvil y el tema claro.
+  Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de

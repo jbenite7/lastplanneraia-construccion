@@ -41,12 +41,13 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_111 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_113 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Apply del recálculo de estados — plan de ejecución | [[docs/superpowers/plans/2026-08-19-apply-recalculo-estados|plan]] | — |
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
 | DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
 | DS-F1a · La escala de estado: vocabulario y lectura — diseño | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado|plan]] | — |
@@ -56,6 +57,7 @@ _111 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archiv
 | Organizar la casa — el repo y sus sesiones | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design|spec]] | — |
 | publicar.sh: el invariante es el montaje, no el nombre del proyecto — diseño | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design|spec]] | — |
 | runtime-budgets al CI, recortado a andamio — diseño | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|spec]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci|plan]] | — |
+| Programación Semanal: el fondo pasa a matiz | [[docs/superpowers/plans/2026-08-19-semanal-fondo-por-matiz|plan]] | — |
 | Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design|spec]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground|plan]] | — |
 | Wiki v2 — visual, etiquetada, misma metodología | [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design|spec]] · [[docs/superpowers/plans/2026-08-18-wiki-v2-visual|plan]] | — |
 | Diseño: el fixture aislado alcanza para programacion-semanal-roles-phases | [[docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design|spec]] · [[docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles|plan]] | — |

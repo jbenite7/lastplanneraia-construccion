@@ -106,6 +106,24 @@ para el estado de los planes en curso.
 - **Confirmación contextual al aplicar lote PI (PI):** Al hacer click en "Aplicar en Lote" se despliega `AIA.Notice.confirm` con 4 variantes según el estado del Preview: (1) **sin alerta** cuando el check "Aplicar asignaciones comunes" está desactivado, ya que no puede haber sobreescritura de Sub-Contratista/Responsable AIA; (2) "Conflictos de asignación" cuando el Preview previo detectó diferencias, listando conteo por columna con el texto literal acordado; (3) "Aplicar restricción compartida" cuando el Preview fue limpio; (4) "Preview desactualizado" o "No se validaron conflictos" según si la configuración cambió desde el último Preview o nunca se ejecutó. Todos los textos están redactados a prueba de bobos: mencionan cuántas actividades se modificarán, qué columnas se sobreescribirán y ofrecen cancelar para ejecutar "Ver Conflictos" antes de continuar. El botón Aplicar **nunca se bloquea**; el usuario siempre decide.
 - **Botón renombrado a "Ver Conflictos" (PI):** El botón antes llamado "Preview" en el modal "Aplicar Restricción Compartida" ahora se llama "Ver Conflictos" para comunicar con precisión que su función es detectar sobreescrituras de Sub-Contratista o Responsable AIA, no solo previsualizar restricciones.
 
+## [2026-08-19] — Repaso de todos los specs pendientes
+
+### Fixed
+- **El CI llevaba 40 corridas sin pasar** (23 `failure`, 17 `cancelled`, ni una verde) por una sola
+  aserción: `full-app-flow` exigía en móvil que el `body` reservara sitio para el carril, justo lo
+  que la spec del menú flotante derogó el 2026-08-14. Comprobado antes de tocar el test que no
+  escondía una regresión: a 390 px el carril está fuera de pantalla, no tapa contenido y no hay
+  desbordamiento.
+- El lint de wiki denegaba publicaciones por basura que git ignora (un residuo de Playwright en
+  `test-results/`). Ahora le pregunta a git en vez de parsear `.gitignore`, que se saltaba las reglas
+  negativas y podaba las 57 páginas de `goals/`.
+
+### Changed
+- Siete `goals` cerrados con verificación de hoy; de 13 abiertos quedan 6. Dos de ellos estaban
+  cerrados y firmados **en prosa**, sin el encabezado `## Cierre` del que el mapa de estado deriva:
+  dieciséis y ocho días contando como abiertos con el trabajo hecho.
+- `DECISIONES_PENDIENTES.md` pasa de cinco a nueve decisiones, todas medidas.
+
 ## [2026-08-19] — Cola de estados, severidad y color
 
 ### Added
