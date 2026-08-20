@@ -430,3 +430,60 @@ ningún usuario en las notas del repo; lo que sí se usa a diario es el móvil.
 
 **Qué NO haría: dejar F3 colgando dentro de este frente.** Es lo que mantiene abierto también a
 `bi-control-tower-gemini` (D-7): un tema retirado bloqueando dos frentes a la vez.
+
+---
+
+## D-10 · El presupuesto de CSS está excedido: ¿se sube el techo o se recorta?
+
+**Estado: abierta, y es la única de las diez que bloquea trabajo hoy.** Cierra
+`runtime-budgets-al-ci` y, con él, `gates-al-ci`.
+
+### Lo que pasó, en orden
+
+El gate `runtime-budgets` **llevaba 40 corridas sin llegar a ejecutarse**: el job moría antes, en
+`full-app-flow`. Al arreglar eso hoy, el gate corrió por primera vez y falló:
+
+| Métrica | Baseline | Máximo | Real | Exceso |
+|---|---:|---:|---:|---:|
+| `cssGzipBytes` | 196.733 | 198.781 | **200.488** | **+1.707 B** |
+| `initializationMs` | 191,4 | 301,9 | **593** | **+291 ms** |
+
+**De quién es el exceso de CSS**, medido hoja por hoja:
+
+| Origen | Aporte |
+|---|---:|
+| `semanal-fondo-por-matiz` | **+1.716 B** |
+| La cola de estados de hoy (ya con los comentarios recortados) | +527 B |
+
+**El frente de Semanal, solo, se comió el presupuesto entero.** No fue negligencia de nadie: el gate
+que lo habría avisado no llegaba a correr. El CI roto ocultó que dos frentes consecutivos publicaron
+por encima del techo.
+
+Un dato que conviene saber antes de decidir: **el CSS se sirve sin minificar**, con sus 187
+comentarios. La prosa explicativa que este repo cultiva a propósito **pesa en el presupuesto**.
+Recortar la de hoy recuperó 799 B.
+
+### Las opciones
+
+| | Qué implica | Consecuencia |
+|---|---|---|
+| **(a) Subir el baseline a lo medido** | Se acepta que el CSS creció ~1,9 % con trabajo legítimo | Rápido y cierra dos frentes. El techo deja de ser un techo si se sube cada vez que estorba |
+| **(b) Recortar CSS hasta volver bajo el techo** | Hay que quitar ~1.700 B gzip de hojas ya publicadas | Honra el contrato. Pero el trabajo a recortar es de otro frente, ya cerrado y aprobado |
+| **(c) Minificar el CSS servido** | Los 187 comentarios dejan de viajar al navegador | **Devolvería mucho más de 1.700 B de una vez** y no obliga a tocar ni una decisión de diseño. Es cambio de fontanería, no de producto |
+
+### Recomendación: **(c), y luego volver a medir**
+
+Es la única que no obliga a elegir entre el techo y el trabajo. Los comentarios del CSS existen para
+quien lee el repositorio, no para el navegador; hoy viajan a cada usuario en cada carga. Minificar
+recupera de golpe mucho más que el exceso, y **deja el presupuesto midiendo lo que debería medir**:
+el peso real del sistema de diseño, no el de su documentación.
+
+Si tras minificar sigue por encima, entonces sí es (a) o (b) — pero con el dato limpio.
+
+**Qué NO haría: subir el baseline ahora.** Es lo más rápido y lo que convierte el presupuesto en un
+adorno: la primera vez que un techo se sube por incomodidad, deja de ser un techo. Y menos aún
+haciéndolo en la misma jornada en que se descubrió que llevaba 40 corridas sin vigilar nada.
+
+**`initializationMs` queda aparte y sin recomendación:** 593 ms contra 301,9 no lo causa el CSS, y
+con una sola corrida no se puede distinguir deriva real de ruido del runner. Hasta hoy no había
+ninguna con la que comparar. Pide una segunda medición antes de decidir nada.

@@ -3424,12 +3424,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-active-border) !important;
 }
 
-/* `Terminada` y `Sin Datos` declaran matices distintos -neutral y violet- y aun
-   asi se pintaban IGUAL: `--ds-cell-state-neutral-bg` y
-   `--ds-cell-state-sin-datos-bg` resuelven los dos a `var(--ds-active-surface)`
-   (`tokens.css:665` y `:679`). Medido en pantalla el 2026-08-19: las dos daban
-   el mismo pixel. Pasan a consumir el tint de su propio matiz, igual que hizo
-   `en-curso` con `--ds-state-tint-blue`. */
+/* Consumen el tint de su matiz: los dos `--ds-cell-state-*-bg` resolvian al
+   mismo color y se pintaban igual. Porque: commit 8418449a. */
 .pg-page #hot-container .handsontable td.pg-state-terminada {
   background-color: var(--ds-state-tint-neutral) !important;
   color: var(--ds-active-text-primary) !important;
@@ -3443,14 +3439,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-style: dashed !important;
 }
 
-/* `Fuera de Ventana`: 39,3% de la tabla y no tenia regla propia, asi que heredaba
-   la de `actividad-futura` a traves de una clasificacion por heuristica.
-
-   Matiz `teal` porque `ds-f1a-escala-estado.json` le da nivel `null` -no pide
-   accion, no dibuja barra- y declara que la distincion frente a `controlado` se
-   hace «por el eje matiz, que ya existe en el fondo». No puede leerse como aviso
-   (descarta ambar) ni como horizonte cercano (descarta verde): es el horizonte
-   mas lejano, 7 semanas o mas. */
+/* `Fuera de Ventana`, 39,3% de la tabla: nivel `null` en ds-f1a-escala-estado,
+   matiz teal por horizonte lejano. Porque: commit 8418449a. */
 .pg-page #hot-container .handsontable td.pg-state-fuera-de-ventana {
   background-color: var(--ds-state-tint-teal) !important;
   color: var(--ds-active-text-primary) !important;
@@ -3983,17 +3973,8 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   color: var(--ds-active-text-primary);
 }
 
-/* «Restricciones blandas» NO es un estado: no bloquea habilitacion, estado
-   operativo ni autoprogramacion. Por eso no toma matiz del catalogo -el matiz
-   es el canal de identidad de estado- y se distingue por FORMA, con borde
-   discontinuo sobre la superficie elevada.
-
-   Sustituye a un `style=` embebido en `programacion_intermedia/hot.js:2920` que
-   reservaba `#fef3c7` para dos variables que no existen en ninguna hoja
-   (`--aia-warning-soft-bg`, `--aia-warning-border`), asi que la reserva era lo
-   que se aplicaba siempre. Medido el 2026-08-19 a 1180x820 dark: luminancia
-   0,893 frente a un maximo de 0,0515 en los ocho estados vecinos -diecisiete
-   veces mas claro-, la unica mancha clara del modal. */
+/* No es un estado: no toma matiz del catalogo, se distingue por FORMA.
+   Sustituye un `style=` embebido con hex claro. Porque: commit 7c287d3a. */
 .pi-page .pi-legend-modal-swatch.pi-legend-soft-restriction {
   background-color: var(--ds-active-surface-raised);
   border: 1px dashed var(--ds-active-border-control);

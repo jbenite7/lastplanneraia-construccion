@@ -166,6 +166,42 @@ procedencia de `full-app-flow` y de `runtime-budgets` de una corrida real, que e
 falta para cerrar. Y con ella cierra también [[goals/gates-al-ci/goal]], que depende del mismo gate.
 
 
+## Fase 2 — PARADA Y ESCALADA, que es lo que el plan manda aquí
+
+**El gate corrió por fin, y falla por dos presupuestos excedidos.** No es fontanería: es el
+producto pasándose de lo que su propio contrato permite. Corrida `32329166643` sobre `79e438e7`:
+
+| Métrica | Baseline | Máximo | Real | Exceso |
+|---|---:|---:|---:|---:|
+| `cssGzipBytes` | 196.733 | 198.781 | **200.488** | **+1.707 B** |
+| `initializationMs` | 191,4 | 301,9 | **593** | **+291 ms** |
+
+Antes de escalar se midió **de quién es el exceso de CSS**, comparando el gzip de cada hoja:
+
+| Origen | Aporte |
+|---|---:|
+| `semanal-fondo-por-matiz` (publicado el 2026-08-19; escrito por otra sesión) | **+1.716 B** |
+| El trabajo de la cola de estados de hoy, ya con los comentarios recortados | +527 B |
+
+**El frente de Semanal, solo, se comió el presupuesto entero** (1.716 ≈ los 1.707 de exceso). Y no lo
+supo nadie porque **el gate llevaba 40 corridas sin llegar a ejecutarse**: lo tapaba el fallo de
+`full-app-flow`, arreglado hoy en `ab2c34f1`. El CI roto escondió que dos frentes consecutivos
+publicaron por encima del presupuesto de CSS.
+
+**Lo que sí se hizo sin preguntar**, porque es responsabilidad propia y no toca el contrato: recortar
+los comentarios que este trabajo había añadido a las hojas —el CSS **se sirve sin minificar**, con
+sus 187 comentarios, así que la prosa pesa—. Recuperó **799 B**; el porqué extenso vive en los
+commits y en los `goal.md`, que es donde no cuesta bytes servidos.
+
+**Y aquí para.** El plan lo dice sin ambigüedad: «Si la única salida pasa por tocar un baseline o
+cambiar lo que el gate mide, **PARAR y escalar**: las dos cosas están en la lista de bloqueo
+incondicional». La decisión está en [[DECISIONES_PENDIENTES]] como **D-10**.
+
+`initializationMs` es harina de otro costal y **no lo causa el CSS**: 593 ms contra un máximo de
+301,9. Puede ser deriva real o ruido del runner, y no se puede distinguir con una sola corrida —
+hasta hoy no había ninguna con la que comparar.
+
+
 ## Archivos de este goal
 
 - [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|Spec]]

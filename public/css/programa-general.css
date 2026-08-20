@@ -29,15 +29,9 @@
   --pg-dot-future: var(--ds-color-state-success-text);
   --pg-dot-progress: var(--ds-color-state-info-text);
   --pg-dot-delayed: var(--ds-color-state-critical-text);
-  /* `Fuera de Ventana` no tiene par `--ds-color-state-*-text`: sus cuatro
-     hermanos cubren exito, aviso, critico e info, y este matiz es teal. Se
-     deriva del ancla `--ds-state-tint-teal` subiendo luminosidad en OKLCH, la
-     misma tecnica que el bloque oscuro usa para los otros cinco. Se canaliza
-     por un token del modulo -y no se consume el tint en la regla- porque el
-     tint es escalera de FONDO y `state-tint-pairing.test.mjs` exige que todo
-     elemento con fondo de matiz declare su tinta; un punto de 8px no tiene
-     texto que tintar, asi que la exigencia no le aplica y consumirlo alli seria
-     pedirle al guard que distinga casos que no puede distinguir. */
+  /* Teal no tiene par `--ds-color-state-*-text`: se deriva del ancla subiendo
+     luminosidad, y se canaliza por token del modulo porque el tint es escalera
+     de FONDO (state-tint-pairing.test.mjs). Porque: commit 8418449a. */
   --pg-dot-out-of-window: oklch(from var(--ds-state-tint-teal) 0.55 calc(c * 3) h);
   max-inline-size: 100%;
   overflow-x: clip;
@@ -303,10 +297,7 @@ html.aia-theme-dark .pg-page {
 .pg-page #pgLegend .pg-filter-chip.actividad-futura .indicator { background: var(--pg-dot-future); }
 .pg-page #pgLegend .pg-filter-chip.en-curso .indicator { background: var(--pg-dot-progress); }
 .pg-page #pgLegend .pg-filter-chip.atrasada .indicator { background: var(--pg-dot-delayed); }
-/* `Fuera de Ventana` es el 39,3% de la tabla y no tenia chip de filtro: no habia
-   forma de aislarla ni de saber cuantas son. Teal, el matiz que le da
-   `statePresentation`; se aclara con la misma tecnica oklch que usan sus
-   hermanos, porque el tint es fondo de fila y como punto no se veria. */
+/* El chip que faltaba para el 39,3% de la tabla. Porque: commit 8418449a. */
 .pg-page #pgLegend .pg-filter-chip.fuera-de-ventana .indicator {
   background: var(--pg-dot-out-of-window);
 }
