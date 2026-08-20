@@ -53,6 +53,17 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
+      # Fija versión y checksum a propósito: un linter que se descarga mutable
+      # es la misma brecha que vino a cerrar.
+      - name: Lint the workflow definitions
+        run: |
+          set -euo pipefail
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt
+          grep ' actionlint_1.7.12_linux_amd64.tar.gz$' actionlint_1.7.12_checksums.txt | sha256sum -c -
+          tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
+          ./actionlint -color
+          rm -f actionlint actionlint_1.7.12_linux_amd64.tar.gz actionlint_1.7.12_checksums.txt
       - name: Fetch main history for design-system contracts
         run: git fetch origin main:refs/remotes/origin/main
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -143,7 +154,7 @@ jobs:
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
       - name: Wait for the application
         run: |
-          for attempt in {1..60}; do
+          for _ in {1..60}; do
             if curl -fsS http://127.0.0.1:18081/login > /dev/null; then
               exit 0
             fi
