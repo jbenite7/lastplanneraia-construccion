@@ -53,27 +53,38 @@ const page = await c.newPage();
 await page.route('**/api/general/restriction-config**', (r) => r.fulfill({ contentType: 'application/json', body: '{"success":false}' }));
 await page.route('**/api/semanal/list**', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ success: true, data: FILAS }) }));
 
+// La fase NO se puede forzar reescribiendo el HTML del servidor. Se probo, y
+// parecia funcionar porque el interceptor reportaba su propia sustitucion:
+// medido el 2026-08-19 con el setter de `.value` instrumentado, el UNICO
+// escritor de `#Semanal_Confirmada` es `cargarDatosGeneralesPagina2.js:183`,
+// que corre en el `success` del AJAX y pisa lo que pinto el PHP. La clave viaja
+// en `data`, no en la raiz de la respuesta (`cargarDatosGeneralesPagina2.js:120`:
+// `datosGenerales = json_info_global['data']`).
+//
+// Asi que la fase se fuerza donde de verdad se decide, y el route se registra
+// ANTES de la primera navegacion: al entrar al proyecto la app ya aterriza en
+// /programacion-semanal, y esa carga escapaba a un route registrado despues.
+if (fase === 'calificacion') {
+  await page.route('**/datosGeneralesPagina.php*', async (route) => {
+    const res = await route.fetch();
+    const body = await res.text();
+    let json = null;
+    try { json = JSON.parse(body); } catch { json = null; }
+    if (!json || !json.data) {
+      await route.fulfill({ status: res.status(), headers: res.headers(), body });
+      return;
+    }
+    json.data.Semanal_Confirmada = 1;
+    await route.fulfill({ status: res.status(), headers: res.headers(), body: JSON.stringify(json) });
+  });
+}
+
 await page.goto(`${BASE}/dev/entrar?u=test.R`);
 const card = page.locator('.project-item').filter({ has: page.getByRole('heading', { name: 'Da Porto', exact: true }) });
 await card.locator('button[type="submit"], .btn-enter').first().click();
 await page.waitForURL((u) => !u.toString().includes('/proyectos'));
 await page.request.post(`${BASE}/context/week`, { data: { semana: 1 } });
 await page.evaluate(() => localStorage.setItem('aia-theme', 'dark'));
-// La fase la decide un input oculto que pinta el SERVIDOR
-// (`programacion_semanal.view.php:59`) y que el modulo lee al construir la
-// rejilla. Ponerlo con `page.evaluate` tras `domcontentloaded` llega tarde: se
-// probo y las filas seguian saliendo en fase `programacion`. Se reescribe el
-// HTML en vuelo, que es determinista y no depende de ganarle una carrera al
-// arranque del modulo.
-if (fase === 'calificacion') {
-  await page.route(/\/programacion-semanal(\?|$)/, async (route) => {
-    const res = await route.fetch();
-    const original = await res.text();
-    const html = original.replace(/(id="Semanal_Confirmada"[^>]*value=")0(")/, '$11$2');
-    console.log('interceptor: ' + (html === original ? 'NO sustituyo (patron no casa)' : 'fase forzada a calificacion'));
-    await route.fulfill({ status: res.status(), headers: res.headers(), body: html });
-  });
-}
 await page.goto(`${BASE}/programacion-semanal`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => document.querySelectorAll('#hot-container .ht_master tbody tr').length >= 3, null, { timeout: 45000 })
   .catch(() => console.log('AVISO: menos de 3 filas renderizadas'));
@@ -97,10 +108,37 @@ const datos = await page.evaluate(() => {
   return out;
 });
 
+// La sonda tiene que poder ponerse ROJA. Antes solo informaba, y su unico
+// control era que el interceptor confirmase su propia sustitucion de texto: el
+// 2026-08-19 declaro «fase forzada a calificacion» y midio la fase equivocada
+// durante toda una corrida. Se comprueba el EFECTO —que fase salio de verdad y
+// que ningun par de estados comparta fondo— y se sale distinto de cero si falla.
+const faseEfectiva = await page.evaluate(() =>
+  document.getElementById('Semanal_Confirmada')?.value === '1' ? 'calificacion' : 'programacion');
+const fallos = [];
+if (faseEfectiva !== fase) {
+  fallos.push(`fase pedida «${fase}» pero la pantalla esta en «${faseEfectiva}»`);
+}
+const prefijoEsperado = fase === 'calificacion' ? 'ps-state-cal-' : 'ps-state-prog-';
+const intrusos = datos.filter((d) => !String(d.estado).startsWith(prefijoEsperado));
+if (intrusos.length) {
+  fallos.push(`${intrusos.length} fila(s) con estado ajeno a la fase: ${intrusos.map((d) => d.estado).join(', ')}`);
+}
+
 const unicos = new Set(datos.map((d) => d.fondo));
 console.log(`FASE ${fase.toUpperCase()} — ${datos.length} filas, ${unicos.size} fondos distintos`);
 console.log('estado'.padEnd(40) + 'cubo'.padEnd(24) + 'fondo'.padEnd(10) + 'rail');
 for (const d of datos) console.log(String(d.estado).padEnd(40) + String(d.cubo).padEnd(24) + String(d.fondo).padEnd(10) + String(d.rail || '-'));
 writeFileSync(`${OUT}medicion-ps-${fase}.json`, JSON.stringify(datos, null, 2));
 await page.screenshot({ path: `${OUT}ps-fase-${fase}-1180x820-dark.png` });
+if (datos.length && unicos.size !== datos.length) {
+  fallos.push(`${datos.length} filas pero solo ${unicos.size} fondos distintos: hay colision`);
+}
+if (fallos.length) {
+  console.log('\nSONDA EN ROJO:');
+  for (const f of fallos) console.log('  - ' + f);
+  process.exitCode = 1;
+} else {
+  console.log('\nSONDA EN VERDE: fase correcta y un fondo distinto por estado.');
+}
 await b.close();
