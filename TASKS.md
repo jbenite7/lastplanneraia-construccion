@@ -153,6 +153,11 @@ estado por defecto mientras Felipe no reparta.
 - [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
   `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
   [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
+- [ ] **CI · renombrar `design-system.yml` → `ci.yml`** — el nombre quedó pequeño: el workflow
+  custodia el repo entero (suite PHP, RBAC, E2E, presupuestos), no solo el design system. Exige
+  barrido de referencias por ruta (`visual-ci-contract.test.mjs`, scripts, docs, comandos
+  `gh run list --workflow=`) y parte el historial de corridas. Hacerlo como micro-frente propio,
+  idealmente junto a G4, que también toca los triggers. Decisión de Felipe 2026-08-20.
 - [ ] **CI · G7 paralelización** — medir duración por paso primero; candidato: PHPStan como job
   paralelo (no necesita la app levantada). Origen: spec 2026-08-20-deuda-ci-design.
 - [ ] **CI · G8 job summaries** — volcar recibos y presupuestos ya generados a
