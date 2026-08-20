@@ -141,7 +141,7 @@ html.aia-theme-dark .pi-page {
     line-height: inherit;
 }
 .pi-page #hot-container .handsontable td small {
-    font-size: 0.74em !important;
+    font-size: 0.7rem !important;
 }
 .pi-page #hot-container td.ops-state-td {
     padding: 4px 6px;
@@ -205,7 +205,7 @@ html.aia-theme-dark .pi-page {
     border-radius: 999px;
     background: var(--pi-due-bg);
     color: var(--pi-due-text);
-    font-size: 0.66rem;
+    font-size: 0.7rem;
     font-weight: 800;
     line-height: 1.1;
     vertical-align: middle;
@@ -704,7 +704,7 @@ html.aia-theme-dark .pi-page {
     position: sticky;
     top: 0;
     z-index: 1;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     color: var(--ds-active-text-secondary);
@@ -729,7 +729,7 @@ html.aia-theme-dark .pi-page {
     min-width: 70px;
     padding: 2px 6px;
     border-radius: 999px;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.01em;
 }

@@ -1282,7 +1282,7 @@ table.dataTable thead th {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
   font-weight: 600 !important;
-  font-size: 0.8rem !important;
+  font-size: 0.70rem !important;
   padding: 8px 4px !important;
   text-align: center !important;
   vertical-align: middle !important;
@@ -1293,7 +1293,7 @@ table.dataTable thead th {
   word-break: normal !important;
 }
 table.dataTable tbody td {
-  font-size: 0.85rem !important;
+  font-size: 0.72rem !important;
   padding: 6px 6px !important;
   vertical-align: middle !important;
   border: 0 !important;
@@ -1307,14 +1307,14 @@ table.dataTable tbody td {
   .ps-page #dt_cliente.dataTable thead th,
   .pg-page #dt_cliente.dataTable thead th,
   .pi-page #dt_cliente.dataTable thead th {
-    font-size: 0.74rem !important;
+    font-size: 0.70rem !important;
     padding: 6px 3px !important;
     line-height: 1.15;
   }
   .ps-page #dt_cliente.dataTable tbody td,
   .pg-page #dt_cliente.dataTable tbody td,
   .pi-page #dt_cliente.dataTable tbody td {
-    font-size: 0.79rem !important;
+    font-size: 0.72rem !important;
     padding: 5px 4px !important;
     line-height: 1.25;
   }
@@ -1553,14 +1553,14 @@ table.dataTable td.dt-min-width-300,
   z-index: 1;
   background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
-  font-size: 0.83rem;
+  font-size: 0.70rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   border-top: 0;
   border-bottom-color: var(--ds-active-border);
 }
 #tabla_excepciones_no_autoprogramadas tbody td {
-  font-size: 0.91rem;
+  font-size: 0.72rem;
   vertical-align: top;
   border-top-color: var(--ds-active-border);
   color: var(--ds-active-text-primary);
@@ -1579,7 +1579,6 @@ table.dataTable td.dt-min-width-300,
   inline-size: 5.6rem;
 }
 #tabla_excepciones_no_autoprogramadas .ps-excepcion-actividad {
-  font-size: 0.95rem;
   line-height: 1.4;
 }
 #tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover {

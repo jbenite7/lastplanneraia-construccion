@@ -433,11 +433,17 @@ body.ps-page .ps-hot-toolbar-shell {
     margin-left: 8px;
 }
 
+/* Ola 3 (2026-08-20): `overflow-wrap: anywhere` partia la palabra AUNQUE cupiera
+   entera en la linea siguiente, y ademas encogia el ancho minimo intrinseco de la
+   celda, engañando al medidor de anchos. La receta del frente envuelve entre
+   palabras y solo parte la palabra que no cabe ni sola en una linea vacia. Es el
+   mismo arreglo que Intermedia ya aplico a su `.force-wrap` en la Task 19. */
 .ps-page #hot-container td.force-wrap,
 .ps-page #hot-container th.force-wrap {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
 }
 
 .ps-page #hot-container td.ops-state-td {
@@ -887,11 +893,15 @@ body.ps-page .ps-hot-toolbar-shell {
     min-width: 0;
 }
 
+/* Ola 3 (2026-08-20): el valor de avance vive en una celda; `anywhere` partia
+   "2.400 m2" dejando "m" arriba y "2" abajo aunque la unidad cupiera entera. */
 .ps-page .ps-progress-value {
     display: block;
     min-width: 0;
     line-height: 1.1;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .ps-page .ps-progress-track {
@@ -927,7 +937,11 @@ body.ps-page .ps-hot-toolbar-shell {
     font-size: calc(var(--spacing-sm) + var(--spacing-xs));
     font-weight: 700;
     line-height: 1.15;
-    overflow-wrap: anywhere;
+    /* Ola 3 (2026-08-20): misma receta que el valor de arriba; el pie de la barra
+       es texto con espacios, asi que debe envolver entre palabras. */
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .ps-page .ps-tnp-badge {
@@ -1277,7 +1291,10 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: center;
     margin-left: 6px;
     min-width: 12px;
-    font-size: 11px;
+    /* Ola 3 (2026-08-20): 11px era un literal en px dentro de una celda, fuera de
+       la rampa densa de DESIGN.md §3. 0.70rem (dense-meta) es el paso vecino y
+       ademas queda por encima del minimo de 11px de PRODUCT.md. */
+    font-size: 0.7rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1327,7 +1344,12 @@ body.ps-page .ps-hot-toolbar-shell {
     padding: 0 !important;
     margin: 0;
     line-height: 1;
-    font-size: 0.66rem;
+    /* Ola 3 (2026-08-20): 0.66rem son 10,56px, por debajo del piso duro de 11px
+       de PRODUCT.md, y ademas fuera de la rampa densa. La cabecera es una
+       etiqueta, asi que sube a dense-label (0.72rem = 11,52px), el mismo tamaño
+       que ya tiene la celda de esta grilla (linea 250) — la cabecera no debe
+       quedar mas pequeña que su propio dato por accidente. */
+    font-size: 0.72rem;
     white-space: normal;
     overflow: hidden;
     text-overflow: clip;
@@ -1743,7 +1765,14 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
     border-radius: var(--ds-radius-xs);
     color: var(--ds-color-text-inverse);
-    font-size: 0.65em;
+    /* Ola 3 (2026-08-20): estaba en `em`, relativo a la celda (0.72rem), asi que
+       en pantalla median 0.47rem (~7,5px) y 0.65rem (~10,4px): ambos por debajo
+       del minimo de 11px de PRODUCT.md, y encima invisibles como unidad relativa
+       en cualquier censo de literales. Pasan a la rampa densa en unidad absoluta:
+       el distintivo Manual/Auto a dense-meta y el ID a dense-label. El ancho de
+       la columna (min 64 / piso 54 px en hot.js) admite "Manual" a este tamaño,
+       pero es lo unico que crecio en la grilla: conviene mirarlo en pantalla. */
+    font-size: 0.7rem;
     line-height: 1.2;
 }
 
@@ -1756,7 +1785,8 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 }
 
 .ps-id-value {
-    font-size: 0.9em;
+    /* Ver el comentario de .ps-origin-badge: mismo caso, mismo motivo. */
+    font-size: 0.72rem;
 }
 
 /* La clase la aplicaba `hot.js:2602` desde siempre y no existia ninguna regla
@@ -3344,10 +3374,15 @@ body.ps-page #hot-container td.ps-cell-shake {
     width: 100%;
 }
 
+/* Ola 3 (2026-08-20): la jerarquia de esta tabla estaba invertida — la celda
+   pintaba a 0.82rem y su propia cabecera a 0.72rem, asi que el rotulo pesaba
+   menos que el dato. Se acomodan las dos a la rampa densa de DESIGN.md §3: la
+   cabecera a dense-meta (0.70rem), que ya se distingue por mayusculas, tracking
+   y color secundario, y la celda a dense-label (0.72rem), que es el dato. */
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -3356,7 +3391,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 }
 
 .cm-table tbody td {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
@@ -3468,7 +3503,10 @@ body.ps-page #hot-container td.ps-cell-shake {
     .cm-table tbody td::before {
         content: attr(data-label);
         display: block;
-        font-size: 0.65rem;
+        /* Ola 3 (2026-08-20): 0.65rem son 10,4px. Este pseudo hace de cabecera de
+           la tabla apilada, asi que se alinea con dense-meta como la cabecera
+           real de arriba, en vez de estrenar un cuarto tamaño. */
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);

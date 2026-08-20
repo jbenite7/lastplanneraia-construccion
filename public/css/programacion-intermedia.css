@@ -210,8 +210,12 @@ html.aia-theme-dark .pi-page {
     line-height: inherit;
 }
 
+/* Ola 3 (2026-08-20): estaba en `em` sobre la celda, asi que el resultado real
+   era ~0.55rem (8,9px), muy por debajo del minimo de 11px de PRODUCT.md y fuera
+   de la rampa densa de DESIGN.md §3. La linea secundaria de una celda es meta,
+   asi que baja un solo paso desde la celda: dense-meta en unidad absoluta. */
 .pi-page #hot-container .handsontable td small {
-    font-size: 0.74em !important;
+    font-size: 0.7rem !important;
 }
 
 .pi-page #hot-container td.ops-state-td {
@@ -309,7 +313,10 @@ html.aia-theme-dark .pi-page {
     border-radius: 999px;
     background: var(--pi-due-bg);
     color: var(--pi-due-text);
-    font-size: 0.66rem;
+    /* Ola 3 (2026-08-20): 0.66rem son 10,56px, por debajo del piso de 11px de
+       PRODUCT.md y fuera de la rampa. El distintivo cuelga de una CABECERA de
+       tabla, asi que toma dense-meta y queda un paso por debajo del rotulo. */
+    font-size: 0.7rem;
     font-weight: 800;
     line-height: 1.1;
     vertical-align: middle;
@@ -900,7 +907,9 @@ html.aia-theme-dark .pi-page {
     position: sticky;
     top: 0;
     z-index: 1;
-    font-size: 0.74rem;
+    /* Ola 3 (2026-08-20): 0.74rem no es un paso de la rampa densa; la cabecera
+       baja al vecino dense-label (0.72rem). Es una cabecera, no un titulo. */
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     color: var(--ds-active-text-secondary);
@@ -933,7 +942,9 @@ html.aia-theme-dark .pi-page {
     min-width: 70px;
     padding: 2px 6px;
     border-radius: 999px;
-    font-size: 0.74rem;
+    /* Ola 3 (2026-08-20): es un distintivo dentro de una celda de
+       .pi-shared-table; 0.74rem no es paso de rampa, dense-label si. */
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.01em;
 }

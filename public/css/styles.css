@@ -1871,7 +1871,11 @@ table.dataTable thead th {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
   font-weight: 600 !important;
-  font-size: 0.8rem !important;
+  /* Rampa densa de tablas (DESIGN.md §3): cabecera = dense-meta 0.70rem.
+     Venia de 0.8rem, que no es paso de ninguna de las tres escalas
+     reconocidas. La jerarquia la sostienen el peso 600 y el fondo elevado, no
+     un tamano mayor que el del dato. */
+  font-size: 0.70rem !important;
   padding: 8px 4px !important;
   text-align: center !important;
   vertical-align: middle !important;
@@ -1900,7 +1904,8 @@ table.dataTable thead th {
    especificidad ya no cambia el color. Se deja constancia y no se mueve nada:
    el movimiento pertenece a quien lleve el hover. */
 table.dataTable tbody td {
-  font-size: 0.85rem !important;
+  /* Dato de celda = dense-label 0.72rem. Venia de 0.85rem. */
+  font-size: 0.72rem !important;
   padding: 6px 6px !important;
   vertical-align: middle !important;
   /* Variante B (A-3): solo separador horizontal, igual que la cabecera. */
@@ -1912,12 +1917,18 @@ table.dataTable tbody td {
   word-break: normal !important;
 }
 
-/* Dense weekly/planning tables: improve fit without horizontal scroll */
+/* Dense weekly/planning tables: improve fit without horizontal scroll.
+   Estas son las tres DataTables vivas del producto (CIC, CNC, CNP), y este
+   bloque —con id y !important— es el que de verdad gobierna su tipografia.
+   Traia una escala propia (0.74 / 0.79rem) nacida de apretar a ojo; se alinea
+   con la rampa densa, que dice exactamente lo mismo con dos pasos declarados.
+   El aprete que buscaba este bloque no se pierde: el padding y el line-height
+   siguen siendo los suyos, y el tamano ahora es incluso algo menor. */
 @media (min-width: 62rem) {
   .ps-page #dt_cliente.dataTable thead th,
   .pg-page #dt_cliente.dataTable thead th,
   .pi-page #dt_cliente.dataTable thead th {
-    font-size: 0.74rem !important;
+    font-size: 0.70rem !important;
     padding: 6px 3px !important;
     line-height: 1.15;
   }
@@ -1925,7 +1936,7 @@ table.dataTable tbody td {
   .ps-page #dt_cliente.dataTable tbody td,
   .pg-page #dt_cliente.dataTable tbody td,
   .pi-page #dt_cliente.dataTable tbody td {
-    font-size: 0.79rem !important;
+    font-size: 0.72rem !important;
     padding: 5px 4px !important;
     line-height: 1.25;
   }
@@ -2312,7 +2323,11 @@ table.dataTable td.dt-min-width-300,
   z-index: 1;
   background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
-  font-size: 0.83rem;
+  /* Cabecera de tabla = dense-meta. La bandeja de No Autoprogramadas corria una
+     escala entera propia (0.83 cabecera / 0.91 celda / 0.95 actividad) que no
+     coincidia con ninguna de las tres reconocidas, y ademas pintaba la celda
+     mas grande que su cabecera. */
+  font-size: 0.70rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   border-top: 0;
@@ -2320,7 +2335,7 @@ table.dataTable td.dt-min-width-300,
 }
 
 #tabla_excepciones_no_autoprogramadas tbody td {
-  font-size: 0.91rem;
+  font-size: 0.72rem;
   vertical-align: top;
   border-top-color: var(--ds-active-border);
   color: var(--ds-active-text-primary);
@@ -2342,8 +2357,12 @@ table.dataTable td.dt-min-width-300,
   inline-size: 5.6rem;
 }
 
+/* Sin `font-size`: el nombre de la actividad es el dato principal de la celda y
+   ya lo declara el `td` en dense-label. El 0.95rem que habia aqui era lo que
+   hacia que una fila pesara mas que la cabecera que la nombra; se retira en vez
+   de repetir el mismo valor dos veces. El interlineado si es propio y se
+   conserva: esta celda envuelve a varias lineas. */
 #tabla_excepciones_no_autoprogramadas .ps-excepcion-actividad {
-  font-size: 0.95rem;
   line-height: 1.4;
 }
 

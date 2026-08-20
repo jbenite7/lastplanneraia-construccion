@@ -16,6 +16,7 @@ import type { Comparativo, InsumoDiff, LadoComparativo, VersionPresupuesto } fro
 import { etiquetaVersion } from '../lib/versionLabel'
 import BotonAyuda from '../components/BotonAyuda'
 import { Selector } from '../components/Selector'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Mismo criterio que VisorPresupuesto.tsx: registro selectivo de módulos.
 ModuleRegistry.registerModules([
@@ -262,6 +263,7 @@ export default function ComparativoPresupuesto() {
             )}
           </div>
 
+          <AvisoColumnasOcultas columnas={eje === 'actividades' ? visiblesAct : visiblesIns} testid="pdc-cmp-cols-ocultas" />
           <div className="pdc-grid" data-testid="pdc-cmp-grid" ref={refGrid}>
             {eje === 'actividades' ? (
               <AgGridReact<FilaComparativo>

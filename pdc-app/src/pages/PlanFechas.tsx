@@ -56,6 +56,7 @@ import { claseCorte, etiquetaCorte } from '../lib/vencimientos'
 import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SimulacionReprogramacion, SugerenciaFrente } from '../lib/types'
 import { filtraPorTexto, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 // TextEditorModule: la columna Responsable es `editable: true`; sin este módulo AG Grid rechaza la
@@ -806,6 +807,7 @@ export default function PlanFechas() {
         value={buscaPlan}
         onChange={(e) => setBuscaPlan(e.target.value)}
       />
+      <AvisoColumnasOcultas columnas={colsVisibles} testid="pdc-plan-cols-ocultas" />
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<FilaPlan>
           theme={pdcTheme}

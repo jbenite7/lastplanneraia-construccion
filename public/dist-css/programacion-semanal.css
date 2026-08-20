@@ -321,8 +321,9 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page #hot-container td.force-wrap,
 .ps-page #hot-container th.force-wrap {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
 }
 .ps-page #hot-container td.ops-state-td {
     padding: var(--spacing-xs) !important;
@@ -668,7 +669,9 @@ body.ps-page .ps-hot-toolbar-shell {
     display: block;
     min-width: 0;
     line-height: 1.1;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .ps-page .ps-progress-track {
     display: block;
@@ -700,7 +703,9 @@ body.ps-page .ps-hot-toolbar-shell {
     font-size: calc(var(--spacing-sm) + var(--spacing-xs));
     font-weight: 700;
     line-height: 1.15;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .ps-page .ps-tnp-badge {
     display: inline-flex;
@@ -1006,7 +1011,7 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: center;
     margin-left: 6px;
     min-width: 12px;
-    font-size: 11px;
+    font-size: 0.7rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1049,7 +1054,7 @@ body.ps-page .ps-hot-toolbar-shell {
     padding: 0 !important;
     margin: 0;
     line-height: 1;
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     white-space: normal;
     overflow: hidden;
     text-overflow: clip;
@@ -1355,7 +1360,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
     border-radius: var(--ds-radius-xs);
     color: var(--ds-color-text-inverse);
-    font-size: 0.65em;
+    font-size: 0.7rem;
     line-height: 1.2;
 }
 .ps-origin-badge.is-manual {
@@ -1365,7 +1370,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     background: var(--ds-color-brand-aqua);
 }
 .ps-id-value {
-    font-size: 0.9em;
+    font-size: 0.72rem;
 }
 .ps-page #hot-container td.ps-cell-empty-alert {
     background-color: var(--ds-color-cell-critical-bg);
@@ -2553,7 +2558,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -2561,7 +2566,7 @@ body.ps-page #hot-container td.ps-cell-shake {
     white-space: nowrap;
 }
 .cm-table tbody td {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
@@ -2648,7 +2653,7 @@ body.ps-page #hot-container td.ps-cell-shake {
     .cm-table tbody td::before {
         content: attr(data-label);
         display: block;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);

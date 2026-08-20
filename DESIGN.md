@@ -432,6 +432,27 @@ excepción de densidad (piso duro 11px de PRODUCT.md):
 Pendiente declarado: tokenizarlos (`--ds-type-dense-*`) cuando un frente tipográfico
 recorra sus usos; hoy se documentan para que el sistema y el detector digan lo mismo.
 
+### Escalas de superficie reconocidas (declaradas 2026-08-20)
+
+**La rampa densa no es la escala universal de la app.** Manda en la familia de tablas
+de obra, no fuera de ella. El censo del frente de estados encontró dos superficies con
+escala propia y, al medirlas, resultaron decisiones justificadas que el sistema nunca
+había declarado — se declaran aquí para que dejen de leerse como deriva y para que
+nadie las "corrija" por error:
+
+- **Panel Admin** (`admin/public/css/**`): consume `--ds-type-size-xs`/`sm` del design
+  system, que resuelven a `0.75` / `0.875` / `1rem`. Es un panel administrativo de uso
+  ocasional, no una tabla densa de obra: su densidad no tiene por qué ser la de la
+  familia de tablas. Admin **no es una isla** — ya consume tokens de color, espaciado y
+  z-index del sistema; lo que difiere es únicamente la escala tipográfica.
+- **Plan de Compras v2** (`pdc-app/src/styles.css`): declara `--pdc-fs-xs..xl` en px
+  (`11, 12, 13, 15, 18`) y `--pdc-fs-cifra` `22px`, con justificación fechada del
+  2026-07-29 (densidad tipo hoja de cálculo) y medición propia en su SPA.
+
+Las tres escalas —rampa densa, escala de Admin, escala del PDC— son **excluyentes por
+superficie**: dentro de una misma superficie se usa una sola y no se mezclan. Un
+literal fuera de la escala que gobierna esa superficie sigue siendo deriva.
+
 ### Named Rules
 
 **La Regla de Escala Fija.** Los tamaños son rem fijos, nunca `clamp()` fluido en UI
