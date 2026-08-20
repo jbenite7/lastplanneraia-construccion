@@ -217,3 +217,56 @@ esperando al contrato, y es el único de los siete módulos donde implementar ti
 
 **Qué NO haría: retirar los siete de PDC en bloque.** Es lo más rápido y borraría el único caso donde
 la declaración iba por delante del código a propósito.
+
+---
+
+## D-4 · DS-F1, cajón 2: qué significa «cubierto»
+
+**Estado: abierta.** La parte técnica —**el guard que pone en rojo lo descubierto**— ya está en el
+repo (`tests/design-system/coverage-closure.test.mjs`). Lo que queda es qué se hace con la brecha.
+
+### El censo, medido contra `public/index.php`
+
+| | |
+|---|---:|
+| pantallas reales (rutas GET, sin APIs ni assets) | 32 |
+| **sin manifiesto** — `/`, `/dashboard`, `/reportes/{tipo}` | **3** |
+| rutas declaradas que **ya no responden a GET** | 5 |
+| manifiestos con rutas y **cero escenarios** | 1 |
+
+Ese único manifiesto sin escenarios es `foundation-shell.json`, y no es cualquiera: **declara 20
+rutas, el 37 % de todas las rutas declaradas del sistema**. Es el que más abarca y el único que no
+prueba nada.
+
+En total el sistema declara 39 escenarios, pero **20 son del laboratorio**: quedan 19 escenarios
+repartidos entre las 32 pantallas del producto.
+
+### Lo que estaba realmente roto
+
+No era «hay cosas sin cubrir» — eso se sabía. Era que **lo descubierto no podía ponerse rojo**. Los
+guards de manifiesto comprueban que cada manifiesto sea válido, que sus escenarios existan y que sus
+hashes cuadren: todo sobre lo que **ya está declarado**. Una pantalla que nadie declaró no incumple
+ninguno, porque para el sistema de diseño no existe.
+
+El guard nuevo mide las tres cosas que faltaban: que toda pantalla real esté declarada, que todo
+manifiesto con rutas tenga al menos un escenario, y que la deuda congelada siga siendo cierta —una
+tolerancia que sobrevive al problema que toleraba miente por omisión. Comprobado que **puede ponerse
+rojo**: al quitar `/dashboard` de la deuda devuelve `RC=1` y lo nombra.
+
+### Lo que queda por decidir
+
+**(1) `foundation-shell` y sus 20 rutas sin escenario.** Es el cajón grande. Un escenario por ruta es
+caro; un escenario que cubra el armazón compartido (barra, drawer, cabecera) puede bastar para lo que
+ese manifiesto realmente gobierna. **Recomiendo lo segundo**: el armazón es una sola cosa repetida en
+20 sitios, y probarla 20 veces mide lo mismo veinte veces.
+
+**(2) Las 3 pantallas sin manifiesto.** `/` y `/dashboard` son producto y deberían tenerlo;
+`/reportes/{tipo}` es paramétrica y habría que decidir si se declara una vez o por tipo.
+
+**(3) Las 5 rutas declaradas que ya no responden a GET.** Son deuda al revés: el contrato promete
+más de lo que hay. **Recomiendo retirarlas** — son POST o desaparecieron, y ninguna decisión de
+producto depende de ellas.
+
+**Qué NO haría: exigir un escenario por ruta de golpe.** Serían 20 escenarios nuevos solo en
+`foundation-shell`, y el resultado predecible es que alguien los declare vacíos para pasar el gate
+—que es exactamente el problema que este cajón vino a cerrar.
