@@ -108,7 +108,17 @@ assert.match(
   'PG debe invalidar la copia legacy del modal en navegadores existentes',
 );
 
-assert.equal(filterMarkup.length, 14, 'PG debe renderizar siete filtros para cada area del proyecto');
+// Ocho por area, no siete, desde el 2026-08-19. La cifra sube porque el
+// vocabulario cambio, no porque el contrato se aflojara: `Fuera de Ventana` es
+// el 39,3% de programa_consolidado -25.778 de 65.633 filas- y no tenia chip, asi
+// que no habia forma de aislarla ni de saber cuantas son.
+//
+// Los ocho NO son ocho estados. Son los siete que produce pg_calculate_status
+// mas `Con Alerta Restricciones`, que se queda como filtro justamente por no ser
+// un estado: no existe en ninguna fila, y lo que cuenta es el REALCE por
+// condicion del dato -las 13.243 filas con restricciones duras pendientes en la
+// ventana de seis semanas-.
+assert.equal(filterMarkup.length, 16, 'PG debe renderizar ocho filtros para cada area del proyecto');
 for (const filter of filterMarkup) {
   assert.match(filter, /aria-pressed="false"/, 'cada filtro PG debe declarar su estado inicial');
 }
