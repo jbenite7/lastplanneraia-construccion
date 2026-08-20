@@ -84,7 +84,7 @@
       "text": "--pdc-not-started-text",
       "solid": "#9aa8a0",
       "solidText": "#1c2420",
-      "row": "#222724"
+      "row": "#262b28"
     },
     {
       "id": "teal",
@@ -92,7 +92,7 @@
       "tint": "--ds-state-tint-teal",
       "solid": "#5ec9bd",
       "solidText": "#062f29",
-      "row": "#192825"
+      "row": "#1c342f"
     },
     {
       "id": "blue",
@@ -101,7 +101,7 @@
       "text": "--pdc-active-text",
       "solid": "#5f9fdd",
       "solidText": "#07223c",
-      "row": "#1b2330"
+      "row": "#1e2c40"
     },
     {
       "id": "violet",
@@ -110,7 +110,7 @@
       "text": "--pdc-missing-text",
       "solid": "#9485d6",
       "solidText": "#26113f",
-      "row": "#251f2d"
+      "row": "#302741"
     },
     {
       "id": "green",
@@ -119,7 +119,7 @@
       "text": "--pdc-completed-ontime-text",
       "solid": "#57b083",
       "solidText": "#06281a",
-      "row": "#1b2a20"
+      "row": "#20362a"
     },
     {
       "id": "amber",
@@ -128,7 +128,7 @@
       "text": "--pdc-completed-late-text",
       "solid": "#ffca28",
       "solidText": "#3a2c04",
-      "row": "#2a2718"
+      "row": "#383314"
     },
     {
       "id": "orange",
@@ -137,7 +137,7 @@
       "text": "--pdc-delayed-text",
       "solid": "#e87722",
       "solidText": "#3a2004",
-      "row": "#2b211a"
+      "row": "#3a2915"
     },
     {
       "id": "red",
@@ -146,7 +146,7 @@
       "text": "--pdc-critical-text",
       "solid": "#e15a52",
       "solidText": "#3c0a06",
-      "row": "#2b1b1a"
+      "row": "#3a1f1c"
     }
   ],
   "translationRules": [
@@ -506,5 +506,5 @@
       ]
     }
   ],
-  "brandAudit": "2026-08-20: solid/solidText/row son hex (no tokens) para que state-solid-contract.test.mjs calcule WCAG sin resolver CSS. Naranja/ambar/violeta/teal anclados al manual AIA (Construccion #e87722, Advertencias #ffca28, Arquitectura #9485d6, Inmobiliario #5ec9bd); rojo custom #e15a52 porque el #e53935 del manual falla AA con su texto (4.01); azul sin familia AIA, desviacion registrada; verde interpolado en la rampa Corporativo."
+  "brandAudit": "2026-08-20: solid/solidText/row son hex (no tokens) para que state-solid-contract.test.mjs calcule WCAG sin resolver CSS. Naranja/ambar/violeta/teal anclados al manual AIA (Construccion #e87722, Advertencias #ffca28, Arquitectura #9485d6, Inmobiliario #5ec9bd); rojo custom #e15a52 porque el #e53935 del manual falla AA con su texto (4.01); azul sin familia AIA, desviacion registrada; verde interpolado en la rampa Corporativo. Tintes de fila v2 (2026-08-20, decision de Felipe tras auditoria de capturas): un punto mas de croma con la misma luminancia — en PI la columna del chip queda fuera del viewport a 1180 y la fila necesita identidad propia."
 }

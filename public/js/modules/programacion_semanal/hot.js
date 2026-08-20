@@ -2560,7 +2560,10 @@
       var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var alertClass = getAlertClassForRow(rowData);
 
-      td.classList.add('ps-row-state', alertClass);
+      // La celda de Acciones lleva TAMBIEN la clase de estado (2026-08-20):
+      // sin ella caia al blanco del vendor y era la mancha mas brillante de la
+      // pantalla oscura — el unico td de la fila sin fondo del sistema.
+      td.classList.add('ps-row-state', alertClass, getStateClassForRow(rowData));
       td.classList.add('htCenter', 'htMiddle');
 
       var phase = getSemanalConfirmada();

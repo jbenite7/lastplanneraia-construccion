@@ -90,15 +90,25 @@
     color: var(--ds-cell-state-sin-datos-fg) !important;
   }
   :where(.pg-page #hot-container td.pg-cell-editable) {
-    box-shadow: inset 0 0 0 9999px var(--pg-cell-editable-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-editable-overlay);
     cursor: text;
   }
   :where(.pg-page #hot-container td.pg-cell-readonly) {
-    box-shadow: inset 0 0 0 9999px var(--pg-cell-readonly-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-readonly-overlay);
     cursor: not-allowed;
+  }
+  :where(.pg-page #hot-container td[data-aia-severity-rail='urgent']) {
+    --pg-rail-shadow: inset var(--ds-severity-rail-width-urgent) 0 0 0 var(--ds-severity-rail-color-urgent);
+  }
+  :where(.pg-page #hot-container td[data-aia-severity-rail='attention']) {
+    --pg-rail-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+  :where(.pg-page #hot-container td[data-aia-severity-rail='ready']) {
+    --pg-rail-shadow: inset var(--ds-severity-rail-width-ready) 0 0 0 var(--ds-severity-rail-color-ready);
   }
   :where(.pg-page #hot-container td.pg-cell-editable.current, .pg-page #hot-container td.pg-cell-editable.area) {
     box-shadow:
+      var(--pg-rail-shadow, 0 0 0 0 transparent),
       inset 0 0 0 9999px var(--pg-cell-current-overlay),
       inset 0 0 0 calc(var(--ds-border-width) * 2) var(--pg-cell-current-ring);
   }
