@@ -149,6 +149,10 @@ $router->add('POST', '/matching/family-catalog/resolve-decision', 'FamilyCatalog
 $router->add('POST', '/matching/family-catalog/import', 'FamilyCatalogController@importCatalog');
 $router->add('GET', '/matching/family-catalog/export', 'FamilyCatalogController@exportCatalog');
 
+// Interruptores de módulos (general_flags)
+$router->add('GET', '/modulos', 'ModulosController@index');
+$router->add('POST', '/modulos', 'ModulosController@update');
+
 // Mantenimiento del Plan de Compras
 $router->add('GET', '/pdc/limpieza', 'PdcMaintenanceController@index');
 $router->add('GET', '/pdc/limpieza/conteos', 'PdcMaintenanceController@counts');
