@@ -5,7 +5,7 @@ estado: vigente
 fecha: 2026-08-13
 areas: [bi, rbac, arquitectura]
 fuente: src/Security/BiPreviewAccessPolicy.php, docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md
-resumen: la Torre de Control BI sigue viva pero fuera de la navegación mientras se desarrolla; la abre solo el rol A por URL directa, con 404 para el resto
+resumen: la Torre de Control BI sigue viva pero fuera de la navegación mientras se desarrolla; la abren los roles A y D (D ampliado el 2026-08-20), con 404 para el resto
 ---
 La [[torre-de-control-bi]] se ocultó de la navegación el 2026-08-13 porque el módulo está a medio
 hacer y el equipo tropezaba con pantallas incompletas. **Las rutas siguen vivas**: no se borró
@@ -15,7 +15,7 @@ nada, solo dejó de haber por dónde entrar.
 
 | Pieza | Dónde | Qué hace |
 |---|---|---|
-| Capacidad | `internal.bi.preview` (`RbacCatalog.php:13`) | Concedida **solo al rol `A`** (`RbacManager.php:30`) |
+| Capacidad | `internal.bi.preview` (`RbacCatalog.php:13`) | Concedida a **`A` y `D`** (`RbacManager.php:30`; `D` ampliado el 2026-08-20 por decisión de Felipe, desplegado a pruebas y producción ese día) |
 | Gate | `BiPreviewAccessPolicy::canOpen()` | Resuelve el rol **por usuario, no por proyecto** — la condición es global |
 | Vistas | `BiViewController.php:54` | **404, no 403**, para no confirmar que la pantalla existe |
 | API | `BiControlTowerApiController.php:34` | Mismo gate |

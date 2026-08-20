@@ -28,6 +28,14 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Control Tower abierto al Director de Obra (2026-08-20)
+
+#### Changed
+- La capacidad `internal.bi.preview` pasa de solo `A` a `A` y `D`: el Director de Obra ya ve los
+  accesos y abre `/bi/*` mientras el módulo sigue oculto para el resto de roles. Decisión de
+  Felipe 2026-08-20; desplegado a pruebas y producción el mismo día (`828483a4`).
+
+
 ### Deuda del CI — Frente 1 (2026-08-20)
 
 #### Security

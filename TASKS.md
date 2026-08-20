@@ -157,6 +157,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Deploy · migración `20260819_recalculo_estados.php` sin aplicar en pruebas ni producción** —
+  llegó con el deploy del 2026-08-20 (Control Tower para rol D) pero es un recálculo de datos
+  bloqueado por diseño: exige el sí explícito de Felipe sobre su dry-run. No cambia esquema, así
+  que el código servido no la necesita. Correr el dry-run y decidir.
+- [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
+  (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
+  2026-07-23 en `public_html`. Confirmar y borrar.
+
 - [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
   `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
   [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
