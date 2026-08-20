@@ -1,9 +1,9 @@
 ---
 capa: fuente
-tipo: censo
+tipo: reporte
 estado: vigente
 fecha: 2026-08-20
-areas: [design-system, programacion-intermedia, programa-general, programacion-semanal, plan-compras, admin]
+areas: [design-system, lps, pdc, admin, bi]
 fuente: goals/replanteo-coloreado-estados/censo-tablas.md
 resumen: "Censo de recorte silencioso, fragmentación de palabra y tamaños de fuente en TODAS las tablas de la app, pedido por Felipe el 2026-08-20"
 ---

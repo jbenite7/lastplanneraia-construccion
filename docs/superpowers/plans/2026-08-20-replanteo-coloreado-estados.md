@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-20
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-20-replanteo-coloreado-estados.md
+resumen: Que el chip sólido sea el portador fuerte de identidad de estado, las filas bajen a tintes sutiles, y el filete de severidad exista y se lea en los TRES…
+---
+
 # Replanteo de coloreado de estados (dirección B) — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
