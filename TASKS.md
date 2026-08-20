@@ -63,6 +63,17 @@ estado por defecto mientras Felipe no reparta.
   fase Calificación **no forzaba la fase** y lo declaraba igual, porque comprobaba su propia
   sustitución de texto: ver `## Cierre` en [[goals/semanal-fondo-por-matiz/goal]].
 
+- [x] 2026-08-19 — **cola de estados, severidad y color**: los siete pendientes atendidos. Cuatro
+  ejecutados (remapeo de Programa General con `Fuera de Ventana` —el 39,3 % de la tabla, que se
+  pintaba igual que `Actividad Futura`—, la crema de la leyenda de Intermedia, y dos guards que antes
+  no podían ponerse rojos) y cinco decisiones medidas y elevadas en [[DECISIONES_PENDIENTES]].
+  Registro: [[goals/cola-estados-severidad/goal]].
+
+- [ ] **Las cinco decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+  condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
+  `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
+  `navigation`. Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
   [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y

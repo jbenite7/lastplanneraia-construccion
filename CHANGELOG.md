@@ -106,6 +106,36 @@ para el estado de los planes en curso.
 - **Confirmación contextual al aplicar lote PI (PI):** Al hacer click en "Aplicar en Lote" se despliega `AIA.Notice.confirm` con 4 variantes según el estado del Preview: (1) **sin alerta** cuando el check "Aplicar asignaciones comunes" está desactivado, ya que no puede haber sobreescritura de Sub-Contratista/Responsable AIA; (2) "Conflictos de asignación" cuando el Preview previo detectó diferencias, listando conteo por columna con el texto literal acordado; (3) "Aplicar restricción compartida" cuando el Preview fue limpio; (4) "Preview desactualizado" o "No se validaron conflictos" según si la configuración cambió desde el último Preview o nunca se ejecutó. Todos los textos están redactados a prueba de bobos: mencionan cuántas actividades se modificarán, qué columnas se sobreescribirán y ofrecen cancelar para ejecutar "Ver Conflictos" antes de continuar. El botón Aplicar **nunca se bloquea**; el usuario siempre decide.
 - **Botón renombrado a "Ver Conflictos" (PI):** El botón antes llamado "Preview" en el modal "Aplicar Restricción Compartida" ahora se llama "Ver Conflictos" para comunicar con precisión que su función es detectar sobreescrituras de Sub-Contratista o Responsable AIA, no solo previsualizar restricciones.
 
+## [2026-08-19] — Cola de estados, severidad y color
+
+### Added
+- `tests/design-system/state-key-consumption.test.mjs`: un estado declarado que nadie pinta ahora se
+  pone rojo. Censo que lo motivó: 25 estados con `key` (los 25 consumidos) y 30 sin ella, en siete de
+  los diez módulos. Deuda congelada en `docs/design-system/state-key-debt.json`.
+- `tests/design-system/coverage-closure.test.mjs`: una pantalla que ningún manifiesto declara ya no
+  pasa desapercibida. 32 pantallas reales, 3 sin manifiesto, y `foundation-shell` con 20 rutas y cero
+  escenarios. Deuda en `docs/design-system/coverage-debt.json`.
+- `DECISIONES_PENDIENTES.md`: las cinco decisiones de producto/diseño que la cola dejó abiertas, cada
+  una con su medición y su recomendación.
+- Programa General gana el chip de filtro «Fuera de Ventana», que no tenía pese a ser el 39,3 % de la
+  tabla.
+
+### Changed
+- Programa General pasa al vocabulario vivo: entra `Fuera de Ventana` (25.778 filas, se pintaba igual
+  que `Actividad Futura`) y sale `Con Alerta Restricciones` (cero filas; sigue vivo como filtro, que
+  es lo que siempre fue: un realce por condición del dato, no un estado).
+- `Terminada` y `Sin Datos` dejan de compartir fondo: declaraban matices distintos y ambos tokens
+  resolvían a `var(--ds-active-surface)`.
+- `rowClassMap` se deriva de `statePresentation` en vez de repetirlo. Había dos listas del mismo
+  vocabulario y una se quedaba atrás.
+
+### Fixed
+- La leyenda de Programación Intermedia deja de tener una mancha crema sobre tema oscuro: el
+  muestrario de «Restricciones blandas» reservaba `#fef3c7` para dos variables inexistentes, así que
+  la reserva se aplicaba siempre. Luminancia 0,893 → 0,0263.
+- La sonda de la fase Calificación de Semanal, que declaraba forzar la fase sin forzarla: comprobaba
+  su propia sustitución de texto y no el efecto.
+
 ## [1.1.1] - 2026-03-31
 
 ### Añadido

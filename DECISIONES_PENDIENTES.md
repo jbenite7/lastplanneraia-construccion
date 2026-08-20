@@ -3,7 +3,7 @@ capa: fuente
 tipo: decision
 estado: vigente
 fecha: 2026-08-19
-areas: [diseno, lps]
+areas: [design-system]
 fuente: cola de pendientes del trabajo de estados, severidad y color del 2026-08-19
 resumen: "Las decisiones de producto, proceso y diseño que la cola de estados y severidad dejó abiertas, cada una con su medición ya hecha"
 project: lps-aia
