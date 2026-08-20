@@ -115,6 +115,13 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-19 — **El gate de publicación frena las integraciones**: publicar con merges exige
+  `--con-merges` y lista qué frentes entran y cuáles declaran cierre. Nace del cuarto choque del
+  día: dos frentes a medio terminar entraron en `main` y solo los detectó una revisión a mano.
+  **No bloquea por «goal.md sin cierre» a secas** —un frente activo commitea su goal mientras
+  trabaja, y eso serían falsos positivos a diario— así que frena por el hecho comprobable y enseña
+  el estado para decidir con datos.
+
 - [x] 2026-08-19 — **Los nueve goals en plantilla, cerrados** (`697978ec`): los nueve habían
   corrido; ocho reciben objetivo y cierre con evidencia re-medida hoy, y `a187ccda` se borra por
   ser un id de sesión, no un frente. De ahí sale por qué `runtime-budgets` sigue `blocked`.
