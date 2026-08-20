@@ -3636,3 +3636,14 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
   color: var(--ds-state-solid-blue-text);
 }
 
+
+/* Target tactil bajo 1180 (audit 2026-08-20, P2): desde el piloto F2a movil y
+   tablet estan abiertos y ahi rige el minimo de 44px, no la excepcion densa de
+   escritorio. El chip no crece visualmente: crece su area de toque. */
+@media (max-width: 1179px) {
+    body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+}

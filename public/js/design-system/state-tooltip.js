@@ -30,6 +30,13 @@ export function activarStateTips(raiz) {
     } else {
       chip.setAttribute('data-aia-tip-side', 'top');
     }
+    const anchoEstimado = Math.max(tip.scrollWidth, 176);
+    const cabeDerecha = caja.left + anchoEstimado < window.innerWidth - 8;
+    if (cabeDerecha) {
+      chip.removeAttribute('data-aia-tip-alinea');
+    } else {
+      chip.setAttribute('data-aia-tip-alinea', 'end');
+    }
   };
 
   contenedor.addEventListener('mouseover', (ev) => {

@@ -415,6 +415,23 @@ OFL (Inter v20, Montserrat v31; DS-007).
 
 La escala es **rem fija**, no fluida: `--ds-type-size-xs`…`3xl` (0.75 → 1.875rem).
 
+### Rampa densa de tablas (consagrada 2026-08-20)
+
+La familia de tablas desktop opera desde hace tiempo tres pasos por debajo de
+`--ds-type-size-xs` que este documento no declaraba y el detector marcaba en cada
+edición. Se **consagran** como rampa densa oficial — son la realidad medida de la
+excepción de densidad (piso duro 11px de PRODUCT.md):
+
+- **Dense-label** `0.72rem` (~11.5px): chip de estado en celda densa (PS), texto del
+  tooltip de estado (`--ds-chip-font-size`).
+- **Dense-meta** `0.70rem` (~11.2px): metadatos de leyenda y cabeceras auxiliares.
+- **Dense-floor** `0.62rem` (~9.9px): **solo** elementos secundarios no textuales-clave
+  ya existentes (contadores del drawer); ningún dato principal baja aquí. Está bajo el
+  piso de 11px: no se le suman usos nuevos — se hereda, no se imita.
+
+Pendiente declarado: tokenizarlos (`--ds-type-dense-*`) cuando un frente tipográfico
+recorra sus usos; hoy se documentan para que el sistema y el detector digan lo mismo.
+
 ### Named Rules
 
 **La Regla de Escala Fija.** Los tamaños son rem fijos, nunca `clamp()` fluido en UI
@@ -625,6 +642,37 @@ estático daba verde sobre una tabla sin filas.
 ### States & Feedback
 - **`.aia-alert`:** mensaje contextual sobre superficie elevada, radio de panel.
 - **`.aia-empty`:** estado vacío que **enseña la interfaz** (borde dashed, centrado), no un "nada aquí".
+
+### Replanteo de estados 2026-08-20 — chip sólido, fila sutil, filete, tooltip
+
+**Deroga, donde contradiga, lo dicho arriba en «Estados semánticos» y «Chips».**
+Decisión de Felipe (2026-08-20), auditada WCAG AA + manual AIA; contrato ejecutable en
+`docs/design-system/state-semantics.json` (`hues[].solid/solidText/row`, `brandAudit`)
+con guard `tests/design-system/state-solid-contract.test.mjs`.
+
+- **El chip sólido es el portador fuerte de identidad**: fondo
+  `--ds-state-solid-<hue>` con texto oscuro de su familia
+  (`--ds-state-solid-<hue>-text`), AA ≥4.5:1 garantizado por guard. Naranja, ámbar,
+  violeta y teal son los hex del manual AIA; el rojo es custom (`#e15a52`) porque el
+  del manual falla AA; el azul es desviación registrada (AIA no tiene azul).
+- **La fila baja a tinte sutil** `--ds-state-row-<hue>` (identidad de apoyo, texto
+  `--ds-active-text-primary`). Los `--ds-state-tint-*` viejos quedan para el PDC y no
+  se usan en filas de estado nuevas.
+- **La gravedad vive completa en el filete** (`severity-rail`): urgente 6px
+  `#ff7a6e`, atención 4px `#ffd23f`, y el marcador positivo escaso `ready` 3px
+  `#7ee2a8` solo en lo activamente listo (`rail: 'ready'` declarado por estado, nunca
+  derivado de nivel+matiz). `Controlado` sigue sin barra: la ausencia es la señal. El
+  chip **ya no codifica nivel** — la excepción crítica del 2026-08-11 se retiró.
+- **Todo chip de estado lleva tooltip explicativo** (`state-tooltip.css` +
+  `public/js/design-system/state-tooltip.js`): hover **y** foco muestran el porqué
+  (mismas frases que la Guía Operativa), Escape lo descarta, y se voltea
+  vertical/horizontal cuando no cabe (WCAG 1.4.13). En PS/PI el clic conserva el
+  drawer (móvil/tablet); en PG el chip es focuseable con nombre accesible
+  (`role="note"` + `aria-label` con etiqueta y porqué) y anillo `--ds-shadow-focus`.
+  Bajo 1180px el área táctil del chip-botón sube a 44px sin crecer visualmente.
+- En celda densa de PS el chip corre a `0.72rem`/600 en una línea con elipsis
+  (excepción declarada a la Regla de Palabra Íntegra: el label entero vive en
+  tooltip, `aria-label` y drawer).
 
 ### Arquitectura de consumo (contrato)
 

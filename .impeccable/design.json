@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-03T00:00:00Z",
+  "generatedAt": "2026-08-20T00:00:00Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -166,6 +166,18 @@
       "mono": {
         "displayName": "Mono",
         "purpose": "ui-monospace. Cifras y datos técnicos puntuales."
+      },
+      "dense-label": {
+        "displayName": "Dense-label",
+        "purpose": "Inter 600, 0.72rem (~11.5px). Rampa densa de tablas consagrada 2026-08-20: chip de estado en celda densa (PS) y texto del tooltip de estado (--ds-chip-font-size)."
+      },
+      "dense-meta": {
+        "displayName": "Dense-meta",
+        "purpose": "Inter, 0.70rem (~11.2px). Rampa densa: metadatos de leyenda y cabeceras auxiliares."
+      },
+      "dense-floor": {
+        "displayName": "Dense-floor",
+        "purpose": "Inter, 0.62rem (~9.9px). SOLO elementos secundarios no textuales-clave ya existentes (contadores del drawer); bajo el piso de 11px, se hereda, no se imita — cero usos nuevos. Pendiente declarado: tokenizar como --ds-type-dense-*."
       }
     },
     "shadows": [
@@ -293,7 +305,7 @@
         ]
       },
       "matiz": {
-        "purpose": "Identidad del estado; se pinta en el fondo. Paleta NOMINAL de ocho anclas, sin eje de intensidad.",
+        "purpose": "Identidad del estado; se pinta en el fondo. Paleta NOMINAL de ocho anclas, sin eje de intensidad. Desde el replanteo 2026-08-20, en filas de estado nuevas la identidad se pinta con --ds-state-solid-* (chip) y --ds-state-row-* (fila); los tintes de ancla quedan para el PDC.",
         "contract": "docs/design-system/state-semantics.json (hues)",
         "anchors": {
           "teal": "#134841",
@@ -307,7 +319,68 @@
         },
         "overlap": "teal/green/amber/red son bit-idénticos al -bg de info/success/warning/critical; medido en navegador el 2026-08-03 tras aplicar los cuatro alias: los cuatro --ds-color-state-*-bg resuelven idénticos a su ancla, cero píxeles movidos. blue, violet, orange y neutral no tienen token de nivel."
       },
-      "deuda": "--ds-cell-state-bloqueado-* ancla color propio (oklch(0.35 0.05 260)) fuera de ambos canales. Medido: --ds-state-tint-blue (#17334f) es L 0,314 · C 0,061 · H 250,4° — 0,036 de luminosidad y 9,6° de separación. El usuario decidió (2026-08-03) que pase a usar el matiz azul existente, con revisión visual previa. Hasta que se ejecute, la paleta vigente tiene aprobación explícita: no corregir de oficio."
+      "deuda": "--ds-cell-state-bloqueado-* ancla color propio (oklch(0.35 0.05 260)) fuera de ambos canales. Medido: --ds-state-tint-blue (#17334f) es L 0,314 · C 0,061 · H 250,4° — 0,036 de luminosidad y 9,6° de separación. El usuario decidió (2026-08-03) que pase a usar el matiz azul existente, con revisión visual previa. Hasta que se ejecute, la paleta vigente tiene aprobación explícita: no corregir de oficio.",
+      "replanteo20260820": {
+        "note": "Replanteo de estados 2026-08-20 (decisión de Felipe, auditada WCAG AA + manual AIA). Deroga, donde contradiga, el esquema tinte-en-chip anterior: el chip sólido porta la identidad, la fila baja a tinte sutil, la gravedad vive completa en el filete y todo chip lleva tooltip. Contrato ejecutable: docs/design-system/state-semantics.json (hues[].solid/solidText/row, brandAudit); guard tests/design-system/state-solid-contract.test.mjs.",
+        "chipSolid": {
+          "purpose": "Portador fuerte de identidad: fondo sólido con texto oscuro de su familia, AA ≥4.5:1 garantizado por guard. Naranja/ámbar/violeta/teal son hex del manual AIA; rojo custom #e15a52 (el del manual falla AA); azul es desviación registrada (AIA no tiene azul). El chip YA NO codifica nivel — la excepción crítica del 2026-08-11 se retiró.",
+          "tokens": {
+            "--ds-state-solid-red": "#e15a52",
+            "--ds-state-solid-orange": "#e87722",
+            "--ds-state-solid-amber": "#ffca28",
+            "--ds-state-solid-violet": "#9485d6",
+            "--ds-state-solid-teal": "#5ec9bd",
+            "--ds-state-solid-blue": "#5f9fdd",
+            "--ds-state-solid-green": "#57b083",
+            "--ds-state-solid-neutral": "#9aa8a0"
+          },
+          "textTokens": {
+            "--ds-state-solid-red-text": "#3c0a06",
+            "--ds-state-solid-orange-text": "#3a2004",
+            "--ds-state-solid-amber-text": "#3a2c04",
+            "--ds-state-solid-violet-text": "#26113f",
+            "--ds-state-solid-teal-text": "#062f29",
+            "--ds-state-solid-blue-text": "#07223c",
+            "--ds-state-solid-green-text": "#06281a",
+            "--ds-state-solid-neutral-text": "#1c2420"
+          }
+        },
+        "rowTint": {
+          "purpose": "Identidad de apoyo en la fila (texto --ds-active-text-primary). Tintes v2 (2026-08-20): un punto más de croma con la misma luminancia. Los --ds-state-tint-* viejos quedan para el PDC y no se usan en filas de estado nuevas.",
+          "tokens": {
+            "--ds-state-row-red": "#3a1f1c",
+            "--ds-state-row-orange": "#3a2915",
+            "--ds-state-row-amber": "#383314",
+            "--ds-state-row-violet": "#302741",
+            "--ds-state-row-teal": "#1c342f",
+            "--ds-state-row-blue": "#1e2c40",
+            "--ds-state-row-green": "#20362a",
+            "--ds-state-row-neutral": "#262b28"
+          }
+        },
+        "severityRail": {
+          "purpose": "La gravedad vive completa en el filete del borde inicial.",
+          "urgent": {
+            "width": "6px",
+            "color": "#ff7a6e"
+          },
+          "attention": {
+            "width": "4px",
+            "color": "#ffd23f"
+          },
+          "ready": {
+            "width": "3px",
+            "color": "#7ee2a8",
+            "note": "Marcador positivo escaso, solo en lo activamente listo; rail: 'ready' declarado por estado, nunca derivado de nivel+matiz."
+          },
+          "controlled": {
+            "width": "none",
+            "note": "Controlado sigue sin barra: la ausencia es la señal."
+          }
+        },
+        "tooltip": "Todo chip de estado lleva tooltip explicativo (state-tooltip.css + public/js/design-system/state-tooltip.js): hover Y foco muestran el porqué, Escape descarta, se voltea cuando no cabe (WCAG 1.4.13). En PG el chip es focuseable con role=\"note\" + aria-label; bajo 1180px el área táctil sube a 44px sin crecer visualmente.",
+        "denseChip": "En celda densa de PS el chip corre a 0.72rem/600 en una línea con elipsis — excepción declarada a la Regla de Palabra Íntegra: el label entero vive en tooltip, aria-label y drawer."
+      }
     }
   },
   "components": [
@@ -347,9 +420,9 @@
       "name": "Status Chips",
       "kind": "chip",
       "refersTo": "chip-info",
-      "description": "Vocabulario semántico de estado. Cuatro niveles con tinte fijo; el texto siempre nombra el significado y nunca se fragmenta una palabra.",
-      "html": "<div class=\"ds-chips\"><span class=\"ds-chip ds-chip--info\">Sin datos</span><span class=\"ds-chip ds-chip--success\">Al día</span><span class=\"ds-chip ds-chip--warning\">Revisar</span><span class=\"ds-chip ds-chip--critical\">Atraso</span></div>",
-      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; font-family: Inter, sans-serif; } .ds-chip { display: inline-flex; min-height: 1.75rem; align-items: center; padding: 0.25rem 0.65rem; border: 1px solid rgba(26,86,51,0.2); border-radius: 9999px; font-size: 0.78rem; font-weight: 800; overflow-wrap: normal; word-break: normal; hyphens: none; } .ds-chip--info { background: #134841; color: #bbdcfb; } .ds-chip--success { background: #173d26; color: #b7e8c6; } .ds-chip--warning { background: #3a3a0f; color: #f2e79c; } .ds-chip--critical { background: #431414; color: #ffcdc8; }"
+      "description": "Vocabulario semántico de estado tras el replanteo 2026-08-20: chip sólido por matiz (identidad), texto oscuro de su familia, AA ≥4.5:1 por guard. El chip no codifica nivel — la gravedad va en el filete de la fila. Todo chip lleva tooltip explicativo; el texto siempre nombra el significado.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip ds-chip--red\">Bloqueado</span><span class=\"ds-chip ds-chip--orange\">Fuera de plazo</span><span class=\"ds-chip ds-chip--amber\">Por resolver</span><span class=\"ds-chip ds-chip--violet\">Sin datos suficientes</span><span class=\"ds-chip ds-chip--teal\">Contexto</span><span class=\"ds-chip ds-chip--blue\">En marcha</span><span class=\"ds-chip ds-chip--green\">Controlado</span><span class=\"ds-chip ds-chip--neutral\">Silencio</span></div>",
+      "css": ".ds-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; font-family: Inter, sans-serif; } .ds-chip { display: inline-flex; min-height: 1.75rem; align-items: center; padding: 0.25rem 0.65rem; border: 0; border-radius: 9999px; font-size: 0.78rem; font-weight: 800; overflow-wrap: normal; word-break: normal; hyphens: none; } .ds-chip--red { background: #e15a52; color: #3c0a06; } .ds-chip--orange { background: #e87722; color: #3a2004; } .ds-chip--amber { background: #ffca28; color: #3a2c04; } .ds-chip--violet { background: #9485d6; color: #26113f; } .ds-chip--teal { background: #5ec9bd; color: #062f29; } .ds-chip--blue { background: #5f9fdd; color: #07223c; } .ds-chip--green { background: #57b083; color: #06281a; } .ds-chip--neutral { background: #9aa8a0; color: #1c2420; }"
     },
     {
       "name": "Card / Panel",
@@ -455,6 +528,16 @@
       {
         "name": "La Regla de los Dos Gates",
         "body": "El contrato de tabla se vigila en dos superficies y ninguna sustituye a la otra: `scripts/design-system-table-contract.mjs` (estático) comprueba que los doce tokens, los catorce de la escala, la regla del shell y el módulo de vocabulario existan; `tests/browser/design-system-table-contract.runtime.mjs` comprueba que resuelvan en el motor y que cada peldaño cumpla AA sobre su propio fondo.",
+        "section": "components"
+      },
+      {
+        "name": "La Rampa Densa Consagrada",
+        "body": "La familia de tablas desktop opera tres pasos bajo --ds-type-size-xs, consagrados el 2026-08-20: dense-label 0.72rem (chip denso, tooltip de estado), dense-meta 0.70rem (leyendas, cabeceras auxiliares) y dense-floor 0.62rem — este último solo para elementos secundarios no textuales-clave ya existentes: está bajo el piso de 11px, se hereda y no se imita. Pendiente: tokenizar como --ds-type-dense-*.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Replanteo de Estados",
+        "body": "Desde 2026-08-20: el chip sólido (--ds-state-solid-*) porta la identidad con texto oscuro de su familia; la fila baja a tinte sutil (--ds-state-row-*, v2); la gravedad vive completa en el filete — urgente 6px #ff7a6e, atención 4px #ffd23f, ready 3px #7ee2a8 solo declarado por estado; Controlado va sin barra. Todo chip lleva tooltip explicativo accesible (hover y foco, Escape, WCAG 1.4.13). Deroga el esquema tinte-en-chip donde contradiga; los --ds-state-tint-* quedan para el PDC. Contrato: state-semantics.json; guard: state-solid-contract.test.mjs.",
         "section": "components"
       }
     ],

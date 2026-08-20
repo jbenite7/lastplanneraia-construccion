@@ -1,25 +1,13 @@
 @layer components {
-  /* Tooltip de estado — companero del chip de estado (decision de Felipe,
-     2026-08-20): el chip solido dice QUE estado es; este tooltip explica POR
-     QUE al pasar el cursor o al enfocar. En los modulos con drawer (PS, PI) el
-     clic sigue abriendo el detalle completo — el tooltip es el resumen, no el
-     sustituto, y por eso movil/tablet no pierden nada.
-
-     WCAG 1.4.13: es hoverable (el puente de padding permite entrar el puntero
-     sin que se cierre), persistente mientras dure el hover/foco, y descartable
-     con Escape via body.aia-tips-off (public/js/design-system/state-tooltip.js,
-     que tambien lo voltea hacia arriba cuando no cabe por debajo). */
   .ops-state-chip {
     position: relative;
   }
-
   button.ops-state-chip {
     cursor: pointer;
     font: inherit;
     font-weight: 900;
     text-align: left;
   }
-
   .aia-state-tip {
     position: absolute;
     inset-inline-start: 0;
@@ -34,7 +22,6 @@
     pointer-events: none;
     transition: opacity var(--ds-motion-fast), visibility var(--ds-motion-fast);
   }
-
   .aia-state-tip > .aia-state-tip-panel {
     display: block;
     padding: var(--ds-space-2) var(--ds-space-3);
@@ -50,28 +37,20 @@
     overflow-wrap: anywhere;
     box-shadow: var(--ds-shadow-md);
   }
-
-  /* Volteo horizontal (audit 2026-08-20): un chip pegado al borde derecho
-     del grid sacaba el panel del area visible; el JS marca el lado que cabe. */
   [data-aia-tip-alinea='end'] .aia-state-tip {
     inset-inline-start: auto;
     inset-inline-end: 0;
   }
-
-  /* Anillo de foco del sistema para el chip focuseable (PG): el outline por
-     defecto del navegador no es el contrato (audit 2026-08-20, P1). */
   .ops-state-chip[tabindex]:focus-visible {
     outline: 0;
     box-shadow: var(--ds-shadow-focus);
   }
-
   [data-aia-tip-side='top'] .aia-state-tip {
     top: auto;
     bottom: 100%;
     padding-top: 0;
     padding-bottom: var(--ds-space-1);
   }
-
   .ops-state-chip:hover > .aia-state-tip,
   .ops-state-chip:focus-visible > .aia-state-tip,
   .ops-state-chip:focus-within > .aia-state-tip,
@@ -80,13 +59,11 @@
     visibility: visible;
     pointer-events: auto;
   }
-
   body.aia-tips-off .aia-state-tip {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
   }
-
   @media (prefers-reduced-motion: reduce) {
     .aia-state-tip {
       transition: none;

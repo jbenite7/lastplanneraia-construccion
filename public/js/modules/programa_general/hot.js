@@ -1760,7 +1760,10 @@
       if (classification.restrictionAlertKey) {
         porQue += ' Alerta ' + String(classification.restrictionAlertKey).toUpperCase() + '.';
       }
-      td.innerHTML = '<span class="ops-state-chip" tabindex="0"' + attrs + '>'
+      // El porque viaja tambien en el aria-label: el tooltip visual esta
+      // aria-hidden y sin esto el foco de teclado llegaba a un span mudo
+      // (hallazgo P1 del audit 2026-08-20).
+      td.innerHTML = '<span class="ops-state-chip" tabindex="0" role="note" aria-label="' + escapeHtml(label + '. ' + porQue) + '"' + attrs + '>'
         + '<span class="ops-chip-label">' + escapeHtml(label) + '</span>'
         + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(porQue) + '</span></span>'
         + '</span>';
