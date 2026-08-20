@@ -60,9 +60,23 @@ estado por defecto mientras Felipe no reparta.
   `semanal-fondo-por-matiz` además toca pantallas, así que su cierre exige comprobación visual.
 
 - [ ] **linea-base-contractual** — sembrado por migración SQL, con `database/migrations/**`
-  autorizado explícitamente por Felipe para este frente. El dry-run se pega como evidencia antes de
-  commitear; contra producción no lo ejecuta nadie, viaja versionado. **No tiene `goals/<slug>/`
-  propio**: su registro vive solo en `decisiones/linea-base-contractual-coordinadora.md`.
+  autorizado explícitamente por Felipe para este frente. **No tiene `goals/<slug>/` propio**: su
+  registro vive solo en `decisiones/linea-base-contractual-coordinadora.md`.
+
+  **Dos hallazgos RELATADOS y sin verificar por esta sesión** (2026-08-19, de la sesión que integró
+  las ramas). Verificarlos es el primer paso del frente, no un trámite:
+  1. **La migración se corrió contra desarrollo y no modificó ni una fila.** De 30 proyectos sin
+     línea base, ninguno tiene cronograma consolidado usable, así que el `JOIN` no alcanza a
+     ninguno. Se ejecuta, sale en verde y no hace nada — el mismo patrón que
+     [[el-contador-no-mide-el-archivo]]: una herramienta que ante «no hay nada que hacer» devuelve
+     algo con forma de resultado. Respaldo en `~/Documents/respaldo-lineabase-20260819-2037.sql`.
+  2. **`test_bi_programa_general_chart_values.php` se pone rojo con el merge** (los `FALLA` de nivel
+     `datos-proyecto` pasan de 12 a 13). No es regresión: el frente movió el origen de la fecha
+     contractual y el test todavía afirma lo viejo. Si el comportamiento nuevo es el correcto, el
+     test hay que actualizarlo — y eso es parte de cerrar, no algo aparte.
+
+  Ese test **se arma sus propios fixtures** (34 inserts en el archivo), así que ninguna migración
+  sobre datos existentes lo va a tocar.
 - [ ] **bi-control-tower-gemini** — bloqueado desde el 2026-08-10 por causa mal diagnosticada: no
   es «falta aprobación visual», es que pide aprobar 6 modos y 3 usan el tema `linen`, retirado el
   2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. Depende de MO-F3.
