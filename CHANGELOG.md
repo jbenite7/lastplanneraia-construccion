@@ -28,6 +28,20 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Interruptor del Control Tower desde /admin (2026-08-20)
+
+#### Added
+- Tabla `general_flags` (clave-valor global con auditoría del último cambio) y
+  `App\Core\FlagsService`, lectura con fail-safe: un flag ilegible se comporta como apagado.
+- Pantalla `/admin/modulos` (solo rol A, con CSRF y lista blanca de claves) para prender y apagar
+  el Control Tower sin deploy.
+
+#### Changed
+- `BiPreviewAccessPolicy` obedece el flag `bi.control_tower.visible` para los roles no-Admin con
+  `internal.bi.preview`. El Admin entra siempre, esté el interruptor como esté.
+  Spec: [[docs/superpowers/specs/2026-08-20-interruptor-control-tower-admin-design]].
+
+
 ### Control Tower abierto al Director de Obra (2026-08-20)
 
 #### Changed
@@ -35,6 +49,14 @@ para el estado de los planes en curso.
   accesos y abre `/bi/*` mientras el módulo sigue oculto para el resto de roles. Decisión de
   Felipe 2026-08-20; desplegado a pruebas y producción el mismo día (`828483a4`).
 
+
+### Deuda del CI — Frente 2 (2026-08-20)
+
+#### Changed
+- CI: la imagen PHP se pre-construye con buildx y cache `type=gha`; compose ya no la
+  reconstruye. Medido en caliente: 81 s → 20 s (estático, −75 %) y 93 s → 72 s (runtime,
+  −23 %). Alcance A del spec [[docs/superpowers/specs/2026-08-20-deuda-ci-design]] — el
+  Dockerfile no se tocó.
 
 ### Deuda del CI — Frente 1 (2026-08-20)
 

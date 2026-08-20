@@ -113,6 +113,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="/admin/modulos" class="nav-link">
+              <i class="nav-icon fas fa-toggle-on"></i>
+              <p>Módulos</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="/admin/pdc/limpieza" class="nav-link">
               <i class="nav-icon fas fa-broom"></i>
               <p>Limpieza Plan de Compras</p>

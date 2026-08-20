@@ -119,3 +119,22 @@ movidas a `docs/archive/superpowers/` porque el trabajo terminó y nadie las cit
   (análisis previo conviviendo con la fila ya cerrada), y el patrón de dos frentes sobre la misma
   superficie sin revisar contención (`ds-f1a-estados-severidad`) — lección para el frente
   `organizar-la-casa`.
+
+## Acta — lote G sin registro de cierre, verificado a posteriori (2026-08-20)
+
+La auditoría corrió con 7 agentes en paralelo. El lote G (las 8 specs del 2026-08-18/19) entregó
+sus hallazgos a la consolidación, pero **su proceso murió sin dejar acta de terminación** — la
+notificación llegó como `stopped` al reanudar la sesión. Este apartado deja constancia de la
+verificación posterior, para que la ausencia de acta no se confunda con ausencia de cobertura:
+
+- Las 8 specs del lote están en este informe **con estado y evidencia propia** (no derivada):
+  `wiki-v2-visual`, `bug-coloreado-severidad`, `ds-f0-auditoria-total`, `ds-f1a-estado`,
+  `estados-severidad-contrato`, `organizar-la-casa`, `publicar-sh-invariante-de-montaje` y
+  `runtime-budgets-al-ci`. La evidencia incluye datos que solo salen de comprobación real
+  (SHAs de goals, cifras de `closeout-evidence.json`, líneas de `publicar.sh`).
+- Las dos que este corte dejó mal paradas se cerraron el mismo día con frente propio:
+  [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
+- **No se relanzó el agente**: repetiría lecturas sobre un resultado ya consolidado y publicado.
+
+Verificado el 2026-08-20 contra el informe en `main` (`grep` de las 8 specs sobre este archivo,
+todas presentes en sus secciones).

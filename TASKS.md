@@ -113,7 +113,16 @@ estado por defecto mientras Felipe no reparta.
   más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
   la Fase 3 puede tomar la procedencia y los dos frentes cierran.
 
-- [ ] **Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+- [x] 2026-08-20 — **Las once decisiones pendientes, RESUELTAS** en sesión dedicada con Felipe
+  (D-1 a D-9, D-11 y los plugins de Obsidian). Ninguna queda abierta; el detalle y el porqué de cada
+  una, en [[DECISIONES_PENDIENTES]] §«Ronda de decisiones del 2026-08-20». Lo que destraba: **D-11
+  es el único paso rojo del CI**, y D-7/D-8/D-9 sacan de la parálisis a tres frentes cuyas
+  condiciones contaban artefactos que ya no existen. Los plugins quedaron instalados y verificados
+  en pantalla; **Iconize se excluyó** por estar declarado como descontinuado por su autor.
+
+  <details><summary>La redacción anterior de este punto</summary>
+
+- [ ] ~~Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.~~ D-1 realces por
   condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
   `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
   `navigation` · **D-6** el vocabulario de la cascada, cuyo objetivo numérico ya se cumplió solo
@@ -121,6 +130,8 @@ estado por defecto mientras Felipe no reparta.
   una condición imposible · **D-8** `design-system-nucleo-gobernanza`, que exige quince gates donde
   el archivo declara nueve · **D-9** hasta dónde llega la reapertura móvil y el tema claro.
   Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+
+  </details>
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
@@ -150,7 +161,9 @@ estado por defecto mientras Felipe no reparta.
   sobre datos existentes lo va a tocar.
 - [ ] **bi-control-tower-gemini** — bloqueado desde el 2026-08-10 por causa mal diagnosticada: no
   es «falta aprobación visual», es que pide aprobar 6 modos y 3 usan el tema `linen`, retirado el
-  2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. Depende de MO-F3.
+  2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. **Ya NO depende de
+  MO-F3** (D-9, 2026-08-20): la condición se recorta a los tres modos dark y el frente puede
+  cerrar sin esperar a ningún tema claro.
 
 - [ ] **Ordenar `CHANGELOG.md`.** No está en orden cronológico inverso: `[1.1.1]` y `[1.1.0]`
   aparecen antes que `[Sin publicar]` y que `[1.2.0]`. Detectado el 2026-08-19 y **no corregido en
@@ -177,8 +190,10 @@ estado por defecto mientras Felipe no reparta.
   `GITHUB_STEP_SUMMARY`. Origen: spec 2026-08-20-deuda-ci-design.
 - [ ] **CI · zizmor** — auditoría de seguridad del YAML complementaria a actionlint; exige tooling
   extra. Origen: spec 2026-08-20-deuda-ci-design.
-- [ ] **CI · Frente 2 (G2, cache de capas Docker)** — su plan se escribe cuando el Frente 1 esté
-  publicado; objetivo y límites duros ya fijados en la spec.
+- [x] 2026-08-20 — **CI · Frente 2 (G2, cache de capas Docker)**: ejecutado en alcance A
+  (cache buildx `type=gha` de la capa base, Dockerfile intacto). Medido en caliente: build del
+  estático 81 s → 20 s (−75 %); runtime 93 s → 72 s (−23 %). Cierre en
+  [[goals/deuda-ci-frente-2/goal]].
 - [ ] **DECISIÓN (Felipe) · G6 branch protection / merge queue** — cambia el flujo de publicación
   de todas las sesiones (`publicar.sh` → PRs). No aplicar sin visto explícito. Origen: spec
   2026-08-20-deuda-ci-design.
@@ -192,9 +207,14 @@ estado por defecto mientras Felipe no reparta.
   comandos, pero la decisión de hacerlo obligatorio es de contrato: a partir de ahí toda fuente
   nueva nace con frontmatter o el gate se pone rojo. El hueco ya se midió: una fuente entró sin
   declarar por un merge y el gate no lo detectó.
-- [ ] **Plugins de comunidad de Obsidian** (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage,
-  tema Minimal) y **grupos de color del grafo** — quedaron fuera de la Fase 0b por decisión del
-  usuario y por no poder verificarse sin abrir Obsidian.
+- [x] 2026-08-20 — **Plugins de Obsidian instalados y verificados en pantalla** (Dataview, Tasks,
+  Kanban, Excalidraw, Homepage y el tema Minimal), publicado en `2888ab77`. El bloqueo original
+  —«no se puede verificar sin abrir Obsidian»— se resolvió abriéndolo. **Iconize quedó fuera**: su
+  autor lo declara descontinuado. **Kanban entró con advertencia**: funciona, pero busca quien lo
+  mantenga. Hallazgo de paso: **el vault de `lps-aia` no estaba registrado** en la app, y
+  `visor-gantt` sigue apuntando al disco Crucial X6 — roto desde la mudanza.
+- [ ] **Grupos de color del grafo** (`.obsidian/graph.json`) — sigue pendiente, es lo único que
+  quedó de la Fase 0b.
 - [ ] **Proponer verificación de tests en contenedor como config por proyecto.** La vía Docker se
   quitó del gate global de `~/.claude` el 2026-08-19; este repo es 100% dockerizado y su
   `verify.quick` en `.claude/gate.yaml` evita PHP/Docker por costo, pero el resto de la suite sí
@@ -359,7 +379,7 @@ con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería c
 | **MO-F2a-2a · Deudas de arranque** | El golden mide exactamente su viewport salvo recorte declarado; los 17 manifiestos en `1.1.0` | **CERRADA** (2026-08-07, DS-033) |
 | **MO-F2a-2b · Piloto móvil** | Handsontable deja de instanciarse bajo el umbral (0 nodos en 390×844); el sidebar pasa a menú flotante — era la causa raíz de que móvil fuera inusable: se comía 240 de 390 px y nunca colapsaba | **CERRADA** (2026-08-14) |
 | **MO-F2b · Resto de módulos** | Los 13 restantes, con el coste ya medido en el piloto | Pendiente |
-| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es reconstruir, no reactivar | Pendiente |
+| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es **reconstruir, no reactivar** | **SALE DEL FRENTE** (D-9, 2026-08-20). No cancelada: **estacionada sin fecha ni dueño**, y sin bloquear a nadie. Se retoma solo si alguien la pide de verdad — hoy ningún usuario la ha reclamado en las notas del repo. Si se retoma, nace como frente propio con su spec |
 | **MO-F4 · Matriz diagonal** | Los gates adoptan la matriz de D6 y los candados se reinstalan | Pendiente — **absorbida por DS-F3**, ver «El solape de los gates» |
 
 ## El solape de los gates, y cómo se resuelve
@@ -393,6 +413,7 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 
 ## Apuestas planificadas (tras lo anterior)
 
-Torre de Control reconstruida con data storytelling (tras DS-F1 y el tema claro) · semana fija en
+Torre de Control reconstruida con data storytelling (tras DS-F1; **ya no espera al tema claro**,
+D-9) · semana fija en
 el resto de módulos con corte semanal · extensión de contadores-cero a todos los módulos · backlog
 del 3-ago (48 decisiones; accesibilidad primero, absorbido por DS-F0).

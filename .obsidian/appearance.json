@@ -3,5 +3,6 @@
   "accentColor": "",
   "enabledCssSnippets": [
     "severidad-aia"
-  ]
+  ],
+  "cssTheme": "Minimal"
 }

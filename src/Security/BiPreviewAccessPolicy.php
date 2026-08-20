@@ -24,7 +24,18 @@ final class BiPreviewAccessPolicy
             ? self::resolveRole($session)
             : (new RbacService())->normalizeRole($roleOverride);
 
-        return RbacManager::hasCapability($role, RbacCatalog::PERM_INTERNAL_BI_PREVIEW);
+        if (!RbacManager::hasCapability($role, RbacCatalog::PERM_INTERNAL_BI_PREVIEW)) {
+            return false;
+        }
+
+        // El Admin entra siempre: el interruptor nunca puede dejar por fuera a quien
+        // lo administra (lección del 2026-08-13). Para el resto de roles con la
+        // capacidad, manda el flag global editable desde /admin.
+        if ($role === 'A') {
+            return true;
+        }
+
+        return \App\Core\FlagsService::isOn('bi.control_tower.visible');
     }
 
     /**
