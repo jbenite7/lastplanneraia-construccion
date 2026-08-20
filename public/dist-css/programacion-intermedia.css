@@ -172,9 +172,6 @@ html.aia-theme-dark .pi-page {
 .pi-page .ops-state-chip > .ops-chip-label {
     display: block;
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     word-break: normal;
 }
 .pi-page .ops-state-zoom:focus-visible {
@@ -1287,10 +1284,12 @@ html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-empty {
 }
 }
 }
-@media (max-width: 1179px) {
-    .pi-page #hot-container .ops-state-zoom[data-aia-hue] {
-        min-height: 44px;
-        display: flex;
-        align-items: center;
+@layer module {
+    @media (max-width: 1179px) {
+        .pi-page #hot-container .ops-state-zoom[data-aia-hue] {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
     }
 }

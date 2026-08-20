@@ -2508,11 +2508,12 @@ body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
    elipsis: con el ancho completo del boton, «Lista para Confirmar» entra en dos
    lineas enteras. La elipsis de antes existia para una caja de 56 px que ya no
    es la que hay. */
-/* La fuente del chip DENTRO del widget baja de 900/0.78 envolvente a
-   600/0.72 en una linea con elipsis (decision de Felipe 2026-08-20, ronda 3;
-   deroga para esta celda la paridad literal «uniforme 900» del 2026-08-03 y
-   el envolver-por-palabra: la altura de la fila vale mas que el label entero,
-   que sigue integro en aria-label y en el drawer). */
+/* La fuente del chip DENTRO del widget baja de 900/0.78 a 600/0.72 (decision de
+   Felipe 2026-08-20, ronda 3; deroga para esta celda la paridad literal
+   «uniforme 900» del 2026-08-03). Lo que se buscaba con eso era caber en una
+   linea sin sacrificar el label: desde la ronda de nombres cortos el label ya
+   cabe por contrato, asi que la fuente pequena se conserva pero SIN elipsis
+   —ver el bloque de abajo—. */
 body.ps-page #hot-container .ops-state-chip {
     padding: 2px var(--ds-space-2);
     font-size: 0.72rem;
@@ -2521,38 +2522,26 @@ body.ps-page #hot-container .ops-state-chip {
     box-shadow: none;
 }
 
-/* La elipsis vive en el LABEL y no en el chip: el tooltip es hijo absoluto
-   del chip y un overflow:hidden en el chip lo decapitaria. */
-body.ps-page #hot-container .ops-state-chip > .ops-chip-label {
-    display: block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    word-break: normal;
-}
+/* El recorte del label se retiro el 2026-08-20 (decision de Felipe): la celda
+   de estado NO recorta nunca. Antes vivian aqui dos mecanismos de recorte y los
+   dos sobran porque el contrato garantiza que el texto cabe:
 
-/* Cuando la columna queda cerca de su mínimo (~118px), el label no puede
-   mostrar ni una sílaba: se oculta y el estado se comunica con el punto de
-   color + contador; el nombre completo sigue en el aria-label del botón. */
-@container (max-width: 120px) {
-    body.ps-page #hot-container .ops-state-topline .ops-state-chip {
-        display: none;
-    }
+   1. `overflow/text-overflow: ellipsis/white-space: nowrap` sobre
+      `.ops-chip-label`. Sin sentido desde que el chip pinta el NOMBRE CORTO
+      OFICIAL que declara docs/design-system/state-semantics.json
+      (`displayShort`): el presupuesto del modulo es 112 px y el corto mas ancho
+      mide 99 px, asi que no hay nada que cortar.
+   2. Una consulta `@container (max-width: 120px)` que ESCONDIA el nombre del
+      estado y dejaba solo punto y contador. Esconder texto sin aviso es
+      justamente lo que la regla prohibe; y su regla hermana de compactar el
+      grid solo tenia sentido «con el nombre oculto», que ya no ocurre.
 
-    /* Con el nombre oculto, el boton seguia siendo un grid de DOS filas: una
-       para un punto de 9px y otra para el contador. Medido asi: 95x44 px en una
-       celda de 116 -el 82 % del ancho- para mostrar un punto y «2 pend.», con
-       la mayor parte del alto vacio. En esta condicion —y solo en ella— las dos
-       piezas caben en una linea, que es lo que la columna estrecha pedia desde
-       el principio. El piso tactil de 44px NO se toca: lo da `min-height` y
-       sigue vigente; lo que se recupera es el espacio horizontal. */
-    body.ps-page #hot-container .ops-state-zoom {
-        grid-auto-flow: column;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-    }
-}
+   Quien vigila que esto siga siendo cierto es el guard
+   tests/browser/state-label-budget.mjs: mide el label efectivo contra
+   labelBudgetPx y cada palabra suelta contra labelFloorBudgetPx. Si un estado
+   nuevo no cupiera, el arreglo es declararle un `displayShort` en el contrato,
+   no devolver la elipsis. El nombre completo sigue viajando en el aria-label,
+   en el tooltip y en el drawer. */
 
 body.ps-page #hot-container .ops-state-summary {
     flex: 0 0 auto;
@@ -3640,10 +3629,12 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
 /* Target tactil bajo 1180 (audit 2026-08-20, P2): desde el piloto F2a movil y
    tablet estan abiertos y ahi rige el minimo de 44px, no la excepcion densa de
    escritorio. El chip no crece visualmente: crece su area de toque. */
-@media (max-width: 1179px) {
-    body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
-        min-height: 44px;
-        display: flex;
-        align-items: center;
+@layer module {
+    @media (max-width: 1179px) {
+        body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
     }
 }

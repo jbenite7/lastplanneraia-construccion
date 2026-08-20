@@ -132,11 +132,11 @@ test('programación intermedia exposes its eight real states with action priorit
     { label: 'RC inicio vencido', key: 'blocked-overdue-critical', level: 'urgent', hue: 'red' },
     { label: 'Inicio vencido', key: 'blocked-overdue', level: 'urgent', hue: 'orange' },
     { label: 'Inicio por Habilitar', key: 'blocked-due', level: 'urgent', hue: 'violet' },
-    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'attention', hue: 'amber' },
-    { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal' },
-    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'healthy', hue: 'neutral' },
-    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'urgent', hue: 'blue', note: 'Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md.' },
-    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green', rail: 'ready', note: 'rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo.' },
+    { label: 'Alistamiento Urgente', key: 'alert-1-week', level: 'attention', hue: 'amber', displayShort: 'Urgente' },
+    { label: 'Alistamiento en Riesgo', key: 'alert-2-3-weeks', level: 'attention', hue: 'teal', displayShort: 'En riesgo' },
+    { label: 'Alistamiento Pendiente', key: 'alert-4-6-weeks', level: 'healthy', hue: 'neutral', displayShort: 'Pendiente' },
+    { label: 'En Ejecución Pendiente', key: 'execution-blocked', level: 'urgent', hue: 'blue', displayShort: 'En ejecución', note: 'Nivel urgent desde 2026-08-18, por decision del usuario. Revierte a sabiendas la ratificacion del 2026-08-03 que fijaba attention/blue: es el unico estado donde el dano se esta produciendo -hay avance sobre restricciones sin liberar- en vez de anticiparse. Se le advirtio de la reversion antes de decidir. Procedencia y argumento de los ocho niveles en goals/bug-coloreado-severidad/respuestas-ds-f1.md.' },
+    { label: 'Listo para Comprometer', key: 'liberated-control', level: 'healthy', hue: 'green', displayShort: 'Por comprometer', rail: 'ready', note: 'rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo.' },
   ]);
   assert.equal(
     new Set(intermediate.states.map(({ hue }) => hue)).size,
@@ -212,17 +212,23 @@ test('programación semanal declara las etiquetas de sus dos fases', async () =>
   // con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo y
   // dos filtros distintos de la leyenda eran indistinguibles. Este assert cambia
   // porque el CONTRATO cambio, no para que pase.
+  // MIDE DESDE 2026-08-20: la forma completa de cada estado incluye ya su
+  // `displayShort` — el NOMBRE CORTO oficial que la celda pinta cuando el
+  // completo no cabe (decision de Felipe). No es una relajacion: es un campo
+  // mas que este assert congela, para que nadie cambie el vocabulario visible
+  // en obra sin pasar por aqui. Que ese corto QUEPA de verdad lo mide aparte
+  // tests/browser/state-label-budget.mjs, con la fuente real.
   assert.deepEqual(weekly.states, [
-    { label: 'RC con restricciones', key: 'prog-bloqueo-critico-sin-compromiso', level: 'urgent', hue: 'red' },
-    { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange' },
-    { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber' },
+    { label: 'RC con restricciones', key: 'prog-bloqueo-critico-sin-compromiso', level: 'urgent', hue: 'red', displayShort: 'RC restringida' },
+    { label: 'Ejecución con restricciones', key: 'prog-ejecucion-con-restricciones', level: 'urgent', hue: 'orange', displayShort: 'Con restricciones' },
+    { label: 'Condiciones Pendientes', key: 'prog-condiciones-pendientes', level: 'attention', hue: 'amber', displayShort: 'Condiciones' },
     { label: 'Por Comprometer', key: 'prog-sin-compromiso', level: 'attention', hue: 'violet', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Violeta porque en /plan-compras ya significa «no puedo comprometerme con lo que tengo», que es el mismo gesto.' },
-    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green', rail: 'ready' },
+    { label: 'Lista para Confirmar', key: 'prog-lista-para-confirmar', level: 'healthy', hue: 'green', displayShort: 'Por confirmar', rail: 'ready' },
     { label: 'Incumplida (RC)', key: 'cal-incumplida-critica', level: 'urgent', hue: 'red' },
     { label: 'Incumplida', key: 'cal-incumplida', level: 'attention', hue: 'amber' },
     { label: 'Sin Calificar', key: 'cal-sin-calificar', level: 'attention', hue: 'neutral', note: 'Matiz reasignado el 2026-08-19 por decision del usuario: compartia ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo fondo. Gris porque es ausencia de dato, no un problema.' },
     { label: 'Cumplida Control', key: 'cal-cumplida-control', level: 'healthy', hue: 'green', rail: 'ready' },
-    { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue' },
+    { label: 'Trabajo No Planificado', key: 'cal-tnp', level: 'neutral', hue: 'blue', displayShort: 'TNP' },
   ]);
 });
 

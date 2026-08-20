@@ -5,10 +5,23 @@
      clic sigue abriendo el detalle completo — el tooltip es el resumen, no el
      sustituto, y por eso movil/tablet no pierden nada.
 
-     WCAG 1.4.13: es hoverable (el puente de padding permite entrar el puntero
-     sin que se cierre), persistente mientras dure el hover/foco, y descartable
-     con Escape via body.aia-tips-off (public/js/design-system/state-tooltip.js,
-     que tambien lo voltea hacia arriba cuando no cabe por debajo). */
+     POR QUE VIVE EN EL TOP-LAYER (migracion 2026-08-20). El panel se pintaba
+     con `position: absolute` colgando del chip, o sea DENTRO del scroller de la
+     tabla: cualquier `overflow` intermedio lo recortaba, y en las filas de
+     abajo y en la ultima columna se veia cortado. El volteo que calculaba el JS
+     (`data-aia-tip-side` / `data-aia-tip-alinea`) era un parche contra ese
+     recorte, no una funcionalidad: por eso ambos atributos se retiraron junto
+     con sus reglas. Ahora el panel declara `popover` y el navegador lo promueve
+     al top-layer, que no tiene ancestro que lo recorte; el sitio donde se dibuja
+     lo decide el anclaje CSS cuando el navegador lo soporta y, si no, unas
+     coordenadas fijas que calcula el JS al mostrarlo. El volteo sigue
+     existiendo, pero ya no es un parche: es `position-try-fallbacks` (o su
+     equivalente en JS), que es quien decide arriba/abajo e inicio/fin.
+
+     WCAG 1.4.13: sigue siendo hoverable (estando en el top-layer el panel
+     recibe puntero, y el JS no lo cierra mientras el cursor este encima),
+     persistente mientras dure el hover/foco, y descartable con Escape via
+     body.aia-tips-off (public/js/design-system/state-tooltip.js). */
   .ops-state-chip {
     position: relative;
   }
@@ -20,19 +33,53 @@
     text-align: left;
   }
 
+  /* El UA pinta todo `[popover]` con borde, fondo, padding y `inset: 0` con
+     `margin: auto` (centrado en pantalla). Se neutraliza aqui: el envoltorio no
+     dibuja nada — quien dibuja es `.aia-state-tip-panel`, igual que antes. */
   .aia-state-tip {
-    position: absolute;
-    inset-inline-start: 0;
-    top: 100%;
-    z-index: var(--ds-z-dropdown, 1000);
+    position: fixed;
+    inset: auto;
+    left: var(--aia-tip-x, 0);
+    top: var(--aia-tip-y, 0);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    overflow: visible;
     width: max-content;
     min-width: 11rem;
     max-width: 17rem;
-    padding-top: var(--ds-space-1);
     opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity var(--ds-motion-fast), visibility var(--ds-motion-fast);
+    /* `allow-discrete` deja que el fundido corra tambien al aparecer/desaparecer,
+       que en un popover son cambios discretos de `display` y de `overlay`. */
+    transition:
+      opacity var(--ds-motion-fast),
+      display var(--ds-motion-fast) allow-discrete,
+      overlay var(--ds-motion-fast) allow-discrete;
+  }
+
+  .aia-state-tip:popover-open {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .aia-state-tip:popover-open {
+      opacity: 0;
+    }
+  }
+
+  /* Camino preferente: anclaje CSS. El JS le pone al chip un `anchor-name`
+     unico y al panel su `position-anchor`; el navegador lo coloca debajo del
+     chip y lo voltea solo cuando no cabe, sin medir nada en JS. */
+  @supports (anchor-name: --aia-ancla) {
+    .aia-state-tip {
+      left: auto;
+      top: auto;
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+      margin-block-start: var(--ds-space-1);
+    }
   }
 
   .aia-state-tip > .aia-state-tip-panel {
@@ -51,13 +98,6 @@
     box-shadow: var(--ds-shadow-md);
   }
 
-  /* Volteo horizontal (audit 2026-08-20): un chip pegado al borde derecho
-     del grid sacaba el panel del area visible; el JS marca el lado que cabe. */
-  [data-aia-tip-alinea='end'] .aia-state-tip {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
-  }
-
   /* Anillo de foco del sistema para el chip focuseable (PG): el outline por
      defecto del navegador no es el contrato (audit 2026-08-20, P1). */
   .ops-state-chip[tabindex]:focus-visible {
@@ -65,25 +105,10 @@
     box-shadow: var(--ds-shadow-focus);
   }
 
-  [data-aia-tip-side='top'] .aia-state-tip {
-    top: auto;
-    bottom: 100%;
-    padding-top: 0;
-    padding-bottom: var(--ds-space-1);
-  }
-
-  .ops-state-chip:hover > .aia-state-tip,
-  .ops-state-chip:focus-visible > .aia-state-tip,
-  .ops-state-chip:focus-within > .aia-state-tip,
-  .aia-state-tip:hover {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
+  /* Escape (WCAG 1.4.13 «dismissable»). El JS ya cierra los popovers abiertos;
+     esta regla es el cinturon para el instante entre el cierre y el fundido. */
   body.aia-tips-off .aia-state-tip {
     opacity: 0 !important;
-    visibility: hidden !important;
     pointer-events: none !important;
   }
 

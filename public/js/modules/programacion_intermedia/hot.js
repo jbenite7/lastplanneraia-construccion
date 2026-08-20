@@ -530,6 +530,22 @@
     header: 'Capítulo',
   };
 
+  // Nombres CORTOS oficiales, proyeccion literal del campo `displayShort` del
+  // contrato (docs/design-system/state-semantics.json, modulo
+  // `programacion-intermedia`). No es una segunda lista de etiquetas: el nombre
+  // COMPLETO vive una sola vez, en `stateLabels`, y aqui solo estan los estados
+  // cuyo nombre completo no cabe en la celda de una linea. Un estado sin
+  // entrada aqui pinta su nombre completo.
+  //
+  // Por que existe (decision de Felipe, 2026-08-20): la celda no recorta nunca.
+  // El texto cabe, envuelve entre palabras, o se acorta con un nombre corto
+  // declarado en el contrato — nunca con elipsis, que es recorte silencioso
+  // porque el usuario no se entera de que le falta texto. El corto se pinta; el
+  // completo sigue viajando en el tooltip, el aria-label y el drawer.
+  //
+  // Guard de que estos nombres caben de verdad (medido con la fuente real, no
+  // declarado): tests/browser/state-label-budget.mjs.
+
   // Presentacion de cada estado, con las claves de
   // docs/design-system/state-semantics.json (modulo `programacion-intermedia`).
   // El chip declara QUE estado es -matiz para la identidad, severity+urgency
@@ -566,14 +582,14 @@
     'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
     'blocked-overdue': { level: 'urgent', hue: 'orange' },
     'blocked-due': { level: 'urgent', hue: 'violet' },
-    'alert-1-week': { level: 'attention', hue: 'amber' },
-    'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
-    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral' },
-    'execution-blocked': { level: 'urgent', hue: 'blue' },
+    'alert-1-week': { level: 'attention', hue: 'amber', short: 'Urgente' },
+    'alert-2-3-weeks': { level: 'attention', hue: 'teal', short: 'En riesgo' },
+    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral', short: 'Pendiente' },
+    'execution-blocked': { level: 'urgent', hue: 'blue', short: 'En ejecución' },
     // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
     // verde fino SOLO en lo activamente listo. Se declara por estado y no se
     // deriva de nivel+matiz: hay estados green+healthy que no lo llevan.
-    'liberated-control': { level: 'healthy', hue: 'green', rail: 'ready' },
+    'liberated-control': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por comprometer' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 
@@ -1298,6 +1314,14 @@
     return stateLabels[resolvedState] || 'Control';
   }
 
+  // Nombre que se PINTA en el chip: el corto oficial si el contrato lo declara,
+  // si no el completo. Solo la celda usa esto; tooltip, aria-label y drawer
+  // siguen con el nombre completo, que es donde no cuesta ancho.
+  function getStateShortLabel(state) {
+    var presentacion = statePresentation[state];
+    return (presentacion && presentacion.short) || getStateLabel(null, state);
+  }
+
   function getReadinessAction(prop, value) {
     var config = readinessActionMatrix[prop];
     if (!config) {
@@ -1403,7 +1427,10 @@
     // salen de la celda y pasan al tooltip como texto; el clic conserva el
     // drawer con el detalle completo. Sufijo de pendientes solo cuando los hay.
     var pendientes = view.actionItems.length;
-    var etiquetaChip = view.label + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    // El chip pinta el nombre corto oficial cuando el contrato lo declara: asi
+    // cabe entero en la celda y no hace falta recortar con elipsis. El sufijo
+    // de pendientes se conserva porque es dato, no adorno.
+    var etiquetaChip = getStateShortLabel(view.state) + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
     var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
     var listaAcciones = view.actionItems.slice(0, 3).map(function (item) { return item.text || item.label; }).join('; ');
     var tipTexto = porQue + (pendientes > 0

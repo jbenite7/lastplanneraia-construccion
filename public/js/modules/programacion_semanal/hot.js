@@ -230,19 +230,28 @@
   // de ambar a VIOLETA y «Sin Calificar» de ambar a GRIS. Cada uno compartia
   // ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo
   // fondo y dos filtros distintos de la leyenda eran indistinguibles.
+  //
+  // `short` es el NOMBRE CORTO OFICIAL, copiado del campo `displayShort` del
+  // contrato (docs/design-system/state-semantics.json, modulo
+  // «programacion-semanal»). Va aqui y en ningun otro sitio del modulo porque
+  // dos listas paralelas de nombres se desincronizan sin que nadie lo note: la
+  // celda pinta lo que diga esta tabla y nada mas. Solo lo declaran los estados
+  // cuyo nombre completo no cabe en el presupuesto de 112 px; los demas pintan
+  // su `label` tal cual. El nombre completo NUNCA se pierde: sigue viajando en
+  // el aria-label, en el tooltip y en el drawer.
   var statePresentation = {
-    'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red' },
-    'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange' },
-    'prog-condiciones-pendientes': { level: 'attention', hue: 'amber' },
+    'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red', short: 'RC restringida' },
+    'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange', short: 'Con restricciones' },
+    'prog-condiciones-pendientes': { level: 'attention', hue: 'amber', short: 'Condiciones' },
     'prog-sin-compromiso': { level: 'attention', hue: 'violet' },
     // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
     // verde fino SOLO en lo activamente listo, declarado por estado.
-    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', rail: 'ready' },
+    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por confirmar' },
     'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
     'cal-incumplida': { level: 'attention', hue: 'amber' },
     'cal-sin-calificar': { level: 'attention', hue: 'neutral' },
     'cal-cumplida-control': { level: 'healthy', hue: 'green', rail: 'ready' },
-    'cal-tnp': { level: 'neutral', hue: 'blue' },
+    'cal-tnp': { level: 'neutral', hue: 'blue', short: 'TNP' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 
@@ -1077,9 +1086,18 @@
     // sufijo de pendientes SOLO cuando los hay (senal accionable a la vista,
     // no escondida en el hover); el tooltip explica el porque y resume los
     // pendientes; el clic conserva el drawer, que es lo que cubre movil.
+    //
+    // La celda no recorta (Felipe, 2026-08-20): pinta el nombre corto oficial
+    // cuando el contrato lo declara (`short` en statePresentation), y si no, el
+    // nombre completo. Nunca elipsis ni palabra partida. Cuando el corto entra,
+    // el tooltip abre con el nombre completo para que el usuario pueda
+    // aprenderse la equivalencia sin abrir el drawer.
     var pendientes = view.actions.length;
-    var etiquetaChip = stateLabel + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    var presentacion = statePresentation[view.state] || statePresentation.neutral;
+    var nombreChip = presentacion.short || stateLabel;
+    var etiquetaChip = nombreChip + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
     var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
+    if (presentacion.short && stateLabel) { porQue = stateLabel + '. ' + porQue; }
     var tipTexto = porQue + ' ' + (pendientes > 0
       ? summary.countAriaText + '. Primer foco: ' + summary.focus + '.'
       : 'Sin pendientes.');

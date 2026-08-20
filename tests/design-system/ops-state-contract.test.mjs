@@ -27,12 +27,29 @@ function parsePresentation(source) {
   // positivo escaso, decision de Felipe): el parser lo captura y la proyeccion
   // lo compara — un rail que el contrato declare y el modulo omita (o al
   // reves) tiene que poner esto en rojo.
+  // Desde 2026-08-20 una entrada puede declarar tambien `short`: el NOMBRE
+  // CORTO oficial que la celda pinta cuando el completo no cabe. Se captura y
+  // se compara contra `displayShort` del contrato — asi este guard vigila
+  // ademas que el modulo no invente un corto propio ni se quede con uno viejo.
+  // `short` y `rail` pueden venir en cualquier orden, por eso se leen del
+  // cuerpo de la entrada y no por posicion.
   const entries = [...block[1].matchAll(
-    /'?([\w-]+)'?:\s*\{\s*level:\s*'([\w-]+)',\s*hue:\s*'([\w-]+)'(?:,\s*rail:\s*'([\w-]+)')?\s*\}/g,
+    /'?([\w-]+)'?:\s*\{([^}]*)\}/g,
   )];
-  return Object.fromEntries(entries.map(
-    ([, key, level, hue, rail]) => [key, rail ? { level, hue, rail } : { level, hue }],
-  ));
+  return Object.fromEntries(entries.map(([, key, cuerpo]) => {
+    const leer = (campo) => cuerpo.match(new RegExp(`${campo}:\\s*'([^']+)'`))?.[1];
+    const level = leer('level');
+    const hue = leer('hue');
+    if (!level || !hue) return [key, null];
+    const rail = leer('rail');
+    const short = leer('short');
+    return [key, {
+      level,
+      hue,
+      ...(rail ? { rail } : {}),
+      ...(short ? { short } : {}),
+    }];
+  }).filter(([, v]) => v));
 }
 
 function parseLabels(source) {
@@ -55,7 +72,12 @@ test('la tabla de presentación de Intermedia proyecta el contrato', async () =>
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
+      {
+        level: state.level,
+        hue: state.hue,
+        ...(state.rail ? { rail: state.rail } : {}),
+        ...(state.displayShort ? { short: state.displayShort } : {}),
+      },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }
@@ -153,7 +175,12 @@ test('la tabla de presentación de Semanal proyecta el contrato', async () => {
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
+      {
+        level: state.level,
+        hue: state.hue,
+        ...(state.rail ? { rail: state.rail } : {}),
+        ...(state.displayShort ? { short: state.displayShort } : {}),
+      },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }
@@ -210,7 +237,12 @@ test('la tabla de presentación de Programa General proyecta el contrato', async
     assert.ok(declared, `el módulo no presenta el estado \`${state.key}\` del contrato`);
     assert.deepEqual(
       declared,
-      state.rail ? { level: state.level, hue: state.hue, rail: state.rail } : { level: state.level, hue: state.hue },
+      {
+        level: state.level,
+        hue: state.hue,
+        ...(state.rail ? { rail: state.rail } : {}),
+        ...(state.displayShort ? { short: state.displayShort } : {}),
+      },
       `\`${state.key}\` («${state.label}») difiere entre el módulo y el contrato`,
     );
   }

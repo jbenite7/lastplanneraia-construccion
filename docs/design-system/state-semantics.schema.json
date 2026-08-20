@@ -185,14 +185,38 @@
                     "ready"
                   ],
                   "description": "Marcador positivo escaso (Felipe 2026-08-20): filete verde 3px solo en lo activamente listo, declarado por estado — nunca derivado de nivel+matiz ni aplicado a todo Controlado."
+                },
+                "displayShort": {
+                  "type": "string",
+                  "description": "Nombre corto OFICIAL que la celda pinta cuando el completo no cabe (decision de Felipe 2026-08-20). El completo nunca se pierde: vive en tooltip, aria-label y drawer."
                 }
               }
             }
+          },
+          "labelBudgetPx": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Ancho util en px del texto en la celda de estado, regimen normal."
+          },
+          "labelFloorBudgetPx": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Ancho util en el regimen comprimido de la tabla. DERIVADO: pendiente de confirmar en pantalla."
+          },
+          "labelLines": {
+            "enum": [
+              1,
+              2
+            ],
+            "description": "Lineas que admite la celda. 1 exige que el label efectivo quepa entero; 2 admite envolver ENTRE palabras, que no es recortar."
           }
         }
       }
     },
     "brandAudit": {
+      "type": "string"
+    },
+    "labelBudgetNota": {
       "type": "string"
     }
   }

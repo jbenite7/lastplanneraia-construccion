@@ -1741,6 +1741,13 @@
       if (!attrs) {
         return;
       }
+      // PG conserva los NOMBRES COMPLETOS de sus siete estados, a diferencia de
+      // PS y PI: su celda admite dos lineas (labelLines: 2 en
+      // docs/design-system/state-semantics.json, modulo programa-general), asi
+      // que el texto cabe o ENVUELVE ENTRE PALABRAS. Envolver no es recortar
+      // —es la regla del sistema (decision de Felipe, 2026-08-20)—, por eso PG
+      // no declara displayShort y aqui no hay ni debe haber acortado. Antes de
+      // "arreglar" un estado que se ve en dos renglones: no esta roto.
       var isEmptyValue = value === null || value === undefined || value === '';
       var label;
       if (classification.restrictionAlertKey) {

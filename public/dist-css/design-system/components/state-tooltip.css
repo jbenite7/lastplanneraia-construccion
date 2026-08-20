@@ -9,18 +9,41 @@
     text-align: left;
   }
   .aia-state-tip {
-    position: absolute;
-    inset-inline-start: 0;
-    top: 100%;
-    z-index: var(--ds-z-dropdown, 1000);
+    position: fixed;
+    inset: auto;
+    left: var(--aia-tip-x, 0);
+    top: var(--aia-tip-y, 0);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    overflow: visible;
     width: max-content;
     min-width: 11rem;
     max-width: 17rem;
-    padding-top: var(--ds-space-1);
     opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity var(--ds-motion-fast), visibility var(--ds-motion-fast);
+    transition:
+      opacity var(--ds-motion-fast),
+      display var(--ds-motion-fast) allow-discrete,
+      overlay var(--ds-motion-fast) allow-discrete;
+  }
+  .aia-state-tip:popover-open {
+    opacity: 1;
+  }
+  @starting-style {
+    .aia-state-tip:popover-open {
+      opacity: 0;
+    }
+  }
+  @supports (anchor-name: --aia-ancla) {
+    .aia-state-tip {
+      left: auto;
+      top: auto;
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+      margin-block-start: var(--ds-space-1);
+    }
   }
   .aia-state-tip > .aia-state-tip-panel {
     display: block;
@@ -37,31 +60,12 @@
     overflow-wrap: anywhere;
     box-shadow: var(--ds-shadow-md);
   }
-  [data-aia-tip-alinea='end'] .aia-state-tip {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
-  }
   .ops-state-chip[tabindex]:focus-visible {
     outline: 0;
     box-shadow: var(--ds-shadow-focus);
   }
-  [data-aia-tip-side='top'] .aia-state-tip {
-    top: auto;
-    bottom: 100%;
-    padding-top: 0;
-    padding-bottom: var(--ds-space-1);
-  }
-  .ops-state-chip:hover > .aia-state-tip,
-  .ops-state-chip:focus-visible > .aia-state-tip,
-  .ops-state-chip:focus-within > .aia-state-tip,
-  .aia-state-tip:hover {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
   body.aia-tips-off .aia-state-tip {
     opacity: 0 !important;
-    visibility: hidden !important;
     pointer-events: none !important;
   }
   @media (prefers-reduced-motion: reduce) {
