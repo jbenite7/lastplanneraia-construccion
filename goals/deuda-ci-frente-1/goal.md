@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: goal-doc
+estado: vigente
+fecha: 2026-08-20
+areas: [proceso]
+fuente: goals/deuda-ci-frente-1/goal.md
+resumen: Anclar por SHA los 8 usos de actions de design-system.yml, añadir Dependabot para github-actions, poner timeout-minutes a ambos jobs y lintar el workflow con…
+---
+
 # Goal: Deuda del CI — Frente 1 (G1+G3+G5)
 
 Anclar por SHA los 8 usos de actions de `design-system.yml`, añadir Dependabot para
