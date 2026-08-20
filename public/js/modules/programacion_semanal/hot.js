@@ -232,11 +232,13 @@
     'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange' },
     'prog-condiciones-pendientes': { level: 'attention', hue: 'amber' },
     'prog-sin-compromiso': { level: 'attention', hue: 'violet' },
-    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green' },
+    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
+    // verde fino SOLO en lo activamente listo, declarado por estado.
+    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', rail: 'ready' },
     'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
     'cal-incumplida': { level: 'attention', hue: 'amber' },
     'cal-sin-calificar': { level: 'attention', hue: 'neutral' },
-    'cal-cumplida-control': { level: 'healthy', hue: 'green' },
+    'cal-cumplida-control': { level: 'healthy', hue: 'green', rail: 'ready' },
     'cal-tnp': { level: 'neutral', hue: 'blue' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
@@ -1203,7 +1205,9 @@
   function getSeverityLevelForRow(row) {
     var stateKey = getStateKey(row || {});
     var presentation = statePresentation[stateKey];
-    return presentation ? presentation.level : '';
+    // `rail` (p. ej. 'ready') gana sobre el nivel: es el marcador declarado
+    // por estado que la primitiva severity-rail.css sabe dibujar.
+    return presentation ? (presentation.rail || presentation.level) : '';
   }
 
   // El filete va en el `<tr>` y en la PRIMERA celda, nunca en todas.

@@ -500,8 +500,15 @@ body.ps-page .ps-hot-toolbar-shell {
    unico que sobrevive aqui es el color de texto (matiz real: en la celda
    densa el chip toma el color del contador de estado, no `inherit`) y el
    ruptura de palabra para columnas angostas de Handsontable. */
-.ps-page .ops-state-chip {
+/* Acotado el 2026-08-20: un chip con matiz pinta su propio texto oscuro
+   (--ds-state-solid-*-text, primitiva states-feedback); este color claro es
+   solo para chips sin matiz. Sin el :not, la capa module le ganaba a la
+   primitiva y el texto quedaba claro sobre solido claro. */
+.ps-page .ops-state-chip:not([data-aia-hue]) {
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
+}
+
+.ps-page .ops-state-chip {
     word-break: break-word;
 }
 

@@ -567,7 +567,10 @@
     'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
     'alert-4-6-weeks': { level: 'healthy', hue: 'neutral' },
     'execution-blocked': { level: 'urgent', hue: 'blue' },
-    'liberated-control': { level: 'healthy', hue: 'green' },
+    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
+    // verde fino SOLO en lo activamente listo. Se declara por estado y no se
+    // deriva de nivel+matiz: hay estados green+healthy que no lo llevan.
+    'liberated-control': { level: 'healthy', hue: 'green', rail: 'ready' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 
@@ -906,7 +909,8 @@
     // El nivel viaja como atributo y no como clase: es lo que consume la
     // primitiva compartida del filete (severity-rail.css), y una clase
     // obligaria a cada modulo a inventar su propio nombre para el mismo eje.
-    var rowSeverity = isHeader ? null : ((statePresentation[resolvedState] || {}).level || 'neutral');
+    var presentacionFila = isHeader ? null : (statePresentation[resolvedState] || {});
+    var rowSeverity = isHeader ? null : (presentacionFila.rail || presentacionFila.level || 'neutral');
 
     return {
       state: resolvedState,
