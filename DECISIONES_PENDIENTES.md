@@ -332,3 +332,101 @@ eso cambia cómo se escribe todo lo demás.
 quitemos uno»— y reabriría exactamente lo que resolvió: sin esa hoja, BI vuelve al Play CDN o a estilos
 sueltos, y ninguno de los dos respeta las capas. Y un guard que exigiera primitivas sin que exista la
 variante de pestañas solo produciría incumplimiento declarado.
+
+---
+
+# Segunda tanda — los frentes que quedan abiertos
+
+Estas cuatro salen del repaso de **todos** los specs y frentes del proyecto (2026-08-19). De los 13
+`goals` sin cerrar, siete se cerraron con verificación de hoy y **seis quedan**: dos están
+encadenados a una corrida de CI y los otros cuatro son tuyos.
+
+## D-6 · `vocabulario-estados-cascada`: el número ya se cumplió, ¿y la consistencia?
+
+**Estado: abierta.** El frente está «en replanteo» desde que lo pediste (D-VOC-1), y mientras tanto
+**su objetivo numérico se cumplió solo**.
+
+La spec fijaba **35 → 29 cadenas distintas** que un usuario de obra puede ver en la cascada. Medido
+hoy sobre `state-semantics.json`: **25**. Bajaron sin que este frente se ejecutara —
+`contrato-estados-modulo-fantasma` retiró un módulo entero con seis estados, y el remapeo de hoy
+quitó `Con Alerta Restricciones`.
+
+**Lo que sí queda, y es lo que el número nunca midió — la consistencia:**
+
+| Defecto | Medido |
+|---|---|
+| Estilo de mayúsculas mezclado | **21 en Title Case, 4 en estilo frase** (`Ejecución con restricciones`, `Inicio vencido`, `RC con restricciones`, `RC inicio vencido`) |
+| Género inconsistente para el mismo gesto | `Lista para Confirmar` / `Listo para Comprometer` |
+
+| | Qué implica |
+|---|---|
+| **(a) Cerrarlo por objetivo cumplido** | Se firma con la medición y se abre otro para consistencia, si se quiere |
+| **(b) Redefinir el objetivo a consistencia** | El frente sigue vivo con una condición nueva: un solo estilo de mayúsculas y géneros coherentes |
+| **(c) Cerrarlo y no hacer nada más** | 25 términos con cuatro excepciones de estilo es tolerable |
+
+**Recomendación: (b).** Es trabajo de una tarde, toca solo etiquetas y **no hay riesgo de dato**: son
+cadenas de interfaz, no valores guardados. Y el número solo, sin consistencia, no era el problema que
+el frente venía a resolver.
+
+## D-7 · `bi-control-tower-gemini`: una condición que no se puede cumplir
+
+**Estado: abierta, y lleva así mes y medio.** Su condición pide **aprobación visual de seis modos**
+(Mobile/Tablet/Desktop × Dark/Linen), y **tres de esos seis son del tema `linen`, retirado del
+producto el 2026-07-25 por DS-030**. Nadie puede aprobar capturas de un tema que ya no existe.
+
+No es un frente parado por falta de trabajo: **está parado por una condición imposible**.
+
+| | Qué implica |
+|---|---|
+| **(a) Recortar la condición a los tres modos dark** | Se puede cerrar esta semana. Es lo que el producto realmente tiene |
+| **(b) Reconstruir `linen` primero** | No hay conmutador de tema: trabajar en claro significa **rehacerlo**, no reactivarlo. Es un frente propio y grande — de hecho es la fase F3 de D-9 |
+| **(c) Archivar el frente** | El dashboard queda sin la validación visual que su goal pedía |
+
+**Recomendación: (a).** Y que la parte de `linen` viva donde le corresponde: dentro de la decisión
+del tema claro (D-9), no bloqueando un dashboard que ya funciona en dark.
+
+## D-8 · `design-system-nucleo-gobernanza`: la condición envejeció con el artefacto
+
+**Estado: abierta.** Su condición de hecho exige que **«los quince gates exactos de
+`closeout-evidence.json` tengan evidencia fresca y estado `passed`»**.
+
+**Ese archivo declara hoy nueve gates, no quince.** La condición no es difícil de cumplir: es
+imposible de leer, porque cuenta algo que ya no existe con ese número. Es la trampa
+[[memoria/trampas/condicion-de-hecho-caduca-sin-aviso]] en su forma más pura.
+
+De los nueve de hoy, **ocho están `passed` y uno `blocked`** — y ese uno es el que persigue
+`runtime-budgets-al-ci`.
+
+| | Qué implica |
+|---|---|
+| **(a) Reescribir la condición contra los nueve gates reales** | Queda a un solo gate de cerrar, el mismo que ya se está atacando |
+| **(b) Reconstruir los quince** | Habría que averiguar cuáles eran y si siguen teniendo sentido. Nadie ha pedido seis gates más |
+| **(c) Archivar el frente y quedarse con los gates** | Los gates siguen vivos y vigilando; lo que se pierde es el paraguas de gobernanza |
+
+**Recomendación: (a).** Un frente cuya condición cuenta artefactos que ya no existen no mide nada; y
+reescrita, este está más cerca de cerrar que ningún otro de los seis.
+
+## D-9 · `reapertura-movil-y-tema-claro`: qué queda y hasta dónde llegar
+
+**Estado: abierta.** **Cuatro de siete fases cerradas** (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan:
+
+- **F2b** — los 13 módulos restantes en móvil.
+- **F3** — el tema claro, que **no es reactivar sino reconstruir**: `linen` se retiró el 2026-07-25 y
+  no existe conmutador.
+- F4 se absorbió en DS-F3.
+
+Dato de hoy que toca esta decisión: al arreglar el CI se midió el shell a 390 px y **el móvil está
+sano** — el carril flotante no tapa contenido, no hay desbordamiento horizontal y el menú abre con
+diez destinos alcanzables. F2b parte de una base que funciona.
+
+| | Qué implica |
+|---|---|
+| **(a) Solo F2b** | Trece módulos, incremental y medible módulo a módulo. El tema claro queda archivado |
+| **(b) F2b y luego F3** | Completo, y muy caro: reconstruir un tema es rehacer la paleta entera y volver a validar cada superficie |
+| **(c) Cerrar en 4 de 7** | Se declara terminado lo hecho y lo demás pasa a trabajo nuevo, si alguna vez se pide |
+
+**Recomendación: (a), y F3 solo si alguien lo pide de verdad.** El tema claro no lo ha reclamado
+ningún usuario en las notas del repo; lo que sí se usa a diario es el móvil.
+
+**Qué NO haría: dejar F3 colgando dentro de este frente.** Es lo que mantiene abierto también a
+`bi-control-tower-gemini` (D-7): un tema retirado bloqueando dos frentes a la vez.
