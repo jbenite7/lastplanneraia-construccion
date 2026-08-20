@@ -44,10 +44,10 @@ estado por defecto mientras Felipe no reparta.
   pendiente atado a su plan, está en
   [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]]. Lo que no estaba anotado en
   ningún lado:
-  1. **`organizar-la-casa` sin ejecutar** — la única spec sin rastro: vistos siguen en
-     `.claude/vistos/`, plantillas vacías en `decisiones/` sin borrar, y
-     `docs/coordinacion-sesiones.md` sigue siendo el del 2026-08-10 con la ruta caducada del
-     Crucial X6. La spec misma es el plan (§1–§3, inline con worktree propio).
+  1. ~~`organizar-la-casa` sin ejecutar~~ — **HECHO (2026-08-20)**: vistos en
+     `decisiones/vistos/`, historial de sesiones versionado, plantillas borradas, las siete
+     reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
+     Ver [[goals/organizar-la-casa/goal]].
   2. **`estados-severidad-contrato` hay que reescribirla bajo el contrato de 3 niveles** de
      `ds-f1a-estado` (decisión de Felipe del 2026-08-19): el frente implementó `severity-rail` e
      Intermedia completa pero nunca publicó y su cierre se retiró por el choque de vocabularios.
@@ -213,6 +213,11 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-20 — **Auditoría de estado real de las 61 specs** contra el código, publicada en
+  `3144ca5e`: 44 ejecutadas · 16 parciales · 1 pendiente · 12 cerradas. Informe con evidencia:
+  [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]].
+- [x] 2026-08-20 — **organizar-la-casa** ejecutada: coordinación versionada y las siete reglas
+  escritas ([[docs/coordinacion-sesiones]]).
 - [x] 2026-08-19 — **El gate de publicación frena las integraciones**: publicar con merges exige
   `--con-merges` y lista qué frentes entran y cuáles declaran cierre. Nace del cuarto choque del
   día: dos frentes a medio terminar entraron en `main` y solo los detectó una revisión a mano.
