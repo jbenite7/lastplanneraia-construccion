@@ -87,7 +87,16 @@
     padding: var(--ds-space-2) var(--ds-space-3);
     border: 1px solid var(--ds-active-border);
     border-radius: var(--ds-radius-md);
-    background: var(--ds-active-surface-raised);
+    /* OPACO A PROPOSITO (arreglo 2026-08-20, reportado por Felipe: «los
+       tooltips se ven transparentes y superpuestos con lo demas»). Medido: el
+       panel usaba --ds-active-surface-raised, que en dark vale
+       rgba(35,48,41,0.86) — un 14% de transparencia. Esa superficie existe para
+       paneles que se apoyan en su fondo, no para algo que FLOTA en el top-layer
+       sobre una tabla densa: el texto de las filas de abajo se leia a traves.
+       Se compone opaco mezclando la superficie elevada sobre el lienzo, asi el
+       tooltip sigue siendo del sistema y no un hex suelto. */
+    background-color: var(--ds-active-bg-page);
+    background-image: linear-gradient(var(--ds-active-surface-raised), var(--ds-active-surface-raised));
     color: var(--ds-active-text-primary);
     font-size: var(--ds-chip-font-size, 0.75rem);
     font-weight: 400;
