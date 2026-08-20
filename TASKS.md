@@ -49,9 +49,10 @@ estado por defecto mientras Felipe no reparta.
      reglas en `docs/coordinacion-sesiones.md` y `AGENTS.md` las referencia.
      Ver [[goals/organizar-la-casa/goal]].
   2. ~~`estados-severidad-contrato` bajo 3 niveles~~ — **HECHO (2026-08-20)**: spec reescrita
-     con notas de revisión fechadas; la ejecución del frente sigue **pausada a propósito** — la
-     coordinación previa con la sesión del contrato hermano es parte de la decisión, y la
-     saturación del filete en Intermedia (6 de 8 con barra) es material de esa coordinación.
+     con notas de revisión fechadas. La ejecución del frente **también cerró el mismo día** (ver
+     el cierre de `ds-f1a-estados-severidad` más abajo): la contención se midió, los frentes de
+     `bold-neumann` ya habían terminado, y la saturación del filete en Intermedia **no se confirmó
+     en pantalla** — capturas en `goals/ds-f1a-estados-severidad/evidence/` para veto de Felipe.
   3. ~~Verificación de `/indicadores` y CNP/CNC/CIC~~ — **HECHO (2026-08-20)**: `/indicadores`
      está migrada (pilot; su contenido es un iframe). **CNP/CNC/CIC son legacy real**: el shell es
      `aia-*` pero `legacyCards.js` pinta todo con clases legacy. F0-022 (mayor) lo detectó sin
