@@ -204,7 +204,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the full-app-flow receipt
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: full-app-flow-receipt
           path: docs/design-system/evidence/full-app-flow.json
@@ -243,7 +243,7 @@ jobs:
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the semanal roles and phases receipt
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: semanal-roles-phases-receipt
           path: docs/design-system/evidence/semanal-roles-phases.json
@@ -278,7 +278,7 @@ jobs:
         run: npm run test:design-system:evidence
       - name: Preserve non-blocking evidence failures
         if: steps.keyboard-reflow-evidence.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: design-system-keyboard-reflow-evidence
           path: |
@@ -303,7 +303,7 @@ jobs:
           docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs --no-color > test-output/docker-compose.log || true
       - name: Preserve failure evidence
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: design-system-failure-evidence
           path: |
