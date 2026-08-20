@@ -28,6 +28,14 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Deuda del CI — Frente 1 (2026-08-20)
+
+#### Security
+- CI: las actions quedan ancladas por SHA de commit (con Dependabot vigilándolas por PR semanal),
+  ambos jobs con `timeout-minutes`, y el propio workflow pasa por actionlint con binario fijado
+  por checksum. El contrato visual-ci ahora exige la forma pineada. Origen:
+  [[docs/superpowers/specs/2026-08-20-deuda-ci-design]], Frente 1.
+
 ### Wiki v2 — esquema, lint y migración de la wiki (2026-08-19)
 
 #### Added

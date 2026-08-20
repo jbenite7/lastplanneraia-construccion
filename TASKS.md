@@ -150,6 +150,23 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
+  `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
+  [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
+- [ ] **CI · G7 paralelización** — medir duración por paso primero; candidato: PHPStan como job
+  paralelo (no necesita la app levantada). Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · G8 job summaries** — volcar recibos y presupuestos ya generados a
+  `GITHUB_STEP_SUMMARY`. Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · zizmor** — auditoría de seguridad del YAML complementaria a actionlint; exige tooling
+  extra. Origen: spec 2026-08-20-deuda-ci-design.
+- [ ] **CI · Frente 2 (G2, cache de capas Docker)** — su plan se escribe cuando el Frente 1 esté
+  publicado; objetivo y límites duros ya fijados en la spec.
+- [ ] **DECISIÓN (Felipe) · G6 branch protection / merge queue** — cambia el flujo de publicación
+  de todas las sesiones (`publicar.sh` → PRs). No aplicar sin visto explícito. Origen: spec
+  2026-08-20-deuda-ci-design.
+- [ ] **PROPUESTA (Felipe) · hook `task-completed-verify.sh`** — corre `composer test` en el host,
+  donde composer no existe (repo Docker-only): rojo falso en toda tarea sin código. Es `~/.claude`:
+  proponer el fix, no aplicarlo.
 - [ ] **Escribir el cierre de dos goals ya ejecutados** — `pdc-tanda2-plan-verdad` y
   `adopcion-logo-construccion` tienen el trabajo hecho y ninguna sección `## Cierre`, así que la
   regla de lectura los cuenta como abiertos. Es escribir el cierre, no re-ejecutar.
