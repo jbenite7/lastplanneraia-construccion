@@ -122,6 +122,21 @@ jobs:
           E2E_REQUIRE_ISOLATED_DB: "1"
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: node scripts/design-system-ci-preflight.mjs
+      # El espejo sin comentarios se genera ANTES de construir la imagen, y el
+      # orden es el hallazgo: `docker/php/Dockerfile` hace `COPY . /var/www/html`
+      # en tiempo de build, asi que lo que no este en el arbol cuando se
+      # construye no entra. Con el paso puesto DESPUES de arrancar el runtime, el
+      # navegador siguio recibiendo el CSS con comentarios y el presupuesto solo
+      # bajo 788 B de los 73.422 esperados.
+      #
+      # Va despues de `Capture runtime provenance`: el espejo esta en .gitignore
+      # y no ensucia el arbol, pero la huella se toma antes igualmente.
+      #
+      # El nombre del paso evita las palabras que `visual-ci-contract.test.mjs`
+      # veta en este archivo: ese guard existe para que el CI no tenga camino de
+      # despliegue, y un guard que se ablanda por comodidad deja de valer.
+      - name: Generate comment-free CSS as the live site serves it
+        run: npm run css:minify && npm run css:minify:check && git status --porcelain
       - name: Start isolated runtime
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml up -d --build db app
       - name: Wait for the application
@@ -223,15 +238,6 @@ jobs:
       - name: Restore the worktree after writing the semanal receipt
         if: always()
         run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
-      # Los `*.min.css` son artefacto de build y no viajan en git, asi que en un
-      # checkout limpio no existen y `.htaccess` sirve los originales. Se generan
-      # ANTES de medir para que el presupuesto mida lo que un usuario recibe de
-      # verdad, no la version con los 187 comentarios del repositorio dentro.
-      #
-      # No ensucian el arbol -estan en .gitignore- asi que el provenance, que
-      # exige worktree limpio, sigue cuadrando.
-      - name: Generate comment-free CSS as the live site serves it
-        run: npm run css:minify && npm run css:minify:check && git status --porcelain
       - name: Measure runtime budgets
         env:
           APP_URL: http://127.0.0.1:18081
