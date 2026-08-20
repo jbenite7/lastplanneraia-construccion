@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-20
+areas: [rbac, bi, admin]
+fuente: docs/superpowers/plans/2026-08-20-interruptor-control-tower-admin.md
+resumen: Un flag global bi.controltower.visible, editable desde /admin, que decide si los roles no-Admin con internal.bi.preview ven el Control Tower; el Admin entra…
+---
+
 # Interruptor del Control Tower desde /admin — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

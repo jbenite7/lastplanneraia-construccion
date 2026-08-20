@@ -28,6 +28,20 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Interruptor del Control Tower desde /admin (2026-08-20)
+
+#### Added
+- Tabla `general_flags` (clave-valor global con auditoría del último cambio) y
+  `App\Core\FlagsService`, lectura con fail-safe: un flag ilegible se comporta como apagado.
+- Pantalla `/admin/modulos` (solo rol A, con CSRF y lista blanca de claves) para prender y apagar
+  el Control Tower sin deploy.
+
+#### Changed
+- `BiPreviewAccessPolicy` obedece el flag `bi.control_tower.visible` para los roles no-Admin con
+  `internal.bi.preview`. El Admin entra siempre, esté el interruptor como esté.
+  Spec: [[docs/superpowers/specs/2026-08-20-interruptor-control-tower-admin-design]].
+
+
 ### Control Tower abierto al Director de Obra (2026-08-20)
 
 #### Changed
