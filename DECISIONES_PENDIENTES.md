@@ -424,7 +424,19 @@ reescrita, este está más cerca de cerrar que ningún otro de los seis.
 
 ## D-9 · `reapertura-movil-y-tema-claro`: qué queda y hasta dónde llegar
 
-**RESUELTA por Felipe el 2026-08-20: (a).** Solo F2b (los 13 módulos en móvil). El tema claro (F3) sale de este frente y espera a que alguien lo pida de verdad; eso además destraba D-7.
+**RESUELTA por Felipe el 2026-08-20, y REVISADA el mismo día.**
+
+- **Primera respuesta: (a)** — solo F2b, con el tema claro fuera del frente y sin fecha.
+- **Revisión de Felipe, minutos después, al preguntar «¿entonces tema claro qué?»:** el tema claro
+  **no queda estacionado: va justo detrás de móvil**. O sea F2b primero y F3 inmediatamente
+  después, en secuencia, no a la espera de que alguien lo reclame.
+
+Se conservan las dos porque la segunda corrige a la primera y el porqué importa: estacionarlo
+indefinidamente era, en la práctica, no hacerlo nunca.
+
+**Lo que NO cambia con la revisión:** `bi-control-tower-gemini` (D-7) **sigue desbloqueado** y
+cierra con sus tres modos dark. Ese frente no vuelve a depender del tema claro — su condición se
+recortó por mérito propio: pedía aprobar capturas de un tema retirado.
 
 **Estado: RESUELTA (2026-08-20).** **Cuatro de siete fases cerradas** (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan:
 
@@ -596,7 +608,7 @@ con el detalle y la medición en cada sección de arriba:
 | D-6 | Vocabulario de la cascada | El frente cambia su objetivo a consistencia |
 | D-7 | `bi-control-tower-gemini` | Condición recortada a los tres modos dark |
 | D-8 | `design-system-nucleo-gobernanza` | Condición reescrita contra los nueve gates reales |
-| D-9 | Móvil y tema claro | Solo F2b; el tema claro sale del frente |
+| D-9 | Móvil y tema claro | F2b primero y **el tema claro justo detrás** (revisado el mismo día); D-7 queda desbloqueado igual |
 | D-10 | Presupuesto de CSS | *(ya estaba decidida: minificar)* |
 | D-11 | `initializationMs` | Recalibrar tras 3–4 corridas; no subir el techo hoy |
 | — | Plugins de Obsidian | Instalados y verificados en pantalla; **Iconize excluido** por estar declarado como proyecto descontinuado por su autor |
