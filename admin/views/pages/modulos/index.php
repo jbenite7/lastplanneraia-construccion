@@ -30,7 +30,7 @@
             $fila = $flags[$clave] ?? null;
             $encendido = $fila !== null && $fila['valor'] === '1';
         ?>
-          <form method="POST" action="/admin/modulos" style="margin-bottom: 1rem;">
+          <form method="POST" action="/admin/modulos" class="mb-4">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
             <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
             <input type="hidden" name="valor" value="<?php echo $encendido ? '0' : '1'; ?>">
