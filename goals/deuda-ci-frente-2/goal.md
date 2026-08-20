@@ -34,7 +34,11 @@ baseline» por `initializationMs` — el mismo paso y causa preexistentes de `ma
 camino quedó resuelto el conflicto con `10dd634e` (el espejo de CSS pasó a versionarse y el
 paso de generación cambió a verificación), re-verificando después de integrar.
 
-**Publicado:** (SHA bajo esta línea al confirmar).
+**Publicado:** `2281a80b` en `origin/main` (fetch + rev-parse coinciden); PR #10 MERGED.
+Primera corrida de `main` (`32408756105`): sin rojos nuevos; runtime ya en 54 s (23 s build +
+31 s arranque) contra 93 s de línea base. El estático marcó 119 s porque el cache gha se
+hereda hacia las ramas pero no desde ellas — esta corrida siembra el scope de `main` y las
+siguientes leen caliente, como el PR demostró (20 s).
 
 ## Archivos de este goal
 - [[goal.md]] · estado en [[memoria/goals/estado]]
