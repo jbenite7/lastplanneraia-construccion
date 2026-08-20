@@ -49,7 +49,7 @@
     },
     {
       "estado": "alert-1-week",
-      "etiqueta": "Alistamiento Urgente · 2Inicia en 1 semana y su alistamiento aun no cierra. Revisar antes del siguiente hito. Pendientes (2): Pasar de plan de compras a plan de aprovisionamiento.; Confirmar equipos disponibles en el proyecto..",
+      "etiqueta": "Urgente · 2Inicia en 1 semana y su alistamiento aun no cierra. Revisar antes del siguiente hito. Pendientes (2): Pasar de plan de compras a plan de aprovisionamiento.; Confirmar equipos disponibles en el proyecto..",
       "hue": "amber",
       "severity": "medium",
       "urgency": "soon",
@@ -63,7 +63,7 @@
     },
     {
       "estado": "execution-blocked",
-      "etiqueta": "En Ejecución Pendiente · 1Hay avance reportado sobre restricciones sin liberar: el dano se esta produciendo. Atender ahora. Pendientes (1): Aprobar y entregar diseños a contratistas/maestros..",
+      "etiqueta": "En ejecución · 1Hay avance reportado sobre restricciones sin liberar: el dano se esta produciendo. Atender ahora. Pendientes (1): Aprobar y entregar diseños a contratistas/maestros..",
       "hue": "blue",
       "severity": "high",
       "urgency": "now",
@@ -77,7 +77,7 @@
     },
     {
       "estado": "liberated-control",
-      "etiqueta": "Listo para ComprometerCumple la matriz de habilitacion para pasar a Programacion Semanal. Sin pendientes.",
+      "etiqueta": "Por comprometerCumple la matriz de habilitacion para pasar a Programacion Semanal. Sin pendientes.",
       "hue": "green",
       "severity": "low",
       "urgency": "none",
@@ -91,7 +91,7 @@
     },
     {
       "estado": "alert-2-3-weeks",
-      "etiqueta": "Alistamiento en Riesgo · 2Inicia en 2 a 3 semanas y aun requiere preparacion. Revisar antes del siguiente hito. Pendientes (2): Aprobar y entregar diseños a contratistas/maestros.; Pasar de plan de compras a plan de aprovisionamiento..",
+      "etiqueta": "En riesgo · 2Inicia en 2 a 3 semanas y aun requiere preparacion. Revisar antes del siguiente hito. Pendientes (2): Aprobar y entregar diseños a contratistas/maestros.; Pasar de plan de compras a plan de aprovisionamiento..",
       "hue": "teal",
       "severity": "medium",
       "urgency": "soon",
@@ -105,7 +105,7 @@
     },
     {
       "estado": "alert-4-6-weeks",
-      "etiqueta": "Alistamiento Pendiente · 4Inicia en 4 a 6 semanas: seguimiento temprano del lookahead. Pendientes (4): Revisar diseños con dirección y residentes.; Gestionar contratos de aprovisionamiento.; Movilizar personal al proyecto.…",
+      "etiqueta": "Pendiente · 4Inicia en 4 a 6 semanas: seguimiento temprano del lookahead. Pendientes (4): Revisar diseños con dirección y residentes.; Gestionar contratos de aprovisionamiento.; Movilizar personal al proyecto.…",
       "hue": "neutral",
       "severity": "low",
       "urgency": "none",
