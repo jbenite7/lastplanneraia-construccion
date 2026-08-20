@@ -51,6 +51,20 @@ $r = pedir($base . '/admin/modulos', [
 ]);
 comprobar('POST sin csrf es 403', $r['status'] === 403);
 
+// 4) Rol no-Admin (D, Director de Obra): la pantalla y el POST se niegan.
+$cookiesD = tempnam(sys_get_temp_dir(), 'cook');
+pedir($base . '/admin/dev/entrar?u=test.D', [CURLOPT_COOKIEJAR => $cookiesD]);
+$r = pedir($base . '/admin/modulos', [CURLOPT_COOKIEFILE => $cookiesD]);
+comprobar('con sesion D (no-Admin) el GET es 403', $r['status'] === 403);
+
+$r = pedir($base . '/admin/modulos', [
+    CURLOPT_COOKIEFILE => $cookiesD,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => http_build_query(['clave' => 'bi.control_tower.visible', 'valor' => '0']),
+]);
+comprobar('con sesion D (no-Admin) el POST es 403', $r['status'] === 403);
+unlink($cookiesD);
+
 unlink($cookies);
 echo "\nResultado: " . ($total - $fallos) . "/{$total}\n";
 exit($fallos === 0 ? 0 : 1);

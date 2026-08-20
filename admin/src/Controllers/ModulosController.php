@@ -16,6 +16,12 @@ class ModulosController extends AdminController
         'bi.control_tower.visible' => 'Control Tower (BI) visible para roles no-Admin',
     ];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->requireAdminRole('Solo administradores pueden gestionar módulos.');
+    }
+
     public function index(): void
     {
         $db = Database::getInstance();
@@ -49,6 +55,8 @@ class ModulosController extends AdminController
 
     public function update(): void
     {
+        // Los `return` que siguen son solo por claridad de lectura: BaseController::json() hace
+        // exit() internamente, así que estos rechazos (405/403/422) ya cortan la ejecución ahí.
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             $this->json(['success' => false, 'message' => 'Método no permitido']);
