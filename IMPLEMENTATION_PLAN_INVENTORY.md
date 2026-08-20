@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-19
+updated: 2026-08-20
 ---
 # Registro de trabajo
 
@@ -167,3 +167,29 @@ _113 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archiv
 | Sidebar canónico del laboratorio | [[docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio|plan]] | — |
 
 <!-- generado:fin -->
+
+## Estado real de las specs — auditoría del 2026-08-20
+
+El catálogo de arriba dice qué existe; esto dice **qué está hecho de verdad**. Las 61 specs
+vigentes se verificaron contra el código y los documentos actuales (no contra checkboxes: 0 de 435
+casillas marcadas, ver [[TASKS]]). El detalle completo —evidencia por spec y cada pendiente con el
+plan que lo cierra— está en
+[[docs/superpowers/reports/2026-08-20-auditoria-estado-specs|el informe de la auditoría]].
+
+**44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas (archivadas).**
+
+Las 16 parciales: `stack-plan-de-compras` (brecha solo documental), `cierre-prelanzamiento-pdc`,
+`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `ui-audit-and-repair-plan` y
+`ui-audit-core-lps-ops` (sin cierre formal; `/indicadores` sin evidencia), `cierre-dark-mode`
+(fase 6 sustituida por DS-F0..F3), `reparto-trabajo-pendiente` (línea E sin cierre),
+`f2a-piloto-movil-programacion` (manifiestos sin escenario móvil), `reapertura-movil-y-tema-claro`
+(F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5), `plan-cierre-hasta-produccion`
+(F-AB pausado, F-E), `vocabulario-estados-cascada` (unificación en replanteo),
+`espacio-cuenta-siteground` (frentes C/D de servidor), `wiki-v2-visual` (plugins por decisión),
+`estados-severidad-contrato` (sin publicar; choca con `ds-f1a-estado`) y `runtime-budgets-al-ci`
+(`initializationMs` rojo, D-11).
+
+La única **pendiente** sin rastro de ejecución: `organizar-la-casa` (2026-08-19).
+
+El estado de ejecución vive aquí y en el informe; el frontmatter de las specs conserva su
+vocabulario documental (`vigente`/`cerrado`) a propósito.

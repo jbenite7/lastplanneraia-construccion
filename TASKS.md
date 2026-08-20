@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-19
+updated: 2026-08-20
 ---
 
 # Tareas
@@ -38,6 +38,24 @@ reclama nadie», así que no tener coordinadora no es una carencia que haya que 
 estado por defecto mientras Felipe no reparta.
 
 ## Ahora
+
+- [ ] **Auditoría de specs 2026-08-20 — pendientes nuevos que no estaban en esta lista.** Las 61
+  specs vigentes se verificaron contra el código; el informe completo, con evidencia y cada
+  pendiente atado a su plan, está en
+  [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]]. Lo que no estaba anotado en
+  ningún lado:
+  1. **`organizar-la-casa` sin ejecutar** — la única spec sin rastro: vistos siguen en
+     `.claude/vistos/`, plantillas vacías en `decisiones/` sin borrar, y
+     `docs/coordinacion-sesiones.md` sigue siendo el del 2026-08-10 con la ruta caducada del
+     Crucial X6. La spec misma es el plan (§1–§3, inline con worktree propio).
+  2. **`estados-severidad-contrato` hay que reescribirla bajo el contrato de 3 niveles** de
+     `ds-f1a-estado` (decisión de Felipe del 2026-08-19): el frente implementó `severity-rail` e
+     Intermedia completa pero nunca publicó y su cierre se retiró por el choque de vocabularios.
+  3. **Verificación puntual de `/indicadores` y CNP/CNC/CIC** — dos planes de UI-audit (2026-07-31
+     y 2026-08-01) sin cierre formal y con evidencia mixta; un `impeccable:audit` dirigido decide
+     si hay trabajo real o solo falta escribir el cierre. Cruzar antes con las tandas biblia.
+  4. **Humo autenticado del PDC v2 en `prueba-lps`** — nadie lo ha verificado con sesión real
+     (`estado-olas.md:82-86`); es paso previo de CP-F-E, no parte del despliegue mismo.
 
 - [ ] **apply-recalculo-estados en PRODUCCIÓN** — el apply sobre **desarrollo** ya se ejecutó
   (`aa965bf5`, 2026-08-19 13:40): 40.664 filas migradas, acta en
