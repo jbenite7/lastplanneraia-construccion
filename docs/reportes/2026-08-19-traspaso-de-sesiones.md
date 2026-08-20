@@ -6,7 +6,7 @@ fecha: 2026-08-19
 areas: [proceso, qa, docker]
 tags: [leer-antes-de-tocar]
 fuente: traspaso de las sesiones vivas, ordenado por Felipe el 2026-08-19; cada apartado cita a la sesión que lo relató
-resumen: Lo que sabían las sesiones de 2026-08-19 y no estaba en ningún archivo — ramas sin publicar, trampas medidas y el gate de rutas caído toda la jornada.
+resumen: Lo que sabían las sesiones de 2026-08-19 y no estaba en ningún archivo — ramas sin publicar, trampas medidas y por qué el gate de rutas dejó de existir.
 ---
 
 # Traspaso de sesiones — 2026-08-19
@@ -63,26 +63,42 @@ red puesta cuando no la tiene.** Hoy solo está activo en el worktree que lo esc
 repo, no. Activarlo en la raíz cambia la configuración de las sesiones que estén corriendo allí, así
 que el orden importa.
 
-## El gate de rutas lleva toda la jornada caído
+## El gate de rutas no está caído: se retiró a propósito
 
-Medido dos veces, por dos sesiones distintas:
+**Esta sección decía «caído» y era el encuadre equivocado.** Corregido el 2026-08-19 tras el aviso
+de una sesión de `loop-engineering`, verificado por mi cuenta en el repo del plugin:
 
 ```
-$ cat .claude/cas-root
-/Users/felipebenitez/.claude/plugins/cache/loop-engineering/loop-engineering/0.2.0/cas
-
-$ ls /Users/felipebenitez/.claude/plugins/cache/loop-engineering/
-No such file or directory
+$ git -C .../loop-engineering log -1 --format='%h %ad %s' c275c1d
+c275c1d 12:13 chore!: barrido a base de evidencia — se retira el motor y CAS completo
+$ git -C .../loop-engineering branch --list retiro-cas
+  retiro-cas
 ```
 
-No es que falte el módulo CAS: **el directorio del plugin desapareció entero durante la jornada.**
-Empezó existiendo en `0.3.0` sin `cas/`, el caché de `0.2.0` se esfumó a media tarde, y al cierre no
-queda ninguno. Con él caen el **gate de rutas**, el de presupuesto y el de push.
+Commit marcado como ruptura (`chore!`), a las 12:13. **CAS no falló: se retiró como decisión de
+producto**, y el código sobrevive en el historial y en la rama `retiro-cas`. El paquete instalado
+(`1.0.0-alpha.1`) es fiel a ese repo; no le falta nada.
 
-**Por qué importa exactamente hoy:** el gate de rutas es el que avisa cuando dos sesiones declaran
-los mismos archivos. Hoy hubo dos choques —el contenedor compartido y una triple edición de la
-wiki—, y **los dos los destapó `git merge` o un mensaje entre sesiones, ninguno un gate**. En el de
-la wiki, el choque salió a la luz hora y media después de producirse.
+**Lo que confundió, y es un defecto real aunque no el que se creía:** la instalación copia el
+directorio de trabajo, no lo versionado, y `.claude/worktrees/` no está en el `.gitignore` del
+plugin. Así que dentro del paquete quedan worktrees viejos que **todavía contienen `cas-frente.sh`**.
+De ahí la observación de que «el módulo solo sobrevive dentro de un worktree interno del plugin»:
+es un fósil de desarrollo empaquetado por error, no la ubicación nueva de la pieza.
+
+**Qué significa en la práctica.** Las sesiones no pueden declarar frentes porque **el mecanismo ya
+no existe**, no porque esté roto. No hay arreglo que esperar. La coordinación manual no es un puente
+temporal hacia un CAS restaurado: hasta nueva orden es el único mecanismo. Si hace falta registro de
+frentes, se plantea como pedido de producto al usuario, no como bug.
+
+**Y aun así, el hecho que motivó todo esto sigue en pie:** hoy hubo dos choques —el contenedor
+compartido y una triple edición de la wiki—, y **los dos los destapó `git merge` o un mensaje entre
+sesiones, ninguno un gate**. Que la pieza se retirara a propósito explica la causa; no cambia la
+consecuencia.
+
+**Un dato relatado que NO pude confirmar:** se me dijo que el plugin estaba deshabilitado entero
+desde hacía dos horas. Medido ahora en `~/.claude/settings.json`,
+`"loop-engineering@loop-engineering"` está en **`true`**. O se reactivó entre medias, o la
+observación era de otra cosa. Se deja anotado sin resolver en vez de repetirlo.
 
 ## Trampas medidas, para no volver a pagarlas
 

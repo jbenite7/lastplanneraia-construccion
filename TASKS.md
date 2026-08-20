@@ -31,11 +31,11 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Bloqueantes
 
-- [ ] **Abrir una coordinadora nueva.** «Coordinadora Intento 3» ya no existe como sesión viva y el
-  proyecto quedó sin sesión coordinadora: nadie audita el trabajo de las sesiones de ejecución, da
-  el visto antes de publicar, ni es el único punto de contacto con el usuario para decisiones
-  (regla en [[docs/coordinacion-sesiones]]). Mientras no haya coordinadora, los frentes activos no
-  deberían publicar a `main` sin ese visto.
+Ninguno. El único que había —«abrir una coordinadora nueva»— quedó resuelto el 2026-08-19 cuando
+Felipe declaró el reparto y consolidó el repo en una sola sesión. **Y estaba mal planteado desde el
+principio:** `docs/coordinacion-sesiones.md:18` dice que «el reparto lo declara el usuario, no lo
+reclama nadie», así que no tener coordinadora no es una carencia que haya que subsanar — es el
+estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
@@ -52,15 +52,17 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 - [ ] **DS-F1, lo que queda del contrato** — la escala de estado cerró (F1a). Faltan tokens,
   primitivas `aia-*`, escala de severidad y escala de z-index. Arranca con brainstorming: el
   contrato es decisión de negocio. Entrada lista: los 68 hallazgos de DS-F0.
+- [ ] **Cerrar antes de integrar: `linea-base-contractual` y `semanal-fondo-por-matiz`.** Los dos
+  entraron en el `main` local el 2026-08-19 sin haber declarado su condición de hecho, y **Felipe
+  ordenó sacarlos: «que se cierren primero»**. Su trabajo está intacto en
+  `claude/elated-golick-e27253` y `claude/reverent-golick-aaf932`, 10 cambios cada una. Lo que les
+  falta no es código: es la sección `## Cierre` con la verificación que demuestre que terminaron.
+  `semanal-fondo-por-matiz` además toca pantallas, así que su cierre exige comprobación visual.
+
 - [ ] **linea-base-contractual** — sembrado por migración SQL, con `database/migrations/**`
   autorizado explícitamente por Felipe para este frente. El dry-run se pega como evidencia antes de
   commitear; contra producción no lo ejecuta nadie, viaja versionado. **No tiene `goals/<slug>/`
   propio**: su registro vive solo en `decisiones/linea-base-contractual-coordinadora.md`.
-- [ ] **Triaje de los nueve goals en plantilla** — `a187ccda`, `buttons-important-leyenda`,
-  `contador-no-mide-el-archivo`, `focus-visible-verde`, `forma-quitar-pasos`,
-  `reserva-redundante-green-dark`, `reservas-contradictorias-var`, `severidad-runtime`,
-  `veracidad-8`. Objetivo sin redactar y sin cierre; decidir cuáles siguen vivos es criterio de
-  Felipe, no deducción de que lleven días quietos.
 - [ ] **bi-control-tower-gemini** — bloqueado desde el 2026-08-10 por causa mal diagnosticada: no
   es «falta aprobación visual», es que pide aprobar 6 modos y 3 usan el tema `linen`, retirado el
   2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. Depende de MO-F3.
@@ -112,6 +114,10 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-19 — **Los nueve goals en plantilla, cerrados** (`697978ec`): los nueve habían
+  corrido; ocho reciben objetivo y cierre con evidencia re-medida hoy, y `a187ccda` se borra por
+  ser un id de sesión, no un frente. De ahí sale por qué `runtime-budgets` sigue `blocked`.
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
