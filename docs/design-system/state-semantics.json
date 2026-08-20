@@ -81,48 +81,72 @@
       "id": "neutral",
       "label": "Silencio",
       "tint": "--ds-state-tint-neutral",
-      "text": "--pdc-not-started-text"
+      "text": "--pdc-not-started-text",
+      "solid": "#9aa8a0",
+      "solidText": "#1c2420",
+      "row": "#222724"
     },
     {
       "id": "teal",
       "label": "Contexto",
-      "tint": "--ds-state-tint-teal"
+      "tint": "--ds-state-tint-teal",
+      "solid": "#5ec9bd",
+      "solidText": "#062f29",
+      "row": "#192825"
     },
     {
       "id": "blue",
       "label": "En marcha",
       "tint": "--ds-state-tint-blue",
-      "text": "--pdc-active-text"
+      "text": "--pdc-active-text",
+      "solid": "#5f9fdd",
+      "solidText": "#07223c",
+      "row": "#1b2330"
     },
     {
       "id": "violet",
       "label": "Sin datos suficientes",
       "tint": "--ds-state-tint-violet",
-      "text": "--pdc-missing-text"
+      "text": "--pdc-missing-text",
+      "solid": "#9485d6",
+      "solidText": "#26113f",
+      "row": "#251f2d"
     },
     {
       "id": "green",
       "label": "Controlado",
       "tint": "--ds-state-tint-green",
-      "text": "--pdc-completed-ontime-text"
+      "text": "--pdc-completed-ontime-text",
+      "solid": "#57b083",
+      "solidText": "#06281a",
+      "row": "#1b2a20"
     },
     {
       "id": "amber",
       "label": "Por resolver",
       "tint": "--ds-state-tint-amber",
-      "text": "--pdc-completed-late-text"
+      "text": "--pdc-completed-late-text",
+      "solid": "#ffca28",
+      "solidText": "#3a2c04",
+      "row": "#2a2718"
     },
     {
       "id": "orange",
       "label": "Fuera de plazo",
       "tint": "--ds-state-tint-orange",
-      "text": "--pdc-delayed-text"
+      "text": "--pdc-delayed-text",
+      "solid": "#e87722",
+      "solidText": "#3a2004",
+      "row": "#2b211a"
     },
     {
       "id": "red",
       "label": "Bloqueado o vencido",
       "tint": "--ds-state-tint-red",
-      "text": "--pdc-critical-text"
+      "text": "--pdc-critical-text",
+      "solid": "#e15a52",
+      "solidText": "#3c0a06",
+      "row": "#2b1b1a"
     }
   ],
   "translationRules": [
@@ -477,5 +501,6 @@
         }
       ]
     }
-  ]
+  ],
+  "brandAudit": "2026-08-20: solid/solidText/row son hex (no tokens) para que state-solid-contract.test.mjs calcule WCAG sin resolver CSS. Naranja/ambar/violeta/teal anclados al manual AIA (Construccion #e87722, Advertencias #ffca28, Arquitectura #9485d6, Inmobiliario #5ec9bd); rojo custom #e15a52 porque el #e53935 del manual falla AA con su texto (4.01); azul sin familia AIA, desviacion registrada; verde interpolado en la rampa Corporativo."
 }

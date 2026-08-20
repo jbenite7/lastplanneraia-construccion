@@ -31,7 +31,7 @@
 | green | `#57b083` | `#06281a` | 5.99 | `#1b2a20` | interpolado rampa Corporativo |
 | neutral | `#9aa8a0` | `#1c2420` | 6.41 | `#222724` | neutro del sistema |
 
-Filete: urgent `#ff7a6e` / 6px · attention `#ffd23f` / 4px. Texto sobre tinte de fila: `--ds-active-text-primary` (14–16:1).
+Filete: urgent `#ff7a6e` / 6px · attention `#ffd23f` / 4px · **ready `#7ee2a8` / 3px** (decisión de Felipe 2026-08-20: marcador positivo SOLO en lo activamente listo — `liberated-control` en PI, `prog-lista-para-confirmar` y `cal-cumplida-control` en PS; PG no tiene estado con esa semántica. NO es un cuarto nivel de gravedad: es un marcador escaso dentro de Controlado, declarado por estado en `statePresentation` con `rail: 'ready'`, nunca derivado de nivel+matiz — `actividad-futura` es green+healthy y NO lo lleva). Texto sobre tinte de fila: `--ds-active-text-primary` (14–16:1).
 
 ---
 
@@ -89,7 +89,7 @@ import { readFileSync } from 'node:fs';
 const contrato = JSON.parse(readFileSync('docs/design-system/state-semantics.json', 'utf8'));
 const tokensCss = readFileSync('public/css/tokens.css', 'utf8');
 const HUES = ['red', 'orange', 'amber', 'violet', 'teal', 'blue', 'green', 'neutral'];
-const RAIL = { urgent: '#ff7a6e', attention: '#ffd23f' };
+const RAIL = { urgent: '#ff7a6e', attention: '#ffd23f', ready: '#7ee2a8' };
 
 const lum = (hex) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -182,9 +182,13 @@ Y en el bloque del rail (líneas ~363-364) sustituir los alias por hex literales
 ```css
     /* Avivados el 2026-08-20: los alias a --ds-color-state-*-text eran pastel
        y el filete se perdia en obra y proyector. El guard state-solid-contract
-       exige >=3:1 contra todo tinte de fila. */
+       exige >=3:1 contra todo tinte de fila. `ready` es el marcador positivo
+       escaso (decision de Felipe 2026-08-20): solo estados declarados con
+       rail:'ready', nunca todo Controlado. */
     --ds-severity-rail-color-urgent: #ff7a6e;
     --ds-severity-rail-color-attention: #ffd23f;
+    --ds-severity-rail-width-ready: 3px;
+    --ds-severity-rail-color-ready: #7ee2a8;
 ```
 
 - [ ] **Step 5: Verificar verde**
@@ -230,6 +234,24 @@ node --test tests/design-system/state-tint-ladder.test.mjs
 ```
 
 - [ ] **Step 3: Retirar la excepción crítica** (`[data-aia-hue][data-aia-severity="high"][data-aia-urgency="now"]`), sustituyendo la regla por el comentario que explica el retiro (la razón de 2026-08-11 era que el matiz tapaba el nivel — con el nivel viviendo en el filete y no en el chip, la razón desapareció; decisión implícita en la dirección B de Felipe, 2026-08-20). Esto resuelve además la D-2 de `DECISIONES_PENDIENTES`.
+
+- [ ] **Step 3bis: El marcador `ready` en la primitiva del filete.** En `severity-rail.css`, antes del bloque healthy/neutral, con su porqué y su variante RTL:
+
+```css
+  /* Marcador positivo, decision de Felipe 2026-08-20: filete verde fino SOLO
+     en lo activamente listo (rail:'ready' declarado por estado, nunca derivado
+     de nivel+matiz). No es un cuarto nivel de gravedad: Controlado sigue sin
+     barra por defecto y la escasez del canal se conserva. */
+  [data-aia-severity-rail="ready"] {
+    box-shadow: inset var(--ds-severity-rail-width-ready) 0 0 0 var(--ds-severity-rail-color-ready);
+  }
+
+  [dir="rtl"] [data-aia-severity-rail="ready"] {
+    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-ready)) 0 0 0 var(--ds-severity-rail-color-ready);
+  }
+```
+
+Y en los hot.js de PI y PS: `statePresentation` gana `rail: 'ready'` en `liberated-control` (PI), `prog-lista-para-confirmar` y `cal-cumplida-control` (PS); el aplicador del atributo pasa `presentation.rail || presentation.level`.
 
 - [ ] **Step 4: Verificar los guards del área**
 

@@ -343,6 +343,38 @@
        siete. */
     --ds-state-tint-neutral: #2b2f2d;
 
+    /* Replanteo 2026-08-20 (direccion B, decision de Felipe): el chip solido es
+       el portador fuerte de identidad y la fila baja a un tinte sutil. Los
+       --ds-state-tint-* de arriba NO se tocan: los consume el PDC. Contrato y
+       auditoria (WCAG AA + manual AIA, con el porque de cada desviacion):
+       docs/design-system/state-semantics.json, hues[].solid/solidText/row y
+       brandAudit. El guard tests/design-system/state-solid-contract.test.mjs
+       exige igualdad con el contrato y calcula los ratios en cada corrida. */
+    --ds-state-solid-red: #e15a52;
+    --ds-state-solid-red-text: #3c0a06;
+    --ds-state-solid-orange: #e87722;
+    --ds-state-solid-orange-text: #3a2004;
+    --ds-state-solid-amber: #ffca28;
+    --ds-state-solid-amber-text: #3a2c04;
+    --ds-state-solid-violet: #9485d6;
+    --ds-state-solid-violet-text: #26113f;
+    --ds-state-solid-teal: #5ec9bd;
+    --ds-state-solid-teal-text: #062f29;
+    --ds-state-solid-blue: #5f9fdd;
+    --ds-state-solid-blue-text: #07223c;
+    --ds-state-solid-green: #57b083;
+    --ds-state-solid-green-text: #06281a;
+    --ds-state-solid-neutral: #9aa8a0;
+    --ds-state-solid-neutral-text: #1c2420;
+    --ds-state-row-red: #2b1b1a;
+    --ds-state-row-orange: #2b211a;
+    --ds-state-row-amber: #2a2718;
+    --ds-state-row-violet: #251f2d;
+    --ds-state-row-teal: #192825;
+    --ds-state-row-blue: #1b2330;
+    --ds-state-row-green: #1b2a20;
+    --ds-state-row-neutral: #222724;
+
     /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
        color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
        a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
@@ -356,12 +388,20 @@
        Ventana» pasa a ~51% de las actividades, asi que un filete universal
        pondria marca de gravedad en mas de MEDIA TABLA para filas que no piden
        nada — ruido de fondo, no senal.
-       Aqui solo quedan los dos que si marcan; que `healthy` y `neutral` no
-       tengan token no es un olvido, es el contrato. */
+       Aqui solo quedan los que si marcan; que `healthy` y `neutral` no
+       tengan token no es un olvido, es el contrato.
+       Avivados el 2026-08-20: los alias a --ds-color-state-*-text eran pastel
+       y el filete se perdia en obra y proyector; el guard state-solid-contract
+       exige >=3:1 contra todo tinte de fila. `ready` (decision de Felipe,
+       2026-08-20) es el marcador positivo ESCASO: solo estados declarados con
+       rail:'ready' en su statePresentation — nunca todo Controlado, que sigue
+       sin barra por defecto. */
     --ds-severity-rail-width-urgent: 6px;
     --ds-severity-rail-width-attention: 4px;
-    --ds-severity-rail-color-urgent: var(--ds-color-state-critical-text);
-    --ds-severity-rail-color-attention: var(--ds-color-state-warning-text);
+    --ds-severity-rail-width-ready: 3px;
+    --ds-severity-rail-color-urgent: #ff7a6e;
+    --ds-severity-rail-color-attention: #ffd23f;
+    --ds-severity-rail-color-ready: #7ee2a8;
 
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
