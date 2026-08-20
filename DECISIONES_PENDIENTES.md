@@ -270,3 +270,65 @@ producto depende de ellas.
 **Qué NO haría: exigir un escenario por ruta de golpe.** Serían 20 escenarios nuevos solo en
 `foundation-shell`, y el resultado predecible es que alguien los declare vacíos para pasar el gate
 —que es exactamente el problema que este cajón vino a cerrar.
+
+---
+
+## D-5 · DS-F1, cajón 3: el segundo sistema de estilos de BI
+
+**Estado: abierta.** La pregunta del cajón era: *¿hay primitivas que el catálogo NO tiene y por eso
+los módulos improvisan?* **La respuesta medida es sí, pero solo una — y no la que se esperaba.**
+
+### Qué son en realidad las 88 utilidades
+
+Las clasifiqué todas. **Ninguna es un componente**: son maquetación atómica.
+
+| Familia | Cuántas |
+|---|---:|
+| `text-*` (tamaño y color de texto) | 13 |
+| `h-*`, `w-*`, `max-*`, `min-*` | 15 |
+| `flex-*`, `items-*`, `justify-*`, `gap-*`, `grid-*` | 14 |
+| `m*-`, `p*-` (espaciado) | 17 |
+| resto (`overflow`, `rounded`, `truncate`, `z-*`, …) | 29 |
+
+No compiten con el catálogo `aia-*`: **juegan en otro eje**. El catálogo da componentes —botón,
+chip, campo, tabla, navegación—; esto da espaciado, tamaño y alineación. Un módulo puede usar las
+primitivas correctas y **seguir necesitando** `gap-2` y `px-4`.
+
+Por eso `bi-utilities.css` fue una victoria y no un descuido: sustituyó al Play CDN de Tailwind, que
+inyectaba sin capa y derrotaba a las nueve capas del sistema. Lo que queda es que esa capa exista
+**solo para BI** y con vocabulario de Tailwind.
+
+### El caso F0-112, mirado de cerca
+
+`views/bi/_nav.php` declara cero primitivas y cinco utilidades por pestaña. Al abrirlo aparecen **dos
+problemas distintos, y conviene no confundirlos**:
+
+1. **Disciplina.** El catálogo **sí tiene** un componente `navigation`, y `_nav.php` no lo usa: monta
+   el carril con una clase propia, `bi-tabs-nav`.
+2. **Carencia real.** Las siete variantes de `navigation` son `brand-lockup`, `navbar`, `contextual`,
+   `drawer`, `account`, `sidebar` y `collapsed`. **Ninguna es un carril de pestañas.** Aunque
+   `_nav.php` quisiera hacerlo bien, no tiene qué usar.
+
+Así que la respuesta no es «es indisciplina» ni «falta catálogo»: **son las dos, y son separables**.
+
+### Lo que queda por decidir
+
+| | Qué implica |
+|---|---|
+| **(a) Añadir una variante `tabs` a `navigation`** | Cierra la carencia. `_nav.php` pasa a consumir catálogo y deja de improvisar el carril |
+| **(b) Promover las utilidades a capa compartida** | El resto de módulos deja de reinventar espaciado. Es un cambio de alcance grande: hoy es una hoja de BI y pasaría a ser parte del sistema |
+| **(c) Dejarlo como está y declararlo** | El contrato dice que BI tiene su capa propia, y se acaba la ambigüedad |
+
+### Recomendación: **(a) ahora, (b) como pregunta aparte**
+
+La variante de pestañas es concreta, tiene un consumidor esperándola y cierra un hallazgo real.
+Empezaría por ahí.
+
+Lo de las utilidades compartidas es una decisión de sistema, no de BI, y merece su propio momento:
+promoverlas significa que el sistema de diseño adopta un vocabulario de maquetación tipo Tailwind, y
+eso cambia cómo se escribe todo lo demás.
+
+**Qué NO haría: retirar `bi-utilities.css`.** Es la lectura natural del hallazgo —«hay dos sistemas,
+quitemos uno»— y reabriría exactamente lo que resolvió: sin esa hoja, BI vuelve al Play CDN o a estilos
+sueltos, y ninguno de los dos respeta las capas. Y un guard que exigiera primitivas sin que exista la
+variante de pestañas solo produciría incumplimiento declarado.
