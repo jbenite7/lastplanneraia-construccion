@@ -379,7 +379,7 @@ con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería c
 | **MO-F2a-2a · Deudas de arranque** | El golden mide exactamente su viewport salvo recorte declarado; los 17 manifiestos en `1.1.0` | **CERRADA** (2026-08-07, DS-033) |
 | **MO-F2a-2b · Piloto móvil** | Handsontable deja de instanciarse bajo el umbral (0 nodos en 390×844); el sidebar pasa a menú flotante — era la causa raíz de que móvil fuera inusable: se comía 240 de 390 px y nunca colapsaba | **CERRADA** (2026-08-14) |
 | **MO-F2b · Resto de módulos** | Los 13 restantes, con el coste ya medido en el piloto | Pendiente |
-| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es **reconstruir, no reactivar** | **SALE DEL FRENTE** (D-9, 2026-08-20). No cancelada: **estacionada sin fecha ni dueño**, y sin bloquear a nadie. Se retoma solo si alguien la pide de verdad — hoy ningún usuario la ha reclamado en las notas del repo. Si se retoma, nace como frente propio con su spec |
+| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es **reconstruir, no reactivar**: paleta nueva, conmutador con preferencia guardada y revalidar todas las superficies | **Pendiente — arranca al cerrar MO-F2b.** Orden de Felipe (2026-08-20), revisando D-9: no queda estacionada, va **justo detrás de móvil**. Sigue **sin bloquear a `bi-control-tower-gemini`**, que cierra en dark por decisión propia (D-7) |
 | **MO-F4 · Matriz diagonal** | Los gates adoptan la matriz de D6 y los candados se reinstalan | Pendiente — **absorbida por DS-F3**, ver «El solape de los gates» |
 
 ## El solape de los gates, y cómo se resuelve
@@ -413,7 +413,7 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 
 ## Apuestas planificadas (tras lo anterior)
 
-Torre de Control reconstruida con data storytelling (tras DS-F1; **ya no espera al tema claro**,
-D-9) · semana fija en
+Torre de Control reconstruida con data storytelling (tras DS-F1 y el tema claro, que vuelve a la
+secuencia detrás de móvil) · semana fija en
 el resto de módulos con corte semanal · extensión de contadores-cero a todos los módulos · backlog
 del 3-ago (48 decisiones; accesibilidad primero, absorbido por DS-F0).
