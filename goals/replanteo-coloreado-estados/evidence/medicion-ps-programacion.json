@@ -1,0 +1,37 @@
+[
+  {
+    "estado": "ps-state-prog-ejecucion-con-restricciones",
+    "cubo": "ps-alert-high",
+    "fondo": "#2b211a",
+    "rail": "urgent",
+    "railShadow": "rgb(255, 122, 110) 6px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-bloqueo-critico-sin-compromiso",
+    "cubo": "ps-alert-critical-route",
+    "fondo": "#431414",
+    "rail": "urgent",
+    "railShadow": "rgb(255, 122, 110) 6px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-condiciones-pendientes",
+    "cubo": "ps-alert-medium",
+    "fondo": "#2a2718",
+    "rail": "attention",
+    "railShadow": "rgb(255, 210, 63) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-sin-compromiso",
+    "cubo": "ps-alert-medium",
+    "fondo": "#251f2d",
+    "rail": "attention",
+    "railShadow": "rgb(255, 210, 63) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-prog-lista-para-confirmar",
+    "cubo": "ps-alert-control",
+    "fondo": "#1b2a20",
+    "rail": "ready",
+    "railShadow": "rgb(126, 226, 168) 3px 0px 0px 0px inset"
+  }
+]
