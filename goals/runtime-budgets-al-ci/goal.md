@@ -202,6 +202,48 @@ incondicional». La decisión está en [[DECISIONES_PENDIENTES]] como **D-10**.
 hasta hoy no había ninguna con la que comparar.
 
 
+## Resultado — el presupuesto de CSS ya pasa; queda uno solo
+
+**Medido en CI, corrida `32380299365` sobre `b289a822`** (no en la máquina de nadie):
+
+| Métrica | Antes | Ahora | Máximo | |
+|---|---:|---:|---:|---|
+| `cssGzipBytes` | 200.488 | **126.885** | 198.781 | **pasa, con 69.848 B de margen** |
+| `initializationMs` | 593 | **639,4** | 301,9 | sigue rojo |
+
+El ahorro de CSS —**73.603 B, el 36,7 %**— salió de dejar de servir al navegador los 187 comentarios
+del repositorio (D-10, decidida por Felipe el 2026-08-20). El detalle está en `35ef3059`.
+
+**Y costó una segunda vuelta que merece quedar escrita:** el primer intento generaba el espejo
+*después* de arrancar el runtime, y `docker/php/Dockerfile` hace `COPY . /var/www/html` **en tiempo
+de build**. Lo que no está en el árbol cuando se construye la imagen, no entra. El presupuesto bajó
+788 B de los 73.422 esperados, y el paso decía «62 hojas minificadas» tan campante. Un paso que
+informa de su propio éxito sin comprobar el efecto: la misma familia de trampa que esta jornada ya
+había cazado dos veces.
+
+### `initializationMs`: ni ruido ni CSS
+
+Seis muestras, dos corridas independientes:
+
+| | muestras | media |
+|---|---|---:|
+| Sin minificar (`32379202973`) | 589,4 · 657,2 · 593,0 | ~613 |
+| Con CSS minificado (`32380299365`) | 639,4 · 627,2 · 666,1 | ~644 |
+
+**La dispersión interna es de ±5 %**, así que la métrica es estable: no se puede llamar ruido del
+runner. Y **minificar el CSS no la mejoró** —de hecho subió—, lo que dice que el cuello no está en el
+peso de las hojas.
+
+Mide `performance.now()` en el instante en que Handsontable queda montado en `/programa-general`: es
+tiempo hasta rejilla lista, sensible a la máquina que lo corre. Con seis muestras al doble del máximo
+y al triple del baseline, o el producto se volvió tres veces más lento en algún momento sin que nadie
+lo midiera, o **el baseline de 191,4 ms se tomó en un entorno que ya no es este**.
+
+Distinguir una cosa de la otra exige historia que no existe: hasta hoy **ninguna corrida llegaba a
+medir**. Y tocar el baseline está en la lista de bloqueo incondicional del plan, así que **para aquí
+otra vez**: es **D-11**.
+
+
 ## Archivos de este goal
 
 - [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|Spec]]

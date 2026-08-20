@@ -435,8 +435,11 @@ ningún usuario en las notas del repo; lo que sí se usa a diario es el móvil.
 
 ## D-10 · El presupuesto de CSS está excedido: ¿se sube el techo o se recorta?
 
-**Estado: abierta, y es la única de las diez que bloquea trabajo hoy.** Cierra
-`runtime-budgets-al-ci` y, con él, `gates-al-ci`.
+**DECIDIDA por Felipe el 2026-08-20: minificar el CSS servido.** Ejecutada en `35ef3059` y
+`b289a822`. Resultado medido en CI: **200.488 → 126.885 B gzip**, un ahorro del 36,7 % que deja el
+presupuesto con **69.848 B de margen**. El techo no se tocó.
+
+Lo que sigue es el planteamiento tal como se elevó.
 
 ### Lo que pasó, en orden
 
@@ -487,3 +490,58 @@ haciéndolo en la misma jornada en que se descubrió que llevaba 40 corridas sin
 **`initializationMs` queda aparte y sin recomendación:** 593 ms contra 301,9 no lo causa el CSS, y
 con una sola corrida no se puede distinguir deriva real de ruido del runner. Hasta hoy no había
 ninguna con la que comparar. Pide una segunda medición antes de decidir nada.
+
+
+---
+
+## D-11 · `initializationMs` triplica su baseline, y no es ruido
+
+**Estado: abierta.** Es lo único que queda para que el gate `runtime-budgets` pase, y con él cierren
+`runtime-budgets-al-ci` y `gates-al-ci`.
+
+Con el CSS ya resuelto (D-10), el gate falla por una sola métrica: **639,4 ms contra un máximo de
+301,9 y un baseline de 191,4**.
+
+### Por qué no se puede despachar como ruido del runner
+
+Seis muestras, dos corridas independientes:
+
+| | muestras | media |
+|---|---|---:|
+| Sin minificar | 589,4 · 657,2 · 593,0 | ~613 |
+| Con CSS minificado | 639,4 · 627,2 · 666,1 | ~644 |
+
+**La dispersión interna es de ±5 %.** Una métrica que varía tan poco entre muestras no está midiendo
+azar. Y **minificar el CSS no la mejoró** —subió—, así que el cuello no es el peso de las hojas.
+
+Qué mide: `performance.now()` en el instante en que Handsontable queda montado en `/programa-general`
+— tiempo hasta rejilla lista, sensible a la máquina que lo corre.
+
+### El problema de fondo: no hay con qué comparar
+
+**Hasta hoy ninguna corrida de CI llegaba a medir esto** — el job moría antes, en `full-app-flow`,
+durante al menos 40 corridas. Así que no existe una serie histórica que diga cuándo empezó. Las dos
+explicaciones posibles no se pueden distinguir con los datos que hay:
+
+1. **El producto se volvió ~3× más lento** en algún momento sin que nadie lo midiera.
+2. **El baseline de 191,4 ms se tomó en otro entorno** —otra máquina, otro fixture— y nunca describió
+   a este.
+
+### Las opciones
+
+| | Qué implica |
+|---|---|
+| **(a) Recalibrar el baseline en el entorno donde de verdad se mide** | Se toman N corridas de CI y se fija el techo con su dispersión real. Honesto si la causa es la 2 |
+| **(b) Investigar la lentitud como bug de rendimiento** | Perfilar el arranque de Programa General. Caro, y podría acabar en «siempre fue así» |
+| **(c) Dejar el gate rojo** | Los dos frentes siguen bloqueados |
+
+### Recomendación: **(a), pero midiendo antes de fijar nada**
+
+Ahora que el CI por fin llega a este paso, cada publicación deja una medición. **Con tres o cuatro
+corridas más hay serie suficiente** para fijar un techo que describa la realidad en vez de a una
+máquina de julio — y eso sale gratis, porque las corridas ocurren igual.
+
+**Qué NO haría: subir el techo hoy con las seis muestras que hay.** Es la tentación evidente —el CSS
+ya se arregló, solo queda «este número»— y sería fijar un baseline con dos corridas del mismo día. Si
+la causa resulta ser la 1, habríamos bendecido una regresión de rendimiento el mismo día que
+recuperamos la capacidad de verla.
