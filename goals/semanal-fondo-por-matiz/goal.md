@@ -119,6 +119,71 @@ sería un refactor de cortesía dentro de un frente ajeno a eso.
 La coordinadora pidió anotar, si aparecen al convertir, **cuántas filas de Semanal serían «detenido
 por otro»** — el dato que ayuda a decidir el `r0` de Programa General, hoy en la mesa de Felipe.
 
+## Cierre
+
+**Cerrado el 2026-08-19**, sobre el sha `4f76d3b1` (`origin/main` integrado: 38 commits, sin
+conflictos). El trabajo estaba terminado desde el 13:39; lo que faltaba era la verificacion que lo
+demostrara, y al hacerla apareció un defecto **en la sonda, no en el producto**.
+
+### Condicion de hecho, medida despues de integrar
+
+| Comprobacion | Resultado |
+|---|---|
+| `bash scripts/publicar.sh --solo-verificar` | 4/4 en `RC=0` (dos bloqueantes: `design-system:static`, `contrato piloto PG`) |
+| Fase **Programacion** | 5 filas, **5 fondos distintos**, filete solo en `urgent` y `attention` |
+| Fase **Calificacion** | 5 filas, **5 fondos distintos**, filete solo en `urgent` y `attention` |
+| Captura mirada, 1180x820 dark, puerta de servicio | las dos fases, encabezado correcto en cada una |
+
+Ningun par de estados de la misma fase comparte fondo. Las dos colisiones que abrieron el frente
+—«Por Comprometer» contra «Condiciones Pendientes», y «Sin Calificar» contra «Incumplida»— quedan
+desempatadas: `#33204a` frente a `#3a3a0f`, y `#2b2f2d` frente a `#3a3a0f`.
+
+### El defecto que casi firma un cierre falso
+
+La sonda **no forzaba la fase**, y lo declaraba en voz alta. Reescribia
+`id="Semanal_Confirmada" value="0"` en el HTML del servidor e imprimia «fase forzada a
+calificacion» comprobando **su propia sustitucion de texto**, nunca el efecto. Al reejecutarla, la
+fase Calificacion salio con cinco filas en fase Programacion —dos fondos, estados `prog-*`— mientras
+la sonda seguia diciendo que habia forzado la fase.
+
+**Causa raiz, medida instrumentando el setter de `.value`** y leyendo el stack: el unico escritor de
+ese input es `public/js/cargarDatosGeneralesPagina2.js:183`, dentro del `success` del AJAX a
+`datosGeneralesPagina.php`, y pisa siempre lo que pinto el PHP. La clave ademas viaja en `data`, no
+en la raiz de la respuesta (`cargarDatosGeneralesPagina2.js:120`, `datosGenerales =
+json_info_global['data']`) — inyectarla en la raiz no hace nada, y eso costo una hipotesis fallida.
+Segundo factor: al entrar al proyecto la app ya aterriza en `/programacion-semanal`, asi que un
+`page.route` registrado despues no ve esa primera carga.
+
+**Por que salio verde el 13:39 y rojo hoy no se sabe con certeza**, y no se finge: las semanas de Da
+Porto estan hoy en `Semanal_Confirmada = 0`, y el `apply` del recalculo de estados (`aa965bf5`) corrio
+un minuto despues de aquella medicion. Lo que si esta probado es que el mecanismo de forzado nunca
+pudo funcionar por si mismo.
+
+**Arreglo.** La sonda fuerza la fase donde de verdad se decide —inyecta
+`json.data.Semanal_Confirmada = 1` en la respuesta del AJAX— y registra el route **antes** de la
+primera navegacion. Y sobre todo, **ahora puede ponerse roja**: comprueba la fase efectiva en el DOM,
+que ningun estado sea ajeno a la fase pedida y que no haya colision de fondos, y sale con `1`.
+Comprobado desactivando el forzado a proposito: `RC=1` y los tres fallos nombrados.
+
+**La prueba de que el producto estaba bien:** la medicion regenerada con la sonda arreglada es
+**identica byte a byte** a la que quedo commiteada el 13:39 (`git diff` vacio sobre
+`medicion-ps-calificacion.json`). Lo roto era el instrumento.
+
+### Familia de la trampa
+
+Es la tercera vez que se mide lo mismo en este repo: un guard que **valida su propia declaracion en
+vez del efecto** —hermana de [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y de
+[[memoria/trampas/guard-valida-declaracion-contra-si-misma]]. Merece ficha propia en
+`memoria/trampas/`; no se escribe aqui porque este frente no declara esa ruta, y queda anotado como
+pendiente.
+
+### Hallazgo encargado, sin respuesta
+
+La coordinadora pidio contar **cuantas filas de Semanal serian «detenido por otro»**, para decidir el
+`r0` de Programa General. **No aparecieron al convertir**: el vocabulario de Semanal no tiene ese
+concepto en ninguna de sus dos fases, ni en `WEEKLY_ALERT_MODEL` ni en `stateMachine.js`. El dato que
+se buscaba no existe de este lado, y esa ausencia es en si misma la respuesta.
+
 ## Archivos de este goal
 - [[docs/superpowers/plans/2026-08-19-semanal-fondo-por-matiz]]
 - [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design]]
