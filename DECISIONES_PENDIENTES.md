@@ -107,3 +107,113 @@ está detenido y debió arrancar?») es de trabajo, no de lectura de tabla.
 algo que se perdió— y es la que rompe el modelo: pintaría del mismo color filas que son Atrasada, En
 Curso y Actividad Futura a la vez, y el color de fondo dejaría de ser fiable para todos los demás
 estados, no solo para éste.
+
+---
+
+## D-2 · La excepción crítica del chip: ¿se retira o se activa?
+
+**Estado: abierta**, pero con una recomendación fuerte y medida.
+
+### Qué pasa hoy
+
+`public/css/design-system/components/states-feedback.css:162` declara una excepción: cuando un chip
+es `severity="high"` y `urgency="now"`, su fondo deja de ser el matiz y pasa al rojo crítico. El
+comentario que la acompaña la razona bien —«el nivel crítico es el único que no admite ambigüedad».
+
+**Nunca se aplica.** `public/css/design-system/adapters/legacy-bridge.css:104-142` reafirma matiz y
+nivel dentro de la capa `legacy-overrides`, que va después de `components`. Las dos familias usan
+`:where(...)`, así que pesan 0,0,0 y **decide el orden de fuente**: el matiz va último y gana
+siempre. Reproducible con `node goals/bug-coloreado-severidad/evidence/sonda-reglas-chip.mjs`, que
+lista las reglas por capa y enseña el matiz ganando en cada estado.
+
+### Dos cosas que hay que saber antes de «arreglarlo»
+
+**1. Hay un guard que afirma lo contrario y está en verde porque la excepción es inerte.**
+`tests/browser/ops-state-chip-hue.mjs` exige que «el color pintado sea el de la escalera para ese
+matiz» — justo lo que la excepción rompería. El guard y la regla se contradicen; uno de los dos
+sobra.
+
+**2. Activarla empeoraría tres pantallas, no una.** Medido contra `state-semantics.json`:
+
+| Módulo | Estados `urgent` | Matices que hoy los distinguen | Al activarla |
+|---|---:|---|---|
+| **Programación Intermedia** | 4 | red, orange, violet, blue | **1 solo rojo** |
+| **Programación Semanal** | 3 | red, orange, red | **1 solo rojo** |
+| **Plan de Compras** | 2 | red, orange | **1 solo rojo** |
+
+**Nueve estados fundidos en tres.** Es exactamente lo contrario del modelo publicado, donde el matiz
+existe para desempatar dentro de un mismo nivel.
+
+### Recomendación: **retirar la excepción de la capa canónica**
+
+No es una regla que «todavía no funciona»: es una regla cuyo efecto, si funcionara, ya sabemos que
+sería malo. Retirarla deja el código diciendo lo que la pantalla hace, y el guard pasa a vigilar algo
+real en vez de estar en verde por accidente.
+
+**Qué NO haría: subir su especificidad para que gane.** Es la lectura obvia del hallazgo —«una regla
+que no aplica, hagámosla aplicar»— y es la que rompe las tres pantallas de golpe.
+
+**Si aun así quieres que el nivel crítico se distinga más**, el camino que no rompe nada es
+reforzarlo por un canal que esté libre: el filete ya lo hace, y se le puede dar más peso ahí sin
+tocar el fondo.
+
+---
+
+## D-3 · Los estados declarados que nadie pinta: ¿se implementan o se retiran?
+
+**Estado: abierta.** La parte técnica —qué debe medir el guard— **ya está resuelta y en el repo**
+(`tests/design-system/state-key-consumption.test.mjs`). Lo que queda es tuyo: qué se hace con lo que
+el censo destapó.
+
+### El censo, medido sobre los 55 estados de `state-semantics.json`
+
+| | Estados |
+|---|---:|
+| con `key` — comprobables, y **los 25 tienen consumidor real** | 25 |
+| **sin `key`** — no se pueden comprobar en absoluto | **30** |
+| de esos 30, sin rastro ni siquiera por su etiqueta | 11 |
+
+**El problema no era de Plan de Compras.** Lo que se veía como «siete estados de PDC que nadie
+pinta» resultó ser un patrón: **siete de los diez módulos no declaran `key`** — auth, bi, pdc,
+control-cambios, dashboard, profesionales y subcontratistas. Los tres que sí la declaran son los de
+programación, y ahí no hay ni un huérfano.
+
+Los cuatro estados de PDC cuya etiqueta sí aparece en el repo, aparecen **solo en la prosa del
+laboratorio** (`views/design-system/families/states-feedback.php`). Ninguna pantalla real. Y la única
+columna «Estado» viva en `/plan-compras` (`pdc-app/src/pages/Seguimiento.tsx`) usa tres valores de
+texto plano, sin color.
+
+### La respuesta a «¿qué debe medir el guard?» — ya implementada
+
+Un estado sin `key` **no aparece como incumplido: simplemente no aparece**. Por eso el guard nuevo
+vigila dos cosas, y no una:
+
+1. **Que ningún estado nuevo nazca sin `key`.** La deuda de hoy queda congelada en
+   `docs/design-system/state-key-debt.json` — visible y cerrada por arriba, nunca autorizada.
+2. **Que todo estado con `key` tenga al menos un consumidor en el código.** Es lo que habría cazado
+   el caso de PDC si PDC declarara claves.
+
+Comprobado que **puede ponerse rojo**: con dos estados de sabotaje —uno sin clave, otro con una clave
+que nadie consume— devuelve `RC=1` y los nombra. Verde otra vez al retirarlos.
+
+### Lo que queda por decidir
+
+Los 30 estados sin clave, y en particular los 11 sin rastro alguno:
+
+| | Qué implica |
+|---|---|
+| **(a) Implementarlos** | Cada módulo declara `key` y pinta sus estados. Es el camino completo y el más caro: toca siete módulos |
+| **(b) Retirar del contrato lo que no se pinta** | El contrato queda diciendo la verdad. Se pierde la intención documentada de estados que quizá se quieran algún día |
+| **(c) Separar contrato de catálogo** | Los estados con renderer viven en `moduleMappings`; los aspiracionales pasan a una sección declarada como no vinculante |
+
+### Recomendación: **(c) para los 11 sin rastro, (a) para PDC**
+
+Los once que no dejan rastro —auth, bi y dashboard, más tres de PDC— son intención, no producto:
+mantenerlos mezclados con los que sí se pintan es lo que hace que el contrato parezca cubrir más de
+lo que cubre. Separarlos cuesta poco y deja de mentir.
+
+PDC es distinto: **tiene una pantalla viva con una columna de estado sin color**. Ahí sí hay producto
+esperando al contrato, y es el único de los siete módulos donde implementar tiene un destino claro.
+
+**Qué NO haría: retirar los siete de PDC en bloque.** Es lo más rápido y borraría el único caso donde
+la declaración iba por delante del código a propósito.

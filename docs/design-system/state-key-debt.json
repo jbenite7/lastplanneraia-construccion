@@ -1,0 +1,51 @@
+{
+  "porque": "Un estado declarado sin `key` no se puede unir con su renderer, asi que NINGUN guard puede comprobar si alguien lo pinta: no aparece como incumplido, simplemente no aparece. Este archivo congela la deuda medida el 2026-08-19 -30 de 55 estados sin clave- para que no pueda crecer. No la autoriza: la hace visible y la cierra por arriba. Los 25 estados que SI tienen clave estan consumidos los 25, asi que la clave es el unico dato que separa un contrato comprobable de uno decorativo.",
+  "medicion": "2026-08-19: 25 estados con key (todos consumidos), 30 sin key. De los 30, once no dejan rastro ni por su etiqueta.",
+  "regla": "Un estado NUEVO debe declarar `key`. Los listados aqui son la deuda existente; quitar entradas es bueno, anadirlas exige decision explicita.",
+  "sin_clave": {
+    "auth": [
+      "Credenciales inválidas",
+      "Sesión iniciada"
+    ],
+    "bi": [
+      "Atrasado",
+      "Rendimiento bajo umbral",
+      "Proyecciones no disponibles",
+      "Avance físico controlado"
+    ],
+    "pdc": [
+      "Información pendiente",
+      "Inicio de contratación vencido",
+      "Contratación atrasada",
+      "Contratación cerrada tarde",
+      "Contratación cerrada a tiempo",
+      "Contratación en curso",
+      "Contratación pendiente de inicio"
+    ],
+    "control-cambios": [
+      "En Estudio",
+      "Aprobado",
+      "Aprobado con Restricciones",
+      "No Aprobado",
+      "Desistido"
+    ],
+    "dashboard": [
+      "Crisis bloqueada",
+      "Escalamiento pendiente",
+      "Crisis cerrada",
+      "Sin datos"
+    ],
+    "profesionales": [
+      "Activo",
+      "Inactivo",
+      "Registro bloqueado",
+      "Error al guardar"
+    ],
+    "subcontratistas": [
+      "Activo",
+      "Inactivo",
+      "Registro bloqueado",
+      "Error al guardar"
+    ]
+  }
+}
