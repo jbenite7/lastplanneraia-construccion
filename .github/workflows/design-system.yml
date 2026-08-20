@@ -16,6 +16,7 @@ concurrency:
 jobs:
   design-system-static:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # Sin esto, `docker-compose.override.yml` monta sobre /var/www/html la ruta absoluta de la
     # máquina de desarrollo, que en un runner NO EXISTE. Docker no protesta: crea el directorio
     # vacío y lo monta igual, así que el código desaparece del contenedor y los cuatro tests de
@@ -80,6 +81,7 @@ jobs:
 
   design-system-runtime:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     needs: design-system-static
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
