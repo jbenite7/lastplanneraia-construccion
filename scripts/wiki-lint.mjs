@@ -17,6 +17,7 @@
 // lleva frontmatter, pero es de otra herramienta (el linter Stitch y el panel live leen ahí sus
 // tokens). Medirlo con la vara de la wiki lo ponía en rojo por cuatro campos que no le tocan.
 // Un bloque de metadatos no es una declaración de pertenecer a este esquema; `capa:` sí lo es.
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +38,37 @@ const SIN_ALARMA = process.argv.includes('--sin-alarma');
 
 // Índice del vault entero (la raíz del repo), aplicando los filtros de Obsidian.
 const filtros = JSON.parse(readFileSync(join(RAIZ, '.obsidian/app.json'), 'utf8')).userIgnoreFilters;
+
+// Además de los filtros de Obsidian, lo que git ignora DE VERDAD.
+//
+// Este lint se define a sí mismo como el que caza «defectos de lo que vas a
+// publicar», y un archivo ignorado por git NO se publica nunca: no puede serlo.
+// Medido el 2026-08-19: un residuo de Playwright en `test-results/report/data/`
+// —ignorado desde `.gitignore:236`— denegó una publicación por «sin frontmatter
+// del esquema v2». El gate bloqueaba por basura local, que es justo la forma de
+// enseñar a saltárselo que su propio comentario teme.
+//
+// **Se le pregunta a git en vez de parsear `.gitignore`.** La primera versión
+// leía el archivo a mano y se saltaba las reglas negativas: `.gitignore` ignora
+// `goals/` entero y lo reincluye después, así que podaba las 57 páginas de
+// `goals/` y reportaba como rotos cuatro enlaces que estaban perfectos. Se cazó
+// porque el lint pasó de «sin hallazgos» a cuatro enlaces rotos, no por leer el
+// código con más cuidado.
+let ignoradosPorGit = [];
+try {
+  ignoradosPorGit = execFileSync(
+    'git',
+    ['ls-files', '--others', '--ignored', '--exclude-standard', '--directory'],
+    { cwd: RAIZ, encoding: 'utf8' },
+  ).split('\n').map((l) => l.trim()).filter(Boolean);
+} catch {
+  // Sin git (un tarball, por ejemplo) el lint sigue funcionando con los filtros
+  // de Obsidian: pierde una poda, no la capacidad de comprobar.
+  ignoradosPorGit = [];
+}
+
 const ignorado = (rel) => filtros.some((f) => rel === f.replace(/\/$/, '') || rel.startsWith(f))
+  || ignoradosPorGit.some((f) => rel === f.replace(/\/$/, '') || rel.startsWith(f))
   || rel.startsWith('.git/');
 
 const vault = [];
