@@ -157,10 +157,6 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **Deploy · recálculo de estados pendiente solo en producción** — `20260819_recalculo_estados.php`
-  ya se aplicó en pruebas el 2026-08-20 con el sí de Felipe sobre el dry-run (40.664 filas
-  recalculadas, respaldo verificado, dry-run posterior en 0). Producción espera su revisión
-  visual de pruebas y su visto propio; su dry-run reporta 40.198 filas a cambiar.
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
