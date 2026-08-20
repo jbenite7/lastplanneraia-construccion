@@ -15,6 +15,18 @@ y el frente `bug-coloreado-severidad` (`goals/bug-coloreado-severidad/`).
 
 **Aprobado por el usuario el 2026-08-18**, bloque por bloque, tras `brainstorming`.
 
+> **Revisión del 2026-08-20 — este spec queda subordinado al contrato de tres niveles.** Al
+> integrar para publicar apareció el frente hermano `ds-f1a-estado`, que había publicado un
+> contrato de **la misma escala** medido contra 50.966 actividades reales, y los dos se
+> contradecían: cuatro niveles contra tres, y filete en todas las filas contra filete solo en el
+> 21,3 % que pide algo. **Decisión de Felipe, 2026-08-19, con las dos propuestas delante:** manda
+> [[docs/design-system/ds-f1a-escala-estado]] —tres niveles y su vocabulario—, esta maquinaria se
+> adapta (filete apagado en `controlado`, Programa General remapeado a los estados reales, con
+> `Fuera de Ventana` incluido), y **se coordina con esa sesión antes de tocar superficie
+> compartida**. Esta revisión reescribe las secciones normativas bajo ese contrato; las
+> mediciones y la procedencia originales se conservan como historia. La ejecución sigue pausada
+> hasta esa coordinación (ver `goals/ds-f1a-estados-severidad/goal.md`, §Estado real).
+
 ## De dónde sale
 
 El usuario esperaba que la tabla de `/programacion-intermedia` ordenara el color por severidad de
@@ -49,14 +61,15 @@ estados; los otros cuatro hallazgos delegados **no entran**.
 | Canal | Qué dice | Cómo |
 |---|---|---|
 | **Color de fondo de la fila** | *Qué* estado es — identidad | Los ocho tintes de `--ds-state-tint-*`, uno por estado. **Sus hex no se tocan** |
-| **Filete del borde izquierdo** | *Cuán grave* es — prioridad | Cuatro escalones de grosor y brillo |
+| **Filete del borde izquierdo** | *Cuán grave* es — prioridad | **Dos tratamientos dibujados** (Urgente fuerte, Atención medio); en `Controlado` **se apaga: la ausencia es la señal** *(revisión 2026-08-20)* |
 | **Orden de las filas** | Desempata dentro de un mismo escalón | Botón en la barra, **apagado por defecto** |
 
-Los **valores exactos** de los cuatro escalones —grosor en px y brillo— no se fijan aquí a
-propósito: se eligen contra la fila real de 24 px de alto (la excepción de densidad de `PRODUCT.md`)
-y se validan midiendo, no razonando. Lo que sí fija este spec es que sean **cuatro**, que el más
-bajo siga siendo visible y que la diferencia entre escalones contiguos se compruebe en pantalla
-antes de darla por buena.
+Los **valores exactos** de los dos tratamientos dibujados —grosor en px y brillo— no se fijan
+aquí a propósito: se eligen contra la fila real de 24 px de alto (la excepción de densidad de
+`PRODUCT.md`) y se validan midiendo, no razonando. Lo que sí fija este spec *(revisado
+2026-08-20)* es que sean **dos dibujados más la ausencia** —el modelo del contrato hermano: la
+barra dibuja dos niveles y la ausencia dibuja el tercero— y que la diferencia entre ambos se
+compruebe en pantalla antes de darla por buena.
 
 **La regla dura que hay que escribir en el contrato y que hoy no existe:**
 
@@ -83,10 +96,15 @@ documenta que en la bitácora «la severidad se lee por el filete lateral», y `
 publica la forma (`border-inline-start`). Este frente **extiende el componente `state` del catálogo**;
 no crea una familia nueva.
 
-### Los cuatro niveles y el nivel de cada estado
+### Los tres niveles y el nivel de cada estado *(revisado 2026-08-20)*
 
-Se adopta el eje de cuatro niveles de `docs/design-system/state-semantics.json` (`urgent`,
-`attention`, `healthy`, `neutral`). **No se deroga el contrato**: se corrige.
+Se adopta el eje de **tres niveles** de [[docs/design-system/ds-f1a-escala-estado]] (`Urgente`,
+`Atención`, `Controlado`; los estados sin gravedad declaran nivel nulo y tampoco dibujan barra).
+El eje de cuatro valores de `state-semantics.json` (`urgent`, `attention`, `healthy`, `neutral`)
+**no se deroga aquí** —sanearlo es decisión pendiente del usuario, declarada en el propio contrato
+hermano—: se **proyecta**: `urgent` → Urgente (filete fuerte) · `attention` → Atención (filete
+medio) · `healthy` y `neutral` → Controlado (**sin filete**). Las correcciones de nivel que
+siguen se conservan tal como se decidieron sobre ese eje.
 
 Nivel de los ocho estados de Programación Intermedia, cerrado el 2026-08-18:
 
@@ -124,6 +142,12 @@ Con estos niveles, la mitad de los estados de Intermedia llevan el filete máxim
 contiene media tabla no prioriza por sí solo. **Lo resuelven los otros dos canales:** los cuatro
 llevan colores de fondo distintos —identidad— y el botón de agrupar los desempata cuando el usuario
 lo pide.
+
+*(Nota de la revisión 2026-08-20)*: con la proyección a tres niveles, en Intermedia **seis de ocho
+estados dibujan barra** — la proporción inversa a la del contrato hermano, donde la ausencia es
+mayoría y por eso es señal. La escasez que hace legible la barra en Programa General no existe
+aquí; si al medir en pantalla la tabla se lee saturada, la salida es material de la coordinación
+pendiente, no una decisión unilateral de este frente.
 
 **Corolario operativo, y es una dependencia real:** implementar el filete **sin** el botón de orden
 no cumple esta decisión, aunque lo parezca.
@@ -211,14 +235,19 @@ aplica hoy.
 
 1. `docs/design-system/state-semantics.json` declara la **regla de un canal por eje** y el nivel
    corregido de los ocho estados de Intermedia.
-2. Existe la primitiva del filete en la capa de componentes, con su ficha en el catálogo, sus tokens
-   y sus cuatro escalones.
-3. Las cuatro superficies pintan **identidad en el fondo** y **gravedad en el filete**, medido con
-   color computado —nunca declarado— a 1180×820 dark, sesión real por la puerta de servicio.
+2. Existe la primitiva del filete en la capa de componentes, con su ficha en el catálogo, sus
+   tokens, sus **dos tratamientos dibujados y el apagado en `Controlado`** *(revisión 2026-08-20)*.
+3. Las tres superficies vigentes (tras la salida de `/plan-compras`) pintan **identidad en el
+   fondo** y **gravedad en el filete solo donde el estado pide algo**, medido con color computado
+   —nunca declarado— a 1180×820 dark, sesión real por la puerta de servicio. Programa General
+   pinta **los estados reales del contrato hermano**, `Fuera de Ventana` incluido.
 4. El botón de agrupar por gravedad existe, arranca apagado, y se puede volver al orden del programa.
 5. Programación Semanal no tiene dos estados con el mismo matiz **dentro de una misma fase**.
-6. **Verificación:** `bash scripts/publicar.sh --solo-verificar` en verde, y los goldens de las cuatro
-   superficies conciliados con aprobación explícita anotada.
+6. **Verificación:** `bash scripts/publicar.sh --solo-verificar` en verde, y los goldens de las
+   superficies vigentes conciliados con aprobación explícita anotada.
+7. **Coordinación previa** *(revisión 2026-08-20)*: nada de esto toca superficie compartida sin
+   coordinarse antes con la sesión del contrato hermano — es la tercera parte de la decisión de
+   Felipe del 2026-08-19, y el precedente de saltársela ya costó un frente entero sin publicar.
 
 ## Riesgos y reversas
 
