@@ -113,7 +113,16 @@ estado por defecto mientras Felipe no reparta.
   más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
   la Fase 3 puede tomar la procedencia y los dos frentes cierran.
 
-- [ ] **Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+- [x] 2026-08-20 — **Las once decisiones pendientes, RESUELTAS** en sesión dedicada con Felipe
+  (D-1 a D-9, D-11 y los plugins de Obsidian). Ninguna queda abierta; el detalle y el porqué de cada
+  una, en [[DECISIONES_PENDIENTES]] §«Ronda de decisiones del 2026-08-20». Lo que destraba: **D-11
+  es el único paso rojo del CI**, y D-7/D-8/D-9 sacan de la parálisis a tres frentes cuyas
+  condiciones contaban artefactos que ya no existen. Los plugins quedaron instalados y verificados
+  en pantalla; **Iconize se excluyó** por estar declarado como descontinuado por su autor.
+
+  <details><summary>La redacción anterior de este punto</summary>
+
+- [ ] ~~Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.~~ D-1 realces por
   condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
   `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
   `navigation` · **D-6** el vocabulario de la cascada, cuyo objetivo numérico ya se cumplió solo
@@ -121,6 +130,8 @@ estado por defecto mientras Felipe no reparta.
   una condición imposible · **D-8** `design-system-nucleo-gobernanza`, que exige quince gates donde
   el archivo declara nueve · **D-9** hasta dónde llega la reapertura móvil y el tema claro.
   Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+
+  </details>
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
@@ -194,9 +205,14 @@ estado por defecto mientras Felipe no reparta.
   comandos, pero la decisión de hacerlo obligatorio es de contrato: a partir de ahí toda fuente
   nueva nace con frontmatter o el gate se pone rojo. El hueco ya se midió: una fuente entró sin
   declarar por un merge y el gate no lo detectó.
-- [ ] **Plugins de comunidad de Obsidian** (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage,
-  tema Minimal) y **grupos de color del grafo** — quedaron fuera de la Fase 0b por decisión del
-  usuario y por no poder verificarse sin abrir Obsidian.
+- [x] 2026-08-20 — **Plugins de Obsidian instalados y verificados en pantalla** (Dataview, Tasks,
+  Kanban, Excalidraw, Homepage y el tema Minimal), publicado en `2888ab77`. El bloqueo original
+  —«no se puede verificar sin abrir Obsidian»— se resolvió abriéndolo. **Iconize quedó fuera**: su
+  autor lo declara descontinuado. **Kanban entró con advertencia**: funciona, pero busca quien lo
+  mantenga. Hallazgo de paso: **el vault de `lps-aia` no estaba registrado** en la app, y
+  `visor-gantt` sigue apuntando al disco Crucial X6 — roto desde la mudanza.
+- [ ] **Grupos de color del grafo** (`.obsidian/graph.json`) — sigue pendiente, es lo único que
+  quedó de la Fase 0b.
 - [ ] **Proponer verificación de tests en contenedor como config por proyecto.** La vía Docker se
   quitó del gate global de `~/.claude` el 2026-08-19; este repo es 100% dockerizado y su
   `verify.quick` en `.claude/gate.yaml` evita PHP/Docker por costo, pero el resto de la suite sí
