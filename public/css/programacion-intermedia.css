@@ -1433,13 +1433,16 @@ border: 1px solid var(--pi-due-border);
     color: var(--ds-active-text-primary);
 }
 
-/* Contenedor de la toolbar: handsontable-module.css (capa vendor) lo pinta
-   #f8f9fa; aquí se funde con el fondo de página del tema activo. */
-.pi-page .header-actions,
-.pi-page .action-bar {
-    background: var(--ds-active-bg-page);
-    border-bottom-color: var(--ds-active-border);
-}
+/* Aqui vivia una regla que pintaba la toolbar con el FONDO DE PAGINA para tapar
+   el #f8f9fa que le mete handsontable-module.css (capa vendor). Retirada el
+   2026-08-20: era la razon de que la barra de PI se viera suelta mientras la de
+   PG iba enmarcada. La vista usa ahora `.aia-toolbar`, que pinta superficie,
+   borde y radio de panel — y eso tapa al vendor igual de bien.
+   Se retira ENTERA y no se acota con `:not(.aia-toolbar)`: ese respaldo es
+   exactamente lo que el gate `duplicate-canonical-primitive` cuenta como
+   duplicar la primitiva, y lo midio (102 -> 103 al intentarlo). Un modulo que
+   repite la receta del sistema «por si acaso» es la deriva que el contrato
+   persigue. */
 
 .pi-page #loading {
     background: color-mix(in srgb, var(--ds-active-bg-page) 82%, transparent);

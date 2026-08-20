@@ -41,7 +41,7 @@
 
     <main class="hot-full-bleed">
     <h1 class="aia-visually-hidden">Programación Intermedia</h1>
-    <div class="header-actions action-bar">
+    <div class="aia-toolbar header-actions action-bar">
         <div class="pi-actions-row">
             <div class="pi-toolbar-actions">
                 <button type="button" class="leyenda_colores aia-btn aia-btn--secondary" data-toggle="modal" data-target="#modal_leyenda_colores">Leyenda <i class="fas fa-question-circle ml-1"></i></button>

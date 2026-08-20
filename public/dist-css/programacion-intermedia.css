@@ -1122,11 +1122,6 @@ border: 1px solid var(--pi-due-border);
     background: var(--ds-active-bg-page);
     color: var(--ds-active-text-primary);
 }
-.pi-page .header-actions,
-.pi-page .action-bar {
-    background: var(--ds-active-bg-page);
-    border-bottom-color: var(--ds-active-border);
-}
 .pi-page #loading {
     background: color-mix(in srgb, var(--ds-active-bg-page) 82%, transparent);
 }

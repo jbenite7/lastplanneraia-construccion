@@ -112,10 +112,6 @@ html.aia-theme-dark .pg-page {
   flex-direction: column;
   align-items: stretch;
   gap: var(--ds-space-2);
-  background: var(--ds-active-surface);
-  border: var(--ds-border-width) solid var(--ds-active-border);
-  border-radius: var(--ds-radius-panel);
-  color: var(--ds-active-text-primary);
   padding: var(--ds-space-2) var(--ds-space-3);
 }
 .pg-page .pg-actions-row {

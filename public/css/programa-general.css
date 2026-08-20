@@ -201,10 +201,9 @@ html.aia-theme-dark .pg-page {
   flex-direction: column;
   align-items: stretch;
   gap: var(--ds-space-2);
-  background: var(--ds-active-surface);
-  border: var(--ds-border-width) solid var(--ds-active-border);
-  border-radius: var(--ds-radius-panel);
-  color: var(--ds-active-text-primary);
+  /* Superficie, borde, radio y color los da ya `.aia-toolbar` (core): repetirlos
+     aqui era la duplicacion que hacia que PG fuera el unico modulo con marco.
+     Queda solo lo propio de PG: dos filas y su respiro. */
   padding: var(--ds-space-2) var(--ds-space-3);
 }
 

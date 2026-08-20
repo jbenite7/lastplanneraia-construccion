@@ -133,6 +133,7 @@
     justify-content: space-between;
     gap: var(--ds-space-3);
     padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-panel);
   }
   .aia-card,
   .aia-panel {
