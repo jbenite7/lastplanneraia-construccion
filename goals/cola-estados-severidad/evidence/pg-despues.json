@@ -1,0 +1,58 @@
+{
+  "Fuera de Ventana": {
+    "filas": 1,
+    "clase": "pg-state-fuera-de-ventana",
+    "fondo": "#134841",
+    "hue": "teal",
+    "severidad": "none",
+    "urgencia": "none"
+  },
+  "Actividad Futura": {
+    "filas": 1,
+    "clase": "pg-state-actividad-futura",
+    "fondo": "#173d26",
+    "hue": "green",
+    "severidad": "low",
+    "urgencia": "none"
+  },
+  "En Curso": {
+    "filas": 1,
+    "clase": "pg-state-en-curso",
+    "fondo": "#17334f",
+    "hue": "blue",
+    "severidad": "low",
+    "urgencia": "none"
+  },
+  "Terminada": {
+    "filas": 1,
+    "clase": "pg-state-terminada",
+    "fondo": "#2b2f2d",
+    "hue": "neutral",
+    "severidad": "low",
+    "urgencia": "none"
+  },
+  "Debe Iniciar": {
+    "filas": 1,
+    "clase": "pg-state-debe-iniciar",
+    "fondo": "#452501",
+    "hue": "orange",
+    "severidad": "medium",
+    "urgencia": "soon"
+  },
+  "Atrasada": {
+    "filas": 1,
+    "clase": "pg-state-atrasada",
+    "fondo": "#431414",
+    "hue": "red",
+    "severidad": "high",
+    "urgencia": "now"
+  },
+  "Sin Datos": {
+    "filas": 1,
+    "clase": "pg-state-sin-datos",
+    "fondo": "#33204a",
+    "hue": "violet",
+    "severidad": "none",
+    "urgencia": "none"
+  }
+}

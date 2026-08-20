@@ -649,8 +649,19 @@
         return 'en-curso';
       case 'actividad futura':
       case 'en liberacion de restricciones':
-      case 'no requerida':
         return 'actividad-futura';
+      // «Fuera de Ventana» es el 39,3% de `programa_consolidado` (25.778 de
+      // 65.633, medido el 2026-08-19) y NO estaba aqui: caia en el `default` y
+      // la clasificaba `getFallbackStateKey` por heuristica, que con
+      // Semanas_Inicio >= 7 devuelve `actividad-futura`. Medido en pantalla:
+      // las dos se pintaban del mismo verde, pixel a pixel.
+      //
+      // `no requerida` es su nombre anterior -`ds-f1a-escala-estado.json` lo
+      // declara con `"sustituye": "No Requerida"`-, asi que viaja con ella y no
+      // se queda apuntando al estado equivocado.
+      case 'fuera de ventana':
+      case 'no requerida':
+        return 'fuera-de-ventana';
       case 'sin datos':
         return 'sin-datos';
       default:
@@ -790,11 +801,19 @@
   // eje que desempata dentro de un mismo nivel. `actividad-futura` y `en-curso`
   // comparten nivel `healthy`, asi que sin matiz se pintan identicas -que es el
   // defecto que este chip viene a corregir-.
+  //
+  // Los NIVELES no se eligen aqui: salen de `docs/design-system/ds-f1a-escala-estado.json`,
+  // medido sobre 50.976 actividades reales. `urgente`->urgent, `atencion`->attention,
+  // `controlado`->healthy, y nivel `null`->neutral (ausencia de gravedad, que ese
+  // contrato distingue de `controlado` por el eje matiz y no por un canal nuevo).
+  //
+  // `con-alerta-restricciones` SALE: no existe en ninguna de las 65.633 filas de
+  // `programa_consolidado`. Entra `fuera-de-ventana`, que es el 39,3%.
   var statePresentation = {
     'actividad-futura': { level: 'healthy', hue: 'green' },
     'en-curso': { level: 'healthy', hue: 'blue' },
     terminada: { level: 'healthy', hue: 'neutral' },
-    'con-alerta-restricciones': { level: 'attention', hue: 'amber' },
+    'fuera-de-ventana': { level: 'neutral', hue: 'teal' },
     'debe-iniciar': { level: 'attention', hue: 'orange' },
     atrasada: { level: 'urgent', hue: 'red' },
     'sin-datos': { level: 'neutral', hue: 'violet' },
@@ -808,7 +827,7 @@
     'actividad-futura': 'Actividad Futura',
     'en-curso': 'En Curso',
     terminada: 'Terminada',
-    'con-alerta-restricciones': 'Con Alerta Restricciones',
+    'fuera-de-ventana': 'Fuera de Ventana',
     'debe-iniciar': 'Debe Iniciar',
     atrasada: 'Atrasada',
     'sin-datos': 'Sin Datos',
@@ -866,14 +885,22 @@
       rutaCriticaRaw === 'true';
     var baseKey = normalizeEstadoToStateKey(data.Estado) || getFallbackStateKey(data);
     var stateKey = baseKey;
-    var rowClassMap = {
-      atrasada: 'pg-state-atrasada',
-      'debe-iniciar': 'pg-state-debe-iniciar',
-      'actividad-futura': 'pg-state-actividad-futura',
-      'en-curso': 'pg-state-en-curso',
-      terminada: 'pg-state-terminada',
-      'sin-datos': 'pg-state-sin-datos',
-    };
+    // El vocabulario se DERIVA de `statePresentation` en vez de repetirse. Habia
+    // dos listas de los mismos estados y una se quedo atras: `fuera-de-ventana`
+    // entro al chip y no a la clase de fila, asi que el chip decia «teal» y la
+    // fila seguia pintandose del verde de `actividad-futura`. Con una sola
+    // fuente, anadir un estado no puede volver a arreglar la mitad.
+    //
+    // El respaldo `|| 'pg-state-actividad-futura'` sigue siendo lo que hace
+    // ruidoso este defecto: un estado sin mapear no se ve raro, se ve como otro
+    // estado real. Se conserva porque cambiarlo mueve el aspecto de filas sin
+    // clasificar y eso no es de este cambio, pero queda dicho aqui.
+    var rowClassMap = {};
+    for (var stateName in statePresentation) {
+      if (Object.prototype.hasOwnProperty.call(statePresentation, stateName)) {
+        rowClassMap[stateName] = 'pg-state-' + stateName;
+      }
+    }
 
     var result = {
       key: stateKey,
@@ -2934,7 +2961,12 @@
 
   function updateLegendCounts(rows) {
     var counts = {
+      // `con-alerta-restricciones` NO cuenta un estado -no existe en ninguna de
+      // las 65.633 filas-: cuenta el REALCE por condicion del dato, o sea las
+      // 13.243 filas con restricciones duras pendientes dentro de la ventana de
+      // seis semanas. Por eso sigue aqui aunque haya salido de `statePresentation`.
       'con-alerta-restricciones': 0,
+      'fuera-de-ventana': 0,
       'debe-iniciar': 0,
       'actividad-futura': 0,
       'en-curso': 0,

@@ -3424,17 +3424,37 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-active-border) !important;
 }
 
+/* `Terminada` y `Sin Datos` declaran matices distintos -neutral y violet- y aun
+   asi se pintaban IGUAL: `--ds-cell-state-neutral-bg` y
+   `--ds-cell-state-sin-datos-bg` resuelven los dos a `var(--ds-active-surface)`
+   (`tokens.css:665` y `:679`). Medido en pantalla el 2026-08-19: las dos daban
+   el mismo pixel. Pasan a consumir el tint de su propio matiz, igual que hizo
+   `en-curso` con `--ds-state-tint-blue`. */
 .pg-page #hot-container .handsontable td.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-tint-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 
 .pg-page #hot-container .handsontable td.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg) !important;
-  color: var(--ds-cell-state-sin-datos-fg) !important;
+  background-color: var(--ds-state-tint-violet) !important;
+  color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   border-style: dashed !important;
+}
+
+/* `Fuera de Ventana`: 39,3% de la tabla y no tenia regla propia, asi que heredaba
+   la de `actividad-futura` a traves de una clasificacion por heuristica.
+
+   Matiz `teal` porque `ds-f1a-escala-estado.json` le da nivel `null` -no pide
+   accion, no dibuja barra- y declara que la distincion frente a `controlado` se
+   hace «por el eje matiz, que ya existe en el fondo». No puede leerse como aviso
+   (descarta ambar) ni como horizonte cercano (descarta verde): es el horizonte
+   mas lejano, 7 semanas o mas. */
+.pg-page #hot-container .handsontable td.pg-state-fuera-de-ventana {
+  background-color: var(--ds-state-tint-teal) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 
 /* Muestras del modal: la geometria la fija `.pg-legend-quick-swatch`; de esta

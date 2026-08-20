@@ -81,6 +81,7 @@
                 <span class="aia-chip pdc-legend-item pg-filter-chip en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Ejecución <span id="count-en-curso" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Completada <span id="count-terminada" class="count-badge">…</span></span>
+                <span class="aia-chip pdc-legend-item pg-filter-chip fuera-de-ventana" data-filter="fuera-de-ventana" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Fuera de Ventana <span id="count-fuera-de-ventana" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">…</span></span>
             </div>
             <?php else: ?>
@@ -91,6 +92,7 @@
                 <span class="aia-chip pdc-legend-item pg-filter-chip en-curso" data-filter="en-curso" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> En Curso <span id="count-en-curso" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip atrasada" data-filter="atrasada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Atrasada <span id="count-atrasada" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip terminada" data-filter="terminada" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Terminada <span id="count-terminada" class="count-badge">…</span></span>
+                <span class="aia-chip pdc-legend-item pg-filter-chip fuera-de-ventana" data-filter="fuera-de-ventana" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Fuera de Ventana <span id="count-fuera-de-ventana" class="count-badge">…</span></span>
                 <span class="aia-chip pdc-legend-item pg-filter-chip sin-datos" data-filter="sin-datos" role="button" tabindex="0" aria-pressed="false"><span class="indicator"></span> Sin Datos <span id="count-sin-datos" class="count-badge">…</span></span>
             </div>
             <?php endif; ?>
