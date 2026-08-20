@@ -445,3 +445,7 @@ goals/ci-en-verde/*
 goals/**/*.png
 goals/**/*.jpg
 goals/**/*.jpeg
+
+# Copias sin comentarios que genera scripts/css-minify.mjs (ver public/.htaccess §1b).
+# Son artefacto de build: se regeneran, no se versionan.
+public/dist-css/

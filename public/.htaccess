@@ -7,6 +7,37 @@ RewriteRule ^construccion/imagenes/(.*)$ img/$1 [L,NC]
 # Redirige otros assets de forma directa
 RewriteRule ^construccion/(css|js|archivosBase|vendor|storage)/(.*)$ $1/$2 [L,NC]
 
+# 1b. Servir la copia sin comentarios cuando exista.
+#
+# El CSS de este repo se sirve sin minificar, y sus comentarios —que explican el
+# porqué de cada decisión y valen para quien lee el repositorio— viajan al
+# navegador en cada carga. Medido el 2026-08-20: pesan 75.895 B gzip, el 38 % del
+# CSS de la página, y son lo que puso el gate `runtime-budgets` por encima de su
+# techo.
+#
+# `scripts/css-minify.mjs` genera un espejo de `public/css/` en `public/dist-css/`.
+# Esta regla lo sirve en su lugar SIN cambiar ninguna URL: los ~27 `<link>` de las
+# vistas y los `@import` internos siguen pidiendo `/css/x.css`.
+#
+# **Falla en seguro, y es lo que la hace aceptable en producción:** la condición
+# `-f` comprueba que el minificado exista antes de reescribir. Si no se generó
+# —un despliegue sin el paso de build, por ejemplo— se sirve el original tal cual.
+# El peor caso es «no ahorra», nunca «la app se queda sin estilos».
+#
+# No hay bucle posible: el destino es `dist-css/…`, que ya no casa con el patrón
+# `^css/…` de la regla.
+#
+# La comprobación NO usa `%{DOCUMENT_ROOT}`, y el porqué se midió: en el
+# contenedor la raíz es `/var/www/html` mientras el `.htaccess` vive en
+# `public/`, así que la condición buscaba en el sitio equivocado y la regla no
+# aplicaba. En el hosting la raíz sí suele ser `public/`. Una regla que funciona
+# en un sitio y no en el otro es peor que no tenerla: se verifica en local y se
+# despliega otra cosa. Con `%{REQUEST_FILENAME}` —la ruta física real— y un
+# destino relativo al propio `.htaccess`, los dos entornos hacen lo mismo.
+RewriteCond %{REQUEST_FILENAME} ^(.*)/css/(.+)\.css$
+RewriteCond %1/dist-css/%2.css -f
+RewriteRule ^css/(.+)\.css$ dist-css/$1.css [L]
+
 # 2. Rutas estándar del Front Controller
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

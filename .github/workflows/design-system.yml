@@ -223,6 +223,15 @@ jobs:
       - name: Restore the worktree after writing the semanal receipt
         if: always()
         run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
+      # Los `*.min.css` son artefacto de build y no viajan en git, asi que en un
+      # checkout limpio no existen y `.htaccess` sirve los originales. Se generan
+      # ANTES de medir para que el presupuesto mida lo que un usuario recibe de
+      # verdad, no la version con los 187 comentarios del repositorio dentro.
+      #
+      # No ensucian el arbol -estan en .gitignore- asi que el provenance, que
+      # exige worktree limpio, sigue cuadrando.
+      - name: Generate comment-free CSS as the live site serves it
+        run: npm run css:minify && npm run css:minify:check && git status --porcelain
       - name: Measure runtime budgets
         env:
           APP_URL: http://127.0.0.1:18081

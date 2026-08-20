@@ -226,6 +226,27 @@ Notas:
 - Usa siempre `--ff-only` para evitar merges manuales en cualquier servidor.
 - Si `git pull --ff-only origin main` falla, aborta el deploy y resuelve fuera del servidor.
 
+### 5.0-bis Generar el CSS sin comentarios
+
+Desde el 2026-08-20 el sitio sirve una copia de cada hoja **sin comentarios**, que `public/.htaccess`
+usa en lugar del original cuando existe (viven en `public/dist-css/`, espejo de `public/css/`). No viaja en git —es artefacto de build— así que hay que
+generarla en el servidor tras cada `git pull`:
+
+```bash
+npm run css:minify && npm run css:minify:check
+```
+
+**Si te lo saltas no se rompe nada**, y por eso el paso es una nota y no un `CAUTION`: la regla del
+`.htaccess` comprueba con `-f` que el minificado exista antes de reescribir, así que sin él se sirven
+los originales igual que siempre. Lo único que se pierde es el ahorro — medido el 2026-08-20 en
+**75.895 B gzip, el 38 % del CSS de la página**.
+
+Lo que sí importa es el `--verificar` del final: comprueba que ninguna copia quedó desfasada respecto
+a su fuente. Ese es el único fallo que sí muerde — la URL lleva `?v=<mtime del original>`, así que una
+copia vieja se serviría con la URL nueva y quedaría cacheada en los navegadores.
+
+Si el servidor no tiene Node, **omite el paso entero**: el sitio funciona con los originales.
+
 ### 5.1 Migraciones de base de datos
 
 > [!CAUTION]
