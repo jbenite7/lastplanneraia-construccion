@@ -63,6 +63,13 @@ html.aia-theme-dark body.ps-page {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0;
+    /* Revisado en la ola 2 (2026-08-20) y se deja en `hidden` a proposito: este
+       NO es el caso de `.ps-table-wrap`. Handsontable no renderiza su tabla
+       dentro de este nodo, sino dentro de su propio `.wtHolder`, que lleva sus
+       barras de scroll y su virtualizacion. Abrir el scroll aqui añadiria una
+       segunda barra sobre la de la grilla sin destapar nada, porque el nodo que
+       desborda es el interno. Aqui no desaparece contenido: la grilla ya scrollea
+       y lo señala con su propia barra. */
     overflow-x: hidden;
     overflow-y: hidden;
 }
@@ -1413,11 +1420,29 @@ body.ps-page .ps-hot-toolbar-shell {
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 35%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 36%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
-#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
+/* Ola 2 (2026-08-20): esta columna llevaba `word-break: break-all`, que parte la
+   palabra donde caiga y sin guion ("Gestio|n"), aunque quepa entera en la linea
+   siguiente. Receta del repo: no partir nunca por defecto (`normal`), envolver
+   entre palabras, y romper solo la palabra que no cabe entera en su propia linea
+   (`overflow-wrap: break-word`), sin introducir guiones que el usuario no
+   escribio (`hyphens: none`). El 14% de ancho de la columna se conserva; si aun
+   asi una palabra se desborda, la salida es dar ancho o envolver, nunca volver a
+   partir. */
+#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+}
+/* Mismo caso que la columna 1, encontrado al aplicar la receta: `overflow-wrap:
+   anywhere` parte en cualquier punto aunque la palabra quepa entera en la linea
+   siguiente, que es exactamente el defecto "Gestió n". Se alinea con la receta.
+   (Cambio no enumerado en el encargo de la ola 2; se hace porque dejar dos
+   columnas de LA MISMA tabla con criterios opuestos es peor que el arreglo.) */
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 /* Motivo chip in Bandeja: line-wrap so multiple restrictions stack on small screens */
 #tabla_excepciones_no_autoprogramadas tbody td .ps-motivo-chip {
@@ -1462,13 +1487,27 @@ body.ps-page .ps-hot-toolbar-shell {
     width: 100%;
     gap: 6px;
 }
-/* Los DataTables de CNP/CNC/CIC heredan overflow-wrap: break-word desde
-   styles.css (compartido) y a 1180px las columnas estrechas parten palabras
-   sin guion ("Gestió n"). Con lang="es", hyphens: auto corta con guion
-   tipográfico ("Ges-tión") solo cuando la palabra no cabe. */
+/* Ola 2 (2026-08-20): aqui habia `hyphens: auto`, puesto para tapar un defecto
+   real — a 1180px las columnas estrechas de CNP/CNC/CIC partian palabras sin
+   guion ("Gestió n"). El diagnostico de entonces era correcto pero el remedio
+   trataba el sintoma: `auto` sigue alterando el texto sin acuerdo, metiendo
+   guiones que nadie escribio en nombres de actividad y de subcontratista.
+   La receta correcta es la misma de la tabla de excepciones: no partir por
+   defecto (`word-break: normal`), envolver entre palabras, y romper unicamente
+   la palabra que no cabe entera en su propia linea (`overflow-wrap:
+   break-word`), sin guion (`hyphens: none`).
+   El defecto viejo NO vuelve, y por que: "Gestió n" salia de que la hoja
+   compartida traia `overflow-wrap: anywhere` (o `break-all`), que corta en
+   cualquier punto aunque la palabra quepa en la linea siguiente. `break-word`
+   es otra cosa: solo actua cuando la palabra no cabe ni sola en una linea
+   vacia, asi que "Gestión" —que si cabe— baja entera en vez de partirse.
+   Se declara explicito aqui, sin heredar, para que un cambio en styles.css no
+   reintroduzca `anywhere` por la puerta de atras. */
 body.ps-page table.dataTable thead th,
 body.ps-page table.dataTable tbody td {
-    hyphens: auto;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 /* El rojo utilitario de Bootstrap (dc3545 = 3.51:1 sobre celda dark) no cumple
@@ -3274,11 +3313,30 @@ body.ps-page #hot-container td.ps-cell-shake {
     flex-shrink: 0;
 }
 
+/* Ola 2 (2026-08-20): el shell de la tabla del modal de cambios estaba en
+   `overflow: hidden` y no ofrecia scroll alternativo, asi que una fila mas ancha
+   que el modal se perdia entera y en silencio. Pasa a `auto` con la misma senal
+   de borde que `.ps-table-wrap` en styles.css (tapas `local` + sombras `scroll`).
+   La receta se repite en vez de compartirse porque son dos hojas distintas y no
+   hay una clase comun en el markup; si algun dia se unifican, este bloque es el
+   duplicado a retirar. El `--ps-scroll-edge-bg` apunta a la misma superficie que
+   ya pinta el shell, que es la condicion para que la tapa sea invisible. */
 .cm-table-shell {
     background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
-    overflow: hidden;
+    overflow: auto;
     border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
+    --ps-scroll-edge-bg: var(--ds-active-surface);
+    --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+    background-image:
+        linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+    background-attachment: local, local, scroll, scroll;
 }
 
 .cm-table {
@@ -3331,10 +3389,18 @@ body.ps-page #hot-container td.ps-cell-shake {
     background: color-mix(in srgb, var(--ds-color-state-warning-text) 45%, transparent);
 }
 
+/* Verificado en la ola 2 (2026-08-20): es `break-word`, NO `break-all`, y por eso
+   se queda. Con `white-space: normal` la celda envuelve entre palabras dentro de
+   sus 380px, y `break-word` solo entra como valvula cuando una palabra sola no
+   cabe entera en una linea vacia — que es la unica rotura aceptada por la regla
+   del frente. Se añade `hyphens: none` explicito para que esa rotura nunca meta
+   un guion inventado. */
 .cm-detail-cell {
     max-width: 380px;
     white-space: normal;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .cm-empty-state {

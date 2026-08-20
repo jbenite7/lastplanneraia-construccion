@@ -913,10 +913,17 @@ html.aia-theme-dark .pi-page {
     color: var(--ds-active-text-primary);
 }
 
+/* El nombre de actividad ya no se recorta en JS por conteo de caracteres (se retiro el
+   substring(0, 157) de hot.js): el texto llega entero y la celda lo envuelve. El tope de ancho
+   sigue aqui para que el modal no se descuadre, pero el corte lo decide el CSS, no la cadena.
+   `anywhere` partia palabras a mitad, que es el mismo dano en otra capa; la receta del frente es
+   envolver ENTRE palabras y no inventar guiones. */
 .pi-shared-activity-cell {
     min-width: 260px;
     max-width: 420px;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .pi-shared-delta {

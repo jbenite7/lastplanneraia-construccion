@@ -1121,11 +1121,16 @@ body.ps-page .ps-hot-toolbar-shell {
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 35%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 36%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
-#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
+#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+}
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 #tabla_excepciones_no_autoprogramadas tbody td .ps-motivo-chip {
     white-space: normal;
@@ -1168,7 +1173,9 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 body.ps-page table.dataTable thead th,
 body.ps-page table.dataTable tbody td {
-    hyphens: auto;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 @layer reset {
     html.aia-theme-dark body.ps-page .text-danger {
@@ -2525,8 +2532,19 @@ body.ps-page #hot-container td.ps-cell-shake {
 .cm-table-shell {
     background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
-    overflow: hidden;
+    overflow: auto;
     border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
+    --ps-scroll-edge-bg: var(--ds-active-surface);
+    --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+    background-image:
+        linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+    background-attachment: local, local, scroll, scroll;
 }
 .cm-table {
     margin: 0;
@@ -2567,7 +2585,9 @@ body.ps-page #hot-container td.ps-cell-shake {
 .cm-detail-cell {
     max-width: 380px;
     white-space: normal;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .cm-empty-state {
     text-align: center;

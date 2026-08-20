@@ -1425,9 +1425,23 @@ table.dataTable td.dt-min-width-300,
 .ps-form-layout .ps-form-col {
   margin-bottom: 0;
 }
+.ps-table-wrap,
+.ps-page #cuadroTabla {
+  --ps-scroll-edge-bg: var(--ds-active-surface);
+  --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+  background-image:
+    linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 .ps-table-wrap {
   max-inline-size: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 .ps-table-container {
   padding: 0;
@@ -2298,7 +2312,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   }
 }
 .ps-page #cuadroTabla {
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
 }
 .ps-page #dt_cliente {
   width: 100% !important;

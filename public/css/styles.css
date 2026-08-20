@@ -2135,9 +2135,39 @@ table.dataTable td.dt-min-width-300,
   margin-bottom: 0;
 }
 
+/* Ola 2 (2026-08-20): estos dos envoltorios de Programacion Semanal estaban en
+   `overflow-x: hidden`, asi que en el viewport canonico 1180x820 lo que no cabia
+   NO se recortaba con elipsis ni con scroll: desaparecia sin ninguna senal. La
+   regla del frente es que nada se esconde sin que el usuario lo sepa, asi que
+   pasan a `auto` y ademas SEÑALAN el desbordamiento con la receta clasica de
+   sombras de scroll (Komarov): dos capas "tapa" del color de la superficie
+   ancladas con `background-attachment: local` (viajan con el contenido) y dos
+   capas de sombra ancladas con `scroll` (quietas contra el borde). Cuando no hay
+   desbordamiento la tapa cubre la sombra y no se ve nada; en cuanto hay scroll,
+   la tapa se desplaza y la sombra asoma en el lado que tiene contenido oculto.
+   Es CSS puro, sin JS ni scroll-driven, asi que no depende de soporte reciente.
+   Los colores salen de tokens (`--ds-active-surface`, `--ds-active-bg-page`):
+   `--ps-scroll-edge-bg` se deja parametrizable porque la tapa solo desaparece si
+   coincide con el fondo real del contenedor; si una subvista se pinta sobre otra
+   superficie, redeclara esa variable en vez de meter un hex aqui. */
+.ps-table-wrap,
+.ps-page #cuadroTabla {
+  --ps-scroll-edge-bg: var(--ds-active-surface);
+  --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+  background-image:
+    linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
 .ps-table-wrap {
   max-inline-size: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .ps-table-container {
@@ -3340,8 +3370,13 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 
 /* Solo sobrevive el arm `.ps-page`: sus subvistas siguen montando estos nodos.
    Los arms `.pg-page` y `.pi-page` median 0 y se retiraron en el tramo 5h-2. */
+/* El `!important` seguia aqui para vencer al CSS de DataTables, que declara su
+   propio overflow en la capa vendor; se conserva por eso, pero ahora impone
+   `auto` en vez de `hidden`: antes ninguna regla podia reabrir el scroll, o sea
+   que el recorte silencioso era ademas irreversible. La senal de borde de este
+   contenedor se declara arriba, junto a `.ps-table-wrap`. */
 .ps-page #cuadroTabla {
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
 }
 
 .ps-page #dt_cliente {

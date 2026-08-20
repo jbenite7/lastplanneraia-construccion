@@ -718,7 +718,9 @@ html.aia-theme-dark .pi-page {
 .pi-shared-activity-cell {
     min-width: 260px;
     max-width: 420px;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .pi-shared-delta {
     display: inline-flex;

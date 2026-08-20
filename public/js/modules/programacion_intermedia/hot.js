@@ -2397,9 +2397,13 @@
           actividad = 'Actividad sin nombre';
         }
 
-        if (actividad.length > 160) {
-          actividad = actividad.substring(0, 157) + '...';
-        }
+        // Aqui habia un recorte por conteo de caracteres (substring(0, 157) + '...'):
+        // cortaba dentro de una palabra y no dejaba ni tooltip ni indicio de que faltaba texto,
+        // asi que el usuario no podia saber que estaba leyendo un nombre incompleto.
+        // Se retiro y se pinta el nombre completo: esta tabla es la previsualizacion de un modal,
+        // no una grilla densa, y ahi la altura de fila no es un bien escaso — que la celda envuelva
+        // entre palabras (ver .pi-shared-activity-cell en programacion-intermedia.css) no cuesta
+        // nada y conserva el texto entero.
 
         var rowSubCurrent = String(item.sub_contratista_actual == null ? '' : item.sub_contratista_actual).trim();
         var rowRespCurrent = String(item.responsable_aia_actual == null ? '' : item.responsable_aia_actual).trim();
