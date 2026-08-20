@@ -179,8 +179,10 @@ estado por defecto mientras Felipe no reparta.
   `GITHUB_STEP_SUMMARY`. Origen: spec 2026-08-20-deuda-ci-design.
 - [ ] **CI · zizmor** — auditoría de seguridad del YAML complementaria a actionlint; exige tooling
   extra. Origen: spec 2026-08-20-deuda-ci-design.
-- [ ] **CI · Frente 2 (G2, cache de capas Docker)** — su plan se escribe cuando el Frente 1 esté
-  publicado; objetivo y límites duros ya fijados en la spec.
+- [x] 2026-08-20 — **CI · Frente 2 (G2, cache de capas Docker)**: ejecutado en alcance A
+  (cache buildx `type=gha` de la capa base, Dockerfile intacto). Medido en caliente: build del
+  estático 81 s → 20 s (−75 %); runtime 93 s → 72 s (−23 %). Cierre en
+  [[goals/deuda-ci-frente-2/goal]].
 - [ ] **DECISIÓN (Felipe) · G6 branch protection / merge queue** — cambia el flujo de publicación
   de todas las sesiones (`publicar.sh` → PRs). No aplicar sin visto explícito. Origen: spec
   2026-08-20-deuda-ci-design.
