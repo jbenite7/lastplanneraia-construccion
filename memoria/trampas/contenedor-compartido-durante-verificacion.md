@@ -60,6 +60,31 @@ Si no devuelve tu worktree, ese resultado **no mide tu trabajo**. Dos salidas:
   resultado vale. Sirve para publicar; **no sirve para ejecutar pruebas nuevas**, que por
   definición no existen en el otro árbol.
 
+## La salida que evita casi todos estos turnos: el contenedor efímero
+
+Adoptado el 2026-08-19 tras cuatro incidentes en una jornada. Para ejecutar algo contra **tu propio
+árbol** sin tocar el contenedor compartido:
+
+```bash
+LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php <script>
+```
+
+Monta tu worktree, alcanza la misma base de datos, y **no le quita el contenedor a nadie**. El
+compartido solo se reapunta —con ventana coordinada— para lo que de verdad lo exige: el invariante
+de `scripts/publicar.sh` y la verificación en navegador.
+
+### La frontera NO es «línea de comandos contra navegador»
+
+Es **«¿necesita Apache arriba?»**, y la diferencia tiene un contraejemplo que engaña:
+`scripts/run-php-tests.php --nivel=http` es un comando de terminal y **no funciona en efímero**,
+porque su comprobación previa hace `file_get_contents('http://127.0.0.1/login')` **desde dentro del
+contenedor** (`scripts/run-php-tests.php:268`) y `--no-deps` no levanta el servidor web. Fallaría
+por el método, no por el código — un rojo que no dice nada.
+
+Quien aplique la regla por la etiqueta «es CLI, va en efímero» se llevará ese rojo y perderá un rato
+buscándolo en su diff. La pregunta correcta antes de elegir es: **¿esto necesita que la aplicación
+responda por HTTP?** Si sí, ventana. Si no, efímero.
+
 **Cuánto costó.** El 2026-08-19: veinte minutos en el primer incidente, y en el segundo dos
 ejecuciones completas de una tarea que se creyó verificada y no lo estaba. **La trampa estaba
 escrita desde la mañana de ese mismo día y mordió igual por la tarde**, lo que dice dónde tiene que

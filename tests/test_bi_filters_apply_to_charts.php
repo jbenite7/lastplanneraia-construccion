@@ -29,10 +29,17 @@ function lastNumericPoint(array $values): float
     return 0.0;
 }
 
+// Los descubrimientos de escenario se anclan a los proyectos sacrificables del fixture: sobre la
+// base compartida de dev, cualquier restauración ajena cambia la fila elegida por el LIMIT 1 y el
+// test oscila sin relación con el código bajo prueba (medido el 2026-08-19). La mecánica de
+// descubrimiento se conserva — solo el universo es determinista.
+$fixtureProjectsSql = BiContractFixture::PROYECTO_A . ', ' . BiContractFixture::PROYECTO_B;
+
 $context = $db->query(
     "SELECT project_id, Semana, sub_contratista, responsable_aia, COUNT(*) AS rows_count
      FROM bi_pg_semana
-     WHERE COALESCE(sub_contratista, '') <> ''
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND COALESCE(sub_contratista, '') <> ''
        AND COALESCE(responsable_aia, '') <> ''
      GROUP BY project_id, Semana, sub_contratista, responsable_aia
      ORDER BY rows_count DESC, project_id, Semana, sub_contratista, responsable_aia
@@ -164,7 +171,8 @@ if (!in_array($filters['resp'], $options['responsables'] ?? [], true)) {
 $causalContext = $db->query(
     "SELECT ps.project_id, ps.Semana, ps.Sub_Contratista, ps.Responsable_AIA, ps.Actividad, ps.Ubicacion
      FROM programacion_semanal ps
-     WHERE ps.Activa = '0' AND COALESCE(TRIM(ps.CNP), '') <> ''
+     WHERE ps.project_id IN ({$fixtureProjectsSql})
+       AND ps.Activa = '0' AND COALESCE(TRIM(ps.CNP), '') <> ''
        AND COALESCE(TRIM(ps.Sub_Contratista), '') <> ''
        AND COALESCE(TRIM(ps.Responsable_AIA), '') <> ''
        AND COALESCE(TRIM(ps.Actividad), '') <> ''
@@ -197,7 +205,8 @@ if ((int) ($rangeCnp['summary']['total'] ?? -1) !== (int) array_sum($rangeCnpCha
 $radarContext = $db->query(
     "SELECT ps.project_id, ps.Semana, ps.Sub_Contratista, ps.Responsable_AIA, ps.Actividad, ps.Ubicacion
      FROM programacion_semanal ps
-     WHERE ps.Activa IN ('1', 'NA')
+     WHERE ps.project_id IN ({$fixtureProjectsSql})
+       AND ps.Activa IN ('1', 'NA')
        AND COALESCE(TRIM(ps.Sub_Contratista), '') <> ''
        AND COALESCE(TRIM(ps.Responsable_AIA), '') <> ''
        AND COALESCE(TRIM(ps.Actividad), '') <> ''
@@ -215,7 +224,10 @@ if (!$radarContext) {
     ];
     $radarDetail = $bi->getProgramaRadarDetail([(int) $radarContext['project_id']], (string) $radarContext['Semana'], $radarFilters);
     foreach ($radarDetail['records'] ?? [] as $record) {
-        $matchesStage = str_contains(strtolower((string) $record['activity']), strtolower($stage));
+        // El contrato del filtro `etapa` en el radar es actividad O ubicación (igual que en el
+        // detalle CNP de arriba); espejarlo solo contra la actividad daba falsos rojos.
+        $matchesStage = str_contains(strtolower((string) $record['activity']), strtolower($stage))
+            || str_contains(strtolower((string) ($record['location'] ?? '')), strtolower($stage));
         if (
             (int) ($record['semana'] ?? 0) !== (int) $radarContext['Semana']
             || !str_contains(strtolower((string) $record['subcontractor']), strtolower($radarFilters['sub']))
@@ -257,7 +269,8 @@ if ((bool) ($rangeRadar['pagination']['has_more'] ?? false) !== ((int) $rangeRad
 
 $cncNa = $db->query(
     "SELECT project_id, Semana, Consecutivo FROM programacion_semanal
-     WHERE Activa = 'NA' AND COALESCE(TRIM(CNC), '') <> '' LIMIT 1",
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND Activa = 'NA' AND COALESCE(TRIM(CNC), '') <> '' LIMIT 1",
 )->fetch(PDO::FETCH_ASSOC);
 if (!$cncNa) {
     $failures[] = 'no CNC NA context available to verify inclusion';
@@ -269,9 +282,14 @@ if (!$cncNa) {
 
 $excludedCnp = $db->query(
     "SELECT project_id, Semana, Consecutivo FROM programacion_semanal
-     WHERE Activa IN ('1', 'NA') AND COALESCE(TRIM(CNP), '') <> '' LIMIT 1",
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND Activa IN ('1', 'NA') AND COALESCE(TRIM(CNP), '') <> '' LIMIT 1",
 )->fetch(PDO::FETCH_ASSOC);
-if ($excludedCnp) {
+if (!$excludedCnp) {
+    // El fixture siembra 'CI.CNP.STALE.A' justo para este escenario: si no aparece, el chequeo
+    // quedaría vacío en silencio.
+    $failures[] = 'no active row with stale CNP available to verify causal universe exclusion';
+} else {
     $detail = $bi->getProgramaCnpDetail([(int) $excludedCnp['project_id']], (string) $excludedCnp['Semana']);
     foreach ($detail['activities'] ?? [] as $activity) {
         if ((int) $activity['consecutivo'] === (int) $excludedCnp['Consecutivo']) {

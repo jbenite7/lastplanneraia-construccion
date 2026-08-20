@@ -1,12 +1,16 @@
 ---
-capa: wiki
+capa: fuente
 tipo: referencia
 estado: vigente
 fecha: 2026-08-03
 areas: [proceso]
-tags: [generado]
+tags: [proyecto, generado]
 fuente: docs/superpowers
 resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la ejecutó, por mes, incluido lo archivado"
+project: lps-aia
+type: plan-inventory
+status: activo
+updated: 2026-08-19
 ---
 # Registro de trabajo
 
@@ -37,7 +41,7 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_106 trabajos · 45 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_111 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
@@ -45,6 +49,11 @@ _106 trabajos · 45 con spec y plan emparejados · 20 archivados en `docs/archiv
 |---|---|---|
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
 | DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
+| DS-F1a · La escala de estado: vocabulario y lectura — diseño | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado|plan]] | — |
+| «Fuera de Ventana» en los dos calculadores | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana|plan]] | — |
+| Estados, severidad y color — el contrato — diseño | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design|spec]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato|plan]] | — |
+| Migración de la columna Estado | [[docs/superpowers/plans/2026-08-19-migracion-estados|plan]] | — |
+| Organizar la casa — el repo y sus sesiones | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design|spec]] | — |
 | publicar.sh: el invariante es el montaje, no el nombre del proyecto — diseño | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design|spec]] | — |
 | runtime-budgets al CI, recortado a andamio — diseño | [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|spec]] · [[docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci|plan]] | — |
 | Espacio de la cuenta de SiteGround: dejar de guardar lo que git ya guarda | [[docs/superpowers/specs/2026-08-18-espacio-cuenta-siteground-design|spec]] · [[docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground|plan]] | — |

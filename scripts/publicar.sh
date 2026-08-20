@@ -78,7 +78,13 @@ else
 fi
 
 solo_verificar=0
-[ "${1:-}" = "--solo-verificar" ] && solo_verificar=1
+con_merges=0
+for arg in "$@"; do
+  case "$arg" in
+    --solo-verificar) solo_verificar=1 ;;
+    --con-merges)     con_merges=1 ;;
+  esac
+done
 
 fallos=0
 avisos=0
@@ -151,6 +157,54 @@ fi
 if [ -n "$(git status --porcelain)" ]; then
   echo "DENEGADO: el arbol tiene cambios sin commitear."
   exit 1
+fi
+
+# Antes de publicar: ¿estas publicando ramas integradas?
+#
+# No juzga si integrar esta bien -es legitimo y frecuente-. Obliga a MIRAR, porque el
+# 2026-08-19 dos frentes a medio terminar entraron en `main` por un merge que otra
+# sesion hizo mientras esta trabajaba, y solo se detectaron porque alguien los reviso
+# a mano antes de empujar. Eso fue una costumbre, no un mecanismo.
+#
+# Por que no bloquea por "goal.md sin cierre" a secas: un frente activo commitea su
+# goal.md mientras trabaja y todavia no ha cerrado. Bloquearlo en cada publicacion
+# intermedia serian falsos positivos a diario, y un gate que estorba a diario se
+# aprende a saltar -es lo que ya paso con la alarma de veracidad, que por eso avisa
+# en vez de bloquear-. Asi que el hecho comprobable ("hay merges") es lo que frena, y
+# el estado de los frentes es lo que se te ensena para que decidas con datos.
+merges=$(git rev-list --merges origin/main..HEAD)
+if [ -n "$merges" ]; then
+  n_merges=$(printf '%s\n' "$merges" | grep -c .)
+  echo
+  echo "Esta publicacion integra $n_merges merge(s):"
+  printf '%s\n' "$merges" | while read -r m; do
+    [ -n "$m" ] && git log -1 --format='  %h %s' "$m"
+  done
+
+  goles=$(git diff --name-only origin/main..HEAD -- 'goals/*/goal.md' || true)
+  if [ -n "$goles" ]; then
+    echo
+    echo "Frentes que entran con ella:"
+    printf '%s\n' "$goles" | while read -r g; do
+      [ -n "$g" ] || continue
+      [ -f "$g" ] || { printf '  ? %s (borrado)\n' "$g"; continue; }
+      cuerpo=$(awk '/^## *Cierre/{f=1;next} /^## /{f=0} f' "$g" | grep -cv '^[[:space:]]*$')
+      if [ "$cuerpo" -gt 0 ]; then
+        printf '  ✔ %s declara cierre\n' "$g"
+      else
+        printf '  ✖ %s SIN seccion de cierre\n' "$g"
+      fi
+    done
+  fi
+
+  if [ "$con_merges" -ne 1 ]; then
+    echo
+    echo "DENEGADO: no se publica una integracion sin decirlo. Mira la lista de arriba."
+    echo "  Si es lo que quieres:  bash scripts/publicar.sh --con-merges"
+    exit 1
+  fi
+  echo
+  echo "Integracion confirmada con --con-merges."
 fi
 
 echo "Publicando…"

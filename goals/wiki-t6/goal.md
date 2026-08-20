@@ -99,6 +99,6 @@ frente que la disparó, y menos cuando el arreglo le vendría bien a ese frente.
 
 ### Lo que la Fase 0b deja abierto
 
-Todo anotado en [[cola-de-pendientes]], para que no se pierda al marcarla hecha: los plugins de
+Todo anotado en [[TASKS|Cola de pendientes]], para que no se pierda al marcarla hecha: los plugins de
 comunidad, los grupos de color del grafo, enchufar `--estricto` al gate, los tres archivos
 congelados por contrato y los ocho `goal.md` que son andamiajes sin objetivo escrito.

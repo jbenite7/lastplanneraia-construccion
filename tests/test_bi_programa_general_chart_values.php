@@ -1861,10 +1861,17 @@ function biCurvaSDirectExpected(array $rows): array
     return ['labels' => $labels, 'real' => $real, 'planned' => $planned];
 }
 
+// Todos los descubrimientos de escenario de este test se anclan a los proyectos sacrificables
+// del fixture: sobre la base compartida de dev cualquier restauración ajena cambia el escenario
+// elegido y las cifras oscilan sin relación con el código bajo prueba (medido el 2026-08-19).
+// La mecánica de descubrimiento se conserva — solo el universo es determinista.
+$fixtureProjectsSql = BiContractFixture::PROYECTO_A . ', ' . BiContractFixture::PROYECTO_B;
+
 $context = $db->query(
     "SELECT project_id, Semana, sub_contratista, responsable_aia, COUNT(*) AS rows_count
      FROM bi_pg_semana
-     WHERE COALESCE(sub_contratista, '') <> ''
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND COALESCE(sub_contratista, '') <> ''
        AND COALESCE(responsable_aia, '') <> ''
      GROUP BY project_id, Semana, sub_contratista, responsable_aia
      ORDER BY rows_count DESC
@@ -1896,6 +1903,7 @@ $baselineDrift = $db->query(
         SELECT project_id, Semana, MAX(Fecha_Fin) AS finish
         FROM programa_consolidado
         WHERE COALESCE(Titulo, 0) = 0
+          AND project_id IN ({$fixtureProjectsSql})
         GROUP BY project_id, Semana
     ), bounds AS (
         SELECT project_id, MIN(Semana) AS first_week, MAX(Semana) AS last_week
@@ -1924,7 +1932,8 @@ if (!$baselineDrift) {
 $multiFiltered = $db->query(
     "SELECT sub_contratista, responsable_aia, MIN(Fecha_Fin_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
      FROM bi_pg_semana
-     WHERE COALESCE(sub_contratista, '') <> ''
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND COALESCE(sub_contratista, '') <> ''
        AND COALESCE(responsable_aia, '') <> ''
      GROUP BY sub_contratista, responsable_aia
      HAVING COUNT(DISTINCT project_id) >= 2
@@ -1935,7 +1944,8 @@ if ($multiFiltered) {
     $multiFilteredProjectIds = $db->query(
         "SELECT DISTINCT project_id
          FROM bi_pg_semana
-         WHERE sub_contratista = ?
+         WHERE project_id IN ({$fixtureProjectsSql})
+           AND sub_contratista = ?
            AND responsable_aia = ?
          ORDER BY project_id",
         [(string) $multiFiltered['sub_contratista'], (string) $multiFiltered['responsable_aia']],
@@ -2024,7 +2034,8 @@ $distinctCutoffWeeks = $db->query(
             MAX(Fecha_Fin_Sem) AS max_cutoff,
             COUNT(*) AS rows_count
      FROM bi_pg_semana
-     WHERE Fecha_Fin_Sem IS NOT NULL
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND Fecha_Fin_Sem IS NOT NULL
      GROUP BY Semana
      HAVING COUNT(DISTINCT project_id) >= 2
         AND MIN(Fecha_Fin_Sem) <> MAX(Fecha_Fin_Sem)
@@ -2038,7 +2049,8 @@ foreach ($distinctCutoffWeeks as $candidateWeek) {
     $projectsForWeek = $db->query(
         "SELECT project_id, MIN(Fecha_Fin_Sem) AS cutoff, COUNT(*) AS rows_count
          FROM bi_pg_semana
-         WHERE Semana = ?
+         WHERE project_id IN ({$fixtureProjectsSql})
+           AND Semana = ?
            AND Fecha_Fin_Sem IS NOT NULL
          GROUP BY project_id
          HAVING COUNT(*) > 0
@@ -2113,7 +2125,8 @@ if ($distinctCutoffScenario === null) {
 $noProductionFiltered = $db->query(
     "SELECT sub_contratista, responsable_aia, MIN(Fecha_Fin_Sem) AS desde, MAX(Fecha_Fin_Sem) AS hasta
      FROM bi_pg_semana
-     WHERE COALESCE(sub_contratista, '') <> ''
+     WHERE project_id IN ({$fixtureProjectsSql})
+       AND COALESCE(sub_contratista, '') <> ''
        AND COALESCE(responsable_aia, '') <> ''
      GROUP BY sub_contratista, responsable_aia
      HAVING COUNT(DISTINCT project_id) >= 2
@@ -2125,7 +2138,8 @@ if ($noProductionFiltered) {
     $noProductionProjectIds = $db->query(
         "SELECT DISTINCT project_id
          FROM bi_pg_semana
-         WHERE sub_contratista = ?
+         WHERE project_id IN ({$fixtureProjectsSql})
+           AND sub_contratista = ?
            AND responsable_aia = ?
          ORDER BY project_id",
         [(string) $noProductionFiltered['sub_contratista'], (string) $noProductionFiltered['responsable_aia']],

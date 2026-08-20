@@ -4,11 +4,56 @@ tipo: biblia
 estado: vigente
 fecha: 2026-03-09
 areas: [proceso]
+tags: [proyecto]
 fuente: ROADMAP.md
 resumen: Visión unificada y plan de adopción metodológica de Last Planner System (LPS) con Arquitectura Híbrida, Control de Acceso (RBAC) y futuras integraciones…
+project: lps-aia
+type: roadmap
+status: activo
+updated: 2026-08-19
 ---
 
-# ROADMAP - Implementación Híbrida y Gobernanza Transversal
+# Roadmap
+
+Last Planner AIA hace visible el estado de la planificación de obra para que los equipos actúen
+antes de que un punto crítico se vuelva un incidente. «Terminado» es que los cuatro programas de
+abajo estén cerrados y el producto viva en producción sin deuda de gobierno.
+
+## Fases
+
+El detalle vivo, con su orden y sus dependencias, está en [[TASKS]]. Esta tabla es el resumen.
+
+| Fase | Qué entrega | Estado |
+|---|---|---|
+| 0. Mudanza del repositorio | El repo en `~/Developer/lps-aia`, verificado antes del cutover | hecha (2026-08-18) |
+| 0b. Wiki v2 | Vault entero etiquetado, 13 mapas de área, capa visual nativa | hecha (2026-08-19) |
+| 1. Programa Design System | Cuatro fases F0–F3: definir, implementar y controlar | en curso |
+| 2. Cierre hasta producción | Cinco fases | pendiente |
+| 3. Móvil, tablet y tema claro | Siete fases | pendiente |
+
+## Decisiones de rumbo
+
+- 2026-08-19 — **El gate de publicación bloquea por la forma de la wiki**; la alarma de veracidad
+  solo avisa. Un defecto de lo que publicas no es lo mismo que un contador que pide trabajo.
+- 2026-08-19 — **Los cinco archivos de la wiki del proyecto viven en la raíz**, y los dos que ya
+  existían dentro de `memoria/` se migraron en vez de duplicarse. Dos fuentes únicas no son una.
+- 2026-08-19 — **Un tag nunca duplica el `tipo` ni el `estado`.** De ahí que `moc` saliera del
+  vocabulario: `tipo: mapa` ya significa MOC. Detalle: [[docs/wiki-operacion]].
+- 2026-08-18 — **Replanteo completo de la wiki** conservando la metodología LLM Wiki, con
+  frontmatter en todas las fuentes. Detalle: [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]].
+- 2026-08-18 — **`MAIL_TRANSPORT`**: en producción el correo sale por `sendmail`, no por relay
+  externo. Lo decide la categoría de la IP de origen, no la autenticación.
+- 2026-08-18 — **El design system se rehace por programa F0–F3**: no está bien definido, ni bien
+  implementado, ni bien controlado. Detalle: [[memoria/decisiones/programa-design-system-en-cuatro-fases]].
+- 2026-08-04 — **El PDC v1 se eliminó.** Su sucesor es Plan de Compras v2. Detalle: [[docs/pdc-v2]].
+
+---
+
+Lo que sigue es el roadmap de arquitectura de marzo de 2026, que se conserva como historia: su
+Gantt, sus hitos y su backlog estratégico siguen siendo la referencia de cómo se llegó aquí.
+
+
+## ROADMAP de arquitectura (marzo 2026)
 
 Fecha: 2026-03-02
 

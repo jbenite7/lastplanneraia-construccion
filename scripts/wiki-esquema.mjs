@@ -24,8 +24,15 @@ export const ESTADOS = new Set(['vigente', 'derogada', 'abierto', 'cerrado']);
 // que `tipo: mapa` SIGNIFICA MOC: un mapa de área tiene estructura propia y fija («Qué manda»,
 // «Trampas», «Vecinos»), así que es una clase de página, y las clases viven en `tipo`. El tag
 // habría existido solo para parchear que una página estaba mal tipada.
+//
+// `proyecto` entró el 2026-08-19 con la wiki LLM del proyecto (los cinco archivos de la raíz).
+// La skill `llm-wiki` pide `tags: [proyecto, <dominio>]`, y esa clave ya existía aquí con otro
+// vocabulario: dos esquemas pidiendo mandar sobre la misma clave. **No se abrió la lista para
+// meter dominios**: el dominio lo lleva `areas`, que es el eje cerrado que v2 ya tenía para eso.
+// Solo entra la marca transversal, que es lo único que `areas` no puede decir — «este archivo es
+// uno de los cinco de la wiki del proyecto».
 export const TAGS = new Set(['dashboard', 'plantilla', 'pendiente', 'trampa',
-  'leer-antes-de-tocar', 'generado', 'archivo']);
+  'leer-antes-de-tocar', 'generado', 'archivo', 'proyecto']);
 
 export const CAPAS = new Set(['fuente', 'wiki', 'esquema']);
 

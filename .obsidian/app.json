@@ -18,6 +18,8 @@
     "tests/",
     "e2e/",
     "storage/",
+    "backups/",
+    "openspec/",
     ".claude/",
     ".superpowers/",
     ".agents/",

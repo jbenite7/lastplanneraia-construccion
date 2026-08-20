@@ -3,9 +3,14 @@ capa: fuente
 tipo: reporte
 estado: vigente
 fecha: 2026-03-09
-tags: [generado]
+areas: [proceso]
+tags: [proyecto, generado]
 fuente: CHANGELOG.md
 resumen: Todos los cambios notables en este proyecto serán documentados en este archivo.
+project: lps-aia
+type: changelog
+status: activo
+updated: 2026-08-19
 ---
 
 # Registro de Cambios (Changelog)
@@ -14,6 +19,92 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0/).
+
+Nota de bootstrap 2026-08-19: `[Sin publicar]` estaba archivado entre `[1.1.0]` y `[1.2.0]` — se
+movió aquí arriba (posición correcta de Unreleased) sin tocar su contenido. Desde esa fecha, el
+detalle día a día de sesiones/frentes vive en `docs/superpowers/reports/` y `decisiones/`; este
+archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEMENTATION_PLAN_INVENTORY]]
+para el estado de los planes en curso.
+
+## [Sin publicar]
+
+### Wiki v2 — esquema, lint y migración de la wiki (2026-08-19)
+
+#### Added
+- Esquema v2 de la wiki: campo `capa`, diecisiete `tipo`, ocho `tags` de vocabulario cerrado, y
+  frontmatter en las 431 fuentes del vault. Detalle en [[docs/wiki-operacion]].
+- `scripts/wiki-frontmatter.mjs` — backfill idempotente del frontmatter, en ensayo por defecto.
+- `scripts/wiki-esquema.mjs` — el vocabulario cerrado en un solo sitio.
+- `scripts/wiki-vistas.mjs` — censa qué lista cada vista de `paginas.base` y falla si alguna cambia.
+  Existe porque el lint en verde **no** prueba que una página siga en el catálogo.
+- 13 mapas de área (antes 7), 13 vistas Bases por área, 3 canvas y un dashboard en la portada.
+- `npm run test:wiki:forma` — la mitad de la comprobación que un gate puede bloquear.
+
+#### Changed
+- **`scripts/publicar.sh` bloquea por la forma de la wiki** y solo avisa por la alarma de
+  veracidad. Antes toda la wiki avisaba, y por eso tres veces entró una fuente sin declarar sin
+  que la publicación se detuviera.
+- `npm run test:wiki` corre en modo estricto.
+- La alarma de veracidad deja de contar tres cosas que no son deriva de código: commits de solo
+  frontmatter, merges que solo unen, y commits que solo tocan documentos de intención
+  (`spec`, `plan`, `reporte`, `evidencia`, `goal-doc`).
+- Los cinco archivos de la wiki del proyecto viven en la raíz: `memoria/goals/cola-de-pendientes.md`
+  pasó a [[TASKS]] y `memoria/registro-de-trabajo.md` a [[IMPLEMENTATION_PLAN_INVENTORY]].
+
+#### Fixed
+- `campo()` del lint devolvía **la línea siguiente** como valor de un campo vacío: `\s*` incluye el
+  salto de línea. Defecto heredado del lint v1, invisible hasta que hubo campos vacíos.
+- El lint daba por roto un enlace a un `.canvas` y un alias con barra escapada (`[[x\|Alias]]`),
+  que es la forma correcta dentro de una tabla.
+
+#### Removed
+- El tag `moc`: `tipo: mapa` significa MOC, y un tag que repite el tipo no discrimina nada.
+
+### Añadido
+
+- **Wiki de proyecto al día y depurada (2026-08-19):** `memoria/goals/estado.md` releído contra
+  `origin/main` —iba nueve días y treinta goals atrasado— y `memoria/goals/cola-de-pendientes.md`
+  actualizado con DS-F0 cerrada y los cuatro frentes de estados. `TASKS.md` reescrito: la versión
+  anterior se escribió desde un árbol 114 commits atrasado y daba por activos cinco frentes ya
+  publicados. `cola-de-pendientes` y `TASKS.md` decían ambos ser «la fuente única»; ahora se
+  reparten por pregunta —fases y su orden en la cola, pendientes en `TASKS.md`—.
+- **`openspec/` y `backups/` salen del vault de Obsidian:** son artefactos ignorados por git
+  (tooling vendorizado y volcados locales de BD) y metían 12 hallazgos falsos en el lint de la
+  wiki. Excluidos en `.obsidian/app.json`, que es donde se define el universo que el lint recorre.
+- **Arquitectura global-only documentada:** La BD activa queda formalizada como tablas globales con `project_id`; `{prefix}_*` queda limitado a respaldos, fuentes de migración o deuda aislada sin dependencia runtime.
+- **Asistente semi-automático compartido:** Listado de Actividades, Contratos y PDC comparten `preview/apply/undo/feedback/metrics`, trazabilidad global y bandeja guiada por seguridad.
+- **Trazabilidad semi-auto:** Nuevas tablas globales para corridas, sugerencias, decisiones, feedback y configuración por proyecto.
+- **Servicio de Normalización de Capítulos PG:** Nuevo `ProgramaConsolidadoNormalizationService` que auto-corrige capítulos con `Ejecutado > 0` y `Estado !== 'Capítulo'`. Integrado en GeneralApiController, SemanalApiController, creación de semana y cierre semanal.
+- **Guard Server-Side para Capítulos PG:** Rechazo con 403 de ediciones directas a filas de tipo capítulo (`Titulo=1`) en `GeneralApiController::update()`.
+- **LPS Contextual Drawers**: Paneles laterales deslizables (Bottom-Sheet responsive) integrados en Programa General, Programación Intermedia y Programación Semanal para guías y ayudas operativas contextuales.
+- **Matriz de severidad del Cajón Contextual LPS:** Nueva documentación operativa en `docs/matriz-severidad-cajon-contextual-lps.md` para normalizar severidades PG/PI/PS, restricciones duras/blandas, colores y comportamiento de sidebar.
+- **Motor de Escalamiento Semanal Inteligente**: Sistema de notificaciones express mitigador de spam con "Modo Simulación" (al portapapeles y Liquid Glass), Weekly Digest consolidador por subcontratista, y filtro automático para restringir las notificaciones individuales a tareas de Ruta Crítica (P1).
+- **Estética Liquid Glassmorphism**: Rediseño CSS modular con efectos traslúcidos Liquid Glass, animaciones fluidas spring y optimización mobile-first para resoluciones de obra.
+- **Bypass de Caché Agresivo**: Implementación de cache-busters de scripts (`?v=hot35` y `?v=hot45`) en PI y PS para invalidar el almacenamiento del cliente y forzar la inicialización reactiva del drawer.
+- **Unificación Cromática y Contraste Premium (Fase 3.1):** Reemplazo de colores en duro ad-hoc del disparador lateral fijo (Desktop) por las variables de marca oficiales `--aia-green-dark` (reposo) y `--aia-green` (hover). Corrección del contraste de headings del drawer y aprobación de la suite de pruebas del servidor en Docker.
+
+### Cambiado
+
+- **UX de automatización no técnica:** La UI oculta IDs, fuentes internas, payloads y nombres técnicos para usuarios normales; Admin conserva “Detalle técnico”.
+- **PDC sin aplicación automática legacy:** El endpoint antiguo de aplicar PDC desde actividades deja de ejecutar cambios directos; el camino soportado es el asistente guiado con preview, selección y confirmación.
+- **Confianza normalizada:** La escala visible y backend queda en `0-100`: `80-100` listo, `50-79` revisión y `<50` no recomendado.
+- **Cajón Contextual LPS:** Centralización de severidad `normal`, `attention`, `critical`, `info` y `neutral` en `lps_drawer.js`, con `isCrisis` reservado solo para estados críticos.
+- **Programación Semanal:** `Por Comprometer`, `Condiciones Pendientes` e incumplimientos no RC quedan como atención operativa sin escalamiento directivo.
+
+### Corregido
+
+- **Fix Color PG con Filtro + Scroll:** Se agregó hook `beforeRenderer` en `hot.js` de Programa General que intercepta cada celda ANTES del render del DOM y sobrescribe `cellProperties.className` con el valor correcto del estado. Esto reemplaza el enfoque anterior (`afterRender` + `applyPGCellDomClass`) que fallaba en virtual scrolling por race conditions con el ciclo interno de renderizado de Handsontable 14.6.1. También se agregó `afterLoadData` hook para invalidar el cache de clasificación al recargar datos. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.
+- **Fix Edición Ejecutado Real en PG (Consecutivo_en_Programa=0):** Resuelto bug donde el valor `Ejecutado Real` de la actividad "INICIO DEL PROYECTO (ESTIMADO)" se revertía al refrescar. Causa raíz: `Consecutivo_en_Programa=0` era falsey en JS, cayendo al `Id=1` del capítulo PREOPERATIVOS. Se corrigió `hot.js` y `GeneralApiController::update()` para usar `Consecutivo_en_Programa` como identificador canónico.
+- **Render estable de Actualización de Cronograma:** Corrección del mapeo de columnas en Handsontable usando `propToCol`, refresco explícito de dimensiones tras `loadData()` y uso de `semana_objetivo` para evitar que las peticiones al borrador cambien la semana base de sesión.
+- **Actualización de Cronograma estable:** La vista `/programa-general-actualizar` separa la semana base de la semana objetivo del borrador para evitar alternancia vacío/con datos al refrescar y mantener las peticiones siempre sobre el cronograma actualizado correcto.
+- **Plantilla de Listado de Actividades:** La descarga de `listadoActividades.csv` usa un endpoint MVC dedicado para no depender de reglas estáticas del servidor en `/archivosBase`.
+- **Actualización de Cronograma desde Excel:** Corrección integral del flujo `/programa-general-actualizar`: la plantilla base vuelve a descargarse desde `/archivosBase`, el selector `Asociar con...` carga la semana activa correcta, los roles A/D pueden mapear sobre borradores aunque la semana esté cerrada y las fechas importadas desde Excel se normalizan a `yyyy-mm-dd` priorizando seriales numéricos.
+- **Disparador lateral LPS:** Corrección visual del badge de atención/crisis para evitar recuadros o iconos desalineados en desktop y móvil.
+- **Asimetría de asignación en "Aplicar Restricción Compartida" (PI):** Corregido bug donde el `SET Responsable_AIA` del SQL de `applySharedConstraints` se aplicaba a todas las filas del lote aunque el usuario no hubiera marcado "Aplicar asignaciones comunes". Ahora tanto `Sub_Contratista` como `Responsable_AIA` se rigen por la misma guarda `if ($applyAssignments && $valor !== '')`, evitando sobreescritura silenciosa de asignaciones.
+- **Validación confusa de Responsable AIA en restricciones (PI):** Eliminada la regla dura que exigía Responsable AIA para aplicar restricciones en lote. Ahora el campo es opt-in: solo se solicita cuando el usuario activa explícitamente el checkbox de "Aplicar asignaciones comunes", y debe seleccionar Sub-Contratista o Responsable AIA; o desactiva el check.
+- **Detección de conflictos de asignación en Preview (PI):** El preview del modal "Aplicar Restricción Compartida" calcula conflictos por actividad (Sub-Contratista o Responsable AIA distintos al objetivo) y los muestra como panel de badges, KPI en rojo y resaltado de filas. No bloquea la operación; sirve como guía visual antes de aplicar.
+- **Confirmación contextual al aplicar lote PI (PI):** Al hacer click en "Aplicar en Lote" se despliega `AIA.Notice.confirm` con 4 variantes según el estado del Preview: (1) **sin alerta** cuando el check "Aplicar asignaciones comunes" está desactivado, ya que no puede haber sobreescritura de Sub-Contratista/Responsable AIA; (2) "Conflictos de asignación" cuando el Preview previo detectó diferencias, listando conteo por columna con el texto literal acordado; (3) "Aplicar restricción compartida" cuando el Preview fue limpio; (4) "Preview desactualizado" o "No se validaron conflictos" según si la configuración cambió desde el último Preview o nunca se ejecutó. Todos los textos están redactados a prueba de bobos: mencionan cuántas actividades se modificarán, qué columnas se sobreescribirán y ofrecen cancelar para ejecutar "Ver Conflictos" antes de continuar. El botón Aplicar **nunca se bloquea**; el usuario siempre decide.
+- **Botón renombrado a "Ver Conflictos" (PI):** El botón antes llamado "Preview" en el modal "Aplicar Restricción Compartida" ahora se llama "Ver Conflictos" para comunicar con precisión que su función es detectar sobreescrituras de Sub-Contratista o Responsable AIA, no solo previsualizar restricciones.
 
 ## [1.1.1] - 2026-03-31
 
@@ -36,54 +127,6 @@ y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.
 
 - **Refactor CSS Modular:** Migración de estilos hacia un motor de variables centralizado, facilitando la consistencia estética entre los módulos MVC y Legacy.
 - **Actualización de Gobernanza:** Endurecimiento de las reglas de edición y validación del agente para garantizar la integridad del código fuente.
-
-## [Sin publicar]
-
-### Añadido
-
-- **Arquitectura global-only documentada:** La BD activa queda formalizada como tablas globales con `project_id`; `{prefix}_*` queda limitado a respaldos, fuentes de migración o deuda aislada sin dependencia runtime.
-- **Asistente semi-automático compartido:** Listado de Actividades, Contratos y PDC comparten `preview/apply/undo/feedback/metrics`, trazabilidad global y bandeja guiada por seguridad.
-- **Trazabilidad semi-auto:** Nuevas tablas globales para corridas, sugerencias, decisiones, feedback y configuración por proyecto.
-
-### Cambiado
-
-- **UX de automatización no técnica:** La UI oculta IDs, fuentes internas, payloads y nombres técnicos para usuarios normales; Admin conserva “Detalle técnico”.
-- **PDC sin aplicación automática legacy:** El endpoint antiguo de aplicar PDC desde actividades deja de ejecutar cambios directos; el camino soportado es el asistente guiado con preview, selección y confirmación.
-- **Confianza normalizada:** La escala visible y backend queda en `0-100`: `80-100` listo, `50-79` revisión y `<50` no recomendado.
-
-### Corregido
-
-- **Fix Color PG con Filtro + Scroll:** Se agregó hook `beforeRenderer` en `hot.js` de Programa General que intercepta cada celda ANTES del render del DOM y sobrescribe `cellProperties.className` con el valor correcto del estado. Esto reemplaza el enfoque anterior (`afterRender` + `applyPGCellDomClass`) que fallaba en virtual scrolling por race conditions con el ciclo interno de renderizado de Handsontable 14.6.1. El hook `beforeRenderer` modifica las propiedades de la celda ANTES de que HT las aplique al DOM, eliminando race conditions. También se agregó `afterLoadData` hook para invalidar el cache de clasificación al recargar datos. Test E2E `test-pg-color-fix.mjs` valida que filas filtradas mantienen clases de estado correctas tras scroll a 8000px.
-
-### Añadido
-
-- **Servicio de Normalización de Capítulos PG:** Nuevo `ProgramaConsolidadoNormalizationService` que auto-corrige capítulos con `Ejecutado > 0` y `Estado !== 'Capítulo'`. Integrado en GeneralApiController, SemanalApiController, creación de semana y cierre semanal.
-- **Guard Server-Side para Capítulos PG:** Rechazo con 403 de ediciones directas a filas de tipo capítulo (`Titulo=1`) en `GeneralApiController::update()`.
-- **LPS Contextual Drawers**: Paneles laterales deslizables (Bottom-Sheet responsive) integrados en Programa General, Programación Intermedia y Programación Semanal para guías y ayudas operativas contextuales.
-- **Matriz de severidad del Cajón Contextual LPS:** Nueva documentación operativa en `docs/matriz-severidad-cajon-contextual-lps.md` para normalizar severidades PG/PI/PS, restricciones duras/blandas, colores y comportamiento de sidebar.
-- **Motor de Escalamiento Semanal Inteligente**: Sistema de notificaciones express mitigador de spam con "Modo Simulación" (al portapapeles y Liquid Glass), Weekly Digest consolidador por subcontratista, y filtro automático para restringir las notificaciones individuales a tareas de Ruta Crítica (P1).
-- **Estética Liquid Glassmorphism**: Rediseño CSS modular con efectos traslúcidos Liquid Glass, animaciones fluidas spring y optimización mobile-first para resoluciones de obra.
-- **Bypass de Caché Agresivo**: Implementación de cache-busters de scripts (`?v=hot35` y `?v=hot45`) en PI y PS para invalidar el almacenamiento del cliente y forzar la inicialización reactiva del drawer.
-- **Unificación Cromática y Contraste Premium (Fase 3.1):** Reemplazo de colores en duro ad-hoc del disparador lateral fijo (Desktop) por las variables de marca oficiales `--aia-green-dark` (reposo) y `--aia-green` (hover). Corrección del contraste de headings del drawer y aprobación de la suite de pruebas del servidor en Docker.
-
-### Cambiado
-
-- **Cajón Contextual LPS:** Centralización de severidad `normal`, `attention`, `critical`, `info` y `neutral` en `lps_drawer.js`, con `isCrisis` reservado solo para estados críticos.
-- **Programación Semanal:** `Por Comprometer`, `Condiciones Pendientes` e incumplimientos no RC quedan como atención operativa sin escalamiento directivo.
-
-### Corregido
-
-- **Fix Edición Ejecutado Real en PG (Consecutivo_en_Programa=0):** Resuelto bug donde el valor `Ejecutado Real` de la actividad "INICIO DEL PROYECTO (ESTIMADO)" se revertía al refrescar. Causa raíz: `Consecutivo_en_Programa=0` era falsey en JS, cayendo al `Id=1` del capítulo PREOPERATIVOS. Se corrigió `hot.js` y `GeneralApiController::update()` para usar `Consecutivo_en_Programa` como identificador canónico.
-- **Render estable de Actualización de Cronograma:** Corrección del mapeo de columnas en Handsontable usando `propToCol`, refresco explícito de dimensiones tras `loadData()` y uso de `semana_objetivo` para evitar que las peticiones al borrador cambien la semana base de sesión.
-- **Actualización de Cronograma estable:** La vista `/programa-general-actualizar` separa la semana base de la semana objetivo del borrador para evitar alternancia vacío/con datos al refrescar y mantener las peticiones siempre sobre el cronograma actualizado correcto.
-- **Plantilla de Listado de Actividades:** La descarga de `listadoActividades.csv` usa un endpoint MVC dedicado para no depender de reglas estáticas del servidor en `/archivosBase`.
-- **Actualización de Cronograma desde Excel:** Corrección integral del flujo `/programa-general-actualizar`: la plantilla base vuelve a descargarse desde `/archivosBase`, el selector `Asociar con...` carga la semana activa correcta, los roles A/D pueden mapear sobre borradores aunque la semana esté cerrada y las fechas importadas desde Excel se normalizan a `yyyy-mm-dd` priorizando seriales numéricos.
-- **Disparador lateral LPS:** Corrección visual del badge de atención/crisis para evitar recuadros o iconos desalineados en desktop y móvil.
-- **Asimetría de asignación en "Aplicar Restricción Compartida" (PI):** Corregido bug donde el `SET Responsable_AIA` del SQL de `applySharedConstraints` se aplicaba a todas las filas del lote aunque el usuario no hubiera marcado "Aplicar asignaciones comunes". Ahora tanto `Sub_Contratista` como `Responsable_AIA` se rigen por la misma guarda `if ($applyAssignments && $valor !== '')`, evitando sobreescritura silenciosa de asignaciones.
-- **Validación confusa de Responsable AIA en restricciones (PI):** Eliminada la regla dura que exigía Responsable AIA para aplicar restricciones en lote. Ahora el campo es opt-in: solo se solicita cuando el usuario activa explícitamente el checkbox de "Aplicar asignaciones comunes", y debe seleccionar Sub-Contratista o Responsable AIA; o desactiva el check.
-- **Detección de conflictos de asignación en Preview (PI):** El preview del modal "Aplicar Restricción Compartida" calcula conflictos por actividad (Sub-Contratista o Responsable AIA distintos al objetivo) y los muestra como panel de badges, KPI en rojo y resaltado de filas. No bloquea la operación; sirve como guía visual antes de aplicar.
-- **Confirmación contextual al aplicar lote PI (PI):** Al hacer click en "Aplicar en Lote" se despliega `AIA.Notice.confirm` con 4 variantes según el estado del Preview: (1) **sin alerta** cuando el check "Aplicar asignaciones comunes" está desactivado, ya que no puede haber sobreescritura de Sub-Contratista/Responsable AIA; (2) "Conflictos de asignación" cuando el Preview previo detectó diferencias, listando conteo por columna con el texto literal acordado; (3) "Aplicar restricción compartida" cuando el Preview fue limpio; (4) "Preview desactualizado" o "No se validaron conflictos" según si la configuración cambió desde el último Preview o nunca se ejecutó. Todos los textos están redactados a prueba de bobos: mencionan cuántas actividades se modificarán, qué columnas se sobreescribirán y ofrecen cancelar para ejecutar "Ver Conflictos" antes de continuar. El botón Aplicar **nunca se bloquea**; el usuario siempre decide.
-- **Botón renombrado a "Ver Conflictos" (PI):** El botón antes llamado "Preview" en el modal "Aplicar Restricción Compartida" ahora se llama "Ver Conflictos" para comunicar con precisión que su función es detectar sobreescrituras de Sub-Contratista o Responsable AIA, no solo previsualizar restricciones.
 
 ## [1.2.0] - 2026-05-21
 

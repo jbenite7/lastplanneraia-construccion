@@ -54,4 +54,4 @@ manifiesto está *garantizado hacia el catálogo* pero el censo inverso (que nad
 declarar) descansa en los gates de entrypoint, no en este.
 
 Mapa del área: [[design-system]] · el registro de qué módulo se migró cuándo:
-[[registro-de-trabajo]].
+[[IMPLEMENTATION_PLAN_INVENTORY|Registro de trabajo]].

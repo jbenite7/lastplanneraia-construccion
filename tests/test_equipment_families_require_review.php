@@ -5,6 +5,19 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 
+/**
+ * Verifica que la migración de decisiones humanas (20260711) enruta las familias de equipos
+ * hacia contratos: familia desactivada, sin pendiente global, sin reglas de Listado activas,
+ * y con su elemento contractual activo.
+ *
+ * Hasta el 2026-08-19 este test asertaba el estado PERSISTENTE del catálogo en la base
+ * compartida de dev, y cualquier restauración ajena que borrara una familia (pasó con
+ * MALACATE) lo dejaba en rojo sin relación con el código. Ahora es determinista: dentro de
+ * una transacción siembra las 8 familias en su peor estado posible (activas y con pendiente
+ * global), aplica la migración real desde su archivo y aserta el estado final; todo se
+ * revierte al terminar. Lo que mide es la lógica de la migración, no la salud de la base.
+ */
+
 $failed = 0;
 
 function eqReviewPass(string $message): void
@@ -26,20 +39,53 @@ function eqReviewAssert(bool $condition, string $message): void
 
 echo "=== Equipment families route to contracts ===\n";
 
+$db = Database::getInstance();
+$db->beginTransaction();
+
 try {
-    $db = Database::getInstance();
-    $equipmentCodes = [
-        'BOMBA_CONCRETO',
-        'EXCAVADORA',
-        'MALACATE',
-        'MONTACARGAS',
-        'MOTORGRUA',
-        'PLANTA_CONCRETO',
-        'TORREGRUA',
-        'VOLQUETA',
+    $equipmentFamilies = [
+        'BOMBA_CONCRETO' => 'Bomba de Concreto',
+        'EXCAVADORA' => 'Excavadora',
+        'MALACATE' => 'Malacate',
+        'MONTACARGAS' => 'Montacargas',
+        'MOTORGRUA' => 'Motorgrua',
+        'PLANTA_CONCRETO' => 'Planta de Concreto',
+        'TORREGRUA' => 'Torregrua',
+        'VOLQUETA' => 'Volqueta',
     ];
 
-    foreach ($equipmentCodes as $code) {
+    // Precondición: la familia existe en el catálogo, en el peor estado posible para la
+    // migración (activa y con pendiente global). Si ya existe, se fuerza ese estado para que
+    // la aserción final pruebe que la migración lo corrige de verdad.
+    $orden = 900100;
+    foreach ($equipmentFamilies as $codigo => $nombre) {
+        $db->query(
+            'INSERT INTO general_pdc_familias (codigo, nombre, categoria, orden, siempre_revision, activa)
+             VALUES (?, ?, ?, ?, 1, 1)
+             ON DUPLICATE KEY UPDATE siempre_revision = 1, activa = 1',
+            [$codigo, $nombre, 'EQUIPOS', $orden++],
+        );
+    }
+
+    // Aplica la migración real, sentencia por sentencia (solo DML idempotente; sin DDL,
+    // así que la transacción la cubre completa).
+    $migrationSql = file_get_contents(dirname(__DIR__) . '/database/migrations/20260711_apply_human_family_decisions.sql');
+    if ($migrationSql === false) {
+        throw new RuntimeException('No se pudo leer la migración 20260711_apply_human_family_decisions.sql');
+    }
+    foreach (preg_split('/;\s*\n/', $migrationSql) as $statement) {
+        $lines = array_filter(
+            array_map('rtrim', explode("\n", $statement)),
+            static fn(string $line): bool => trim($line) !== '' && !str_starts_with(trim($line), '--'),
+        );
+        $statement = trim(implode("\n", $lines));
+        if ($statement === '') {
+            continue;
+        }
+        $db->query($statement);
+    }
+
+    foreach ($equipmentFamilies as $code => $nombre) {
         $row = $db->query(
             'SELECT nombre, activa, siempre_revision FROM general_pdc_familias WHERE codigo = ?',
             [$code],
@@ -67,7 +113,13 @@ try {
     }
 } catch (Throwable $e) {
     eqReviewFail($e->getMessage());
+} finally {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
 }
 
-echo "=== Equipment families route to contracts: {$failed} failed ===\n";
-exit($failed === 0 ? 0 : 1);
+echo $failed > 0
+    ? "=== Equipment families route to contracts: {$failed} failed ===\n"
+    : "=== Equipment families route to contracts: OK ===\n";
+exit($failed > 0 ? 1 : 0);
