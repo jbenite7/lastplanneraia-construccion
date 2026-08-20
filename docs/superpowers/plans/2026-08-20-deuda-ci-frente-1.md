@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-20
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-20-deuda-ci-frente-1.md
+resumen: Anclar por SHA las actions del workflow, vigilarlas con Dependabot, acotar ambos jobs con timeout y lintar el YAML con actionlint — publicado en main sin rojos…
+---
+
 # Deuda del CI · Frente 1 (G1+G3+G5) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
