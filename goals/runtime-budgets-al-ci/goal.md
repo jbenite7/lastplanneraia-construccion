@@ -122,6 +122,50 @@ Sobre **4e6d63e3**, que es el sha a publicar.
 - Fase 3: bajar de una corrida verde la procedencia real y escribirla en `closeout-evidence.json`.
   Depende de que el CI llegue a verde, que es lo que este cierre habilita.
 
+## Fase 1 — por qué está `blocked`, reproducido y no recordado
+
+**Medido el 2026-08-19 sobre `ab2c34f1`.** El plan exigía ejecutar el gate a mano y ver el fallo
+real. Hecho:
+
+```
+npm run test:runtime-budget:check
+> node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.5.json test-output/design-system-runtime-budget.json
+ENOENT: no such file or directory, open '.../test-output/design-system-runtime-budget.json'
+RC=1
+```
+
+**No es un baseline caducado.** Falta el archivo de medición, así que se ejecutó su productor:
+
+```
+npm run test:runtime-budget:measure
+Error: Runtime budget aggregation: CI_GIT_SHA must match the current clean worktree
+  at scripts/design-system-runtime-budget-provenance.mjs:36
+```
+
+**La causa, entonces, es de diseño y no un defecto:** `readCurrentRuntimeContext`
+(`scripts/design-system-runtime-budget-provenance.mjs:125-143`) exige que `CI_RUN_ID`,
+`CI_GIT_SHA`, `CI_WORKTREE_FINGERPRINT` y `CI_FIXTURE_SHA256` coincidan con un worktree limpio, y
+`CI_RUN_ID` va validado contra una expresión regular. **La medición no se puede producir fuera de
+GitHub Actions, y eso es intencional**: el recibo tiene que ser objetivo.
+
+**Consecuencia para el plan: la Fase 2 —«arreglar la causa con el cambio mínimo»— no tiene nada que
+arreglar.** No hay causa local. La única vía es la Fase 3: una corrida real de Actions.
+
+### Y ahí apareció el problema de verdad
+
+`gh run list --workflow=design-system.yml --branch=main --limit 40` devuelve
+**23 `failure` y 17 `cancelled`. Ni una verde.** El CI de este repositorio no pasa desde hace
+decenas de corridas, y no se había notado porque la suite local sí pasa.
+
+La causa era **una sola aserción**: `tests/browser/full-app-flow.spec.mjs:92` exigía en móvil que el
+`body` reservara sitio para el carril, justo lo que la spec del menú flotante derogó el 2026-08-14.
+Arreglado en `ab2c34f1`, con la comprobación previa de que no escondía una regresión.
+
+**Este frente queda a la espera de esa corrida**: si CI se pone verde, la Fase 3 puede tomar la
+procedencia de `full-app-flow` y de `runtime-budgets` de una corrida real, que es lo único que le
+falta para cerrar. Y con ella cierra también [[goals/gates-al-ci/goal]], que depende del mismo gate.
+
+
 ## Archivos de este goal
 
 - [[docs/superpowers/specs/2026-08-19-runtime-budgets-al-ci-design|Spec]]
