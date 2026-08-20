@@ -21,5 +21,20 @@ vía `scripts/publicar.sh` y primera corrida de `main` igualmente sin rojos nuev
 **Plan:** `docs/superpowers/plans/2026-08-20-deuda-ci-frente-1.md`
 **Spec:** `docs/superpowers/specs/2026-08-20-deuda-ci-design.md`
 
+## Cierre
+
+Cerrado el 2026-08-20. Los cuatro cambios entraron: 8 `uses:` anclados por SHA con comentario
+de versión (checkout/setup-node v4.4.0, upload-artifact v4.6.2), `.github/dependabot.yml`
+semanal para `github-actions`, `timeout-minutes` 20/60, y actionlint v1.7.12 (binario fijado
+por checksum) como primer paso del job estático — su único hallazgo local (SC2034 en el bucle
+de espera) corregido. El contrato `visual-ci-contract.test.mjs` pasó a exigir la forma pineada.
+
+**Verificación:** actionlint RC=0 y suite estática 8/8 en local, antes y después de integrar
+`origin/main`; corrida de PR [#6](https://github.com/jbenite7/lastplanneraia-construccion/pull/6)
+(`32392721353`): job estático `success` completo y un único rojo en «Check runtime budgets
+against the baseline» por `initializationMs` — el mismo paso y causa preexistentes de `main`,
+deuda de otro frente. Cero rojos nuevos: condición de hecho cumplida. Publicado vía
+`scripts/publicar.sh` (el SHA queda anotado bajo esta línea al confirmar).
+
 ## Archivos de este goal
 - [[goal.md]] · estado en [[memoria/goals/estado]]
