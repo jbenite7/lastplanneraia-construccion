@@ -142,6 +142,11 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
+  niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
+  `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en
+  `goals/ds-f1a-estados-severidad/evidence/`). Los pendientes que sobreviven son frentes propios
+  (`r0` de PG, fantasmas de `/plan-compras`, `states-feedback.css:162`).
 - [x] 2026-08-19 — **Fase 0b, wiki v2**: las seis tandas cerradas y publicadas, lint estricto verde.
 - [x] 2026-08-19 — `ds-f1a-estado` (`4a152a54`): la escala de estado del contrato, medida contra
   50.966 actividades reales.
