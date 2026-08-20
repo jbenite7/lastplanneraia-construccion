@@ -38,3 +38,27 @@ docs/superpowers/plans/*-apply-recalculo-*,goals/apply-recalculo-estados/**,data
 
 ## Cadena de herramientas
 <!-- ids del arsenal, máx 8, una línea de porqué cada uno -->
+
+## Cierre
+
+**Cerrado el 2026-08-19 para DESARROLLO.** El apply corrió el mismo día (`aa965bf5`, 13:40): 40.664
+filas migradas, acta en `goals/apply-recalculo-estados/acta-del-apply.md`, reconciliación exacta.
+
+Condición de hecho re-verificada hoy con salida real:
+
+```
+docker compose exec -T app php tests/test_global_table_reconciliation.php
+=== Global Table Reconciliation: OK ===
+Tablas legacy verificadas: 0
+No hay claves legacy sin equivalente global por project_id.
+RC=0
+```
+
+**Lo que este cierre NO cubre, y hay que decirlo aparte: producción sigue sin tocar.** Publicar en
+`main` no autoriza el apply sobre la base de la obra; eso necesita su propia autorización explícita
+de Felipe, y queda como pendiente vivo en [[TASKS]].
+
+Y cuando llegue, la lección del apply de desarrollo aplica entera: **el respaldo probado horas antes
+ya no cubría la base** —aparecieron 8 filas nuevas sin respaldo—, así que se rehace y se vuelve a
+probar la restauración **inmediatamente antes**, no la víspera.
+

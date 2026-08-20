@@ -1,0 +1,40 @@
+[
+  {
+    "superficie": "login",
+    "url": "http://localhost:8081/login",
+    "marcas": [
+      "http://localhost:8081/img/brand/glyph-mono.svg"
+    ],
+    "recursosRotos": [],
+    "legado": false
+  },
+  {
+    "superficie": "shell",
+    "url": "http://localhost:8081/programa-general",
+    "marcas": [
+      "http://localhost:8081/public/img/brand/icon.svg",
+      "(svg inline en aia-icon aia-icon--logout)"
+    ],
+    "recursosRotos": [],
+    "legado": false
+  },
+  {
+    "superficie": "proyectos",
+    "url": "http://localhost:8081/proyectos",
+    "marcas": [
+      "http://localhost:8081/public/img/brand/icon.svg",
+      "(svg inline en aia-icon aia-icon--logout)"
+    ],
+    "recursosRotos": [],
+    "legado": false
+  },
+  {
+    "superficie": "admin",
+    "url": "http://localhost:8081/admin",
+    "marcas": [
+      "http://localhost:8081/public/img/aiaConstruccionMasCerteza.png"
+    ],
+    "recursosRotos": [],
+    "legado": false
+  }
+]
