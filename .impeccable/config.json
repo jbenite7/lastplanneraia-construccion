@@ -48,6 +48,24 @@
         ],
         "createdAt": "2026-08-06T19:17:56.065Z",
         "reason": "Borde lateral de 4px: convencion establecida de las tarjetas KPI de la Control Tower; el usuario lo confirmo intencional el 2026-08-06"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.72rem",
+        "createdAt": "2026-08-20T21:45:18.998Z",
+        "reason": "Rampa densa consagrada en DESIGN.md §3 (2026-08-20) con aprobacion explicita de Felipe; el 0.62 es piso heredado sin usos nuevos"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.7rem",
+        "createdAt": "2026-08-20T21:45:19.038Z",
+        "reason": "Rampa densa consagrada en DESIGN.md §3 (2026-08-20) con aprobacion explicita de Felipe; el 0.62 es piso heredado sin usos nuevos"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.62rem",
+        "createdAt": "2026-08-20T21:45:19.080Z",
+        "reason": "Rampa densa consagrada en DESIGN.md §3 (2026-08-20) con aprobacion explicita de Felipe; el 0.62 es piso heredado sin usos nuevos"
       }
     ]
   }
