@@ -52,12 +52,24 @@ estado por defecto mientras Felipe no reparta.
 - [ ] **DS-F1, lo que queda del contrato** — la escala de estado cerró (F1a). Faltan tokens,
   primitivas `aia-*`, escala de severidad y escala de z-index. Arranca con brainstorming: el
   contrato es decisión de negocio. Entrada lista: los 68 hallazgos de DS-F0.
-- [ ] **Cerrar antes de integrar: `linea-base-contractual` y `semanal-fondo-por-matiz`.** Los dos
-  entraron en el `main` local el 2026-08-19 sin haber declarado su condición de hecho, y **Felipe
-  ordenó sacarlos: «que se cierren primero»**. Su trabajo está intacto en
-  `claude/elated-golick-e27253` y `claude/reverent-golick-aaf932`, 10 cambios cada una. Lo que les
-  falta no es código: es la sección `## Cierre` con la verificación que demuestre que terminaron.
-  `semanal-fondo-por-matiz` además toca pantallas, así que su cierre exige comprobación visual.
+- [ ] **Cerrar antes de integrar: `linea-base-contractual`.** Entró en el `main` local el
+  2026-08-19 sin haber declarado su condición de hecho, y **Felipe ordenó sacarlo: «que se cierre
+  primero»**. Su trabajo está intacto en `claude/elated-golick-e27253`, 10 cambios. Lo que le falta
+  no es código: es la sección `## Cierre` con la verificación que demuestre que terminó.
+
+  **`semanal-fondo-por-matiz` ya cerró y está publicado** (`2fc5998e`, 2026-08-19): las dos fases
+  con cinco fondos distintos, filete solo en `urgent` y `attention`, capturas miradas a 1180×820
+  dark, suite del gate 4/4 en `RC=0` **después** de integrar. Su cierre destapó que la sonda de la
+  fase Calificación **no forzaba la fase** y lo declaraba igual, porque comprobaba su propia
+  sustitución de texto: ver `## Cierre` en [[goals/semanal-fondo-por-matiz/goal]].
+
+- [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
+  tercera vez que se mide la misma familia en este repo —hermana de
+  [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y
+  [[memoria/trampas/guard-valida-declaracion-contra-si-misma]]— y le falta ficha propia en
+  `memoria/trampas/`. El caso nuevo, con su medición, está en el `## Cierre` de
+  [[goals/semanal-fondo-por-matiz/goal]]: no se escribió allí porque ese frente no declaraba la
+  ruta `memoria/trampas/**`.
 
 - [ ] **linea-base-contractual** — sembrado por migración SQL, con `database/migrations/**`
   autorizado explícitamente por Felipe para este frente. **No tiene `goals/<slug>/` propio**: su
