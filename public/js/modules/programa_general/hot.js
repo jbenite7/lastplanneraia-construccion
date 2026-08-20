@@ -19,6 +19,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -843,6 +846,19 @@
       + ' data-aia-severity="' + pair.severity + '"'
       + ' data-aia-urgency="' + pair.urgency + '"';
   }
+
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20).
+  // Mismas frases que la Guia Operativa para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    atrasada: 'Debio iniciar y no registra el avance esperado. Atender ahora.',
+    'debe-iniciar': 'Su semana de inicio llego: arranca o justifica. Revisar antes del siguiente hito.',
+    'en-curso': 'Con ejecucion en marcha dentro de lo planificado.',
+    'actividad-futura': 'Inicia dentro de la ventana de planificacion. Sin accion inmediata.',
+    'fuera-de-ventana': 'Inicia mas alla de la ventana de 6 semanas: aun fuera del lookahead.',
+    terminada: 'Actividad cerrada. Sin accion.',
+    'sin-datos': 'Sin fecha de inicio ni ejecucion registrada. Requiere programacion.',
+    'con-alerta-restricciones': 'Restricciones duras pendientes dentro de la ventana proxima.',
+  };
 
   function classifyPGRow(data) {
     if (!data || (getProgramUniqueId(data) === null && data.Consecutivo === undefined && data.Id === undefined)) {
@@ -1737,7 +1753,17 @@
       } else {
         label = String(value);
       }
-      td.innerHTML = '<span class="ops-state-chip"' + attrs + '>' + escapeHtml(label) + '</span>';
+      // Chip + tooltip (Felipe, 2026-08-20): PG no tiene drawer, asi que el
+      // chip es focuseable (tabindex) para que el porque llegue tambien por
+      // teclado, no solo por hover.
+      var porQue = STATE_TIPS[stateKey] || STATE_TIPS['sin-datos'];
+      if (classification.restrictionAlertKey) {
+        porQue += ' Alerta ' + String(classification.restrictionAlertKey).toUpperCase() + '.';
+      }
+      td.innerHTML = '<span class="ops-state-chip" tabindex="0"' + attrs + '>'
+        + '<span class="ops-chip-label">' + escapeHtml(label) + '</span>'
+        + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(porQue) + '</span></span>'
+        + '</span>';
       td.classList.add('ops-state-td');
     });
 

@@ -148,4 +148,12 @@ if (fallos.length) {
 }
 
 await page.screenshot({ path: `${OUT}ps-detalle-estado-acciones-2x.png`, clip: { x: 920, y: 225, width: 250, height: 450 } });
+
+const chipPS = page.locator('#hot-container .ops-state-chip').first();
+if (await chipPS.count()) {
+  await chipPS.hover();
+  await page.waitForTimeout(400);
+  const cajaPS = await chipPS.boundingBox();
+  if (cajaPS) { await page.screenshot({ path: `${OUT}tooltip-ps-2x.png`, clip: { x: Math.max(0, cajaPS.x - 60), y: Math.max(0, cajaPS.y - 30), width: 360, height: 220 } }); }
+}
 await b.close();

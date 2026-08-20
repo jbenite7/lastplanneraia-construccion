@@ -7,7 +7,7 @@
   "filas": [
     {
       "estado": "actividad-futura",
-      "etiqueta": "Actividad Futura",
+      "etiqueta": "Actividad FuturaInicia dentro de la ventana de planificacion. Sin accion inmediata.",
       "hue": "green",
       "severity": "low",
       "urgency": "none",
@@ -22,7 +22,7 @@
     },
     {
       "estado": "en-curso",
-      "etiqueta": "En Curso",
+      "etiqueta": "En CursoCon ejecucion en marcha dentro de lo planificado.",
       "hue": "blue",
       "severity": "low",
       "urgency": "none",
@@ -37,7 +37,7 @@
     },
     {
       "estado": "terminada",
-      "etiqueta": "Terminada",
+      "etiqueta": "TerminadaActividad cerrada. Sin accion.",
       "hue": "neutral",
       "severity": "low",
       "urgency": "none",
@@ -52,7 +52,7 @@
     },
     {
       "estado": "debe-iniciar",
-      "etiqueta": "Debe Iniciar",
+      "etiqueta": "Debe IniciarSu semana de inicio llego: arranca o justifica. Revisar antes del siguiente hito.",
       "hue": "orange",
       "severity": "medium",
       "urgency": "soon",
@@ -67,7 +67,7 @@
     },
     {
       "estado": "atrasada",
-      "etiqueta": "Atrasada",
+      "etiqueta": "AtrasadaDebio iniciar y no registra el avance esperado. Atender ahora.",
       "hue": "red",
       "severity": "high",
       "urgency": "now",
@@ -82,7 +82,7 @@
     },
     {
       "estado": "sin-datos",
-      "etiqueta": "Sin Datos",
+      "etiqueta": "Sin DatosSin fecha de inicio ni ejecucion registrada. Requiere programacion.",
       "hue": "violet",
       "severity": "none",
       "urgency": "none",
@@ -97,7 +97,7 @@
     },
     {
       "estado": "fuera-de-ventana",
-      "etiqueta": "Fuera de Ventana",
+      "etiqueta": "Fuera de VentanaInicia mas alla de la ventana de 6 semanas: aun fuera del lookahead.",
       "hue": "teal",
       "severity": "none",
       "urgency": "none",

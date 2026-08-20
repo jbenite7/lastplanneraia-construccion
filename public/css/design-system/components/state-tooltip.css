@@ -1,0 +1,81 @@
+@layer components {
+  /* Tooltip de estado — companero del chip de estado (decision de Felipe,
+     2026-08-20): el chip solido dice QUE estado es; este tooltip explica POR
+     QUE al pasar el cursor o al enfocar. En los modulos con drawer (PS, PI) el
+     clic sigue abriendo el detalle completo — el tooltip es el resumen, no el
+     sustituto, y por eso movil/tablet no pierden nada.
+
+     WCAG 1.4.13: es hoverable (el puente de padding permite entrar el puntero
+     sin que se cierre), persistente mientras dure el hover/foco, y descartable
+     con Escape via body.aia-tips-off (public/js/design-system/state-tooltip.js,
+     que tambien lo voltea hacia arriba cuando no cabe por debajo). */
+  .ops-state-chip {
+    position: relative;
+  }
+
+  button.ops-state-chip {
+    cursor: pointer;
+    font: inherit;
+    font-weight: 900;
+    text-align: left;
+  }
+
+  .aia-state-tip {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 100%;
+    z-index: var(--ds-z-dropdown, 1000);
+    width: max-content;
+    min-width: 11rem;
+    max-width: 17rem;
+    padding-top: var(--ds-space-1);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--ds-motion-fast), visibility var(--ds-motion-fast);
+  }
+
+  .aia-state-tip > .aia-state-tip-panel {
+    display: block;
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-active-surface-raised);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-chip-font-size, 0.75rem);
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-shadow: var(--ds-shadow-md);
+  }
+
+  [data-aia-tip-side='top'] .aia-state-tip {
+    top: auto;
+    bottom: 100%;
+    padding-top: 0;
+    padding-bottom: var(--ds-space-1);
+  }
+
+  .ops-state-chip:hover > .aia-state-tip,
+  .ops-state-chip:focus-visible > .aia-state-tip,
+  .ops-state-chip:focus-within > .aia-state-tip,
+  .aia-state-tip:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  body.aia-tips-off .aia-state-tip {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aia-state-tip {
+      transition: none;
+    }
+  }
+}

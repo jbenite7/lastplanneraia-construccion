@@ -41,6 +41,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -1381,13 +1384,35 @@
     return html;
   }
 
-  function renderOperationalStateCell(view) {
-    var pills = view.actionItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20).
+  // Mismas frases que la Guia Operativa para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    'blocked-overdue-critical': 'La restriccion compartida vencio con el inicio ya en riesgo critico. Atender ahora.',
+    'blocked-overdue': 'El inicio planificado ya vencio sin habilitacion completa. Atender ahora.',
+    'blocked-due': 'El inicio llega y las condiciones de habilitacion no estan cerradas. Atender ahora.',
+    'execution-blocked': 'Hay avance reportado sobre restricciones sin liberar: el dano se esta produciendo. Atender ahora.',
+    'alert-1-week': 'Inicia en 1 semana y su alistamiento aun no cierra. Revisar antes del siguiente hito.',
+    'alert-2-3-weeks': 'Inicia en 2 a 3 semanas y aun requiere preparacion. Revisar antes del siguiente hito.',
+    'alert-4-6-weeks': 'Inicia en 4 a 6 semanas: seguimiento temprano del lookahead.',
+    'liberated-control': 'Cumple la matriz de habilitacion para pasar a Programacion Semanal.',
+    neutral: 'Fila sin clasificacion operativa.',
+  };
 
-    return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip"' + stateChipAttrs(view.state) + '>'
-      + escapeHtml(view.label) + '</span></span>'
-      + pills
+  function renderOperationalStateCell(view) {
+    // Chip sencillo + tooltip (Felipe, 2026-08-20): las pildoras de acciones
+    // salen de la celda y pasan al tooltip como texto; el clic conserva el
+    // drawer con el detalle completo. Sufijo de pendientes solo cuando los hay.
+    var pendientes = view.actionItems.length;
+    var etiquetaChip = view.label + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
+    var listaAcciones = view.actionItems.slice(0, 3).map(function (item) { return item.text || item.label; }).join('; ');
+    var tipTexto = porQue + (pendientes > 0
+      ? ' Pendientes (' + pendientes + '): ' + listaAcciones + (pendientes > 3 ? '\u2026' : '.')
+      : ' Sin pendientes.');
+    return '<button type="button" class="ops-state-zoom ops-state-chip"' + stateChipAttrs(view.state)
+      + ' aria-label="' + escapeHtml(view.label + '. ' + tipTexto) + ' Ver detalle operativo">'
+      + '<span class="ops-chip-label">' + escapeHtml(etiquetaChip) + '</span>'
+      + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(tipTexto) + '</span></span>'
       + '</button>';
   }
 

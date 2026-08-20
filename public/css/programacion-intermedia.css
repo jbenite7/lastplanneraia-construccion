@@ -220,7 +220,7 @@ html.aia-theme-dark .pi-page {
     vertical-align: middle;
 }
 
-.pi-page .ops-state-zoom {
+.pi-page .ops-state-zoom:not([data-aia-hue]) {
     display: grid;
     gap: 4px;
     width: 100%;
@@ -232,6 +232,26 @@ html.aia-theme-dark .pi-page {
     font: inherit;
     text-align: left;
     cursor: zoom-in;
+}
+
+/* El chip-boton (ops-state-zoom con matiz) lo pinta la primitiva del chip;
+   aqui solo el piso tactil de la excepcion de densidad y el ancho contenido. */
+.pi-page .ops-state-zoom[data-aia-hue] {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    min-height: var(--ds-target-min);
+    vertical-align: middle;
+    cursor: zoom-in;
+}
+
+.pi-page .ops-state-chip > .ops-chip-label {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
 }
 
 .pi-page .ops-state-zoom:focus-visible {

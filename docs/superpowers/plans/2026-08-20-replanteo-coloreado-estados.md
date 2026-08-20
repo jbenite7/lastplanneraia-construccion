@@ -446,3 +446,22 @@ bash scripts/publicar.sh
 - Cobertura: dirección B (Tasks 2-4), homogeneización del filete (Task 5), contraste auditado como guard permanente (Task 2), goldens con aprobación (Task 6), D-2 resuelta (Task 3), docs y gate (Task 7). El cubo de alertas de Semanal queda explícitamente fuera.
 - Tipos/nombres consistentes: `--ds-state-solid-<hue>[-text]`, `--ds-state-row-<hue>`, `applyPGRowSeverityAttr` — usados igual en todas las tareas.
 - Sin placeholders: cada paso lleva código o comando ejecutable.
+
+---
+
+## Revisión de la Task 6 (2026-08-20, rondas 3-4 del gate visual)
+
+Felipe rechazó dos rondas y sus críticas rediseñaron Semanal y parieron una primitiva nueva:
+
+1. **Ronda 3** — botones de acciones al contrato secondary (superficie elevada + borde activo,
+   acción en el color del icono) y el widget de Estado Operativo aquietado.
+2. **Ronda 4 (decisión de Felipe)** — el Estado Operativo se sustituye por **chip sencillo +
+   tooltip**, replicado en los TRES módulos: primitiva nueva
+   `public/css/design-system/components/state-tooltip.css` +
+   `public/js/design-system/state-tooltip.js` (WCAG 1.4.13: hover Y foco, Escape lo descarta,
+   volteo arriba/abajo). El chip lleva sufijo `· N` solo con pendientes; en PS/PI el clic conserva
+   el drawer (cubre móvil/tablet); en PG el chip es focuseable por teclado. Deroga para la celda
+   densa de PS la paridad «uniforme 900» del 2026-08-03 (600/0.72 una línea con elipsis).
+3. **Lección medida del ciclo**: dos lecturas visuales del asistente sobre miniaturas de 1180
+   alucinaron tarjetas claras (56/60 píxeles muestreados eran oscuros) — la evidencia de detalle
+   va a 2x; y las sondas esperan el tema estable antes de capturar.

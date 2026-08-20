@@ -26,6 +26,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -241,6 +244,23 @@
     'cal-cumplida-control': { level: 'healthy', hue: 'green', rail: 'ready' },
     'cal-tnp': { level: 'neutral', hue: 'blue' },
     neutral: { level: 'neutral', hue: 'neutral' },
+  };
+
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20):
+  // el chip dice QUE, el tooltip explica POR QUE, el clic abre el detalle.
+  // Mismas frases que la leyenda para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    'prog-bloqueo-critico-sin-compromiso': 'Restricciones duras sin liberar y sin compromiso registrado. Atender ahora.',
+    'prog-ejecucion-con-restricciones': 'Tiene ejecucion reportada con restricciones duras aun sin liberar. Atender ahora.',
+    'prog-condiciones-pendientes': 'Faltan condiciones de habilitacion por cerrar antes de comprometer. Revisar antes del siguiente hito.',
+    'prog-sin-compromiso': 'Habilitada pero sin cantidad comprometida para la semana. Revisar antes del siguiente hito.',
+    'prog-lista-para-confirmar': 'Cumple la matriz de habilitacion y tiene compromiso: lista para confirmar.',
+    'cal-incumplida-critica': 'Compromiso incumplido con restricciones duras de por medio. Atender ahora.',
+    'cal-incumplida': 'El ejecutado quedo por debajo del compromiso de la semana. Revisar causa de no cumplimiento.',
+    'cal-sin-calificar': 'La semana cerro y esta actividad aun no tiene calificacion registrada.',
+    'cal-cumplida-control': 'Compromiso cumplido: bajo control segun el ciclo normal.',
+    'cal-tnp': 'Trabajo no planificado: se ejecuto sin compromiso previo de la semana.',
+    neutral: 'Fila sin clasificacion operativa para esta fase.',
   };
 
   function stateChipAttrs(state) {
@@ -1053,14 +1073,20 @@
     var stateLabel = view.label || 'Control';
     var aria = view.actions.length ? (stateLabel + '. ' + summary.countAriaText + '. Primer foco: ' + summary.focus) : stateLabel;
 
-    return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + '" aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
-      + '<span class="ops-state-topline">'
-      + '<span class="ops-state-dot" aria-hidden="true"></span>'
-      + '<span class="ops-state-chip"' + stateChipAttrs(view.state) + '>' + escapeHtml(stateLabel) + '</span>'
-      + '</span>'
-      + '<span class="ops-state-summary">'
-      + '<span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span>'
-      + '</span>'
+    // Chip sencillo + tooltip (Felipe, 2026-08-20): la etiqueta lleva el
+    // sufijo de pendientes SOLO cuando los hay (senal accionable a la vista,
+    // no escondida en el hover); el tooltip explica el porque y resume los
+    // pendientes; el clic conserva el drawer, que es lo que cubre movil.
+    var pendientes = view.actions.length;
+    var etiquetaChip = stateLabel + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
+    var tipTexto = porQue + ' ' + (pendientes > 0
+      ? summary.countAriaText + '. Primer foco: ' + summary.focus + '.'
+      : 'Sin pendientes.');
+    return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + ' ops-state-chip"' + stateChipAttrs(view.state)
+      + ' aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
+      + '<span class="ops-chip-label">' + escapeHtml(etiquetaChip) + '</span>'
+      + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(tipTexto) + '</span></span>'
       + '</button>';
   }
 
