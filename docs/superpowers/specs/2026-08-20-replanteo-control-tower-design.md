@@ -79,16 +79,29 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
 1. **La obra no fue entrevistada.** El método `antes-del-almuerzo` exige de tres a cinco
    conversaciones con quienes usan el tablero. Felipe declaró «yo soy la obra» y respondió por ella.
    **Cualquier hallazgo de un residente o director que contradiga lo aquí decidido manda sobre esta
-   spec.**
+   spec.** El guion, la plantilla de registro y la tabla de veredicto están listos en
+   [[2026-08-20-entrevistas-obra]]; el supuesto se cierra con renglones concretos:
+   **quién** (un residente y un director, de obras distintas) · **cuándo** (fecha de cada
+   conversación, antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
+   **Si la repregunta de acción sale «nada» en las dos conversaciones, la condición de parada del
+   método aplica y se reabren D9, D33 y D35 antes de construir.**
 2. **El correo automático se construye sin haber validado a mano** que alguien responde (D50,
    tomada contra la recomendación del método).
 3. **Se asume que las cifras históricas son correctas.** No se auditó un período contra la realidad
    de obra. La fase 1 incluye una verificación mínima de esto.
-4. **Se asume que el plan de compras con fechas existirá en una semana** (D63). Hoy no existe en
-   ninguna obra. Si no llega, la hoja de 8.6 nace vacía y hay que decirlo en pantalla.
+4. **Se asume que alguien carga el plan de compras en una semana** (D63). **No falta construir nada:
+   la pantalla está desplegada y el motor propone frente para 55 de 58 paquetes; falta que alguien
+   entre a amarrar y recalcular** — son dos o tres horas de una persona con permiso de editar
+   paquetes de contratación. Es adopción, no desarrollo, y **un supuesto de adopción sin dueño
+   nombrado no se cierra nunca**: falta el nombre y la fecha. Si no llega, la hoja de 8.6 nace vacía
+   y su vacío nombra la acción.
 5. **La medición se hizo contra la base de desarrollo**, con verificación puntual en producción por
    SSH en solo lectura. Los porcentajes de llenado son señal confiable; los conteos absolutos de dev
    pueden diferir de producción. **No se trajo ninguna copia de producción.**
+6. **El calendario de reuniones no se confirmó con la obra.** Se asume una reunión semanal por obra
+   en su día ancla, una diaria, y un comité de compras por paquete. **La revisión de gerencia y la
+   rendición al cliente están supuestas, no evidenciadas** — y de la primera depende la hoja 8.1.
+   Ver [[2026-08-20-ritual-y-reuniones]].
 
 ## 5. Alcance
 
@@ -151,6 +164,15 @@ a pedirle al ejecutor.
 
 **Regla dura:** si una métrica se puede calcular por dos caminos, la spec está mal. Una métrica,
 una declaración, un ejecutor.
+
+**Segunda regla dura, que sale de los errores de 19:** ninguna métrica se declara sin declarar
+también su **denominador**. Un porcentaje sin su base no es una cifra, es una insinuación. El
+ejecutor devuelve siempre la base junto al valor (ver 6.2).
+
+**Métrica nueva que nace del vacío detectado:** `compras.duracion_real_paso`, por tipo de paquete,
+fuente `pdc_plan_paso.fecha_real`, **en estado `descriptiva` hasta que haya al menos 20 pasos
+cerrados por tipo**. Es la que empieza a construir la memoria de duraciones que AIA no tiene, y el
+umbral evita publicar una mediana de tres datos.
 
 ### 6.1 Migración métrica por métrica, sin bloquear la pantalla
 
@@ -273,6 +295,27 @@ hoy muestra Power BI **antes** de dar la migración por buena.
 Cada hoja declara: la decisión que habilita, quién actúa, qué se muestra primero, y qué baja a
 desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 
+### 8.0 El ritual — cuándo se usa cada hoja
+
+Medido el 2026-08-20 contra `semanas_activas` y el dominio (ver [[2026-08-20-ritual-y-reuniones]]).
+**La semana no arranca el lunes: cada obra tiene su día ancla** — la obra 70 siempre martes, la 65
+viernes, la 62 jueves. Cualquier diseño que asuma lunes pone el correo y la semana por defecto en el
+día equivocado para la mayoría de las obras.
+
+| Reunión | Hoja que se proyecta | Acción | Quién registra |
+|---|---|---|---|
+| Semanal de obra, en su día ancla | **8.3 Intermedia** y **8.4 Semanal** | Liberar restricciones, asignar dueños, comprometer la semana que entra | El residente, en vivo |
+| Diaria de obra, corta y sin computador | **8.4**, solo el riesgo de incumplimiento | Salvar el compromiso que va a caerse | El residente |
+| Comité de compras, por paquete | **8.6** y **8.7** | Destrabar el paso vencido | Compras |
+| Revisión de gerencia (**no evidenciada**) | **8.1** | Decidir en qué obra meterse | — |
+| Rendición al cliente, mensual o por hito | **8.5** | Conversación de contrato | — |
+
+**Solo 8.3 y 8.4 se proyectan en la reunión semanal de obra. 8.2 y 8.5 son de ritmo mensual; 8.6 y
+8.7 son del comité de compras; 8.1 llega por correo a gerencia; 8.8 no se proyecta nunca.**
+
+Hoy cada hoja declara su decisión y ninguna declara su momento. Sin momento, la hoja se abre cuando
+alguien se acuerda — que es exactamente como la Torre lleva meses.
+
 ### 8.1 Resumen Ejecutivo — audiencia gerencia
 
 - **Decisión (D17):** en qué obra meterse esta semana. Acción: llamar hoy a ese director.
@@ -282,6 +325,10 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 - **Se retiran del lienzo:** las dos gráficas actuales (PAC contra programado, PPC semanal), que
   repiten lo que ya está en Semanal.
 - **Regla:** es la única hoja que compara obras entre sí.
+- **Su reunión no está evidenciada.** Nadie confirma que la gerencia tenga una revisión fija de
+  obras. Hasta que Felipe lo confirme, **esta hoja se diseña para llegar por correo con la pantalla
+  detrás**, no para proyectarse. Si no existe esa reunión, el lienzo de gerencia nace en riesgo de
+  cementerio y la respuesta es distribución, no colapsar lienzos.
 
 ### 8.2 Programa General — audiencia obra y dirección
 
@@ -304,6 +351,8 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   sale de cruzar insumos con actividades, no del programa. Donde no haya presupuesto, la métrica es
   `insuficiente` según 6.2 y no se muestra.
 - **Causas de no cumplimiento:** aquí solo el titular; el detalle vive en Semanal (D39).
+- **Ritmo: mensual o por hito**, en revisión de gerencia. No se evalúa con el criterio de muerte de
+  15, que es semanal.
 - **Desglose:** aporte por actividad, retraso observado, detalle de radar, detalle de cumplimiento.
 
 ### 8.3 Programación Intermedia — la hoja del indicador principal
@@ -335,8 +384,12 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 
 ### 8.4 Programación Semanal — audiencia obra
 
-- **Decisión (D35):** principal, el director prepara el comité del lunes. Secundarias: el residente
-  revisa sus compromisos a diario; gerencia compara entre obras.
+- **Decisión (D35):** principal, **el director prepara la reunión semanal de su obra, que cae en el
+  día ancla de esa obra** — no el lunes: medido, viernes en 38 semanas, martes en 36, lunes en 34,
+  jueves en 28, miércoles en 19. Secundarias: el residente revisa sus compromisos a diario; gerencia
+  compara entre obras.
+- **El riesgo de incumplimiento (D38) es la señal de la reunión diaria**, no de la semanal: entre una
+  reunión y otra es lo primero que ve el residente, y por eso debe caber en el móvil.
 - **Protagonista (D38): «Riesgo de incumplimiento» por compromiso.** Es la métrica hoy llamada
   `ps_pac_expected`, mal bautizada: su fórmula real es 25% histórico del contratista + 20% del
   responsable + 15% criticidad + 20% restricciones + 10% avance + 10% CNC, y estima **compromiso por
@@ -360,14 +413,18 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   brecha pasa un umbral. El umbral se define con Felipe antes de construir.
 - **Lienzo (D41):** teórica, real, y proyección a fecha probable de entrega **con banda de
   incertidumbre**, con la misma matemática del P50 de 8.2.
+- **Ritmo: mensual o por hito**, en rendición al cliente. No se evalúa con el criterio de muerte de
+  15, que es semanal.
 
 ### 8.6 Plan de Compras
 
-> **Supuesto que sostiene esta hoja (D63):** hoy **no existe plan con fechas en ninguna obra** —
-> `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` en cero, en dev y en producción. Lo que sí
-> existe en Da Porto (proyecto 73) es presupuesto (523 ítems) y **58 paquetes de contratación con 278
-> insumos asignados, todos confirmados a mano**. Se asume que el calendario estará cargado en una
-> semana. **Si no llega, esta hoja nace vacía y debe decirlo en pantalla, no disimularlo.**
+> **Corregido el 2026-08-20.** Esta hoja no espera desarrollo: **espera dos clics.** La cadena
+> paquetes → amarre a frente → «Recalcular» **está construida y desplegada en producción**, y el
+> motor propone frente para **55 de los 58 paquetes contratables** de Da Porto. Lo que no ha
+> ocurrido es que alguien entre a `#/ensamble/plan`: `pdc_paquete_frente` está en cero. Cargar el
+> plan son **2 o 3 horas de una persona** con permiso de editar paquetes de contratación, sin una
+> línea de código. **Es adopción, no trabajo pendiente** — y un supuesto de adopción sin dueño
+> nombrado es exactamente el error que el método señala. D63 es realista **solo con nombre y fecha**.
 
 - **Decisión (D42):** compras destraba el paso vencido de hoy · gerencia vigila la cobertura del
   presupuesto · el director anticipa qué le va a faltar.
@@ -375,6 +432,22 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   la lista de restricciones— · cobertura por conteo y por valor · escala de vencimiento.
 - **Escala (D43):** ya vencido · esta semana · en 2 · en 3 · en 6 semanas · **sin fecha, tratada
   como alarma**, igual que las restricciones huérfanas.
+- **«Vencido» no es lo mismo que «sin avance registrado».** El plan nace con la fecha real en blanco
+  en todos los pasos, así que la regla de D43, aplicada tal cual, **pintaría de rojo contratos ya
+  firmados** el primer día. Un paso con fecha planeada vencida y sin fecha real se muestra como
+  **sin avance registrado** hasta que la obra haya registrado al menos un avance en ese paquete.
+- **La escala se rotula «planeado», no «estimado».** No existe en AIA ninguna duración real medida
+  con la que calibrarla: sale del catálogo de la empresa. Y **19 de los 62 paquetes de Da Porto usan
+  tipos sin duración de referencia**, así que sus fechas salen de una mediana; esos se marcan como
+  **duración provisional** y no se leen con la misma autoridad que una medida.
+- **Contrapeso obligatorio (D36):** al lado de la escala, el contador **«pasos cerrados con fecha
+  real / pasos planeados»**. Es lo que empieza a construir la memoria que hoy no existe, y lo que
+  impide leer un calendario de catálogo como si fuera una predicción calibrada.
+- **Tercera cifra en la cobertura: paquetes sin responsable.** Sin responsable no hay a quién llamar
+  cuando un paso vence, y la hoja no pasa el test de la decisión.
+- **Si la hoja nace vacía, el vacío nombra la acción:** «58 paquetes esperan fechas — amarrar y
+  recalcular en Ensamble › Plan», con enlace directo. Un «no hay datos» es museo; un «falta este
+  botón, aquí» es una decisión que alguien toma antes del almuerzo.
 
 ### 8.7 Proveedores
 
@@ -385,6 +458,10 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   lo carga. Es el caso de aplicación obligatoria de 6.2.
 
 ### 8.8 Responsables
+
+> **Esta hoja no se proyecta en ninguna reunión, por diseño.** D46 y D47 la hacen de consulta
+> personal y de conversación uno a uno. Su distribución es un correo al jefe directo; nunca entra al
+> lienzo de la reunión semanal. Proyectarla es la reconvención pública que D47 prohíbe.
 
 > **Bloqueante de esta hoja (D61):** la vista `bi_cip_responsables` devuelve **una sola fila**,
 > mientras `Responsable_AIA` está lleno en 5.223 filas del programa. Es defecto de la vista, no falta
@@ -402,7 +479,7 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 | Decisión | Regla |
 |---|---|
 | D13 | **El rango de fechas manda.** «Semana 10» es un atajo que rellena el rango. Un solo motor de período por debajo |
-| D14 | Por defecto, **la semana en curso** |
+| D14 | Por defecto, **la semana en curso**, resuelta **por obra contra su propia fecha de inicio de semana**, no contra el lunes calendario. En el día ancla, la hoja Semanal abre con la semana que cierra y ofrece el paso a la que entra |
 | D15 | Por defecto, **las obras que corresponden al cargo**: gerencia todas las suyas, el director la suya |
 | D16 | La barra principal queda con **obra y período**. Subcontratista, responsable y etapa bajan al desglose |
 
@@ -451,8 +528,9 @@ diseño no cubre:
   y sale en una captura.
 - **Contexto obligatorio:** ninguna cifra sola. Siempre contra meta, contra período anterior o
   contra umbral.
-- Un lienzo por audiencia (D52): gerencia y obra. Dark, 1180×820 como viewport canónico de
-  validación.
+- Un lienzo por audiencia (D52): gerencia y obra, **entendidos como composiciones de hojas
+  compartidas, no como productos aparte**. Regla dura: **una hoja, un diseño.** Dark, 1180×820 como
+  viewport canónico de validación.
 
 ## 13. Fases
 
@@ -460,33 +538,54 @@ Cada fase se publica antes de abrir la siguiente, según el gate de cierre de fr
 
 | # | Fase | Contenido | Condición de hecho |
 |---|---|---|---|
-| **F0** | **Higiene de datos** | Arreglar la vista de responsables · aclarar el origen del eje de Productividad · corregir el mojibake del catálogo de causas · dejar de truncar la atribución · decidir los campos muertos | Ninguna cifra de la Torre viene de una fuente que no es la que declara, y ningún texto de causa se corta donde dice de quién es la culpa |
-| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, y cada una responde «de dónde salgo» con un clic |
+| **F0** | **Higiene de datos** | Arreglar la vista de responsables · aclarar el origen del eje de Productividad · corregir el mojibake del catálogo de causas · dejar de truncar la atribución · decidir los campos muertos · **retirar las tablas del PDC v1, con su gate de borrado** | Ninguna cifra de la Torre viene de una fuente que no es la que declara, y ningún texto de causa se corta donde dice de quién es la culpa |
+| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada · **T1 con su gemelo en el servicio: una clase por hoja detrás de una interfaz común** | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, cada una responde «de dónde salgo» con un clic, **y las dos conversaciones con la obra están hechas y con veredicto** |
 | **F2** | **Restricciones** | Migración de esquema con su gate · métricas nuevas · hoja de Intermedia reconstruida · alarma de huérfanas · lista accionable · escritura desde la Torre | Un director asigna responsable y fecha a una restricción sin salir de la hoja, y el conteo de huérfanas baja |
 | **F3** | **Narrativa** | Resumen Ejecutivo con panorama de obras · acciones con dueño · riesgo de incumplimiento por compromiso rebautizado e integrado · Semanal rediseñada | La hoja abre con una frase que afirma qué pasó y por qué, y debajo qué hacer y quién |
-| **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · correo automático | El módulo está en el menú y la señal llega por correo |
-| **F5** | **Jubilación** | Liberación de Restricciones completa · retiro del informe Power BI · después, `/indicadores` | Una sola casa para las cifras |
-| **F6** | **Diferidos** | What-if acotado a restricciones · vista de cliente · contabilidad para el índice de costo · **rescate del historial del PDC v1** | Cada uno con su propia spec |
+| **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · **disparador programado** (no existe hoy: el único correo del sistema es el de contraseña y las alertas de restricciones son campana dentro de la app) · **correo de víspera por obra** —día ancla menos uno, a director y residente: huérfanas de tres semanas, vencidas con dueño, incumplidas sin causa, cada línea con enlace a la acción— · **correo semanal de gerencia** en día fijo, con la fecha de corte de cada obra | El módulo está en el menú, **el correo llega la víspera de la reunión de cada obra**, y se mide qué porcentaje de las huérfanas listadas tiene dueño 48 horas después |
+| **F5** | **Jubilación** | Liberación de Restricciones completa · retiro del informe Power BI · después, `/indicadores` | Una sola casa para las cifras, **y una persona distinta a Felipe ha hecho, documentado, un deploy y un cambio de métrica por catálogo** |
+| **F6** | **Diferidos** | What-if acotado a restricciones · vista de cliente · contabilidad para el índice de costo | Cada uno con su propia spec |
 
 **F0 y F1 son las únicas especificadas aquí a nivel ejecutable.** F2 en adelante derivan su propia
 spec. F0 es barata y desbloquea: sin ella, tres hojas muestran cifras cuyo origen no se puede
 defender, que es exactamente lo que este replanteo viene a curar.
 
-### El frente aparte: el historial del PDC v1 (D64)
+### El frente aparte: el retiro de las tablas del PDC v1 (D64)
 
-La tabla `pdc` guarda **409 planes de compras completos** —fechas planeadas y reales de cada paso,
-proveedor adjudicado, número de contrato, pólizas, y valores de presupuesto, negociación,
-adjudicación, anticipo, reclamado y devoluciones— de tres obras: Prueba (136), Optimización
-Aeropuerto JMC (162) y Milán Campestre Torre 19 (111). **Da Porto no está ahí**, y ninguna obra tiene
-las dos generaciones del plan.
+**Corregido el 2026-08-20 contra producción.** Esta sección afirmaba que la tabla `pdc` guardaba
+«409 planes de compras completos» y que era «el único historial de desempeño de compras que existe».
+**Las dos cosas son falsas**, y salieron de contar filas sin mirar el llenado de las columnas.
 
-El código del PDC v1 se eliminó del repositorio el 2026-08-04, así que esos datos **están vivos en
-producción y huérfanos de aplicación**. Es el único historial de desempeño de compras que existe.
+Lo que hay de verdad en esas 409 filas:
 
-Felipe decidió consultarlo y sacarlo de producción. **«Sacar» es borrado**, así que ese frente exige,
-en este orden: visto explícito de Felipe · respaldo verificable · extracción a un archivo histórico ·
-**comprobación de que ese archivo se lee fuera de producción** · y solo entonces el retiro, con plan
-de restauración. Nada de esto se ejecutó en esta sesión.
+| Obra | Filas | Con fecha planeada | Con fecha real | Con valor o contrato |
+|---|---|---|---|---|
+| Optimización Aeropuerto JMC (68) y Milán Campestre Torre 19 (74) | 273 | **0** | **0** | **0** |
+| Prueba (27) | 126 | 126 | **4** (todas del mismo día, en pares duplicados) | **0** |
+
+Las seis columnas de valor —presupuesto, primera negociación, adjudicado, anticipo, reclamado,
+devoluciones— están en NULL en las 409. `general_informe_pdc` y `bi_pdc_general` repiten el mismo
+esqueleto. **Son plantilla, no historial.**
+
+Consecuencias directas:
+
+1. **No hay duraciones reales, ni desvío de precio, ni cumplimiento por proveedor que extraer.** No
+   se construye ningún importador ni pronóstico de compras alimentado por el v1: no hay entrada.
+2. **El frente deja de ser «rescate» y pasa a ser «retiro de las tablas del PDC v1»**, y sale de los
+   diferidos: es higiene, y va en F0 o como parte de F5.
+3. El archivo histórico se reduce a la estructura de las tablas más el CSV de las 126 filas planeadas
+   de «Prueba», si Felipe confirma que fueron el borrador de Da Porto.
+4. Al retiro se suman las hermanas `general_informe_pdc`, `bi_pdc_general`, `papelera_pdc` y
+   `backup_licify_general_informe_pdc_20260612`, **previa comprobación de que ningún informe vivo de
+   Power BI las lee**.
+
+**El gate de borrado se mantiene intacto** (D64): que el contenido sea plantilla no releva el visto
+explícito de Felipe, el respaldo verificable, la comprobación de que el archivo se lee fuera de
+producción, ni el plan de restauración. Nada de esto se ejecutó.
+
+**Y queda una pregunta abierta que solo Felipe responde:** si JMC y Milán tuvieron plan de compras en
+Excel o Licify, el historial existe pero no está en la base — y entonces la memoria de desempeño se
+busca allá, no aquí.
 
 ## 14. Verificación
 
@@ -524,6 +623,11 @@ y llevarían a una conclusión falsa.
 el PAC se logra comprometiéndose a menos; bajar el porcentaje de actividades sin análisis exige
 abrir el análisis.
 
+**Y un segundo indicador, temprano: a las 4 semanas de F4**, qué porcentaje de las restricciones
+huérfanas listadas en el correo de víspera gana dueño en 48 horas. El método pide medir la respuesta
+al empuje, no la apertura; este avisa a los 28 días con el mismo dato que el de 90. El umbral lo fija
+Felipe; la propuesta es 30%.
+
 Triaje a los 90 días, cuadrante uso contra relevancia: alto uso y alta relevancia, mantener; bajo
 uso y alta relevancia, es problema de distribución, no de diseño; baja relevancia, archivar avisando
 a quien lo pidió.
@@ -538,8 +642,11 @@ a quien lo pidió.
 | **La paridad de métricas destapa que las cifras de hoy están mal** | F1 | Es una ganancia disfrazada de problema. Documentar cada discrepancia y decidir cuál es la correcta antes de migrar |
 | **La migración de esquema toca datos vivos** | F2 | Gate de Plannotator, respaldo verificable, dry-run y reconciliación. No se ejecuta desde una tarea de interfaz |
 | **La Torre escribiendo abre un hueco de seguridad** | F2 | CSRF, capacidad, aislamiento por proyecto, auditoría, y prueba de rol permitido y denegado |
-| **Tres lienzos con una sola persona detrás** | D52 | El cliente ya se difirió. Si el mantenimiento ahoga, se colapsan gerencia y obra en uno con puerta de entrada distinta |
-| **El correo no lo lee nadie** | D50 | Medir respuesta al correo desde el primer envío. Si a las cuatro semanas nadie responde, apagarlo antes de invertir más |
+| **Tres lienzos con una sola persona detrás** | D52 | **Medido el 2026-08-20: el segundo lienzo cuesta cerca del 5% del primero**, porque la unidad de construcción es la hoja. El riesgo real no es este: es el bus factor, en la fila de abajo |
+| **Felipe ausente dos semanas** | Una sola persona construye, despliega y mantiene | Tres condiciones: T1 con su gemelo en el servicio · F5 no se ejecuta hasta que otra persona haya hecho un deploy y un cambio de métrica por catálogo · un runbook de una página por hoja |
+| **La revisión de gerencia no existe como reunión** | 8.1 depende de ella y nadie la evidencia | Confirmar con Felipe antes de F3. Si no existe, 8.1 se diseña como correo con pantalla detrás, no como hoja proyectada |
+| **El catálogo de duraciones nunca se contrastó con una duración real** | 8.6 | Rotular la escala como «planeado», marcar los 19 paquetes de duración provisional, y publicar el contador de pasos cerrados con fecha real |
+| **El correo no lo lee nadie** (medición temprana) | D50, F4 | A las 4 semanas de F4: si menos del porcentaje que fije Felipe —propuesta, 30%— de las huérfanas listadas gana dueño en 48 horas, el correo se apaga antes de invertir más |
 | **El pronóstico P50 se equivoca en el titular** | D23 | Contrastar contra obras cerradas antes de F3. Si no acierta, baja de titular |
 | **`bi-spa.js` de 4.199 líneas** | Todas las fases | T1: se parte por hoja antes de tocar nada |
 
@@ -551,28 +658,41 @@ a quien lo pidió.
 - Métricas agregadas al lienzo «porque el dato ya está».
 - Comparaciones entre obras que no son comparables sin normalizar.
 - Cualquier cifra que dependa de costo real causado, mientras no exista la fuente.
+- **Variantes por audiencia dentro de una hoja compartida.** Es la única forma de duplicación que
+  esta arquitectura permite por descuido, y la única que triplicaría el costo de mantenimiento.
+- Un importador o un pronóstico de compras alimentado por el PDC v1: no hay entrada que importar.
 
 ## 18. Lo que queda abierto
 
-Ninguno bloquea F0. El primero bloquea la planificación de F1 en adelante.
+Ninguno bloquea F0. El primero **quedó resuelto el 2026-08-20**; los demás siguen abiertos.
 
-1. **Contradicción entre D52 y D11, y hay que resolverla con Felipe.** D52 decidió «un lienzo propio
-   por audiencia», rechazando explícitamente «las mismas hojas con puerta de entrada distinta». Pero
-   D11 dejó las ocho hojas como obligatorias. Las dos juntas no definen **qué hojas tiene el lienzo
-   de gerencia y cuáles el de obra**, ni qué pasa con una hoja que ambas necesitan —Curva S,
-   Proveedores— si son productos separados. Tres salidas posibles:
-   - Cada lienzo tiene su subconjunto, y las hojas compartidas se construyen una vez y se montan en
-     los dos. Es lo más cercano a lo decidido sin duplicar trabajo.
-   - Se revisa D52 hacia la puerta de entrada compartida, asumiendo que el método pierde aquí contra
-     el costo de mantenimiento con una sola persona.
-   - Se reduce el alcance de hojas por lienzo, revisando D11.
+1. **Resuelto (ver [[2026-08-20-sostenibilidad-lienzos]]).** D52 y D11 no chocan: un **lienzo** es una
+   composición —puerta de entrada por rol, hoja de aterrizaje y lista de hojas montadas—, y la
+   **hoja** es la unidad de construcción. Gerencia monta cuatro hojas (Resumen Ejecutivo como
+   aterrizaje, Programa General, Curva S, Proveedores); obra monta siete (Programación Intermedia
+   como aterrizaje, Programa General, Semanal, Curva S, Plan de Compras, Proveedores, Responsables).
+   Las ocho hojas de D11 viven, cada una en al menos un lienzo. Programa General, Curva S y
+   Proveedores se construyen **una vez** y se montan en los dos, **sin variante por audiencia**: el
+   alcance lo deciden los filtros de proyecto y período, y una necesidad nueva de una audiencia es un
+   desglose, no una copia. Responsables no se monta en gerencia (D46, D47). Medido contra el código
+   —57% de la interfaz es motor compartido y el servidor despacha por hoja, nunca por audiencia—
+   **el segundo lienzo cuesta cerca del 5% del primero**. Lo que sí triplicaría el costo, y por eso
+   queda prohibido en 17, es la variante por audiencia dentro de una hoja compartida. **El costo que
+   D52 advertía no está en los lienzos: está en el bus factor**, tratado en 16.
 2. **Umbral de replanificación de la Curva S** (8.5): a partir de qué brecha se convoca a rehacer el
    programa.
-3. **Orden del titular y la lista en Intermedia** (D28, 8.3): si la narrativa va arriba de la lista de
-   restricciones o al revés. Se resuelve al diseñar F2.
+3. **Resuelto por el ritual (ver [[2026-08-20-ritual-y-reuniones]]):** en Intermedia, **la lista de
+   restricciones va arriba del titular**. En la reunión se trabaja la lista y se asignan dueños en
+   vivo; el titular narrativo sirve a quien llega sin contexto y encabeza el correo, no la pantalla
+   proyectada.
 4. **Los campos muertos** —`Categoria_CP`, `CP`, `alerta_crisis`, `reprogramaciones_semanales`, todos
    en 0% de llenado— se retiran o alguien debería estar llenándolos. Decisión de proceso, se toma
    en F0.
+5. **Las ocho preguntas de ritual y reuniones** que no se pudieron hacer en vivo, listadas en la
+   sección 7 de [[2026-08-20-ritual-y-reuniones]]. La que más cambia el diseño: **si la gerencia
+   tiene una reunión fija de revisión de obras o cada gerente lee el informe por su cuenta.**
+6. **Si «Prueba» fue el borrador de Da Porto**, y si JMC y Milán tuvieron su plan de compras en Excel
+   o Licify — porque entonces el historial de compras existe, pero fuera de la base.
 
 ## 19. Errores de medición cometidos en este diseño
 
@@ -585,7 +705,14 @@ la spec pide que las cifras se puedan defender.
    cumplimiento, solo a las comprometidas que fallaron. Medido sobre el programa entero, una captura
    sana del 90% parece un abandono del 22%.
 
-Los dos juntos produjeron un diagnóstico falso —«hay que arreglar la captura antes que el tablero»—
+3. **Contar filas como si fueran datos.** Se afirmó que la tabla `pdc` guardaba «409 planes de
+   compras completos» y que era «el único historial de desempeño de compras que existe», habiendo
+   mirado solo los nombres de las columnas y el número de filas. Medido: 273 de esas filas no tienen
+   una sola fecha, valor ni proveedor, y las seis columnas de valor están vacías en las 409. **Son
+   plantilla.** Es la trampa 4 del método —el dato histórico puede no ser confiable— aplicada a quien
+   escribió la spec.
+
+Los dos primeros juntos produjeron un diagnóstico falso —«hay que arreglar la captura antes que el tablero»—
 que estuvo a punto de reordenar todo el replanteo. Lo corrigió Felipe.
 
 **Regla que sale de ahí, y que aplica al ejecutor de métricas de 6:** ninguna métrica se declara sin
