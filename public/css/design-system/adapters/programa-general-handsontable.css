@@ -107,14 +107,26 @@
   /* El filete del contrato usa la misma propiedad que este velo, asi que se
      COMPONEN via --pg-rail-shadow (2026-08-20): sin la variable, el velo se
      tragaba el filete recien estrenado en PG — medido con la sonda del frente
-     replanteo-coloreado-estados. La variable se define por atributo abajo. */
+     replanteo-coloreado-estados. La variable se define por atributo abajo.
+
+     El COLOR del velo se lee del contrato, no del alias del modulo (2026-08-20).
+     `--pg-cell-editable-overlay` / `--pg-cell-readonly-overlay` los declaraba
+     programa-general.css con su propia intensidad (6% de success-text y 8% de
+     text-tertiary), y Programacion Intermedia otra distinta (6% y 7% de
+     active-text-secondary): dos modulos, tres cifras, para el mismo significado.
+     Apuntar aqui al token del sistema es lo que hace que la unificacion no
+     dependa de que cada hoja de modulo se acuerde de mantenerla. No se cambia
+     por `var(--pg-...)` con respaldo: el alias siempre esta definido, asi que el
+     respaldo nunca se leeria y el velo seguiria siendo el del modulo.
+     Programa General Actualizar NO se ve afectado: sus reglas propias, de mayor
+     especificidad, siguen pintando `transparent` por la decision del 2026-08-06. */
   :where(.pg-page #hot-container td.pg-cell-editable) {
-    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-editable-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--ds-table-cell-editable-overlay);
     cursor: text;
   }
 
   :where(.pg-page #hot-container td.pg-cell-readonly) {
-    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-readonly-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--ds-table-cell-readonly-overlay);
     cursor: not-allowed;
   }
 

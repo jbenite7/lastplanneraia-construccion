@@ -2823,3 +2823,13 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
         }
     }
 }
+@layer module {
+    .ps-page #hot-container .htCore td {
+        line-height: calc(var(--ds-table-row-h) - 2 * var(--ds-table-cell-pad-y)) !important;
+    }
+}
+@layer module {
+    .ps-page main.hot-full-bleed {
+        padding-block-start: var(--ds-page-padding);
+    }
+}

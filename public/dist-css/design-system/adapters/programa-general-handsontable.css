@@ -90,11 +90,11 @@
     color: var(--ds-cell-state-sin-datos-fg) !important;
   }
   :where(.pg-page #hot-container td.pg-cell-editable) {
-    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-editable-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--ds-table-cell-editable-overlay);
     cursor: text;
   }
   :where(.pg-page #hot-container td.pg-cell-readonly) {
-    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pg-cell-readonly-overlay);
+    box-shadow: var(--pg-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--ds-table-cell-readonly-overlay);
     cursor: not-allowed;
   }
   :where(.pg-page #hot-container td[data-aia-severity-rail='urgent']) {

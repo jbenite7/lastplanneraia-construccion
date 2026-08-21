@@ -4098,6 +4098,46 @@
       return;
     }
 
+    // Ola 4 (2026-08-20). El alto de fila estaba escrito a mano aqui:
+    // `rowHeights: 56`, mas del doble de lo que fija el contrato del design
+    // system (--ds-table-row-h = 1.5rem = 24px, public/css/tokens.css:662).
+    // Medido en pantalla antes del cambio, 1180x820 dark, /programacion-intermedia:
+    // celda de 55px, cabecera de 71px, 153 celdas renderizadas y CERO con texto
+    // cortado — es decir, sobraba alto, no faltaba.
+    //
+    // POR QUE SIGUE SIENDO `rowHeights` Y NO `autoRowSize`, y por que bajar el
+    // numero no recorta nada: Handsontable aplica `rowHeights` como `height` del
+    // `tr`, y en layout de tabla `height` es un MINIMO, no un maximo — la fila
+    // crece si el contenido lo pide. Esta comprobado en la pantalla hermana
+    // Programa General, donde con el suelo puesto las filas reales median 44, 67,
+    // 87, 108, 151, 173 y 154px segun lo que envolvia cada una. Bajar el suelo
+    // aprieta las filas de una linea, que son la mayoria, y deja crecer a las que
+    // envuelven. Encender `autoRowSize` cambiaria el mecanismo entero y, con
+    // `renderAllRows: false`, obligaria a medir fuera de pantalla.
+    //
+    // El token se lee en tiempo de ejecucion porque Handsontable exige un numero
+    // y el contrato lo declara en rem: se resuelve midiendo una sonda con
+    // `height: var(--ds-table-row-h)`, asi cualquier unidad futura sigue sirviendo.
+    // Misma receta que programa_general/hot.js, deliberadamente: son dos IIFE sin
+    // utilidad compartida, y el numero magico duplicado seria peor que la funcion.
+    function resolverAltoFilaContrato() {
+      var RESPALDO_PX = 24; // el valor del contrato hoy, por si el token no resuelve
+      var sonda;
+      var alto;
+      try {
+        sonda = document.createElement('div');
+        sonda.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;padding:0;border:0;height:var(--ds-table-row-h)';
+        (container || document.body).appendChild(sonda);
+        alto = Math.round(sonda.getBoundingClientRect().height);
+        sonda.parentNode.removeChild(sonda);
+        return alto > 0 ? alto : RESPALDO_PX;
+      } catch (_errSonda) {
+        return RESPALDO_PX;
+      }
+    }
+
+    var altoFilaContrato = resolverAltoFilaContrato();
+
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
@@ -4121,7 +4161,8 @@
       manualColumnResize: false,
       manualRowResize: true,
       autoRowSize: false,
-      rowHeights: 56,
+      // Suelo, no techo: ver `resolverAltoFilaContrato()` arriba.
+      rowHeights: altoFilaContrato,
       renderAllRows: false,
       colWidths: function (index) {
         var container = document.getElementById('hot-container');

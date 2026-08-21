@@ -68,6 +68,9 @@ html.aia-theme-dark .pi-page {
     --pi-danger-text: var(--ds-active-text-primary);
     --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
 }
+.pi-page > main.hot-full-bleed {
+    padding-top: var(--ds-page-padding);
+}
 .hot-full-bleed {
     --hot-gutter: 8px;
     width: 100%;

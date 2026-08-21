@@ -3118,6 +3118,37 @@
     }
     syncResponsiveModeClasses();
 
+    // Ola 4 (2026-08-20). El alto de fila estaba escrito a mano aqui: `rowHeights: 45`,
+    // casi el doble de lo que fija el contrato del design system
+    // (--ds-table-row-h = 1.5rem = 24px, public/css/tokens.css:662). Medido en
+    // pantalla antes del cambio: celda de 44px con el token en 24.
+    //
+    // POR QUE SIGUE SIENDO `rowHeights` Y NO `autoRowSize`. En Handsontable el
+    // valor de `rowHeights` se aplica como `height` sobre el `tr`, y en layout de
+    // tabla `height` es un MINIMO, no un maximo: la fila crece si el contenido lo
+    // pide. Esta medido en esta misma pantalla con el 45 puesto — los altos reales
+    // de las 27 primeras filas eran 44, 67, 87, 108, 110, 131, 151, 154, 173, 219 y
+    // 241px, y cero celdas con texto cortado. Es decir: el mecanismo que hace crecer
+    // la fila ya funcionaba; lo unico equivocado era el suelo. Bajar el suelo al del
+    // contrato aprieta las filas de una linea (las mas numerosas) y deja intactas
+    // las que envuelven, que es exactamente lo que se pedia. Encender `autoRowSize`
+    // habria cambiado el mecanismo entero —y con `renderAllRows: false` obliga a
+    // medir fuera de pantalla— para arreglar algo que no estaba roto.
+    //
+    // El token se lee en tiempo de ejecucion porque Handsontable exige un numero y
+    // el contrato lo declara en rem: se resuelve midiendo un sonda con
+    // `height: var(--ds-table-row-h)`, asi cualquier unidad futura sigue sirviendo.
+    var RESPALDO_ALTO_FILA_PX = 24; // el valor del contrato hoy, por si el token no resuelve
+    var altoFilaContrato = RESPALDO_ALTO_FILA_PX;
+    var sondaAltoFila = document.createElement('div');
+    sondaAltoFila.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;padding:0;border:0;height:var(--ds-table-row-h)';
+    container.appendChild(sondaAltoFila);
+    var altoMedido = Math.round(sondaAltoFila.getBoundingClientRect().height);
+    container.removeChild(sondaAltoFila);
+    if (altoMedido > 0) {
+      altoFilaContrato = altoMedido;
+    }
+
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
@@ -3262,7 +3293,8 @@
         return Math.max(w, 20);
       },
       autoRowSize: false,
-      rowHeights: 45,
+      // Suelo, no techo: ver `resolverAltoFilaContrato()` arriba.
+      rowHeights: altoFilaContrato,
       renderAllRows: false,
       viewportRowRenderingOffset: 20,
       viewportColumnRenderingOffset: 10,

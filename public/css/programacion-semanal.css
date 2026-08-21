@@ -3742,3 +3742,73 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
         }
     }
 }
+
+
+/* Ola 4 (2026-08-20), defectos reportados por Felipe mirando la pantalla.
+
+   (1) ALTO DE FILA. Este modulo NO fija `rowHeights` a mano — se comprobo:
+   `public/js/modules/programacion_semanal/hot.js` no menciona la opcion, al
+   contrario que PG (45) y PI (56). Su fila alta la impone el CONTENIDO: la
+   columna «Actividad» mide 179px, y un rotulo real como
+   «Subrasante mejorada, [Capitulo: Area A-1, Franja A, Zona 1 (central - CIAN),
+   (6) POSICIONES EN PLATAFORMA (FASE 1)]» —115 caracteres, sin saltos duros—
+   envuelve en 6 renglones. Medido a 1180x820 dark: filas de 106 a 128px, con
+   126px de contenido dentro. Nada que recortar aqui: el texto es cierto y
+   entero.
+
+   Lo que si estaba fuera de contrato era el INTERLINEADO. La celda heredaba el
+   1.6 del cuerpo = 21px de renglon con fuente de 13px, y ese renglon NO CABE en
+   la fila que declara el contrato: --ds-table-row-h 24px menos 2x
+   --ds-table-cell-pad-y (2px) deja una caja de texto de 20px. Es decir, una
+   fila de una sola linea era imposible de cumplir hoy, aunque el token la
+   declarara. Se ata el interlineado a esa misma aritmetica en vez de inventar
+   un numero: 20px. Con eso la fila de una linea mide exactamente los 24px del
+   contrato, y la de seis renglones baja de 126 a 120px de contenido. No se
+   toca ninguna fuente (celda 13px, cabecera 12px siguen en contrato) y no se
+   pierde un solo caracter: cambia el aire entre renglones, no cuantos hay.
+
+   Se acota a `td` a proposito: el chip de Estado Operativo, los progresos y el
+   valor de compromiso traen su propio interlineado y su piso tactil de 44px,
+   que no se tocan.
+
+   El `!important` no es pereza y se midio: quien fija los 21px es el vendor,
+   `.handsontable td{...line-height:21px...}` en
+   public/vendor/handsontable/handsontable.full.min.css, que llega SIN CAPA.
+   Una declaracion normal dentro de cualquier @layer pierde siempre contra lo
+   no encapado, por especifica que sea — la primera version de esta regla, sin
+   `!important`, se cargo en la capa `module` y el navegador siguio computando
+   21px. Con `!important` el orden de capas se invierte y una capa nombrada
+   gana, que es justo el patron que ya documenta este archivo en @layer
+   components (~linea 1867). La alternativa era sacar la regla de la capa, y
+   eso entrega la hoja entera sin capa: lo caza el guard unlayered-delivery. */
+@layer module {
+    .ps-page #hot-container .htCore td {
+        line-height: calc(var(--ds-table-row-h) - 2 * var(--ds-table-cell-pad-y)) !important;
+    }
+}
+
+/* (4) RESPIRO ENTRE LA BARRA SUPERIOR Y EL CAJON DE ACCIONES.
+
+   Medido a 1180x820 dark, antes de este cambio:
+     PG — main es `.aia-page hot-full-bleed`, `.aia-page` le da
+          `padding: var(--ds-page-padding)` = 23.6px, y su `.aia-toolbar`
+          arranca en y=63.59 con el main en y=40. Ese es el respiro que Felipe
+          quiere.
+     PS — main es solo `hot-full-bleed`, padding-top 0, y la toolbar arranca en
+          y=49, exactamente pegada al borde inferior de la context-bar sticky.
+
+   No se copia un numero: se replica la MISMA fuente del valor, el token
+   --ds-page-padding (clamp(1rem, 2vw, 1.5rem)). Solo el eje vertical: el
+   sangrado horizontal lo gobierna `--hot-gutter` de `.hot-full-bleed`, que es
+   lo que hace que la tabla vaya a sangre, y ampliarlo estrecharia la tabla.
+
+   La altura util de la tabla se recalcula sola: `syncContainerHeight()` en
+   public/js/modules/programacion_semanal/hot.js mide
+   `getBoundingClientRect().top` de #hot-container y alimenta
+   `updateSettings({ height })`, asi que descuenta este respiro sin numeros
+   magicos. Contrato en tests/browser/programacion-semanal-hot-height.mjs. */
+@layer module {
+    .ps-page main.hot-full-bleed {
+        padding-block-start: var(--ds-page-padding);
+    }
+}

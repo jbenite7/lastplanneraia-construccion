@@ -121,6 +121,26 @@ html.aia-theme-dark .pi-page {
     --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
 }
 
+/* RESPIRO ENTRE LA BARRA SUPERIOR Y EL CAJON DE ACCIONES (Ola 4, 2026-08-20)
+   Felipe pidio en PI el mismo hueco que le gusta en Programa General. No se
+   inventa un valor: se toma la MISMA fuente que lo produce alli, documentada en
+   public/css/programa-general.css — el padding superior de la pagina canonica,
+   `padding: var(--ds-page-padding)` sobre `main.aia-page`
+   (public/css/design-system/core.css), token `clamp(1rem, 2vw, 1.5rem)`, que a
+   1180px de ancho resuelve 23.6px.
+   Medido el 2026-08-20 a 1180x820 dark, antes de tocar:
+     PG  #encabezado abajo y=40, .aia-toolbar arriba y=64  -> hueco 24px
+     PI  #encabezado abajo y=40, .aia-toolbar arriba y=40  -> hueco 0px
+   La diferencia no esta en la toolbar (su margin-top computa 0px en ambas): esta
+   en que el `main` de PG lleva la clase `.aia-page` y el de PI no, y esa vista es
+   PHP que este frente no toca. Por eso se aporta aqui solo el padding SUPERIOR
+   con el mismo token, y no se copia el resto de `.aia-page`: los laterales ya los
+   pone `--hot-gutter` en la regla de abajo, y duplicarlos moveria la tabla.
+   Va dentro de `@layer module` como el resto de la hoja. */
+.pi-page > main.hot-full-bleed {
+    padding-top: var(--ds-page-padding);
+}
+
 /* programacion_intermedia.view.php style block 1 */
 .hot-full-bleed {
     --hot-gutter: 8px;

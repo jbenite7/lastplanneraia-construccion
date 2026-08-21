@@ -16,7 +16,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#57b083",
       "chipTexto": "#06281a",
-      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "healthy",
       "railNivelCelda": "healthy"
     },
@@ -31,7 +31,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#5f9fdd",
       "chipTexto": "#07223c",
-      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "healthy",
       "railNivelCelda": "healthy"
     },
@@ -46,7 +46,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#9aa8a0",
       "chipTexto": "#1c2420",
-      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "healthy",
       "railNivelCelda": "healthy"
     },
@@ -61,7 +61,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#e87722",
       "chipTexto": "#3a2004",
-      "railGrosor": "rgb(255, 210, 63) 4px 0px 0px 0px inset, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgb(255, 210, 63) 4px 0px 0px 0px inset, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "attention",
       "railNivelCelda": "attention"
     },
@@ -76,7 +76,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#e15a52",
       "chipTexto": "#3c0a06",
-      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "urgent",
       "railNivelCelda": "urgent"
     },
@@ -91,7 +91,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#9485d6",
       "chipTexto": "#26113f",
-      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "neutral",
       "railNivelCelda": "neutral"
     },
@@ -106,7 +106,7 @@
       "celdaTexto": "#f7faf8",
       "chipFondo": "#5ec9bd",
       "chipTexto": "#062f29",
-      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.447059 0.521569 0.478431 / 0.08) 0px 0px 0px 9999px inset",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
       "railNivel": "neutral",
       "railNivelCelda": "neutral"
     }
