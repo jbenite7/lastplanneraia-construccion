@@ -184,6 +184,20 @@ se devuelven por el buzón y por esta spec.
 | D83 | Las 126 filas de la obra «Prueba» | **Se conservan**: se extrae su CSV al archivo histórico antes de retirar nada | Fueron el borrador de un plan real. Es lo único con contenido de las 409 filas, y sirve de referencia para el primer plan de Da Porto |
 | D84 | Las tablas hermanas del PDC v1 | **Se verifica primero** si alguna alimenta un informe de Power BI vivo. **El retiro espera a esa verificación** | Decisión de Felipe: no dar por muerta una tabla sin comprobarlo. Es prerrequisito del borrado, no supuesto |
 
+### Cuarta ronda: lo que salió de la entrevista de obra (2026-08-20)
+
+Evidencia en [[2026-08-20-entrevista-obra-felipe]]. Una sola voz, dos roles: **no cierra el
+supuesto 1**, pero es la primera evidencia real del replanteo.
+
+| # | Decisión | Qué se decidió | Por qué |
+|---|---|---|---|
+| D86 | Hoja de Responsables | **Se deja como estaba: el jefe ve su equipo completo** | Decisión de Felipe **con la evidencia en contra sobre la mesa**: él mismo confirmó («ha pasado») que la causa se maquilla cuando el jefe la va a ver. Riesgo asumido. **Consecuencia obligatoria:** el contrapeso de D32 deja de ser conveniente y pasa a obligatorio, y el ranking de causas no puede sostener por sí solo ninguna decisión sobre personas |
+| D87 | Avance parcial de restricciones | **Cuenta, y se ve: tres estados** — sin gestionar · en gestión · liberada | «Recortar el problema paulatinamente, no necesariamente resolver todo en una semana.» El modelo ya guarda el valor intermedio; un tablero que solo cuenta liberadas castiga la gestión que pide |
+| D88 | Encadenamientos que causan atrasos | **La cadena completa, hasta la fecha de entrega**: esta restricción empuja estas actividades, que empujan la entrega | Pedido explícito de la obra, y no estaba en la spec. Exige que la ruta crítica esté bien mantenida — riesgo a declarar |
+| D89 | Ruta de acción | **Cada alerta trae la acción sugerida y a quién acudir** | «Sabía que se iba a caer y no hice nada porque no sabía cómo resolverlo.» El replanteo asumía que el problema era de información; en parte es de ruta de acción. `ActionRecommendationService` ya existe y hoy casi no se usa |
+| D90 | Notificación in-app | **Además del correo, notificación dentro de la aplicación** | Pedido explícito: «Correo + notificaciones in-app». D76 y D77 solo previeron correo. La campana ya existe para restricciones |
+| D91 | El compromiso impuesto | **Queda registrado como límite de interpretación del PAC**: a un residente al que le ordenan comprometerse sin criterio, el PAC no le mide la planificación | «Desde mis superiores me ordenaban a comprometerme sin criterio.» El contrapeso de D36 se diseñó contra comprometerse a menos — una trampa que ese residente no tiene a su alcance |
+
 ## Lo que queda abierto
 
 - **D28 por confirmar:** en la hoja de restricciones, si el titular narrativo va arriba de la lista

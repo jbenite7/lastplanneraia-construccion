@@ -85,6 +85,11 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
    antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
    **Si la repregunta de acción sale «nada» en las dos conversaciones, la condición de parada del
    método aplica y se reabren D9, D33 y D35 antes de construir.**
+   **Primera evidencia obtenida el 2026-08-20** ([[2026-08-20-entrevista-obra-felipe]]): Felipe
+   respondió el guion en los roles de residente y director. **Una sola voz no cierra el supuesto**,
+   pero confirmó D9, D33, D35 y D10, puso en entredicho D36 y destapó cinco cosas que la spec no
+   tenía (D86 a D91). La repregunta de acción **cerró en acción concreta**, así que la condición de
+   parada del método no se activó.
    **Corrección pendiente en ese guion:** pregunta por «el lunes» en su repregunta 5 y en la fila de
    D35/D38. Debe preguntar por **«el día de su reunión semanal»**, o la entrevista confirma una
    premisa que la medición ya refutó (ver 8.0).
@@ -279,7 +284,7 @@ Se agregan a `pi_shared_constraints`:
 |---|---|---|
 | `ResponsableAsignado` | varchar, nulo | Quién responde por liberarla |
 | `FechaCompromiso` | date, nulo | Cuándo se comprometió a liberarla |
-| `EstadoLiberacion` | enum: `sin_gestionar`, `en_gestion`, `liberada`, `no_aplica` | Estado explícito, en vez de inferido del valor |
+| `EstadoLiberacion` | enum: `sin_gestionar`, `en_gestion`, `liberada`, `no_aplica` | Estado explícito, en vez de inferido del valor. **`en_gestion` no es decorativo (D87): es el avance parcial, y se muestra.** «Recortar el problema paulatinamente» es la gestión que la obra dice que haría, y un tablero que solo cuenta liberadas la castiga |
 | `AsignadoPor` / `AsignadoEn` | varchar / datetime, nulos | Auditoría de quién asignó |
 
 **Este cambio es una migración de esquema y se rige por el contrato del repositorio**
@@ -381,6 +386,16 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
      actividad está en ruta crítica.
   4. Semáforo por semanas para iniciar (0 a 6), reconstruido desde Power BI (D55, D58).
   5. Pareto de restricciones no liberadas, como contexto (D34).
+- **Los tres estados se ven (D87):** sin gestionar · en gestión · liberada. Quien recortó de tres
+  problemas a uno tiene crédito visible.
+- **Cada restricción muestra su encadenamiento (D88):** qué actividades cuelgan de ella y cómo eso
+  empuja la fecha de entrega. Es lo que permite decidir cuál liberar primero, y fue un pedido
+  explícito de la obra. **Riesgo declarado:** exige que la ruta crítica esté bien mantenida en el
+  programa.
+- **Cada alerta trae su acción sugerida y a quién acudir (D89).** «Materiales sin liberar: llame al
+  proveedor, o escale a compras.» Sale del hallazgo más incómodo de la entrevista: *«sabía que se
+  iba a caer y no hice nada porque no sabía cómo resolverlo»*. Señalar el problema no basta si quien
+  lo ve no sabe qué hacer; `ActionRecommendationService` ya existe y hoy casi no se usa.
 - **Acción en pantalla (D33):** asignar responsable y fecha a una restricción sin salir de la hoja.
 - **Contrapeso de captura (D32):** junto al ranking de causas, quién lo registró y cuántas quedaron
   sin causa. Con una nota explícita de que cada responsable registra la suya.
@@ -408,6 +423,11 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
   de más. El compromiso es binario.
 - **Contrapeso (D36):** el conteo de compromisos nunca se separa del porcentaje, y se muestra la
   variación contra la semana anterior para destapar el encogimiento gradual del compromiso.
+- **Límite de interpretación del PAC (D91).** El contrapeso de D36 se diseñó contra la trampa de
+  comprometerse a menos. **A un residente al que le ordenan comprometerse sin criterio esa trampa no
+  está a su alcance**, y su PAC bajo mide presión de arriba, no su planificación. La hoja no puede
+  presentarse como evaluación de quien no eligió su compromiso. Evidencia:
+  [[2026-08-20-entrevista-obra-felipe]].
 - **La captura de esta hoja está sana y no se toca (D60):** 92,3% de PAC sobre comprometidas, 89,4%
   de causa sobre las incumplidas, 90,1% de causa sobre las no programadas. Cualquier diseño que
   parta de «aquí no se registra nada» está partiendo de una medición mal hecha.
@@ -468,6 +488,11 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
   lo carga. Es el caso de aplicación obligatoria de 6.2.
 
 ### 8.8 Responsables
+
+> **Riesgo asumido y declarado (D86).** Felipe confirmó en la entrevista que **la causa se cambia
+> cuando el jefe la va a ver** —«ha pasado»— y aun así decidió conservar que el jefe vea a su equipo
+> completo. En consecuencia, **el contrapeso de D32 es obligatorio en esta hoja y en el ranking de
+> causas**, y ese ranking no puede sostener por sí solo ninguna decisión sobre personas.
 
 > **Esta hoja no se proyecta en ninguna reunión, por diseño.** D46 y D47 la hacen de consulta
 > personal y de conversación uno a uno. Su distribución es un correo al jefe directo; nunca entra al
@@ -552,6 +577,9 @@ tampoco puede tenerlo.
   reunión semanal de su obra. Es otro trabajo: el de evento avisa cuando pasa algo, el de víspera
   prepara la reunión.
 - **Cada línea del correo lleva enlace directo a la acción**, no a la portada del módulo.
+- **La señal va por dos canales: correo y notificación dentro de la aplicación** (D90). Fue un
+  pedido explícito de la obra, y la campana ya existe para restricciones.
+- **Cada aviso trae su acción sugerida y a quién acudir** (D89), no solo el hecho.
 
 **Riesgo de gobernanza:** el correo nombra responsables. Va a director y residente de la obra; en la
 primera versión, a nadie más. Ampliarlo hacia gerencia o hacia el subcontratista es una decisión
@@ -712,6 +740,8 @@ a quien lo pidió.
 | **Felipe ausente dos semanas** | Una sola persona construye, despliega y mantiene | Tres condiciones: T1 con su gemelo en el servicio · F5 no se ejecuta hasta que otra persona haya hecho un deploy y un cambio de métrica por catálogo · un runbook de una página por hoja |
 | **La revisión de gerencia no existe como reunión** | 8.1 depende de ella y nadie la evidencia | Confirmar con Felipe antes de F3. Si no existe, 8.1 se diseña como correo con pantalla detrás, no como hoja proyectada |
 | **El catálogo de duraciones nunca se contrastó con una duración real** | 8.6 | El catálogo es criterio experto vigente (216 paquetes, 7 duraciones cada uno), **no una estimación floja**; lo que falta es el lazo de vuelta. Rotular la escala como «planeado», marcar los 19 paquetes de Da Porto que caen a la mediana, y publicar el contador de pasos cerrados con fecha real para empezar a calibrarlo |
+| **El ranking de causas está contaminado** | D86: el jefe ve a su equipo y la causa se maquilla —confirmado, no sospechado | Contrapeso obligatorio de D32 al lado del ranking, y prohibición de sostener decisiones sobre personas solo con él |
+| **La cadena de encadenamientos depende de la ruta crítica** | D88 | Si la ruta crítica no está bien mantenida en el programa, el efecto dominó que se muestre será falso. Verificar antes de publicarlo |
 | **El correo no lo lee nadie** (medición temprana) | D50, F4 | A las 4 semanas de F4: si menos del porcentaje que fije Felipe —propuesta, 30%— de las huérfanas listadas gana dueño en 48 horas, el correo se apaga antes de invertir más |
 | **El pronóstico P50 se equivoca en el titular** | D23 | Contrastar contra obras cerradas antes de F3. Si no acierta, baja de titular |
 | **`bi-spa.js` de 4.199 líneas** | Todas las fases | T1: se parte por hoja antes de tocar nada |
