@@ -85,6 +85,9 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
    conversación, antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
    **Si la repregunta de acción sale «nada» en las dos conversaciones, la condición de parada del
    método aplica y se reabren D9, D33 y D35 antes de construir.**
+   **Corrección pendiente en ese guion:** pregunta por «el lunes» en su repregunta 5 y en la fila de
+   D35/D38. Debe preguntar por **«el día de su reunión semanal»**, o la entrevista confirma una
+   premisa que la medición ya refutó (ver 8.0).
 2. **El correo automático se construye sin haber validado a mano** que alguien responde (D50,
    tomada contra la recomendación del método).
 3. **Se asume que las cifras históricas son correctas.** No se auditó un período contra la realidad
