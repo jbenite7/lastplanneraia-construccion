@@ -2331,8 +2331,16 @@
   //
   // Sigue valiendo con `navigableHeaders: true` (2026-08-21): el boton continua
   // siendo decorativo porque el camino de teclado NO pasa por el, pasa por la
-  // cabecera: flecha arriba hasta el `th` y Ctrl/Cmd+Enter (o Shift+Alt+Abajo)
-  // abre el mismo menu. Comprobado en /programa-general sobre la 14.6.1 servida.
+  // cabecera: flecha arriba hasta el `th` y Shift+Enter (o Shift+Alt+Abajo) abre
+  // el mismo menu. Los dos atajos se leyeron del propio ShortcutManager sobre la
+  // 14.6.1 servida — `shift+enter` con 1 manejador y `shift+alt+arrowdown` con 2;
+  // `control+enter` NO existe, que es lo que decia esta nota al escribirse.
+  //
+  // Pendiente medido el 2026-08-21 y NO arreglado aqui: esta funcion dice marcar
+  // los 24 sin condicion, pero en la pagina viva solo 12 llevan `aria-hidden`.
+  // Son 12 columnas x 2 contenedores (master y clone_top), asi que cada columna
+  // queda con un boton anunciado y su gemelo callado — el mismo defecto que el
+  // parrafo de arriba venia a cerrar, reaparecido por el otro lado.
   // Marcar un elemento con `tabindex="-1"` no dispara `aria-hidden-focus`,
   // que solo aplica a lo que sigue siendo tabulable.
   function markDecorativeHeaderTriggers(container) {
