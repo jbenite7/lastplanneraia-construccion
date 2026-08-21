@@ -2328,6 +2328,11 @@
   // asi que ninguno es alcanzable por teclado, pero solo 12 llevaban
   // `aria-hidden`: un lector de pantalla anunciaba esos 12 como botones sin
   // nombre e ignoraba los otros 12, identicos. Se marcan todos, sin condicion.
+  //
+  // Sigue valiendo con `navigableHeaders: true` (2026-08-21): el boton continua
+  // siendo decorativo porque el camino de teclado NO pasa por el, pasa por la
+  // cabecera: flecha arriba hasta el `th` y Ctrl/Cmd+Enter (o Shift+Alt+Abajo)
+  // abre el mismo menu. Comprobado en /programa-general sobre la 14.6.1 servida.
   // Marcar un elemento con `tabindex="-1"` no dispara `aria-hidden-focus`,
   // que solo aplica a lo que sigue siendo tabulable.
   function markDecorativeHeaderTriggers(container) {
@@ -3150,6 +3155,13 @@
         },
       ],
       hiddenColumns: getResponsiveHiddenColumnsConfig(),
+      // Accesibilidad (Handsontable >= 14.0). Por defecto viene en `false`, y con esa
+      // opcion apagada NO hay camino de teclado hasta el embudo de la cabecera: HOT lo
+      // pinta con `tabindex="-1"` y `aria-hidden="true"` a proposito, porque espera que
+      // se llegue navegando el encabezado con las flechas y se abra con Alt+Abajo.
+      // Comprobado en /programa-general el 2026-08-21: sin esto, quien no usa raton no
+      // puede filtrar ninguna tabla de la aplicacion.
+      navigableHeaders: true,
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       stretchH: 'none',

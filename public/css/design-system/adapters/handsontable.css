@@ -70,6 +70,25 @@
     font-size: var(--ds-table-cell-font-size);
   }
 
+  /* Cifras tabulares en la grilla. Inter trae figuras PROPORCIONALES por defecto:
+     medido sobre el propio subconjunto que servimos
+     (public/vendor/fonts/aia/inter-latin-v20.woff2, upm 2048) el «1» avanza 833 y
+     el «4» avanza 1323 — nueve anchos distintos para diez digitos. En una columna
+     alineada a la derecha (`htRight`, que es como van cantidad_ppto, Compromiso,
+     Ejecutado_Real y las de PPTO/Ejecutado del programa general) eso desalinea las
+     unidades entre filas: el mismo lugar decimal cae en una x distinta segun que
+     digitos lo precedan. Con `tnum` los diez pasan a 1328 y la columna se lee como
+     columna. El subconjunto SI incluye la caracteristica (GSUB: tnum), asi que esto
+     no es decorativo: sustituye de verdad.
+
+     No toca el ancho de columna — se calculan por proporcion del contenedor
+     (`colWidths` en los tres modulos hot), no por contenido. Se aplica tambien al
+     editor para que el numero no se corra al entrar a editar la celda. */
+  :where(.handsontable td),
+  .handsontableInput {
+    font-variant-numeric: tabular-nums;
+  }
+
   :where(.handsontable th, .handsontable td) {
     border-color: var(--ds-table-border);
     background: var(--ds-active-surface);

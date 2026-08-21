@@ -273,6 +273,13 @@
                 contextMenu: true,
                 manualRowResize: true,
                 manualColumnResize: true,
+                // Accesibilidad (Handsontable >= 14.0). Por defecto viene en `false`, y con esa
+                // opcion apagada NO hay camino de teclado hasta el embudo de la cabecera: HOT lo
+                // pinta con `tabindex="-1"` y `aria-hidden="true"` a proposito, porque espera que
+                // se llegue navegando el encabezado con las flechas y se abra con Alt+Abajo.
+                // Comprobado en /programa-general el 2026-08-21: sin esto, quien no usa raton no
+                // puede filtrar ninguna tabla de la aplicacion.
+                navigableHeaders: true,
                 licenseKey: 'non-commercial-and-evaluation',
                 language: 'es-MX',
                 minSpareRows: 1,
