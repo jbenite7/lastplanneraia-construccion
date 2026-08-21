@@ -103,9 +103,33 @@ Las **siete columnas de restricción** y la de **% Liberación** se funden en un
 como liberada. Pintarlo de verde es lo más cómodo de programar y es justo lo que hace que alguien dé
 por resuelta una restricción que nadie miró.
 
-**Cuentas del ancho:** salen 572px (siete restricciones) + 78px (% Liberación) = **650px**; entra
-una columna de ~200px. Neto: **450px liberados**, y la tabla pasa de 1490 a **~1040px en 1100** —
-entra completa, con unos 60px de margen, sin scroll horizontal y **sin esconder nada**.
+**Cuentas del ancho — corregidas el 2026-08-21, y el resultado cambia la conclusión.** Las
+cifras de la v0 (572 + 78 = 650 liberados) se estimaron sin leer los arrays reales de
+`hot.js:443-467`. Los verdaderos:
+
+| Bloque | Mínimo | Piso duro |
+|---|---|---|
+| 7 columnas fijas iniciales | 672 | 580 |
+| 7 restricciones (74 / 64 c.u.) | 518 | 448 |
+| 3 columnas fijas finales | 422 | 326 |
+| **Total** | **1612** | **1354** |
+
+Disponible a 1100: **1040 px** (descontados ~60 de scrollbar y barra lateral).
+
+**El problema es más profundo de lo que decía la v0:** las **diez columnas que esta spec no toca**
+suman ya **1094 px de mínimo** — más que los 1040 disponibles, sin contar una sola restricción.
+Apretándolas a su piso duro bajan a 906; sumando una Habilitación de 200 px queda **1106**, que
+**sigue sin caber por 66 px**.
+
+Conclusión: **fundir las restricciones es necesario pero no suficiente.** Para cumplir la condición
+de hecho #1 hay que hacer además una de estas dos, y es decisión de Felipe cuál:
+
+- **Habilitación de 134 px o menos** (cuadritos de ~10 px y el porcentaje debajo, no al lado), sin
+  tocar ninguna otra columna; o
+- **bajar el piso de una de las tres columnas anchas** — Actividad (piso 120), Estado Operativo
+  (118) u Observaciones (130) —, lo que implica decidir cuál de esos textos puede estrecharse.
+
+Lo que **no** es opción es dejarlo en 1106 y llamarlo cumplido.
 
 ### 2 · El globo: liberar sin perder el contexto
 
