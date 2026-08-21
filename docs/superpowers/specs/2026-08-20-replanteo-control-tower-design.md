@@ -76,23 +76,31 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
 
 ## 4. Supuestos declarados
 
-1. **La obra no fue entrevistada.** El método `antes-del-almuerzo` exige de tres a cinco
-   conversaciones con quienes usan el tablero. Felipe declaró «yo soy la obra» y respondió por ella.
-   **Cualquier hallazgo de un residente o director que contradiga lo aquí decidido manda sobre esta
-   spec.** El guion, la plantilla de registro y la tabla de veredicto están listos en
-   [[2026-08-20-entrevistas-obra]]; el supuesto se cierra con renglones concretos:
-   **quién** (un residente y un director, de obras distintas) · **cuándo** (**esta semana**, D74,
-   antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
-   **Si la repregunta de acción sale «nada» en las dos conversaciones, la condición de parada del
-   método aplica y se reabren D9, D33 y D35 antes de construir.**
-   **Primera evidencia obtenida el 2026-08-20** ([[2026-08-20-entrevista-obra-felipe]]): Felipe
-   respondió el guion en los roles de residente y director. **Una sola voz no cierra el supuesto**,
-   pero confirmó D9, D33, D35 y D10, puso en entredicho D36 y destapó cinco cosas que la spec no
-   tenía (D86 a D91). La repregunta de acción **cerró en acción concreta**, así que la condición de
-   parada del método no se activó.
-   **Corrección pendiente en ese guion:** pregunta por «el lunes» en su repregunta 5 y en la fila de
-   D35/D38. Debe preguntar por **«el día de su reunión semanal»**, o la entrevista confirma una
-   premisa que la medición ya refutó (ver 8.0).
+1. **La obra no fue entrevistada, y se decidió avanzar sin hacerlo.** El método `antes-del-almuerzo` exige de tres a cinco
+   conversaciones con quienes usan el tablero. **Se hizo una, con Felipe en los roles de residente y
+   director** ([[2026-08-20-entrevista-obra-felipe]]), y **el 2026-08-20 Felipe decidió avanzar sin
+   entrevistar a un residente ni a un director distintos de él.**
+
+   **Esto es un riesgo aceptado, no un pendiente.** Lo que se acepta, dicho con precisión:
+
+   - Las decisiones D9, D33, D35 y D10 quedaron **confirmadas por una sola voz, que además es la de
+     quien diseñó el tablero.** No es validación independiente.
+   - D36 y D91 quedaron **en entredicho y sin resolver**: el contrapeso al PAC no aplica a quien no
+     elige su compromiso, y nadie más ha dicho si eso es general o es el caso de Felipe.
+   - D86 se tomó **contra la evidencia** de la única entrevista disponible.
+   - Cinco necesidades (D86 a D91) salieron de una conversación de veinte minutos. **Es probable que
+     una segunda voz destape otras cinco**, y esas se descubrirán construyendo, que es más caro.
+
+   **Dónde se valida entonces.** La validación se traslada de la conversación al comportamiento
+   medido, y ya tiene instrumento: el criterio de muerte de 15 —el porcentaje de actividades que
+   entran a la semana sin análisis de restricciones— y la medición temprana de la respuesta al
+   correo a las 4 semanas. **Si esas dos no se mueven, la hipótesis de este replanteo era falsa**, y
+   se sabrá sin haber entrevistado a nadie. Es más lento y más caro que preguntar, y es la vía que
+   queda.
+
+   **La puerta sigue abierta:** el guion está probado y listo en [[2026-08-20-entrevistas-obra]]. Si
+   en algún momento hay veinte minutos de un residente, se corre y manda sobre lo aquí decidido.
+
 2. **El correo automático se construye sin haber validado a mano** que alguien responde (D50,
    tomada contra la recomendación del método).
 3. **Se asume que las cifras históricas son correctas.** No se auditó un período contra la realidad
@@ -611,7 +619,7 @@ Cada fase se publica antes de abrir la siguiente, según el gate de cierre de fr
 | # | Fase | Contenido | Condición de hecho |
 |---|---|---|---|
 | **F0** | **Higiene de datos** | Arreglar la vista de responsables · aclarar el origen del eje de Productividad · corregir el mojibake del catálogo de causas · dejar de truncar la atribución · decidir los campos muertos · **retirar las tablas del PDC v1, con su gate de borrado** | Ninguna cifra de la Torre viene de una fuente que no es la que declara, y ningún texto de causa se corta donde dice de quién es la culpa |
-| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada · **T1 con su gemelo en el servicio: una clase por hoja detrás de una interfaz común** | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, cada una responde «de dónde salgo» con un clic, **y las dos conversaciones con la obra están hechas y con veredicto** |
+| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada · **T1 con su gemelo en el servicio: una clase por hoja detrás de una interfaz común** | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, cada una responde «de dónde salgo» con un clic |
 | **F2** | **Restricciones** | Migración de esquema con su gate · métricas nuevas · hoja de Intermedia reconstruida · alarma de huérfanas · lista accionable · escritura desde la Torre | Un director asigna responsable y fecha a una restricción sin salir de la hoja, y el conteo de huérfanas baja |
 | **F3** | **Narrativa** | Resumen Ejecutivo con panorama de obras · acciones con dueño · riesgo de incumplimiento por compromiso rebautizado e integrado · Semanal rediseñada | La hoja abre con una frase que afirma qué pasó y por qué, y debajo qué hacer y quién |
 | **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · **disparador por evento** (no existe hoy: el único correo del sistema es el de contraseña y las alertas de restricciones son campana dentro de la app) · **los cuatro avisos de D77**, agrupados en **un solo correo diario por persona** · **correo de víspera** como resumen para el director, el día antes de la reunión de su obra | El módulo está en el menú, **la señal llega cuando pasa algo y no cuando toca reunirse**, y se mide qué porcentaje de las huérfanas listadas tiene dueño 48 horas después |
@@ -730,7 +738,7 @@ a quien lo pidió.
 
 | Riesgo | Qué lo dispara | Mitigación |
 |---|---|---|
-| **La obra no quiere lo que decidimos** | El supuesto 1 | Las tres conversaciones siguen pendientes. Hacerlas antes de F2, que es donde se gasta de verdad |
+| **La obra no quiere lo que decidimos** | El supuesto 1, ahora **riesgo aceptado**: se avanza sin entrevistar a un residente ni a un director | No hay mitigación previa. Se detecta después, por comportamiento: si a los 90 días el porcentaje de actividades sin análisis de restricciones no baja, y si a las 4 semanas el correo no mueve a nadie, la hipótesis era falsa. **El costo de equivocarse ya no son veinte minutos: es F1 y F2 construidas** |
 | **El plan de compras no llega en una semana** | El supuesto 4 | La hoja 8.6 nace vacía declarándolo. No se disimula con datos de ejemplo |
 | **El indicador principal se lee como predicción** | D59 | La adherencia y la estimación van separadas y rotuladas. Nunca «estas van a fallar» con la evidencia actual |
 | **La paridad de métricas destapa que las cifras de hoy están mal** | F1 | Es una ganancia disfrazada de problema. Documentar cada discrepancia y decidir cuál es la correcta antes de migrar |
