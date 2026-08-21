@@ -28,9 +28,16 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
-### Los botones de acción de Programación Semanal vuelven a verse (2026-08-21)
+### La columna Acciones de Programación Semanal vuelve a verse (2026-08-21)
 
 #### Fixed
+- La celda de Acciones se quedaba con el **blanco opaco del vendor**, así que la columna entera se
+  veía como una franja clara pegada al borde derecho de una tabla oscura. Causa: `psActionsRenderer`
+  se arma la lista de clases a mano en vez de heredar la que construye `cells()`, y se saltaba
+  `ps-state-<estado>`, que es la que pinta el fondo de la fila. La regla del vendor le gana por
+  especificidad (0,1,1 contra el 0,0,0 del `:where(...)` del adaptador). Ahora la celda toma el
+  color de su propia fila; verificado con scroll, que recicla las celdas: 0 blancas y 0 estados
+  duplicados en seis posiciones distintas.
 - El chip de los botones «duplicar» y «eliminar» usaba la mitad `-text` de un par de estado
   **como fondo**, con blanco encima. En tema claro funcionaba; desde que la paleta de estado se
   invirtió a oscuro (spec del 2026-07-28) esa mitad resuelve a un tono pálido, así que quedaba
