@@ -172,6 +172,15 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Tablas · retirar DataTables, el tercer motor** — quedan cinco superficies en
+  DataTables 1.10.21 (2020, con jQuery detrás): `views/programacion-semanal/CIC|CNC|CNP.view.php`,
+  `views/control-cambios/controlCambios.view.php` y las tablas del panel `admin/`. El destino es
+  AG Grid, ya en uso en Plan de Compras. **Sin frente propio y sin fecha:** ninguna de esas
+  pantallas duele hoy, así que la regla es «quien entre a una de ellas por otra razón, sale con
+  AG Grid». Al hacerlo, llevarse también las cifras tabulares, que ese carril no las tiene
+  (`font-variant-numeric: tabular-nums`, ya aplicado en Handsontable y en el PDC). Decisión de
+  rumbo del 2026-08-21 en [[ROADMAP]].
+
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.

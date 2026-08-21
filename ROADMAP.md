@@ -33,6 +33,13 @@ El detalle vivo, con su orden y sus dependencias, está en [[TASKS]]. Esta tabla
 
 ## Decisiones de rumbo
 
+- 2026-08-21 — **La aplicación se queda con dos motores de tabla, no tres.** DataTables 1.10.21
+  (CIC, CNC, CNP, control de cambios y el panel de administración) es el carril a retirar: sale
+  hacia AG Grid, que ya vive en Plan de Compras y es el mismo motor que se usará de aquí en
+  adelante. **No abre frente propio:** se cobra cuando haya que entrar a una de esas pantallas por
+  otra razón. Handsontable se queda donde está — las seis rejillas del Last Planner llevan años de
+  reglas de negocio y cambiarlas de motor es un proyecto, no una limpieza. Registrado por decisión
+  de Felipe. Tarjeta operativa en [[TASKS]].
 - 2026-08-19 — **El gate de publicación bloquea por la forma de la wiki**; la alarma de veracidad
   solo avisa. Un defecto de lo que publicas no es lo mismo que un contador que pide trabajo.
 - 2026-08-19 — **Los cinco archivos de la wiki del proyecto viven en la raíz**, y los dos que ya

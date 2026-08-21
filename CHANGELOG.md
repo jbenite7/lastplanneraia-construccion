@@ -28,6 +28,27 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Tablas: cifras alineadas, filtros alcanzables por teclado e identidad de fila (2026-08-21)
+
+#### Added
+- Cifras tabulares en las rejillas Handsontable (`font-variant-numeric: tabular-nums` en la celda
+  y en el editor). Inter sirve figuras proporcionales por defecto: medido sobre el subconjunto que
+  servimos, el «1» avanza 833 y el «4» 1323 sobre 2048, nueve anchos para diez dígitos. Verificado
+  en `/programa-general`: la columna de Id pasa de 9,62 px de desviación a 0, y las fechas de 8,28
+  a 1,15. Sin desbordes: los anchos de columna se calculan por proporción del contenedor.
+- `navigableHeaders: true` en las seis rejillas Handsontable. Viene apagado por defecto desde la
+  14.0, y con la opción apagada NO hay camino de teclado hasta el embudo de la cabecera —
+  Handsontable lo emite con `tabindex="-1"` y `aria-hidden="true"` a propósito. Antes de esto,
+  quien no usaba ratón no podía filtrar ninguna tabla de la aplicación.
+- `getRowId` en las tres rejillas de Plan de Compras que no lo tenían (paquetes de contratación,
+  plan de fechas y seguimiento). Sin él AG Grid identifica las filas por posición y pierde
+  selección y estado de edición en cada recarga.
+
+#### Changed
+- `FilaPlan` y `FilaSeguimiento` declaran `subpaqueteId`. El servidor ya lo emitía
+  (`PlanFechasService`, `SeguimientoService`); el tipo no lo declaraba, y sin él la pareja
+  paquete-lote no podía usarse como identidad de fila en un paquete partido.
+
 ### Interruptor del Control Tower desde /admin (2026-08-20)
 
 #### Added
