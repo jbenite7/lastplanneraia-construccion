@@ -444,10 +444,12 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
   en todos los pasos, así que la regla de D43, aplicada tal cual, **pintaría de rojo contratos ya
   firmados** el primer día. Un paso con fecha planeada vencida y sin fecha real se muestra como
   **sin avance registrado** hasta que la obra haya registrado al menos un avance en ese paquete.
-- **La escala se rotula «planeado», no «estimado».** No existe en AIA ninguna duración real medida
-  con la que calibrarla: sale del catálogo de la empresa. Y **19 de los 62 paquetes de Da Porto usan
-  tipos sin duración de referencia**, así que sus fechas salen de una mediana; esos se marcan como
-  **duración provisional** y no se leen con la misma autoridad que una medida.
+- **La escala se rotula «planeado», no «estimado».** Sale del catálogo de duraciones de AIA
+  (`general_dias_procesos_contratacion`, 216 paquetes con siete duraciones cada uno), que es
+  **criterio experto vigente y diferenciado por paquete** — no un número genérico. Lo que aún no
+  existe es el contraste con la ejecución real, y por eso «planeado» y no «estimado». **43 de los 62
+  paquetes de Da Porto traen su duración de referencia propia; los otros 19 caen a la mediana de la
+  empresa** y se marcan como **duración provisional**, que no se lee con la misma autoridad.
 - **Contrapeso obligatorio (D36):** al lado de la escala, el contador **«pasos cerrados con fecha
   real / pasos planeados»**. Es lo que empieza a construir la memoria que hoy no existe, y lo que
   impide leer un calendario de catálogo como si fuera una predicción calibrada.
@@ -628,11 +630,28 @@ Consecuencias directas:
 explícito de Felipe, el respaldo verificable, la comprobación de que el archivo se lee fuera de
 producción, ni el plan de restauración. Nada de esto se ejecutó.
 
-**Respondido el 2026-08-20 (D82): no hay historial en ninguna parte.** JMC y Milán **deben construir
-su plan en Last Planner AIA y está pendiente**; sus 273 filas vacías son plantillas esperando a que
-alguien las llene. No hubo Excel ni Licify que rescatar. **La memoria de duraciones de AIA arranca de
-cero con Da Porto**, y por eso el contador de «pasos cerrados con fecha real» de 8.6 y el marcador de
-acierto de 11.b dejan de ser adornos: son lo único que la va a construir.
+**Respondido el 2026-08-20 (D82): no hay historial de ejecución en ninguna parte.** JMC y Milán
+**deben construir su plan en Last Planner AIA y está pendiente**; sus 273 filas vacías son plantillas
+esperando a que alguien las llene. No hubo Excel ni Licify que rescatar.
+
+**Pero eso no significa que AIA no tenga memoria de duraciones — la tiene, y es vigente** (D85). Hay
+que distinguir dos cosas que esta spec confundió:
+
+| | Existe | Estado |
+|---|---|---|
+| **Memoria experta**: cuánto se sabe que tarda contratar cada paquete | **Sí**, y es rica | `general_dias_procesos_contratacion`: **216 paquetes con siete duraciones cada uno** —pliegos, entrega, propuestas, cuadros comparativos, legalización, fabricación, insumos en obra—, diferenciadas por paquete y por tipo. Más `duracion_ref` en 169 de los 221 paquetes del catálogo |
+| **Memoria medida**: cuánto tardó de verdad la última vez | **No** | Nadie ha contrastado nunca lo planeado con lo ocurrido |
+
+El catálogo **no es optimismo genérico**: es criterio acumulado y diferenciado —ascensores 300 días
+de fabricación, carpintería de madera 90, baños portátiles 0; cuadros comparativos entre 2 y 45 días
+según el paquete— y es lo que alimenta el motor que propone las fechas. **De los 62 paquetes de Da
+Porto, 43 traen su duración de referencia propia**; los otros 19 caen a la mediana de la empresa y
+son los que la hoja marca como duración provisional (8.6).
+
+Lo que falta, entonces, no es la memoria: **es cerrar el lazo.** El contador de «pasos cerrados con
+fecha real» de 8.6 y el marcador de acierto de 11.b no construyen la memoria desde cero — **sirven
+para calibrar la que ya existe**, y para descubrir en qué paquetes el criterio de la empresa acierta
+y en cuáles se quedó viejo.
 
 ## 14. Verificación
 
@@ -692,7 +711,7 @@ a quien lo pidió.
 | **Tres lienzos con una sola persona detrás** | D52 | **Medido el 2026-08-20: el segundo lienzo cuesta cerca del 5% del primero**, porque la unidad de construcción es la hoja. El riesgo real no es este: es el bus factor, en la fila de abajo |
 | **Felipe ausente dos semanas** | Una sola persona construye, despliega y mantiene | Tres condiciones: T1 con su gemelo en el servicio · F5 no se ejecuta hasta que otra persona haya hecho un deploy y un cambio de métrica por catálogo · un runbook de una página por hoja |
 | **La revisión de gerencia no existe como reunión** | 8.1 depende de ella y nadie la evidencia | Confirmar con Felipe antes de F3. Si no existe, 8.1 se diseña como correo con pantalla detrás, no como hoja proyectada |
-| **El catálogo de duraciones nunca se contrastó con una duración real** | 8.6 | Rotular la escala como «planeado», marcar los 19 paquetes de duración provisional, y publicar el contador de pasos cerrados con fecha real |
+| **El catálogo de duraciones nunca se contrastó con una duración real** | 8.6 | El catálogo es criterio experto vigente (216 paquetes, 7 duraciones cada uno), **no una estimación floja**; lo que falta es el lazo de vuelta. Rotular la escala como «planeado», marcar los 19 paquetes de Da Porto que caen a la mediana, y publicar el contador de pasos cerrados con fecha real para empezar a calibrarlo |
 | **El correo no lo lee nadie** (medición temprana) | D50, F4 | A las 4 semanas de F4: si menos del porcentaje que fije Felipe —propuesta, 30%— de las huérfanas listadas gana dueño en 48 horas, el correo se apaga antes de invertir más |
 | **El pronóstico P50 se equivoca en el titular** | D23 | Contrastar contra obras cerradas antes de F3. Si no acierta, baja de titular |
 | **`bi-spa.js` de 4.199 líneas** | Todas las fases | T1: se parte por hoja antes de tocar nada |
