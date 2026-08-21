@@ -98,6 +98,37 @@ renglones y en tipografia inflada.
 - **El censo completo de las 22 tablas** vive en `censo-tablas.md`: Admin y el resto de vistas HTML
   quedaron fuera de estas tres olas por decision de alcance.
 
+## Cierre
+
+**Cerrado el 2026-08-21.** Publicado en `main` desde el worktree `estados-severidad`, rama
+`claude/reverent-golick-aaf932`, sobre `2ad7331f`.
+
+Condicion de hecho verificada con salida real de `bash scripts/publicar.sh --solo-verificar`:
+
+```
+Verificando sobre 2ad7331f...
+  OK design-system:static               RC=0
+  OK contrato piloto PG                 RC=0
+  OK wiki (forma)                       RC=0
+  !  wiki (veracidad + pruebas)         RC=1  avisa, no bloquea
+```
+
+El unico aviso es la alarma de veracidad de la wiki (52 commits desde el ultimo pase, umbral 40).
+No lo produjo este frente y no bloquea: queda como pendiente propio, anotado abajo.
+
+**Lo que entra con este cierre**, mas alla de lo ya listado arriba:
+
+- Erradicacion del recorte silencioso en las tablas de los tres modulos de programacion.
+- Filete de gravedad homogeneo en PG, PI y PS, con marcador `ready` incluido.
+- Chip de estado con tooltip en top-layer (Popover API), replicado en los tres modulos.
+- Rampa tipografica completada, incluidos los dos literales principales (13px celda, 12px cabecera).
+- Spec v1 del rediseno de habilitacion (`docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design.md`),
+  con dos correcciones que salieron del codigo y no de la conversacion: las restricciones no tienen
+  tres estados sino escalas propias por restriccion mas `N/A`, y Semanal si comparte las cinco duras.
+
+**Pendientes que NO cierra este frente** y siguen vivos: el desborde de Intermedia (1490px en 1100),
+el color de los contadores de la leyenda, y el pase de veracidad de la wiki.
+
 ## Publicaciones
 Ver `## Cierre`.
 
