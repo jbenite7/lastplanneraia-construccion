@@ -81,8 +81,8 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
    **Cualquier hallazgo de un residente o director que contradiga lo aquí decidido manda sobre esta
    spec.** El guion, la plantilla de registro y la tabla de veredicto están listos en
    [[2026-08-20-entrevistas-obra]]; el supuesto se cierra con renglones concretos:
-   **quién** (un residente y un director, de obras distintas) · **cuándo** (fecha de cada
-   conversación, antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
+   **quién** (un residente y un director, de obras distintas) · **cuándo** (**esta semana**, D74,
+   antes de arrancar F1) · **dónde cae el resultado** (las plantillas de esa nota).
    **Si la repregunta de acción sale «nada» en las dos conversaciones, la condición de parada del
    método aplica y se reabren D9, D33 y D35 antes de construir.**
    **Corrección pendiente en ese guion:** pregunta por «el lunes» en su repregunta 5 y en la fila de
@@ -96,15 +96,14 @@ actividades que entran a la semana sin análisis de restricciones dejan de ser e
    la pantalla está desplegada y el motor propone frente para 55 de 58 paquetes; falta que alguien
    entre a amarrar y recalcular** — son dos o tres horas de una persona con permiso de editar
    paquetes de contratación. Es adopción, no desarrollo, y **un supuesto de adopción sin dueño
-   nombrado no se cierra nunca**: falta el nombre y la fecha. Si no llega, la hoja de 8.6 nace vacía
+   nombrado no se cierra nunca**. **Cerrado el 2026-08-20 (D73): lo carga Felipe esta semana.** Si no llega, la hoja de 8.6 nace vacía
    y su vacío nombra la acción.
 5. **La medición se hizo contra la base de desarrollo**, con verificación puntual en producción por
    SSH en solo lectura. Los porcentajes de llenado son señal confiable; los conteos absolutos de dev
    pueden diferir de producción. **No se trajo ninguna copia de producción.**
-6. **El calendario de reuniones no se confirmó con la obra.** Se asume una reunión semanal por obra
-   en su día ancla, una diaria, y un comité de compras por paquete. **La revisión de gerencia y la
-   rendición al cliente están supuestas, no evidenciadas** — y de la primera depende la hoja 8.1.
-   Ver [[2026-08-20-ritual-y-reuniones]].
+6. **El calendario de reuniones quedó confirmado con Felipe el 2026-08-20** (D67 a D70) y está en
+   8.0. Lo que sigue abierto es **el día del comité general de gerencia**, y que ese calendario lo
+   confirme la obra y no solo la gerencia. Ver [[2026-08-20-ritual-y-reuniones]].
 
 ## 5. Alcance
 
@@ -305,13 +304,19 @@ Medido el 2026-08-20 contra `semanas_activas` y el dominio (ver [[2026-08-20-rit
 viernes, la 62 jueves. Cualquier diseño que asuma lunes pone el correo y la semana por defecto en el
 día equivocado para la mayoría de las obras.
 
-| Reunión | Hoja que se proyecta | Acción | Quién registra |
-|---|---|---|---|
-| Semanal de obra, en su día ancla | **8.3 Intermedia** y **8.4 Semanal** | Liberar restricciones, asignar dueños, comprometer la semana que entra | El residente, en vivo |
-| Diaria de obra, corta y sin computador | **8.4**, solo el riesgo de incumplimiento | Salvar el compromiso que va a caerse | El residente |
-| Comité de compras, por paquete | **8.6** y **8.7** | Destrabar el paso vencido | Compras |
-| Revisión de gerencia (**no evidenciada**) | **8.1** | Decidir en qué obra meterse | — |
-| Rendición al cliente, mensual o por hito | **8.5** | Conversación de contrato | — |
+**Confirmado con Felipe el 2026-08-20** (D67 a D70). Ya no son supuestos:
+
+| Reunión | Ritmo | Hoja que se proyecta | Acción | Quién registra |
+|---|---|---|---|---|
+| **Semanal de obra**, en su día ancla | Semanal, **una sola sentada**: se cierra la semana que termina y se compromete la que entra | **8.3 Intermedia** y **8.4 Semanal**, seguidas | Liberar restricciones, asignar dueños, comprometer | El residente, en vivo |
+| **Diaria de obra**, corta y sin computador | Diaria | **8.4**, solo el riesgo de incumplimiento | Salvar el compromiso que va a caerse | El residente |
+| **Comité de gerencia por obra** | Por obra, en su día | **8.2 Programa General** | Evaluar el riesgo de la fecha de entrega de esa obra | — |
+| **Comité general de gerencia** | Periódico, compara todas las obras | **8.1 Resumen Ejecutivo** | Decidir en qué obra meterse | — |
+| **Comité de compras** | **Existe, pero sin día fijo: varía por obra** | **8.6** y **8.7** | Destrabar el paso vencido | Compras |
+| Rendición al cliente | Mensual o por hito | **8.5 Curva S** | Conversación de contrato | — |
+
+**Que el comité de compras no tenga día fijo es la razón de fondo de D76**: una señal que depende de
+una reunión sin calendario no puede ser un correo de calendario.
 
 **Solo 8.3 y 8.4 se proyectan en la reunión semanal de obra. 8.2 y 8.5 son de ritmo mensual; 8.6 y
 8.7 son del comité de compras; 8.1 llega por correo a gerencia; 8.8 no se proyecta nunca.**
@@ -328,10 +333,10 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
 - **Se retiran del lienzo:** las dos gráficas actuales (PAC contra programado, PPC semanal), que
   repiten lo que ya está en Semanal.
 - **Regla:** es la única hoja que compara obras entre sí.
-- **Su reunión no está evidenciada.** Nadie confirma que la gerencia tenga una revisión fija de
-  obras. Hasta que Felipe lo confirme, **esta hoja se diseña para llegar por correo con la pantalla
-  detrás**, no para proyectarse. Si no existe esa reunión, el lienzo de gerencia nace en riesgo de
-  cementerio y la respuesta es distribución, no colapsar lienzos.
+- **Su reunión existe: el comité general de gerencia** (D67), donde se comparan todas las obras.
+  Esta hoja **se proyecta ahí**. Confirmado el 2026-08-20; corrige el supuesto anterior de la spec,
+  que la daba por inexistente y ponía a la hoja en riesgo de cementerio. Falta fijar el día del
+  comité general.
 
 ### 8.2 Programa General — audiencia obra y dirección
 
@@ -516,6 +521,40 @@ Consecuencia de D33, y el cambio de naturaleza más grande de este replanteo.
 - La página de SharePoint se conserva como enlace a la Torre durante un período de transición, para
   no romper el hábito de golpe.
 
+## 11.b La distribución: por evento, nunca por calendario
+
+Decisión de Felipe, D76. **Ningún correo de la Torre se dispara por fecha del calendario.** Un correo
+de calendario es un recordatorio, y los recordatorios se filtran; el método reserva el empuje para la
+señal excepcional. Lo hizo inevitable D70: si el comité de compras no tiene día fijo, su señal
+tampoco puede tenerlo.
+
+**Los cuatro disparadores** (D77), todos anticipatorios — avisan mientras todavía se puede actuar:
+
+| Evento | A quién | Por qué es accionable |
+|---|---|---|
+| Una restricción se queda sin dueño a **tres semanas** de iniciar | Director y residente de esa obra | Es la señal del indicador principal, con margen para liberarla |
+| Un paso de contratación entra en **ventana de vencer** | Compras | Reemplaza el correo de calendario que el comité sin día fijo no permitía |
+| Un compromiso queda marcado en **riesgo alto de incumplir** | El responsable | La señal que avisa el martes en vez de contar el viernes |
+| Una obra **cruza un umbral de desviación** en su fecha de entrega | Gerencia | Algo se salió de cauce en esta obra, antes del comité general |
+
+**Reglas de redacción y de freno:**
+
+- **La certeza se declara siempre.** «Tres compromisos en riesgo alto», nunca «tres compromisos van a
+  fallar». Cumple D59: lo predictivo se rotula como estimación, no como hecho.
+- **Cada aviso lleva su marcador histórico de acierto** (D80): «de los 10 que marqué en riesgo el mes
+  pasado, fallaron 7». Es lo único que convierte un pronóstico en algo a lo que vale la pena hacerle
+  caso, y empieza a construir desde el día uno la calibración que hoy no existe en AIA.
+- **Un solo correo diario por persona** (D78), agrupando todo lo suyo. El día que lleguen seis
+  correos, alguien crea una regla de bandeja y el canal se pierde para siempre.
+- **El correo de víspera se conserva** (D79) como resumen para el director, el día antes de la
+  reunión semanal de su obra. Es otro trabajo: el de evento avisa cuando pasa algo, el de víspera
+  prepara la reunión.
+- **Cada línea del correo lleva enlace directo a la acción**, no a la portada del módulo.
+
+**Riesgo de gobernanza:** el correo nombra responsables. Va a director y residente de la obra; en la
+primera versión, a nadie más. Ampliarlo hacia gerencia o hacia el subcontratista es una decisión
+aparte, no una comodidad.
+
 ## 12. Diseño visual
 
 Se rige por `DESIGN.md` y `docs/design-system/`. Reglas propias de este replanteo, que el sistema de
@@ -545,7 +584,7 @@ Cada fase se publica antes de abrir la siguiente, según el gate de cierre de fr
 | **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada · **T1 con su gemelo en el servicio: una clase por hoja detrás de una interfaz común** | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, cada una responde «de dónde salgo» con un clic, **y las dos conversaciones con la obra están hechas y con veredicto** |
 | **F2** | **Restricciones** | Migración de esquema con su gate · métricas nuevas · hoja de Intermedia reconstruida · alarma de huérfanas · lista accionable · escritura desde la Torre | Un director asigna responsable y fecha a una restricción sin salir de la hoja, y el conteo de huérfanas baja |
 | **F3** | **Narrativa** | Resumen Ejecutivo con panorama de obras · acciones con dueño · riesgo de incumplimiento por compromiso rebautizado e integrado · Semanal rediseñada | La hoja abre con una frase que afirma qué pasó y por qué, y debajo qué hacer y quién |
-| **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · **disparador programado** (no existe hoy: el único correo del sistema es el de contraseña y las alertas de restricciones son campana dentro de la app) · **correo de víspera por obra** —día ancla menos uno, a director y residente: huérfanas de tres semanas, vencidas con dueño, incumplidas sin causa, cada línea con enlace a la acción— · **correo semanal de gerencia** en día fijo, con la fecha de corte de cada obra | El módulo está en el menú, **el correo llega la víspera de la reunión de cada obra**, y se mide qué porcentaje de las huérfanas listadas tiene dueño 48 horas después |
+| **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · **disparador por evento** (no existe hoy: el único correo del sistema es el de contraseña y las alertas de restricciones son campana dentro de la app) · **los cuatro avisos de D77**, agrupados en **un solo correo diario por persona** · **correo de víspera** como resumen para el director, el día antes de la reunión de su obra | El módulo está en el menú, **la señal llega cuando pasa algo y no cuando toca reunirse**, y se mide qué porcentaje de las huérfanas listadas tiene dueño 48 horas después |
 | **F5** | **Jubilación** | Liberación de Restricciones completa · retiro del informe Power BI · después, `/indicadores` | Una sola casa para las cifras, **y una persona distinta a Felipe ha hecho, documentado, un deploy y un cambio de métrica por catálogo** |
 | **F6** | **Diferidos** | What-if acotado a restricciones · vista de cliente · contabilidad para el índice de costo | Cada uno con su propia spec |
 
@@ -627,9 +666,9 @@ el PAC se logra comprometiéndose a menos; bajar el porcentaje de actividades si
 abrir el análisis.
 
 **Y un segundo indicador, temprano: a las 4 semanas de F4**, qué porcentaje de las restricciones
-huérfanas listadas en el correo de víspera gana dueño en 48 horas. El método pide medir la respuesta
-al empuje, no la apertura; este avisa a los 28 días con el mismo dato que el de 90. El umbral lo fija
-Felipe; la propuesta es 30%.
+huérfanas listadas en los correos gana dueño en 48 horas. **El umbral es 30%** (D75): si no se
+alcanza, el correo se apaga antes de invertir más. El método pide medir la respuesta al empuje, no la
+apertura; este avisa a los 28 días con el mismo dato que el de 90.
 
 Triaje a los 90 días, cuadrante uso contra relevancia: alto uso y alta relevancia, mantener; bajo
 uso y alta relevancia, es problema de distribución, no de diseño; baja relevancia, archivar avisando
@@ -691,9 +730,9 @@ Ninguno bloquea F0. El primero **quedó resuelto el 2026-08-20**; los demás sig
 4. **Los campos muertos** —`Categoria_CP`, `CP`, `alerta_crisis`, `reprogramaciones_semanales`, todos
    en 0% de llenado— se retiran o alguien debería estar llenándolos. Decisión de proceso, se toma
    en F0.
-5. **Las ocho preguntas de ritual y reuniones** que no se pudieron hacer en vivo, listadas en la
-   sección 7 de [[2026-08-20-ritual-y-reuniones]]. La que más cambia el diseño: **si la gerencia
-   tiene una reunión fija de revisión de obras o cada gerente lee el informe por su cuenta.**
+5. **Resueltas el 2026-08-20** las ocho preguntas de ritual y reuniones (D67 a D70, D75, y la
+   distribución completa en D76 a D80). **Queda una: el día del comité general de gerencia**, y quién
+   más debería recibir el correo de víspera además de director y residente.
 6. **Si «Prueba» fue el borrador de Da Porto**, y si JMC y Milán tuvieron su plan de compras en Excel
    o Licify — porque entonces el historial de compras existe, pero fuera de la base.
 

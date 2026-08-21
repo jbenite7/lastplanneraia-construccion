@@ -156,6 +156,28 @@ Ver [[2026-08-20-que-data-tenemos]] para la medición completa.
 | D65 | Atribución en las causas | **La gráfica deja de truncar el sufijo de atribución** (obra / subcontratista) | No eran duplicados: son tres causas distintas y el truncamiento borra el dato más político del tablero. La tercera variante, sin atribuir, sí es deuda de catálogo |
 | D66 | Alcance real del valor ganado | **Solo donde hay presupuesto cargado**: hoy dos obras (27 y 73) | `programa_consolidado` no tiene valor, precio ni peso; `cantidad_ppto` está en 223 filas. Acota D27 más de lo que la spec suponía |
 
+### Tercera ronda: las dudas de los cinco frentes, resueltas con Felipe (2026-08-20)
+
+Coordinadas por la sesión principal. Las cinco investigaciones habían cerrado, así que las respuestas
+se devuelven por el buzón y por esta spec.
+
+| # | Decisión | Qué se decidió | Por qué |
+|---|---|---|---|
+| D67 | Comité de gerencia | **Existe, y son dos: uno por obra en su día, y uno general que compara todas.** El Resumen Ejecutivo se proyecta en el general | Refuta el supuesto con que quedó escrita la spec, que asumía que no había reunión de gerencia. Saca a la hoja 8.1 del riesgo de cementerio y confirma D17 y D18: la comparación entre obras sí tiene dónde ocurrir |
+| D68 | Reunión semanal de obra | **Una sola sentada**: se cierra la semana que termina y se compromete la que entra | Intermedia y Semanal se proyectan seguidas en la misma reunión |
+| D69 | Reunión diaria | **Existe, corta y sin computador** | Confirma que el riesgo de incumplimiento por compromiso debe caber en el móvil: es lo primero que ve el residente entre una semanal y otra |
+| D70 | Comité de compras | **Existe pero sin día fijo; varía por obra** | Por eso su señal no puede ser de calendario. Origen de D76 |
+| D71 | Hoja compartida | **Una hoja, un diseño. Sin variantes por audiencia** | Lo que una audiencia no necesita baja a desglose. Es lo único que mantiene el segundo lienzo en el 5% del costo del primero |
+| D72 | Puerta de entrada | **Automática por el rol de la persona**, normalizado con `RbacService::normalizeRole()` | Sin configuración ni pasos extra, y usa lo que ya existe en `project_members` |
+| D73 | Dueño del plan de compras | **Felipe lo carga esta semana** | Cierra el supuesto 4 con nombre. Son 2 o 3 horas en la pantalla de ensamble; no falta desarrollo |
+| D74 | Entrevistas con la obra | **Un residente y un director, esta semana** | Cierra el supuesto más caro de la spec, y es condición de cierre de F1 |
+| D75 | Umbral del correo | **30% de las restricciones listadas con dueño a las 48 horas** | Modesto a propósito: mide si el correo mueve a alguien, no si resuelve el problema |
+| **D76** | **Cómo se envían los correos** | **Por evento, en todos los casos. Nunca por calendario** | Decisión de Felipe. El método reserva el empuje para la señal excepcional; un correo de calendario es un recordatorio, y los recordatorios se filtran. Lo hizo posible D70: si el comité de compras no tiene día, la señal tampoco puede tenerlo |
+| D77 | Los disparadores | Cuatro, todos anticipatorios: **restricción sin dueño a tres semanas de iniciar** · **paso de contratación en ventana de vencer** · **compromiso en riesgo alto de incumplir** · **obra que cruza un umbral de desviación en su fecha de entrega**. Con **enfoque predictivo y la certeza declarada**: «tres compromisos en riesgo alto», nunca «tres compromisos van a fallar» | Cada uno avisa mientras todavía se puede actuar. La rotulación con certeza cumple D59 y evita quemar la confianza el día que el modelo falle |
+| D78 | Freno al ruido | **Un solo correo diario por persona, agrupando todo lo suyo** | Conserva la urgencia sin volverse goteo. El día que lleguen seis correos, alguien crea una regla de bandeja y se pierde el canal para siempre |
+| D79 | El correo de víspera | **Se conserva como resumen**, además de los de evento | Son dos trabajos distintos: el de evento avisa cuando pasa algo; el de víspera le llega al director con todo lo de su obra el día antes de su reunión |
+| D80 | Rendición del pronóstico | **Cada aviso lleva su marcador histórico de acierto**: «de los 10 que marqué en riesgo el mes pasado, fallaron 7» | Es lo único que convierte un pronóstico en algo creíble, y construye desde el día uno la calibración que hoy no existe |
+
 ## Lo que queda abierto
 
 - **D28 por confirmar:** en la hoja de restricciones, si el titular narrativo va arriba de la lista
