@@ -460,7 +460,7 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-surface-raised);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
@@ -1011,7 +1011,7 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: center;
     margin-left: 6px;
     min-width: 12px;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1360,7 +1360,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
     border-radius: var(--ds-radius-xs);
     color: var(--ds-color-text-inverse);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.2;
 }
 .ps-origin-badge.is-manual {
@@ -1406,7 +1406,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     border-radius: var(--ds-radius-pill);
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     font-weight: 600;
 }
 .ps-legacy-card-view {
@@ -2440,7 +2440,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 }
 .cm-eyebrow {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     opacity: 0.75;
@@ -2558,7 +2558,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -2653,7 +2653,7 @@ body.ps-page #hot-container td.ps-cell-shake {
     .cm-table tbody td::before {
         content: attr(data-label);
         display: block;
-        font-size: 0.7rem;
+        font-size: 0.70rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);

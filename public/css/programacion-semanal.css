@@ -641,7 +641,7 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-surface-raised);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
@@ -1294,7 +1294,7 @@ body.ps-page .ps-hot-toolbar-shell {
     /* Ola 3 (2026-08-20): 11px era un literal en px dentro de una celda, fuera de
        la rampa densa de DESIGN.md §3. 0.70rem (dense-meta) es el paso vecino y
        ademas queda por encima del minimo de 11px de PRODUCT.md. */
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1772,7 +1772,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
        el distintivo Manual/Auto a dense-meta y el ID a dense-label. El ancho de
        la columna (min 64 / piso 54 px en hot.js) admite "Manual" a este tamaño,
        pero es lo unico que crecio en la grilla: conviene mirarlo en pantalla. */
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.2;
 }
 
@@ -1847,7 +1847,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     border-radius: var(--ds-radius-pill);
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     font-weight: 600;
 }
 
@@ -3236,7 +3236,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 
 .cm-eyebrow {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     opacity: 0.75;
@@ -3382,7 +3382,7 @@ body.ps-page #hot-container td.ps-cell-shake {
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -3506,7 +3506,7 @@ body.ps-page #hot-container td.ps-cell-shake {
         /* Ola 3 (2026-08-20): 0.65rem son 10,4px. Este pseudo hace de cabecera de
            la tabla apilada, asi que se alinea con dense-meta como la cabecera
            real de arriba, en vez de estrenar un cuarto tamaño. */
-        font-size: 0.7rem;
+        font-size: 0.70rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);

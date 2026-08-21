@@ -144,7 +144,7 @@ html.aia-theme-dark .pi-page {
     line-height: inherit;
 }
 .pi-page #hot-container .handsontable td small {
-    font-size: 0.7rem !important;
+    font-size: 0.70rem !important;
 }
 .pi-page #hot-container td.ops-state-td {
     padding: 4px 6px;
@@ -208,7 +208,7 @@ html.aia-theme-dark .pi-page {
     border-radius: 999px;
     background: var(--pi-due-bg);
     color: var(--pi-due-text);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     font-weight: 800;
     line-height: 1.1;
     vertical-align: middle;
@@ -250,7 +250,7 @@ html.aia-theme-dark .pi-page {
     background: color-mix(in srgb, var(--ds-active-surface-raised) 88%, transparent);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: normal;
     overflow: visible;
