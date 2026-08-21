@@ -141,6 +141,21 @@ project: lps-aia
 | T2 | El catálogo pasa de descriptivo a ejecutable sin cambiar su forma de datos | D5 exige que la definición mande el cálculo; conservar la forma permite migrar métrica por métrica sin romper las pantallas |
 | T3 | Escribir desde la Torre (D33) exige CSRF, comprobación de capacidad y registro de auditoría | La Torre pasa de solo lectura a escritura; sin esto se abre un hueco de seguridad |
 
+### Decisiones tomadas contra la data medida (segunda ronda, 2026-08-20)
+
+Ver [[2026-08-20-que-data-tenemos]] para la medición completa.
+
+| # | Decisión | Qué se decidió | Por qué |
+|---|---|---|---|
+| D59 | El cero en restricciones | **Entra de las dos formas, separadas y rotuladas**: como adherencia al método (cifra dura) y como señal predictiva (estimación con su nivel de certeza) | Felipe rechazó la objeción de que el cero fuera ambiguo, y tenía razón: el patrón mixto del 20% prueba que cero es «no se analizó». La prueba predictiva salió débil (53,2% contra 57,5%), así que no puede rotularse como predicción sin declarar su incertidumbre |
+| D60 | La captura de programación semanal | **No se toca. Está sana** | Medido con el denominador correcto: 92,3% de PAC sobre comprometidas, 89,4% de causa sobre incumplidas, 90,1% de causa sobre no programadas. La hipótesis de «primero arreglar la captura» queda descartada para este módulo |
+| D61 | Hoja de Responsables | **Se revisa la vista `bi_cip_responsables`**, que devuelve 1 fila con 5.223 filas de responsable en el programa | Es defecto de la vista, no falta de datos |
+| D62 | Eje de Productividad del radar | **Se revisa de dónde sale hoy**, con `medir_productividad` en 0% de llenado | Si el eje pinta algo que no viene de su fuente declarada, el catálogo miente sobre su propio origen — lo que D5 viene a matar |
+| D63 | Plan de compras | **Se asume que en una semana estará el corte del plan completo** y la hoja se diseña como se cerró en D42 y D43 | Decisión de Felipe. **Supuesto declarado:** si el calendario no existe en una semana, la hoja nace vacía. Hoy `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` están en cero en todas las obras |
+| D64 | Los 409 planes del PDC v1 | **Historia que se consulta, y se saca de producción** | Decisión de Felipe. **«Sacar» es borrado: frente propio, con visto explícito, respaldo verificable, extracción a un archivo histórico que se compruebe legible fuera, y solo entonces el retiro.** No se ejecutó nada en esta sesión |
+| D65 | Atribución en las causas | **La gráfica deja de truncar el sufijo de atribución** (obra / subcontratista) | No eran duplicados: son tres causas distintas y el truncamiento borra el dato más político del tablero. La tercera variante, sin atribuir, sí es deuda de catálogo |
+| D66 | Alcance real del valor ganado | **Solo donde hay presupuesto cargado**: hoy dos obras (27 y 73) | `programa_consolidado` no tiene valor, precio ni peso; `cantidad_ppto` está en 223 filas. Acota D27 más de lo que la spec suponía |
+
 ## Lo que queda abierto
 
 - **D28 por confirmar:** en la hoja de restricciones, si el titular narrativo va arriba de la lista

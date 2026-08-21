@@ -466,3 +466,40 @@ Estos puntos salieron de la revisión de la propia spec. Ninguno bloquea F1 salv
    de restricciones o al revés. Se resuelve al diseñar F2.
 4. **«Sin gestionar» = valor cero** está inferido del modelo, no comprobado contra datos. Confirmarlo
    con una consulta antes de construir la alarma de huérfanas.
+
+## 19. Corrección por medición contra datos (2026-08-20, posterior)
+
+Esta sección corrige secciones anteriores. Donde contradiga a las de arriba, **manda esta**.
+Medición completa en [[2026-08-20-que-data-tenemos]]; decisiones D59 a D66.
+
+| Lo que decía la spec | Lo que dijo la medición |
+|---|---|
+| §3 daba por inferido que «sin gestionar» = valor cero | **Confirmado** por el patrón mixto: 68,9% de actividades-semana con las cinco restricciones intactas, 20,1% con análisis real y parcial. El cero es «no se analizó» |
+| §8.3 apoyaba el indicador principal en que el cero anticipa el fallo | **La evidencia predictiva es débil**: 53,2% de PAC sin analizar contra 57,5% analizadas. Entra como **adherencia al método**, y la lectura predictiva se rotula aparte con su incertidumbre (D59) |
+| §16 listaba como riesgo que la captura estuviera floja | **Descartado.** Con el denominador correcto la captura está sana: 92,3%, 89,4% y 90,1% (D60) |
+| §8.6 daba por existente el plan de compras | **No existe calendario en ninguna obra.** Da Porto tiene 523 ítems de presupuesto y 58 paquetes con 278 insumos confirmados a mano, pero `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` están en cero. Se asume que estará en una semana (D63) |
+| §8.2 y §5 daban el valor ganado como calculable | **Solo donde hay presupuesto cargado: dos obras.** El programa no tiene columna de valor, precio ni peso (D66) |
+| §6.2 usaba proveedores como caso de ejemplo | **Confirmado con datos:** Calidad tiene valor en 5 de 323 filas, SST en 6, administración en 6, ambiental en 23 — y el integral se publica en 171. Es el PAC con otro nombre |
+| §8.3 hablaba de «catálogo de causas depurado» por duplicados | **No eran duplicados.** Son tres causas distintas: predecesora incompleta (obra) 502, (subcontratista) 297, y sin atribuir 224. La gráfica trunca el texto justo en la atribución (D65). Solo la tercera es deuda |
+
+### Trabajo nuevo que la medición destapó
+
+1. **`bi_cip_responsables` devuelve una fila** con 5.223 filas de responsable en el programa: defecto
+   de la vista (D61). La hoja 8.8 no se puede construir hasta arreglarlo.
+2. **El eje de Productividad del radar** pinta un valor con `medir_productividad` en 0% de llenado
+   (D62). Verificar su origen real antes de conservar el eje de §8.2.
+3. **Campos muertos** a decidir: `Categoria_CP`, `CP`, `alerta_crisis`,
+   `reprogramaciones_semanales`, todos en 0%.
+4. **Mojibake en el catálogo de causas** («Diseńos», «Programación»): corregir antes de publicar
+   cualquier ranking.
+5. **Los 409 planes del PDC v1** viven en producción sin código que los lea. Extraerlos a un archivo
+   histórico y retirarlos es un frente propio con su propio gate (D64). **«Sacar de producción» es
+   borrado y exige visto explícito, respaldo verificable y comprobación de que el archivo se lee
+   fuera antes de retirar nada.**
+
+### Errores de medición cometidos y corregidos
+
+Se dejan escritos porque son el error que un tablero puede cometer en grande:
+**contar los ceros como campos vacíos** (un PAC en cero no es un dato faltante: es el incumplimiento)
+y **usar el denominador equivocado** (el PAC solo aplica a comprometidas). Los dos juntos hacían
+parecer abandonada una captura que está al 90%.
