@@ -28,6 +28,22 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Los botones de acción de Programación Semanal vuelven a verse (2026-08-21)
+
+#### Fixed
+- El chip de los botones «duplicar» y «eliminar» usaba la mitad `-text` de un par de estado
+  **como fondo**, con blanco encima. En tema claro funcionaba; desde que la paleta de estado se
+  invirtió a oscuro (spec del 2026-07-28) esa mitad resuelve a un tono pálido, así que quedaba
+  blanco sobre claro: **1,37:1 y 1,42:1** contra el piso de 3:1 de WCAG 2.2 SC 1.4.11. El glifo se
+  dibujaba —9,3 px dentro de un chip de 32— pero era invisible, y los botones se leían como
+  cuadros vacíos. Restituido el par que la spec ya había medido: **8,88:1** y **10,99:1**, sin
+  tocar geometría (chip 32×32 dentro de un destino táctil de 44×44).
+- Lo reportó el usuario mirando una captura, no un gate: no estaba en el baseline de axe, no había
+  excepción de accesibilidad que lo cubriera, y los tres hallazgos del ledger sobre esos mismos
+  botones (C-18, C-48, F-3/F-4) miran otra cosa. El porqué y la receta quedaron anotados en la
+  propia spec de la paleta, §«Lo que se rompió después», junto al hermano sin auditar de
+  `bi-spa.js:3704`.
+
 ### Tablas: cifras alineadas, filtros alcanzables por teclado e identidad de fila (2026-08-21)
 
 #### Added

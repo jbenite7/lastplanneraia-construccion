@@ -2591,6 +2591,28 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         box-shadow: none !important;
     }
 
+    /* Los tokens de estado van EN PAR: `-bg` de fondo y `-text` de tinta encima. Los
+       pares y su contraste los fijo la spec que invirtio la paleta a oscuro
+       (docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design.md,
+       tabla de la seccion «Los cuatro pares se invierten»): success 8,88:1 y
+       critical 10,99:1.
+
+       Aqui el par estaba partido por la mitad: el chip usaba la mitad `-text`
+       COMO FONDO y le ponia `--ds-color-text-inverse` (blanco) encima. En claro
+       eso funcionaba —`success-text` era tinta oscura— pero desde la inversion
+       resuelve a un menta palido, asi que quedaba blanco sobre claro. (El valor
+       exacto NO se escribe aqui: el presupuesto `hardcoded-hex` de este archivo
+       es 0 y el audit tambien lee los comentarios — lo cazo al primer intento.
+       Vive en la tabla de la spec citada arriba.) Medido en
+       vivo el 2026-08-21 sobre /programacion-semanal en dark: duplicar 1,37:1 y
+       eliminar 1,42:1, contra el piso de 3:1 que WCAG 2.2 SC 1.4.11 exige a un
+       control grafico. El glifo se dibujaba —9,3 px dentro de un chip de 32— pero
+       era invisible: se leia como un cuadro vacio.
+
+       Es el mismo error de rol que docs/PDC-AUDIT.md ya habia anotado como trampa
+       en otro modulo («`status-critical` no es un color de dato»). Restituir el par
+       no es subir el contraste a ojo: es volver a los dos valores que la spec ya
+       habia medido. */
     body.ps-page #hot-container .ps-action-icon {
         display: grid;
         place-items: center;
@@ -2598,15 +2620,17 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
         background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ds-color-text-inverse);
+        color: var(--ps-action-icon-ink, var(--ds-color-text-inverse));
     }
 
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-text);
+        --ps-action-icon-bg: var(--ds-color-state-success-bg);
+        --ps-action-icon-ink: var(--ds-color-state-success-text);
     }
 
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-text);
+        --ps-action-icon-bg: var(--ds-color-state-critical-bg);
+        --ps-action-icon-ink: var(--ds-color-state-critical-text);
     }
 
     /* C-48: aqui vivia una sobrescritura exclusiva de PS que pintaba el `::before`

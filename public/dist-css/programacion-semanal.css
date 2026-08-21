@@ -2052,13 +2052,15 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
         background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ds-color-text-inverse);
+        color: var(--ps-action-icon-ink, var(--ds-color-text-inverse));
     }
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-text);
+        --ps-action-icon-bg: var(--ds-color-state-success-bg);
+        --ps-action-icon-ink: var(--ds-color-state-success-text);
     }
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-text);
+        --ps-action-icon-bg: var(--ds-color-state-critical-bg);
+        --ps-action-icon-ink: var(--ds-color-state-critical-text);
     }
     html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item {
         border-color: var(--ds-active-border) !important;

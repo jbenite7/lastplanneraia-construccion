@@ -172,6 +172,13 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
+  `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
+  de rol que se corrigió el 2026-08-21 en los botones de Programación Semanal. Ya estaba anotado
+  como «trampa medida, sin auditar» en [[docs/PDC-AUDIT]] §Trampa medida; queda aquí para que salga
+  de ese pie de página. El rojo de series es `critical` (`oklch(65% 0.18 26.3)`). Contexto y receta:
+  [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design]] §Lo que se rompió después.
+
 - [ ] **Tablas · retirar DataTables, el tercer motor** — quedan cinco superficies en
   DataTables 1.10.21 (2020, con jQuery detrás): `views/programacion-semanal/CIC|CNC|CNP.view.php`,
   `views/control-cambios/controlCambios.view.php` y las tablas del panel `admin/`. El destino es
