@@ -442,6 +442,12 @@ La familia de tablas desktop opera desde hace tiempo tres pasos por debajo de
 edición. Se **consagran** como rampa densa oficial — son la realidad medida de la
 excepción de densidad (piso duro 11px de PRODUCT.md):
 
+- **Dense-body** `0.8125rem` (13px): **el dato principal de la celda**
+  (`--ds-table-cell-font-size`). Es el paso más usado de toda la familia de tablas y
+  llevaba años en el contrato; faltaba aquí por un olvido al consagrar la rampa el
+  2026-08-20, y por eso el detector lo leía como deriva.
+- **Dense-header** `0.75rem` (12px): **la cabecera de tabla**
+  (`--ds-table-header-font-size`), un paso por debajo del dato. Mismo caso que el anterior.
 - **Dense-label** `0.72rem` (~11.5px): chip de estado en celda densa (PS), texto del
   tooltip de estado (`--ds-chip-font-size`).
 - **Dense-meta** `0.70rem` (~11.2px): metadatos de leyenda y cabeceras auxiliares.
