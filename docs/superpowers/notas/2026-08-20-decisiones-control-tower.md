@@ -1,7 +1,7 @@
 ---
 capa: fuente
-tipo: registro-de-decisiones
-estado: en-curso
+tipo: reporte
+estado: abierto
 fecha: 2026-08-20
 areas: [bi, rbac, design-system]
 fuente: entrevista con Felipe bajo el método `antes-del-almuerzo`, 2026-08-20

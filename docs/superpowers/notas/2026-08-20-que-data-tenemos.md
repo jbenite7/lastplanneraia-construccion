@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: nota-de-trabajo
+tipo: reporte
 estado: vigente
 fecha: 2026-08-20
 areas: [bi, datos, pdc]

@@ -1,7 +1,7 @@
 ---
 capa: fuente
-tipo: nota-de-trabajo
-estado: en-curso
+tipo: reporte
+estado: abierto
 fecha: 2026-08-20
 areas: [bi, rbac, design-system]
 fuente: brainstorming con Felipe, 2026-08-20

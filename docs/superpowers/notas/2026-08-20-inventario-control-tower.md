@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: inventario
+tipo: reporte
 estado: vigente
 fecha: 2026-08-20
 areas: [bi, rbac, design-system]

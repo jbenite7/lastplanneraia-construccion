@@ -6,6 +6,7 @@ fecha: 2026-08-20
 areas: [bi, rbac, datos, design-system]
 fuente: brainstorming con Felipe bajo el método `antes-del-almuerzo`, 2026-08-20
 resumen: "Replanteo completo de la Control Tower: el catálogo de métricas pasa de papel a ley, las restricciones del lookahead se vuelven el indicador principal, Power BI se jubila y la Torre pasa a escribir"
+revisado: 2026-08-20 contra la data real de dev y producción
 project: lps-aia
 ---
 
@@ -17,8 +18,9 @@ project: lps-aia
 > derivada de esta antes de planificarse.
 >
 > Insumos: [[2026-08-20-inventario-control-tower]] (qué existe hoy) ·
-> [[2026-08-20-decisiones-control-tower]] (las 58 decisiones y su porqué) ·
-> [[2026-08-20-replanteo-control-tower-notas]] (hallazgos del recorrido).
+> [[2026-08-20-decisiones-control-tower]] (las 66 decisiones y su porqué) ·
+> [[2026-08-20-replanteo-control-tower-notas]] (hallazgos del recorrido) ·
+> [[2026-08-20-que-data-tenemos]] (**medición contra la base real**, que corrigió varias decisiones).
 
 ## 1. El problema
 
@@ -36,8 +38,13 @@ siente mal. La desconfianza se descompone en tres causas distintas (D2):
    DAX, la Torre recalcula en PHP, y el catálogo de métricas solo *describe* — no manda. Nada obliga
    a que los tres coincidan.
 3. **El dato llega tarde o incompleto**, y la pantalla lo presenta como si estuviera completo. El
-   caso extremo: la «Calificación Integral» de proveedores declara cinco componentes ponderados y
-   solo uno tiene datos.
+   caso extremo, medido: la «Calificación Integral» de proveedores declara cinco componentes
+   ponderados, cuatro de ellos tienen valor en menos del 7% de las filas, y el integral se publica
+   igual en 171 de 323.
+
+**Lo que la medición del 2026-08-20 descartó como causa:** la captura. Se registra el PAC en el 92,3%
+de las actividades comprometidas y la causa en el 89,4% de las incumplidas. **El problema no es que
+la obra no registre: es que lo registrado se presenta mal.**
 
 ## 2. Objetivo
 
@@ -48,7 +55,7 @@ produzca una acción concreta con dueño y fecha en lugar de una consulta.
 **Condición de hecho del replanteo completo:** un director de obra abre la Torre un martes, ve qué
 restricciones van a matar sus compromisos, asigna responsable y fecha a las que no lo tienen sin
 salir de la pantalla, y puede responder «¿de dónde sale ese número?» con un clic. Y las
-restricciones sin dueño bajan de 318.
+actividades que entran a la semana sin análisis de restricciones dejan de ser el 69%.
 
 ## 3. Estado epistémico — qué está verificado y qué no
 
@@ -60,7 +67,10 @@ restricciones sin dueño bajan de 318.
 | El linaje viaja al navegador y no se pinta | **Verificado**: `'lineage' => $lineage` en cada respuesta, cero referencias en `bi-spa.js` |
 | No existe costo real causado en el sistema | **Verificado**: hay presupuesto, APU y valor comprometido; ninguna tabla de costo causado, facturado o pagado |
 | Las restricciones no tienen responsable ni fecha comprometida | **Verificado** contra `pi_shared_constraints` y `002_bi_pi_restricciones.sql` |
-| «Sin gestionar» = valor cero, la casilla nunca se movió | **Inferido** del modelo (`restriction_value` 0..1 contra umbral 1.0) y coherente con lo que declaró Felipe. **Confirmar contra datos antes de construir** |
+| «Sin gestionar» = valor cero, la casilla nunca se movió | **Verificado con datos**: 68,9% de actividades-semana con las cinco restricciones intactas, 20,1% con análisis parcial. El patrón mixto prueba que el cero es «no se analizó» y no «no aplica» |
+| Que analizar restricciones mejora el cumplimiento | **Evidencia débil**: 53,2% de PAC en las no analizadas contra 57,5% en las analizadas, sobre muestra parcial. No alcanza para sostenerlo en comité |
+| Que la captura de programación semanal está sana | **Verificado**: 92,3% de PAC sobre comprometidas, 89,4% de causa sobre incumplidas, 90,1% de causa sobre no programadas |
+| Que existe un plan de compras con fechas | **Refutado**: `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` en cero en todas las obras, en dev y en producción |
 | Que la obra necesita lo aquí decidido | **NO verificado.** Ver supuestos |
 | Goodhart y los contrapesos (D36, D32) | **Criterio propio.** Las 186 fuentes consultadas no lo respaldan. Es lo primero que cede si el caso lo contradice |
 
@@ -74,6 +84,11 @@ restricciones sin dueño bajan de 318.
    tomada contra la recomendación del método).
 3. **Se asume que las cifras históricas son correctas.** No se auditó un período contra la realidad
    de obra. La fase 1 incluye una verificación mínima de esto.
+4. **Se asume que el plan de compras con fechas existirá en una semana** (D63). Hoy no existe en
+   ninguna obra. Si no llega, la hoja de 8.6 nace vacía y hay que decirlo en pantalla.
+5. **La medición se hizo contra la base de desarrollo**, con verificación puntual en producción por
+   SSH en solo lectura. Los porcentajes de llenado son señal confiable; los conteos absolutos de dev
+   pueden diferir de producción. **No se trajo ninguna copia de producción.**
 
 ## 5. Alcance
 
@@ -86,6 +101,8 @@ restricciones sin dueño bajan de 318.
 - La Torre pasa a **escribir**: asignar responsable y fecha a una restricción (D33).
 - Las ocho hojas se rediseñan según las decisiones D17–D47. **Ninguna se apaga** (D11).
 - Cuatro métricas nuevas al catálogo (D58).
+- **Higiene de datos previa (F0)**: vista de responsables, origen del eje de Productividad,
+  atribución de causas sin truncar, mojibake y campos muertos.
 - Power BI se jubila, incluido `/indicadores` (D8, D56).
 - Un lienzo por audiencia: gerencia y obra (D52).
 - Correo automático con la señal (D50).
@@ -171,6 +188,19 @@ Reglas de presentación, obligatorias en toda hoja:
 componentes son partes declaradas de la métrica; con cuatro vacíos, el integral es `insuficiente` y
 no se publica. Los componentes con dato se muestran por separado.
 
+Medido el 2026-08-20 sobre 323 filas de `bi_cic_contratistas`, cuántas traen valor mayor que cero:
+
+| Componente | Peso declarado | Con valor |
+|---|---|---|
+| PAC | 30% | 229 (71%) |
+| Calidad | 20% | **5 (1,5%)** |
+| Social-Ambiental | 20% | **23 (7%)** |
+| SST | 20% | **6 (1,9%)** |
+| Administración | 10% | **6 (1,9%)** |
+| Calificación integral | — | **171 (53%)** |
+
+Es decir: **hoy se publica en 171 filas un número que en la práctica es el PAC con otro nombre.**
+
 ### 6.3 Trazabilidad visible (D48)
 
 El bloque `lineage` ya viaja en cada respuesta. Se pinta:
@@ -200,7 +230,19 @@ El bloque `lineage` ya viaja en cada respuesta. Se pinta:
 
 Los tres estados que muestra Power BI —liberada, en proceso, sin gestionar— **no son un campo de
 estado**: son lecturas del valor numérico (1.0, intermedio, 0). Por eso «sin gestionar» significa
-literalmente *la casilla nunca se movió*, y por eso son 318.
+literalmente *la casilla nunca se movió*.
+
+Verificado el 2026-08-20 sobre 45.600 actividades-semana:
+
+| Patrón sobre las cinco restricciones duras | Cantidad | % |
+|---|---|---|
+| **Ninguna tocada** | 31.396 | **68,9%** |
+| Mixto — hubo análisis real | 9.182 | 20,1% |
+| Todas listas | 5.022 | 11,0% |
+
+**El patrón mixto es la prueba de que el cero significa «no se analizó» y no «no aplica»**: cuando
+alguien abre el análisis, marca unas restricciones y deja otras. Si el cero fuera «no aplica», lo
+mixto sería la norma y no el 20%.
 
 Y por eso **D30 y D33 no se pueden construir sobre el modelo actual**: no se puede asignar
 responsable ni fecha a algo que no tiene dónde guardarlos.
@@ -249,19 +291,33 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 - **El número de desviación (D24):** en palabras —«88 días de retraso»—, **y además la fecha
   proyectada de terminación contra la comprometida**. Nunca signo ni color solos.
 - **Radar (D22):** se conserva, con escala corregida y mayor tamaño. Cada eje conserva su
-  «Cómo se calcula».
+  «Cómo se calcula». **Prerrequisito (D62): verificar de dónde sale hoy el eje de Productividad**,
+  porque `medir_productividad` está en 0% de llenado y el radar pinta un valor igual. O sale de otra
+  fuente —y entonces el catálogo miente sobre su propio origen, que es lo que 6 viene a matar— o el
+  eje muestra algo distinto de lo que su nombre dice. El eje no se conserva hasta aclararlo.
 - **Riesgo (D26):** combinado — restricciones sin liberar y su antigüedad, ponderadas por si caen en
   ruta crítica. La pantalla debe explicar la ponderación en una frase.
-- **Valor ganado (D27):** solo desempeño de cronograma en plata, con el presupuesto y APU
-  existentes. **La pantalla declara explícitamente que no incluye costo real.**
+- **Valor ganado (D27, acotado por D66):** solo desempeño de cronograma en plata, con el presupuesto
+  y APU existentes. **La pantalla declara explícitamente que no incluye costo real.** Y se calcula
+  **solo donde hay presupuesto cargado**: hoy dos obras (27 y 73, 523 ítems cada una). El programa
+  **no tiene columna de valor, precio ni peso** —`cantidad_ppto` está en 223 filas—, así que la cifra
+  sale de cruzar insumos con actividades, no del programa. Donde no haya presupuesto, la métrica es
+  `insuficiente` según 6.2 y no se muestra.
 - **Causas de no cumplimiento:** aquí solo el titular; el detalle vive en Semanal (D39).
 - **Desglose:** aporte por actividad, retraso observado, detalle de radar, detalle de cumplimiento.
 
 ### 8.3 Programación Intermedia — la hoja del indicador principal
 
 - **Decisión:** liberar hoy la restricción que va a matar el compromiso de dentro de tres semanas.
+- **Las dos lecturas del cero, separadas y rotuladas (D59).** No se mezclan nunca:
+  - **Adherencia al método**, como cifra dura: «el 69% de las actividades entró a la semana sin
+    análisis de restricciones». Se sostiene sola, no necesita correlación, y la acción es abrir ese
+    análisis antes del lunes.
+  - **Señal predictiva**, marcada como estimación con su nivel de certeza. **No se rotula «estas van
+    a fallar»**: la evidencia disponible da 53,2% de PAC en las no analizadas contra 57,5% en las
+    analizadas, y eso no aguanta un comité.
 - **Lienzo, en orden (D28, D30):**
-  1. **Alarma de huérfanas:** «318 restricciones sin dueño», con la acción de asignarlas.
+  1. **Alarma de huérfanas:** las restricciones sin análisis ni dueño, con la acción de asignarlas.
   2. Titular narrativo: qué está pasando con el lookahead y por qué.
   3. **Lista de restricciones por liberar, ordenada por urgencia**: restricción, actividad que
      bloquea, responsable, fecha comprometida, días de vencida, actividades afectadas, y si la
@@ -271,6 +327,10 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
 - **Acción en pantalla (D33):** asignar responsable y fecha a una restricción sin salir de la hoja.
 - **Contrapeso de captura (D32):** junto al ranking de causas, quién lo registró y cuántas quedaron
   sin causa. Con una nota explícita de que cada responsable registra la suya.
+- **La atribución no se trunca (D65).** El catálogo distingue «Actividad predecesora incompleta / no
+  ejecutada **(obra)**» (502 veces) de «**(subcontratista)**» (297) y de la variante sin atribuir
+  (224). No eran duplicados: **la gráfica corta el texto justo donde está la atribución de culpa**,
+  que es el dato más político del tablero. Solo la tercera variante es deuda de catálogo.
 - **Abierto:** confirmar con Felipe si el titular narrativo va arriba de la lista o al revés.
 
 ### 8.4 Programación Semanal — audiencia obra
@@ -287,6 +347,9 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   de más. El compromiso es binario.
 - **Contrapeso (D36):** el conteo de compromisos nunca se separa del porcentaje, y se muestra la
   variación contra la semana anterior para destapar el encogimiento gradual del compromiso.
+- **La captura de esta hoja está sana y no se toca (D60):** 92,3% de PAC sobre comprometidas, 89,4%
+  de causa sobre las incumplidas, 90,1% de causa sobre las no programadas. Cualquier diseño que
+  parta de «aquí no se registra nada» está partiendo de una medición mal hecha.
 - **Causas de no cumplimiento (D39):** viven aquí, con su desglose a subcausa **por clic, no por
   hover**.
 - **La hoja se diseña para proyectarse** en el comité, y admite filtro por persona en desglose.
@@ -299,6 +362,12 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   incertidumbre**, con la misma matemática del P50 de 8.2.
 
 ### 8.6 Plan de Compras
+
+> **Supuesto que sostiene esta hoja (D63):** hoy **no existe plan con fechas en ninguna obra** —
+> `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` en cero, en dev y en producción. Lo que sí
+> existe en Da Porto (proyecto 73) es presupuesto (523 ítems) y **58 paquetes de contratación con 278
+> insumos asignados, todos confirmados a mano**. Se asume que el calendario estará cargado en una
+> semana. **Si no llega, esta hoja nace vacía y debe decirlo en pantalla, no disimularlo.**
 
 - **Decisión (D42):** compras destraba el paso vencido de hoy · gerencia vigila la cobertura del
   presupuesto · el director anticipa qué le va a faltar.
@@ -316,6 +385,10 @@ desglose. Todo elemento no listado como «lienzo» va a desglose o desaparece.
   lo carga. Es el caso de aplicación obligatoria de 6.2.
 
 ### 8.8 Responsables
+
+> **Bloqueante de esta hoja (D61):** la vista `bi_cip_responsables` devuelve **una sola fila**,
+> mientras `Responsable_AIA` está lleno en 5.223 filas del programa. Es defecto de la vista, no falta
+> de datos. **La hoja no se construye hasta arreglarla.**
 
 - **Propósito declarado en la propia pantalla (D47): ver quién necesita ayuda, no quién falla.** La
   acción sugerida es descargar o destrabar, nunca reconvenir.
@@ -387,19 +460,41 @@ Cada fase se publica antes de abrir la siguiente, según el gate de cierre de fr
 
 | # | Fase | Contenido | Condición de hecho |
 |---|---|---|---|
-| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada · catálogo de causas depurado | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, y cada una responde «de dónde salgo» con un clic |
+| **F0** | **Higiene de datos** | Arreglar la vista de responsables · aclarar el origen del eje de Productividad · corregir el mojibake del catálogo de causas · dejar de truncar la atribución · decidir los campos muertos | Ninguna cifra de la Torre viene de una fuente que no es la que declara, y ningún texto de causa se corta donde dice de quién es la culpa |
+| **F1** | **Cimiento** | Ejecutor de métricas · las 19 métricas de `descriptiva` a `ejecutable` con prueba de paridad · declaración de completitud · trazabilidad pintada · calificación de proveedores inhabilitada | Toda cifra de la Torre sale del catálogo, ninguna se calcula dos veces, y cada una responde «de dónde salgo» con un clic |
 | **F2** | **Restricciones** | Migración de esquema con su gate · métricas nuevas · hoja de Intermedia reconstruida · alarma de huérfanas · lista accionable · escritura desde la Torre | Un director asigna responsable y fecha a una restricción sin salir de la hoja, y el conteo de huérfanas baja |
 | **F3** | **Narrativa** | Resumen Ejecutivo con panorama de obras · acciones con dueño · riesgo de incumplimiento por compromiso rebautizado e integrado · Semanal rediseñada | La hoja abre con una frase que afirma qué pasó y por qué, y debajo qué hacer y quién |
 | **F4** | **Salir del escondite** | Interruptor encendido · entrada en navegación · correo automático | El módulo está en el menú y la señal llega por correo |
 | **F5** | **Jubilación** | Liberación de Restricciones completa · retiro del informe Power BI · después, `/indicadores` | Una sola casa para las cifras |
-| **F6** | **Diferidos** | What-if acotado a restricciones · vista de cliente · contabilidad para el índice de costo | Cada uno con su propia spec |
+| **F6** | **Diferidos** | What-if acotado a restricciones · vista de cliente · contabilidad para el índice de costo · **rescate del historial del PDC v1** | Cada uno con su propia spec |
 
-**F1 es la única especificada aquí a nivel ejecutable.** F2 en adelante derivan su propia spec.
+**F0 y F1 son las únicas especificadas aquí a nivel ejecutable.** F2 en adelante derivan su propia
+spec. F0 es barata y desbloquea: sin ella, tres hojas muestran cifras cuyo origen no se puede
+defender, que es exactamente lo que este replanteo viene a curar.
+
+### El frente aparte: el historial del PDC v1 (D64)
+
+La tabla `pdc` guarda **409 planes de compras completos** —fechas planeadas y reales de cada paso,
+proveedor adjudicado, número de contrato, pólizas, y valores de presupuesto, negociación,
+adjudicación, anticipo, reclamado y devoluciones— de tres obras: Prueba (136), Optimización
+Aeropuerto JMC (162) y Milán Campestre Torre 19 (111). **Da Porto no está ahí**, y ninguna obra tiene
+las dos generaciones del plan.
+
+El código del PDC v1 se eliminó del repositorio el 2026-08-04, así que esos datos **están vivos en
+producción y huérfanos de aplicación**. Es el único historial de desempeño de compras que existe.
+
+Felipe decidió consultarlo y sacarlo de producción. **«Sacar» es borrado**, así que ese frente exige,
+en este orden: visto explícito de Felipe · respaldo verificable · extracción a un archivo histórico ·
+**comprobación de que ese archivo se lee fuera de producción** · y solo entonces el retiro, con plan
+de restauración. Nada de esto se ejecutó en esta sesión.
 
 ## 14. Verificación
 
 Por fase, y con salida real de comandos:
 
+- **F0:** conteo de filas que devuelve la vista de responsables antes y después · consulta que
+  demuestre de qué columna sale el eje de Productividad · recuento de causas con la atribución
+  completa, sin truncar.
 - **F1:** prueba de paridad por métrica (viejo motor contra catálogo, cuatro semanas, dos obras) ·
   `docker compose exec app php scripts/run-php-tests.php --nivel=puro` y `--nivel=http` ·
   `vendor/bin/phpstan analyse src admin/src` · revisión en navegador de la trazabilidad, alcanzable
@@ -414,11 +509,20 @@ Ninguna baseline visual se regenera para forzar un resultado verde.
 
 ## 15. Criterio de muerte (D51)
 
-**A los 90 días de publicar F2: si las restricciones sin dueño no bajaron de 318, la Torre no
-cambió el comportamiento y se rehace o se apaga.**
+**A los 90 días de publicar F2: si el porcentaje de actividades que entran a la semana sin análisis
+de restricciones no bajó, la Torre no cambió el comportamiento y se rehace o se apaga.**
+
+**La línea base se mide el día en que se publica F2, no antes**, y queda anotada en el ledger del
+frente. Hoy, en la base de desarrollo, ese porcentaje es **68,9%** — 31.396 de 45.600
+actividades-semana con las cinco restricciones intactas. La cifra de producción puede diferir; la que
+manda es la del día de publicación.
 
 Se mide contando registros, sin instrumentar aperturas — que además darían cero por el correo de F4
 y llevarían a una conclusión falsa.
+
+**Por qué esta métrica y no otra:** es la única que no se puede maquillar sin hacer el trabajo. Subir
+el PAC se logra comprometiéndose a menos; bajar el porcentaje de actividades sin análisis exige
+abrir el análisis.
 
 Triaje a los 90 días, cuadrante uso contra relevancia: alto uso y alta relevancia, mantener; bajo
 uso y alta relevancia, es problema de distribución, no de diseño; baja relevancia, archivar avisando
@@ -429,6 +533,8 @@ a quien lo pidió.
 | Riesgo | Qué lo dispara | Mitigación |
 |---|---|---|
 | **La obra no quiere lo que decidimos** | El supuesto 1 | Las tres conversaciones siguen pendientes. Hacerlas antes de F2, que es donde se gasta de verdad |
+| **El plan de compras no llega en una semana** | El supuesto 4 | La hoja 8.6 nace vacía declarándolo. No se disimula con datos de ejemplo |
+| **El indicador principal se lee como predicción** | D59 | La adherencia y la estimación van separadas y rotuladas. Nunca «estas van a fallar» con la evidencia actual |
 | **La paridad de métricas destapa que las cifras de hoy están mal** | F1 | Es una ganancia disfrazada de problema. Documentar cada discrepancia y decidir cuál es la correcta antes de migrar |
 | **La migración de esquema toca datos vivos** | F2 | Gate de Plannotator, respaldo verificable, dry-run y reconciliación. No se ejecuta desde una tarea de interfaz |
 | **La Torre escribiendo abre un hueco de seguridad** | F2 | CSRF, capacidad, aislamiento por proyecto, auditoría, y prueba de rol permitido y denegado |
@@ -446,9 +552,9 @@ a quien lo pidió.
 - Comparaciones entre obras que no son comparables sin normalizar.
 - Cualquier cifra que dependa de costo real causado, mientras no exista la fuente.
 
-## 18. Lo que queda abierto — resolver antes de planificar F1
+## 18. Lo que queda abierto
 
-Estos puntos salieron de la revisión de la propia spec. Ninguno bloquea F1 salvo el primero.
+Ninguno bloquea F0. El primero bloquea la planificación de F1 en adelante.
 
 1. **Contradicción entre D52 y D11, y hay que resolverla con Felipe.** D52 decidió «un lienzo propio
    por audiencia», rechazando explícitamente «las mismas hojas con puerta de entrada distinta». Pero
@@ -461,45 +567,26 @@ Estos puntos salieron de la revisión de la propia spec. Ninguno bloquea F1 salv
      el costo de mantenimiento con una sola persona.
    - Se reduce el alcance de hojas por lienzo, revisando D11.
 2. **Umbral de replanificación de la Curva S** (8.5): a partir de qué brecha se convoca a rehacer el
-   programa. Sin definir. No bloquea F1.
-3. **Orden del titular y la lista en Intermedia** (D28, 8.3): si la narrativa va arriba de la lista
-   de restricciones o al revés. Se resuelve al diseñar F2.
-4. **«Sin gestionar» = valor cero** está inferido del modelo, no comprobado contra datos. Confirmarlo
-   con una consulta antes de construir la alarma de huérfanas.
+   programa.
+3. **Orden del titular y la lista en Intermedia** (D28, 8.3): si la narrativa va arriba de la lista de
+   restricciones o al revés. Se resuelve al diseñar F2.
+4. **Los campos muertos** —`Categoria_CP`, `CP`, `alerta_crisis`, `reprogramaciones_semanales`, todos
+   en 0% de llenado— se retiran o alguien debería estar llenándolos. Decisión de proceso, se toma
+   en F0.
 
-## 19. Corrección por medición contra datos (2026-08-20, posterior)
+## 19. Errores de medición cometidos en este diseño
 
-Esta sección corrige secciones anteriores. Donde contradiga a las de arriba, **manda esta**.
-Medición completa en [[2026-08-20-que-data-tenemos]]; decisiones D59 a D66.
+Se dejan escritos porque son exactamente el error que un tablero puede cometer en grande, y porque
+la spec pide que las cifras se puedan defender.
 
-| Lo que decía la spec | Lo que dijo la medición |
-|---|---|
-| §3 daba por inferido que «sin gestionar» = valor cero | **Confirmado** por el patrón mixto: 68,9% de actividades-semana con las cinco restricciones intactas, 20,1% con análisis real y parcial. El cero es «no se analizó» |
-| §8.3 apoyaba el indicador principal en que el cero anticipa el fallo | **La evidencia predictiva es débil**: 53,2% de PAC sin analizar contra 57,5% analizadas. Entra como **adherencia al método**, y la lectura predictiva se rotula aparte con su incertidumbre (D59) |
-| §16 listaba como riesgo que la captura estuviera floja | **Descartado.** Con el denominador correcto la captura está sana: 92,3%, 89,4% y 90,1% (D60) |
-| §8.6 daba por existente el plan de compras | **No existe calendario en ninguna obra.** Da Porto tiene 523 ítems de presupuesto y 58 paquetes con 278 insumos confirmados a mano, pero `pdc_plan_paso`, `pdc_plan_paquete` y `pdc_subpaquete` están en cero. Se asume que estará en una semana (D63) |
-| §8.2 y §5 daban el valor ganado como calculable | **Solo donde hay presupuesto cargado: dos obras.** El programa no tiene columna de valor, precio ni peso (D66) |
-| §6.2 usaba proveedores como caso de ejemplo | **Confirmado con datos:** Calidad tiene valor en 5 de 323 filas, SST en 6, administración en 6, ambiental en 23 — y el integral se publica en 171. Es el PAC con otro nombre |
-| §8.3 hablaba de «catálogo de causas depurado» por duplicados | **No eran duplicados.** Son tres causas distintas: predecesora incompleta (obra) 502, (subcontratista) 297, y sin atribuir 224. La gráfica trunca el texto justo en la atribución (D65). Solo la tercera es deuda |
+1. **Contar los ceros como campos vacíos.** Un PAC en cero no es un dato faltante: es el
+   incumplimiento, que es el dato que importa. Filtrar «distinto de vacío» lo borra de la cuenta.
+2. **Usar el denominador equivocado.** El PAC solo aplica a actividades comprometidas; la causa de no
+   cumplimiento, solo a las comprometidas que fallaron. Medido sobre el programa entero, una captura
+   sana del 90% parece un abandono del 22%.
 
-### Trabajo nuevo que la medición destapó
+Los dos juntos produjeron un diagnóstico falso —«hay que arreglar la captura antes que el tablero»—
+que estuvo a punto de reordenar todo el replanteo. Lo corrigió Felipe.
 
-1. **`bi_cip_responsables` devuelve una fila** con 5.223 filas de responsable en el programa: defecto
-   de la vista (D61). La hoja 8.8 no se puede construir hasta arreglarlo.
-2. **El eje de Productividad del radar** pinta un valor con `medir_productividad` en 0% de llenado
-   (D62). Verificar su origen real antes de conservar el eje de §8.2.
-3. **Campos muertos** a decidir: `Categoria_CP`, `CP`, `alerta_crisis`,
-   `reprogramaciones_semanales`, todos en 0%.
-4. **Mojibake en el catálogo de causas** («Diseńos», «Programación»): corregir antes de publicar
-   cualquier ranking.
-5. **Los 409 planes del PDC v1** viven en producción sin código que los lea. Extraerlos a un archivo
-   histórico y retirarlos es un frente propio con su propio gate (D64). **«Sacar de producción» es
-   borrado y exige visto explícito, respaldo verificable y comprobación de que el archivo se lee
-   fuera antes de retirar nada.**
-
-### Errores de medición cometidos y corregidos
-
-Se dejan escritos porque son el error que un tablero puede cometer en grande:
-**contar los ceros como campos vacíos** (un PAC en cero no es un dato faltante: es el incumplimiento)
-y **usar el denominador equivocado** (el PAC solo aplica a comprometidas). Los dos juntos hacían
-parecer abandonada una captura que está al 90%.
+**Regla que sale de ahí, y que aplica al ejecutor de métricas de 6:** ninguna métrica se declara sin
+declarar también su denominador. Un porcentaje sin su base no es una cifra, es una insinuación.
