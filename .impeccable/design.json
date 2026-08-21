@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-20T18:30:00Z",
+  "generatedAt": "2026-08-21T00:03:51Z",
   "title": "Design System: Last Planner AIA",
   "extensions": {
     "colorMeta": {
@@ -167,17 +167,53 @@
         "displayName": "Mono",
         "purpose": "ui-monospace. Cifras y datos técnicos puntuales."
       },
-      "dense-label": {
+      "scale.denseLabel": {
         "displayName": "Dense-label",
-        "purpose": "Inter 600, 0.72rem (~11.5px). Rampa densa de tablas consagrada 2026-08-20: chip de estado en celda densa (PS) y texto del tooltip de estado (--ds-chip-font-size)."
+        "purpose": "0.72rem (~11.5px). Rampa densa de tablas consagrada 2026-08-20: chip de estado en celda densa (PS) y texto del tooltip de estado (--ds-chip-font-size). En celda densa de PS corre a 0.72rem/600 en una línea con elipsis."
       },
-      "dense-meta": {
+      "scale.denseMeta": {
         "displayName": "Dense-meta",
-        "purpose": "Inter, 0.70rem (~11.2px). Rampa densa: metadatos de leyenda y cabeceras auxiliares."
+        "purpose": "0.70rem (~11.2px). Rampa densa: metadatos de leyenda y cabeceras auxiliares."
       },
-      "dense-floor": {
+      "scale.denseFloor": {
         "displayName": "Dense-floor",
-        "purpose": "Inter, 0.62rem (~9.9px). SOLO elementos secundarios no textuales-clave ya existentes (contadores del drawer); bajo el piso de 11px, se hereda, no se imita — cero usos nuevos. Pendiente declarado: tokenizar como --ds-type-dense-*."
+        "purpose": "0.62rem (~9.9px). SOLO elementos secundarios no textuales-clave ya existentes (contadores del drawer); ningún dato principal baja aquí. Está bajo el piso de 11px: se hereda, no se imita — cero usos nuevos. Pendiente declarado: tokenizar como --ds-type-dense-*."
+      },
+      "scale.adminXs": {
+        "displayName": "Admin xs",
+        "purpose": "0.75rem. Escala del Panel Admin (admin/public/css/**): consume --ds-type-size-xs del design system."
+      },
+      "scale.adminSm": {
+        "displayName": "Admin sm",
+        "purpose": "0.875rem. Escala del Panel Admin: --ds-type-size-sm."
+      },
+      "scale.adminBase": {
+        "displayName": "Admin base",
+        "purpose": "1rem. Cuerpo del Panel Admin: --ds-type-size-base. Panel administrativo de uso ocasional, no tabla densa de obra."
+      },
+      "scale.pdcXs": {
+        "displayName": "PDC xs",
+        "purpose": "11px. Rótulos en versalitas (pdc-app/src/styles.css, --pdc-fs-xs). Piso duro."
+      },
+      "scale.pdcSm": {
+        "displayName": "PDC sm",
+        "purpose": "12px. Ayudas, notas al pie de un dato, encabezado de tabla."
+      },
+      "scale.pdcMd": {
+        "displayName": "PDC md",
+        "purpose": "13px. Cuerpo del Plan de Compras: controles, celdas, navegación."
+      },
+      "scale.pdcLg": {
+        "displayName": "PDC lg",
+        "purpose": "15px. Subtítulos de sección."
+      },
+      "scale.pdcXl": {
+        "displayName": "PDC xl",
+        "purpose": "18px. Título de pantalla."
+      },
+      "scale.pdcCifra": {
+        "displayName": "PDC cifra",
+        "purpose": "22px. El único número que manda en la pantalla."
       }
     },
     "shadows": [
@@ -262,16 +298,26 @@
       "outOfScope": [
         "mobile",
         "tablet",
-        "tema linen (shipped-but-ungated)"
+        "tema claro: linen fue retirado del producto (F0 del goal dark-mode-todos-los-modulos); dark es el único tema y no existe conmutador. Trabajar en claro ya no está prohibido, pero es reconstruirlo desde los tokens, no reactivar una variante viva."
       ],
-      "density": "Compacta desde 1200px; Táctil por debajo. Target táctil mínimo 44px. Excepción registrada (2026-07-29, DESIGN.md §5 bis): en superficies de datos densas operadas con ratón en desktop y sin equivalente móvil —hoy solo /plan-compras— el alto de control es 28px y la fila de tabla 28px con encabezado 32px.",
+      "density": "Compacta desde 1200px; Táctil por debajo. Target táctil mínimo 44px. Excepción registrada (DESIGN.md §5 bis, actualizada 2026-08-03): en la familia de tablas desktop de datos densos, operada con ratón y sin equivalente móvil, fila y encabezado (base) miden 24px — exactamente el mínimo de WCAG 2.2 SC 2.5.8 (AA), sin margen —, celda 13px, padding horizontal 10px y vertical 2px.",
       "densityException": {
         "surfaces": [
+          "/programa-general",
+          "/programacion-intermedia",
+          "/programacion-semanal",
+          "/pdc",
           "/plan-compras"
         ],
-        "controlHeight": "28px",
-        "tableRowHeight": "28px",
-        "tableHeaderHeight": "32px",
+        "scopeNote": "Ampliado el 2026-08-03 desde /plan-compras únicamente a toda la familia de tablas desktop, vía el contrato --ds-table-* del design system.",
+        "controlHeight": "24px",
+        "tableRowHeight": "24px",
+        "tableHeaderHeight": "24px (base; crece con height:auto si el texto necesita dos líneas legibles)",
+        "cellFontSize": "13px",
+        "cellPaddingX": "10px",
+        "cellPaddingY": "2px",
+        "rationale": "Actualizado 2026-08-03 (Task 19, corrección de rumbo del dueño del producto): el corte del 2026-07-29 fijaba fila y control en 28px por calco directo de la medición de /plan-compras, no porque 28px fuera el suelo real. La premisa pasó a ser maximizar filas visibles contra el suelo real de accesibilidad — WCAG 2.2 SC 2.5.8 (AA), 24x24px — en vez de quedarse arriba de él por inercia. Las filas que envuelven texto (autoHeight) crecen lo que necesiten: comprimir rompiendo palabras a mitad o truncando en ambigüedad es empeorar, por mucha fila que se gane.",
+        "measured": "25 filas en /plan-compras donde había 17 con la métrica antigua de 42px; con 24px de fila la cuenta sube más (ver reporte del Task 19).",
         "typeScale": {
           "xs": "11px",
           "sm": "12px",
@@ -280,17 +326,18 @@
           "xl": "18px",
           "figure": "22px"
         },
-        "floor": "11px",
+        "floor": "11px — solo para elementos secundarios; el dato principal no baja de 13px.",
         "notRelaxed": [
-          "contraste AA",
+          "contraste AA (4,5:1)",
           "foco visible 4px",
           "orden de foco",
           "teclado",
           "prefers-reduced-motion"
         ],
-        "expiresIf": "la superficie se abre a táctil",
-        "source": "DESIGN.md §5 bis / PRODUCT.md §Accesibilidad",
-        "scaleRef": "extensions.surfaceScales.scales[id=pdc-v2-scale]"
+        "expiresIf": "la superficie se abre a táctil: la excepción caduca y los controles vuelven a 44px antes de exponerla.",
+        "source": "DESIGN.md §5 bis / PRODUCT.md §Accessibility & Inclusion",
+        "scaleRef": "extensions.surfaceScales.scales[id=pdc-v2-scale]",
+        "knownDivergenceInSource": "DESIGN.md §5 («Ojo con la métrica») todavía cita 28/32/13/10 para Plan de Compras, mientras §5 bis —la sección que gobierna la excepción— fue actualizada a 24px el 2026-08-03. Este sidecar registra lo de §5 bis y deja la divergencia a la vista en vez de escogerla en silencio."
       }
     },
     "stateChannels": {
@@ -385,7 +432,7 @@
     },
     "surfaceScales": {
       "note": "Tres escalas tipográficas conviven en el producto y son EXCLUYENTES POR SUPERFICIE: dentro de una misma superficie se usa una sola y no se mezclan. Un literal fuera de la escala que gobierna esa superficie sigue siendo deriva. Declaradas en DESIGN.md §3 «Escalas de superficie reconocidas» (2026-08-20).",
-      "detectorNote": "El detector de Impeccable construye su rampa permitida SOLO desde el frontmatter `typography` de DESIGN.md (los `fontSize` de cada rol y, si existiera, `typography.scale`); no hay lector de tamaños de letra para este sidecar (design-system.mjs tiene addSidecarColors y addSidecarRadii, pero ningún addSidecarFontSizes). Estas tres escalas quedan aquí como registro del sistema, no como supresión: la supresión operativa vive en `.impeccable/config.json` → `detector.ignoreValues` (ya cubre 0.72rem, 0.7rem y 0.62rem).",
+      "detectorNote": "El detector de Impeccable construye su rampa permitida desde el frontmatter `typography` de DESIGN.md: los `fontSize` de cada rol y el bloque `typography.scale`, que desde el 2026-08-20 enumera los doce pasos (denseLabel/denseMeta/denseFloor, adminXs/adminSm/adminBase, pdcXs..pdcXl y pdcCifra). Declararlos en el frontmatter es lo que hace que el sistema los reconozca como contrato; `.impeccable/config.json` → `detector.ignoreValues` ya NO los suprime (no hay entradas para 0.72rem, 0.7rem ni 0.62rem), y así debe quedar: esconder el contrato en la configuración del detector sería mover el sistema a otro archivo. Este bloque es el registro narrativo de las tres escalas; no hay lector de tamaños de letra para el sidecar (design-system.mjs tiene addSidecarColors y addSidecarRadii, pero ningún addSidecarFontSizes).",
       "scales": [
         {
           "id": "dense-table-ramp",
@@ -536,6 +583,13 @@
       "css": ".ds-card { max-width: 22rem; padding: 1rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 1rem; background: rgba(28,36,31,0.92); box-shadow: 0 1px 2px rgba(20,28,24,0.06); font-family: Inter, sans-serif; } .ds-card__title { margin: 0 0 0.5rem; font-family: Montserrat, sans-serif; font-weight: 600; font-size: 1.25rem; line-height: 1.2; color: #f7faf8; } .ds-card__body { margin: 0; font-size: 1rem; line-height: 1.5; color: #c7d4cc; }"
     },
     {
+      "name": "Toolbar",
+      "kind": "custom",
+      "description": "Barra de acciones y chips de filtro en la cabecera de un modulo de tabla (.aia-toolbar). Comparte superficie, borde y sombra xs con las demas superficies, pero su radio es el de PANEL (--ds-radius-panel = --ds-radius-2xl, 1.5rem), no el de tarjeta: la receta subio a la primitiva el 2026-08-20 desde `.pg-page .pg-toolbar` y no se repite en la hoja del modulo, ni acotada con :not(.aia-toolbar) — el gate duplicate-canonical-primitive lo cuenta.",
+      "html": "<div class=\"ds-toolbar\"><div class=\"ds-toolbar__group\"><button class=\"ds-toolbar__btn\" type=\"button\">Nueva actividad</button><span class=\"ds-toolbar__chip\">Semana 34</span><span class=\"ds-toolbar__chip\">Solo bloqueadas</span></div><div class=\"ds-toolbar__group\"><button class=\"ds-toolbar__btn ds-toolbar__btn--ghost\" type=\"button\">Exportar</button></div></div>",
+      "css": ".ds-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem; border: 1px solid rgba(221,239,230,0.22); border-radius: 1.5rem; background: rgba(28,36,31,0.92); box-shadow: 0 1px 2px rgba(20,28,24,0.06); color: #f7faf8; font-family: Inter, sans-serif; } .ds-toolbar__group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; } .ds-toolbar__btn { min-height: 44px; padding: 0.65rem 1rem; border: none; border-radius: 0.75rem; background: #6c9077; color: #141c18; font-family: Inter, sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background 0.18s cubic-bezier(0.4,0,0.2,1), transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s cubic-bezier(0.4,0,0.2,1); } .ds-toolbar__btn:hover { background: #8cb4a1; } .ds-toolbar__btn:focus-visible { outline: 2px solid #2caa9f; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(44,170,159,0.35); } .ds-toolbar__btn--ghost { background: rgba(35,48,41,0.86); color: #f7faf8; border: 1px solid rgba(221,239,230,0.22); } .ds-toolbar__btn--ghost:hover { background: rgba(35,48,41,0.98); } .ds-toolbar__chip { display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0.25rem 0.65rem; border-radius: 9999px; background: #134841; color: #bbdcfb; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }"
+    },
+    {
       "name": "Alert",
       "kind": "custom",
       "refersTo": "alert",
@@ -569,7 +623,7 @@
       "Vocabulario semántico de estados que refuerza el significado (color + texto + data-aia-severity/urgency), nunca solo color.",
       "Elevación mínima con tintes fríos; glass reservado para jerarquía (shell, nav, modales, paneles, cards).",
       "Montserrat para jerarquía de decisión; Inter para todo lo operativo. Sin Roboto.",
-      "Objetivos táctiles de 44px, foco visible de 4px, prefers-reduced-motion respetado.",
+      "Objetivos táctiles de 44px, foco visible de 4px, prefers-reduced-motion respetado. Excepción registrada — superficies de datos densas: ver §Densidad de datos.",
       "Densidad adaptativa: Compacta desde 1200 px, Táctil por debajo."
     ],
     "rules": [
@@ -615,7 +669,7 @@
       },
       {
         "name": "La Regla de la Densidad de Datos",
-        "body": "Una superficie de hoja de cálculo no se comprime encogiendo la letra, se comprime quitando aire: la fila baja a 28px y el encabezado a 32px, pero el cuerpo se queda en 13px y nada baja de 11px. El alto de control de 28px es una excepción registrada al mínimo táctil de 44px, limitada a desktop con ratón y sin equivalente móvil; el contraste AA, el foco visible y el teclado no se relajan nunca.",
+        "body": "Una superficie de hoja de cálculo no se comprime encogiendo la letra, se comprime quitando aire: fila y encabezado bajan a 24px (base) y la celda se queda en 13px, con padding 10px/2px y nada por debajo de 11px. Ese 24px no es un valor arbitrario más compacto que Excel o Figma: es exactamente el mínimo de WCAG 2.2 SC 2.5.8 (AA), 24x24px, sin margen — ningún control dentro de una fila puede medir menos sin incumplir de verdad. Es una excepción registrada al mínimo táctil de 44px, limitada a la familia de tablas desktop operada con ratón y sin equivalente móvil; contraste AA, foco visible, orden de foco, teclado y prefers-reduced-motion no se relajan nunca, y si la superficie se abre a táctil la excepción caduca.",
         "section": "layout"
       },
       {
@@ -653,26 +707,26 @@
       "Usa tokens --ds-*/--aia-* y primitivas aia-*. Cambia primero tokens, componentes o capas canónicas.",
       "Usa Montserrat para títulos, métricas y jerarquía de decisión; Inter para cuerpo, navegación, formularios, tablas y ayudas.",
       "Diseña y valida solo en desktop dark de al menos 1180 px. Viewport canónico 1180x820; secundario 1440x900.",
-      "Mantén WCAG AA, foco visible de 4px, objetivos táctiles de 44px y una alternativa prefers-reduced-motion en toda animación. En superficies de datos densas el alto de control es 28px por excepción registrada (§5 bis); el resto no se relaja.",
+      "Mantén WCAG AA, foco visible de 4px, objetivos táctiles de 44px y una alternativa prefers-reduced-motion en toda animación. En superficies de datos densas el alto de fila/control es 24px — el mínimo real de WCAG 2.2 SC 2.5.8 (AA), por la excepción registrada al mínimo de 44 px que documenta §5 bis; el resto no se relaja.",
       "Reserva el glass para jerarquía (shell, nav, modales, paneles, cards); tablas y grillas van opacas y legibles.",
+      "Envuelve toda grilla en `.aia-grid-shell` / `.aia-table-shell`, consume los doce `--ds-table-*` y pide el peldaño de celda a `getCanonicalCellState()`, nunca escribas la clase `ds-cell-*` a mano.",
       "Expresa el estado con superficie + borde + texto del tema destino; anima solo transform y box-shadow, nunca color/background (DS-023/DS-025).",
       "Registra en exceptions.json cualquier excepción temporal, y mantén manifiesto + pruebas + evidencia juntos.",
-      "No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez. Si tocas una pantalla del Plan de Compras y no tocas su entrada en pdc-app/src/lib/ayuda.ts, el cambio no está terminado. Una ayuda que miente es peor que ninguna, y lo único que lo evita es que la pantalla y su texto viajen en el mismo commit. ayuda.test.ts atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad solo lo puede comprobar quien hace el cambio.",
-      "No repitas en la ayuda un mensaje que la pantalla ya da en el momento. Un aviso que aparece cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él.",
-      "Envuelve toda grilla en `.aia-grid-shell` / `.aia-table-shell`, consume los doce `--ds-table-*` y pide el peldaño de celda a `getCanonicalCellState()`, nunca escribas la clase `ds-cell-*` a mano."
+      "No cierres una pantalla sin su ayuda, y cambiarla cuenta como cerrarla otra vez. Si tocas una pantalla del Plan de Compras y no tocas su entrada en pdc-app/src/lib/ayuda.ts, el cambio no está terminado. Una ayuda que miente es peor que ninguna, y lo único que lo evita es que la pantalla y su texto viajen en el mismo commit. pdc-app/src/lib/ayuda.test.ts atrapa la pantalla sin ayuda y la jerga; que el texto siga siendo verdad solo lo puede comprobar quien hace el cambio.",
+      "No repitas en la ayuda un mensaje que la pantalla ya da en el momento. Un aviso que aparece cuando pasa la cosa llega mejor que el mismo texto detrás de un botón, y dos copias del mismo aviso envejecen por separado. La ayuda lo señala y dice qué hacer con él."
     ],
     "donts": [
       "Nunca introduzcas hex sueltos, estilos inline, bloques <style>, gradientes decorativos, skins de vendors ni nuevas CDN en módulos migrados.",
       "Nunca hagas que la interfaz se vea decorativa, saturada de alertas o que exija lectura innecesaria antes de actuar (anti-referencia de PRODUCT.md).",
       "Nunca uses el color como único canal de significado, ni acentos a plena saturación en estados inactivos.",
-      "Nunca trabajes, generes cambios, pruebas o evidencia para mobile o tablet: fuera del alcance visual vigente. linen quedó retirado del producto en F0 del goal dark-mode-todos-los-modulos; dark es el único tema y no existe conmutador.",
+      "Ojo con el tema claro: linen quedó retirado del producto en F0 del goal dark-mode-todos-los-modulos; hoy dark es el único tema y no existe conmutador. Ya no está prohibido trabajar en claro, pero hacerlo es reconstruirlo desde los tokens, no reactivar una variante viva.",
       "Nunca uses clamp() fluido para tamaños de texto de UI, ni fragmentes una palabra en chips o estados.",
-      "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, Plan de Compras (v2) y el módulo de tema tienen presupuesto cero.",
-      "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",
-      "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie.",
       "Nunca pintes en pantalla las variantes `--ds-color-state-*-light`: son reserva para impresos y XLSX. La escala de pantalla está invertida a oscuro.",
+      "Nunca trates la paleta de estado como una lista plana de cuatro tintes ni repitas matiz entre dos estados de un mismo módulo: son dos canales —nivel en el acento, matiz en el fondo— y el matiz es el único eje que los separa. Tampoco derives pasos de intensidad de un ancla: la paleta es nominal, se midió, y los pasos resultan indistinguibles.",
       "Nunca ancles un color propio en `--ds-cell-state-*` ni instales un skin de vendor para una grilla: la escala deriva de `--ds-color-state-*` (salvo `bloqueado`) y cada librería entra por su adaptador en `layer(vendor)`.",
-      "Nunca trates la paleta de estado como una lista plana de cuatro tintes ni repitas matiz entre dos estados de un mismo módulo: son dos canales —nivel en el acento, matiz en el fondo— y el matiz es el único eje que los separa. Tampoco derives pasos de intensidad de un ancla: la paleta es nominal."
+      "Nunca uses Roboto ni radios hardcodeados: Login, Projects, Programa General, Plan de Compras y el módulo de tema tienen presupuesto cero para hex sueltos, inline styles, `<style>`, Roboto y radios hardcodeados. (PDC, Contratos y Listado de Actividades salieron de esta lista el 2026-08-04 al eliminarse el PDC v1.)",
+      "Nunca regeneres snapshots ni baselines para forzar verde: requieren decisión visual aprobada con hashes before/after.",
+      "Nunca modifiques Programa General ni sus archivos protegidos desde la migración de otra superficie."
     ]
   }
 }

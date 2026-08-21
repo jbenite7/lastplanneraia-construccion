@@ -534,6 +534,25 @@ spacing o estado local.
   tarjeta no es un control y WCAG 1.4.11 no la gobierna (ver «El par de bordes»).
 - **Internal Padding:** `--ds-card-padding` (`clamp(0.875rem, 1.8vw, 1.25rem)`).
 
+### Toolbars — la barra de acciones es panel, no tarjeta
+
+`.aia-toolbar` es la superficie que envuelve las acciones y los chips de filtro en la cabecera de
+un módulo de tabla. Comparte fondo, borde y sombra con las demás superficies, pero **su radio es el
+de PANEL** (`--ds-radius-panel` = `--ds-radius-2xl`, `1.5rem`), no el de tarjeta: una barra de
+herramientas de página es una superficie de panel, y heredar el radio de `.aia-card` la hacía
+parecer otra cosa.
+
+**Por qué está escrito aquí, y no solo en el CSS** (2026-08-20, defecto reportado por Felipe): la
+receta vivía duplicada en `.pg-page .pg-toolbar`, y Programa General era el único módulo que se veía
+enmarcado — Intermedia y Semanal ni siquiera usaban la primitiva, así que su barra salía suelta. El
+único módulo correcto lo lograba saltándose el sistema. La receta subió a la primitiva y las tres
+vistas la adoptaron; sin declararlo aquí, el próximo módulo vuelve a copiarla en local.
+
+**No la repitas en la hoja del módulo.** Ni siquiera acotada con `:not(.aia-toolbar)` «por si
+acaso»: eso cuenta como duplicar la primitiva y el gate lo mide (`duplicate-canonical-primitive`
+subió de 102 a 103 al intentarlo). En la hoja del módulo va solo lo propio — dirección, gaps,
+padding.
+
 ### El par de bordes — control contra separador
 
 `--ds-active-border` **significa dos cosas distintas según el elemento**, y no hace falta que elijas:
