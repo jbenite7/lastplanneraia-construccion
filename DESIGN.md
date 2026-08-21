@@ -75,6 +75,26 @@ colors:
   cell-bloqueado-bg: "oklch(0.35 0.05 260)"
   cell-bloqueado-fg: "oklch(0.85 0.03 260)"
 typography:
+  # La rampa enumerada que el detector consume, ademas de los roles de abajo.
+  # Aqui viven los pasos que los roles no nombran: la rampa densa de la familia
+  # de tablas (consagrada 2026-08-20 con aprobacion de Felipe) y las dos escalas
+  # de superficie declaradas en la seccion 3 -Admin y Plan de Compras-, que no
+  # son deriva sino decisiones medidas. Declararlas AQUI es lo que hace que el
+  # sistema las reconozca; silenciarlas en la configuracion del detector seria
+  # esconder el contrato en otro archivo.
+  scale:
+    denseLabel: "0.72rem"
+    denseMeta: "0.70rem"
+    denseFloor: "0.62rem"
+    adminXs: "0.75rem"
+    adminSm: "0.875rem"
+    adminBase: "1rem"
+    pdcXs: "11px"
+    pdcSm: "12px"
+    pdcMd: "13px"
+    pdcLg: "15px"
+    pdcXl: "18px"
+    pdcCifra: "22px"
   display:
     fontFamily: "Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     fontSize: "1.875rem"
@@ -415,6 +435,50 @@ OFL (Inter v20, Montserrat v31; DS-007).
 
 La escala es **rem fija**, no fluida: `--ds-type-size-xs`…`3xl` (0.75 → 1.875rem).
 
+### Rampa densa de tablas (consagrada 2026-08-20)
+
+La familia de tablas desktop opera desde hace tiempo tres pasos por debajo de
+`--ds-type-size-xs` que este documento no declaraba y el detector marcaba en cada
+edición. Se **consagran** como rampa densa oficial — son la realidad medida de la
+excepción de densidad (piso duro 11px de PRODUCT.md):
+
+- **Dense-body** `0.8125rem` (13px): **el dato principal de la celda**
+  (`--ds-table-cell-font-size`). Es el paso más usado de toda la familia de tablas y
+  llevaba años en el contrato; faltaba aquí por un olvido al consagrar la rampa el
+  2026-08-20, y por eso el detector lo leía como deriva.
+- **Dense-header** `0.75rem` (12px): **la cabecera de tabla**
+  (`--ds-table-header-font-size`), un paso por debajo del dato. Mismo caso que el anterior.
+- **Dense-label** `0.72rem` (~11.5px): chip de estado en celda densa (PS), texto del
+  tooltip de estado (`--ds-chip-font-size`).
+- **Dense-meta** `0.70rem` (~11.2px): metadatos de leyenda y cabeceras auxiliares.
+- **Dense-floor** `0.62rem` (~9.9px): **solo** elementos secundarios no textuales-clave
+  ya existentes (contadores del drawer); ningún dato principal baja aquí. Está bajo el
+  piso de 11px: no se le suman usos nuevos — se hereda, no se imita.
+
+Pendiente declarado: tokenizarlos (`--ds-type-dense-*`) cuando un frente tipográfico
+recorra sus usos; hoy se documentan para que el sistema y el detector digan lo mismo.
+
+### Escalas de superficie reconocidas (declaradas 2026-08-20)
+
+**La rampa densa no es la escala universal de la app.** Manda en la familia de tablas
+de obra, no fuera de ella. El censo del frente de estados encontró dos superficies con
+escala propia y, al medirlas, resultaron decisiones justificadas que el sistema nunca
+había declarado — se declaran aquí para que dejen de leerse como deriva y para que
+nadie las "corrija" por error:
+
+- **Panel Admin** (`admin/public/css/**`): consume `--ds-type-size-xs`/`sm` del design
+  system, que resuelven a `0.75` / `0.875` / `1rem`. Es un panel administrativo de uso
+  ocasional, no una tabla densa de obra: su densidad no tiene por qué ser la de la
+  familia de tablas. Admin **no es una isla** — ya consume tokens de color, espaciado y
+  z-index del sistema; lo que difiere es únicamente la escala tipográfica.
+- **Plan de Compras v2** (`pdc-app/src/styles.css`): declara `--pdc-fs-xs..xl` en px
+  (`11, 12, 13, 15, 18`) y `--pdc-fs-cifra` `22px`, con justificación fechada del
+  2026-07-29 (densidad tipo hoja de cálculo) y medición propia en su SPA.
+
+Las tres escalas —rampa densa, escala de Admin, escala del PDC— son **excluyentes por
+superficie**: dentro de una misma superficie se usa una sola y no se mezclan. Un
+literal fuera de la escala que gobierna esa superficie sigue siendo deriva.
+
 ### Named Rules
 
 **La Regla de Escala Fija.** Los tamaños son rem fijos, nunca `clamp()` fluido en UI
@@ -475,6 +539,25 @@ spacing o estado local.
 - **Border:** `1px` del borde activo (`--ds-active-border`). Aquí resuelve al **separador**: una
   tarjeta no es un control y WCAG 1.4.11 no la gobierna (ver «El par de bordes»).
 - **Internal Padding:** `--ds-card-padding` (`clamp(0.875rem, 1.8vw, 1.25rem)`).
+
+### Toolbars — la barra de acciones es panel, no tarjeta
+
+`.aia-toolbar` es la superficie que envuelve las acciones y los chips de filtro en la cabecera de
+un módulo de tabla. Comparte fondo, borde y sombra con las demás superficies, pero **su radio es el
+de PANEL** (`--ds-radius-panel` = `--ds-radius-2xl`, `1.5rem`), no el de tarjeta: una barra de
+herramientas de página es una superficie de panel, y heredar el radio de `.aia-card` la hacía
+parecer otra cosa.
+
+**Por qué está escrito aquí, y no solo en el CSS** (2026-08-20, defecto reportado por Felipe): la
+receta vivía duplicada en `.pg-page .pg-toolbar`, y Programa General era el único módulo que se veía
+enmarcado — Intermedia y Semanal ni siquiera usaban la primitiva, así que su barra salía suelta. El
+único módulo correcto lo lograba saltándose el sistema. La receta subió a la primitiva y las tres
+vistas la adoptaron; sin declararlo aquí, el próximo módulo vuelve a copiarla en local.
+
+**No la repitas en la hoja del módulo.** Ni siquiera acotada con `:not(.aia-toolbar)` «por si
+acaso»: eso cuenta como duplicar la primitiva y el gate lo mide (`duplicate-canonical-primitive`
+subió de 102 a 103 al intentarlo). En la hoja del módulo va solo lo propio — dirección, gaps,
+padding.
 
 ### El par de bordes — control contra separador
 
@@ -625,6 +708,37 @@ estático daba verde sobre una tabla sin filas.
 ### States & Feedback
 - **`.aia-alert`:** mensaje contextual sobre superficie elevada, radio de panel.
 - **`.aia-empty`:** estado vacío que **enseña la interfaz** (borde dashed, centrado), no un "nada aquí".
+
+### Replanteo de estados 2026-08-20 — chip sólido, fila sutil, filete, tooltip
+
+**Deroga, donde contradiga, lo dicho arriba en «Estados semánticos» y «Chips».**
+Decisión de Felipe (2026-08-20), auditada WCAG AA + manual AIA; contrato ejecutable en
+`docs/design-system/state-semantics.json` (`hues[].solid/solidText/row`, `brandAudit`)
+con guard `tests/design-system/state-solid-contract.test.mjs`.
+
+- **El chip sólido es el portador fuerte de identidad**: fondo
+  `--ds-state-solid-<hue>` con texto oscuro de su familia
+  (`--ds-state-solid-<hue>-text`), AA ≥4.5:1 garantizado por guard. Naranja, ámbar,
+  violeta y teal son los hex del manual AIA; el rojo es custom (`#e15a52`) porque el
+  del manual falla AA; el azul es desviación registrada (AIA no tiene azul).
+- **La fila baja a tinte sutil** `--ds-state-row-<hue>` (identidad de apoyo, texto
+  `--ds-active-text-primary`). Los `--ds-state-tint-*` viejos quedan para el PDC y no
+  se usan en filas de estado nuevas.
+- **La gravedad vive completa en el filete** (`severity-rail`): urgente 6px
+  `#ff7a6e`, atención 4px `#ffd23f`, y el marcador positivo escaso `ready` 3px
+  `#7ee2a8` solo en lo activamente listo (`rail: 'ready'` declarado por estado, nunca
+  derivado de nivel+matiz). `Controlado` sigue sin barra: la ausencia es la señal. El
+  chip **ya no codifica nivel** — la excepción crítica del 2026-08-11 se retiró.
+- **Todo chip de estado lleva tooltip explicativo** (`state-tooltip.css` +
+  `public/js/design-system/state-tooltip.js`): hover **y** foco muestran el porqué
+  (mismas frases que la Guía Operativa), Escape lo descarta, y se voltea
+  vertical/horizontal cuando no cabe (WCAG 1.4.13). En PS/PI el clic conserva el
+  drawer (móvil/tablet); en PG el chip es focuseable con nombre accesible
+  (`role="note"` + `aria-label` con etiqueta y porqué) y anillo `--ds-shadow-focus`.
+  Bajo 1180px el área táctil del chip-botón sube a 44px sin crecer visualmente.
+- En celda densa de PS el chip corre a `0.72rem`/600 en una línea con elipsis
+  (excepción declarada a la Regla de Palabra Íntegra: el label entero vive en
+  tooltip, `aria-label` y drawer).
 
 ### Arquitectura de consumo (contrato)
 

@@ -283,6 +283,16 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `replanteo-coloreado-estados` cerrado: el chip solido pasa a portar la identidad
+  (paleta auditada WCAG AA + manual AIA), el filete queda homogeneo en los tres modulos con el
+  marcador `ready`, y **nada se recorta en silencio** — tres olas en workflows dependientes
+  erradicaron elipsis, `overflow-x: hidden` irreversible, palabras partidas y ~20 tamanos fuera de
+  rampa. Efecto no previsto: Intermedia muestra sus 9 filas donde antes cabian 5. Censo de las 22
+  tablas de la app en `goals/replanteo-coloreado-estados/censo-tablas.md`.
+  **Pendientes que dejo, cada uno frente propio:** cabeceras de grilla desalineadas (PI 0.75rem vs
+  PS 0.72rem, decision de producto); `overflow-wrap: anywhere` en el chip de PI; `1.75rem` del boton
+  de cierre de modal en PS; siete `console.log('[PI-DEBUG]')` tras flag; y el resto del censo
+  (Admin y vistas HTML) fuera de estas olas por alcance.
 - [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
   niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
   `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en

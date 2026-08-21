@@ -41,6 +41,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -527,6 +530,22 @@
     header: 'Capítulo',
   };
 
+  // Nombres CORTOS oficiales, proyeccion literal del campo `displayShort` del
+  // contrato (docs/design-system/state-semantics.json, modulo
+  // `programacion-intermedia`). No es una segunda lista de etiquetas: el nombre
+  // COMPLETO vive una sola vez, en `stateLabels`, y aqui solo estan los estados
+  // cuyo nombre completo no cabe en la celda de una linea. Un estado sin
+  // entrada aqui pinta su nombre completo.
+  //
+  // Por que existe (decision de Felipe, 2026-08-20): la celda no recorta nunca.
+  // El texto cabe, envuelve entre palabras, o se acorta con un nombre corto
+  // declarado en el contrato — nunca con elipsis, que es recorte silencioso
+  // porque el usuario no se entera de que le falta texto. El corto se pinta; el
+  // completo sigue viajando en el tooltip, el aria-label y el drawer.
+  //
+  // Guard de que estos nombres caben de verdad (medido con la fuente real, no
+  // declarado): tests/browser/state-label-budget.mjs.
+
   // Presentacion de cada estado, con las claves de
   // docs/design-system/state-semantics.json (modulo `programacion-intermedia`).
   // El chip declara QUE estado es -matiz para la identidad, severity+urgency
@@ -563,11 +582,14 @@
     'blocked-overdue-critical': { level: 'urgent', hue: 'red' },
     'blocked-overdue': { level: 'urgent', hue: 'orange' },
     'blocked-due': { level: 'urgent', hue: 'violet' },
-    'alert-1-week': { level: 'attention', hue: 'amber' },
-    'alert-2-3-weeks': { level: 'attention', hue: 'teal' },
-    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral' },
-    'execution-blocked': { level: 'urgent', hue: 'blue' },
-    'liberated-control': { level: 'healthy', hue: 'green' },
+    'alert-1-week': { level: 'attention', hue: 'amber', short: 'Urgente' },
+    'alert-2-3-weeks': { level: 'attention', hue: 'teal', short: 'En riesgo' },
+    'alert-4-6-weeks': { level: 'healthy', hue: 'neutral', short: 'Pendiente' },
+    'execution-blocked': { level: 'urgent', hue: 'blue', short: 'En ejecución' },
+    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
+    // verde fino SOLO en lo activamente listo. Se declara por estado y no se
+    // deriva de nivel+matiz: hay estados green+healthy que no lo llevan.
+    'liberated-control': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por comprometer' },
     neutral: { level: 'neutral', hue: 'neutral' },
   };
 
@@ -906,7 +928,8 @@
     // El nivel viaja como atributo y no como clase: es lo que consume la
     // primitiva compartida del filete (severity-rail.css), y una clase
     // obligaria a cada modulo a inventar su propio nombre para el mismo eje.
-    var rowSeverity = isHeader ? null : ((statePresentation[resolvedState] || {}).level || 'neutral');
+    var presentacionFila = isHeader ? null : (statePresentation[resolvedState] || {});
+    var rowSeverity = isHeader ? null : (presentacionFila.rail || presentacionFila.level || 'neutral');
 
     return {
       state: resolvedState,
@@ -1291,6 +1314,14 @@
     return stateLabels[resolvedState] || 'Control';
   }
 
+  // Nombre que se PINTA en el chip: el corto oficial si el contrato lo declara,
+  // si no el completo. Solo la celda usa esto; tooltip, aria-label y drawer
+  // siguen con el nombre completo, que es donde no cuesta ancho.
+  function getStateShortLabel(state) {
+    var presentacion = statePresentation[state];
+    return (presentacion && presentacion.short) || getStateLabel(null, state);
+  }
+
   function getReadinessAction(prop, value) {
     var config = readinessActionMatrix[prop];
     if (!config) {
@@ -1377,13 +1408,38 @@
     return html;
   }
 
-  function renderOperationalStateCell(view) {
-    var pills = view.actionItems.length > 0 ? '<span class="ops-state-pills">' + renderStatePills(view.actionItems, 2) + '</span>' : '';
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20).
+  // Mismas frases que la Guia Operativa para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    'blocked-overdue-critical': 'La restriccion compartida vencio con el inicio ya en riesgo critico. Atender ahora.',
+    'blocked-overdue': 'El inicio planificado ya vencio sin habilitacion completa. Atender ahora.',
+    'blocked-due': 'El inicio llega y las condiciones de habilitacion no estan cerradas. Atender ahora.',
+    'execution-blocked': 'Hay avance reportado sobre restricciones sin liberar: el dano se esta produciendo. Atender ahora.',
+    'alert-1-week': 'Inicia en 1 semana y su alistamiento aun no cierra. Revisar antes del siguiente hito.',
+    'alert-2-3-weeks': 'Inicia en 2 a 3 semanas y aun requiere preparacion. Revisar antes del siguiente hito.',
+    'alert-4-6-weeks': 'Inicia en 4 a 6 semanas: seguimiento temprano del lookahead.',
+    'liberated-control': 'Cumple la matriz de habilitacion para pasar a Programacion Semanal.',
+    neutral: 'Fila sin clasificacion operativa.',
+  };
 
-    return '<button type="button" class="ops-state-zoom" aria-label="Ver detalle operativo">'
-      + '<span class="ops-state-topline"><span class="ops-state-chip"' + stateChipAttrs(view.state) + '>'
-      + escapeHtml(view.label) + '</span></span>'
-      + pills
+  function renderOperationalStateCell(view) {
+    // Chip sencillo + tooltip (Felipe, 2026-08-20): las pildoras de acciones
+    // salen de la celda y pasan al tooltip como texto; el clic conserva el
+    // drawer con el detalle completo. Sufijo de pendientes solo cuando los hay.
+    var pendientes = view.actionItems.length;
+    // El chip pinta el nombre corto oficial cuando el contrato lo declara: asi
+    // cabe entero en la celda y no hace falta recortar con elipsis. El sufijo
+    // de pendientes se conserva porque es dato, no adorno.
+    var etiquetaChip = getStateShortLabel(view.state) + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
+    var listaAcciones = view.actionItems.slice(0, 3).map(function (item) { return item.text || item.label; }).join('; ');
+    var tipTexto = porQue + (pendientes > 0
+      ? ' Pendientes (' + pendientes + '): ' + listaAcciones + (pendientes > 3 ? '\u2026' : '.')
+      : ' Sin pendientes.');
+    return '<button type="button" class="ops-state-zoom ops-state-chip"' + stateChipAttrs(view.state)
+      + ' aria-label="' + escapeHtml(view.label + '. ' + tipTexto) + ' Ver detalle operativo">'
+      + '<span class="ops-chip-label">' + escapeHtml(etiquetaChip) + '</span>'
+      + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(tipTexto) + '</span></span>'
       + '</button>';
   }
 
@@ -2341,9 +2397,13 @@
           actividad = 'Actividad sin nombre';
         }
 
-        if (actividad.length > 160) {
-          actividad = actividad.substring(0, 157) + '...';
-        }
+        // Aqui habia un recorte por conteo de caracteres (substring(0, 157) + '...'):
+        // cortaba dentro de una palabra y no dejaba ni tooltip ni indicio de que faltaba texto,
+        // asi que el usuario no podia saber que estaba leyendo un nombre incompleto.
+        // Se retiro y se pinta el nombre completo: esta tabla es la previsualizacion de un modal,
+        // no una grilla densa, y ahi la altura de fila no es un bien escaso — que la celda envuelva
+        // entre palabras (ver .pi-shared-activity-cell en programacion-intermedia.css) no cuesta
+        // nada y conserva el texto entero.
 
         var rowSubCurrent = String(item.sub_contratista_actual == null ? '' : item.sub_contratista_actual).trim();
         var rowRespCurrent = String(item.responsable_aia_actual == null ? '' : item.responsable_aia_actual).trim();
@@ -4038,6 +4098,46 @@
       return;
     }
 
+    // Ola 4 (2026-08-20). El alto de fila estaba escrito a mano aqui:
+    // `rowHeights: 56`, mas del doble de lo que fija el contrato del design
+    // system (--ds-table-row-h = 1.5rem = 24px, public/css/tokens.css:662).
+    // Medido en pantalla antes del cambio, 1180x820 dark, /programacion-intermedia:
+    // celda de 55px, cabecera de 71px, 153 celdas renderizadas y CERO con texto
+    // cortado — es decir, sobraba alto, no faltaba.
+    //
+    // POR QUE SIGUE SIENDO `rowHeights` Y NO `autoRowSize`, y por que bajar el
+    // numero no recorta nada: Handsontable aplica `rowHeights` como `height` del
+    // `tr`, y en layout de tabla `height` es un MINIMO, no un maximo — la fila
+    // crece si el contenido lo pide. Esta comprobado en la pantalla hermana
+    // Programa General, donde con el suelo puesto las filas reales median 44, 67,
+    // 87, 108, 151, 173 y 154px segun lo que envolvia cada una. Bajar el suelo
+    // aprieta las filas de una linea, que son la mayoria, y deja crecer a las que
+    // envuelven. Encender `autoRowSize` cambiaria el mecanismo entero y, con
+    // `renderAllRows: false`, obligaria a medir fuera de pantalla.
+    //
+    // El token se lee en tiempo de ejecucion porque Handsontable exige un numero
+    // y el contrato lo declara en rem: se resuelve midiendo una sonda con
+    // `height: var(--ds-table-row-h)`, asi cualquier unidad futura sigue sirviendo.
+    // Misma receta que programa_general/hot.js, deliberadamente: son dos IIFE sin
+    // utilidad compartida, y el numero magico duplicado seria peor que la funcion.
+    function resolverAltoFilaContrato() {
+      var RESPALDO_PX = 24; // el valor del contrato hoy, por si el token no resuelve
+      var sonda;
+      var alto;
+      try {
+        sonda = document.createElement('div');
+        sonda.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;padding:0;border:0;height:var(--ds-table-row-h)';
+        (container || document.body).appendChild(sonda);
+        alto = Math.round(sonda.getBoundingClientRect().height);
+        sonda.parentNode.removeChild(sonda);
+        return alto > 0 ? alto : RESPALDO_PX;
+      } catch (_errSonda) {
+        return RESPALDO_PX;
+      }
+    }
+
+    var altoFilaContrato = resolverAltoFilaContrato();
+
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
@@ -4052,12 +4152,24 @@
       navigableHeaders: true,
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
-      stretchH: 'none',
+      // `last` y no `none` (2026-08-20, defecto reportado por Felipe: «los border
+      // radius de las esquinas de las tablas no son homogeneos en todas sus
+      // direcciones»). Medido antes de tocar: los cuatro radios del contenedor
+      // SI eran iguales (16px); lo que fallaba es que la tabla no llenaba su
+      // contenedor a lo ancho — en Programa General 1074px dentro de 1100 —, y
+      // como la cabecera lleva fondo propio, el sobrante dejaba un escalon en la
+      // esquina superior derecha mientras abajo el contenido si llegaba al
+      // borde. El ojo lo lee como radios distintos segun la direccion.
+      // `last` hace que la ULTIMA columna absorba el sobrante y respeta los
+      // anchos medidos a mano de las demas, que estan documentados con su
+      // medicion en los arrays de arriba. Si la tabla ya desborda, no hace nada.
+      stretchH: 'last',
       autoColumnSize: false,
       manualColumnResize: false,
       manualRowResize: true,
       autoRowSize: false,
-      rowHeights: 56,
+      // Suelo, no techo: ver `resolverAltoFilaContrato()` arriba.
+      rowHeights: altoFilaContrato,
       renderAllRows: false,
       colWidths: function (index) {
         var container = document.getElementById('hot-container');

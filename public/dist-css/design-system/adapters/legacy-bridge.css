@@ -56,36 +56,36 @@
     color: var(--ds-color-state-critical-text);
   }
   :where([data-aia-hue="neutral"]) {
-    background: var(--ds-state-tint-neutral);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-neutral);
+    color: var(--ds-state-solid-neutral-text);
   }
   :where([data-aia-hue="teal"]) {
-    background: var(--ds-state-tint-teal);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-teal);
+    color: var(--ds-state-solid-teal-text);
   }
   :where([data-aia-hue="blue"]) {
-    background: var(--ds-state-tint-blue);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-blue);
+    color: var(--ds-state-solid-blue-text);
   }
   :where([data-aia-hue="violet"]) {
-    background: var(--ds-state-tint-violet);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-violet);
+    color: var(--ds-state-solid-violet-text);
   }
   :where([data-aia-hue="green"]) {
-    background: var(--ds-state-tint-green);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-green);
+    color: var(--ds-state-solid-green-text);
   }
   :where([data-aia-hue="amber"]) {
-    background: var(--ds-state-tint-amber);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-amber);
+    color: var(--ds-state-solid-amber-text);
   }
   :where([data-aia-hue="orange"]) {
-    background: var(--ds-state-tint-orange);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-orange);
+    color: var(--ds-state-solid-orange-text);
   }
   :where([data-aia-hue="red"]) {
-    background: var(--ds-state-tint-red);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-red);
+    color: var(--ds-state-solid-red-text);
   }
   :where(.aia-pagination a[aria-current="page"]) {
     color: var(--ds-active-action-text);

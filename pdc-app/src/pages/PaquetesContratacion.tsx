@@ -19,6 +19,7 @@ import PaquetesAsistente from './PaquetesAsistente'
 import { contarInsumos, filtraPorTexto, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
 import { Selector } from '../components/Selector'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 ModuleRegistry.registerModules([
@@ -522,6 +523,7 @@ export default function PaquetesContratacion() {
 
       <BarraFiltros chips={chipsFiltros} onQuitar={quitarFiltro} onLimpiar={limpiarFiltros} testid="pdc-paq-barra-filtros" />
 
+      <AvisoColumnasOcultas columnas={colsVisibles} testid="pdc-paq-cols-ocultas" />
       <div data-testid="pdc-paq-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<InsumoPaquete>
           theme={pdcTheme}

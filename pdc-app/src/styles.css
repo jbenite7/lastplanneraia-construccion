@@ -308,6 +308,22 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-chip-quitar { opacity: 0.7; }
 .pdc-barra-filtros-limpiar { background: none; border: none; color: var(--pdc-ink); text-decoration: underline; cursor: pointer; }
 
+/* Aviso de columnas escondidas por falta de hueco. Discreto a proposito: es una nota al pie de la
+   tabla, no una alerta — lo que se esconde es siempre lo prescindible de esa pantalla. Mismo peso
+   visual que la barra de filtros, con la que suele compartir renglon. */
+.pdc-cols-ocultas { margin: 4px 0 6px; font-size: var(--pdc-fs-sm); color: var(--pdc-ink-muted); }
+.pdc-cols-ocultas > summary { cursor: pointer; list-style: revert; width: fit-content; }
+.pdc-cols-ocultas > summary:focus-visible { outline: 2px solid var(--pdc-focus); outline-offset: 2px; border-radius: var(--pdc-radio-control); }
+.pdc-cols-ocultas-lista {
+  list-style: none; margin: 6px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 4px 10px;
+  color: var(--pdc-ink);
+  /* Un nombre de columna puede ser largo pero nunca es una cadena continua: parte solo si no cabe
+     ni sola en una linea (receta del repo para contenido de tabla). */
+  word-break: normal; overflow-wrap: break-word; hyphens: none;
+}
+.pdc-cols-ocultas-pista { margin: 4px 0 0; }
+
 /* Embudo de la cabecera: el mismo lenguaje que el changeType de Programa General — pequeño y
    sutil, no un control de 32 px colgando de una cabecera de 32 (el defecto C-48 de PS). */
 .pdc-grid .ag-header-icon { color: var(--pdc-ink-muted); }
@@ -535,7 +551,11 @@ body:has(.pdc-shell) > #root { flex: 1 1 auto; min-height: 0; display: flex; }
 .pdc-tt-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .pdc-tt-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
 .pdc-tt-cod { font-family: ui-monospace, monospace; color: var(--pdc-accent-texto); white-space: nowrap; }
-.pdc-tt-act { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* El nombre de actividad ENVUELVE, no se recorta. Recortaba con elipsis y sin `title`, asi que el
+   nombre completo no llegaba por ningun camino: dos actividades del mismo capitulo se veian
+   identicas. El tooltip tiene 440 px de ancho y la altura no es escasa ahi, asi que envolver no
+   cuesta nada. `break-word` y no `anywhere`: son frases con espacios, no codigos. */
+.pdc-tt-act { min-width: 0; word-break: normal; overflow-wrap: break-word; hyphens: none; }
 .pdc-tt-cant { color: var(--pdc-ink-muted); white-space: nowrap; }
 .pdc-tt-mas { margin-top: 6px; color: var(--pdc-ink-muted); font-style: italic; }
 

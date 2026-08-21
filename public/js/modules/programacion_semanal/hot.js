@@ -26,6 +26,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -227,18 +230,46 @@
   // de ambar a VIOLETA y «Sin Calificar» de ambar a GRIS. Cada uno compartia
   // ambar con otro estado de SU MISMA fase, asi que los dos pintaban el mismo
   // fondo y dos filtros distintos de la leyenda eran indistinguibles.
+  //
+  // `short` es el NOMBRE CORTO OFICIAL, copiado del campo `displayShort` del
+  // contrato (docs/design-system/state-semantics.json, modulo
+  // «programacion-semanal»). Va aqui y en ningun otro sitio del modulo porque
+  // dos listas paralelas de nombres se desincronizan sin que nadie lo note: la
+  // celda pinta lo que diga esta tabla y nada mas. Solo lo declaran los estados
+  // cuyo nombre completo no cabe en el presupuesto de 112 px; los demas pintan
+  // su `label` tal cual. El nombre completo NUNCA se pierde: sigue viajando en
+  // el aria-label, en el tooltip y en el drawer.
   var statePresentation = {
-    'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red' },
-    'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange' },
-    'prog-condiciones-pendientes': { level: 'attention', hue: 'amber' },
+    'prog-bloqueo-critico-sin-compromiso': { level: 'urgent', hue: 'red', short: 'RC restringida' },
+    'prog-ejecucion-con-restricciones': { level: 'urgent', hue: 'orange', short: 'Con restricciones' },
+    'prog-condiciones-pendientes': { level: 'attention', hue: 'amber', short: 'Condiciones' },
     'prog-sin-compromiso': { level: 'attention', hue: 'violet' },
-    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green' },
+    // rail:'ready' — marcador positivo escaso (Felipe, 2026-08-20): filete
+    // verde fino SOLO en lo activamente listo, declarado por estado.
+    'prog-lista-para-confirmar': { level: 'healthy', hue: 'green', rail: 'ready', short: 'Por confirmar' },
     'cal-incumplida-critica': { level: 'urgent', hue: 'red' },
     'cal-incumplida': { level: 'attention', hue: 'amber' },
     'cal-sin-calificar': { level: 'attention', hue: 'neutral' },
-    'cal-cumplida-control': { level: 'healthy', hue: 'green' },
-    'cal-tnp': { level: 'neutral', hue: 'blue' },
+    'cal-cumplida-control': { level: 'healthy', hue: 'green', rail: 'ready' },
+    'cal-tnp': { level: 'neutral', hue: 'blue', short: 'TNP' },
     neutral: { level: 'neutral', hue: 'neutral' },
+  };
+
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20):
+  // el chip dice QUE, el tooltip explica POR QUE, el clic abre el detalle.
+  // Mismas frases que la leyenda para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    'prog-bloqueo-critico-sin-compromiso': 'Restricciones duras sin liberar y sin compromiso registrado. Atender ahora.',
+    'prog-ejecucion-con-restricciones': 'Tiene ejecucion reportada con restricciones duras aun sin liberar. Atender ahora.',
+    'prog-condiciones-pendientes': 'Faltan condiciones de habilitacion por cerrar antes de comprometer. Revisar antes del siguiente hito.',
+    'prog-sin-compromiso': 'Habilitada pero sin cantidad comprometida para la semana. Revisar antes del siguiente hito.',
+    'prog-lista-para-confirmar': 'Cumple la matriz de habilitacion y tiene compromiso: lista para confirmar.',
+    'cal-incumplida-critica': 'Compromiso incumplido con restricciones duras de por medio. Atender ahora.',
+    'cal-incumplida': 'El ejecutado quedo por debajo del compromiso de la semana. Revisar causa de no cumplimiento.',
+    'cal-sin-calificar': 'La semana cerro y esta actividad aun no tiene calificacion registrada.',
+    'cal-cumplida-control': 'Compromiso cumplido: bajo control segun el ciclo normal.',
+    'cal-tnp': 'Trabajo no planificado: se ejecuto sin compromiso previo de la semana.',
+    neutral: 'Fila sin clasificacion operativa para esta fase.',
   };
 
   function stateChipAttrs(state) {
@@ -1051,14 +1082,29 @@
     var stateLabel = view.label || 'Control';
     var aria = view.actions.length ? (stateLabel + '. ' + summary.countAriaText + '. Primer foco: ' + summary.focus) : stateLabel;
 
-    return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + '" aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
-      + '<span class="ops-state-topline">'
-      + '<span class="ops-state-dot" aria-hidden="true"></span>'
-      + '<span class="ops-state-chip"' + stateChipAttrs(view.state) + '>' + escapeHtml(stateLabel) + '</span>'
-      + '</span>'
-      + '<span class="ops-state-summary">'
-      + '<span class="ops-state-count is-' + escapeHtml(summary.status) + '">' + escapeHtml(summary.countText) + '</span>'
-      + '</span>'
+    // Chip sencillo + tooltip (Felipe, 2026-08-20): la etiqueta lleva el
+    // sufijo de pendientes SOLO cuando los hay (senal accionable a la vista,
+    // no escondida en el hover); el tooltip explica el porque y resume los
+    // pendientes; el clic conserva el drawer, que es lo que cubre movil.
+    //
+    // La celda no recorta (Felipe, 2026-08-20): pinta el nombre corto oficial
+    // cuando el contrato lo declara (`short` en statePresentation), y si no, el
+    // nombre completo. Nunca elipsis ni palabra partida. Cuando el corto entra,
+    // el tooltip abre con el nombre completo para que el usuario pueda
+    // aprenderse la equivalencia sin abrir el drawer.
+    var pendientes = view.actions.length;
+    var presentacion = statePresentation[view.state] || statePresentation.neutral;
+    var nombreChip = presentacion.short || stateLabel;
+    var etiquetaChip = nombreChip + (pendientes > 0 ? ' \u00b7 ' + pendientes : '');
+    var porQue = STATE_TIPS[view.state] || STATE_TIPS.neutral;
+    if (presentacion.short && stateLabel) { porQue = stateLabel + '. ' + porQue; }
+    var tipTexto = porQue + ' ' + (pendientes > 0
+      ? summary.countAriaText + '. Primer foco: ' + summary.focus + '.'
+      : 'Sin pendientes.');
+    return '<button type="button" class="ops-state-zoom is-' + escapeHtml(summary.status) + ' ops-state-chip"' + stateChipAttrs(view.state)
+      + ' aria-label="' + escapeHtml(aria) + '. Ver detalle operativo">'
+      + '<span class="ops-chip-label">' + escapeHtml(etiquetaChip) + '</span>'
+      + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(tipTexto) + '</span></span>'
       + '</button>';
   }
 
@@ -1203,7 +1249,9 @@
   function getSeverityLevelForRow(row) {
     var stateKey = getStateKey(row || {});
     var presentation = statePresentation[stateKey];
-    return presentation ? presentation.level : '';
+    // `rail` (p. ej. 'ready') gana sobre el nivel: es el marcador declarado
+    // por estado que la primitiva severity-rail.css sabe dibujar.
+    return presentation ? (presentation.rail || presentation.level) : '';
   }
 
   // El filete va en el `<tr>` y en la PRIMERA celda, nunca en todas.
@@ -2556,7 +2604,10 @@
       var rowData = instance && typeof instance.getSourceDataAtRow === 'function' ? (getSourceRowDataByVisualRow(instance, row) || {}) : {};
       var alertClass = getAlertClassForRow(rowData);
 
-      td.classList.add('ps-row-state', alertClass);
+      // La celda de Acciones lleva TAMBIEN la clase de estado (2026-08-20):
+      // sin ella caia al blanco del vendor y era la mancha mas brillante de la
+      // pantalla oscura — el unico td de la fila sin fondo del sistema.
+      td.classList.add('ps-row-state', alertClass, getStateClassForRow(rowData));
       td.classList.add('htCenter', 'htMiddle');
 
       // El fondo de la fila lo pinta `ps-state-<estado>`, y este renderer se
@@ -2835,7 +2886,18 @@
       navigableHeaders: true,
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
-      stretchH: 'none',
+      // `last` y no `none` (2026-08-20, defecto reportado por Felipe: «los border
+      // radius de las esquinas de las tablas no son homogeneos en todas sus
+      // direcciones»). Medido antes de tocar: los cuatro radios del contenedor
+      // SI eran iguales (16px); lo que fallaba es que la tabla no llenaba su
+      // contenedor a lo ancho — en Programa General 1074px dentro de 1100 —, y
+      // como la cabecera lleva fondo propio, el sobrante dejaba un escalon en la
+      // esquina superior derecha mientras abajo el contenido si llegaba al
+      // borde. El ojo lo lee como radios distintos segun la direccion.
+      // `last` hace que la ULTIMA columna absorba el sobrante y respeta los
+      // anchos medidos a mano de las demas, que estan documentados con su
+      // medicion en los arrays de arriba. Si la tabla ya desborda, no hace nada.
+      stretchH: 'last',
       autoColumnSize: true,
       manualColumnResize: false,
       manualRowResize: true,

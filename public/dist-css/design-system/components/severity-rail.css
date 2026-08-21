@@ -5,6 +5,9 @@
   [data-aia-severity-rail="attention"] {
     box-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
   }
+  [data-aia-severity-rail="ready"] {
+    box-shadow: inset var(--ds-severity-rail-width-ready) 0 0 0 var(--ds-severity-rail-color-ready);
+  }
   [data-aia-severity-rail="healthy"],
   [data-aia-severity-rail="neutral"] {
     box-shadow: none;
@@ -14,5 +17,8 @@
   }
   [dir="rtl"] [data-aia-severity-rail="attention"] {
     box-shadow: inset calc(-1 * var(--ds-severity-rail-width-attention)) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+  [dir="rtl"] [data-aia-severity-rail="ready"] {
+    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-ready)) 0 0 0 var(--ds-severity-rail-color-ready);
   }
 }

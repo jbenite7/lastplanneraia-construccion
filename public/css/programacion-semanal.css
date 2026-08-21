@@ -63,6 +63,13 @@ html.aia-theme-dark body.ps-page {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0;
+    /* Revisado en la ola 2 (2026-08-20) y se deja en `hidden` a proposito: este
+       NO es el caso de `.ps-table-wrap`. Handsontable no renderiza su tabla
+       dentro de este nodo, sino dentro de su propio `.wtHolder`, que lleva sus
+       barras de scroll y su virtualizacion. Abrir el scroll aqui añadiria una
+       segunda barra sobre la de la grilla sin destapar nada, porque el nodo que
+       desborda es el interno. Aqui no desaparece contenido: la grilla ya scrollea
+       y lo señala con su propia barra. */
     overflow-x: hidden;
     overflow-y: hidden;
 }
@@ -426,11 +433,17 @@ body.ps-page .ps-hot-toolbar-shell {
     margin-left: 8px;
 }
 
+/* Ola 3 (2026-08-20): `overflow-wrap: anywhere` partia la palabra AUNQUE cupiera
+   entera en la linea siguiente, y ademas encogia el ancho minimo intrinseco de la
+   celda, engañando al medidor de anchos. La receta del frente envuelve entre
+   palabras y solo parte la palabra que no cabe ni sola en una linea vacia. Es el
+   mismo arreglo que Intermedia ya aplico a su `.force-wrap` en la Task 19. */
 .ps-page #hot-container td.force-wrap,
 .ps-page #hot-container th.force-wrap {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
 }
 
 .ps-page #hot-container td.ops-state-td {
@@ -438,33 +451,39 @@ body.ps-page .ps-hot-toolbar-shell {
     vertical-align: middle !important;
 }
 
-.ps-page .ops-state-zoom {
+/* Rediseno 2026-08-20 (auditoria de Felipe: «horrible y desproporcionado»).
+   El widget era tarjeta-dentro-de-celda: fondo elevado TENIDO POR NIVEL, borde
+   tenido, sombra, halo en el punto y chip solido encima — tres cajas anidadas
+   y el nivel codificado dos veces (el filete ya lo lleva). Ahora es un control
+   QUIETO del sistema: transparente en reposo, hairline neutro, y el color del
+   nivel vive solo en el punto y en el contador. La afordancia de zoom llega
+   por hover/focus, no por gritar en reposo. */
+.ps-page .ops-state-zoom:not([data-aia-hue]) {
     --ops-state-accent: var(--ds-active-text-secondary);
-    --ops-state-bg: var(--ds-active-surface-raised);
     --ops-state-border: var(--ds-active-border);
     --ops-state-count-bg: var(--ds-active-surface);
     --ops-state-count-text: var(--ds-active-text-secondary);
     display: grid;
-    gap: var(--spacing-xs);
+    gap: var(--ds-space-1);
     width: 100%;
     min-width: 0;
     min-height: var(--ds-target-min);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--ds-space-1) var(--ds-space-2);
     border: 1px solid var(--ops-state-border);
     border-radius: var(--ds-radius-sm);
-    background: var(--ops-state-bg);
-    color: var(--ops-state-count-text, var(--ds-active-text-primary));
+    background: transparent;
+    color: var(--ds-active-text-primary);
     font: inherit;
     text-align: left;
     cursor: zoom-in;
-    box-shadow: var(--ds-shadow-xs);
-    transition: transform var(--ds-motion-fast), border-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+    box-shadow: none;
+    transition: border-color var(--ds-motion-fast), background-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
 }
 
-.ps-page .ops-state-zoom:hover {
+.ps-page .ops-state-zoom:not([data-aia-hue]):hover {
     border-color: var(--ops-state-accent);
-    box-shadow: var(--ds-shadow-sm);
-    transform: translateY(-1px);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
 }
 
 .ps-page .ops-state-zoom:focus-visible {
@@ -482,11 +501,10 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 
 .ps-page .ops-state-dot {
-    width: 0.56rem;
-    height: 0.56rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: var(--ds-radius-pill);
     background: var(--ops-state-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-state-accent) 18%, transparent);
 }
 
 /* Variante densa de tabla: ancho auto (el componente usa 100%), sin borde ni
@@ -500,8 +518,15 @@ body.ps-page .ps-hot-toolbar-shell {
    unico que sobrevive aqui es el color de texto (matiz real: en la celda
    densa el chip toma el color del contador de estado, no `inherit`) y el
    ruptura de palabra para columnas angostas de Handsontable. */
-.ps-page .ops-state-chip {
+/* Acotado el 2026-08-20: un chip con matiz pinta su propio texto oscuro
+   (--ds-state-solid-*-text, primitiva states-feedback); este color claro es
+   solo para chips sin matiz. Sin el :not, la capa module le ganaba a la
+   primitiva y el texto quedaba claro sobre solido claro. */
+.ps-page .ops-state-chip:not([data-aia-hue]) {
     color: var(--ops-state-count-text, var(--ds-active-text-primary));
+}
+
+.ps-page .ops-state-chip {
     word-break: break-word;
 }
 
@@ -534,9 +559,6 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-zoom,
 .ps-page .ops-state-zoom.is-critical {
     --ops-state-accent: var(--ds-color-state-critical-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-bg) 76%, var(--ds-active-surface) 24%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-border) 62%);
-    --ops-state-count-bg: var(--ds-color-state-critical-bg);
     --ops-state-count-text: var(--ds-color-state-critical-text);
 }
 
@@ -545,18 +567,12 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .ops-state-zoom.is-pending,
 .ps-page .ops-state-zoom.is-partial {
     --ops-state-accent: var(--ds-color-state-warning-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 72%, var(--ds-active-surface) 28%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-border) 70%);
-    --ops-state-count-bg: var(--ds-color-state-warning-bg);
     --ops-state-count-text: var(--ds-color-state-warning-text);
 }
 
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-zoom,
 .ps-page .ops-state-zoom.is-ready {
     --ops-state-accent: var(--ds-color-state-success-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-bg) 70%, var(--ds-active-surface) 30%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-success-text) 28%, var(--ds-active-border) 72%);
-    --ops-state-count-bg: var(--ds-color-state-success-bg);
     --ops-state-count-text: var(--ds-color-state-success-text);
 }
 
@@ -625,7 +641,7 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-surface-raised);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
@@ -877,11 +893,15 @@ body.ps-page .ps-hot-toolbar-shell {
     min-width: 0;
 }
 
+/* Ola 3 (2026-08-20): el valor de avance vive en una celda; `anywhere` partia
+   "2.400 m2" dejando "m" arriba y "2" abajo aunque la unidad cupiera entera. */
 .ps-page .ps-progress-value {
     display: block;
     min-width: 0;
     line-height: 1.1;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .ps-page .ps-progress-track {
@@ -917,7 +937,11 @@ body.ps-page .ps-hot-toolbar-shell {
     font-size: calc(var(--spacing-sm) + var(--spacing-xs));
     font-weight: 700;
     line-height: 1.15;
-    overflow-wrap: anywhere;
+    /* Ola 3 (2026-08-20): misma receta que el valor de arriba; el pie de la barra
+       es texto con espacios, asi que debe envolver entre palabras. */
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .ps-page .ps-tnp-badge {
@@ -1267,7 +1291,10 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: center;
     margin-left: 6px;
     min-width: 12px;
-    font-size: 11px;
+    /* Ola 3 (2026-08-20): 11px era un literal en px dentro de una celda, fuera de
+       la rampa densa de DESIGN.md §3. 0.70rem (dense-meta) es el paso vecino y
+       ademas queda por encima del minimo de 11px de PRODUCT.md. */
+    font-size: 0.70rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1317,7 +1344,12 @@ body.ps-page .ps-hot-toolbar-shell {
     padding: 0 !important;
     margin: 0;
     line-height: 1;
-    font-size: 0.66rem;
+    /* Ola 3 (2026-08-20): 0.66rem son 10,56px, por debajo del piso duro de 11px
+       de PRODUCT.md, y ademas fuera de la rampa densa. La cabecera es una
+       etiqueta, asi que sube a dense-label (0.72rem = 11,52px), el mismo tamaño
+       que ya tiene la celda de esta grilla (linea 250) — la cabecera no debe
+       quedar mas pequeña que su propio dato por accidente. */
+    font-size: 0.72rem;
     white-space: normal;
     overflow: hidden;
     text-overflow: clip;
@@ -1410,11 +1442,29 @@ body.ps-page .ps-hot-toolbar-shell {
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 35%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 36%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
-#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
+/* Ola 2 (2026-08-20): esta columna llevaba `word-break: break-all`, que parte la
+   palabra donde caiga y sin guion ("Gestio|n"), aunque quepa entera en la linea
+   siguiente. Receta del repo: no partir nunca por defecto (`normal`), envolver
+   entre palabras, y romper solo la palabra que no cabe entera en su propia linea
+   (`overflow-wrap: break-word`), sin introducir guiones que el usuario no
+   escribio (`hyphens: none`). El 14% de ancho de la columna se conserva; si aun
+   asi una palabra se desborda, la salida es dar ancho o envolver, nunca volver a
+   partir. */
+#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+}
+/* Mismo caso que la columna 1, encontrado al aplicar la receta: `overflow-wrap:
+   anywhere` parte en cualquier punto aunque la palabra quepa entera en la linea
+   siguiente, que es exactamente el defecto "Gestió n". Se alinea con la receta.
+   (Cambio no enumerado en el encargo de la ola 2; se hace porque dejar dos
+   columnas de LA MISMA tabla con criterios opuestos es peor que el arreglo.) */
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 /* Motivo chip in Bandeja: line-wrap so multiple restrictions stack on small screens */
 #tabla_excepciones_no_autoprogramadas tbody td .ps-motivo-chip {
@@ -1459,13 +1509,27 @@ body.ps-page .ps-hot-toolbar-shell {
     width: 100%;
     gap: 6px;
 }
-/* Los DataTables de CNP/CNC/CIC heredan overflow-wrap: break-word desde
-   styles.css (compartido) y a 1180px las columnas estrechas parten palabras
-   sin guion ("Gestió n"). Con lang="es", hyphens: auto corta con guion
-   tipográfico ("Ges-tión") solo cuando la palabra no cabe. */
+/* Ola 2 (2026-08-20): aqui habia `hyphens: auto`, puesto para tapar un defecto
+   real — a 1180px las columnas estrechas de CNP/CNC/CIC partian palabras sin
+   guion ("Gestió n"). El diagnostico de entonces era correcto pero el remedio
+   trataba el sintoma: `auto` sigue alterando el texto sin acuerdo, metiendo
+   guiones que nadie escribio en nombres de actividad y de subcontratista.
+   La receta correcta es la misma de la tabla de excepciones: no partir por
+   defecto (`word-break: normal`), envolver entre palabras, y romper unicamente
+   la palabra que no cabe entera en su propia linea (`overflow-wrap:
+   break-word`), sin guion (`hyphens: none`).
+   El defecto viejo NO vuelve, y por que: "Gestió n" salia de que la hoja
+   compartida traia `overflow-wrap: anywhere` (o `break-all`), que corta en
+   cualquier punto aunque la palabra quepa en la linea siguiente. `break-word`
+   es otra cosa: solo actua cuando la palabra no cabe ni sola en una linea
+   vacia, asi que "Gestión" —que si cabe— baja entera en vez de partirse.
+   Se declara explicito aqui, sin heredar, para que un cambio en styles.css no
+   reintroduzca `anywhere` por la puerta de atras. */
 body.ps-page table.dataTable thead th,
 body.ps-page table.dataTable tbody td {
-    hyphens: auto;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 /* El rojo utilitario de Bootstrap (dc3545 = 3.51:1 sobre celda dark) no cumple
@@ -1701,7 +1765,14 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
     border-radius: var(--ds-radius-xs);
     color: var(--ds-color-text-inverse);
-    font-size: 0.65em;
+    /* Ola 3 (2026-08-20): estaba en `em`, relativo a la celda (0.72rem), asi que
+       en pantalla median 0.47rem (~7,5px) y 0.65rem (~10,4px): ambos por debajo
+       del minimo de 11px de PRODUCT.md, y encima invisibles como unidad relativa
+       en cualquier censo de literales. Pasan a la rampa densa en unidad absoluta:
+       el distintivo Manual/Auto a dense-meta y el ID a dense-label. El ancho de
+       la columna (min 64 / piso 54 px en hot.js) admite "Manual" a este tamaño,
+       pero es lo unico que crecio en la grilla: conviene mirarlo en pantalla. */
+    font-size: 0.70rem;
     line-height: 1.2;
 }
 
@@ -1714,7 +1785,8 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
 }
 
 .ps-id-value {
-    font-size: 0.9em;
+    /* Ver el comentario de .ps-origin-badge: mismo caso, mismo motivo. */
+    font-size: 0.72rem;
 }
 
 /* La clase la aplicaba `hot.js:2602` desde siempre y no existia ninguna regla
@@ -1775,7 +1847,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     border-radius: var(--ds-radius-pill);
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     font-weight: 600;
 }
 
@@ -2485,46 +2557,60 @@ body.ps-page #hot-container .ops-state-zoom {
    columna. Se apilan: el nombre ocupa el ancho completo del boton y el contador
    baja a su propia fila. La fila de PS mide ~97 px, asi que el alto sobra.
    El minimo tactil de 44 px lo sigue dando `min-height`. */
-body.ps-page #hot-container .ops-state-zoom {
-    grid-template-columns: minmax(0, 1fr);
-    grid-auto-flow: row;
-    justify-items: start;
-    align-content: center;
+/* Rediseno 2026-08-20, ronda 3 (Felipe: fuente, tamano del chip y ALTURA).
+   El widget apilaba chip y contador en dos renglones y el chip envolvia a dos
+   lineas: cada fila cargaba ~90 px por un dato que cabe en uno. Ahora es UNA
+   linea: punto + chip (elipsis) + contador; el nombre completo sigue en el
+   aria-label del boton y en el drawer de detalle. */
+/* Ronda 4 (Felipe, 2026-08-20): el aparato de punto + chip + contador se
+   sustituyo por el chip-boton con tooltip (state-tooltip.css). El boton lleva
+   ops-state-chip + matiz y lo pinta la primitiva; aqui solo quedan el piso
+   tactil de la excepcion de densidad y el ancho contenido. */
+body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+    /* Bloque de ancho completo como manda la primitiva del chip: inline-block
+       + label con max-width era la circularidad shrink-to-fit que colapsaba la
+       pastilla a cero (cazada por la sonda 2x, ronda 4). */
+    min-height: var(--ds-target-min);
 }
 
 /* Y por eso mismo el chip vuelve a envolver por palabra en vez de cortar con
    elipsis: con el ancho completo del boton, «Lista para Confirmar» entra en dos
    lineas enteras. La elipsis de antes existia para una caja de 56 px que ya no
    es la que hay. */
+/* La fuente del chip DENTRO del widget baja de 900/0.78 a 600/0.72 (decision de
+   Felipe 2026-08-20, ronda 3; deroga para esta celda la paridad literal
+   «uniforme 900» del 2026-08-03). Lo que se buscaba con eso era caber en una
+   linea sin sacrificar el label: desde la ronda de nombres cortos el label ya
+   cabe por contrato, asi que la fuente pequena se conserva pero SIN elipsis
+   —ver el bloque de abajo—. */
 body.ps-page #hot-container .ops-state-chip {
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal !important;
-    overflow-wrap: break-word;
-    word-break: normal;
+    padding: 2px var(--ds-space-2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.15;
+    box-shadow: none;
 }
 
-/* Cuando la columna queda cerca de su mínimo (~118px), el label no puede
-   mostrar ni una sílaba: se oculta y el estado se comunica con el punto de
-   color + contador; el nombre completo sigue en el aria-label del botón. */
-@container (max-width: 120px) {
-    body.ps-page #hot-container .ops-state-topline .ops-state-chip {
-        display: none;
-    }
+/* El recorte del label se retiro el 2026-08-20 (decision de Felipe): la celda
+   de estado NO recorta nunca. Antes vivian aqui dos mecanismos de recorte y los
+   dos sobran porque el contrato garantiza que el texto cabe:
 
-    /* Con el nombre oculto, el boton seguia siendo un grid de DOS filas: una
-       para un punto de 9px y otra para el contador. Medido asi: 95x44 px en una
-       celda de 116 -el 82 % del ancho- para mostrar un punto y «2 pend.», con
-       la mayor parte del alto vacio. En esta condicion —y solo en ella— las dos
-       piezas caben en una linea, que es lo que la columna estrecha pedia desde
-       el principio. El piso tactil de 44px NO se toca: lo da `min-height` y
-       sigue vigente; lo que se recupera es el espacio horizontal. */
-    body.ps-page #hot-container .ops-state-zoom {
-        grid-auto-flow: column;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-    }
-}
+   1. `overflow/text-overflow: ellipsis/white-space: nowrap` sobre
+      `.ops-chip-label`. Sin sentido desde que el chip pinta el NOMBRE CORTO
+      OFICIAL que declara docs/design-system/state-semantics.json
+      (`displayShort`): el presupuesto del modulo es 112 px y el corto mas ancho
+      mide 99 px, asi que no hay nada que cortar.
+   2. Una consulta `@container (max-width: 120px)` que ESCONDIA el nombre del
+      estado y dejaba solo punto y contador. Esconder texto sin aviso es
+      justamente lo que la regla prohibe; y su regla hermana de compactar el
+      grid solo tenia sentido «con el nombre oculto», que ya no ocurre.
+
+   Quien vigila que esto siga siendo cierto es el guard
+   tests/browser/state-label-budget.mjs: mide el label efectivo contra
+   labelBudgetPx y cada palabra suelta contra labelFloorBudgetPx. Si un estado
+   nuevo no cupiera, el arreglo es declararle un `displayShort` en el contrato,
+   no devolver la elipsis. El nombre completo sigue viajando en el aria-label,
+   en el tooltip y en el drawer. */
 
 body.ps-page #hot-container .ops-state-summary {
     flex: 0 0 auto;
@@ -2563,23 +2649,9 @@ body.ps-page #hot-container td.ps-cell-shake {
     }
 }
 
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-
-html.aia-theme-dark body.ps-page #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
+/* Los remix oscuros del contenedor por nivel se retiraron con el rediseno del
+   2026-08-20: el contenedor ya no se tine (el nivel vive en el filete, el
+   punto y el contador), asi que no queda nada que remezclar en dark. */
 
 @layer components {
     body.ps-page #hot-container .ps-action-btn {
@@ -2591,46 +2663,41 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         box-shadow: none !important;
     }
 
-    /* Los tokens de estado van EN PAR: `-bg` de fondo y `-text` de tinta encima. Los
-       pares y su contraste los fijo la spec que invirtio la paleta a oscuro
-       (docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design.md,
-       tabla de la seccion «Los cuatro pares se invierten»): success 8,88:1 y
-       critical 10,99:1.
-
-       Aqui el par estaba partido por la mitad: el chip usaba la mitad `-text`
-       COMO FONDO y le ponia `--ds-color-text-inverse` (blanco) encima. En claro
-       eso funcionaba —`success-text` era tinta oscura— pero desde la inversion
-       resuelve a un menta palido, asi que quedaba blanco sobre claro. (El valor
-       exacto NO se escribe aqui: el presupuesto `hardcoded-hex` de este archivo
-       es 0 y el audit tambien lee los comentarios — lo cazo al primer intento.
-       Vive en la tabla de la spec citada arriba.) Medido en
-       vivo el 2026-08-21 sobre /programacion-semanal en dark: duplicar 1,37:1 y
-       eliminar 1,42:1, contra el piso de 3:1 que WCAG 2.2 SC 1.4.11 exige a un
-       control grafico. El glifo se dibujaba —9,3 px dentro de un chip de 32— pero
-       era invisible: se leia como un cuadro vacio.
-
-       Es el mismo error de rol que docs/PDC-AUDIT.md ya habia anotado como trampa
-       en otro modulo («`status-critical` no es un color de dato»). Restituir el par
-       no es subir el contraste a ojo: es volver a los dos valores que la spec ya
-       habia medido. */
+    /* Rediseno 2026-08-20 (auditoria de Felipe): los iconos iban sobre un
+       RELLENO pastel con texto invertido — una variante que DESIGN.md no
+       declara y que en dark parecia un parche del vendor. Ahora son el
+       secondary del contrato: superficie elevada + borde activo, y la accion
+       habla por el COLOR DEL ICONO (par semantico de texto), no por un fondo
+       que grita. Hover: borde al color de la accion, mismo criterio que el
+       resto de controles del sistema. */
     body.ps-page #hot-container .ps-action-icon {
         display: grid;
         place-items: center;
         width: 2rem;
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
-        background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ps-action-icon-ink, var(--ds-color-text-inverse));
+        border: 1px solid var(--ds-active-border);
+        background: var(--ds-active-surface-raised);
+        color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+        transition: border-color var(--ds-motion-fast), color var(--ds-motion-fast);
     }
 
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-bg);
-        --ps-action-icon-ink: var(--ds-color-state-success-text);
+        --ps-action-icon-fg: var(--ds-color-state-success-text);
     }
 
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-bg);
-        --ps-action-icon-ink: var(--ds-color-state-critical-text);
+        --ps-action-icon-fg: var(--ds-color-state-critical-text);
+    }
+
+    body.ps-page #hot-container .ps-action-btn:hover .ps-action-icon,
+    body.ps-page #hot-container .ps-action-btn:focus-visible .ps-action-icon {
+        border-color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+    }
+
+    body.ps-page #hot-container .ps-action-btn:focus-visible {
+        outline: 0;
+        box-shadow: var(--ds-shadow-focus) !important;
     }
 
     /* C-48: aqui vivia una sobrescritura exclusiva de PS que pintaba el `::before`
@@ -3169,7 +3236,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 
 .cm-eyebrow {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     opacity: 0.75;
@@ -3276,11 +3343,30 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     flex-shrink: 0;
 }
 
+/* Ola 2 (2026-08-20): el shell de la tabla del modal de cambios estaba en
+   `overflow: hidden` y no ofrecia scroll alternativo, asi que una fila mas ancha
+   que el modal se perdia entera y en silencio. Pasa a `auto` con la misma senal
+   de borde que `.ps-table-wrap` en styles.css (tapas `local` + sombras `scroll`).
+   La receta se repite en vez de compartirse porque son dos hojas distintas y no
+   hay una clase comun en el markup; si algun dia se unifican, este bloque es el
+   duplicado a retirar. El `--ps-scroll-edge-bg` apunta a la misma superficie que
+   ya pinta el shell, que es la condicion para que la tapa sea invisible. */
 .cm-table-shell {
     background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
-    overflow: hidden;
+    overflow: auto;
     border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
+    --ps-scroll-edge-bg: var(--ds-active-surface);
+    --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+    background-image:
+        linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+    background-attachment: local, local, scroll, scroll;
 }
 
 .cm-table {
@@ -3288,10 +3374,15 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     width: 100%;
 }
 
+/* Ola 3 (2026-08-20): la jerarquia de esta tabla estaba invertida — la celda
+   pintaba a 0.82rem y su propia cabecera a 0.72rem, asi que el rotulo pesaba
+   menos que el dato. Se acomodan las dos a la rampa densa de DESIGN.md §3: la
+   cabecera a dense-meta (0.70rem), que ya se distingue por mayusculas, tracking
+   y color secundario, y la celda a dense-label (0.72rem), que es el dato. */
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -3300,7 +3391,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 
 .cm-table tbody td {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
@@ -3333,10 +3424,18 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     background: color-mix(in srgb, var(--ds-color-state-warning-text) 45%, transparent);
 }
 
+/* Verificado en la ola 2 (2026-08-20): es `break-word`, NO `break-all`, y por eso
+   se queda. Con `white-space: normal` la celda envuelve entre palabras dentro de
+   sus 380px, y `break-word` solo entra como valvula cuando una palabra sola no
+   cabe entera en una linea vacia — que es la unica rotura aceptada por la regla
+   del frente. Se añade `hyphens: none` explicito para que esa rotura nunca meta
+   un guion inventado. */
 .cm-detail-cell {
     max-width: 380px;
     white-space: normal;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .cm-empty-state {
@@ -3404,7 +3503,10 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     .cm-table tbody td::before {
         content: attr(data-label);
         display: block;
-        font-size: 0.65rem;
+        /* Ola 3 (2026-08-20): 0.65rem son 10,4px. Este pseudo hace de cabecera de
+           la tabla apilada, asi que se alinea con dense-meta como la cabecera
+           real de arriba, en vez de estrenar un cuarto tamaño. */
+        font-size: 0.70rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);
@@ -3524,52 +3626,52 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
    El `color` se declara en la misma regla a proposito: state-tint-pairing exige
    que toda regla que pinte un fondo de matiz declare su tinta, y con razon. */
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
 }
 
@@ -3578,52 +3680,135 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
    describir la tabla (defecto F0-012). La clase de cubo se conserva en el markup
    para la forma; el color lo pone el estado. */
 .ps-page .ps-legend-modal-swatch.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 
 .ps-page .ps-legend-modal-swatch.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
 }
 
+
+/* Target tactil bajo 1180 (audit 2026-08-20, P2): desde el piloto F2a movil y
+   tablet estan abiertos y ahi rige el minimo de 44px, no la excepcion densa de
+   escritorio. El chip no crece visualmente: crece su area de toque. */
+@layer module {
+    @media (max-width: 1179px) {
+        body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
+
+/* Ola 4 (2026-08-20), defectos reportados por Felipe mirando la pantalla.
+
+   (1) ALTO DE FILA. Este modulo NO fija `rowHeights` a mano — se comprobo:
+   `public/js/modules/programacion_semanal/hot.js` no menciona la opcion, al
+   contrario que PG (45) y PI (56). Su fila alta la impone el CONTENIDO: la
+   columna «Actividad» mide 179px, y un rotulo real como
+   «Subrasante mejorada, [Capitulo: Area A-1, Franja A, Zona 1 (central - CIAN),
+   (6) POSICIONES EN PLATAFORMA (FASE 1)]» —115 caracteres, sin saltos duros—
+   envuelve en 6 renglones. Medido a 1180x820 dark: filas de 106 a 128px, con
+   126px de contenido dentro. Nada que recortar aqui: el texto es cierto y
+   entero.
+
+   Lo que si estaba fuera de contrato era el INTERLINEADO. La celda heredaba el
+   1.6 del cuerpo = 21px de renglon con fuente de 13px, y ese renglon NO CABE en
+   la fila que declara el contrato: --ds-table-row-h 24px menos 2x
+   --ds-table-cell-pad-y (2px) deja una caja de texto de 20px. Es decir, una
+   fila de una sola linea era imposible de cumplir hoy, aunque el token la
+   declarara. Se ata el interlineado a esa misma aritmetica en vez de inventar
+   un numero: 20px. Con eso la fila de una linea mide exactamente los 24px del
+   contrato, y la de seis renglones baja de 126 a 120px de contenido. No se
+   toca ninguna fuente (celda 13px, cabecera 12px siguen en contrato) y no se
+   pierde un solo caracter: cambia el aire entre renglones, no cuantos hay.
+
+   Se acota a `td` a proposito: el chip de Estado Operativo, los progresos y el
+   valor de compromiso traen su propio interlineado y su piso tactil de 44px,
+   que no se tocan.
+
+   El `!important` no es pereza y se midio: quien fija los 21px es el vendor,
+   `.handsontable td{...line-height:21px...}` en
+   public/vendor/handsontable/handsontable.full.min.css, que llega SIN CAPA.
+   Una declaracion normal dentro de cualquier @layer pierde siempre contra lo
+   no encapado, por especifica que sea — la primera version de esta regla, sin
+   `!important`, se cargo en la capa `module` y el navegador siguio computando
+   21px. Con `!important` el orden de capas se invierte y una capa nombrada
+   gana, que es justo el patron que ya documenta este archivo en @layer
+   components (~linea 1867). La alternativa era sacar la regla de la capa, y
+   eso entrega la hoja entera sin capa: lo caza el guard unlayered-delivery. */
+@layer module {
+    .ps-page #hot-container .htCore td {
+        line-height: calc(var(--ds-table-row-h) - 2 * var(--ds-table-cell-pad-y)) !important;
+    }
+}
+
+/* (4) RESPIRO ENTRE LA BARRA SUPERIOR Y EL CAJON DE ACCIONES.
+
+   Medido a 1180x820 dark, antes de este cambio:
+     PG — main es `.aia-page hot-full-bleed`, `.aia-page` le da
+          `padding: var(--ds-page-padding)` = 23.6px, y su `.aia-toolbar`
+          arranca en y=63.59 con el main en y=40. Ese es el respiro que Felipe
+          quiere.
+     PS — main es solo `hot-full-bleed`, padding-top 0, y la toolbar arranca en
+          y=49, exactamente pegada al borde inferior de la context-bar sticky.
+
+   No se copia un numero: se replica la MISMA fuente del valor, el token
+   --ds-page-padding (clamp(1rem, 2vw, 1.5rem)). Solo el eje vertical: el
+   sangrado horizontal lo gobierna `--hot-gutter` de `.hot-full-bleed`, que es
+   lo que hace que la tabla vaya a sangre, y ampliarlo estrecharia la tabla.
+
+   La altura util de la tabla se recalcula sola: `syncContainerHeight()` en
+   public/js/modules/programacion_semanal/hot.js mide
+   `getBoundingClientRect().top` de #hot-container y alimenta
+   `updateSettings({ height })`, asi que descuenta este respiro sin numeros
+   magicos. Contrato en tests/browser/programacion-semanal-hot-height.mjs. */
+@layer module {
+    .ps-page main.hot-full-bleed {
+        padding-block-start: var(--ds-page-padding);
+    }
+}
