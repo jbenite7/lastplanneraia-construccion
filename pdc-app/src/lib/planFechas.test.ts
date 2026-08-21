@@ -41,7 +41,7 @@ import {
 import type { Desfase, FilaPlan, FrenteDisponible, SugerenciaFrente } from './types'
 
 const fila = (over: Partial<FilaPlan> = {}): FilaPlan => ({
-  paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'orden_compra',
+  paqueteId: 1, subpaqueteId: 0, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'orden_compra',
   frenteNombre: 'ESTRUCTURA', uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23',
   diasTotales: 87, duracionProvisional: false,
   responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
@@ -257,7 +257,7 @@ describe('agruparPorConfianza', () => {
 describe('paquetesAmarradosSinCalcular', () => {
   const base = { paqueteId: 1, nombre: 'Suministro CONCRETO', tipoNegociacion: 'suministro', modalidad: 'contrato', insumos: 3, subtotal: 100 }
   const filaPlan = (paqueteId: number): FilaPlan => ({
-    paqueteId, nombre: 'x', tipoNegociacion: 'suministro', modalidad: 'contrato', frenteNombre: 'ESTRUCTURA',
+    paqueteId, subpaqueteId: 0, nombre: 'x', tipoNegociacion: 'suministro', modalidad: 'contrato', frenteNombre: 'ESTRUCTURA',
     uniqueId: 9001, fechaAncla: '2026-08-18', fechaArranque: '2026-05-23', diasTotales: 87,
     duracionProvisional: false,
     responsableUserId: null, responsableNombre: '', responsableCargo: '', responsableHuerfano: false,
