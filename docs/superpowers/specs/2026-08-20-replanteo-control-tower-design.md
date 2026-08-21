@@ -311,7 +311,7 @@ día equivocado para la mayoría de las obras.
 | **Semanal de obra**, en su día ancla | Semanal, **una sola sentada**: se cierra la semana que termina y se compromete la que entra | **8.3 Intermedia** y **8.4 Semanal**, seguidas | Liberar restricciones, asignar dueños, comprometer | El residente, en vivo |
 | **Diaria de obra**, corta y sin computador | Diaria | **8.4**, solo el riesgo de incumplimiento | Salvar el compromiso que va a caerse | El residente |
 | **Comité de gerencia por obra** | Por obra, en su día | **8.2 Programa General** | Evaluar el riesgo de la fecha de entrega de esa obra | — |
-| **Comité general de gerencia** | Periódico, compara todas las obras | **8.1 Resumen Ejecutivo** | Decidir en qué obra meterse | — |
+| **Comité general de gerencia** | **Semanal, los lunes**; compara todas las obras | **8.1 Resumen Ejecutivo** | Decidir en qué obra meterse | — |
 | **Comité de compras** | **Existe, pero sin día fijo: varía por obra** | **8.6** y **8.7** | Destrabar el paso vencido | Compras |
 | Rendición al cliente | Mensual o por hito | **8.5 Curva S** | Conversación de contrato | — |
 
@@ -335,8 +335,8 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
 - **Regla:** es la única hoja que compara obras entre sí.
 - **Su reunión existe: el comité general de gerencia** (D67), donde se comparan todas las obras.
   Esta hoja **se proyecta ahí**. Confirmado el 2026-08-20; corrige el supuesto anterior de la spec,
-  que la daba por inexistente y ponía a la hoja en riesgo de cementerio. Falta fijar el día del
-  comité general.
+  que la daba por inexistente y ponía a la hoja en riesgo de cementerio. **Es semanal, los lunes**
+  (D81), así que las señales de gerencia deben estar puestas antes del fin de semana.
 
 ### 8.2 Programa General — audiencia obra y dirección
 
@@ -615,19 +615,24 @@ Consecuencias directas:
    se construye ningún importador ni pronóstico de compras alimentado por el v1: no hay entrada.
 2. **El frente deja de ser «rescate» y pasa a ser «retiro de las tablas del PDC v1»**, y sale de los
    diferidos: es higiene, y va en F0 o como parte de F5.
-3. El archivo histórico se reduce a la estructura de las tablas más el CSV de las 126 filas planeadas
-   de «Prueba», si Felipe confirma que fueron el borrador de Da Porto.
+3. El archivo histórico se reduce a la estructura de las tablas más **el CSV de las 126 filas
+   planeadas de «Prueba», que Felipe confirmó como borrador de un plan real y pidió conservar**
+   (D83): es lo único con contenido de las 409 filas, y sirve de referencia para el primer plan de
+   Da Porto.
 4. Al retiro se suman las hermanas `general_informe_pdc`, `bi_pdc_general`, `papelera_pdc` y
-   `backup_licify_general_informe_pdc_20260612`, **previa comprobación de que ningún informe vivo de
-   Power BI las lee**.
+   `backup_licify_general_informe_pdc_20260612`. **La comprobación de que ningún informe vivo de
+   Power BI las lee es prerrequisito del borrado, no un supuesto** (D84): el retiro espera a esa
+   verificación.
 
 **El gate de borrado se mantiene intacto** (D64): que el contenido sea plantilla no releva el visto
 explícito de Felipe, el respaldo verificable, la comprobación de que el archivo se lee fuera de
 producción, ni el plan de restauración. Nada de esto se ejecutó.
 
-**Y queda una pregunta abierta que solo Felipe responde:** si JMC y Milán tuvieron plan de compras en
-Excel o Licify, el historial existe pero no está en la base — y entonces la memoria de desempeño se
-busca allá, no aquí.
+**Respondido el 2026-08-20 (D82): no hay historial en ninguna parte.** JMC y Milán **deben construir
+su plan en Last Planner AIA y está pendiente**; sus 273 filas vacías son plantillas esperando a que
+alguien las llene. No hubo Excel ni Licify que rescatar. **La memoria de duraciones de AIA arranca de
+cero con Da Porto**, y por eso el contador de «pasos cerrados con fecha real» de 8.6 y el marcador de
+acierto de 11.b dejan de ser adornos: son lo único que la va a construir.
 
 ## 14. Verificación
 
@@ -730,9 +735,9 @@ Ninguno bloquea F0. El primero **quedó resuelto el 2026-08-20**; los demás sig
 4. **Los campos muertos** —`Categoria_CP`, `CP`, `alerta_crisis`, `reprogramaciones_semanales`, todos
    en 0% de llenado— se retiran o alguien debería estar llenándolos. Decisión de proceso, se toma
    en F0.
-5. **Resueltas el 2026-08-20** las ocho preguntas de ritual y reuniones (D67 a D70, D75, y la
-   distribución completa en D76 a D80). **Queda una: el día del comité general de gerencia**, y quién
-   más debería recibir el correo de víspera además de director y residente.
+5. **Resueltas el 2026-08-20** las ocho preguntas de ritual y reuniones (D67 a D70, D75, D81 y la
+   distribución completa en D76 a D80). **Queda una sola: quién más debería recibir el correo de
+   víspera** además de director y residente. La spec asume que nadie más en la primera versión.
 6. **Si «Prueba» fue el borrador de Da Porto**, y si JMC y Milán tuvieron su plan de compras en Excel
    o Licify — porque entonces el historial de compras existe, pero fuera de la base.
 

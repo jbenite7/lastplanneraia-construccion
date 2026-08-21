@@ -178,6 +178,11 @@ se devuelven por el buzón y por esta spec.
 | D79 | El correo de víspera | **Se conserva como resumen**, además de los de evento | Son dos trabajos distintos: el de evento avisa cuando pasa algo; el de víspera le llega al director con todo lo de su obra el día antes de su reunión |
 | D80 | Rendición del pronóstico | **Cada aviso lleva su marcador histórico de acierto**: «de los 10 que marqué en riesgo el mes pasado, fallaron 7» | Es lo único que convierte un pronóstico en algo creíble, y construye desde el día uno la calibración que hoy no existe |
 
+| D81 | Día del comité general de gerencia | **Lunes** | Es donde se proyecta el Resumen Ejecutivo. Las señales de gerencia deben estar puestas antes del fin de semana |
+| D82 | Historial de compras de JMC y Milán | **No existe en ninguna parte.** Ambas obras **deben construir su plan en Last Planner AIA, y está pendiente** | Las 273 filas vacías son plantillas esperando a que alguien las llene. La calibración de duraciones arranca de cero con Da Porto, y por eso el contador de «pasos cerrados con fecha real» (D80) deja de ser adorno |
+| D83 | Las 126 filas de la obra «Prueba» | **Se conservan**: se extrae su CSV al archivo histórico antes de retirar nada | Fueron el borrador de un plan real. Es lo único con contenido de las 409 filas, y sirve de referencia para el primer plan de Da Porto |
+| D84 | Las tablas hermanas del PDC v1 | **Se verifica primero** si alguna alimenta un informe de Power BI vivo. **El retiro espera a esa verificación** | Decisión de Felipe: no dar por muerta una tabla sin comprobarlo. Es prerrequisito del borrado, no supuesto |
+
 ## Lo que queda abierto
 
 - **D28 por confirmar:** en la hoja de restricciones, si el titular narrativo va arriba de la lista
