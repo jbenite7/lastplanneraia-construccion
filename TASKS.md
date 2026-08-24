@@ -159,6 +159,18 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
+  `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
+  aplicar el arreglo de mojibake de F0 (Control Tower): una fila huérfana bloqueó el `UPDATE` con
+  un error de llave foránea. No se investigó el origen ni si están en producción — solo se
+  confirmó que existen y que no se tocaron. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 4.
+- [ ] **BI · `tests/test_causas_codificacion.php` tiene un punto ciego de colación** — usa
+  `SELECT DISTINCT` sin `BINARY`; bajo `utf8mb4_general_ci`, un texto roto («Diseńos») y su
+  versión ya reparada («Diseños») colapsan al mismo grupo `DISTINCT` y MySQL puede devolver el
+  representante correcto, escondiendo la fila rota. Confirmado el 2026-08-20: el test reporta
+  PASA con 2 filas todavía rotas (las huérfanas de arriba), verificado con `LIKE BINARY` directo.
+  Arreglo: reescribir la detección con `LIKE BINARY` o comparar bytes, no `DISTINCT` normal.
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
