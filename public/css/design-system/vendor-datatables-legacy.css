@@ -4,7 +4,6 @@
 @import url("/public/vendor/datatables/buttons.bootstrap4.min.css") layer(vendor);
 @import url("/public/vendor/datatables/dataTables.checkboxes.css") layer(vendor);
 @import url("/css/design-system/adapters/datatables.css?v=1.1.0") layer(components);
-@import url("/css/design-system/adapters/datatables.css") layer(components);
 
 @layer legacy-overrides {
   .dataTables_wrapper {
