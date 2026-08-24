@@ -126,7 +126,7 @@ porqué junto a la regla.
 - **Sesiones paralelas activas** en este repo empujan a `main` con frecuencia y ya dejaron obsoleta
   una medición a mitad de camino. Re-medir antes de cada paso que dependa de un valor.
 
-## Lo que se rompio despues (anadido 2026-08-21)
+## Lo que se rompio despues (anadido 2026-08-24)
 
 Esta spec quedo `cerrado`, pero el contrato que fija —**los tokens de estado van en par: `-bg` de
 fondo y `-text` de tinta encima**— se incumplio al menos dos veces despues, siempre igual: alguien
@@ -136,7 +136,7 @@ porque el sitio donde la tabla de pares vive es el sitio donde hay que enterarse
 | Donde | Que hizo | Contraste resultante | Estado |
 |---|---|---|---|
 | `bi-spa.js:3704` | `status-critical` (`#ffcdc8`) como color de **serie** de grafico | — | **sin auditar**, anotado en `docs/PDC-AUDIT.md` §Trampa medida y en `TASKS.md` |
-| `programacion-semanal.css:2600` | `success-text` / `critical-text` como **fondo** del chip de los botones duplicar y eliminar, con blanco encima | 1,37:1 y 1,42:1 | **corregido 2026-08-21**, restituyendo el par |
+| `programacion-semanal.css:2600` | `success-text` / `critical-text` como **fondo** del chip de los botones duplicar y eliminar, con blanco encima | 1,37:1 y 1,42:1 | **corregido 2026-08-24**, restituyendo el par |
 
 En los dos casos el sintoma es el mismo y enganosamente leve: el elemento se ve **palido y lavado**,
 no roto. En Semanal el glifo se dibujaba —9,3 px dentro de un chip de 32— pero blanco sobre menta

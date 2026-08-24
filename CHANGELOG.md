@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-19
+updated: 2026-08-24
 ---
 
 # Registro de Cambios (Changelog)
@@ -28,7 +28,7 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
-### La columna Acciones de Programación Semanal vuelve a verse (2026-08-21)
+### La columna Acciones de Programación Semanal vuelve a verse (2026-08-24)
 
 #### Fixed
 - La celda de Acciones se quedaba con el **blanco opaco del vendor**, así que la columna entera se
@@ -51,7 +51,7 @@ para el estado de los planes en curso.
   propia spec de la paleta, §«Lo que se rompió después», junto al hermano sin auditar de
   `bi-spa.js:3704`.
 
-### Tablas: cifras alineadas, filtros alcanzables por teclado e identidad de fila (2026-08-21)
+### Tablas: cifras alineadas, filtros alcanzables por teclado e identidad de fila (2026-08-24)
 
 #### Added
 - Cifras tabulares en las rejillas Handsontable (`font-variant-numeric: tabular-nums` en la celda

@@ -2617,7 +2617,7 @@
       // `.handsontable td, .handsontable th`, que le gana por especificidad (0,1,1)
       // al `:where(...)` del adaptador (0,0,0). La columna entera se veia como una
       // franja clara pegada al borde derecho de una tabla oscura, en todas las
-      // filas. Reportado sobre captura el 2026-08-21.
+      // filas. Reportado sobre captura el 2026-08-24.
       //
       // Se limpia antes de anadir porque el estado de una fila cambia en caliente
       // (autoprogramar, confirmar) y este renderer se reusa sobre el mismo `td`:
@@ -2881,7 +2881,7 @@
       // opcion apagada NO hay camino de teclado hasta el embudo de la cabecera: HOT lo
       // pinta con `tabindex="-1"` y `aria-hidden="true"` a proposito, porque espera que
       // se llegue navegando el encabezado con las flechas y se abra con Alt+Abajo.
-      // Comprobado en /programa-general el 2026-08-21: sin esto, quien no usa raton no
+      // Comprobado en /programa-general el 2026-08-24: sin esto, quien no usa raton no
       // puede filtrar ninguna tabla de la aplicacion.
       navigableHeaders: true,
       licenseKey: 'non-commercial-and-evaluation',

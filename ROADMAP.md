@@ -10,7 +10,7 @@ resumen: Visión unificada y plan de adopción metodológica de Last Planner Sys
 project: lps-aia
 type: roadmap
 status: activo
-updated: 2026-08-19
+updated: 2026-08-24
 ---
 
 # Roadmap
@@ -33,7 +33,7 @@ El detalle vivo, con su orden y sus dependencias, está en [[TASKS]]. Esta tabla
 
 ## Decisiones de rumbo
 
-- 2026-08-21 — **La aplicación se queda con dos motores de tabla, no tres.** DataTables 1.10.21
+- 2026-08-24 — **La aplicación se queda con dos motores de tabla, no tres.** DataTables 1.10.21
   (CIC, CNC, CNP, control de cambios y el panel de administración) es el carril a retirar: sale
   hacia AG Grid, que ya vive en Plan de Compras y es el mismo motor que se usará de aquí en
   adelante. **No abre frente propio:** se cobra cuando haya que entrar a una de esas pantallas por

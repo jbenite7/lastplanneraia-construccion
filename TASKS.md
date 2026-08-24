@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-20
+updated: 2026-08-24
 ---
 
 # Tareas
@@ -174,7 +174,7 @@ estado por defecto mientras Felipe no reparta.
 
 - [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
   `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
-  de rol que se corrigió el 2026-08-21 en los botones de Programación Semanal. Ya estaba anotado
+  de rol que se corrigió el 2026-08-24 en los botones de Programación Semanal. Ya estaba anotado
   como «trampa medida, sin auditar» en [[docs/PDC-AUDIT]] §Trampa medida; queda aquí para que salga
   de ese pie de página. El rojo de series es `critical` (`oklch(65% 0.18 26.3)`). Contexto y receta:
   [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design]] §Lo que se rompió después.
@@ -186,7 +186,7 @@ estado por defecto mientras Felipe no reparta.
   pantallas duele hoy, así que la regla es «quien entre a una de ellas por otra razón, sale con
   AG Grid». Al hacerlo, llevarse también las cifras tabulares, que ese carril no las tiene
   (`font-variant-numeric: tabular-nums`, ya aplicado en Handsontable y en el PDC). Decisión de
-  rumbo del 2026-08-21 en [[ROADMAP]].
+  rumbo del 2026-08-24 en [[ROADMAP]].
 
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
