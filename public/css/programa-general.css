@@ -379,29 +379,56 @@ html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
    `[aria-pressed]` de mas arriba si lo hace: su fila es naranja (`--pg-due-bg`)
    y la de alerta es ambar. Agrupados, «Debe Iniciar» anuncia el ambar de otro
    estado. */
+/* Los siete estados con hue en `moduleMappings.programa-general` de
+   `docs/design-system/state-semantics.json` pintan ahora la familia solida
+   (`--ds-state-solid-*`), igual que PI y PS desde 0a77fb1b: la leyenda debe
+   describir el chip que el ojo busca, no el tinte apagado de la fila. */
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.debe-iniciar {
-  background: color-mix(in srgb, var(--pg-due-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
+  border-color: var(--ds-state-solid-orange);
 }
 
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.actividad-futura {
-  background: color-mix(in srgb, var(--pg-future-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
+  border-color: var(--ds-state-solid-green);
 }
 
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.en-curso {
-  background: color-mix(in srgb, var(--pg-progress-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
+  border-color: var(--ds-state-solid-blue);
 }
 
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.atrasada {
-  background: color-mix(in srgb, var(--pg-delayed-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
+  border-color: var(--ds-state-solid-red);
 }
 
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.sin-datos {
-  background: color-mix(in srgb, var(--pg-nodata-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
+  border-color: var(--ds-state-solid-violet);
 }
 
-/* `terminada` NO lleva regla: su fila usa `--pg-done-bg`, que es
-   `--ds-state-tint-neutral`. Dejarlo en la superficie neutra ES prometer su
-   tinte; darle color seria mentir al reves. */
+/* `fuera-de-ventana` (hue teal) y `terminada` (hue neutral) no tenian regla
+   de fondo en reposo — la primera solo pintaba su punto (linea 324), la
+   segunda se dejaba deliberadamente en la superficie neutra porque su fila
+   usaba tinte. Con la fila migrada a solido en el resto de modulos, la
+   leyenda de estos dos tambien pasa a nombrar el solido de su hue. */
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.fuera-de-ventana {
+  background-color: var(--ds-state-solid-teal);
+  color: var(--ds-state-solid-teal-text);
+  border-color: var(--ds-state-solid-teal);
+}
+
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.terminada {
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
+  border-color: var(--ds-state-solid-neutral);
+}
 
 /* El peso lo traia `aia-chip` en 600 y la referencia rinde 500. */
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip {
