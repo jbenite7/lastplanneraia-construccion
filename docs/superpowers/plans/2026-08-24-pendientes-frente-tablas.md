@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-24
+areas: [design-system, bi, qa]
+fuente: docs/superpowers/plans/2026-08-24-pendientes-frente-tablas.md
+resumen: Cerrar cuatro pendientes diferibles del frente de tablas — dos fugas de tipografia, el color de rol en los anillos de BI, los roles de las listas de SQL de CI…
+---
+
 # Pendientes del frente de tablas — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

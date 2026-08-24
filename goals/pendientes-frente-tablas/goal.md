@@ -3,7 +3,7 @@ capa: fuente
 tipo: goal-doc
 estado: vigente
 fecha: 2026-08-24
-areas: [design-system, bi, ci, a11y]
+areas: [design-system, bi, qa]
 fuente: goals/pendientes-frente-tablas/goal.md
 resumen: Cierre de cuatro pendientes que dejó el frente de tablas — fuga de tipografía, color de serie mal usado en BI, cuatro listas de SQL en CI y el gemelo callado del filtro de cabecera — más la anotación de lo que no se cerró.
 ---

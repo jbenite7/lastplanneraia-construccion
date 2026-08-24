@@ -3,7 +3,7 @@ capa: fuente
 tipo: spec
 estado: vigente
 fecha: 2026-08-24
-areas: [design-system, bi, ci, accesibilidad]
+areas: [design-system, bi, qa]
 resumen: "Cierre de cuatro pendientes diferibles que dejo el frente de tablas: fugas de tipografia, color de rol en BI, las listas de SQL de CI y el gemelo callado del filtro de cabecera"
 project: lps-aia
 type: design
