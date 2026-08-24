@@ -43,8 +43,19 @@ const emparejarAncla = (celda, globo) => {
     contador += 1;
     nombre = `--aia-popover-ancla-${contador}`;
     celda.dataset.aiaAncla = nombre;
-    celda.style.anchorName = nombre;
   }
+  // Task 8 (2026-08-21, verificado en vivo): `celda.style.anchorName` hay que
+  // REASIGNARLO siempre, no solo la primera vez. Con `renderAllRows: false`
+  // Handsontable recicla el mismo <td> para otra fila al hacer scroll -el
+  // recorrido del globo dispara ese scroll-, y su `TextRenderer` de base
+  // limpia `style` en cada reciclado (comentario de `piRestrictionRenderer`
+  // en `hot.js`, misma maquinaria). El `dataset.aiaAncla` sobrevive porque no
+  // es `style`, pero el `anchor-name` real si se pierde: sin reasignarlo aqui
+  // el globo apunta a un ancla que ya no existe en ningun elemento y el
+  // motor de anchor-positioning cae a una posicion sin relacion con la celda,
+  // superpuesta con la grilla -eso es lo que interceptaba el clic del boton
+  // "siguiente" tras varios saltos.
+  celda.style.anchorName = nombre;
   globo.style.positionAnchor = nombre;
 };
 
@@ -97,6 +108,37 @@ const construirMarcadorAvance = (datosFila) => {
   return { marcador, avance };
 };
 
+// Task 8 (2026-08-21): recorrido entre actividades sin cerrar el globo. El
+// salto de fila (saltarse capitulos, resolver cual es la siguiente/anterior
+// actividad) lo resuelve `hot.js`, que es quien conoce la grilla; este modulo
+// solo expone los botones y reenvia el clic/tecla a `datosFila.siguiente` /
+// `datosFila.anterior` -mismas dos funciones que arma `abrirGloboHabilitacion`
+// para el paquete de la fila abierta-. Si la fila de turno es la primera o la
+// ultima actividad, `hot.js` no encuentra destino y esas funciones no hacen
+// nada: el globo se queda donde esta, nunca vacio ni cerrado.
+const construirNavegacion = () => {
+  const nav = document.createElement('div');
+  nav.className = 'aia-readiness-popover__nav';
+
+  const anterior = document.createElement('button');
+  anterior.type = 'button';
+  anterior.className = 'aia-readiness-popover__anterior';
+  anterior.setAttribute('aria-label', 'Actividad anterior');
+  anterior.textContent = '‹';
+  anterior.addEventListener('click', () => irA(-1));
+  nav.appendChild(anterior);
+
+  const siguiente = document.createElement('button');
+  siguiente.type = 'button';
+  siguiente.className = 'aia-readiness-popover__siguiente';
+  siguiente.setAttribute('aria-label', 'Actividad siguiente');
+  siguiente.textContent = '›';
+  siguiente.addEventListener('click', () => irA(1));
+  nav.appendChild(siguiente);
+
+  return nav;
+};
+
 const construirCabecera = (datosFila) => {
   const cabecera = document.createElement('div');
   cabecera.className = 'aia-readiness-popover__cabecera';
@@ -111,6 +153,8 @@ const construirCabecera = (datosFila) => {
   meta.textContent = 'Semana ' + (datosFila.Semana || '-') + ' · ' +
     (datosFila.Responsable_AIA || 'Sin responsable');
   cabecera.appendChild(meta);
+
+  cabecera.appendChild(construirNavegacion());
 
   return cabecera;
 };
@@ -333,6 +377,11 @@ const alTeclado = (ev) => {
     cerrar();
     return;
   }
+  if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
+    ev.preventDefault();
+    irA(ev.key === 'ArrowUp' ? -1 : 1);
+    return;
+  }
   alDeshacer(ev);
   focoAtrapado(ev);
 };
@@ -406,9 +455,21 @@ function abrir(celda, datosFila) {
   document.addEventListener('click', alClicAfuera, true);
 }
 
-function irA() {
-  // Reservado para la Task 7 (navegacion entre cuadritos dentro del globo).
-  // No se implementa aqui: esta tarea solo cubre abrir/cerrar/foco/teclado.
+// Task 8: `direccion` es -1 (anterior) o 1 (siguiente). El globo NO sigue al
+// raton -saltar solo ocurre por este boton/tecla explicitos, nunca porque el
+// cursor paso sobre otra fila- y no cierra el globo actual antes de saber si
+// hay destino: si `hot.js` no encuentra una fila siguiente/anterior (extremo
+// de la tabla, o solo quedan capitulos), la funcion correspondiente
+// simplemente no hace nada y el globo se queda como estaba.
+function irA(direccion) {
+  if (!estado) {
+    return;
+  }
+  const funcion = direccion < 0 ? estado.datosFila.anterior : estado.datosFila.siguiente;
+  if (typeof funcion !== 'function') {
+    return;
+  }
+  funcion();
 }
 
 export const AIAReadinessPopover = { abrir, cerrar, irA };

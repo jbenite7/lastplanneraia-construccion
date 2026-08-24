@@ -112,6 +112,28 @@
     return grupo;
   }
 
+  // Task 8 (2026-08-21): recorrido del globo sin cerrarlo. Busca la siguiente
+  // fila de ACTIVIDAD (no capitulo) en la direccion pedida, saltandose las
+  // filas de capitulo con la misma `getPIRowMeta(...).isHeader` que ya usa el
+  // renderer de la Task 4 -no hay una segunda deteccion de capitulo-.
+  // Devuelve el numero de fila visual o null si no hay destino (extremo de
+  // la tabla, o solo quedan capitulos en esa direccion).
+  function encontrarFilaHabilitacion(visualRowInicial, direccion) {
+    if (!hot) { return null; }
+    var total = hot.countRows();
+    var candidato = visualRowInicial;
+    for (var i = 0; i < total; i++) {
+      candidato += direccion;
+      if (candidato < 0 || candidato >= total) { return null; }
+      var rowData = getSourceRowDataByVisualRow(hot, candidato);
+      if (!rowData) { continue; }
+      var physicalRow = getPhysicalRowFromVisualRow(hot, candidato);
+      var meta = getPIRowMeta(physicalRow, rowData);
+      if (!meta.isHeader) { return candidato; }
+    }
+    return null;
+  }
+
   function abrirGloboHabilitacion(celda) {
     if (!_readinessPopover || !celda) { return; }
     var visualRow = celda.hasAttribute('data-row') ? parseInt(celda.getAttribute('data-row'), 10) : NaN;
@@ -155,6 +177,35 @@
     // ruta de escritura, `setDataAtRowProp(..., 'edit')`, mismo `saveRow`-,
     // simplemente sin pasar por `hot.undo()`.
     var ultimaEdicionGlobo = null; // { prop, valorAnterior }
+
+    // Task 8: el salto reabre el globo entero sobre la fila destino -misma
+    // via que un clic normal, `abrirGloboHabilitacion` de nuevo-, asi que
+    // hereda intacto lector de estado, permisos, guardado y deshacer de la
+    // fila nueva sin duplicar esa logica aqui.
+    var colHabilitacion = hot.propToCol('__habilitacion');
+    function irAFila(direccion) {
+      var nuevaFila = encontrarFilaHabilitacion(visualRow, direccion);
+      if (nuevaFila == null) { return; }
+      // `scrollViewportTo` + `render()` (y no `selectCell`) asegura que la
+      // fila destino tenga su <td> en el DOM -en tablas grandes,
+      // `renderAllRows: false` no lo garantiza sin esto-, sin mover la
+      // seleccion de la grilla. Verificado en vivo: eso solo, sin embargo,
+      // no basta -esta tabla usa scroll de PAGINA, no un contenedor interno
+      // con su propio scroll, asi que `scrollViewportTo` puede devolver
+      // `false` (la fila ya "cabe" en el viewport virtual de Handsontable)
+      // mientras la fila sigue fuera de la vista de la PAGINA. El
+      // `scrollIntoView` del propio <td> cubre ese caso: si el anchor CSS
+      // queda clippeado fuera de vista, el navegador oculta el globo
+      // anclado sin avisar -parecia un problema de clic interceptado y era
+      // la fila destino invisible.
+      hot.scrollViewportTo({ row: nuevaFila, col: colHabilitacion });
+      hot.render();
+      var celdaNueva = hot.getCell(nuevaFila, colHabilitacion);
+      if (celdaNueva) {
+        celdaNueva.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        abrirGloboHabilitacion(celdaNueva);
+      }
+    }
 
     var datosFila = {
       Actividad: rowData.Actividad,
@@ -206,6 +257,8 @@
         var filaActual = getSourceRowDataByVisualRow(hot, visualRow) || {};
         return filaActual[prop];
       },
+      siguiente: function () { irAFila(1); },
+      anterior: function () { irAFila(-1); },
     };
 
     _readinessPopover.abrir(celda, datosFila);
