@@ -31,4 +31,18 @@ assert.ok(await pagina.evaluate(() =>
   'el foco no volvio a la celda que abrio el globo');
 
 console.log('OK: abre, enfoca, cierra y devuelve el foco');
+
+await pagina.locator('.pi-habilitacion-cell').first().click();
+assert.equal(await pagina.locator('.aia-readiness-popover:popover-open').count(), 1,
+  'el clic no reabrio el globo');
+
+await pagina.mouse.click(5, 5);
+
+assert.equal(await pagina.locator('.aia-readiness-popover:popover-open').count(), 0,
+  'el clic afuera no cerro el globo');
+assert.ok(await pagina.evaluate(() =>
+  document.activeElement.classList.contains('pi-habilitacion-cell')),
+  'el foco no volvio a la celda tras el clic afuera');
+
+console.log('OK: el clic afuera cierra el globo y devuelve el foco');
 await navegador.close();

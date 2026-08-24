@@ -11,7 +11,11 @@
 // SI: es interactivo (contendra selectores en la Task 7), asi que al abrir
 // mueve el foco DENTRO del globo, atrapa el Tab mientras esta abierto, y
 // Escape lo cierra devolviendo el foco a la celda que lo abrio — eso es lo
-// que exige la prueba de teclado de esta tarea.
+// que exige la prueba de teclado de esta tarea. Un clic fuera del globo y de
+// la celda tambien lo cierra (spec, linea 165): con `popover="manual"` el
+// navegador NO aplica light-dismiss por si solo -eso es exclusivo de
+// "auto"-, asi que el clic-afuera se codifica a mano aqui, con el mismo
+// cierre y devolucion de foco que Escape.
 
 const SOPORTA_ANCLA =
   typeof CSS !== 'undefined' &&
@@ -22,14 +26,25 @@ const HOLGURA = 8;
 let contador = 0;
 let estado = null; // { celda, globo }
 
+// A diferencia de `state-tooltip.js` -donde el panel es un unico nodo que vive
+// siempre en el DOM del chip-, aqui `construirGlobo()` crea un globo NUEVO en
+// cada apertura (se destruye al cerrar). El nombre de ancla se calcula una
+// sola vez por celda y se recuerda en `celda.dataset.aiaAncla`, pero
+// `globo.style.positionAnchor` hay que asignarlo SIEMPRE al globo de turno:
+// si se salta ahi apenas la celda ya tenia ancla de una apertura anterior, el
+// globo nuevo queda sin `position-anchor` y el navegador lo cae a su posicion
+// por defecto (0,0) en vez de anclarlo a la celda.
 const emparejarAncla = (celda, globo) => {
-  if (!SOPORTA_ANCLA || celda.dataset.aiaAncla) {
+  if (!SOPORTA_ANCLA) {
     return;
   }
-  contador += 1;
-  const nombre = `--aia-popover-ancla-${contador}`;
-  celda.dataset.aiaAncla = nombre;
-  celda.style.anchorName = nombre;
+  let nombre = celda.dataset.aiaAncla;
+  if (!nombre) {
+    contador += 1;
+    nombre = `--aia-popover-ancla-${contador}`;
+    celda.dataset.aiaAncla = nombre;
+    celda.style.anchorName = nombre;
+  }
   globo.style.positionAnchor = nombre;
 };
 
@@ -108,6 +123,27 @@ const alTeclado = (ev) => {
   focoAtrapado(ev);
 };
 
+// Clic afuera: ni dentro del globo ni sobre la celda que lo abrio. Se
+// registra en fase de `capture` y se puede instalar en cuanto se abre el
+// globo, sin ningun retraso: el clic que abre el globo llega a `hot.js`
+// (bubble, document) recien DESPUES de que su fase de captura ya paso, asi
+// que agregar aqui este listener de captura durante ese manejador de bubble
+// no alcanza a la fase de captura de ese MISMO evento -solo a los
+// siguientes-, y por eso no se cierra a si mismo.
+const alClicAfuera = (ev) => {
+  if (!estado) {
+    return;
+  }
+  const objetivo = ev.target;
+  if (!(objetivo instanceof Node)) {
+    return;
+  }
+  if (estado.globo.contains(objetivo) || estado.celda.contains(objetivo)) {
+    return;
+  }
+  cerrar();
+};
+
 function cerrar() {
   if (!estado) {
     return;
@@ -115,6 +151,7 @@ function cerrar() {
   const { celda, globo } = estado;
   estado = null;
   document.removeEventListener('keydown', alTeclado, true);
+  document.removeEventListener('click', alClicAfuera, true);
   if (globo.isConnected && typeof globo.matches === 'function' && globo.matches(':popover-open')) {
     globo.hidePopover();
   }
@@ -152,6 +189,7 @@ function abrir(celda, datosFila) {
   colocar(celda, globo);
   globo.focus();
   document.addEventListener('keydown', alTeclado, true);
+  document.addEventListener('click', alClicAfuera, true);
 }
 
 function irA() {
