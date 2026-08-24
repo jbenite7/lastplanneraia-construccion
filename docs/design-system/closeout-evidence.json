@@ -45,20 +45,20 @@
     {
       "id": "runtime-budgets",
       "kind": "automatic",
-      "status": "blocked",
-      "verifiedAt": null,
+      "status": "passed",
+      "verifiedAt": "2026-08-24T23:12:16Z",
       "blocking": true,
       "evidence": [
         {
-          "summary": "Objective receipt for runtime-budgets",
+          "summary": "P2 Tarea 3: gate-receipt.mjs cableado en el workflow (Fase 2 pendiente de goals/runtime-budgets-al-ci), recibo real de la corrida verde de Actions 32787664690, baseline 0.4.0.",
           "commandId": "ds.runtime-budgets.v1",
           "command": "npm run test:runtime-budget:check",
-          "exitCode": 1,
+          "exitCode": 0,
           "artifact": "docs/design-system/evidence/runtime-budgets.json",
-          "artifactSha256": "442bab51ffec92d3a0fcc6eff6cc9939d8d2735920591ada65271fe739c90e04",
-          "sourceRef": "042445a68f6794fc6d3fbadb7cefac689f98c7fe",
-          "sourceFingerprint": "0ec76acec1c8127e864cdbd87147b903ea26797b8a72b823af62b1a0daa63d00",
-          "fixtureSha256": "2da4cad70d5b594c2e0be07273b594f267dc8643191a44b802daa684602f477d"
+          "artifactSha256": "bdd8284cbd8f5b2d806ff56104429dca55a5064ea70473a61e12785a23b1c13f",
+          "sourceRef": "6f9f69f73c32a9e6ea0b774c33b20a3dbdd322f0",
+          "sourceFingerprint": "2aac7c60f358f4fff51802f2f7404e76ad7b8545c778e6997390cabfff288d13",
+          "fixtureSha256": "0a3617dd17ea739af5025330627d6c73ed5efae260218626400d0a5159789fe8"
         }
       ]
     },
