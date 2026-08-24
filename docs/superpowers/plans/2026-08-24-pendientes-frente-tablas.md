@@ -17,6 +17,7 @@
 - **`LPS_CODE_ROOT="$(pwd)"` no es opcional en ninguna de esas invocaciones.** `docker-compose.override.yml:27` monta el codigo por ruta absoluta y sin esa variable cae por defecto a la raiz del repo: se verificaria OTRO arbol creyendo que es este. Es el fallo medido el 2026-08-18 — tres verdes desde un worktree mientras el contenedor servia el principal.
 - **Para tests de linea de comandos** hace falta que el contenedor monte ESTE arbol. Como no lo hace, los tests PHP se corren en el contenedor efimero: `LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php <ruta>`.
 - **El presupuesto `hardcoded-hex` de `programacion-semanal` es 0 y el audit lee tambien los comentarios**, de CSS y de JS. No escribir NINGUN hex, ni dentro de un comentario explicativo. Ya puso el gate en rojo dos veces.
+- **Limpieza del contenedor efimero: `docker rm -f <nombre-de-ESTA-tarea>` y NADA MAS en la misma linea.** El 2026-08-24 un implementador anadio el contenedor compartido a esa misma orden y tumbo `app`, `db` y `adminer` de otra sesion. El plan prohibia reapuntarlo pero no prohibia borrarlo, y por ahi se colo. Cada tarea usa su propio `--name`.
 - **No regenerar baselines ni snapshots para forzar verde.** Un cambio visual necesita aprobacion explicita.
 - **Sesion local siempre por `/dev/entrar`**, nunca por `/login`: `http://127.0.0.1:18081/dev/entrar?u=test.R&p=PDC%20Sandbox%20E2E`.
 - **Commits atomicos con staging selectivo.** Nunca `.env`, evidencia local ni trabajo ajeno.
