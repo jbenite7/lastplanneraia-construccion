@@ -5,7 +5,7 @@ estado: vigente
 fecha: 2026-08-13
 areas: [bi, rbac, arquitectura]
 fuente: src/Security/BiPreviewAccessPolicy.php, docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md
-resumen: la Torre de Control BI sigue viva pero fuera de la navegación mientras se desarrolla; la abren los roles A y D (D ampliado el 2026-08-20), con 404 para el resto
+resumen: la Torre de Control BI sigue viva pero fuera de la navegación mientras se desarrolla; la abren los roles A, D y R (D ampliado el 2026-08-20, R el 2026-08-24), con 404 para el resto
 ---
 La [[torre-de-control-bi]] se ocultó de la navegación el 2026-08-13 porque el módulo está a medio
 hacer y el equipo tropezaba con pantallas incompletas. **Las rutas siguen vivas**: no se borró
@@ -15,11 +15,11 @@ nada, solo dejó de haber por dónde entrar.
 
 | Pieza | Dónde | Qué hace |
 |---|---|---|
-| Capacidad | `internal.bi.preview` (`RbacCatalog.php:13`) | Concedida a **`A` y `D`** (`RbacManager.php:30`; `D` ampliado el 2026-08-20). Desde ese mismo día, para los roles no-Admin manda además el interruptor `bi.control_tower.visible` de `general_flags`, editable en `/admin/modulos` — el Admin entra siempre |
+| Capacidad | `internal.bi.preview` (`RbacCatalog.php:13`) | Concedida a **`A`, `D` y `R`** (`RbacManager.php:33`; `D` ampliado el 2026-08-20, `R` el 2026-08-24 por el reparto de lienzos por rol). Desde ese mismo día, para los roles no-Admin manda además el interruptor `bi.control_tower.visible` de `general_flags`, editable en `/admin/modulos` — el Admin entra siempre |
 | Gate | `BiPreviewAccessPolicy::canOpen()` | Resuelve el rol **por usuario, no por proyecto** — la condición es global |
 | Vistas | `BiViewController.php:54` | **404, no 403**, para no confirmar que la pantalla existe |
 | API | `BiControlTowerApiController.php:34` | Mismo gate |
-| Enlaces | `BiAccessComponent.php:41,60` | No pinta accesos a quien no puede abrirlos |
+| Enlaces | `BiAccessComponent.php:94,113` | No pinta accesos a quien no puede abrirlos |
 
 El gate se comprueba **antes** de la lógica de alcance por proyecto, para no pintarle a un Admin
 un enlace que `BiProjectScope` le rechazaría después.
@@ -40,7 +40,7 @@ desarrolla.
 ## Para revertirlo
 
 Quitar la llamada a `BiPreviewAccessPolicy` de los cuatro puntos de la tabla. El comentario de
-`BiAccessComponent.php:36` lo dice en el propio código, que es donde hay que mirar primero.
+`BiAccessComponent.php:89-90` lo dice en el propio código, que es donde hay que mirar primero.
 
 Ver también [[el-item-oculto-del-sidebar-rompe-su-propio-modulo]] — ocultar el ítem del sidebar
 reventó con 500 las ocho vistas del propio módulo, y es la trampa que este cambio dejó puesta.

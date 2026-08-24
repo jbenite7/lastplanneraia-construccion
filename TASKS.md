@@ -37,8 +37,11 @@ consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ram
 los merges destaparon, en
 [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 §Cierre]].
 
-**Queda un aviso que no bloquea:** la wiki pide un pase de veracidad (52 commits desde el del
-2026-08-21, umbral 40).
+**P1 quedó cerrado entero el mismo día**: noveno pase de veracidad hecho (17 hallazgos, 15 páginas
+corregidas, `npm run test:wiki` en `RC=0`) y los dos hallazgos de `linea-base-contractual`
+verificados por fin — llevaban desde el 2026-08-19 relatados y sin comprobar.
+`test_bi_programa_general_chart_values.php` pasa de **15 `FAIL` a 0**; llevaba rojo desde el
+2026-08-14.
 
 **El estado del repo se consolidó en una spec y seis planes**, por encargo de Felipe del
 2026-08-24: [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design]]. Esta lista
@@ -58,8 +61,8 @@ estado por defecto mientras Felipe no reparta.
 ## Ahora
 
 - [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
-  [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**EJECUTADO** el
-  2026-08-24; quedan el pase de veracidad y verificar los dos hallazgos de linea-base-contractual) ·
+  [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**CERRADO** el
+  2026-08-24, con su `## Cierre` escrito) ·
   [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|P2 · CI y presupuestos]] ·
   [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|P3 · Design System]] ·
   [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|P4 · Móvil y tema claro]] ·
@@ -161,6 +164,13 @@ estado por defecto mientras Felipe no reparta.
   Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
 
   </details>
+
+- [ ] **`test_bi_programa_general_chart_values.php` imprime `FAIL` y sale con `RC=0`.** No propaga su
+  propio fallo, así que un runner que solo mire el código de salida lo da por bueno. Detectado al
+  cerrar P1 el 2026-08-24. Familia de [[memoria/trampas/el-codigo-de-salida-se-pierde-en-la-tuberia]].
+- [ ] **30 proyectos sin cronograma consolidado** — medido al verificar `linea-base-contractual`: no
+  es deuda de la migración, que es correcta, sino un hueco de datos. Los 30 sin línea base no tienen
+  **ni una fila** en `programa_consolidado`. Cerrarlo es decisión de negocio.
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de

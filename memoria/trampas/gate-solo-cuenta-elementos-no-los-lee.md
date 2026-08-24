@@ -95,7 +95,7 @@ lleva a reconstruir piezas sanas.
 El cierre del Frente 1b movió todo lo que este cuerpo describía como vigente, verificado sobre
 `0e45ba1d`:
 
-- `closeout-evidence.json` declara **8 gates, no 15** (`release-governance.test.mjs:75-77` exige
+- `closeout-evidence.json` declaraba **8 gates, no 15** — hoy **9**, ver arriba (`release-governance.test.mjs:79-80` exige
   `gates.length === 8`).
 - El test **ya no exige `status: 'passed'`** en todos: D-F1b-5 (2026-08-11) retiró ese
   acoplamiento — el comentario en `release-governance.test.mjs:68-74` explica que exigirlo fue el

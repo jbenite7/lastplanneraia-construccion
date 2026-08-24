@@ -208,10 +208,77 @@ tres ramas de dependabot.
 - Tarea 6 (podar worktrees) — **HECHA**
 - Tarea 7 (anotar el cierre) — **HECHA** con esta sección
 
-### Lo que queda vivo de P1
+### Lo que quedaba vivo, cerrado el mismo 2026-08-24
 
-- [ ] **Un pase de veracidad de la wiki.** La alarma es legítima: 52 commits desde el pase del
-      2026-08-21, umbral 40. Los metió esta consolidación. Es la operación `veracidad` de
-      `docs/wiki-operacion.md`, no un arreglo de forma
-- [ ] **Verificar los dos hallazgos de `linea-base-contractual`**, ahora que su código está en
-      `main` y no en una rama aparte
+- [x] **Pase de veracidad de la wiki (noveno).** Cuatro verificadores de solo lectura por área sobre
+      `a4f19884`; las cifras sustantivas re-medidas antes de aplicarlas —y **una no coincidió**: el
+      verificador daba 298 tokens `--ds-*` y el conteo anclado a declaración da 295, que es la que
+      quedó—. **17 hallazgos, 15 páginas corregidas, ninguna derogada.** `npm run test:wiki` → `RC=0`.
+      El hallazgo de más fondo estaba repetido en **cinco** páginas: `closeout-evidence.json` declara
+      **nueve** gates desde el 2026-08-14 y todas seguían diciendo ocho — `memoria/mapas/design-system.md`
+      llegaba a contradecirse consigo mismo, «8» arriba y «nueve» treinta líneas más abajo.
+- [x] **Los dos hallazgos de `linea-base-contractual`, verificados.** Ver abajo.
+
+## Los dos hallazgos, medidos por fin
+
+Llevaban desde el 2026-08-19 **relatados y sin comprobar por nadie**. Los dos eran ciertos, y el
+primero es más nítido de lo que decía el relato.
+
+### (a) La migración no mueve ninguna fila — y la causa no era la que se creía
+
+Medido contra la base de desarrollo:
+
+| | |
+|---|---|
+| Proyectos totales | 90 |
+| Sin línea base declarada | 30 |
+| Con cronograma consolidado usable | 56 |
+| **Filas que la migración actualizaría hoy** | **0** |
+| **De los 30 sin línea base, cuántos tienen alguna fila en `programa_consolidado`** | **0** |
+
+El relato decía «el `JOIN` no alcanza a ninguno», lo que sugiere un defecto del `JOIN`. **No lo hay:**
+los 30 proyectos sin línea base **no tienen ni una fila de cronograma**. No hay nada de donde
+deducirla. La migración es correcta y ya hizo su trabajo con los 60 que sí tenían cronograma.
+
+**Veredicto:** no es el patrón de [[el-contador-no-mide-el-archivo]] —esa trampa es una herramienta
+que devuelve algo con forma de resultado sin medir—. Aquí la herramienta es honesta: cero filas
+porque hay cero candidatos. **Lo que queda no es deuda de la migración, es un hueco de datos**:
+30 proyectos sin cronograma. Cerrarlo es decisión de negocio, no de este frente.
+
+### (b) El test afirmaba el contrato derogado
+
+`tests/test_bi_programa_general_chart_values.php` daba **15 `FAIL`**. Exigía
+`contractual_finish_basis === 'first_available_snapshot_per_project'` mientras el servicio produce
+`declared_project_baseline` (`src/Services/ControlTowerService.php:1837,1898`).
+
+**Actualizar el test NO fue ocultar una regresión**, y eso hay que poder demostrarlo: la spec
+`2026-08-19-linea-base-contractual-design.md` lo decide con todas las letras — «el campo
+`contractual_finish_basis` deja de declarar `first_available_snapshot_per_project` y pasa a declarar
+que la fuente es la línea base declarada» — a partir de una frase textual de Felipe: «al reprogramar
+y cambiar actividades, el informe **SÍ** debe conservar la fecha contractual original». El test
+afirmaba lo viejo.
+
+Tres cambios, y el tercero es el que importa:
+
+1. El test lee la fecha de `general_proyectos_procesos.fechaFinLineaBase` en vez de deducirla.
+2. El escenario `baseline-drift` compara contra la declarada, conservando intacta la aserción de
+   `latest_finish`, que es la que de verdad prueba que una reprogramación no mueve la fecha.
+3. **`BiContractFixture` registra sus dos proyectos y les declara la línea base** — no los
+   registraba nadie, solo `seedCicScenario`. Y **no se escribió una fecha literal**: se deriva del
+   primer corte con el **mismo `UPDATE` de la migración**, acotado a esos proyectos. Una fecha a
+   mano habría caducado en silencio en cuanto alguien tocara una `Fecha_Fin` del fixture.
+
+**Resultado:** de 15 `FAIL` a **0**. El test llevaba rojo desde el 2026-08-14.
+
+**Un defecto propio del test, anotado y no arreglado aquí:** imprime `FAIL` y sale con **`RC=0`**.
+No propaga su propio fallo, así que un runner que solo mire el código de salida lo da por bueno.
+Es de la familia de [[el-codigo-de-salida-se-pierde-en-la-tuberia]] y merece frente propio.
+
+### Verificación final de P1
+
+| Comprobación | Resultado |
+|---|---|
+| `run-php-tests.php --nivel=puro` | `RC=0` · 29/29, 0 sospechosos |
+| `run-php-tests.php --nivel=db` | `RC=0` · 81/81, 0 fallaron · PHPUnit 4 clases en verde |
+| `--nivel=datos-proyecto` | 117 corridos, 104 pasaron, **12 fallaron** — los preexistentes documentados. **El 13.º era éste**, y ya no está |
+| `npm run test:wiki` | `RC=0`, sin hallazgos |

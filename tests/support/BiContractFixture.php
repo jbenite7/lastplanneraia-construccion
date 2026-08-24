@@ -227,5 +227,60 @@ final class BiContractFixture
             self::PROYECTO_A,
             self::PROYECTO_B,
         ))->execute();
+
+        self::declararLineaBase($db);
+    }
+
+    /**
+     * Registra los dos proyectos sacrificables y les declara su linea base contractual.
+     *
+     * Anadido el 2026-08-24, al integrar el frente `linea-base-contractual`. Desde entonces la
+     * fecha contractual del informe NO se deduce del primer corte: se lee de
+     * `general_proyectos_procesos.fechaFinLineaBase` (spec
+     * docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md). Estos proyectos no
+     * estaban registrados en esa tabla —solo los registraba `seedCicScenario`—, asi que el
+     * escenario `baseline-drift` se quedaba sin fecha contractual que comprobar.
+     *
+     * La linea base NO se escribe a mano: se deriva del primer corte con el MISMO `UPDATE` de
+     * `database/migrations/20260819_sembrar_linea_base_contractual.sql`, acotado a estos dos
+     * proyectos. Copiar una fecha literal aqui la habria dejado caducando en silencio en cuanto
+     * alguien tocara una `Fecha_Fin` de arriba.
+     */
+    private static function declararLineaBase(Database $db): void
+    {
+        $db->prepare(sprintf(
+            "INSERT IGNORE INTO general_proyectos_procesos
+                (Id, Proyecto_Proceso, Base_de_Datos, Area, Activo, Acceso)
+             VALUES
+                (%1\$d, 'CI Sandbox A', 'ciSandboxA', 'Construccion', 1, 1),
+                (%2\$d, 'CI Sandbox B', 'ciSandboxB', 'Construccion', 1, 1)",
+            self::PROYECTO_A,
+            self::PROYECTO_B,
+        ))->execute();
+
+        $db->prepare(sprintf(
+            "UPDATE general_proyectos_procesos p
+               JOIN (
+                     SELECT c.project_id,
+                            MIN(c.Fecha_Inicio) AS inicio,
+                            MAX(c.Fecha_Fin)    AS fin
+                       FROM programa_consolidado c
+                       JOIN (SELECT project_id, MIN(Semana) AS primera
+                               FROM programa_consolidado
+                              WHERE project_id IN (%1\$d, %2\$d)
+                              GROUP BY project_id) pr
+                         ON pr.project_id = c.project_id
+                        AND pr.primera    = c.Semana
+                      WHERE c.Fecha_Inicio IS NOT NULL
+                        AND c.Fecha_Fin    IS NOT NULL
+                        AND c.project_id IN (%1\$d, %2\$d)
+                      GROUP BY c.project_id
+                   ) pc ON pc.project_id = p.Id
+                SET p.fechaInicioLineaBase = pc.inicio,
+                    p.fechaFinLineaBase    = pc.fin
+              WHERE p.Id IN (%1\$d, %2\$d)",
+            self::PROYECTO_A,
+            self::PROYECTO_B,
+        ))->execute();
     }
 }

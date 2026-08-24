@@ -1165,6 +1165,34 @@ function biContractualBaselineForFilteredCohort(array $unfilteredTrendRows, arra
     return $baseline;
 }
 
+/**
+ * La fecha contractual sale de la linea base DECLARADA del proyecto, no del primer corte.
+ *
+ * Cambiado el 2026-08-24 al integrar el frente `linea-base-contractual`. La spec
+ * docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md lo decide con estas palabras
+ * de Felipe: «al reprogramar y cambiar actividades, el informe SI debe conservar la fecha
+ * contractual original». Antes se deducia del primer snapshot y por eso una reprogramacion que
+ * cambiaba las actividades vaciaba la interseccion y dejaba la fecha NULA — ese era el defecto,
+ * no el sintoma. Este test afirmaba el contrato viejo; se alinea con el nuevo, que es el decidido.
+ */
+function biDeclaredBaselineFinish(int $projectId): ?string
+{
+    static $cache = [];
+    if (array_key_exists($projectId, $cache)) {
+        return $cache[$projectId];
+    }
+    $stmt = \Database::getInstance()->prepare(
+        'SELECT fechaFinLineaBase FROM general_proyectos_procesos WHERE Id = ?'
+    );
+    $stmt->execute([$projectId]);
+    $valor = $stmt->fetchColumn();
+    $cache[$projectId] = ($valor === false || $valor === null || $valor === '')
+        ? null
+        : substr((string) $valor, 0, 10);
+
+    return $cache[$projectId];
+}
+
 function biProgramaForecastExpected(array $trendRows, array $unfilteredTrendRows, array $projectIds): array
 {
     $rowsByProject = [];
@@ -1178,7 +1206,8 @@ function biProgramaForecastExpected(array $trendRows, array $unfilteredTrendRows
         $progress = biProgressExpected($projectRows);
         $observed = array_values(array_filter($progress['real'], 'is_numeric'));
         $available = biPositiveProductionIncrementCount($observed) >= 3;
-        [, $contractual] = biBaselineDates($contractualBaseline[$projectId] ?? []);
+        $contractualDeclarado = biDeclaredBaselineFinish($projectId);
+        $contractual = $contractualDeclarado !== null ? new DateTimeImmutable($contractualDeclarado) : null;
         $completionDates = biCompletionDateSamples($progress);
         $available = $available && $contractual !== null && count($completionDates) === 240;
         $projects[$projectId] = [
@@ -1233,9 +1262,9 @@ function biAssertProgramaForecastContract(
         biFail($failures, "{$label}: forecast availability mismatch");
     }
     if (($metrics['contractual_finish'] ?? null) !== $expected['contractual_finish']) {
-        biFail($failures, "{$label}: contractual finish must remain on the first snapshot baseline");
+        biFail($failures, "{$label}: contractual finish must come from the declared project baseline");
     }
-    if (($metrics['contractual_finish_basis'] ?? '') !== 'first_available_snapshot_per_project') {
+    if (($metrics['contractual_finish_basis'] ?? '') !== 'declared_project_baseline') {
         biFail($failures, "{$label}: contractual baseline basis is not documented");
     }
     if (array_key_exists('observed_days', $metrics)) {
@@ -1921,7 +1950,15 @@ if (!$baselineDrift) {
 } else {
     $driftBrief = $bi->getBrief('programa-general', [(int) $baselineDrift['project_id']], (string) $baselineDrift['last_week'], 'R', []);
     $driftMetrics = $driftBrief['charts']['programa-dias-retraso']['metrics'] ?? [];
-    if (($driftMetrics['contractual_finish'] ?? '') !== (string) $baselineDrift['first_finish']) {
+    // 2026-08-24: antes se comparaba contra `first_finish`, el fin del PRIMER corte. Con el
+    // contrato de `linea-base-contractual` la fecha sale de la linea base DECLARADA del proyecto,
+    // asi que comparar contra el primer corte volvio a afirmar lo que la spec derogo. Lo que este
+    // escenario debe seguir probando —y prueba— es que una reprogramacion NO mueve la fecha: eso
+    // lo cubre esta asercion contra la declarada, mas la de `latest_finish` de abajo, intacta.
+    $driftDeclarado = biDeclaredBaselineFinish((int) $baselineDrift['project_id']);
+    if ($driftDeclarado === null) {
+        biFail($failures, 'baseline-drift: el proyecto del escenario no tiene linea base declarada');
+    } elseif (($driftMetrics['contractual_finish'] ?? '') !== $driftDeclarado) {
         biFail($failures, 'baseline-drift: contractual finish moved with latest reprogramming');
     }
     if (($driftMetrics['contractual_finish'] ?? '') === (string) $baselineDrift['latest_finish']) {

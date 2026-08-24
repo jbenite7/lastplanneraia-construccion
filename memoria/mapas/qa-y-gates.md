@@ -39,7 +39,8 @@ devuelve).
   | `datos-proyecto` | datos o evidencia que el CI no tiene | 30 | no |
 
 **Estas cuatro cifras caducan solas y ya lo hicieron tres veces en 24 h** — el universo pasó de 126
-a 96, a 99 y a 101 según entraban pruebas. Suman **101 el 2026-08-11 sobre `123a8bff`**. No las
+a 96, a 99 y a 101 según entraban pruebas. Suman **117 el 2026-08-24 sobre `a4f19884`**
+(puro 29, db 52, http 5, datos-proyecto 31), frente a los 101 del 2026-08-11. No las
 copies: re-mídelas.
 
 ```bash

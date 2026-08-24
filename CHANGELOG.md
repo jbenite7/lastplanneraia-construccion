@@ -99,6 +99,21 @@ para el estado de los planes en curso.
   `render()`, `updateSettings()`, `loadData()`, resize y recarga. Se actualizó solo el comentario,
   sin arreglo de código. Hipótesis que queda: la medición original se tomó contra un contenedor
   que montaba otro árbol. Commit `ee875efb`.
+### Cierre de P1: pase de veracidad y la fecha contractual del informe (2026-08-24)
+
+#### Fixed
+- `tests/test_bi_programa_general_chart_values.php` pasa de **15 `FAIL` a 0**; llevaba rojo desde el
+  2026-08-14. Afirmaba `contractual_finish_basis === 'first_available_snapshot_per_project'` cuando
+  la spec de `linea-base-contractual` derogó ese contrato: la fecha sale de la línea base declarada
+  del proyecto. `BiContractFixture` pasa a registrar sus proyectos y declararles la línea base
+  derivándola con el mismo `UPDATE` de la migración, no con una fecha literal.
+- Docstring de `BiPreviewAccessPolicy.php`: decía «solo las abre Admin» tras dos ampliaciones de rol.
+
+#### Changed
+- Noveno pase de veracidad de la wiki sobre `a4f19884`: 17 hallazgos, 15 páginas corregidas. El de
+  más fondo estaba en cinco páginas — `closeout-evidence.json` declara **nueve** gates desde el
+  2026-08-14 y todas decían ocho.
+
 ### Consolidación de trece ramas en main y retiro de worktrees (2026-08-24)
 
 #### Changed

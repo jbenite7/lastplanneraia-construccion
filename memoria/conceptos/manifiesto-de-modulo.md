@@ -34,7 +34,7 @@ primitivas BI compartidas).
 
 **Los dos selladores del cierre**, hermanos de esta familia:
 
-- `closeout-evidence.json` — las **ocho gates de cierre** (eran quince hasta el 2026-08-11), cada
+- `closeout-evidence.json` — las **nueve gates de cierre** (quince hasta el 2026-08-11, ocho hasta el 2026-08-14, nueve desde que entró `semanal-roles-phases`), cada
   una `blocking`, con fecha y evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). Ojo: el gate que las lee
   (`tests/design-system/release-governance.test.mjs:75-76`) comprueba `gates.length === 8`,
@@ -43,7 +43,7 @@ primitivas BI compartidas).
   `status: 'passed'`**: `D-F1b-5` retiró ese acoplamiento el 2026-08-11 y hoy uno de los ocho está
   `blocked` sin romper el contrato (ver [[gate-solo-cuenta-elementos-no-los-lee]]). La garantía es de
   forma, no de contenido.
-- `closeout-evidence.json` — los **ocho gates de cierre** (eran quince hasta el Frente 1b), cada
+- `closeout-evidence.json` — los **nueve gates de cierre** (quince hasta el Frente 1b, ocho hasta el 2026-08-14), cada
   uno `blocking` y con evidencia. Es lo que activa la garantía 1.0.0 (ver
   [[madurez-y-api-estable]]). El gate que los cuenta
   (`tests/design-system/release-governance.test.mjs:75-77`) exige la lista completa y bloqueante,

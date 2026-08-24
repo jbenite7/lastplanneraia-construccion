@@ -4,7 +4,12 @@ namespace App\Security;
 
 /**
  * El módulo BI (Control Tower) está oculto de la navegación mientras se desarrolla.
- * Sus rutas siguen vivas, pero solo las abre Admin, que entra por URL directa.
+ * Sus rutas siguen vivas. Las abren Admin, Director de Obra (ampliado el 2026-08-20) y Residente
+ * de Obra (ampliado el 2026-08-24 por el reparto de lienzos por rol), por URL directa. Para los
+ * roles no-Admin manda ademas el interruptor `bi.control_tower.visible` de `general_flags`.
+ *
+ * Este parrafo decia «solo las abre Admin» hasta el 2026-08-24: quedo caducado en dos ampliaciones
+ * sucesivas y ningun gate lo mira, porque es prosa.
  *
  * El rol se resuelve por usuario y no por el proyecto seleccionado, igual que en
  * DesignSystemLabAccessPolicy: la condición es global, no depende de en qué proyecto

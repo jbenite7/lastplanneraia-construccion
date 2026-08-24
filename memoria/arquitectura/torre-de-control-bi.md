@@ -6,7 +6,7 @@ fecha: 2026-08-03
 areas: [bi, arquitectura]
 tags: [generado]
 fuente: public/index.php
-resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos — oculto de la navegación desde 2026-08-13, visible para Admin y Director de Obra (D desde 2026-08-20)"
+resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo tablero, sin tocar los datos operativos — oculto de la navegación desde 2026-08-13, visible para Admin, Director de Obra (D desde 2026-08-20) y Residente de Obra (R desde 2026-08-24)"
 ---
 # Torre de Control BI
 
@@ -14,7 +14,7 @@ resumen: "Torre de Control BI: los reportes consolidados de LPS y PDC en un solo
 desempeño de contratistas, todo leído desde las mismas tablas operativas de LPS y PDC pero sin
 escribir en ellas. Es adonde manda `Control Tower - Informes` del sidebar. **Corregido
 2026-08-14:** desde el 2026-08-13 (`44632801`, `9483cd5a`) está oculto de la navegación y de las
-rutas mientras se desarrolla — lo ven y abren los roles Admin y Director de Obra (`D` ampliado el 2026-08-20), gateado por la capacidad
+rutas mientras se desarrolla — lo ven y abren los roles Admin, Director de Obra (`D` ampliado el 2026-08-20) y Residente de Obra (`R` ampliado el 2026-08-24, `docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design.md`), gateado por la capacidad
 `internal.bi.preview` (`src/Security/RbacCatalog.php:120`) a través de
 `BiPreviewAccessPolicy::canOpen()`. Ver [[control-tower-oculto-mientras-se-desarrolla]].
 

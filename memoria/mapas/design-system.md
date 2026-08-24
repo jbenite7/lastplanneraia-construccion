@@ -113,7 +113,7 @@ matiz por estado» comprueba el JSON contra el JSON y nunca abre el CSS: Program
 dos estados del mismo color con el test en verde) y
 [[gate-solo-cuenta-elementos-no-los-lee]] (el gate de gobernanza de release solo comprobaba
 `evidence.length > 0` sin abrir el contenido: 14 recibos resultaron ser stubs, medido el
-2026-08-10; el hueco lo cerró el Frente 1b — hoy son 8 gates con recibos reales y
+2026-08-10; el hueco lo cerró el Frente 1b — hoy son 9 gates con recibos reales —8 desde el 2026-08-11 y 9 desde el 2026-08-14, al entrar `semanal-roles-phases`— y
 `gate-receipt-content.test.mjs` los abre uno a uno).
 
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],

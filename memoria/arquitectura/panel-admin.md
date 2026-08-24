@@ -39,6 +39,7 @@ Sus vistas (login, dashboard, usuarios, proyectos) están catalogadas en [[VISTA
 | `/admin/proyectos` | CRUD de proyectos, incluida la gestión de miembros |
 | `/admin/matching/family-catalog` | Catálogo de familias de matching |
 | `/admin/matching/config` | Configuración de matching |
+| `/admin/modulos` | Interruptores de módulos (`general_flags`) — entre ellos la visibilidad de la Torre de Control para roles no-Admin. `ModulosController@index`/`@update`, `admin/public/index.php:153-154`. Entró el 2026-08-20 y esta tabla no lo tenía: la propia página avisa de que nadie detecta el desfase automáticamente, y así fue |
 | `/admin/pdc/limpieza` | Mantenimiento del PDC (conteos y ejecución de limpieza) — no aparece en ninguna otra parte de la wiki ni del sidebar principal; si buscas dónde se ajustan parámetros globales del PDC, es aquí y no en [[plan-de-compras]] |
 
 **Nota del manifiesto.** Mini-app aislada con su propio front controller (admin/index.php) y su propio router. Ninguna de sus rutas pasa por public/index.php, por eso la zona generada de rutas queda vacía a propósito.

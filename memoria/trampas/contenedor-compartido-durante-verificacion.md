@@ -78,7 +78,7 @@ de `scripts/publicar.sh` y la verificación en navegador.
 Es **«¿necesita Apache arriba?»**, y la diferencia tiene un contraejemplo que engaña:
 `scripts/run-php-tests.php --nivel=http` es un comando de terminal y **no funciona en efímero**,
 porque su comprobación previa hace `file_get_contents('http://127.0.0.1/login')` **desde dentro del
-contenedor** (`scripts/run-php-tests.php:268`) y `--no-deps` no levanta el servidor web. Fallaría
+contenedor** (`scripts/run-php-tests.php:280`) y `--no-deps` no levanta el servidor web. Fallaría
 por el método, no por el código — un rojo que no dice nada.
 
 Quien aplique la regla por la etiqueta «es CLI, va en efímero» se llevará ese rojo y perderá un rato

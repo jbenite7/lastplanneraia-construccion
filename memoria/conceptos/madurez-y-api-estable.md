@@ -48,13 +48,13 @@ recibos de `docs/design-system/evidence/` que resultaron ser stubs de dos claves
 (`{"gateId": "static", "result": "passed"}`), sin comando, sin salida, sin fecha — medido en la
 Task 6 del Frente 0 (2026-08-10). Ver [[estado|Estado de los goals]] y el Frente 1b.
 
-**Corrección del pase del 2026-08-12:** ese diagnóstico se pagó. Hoy son **ocho** gates, no quince,
+**Corrección del pase del 2026-08-12:** ese diagnóstico se pagó. Hoy son **nueve** gates, no quince —bajaron a ocho el 2026-08-11 y subieron a nueve el 2026-08-14 al entrar `semanal-roles-phases`—,
 sus ocho recibos traen `command`, `exitCode`, `durationMs` y `outputTail` (ya no son stubs), y el
 contrato **dejó de exigir `status: 'passed'`** — `D-F1b-5`, 2026-08-11, porque exigirlo empujaba a
 declarar aprobado lo que no lo estaba. Uno de los ocho está hoy `blocked` y eso es legítimo. Lo que
 sigue siendo cierto es la forma del gate: cuenta elementos, no los lee
 (ver [[gate-solo-cuenta-elementos-no-los-lee]]).
-`tests/design-system/release-governance.test.mjs:75-77` exige que los **ocho gates de cierre** de
+`tests/design-system/release-governance.test.mjs:79-80` exige que los **nueve gates de cierre** de
 `closeout-evidence.json` estén todos `blocking: true` y con `evidence.length > 0`. **Ya no exige
 `status: 'passed'` en todos**: D-F1b-5 (2026-08-11) retiró ese acoplamiento porque, con la versión
 ya estable, exigirlo obligaba a declarar aprobados gates que no lo estaban — fue el incentivo que

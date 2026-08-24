@@ -2,11 +2,11 @@
 capa: wiki
 tipo: goal
 estado: vigente
-fecha: 2026-08-19
+fecha: 2026-08-24
 areas: [proceso]
 tags: [dashboard]
-fuente: los 55 `goals/<slug>/goal.md` leídos el 2026-08-19 contra `origin/main`, más `git ls-files` y el lint de la wiki
-resumen: "Estado de los 55 goals del repo, leído de la sección `## Cierre` de cada goal.md: 42 cerrados, 13 abiertos y 1 en plantilla"
+fuente: los 63 `goals/<slug>/goal.md` leídos el 2026-08-24 contra `origin/main`, más `git ls-files` y el lint de la wiki
+resumen: "Estado de los 63 goals del repo, leído de la sección `## Cierre` de cada goal.md: 56 cerrados y 7 abiertos"
 ---
 # Estado de los goals
 
@@ -36,6 +36,14 @@ un frente. La única que queda es `apply-recalculo-estados`, cuyo trabajo sí co
 
 ## Abiertos o bloqueados
 
+> **Recorte del 2026-08-24.** De los 12 que esta tabla listaba, **seis ya tienen `## Cierre`** y
+> salieron: `contadores-cero`, `contrato-estados-modulo-fantasma`, `semana-fija-visual`,
+> `repaso-usabilidad-no-tablas`, `pdc-tanda2-plan-verdad` y `adopcion-logo-construccion` — los dos
+> últimos eran justamente los que esta página señalaba como «ejecutados sin cierre escrito», y el
+> cierre se escribió. Entró `organizar-la-casa`, en esa misma situación. Medido con
+> `grep -rl '^## Cierre' goals --include=goal.md`: **56 de 63**.
+
+
 | Goal | Estado |
 |---|---|
 | [[goals/bi-control-tower-gemini/goal\|bi-control-tower-gemini]] | **Bloqueado por dependencia, no por olvido.** Su condición de hecho pide aprobar seis modos, tres del tema `linen`, retirado el 2026-07-25 (DS-030): nadie podía cumplirla. El usuario decidió esperar al tema claro nuevo (MO-F3) y aprobar los seis de verdad, en vez de recortar el alcance. Ver [[condicion-de-hecho-caduca-sin-aviso]] |
@@ -43,13 +51,8 @@ un frente. La única que queda es `apply-recalculo-estados`, cuyo trabajo sí co
 | [[goals/reapertura-movil-y-tema-claro/goal\|reapertura-movil-y-tema-claro]] | **Abierto**, 4 de 7 fases cerradas (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan F2b —los 13 módulos restantes— y F3 —tema claro—; F4 se absorbió en DS-F3 |
 | [[goals/runtime-budgets-al-ci/goal\|runtime-budgets-al-ci]] | **Activo.** Persigue el único gate `blocked` de los nueve de `closeout-evidence.json`. Andamio declarado: DS-F3 lo reemplaza |
 | [[goals/gates-al-ci/goal\|gates-al-ci]] | **Pausado** con sus dos decisiones ya confirmadas y sin ejecutar (`test.C` en `docker-compose.ci.yml`, baseline 0.3.4) |
-| [[goals/contadores-cero/goal\|contadores-cero]] | Visto concedido; falta localizar la rama, re-verificar y publicar |
 | [[goals/vocabulario-estados-cascada/goal\|vocabulario-estados-cascada]] | **En replanteo** por pedido del usuario (D-VOC-1). Su aclaración clave: [[programa-general-actualizar-es-otra-herramienta]] |
-| [[goals/contrato-estados-modulo-fantasma/goal\|contrato-estados-modulo-fantasma]] | Su D-1 se ajusta al censo que salga del replanteo anterior, en un solo movimiento |
-| [[goals/semana-fija-visual/goal\|semana-fija-visual]] | Abierto |
-| [[goals/repaso-usabilidad-no-tablas/goal\|repaso-usabilidad-no-tablas]] | Reabierto para ejecutar el hallazgo H-08 que `cierre-dark-mode-y-tablas` dejó diferido |
-| [[goals/pdc-tanda2-plan-verdad/goal\|pdc-tanda2-plan-verdad]] | Condición de hecho cumplida el 2026-07-29 **sin sección de cierre**: por la regla de lectura cuenta como abierto, aunque su trabajo esté hecho. Se cierra escribiendo el cierre, no re-ejecutando |
-| [[goals/adopcion-logo-construccion/goal\|adopcion-logo-construccion]] | Igual que el anterior: ejecutado (`4437fcfa`, `6b618964`) y sin cierre escrito |
+| [[goals/organizar-la-casa/goal\|organizar-la-casa]] | **Ejecutado y sin cierre escrito** (2026-08-20): las siete reglas viven en [[docs/coordinacion-sesiones]] y `AGENTS.md` las referencia. Por la regla de lectura cuenta como abierto |
 
 ## Cerrados
 

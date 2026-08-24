@@ -34,7 +34,12 @@ no 16 de 103.**
 > cifra de fallos de arriba es de `main@1a75b19` (2026-07-29) y **no se ha vuelto a medir**. Cítala
 > siempre con su fecha, o vuelve a correr la suite.
 >
-> **Re-medido el 2026-08-11 sobre `123a8bff`: da 101.** El 2026-08-10 daba **96**, un 24 % menos que el
+> **Re-medido el 2026-08-24 sobre `a4f19884`: da 117** (puro 29, db 52, http 5, datos-proyecto 31).
+> Entraron, entre otros, `test_bi_lienzo_por_rol.php` y `test_bi_alcance_responsables.php`. La cifra
+> de *fallos* no se re-midió sobre ese universo; lo que sí cambió el 2026-08-24 es que **ya no hay
+> sospechosos**: el runner dejó de juzgar en inglés lo que la suite anuncia en español.
+>
+> **Re-medido el 2026-08-11 sobre `123a8bff`: daba 101.** El 2026-08-10 daba **96**, un 24 % menos que el
 > 2026-08-03. El retiro del PDC v1 del 2026-08-04 se llevó varios tests por delante; el universo de
 > 96 ya incluye `tests/test_password_reset_resultados.php`, creado ese mismo día. La cifra de
 > fallos sigue sin re-medirse sobre este universo — solo cambia cuántos archivos hay.
