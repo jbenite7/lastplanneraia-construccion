@@ -812,6 +812,11 @@ export default function PlanFechas() {
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
           rowData={planVisible}
+          // Identidad de fila estable: el plan se recalcula entero y vuelve como filas nuevas.
+          // Sin esto AG Grid las empareja por posicion y pierde el estado de la fila abierta.
+          // La fila es un DESTINO (paquete + lote), no un paquete: un paquete partido en tres
+          // trae tres filas con el mismo paqueteId, y un id repetido rompe la grilla entera.
+          getRowId={(p) => `${p.data.paqueteId}:${p.data.subpaqueteId}`}
           quickFilterText={buscaPlan}
           overlayNoRowsTemplate={vacioTabla("Todavía no hay paquetes con plan calculado. Amarra un paquete a un frente y pulsa «Recalcular».")}
           columnDefs={colsVisibles}

@@ -190,6 +190,90 @@ estado por defecto mientras Felipe no reparta.
   de [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] no pudo migrarlo a la familia
   sólida como al resto de la leyenda de Programa General. Arreglar el contrato primero.
 
+- [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
+  `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
+  aplicar el arreglo de mojibake de F0 (Control Tower): una fila huérfana bloqueó el `UPDATE` con
+  un error de llave foránea. No se investigó el origen ni si están en producción — solo se
+  confirmó que existen y que no se tocaron. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 4.
+- [ ] **BI · `tests/test_causas_codificacion.php` tiene un punto ciego de colación** — usa
+  `SELECT DISTINCT` sin `BINARY`; bajo `utf8mb4_general_ci`, un texto roto («Diseńos») y su
+  versión ya reparada («Diseños») colapsan al mismo grupo `DISTINCT` y MySQL puede devolver el
+  representante correcto, escondiendo la fila rota. Confirmado el 2026-08-20: el test reporta
+  PASA con 2 filas todavía rotas (las huérfanas de arriba), verificado con `LIKE BINARY` directo.
+  Arreglo: reescribir la detección con `LIKE BINARY` o comparar bytes, no `DISTINCT` normal.
+- [ ] **BI · `tests/test_cip_poblado.php` no prueba realmente el arreglo del backfill** —
+  solo comprueba `COUNT(DISTINCT profesional) > 0`, que pasaría igual con el código viejo si
+  coincide una sola semana. Debería aseverar cobertura multi-semana (`COUNT(DISTINCT Semana)`).
+  Hallazgo de la revisión final de F0, 2026-08-24. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 1.
+- [ ] **BI · el backfill de `cip` no tiene guarda de costo** — `updateCICProyectos()` repite
+  ~4 consultas por semana por proyecto en cada corrida, incluidas semanas ya completas que no
+  cambian. Un proyecto en semana 60 son ~240 consultas por corrida solo para reconfirmar lo ya
+  hecho. No medido bajo carga real. Guarda barata propuesta: saltar la semana si
+  `COUNT(*) FROM cip WHERE Semana = ?` ya iguala el número de responsables de esa semana.
+  Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
+  escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
+  contradice la regla general de aislamiento del repo; falta un comentario que lo declare
+  explícito. Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · dos tests de F0 salen "sospechosos" para el runner por el mismo patrón** —
+  `tests/test_causa_atribucion.php` y `tests/test_causas_codificacion.php` imprimen `"PASA: ..."`,
+  y `PASA` (con A) no contiene ninguna señal reconocida por `SENALES_DE_COMPROBACION` (`pass`,
+  `ok`, `comprobacion`, `comprobación`, `✓`, `correcto`) — difiere de `pass` en la cuarta letra.
+  Los dos comprueban algo de verdad (ejecutan y pasan directamente, rc=0), pero el runner no los
+  reconoce y los marca sospechosos. Arreglo: cambiar el texto de éxito de los dos a algo que
+  incluya una señal reconocida, p. ej. `"PASA (correcto): ..."`. Preexistentes de las Tareas 3 y 4
+  de F0 (ambas ya cerradas con revisión limpia); confirmado por el controller el 2026-08-24 que
+  son idénticos contra el commit previo a la ronda de arreglos de la revisión final — no los
+  introdujo esa ronda. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Tasks 3 y 4.
+
+- [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General)** — de 24 botones de
+  filtro idénticos, `markDecorativeHeaderTriggers` marca 12 con `aria-hidden` y deja 12 sin marcar.
+  Son 12 columnas por 2 contenedores (`ht_master` y `ht_clone_top`), así que cada columna tiene un
+  botón anunciado y su gemelo callado — el mismo defecto que el comentario de esa función venía a
+  cerrar, reaparecido por el otro lado. Medido en vivo el 2026-08-24; anotado en
+  `public/js/modules/programa_general/hot.js:2411`. Con `navigableHeaders: true` el camino de
+  teclado NO pasa por esos botones, así que marcarlos los 24 es lo coherente.
+
+- [ ] **DS · dos salidas del sistema en las tablas** — `handsontable-module.css:579` usa
+  `font-family: monospace` literal en vez de `--ds-font-mono`, y
+  `handsontable-header-global.css:167` llama a «Font Awesome 5 Free» directamente en vez de una
+  primitiva de ícono. Los dos son de una línea; van juntos porque son el mismo tipo de fuga.
+
+- [ ] **CI · el mismo SQL declarado en cuatro listas que deben coincidir** — al sembrar
+  `general_flags` (2026-08-24) hubo que tocar `database/fixtures/design-system-ci.Dockerfile`,
+  `scripts/design-system-ci-preflight.mjs`, `tests/design-system/ci-preflight.test.mjs` y
+  `tests/design-system/visual-ci-contract.test.mjs`. El gate rechazó **tres veces seguidas**, una
+  por lista, así que la red funciona; lo caro es que el comentario que advertía de esto hablaba de
+  «las dos listas» y ya son cuatro. Evaluar si una sola fuente derivada las sustituye.
+
+- [ ] **CI · regenerar la baseline de presupuesto de runtime** — `runtime-baseline-0.3.5.json` se
+  grabó el 2026-08-18 y desde entonces entraron **56 commits de código** a `main`, incluidas las
+  cuatro olas del replanteo de coloreado. El gate no lo cazó porque estaba apagado detrás del
+  fallo de `general_flags` (2026-08-21 → 2026-08-24). Al destrabarlo aparecen dos excesos:
+  `jsGzipBytes` 643.832 contra un techo de 638.380, e `initializationMs` 596,5 contra 301,9.
+  **No son del frente de tablas:** su delta de JS son 2.203 B gzip sobre un exceso de 5.452 B, e
+  `initializationMs` mide `performance.now()` de carga de página completa. Regenerar la baseline
+  es **aprobación designada de Felipe**, igual que los goldens: no se toma de paso.
+
+- [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
+  `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
+  de rol que se corrigió el 2026-08-24 en los botones de Programación Semanal. Ya estaba anotado
+  como «trampa medida, sin auditar» en [[docs/PDC-AUDIT]] §Trampa medida; queda aquí para que salga
+  de ese pie de página. El rojo de series es `critical` (`oklch(65% 0.18 26.3)`). Contexto y receta:
+  [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design]] §Lo que se rompió después.
+
+- [ ] **Tablas · retirar DataTables, el tercer motor** — quedan cinco superficies en
+  DataTables 1.10.21 (2020, con jQuery detrás): `views/programacion-semanal/CIC|CNC|CNP.view.php`,
+  `views/control-cambios/controlCambios.view.php` y las tablas del panel `admin/`. El destino es
+  AG Grid, ya en uso en Plan de Compras. **Sin frente propio y sin fecha:** ninguna de esas
+  pantallas duele hoy, así que la regla es «quien entre a una de ellas por otra razón, sale con
+  AG Grid». Al hacerlo, llevarse también las cifras tabulares, que ese carril no las tiene
+  (`font-variant-numeric: tabular-nums`, ya aplicado en Handsontable y en el PDC). Decisión de
+  rumbo del 2026-08-24 en [[ROADMAP]].
+
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
@@ -439,6 +523,22 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
+
+## Habilitación en una columna (en curso, sesión propia)
+
+Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
+quedaron vivos del frente de replanteo de coloreado:
+
+- **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
+  con un guardián que falla solo si alguien vuelve a ensanchar.
+- **Contadores de leyenda del color equivocado** — consumen `--ds-state-tint-*` mientras los chips
+  usan `--ds-state-solid-*`. Lo cierra la Task 1, que es independiente del resto.
+
+Pendiente propio derivado: **Programación Semanal hereda la pieza en la ola siguiente**, con
+Intermedia ya rodado una semana en obra. Comparte las mismas cinco restricciones duras
+(`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
+problema que el frente vino a corregir.
 
 ## Replanteo antes de ejecutar
 

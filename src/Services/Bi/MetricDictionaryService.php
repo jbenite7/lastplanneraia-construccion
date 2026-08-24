@@ -161,7 +161,7 @@ class MetricDictionaryService
         $catalog['pg_radar_productividad'] = [
             'metric_key' => 'pg_radar_productividad',
             'report_key' => 'programa-general',
-            'metric_name' => 'Radar: Productividad',
+            'metric_name' => 'Radar: Avance promedio',
             'definition' => 'Proxy de productividad: avance promedio de P_Completado con población válida independiente; el sobrecumplimiento conserva la fila y limita su aporte al eje a 100%.',
             'formula' => 'PROMEDIO(MIN(P_Completado válido, 1)) × 100',
             'unit' => 'porcentaje',
@@ -175,7 +175,7 @@ class MetricDictionaryService
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; requiere mínimo 3 registros válidos.',
-            'version' => '2.0',
+            'version' => '2.1',
             'known_limitations' => 'P_Completado nulo o negativo se excluye. Valores superiores a 1 permanecen en la muestra y aportan máximo 1 al eje; el detalle conserva el valor bruto.',
         ];
 

@@ -39,3 +39,14 @@ COPY database/bi/010_bi_lineage.sql /docker-entrypoint-initdb.d/110-bi-view.sql
 # paso cada build de CI comprueba que la migracion hace lo que dice. Va al final, despues de que
 # el fixture haya creado la tabla, porque sus ALTERs son condicionales.
 COPY database/migrations/20260807_proyectos_lineabase_columns.sql /docker-entrypoint-initdb.d/120-proyectos-lineabase.sql
+
+# 2026-08-24: `general_flags` llego con el interruptor del Control Tower (migracion del 20-08 +
+# `FlagsService` + dos suites), pero la imagen de CI nunca la sembro. Resultado: `main` en rojo
+# desde el 2026-08-21 con «Table 'lastplanneraia_ci.general_flags' doesn't exist» en
+# test_bi_preview_gate.php (21/22) y test_flags_service.php (4/7) — 74 de 76 pasan y el paso
+# muere ahi, ANTES del piloto visual, que por eso lleva sin correr en CI el mismo tiempo.
+#
+# Se aplica LA MIGRACION, no un CREATE TABLE a mano, por el mismo criterio que el bloque de
+# arriba: una sola fuente de verdad, y cada build de CI comprueba de paso que la migracion hace
+# lo que dice. Es idempotente (IF NOT EXISTS + INSERT IGNORE), asi que re-correrla no daña.
+COPY database/migrations/20260820_general_flags.sql /docker-entrypoint-initdb.d/121-general-flags.sql

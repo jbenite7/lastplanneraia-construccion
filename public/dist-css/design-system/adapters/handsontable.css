@@ -45,6 +45,10 @@
     font-size: var(--ds-table-cell-font-size);
     line-height: var(--ds-table-cell-line-h);
   }
+  :where(.handsontable td),
+  .handsontableInput {
+    font-variant-numeric: tabular-nums;
+  }
   :where(.handsontable th, .handsontable td) {
     border-color: var(--ds-table-border);
     background: var(--ds-active-surface);

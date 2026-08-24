@@ -2610,6 +2610,29 @@
       td.classList.add('ps-row-state', alertClass, getStateClassForRow(rowData));
       td.classList.add('htCenter', 'htMiddle');
 
+      // El fondo de la fila lo pinta `ps-state-<estado>`, y este renderer se
+      // construye la lista de clases a mano en vez de heredar la que arma
+      // `cells()` (el `finalClass` de mas abajo, que si la incluye). Sin ella la
+      // celda de Acciones se quedaba con el blanco opaco que el vendor declara en
+      // `.handsontable td, .handsontable th`, que le gana por especificidad (0,1,1)
+      // al `:where(...)` del adaptador (0,0,0). La columna entera se veia como una
+      // franja clara pegada al borde derecho de una tabla oscura, en todas las
+      // filas. Reportado sobre captura el 2026-08-24.
+      //
+      // Se limpia antes de anadir porque el estado de una fila cambia en caliente
+      // (autoprogramar, confirmar) y este renderer se reusa sobre el mismo `td`:
+      // sin la limpieza se acumularian dos `ps-state-*` y ganaria el que el orden
+      // de la hoja decida, no el estado real.
+      for (var i = td.classList.length - 1; i >= 0; i--) {
+        if (td.classList[i].indexOf('ps-state-') === 0) {
+          td.classList.remove(td.classList[i]);
+        }
+      }
+      var stateClass = getStateClassForRow(rowData);
+      if (stateClass) {
+        td.classList.add(stateClass);
+      }
+
       var phase = getSemanalConfirmada();
       var permiso = getPermiso();
       var html = '';
@@ -2854,6 +2877,13 @@
       ],
       columns: columnDefs,
       hiddenColumns: getLegacyHiddenColumnsConfig(columnDefs),
+      // Accesibilidad (Handsontable >= 14.0). Por defecto viene en `false`, y con esa
+      // opcion apagada NO hay camino de teclado hasta el embudo de la cabecera: HOT lo
+      // pinta con `tabindex="-1"` y `aria-hidden="true"` a proposito, porque espera que
+      // se llegue navegando el encabezado con las flechas y se abra con Alt+Abajo.
+      // Comprobado en /programa-general el 2026-08-24: sin esto, quien no usa raton no
+      // puede filtrar ninguna tabla de la aplicacion.
+      navigableHeaders: true,
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
       // `last` y no `none` (2026-08-20, defecto reportado por Felipe: «los border

@@ -528,6 +528,10 @@ export default function PaquetesContratacion() {
         <AgGridReact<InsumoPaquete>
           theme={pdcTheme}
           rowData={visibles}
+          // Identidad de fila estable: sin esto AG Grid identifica por posicion y al recargar
+          // (`cargar(filtro)` corre con cada cambio de filtro) pierde seleccion y estado de fila.
+          // La clave es la misma que ya usa `state.seleccion`, no una inventada aparte.
+          getRowId={(p) => claveInsumo(p.data.descripcionNorm, p.data.unidad)}
           overlayNoRowsTemplate={vacioTabla("No queda ningún insumo con este filtro.")}
           columnDefs={colsVisibles}
           defaultColDef={defaultColDef}

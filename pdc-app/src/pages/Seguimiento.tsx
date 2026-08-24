@@ -579,6 +579,10 @@ export default function Seguimiento() {
         <AgGridReact<FilaSeguimiento>
           theme={pdcTheme}
           rowData={visibles}
+          // Identidad de fila estable: el seguimiento se refresca al cerrar el panel de un
+          // paquete, y sin esto la fila que se acaba de tocar no es la misma para AG Grid.
+          // Por destino (paquete + lote): un paquete partido trae varias filas con igual paqueteId.
+          getRowId={(p) => `${p.data.paqueteId}:${p.data.subpaqueteId}`}
           quickFilterText={buscaSeg}
           columnDefs={cols}
           defaultColDef={defaultColDef}
