@@ -2,7 +2,7 @@
 capa: fuente
 tipo: reporte
 estado: abierto
-fecha: 2026-08-20
+fecha: 2026-08-24
 areas: [pdc, datos]
 fuente: "SSH `siteground-produccion-lastplanner` (solo lectura, mysqldump/mysql) + docker local, 2026-08-24"
 resumen: "Pasos 1-4 del retiro de tablas PDC v1 (D64/D83/D84): prerrequisito confirmado, extracción de estructura y CSV histórico, verificación de lectura parcial, y respaldo de producción. Paso 5 (el retiro en sí) queda deliberadamente sin ejecutar."

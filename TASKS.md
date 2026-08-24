@@ -171,6 +171,21 @@ estado por defecto mientras Felipe no reparta.
   representante correcto, escondiendo la fila rota. Confirmado el 2026-08-20: el test reporta
   PASA con 2 filas todavía rotas (las huérfanas de arriba), verificado con `LIKE BINARY` directo.
   Arreglo: reescribir la detección con `LIKE BINARY` o comparar bytes, no `DISTINCT` normal.
+- [ ] **BI · `tests/test_cip_poblado.php` no prueba realmente el arreglo del backfill** —
+  solo comprueba `COUNT(DISTINCT profesional) > 0`, que pasaría igual con el código viejo si
+  coincide una sola semana. Debería aseverar cobertura multi-semana (`COUNT(DISTINCT Semana)`).
+  Hallazgo de la revisión final de F0, 2026-08-24. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 1.
+- [ ] **BI · el backfill de `cip` no tiene guarda de costo** — `updateCICProyectos()` repite
+  ~4 consultas por semana por proyecto en cada corrida, incluidas semanas ya completas que no
+  cambian. Un proyecto en semana 60 son ~240 consultas por corrida solo para reconfirmar lo ya
+  hecho. No medido bajo carga real. Guarda barata propuesta: saltar la semana si
+  `COUNT(*) FROM cip WHERE Semana = ?` ya iguala el número de responsables de esa semana.
+  Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
+  escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
+  contradice la regla general de aislamiento del repo; falta un comentario que lo declare
+  explícito. Hallazgo de la revisión final de F0, 2026-08-24.
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
