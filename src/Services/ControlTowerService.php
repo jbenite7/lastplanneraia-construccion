@@ -2888,24 +2888,29 @@ class ControlTowerService
         return round(min(150.0, max(0.0, ($real / $planned) * 100)), 1);
     }
 
+    // 2026-08-24: estos `color_token` PINTAN el relleno de dos donas (el anillo de «Avance
+    // fisico» y el de «Cumplimiento cronograma»), asi que tienen que ser colores de DATO.
+    // Devolvian `status-*`, que resuelve a `--ds-color-state-*-text`: tinta pensada para
+    // leerse SOBRE un fondo, no para rellenar un area. El semaforo se conserva —el color
+    // sigue diciendo si va mal o bien—, cambia con que se pinta.
     private function semanticMetricRange(float $value, string $vocabulary): array
     {
         $isCompliance = $vocabulary === 'compliance';
         if ($value < 70.0) {
-            return ['key' => 'critical', 'label' => $isCompliance ? 'No Cumple' : 'Inaceptable', 'color_token' => 'status-critical'];
+            return ['key' => 'critical', 'label' => $isCompliance ? 'No Cumple' : 'Inaceptable', 'color_token' => 'critical'];
         }
         if ($value < 90.0) {
-            return ['key' => 'warning', 'label' => $isCompliance ? 'Cumple Parcialmente' : 'Aceptable', 'color_token' => 'status-warning'];
+            return ['key' => 'warning', 'label' => $isCompliance ? 'Cumple Parcialmente' : 'Aceptable', 'color_token' => 'brand-construction'];
         }
-        return ['key' => 'success', 'label' => $isCompliance ? 'Cumple' : 'Excelente', 'color_token' => 'status-success'];
+        return ['key' => 'success', 'label' => $isCompliance ? 'Cumple' : 'Excelente', 'color_token' => 'brand-primary'];
     }
 
     private function schedulePerformanceRange(float $real, float $planned): array
     {
         $performance = $this->scheduleCompliancePct($real, $planned);
-        if ($performance < 95.0) return ['key' => 'critical', 'label' => 'Atrasado', 'color_token' => 'status-critical'];
-        if ($performance > 105.0) return ['key' => 'success', 'label' => 'Adelantado', 'color_token' => 'status-success'];
-        return ['key' => 'warning', 'label' => 'A Tiempo', 'color_token' => 'status-warning'];
+        if ($performance < 95.0) return ['key' => 'critical', 'label' => 'Atrasado', 'color_token' => 'critical'];
+        if ($performance > 105.0) return ['key' => 'success', 'label' => 'Adelantado', 'color_token' => 'brand-primary'];
+        return ['key' => 'warning', 'label' => 'A Tiempo', 'color_token' => 'brand-construction'];
     }
 
     private function programaProgressDetailPayload(array $trend): array

@@ -3704,7 +3704,10 @@ function renderComparativeProgressGauge(canvasId, chart) {
   stabilizeCanvas(canvas, 'gauge');
   const theme = chartTheme();
   const source = chartDatasets(chart).slice(0, 2);
-  const colors = source.map((dataset, index) => resolveChartColor(dataset.color || (index === 0 ? 'status-critical' : 'brand-aqua-medium')));
+  // El servidor SIEMPRE manda `dataset.color` para este medidor, asi que este fallback casi no
+  // corre; aun asi decia `status-critical`, que es tinta de estado y no color de serie. La causa
+  // del anillo palido no estaba aqui sino en ControlTowerService::semanticMetricRange().
+  const colors = source.map((dataset, index) => resolveChartColor(dataset.color || (index === 0 ? 'critical' : 'brand-aqua-medium')));
   const remainder = resolveChartColor('surface-muted');
   const datasets = source.map((dataset, index) => ({
     label: dataset.label,
