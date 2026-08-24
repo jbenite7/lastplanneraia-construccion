@@ -704,9 +704,20 @@
 <!-- Vista: Responsables (CIP) -->
 <section id="view-cip" class="view-section w-full hidden" aria-label="Responsables CIP" role="tabpanel" aria-labelledby="nav-cip">
     <div class="card p-5 flex flex-col gap-4">
-        <div class="flex items-center gap-2">
-            <i data-lucide="users" class="w-5 h-5" aria-hidden="true"></i>
-            <h3 class="font-semibold text-gray-800">Responsables (CIP)</h3>
+        <div class="flex items-center gap-2 justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="users" class="w-5 h-5" aria-hidden="true"></i>
+                <h3 class="font-semibold text-gray-800">Responsables (CIP)</h3>
+            </div>
+            <?php if (($role ?? '') === 'R'): ?>
+            <?php
+                $cipVerTodaLaObraHref = \App\View\Components\BiAccessComponent::url('profesionales');
+                $cipVerTodaLaObraHref .= (str_contains($cipVerTodaLaObraHref, '?') ? '&' : '?') . 'alcance=obra';
+            ?>
+            <a href="<?= htmlspecialchars($cipVerTodaLaObraHref, ENT_QUOTES, 'UTF-8') ?>" class="aia-btn aia-btn--secondary text-sm">
+                Ver toda la obra
+            </a>
+            <?php endif; ?>
         </div>
         <div id="cip-table-wrapper" class="bi-table-container">
             <table class="w-full text-xs" id="cip-table">

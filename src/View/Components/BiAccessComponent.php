@@ -21,11 +21,64 @@ class BiAccessComponent
     ];
 
     /**
+     * `BiViewController` identifica cada pantalla por reportKey ('overview', 'cip', ...);
+     * ROUTES identifica cada módulo por el nombre que usan los enlaces ('control-tower',
+     * 'profesionales', ...). Los dos vocabularios no coinciden 1:1 (cic → subcontratistas,
+     * cip → profesionales, overview → control-tower), así que hace falta este mapa.
+     */
+    private const REPORT_KEY_TO_MODULE = [
+        'overview' => 'control-tower',
+        'programa-general' => 'programa-general',
+        'intermedia' => 'intermedia',
+        'semanal' => 'semanal',
+        'pdc' => 'pdc',
+        'cic' => 'subcontratistas',
+        'cip' => 'profesionales',
+        'curva-s' => 'indicadores',
+    ];
+
+    /**
+     * A qué módulo aterriza cada rol al abrir la Torre desde el enlace de entrada.
+     * Decisión de Felipe, 2026-08-24 (reemplaza D72 "sin conmutador" para R y A):
+     * docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design.md.
+     */
+    public static function defaultModuleForRole(string $role): string
+    {
+        $role = strtoupper(trim($role));
+
+        if ($role === 'D' || $role === 'R') {
+            return 'intermedia';
+        }
+
+        if ($role === 'A') {
+            return self::adminLastModule() ?? 'control-tower';
+        }
+
+        return 'control-tower';
+    }
+
+    /**
+     * Último módulo que el Admin visitó en esta sesión, o null si no ha entrado
+     * todavía. Lo escribe BiViewController::renderView() en cada visita. Ver Tarea 3.
+     */
+    private static function adminLastModule(): ?string
+    {
+        $reportKey = $_SESSION['bi_admin_last_module'] ?? null;
+        if (!is_string($reportKey) || $reportKey === '') {
+            return null;
+        }
+
+        return self::REPORT_KEY_TO_MODULE[$reportKey] ?? null;
+    }
+
+    /**
      * El módulo BI está oculto de la navegación mientras se termina de desarrollar
      * (spec del 2026-08-13: docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
      * Sus accesos —barra lateral, selector de proyectos, tarjeta del cajón contextual,
      * los cinco botones «BI …» y los boot-configs de JS— solo se pintan para quien
-     * además puede abrir el módulo, que hoy es únicamente Admin.
+     * además puede abrir el módulo. Hoy eso incluye Admin, Director (desde el
+     * 2026-08-20) y Residente (Tarea 3, 2026-08-24), estos dos últimos sujetos al
+     * interruptor global `BiPreviewAccessPolicy::canOpen()`.
      *
      * Corregido el 2026-08-13, mismo día: la primera versión devolvía `false` para
      * todos, y dejaba al propio Admin teniendo que teclear la URL. Lo reportó el

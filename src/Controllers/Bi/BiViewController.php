@@ -71,6 +71,18 @@ class BiViewController extends BaseController
 
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $role      = $this->projectScope->reportRole($projectIds, $_SESSION);
+
+        if ($reportKey === 'cip') {
+            $this->maybeRedirectToOwnScope($projectIds, $role);
+        }
+
+        // El Admin no tiene audiencia fija: recuerda su última elección para que el
+        // enlace de entrada del sidebar aterrice ahí la próxima vez (Tarea 3,
+        // docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design.md).
+        if ($role === 'A') {
+            $_SESSION['bi_admin_last_module'] = $reportKey;
+        }
+
         $filters   = $this->resolveFilters();
 
         $brief = $this->bi->getBrief($reportKey, $projectIds, $semana, $role, $filters);
@@ -167,6 +179,83 @@ class BiViewController extends BaseController
     public function responsables(): void
     {
         $this->renderView('cip', 'control-tower');
+    }
+
+    /**
+     * El Residente aterriza en Responsables viendo solo sus propios compromisos
+     * (confirmado con Felipe, 2026-08-24), a menos que ya haya elegido explícitamente
+     * un filtro (`resp`) o pedido ver toda la obra (`alcance=obra`).
+     *
+     * Se invoca DESDE renderView(), después del gate de acceso (BiPreviewAccessPolicy
+     * + requireAuth) y con el mismo $projectIds/$role que ya resolvió esa función —
+     * nunca antes del gate, y nunca contra $_SESSION directamente, porque el alcance
+     * mostrado puede diferir del de sesión (ej. ?project_ids=70 con la 68 en sesión).
+     * Corrección Tarea 4, revisión 2026-08-24.
+     *
+     * @param array<int,int> $projectIds
+     */
+    private function maybeRedirectToOwnScope(array $projectIds, string $role): void
+    {
+        if (isset($_GET['resp']) || ($_GET['alcance'] ?? '') === 'obra') {
+            return;
+        }
+
+        // 'MULTI' significa selección de más de un proyecto: no hay un único
+        // proyecto contra el cual resolver el nombre propio, así que no se aplica
+        // el filtro por defecto.
+        if ($role !== 'R' || count($projectIds) !== 1) {
+            return;
+        }
+
+        $usuario = (string) ($_SESSION['usuario'] ?? '');
+        if ($usuario === '') {
+            return;
+        }
+
+        $nombre = $this->resolveOwnProfessionalName($usuario, $projectIds[0]);
+        if ($nombre === null) {
+            return;
+        }
+
+        $query = $_GET;
+        $query['resp'] = $nombre;
+        header('Location: /bi/responsables?' . http_build_query($query));
+        exit;
+    }
+
+    /**
+     * Nombre en `profesionales` de quien está en sesión, cruzando por email contra
+     * `general_usuarios`. Null si no hay cruce (usuario sin profesional, o email
+     * distinto entre las dos tablas). Usado por el filtro por defecto de Responsables
+     * para el Residente (Tarea 4, 2026-08-24).
+     */
+    protected function resolveOwnProfessionalName(string $usuario, int $projectId): ?string
+    {
+        $usuario = trim($usuario);
+        if ($usuario === '' || $projectId <= 0) {
+            return null;
+        }
+
+        $dbName = (string) ($_SESSION['db'] ?? '');
+        if ($dbName === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            return null;
+        }
+
+        try {
+            $tProf = TableResolver::resolveByPrefix($dbName, 'profesionales');
+            $fila = $this->db->query(
+                "SELECT p.nombre FROM {$tProf} p
+                 INNER JOIN general_usuarios u ON u.email = p.email
+                 WHERE u.usuario = ? AND p.project_id = ? AND p.email <> ''
+                 LIMIT 1",
+                [$usuario, $projectId]
+            )->fetch();
+        } catch (\Throwable $e) {
+            error_log('Error resolviendo nombre propio para Responsables: ' . $e->getMessage());
+            return null;
+        }
+
+        return $fila !== false ? (string) $fila['nombre'] : null;
     }
 
     public function curvaS(): void

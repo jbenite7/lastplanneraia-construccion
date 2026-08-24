@@ -27,9 +27,10 @@ class RbacManager
         return [
             'isSystemAdmin' => $isSystemAdmin,
             RbacCatalog::PERM_INTERNAL_DESIGN_SYSTEM_VIEW => $isSystemAdmin,
-            // Ampliado a Director de Obra el 2026-08-20 (decisión de Felipe): el módulo sigue
-            // oculto para el resto de roles mientras se desarrolla.
-            RbacCatalog::PERM_INTERNAL_BI_PREVIEW => $isSystemAdmin || $isDirector,
+            // Ampliado a Director de Obra el 2026-08-20 y a Residente el 2026-08-24 (decisión de
+            // Felipe, docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design.md): el
+            // módulo sigue oculto para el resto de roles mientras se desarrolla.
+            RbacCatalog::PERM_INTERNAL_BI_PREVIEW => $isSystemAdmin || $isDirector || $isResident,
             'canManageWeeks' => in_array($role, ['A', 'D', 'OT', 'R', 'DCV']),
             'canManageGeneralProgram' => in_array($role, ['A', 'D', 'R', 'DCV']),
             'canEditPastGeneralProgram' => in_array($role, ['A', 'D']),
