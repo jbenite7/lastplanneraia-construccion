@@ -75,6 +75,19 @@ const BASELINE_GENERATIONS = {
     measurementPath: 'docs/design-system/runtime-measurements/0.3.5-measurement.json',
     manifestPath: 'docs/design-system/runtime-measurements/0.3.5-recovery-manifest.json',
   },
+  // 0.4.0 (2026-08-24): primera generacion cuyo baseline se mide en el MISMO entorno donde el
+  // gate lo verifica. Las anteriores no lo hacian y ahi estaba el defecto: 0.3.5 se midio en la
+  // maquina local (`run-local-01428901`) mientras el check corre en runners de GitHub Actions, y
+  // `initializationMs` agrupa por maquina antes que por codigo — 191-268 ms en local contra
+  // 596-1071 ms en Actions. Un baseline tomado en la maquina rapida y verificado en la lenta
+  // produce rojos que no son regresiones. Salta a 0.4.0 y no a 0.3.6 por dos razones: el nombre
+  // 0.3.6 ya lo lleva una medicion suelta archivada en runtime-measurements, y el salto menor
+  // senala el cambio de entorno de referencia, que es lo que de verdad cambio aqui.
+  '0.4.0': {
+    measurementKind: 'current',
+    measurementPath: 'docs/design-system/runtime-measurements/0.4.0-measurement.json',
+    manifestPath: 'docs/design-system/runtime-measurements/0.4.0-recovery-manifest.json',
+  },
 };
 
 export function baselineGeneration(version) {

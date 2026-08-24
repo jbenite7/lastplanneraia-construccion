@@ -22,7 +22,7 @@
     "test:hue:pilot": "playwright test tests/browser/programa-general-state-hue.mjs --workers=1",
     "test:performance:lab": "playwright test tests/browser/design-system-lab.performance.mjs --workers=1",
     "test:runtime-budget:measure": "playwright test tests/browser/design-system-runtime-budget.mjs --workers=1",
-    "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.3.5.json test-output/design-system-runtime-budget.json",
+    "test:runtime-budget:check": "node scripts/design-system-runtime-budget.mjs check docs/design-system/runtime-baseline-0.4.0.json test-output/design-system-runtime-budget.json",
     "css:minify": "node scripts/css-minify.mjs",
     "css:minify:check": "node scripts/css-minify.mjs --verificar",
     "css:minify:parity": "node tests/design-system/css-minify-parity.mjs",

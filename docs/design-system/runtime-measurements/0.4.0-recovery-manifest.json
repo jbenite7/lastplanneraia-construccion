@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "current-measurement-receipt",
+  "designSystemVersion": "0.4.0",
+  "measuredDesignSystemVersion": "1.1.0",
+  "status": "ci-measured",
+  "recordedAt": "2026-08-24T17:35:11.775Z",
+  "measurementPath": "docs/design-system/runtime-measurements/0.4.0-measurement.json",
+  "measurementSha256": "311d10f2a4430a794afa6f8961ce6697e5fe1277194d80879c5c44302abead7a",
+  "assetInventorySha256": "7763034360a765faac5f01781966d296ed30a91b2fee8556b9da164d459e9d24",
+  "metricsSha256": "c4e472978c6a47a19ce719bdbae4b34f937c41a545fc7f50d573045353983e38",
+  "rawSamplesPreserved": true,
+  "versionEvidence": "docs/design-system/version.json records 1.1.0; 0.4.0 is the runtime-budget generation label, not the product version",
+  "sourceHistory": {
+    "originCommitAvailable": true,
+    "recoveryFromOriginGitHistory": true,
+    "sourceRef": "13e692aab9b568436258d918fb1b15347d1cdffa",
+    "ciRunId": "run-32756835750-1",
+    "note": "Medido por GitHub Actions (run 32756835750) sobre el runtime aislado de CI. Es la corrida mediana de tres del mismo commit; las otras dos (32756319305 y 32756847947) quedan citadas en el informe de atribucion."
+  }
+}

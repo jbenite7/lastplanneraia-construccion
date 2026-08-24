@@ -1,0 +1,60 @@
+{
+  "$schema": "https://lastplanneraia.com/schemas/design-system-runtime-budget-v1.json",
+  "schemaVersion": 1,
+  "kind": "baseline",
+  "measurementKind": "current",
+  "status": "approved",
+  "designSystemVersion": "0.4.0",
+  "route": "/programa-general",
+  "viewport": "1440x900",
+  "theme": "dark",
+  "density": "compact",
+  "fixture": "sanitized-pilot-v1",
+  "sourceRef": "13e692aab9b568436258d918fb1b15347d1cdffa",
+  "sourceTreeHash": "bdadfe563c6cc6a80ca6bf5d8aec71b076c2d45b62050b600f2f37753b52e4b7",
+  "recordedAt": "2026-08-24T17:35:11.775Z",
+  "approval": {
+    "status": "approved",
+    "approvedBy": "user",
+    "approvalRef": "user-approved-runtime-budget-0.4.0-2026-08-24"
+  },
+  "justification": {
+    "attributionPath": "docs/design-system/runtime-measurements/2026-08-24-atribucion-0.4.0.md",
+    "decisionRef": "D-GAC-5 / re-aprobacion 2026-08-24",
+    "summary": "El baseline 0.3.5 se midio en la maquina local (ciRunId run-local-01428901) y se verificaba en runners de GitHub Actions: initializationMs agrupa por maquina, no por codigo (local 191-268 ms; Actions 596-1071 ms), asi que los 596,5 del rojo son mejores que los 1.070,6 del unico precedente medido en Actions. jsGzipBytes +9.548 B atribuidos al byte: hot.js +4.990 y state-tooltip.js +2.304 (frente replanteo-coloreado-estados), tablet-viewport-scale.js +727, view-switch.js +395, y +1.132 de ruido de zlib entre entornos en 42 archivos de sha256 identico. El total servido baja 59 KB gzip porque el CSS cae 68.467 B. Determinista: 643.832 B identicos en cuatro corridas y doce muestras. Sin regresion atribuible al codigo."
+  },
+  "recovery": {
+    "manifestPath": "docs/design-system/runtime-measurements/0.4.0-recovery-manifest.json",
+    "manifestSha256": "8925587d77d29ae96a1ece569d3fc7f8251aaa5a5541c99d3f3fd91bec34ae4a",
+    "measurementPath": "docs/design-system/runtime-measurements/0.4.0-measurement.json",
+    "measurementSha256": "311d10f2a4430a794afa6f8961ce6697e5fe1277194d80879c5c44302abead7a"
+  },
+  "metrics": {
+    "adapterAssets": [
+      "/css/design-system/adapters/datatables.css",
+      "/css/design-system/adapters/handsontable.css",
+      "/css/design-system/adapters/legacy-bridge.css",
+      "/css/design-system/adapters/lps-drawer.css",
+      "/css/design-system/adapters/programa-general-handsontable.css",
+      "/css/design-system/adapters/select2.css",
+      "/css/design-system/adapters/shell-sidebar.css",
+      "/css/design-system/adapters/sweetalert2.css"
+    ],
+    "laboratoryAssets": [],
+    "cssGzipBytes": 128266,
+    "jsGzipBytes": 643832,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 598.9,
+    "handsontableInteractionMs": 141.6
+  },
+  "tolerances": {
+    "cssGzipBytes": 2048,
+    "jsGzipBytes": 4096,
+    "addedAdapterAssets": 0,
+    "duplicateRequestCount": 0,
+    "themeFlashCount": 0,
+    "initializationMs": 110,
+    "handsontableInteractionMs": 60
+  }
+}
