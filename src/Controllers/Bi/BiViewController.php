@@ -71,6 +71,14 @@ class BiViewController extends BaseController
 
         $semana = (string) ($_GET['semana'] ?? $_SESSION['semana'] ?? $this->bi->currentWeekBogota());
         $role      = $this->projectScope->reportRole($projectIds, $_SESSION);
+
+        // El Admin no tiene audiencia fija: recuerda su última elección para que el
+        // enlace de entrada del sidebar aterrice ahí la próxima vez (Tarea 3,
+        // docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design.md).
+        if ($role === 'A') {
+            $_SESSION['bi_admin_last_module'] = $reportKey;
+        }
+
         $filters   = $this->resolveFilters();
 
         $brief = $this->bi->getBrief($reportKey, $projectIds, $semana, $role, $filters);

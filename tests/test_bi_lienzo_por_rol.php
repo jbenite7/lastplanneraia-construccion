@@ -37,5 +37,21 @@ comprobar(
     'control-tower'
 );
 
+echo "\nMemoria de la última elección del Admin:\n";
+$_SESSION = [];
+$_SESSION['bi_admin_last_module'] = 'intermedia';
+comprobar(
+    'Admin con elección previa de obra aterriza en Intermedia',
+    BiAccessComponent::defaultModuleForRole('A'),
+    'intermedia'
+);
+$_SESSION['bi_admin_last_module'] = 'cip';
+comprobar(
+    'Admin con elección previa de Responsables (cip) aterriza en profesionales',
+    BiAccessComponent::defaultModuleForRole('A'),
+    'profesionales'
+);
+$_SESSION = [];
+
 echo "\nResultado: " . ($total - $fallos) . "/{$total}\n";
 exit($fallos === 0 ? 0 : 1);
