@@ -144,12 +144,6 @@ estado por defecto mientras Felipe no reparta.
   en `DEV_DOOR_USERS`, D-GAC-5(b) baseline con `cssGzipBytes` medido) ya estaban ejecutadas por
   trabajo previo; faltaba el CI en verde, que P2 resolvió. Detalle: [[goals/gates-al-ci/goal]].
 
-- [ ] **P2 · Tarea 8 pendiente — renombrar `.github/workflows/design-system.yml` → `ci.yml`.**
-  Decisión de Felipe (2026-08-20), diferida a propósito del cierre de P2: 60+ archivos mencionan
-  «design-system» (no todos por el nombre del archivo), y renombrar el workflow **parte el
-  historial de corridas de GitHub** — barrido de referencias por ruta primero
-  (`visual-ci-contract.test.mjs`, scripts, docs, `gh run list --workflow=`). Micro-frente propio.
-
 - [ ] **G7 · paralelizar PHPStan en su propio job, sin datos suficientes todavía.** El plan P2 lo
   proponía como candidato («no necesita la app levantada»); el resumen del job (`Summarize gate
   results`, cableado en P2) ya vuelca duración de tres gates a `GITHUB_STEP_SUMMARY`, pero falta
@@ -363,11 +357,6 @@ estado por defecto mientras Felipe no reparta.
 - [ ] **CI · G4 path filters** — excluir de los triggers lo que ningún gate lee (`memoria/**`,
   `.md` de raíz); `docs/design-system/` es contractual y NO se excluye. Origen:
   [[docs/superpowers/specs/2026-08-20-deuda-ci-design]].
-- [ ] **CI · renombrar `design-system.yml` → `ci.yml`** — el nombre quedó pequeño: el workflow
-  custodia el repo entero (suite PHP, RBAC, E2E, presupuestos), no solo el design system. Exige
-  barrido de referencias por ruta (`visual-ci-contract.test.mjs`, scripts, docs, comandos
-  `gh run list --workflow=`) y parte el historial de corridas. Hacerlo como micro-frente propio,
-  idealmente junto a G4, que también toca los triggers. Decisión de Felipe 2026-08-20.
 - [ ] **CI · G7 paralelización** — medir duración por paso primero; candidato: PHPStan como job
   paralelo (no necesita la app levantada). Origen: spec 2026-08-20-deuda-ci-design.
 - [ ] **CI · G8 job summaries** — volcar recibos y presupuestos ya generados a

@@ -791,7 +791,7 @@ no declarado queda congelado: para editarlo primero hay que crear su manifiesto 
 activar sus gates. El enrutador `scripts/design-system-router.mjs` traduce "estos
 archivos cambiaron" a "corre estos gates" (para UI sin manifiesto advierte, no
 bloquea, y recuerda no subir `docs/design-system/audit-baseline.json`). La garantía
-compartida real es CI (`.github/workflows/design-system.yml`) más los gates en
+compartida real es CI (`.github/workflows/ci.yml`) más los gates en
 `scripts/`; el hook local `PostToolUse` es solo una ayuda temprana y vive en
 configuración por máquina (`.claude/settings.json` / `.codex/hooks.json`, en `.gitignore`).
 

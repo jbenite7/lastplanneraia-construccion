@@ -71,7 +71,7 @@ de hecho** aunque tu tarea no lo mencione.
 
 | Contrato | Qué fija |
 |---|---|
-| `tests/design-system/visual-ci-contract.test.mjs` | Contenido literal de `.github/workflows/design-system.yml` y del compose |
+| `tests/design-system/visual-ci-contract.test.mjs` | Contenido literal de `.github/workflows/ci.yml` (renombrado desde `design-system.yml` el 2026-08-24) y del compose |
 | `docs/design-system/manifests/goal-provenance.json` | `sha256` de `goal.md`, `facts.md` y `plan.md` del goal de gobernanza |
 | `docs/design-system/manifests/*.json` | `sha256`, viewport y dimensiones de cada golden |
 | `docs/design-system/evidence-exceptions.json` | Cada excepción debe **estar en uso**, o falla |

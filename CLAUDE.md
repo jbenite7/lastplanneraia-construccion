@@ -164,7 +164,7 @@ true on 2026-08-11. Both suites coexist and both run through the same entry poin
   dependencies don't exist. Migration is incremental: 103 loose scripts, 1 PHPUnit class so far.
 
 `scripts/run-php-tests.php` runs both in one pass and aggregates the exit codes; it is what CI calls
-(`.github/workflows/design-system.yml`, `--nivel=puro` and `--nivel=http`). The CI image is built with
+(`.github/workflows/ci.yml`, `--nivel=puro` and `--nivel=http`). The CI image is built with
 `COMPOSER_INSTALL_FLAGS=""` so dev dependencies — PHPUnit among them — exist in the container.
 
 ```bash
