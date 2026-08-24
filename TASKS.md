@@ -172,6 +172,24 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **PI · test de teclado para el recorrido del globo (ArrowUp/ArrowDown)** — la Task 8 de
+  [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] verificó el binding manualmente
+  contra el navegador real; falta el Playwright dedicado (los botones sí tienen prueba, en
+  `tests/browser/pi-globo-recorrido.mjs`).
+- [ ] **PI · reponer el tooltip «?» educativo por restricción** — `hot.js:4564-4605` quedó código
+  muerto al vaciar `headerIndexToRestrictionProp` (fix final de
+  [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]]): ya no hay forma de abrir el
+  texto explicativo de una restricción desde la cabecera. El globo cubre la consulta al hacer clic
+  en la celda, pero no es lo mismo que la ayuda educativa que existía antes.
+- [ ] **PI · unificar `construirCuadrito`** — sigue duplicado entre `hot.js` (IIFE, contrato
+  `item.prop`) y `readiness-popover.js` (módulo ES, contrato `item.key`). Ambos pintan lo mismo
+  (relleno, visto, N/A) tras el fix final del frente, pero unificarlos exige diseñar un puente entre
+  los dos sistemas de módulos — no es un movimiento mecánico.
+- [ ] **PG · `alerta-restricciones` sigue en tinte de color** — no tiene `hue` asignado en
+  `docs/design-system/state-semantics.json` (`moduleMappings.programa-general`), así que la Task 1
+  de [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] no pudo migrarlo a la familia
+  sólida como al resto de la leyenda de Programa General. Arreglar el contrato primero.
+
 - [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
   `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
   aplicar el arreglo de mojibake de F0 (Control Tower): una fila huérfana bloqueó el `UPDATE` con
@@ -343,6 +361,15 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Habilitación en una columna — Programación Intermedia**: 15 commits, ejecutado
+  con `subagent-driven-development`. Fusiona 7 columnas de restricción + `% Liberación` en una
+  columna de cuadritos con globo de liberación (abrir/cerrar/foco/teclado/recorrido/guardado
+  idéntico al de hoy), tabla cabe a 1100 sin scroll (antes 1490), leyenda de PI y PG con color
+  sólido, tarjeta móvil comparte pieza con el globo. Revisión final encontró y corrigió 5 hallazgos
+  (2 Critical) antes de publicar; goldens de `programacion-intermedia.visual.mjs` regenerados con
+  aprobación visual de Felipe. Spec: [[docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design]]
+  · plan: [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] · procedencia del golden:
+  [[docs/design-system/manifests/programacion-intermedia.goldens]].
 - [x] 2026-08-20 — **Los tres pendientes restantes de la auditoría de specs**: spec de severidad
   reescrita a 3 niveles, veredicto de indicadores/CNP-CNC-CIC (legacy real → DS-F2), humo anónimo
   de `prueba-lps` en verde. [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].

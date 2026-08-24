@@ -212,19 +212,39 @@ html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
   background: color-mix(in srgb, var(--pg-alert-bg) 88%, var(--ds-active-surface) 12%);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.debe-iniciar {
-  background: color-mix(in srgb, var(--pg-due-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
+  border-color: var(--ds-state-solid-orange);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.actividad-futura {
-  background: color-mix(in srgb, var(--pg-future-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
+  border-color: var(--ds-state-solid-green);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.en-curso {
-  background: color-mix(in srgb, var(--pg-progress-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
+  border-color: var(--ds-state-solid-blue);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.atrasada {
-  background: color-mix(in srgb, var(--pg-delayed-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
+  border-color: var(--ds-state-solid-red);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.sin-datos {
-  background: color-mix(in srgb, var(--pg-nodata-bg) 88%, var(--ds-active-surface) 12%);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
+  border-color: var(--ds-state-solid-violet);
+}
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.fuera-de-ventana {
+  background-color: var(--ds-state-solid-teal);
+  color: var(--ds-state-solid-teal-text);
+  border-color: var(--ds-state-solid-teal);
+}
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.terminada {
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
+  border-color: var(--ds-state-solid-neutral);
 }
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip {
   font-weight: var(--ds-type-weight-medium);
