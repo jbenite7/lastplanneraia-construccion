@@ -186,16 +186,17 @@ estado por defecto mientras Felipe no reparta.
   escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
   contradice la regla general de aislamiento del repo; falta un comentario que lo declare
   explícito. Hallazgo de la revisión final de F0, 2026-08-24.
-- [ ] **BI · `tests/test_causa_atribucion.php` sale "sospechoso" para el runner** —
-  imprime `"PASA: ..."`, y `PASA` (con A) no contiene ninguna señal reconocida por
-  `SENALES_DE_COMPROBACION` (`pass`, `ok`, `comprobacion`, `comprobación`, `✓`, `correcto`) —
-  difiere de `pass` en la cuarta letra. El test sí comprueba algo de verdad (ejecuta y pasa
-  directamente, rc=0), pero el runner no lo reconoce y lo marca sospechoso. Arreglo: cambiar el
-  texto de éxito a algo que incluya una señal reconocida, p. ej. `"PASA (correcto): ..."`.
-  Preexistente de la Tarea 3 de F0 (ya cerrada con revisión limpia); confirmado por el controller
-  el 2026-08-24 que es idéntico contra el commit previo a la ronda de arreglos de la revisión
-  final — no lo introdujo esa ronda. Origen:
-  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 3.
+- [ ] **BI · dos tests de F0 salen "sospechosos" para el runner por el mismo patrón** —
+  `tests/test_causa_atribucion.php` y `tests/test_causas_codificacion.php` imprimen `"PASA: ..."`,
+  y `PASA` (con A) no contiene ninguna señal reconocida por `SENALES_DE_COMPROBACION` (`pass`,
+  `ok`, `comprobacion`, `comprobación`, `✓`, `correcto`) — difiere de `pass` en la cuarta letra.
+  Los dos comprueban algo de verdad (ejecutan y pasan directamente, rc=0), pero el runner no los
+  reconoce y los marca sospechosos. Arreglo: cambiar el texto de éxito de los dos a algo que
+  incluya una señal reconocida, p. ej. `"PASA (correcto): ..."`. Preexistentes de las Tareas 3 y 4
+  de F0 (ambas ya cerradas con revisión limpia); confirmado por el controller el 2026-08-24 que
+  son idénticos contra el commit previo a la ronda de arreglos de la revisión final — no los
+  introdujo esa ronda. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Tasks 3 y 4.
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
