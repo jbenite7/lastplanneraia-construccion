@@ -18,7 +18,7 @@ $enCip = (int) $db->query(
 )->fetchColumn();
 
 if ($responsables === 0) {
-    echo "SKIP (OK): el proyecto $projectId no tiene responsables\n";
+    echo "SKIP: el proyecto $projectId no tiene responsables\n";
     exit(0);
 }
 if ($enCip === 0) {
