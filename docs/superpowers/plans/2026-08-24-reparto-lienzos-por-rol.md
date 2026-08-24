@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-24
+areas: [rbac]
+fuente: docs/superpowers/plans/2026-08-24-reparto-lienzos-por-rol.md
+resumen: El Residente de Obra entra a la Torre de Control con el lienzo de obra (aterrizando en Programación Intermedia), filtrado por defecto a sus propios compromisos…
+---
+
 # Reparto de lienzos de la Torre por rol — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
