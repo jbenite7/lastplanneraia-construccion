@@ -46,7 +46,12 @@ comprobar(
     RbacManager::hasCapability('D', RbacCatalog::PERM_INTERNAL_BI_PREVIEW),
     true
 );
-foreach (['R', 'V', 'C', 'DCV', 'OT', 'S', 'G', 'SG'] as $rol) {
+comprobar(
+    'rol R la tiene (ampliado el 2026-08-24)',
+    RbacManager::hasCapability('R', RbacCatalog::PERM_INTERNAL_BI_PREVIEW),
+    true
+);
+foreach (['V', 'C', 'DCV', 'OT', 'S', 'G', 'SG'] as $rol) {
     comprobar("rol {$rol} no la tiene", RbacManager::hasCapability($rol, RbacCatalog::PERM_INTERNAL_BI_PREVIEW), false);
 }
 
@@ -62,9 +67,9 @@ comprobar(
     true
 );
 comprobar(
-    'sesion de Residente no abre',
+    'sesion de Residente abre (ampliado el 2026-08-24)',
     \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.R'], 'R'),
-    false
+    true
 );
 comprobar(
     'sesion de Visualizador no abre',
@@ -77,9 +82,9 @@ comprobar(
     false
 );
 comprobar(
-    'alias de rol se normaliza (RESIDENTE DE OBRA -> R) y no abre',
+    'alias de rol se normaliza (RESIDENTE DE OBRA -> R) y abre',
     \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'x'], 'RESIDENTE DE OBRA'),
-    false
+    true
 );
 
 echo "\nInterruptor global (general_flags via FlagsService):\n";
@@ -103,8 +108,18 @@ comprobar(
     true
 );
 comprobar(
-    'flag encendido: Residente sigue sin entrar (no tiene la capacidad)',
+    'flag encendido: Residente entra',
     \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.R'], 'R'),
+    true
+);
+comprobar(
+    'flag apagado: Residente NO entra (no es Admin)',
+    (function () {
+        \App\Core\FlagsService::overrideForTests(['bi.control_tower.visible' => false]);
+        $resultado = \App\Security\BiPreviewAccessPolicy::canOpen(['usuario' => 'test.R'], 'R');
+        \App\Core\FlagsService::overrideForTests(['bi.control_tower.visible' => true]);
+        return $resultado;
+    })(),
     false
 );
 
