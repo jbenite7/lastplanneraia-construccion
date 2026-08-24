@@ -99,6 +99,15 @@ para el estado de los planes en curso.
   `render()`, `updateSettings()`, `loadData()`, resize y recarga. Se actualizó solo el comentario,
   sin arreglo de código. Hipótesis que queda: la medición original se tomó contra un contenedor
   que montaba otro árbol. Commit `ee875efb`.
+### Cierre del plan del sidebar canónico, 35 días después de ejecutarse (2026-08-24)
+
+#### Changed
+- `docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio.md` recibe su sección `## Cierre`.
+  El trabajo estaba hecho desde julio y en producción —aprobado por Felipe el 2026-07-22, migrado en
+  `goals/sidebar-todos-modulos` el 2026-07-31, hoy en 16 vistas—; lo que faltaba era el acta, y sin
+  ella la regla de lectura lo contaba como abierto. No se ejecutó nada: ejecutarlo habría sido
+  construir en el laboratorio el prototipo de algo que la app ya usa.
+
 ### Cierre de P1: pase de veracidad y la fecha contractual del informe (2026-08-24)
 
 #### Fixed

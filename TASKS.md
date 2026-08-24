@@ -165,6 +165,15 @@ estado por defecto mientras Felipe no reparta.
 
   </details>
 
+- [ ] **Los controles que miden el papel y no el código: ya van cuatro.** El aviso que pidió decidir
+  sobre `2026-07-20-sidebar-canonico-laboratorio` mide la antigüedad del documento y nunca comprueba
+  si el trabajo existe: estuvo 35 días pidiendo criterio a Felipe sobre algo aprobado por él en julio
+  y en producción desde entonces. Es la misma familia que
+  [[memoria/trampas/guard-valida-declaracion-contra-si-misma]],
+  [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y [[el-contador-no-mide-el-archivo]]. **Merece
+  ficha propia y, sobre todo, arreglo del disparador** — vive en el harness, no en este repo, así que
+  el arreglo se propone, no se aplica.
+
 - [ ] **`test_bi_programa_general_chart_values.php` imprime `FAIL` y sale con `RC=0`.** No propaga su
   propio fallo, así que un runner que solo mire el código de salida lo da por bueno. Detectado al
   cerrar P1 el 2026-08-24. Familia de [[memoria/trampas/el-codigo-de-salida-se-pierde-en-la-tuberia]].
