@@ -188,6 +188,13 @@ estado por defecto mientras Felipe no reparta.
   sigue: el design system no ofrece un color de estado pensado para rellenar área, solo la mitad
   `-text` pensada para tinta. **Dirigido a DS-F1**, que es el frente dueño de tokens y de la escala
   de severidad — quien decida la escala decide esto.
+  **Decision heredada pendiente de ratificar:** al resolver el reemplazo, este mismo frente eligio
+  que `brand-construction` es el color del nivel medio («Aceptable» / «Cumple Parcialmente», valor
+  entre 70 y 90, en `semanticMetricRange()` y `schedulePerformanceRange()` de
+  `src/Services/ControlTowerService.php`). Reutilizar un token de dato ya existente no vuelve neutral
+  esa eleccion: mapear un color a un nivel de severidad es exactamente el tipo de decision que este
+  frente dijo que le tocaba a DS-F1, no a si mismo. DS-F1 debe revisarla y ratificarla o deshacerla
+  como parte del contrato de escala, no asumir que ya quedo resuelta.
 
 - [ ] **BI · confirmar visualmente los dos anillos con avance mayor que cero** — el reemplazo de
   color de relleno (commit `880e9d4a`) no se vio a tamaño real: el único proyecto accesible del

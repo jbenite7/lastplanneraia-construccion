@@ -76,20 +76,20 @@ function biAssertSeries(array &$failures, string $label, array $actual, array $e
 function biExpectedSemanticRange(float $value, string $vocabulary): array
 {
     if ($value < 70) {
-        return ['key' => 'critical', 'label' => $vocabulary === 'compliance' ? 'No Cumple' : 'Inaceptable', 'color_token' => 'status-critical'];
+        return ['key' => 'critical', 'label' => $vocabulary === 'compliance' ? 'No Cumple' : 'Inaceptable', 'color_token' => 'critical'];
     }
     if ($value < 90) {
-        return ['key' => 'warning', 'label' => $vocabulary === 'compliance' ? 'Cumple Parcialmente' : 'Aceptable', 'color_token' => 'status-warning'];
+        return ['key' => 'warning', 'label' => $vocabulary === 'compliance' ? 'Cumple Parcialmente' : 'Aceptable', 'color_token' => 'brand-construction'];
     }
-    return ['key' => 'success', 'label' => $vocabulary === 'compliance' ? 'Cumple' : 'Excelente', 'color_token' => 'status-success'];
+    return ['key' => 'success', 'label' => $vocabulary === 'compliance' ? 'Cumple' : 'Excelente', 'color_token' => 'brand-primary'];
 }
 
 function biExpectedScheduleRange(float $real, float $planned): array
 {
     $performance = $planned > 0 ? round(($real / $planned) * 100, 1) : ($real > 0 ? 150.0 : 100.0);
-    if ($performance < 95.0) return ['key' => 'critical', 'label' => 'Atrasado', 'color_token' => 'status-critical'];
-    if ($performance > 105.0) return ['key' => 'success', 'label' => 'Adelantado', 'color_token' => 'status-success'];
-    return ['key' => 'warning', 'label' => 'A Tiempo', 'color_token' => 'status-warning'];
+    if ($performance < 95.0) return ['key' => 'critical', 'label' => 'Atrasado', 'color_token' => 'critical'];
+    if ($performance > 105.0) return ['key' => 'success', 'label' => 'Adelantado', 'color_token' => 'brand-primary'];
+    return ['key' => 'warning', 'label' => 'A Tiempo', 'color_token' => 'brand-construction'];
 }
 
 function biAssertDateLabelsChronological(array &$failures, string $label, array $labels): void

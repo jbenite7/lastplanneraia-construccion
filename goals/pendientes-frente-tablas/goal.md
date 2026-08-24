@@ -35,8 +35,9 @@ el frente queda publicado en `main`.
   incidente del contenedor compartido en Task 1 y las rulings de revisión.
 
 ## Archivos declarados
-`public/css/**`, `public/js/modules/programa_general/hot.js`, `src/Services/Bi/ControlTowerService.php`,
-`public/js/bi-spa.js`, `database/fixtures/design-system-ci.Dockerfile`,
+`public/css/**`, `public/dist-css/**`, `public/js/modules/programa_general/hot.js`,
+`src/Services/ControlTowerService.php`,
+`public/js/modules/bi-spa.js`, `database/fixtures/design-system-ci.Dockerfile`,
 `scripts/design-system-ci-preflight.mjs`, `tests/design-system/ci-preflight.test.mjs`,
 `tests/design-system/visual-ci-contract.test.mjs`, `TASKS.md`, `CHANGELOG.md`,
 `goals/pendientes-frente-tablas/**`

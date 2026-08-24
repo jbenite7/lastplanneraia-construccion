@@ -34,6 +34,24 @@ const BI_CHARTS = [
   { view: 'semanal', nav: 'nav-semanal', endpoint: '/api/bi/report/semanal', charts: ['chart-semanal-pac'] },
 ];
 
+// Mismo mapa que CHART_COLOR_TOKENS en public/js/modules/bi-spa.js (lineas 84-97).
+// Los tokens de color de dato usan variables --bi-chart-*, no --bi-<token> a secas:
+// solo los tres tokens status-* (retirados de estas donas) resuelven directo.
+const CHART_COLOR_TOKENS = {
+  'brand-primary': '--bi-chart-brand-primary',
+  'brand-primary-medium': '--bi-chart-brand-primary-medium',
+  'brand-aqua': '--bi-chart-brand-aqua',
+  'brand-aqua-medium': '--bi-chart-brand-aqua-medium',
+  'brand-construction': '--bi-chart-brand-construction',
+  'brand-construction-medium': '--bi-chart-brand-construction-medium',
+  critical: '--bi-chart-critical',
+  'status-critical': '--bi-status-critical',
+  'status-warning': '--bi-status-warning',
+  'status-success': '--bi-status-success',
+  'neutral-muted': '--bi-chart-neutral-muted',
+  'surface-muted': '--bi-chart-surface-muted',
+};
+
 function formatPercent(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return '--';
@@ -367,7 +385,8 @@ for (const project of BI_PROJECT_SCOPE) {
       await expect(page.locator('#programa-compliance-range')).toHaveText(expectedCompliance.metrics?.range?.label || '');
       await expect(page.locator('#programa-gauge-card')).toHaveAttribute('data-range', expected.metrics?.range?.key || '');
       await expect(page.locator('#programa-compliance-card')).toHaveAttribute('data-range', expectedCompliance.metrics?.range?.key || '');
-      const semanticColor = await page.evaluate((token) => getComputedStyle(document.body).getPropertyValue(`--bi-${token}`).trim(), expected.metrics?.range?.color_token);
+      const semanticCssVar = CHART_COLOR_TOKENS[expected.metrics?.range?.color_token] || `--bi-${expected.metrics?.range?.color_token}`;
+      const semanticColor = await page.evaluate((cssVar) => getComputedStyle(document.body).getPropertyValue(cssVar).trim(), semanticCssVar);
       const renderedGauge = await chartState(page, 'programa-gauge');
       expect(renderedGauge.datasets[0].backgroundColor[0]).toBe(semanticColor);
       await expect(page.locator('#programa-compliance-explanation'))
