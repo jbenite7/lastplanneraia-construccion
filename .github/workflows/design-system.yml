@@ -194,9 +194,18 @@ jobs:
           done
           docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml logs
           exit 1
+      # P2 Tarea 2 (2026-08-24): los gates de aquí en adelante llevan `id` + `continue-on-error:
+      # true`. Antes, el primero en romperse cancelaba TODOS los posteriores — GitHub Actions salta
+      # el resto del job en cuanto un paso sin continue-on-error falla — y eso escondio el paso 25
+      # («Run pilot lab gates») detrás de fallos anteriores tres veces en una jornada. Con esto cada
+      # gate corre siempre; «Summarize gate results» al final decide si el job queda en rojo.
       - name: Enforce PHPStan baseline
+        id: phpstan-baseline
+        continue-on-error: true
         run: npm run test:design-system:phpstan
       - name: Enforce PHPStan level 6 on the PDC module
+        id: phpstan-pdc
+        continue-on-error: true
         run: npm run test:pdc:phpstan
       # Sustituye a los tres tests que antes se listaban aquí a mano (test_global_table_safety,
       # test_dev_door_guard, test_dev_door_http): los tres siguen corriendo, ahora dentro de la
@@ -204,6 +213,8 @@ jobs:
       # explícito que duplicaba el primero se retiró el 2026-08-11 (decisión D-CI-1), cuando el
       # contrato pasó a comprobar que el CI lo ejecuta en vez de que lo nombra.
       - name: Correr la suite PHP completa que el CI puede honrar
+        id: php-suite
+        continue-on-error: true
         run: docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.ci.yml exec -T app php scripts/run-php-tests.php --nivel=http
       # F-AB (2026-08-12): los dos gates que constaban `blocked` se enchufan AQUI,
       # antes de «Run laboratory gates», y no despues. Motivo medido: ese paso
@@ -225,6 +236,8 @@ jobs:
       # el gate en rojo. Por eso la segunda linea lee el recibo y propaga su
       # `exitCode`: el acta la levanta el script, el veredicto lo da el recibo.
       - name: Enforce full-app-flow gate
+        id: full-app-flow
+        continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -265,6 +278,8 @@ jobs:
       # SIEMPRE sale 0 —su trabajo es levantar acta, no aprobar—, asi que la segunda lee el
       # recibo y propaga su `exitCode`. Sin ella, el paso saldria verde con el gate en rojo.
       - name: Enforce semanal roles and phases gate
+        id: semanal-roles-phases
+        continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -284,18 +299,31 @@ jobs:
         if: always()
         run: git checkout -- docs/design-system/evidence/semanal-roles-phases.json && git status --porcelain
       - name: Measure runtime budgets
+        id: runtime-budget-measure
+        continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:runtime-budget:measure
       - name: Check runtime budgets against the baseline
+        id: runtime-budget-check
+        continue-on-error: true
         run: npm run test:runtime-budget:check
+      # `blocking-runtime` es la única excepción deliberada de esta lista: sigue SIN
+      # `continue-on-error` (tests/design-system/visual-ci-contract.test.mjs lo exige por
+      # contrato — «CI tolerates keyboard and reflow evidence», que protege que el laboratorio
+      # siga siendo genuinamente bloqueante y que `keyboard-reflow-evidence` sea la única
+      # tolerancia). Si este paso falla, sí cancela lo que sigue — igual que antes de esta tarea —
+      # pero el historial reciente no muestra que sea el cuello de botella: los tres escondites
+      # medidos esta jornada fueron en pasos ANTERIORES a este, ya cubiertos arriba.
       - name: Run laboratory gates
         id: blocking-runtime
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:design-system:runtime
       - name: Run pilot lab gates (Programa General)
+        id: pilot-lab-gates
+        continue-on-error: true
         env:
           E2E_BASE_URL: http://127.0.0.1:18081
         run: |
@@ -319,6 +347,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Run Programa General persistence and RBAC gate
+        id: pg-persistence-rbac
+        continue-on-error: true
         env:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
@@ -328,6 +358,57 @@ jobs:
           E2E_WORKERS: "1"
           E2E_HEADLESS: "true"
         run: npx playwright test --config=e2e/playwright.config.mjs e2e/tests/workflows/pg-interactions.spec.mjs --workers=1
+      # G8 converge aqui (P2 Tarea 6): el resumen de que gate paso o fallo, en un solo lugar
+      # legible sin abrir logs. Cada gate de arriba corrio SIEMPRE por su `continue-on-error`;
+      # este paso es el unico que decide si el job queda en rojo, y lo hace mirando todos los
+      # resultados juntos en vez de dejar que el primero en romperse tape a los demas.
+      # `keyboard-reflow-evidence` se lista pero NO cuenta para el veredicto: ya era no bloqueante
+      # antes de este cambio (tiene su propio artefacto de evidencia condicionado), y sigue
+      # siendolo — este paso no le agrega peso que no tenia.
+      - name: Summarize gate results
+        if: always()
+        env:
+          G_PHPSTAN_BASELINE: ${{ steps.phpstan-baseline.outcome }}
+          G_PHPSTAN_PDC: ${{ steps.phpstan-pdc.outcome }}
+          G_PHP_SUITE: ${{ steps.php-suite.outcome }}
+          G_FULL_APP_FLOW: ${{ steps.full-app-flow.outcome }}
+          G_SEMANAL_ROLES_PHASES: ${{ steps.semanal-roles-phases.outcome }}
+          G_RUNTIME_BUDGET_MEASURE: ${{ steps.runtime-budget-measure.outcome }}
+          G_RUNTIME_BUDGET_CHECK: ${{ steps.runtime-budget-check.outcome }}
+          G_LABORATORY_GATES: ${{ steps.blocking-runtime.outcome }}
+          G_PILOT_LAB_GATES: ${{ steps.pilot-lab-gates.outcome }}
+          G_KEYBOARD_REFLOW_EVIDENCE: ${{ steps.keyboard-reflow-evidence.outcome }}
+          G_PG_PERSISTENCE_RBAC: ${{ steps.pg-persistence-rbac.outcome }}
+        run: |
+          {
+            echo "## Resultado de los gates del piloto"
+            echo ""
+            echo "| Gate | Resultado |"
+            echo "| --- | --- |"
+            echo "| Enforce PHPStan baseline | ${G_PHPSTAN_BASELINE} |"
+            echo "| Enforce PHPStan level 6 on the PDC module | ${G_PHPSTAN_PDC} |"
+            echo "| Correr la suite PHP completa que el CI puede honrar | ${G_PHP_SUITE} |"
+            echo "| Enforce full-app-flow gate | ${G_FULL_APP_FLOW} |"
+            echo "| Enforce semanal roles and phases gate | ${G_SEMANAL_ROLES_PHASES} |"
+            echo "| Measure runtime budgets | ${G_RUNTIME_BUDGET_MEASURE} |"
+            echo "| Check runtime budgets against the baseline | ${G_RUNTIME_BUDGET_CHECK} |"
+            echo "| Run laboratory gates | ${G_LABORATORY_GATES} |"
+            echo "| Run pilot lab gates (Programa General) | ${G_PILOT_LAB_GATES} |"
+            echo "| Collect keyboard and reflow evidence (no bloqueante) | ${G_KEYBOARD_REFLOW_EVIDENCE} |"
+            echo "| Run Programa General persistence and RBAC gate | ${G_PG_PERSISTENCE_RBAC} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          failed=0
+          for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_PHP_SUITE" "$G_FULL_APP_FLOW" \
+            "$G_SEMANAL_ROLES_PHASES" "$G_RUNTIME_BUDGET_MEASURE" "$G_RUNTIME_BUDGET_CHECK" \
+            "$G_LABORATORY_GATES" "$G_PILOT_LAB_GATES" "$G_PG_PERSISTENCE_RBAC"; do
+            if [ "$outcome" = "failure" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" = "1" ]; then
+            echo "::error::Al menos un gate bloqueante falló. Ver la tabla de resultados arriba."
+            exit 1
+          fi
       - name: Preserve runtime logs
         if: failure()
         run: |
