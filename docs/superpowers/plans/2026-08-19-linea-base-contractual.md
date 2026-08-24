@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: plan
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/plans/2026-08-19-linea-base-contractual.md
+resumen: que la fecha contractual del cronograma salga de la línea base declarada del proyecto y deje de borrarse cuando una reprogramación cambia las actividades.
+---
+
 # Línea base contractual — plan de implementación
 
 > **Para trabajadores agénticos:** SUB-SKILL REQUERIDA: usa `superpowers:subagent-driven-development`

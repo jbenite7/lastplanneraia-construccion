@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: evidencia
+estado: vigente
+fecha: 2026-08-19
+areas: [pdc]
+fuente: docs/superpowers/evidencia/2026-08-19-auditoria-linea-base-pdc.md
+resumen: Auditoría de la línea base contractual en el PDC — con evidencia
+---
+
 # Auditoría de la línea base contractual en el PDC — con evidencia
 
 **Frente:** `linea-base-contractual`, tarea 6. **Alcance:** auditar, no arreglar. Cada punto que usa

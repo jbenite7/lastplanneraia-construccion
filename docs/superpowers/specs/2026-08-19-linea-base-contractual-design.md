@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: spec
+estado: vigente
+fecha: 2026-08-19
+areas: [proceso]
+fuente: docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md
+resumen: La línea base contractual deja de deducirse — diseño
+---
+
 # La línea base contractual deja de deducirse — diseño
 
 **Frente:** `linea-base-contractual`. **Origen:** defecto destapado al desbloquear el CI en el frente

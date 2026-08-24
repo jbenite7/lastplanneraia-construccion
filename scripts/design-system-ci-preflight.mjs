@@ -45,6 +45,11 @@ export const EXPECTED_INIT_COPIES = [
   // sembro en CI. La lista blanca hizo su trabajo — el primer intento cambio el Dockerfile sin
   // tocarla y el gate lo rechazo con «must COPY exactly 29 allowlisted SQL files».
   ['database/migrations/20260820_general_flags.sql', '121-general-flags.sql'],
+  // 2026-08-24: la siembra de la linea base contractual, que llego con el merge de
+  // `linea-base-contractual`. Va DESPUES de la 120 por dependencia — aquella crea las columnas y
+  // esta las rellena — y despues de la 121 porque ese slot ya estaba tomado: la rama pedia el 121
+  // y se renumero al integrarla, no se eligio entre las dos.
+  ['database/migrations/20260819_sembrar_linea_base_contractual.sql', '122-sembrar-linea-base.sql'],
 ];
 
 function reject(detail) {
