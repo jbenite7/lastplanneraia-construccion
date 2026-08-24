@@ -16,6 +16,11 @@ resumen: "P1 · Publicar las tres ramas con trabajo terminado sin publicar, reso
 
 **Spec:** [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design]]
 
+> **EJECUTADO EN SU MAYOR PARTE el 2026-08-24**, por orden directa de Felipe: «mergeemos todas las
+> ramas y worktrees en main, luego borra todas las ramas y worktrees. Deja main limpio». Se
+> consolidaron **trece** ramas —no las tres previstas— y se publicó `6c736d91`. Lo que queda vivo
+> está marcado abajo. El detalle de lo ejecutado, en el `## Cierre` al final.
+
 **Goal:** que `origin/main` contenga todo el trabajo verificado que hoy vive en ramas, que el
 árbol de worktrees refleje solo frentes vivos, y que el gate bloqueante de `AGENTS.md` deje de
 impedir la apertura de frentes nuevos.
@@ -141,3 +146,72 @@ cuesta más que rehacerlo, y su propia migración demostró no mover ninguna fil
 `git rev-parse origin/main` contiene los tres frentes publicados; `git worktree list` no muestra
 worktrees residuales; `--nivel=puro` en verde con 0 sospechosos sobre `origin/main`; y
 `linea-base-contractual` tiene decisión escrita, rescatada o archivada.
+
+
+---
+
+## Cierre — 2026-08-24
+
+**Publicado:** `aa6f0b74..6c736d91` en `origin/main`, confirmado con `git rev-parse origin/main`
+coincidiendo con el sha verificado.
+
+**Trece ramas consolidadas**, no tres. El censo original solo miró las sesiones vivas; al barrer
+`refs/heads/` aparecieron nueve ramas más con trabajo fuera de `main`, algunas de doce días atrás.
+
+**Verificación después de integrar** (contenedor montando `/Users/felipebenitez/Developer/lps-aia`,
+que es el árbol verificado):
+
+| Comprobación | Resultado |
+|---|---|
+| `run-php-tests.php --nivel=puro` | `RC=0` · 29 corridos, 29 pasaron, **0 sospechosos** (antes 27/1) |
+| PHPUnit | 52 tests, 76 aserciones, OK |
+| `npm run test:design-system:static` | `RC=0` · 8/8 |
+| `npm run test:wiki` | forma en verde; alarma de veracidad, que no bloquea |
+| `scripts/publicar.sh --con-merges` | los cuatro checks en verde sobre `6c736d91` |
+
+**Tres cosas que los merges destaparon, y que la verificación posterior cazó** — ninguna la habría
+visto quien hizo el trabajo original:
+
+1. **La lista blanca de SQL de CI rechazó el Dockerfile.** Las migraciones `general_flags` y
+   `sembrar_linea_base_contractual` reclamaban **ambas el slot 121**. No eran rivales: se renumeró
+   la segunda a **122** y se declararon las dos. El guardarraíl hizo exactamente su trabajo.
+2. **`zealous-archimedes` editaba el baseline `0.3.3` en sitio**, y ese archivo está anclado por
+   hash. Es el intento de D-GAC-6 que ya falló el 2026-08-12 — por eso la rama estaba abandonada.
+   **Revertido**: su sucesor legítimo son `0.3.4` y `0.4.0`.
+3. **El octavo pase de veracidad quedó duplicado** en dos redacciones rivales (131 vs 184 commits)
+   al resolver `memoria/log.md` de forma aditiva. Retirada la de la rama, conservada la de `main`.
+
+**Error propio, corregido:** se resolvieron conflictos de prosa y de CSS con una regla aditiva
+—quitar marcadores conservando ambos lados— que solo era válida para `CHANGELOG.md` y para el log
+append-only. En `vendor-datatables-legacy.css` dejó **dos `@import` de la misma hoja**. Detectado al
+auditar la resolución, no por un test. La lección: *aditivo* es una propiedad del archivo, no del
+conflicto.
+
+**Rescate previo al borrado.** Los worktrees guardaban artefactos que git ignora y que el borrado
+habría destruido en silencio — lo avisó la sesión de `cool-margulis`, no lo detectó el plan.
+**63 MB y 1.267 archivos** copiados a `~/Documents/rescate-worktrees-lps-aia-20260824/`, incluidos
+los dos `.superpowers/sdd/` con los rulings tomados en nombre de Felipe y toda la evidencia visual
+de los goals.
+
+**Estado final:** un worktree (la sesión viva), `main` limpio, y en el remoto solo `main` más las
+tres ramas de dependabot.
+
+### Tareas del plan, al cierre
+
+- Tarea 1 (publicar el arreglo del runner) — **HECHA**
+- Tarea 2 (colisión de la baseline 0.4.0) — **HECHA**: se resolvió al integrar; los sueltos del
+  worktree `deuda-ci-frente-1` desaparecieron con él, y la versión buena es la medida en Actions
+- Tarea 3 y 4 (publicar los otros dos frentes) — **HECHAS**
+- Tarea 5 (`linea-base-contractual`) — **RESUELTA POR OTRA VÍA**: Felipe ordenó mergear todas las
+  ramas, así que se integró en vez de archivarse. **Sus dos hallazgos siguen sin verificar** y pasan
+  a P2: la migración que no movió ninguna fila, y `test_bi_programa_general_chart_values.php`
+- Tarea 6 (podar worktrees) — **HECHA**
+- Tarea 7 (anotar el cierre) — **HECHA** con esta sección
+
+### Lo que queda vivo de P1
+
+- [ ] **Un pase de veracidad de la wiki.** La alarma es legítima: 52 commits desde el pase del
+      2026-08-21, umbral 40. Los metió esta consolidación. Es la operación `veracidad` de
+      `docs/wiki-operacion.md`, no un arreglo de forma
+- [ ] **Verificar los dos hallazgos de `linea-base-contractual`**, ahora que su código está en
+      `main` y no en una rama aparte

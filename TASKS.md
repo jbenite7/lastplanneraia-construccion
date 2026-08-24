@@ -31,11 +31,14 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Bloqueantes
 
-**El gate de cierre de frente está activo: hay tres frentes terminados sin publicar** (censo del
-2026-08-24). `AGENTS.md` §Publicación no permite abrir un frente nuevo mientras el anterior no esté
-en `main`. Y hay un motivo duro además del formal: el arreglo del runner de tests PHP vive solo en
-`claude/mystifying-bhaskara-a6207f`, así que **`main` está en rojo para todas las sesiones**.
-Lo desatasca [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1]].
+**Ninguno. El atasco de publicación se desatascó el 2026-08-24**: por orden de Felipe se
+consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ramas y worktrees.
+`main` salió del rojo — el runner de tests PHP da 29/29 con **0 sospechosos**. El cierre, con lo que
+los merges destaparon, en
+[[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 §Cierre]].
+
+**Queda un aviso que no bloquea:** la wiki pide un pase de veracidad (52 commits desde el del
+2026-08-21, umbral 40).
 
 **El estado del repo se consolidó en una spec y seis planes**, por encargo de Felipe del
 2026-08-24: [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design]]. Esta lista
@@ -55,7 +58,8 @@ estado por defecto mientras Felipe no reparta.
 ## Ahora
 
 - [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
-  [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (bloquea a todos) ·
+  [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**EJECUTADO** el
+  2026-08-24; quedan el pase de veracidad y verificar los dos hallazgos de linea-base-contractual) ·
   [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|P2 · CI y presupuestos]] ·
   [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|P3 · Design System]] ·
   [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|P4 · Móvil y tema claro]] ·

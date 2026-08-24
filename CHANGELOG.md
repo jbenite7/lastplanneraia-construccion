@@ -99,6 +99,22 @@ para el estado de los planes en curso.
   `render()`, `updateSettings()`, `loadData()`, resize y recarga. Se actualizó solo el comentario,
   sin arreglo de código. Hipótesis que queda: la medición original se tomó contra un contenedor
   que montaba otro árbol. Commit `ee875efb`.
+### Consolidación de trece ramas en main y retiro de worktrees (2026-08-24)
+
+#### Changed
+- Por orden de Felipe se integraron en `main` las **trece** ramas con trabajo fuera de él
+  (`aa6f0b74..6c736d91`) y se retiraron todas las ramas y worktrees salvo la sesión viva. En el
+  remoto quedan `main` y las tres ramas de dependabot, que no son de sesiones y no se tocaron.
+- El runner de pruebas PHP sale del rojo en `main`: 29 corridos, 29 pasaron, **0 sospechosos**.
+
+#### Fixed
+- Las migraciones `general_flags` y `sembrar_linea_base_contractual` reclamaban ambas el slot `121`
+  del fixture de CI; la segunda pasa a `122` y las dos quedan declaradas en la lista blanca.
+- Revertida la edición en sitio del baseline `0.3.3`, que está anclado por hash: era el intento de
+  D-GAC-6 ya fallido el 2026-08-12, cuyo sucesor legítimo son `0.3.4` y `0.4.0`.
+- Un solo `@import` del adaptador de DataTables, el versionado.
+- `memoria/log.md`: retirada una redacción rival del octavo pase de veracidad.
+
 ### Consolidación del estado del repositorio y reparto en seis planes (2026-08-24)
 
 #### Added
