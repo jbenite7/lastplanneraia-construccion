@@ -2405,11 +2405,21 @@
   // 14.6.1 servida — `shift+enter` con 1 manejador y `shift+alt+arrowdown` con 2;
   // `control+enter` NO existe, que es lo que decia esta nota al escribirse.
   //
-  // Pendiente medido el 2026-08-24 y NO arreglado aqui: esta funcion dice marcar
-  // los 24 sin condicion, pero en la pagina viva solo 12 llevan `aria-hidden`.
-  // Son 12 columnas x 2 contenedores (master y clone_top), asi que cada columna
-  // queda con un boton anunciado y su gemelo callado — el mismo defecto que el
-  // parrafo de arriba venia a cerrar, reaparecido por el otro lado.
+  // El 2026-08-24 se anoto aqui un pendiente: que en la pagina viva solo 12 de
+  // los 24 llevaban `aria-hidden`, uno por columna, dejando su gemelo callado.
+  // Ese mismo dia se volvio a medir contra un contenedor efimero montado sobre
+  // este arbol, con sesion `test.R` en `PDC Sandbox E2E` y viewport 1180x820, y
+  // NO se reprodujo: salio 24/24 en carga inicial, en cada muestreo cada 250 ms
+  // durante los tres primeros segundos, tras borrar el atributo a mano, tras
+  // `render()` (a 50 ms y a 1550 ms), tras `updateSettings()`, tras `loadData()`,
+  // tras abrir y cerrar el menu de una columna, tras redimensionar, tras hacer
+  // scroll y tras recargar. El desglose por contenedor fue 12/12 en `ht_master`
+  // y 12/12 en `ht_clone_top` en todas esas muestras.
+  //
+  // Es decir: el observer de abajo si cubre los dos contenedores y sobrevive al
+  // render. No se cambio codigo porque no habia fallo que reproducir; si vuelve
+  // a verse 12/24, lo primero a descartar es que la medicion se tomara contra un
+  // contenedor que monta otro arbol.
   // Marcar un elemento con `tabindex="-1"` no dispara `aria-hidden-focus`,
   // que solo aplica a lo que sigue siendo tabulable.
   function markDecorativeHeaderTriggers(container) {
