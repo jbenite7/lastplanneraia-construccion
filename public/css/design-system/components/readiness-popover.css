@@ -174,7 +174,7 @@
     gap: var(--ds-space-2);
     width: 100%;
     font-size: var(--ds-type-size-xs);
-    color: var(--ds-color-danger, var(--ds-active-text-primary));
+    color: var(--ds-state-solid-red);
   }
 
   .aia-readiness-popover__reintentar {

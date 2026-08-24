@@ -527,11 +527,12 @@
       }
     }
 
-    // Header-index → restriction prop (7 fixed cols before restriction cols)
+    // Task 4 fundio las 7 columnas de restriccion en una sola (`__habilitacion`,
+    // indice 7) seguida de `estado_operativo` (8) y `Observaciones` (9). Ya no
+    // existe un mapeo 1:1 indice->prop de restriccion: dejar el mapa vacio
+    // evita que el trigger de ayuda "?" de Observaciones herede por accidente
+    // el tooltip de una restriccion cualquiera (hallazgo Important 1).
     headerIndexToRestrictionProp = {};
-    for (var t = 0; t < restrictions.length; t++) {
-      headerIndexToRestrictionProp[7 + t] = restrictions[t].key;
-    }
 
     // Rebuild column sizing arrays for the current restriction count
     buildColumnSizing();
@@ -3524,8 +3525,9 @@
     for (var i = 0; i < lista.length; i++) {
       if (!lista[i].lectura.cumple && !lista[i].lectura.esNoAplica) { faltan += 1; }
     }
-    var pct = Math.round((rowData.Estado_Restricciones || 0) * 100);
-    return (rowData.Actividad || 'Actividad') + ': ' + faltan +
+    var pct = Math.round((normalizePercentRatio(rowData.Estado_Restricciones) || 0) * 100);
+    var actividadTexto = getActividadPlainText(rowData.Actividad) || 'Actividad';
+    return actividadTexto + ': ' + faltan +
       ' restricciones por liberar, ' + pct + ' por ciento habilitada.';
   }
 
@@ -3538,31 +3540,6 @@
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       td.textContent = formatPercent(value);
       td.classList.add('htCenter');
-    });
-
-    // N-1 (Task 38): la celda de restriccion bloqueada dice POR QUE sin que
-    // nadie la toque. El candado es el canal visible; el `title`, el respaldo.
-    Handsontable.renderers.registerRenderer('piRestrictionRenderer', function (instance, td, row, col, prop, value) {
-      Handsontable.renderers.TextRenderer.apply(this, arguments);
-      td.textContent = formatPercent(value);
-      td.classList.add('htCenter');
-
-      if (td.classList.contains('pi-cell-locked-resp')) {
-        td.insertBefore(buildLockGlyph(), td.firstChild);
-
-        var sr = document.createElement('span');
-        sr.className = 'sr-only';
-        sr.textContent = PI_LOCK_REASON;
-        td.appendChild(sr);
-        td.title = PI_LOCK_REASON;
-      } else {
-        // Con `renderAllRows: false` HOT recicla los <td> al hacer scroll y su
-        // TextRenderer solo quita style/colspan/rowspan/dir/contenteditable: el
-        // `title` sobreviviria al reciclado y una celda editable acabaria
-        // anunciando un bloqueo que no tiene. El contenido (candado y sr-only)
-        // si se limpia solo, porque aqui se reescribe el texto de la celda.
-        td.removeAttribute('title');
-      }
     });
 
     // N-1 (Task 38): el motivo en claro vive en la propia columna que falta.

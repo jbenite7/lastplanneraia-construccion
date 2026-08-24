@@ -89,6 +89,24 @@ const colocar = (celda, globo) => {
 
 const formatearAvance = (avance) => (avance == null ? '0%' : String(avance));
 
+// `datosFila.Actividad` llega con marcado HTML (capitulo en `<b>`/`<small>`)
+// tal como lo guarda el modulo — hot.js ya resuelve esto con su propio
+// `getActividadPlainText()` (usado en cinco sitios); este globo es un modulo
+// ES aparte sin acceso a esa IIFE, asi que replica la misma logica minima:
+// vaciar el marcado en un nodo desconectado y leer `textContent`.
+const obtenerActividadTextoPlano = (valor) => {
+  if (valor === null || valor === undefined) {
+    return '';
+  }
+  const crudo = String(valor);
+  if (!crudo) {
+    return '';
+  }
+  const contenedor = document.createElement('div');
+  contenedor.innerHTML = crudo;
+  return String(contenedor.textContent || contenedor.innerText || '').trim();
+};
+
 const construirMarcadorAvance = (datosFila) => {
   const marcador = document.createElement('div');
   marcador.className = 'aia-readiness-popover__marcador';
@@ -145,7 +163,7 @@ const construirCabecera = (datosFila) => {
 
   const titulo = document.createElement('span');
   titulo.className = 'aia-readiness-popover__titulo';
-  titulo.textContent = datosFila.Actividad || 'Habilitación';
+  titulo.textContent = obtenerActividadTextoPlano(datosFila.Actividad) || 'Habilitación';
   cabecera.appendChild(titulo);
 
   const meta = document.createElement('span');
@@ -199,6 +217,10 @@ const construirCuadrito = (item) => {
   }
   if (lectura.cumple) {
     box.classList.add('aia-readiness__box--met');
+    const check = document.createElement('span');
+    check.className = 'aia-readiness__check';
+    check.textContent = '✓';
+    box.appendChild(check);
     return box;
   }
   const fill = document.createElement('span');
@@ -251,7 +273,6 @@ const construirFilaRestriccion = (item, opciones) => {
     select.appendChild(option);
   });
   etiqueta.appendChild(select);
-  fila.appendChild(etiqueta);
 
   if (typeof opts.onCambio === 'function') {
     select.addEventListener('change', () => opts.onCambio(select, fila));
@@ -325,7 +346,7 @@ const construirGlobo = (datosFila) => {
   globo.tabIndex = -1;
 
   const cabecera = construirCabecera(datos);
-  globo.setAttribute('aria-label', datos.Actividad || 'Habilitación');
+  globo.setAttribute('aria-label', obtenerActividadTextoPlano(datos.Actividad) || 'Habilitación');
   globo.appendChild(cabecera);
 
   const { marcador, avance } = construirMarcadorAvance(datos);
@@ -397,23 +418,46 @@ const focoAtrapado = (ev) => {
   if (!estado || ev.key !== 'Tab') {
     return;
   }
+  // Con rol denegado (test.V) los 7 <select> del globo llegan `disabled`:
+  // sin excluirlos aqui, `ultimo` apuntaba a un nodo no focuseable de
+  // verdad, la rama que cierra el ciclo del Tab nunca disparaba y el foco
+  // se escapaba del globo hacia la pagina (Important 3).
   const focosables = estado.globo.querySelectorAll(
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    'button:not([disabled]), [href]:not([disabled]), input:not([disabled]), ' +
+      'select:not([disabled]), textarea:not([disabled]), ' +
+      '[tabindex]:not([tabindex="-1"]):not([disabled]):not([aria-hidden="true"])',
   );
   if (focosables.length === 0) {
     ev.preventDefault();
+    ev.stopPropagation();
     estado.globo.focus();
     return;
   }
-  const primero = focosables[0];
-  const ultimo = focosables[focosables.length - 1];
-  if (ev.shiftKey && document.activeElement === primero) {
-    ev.preventDefault();
-    ultimo.focus();
-  } else if (!ev.shiftKey && document.activeElement === ultimo) {
-    ev.preventDefault();
-    primero.focus();
+  // Handsontable escucha `keydown` en `document` para su propia navegacion
+  // por teclado y no comprueba si el foco real esta dentro del globo: aunque
+  // aqui se calcule bien el destino, `preventDefault()` solo cancela la
+  // accion NATIVA del navegador, no la entrega del evento a otros listeners,
+  // asi que sin `stopPropagation()` el handler de HOT seguia moviendo la
+  // celda seleccionada y el foco terminaba en una <td> aunque nuestro
+  // `.focus()` ya se hubiera ejecutado. Medido en vivo (Important 3): pasaba
+  // con rol permitido y denegado por igual, no solo con `<select>` `disabled`.
+  // Por eso el globo gestiona el Tab de punta a punta el mismo -nunca deja
+  // que el navegador decida el "siguiente" nativo- en vez de solo corregir
+  // los bordes del ciclo.
+  const posicionActual = Array.prototype.indexOf.call(focosables, document.activeElement);
+  const total = focosables.length;
+  let destinoIndice;
+  if (posicionActual === -1) {
+    // Foco en el contenedor (recien abierto) u otro nodo fuera de la lista.
+    destinoIndice = ev.shiftKey ? total - 1 : 0;
+  } else if (ev.shiftKey) {
+    destinoIndice = posicionActual === 0 ? total - 1 : posicionActual - 1;
+  } else {
+    destinoIndice = posicionActual === total - 1 ? 0 : posicionActual + 1;
   }
+  ev.preventDefault();
+  ev.stopPropagation();
+  focosables[destinoIndice].focus();
 };
 
 // Step 7 (Task 7): Ctrl+Z (Cmd+Z en mac) llama a `estado.datosFila.deshacer()`
