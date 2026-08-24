@@ -73,6 +73,32 @@ para el estado de los planes en curso.
   archivos de sha256 idéntico comprimidos por versiones distintas de zlib. El total servido baja
   59 KB gzip, porque el CSS cae 68.467 B. Sin regresión atribuible al código; los límites de esa
   afirmación están escritos en el informe de atribución.
+### Cierre de pendientes del frente de tablas (2026-08-24)
+
+#### Fixed
+- Tipografía: `handsontable-module.css` usaba `monospace` literal en vez de `--ds-font-mono`. Se
+  creó el token `--ds-font-icon` en `tokens.css` y se aplicó en los dos sitios que llamaban a
+  «Font Awesome 5 Free» a mano (`handsontable-header-global.css`,
+  `design-system/components/table-filter-trigger.css`). Gate estático 8/8. Commit `3ce994fc`.
+- Color de BI: `ControlTowerService.php` (`semanticMetricRange`, `schedulePerformanceRange`) y el
+  fallback de `bi-spa.js` dejaron de usar `status-*` — la mitad `-text` de un par de estado,
+  pensada para tinta, no para relleno — como color de las dos donas de progreso. Ahora resuelven a
+  colores de dato: crítico → `critical`, alerta → `brand-construction`, bien → `brand-primary`.
+  PHPStan sin errores; 51 tests PHPUnit OK. Commit `880e9d4a`.
+
+#### Changed
+- CI: de cuatro listas de SQL que fingían ser la misma quedaron tres con roles distintos: la lista
+  blanca de `scripts/design-system-ci-preflight.mjs` (guardarraíl), su derivada en
+  `ci-preflight.test.mjs`, y la de `visual-ci-contract.test.mjs` conservada duplicada a propósito
+  como segundo testigo. Verificado ensuciando el Dockerfile: los dos archivos fallan. Commit
+  `a9366f3b`.
+
+#### Investigated
+- A11y: el gemelo callado del filtro de cabecera de Programa General (12 de 24 botones sin
+  `aria-hidden`) no se reprodujo. Medido 24/24 marcados en las dos mitades, sostenido tras
+  `render()`, `updateSettings()`, `loadData()`, resize y recarga. Se actualizó solo el comentario,
+  sin arreglo de código. Hipótesis que queda: la medición original se tomó contra un contenedor
+  que montaba otro árbol. Commit `ee875efb`.
 ### Habilitación en una columna — Programación Intermedia (2026-08-24)
 
 #### Changed

@@ -412,7 +412,7 @@ body {
   margin-top: 15px;
 }
 .lps-digest-preview {
-  font-family: monospace;
+  font-family: var(--ds-font-mono);
   font-size: var(--ds-type-size-xs);
   white-space: pre-wrap;
   background: var(--ds-active-surface);

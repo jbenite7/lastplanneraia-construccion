@@ -97,7 +97,7 @@ body.pg-page #hot-container .handsontable thead th .changeType:before,
 body.pdc-page #dt_cliente .handsontable thead th .changeType:before,
 body #hot-container .handsontable thead th .changeType:before {
   content: "\f0b0" !important;
-  font-family: "Font Awesome 5 Free" !important;
+  font-family: var(--ds-font-icon) !important;
   font-weight: 900 !important;
   font-size: var(--ds-table-filter-trigger-icon-size, 6px) !important;
   line-height: 1 !important;

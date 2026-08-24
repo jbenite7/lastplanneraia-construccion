@@ -135,8 +135,10 @@ al detalle plegable. Medido en Da Porto, 1180×820, dark.
 
 - **`status-critical` no es un color de dato.** Resuelve a `#ffcdc8`, un rosa pálido pensado para
   texto de estado: la barra de «ya vencido» salió rosa claro sobre fondo oscuro. El rojo de series
-  es `critical` (`oklch(65% 0.18 26.3)`). Queda un uso viejo de `status-critical` como color de
-  serie en `bi-spa.js:3704`, sin auditar en esta pasada.
+  es `critical` (`oklch(65% 0.18 26.3)`). El uso viejo de `status-critical` como color de serie en
+  `bi-spa.js:3704` (y sus equivalentes `status-warning`/`status-success` en
+  `ControlTowerService.php`) se cerro el 2026-08-24, commit `880e9d4a`: las dos donas de progreso
+  pasaron a pintar con `critical` / `brand-construction` / `brand-primary`.
 - **Las utilidades de rejilla del BI no son Tailwind completo.** `public/css/design-system/adapters/bi-utilities.css`
   define a mano solo `md:grid-cols-2`, `lg:grid-cols-2/3/4` y `xl:grid-cols-2/3`. Escribir
   `md:grid-cols-3` o `xl:grid-cols-5` no falla: la rejilla se queda en una columna, en silencio.

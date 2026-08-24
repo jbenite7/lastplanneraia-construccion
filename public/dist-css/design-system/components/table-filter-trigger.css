@@ -27,7 +27,7 @@
   .aia-table-filter-trigger::before,
   .changeType::before {
     content: "\f0b0";
-    font-family: "Font Awesome 5 Free";
+    font-family: var(--ds-font-icon);
     font-weight: 900;
     font-size: var(--ds-table-filter-trigger-icon-size);
     line-height: 1;

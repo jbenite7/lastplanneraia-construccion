@@ -7,7 +7,7 @@ import { assertSafeCiComposeConfig } from './design-system-ci-compose-contract.m
 
 const FIXTURE_PATH = 'database/fixtures/design-system-ci.sql';
 const DB_DOCKERFILE_PATH = 'database/fixtures/design-system-ci.Dockerfile';
-const EXPECTED_INIT_COPIES = [
+export const EXPECTED_INIT_COPIES = [
   ['database/migrations/20260630_global_tables_contract.sql', '001-global-schema.sql'],
   ['database/patches/001_create_new_tables.sql', '002-rbac-schema.sql'],
   ['database/fixtures/design-system-ci.sql', '003-design-system-ci.sql'],

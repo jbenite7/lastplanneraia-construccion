@@ -133,6 +133,10 @@
       "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --ds-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --ds-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    /* La familia de iconos. Existia copiada a mano en dos hojas (la cabecera global de
+       Handsontable y la primitiva del filtro de tabla); un token la deja en un sitio. No lleva
+       significado —nadie discute cual es la fuente de iconos— asi que no es contrato de DS-F1. */
+    --ds-font-icon: "Font Awesome 5 Free";
 
     --ds-color-brand-primary: var(--aia-green-primary);
     --ds-color-brand-primary-dark: var(--aia-green-dark);

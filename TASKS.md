@@ -172,6 +172,15 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General) — no se reprodujo
+  (2026-08-24)** — medido de nuevo tras el hallazgo del 2026-08-24: 24/24 botones con
+  `aria-hidden` en las dos mitades (12/12 `ht_master`, 12/12 `ht_clone_top`), sostenido en 12
+  muestras cada 250 ms, tras borrar el atributo a mano, tras `render()` a +50 ms y +1550 ms, tras
+  `updateSettings()`, `loadData()`, abrir/cerrar menú, resize, scroll y recarga. Código idéntico
+  entre `origin/main` y `HEAD` en esa función. **Primera hipótesis a descartar si reaparece: la
+  medición original se tomó contra un contenedor que montaba otro árbol** — el mismo fallo que
+  mordió dos veces esa misma jornada en la sesión que lo midió. Solo se actualizó el comentario en
+  `public/js/modules/programa_general/hot.js:2411`, sin arreglo de código.
 - [ ] **PG · golden visual (`programa-general.visual.mjs`) está desactualizado, ajeno a
   `habilitacion-en-una-columna`** — al cerrar los cuatro pendientes de ese frente (2026-08-24) se
   detectó que `npx playwright test tests/browser/programa-general.visual.mjs` falla (18006 px a
@@ -248,17 +257,26 @@ estado por defecto mientras Felipe no reparta.
   `public/js/modules/programa_general/hot.js:2411`. Con `navigableHeaders: true` el camino de
   teclado NO pasa por esos botones, así que marcarlos los 24 es lo coherente.
 
-- [ ] **DS · dos salidas del sistema en las tablas** — `handsontable-module.css:579` usa
-  `font-family: monospace` literal en vez de `--ds-font-mono`, y
-  `handsontable-header-global.css:167` llama a «Font Awesome 5 Free» directamente en vez de una
-  primitiva de ícono. Los dos son de una línea; van juntos porque son el mismo tipo de fuga.
+- [ ] **DS · faltan tokens de relleno para los estados** — los dos anillos de BI dejaron de usar
+  tinta de estado (`status-*`) como color de relleno (2026-08-24, commit `880e9d4a`) y ahora pintan
+  con colores de dato (`critical`, `brand-construction`, `brand-primary`). Pero el problema de fondo
+  sigue: el design system no ofrece un color de estado pensado para rellenar área, solo la mitad
+  `-text` pensada para tinta. **Dirigido a DS-F1**, que es el frente dueño de tokens y de la escala
+  de severidad — quien decida la escala decide esto.
+  **Decision heredada pendiente de ratificar:** al resolver el reemplazo, este mismo frente eligio
+  que `brand-construction` es el color del nivel medio («Aceptable» / «Cumple Parcialmente», valor
+  entre 70 y 90, en `semanticMetricRange()` y `schedulePerformanceRange()` de
+  `src/Services/ControlTowerService.php`). Reutilizar un token de dato ya existente no vuelve neutral
+  esa eleccion: mapear un color a un nivel de severidad es exactamente el tipo de decision que este
+  frente dijo que le tocaba a DS-F1, no a si mismo. DS-F1 debe revisarla y ratificarla o deshacerla
+  como parte del contrato de escala, no asumir que ya quedo resuelta.
 
-- [ ] **CI · el mismo SQL declarado en cuatro listas que deben coincidir** — al sembrar
-  `general_flags` (2026-08-24) hubo que tocar `database/fixtures/design-system-ci.Dockerfile`,
-  `scripts/design-system-ci-preflight.mjs`, `tests/design-system/ci-preflight.test.mjs` y
-  `tests/design-system/visual-ci-contract.test.mjs`. El gate rechazó **tres veces seguidas**, una
-  por lista, así que la red funciona; lo caro es que el comentario que advertía de esto hablaba de
-  «las dos listas» y ya son cuatro. Evaluar si una sola fuente derivada las sustituye.
+- [ ] **BI · confirmar visualmente los dos anillos con avance mayor que cero** — el reemplazo de
+  color de relleno (commit `880e9d4a`) no se vio a tamaño real: el único proyecto accesible del
+  sandbox tiene 0 % de avance en ambas métricas y el arco queda invisible. Riesgo bajo — los tres
+  tokens (`critical`, `brand-construction`, `brand-primary`) ya pintan área en el mismo tablero
+  (barras de «Causas de no cumplimiento», curva de ejecución, pronóstico de fecha) — pero sin ver
+  un arco de dona con esos colores. Confirmar en obra o con datos de un proyecto con avance real.
 
 - [x] **CI · regenerar la baseline de presupuesto de runtime** — hecho el 2026-08-24, generación
   **0.4.0** (`docs/design-system/runtime-baseline-0.4.0.json`). El rojo no era una regresión: el
@@ -281,13 +299,6 @@ estado por defecto mientras Felipe no reparta.
   distingan. **Llevaba cuatro días en rojo sin que se viera** — es el paso 24 del job y el check de
   presupuesto, en el 23, lo dejaba `skipped`; mismo patrón que `general_flags`. Lo destapó la
   regeneración de la baseline a 0.4.0.
-
-- [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
-  `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
-  de rol que se corrigió el 2026-08-24 en los botones de Programación Semanal. Ya estaba anotado
-  como «trampa medida, sin auditar» en [[docs/PDC-AUDIT]] §Trampa medida; queda aquí para que salga
-  de ese pie de página. El rojo de series es `critical` (`oklch(65% 0.18 26.3)`). Contexto y receta:
-  [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design]] §Lo que se rompió después.
 
 - [ ] **Tablas · retirar DataTables, el tercer motor** — quedan cinco superficies en
   DataTables 1.10.21 (2020, con jQuery detrás): `views/programacion-semanal/CIC|CNC|CNP.view.php`,

@@ -74,6 +74,7 @@
       "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --ds-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --ds-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --ds-font-icon: "Font Awesome 5 Free";
     --ds-color-brand-primary: var(--aia-green-primary);
     --ds-color-brand-primary-dark: var(--aia-green-dark);
     --ds-color-brand-construction: var(--aia-orange-primary);
