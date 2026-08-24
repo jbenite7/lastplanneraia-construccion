@@ -172,14 +172,29 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **CI · regenerar la baseline de presupuesto de runtime** — `runtime-baseline-0.3.5.json` se
-  grabó el 2026-08-18 y desde entonces entraron **56 commits de código** a `main`, incluidas las
-  cuatro olas del replanteo de coloreado. El gate no lo cazó porque estaba apagado detrás del
-  fallo de `general_flags` (2026-08-21 → 2026-08-24). Al destrabarlo aparecen dos excesos:
-  `jsGzipBytes` 643.832 contra un techo de 638.380, e `initializationMs` 596,5 contra 301,9.
-  **No son del frente de tablas:** su delta de JS son 2.203 B gzip sobre un exceso de 5.452 B, e
-  `initializationMs` mide `performance.now()` de carga de página completa. Regenerar la baseline
-  es **aprobación designada de Felipe**, igual que los goldens: no se toma de paso.
+- [x] **CI · regenerar la baseline de presupuesto de runtime** — hecho el 2026-08-24, generación
+  **0.4.0** (`docs/design-system/runtime-baseline-0.4.0.json`). El rojo no era una regresión: el
+  baseline 0.3.5 se había medido **en la máquina local** (`ciRunId: run-local-01428901`) mientras
+  el gate lo verifica en runners de GitHub Actions, e `initializationMs` agrupa por máquina antes
+  que por código — local 191-268 ms, Actions 596-1.071. Los 596,5 del rojo son la mitad del único
+  precedente medido en el mismo entorno. `jsGzipBytes` +9.548 B atribuidos al byte y sin residuo,
+  de los cuales 1.132 B son ruido de zlib entre entornos en 42 archivos de sha256 idéntico. Desde
+  0.4.0 la referencia se toma donde el gate la verifica. Atribución completa en
+  [[docs/design-system/runtime-measurements/2026-08-24-atribucion-0.4.0]].
+
+- [ ] **DS · el guard de laboratorio exige una excepción que el CSS retiró el 2026-08-20** —
+  `tests/browser/design-system-lab.mjs:303-307` («severity and urgency blocks keep distinct
+  semantic backgrounds») exige que un estado crítico con matiz conserve el fondo crítico. Esa
+  excepción **se retiró en `b7d5dd18`** con el replanteo B, decisión de Felipe: hoy el chip pinta
+  sólido y la gravedad vive en el filete (`severity-rail.css`); el propio CSS lo documenta en
+  `states-feedback.css:151-158` y delega el guard en `state-tint-ladder`. El test quedó en su
+  versión del 2026-08-11 (`82832685`). **Llevaba cuatro días en rojo sin que se viera**: es el paso
+  24 del job, después del check de presupuesto (23), que lo dejaba `skipped` — mismo patrón que el
+  fallo de `general_flags`. Lo destapó la regeneración de la baseline el 2026-08-24. Verificado:
+  falla 3/3 con el gate destrabado y quedó `skipped` 6/6 con él trabado.
+  **Decisión de Felipe, no técnica:** o el test se alinea con el replanteo B (retirar la aserción
+  caducada) o el CSS reintroduce la excepción. El código y el test dicen cosas contrarias y solo
+  uno de los dos refleja lo decidido.
 
 - [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
   `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error

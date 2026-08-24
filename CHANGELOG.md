@@ -28,6 +28,25 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### El presupuesto de runtime pasa a la generación 0.4.0 y se mide donde el gate lo verifica (2026-08-24)
+
+#### Changed
+- `test:runtime-budget:check` apunta a `runtime-baseline-0.4.0.json`. La generación anterior
+  (0.3.5) se había medido en la máquina local mientras el gate corre en runners de GitHub Actions,
+  y `initializationMs` agrupa por máquina antes que por código: 191-268 ms en local contra
+  596-1.071 en Actions. Un baseline tomado en la máquina rápida y verificado en la lenta produce
+  rojos que no corresponden a ningún cambio. Desde 0.4.0 la referencia se toma en CI.
+- La tolerancia de `handsontableInteractionMs` sube de 45 a 60 ms: con 45 el techo caía a 11 ms del
+  máximo ya observado del mismo código, es decir dentro del ruido medido.
+
+#### Fixed
+- El gate estaba en rojo por `jsGzipBytes` (+9.548 B) e `initializationMs`. El JS queda atribuido
+  al byte y sin residuo —`hot.js` +4.990 y `state-tooltip.js` +2.304 del frente de coloreado,
+  `tablet-viewport-scale.js` +727, `view-switch.js` +395— más 1.132 B que **no son código**: 42
+  archivos de sha256 idéntico comprimidos por versiones distintas de zlib. El total servido baja
+  59 KB gzip, porque el CSS cae 68.467 B. Sin regresión atribuible al código; los límites de esa
+  afirmación están escritos en el informe de atribución.
+
 ### CI: la imagen de pruebas siembra `general_flags` (2026-08-24)
 
 #### Fixed
