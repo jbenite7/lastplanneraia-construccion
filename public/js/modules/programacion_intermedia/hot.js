@@ -16,6 +16,14 @@
   var masterData = [];
   var visibleRows = [];
   var activeFilters = [];
+  // Task 9 (2026-08-21): filtro por restriccion, repuesto tras la fusion de
+  // columnas de la Task 4. `__habilitacion` no tiene un valor simple que el
+  // plugin nativo de filtros pueda comparar (es un compuesto de 7
+  // restricciones), asi que se filtra manualmente igual que `activeFilters`
+  // (leyenda) y los demas `buscador*`: un valor de restriccion activo (el
+  // `prop`/clave, la misma que ya trae `data-restriccion` en cada cuadrito) o
+  // `null` cuando no hay filtro puesto.
+  var restrictionFilterActive = null;
 
   /* Frente contadores-cero. Unico punto de reversion: en false vuelve el
      comportamiento anterior -las ocho etiquetas visibles, las que marcan cero
@@ -4304,6 +4312,14 @@
       return false;
     }
 
+    if (restrictionFilterActive && window.AIAReadiness) {
+      var lecturaFiltro = window.AIAReadiness.leerRestriccion(
+        row[restrictionFilterActive], hardRestrictionThresholds[restrictionFilterActive] || 1);
+      if (lecturaFiltro.cumple || lecturaFiltro.esNoAplica) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -4555,6 +4571,10 @@
 
         if (headerText && headerText.indexOf(' ') === -1) {
           headerNode.classList.add('pi-header-single-word');
+        }
+
+        if (this.colToProp(col) === '__habilitacion') {
+          injectHabilitacionFiltro(TH, headerNode);
         }
 
         // Task 26 ponia aqui el `title`. C-19 (2026-08-05) lo movio a
@@ -5152,6 +5172,109 @@
 
     syncLegendVisualState();
     applyFiltersAndRender();
+  }
+
+  // Task 9 (2026-08-21): menu propio de filtro en la cabecera de
+  // Habilitacion. `__habilitacion` funde 7 restricciones en una sola
+  // columna sin valor simple que el dropdown nativo de Handsontable pueda
+  // comparar (ver `dropdownMenu`/`filters: true` mas abajo, que siguen
+  // sirviendo a las demas columnas): en vez de forzar el plugin nativo con
+  // una condicion custom, se reusa el filtro manual que ya existe para la
+  // leyenda y los `buscador*` (`activeFilters`, `rowMatchesFilters`,
+  // `applyFiltersAndRender`) — es el mismo mecanismo que ya filtra esta
+  // pantalla, y el unico que sabe leer un valor compuesto via
+  // `window.AIAReadiness.leerRestriccion`.
+  function closeHabilitacionFiltroMenu() {
+    $('.pi-habilitacion-filtro__menu').remove();
+    $(document).off('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro);
+  }
+
+  function onDocumentClickCloseHabilitacionFiltro(event) {
+    if ($(event.target).closest('.pi-habilitacion-filtro-wrap').length) {
+      return;
+    }
+    closeHabilitacionFiltroMenu();
+  }
+
+  function buildHabilitacionFiltroMenu(anchorBtn) {
+    var menu = document.createElement('div');
+    menu.className = 'pi-habilitacion-filtro__menu';
+    menu.setAttribute('role', 'menu');
+
+    var limpiar = document.createElement('button');
+    limpiar.type = 'button';
+    limpiar.className = 'pi-habilitacion-filtro__opcion pi-habilitacion-filtro__opcion--limpiar';
+    limpiar.setAttribute('data-restriccion', '');
+    limpiar.textContent = 'Todas (quitar filtro)';
+    menu.appendChild(limpiar);
+
+    for (var i = 0; i < _activeRestrictions.length; i++) {
+      var restriccion = _activeRestrictions[i];
+      var opcion = document.createElement('button');
+      opcion.type = 'button';
+      opcion.className = 'pi-habilitacion-filtro__opcion';
+      opcion.setAttribute('data-restriccion', restriccion.key);
+      opcion.setAttribute('role', 'menuitemradio');
+      opcion.setAttribute('aria-checked', restrictionFilterActive === restriccion.key ? 'true' : 'false');
+      if (restrictionFilterActive === restriccion.key) {
+        opcion.classList.add('pi-habilitacion-filtro__opcion--activa');
+      }
+      opcion.textContent = restriccion.label || restriccion.key;
+      menu.appendChild(opcion);
+    }
+
+    $(menu).on('click', '.pi-habilitacion-filtro__opcion', function () {
+      var clave = String($(this).attr('data-restriccion') || '');
+      restrictionFilterActive = clave || null;
+      closeHabilitacionFiltroMenu();
+      applyFiltersAndRender();
+    });
+
+    anchorBtn.parentNode.appendChild(menu);
+    return menu;
+  }
+
+  function injectHabilitacionFiltro(TH, headerNode) {
+    // Handsontable renderiza la cabecera real en `.ht_master`, pero ese
+    // thead vive con `visibility: hidden` -lo que el usuario ve es el
+    // overlay clonado `.ht_clone_top` (asi resuelve el scroll con cabecera
+    // fija). `afterGetColHeader` corre para cada clon: inyectar el boton
+    // solo en `.ht_clone_top` evita un boton invisible en el master y
+    // duplicados que romperian un locator en modo estricto.
+    if (!TH.closest('.ht_clone_top')) {
+      return;
+    }
+
+    if (TH.querySelector('.pi-habilitacion-filtro-wrap')) {
+      TH.querySelector('.pi-habilitacion-filtro-wrap').classList.toggle(
+        'pi-habilitacion-filtro-wrap--activo', Boolean(restrictionFilterActive));
+      return;
+    }
+
+    var wrap = document.createElement('span');
+    wrap.className = 'pi-habilitacion-filtro-wrap';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pi-habilitacion-filtro';
+    btn.setAttribute('aria-label', 'Filtrar por restriccion');
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.innerHTML = '<i class="fas fa-filter" aria-hidden="true"></i>';
+
+    $(btn).on('click', function (event) {
+      event.stopPropagation();
+      var existente = $('.pi-habilitacion-filtro__menu');
+      if (existente.length) {
+        closeHabilitacionFiltroMenu();
+        return;
+      }
+      buildHabilitacionFiltroMenu(wrap);
+      $(document).off('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro)
+        .on('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro);
+    });
+
+    wrap.appendChild(btn);
+    (headerNode || TH).appendChild(wrap);
   }
 
   function bindFilters() {
