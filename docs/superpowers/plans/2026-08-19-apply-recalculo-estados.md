@@ -59,7 +59,7 @@ indique lo contrario: ninguna necesita Apache.
 El respaldo se probó hace horas. **La base pudo moverse desde entonces** — de hecho se movió
 durante el frente anterior, de 65 549 a 65 557 filas.
 
-- [ ] **Step 1: Paso 0 y comparación respaldo vs realidad**
+- [x] **Step 1: Paso 0 y comparación respaldo vs realidad**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php -r '
@@ -76,19 +76,19 @@ printf("origen=%s respaldo=%s difieren=%s sin_respaldo=%s\n", $o, $r, $d, $h);'
 **Criterio de parada:** si `difieren` > 0 o `sin_respaldo` > 0, el respaldo **ya no cubre** la base
 actual. **Parar, rehacer el respaldo, y volver a probar la restauración** antes de seguir.
 
-- [ ] **Step 2: Rehacer el respaldo si hizo falta, y anotar cuál se usa**
+- [x] **Step 2: Rehacer el respaldo si hizo falta, y anotar cuál se usa**
 
 ---
 
 ### Task 2: Re-correr el dry-run y comparar con el informe
 
-- [ ] **Step 1: Dry-run sobre el estado actual**
+- [x] **Step 1: Dry-run sobre el estado actual**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php database/migrations/20260819_recalculo_estados.php
 ```
 
-- [ ] **Step 2: Comparar contra el informe publicado**
+- [x] **Step 2: Comparar contra el informe publicado**
 
 Esperado: 40 664 cambios, 24 777 iguales, 116 sin semana activa, y las mismas transiciones.
 
@@ -103,14 +103,14 @@ otros, la autorización es sobre otra cosa.
 **No se ejecuta sin (a) el sí directo del usuario en el canal de esta sesión y (b) la ventana de
 base exclusiva abierta por la coordinadora.**
 
-- [ ] **Step 1: Quitar la guarda del `--apply`**
+- [x] **Step 1: Quitar la guarda del `--apply`**
 
 En `database/migrations/20260819_recalculo_estados.php`, sustituir el bloque que deniega por la
 llamada real, dejando **en el código** la cita de la autorización y su fecha.
 
-- [ ] **Step 2: Confirmar la ventana con la coordinadora**
+- [x] **Step 2: Confirmar la ventana con la coordinadora**
 
-- [ ] **Step 3: Ejecutar**
+- [x] **Step 3: Ejecutar**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php database/migrations/20260819_recalculo_estados.php --apply
@@ -122,12 +122,12 @@ Leyendo el código de salida **en su propia línea**.
 
 ### Task 4: Reconciliación, y restaurar si no cuadra
 
-- [ ] **Step 1: Contar las transiciones reales y compararlas con las del dry-run**
+- [x] **Step 1: Contar las transiciones reales y compararlas con las del dry-run**
 
 Las filas que ahora difieren del respaldo tienen que ser **exactamente** las 40 664 previstas, con
 el mismo desglose por transición.
 
-- [ ] **Step 2: Los gates obligatorios**
+- [x] **Step 2: Los gates obligatorios**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_global_table_safety.php
@@ -135,7 +135,7 @@ LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php tests/test_glob
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php scripts/run-php-tests.php --nivel=db
 ```
 
-- [ ] **Step 3: Si algo no cuadra, RESTAURAR**
+- [x] **Step 3: Si algo no cuadra, RESTAURAR**
 
 ```bash
 LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php database/migrations/20260819_recalculo_estados.php --restaurar --apply
@@ -143,7 +143,7 @@ LPS_CODE_ROOT="$(pwd)" docker compose run --rm --no-deps app php database/migrat
 
 y reportar. **No se investiga con los datos migrados.**
 
-- [ ] **Step 4: Comprobar que las 113 y las 296 quedaron donde el informe decía**
+- [x] **Step 4: Comprobar que las 113 y las 296 quedaron donde el informe decía**
 
 Usando `113-contradictorias-capturadas.csv` y su `Consecutivo`.
 
@@ -151,9 +151,9 @@ Usando `113-contradictorias-capturadas.csv` y su `Consecutivo`.
 
 ### Task 5: Actualizar el contrato con la distribución nueva
 
-- [ ] **Step 1: Medir el reparto real tras la migración**
+- [x] **Step 1: Medir el reparto real tras la migración**
 
-- [ ] **Step 2: Actualizar `ds-f1a-escala-estado.{json,md}`**
+- [x] **Step 2: Actualizar `ds-f1a-escala-estado.{json,md}`**
 
 Sustituir los porcentajes —que hoy llevan aviso de ser pre-migración— por los medidos, con su
 fecha, y **retirar el aviso**. La prueba del contrato tiene que seguir en verde.
@@ -162,11 +162,11 @@ fecha, y **retirar el aviso**. La prueba del contrato tiene que seguir en verde.
 
 ### Task 6: El acta
 
-- [ ] Escribir `goals/apply-recalculo-estados/acta-del-apply.md`: qué se ejecutó, cuándo, con qué
+- [x] Escribir `goals/apply-recalculo-estados/acta-del-apply.md`: qué se ejecutó, cuándo, con qué
       autorización, los números antes y después, el resultado de la reconciliación y qué respaldo
       quedó disponible para restaurar.
 
 ## Cierre
 
-- [ ] Verificar con salida real · `git status` limpio · fetch · integrar · **re-verificar después**
+- [x] Verificar con salida real · `git status` limpio · fetch · integrar · **re-verificar después**
       · pedir visto · publicar el sha visado · confirmar · anotar · **marcar las casillas**.
