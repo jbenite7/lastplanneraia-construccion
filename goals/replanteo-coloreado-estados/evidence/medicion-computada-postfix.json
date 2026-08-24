@@ -1,0 +1,425 @@
+{
+  "tema": "dark",
+  "viewport": {
+    "width": 1180,
+    "height": 820
+  },
+  "filas": [
+    {
+      "estado": "blocked-overdue-critical",
+      "etiqueta": "RC inicio vencido · 3La restriccion compartida vencio con el inicio ya en riesgo critico. Atender ahora. Pendientes (3): Gestionar contratos de aprovisionamiento.; Movilizar personal al proyecto.; Recuperar o iniciar actividad predecesora..",
+      "hue": "red",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#3a1f1c",
+      "celdaFondoDeclarado": "rgb(58, 31, 28)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#e15a52",
+      "chipTexto": "#3c0a06",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset",
+      "railNivel": "urgent"
+    },
+    {
+      "estado": "blocked-overdue",
+      "etiqueta": "Inicio vencido · 1El inicio planificado ya vencio sin habilitacion completa. Atender ahora. Pendientes (1): Revisar diseños con dirección y residentes..",
+      "hue": "orange",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#3a2915",
+      "celdaFondoDeclarado": "rgb(58, 41, 21)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#e87722",
+      "chipTexto": "#3a2004",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset",
+      "railNivel": "urgent"
+    },
+    {
+      "estado": "blocked-due",
+      "etiqueta": "Inicio por Habilitar · 1El inicio llega y las condiciones de habilitacion no estan cerradas. Atender ahora. Pendientes (1): Confirmar materiales disponibles en el proyecto..",
+      "hue": "violet",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#302741",
+      "celdaFondoDeclarado": "rgb(48, 39, 65)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#9485d6",
+      "chipTexto": "#26113f",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset",
+      "railNivel": "urgent"
+    },
+    {
+      "estado": "alert-1-week",
+      "etiqueta": "Urgente · 2Inicia en 1 semana y su alistamiento aun no cierra. Revisar antes del siguiente hito. Pendientes (2): Pasar de plan de compras a plan de aprovisionamiento.; Confirmar equipos disponibles en el proyecto..",
+      "hue": "amber",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#383314",
+      "celdaFondoDeclarado": "rgb(56, 51, 20)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#ffca28",
+      "chipTexto": "#3a2c04",
+      "railGrosor": "rgb(255, 210, 63) 4px 0px 0px 0px inset",
+      "railNivel": "attention"
+    },
+    {
+      "estado": "execution-blocked",
+      "etiqueta": "En ejecución · 1Hay avance reportado sobre restricciones sin liberar: el dano se esta produciendo. Atender ahora. Pendientes (1): Aprobar y entregar diseños a contratistas/maestros..",
+      "hue": "blue",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#1e2c40",
+      "celdaFondoDeclarado": "rgb(30, 44, 64)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#5f9fdd",
+      "chipTexto": "#07223c",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset",
+      "railNivel": "urgent"
+    },
+    {
+      "estado": "liberated-control",
+      "etiqueta": "Por comprometerCumple la matriz de habilitacion para pasar a Programacion Semanal. Sin pendientes.",
+      "hue": "green",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#20362a",
+      "celdaFondoDeclarado": "rgb(32, 54, 42)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#57b083",
+      "chipTexto": "#06281a",
+      "railGrosor": "rgb(126, 226, 168) 3px 0px 0px 0px inset",
+      "railNivel": "ready"
+    },
+    {
+      "estado": "alert-2-3-weeks",
+      "etiqueta": "En riesgo · 2Inicia en 2 a 3 semanas y aun requiere preparacion. Revisar antes del siguiente hito. Pendientes (2): Aprobar y entregar diseños a contratistas/maestros.; Pasar de plan de compras a plan de aprovisionamiento..",
+      "hue": "teal",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#1c342f",
+      "celdaFondoDeclarado": "rgb(28, 52, 47)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#5ec9bd",
+      "chipTexto": "#062f29",
+      "railGrosor": "rgb(255, 210, 63) 4px 0px 0px 0px inset",
+      "railNivel": "attention"
+    },
+    {
+      "estado": "alert-4-6-weeks",
+      "etiqueta": "Pendiente · 4Inicia en 4 a 6 semanas: seguimiento temprano del lookahead. Pendientes (4): Revisar diseños con dirección y residentes.; Gestionar contratos de aprovisionamiento.; Movilizar personal al proyecto.…",
+      "hue": "neutral",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#262b28",
+      "celdaFondoDeclarado": "rgb(38, 43, 40)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#9aa8a0",
+      "chipTexto": "#1c2420",
+      "railGrosor": "none",
+      "railNivel": "healthy"
+    },
+    {
+      "estado": "neutral",
+      "etiqueta": "Control · 5Fila sin clasificacion operativa. Pendientes (5): Solicitar diseños para construcción.; Gestionar contratos de aprovisionamiento.; Ubicar y confirmar recurso de mano de obra.…",
+      "hue": "neutral",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#262b28",
+      "celdaFondoDeclarado": "rgb(38, 43, 40)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#9aa8a0",
+      "chipTexto": "#1c2420",
+      "railGrosor": "none",
+      "railNivel": "neutral"
+    }
+  ],
+  "pares": [
+    {
+      "a": "blocked-overdue-critical",
+      "b": "blocked-overdue",
+      "celdaVsCelda": 1.083,
+      "chipVsChip": 1.226,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "blocked-due",
+      "celdaVsCelda": 1.071,
+      "chipVsChip": 1.138,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "alert-1-week",
+      "celdaVsCelda": 1.186,
+      "chipVsChip": 2.373,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "execution-blocked",
+      "celdaVsCelda": 1.07,
+      "chipVsChip": 1.295,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "liberated-control",
+      "celdaVsCelda": 1.165,
+      "chipVsChip": 1.373,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.136,
+      "chipVsChip": 1.826,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.047,
+      "chipVsChip": 1.466,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue-critical",
+      "b": "neutral",
+      "celdaVsCelda": 1.047,
+      "chipVsChip": 1.466,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "blocked-due",
+      "celdaVsCelda": 1.011,
+      "chipVsChip": 1.077,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "alert-1-week",
+      "celdaVsCelda": 1.095,
+      "chipVsChip": 1.936,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "execution-blocked",
+      "celdaVsCelda": 1.012,
+      "chipVsChip": 1.056,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "liberated-control",
+      "celdaVsCelda": 1.076,
+      "chipVsChip": 1.12,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.049,
+      "chipVsChip": 1.49,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.034,
+      "chipVsChip": 1.196,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-overdue",
+      "b": "neutral",
+      "celdaVsCelda": 1.034,
+      "chipVsChip": 1.196,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "alert-1-week",
+      "celdaVsCelda": 1.107,
+      "chipVsChip": 2.085,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "execution-blocked",
+      "celdaVsCelda": 1.002,
+      "chipVsChip": 1.137,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "liberated-control",
+      "celdaVsCelda": 1.087,
+      "chipVsChip": 1.206,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.06,
+      "chipVsChip": 1.604,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.023,
+      "chipVsChip": 1.288,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "blocked-due",
+      "b": "neutral",
+      "celdaVsCelda": 1.023,
+      "chipVsChip": 1.288,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-1-week",
+      "b": "execution-blocked",
+      "celdaVsCelda": 1.109,
+      "chipVsChip": 1.833,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-1-week",
+      "b": "liberated-control",
+      "celdaVsCelda": 1.018,
+      "chipVsChip": 1.729,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-1-week",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.044,
+      "chipVsChip": 1.3,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-1-week",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.132,
+      "chipVsChip": 1.619,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-1-week",
+      "b": "neutral",
+      "celdaVsCelda": 1.132,
+      "chipVsChip": 1.619,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "execution-blocked",
+      "b": "liberated-control",
+      "celdaVsCelda": 1.089,
+      "chipVsChip": 1.061,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "execution-blocked",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.062,
+      "chipVsChip": 1.411,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "execution-blocked",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.021,
+      "chipVsChip": 1.133,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "execution-blocked",
+      "b": "neutral",
+      "celdaVsCelda": 1.021,
+      "chipVsChip": 1.133,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "liberated-control",
+      "b": "alert-2-3-weeks",
+      "celdaVsCelda": 1.026,
+      "chipVsChip": 1.33,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "liberated-control",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.112,
+      "chipVsChip": 1.068,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "liberated-control",
+      "b": "neutral",
+      "celdaVsCelda": 1.112,
+      "chipVsChip": 1.068,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-2-3-weeks",
+      "b": "alert-4-6-weeks",
+      "celdaVsCelda": 1.084,
+      "chipVsChip": 1.246,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-2-3-weeks",
+      "b": "neutral",
+      "celdaVsCelda": 1.084,
+      "chipVsChip": 1.246,
+      "celdaIdentica": false,
+      "chipIdentico": false
+    },
+    {
+      "a": "alert-4-6-weeks",
+      "b": "neutral",
+      "celdaVsCelda": 1,
+      "chipVsChip": 1,
+      "celdaIdentica": true,
+      "chipIdentico": true
+    }
+  ]
+}

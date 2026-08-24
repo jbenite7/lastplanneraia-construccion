@@ -82,7 +82,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1180x820.png",
-      "sha256": "a4d4cbbd5c050003c5f7030e218159f7448db606a0bac0198982ca343535847a",
+      "sha256": "c363cca93ff70573adebcb1be42245ad6ed3a974f17a162e07672d47c82bd608",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1180x820.png",
@@ -104,7 +104,7 @@
       "state": "deterministic",
       "role": "A",
       "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/programa-general-dark-1440x900.png",
-      "sha256": "2b322c01c45885e5f54cde60079bc6ffb8bb18e782b13b7045ab6f5169975a7b",
+      "sha256": "0cb6fc104fba51b7674a70b17d9685d82f30de9290f9be408ec6c9a7310715f5",
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/programa-general.visual.mjs/linux/programa-general-dark-1440x900.png",

@@ -1282,7 +1282,7 @@ table.dataTable thead th {
   background-color: var(--ds-active-surface-raised) !important;
   color: var(--ds-active-text-primary) !important;
   font-weight: 600 !important;
-  font-size: 0.8rem !important;
+  font-size: 0.70rem !important;
   padding: 8px 4px !important;
   text-align: center !important;
   vertical-align: middle !important;
@@ -1293,7 +1293,7 @@ table.dataTable thead th {
   word-break: normal !important;
 }
 table.dataTable tbody td {
-  font-size: 0.85rem !important;
+  font-size: 0.72rem !important;
   padding: 6px 6px !important;
   vertical-align: middle !important;
   border: 0 !important;
@@ -1307,14 +1307,14 @@ table.dataTable tbody td {
   .ps-page #dt_cliente.dataTable thead th,
   .pg-page #dt_cliente.dataTable thead th,
   .pi-page #dt_cliente.dataTable thead th {
-    font-size: 0.74rem !important;
+    font-size: 0.70rem !important;
     padding: 6px 3px !important;
     line-height: 1.15;
   }
   .ps-page #dt_cliente.dataTable tbody td,
   .pg-page #dt_cliente.dataTable tbody td,
   .pi-page #dt_cliente.dataTable tbody td {
-    font-size: 0.79rem !important;
+    font-size: 0.72rem !important;
     padding: 5px 4px !important;
     line-height: 1.25;
   }
@@ -1425,9 +1425,23 @@ table.dataTable td.dt-min-width-300,
 .ps-form-layout .ps-form-col {
   margin-bottom: 0;
 }
+.ps-table-wrap,
+.ps-page #cuadroTabla {
+  --ps-scroll-edge-bg: var(--ds-active-surface);
+  --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+  background-image:
+    linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+    linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+    linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 .ps-table-wrap {
   max-inline-size: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 .ps-table-container {
   padding: 0;
@@ -1539,14 +1553,14 @@ table.dataTable td.dt-min-width-300,
   z-index: 1;
   background: var(--ds-active-surface-raised);
   color: var(--ds-active-text-primary);
-  font-size: 0.83rem;
+  font-size: 0.70rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   border-top: 0;
   border-bottom-color: var(--ds-active-border);
 }
 #tabla_excepciones_no_autoprogramadas tbody td {
-  font-size: 0.91rem;
+  font-size: 0.72rem;
   vertical-align: top;
   border-top-color: var(--ds-active-border);
   color: var(--ds-active-text-primary);
@@ -1565,7 +1579,6 @@ table.dataTable td.dt-min-width-300,
   inline-size: 5.6rem;
 }
 #tabla_excepciones_no_autoprogramadas .ps-excepcion-actividad {
-  font-size: 0.95rem;
   line-height: 1.4;
 }
 #tabla_excepciones_no_autoprogramadas .ps-row-excepcion:hover {
@@ -2298,7 +2311,7 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   }
 }
 .ps-page #cuadroTabla {
-  overflow-x: hidden !important;
+  overflow-x: auto !important;
 }
 .ps-page #dt_cliente {
   width: 100% !important;
@@ -2313,9 +2326,9 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 .pg-page #hot-container .handsontable td.pg-state-atrasado,
 .pg-page #hot-container .handsontable td.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg) !important;
-  color: var(--ds-cell-state-critico-fg) !important;
-  border-color: var(--ds-cell-state-critico-fg) !important;
+  background-color: var(--ds-state-row-red) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-restr-0 {
   background-color: var(--ds-cell-state-bloqueado-bg) !important;
@@ -2323,14 +2336,14 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-cell-state-bloqueado-fg) !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg) !important;
-  color: var(--ds-cell-state-riesgo-fg) !important;
-  border-color: var(--ds-cell-state-riesgo-fg) !important;
+  background-color: var(--ds-state-row-orange) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg) !important;
-  color: var(--ds-cell-state-ok-fg) !important;
-  border-color: var(--ds-cell-state-ok-fg) !important;
+  background-color: var(--ds-state-row-green) !important;
+  color: var(--ds-active-text-primary) !important;
+  border-color: var(--ds-active-border) !important;
 }
 .pg-page #hot-container .handsontable tbody td.pg-row-state.pg-state-r0,
 .pg-page #hot-container .handsontable tbody td.pg-row-state[class~="pg-state-r0"] {
@@ -2350,23 +2363,23 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 .pg-page #hot-container .handsontable td.pg-state-a-tiempo-en-curso,
 .pg-page #hot-container .handsontable td.pg-state-en-curso {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-terminada {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-sin-datos {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   border-style: dashed !important;
 }
 .pg-page #hot-container .handsontable td.pg-state-fuera-de-ventana {
-  background-color: var(--ds-state-tint-teal) !important;
+  background-color: var(--ds-state-row-teal) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
@@ -2375,20 +2388,20 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 .pg-page .pg-legend-modal-swatch.pg-state-atrasado,
 .pg-page .pg-legend-modal-swatch.pg-state-atrasada {
-  background-color: var(--ds-cell-state-critico-bg);
-  border-color: var(--ds-cell-state-critico-fg);
+  background-color: var(--ds-state-solid-red);
+  border-color: var(--ds-active-border);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-debe-iniciar {
-  background-color: var(--ds-cell-state-riesgo-bg);
+  background-color: var(--ds-state-solid-orange);
   border-color: var(--ds-cell-state-riesgo-fg);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-actividad-futura {
-  background-color: var(--ds-cell-state-ok-bg);
+  background-color: var(--ds-state-solid-green);
   border-color: var(--ds-cell-state-ok-fg);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-en-curso {
-  background-color: var(--ds-state-tint-blue);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
   border-color: var(--ds-active-border);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-restr-0 {
@@ -2402,15 +2415,15 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   border-color: var(--ds-cell-state-atencion-fg);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-a-tiempo-en-curso {
-  background-color: var(--ds-cell-state-ok-bg);
+  background-color: var(--ds-state-solid-blue);
   border-color: var(--ds-cell-state-ok-fg);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-terminada {
-  background-color: var(--ds-cell-state-neutral-bg);
+  background-color: var(--ds-state-solid-neutral);
   border-color: var(--ds-active-border);
 }
 .pg-page .pg-legend-modal-swatch.pg-state-sin-datos {
-  background-color: var(--ds-cell-state-sin-datos-bg);
+  background-color: var(--ds-state-solid-violet);
   border-color: var(--ds-active-border);
   border-style: dashed;
 }
@@ -2573,96 +2586,96 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
 }
 .pi-page .handsontable td.pi-state-blocked-overdue-critical,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
   font-weight: 600;
 }
 .pi-page .handsontable td.pi-state-blocked-overdue,
 .pi-page #hot-container .handsontable td.pi-state-blocked-overdue {
-  background-color: var(--ds-state-tint-orange) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-blocked-due,
 .pi-page #hot-container .handsontable td.pi-state-blocked-due {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-alert-1-week,
 .pi-page #hot-container .handsontable td.pi-state-alert-1-week {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-alert-2-3-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-state-tint-teal) !important;
+  background-color: var(--ds-state-row-teal) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-alert-4-6-weeks,
 .pi-page #hot-container .handsontable td.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-execution-blocked,
 .pi-page #hot-container .handsontable td.pi-state-execution-blocked {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-liberated-control,
 .pi-page #hot-container .handsontable td.pi-state-liberated-control {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
   border-color: var(--ds-active-border) !important;
 }
 .pi-page .handsontable td.pi-state-neutral,
 .pi-page #hot-container .handsontable td.pi-state-neutral {
-  background-color: var(--ds-cell-state-neutral-bg) !important;
-  color: var(--ds-cell-state-neutral-fg) !important;
+  background-color: var(--ds-state-row-neutral) !important;
+  color: var(--ds-active-text-primary) !important;
 }
 .pi-page .pi-legend .pdc-legend-item.blocked-overdue-critical {
-  background-color: var(--pi-critical-bg);
-  color: var(--pi-critical-text);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
   border-color: var(--pi-critical-border);
 }
 .pi-page .pi-legend .pdc-legend-item.blocked-overdue {
-  background-color: var(--pi-overdue-bg);
-  color: var(--pi-overdue-text);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
   border-color: var(--pi-overdue-border);
 }
 .pi-page .pi-legend .pdc-legend-item.blocked-due {
-  background-color: var(--pi-due-bg);
-  color: var(--pi-due-text);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
   border-color: var(--pi-due-border);
 }
 .pi-page .pi-legend .pdc-legend-item.alert-1-week {
-  background-color: var(--pi-alert1-bg);
-  color: var(--pi-alert1-text);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
   border-color: var(--pi-alert1-border);
 }
 .pi-page .pi-legend .pdc-legend-item.alert-2-3-weeks {
-  background-color: var(--pi-alert23-bg);
-  color: var(--pi-alert23-text);
+  background-color: var(--ds-state-solid-teal);
+  color: var(--ds-state-solid-teal-text);
   border-color: var(--pi-alert23-border);
 }
 .pi-page .pi-legend .pdc-legend-item.alert-4-6-weeks {
-  background-color: var(--pi-alert46-bg);
-  color: var(--pi-alert46-text);
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
   border-color: var(--pi-alert46-border);
 }
 .pi-page .pi-legend .pdc-legend-item.execution-blocked {
-  background-color: var(--pi-exec-blocked-bg);
-  color: var(--pi-exec-blocked-text);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
   border-color: var(--pi-exec-blocked-border);
 }
 .pi-page .pi-legend .pdc-legend-item.liberated-control {
-  background-color: var(--pi-control-bg);
-  color: var(--pi-control-text);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
   border-color: var(--pi-control-border);
 }
 .pi-page .pi-legend-quick {
@@ -2755,44 +2768,44 @@ body.ps-toolbar-comfortable .filaBotones .toolbarFilaBotones {
   margin-top: 0.2rem;
 }
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue-critical {
-  background-color: var(--ds-state-tint-red);
+  background-color: var(--ds-state-solid-red);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-red-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-overdue {
-  background-color: var(--ds-state-tint-orange);
+  background-color: var(--ds-state-solid-orange);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-orange-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-blocked-due {
-  background-color: var(--ds-state-tint-violet);
+  background-color: var(--ds-state-solid-violet);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-violet-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-alert-1-week {
-  background-color: var(--ds-state-tint-amber);
+  background-color: var(--ds-state-solid-amber);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-amber-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-alert-2-3-weeks {
-  background-color: var(--ds-state-tint-teal);
+  background-color: var(--ds-state-solid-teal);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-teal-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-alert-4-6-weeks {
-  background-color: var(--ds-state-tint-neutral);
+  background-color: var(--ds-state-solid-neutral);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-neutral-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-execution-blocked {
-  background-color: var(--ds-state-tint-blue);
+  background-color: var(--ds-state-solid-blue);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-blue-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-state-liberated-control {
-  background-color: var(--ds-state-tint-green);
+  background-color: var(--ds-state-solid-green);
   border-color: var(--ds-active-border);
-  color: var(--ds-active-text-primary);
+  color: var(--ds-state-solid-green-text);
 }
 .pi-page .pi-legend-modal-swatch.pi-legend-soft-restriction {
   background-color: var(--ds-active-surface-raised);

@@ -34,7 +34,11 @@ test('cada fase de Semanal pinta cinco matices distintos en el CSS', async () =>
       // estaba bien.
       const regla = css.match(new RegExp(`\\.ps-state-${key}(?![\\w-])[^{]*\\{([^}]*)\\}`))?.[1];
       assert.ok(regla, `programacion-semanal.css no pinta .ps-state-${key}`);
-      const tinte = regla.match(/--ds-state-tint-([a-z]+)/)?.[1];
+      // MIDE DESDE 2026-08-20 (replanteo direccion B): la fila pinta el tinte
+      // SUTIL --ds-state-row-<hue>; el matiz fuerte vive en el chip solido
+      // (states-feedback). El eje que este guard protege no cambio: cinco
+      // estados por fase, cinco matices distintos, los del contrato.
+      const tinte = regla.match(/--ds-state-row-([a-z]+)/)?.[1];
       assert.equal(tinte, hue, `.ps-state-${key} pinta ${tinte} y el contrato dice ${hue}`);
       return tinte;
     });

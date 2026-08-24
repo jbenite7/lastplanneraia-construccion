@@ -464,6 +464,10 @@ export type PasoPlan = {
 
 export type FilaPlan = {
   paqueteId: number
+  // Destino contratable: `0` es el paquete sin partir; >0 es un lote. El servidor lo emite
+  // desde siempre (PlanFechasService / SeguimientoService); el tipo no lo declaraba y por eso
+  // la grilla no podia usar la pareja como identidad de fila.
+  subpaqueteId: number
   nombre: string
   tipoNegociacion: string
   modalidad: string
@@ -705,6 +709,10 @@ export type PanelCorrespondencias = {
 /** Una fila de `GET /plan-compras/api/seguimiento`: el estado de un paquete de un vistazo. */
 export type FilaSeguimiento = {
   paqueteId: number
+  // Destino contratable: `0` es el paquete sin partir; >0 es un lote. El servidor lo emite
+  // desde siempre (PlanFechasService / SeguimientoService); el tipo no lo declaraba y por eso
+  // la grilla no podia usar la pareja como identidad de fila.
+  subpaqueteId: number
   nombre: string
   frenteNombre: string
   responsableUserId: number | null

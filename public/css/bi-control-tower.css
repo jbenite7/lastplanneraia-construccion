@@ -1,3 +1,34 @@
+/* ── Partidor de palabras y rampa densa de esta hoja (2026-08-20) ─────────
+ *
+ * PARTIDOR. Las 32 apariciones de `overflow-wrap: anywhere` que tenia esta
+ * hoja pasaron a la receta del repo:
+ *
+ *     word-break: normal; overflow-wrap: break-word; hyphens: none;
+ *
+ * La diferencia no es cosmetica. `anywhere` parte una palabra AUNQUE quepa
+ * entera en la linea siguiente, asi que «Programacion» sale como «Programa/
+ * cion» sin necesidad ninguna; `break-word` solo parte cuando la palabra no
+ * cabe ni sola en una linea vacia. Es la Regla de Palabra Integra de
+ * DESIGN.md (DS-001/DS-015), la misma que ya declara
+ * programacion-semanal.css para las celdas de DataTable.
+ *
+ * NO SE CONSERVO NINGUNA como `anywhere`, y se comprobo dato por dato: todo
+ * lo que pintan estos contenedores en bi-spa.js es lenguaje natural —nombre
+ * de proyecto, nombre de actividad, categoria, causa, observacion, accion
+ * recomendada, responsable—. No hay ni un codigo ni un identificador
+ * continuo sin espacios, que es el unico caso en que `anywhere` estaria
+ * justificado. El cambio tampoco toca la geometria: cada uno de estos
+ * bloques ya declara `min-width: 0` (o `max-width: 100%`), asi que el ancho
+ * minimo intrinseco que `anywhere` encogia no lo estaba sosteniendo nadie.
+ *
+ * RAMPA DENSA (DESIGN.md §3). Las dos tablas de esta hoja
+ * —`.bi-drilldown__table` y `.bi-programa-activity-table`— corren ahora en
+ * dense-label `0.72rem` para el dato y dense-meta `0.70rem` para cabecera y
+ * segunda linea. Los `font-size` que NO son de tabla (KPI, titulos, chips de
+ * filtro, botones, tarjetas moviles) se dejaron como estaban a proposito: la
+ * rampa densa manda en la familia de tablas, no fuera de ella.
+ */
+
 /* ── Carril de pestanas: anuncio de corte ────────────────────────────────
  *
  * Medido en /bi/control-tower a 1180x820: las ocho pestanas suman 1626 px de
@@ -177,7 +208,9 @@
 
   .bi-chip strong {
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-chip button {
@@ -445,7 +478,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-semantic-range {
@@ -460,7 +495,9 @@
     font-size: 0.75rem;
     font-weight: 800;
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-semantic-range-reason {
@@ -469,7 +506,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.35;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   [data-range='critical'] .bi-semantic-range {
@@ -522,7 +561,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-compliance-card {
@@ -580,7 +621,9 @@
     color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-xs);
     line-height: var(--ds-type-line-body);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-cause-insight__lead strong {
@@ -592,7 +635,9 @@
     color: var(--ds-active-text-secondary);
     font-size: 0.8125rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-cause-category-actions {
@@ -653,7 +698,9 @@
     color: var(--ds-active-text-secondary);
     font-size: 0.8125rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-delay-status {
@@ -680,7 +727,9 @@
   .bi-delay-dates dt,
   .bi-delay-dates dd {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-delay-dates dt {
@@ -727,7 +776,9 @@
   .bi-delay-project dd {
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-delay-project h3 {
@@ -757,13 +808,17 @@
   .bi-delay-drilldown__table td > small {
     display: block;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-delay-drilldown__table td > small {
     padding-top: var(--spacing-xs);
     color: var(--ds-active-text-secondary);
-    font-size: var(--ds-type-size-xs);
+    /* Segunda linea de celda: dense-meta. Venia de `--ds-type-size-xs`
+       (0.75rem), que es la escala general y no la de la familia de tablas. */
+    font-size: 0.70rem;
     line-height: var(--ds-type-line-body);
   }
 }
@@ -861,7 +916,9 @@
     border-radius: var(--ds-radius-control);
     background: var(--bi-drilldown-elevated-surface);
     padding: var(--spacing-sm);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-drilldown__summary--four {
@@ -885,7 +942,9 @@
     border-radius: var(--ds-radius-control);
     padding: var(--spacing-sm) var(--spacing-md);
     color: var(--ds-active-text-secondary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-progress-tabs button[aria-selected='true'] {
@@ -934,7 +993,9 @@
     margin: 0;
     color: var(--ds-active-text-secondary);
     line-height: 1.5;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-drilldown__state {
@@ -958,10 +1019,17 @@
     display: none !important;
   }
 
+  /* Rampa densa, dato de celda (dense-label 0.72rem). Antes esta tabla no
+     declaraba tamano y heredaba el 1rem del documento, mientras su propia
+     cabecera corria a 0.75rem: la celda salia mas grande que el rotulo que la
+     nombra, justo la inversion de jerarquia que el censo marco en `.cm-table`.
+     Se declara en la tabla, no en cada `td`, para que herede tambien lo que
+     bi-spa.js inyecta dentro de la celda. */
   .bi-drilldown__table {
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
+    font-size: 0.72rem;
   }
 
   .bi-drilldown__table th,
@@ -971,20 +1039,34 @@
     padding: var(--spacing-sm);
     vertical-align: top;
     text-align: left;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-drilldown__table th {
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 92%, var(--bi-drilldown-elevated-surface));
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    /* Cabecera auxiliar: dense-meta 0.70rem, un paso por debajo del dato. */
+    font-size: 0.70rem;
+  }
+
+  /* La segunda linea de una celda (`<small>`: fecha de corte, «Real: x%»,
+     etiqueta de exclusion) no puede quedar a merced del 0.83em de fabrica del
+     navegador: sobre una celda de 0.72rem eso da 9,6px, por debajo del piso de
+     11px de PRODUCT.md y por debajo incluso del dense-floor heredado. Se fija a
+     dense-meta, que es lo que ya declaraba a mano la tabla de atrasos. */
+  .bi-drilldown__table small {
+    font-size: 0.70rem;
   }
 
   .bi-causal-operational-link,
   .bi-causal-record-link {
     min-height: var(--ds-target-min);
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-causal-operational-link {
@@ -1010,13 +1092,18 @@
     margin-top: calc(var(--spacing-xs) / 2);
   }
 
+  /* Se pinta dentro de un `td` del drilldown (bi-spa.js:717, 1213, 1831) y
+     tambien en las tarjetas moviles. Como linea secundaria de celda le toca
+     dense-meta; a 0.75rem quedaba por encima del dato de su propia celda. */
   .bi-drilldown__responsible-line {
     margin: 0;
     min-width: 0;
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.70rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-drilldown__responsible-label {
@@ -1042,7 +1129,9 @@
   .programa-gauge-drilldown-card p,
   .bi-causal-drilldown-card h3 {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .programa-compliance-drilldown-card p,
@@ -1062,7 +1151,9 @@
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 88%, var(--bi-drilldown-elevated-surface));
     padding: var(--spacing-xs);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .programa-gauge-drilldown-card__metrics {
@@ -1076,7 +1167,9 @@
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 88%, var(--bi-drilldown-elevated-surface));
     padding: var(--spacing-xs);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-causal-drilldown-card__fields {
@@ -1099,7 +1192,9 @@
   .bi-causal-drilldown-card__fields dd {
     margin: calc(var(--spacing-xs) / 2) 0 0;
     color: var(--ds-active-text-primary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-causal-drilldown-card__decision {
@@ -1126,7 +1221,9 @@
     display: block;
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-causal-drilldown-card__decision p {
@@ -1154,7 +1251,9 @@
     font-size: var(--ds-type-size-xs);
     line-height: var(--ds-type-line-body);
     text-align: center;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
 }
@@ -1243,7 +1342,9 @@
 
   .bi-programa-activity-cutoff {
     max-width: 100%;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-programa-activity-total {
@@ -1271,11 +1372,18 @@
     text-align: center;
   }
 
+  /* Dato de celda en dense-label; hereda a todo lo que la tabla contiene. */
   .bi-programa-activity-table {
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+  }
+
+  /* Mismo motivo que en el drilldown: el `small` de fabrica encogeria otro 17%
+     sobre una celda ya densa y caeria por debajo del piso de 11px. */
+  .bi-programa-activity-table small {
+    font-size: 0.70rem;
   }
 
   .bi-programa-activity-table th,
@@ -1285,12 +1393,17 @@
     padding: var(--spacing-sm);
     text-align: left;
     vertical-align: top;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-programa-activity-table th {
     color: var(--ds-active-text-secondary);
     font-weight: 700;
+    /* Cabecera auxiliar: dense-meta. Antes heredaba el tamano del dato, asi
+       que rotulo y dato pesaban igual y solo los distinguia el color. */
+    font-size: 0.70rem;
   }
 
   .bi-programa-activity-table th:nth-child(1) { width: 20%; }
@@ -1331,14 +1444,19 @@
   .bi-programa-activity-dates span {
     min-width: 0;
     color: var(--ds-active-text-primary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-programa-activity-dates span small,
   .bi-programa-activity-timeline label span {
     display: block;
     color: var(--ds-active-text-secondary);
-    font-size: var(--ds-type-size-xs);
+    /* Rotulo dentro de la celda (fecha, «Real»/«Plan»): dense-meta. Venia de
+       `--ds-type-size-xs`, la escala general, que dentro de esta tabla salia
+       mas grande que el propio dato. */
+    font-size: 0.70rem;
     font-weight: 700;
   }
 
@@ -1400,7 +1518,9 @@
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--ds-active-surface-raised) 84%, var(--ds-active-bg-canvas));
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-programa-activity-state[data-status='late'] {
@@ -1464,7 +1584,9 @@
   }
 
   .bi-programa-activity-card dd {
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-programa-activity-more-error {
@@ -1706,7 +1828,9 @@
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-display);
     font-size: var(--ds-type-size-sm);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 }
 
@@ -1770,7 +1894,9 @@
   .bi-radar-axis__trend {
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-radar-axis__heading h4 {
@@ -1838,7 +1964,9 @@
     transform: translateY(var(--spacing-xs));
     transition: opacity var(--ds-motion-fast), transform var(--ds-motion-fast);
     visibility: hidden;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-radar-axis__info:hover + .bi-radar-axis__tooltip,
@@ -1895,7 +2023,9 @@
   .bi-radar-drilldown-card dl,
   .bi-radar-drilldown-card dd {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 
   .bi-radar-drilldown-card h3 {

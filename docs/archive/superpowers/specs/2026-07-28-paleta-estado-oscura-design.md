@@ -125,3 +125,30 @@ porqué junto a la regla.
   nadie lo note. Se verifica con captura.
 - **Sesiones paralelas activas** en este repo empujan a `main` con frecuencia y ya dejaron obsoleta
   una medición a mitad de camino. Re-medir antes de cada paso que dependa de un valor.
+
+## Lo que se rompio despues (anadido 2026-08-24)
+
+Esta spec quedo `cerrado`, pero el contrato que fija —**los tokens de estado van en par: `-bg` de
+fondo y `-text` de tinta encima**— se incumplio al menos dos veces despues, siempre igual: alguien
+toma la mitad `-text` del par y la usa **como fondo**. Se anota aqui, y no en un documento nuevo,
+porque el sitio donde la tabla de pares vive es el sitio donde hay que enterarse de que se rompe.
+
+| Donde | Que hizo | Contraste resultante | Estado |
+|---|---|---|---|
+| `bi-spa.js:3704` | `status-critical` (`#ffcdc8`) como color de **serie** de grafico | — | **sin auditar**, anotado en `docs/PDC-AUDIT.md` §Trampa medida y en `TASKS.md` |
+| `programacion-semanal.css:2600` | `success-text` / `critical-text` como **fondo** del chip de los botones duplicar y eliminar, con blanco encima | 1,37:1 y 1,42:1 | **corregido 2026-08-24**, restituyendo el par |
+
+En los dos casos el sintoma es el mismo y enganosamente leve: el elemento se ve **palido y lavado**,
+no roto. En Semanal el glifo se dibujaba —9,3 px dentro de un chip de 32— pero blanco sobre menta
+palido, asi que se leia como un cuadro vacio. Lo reporto el usuario mirando una captura, no un gate:
+`axe` no lo tenia en baseline, no habia excepcion de accesibilidad que lo cubriera, y los tres
+hallazgos vecinos del ledger de `DESIGN-AUDIT.md` sobre esos mismos botones (C-18 codigo muerto,
+C-48 geometria del gatillo, F-3/F-4 tamano de destino) miran otra cosa.
+
+**Por que se cuela.** Un `-text` invertido a oscuro *parece* un color de fondo valido: es claro,
+tiene el matiz correcto y contrasta bien contra la superficie de la tabla. Lo unico que falla es lo
+que se pone encima. Por eso la revision no puede ser «se ve bien», tiene que ser «que par es».
+
+**La receta, para el siguiente.** No subir el contraste a ojo ni agrandar el icono: volver a los dos
+valores que la tabla de arriba ya midio. Si hace falta una variable intermedia por modulo, que sean
+**dos** —fondo y tinta— y no una sola, que es como se partio el par en Semanal.

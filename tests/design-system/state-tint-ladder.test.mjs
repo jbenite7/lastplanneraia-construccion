@@ -122,20 +122,41 @@ for (const sheet of ['public/css/programacion-intermedia.css', 'public/css/progr
 // El eje de matiz necesita una primitiva que lo pinte, o `data-aia-hue` es un
 // atributo decorativo. `.aia-chip` ya cubre el chip y esta aprobada; lo que
 // faltaba era que la capa de componentes supiera traducir un matiz a su tinte.
-test('la capa de componentes traduce data-aia-hue a su tinte', async () => {
+//
+// MIDE DESDE 2026-08-20 (replanteo direccion B): la traduccion matiz->SOLIDO
+// del chip, no matiz->tinte. El chip es el portador fuerte de identidad
+// (--ds-state-solid-*, texto oscuro de su familia); el tinte quedo para el PDC
+// y el fondo de fila paso a --ds-state-row-*. Ademas asierta que la excepcion
+// critica del 2026-08-11 ([data-aia-hue][high][now]) NO exista: aquella regla
+// hacia al chip codificar nivel ademas de matiz -dos ejes en un canal-; hoy la
+// gravedad vive completa en el filete, que existe en los tres modulos. El
+// selector de nivel SIN matiz sigue vivo como respaldo y lo asierta
+// states-feedback.test.mjs.
+test('la capa de componentes traduce data-aia-hue a su solido con su texto', async () => {
   const css = await read('public/css/design-system/components/states-feedback.css');
   const semantics = JSON.parse(await read('docs/design-system/state-semantics.json'));
-  for (const { id, tint } of semantics.hues) {
-    const rule = css.match(new RegExp(`\\[data-aia-hue="${id}"\\][^{]*\\{([^}]*)\\}`))?.[1];
+  for (const { id } of semantics.hues) {
+    const rule = css.match(new RegExp(`\\[data-aia-hue="${id}"\\]\\[data-aia-severity\\][^{]*\\{([^}]*)\\}`))?.[1];
     assert.ok(rule, `states-feedback.css no traduce [data-aia-hue="${id}"]`);
     assert.match(
       rule,
-      new RegExp(`${tint.replace(/[-]/g, '\\-')}\\)`),
-      `[data-aia-hue="${id}"] deberia usar ${tint}, que es el que declara el contrato`,
+      new RegExp(`--ds-state-solid-${id}\\)`),
+      `[data-aia-hue="${id}"] deberia pintar fondo con --ds-state-solid-${id}`,
+    );
+    assert.match(
+      rule,
+      new RegExp(`--ds-state-solid-${id}-text\\)`),
+      `[data-aia-hue="${id}"] deberia pintar texto con --ds-state-solid-${id}-text`,
     );
   }
-  // El selector de urgencia no se toca: es el que asierta states-feedback.test.mjs
-  // y el que sostiene la regla «urgencia now siempre usa critical».
+  // La excepcion critica se retiro: si reaparece, el chip vuelve a cargar dos
+  // ejes y este guard tiene que ponerse rojo nombrandola.
+  assert.doesNotMatch(
+    css,
+    /\[data-aia-hue\]\[data-aia-severity="high"\]\[data-aia-urgency="now"\]/,
+    'la excepcion critica del chip (hue+high+now) se retiro el 2026-08-20 y no debe volver',
+  );
+  // El selector de nivel sin matiz sigue siendo el respaldo de un chip sin hue.
   assert.match(css, /\[data-aia-severity="high"\]\[data-aia-urgency="now"\]/);
 });
 

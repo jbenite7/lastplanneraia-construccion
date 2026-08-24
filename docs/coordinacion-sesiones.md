@@ -75,6 +75,20 @@ coordinadora es el estado por defecto, no una carencia. Precedencia: código > `
 
 ## Fuera de alcance (declarado en la spec)
 
-El empaquetado del plugin (CAS), el rediseño del contenedor por worktree, la base compartida como
-infraestructura, y el apply de producción. El deploy a producción sigue exigiendo autorización
-propia y explícita de Felipe, siempre.
+El rediseño del contenedor por worktree, la base compartida como infraestructura, y el apply de
+producción. El deploy a producción sigue exigiendo autorización propia y explícita de Felipe,
+siempre.
+
+**CAS no está fuera de alcance: no existe.** Corregido el 2026-08-21. Este bloque heredó de la spec
+del 2026-08-19 la frase «el empaquetado del plugin (CAS)», escrita el mismo día en que CAS se
+retiraba, y «fuera de alcance» se lee como *existe, pero después* — justo lo contrario de lo que
+pasó. El motor y la capa CAS completa salieron de `main` del plugin en `c275c1d` (2026-08-19,
+12:13, `chore!`), con el código conservado en la rama `retiro-cas`. **Fue decisión de producto por
+evidencia medida, no una avería:** 27 sesiones con 0 frentes declarados y 1 solo visto. El defecto
+de empaquetado que confundió a dos sesiones —copias fósiles de `cas-frente.sh` dentro del paquete
+instalado, por copiarse el directorio de trabajo sin respetar `.gitignore`— se cerró en
+`1.0.0-alpha.2`, que es otra cosa y también está resuelta.
+
+En consecuencia, **la declaración de frentes de la regla 1 es manual y no tiene sucesor previsto**.
+No hay arreglo que esperar ni puente temporal hacia un CAS restaurado: si alguna vez hace falta
+registro automático de frentes, se plantea como pedido de producto al usuario, no como bug.

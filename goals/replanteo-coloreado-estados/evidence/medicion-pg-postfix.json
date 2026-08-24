@@ -1,0 +1,242 @@
+{
+  "tema": "dark",
+  "viewport": {
+    "width": 1180,
+    "height": 820
+  },
+  "filas": [
+    {
+      "estado": "actividad-futura",
+      "etiqueta": "Actividad FuturaInicia dentro de la ventana de planificacion. Sin accion inmediata.",
+      "hue": "green",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#20362a",
+      "celdaFondoDeclarado": "rgb(32, 54, 42)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#57b083",
+      "chipTexto": "#06281a",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "en-curso",
+      "etiqueta": "En CursoCon ejecucion en marcha dentro de lo planificado.",
+      "hue": "blue",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#1e2c40",
+      "celdaFondoDeclarado": "rgb(30, 44, 64)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#5f9fdd",
+      "chipTexto": "#07223c",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "terminada",
+      "etiqueta": "TerminadaActividad cerrada. Sin accion.",
+      "hue": "neutral",
+      "severity": "low",
+      "urgency": "none",
+      "celdaFondo": "#262b28",
+      "celdaFondoDeclarado": "rgb(38, 43, 40)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#9aa8a0",
+      "chipTexto": "#1c2420",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "healthy",
+      "railNivelCelda": "healthy"
+    },
+    {
+      "estado": "debe-iniciar",
+      "etiqueta": "Debe IniciarSu semana de inicio llego: arranca o justifica. Revisar antes del siguiente hito.",
+      "hue": "orange",
+      "severity": "medium",
+      "urgency": "soon",
+      "celdaFondo": "#3a2915",
+      "celdaFondoDeclarado": "rgb(58, 41, 21)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#e87722",
+      "chipTexto": "#3a2004",
+      "railGrosor": "rgb(255, 210, 63) 4px 0px 0px 0px inset, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "attention",
+      "railNivelCelda": "attention"
+    },
+    {
+      "estado": "atrasada",
+      "etiqueta": "AtrasadaDebio iniciar y no registra el avance esperado. Atender ahora.",
+      "hue": "red",
+      "severity": "high",
+      "urgency": "now",
+      "celdaFondo": "#3a1f1c",
+      "celdaFondoDeclarado": "rgb(58, 31, 28)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#e15a52",
+      "chipTexto": "#3c0a06",
+      "railGrosor": "rgb(255, 122, 110) 6px 0px 0px 0px inset, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "urgent",
+      "railNivelCelda": "urgent"
+    },
+    {
+      "estado": "sin-datos",
+      "etiqueta": "Sin DatosSin fecha de inicio ni ejecucion registrada. Requiere programacion.",
+      "hue": "violet",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#302741",
+      "celdaFondoDeclarado": "rgb(48, 39, 65)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#9485d6",
+      "chipTexto": "#26113f",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "neutral",
+      "railNivelCelda": "neutral"
+    },
+    {
+      "estado": "fuera-de-ventana",
+      "etiqueta": "Fuera de VentanaInicia mas alla de la ventana de 6 semanas: aun fuera del lookahead.",
+      "hue": "teal",
+      "severity": "none",
+      "urgency": "none",
+      "celdaFondo": "#1c342f",
+      "celdaFondoDeclarado": "rgb(28, 52, 47)",
+      "celdaTexto": "#f7faf8",
+      "chipFondo": "#5ec9bd",
+      "chipTexto": "#062f29",
+      "railGrosor": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, color(srgb 0.780392 0.831373 0.8 / 0.07) 0px 0px 0px 9999px inset",
+      "railNivel": "neutral",
+      "railNivelCelda": "neutral"
+    }
+  ],
+  "pares": [
+    {
+      "a": "actividad-futura",
+      "b": "en-curso",
+      "celdaVsCelda": 1.089,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "terminada",
+      "celdaVsCelda": 1.112,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.076,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "atrasada",
+      "celdaVsCelda": 1.165,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.087,
+      "celdaIdentica": false
+    },
+    {
+      "a": "actividad-futura",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.026,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "terminada",
+      "celdaVsCelda": 1.021,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.012,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "atrasada",
+      "celdaVsCelda": 1.07,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.002,
+      "celdaIdentica": false
+    },
+    {
+      "a": "en-curso",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.062,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "debe-iniciar",
+      "celdaVsCelda": 1.034,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "atrasada",
+      "celdaVsCelda": 1.047,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.023,
+      "celdaIdentica": false
+    },
+    {
+      "a": "terminada",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.084,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "atrasada",
+      "celdaVsCelda": 1.083,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.011,
+      "celdaIdentica": false
+    },
+    {
+      "a": "debe-iniciar",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.049,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "sin-datos",
+      "celdaVsCelda": 1.071,
+      "celdaIdentica": false
+    },
+    {
+      "a": "atrasada",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.136,
+      "celdaIdentica": false
+    },
+    {
+      "a": "sin-datos",
+      "b": "fuera-de-ventana",
+      "celdaVsCelda": 1.06,
+      "celdaIdentica": false
+    }
+  ]
+}

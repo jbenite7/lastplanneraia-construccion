@@ -26,6 +26,17 @@
     box-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
   }
 
+  /* Marcador positivo, decision de Felipe 2026-08-20: filete verde fino SOLO
+     en lo activamente listo (`rail: 'ready'` declarado estado por estado en el
+     statePresentation del modulo, nunca derivado de nivel+matiz — que
+     `actividad-futura` sea green+healthy y NO lo lleve es el contraejemplo que
+     obliga a declararlo). No es un cuarto nivel de gravedad: Controlado sigue
+     sin barra por defecto y la escasez del canal se conserva — la razon medida
+     de abajo (~51% sin pedir nada) sigue mandando. */
+  [data-aia-severity-rail="ready"] {
+    box-shadow: inset var(--ds-severity-rail-width-ready) 0 0 0 var(--ds-severity-rail-color-ready);
+  }
+
   /* LA AUSENCIA ES LA SEÑAL, y por eso se declara en vez de omitirse.
      `controlado` -y todo lo que no tiene gravedad, como «Fuera de Ventana» o
      «Sin Datos», que el contrato marca con nivel nulo- NO lleva filete. Adoptado
@@ -57,6 +68,10 @@
 
   [dir="rtl"] [data-aia-severity-rail="attention"] {
     box-shadow: inset calc(-1 * var(--ds-severity-rail-width-attention)) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+
+  [dir="rtl"] [data-aia-severity-rail="ready"] {
+    box-shadow: inset calc(-1 * var(--ds-severity-rail-width-ready)) 0 0 0 var(--ds-severity-rail-color-ready);
   }
 
   /* `healthy` y `neutral` no tienen variante RTL: `box-shadow: none` no tiene

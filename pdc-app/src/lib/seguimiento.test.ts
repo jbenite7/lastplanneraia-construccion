@@ -3,7 +3,7 @@ import { etiquetaDesfaseDias, etiquetaEstado, filtrarSeguimiento, frentesDeSegui
 import type { FilaSeguimiento, FiltrosSeguimiento } from './types'
 
 const fila = (over: Partial<FilaSeguimiento>): FilaSeguimiento => ({
-  paqueteId: 1, nombre: 'Paquete', frenteNombre: 'ESTRUCTURA',
+  paqueteId: 1, subpaqueteId: 0, nombre: 'Paquete', frenteNombre: 'ESTRUCTURA',
   responsableUserId: null, responsableNombre: '', responsableHuerfano: false,
   pasoActual: 'Cotizacion', cumplidos: 0, total: 7, estado: 'sin_empezar',
   atrasado: false, finProgramado: '2026-05-01', finProyectado: '2026-05-01',

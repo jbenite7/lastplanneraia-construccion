@@ -1,0 +1,77 @@
+@layer components {
+  .ops-state-chip {
+    position: relative;
+  }
+  button.ops-state-chip {
+    cursor: pointer;
+    font: inherit;
+    font-weight: 900;
+    text-align: left;
+  }
+  .aia-state-tip {
+    position: fixed;
+    inset: auto;
+    left: var(--aia-tip-x, 0);
+    top: var(--aia-tip-y, 0);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    overflow: visible;
+    width: max-content;
+    min-width: 11rem;
+    max-width: 17rem;
+    opacity: 0;
+    transition:
+      opacity var(--ds-motion-fast),
+      display var(--ds-motion-fast) allow-discrete,
+      overlay var(--ds-motion-fast) allow-discrete;
+  }
+  .aia-state-tip:popover-open {
+    opacity: 1;
+  }
+  @starting-style {
+    .aia-state-tip:popover-open {
+      opacity: 0;
+    }
+  }
+  @supports (anchor-name: --aia-ancla) {
+    .aia-state-tip {
+      left: auto;
+      top: auto;
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+      margin-block-start: var(--ds-space-1);
+    }
+  }
+  .aia-state-tip > .aia-state-tip-panel {
+    display: block;
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    background-color: var(--ds-active-bg-page);
+    background-image: linear-gradient(var(--ds-active-surface-raised), var(--ds-active-surface-raised));
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-chip-font-size, 0.75rem);
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-shadow: var(--ds-shadow-md);
+  }
+  .ops-state-chip[tabindex]:focus-visible {
+    outline: 0;
+    box-shadow: var(--ds-shadow-focus);
+  }
+  body.aia-tips-off .aia-state-tip {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aia-state-tip {
+      transition: none;
+    }
+  }
+}

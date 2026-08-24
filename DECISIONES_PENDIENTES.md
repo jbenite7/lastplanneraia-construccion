@@ -31,7 +31,9 @@ y el **orden** desempata. La regla vive en `axisRules` dentro de
 
 ## D-1 · ¿El contrato debe declarar los realces por condición del dato?
 
-**Estado: abierta.** Es una sola pregunta con dos casos detrás, y las mediciones dicen que **no son
+**RESUELTA por Felipe el 2026-08-20: opción (b).** La ruta crítica de Semanal entra al contrato como realce declarado; `r0` NO recibe matiz — sus 4.384 filas se atienden con columna o filtro, porque la pregunta que responden es de trabajo, no de lectura de tabla.
+
+**Estado: RESUELTA (2026-08-20).** Es una sola pregunta con dos casos detrás, y las mediciones dicen que **no son
 gemelos**.
 
 ### El caso de Programa General: `r0`
@@ -112,7 +114,9 @@ estados, no solo para éste.
 
 ## D-2 · La excepción crítica del chip: ¿se retira o se activa?
 
-**Estado: abierta**, pero con una recomendación fuerte y medida.
+**RESUELTA por Felipe el 2026-08-20: retirar la excepción de la capa canónica.** No se sube su especificidad: activarla fundiría nueve estados en tres rojos, medido en Intermedia, Semanal y PDC.
+
+**Estado: RESUELTA (2026-08-20).**
 
 ### Qué pasa hoy
 
@@ -161,7 +165,9 @@ tocar el fondo.
 
 ## D-3 · Los estados declarados que nadie pinta: ¿se implementan o se retiran?
 
-**Estado: abierta.** La parte técnica —qué debe medir el guard— **ya está resuelta y en el repo**
+**RESUELTA por Felipe el 2026-08-20: (c) para los 11 sin rastro, (a) para PDC.** Los aspiracionales pasan a sección no vinculante; PDC se implementa porque tiene pantalla viva esperando. Felipe preguntó expresamente por el impacto en PDC y ratificó esta parte sabiendo que su columna «Estado» gana color en DS-F2, con frente propio y verificación en pantalla.
+
+**Estado: RESUELTA (2026-08-20).** La parte técnica —qué debe medir el guard— **ya está resuelta y en el repo**
 (`tests/design-system/state-key-consumption.test.mjs`). Lo que queda es tuyo: qué se hace con lo que
 el censo destapó.
 
@@ -222,7 +228,9 @@ la declaración iba por delante del código a propósito.
 
 ## D-4 · DS-F1, cajón 2: qué significa «cubierto»
 
-**Estado: abierta.** La parte técnica —**el guard que pone en rojo lo descubierto**— ya está en el
+**RESUELTA por Felipe el 2026-08-20: las tres partes como se recomendaron.** (1) `foundation-shell` cubre el armazón compartido con UN escenario, no veinte. (2) `/` y `/dashboard` se declaran; `/reportes/{tipo}` se declara una vez como plantilla. (3) Las 5 rutas muertas se retiran del contrato.
+
+**Estado: RESUELTA (2026-08-20).** La parte técnica —**el guard que pone en rojo lo descubierto**— ya está en el
 repo (`tests/design-system/coverage-closure.test.mjs`). Lo que queda es qué se hace con la brecha.
 
 ### El censo, medido contra `public/index.php`
@@ -275,7 +283,9 @@ producto depende de ellas.
 
 ## D-5 · DS-F1, cajón 3: el segundo sistema de estilos de BI
 
-**Estado: abierta.** La pregunta del cajón era: *¿hay primitivas que el catálogo NO tiene y por eso
+**RESUELTA por Felipe el 2026-08-20: (a).** Se añade la variante `tabs` a `navigation` — hay consumidor esperándola. Promover las utilidades a capa compartida queda como pregunta aparte, no se decide hoy. Verificado antes de decidir: **esto no toca el PDC** (`bi-utilities` solo lo carga `views/bi/_layout.php`; `bi-tabs-nav` solo vive en `views/bi/_nav.php` y `bi-spa.js`; la SPA no consume ninguno).
+
+**Estado: RESUELTA (2026-08-20).** La pregunta del cajón era: *¿hay primitivas que el catálogo NO tiene y por eso
 los módulos improvisan?* **La respuesta medida es sí, pero solo una — y no la que se esperaba.**
 
 ### Qué son en realidad las 88 utilidades
@@ -343,7 +353,9 @@ encadenados a una corrida de CI y los otros cuatro son tuyos.
 
 ## D-6 · `vocabulario-estados-cascada`: el número ya se cumplió, ¿y la consistencia?
 
-**Estado: abierta.** El frente está «en replanteo» desde que lo pediste (D-VOC-1), y mientras tanto
+**RESUELTA por Felipe el 2026-08-20: (b).** El objetivo del frente pasa de número a consistencia: un solo estilo de mayúsculas y géneros coherentes. Sin riesgo de dato — son cadenas de interfaz.
+
+**Estado: RESUELTA (2026-08-20).** El frente está «en replanteo» desde que lo pediste (D-VOC-1), y mientras tanto
 **su objetivo numérico se cumplió solo**.
 
 La spec fijaba **35 → 29 cadenas distintas** que un usuario de obra puede ver en la cascada. Medido
@@ -370,7 +382,9 @@ el frente venía a resolver.
 
 ## D-7 · `bi-control-tower-gemini`: una condición que no se puede cumplir
 
-**Estado: abierta, y lleva así mes y medio.** Su condición pide **aprobación visual de seis modos**
+**RESUELTA por Felipe el 2026-08-20: (a).** La condición se recorta a los tres modos dark. Lo de `linen` vive dentro de D-9, no bloqueando un dashboard que ya funciona.
+
+**Estado: RESUELTA (2026-08-20)**; llevaba mes y medio parada. Su condición pide **aprobación visual de seis modos**
 (Mobile/Tablet/Desktop × Dark/Linen), y **tres de esos seis son del tema `linen`, retirado del
 producto el 2026-07-25 por DS-030**. Nadie puede aprobar capturas de un tema que ya no existe.
 
@@ -387,7 +401,9 @@ del tema claro (D-9), no bloqueando un dashboard que ya funciona en dark.
 
 ## D-8 · `design-system-nucleo-gobernanza`: la condición envejeció con el artefacto
 
-**Estado: abierta.** Su condición de hecho exige que **«los quince gates exactos de
+**RESUELTA por Felipe el 2026-08-20: (a).** La condición se reescribe contra los nueve gates reales de `closeout-evidence.json`.
+
+**Estado: RESUELTA (2026-08-20).** Su condición de hecho exige que **«los quince gates exactos de
 `closeout-evidence.json` tengan evidencia fresca y estado `passed`»**.
 
 **Ese archivo declara hoy nueve gates, no quince.** La condición no es difícil de cumplir: es
@@ -408,7 +424,21 @@ reescrita, este está más cerca de cerrar que ningún otro de los seis.
 
 ## D-9 · `reapertura-movil-y-tema-claro`: qué queda y hasta dónde llegar
 
-**Estado: abierta.** **Cuatro de siete fases cerradas** (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan:
+**RESUELTA por Felipe el 2026-08-20, y REVISADA el mismo día.**
+
+- **Primera respuesta: (a)** — solo F2b, con el tema claro fuera del frente y sin fecha.
+- **Revisión de Felipe, minutos después, al preguntar «¿entonces tema claro qué?»:** el tema claro
+  **no queda estacionado: va justo detrás de móvil**. O sea F2b primero y F3 inmediatamente
+  después, en secuencia, no a la espera de que alguien lo reclame.
+
+Se conservan las dos porque la segunda corrige a la primera y el porqué importa: estacionarlo
+indefinidamente era, en la práctica, no hacerlo nunca.
+
+**Lo que NO cambia con la revisión:** `bi-control-tower-gemini` (D-7) **sigue desbloqueado** y
+cierra con sus tres modos dark. Ese frente no vuelve a depender del tema claro — su condición se
+recortó por mérito propio: pedía aprobar capturas de un tema retirado.
+
+**Estado: RESUELTA (2026-08-20).** **Cuatro de siete fases cerradas** (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan:
 
 - **F2b** — los 13 módulos restantes en móvil.
 - **F3** — el tema claro, que **no es reactivar sino reconstruir**: `linen` se retiró el 2026-07-25 y
@@ -509,7 +539,9 @@ ninguna con la que comparar. Pide una segunda medición antes de decidir nada.
 
 ## D-11 · `initializationMs` triplica su baseline, y no es ruido
 
-**Estado: abierta.** Es lo único que queda para que el gate `runtime-budgets` pase, y con él cierren
+**RESUELTA por Felipe el 2026-08-20: (a), midiendo antes de fijar nada.** Se recalibra el techo tras 3–4 corridas de CI más, que salen gratis. **No** se sube el techo hoy con las seis muestras que hay: sería bendecir una posible regresión el mismo día que recuperamos la capacidad de verla.
+
+**Estado: RESUELTA (2026-08-20).** Es lo único que queda para que el gate `runtime-budgets` pase, y con él cierren
 `runtime-budgets-al-ci` y `gates-al-ci`.
 
 Con el CSS ya resuelto (D-10), el gate falla por una sola métrica: **639,4 ms contra un máximo de
@@ -558,3 +590,33 @@ máquina de julio — y eso sale gratis, porque las corridas ocurren igual.
 ya se arregló, solo queda «este número»— y sería fijar un baseline con dos corridas del mismo día. Si
 la causa resulta ser la 1, habríamos bendecido una regresión de rendimiento el mismo día que
 recuperamos la capacidad de verla.
+
+---
+
+# Ronda de decisiones del 2026-08-20 — las once, resueltas
+
+Felipe las revisó una por una en sesión dedicada. **Ninguna quedó abierta.** Resumen de lo decidido,
+con el detalle y la medición en cada sección de arriba:
+
+| | Decisión | Resultado |
+|---|---|---|
+| D-1 | Realces por condición del dato | Semanal entra al contrato; `r0` va por filtro, no por color |
+| D-2 | Excepción crítica del chip | Se retira la regla muerta |
+| D-3 | Estados declarados sin pintar | Aspiracionales aparte; PDC se implementa |
+| D-4 | Qué significa «cubierto» | Un escenario para el armazón; 3 pantallas se declaran; 5 rutas muertas se retiran |
+| D-5 | Segundo sistema de estilos de BI | Variante `tabs` al catálogo; utilidades, pregunta aparte |
+| D-6 | Vocabulario de la cascada | El frente cambia su objetivo a consistencia |
+| D-7 | `bi-control-tower-gemini` | Condición recortada a los tres modos dark |
+| D-8 | `design-system-nucleo-gobernanza` | Condición reescrita contra los nueve gates reales |
+| D-9 | Móvil y tema claro | F2b primero y **el tema claro justo detrás** (revisado el mismo día); D-7 queda desbloqueado igual |
+| D-10 | Presupuesto de CSS | *(ya estaba decidida: minificar)* |
+| D-11 | `initializationMs` | Recalibrar tras 3–4 corridas; no subir el techo hoy |
+| — | Plugins de Obsidian | Instalados y verificados en pantalla; **Iconize excluido** por estar declarado como proyecto descontinuado por su autor |
+
+**Lo que esta ronda destraba:** D-11 es el único paso rojo del CI — con él recalibrado,
+`runtime-budgets-al-ci` y `gates-al-ci` cierran solos. D-7, D-8 y D-9 sacan de la parálisis a tres
+frentes cuyas condiciones contaban artefactos que ya no existen.
+
+**Nada de esto se ejecuta hoy:** son decisiones, y su trabajo entra por los frentes que ya tienen
+dueño (DS-F1, DS-F2, DS-F3 y MO-F2b). El deploy a producción sigue exigiendo autorización propia.
+

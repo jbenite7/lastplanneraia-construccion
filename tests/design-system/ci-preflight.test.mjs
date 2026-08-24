@@ -60,6 +60,7 @@ const INIT_COPIES = [
   // B-9 (2026-08-07): migracion de `general_proyectos_procesos`. Esta lista es copia
   // deliberada de la de scripts/design-system-ci-preflight.mjs — las dos deben moverse.
   ['database/migrations/20260807_proyectos_lineabase_columns.sql', '120-proyectos-lineabase.sql'],
+  ['database/migrations/20260820_general_flags.sql', '121-general-flags.sql'],
 ];
 
 function safeConfig() {

@@ -67,7 +67,7 @@ if (($area ?? 'Construccion') === 'Pre-Construccion') {
         <div class="col-sm-10 col-md-10 col-lg-10 ml-0 mr-auto text-left" id="textoDireccionSeccion"></div>
     </div>
 
-    <div class="header-actions action-bar ps-hot-toolbar-shell">
+    <div class="aia-toolbar header-actions action-bar ps-hot-toolbar-shell">
             <div class="ps-actions-row">
             <button class="aia-btn aia-btn--secondary ps-mobile-actions-toggle d-md-none" type="button" data-toggle="collapse" data-target="#psMobileActionsPanel" aria-expanded="false" aria-controls="psMobileActionsPanel">
                 <i aria-hidden="true" class="fas fa-sliders-h"></i> <span>Botones de acción</span>

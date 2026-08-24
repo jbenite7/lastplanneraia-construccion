@@ -321,39 +321,39 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page #hot-container td.force-wrap,
 .ps-page #hot-container th.force-wrap {
     white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
 }
 .ps-page #hot-container td.ops-state-td {
     padding: var(--spacing-xs) !important;
     vertical-align: middle !important;
 }
-.ps-page .ops-state-zoom {
+.ps-page .ops-state-zoom:not([data-aia-hue]) {
     --ops-state-accent: var(--ds-active-text-secondary);
-    --ops-state-bg: var(--ds-active-surface-raised);
     --ops-state-border: var(--ds-active-border);
     --ops-state-count-bg: var(--ds-active-surface);
     --ops-state-count-text: var(--ds-active-text-secondary);
     display: grid;
-    gap: var(--spacing-xs);
+    gap: var(--ds-space-1);
     width: 100%;
     min-width: 0;
     min-height: var(--ds-target-min);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--ds-space-1) var(--ds-space-2);
     border: 1px solid var(--ops-state-border);
     border-radius: var(--ds-radius-sm);
-    background: var(--ops-state-bg);
-    color: var(--ops-state-count-text, var(--ds-active-text-primary));
+    background: transparent;
+    color: var(--ds-active-text-primary);
     font: inherit;
     text-align: left;
     cursor: zoom-in;
-    box-shadow: var(--ds-shadow-xs);
-    transition: transform var(--ds-motion-fast), border-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+    box-shadow: none;
+    transition: border-color var(--ds-motion-fast), background-color var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
 }
-.ps-page .ops-state-zoom:hover {
+.ps-page .ops-state-zoom:not([data-aia-hue]):hover {
     border-color: var(--ops-state-accent);
-    box-shadow: var(--ds-shadow-sm);
-    transform: translateY(-1px);
+    background: var(--ds-active-surface-raised);
+    box-shadow: var(--ds-shadow-xs);
 }
 .ps-page .ops-state-zoom:focus-visible {
     outline: 0;
@@ -368,14 +368,15 @@ body.ps-page .ps-hot-toolbar-shell {
     min-width: 0;
 }
 .ps-page .ops-state-dot {
-    width: 0.56rem;
-    height: 0.56rem;
+    width: 0.45rem;
+    height: 0.45rem;
     border-radius: var(--ds-radius-pill);
     background: var(--ops-state-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ops-state-accent) 18%, transparent);
+}
+.ps-page .ops-state-chip:not([data-aia-hue]) {
+    color: var(--ops-state-count-text, var(--ds-active-text-primary));
 }
 .ps-page .ops-state-chip {
-    color: var(--ops-state-count-text, var(--ds-active-text-primary));
     word-break: break-word;
 }
 .ps-page .ops-state-summary {
@@ -398,9 +399,6 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-critical .ops-state-zoom,
 .ps-page .ops-state-zoom.is-critical {
     --ops-state-accent: var(--ds-color-state-critical-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-bg) 76%, var(--ds-active-surface) 24%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-critical-text) 38%, var(--ds-active-border) 62%);
-    --ops-state-count-bg: var(--ds-color-state-critical-bg);
     --ops-state-count-text: var(--ds-color-state-critical-text);
 }
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-high .ops-state-zoom,
@@ -408,17 +406,11 @@ body.ps-page .ps-hot-toolbar-shell {
 .ps-page .ops-state-zoom.is-pending,
 .ps-page .ops-state-zoom.is-partial {
     --ops-state-accent: var(--ds-color-state-warning-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-bg) 72%, var(--ds-active-surface) 28%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-warning-text) 30%, var(--ds-active-border) 70%);
-    --ops-state-count-bg: var(--ds-color-state-warning-bg);
     --ops-state-count-text: var(--ds-color-state-warning-text);
 }
 .ps-page .handsontable td.ops-state-td.ps-row-state.ps-alert-control .ops-state-zoom,
 .ps-page .ops-state-zoom.is-ready {
     --ops-state-accent: var(--ds-color-state-success-text);
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-bg) 70%, var(--ds-active-surface) 30%);
-    --ops-state-border: color-mix(in srgb, var(--ds-color-state-success-text) 28%, var(--ds-active-border) 72%);
-    --ops-state-count-bg: var(--ds-color-state-success-bg);
     --ops-state-count-text: var(--ds-color-state-success-text);
 }
 .ps-page .ops-state-zoom .ops-state-count {
@@ -468,7 +460,7 @@ body.ps-page .ps-hot-toolbar-shell {
     background: var(--ds-color-surface-raised);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
@@ -677,7 +669,9 @@ body.ps-page .ps-hot-toolbar-shell {
     display: block;
     min-width: 0;
     line-height: 1.1;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .ps-page .ps-progress-track {
     display: block;
@@ -709,7 +703,9 @@ body.ps-page .ps-hot-toolbar-shell {
     font-size: calc(var(--spacing-sm) + var(--spacing-xs));
     font-weight: 700;
     line-height: 1.15;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .ps-page .ps-tnp-badge {
     display: inline-flex;
@@ -1015,7 +1011,7 @@ body.ps-page .ps-hot-toolbar-shell {
     justify-content: center;
     margin-left: 6px;
     min-width: 12px;
-    font-size: 11px;
+    font-size: 0.70rem;
     line-height: 1;
     vertical-align: middle;
     user-select: none;
@@ -1058,7 +1054,7 @@ body.ps-page .ps-hot-toolbar-shell {
     padding: 0 !important;
     margin: 0;
     line-height: 1;
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     white-space: normal;
     overflow: hidden;
     text-overflow: clip;
@@ -1130,11 +1126,16 @@ body.ps-page .ps-hot-toolbar-shell {
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(2) { width: 35%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(3) { width: 36%; }
 #tabla_excepciones_no_autoprogramadas thead th:nth-child(4) { width: 15%; }
-#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) { word-break: break-all; }
+#tabla_excepciones_no_autoprogramadas tbody td:nth-child(1) {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+}
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(2),
 #tabla_excepciones_no_autoprogramadas tbody td:nth-child(3) {
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 #tabla_excepciones_no_autoprogramadas tbody td .ps-motivo-chip {
     white-space: normal;
@@ -1177,7 +1178,9 @@ body.ps-page .ps-hot-toolbar-shell {
 }
 body.ps-page table.dataTable thead th,
 body.ps-page table.dataTable tbody td {
-    hyphens: auto;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 @layer reset {
     html.aia-theme-dark body.ps-page .text-danger {
@@ -1357,7 +1360,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
     border-radius: var(--ds-radius-xs);
     color: var(--ds-color-text-inverse);
-    font-size: 0.65em;
+    font-size: 0.70rem;
     line-height: 1.2;
 }
 .ps-origin-badge.is-manual {
@@ -1367,7 +1370,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     background: var(--ds-color-brand-aqua);
 }
 .ps-id-value {
-    font-size: 0.9em;
+    font-size: 0.72rem;
 }
 .ps-page #hot-container td.ps-cell-empty-alert {
     background-color: var(--ds-color-cell-critical-bg);
@@ -1403,7 +1406,7 @@ body.ps-page #modal_cnc_hot .ps-modal-control {
     border-radius: var(--ds-radius-pill);
     background: var(--ds-color-state-warning-bg);
     color: var(--ds-color-state-warning-text);
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     font-weight: 600;
 }
 .ps-legacy-card-view {
@@ -1975,28 +1978,15 @@ body.ps-page #hot-container .ops-state-zoom {
     padding: var(--spacing-xs) var(--spacing-sm);
     container-type: inline-size;
 }
-body.ps-page #hot-container .ops-state-zoom {
-    grid-template-columns: minmax(0, 1fr);
-    grid-auto-flow: row;
-    justify-items: start;
-    align-content: center;
+body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+    min-height: var(--ds-target-min);
 }
 body.ps-page #hot-container .ops-state-chip {
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal !important;
-    overflow-wrap: break-word;
-    word-break: normal;
-}
-@container (max-width: 120px) {
-    body.ps-page #hot-container .ops-state-topline .ops-state-chip {
-        display: none;
-    }
-    body.ps-page #hot-container .ops-state-zoom {
-        grid-auto-flow: column;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-    }
+    padding: 2px var(--ds-space-2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.15;
+    box-shadow: none;
 }
 body.ps-page #hot-container .ops-state-summary {
     flex: 0 0 auto;
@@ -2021,21 +2011,6 @@ body.ps-page #hot-container td.ps-cell-shake {
         animation: none;
     }
 }
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-critical {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 22%, var(--ds-active-surface) 78%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-critical-text) 18%, var(--ds-active-surface-raised) 82%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-html.aia-theme-dark body.ps-page #hot-container :is(.ops-state-zoom.is-pending, .ops-state-zoom.is-partial) {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-warning-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
-html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
-    --ops-state-bg: color-mix(in srgb, var(--ds-color-state-success-text) 18%, var(--ds-active-surface) 82%);
-    --ops-state-count-bg: color-mix(in srgb, var(--ds-color-state-success-text) 14%, var(--ds-active-surface-raised) 86%);
-    --ops-state-count-text: var(--ds-active-text-primary);
-}
 @layer components {
     body.ps-page #hot-container .ps-action-btn {
         display: grid !important;
@@ -2051,14 +2026,24 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
         width: 2rem;
         height: 2rem;
         border-radius: var(--ds-radius-control-sm);
-        background: var(--ps-action-icon-bg, var(--ds-color-brand-primary));
-        color: var(--ds-color-text-inverse);
+        border: 1px solid var(--ds-active-border);
+        background: var(--ds-active-surface-raised);
+        color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+        transition: border-color var(--ds-motion-fast), color var(--ds-motion-fast);
     }
     body.ps-page #hot-container .ps-action-btn.duplicar {
-        --ps-action-icon-bg: var(--ds-color-state-success-text);
+        --ps-action-icon-fg: var(--ds-color-state-success-text);
     }
     body.ps-page #hot-container .ps-action-btn.eliminar {
-        --ps-action-icon-bg: var(--ds-color-state-critical-text);
+        --ps-action-icon-fg: var(--ds-color-state-critical-text);
+    }
+    body.ps-page #hot-container .ps-action-btn:hover .ps-action-icon,
+    body.ps-page #hot-container .ps-action-btn:focus-visible .ps-action-icon {
+        border-color: var(--ps-action-icon-fg, var(--ds-active-text-secondary));
+    }
+    body.ps-page #hot-container .ps-action-btn:focus-visible {
+        outline: 0;
+        box-shadow: var(--ds-shadow-focus) !important;
     }
     html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item {
         border-color: var(--ds-active-border) !important;
@@ -2455,7 +2440,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 }
 .cm-eyebrow {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     opacity: 0.75;
@@ -2552,8 +2537,19 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 .cm-table-shell {
     background: var(--ds-active-surface);
     border-radius: var(--ds-radius-sm);
-    overflow: hidden;
+    overflow: auto;
     border: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
+    --ps-scroll-edge-bg: var(--ds-active-surface);
+    --ps-scroll-edge-shadow: color-mix(in srgb, var(--ds-active-bg-page) 65%, transparent);
+    background-image:
+        linear-gradient(to right, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-bg) 40%, transparent),
+        linear-gradient(to right, var(--ps-scroll-edge-shadow), transparent),
+        linear-gradient(to left, var(--ps-scroll-edge-shadow), transparent);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 2rem 100%, 2rem 100%, 0.75rem 100%, 0.75rem 100%;
+    background-attachment: local, local, scroll, scroll;
 }
 .cm-table {
     margin: 0;
@@ -2562,7 +2558,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 .cm-table thead th {
     background: var(--ds-active-surface-raised);
     color: var(--ds-active-text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.55rem 0.75rem;
@@ -2570,7 +2566,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     white-space: nowrap;
 }
 .cm-table tbody td {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: var(--ds-active-text-primary);
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid color-mix(in srgb, var(--ds-active-border) 55%, transparent);
@@ -2594,7 +2590,9 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
 .cm-detail-cell {
     max-width: 380px;
     white-space: normal;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 .cm-empty-state {
     text-align: center;
@@ -2655,7 +2653,7 @@ html.aia-theme-dark body.ps-page #hot-container .ops-state-zoom.is-ready {
     .cm-table tbody td::before {
         content: attr(data-label);
         display: block;
-        font-size: 0.65rem;
+        font-size: 0.70rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--ds-color-text-tertiary);
@@ -2737,82 +2735,101 @@ html.aia-theme-dark body.ps-page #psAlertsLegend .pdc-legend-item.is-zero .count
 }
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange) !important;
+  background-color: var(--ds-state-row-orange) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet) !important;
+  background-color: var(--ds-state-row-violet) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red) !important;
+  background-color: var(--ds-state-row-red) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber) !important;
+  background-color: var(--ds-state-row-amber) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral) !important;
+  background-color: var(--ds-state-row-neutral) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green) !important;
+  background-color: var(--ds-state-row-green) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page #hot-container .handsontable td.ps-row-state.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue) !important;
+  background-color: var(--ds-state-row-blue) !important;
   color: var(--ds-active-text-primary) !important;
 }
 .ps-page .ps-legend-modal-swatch.ps-state-prog-bloqueo-critico-sin-compromiso {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-prog-ejecucion-con-restricciones {
-  background-color: var(--ds-state-tint-orange);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-orange);
+  color: var(--ds-state-solid-orange-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-prog-condiciones-pendientes {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-prog-sin-compromiso {
-  background-color: var(--ds-state-tint-violet);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-violet);
+  color: var(--ds-state-solid-violet-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-prog-lista-para-confirmar {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida-critica {
-  background-color: var(--ds-state-tint-red);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-red);
+  color: var(--ds-state-solid-red-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-cal-incumplida {
-  background-color: var(--ds-state-tint-amber);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-cal-sin-calificar {
-  background-color: var(--ds-state-tint-neutral);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-neutral);
+  color: var(--ds-state-solid-neutral-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-cal-cumplida-control {
-  background-color: var(--ds-state-tint-green);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-green);
+  color: var(--ds-state-solid-green-text);
 }
 .ps-page .ps-legend-modal-swatch.ps-state-cal-tnp {
-  background-color: var(--ds-state-tint-blue);
-  color: var(--ds-active-text-primary);
+  background-color: var(--ds-state-solid-blue);
+  color: var(--ds-state-solid-blue-text);
+}
+@layer module {
+    @media (max-width: 1179px) {
+        body.ps-page #hot-container .ops-state-zoom[data-aia-hue] {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+@layer module {
+    .ps-page #hot-container .htCore td {
+        line-height: calc(var(--ds-table-row-h) - 2 * var(--ds-table-cell-pad-y)) !important;
+    }
+}
+@layer module {
+    .ps-page main.hot-full-bleed {
+        padding-block-start: var(--ds-page-padding);
+    }
 }

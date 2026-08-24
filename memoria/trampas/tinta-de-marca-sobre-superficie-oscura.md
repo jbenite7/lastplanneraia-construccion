@@ -4,7 +4,7 @@ tipo: trampa
 estado: vigente
 fecha: 2026-08-13
 areas: [design-system, lps]
-fuente: public/css/programacion-semanal.css:1720, feedback del usuario con captura de produccion
+fuente: public/css/programacion-semanal.css:1827, feedback del usuario con captura de produccion
 resumen: un token de marca pensado como fondo (brand-primary-dark) usado como color de texto en dark da ~1,4:1 y el texto desaparece; la tinta en superficies del sistema hereda o usa los pares active-text-*
 ---
 El modal TNP de `/programacion-semanal` mostraba las opciones del desplegable Select2

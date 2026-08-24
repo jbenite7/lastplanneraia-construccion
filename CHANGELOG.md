@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-19
+updated: 2026-08-24
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,64 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### CI: la imagen de pruebas siembra `general_flags` (2026-08-24)
+
+#### Fixed
+- `main` llevaba en rojo desde el 2026-08-21 con «Table `lastplanneraia_ci.general_flags`
+  doesn't exist». El interruptor del Control Tower trajo su migración, su servicio y sus dos
+  suites, pero la imagen de base de CI nunca sembró la tabla. El paso de la suite PHP moría ahí
+  —74 de 76— y con él **todo lo que venía después: el piloto visual, la accesibilidad y el matiz
+  del piloto llevaban tres días sin correr en CI.** Se añade la migración a
+  `database/fixtures/design-system-ci.Dockerfile`, siguiendo el criterio que ese archivo ya
+  documenta: se aplica la migración, no un `CREATE TABLE` a mano, para que cada build compruebe
+  de paso que la migración hace lo que dice.
+- **Fuera del alcance de este frente**, y se hace igual porque bloqueaba su cierre y el de
+  cualquiera: mientras ese paso muera, ningún gate de navegador corre en CI para nadie.
+
+### La columna Acciones de Programación Semanal vuelve a verse (2026-08-24)
+
+#### Fixed
+- La celda de Acciones se quedaba con el **blanco opaco del vendor**, así que la columna entera se
+  veía como una franja clara pegada al borde derecho de una tabla oscura. Causa: `psActionsRenderer`
+  se arma la lista de clases a mano en vez de heredar la que construye `cells()`, y se saltaba
+  `ps-state-<estado>`, que es la que pinta el fondo de la fila. La regla del vendor le gana por
+  especificidad (0,1,1 contra el 0,0,0 del `:where(...)` del adaptador). Ahora la celda toma el
+  color de su propia fila; verificado con scroll, que recicla las celdas: 0 blancas y 0 estados
+  duplicados en seis posiciones distintas.
+- El chip de los botones «duplicar» y «eliminar» usaba la mitad `-text` de un par de estado
+  **como fondo**, con blanco encima. En tema claro funcionaba; desde que la paleta de estado se
+  invirtió a oscuro (spec del 2026-07-28) esa mitad resuelve a un tono pálido, así que quedaba
+  blanco sobre claro: **1,37:1 y 1,42:1** contra el piso de 3:1 de WCAG 2.2 SC 1.4.11. El glifo se
+  dibujaba —9,3 px dentro de un chip de 32— pero era invisible, y los botones se leían como
+  cuadros vacíos. Restituido el par que la spec ya había medido: **8,88:1** y **10,99:1**, sin
+  tocar geometría (chip 32×32 dentro de un destino táctil de 44×44).
+- Lo reportó el usuario mirando una captura, no un gate: no estaba en el baseline de axe, no había
+  excepción de accesibilidad que lo cubriera, y los tres hallazgos del ledger sobre esos mismos
+  botones (C-18, C-48, F-3/F-4) miran otra cosa. El porqué y la receta quedaron anotados en la
+  propia spec de la paleta, §«Lo que se rompió después», junto al hermano sin auditar de
+  `bi-spa.js:3704`.
+
+### Tablas: cifras alineadas, filtros alcanzables por teclado e identidad de fila (2026-08-24)
+
+#### Added
+- Cifras tabulares en las rejillas Handsontable (`font-variant-numeric: tabular-nums` en la celda
+  y en el editor). Inter sirve figuras proporcionales por defecto: medido sobre el subconjunto que
+  servimos, el «1» avanza 833 y el «4» 1323 sobre 2048, nueve anchos para diez dígitos. Verificado
+  en `/programa-general`: la columna de Id pasa de 9,62 px de desviación a 0, y las fechas de 8,28
+  a 1,15. Sin desbordes: los anchos de columna se calculan por proporción del contenedor.
+- `navigableHeaders: true` en las seis rejillas Handsontable. Viene apagado por defecto desde la
+  14.0, y con la opción apagada NO hay camino de teclado hasta el embudo de la cabecera —
+  Handsontable lo emite con `tabindex="-1"` y `aria-hidden="true"` a propósito. Antes de esto,
+  quien no usaba ratón no podía filtrar ninguna tabla de la aplicación.
+- `getRowId` en las tres rejillas de Plan de Compras que no lo tenían (paquetes de contratación,
+  plan de fechas y seguimiento). Sin él AG Grid identifica las filas por posición y pierde
+  selección y estado de edición en cada recarga.
+
+#### Changed
+- `FilaPlan` y `FilaSeguimiento` declaran `subpaqueteId`. El servidor ya lo emitía
+  (`PlanFechasService`, `SeguimientoService`); el tipo no lo declaraba, y sin él la pareja
+  paquete-lote no podía usarse como identidad de fila en un paquete partido.
 
 ### Interruptor del Control Tower desde /admin (2026-08-20)
 

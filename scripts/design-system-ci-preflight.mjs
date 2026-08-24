@@ -41,6 +41,10 @@ const EXPECTED_INIT_COPIES = [
   // DESPUES del fixture para arreglar su deriva (PK sin AUTO_INCREMENT y 3 columnas de
   // menos), y de paso cada build de CI comprueba que la migracion hace lo que dice.
   ['database/migrations/20260807_proyectos_lineabase_columns.sql', '120-proyectos-lineabase.sql'],
+  // 2026-08-24: `general_flags`, que llego con el interruptor del Control Tower y nunca se
+  // sembro en CI. La lista blanca hizo su trabajo — el primer intento cambio el Dockerfile sin
+  // tocarla y el gate lo rechazo con «must COPY exactly 29 allowlisted SQL files».
+  ['database/migrations/20260820_general_flags.sql', '121-general-flags.sql'],
 ];
 
 function reject(detail) {

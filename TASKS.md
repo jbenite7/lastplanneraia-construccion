@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-20
+updated: 2026-08-24
 ---
 
 # Tareas
@@ -113,7 +113,16 @@ estado por defecto mientras Felipe no reparta.
   más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
   la Fase 3 puede tomar la procedencia y los dos frentes cierran.
 
-- [ ] **Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.** D-1 realces por
+- [x] 2026-08-20 — **Las once decisiones pendientes, RESUELTAS** en sesión dedicada con Felipe
+  (D-1 a D-9, D-11 y los plugins de Obsidian). Ninguna queda abierta; el detalle y el porqué de cada
+  una, en [[DECISIONES_PENDIENTES]] §«Ronda de decisiones del 2026-08-20». Lo que destraba: **D-11
+  es el único paso rojo del CI**, y D-7/D-8/D-9 sacan de la parálisis a tres frentes cuyas
+  condiciones contaban artefactos que ya no existen. Los plugins quedaron instalados y verificados
+  en pantalla; **Iconize se excluyó** por estar declarado como descontinuado por su autor.
+
+  <details><summary>La redacción anterior de este punto</summary>
+
+- [ ] ~~Las nueve decisiones de [[DECISIONES_PENDIENTES]] esperan a Felipe.~~ D-1 realces por
   condición del dato · D-2 la excepción crítica del chip · D-3 los 30 estados sin `key` · D-4
   `foundation-shell` y sus 20 rutas sin escenario · D-5 la variante de pestañas que le falta a
   `navigation` · **D-6** el vocabulario de la cascada, cuyo objetivo numérico ya se cumplió solo
@@ -121,6 +130,8 @@ estado por defecto mientras Felipe no reparta.
   una condición imposible · **D-8** `design-system-nucleo-gobernanza`, que exige quince gates donde
   el archivo declara nueve · **D-9** hasta dónde llega la reapertura móvil y el tema claro.
   Cada una lleva su medición hecha; ninguna necesita más trabajo antes de decidirse.
+
+  </details>
 
 - [ ] **Ficha de trampa pendiente: «el guard que valida su declaración, no su efecto».** Es la
   tercera vez que se mide la misma familia en este repo —hermana de
@@ -150,7 +161,9 @@ estado por defecto mientras Felipe no reparta.
   sobre datos existentes lo va a tocar.
 - [ ] **bi-control-tower-gemini** — bloqueado desde el 2026-08-10 por causa mal diagnosticada: no
   es «falta aprobación visual», es que pide aprobar 6 modos y 3 usan el tema `linen`, retirado el
-  2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. Depende de MO-F3.
+  2026-07-25. Hay que rehacer la condición de hecho, no correr los tests. **Ya NO depende de
+  MO-F3** (D-9, 2026-08-20): la condición se recorta a los tres modos dark y el frente puede
+  cerrar sin esperar a ningún tema claro.
 
 - [ ] **Ordenar `CHANGELOG.md`.** No está en orden cronológico inverso: `[1.1.1]` y `[1.1.0]`
   aparecen antes que `[Sin publicar]` y que `[1.2.0]`. Detectado el 2026-08-19 y **no corregido en
@@ -197,6 +210,52 @@ estado por defecto mientras Felipe no reparta.
   son idénticos contra el commit previo a la ronda de arreglos de la revisión final — no los
   introdujo esa ronda. Origen:
   [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Tasks 3 y 4.
+
+- [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General)** — de 24 botones de
+  filtro idénticos, `markDecorativeHeaderTriggers` marca 12 con `aria-hidden` y deja 12 sin marcar.
+  Son 12 columnas por 2 contenedores (`ht_master` y `ht_clone_top`), así que cada columna tiene un
+  botón anunciado y su gemelo callado — el mismo defecto que el comentario de esa función venía a
+  cerrar, reaparecido por el otro lado. Medido en vivo el 2026-08-24; anotado en
+  `public/js/modules/programa_general/hot.js:2411`. Con `navigableHeaders: true` el camino de
+  teclado NO pasa por esos botones, así que marcarlos los 24 es lo coherente.
+
+- [ ] **DS · dos salidas del sistema en las tablas** — `handsontable-module.css:579` usa
+  `font-family: monospace` literal en vez de `--ds-font-mono`, y
+  `handsontable-header-global.css:167` llama a «Font Awesome 5 Free» directamente en vez de una
+  primitiva de ícono. Los dos son de una línea; van juntos porque son el mismo tipo de fuga.
+
+- [ ] **CI · el mismo SQL declarado en cuatro listas que deben coincidir** — al sembrar
+  `general_flags` (2026-08-24) hubo que tocar `database/fixtures/design-system-ci.Dockerfile`,
+  `scripts/design-system-ci-preflight.mjs`, `tests/design-system/ci-preflight.test.mjs` y
+  `tests/design-system/visual-ci-contract.test.mjs`. El gate rechazó **tres veces seguidas**, una
+  por lista, así que la red funciona; lo caro es que el comentario que advertía de esto hablaba de
+  «las dos listas» y ya son cuatro. Evaluar si una sola fuente derivada las sustituye.
+
+- [ ] **CI · regenerar la baseline de presupuesto de runtime** — `runtime-baseline-0.3.5.json` se
+  grabó el 2026-08-18 y desde entonces entraron **56 commits de código** a `main`, incluidas las
+  cuatro olas del replanteo de coloreado. El gate no lo cazó porque estaba apagado detrás del
+  fallo de `general_flags` (2026-08-21 → 2026-08-24). Al destrabarlo aparecen dos excesos:
+  `jsGzipBytes` 643.832 contra un techo de 638.380, e `initializationMs` 596,5 contra 301,9.
+  **No son del frente de tablas:** su delta de JS son 2.203 B gzip sobre un exceso de 5.452 B, e
+  `initializationMs` mide `performance.now()` de carga de página completa. Regenerar la baseline
+  es **aprobación designada de Felipe**, igual que los goldens: no se toma de paso.
+
+- [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
+  `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
+  de rol que se corrigió el 2026-08-24 en los botones de Programación Semanal. Ya estaba anotado
+  como «trampa medida, sin auditar» en [[docs/PDC-AUDIT]] §Trampa medida; queda aquí para que salga
+  de ese pie de página. El rojo de series es `critical` (`oklch(65% 0.18 26.3)`). Contexto y receta:
+  [[docs/archive/superpowers/specs/2026-07-28-paleta-estado-oscura-design]] §Lo que se rompió después.
+
+- [ ] **Tablas · retirar DataTables, el tercer motor** — quedan cinco superficies en
+  DataTables 1.10.21 (2020, con jQuery detrás): `views/programacion-semanal/CIC|CNC|CNP.view.php`,
+  `views/control-cambios/controlCambios.view.php` y las tablas del panel `admin/`. El destino es
+  AG Grid, ya en uso en Plan de Compras. **Sin frente propio y sin fecha:** ninguna de esas
+  pantallas duele hoy, así que la regla es «quien entre a una de ellas por otra razón, sale con
+  AG Grid». Al hacerlo, llevarse también las cifras tabulares, que ese carril no las tiene
+  (`font-variant-numeric: tabular-nums`, ya aplicado en Handsontable y en el PDC). Decisión de
+  rumbo del 2026-08-24 en [[ROADMAP]].
+
 - [ ] **Deploy · limpiar drift residual en producción** — stash `pre-deploy-20260820-185447`
   (SmtpMailer, ya superado por `21243c7e` versionado) y 7 `.bak` de `indicadores.view.php` del
   2026-07-23 en `public_html`. Confirmar y borrar.
@@ -232,9 +291,14 @@ estado por defecto mientras Felipe no reparta.
   comandos, pero la decisión de hacerlo obligatorio es de contrato: a partir de ahí toda fuente
   nueva nace con frontmatter o el gate se pone rojo. El hueco ya se midió: una fuente entró sin
   declarar por un merge y el gate no lo detectó.
-- [ ] **Plugins de comunidad de Obsidian** (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage,
-  tema Minimal) y **grupos de color del grafo** — quedaron fuera de la Fase 0b por decisión del
-  usuario y por no poder verificarse sin abrir Obsidian.
+- [x] 2026-08-20 — **Plugins de Obsidian instalados y verificados en pantalla** (Dataview, Tasks,
+  Kanban, Excalidraw, Homepage y el tema Minimal), publicado en `2888ab77`. El bloqueo original
+  —«no se puede verificar sin abrir Obsidian»— se resolvió abriéndolo. **Iconize quedó fuera**: su
+  autor lo declara descontinuado. **Kanban entró con advertencia**: funciona, pero busca quien lo
+  mantenga. Hallazgo de paso: **el vault de `lps-aia` no estaba registrado** en la app, y
+  `visor-gantt` sigue apuntando al disco Crucial X6 — roto desde la mudanza.
+- [ ] **Grupos de color del grafo** (`.obsidian/graph.json`) — sigue pendiente, es lo único que
+  quedó de la Fase 0b.
 - [ ] **Proponer verificación de tests en contenedor como config por proyecto.** La vía Docker se
   quitó del gate global de `~/.claude` el 2026-08-19; este repo es 100% dockerizado y su
   `verify.quick` en `.claude/gate.yaml` evita PHP/Docker por costo, pero el resto de la suite sí
@@ -287,6 +351,16 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `replanteo-coloreado-estados` cerrado: el chip solido pasa a portar la identidad
+  (paleta auditada WCAG AA + manual AIA), el filete queda homogeneo en los tres modulos con el
+  marcador `ready`, y **nada se recorta en silencio** — tres olas en workflows dependientes
+  erradicaron elipsis, `overflow-x: hidden` irreversible, palabras partidas y ~20 tamanos fuera de
+  rampa. Efecto no previsto: Intermedia muestra sus 9 filas donde antes cabian 5. Censo de las 22
+  tablas de la app en `goals/replanteo-coloreado-estados/censo-tablas.md`.
+  **Pendientes que dejo, cada uno frente propio:** cabeceras de grilla desalineadas (PI 0.75rem vs
+  PS 0.72rem, decision de producto); `overflow-wrap: anywhere` en el chip de PI; `1.75rem` del boton
+  de cierre de modal en PS; siete `console.log('[PI-DEBUG]')` tras flag; y el resto del censo
+  (Admin y vistas HTML) fuera de estas olas por alcance.
 - [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
   niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
   `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en
@@ -399,7 +473,7 @@ con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería c
 | **MO-F2a-2a · Deudas de arranque** | El golden mide exactamente su viewport salvo recorte declarado; los 17 manifiestos en `1.1.0` | **CERRADA** (2026-08-07, DS-033) |
 | **MO-F2a-2b · Piloto móvil** | Handsontable deja de instanciarse bajo el umbral (0 nodos en 390×844); el sidebar pasa a menú flotante — era la causa raíz de que móvil fuera inusable: se comía 240 de 390 px y nunca colapsaba | **CERRADA** (2026-08-14) |
 | **MO-F2b · Resto de módulos** | Los 13 restantes, con el coste ya medido en el piloto | Pendiente |
-| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es reconstruir, no reactivar | Pendiente |
+| **MO-F3 · Tema claro** | Paleta clara nueva y conmutador con preferencia guardada. Ojo: `linen` se retiró del producto el 2026-07-25 (DS-030), así que es **reconstruir, no reactivar**: paleta nueva, conmutador con preferencia guardada y revalidar todas las superficies | **Pendiente — arranca al cerrar MO-F2b.** Orden de Felipe (2026-08-20), revisando D-9: no queda estacionada, va **justo detrás de móvil**. Sigue **sin bloquear a `bi-control-tower-gemini`**, que cierra en dark por decisión propia (D-7) |
 | **MO-F4 · Matriz diagonal** | Los gates adoptan la matriz de D6 y los candados se reinstalan | Pendiente — **absorbida por DS-F3**, ver «El solape de los gates» |
 
 ## El solape de los gates, y cómo se resuelve
@@ -423,6 +497,22 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 
+## Habilitación en una columna (en curso, sesión propia)
+
+Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
+quedaron vivos del frente de replanteo de coloreado:
+
+- **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
+  con un guardián que falla solo si alguien vuelve a ensanchar.
+- **Contadores de leyenda del color equivocado** — consumen `--ds-state-tint-*` mientras los chips
+  usan `--ds-state-solid-*`. Lo cierra la Task 1, que es independiente del resto.
+
+Pendiente propio derivado: **Programación Semanal hereda la pieza en la ola siguiente**, con
+Intermedia ya rodado una semana en obra. Comparte las mismas cinco restricciones duras
+(`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
+problema que el frente vino a corregir.
+
 ## Replanteo antes de ejecutar
 
 - [[goals/vocabulario-estados-cascada/goal|vocabulario-estados-cascada]] — el usuario pidió
@@ -433,6 +523,7 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 
 ## Apuestas planificadas (tras lo anterior)
 
-Torre de Control reconstruida con data storytelling (tras DS-F1 y el tema claro) · semana fija en
+Torre de Control reconstruida con data storytelling (tras DS-F1 y el tema claro, que vuelve a la
+secuencia detrás de móvil) · semana fija en
 el resto de módulos con corte semanal · extensión de contadores-cero a todos los módulos · backlog
 del 3-ago (48 decisiones; accesibilidad primero, absorbido por DS-F0).

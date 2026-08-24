@@ -20,6 +20,7 @@ import { etiquetaVersion } from '../lib/versionLabel'
 import { contarInsumos, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
 import { Selector } from '../components/Selector'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Mismo criterio que ImportarPresupuesto.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -431,6 +432,7 @@ export default function VisorPresupuesto() {
             </div>
           )}
 
+          <AvisoColumnasOcultas columnas={colsVisibles} testid="pdc-visor-cols-ocultas" />
           <div className="pdc-grid" data-testid="pdc-visor-arbol" ref={refGrid}>
             <AgGridReact<FilaVisor>
               // Remontar al cambiar de modo: si no, AG Grid reutiliza las celdas ya pintadas y

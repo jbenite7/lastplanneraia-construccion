@@ -56,6 +56,7 @@ import { claseCorte, etiquetaCorte } from '../lib/vencimientos'
 import type { AnclaDisponible, MotivoSinPropuesta, PanelCorrespondencias, Desfase, FilaPlan, FrenteDisponible, PlanResultado, ResponsableElegible, ResumenPaquetes, SimulacionReprogramacion, SugerenciaFrente } from '../lib/types'
 import { filtraPorTexto, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Registro selectivo de módulos (no AllCommunityModule); ValidationModule solo en dev — patrón del repo.
 // TextEditorModule: la columna Responsable es `editable: true`; sin este módulo AG Grid rechaza la
@@ -806,10 +807,16 @@ export default function PlanFechas() {
         value={buscaPlan}
         onChange={(e) => setBuscaPlan(e.target.value)}
       />
+      <AvisoColumnasOcultas columnas={colsVisibles} testid="pdc-plan-cols-ocultas" />
       <div data-testid="pdc-plan-grid" className="pdc-grid-wrap" ref={refGrid}>
         <AgGridReact<FilaPlan>
           theme={pdcTheme}
           rowData={planVisible}
+          // Identidad de fila estable: el plan se recalcula entero y vuelve como filas nuevas.
+          // Sin esto AG Grid las empareja por posicion y pierde el estado de la fila abierta.
+          // La fila es un DESTINO (paquete + lote), no un paquete: un paquete partido en tres
+          // trae tres filas con el mismo paqueteId, y un id repetido rompe la grilla entera.
+          getRowId={(p) => `${p.data.paqueteId}:${p.data.subpaqueteId}`}
           quickFilterText={buscaPlan}
           overlayNoRowsTemplate={vacioTabla("Todavía no hay paquetes con plan calculado. Amarra un paquete a un frente y pulsa «Recalcular».")}
           columnDefs={colsVisibles}
