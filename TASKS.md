@@ -172,6 +172,45 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
+  `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
+  aplicar el arreglo de mojibake de F0 (Control Tower): una fila huérfana bloqueó el `UPDATE` con
+  un error de llave foránea. No se investigó el origen ni si están en producción — solo se
+  confirmó que existen y que no se tocaron. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 4.
+- [ ] **BI · `tests/test_causas_codificacion.php` tiene un punto ciego de colación** — usa
+  `SELECT DISTINCT` sin `BINARY`; bajo `utf8mb4_general_ci`, un texto roto («Diseńos») y su
+  versión ya reparada («Diseños») colapsan al mismo grupo `DISTINCT` y MySQL puede devolver el
+  representante correcto, escondiendo la fila rota. Confirmado el 2026-08-20: el test reporta
+  PASA con 2 filas todavía rotas (las huérfanas de arriba), verificado con `LIKE BINARY` directo.
+  Arreglo: reescribir la detección con `LIKE BINARY` o comparar bytes, no `DISTINCT` normal.
+- [ ] **BI · `tests/test_cip_poblado.php` no prueba realmente el arreglo del backfill** —
+  solo comprueba `COUNT(DISTINCT profesional) > 0`, que pasaría igual con el código viejo si
+  coincide una sola semana. Debería aseverar cobertura multi-semana (`COUNT(DISTINCT Semana)`).
+  Hallazgo de la revisión final de F0, 2026-08-24. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 1.
+- [ ] **BI · el backfill de `cip` no tiene guarda de costo** — `updateCICProyectos()` repite
+  ~4 consultas por semana por proyecto en cada corrida, incluidas semanas ya completas que no
+  cambian. Un proyecto en semana 60 son ~240 consultas por corrida solo para reconfirmar lo ya
+  hecho. No medido bajo carga real. Guarda barata propuesta: saltar la semana si
+  `COUNT(*) FROM cip WHERE Semana = ?` ya iguala el número de responsables de esa semana.
+  Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
+  escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
+  contradice la regla general de aislamiento del repo; falta un comentario que lo declare
+  explícito. Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · dos tests de F0 salen "sospechosos" para el runner por el mismo patrón** —
+  `tests/test_causa_atribucion.php` y `tests/test_causas_codificacion.php` imprimen `"PASA: ..."`,
+  y `PASA` (con A) no contiene ninguna señal reconocida por `SENALES_DE_COMPROBACION` (`pass`,
+  `ok`, `comprobacion`, `comprobación`, `✓`, `correcto`) — difiere de `pass` en la cuarta letra.
+  Los dos comprueban algo de verdad (ejecutan y pasan directamente, rc=0), pero el runner no los
+  reconoce y los marca sospechosos. Arreglo: cambiar el texto de éxito de los dos a algo que
+  incluya una señal reconocida, p. ej. `"PASA (correcto): ..."`. Preexistentes de las Tareas 3 y 4
+  de F0 (ambas ya cerradas con revisión limpia); confirmado por el controller el 2026-08-24 que
+  son idénticos contra el commit previo a la ronda de arreglos de la revisión final — no los
+  introdujo esa ronda. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Tasks 3 y 4.
+
 - [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General)** — de 24 botones de
   filtro idénticos, `markDecorativeHeaderTriggers` marca 12 con `aria-hidden` y deja 12 sin marcar.
   Son 12 columnas por 2 contenedores (`ht_master` y `ht_clone_top`), así que cada columna tiene un
