@@ -144,6 +144,24 @@ estado por defecto mientras Felipe no reparta.
   en `DEV_DOOR_USERS`, D-GAC-5(b) baseline con `cssGzipBytes` medido) ya estaban ejecutadas por
   trabajo previo; faltaba el CI en verde, que P2 resolvió. Detalle: [[goals/gates-al-ci/goal]].
 
+- [ ] **P2 · Tarea 8 pendiente — renombrar `.github/workflows/design-system.yml` → `ci.yml`.**
+  Decisión de Felipe (2026-08-20), diferida a propósito del cierre de P2: 60+ archivos mencionan
+  «design-system» (no todos por el nombre del archivo), y renombrar el workflow **parte el
+  historial de corridas de GitHub** — barrido de referencias por ruta primero
+  (`visual-ci-contract.test.mjs`, scripts, docs, `gh run list --workflow=`). Micro-frente propio.
+
+- [ ] **G7 · paralelizar PHPStan en su propio job, sin datos suficientes todavía.** El plan P2 lo
+  proponía como candidato («no necesita la app levantada»); el resumen del job (`Summarize gate
+  results`, cableado en P2) ya vuelca duración de tres gates a `GITHUB_STEP_SUMMARY`, pero falta
+  reunir varias corridas para saber si el ahorro compensa el costo de un `checkout`+`setup` extra.
+
+- [ ] **zizmor · dos hallazgos `cache-poisoning` (confidence: Low) evaluados y aceptados, no
+  arreglados.** El repo `lastplanneraia-construccion` es **público** (confirmado con `gh repo view`,
+  no asumido): `actions/setup-node` + `docker/build-push-action` con `cache-from/to: type=gha`
+  conviven en `design-system-runtime`. Quitar el cache de capas de Docker eliminaría el vector, pero
+  con costo de performance real y en contra de G7. Revisar si zizmor mejora su detección o si el
+  repo cambia de visibilidad.
+
 - [x] 2026-08-20 — **Las once decisiones pendientes, RESUELTAS** en sesión dedicada con Felipe
   (D-1 a D-9, D-11 y los plugins de Obsidian). Ninguna queda abierta; el detalle y el porqué de cada
   una, en [[DECISIONES_PENDIENTES]] §«Ronda de decisiones del 2026-08-20». Lo que destraba: **D-11

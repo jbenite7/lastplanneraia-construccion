@@ -41,17 +41,28 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_119 trabajos · 48 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_131 trabajos · 52 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Estado consolidado del repositorio — la spec única | [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design|spec]] | — |
+| P1 · Desagüe y consolidación de ramas | [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|plan]] | — |
+| P2 · El CI en verde y los presupuestos | [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|plan]] | — |
+| P3 · Programa Design System · DS-F1 → DS-F3 | [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|plan]] | — |
+| P4 · Móvil y tema claro · MO-F2b → MO-F3 | [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|plan]] | — |
+| P5 · Cierre hasta producción · CP-F-C → CP-F-E | [[docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion|plan]] | — |
+| P6 · Higiene documental y de coordinación | [[docs/superpowers/plans/2026-08-24-p6-higiene-documental-y-coordinacion|plan]] | — |
+| Pendientes del frente de tablas | [[docs/superpowers/specs/2026-08-24-pendientes-frente-tablas-design|spec]] · [[docs/superpowers/plans/2026-08-24-pendientes-frente-tablas|plan]] | — |
+| Reparto de lienzos de la Torre de Control por rol | [[docs/superpowers/specs/2026-08-24-reparto-lienzos-por-rol-design|spec]] · [[docs/superpowers/plans/2026-08-24-reparto-lienzos-por-rol|plan]] | — |
 | Control Tower · Fase 0 — Higiene de datos | [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos|plan]] | — |
 | Deuda del CI — diseño de eliminación | [[docs/superpowers/specs/2026-08-20-deuda-ci-design|spec]] | — |
 | Deuda del CI · Frente 1 (G1+G3+G5) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-1|plan]] | — |
 | Deuda del CI · Frente 2 (G2 mínimo, cache de capa base) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-2|plan]] | — |
+| Habilitación en una columna — spec v2 | [[docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design|spec]] · [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna|plan]] | — |
 | Interruptor del Control Tower desde /admin | [[docs/superpowers/specs/2026-08-20-interruptor-control-tower-admin-design|spec]] · [[docs/superpowers/plans/2026-08-20-interruptor-control-tower-admin|plan]] | — |
+| Replanteo de coloreado de estados (dirección B) | [[docs/superpowers/plans/2026-08-20-replanteo-coloreado-estados|plan]] | — |
 | Replanteo de la Control Tower — Diseño | [[docs/superpowers/specs/2026-08-20-replanteo-control-tower-design|spec]] | — |
 | Apply del recálculo de estados — plan de ejecución | [[docs/superpowers/plans/2026-08-19-apply-recalculo-estados|plan]] | — |
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
@@ -59,6 +70,7 @@ _119 trabajos · 48 con spec y plan emparejados · 20 archivados en `docs/archiv
 | DS-F1a · La escala de estado: vocabulario y lectura — diseño | [[docs/superpowers/specs/2026-08-19-ds-f1a-estado-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f1a-estado|plan]] | — |
 | «Fuera de Ventana» en los dos calculadores | [[docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana|plan]] | — |
 | Estados, severidad y color — el contrato — diseño | [[docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design|spec]] · [[docs/superpowers/plans/2026-08-19-estados-severidad-contrato|plan]] | — |
+| La línea base contractual deja de deducirse — diseño | [[docs/superpowers/specs/2026-08-19-linea-base-contractual-design|spec]] · [[docs/superpowers/plans/2026-08-19-linea-base-contractual|plan]] | — |
 | Migración de la columna Estado | [[docs/superpowers/plans/2026-08-19-migracion-estados|plan]] | — |
 | Organizar la casa — el repo y sus sesiones | [[docs/superpowers/specs/2026-08-19-organizar-la-casa-design|spec]] | — |
 | publicar.sh: el invariante es el montaje, no el nombre del proyecto — diseño | [[docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design|spec]] | — |

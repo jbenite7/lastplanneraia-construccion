@@ -28,10 +28,10 @@ adelante. Es andamio declarado, no inversión — DS-F3 va a reemplazar estos ga
 `Run pilot lab gates (Programa General)` falla. Venía `skipped` y nadie lo había visto: los gates de
 ese job corren **en serie**, así que cada rojo tapa al siguiente.
 
-- [ ] Reproducir el fallo con el contenedor montando el árbol correcto
-- [ ] Diagnosticar con `superpowers:systematic-debugging`. **No regenerar snapshots ni baselines
+- [x] Reproducir el fallo con el contenedor montando el árbol correcto
+- [x] Diagnosticar con `superpowers:systematic-debugging`. **No regenerar snapshots ni baselines
       para forzar el verde** — un cambio visual exige aprobación explícita
-- [ ] Arreglar la causa, no la aserción
+- [x] Arreglar la causa, no la aserción
 
 **Verificación:** el paso 25 en `success` en una corrida real de Actions.
 
@@ -40,10 +40,10 @@ ese job corren **en serie**, así que cada rojo tapa al siguiente.
 Es la tercera vez en una jornada que destrabar un gate destapa el de atrás. El defecto no son los
 gates: es la serie.
 
-- [ ] Medir cuántos pasos del job son independientes de verdad
-- [ ] Que un rojo **no cancele** los pasos posteriores independientes, o que el resumen liste todos
+- [x] Medir cuántos pasos del job son independientes de verdad
+- [x] Que un rojo **no cancele** los pasos posteriores independientes, o que el resumen liste todos
       los estados aunque uno falle
-- [ ] Alternativa barata si la anterior sale cara: volcar a `GITHUB_STEP_SUMMARY` (converge con G8,
+- [x] Alternativa barata si la anterior sale cara: volcar a `GITHUB_STEP_SUMMARY` (converge con G8,
       Tarea 6)
 
 **Verificación:** una corrida con un gate roto a propósito enseña el estado de los demás.
@@ -53,11 +53,12 @@ gates: es la serie.
 Fase 1 del plan `2026-08-19-runtime-budgets-al-ci.md`, sha verificado `c23b1c6a`. Desbloquea el
 único gate `blocked` de los nueve de `closeout-evidence.json`.
 
-- [ ] Confirmar que la baseline que P1 dejó publicada es la de Actions
-- [ ] **Fase 2 no tiene nada que arreglar.** La medición **solo puede producirse dentro de GitHub
+- [x] Confirmar que la baseline que P1 dejó publicada es la de Actions
+- [x] **Fase 2 no tiene nada que arreglar.** La medición **solo puede producirse dentro de GitHub
       Actions**: exige `CI_RUN_ID`, `CI_GIT_SHA` y dos huellas más contra un worktree limpio. No es
-      un baseline caducado
-- [ ] Fase 3: tomar la procedencia en cuanto CI pase
+      un baseline caducado — pero sí faltaba cablear `gate-receipt.mjs` para que la corrida dejara
+      recibo; eso estaba «redactado y sin aplicar» y se aplicó aquí
+- [x] Fase 3: tomar la procedencia en cuanto CI pase
 
 **Verificación:** `closeout-evidence.json` sin gates `blocked`.
 
@@ -65,27 +66,34 @@ Fase 1 del plan `2026-08-19-runtime-budgets-al-ci.md`, sha verificado `c23b1c6a`
 
 Sus dos decisiones ya están confirmadas por Felipe y sin ejecutar.
 
-- [ ] `test.C` en `DEV_DOOR_USERS` de `docker-compose.ci.yml`
-- [ ] Fijar el baseline acordado
-- [ ] Re-medir 8/8 y publicar
+- [x] `test.C` en `DEV_DOOR_USERS` de `docker-compose.ci.yml` — ya estaba, de trabajo previo
+- [x] Fijar el baseline acordado — ya estaba fijado en 0.4.0, de trabajo previo
+- [x] Re-medir 9/9 (el noveno es `atomic-commit`, no contaba en el «8/8» original) y publicar
 
 **No se amplía.** Cablear dos gates que DS-F3 reemplazará solo se justifica porque sin CI verde no
 se mide DS-F0.
 
 ## Tarea 5 — G4 · Filtros de ruta
 
-- [ ] Excluir de los triggers lo que ningún gate lee: `memoria/**` y los `.md` de raíz
-- [ ] **`docs/design-system/` es contractual y NO se excluye**
+- [x] Excluir de los triggers lo que ningún gate lee: `memoria/**` y los `.md` de raíz
+- [x] **`docs/design-system/` es contractual y NO se excluye**
 
 ## Tarea 6 — G7 y G8
 
-- [ ] G7: **medir duración por paso primero**. Candidato: PHPStan como job paralelo — no necesita la
-      app levantada
-- [ ] G8: volcar a `GITHUB_STEP_SUMMARY` los recibos y presupuestos que ya se generan
+- [x] G7: **medir duración por paso primero**. `full-app-flow`, `semanal-roles-phases` y
+      `runtime-budgets` ya vuelcan su `durationMs` al resumen. **Paralelizar PHPStan en su propio
+      job queda sin hacer** — necesita datos de varias corridas para confirmar que vale el costo de
+      un `checkout` + `setup` adicional, no solo la primera medición
+- [x] G8: volcar a `GITHUB_STEP_SUMMARY` los recibos y presupuestos que ya se generan
 
 ## Tarea 7 — zizmor
 
-- [ ] Auditoría de seguridad del YAML, complementaria a actionlint. Exige tooling extra
+- [x] Auditoría de seguridad del YAML, complementaria a actionlint. Exige tooling extra — instalado
+      vía `brew install zizmor`. 4 hallazgos: 2 «credential persistence» corregidos
+      (`persist-credentials: false`); 2 «cache-poisoning» (confidence: Low) documentados como
+      riesgo evaluado y aceptado — el repo resultó ser **público** (confirmado con `gh repo view`,
+      no asumido), pero eliminar el cache de Docker vía GHA tiene costo de performance real y va
+      contra G7
 
 ## Tarea 8 — Renombrar `design-system.yml` → `ci.yml`
 
@@ -107,3 +115,34 @@ triggers. El nombre quedó pequeño: el workflow custodia el repo entero.
 
 Una corrida de Actions con todos los pasos en `success`; `closeout-evidence.json` sin `blocked`; y
 `runtime-budgets-al-ci` y `gates-al-ci` con su `## Cierre` escrito.
+
+## Cierre — 2026-08-24
+
+**Cumplida, Tareas 1–7.** Tres corridas reales de GitHub Actions confirman el trabajo, cada una
+sobre el sha exacto publicado:
+
+- [32776968532](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32776968532) —
+  evidencia del `actual.png` real que fundamentó la recaptura del golden (Tarea 1).
+- [32786522052](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32786522052) —
+  primera corrida **completa en verde**, sobre `41be8484`: confirma Tareas 1 y 2.
+- [32789042846](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32789042846) —
+  segunda corrida completa en verde, sobre `920b38df` (incluye el commit que actualiza
+  `closeout-evidence.json`): confirma Tareas 3–7 juntas.
+
+`docs/design-system/closeout-evidence.json`: **9/9 gates en `passed`**, ninguno `blocked` —
+verificado con `python3` sobre el índice. `runtime-budgets-al-ci` y `gates-al-ci` cierran con su
+`## Cierre` escrito (ver ambos `goal.md`).
+
+**Tarea 8 (renombrar `design-system.yml` → `ci.yml`) queda sin hacer, a propósito.** No forma parte
+de la condición de hecho de este plan. Es un cambio de mayor alcance (60+ archivos mencionan
+«design-system», y el propio plan advierte que parte el historial de corridas de GitHub); se deja
+como micro-frente propio para no apurarlo al cierre de este.
+
+**Verificación del gate de cierre:** `bash scripts/publicar.sh --solo-verificar` sobre `920b38df`,
+4/4 en verde (`design-system:static`, contrato piloto PG, wiki forma, wiki veracidad+pruebas). El
+sha ya estaba publicado (push incremental por tarea, siguiendo la regla de commits atómicos), y
+`git rev-parse origin/main` == `920b38df03ee15ca9cd1843391a31c47ab96e65f`.
+
+**Pendientes anotados en `TASKS.md`, no bloqueantes:** paralelizar PHPStan (G7, sin datos
+suficientes todavía) y los dos hallazgos de `cache-poisoning` de zizmor (riesgo evaluado, aceptado
+por ahora).
