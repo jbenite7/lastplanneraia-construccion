@@ -62,9 +62,16 @@ jobs:
     env:
       LPS_CODE_ROOT: ${{ github.workspace }}
     steps:
+      # P2 Tarea 7 (zizmor, 2026-08-24): `persist-credentials: false` en los dos checkout — zizmor
+      # marcaba "credential persistence through GitHub Actions artifacts": sin esto, el token de
+      # git queda escrito en `.git/config` del workspace del runner, disponible a cualquier paso
+      # posterior que suba ese arbol como artefacto. Ningún paso de este workflow necesita
+      # `git push` con el token del checkout (la publicación a `main` la hace `publicar.sh` desde
+      # fuera de CI), así que no hay downside.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
+          persist-credentials: false
       # Fija versión y checksum a propósito: un linter que se descarga mutable
       # es la misma brecha que vino a cerrar.
       - name: Lint the workflow definitions
@@ -122,6 +129,8 @@ jobs:
     needs: design-system-static
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
