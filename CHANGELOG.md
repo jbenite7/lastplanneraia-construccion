@@ -28,6 +28,20 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### CI: la imagen de pruebas siembra `general_flags` (2026-08-24)
+
+#### Fixed
+- `main` llevaba en rojo desde el 2026-08-21 con «Table `lastplanneraia_ci.general_flags`
+  doesn't exist». El interruptor del Control Tower trajo su migración, su servicio y sus dos
+  suites, pero la imagen de base de CI nunca sembró la tabla. El paso de la suite PHP moría ahí
+  —74 de 76— y con él **todo lo que venía después: el piloto visual, la accesibilidad y el matiz
+  del piloto llevaban tres días sin correr en CI.** Se añade la migración a
+  `database/fixtures/design-system-ci.Dockerfile`, siguiendo el criterio que ese archivo ya
+  documenta: se aplica la migración, no un `CREATE TABLE` a mano, para que cada build compruebe
+  de paso que la migración hace lo que dice.
+- **Fuera del alcance de este frente**, y se hace igual porque bloqueaba su cierre y el de
+  cualquiera: mientras ese paso muera, ningún gate de navegador corre en CI para nadie.
+
 ### La columna Acciones de Programación Semanal vuelve a verse (2026-08-24)
 
 #### Fixed
