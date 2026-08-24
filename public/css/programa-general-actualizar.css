@@ -169,7 +169,10 @@
     ):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(
       .pg-state-terminada
     ):not(.pg-state-sin-datos) {
-    box-shadow: inset 0 0 0 9999px var(--pga-cell-editable-overlay);
+    /* El filete del contrato usa la misma propiedad que este velo, asi que se
+       COMPONEN via --pga-rail-shadow (2026-08-20): sin la variable, el velo se
+       tragaba el filete — medido con la sonda del frente replanteo-coloreado. */
+    box-shadow: var(--pga-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pga-cell-editable-overlay);
     cursor: text;
   }
 
@@ -192,8 +195,22 @@
     ):not(.pg-state-actividad-futura):not(.pg-state-en-curso):not(.pg-state-a-tiempo-en-curso):not(
       .pg-state-terminada
     ):not(.pg-state-sin-datos) {
-    box-shadow: inset 0 0 0 9999px var(--pga-cell-readonly-overlay);
+    box-shadow: var(--pga-rail-shadow, 0 0 0 0 transparent), inset 0 0 0 9999px var(--pga-cell-readonly-overlay);
     cursor: not-allowed;
+  }
+
+  /* La variable que el velo compone. Se define por atributo y pesa poco a
+     proposito: no compite con el velo, lo alimenta. */
+  .pg-page #hot-container td[data-aia-severity-rail='urgent'] {
+    --pga-rail-shadow: inset var(--ds-severity-rail-width-urgent) 0 0 0 var(--ds-severity-rail-color-urgent);
+  }
+
+  .pg-page #hot-container td[data-aia-severity-rail='attention'] {
+    --pga-rail-shadow: inset var(--ds-severity-rail-width-attention) 0 0 0 var(--ds-severity-rail-color-attention);
+  }
+
+  .pg-page #hot-container td[data-aia-severity-rail='ready'] {
+    --pga-rail-shadow: inset var(--ds-severity-rail-width-ready) 0 0 0 var(--ds-severity-rail-color-ready);
   }
 
   .pg-page #hot-container td.pg-cell-readonly.pg-state-atrasado,

@@ -267,6 +267,16 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 - [x] 2026-08-19 — **DS-F0 cerrada y publicada** (`567e566e`): `docs/design-system/auditoria/` con
   68 hallazgos clasificados sobre un censo de 257 rutas, sin tocar código de producto.
+- [x] 2026-08-20 — `replanteo-coloreado-estados` cerrado: el chip solido pasa a portar la identidad
+  (paleta auditada WCAG AA + manual AIA), el filete queda homogeneo en los tres modulos con el
+  marcador `ready`, y **nada se recorta en silencio** — tres olas en workflows dependientes
+  erradicaron elipsis, `overflow-x: hidden` irreversible, palabras partidas y ~20 tamanos fuera de
+  rampa. Efecto no previsto: Intermedia muestra sus 9 filas donde antes cabian 5. Censo de las 22
+  tablas de la app en `goals/replanteo-coloreado-estados/censo-tablas.md`.
+  **Pendientes que dejo, cada uno frente propio:** cabeceras de grilla desalineadas (PI 0.75rem vs
+  PS 0.72rem, decision de producto); `overflow-wrap: anywhere` en el chip de PI; `1.75rem` del boton
+  de cierre de modal en PS; siete `console.log('[PI-DEBUG]')` tras flag; y el resto del censo
+  (Admin y vistas HTML) fuera de estas olas por alcance.
 - [x] 2026-08-20 — `ds-f1a-estados-severidad` cerrado: maquinaria adaptada al contrato de 3
   niveles (filete apagado en `Controlado` `1ff946f8`, PG remapeado con `Fuera de Ventana`
   `8418449a`), publicada, y verificada en pantalla post-fix a 1180×820 dark (sondas y capturas en
@@ -402,6 +412,22 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
+
+## Habilitación en una columna (en curso, sesión propia)
+
+Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
+quedaron vivos del frente de replanteo de coloreado:
+
+- **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
+  con un guardián que falla solo si alguien vuelve a ensanchar.
+- **Contadores de leyenda del color equivocado** — consumen `--ds-state-tint-*` mientras los chips
+  usan `--ds-state-solid-*`. Lo cierra la Task 1, que es independiente del resto.
+
+Pendiente propio derivado: **Programación Semanal hereda la pieza en la ola siguiente**, con
+Intermedia ya rodado una semana en obra. Comparte las mismas cinco restricciones duras
+(`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
+problema que el frente vino a corregir.
 
 ## Replanteo antes de ejecutar
 

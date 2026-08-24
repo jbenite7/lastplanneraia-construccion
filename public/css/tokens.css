@@ -343,6 +343,38 @@
        siete. */
     --ds-state-tint-neutral: #2b2f2d;
 
+    /* Replanteo 2026-08-20 (direccion B, decision de Felipe): el chip solido es
+       el portador fuerte de identidad y la fila baja a un tinte sutil. Los
+       --ds-state-tint-* de arriba NO se tocan: los consume el PDC. Contrato y
+       auditoria (WCAG AA + manual AIA, con el porque de cada desviacion):
+       docs/design-system/state-semantics.json, hues[].solid/solidText/row y
+       brandAudit. El guard tests/design-system/state-solid-contract.test.mjs
+       exige igualdad con el contrato y calcula los ratios en cada corrida. */
+    --ds-state-solid-red: #e15a52;
+    --ds-state-solid-red-text: #3c0a06;
+    --ds-state-solid-orange: #e87722;
+    --ds-state-solid-orange-text: #3a2004;
+    --ds-state-solid-amber: #ffca28;
+    --ds-state-solid-amber-text: #3a2c04;
+    --ds-state-solid-violet: #9485d6;
+    --ds-state-solid-violet-text: #26113f;
+    --ds-state-solid-teal: #5ec9bd;
+    --ds-state-solid-teal-text: #062f29;
+    --ds-state-solid-blue: #5f9fdd;
+    --ds-state-solid-blue-text: #07223c;
+    --ds-state-solid-green: #57b083;
+    --ds-state-solid-green-text: #06281a;
+    --ds-state-solid-neutral: #9aa8a0;
+    --ds-state-solid-neutral-text: #1c2420;
+    --ds-state-row-red: #3a1f1c;
+    --ds-state-row-orange: #3a2915;
+    --ds-state-row-amber: #383314;
+    --ds-state-row-violet: #302741;
+    --ds-state-row-teal: #1c342f;
+    --ds-state-row-blue: #1e2c40;
+    --ds-state-row-green: #20362a;
+    --ds-state-row-neutral: #262b28;
+
     /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
        color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
        a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
@@ -356,12 +388,20 @@
        Ventana» pasa a ~51% de las actividades, asi que un filete universal
        pondria marca de gravedad en mas de MEDIA TABLA para filas que no piden
        nada — ruido de fondo, no senal.
-       Aqui solo quedan los dos que si marcan; que `healthy` y `neutral` no
-       tengan token no es un olvido, es el contrato. */
+       Aqui solo quedan los que si marcan; que `healthy` y `neutral` no
+       tengan token no es un olvido, es el contrato.
+       Avivados el 2026-08-20: los alias a --ds-color-state-*-text eran pastel
+       y el filete se perdia en obra y proyector; el guard state-solid-contract
+       exige >=3:1 contra todo tinte de fila. `ready` (decision de Felipe,
+       2026-08-20) es el marcador positivo ESCASO: solo estados declarados con
+       rail:'ready' en su statePresentation — nunca todo Controlado, que sigue
+       sin barra por defecto. */
     --ds-severity-rail-width-urgent: 6px;
     --ds-severity-rail-width-attention: 4px;
-    --ds-severity-rail-color-urgent: var(--ds-color-state-critical-text);
-    --ds-severity-rail-color-attention: var(--ds-color-state-warning-text);
+    --ds-severity-rail-width-ready: 3px;
+    --ds-severity-rail-color-urgent: #ff7a6e;
+    --ds-severity-rail-color-attention: #ffd23f;
+    --ds-severity-rail-color-ready: #7ee2a8;
 
     /* ========================================
      ESTADOS DE PROGRAMACION (paleta compartida)
@@ -622,6 +662,16 @@
     --ds-table-row-h:              1.5rem;    /* 24px — EN el suelo AA (SC 2.5.8), sin margen */
     --ds-table-header-h:           1.5rem;    /* 24px, base — crece con `height: auto` si envuelve */
     --ds-table-cell-font-size:     0.8125rem; /* 13px, cuerpo/dato principal */
+    /* Interlineado de celda (2026-08-20, defecto reportado por Felipe: la fila se
+       ve demasiado alta para la pantalla). Medido antes: el line-height heredado
+       resolvia a 21px sobre una fuente de 13px — ratio 1,6, que es interlineado
+       de PROSA. En una tabla operativa el texto envuelve mucho: en el programa
+       de Da Porto habia filas reales de 151 y 173px, y catorce filas sumaban
+       1699px, o sea seis por pantalla. A 1,25 la misma celda de siete lineas
+       baja ~24% sin tocar el tamano de letra, que si esta en contrato y no se
+       negocia. No baja de 1,25: por debajo, las tildes y los descendentes de una
+       fuente de 13px se tocan entre lineas. */
+    --ds-table-cell-line-h:        1.25;
     --ds-table-header-font-size:   0.75rem;   /* 12px, cabecera/secundario */
     --ds-table-font-size-floor:    0.6875rem; /* 11px, piso duro — solo secundarios, nunca el dato principal */
     --ds-table-cell-pad-x:   0.625rem; /* 10px, escala de /plan-compras */
@@ -653,6 +703,30 @@
        token apuntaba a una variable inexistente y el texto del estado vacío caía a color
        heredado en todas las tablas. Corregido el 2026-08-03. */
     --ds-table-empty-fg:     var(--ds-active-text-secondary);
+
+    /* ── Velo de celda editable / solo lectura (2026-08-20) ──
+       El velo dice algo verdadero —si esta columna se puede escribir o no— y por eso
+       se conserva; lo que no se conserva es que cada modulo eligiera su propia
+       intensidad, que es lo que se ve en pantalla como «cada columna tiene un matiz
+       distinto». Medido antes de unificar: Programa General pintaba editable al 6% de
+       `--ds-color-state-success-text` y solo-lectura al 8% de `--ds-color-text-tertiary`;
+       Programacion Intermedia, 6% y 7% de `--ds-active-text-secondary`. Tres cifras y
+       dos bases grises para dos significados.
+       Se fija UNA pareja para todo el sistema:
+       - Editable al 6%: es el valor en el que ya coincidian los dos modulos, o sea el
+         unico que no obliga a nadie a cambiar de aspecto. Sobre penumbra, 6% del verde
+         de estado se lee como «aqui se escribe» sin competir con el tinte de estado de
+         la fila, que es el dato importante.
+       - Solo lectura al 7% de `--ds-active-text-secondary`: se elige la base de PI —no
+         la de PG— porque `--ds-active-text-secondary` sigue al tema activo y
+         `--ds-color-text-tertiary` es un hex fijo del tema oscuro. Al 7% sobre esa base,
+         mas clara que la tercearia, el resultado queda practicamente donde estaba el 8%
+         de PG: se unifica sin que ningun modulo de un salto visible.
+       La MECANICA no vive aqui: el velo se sigue pintando como `box-shadow` inset
+       componible con el filete de severidad (ver el adaptador de PG). Esto es solo el
+       color. */
+    --ds-table-cell-editable-overlay: color-mix(in srgb, var(--ds-color-state-success-text) 6%, transparent);
+    --ds-table-cell-readonly-overlay: color-mix(in srgb, var(--ds-active-text-secondary) 7%, transparent);
 
     /* ── Cell state semantic scale (7 peldaños) ──
        No es una paleta propia: es la capa de significado de tabla sobre la escala de estado

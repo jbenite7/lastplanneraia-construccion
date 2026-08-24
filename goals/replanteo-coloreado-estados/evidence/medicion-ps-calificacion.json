@@ -1,0 +1,37 @@
+[
+  {
+    "estado": "ps-state-cal-tnp",
+    "cubo": "ps-alert-tnp",
+    "fondo": "#1e2c40",
+    "rail": "neutral",
+    "railShadow": "none"
+  },
+  {
+    "estado": "ps-state-cal-sin-calificar",
+    "cubo": "ps-alert-medium",
+    "fondo": "#262b28",
+    "rail": "attention",
+    "railShadow": "rgb(255, 210, 63) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-cal-incumplida-critica",
+    "cubo": "ps-alert-critical-route",
+    "fondo": "#431414",
+    "rail": "urgent",
+    "railShadow": "rgb(255, 122, 110) 6px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-cal-incumplida",
+    "cubo": "ps-alert-medium",
+    "fondo": "#383314",
+    "rail": "attention",
+    "railShadow": "rgb(255, 210, 63) 4px 0px 0px 0px inset"
+  },
+  {
+    "estado": "ps-state-cal-cumplida-control",
+    "cubo": "ps-alert-control",
+    "fondo": "#20362a",
+    "rail": "ready",
+    "railShadow": "rgb(126, 226, 168) 3px 0px 0px 0px inset"
+  }
+]

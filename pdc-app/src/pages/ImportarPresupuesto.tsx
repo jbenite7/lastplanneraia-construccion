@@ -15,6 +15,7 @@ import { etiquetaVersion } from '../lib/versionLabel'
 import type { Comparativo, GrupoImpacto, ImportConfirmResult, ImportErrorFila, ImportPreview, ImpactoVersion, ResumenDiff, VersionPresupuesto } from '../lib/types'
 import { contarInsumos, plural } from '../lib/texto'
 import BotonAyuda from '../components/BotonAyuda'
+import { AvisoColumnasOcultas } from '../components/AvisoColumnasOcultas'
 
 // Mismo criterio que MaestroInsumos.tsx: registro selectivo de módulos
 // (no AllCommunityModule, que arrastra ~1.3MB). ValidationModule solo en dev.
@@ -423,6 +424,7 @@ export default function ImportarPresupuesto() {
           value={buscaVersiones}
           onChange={(e) => setBuscaVersiones(e.target.value)}
         />
+        <AvisoColumnasOcultas columnas={colsVisibles} testid="pdc-import-cols-ocultas" />
         <div className="pdc-grid-corta" ref={refGrid}>
           <AgGridReact<VersionPresupuesto>
             theme={pdcTheme}

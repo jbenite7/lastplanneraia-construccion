@@ -109,7 +109,9 @@
   }
   .bi-chip strong {
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-chip button {
     display: inline-flex;
@@ -338,7 +340,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-semantic-range {
     display: inline-flex;
@@ -352,7 +356,9 @@
     font-size: 0.75rem;
     font-weight: 800;
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-semantic-range-reason {
     max-width: 24rem;
@@ -360,7 +366,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.35;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   [data-range='critical'] .bi-semantic-range {
     background: var(--bi-status-critical-bg);
@@ -406,7 +414,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-compliance-card {
     min-width: 0;
@@ -456,7 +466,9 @@
     color: var(--ds-active-text-secondary);
     font-size: var(--ds-type-size-xs);
     line-height: var(--ds-type-line-body);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-cause-insight__lead strong {
     color: var(--ds-active-text-primary);
@@ -466,7 +478,9 @@
     color: var(--ds-active-text-secondary);
     font-size: 0.8125rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-cause-category-actions {
     display: flex;
@@ -519,7 +533,9 @@
     color: var(--ds-active-text-secondary);
     font-size: 0.8125rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-delay-status {
     color: var(--ds-active-text-primary);
@@ -542,7 +558,9 @@
   .bi-delay-dates dt,
   .bi-delay-dates dd {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-delay-dates dt {
     color: var(--ds-active-text-secondary);
@@ -582,7 +600,9 @@
   .bi-delay-project dd {
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-delay-project h3 {
     color: var(--ds-active-text-primary);
@@ -607,12 +627,14 @@
   .bi-delay-drilldown__table td > small {
     display: block;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-delay-drilldown__table td > small {
     padding-top: var(--spacing-xs);
     color: var(--ds-active-text-secondary);
-    font-size: var(--ds-type-size-xs);
+    font-size: 0.70rem;
     line-height: var(--ds-type-line-body);
   }
 }
@@ -698,7 +720,9 @@
     border-radius: var(--ds-radius-control);
     background: var(--bi-drilldown-elevated-surface);
     padding: var(--spacing-sm);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-drilldown__summary--four {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -719,7 +743,9 @@
     border-radius: var(--ds-radius-control);
     padding: var(--spacing-sm) var(--spacing-md);
     color: var(--ds-active-text-secondary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-progress-tabs button[aria-selected='true'] {
     border-color: var(--ds-active-border);
@@ -762,7 +788,9 @@
     margin: 0;
     color: var(--ds-active-text-secondary);
     line-height: 1.5;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-drilldown__state {
     display: flex;
@@ -786,6 +814,7 @@
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
+    font-size: 0.72rem;
   }
   .bi-drilldown__table th,
   .bi-drilldown__table td {
@@ -794,18 +823,25 @@
     padding: var(--spacing-sm);
     vertical-align: top;
     text-align: left;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-drilldown__table th {
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 92%, var(--bi-drilldown-elevated-surface));
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.70rem;
+  }
+  .bi-drilldown__table small {
+    font-size: 0.70rem;
   }
   .bi-causal-operational-link,
   .bi-causal-record-link {
     min-height: var(--ds-target-min);
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-causal-operational-link {
     align-self: flex-start;
@@ -830,9 +866,11 @@
     margin: 0;
     min-width: 0;
     color: var(--ds-active-text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.70rem;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-drilldown__responsible-label {
     color: var(--ds-active-text-primary);
@@ -855,7 +893,9 @@
   .programa-gauge-drilldown-card p,
   .bi-causal-drilldown-card h3 {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .programa-compliance-drilldown-card p,
   .programa-gauge-drilldown-card p {
@@ -872,7 +912,9 @@
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 88%, var(--bi-drilldown-elevated-surface));
     padding: var(--spacing-xs);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .programa-gauge-drilldown-card__metrics {
     display: grid;
@@ -884,7 +926,9 @@
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--bi-drilldown-panel-surface) 88%, var(--bi-drilldown-elevated-surface));
     padding: var(--spacing-xs);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-causal-drilldown-card__fields {
     display: grid;
@@ -903,7 +947,9 @@
   .bi-causal-drilldown-card__fields dd {
     margin: calc(var(--spacing-xs) / 2) 0 0;
     color: var(--ds-active-text-primary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-causal-drilldown-card__decision {
     display: grid;
@@ -926,7 +972,9 @@
     display: block;
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-causal-drilldown-card__decision p {
     color: var(--ds-active-text-secondary);
@@ -950,7 +998,9 @@
     font-size: var(--ds-type-size-xs);
     line-height: var(--ds-type-line-body);
     text-align: center;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 }
 @layer components {
@@ -1002,7 +1052,9 @@
   }
   .bi-programa-activity-cutoff {
     max-width: 100%;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-programa-activity-total {
     margin: 0;
@@ -1030,7 +1082,10 @@
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+  }
+  .bi-programa-activity-table small {
+    font-size: 0.70rem;
   }
   .bi-programa-activity-table th,
   .bi-programa-activity-table td {
@@ -1039,11 +1094,14 @@
     padding: var(--spacing-sm);
     text-align: left;
     vertical-align: top;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-programa-activity-table th {
     color: var(--ds-active-text-secondary);
     font-weight: 700;
+    font-size: 0.70rem;
   }
   .bi-programa-activity-table th:nth-child(1) { width: 20%; }
   .bi-programa-activity-table th:nth-child(2) { width: 28%; }
@@ -1078,13 +1136,15 @@
   .bi-programa-activity-dates span {
     min-width: 0;
     color: var(--ds-active-text-primary);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-programa-activity-dates span small,
   .bi-programa-activity-timeline label span {
     display: block;
     color: var(--ds-active-text-secondary);
-    font-size: var(--ds-type-size-xs);
+    font-size: 0.70rem;
     font-weight: 700;
   }
   .bi-programa-activity-timeline label {
@@ -1136,7 +1196,9 @@
     border: var(--ds-border-width) solid var(--ds-active-border);
     border-radius: var(--ds-radius-control);
     background: color-mix(in srgb, var(--ds-active-surface-raised) 84%, var(--ds-active-bg-canvas));
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-programa-activity-state[data-status='late'] {
     border-color: var(--bi-status-critical);
@@ -1188,7 +1250,9 @@
     font-weight: 700;
   }
   .bi-programa-activity-card dd {
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-programa-activity-more-error {
     margin: 0;
@@ -1379,7 +1443,9 @@
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-display);
     font-size: var(--ds-type-size-sm);
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
 }
 @layer components {
@@ -1434,7 +1500,9 @@
   .bi-radar-axis__trend {
     margin: 0;
     min-width: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-radar-axis__heading h4 {
     color: var(--ds-active-text-primary) !important;
@@ -1495,7 +1563,9 @@
     transform: translateY(var(--spacing-xs));
     transition: opacity var(--ds-motion-fast), transform var(--ds-motion-fast);
     visibility: hidden;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-radar-axis__info:hover + .bi-radar-axis__tooltip,
   .bi-radar-axis__info:focus-visible + .bi-radar-axis__tooltip {
@@ -1543,7 +1613,9 @@
   .bi-radar-drilldown-card dl,
   .bi-radar-drilldown-card dd {
     margin: 0;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
   }
   .bi-radar-drilldown-card h3 {
     color: var(--ds-active-text-primary) !important;

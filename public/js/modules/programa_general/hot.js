@@ -19,6 +19,9 @@
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({});
   });
+  import('/js/design-system/state-tooltip.js').then(function (mod) {
+    mod.activarStateTips(document);
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -844,6 +847,19 @@
       + ' data-aia-urgency="' + pair.urgency + '"';
   }
 
+  // El porque de cada estado, para el tooltip del chip (Felipe, 2026-08-20).
+  // Mismas frases que la Guia Operativa para que pantalla y ayuda no diverjan.
+  var STATE_TIPS = {
+    atrasada: 'Debio iniciar y no registra el avance esperado. Atender ahora.',
+    'debe-iniciar': 'Su semana de inicio llego: arranca o justifica. Revisar antes del siguiente hito.',
+    'en-curso': 'Con ejecucion en marcha dentro de lo planificado.',
+    'actividad-futura': 'Inicia dentro de la ventana de planificacion. Sin accion inmediata.',
+    'fuera-de-ventana': 'Inicia mas alla de la ventana de 6 semanas: aun fuera del lookahead.',
+    terminada: 'Actividad cerrada. Sin accion.',
+    'sin-datos': 'Sin fecha de inicio ni ejecucion registrada. Requiere programacion.',
+    'con-alerta-restricciones': 'Restricciones duras pendientes dentro de la ventana proxima.',
+  };
+
   function classifyPGRow(data) {
     if (!data || (getProgramUniqueId(data) === null && data.Consecutivo === undefined && data.Id === undefined)) {
       return {
@@ -1418,6 +1434,25 @@
     cell.className = normalizeClassList(className);
   }
 
+  // El fondo (pg-state-*) dice QUE estado es; este atributo dice CUAN grave, y
+  // lo traduce la primitiva compartida severity-rail.css. Igual que Intermedia
+  // y Semanal: va en el <tr> y en la PRIMERA celda rendida, nunca en todas —
+  // puesto en cada celda dibuja un filete por columna y la tabla se lee como un
+  // pijama (medido en Intermedia el 2026-08-19). `rail` (p. ej. 'ready') gana
+  // sobre el nivel: es el marcador declarado por estado. PG lo estrena el
+  // 2026-08-20 (replanteo direccion B): declaraba niveles desde el remapeo
+  // 8418449a y ninguna fila los dibujaba.
+  function applyPGRowSeverityAttr(element, rowSeverity) {
+    if (!element) {
+      return;
+    }
+    if (rowSeverity) {
+      element.setAttribute('data-aia-severity-rail', rowSeverity);
+    } else {
+      element.removeAttribute('data-aia-severity-rail');
+    }
+  }
+
   function refreshVisiblePGCellMeta(instance) {
     if (!instance || typeof instance.countRows !== 'function' || typeof instance.countCols !== 'function') {
       return;
@@ -1432,6 +1467,20 @@
           var cellProperties = buildPGCellProperties(instance, visualRow, col, null, rowData);
           instance.setCellMeta(visualRow, col, 'className', cellProperties.className);
           instance.setCellMeta(visualRow, col, 'readOnly', cellProperties.readOnly);
+        }
+      }
+
+      if (typeof instance.getCell === 'function') {
+        var clasificacion = classifyPGRow(rowData);
+        var presentacion = statePresentation[clasificacion.key] || null;
+        var rowSeverity = presentacion ? (presentacion.rail || presentacion.level) : null;
+        var primeraCelda = null;
+        for (var c = 0; c < colCount && !primeraCelda; c++) {
+          primeraCelda = instance.getCell(visualRow, c, true);
+        }
+        if (primeraCelda) {
+          applyPGRowSeverityAttr(primeraCelda, rowSeverity);
+          applyPGRowSeverityAttr(primeraCelda.parentElement, rowSeverity);
         }
       }
     }
@@ -1692,6 +1741,13 @@
       if (!attrs) {
         return;
       }
+      // PG conserva los NOMBRES COMPLETOS de sus siete estados, a diferencia de
+      // PS y PI: su celda admite dos lineas (labelLines: 2 en
+      // docs/design-system/state-semantics.json, modulo programa-general), asi
+      // que el texto cabe o ENVUELVE ENTRE PALABRAS. Envolver no es recortar
+      // —es la regla del sistema (decision de Felipe, 2026-08-20)—, por eso PG
+      // no declara displayShort y aqui no hay ni debe haber acortado. Antes de
+      // "arreglar" un estado que se ve en dos renglones: no esta roto.
       var isEmptyValue = value === null || value === undefined || value === '';
       var label;
       if (classification.restrictionAlertKey) {
@@ -1704,7 +1760,20 @@
       } else {
         label = String(value);
       }
-      td.innerHTML = '<span class="ops-state-chip"' + attrs + '>' + escapeHtml(label) + '</span>';
+      // Chip + tooltip (Felipe, 2026-08-20): PG no tiene drawer, asi que el
+      // chip es focuseable (tabindex) para que el porque llegue tambien por
+      // teclado, no solo por hover.
+      var porQue = STATE_TIPS[stateKey] || STATE_TIPS['sin-datos'];
+      if (classification.restrictionAlertKey) {
+        porQue += ' Alerta ' + String(classification.restrictionAlertKey).toUpperCase() + '.';
+      }
+      // El porque viaja tambien en el aria-label: el tooltip visual esta
+      // aria-hidden y sin esto el foco de teclado llegaba a un span mudo
+      // (hallazgo P1 del audit 2026-08-20).
+      td.innerHTML = '<span class="ops-state-chip" tabindex="0" role="note" aria-label="' + escapeHtml(label + '. ' + porQue) + '"' + attrs + '>'
+        + '<span class="ops-chip-label">' + escapeHtml(label) + '</span>'
+        + '<span class="aia-state-tip" role="tooltip" aria-hidden="true"><span class="aia-state-tip-panel">' + escapeHtml(porQue) + '</span></span>'
+        + '</span>';
       td.classList.add('ops-state-td');
     });
 
@@ -3049,6 +3118,37 @@
     }
     syncResponsiveModeClasses();
 
+    // Ola 4 (2026-08-20). El alto de fila estaba escrito a mano aqui: `rowHeights: 45`,
+    // casi el doble de lo que fija el contrato del design system
+    // (--ds-table-row-h = 1.5rem = 24px, public/css/tokens.css:662). Medido en
+    // pantalla antes del cambio: celda de 44px con el token en 24.
+    //
+    // POR QUE SIGUE SIENDO `rowHeights` Y NO `autoRowSize`. En Handsontable el
+    // valor de `rowHeights` se aplica como `height` sobre el `tr`, y en layout de
+    // tabla `height` es un MINIMO, no un maximo: la fila crece si el contenido lo
+    // pide. Esta medido en esta misma pantalla con el 45 puesto — los altos reales
+    // de las 27 primeras filas eran 44, 67, 87, 108, 110, 131, 151, 154, 173, 219 y
+    // 241px, y cero celdas con texto cortado. Es decir: el mecanismo que hace crecer
+    // la fila ya funcionaba; lo unico equivocado era el suelo. Bajar el suelo al del
+    // contrato aprieta las filas de una linea (las mas numerosas) y deja intactas
+    // las que envuelven, que es exactamente lo que se pedia. Encender `autoRowSize`
+    // habria cambiado el mecanismo entero —y con `renderAllRows: false` obliga a
+    // medir fuera de pantalla— para arreglar algo que no estaba roto.
+    //
+    // El token se lee en tiempo de ejecucion porque Handsontable exige un numero y
+    // el contrato lo declara en rem: se resuelve midiendo un sonda con
+    // `height: var(--ds-table-row-h)`, asi cualquier unidad futura sigue sirviendo.
+    var RESPALDO_ALTO_FILA_PX = 24; // el valor del contrato hoy, por si el token no resuelve
+    var altoFilaContrato = RESPALDO_ALTO_FILA_PX;
+    var sondaAltoFila = document.createElement('div');
+    sondaAltoFila.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;padding:0;border:0;height:var(--ds-table-row-h)';
+    container.appendChild(sondaAltoFila);
+    var altoMedido = Math.round(sondaAltoFila.getBoundingClientRect().height);
+    container.removeChild(sondaAltoFila);
+    if (altoMedido > 0) {
+      altoFilaContrato = altoMedido;
+    }
+
     hot = new Handsontable(container, {
       data: data,
       rowHeaders: false,
@@ -3152,7 +3252,18 @@
       hiddenColumns: getResponsiveHiddenColumnsConfig(),
       licenseKey: 'non-commercial-and-evaluation',
       language: 'es-MX',
-      stretchH: 'none',
+      // `last` y no `none` (2026-08-20, defecto reportado por Felipe: «los border
+      // radius de las esquinas de las tablas no son homogeneos en todas sus
+      // direcciones»). Medido antes de tocar: los cuatro radios del contenedor
+      // SI eran iguales (16px); lo que fallaba es que la tabla no llenaba su
+      // contenedor a lo ancho — en Programa General 1074px dentro de 1100 —, y
+      // como la cabecera lleva fondo propio, el sobrante dejaba un escalon en la
+      // esquina superior derecha mientras abajo el contenido si llegaba al
+      // borde. El ojo lo lee como radios distintos segun la direccion.
+      // `last` hace que la ULTIMA columna absorba el sobrante y respeta los
+      // anchos medidos a mano de las demas, que estan documentados con su
+      // medicion en los arrays de arriba. Si la tabla ya desborda, no hace nada.
+      stretchH: 'last',
       autoColumnSize: false,
       manualColumnResize: false,
       manualRowResize: true,
@@ -3182,7 +3293,8 @@
         return Math.max(w, 20);
       },
       autoRowSize: false,
-      rowHeights: 45,
+      // Suelo, no techo: ver `resolverAltoFilaContrato()` arriba.
+      rowHeights: altoFilaContrato,
       renderAllRows: false,
       viewportRowRenderingOffset: 20,
       viewportColumnRenderingOffset: 10,

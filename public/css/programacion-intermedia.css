@@ -121,6 +121,26 @@ html.aia-theme-dark .pi-page {
     --pi-danger-border: color-mix(in srgb, var(--ds-color-state-critical-bg) 44%, var(--ds-active-border) 56%);
 }
 
+/* RESPIRO ENTRE LA BARRA SUPERIOR Y EL CAJON DE ACCIONES (Ola 4, 2026-08-20)
+   Felipe pidio en PI el mismo hueco que le gusta en Programa General. No se
+   inventa un valor: se toma la MISMA fuente que lo produce alli, documentada en
+   public/css/programa-general.css — el padding superior de la pagina canonica,
+   `padding: var(--ds-page-padding)` sobre `main.aia-page`
+   (public/css/design-system/core.css), token `clamp(1rem, 2vw, 1.5rem)`, que a
+   1180px de ancho resuelve 23.6px.
+   Medido el 2026-08-20 a 1180x820 dark, antes de tocar:
+     PG  #encabezado abajo y=40, .aia-toolbar arriba y=64  -> hueco 24px
+     PI  #encabezado abajo y=40, .aia-toolbar arriba y=40  -> hueco 0px
+   La diferencia no esta en la toolbar (su margin-top computa 0px en ambas): esta
+   en que el `main` de PG lleva la clase `.aia-page` y el de PI no, y esa vista es
+   PHP que este frente no toca. Por eso se aporta aqui solo el padding SUPERIOR
+   con el mismo token, y no se copia el resto de `.aia-page`: los laterales ya los
+   pone `--hot-gutter` en la regla de abajo, y duplicarlos moveria la tabla.
+   Va dentro de `@layer module` como el resto de la hoja. */
+.pi-page > main.hot-full-bleed {
+    padding-top: var(--ds-page-padding);
+}
+
 /* programacion_intermedia.view.php style block 1 */
 .hot-full-bleed {
     --hot-gutter: 8px;
@@ -210,8 +230,12 @@ html.aia-theme-dark .pi-page {
     line-height: inherit;
 }
 
+/* Ola 3 (2026-08-20): estaba en `em` sobre la celda, asi que el resultado real
+   era ~0.55rem (8,9px), muy por debajo del minimo de 11px de PRODUCT.md y fuera
+   de la rampa densa de DESIGN.md §3. La linea secundaria de una celda es meta,
+   asi que baja un solo paso desde la celda: dense-meta en unidad absoluta. */
 .pi-page #hot-container .handsontable td small {
-    font-size: 0.74em !important;
+    font-size: 0.70rem !important;
 }
 
 .pi-page #hot-container td.ops-state-td {
@@ -220,7 +244,7 @@ html.aia-theme-dark .pi-page {
     vertical-align: middle;
 }
 
-.pi-page .ops-state-zoom {
+.pi-page .ops-state-zoom:not([data-aia-hue]) {
     display: grid;
     gap: 4px;
     width: 100%;
@@ -232,6 +256,31 @@ html.aia-theme-dark .pi-page {
     font: inherit;
     text-align: left;
     cursor: zoom-in;
+}
+
+/* El chip-boton (ops-state-zoom con matiz) lo pinta la primitiva del chip;
+   aqui solo el piso tactil de la excepcion de densidad y el ancho contenido. */
+.pi-page .ops-state-zoom[data-aia-hue] {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    min-height: var(--ds-target-min);
+    vertical-align: middle;
+    cursor: zoom-in;
+}
+
+/* La etiqueta del chip ya NO se recorta (decision de Felipe, 2026-08-20).
+   Aqui vivia un `overflow:hidden` + `text-overflow:ellipsis` + `white-space:
+   nowrap`: recorte silencioso, porque el usuario no se entera de que le falta
+   texto. Se retira porque el chip pinta el nombre CORTO oficial del contrato
+   (`displayShort`), que si cabe: presupuesto 114px y el corto mas ancho mide
+   97px medidos con la fuente real. El nombre completo no se pierde — sigue en
+   el tooltip, el aria-label y el drawer.
+   Lo vigila tests/browser/state-label-budget.mjs. */
+.pi-page .ops-state-chip > .ops-chip-label {
+    display: block;
+    max-width: 100%;
+    word-break: normal;
 }
 
 .pi-page .ops-state-zoom:focus-visible {
@@ -284,7 +333,10 @@ html.aia-theme-dark .pi-page {
     border-radius: 999px;
     background: var(--pi-due-bg);
     color: var(--pi-due-text);
-    font-size: 0.66rem;
+    /* Ola 3 (2026-08-20): 0.66rem son 10,56px, por debajo del piso de 11px de
+       PRODUCT.md y fuera de la rampa. El distintivo cuelga de una CABECERA de
+       tabla, asi que toma dense-meta y queda un paso por debajo del rotulo. */
+    font-size: 0.70rem;
     font-weight: 800;
     line-height: 1.1;
     vertical-align: middle;
@@ -329,7 +381,7 @@ html.aia-theme-dark .pi-page {
     background: color-mix(in srgb, var(--ds-active-surface-raised) 88%, transparent);
     color: inherit;
     font-weight: 800;
-    font-size: 0.7rem;
+    font-size: 0.70rem;
     line-height: 1.1;
     white-space: normal;
     overflow: visible;
@@ -875,7 +927,9 @@ html.aia-theme-dark .pi-page {
     position: sticky;
     top: 0;
     z-index: 1;
-    font-size: 0.74rem;
+    /* Ola 3 (2026-08-20): 0.74rem no es un paso de la rampa densa; la cabecera
+       baja al vecino dense-label (0.72rem). Es una cabecera, no un titulo. */
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.02em;
     color: var(--ds-active-text-secondary);
@@ -888,10 +942,17 @@ html.aia-theme-dark .pi-page {
     color: var(--ds-active-text-primary);
 }
 
+/* El nombre de actividad ya no se recorta en JS por conteo de caracteres (se retiro el
+   substring(0, 157) de hot.js): el texto llega entero y la celda lo envuelve. El tope de ancho
+   sigue aqui para que el modal no se descuadre, pero el corte lo decide el CSS, no la cadena.
+   `anywhere` partia palabras a mitad, que es el mismo dano en otra capa; la receta del frente es
+   envolver ENTRE palabras y no inventar guiones. */
 .pi-shared-activity-cell {
     min-width: 260px;
     max-width: 420px;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
 }
 
 .pi-shared-delta {
@@ -901,7 +962,9 @@ html.aia-theme-dark .pi-page {
     min-width: 70px;
     padding: 2px 6px;
     border-radius: 999px;
-    font-size: 0.74rem;
+    /* Ola 3 (2026-08-20): es un distintivo dentro de una celda de
+       .pi-shared-table; 0.74rem no es paso de rampa, dense-label si. */
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.01em;
 }
@@ -1390,13 +1453,16 @@ border: 1px solid var(--pi-due-border);
     color: var(--ds-active-text-primary);
 }
 
-/* Contenedor de la toolbar: handsontable-module.css (capa vendor) lo pinta
-   #f8f9fa; aquí se funde con el fondo de página del tema activo. */
-.pi-page .header-actions,
-.pi-page .action-bar {
-    background: var(--ds-active-bg-page);
-    border-bottom-color: var(--ds-active-border);
-}
+/* Aqui vivia una regla que pintaba la toolbar con el FONDO DE PAGINA para tapar
+   el #f8f9fa que le mete handsontable-module.css (capa vendor). Retirada el
+   2026-08-20: era la razon de que la barra de PI se viera suelta mientras la de
+   PG iba enmarcada. La vista usa ahora `.aia-toolbar`, que pinta superficie,
+   borde y radio de panel — y eso tapa al vendor igual de bien.
+   Se retira ENTERA y no se acota con `:not(.aia-toolbar)`: ese respaldo es
+   exactamente lo que el gate `duplicate-canonical-primitive` cuenta como
+   duplicar la primitiva, y lo midio (102 -> 103 al intentarlo). Un modulo que
+   repite la receta del sistema «por si acaso» es la deriva que el contrato
+   persigue. */
 
 .pi-page #loading {
     background: color-mix(in srgb, var(--ds-active-bg-page) 82%, transparent);
@@ -1658,4 +1724,19 @@ html.aia-theme-dark body.pi-page .pi-legend .pdc-legend-item.is-empty {
     display: none !important;
 }
 }
+}
+
+/* Target tactil bajo 1180 (audit 2026-08-20, P2): desde el piloto F2a movil y
+   tablet estan abiertos y ahi rige el minimo de 44px, no la excepcion densa de
+   escritorio. El chip no crece visualmente: crece su area de toque.
+   VA DENTRO DE @layer module: sin capa, la hoja entera se entrega unlayered y
+   gana a todo el design system (lo caza el guard unlayered-delivery). */
+@layer module {
+    @media (max-width: 1179px) {
+        .pi-page #hot-container .ops-state-zoom[data-aia-hue] {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+    }
 }

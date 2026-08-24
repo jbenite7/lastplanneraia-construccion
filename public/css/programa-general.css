@@ -168,6 +168,30 @@ html.aia-theme-dark .pg-page {
   color: var(--ds-active-text-primary);
 }
 
+/* ------------------------------------------------------------------------
+   RESPIRO ENTRE LA BARRA SUPERIOR Y EL CAJON DE ACCIONES  (Ola 4, 2026-08-20)
+   Documentado a peticion de Felipe: en PG le gusta como queda y PI/PS deben
+   replicarlo sin adivinar. AQUI NO SE CAMBIA NADA; esto solo dice de donde sale.
+
+   Medido en el navegador el 2026-08-20, viewport 1180x820, dark, /programa-general:
+     #encabezado          -> borde inferior en y = 40
+     .aia-toolbar.pg-toolbar -> borde superior en y = 64
+     hueco real           = 24px
+
+   DE DONDE SALE, exactamente UNA fuente:
+     selector : main.aia-page   (aqui: <main class="aia-page hot-full-bleed" id="contenido">)
+     regla    : padding: var(--ds-page-padding)   -- public/css/design-system/core.css:118
+     token    : --ds-page-padding: clamp(1rem, 2vw, 1.5rem)
+     resuelto : 23.6px a 1180px de ancho (2vw), o sea el hueco de 24px medido.
+
+   LO QUE **NO** LO PRODUCE, para que nadie lo copie mal:
+     - .aia-toolbar / .pg-toolbar no aportan nada: su margin-top computa 0px.
+     - .pg-direction-row no interviene: en esta pantalla ni siquiera se renderiza.
+   Es decir, el respiro es el padding superior de la pagina canonica, no un margen
+   del cajon. Para replicarlo en PI y PS basta con que su contenedor de pagina sea
+   `.aia-page` (o herede `--ds-page-padding`) y que su toolbar no lo anule con un
+   margin-top negativo ni con un padding-block-start propio.
+   ------------------------------------------------------------------------ */
 .pg-page .hot-full-bleed {
   --hot-gutter: var(--ds-space-2);
   width: 100%;
@@ -201,10 +225,9 @@ html.aia-theme-dark .pg-page {
   flex-direction: column;
   align-items: stretch;
   gap: var(--ds-space-2);
-  background: var(--ds-active-surface);
-  border: var(--ds-border-width) solid var(--ds-active-border);
-  border-radius: var(--ds-radius-panel);
-  color: var(--ds-active-text-primary);
+  /* Superficie, borde, radio y color los da ya `.aia-toolbar` (core): repetirlos
+     aqui era la duplicacion que hacia que PG fuera el unico modulo con marco.
+     Queda solo lo propio de PG: dos filas y su respiro. */
   padding: var(--ds-space-2) var(--ds-space-3);
 }
 

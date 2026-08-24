@@ -96,49 +96,51 @@
 
      Van DESPUES de las de nivel a proposito: con `:where()` las dos familias
      pesan 0,0,0, asi que dentro de la capa decide el orden de fuente y el matiz
-     -que es la identidad del estado- gana el fondo. El nivel sigue vivo en el
+     -que es la identidad del estado- gana el fondo. Sincronizado el
+     2026-08-20 con el replanteo B: el chip pinta SOLIDO (--ds-state-solid-*)
+     con texto oscuro de su familia, igual que la primitiva. El nivel sigue vivo en el
      acento y en el par severity/urgency que el modulo declara.
 
      Cuando el puente se retire, la copia de `states-feedback.css` es la que
      queda; esta se va con el. */
   :where([data-aia-hue="neutral"]) {
-    background: var(--ds-state-tint-neutral);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-neutral);
+    color: var(--ds-state-solid-neutral-text);
   }
 
   :where([data-aia-hue="teal"]) {
-    background: var(--ds-state-tint-teal);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-teal);
+    color: var(--ds-state-solid-teal-text);
   }
 
   :where([data-aia-hue="blue"]) {
-    background: var(--ds-state-tint-blue);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-blue);
+    color: var(--ds-state-solid-blue-text);
   }
 
   :where([data-aia-hue="violet"]) {
-    background: var(--ds-state-tint-violet);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-violet);
+    color: var(--ds-state-solid-violet-text);
   }
 
   :where([data-aia-hue="green"]) {
-    background: var(--ds-state-tint-green);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-green);
+    color: var(--ds-state-solid-green-text);
   }
 
   :where([data-aia-hue="amber"]) {
-    background: var(--ds-state-tint-amber);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-amber);
+    color: var(--ds-state-solid-amber-text);
   }
 
   :where([data-aia-hue="orange"]) {
-    background: var(--ds-state-tint-orange);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-orange);
+    color: var(--ds-state-solid-orange-text);
   }
 
   :where([data-aia-hue="red"]) {
-    background: var(--ds-state-tint-red);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-red);
+    color: var(--ds-state-solid-red-text);
   }
 
   :where(.aia-pagination a[aria-current="page"]) {

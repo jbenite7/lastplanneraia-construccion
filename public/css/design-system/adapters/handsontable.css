@@ -68,6 +68,12 @@
      por debajo, ni aquí ni en un override local del módulo. */
   :where(.handsontable td) {
     font-size: var(--ds-table-cell-font-size);
+    /* El interlineado tambien es densidad, y hasta hoy nadie lo declaraba: se
+       heredaba en 21px sobre una fuente de 13px (ratio 1,6, de prosa). En una
+       tabla operativa el texto envuelve, y ese ratio inflaba las filas — en el
+       programa de Da Porto habia filas reales de 151 y 173px. El tamano de letra
+       NO se toca (esta en contrato); lo que se corrige es el aire entre lineas. */
+    line-height: var(--ds-table-cell-line-h);
   }
 
   :where(.handsontable th, .handsontable td) {

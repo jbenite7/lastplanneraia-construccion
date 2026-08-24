@@ -101,66 +101,58 @@
      tests/design-system/state-tint-ladder.test.mjs comprueba que esta traduccion
      no se desvie de el.
 
-     El texto SI se declara: la regla de nivel lo fija en `--ds-color-state-*-text`,
-     un tono oscuro pensado para el pastel claro del nivel, y sobre estos tintes
-     -que son oscuros- queda ilegible. Los pasos de la escalera estan calculados
-     contra `--ds-active-text-primary`, asi que el par viaja junto. */
+     REPLANTEO 2026-08-20 (direccion B, decision de Felipe): el chip pinta
+     SOLIDO. Los tintes oscuros del chip se lavaban iguales en obra y proyector
+     y la identidad se perdia; ahora el chip es el portador fuerte de identidad
+     (--ds-state-solid-*, saturado, con texto oscuro de su misma familia,
+     auditado WCAG AA + manual AIA) y el fondo de fila baja a --ds-state-row-*.
+     El par fondo/texto viaja junto por familia; el guard
+     state-solid-contract.test.mjs calcula los ratios contra el contrato. */
   [data-aia-hue="neutral"][data-aia-severity] {
-    background: var(--ds-state-tint-neutral);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-neutral);
+    color: var(--ds-state-solid-neutral-text);
   }
 
   [data-aia-hue="teal"][data-aia-severity] {
-    background: var(--ds-state-tint-teal);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-teal);
+    color: var(--ds-state-solid-teal-text);
   }
 
   [data-aia-hue="blue"][data-aia-severity] {
-    background: var(--ds-state-tint-blue);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-blue);
+    color: var(--ds-state-solid-blue-text);
   }
 
   [data-aia-hue="violet"][data-aia-severity] {
-    background: var(--ds-state-tint-violet);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-violet);
+    color: var(--ds-state-solid-violet-text);
   }
 
   [data-aia-hue="green"][data-aia-severity] {
-    background: var(--ds-state-tint-green);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-green);
+    color: var(--ds-state-solid-green-text);
   }
 
   [data-aia-hue="amber"][data-aia-severity] {
-    background: var(--ds-state-tint-amber);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-amber);
+    color: var(--ds-state-solid-amber-text);
   }
 
   [data-aia-hue="orange"][data-aia-severity] {
-    background: var(--ds-state-tint-orange);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-orange);
+    color: var(--ds-state-solid-orange-text);
   }
 
   [data-aia-hue="red"][data-aia-severity] {
-    background: var(--ds-state-tint-red);
-    color: var(--ds-active-text-primary);
+    background: var(--ds-state-solid-red);
+    color: var(--ds-state-solid-red-text);
   }
 
-  /* La excepcion, decidida el 2026-08-11: el matiz desempata en todos los
-     niveles MENOS en el critico. Va aqui, pegada a las reglas que gobierna,
-     porque a partir de ahora el matiz gana *salvo* en un caso y quien lea el
-     selector tiene que ver la excepcion sin ir a buscarla.
-
-     Por que: el nivel critico es el unico que no admite ambiguedad. Con el
-     matiz ganando siempre, un estado `high:now` con matiz naranja se leia como
-     una advertencia — mismo tinte que `attention`—, y eso convierte el aviso
-     mas grave en uno del monton. Los otros tres niveles no tienen ese problema:
-     ahi el matiz desempata sin que nadie confunda la urgencia.
-
-     Pesa 0,3,0 (tres atributos) para ganarle a las reglas de matiz de arriba,
-     que pesan 0,2,0. El matiz sigue vivo en lo critico: distingue por el acento
-     y por el texto, no por el fondo. */
-  [data-aia-hue][data-aia-severity="high"][data-aia-urgency="now"] {
-    background: var(--ds-color-state-critical-bg);
-    color: var(--ds-color-state-critical-text);
-  }
+  /* La excepcion critica del 2026-08-11 ([data-aia-hue][high][now] pintando
+     critical-bg) SE RETIRO el 2026-08-20 con el replanteo B. Su razon de ser
+     era que el matiz tapaba el nivel cuando el chip cargaba los dos ejes; hoy
+     el chip solo carga identidad y la gravedad vive completa en el filete
+     (severity-rail.css), que ya existe en los tres modulos. Reintroducirla
+     volveria a poner dos ejes en un canal: el guard state-tint-ladder se pone
+     rojo si reaparece. Esto resuelve la D-2 de DECISIONES_PENDIENTES. */
 }
