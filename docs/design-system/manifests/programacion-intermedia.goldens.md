@@ -84,3 +84,66 @@ el resto de la pantalla—. Es la reproducción exacta del fallo original.
 
 Eso es lo que cierra el argumento: si sin la llamada hubiera seguido en verde, la semana la estaría
 fijando **otra cosa** y este arreglo no sería la causa de nada. Con la llamada puesta, `2 passed`.
+
+## Recaptura del 2026-08-24 — frente `habilitacion-en-una-columna`
+
+- **Firmas nuevas:**
+  - `programacion-intermedia-dark-1180x820.png` → `90b500fe0e9b532cde22af3a4ebe8e536127a7d2b52e44b497406b3fdf4fd719`
+  - `programacion-intermedia-dark-1440x900.png` → `2739424d804c9dc5a9325c301a69bf5799ced3e2547c7824917d39e6c7ed8800`
+- **Firmas que sustituyen:** `e679df0c…` y `74843929…`, tal como estaban en `programacion-intermedia.json`
+  antes de este cambio. Este documento no tenía registrada una recaptura intermedia entre el
+  2026-08-11 y hoy — el sha real de `programacion-intermedia.json` no coincidía con la firma
+  `21f4be3d…` de la sección anterior. Es una deuda de constancia preexistente, ajena a este frente,
+  que se deja anotada aquí en vez de corregida en silencio.
+- **Sobre qué sha se recapturó:** `09dd6443` (base del plan), tras aplicar los 15 commits del frente
+  `habilitacion-en-una-columna` (spec: `docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design.md`).
+- **Quién lo aprobó:** Felipe, viendo las capturas de la tabla, el globo y la tarjeta móvil enviadas
+  como archivos en el chat, y confirmando explícitamente («Si») antes de la regeneración.
+
+### Qué cambió
+
+Es un rediseño deliberado, no una deriva accidental: las siete columnas de restricción (Diseños y
+Especificaciones, Procedimiento Constructivo, Modelación BIM, Materiales, Mano de Obra, Equipos y
+Herramienta, Actividad Predecesora) y la columna `% Liberación` desaparecen de la tabla. En su lugar
+queda una sola columna «Habilitación» de 130 px con hasta siete cuadritos por fila (relleno + visto +
+tachado para N/A, sin depender solo del color), con embudo de filtro propio en la cabecera. El
+`% Liberación` se muda al globo que se abre al hacer clic en la celda. Verificado con la sonda de
+ancho: la tabla pasa de pedir 1490 px a caber en 1100 sin scroll horizontal.
+
+### Por qué no hace falta una mutación de golden esta vez
+
+La mutación deliberada («¿el golden detecta un cambio real?») ya se hizo en la recaptura del
+2026-08-11 y sigue siendo válida como comprobación del mecanismo: nada de esta obra tocó
+`fijarSemanaDelEscenario` ni la forma en que el test controla la semana. Lo que cambió es la
+superficie que el golden fotografía, no la fontanería que lo hace estable.
+
+## Recaptura del 2026-08-24 (segunda del día) — gate de publicación, tras integrar `origin/main`
+
+- **Firmas nuevas:**
+  - `programacion-intermedia-dark-1180x820.png` → `e841b81e92072c263bf14cbccf842f7e132324939a8e6e3496536ab6500f3016`
+  - `programacion-intermedia-dark-1440x900.png` → `02c4ab77b56f7fec1d76e2b39379d82928153e577c255c66554dd7254d25484d`
+- **Firmas que sustituyen:** `90b500fe…` y `2739424d…`, las de la recaptura de arriba — vigentes
+  menos de una hora.
+- **Sobre qué sha se recapturó:** el merge de `origin/main` (53 commits) hecho para pasar el gate de
+  `scripts/publicar.sh` (§AGENTS.md «Publicación», paso 4). El gate exige integrar antes de publicar
+  y **re-verificar después de integrar, no antes** — es exactamente ese paso el que atrapó esto.
+- **Quién lo aprobó:** Felipe, viendo la captura resultante y el diff resaltado en rojo (enviados
+  como archivos en el chat), confirmando explícitamente («Aprobado»).
+
+### Qué cambió, y por qué no es de este frente
+
+El merge trajo `56a53b49` («feat(tablas): cifras tabulares y cabecera navegable por teclado en
+Handsontable»), publicado por otra sesión el mismo día. Añade
+`font-variant-numeric: tabular-nums` a toda celda de Handsontable
+(`public/css/design-system/adapters/handsontable.css:95`), que corre ligeramente cada dígito de la
+tabla — Id, porcentajes, contadores de chips — a su ancho tabular. El diff (2318 px a 1180×820, 3821
+a 1440×900, ambos sobre el tope de `maxDiffPixels: 100`) resalta exactamente esas cifras y nada de
+layout: contenido idéntico al aprobado hace una hora, solo con la fuente numérica correcta. Ninguna
+línea de `habilitacion-en-una-columna` toca `handsontable.css`.
+
+### La lección para la próxima sesión que integre sobre este golden
+
+Un golden recién aprobado no sobrevive gratis a un `git merge origin/main`: cualquier frente ajeno
+que toque la apariencia de Handsontable —aunque sea una línea de CSS global— lo invalida. El gate de
+publicación lo atrapa porque re-verifica **después** de integrar, no antes; saltarse ese orden es
+justo el fallo que `AGENTS.md` documenta haber medido dos veces el 2026-08-10.
