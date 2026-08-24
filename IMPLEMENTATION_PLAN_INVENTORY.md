@@ -47,6 +47,7 @@ _113 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archiv
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Control Tower · Fase 0 — Higiene de datos | [[docs/superpowers/specs/2026-08-20-replanteo-control-tower-design|spec]] · [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos|plan]] | propuesto |
 | Apply del recálculo de estados — plan de ejecución | [[docs/superpowers/plans/2026-08-19-apply-recalculo-estados|plan]] | — |
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
 | DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
