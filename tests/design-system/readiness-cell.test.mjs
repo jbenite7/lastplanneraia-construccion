@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { leerRestriccion, repartirCuadritos, MAX_CUADRITOS_VISIBLES }
   from '../../public/js/design-system/readiness-cell.js';
+
+const read = (file) => readFile(new URL(`../../${file}`, import.meta.url), 'utf8');
 
 test('N/A no cuenta y no se lee como liberada', () => {
   const r = leerRestriccion('N/A', 1);
@@ -43,4 +46,17 @@ test('con mas de siete se muestran seis y el resto se cuenta', () => {
 
 test('el tope declarado es siete, no ocho', () => {
   assert.equal(MAX_CUADRITOS_VISIBLES, 7);
+});
+
+test('la primitiva del cuadrito vive en una capa y sin hex', async () => {
+  const css = await read('public/css/design-system/components/readiness-squares.css');
+  assert.match(css, /@layer\s+components/, 'la hoja no declara su capa');
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, 'la hoja trae hex literales');
+});
+
+test('el cuadrito lleva tres senales y no solo el color', async () => {
+  const css = await read('public/css/design-system/components/readiness-squares.css');
+  assert.match(css, /\.aia-readiness__fill/, 'falta el relleno');
+  assert.match(css, /\.aia-readiness__check/, 'falta la marca de visto');
+  assert.match(css, /\.aia-readiness__box--na/, 'falta el estado no aplica');
 });
