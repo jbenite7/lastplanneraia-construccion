@@ -1,9 +1,21 @@
 name: Design System
 
+# P2 Tarea 5 (G4, 2026-08-24): `paths-ignore` excluye lo que ningun gate de este workflow lee —
+# `memoria/**` (wiki generada, sin efecto en codigo ni build) y los `.md` de RAIZ (README, TASKS,
+# CHANGELOG, etc.). El patron `*.md` sin `**` en `paths-ignore` de Actions solo matchea archivos en
+# la raiz del repo, no subcarpetas, asi que `docs/**/*.md` y `goals/**/*.md` NO quedan excluidos.
+# `docs/design-system/` es contractual y NO se toca aqui a proposito: sus contratos son lo que
+# `design-system-static` verifica.
 on:
   pull_request:
+    paths-ignore:
+      - 'memoria/**'
+      - '*.md'
   push:
     branches: [main]
+    paths-ignore:
+      - 'memoria/**'
+      - '*.md'
   workflow_dispatch:
 
 permissions:
