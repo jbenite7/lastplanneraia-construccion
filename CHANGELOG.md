@@ -28,6 +28,19 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### El guard de laboratorio se alinea con el replanteo B (2026-08-24)
+
+#### Fixed
+- `tests/browser/design-system-lab.mjs` exigía que un estado crítico con matiz conservara el fondo
+  crítico. Esa excepción se retiró del CSS el 2026-08-20 con el replanteo B (`b7d5dd18`): el chip
+  pinta sólido por familia y la gravedad vive completa en el filete. El test se había quedado en su
+  versión del 2026-08-11 y llevaba **cuatro días en rojo sin que se viera**, porque era el paso 24
+  del job y el check de presupuesto, en el 23, lo dejaba `skipped` — el mismo patrón que había
+  tapado el fallo de `general_flags`. Lo destapó la regeneración de la baseline a 0.4.0.
+- Al caer la excepción, el nivel crítico deja de ser un caso aparte y entra en la regla general del
+  eje de matiz: el test **comprueba más que antes**, porque ahora también exige que dos estados
+  críticos de matiz distinto no compartan fondo.
+
 ### El presupuesto de runtime pasa a la generación 0.4.0 y se mide donde el gate lo verifica (2026-08-24)
 
 #### Changed

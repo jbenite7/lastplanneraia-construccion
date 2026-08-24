@@ -270,40 +270,39 @@ test('severity and urgency blocks keep distinct semantic backgrounds', async ({ 
   // lleva matiz: así el test compara contra lo que el sistema declara crítico
   // en vez de contra un color escrito a mano aquí, que se quedaría atrás en
   // cuanto el token cambie.
-  const criticalBackground = await family
-    .locator('.ds-state-semantics__level[data-aia-severity="high"][data-aia-urgency="now"]')
-    .evaluate((element) => getComputedStyle(element).backgroundColor);
   // Esta aserción exigía que dos estados con la misma clave `severity:urgency`
   // tuvieran el MISMO fondo, y contradecía al eje de matiz: `data-aia-hue`
   // existe justamente para que dos estados del mismo nivel se distingan
-  // (states-feedback.css:88-100 lo explica con el caso de /pdc). Se actualiza a
-  // la regla vigente, y la nueva comprueba MÁS que la vieja, no menos:
-  //   (1) dos estados del mismo nivel con matiz distinto NO comparten fondo
-  //       —lo contrario de lo que se pedía antes, y es el propósito del eje—;
-  //   (2) ningún estado crítico pierde su fondo crítico por llevar matiz, que
-  //       es la excepción decidida el 2026-08-11 y lo único que no admite
-  //       ambigüedad.
-  // La vieja no comprobaba (2) en absoluto.
+  // (states-feedback.css:88-100 lo explica con el caso de /pdc). Comprueba que
+  // dos estados del mismo nivel con matiz distinto NO comparten fondo, que es
+  // el propósito del eje.
+  //
+  // ACTUALIZADO 2026-08-24: hasta hoy el nivel crítico quedaba EXENTO de esa
+  // regla y en su lugar se le exigía conservar el fondo crítico pese al matiz
+  // —la excepción decidida el 2026-08-11—. Esa excepción **se retiró del CSS el
+  // 2026-08-20** con el replanteo B (`b7d5dd18`, decisión de Felipe): el chip
+  // pinta sólido por familia y la gravedad vive completa en el filete
+  // (`severity-rail.css`), de modo que `states-feedback.css:151-158` declara la
+  // retirada y delega en `state-tint-ladder` el guard contra su reaparición.
+  // El test se quedó en su versión del 2026-08-11 y llevaba cuatro días en rojo
+  // **sin que se viera**: es el paso 24 del job y el check de presupuesto, en el
+  // 23, lo dejaba `skipped`. Lo destapó la regeneración de la baseline a 0.4.0.
+  //
+  // Al caer la excepción, el crítico deja de ser un caso aparte y entra en la
+  // regla general — así que esto comprueba MÁS que antes, no menos: ahora
+  // también exige que dos estados críticos de matiz distinto se distingan.
   const porClave = new Map();
   for (const { key, hue, background } of mappedColors) {
     if (!porClave.has(key)) porClave.set(key, []);
     porClave.get(key).push({ hue, background });
   }
   for (const [key, estados] of porClave) {
-    // El nivel crítico queda fuera de (1) a propósito: es la excepción del
-    // 2026-08-11, y ahí el fondo es uniforme por diseño. Su comprobación es (2),
-    // abajo, que es más estricta — no admite ni una desviación.
-    if (key === 'high:now') continue;
     const conMatiz = estados.filter(({ hue }) => hue);
     const matices = new Set(conMatiz.map(({ hue }) => hue));
     if (matices.size > 1) {
       const fondos = new Set(conMatiz.map(({ background }) => background));
       expect(fondos.size, `«${key}»: ${matices.size} matices distintos comparten fondo`).toBeGreaterThan(1);
     }
-  }
-  const criticos = mappedColors.filter(({ key }) => key === 'high:now');
-  for (const { hue, background } of criticos) {
-    expect(background, `un estado crítico con matiz «${hue}» perdió su fondo crítico`).toBe(criticalBackground);
   }
   expect(new Set(mappedColors.map(({ background }) => background)).size).toBeGreaterThanOrEqual(3);
 });
