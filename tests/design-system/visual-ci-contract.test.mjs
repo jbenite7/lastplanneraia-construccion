@@ -82,6 +82,14 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
   assert.match(fixtureImage, /COPY database\/migrations\/20260630_global_tables_contract\.sql \/docker-entrypoint-initdb\.d\/001-global-schema\.sql/);
   assert.match(fixtureImage, /COPY database\/patches\/001_create_new_tables\.sql \/docker-entrypoint-initdb\.d\/002-rbac-schema\.sql/);
   assert.match(fixtureImage, /COPY database\/fixtures\/design-system-ci\.sql \/docker-entrypoint-initdb\.d\/003-design-system-ci\.sql/);
+  // Tercera de las tres listas de SQL de CI, y la unica que se conserva duplicada a proposito.
+  // Las otras dos: la lista blanca de scripts/design-system-ci-preflight.mjs (el guardarrail
+  // fail-closed) y la de tests/design-system/ci-preflight.test.mjs, que desde el 2026-08-24 se
+  // deriva de aquella. Esta mira el Dockerfile real por su cuenta, sin consultar a la lista
+  // blanca, y por eso lo caza si las dos se desalinean.
+  //
+  // Al sembrar `general_flags` el 2026-08-24 el gate rechazo TRES veces seguidas, una por lista.
+  // Eso es la red funcionando, no friccion que haya que quitar.
   const expectedInitOrder = [
     '001-global-schema.sql',
     '002-rbac-schema.sql',

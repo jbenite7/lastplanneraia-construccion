@@ -6,6 +6,7 @@ import {
   assertDbInitDockerfile,
   assertSafeCiComposeConfig,
   assertWorktreeProvenance,
+  EXPECTED_INIT_COPIES as INIT_COPIES,
 } from '../../scripts/design-system-ci-preflight.mjs';
 
 const SAFE_ENV = {
@@ -24,44 +25,15 @@ const SAFE_ENV = {
 
 const WORKTREE_ROOT = process.cwd();
 
-const INIT_COPIES = [
-  ['database/migrations/20260630_global_tables_contract.sql', '001-global-schema.sql'],
-  ['database/patches/001_create_new_tables.sql', '002-rbac-schema.sql'],
-  ['database/fixtures/design-system-ci.sql', '003-design-system-ci.sql'],
-  ['database/migrations/20260702_semi_auto_global_tables.sql', '004-semi-auto-global.sql'],
-  ['database/migrations/20260704_semi_auto_assistant_tables.sql', '005-semi-auto-assistant.sql'],
-  ['database/migrations/20260703_contratos_slot_quantities_traceability.sql', '006-contract-quantities.sql'],
-  ['database/migrations/20260705_actividad_programa_fuentes.sql', '007-activity-sources.sql'],
-  ['database/migrations/002_bi_forecast_tables.sql', '008-bi-forecast.sql'],
-  ['database/migrations/003_bi_action_queue.sql', '009-bi-action-queue.sql'],
-  ['database/patches/20260612_pdc_familias_maestro.sql', '010-family-catalog-base.sql'],
-  ['database/patches/20260701_da_porto_feedback_semi_auto.sql', '011-family-catalog-feedback.sql'],
-  ['database/migrations/20260706_family_catalog_refactor.sql', '012-family-catalog-refactor.sql'],
-  ['database/migrations/20260707_da_porto_jmc_family_patterns.sql', '013-family-patterns.sql'],
-  ['database/migrations/20260708_contract_defaults_feedback.sql', '014-contract-defaults.sql'],
-  ['database/migrations/20260709_inactivate_alias_contractual_families.sql', '015-contractual-aliases.sql'],
-  ['database/migrations/20260710_equipment_families_require_review.sql', '016-equipment-review.sql'],
-  ['database/migrations/20260711_apply_human_family_decisions.sql', '017-human-decisions.sql'],
-  ['database/fixtures/design-system-ci-normalize.sql', '018-design-system-ci-normalize.sql'],
-  ['database/fixtures/design-system-ci-pdc-v2.sql', '019-pdc-v2-schema.sql'],
-  // Vistas BI. Se listan una a una y NO se generan con un contador: el 2026-08-04 el retiro del
-  // PDC v1 se llevo `004_bi_pdc_general.sql`, y la numeracion dejo de ser contigua —queda 001-003 y
-  // 005-010, con destinos 101-103 y 105-110—. Un `Array.from({length})` con `index + 1` no puede
-  // expresar ese hueco, y fue justo lo que rompio este test al podar la lista de produccion.
-  ['database/bi/001_bi_pg_semana.sql', '101-bi-view.sql'],
-  ['database/bi/002_bi_pi_restricciones.sql', '102-bi-view.sql'],
-  ['database/bi/003_bi_ps_compromisos.sql', '103-bi-view.sql'],
-  ['database/bi/005_bi_cic_contratistas.sql', '105-bi-view.sql'],
-  ['database/bi/006_bi_cip_responsables.sql', '106-bi-view.sql'],
-  ['database/bi/007_bi_curva_s_duracion.sql', '107-bi-view.sql'],
-  ['database/bi/008_bi_riesgos.sql', '108-bi-view.sql'],
-  ['database/bi/009_bi_control_tower_summary.sql', '109-bi-view.sql'],
-  ['database/bi/010_bi_lineage.sql', '110-bi-view.sql'],
-  // B-9 (2026-08-07): migracion de `general_proyectos_procesos`. Esta lista es copia
-  // deliberada de la de scripts/design-system-ci-preflight.mjs — las dos deben moverse.
-  ['database/migrations/20260807_proyectos_lineabase_columns.sql', '120-proyectos-lineabase.sql'],
-  ['database/migrations/20260820_general_flags.sql', '121-general-flags.sql'],
-];
+// 2026-08-24: esta lista era una copia a mano de la de scripts/design-system-ci-preflight.mjs y
+// ahora se deriva de ella. Se puede derivar sin perder nada porque su unico oficio es armar un
+// Dockerfile SINTETICO con el que probar el validador: prueba la mecanica, no el contenido. Lo
+// que si comprueba el contenido es el test «the real db init Dockerfile satisfies the allowlist
+// it is built from», mas abajo en este mismo archivo, que lee el Dockerfile REAL.
+//
+// La lista de tests/design-system/visual-ci-contract.test.mjs NO se deriva, a proposito: es un
+// segundo testigo independiente sobre el Dockerfile real, y su valor esta justamente en no
+// depender de la lista blanca que vigila.
 
 function safeConfig() {
   return {
