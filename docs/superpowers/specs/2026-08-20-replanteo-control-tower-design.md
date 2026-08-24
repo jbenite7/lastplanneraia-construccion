@@ -409,8 +409,11 @@ alguien se acuerda — que es exactamente como la Torre lleva meses.
   sin causa. Con una nota explícita de que cada responsable registra la suya.
 - **La atribución no se trunca (D65).** El catálogo distingue «Actividad predecesora incompleta / no
   ejecutada **(obra)**» (502 veces) de «**(subcontratista)**» (297) y de la variante sin atribuir
-  (224). No eran duplicados: **la gráfica corta el texto justo donde está la atribución de culpa**,
-  que es el dato más político del tablero. Solo la tercera variante es deuda de catálogo.
+  (224). No eran duplicados. **Corregido el 2026-08-20 al implementar F0:** el truncamiento que dio
+  origen a esta decisión se observó en el tooltip de **Power BI**, no en el código de la Torre —
+  `bi-spa.js` verificado (BD y navegador) mostrando siempre el texto completo, con `title` añadido
+  como defensa. D65 se mantiene como contrato hacia adelante: ningún texto de causa se trunca en
+  ninguna hoja de la Torre. Solo la variante sin atribuir sigue siendo deuda de catálogo.
 - **Abierto:** confirmar con Felipe si el titular narrativo va arriba de la lista o al revés.
 
 ### 8.4 Programación Semanal — audiencia obra
