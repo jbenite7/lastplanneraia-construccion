@@ -44,6 +44,15 @@
   import('/js/design-system/state-tooltip.js').then(function (mod) {
     mod.activarStateTips(document);
   });
+  // Task 4 (2026-08-21): `piHabilitacionRenderer` necesita `window.AIAReadiness`
+  // de forma SINCRONA en el primer render de la columna. Ese `import()` es
+  // asincrono, asi que el renderer es defensivo si aun no ha llegado (ver el
+  // registro del renderer) y aqui, en cuanto llega, se repinta la tabla una
+  // sola vez -si ya existe- para que la columna deje de verse vacia.
+  import('/js/design-system/readiness-cell.js').then(function (mod) {
+    window.AIAReadiness = mod;
+    if (hot) { hot.render(); }
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -325,23 +334,15 @@
   }
 
   function buildColumnHeaders() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
     var headers = [
       'Id', 'Lote', 'Actividad', 'Sub-Contratista', 'Responsable AIA',
       'Semanas Inicio', 'Ejecutado',
     ];
-    for (var i = 0; i < restrictions.length; i++) {
-      headers.push(restrictions[i].label);
-    }
-    headers.push('% Liberación', 'Estado Operativo', 'Observaciones');
+    headers.push('Habilitación', 'Estado Operativo', 'Observaciones');
     return headers;
   }
 
   function buildColumnDefinitions() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
-    var softKeys = config.softRestrictions || CONSTRUCTION_DEFAULTS.softRestrictions;
     var cols = [
       { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
       { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
@@ -351,21 +352,13 @@
       { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
       { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
     ];
-    for (var i = 0; i < restrictions.length; i++) {
-      var r = restrictions[i];
-      var isSoft = softKeys.indexOf(r.key) > -1;
-      cols.push({
-        data: r.key,
-        type: 'dropdown',
-        source: [''].concat(r.options || []),
-        strict: false,
-        allowInvalid: false,
-        renderer: 'piRestrictionRenderer',
-        className: 'htCenter htMiddle' + (isSoft ? ' pi-soft-restriction-cell' : ''),
-      });
-    }
+    cols.push({
+      data: '__habilitacion',
+      readOnly: true,
+      renderer: 'piHabilitacionRenderer',
+      className: 'htLeft htMiddle pi-habilitacion-cell',
+    });
     cols.push(
-      { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
       { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
       { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
     );
@@ -3281,6 +3274,42 @@
   }
 
 
+  function construirCuadrito(item) {
+    var box = document.createElement('span');
+    box.className = 'aia-readiness__box';
+    box.setAttribute('data-restriccion', item.prop);
+
+    if (item.lectura.esNoAplica) {
+      box.classList.add('aia-readiness__box--na');
+      return box;
+    }
+    if (item.lectura.cumple) {
+      box.classList.add('aia-readiness__box--met');
+      var check = document.createElement('span');
+      check.className = 'aia-readiness__check';
+      check.textContent = '✓';
+      box.appendChild(check);
+      return box;
+    }
+    var fill = document.createElement('span');
+    fill.className = 'aia-readiness__fill';
+    // `fill.style.height` es el UNICO estilo inline permitido en esta obra:
+    // es un dato de la fila, no una decision de diseño.
+    fill.style.height = Math.round(item.lectura.relleno * 100) + '%';
+    box.appendChild(fill);
+    return box;
+  }
+
+  function describirHabilitacion(rowData, lista) {
+    var faltan = 0;
+    for (var i = 0; i < lista.length; i++) {
+      if (!lista[i].lectura.cumple && !lista[i].lectura.esNoAplica) { faltan += 1; }
+    }
+    var pct = Math.round((rowData.Estado_Restricciones || 0) * 100);
+    return (rowData.Actividad || 'Actividad') + ': ' + faltan +
+      ' restricciones por liberar, ' + pct + ' por ciento habilitada.';
+  }
+
   function setupRenderers() {
     if (renderersRegistered) {
       return;
@@ -3318,6 +3347,51 @@
     });
 
     // N-1 (Task 38): el motivo en claro vive en la propia columna que falta.
+    // Task 4 (2026-08-21): una sola columna de habilitacion reemplaza a las
+    // siete de restriccion suelta. `window.AIAReadiness` se publica mediante
+    // `import()` dinamico (ver el bloque junto a `state-tooltip.js` al inicio
+    // del archivo) y puede no estar listo aun cuando este renderer corre por
+    // primera vez -a diferencia del tooltip, este SI se necesita en el primer
+    // render-, asi que se es defensivo: sin el modulo, la celda queda vacia
+    // en vez de lanzar. El `.then()` de esa importacion repinta la tabla una
+    // vez cargado.
+    Handsontable.renderers.registerRenderer('piHabilitacionRenderer', function (instance, td, row, col, prop, value) {
+      Handsontable.renderers.TextRenderer.apply(this, arguments);
+      td.textContent = '';
+
+      if (!window.AIAReadiness) { return; }
+
+      var rowData = getSourceRowDataByVisualRow(instance, row) || {};
+      var physicalRow = getPhysicalRowFromVisualRow(instance, row);
+      var meta = getPIRowMeta(physicalRow, rowData);
+      if (meta.isHeader) { return; }
+
+      var lista = [];
+      for (var i = 0; i < restrictionProps.length; i++) {
+        var prop2 = restrictionProps[i];
+        var lectura = window.AIAReadiness.leerRestriccion(
+          rowData[prop2], hardRestrictionThresholds[prop2] || 1);
+        lista.push({ prop: prop2, lectura: lectura });
+      }
+
+      var reparto = window.AIAReadiness.repartirCuadritos(lista);
+      var caja = document.createElement('div');
+      caja.className = 'aia-readiness';
+
+      for (var v = 0; v < reparto.visibles.length; v++) {
+        caja.appendChild(construirCuadrito(reparto.visibles[v]));
+      }
+      if (reparto.sobrantes > 0) {
+        var mas = document.createElement('span');
+        mas.className = 'aia-readiness__more';
+        mas.textContent = '+' + reparto.sobrantes;
+        caja.appendChild(mas);
+      }
+
+      td.appendChild(caja);
+      td.setAttribute('aria-label', describirHabilitacion(rowData, lista));
+    });
+
     Handsontable.renderers.registerRenderer('piResponsableRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = getSourceRowDataByVisualRow(instance, row) || {};
