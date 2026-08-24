@@ -181,16 +181,25 @@ estado por defecto mientras Felipe no reparta.
   golden vigente es de `f52d8120` (2026-08-24 11:24, 11 min después del propio
   `39a8b69c` de este frente). **Verificado el mismo día:** `git log f52d8120..HEAD --
   public/css/` no trae nada — el CSS de la leyenda es idéntico entre la captura del golden y
-  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar. Sigue abierta la
-  sospecha de no-determinismo de renderizado (el mismo `font-variant-numeric: tabular-nums`
-  que ya rompió el golden de PI, ver
-  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **sin confirmar**:
-  no se pudo correr el test contra un entorno vivo porque este worktree tenía `vendor/`
-  faltante (ya instalado con `composer install`) y la base del contenedor `db` sin sembrar
-  (no existe ni la tabla `users`). Sembrar la base es tarea de infraestructura aparte, no
-  decidida hoy. Quien retome: sembrar la DB, correr
-  `npx playwright test tests/browser/programa-general.visual.mjs --workers=1`, diagnosticar la
-  causa exacta contra el diff real y recapturar con aprobación visual de Felipe.
+  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar.
+
+  **Corrido contra un entorno vivo el mismo día, tras instalar `vendor/` con
+  `composer install`:** la base del worktree **ya estaba sembrada** (`general_usuarios` y
+  `general_proyectos_procesos` con datos completos; el chequeo anterior de "DB sin tabla
+  `users`" fue un falso negativo por consultar una tabla que no existe con ese nombre —
+  el proyecto usa `general_usuarios`, no `users`). Con el test corriendo de verdad
+  (`npx playwright test tests/browser/programa-general.visual.mjs --workers=1`), el diff
+  real (ver `test-output/.../programa-general-dark-1440x900-diff.png` de esa corrida) **no
+  se limita a los 6 chips**: es un corrimiento vertical acumulado de toda la tabla — cada
+  fila baja unos pocos píxeles más que la anterior, hasta ~8px de diferencia en la fila
+  "Cubierta" al fondo. Encaja con no-determinismo de métricas de fuente (mismo tipo de causa
+  que rompió el golden de PI con `tabular-nums`, ver
+  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **la causa CSS
+  exacta en `programa-general.css`/`handsontable.css` sigue sin identificar** — no confirmé
+  si es `tabular-nums`, otra propiedad de line-height, o una fuente que cambió de versión.
+  Quien retome: aislar la propiedad exacta (comparar computed styles de una fila entre
+  golden y actual), corregirla o, si el corrimiento es legítimo, recapturar con aprobación
+  visual de Felipe.
 
 - [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
   `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
