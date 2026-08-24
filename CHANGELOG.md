@@ -28,6 +28,39 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### El CI vuelve a completar una corrida entera (2026-08-24, Plan P2)
+
+Cuatro causas encadenadas, cada una escondida detrás de la anterior — el mismo patrón que ya había
+mordido tres veces esa jornada. Condición de hecho del plan cumplida: corrida de Actions
+[32787664690](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32787664690)
+con los 9 gates de `closeout-evidence.json` en `passed`, sin ninguno `blocked`.
+
+#### Fixed
+- El golden **Linux** de `programa-general.visual.mjs` estaba congelado en el 2026-08-12 mientras el
+  golden macOS del mismo test se recapturó tres veces después con cambios reales aprobados por
+  Felipe. La hipótesis de no-determinismo de fuente que se había anotado antes era falsa: el estado
+  **Fuera de Ventana** entró al vocabulario el 2026-08-19 y su chip nuevo partía la leyenda en dos
+  filas, empujando toda la tabla. Recapturado con evidencia real de una corrida de Actions, no una
+  captura local.
+- `tests/browser/programa-general-state-hue.mjs` no tenía ninguna fila con `Estado: 'Fuera de
+  Ventana'`, así que no podía comprobar que el matiz `teal` se pinte distinto — el mismo vocabulario
+  nuevo del punto anterior, otro fixture sin propagar.
+- Los gates de `design-system-runtime` corrían en serie sin `continue-on-error`: el primero en
+  romperse cancelaba todos los posteriores. Ahora cada gate corre siempre y un paso final
+  («Summarize gate results») decide si el job queda en rojo mirando todos los resultados juntos, y
+  vuelca la tabla a `GITHUB_STEP_SUMMARY` junto con la duración y las métricas de presupuesto que ya
+  se generaban.
+- El gate `runtime-budgets` no podía pasar de `blocked` a `passed` sin editar su evidencia a mano:
+  el `check` no dejaba recibo. Envuelto en `gate-receipt.mjs`, igual que `full-app-flow` y
+  `semanal-roles-phases`.
+- Dos hallazgos de `zizmor` (auditoría de seguridad del YAML, nueva en este repo): los checkout no
+  fijaban `persist-credentials: false`.
+
+#### Changed
+- El workflow ya no dispara por cambios en `memoria/**` o en los `.md` de la raíz del repo —
+  ningún gate los lee. `docs/design-system/` queda fuera de la exclusión a propósito: es
+  contractual.
+
 ### El runner de pruebas deja de juzgar en un idioma y reportar en otro (2026-08-24)
 
 #### Fixed
