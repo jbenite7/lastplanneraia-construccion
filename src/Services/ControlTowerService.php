@@ -1032,7 +1032,7 @@ class ControlTowerService
                 'detail_endpoint' => '/api/bi/report/programa-general/cnc-detail',
                 'desktop_action' => 'dblclick', 'mobile_action' => 'button',
             ]),
-            'programa-radar-productividad' => $this->chart('radar', ['Productividad', 'Eficiencia', 'Desempeño'], [
+            'programa-radar-productividad' => $this->chart('radar', ['Avance promedio', 'Eficiencia', 'Desempeño'], [
                 $this->dataset('Radar operativo', $radar['display_values'], 'brand-aqua'),
             ], $commitmentSource) + [
                 'status' => $radar['status'],
@@ -3324,7 +3324,7 @@ class ControlTowerService
     {
         $definitions = [
             'productividad' => [
-                'name' => 'Productividad',
+                'name' => 'Avance promedio',
                 'label' => 'Avance promedio válido',
                 'formula' => 'PROMEDIO(MIN(P_Completado válido, 1)) × 100; válido cuando P_Completado es mayor o igual que 0.',
                 'value' => fn(array $row): ?float => $this->radarProgressValue($row),

@@ -163,6 +163,13 @@
     --ds-state-solid-green-text: #06281a;
     --ds-state-solid-neutral: #9aa8a0;
     --ds-state-solid-neutral-text: #1c2420;
+    --ds-readiness-box-w: 14px;
+    --ds-readiness-box-h: 18px;
+    --ds-readiness-gap: 2px;
+    --ds-readiness-empty: var(--ds-state-row-neutral);
+    --ds-readiness-partial: var(--ds-state-solid-amber);
+    --ds-readiness-met: var(--ds-state-solid-green);
+    --ds-readiness-met-ink: var(--ds-state-solid-green-text);
     --ds-state-row-red: #3a1f1c;
     --ds-state-row-orange: #3a2915;
     --ds-state-row-amber: #383314;

@@ -181,6 +181,81 @@ estado por defecto mientras Felipe no reparta.
   medición original se tomó contra un contenedor que montaba otro árbol** — el mismo fallo que
   mordió dos veces esa misma jornada en la sesión que lo midió. Solo se actualizó el comentario en
   `public/js/modules/programa_general/hot.js:2411`, sin arreglo de código.
+- [ ] **PG · golden visual (`programa-general.visual.mjs`) está desactualizado, ajeno a
+  `habilitacion-en-una-columna`** — al cerrar los cuatro pendientes de ese frente (2026-08-24) se
+  detectó que `npx playwright test tests/browser/programa-general.visual.mjs` falla (18006 px a
+  1180×820, 17526 a 1440×900) contra los seis chips de leyenda que NO son `alerta-restricciones`
+  (Debe Iniciar, Actividad Futura, En Curso, Atrasada, Terminada, Sin Datos). Confirmado con
+  `git stash` que el diff es **idéntico con y sin** el cambio de este frente: es preexistente. El
+  golden vigente es de `f52d8120` (2026-08-24 11:24, 11 min después del propio
+  `39a8b69c` de este frente). **Verificado el mismo día:** `git log f52d8120..HEAD --
+  public/css/` no trae nada — el CSS de la leyenda es idéntico entre la captura del golden y
+  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar.
+
+  **Corrido contra un entorno vivo el mismo día, tras instalar `vendor/` con
+  `composer install`:** la base del worktree **ya estaba sembrada** (`general_usuarios` y
+  `general_proyectos_procesos` con datos completos; el chequeo anterior de "DB sin tabla
+  `users`" fue un falso negativo por consultar una tabla que no existe con ese nombre —
+  el proyecto usa `general_usuarios`, no `users`). Con el test corriendo de verdad
+  (`npx playwright test tests/browser/programa-general.visual.mjs --workers=1`), el diff
+  real (ver `test-output/.../programa-general-dark-1440x900-diff.png` de esa corrida) **no
+  se limita a los 6 chips**: es un corrimiento vertical acumulado de toda la tabla — cada
+  fila baja unos pocos píxeles más que la anterior, hasta ~8px de diferencia en la fila
+  "Cubierta" al fondo. Encaja con no-determinismo de métricas de fuente (mismo tipo de causa
+  que rompió el golden de PI con `tabular-nums`, ver
+  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **la causa CSS
+  exacta en `programa-general.css`/`handsontable.css` sigue sin identificar** — no confirmé
+  si es `tabular-nums`, otra propiedad de line-height, o una fuente que cambió de versión.
+  Quien retome: aislar la propiedad exacta (comparar computed styles de una fila entre
+  golden y actual), corregirla o, si el corrimiento es legítimo, recapturar con aprobación
+  visual de Felipe.
+
+- [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
+  `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
+  aplicar el arreglo de mojibake de F0 (Control Tower): una fila huérfana bloqueó el `UPDATE` con
+  un error de llave foránea. No se investigó el origen ni si están en producción — solo se
+  confirmó que existen y que no se tocaron. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 4.
+- [ ] **BI · `tests/test_causas_codificacion.php` tiene un punto ciego de colación** — usa
+  `SELECT DISTINCT` sin `BINARY`; bajo `utf8mb4_general_ci`, un texto roto («Diseńos») y su
+  versión ya reparada («Diseños») colapsan al mismo grupo `DISTINCT` y MySQL puede devolver el
+  representante correcto, escondiendo la fila rota. Confirmado el 2026-08-20: el test reporta
+  PASA con 2 filas todavía rotas (las huérfanas de arriba), verificado con `LIKE BINARY` directo.
+  Arreglo: reescribir la detección con `LIKE BINARY` o comparar bytes, no `DISTINCT` normal.
+- [ ] **BI · `tests/test_cip_poblado.php` no prueba realmente el arreglo del backfill** —
+  solo comprueba `COUNT(DISTINCT profesional) > 0`, que pasaría igual con el código viejo si
+  coincide una sola semana. Debería aseverar cobertura multi-semana (`COUNT(DISTINCT Semana)`).
+  Hallazgo de la revisión final de F0, 2026-08-24. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Task 1.
+- [ ] **BI · el backfill de `cip` no tiene guarda de costo** — `updateCICProyectos()` repite
+  ~4 consultas por semana por proyecto en cada corrida, incluidas semanas ya completas que no
+  cambian. Un proyecto en semana 60 son ~240 consultas por corrida solo para reconfirmar lo ya
+  hecho. No medido bajo carga real. Guarda barata propuesta: saltar la semana si
+  `COUNT(*) FROM cip WHERE Semana = ?` ya iguala el número de responsables de esa semana.
+  Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · `scripts/higiene/reparar-mojibake-causas.php` no está acotado por `project_id`** —
+  escribe a través de todos los proyectos. Defendible para higiene global de catálogo, pero
+  contradice la regla general de aislamiento del repo; falta un comentario que lo declare
+  explícito. Hallazgo de la revisión final de F0, 2026-08-24.
+- [ ] **BI · dos tests de F0 salen "sospechosos" para el runner por el mismo patrón** —
+  `tests/test_causa_atribucion.php` y `tests/test_causas_codificacion.php` imprimen `"PASA: ..."`,
+  y `PASA` (con A) no contiene ninguna señal reconocida por `SENALES_DE_COMPROBACION` (`pass`,
+  `ok`, `comprobacion`, `comprobación`, `✓`, `correcto`) — difiere de `pass` en la cuarta letra.
+  Los dos comprueban algo de verdad (ejecutan y pasan directamente, rc=0), pero el runner no los
+  reconoce y los marca sospechosos. Arreglo: cambiar el texto de éxito de los dos a algo que
+  incluya una señal reconocida, p. ej. `"PASA (correcto): ..."`. Preexistentes de las Tareas 3 y 4
+  de F0 (ambas ya cerradas con revisión limpia); confirmado por el controller el 2026-08-24 que
+  son idénticos contra el commit previo a la ronda de arreglos de la revisión final — no los
+  introdujo esa ronda. Origen:
+  [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos]], Tasks 3 y 4.
+
+- [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General)** — de 24 botones de
+  filtro idénticos, `markDecorativeHeaderTriggers` marca 12 con `aria-hidden` y deja 12 sin marcar.
+  Son 12 columnas por 2 contenedores (`ht_master` y `ht_clone_top`), así que cada columna tiene un
+  botón anunciado y su gemelo callado — el mismo defecto que el comentario de esa función venía a
+  cerrar, reaparecido por el otro lado. Medido en vivo el 2026-08-24; anotado en
+  `public/js/modules/programa_general/hot.js:2411`. Con `navigableHeaders: true` el camino de
+  teclado NO pasa por esos botones, así que marcarlos los 24 es lo coherente.
 
 - [ ] **DS · faltan tokens de relleno para los estados** — los dos anillos de BI dejaron de usar
   tinta de estado (`status-*`) como color de relleno (2026-08-24, commit `880e9d4a`) y ahora pintan
@@ -295,6 +370,26 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Los cuatro pendientes de `habilitacion-en-una-columna`, cerrados**: test de
+  teclado del recorrido del globo (`pi-globo-recorrido.mjs`, ArrowUp/ArrowDown); tooltip «?»
+  educativo repuesto en la cabecera de Habilitación (un solo trigger con las siete restricciones
+  concatenadas, sin volver al mapa índice→prop que causó el hallazgo Important 1);
+  `alerta-restricciones` de Programa General migrado a ámbar sólido sin forzarla al contrato de
+  estados (es una insignia orthogonal, no un `Estado_PG` de fila — verificado contra 65.633 filas);
+  `construirCuadrito` unificado en `readiness-box.js`, consumido por `hot.js` (IIFE) y
+  `readiness-popover.js` (módulo ES) sin duplicar lógica. Verificado en pantalla y con los 8
+  guardianes de navegador del frente + `test:design-system:static` 8/8 + PHP 52/52. Detectado de
+  paso y anotado por separado (no es de este frente): el golden visual de Programa General está
+  desactualizado — ver diferible arriba.
+- [x] 2026-08-24 — **Habilitación en una columna — Programación Intermedia**: 15 commits, ejecutado
+  con `subagent-driven-development`. Fusiona 7 columnas de restricción + `% Liberación` en una
+  columna de cuadritos con globo de liberación (abrir/cerrar/foco/teclado/recorrido/guardado
+  idéntico al de hoy), tabla cabe a 1100 sin scroll (antes 1490), leyenda de PI y PG con color
+  sólido, tarjeta móvil comparte pieza con el globo. Revisión final encontró y corrigió 5 hallazgos
+  (2 Critical) antes de publicar; goldens de `programacion-intermedia.visual.mjs` regenerados con
+  aprobación visual de Felipe. Spec: [[docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design]]
+  · plan: [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] · procedencia del golden:
+  [[docs/design-system/manifests/programacion-intermedia.goldens]].
 - [x] 2026-08-20 — **Los tres pendientes restantes de la auditoría de specs**: spec de severidad
   reescrita a 3 niveles, veredicto de indicadores/CNP-CNC-CIC (legacy real → DS-F2), humo anónimo
   de `prueba-lps` en verde. [[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]].
@@ -462,11 +557,12 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 
-## Habilitación en una columna (en curso, sesión propia)
+## Habilitación en una columna (cerrado y publicado, 2026-08-24)
 
 Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
-v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
-quedaron vivos del frente de replanteo de coloreado:
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21, publicado en `main` el 2026-08-24
+(`c57455e5`), con sus cuatro pendientes cerrados el mismo día — ver «Hechas» arriba. Cubrió los dos
+pendientes que quedaron vivos del frente de replanteo de coloreado:
 
 - **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
   con un guardián que falla solo si alguien vuelve a ensanchar.

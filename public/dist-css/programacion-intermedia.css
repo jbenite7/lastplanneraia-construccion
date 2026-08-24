@@ -1064,6 +1064,76 @@ html.aia-theme-dark .pi-page {
     line-height: 1.4;
     padding: 10px 14px;
 }
+.pi-habilitacion-filtro-wrap {
+    position: relative;
+    display: inline-flex;
+    order: 3;
+}
+.pi-habilitacion-filtro-wrap--activo .pi-habilitacion-filtro {
+    color: var(--ds-active-focus-ring);
+}
+.pi-habilitacion-filtro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--ds-control-compact-min);
+    min-block-size: var(--ds-control-compact-min);
+    color: var(--ds-active-text-secondary);
+    font-size: var(--ds-table-font-size-floor);
+    cursor: pointer;
+    line-height: 1;
+    background: transparent;
+    border: 0;
+    padding: 0;
+}
+.pi-habilitacion-filtro:hover {
+    color: var(--ds-active-focus-ring);
+}
+.pi-habilitacion-filtro:focus-visible {
+    color: var(--ds-active-focus-ring);
+    outline: var(--ds-outline-width) solid var(--ds-active-focus-ring);
+    outline-offset: var(--ds-outline-offset);
+}
+.pi-habilitacion-filtro__menu {
+    position: absolute;
+    top: calc(100% + var(--ds-space-1));
+    right: 0;
+    z-index: var(--ds-z-index-popover, 1000);
+    display: flex;
+    flex-direction: column;
+    min-width: 12rem;
+    padding: var(--ds-space-1);
+    background: var(--ds-active-surface-raised);
+    border: var(--ds-border-width) solid var(--ds-active-border);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-md);
+}
+.pi-habilitacion-filtro__opcion {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--ds-radius-sm);
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-xs);
+    padding: var(--ds-space-2) var(--ds-space-2);
+    cursor: pointer;
+}
+.pi-habilitacion-filtro__opcion:hover,
+.pi-habilitacion-filtro__opcion:focus-visible {
+    background: var(--ds-active-surface);
+    outline: none;
+}
+.pi-habilitacion-filtro__opcion--activa {
+    color: var(--ds-active-focus-ring);
+    font-weight: 600;
+}
+.pi-habilitacion-filtro__opcion--limpiar {
+    border-bottom: var(--ds-border-width) solid var(--ds-active-border);
+    margin-bottom: var(--ds-space-1);
+    padding-bottom: var(--ds-space-2);
+}
       .pi-create-option {
 background-color: #e8f0eb !important;
 color: #1a5633 !important;

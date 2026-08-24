@@ -1826,7 +1826,7 @@ function renderCausalDrilldownTable(rows, type) {
   body.innerHTML = rows.map((row) => `<tr>
     <td>${escapeHtml(row.project || '--')}<br><small>Semana ${escapeHtml(row.week || '--')}</small></td>
     <td><strong>${escapeHtml(row.activity || 'Actividad sin nombre')}</strong><br><small>${escapeHtml(row.location || 'Sin ubicación')}</small></td>
-    <td><strong>${escapeHtml(row.category || '--')}</strong><br><small>${escapeHtml(row.cause || '--')}</small><br><small>${escapeHtml(row.observation || 'Sin observación')}</small></td>
+    <td><strong>${escapeHtml(row.category || '--')}</strong><br><small title="${escapeAttr(row.cause || '--')}">${escapeHtml(row.cause || '--')}</small><br><small>${escapeHtml(row.observation || 'Sin observación')}</small></td>
     <td>${type === 'cnc' ? renderCncExecution(row) : `${escapeHtml(formatShortDate(row.startDate))}<br><small>${escapeHtml(causalStartStatusLabel(row.startStatus, row.daysToStart))}</small>`}</td>
     <td>${renderComplianceResponsibles(row)}<small>Crítica: ${escapeHtml(causalCriticalLabel(row.critical))}</small></td>
     <td><strong>${escapeHtml(row.impact || '--')}</strong><br><small>${escapeHtml(row.recommendedAction || '--')}</small></td>
@@ -1910,7 +1910,10 @@ function loadMoreCausalRecords() {
 }
 
 function renderCausalField(label, value) {
-  return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(String(value || '').trim() || 'Sin asignar')}</dd></div>`;
+  const rawText = String(value || '').trim() || 'Sin asignar';
+  const text = escapeHtml(rawText);
+  const attrText = escapeAttr(rawText);
+  return `<div><dt>${escapeHtml(label)}</dt><dd title="${attrText}">${text}</dd></div>`;
 }
 
 function causalCriticalLabel(value) {
@@ -4199,4 +4202,8 @@ function escapeHtml(value) {
   const txt = document.createElement('div');
   txt.textContent = String(value || '');
   return txt.innerHTML;
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/"/g, '&quot;');
 }

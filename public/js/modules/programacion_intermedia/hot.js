@@ -16,6 +16,14 @@
   var masterData = [];
   var visibleRows = [];
   var activeFilters = [];
+  // Task 9 (2026-08-21): filtro por restriccion, repuesto tras la fusion de
+  // columnas de la Task 4. `__habilitacion` no tiene un valor simple que el
+  // plugin nativo de filtros pueda comparar (es un compuesto de 7
+  // restricciones), asi que se filtra manualmente igual que `activeFilters`
+  // (leyenda) y los demas `buscador*`: un valor de restriccion activo (el
+  // `prop`/clave, la misma que ya trae `data-restriccion` en cada cuadrito) o
+  // `null` cuando no hay filtro puesto.
+  var restrictionFilterActive = null;
 
   /* Frente contadores-cero. Unico punto de reversion: en false vuelve el
      comportamiento anterior -las ocho etiquetas visibles, las que marcan cero
@@ -38,14 +46,254 @@
   var _rowMetaCache = [];
   var _stateViewCache = [];
   var _saveStatus = null;
+  // Task 7 (2026-08-21): el globo escribe con `hot.setDataAtRowProp(...,
+  // 'edit')` -obligatorio para que la pila de deshacer de Handsontable se
+  // entere (Ctrl+Z)-, y eso dispara `afterChange` -> `saveRow` sin que el
+  // globo pueda pasarle un callback directo. Este registro por
+  // `visualRow + '|' + prop` es el puente: el globo se suscribe justo antes
+  // de escribir, y `saveRow` lo consulta en sus tres desenlaces (exito, error
+  // de servidor, fallo de red) para avisarle el resultado sin cerrarlo. El
+  // camino existente desde la celda (afterChange sin cuarto argumento) nunca
+  // registra nada aqui, asi que su comportamiento no cambia.
+  var _saveResultListeners = {};
+
+  function registrarEscuchaGuardado(visualRow, prop, callback) {
+    _saveResultListeners[visualRow + '|' + prop] = callback;
+  }
+
+  function notificarResultadoGuardado(visualRow, prop, resultado) {
+    var clave = visualRow + '|' + prop;
+    var callback = _saveResultListeners[clave];
+    if (!callback) {
+      return;
+    }
+    delete _saveResultListeners[clave];
+    callback(resultado);
+  }
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
   });
   import('/js/design-system/state-tooltip.js').then(function (mod) {
     mod.activarStateTips(document);
   });
+  // Task 4 (2026-08-21): `piHabilitacionRenderer` necesita `window.AIAReadiness`
+  // de forma SINCRONA en el primer render de la columna. Ese `import()` es
+  // asincrono, asi que el renderer es defensivo si aun no ha llegado (ver el
+  // registro del renderer) y aqui, en cuanto llega, se repinta la tabla una
+  // sola vez -si ya existe- para que la columna deje de verse vacia.
+  import('/js/design-system/readiness-cell.js').then(function (mod) {
+    window.AIAReadiness = mod;
+    if (hot) { hot.render(); }
+  });
+  // Mismo patron: `construirCuadrito` vive ahora en un solo lugar
+  // (`readiness-box.js`), compartido con el globo/tarjeta movil de
+  // `readiness-popover.js`. Repinta si ya habia renderizado con el
+  // fallback local (ver el renderer de la columna, mas abajo).
+  import('/js/design-system/readiness-box.js').then(function (mod) {
+    window.AIAReadinessBox = mod;
+    if (hot) { hot.render(); }
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
+  });
+  // Task 6 (2026-08-21): el globo se importa una sola vez y se engancha por
+  // delegacion en `document`, igual que `state-tooltip.js` — no depende de
+  // que la tabla ya haya renderizado la celda en el instante del import().
+  var _readinessPopover = null;
+  import('/js/design-system/readiness-popover.js').then(function (mod) {
+    _readinessPopover = mod.AIAReadinessPopover;
+  });
+
+  // Task 7 (2026-08-21): arma el paquete que consume el globo. El selector,
+  // las opciones y el endpoint de guardado son los MISMOS que ya existen para
+  // la celda -nada de eso se inventa aqui-, asi que este paquete solo empaca
+  // datos ya calculados en otras funciones de este archivo (config activa,
+  // reglas de edicion, estado de fila) y una funcion `guardar` que reusa
+  // `saveRow` por la misma ruta que una edicion de celda: `setDataAtRowProp`
+  // con source `'edit'`, para que la pila de deshacer de Handsontable se
+  // entere (spec Step 7, Ctrl+Z).
+  function construirGrupoRestricciones(claves, rowData) {
+    var grupo = [];
+    for (var i = 0; i < claves.length; i++) {
+      var restriccion = _findRestrictionByKey(claves[i]);
+      if (!restriccion) { continue; }
+      grupo.push({
+        key: restriccion.key,
+        label: restriccion.label,
+        options: [''].concat(restriccion.options || []),
+        value: rowData[restriccion.key],
+        umbralRatio: (restriccion.threshold || 100) / 100,
+      });
+    }
+    return grupo;
+  }
+
+  // Task 8 (2026-08-21): recorrido del globo sin cerrarlo. Busca la siguiente
+  // fila de ACTIVIDAD (no capitulo) en la direccion pedida, saltandose las
+  // filas de capitulo con la misma `getPIRowMeta(...).isHeader` que ya usa el
+  // renderer de la Task 4 -no hay una segunda deteccion de capitulo-.
+  // Devuelve el numero de fila visual o null si no hay destino (extremo de
+  // la tabla, o solo quedan capitulos en esa direccion).
+  function encontrarFilaHabilitacion(visualRowInicial, direccion) {
+    if (!hot) { return null; }
+    var total = hot.countRows();
+    var candidato = visualRowInicial;
+    for (var i = 0; i < total; i++) {
+      candidato += direccion;
+      if (candidato < 0 || candidato >= total) { return null; }
+      var rowData = getSourceRowDataByVisualRow(hot, candidato);
+      if (!rowData) { continue; }
+      var physicalRow = getPhysicalRowFromVisualRow(hot, candidato);
+      var meta = getPIRowMeta(physicalRow, rowData);
+      if (!meta.isHeader) { return candidato; }
+    }
+    return null;
+  }
+
+  function abrirGloboHabilitacion(celda) {
+    if (!_readinessPopover || !celda) { return; }
+    var visualRow = celda.hasAttribute('data-row') ? parseInt(celda.getAttribute('data-row'), 10) : NaN;
+    if (!hot || isNaN(visualRow)) { return; }
+
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow) || {};
+    var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
+    var meta = getPIRowMeta(physicalRow, rowData);
+    var view = getStateView(rowData, meta.state);
+
+    var reglas = reglasIntermediaActuales();
+    var tieneResponsable = hasAssignedValue(rowData.Responsable_AIA, PI_CREATE_PROF);
+    var canEdit = reglas.puedeEditarCelda({
+      prop: restrictionProps[0],
+      esHeader: meta.isHeader,
+      tieneResponsable: tieneResponsable,
+      esRestriccion: true,
+    });
+    var razonSoloLectura = null;
+    if (!canEdit) {
+      razonSoloLectura = !tieneResponsable
+        ? PI_LOCK_REASON
+        : 'No tiene permiso para editar restricciones en esta semana.';
+    }
+
+    // Step 7 (spec): "Ctrl+Z sigue funcionando". El candidato obvio era
+    // reenviar al `hot.undo()` de Handsontable -la MISMA pila que usa la
+    // tabla-, pero verificado en vivo: `ChangeAction.undo()` replica el
+    // cambio con `setDataAtCell(row, COLUMNA)`, y las siete props de
+    // restriccion dejaron de ser columnas propias desde que la Task 4 las
+    // fundio en la columna `__habilitacion` — `propToCol('D_y_E')` no
+    // resuelve, y Handsontable lanza
+    // "Method setDataAtCell accepts row and column number...". No es un
+    // problema que el globo introduzca: CUALQUIER escritura futura a estas
+    // props (la unica via de escritura hoy es el globo) quedaria en esa
+    // misma pila rota; aqui se evita ademas con `beforeUndoStackChange` (mas
+    // abajo, en las opciones del propio Handsontable) que ya bloquea que las
+    // escrituras derivadas de `saveRow` ('internal-update') se apilen. Para
+    // que el REQUISITO del Step 7 se cumpla sin heredar ese defecto de
+    // Handsontable, el globo lleva su propio unico nivel de deshacer -misma
+    // ruta de escritura, `setDataAtRowProp(..., 'edit')`, mismo `saveRow`-,
+    // simplemente sin pasar por `hot.undo()`.
+    var ultimaEdicionGlobo = null; // { prop, valorAnterior }
+
+    // Task 8: el salto reabre el globo entero sobre la fila destino -misma
+    // via que un clic normal, `abrirGloboHabilitacion` de nuevo-, asi que
+    // hereda intacto lector de estado, permisos, guardado y deshacer de la
+    // fila nueva sin duplicar esa logica aqui.
+    var colHabilitacion = hot.propToCol('__habilitacion');
+    function irAFila(direccion) {
+      var nuevaFila = encontrarFilaHabilitacion(visualRow, direccion);
+      if (nuevaFila == null) { return; }
+      // `scrollViewportTo` + `render()` (y no `selectCell`) asegura que la
+      // fila destino tenga su <td> en el DOM -en tablas grandes,
+      // `renderAllRows: false` no lo garantiza sin esto-, sin mover la
+      // seleccion de la grilla. Verificado en vivo: eso solo, sin embargo,
+      // no basta -esta tabla usa scroll de PAGINA, no un contenedor interno
+      // con su propio scroll, asi que `scrollViewportTo` puede devolver
+      // `false` (la fila ya "cabe" en el viewport virtual de Handsontable)
+      // mientras la fila sigue fuera de la vista de la PAGINA. El
+      // `scrollIntoView` del propio <td> cubre ese caso: si el anchor CSS
+      // queda clippeado fuera de vista, el navegador oculta el globo
+      // anclado sin avisar -parecia un problema de clic interceptado y era
+      // la fila destino invisible.
+      hot.scrollViewportTo({ row: nuevaFila, col: colHabilitacion });
+      hot.render();
+      var celdaNueva = hot.getCell(nuevaFila, colHabilitacion);
+      if (celdaNueva) {
+        celdaNueva.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        abrirGloboHabilitacion(celdaNueva);
+      }
+    }
+
+    var datosFila = {
+      Actividad: rowData.Actividad,
+      Semana: getSemana(),
+      Responsable_AIA: rowData.Responsable_AIA,
+      avance: formatPercent(rowData.Estado_Restricciones || 0),
+      // Mismo chip que la columna de estado operativo (`ops-state-chip` +
+      // `stateChipAttrs`, ya con su hoja de tokens en
+      // `docs/design-system/components/ops-state-chip.css`) — el globo no
+      // inventa un chip propio.
+      estadoChipHtml: '<span class="ops-state-chip"' + stateChipAttrs(view.state) + '>'
+        + '<span class="ops-chip-label">' + escapeHtml(getStateShortLabel(view.state)) + '</span></span>',
+      canEdit: canEdit,
+      razonSoloLectura: razonSoloLectura,
+      obligatorias: construirGrupoRestricciones(hardRestrictionProps, rowData),
+      seguimiento: construirGrupoRestricciones(softRestrictionProps, rowData),
+      guardar: function (prop, newValue, onResultado) {
+        if (restrictionProps.indexOf(prop) === -1) { return; }
+        var valorAnterior = (getSourceRowDataByVisualRow(hot, visualRow) || {})[prop];
+        registrarEscuchaGuardado(visualRow, prop, function (resultado) {
+          if (resultado && resultado.ok) {
+            ultimaEdicionGlobo = { prop: prop, valorAnterior: valorAnterior };
+            var filaActual = getSourceRowDataByVisualRow(hot, visualRow) || {};
+            onResultado({
+              ok: true,
+              avance: formatPercent(filaActual.Estado_Restricciones || 0),
+            });
+          } else {
+            onResultado({ ok: false, message: (resultado && resultado.message) || 'Error al guardar' });
+          }
+        });
+        hot.setDataAtRowProp(visualRow, prop, newValue, 'edit');
+      },
+      // Ver la nota de `ultimaEdicionGlobo` arriba: un solo nivel de
+      // deshacer, misma ruta de escritura que `guardar` (setDataAtRowProp
+      // + 'edit' -> afterChange -> saveRow), asi que un reintento fallido de
+      // este deshacer se comporta exactamente igual que cualquier otra
+      // edicion fallida (revertCell, showFeedback).
+      deshacer: function () {
+        if (!ultimaEdicionGlobo) { return; }
+        var edicion = ultimaEdicionGlobo;
+        ultimaEdicionGlobo = null;
+        hot.setDataAtRowProp(visualRow, edicion.prop, edicion.valorAnterior, 'edit');
+      },
+      // El globo guarda una foto de los valores al abrir; tras deshacer
+      // necesita releer el dato real para refrescar su propio `<select>`
+      // -misma fuente que usa toda la fila, `getSourceRowDataByVisualRow`-.
+      leerValor: function (prop) {
+        var filaActual = getSourceRowDataByVisualRow(hot, visualRow) || {};
+        return filaActual[prop];
+      },
+      siguiente: function () { irAFila(1); },
+      anterior: function () { irAFila(-1); },
+    };
+
+    _readinessPopover.abrir(celda, datosFila);
+  }
+
+  document.addEventListener('click', function (ev) {
+    var celda = ev.target instanceof Element ? ev.target.closest('.pi-habilitacion-cell') : null;
+    if (celda) {
+      abrirGloboHabilitacion(celda);
+    }
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') { return; }
+    var celda = ev.target instanceof Element ? ev.target.closest('.pi-habilitacion-cell') : null;
+    if (celda) {
+      ev.preventDefault();
+      abrirGloboHabilitacion(celda);
+    }
   });
 
   var options = window.PI_HOT_OPTIONS || {};
@@ -287,11 +535,12 @@
       }
     }
 
-    // Header-index → restriction prop (7 fixed cols before restriction cols)
+    // Task 4 fundio las 7 columnas de restriccion en una sola (`__habilitacion`,
+    // indice 7) seguida de `estado_operativo` (8) y `Observaciones` (9). Ya no
+    // existe un mapeo 1:1 indice->prop de restriccion: dejar el mapa vacio
+    // evita que el trigger de ayuda "?" de Observaciones herede por accidente
+    // el tooltip de una restriccion cualquiera (hallazgo Important 1).
     headerIndexToRestrictionProp = {};
-    for (var t = 0; t < restrictions.length; t++) {
-      headerIndexToRestrictionProp[7 + t] = restrictions[t].key;
-    }
 
     // Rebuild column sizing arrays for the current restriction count
     buildColumnSizing();
@@ -325,23 +574,15 @@
   }
 
   function buildColumnHeaders() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
     var headers = [
       'Id', 'Lote', 'Actividad', 'Sub-Contratista', 'Responsable AIA',
       'Semanas Inicio', 'Ejecutado',
     ];
-    for (var i = 0; i < restrictions.length; i++) {
-      headers.push(restrictions[i].label);
-    }
-    headers.push('% Liberación', 'Estado Operativo', 'Observaciones');
+    headers.push('Habilitación', 'Estado Operativo', 'Observaciones');
     return headers;
   }
 
   function buildColumnDefinitions() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
-    var softKeys = config.softRestrictions || CONSTRUCTION_DEFAULTS.softRestrictions;
     var cols = [
       { data: 'Id', readOnly: true, className: 'htCenter htMiddle' },
       { data: '__shared_selected', type: 'checkbox', className: 'htCenter htMiddle pi-shared-select-cell' },
@@ -351,21 +592,13 @@
       { data: 'Semanas_Inicio', readOnly: true, className: 'htCenter htMiddle' },
       { data: 'Ejecutado', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
     ];
-    for (var i = 0; i < restrictions.length; i++) {
-      var r = restrictions[i];
-      var isSoft = softKeys.indexOf(r.key) > -1;
-      cols.push({
-        data: r.key,
-        type: 'dropdown',
-        source: [''].concat(r.options || []),
-        strict: false,
-        allowInvalid: false,
-        renderer: 'piRestrictionRenderer',
-        className: 'htCenter htMiddle' + (isSoft ? ' pi-soft-restriction-cell' : ''),
-      });
-    }
+    cols.push({
+      data: '__habilitacion',
+      readOnly: true,
+      renderer: 'piHabilitacionRenderer',
+      className: 'htLeft htMiddle pi-habilitacion-cell',
+    });
     cols.push(
-      { data: 'Estado_Restricciones', readOnly: true, renderer: 'piPercentRenderer', className: 'htCenter htMiddle' },
       { data: 'estado_operativo', readOnly: true, renderer: 'piStateRenderer', className: 'htLeft htMiddle force-wrap' },
       { data: 'Observaciones', type: 'text', className: 'htLeft htMiddle force-wrap' },
     );
@@ -430,10 +663,6 @@
   }
 
   function buildColumnSizing() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
-    var numRestrictions = restrictions.length;
-
     // Task 8 (2026-08-05, C-31): «Id» pasa de 36 px (su piso) a 74. Los codigos
     // jerarquicos de JMC llegan a «2.4.1.3.1», que mide 69 px; a 36 px se veian
     // «2.4» — 27 de las 28 filas visibles mostraban un id que no era el suyo.
@@ -447,40 +676,25 @@
       ratio: [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048],
     };
 
-    // Fixed trailing columns (3): Estado_Restricciones, estado_operativo, Observaciones
+    // Fixed trailing columns (2): estado_operativo, Observaciones
     var fixedTrailing = {
-      min:   [92, 150, 180],
-      floor: [78, 118, 130],
-      max:   [136, 240, 380],
-      ratio: [0.05, 0.096, 0.088],
+      min:   [150, 180],
+      floor: [118, 130],
+      max:   [240, 380],
+      ratio: [0.096, 0.088],
     };
 
-    // Dynamic restriction columns: uniform sizing
-    var restrictionMin = [];
-    var restrictionFloor = [];
-    var restrictionMax = [];
-    var restrictionRatio = [];
-    for (var i = 0; i < numRestrictions; i++) {
-      restrictionMin.push(74);
-      restrictionFloor.push(64);
-      restrictionMax.push(130);
-    }
-
-    // Compute ratio budget for restriction cols (reserve 1 - fixedLeading - fixedTrailing)
-    var fixedRatioSum = 0;
-    for (var fi = 0; fi < fixedLeading.ratio.length; fi++) { fixedRatioSum += fixedLeading.ratio[fi]; }
-    for (var ft = 0; ft < fixedTrailing.ratio.length; ft++) { fixedRatioSum += fixedTrailing.ratio[ft]; }
-    var restrictionBudget = Math.max(0, 1 - fixedRatioSum);
-    var perRestrictionRatio = numRestrictions > 0 ? restrictionBudget / numRestrictions : 0;
-    for (var ri = 0; ri < numRestrictions; ri++) {
-      restrictionRatio.push(perRestrictionRatio);
-    }
+    // Single habilitacion column: fixed width, doesn't shrink nor grow — its
+    // content has a known fixed width, stretching it would only rob pixels
+    // from the text columns. Ratio recalculated so the full set sums 1.0:
+    // 1 - fixedLeading.ratio(0.456) - fixedTrailing.ratio(0.184) = 0.36.
+    var habilitacion = { min: 130, floor: 130, max: 130, ratio: 0.36 };
 
     // Assemble full arrays
-    columnMinWidths = fixedLeading.min.concat(restrictionMin, fixedTrailing.min);
-    columnFloorWidths = fixedLeading.floor.concat(restrictionFloor, fixedTrailing.floor);
-    columnMaxWidths = fixedLeading.max.concat(restrictionMax, fixedTrailing.max);
-    columnWidthRatios = fixedLeading.ratio.concat(restrictionRatio, fixedTrailing.ratio);
+    columnMinWidths = fixedLeading.min.concat([habilitacion.min], fixedTrailing.min);
+    columnFloorWidths = fixedLeading.floor.concat([habilitacion.floor], fixedTrailing.floor);
+    columnMaxWidths = fixedLeading.max.concat([habilitacion.max], fixedTrailing.max);
+    columnWidthRatios = fixedLeading.ratio.concat([habilitacion.ratio], fixedTrailing.ratio);
 
     /* Task 8 (2026-08-05, Step 1-bis): ninguna columna baja del ancho que su
        propia cabecera necesita para leerse entera. Se aplica al PISO (el limite
@@ -501,7 +715,7 @@
     }
 
     // Shrink priority: lower index = shrinks first; trailing Observaciones shrinks last (0)
-    var totalCols = 7 + numRestrictions + 3;
+    var totalCols = 7 + 1 + 2;
     columnShrinkPriority = [];
     for (var sp = 0; sp < totalCols; sp++) {
       columnShrinkPriority.push(totalCols - 1 - sp);
@@ -625,12 +839,12 @@
       + ' data-aia-urgency="' + pair.urgency + '"';
   }
 
-  var columnMinWidths = [44, 54, 150, 130, 130, 60, 72, 74, 74, 74, 74, 82, 94, 88, 92, 150, 180];
-  var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 118, 130];
-  var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 240, 380];
-  var columnShrinkPriority = [16, 2, 3, 4, 15, 14, 13, 11, 10, 8, 9, 7, 6, 5, 1, 12, 0];
+  var columnMinWidths = [76, 54, 150, 130, 130, 60, 72, 130, 150, 180];
+  var columnFloorWidths = [74, 44, 120, 126, 100, 52, 64, 130, 118, 130];
+  var columnMaxWidths = [96, 70, 460, 240, 240, 110, 110, 130, 240, 380];
+  var columnShrinkPriority = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
   // La suma debe ser 1.0: colWidths ya reserva 60px para scrollbar/sidebar LPS.
-  var columnWidthRatios = [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048, 0.042, 0.042, 0.042, 0.042, 0.046, 0.05, 0.046, 0.05, 0.096, 0.088];
+  var columnWidthRatios = [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048, 0.36, 0.096, 0.088];
 
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';
@@ -3181,6 +3395,7 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       showFeedback('error', payload.error);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: payload.error });
       return;
     }
 
@@ -3258,6 +3473,7 @@
           updateLegendCounts(getFilteredRows());
         }
         showFeedback('success', 'Guardado');
+        notificarResultadoGuardado(visualRow, prop, { ok: true });
         return;
       }
 
@@ -3267,19 +3483,53 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       showFeedback('error', message);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: message });
     }).fail(function (jqXHR) {
       revertCell(visualRow, prop, oldValue);
       if (restrictionProps.indexOf(prop) > -1) {
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       if (jqXHR && jqXHR.status === 409) {
-        showFeedback('error', 'La semana activa cambió en otra pestaña o sesión. Recarga la página para continuar.');
+        var mensaje409 = 'La semana activa cambió en otra pestaña o sesión. Recarga la página para continuar.';
+        showFeedback('error', mensaje409);
+        notificarResultadoGuardado(visualRow, prop, { ok: false, message: mensaje409 });
         return;
       }
-      showFeedback('error', 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.');
+      var mensajeRed = 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.';
+      showFeedback('error', mensajeRed);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: mensajeRed });
     });
   }
 
+
+  function construirCuadrito(item) {
+    // Pieza compartida con el globo y la tarjeta movil (`readiness-box.js`,
+    // hallazgo TASKS.md 2026-08-24). El fallback local solo corre en la
+    // ventana angosta antes de que el `import()` asincrono de mas arriba
+    // resuelva -mismo patron defensivo que `window.AIAReadiness`- y se
+    // repinta una vez cargado, asi que no es una segunda fuente permanente.
+    if (window.AIAReadinessBox) {
+      return window.AIAReadinessBox.construirCuadrito(item.prop, item.lectura);
+    }
+    var box = document.createElement('span');
+    box.className = 'aia-readiness__box';
+    box.setAttribute('data-restriccion', item.prop);
+    if (item.lectura.esNoAplica) {
+      box.classList.add('aia-readiness__box--na');
+    }
+    return box;
+  }
+
+  function describirHabilitacion(rowData, lista) {
+    var faltan = 0;
+    for (var i = 0; i < lista.length; i++) {
+      if (!lista[i].lectura.cumple && !lista[i].lectura.esNoAplica) { faltan += 1; }
+    }
+    var pct = Math.round((normalizePercentRatio(rowData.Estado_Restricciones) || 0) * 100);
+    var actividadTexto = getActividadPlainText(rowData.Actividad) || 'Actividad';
+    return actividadTexto + ': ' + faltan +
+      ' restricciones por liberar, ' + pct + ' por ciento habilitada.';
+  }
 
   function setupRenderers() {
     if (renderersRegistered) {
@@ -3292,32 +3542,58 @@
       td.classList.add('htCenter');
     });
 
-    // N-1 (Task 38): la celda de restriccion bloqueada dice POR QUE sin que
-    // nadie la toque. El candado es el canal visible; el `title`, el respaldo.
-    Handsontable.renderers.registerRenderer('piRestrictionRenderer', function (instance, td, row, col, prop, value) {
+    // N-1 (Task 38): el motivo en claro vive en la propia columna que falta.
+    // Task 4 (2026-08-21): una sola columna de habilitacion reemplaza a las
+    // siete de restriccion suelta. `window.AIAReadiness` se publica mediante
+    // `import()` dinamico (ver el bloque junto a `state-tooltip.js` al inicio
+    // del archivo) y puede no estar listo aun cuando este renderer corre por
+    // primera vez -a diferencia del tooltip, este SI se necesita en el primer
+    // render-, asi que se es defensivo: sin el modulo, la celda queda vacia
+    // en vez de lanzar. El `.then()` de esa importacion repinta la tabla una
+    // vez cargado.
+    Handsontable.renderers.registerRenderer('piHabilitacionRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
-      td.textContent = formatPercent(value);
-      td.classList.add('htCenter');
+      td.textContent = '';
 
-      if (td.classList.contains('pi-cell-locked-resp')) {
-        td.insertBefore(buildLockGlyph(), td.firstChild);
+      if (!window.AIAReadiness) { return; }
 
-        var sr = document.createElement('span');
-        sr.className = 'sr-only';
-        sr.textContent = PI_LOCK_REASON;
-        td.appendChild(sr);
-        td.title = PI_LOCK_REASON;
-      } else {
-        // Con `renderAllRows: false` HOT recicla los <td> al hacer scroll y su
-        // TextRenderer solo quita style/colspan/rowspan/dir/contenteditable: el
-        // `title` sobreviviria al reciclado y una celda editable acabaria
-        // anunciando un bloqueo que no tiene. El contenido (candado y sr-only)
-        // si se limpia solo, porque aqui se reescribe el texto de la celda.
-        td.removeAttribute('title');
+      var rowData = getSourceRowDataByVisualRow(instance, row) || {};
+      var physicalRow = getPhysicalRowFromVisualRow(instance, row);
+      var meta = getPIRowMeta(physicalRow, rowData);
+      if (meta.isHeader) { return; }
+
+      var lista = [];
+      for (var i = 0; i < restrictionProps.length; i++) {
+        var prop2 = restrictionProps[i];
+        var lectura = window.AIAReadiness.leerRestriccion(
+          rowData[prop2], hardRestrictionThresholds[prop2] || 1);
+        lista.push({ prop: prop2, lectura: lectura });
       }
+
+      var reparto = window.AIAReadiness.repartirCuadritos(lista);
+      var caja = document.createElement('div');
+      caja.className = 'aia-readiness';
+
+      for (var v = 0; v < reparto.visibles.length; v++) {
+        caja.appendChild(construirCuadrito(reparto.visibles[v]));
+      }
+      if (reparto.sobrantes > 0) {
+        var mas = document.createElement('span');
+        mas.className = 'aia-readiness__more';
+        mas.textContent = '+' + reparto.sobrantes;
+        caja.appendChild(mas);
+      }
+
+      td.appendChild(caja);
+      td.setAttribute('aria-label', describirHabilitacion(rowData, lista));
+      // Task 6 (2026-08-21): la celda abre el globo con clic o Enter/Espacio,
+      // asi que necesita ser focuseable y llevar la fila visual consigo para
+      // que el listener delegado en `document` (mas arriba en este archivo)
+      // sepa que datos pasarle al globo sin recalcular nada.
+      td.setAttribute('tabindex', '0');
+      td.setAttribute('data-row', String(row));
     });
 
-    // N-1 (Task 38): el motivo en claro vive en la propia columna que falta.
     Handsontable.renderers.registerRenderer('piResponsableRenderer', function (instance, td, row, col, prop, value) {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
       var rowData = getSourceRowDataByVisualRow(instance, row) || {};
@@ -4013,6 +4289,14 @@
       return false;
     }
 
+    if (restrictionFilterActive && window.AIAReadiness) {
+      var lecturaFiltro = window.AIAReadiness.leerRestriccion(
+        row[restrictionFilterActive], hardRestrictionThresholds[restrictionFilterActive] || 1);
+      if (lecturaFiltro.cumple || lecturaFiltro.esNoAplica) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -4273,6 +4557,10 @@
           headerNode.classList.add('pi-header-single-word');
         }
 
+        if (this.colToProp(col) === '__habilitacion') {
+          injectHabilitacionFiltro(TH, headerNode);
+        }
+
         // Task 26 ponia aqui el `title`. C-19 (2026-08-05) lo movio a
         // `refreshHeaderTitles()`, que corre en `afterRender` con el ancho ya
         // definitivo y solo lo pone donde el texto se recorta de verdad. Sigue
@@ -4349,6 +4637,21 @@
           var hot = this;
           openDropdownEditorAtCell(hot, row, col, null, false);
         }
+      },
+      // Task 7 (2026-08-21, Step 7): `saveRow` reescribe varias celdas
+      // derivadas (`Estado_Restricciones`, `estado_operativo`, ...) con
+      // source `'internal-update'` cuando responde el servidor. El plugin
+      // UndoRedo de base graba en su pila CUALQUIER cambio con diferencia de
+      // valor, sin importar el source -solo excluye 'UndoRedo.undo',
+      // 'UndoRedo.redo' y 'auto'-, asi que sin este hook esas escrituras
+      // derivadas se apilaban encima de la edicion real del usuario y un
+      // solo Ctrl+Z deshacia el dato calculado en vez de la restriccion que
+      // la persona acababa de marcar. No es un problema nuevo del globo: ya
+      // afectaba a cualquier edicion de restriccion (la unica via de edicion
+      // hoy es el globo, Task 4 fundio la columna). Se bloquea aqui, una vez,
+      // para toda la tabla.
+      beforeUndoStackChange: function (actions, source) {
+        return source !== 'internal-update';
       },
       afterOnCellMouseDown: function (event, coords) {
         if (!coords || coords.row < 0 || coords.col < 0) {
@@ -4560,44 +4863,40 @@
 
     var meta = getPIRowMeta(getPhysicalRowFromVisualRow(hot, index), row || {});
     var reglas = reglasIntermediaActuales();
+    var rowData = row || {};
 
-    for (var i = 0; i < restrictionProps.length; i++) {
-      var clave = restrictionProps[i];
-      var entrada = null;
-      for (var j = 0; j < _activeRestrictions.length; j++) {
-        if (_activeRestrictions[j].key === clave) { entrada = _activeRestrictions[j]; break; }
-      }
-      var puedeEditar = reglas.puedeEditarCelda({
-        prop: clave,
-        esHeader: meta.isHeader,
-        tieneResponsable: meta.hasResponsable,
-        esRestriccion: true,
+    // Task 10 (2026-08-21): misma pieza que el globo de escritorio
+    // (`readiness-popover.js`, cuadrito `.aia-readiness__box` + etiqueta +
+    // select). El envase cambia -`<details>` en vez de la caja flotante-,
+    // el guardado tambien -el listener delegado de `renderMobileCards`
+    // via `data-pi-restriccion`/`data-row-index`, no `datosFila.guardar`
+    // del globo-, pero la fila de restriccion (cuadrito, nombre, selector)
+    // es la misma funcion. Defensivo: si el modulo del globo aun no cargo
+    // (import asincrono), la tarjeta se queda sin este bloque en vez de
+    // reventar; el proximo repintado (tras el `.then()`) lo completa.
+    if (_readinessPopover && typeof _readinessPopover.construirCuerpoRestricciones === 'function') {
+      var datosFila = {
+        obligatorias: construirGrupoRestricciones(hardRestrictionProps, rowData),
+        seguimiento: construirGrupoRestricciones(softRestrictionProps, rowData),
+      };
+      var cuerpo = _readinessPopover.construirCuerpoRestricciones(datosFila, {
+        claseFila: 'pi-mobile-card__restriccion',
+        claseEtiqueta: 'pi-mobile-card__restriccion-label',
+        forEtiqueta: true,
+        idSelect: function (item) { return 'pi-restr-' + index + '-' + item.key; },
+        datasetSelect: function (item) {
+          return { piRestriccion: item.key, rowIndex: String(index) };
+        },
+        disabled: function (item) {
+          return !reglas.puedeEditarCelda({
+            prop: item.key,
+            esHeader: meta.isHeader,
+            tieneResponsable: meta.hasResponsable,
+            esRestriccion: true,
+          });
+        },
       });
-
-      var fila = document.createElement('div');
-      fila.className = 'pi-mobile-card__restriccion';
-
-      var etiqueta = document.createElement('label');
-      etiqueta.className = 'pi-mobile-card__restriccion-label';
-      etiqueta.textContent = (entrada && entrada.label) ? entrada.label : clave;
-      etiqueta.setAttribute('for', 'pi-restr-' + index + '-' + clave);
-      fila.appendChild(etiqueta);
-
-      var control = document.createElement('select');
-      control.id = 'pi-restr-' + index + '-' + clave;
-      control.dataset.piRestriccion = clave;
-      control.dataset.rowIndex = String(index);
-      control.disabled = !puedeEditar;
-      var opciones = (entrada && Array.isArray(entrada.options)) ? [''].concat(entrada.options) : [''];
-      for (var k = 0; k < opciones.length; k++) {
-        var opt = document.createElement('option');
-        opt.value = opciones[k];
-        opt.textContent = opciones[k] === '' ? '—' : opciones[k];
-        if (String(row && row[clave] || '') === opciones[k]) opt.selected = true;
-        control.appendChild(opt);
-      }
-      fila.appendChild(control);
-      detalle.appendChild(fila);
+      detalle.appendChild(cuerpo);
     }
 
     if (!meta.hasResponsable) {
@@ -4853,6 +5152,142 @@
 
     syncLegendVisualState();
     applyFiltersAndRender();
+  }
+
+  // Task 9 (2026-08-21): menu propio de filtro en la cabecera de
+  // Habilitacion. `__habilitacion` funde 7 restricciones en una sola
+  // columna sin valor simple que el dropdown nativo de Handsontable pueda
+  // comparar (ver `dropdownMenu`/`filters: true` mas abajo, que siguen
+  // sirviendo a las demas columnas): en vez de forzar el plugin nativo con
+  // una condicion custom, se reusa el filtro manual que ya existe para la
+  // leyenda y los `buscador*` (`activeFilters`, `rowMatchesFilters`,
+  // `applyFiltersAndRender`) — es el mismo mecanismo que ya filtra esta
+  // pantalla, y el unico que sabe leer un valor compuesto via
+  // `window.AIAReadiness.leerRestriccion`.
+  function closeHabilitacionFiltroMenu() {
+    $('.pi-habilitacion-filtro__menu').remove();
+    $(document).off('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro);
+  }
+
+  function onDocumentClickCloseHabilitacionFiltro(event) {
+    if ($(event.target).closest('.pi-habilitacion-filtro-wrap').length) {
+      return;
+    }
+    closeHabilitacionFiltroMenu();
+  }
+
+  function buildHabilitacionFiltroMenu(anchorBtn) {
+    var menu = document.createElement('div');
+    menu.className = 'pi-habilitacion-filtro__menu';
+    menu.setAttribute('role', 'menu');
+
+    var limpiar = document.createElement('button');
+    limpiar.type = 'button';
+    limpiar.className = 'pi-habilitacion-filtro__opcion pi-habilitacion-filtro__opcion--limpiar';
+    limpiar.setAttribute('data-restriccion', '');
+    limpiar.textContent = 'Todas (quitar filtro)';
+    menu.appendChild(limpiar);
+
+    for (var i = 0; i < _activeRestrictions.length; i++) {
+      var restriccion = _activeRestrictions[i];
+      var opcion = document.createElement('button');
+      opcion.type = 'button';
+      opcion.className = 'pi-habilitacion-filtro__opcion';
+      opcion.setAttribute('data-restriccion', restriccion.key);
+      opcion.setAttribute('role', 'menuitemradio');
+      opcion.setAttribute('aria-checked', restrictionFilterActive === restriccion.key ? 'true' : 'false');
+      if (restrictionFilterActive === restriccion.key) {
+        opcion.classList.add('pi-habilitacion-filtro__opcion--activa');
+      }
+      opcion.textContent = restriccion.label || restriccion.key;
+      menu.appendChild(opcion);
+    }
+
+    $(menu).on('click', '.pi-habilitacion-filtro__opcion', function () {
+      var clave = String($(this).attr('data-restriccion') || '');
+      restrictionFilterActive = clave || null;
+      closeHabilitacionFiltroMenu();
+      applyFiltersAndRender();
+    });
+
+    anchorBtn.parentNode.appendChild(menu);
+    return menu;
+  }
+
+  function injectHabilitacionFiltro(TH, headerNode) {
+    // Handsontable renderiza la cabecera real en `.ht_master`, pero ese
+    // thead vive con `visibility: hidden` -lo que el usuario ve es el
+    // overlay clonado `.ht_clone_top` (asi resuelve el scroll con cabecera
+    // fija). `afterGetColHeader` corre para cada clon: inyectar el boton
+    // solo en `.ht_clone_top` evita un boton invisible en el master y
+    // duplicados que romperian un locator en modo estricto.
+    if (!TH.closest('.ht_clone_top')) {
+      return;
+    }
+
+    if (TH.querySelector('.pi-habilitacion-filtro-wrap')) {
+      TH.querySelector('.pi-habilitacion-filtro-wrap').classList.toggle(
+        'pi-habilitacion-filtro-wrap--activo', Boolean(restrictionFilterActive));
+      return;
+    }
+
+    var wrap = document.createElement('span');
+    wrap.className = 'pi-habilitacion-filtro-wrap';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pi-habilitacion-filtro';
+    btn.setAttribute('aria-label', 'Filtrar por restriccion');
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.innerHTML = '<i class="fas fa-filter" aria-hidden="true"></i>';
+
+    $(btn).on('click', function (event) {
+      event.stopPropagation();
+      var existente = $('.pi-habilitacion-filtro__menu');
+      if (existente.length) {
+        closeHabilitacionFiltroMenu();
+        return;
+      }
+      buildHabilitacionFiltroMenu(wrap);
+      $(document).off('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro)
+        .on('click.piHabFiltro', onDocumentClickCloseHabilitacionFiltro);
+    });
+
+    wrap.appendChild(btn);
+    (headerNode || TH).appendChild(wrap);
+
+    // Hallazgo TASKS.md 2026-08-24: la Task 4 fundio las 7 columnas de
+    // restriccion y con ellas se perdio el "?" educativo por restriccion que
+    // vivia en cada cabecera. El globo cubre la consulta puntual al hacer
+    // clic en una fila, pero no reemplaza poder leer las cuatro reglas de
+    // las siete restricciones sin abrir ninguna actividad. Se repone como UN
+    // solo trigger en la cabecera de Habilitacion, con el contenido de las
+    // siete concatenado en el orden ya establecido (duras primero, blandas
+    // despues) -mismo texto de `DEFAULT_POPOVER_CONTENT`, sin inventar uno
+    // nuevo-, en vez de volver al mapa indice->prop que causo el hallazgo
+    // Important 1 de la revision final.
+    if (!TH.querySelector('.pi-help-trigger')) {
+      var ayuda = document.createElement('a');
+      ayuda.href = 'javascript:void(0);';
+      ayuda.className = 'pi-help-trigger';
+      ayuda.innerHTML = '<i class="fas fa-question-circle" aria-hidden="true"></i>';
+      ayuda.setAttribute('aria-label', 'Ayuda sobre las restricciones de habilitacion');
+      $(ayuda).tooltip({
+        trigger: 'manual', html: true, placement: 'bottom', container: 'body', boundary: 'window',
+        template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
+        title: function () {
+          var partes = [];
+          for (var i = 0; i < restrictionProps.length; i++) {
+            var prop = restrictionProps[i];
+            partes.push(
+              '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[prop] || prop) + '</h6>'
+              + (popoverContent[prop] || ''));
+          }
+          return partes.join('');
+        },
+      });
+      wrap.appendChild(ayuda);
+    }
   }
 
   function bindFilters() {

@@ -201,6 +201,35 @@ foreach ($frentes as [$consecutivo, $actividad, $inicio, $fin]) {
 // paquetes, que solo cuenta insumos de la versión activa. Una asignación suelta en
 // `pdc_insumo_paquete` no aparecería allí.
 
+/*
+ * Dos actividades reales (Titulo=0) para `tests/browser/pi-filtro-restriccion.mjs` (Task 9,
+ * 2026-08-21). Los dos frentes de arriba son encabezados (Titulo=1): `ProgramacionIntermediaController::list()`
+ * exige `Titulo = 0`, así que sin esto el sandbox no tenía ninguna fila real de Programación
+ * Intermedia y el filtro por restricción no tenía nada que reducir. Una queda con Materiales al
+ * 100% (liberada, threshold duro 100) y la otra en 0% (pendiente), para que el filtro por
+ * "Materiales" deje ver la reducción de 2 filas a 1.
+ */
+$actividadesPI = [
+    [3, 'ZZTEST ACTIVIDAD PI LIBERADA', '2026-01-06', '2026-01-10', '100'],
+    [4, 'ZZTEST ACTIVIDAD PI PENDIENTE', '2026-01-06', '2026-01-10', '0'],
+];
+
+foreach ($actividadesPI as [$consecutivo, $actividad, $inicio, $fin, $materiales]) {
+    $db->query(
+        'INSERT INTO programa (project_id, unique_id, Consecutivo, Id, Actividad, Titulo, Fecha_Inicio, Fecha_Fin, Materiales)
+         VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)',
+        [PDC_SANDBOX_PROJECT_ID, $consecutivo, $consecutivo, (string) $consecutivo, $actividad, $inicio, $fin, $materiales],
+    );
+    $db->query(
+        'INSERT INTO programa_consolidado
+            (project_id, Consecutivo, Semana, unique_id, Consecutivo_en_Programa, Id, Actividad, Titulo,
+             Fecha_Inicio, Fecha_Fin, Activa, Semanas_Inicio, Materiales)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 1, 1, ?)',
+        [PDC_SANDBOX_PROJECT_ID, $consecutivo, PDC_SANDBOX_SEMANA, $consecutivo, $consecutivo,
+         (string) $consecutivo, $actividad, $inicio, $fin, $materiales],
+    );
+}
+
 printf(
     "Sandbox PDC listo: project_id=%d «%s» (frente principal: %s).\n",
     PDC_SANDBOX_PROJECT_ID,
