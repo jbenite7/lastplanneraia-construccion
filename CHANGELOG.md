@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-19
+updated: 2026-08-24
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,29 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Habilitación en una columna — Programación Intermedia (2026-08-24)
+
+#### Changed
+- Las siete columnas de restricción de `/programacion-intermedia` (Diseños y Especificaciones,
+  Procedimiento Constructivo, Modelación BIM, Materiales, Mano de Obra, Equipos y Herramienta,
+  Actividad Predecesora) se funden en una sola columna «Habilitación» de cuadritos (relleno + visto
+  + tachado para N/A, sin depender solo del color), con hasta 7 visibles y «+N» para el resto. La
+  tabla pasa de pedir 1490 px a caber en 1100 sin scroll horizontal, con guardián automático
+  (`tests/browser/pi-ancho-presupuesto.mjs`).
+- Liberar una restricción se hace desde un globo (Popover API) anclado a la fila, con el mismo
+  selector, guardado y validación de hoy — nada nuevo del lado del servidor. El globo se abre por
+  clic o teclado, se navega entre actividades con flechas sin cerrarlo, se cierra con Escape o clic
+  afuera, y devuelve el foco a la celda. Sin permiso de edición, se ve todo con los selectores
+  desactivados y el motivo explicado.
+- El `% Liberación` (antes columna `Estado_Restricciones`) se muda al globo. El filtro por
+  restricción, que vivía en cada columna, ahora es un menú propio en la cabecera de Habilitación.
+- La tarjeta móvil de Programación Intermedia comparte la misma pieza visual del globo (mismos
+  cuadritos, mismo orden, mismo selector).
+- Los contadores de la leyenda de Programa General e Intermedia toman el color sólido de su estado
+  (antes tinte apagado, no se parecían al chip de su fila).
+  Spec: [[docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design]] · plan:
+  [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]].
 
 ### Interruptor del Control Tower desde /admin (2026-08-20)
 

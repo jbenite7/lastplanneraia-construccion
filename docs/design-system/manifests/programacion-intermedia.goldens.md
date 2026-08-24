@@ -84,3 +84,35 @@ el resto de la pantalla—. Es la reproducción exacta del fallo original.
 
 Eso es lo que cierra el argumento: si sin la llamada hubiera seguido en verde, la semana la estaría
 fijando **otra cosa** y este arreglo no sería la causa de nada. Con la llamada puesta, `2 passed`.
+
+## Recaptura del 2026-08-24 — frente `habilitacion-en-una-columna`
+
+- **Firmas nuevas:**
+  - `programacion-intermedia-dark-1180x820.png` → `90b500fe0e9b532cde22af3a4ebe8e536127a7d2b52e44b497406b3fdf4fd719`
+  - `programacion-intermedia-dark-1440x900.png` → `2739424d804c9dc5a9325c301a69bf5799ced3e2547c7824917d39e6c7ed8800`
+- **Firmas que sustituyen:** `e679df0c…` y `74843929…`, tal como estaban en `programacion-intermedia.json`
+  antes de este cambio. Este documento no tenía registrada una recaptura intermedia entre el
+  2026-08-11 y hoy — el sha real de `programacion-intermedia.json` no coincidía con la firma
+  `21f4be3d…` de la sección anterior. Es una deuda de constancia preexistente, ajena a este frente,
+  que se deja anotada aquí en vez de corregida en silencio.
+- **Sobre qué sha se recapturó:** `09dd6443` (base del plan), tras aplicar los 15 commits del frente
+  `habilitacion-en-una-columna` (spec: `docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design.md`).
+- **Quién lo aprobó:** Felipe, viendo las capturas de la tabla, el globo y la tarjeta móvil enviadas
+  como archivos en el chat, y confirmando explícitamente («Si») antes de la regeneración.
+
+### Qué cambió
+
+Es un rediseño deliberado, no una deriva accidental: las siete columnas de restricción (Diseños y
+Especificaciones, Procedimiento Constructivo, Modelación BIM, Materiales, Mano de Obra, Equipos y
+Herramienta, Actividad Predecesora) y la columna `% Liberación` desaparecen de la tabla. En su lugar
+queda una sola columna «Habilitación» de 130 px con hasta siete cuadritos por fila (relleno + visto +
+tachado para N/A, sin depender solo del color), con embudo de filtro propio en la cabecera. El
+`% Liberación` se muda al globo que se abre al hacer clic en la celda. Verificado con la sonda de
+ancho: la tabla pasa de pedir 1490 px a caber en 1100 sin scroll horizontal.
+
+### Por qué no hace falta una mutación de golden esta vez
+
+La mutación deliberada («¿el golden detecta un cambio real?») ya se hizo en la recaptura del
+2026-08-11 y sigue siendo válida como comprobación del mecanismo: nada de esta obra tocó
+`fijarSemanaDelEscenario` ni la forma en que el test controla la semana. Lo que cambió es la
+superficie que el golden fotografía, no la fontanería que lo hace estable.
