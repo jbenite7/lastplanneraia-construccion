@@ -429,6 +429,22 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 
+## Habilitación en una columna (en curso, sesión propia)
+
+Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
+quedaron vivos del frente de replanteo de coloreado:
+
+- **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
+  con un guardián que falla solo si alguien vuelve a ensanchar.
+- **Contadores de leyenda del color equivocado** — consumen `--ds-state-tint-*` mientras los chips
+  usan `--ds-state-solid-*`. Lo cierra la Task 1, que es independiente del resto.
+
+Pendiente propio derivado: **Programación Semanal hereda la pieza en la ola siguiente**, con
+Intermedia ya rodado una semana en obra. Comparte las mismas cinco restricciones duras
+(`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
+problema que el frente vino a corregir.
+
 ## Replanteo antes de ejecutar
 
 - [[goals/vocabulario-estados-cascada/goal|vocabulario-estados-cascada]] — el usuario pidió

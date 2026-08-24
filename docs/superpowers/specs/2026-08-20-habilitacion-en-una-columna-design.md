@@ -5,19 +5,25 @@ estado: vigente
 fecha: 2026-08-20
 areas: [design-system, lps]
 fuente: docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design.md
-resumen: "Las restricciones de Programación Intermedia se funden en una columna de indicadores y se liberan desde un globo anclado a la fila; la tabla deja de desbordar sin esconder nada. Semanal hereda la pieza en la ola siguiente"
+resumen: "Las restricciones de Programación Intermedia se funden en una columna de 130px de cuadritos y se liberan desde un globo anclado a la fila; el % Liberación se muda al globo y la tabla cabe a 1100 con 82px de holgura. Semanal hereda la pieza en la ola siguiente"
 ---
 
-# Habilitación en una columna — spec v1
+# Habilitación en una columna — spec v2
 
-> **v1 · para revisión de Felipe.** Escrita tras el grillado del 2026-08-20 y ampliada con el
-> segundo sprint del 2026-08-21 (diez decisiones más). Todas las decisiones de producto que
-> aparecen aquí las tomó él en esas conversaciones.
+> **v2 · aprobada por Felipe el 2026-08-21.** Escrita tras el grillado del 2026-08-20, ampliada con
+> el segundo sprint del mismo día (diez decisiones) y cerrada con el tercero del 2026-08-21 (cinco
+> decisiones, tomadas sobre mockups). Todas las decisiones de producto las tomó él.
 >
-> **Dos correcciones a la v0, ambas por dato del código:** (a) las restricciones **no tienen tres
-> estados** sino escalas propias por restricción y un valor `N/A`; (b) **Semanal sí tiene las mismas
-> cinco restricciones duras** (`programacion_semanal/hot.js:570`), así que no puede quedar «fuera de
-> alcance» sin más — queda en la ola siguiente.
+> **Correcciones acumuladas, todas por dato del código o por aritmética, no por cambio de opinión:**
+>
+> | # | La v0/v1 decía | El dato |
+> |---|---|---|
+> | 1 | Las restricciones tienen tres estados | Cada una trae su escala (0/33/66/100, 0/50/100) y todas admiten `N/A` |
+> | 2 | Semanal queda fuera de alcance | Tiene las mismas cinco duras (`programacion_semanal/hot.js:570`); entra en la ola siguiente |
+> | 3 | Se liberan 650 px y la tabla queda en ~1040 | Las cuentas se estimaron sin leer `hot.js:443-467`; las diez columnas no tocadas ya sumaban 1094 de mínimo |
+> | 4 | El `% Liberación` es una columna aparte | Es `Estado_Restricciones` (`hot.js:368`, `piPercentRenderer`, readOnly): mudarlo al globo libera esos 92 px |
+> | 5 | Tope de ocho cuadritos y «+N» | Ocho de 14 px piden 126 de 114 útiles. El tope real es **siete**; con más, seis y el resto contado |
+> | 6 | Inicial dentro del cuadrito | Una letra legible pide ~14 px de caja y la columna no da para eso más el ancho; la inicial sale de la tabla y vive en el globo |
 
 ## El problema, medido
 
@@ -79,70 +85,79 @@ maquetas. El ratón se conserva tal cual y el teclado se suma — no lo reemplaz
 
 ### 1 · La tabla: una columna «Habilitación»
 
-Las **siete columnas de restricción** y la de **% Liberación** se funden en una sola columna:
+Las **siete columnas de restricción** se funden en una sola de **130 px**, y el **% Liberación**
+(la columna `Estado_Restricciones`) **sale de la tabla** y se muda al globo.
 
-- Un cuadrito por restricción en **orden fijo** (las duras primero, las blandas después), con la
-  **inicial dentro** para no depender solo del color ni de la posición.
-- El **% Liberación** calculado, al lado de los cuadritos.
+- Un cuadrito de **14 × 18 px** por restricción, en **orden fijo** (las duras primero, las blandas
+  después). **Sin inicial dentro**: una letra legible obligaría a una caja mayor, y la columna no da
+  para eso. El nombre completo vive en el globo y en el nombre accesible de la celda.
 - La celda es focuseable y tiene nombre accesible: anuncia la actividad, cuántas restricciones
-  faltan y el porcentaje.
-- **Tope de ocho cuadritos y «+N»**: el número de restricciones lo fija el proyecto (Construcción
-  usa siete, otras áreas dos), así que la columna no puede asumir una cantidad.
+  faltan y el porcentaje — que sigue existiendo aunque ya no se dibuje.
+- **Siete cuadritos visibles como tope, no ocho.** El número lo fija el proyecto (Construcción usa
+  siete, otras áreas dos), así que la columna no puede asumir una cantidad; con ocho o más se
+  muestran **seis y el resto contado** («+4»).
 - Las **filas de capítulo** llevan la celda vacía: no son actividades y no se liberan.
 - La cabecera conserva el **embudo de filtro por restricción** que hoy existe en cada columna
   (`filters: true`). Fundir las columnas sin reponerlo mataría un filtro que el equipo usa.
 
-**Cómo se lee un cuadrito.** Dos señales independientes, porque responden a dos preguntas distintas:
+**Por qué el porcentaje se va.** Al lado de la celda ya va el chip de Estado Operativo, que se
+calcula **desde ese mismo porcentaje**, y los cuadritos muestran cuántas faltan, que es el mismo
+dato contado de otra forma. Tres formas de decir lo mismo en una fila. En el globo sí sirve, porque
+ahí alguien está trabajando esa actividad.
+
+**Cómo se lee un cuadrito.** Tres señales, y ninguna depende solo del color:
 
 | Señal | Qué dice | Por qué |
 |---|---|---|
 | **Relleno** (vacío → medio → lleno) | Cuánto lleva esa restricción | Las escalas varían: Materiales va 0/33/66/100, Predecesora 0/50/100. Un relleno cubre cualquier escala, incluso si mañana cambian los pasos. |
-| **Color** | Si **cumple su propio umbral** | Cada restricción tiene su `threshold`: Predecesora al 50 % ya cuenta como liberada, Materiales necesita 100. Colorear por el porcentaje crudo pintaría de amarillo algo ya resuelto, y la gente perseguiría restricciones muertas. |
+| **Color** | Si **cumple su propio umbral** | Cada restricción tiene su `threshold`: Predecesora al 50 % ya cuenta, Materiales necesita 100. Colorear por el porcentaje crudo pintaría de amarillo algo ya resuelto, y la gente perseguiría restricciones muertas. |
+| **Marca de visto** en la esquina | Que cumplió, **sin usar color** | Dos cuadritos medio llenos —Predecesora al 50 que ya cumple y Materiales al 50 que no— serían idénticos para quien no distingue verde de amarillo. El visto es la señal más reconocible para «esto ya está» y no gasta ancho. |
+
+Un borde más grueso **no** sirve para esto: a 14 px, uno o dos píxeles de borde no se distinguen a
+la distancia en que esta pantalla se usa.
 
 **`N/A` va tachado y en gris apagado.** Ni verde ni rojo: no cuenta para el cálculo y no debe leerse
 como liberada. Pintarlo de verde es lo más cómodo de programar y es justo lo que hace que alguien dé
 por resuelta una restricción que nadie miró.
 
-**Cuentas del ancho — corregidas el 2026-08-21, y el resultado cambia la conclusión.** Las
-cifras de la v0 (572 + 78 = 650 liberados) se estimaron sin leer los arrays reales de
-`hot.js:443-467`. Los verdaderos:
+**Cuentas del ancho — leídas de `hot.js:443-467`, no estimadas.** Disponible a 1100: **1040 px**,
+descontados ~60 de scrollbar y barra lateral.
 
-| Bloque | Mínimo | Piso duro |
+| Bloque | Antes (mín / piso) | Después (mín / piso) |
 |---|---|---|
-| 7 columnas fijas iniciales | 672 | 580 |
-| 7 restricciones (74 / 64 c.u.) | 518 | 448 |
-| 3 columnas fijas finales | 422 | 326 |
-| **Total** | **1612** | **1354** |
+| 7 columnas fijas iniciales | 672 / 580 | 672 / 580 |
+| 7 restricciones | 518 / 448 | — |
+| `Estado_Restricciones` (% Liberación) | 92 / 78 | — se muda al globo |
+| Estado Operativo + Observaciones | 330 / 248 | 330 / 248 |
+| **Habilitación** | — | **130 / 130** |
+| **Total** | **1612 / 1354** | **1132 / 958** |
 
-Disponible a 1100: **1040 px** (descontados ~60 de scrollbar y barra lateral).
+**Cabe: 958 contra 1040, con 82 px de holgura** — con las columnas en su piso, que es lo que hace el
+reparto responsivo cuando aprieta. No sobra margen para agregar una columna nueva, y eso es
+deliberado: lo vigila la prueba del punto 1 de la condición de hecho.
 
-**El problema es más profundo de lo que decía la v0:** las **diez columnas que esta spec no toca**
-suman ya **1094 px de mínimo** — más que los 1040 disponibles, sin contar una sola restricción.
-Apretándolas a su piso duro bajan a 906; sumando una Habilitación de 200 px queda **1106**, que
-**sigue sin caber por 66 px**.
+**Dentro de la celda**, 130 px dejan 114 útiles (padding 8 + 8):
 
-Conclusión: **fundir las restricciones es necesario pero no suficiente.** Para cumplir la condición
-de hecho #1 hay que hacer además una de estas dos, y es decisión de Felipe cuál:
+- siete cuadritos: `7 × 14 + 6 × 2` = **110** ✓
+- ocho cuadritos: `8 × 14 + 7 × 2` = **126** ✗ — por eso el tope es siete
+- seis más «+N»: `6 × 14 + 5 × 2 + 2 + 17` = **113** ✓
 
-- **Habilitación de 134 px o menos** (cuadritos de ~10 px y el porcentaje debajo, no al lado), sin
-  tocar ninguna otra columna; o
-- **bajar el piso de una de las tres columnas anchas** — Actividad (piso 120), Estado Operativo
-  (118) u Observaciones (130) —, lo que implica decidir cuál de esos textos puede estrecharse.
-
-Lo que **no** es opción es dejarlo en 1106 y llamarlo cumplido.
+**Lo que se decidió NO tocar:** el piso de Actividad (120), Estado Operativo (118) y Observaciones
+(130). Son las tres columnas de texto; estrecharlas devolvería el recorte silencioso que este frente
+vino a erradicar. Si algún día hace falta más ancho, se revisa **qué columna sobra**, no cuál se
+aprieta — y eso es un frente propio.
 
 ### 2 · El globo: liberar sin perder el contexto
 
 Se abre con clic en la celda, o con Enter/Espacio si se llegó por teclado. Contiene:
 
-- Un **marcador de avance arriba** con el `% Liberación` y el estado operativo de la actividad, que
-  **se mueve al marcar**. Sin él, la recompensa del gesto queda tapada por el propio globo: hoy la
+- Un **marcador de avance arriba** con el `% Liberación` —que ya no vive en la tabla, así que este
+  es su único sitio— y el estado operativo de la actividad, que **se mueve al marcar**. Sin él, la recompensa del gesto queda tapada por el propio globo: hoy la
   fila recalcula al instante (`recalculateRestrictionStateForVisualRow`) y el usuario lo ve.
 - **Duras** (bloquean la habilitación) y **blandas** (seguimiento), agrupadas y rotuladas como tales
   — hoy esa distinción solo vive en una clase CSS (`pi-soft-restriction-cell`).
 - Cada una con **el mismo selector y las mismas opciones de hoy**: mismo gesto, mismo dato, misma
   validación. No se inventa un editor nuevo.
-- El **% Liberación** al pie, recalculado al vuelo.
 
 **Comportamiento:**
 - **Guarda al elegir**, igual que la celda hoy. Sin botón de confirmar: añadirlo cambiaría un
@@ -195,6 +210,11 @@ Se abre con clic en la celda, o con Enter/Espacio si se llegó por teclado. Cont
 6. La suite del gate en verde y los goldens regenerados **con aprobación visual explícita de
    Felipe**.
 7. El **filtro por restricción sigue existiendo** desde la cabecera de Habilitación.
+8. Los **contadores de la leyenda** de Programa General e Intermedia usan el mismo token que el chip
+   de estado de su fila, comprobado sobre valores computados en el navegador y no sobre el CSS
+   declarado.
+9. **La información no depende solo del color:** relleno y visto distinguen los cuatro casos con la
+   pantalla en escala de grises.
 
 ## Cómo se mide, un mes después
 
@@ -216,11 +236,28 @@ buena idea.
 - **Un clic más por restricción suelta.** Hoy se edita en la celda directamente; con el globo hay
   que abrirlo. Se compensa cuando se liberan varias de la misma actividad, que según Felipe es el
   gesto real. Queda declarado como el costo aceptado de la decisión.
-- **Densidad de la celda:** siete cuadritos más un porcentaje en ~200px, sobre filas de 24px de alto.
-  Hay que medirlo en pantalla antes de dar por buena la maqueta.
+- **Densidad de la celda:** siete cuadritos de 14 × 18 px en 114 útiles, sobre filas de 24 px de
+  alto. Las cuentas cierran con 4 px de sobra, así que hay poco margen: hay que medirlo en pantalla
+  con la fuente real antes de dar por buena la maqueta.
+- **El visto sobre un cuadrito de 14 px es pequeño.** Es la señal que sostiene el criterio de no
+  depender del color, así que si en pantalla no se distingue, no se encoge el problema: se sube el
+  tamaño del cuadrito y se recalcula el ancho.
 - **Los goldens de Intermedia cambian otra vez**, y con ellos una nueva aprobación visual.
 
-### 4 · Móvil: la misma pieza, otro envase
+### 4 · Los contadores de la leyenda
+
+Los items de la leyenda usan la familia de tokens **vieja** (`--ds-cell-state-*`, `styles.css:536-542`)
+mientras los chips de estado de la tabla ya usan la nueva (`--ds-state-solid-*`). Por eso los
+contadores se ven todos del mismo gris verdoso y no se parecen a lo que describen.
+
+**Cada contador toma el color sólido de su estado, idéntico al chip de su fila.** Semanal ya lo hizo
+(`programacion-semanal.css:3683`); falta Programa General e Intermedia. Una leyenda que no se parece
+a la tabla no está describiendo nada.
+
+No se le inventa una paleta propia más suave: cuatro contadores en una barra no saturan la pantalla,
+y desalinearlos del chip es el defecto que se está corrigiendo.
+
+### 5 · Móvil: la misma pieza, otro envase
 
 En móvil la tabla **ya no es una tabla**: se convierte en tarjetas (`pi-mobile-card`) que listan
 cada restricción con su nombre y su valor. O sea, el panel por fila **ya existe ahí y funciona**.
