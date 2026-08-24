@@ -710,7 +710,11 @@
                 <h3 class="font-semibold text-gray-800">Responsables (CIP)</h3>
             </div>
             <?php if (($role ?? '') === 'R'): ?>
-            <a href="/bi/responsables?alcance=obra" class="aia-btn aia-btn--secondary text-sm">
+            <?php
+                $cipVerTodaLaObraHref = \App\View\Components\BiAccessComponent::url('profesionales');
+                $cipVerTodaLaObraHref .= (str_contains($cipVerTodaLaObraHref, '?') ? '&' : '?') . 'alcance=obra';
+            ?>
+            <a href="<?= htmlspecialchars($cipVerTodaLaObraHref, ENT_QUOTES, 'UTF-8') ?>" class="aia-btn aia-btn--secondary text-sm">
                 Ver toda la obra
             </a>
             <?php endif; ?>

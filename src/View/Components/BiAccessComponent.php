@@ -76,7 +76,9 @@ class BiAccessComponent
      * (spec del 2026-08-13: docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md).
      * Sus accesos —barra lateral, selector de proyectos, tarjeta del cajón contextual,
      * los cinco botones «BI …» y los boot-configs de JS— solo se pintan para quien
-     * además puede abrir el módulo, que hoy es únicamente Admin.
+     * además puede abrir el módulo. Hoy eso incluye Admin, Director (desde el
+     * 2026-08-20) y Residente (Tarea 3, 2026-08-24), estos dos últimos sujetos al
+     * interruptor global `BiPreviewAccessPolicy::canOpen()`.
      *
      * Corregido el 2026-08-13, mismo día: la primera versión devolvía `false` para
      * todos, y dejaba al propio Admin teniendo que teclear la URL. Lo reportó el
