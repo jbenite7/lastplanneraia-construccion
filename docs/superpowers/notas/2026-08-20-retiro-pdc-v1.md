@@ -22,6 +22,11 @@ project: lps-aia
 leyendo `general_informe_pdc` ni `bi_pdc_general`. Esta dispatch no repitió la verificación —
 se registra la confirmación tal cual fue relatada, con su fecha.
 
+**Ampliado el 2026-08-24, mismo chat:** Felipe confirmó que la respuesta cubre los cinco objetos
+del retiro, no solo los dos citados arriba — **ninguna de `pdc`, `general_informe_pdc`,
+`bi_pdc_general`, `papelera_pdc` ni `backup_licify_general_informe_pdc_20260612` se usa en ningún
+informe de Power BI vivo.** D84 queda satisfecho para el conjunto completo.
+
 ## Paso 2 — Extracción del archivo histórico
 
 Ejecutado el 2026-08-24 por SSH a `siteground-produccion-lastplanner` (solo lectura: `mysqldump`
@@ -121,12 +126,19 @@ sin escritura.
 
 ## Qué falta para el Paso 5
 
-No ejecutado por diseño de esta dispatch. Antes de pedir el visto de Felipe, quien lo ejecute
-debería:
+No ejecutado por diseño de esta dispatch. **Decisión de Felipe (2026-08-24): F0 cierra ahora sin
+ejecutar el Paso 5.** La Tarea 6 queda preparada y pendiente — no bloquea el cierre de F0, por el
+propio texto del plan («las tablas están retiradas, o hay constancia escrita de por qué no»).
 
-1. Resolver el pendiente de restauración real del dump (Paso 3/4) si se considera bloqueante,
-   o aceptar la verificación por contenido como suficiente.
-2. Confirmar de nuevo el prerrequisito D84 si pasó tiempo desde el 2026-08-20.
+Antes de pedir el visto de Felipe para el retiro real, quien lo retome debería:
+
+1. **Resolver la restauración real del dump** (Pasos 3/4): cargar el CSV y el dump en una tabla
+   real de MySQL (con la autorización correspondiente para la escritura DDL en desarrollo) y
+   confirmar que no falla por encoding, tipos de fecha o escapes de texto libre. La verificación
+   por contenido de esta bitácora confirma que los archivos no están truncados ni corruptos, pero
+   **no** confirma que carguen sin error en un motor real.
+2. **D84 ya cubre los cinco objetos** (ampliado 2026-08-24, arriba) — no hace falta repetirlo
+   salvo que pase mucho tiempo desde esta fecha.
 3. Registrar en esta misma bitácora: qué se retiró, cuándo, con qué respaldo, y el conteo de
    filas antes y después — tal como pide el Paso 5 del brief.
 
