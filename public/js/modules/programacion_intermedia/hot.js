@@ -56,6 +56,39 @@
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
+  // Task 6 (2026-08-21): el globo se importa una sola vez y se engancha por
+  // delegacion en `document`, igual que `state-tooltip.js` — no depende de
+  // que la tabla ya haya renderizado la celda en el instante del import().
+  var _readinessPopover = null;
+  import('/js/design-system/readiness-popover.js').then(function (mod) {
+    _readinessPopover = mod.AIAReadinessPopover;
+  });
+
+  function abrirGloboHabilitacion(celda) {
+    if (!_readinessPopover || !celda) { return; }
+    var visualRow = celda.hasAttribute('data-row') ? parseInt(celda.getAttribute('data-row'), 10) : NaN;
+    var datosFila = {};
+    if (hot && !isNaN(visualRow)) {
+      datosFila = getSourceRowDataByVisualRow(hot, visualRow) || {};
+    }
+    _readinessPopover.abrir(celda, datosFila);
+  }
+
+  document.addEventListener('click', function (ev) {
+    var celda = ev.target instanceof Element ? ev.target.closest('.pi-habilitacion-cell') : null;
+    if (celda) {
+      abrirGloboHabilitacion(celda);
+    }
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') { return; }
+    var celda = ev.target instanceof Element ? ev.target.closest('.pi-habilitacion-cell') : null;
+    if (celda) {
+      ev.preventDefault();
+      abrirGloboHabilitacion(celda);
+    }
+  });
 
   var options = window.PI_HOT_OPTIONS || {};
   var subcontratistas = Array.isArray(options.subcontratistas) ? options.subcontratistas.slice() : [];
@@ -3371,6 +3404,12 @@
 
       td.appendChild(caja);
       td.setAttribute('aria-label', describirHabilitacion(rowData, lista));
+      // Task 6 (2026-08-21): la celda abre el globo con clic o Enter/Espacio,
+      // asi que necesita ser focuseable y llevar la fila visual consigo para
+      // que el listener delegado en `document` (mas arriba en este archivo)
+      // sepa que datos pasarle al globo sin recalcular nada.
+      td.setAttribute('tabindex', '0');
+      td.setAttribute('data-row', String(row));
     });
 
     Handsontable.renderers.registerRenderer('piResponsableRenderer', function (instance, td, row, col, prop, value) {
