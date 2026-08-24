@@ -720,18 +720,31 @@ class ReportProcessor
                 );
 
                 // --- PROCESAR PROFESIONALES (CIP) ---
-                $this->reportSubprocess('CIC', $proyecto, 'Procesando CIP profesionales', 'running');
-                $this->processCalificacionEntidad(
-                    $proyecto,
-                    $dbName,
-                    $semanaProyecto,
-                    'cip',
-                    'profesional',
-                    'CIC Profesionales',
-                    [$this, 'updatePACProfesionales'],
-                    [$this, 'generateProfesionales'],
-                    $messages,
-                );
+                // `cic` se puebla cada semana porque CicApiController::list() corre un
+                // "sync loop" (`for ($s = 1; $s <= $semana; $s++)`) cada vez que alguien
+                // abre la pantalla de Calificación Integral Contratistas — por eso acumula
+                // filas de semanas pasadas aunque este método (`updateCICProyectos`) solo
+                // procese la semana activa. `cip` no tiene esa pantalla equivalente
+                // (no existe un CipApiController), así que aquí es el único lugar que la
+                // puebla; por eso replicamos el mismo backfill 1..semanaProyecto solo para
+                // `cip`, sin tocar el bloque de `cic`. Detectado 2026-08-24 (Task 1,
+                // control-tower-f0-higiene-datos): con una sola llamada a la semana activa,
+                // `cip` solo captura responsables cuyo PAC ya estaba marcado justo en el
+                // instante del run — casi nunca pasa — y por eso la tabla quedaba vacía.
+                for ($semanaCip = 1; $semanaCip <= $semanaProyecto; $semanaCip++) {
+                    $this->reportSubprocess('CIC', $proyecto, 'Procesando CIP profesionales', 'running');
+                    $this->processCalificacionEntidad(
+                        $proyecto,
+                        $dbName,
+                        $semanaCip,
+                        'cip',
+                        'profesional',
+                        'CIC Profesionales',
+                        [$this, 'updatePACProfesionales'],
+                        [$this, 'generateProfesionales'],
+                        $messages,
+                    );
+                }
 
                 $messages[] = "$proyecto (Semana $semanaProyecto) - OK";
                 $this->reportProgress('CIC', $proyecto, $cicIdx, $totalCIC, 'ok');
