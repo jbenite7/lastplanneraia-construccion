@@ -28,6 +28,20 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### El runner de pruebas deja de juzgar en un idioma y reportar en otro (2026-08-24)
+
+#### Fixed
+- `scripts/run-php-tests.php` marcaba SOSPECHOSO («salió 0 sin comprobar nada») a tests que sí
+  comprueban, solo porque anuncian su verde con `PASA:` en español mientras el detector buscaba
+  `pass` en inglés. Tuvo `main` en rojo casi una hora por `test_causa_atribucion.php`, cuyo mensaje
+  de hallazgo además mandaba al sitio equivocado —«dale aserciones»— cuando las aserciones ya
+  estaban puestas. Otros **seis** tests de la suite dicen `PASA` y se salvaban de rebote, por
+  imprimir alguna otra línea con una señal reconocida: la trampa seguía armada para el siguiente.
+- Se añade `pasa:` a las señales, **con los dos puntos**: a secas también casaría dentro de «no
+  pasa» y un test que saliera 0 anunciando su propio fallo quedaría verde. Con los dos puntos cubre
+  los siete casos reales sin inventar ninguno. Cubierto por `tests/fixtures/runner/espanol/` y tres
+  comprobaciones nuevas en `test_php_test_runner.php`.
+
 ### El guard de laboratorio se alinea con el replanteo B (2026-08-24)
 
 #### Fixed

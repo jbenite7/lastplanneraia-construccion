@@ -87,6 +87,14 @@ $r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/mudo', '--ni
 verificar('un verde sin respaldo se marca sospechoso', str_contains($r['salida'], 'SOSPECHOSO'));
 verificar('un verde sin respaldo no deja el runner en 0', $r['codigo'] !== 0);
 
+// Un test que comprueba de verdad y lo anuncia en espanol NO es sospechoso. El detector
+// buscaba `pass` mientras la suite escribe `PASA:`, asi que marcaba como mudos a tests que
+// tenian sus aserciones puestas — y el aviso mandaba a arreglar lo que ya estaba bien.
+$r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/espanol', '--nivel=puro']);
+verificar('un verde anunciado en espanol no se marca sospechoso', !str_contains($r['salida'], 'SOSPECHOSO'));
+verificar('un verde anunciado en espanol cuenta como que paso', str_contains($r['salida'], '1 pasaron'));
+verificar('un verde anunciado en espanol deja el runner en 0', $r['codigo'] === 0);
+
 // Un test que se salta solo sale 0, pero no ha comprobado nada: contarlo entre
 // los que pasaron infla la cobertura que el CI dice tener.
 $r = correrRunner($runner, [$sinUnitarios, '--dir=' . $fixtures . '/salta', '--nivel=puro']);

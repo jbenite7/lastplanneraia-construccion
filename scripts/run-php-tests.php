@@ -39,7 +39,18 @@ const NIVELES = [
  * Señales de que un test comprobó algo de verdad. Un test que sale 0 sin
  * imprimir ninguna de estas es un verde sin respaldo: no demuestra nada.
  */
-const SENALES_DE_COMPROBACION = ['pass', 'ok', 'comprobacion', 'comprobación', '✓', 'correcto'];
+// El detector juzgaba en un idioma distinto al que este repo usa para reportar: buscaba `pass`
+// mientras siete tests de `tests/` anuncian su verde con `PASA:` en español. `str_contains('pasa:',
+// 'pass')` es false, asi que un test correcto —con sus tres caminos de fallo y su `exit(1)`— se
+// marcaba SOSPECHOSO. Medido el 2026-08-24: `test_causa_atribucion.php` tuvo `main` en rojo casi
+// una hora, y el mensaje del propio hallazgo mandaba al sitio equivocado («dale aserciones»)
+// porque las aserciones ya estaban. Los otros seis se salvaban de rebote, por imprimir ademas
+// alguna otra linea con una senal reconocida: la trampa seguia armada para el siguiente.
+//
+// Va `pasa:` con los dos puntos, no `pasa` a secas, y la diferencia importa: a secas tambien
+// casaria dentro de «no pasa», y un test que saliera 0 anunciando su propio fallo quedaria verde.
+// Con los dos puntos cubre los siete casos reales y no inventa ninguno.
+const SENALES_DE_COMPROBACION = ['pass', 'pasa:', 'ok', 'comprobacion', 'comprobación', '✓', 'correcto'];
 
 const SALIDA_OK = 0;
 const SALIDA_FALLO = 1;
