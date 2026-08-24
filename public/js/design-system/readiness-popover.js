@@ -293,10 +293,18 @@ const focoAtrapado = (ev) => {
   }
 };
 
-// Step 7 (Task 7): Ctrl+Z (Cmd+Z en mac) reenvia a `hot.undo()` -la MISMA
-// pila que usa la tabla, no una propia del globo- y sincroniza los
-// `<select>` afectados con el dato ya revertido, porque nada dentro del
-// globo escucha `afterChange` para refrescarse solo.
+// Step 7 (Task 7): Ctrl+Z (Cmd+Z en mac) llama a `estado.datosFila.deshacer()`
+// -NO al `hot.undo()` nativo de Handsontable-. Verificado en vivo: las siete
+// props de restriccion dejaron de ser columnas propias de la grilla desde
+// que la Task 4 las fundio en `__habilitacion`, asi que `propToCol('D_y_E')`
+// (y equivalentes) no resuelve, y el `ChangeAction.undo()` nativo de
+// Handsontable revienta al intentar `setDataAtCell(row, columna)` con una
+// columna inexistente. `deshacer()` (armado en `hot.js`) es por eso un unico
+// nivel de deshacer PROPIO del globo -mismo camino de escritura que
+// `guardar`, `setDataAtRowProp(..., 'edit')`, no un guardado nuevo-, no la
+// pila nativa. Tras invocarlo, se sincronizan los `<select>` afectados
+// leyendo el dato ya revertido, porque nada dentro del globo escucha
+// `afterChange` para refrescarse solo.
 const alDeshacer = (ev) => {
   if (!estado || !(ev.ctrlKey || ev.metaKey) || ev.key.toLowerCase() !== 'z') {
     return;
