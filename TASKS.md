@@ -179,10 +179,18 @@ estado por defecto mientras Felipe no reparta.
   (Debe Iniciar, Actividad Futura, En Curso, Atrasada, Terminada, Sin Datos). Confirmado con
   `git stash` que el diff es **idéntico con y sin** el cambio de este frente: es preexistente. El
   golden vigente es de `f52d8120` (2026-08-24 11:24, 11 min después del propio
-  `39a8b69c` de este frente); algo entre esa captura y ahora — sospecha: el mismo
-  `font-variant-numeric: tabular-nums` que ya rompió el golden de PI (ver
-  [[docs/design-system/manifests/programacion-intermedia.goldens]]) — invalidó la de PG sin que
-  nadie lo notara. Diagnosticar la causa exacta y recapturar con aprobación visual de Felipe.
+  `39a8b69c` de este frente). **Verificado el mismo día:** `git log f52d8120..HEAD --
+  public/css/` no trae nada — el CSS de la leyenda es idéntico entre la captura del golden y
+  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar. Sigue abierta la
+  sospecha de no-determinismo de renderizado (el mismo `font-variant-numeric: tabular-nums`
+  que ya rompió el golden de PI, ver
+  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **sin confirmar**:
+  no se pudo correr el test contra un entorno vivo porque este worktree tenía `vendor/`
+  faltante (ya instalado con `composer install`) y la base del contenedor `db` sin sembrar
+  (no existe ni la tabla `users`). Sembrar la base es tarea de infraestructura aparte, no
+  decidida hoy. Quien retome: sembrar la DB, correr
+  `npx playwright test tests/browser/programa-general.visual.mjs --workers=1`, diagnosticar la
+  causa exacta contra el diff real y recapturar con aprobación visual de Felipe.
 
 - [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
   `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
