@@ -68,7 +68,7 @@ test('visual regression contract covers the Programa General pilot matrix', asyn
 
 test('CI is reproducible, least-privileged and has no deployment path', async () => {
   const [workflow, compose, fixtureImage, fixture] = await Promise.all([
-    read('.github/workflows/design-system.yml'),
+    read('.github/workflows/ci.yml'),
     read('docker-compose.ci.yml'),
     read('database/fixtures/design-system-ci.Dockerfile'),
     read('database/fixtures/design-system-ci.sql'),
@@ -160,7 +160,7 @@ test('CI image includes analysis tools without changing the production default',
 });
 
 test('runtime CI continuously enforces the Programa General persistence boundary', async () => {
-  const workflow = await read('.github/workflows/design-system.yml');
+  const workflow = await read('.github/workflows/ci.yml');
 
   const preflightIndex = workflow.indexOf('node scripts/design-system-ci-preflight.mjs');
   const startIndex = workflow.indexOf('docker compose -p "$COMPOSE_PROJECT_NAME"');
@@ -251,7 +251,7 @@ test('versioned runner scripts separate static, accessibility and visual gates',
 });
 
 test('CI tolerates keyboard and reflow evidence and uploads its failures', async () => {
-  const workflow = await read('.github/workflows/design-system.yml');
+  const workflow = await read('.github/workflows/ci.yml');
   const steps = parseJobSteps(workflow, 'design-system-runtime');
   const blocking = steps.find(({ id }) => id === 'blocking-runtime');
   const evidence = steps.find(({ id }) => id === 'keyboard-reflow-evidence');
@@ -277,7 +277,7 @@ test('runtime failures preserve Playwright, axe and Docker evidence', async () =
     read('playwright.config.mjs'),
     read('e2e/playwright.config.mjs'),
     read('tests/browser/programa-general-design-system.mjs'),
-    read('.github/workflows/design-system.yml'),
+    read('.github/workflows/ci.yml'),
   ]);
 
   assert.match(config, /forbidOnly:\s*Boolean\(process\.env\.CI\)/);
@@ -294,7 +294,7 @@ test('runtime failures preserve Playwright, axe and Docker evidence', async () =
 test('pilot runtime budgets remain available while the canonical runtime uses the isolated laboratory budget', async () => {
   const [packageJson, workflow, collector, baseline, retrospective, recoveryManifest, schema, closeout] = await Promise.all([
     readJson('package.json'),
-    read('.github/workflows/design-system.yml'),
+    read('.github/workflows/ci.yml'),
     read('tests/browser/design-system-runtime-budget.mjs'),
     readJson('docs/design-system/runtime-baseline-0.3.3.json'),
     readJson('docs/design-system/runtime-measurements/0.3.3-retrospective.json'),

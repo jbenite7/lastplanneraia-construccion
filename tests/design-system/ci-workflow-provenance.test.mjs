@@ -7,7 +7,7 @@ import { parseJobSteps } from './workflow-contract-parser.mjs';
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
 test('runtime workflow exports preflight provenance before composing a unique target', async () => {
-  const workflow = await read('.github/workflows/design-system.yml');
+  const workflow = await read('.github/workflows/ci.yml');
   const steps = parseJobSteps(workflow, 'design-system-runtime');
   const provenance = steps.find(({ id }) => id === 'runtime-provenance');
   const preflight = steps.find(({ name }) => name === 'Verify isolated runtime target');

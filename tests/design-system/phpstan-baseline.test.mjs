@@ -14,7 +14,7 @@ const read = async (path) => readFile(new URL(path, root), 'utf8');
 
 test('PHPStan legacy debt is enforced by an executable baseline gate', async () => {
   const pkg = JSON.parse(await read('package.json'));
-  const workflow = await read('.github/workflows/design-system.yml');
+  const workflow = await read('.github/workflows/ci.yml');
   const closeout = JSON.parse(await read('docs/design-system/closeout-evidence.json'));
   assert.equal(pkg.scripts['test:design-system:phpstan'], 'node scripts/design-system-phpstan-baseline.mjs');
   assert.match(workflow, /npm run test:design-system:phpstan/);
@@ -31,7 +31,7 @@ test('PHPStan legacy debt is enforced by an executable baseline gate', async () 
 });
 
 test('CI PHPStan targets the isolated compose project', async () => {
-  const workflow = await read('.github/workflows/design-system.yml');
+  const workflow = await read('.github/workflows/ci.yml');
   const steps = parseJobSteps(workflow, 'design-system-runtime');
   const provenanceIndex = steps.findIndex(({ id }) => id === 'runtime-provenance');
   const phpstanIndex = steps.findIndex(({ name }) => name === 'Enforce PHPStan baseline');
