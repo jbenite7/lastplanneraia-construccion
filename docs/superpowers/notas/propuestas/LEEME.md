@@ -1,3 +1,13 @@
+---
+capa: fuente
+tipo: guia
+estado: vigente
+fecha: 2026-08-21
+areas: [proceso]
+fuente: docs/superpowers/notas/propuestas/LEEME.md
+resumen: Cada investigación deja un archivo propio en esta carpeta y no toca la spec.
+---
+
 # Propuestas de ajuste a la spec del replanteo de la Control Tower
 
 Cada investigación deja **un archivo propio** en esta carpeta y **no toca la spec**.
