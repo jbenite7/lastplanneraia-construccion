@@ -83,7 +83,7 @@ $shellInformacion = array_values(array_filter([
     // /bi/* el sidebar necesita pintar su propio destino activo o revienta con "unknown
     // active sidebar destination". No lo simplifiques a solo la primera condición.
     (\App\View\Components\BiAccessComponent::canAccess() || $shellActive === 'control-tower')
-        ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::url('control-tower'), 'icon' => 'chart']
+        ? ['id' => 'control-tower', 'label' => 'Control Tower - Informes', 'href' => \App\View\Components\BiAccessComponent::url(\App\View\Components\BiAccessComponent::defaultModuleForRole($shellRol)), 'icon' => 'chart']
         : null,
     ['id' => 'semanas-proyecto', 'label' => 'Semanas del Proyecto', 'icon' => 'calendar', 'action' => true],
     $shellItem('profesionales', 'Profesionales', '/profesionales', 'user'),
