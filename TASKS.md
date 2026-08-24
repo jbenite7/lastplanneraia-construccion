@@ -172,6 +172,15 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **CI · regenerar la baseline de presupuesto de runtime** — `runtime-baseline-0.3.5.json` se
+  grabó el 2026-08-18 y desde entonces entraron **56 commits de código** a `main`, incluidas las
+  cuatro olas del replanteo de coloreado. El gate no lo cazó porque estaba apagado detrás del
+  fallo de `general_flags` (2026-08-21 → 2026-08-24). Al destrabarlo aparecen dos excesos:
+  `jsGzipBytes` 643.832 contra un techo de 638.380, e `initializationMs` 596,5 contra 301,9.
+  **No son del frente de tablas:** su delta de JS son 2.203 B gzip sobre un exceso de 5.452 B, e
+  `initializationMs` mide `performance.now()` de carga de página completa. Regenerar la baseline
+  es **aprobación designada de Felipe**, igual que los goldens: no se toma de paso.
+
 - [ ] **BI · `status-critical` usado como color de serie en `bi-spa.js:3704`** — es la mitad
   `-text` de un par de estado (`#ffcdc8`, rosa pálido para tinta), no un color de dato. Mismo error
   de rol que se corrigió el 2026-08-24 en los botones de Programación Semanal. Ya estaba anotado
