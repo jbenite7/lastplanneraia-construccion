@@ -172,6 +172,26 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General)** — de 24 botones de
+  filtro idénticos, `markDecorativeHeaderTriggers` marca 12 con `aria-hidden` y deja 12 sin marcar.
+  Son 12 columnas por 2 contenedores (`ht_master` y `ht_clone_top`), así que cada columna tiene un
+  botón anunciado y su gemelo callado — el mismo defecto que el comentario de esa función venía a
+  cerrar, reaparecido por el otro lado. Medido en vivo el 2026-08-24; anotado en
+  `public/js/modules/programa_general/hot.js:2411`. Con `navigableHeaders: true` el camino de
+  teclado NO pasa por esos botones, así que marcarlos los 24 es lo coherente.
+
+- [ ] **DS · dos salidas del sistema en las tablas** — `handsontable-module.css:579` usa
+  `font-family: monospace` literal en vez de `--ds-font-mono`, y
+  `handsontable-header-global.css:167` llama a «Font Awesome 5 Free» directamente en vez de una
+  primitiva de ícono. Los dos son de una línea; van juntos porque son el mismo tipo de fuga.
+
+- [ ] **CI · el mismo SQL declarado en cuatro listas que deben coincidir** — al sembrar
+  `general_flags` (2026-08-24) hubo que tocar `database/fixtures/design-system-ci.Dockerfile`,
+  `scripts/design-system-ci-preflight.mjs`, `tests/design-system/ci-preflight.test.mjs` y
+  `tests/design-system/visual-ci-contract.test.mjs`. El gate rechazó **tres veces seguidas**, una
+  por lista, así que la red funciona; lo caro es que el comentario que advertía de esto hablaba de
+  «las dos listas» y ya son cuatro. Evaluar si una sola fuente derivada las sustituye.
+
 - [x] **CI · regenerar la baseline de presupuesto de runtime** — hecho el 2026-08-24, generación
   **0.4.0** (`docs/design-system/runtime-baseline-0.4.0.json`). El rojo no era una regresión: el
   baseline 0.3.5 se había medido **en la máquina local** (`ciRunId: run-local-01428901`) mientras
