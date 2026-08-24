@@ -379,6 +379,24 @@ html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
    `[aria-pressed]` de mas arriba si lo hace: su fila es naranja (`--pg-due-bg`)
    y la de alerta es ambar. Agrupados, «Debe Iniciar» anuncia el ambar de otro
    estado. */
+
+/* `alerta-restricciones` NO esta en `moduleMappings.programa-general` de
+   `state-semantics.json` y por diseño, no por olvido: `statePresentation` en
+   este mismo hot.js la excluye a proposito, verificado contra las 65.633
+   filas de `programa_consolidado` -no es un `Estado_PG` de fila, es una
+   insignia que puede coexistir con cualquiera de los siete estados reales
+   ("restricciones duras pendientes"), asi que forzarla al arreglo de estados
+   la haria mentir como si compitiera por el mismo eje. Se migra el CHIP a
+   solido igual que el resto (Task 1, 2026-08-24) porque la leyenda sigue
+   siendo apagada si se la deja afuera, pero se ata directo al mismo ambar que
+   ya usaba en tinte (`--pg-alert-bg` -> `--ds-state-tint-amber`), sin tocar
+   el contrato de estados. */
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
+  border-color: var(--ds-state-solid-amber);
+}
+
 /* Los siete estados con hue en `moduleMappings.programa-general` de
    `docs/design-system/state-semantics.json` pintan ahora la familia solida
    (`--ds-state-solid-*`), igual que PI y PS desde 0a77fb1b: la leyenda debe
