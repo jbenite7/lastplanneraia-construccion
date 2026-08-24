@@ -49,6 +49,11 @@ const FILAS = [
     Id: 7, Consecutivo: 7, Titulo: 0, Actividad: 'Fachada', Estado: 'Debe iniciar', Ruta_Critica: '0',
     Semanas_Inicio: 0, D_y_E: 0.5,
   },
+  // `fuera-de-ventana` (hue teal) entro al vocabulario el 2026-08-19 (8418449a) y esta fila
+  // faltaba: sin ella el test no podia detectar que se pintara igual que otro matiz, que es
+  // justo lo que paso con `en-curso` antes de que existiera este archivo. normalizeEstadoToStateKey
+  // (hot.js:665-667) mapea el string 'Fuera de Ventana' a la clave 'fuera-de-ventana'.
+  { Id: 8, Consecutivo: 8, Titulo: 0, Actividad: 'Cubierta ala norte', Estado: 'Fuera de Ventana', Ruta_Critica: '0' },
 ];
 
 test.use({ viewport: { width: 1180, height: 820 }, colorScheme: 'dark' });
