@@ -189,6 +189,7 @@ const limpiarFilaError = (fila) => {
 const construirCuadrito = (item) => {
   const box = document.createElement('span');
   box.className = 'aia-readiness__box';
+  box.setAttribute('data-restriccion', item.key || '');
   const lectura = window.AIAReadiness
     ? window.AIAReadiness.leerRestriccion(item.value, item.umbralRatio)
     : { relleno: 0, cumple: false, esNoAplica: false };
@@ -207,18 +208,39 @@ const construirCuadrito = (item) => {
   return box;
 };
 
-const construirFilaRestriccion = (item, datosFila, avanceEl, registroSelects) => {
+// Task 10 (2026-08-21): esta es LA PIEZA compartida entre el globo de
+// escritorio y la tarjeta movil — cuadrito + etiqueta + selector de una
+// restriccion. El envase (caja flotante vs. `<details>`) y el mecanismo de
+// guardado los decide quien llama: el globo pasa `onCambio` con su propio
+// `datosFila.guardar` (Task 7), la tarjeta movil pasa `datasetSelect` para
+// que su listener delegado existente (`hot.js`, `data-pi-restriccion`) ya
+// se encargue sin que esta pieza sepa nada de `saveRow`.
+const construirFilaRestriccion = (item, opciones) => {
+  const opts = opciones || {};
   const fila = document.createElement('div');
-  fila.className = 'aia-readiness-popover__fila';
+  fila.className = opts.claseFila || 'aia-readiness-popover__fila';
   fila.appendChild(construirCuadrito(item));
 
   const etiqueta = document.createElement('label');
-  etiqueta.className = 'aia-readiness-popover__etiqueta';
+  etiqueta.className = opts.claseEtiqueta || 'aia-readiness-popover__etiqueta';
   etiqueta.textContent = item.label;
   fila.appendChild(etiqueta);
 
   const select = document.createElement('select');
-  select.disabled = !datosFila.canEdit;
+  select.disabled = typeof opts.disabled === 'function' ? Boolean(opts.disabled(item)) : Boolean(opts.disabled);
+  const datasetSelect = typeof opts.datasetSelect === 'function' ? opts.datasetSelect(item) : opts.datasetSelect;
+  if (datasetSelect) {
+    Object.keys(datasetSelect).forEach((clave) => {
+      select.dataset[clave] = datasetSelect[clave];
+    });
+  }
+  const idSelect = typeof opts.idSelect === 'function' ? opts.idSelect(item) : opts.idSelect;
+  if (idSelect) {
+    select.id = idSelect;
+  }
+  if (opts.forEtiqueta && idSelect) {
+    etiqueta.setAttribute('for', idSelect);
+  }
   item.options.forEach((opcion) => {
     const option = document.createElement('option');
     option.value = opcion;
@@ -231,31 +253,47 @@ const construirFilaRestriccion = (item, datosFila, avanceEl, registroSelects) =>
   etiqueta.appendChild(select);
   fila.appendChild(etiqueta);
 
+  if (typeof opts.onCambio === 'function') {
+    select.addEventListener('change', () => opts.onCambio(select, fila));
+  }
+
+  if (opts.registroSelects) {
+    opts.registroSelects[item.key] = select;
+  }
+
+  return fila;
+};
+
+// Envoltura del globo: reenvia el cambio a `datosFila.guardar` (Task 7),
+// con el mismo manejo de error/reintento y actualizacion del avance de
+// siempre.
+const construirFilaRestriccionGlobo = (item, datosFila, avanceEl, registroSelects) => {
+  let filaRef = null;
   const intentar = () => {
-    if (typeof datosFila.guardar !== 'function') {
+    if (!filaRef || typeof datosFila.guardar !== 'function') {
       return;
     }
-    limpiarFilaError(fila);
+    limpiarFilaError(filaRef);
+    const select = filaRef.querySelector('select');
     const valorNuevo = select.value;
     datosFila.guardar(item.key, valorNuevo, (resultado) => {
       if (resultado && resultado.ok) {
-        limpiarFilaError(fila);
+        limpiarFilaError(filaRef);
         if (avanceEl && resultado.avance != null) {
           avanceEl.textContent = formatearAvance(resultado.avance);
         }
         return;
       }
-      marcarFilaError(fila, (resultado && resultado.message) || 'Error al guardar', intentar);
+      marcarFilaError(filaRef, (resultado && resultado.message) || 'Error al guardar', intentar);
     });
   };
 
-  select.addEventListener('change', intentar);
-
-  if (registroSelects) {
-    registroSelects[item.key] = select;
-  }
-
-  return fila;
+  filaRef = construirFilaRestriccion(item, {
+    disabled: !datosFila.canEdit,
+    registroSelects,
+    onCambio: intentar,
+  });
+  return filaRef;
 };
 
 const construirGrupo = (titulo, items, datosFila, avanceEl, registroSelects) => {
@@ -271,7 +309,7 @@ const construirGrupo = (titulo, items, datosFila, avanceEl, registroSelects) => 
   grupo.appendChild(rotulo);
 
   items.forEach((item) => {
-    grupo.appendChild(construirFilaRestriccion(item, datosFila, avanceEl, registroSelects));
+    grupo.appendChild(construirFilaRestriccionGlobo(item, datosFila, avanceEl, registroSelects));
   });
 
   return grupo;
@@ -312,6 +350,47 @@ const construirGlobo = (datosFila) => {
 
   document.body.appendChild(globo);
   return { globo, selects };
+};
+
+// Task 10 (2026-08-21): las mismas dos filas de grupo (Obligatorias / De
+// seguimiento) que arma el globo, pero como fragmento suelto para que otro
+// envase -la tarjeta movil, `pi-mobile-card__detalle`- lo inserte donde le
+// convenga. `opcionesFila` viaja tal cual a `construirFilaRestriccion`: es
+// lo que le permite a cada envase decidir su propio mecanismo de guardado
+// (`onCambio`, `datasetSelect`) sin que esta funcion lo conozca.
+const construirCuerpoRestricciones = (datosFila, opcionesFila) => {
+  const datos = datosFila || {};
+  const contenido = document.createDocumentFragment();
+
+  const armarGrupo = (titulo, items) => {
+    if (!items || items.length === 0) {
+      return null;
+    }
+    const grupo = document.createElement('div');
+    grupo.className = 'aia-readiness-popover__grupo';
+
+    const rotulo = document.createElement('h4');
+    rotulo.className = 'aia-readiness-popover__rotulo';
+    rotulo.textContent = titulo;
+    grupo.appendChild(rotulo);
+
+    items.forEach((item) => {
+      grupo.appendChild(construirFilaRestriccion(item, opcionesFila));
+    });
+
+    return grupo;
+  };
+
+  const grupoObligatorias = armarGrupo('Obligatorias', datos.obligatorias);
+  if (grupoObligatorias) {
+    contenido.appendChild(grupoObligatorias);
+  }
+  const grupoSeguimiento = armarGrupo('De seguimiento', datos.seguimiento);
+  if (grupoSeguimiento) {
+    contenido.appendChild(grupoSeguimiento);
+  }
+
+  return contenido;
 };
 
 const focoAtrapado = (ev) => {
@@ -472,7 +551,7 @@ function irA(direccion) {
   funcion();
 }
 
-export const AIAReadinessPopover = { abrir, cerrar, irA };
+export const AIAReadinessPopover = { abrir, cerrar, irA, construirCuerpoRestricciones };
 
 if (typeof window !== 'undefined') {
   window.AIAReadinessPopover = AIAReadinessPopover;

@@ -4879,44 +4879,40 @@
 
     var meta = getPIRowMeta(getPhysicalRowFromVisualRow(hot, index), row || {});
     var reglas = reglasIntermediaActuales();
+    var rowData = row || {};
 
-    for (var i = 0; i < restrictionProps.length; i++) {
-      var clave = restrictionProps[i];
-      var entrada = null;
-      for (var j = 0; j < _activeRestrictions.length; j++) {
-        if (_activeRestrictions[j].key === clave) { entrada = _activeRestrictions[j]; break; }
-      }
-      var puedeEditar = reglas.puedeEditarCelda({
-        prop: clave,
-        esHeader: meta.isHeader,
-        tieneResponsable: meta.hasResponsable,
-        esRestriccion: true,
+    // Task 10 (2026-08-21): misma pieza que el globo de escritorio
+    // (`readiness-popover.js`, cuadrito `.aia-readiness__box` + etiqueta +
+    // select). El envase cambia -`<details>` en vez de la caja flotante-,
+    // el guardado tambien -el listener delegado de `renderMobileCards`
+    // via `data-pi-restriccion`/`data-row-index`, no `datosFila.guardar`
+    // del globo-, pero la fila de restriccion (cuadrito, nombre, selector)
+    // es la misma funcion. Defensivo: si el modulo del globo aun no cargo
+    // (import asincrono), la tarjeta se queda sin este bloque en vez de
+    // reventar; el proximo repintado (tras el `.then()`) lo completa.
+    if (_readinessPopover && typeof _readinessPopover.construirCuerpoRestricciones === 'function') {
+      var datosFila = {
+        obligatorias: construirGrupoRestricciones(hardRestrictionProps, rowData),
+        seguimiento: construirGrupoRestricciones(softRestrictionProps, rowData),
+      };
+      var cuerpo = _readinessPopover.construirCuerpoRestricciones(datosFila, {
+        claseFila: 'pi-mobile-card__restriccion',
+        claseEtiqueta: 'pi-mobile-card__restriccion-label',
+        forEtiqueta: true,
+        idSelect: function (item) { return 'pi-restr-' + index + '-' + item.key; },
+        datasetSelect: function (item) {
+          return { piRestriccion: item.key, rowIndex: String(index) };
+        },
+        disabled: function (item) {
+          return !reglas.puedeEditarCelda({
+            prop: item.key,
+            esHeader: meta.isHeader,
+            tieneResponsable: meta.hasResponsable,
+            esRestriccion: true,
+          });
+        },
       });
-
-      var fila = document.createElement('div');
-      fila.className = 'pi-mobile-card__restriccion';
-
-      var etiqueta = document.createElement('label');
-      etiqueta.className = 'pi-mobile-card__restriccion-label';
-      etiqueta.textContent = (entrada && entrada.label) ? entrada.label : clave;
-      etiqueta.setAttribute('for', 'pi-restr-' + index + '-' + clave);
-      fila.appendChild(etiqueta);
-
-      var control = document.createElement('select');
-      control.id = 'pi-restr-' + index + '-' + clave;
-      control.dataset.piRestriccion = clave;
-      control.dataset.rowIndex = String(index);
-      control.disabled = !puedeEditar;
-      var opciones = (entrada && Array.isArray(entrada.options)) ? [''].concat(entrada.options) : [''];
-      for (var k = 0; k < opciones.length; k++) {
-        var opt = document.createElement('option');
-        opt.value = opciones[k];
-        opt.textContent = opciones[k] === '' ? '—' : opciones[k];
-        if (String(row && row[clave] || '') === opciones[k]) opt.selected = true;
-        control.appendChild(opt);
-      }
-      fila.appendChild(control);
-      detalle.appendChild(fila);
+      detalle.appendChild(cuerpo);
     }
 
     if (!meta.hasResponsable) {
