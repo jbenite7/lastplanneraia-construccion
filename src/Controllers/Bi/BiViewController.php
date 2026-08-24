@@ -174,7 +174,72 @@ class BiViewController extends BaseController
 
     public function responsables(): void
     {
+        $this->maybeRedirectToOwnScope();
         $this->renderView('cip', 'control-tower');
+    }
+
+    /**
+     * El Residente aterriza en Responsables viendo solo sus propios compromisos
+     * (confirmado con Felipe, 2026-08-24), a menos que ya haya elegido explícitamente
+     * un filtro (`resp`) o pedido ver toda la obra (`alcance=obra`).
+     */
+    private function maybeRedirectToOwnScope(): void
+    {
+        if (isset($_GET['resp']) || ($_GET['alcance'] ?? '') === 'obra') {
+            return;
+        }
+
+        $usuario = (string) ($_SESSION['usuario'] ?? '');
+        $rol = strtoupper(trim((string) ($_SESSION['permiso'] ?? '')));
+        if ($rol !== 'R' || $usuario === '') {
+            return;
+        }
+
+        $projectId = (int) ($_SESSION['project_id'] ?? 0);
+        $nombre = $this->resolveOwnProfessionalName($usuario, $projectId);
+        if ($nombre === null) {
+            return;
+        }
+
+        $query = $_GET;
+        $query['resp'] = $nombre;
+        header('Location: /bi/responsables?' . http_build_query($query));
+        exit;
+    }
+
+    /**
+     * Nombre en `profesionales` de quien está en sesión, cruzando por email contra
+     * `general_usuarios`. Null si no hay cruce (usuario sin profesional, o email
+     * distinto entre las dos tablas). Usado por el filtro por defecto de Responsables
+     * para el Residente (Tarea 4, 2026-08-24).
+     */
+    protected function resolveOwnProfessionalName(string $usuario, int $projectId): ?string
+    {
+        $usuario = trim($usuario);
+        if ($usuario === '' || $projectId <= 0) {
+            return null;
+        }
+
+        $dbName = (string) ($_SESSION['db'] ?? '');
+        if ($dbName === '' || !preg_match('/^[a-zA-Z0-9_]+$/', $dbName)) {
+            return null;
+        }
+
+        try {
+            $tProf = TableResolver::resolveByPrefix($dbName, 'profesionales');
+            $fila = $this->db->query(
+                "SELECT p.nombre FROM {$tProf} p
+                 INNER JOIN general_usuarios u ON u.email = p.email
+                 WHERE u.usuario = ? AND p.project_id = ? AND p.email <> ''
+                 LIMIT 1",
+                [$usuario, $projectId]
+            )->fetch();
+        } catch (\Throwable $e) {
+            error_log('Error resolviendo nombre propio para Responsables: ' . $e->getMessage());
+            return null;
+        }
+
+        return $fila !== false ? (string) $fila['nombre'] : null;
     }
 
     public function curvaS(): void
