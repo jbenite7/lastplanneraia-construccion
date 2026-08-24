@@ -423,10 +423,6 @@
   }
 
   function buildColumnSizing() {
-    var config = _activeConfig || CONSTRUCTION_DEFAULTS;
-    var restrictions = config.restrictions || CONSTRUCTION_DEFAULTS.restrictions;
-    var numRestrictions = restrictions.length;
-
     // Task 8 (2026-08-05, C-31): «Id» pasa de 36 px (su piso) a 74. Los codigos
     // jerarquicos de JMC llegan a «2.4.1.3.1», que mide 69 px; a 36 px se veian
     // «2.4» — 27 de las 28 filas visibles mostraban un id que no era el suyo.
@@ -440,40 +436,25 @@
       ratio: [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048],
     };
 
-    // Fixed trailing columns (3): Estado_Restricciones, estado_operativo, Observaciones
+    // Fixed trailing columns (2): estado_operativo, Observaciones
     var fixedTrailing = {
-      min:   [92, 150, 180],
-      floor: [78, 118, 130],
-      max:   [136, 240, 380],
-      ratio: [0.05, 0.096, 0.088],
+      min:   [150, 180],
+      floor: [118, 130],
+      max:   [240, 380],
+      ratio: [0.096, 0.088],
     };
 
-    // Dynamic restriction columns: uniform sizing
-    var restrictionMin = [];
-    var restrictionFloor = [];
-    var restrictionMax = [];
-    var restrictionRatio = [];
-    for (var i = 0; i < numRestrictions; i++) {
-      restrictionMin.push(74);
-      restrictionFloor.push(64);
-      restrictionMax.push(130);
-    }
-
-    // Compute ratio budget for restriction cols (reserve 1 - fixedLeading - fixedTrailing)
-    var fixedRatioSum = 0;
-    for (var fi = 0; fi < fixedLeading.ratio.length; fi++) { fixedRatioSum += fixedLeading.ratio[fi]; }
-    for (var ft = 0; ft < fixedTrailing.ratio.length; ft++) { fixedRatioSum += fixedTrailing.ratio[ft]; }
-    var restrictionBudget = Math.max(0, 1 - fixedRatioSum);
-    var perRestrictionRatio = numRestrictions > 0 ? restrictionBudget / numRestrictions : 0;
-    for (var ri = 0; ri < numRestrictions; ri++) {
-      restrictionRatio.push(perRestrictionRatio);
-    }
+    // Single habilitacion column: fixed width, doesn't shrink nor grow — its
+    // content has a known fixed width, stretching it would only rob pixels
+    // from the text columns. Ratio recalculated so the full set sums 1.0:
+    // 1 - fixedLeading.ratio(0.456) - fixedTrailing.ratio(0.184) = 0.36.
+    var habilitacion = { min: 130, floor: 130, max: 130, ratio: 0.36 };
 
     // Assemble full arrays
-    columnMinWidths = fixedLeading.min.concat(restrictionMin, fixedTrailing.min);
-    columnFloorWidths = fixedLeading.floor.concat(restrictionFloor, fixedTrailing.floor);
-    columnMaxWidths = fixedLeading.max.concat(restrictionMax, fixedTrailing.max);
-    columnWidthRatios = fixedLeading.ratio.concat(restrictionRatio, fixedTrailing.ratio);
+    columnMinWidths = fixedLeading.min.concat([habilitacion.min], fixedTrailing.min);
+    columnFloorWidths = fixedLeading.floor.concat([habilitacion.floor], fixedTrailing.floor);
+    columnMaxWidths = fixedLeading.max.concat([habilitacion.max], fixedTrailing.max);
+    columnWidthRatios = fixedLeading.ratio.concat([habilitacion.ratio], fixedTrailing.ratio);
 
     /* Task 8 (2026-08-05, Step 1-bis): ninguna columna baja del ancho que su
        propia cabecera necesita para leerse entera. Se aplica al PISO (el limite
@@ -494,7 +475,7 @@
     }
 
     // Shrink priority: lower index = shrinks first; trailing Observaciones shrinks last (0)
-    var totalCols = 7 + numRestrictions + 3;
+    var totalCols = 7 + 1 + 2;
     columnShrinkPriority = [];
     for (var sp = 0; sp < totalCols; sp++) {
       columnShrinkPriority.push(totalCols - 1 - sp);
@@ -618,12 +599,12 @@
       + ' data-aia-urgency="' + pair.urgency + '"';
   }
 
-  var columnMinWidths = [44, 54, 150, 130, 130, 60, 72, 74, 74, 74, 74, 82, 94, 88, 92, 150, 180];
-  var columnFloorWidths = [36, 44, 120, 100, 100, 52, 64, 64, 64, 64, 64, 70, 80, 76, 78, 118, 130];
-  var columnMaxWidths = [90, 70, 460, 240, 240, 110, 110, 120, 120, 120, 120, 130, 148, 136, 136, 240, 380];
-  var columnShrinkPriority = [16, 2, 3, 4, 15, 14, 13, 11, 10, 8, 9, 7, 6, 5, 1, 12, 0];
+  var columnMinWidths = [76, 54, 150, 130, 130, 60, 72, 130, 150, 180];
+  var columnFloorWidths = [74, 44, 120, 126, 100, 52, 64, 130, 118, 130];
+  var columnMaxWidths = [96, 70, 460, 240, 240, 110, 110, 130, 240, 380];
+  var columnShrinkPriority = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
   // La suma debe ser 1.0: colWidths ya reserva 60px para scrollbar/sidebar LPS.
-  var columnWidthRatios = [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048, 0.042, 0.042, 0.042, 0.042, 0.046, 0.05, 0.046, 0.05, 0.096, 0.088];
+  var columnWidthRatios = [0.032, 0.024, 0.144, 0.08, 0.08, 0.048, 0.048, 0.36, 0.096, 0.088];
 
   function getDb() {
     return $('#baseDatos_PHP').val() || $('#baseDatos').val() || '';

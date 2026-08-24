@@ -350,6 +350,7 @@ goals/retiro-listado-contratos/*
 !goals/retiro-listado-contratos/plan.md
 !goals/retiro-listado-contratos/validation-log.md
 !tests/browser/handsontable-ancho-tabla.mjs
+!tests/browser/pi-ancho-presupuesto.mjs
 !tests/browser/pdc-v2-tamiz.spec.mjs
 !tests/browser/pdc-v2-tamiz-daporto.evidencia.mjs
 !tests/browser/pdc-v2-impacto-daporto.evidencia.mjs
