@@ -50,3 +50,10 @@ COPY database/migrations/20260807_proyectos_lineabase_columns.sql /docker-entryp
 # arriba: una sola fuente de verdad, y cada build de CI comprueba de paso que la migracion hace
 # lo que dice. Es idempotente (IF NOT EXISTS + INSERT IGNORE), asi que re-correrla no daña.
 COPY database/migrations/20260820_general_flags.sql /docker-entrypoint-initdb.d/121-general-flags.sql
+
+# La siembra de la linea base contractual, y va DESPUES de 120 y de 121 a proposito: aquella crea las
+# columnas y esta las rellena. Sin este paso el CI tendria las columnas vacias, la fecha
+# contractual saldria NULL y `baseline-drift` seguiria rojo aunque el calculo fuera correcto —
+# que es exactamente lo que paso al implementar, y lo que obligo a que el sembrado fuera migracion
+# en vez de script PHP. Es write-once: reejecutarla no pisa una linea base ya declarada.
+COPY database/migrations/20260819_sembrar_linea_base_contractual.sql /docker-entrypoint-initdb.d/122-sembrar-linea-base.sql
