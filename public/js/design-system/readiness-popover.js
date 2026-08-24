@@ -17,6 +17,8 @@
 // "auto"-, asi que el clic-afuera se codifica a mano aqui, con el mismo
 // cierre y devolucion de foco que Escape.
 
+import { construirCuadrito as construirCuadritoBox } from './readiness-box.js';
+
 const SOPORTA_ANCLA =
   typeof CSS !== 'undefined' &&
   typeof CSS.supports === 'function' &&
@@ -205,29 +207,10 @@ const limpiarFilaError = (fila) => {
 };
 
 const construirCuadrito = (item) => {
-  const box = document.createElement('span');
-  box.className = 'aia-readiness__box';
-  box.setAttribute('data-restriccion', item.key || '');
   const lectura = window.AIAReadiness
     ? window.AIAReadiness.leerRestriccion(item.value, item.umbralRatio)
     : { relleno: 0, cumple: false, esNoAplica: false };
-  if (lectura.esNoAplica) {
-    box.classList.add('aia-readiness__box--na');
-    return box;
-  }
-  if (lectura.cumple) {
-    box.classList.add('aia-readiness__box--met');
-    const check = document.createElement('span');
-    check.className = 'aia-readiness__check';
-    check.textContent = '✓';
-    box.appendChild(check);
-    return box;
-  }
-  const fill = document.createElement('span');
-  fill.className = 'aia-readiness__fill';
-  fill.style.height = Math.round(lectura.relleno * 100) + '%';
-  box.appendChild(fill);
-  return box;
+  return construirCuadritoBox(item.key, lectura);
 };
 
 // Task 10 (2026-08-21): esta es LA PIEZA compartida entre el globo de

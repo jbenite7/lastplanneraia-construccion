@@ -85,6 +85,14 @@
     window.AIAReadiness = mod;
     if (hot) { hot.render(); }
   });
+  // Mismo patron: `construirCuadrito` vive ahora en un solo lugar
+  // (`readiness-box.js`), compartido con el globo/tarjeta movil de
+  // `readiness-popover.js`. Repinta si ya habia renderizado con el
+  // fallback local (ver el renderer de la columna, mas abajo).
+  import('/js/design-system/readiness-box.js').then(function (mod) {
+    window.AIAReadinessBox = mod;
+    if (hot) { hot.render(); }
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -3495,28 +3503,20 @@
 
 
   function construirCuadrito(item) {
+    // Pieza compartida con el globo y la tarjeta movil (`readiness-box.js`,
+    // hallazgo TASKS.md 2026-08-24). El fallback local solo corre en la
+    // ventana angosta antes de que el `import()` asincrono de mas arriba
+    // resuelva -mismo patron defensivo que `window.AIAReadiness`- y se
+    // repinta una vez cargado, asi que no es una segunda fuente permanente.
+    if (window.AIAReadinessBox) {
+      return window.AIAReadinessBox.construirCuadrito(item.prop, item.lectura);
+    }
     var box = document.createElement('span');
     box.className = 'aia-readiness__box';
     box.setAttribute('data-restriccion', item.prop);
-
     if (item.lectura.esNoAplica) {
       box.classList.add('aia-readiness__box--na');
-      return box;
     }
-    if (item.lectura.cumple) {
-      box.classList.add('aia-readiness__box--met');
-      var check = document.createElement('span');
-      check.className = 'aia-readiness__check';
-      check.textContent = '✓';
-      box.appendChild(check);
-      return box;
-    }
-    var fill = document.createElement('span');
-    fill.className = 'aia-readiness__fill';
-    // `fill.style.height` es el UNICO estilo inline permitido en esta obra:
-    // es un dato de la fila, no una decision de diseño.
-    fill.style.height = Math.round(item.lectura.relleno * 100) + '%';
-    box.appendChild(fill);
     return box;
   }
 
