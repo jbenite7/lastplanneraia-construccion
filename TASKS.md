@@ -31,13 +31,38 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 
 ## Bloqueantes
 
+**El gate de cierre de frente está activo: hay tres frentes terminados sin publicar** (censo del
+2026-08-24). `AGENTS.md` §Publicación no permite abrir un frente nuevo mientras el anterior no esté
+en `main`. Y hay un motivo duro además del formal: el arreglo del runner de tests PHP vive solo en
+`claude/mystifying-bhaskara-a6207f`, así que **`main` está en rojo para todas las sesiones**.
+Lo desatasca [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1]].
+
+**El estado del repo se consolidó en una spec y seis planes**, por encargo de Felipe del
+2026-08-24: [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design]]. Esta lista
+sigue siendo la fuente viva de pendientes; la spec es el mapa que dice qué bloquea a qué.
+De las 12 sesiones simultáneas del censo, **solo 4 eran de este repositorio**.
+
+<details><summary>Lo que decía antes de este bloque</summary>
+
 Ninguno. El único que había —«abrir una coordinadora nueva»— quedó resuelto el 2026-08-19 cuando
 Felipe declaró el reparto y consolidó el repo en una sola sesión. **Y estaba mal planteado desde el
 principio:** `docs/coordinacion-sesiones.md:18` dice que «el reparto lo declara el usuario, no lo
 reclama nadie», así que no tener coordinadora no es una carencia que haya que subsanar — es el
 estado por defecto mientras Felipe no reparta.
 
+</details>
+
 ## Ahora
+
+- [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
+  [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (bloquea a todos) ·
+  [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|P2 · CI y presupuestos]] ·
+  [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|P3 · Design System]] ·
+  [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|P4 · Móvil y tema claro]] ·
+  [[docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion|P5 · Cierre hasta producción]] ·
+  [[docs/superpowers/plans/2026-08-24-p6-higiene-documental-y-coordinacion|P6 · Higiene]], que
+  **corre en paralelo a todos los demás**. Ninguna tarea de esta lista queda huérfana: cada una
+  está asignada a uno de los seis.
 
 - [ ] **Auditoría de specs 2026-08-20 — pendientes nuevos que no estaban en esta lista.** Las 61
   specs vigentes se verificaron contra el código; el informe completo, con evidencia y cada

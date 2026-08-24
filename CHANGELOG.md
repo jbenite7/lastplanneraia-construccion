@@ -99,6 +99,20 @@ para el estado de los planes en curso.
   `render()`, `updateSettings()`, `loadData()`, resize y recarga. Se actualizó solo el comentario,
   sin arreglo de código. Hipótesis que queda: la medición original se tomó contra un contenedor
   que montaba otro árbol. Commit `ee875efb`.
+### Consolidación del estado del repositorio y reparto en seis planes (2026-08-24)
+
+#### Added
+- `docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design.md` — spec única con el
+  censo medido de las 12 sesiones simultáneas (solo 4 eran de este repositorio), el estado de las
+  ramas contra `origin/main` y el reparto de todo el pendiente vivo.
+- Seis planes de ejecución con dependencias declaradas: `2026-08-24-p1-desague-y-consolidacion`,
+  `p2-ci-en-verde-y-presupuestos`, `p3-design-system-contrato-y-control`, `p4-movil-y-tema-claro`,
+  `p5-cierre-hasta-produccion` y `p6-higiene-documental-y-coordinacion`.
+
+#### Changed
+- `TASKS.md` deja de declarar «sin bloqueantes»: el gate de cierre de frente está activo con tres
+  frentes terminados sin publicar (+8, +9 y +11 commits en tres ramas).
+
 ### Habilitación en una columna — Programación Intermedia (2026-08-24)
 
 #### Changed
