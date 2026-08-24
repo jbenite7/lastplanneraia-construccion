@@ -41,13 +41,18 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_113 trabajos · 47 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_119 trabajos · 48 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
-| Control Tower · Fase 0 — Higiene de datos | [[docs/superpowers/specs/2026-08-20-replanteo-control-tower-design|spec]] · [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos|plan]] | propuesto |
+| Control Tower · Fase 0 — Higiene de datos | [[docs/superpowers/plans/2026-08-20-control-tower-f0-higiene-datos|plan]] | — |
+| Deuda del CI — diseño de eliminación | [[docs/superpowers/specs/2026-08-20-deuda-ci-design|spec]] | — |
+| Deuda del CI · Frente 1 (G1+G3+G5) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-1|plan]] | — |
+| Deuda del CI · Frente 2 (G2 mínimo, cache de capa base) | [[docs/superpowers/plans/2026-08-20-deuda-ci-frente-2|plan]] | — |
+| Interruptor del Control Tower desde /admin | [[docs/superpowers/specs/2026-08-20-interruptor-control-tower-admin-design|spec]] · [[docs/superpowers/plans/2026-08-20-interruptor-control-tower-admin|plan]] | — |
+| Replanteo de la Control Tower — Diseño | [[docs/superpowers/specs/2026-08-20-replanteo-control-tower-design|spec]] | — |
 | Apply del recálculo de estados — plan de ejecución | [[docs/superpowers/plans/2026-08-19-apply-recalculo-estados|plan]] | — |
 | El coloreado en cascada por severidad — diseño del diagnóstico | [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design|spec]] · [[docs/superpowers/plans/2026-08-19-bug-coloreado-severidad|plan]] | — |
 | DS-F0 · Auditoría total del design system — diseño | [[docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design|spec]] · [[docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total|plan]] | — |
