@@ -5255,6 +5255,39 @@
 
     wrap.appendChild(btn);
     (headerNode || TH).appendChild(wrap);
+
+    // Hallazgo TASKS.md 2026-08-24: la Task 4 fundio las 7 columnas de
+    // restriccion y con ellas se perdio el "?" educativo por restriccion que
+    // vivia en cada cabecera. El globo cubre la consulta puntual al hacer
+    // clic en una fila, pero no reemplaza poder leer las cuatro reglas de
+    // las siete restricciones sin abrir ninguna actividad. Se repone como UN
+    // solo trigger en la cabecera de Habilitacion, con el contenido de las
+    // siete concatenado en el orden ya establecido (duras primero, blandas
+    // despues) -mismo texto de `DEFAULT_POPOVER_CONTENT`, sin inventar uno
+    // nuevo-, en vez de volver al mapa indice->prop que causo el hallazgo
+    // Important 1 de la revision final.
+    if (!TH.querySelector('.pi-help-trigger')) {
+      var ayuda = document.createElement('a');
+      ayuda.href = 'javascript:void(0);';
+      ayuda.className = 'pi-help-trigger';
+      ayuda.innerHTML = '<i class="fas fa-question-circle" aria-hidden="true"></i>';
+      ayuda.setAttribute('aria-label', 'Ayuda sobre las restricciones de habilitacion');
+      $(ayuda).tooltip({
+        trigger: 'manual', html: true, placement: 'bottom', container: 'body', boundary: 'window',
+        template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
+        title: function () {
+          var partes = [];
+          for (var i = 0; i < restrictionProps.length; i++) {
+            var prop = restrictionProps[i];
+            partes.push(
+              '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[prop] || prop) + '</h6>'
+              + (popoverContent[prop] || ''));
+          }
+          return partes.join('');
+        },
+      });
+      wrap.appendChild(ayuda);
+    }
   }
 
   function bindFilters() {
