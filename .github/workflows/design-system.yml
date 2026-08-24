@@ -267,6 +267,10 @@ jobs:
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: |
           node scripts/design-system/gate-receipt.mjs full-app-flow
+          # G8 (P2 Tarea 6): la duracion sale a GITHUB_OUTPUT ANTES del checkout de mas abajo,
+          # que restaura el arbol y borra este dato del recibo en disco. "Summarize gate results"
+          # la vuelca al resumen sin tocar el recibo, que sigue siendo del script, no de este paso.
+          node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/full-app-flow.json'); if (r.exitCode !== 0) { console.error('full-app-flow en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the full-app-flow receipt
         if: always()
@@ -308,6 +312,7 @@ jobs:
           E2E_ALLOW_DB_MUTATION: design-system-ci
         run: |
           node scripts/design-system/gate-receipt.mjs semanal-roles-phases
+          node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
           node -e "const r=require('./docs/design-system/evidence/semanal-roles-phases.json'); if (r.exitCode !== 0) { console.error('semanal-roles-phases en rojo: exitCode ' + r.exitCode); process.exit(1); }"
       - name: Preserve the semanal roles and phases receipt
         if: always()
@@ -326,10 +331,29 @@ jobs:
           APP_URL: http://127.0.0.1:18081
           E2E_BASE_URL: http://127.0.0.1:18081
         run: npm run test:runtime-budget:measure
+      # P2 Tarea 3 (2026-08-24): Fase 2 de goals/runtime-budgets-al-ci quedaba "redactada y sin
+      # aplicar" — envolver el check en `gate-receipt.mjs` para que la corrida deje recibo, igual
+      # que full-app-flow y semanal-roles-phases. `closeout-evidence.json` ya declaraba el comando
+      # para `runtime-budgets` (`gate-receipt.mjs` lo lee de ahi, no aqui), asi que cablearlo es
+      # generico: sin esto, `runtime-budgets` no podia pasar de `blocked` a `passed` sin editar el
+      # indice a mano, que es justo lo que este mecanismo existe para impedir.
       - name: Check runtime budgets against the baseline
         id: runtime-budget-check
         continue-on-error: true
-        run: npm run test:runtime-budget:check
+        run: |
+          node scripts/design-system/gate-receipt.mjs runtime-budgets
+          node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); console.log('duration_ms=' + (r.durationMs ?? ''));" >> "$GITHUB_OUTPUT"
+          node -e "const r=require('./docs/design-system/evidence/runtime-budgets.json'); if (r.exitCode !== 0) { console.error('runtime-budgets en rojo: exitCode ' + r.exitCode); process.exit(1); }"
+      - name: Preserve the runtime-budgets receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: runtime-budgets-receipt
+          path: docs/design-system/evidence/runtime-budgets.json
+          if-no-files-found: error
+      - name: Restore the worktree after writing the runtime-budgets receipt
+        if: always()
+        run: git checkout -- docs/design-system/evidence/runtime-budgets.json && git status --porcelain
       # `blocking-runtime` es la única excepción deliberada de esta lista: sigue SIN
       # `continue-on-error` (tests/design-system/visual-ci-contract.test.mjs lo exige por
       # contrato — «CI tolerates keyboard and reflow evidence», que protege que el laboratorio
@@ -400,6 +424,9 @@ jobs:
           G_PILOT_LAB_GATES: ${{ steps.pilot-lab-gates.outcome }}
           G_KEYBOARD_REFLOW_EVIDENCE: ${{ steps.keyboard-reflow-evidence.outcome }}
           G_PG_PERSISTENCE_RBAC: ${{ steps.pg-persistence-rbac.outcome }}
+          G_FULL_APP_FLOW_MS: ${{ steps.full-app-flow.outputs.duration_ms }}
+          G_SEMANAL_ROLES_PHASES_MS: ${{ steps.semanal-roles-phases.outputs.duration_ms }}
+          G_RUNTIME_BUDGET_CHECK_MS: ${{ steps.runtime-budget-check.outputs.duration_ms }}
         run: |
           {
             echo "## Resultado de los gates del piloto"
@@ -418,6 +445,37 @@ jobs:
             echo "| Collect keyboard and reflow evidence (no bloqueante) | ${G_KEYBOARD_REFLOW_EVIDENCE} |"
             echo "| Run Programa General persistence and RBAC gate | ${G_PG_PERSISTENCE_RBAC} |"
           } >> "$GITHUB_STEP_SUMMARY"
+          # G7/G8 (P2 Tarea 6): los recibos y presupuestos ya se generan; lo unico que faltaba
+          # era volcarlos donde se leen sin abrir logs. `full-app-flow`/`semanal-roles-phases`
+          # traen `durationMs` propio (ver los `duration_ms` de arriba); `runtime-budget.mjs`
+          # escribe sus metricas en `test-output/`, que NO se restaura (a diferencia de los
+          # recibos en `docs/design-system/evidence/`), asi que se lee del disco tal cual.
+          {
+            echo ""
+            echo "## Duración y presupuesto"
+            echo ""
+            echo "| Recibo | Duración |"
+            echo "| --- | --- |"
+            echo "| full-app-flow | ${G_FULL_APP_FLOW_MS:-sin dato} ms |"
+            echo "| semanal-roles-phases | ${G_SEMANAL_ROLES_PHASES_MS:-sin dato} ms |"
+            echo "| runtime-budgets | ${G_RUNTIME_BUDGET_CHECK_MS:-sin dato} ms |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f test-output/design-system-runtime-budget.json ]; then
+            node -e "
+              const r = require('./test-output/design-system-runtime-budget.json');
+              const rows = Object.entries(r.metrics ?? {})
+                .filter(([, v]) => typeof v === 'number')
+                .map(([k, v]) => '| ' + k + ' | ' + v + ' |')
+                .join('\n');
+              console.log('');
+              console.log('| Métrica de runtime budget | Valor medido |');
+              console.log('| --- | --- |');
+              console.log(rows);
+            " >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "_Sin \`test-output/design-system-runtime-budget.json\`: \`Measure runtime budgets\` no llegó a escribirlo._" >> "$GITHUB_STEP_SUMMARY"
+          fi
           failed=0
           for outcome in "$G_PHPSTAN_BASELINE" "$G_PHPSTAN_PDC" "$G_PHP_SUITE" "$G_FULL_APP_FLOW" \
             "$G_SEMANAL_ROLES_PHASES" "$G_RUNTIME_BUDGET_MEASURE" "$G_RUNTIME_BUDGET_CHECK" \
