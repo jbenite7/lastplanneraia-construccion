@@ -105,9 +105,10 @@ estado por defecto mientras Felipe no reparta.
   llegue, la lección del apply de desarrollo aplica: **el respaldo probado horas antes ya no cubría
   la base** (8 filas nuevas sin respaldo), así que se rehace y se vuelve a probar la restauración
   inmediatamente antes, no la víspera.
-- [ ] **runtime-budgets-al-ci** — Fase 1 de `docs/superpowers/plans/2026-08-19-runtime-budgets-al-ci.md`,
-  sha verificado `c23b1c6a`. Desbloquea el único gate `blocked` de los nueve de
-  `closeout-evidence.json`. Andamio declarado, no inversión: DS-F3 lo reemplaza.
+- [x] 2026-08-24 — **`runtime-budgets-al-ci` CERRADO vía Plan P2.** Fase 2 confirmada sin causa
+  local que arreglar; Fase 3 tomó la procedencia de la corrida verde de Actions
+  [32787664690](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32787664690).
+  `closeout-evidence.json` llega a **9/9 sin ningún gate `blocked`**. Detalle: [[goals/runtime-budgets-al-ci/goal]].
 - [ ] **DS-F1, lo que queda del contrato** — la escala de estado cerró (F1a). Faltan tokens,
   primitivas `aia-*`, escala de severidad y escala de z-index. Arranca con brainstorming: el
   contrato es decisión de negocio. Entrada lista: los 68 hallazgos de DS-F0.
@@ -139,11 +140,9 @@ estado por defecto mientras Felipe no reparta.
   el carril, justo lo que la spec del menú flotante derogó el 2026-08-14. Arreglado en `ab2c34f1`.
   Y el lint de wiki denegaba publicaciones por basura que git ignora: arreglado preguntándole a git.
 
-- [ ] **`runtime-budgets-al-ci` y `gates-al-ci` están encadenados a una corrida verde de CI.**
-  Fase 1 reproducida: el gate `runtime-budgets` no es un baseline caducado — su medición **solo
-  puede producirse dentro de GitHub Actions**, porque exige `CI_RUN_ID`, `CI_GIT_SHA` y dos huellas
-  más contra un worktree limpio. La Fase 2 del plan no tiene nada que arreglar. En cuanto CI pase,
-  la Fase 3 puede tomar la procedencia y los dos frentes cierran.
+- [x] 2026-08-24 — **`gates-al-ci` CERRADO vía Plan P2.** Sus dos decisiones escaladas (D-7 `test.C`
+  en `DEV_DOOR_USERS`, D-GAC-5(b) baseline con `cssGzipBytes` medido) ya estaban ejecutadas por
+  trabajo previo; faltaba el CI en verde, que P2 resolvió. Detalle: [[goals/gates-al-ci/goal]].
 
 - [x] 2026-08-20 — **Las once decisiones pendientes, RESUELTAS** en sesión dedicada con Felipe
   (D-1 a D-9, D-11 y los plugins de Obsidian). Ninguna queda abierta; el detalle y el porqué de cada
@@ -229,34 +228,16 @@ estado por defecto mientras Felipe no reparta.
   medición original se tomó contra un contenedor que montaba otro árbol** — el mismo fallo que
   mordió dos veces esa misma jornada en la sesión que lo midió. Solo se actualizó el comentario en
   `public/js/modules/programa_general/hot.js:2411`, sin arreglo de código.
-- [ ] **PG · golden visual (`programa-general.visual.mjs`) está desactualizado, ajeno a
-  `habilitacion-en-una-columna`** — al cerrar los cuatro pendientes de ese frente (2026-08-24) se
-  detectó que `npx playwright test tests/browser/programa-general.visual.mjs` falla (18006 px a
-  1180×820, 17526 a 1440×900) contra los seis chips de leyenda que NO son `alerta-restricciones`
-  (Debe Iniciar, Actividad Futura, En Curso, Atrasada, Terminada, Sin Datos). Confirmado con
-  `git stash` que el diff es **idéntico con y sin** el cambio de este frente: es preexistente. El
-  golden vigente es de `f52d8120` (2026-08-24 11:24, 11 min después del propio
-  `39a8b69c` de este frente). **Verificado el mismo día:** `git log f52d8120..HEAD --
-  public/css/` no trae nada — el CSS de la leyenda es idéntico entre la captura del golden y
-  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar.
-
-  **Corrido contra un entorno vivo el mismo día, tras instalar `vendor/` con
-  `composer install`:** la base del worktree **ya estaba sembrada** (`general_usuarios` y
-  `general_proyectos_procesos` con datos completos; el chequeo anterior de "DB sin tabla
-  `users`" fue un falso negativo por consultar una tabla que no existe con ese nombre —
-  el proyecto usa `general_usuarios`, no `users`). Con el test corriendo de verdad
-  (`npx playwright test tests/browser/programa-general.visual.mjs --workers=1`), el diff
-  real (ver `test-output/.../programa-general-dark-1440x900-diff.png` de esa corrida) **no
-  se limita a los 6 chips**: es un corrimiento vertical acumulado de toda la tabla — cada
-  fila baja unos pocos píxeles más que la anterior, hasta ~8px de diferencia en la fila
-  "Cubierta" al fondo. Encaja con no-determinismo de métricas de fuente (mismo tipo de causa
-  que rompió el golden de PI con `tabular-nums`, ver
-  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **la causa CSS
-  exacta en `programa-general.css`/`handsontable.css` sigue sin identificar** — no confirmé
-  si es `tabular-nums`, otra propiedad de line-height, o una fuente que cambió de versión.
-  Quien retome: aislar la propiedad exacta (comparar computed styles de una fila entre
-  golden y actual), corregirla o, si el corrimiento es legítimo, recapturar con aprobación
-  visual de Felipe.
+- [x] 2026-08-24 — **PG · golden visual CERRADO — no era no-determinismo de fuente, era un golden
+  Linux 12 días atrasado.** La hipótesis de `tabular-nums`/no-determinismo de esta ficha era falsa:
+  el golden **Linux** de `programa-general.visual.mjs` quedó congelado en `6cf8d28c` (2026-08-12) y
+  nunca se recapturó, mientras el golden macOS del mismo test se recapturó al menos tres veces
+  después (`18d05c1f`, `b1cf59c9`, `f52d8120`) con cambios reales aprobados por Felipe. El diff era
+  real: el estado **Fuera de Ventana** entró al vocabulario el 2026-08-19 (`8418449a`, una semana
+  después de la captura Linux) y su chip nuevo parte la leyenda en dos filas a 1180×820, empujando
+  toda la tabla. Recapturado con la evidencia real de la corrida de Actions 32776968532 (no una
+  captura local en macOS), aprobado por Felipe viendo las tres imágenes. Detalle en el commit
+  `76b86555`.
 
 - [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
   `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
@@ -578,7 +559,7 @@ con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería c
 | Fase | Frente | Estado |
 |---|---|---|
 | **CP-F0 · Poner el CI en verde** | `ci-en-verde` | Añadida el 2026-08-12 delante de todo (`6d82f723`), porque `design-system-runtime` lleva `needs: design-system-static` y el static llevaba rojo desde el 2026-07-17 |
-| **CP-F-AB · Cablear los dos gates al CI** | `gates-al-ci` | **PAUSADO.** Sus dos decisiones ya confirmadas por el usuario (añadir `test.C` a `DEV_DOOR_USERS` en `docker-compose.ci.yml`, y el baseline 0.3.4), sin ejecutar |
+| **CP-F-AB · Cablear los dos gates al CI** | `gates-al-ci` | **CERRADA** (2026-08-24, vía Plan P2). Las dos decisiones ya estaban ejecutadas; faltaba el CI en verde |
 | **CP-F-C · Cada módulo declara dónde pinta sus estados** | `superficie-de-estados` | Pendiente. Decisión del usuario: opción (a), obligatoria |
 | **CP-F-D** | — | **RETIRADA** el 2026-08-12: su premisa estaba caducada, ya estaba hecha |
 | **CP-F-E · Despliegue a producción** | `despliegue` | Pendiente. ~1.255 commits de retraso. **Necesita autorización propia y explícita, siempre** |
@@ -612,7 +593,6 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 
 ## Frentes en espera (no arrancan hasta cerrar el bloque 0)
 
-- [[goals/gates-al-ci/goal|gates-al-ci]] — CP-F-AB recortado: `test.C` en CI + baseline, re-medir 8/8, publicar.
 - [[goals/contadores-cero/goal|contadores-cero]] — visto concedido; localizar rama, re-verificar, publicar.
 - **Plan espacio SiteGround** — tareas 1–5 de `docs/superpowers/plans/2026-08-18-espacio-cuenta-siteground.md`.
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.

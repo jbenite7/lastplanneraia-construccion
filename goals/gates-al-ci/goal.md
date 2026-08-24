@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: goal-doc
-estado: vigente
+estado: cerrado
 fecha: 2026-08-18
 areas: [proceso]
 fuente: goals/gates-al-ci/goal.md
@@ -376,3 +376,25 @@ El usuario aprobó crear el **baseline 0.3.4** según la recomendación del info
    8/8, que es la condición de hecho original de este frente.
 
 Sigue vigente: entrega de 6 campos, visto por sha antes de publicar.
+
+## Cierre — 2026-08-24, vía Plan P2
+
+Las dos decisiones escaladas ya estaban ejecutadas cuando este frente se retomó — por trabajo de
+otras sesiones durante la consolidación de P1, sin que este `goal.md` se hubiera actualizado:
+
+- **D-7 (`test.C` en `DEV_DOOR_USERS`):** confirmado en `docker-compose.ci.yml:21`, que hoy trae
+  `"test.A,test.R,test.V,test.C,test.D"`.
+- **D-GAC-5(b) (baseline con `cssGzipBytes` medido):** superado — el baseline vigente es **0.4.0**
+  (no el 0.3.4 que este `goal.md` encargaba), con `sourceRef` real y aprobación de Felipe
+  (`docs/design-system/runtime-baseline-0.4.0.json`).
+
+Lo único que faltaba para la condición de hecho (8/8, hoy 9/9 con `runtime-budgets` incluido) era
+que el CI corriera limpio de punta a punta, lo que P2 resolvió arreglando el golden desactualizado
+de Programa General, el escondite en serie de los gates, un fixture de prueba sin fila para el
+matiz `teal`, y cableando el recibo de `runtime-budgets`. Ver el cierre completo en
+[[goals/runtime-budgets-al-ci/goal|runtime-budgets-al-ci]], que comparte el mismo gate.
+
+**Condición de hecho cumplida:** los 9 gates de `docs/design-system/closeout-evidence.json` en
+`passed`, procedencia de la corrida de Actions
+[32787664690](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32787664690) y
+`npm run test:design-system:static` en `RC=0`.

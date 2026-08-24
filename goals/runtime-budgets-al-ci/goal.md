@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: goal-doc
-estado: abierto
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: goals/runtime-budgets-al-ci/goal.md
@@ -243,6 +243,33 @@ Distinguir una cosa de la otra exige historia que no existe: hasta hoy **ninguna
 medir**. Y tocar el baseline está en la lista de bloqueo incondicional del plan, así que **para aquí
 otra vez**: es **D-11**.
 
+## Cierre — 2026-08-24, vía Plan P2
+
+**Fase 2 confirmada sin causa que arreglar** (como ya medía este mismo goal): no hay defecto local,
+la medición sólo puede producirse dentro de GitHub Actions. Lo que faltaba de Fase 2 —envolver el
+`check` en `gate-receipt.mjs` para que la corrida deje recibo, «redactado y sin aplicar»— se aplicó
+en `cab6e5fd`.
+
+**Fase 3 — procedencia real, tomada de una corrida verde:**
+
+- Corrida de Actions **[32787664690](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32787664690)**, sobre `cab6e5fd`, con los 9 gates de `closeout-evidence.json` corriendo
+  de verdad en una sola pasada (sin que ninguno se escondiera detrás de otro — Tarea 2 del plan P2
+  resolvió el problema en serie que este goal ya había anotado como bloqueo: «GitHub salta todos los
+  pasos posteriores a uno fallido»).
+- Recibo real bajado del artifact `runtime-budgets-receipt`: `exitCode: 0`, `result: passed`,
+  `"Design-system runtime budget: PASS (0.4.0 -> 1.1.0)"`. Fijado en `6f9f69f7`.
+- `closeout-evidence.json` actualizado en `20f5cbd6`: `runtime-budgets` pasa de `blocked` a
+  `passed`, con `sourceRef`/`sourceFingerprint`/`artifactSha256`/`fixtureSha256` recalculados sobre
+  ese commit — mismo mecanismo de `git` que ya usan `full-app-flow` y `semanal-roles-phases`, nada
+  fabricado a mano.
+
+**D-11 (`initializationMs` sospechoso de baseline desactualizado) sigue sin resolver — no era parte
+de la condición de hecho de este goal** (el baseline vigente es 0.4.0, no el 0.3.5 donde se abrió
+D-11; queda en `TASKS.md` para quien retome el presupuesto de runtime).
+
+**Condición de hecho cumplida:** `docs/design-system/closeout-evidence.json` sin ningún gate
+`blocked` — verificado con `python3` sobre los 9 gates, los 9 en `passed`. `npm run
+test:design-system:static` en `RC=0` (8/8) sobre árbol limpio tras `20f5cbd6`.
 
 ## Archivos de este goal
 
