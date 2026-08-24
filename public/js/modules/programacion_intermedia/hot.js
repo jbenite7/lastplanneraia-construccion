@@ -85,6 +85,14 @@
     window.AIAReadiness = mod;
     if (hot) { hot.render(); }
   });
+  // Mismo patron: `construirCuadrito` vive ahora en un solo lugar
+  // (`readiness-box.js`), compartido con el globo/tarjeta movil de
+  // `readiness-popover.js`. Repinta si ya habia renderizado con el
+  // fallback local (ver el renderer de la columna, mas abajo).
+  import('/js/design-system/readiness-box.js').then(function (mod) {
+    window.AIAReadinessBox = mod;
+    if (hot) { hot.render(); }
+  });
   import('/js/design-system/modal-escape.js').then(function (mod) {
     mod.activarEscapeEnModales();
   });
@@ -3495,28 +3503,20 @@
 
 
   function construirCuadrito(item) {
+    // Pieza compartida con el globo y la tarjeta movil (`readiness-box.js`,
+    // hallazgo TASKS.md 2026-08-24). El fallback local solo corre en la
+    // ventana angosta antes de que el `import()` asincrono de mas arriba
+    // resuelva -mismo patron defensivo que `window.AIAReadiness`- y se
+    // repinta una vez cargado, asi que no es una segunda fuente permanente.
+    if (window.AIAReadinessBox) {
+      return window.AIAReadinessBox.construirCuadrito(item.prop, item.lectura);
+    }
     var box = document.createElement('span');
     box.className = 'aia-readiness__box';
     box.setAttribute('data-restriccion', item.prop);
-
     if (item.lectura.esNoAplica) {
       box.classList.add('aia-readiness__box--na');
-      return box;
     }
-    if (item.lectura.cumple) {
-      box.classList.add('aia-readiness__box--met');
-      var check = document.createElement('span');
-      check.className = 'aia-readiness__check';
-      check.textContent = '✓';
-      box.appendChild(check);
-      return box;
-    }
-    var fill = document.createElement('span');
-    fill.className = 'aia-readiness__fill';
-    // `fill.style.height` es el UNICO estilo inline permitido en esta obra:
-    // es un dato de la fila, no una decision de diseño.
-    fill.style.height = Math.round(item.lectura.relleno * 100) + '%';
-    box.appendChild(fill);
     return box;
   }
 
@@ -5255,6 +5255,39 @@
 
     wrap.appendChild(btn);
     (headerNode || TH).appendChild(wrap);
+
+    // Hallazgo TASKS.md 2026-08-24: la Task 4 fundio las 7 columnas de
+    // restriccion y con ellas se perdio el "?" educativo por restriccion que
+    // vivia en cada cabecera. El globo cubre la consulta puntual al hacer
+    // clic en una fila, pero no reemplaza poder leer las cuatro reglas de
+    // las siete restricciones sin abrir ninguna actividad. Se repone como UN
+    // solo trigger en la cabecera de Habilitacion, con el contenido de las
+    // siete concatenado en el orden ya establecido (duras primero, blandas
+    // despues) -mismo texto de `DEFAULT_POPOVER_CONTENT`, sin inventar uno
+    // nuevo-, en vez de volver al mapa indice->prop que causo el hallazgo
+    // Important 1 de la revision final.
+    if (!TH.querySelector('.pi-help-trigger')) {
+      var ayuda = document.createElement('a');
+      ayuda.href = 'javascript:void(0);';
+      ayuda.className = 'pi-help-trigger';
+      ayuda.innerHTML = '<i class="fas fa-question-circle" aria-hidden="true"></i>';
+      ayuda.setAttribute('aria-label', 'Ayuda sobre las restricciones de habilitacion');
+      $(ayuda).tooltip({
+        trigger: 'manual', html: true, placement: 'bottom', container: 'body', boundary: 'window',
+        template: '<div class="tooltip pi-help-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner tooltip-inner--wide"></div></div>',
+        title: function () {
+          var partes = [];
+          for (var i = 0; i < restrictionProps.length; i++) {
+            var prop = restrictionProps[i];
+            partes.push(
+              '<h6 class="font-weight-bold border-bottom pb-2 mb-2">' + (popoverTitles[prop] || prop) + '</h6>'
+              + (popoverContent[prop] || ''));
+          }
+          return partes.join('');
+        },
+      });
+      wrap.appendChild(ayuda);
+    }
   }
 
   function bindFilters() {

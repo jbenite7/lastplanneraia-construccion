@@ -172,23 +172,34 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **PI · test de teclado para el recorrido del globo (ArrowUp/ArrowDown)** — la Task 8 de
-  [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] verificó el binding manualmente
-  contra el navegador real; falta el Playwright dedicado (los botones sí tienen prueba, en
-  `tests/browser/pi-globo-recorrido.mjs`).
-- [ ] **PI · reponer el tooltip «?» educativo por restricción** — `hot.js:4564-4605` quedó código
-  muerto al vaciar `headerIndexToRestrictionProp` (fix final de
-  [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]]): ya no hay forma de abrir el
-  texto explicativo de una restricción desde la cabecera. El globo cubre la consulta al hacer clic
-  en la celda, pero no es lo mismo que la ayuda educativa que existía antes.
-- [ ] **PI · unificar `construirCuadrito`** — sigue duplicado entre `hot.js` (IIFE, contrato
-  `item.prop`) y `readiness-popover.js` (módulo ES, contrato `item.key`). Ambos pintan lo mismo
-  (relleno, visto, N/A) tras el fix final del frente, pero unificarlos exige diseñar un puente entre
-  los dos sistemas de módulos — no es un movimiento mecánico.
-- [ ] **PG · `alerta-restricciones` sigue en tinte de color** — no tiene `hue` asignado en
-  `docs/design-system/state-semantics.json` (`moduleMappings.programa-general`), así que la Task 1
-  de [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]] no pudo migrarlo a la familia
-  sólida como al resto de la leyenda de Programa General. Arreglar el contrato primero.
+- [ ] **PG · golden visual (`programa-general.visual.mjs`) está desactualizado, ajeno a
+  `habilitacion-en-una-columna`** — al cerrar los cuatro pendientes de ese frente (2026-08-24) se
+  detectó que `npx playwright test tests/browser/programa-general.visual.mjs` falla (18006 px a
+  1180×820, 17526 a 1440×900) contra los seis chips de leyenda que NO son `alerta-restricciones`
+  (Debe Iniciar, Actividad Futura, En Curso, Atrasada, Terminada, Sin Datos). Confirmado con
+  `git stash` que el diff es **idéntico con y sin** el cambio de este frente: es preexistente. El
+  golden vigente es de `f52d8120` (2026-08-24 11:24, 11 min después del propio
+  `39a8b69c` de este frente). **Verificado el mismo día:** `git log f52d8120..HEAD --
+  public/css/` no trae nada — el CSS de la leyenda es idéntico entre la captura del golden y
+  `HEAD`, así que **no** es un rediseño legítimo pendiente de re-aprobar.
+
+  **Corrido contra un entorno vivo el mismo día, tras instalar `vendor/` con
+  `composer install`:** la base del worktree **ya estaba sembrada** (`general_usuarios` y
+  `general_proyectos_procesos` con datos completos; el chequeo anterior de "DB sin tabla
+  `users`" fue un falso negativo por consultar una tabla que no existe con ese nombre —
+  el proyecto usa `general_usuarios`, no `users`). Con el test corriendo de verdad
+  (`npx playwright test tests/browser/programa-general.visual.mjs --workers=1`), el diff
+  real (ver `test-output/.../programa-general-dark-1440x900-diff.png` de esa corrida) **no
+  se limita a los 6 chips**: es un corrimiento vertical acumulado de toda la tabla — cada
+  fila baja unos pocos píxeles más que la anterior, hasta ~8px de diferencia en la fila
+  "Cubierta" al fondo. Encaja con no-determinismo de métricas de fuente (mismo tipo de causa
+  que rompió el golden de PI con `tabular-nums`, ver
+  [[docs/design-system/manifests/programacion-intermedia.goldens]]), pero **la causa CSS
+  exacta en `programa-general.css`/`handsontable.css` sigue sin identificar** — no confirmé
+  si es `tabular-nums`, otra propiedad de line-height, o una fuente que cambió de versión.
+  Quien retome: aislar la propiedad exacta (comparar computed styles de una fila entre
+  golden y actual), corregirla o, si el corrimiento es legítimo, recapturar con aprobación
+  visual de Felipe.
 
 - [ ] **BI · 336 filas huérfanas en `programacion_semanal`** — sin `unique_id` que exista en
   `programa` (verificado en `lastplanneraia_dev` con `LEFT JOIN`). Destapado el 2026-08-20 al
@@ -361,6 +372,17 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Los cuatro pendientes de `habilitacion-en-una-columna`, cerrados**: test de
+  teclado del recorrido del globo (`pi-globo-recorrido.mjs`, ArrowUp/ArrowDown); tooltip «?»
+  educativo repuesto en la cabecera de Habilitación (un solo trigger con las siete restricciones
+  concatenadas, sin volver al mapa índice→prop que causó el hallazgo Important 1);
+  `alerta-restricciones` de Programa General migrado a ámbar sólido sin forzarla al contrato de
+  estados (es una insignia orthogonal, no un `Estado_PG` de fila — verificado contra 65.633 filas);
+  `construirCuadrito` unificado en `readiness-box.js`, consumido por `hot.js` (IIFE) y
+  `readiness-popover.js` (módulo ES) sin duplicar lógica. Verificado en pantalla y con los 8
+  guardianes de navegador del frente + `test:design-system:static` 8/8 + PHP 52/52. Detectado de
+  paso y anotado por separado (no es de este frente): el golden visual de Programa General está
+  desactualizado — ver diferible arriba.
 - [x] 2026-08-24 — **Habilitación en una columna — Programación Intermedia**: 15 commits, ejecutado
   con `subagent-driven-development`. Fusiona 7 columnas de restricción + `% Liberación` en una
   columna de cuadritos con globo de liberación (abrir/cerrar/foco/teclado/recorrido/guardado
@@ -537,11 +559,12 @@ está cableando dos de esos mismos gates, y **MO-F4** quiere cambiarles la matri
 - **Dropdown PS sobre selector de semana** — diagnóstico (`systematic-debugging`) del stacking en `/programacion-semanal`.
 - **Higiene de coordinación** — sesiones zombi, `cas-log.*` de la raíz, triaje de goals.
 
-## Habilitación en una columna (en curso, sesión propia)
+## Habilitación en una columna (cerrado y publicado, 2026-08-24)
 
 Plan `docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md` (once tareas), desde la spec
-v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21. Cubre los dos pendientes que
-quedaron vivos del frente de replanteo de coloreado:
+v2 aprobada el 2026-08-21. Lanzado en sesión propia el 2026-08-21, publicado en `main` el 2026-08-24
+(`c57455e5`), con sus cuatro pendientes cerrados el mismo día — ver «Hechas» arriba. Cubrió los dos
+pendientes que quedaron vivos del frente de replanteo de coloreado:
 
 - **Desborde de Programación Intermedia** — 17 columnas piden 1490 px en 1100. Lo cierra la Task 5,
   con un guardián que falla solo si alguien vuelve a ensanchar.

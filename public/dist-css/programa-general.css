@@ -211,6 +211,11 @@ html.aia-theme-dark .pg-page {
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
   background: color-mix(in srgb, var(--pg-alert-bg) 88%, var(--ds-active-surface) 12%);
 }
+html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.alerta-restricciones {
+  background-color: var(--ds-state-solid-amber);
+  color: var(--ds-state-solid-amber-text);
+  border-color: var(--ds-state-solid-amber);
+}
 html.aia-theme-dark .pg-page #pgLegend .pg-filter-chip.debe-iniciar {
   background-color: var(--ds-state-solid-orange);
   color: var(--ds-state-solid-orange-text);

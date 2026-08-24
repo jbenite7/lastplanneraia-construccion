@@ -45,4 +45,30 @@ assert.ok((await titulo()).trim().length > 0,
   'al llegar al final el globo se quedo sin contenido');
 
 console.log('OK: recorre sin cerrarse y no se vacia al final');
+
+// Recorrido por teclado (ArrowUp/ArrowDown), sin cerrar y sin depender del
+// raton. Reabre el globo desde cero para partir de un estado conocido.
+await pagina.keyboard.press('Escape');
+await pagina.waitForTimeout(200);
+await pagina.locator('.pi-habilitacion-cell').first().click();
+await pagina.waitForSelector('.aia-readiness-popover:popover-open');
+
+const antesTeclado = await titulo();
+await pagina.keyboard.press('ArrowDown');
+await pagina.waitForTimeout(400);
+
+assert.equal(await pagina.locator('.aia-readiness-popover:popover-open').count(), 1,
+  'ArrowDown cerro el globo en vez de saltar');
+const trasAbajo = await titulo();
+assert.notEqual(antesTeclado, trasAbajo, 'ArrowDown no cambio de actividad');
+
+await pagina.keyboard.press('ArrowUp');
+await pagina.waitForTimeout(400);
+
+assert.equal(await pagina.locator('.aia-readiness-popover:popover-open').count(), 1,
+  'ArrowUp cerro el globo en vez de volver');
+const trasArriba = await titulo();
+assert.equal(trasArriba, antesTeclado, 'ArrowUp no volvio a la actividad anterior');
+
+console.log('OK: ArrowDown/ArrowUp recorren sin cerrar el globo');
 await navegador.close();

@@ -82,6 +82,19 @@ para el estado de los planes en curso.
   Spec: [[docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design]] · plan:
   [[docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna]].
 
+#### Fixed
+- El recorrido del globo por teclado (ArrowUp/ArrowDown) queda cubierto por Playwright, no solo
+  verificado a mano.
+- Se repone el tooltip «?» educativo de las siete restricciones en la cabecera de Habilitación —se
+  había perdido al fundir las columnas de restricción en una sola— como un solo trigger con las
+  siete concatenadas, sin volver al mapa índice→columna que causó un hallazgo de la revisión final.
+- El chip «Con Alerta Restricciones» de Programa General toma el ámbar sólido, igual que el resto
+  de la leyenda; se mantiene fuera del contrato de estados a propósito, porque es una insignia que
+  puede coexistir con cualquier fila y no un `Estado_PG` propio.
+- `construirCuadrito` (el cuadrito de habilitación) queda en un solo módulo compartido
+  (`readiness-box.js`), consumido tanto por la columna de la tabla como por el globo y la tarjeta
+  móvil — dejó de estar duplicado entre un script clásico y un módulo ES.
+
 ### CI: la imagen de pruebas siembra `general_flags` (2026-08-24)
 
 #### Fixed
