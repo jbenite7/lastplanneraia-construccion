@@ -43,6 +43,13 @@ primitivas BI compartidas).
   `status: 'passed'`**: `D-F1b-5` retiró ese acoplamiento el 2026-08-11 y hoy uno de los ocho está
   `blocked` sin romper el contrato (ver [[gate-solo-cuenta-elementos-no-los-lee]]). La garantía es de
   forma, no de contenido.
+- `closeout-evidence.json` — los **ocho gates de cierre** (eran quince hasta el Frente 1b), cada
+  uno `blocking` y con evidencia. Es lo que activa la garantía 1.0.0 (ver
+  [[madurez-y-api-estable]]). El gate que los cuenta
+  (`tests/design-system/release-governance.test.mjs:75-77`) exige la lista completa y bloqueante,
+  **ya sin `passed` obligatorio** (D-F1b-5, 2026-08-11), y el contenido de cada recibo lo abre
+  `tests/design-system/gate-receipt-content.test.mjs` — el hueco de los 14 stubs medido el
+  2026-08-10 está cerrado; ver [[gate-solo-cuenta-elementos-no-los-lee]].
 - `goal-provenance.json` — la trazabilidad hacia el goal de gobernanza: `sourceCommit` de 40 hex y
   el `sha256` de cada fuente (`goal.md`, `facts.md`, `plan.md`), verificado byte a byte
   (`design-system-contracts.mjs:373-406`). Reescribir el goal sin re-certificar rompe el gate: la

@@ -111,9 +111,10 @@ Y antes de citar una fuente como contrato, tres que afirman lo que el código no
 consumidor real nunca cableó), [[guard-valida-declaracion-contra-si-misma]] (el guard de «un
 matiz por estado» comprueba el JSON contra el JSON y nunca abre el CSS: Programa General pinta
 dos estados del mismo color con el test en verde) y
-[[gate-solo-cuenta-elementos-no-los-lee]] (el gate de gobernanza de release solo comprueba
-`evidence.length > 0`, nunca su contenido: 14 recibos de release resultaron ser stubs de dos
-claves, medido el 2026-08-10).
+[[gate-solo-cuenta-elementos-no-los-lee]] (el gate de gobernanza de release solo comprobaba
+`evidence.length > 0` sin abrir el contenido: 14 recibos resultaron ser stubs, medido el
+2026-08-10; el hueco lo cerró el Frente 1b — hoy son 8 gates con recibos reales y
+`gate-receipt-content.test.mjs` los abre uno a uno).
 
 Del laboratorio: [[lab-sticky-body-overflow]], [[lab-header-offset-medido]],
 [[lab-desktop-layout-suite]].
@@ -131,6 +132,7 @@ Estado vivo del dark mode: [[artefacto-estado-dark-mode]].
 ## Goals que trabajaron esta área
 
 - [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Corregido 2026-08-14:** el hallazgo del 2026-08-10 (15 gates, solo 2 verificados de verdad) es histórico — el Frente 1b bajó el índice de 15 a 8 gates, cada uno con recibo real (`command`/`exitCode`/`outputTail`). **Actualizado 2026-08-18:** el índice tiene hoy **nueve** gates —entró `semanal-roles-phases`, que el 14 se había decidido no añadir y se añadió después— con **8 en `passed`** y `runtime-budgets` en `blocked`. Ese bloqueo no es del código: su recibo se midió el 11 de agosto contra un baseline que se reemplazó el 12 y nunca se regeneró; la generación `0.3.5` del presupuesto quedó aprobada el 18 y el recibo válido lo produce CI. Ver [[baseline-de-una-muestra-congela-el-atipico]]. Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]].
+- [[goals/design-system-nucleo-gobernanza/goal|design-system-nucleo-gobernanza]] — el núcleo: fuente de verdad global, cascada determinista, gates continuos, con Programa General de piloto. **Sigue abierto**, pero el diagnóstico del 2026-08-10 (15 gates sin verificar, solo 2 reales) quedó atrás: el Frente 1b dejó `closeout-evidence.json` en **8 gates con recibos reales**, 7 `passed` y 1 `blocked` (`runtime-budgets`), medido el 2026-08-12 sobre `0e45ba1d`. Ver [[gate-solo-cuenta-elementos-no-los-lee]] y [[condicion-de-hecho-caduca-sin-aviso]].
 - [[goals/segmentacion-entrypoint-css/goal|segmentacion-entrypoint-css]] — núcleo sin vendors más adjuntos por vendor, para dejar de servir ~190 KB de CSS de grilla a superficies ligeras.
 - [[goals/shell-layout-design-system/goal|shell-layout-design-system]] — el paraguas que agrupó shell, layout y sistema.
 - [[goals/sidebar-todos-modulos/goal|sidebar-todos-modulos]] — el rollout del shell sidebar; sus `reports/` explican módulo por módulo.

@@ -54,6 +54,19 @@ contrato **dejó de exigir `status: 'passed'`** — `D-F1b-5`, 2026-08-11, porqu
 declarar aprobado lo que no lo estaba. Uno de los ocho está hoy `blocked` y eso es legítimo. Lo que
 sigue siendo cierto es la forma del gate: cuenta elementos, no los lee
 (ver [[gate-solo-cuenta-elementos-no-los-lee]]).
+`tests/design-system/release-governance.test.mjs:75-77` exige que los **ocho gates de cierre** de
+`closeout-evidence.json` estén todos `blocking: true` y con `evidence.length > 0`. **Ya no exige
+`status: 'passed'` en todos**: D-F1b-5 (2026-08-11) retiró ese acoplamiento porque, con la versión
+ya estable, exigirlo obligaba a declarar aprobados gates que no lo estaban — fue el incentivo que
+produjo quince recibos `passed` sin ejecutar (el comentario de `release-governance.test.mjs:68-74`
+lo documenta). Hoy `runtime-budgets` está `blocked` y el gate pasa, porque dice la verdad.
+
+**Corrección del pase de veracidad del 2026-08-10, cerrada el 2026-08-12:** aquel
+`evidence.length > 0` comprobaba forma, no contenido, y dejó pasar 14 recibos stub de dos claves
+(Task 6, Frente 0). El Frente 1b lo arregló: los recibos de `docs/design-system/evidence/` llevan
+hoy `command`, `exitCode`, `artifactSha256` y `sourceRef` reales, y
+`tests/design-system/gate-receipt-content.test.mjs` abre cada recibo con `validarRecibo()`
+(`scripts/design-system/gate-receipt.mjs`). Ver [[gate-solo-cuenta-elementos-no-los-lee]].
 
 Ojo con el nombre del archivo: `stable-api-1.0.0.json` **no** se renombra en cada versión. Su
 `targetVersion` sigue siendo `1.0.0` porque enumera la API que ganó la garantía SemVer en aquel
@@ -65,7 +78,7 @@ cierre de la 1.1.0, los gates aceptan cualquier SemVer con major ≥1 más `stat
 sus tests. Antes comprobaban el literal `'1.0.0'` en tres sitios distintos y cualquier subida
 declaraba el sistema no activado — ver [[version-escrita-a-mano-rompe-el-bump]].
 
-Es decir: la garantía es verificable **en su forma**, no en su contenido — ver la corrección de
+Es decir: la garantía es hoy verificable en forma **y** en contenido — ver la corrección de
 arriba. Ver [[baselines-y-presupuestos]] para los gates que miden, y
 [[changelog-ds-encabeza-version-vieja]] para la fuente que **no** hay que leer para saber la
 versión.
