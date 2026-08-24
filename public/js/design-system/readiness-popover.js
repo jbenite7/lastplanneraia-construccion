@@ -70,7 +70,171 @@ const colocar = (celda, globo) => {
   globo.style.setProperty('--aia-popover-y', `${Math.round(y)}px`);
 };
 
+// Task 7 (2026-08-21): el contenido real del globo. El selector, las
+// opciones y el guardado son LOS DE HOY (`hot.js` los arma en
+// `abrirGloboHabilitacion()` y los pasa aqui ya calculados); este modulo solo
+// dibuja lo que le entregan y reenvia el cambio a `datosFila.guardar`, que es
+// quien conoce `hot`, `saveRow` y la pila de deshacer.
+
+const formatearAvance = (avance) => (avance == null ? '0%' : String(avance));
+
+const construirMarcadorAvance = (datosFila) => {
+  const marcador = document.createElement('div');
+  marcador.className = 'aia-readiness-popover__marcador';
+
+  const avance = document.createElement('span');
+  avance.className = 'aia-readiness-popover__avance';
+  avance.textContent = formatearAvance(datosFila.avance);
+  marcador.appendChild(avance);
+
+  // El chip reusa el HTML exacto que hot.js ya arma con `ops-state-chip` +
+  // `stateChipAttrs` (mismo componente que la columna de estado operativo).
+  const chipWrapper = document.createElement('span');
+  chipWrapper.className = 'aia-readiness-popover__chip';
+  chipWrapper.innerHTML = datosFila.estadoChipHtml || '';
+  marcador.appendChild(chipWrapper);
+
+  return { marcador, avance };
+};
+
+const construirCabecera = (datosFila) => {
+  const cabecera = document.createElement('div');
+  cabecera.className = 'aia-readiness-popover__cabecera';
+
+  const titulo = document.createElement('span');
+  titulo.className = 'aia-readiness-popover__titulo';
+  titulo.textContent = datosFila.Actividad || 'Habilitación';
+  cabecera.appendChild(titulo);
+
+  const meta = document.createElement('span');
+  meta.className = 'aia-readiness-popover__meta';
+  meta.textContent = 'Semana ' + (datosFila.Semana || '-') + ' · ' +
+    (datosFila.Responsable_AIA || 'Sin responsable');
+  cabecera.appendChild(meta);
+
+  return cabecera;
+};
+
+const marcarFilaError = (fila, mensaje, onReintentar) => {
+  fila.classList.add('aia-readiness-popover__fila--error');
+  let aviso = fila.querySelector('.aia-readiness-popover__error');
+  if (!aviso) {
+    aviso = document.createElement('div');
+    aviso.className = 'aia-readiness-popover__error';
+    const texto = document.createElement('span');
+    aviso.appendChild(texto);
+    const reintentar = document.createElement('button');
+    reintentar.type = 'button';
+    reintentar.className = 'aia-readiness-popover__reintentar';
+    reintentar.textContent = 'Reintentar';
+    aviso.appendChild(reintentar);
+    fila.appendChild(aviso);
+  }
+  aviso.querySelector('span').textContent = mensaje;
+  aviso.querySelector('button').onclick = onReintentar;
+};
+
+const limpiarFilaError = (fila) => {
+  fila.classList.remove('aia-readiness-popover__fila--error');
+  const aviso = fila.querySelector('.aia-readiness-popover__error');
+  if (aviso) {
+    aviso.remove();
+  }
+};
+
+const construirCuadrito = (item) => {
+  const box = document.createElement('span');
+  box.className = 'aia-readiness__box';
+  const lectura = window.AIAReadiness
+    ? window.AIAReadiness.leerRestriccion(item.value, item.umbralRatio)
+    : { relleno: 0, cumple: false, esNoAplica: false };
+  if (lectura.esNoAplica) {
+    box.classList.add('aia-readiness__box--na');
+    return box;
+  }
+  if (lectura.cumple) {
+    box.classList.add('aia-readiness__box--met');
+    return box;
+  }
+  const fill = document.createElement('span');
+  fill.className = 'aia-readiness__fill';
+  fill.style.height = Math.round(lectura.relleno * 100) + '%';
+  box.appendChild(fill);
+  return box;
+};
+
+const construirFilaRestriccion = (item, datosFila, avanceEl, registroSelects) => {
+  const fila = document.createElement('div');
+  fila.className = 'aia-readiness-popover__fila';
+  fila.appendChild(construirCuadrito(item));
+
+  const etiqueta = document.createElement('label');
+  etiqueta.className = 'aia-readiness-popover__etiqueta';
+  etiqueta.textContent = item.label;
+  fila.appendChild(etiqueta);
+
+  const select = document.createElement('select');
+  select.disabled = !datosFila.canEdit;
+  item.options.forEach((opcion) => {
+    const option = document.createElement('option');
+    option.value = opcion;
+    option.textContent = opcion === '' ? '—' : opcion;
+    if (String(item.value || '') === opcion) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+  etiqueta.appendChild(select);
+  fila.appendChild(etiqueta);
+
+  const intentar = () => {
+    if (typeof datosFila.guardar !== 'function') {
+      return;
+    }
+    limpiarFilaError(fila);
+    const valorNuevo = select.value;
+    datosFila.guardar(item.key, valorNuevo, (resultado) => {
+      if (resultado && resultado.ok) {
+        limpiarFilaError(fila);
+        if (avanceEl && resultado.avance != null) {
+          avanceEl.textContent = formatearAvance(resultado.avance);
+        }
+        return;
+      }
+      marcarFilaError(fila, (resultado && resultado.message) || 'Error al guardar', intentar);
+    });
+  };
+
+  select.addEventListener('change', intentar);
+
+  if (registroSelects) {
+    registroSelects[item.key] = select;
+  }
+
+  return fila;
+};
+
+const construirGrupo = (titulo, items, datosFila, avanceEl, registroSelects) => {
+  if (!items || items.length === 0) {
+    return null;
+  }
+  const grupo = document.createElement('div');
+  grupo.className = 'aia-readiness-popover__grupo';
+
+  const rotulo = document.createElement('h4');
+  rotulo.className = 'aia-readiness-popover__rotulo';
+  rotulo.textContent = titulo;
+  grupo.appendChild(rotulo);
+
+  items.forEach((item) => {
+    grupo.appendChild(construirFilaRestriccion(item, datosFila, avanceEl, registroSelects));
+  });
+
+  return grupo;
+};
+
 const construirGlobo = (datosFila) => {
+  const datos = datosFila || {};
   const globo = document.createElement('div');
   globo.className = 'aia-readiness-popover';
   globo.setAttribute('popover', 'manual');
@@ -78,14 +242,32 @@ const construirGlobo = (datosFila) => {
   globo.setAttribute('aria-modal', 'false');
   globo.tabIndex = -1;
 
-  const titulo = document.createElement('span');
-  titulo.className = 'aia-readiness-popover__titulo';
-  titulo.textContent = (datosFila && datosFila.Actividad) || 'Habilitación';
-  globo.setAttribute('aria-label', titulo.textContent);
-  globo.appendChild(titulo);
+  const cabecera = construirCabecera(datos);
+  globo.setAttribute('aria-label', datos.Actividad || 'Habilitación');
+  globo.appendChild(cabecera);
+
+  const { marcador, avance } = construirMarcadorAvance(datos);
+  globo.appendChild(marcador);
+
+  if (!datos.canEdit && datos.razonSoloLectura) {
+    const lectura = document.createElement('p');
+    lectura.className = 'aia-readiness-popover__solo-lectura';
+    lectura.textContent = datos.razonSoloLectura;
+    globo.appendChild(lectura);
+  }
+
+  const selects = {};
+  const grupoObligatorias = construirGrupo('Obligatorias', datos.obligatorias, datos, avance, selects);
+  if (grupoObligatorias) {
+    globo.appendChild(grupoObligatorias);
+  }
+  const grupoSeguimiento = construirGrupo('De seguimiento', datos.seguimiento, datos, avance, selects);
+  if (grupoSeguimiento) {
+    globo.appendChild(grupoSeguimiento);
+  }
 
   document.body.appendChild(globo);
-  return globo;
+  return { globo, selects };
 };
 
 const focoAtrapado = (ev) => {
@@ -111,6 +293,29 @@ const focoAtrapado = (ev) => {
   }
 };
 
+// Step 7 (Task 7): Ctrl+Z (Cmd+Z en mac) reenvia a `hot.undo()` -la MISMA
+// pila que usa la tabla, no una propia del globo- y sincroniza los
+// `<select>` afectados con el dato ya revertido, porque nada dentro del
+// globo escucha `afterChange` para refrescarse solo.
+const alDeshacer = (ev) => {
+  if (!estado || !(ev.ctrlKey || ev.metaKey) || ev.key.toLowerCase() !== 'z') {
+    return;
+  }
+  if (typeof estado.datosFila.deshacer !== 'function') {
+    return;
+  }
+  ev.preventDefault();
+  estado.datosFila.deshacer();
+  if (typeof estado.datosFila.leerValor !== 'function') {
+    return;
+  }
+  Object.keys(estado.selects).forEach((prop) => {
+    const select = estado.selects[prop];
+    const valor = estado.datosFila.leerValor(prop);
+    select.value = String(valor == null ? '' : valor);
+  });
+};
+
 const alTeclado = (ev) => {
   if (!estado) {
     return;
@@ -120,6 +325,7 @@ const alTeclado = (ev) => {
     cerrar();
     return;
   }
+  alDeshacer(ev);
   focoAtrapado(ev);
 };
 
@@ -172,7 +378,7 @@ function abrir(celda, datosFila) {
   }
   cerrar();
 
-  const globo = construirGlobo(datosFila);
+  const { globo, selects } = construirGlobo(datosFila);
   if (typeof globo.showPopover !== 'function') {
     globo.remove();
     return;
@@ -185,7 +391,7 @@ function abrir(celda, datosFila) {
     globo.remove();
     return;
   }
-  estado = { celda, globo };
+  estado = { celda, globo, datosFila: datosFila || {}, selects };
   colocar(celda, globo);
   globo.focus();
   document.addEventListener('keydown', alTeclado, true);

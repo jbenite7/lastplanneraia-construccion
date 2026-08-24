@@ -38,6 +38,30 @@
   var _rowMetaCache = [];
   var _stateViewCache = [];
   var _saveStatus = null;
+  // Task 7 (2026-08-21): el globo escribe con `hot.setDataAtRowProp(...,
+  // 'edit')` -obligatorio para que la pila de deshacer de Handsontable se
+  // entere (Ctrl+Z)-, y eso dispara `afterChange` -> `saveRow` sin que el
+  // globo pueda pasarle un callback directo. Este registro por
+  // `visualRow + '|' + prop` es el puente: el globo se suscribe justo antes
+  // de escribir, y `saveRow` lo consulta en sus tres desenlaces (exito, error
+  // de servidor, fallo de red) para avisarle el resultado sin cerrarlo. El
+  // camino existente desde la celda (afterChange sin cuarto argumento) nunca
+  // registra nada aqui, asi que su comportamiento no cambia.
+  var _saveResultListeners = {};
+
+  function registrarEscuchaGuardado(visualRow, prop, callback) {
+    _saveResultListeners[visualRow + '|' + prop] = callback;
+  }
+
+  function notificarResultadoGuardado(visualRow, prop, resultado) {
+    var clave = visualRow + '|' + prop;
+    var callback = _saveResultListeners[clave];
+    if (!callback) {
+      return;
+    }
+    delete _saveResultListeners[clave];
+    callback(resultado);
+  }
   import('/js/design-system/save-status.js').then(function (mod) {
     _saveStatus = mod.crearSaveStatus({ claseOculta: 'pi-status-badge-hidden' });
   });
@@ -64,13 +88,126 @@
     _readinessPopover = mod.AIAReadinessPopover;
   });
 
+  // Task 7 (2026-08-21): arma el paquete que consume el globo. El selector,
+  // las opciones y el endpoint de guardado son los MISMOS que ya existen para
+  // la celda -nada de eso se inventa aqui-, asi que este paquete solo empaca
+  // datos ya calculados en otras funciones de este archivo (config activa,
+  // reglas de edicion, estado de fila) y una funcion `guardar` que reusa
+  // `saveRow` por la misma ruta que una edicion de celda: `setDataAtRowProp`
+  // con source `'edit'`, para que la pila de deshacer de Handsontable se
+  // entere (spec Step 7, Ctrl+Z).
+  function construirGrupoRestricciones(claves, rowData) {
+    var grupo = [];
+    for (var i = 0; i < claves.length; i++) {
+      var restriccion = _findRestrictionByKey(claves[i]);
+      if (!restriccion) { continue; }
+      grupo.push({
+        key: restriccion.key,
+        label: restriccion.label,
+        options: [''].concat(restriccion.options || []),
+        value: rowData[restriccion.key],
+        umbralRatio: (restriccion.threshold || 100) / 100,
+      });
+    }
+    return grupo;
+  }
+
   function abrirGloboHabilitacion(celda) {
     if (!_readinessPopover || !celda) { return; }
     var visualRow = celda.hasAttribute('data-row') ? parseInt(celda.getAttribute('data-row'), 10) : NaN;
-    var datosFila = {};
-    if (hot && !isNaN(visualRow)) {
-      datosFila = getSourceRowDataByVisualRow(hot, visualRow) || {};
+    if (!hot || isNaN(visualRow)) { return; }
+
+    var rowData = getSourceRowDataByVisualRow(hot, visualRow) || {};
+    var physicalRow = getPhysicalRowFromVisualRow(hot, visualRow);
+    var meta = getPIRowMeta(physicalRow, rowData);
+    var view = getStateView(rowData, meta.state);
+
+    var reglas = reglasIntermediaActuales();
+    var tieneResponsable = hasAssignedValue(rowData.Responsable_AIA, PI_CREATE_PROF);
+    var canEdit = reglas.puedeEditarCelda({
+      prop: restrictionProps[0],
+      esHeader: meta.isHeader,
+      tieneResponsable: tieneResponsable,
+      esRestriccion: true,
+    });
+    var razonSoloLectura = null;
+    if (!canEdit) {
+      razonSoloLectura = !tieneResponsable
+        ? PI_LOCK_REASON
+        : 'No tiene permiso para editar restricciones en esta semana.';
     }
+
+    // Step 7 (spec): "Ctrl+Z sigue funcionando". El candidato obvio era
+    // reenviar al `hot.undo()` de Handsontable -la MISMA pila que usa la
+    // tabla-, pero verificado en vivo: `ChangeAction.undo()` replica el
+    // cambio con `setDataAtCell(row, COLUMNA)`, y las siete props de
+    // restriccion dejaron de ser columnas propias desde que la Task 4 las
+    // fundio en la columna `__habilitacion` — `propToCol('D_y_E')` no
+    // resuelve, y Handsontable lanza
+    // "Method setDataAtCell accepts row and column number...". No es un
+    // problema que el globo introduzca: CUALQUIER escritura futura a estas
+    // props (la unica via de escritura hoy es el globo) quedaria en esa
+    // misma pila rota; aqui se evita ademas con `beforeUndoStackChange` (mas
+    // abajo, en las opciones del propio Handsontable) que ya bloquea que las
+    // escrituras derivadas de `saveRow` ('internal-update') se apilen. Para
+    // que el REQUISITO del Step 7 se cumpla sin heredar ese defecto de
+    // Handsontable, el globo lleva su propio unico nivel de deshacer -misma
+    // ruta de escritura, `setDataAtRowProp(..., 'edit')`, mismo `saveRow`-,
+    // simplemente sin pasar por `hot.undo()`.
+    var ultimaEdicionGlobo = null; // { prop, valorAnterior }
+
+    var datosFila = {
+      Actividad: rowData.Actividad,
+      Semana: getSemana(),
+      Responsable_AIA: rowData.Responsable_AIA,
+      avance: formatPercent(rowData.Estado_Restricciones || 0),
+      // Mismo chip que la columna de estado operativo (`ops-state-chip` +
+      // `stateChipAttrs`, ya con su hoja de tokens en
+      // `docs/design-system/components/ops-state-chip.css`) — el globo no
+      // inventa un chip propio.
+      estadoChipHtml: '<span class="ops-state-chip"' + stateChipAttrs(view.state) + '>'
+        + '<span class="ops-chip-label">' + escapeHtml(getStateShortLabel(view.state)) + '</span></span>',
+      canEdit: canEdit,
+      razonSoloLectura: razonSoloLectura,
+      obligatorias: construirGrupoRestricciones(hardRestrictionProps, rowData),
+      seguimiento: construirGrupoRestricciones(softRestrictionProps, rowData),
+      guardar: function (prop, newValue, onResultado) {
+        if (restrictionProps.indexOf(prop) === -1) { return; }
+        var valorAnterior = (getSourceRowDataByVisualRow(hot, visualRow) || {})[prop];
+        registrarEscuchaGuardado(visualRow, prop, function (resultado) {
+          if (resultado && resultado.ok) {
+            ultimaEdicionGlobo = { prop: prop, valorAnterior: valorAnterior };
+            var filaActual = getSourceRowDataByVisualRow(hot, visualRow) || {};
+            onResultado({
+              ok: true,
+              avance: formatPercent(filaActual.Estado_Restricciones || 0),
+            });
+          } else {
+            onResultado({ ok: false, message: (resultado && resultado.message) || 'Error al guardar' });
+          }
+        });
+        hot.setDataAtRowProp(visualRow, prop, newValue, 'edit');
+      },
+      // Ver la nota de `ultimaEdicionGlobo` arriba: un solo nivel de
+      // deshacer, misma ruta de escritura que `guardar` (setDataAtRowProp
+      // + 'edit' -> afterChange -> saveRow), asi que un reintento fallido de
+      // este deshacer se comporta exactamente igual que cualquier otra
+      // edicion fallida (revertCell, showFeedback).
+      deshacer: function () {
+        if (!ultimaEdicionGlobo) { return; }
+        var edicion = ultimaEdicionGlobo;
+        ultimaEdicionGlobo = null;
+        hot.setDataAtRowProp(visualRow, edicion.prop, edicion.valorAnterior, 'edit');
+      },
+      // El globo guarda una foto de los valores al abrir; tras deshacer
+      // necesita releer el dato real para refrescar su propio `<select>`
+      // -misma fuente que usa toda la fila, `getSourceRowDataByVisualRow`-.
+      leerValor: function (prop) {
+        var filaActual = getSourceRowDataByVisualRow(hot, visualRow) || {};
+        return filaActual[prop];
+      },
+    };
+
     _readinessPopover.abrir(celda, datosFila);
   }
 
@@ -3188,6 +3325,7 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       showFeedback('error', payload.error);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: payload.error });
       return;
     }
 
@@ -3265,6 +3403,7 @@
           updateLegendCounts(getFilteredRows());
         }
         showFeedback('success', 'Guardado');
+        notificarResultadoGuardado(visualRow, prop, { ok: true });
         return;
       }
 
@@ -3274,16 +3413,21 @@
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       showFeedback('error', message);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: message });
     }).fail(function (jqXHR) {
       revertCell(visualRow, prop, oldValue);
       if (restrictionProps.indexOf(prop) > -1) {
         recalculateRestrictionStateForVisualRow(visualRow);
       }
       if (jqXHR && jqXHR.status === 409) {
-        showFeedback('error', 'La semana activa cambió en otra pestaña o sesión. Recarga la página para continuar.');
+        var mensaje409 = 'La semana activa cambió en otra pestaña o sesión. Recarga la página para continuar.';
+        showFeedback('error', mensaje409);
+        notificarResultadoGuardado(visualRow, prop, { ok: false, message: mensaje409 });
         return;
       }
-      showFeedback('error', 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.');
+      var mensajeRed = 'No se pudo guardar: sin conexión con el servidor. Revisa la red y vuelve a escribir el dato.';
+      showFeedback('error', mensajeRed);
+      notificarResultadoGuardado(visualRow, prop, { ok: false, message: mensajeRed });
     });
   }
 
@@ -4436,6 +4580,21 @@
           var hot = this;
           openDropdownEditorAtCell(hot, row, col, null, false);
         }
+      },
+      // Task 7 (2026-08-21, Step 7): `saveRow` reescribe varias celdas
+      // derivadas (`Estado_Restricciones`, `estado_operativo`, ...) con
+      // source `'internal-update'` cuando responde el servidor. El plugin
+      // UndoRedo de base graba en su pila CUALQUIER cambio con diferencia de
+      // valor, sin importar el source -solo excluye 'UndoRedo.undo',
+      // 'UndoRedo.redo' y 'auto'-, asi que sin este hook esas escrituras
+      // derivadas se apilaban encima de la edicion real del usuario y un
+      // solo Ctrl+Z deshacia el dato calculado en vez de la restriccion que
+      // la persona acababa de marcar. No es un problema nuevo del globo: ya
+      // afectaba a cualquier edicion de restriccion (la unica via de edicion
+      // hoy es el globo, Task 4 fundio la columna). Se bloquea aqui, una vez,
+      // para toda la tabla.
+      beforeUndoStackChange: function (actions, source) {
+        return source !== 'internal-update';
       },
       afterOnCellMouseDown: function (event, coords) {
         if (!coords || coords.row < 0 || coords.col < 0) {

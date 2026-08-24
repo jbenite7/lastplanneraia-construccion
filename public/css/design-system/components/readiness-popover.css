@@ -68,7 +68,97 @@
     font-weight: 700;
     font-size: var(--ds-chip-font-size, 0.75rem);
     color: var(--ds-active-text-primary);
+    margin: 0 0 var(--ds-space-1) 0;
+  }
+
+  /* Task 7 (2026-08-21): contenido real del globo — cabecera, marcador de
+     avance, grupos duras/blandas y filas con selector. Todo con tokens; el
+     unico color que no viene de aqui es el chip, que reusa `ops-state-chip`
+     ya definido en `ops-state-chip.css`. */
+
+  .aia-readiness-popover__cabecera {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .aia-readiness-popover__meta {
+    font-size: var(--ds-type-size-xs);
+    color: var(--ds-active-text-secondary);
+  }
+
+  .aia-readiness-popover__marcador {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    margin-bottom: var(--ds-space-2);
+  }
+
+  .aia-readiness-popover__avance {
+    font-weight: 700;
+    font-size: var(--ds-type-size-md, 1rem);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-readiness-popover__solo-lectura {
+    font-size: var(--ds-type-size-xs);
+    color: var(--ds-active-text-secondary);
     margin: 0 0 var(--ds-space-2) 0;
+  }
+
+  .aia-readiness-popover__grupo + .aia-readiness-popover__grupo {
+    margin-top: var(--ds-space-2);
+  }
+
+  .aia-readiness-popover__rotulo {
+    font-size: var(--ds-type-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ds-active-text-secondary);
+    margin: 0 0 var(--ds-space-1) 0;
+  }
+
+  .aia-readiness-popover__fila {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    padding-block: var(--ds-space-1);
+  }
+
+  .aia-readiness-popover__etiqueta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    flex: 1 1 auto;
+    font-size: var(--ds-chip-font-size, 0.75rem);
+    color: var(--ds-active-text-primary);
+  }
+
+  .aia-readiness-popover__fila--error {
+    border-radius: var(--ds-radius-sm);
+    background-color: var(--ds-active-surface-raised);
+  }
+
+  .aia-readiness-popover__error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    width: 100%;
+    font-size: var(--ds-type-size-xs);
+    color: var(--ds-color-danger, var(--ds-active-text-primary));
+  }
+
+  .aia-readiness-popover__reintentar {
+    border: 1px solid var(--ds-active-border);
+    border-radius: var(--ds-radius-sm);
+    background: transparent;
+    color: var(--ds-active-text-primary);
+    font-size: var(--ds-type-size-xs);
+    padding: 0 var(--ds-space-1);
+    cursor: pointer;
   }
 
   @media (prefers-reduced-motion: reduce) {
