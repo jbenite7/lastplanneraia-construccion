@@ -33,12 +33,19 @@ resumen: "P5 · Lo que falta del programa de cierre hasta producción: CP-F-C (c
 
 ## Tarea 1 — CP-F-C · La superficie de estados
 
-Decisión de Felipe ya tomada: **opción (a), obligatoria**. Cada módulo declara dónde pinta sus
-estados; no es opt-in.
+**YA EJECUTADA el 2026-08-12 (D-CEF-1), antes de que esta tarea se escribiera.** Corregido
+2026-08-24 al cerrar la spec [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design]]:
+`state-semantics.schema.json` exige `surface` en cada `moduleMappings` (`required: [module, surface,
+states]`), los 10 módulos vivos la declaran, y `states-feedback.test.mjs:252-258` comprueba que la
+ruta existe de verdad en `public/index.php`. Esta tarea no se ejecuta: ya está hecha. Ver el `##
+Cierre` de esa spec para la evidencia completa.
 
-- [ ] Censar los módulos contra la declaración existente
-- [ ] Hacer la declaración obligatoria, con un guard que **falle por el efecto, no por la
-      declaración**
+~~Decisión de Felipe ya tomada: **opción (a), obligatoria**. Cada módulo declara dónde pinta sus
+estados; no es opt-in.~~
+
+~~- [ ] Censar los módulos contra la declaración existente~~
+~~- [ ] Hacer la declaración obligatoria, con un guard que **falle por el efecto, no por la
+      declaración**~~
 
 **Trampa a evitar, medida tres veces en este repo:** «el guard que valida su declaración, no su
 efecto». Es hermana de [[memoria/trampas/guard-de-texto-no-ve-el-parseo]] y de

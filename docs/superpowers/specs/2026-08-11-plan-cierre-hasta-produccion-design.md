@@ -192,6 +192,57 @@ publicar.
    afectado y respaldo previo verificable.
 4. Las cuatro fases tienen su `## Cierre` anotado.
 
+## Cierre
+
+**Ejecutado en todo lo que es trabajo.** Verificado sobre el árbol actual, no sobre casillas:
+
+- **CP-F0 · CI en verde** — resuelto como efecto colateral del cierre de CP-F-AB (abajo): el CI no
+  corría limpio de punta a punta, y P2 lo arregló junto con los dos gates.
+- **F-AB · Cablear los dos gates al CI** — **CERRADA** el 2026-08-24 vía Plan P2
+  ([[goals/gates-al-ci/goal]]). Las dos decisiones (D-7, D-GAC-5(b)) ya estaban ejecutadas por otras
+  sesiones sin que el `goal.md` se hubiera actualizado; lo que faltaba era el CI verde de punta a
+  punta. `docs/design-system/closeout-evidence.json` declara **9/9 gates `passed`** (no 8, uno más
+  desde que se escribió este spec) — `runtime-budgets` con recibo real del 2026-08-24T23:12:16Z de
+  la corrida de Actions, baseline `0.4.0`.
+- **F-C · `D-CEF-1` — superficie obligatoria** — **ejecutada el 2026-08-12**, doce días antes de que
+  el plan `docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion.md` la reasignara como
+  "Tarea 1" sin verificar contra `docs/decisiones-pendientes.md`. Verificado en esta sesión, en el
+  código, no solo en la ficha de decisión: `state-semantics.schema.json` exige `surface` en cada
+  entrada de `moduleMappings` (`required: [module, surface, states]`, `additionalProperties: false`),
+  los **10** módulos vivos la declaran con su ruta real, y
+  `tests/design-system/states-feedback.test.mjs:252-258` comprueba que esa ruta existe de verdad en
+  `public/index.php`, no solo que el campo esté presente. La condición de hecho original decía «los
+  trece módulos»; eran 12 al escribirse y hoy son 10 — la resta la explica el retiro del PDC v1
+  (`contratos`, `listado-actividades`, 2026-08-04), no un incumplimiento de esta fase.
+- **F-D · `D-BTN-1`** — **RETIRADA el 2026-08-12**: la premisa estaba caducada porque ya estaba
+  hecha, y hecha mejor de lo pedido. El usuario había elegido la opción 2 (investigar y retirar el
+  par declaración-muerta + regla-que-la-pisa), y el commit `0a228a39` (2026-08-11) ya lo había
+  ejecutado — no solo el par de `.pdc-legend-item`, sino los **dieciséis** `!important` sobrantes del
+  chip, reponiendo los seis que sí hacían trabajo. Verificado ancestro de `origin/main`.
+- **F-E · Despliegue a producción** — **sin ejecutar, por diseño.** El propio plan declara que esta
+  fase "existe para estar nombrada, no para hacerse" y que ninguna publicación en `main` concede la
+  autorización. Sigue esperando la palabra explícita de Felipe, en el momento — se rastrea en la
+  spec [[docs/superpowers/specs/2026-07-29-despliegue-pdc-v2-produccion-design|despliegue-pdc-v2-produccion]],
+  no aquí, para no llevar el mismo pendiente en dos sitios.
+
+**Condición de hecho del plan entero**, contrastada:
+
+1. `closeout-evidence.json` con los gates `passed` — ✅ cumplida, 9/9.
+2. `docs/decisiones-pendientes.md` sin ninguna entrada `abierta` — ✅ cumplida (35 fichas: 33
+   resueltas, 1 ejecutada, 0 abiertas reales — la única coincidencia de "abierta" es la plantilla del
+   encabezado, no una entrada).
+3. El trabajo en producción, desplegado — ❌ no cumplida, **intencionalmente**: es F-E, que este
+   mismo plan prohíbe ejecutar sin autorización aparte.
+4. Las cuatro fases con su `## Cierre` anotado — ✅ esta sección, consolidando lo que vivía disperso
+   en `goals/gates-al-ci/goal.md` y `docs/decisiones-pendientes.md`.
+
+**Corrección de paso, para que no se repita el trabajo:** `docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion.md`
+sigue nombrando CP-F-C como su "Tarea 1" sin marcarla. Se anota ahí mismo que ya está hecha, para que
+quien retome P5 no la reabra.
+
+No se requirió grilleo para este cierre: las tres fases que son trabajo ya estaban hechas y solo
+faltaba consolidar la evidencia; la cuarta (F-E) sigue, correctamente, sin tocar.
+
 ## Archivos de este goal
 
 Este spec vive en `docs/superpowers/specs/`. El plan de implementación que salga de él se enlazará

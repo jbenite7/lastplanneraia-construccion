@@ -436,6 +436,14 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **`plan-cierre-hasta-produccion` cerrada.** Verificado sobre el código, no sobre
+  el plan `2026-08-24-p5-cierre-hasta-produccion.md` que la daba por pendiente: CP-F-C (superficie
+  obligatoria de estados) ya estaba ejecutada desde el 2026-08-12 (D-CEF-1) — esquema exige
+  `surface`, 10 módulos la declaran, el gate comprueba la ruta real en `public/index.php`. CP-F-AB
+  cerrada vía P2 el mismo día (9/9 gates `passed`). CP-F-D retirada desde el 2026-08-12 (ya estaba
+  hecha, mejor de lo pedido). Solo queda CP-F-E (despliegue), sin ejecutar por diseño — necesita
+  autorización explícita de Felipe, siempre. Corregido de paso el plan P5 para que no se repita el
+  trabajo de CP-F-C. Detalle: [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design]].
 - [x] 2026-08-24 — **Las tres specs huérfanas de la auditoría del 20 de agosto, cerradas** (ninguna
   necesitó código, solo verificación y `## Cierre`). `stack-plan-de-compras`: la brecha era por qué
   el módulo se unificó en `lps-aia`, ya respondido en
@@ -619,11 +627,15 @@ con enfoque data storytelling sobre el contrato de DS-F1; hacerlo antes sería c
 
 | Fase | Frente | Estado |
 |---|---|---|
-| **CP-F0 · Poner el CI en verde** | `ci-en-verde` | Añadida el 2026-08-12 delante de todo (`6d82f723`), porque `design-system-runtime` lleva `needs: design-system-static` y el static llevaba rojo desde el 2026-07-17 |
+| **CP-F0 · Poner el CI en verde** | `ci-en-verde` | **Resuelta** como efecto de cerrar CP-F-AB — el CI no corría limpio de punta a punta y P2 lo arregló junto con los dos gates |
 | **CP-F-AB · Cablear los dos gates al CI** | `gates-al-ci` | **CERRADA** (2026-08-24, vía Plan P2). Las dos decisiones ya estaban ejecutadas; faltaba el CI en verde |
-| **CP-F-C · Cada módulo declara dónde pinta sus estados** | `superficie-de-estados` | Pendiente. Decisión del usuario: opción (a), obligatoria |
+| **CP-F-C · Cada módulo declara dónde pinta sus estados** | `superficie-de-estados` | **Corregido 2026-08-24: ya estaba ejecutada desde el 2026-08-12 (D-CEF-1)** — esta fila decía «Pendiente» y el plan P5 la reasignaba como tarea sin verificar contra `docs/decisiones-pendientes.md`. Verificado en código: esquema exige `surface`, 10 módulos la declaran, el gate comprueba la ruta real |
 | **CP-F-D** | — | **RETIRADA** el 2026-08-12: su premisa estaba caducada, ya estaba hecha |
 | **CP-F-E · Despliegue a producción** | `despliegue` | Pendiente. ~1.255 commits de retraso. **Necesita autorización propia y explícita, siempre** |
+
+**Spec `plan-cierre-hasta-produccion` cerrada el 2026-08-24**: todo lo que es trabajo (F-AB, F-C,
+F-D, CI en verde) está hecho; solo F-E sigue sin ejecutar, por diseño del propio plan. Detalle en el
+`## Cierre` de [[docs/superpowers/specs/2026-08-11-plan-cierre-hasta-produccion-design]].
 
 ## Bloque 3 — Móvil, tablet y tema claro (siete fases)
 
