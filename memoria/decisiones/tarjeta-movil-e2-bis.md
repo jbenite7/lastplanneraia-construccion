@@ -4,7 +4,7 @@ tipo: decision
 estado: vigente
 fecha: 2026-08-14
 areas: [lps, design-system]
-fuente: "docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design.md (adenda del 2026-08-14); verificado contra public/js/modules/programacion_semanal/hot.js:3470 y public/js/modules/programacion_intermedia/hot.js:4437"
+fuente: "docs/superpowers/specs/2026-08-07-f2a-piloto-movil-programacion-design.md (adenda del 2026-08-14); verificado contra public/js/modules/programacion_semanal/hot.js:3651 y public/js/modules/programacion_intermedia/hot.js:4918"
 resumen: "Bajo 1180px, Semanal e Intermedia pintan tarjetas con la misma forma: cinco elementos en la cara visible y el resto en un desplegable nombrado por su contenido"
 ---
 # La tarjeta móvil de programación (E2-bis)

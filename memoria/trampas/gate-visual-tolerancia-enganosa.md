@@ -17,9 +17,15 @@ el diff cae dentro de tolerancia) y actualizar los `sha256` del manifiesto.
 
 **Corregido después, sin invalidar la lección** (verificado el 2026-08-06): la tolerancia bajó de
 0.03 → 0.005 → **0.002**, y el propio archivo cita este hallazgo como motivo
-(`playwright.config.mjs:50`, y los dos specs de rejilla `programa-general.visual.mjs:95` y
-`programacion-intermedia.visual.mjs:95`). La cifra 0.03 es histórica; lo que sigue vigente es que
-un verde del gate no prueba que el golden esté al día.
+(`playwright.config.mjs:50`). La cifra 0.03 es histórica; lo que sigue vigente es que un verde del
+gate no prueba que el golden esté al día.
+
+> **Corregido en el pase de veracidad del 2026-08-25.** Esta nota citaba
+> `programa-general.visual.mjs:95` y `programacion-intermedia.visual.mjs:95` como specs que
+> heredaban esa tolerancia. **Ninguno de los dos usa `maxDiffPixelRatio`**: los dos fijan un tope
+> **absoluto** de `maxDiffPixels: 100` (`programa-general.visual.mjs:106`,
+> `programacion-intermedia.visual.mjs:134`), que es otra política y con otra historia. El ratio
+> `0.002` vive solo en la configuración global.
 
 **Medido el 2026-08-06: 0.002 ya está cerca del suelo de ruido, no sobra margen.** El comentario de
 `playwright.config.mjs:44-47` afirma que «con la tolerancia en 0, tres corridas seguidas sin tocar

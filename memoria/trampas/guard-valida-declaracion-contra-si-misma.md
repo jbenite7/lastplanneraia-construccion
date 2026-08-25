@@ -7,7 +7,7 @@ areas: [design-system, qa]
 fuente: sesion
 resumen: "El guard de «un matiz por estado» lee state-semantics.json y comprueba que no se repita hue dentro de ese mismo archivo; nunca abre el CSS, así que siempre está verde — la divergencia que lo destapó se pagó el 2026-08-06, el guard no se enteró de ninguna de las dos cosas"
 ---
-`tests/design-system/state-tint-ladder.test.mjs:170` («ningun modulo asigna el mismo
+`tests/design-system/state-tint-ladder.test.mjs:200` («ningun modulo asigna el mismo
 matiz a dos estados») recorre `semantics.moduleMappings` y cuenta repeticiones de `hue`
 **dentro del propio `state-semantics.json`**. Es la declaración validándose contra sí
 misma: mientras el JSON esté bien escrito, el test pasa aunque el CSS pinte lo que
@@ -15,17 +15,24 @@ quiera.
 
 La divergencia que lo destapó, medida el 2026-08-03: el contrato declara para
 `programa-general` «Actividad Futura» → `green` y «En Curso» → `blue`
-(`docs/design-system/state-semantics.json:199-212`, que sigue igual), y la grilla
+(`docs/design-system/state-semantics.json:244-258`, que sigue igual), y la grilla
 pintaba **las dos** con `--ds-cell-state-ok-bg` / `-fg` — el mismo color, 8,88:1 en
 ambas.
 
 **Esa divergencia concreta ya está pagada** (verificado el 2026-08-07, y el guard siguió
 verde todo el tiempo, que es justo el punto de esta nota): `51ccd5ca` llevó el chip de
-estado al canal de matiz, `public/js/modules/programa_general/hot.js:804` emite
-`data-aia-hue="<hue>"` sobre el `<span class="ops-state-chip">` que pinta `:1658`, y
-`public/css/design-system/adapters/legacy-bridge.css:114-127` da a `blue` y a `green`
-fondos distintos (`--ds-state-tint-blue` vs. `--ds-state-tint-green`). Las citas viejas
-`styles.css:3516` y `:3541` ya no existen.
+estado al canal de matiz, `public/js/modules/programa_general/hot.js:845` emite
+`data-aia-hue="<hue>"` sobre el `<span class="ops-state-chip">` que pinta `:1773`, y
+`public/css/design-system/adapters/legacy-bridge.css` da a `blue` y a `green` fondos
+distintos. Las citas viejas `styles.css:3516` y `:3541` ya no existen.
+
+> **Corregido en el pase de veracidad del 2026-08-25: el puente ya no pinta con tintes.**
+> Esta nota decía que `legacy-bridge.css:114-127` usaba `--ds-state-tint-blue` y
+> `--ds-state-tint-green`. **Hoy ese archivo tiene cero `--ds-state-tint-*` y diecisiete
+> `--ds-state-solid-*`** (`grep -c`): lo reescribió el replanteo B del 2026-08-20, y su propio
+> comentario lo dice — «el chip pinta SÓLIDO (`--ds-state-solid-*`) con texto oscuro de su
+> familia, igual que la primitiva». **La lección de la página no cambia** —el guard seguía verde
+> mientras el mecanismo mutaba debajo—, pero el mecanismo que describía ya no es el vigente.
 
 Queda vivo el tercer sitio: `public/js/modules/shared/cell-state-vocabulary.mjs:18-22`
 sigue mandando los dos alias a `CELL_STATE.OK`. Matiz nuevo del pase: la clase que ese

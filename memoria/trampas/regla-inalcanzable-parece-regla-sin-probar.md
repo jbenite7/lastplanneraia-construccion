@@ -17,7 +17,7 @@ La causa medida no son los datos. El listado del servidor filtra `Titulo = 0`
 cabecera es exactamente `Titulo != 0` (`public/js/modules/programacion_intermedia/stateMachine.js:161-167`).
 En la base local hay 24 cabeceras en `programa` para ese proyecto: existen, pero **no
 pueden llegar a la grilla**. La rama `meta.isHeader` de `buildPICellProperties()`
-(`hot.js:956-961`) es, desde esta vista, código inalcanzable.
+(`hot.js:1226-1229`) es, desde esta vista, código inalcanzable.
 
 La diferencia importa porque las dos situaciones piden cosas opuestas:
 
@@ -40,11 +40,19 @@ mismo patrón de algo que parece vigilado y no lo está.
 Los otros dos hallazgos de la misma red, por si se cruzan con ellos:
 
 - **`Ejecutado_Real` ignora la restricción de semana histórica** en Semanal: su cláusula
-  tiene un `return` propio *antes* de `isUserAllowedToEdit()`
-  (`programacion_semanal/hot.js:416-418`), así que en fase de calificación un rol `R` edita
-  el avance de una semana que no puede tocar en ninguna otra columna. **Revisado el mismo
-  día: es deliberado y el servidor implementa la misma regla** — ver
+  tiene un `return` propio *antes* de `isUserAllowedToEdit()`, así que en fase de calificación un
+  rol `R` edita el avance de una semana que no puede tocar en ninguna otra columna. **Revisado el
+  mismo día: es deliberado y el servidor implementa la misma regla** — ver
   [[un-if-de-autorizacion-no-es-toda-la-autorizacion]].
+
+  > **Límite declarado del pase de veracidad del 2026-08-25:** este punto citaba
+  > `programacion_semanal/hot.js:416-418`, y **hoy esas líneas son otra cosa**
+  > (`normalizeNullableNumber`). Se retiró la cita porque es falsa, pero **no se pudo localizar
+  > dónde vive hoy la regla**: `isUserAllowedToEdit()` está definida en `:463-464` y **no se invoca
+  > en ningún otro punto del archivo**; la editabilidad pasa hoy por `isPropReadOnly()` →
+  > `reglasActuales().isPropReadOnly(prop)`. **No se sabe si el bypass sigue existiendo, se movió o
+  > desapareció en un refactor** — y como es una regla de permisos, averiguarlo merece sesión
+  > propia. Se dice en vez de suponerlo.
 - **`editableProps` declara nueve props y la grilla monta ocho**: `Descripcion` no está en
   el array `columns`, así que esa entrada no gobierna ninguna celda.
 

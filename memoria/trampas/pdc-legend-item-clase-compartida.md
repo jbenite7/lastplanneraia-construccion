@@ -12,7 +12,7 @@ resumen: "pdc-legend-item es una clase compartida entre PG, PI y PS; adoptar el 
 `html body … {width: 205px !important}` que citaba la línea 6476 de `styles.css` **ya no
 existe** — `205px` no aparece en el archivo (comprobado de nuevo el 2026-08-06; el conteo de
 líneas se mueve con cada commit, hoy 4211). Tras la tokenización,
-`.pdc-legend-item` se define en `styles.css:532-536` (corregido el 2026-08-10: las reglas de
+`.pdc-legend-item` se define en `styles.css:536-542` (corregido el 2026-08-10: las reglas de
 estado — `.missing`, `.critical`, `.delayed`… — empiezan en `:536` y llegan a `:541-542`; el rango
 anterior caía dentro de un comentario sobre tokens `--pdc-*` movidos a `tokens.css`) con tokens de
 estado del design system y sin `!important` de ancho. Lo que sigue vigente es el fondo del asunto: la clase la comparten

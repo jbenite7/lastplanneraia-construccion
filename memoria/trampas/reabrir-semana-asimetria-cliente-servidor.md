@@ -4,7 +4,7 @@ tipo: trampa
 estado: derogada
 fecha: 2026-08-10
 areas: [rbac, lps]
-fuente: "public/js/modules/programacion_semanal/hot.js:3139, src/Controllers/Api/SemanalApiController.php:942,984, Frente 0 (Task 3, 2026-08-10)"
+fuente: "public/js/modules/programacion_semanal/hot.js:3139, src/Controllers/Api/SemanalApiController.php:955,984, Frente 0 (Task 3, 2026-08-10)"
 resumen: "Reabrir una semana esconde el botón en cliente salvo al rol A, pero el servidor solo exige lps.programacion_semanal.editar — cualquier rol con esa capacidad puede reabrir por el endpoint, y el log siempre escribe «reabierta por Admin»"
 ---
 # Reabrir semana: el cliente y el servidor no están de acuerdo, y no está escrito en ningún sitio
@@ -24,12 +24,12 @@ resumen: "Reabrir una semana esconde el botón en cliente salvo al rol A, pero e
 
 **El cliente esconde el botón de reabrir salvo al rol `A`** — `public/js/modules/programacion_semanal/hot.js:3139`
 solo lo pinta para Admin. **El servidor no lo restringe así**:
-`src/Controllers/Api/SemanalApiController.php:942` (`reabrir()`) solo exige la capacidad
+`src/Controllers/Api/SemanalApiController.php:955` (`reabrir()`) solo exige la capacidad
 `lps.programacion_semanal.editar`, que no es exclusiva de `A`. Cualquier rol con esa capacidad
 puede reabrir la semana llamando al endpoint directamente, sin pasar por el botón que el cliente
 oculta.
 
-Y el log no ayuda a detectarlo: `SemanalApiController.php:984` escribe siempre «reabierta por
+Y el log no ayuda a detectarlo: `SemanalApiController.php:1023` escribe siempre «reabierta por
 Admin», sea quien sea el rol real que hizo la llamada. Un audit trail que miente sobre quién actuó
 es peor que ninguno.
 

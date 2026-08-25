@@ -8,7 +8,7 @@ fuente: sesión del 2026-08-13, revisión de los hallazgos de la red F2a-2b-1
 resumen: en la semanal la autorización vive en dos capas —el candado de semana y la separación de fases por campo—; leer solo la primera produce sospechas falsas de brecha
 ---
 Al revisar por qué el cliente deja editar `Ejecutado_Real` en una semana histórica, se leyó
-`LpsWeekEditPolicy::allows()` (`src/Security/LpsWeekEditPolicy.php:16-48`) y se concluyó —mal—
+`LpsWeekEditPolicy::allows()` (`src/Security/LpsWeekEditPolicy.php:16-45`) y se concluyó —mal—
 que había una brecha: el guard autoriza por **semana y rol**, sin mirar qué campo se modifica,
 y `SemanalApiController.php:156-158` lo invoca con `$qualification = true` para toda la opción
 `modificar`. De ahí salía la sospecha de que por API se podría cambiar `Compromiso` en una
@@ -23,7 +23,7 @@ semana ya cerrada.
 
 La segunda es la que acota por campo, y dibuja exactamente la misma frontera que la interfaz.
 Ya estaba cubierta de extremo a extremo por
-`tests/browser/programacion-semanal-roles-phases.mjs:316` («rol R histórico solo puede calificar
+`tests/browser/programacion-semanal-roles-phases.mjs:451` («rol R histórico solo puede calificar
 el compromiso confirmado»), que afirma 200 en la calificación y 409 al tocar planificación.
 
 **El criterio que deja esta página:** antes de reportar una brecha de permisos en la semanal,

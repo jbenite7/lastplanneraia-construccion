@@ -17,7 +17,7 @@ En lps-aia, `aia-design-system.css` declara `@layer reset, vendor, theme, base, 
 **Ampliación del 2026-08-11 (frente `contadores-cero`): la receta de arriba no siempre basta.**
 `@layer components` de nivel superior gana a `module` y a `module.components`, pero **pierde
 contra una SUBcapa de la propia `components`**. Medido: `buttons.css` entra por
-`@import url("/css/buttons.css") layer(components)` (`aia-design-system.css:35`) y **se envuelve a
+`@import url("/css/buttons.css") layer(components)` (`aia-design-system.css:39`) y **se envuelve a
 sí mismo** en `@layer components { }`, así que sus reglas quedan en `components.components`. Su
 `.pdc-legend-item { display: inline-flex !important }` (entonces `buttons.css:971`) derrotó a una regla
 `!important` de mucha más especificidad puesta en `components` a secas — la regla estaba en el
@@ -35,5 +35,5 @@ Nota del pase 8 (2026-08-12, sobre `0e45ba1d`): el ejemplo concreto ya no se rep
 `.pdc-legend-item` está hoy en `buttons.css:976` y su `display: inline-flex` perdió el
 `!important` (`:977`); un refactor del mismo 2026-08-11 lo sacó además de un `:where()` compartido
 (comentario en `buttons.css:52-58`). El mecanismo sigue vigente y verificado:
-`aia-design-system.css:35` importa `buttons.css` con `layer(components)` y `buttons.css:1` se
+`aia-design-system.css:39` importa `buttons.css` con `layer(components)` y `buttons.css:1` se
 envuelve en `@layer components`, así que sus reglas siguen viviendo en `components.components`.

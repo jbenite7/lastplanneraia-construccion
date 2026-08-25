@@ -23,9 +23,16 @@ changelog, y la suite estática se puso en rojo por tres frentes a la vez:
    de ~10 JSON (`component-catalog`, `stable-api-1.0.0`, `ui-groups-inventory`, `state-semantics`,
    `vendors`, `legacy-aliases`, `manifests/inventory`, `closeout-evidence`, …) sea **igual** al de
    `version.json`.
-3. **Gates con `1.0.0` literal.** `design-system-closeout-contract.mjs:121-124` y
+3. **Gates con `1.0.0` literal.** ~~`design-system-closeout-contract.mjs:121-124` y
    `design-system-activation-git.mjs:55` comprueban `version === '1.0.0'` para decidir si la
-   activación existe; con otra versión declaran el sistema no activado.
+   activación existe; con otra versión declaran el sistema no activado.~~
+   **Este punto dejó de aplicar el 2026-08-07 y esta nota no lo recogía** (corregido en el pase de
+   veracidad del 2026-08-25). El commit `8c45ae41` cambió el chequeo literal por un patrón:
+   `ACTIVATED_VERSION_PATTERN = /^([1-9]\d*)\.\d+\.\d+$/` (`design-system-activation-git.mjs:43`),
+   consumido por `design-system-closeout-contract.mjs:113`. **Cualquier SemVer con `major >= 1` y
+   `status: stable` activa**, así que 1.1.0 y sucesoras ya no cobran este peaje. El detalle es que
+   el arreglo llegó **el mismo día** del «Desenlace» que esta página ya narra, y aun así el punto 3
+   se quedó escrito como si siguiera vivo: dieciocho días describiendo un peaje que nadie paga.
 
 **Cómo no caer.** Un bump de versión es un cierre de ciclo completo: pagar (o re-vencer a
 conciencia) las excepciones que expiran, sincronizar los manifiestos y decidir qué significan los

@@ -2,17 +2,20 @@
 capa: wiki
 tipo: goal
 estado: vigente
-fecha: 2026-08-24
+fecha: 2026-08-25
 areas: [proceso]
 tags: [dashboard]
-fuente: los 63 `goals/<slug>/goal.md` leídos el 2026-08-24 contra `origin/main`, más `git ls-files` y el lint de la wiki
-resumen: "Estado de los 63 goals del repo, leído de la sección `## Cierre` de cada goal.md: 56 cerrados y 7 abiertos"
+fuente: los 63 `goals/<slug>/goal.md` recontados el 2026-08-25 en el pase de veracidad, más `git ls-files` y el lint de la wiki
+resumen: "Estado de los 63 goals del repo, leído de la sección `## Cierre` de cada goal.md: 58 cerrados y 5 abiertos"
 ---
 # Estado de los goals
 
-**Corte del 2026-08-19**, releído de cada `goals/<slug>/goal.md` contra `origin/main`. El anterior
-era del 2026-08-10 y describía 26 carpetas cuando ya había 56: nueve días y treinta goals de
-desfase, en la página que existe justo para responder «¿dónde quedó X?».
+**Corte del 2026-08-25**, recontado goal por goal en el pase de veracidad. El del 2026-08-19 daba
+42 cerrados y 13 abiertos sobre 56 carpetas; hoy son **58 y 5 sobre 63**. Y el del 2026-08-10
+describía 26 carpetas cuando ya había 56 — nueve días y treinta goals de desfase, en la página que
+existe justo para responder «¿dónde quedó X?». **Es la tercera vez que esta página envejece por el
+mismo motivo**, así que conviene decirlo aquí: su cifra caduca en días, no en semanas, y el pase de
+veracidad es lo único que la mantiene honesta.
 
 La fuente sigue siendo `goals/<slug>/`; esta página solo lo resume. **La regla de lectura es una:
 un goal está cerrado si su `goal.md` tiene una sección `## Cierre` con contenido** —salida de
@@ -26,13 +29,19 @@ Para las **fases de los cuatro programas y los pendientes vivos**, [[TASKS]], qu
 
 | | Cuántos | Qué significa |
 |---|---|---|
-| **Cerrados** | 42 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
-| **Abiertos** | 13 | objetivo redactado, sin cierre |
-| **Plantilla** | 1 | `goal.md` es el andamiaje con el objetivo sin escribir |
+| **Cerrados** | 58 | `## Cierre` con evidencia. Incluye 1 retirado y 1 descartado |
+| **Abiertos** | 5 | objetivo redactado, sin cierre |
+| **Plantilla** | 0 | ya no queda ninguna |
+
+*(Recuento del **2026-08-25**, pase de veracidad, con
+`for d in goals/*/; do grep -q '^## Cierre' $d/goal.md; done`: **63 carpetas, 58 con cierre, 5 sin
+él, 0 sin `goal.md`**. La tabla anterior decía 42/13/1, cifras del corte del 2026-08-19 que
+envejecieron seis días — y sumaban 56, no 63.)*
 
 **Eran 56 goals y 10 plantillas hasta el 2026-08-19.** Ocho de esas plantillas recibieron su
 objetivo y su cierre con evidencia re-medida ese día, y una carpeta —`a187ccda`— se borró por no ser
-un frente. La única que queda es `apply-recalculo-estados`, cuyo trabajo sí corrió.
+un frente. **La última que quedaba, `apply-recalculo-estados`, ya tiene su `## Cierre`**
+(comprobado el 2026-08-25): no queda ninguna plantilla.
 
 ## Abiertos o bloqueados
 
@@ -42,16 +51,19 @@ un frente. La única que queda es `apply-recalculo-estados`, cuyo trabajo sí co
 > últimos eran justamente los que esta página señalaba como «ejecutados sin cierre escrito», y el
 > cierre se escribió. Entró `organizar-la-casa`, en esa misma situación. Medido con
 > `grep -rl '^## Cierre' goals --include=goal.md`: **56 de 63**.
+>
+> **Segundo recorte, 2026-08-25 (pase de veracidad): ahora son 58 de 63.** Salieron
+> `runtime-budgets-al-ci` y `gates-al-ci`, que cerraron el 2026-08-24 vía Plan P2 y esta tabla
+> seguía dando por abiertos — uno como «activo» y el otro como «pausado». **Ninguno de los cinco que
+> quedan está esperando trabajo ajeno: a tres les falta solo escribir su cierre.**
 
 
 | Goal | Estado |
 |---|---|
-| [[goals/bi-control-tower-gemini/goal\|bi-control-tower-gemini]] | **Bloqueado por dependencia, no por olvido.** Su condición de hecho pide aprobar seis modos, tres del tema `linen`, retirado el 2026-07-25 (DS-030): nadie podía cumplirla. El usuario decidió esperar al tema claro nuevo (MO-F3) y aprobar los seis de verdad, en vez de recortar el alcance. Ver [[condicion-de-hecho-caduca-sin-aviso]] |
+| [[goals/bi-control-tower-gemini/goal\|bi-control-tower-gemini]] | **Desbloqueado desde el 2026-08-20, y esta página decía lo contrario.** Su condición pedía aprobar seis modos, tres del tema `linen` retirado el 2026-07-25 (DS-030): nadie podía cumplirla. **Felipe resolvió D-7 con la opción (a): recortar la condición a los tres modos dark** (`DECISIONES_PENDIENTES.md:385`), y P4 lo confirma — «no bloquea a `bi-control-tower-gemini`, que cierra en dark por decisión propia». Lo que falta es **escribir su cierre**, no esperar nada. Ver [[condicion-de-hecho-caduca-sin-aviso]] |
 | [[goals/design-system-nucleo-gobernanza/goal\|design-system-nucleo-gobernanza]] | **No se cierra**, medido el 2026-08-10: de sus 15 gates solo 2 pasaban de verdad, 4 fallaban con evidencia, 8 no eran ejecutables y 1 era un recibo sin comando detrás. Los 14 artefactos de `docs/design-system/evidence/` eran stubs de dos claves. **Superado por el programa DS**: los 15 gates se reemplazan en DS-F3, no se arreglan. Ver [[gate-solo-cuenta-elementos-no-los-lee]] |
-| [[goals/reapertura-movil-y-tema-claro/goal\|reapertura-movil-y-tema-claro]] | **Abierto**, 4 de 7 fases cerradas (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan F2b —los 13 módulos restantes— y F3 —tema claro—; F4 se absorbió en DS-F3 |
-| [[goals/runtime-budgets-al-ci/goal\|runtime-budgets-al-ci]] | **Activo.** Persigue el único gate `blocked` de los nueve de `closeout-evidence.json`. Andamio declarado: DS-F3 lo reemplaza |
-| [[goals/gates-al-ci/goal\|gates-al-ci]] | **Pausado** con sus dos decisiones ya confirmadas y sin ejecutar (`test.C` en `docker-compose.ci.yml`, baseline 0.3.4) |
-| [[goals/vocabulario-estados-cascada/goal\|vocabulario-estados-cascada]] | **En replanteo** por pedido del usuario (D-VOC-1). Su aclaración clave: [[programa-general-actualizar-es-otra-herramienta]] |
+| [[goals/reapertura-movil-y-tema-claro/goal\|reapertura-movil-y-tema-claro]] | **Abierto**, 4 de 7 fases cerradas (MO-F1, F2a-1, F2a-2a, F2a-2b). Quedan F2b —los 13 módulos restantes— y F3 —tema claro—; F4 se absorbió en DS-F3. **Su spec se derogó el 2026-08-25** a favor de P4, que ejecuta la decisión D-9 de Felipe: el trabajo vive ahí, no aquí |
+| [[goals/vocabulario-estados-cascada/goal\|vocabulario-estados-cascada]] | **Ya no está «en replanteo»: sus cuatro decisiones se resolvieron el 2026-08-11** (D-VOC-1 a D-VOC-4, `docs/decisiones-pendientes.md`), y su trabajo mecánico —35→29 términos en Intermedia— está en el código. Lo que decía «en replanteo» era una copia de la cola sin sincronizar. Falta **escribir su cierre**, y ejecutar D-VOC-4 (separar `Capítulo`) en frente propio, porque toca datos persistidos. Su aclaración clave sigue valiendo: [[programa-general-actualizar-es-otra-herramienta]] |
 | [[goals/organizar-la-casa/goal\|organizar-la-casa]] | **Ejecutado y sin cierre escrito** (2026-08-20): las siete reglas viven en [[docs/coordinacion-sesiones]] y `AGENTS.md` las referencia. Por la regla de lectura cuenta como abierto |
 
 ## Cerrados
