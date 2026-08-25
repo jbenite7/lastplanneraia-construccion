@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,50 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Depuración de la documentación: el tipado de `docs/` decía lo que no era (2026-08-25)
+
+Encargo de Felipe: dejar la wiki y `docs/` sin ruido ni documentos obsoletos, reflejando la
+realidad de hoy. El hallazgo que ordena el resto: **el frontmatter de `docs/` lo puso un backfill
+que dedujo el tipo desde la ruta**, y `guia` acabó siendo su valor por defecto. Había **90
+documentos declarados `guia`** —el tipo que *manda*, y que cuenta como autoridad en la alarma de
+veracidad— cuando la mitad eran reportes, planes o la biblia de dominio. Un reporte mal tipado se
+lee como si ordenara.
+
+#### Changed
+- **72 documentos reclasificados** por lo que de verdad son: 38 a `reporte` (auditorías DS-F0,
+  `DESIGN-AUDIT`, `PDC-AUDIT`, `MIGRATION_FINDINGS`, los cinco barridos del 2026-08-03…), 11 a
+  `plan`, 22 a `biblia` (los doce `docs/flujos/`, `PRODUCT`, `CUSTOMER`, los diccionarios de RBAC y
+  estados) y `docs/DESIGN.md` a `contrato`. **De 90 «guías» a 18**, y las 18 sí explican cómo se
+  hace algo.
+- **13 specs y planes sellados como `cerrado`**, aplicando por primera vez a `docs/superpowers/` la
+  regla que el repo ya usa para los goals: cerrado es tener `## Cierre` con contenido, no casillas
+  marcadas ni antigüedad. Los ~120 restantes se dejan como están a propósito: `vigente` en ellos no
+  afirma nada, y marcarlos `abierto` sí afirmaría algo sin verificar.
+
+#### Fixed
+- **`docs/pdc-v2.md` mandaba a un disco muerto y contradecía al `docker-compose.override.yml`.** Es
+  `tipo: guia` y `CLAUDE.md:304` obliga a leerlo antes de tocar el PDC. Decía tres cosas falsas:
+  (1) trabajar en `/Volumes/Crucial X6/…/lps-aia-pdc`, ruta caducada con la mudanza del 2026-08-18;
+  (2) que el override monta `./` relativo «así que docker compose desde el worktree monta el
+  worktree» —`docker-compose.override.yml:27` monta `${LPS_CODE_ROOT:-/Users/felipebenitez/Developer/lps-aia}`,
+  **ruta absoluta a la raíz**—; y (3) que no hay PHPUnit, falso desde el 2026-08-11. La segunda es
+  la cara: es la trampa de medir en un árbol y concluir sobre otro, la que produjo tres verdes
+  falsos el 2026-08-18. Sección reescrita entera conservando el porqué de la decisión.
+- **`CLAUDE.md` daba «103 loose scripts, 1 PHPUnit class»**; medido hoy, son **117 y 5**.
+
+#### Added
+- `docs/qa/evidence/ARCHIVO.md` sellado como **historia, no estado actual**: casi todo es de julio
+  y documenta el PDC v1, eliminado el 2026-08-04. Se deja constancia de por qué **no se borra** —
+  cuatro pruebas PHP dependen de `catalog-goal-audit-20260702/`, el peso ya está en la historia de
+  git y el precedente del repo es sacar a disco con `sha256`— y de que el respaldo externo sigue
+  **completo: 282 MB y 46 archivos**, verificado. Matiz que la documentación confundía: lo que se
+  mudó el 2026-08-18 fue el repositorio, no el disco `Crucial X6`, que sigue montado.
+
+**Verificado:** `npm run test:wiki` 98/98 sin hallazgos (165 páginas, 501/504 fuentes en estricto);
+`npm run test:design-system:static` **8/8**. Los cuatro tests PHP que citan archivos tocados solo
+los nombran en comentarios —comprobado con `grep`—, así que no se movió el contenedor compartido,
+que otra sesión está usando.
 
 ### El CI vuelve a completar una corrida entera (2026-08-24, Plan P2)
 

@@ -44,6 +44,7 @@ trabajo ajeno puede romper un verde propio sin tocar tu diff, y quien hizo el tr
 - [[una-decision-escrita-no-llega-sola-al-codigo]] — decidir no es implementar.
 - [[el-trabajo-hecho-no-vuelve-solo-al-documento]] — y su reverso: implementar no cierra el documento.
 - [[autoria-por-coincidencia-de-hora]] — la hora de actividad no prueba autoría.
+- [[el-tipo-de-una-fuente-lo-dedujo-un-script]] — un metadato puesto por defecto parece un dato y no lo es.
 - [[path-with-space-esm-guard-noop]] — el repo vive en una ruta con espacio.
 
 ## El área, en una tabla

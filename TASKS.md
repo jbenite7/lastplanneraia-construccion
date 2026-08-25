@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # Tareas
@@ -234,6 +234,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Verificar contra el código los ~120 planes y specs que siguen en `estado: vigente`.**
+  Medido el 2026-08-25: de 140 documentos en `docs/superpowers/`, solo **20** declaran su cierre.
+  En los otros 120 `vigente` es el **valor por defecto del backfill**, no una afirmación — por eso
+  no se tocaron: marcarlos `abierto` afirmaría algo sin verificar, y la regla del repo es que el
+  estado se lee del código, nunca de las casillas. Es un frente propio, no un remate: son 120
+  verificaciones independientes. Señal barata para empezar: cruzar el slug de cada plan con
+  `goals/<slug>/goal.md` y con `IMPLEMENTATION_PLAN_INVENTORY.md`.
+
 - [x] 2026-08-24 — **Frente C de SiteGround · ejecutado y DESCARTADO por su propia verificación.**
   Autorizado por Felipe. `fetch --depth=1` + `reflog expire` + `gc --prune=now` sobre `prueba-lps`,
   los tres en `rc=0`, y entonces las comprobaciones lo rechazaron: **`git pull --ff-only` da
@@ -455,6 +463,20 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-25 — **Depuración de `docs/`: el tipado decía lo que no era.** Encargo de Felipe
+  («que la wiki quede sin ruido y refleje la realidad de hoy»), alcance `memoria/` + `docs/`.
+  **72 documentos reclasificados** —de **90 `tipo: guia` a 18**, y las 18 sí son «cómo se hace
+  algo»—, **13 specs y planes sellados `cerrado`** por tener `## Cierre` con contenido, y tres
+  afirmaciones falsas corregidas en documentos que *mandan*: `docs/pdc-v2.md` (disco muerto,
+  «el override monta `./` relativo» —monta ruta absoluta a la raíz— y «no hay PHPUnit») y
+  `CLAUDE.md` (103/1 → **117/5** scripts y clases). `docs/qa/evidence/` sellado como historia,
+  con el respaldo externo verificado íntegro (282 MB, 46 archivos).
+  **Hallazgo que conviene no olvidar:** `memoria/` **no estaba sucia**. El lint sale verde, el
+  pase de veracidad es del mismo día, y las 11 «citas rotas» que encontré resultaron ser todas
+  menciones que *narran* algo eliminado — que es justo lo correcto. El ruido estaba entero en
+  `docs/`, y su causa es que el frontmatter lo puso un backfill que dedujo el tipo desde la ruta.
+  Verificado: `test:wiki` 98/98 sin hallazgos, `test:design-system:static` 8/8.
 
 - [x] 2026-08-25 — **Las tres specs de móvil, tema claro y programa de cierre, DEROGADAS tras
   medirlas frente por frente** (`f2a-piloto-movil-programacion`, `reapertura-movil-y-tema-claro`,
