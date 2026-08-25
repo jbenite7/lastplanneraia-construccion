@@ -198,8 +198,8 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-24:** **51 ejecutadas · 7 parciales · 0 pendientes · 3 derogadas · 12
-cerradas.** Las mismas 61 specs, diez movidas de casilla en cinco pasadas del mismo día; ninguna
+**Corte del 2026-08-24:** **52 ejecutadas · 6 parciales · 0 pendientes · 3 derogadas · 12
+cerradas.** Las mismas 61 specs, once movidas de casilla en seis pasadas del mismo día; ninguna
 se archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
 re-auditoría**: las parciales que siguen así conservan el veredicto del 20 de agosto, comprobado
 ítem por ítem contra `goals/*/goal.md`, `TASKS.md` y los cierres de P1 y P2.
@@ -218,9 +218,10 @@ Las tres primeras, con la evidencia que lo prueba:
 | `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**, con procedencia de corrida real. Cerrada vía P2 |
 | `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
 
-Seis más, movidas en la misma sesión. Las tres primeras eran las decisiones de bajo esfuerzo que
-ningún plan P3-P6 recogía; las tres últimas se cerraron después, a petición de Felipe, siguiendo el
-orden de la matriz de priorización de esa misma sesión:
+Siete más, movidas en la misma sesión. Las tres primeras eran las decisiones de bajo esfuerzo que
+ningún plan P3-P6 recogía; las cuatro últimas se cerraron después, a petición de Felipe, siguiendo
+el orden de la matriz de priorización de esa misma sesión — y la última, `espacio-cuenta-siteground`,
+acabó ejecutando trabajo real en el servidor, no solo anotándolo:
 
 | Spec | Antes | Ahora | Evidencia |
 |---|---|---|---|
@@ -230,6 +231,7 @@ orden de la matriz de priorización de esa misma sesión:
 | `ui-audit-and-repair-plan` | parcial (sin cierre formal) | **derogada** | Superada como vehículo por decisión medida del 2026-08-20 ([[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]] §2): su inventario de 18+ superficies lo sustituye DS-F0 (68 hallazgos sobre 257 rutas) y su plan de reparación, DS-F2 con dueño. Re-medido hoy: `/indicadores` es shell `aia-*` + iframe de Power BI, **sin tarjetas KPI que migrar** (F0-082); CNP/CNC/CIC son legacy real en `legacyCards.js` (0 clases `aia-*`, intacto desde el veredicto, F0-022 mayor). La spec proponía tocar vistas PHP y la deuda vive en un módulo JS que ninguna de sus fases nombra |
 | `cierre-dark-mode` | parcial (fase 6 sustituida) | **derogada** | Mismo motivo estructural, **pero se deroga distinto: aquí sí se ejecutó trabajo real.** Medido hoy: la deuda del audit pasó de un techo de **7 076 a 3 858 vivos (−45 %)**, con RC=0. Lo que se deroga es el remanente — fases 2, 5, 6 y 7 sin hacer, y la 5 **no pudo hacerse** porque dependía de la 2 (puerta de servicio de `admin/`, que no existe). La fase 6 apuntaba a bajarle el techo a `design-system-audit.mjs`, y **DS-F3 declara que los 15 gates actuales se reemplazan, no se arreglan**: era trabajo sobre un instrumento con fecha de retiro. **Hallazgo cuantificado al cerrar:** entre la deuda real y el techo hay **3 218 de holgura** — el gate sale verde y no gobierna; ya tiene dueño como `F0-030` de DS-F0 |
 | `ui-audit-core-lps-ops` | parcial (sin cierre formal) | **derogada** | Mismo veredicto y mismo acto: se solapaba casi por completo con la anterior (un día de diferencia, mismas superficies). Su aporte propio era el método de refactorización vertical, que no se pierde — es la skill `impeccable`, la misma que emitió el veredicto. Las dos prometían refactorizar tarjetas KPI de `/indicadores` que no existen en el repo |
+| `espacio-cuenta-siteground` | parcial (frentes C/D de servidor) | ejecutada | Los cuatro frentes con desenlace medido. **D ya estaba hecho** en producción y **B verificado en vivo**: tars de **5,1–6,7 MB** contra **687 MB** del último viejo, 5 manifiestos, rotación exacta a 3 por sitio — de ~4,1 GB en respaldos a ~39 MB. **El frente C se ejecutó con autorización de Felipe y sus propias comprobaciones lo rechazaron:** el clon shallow rompe `git pull --ff-only`, que es el comando del que depende el despliegue (`rc=128`), y además el `.git` **no bajaba** de 366 MB porque `gc` no poda lo alcanzable desde `HEAD`. Revertido con `--unshallow` y servidor verificado sano; de paso quedó al día (213 commits de atraso). **Descartar por medición es un resultado, no una omisión** — la spec escribió esas tres comprobaciones justo para esto |
 | `plan-cierre-hasta-produccion` | parcial (F-AB pausado, F-E) | ejecutada | F-AB cerrada vía P2 (9/9 gates `passed`); F-C (`D-CEF-1`) ya estaba ejecutada desde el 2026-08-12, doce días antes de que el plan P5 la reasignara sin verificar — confirmado en el esquema, el código y el test. F-D retirada desde el 2026-08-12. Solo F-E (despliegue) sigue sin ejecutar, por diseño: necesita autorización explícita de Felipe, siempre, y se rastrea en `despliegue-pdc-v2-produccion` |
 
 **Ya no hay ninguna spec pendiente.** Ese dato —«la única pendiente sin rastro»— era el más
@@ -240,27 +242,13 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 7 parciales que quedan: `cierre-prelanzamiento-pdc`,
+Las 6 parciales que quedan: `cierre-prelanzamiento-pdc`,
 `despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `reparto-trabajo-pendiente`
 (línea E sin cierre), `f2a-piloto-movil-programacion` (manifiestos sin escenario móvil),
-`reapertura-movil-y-tema-claro` (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y
-`espacio-cuenta-siteground` (frentes C/D de servidor).
+`reapertura-movil-y-tema-claro` (F2b/F3/F4) y `programa-cierre-pendientes` (frentes 3–5).
 
-**`espacio-cuenta-siteground` se revisó el 2026-08-24 y sigue parcial, pero le falta mucho menos de
-lo que decía el veredicto del 20 de agosto: solo el frente C.** Medido en el servidor ese mismo día:
-el **frente D está ejecutado** (los cuatro archivos fuera del webroot, cero dumps en el home,
-`2026_MASTER_FUSION.sql` movido a `~/backups/` y no borrado) y el **frente B verificado en vivo** —
-los tars nuevos pesan **5,1–6,7 MB** frente a los **687 MB** del último viejo, con 5 manifiestos y
-rotación exacta a 3 por sitio. Lo único que falta es el **frente C**: el `.git` de `prueba-lps`
-sigue en **366 MB** sin shallow. Los frentes A y B en el repo ya estaban: `qa/evidence` en 15 MB con
-`ARCHIVO.md` y cero binarios rastreados. Las cuatro pruebas PHP de la condición 2 dan RC=1 y **se
-demostró que no es por este frente**.
-
-> **Corrección del mismo día, publicada antes en `0a79d905`:** una primera pasada afirmó que los
-> frentes C y D eran «imposibles» por no haber acceso SSH. **Era falso.** Se grepearon los `Host` de
-> `~/.ssh/config` sin resolver sus doce `Include`, y los alias viven en el archivo incluido. El
-> detalle del error y su porqué, en el `## Estado medido` de la spec — que a propósito **no** lleva
-> `## Cierre`, porque aún no cierra.
+**`espacio-cuenta-siteground` pasó a ejecutada el 2026-08-24**, tras una revisión de tres pasadas
+que terminó ejecutando en el servidor el único frente que faltaba. Ver la fila en la tabla de abajo.
 
 **Las tres derogadas comparten causa, y conviene leerla junta:** las tres eran vehículos de trabajo
 de design system escritos entre el 31 de julio y el 3 de agosto, y las tres fueron sustituidas por

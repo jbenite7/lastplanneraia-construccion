@@ -54,6 +54,11 @@ No se puede navegar el entorno remoto como si fuera local:
 incluido desde `~/.ssh/config`: comprobarlos con `grep "^Host "` da un negativo falso
 ([[grep-de-host-no-resuelve-los-include]]).
 
+**No adelgaces el `.git` del servidor con un clon shallow.** Se probó en `prueba-lps` el 2026-08-24
+y se descartó por medición: rompe el `git pull --ff-only` del que depende el despliegue, deja de
+detectar migraciones nuevas, y encima **el `.git` no adelgaza**
+([[shallow-rompe-el-pull-ff-only-del-despliegue]]).
+
 No se hace commit, push ni deploy sin petición explícita. Una publicación aprobada no autoriza
 limpiar deriva del servidor ni desplegar de paso otros cambios.
 

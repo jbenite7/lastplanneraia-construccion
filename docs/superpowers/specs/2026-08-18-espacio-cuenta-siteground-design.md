@@ -199,10 +199,11 @@ esa protección es un archivo de configuración de distancia.
 
 ## Estado medido — 2026-08-24
 
-**Esta spec NO cierra, y a propósito no lleva `## Cierre`:** en este repo la presencia de esa
-sección es el hecho del que derivan el mapa de estado y el aviso de fase previa, así que ponerla sin
-cierre real haría mentir a los dos a la vez. Sigue **parcial**, con la mitad ejecutada y la otra
-mitad bloqueada por una causa material, no por falta de trabajo.
+**Nota de lectura:** esta sección se escribió en tres pasadas del mismo día y **se conserva su
+orden**, porque el recorrido explica el desenlace mejor que el resultado solo. Primero se declaró
+que la spec no cerraba por falta de acceso al servidor —falso, y publicado—; después se midió el
+servidor y aparecieron dos frentes ya hechos; y por último Felipe autorizó ejecutar el frente C, que
+sus propias comprobaciones rechazaron. **El `## Cierre` está al final**, y ahí manda.
 
 ### Lo verificado hoy, con salida real
 
@@ -276,12 +277,72 @@ de drift residual que la Tarea 2 de
 vez de suponerlo; el candidato natural es el despliegue del 2026-08-20, que dejó los dos tars de esa
 fecha.
 
-### Lo único que falta: el frente C
+### Frente C · ejecutado el 2026-08-24, y **descartado por su propia verificación**
 
-No es «pendiente de acceso»: es **trabajo sin hacer**, y es ejecutable ahora. Toca solo
-`prueba-lps` —producción queda fuera por decisión de esta misma spec— y es reversible con
-`git fetch --unshallow`.
+Autorizado por Felipe y ejecutado sobre `prueba-lps` ese mismo día. **Las comprobaciones lo
+rechazaron, y eso no es un fracaso: es el procedimiento haciendo exactamente lo que se diseñó para
+hacer.** Esta spec escribió tres comprobaciones «antes de darlo por bueno, no solo el tamaño», y
+dijo cuál decidía. Decidió.
 
-Sus tres comprobaciones siguen siendo las que decidían, y la que manda es la segunda:
-`git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/` tiene que seguir
-detectando migraciones nuevas, porque **lee historia** y es lo que un clon shallow puede romper.
+**Estado previo, capturado antes de tocar nada:** `HEAD=6fa3cff1`, rama `main`, `.git` de 366 MB,
+26 585 objetos, sin shallow, árbol limpio.
+
+Ejecutado `git fetch --depth=1 origin main` + `reflog expire --expire=now --all` +
+`gc --prune=now`, los tres con `rc=0`. Y entonces:
+
+| Comprobación | Con clon shallow | Con historia completa |
+|---|---|---|
+| 1 · `git pull --ff-only origin main` | ❌ **`rc=128`** — «fatal: Not possible to fast-forward, aborting» | ✅ `rc=0` |
+| 2 · `git log --diff-filter=A HEAD@{1}..HEAD -- database/migrations/` *(la que decide)* | ❌ **ninguna detectada** | ✅ detecta `20260819_sembrar_linea_base_contractual.sql` |
+| 3 · `git stash push -u` guarda y restaura drift | no llegó a probarse | ✅ guarda y restaura, árbol limpio después |
+
+**El primer punto es el veredicto:** `git pull --ff-only` es **el comando del que depende la rutina
+de despliegue** (`docs/siteground-deploy-routine.md`). Un clon shallow lo inutiliza — sin la
+historia intermedia, git no puede calcular el avance rápido entre el `HEAD` local y un
+`origin/main` truncado. No es que el despliegue se degrade: **deja de poder ejecutarse**.
+
+El segundo lo confirma por el otro lado, y es el contraste el que prueba la causa: el mismo comando,
+sobre el mismo rango, no ve la migración con shallow y sí la ve con historia completa.
+
+**Un detalle que conviene saber si alguien lo reintenta:** tras el `gc`, el `.git` **seguía en
+366 MB**. Los 326 MB prometidos no aparecen con `--depth=1` sobre un clon ya completo, porque la
+historia local sigue siendo alcanzable desde `HEAD` y `gc` no poda lo alcanzable. Habría que mover
+`HEAD` al commit truncado — y eso es justo lo que el punto 1 impide. **El ahorro no solo rompe el
+despliegue: además no se materializa por el camino que esta spec describía.**
+
+**Revertido de inmediato** con `git fetch --unshallow` (`rc=0`), y comprobado que el servidor quedó
+sano, no solo que el comando devolviera cero: `pull --ff-only` en `rc=0`, `.git/shallow` ausente,
+árbol con **0** cambios sueltos, rama `main`.
+
+**Efecto colateral, no buscado y benigno:** el `pull` de la verificación trajo los **213 commits**
+que `prueba-lps` llevaba de atraso desde el 2026-08-20. El servidor de pruebas quedó al día en
+`1a3372f6`.
+
+**Decisión que deja este resultado:** el frente C **no se reintenta**. El ahorro que perseguía
+(~326 MB en un servidor de pruebas) no compensa inutilizar el despliegue, y el propio spec ya lo
+había puesto en su tabla de riesgos con la mitigación correcta. La categoría a la que pertenece está
+en «Lo que se descartó, y por qué», junto a `git-filter-repo`.
+
+## Cierre
+
+**Ejecutada.** Los cuatro frentes tienen desenlace medido, y el descarte del C es un resultado, no
+una omisión:
+
+| Frente | Desenlace |
+|---|---|
+| A · el repo deja de cargar binarios | ✅ ejecutado — `qa/evidence` en **15 MB**, `ARCHIVO.md` escrito, **0** `trace.zip` y **0** `.webm` rastreados |
+| B · el tar guarda lo irremplazable | ✅ ejecutado y verificado en el servidor — tars de **5,1–6,7 MB** contra los **687 MB** del último viejo, 5 manifiestos, rotación exacta a **3 por sitio** |
+| C · clones shallow en pruebas | ⛔ **ejecutado y descartado por medición** — rompe `pull --ff-only`, que es el comando del despliegue. Revertido y servidor sano |
+| D · basura suelta en producción | ✅ ejecutado — los cuatro archivos fuera del webroot, **0** dumps en el home, `2026_MASTER_FUSION.sql` **movido** a `~/backups/` y no borrado |
+
+**El objetivo de la spec se cumplió, y por el frente que importaba.** El criterio que la ordenaba
+—«un respaldo guarda lo que nadie más puede reponer»— produjo su ahorro en el frente B: donde antes
+3 tarballs × 2 sitios pesaban ~4,1 GB, hoy pesan ~39 MB. El frente C perseguía 326 MB adicionales en
+un servidor de pruebas y resultó incompatible con el despliegue; el D liberó ~25 MB y quitó del
+webroot de producción dos archivos de depuración que solo tapaba una regla de `.htaccess`.
+
+**Condición de hecho, contrastada:** se cumplen la 1, la 2 *(con el matiz de las cuatro pruebas PHP
+rojas por causa ajena, demostrada arriba)*, la 3, la 5 y la 6. **La 4 no se cumple y no se
+perseguirá**: pedía el `.git` de `prueba-lps` bajo 60 MB *«con los tres puntos de verificación del
+frente C comprobados»* — se comprobaron, y dos fallaron. La condición se cumplió en su intención,
+que era no dar por bueno el tamaño sin verificar el ciclo.

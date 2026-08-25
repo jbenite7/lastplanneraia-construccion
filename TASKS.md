@@ -234,14 +234,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **Frente C de SiteGround · clon shallow en `prueba-lps`** — es **lo único** que le falta a
-  `espacio-cuenta-siteground`, medido en el servidor el 2026-08-24: su `.git` sigue en **366 MB**
-  con `.git/shallow` vacío. `git fetch --depth=1` + `reflog expire` + `gc --prune=now` lo baja a
-  ~40 MB. **Solo pruebas** —producción queda fuera por decisión de la propia spec— y **reversible**
-  con `git fetch --unshallow`. Sus tres comprobaciones son parte del trabajo, y la que decide es la
-  segunda: que `git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/` siga
-  detectando migraciones nuevas, porque lee historia. No entra en «Bloqueantes»: la cuota quedó en
-  13.32 % tras el paliativo y nada urge hoy.
+- [x] 2026-08-24 — **Frente C de SiteGround · ejecutado y DESCARTADO por su propia verificación.**
+  Autorizado por Felipe. `fetch --depth=1` + `reflog expire` + `gc --prune=now` sobre `prueba-lps`,
+  los tres en `rc=0`, y entonces las comprobaciones lo rechazaron: **`git pull --ff-only` da
+  `rc=128`** («Not possible to fast-forward») — y ese es **el comando del que depende la rutina de
+  despliegue**, así que el shallow no lo degrada, lo inutiliza. La comprobación que la spec declaró
+  decisiva lo confirma por el otro lado: con shallow **no detecta** la migración nueva del rango, y
+  con historia completa **sí** (`20260819_sembrar_linea_base_contractual.sql`). **Y el ahorro
+  tampoco aparecía:** tras el `gc` el `.git` seguía en 366 MB, porque `gc` no poda lo alcanzable
+  desde `HEAD` y mover `HEAD` es justo lo que el `pull` roto impide. Revertido con
+  `git fetch --unshallow` y **servidor verificado sano**: `pull` en `rc=0`, sin shallow, árbol con 0
+  cambios sueltos. Efecto colateral benigno: `prueba-lps` quedó al día tras 213 commits de atraso.
+  **No se reintenta.** Trampa escrita en
+  [[memoria/trampas/shallow-rompe-el-pull-ff-only-del-despliegue]].
 - [ ] **Retirar `cell-state-vocabulary.mjs`, código muerto** —
   `public/js/modules/shared/cell-state-vocabulary.mjs` no lo importa nadie salvo su propio gate: los
   renderers de Handsontable nunca lo llaman, así que su `STATE_MAP` documenta una intención, no un
