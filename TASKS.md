@@ -393,10 +393,16 @@ estado por defecto mientras Felipe no reparta.
   Kanban, Excalidraw, Homepage y el tema Minimal), publicado en `2888ab77`. El bloqueo original
   —«no se puede verificar sin abrir Obsidian»— se resolvió abriéndolo. **Iconize quedó fuera**: su
   autor lo declara descontinuado. **Kanban entró con advertencia**: funciona, pero busca quien lo
-  mantenga. Hallazgo de paso: **el vault de `lps-aia` no estaba registrado** en la app, y
+  mantenga. Hallazgo de paso: **el vault de `lps-aia` no estaba registrado** en la app —
+  **corregido 2026-08-24: sí está registrado**, solo que Obsidian tenía activo otro vault
+  ("Gerencia") con una carpeta que replica `proyectos/lps-aia/` sin ser el mismo vault — y
   `visor-gantt` sigue apuntando al disco Crucial X6 — roto desde la mudanza.
-- [ ] **Grupos de color del grafo** (`.obsidian/graph.json`) — sigue pendiente, es lo único que
-  quedó de la Fase 0b.
+- [x] 2026-08-24 — **Grupos de color del grafo, configurados y verificados en pantalla**
+  (`computer-use`, con acceso autorizado por Felipe). Tres `colorGroups` en `.obsidian/graph.json`:
+  wiki (`path:memoria`, rojo), fuentes (`path:docs OR path:goals`, ámbar), contratos de raíz
+  (`file:AGENTS OR file:CLAUDE OR ...`, verde). Verificado pintando en la Vista gráfica real, no
+  solo escrito en el JSON. Cierra el único pendiente que quedaba de la Fase 0b. Detalle en el
+  `## Cierre` de [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]].
 - [ ] **Proponer verificación de tests en contenedor como config por proyecto.** La vía Docker se
   quitó del gate global de `~/.claude` el 2026-08-19; este repo es 100% dockerizado y su
   `verify.quick` en `.claude/gate.yaml` evita PHP/Docker por costo, pero el resto de la suite sí
@@ -437,10 +443,10 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
   `decisiones/vocabulario-estados-cascada.md` que sugería "en replanteo" era una copia del 18 de
   agosto nunca sincronizada con ese cierre; pendiente real fuera de este frente: separar `Capítulo`
   (D-VOC-4) en frente propio. `wiki-v2-visual`: los plugins de comunidad ya estaban instalados y
-  verificados desde el 20 de agosto (`2888ab77`); el único pendiente real es el grafo con grupos de
-  color (`.obsidian/graph.json`, `colorGroups: []`), que Felipe decidió dejar pendiente por no poder
-  verificarse sin abrir Obsidian, en vez de escribirlo a ciegas. Inventario actualizado: 50
-  ejecutadas · 11 parciales.
+  verificados desde el 20 de agosto (`2888ab77`); el grafo con grupos de color, que quedó pendiente
+  en el primer cierre de esta sesión por no poder verificarse sin abrir Obsidian, se resolvió en la
+  misma sesión al confirmar Felipe que ya lo tenía abierto — ver entrada aparte. Inventario
+  actualizado: 50 ejecutadas · 11 parciales.
 - [x] 2026-08-24 — **Tarea 8 de P2 — `design-system.yml` renombrado a `ci.yml`.** Decisión de
   Felipe (2026-08-20), micro-frente propio. Barrido de referencias confirmado archivo por archivo
   (no solo grep): 3 tests que leían la ruta literal, `CLAUDE.md`, `DESIGN.md` y una trampa de
@@ -583,8 +589,8 @@ esperando su decisión.
 
 | Pendiente | Por qué quedó fuera |
 |---|---|
-| Plugins de comunidad (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage, tema Minimal) | Decisión del usuario: los decide aparte. Con ellos quedan fuera el Kanban de esta cola y el arranque automático del dashboard |
-| Grupos de color del grafo (`.obsidian/graph.json`) | No hay forma de comprobar que la consulta hace lo que dice sin abrir Obsidian, y el criterio de la tanda fue que sin verificación no se escribe |
+| Plugins de comunidad (Dataview, Tasks, Kanban, Excalidraw, Iconize, Homepage, tema Minimal) | **Resuelto 2026-08-20** (instalados y verificados, `2888ab77`) |
+| Grupos de color del grafo (`.obsidian/graph.json`) | **Resuelto 2026-08-24** (configurado y verificado en pantalla) |
 | Enchufar `--estricto` a `npm run test:wiki` | Es decisión de contrato: a partir de ahí toda fuente nueva nace con frontmatter o el gate se pone rojo. **Ya se midió el hueco**: una fuente entró sin declarar por un merge y el gate no lo detuvo |
 | 3 archivos del design system sin frontmatter | Están congelados por sha256 en `goal-provenance.json`. Ratificado por el usuario |
 | 8 `goal.md` que son andamiajes sin objetivo escrito | Salen ahora en el catálogo con un resumen que lo dice. Hay que decidir cuáles siguen vivos |

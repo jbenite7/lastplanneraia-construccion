@@ -104,13 +104,23 @@ entra por decisión técnica, no por indecisión. Kanban entró con advertencia 
 lo mantenga). Esta sesión (2026-08-24) verificó que ya no hace falta grillar esta pregunta con el
 usuario: la evidencia de ejecución ya estaba en `TASKS.md`.
 
-**§2 · Grafo con grupos de color — sigue sin ejecutarse.** Verificado en esta sesión:
-`.obsidian/graph.json` tiene `colorGroups: []`, sin tocar desde el 2026-08-03. A diferencia de los
-plugins, esta pieza **no se puede verificar sin abrir Obsidian**, y el criterio que gobernó toda la
-Tanda 4 fue "sin verificación no se escribe". Preguntado a Felipe en esta sesión (2026-08-24):
-queda pendiente tal como ya lo anota `TASKS.md`, sin tocar el JSON a ciegas — se resuelve cuando
-alguien lo pueda abrir y verificar en pantalla, igual que se hizo con los plugins.
+**§2 · Grafo con grupos de color — ejecutado y verificado en pantalla, 2026-08-24.** Al preguntarle
+a Felipe, confirmó que Obsidian ya estaba abierto con el vault de `lps-aia`, lo que resolvió el
+bloqueo que había dejado esto pendiente desde la Tanda 4 ("no se puede verificar sin abrir
+Obsidian"). Con acceso vía `computer-use`, se configuraron tres `colorGroups` en
+`.obsidian/graph.json` (antes `[]`, sin tocar desde el 2026-08-03) y se verificaron pintando en
+la Vista gráfica real del vault, no solo escritos en el JSON:
 
-**Condición de hecho global:** cumplida salvo el grafo, que la propia condición no exige de forma
-explícita (solo aparece en §2 · Navegación como pieza de diseño, no en la lista de cierre). No
-bloquea declarar el frente ejecutado.
+| Grupo | Consulta | Qué pinta |
+|---|---|---|
+| Wiki | `path:memoria` | Rojo — las 162 páginas de `memoria/` |
+| Fuentes | `path:docs OR path:goals` | Ámbar — `docs/` y `goals/` |
+| Contratos de raíz | `file:AGENTS OR file:CLAUDE OR file:GEMINI OR file:README OR file:TASKS OR file:ROADMAP OR file:CHANGELOG OR file:IMPLEMENTATION_PLAN_INVENTORY` | Verde |
+
+Todo lo demás (código, tests, vendor) queda sin colorear a propósito — es ruido para el grafo de
+la wiki, no señal. Hallazgo de paso: el vault de `lps-aia` **sí** estaba registrado en Obsidian
+(contradice la nota de `TASKS.md` del 20 de agosto que decía lo contrario) — lo que faltaba era
+tenerlo *activo*; Obsidian tenía abierto otro vault ("Gerencia") con una carpeta que replica
+`proyectos/lps-aia/`, que no es el mismo vault que declara `CLAUDE.md`.
+
+**Condición de hecho global:** cumplida en su totalidad. Ningún pendiente real queda de esta spec.
