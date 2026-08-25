@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v0
+version: v1
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -35,6 +35,13 @@ reparan con este trabajo. La bitácora empieza a contar desde que se despliega; 
 anteriores a esa fecha no quedan escritas en ningún lado. Esas 27 se resuelven por revisión manual,
 en un frente aparte.
 
+**Consecuencia a tener en cuenta para esa revisión manual:** guardar el mismo valor no cuenta como
+edición — es una decisión de diseño de este spec, no un detalle menor. Si al revisar una de las 27
+alguien concluye que el número que ya está ahí es el correcto, no basta con volver a guardarlo para
+dejar esa confirmación registrada: como el valor no cambia, la bitácora no registra nada. Para que
+quede prueba de que alguien la revisó y la confirmó, hay que cambiar el número, aunque sea en un
+detalle mínimo. No hay hoy una forma de "confirmar sin tocar".
+
 ## Alcance
 
 Los cinco campos que `WeeklyRealProgressCarryoverService` ya trata como "editables a mano" hoy:
@@ -57,7 +64,8 @@ consulte. No hay vista de historial para el residente ni el director de obra en 
 
 ### 1. Qué se guarda
 
-Una tabla nueva y angosta, con una sola pregunta en mente: "¿alguien tocó este campo, y a qué?"
+Una tabla nueva y angosta — `campo_edicion_manual` —, con una sola pregunta en mente: "¿alguien
+tocó este campo, y a qué?"
 
 | Columna | Qué guarda |
 |---|---|
@@ -102,7 +110,9 @@ usuario de la sesión.
 
 El servicio, envuelto en una transacción (todo o nada):
 
-1. Lee los valores actuales de la fila.
+1. Bloquea la fila y lee sus valores actuales dentro de la misma transacción (`SELECT ... FOR
+   UPDATE`), para que dos ediciones casi simultáneas de la misma actividad no se pisen sin que
+   ninguna de las dos vea el cambio de la otra.
 2. Compara campo por campo. Si el valor nuevo es igual al actual, no se registra nada — guardar
    sin cambiar no es una edición.
 3. Por cada campo que sí cambió, inserta su fila en la bitácora, y solo entonces aplica el
