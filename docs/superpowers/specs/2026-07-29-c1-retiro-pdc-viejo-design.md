@@ -21,6 +21,29 @@ resumen: goals/pdc-preparar-b1 - Origen: roadmap maestro (fase C1) + un conflict
   manifiesto del v2 (puntos 1, 2 y 4). El retiro en sí sigue **bloqueado por la precondición**, y el
   alcance quedó reescrito: es más pequeño y más seguro de lo que decía el diseño original.
 
+## Aviso del 2026-08-25 — este documento es la fuente de un dato que circuló falso trece días
+
+**Las tres menciones de que «producción está en `1aa7c69` del 2026-07-16, sin una sola tabla
+`pdc_*`» (líneas 31, 187 y 271) caducaron el 2026-08-12** y **no** se corrigen en el cuerpo, que se
+conserva como historia: eran ciertas al escribirse, y el razonamiento que sostienen era válido con
+lo que se sabía entonces.
+
+Lo que pasó después: el release completo salió el **2026-08-12** — producción pasó de `1aa7c694` a
+`939b7928` en un solo `git pull --ff-only`, **1.763 commits**, con el PDC v2 dentro (16 entradas
+`Services\Pdc` en el classmap donde había cero) y el esquema ya nivelado. Registro en
+`memoria/referencias/produccion-deploy.md`.
+
+**Por qué se avisa aquí y no en otro sitio.** Este documento está `cerrado`, así que nadie volvía a
+mirarlo — y sin embargo su frase se copió a la spec de despliegue, de ahí al informe de auditoría
+del 2026-08-20, de ahí a `IMPLEMENTATION_PLAN_INVENTORY.md` y de ahí a un encargo del 2026-08-25 ya
+convertida en premisa. Para el cuarto lector venía de tres sitios distintos; era el mismo texto
+cuatro veces. El mecanismo tiene ficha propia:
+[[memoria/trampas/el-sha-de-partida-leido-como-estado-actual]] — `1aa7c69` era el sha **de partida**
+del despliegue, leído como estado de llegada.
+
+**Una spec cerrada no deja de ser leída: deja de ser revisada.** Es lo que la hace peligrosa como
+fuente.
+
 ## Lo que realmente pasó — 2026-08-04
 
 Tres cosas que este documento afirma **ya no son ciertas**. Se corrigen aquí en vez de reescribir el
