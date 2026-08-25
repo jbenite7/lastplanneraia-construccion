@@ -35,7 +35,10 @@ gate lo detecta — [[drawer-en-handsontable-module]].
 
 Para QA visual del cajón conviene `/dashboard/escalamientos`, no `/programacion-semanal`: esta
 última dispara `save` y `auto-program` con solo cargar la página ([[semanal-auto-dispara-mutaciones]]).
-Sembrar la bitácora con `test.A` falla por clave foránea; se intercepta con una fixture.
+Sembrar la bitácora con `test.A` falla por clave foránea; se intercepta con una fixture. Los
+escenarios verificados de escalamientos, crisis y comentarios —incluida esa misma FK como
+comportamiento del producto, no solo trampa de QA— están en
+[[docs/flujos/soporte|la biblia de módulos de soporte]].
 
 ## Tablas
 

@@ -354,10 +354,37 @@ Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-0
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — sigue vigente (ampliado)
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-08-25 (dos pasadas). La primera encontró: manda 3 documentos
+(`pdc-presupuesto-maestro`/`pdc-paquetes`/`pdc-plan-seguimiento`) y ninguno existe —solo
+`docs/flujos/compras-v2.md`, consolidado (mismo criterio de alcance ya aceptado en T4/T5)— con
+«falta la cadena de dominio» (`README.md:95`). Ver
+[[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]] y
+[[memoria/trampas/el-goal-cierra-un-alcance-menor-que-el-del-plan]].
 
-**Qué falta:** MANDA 3 documentos (pdc-presupuesto-maestro/pdc-paquetes/pdc-plan-seguimiento) y ninguno existe: solo docs/flujos/compras-v2.md. README.md:95 «Falta la cadena de dominio»
+**Sigue vigente, deliberadamente: es el frente más grande de los tres y no cabía completo en esta
+sesión.** Se avanzó una parte real y verificada, no se cerró de más:
+
+- **Presupuesto** (`PDC-006` a `PDC-010`, 7 rutas de `PlanComprasImportController`): preview sin
+  persistir, confirmar idempotente por token, una sola versión activa por proyecto con el cambio
+  transaccional, recargar contenido idéntico no crea versión y recargar contenido distinto no
+  borra la anterior, árbol/comparar de solo lectura con 404 de dominio.
+- **Seguimiento** (`PDC-011` a `PDC-015`, 4 rutas de `PlanComprasSeguimientoController`): la
+  tanda que la primera pasada dejó «entera». Cuaterna completa contra cruce entre lotes del mismo
+  paquete, deshacer borra también la auditoría, fecha en formato estricto, «sin responsable» como
+  filtro de primera clase.
+
+11 de las 70 rutas de `/plan-compras` quedan cubiertas con cita. **Sigue faltando, en el orden en
+que el plan original lo dimensionaba:** Maestro de insumos (13 rutas), Paquetes y subpaquetes (21
+rutas), la SPA (`pdc-app/src/`) y las deudas de datos de `docs/pdc-v2.md` como escenarios de
+primera clase. `PlanComprasPlanController` (23 rutas, plan de fechas) ya tenía su invariante más
+peligrosa cubierta por `PDC-005` desde la primera pasada; el resto de sus rutas sigue sin
+escenario propio.
+
+**Recomendación de este cierre parcial:** Maestro de insumos es el siguiente candidato natural —
+es el eslabón entre lo ya cubierto (Presupuesto) y lo que falta (Paquetes), y el propio código deja
+una pista ya citada (`PlanComprasMaestroController:172`, el contador de «reenganchados») que merece
+verificarse antes que adivinarse.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

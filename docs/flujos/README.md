@@ -92,9 +92,9 @@ Se ejecutan por matriz esfuerzo/impacto, no en orden narrativo.
 |---|---|---|---|
 | T1 | Transversal — autenticación, proyecto, RBAC | `AUTH`, `PROY`, `RBAC` | **primera pasada cerrada** (2026-08-04): 3 documentos, 7 pruebas en verde, 10 hallazgos. Quedan los pendientes que cada documento declara al final |
 | T2 | Cascada LPS | `PG`, `CRO`, `PI`, `PS`, `APR`, `CAS` | **primera pasada cerrada** (2026-08-04): 5 documentos, 26 escenarios, 5 pruebas en verde, 5 hallazgos |
-| T3 | Plan de Compras **v2** | `PDC` | **rehecha el 2026-08-04.** La primera versión documentaba v1 (`/api/pdc/*`); al deprecarse v1 se retiró y se escribió desde cero sobre `/plan-compras` y sus 70 rutas: 5 escenarios, 0 hallazgos. Falta la cadena de dominio |
-| T4 | Soporte | `SOP` | **primera pasada cerrada** (2026-08-04): 3 escenarios, 2 pruebas en verde, 1 hallazgo mayor (CSRF ausente en seis módulos). Escalamientos queda entero |
-| T5 | Lectura — indicadores y BI | `BI` | **primera pasada cerrada** (2026-08-04): 6 escenarios, 1 hallazgo. Falta la comprobación cruzada de cifras contra su origen |
+| T3 | Plan de Compras **v2** | `PDC` | **ampliada, sigue abierta (2026-08-25).** 15 escenarios, 0 hallazgos. Presupuesto (7 rutas) y Seguimiento (4 rutas) cubiertos con cita el 2026-08-25 — 11 de 70. Falta Maestro de insumos (13 rutas), Paquetes y subpaquetes (21 rutas), la SPA y las deudas de datos de `docs/pdc-v2.md` |
+| T4 | Soporte | `SOP` | **cerrada (2026-08-25).** 9 escenarios, 4 pruebas en verde. Corregida la sección de apertura, que describía «Contratos» y «Listado de Actividades» como si siguieran existiendo tras el retiro del PDC v1. Escalamientos, control de cambios/línea base y la FK de profesionales, cubiertos. Un hallazgo nuevo: `LpsApiController` muta sin CSRF — quedó fuera del cierre de `SOP-002` (ver `docs/EXPERIMENTS.md`) |
+| T5 | Lectura — indicadores y BI | `BI` | **cerrada (2026-08-25).** 8 escenarios, 2 pruebas ejecutables en verde (`e2e/tests/biblia/lectura.spec.mjs`). El hallazgo de BI-005 estaba ya corregido (`4b1a2be0`, 2026-08-06) y la biblia todavía no lo reflejaba — corregido en el mismo cierre. Falta la comprobación cruzada de cifras contra su origen (BI-006) |
 
 T1 va primera pese a no ser el corazón del negocio: es barata y contamina todo lo demás, porque
 cada escenario de las otras cuatro empieza con «un rol X con un proyecto en sesión». T5 va última

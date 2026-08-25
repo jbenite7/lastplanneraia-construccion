@@ -60,6 +60,20 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **`LpsApiController` muta sin validar CSRF** — `addComment()`, `registerCrisis()` y
+  `closeCrisis()` autorizan solo con `rbac_guard_require_permission`; ninguna llama a
+  `legacy_require_csrf()`, que ya existe en el mismo archivo (`src/Legacy/rbac_guard.php:83-89`) y
+  que `public/js/modules/lps_drawer.js` tampoco envía. Quedó fuera del cierre `88ba6e0d`/`ca642189`
+  que corrigió los otros seis módulos con el mismo defecto (`SOP-002`). Hallazgo del cierre de T4
+  el 2026-08-25 — `docs/EXPERIMENTS.md`, fila «Escalamientos (T4, 2026-08-25)». El arreglo es el
+  mismo patrón ya cerrado: añadir el guard a las tres mutaciones y emitir/adjuntar el token desde
+  el JS.
+- [ ] **Terminar la biblia de flujos T3 (PDC v2)** — [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]].
+  Presupuesto y Seguimiento se cerraron el 2026-08-25 (`PDC-006` a `PDC-015`, 11 de 70 rutas). Falta
+  Maestro de insumos (13 rutas — empezar aquí, el código ya deja una pista citada en
+  `PlanComprasMaestroController:172`), Paquetes y subpaquetes (21 rutas), la SPA (`pdc-app/src/`) y
+  las deudas de datos de `docs/pdc-v2.md`. T4 (soporte) y T5 (lectura) quedaron cerradas del todo el
+  mismo día.
 - [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
   [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**CERRADO** el
   2026-08-24, con su `## Cierre` escrito) ·

@@ -73,23 +73,69 @@ El escenario que sostiene todo el aislamiento del portafolio.
 - **Rol:** uno sin proyectos autorizados o que pide lo que no le corresponde.
 - **Resultado esperado:** **403** desde el servidor, con mensaje escapado
   (`htmlspecialchars`) — no se refleja entrada del usuario sin sanear.
-- **Verificación:** lectura — `src/Controllers/Bi/BiViewController.php:176-182`.
+- **Verificación:** lectura — `src/Controllers/Bi/BiViewController.php:277-283`
+  (`abortUnauthorizedProjectScope()`).
 
-## BI-005 · `/indicadores` **debería** cortar igual, y hoy no lo hace
+> **Corrección de cita, 2026-08-25.** Esta línea citaba `:176-182`, que hoy es otro tramo del
+> archivo — el método se movió al reordenar `renderView()`. La regla sigue viva, solo cambió el
+> número de línea. Es la misma clase de deriva que [[el-tipo-de-una-fuente-lo-dedujo-un-script]]
+> nombra para el frontmatter: un archivo que crece desactualiza sus propias citas si nadie las
+> vuelve a leer.
+
+## BI-005 · `/indicadores` corta en el servidor — y ya no es un hallazgo
 
 - **Roles denegados por diseño:** `G`, `S`, `SG`, `C` (decisión registrada en
   `memoria/decisiones/powerbi-indicadores.md`).
 - **Resultado esperado:** que esos cuatro roles **no reciban el informe**, con la restricción
   aplicada donde no se puede saltar: el servidor.
-- **Verificación:** lectura — `src/Controllers/Gestion/IndicadoresController.php` **no tiene ningún
-  control de rol**, y `views/indicadores/indicadores.view.php:111` declara la URL del informe antes
-  de que `:151` decida ocultarla, así que viaja en el HTML de todos.
+- **Verificación:** lectura — `src/Controllers/Gestion/IndicadoresController.php:16` declara
+  `ROLES_SIN_INFORME = ['G', 'S', 'SG', 'C']`, y `:27-29` corta con `abortUnauthorizedProjectScope()`
+  **antes** de `require` la vista — la URL de Power BI nunca llega a construirse para esos cuatro
+  roles. Comprobado en ejecución con `test.C` (rol `C`, ver `e2e/tests/biblia/lectura.spec.mjs`
+  `BI-007`): `GET /indicadores` responde **403**, no 200.
 
-> **Hallazgo ya registrado**, con su matiz: ese informe es *publish-to-web*, público por enlace por
-> diseño, así que no hay filtración de datos privados. Lo que falla es que **una regla declarada
-> existe solo como adorno del cliente**, y que dos módulos hermanos —este y `/bi/*`— aplican la
-> misma política con dos niveles de garantía distintos. Ver
-> `memoria/trampas/indicadores-oculta-en-cliente-bi-en-servidor.md`.
+> **Corregido el 2026-08-25: esto era un hallazgo hasta el commit `4b1a2be0` del 2026-08-06,
+> y el propio documento seguía describiendo el estado anterior a esa fecha como si fuera hoy.**
+> El registro completo de qué pasó y por qué está en
+> `memoria/trampas/indicadores-oculta-en-cliente-bi-en-servidor.md` (ya marcada `derogada`, con la
+> fecha del fix) y en `docs/EXPERIMENTS.md` fila 65 (`cerrado 4b1a2be0`). Esta sección de la
+> biblia era la única pieza de la wiki que aún no reflejaba el cierre — la cláusula de autoridad
+> de este documento («si la biblia y el código divergen, es un bug de uno de los dos») se aplica
+> también contra las propias notas hermanas, no solo contra el código.
+
+## BI-007 · El mismo rol restringido, dos mecanismos de negación distintos
+
+Verificado en ejecución, no solo por lectura — es el escenario crítico de T5.
+
+- **Rol:** `C` (Subcontratista), uno de los cuatro restringidos.
+- **Pasos:** con el mismo rol en la misma sesión, pedir `/indicadores` y luego `/bi/control-tower`.
+- **Resultado esperado y medido:**
+
+  | Ruta | Código | Por qué |
+  |---|---|---|
+  | `/indicadores` | **403** | `IndicadoresController::index()` corta por rol (BI-005) |
+  | `/bi/control-tower` | **404** | `BiPreviewAccessPolicy::canOpen()` corta **antes**, por diseño — «para no confirmar que la pantalla existe» (`BiViewController.php:54-60`, comentario en el propio código) |
+
+  **No son el mismo mecanismo con dos códigos distintos: son dos generaciones de guardia
+  superpuestas.** `/bi/*` ganó su gate de módulo completo el 2026-08-13
+  (`docs/superpowers/specs/2026-08-13-ocultar-control-tower-design.md`, «el módulo está oculto
+  mientras se desarrolla»), y ese gate corre **antes** que el filtro de alcance de proyecto que
+  BI-004 describe (`BiProjectScope` → 403). Para un rol sin `PERM_INTERNAL_BI_PREVIEW`, el 403 de
+  BI-004 nunca se alcanza a comprobar: lo tapa el 404 del módulo oculto. `/indicadores` no tiene
+  ese gate de módulo —nunca estuvo oculto de navegación— así que su único filtro es el de rol,
+  y responde 403 limpio.
+- **Verificación:** `e2e/tests/biblia/lectura.spec.mjs` · `BI-007`.
+
+## BI-008 · Un rol permitido entra a la Torre de Control; uno denegado no
+
+- **Rol permitido:** `R` (Residente) — ampliado el 2026-08-24, reparto de lienzos por rol
+  (`src/Security/RbacManager.php:33`: `PERM_INTERNAL_BI_PREVIEW` es `A || D || R`). El interruptor
+  `bi.control_tower.visible` de `general_flags` está en `1` (comprobado en `general_flags` el
+  2026-08-25); si algún día pasa a `0`, este escenario también deniega para `R` — es lo que el
+  interruptor existe para hacer.
+- **Rol denegado:** `C` — mismo mecanismo que BI-007, 404.
+- **Resultado esperado:** `GET /bi/control-tower` con `test.R` → **200**; con `test.C` → **404**.
+- **Verificación:** `e2e/tests/biblia/lectura.spec.mjs` · `BI-008`.
 
 ## BI-006 · Las cifras de BI dependen de lo que registran los módulos operativos
 

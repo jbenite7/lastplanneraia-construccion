@@ -28,6 +28,25 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Biblia de flujos — tandas T3, T4 y T5 (2026-08-25)
+
+#### Changed
+- `docs/flujos/soporte.md` (T4) y `docs/flujos/lectura-bi.md` (T5) quedaron **cerradas**: 8 y 9
+  escenarios respectivamente, con las secciones «entero pendiente» de la primera pasada resueltas
+  (escalamientos, control de cambios/línea base, la FK de profesionales; el contraste 403/404 entre
+  `/indicadores` y `/bi/control-tower`) y dos correcciones de contenido caducado — `soporte.md`
+  seguía describiendo módulos retirados con el PDC v1 el mismo día en que se escribió, y
+  `lectura-bi.md` seguía describiendo un hallazgo de seguridad ya corregido el 2026-08-06. 6
+  pruebas nuevas en `e2e/tests/biblia/`, todas en verde.
+- `docs/flujos/compras-v2.md` (T3): Presupuesto y Seguimiento cubiertos (`PDC-006` a `PDC-015`,
+  11 de 70 rutas de `/plan-compras`). **Sigue abierta** — Maestro de insumos, Paquetes,
+  Subpaquetes, la SPA y las deudas de datos quedan para la siguiente sesión.
+
+#### Security
+- **Hallazgo, no corregido en esta pasada:** `LpsApiController` muta datos (comentarios, registro
+  y cierre de alertas de crisis) sin validar token CSRF. Quedó fuera del cierre `88ba6e0d`/`ca642189`
+  que corrigió el mismo defecto en otros seis controladores. Registrado en `docs/EXPERIMENTS.md`.
+
 ### El estado real de los 127 planes y specs (2026-08-25)
 
 #### Changed

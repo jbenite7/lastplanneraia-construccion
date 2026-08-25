@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-04-biblia-t4-soporte.md
@@ -391,10 +391,35 @@ Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-0
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-08-25 (dos pasadas). La primera encontró: manda 5 documentos y
+solo existe `docs/flujos/soporte.md`; escalamientos entero sin verificar
+(README.md:96) — ver [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]] y
+[[memoria/trampas/el-goal-cierra-un-alcance-menor-que-el-del-plan]].
 
-**Qué falta:** MANDA 5 documentos y solo existe docs/flujos/soporte.md. README.md:96 «Escalamientos queda entero»
+**Cerrado el mismo día**, con una decisión de alcance explícita: los cinco documentos del plan se
+consolidan en el único `docs/flujos/soporte.md` (mismo criterio ya aceptado para T5 con
+`lectura-bi.md`) — subcontratistas, profesionales y control de cambios comparten código y
+escenarios contiguos; separarlos habría sido partición artificial, no claridad.
+
+Se completó lo que faltaba: escalamientos (`SOP-004` a `SOP-007`, las diez rutas de
+`memoria/arquitectura/escalamientos-y-crisis.md`, incluida la FK de `bitacora-drawer-sin-profesional`
+formalizada como comportamiento del producto), el vínculo de control de cambios con la línea base
+(`SOP-008` — no existe en código, es manual) y el aislamiento por `project_id` de los cuatro
+módulos (`SOP-009`). `e2e/tests/biblia/soporte.spec.mjs` pasó de 2 a 4 pruebas, todas de rechazo,
+sin mutar datos.
+
+**Corrección aparte, más grave que el hueco original:** la sección de apertura del documento
+describía «Contratos» y «Listado de Actividades» como módulos vigentes atribuidos al PDC —
+ambos se habían retirado **el mismo día** en que se escribió, con el PDC v1 (`AGENTS.md`
+§Arquitectura y datos). Once meses… no, el mismo día: la biblia nació citando un enlace roto a
+`docs/flujos/pdc-v2.md` (el archivo real es `compras-v2.md`) y rutas `/pdc` que cero veces
+aparecen hoy en `public/index.php`.
+
+**Hallazgo nuevo, no en el plan original:** `LpsApiController` muta sin validar CSRF —quedó fuera
+del cierre `88ba6e0d`/`ca642189` que corrigió los otros seis módulos—, registrado en
+`docs/EXPERIMENTS.md` (fila «Escalamientos (T4, 2026-08-25)») y **no corregido en esta pasada**,
+por la propia cláusula de autoridad del documento: verificar y registrar, no arreglar en caliente.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

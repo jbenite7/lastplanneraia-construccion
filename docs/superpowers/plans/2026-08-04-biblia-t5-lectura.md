@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-04-biblia-t5-lectura.md
@@ -267,10 +267,26 @@ Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-0
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — cerrado
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Verificado contra el código el 2026-08-25 (dos pasadas). La primera encontró la Task 3 sin
+ejecutar: `e2e/tests/biblia/lectura.spec.mjs` no existía y el hueco no estaba documentado — ver
+[[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]], Tarea 0, y
+[[memoria/trampas/el-goal-cierra-un-alcance-menor-que-el-del-plan]].
 
-**Qué falta:** Task 3 sin ejecutar: e2e/tests/biblia/lectura.spec.mjs no existe y el hueco no se documento; ver Tarea 0
+**Cerrado el mismo día.** La Task 3 se ejecutó: `e2e/tests/biblia/lectura.spec.mjs` con dos
+escenarios (`BI-007`, `BI-008`), verificados en ejecución contra el contenedor con la cuenta
+seed `test.C` (rol `C`, uno de los cuatro restringidos). Al escribir la prueba se destapó que el
+plan y la propia biblia asumían un `/bi/control-tower` respondiendo 403 para el rol restringido, y
+hoy responde **404** — `BiPreviewAccessPolicy`, un gate de módulo completo añadido el 2026-08-13
+(posterior a este plan), corta antes de llegar al filtro de proyecto que sí da 403. Y `/indicadores`
+ya no expone el embed en cliente: corta en servidor con 403 desde el 2026-08-06 (`4b1a2be0`) — el
+propio `BI-005` de la biblia seguía describiendo el estado anterior a ese fix como si fuera hoy.
+Las dos divergencias se corrigieron en `docs/flujos/lectura-bi.md` (`BI-004` cita reubicada,
+`BI-005` reescrita, `BI-007`/`BI-008` nuevos) en el mismo cierre — la cláusula de autoridad del
+propio documento lo exige.
+
+`docs/flujos/README.md` marca T5 cerrada con 8 escenarios y 2 pruebas en verde. Queda declarado
+`BI-006` (comparación de cifras contra su origen) sin resolver, tal como el plan permite.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
