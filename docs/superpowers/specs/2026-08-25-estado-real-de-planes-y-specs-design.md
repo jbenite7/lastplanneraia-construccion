@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-25
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design.md
@@ -93,3 +93,25 @@ la falta que `AGENTS.md` nombra por su nombre.
 Ningún documento de `docs/superpowers/` en `estado: vigente` sin que ese valor sea una
 afirmación deliberada; cada `cerrado` con su evidencia citada en el propio documento; y
 `npm run test:wiki` sin hallazgos.
+
+---
+
+## Cierre — 2026-08-25
+
+**Su trabajo se hizo, y la ironía queda registrada: era la única spec vigente sin sección de estado
+verificado. El barrido no se aplicó a sí mismo.**
+
+Las tres condiciones de hecho, medidas:
+
+| # | Condición | Veredicto | Evidencia |
+|---|---|---|---|
+| 1 | Ningún documento en `vigente` sin que sea afirmación deliberada | **cumplida** en specs y planes | De 165 archivos con `estado:` en `docs/superpowers/`, 124 están en `cerrado`/`derogada`; de los que siguen vigentes, los del universo declarado llevan su sección de estado. Los residuos de `notas/`, `reports/` y raíz quedaban fuera del alcance declarado |
+| 2 | Cada `cerrado` con evidencia citada en su propio documento | **cumplida en cobertura** | 126 archivos tienen `## Estado verificado` frente a 124 en `cerrado`/`derogada`. La calidad de las 124 citas no se auditó una por una, y se dice así |
+| 3 | `npm run test:wiki` sin hallazgos | **cumplida** | Corrido el 2026-08-25: «Sin hallazgos. 170 páginas de wiki y 504 de 507 fuentes declaradas (modo estricto)» |
+
+**Límite declarado, y es el que más vale:** este barrido clasificó bien 127 documentos y aun así
+**propagó una afirmación falsa sobre producción**, porque en ese punto midió documento contra
+documento. El método correcto —medir contra el código o contra un comando— quedó escrito en
+[[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design]], que hereda esta cola.
+
+Absorbida por el mapa único del trabajo vivo.

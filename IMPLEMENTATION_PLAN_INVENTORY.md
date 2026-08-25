@@ -199,7 +199,11 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-25:** **53 ejecutadas · 2 parciales · 0 pendientes · 6 derogadas · 12
+**Corte del 2026-08-25 (segunda pasada, tarde):** **55 ejecutadas · 1 parcial · 0 pendientes · 7 derogadas · 12 cerradas**, y por primera vez existe **una spec madre** de la que cuelgan los planes: [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design|el mapa único del trabajo vivo]].
+
+> **El cambio de método importa más que las cifras.** Las siete specs vigentes se midieron **contra el código o contra la salida de un comando**, con prohibición expresa de citar otra spec, un inventario o un `goal.md` como prueba. El resultado transversal fue el mismo en cada frente: **una parte grande de lo que figuraba como pendiente ya estaba hecha** — cuatro de las seis líneas «sin empezar» del reparto, diez de los veintiséis hallazgos de usabilidad, y el despliegue del PDC entero. Por decisión de Felipe —«no quiero más specs atómicos»— el trabajo vivo se concentra en la spec madre y de ahí salen planes, no specs nuevas. Cerradas con evidencia `estado-real-de-planes-y-specs` y `estado-consolidado-del-repo` (andamios cumplidos); derogada y absorbida `reparto-trabajo-pendiente`.
+
+**Corte del 2026-08-25 (primera pasada):** **53 ejecutadas · 2 parciales · 0 pendientes · 6 derogadas · 12
 cerradas.** Las mismas 61 specs; ninguna se archivó, así que el bloque de cerradas no cambia. El
 grueso se movió en seis pasadas del 2026-08-24, y las tres últimas derogaciones el 2026-08-25, tras
 medirlas frente por frente. Esto es un **delta verificado, no una

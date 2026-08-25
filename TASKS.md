@@ -240,6 +240,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-25 — **Existe una spec madre; el trabajo vivo se lee ahí y de ahí salen los planes.**
+  [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design|El mapa único del trabajo
+  vivo]] mide las siete specs vigentes contra el código y agrupa lo que queda en cuatro bloques:
+  papeles por cerrar (minutos), pequeño de valor alto (horas), tres frentes grandes de verdad
+  (semanas: que la Torre de Control escriba, el design system sobre las tablas, y el tema claro que
+  no existe) y lo bloqueado por decisión humana. **Por decisión de Felipe no se abren más specs
+  atómicas:** lo siguiente son planes con `writing-plans` sobre ese documento.
+
 - [ ] 2026-08-25 — **`despliegue-pdc-v2-produccion`: falta la prueba de uso, NO el despliegue.**
   Corregido hoy un dato que llevaba trece días circulando falso: «producción sin tocar, sigue en
   `1aa7c69`». **El release completo salió el 2026-08-12** (`1aa7c694` → `939b7928`, 1.763 commits,

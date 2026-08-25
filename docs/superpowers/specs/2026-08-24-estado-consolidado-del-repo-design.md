@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [proceso, design-system, lps, pdc]
 fuente: docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design.md
@@ -199,3 +199,31 @@ Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa 
 **Qué falta:** el propio documento declara en §8 «no ejecuta nada»; delega en P1-P6, de los que solo P1 y P2 tienen Cierre con contenido
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+---
+
+## Cierre — 2026-08-25
+
+**Andamio cumplido. Su producto existe; lo que sigue abierto no es esta spec, son los planes que
+creó.**
+
+La spec se declara a sí misma sin ejecución («no ejecuta nada»), y su entregable —repartir el
+pendiente en seis planes— está medido: los seis archivos `docs/superpowers/plans/2026-08-24-p*.md`
+existen, cada uno con sus tareas, condición de hecho y verificación.
+
+**Por qué se cierra ahora y no antes.** Mantenerla `vigente` confundía «mi cola no terminó» con «yo
+no terminé» — y esa confusión es exactamente el contagio documental que el repo acaba de pagar caro
+con el falso «producción sin desplegar». Un andamio abierto exporta su estado a todo el que lo cite.
+
+**Lo que sigue vivo, con su dueño, medido contra el código y no contra los planes:**
+
+- **P3** — DS-F1 sin contrato escrito; DS-F2 con cinco módulos aún en Handsontable heredado
+  (`public/js/modules/*/hot*.js`) y los adaptadores de DataTables intactos.
+- **P4** — el tema claro **no existe**: cero ocurrencias de conmutador o tema en `public/css`.
+- **P5** — solo CP-F-E (despliegue), que no se ejecuta por diseño: exige autorización explícita.
+- **P6** — dos tareas reales y medidas: el `CHANGELOG` sigue desordenado (`1.2.0` después de
+  `1.1.0`) y las dos reglas de coordinación **nunca se escribieron** (cero coincidencias en
+  `docs/coordinacion-sesiones.md`). La segunda es justo la lección que evita repetir el defecto.
+
+Todo eso vive ahora en
+[[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design]], grupos 2 y 3.

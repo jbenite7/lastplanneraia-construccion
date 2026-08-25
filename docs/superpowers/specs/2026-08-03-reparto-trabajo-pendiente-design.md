@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: derogada
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-03-reparto-trabajo-pendiente-design.md
@@ -442,10 +442,30 @@ Verificados con `git stash` el 2026-08-03; no son de ninguna de estas líneas y 
 
 ---
 
-## Estado verificado — sigue vigente
+## DEROGADA — 2026-08-25. Absorbida por el mapa único, y con una corrección de fondo
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+**Se deroga por dos razones, y la segunda es la que importa.** La primera: su trabajo vivo pasa a
+[[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design]], por decisión de Felipe de
+no sostener una spec por pendiente. La segunda: **lo que este documento daba por pendiente ya no lo
+era.**
 
-**Qué falta:** el propio documento (linea 14) declara «A cerrada · B1 a medias · el resto sin empezar». De ocho lineas de trabajo A-H, seis no han empezado: sigue siendo el reparto vivo
+La nota anterior decía «de ocho líneas A–H, seis no han empezado», y se apoyaba en la **línea 14 de
+este mismo documento**, escrita el 2026-08-03. Medir un papel contra sí mismo tres semanas después
+no es verificar. Medido contra el código el 2026-08-25:
 
-Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+| Línea | Decía | Está | Evidencia |
+|---|---|---|---|
+| A · Tintes | cerrada | cerrada | — |
+| B1 · Goldens que retraten estados | sin empezar | **HECHA** | `tests/browser/programa-general.visual.mjs` ya trae `FILAS_DE_ESTADO` reales; la fila de capítulo se añadió el 2026-08-05. El mock ya no devuelve `data: []` |
+| C · Cerrar la paleta | sin empezar | **VIVA** | `public/css/tokens.css:762` mantiene el color propio. **No se disolvió con G**, como el documento preveía: `pg-state-restr-0` sigue emitiéndose (`public/js/modules/programa_general/hot.js:1066`) |
+| D · Puerta de servicio para `admin/` | sin empezar | **HECHA** | `admin/public/index.php:73` monta `DevDoorController`, reutilizando `App\Core\DevDoor` |
+| E · Usabilidad, altas y medias | sin empezar | **10 de 26 arreglados, 6 vivos, 10 no verificables** | Detalle en el grupo 2 del mapa único. Cuatro de los seis vivos son de una línea |
+| F · Panel de inicio | sin empezar | **HECHA** | `public/index.php:294` → `DashboardController::index` |
+| F-bis · Autoguardado al entrar | sin empezar | **VIVA** | `public/js/modules/programacion_semanal/hot.js:2262` sigue disparando el guardado al cargar |
+| G · Chip de estado en Programa General | sin empezar | **HECHA** | `public/js/modules/programa_general/hot.js:1773` pinta `ops-state-chip` con su tooltip y foco |
+
+**Cuatro de las seis «sin empezar» estaban hechas.** Es el mismo patrón que el falso «producción sin
+desplegar» del mismo día: el trabajo se hizo y el documento no se enteró — con el agravante de que
+aquí el documento se citaba a sí mismo como prueba.
+
+Lo que queda vivo (C, F-bis y los seis hallazgos de usabilidad) vive en el mapa único, grupos 2 y 3.
