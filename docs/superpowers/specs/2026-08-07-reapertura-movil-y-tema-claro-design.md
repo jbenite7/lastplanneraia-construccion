@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: cerrado
+estado: derogada
 fecha: 2026-08-07
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-07-reapertura-movil-y-tema-claro-design.md

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: cerrado
+estado: derogada
 fecha: 2026-07-31
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-31-ui-audit-and-repair-plan-design.md
