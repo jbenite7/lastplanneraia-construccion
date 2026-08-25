@@ -198,19 +198,28 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-24:** **47 ejecutadas · 14 parciales · 0 pendientes · 0 derogadas · 12
-cerradas.** Las mismas 61 specs, tres movidas de casilla; ninguna se archivó, así que el bloque de
-cerradas no cambia. Esto es un **delta verificado, no una re-auditoría**: las 14 parciales
-conservan el veredicto del 20 de agosto, comprobado ítem por ítem contra `goals/*/goal.md`,
-`TASKS.md` y los cierres de P1 y P2.
+**Corte del 2026-08-24:** **50 ejecutadas · 11 parciales · 0 pendientes · 0 derogadas · 12
+cerradas.** Las mismas 61 specs, seis movidas de casilla en dos pasadas del mismo día; ninguna se
+archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
+re-auditoría**: las parciales que siguen así conservan el veredicto del 20 de agosto, comprobado
+ítem por ítem contra `goals/*/goal.md`, `TASKS.md` y los cierres de P1 y P2.
 
-Las tres que se movieron, con la evidencia que lo prueba:
+Las tres primeras, con la evidencia que lo prueba:
 
 | Spec | Antes | Ahora | Evidencia |
 |---|---|---|---|
 | `organizar-la-casa` | **pendiente** | ejecutada | Existe `goals/organizar-la-casa/`, los vistos ya no están en `.claude/vistos/` sino versionados en `decisiones/vistos/`, y `docs/coordinacion-sesiones.md` es la reescritura del 2026-08-20 con las siete reglas. Los **tres** criterios con que el informe la declaró «sin rastro de ejecución» están hoy invertidos |
 | `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**, con procedencia de corrida real. Cerrada vía P2 |
 | `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
+
+Tres más, movidas en la sesión de cierre de las specs huérfanas de la auditoría del 20 de agosto
+(las tres decisiones de bajo esfuerzo que ningún plan P3-P6 recogía):
+
+| Spec | Antes | Ahora | Evidencia |
+|---|---|---|---|
+| `stack-plan-de-compras` | parcial (brecha solo documental) | ejecutada | La brecha era por qué el módulo se unificó en `lps-aia` en vez del repo separado que la spec proponía. Ya estaba respondido en [[docs/superpowers/specs/2026-07-29-unificacion-repos-design]] (2026-07-29); solo faltaba citarlo en el `## Cierre` de la spec |
+| `vocabulario-estados-cascada` | parcial (unificación en replanteo) | ejecutada | El trabajo mecánico (35→29 términos en Intermedia) está en el código, verificado línea por línea en `hot.js`, la vista y el test. Las cuatro decisiones encoladas (D-VOC-1..4) están resueltas desde el 2026-08-11 en `docs/decisiones-pendientes.md`, la cola canónica — el archivo `decisiones/vocabulario-estados-cascada.md` que sugería "en replanteo" es una copia del 2026-08-18 que nunca se sincronizó con ese cierre. Pendiente real fuera de este frente: ejecutar D-VOC-4 (separar `Capítulo`) en frente propio |
+| `wiki-v2-visual` | parcial (plugins por decisión) | ejecutada | Los plugins de comunidad se instalaron y verificaron en pantalla el 2026-08-20 (`2888ab77`), ya en `TASKS.md`; la pregunta que dejaba la spec abierta ya no aplica. Único pendiente real: grupos de color del grafo (`.obsidian/graph.json`, `colorGroups: []` verificado), que no se puede comprobar sin abrir Obsidian — Felipe decidió el 2026-08-24 dejarlo pendiente en vez de escribirlo sin verificación visual |
 
 **Ya no hay ninguna spec pendiente.** Ese dato —«la única pendiente sin rastro»— era el más
 llamativo del corte anterior y caducó a los cuatro días.
@@ -220,16 +229,18 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 16 parciales: `stack-plan-de-compras` (brecha solo documental), `cierre-prelanzamiento-pdc`,
+Las 11 parciales que quedan: `cierre-prelanzamiento-pdc`,
 `despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `ui-audit-and-repair-plan` y
 `ui-audit-core-lps-ops` (sin cierre formal; `/indicadores` sin evidencia), `cierre-dark-mode`
 (fase 6 sustituida por DS-F0..F3), `reparto-trabajo-pendiente` (línea E sin cierre),
 `f2a-piloto-movil-programacion` (manifiestos sin escenario móvil), `reapertura-movil-y-tema-claro`
 (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5), `plan-cierre-hasta-produccion`
-(F-AB pausado, F-E), `vocabulario-estados-cascada` (unificación en replanteo),
-`espacio-cuenta-siteground` (frentes C/D de servidor), `wiki-v2-visual` (plugins por decisión),
-`estados-severidad-contrato` (sin publicar; choca con `ds-f1a-estado`) y `runtime-budgets-al-ci`
-(`initializationMs` rojo, D-11).
+(F-AB pausado, F-E) y `espacio-cuenta-siteground` (frentes C/D de servidor).
+
+`stack-plan-de-compras`, `vocabulario-estados-cascada` y `wiki-v2-visual` se movieron a ejecutada
+en esta misma pasada (ver tabla arriba); `estados-severidad-contrato` y `runtime-budgets-al-ci` ya
+se habían movido en la primera tabla del corte y quedaron fuera de esta lista por error hasta
+ahora — corregido aquí.
 
 La única **pendiente** sin rastro de ejecución: `organizar-la-casa` (2026-08-19).
 

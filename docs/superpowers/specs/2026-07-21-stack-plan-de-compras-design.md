@@ -93,3 +93,23 @@ Requisitos que motivaron replantear el stack:
 | Memoria de PhpSpreadsheet con presupuestos grandes en SiteGround | Lectura por chunks; validar en staging con archivo real |
 | Features de agrupación/pivote resultan imprescindibles | Migrar a AG Grid Enterprise (costo por dev/año); las agregaciones viven en el backend mientras tanto |
 | Divergencia visual entre la SPA y el design system de lps-aia | Consumir `tokens.css` directamente; revisar contra `DESIGN.md` antes de cada vista nueva |
+
+## Cierre
+
+**Ejecutado.** El stack decidido aquí (React + Vite + AG Grid Community como "isla moderna",
+glue PHP en `lps-aia`, build a estáticos sin fricción en SiteGround) está en producción: `pdc-app/`
+y `src/Services/Pdc/` en el árbol actual, documentado en [[docs/pdc-v2]].
+
+La brecha que dejaba esta spec abierta era solo documental: por qué el módulo se **unificó** dentro
+de `lps-aia` en vez de vivir en el repo separado `plan-de-compras` que esta misma spec proponía en
+su decisión 3. La respuesta ya estaba escrita: [[docs/superpowers/specs/2026-07-29-unificacion-repos-design]]
+(2026-07-29, decidida en grilleo con el usuario) documenta el motivo medido — un bundle publicado
+(`public/pdc-app/assets/pdc.js`) cuya fuente no viajó con él porque compilar y publicar eran dos
+repos distintos, y seis decisiones (SPA en `pdc-app/` con `package.json` propio, historial
+conservado con `git subtree`, documentación fusionada, build directo a `public/pdc-app/`,
+conocimiento en `docs/pdc-v2.md`, repo viejo archivado) que reemplazan la arquitectura de dos repos
+de esta spec por la unificada de hoy. Verificado en el árbol actual: `pdc-app/` existe con su propio
+`package.json`, y `public/pdc-app/` es el destino directo del build.
+
+No se requirió grilleo nuevo para este cierre: la decisión ya estaba tomada y publicada: solo faltaba
+citarla aquí.

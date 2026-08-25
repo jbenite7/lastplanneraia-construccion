@@ -234,6 +234,12 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Separar `Capítulo` del eje de estado (D-VOC-4)** — decidido el 2026-08-11: sí se separa,
+  pero en frente propio con autorización aparte, porque `Capítulo` es un valor persistido en datos
+  reales de obra (`{prog_consolidado}.Estado`) y exige dry-run, respaldo verificable y gate según
+  `docs/global-tables-architecture.md`. No se ejecuta dentro de otro frente. Ver
+  `docs/decisiones-pendientes.md` D-VOC-4 y el `## Cierre` de
+  [[docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design]].
 - [ ] **A11y · el gemelo callado del filtro de cabecera (Programa General) — no se reprodujo
   (2026-08-24)** — medido de nuevo tras el hallazgo del 2026-08-24: 24/24 botones con
   `aria-hidden` en las dos mitades (12/12 `ht_master`, 12/12 `ht_clone_top`), sostenido en 12
@@ -422,6 +428,19 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Las tres specs huérfanas de la auditoría del 20 de agosto, cerradas** (ninguna
+  necesitó código, solo verificación y `## Cierre`). `stack-plan-de-compras`: la brecha era por qué
+  el módulo se unificó en `lps-aia`, ya respondido en
+  [[docs/superpowers/specs/2026-07-29-unificacion-repos-design]]. `vocabulario-estados-cascada`: el
+  trabajo mecánico (35→29 en Intermedia) ya estaba en el código, y las cuatro decisiones D-VOC-1..4
+  ya estaban resueltas desde el 11 de agosto en `docs/decisiones-pendientes.md` — el archivo
+  `decisiones/vocabulario-estados-cascada.md` que sugería "en replanteo" era una copia del 18 de
+  agosto nunca sincronizada con ese cierre; pendiente real fuera de este frente: separar `Capítulo`
+  (D-VOC-4) en frente propio. `wiki-v2-visual`: los plugins de comunidad ya estaban instalados y
+  verificados desde el 20 de agosto (`2888ab77`); el único pendiente real es el grafo con grupos de
+  color (`.obsidian/graph.json`, `colorGroups: []`), que Felipe decidió dejar pendiente por no poder
+  verificarse sin abrir Obsidian, en vez de escribirlo a ciegas. Inventario actualizado: 50
+  ejecutadas · 11 parciales.
 - [x] 2026-08-24 — **Tarea 8 de P2 — `design-system.yml` renombrado a `ci.yml`.** Decisión de
   Felipe (2026-08-20), micro-frente propio. Barrido de referencias confirmado archivo por archivo
   (no solo grep): 3 tests que leían la ruta literal, `CLAUDE.md`, `DESIGN.md` y una trampa de
@@ -648,14 +667,6 @@ Pendiente propio derivado: **Programación Semanal hereda la pieza en la ola sig
 Intermedia ya rodado una semana en obra. Comparte las mismas cinco restricciones duras
 (`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
 problema que el frente vino a corregir.
-
-## Replanteo antes de ejecutar
-
-- [[goals/vocabulario-estados-cascada/goal|vocabulario-estados-cascada]] — el usuario pidió
-  replantear D-VOC-1; su aclaración clave está en
-  [[programa-general-actualizar-es-otra-herramienta]]. D-VOC-4 exige análisis profundo. D-1 de
-  `contrato-estados-modulo-fantasma` se ajusta al censo que salga del replanteo, en un solo
-  movimiento.
 
 ## Apuestas planificadas (tras lo anterior)
 

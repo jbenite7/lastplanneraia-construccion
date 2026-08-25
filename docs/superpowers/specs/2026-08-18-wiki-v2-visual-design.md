@@ -87,3 +87,30 @@ Lint v2 en verde sobre **todo el vault** (wiki + fuentes con frontmatter), Home 
 MOCs operativos, los 3 canvas creados, plugins versionados y funcionando en frío (clon limpio),
 y `docs/wiki-operacion.md` reescrito documentando el esquema v2. La ejecución por tandas y sus
 verificaciones, en el plan hermano.
+
+## Cierre
+
+**Ejecutado, con una salvedad pendiente ya anotada.** Las seis tandas del plan hermano
+(`docs/superpowers/plans/2026-08-18-wiki-v2-visual.md`) publicaron: `wiki-lint.mjs --estricto`
+verde sobre 156 páginas y 414 de 417 fuentes, 13 MOCs con Bases embebido, 3 canvas nativos,
+`docs/wiki-operacion.md` reescrito para el esquema v2 (`66012929`, `58240c2c`, `26a8fe80`,
+`e5c540c3`, `7208edf9`).
+
+**§3 · Plugins de comunidad — resuelto y ejecutado el 2026-08-20 (`2888ab77`), no encolado.**
+La Tanda 4 cerró "sin plugins" a la espera de la decisión del usuario; esa decisión llegó después
+y ya se ejecutó: Dataview, Tasks, Kanban, Excalidraw, Homepage y el tema Minimal están instalados
+y verificados en pantalla. **Iconize quedó fuera** — su autor lo declara descontinuado, así que no
+entra por decisión técnica, no por indecisión. Kanban entró con advertencia (funciona, busca quien
+lo mantenga). Esta sesión (2026-08-24) verificó que ya no hace falta grillar esta pregunta con el
+usuario: la evidencia de ejecución ya estaba en `TASKS.md`.
+
+**§2 · Grafo con grupos de color — sigue sin ejecutarse.** Verificado en esta sesión:
+`.obsidian/graph.json` tiene `colorGroups: []`, sin tocar desde el 2026-08-03. A diferencia de los
+plugins, esta pieza **no se puede verificar sin abrir Obsidian**, y el criterio que gobernó toda la
+Tanda 4 fue "sin verificación no se escribe". Preguntado a Felipe en esta sesión (2026-08-24):
+queda pendiente tal como ya lo anota `TASKS.md`, sin tocar el JSON a ciegas — se resuelve cuando
+alguien lo pueda abrir y verificar en pantalla, igual que se hizo con los plugins.
+
+**Condición de hecho global:** cumplida salvo el grafo, que la propia condición no exige de forma
+explícita (solo aparece en §2 · Navegación como pieza de diseño, no en la lista de cierre). No
+bloquea declarar el frente ejecutado.

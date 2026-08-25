@@ -170,3 +170,62 @@ a diario y, en el caso de A, **reescribir una columna persistida** (`Estado` en
    encoladas.
 4. Antes/después a 1180×820 dark de Intermedia, con sesión por la puerta de servicio.
 5. Verde con salida real: `npm run test:design-system:static`, PHPStan, y las pruebas PHP del área.
+
+## Cierre
+
+**Ejecutado.** Verificado sobre el código actual, no solo sobre el plan:
+
+- **T1 (etiquetas del contrato en `hot.js`):** las seis entradas de `stateLabels` en
+  `public/js/modules/programacion_intermedia/hot.js:734` ya proyectan la forma del contrato
+  (`Inicio vencido`, `Alistamiento Urgente`, `Alistamiento en Riesgo`, `Alistamiento Pendiente`,
+  `En Ejecución Pendiente`, `Listo para Comprometer`), verbatim contra la tabla del plan.
+- **T2 (leyenda de la vista):** `views/programacion-intermedia/programacion_intermedia.view.php`
+  ya muestra `Inicio vencido` en minúscula, coincidente con el chip.
+- **T3 (guard endurecido):** `tests/design-system/ops-state-contract.test.mjs` ya compara la
+  etiqueta (`labels[state.key]` contra `state.label`), no solo el `key` — el comentario de
+  desviación tolerada que el plan pedía retirar ya no está.
+
+El recuento mecánico de esta pasada (35 → 29) quedó hecho.
+
+**Las cuatro decisiones encoladas (D-VOC-1 a D-VOC-4) también están resueltas**, pero en
+`docs/decisiones-pendientes.md` (la cola canónica del repo, commit `2e73013b`, 2026-08-11), no en
+`decisiones/vocabulario-estados-cascada.md`. Ese segundo archivo quedó congelado en una ronda de
+grilleo del 2026-08-18 ("replantear", "reevaluar", "revisar más a fondo") que nunca se sincronizó
+con el cierre anterior — el propio commit que lo creó (`06627082`, 2026-08-18) declara
+explícitamente que `docs/decisiones-pendientes.md` "sigue siendo la cola canónica del repo" y que
+la versión en `decisiones/` es una copia. No es una segunda vuelta de grilleo que contradiga a la
+primera: es un archivo espejo que no se actualizó.
+
+Las cuatro, resueltas el 2026-08-11 (con la corrección del 2026-08-12 sobre D-VOC-3):
+
+- **D-VOC-1 — tres ejes, un vocabulario por eje.** No se funden A/B/C en un vocabulario único.
+- **D-VOC-2 — no se toca el vocabulario de Programa General ni su columna persistida** (arrastre
+  directo de D-VOC-1: la migración solo aplicaba si D-VOC-1 salía "unificar").
+- **D-VOC-3 — la premisa era falsa, dos veces.** El 2026-08-11 el usuario corrigió la pregunta
+  misma: en `/programa-general-actualizar` no hay estados — la vista no menciona "estado", el JS no
+  contiene ninguna de las seis etiquetas, `Bloqueado` es solo el título de un modal, y la columna
+  parecida es un porcentaje. Las seis entradas del contrato eran **fantasma** desde su creación
+  (`3a139499`, 2026-07-15): nunca se pintaron. Ejecutado en el frente
+  `contrato-estados-modulo-fantasma`: el módulo sale del contrato, censo 29 → 28. El 2026-08-18,
+  en una sesión de coordinación posterior, el usuario aportó una segunda corrección —esta vez
+  conceptual, no técnica— que refuerza la misma conclusión sin contradecirla:
+  [[programa-general-actualizar-es-otra-herramienta]] — `programa-general` es el cronograma del
+  proyecto y `programa-general-actualizar` es el actualizador desde Project, **herramientas
+  distintas con datos compartidos, no dos vistas de la misma tabla**. Esa nota quedó huérfana en
+  `TASKS.md` bajo un encabezado de "replanteo pendiente" que nunca se cerró formalmente; esta
+  sesión (2026-08-24) retiró ese encabezado porque ambas correcciones —la de datos y la
+  conceptual— ya apuntan a la misma resolución práctica: no se toca nada de Programa General
+  Actualizar.
+- **D-VOC-4 — sí se separa `Capítulo` del eje de estado, pero en frente propio y con autorización
+  aparte**, porque es un valor persistido en datos de obra y exige dry-run, respaldo y gate según
+  `docs/global-tables-architecture.md`. Esto es decisión tomada, no pendiente de decidir; lo que
+  falta es ejecutarla, y ya está fuera del alcance de este frente por diseño propio del plan
+  ("Lo que este plan deliberadamente NO hace").
+
+No se requirió grilleo nuevo para este cierre: las cuatro decisiones ya estaban tomadas y el
+trabajo mecánico ya estaba en el código; el hallazgo de esta verificación fue detectar que el
+archivo `decisiones/vocabulario-estados-cascada.md` no reflejaba ese cierre, no que faltara
+decidir algo.
+
+**Pendiente real, fuera de este frente:** separar `Capítulo` del eje de estado (D-VOC-4) sigue sin
+ejecutarse — es trabajo de un frente propio aún no abierto, anotado en `TASKS.md`.
