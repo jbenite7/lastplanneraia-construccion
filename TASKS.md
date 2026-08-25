@@ -419,6 +419,16 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Tarea 8 de P2 — `design-system.yml` renombrado a `ci.yml`.** Decisión de
+  Felipe (2026-08-20), micro-frente propio. Barrido de referencias confirmado archivo por archivo
+  (no solo grep): 3 tests que leían la ruta literal, `CLAUDE.md`, `DESIGN.md` y una trampa de
+  memoria actualizados; ~25 docs históricos (`goals/`, planes/specs ya ejecutados, `decisiones/`,
+  informes) se dejan intactos porque narran hechos de cuando el archivo tenía el nombre viejo.
+  `actionlint` RC=0, suite estática 8/8, publicado en `3c670c5c`. Corrida real confirmada:
+  [32791129071](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32791129071)
+  (`gh run list --workflow=ci.yml`), ambos jobs en `success`. Como se advirtió, partió el
+  historial: `gh run list --workflow=design-system.yml` ya no devuelve nada. Detalle:
+  [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos]].
 - [x] 2026-08-24 — **Los cuatro pendientes de `habilitacion-en-una-columna`, cerrados**: test de
   teclado del recorrido del globo (`pi-globo-recorrido.mjs`, ArrowUp/ArrowDown); tooltip «?»
   educativo repuesto en la cabecera de Habilitación (un solo trigger con las siete restricciones

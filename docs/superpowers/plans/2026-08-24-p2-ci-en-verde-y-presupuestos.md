@@ -100,9 +100,35 @@ se mide DS-F0.
 Decisión de Felipe, 2026-08-20. **Micro-frente propio, idealmente junto a G4**, que también toca los
 triggers. El nombre quedó pequeño: el workflow custodia el repo entero.
 
-- [ ] Barrido de referencias por ruta: `visual-ci-contract.test.mjs`, scripts, docs, `gh run list
+- [x] Barrido de referencias por ruta: `visual-ci-contract.test.mjs`, scripts, docs, `gh run list
       --workflow=`
-- [ ] Asumir que **parte el historial de corridas**
+- [x] Asumir que **parte el historial de corridas**
+
+### Cierre — 2026-08-24
+
+`git mv .github/workflows/{design-system,ci}.yml`. Barrido de referencias por ruta literal
+confirmado archivo por archivo, no solo grep superficial: actualizadas las tres pruebas que leen
+el YAML por ruta (`visual-ci-contract.test.mjs`, `ci-workflow-provenance.test.mjs`,
+`phpstan-baseline.test.mjs`, 8 ocurrencias) y las referencias vivas en `CLAUDE.md`, `DESIGN.md` y
+la trampa de memoria `el-archivo-que-tocas-puede-tener-un-contrato.md`. Los ~25 hits restantes
+(`goals/*/goal.md` con `estado: cerrado` o cuyo contenido ya narra su propio cierre, planes y specs
+de `docs/superpowers/` ya ejecutados, `decisiones/`, `docs/reportes/estado-desarrollo.html`,
+`memoria/log.md`, `memoria/mapas/qa-y-gates.md`) se dejan intactos a propósito: narran eventos ya
+ocurridos cuando el archivo se llamaba `design-system.yml`, y reescribirlos sería reescribir
+historia, no corregir una referencia rota.
+
+**Verificación:** `actionlint .github/workflows/ci.yml` → `RC=0`. `npm run test:design-system:static`
+→ 8/8. `node --test` sobre las tres pruebas que leen la ruta → 22/22. Publicado vía
+`scripts/publicar.sh` en `3c670c5c` (`origin/main` confirmado con fetch + rev-parse, sin
+ahead/behind). **Corrida real de GitHub Actions con el nombre nuevo:**
+[32791129071](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32791129071)
+(`gh run list --workflow=ci.yml`) sobre `3c670c5c` — `design-system-static` y `design-system-runtime`
+en `success`, corrida completa en `success`. La anotación «Process completed with exit code 1» que
+muestra `gh run view` es de un paso `continue-on-error: true` de los gates no bloqueantes (P2 Tarea
+2); no afecta la conclusión del job ni de la corrida.
+
+Como se advirtió: renombrar partió el historial de corridas — `gh run list --workflow=design-system.yml`
+ya no devuelve nada; las corridas viejas quedan asociadas al nombre retirado.
 
 ---
 
