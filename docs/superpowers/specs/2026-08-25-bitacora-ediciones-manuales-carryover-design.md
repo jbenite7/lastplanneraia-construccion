@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v1
+version: v0.7
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -98,8 +98,16 @@ campos numéricos (`Ejecutado`, `cantidad_ppto`), y texto recortado sin distingu
 `unidad`, `Responsable_AIA`, `Sub_Contratista`. Es una decisión técnica, no de producto: dos
 criterios distintos para "cambió" en el mismo dato serían una inconsistencia, no una elección.
 
-La tabla se agrega a `TableResolver::$validTables`, junto a las quince que ya existen — sigue el
-mismo patrón que toda tabla operativa del proyecto, sin necesidad de decidir nada nuevo ahí.
+**Corregido en esta ronda.** La v0.5 decía que la tabla se agregaba a `TableResolver::$validTables`,
+igual que las tablas operativas del proyecto. Es un error: se verificó cómo `Database::logActivity`
+nombra `general_auditoria_acciones` —la única tabla de auditoría que ya existe en el repo— y lo hace
+por nombre fijo, sin pasar nunca por `TableResolver`, ni siquiera en el modo legado por proyecto.
+`campo_edicion_manual` sigue esa misma convención: nombre fijo, siempre, sin importar
+`USE_GLOBAL_TABLES`. De paso resuelve una pregunta que no hizo falta subir: el servicio identifica
+`usuario` leyendo `$_SESSION['usuario']`, igual que ya hace `Database::logActivity` — se verificó que
+los tres controladores exigen sesión autenticada antes de llegar a estas escrituras (dos con
+`requireAuth()`, `SemanalApiController` con el helper legado `rbac_guard_require_permission()`), así
+que ese valor siempre está disponible.
 
 ### 2. Quién escribe ahí
 
@@ -138,6 +146,15 @@ ni con el acumulado anterior ni con el calculado) deja de resolverse por sospech
 El caso con testigo (introducido el 2026-08-25) no cambia: sigue siendo la vía normal para
 actividades tocadas después de esa fecha. La bitácora resuelve específicamente el caso que el
 testigo no puede: filas que nunca pasaron por el arrastre nuevo.
+
+**Asimetría entre escribir y consultar, confirmada en esta ronda.** Los cinco campos se registran,
+pero hoy el arrastre solo consulta la bitácora para `Ejecutado`. Se verificó el código vigente de
+`unidad`, `cantidad_ppto`, `Responsable_AIA` y `Sub_Contratista`: su comparación de "¿esto lo editó
+una persona?" ya se hace contra el valor que el arrastre calcularía en este momento, no contra el
+acumulado de la semana anterior — por eso nunca caen en la trampa que tenía `Ejecutado`, y no
+existe ningún caso ambiguo que resolver para ellos hoy. Se decidió igual registrar los cinco: por si
+alguno de esos cuatro desarrolla una ambigüedad parecida más adelante, y para no tener que volver a
+tocar los tres controladores si ese día llega.
 
 **Las escrituras del propio arrastre no quedan en la bitácora.** Se preguntó explícitamente en la
 segunda ronda de brainstorming (2026-08-25) si el servicio debía registrar también sus propias
