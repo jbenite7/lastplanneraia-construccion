@@ -29,6 +29,35 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 > **Es el modo de fallo a vigilar aquí:** este archivo se escribe desde lo que una sesión ve, y una
 > sesión ve su worktree.
 
+## Pendiente de decisión: despliegue a producción
+
+**El arreglo del arrastre de avance semanal está en `main` (`c1e3365e`) y desplegado en
+`prueba-lps`, no en producción.** Decisión de Felipe del 2026-08-25: validar primero en pruebas.
+
+Lo que hay que saber para retomarlo:
+
+- **Producción va 233 commits atrás de `main`** (`6fa3cff1`), de los cuales 86 tocan código y
+  96 archivos son de runtime. Desplegar arrastra ese paquete entero, no solo el arreglo — entre
+  otras cosas el fix de CSRF de `LpsApiController` (`39ff0b8f`), que sigue sin llegar a la obra.
+- **Dos migraciones pendientes en producción**: `20260819_sembrar_linea_base_contractual.sql` y
+  `20260825_carryover_testigo.sql`. La segunda es aditiva y reversible
+  (`DROP COLUMN Ejecutado_Carryover`); la primera no la revisé.
+- Staging quedó en `c1e3365e` con la migración aplicada y smoke en verde (home y login 200,
+  65.549 filas intactas). Respaldo previo en `~/backups/prueba-lps-predeploy-*`.
+- **Qué validar en pruebas**: reportar avance en Programación Semanal *después* de abrir el
+  Programa General de la semana siguiente, y comprobar que el acumulado sí lo recoge.
+
+## Otros pendientes anotados el 2026-08-25
+
+- **`tests/test_schedule_update_draft_import.php` deja un proyecto huérfano.** Crea
+  `Base_de_Datos = 'it_schedule_draft'` y no lo borra al terminar, así que la corrida siguiente
+  de la suite falla con «already exists» y la de después pasa. Alterna verde y rojo según quién
+  corrió antes, y hace desconfiar de un gate que sí funciona. Limpiado a mano el 2026-08-25
+  (proyecto `1000030`); la causa sigue ahí.
+- **`Database::beginTransaction()` + `rollBack()` no aislaron las escrituras de un servicio** en
+  una prueba manual del 2026-08-25. No se determinó por qué. Mientras no se sepa, no confiar en
+  el rollback para experimentos contra la base de dev: volver a sembrar desde el dump.
+
 ## Bloqueantes
 
 **Ninguno. El atasco de publicación se desatascó el 2026-08-24**: por orden de Felipe se
