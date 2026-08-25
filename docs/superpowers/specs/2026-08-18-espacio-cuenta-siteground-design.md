@@ -196,3 +196,76 @@ esa protección es un archivo de configuración de distancia.
    comprobados.
 5. Producción sin los archivos del frente D y con `2026_MASTER_FUSION.sql` movido.
 6. Todo publicado en `main` según el gate de cierre de frente de `AGENTS.md`.
+
+## Estado medido — 2026-08-24
+
+**Esta spec NO cierra, y a propósito no lleva `## Cierre`:** en este repo la presencia de esa
+sección es el hecho del que derivan el mapa de estado y el aviso de fase previa, así que ponerla sin
+cierre real haría mentir a los dos a la vez. Sigue **parcial**, con la mitad ejecutada y la otra
+mitad bloqueada por una causa material, no por falta de trabajo.
+
+### Lo verificado hoy, con salida real
+
+| Condición | Estado | Evidencia |
+|---|---|---|
+| 1 · `qa/evidence` ≤ 20 MB con `ARCHIVO.md` | ✅ | **15 MB** medidos; `ARCHIVO.md` presente; `git ls-files` da **0** `trace.zip` y **0** `.webm` rastreados |
+| 2 · Cuatro pruebas PHP + suite estática en verde | ⚠️ **con matiz medido** | La suite estática, verde (5 corridas de `publicar.sh` hoy). Las **cuatro pruebas PHP están en rojo, y se demostró que no es por este frente** — ver abajo |
+| 3 · Rutina con tar adelgazado y manifiesto | ✅ *en el documento* | `docs/siteground-deploy-routine.md:93-110`: las diez exclusiones y el `.manifest.txt`. **Su verificación en `prueba-lps` no se pudo hacer** — ver bloqueo |
+| 4 · `.git` de `prueba-lps` < 60 MB | ⛔ no medible | Requiere el servidor |
+| 5 · Producción sin los archivos del frente D | ⛔ no medible | Requiere el servidor |
+| 6 · Publicado en `main` | ✅ *para A y B* | Ambos en el árbol publicado |
+
+### Las cuatro pruebas rojas no son de este frente, y se probó
+
+`test_goal_close_blockers_manifest`, `test_human_decision_matrix_coverage`,
+`test_human_decision_actions_package` y `test_human_decision_approval_checklist` dan **RC=1** hoy,
+corridas sobre el contenedor con el paso 0 comprobado (`/Users/felipebenitez/Developer/lps-aia ->
+/var/www/html`, el árbol correcto).
+
+No las rompió el frente A, y no es una suposición:
+
+- El fallo real es «el catálogo mantiene exactamente las familias con revisión obligatoria
+  vigentes» — un catálogo en base de datos. **Cero menciones de `evidence`** en toda la salida.
+- La carpeta que estas pruebas leen, `catalog-goal-audit-20260702/`, conserva sus **6 `.md` y
+  2 `.json`** intactos, y contiene **0** `.zip` y **0** `.webm`: lo que el frente A movió no estaba
+  ahí.
+- `git log --diff-filter=D` desde el 2026-08-17 sobre los `.md` y `.json` de esa carpeta: **vacío**.
+  El frente A no borró ninguno.
+
+Las cuatro son de nivel `datos-proyecto`, el más alto, y **no corren en CI** (`ci.yml` solo ejecuta
+`--nivel=puro` y `--nivel=http`), así que solo se ven al correrlas a mano. Aparecen en la lista de
+[[memoria/trampas/suite-php-rojos-preexistentes]], con el aviso de que esa lista es de una rama y no
+sirve como línea base de `main`. **Queda declarado como límite:** se probó que no son de este
+frente; **no** se diagnosticó de qué sí lo son.
+
+### El bloqueo, medido: no hay acceso al servidor desde esta máquina
+
+Los frentes C y D no están «pendientes de que alguien los haga». **No se pueden ejecutar desde
+aquí**, y la causa es concreta:
+
+`docs/siteground-deploy-routine.md:23-24` da por sentados dos alias SSH,
+`siteground-pruebas-lastplanner` y `siteground-produccion-lastplanner`. **Ninguno de los dos existe
+en `~/.ssh/config` de esta máquina**, que solo declara `Host *`. Sin ellos no hay forma de mirar
+`prueba-lps` ni producción, y por tanto tampoco de verificar la condición 3 en el servidor, que es
+donde la spec la exige.
+
+Es el mismo tipo de resto que dejó la mudanza del repositorio del 2026-08-18 —igual que el `.env`
+enlazado a una ruta del disco viejo que documenta `CLAUDE.md`—, y conviene tratarlo como tal: puede
+ser que la configuración se quedara atrás y no que nunca existiera.
+
+**Y aunque hubiera acceso, el frente D no se ejecutaría sin más:** borra archivos del webroot de
+producción. `AGENTS.md` lo exige explícitamente y no hay atajo — una publicación aprobada no
+autoriza limpiar drift, y este cierre no concede esa autorización.
+
+### Qué falta, y de quién depende
+
+| Frente | Qué falta | Quién puede |
+|---|---|---|
+| B | Verificar el tar nuevo en `prueba-lps`: que contenga `.env` y `public/storage`, y que la rotación deje 3 | Cualquiera con acceso SSH |
+| C | El clon shallow y sus **tres** comprobaciones — la que decide es que `git log --diff-filter=A` siga detectando migraciones nuevas, porque lee historia | Cualquiera con acceso SSH. Reversible con `--unshallow` |
+| D | Borrar 4 archivos del webroot y los dumps del home; **mover** `2026_MASTER_FUSION.sql`, no borrarlo | **Solo Felipe**, con autorización explícita en el momento |
+
+Los siete `.bak` de `indicadores.view.php` **se quedan**, como decidió esta misma spec: son drift
+real de producción y su destino es otra conversación. El mismo pendiente lo recoge la Tarea 2 de
+`docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion.md`, que también manda confirmar con
+Felipe antes de borrar.

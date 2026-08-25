@@ -234,6 +234,24 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Reponer los alias SSH de SiteGround — desbloquea `espacio-cuenta-siteground`** *(no entra en
+  «Bloqueantes»: la cuota quedó en 13.32 % tras el paliativo y nada urge hoy; lo que traba es el
+  cierre de esa spec, no el proyecto)* —
+  `docs/siteground-deploy-routine.md:23-24` da por sentados `siteground-pruebas-lastplanner` y
+  `siteground-produccion-lastplanner`, y **ninguno existe en `~/.ssh/config`** (solo `Host *`),
+  medido el 2026-08-24. Sin ellos no hay forma de mirar `prueba-lps` ni producción, así que los
+  frentes C y D no están «pendientes»: están **imposibilitados**. Probable resto de la mudanza del
+  2026-08-18, como el `.env` enlazado al disco viejo. **Lo repone Felipe** (es su config personal, y
+  toca credenciales). Desbloquea de una vez: verificar el tar nuevo en pruebas (frente B), el clon
+  shallow y sus tres comprobaciones (frente C) y la Tarea 2 de P5.
+- [ ] **Frente D de SiteGround · limpieza del webroot de producción — NECESITA AUTORIZACIÓN DE
+  FELIPE, no solo acceso.** Borrar `test_debug_std.php`, `test_log.php`,
+  `index.html.bak-20260327-203406` y `.maintenance.disabled-20260704-221448` del webroot, más los
+  `dump_proyectos_seleccionados_*.sql` del home (~14 MB); y **mover** `2026_MASTER_FUSION.sql` a
+  `~/backups/`, no borrarlo — no está en git en ninguna parte. Los siete `.bak` de
+  `indicadores.view.php` **se quedan**: son drift real y su destino es otra conversación (mismo
+  criterio en la Tarea 2 de P5). Motivo de urgencia baja pero real: `test_debug_std.php` y
+  `test_log.php` están hoy en el webroot de producción tapados solo por una regla del `.htaccess`.
 - [ ] **Retirar `cell-state-vocabulary.mjs`, código muerto** —
   `public/js/modules/shared/cell-state-vocabulary.mjs` no lo importa nadie salvo su propio gate: los
   renderers de Handsontable nunca lo llaman, así que su `STATE_MAP` documenta una intención, no un
@@ -443,6 +461,16 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **`espacio-cuenta-siteground` revisada — NO cierra, y por causa material.** Es la
+  primera de la tanda que no se puede cerrar, y el motivo no es falta de trabajo: **los dos alias
+  SSH que la rutina de despliegue da por sentados no existen en esta máquina**, así que los frentes
+  C y D no están «sin verificar», están imposibilitados. Lo medible se midió y está bien: frente A
+  verificado hoy (`qa/evidence` en **15 MB**, `ARCHIVO.md` presente, **0** `trace.zip` y **0**
+  `.webm` rastreados) y frente B presente en el documento (diez exclusiones + `.manifest.txt`). Las
+  cuatro pruebas PHP de la condición 2 dan RC=1: **se probó que no es por este frente** — el fallo
+  es de un catálogo en base de datos, cero menciones de `evidence`, y la carpeta que leen conserva
+  sus 6 `.md` y 2 `.json` intactos. Se declaró el límite: se probó de qué **no** son, no de qué sí.
+  Dos entradas nuevas en «Bloqueantes» con lo que falta y de quién depende.
 - [x] 2026-08-24 — **`cierre-dark-mode`, DEROGADA** — la sospecha de la pasada anterior, medida y
   confirmada: mismo motivo que las dos `ui-audit` (sustituida por DS-F0..F3). **Pero se deroga
   distinto: aquí sí se ejecutó trabajo real.** Medido hoy con `design-system-audit.mjs` (RC=0): la

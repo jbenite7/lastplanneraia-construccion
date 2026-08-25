@@ -246,6 +246,17 @@ Las 7 parciales que quedan: `cierre-prelanzamiento-pdc`,
 `reapertura-movil-y-tema-claro` (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y
 `espacio-cuenta-siteground` (frentes C/D de servidor).
 
+**`espacio-cuenta-siteground` se revisó el 2026-08-24 y sigue parcial — pero por una causa distinta
+de la que decía el veredicto del 20 de agosto.** No es que los frentes C y D estén «sin verificar»:
+**no se pueden ejecutar desde aquí.** Los dos alias SSH que
+`docs/siteground-deploy-routine.md:23-24` da por sentados no existen en `~/.ssh/config` de esta
+máquina, que solo declara `Host *` — probable resto de la mudanza del 2026-08-18, igual que el
+`.env` enlazado al disco viejo. Lo medible sí se midió y está en verde: `qa/evidence` en **15 MB**
+con `ARCHIVO.md` y cero binarios rastreados (frente A), y la rutina con sus diez exclusiones y el
+manifiesto (frente B, en el documento). Las cuatro pruebas PHP de esa condición dan RC=1 y **se
+demostró que no es por este frente** — el detalle, en el `## Estado medido` de la spec, que a
+propósito no lleva `## Cierre`.
+
 **Las tres derogadas comparten causa, y conviene leerla junta:** las tres eran vehículos de trabajo
 de design system escritos entre el 31 de julio y el 3 de agosto, y las tres fueron sustituidas por
 el programa **DS-F0..F3** que Felipe decidió el 2026-08-18. Ninguna se deroga por estar equivocada:
