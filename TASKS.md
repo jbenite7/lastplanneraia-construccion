@@ -456,6 +456,24 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-25 — **Las tres specs de móvil, tema claro y programa de cierre, DEROGADAS tras
+  medirlas frente por frente** (`f2a-piloto-movil-programacion`, `reapertura-movil-y-tema-claro`,
+  `programa-cierre-pendientes`). La hipótesis la había propuesto el propio asistente, así que la
+  medición se encargó **con instrucción explícita de buscar lo que la refutara** — y encontró cinco
+  hallazgos que solo vivían en esas specs, trasladados **antes** de derogarlas:
+  **(1)** E5, el aviso al cruzar los 1180 px en caliente → P4/MO-F2b. Verificado: **nunca se
+  implementó** y P4 no lo mencionaba.
+  **(2)** El Plan de Compras está entre los 13 módulos de MO-F2b pero **no admite la receta del
+  piloto** — es React + AG Grid sin código compartido — y la spec propia que se pedía no existe.
+  **(3) y (4)** Los dos candados del tema claro: `theme-default.test.mjs` fija 22 declaraciones a
+  mano y `linen-removal.test.mjs` compara cadena en vez de intención. **Con el tema claro puesto,
+  los dos se ponen rojos por hacer bien las cosas.**
+  **(5)** El backlog de `docs/EXPERIMENTS.md`: **~35 filas `abierto`, ~21 sin dueño**, y **ningún
+  plan de P1 a P6 lo nombraba** → a P3/DS-F2 con triaje en tres grupos.
+  **Lo que enseñó el traslado:** se comprobó la fila más grave —una guarda de autorización
+  presuntamente abierta— y **estaba arreglada desde el 2026-08-10**. Una fila `abierto` no prueba
+  que el defecto siga vivo, así que el triaje quedó escrito como «verificar antes de asignar
+  dueño». Inventario: **52 ejecutadas · 3 parciales · 6 derogadas**.
 - [x] 2026-08-24 — **`espacio-cuenta-siteground` revisada — no cierra, pero le falta solo el frente
   C.** Medido en el servidor: **el frente D ya estaba ejecutado** (los cuatro archivos fuera del
   webroot, cero dumps en el home, `2026_MASTER_FUSION.sql` movido a `~/backups/` y no borrado) y el

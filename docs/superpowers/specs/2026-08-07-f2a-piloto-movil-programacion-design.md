@@ -343,3 +343,37 @@ DataTables: ningún módulo del piloto lo usa.
 | Promover `legacyCards` arrastra jQuery y HTML por concatenación de strings a la primitiva compartida. | La promoción conserva el comportamiento y las specs; la limpieza de estilo va después, con la red ya puesta. No se hacen las dos cosas a la vez. |
 | Cambiar el umbral de 767 a 1180 altera lo que ven hoy los usuarios de tablet: pasan de grilla a cards. | Es el efecto buscado (E3) y la razón es que la grilla no es usable bajo 1180. Se anota como cambio visible en el cierre, no como efecto colateral. |
 | Las cinco specs existentes asumen 767px. | Se revisan una a una al cambiar el umbral. Si alguna fija el ancho, se actualiza su viewport, nunca su aserción. |
+
+## Cierre
+
+**DEROGADA el 2026-08-25. Su trabajo está hecho o pasó a P4; lo único vivo se trasladó antes de
+derogarla.**
+
+Medido frente por frente contra el código, con instrucción explícita de buscar lo que **refutara**
+la derogación —la hipótesis venía del propio asistente, y confirmarla sin más habría sido el error
+que este repo ya tiene documentado—:
+
+| Elemento | Estado medido 2026-08-25 |
+|---|---|
+| **P1** · los carriles descartan escenarios móviles | **Resuelto** — sustituido por infraestructura positiva: `tests/design-system/mobile-viewport-scope.test.mjs` exige evidencia por viewport declarado |
+| **P2** · un golden de escritorio vale como evidencia móvil | **Resuelto** — `scripts/design-system-contracts.mjs:1086-1090` compara el IHDR del PNG contra `scenario.viewport`, y `:1034-1041` exige que el nombre del golden case con tema y viewport |
+| **P3** · el harness corre sin `.git` y con lista desactualizada | **Resuelto** — `tests/design-system/contracts.test.mjs:134` usa `referencedTestFiles()` dinámico y `:157-163` fija `GIT_DIR`/`GIT_WORK_TREE` en vez de enlazar `.git` |
+| **E1–E4, E2-bis** · tarjetas, umbral 1180, decide el JS | **Hecho** — `view-switch.js:6` (`UMBRAL_CARDS=1180`) y los `hot.js` de ambos módulos montan las tarjetas con foco, responsable y chip. P4 lo da por cerrado y no lo re-litiga |
+| **E6** · primitiva compartida `card-list.js` | **Anulado por la propia spec** el 2026-08-08, por acoplamiento a DataTables. No es deuda |
+| **E5** · aviso al cruzar el umbral en caliente | **NUNCA SE IMPLEMENTÓ, y nadie lo recogía** → trasladado |
+| Condición de hecho #2 · goldens `390x844` | Cubierta por la condición de hecho de P4 («los 15 manifiestos en verde a 390×844») |
+
+### Lo que se trasladó, y por qué no podía perderse
+
+**E5 · el aviso al cruzar el umbral en caliente** → [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro]], MO-F2b.
+
+Verificado en el código el 2026-08-25: `shouldRenderCards()` solo se consulta dentro de
+`applyFiltersAndRender` (`programacion_semanal/hot.js:3276`), y el listener de resize (`bindResize`,
+`:4874-4894`) solo reajusta alto y columnas. **Al cruzar los 1180 px en caliente con Handsontable
+montado, la vista queda desactualizada sin avisar.** La decisión pedía aviso visible con botón de
+recargar, y **P4 no la mencionaba**: derogar sin trasladarla habría borrado del registro una
+decisión de diseño que nunca llegó al código.
+
+**Lo que NO se trasladó, a propósito:** las tres precondiciones. No porque no importen, sino porque
+están resueltas en el código y arrastrarlas sería reabrir trabajo hecho — el defecto que esta misma
+jornada persiguió en otras cinco specs.

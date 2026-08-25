@@ -198,9 +198,10 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-24:** **52 ejecutadas · 6 parciales · 0 pendientes · 3 derogadas · 12
-cerradas.** Las mismas 61 specs, once movidas de casilla en seis pasadas del mismo día; ninguna
-se archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
+**Corte del 2026-08-25:** **52 ejecutadas · 3 parciales · 0 pendientes · 6 derogadas · 12
+cerradas.** Las mismas 61 specs; ninguna se archivó, así que el bloque de cerradas no cambia. El
+grueso se movió en seis pasadas del 2026-08-24, y las tres últimas derogaciones el 2026-08-25, tras
+medirlas frente por frente. Esto es un **delta verificado, no una
 re-auditoría**: las parciales que siguen así conservan el veredicto del 20 de agosto, comprobado
 ítem por ítem contra `goals/*/goal.md`, `TASKS.md` y los cierres de P1 y P2.
 
@@ -231,6 +232,9 @@ acabó ejecutando trabajo real en el servidor, no solo anotándolo:
 | `ui-audit-and-repair-plan` | parcial (sin cierre formal) | **derogada** | Superada como vehículo por decisión medida del 2026-08-20 ([[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]] §2): su inventario de 18+ superficies lo sustituye DS-F0 (68 hallazgos sobre 257 rutas) y su plan de reparación, DS-F2 con dueño. Re-medido hoy: `/indicadores` es shell `aia-*` + iframe de Power BI, **sin tarjetas KPI que migrar** (F0-082); CNP/CNC/CIC son legacy real en `legacyCards.js` (0 clases `aia-*`, intacto desde el veredicto, F0-022 mayor). La spec proponía tocar vistas PHP y la deuda vive en un módulo JS que ninguna de sus fases nombra |
 | `cierre-dark-mode` | parcial (fase 6 sustituida) | **derogada** | Mismo motivo estructural, **pero se deroga distinto: aquí sí se ejecutó trabajo real.** Medido hoy: la deuda del audit pasó de un techo de **7 076 a 3 858 vivos (−45 %)**, con RC=0. Lo que se deroga es el remanente — fases 2, 5, 6 y 7 sin hacer, y la 5 **no pudo hacerse** porque dependía de la 2 (puerta de servicio de `admin/`, que no existe). La fase 6 apuntaba a bajarle el techo a `design-system-audit.mjs`, y **DS-F3 declara que los 15 gates actuales se reemplazan, no se arreglan**: era trabajo sobre un instrumento con fecha de retiro. **Hallazgo cuantificado al cerrar:** entre la deuda real y el techo hay **3 218 de holgura** — el gate sale verde y no gobierna; ya tiene dueño como `F0-030` de DS-F0 |
 | `ui-audit-core-lps-ops` | parcial (sin cierre formal) | **derogada** | Mismo veredicto y mismo acto: se solapaba casi por completo con la anterior (un día de diferencia, mismas superficies). Su aporte propio era el método de refactorización vertical, que no se pierde — es la skill `impeccable`, la misma que emitió el veredicto. Las dos prometían refactorizar tarjetas KPI de `/indicadores` que no existen en el repo |
+| `f2a-piloto-movil-programacion` | parcial (manifiestos sin escenario móvil) | **derogada** (2026-08-25) | Las tres precondiciones **resueltas en el código** (candado de viewport positivo; el gate compara el IHDR del PNG contra el viewport del escenario; el harness usa `GIT_DIR` en vez de enlazar `.git`), y las decisiones de tarjetas ya ejecutadas y no re-litigadas por P4. **Trasladado 1:** E5, el aviso al cruzar el umbral en caliente — **nunca se implementó** y P4 no lo mencionaba |
+| `reapertura-movil-y-tema-claro` | parcial (F2b/F3/F4) | **derogada** (2026-08-25) | Sus cuatro fases con vehículo: F1 cerrada, F2b y F3 en P4, F4 absorbida en P3. **La decisión que manda ya era de Felipe** — D-9, resuelta el 2026-08-20, que P4 ejecuta al pie de la letra. **Trasladados 2, 3 y 4:** el Plan de Compras no admite la receta del piloto pese a estar entre los 13 (es React + AG Grid, sin código compartido, y no existe la spec propia que esta spec pedía); y los dos candados que **se ponen rojos por hacer bien las cosas** cuando llegue el tema claro — `theme-default.test.mjs` fija 22 declaraciones a mano y `linen-removal.test.mjs` compara cadena, no intención |
+| `programa-cierre-pendientes` | parcial (frentes 3–5) | **derogada** (2026-08-25) | Seis de siete frentes ejecutados o con vehículo en P1–P6; el frente 5 (publicación) sin ejecutar **correctamente**, porque espera autorización explícita. **Traslado 5, el mayor de la jornada:** el backlog de `docs/EXPERIMENTS.md` con ~35 filas `abierto` y ~21 sin dueño, que **ningún plan de P1 a P6 nombraba** (`grep -c` da cero en los seis) → a DS-F2 con el triaje repartido en tres grupos. Al preparar el reparto se comprobó la fila más grave —una guarda de autorización presuntamente abierta— y **estaba arreglada desde el 2026-08-10**: una fila `abierto` no prueba que el defecto siga vivo |
 | `espacio-cuenta-siteground` | parcial (frentes C/D de servidor) | ejecutada | Los cuatro frentes con desenlace medido. **D ya estaba hecho** en producción y **B verificado en vivo**: tars de **5,1–6,7 MB** contra **687 MB** del último viejo, 5 manifiestos, rotación exacta a 3 por sitio — de ~4,1 GB en respaldos a ~39 MB. **El frente C se ejecutó con autorización de Felipe y sus propias comprobaciones lo rechazaron:** el clon shallow rompe `git pull --ff-only`, que es el comando del que depende el despliegue (`rc=128`), y además el `.git` **no bajaba** de 366 MB porque `gc` no poda lo alcanzable desde `HEAD`. Revertido con `--unshallow` y servidor verificado sano; de paso quedó al día (213 commits de atraso). **Descartar por medición es un resultado, no una omisión** — la spec escribió esas tres comprobaciones justo para esto |
 | `plan-cierre-hasta-produccion` | parcial (F-AB pausado, F-E) | ejecutada | F-AB cerrada vía P2 (9/9 gates `passed`); F-C (`D-CEF-1`) ya estaba ejecutada desde el 2026-08-12, doce días antes de que el plan P5 la reasignara sin verificar — confirmado en el esquema, el código y el test. F-D retirada desde el 2026-08-12. Solo F-E (despliegue) sigue sin ejecutar, por diseño: necesita autorización explícita de Felipe, siempre, y se rastrea en `despliegue-pdc-v2-produccion` |
 
@@ -242,10 +246,13 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 6 parciales que quedan: `cierre-prelanzamiento-pdc`,
-`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `reparto-trabajo-pendiente`
-(línea E sin cierre), `f2a-piloto-movil-programacion` (manifiestos sin escenario móvil),
-`reapertura-movil-y-tema-claro` (F2b/F3/F4) y `programa-cierre-pendientes` (frentes 3–5).
+Las 3 parciales que quedan: `cierre-prelanzamiento-pdc`, `despliegue-pdc-v2-produccion`
+(producción sin tocar, CP-F-E) y `reparto-trabajo-pendiente` (línea E sin cierre).
+
+**Las tres de móvil, design system y programa se derogaron el 2026-08-25** tras medirlas frente por
+frente contra el código —con instrucción explícita de buscar lo que refutara la derogación, porque
+la hipótesis la había propuesto el propio asistente— y **trasladar los cinco hallazgos que solo
+vivían en ellas**. Ver sus filas abajo.
 
 **`espacio-cuenta-siteground` pasó a ejecutada el 2026-08-24**, tras una revisión de tres pasadas
 que terminó ejecutando en el servidor el único frente que faltaba. Ver la fila en la tabla de abajo.

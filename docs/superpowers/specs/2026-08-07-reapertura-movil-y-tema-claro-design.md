@@ -187,3 +187,53 @@ validar y su entrada no cambió.
 
 Cards, CSS, temas, goldens, axe, el conmutador, `pdc-app/`, y cualquier cambio en
 `homologation.json` o en las aprobaciones firmadas.
+
+## Cierre
+
+**DEROGADA el 2026-08-25.** Sus cuatro fases tienen hoy vehículo vigente, y los tres avisos
+concretos que solo vivían aquí se trasladaron antes de derogarla.
+
+**La decisión que manda sobre esta spec ya la tomó Felipe:** D-9 (`DECISIONES_PENDIENTES.md:425`),
+resuelta el 2026-08-20 y revisada el mismo día. Declara **cuatro de siete fases cerradas** (MO-F1,
+F2a-1, F2a-2a, F2a-2b) y fija que **el tema claro no queda estacionado: va justo detrás de móvil**,
+corrigiendo su propia primera respuesta porque «estacionarlo indefinidamente era, en la práctica, no
+hacerlo nunca». **P4 ejecuta esa decisión al pie de la letra**, y la cita.
+
+| Fase | Estado medido 2026-08-25 | Vehículo hoy |
+|---|---|---|
+| **F1** · Destrabar | Cerrada (DS-032/033/034) | — |
+| **F2** · Móvil real | Piloto cerrado; faltan **13 módulos** | P4 · MO-F2b |
+| **F3** · Tema claro | Sin empezar. **Es reconstruir, no reactivar**: `linen` se retiró el 2026-07-25 y no hay conmutador | P4 · MO-F3 |
+| **F4** · Matriz diagonal | Retirada como fase propia el 2026-08-18 | P3 · absorbida en DS-F1 y DS-F3 |
+
+Las **decisiones D5 y D7** las recoge P4 literalmente («es reconstruir, no reactivar»; móvil antes
+que claro). Las **tres precondiciones de F2** están resueltas en el código.
+
+### Lo que se trasladó, y por qué no podía perderse
+
+Los tres van a [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro]]:
+
+1. **El Plan de Compras no admite la receta del piloto, y está entre los 13.** `plan-compras-v2` es
+   una SPA React con AG Grid que no comparte código con el resto: el umbral de montaje y el menú
+   flotante del shell no le aplican tal cual. Esta spec pedía «su propia spec dentro de F2» y **no
+   existe ninguna** — cero menciones de `pdc` en P3 y en P4, comprobado. Sin este aviso, alguien
+   aplicaría la receta a doce módulos y se estrellaría con el decimotercero.
+2. **`theme-default.test.mjs` cambia de forma en F3, no desaparece.** Fija a mano las **22**
+   declaraciones del bloque `:root`, contadas hoy. Con un segundo tema esa ya no es la pregunta
+   correcta.
+3. **`linen-removal.test.mjs` debe pasar de comparar cadena a comparar intención.** Hoy hace
+   `/linen/i.test(...)`, y **no distingue prometer un tema retirado de explicar que se retiró** — el
+   2026-08-07 puso en rojo una redacción que decía justo lo contrario de prometerlo. Al documentar
+   el tema claro nuevo, la palabra va a aparecer legítimamente.
+
+Los dos últimos son la clase de aviso que se paga caro perder: **con el tema claro puesto los dos se
+ponen rojos por hacer bien las cosas**, y quien llegue sin saberlo los ablandaría en vez de
+reformarlos.
+
+### Corrección a la medición asistida
+
+Una verificación intermedia concluyó que el Plan de Compras «no aparece en ningún manifiesto». **Es
+falso, y se comprobó antes de escribirlo aquí:** `docs/design-system/manifests/plan-compras-v2.json`
+existe y declara `["desktop"]`. Los números de P4 son exactos — 15 manifiestos con `layouts`, uno ya
+con móvil (`programa-general`, el piloto), y 13 de producto sin él excluyendo `laboratory`. El
+hallazgo real no era de conteo sino de **método**: el PDC está contado, pero la receta no le sirve.

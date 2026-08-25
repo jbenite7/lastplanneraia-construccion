@@ -290,3 +290,51 @@ piloto F2a-2b entregue su medición de coste. Es la única dependencia dura entr
 
 **Riesgo mayor declarado:** D2, arriba, con su mitigación y con el límite de esa mitigación dicho
 explícitamente.
+
+## Cierre
+
+**DEROGADA el 2026-08-25.** Seis de sus siete frentes están ejecutados o tienen vehículo vigente en
+los planes P1–P6 del 2026-08-24. El séptimo dejó el **hueco más grande de la jornada**, y se
+trasladó con nombre y destino antes de derogar.
+
+| Frente | Estado medido 2026-08-25 | Vehículo hoy |
+|---|---|---|
+| **0** · Higiene y decisiones | Ejecutado el 2026-08-10 | — (cerrado antes de P1–P6) |
+| **1** · Los 39 hallazgos | **NO cumplido** → trasladado | ninguno lo nombraba |
+| **1b** · Reconstruir los 15 gates | Ejecutado el 2026-08-11 (`943d8ea5`, «de quince gates a ocho»); hoy `closeout-evidence.json` da **9/9 `passed`** | P3 · DS-F3 lo declara superado: «los 15 gates actuales se reemplazan, no se arreglan» |
+| **2** · Móvil | Piloto cerrado; faltan 13 módulos | P4 · MO-F2b |
+| **3** · Tema claro | Sin empezar | P4 · MO-F3 |
+| **4** · Matriz diagonal | Retirada como fase propia el 2026-08-18 | P3 · absorbida en DS-F1/DS-F3 |
+| **5** · Publicación | Sin ejecutar — **y es correcto**: espera autorización explícita de Felipe | P5 · CP-F-E |
+
+### El hueco, trasladado: el backlog de `docs/EXPERIMENTS.md`
+
+Su Frente 1 exigía que ese archivo no tuviera «ninguna fila abierta sin dueño». Medido hoy: quedan
+**~35 filas `abierto`, de ellas ~21 sin dueño**, y **`grep -c EXPERIMENTS` sobre los seis planes
+P1–P6 da cero**. Nadie era dueño de cerrarlo.
+
+Trasladado a [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control]] · DS-F2, con
+el triaje repartido en tres grupos: design system y accesibilidad (objetivos táctiles bajo 44×44 px,
+`maximum-scale` que impide el zoom que exige WCAG, escalas de tablet que significan cosas distintas
+en cada módulo), móvil hacia P4/MO-F2b, y un tercer grupo de cascada LPS **que sigue sin dueño y es
+lo que hay que decidir**.
+
+Se trasladó también un segundo hallazgo del mismo frente: **hay dos backlogs corriendo en paralelo
+sin puente** — el viejo de `EXPERIMENTS.md` y los 68 de DS-F0. Ningún documento dice si se solapan,
+así que hoy es posible arreglar dos veces lo mismo, o ninguna.
+
+### Lo que este traslado enseñó, y cambia cómo hay que hacerlo
+
+Al preparar el reparto se tomó la fila de aspecto más grave —`CommitmentLockGuard::guard()` con
+`allowIfConfirmed: true` «retorna en su primera línea sin comprobar nada», que sería una guarda de
+autorización abierta— y **se comprobó de inmediato en vez de anotarla**.
+
+**Está arreglada desde el 2026-08-10.** Hoy `src/Core/CommitmentLockGuard.php:43-54` resuelve el
+rol, exige `RbacCatalog::canQualifyWeeklyCommitment()` y deniega si no lo cumple; el propio
+comentario del código dice «antes retornaba aquí sin comprobar nada».
+
+**Una fila `abierto` no prueba que el defecto siga vivo.** Es el patrón de
+[[memoria/trampas/el-trabajo-hecho-no-vuelve-solo-al-documento]] otra vez, ahora dentro de una tabla
+de hallazgos — y por eso el triaje quedó escrito como «verificar contra el código antes de asignar
+dueño», no como «repartir las 21». El trabajo realmente pendiente es, con alta probabilidad,
+bastante menor que el recuento.

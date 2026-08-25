@@ -67,6 +67,47 @@ chip de PI, el `1.75rem` del botón de cierre de modal en PS, y el resto del cen
 
 - [ ] Aparte y barato: **retirar los siete `console.log('[PI-DEBUG]')` tras flag**
 
+### Trasladado desde `programa-cierre-pendientes` al derogarla (2026-08-25) — y **necesita decisión**
+
+Su Frente 1 perseguía cerrar el backlog de `docs/EXPERIMENTS.md`, y esa condición **no se cumple**:
+medido el 2026-08-25, quedan **~35 filas `abierto`, de ellas ~21 sin dueño** (`—`), y **ningún plan
+de P1 a P6 nombra ese archivo**: `grep -c EXPERIMENTS` sobre los seis da **cero**. Es el único hueco
+real que dejó la derogación de esa spec, y el más grande de los cinco traslados de esa jornada.
+
+*(El conteo difiere del que dio la medición asistida —31 abiertas, 17 sin dueño— porque las
+expresiones de búsqueda no eran las mismas. **Ninguna de las dos cifras se toma como exacta**: el
+orden de magnitud es el hallazgo, y el recuento fino es parte de la tarea.)*
+
+- [ ] **Triar las ~21 filas sin dueño y repartirlas.** Por la muestra leída, caen en tres grupos
+      claros, y solo el primero es de este plan:
+      - **Design system / accesibilidad → DS-F2**: objetivos táctiles bajo 44×44 px en la barra de
+        Intermedia a 390 px, `maximum-scale=1.2` que impide el zoom al 200 % que exige WCAG 2.2
+        SC 1.4.4, `tablet-scale-70` que significa 0,85 en Semanal y 0,7 en Intermedia, tokens de
+        fondo de estado con contraste bajo 3:1
+      - **Móvil → P4/MO-F2b**: el sidebar que no colapsa y se come el 60 % de una pantalla de
+        390 px, el botón flotante que tapa datos en `/programa-general`, el estado guardado que deja
+        PG en 64 px y PI en 240 px
+      - **Cascada LPS → sin dueño, y es lo que hay que decidir**: `Esc` que no cierra los modales,
+        el selector de semana duplicado, las dos piezas del candado de semana
+- [ ] **Reconciliar los dos backlogs, que hoy corren en paralelo sin puente:** el viejo de
+      `docs/EXPERIMENTS.md` y los **68 hallazgos de DS-F0** (`docs/design-system/auditoria/`).
+      Ningún documento dice si se solapan, así que hoy es posible arreglar dos veces lo mismo — o
+      ninguna
+
+> **El triaje no es solo repartir: es comprobar cuáles siguen vivas, y bastantes no lo estarán.**
+> Al preparar este traslado se tomó la fila de aspecto más grave —`CommitmentLockGuard::guard()`
+> «retorna en su primera línea sin comprobar nada» con `allowIfConfirmed: true`, que sería una
+> guarda de autorización abierta— y **se comprobó de inmediato en vez de anotarla**. Está
+> **arreglada desde el 2026-08-10** (Task 4): hoy `src/Core/CommitmentLockGuard.php:43-54` resuelve
+> el rol, exige `RbacCatalog::canQualifyWeeklyCommitment()` y deniega si no lo cumple; el propio
+> comentario del código dice «antes retornaba aquí sin comprobar nada». **La ficha del backlog
+> describe un defecto que ya no existe.**
+>
+> Es el patrón de [[memoria/trampas/el-trabajo-hecho-no-vuelve-solo-al-documento]] otra vez, ahora
+> dentro de una tabla de hallazgos: **una fila `abierto` no prueba que el defecto siga vivo**. Cada
+> una se verifica contra el código antes de asignarle dueño — y si ya está resuelta, se cierra ahí
+> mismo. Es probable que el recuento real de trabajo pendiente sea bastante menor que las ~21.
+
 **Ola derivada, con fecha propia:** **Programación Semanal hereda la pieza de habilitación en una
 columna**, con Intermedia ya rodada una semana en obra. Comparte las mismas cinco restricciones
 duras (`programacion_semanal/hot.js:570`), así que dejarla distinta indefinidamente reintroduce el
