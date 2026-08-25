@@ -246,16 +246,21 @@ Las 7 parciales que quedan: `cierre-prelanzamiento-pdc`,
 `reapertura-movil-y-tema-claro` (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y
 `espacio-cuenta-siteground` (frentes C/D de servidor).
 
-**`espacio-cuenta-siteground` se revisó el 2026-08-24 y sigue parcial — pero por una causa distinta
-de la que decía el veredicto del 20 de agosto.** No es que los frentes C y D estén «sin verificar»:
-**no se pueden ejecutar desde aquí.** Los dos alias SSH que
-`docs/siteground-deploy-routine.md:23-24` da por sentados no existen en `~/.ssh/config` de esta
-máquina, que solo declara `Host *` — probable resto de la mudanza del 2026-08-18, igual que el
-`.env` enlazado al disco viejo. Lo medible sí se midió y está en verde: `qa/evidence` en **15 MB**
-con `ARCHIVO.md` y cero binarios rastreados (frente A), y la rutina con sus diez exclusiones y el
-manifiesto (frente B, en el documento). Las cuatro pruebas PHP de esa condición dan RC=1 y **se
-demostró que no es por este frente** — el detalle, en el `## Estado medido` de la spec, que a
-propósito no lleva `## Cierre`.
+**`espacio-cuenta-siteground` se revisó el 2026-08-24 y sigue parcial, pero le falta mucho menos de
+lo que decía el veredicto del 20 de agosto: solo el frente C.** Medido en el servidor ese mismo día:
+el **frente D está ejecutado** (los cuatro archivos fuera del webroot, cero dumps en el home,
+`2026_MASTER_FUSION.sql` movido a `~/backups/` y no borrado) y el **frente B verificado en vivo** —
+los tars nuevos pesan **5,1–6,7 MB** frente a los **687 MB** del último viejo, con 5 manifiestos y
+rotación exacta a 3 por sitio. Lo único que falta es el **frente C**: el `.git` de `prueba-lps`
+sigue en **366 MB** sin shallow. Los frentes A y B en el repo ya estaban: `qa/evidence` en 15 MB con
+`ARCHIVO.md` y cero binarios rastreados. Las cuatro pruebas PHP de la condición 2 dan RC=1 y **se
+demostró que no es por este frente**.
+
+> **Corrección del mismo día, publicada antes en `0a79d905`:** una primera pasada afirmó que los
+> frentes C y D eran «imposibles» por no haber acceso SSH. **Era falso.** Se grepearon los `Host` de
+> `~/.ssh/config` sin resolver sus doce `Include`, y los alias viven en el archivo incluido. El
+> detalle del error y su porqué, en el `## Estado medido` de la spec — que a propósito **no** lleva
+> `## Cierre`, porque aún no cierra.
 
 **Las tres derogadas comparten causa, y conviene leerla junta:** las tres eran vehículos de trabajo
 de design system escritos entre el 31 de julio y el 3 de agosto, y las tres fueron sustituidas por

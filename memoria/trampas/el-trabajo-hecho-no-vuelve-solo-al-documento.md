@@ -31,6 +31,13 @@ lo encargaba se queda como estaba**.
 | Plugins de Obsidian (`2888ab77`) | 2026-08-20 | Spec `wiki-v2-visual`, «plugins por decisión del usuario» | 4 días |
 | `D-BTN-1` · el `!important` que no gana | 2026-08-11 | Su propia ficha, que al marcarse admite: «ya estaba ejecutada antes de que nadie la marcara» | 1 día |
 | Plan del sidebar canónico | 2026-07-31, en producción | Aviso del harness pidiendo «¿se ejecuta o se cierra?» | **35 días** |
+| Frente D de SiteGround + drift de producción | ~2026-08-20, en el servidor | El veredicto del 2026-08-20 («cambios de servidor sin verificar») y la Tarea 2 del plan P5, del 2026-08-24 | 4 días |
+
+*(El sexto se añadió el 2026-08-24, horas después de escribir esta página: el frente D estaba
+ejecutado en producción —cuatro archivos fuera, dumps borrados, el `.sql` movido y no borrado— y el
+drift de los siete `.bak` había desaparecido, con el webroot limpio. Nadie lo anotó en ningún
+documento del repo. **Con este, el patrón deja de ser solo documental: alcanza al estado de los
+servidores**, donde nada obliga a que un cambio vuelva al repositorio que lo encargó.)*
 
 El quinto lo cerró otra sesión el mismo 2026-08-24, y su acta ya nombraba la familia; los cuatro
 primeros salieron de una sola sesión de cierre documental ese mismo día. Cinco casos en tres semanas

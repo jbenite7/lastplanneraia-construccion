@@ -210,9 +210,9 @@ mitad bloqueada por una causa material, no por falta de trabajo.
 |---|---|---|
 | 1 · `qa/evidence` ≤ 20 MB con `ARCHIVO.md` | ✅ | **15 MB** medidos; `ARCHIVO.md` presente; `git ls-files` da **0** `trace.zip` y **0** `.webm` rastreados |
 | 2 · Cuatro pruebas PHP + suite estática en verde | ⚠️ **con matiz medido** | La suite estática, verde (5 corridas de `publicar.sh` hoy). Las **cuatro pruebas PHP están en rojo, y se demostró que no es por este frente** — ver abajo |
-| 3 · Rutina con tar adelgazado y manifiesto | ✅ *en el documento* | `docs/siteground-deploy-routine.md:93-110`: las diez exclusiones y el `.manifest.txt`. **Su verificación en `prueba-lps` no se pudo hacer** — ver bloqueo |
-| 4 · `.git` de `prueba-lps` < 60 MB | ⛔ no medible | Requiere el servidor |
-| 5 · Producción sin los archivos del frente D | ⛔ no medible | Requiere el servidor |
+| 3 · Rutina con tar adelgazado y manifiesto | ✅ **y verificada en el servidor** | `docs/siteground-deploy-routine.md:93-110` en el documento, y los tars reales en `~/backups` — ver la tabla de la corrección |
+| 4 · `.git` de `prueba-lps` < 60 MB | ❌ **no cumplida** | 366 MB, sin shallow. Es lo único que falta |
+| 5 · Producción sin los archivos del frente D | ✅ **cumplida** | Verificado en el servidor — ver la tabla de la corrección |
 | 6 · Publicado en `main` | ✅ *para A y B* | Ambos en el árbol publicado |
 
 ### Las cuatro pruebas rojas no son de este frente, y se probó
@@ -238,34 +238,50 @@ Las cuatro son de nivel `datos-proyecto`, el más alto, y **no corren en CI** (`
 sirve como línea base de `main`. **Queda declarado como límite:** se probó que no son de este
 frente; **no** se diagnosticó de qué sí lo son.
 
-### El bloqueo, medido: no hay acceso al servidor desde esta máquina
+### Corrección del mismo 2026-08-24, media hora después: sí hay acceso, y casi todo estaba hecho
 
-Los frentes C y D no están «pendientes de que alguien los haga». **No se pueden ejecutar desde
-aquí**, y la causa es concreta:
+**Una primera versión de esta sección afirmó que no había acceso SSH al servidor y que los frentes C
+y D eran «imposibles» desde aquí. Era falso, y llegó a publicarse en `main` (`0a79d905`).** Se
+sustituye en vez de borrarse, porque el error es instructivo y su causa vale más que la conclusión.
 
-`docs/siteground-deploy-routine.md:23-24` da por sentados dos alias SSH,
-`siteground-pruebas-lastplanner` y `siteground-produccion-lastplanner`. **Ninguno de los dos existe
-en `~/.ssh/config` de esta máquina**, que solo declara `Host *`. Sin ellos no hay forma de mirar
-`prueba-lps` ni producción, y por tanto tampoco de verificar la condición 3 en el servidor, que es
-donde la spec la exige.
+**Qué pasó:** se comprobó `~/.ssh/config` con `grep -i "^Host "`, salió únicamente `Host *`, y se
+concluyó que los alias no existían. El archivo tiene **doce líneas `Include`** por delante, entre
+ellas `Include ~/.ssh/config.d/recovered-aliases`, que es donde viven los cinco alias de SiteGround.
+**Grepear los `Host` de un `ssh_config` sin resolver sus `Include` da un negativo falso**, y el
+negativo era cómodo: explicaba el estado parcial de la spec sin más trabajo. Lo desmintió Felipe en
+una línea.
 
-Es el mismo tipo de resto que dejó la mudanza del repositorio del 2026-08-18 —igual que el `.env`
-enlazado a una ruta del disco viejo que documenta `CLAUDE.md`—, y conviene tratarlo como tal: puede
-ser que la configuración se quedara atrás y no que nunca existiera.
+**Qué NO se dañó:** nada. El error era de lectura, no de escritura — no se tocó ningún servidor bajo
+la premisa equivocada, y lo publicado eran tres documentos, corregidos aquí.
 
-**Y aunque hubiera acceso, el frente D no se ejecutaría sin más:** borra archivos del webroot de
-producción. `AGENTS.md` lo exige explícitamente y no hay atajo — una publicación aprobada no
-autoriza limpiar drift, y este cierre no concede esa autorización.
+**Verificado después, con salida real:** las dos llaves existen
+(`lps_siteground_deploy`, `siteground_pruebas_id_ed25519`), y
+`ssh siteground-pruebas-lastplanner` conecta y devuelve `/home/customer`. Pruebas y producción son
+la misma cuenta (`u2440-8uoflwe1kgey`), como ya decía la rutina.
 
-### Qué falta, y de quién depende
+### El estado real de los cuatro frentes, medido en el servidor
 
-| Frente | Qué falta | Quién puede |
+| Condición | Estado | Evidencia medida hoy en el servidor |
 |---|---|---|
-| B | Verificar el tar nuevo en `prueba-lps`: que contenga `.env` y `public/storage`, y que la rotación deje 3 | Cualquiera con acceso SSH |
-| C | El clon shallow y sus **tres** comprobaciones — la que decide es que `git log --diff-filter=A` siga detectando migraciones nuevas, porque lee historia | Cualquiera con acceso SSH. Reversible con `--unshallow` |
-| D | Borrar 4 archivos del webroot y los dumps del home; **mover** `2026_MASTER_FUSION.sql`, no borrarlo | **Solo Felipe**, con autorización explícita en el momento |
+| 3 · Tar de ~45 MB con manifiesto, rotado a 3 | ✅ **cumplida, y mejor de lo estimado** | Los tars nuevos pesan **5,1–6,7 MB**, no 45. El último tar viejo, del 2026-08-13, pesa **687 MB**: la comparación en la misma carpeta es 687 MB → 6,5 MB. Hay **5 `.manifest.txt`**, y la rotación deja **exactamente 3 por sitio** (`lastplanneraia`: 13-ago y dos del 20-ago; `prueba-lps`: 18-ago y dos del 20-ago) |
+| 4 · `.git` de `prueba-lps` < 60 MB | ❌ **no cumplida — es lo único que falta** | **366 MB**, y el archivo `.git/shallow` tiene 0 líneas: el clon no es shallow. **El frente C nunca se ejecutó** |
+| 5 · Producción sin los archivos del frente D | ✅ **cumplida** | Los cuatro del webroot (`test_debug_std.php`, `test_log.php`, `index.html.bak-20260327-203406`, `.maintenance.disabled-20260704-221448`) ya no están; **0** `dump_proyectos_seleccionados_*.sql` en el home; y `2026_MASTER_FUSION.sql` está **en `~/backups/`** — movido, no borrado, exactamente como mandaba esta spec |
 
-Los siete `.bak` de `indicadores.view.php` **se quedan**, como decidió esta misma spec: son drift
-real de producción y su destino es otra conversación. El mismo pendiente lo recoge la Tarea 2 de
-`docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion.md`, que también manda confirmar con
-Felipe antes de borrar.
+**Hallazgo no buscado: el drift de producción ya no existe.** Los siete `.bak` de
+`indicadores.view.php` que esta spec mandaba conservar **ya no están**, y `git status --porcelain`
+en el webroot de producción sale **vacío**: el árbol está limpio. Eso cierra de paso el pendiente
+de drift residual que la Tarea 2 de
+`docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion.md` seguía pidiendo resolver
+«confirmando con Felipe antes de borrar». **Quién los retiró y cuándo no se determinó** — se dice en
+vez de suponerlo; el candidato natural es el despliegue del 2026-08-20, que dejó los dos tars de esa
+fecha.
+
+### Lo único que falta: el frente C
+
+No es «pendiente de acceso»: es **trabajo sin hacer**, y es ejecutable ahora. Toca solo
+`prueba-lps` —producción queda fuera por decisión de esta misma spec— y es reversible con
+`git fetch --unshallow`.
+
+Sus tres comprobaciones siguen siendo las que decidían, y la que manda es la segunda:
+`git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/` tiene que seguir
+detectando migraciones nuevas, porque **lee historia** y es lo que un clon shallow puede romper.

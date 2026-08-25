@@ -64,10 +64,14 @@ la declaraba igual, porque comprobaba su propia sustitución de texto.
       producción, respaldo previo verificable, plan de restauración escrito
 - [ ] Composer se ejecuta con **PHP 8.3**
 - [ ] Dejar listo el smoke funcional del flujo afectado, sin correrlo contra producción
-- [ ] Resolver el **drift residual** ya inventariado: el stash `pre-deploy-20260820-185447`
+- [x] ~~Resolver el **drift residual** ya inventariado: el stash `pre-deploy-20260820-185447`
       (SmtpMailer, superado por `21243c7e` versionado) y **7 `.bak` de `indicadores.view.php`** del
       2026-07-23 en `public_html`. **Confirmar con Felipe antes de borrar** — una publicación
-      aprobada no autoriza limpiar drift
+      aprobada no autoriza limpiar drift~~ — **YA RESUELTO, verificado en el servidor el
+      2026-08-24:** no queda ningún `.bak` en el webroot de producción (`find` da 0) y
+      `git status --porcelain` sale **vacío**: el árbol está limpio. **Quién los retiró y cuándo no
+      se determinó** — se dice en vez de suponerlo; el candidato natural es el despliegue del
+      2026-08-20. No se ejecutó nada bajo esta tarea: se midió y ya estaba hecha
 
 ## Tarea 3 — CP-F-E · Despliegue · NO EJECUTAR
 

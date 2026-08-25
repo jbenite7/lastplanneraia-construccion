@@ -234,24 +234,14 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
-- [ ] **Reponer los alias SSH de SiteGround — desbloquea `espacio-cuenta-siteground`** *(no entra en
-  «Bloqueantes»: la cuota quedó en 13.32 % tras el paliativo y nada urge hoy; lo que traba es el
-  cierre de esa spec, no el proyecto)* —
-  `docs/siteground-deploy-routine.md:23-24` da por sentados `siteground-pruebas-lastplanner` y
-  `siteground-produccion-lastplanner`, y **ninguno existe en `~/.ssh/config`** (solo `Host *`),
-  medido el 2026-08-24. Sin ellos no hay forma de mirar `prueba-lps` ni producción, así que los
-  frentes C y D no están «pendientes»: están **imposibilitados**. Probable resto de la mudanza del
-  2026-08-18, como el `.env` enlazado al disco viejo. **Lo repone Felipe** (es su config personal, y
-  toca credenciales). Desbloquea de una vez: verificar el tar nuevo en pruebas (frente B), el clon
-  shallow y sus tres comprobaciones (frente C) y la Tarea 2 de P5.
-- [ ] **Frente D de SiteGround · limpieza del webroot de producción — NECESITA AUTORIZACIÓN DE
-  FELIPE, no solo acceso.** Borrar `test_debug_std.php`, `test_log.php`,
-  `index.html.bak-20260327-203406` y `.maintenance.disabled-20260704-221448` del webroot, más los
-  `dump_proyectos_seleccionados_*.sql` del home (~14 MB); y **mover** `2026_MASTER_FUSION.sql` a
-  `~/backups/`, no borrarlo — no está en git en ninguna parte. Los siete `.bak` de
-  `indicadores.view.php` **se quedan**: son drift real y su destino es otra conversación (mismo
-  criterio en la Tarea 2 de P5). Motivo de urgencia baja pero real: `test_debug_std.php` y
-  `test_log.php` están hoy en el webroot de producción tapados solo por una regla del `.htaccess`.
+- [ ] **Frente C de SiteGround · clon shallow en `prueba-lps`** — es **lo único** que le falta a
+  `espacio-cuenta-siteground`, medido en el servidor el 2026-08-24: su `.git` sigue en **366 MB**
+  con `.git/shallow` vacío. `git fetch --depth=1` + `reflog expire` + `gc --prune=now` lo baja a
+  ~40 MB. **Solo pruebas** —producción queda fuera por decisión de la propia spec— y **reversible**
+  con `git fetch --unshallow`. Sus tres comprobaciones son parte del trabajo, y la que decide es la
+  segunda: que `git log --name-only --diff-filter=A HEAD@{1}..HEAD -- database/migrations/` siga
+  detectando migraciones nuevas, porque lee historia. No entra en «Bloqueantes»: la cuota quedó en
+  13.32 % tras el paliativo y nada urge hoy.
 - [ ] **Retirar `cell-state-vocabulary.mjs`, código muerto** —
   `public/js/modules/shared/cell-state-vocabulary.mjs` no lo importa nadie salvo su propio gate: los
   renderers de Handsontable nunca lo llaman, así que su `STATE_MAP` documenta una intención, no un
@@ -461,16 +451,22 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
-- [x] 2026-08-24 — **`espacio-cuenta-siteground` revisada — NO cierra, y por causa material.** Es la
-  primera de la tanda que no se puede cerrar, y el motivo no es falta de trabajo: **los dos alias
-  SSH que la rutina de despliegue da por sentados no existen en esta máquina**, así que los frentes
-  C y D no están «sin verificar», están imposibilitados. Lo medible se midió y está bien: frente A
-  verificado hoy (`qa/evidence` en **15 MB**, `ARCHIVO.md` presente, **0** `trace.zip` y **0**
-  `.webm` rastreados) y frente B presente en el documento (diez exclusiones + `.manifest.txt`). Las
-  cuatro pruebas PHP de la condición 2 dan RC=1: **se probó que no es por este frente** — el fallo
-  es de un catálogo en base de datos, cero menciones de `evidence`, y la carpeta que leen conserva
-  sus 6 `.md` y 2 `.json` intactos. Se declaró el límite: se probó de qué **no** son, no de qué sí.
-  Dos entradas nuevas en «Bloqueantes» con lo que falta y de quién depende.
+- [x] 2026-08-24 — **`espacio-cuenta-siteground` revisada — no cierra, pero le falta solo el frente
+  C.** Medido en el servidor: **el frente D ya estaba ejecutado** (los cuatro archivos fuera del
+  webroot, cero dumps en el home, `2026_MASTER_FUSION.sql` movido a `~/backups/` y no borrado) y el
+  **frente B verificado en vivo** — tars de **5,1–6,7 MB** contra los **687 MB** del último viejo,
+  5 manifiestos, rotación exacta a 3 por sitio. Falta solo el clon shallow de `prueba-lps`, cuyo
+  `.git` sigue en 366 MB. Frentes A y B en el repo ya estaban. Las cuatro pruebas PHP de la
+  condición 2 dan RC=1 y **se probó que no es por este frente** (el fallo es de un catálogo en base
+  de datos, cero menciones de `evidence`, y la carpeta que leen conserva sus 6 `.md` y 2 `.json`);
+  límite declarado: se probó de qué **no** son, no de qué sí. **Hallazgo no buscado: el drift de
+  producción ya no existe** — los siete `.bak` de `indicadores.view.php` no están y
+  `git status --porcelain` del webroot sale vacío, lo que cierra de paso el pendiente de drift de la
+  Tarea 2 de P5; quién los retiró no se determinó.
+  **Error propio, corregido el mismo día:** una primera pasada afirmó —y publicó en `0a79d905`— que
+  no había acceso SSH y que C y D eran imposibles. Falso: se grepearon los `Host` de `~/.ssh/config`
+  sin resolver sus doce `Include`, y los alias viven en el archivo incluido. Lo desmintió Felipe en
+  una línea. No se dañó nada: el error fue de lectura, no se tocó ningún servidor bajo esa premisa.
 - [x] 2026-08-24 — **`cierre-dark-mode`, DEROGADA** — la sospecha de la pasada anterior, medida y
   confirmada: mismo motivo que las dos `ui-audit` (sustituida por DS-F0..F3). **Pero se deroga
   distinto: aquí sí se ejecutó trabajo real.** Medido hoy con `design-system-audit.mjs` (RC=0): la

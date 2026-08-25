@@ -50,7 +50,9 @@ main`, con llave dedicada. Producción va muy por detrás de `main`, así que un
 no es un trámite.
 
 No se puede navegar el entorno remoto como si fuera local:
-[[siteground-sin-tunel-ssh]].
+[[siteground-sin-tunel-ssh]]. Pero **el acceso SSH sí existe** y los cinco alias viven en un archivo
+incluido desde `~/.ssh/config`: comprobarlos con `grep "^Host "` da un negativo falso
+([[grep-de-host-no-resuelve-los-include]]).
 
 No se hace commit, push ni deploy sin petición explícita. Una publicación aprobada no autoriza
 limpiar deriva del servidor ni desplegar de paso otros cambios.
