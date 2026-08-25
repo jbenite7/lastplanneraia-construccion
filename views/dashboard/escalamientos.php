@@ -8,6 +8,7 @@
     <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Escalamientos AIA</title>
+    <meta name="lps-drawer-csrf-token" content="<?php echo htmlspecialchars($lpsDrawerCsrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderForModule('escalamientos') ?>

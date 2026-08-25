@@ -6,6 +6,12 @@
  */
 
 window.LPSContextualDrawer = (function() {
+  /** Token CSRF del cajón: la vista anfitriona lo emite en <meta name="lps-drawer-csrf-token">. */
+  function lpsDrawerCsrfToken() {
+    const meta = document.querySelector('meta[name="lps-drawer-csrf-token"]');
+    return (meta && meta.getAttribute('content')) || '';
+  }
+
   const lpsFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
   let activeHot = null;
   // `activeHot` no siempre es una malla Handsontable: las superficies sin malla (el dashboard de
@@ -1050,6 +1056,7 @@ window.LPSContextualDrawer = (function() {
     if (activeParentId) formData.append('parent_id', activeParentId);
     if (activeAlertaId) formData.append('escalamiento_id', activeAlertaId);
     if (menciones.length > 0) formData.append('menciones', JSON.stringify({ roles: menciones }));
+    formData.append('_csrf_token', lpsDrawerCsrfToken());
 
     fetch('/api/lps/comments/add', {
       method: 'POST',
@@ -1088,6 +1095,7 @@ window.LPSContextualDrawer = (function() {
     const formData = new FormData();
     formData.append('alerta_id', activeAlertaId);
     formData.append('justificacion', justificacion);
+    formData.append('_csrf_token', lpsDrawerCsrfToken());
 
     fetch('/api/lps/crisis/close', {
       method: 'POST',
@@ -1200,6 +1208,7 @@ window.LPSContextualDrawer = (function() {
       const moduloDeLaFila = ['PG', 'PI', 'PS'].includes(rowData.modulo) ? rowData.modulo : null;
       formData.append('modulo', moduloDeLaFila || (activeModuleKey === 'programa-general' ? 'PG' : (activeModuleKey === 'programacion-intermedia' ? 'PI' : 'PS')));
       formData.append('trigger', `SOS-${rolSuperior.substring(0, 3).toUpperCase()}`);
+      formData.append('_csrf_token', lpsDrawerCsrfToken());
 
       fetch('/api/lps/crisis/register', {
         method: 'POST',

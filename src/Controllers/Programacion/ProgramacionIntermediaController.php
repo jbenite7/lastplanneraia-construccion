@@ -3,6 +3,7 @@
 namespace App\Controllers\Programacion;
 
 use App\Controllers\BaseController;
+use App\Security\CsrfTokenManager;
 use App\Support\ResponsableAiaPolicy;
 
 use TableResolver;
@@ -122,6 +123,7 @@ class ProgramacionIntermediaController extends BaseController
             'shellWeeks' => $shellWeeks,
             'shellActive' => 'programacion-intermedia',
             'shellModuleLabel' => 'Programación Intermedia',
+            'lpsDrawerCsrfToken' => CsrfTokenManager::generate('lps_drawer'),
         ]);
 
         $this->render('/views/programacion-intermedia/programacion_intermedia.view.php', $data);

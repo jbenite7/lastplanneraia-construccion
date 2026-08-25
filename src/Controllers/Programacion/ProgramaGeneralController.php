@@ -24,6 +24,7 @@ class ProgramaGeneralController extends BaseController
         $area = $vars['area'] ?? 'Construccion';
         $initialFilterQuery = $this->buildProgramaGeneralFilterQuery();
         $csrfToken = CsrfTokenManager::generate('programa_general_save');
+        $lpsDrawerCsrfToken = CsrfTokenManager::generate('lps_drawer');
 
         $maxSemana = 0;
         $fechaInicioSem = '';

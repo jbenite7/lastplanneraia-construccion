@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Programación Intermedia · Last Planner AIA</title>
+    <meta name="lps-drawer-csrf-token" content="<?php echo htmlspecialchars($lpsDrawerCsrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/public/vendor/jquery.min.js"></script>
     <script src="/public/vendor/jquery-ui.min.js"></script>
     <link href="/public/vendor/tom-select/tom-select.bootstrap4.min.css" rel="stylesheet">

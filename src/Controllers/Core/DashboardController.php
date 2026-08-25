@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Core;
 
+use App\Security\CsrfTokenManager;
 use App\Services\ProjectLandingService;
 
 class DashboardController
@@ -53,6 +54,7 @@ class DashboardController
 
         $lps = new \App\Services\LpsService();
         $crisis = $lps->getActiveCrisisByProject($dbName, $projId);
+        $lpsDrawerCsrfToken = CsrfTokenManager::generate('lps_drawer');
 
         require_once PROJECT_ROOT . '/views/dashboard/escalamientos.php';
     }

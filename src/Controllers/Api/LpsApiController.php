@@ -76,6 +76,7 @@ class LpsApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.programacion_semanal.editar');
+        legacy_require_csrf('lps_drawer');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {
@@ -121,6 +122,7 @@ class LpsApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.programacion_semanal.editar');
+        legacy_require_csrf('lps_drawer');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {
@@ -157,6 +159,7 @@ class LpsApiController
     {
         require_once PROJECT_ROOT . '/src/Legacy/rbac_guard.php';
         rbac_guard_require_permission('lps.programacion_semanal.editar');
+        legacy_require_csrf('lps_drawer');
         header('Content-Type: application/json; charset=utf-8');
         $context = $this->getContext();
         if (empty($context)) {

@@ -23,6 +23,7 @@ class ProgramacionSemanalController extends BaseController
         $pdcActivo = $_SESSION['pdcActivo'] ?? '';
         $area = $_SESSION['area'] ?? 'Construccion';
         $csrfToken = CsrfTokenManager::generate('semanal_save');
+        $lpsDrawerCsrfToken = CsrfTokenManager::generate('lps_drawer');
 
         $subcontratistas = [];
         $profesionales = [];

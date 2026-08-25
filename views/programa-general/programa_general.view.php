@@ -5,6 +5,7 @@
     <?php require dirname(__DIR__) . '/partials/head_brand.php'; ?>
     <title>Programa General — Last Planner AIA</title>
     <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="lps-drawer-csrf-token" content="<?php echo htmlspecialchars($lpsDrawerCsrfToken ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <script src="/public/vendor/jquery.min.js"></script>
     <?= \App\View\Components\DesignSystemHeadComponent::render() ?>
     <script type="text/javascript" src="/js/linksComunesHead2.js?v=20260711foundation5" charset="utf-8"></script>

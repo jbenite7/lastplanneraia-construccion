@@ -152,20 +152,30 @@ consumida desde dentro de otros módulos vía `LpsApiController` y `Notification
 
 ---
 
-## Hallazgo de esta pasada: `LpsApiController` muta sin validar CSRF
+## SOP-010 (corregido, 2026-08-25) · `LpsApiController` ya valida CSRF
 
-**No se corrige aquí** — la cláusula de este documento es verificar y registrar, no arreglar en
-caliente. Va a `docs/EXPERIMENTS.md`.
+**Estaba abierto al escribir esta pasada, corregido en la misma sesión con autorización
+explícita del usuario.** Las seis APIs de módulos que SOP-002 documentó sin CSRF se corrigieron
+el 2026-08-06/07 (`88ba6e0d`, `ca642189`). `LpsApiController` no estaba en esa lista, y sus tres
+mutaciones —`addComment()`, `registerCrisis()`, `closeCrisis()`— mutaban sin validar procedencia.
 
-Las seis APIs de módulos que SOP-002 documentó sin CSRF se corrigieron el 2026-08-06/07
-(`88ba6e0d`, `ca642189`): `CicApiController`, `ProfesionalesApiController`,
-`SubcontratistasApiController`, `ControlCambiosApiController`, `CnpApiController`,
-`CncApiController`. **`LpsApiController` no estaba en esa lista, y hoy sigue sin validar CSRF** en
-sus tres mutaciones: `addComment()`, `registerCrisis()`, `closeCrisis()` — ninguna llama a
-`legacy_require_csrf()`, y `public/js/modules/lps_drawer.js` (el único cliente de estas rutas) no
-envía ningún token. Autorizan solo con `rbac_guard_require_permission()`, que comprueba permiso y
-no valida procedencia — el mismo patrón exacto que SOP-002 ya nombró: «cuando una defensa depende
-de que cada autor se acuerde de invocarla, un módulo puede quedar fuera sin que nada avise».
+**El arreglo, mismo patrón exacto que el precedente ya cerrado:**
+
+- Servidor: `legacy_require_csrf('lps_drawer')` justo después de `rbac_guard_require_permission()`
+  en las tres mutaciones (`src/Controllers/Api/LpsApiController.php:78,120,160`).
+- Token compartido: las cuatro páginas anfitrionas del cajón —`/programa-general`,
+  `/programacion-intermedia`, `/programacion-semanal`, `/dashboard/escalamientos`— generan
+  `CsrfTokenManager::generate('lps_drawer')` y lo emiten en
+  `<meta name="lps-drawer-csrf-token">`. El form-key es de sesión, así que el mismo token vale en
+  las cuatro páginas sin regenerarse al navegar entre ellas (verificado: mismo valor en las
+  cuatro).
+- Cliente: `public/js/modules/lps_drawer.js` lee el meta y adjunta `_csrf_token` en las tres
+  llamadas `fetch(..., { method: 'POST' })`.
+
+**Verificado en ejecución, no solo por lectura** —`tests/test_csrf_lps_api.php`, HTTP real contra
+el contenedor, sesión por dev door—: las tres mutaciones responden **403** sin token y **no**
+403-por-CSRF con un token válido (7/7 aserciones). Regresión en
+`e2e/tests/biblia/soporte.spec.mjs` (`SOP-004`).
 
 ## Escenarios pendientes de esta pasada
 
