@@ -10,7 +10,7 @@ resumen: "Catálogo del trabajo fechado: cada spec de diseño con el plan que la
 project: lps-aia
 type: plan-inventory
 status: activo
-updated: 2026-08-20
+updated: 2026-08-24
 ---
 # Registro de trabajo
 
@@ -186,15 +186,39 @@ _131 trabajos · 52 con spec y plan emparejados · 20 archivados en `docs/archiv
 
 <!-- generado:fin -->
 
-## Estado real de las specs — auditoría del 2026-08-20
+## Estado real de las specs — auditoría del 2026-08-20, con delta al 2026-08-24
 
 El catálogo de arriba dice qué existe; esto dice **qué está hecho de verdad**. Las 61 specs
-vigentes se verificaron contra el código y los documentos actuales (no contra checkboxes: 0 de 435
-casillas marcadas, ver [[TASKS]]). El detalle completo —evidencia por spec y cada pendiente con el
-plan que lo cierra— está en
+vigentes de entonces se verificaron contra el código y los documentos actuales — **no contra
+casillas de verificación, que en este repo no miden avance** (la regla y su medición, en
+[[TASKS]] y en `AGENTS.md` §Verificación). El detalle completo —evidencia por spec y cada
+pendiente con el plan que lo cierra— está en
 [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs|el informe de la auditoría]].
 
-**44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas (archivadas).**
+**Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
+(archivadas).
+
+**Corte del 2026-08-24:** **47 ejecutadas · 14 parciales · 0 pendientes · 0 derogadas · 12
+cerradas.** Las mismas 61 specs, tres movidas de casilla; ninguna se archivó, así que el bloque de
+cerradas no cambia. Esto es un **delta verificado, no una re-auditoría**: las 14 parciales
+conservan el veredicto del 20 de agosto, comprobado ítem por ítem contra `goals/*/goal.md`,
+`TASKS.md` y los cierres de P1 y P2.
+
+Las tres que se movieron, con la evidencia que lo prueba:
+
+| Spec | Antes | Ahora | Evidencia |
+|---|---|---|---|
+| `organizar-la-casa` | **pendiente** | ejecutada | Existe `goals/organizar-la-casa/`, los vistos ya no están en `.claude/vistos/` sino versionados en `decisiones/vistos/`, y `docs/coordinacion-sesiones.md` es la reescritura del 2026-08-20 con las siete reglas. Los **tres** criterios con que el informe la declaró «sin rastro de ejecución» están hoy invertidos |
+| `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**, con procedencia de corrida real. Cerrada vía P2 |
+| `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
+
+**Ya no hay ninguna spec pendiente.** Ese dato —«la única pendiente sin rastro»— era el más
+llamativo del corte anterior y caducó a los cuatro días.
+
+**Aviso de alcance:** hoy hay **69 specs vigentes**, no 61. Las 8 nuevas —entre ellas
+`estado-consolidado-del-repo`, `pendientes-frente-tablas` y `reparto-lienzos-por-rol`— se
+escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
+renglón de este delta.
 
 Las 16 parciales: `stack-plan-de-compras` (brecha solo documental), `cierre-prelanzamiento-pdc`,
 `despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `ui-audit-and-repair-plan` y

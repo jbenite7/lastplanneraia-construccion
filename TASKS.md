@@ -515,9 +515,23 @@ tres cosas distintas llamadas «F0» y dos llamadas «F1». Nadie podía respond
 fase X?» sin abrir cuatro archivos y adivinar a cuál se refería. Consolidado el 2026-08-18.
 
 Segundo hallazgo de esa consolidación, que vale por sí solo: **las casillas de los planes no miden
-nada.** De 435 casillas repartidas en 17 planes, hay **0 marcadas** — incluidos planes cuyo trabajo
-está en producción. Es el mismo defecto que `coordinating-agent-sessions` tiene medido en su propio
-plan. Para saber si algo está hecho, se verifica **contra el código**, no contra su casilla.
+avance.** Medido el 2026-08-18 sobre los 17 planes de entonces: 435 casillas, **0 marcadas**,
+incluidos planes cuyo trabajo estaba en producción. Es el mismo defecto que
+`coordinating-agent-sessions` tiene medido en su propio plan.
+
+**Re-medido el 2026-08-24, y el dato de arriba ya no es universal.** Hoy son **71 planes vivos con
+2.127 casillas, de las que 162 sí están marcadas** — repartidas en solo 7 planes, todos del
+2026-08-19 en adelante. La costumbre cambió a mitad de agosto, así que «0 marcadas» describe el
+estado de 17 planes en una fecha, no una ley del repo: citarlo sin su alcance hace creer que nada
+se ha hecho. Lo que **no** cambió es la conclusión operativa: solo **9 de los 71 planes** tienen su
+sección `## Cierre` escrita, y hay **2 contradicciones activas** — cierre escrito con casillas sin
+marcar, en `2026-08-04-cierre-dark-mode-campana-decisiones` (148, con nota explícita en su propio
+cierre) y en `2026-08-24-p1-desague-y-consolidacion` (25). Para saber si algo está hecho se
+verifica **contra el código y contra la sección de cierre**, nunca contra la casilla.
+
+**Y no se marcan retroactivamente.** La regla la fijó el cierre de la campaña de dark mode el
+2026-08-07, con su porqué escrito: reescribir casillas sin haber presenciado cada paso «sería
+fabricar evidencia».
 
 ## Bloque 0 — Arranque (bloquea todo lo demás)
 

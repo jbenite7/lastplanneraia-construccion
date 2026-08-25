@@ -159,10 +159,15 @@ sobre el sha exacto publicado:
 verificado con `python3` sobre el índice. `runtime-budgets-al-ci` y `gates-al-ci` cierran con su
 `## Cierre` escrito (ver ambos `goal.md`).
 
-**Tarea 8 (renombrar `design-system.yml` → `ci.yml`) queda sin hacer, a propósito.** No forma parte
-de la condición de hecho de este plan. Es un cambio de mayor alcance (60+ archivos mencionan
-«design-system», y el propio plan advierte que parte el historial de corridas de GitHub); se deja
-como micro-frente propio para no apurarlo al cierre de este.
+**Tarea 8 (renombrar `design-system.yml` → `ci.yml`) quedó fuera de este cierre, a propósito.** No
+formaba parte de la condición de hecho de este plan: es un cambio de mayor alcance (60+ archivos
+mencionan «design-system», y el propio plan advierte que parte el historial de corridas de GitHub),
+y se difirió como micro-frente propio para no apurarlo al cierre de este.
+
+**Ejecutada más tarde el mismo día**, ya como frente aparte y con su corrida real de Actions
+confirmada: ver «Tarea 8 → ### Cierre — 2026-08-24» más arriba en este documento, y el sha
+publicado `3c670c5c`. Este párrafo describe el estado en el momento del cierre de las Tareas 1–7,
+no el estado final del plan.
 
 **Verificación del gate de cierre:** `bash scripts/publicar.sh --solo-verificar` sobre `920b38df`,
 4/4 en verde (`design-system:static`, contrato piloto PG, wiki forma, wiki veracidad+pruebas). El
