@@ -1,5 +1,25 @@
 # Evidencia binaria archivada fuera del repositorio
 
+> [!warning] Esta carpeta es **historia, no estado actual**. Sellada el 2026-08-25.
+> Casi todo lo que hay aqui son capturas y trazas de **julio de 2026**, y buena parte
+> documenta el **PDC v1**, que se elimino del repositorio el 2026-08-04
+> (`SemiAutoService`, `semi_auto_review.js`, los contratos `auto/*` y sus 18 tablas ya no
+> existen — ver `AGENTS.md`). No la leas como descripcion de como funciona el producto hoy;
+> para eso, `docs/flujos/` y los mapas de `memoria/`.
+>
+> **No se borra, y hay tres motivos medidos.** (1) Cuatro pruebas PHP dependen de
+> `catalog-goal-audit-20260702/`: `test_goal_close_blockers_manifest.php`,
+> `test_human_decision_matrix_coverage.php`, `test_human_decision_actions_package.php` y
+> `test_human_decision_approval_checklist.php`. (2) Lo que queda ya esta en la historia de
+> git, asi que borrarlo del arbol no adelgaza un clon. (3) El precedente de este repo es
+> sacar a disco externo con `sha256`, que es lo que hizo el 2026-08-18 — no eliminar.
+>
+> **Verificado el 2026-08-25:** el respaldo externo sigue completo, **282 MB y 46 archivos**
+> en `/Volumes/Crucial X6/Developer/lps-aia-evidencia/`. Ojo con el matiz: lo que se mudo el
+> 2026-08-18 fue **el repositorio**, que hoy vive en `~/Developer/lps-aia`; el **disco**
+> `Crucial X6` sigue existiendo y montado, y el respaldo esta ahi. Si algun dia no lo esta,
+> los binarios siguen recuperables de la historia de git mientras no se reescriba.
+
 El 2026-08-18 se sacaron de git los 20 `trace.zip` y 26 `.webm` de esta carpeta: 282 MB
 que inflaban cada clon y cada respaldo de despliegue. Los `.md`, `.json` y `.png` siguen
 aqui — de ellos dependen cuatro pruebas PHP.

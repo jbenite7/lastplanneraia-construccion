@@ -161,7 +161,9 @@ true on 2026-08-11. Both suites coexist and both run through the same entry poin
 - `tests/unit/*Test.php` — PHPUnit 12 classes (`composer.json`, `phpunit.xml`, autoload-dev
   `Tests\Unit\`). **Every class must declare a `#[Group(...)]`** naming its level, or
   `scripts/run-php-tests.php` aborts — a test without a declared level would otherwise run where its
-  dependencies don't exist. Migration is incremental: 103 loose scripts, 1 PHPUnit class so far.
+  dependencies don't exist. Migration is incremental: **117 loose scripts and 5 PHPUnit classes** as of 2026-08-25.
+  (This line said "103 loose scripts, 1 PHPUnit class" — true on 2026-08-18, stale since. The
+  count is `ls tests/test_*.php` and `ls tests/unit/*Test.php`; re-measure rather than trust it.)
 
 `scripts/run-php-tests.php` runs both in one pass and aggregates the exit codes; it is what CI calls
 (`.github/workflows/ci.yml`, `--nivel=puro` and `--nivel=http`). The CI image is built with
