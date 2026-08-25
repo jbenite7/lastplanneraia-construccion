@@ -194,3 +194,88 @@ decirlo: es una posición sin margen, y quien la toque después necesita saberlo
 6. Ramas: **fusionar solo las 5 vivas**; las 15 viejas se revisan con lista antes de decidir.
 7. Momento del merge: **antes de empezar** el trabajo de dark mode.
 8. Prioridad de módulos: **PG, PI, PS, PDC v2**, en la fase 3.
+
+## Cierre
+
+**DEROGADA el 2026-08-24**, por el mismo motivo estructural que las dos specs de `ui-audit` cerradas
+ese mismo día: sustituida por el programa **DS-F0..F3** (decisión de Felipe del 2026-08-18). El
+veredicto «**no reabrir**» ya estaba escrito en
+[[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]]; aquí se anota con la medición al
+día.
+
+**Pero se deroga distinto que las `ui-audit`, y la diferencia importa:** aquellas no ejecutaron
+nada. Esta sí, y bastante. Lo que se deroga es el **remanente**, no el trabajo.
+
+### Lo que sí se hizo, medido hoy sobre el árbol
+
+`node scripts/design-system-audit.mjs` → **RC=0**, «Design system audit passed against baseline».
+
+| | Hallazgos |
+|---|---|
+| Techo del baseline (`audit-baseline.json`, 2026-07-25) | **7 076** |
+| Línea de partida que declaró esta spec (`4c46825`, 2026-08-03) | 4 511 |
+| **Deuda real hoy** (2026-08-24, medido) | **3 858** |
+
+**Una reducción del 45 % contra el techo**, y de ~14 % desde que se escribió esta spec. No es poco y
+no se pierde al derogarla.
+
+### Lo que no se hizo, verificado pieza por pieza
+
+No basta el informe del 2026-08-20 («fases 0–3 cerradas»): medido hoy, faltan más fases que esa,
+y una por una cadena rota.
+
+| Fase | Estado medido | Evidencia |
+|---|---|---|
+| 1 · Que los gates dejen de mentir | **hecha** | `test:design-system:static` es hoy un runner (`design-system-static-suite.mjs`), no la cadena `&&` que cortaba en el primer fallo. Era M-01 |
+| 2 · Puerta de servicio para `admin/` | **no hecha** | `admin/src/Core/DevDoor.php` no existe |
+| 5 · `admin/` (14 vistas) | **no pudo hacerse** | Era *habilitada por* la fase 2. Sin puerta no hay validación visual de `admin/`: la cadena quedó rota en su primer eslabón |
+| 6 · El grueso estructural (2 684 hallazgos) | **no hecha** | Es la que domina la deuda restante y la que se deroga |
+| 7 · Cierre | **no hecha** | `public/js/modules/shared/cell-state-vocabulary.mjs` sigue en el árbol, y la fase 7 mandaba retirarlo por código muerto |
+
+*(Fases 0, 3 y 4 no se re-midieron en esta pasada; el informe del 2026-08-20 las da por cerradas y
+no hay motivo medido para dudarlo. Se dice en vez de afirmarlo.)*
+
+### La condición de hecho #1 no se cumple, aunque el gate salga verde
+
+Esto es lo que más conviene leer de este cierre. La condición decía tres cosas, no una:
+
+> «`design-system-audit.mjs` sale con código 0, **con cada excepción superviviente listada en un
+> inventario con su razón**, y **el gate falla ante una excepción nueva sin justificar**».
+
+- El código 0 ✅ se cumple.
+- El inventario de excepciones con su razón ❌ no existe: `audit-baseline.json` son **techos
+  agregados por regla** (15 números), no 3 858 excepciones justificadas.
+- «El gate falla ante una excepción nueva» ❌ **no se cumple, y por mucho.** Entre la deuda real
+  (3 858) y el techo (7 076) hay **3 218 de holgura**: se pueden añadir tres mil doscientas
+  violaciones nuevas y el gate sigue verde.
+
+El baseline no se ha bajado desde el 2026-07-25 pese a que su propia nota manda «reducir por módulo
+migrado». Un gate con la mitad del techo vacío sale verde sin gobernar nada — exactamente el defecto
+que la **fase 1 de esta misma spec** existía para erradicar («que los gates dejen de mentir»), en su
+otra forma.
+
+**Ya está detectado y con dueño, y por eso no abre frente aquí:** es el hallazgo **`F0-030`** de
+DS-F0 — «el baseline de deuda tolera 7161 hallazgos y la deuda real es 3896: el gate no puede
+detectar una regresión menor del 84 %» (`docs/design-system/auditoria/inventario.md:35`). La cifra
+de DS-F0 era 3 896 y hoy son 3 858: la deuda siguió bajando 38 hallazgos desde entonces, sin que
+nadie bajara el techo.
+
+### Por qué el remanente no se reabre
+
+**DS-F3 lo dice sin ambigüedad: «los 15 gates actuales se reemplazan, no se arreglan».**
+`design-system-audit.mjs` es uno de ellos. La fase 6 consistía en bajarle el techo regla por regla a
+un gate que el programa vigente va a sustituir — trabajo sobre un instrumento con fecha de retiro.
+
+Y la deuda que la fase 6 perseguía tiene mejor vehículo: **DS-F2 · Reimplementación por
+adaptadores** ataca «primero Handsontable y DataTables, que concentran la deuda», que es donde está
+(`handsontable-module.css` sola aporta 22 hex).
+
+### Qué NO se pierde
+
+Ni un hallazgo. Los 3 858 siguen contados por el mismo audit; `F0-030` mantiene vivo el problema del
+techo con dueño; y la deuda concentrada pasa a DS-F2. Lo que se retira es **esta spec como
+vehículo**, que llevaba 21 días sin cerrar y cuya fase más grande apuntaba a un gate condenado.
+
+**Pendiente menor que se anota y no se ejecuta aquí** (es de la fase 7, y sobrevive a la
+derogación): `cell-state-vocabulary.mjs` sigue siendo código muerto — nadie lo importa salvo su
+propio gate. Anotado en [[TASKS]].

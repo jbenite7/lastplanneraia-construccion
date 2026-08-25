@@ -198,8 +198,8 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-24:** **51 ejecutadas · 8 parciales · 0 pendientes · 2 derogadas · 12
-cerradas.** Las mismas 61 specs, nueve movidas de casilla en cuatro pasadas del mismo día; ninguna
+**Corte del 2026-08-24:** **51 ejecutadas · 7 parciales · 0 pendientes · 3 derogadas · 12
+cerradas.** Las mismas 61 specs, diez movidas de casilla en cinco pasadas del mismo día; ninguna
 se archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
 re-auditoría**: las parciales que siguen así conservan el veredicto del 20 de agosto, comprobado
 ítem por ítem contra `goals/*/goal.md`, `TASKS.md` y los cierres de P1 y P2.
@@ -228,6 +228,7 @@ orden de la matriz de priorización de esa misma sesión:
 | `vocabulario-estados-cascada` | parcial (unificación en replanteo) | ejecutada | El trabajo mecánico (35→29 términos en Intermedia) está en el código, verificado línea por línea en `hot.js`, la vista y el test. Las cuatro decisiones encoladas (D-VOC-1..4) están resueltas desde el 2026-08-11 en `docs/decisiones-pendientes.md`, la cola canónica — el archivo `decisiones/vocabulario-estados-cascada.md` que sugería "en replanteo" es una copia del 2026-08-18 que nunca se sincronizó con ese cierre. Pendiente real fuera de este frente: ejecutar D-VOC-4 (separar `Capítulo`) en frente propio |
 | `wiki-v2-visual` | parcial (plugins por decisión) | ejecutada | Los plugins de comunidad se instalaron y verificaron en pantalla el 2026-08-20 (`2888ab77`), ya en `TASKS.md`; la pregunta que dejaba la spec abierta ya no aplica. Grupos de color del grafo configurados y verificados en pantalla el mismo 2026-08-24, con Felipe ratificando los 3 grupos como definitivos — sin ningún pendiente real |
 | `ui-audit-and-repair-plan` | parcial (sin cierre formal) | **derogada** | Superada como vehículo por decisión medida del 2026-08-20 ([[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]] §2): su inventario de 18+ superficies lo sustituye DS-F0 (68 hallazgos sobre 257 rutas) y su plan de reparación, DS-F2 con dueño. Re-medido hoy: `/indicadores` es shell `aia-*` + iframe de Power BI, **sin tarjetas KPI que migrar** (F0-082); CNP/CNC/CIC son legacy real en `legacyCards.js` (0 clases `aia-*`, intacto desde el veredicto, F0-022 mayor). La spec proponía tocar vistas PHP y la deuda vive en un módulo JS que ninguna de sus fases nombra |
+| `cierre-dark-mode` | parcial (fase 6 sustituida) | **derogada** | Mismo motivo estructural, **pero se deroga distinto: aquí sí se ejecutó trabajo real.** Medido hoy: la deuda del audit pasó de un techo de **7 076 a 3 858 vivos (−45 %)**, con RC=0. Lo que se deroga es el remanente — fases 2, 5, 6 y 7 sin hacer, y la 5 **no pudo hacerse** porque dependía de la 2 (puerta de servicio de `admin/`, que no existe). La fase 6 apuntaba a bajarle el techo a `design-system-audit.mjs`, y **DS-F3 declara que los 15 gates actuales se reemplazan, no se arreglan**: era trabajo sobre un instrumento con fecha de retiro. **Hallazgo cuantificado al cerrar:** entre la deuda real y el techo hay **3 218 de holgura** — el gate sale verde y no gobierna; ya tiene dueño como `F0-030` de DS-F0 |
 | `ui-audit-core-lps-ops` | parcial (sin cierre formal) | **derogada** | Mismo veredicto y mismo acto: se solapaba casi por completo con la anterior (un día de diferencia, mismas superficies). Su aporte propio era el método de refactorización vertical, que no se pierde — es la skill `impeccable`, la misma que emitió el veredicto. Las dos prometían refactorizar tarjetas KPI de `/indicadores` que no existen en el repo |
 | `plan-cierre-hasta-produccion` | parcial (F-AB pausado, F-E) | ejecutada | F-AB cerrada vía P2 (9/9 gates `passed`); F-C (`D-CEF-1`) ya estaba ejecutada desde el 2026-08-12, doce días antes de que el plan P5 la reasignara sin verificar — confirmado en el esquema, el código y el test. F-D retirada desde el 2026-08-12. Solo F-E (despliegue) sigue sin ejecutar, por diseño: necesita autorización explícita de Felipe, siempre, y se rastrea en `despliegue-pdc-v2-produccion` |
 
@@ -239,21 +240,21 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 8 parciales que quedan: `cierre-prelanzamiento-pdc`,
-`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `cierre-dark-mode`
-(fase 6 sustituida por DS-F0..F3), `reparto-trabajo-pendiente` (línea E sin cierre),
-`f2a-piloto-movil-programacion` (manifiestos sin escenario móvil), `reapertura-movil-y-tema-claro`
-(F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y `espacio-cuenta-siteground` (frentes C/D
-de servidor).
+Las 7 parciales que quedan: `cierre-prelanzamiento-pdc`,
+`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `reparto-trabajo-pendiente`
+(línea E sin cierre), `f2a-piloto-movil-programacion` (manifiestos sin escenario móvil),
+`reapertura-movil-y-tema-claro` (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y
+`espacio-cuenta-siteground` (frentes C/D de servidor).
 
-**Aviso sobre `cierre-dark-mode`:** su nota ya dice «sustituida por DS-F0..F3», que es exactamente
-el motivo por el que las dos `ui-audit` pasaron a derogadas. Se deja parcial a propósito **en esta
-pasada** —no se midió— pero es la primera candidata a revisar: si su situación es la misma, la
-casilla correcta es derogada, no parcial.
+**Las tres derogadas comparten causa, y conviene leerla junta:** las tres eran vehículos de trabajo
+de design system escritos entre el 31 de julio y el 3 de agosto, y las tres fueron sustituidas por
+el programa **DS-F0..F3** que Felipe decidió el 2026-08-18. Ninguna se deroga por estar equivocada:
+se derogan porque su trabajo tiene hoy mejor instrumento y dueño. **La sospecha que quedó anotada en
+la pasada anterior —que `cierre-dark-mode` sería el mismo caso— se midió y se confirmó.**
 
 `stack-plan-de-compras`, `vocabulario-estados-cascada`, `wiki-v2-visual` y
 `plan-cierre-hasta-produccion` se movieron a ejecutada en esta misma sesión, y las dos `ui-audit`
-a derogada (ver tablas arriba);
+más `cierre-dark-mode` a derogada (ver tablas arriba);
 `estados-severidad-contrato` y `runtime-budgets-al-ci` ya se habían movido en la primera tabla del
 corte y quedaron fuera de esta lista por error hasta
 ahora — corregido aquí.

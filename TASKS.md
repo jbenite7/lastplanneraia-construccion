@@ -234,6 +234,13 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] **Retirar `cell-state-vocabulary.mjs`, código muerto** —
+  `public/js/modules/shared/cell-state-vocabulary.mjs` no lo importa nadie salvo su propio gate: los
+  renderers de Handsontable nunca lo llaman, así que su `STATE_MAP` documenta una intención, no un
+  comportamiento. Venía de la fase 7 de `cierre-dark-mode`, que se derogó el 2026-08-24 — **este
+  pendiente sobrevive a la derogación** y se anota aquí para que no se pierda con ella. Lo detectó
+  el saneamiento del 2026-08-03 en [[goals/cierre-dark-mode-y-tablas/goal]] y sigue vivo, verificado
+  hoy.
 - [ ] **Separar `Capítulo` del eje de estado (D-VOC-4)** — decidido el 2026-08-11: sí se separa,
   pero en frente propio con autorización aparte, porque `Capítulo` es un valor persistido en datos
   reales de obra (`{prog_consolidado}.Estado`) y exige dry-run, respaldo verificable y gate según
@@ -436,6 +443,17 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **`cierre-dark-mode`, DEROGADA** — la sospecha de la pasada anterior, medida y
+  confirmada: mismo motivo que las dos `ui-audit` (sustituida por DS-F0..F3). **Pero se deroga
+  distinto: aquí sí se ejecutó trabajo real.** Medido hoy con `design-system-audit.mjs` (RC=0): la
+  deuda pasó de un techo de **7 076 a 3 858 hallazgos vivos, −45 %**. Lo que se deroga es el
+  remanente: fases 2, 5, 6 y 7 sin hacer — y la 5 **no pudo hacerse**, porque dependía de la 2 (la
+  puerta de servicio de `admin/`, que no existe: cadena rota en su primer eslabón). La fase 6, que
+  era el grueso, consistía en bajarle el techo a un gate que **DS-F3 declara que se reemplaza, no se
+  arregla**. **Hallazgo cuantificado al cerrar:** entre la deuda real y el techo hay **3 218 de
+  holgura** — se pueden añadir 3 218 violaciones nuevas y el gate sigue verde, que es el defecto que
+  la fase 1 de esa misma spec existía para erradicar. Ya tiene dueño como `F0-030` de DS-F0, así que
+  no abre frente.
 - [x] 2026-08-24 — **Las dos specs de auditoría de UI, DEROGADAS** (no ejecutadas — el trabajo no se
   hizo por esa vía, se superó por otra). `ui-audit-and-repair-plan` (2026-07-31) y
   `ui-audit-core-lps-ops` (2026-08-01) se solapaban casi por completo y su veredicto ya estaba
