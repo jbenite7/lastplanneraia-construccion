@@ -199,7 +199,7 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-25:** **52 ejecutadas · 3 parciales · 0 pendientes · 6 derogadas · 12
+**Corte del 2026-08-25:** **53 ejecutadas · 2 parciales · 0 pendientes · 6 derogadas · 12
 cerradas.** Las mismas 61 specs; ninguna se archivó, así que el bloque de cerradas no cambia. El
 grueso se movió en seis pasadas del 2026-08-24, y las tres últimas derogaciones el 2026-08-25, tras
 medirlas frente por frente. Esto es un **delta verificado, no una
@@ -217,7 +217,7 @@ Las tres primeras, con la evidencia que lo prueba:
 | Spec | Antes | Ahora | Evidencia |
 |---|---|---|---|
 | `organizar-la-casa` | **pendiente** | ejecutada | Existe `goals/organizar-la-casa/`, los vistos ya no están en `.claude/vistos/` sino versionados en `decisiones/vistos/`, y `docs/coordinacion-sesiones.md` es la reescritura del 2026-08-20 con las siete reglas. Los **tres** criterios con que el informe la declaró «sin rastro de ejecución» están hoy invertidos |
-| `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**, con procedencia de corrida real. Cerrada vía P2 |
+| `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada **con salvedad** | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**. **Salvedad medida el 2026-08-25:** la procedencia de corrida real la tiene `runtime-budgets` (Actions 32787664690), pero **no `full-app-flow`**, cuyo recibo dice «regenerado localmente» — y la condición de hecho de la spec exige los dos. Por eso su spec sigue `vigente` mientras su goal ya declara `## Cierre`: el goal se adelantó. Ver el `## Estado verificado` de la spec |
 | `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
 
 Siete más, movidas en la misma sesión. Las tres primeras eran las decisiones de bajo esfuerzo que
@@ -238,6 +238,7 @@ acabó ejecutando trabajo real en el servidor, no solo anotándolo:
 | `programa-cierre-pendientes` | parcial (frentes 3–5) | **derogada** (2026-08-25) | Seis de siete frentes ejecutados o con vehículo en P1–P6; el frente 5 (publicación) sin ejecutar **correctamente**, porque espera autorización explícita. **Traslado 5, el mayor de la jornada:** el backlog de `docs/EXPERIMENTS.md` con ~35 filas `abierto` y ~21 sin dueño, que **ningún plan de P1 a P6 nombraba** (`grep -c` da cero en los seis) → a DS-F2 con el triaje repartido en tres grupos. Al preparar el reparto se comprobó la fila más grave —una guarda de autorización presuntamente abierta— y **estaba arreglada desde el 2026-08-10**: una fila `abierto` no prueba que el defecto siga vivo |
 | `espacio-cuenta-siteground` | parcial (frentes C/D de servidor) | ejecutada | Los cuatro frentes con desenlace medido. **D ya estaba hecho** en producción y **B verificado en vivo**: tars de **5,1–6,7 MB** contra **687 MB** del último viejo, 5 manifiestos, rotación exacta a 3 por sitio — de ~4,1 GB en respaldos a ~39 MB. **El frente C se ejecutó con autorización de Felipe y sus propias comprobaciones lo rechazaron:** el clon shallow rompe `git pull --ff-only`, que es el comando del que depende el despliegue (`rc=128`), y además el `.git` **no bajaba** de 366 MB porque `gc` no poda lo alcanzable desde `HEAD`. Revertido con `--unshallow` y servidor verificado sano; de paso quedó al día (213 commits de atraso). **Descartar por medición es un resultado, no una omisión** — la spec escribió esas tres comprobaciones justo para esto |
 | `plan-cierre-hasta-produccion` | parcial (F-AB pausado, F-E) | ejecutada | F-AB cerrada vía P2 (9/9 gates `passed`); F-C (`D-CEF-1`) ya estaba ejecutada desde el 2026-08-12, doce días antes de que el plan P5 la reasignara sin verificar — confirmado en el esquema, el código y el test. F-D retirada desde el 2026-08-12. Solo F-E (despliegue) sigue sin ejecutar, por diseño: necesita autorización explícita de Felipe, siempre, y se rastrea en `despliegue-pdc-v2-produccion` |
+| `cierre-prelanzamiento-pdc` | parcial (punto 6 sin contenido del piloto) | ejecutada | **El inventario era el que se contradecía con el frontmatter, no al revés.** Las seis condiciones medidas una por una el 2026-08-25 (ver el `## Cierre` de la spec): 1, 2, 3 y 5 cumplidas con evidencia citada; la 4 cumplida en el fondo pero con otro instrumento —residuo del sandbox, no la brecha del motor—, declarado sin adornos en la propia bitácora. **La 6 no se cumplió y así está dicho**, tal como la §Riesgos de la spec exige: el piloto no reportó hallazgos y Felipe cerró el hueco vacío (`estado-olas.md:211`), lo que **retira el punto del alcance en vez de darlo por satisfecho**. No queda trabajo vivo que la spec gobierne: H3 arreglado, H1 diferido con destino, H4 descartado con motivo y **H2 reparado después** —`tests/test_pdc_v2_brecha_daporto.php:62` ya resuelve la versión en vez de fijar la 292 |
 
 **Ya no hay ninguna spec pendiente.** Ese dato —«la única pendiente sin rastro»— era el más
 llamativo del corte anterior y caducó a los cuatro días.
@@ -247,8 +248,10 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 3 parciales que quedan: `cierre-prelanzamiento-pdc`, `despliegue-pdc-v2-produccion`
-(producción sin tocar, CP-F-E) y `reparto-trabajo-pendiente` (línea E sin cierre).
+Las 2 parciales que quedan: `despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E) y
+`reparto-trabajo-pendiente` (línea E sin cierre). **`cierre-prelanzamiento-pdc` salió de esta lista
+el 2026-08-25**, tras medir sus seis condiciones de hecho contra el código: era el inventario el que
+la contradecía, no su frontmatter.
 
 **Las tres de móvil, design system y programa se derogaron el 2026-08-25** tras medirlas frente por
 frente contra el código —con instrucción explícita de buscar lo que refutara la derogación, porque

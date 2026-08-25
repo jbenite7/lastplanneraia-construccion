@@ -44,6 +44,19 @@ no 16 de 103.**
 > 96 ya incluye `tests/test_password_reset_resultados.php`, creado ese mismo día. La cifra de
 > fallos sigue sin re-medirse sobre este universo — solo cambia cuántos archivos hay.
 
+> **Re-medido el 2026-08-25 sobre `410ac132`, árbol limpio, nivel `puro`: 26 pasan, 3 fallan de 29**
+> (más 4 clases PHPUnit en verde; 89 omitidos por nivel, 118 descubiertos). Los tres:
+> `test_legacy_csrf_guard` (rc=1, `FAIL token válido pasa el guard`) — llega el mismo día en que se
+> cerró el frente de CSRF de `LpsApiController`, así que **muy probablemente es trabajo en curso**,
+> no un rojo estable; y `test_pdc_v2_import_parser` + `test_pdc_v2_maestro_sinco_parser` (rc=255),
+> **ambientales por una causa que esta página no tenía**: `/tmp` está montado de **solo lectura**
+> dentro del contenedor, y los dos escriben ahí su fixture `.xlsx` vía PhpSpreadsheet. No es dato ni
+> código: es el montaje. Si los ve en rojo, no los diagnostique desde cero.
+>
+> **Tercera trampa de medición, cazada en esta misma pasada:** `… | tail -30; echo "RC=$?"` reporta
+> el rc de `tail`, no el de la suite — dio `RC=0` con tres rojos delante. Redirija a archivo y lea
+> `$?` en su propia línea, o en zsh use `$pipestatus[1]` (minúscula y 1-indexado).
+
 La cifra de arriba es de una rama, y sobre `main` la mayoría ya estaba resuelta —así que
 **la lista de 16 no sirve como línea base de `main`**. Los 4 de `main`: `test_pdc_phpstan_nivel6` (roto
 de verdad, arreglado en `88c37b8`), `test_pdc_v2_brecha_daporto` (obsoleto: fija la versión 292 de Da

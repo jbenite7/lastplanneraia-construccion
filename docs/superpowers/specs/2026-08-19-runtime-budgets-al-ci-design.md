@@ -67,10 +67,26 @@ necesita un carril de referencia que se sepa sano. **Es andamio declarado, no in
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado verificado — sigue vigente, y ahora se sabe exactamente por qué
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+Re-medido el 2026-08-25 contra `docs/design-system/closeout-evidence.json`. **`estado: vigente`
+sigue siendo correcto**, pero la nota anterior («objetivo 2 no») era demasiado vaga para actuar
+sobre ella, y **su goal `goals/runtime-budgets-al-ci/goal.md` ya declara `## Cierre`** — así que uno
+de los dos estaba mal. Medido: **el goal se adelantó, y le falta media condición**.
 
-**Qué falta:** idem: objetivo 1 cumplido, objetivo 2 (procedencia de corrida real) no, closeout-evidence.json:124-141
+**Lo que sí está cumplido.** Los nueve gates están en `passed` (medido con `json.load`, no de vista),
+y `runtime-budgets` **tiene la procedencia que se le exigía**: recibo real de la corrida de Actions
+[32787664690](https://github.com/jbenite7/lastplanneraia-construccion/actions/runs/32787664690),
+`exitCode: 0`, `sourceRef: 6f9f69f7`.
+
+**Lo que falta, y es la mitad literal de la condición de hecho.** La condición pide
+«`runtime-budgets` en `passed` **y `full-app-flow` con procedencia de una corrida real de Actions**».
+El gate `full-app-flow` está en `passed`, pero su evidencia dice **«Recibo regenerado localmente**
+(13 tests, 1.0m)», con `verifiedAt: 2026-08-14` y `sourceRef: 79debf28`. Un recibo local no es una
+corrida de Actions: es exactamente la distinción que esta spec existía para instaurar, así que
+darla por buena vaciaría su propio propósito.
+
+**Qué falta, en una línea:** bajar de una corrida verde de Actions el recibo de `full-app-flow` y
+fijar su procedencia en `closeout-evidence.json`, como ya se hizo con `runtime-budgets`.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

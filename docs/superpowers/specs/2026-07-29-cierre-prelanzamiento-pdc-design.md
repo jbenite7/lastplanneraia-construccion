@@ -107,10 +107,49 @@ test da hoy es un parche que le pide al humano acordarse.
 
 ---
 
-## Estado verificado — cerrado
+## Cierre — verificado condición por condición el 2026-08-25
 
-Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+`estado: cerrado` **es una afirmación deliberada y se sostiene**, pero no por la razón que decía la
+nota anterior. Esa nota (dos renglones: que spec:19 declaraba cerrado y que `hallazgos-piloto.md`
+existía) **no medía ninguna de las seis condiciones**. Esta sí las mide, una por una.
 
-**Evidencia:** spec:19 declara cerrado con 88c37b8, que esta en origin/main (git merge-base --is-ancestor: SI); goals/pdc-preparar-b1/hallazgos-piloto.md existe como el hueco reservado, cerrado vacio por decision de Felipe
+El cierre **no es contradictorio con el punto 6 incumplido**, y conviene entender por qué antes de
+leer la tabla: el punto 6 no se cumplió, no se dio por cumplido, y **no se va a cumplir nunca**.
+Felipe decidió cerrar el hueco vacío en vez de dejar la fila abierta esperando
+(`goals/pdc-preparar-b1/estado-olas.md:211`). Eso **retira el punto del alcance**; no lo declara
+satisfecho. La prohibición de la §Riesgos —«se declara así y no se da por cumplido»— se respetó al pie.
+
+| # | Condición | Veredicto | Evidencia verificada |
+|---|---|---|---|
+| 1 | Captura del panel de correspondencias | **cumplida** | `evidence/panel-correspondencias-daporto-2026-07-29.png` y `…-sandbox-2026-07-29.png`, ambas presentes. Bitácora en `evidence/cierre-prelanzamiento-2026-07-29.md` §Punto 1. Destapó un defecto real de CSS (H3) que el e2e verde no veía |
+| 2 | Paquetes sin `duracion_ref` medidos y declarados en pantalla | **cumplida, corrigiendo la premisa** | No eran 25 sino **42**; y un paquete sin `duracion_ref` **sí** recibe fechas por la mediana de su tipo (`PlanFechasService`, `duracion_provisional = 1`). El aviso vive en código: `pdc-app/src/lib/vencimientos.ts:65`, con tres casos en `vencimientos.test.ts:47,53,59`. Medición en `evidence/paquetes-sin-duracion-ref.md` |
+| 3 | Suite PHP completa, cada rojo clasificado | **cumplida en su fecha** | 4 rojos de 108 sobre `main@1a75b19`, clasificados uno a uno en (a) roto/(b) obsoleto/(c) ambiental. Cero rojos sin explicación |
+| 4 | Los e2e dos veces dan el mismo número | **cumplida en el fondo, con otro instrumento** | El arreglo estructural está en `tests/browser/support/pdc-sandbox.mjs:132` (`test.afterAll`). Se midió **residuo del sandbox** (0 en dos pasadas), **no la brecha del motor** que la condición nombraba, porque el trinquete estaba roto. La bitácora lo declara sin adornos: «que nadie lea esto como *la brecha se midió*» |
+| 5 | Un rol permitido y uno denegado contra el maestro | **cumplida, y más de lo pedido** | `tests/test_pdc_v2_maestro_gobernado.php` existe y es ejecutable: dos capacidades en vez de una, permisos leídos de BD. Corrigió una afirmación falsa del comité: no es «solo un administrador», son **tres** roles (A, D, OT) |
+| 6 | Hallazgos del piloto con decisión | **NO cumplida — sin contenido, y así declarado** | El piloto no reportó hallazgos. Los cuatro de `hallazgos-piloto.md` son observaciones propias de la sesión, con decisión cada una (H3 arreglado · H1 y H2 diferidos · H4 descartado con motivo). Cerrado vacío por decisión de Felipe |
+
+### Por qué no queda trabajo vivo que esta spec gobierne
+
+Los cuatro hallazgos tienen destino, y el que seguía siendo deuda **ya se saldó**:
+
+- **H3** (textos pegados en el panel) — arreglado en la propia ola.
+- **H2** (el trinquete de la brecha sin punto de referencia) — **reparado después**. Verificado hoy:
+  `tests/test_pdc_v2_brecha_daporto.php:62` ya no fija la versión 292, la resuelve el servicio
+  (`$VERSION = null`) y salta limpio si el proyecto no está sembrado. Dejó de ser deuda.
+- **H1** (dos e2e que alternan según el dato de la obra) — diferido a la Ola 2 con destino escrito.
+- **H4** (tres radios fuera de escala en `/pdc`) — descartado con motivo; esa pantalla se retiró el
+  2026-08-04.
+
+### Lo que esta verificación NO cubre, dicho para que nadie lo lea de más
+
+- **No se re-corrieron los e2e dos veces hoy.** Escriben en la base de desarrollo compartida y había
+  otra sesión viva en el repo; la regla 6 de `docs/coordinacion-sesiones.md` exige coordinar esas
+  escrituras. El punto 4 se dio por verificado sobre el código y la evidencia A/B existente, no sobre
+  una corrida nueva.
+- **El punto 3 se verificó en su fecha, no hoy.** La suite de hoy es otra: sobre `410ac132`, nivel
+  `puro`, da **26 pasan / 3 fallan de 29** (`test_legacy_csrf_guard` rc=1, más
+  `test_pdc_v2_import_parser` y `test_pdc_v2_maestro_sinco_parser` rc=255 por `/tmp` de solo lectura
+  en el contenedor). **Ninguno de los tres es del PDC-cierre**, y el de CSRF es de otro frente. Exigirle
+  a esta spec que mantenga clasificados los rojos de siempre sería una condición imposible de cerrar.
 
 Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

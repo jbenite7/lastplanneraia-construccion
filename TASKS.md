@@ -240,6 +240,24 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
+  de dos minutos que parecía.** Medido al pasar: los nueve gates de `closeout-evidence.json` están
+  en `passed`, y `runtime-budgets` **sí** tiene procedencia de corrida real de Actions (32787664690).
+  Pero la condición de hecho exige **dos** gates con esa procedencia, y `full-app-flow` lleva recibo
+  **«regenerado localmente»** (`verifiedAt: 2026-08-14`, `sourceRef: 79debf28`). Un recibo local no
+  es una corrida de Actions — es exactamente la distinción que esa spec existe para instaurar, así
+  que darla por buena vaciaría su propósito. **Por eso su spec sigue `vigente` mientras su goal ya
+  declara `## Cierre`: el goal se adelantó.** Qué falta, en una línea: bajar de una corrida verde de
+  Actions el recibo de `full-app-flow` y fijar su procedencia, igual que se hizo con el otro.
+
+- [ ] 2026-08-25 — **Aviso, no encargo: `test_legacy_csrf_guard.php` está rojo en `main`.** Medido
+  sobre `410ac132` con árbol limpio, nivel `puro`: **26 pasan, 3 fallan de 29**. El rojo es
+  `FAIL token válido pasa el guard` (rc=1) — y llega el mismo día en que se cerró el frente de CSRF
+  de `LpsApiController` (ver «Hechas»), así que **con toda probabilidad es trabajo en curso de esa
+  sesión y no una regresión suelta**. Se anota sin tocarlo, para que quien lo vea no lo diagnostique
+  desde cero. Los otros dos (`test_pdc_v2_import_parser`, `test_pdc_v2_maestro_sinco_parser`, rc=255)
+  son **ambientales**: `/tmp` de solo lectura dentro del contenedor, no código.
+
 - [x] 2026-08-24 — **Frente C de SiteGround · ejecutado y DESCARTADO por su propia verificación.**
   Autorizado por Felipe. `fetch --depth=1` + `reflog expire` + `gc --prune=now` sobre `prueba-lps`,
   los tres en `rc=0`, y entonces las comprobaciones lo rechazaron: **`git pull --ff-only` da
@@ -461,6 +479,20 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-25 — **La spec `cierre-prelanzamiento-pdc` se midió condición por condición: estaba
+  bien marcada, y el que se contradecía era el inventario.** Encargo de verificar una contradicción
+  aparente (`estado: cerrado` sin sección de cierre, mientras `IMPLEMENTATION_PLAN_INVENTORY.md` la
+  daba por parcial). Las seis condiciones de hecho, contra el código y con evidencia citada: **1, 2,
+  3 y 5 cumplidas**; **la 4 cumplida en el fondo pero con otro instrumento** —se midió residuo del
+  sandbox, no la brecha del motor, porque el trinquete estaba roto, y la bitácora ya lo declaraba
+  sin adornos—; **la 6 no cumplida y así dicho**, que es justo lo que la §Riesgos de la spec exige.
+  **El matiz que resuelve la aparente contradicción:** Felipe cerró el hueco del piloto vacío
+  (`estado-olas.md:211`), lo que **retira el punto 6 del alcance en vez de darlo por satisfecho** —
+  nadie fabricó evidencia. No queda trabajo vivo que la spec gobierne: H3 arreglado, H1 diferido con
+  destino, H4 descartado con motivo y **H2 reparado después** (verificado hoy:
+  `tests/test_pdc_v2_brecha_daporto.php:62` ya resuelve la versión en vez de fijar la 292 muerta).
+  Escrito su `## Cierre` real, corregido el inventario a **53 ejecutadas · 2 parciales**.
 
 - [x] 2026-08-25 — **`LpsApiController` ya valida CSRF en sus tres mutaciones.** Encargo de
   Felipe («arranca el hallazgo del CSRF»), directo tras el cierre de la biblia T4/T5. Mismo
