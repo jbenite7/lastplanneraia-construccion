@@ -112,10 +112,13 @@ estado por defecto mientras Felipe no reparta.
 - [ ] **DS-F1, lo que queda del contrato** — la escala de estado cerró (F1a). Faltan tokens,
   primitivas `aia-*`, escala de severidad y escala de z-index. Arranca con brainstorming: el
   contrato es decisión de negocio. Entrada lista: los 68 hallazgos de DS-F0.
-- [ ] **Cerrar antes de integrar: `linea-base-contractual`.** Entró en el `main` local el
-  2026-08-19 sin haber declarado su condición de hecho, y **Felipe ordenó sacarlo: «que se cierre
-  primero»**. Su trabajo está intacto en `claude/elated-golick-e27253`, 10 cambios. Lo que le falta
-  no es código: es la sección `## Cierre` con la verificación que demuestre que terminó.
+- [x] 2026-08-24 — **`linea-base-contractual` cerrada, integrada por otra vía.** Ya no espera su
+  `## Cierre` propio: Felipe ordenó mergear todas las ramas en el desagüe de P1, así que se integró
+  junto con las otras doce en vez de declararse y publicarse aparte. Sus dos hallazgos, relatados
+  desde el 19 de agosto y sin comprobar por nadie, se verificaron el mismo día: la migración no
+  movía ninguna fila porque los 30 proyectos sin línea base no tienen ni una de cronograma —hueco
+  de datos, no defecto— y `test_bi_programa_general_chart_values.php` afirmaba un contrato ya
+  derogado. Detalle: [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 §Tarea 5]].
 
   **`semanal-fondo-por-matiz` ya cerró y está publicado** (`2fc5998e`, 2026-08-19): las dos fases
   con cinco fondos distintos, filete solo en `urgent` y `attention`, capturas miradas a 1180×820
