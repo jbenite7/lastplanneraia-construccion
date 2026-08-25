@@ -48,3 +48,39 @@ Dado el alto grado de acoplamiento de las vistas legadas, la verificación se ha
    - Vistas: Programación Semanal y sus submódulos inyectables (CNP, CNC, CIC).
 4. **Fase 4: Operaciones**
    - Vistas: Profesionales, Subcontratistas, Indicadores y Control de Cambios.
+
+## Cierre
+
+**DEROGADA el 2026-08-24, en el mismo acto que su spec hermana**
+[[docs/superpowers/specs/2026-07-31-ui-audit-and-repair-plan-design]]. Superada como vehículo, no
+ejecutada.
+
+El veredicto es del **2026-08-20** ([[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]]
+§2): «los dos planes viejos quedan superados como vehículo». La evidencia completa —qué sustituye a
+cada pieza, y las mediciones de `/indicadores` y CNP/CNC/CIC re-verificadas hoy sobre el árbol
+actual— está escrita **una sola vez**, en el `## Cierre` de la spec hermana, para no duplicarla.
+
+### Lo propio de esta spec
+
+Las dos se solapaban casi por completo (mismo alcance, mismas superficies, un día de diferencia), y
+esta añadía sobre todo el **método**: refactorización vertical pantalla por pantalla, con reglas de
+sustitución Bootstrap → `aia-*` y de endurecimiento (limpieza de DOM, de estilos inline y de código
+zombi).
+
+Ese método **no se pierde al derogar la spec**: es lo que hace la skill `impeccable` (`audit`,
+`harden`, `polish`), que sigue disponible y es la que se invocó el 2026-08-20 para emitir el
+veredicto. Lo que se retira es el compromiso de aplicarlo *desde este documento*, sin dueño y con un
+alcance —«Audit Health Score de 10/10» sobre todo el frontend legado— que DS-F0 sustituyó por un
+censo con severidad declarada.
+
+### El error de diagnóstico que las dos compartían
+
+Ambas listaban `indicadores` como superficie a refactorizar (§Fase 4 aquí, §Fase 2 allá). Medido:
+`/indicadores` es un shell `aia-*` con un iframe de Power BI dentro — **no hay tarjetas KPI en el
+repo que migrar**. Dos planes prometieron el mismo trabajo inexistente durante 23 días, y ninguno lo
+detectó porque ninguno llegó a ejecutarse.
+
+Es un caso más de [[memoria/trampas/el-trabajo-hecho-no-vuelve-solo-al-documento]] en su variante
+inversa: aquí el documento no arrastraba trabajo ya hecho, sino trabajo que **nunca tuvo dónde
+hacerse**, y sobrevivió por lo mismo — nada confronta un plan con el estado real hasta que alguien
+lo mide.

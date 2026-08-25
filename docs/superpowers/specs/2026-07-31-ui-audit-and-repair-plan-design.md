@@ -130,3 +130,53 @@ graph TD
 - **Sin placeholders:** Todos los módulos, rutas y parámetros están explícitamente detallados.
 - **Consistencia interna:** Cumple estrictamente el contrato de `AGENTS.md` (Dark Mode, 1180×820, sin mobile/tablet/linen).
 - **Scope acotado:** Plan por fases ejecutable sin cambios destructivos ni refactorizaciones innecesarias en el backend.
+
+## Cierre
+
+**DEROGADA el 2026-08-24. Superada como vehículo, no ejecutada** — y la distinción importa: marcarla
+«ejecutada» sería afirmar que su trabajo se hizo, y no se hizo por esta vía.
+
+El veredicto ya estaba tomado y medido desde el **2026-08-20**, en
+[[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]] §2, que lo dice con estas
+palabras: «**los dos planes viejos quedan superados como vehículo** — la migración de CNP/CNC/CIC
+entra al programa design system como entrada de DS-F2 con dueño, no se reabre un plan archivado sin
+owner». Este `## Cierre` solo lo anota donde se lee.
+
+### Qué la sustituye, pieza por pieza
+
+| Lo que esta spec proponía | Qué lo sustituye |
+|---|---|
+| Inventario y scoring de 18+ superficies (§2) | **DS-F0 · Auditoría total** (`567e566e`, 2026-08-19): 68 hallazgos clasificados sobre un censo de **257 rutas**, en `docs/design-system/auditoria/`. Instrumento más ancho y con severidad declarada |
+| Plan de reparación por fases (§3) | **DS-F2 · Reimplementación por adaptadores**, con CNP/CNC/CIC como entrada propia y con dueño (anotado en [[TASKS]] el 2026-08-20) |
+| Redefinir tokens y criterios visuales | **DS-F1 · Redefinición del contrato** |
+
+### Las dos superficies que motivaban reabrirla, medidas hoy
+
+La auditoría del 2026-08-20 recomendaba «`impeccable:audit` puntual sobre esas superficies antes de
+reabrir». Ese audit **ya se hizo** ese mismo día, y su veredicto sigue vigente — re-verificado en
+esta sesión sobre el árbol actual, no leído del informe:
+
+- **`/indicadores` — migrada, sin superficie propia que migrar.**
+  `views/indicadores/indicadores.view.php:14` usa `aia-shell aia-shell--sidebar`, y su contenido es
+  un iframe de Power BI (`:147`). El hallazgo DS-F0 correspondiente es **F0-082**, y su texto es
+  revelador: «el "sin deuda" de `/indicadores` no significa lo mismo que en los demás módulos».
+  La brecha que esta spec le atribuía —«tarjetas KPI con escalas de texto heterogéneas y sombras
+  cálidas», 7/10— **no tiene dónde aplicarse**: esas tarjetas las pinta Power BI, no el repo.
+- **CNP · CNC · CIC — legacy real, y el culpable es el JS, no el PHP.**
+  `public/js/modules/programacion_semanal/legacyCards.js` da hoy **0** ocurrencias de `aia-`, **10**
+  de `ps-legacy-card` y **2** de `btn btn-`. Intacto desde el veredicto (`git log --since=2026-08-20`
+  sobre ese archivo: vacío). Hallazgo DS-F0 **F0-022**, mayor: las tres pantallas están declaradas
+  en el manifiesto y **ningún escenario las cubre**.
+
+Ese matiz es el que condena a esta spec como vehículo: proponía reemplazar clases en las **vistas
+PHP** (§3, Fase 1), y la deuda real vive en un módulo **JavaScript** que ninguna de sus fases
+nombra. Habría cerrado sin arreglar nada.
+
+### Qué NO se pierde al derogarla
+
+Nada de la deuda. `F0-022` sigue vivo y con dueño en DS-F2; `F0-082` está clasificado
+`sin-problema` con su porqué escrito. Lo que se retira es **el plan como vehículo**, que es
+justamente lo que no tenía dueño y por eso llevaba 24 días sin cerrar.
+
+Su spec hermana [[docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design]] se deroga por lo
+mismo y en el mismo acto.

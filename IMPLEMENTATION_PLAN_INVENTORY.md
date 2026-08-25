@@ -198,11 +198,17 @@ pendiente con el plan que lo cierra— está en
 **Corte del 2026-08-20:** 44 ejecutadas · 16 parciales · 1 pendiente · 0 derogadas · 12 cerradas
 (archivadas).
 
-**Corte del 2026-08-24:** **51 ejecutadas · 10 parciales · 0 pendientes · 0 derogadas · 12
-cerradas.** Las mismas 61 specs, siete movidas de casilla en tres pasadas del mismo día; ninguna se
-archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
+**Corte del 2026-08-24:** **51 ejecutadas · 8 parciales · 0 pendientes · 2 derogadas · 12
+cerradas.** Las mismas 61 specs, nueve movidas de casilla en cuatro pasadas del mismo día; ninguna
+se archivó, así que el bloque de cerradas no cambia. Esto es un **delta verificado, no una
 re-auditoría**: las parciales que siguen así conservan el veredicto del 20 de agosto, comprobado
 ítem por ítem contra `goals/*/goal.md`, `TASKS.md` y los cierres de P1 y P2.
+
+**Estrena la casilla `derogada`, que llevaba en cero desde que existe el corte.** Se usa cuando una
+spec **no se ejecutó y ya no es el vehículo** de su propio trabajo: la deuda sigue viva, pero con
+otro dueño. No es lo mismo que «ejecutada» (el trabajo se hizo) ni que «parcial» (falta hacerlo por
+esta vía). Distinguirlas importa: una spec derogada que se marcara parcial seguiría pareciendo una
+tarea de alguien.
 
 Las tres primeras, con la evidencia que lo prueba:
 
@@ -212,16 +218,17 @@ Las tres primeras, con la evidencia que lo prueba:
 | `runtime-budgets-al-ci` | parcial (`initializationMs` rojo, D-11) | ejecutada | `docs/design-system/closeout-evidence.json` pasa de 8/9 con un `blocked` a **9/9 `passed`**, con procedencia de corrida real. Cerrada vía P2 |
 | `estados-severidad-contrato` | parcial (sin publicar; chocaba con `ds-f1a-estado`) | ejecutada | La colisión de 3 vs 4 niveles la resolvió Felipe a favor del contrato de 3 niveles; el frente se adaptó y publicó (`8418449a`), verificado en pantalla |
 
-Cuatro más, movidas en la misma sesión de cierre de specs huérfanas del 20 de agosto (las tres
-primeras eran las decisiones de bajo esfuerzo que ningún plan P3-P6 recogía; la cuarta,
-`plan-cierre-hasta-produccion`, se cerró después a petición de Felipe tras revisar la matriz de
-priorización de esta misma sesión):
+Seis más, movidas en la misma sesión. Las tres primeras eran las decisiones de bajo esfuerzo que
+ningún plan P3-P6 recogía; las tres últimas se cerraron después, a petición de Felipe, siguiendo el
+orden de la matriz de priorización de esa misma sesión:
 
 | Spec | Antes | Ahora | Evidencia |
 |---|---|---|---|
 | `stack-plan-de-compras` | parcial (brecha solo documental) | ejecutada | La brecha era por qué el módulo se unificó en `lps-aia` en vez del repo separado que la spec proponía. Ya estaba respondido en [[docs/superpowers/specs/2026-07-29-unificacion-repos-design]] (2026-07-29); solo faltaba citarlo en el `## Cierre` de la spec |
 | `vocabulario-estados-cascada` | parcial (unificación en replanteo) | ejecutada | El trabajo mecánico (35→29 términos en Intermedia) está en el código, verificado línea por línea en `hot.js`, la vista y el test. Las cuatro decisiones encoladas (D-VOC-1..4) están resueltas desde el 2026-08-11 en `docs/decisiones-pendientes.md`, la cola canónica — el archivo `decisiones/vocabulario-estados-cascada.md` que sugería "en replanteo" es una copia del 2026-08-18 que nunca se sincronizó con ese cierre. Pendiente real fuera de este frente: ejecutar D-VOC-4 (separar `Capítulo`) en frente propio |
 | `wiki-v2-visual` | parcial (plugins por decisión) | ejecutada | Los plugins de comunidad se instalaron y verificaron en pantalla el 2026-08-20 (`2888ab77`), ya en `TASKS.md`; la pregunta que dejaba la spec abierta ya no aplica. Grupos de color del grafo configurados y verificados en pantalla el mismo 2026-08-24, con Felipe ratificando los 3 grupos como definitivos — sin ningún pendiente real |
+| `ui-audit-and-repair-plan` | parcial (sin cierre formal) | **derogada** | Superada como vehículo por decisión medida del 2026-08-20 ([[docs/superpowers/reports/2026-08-20-cierre-pendientes-auditoria]] §2): su inventario de 18+ superficies lo sustituye DS-F0 (68 hallazgos sobre 257 rutas) y su plan de reparación, DS-F2 con dueño. Re-medido hoy: `/indicadores` es shell `aia-*` + iframe de Power BI, **sin tarjetas KPI que migrar** (F0-082); CNP/CNC/CIC son legacy real en `legacyCards.js` (0 clases `aia-*`, intacto desde el veredicto, F0-022 mayor). La spec proponía tocar vistas PHP y la deuda vive en un módulo JS que ninguna de sus fases nombra |
+| `ui-audit-core-lps-ops` | parcial (sin cierre formal) | **derogada** | Mismo veredicto y mismo acto: se solapaba casi por completo con la anterior (un día de diferencia, mismas superficies). Su aporte propio era el método de refactorización vertical, que no se pierde — es la skill `impeccable`, la misma que emitió el veredicto. Las dos prometían refactorizar tarjetas KPI de `/indicadores` que no existen en el repo |
 | `plan-cierre-hasta-produccion` | parcial (F-AB pausado, F-E) | ejecutada | F-AB cerrada vía P2 (9/9 gates `passed`); F-C (`D-CEF-1`) ya estaba ejecutada desde el 2026-08-12, doce días antes de que el plan P5 la reasignara sin verificar — confirmado en el esquema, el código y el test. F-D retirada desde el 2026-08-12. Solo F-E (despliegue) sigue sin ejecutar, por diseño: necesita autorización explícita de Felipe, siempre, y se rastrea en `despliegue-pdc-v2-produccion` |
 
 **Ya no hay ninguna spec pendiente.** Ese dato —«la única pendiente sin rastro»— era el más
@@ -232,16 +239,21 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 10 parciales que quedan: `cierre-prelanzamiento-pdc`,
-`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `ui-audit-and-repair-plan` y
-`ui-audit-core-lps-ops` (sin cierre formal; `/indicadores` sin evidencia), `cierre-dark-mode`
+Las 8 parciales que quedan: `cierre-prelanzamiento-pdc`,
+`despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E), `cierre-dark-mode`
 (fase 6 sustituida por DS-F0..F3), `reparto-trabajo-pendiente` (línea E sin cierre),
 `f2a-piloto-movil-programacion` (manifiestos sin escenario móvil), `reapertura-movil-y-tema-claro`
 (F2b/F3/F4), `programa-cierre-pendientes` (frentes 3–5) y `espacio-cuenta-siteground` (frentes C/D
 de servidor).
 
+**Aviso sobre `cierre-dark-mode`:** su nota ya dice «sustituida por DS-F0..F3», que es exactamente
+el motivo por el que las dos `ui-audit` pasaron a derogadas. Se deja parcial a propósito **en esta
+pasada** —no se midió— pero es la primera candidata a revisar: si su situación es la misma, la
+casilla correcta es derogada, no parcial.
+
 `stack-plan-de-compras`, `vocabulario-estados-cascada`, `wiki-v2-visual` y
-`plan-cierre-hasta-produccion` se movieron a ejecutada en esta misma sesión (ver tablas arriba);
+`plan-cierre-hasta-produccion` se movieron a ejecutada en esta misma sesión, y las dos `ui-audit`
+a derogada (ver tablas arriba);
 `estados-severidad-contrato` y `runtime-budgets-al-ci` ya se habían movido en la primera tabla del
 corte y quedaron fuera de esta lista por error hasta
 ahora — corregido aquí.

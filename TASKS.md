@@ -436,6 +436,17 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
 
 ## Hechas (últimas 10)
 
+- [x] 2026-08-24 — **Las dos specs de auditoría de UI, DEROGADAS** (no ejecutadas — el trabajo no se
+  hizo por esa vía, se superó por otra). `ui-audit-and-repair-plan` (2026-07-31) y
+  `ui-audit-core-lps-ops` (2026-08-01) se solapaban casi por completo y su veredicto ya estaba
+  medido desde el 2026-08-20: «los dos planes viejos quedan superados como vehículo». Su inventario
+  de 18+ superficies lo sustituye DS-F0 (68 hallazgos sobre 257 rutas); su plan de reparación,
+  DS-F2 con dueño. Re-medido hoy sobre el árbol, no leído del informe: `/indicadores` es shell
+  `aia-*` con iframe de Power BI — **las tarjetas KPI que ambas prometían refactorizar no existen en
+  el repo** (F0-082); CNP/CNC/CIC siguen legacy real en `legacyCards.js` (0 clases `aia-*`, 10
+  `ps-legacy-card`, intacto desde el veredicto), con F0-022 mayor y dueño en DS-F2. El error de
+  fondo que las condenaba: proponían tocar vistas PHP y la deuda vive en un módulo JS que ninguna de
+  sus fases nombra. **Estrena la casilla `derogada` del inventario**, que llevaba en cero.
 - [x] 2026-08-24 — **`plan-cierre-hasta-produccion` cerrada.** Verificado sobre el código, no sobre
   el plan `2026-08-24-p5-cierre-hasta-produccion.md` que la daba por pendiente: CP-F-C (superficie
   obligatoria de estados) ya estaba ejecutada desde el 2026-08-12 (D-CEF-1) — esquema exige
