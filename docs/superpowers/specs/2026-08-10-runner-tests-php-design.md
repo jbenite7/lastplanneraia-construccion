@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-10
 areas: [qa]
 fuente: docs/superpowers/specs/2026-08-10-runner-tests-php-design.md
@@ -177,3 +177,13 @@ haya que recordarlo de memoria.
 - Este spec: `docs/superpowers/specs/2026-08-10-runner-tests-php-design.md`
 - Mapa del área: `memoria/mapas/qa-y-gates.md`
 - Trampas al medir: `memoria/trampas/suite-php-rojos-preexistentes.md`
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/run-php-tests.php existe y es lo que llama el CI, como describe CLAUDE.md
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

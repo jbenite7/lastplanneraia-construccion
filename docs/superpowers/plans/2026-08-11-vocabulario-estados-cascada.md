@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-vocabulario-estados-cascada.md
@@ -91,3 +91,13 @@ Recuento final medido, entrega a la coordinadora con sha, visto, publicación en
 - No toca `docs/design-system/state-semantics.json`.
 - No toca la columna persistida `Estado`.
 - No añade un mapa de equivalencias: sería el cuarto vocabulario.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** programacion_intermedia/hot.js:734-744 (stateLabels) tiene las seis cadenas del contrato, ya no las variantes viejas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-30
 areas: [design-system]
 fuente: docs/superpowers/specs/2026-07-30-shell-layout-design-system-design.md
@@ -79,3 +79,13 @@ Este documento unifica en un solo contrato de diseño y gobernanza todas las ini
 - Los 11 módulos renderizan la sidebar canónica correctamente en viewport 1180×820 dark.
 - Cero archivos cargando CSS no declarado o no utilizado.
 - Tests de regresión pasando sin errores de consola.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** goals/shell-layout-design-system/goal.md cierra el 2026-07-31 con las cuatro iniciativas resueltas, cada una con goal dedicado; el plan hermano esta en docs/archive/superpowers/plans/. Artefactos vivos: foundation-shell.json, shell_sidebar.php, navigation.css
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

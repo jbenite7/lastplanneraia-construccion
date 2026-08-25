@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-flujo-caja-desembolsos-design.md
@@ -184,3 +184,13 @@ Pestaña «Flujo de caja» de Seguimiento, en Da Porto, a 1180×820 y en dark:
 **Límite honesto:** el camino `provisional` no se pudo recorrer en pantalla con datos reales porque Da
 Porto no tiene ningún paquete sin frente. Está cubierto por el test PHP (un destino de $7.000 sin
 frente) y por Vitest (el texto del aviso y su concordancia en singular), no por observación.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** src/Services/Pdc/FlujoCajaService.php y tests/test_pdc_v2_flujo_caja.php (31 asserts)
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

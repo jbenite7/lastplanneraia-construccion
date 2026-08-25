@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [arquitectura]
 tags: [generado]
@@ -125,3 +125,13 @@ borra nada que no esté cubierto.**
 - Automatizar la regeneración con hooks o CI: el script se corre a mano.
 - Documentar `admin/` al mismo nivel de detalle que la aplicación principal: es un mini-app
   arquitectónicamente aislado y basta con una página que lo explique como tal.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** memoria/arquitectura/ con 22 paginas de modulo; scripts/wiki-arquitectura.mjs existe
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

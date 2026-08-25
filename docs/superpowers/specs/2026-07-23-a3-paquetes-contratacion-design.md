@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-23
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-23-a3-paquetes-contratacion-design.md
@@ -129,3 +129,13 @@ Bloqueo real de "suministro+instalación" (contratar a todo costo bloquea los ot
 | Escape de comodines LIKE en similitud | `addcslashes($t, '\\%_')` (corrige el follow-up de A2) |
 | `omitido` mal usado como "papelera" | La cobertura distingue asignados de omitidos; el resumen muestra ambos por separado |
 | Contaminación test PHP ↔ e2e por catálogo global | Cleanup por marca en ambos, secuencia alternada (lección A2); el seed usa marca `seed-tomas` disjunta de `test-a3` |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PaquetesService.php, PlanComprasPaquetesController.php, pdc-app/src/pages/PaquetesContratacion.tsx
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-03-saneamiento-deudas-usabilidad.md
@@ -411,3 +411,13 @@ Las tres deudas restantes salieron del alcance en el spec, cada una con su acci�
 - **El CSS `ops-state-chip.css` que falta** — es del goal `pg-chip-de-estado`, llegó incompleto con el merge de `main`. Chip creado. No lo toques aquí: crear una hoja del design system sin las decisiones visuales de ese goal es lo que prohíbe `docs/design-system/`.
 - **La FK que impide cerrar una crisis** — exige decidir a quién representa «quién cerró la crisis» y puede requerir migración de esquema, con las reglas duras de `AGENTS.md`. Chip creado, con su propio ciclo spec → plan.
 - **Las dos políticas de unidades en BI** (`valueWithUnit` con lista negra, `renderPDC` con lista blanca) — unificarlas cambia lo que se ve, y los cambios visuales exigen aprobación explícita. Queda documentado como decisión de producto.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** bi-kpi-copy.spec.mjs y escalamientos-sin-errores.spec.mjs usan BASE_URL; cero localhost:8081/8091 fijos
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

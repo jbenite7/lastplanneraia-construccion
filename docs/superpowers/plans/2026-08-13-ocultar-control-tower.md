@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-13
 areas: [rbac, bi]
 fuente: docs/superpowers/plans/2026-08-13-ocultar-control-tower.md
@@ -599,3 +599,13 @@ git push origin main
 ```
 
 Confirmar con `git status -sb` que no queda `ahead` ni `behind`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** RbacCatalog.php:13,120 PERM_INTERNAL_BI_PREVIEW; BiPreviewAccessPolicy.php; gates en BiViewController.php:54 y BiControlTowerApiController.php:34; BiAccessComponent.php:92-118
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-21
 areas: [design-system, lps]
 fuente: docs/superpowers/plans/2026-08-21-habilitacion-en-una-columna.md
@@ -1261,3 +1261,13 @@ activa cambió en otra sesión (`hot.js:3214`), pero nada vigila la misma celda.
 ni lo arregla.
 
 **Programa General** y el rediseño del modal de Restricción Compartida.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** readiness-cell.js, readiness-popover.js, readiness-squares.css; columna __habilitacion en programacion_intermedia/hot.js
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

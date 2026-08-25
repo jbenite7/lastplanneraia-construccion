@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-unificacion-repos-design.md
@@ -108,3 +108,13 @@ es `git pull`.
 - **El bundle podría no salir idéntico** por diferencias de entorno (versión de Node, orden de
   módulos). Si pasa, se investiga la causa antes de continuar: un bundle distinto sin explicación es
   un cambio de comportamiento no auditado.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** pdc-app/ en la raiz con package.json y vite.config.ts; public/pdc-app/ como destino del build; docs/pdc-v2.md referenciado desde CLAUDE.md
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

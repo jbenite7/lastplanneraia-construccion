@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-20-deuda-ci-frente-2.md
@@ -361,3 +361,13 @@ vigilar la corrida de `main` con el mismo criterio, y anotar el SHA publicado en
   de paso «Build the PHP test runtime» (se conserva) y «Build the isolated app image» (nuevo)
   son los que Task 4 mide; la línea base 81 s/93 s aparece una vez en Global Constraints y
   las demás menciones la referencian.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** ci.yml:104-113 y :192-201 buildx con cache type=gha; docker-compose.yml:7 image lps-aia-app-ci:local
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

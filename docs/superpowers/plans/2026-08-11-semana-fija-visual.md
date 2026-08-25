@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-semana-fija-visual.md
@@ -75,3 +75,13 @@ el que había.
 La prueba deja de fallar por una razón que no mide nada; lo que quede del diff está explicado o
 encolado; y si se regeneró, hay antes/después aprobado y mutación ejecutada. El gate `runtime`
 sigue `blocked` por otras causas y **no se pretende ponerlo verde**.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** programacion-intermedia.visual.mjs:92,95-99 fija la semana por POST /context/week y comprueba la respuesta
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

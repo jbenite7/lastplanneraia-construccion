@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-bug-coloreado-severidad.md
@@ -45,3 +45,13 @@ la evidencia al lado y entregarlo a la coordinadora.
   inventariando. Si la causa es obvia y trivial, se anota como tal y se deja escrito para DS-F2.
 - **Juzgar el color por una captura reescalada** → medir contra el valor computado y a tamaño real;
   ya pasó en `severidad-runtime`, donde una captura fuera de escala habría dado el veredicto contrario.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** goals/bug-coloreado-severidad/diagnostico.md:11-40 responde las tres preguntas; cero cambios en producto, que era la condicion
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

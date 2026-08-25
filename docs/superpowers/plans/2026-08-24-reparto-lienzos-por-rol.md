@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [rbac]
 fuente: docs/superpowers/plans/2026-08-24-reparto-lienzos-por-rol.md
@@ -655,3 +655,13 @@ git commit -m "feat(bi): Responsables filtra al Residente por sus propios compro
 - Verificado en el navegador un rol permitido y uno denegado para el acceso a la Torre (Task 1) y
   para el filtro de Responsables (Task 4).
 - `docker compose exec app php scripts/run-php-tests.php --nivel=puro` y `--nivel=db` en verde.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** RbacManager.php:33 concede PERM_INTERNAL_BI_PREVIEW a A/D/R; BiAccessComponent.php:45 defaultModuleForRole() y :103-108 con BiProjectScope
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

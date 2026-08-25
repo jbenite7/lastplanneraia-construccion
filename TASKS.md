@@ -60,19 +60,6 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
-- [ ] **Frente: el estado real de los 127 planes y specs** — arrancado el 2026-08-25 por encargo
-  de Felipe, **en sesión propia**. Spec y plan escritos y publicados:
-  [[docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design|spec]] ·
-  [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs|plan]].
-  Recontado con precisión: son **127**, no 120 (58 specs + 69 planes). El reparto de señales está
-  medido: **33** cruzan con un `goals/<slug>/goal.md` cerrado, **2** con uno abierto y **92 no
-  tienen señal barata** — esos exigen ir al código uno por uno, y son la razón de que el frente
-  no cupiera como remate del anterior.
-  **La restricción que gobierna el plan:** una señal automática decide *a quién mirar*, nunca
-  *qué escribir*. Automatizar el sellado repetiría el defecto que se acaba de corregir en
-  [[el-tipo-de-una-fuente-lo-dedujo-un-script]], y con `cerrado` sería peor: es una afirmación
-  fuerte, no un cajón de sastre. La Tarea 0 valida la señal en 5 casos **antes** de confiarle 33.
-
 - [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
   [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**CERRADO** el
   2026-08-24, con su `## Cierre` escrito) ·
@@ -468,6 +455,18 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-25 — **El estado real de los 127 planes y specs.** Encargo de Felipe en sesión
+  propia. Los 127 verificados contra el código: **105 `cerrado` · 19 `vigente` · 3 `derogada`**,
+  cada uno con su evidencia o su motivo escrito dentro del propio documento.
+  **El hallazgo que cambió el frente:** la Tarea 0 validó la señal del goal en 5 casos y **falló
+  uno** — `biblia-t5-lectura` tenía el goal cerrado como HECHO y su Task 3 entera sin ejecutar
+  (`e2e/tests/biblia/lectura.spec.mjs` no existe), sin tomar siquiera la salida que el propio plan
+  autorizaba. La señal se degradó a indicio sin ablandarla y los 33 que cubría pasaron al lote
+  manual: de 92 a 127. El defecto resultó sistémico — **`biblia-t3`, `t4` y `t5` lo tienen los
+  tres**. Contraste que quedó escrito: `control-tower-f0` también dejó una Task sin ejecutar y sí
+  cierra, porque **dejó constancia escrita de por qué**. Lint 98/98 sin hallazgos.
+  Ver [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
 
 - [x] 2026-08-25 — **Depuración de `docs/`: el tipado decía lo que no era.** Encargo de Felipe
   («que la wiki quede sin ruido y refleje la realidad de hoy»), alcance `memoria/` + `docs/`.

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-06-cierre-hallazgos-seguridad-biblia-design.md
@@ -106,3 +106,13 @@ permitido y uno denegado por cambio de RBAC/rutas.
 Los cuatro hallazgos pasan de «abierto» a cerrados con: tests nuevos en verde, smoke de navegador
 por módulo sin regresiones, y las filas 24-26 y 49 de `docs/EXPERIMENTS.md` actualizadas con el
 commit que las cierra.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

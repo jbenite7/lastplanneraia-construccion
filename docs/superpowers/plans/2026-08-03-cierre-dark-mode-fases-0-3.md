@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-03-cierre-dark-mode-fases-0-3.md
@@ -769,3 +769,13 @@ Alcance mínimo: `.btn-dropdown-trigger` en sus 6 usos. Alcance recomendado, si 
 confirma: dar variante dark a `--ds-color-surface` y sus hermanos (`-raised`, `-glass`), que es la
 raíz registrada como C-20 — pero eso toca el sistema entero y debe medirse superficie por
 superficie antes de tocarlo.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/design-system-static-suite.mjs; admin DevDoorController.php + tests/test_admin_dev_door_guard.php; exceptions.json:375; programacion-intermedia.css:741
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

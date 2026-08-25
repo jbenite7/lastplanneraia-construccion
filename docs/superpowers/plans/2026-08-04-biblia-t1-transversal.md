@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-04-biblia-t1-transversal.md
@@ -356,3 +356,13 @@ npm run test:wiki
 Y comprueba las seis condiciones de hecho del spec (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md` §Condición de hecho) que aplican a T1: carpeta con su cláusula, escenarios descritos y verificados con cita, críticos con prueba citando su `id`, hallazgos en el backlog sin arreglar, wiki enlazada y en verde.
 
 **Sobre la validación en navegador:** T1 sí toca superficie observable (los controles que un rol ve y otro no), así que la evidencia de Playwright es la validación exigida. No hace falta recorrido manual adicional.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/flujos/transversal-{autenticacion,proyecto,rbac}.md; e2e/tests/biblia/transversal.spec.mjs; README.md:93 «3 documentos, 7 pruebas en verde»
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

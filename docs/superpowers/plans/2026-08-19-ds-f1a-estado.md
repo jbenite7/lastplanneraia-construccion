@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-ds-f1a-estado.md
@@ -357,3 +357,13 @@ No es una tarea del plan: es el gate de `AGENTS.md` §Publicación, que se aplic
 - [x] Publicar el sha exacto visado, en comando aparte.
 - [x] Confirmar que `origin/main` coincide con el sha anotado.
 - [x] Anotar el cierre en `goals/ds-f1a-estado/goal.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/design-system/ds-f1a-escala-estado.json y .md existen (verificado en esta sesion)
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-29-equipo-alquilado-comprado.md
@@ -1525,3 +1525,13 @@ git commit -m "docs(pdc): queda escrito que partir «Equipo» tenía trampa en e
 - **El tapón son 167 decisiones humanas.** Se asume por decisión explícita del usuario. Mitigado a dos clics para 145 de ellas mediante preorden + selección por lote, sin escribir nada sin confirmación. «Sin clasificar» hereda el comportamiento del viejo `EQUIPO`, así que el módulo se puede usar con el tapón puesto.
 - **`resolverTipoRecurso()` decide que «SINCO más preciso gana».** Si el equipo de presupuestos clasifica mal en SINCO, sobrescribirá una clasificación humana correcta. Es deliberado —SINCO es la fuente contable— y queda auditado en `clasificado_por`/`clasificado_at`. Si en obra molesta, la vuelta es invertir esa rama, no ampliar el blindaje.
 - **La base de este trabajo es un volcado, no la de producción.** Los números (167 / 89 / 53) son del volcado del 2026-07-29. Antes de aplicar en cualquier otro entorno hay que **volver a correr el dry-run**, que recalcula por regla y no lleva ids fijos.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** src/Services/Pdc/TipoRecursoEquipo.php; PaquetesService.php:1893,1898 usa ALQUILADO/COMPRADO; las dos migraciones existen
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

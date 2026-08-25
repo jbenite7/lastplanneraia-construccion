@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-frente-1c-pulido-a11y-y-texto.md
@@ -839,3 +839,13 @@ El gate completo de `AGENTS.md` §Publicación, en orden y sin saltarse el quint
 **Puntos que se encolan y se saltan:** cualquier recaptura de golden (T2, T4, T5, T6), un token de espacio o de opacidad que no exista (T5, T7), un token de color no definido al quitar su reserva (T3), y la acción primaria de PG y PS (T4). **Excepción que no se encola:** un `200` donde se espera `403` (T7).
 
 **Lo que este plan no cubre:** la campaña de reducción de la fase 6 del design system, declarada fuera del programa por el propio spec; y los hallazgos nuevos que abrieron las tandas 1B y 1C, que quedan abiertos con su medición para un frente posterior.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** public/js/design-system/modal-escape.js; cascada-lps-a11y.test.mjs amplia con el candado del boton bloqueado
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

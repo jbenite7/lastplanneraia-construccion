@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-07
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-07-f2a-1-precondiciones-evidencia-movil.md
@@ -462,3 +462,13 @@ git commit -m "test(design-system): la matriz esperada se deriva de homologation
 ## Fuera de alcance
 
 Declarar escenarios móviles, generar goldens, la primitiva de cards, el umbral de 1180 en el navegador, y cualquier cambio en `public/js`, `views/` o `public/css`. Todo eso es F2a-2.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** p4-movil-y-tema-claro.md:23-25 «MO-F2a-1 (el gate valida los 15 manifiestos, no 4)»
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

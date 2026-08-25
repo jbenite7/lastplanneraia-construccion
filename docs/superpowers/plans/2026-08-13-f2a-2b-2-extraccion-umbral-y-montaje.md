@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-13
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-13-f2a-2b-2-extraccion-umbral-y-montaje.md
@@ -689,3 +689,13 @@ La evidencia móvil y los goldens `390x844` de los dos módulos (necesitan aprob
 - **(a) `skip` documentado ahora, reescritura contra cards en la tanda de evidencia móvil.** Barato, y deja la deuda visible en el propio archivo. Es lo que el plan asume por defecto.
 - **(b) Reescribirlas contra las cards dentro de este plan.** Más caro y mezcla dos trabajos: la Task 4 pasaría a tocar aserciones visuales, que es justo lo que las tres primeras tareas evitan a propósito.
 - **(c) Conservar la tabla en tablet** (umbral distinto para las subvistas de DataTables). Contradice E3 y reintroduce el segundo umbral que este plan viene a eliminar.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem: umbral y montaje condicional (shouldRenderCards, hot.js:3276); DS-032/033 en decisions.md
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

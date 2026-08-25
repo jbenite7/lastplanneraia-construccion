@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-08-04
 areas: [pdc]
 fuente: docs/superpowers/plans/2026-08-04-c1-retiro-pdc-viejo.md
@@ -856,3 +856,13 @@ git commit -m "docs(c1): evidencia de verificacion del retiro del PDC viejo"
   retiro mezclaría dos cosas. Se anota como pendiente diferible.
 - **Los `docs/**` narrativos y `memoria/`**, salvo `memoria/arquitectura/` que se regenera desde el
   código. Registrar lo que pasó es su función.
+
+---
+
+## Estado verificado — derogada
+
+Verificado contra el código el 2026-08-25. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
+
+**Qué dejó de ser cierto:** banner ARCHIVADO SIN EJECUTAR; el retiro se aplico por otra via. Sustituido por lo ejecutado el 2026-08-04
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

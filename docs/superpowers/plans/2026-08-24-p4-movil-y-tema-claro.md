@@ -105,3 +105,13 @@ no es «falta aprobación visual», es que pedía aprobar 6 modos y **3 usan el 
 
 Los 15 manifiestos en verde a 390×844; el conmutador de tema funcionando con preferencia guardada;
 y `bi-control-tower-gemini` cerrado con su condición rehecha.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** MO-F2b (13 modulos) y MO-F3 (tema claro) sin ejecutar, con evidencia negativa fechada 2026-08-25 en el propio plan (:47-52 y :56-62). No es derogacion: el plan lo prioriza explicitamente en :69
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

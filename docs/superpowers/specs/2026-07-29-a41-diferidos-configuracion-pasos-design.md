@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-a41-diferidos-configuracion-pasos-design.md
@@ -72,3 +72,13 @@ pasar por su propio grilleo antes de tocar nada: cambia la forma del modelo de d
   entera, no solo la retrasa.
 - **Copiar puede arrastrar basura.** Si la obra origen tiene una configuración a medias, la copia la
   hereda. La pantalla debe mostrar qué se va a copiar antes de copiarlo.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PasosContratacionService.php (copiar); historialVersiones.ts; DuracionesCatalogoService.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

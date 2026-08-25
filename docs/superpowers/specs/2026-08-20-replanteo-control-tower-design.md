@@ -824,3 +824,13 @@ que estuvo a punto de reordenar todo el replanteo. Lo corrigió Felipe.
 
 **Regla que sale de ahí, y que aplica al ejecutor de métricas de 6:** ninguna métrica se declara sin
 declarar también su denominador. Un porcentaje sin su base no es una cifra, es una insinuación.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** spec maestra de seis fases que solo detalla la fase 1 a nivel ejecutable (linea 17: «cada fase siguiente toma su propia spec»). La fase 1 cerro como reparto-lienzos-por-rol; las otras cinco no tienen spec derivada todavia
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

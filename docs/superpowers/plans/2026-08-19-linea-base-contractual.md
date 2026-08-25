@@ -909,3 +909,13 @@ posteriores —`Measure runtime budgets` y `Check runtime budgets`— por fin se
 - **La auditoría del PDC encuentra un defecto** → se anota y se escala; no se arregla aquí.
 - **`main` avanza mientras se verifica** → repetir fetch, integrar, re-verificar y pedir visto nuevo.
   El rechazo del push es el guardarraíl funcionando, no un problema.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** Tarea 3 falta (no existe tests/test_linea_base_rotulo.php ni la clave contractual_finish_scope) y la Tarea 5 se resolvio por otra via (migracion SQL) sin el script que el plan manda
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

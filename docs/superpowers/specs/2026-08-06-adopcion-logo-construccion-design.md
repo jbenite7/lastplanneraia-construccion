@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-06-adopcion-logo-construccion-design.md
@@ -85,3 +85,13 @@ En dark desktop 1180×820 contra el contenedor (`http://localhost:8081`, sesión
 5. Consola del navegador sin errores nuevos.
 
 Sin cambios de RBAC, datos ni rutas; no aplican pruebas de persistencia.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

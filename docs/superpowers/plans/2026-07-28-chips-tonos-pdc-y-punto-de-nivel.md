@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: derogada
 fecha: 2026-07-28
 areas: [pdc]
 fuente: docs/superpowers/plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel.md
@@ -305,3 +305,13 @@ Los golden `states-feedback-dark-*.png` no se comparan: el test retorna antes de
 - **F4 toca el piloto.** Mitigación: aprobación visual explícita antes de regenerar nada.
 - **Sesiones paralelas activas.** Dos commits ajenos aterrizaron a mitad de la sesión anterior y
   dejaron obsoleta una medición. Re-medir antes de cada tarea que dependa de un valor.
+
+---
+
+## Estado verificado — derogada
+
+Verificado contra el código el 2026-08-25. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
+
+**Qué dejó de ser cierto:** su premisa era armonizar el matiz entre cuatro modulos incluido /pdc, y el PDC v1 se elimino el 2026-08-04: cero rutas '/pdc' en public/index.php. Ademas su Task 3 quedaba «en suspenso» (linea 199) colgada de un artefacto externo. Lo vigente es el contrato de tres niveles ds-f1a-escala-estado
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

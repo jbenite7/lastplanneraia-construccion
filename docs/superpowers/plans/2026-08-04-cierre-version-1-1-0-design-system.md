@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [design-system]
 fuente: docs/superpowers/plans/2026-08-04-cierre-version-1-1-0-design-system.md
@@ -186,3 +186,13 @@ git commit -m "docs(design-system): activate 1.1.0 — manifiestos sincronizados
 - **Cobertura del spec:** §1 migración → Task 2; §2 acento → Task 3; §3 una-a-una → Task 4; §4 gates → Task 5; §5 publicación → Tasks 6–7; condición de hecho → Task 7 step 3; riesgos (campaña, pagos que rompen, manifiestos) → constraint global, Task 4 step 2, Task 6 step 1.
 - **Placeholders:** los pasos de edición citan archivo, selector o línea y regla de decisión; el código de la Task 5 es literal (ya probado). Los N/M del changelog se toman del ledger, no son TBD: la Task 4 los produce.
 - **Consistencia:** `expiresAtVersion` (Tasks 2–4), regex `^([1-9]\d*)\.\d+\.\d+$` (Task 5 = trampa), lista de manifiestos tomada del gate (Task 6 manda sobre la enumeración del plan).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/design-system/version.json:2 «1.1.0 stable»; CHANGELOG.md:13 «## 1.1.0 - 2026-08-07»; cero excepciones con expiresAtVersion 1.1.0
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

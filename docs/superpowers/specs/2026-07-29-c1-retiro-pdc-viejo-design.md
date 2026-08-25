@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [pdc]
 fuente: docs/superpowers/specs/2026-07-29-c1-retiro-pdc-viejo-design.md
@@ -275,3 +275,13 @@ cuando el v1 deje el suyo.
 - **~~Los datos históricos son irreversibles.~~** Neutralizado por la decisión del 2026-07-30: no hay
   borrado. Si alguna vez se revisa a favor de borrar, este riesgo vuelve entero y con él el gate de
   Plannotator, el respaldo verificable y la estrategia de restauración.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** seccion «Lo que realmente paso — 2026-08-04»; cero rutas /pdc en public/index.php; 18 tablas borradas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

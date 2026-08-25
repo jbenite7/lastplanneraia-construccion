@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [rbac, bi, admin]
 fuente: docs/superpowers/plans/2026-08-20-interruptor-control-tower-admin.md
@@ -610,3 +610,13 @@ Trae clase nueva (`FlagsService`, `ModulosController`) → **`composer install` 
 servidores (classmap optimizado), y la migración `.sql` **antes** del smoke, por el cliente
 `mysql`. Orden: backup → pull → composer → migración → smoke → verificación con el gate evaluado
 por rol, como en el deploy del 2026-08-20.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** database/migrations/20260820_general_flags.sql; src/Core/FlagsService.php; BiPreviewAccessPolicy referencia control_tower; admin ModulosController.php + views/pages/modulos/index.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

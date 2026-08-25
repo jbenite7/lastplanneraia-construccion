@@ -94,3 +94,13 @@ se congela entera para terceros: ni escrituras ni mediciones (regla 6 de
 
 CP-F-C cerrada con su guard midiendo el efecto; el despliegue preparado, con respaldo probado y plan
 de restauración escrito; y **CP-F-E sin ejecutar**, esperando la palabra de Felipe.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** la Tarea 3 (CP-F-E, el despliegue) esta marcada NO EJECUTAR a la espera de la palabra de Felipe (:96). La condicion de hecho exige produccion
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

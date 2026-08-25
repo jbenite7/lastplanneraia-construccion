@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [pdc]
 fuente: docs/superpowers/specs/2026-07-29-pdc-b1-seguimiento-design.md
@@ -207,3 +207,13 @@ Lo que **sí** se conserva de aquella disciplina, porque no depende del proyecto
 - Torre de Control / BI → **C1**.
 - Nota o evidencia por paso, y estado «no aplica» → descartados en el grilleo; se reabren si la operación
   los pide, no antes.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** SeguimientoService.php y PlanComprasSeguimientoController.php; public/index.php:228-231 registra las cuatro rutas /plan-compras/api/seguimiento*
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

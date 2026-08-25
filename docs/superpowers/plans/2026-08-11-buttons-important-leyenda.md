@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-buttons-important-leyenda.md
@@ -78,3 +78,13 @@ y el par final «quitadas / quedan» de las 41.
 `.badge`, `.aia-chip`). Cada retirada de una regla con `:where()` o con lista de selectores puede
 alcanzar superficies fuera del alcance; por eso T3 y T4 miden en todos los selectores de la regla,
 no solo en `.pdc-legend-item`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** grep -c '!important' public/css/buttons.css = 138, la cifra final declarada
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-07
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-07-f2a-2a-deudas-de-arranque.md
@@ -301,3 +301,13 @@ git commit -m "chore(design-system): saldar los seis minors registrados en F2a-1
 4. Los 17 manifiestos declaran la misma versión que `version.json`.
 5. Los seis minors del ledger están cerrados o explicados por escrito.
 6. Ningún golden fue creado, regenerado, renombrado ni borrado: `git diff --name-only <base>..HEAD -- '*.png'` vacío.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** p4-movil-y-tema-claro.md:23-25 «MO-F2a-2a (DS-033)»; DS-033 en docs/design-system/decisions.md
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

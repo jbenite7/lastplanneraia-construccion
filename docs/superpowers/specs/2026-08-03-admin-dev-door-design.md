@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [admin]
 fuente: docs/superpowers/specs/2026-08-03-admin-dev-door-design.md
@@ -127,3 +127,13 @@ paso del diseño original.
   puerta no otorga nada por encima de la cuenta.
 - Candado cerrado (`DEV_DOOR=0` o `APP_ENV=production`): `/admin/dev/entrar?u=test.A` →
   `404`, nunca `403`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** admin/public/index.php:74 ruta GET /dev/entrar; admin/src/Controllers/DevDoorController.php:15
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

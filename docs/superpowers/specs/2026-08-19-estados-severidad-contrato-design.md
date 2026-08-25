@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: derogada
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-estados-severidad-contrato-design.md
@@ -266,3 +266,13 @@ aplica hoy.
 ## Archivos de este goal
 - [[goals/ds-f1a-estados-severidad/goal]] · [[goals/bug-coloreado-severidad/respuestas-ds-f1]]
 - [[docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design]]
+
+---
+
+## Estado verificado — derogada
+
+Verificado contra el código el 2026-08-25. La decisión que contiene **dejó de ser cierta**; el documento se conserva con su lápida.
+
+**Qué dejó de ser cierto:** la propia spec:18 se declara subordinada al contrato de tres niveles. La sustituye docs/design-system/ds-f1a-escala-estado.{md,json}
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

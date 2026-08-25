@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-equipo-alquilado-comprado-design.md
@@ -87,3 +87,13 @@ distinguir solo en el paquete (el maestro global se quedaría sin el dato).
 - **Partir un enum toca muchos sitios.** Ya se hizo antes (el bucket de indirectos se partió en A3.2) y
   entonces aparecieron paquetes arrastrando el tipo viejo. Ese antecedente está documentado en
   `docs/pdc-v2.md` §deudas de datos: releerlo antes de escribir el plan.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

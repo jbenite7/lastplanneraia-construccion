@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-10
 areas: [rbac]
 fuente: docs/superpowers/plans/2026-08-10-frente-1a-seguridad-y-permisos.md
@@ -545,3 +545,13 @@ Esperado: todo verde. El gate de paridad, que nació rojo en la Task 1, debe est
 **Dos mediciones obligatorias antes de tocar código:** si «Actualizar Ejecución» muta datos para el Visualizador (Task 6 Step 1), y qué consumidores reales tienen las capacidades a retirar (Task 2 Step 1). Ninguna de las dos se puede deducir leyendo.
 
 **Riesgo conocido:** `tests/browser/programacion-semanal-roles-phases.mjs` ya está roja por causas ajenas —8 fallos medidos el 2026-08-10—, así que la Task 6 debe medir su línea base antes de comparar. Sin eso, atribuiría a este trabajo fallos que ya estaban.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/rbac-parity.mjs + tests/rbac/parity.test.mjs + docs/rbac-parity-exceptions.json; cinco tests php de la Task 3 a 7; tests/browser/programa-general-visualizador.mjs
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

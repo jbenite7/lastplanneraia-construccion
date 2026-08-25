@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-30
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-30-dev-door-design.md
@@ -263,3 +263,13 @@ túnel no añade ningún secreto nuevo — reutiliza el acceso SSH que ya contro
   siendo probables.
 - No otorga permisos: una vez dentro, el RBAC se aplica exactamente igual.
 - No añade credenciales a ningún archivo versionado.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** src/Core/DevDoor.php; tests/test_dev_door_guard.php; ruta /dev/entrar documentada en AGENTS.md y CLAUDE.md como via vigente
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

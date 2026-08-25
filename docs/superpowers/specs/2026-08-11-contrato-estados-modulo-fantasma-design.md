@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-11-contrato-estados-modulo-fantasma-design.md
@@ -99,3 +99,13 @@ Este frente **no la implementa ni la insinúa en el código**.
 5. Verde con salida real y código de salida leído sin tubería:
    `npm run test:design-system:static`.
 6. Decisión de fondo encolada en `docs/decisiones-pendientes.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

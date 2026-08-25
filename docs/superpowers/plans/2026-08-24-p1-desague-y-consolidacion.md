@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion.md
@@ -282,3 +282,13 @@ Es de la familia de [[el-codigo-de-salida-se-pierde-en-la-tuberia]] y merece fre
 | `run-php-tests.php --nivel=db` | `RC=0` · 81/81, 0 fallaron · PHPUnit 4 clases en verde |
 | `--nivel=datos-proyecto` | 117 corridos, 104 pasaron, **12 fallaron** — los preexistentes documentados. **El 13.º era éste**, y ya no está |
 | `npm run test:wiki` | `RC=0`, sin hallazgos |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** seccion Cierre 2026-08-24 con publicacion aa6f0b74..6c736d91 y tabla de verificaciones RC=0
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

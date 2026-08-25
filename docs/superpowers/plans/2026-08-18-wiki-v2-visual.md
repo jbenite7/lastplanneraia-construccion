@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-18
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-18-wiki-v2-visual.md
@@ -76,3 +76,13 @@ pagar la verificación dos veces.
   es la red.
 - **Roce con sesiones vivas** → tandas 2-3 tocan cientos de archivos: ejecutar con la cola parada
   (ya lo está por orden del usuario) y publicar por tanda, no al final.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/wiki-frontmatter.mjs; memoria/index.md:2,7 con capa y tags; los tres .canvas (cascada-lps, mapa-del-sistema, tablero-de-control)
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

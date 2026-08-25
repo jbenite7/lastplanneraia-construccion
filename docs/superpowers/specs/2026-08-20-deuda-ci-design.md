@@ -5,7 +5,7 @@ fecha: 2026-08-20
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-20-deuda-ci-design.md
 resumen: Eliminación de la deuda del CI detectada en el contraste con la mejor práctica (2026-08-20) — dos frentes atómicos: seguridad de cadena de suministro (G1+G3+G5) y cache de capas Docker (G2); el resto diferido con dueño.
-estado: vigente
+estado: cerrado
 ---
 
 # Deuda del CI — diseño de eliminación
@@ -132,3 +132,13 @@ de publicación de `AGENTS.md`.
 - Plan del Frente 1: `docs/superpowers/plans/` (lo crea `writing-plans`)
 - Contraste de origen: artifact privado + cuaderno NotebookLM citados arriba
 - Retrato y barrido: scratchpad de la sesión 2026-08-20 (efímero; lo durable está en este spec)
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** Frente 1 en ci.yml:71,88,31,128,77-85 + dependabot.yml; Frente 2 en ci.yml:104-113,192-201
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

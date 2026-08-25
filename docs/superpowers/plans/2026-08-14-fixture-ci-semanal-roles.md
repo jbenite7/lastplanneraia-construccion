@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-14
 areas: [rbac, lps]
 fuente: docs/superpowers/plans/2026-08-14-fixture-ci-semanal-roles.md
@@ -190,3 +190,13 @@ re-verificación **después** de integrar `origin/main`.
 | Sembrar semanas cambia la fase de la 5 de JMC | `Max_Semana` sigue en 5; se comprueba en la base y con `full-operational-cycle` |
 | La semana nueva de Da Porto mueve su `Max_Semana` | Task 3 lo comprueba antes de sembrar y corre `full-app-flow` después |
 | Un gate nuevo rojo bloquea el workflow | el paso se añade al final del plan, cuando el spec ya está verde en local |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** database/fixtures/design-system-ci.sql; ci.yml:306-460 cablea el gate semanal-roles-phases con gate-receipt.mjs
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

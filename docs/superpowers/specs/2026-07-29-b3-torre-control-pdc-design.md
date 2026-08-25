@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [pdc, rbac, bi]
 fuente: docs/superpowers/specs/2026-07-29-b3-torre-control-pdc-design.md
@@ -208,3 +208,13 @@ Sin tablas nuevas y sin migraciones.
 - **El volumen real no está medido.** La Ola 1 declaró que Da Porto tiene hoy 4 paquetes y 21 pasos, no
   los 96 del spec: la regla está probada pero **no está estresada a escala**. El punto 4 de la condición
   de hecho es precisamente lo que esta fase no puede dar por supuesto.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** ControlTowerService.php:569 llama vencimientosAgregados(); BiControlTowerApiController.php:213 sirve /api/bi/report/pdc sobre v2; tests/test_pdc_v2_torre_control.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

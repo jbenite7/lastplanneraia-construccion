@@ -75,3 +75,13 @@ Dependencias: A1→A2→A2.5→A3→A4→B1→B2; **A1.6 depende solo de A1** (c
 
 - El roadmap commiteado y el CLAUDE.md actualizado son el entregable de este paso.
 - La verificación de cada fase vive en su plan detallado, siempre con las dos patas: **aplicación** (Vitest, tests PHP autoejecutables, PHPStan, Playwright e2e) y **base de datos** (migraciones aplicadas en Docker + asserts de integridad sobre MySQL real + gates `test_global_table_safety`/`reconciliation`).
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** documento indice del roadmap: A1-A4.1 marcadas implementadas, pero B2, B3 y C1 no. docs/pdc-v2.md:392 sigue remitiendo al roadmap sin declararlas cerradas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

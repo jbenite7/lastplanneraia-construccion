@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-06-adopcion-logo-construccion.md
@@ -297,3 +297,13 @@ Expected: sin errores nuevos en `public/css` (biome no cubre `admin/views` ni `v
 Reportar: superficies verificadas, comandos y resultados, y el estado de los commits (hechos o
 pendientes de autorización). Pendientes conocidos fuera de alcance: lockups PNG para
 Control de Cambios/impresión y PWA manifest (no solicitados).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** public/img/brand/{icon,glyph-mono,icon-192}; tokens.css:644; el SVG legado no lo cita ningun archivo
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

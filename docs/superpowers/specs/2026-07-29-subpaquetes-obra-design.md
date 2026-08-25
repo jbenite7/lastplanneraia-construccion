@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-subpaquetes-obra-design.md
@@ -200,3 +200,13 @@ tablero pasó de 924 pasos a 1.932 y el test se puso rojo. El dato que justifica
 mismo sabotaje, `test_pdc_v2_subpaquetes.php` seguía **en verde**, porque comprobaba qué nombres
 aparecían y no cuántas veces. Se le añadió la aserción de conteo que le faltaba —también verificada
 roja contra el código saboteado—, así que ahora el fallo se atrapa en los dos sitios.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** src/Services/Pdc/SubpaquetesService.php implementa el paquete sombrilla mas lotes. Es del PDC v2, no del v1 eliminado
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

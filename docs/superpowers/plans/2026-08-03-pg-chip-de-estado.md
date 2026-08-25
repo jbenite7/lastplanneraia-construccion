@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-03-pg-chip-de-estado.md
@@ -635,3 +635,13 @@ Contra la condición de hecho de `goals/pg-chip-de-estado/goal.md`:
 - No cambia la asignación de nivel ni matiz de ningún estado: la fija el contrato.
 - No retira las copias de `.ops-state-chip` de `.pi-page` y `.ps-page`. Queda como trabajo aparte.
 - No toca `createMobileStateBadge` ni nada de mobile.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** programa_general/hot.js:815 statePresentation con los siete estados y pgStateChipRenderer registrado; ops-state-chip.css como componente compartido
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

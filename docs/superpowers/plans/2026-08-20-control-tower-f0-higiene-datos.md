@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [bi, datos, pdc]
 fuente: docs/superpowers/specs/2026-08-20-replanteo-control-tower-design.md
@@ -526,3 +526,13 @@ Actualizar `docs/superpowers/notas/2026-08-20-retiro-pdc-v1.md` y commitear.
 - Las tablas del PDC v1 están retiradas, o hay constancia escrita de por qué no.
 - `docker compose exec app php scripts/run-php-tests.php --nivel=puro` y `--nivel=db` en verde.
 - `npm run test:wiki` sin hallazgos.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** Tareas 1-5 con artefactos (test_cip_poblado.php, RadarAxisNamingTest.php, test_causa_atribucion.php, scripts/higiene/reparar-mojibake-causas.php, notas/2026-08-20-campos-muertos.md). La Task 6 no se ejecuto pero el plan admite esa salida en su linea 526 («o hay constancia escrita de por que no») y la constancia esta en notas/2026-08-20-retiro-pdc-v1.md:127-131 con decision de Felipe del 2026-08-24
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

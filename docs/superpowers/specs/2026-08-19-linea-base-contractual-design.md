@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-linea-base-contractual-design.md
@@ -229,3 +229,13 @@ esté rojo, GitHub salta todos los posteriores y el recibo de `runtime-budgets` 
 
 - [[goals/linea-base-contractual/goal|Goal]]
 - [[memoria/goals/estado|Estado de los goals]]
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** CHANGELOG.md:190-195 «pasa de 15 FAIL a 0»; database/migrations/20260819_sembrar_linea_base_contractual.sql; ControlTowerService.php:1837,1898 declared_project_baseline
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

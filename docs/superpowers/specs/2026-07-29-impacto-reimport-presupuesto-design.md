@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-impacto-reimport-presupuesto-design.md
@@ -95,3 +95,13 @@ El texto de confirmación pasa a decir qué se conserva y qué no, en palabras, 
 - **El clase 0 todavía no existe.** La verificación del punto 2 se hace con una versión construida a
   mano a partir del clase 1. Es una prueba honesta del mecanismo, no del caso real: eso se comprueba
   cuando llegue el presupuesto de verdad, y hay que decirlo así en la bitácora.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PresupuestoImportService.php:196 impactoDeReimportar() y :695 avisosDelPresupuesto(), cableados en previewDesdeArchivo/arbol
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

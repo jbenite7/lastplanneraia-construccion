@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-28
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-28-paleta-estado-oscura.md
@@ -591,3 +591,13 @@ Un commit por hallazgo, con su medición.
 **Fuera de alcance, coherente con la especificación:** la convergencia del componente de chip (va después, como refactor que no debe mover un píxel) y la paleta de marca `--aia-*`.
 
 **Un valor que este plan no puede fijar de antemano:** el texto de `info`. Aparece como `<el hex medido en el Step 1>` en dos sitios de la Task 2 a propósito — se deriva y se mide con el método que el Step 1 detalla, y se sustituye en ambos. Es una medición, no un placeholder.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** tokens.css:243-249 usa var(--ds-state-tint-*) y :338-343 fija los hex oscuros; state-token-exceptions.json v3.0.0; tests/design-system/state-token-pairing.test.mjs. La Task 3 quedo sin objeto al eliminarse el PDC v1
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

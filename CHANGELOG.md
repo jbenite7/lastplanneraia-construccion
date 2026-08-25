@@ -28,6 +28,20 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### El estado real de los 127 planes y specs (2026-08-25)
+
+#### Changed
+- `docs/superpowers/`: los **127** documentos que seguían en `estado: vigente` por el valor por
+  defecto del backfill quedaron verificados **uno por uno contra el código**. Resultado:
+  **105 `cerrado`** (con la evidencia citada dentro de cada documento), **19 `vigente`** (con el
+  motivo escrito) y **3 `derogada`** (con lo que las sustituye). Sumados a los 13 ya sellados, el
+  directorio queda en **118 · 22 · 3** sobre 142.
+- La señal «existe `goals/<slug>/goal.md` con `## Cierre`» **quedó degradada a indicio**: de 5
+  casos de muestra falló 1 (`biblia-t5-lectura`, goal cerrado como HECHO con una Task entera sin
+  ejecutar). Los 33 que cubría pasaron a verificación manual, de 92 a 127. Ver
+  [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+
+
 ### Depuración de la documentación: el tipado de `docs/` decía lo que no era (2026-08-25)
 
 Encargo de Felipe: dejar la wiki y `docs/` sin ruido ni documentos obsoletos, reflejando la

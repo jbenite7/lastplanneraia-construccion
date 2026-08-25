@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-23
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-23-a25-importador-maestro-sinco-design.md
@@ -82,3 +82,13 @@ Multi-empresa (el archivo actual es solo AIA; si aparece un export con varias em
 | Colisión norma+unidad con distinto `codigo_sinco` (dos insumos SINCO que normalizan igual) | Reportar como advertencia en el preview; no pisar; decidir manualmente |
 | Memoria de PhpSpreadsheet con 3.088 filas | Read-only + `toArray` medido OK a escala DAPORTO (parse 0.13s); límite 10MB |
 | Empresa distinta a AIA en un export futuro | Fuera de alcance; el importador filtra/mapea por la hoja tal cual hoy |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** MaestroSincoParser.php, MaestroSincoImportService.php, PlanComprasMaestroImportController.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

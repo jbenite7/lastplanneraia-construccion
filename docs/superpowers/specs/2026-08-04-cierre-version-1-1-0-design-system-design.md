@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [design-system]
 fuente: docs/superpowers/specs/2026-08-04-cierre-version-1-1-0-design-system-design.md
@@ -107,3 +107,13 @@ triple aprobada.
 
 Retirar el puente legacy móvil/vendor de Handsontable (obra de 1.2.0), la campaña de ~2.600
 hallazgos de fase 6 (C-2), mobile/tablet/`linen`, y cualquier cambio de comportamiento.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

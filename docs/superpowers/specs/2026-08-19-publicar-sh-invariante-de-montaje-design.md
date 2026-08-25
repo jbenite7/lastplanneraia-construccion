@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-publicar-sh-invariante-de-montaje-design.md
@@ -87,3 +87,13 @@ que contradiga» cuando lo que ocurre es que no hay nada.
 Desde el worktree principal, `bash scripts/publicar.sh --solo-verificar` termina en `RC=0` con las
 tres comprobaciones en verde. Desde un worktree secundario cuyo contenedor sirve otro árbol,
 deniega nombrando las dos rutas y el comando de remedio. Ambas cosas demostradas con salida real.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/publicar.sh:41 exporta LPS_CODE_ROOT; :47-48 compara --absolute-git-dir con --git-common-dir; :54 docker inspect del montaje; :65 imprime el remedio
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

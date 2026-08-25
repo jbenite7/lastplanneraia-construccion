@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-b2-semaforos-lookahead-design.md
@@ -121,3 +121,13 @@ Medido en la app real contra Da Porto, consola sin errores:
 - **Un paquete sin fechas programadas no puede vencer.** Los 25 paquetes sin `duracion_ref` quedarían
   invisibles en el tablero. Se resuelven en `2026-07-29-cierre-prelanzamiento-pdc-design.md`, y hasta
   entonces el tablero debe **decir cuántos paquetes no está mirando**, en vez de callarlo.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** SeguimientoService.php:388 vencimientos() y :550 vencimientosAgregados(); PlanComprasSeguimientoController.php:47-48
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

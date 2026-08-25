@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-ds-f1a-estado-design.md
@@ -191,3 +191,13 @@ revocables. Cero cambios en código de producto y cero cambios en baselines.
 
 Verificación: `npm run test:design-system:static` y `npm run test:wiki`, ambos en verde sobre el
 sha que se publique.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

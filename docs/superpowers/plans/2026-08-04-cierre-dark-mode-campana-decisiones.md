@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-04-cierre-dark-mode-campana-decisiones.md
@@ -723,3 +723,13 @@ antes, o estará midiendo el árbol de otra sesión.
 - **Placeholders:** las tasks de investigación (T2, T16, T27 step 6) producen informes con regla de decisión explícita, no «TBD»; los pasos de edición citan selector, valor medido y objetivo numérico.
 - **Consistencia:** `pdc-legend-item` (T11 — la clase se llama así por herencia, pero sus consumidores vivos son PI y PS), `--ds-active-surface-raised` (T7/T10/T11), `.ops-state-zoom` y umbral 120 px (T8), dev door y viewport uniformes en todas.
 - **Purga de PDC V1 (2026-08-04):** retiradas las tasks 17 y 25 enteras; acotadas la 8 (fuera «ESTADO DEL PROCESO»), la 10, la 13 (fuera C-3), la 15, la 30 y la 34. La 7 queda hecha pero marcada. Ninguna task viva lee, mide ni edita `pdc/`, `listado-actividades/` o `contratos/`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** tabla de cierre 648-688 con 38/38 tareas y commit por tarea, verificada contra git log el 2026-08-07
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-07
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-07-f1-destrabar-viewport-movil.md
@@ -563,3 +563,13 @@ Las cuatro de la spec, verificables con los comandos de arriba:
 ## Fuera de alcance
 
 Cards, CSS, temas, goldens, axe, el conmutador, `pdc-app/`, y cualquier cambio en `homologation.json` o en las aprobaciones firmadas. El carril runtime (`npm run test:design-system:runtime`) no se corre: F1 no cambia nada observable en navegador.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** p4-movil-y-tema-claro.md:23 «Cerrado y no se re-litiga: MO-F1 (390x844 soportado y no requerido, DS-032)»; DS-032 en docs/design-system/decisions.md
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

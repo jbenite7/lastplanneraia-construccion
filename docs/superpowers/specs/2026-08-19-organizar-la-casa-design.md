@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-organizar-la-casa-design.md
@@ -97,3 +97,13 @@ cualquier frente: dos commits atómicos — (1) registros + mudanza de vistos + 
 El empaquetado del plugin (CAS), el rediseño del contenedor por worktree, la base compartida como
 infraestructura, y el apply de producción. El deploy a producción sigue exigiendo autorización
 propia, siempre.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/coordinacion-sesiones.md existe; decisiones/vistos/ con 7 archivos versionados; notas de memoria/decisiones/ versionadas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

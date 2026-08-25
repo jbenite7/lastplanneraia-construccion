@@ -264,3 +264,13 @@ npm run test:wiki
 Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md` §Condición de hecho) que aplican a T5: escenarios descritos y verificados con cita, críticos con prueba citando su `id`, hallazgos en el backlog sin arreglar (con el contraste de autorización marcado para decisión del usuario), wiki enlazada y en verde.
 
 **Sobre la validación en navegador:** T5 toca superficie observable (qué embed se ve, qué código de estado responde cada ruta), así que la evidencia de Playwright es la validación exigida. No hace falta recorrido manual adicional salvo para confirmar el selector del mensaje de «informe no disponible» antes de escribir la prueba (Task 3, Step 3).
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** Task 3 sin ejecutar: e2e/tests/biblia/lectura.spec.mjs no existe y el hueco no se documento; ver Tarea 0
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [design-system, lps]
 fuente: docs/superpowers/specs/2026-08-20-habilitacion-en-una-columna-design.md
@@ -282,3 +282,13 @@ y el resto del censo de tablas (`goals/replanteo-coloreado-estados/censo-tablas.
 **Supuesto declarado, no resuelto:** dos personas editando la misma actividad a la vez. Hoy existe
 un 409 que avisa si la semana activa cambió en otra sesión (`hot.js:3214`), pero nada vigila la
 misma celda. El globo no empeora eso ni lo arregla; queda anotado por si aparece en obra.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -64,3 +64,13 @@ necesita un carril de referencia que se sepa sano. **Es andamio declarado, no in
 
 `runtime-budgets` en `passed` y `full-app-flow` con procedencia de una corrida real de Actions, con
 `npm run test:design-system:static` en `RC=0` sobre el sha que se publique.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** idem: objetivo 1 cumplido, objetivo 2 (procedencia de corrida real) no, closeout-evidence.json:124-141
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-14
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-14-shell-menu-flotante-responsive.md
@@ -469,3 +469,13 @@ Migrar el laboratorio (deuda anotada en la Task 5). El umbral de las tarjetas y 
 | El menú flotante se abre y no hay forma de salir en un teléfono. | Tres vías de cierre —velo, `Escape` y elegir destino— y la prueba de teclado forma parte de la condición de hecho. |
 | Quitar el `padding-left` descoloca módulos que asumían ese offset. | Task 5 Step 1 recorre los tres módulos de la cascada a 390 px, y Step 2 comprueba que escritorio no se movió. |
 | El módulo diferido aún no está cuando el script clásico lo busca. | Mismo patrón ya resuelto en `programacion_semanal/hot.js`: el consumidor tolera su ausencia en vez de lanzar. |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** shell-drawer.js:1-20 con UMBRAL_FLOTANTE=1180 y debeSerFlotante(); goals/reapertura-movil-y-tema-claro/goal.md:32 da F2a-2b por cerrada
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

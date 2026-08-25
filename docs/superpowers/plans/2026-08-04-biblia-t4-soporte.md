@@ -388,3 +388,13 @@ npm run test:wiki
 Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md` §Condición de hecho) que aplican a T4: escenarios descritos y verificados con cita, críticos con prueba citando su `id`, hallazgos en el backlog sin arreglar (con la invariante semi-automática marcada para decisión del usuario), wiki enlazada y en verde.
 
 **Sobre la validación en navegador:** T4 toca superficie observable (grillas editables, panel semi-auto, cierre de crisis), así que la evidencia de Playwright es la validación exigida. No hace falta recorrido manual adicional salvo para calibrar selectores antes de escribir las pruebas (Task 6, Step 3).
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** MANDA 5 documentos y solo existe docs/flujos/soporte.md. README.md:96 «Escalamientos queda entero»
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

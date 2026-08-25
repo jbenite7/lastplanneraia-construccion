@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-23
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-23-a16-comparativo-versiones-design.md
@@ -77,3 +77,13 @@ Pestaña **"Comparar"** (`#/ensamble/comparar`) en la nav de Ensamble. Component
 | Códigos de actividad reusados/duplicados entre versiones | La comparación por `codigo` asume unicidad de código por versión (garantizada por el import de A1); si un código se repite, se agregan sus valores (documentado) |
 | Volumen (miles de filas × 2 versiones) en memoria PHP | Fusión por mapa en PHP medida OK a escala DAPORTO; si un presupuesto real lo exige, paginar por eje o mover el diff a SQL |
 | Insumos que normalizan igual con distinta descripción cruda | Se consolidan por `descripcion_norm+unidad` (más robusto que la clave por descripción cruda de la app de Tomás) — coherente con A2 |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PlanComprasImportController.php:213-214 GET /plan-compras/api/presupuesto/comparar; PresupuestoImportService.php:830 comparar(); pdc-app/src/pages/ComparativoPresupuesto.tsx
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

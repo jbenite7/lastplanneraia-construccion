@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-20-replanteo-coloreado-estados.md
@@ -475,3 +475,13 @@ Felipe rechazó dos rondas y sus críticas rediseñaron Semanal y parieron una p
 3. **Lección medida del ciclo**: dos lecturas visuales del asistente sobre miniaturas de 1180
    alucinaron tarjetas claras (56/60 píxeles muestreados eran oscuros) — la evidencia de detalle
    va a 2x; y las sondas esperan el tema estable antes de capturar.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** tests/design-system/state-solid-contract.test.mjs existe; 19 ocurrencias de ds-state-solid en tokens.css y 8 claves "solid" en state-semantics.json; goal con Cierre del 2026-08-21 publicado sobre 2ad7331f con publicar.sh --solo-verificar RC=0
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

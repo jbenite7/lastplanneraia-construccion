@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [lps]
 fuente: docs/superpowers/plans/2026-08-19-semanal-fondo-por-matiz.md
@@ -216,3 +216,13 @@ Los goldens de Semanal **van a fallar**. No los regeneres.
 - [ ] **Step 3:** Solo con el sí, `--update-snapshots`, y actualiza los `sha256` del manifiesto si los ancla.
 - [ ] **Step 4:** `bash scripts/publicar.sh --solo-verificar`, escribe `## Publicaciones` y `## Cierre` en el `goal.md`, y entrega el sha a la coordinadora para visto.
 - [ ] **Step 5:** Con el visto, publica con `bash scripts/publicar.sh` y devuelve el contenedor a la raíz.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** goal.md:122-170 con Cierre del 2026-08-19 y publicar.sh --solo-verificar 4/4; tests/design-system/semanal-matiz.test.mjs; 114 ps-state- en programacion-semanal.css
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

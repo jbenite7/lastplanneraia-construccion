@@ -44,3 +44,13 @@ cierre, pasos 6-8). No se empuja para ver qué pasa.
   `contadores-cero`, donde regenerar habría congelado deriva ajena.
 - **La corrida de CI falla por algo ajeno** → se anota con su sha y se escala; no se estrecha el
   gate para que pase.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** Fase 2 lograda (closeout-evidence.json:46-49 runtime-budgets passed) pero Fase 3 no: full-app-flow sigue con recibo regenerado localmente y sin runId de GitHub Actions
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

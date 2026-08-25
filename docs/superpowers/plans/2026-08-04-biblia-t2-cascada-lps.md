@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [lps]
 fuente: docs/superpowers/plans/2026-08-04-biblia-t2-cascada-lps.md
@@ -319,3 +319,13 @@ npm run test:wiki
 ```
 
 Y las condiciones de hecho del spec que aplican a T2. La validación en navegador que exige `AGENTS.md` la cubren las pruebas de la Task 6, que corren contra el contenedor en el viewport canónico.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/flujos/lps-{programa-general,intermedia,semanal,aprendizaje,cascada}.md; e2e/tests/biblia/cascada-lps.spec.mjs; README.md:94
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

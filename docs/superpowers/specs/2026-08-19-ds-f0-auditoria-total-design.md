@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-ds-f0-auditoria-total-design.md
@@ -68,3 +68,13 @@ medidor. Se deja el hueco marcado, no se rellena con una cifra que no se pueda d
 `docs/design-system/auditoria/` con el inventario completo por módulo y por severidad; cada
 hallazgo con archivo, línea y por qué se clasificó así; los huecos que dependen del CI marcados como
 tales y no rellenados. Cero cambios en código de producto.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano; hallazgos.json y hallazgos.schema.json
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

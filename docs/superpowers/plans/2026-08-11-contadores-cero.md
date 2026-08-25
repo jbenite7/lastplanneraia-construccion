@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-contadores-cero.md
@@ -95,3 +95,13 @@ pantallas). Todo en `decisiones/contadores-cero.md`.
 
 Menos elementos en pantalla, medido con número antes y después; la guarda del filtro verificada;
 la reversión verificada; y `static` sin regresión contra 7/8.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** hot.js:39 OCULTAR_CONTADORES_EN_CERO=true y :3261 toggleClass is-empty; programacion-intermedia.css:1799
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

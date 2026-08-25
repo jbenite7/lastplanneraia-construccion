@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-14
 areas: [rbac, lps]
 fuente: docs/superpowers/specs/2026-08-14-fixture-ci-semanal-roles-design.md
@@ -108,3 +108,13 @@ Cinco unidades, en orden, cada una verificable sola:
 - `memoria/trampas/el-dato-esta-en-desarrollo-y-el-permiso-en-el-stack-aislado.md`
 - `memoria/trampas/fijar-un-dato-de-la-base-en-un-test-lo-podre.md`
 - `AGENTS.md` §Verificación y §Publicación
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem; gate passed con 15 casos; los 4 test.skip son el candado que la spec exige conservar
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-11-contrato-estados-modulo-fantasma.md
@@ -69,3 +69,13 @@ con el sha, publicar **ese** sha en comando aparte, confirmar sin `ahead`/`behin
 
 No toca la vista, el CSS, el manifiesto ni las excepciones de `programa-general-actualizar`: el
 módulo sigue existiendo como pantalla. Solo deja de declarar estados que no pinta.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** programa-general-actualizar retirado de state-semantics.json; states-feedback.test.mjs:248 ya no exige >=13; docs/decisiones-pendientes.md:929-1001
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

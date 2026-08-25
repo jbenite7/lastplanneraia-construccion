@@ -351,3 +351,13 @@ npm run test:wiki
 Y comprueba las condiciones de hecho del spec (`docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md` §Condición de hecho) que aplican a T3: escenarios descritos y verificados con cita (incluidas las deudas de datos), críticos con prueba citando su `id`, hallazgos en el backlog sin arreglar, wiki enlazada y en verde.
 
 **Sobre la validación en navegador:** T3 toca superficie observable y mutación de datos reales del sandbox, así que la evidencia de Playwright contra el proyecto 990100 es la validación exigida. No se corre nada contra Da Porto ni contra otro proyecto real.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** MANDA 3 documentos (pdc-presupuesto-maestro/pdc-paquetes/pdc-plan-seguimiento) y ninguno existe: solo docs/flujos/compras-v2.md. README.md:95 «Falta la cadena de dominio»
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

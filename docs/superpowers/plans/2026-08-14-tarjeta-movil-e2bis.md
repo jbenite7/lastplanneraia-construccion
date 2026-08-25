@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-14
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-14-tarjeta-movil-e2bis.md
@@ -871,3 +871,13 @@ Unificar los dos renderizadores en una primitiva común (son HTML por concatenac
 | `saveRow` de Intermedia revienta sin grilla montada. | La Task 5 Step 2 lo comprueba explícitamente contra el mismo patrón que apareció en Semanal. |
 | La tarjeta desplegada de Intermedia queda enorme con siete controles. | Es aceptado por `E2-bis-c` y solo una está abierta a la vez; la Task 7 mide la cerrada, que es la que multiplica por 78. |
 | Los tokens CSS citados no existen. | Cada bloque de CSS lleva su `grep` de comprobación y la instrucción de no introducir literales. |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** public/js/modules/aia_ui/card-title.js; programacion_semanal/hot.js:3646,3660,3674; programacion_intermedia/hot.js:4824,4883-4884,4921; tests/browser/programacion-movil-tarjeta.mjs
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

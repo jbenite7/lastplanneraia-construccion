@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-28
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-28-responsable-usuario-proyecto-design.md
@@ -124,3 +124,13 @@ que lo verificable se prueba y la estética se mira.
 
 Limpiar los usuarios de prueba de DAPORTO, arreglar el usuario con el correo en el campo
 `cargo`, y notificaciones — eso es B1.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** columna responsable_user_id usada en PlanFechasService, SubpaquetesService y SeguimientoService; tests/browser/pdc-v2-responsable.spec.mjs
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

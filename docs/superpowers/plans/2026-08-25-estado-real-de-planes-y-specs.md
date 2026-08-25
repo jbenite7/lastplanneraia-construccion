@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-25
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs.md
@@ -194,3 +194,72 @@ primero es un dato, el segundo es ruido.
 - **Que otra sesión, otro goal o el propio documento lo diera por cerrado sin cita.** Es
   precisamente lo que falló en `biblia-t5-lectura`.
 - **La coincidencia de slug con un goal cerrado.** Degradada a indicio por la Tarea 0.
+
+---
+
+## Resultado de la Tarea 3 — los 127, uno por uno
+
+Repartidos en 12 lotes por orden de slug (las familias `biblia-*`, `pdc-*`, `ds-*`, `p1..p6` caen
+juntas). Los lotes los verificaron subagentes que **devolvían evidencia, nunca el `estado`**; los
+veredictos de baja confianza y los desacuerdos los resolvió el turno principal a mano.
+
+| Estado | Cuántos | Qué significa ahora |
+|---|---:|---|
+| `cerrado` | **105** | Artefacto verificado en el árbol, gate citable o entrada de CHANGELOG — y ninguna Task entera sin ejecutar |
+| `vigente` | **19** | El trabajo sigue abierto, con el motivo escrito en el propio documento |
+| `derogada` | **3** | La decisión dejó de ser cierta, con lo que la sustituyó |
+
+Sumados a los 13 que ya estaban sellados, `docs/superpowers/` queda en **118 `cerrado` · 22
+`vigente` · 3 `derogada`** sobre 142 documentos. De esos 22 `vigente`, 19 son afirmaciones
+verificadas, 2 son esta spec y este plan, y **uno es un falso positivo del recuento**: la línea 58
+de `plans/2026-08-20-deuda-ci-frente-2.md` está dentro de un bloque de código que muestra el
+frontmatter de un goal de ejemplo. Su metadato real dice `cerrado`.
+
+### Los 19 que siguen abiertos, y por qué
+
+Vale la pena mirarlos juntos, porque no son un residuo: son **la cola de trabajo real del repo**.
+
+- **Producción, tres veces.** `despliegue-pdc-v2-produccion`, `cierre-hasta-produccion` y
+  `p5-cierre-hasta-produccion` esperan lo mismo: `lastplanneraia.com` sigue en `1aa7c69` del
+  2026-07-16, con cero tablas `pdc_*`. Solo se desplegó a `prueba-lps`.
+- **Las tres tandas de la biblia** (`t3` PDC, `t4` soporte, `t5` lectura), todas por el mismo
+  defecto: el goal cerró un alcance menor que el del plan. Es el hallazgo de la Tarea 0
+  multiplicado por tres.
+- **Móvil y tema claro** (`p4`), **el contrato del design system** (`p3`), **la higiene
+  documental** (`p6`) — la cola que `p1` ya nombraba.
+- Y siete más: `usabilidad-altas-y-medias` (18 de 26 hallazgos sin tocar),
+  `cierre-de-diseno-impeccable`, `linea-base-contractual`, los dos de `runtime-budgets-al-ci`
+  (falta darle a `full-app-flow` procedencia de una corrida real de Actions),
+  `roadmap-pdc-v2`, `reparto-trabajo-pendiente`, `replanteo-control-tower`,
+  `estado-consolidado-del-repo` y `espacio-cuenta-siteground` (sin acceso al servidor).
+
+### Los 3 derogados
+
+- `plans/2026-08-04-c1-retiro-pdc-viejo` — archivado sin ejecutar; el retiro se hizo por otra vía.
+- `specs/2026-08-19-estados-severidad-contrato-design` — el propio documento se declara
+  subordinado al contrato de tres niveles que lo sustituye.
+- `plans/2026-07-28-chips-tonos-pdc-y-punto-de-nivel` — su premisa era armonizar el matiz entre
+  cuatro módulos incluido `/pdc`, y el PDC v1 se eliminó el 2026-08-04.
+
+### Irresolubles: ninguno
+
+El plan reservaba una lista para los que no se pudieran verificar. **Queda vacía, y eso se
+declara en vez de omitirse.** Siete llegaron con confianza baja desde los lotes
+—`chips-tonos-pdc`, `cierre-prelanzamiento-pdc`, `lint-wiki-memoria`, `reparto-trabajo-pendiente`,
+`replanteo-coloreado-estados`, `replanteo-control-tower`, `shell-layout-design-system`— y los siete
+se resolvieron a mano en el turno principal. Si alguno se hubiera quedado sin resolver, estaría
+escrito aquí con su nombre.
+
+### El contraste que conviene no perder
+
+Dos documentos dejaron una Task sin ejecutar. Solo uno cuenta como abierto:
+
+| | `biblia-t5-lectura` | `control-tower-f0-higiene-datos` |
+|---|---|---|
+| Task sin ejecutar | Task 3, la prueba `e2e` | Task 6, el retiro de tablas |
+| ¿El plan admitía no hacerla? | Sí, documentando el hueco | Sí, con «constancia escrita de por qué no» (línea 526) |
+| ¿Se documentó? | **No** | **Sí** — `notas/2026-08-20-retiro-pdc-v1.md:127-131`, con decisión de Felipe |
+| Veredicto | `vigente` | `cerrado` |
+
+**La diferencia no es cuánto se hizo: es si quedó escrito por qué no se hizo el resto.** Un plan
+puede cerrar con trabajo pendiente; lo que no puede es cerrar callándolo.

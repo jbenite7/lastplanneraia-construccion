@@ -189,3 +189,13 @@ que se escribió esta spec.
 - Reglas de tráfico: [[docs/coordinacion-sesiones]]
 - Lista viva de pendientes: [[TASKS]]
 - Auditoría de partida: [[docs/superpowers/reports/2026-08-20-auditoria-estado-specs]]
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** el propio documento declara en §8 «no ejecuta nada»; delega en P1-P6, de los que solo P1 y P2 tienen Cierre con contenido
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

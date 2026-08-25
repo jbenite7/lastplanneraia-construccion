@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-22
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-22-lab-colapsado-primitiva.md
@@ -123,3 +123,13 @@ que asuma `expanded` de arranque (el toggle sigue alternando ambos en runtime).
 - Mobile/tablet (390 se regenera por coherencia de árbol, no se rediseña); linen se regenera pero
   el alcance de diseño es dark desktop.
 - Tocar `family-approvals.json` o el candidato aprobado.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem; shell-sidebar.css conserva solo los flyouts scopeados, como la spec decide
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

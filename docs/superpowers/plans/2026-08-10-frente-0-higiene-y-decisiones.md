@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-10
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-10-frente-0-higiene-y-decisiones.md
@@ -768,3 +768,13 @@ Reportar: qué se verificó con qué comando y qué resultado, qué quedó fuera
 **Dependencias entre tareas:** Task 1 → Task 2 (no borrar la rama antes de extraer B-10). Task 3 → Task 4 y → Task 7 Step 2. Task 8 consume todas. El resto es independiente y puede reordenarse.
 
 **Dónde puede pararse este plan legítimamente:** Task 0 Step 1 si el worktree tiene algo ajeno; Task 1 Step 1 si el cherry-pick entra en conflicto; Task 2 Step 3 si `git branch -d` se resiste. Los tres son «PARAR y reportar», no «resolver a ojo».
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** tests/test_password_reset_resultados.php; tests/browser/programa-general-actualizar.visual.mjs; ramas-viejas-2026-08-03.md:66 con su Cierre; goals/design-system-nucleo-gobernanza/goal.md:15 declara honestamente por que sigue abierto
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

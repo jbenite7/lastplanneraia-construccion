@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-04-semana-en-sesion-solo-por-navegacion.md
@@ -495,3 +495,13 @@ git commit -m "test(ps): la suite vuelve a vigilar la carrera de semana sin espe
   castear a entero. Es una navegación legítima, así que el agujero de este plan no la incluye, pero
   merece pasar por el mismo tamiz algún día.
 - Los demás fallos de la suite de Programación Semanal (`.ps-weekly-phase-title`).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** SessionMiddleware.php ya no asigna $_SESSION['semana']; syncRequestedWeekContext en los cuatro controladores de pagina; ningun Api/ la asigna
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

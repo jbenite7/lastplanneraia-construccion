@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-estados-severidad-contrato.md
@@ -711,3 +711,13 @@ cd /Users/felipebenitez/Developer/lps-aia && LPS_CODE_ROOT="$(pwd)" docker compo
 ## Dónde parar
 
 **Al terminar la Task 5, Programación Intermedia está completa y verificable por sí sola.** Las Tasks 6 y 7 extienden el modelo a las otras tres superficies con las primitivas ya hechas. Si el usuario ve Intermedia y no le convence, se para ahí y se revierte un frente de cinco tasks, no de ocho.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** severity-rail.css; data-aia-severity-rail en programa_general/hot.js; axisRules en state-semantics.json. Tasks 6-8 sustituidas bajo el contrato de ds-f1a, con constancia en goals/ds-f1a-estados-severidad/goal.md:163
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -439,3 +439,13 @@ Verificados con `git stash` el 2026-08-03; no son de ninguna de estas líneas y 
 - `tests/browser/support/contrast.mjs` existe desde el 2026-07-28 y compone alfa sobre los
   ancestros. **No escribir otra sonda de contraste**: varias superficies del sistema son
   translúcidas y medirlas sin componer da cifras inventadas.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** el propio documento (linea 14) declara «A cerrada · B1 a medias · el resto sin empezar». De ocho lineas de trabajo A-H, seis no han empezado: sigue siendo el reparto vivo
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

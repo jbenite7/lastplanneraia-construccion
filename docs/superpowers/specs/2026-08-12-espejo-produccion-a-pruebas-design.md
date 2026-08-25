@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-12
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-12-espejo-produccion-a-pruebas-design.md
@@ -63,3 +63,13 @@ producción en mantenimiento, la reparación y la nivelación se aplicaron tambi
 
 Condición de hecho: **cumplida** (edición en PI de pruebas sin error, conteos cuadrados).
 Bitácora de la wiki: `memoria/referencias/espejo-y-reparacion-unique-id.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** seccion «## Cierre (2026-08-12)» con conteos (25.708 consolidado, 1.422 semanal), smoke sobre Da Porto y respaldo pre-mantenimiento citado
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

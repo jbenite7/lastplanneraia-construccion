@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-03-saneamiento-deudas-usabilidad-design.md
@@ -150,3 +150,13 @@ clean`. Medir la línea base con cambios sin commitear lo cuenta como rojo propi
 - Plan en curso: [2026-08-03-usabilidad-altas-y-medias](../plans/2026-08-03-usabilidad-altas-y-medias.md)
 - Inventario de origen: [inventario-usabilidad](../../../goals/repaso-usabilidad-no-tablas/inventario-usabilidad.md)
 - Estado de los goals: [estado](../../../memoria/goals/estado.md)
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

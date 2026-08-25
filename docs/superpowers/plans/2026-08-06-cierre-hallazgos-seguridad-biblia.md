@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-06-cierre-hallazgos-seguridad-biblia.md
@@ -438,3 +438,13 @@ Esperado: `OK` los cuatro.
 git add docs/EXPERIMENTS.md
 git commit -m "docs(seguridad): las filas 24-26 y 49 de EXPERIMENTS.md cierran con sus commits"
 ```
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** SubcontratistasApiController.php:69 legacy_require_csrf; SemanalApiController.php:130,150,190; GeneralApiController.php:1740 assertNotPastWeekOrPrivileged; tests/test_csrf_modulos_api.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

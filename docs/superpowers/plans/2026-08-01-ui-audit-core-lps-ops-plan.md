@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-01
 areas: [lps]
 fuente: docs/superpowers/plans/2026-08-01-ui-audit-core-lps-ops-plan.md
@@ -149,3 +149,13 @@ resumen: Estandarizar al 100% las pantallas de Auth, Selector de Proyecto, Core 
   git add views/profesionales/ views/subcontratistas/ views/indicadores/ views/control-cambios/
   git commit -m "style(ops): impeccable polish on operational surfaces"
   ```
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** login.view.php usa aia-btn/aia-input y cero clases Bootstrap; mismo resultado en project_selector, profesionales, programa_general, programacion_semanal y subcontratistas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

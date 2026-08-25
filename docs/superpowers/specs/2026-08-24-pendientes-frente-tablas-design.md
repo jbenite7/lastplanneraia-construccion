@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [design-system, bi, qa]
 resumen: "Cierre de cuatro pendientes diferibles que dejo el frente de tablas: fugas de tipografia, color de rol en BI, las listas de SQL de CI y el gemelo callado del filtro de cabecera"
@@ -171,3 +171,13 @@ Ya puso el gate en rojo dos veces.
    relleno de estado, dirigido a DS-F1.
 4. Publicado en `main` con `bash scripts/publicar.sh` (el del repo: `--solo-verificar` y
    `--con-merges`; **no** acepta `-v/-p/-m`).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** ControlTowerService.php:2866-2872 devuelve critical/brand-*; cero status-* de relleno; tokens.css:139 --ds-font-icon; CHANGELOG.md:153-164
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

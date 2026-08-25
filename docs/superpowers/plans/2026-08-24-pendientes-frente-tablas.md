@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [design-system, bi, qa]
 fuente: docs/superpowers/plans/2026-08-24-pendientes-frente-tablas.md
@@ -462,3 +462,13 @@ git fetch origin && git rev-parse origin/main && git rev-parse HEAD
 ```
 
 Los dos SHA deben coincidir. Si no, no esta publicado y el frente no esta cerrado.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem; ademas ci-preflight.mjs:10 exporta EXPECTED_INIT_COPIES y su test la importa; goal con Cierre y sha anotado
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

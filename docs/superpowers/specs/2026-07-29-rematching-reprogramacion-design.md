@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-rematching-reprogramacion-design.md
@@ -88,3 +88,13 @@ existe, el alcance se recorta y se anota; no se reimplementa.
 - **La medición puede cambiar el spec.** Es el motivo de que el punto 1 sea un hecho y no un supuesto.
 - **Recalcular es la operación que más daño puede hacer** en todo el módulo: toca las fechas de las que
   cuelga el trabajo de la obra. Por eso simula y pide confirmación en vez de aplicar y avisar.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** commit de cierre 3a0da33 citado tambien en goals/pdc-preparar-b1/estado-olas.md; PlanFechasService.php existe; docs/pdc-v2.md:243 confirma que el re-matching funciona
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

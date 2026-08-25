@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-29-tamiz-presupuesto-design.md
@@ -101,3 +101,13 @@ resúmenes) y se etiqueta como una de dos magnitudes, con la misma palabra siemp
   código corra.
 - **Los insumos vacíos pueden ser legítimos** (partidas previstas sin valorar todavía). El aviso dice
   «mira esto», nunca «esto está mal», y el texto tiene que sonar así.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** pdc-app/src/lib/tamiz.test.ts y pages/VisorPresupuesto.tsx con los avisos de insumos vacios y globales. PDC v2
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

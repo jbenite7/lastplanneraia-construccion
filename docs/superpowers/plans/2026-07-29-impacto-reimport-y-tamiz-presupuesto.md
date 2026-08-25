@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-29-impacto-reimport-y-tamiz-presupuesto.md
@@ -1751,3 +1751,13 @@ No hacer commit, push ni deploy. Presentar al usuario el resumen de lo verificad
 **Consistencia de tipos:** `consolidarInsumos()` devuelve `apariciones` (nueva) y la consumen Task 4 (`insumosDistintos`) y el comparativo sin usarla — compatible. `ImpactoReimport` en TS espeja el `@return` de `impactoDeReimportar()` clave por clave. `AvisosPresupuesto` espeja el de `avisosDelPresupuesto()`. `contarInsumos(n, magnitud)` se llama con la misma firma en las tres pantallas. `partidasSobreUmbral` recibe `CandidatoGlobal[]`, que es exactamente lo que devuelve `avisos.partidasGlobales.candidatos`.
 
 **Sin marcadores de posición:** todos los pasos de código traen el código; los dos únicos «comprobar antes» (`plural()` en Task 3 Step 3, las rutas del hash en Task 7 Step 1) son verificaciones contra el código existente con instrucción explícita de no inventar, no trabajo diferido.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PresupuestoImportService.php:196,346,644,695; tests/test_pdc_v2_impacto_reimport.php
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

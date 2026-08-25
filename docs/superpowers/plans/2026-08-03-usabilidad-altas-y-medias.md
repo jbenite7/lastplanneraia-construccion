@@ -1567,3 +1567,13 @@ Esperado: sin hallazgos.
 2. **Task 4 antes que Task 26, y volver a la Task 4 al terminar.** El estado vacío de control de cambios nombra una acción que la Task 26 crea. La Task 4 usa texto provisional y la Task 26 lo cierra.
 
 **Dos puntos donde el plan se detiene a propósito:** la Task 25 (freno de H-18) y el Step 1 de la Task 26 (si no existe alta en el backend). En ambos, parar y abrir goal propio es el resultado correcto, no un fallo.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** de los ~10 archivos de prueba que manda crear solo existe tests/browser/ht-empty-state.spec.mjs. Las fases F3, F4 y F5 (18 de 26 hallazgos) sin ejecutar, y goals/usabilidad-altas-y-medias/ no existe
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

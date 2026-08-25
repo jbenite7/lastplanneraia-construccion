@@ -138,3 +138,13 @@ veces.
 
 El contrato escrito y aprobado; Handsontable, DataTables y `legacyCards.js` migrados; los gates
 viejos retirados y los nuevos en verde sobre `main`.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** DS-F1, DS-F2 y DS-F3 sin ejecutar y sin decision que las cancele; p1 lo lista como cola de trabajo pendiente
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

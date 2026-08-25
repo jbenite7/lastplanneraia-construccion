@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-11-semana-fija-visual-design.md
@@ -128,3 +128,13 @@ Si el trabajo acabara necesitándolos, se para y se avisa.
 3. Lo que quede del diff está explicado, o encolado con evidencia si no lo está.
 4. Si se regeneran los goldens: antes/después enseñados antes de firmar, y **mutación ejecutada**
    que demuestre que la captura nueva sabe fallar.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

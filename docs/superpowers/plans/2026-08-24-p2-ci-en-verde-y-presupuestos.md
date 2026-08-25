@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [proceso, design-system]
 fuente: docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos.md
@@ -177,3 +177,13 @@ sha ya estaba publicado (push incremental por tarea, siguiendo la regla de commi
 **Pendientes anotados en `TASKS.md`, no bloqueantes:** paralelizar PHPStan (G7, sin datos
 suficientes todavía) y los dos hallazgos de `cache-poisoning` de zizmor (riesgo evaluado, aceptado
 por ahora).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** dos secciones Cierre: corridas reales 32776968532/32786522052/32789042846 en verde y closeout-evidence.json 9/9; renombrado a ci.yml en 3c670c5c con corrida 32791129071
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

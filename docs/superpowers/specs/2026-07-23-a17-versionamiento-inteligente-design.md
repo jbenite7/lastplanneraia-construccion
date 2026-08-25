@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-23
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-23-a17-versionamiento-inteligente-design.md
@@ -89,3 +89,13 @@ Al cargar el presupuesto real **DAPORTO** (`102 - 2026 09 DAPORTO - RIONEGRO - P
 | Backfill de `version_numero` con 20+ versiones de prueba en Da Porto | `ROW_NUMBER()` por proyecto ordenado por created_at; idempotente (solo setea donde numero=0) |
 | Anti-duplicado demasiado estricto bloquea un re-cargue legítimo | Compara solo contra la **activa** (no todo el historial): volver a una versión anterior distinta de la activa SÍ crea versión; recargar exactamente lo activo no |
 | `contenido_hash` NULL en históricas | La comparación trata NULL como "distinto" (no dispara sinCambios); se puebla al primer re-cargue |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** PresupuestoImportService.php con version_numero/contenido_hash; pdc-app/src/lib/historialVersiones.ts y su test
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

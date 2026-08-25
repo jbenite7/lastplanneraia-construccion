@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-04-biblia-de-flujos-design.md
@@ -155,3 +155,13 @@ mode) y este proyecto se entrelaza con él en vez de duplicarlo:
   escribirlo no se puede afirmar nada que el código no diga ya, ese escenario sobra.
 - **Cinco tandas es mucho alcance.** Por eso se escriben los cinco planes pero se ejecuta por
   matriz: cada tanda cerrada vale por sí sola aunque las siguientes se aplacen.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/flujos/README.md con clausula de autoridad y las cinco tandas; T1 con sus 3 documentos y su prueba
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

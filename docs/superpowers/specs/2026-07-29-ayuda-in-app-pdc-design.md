@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [pdc]
 fuente: docs/superpowers/specs/2026-07-29-ayuda-in-app-pdc-design.md
@@ -89,3 +89,13 @@ justo cuando la persona está bloqueada.
   cambio no está terminado.
 - **El recorrido puede estorbar** a quien ya sabe. Por eso es omitible en el primer clic y nunca
   reaparece solo.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** pdc-app/src/components/{BotonAyuda,Recorrido}.tsx y lib/{ayuda,recorrido}.ts con tests; importados en 8 pantallas
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

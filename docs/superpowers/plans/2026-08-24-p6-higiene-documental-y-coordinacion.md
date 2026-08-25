@@ -113,3 +113,13 @@ transmite por otro agente.**
 `CHANGELOG.md` en orden con recuento de entradas intacto; ningún goal ejecutado contado como
 abierto; el estado de coordinación visible desde cualquier worktree; y las dos reglas nuevas
 escritas en [[docs/coordinacion-sesiones]].
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** ocho tareas sin seccion de Cierre ni resultado reportado dentro del documento: es lista de pendientes, no bitacora
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

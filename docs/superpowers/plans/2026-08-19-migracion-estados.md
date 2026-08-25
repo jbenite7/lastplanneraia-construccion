@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [datos]
 fuente: docs/superpowers/plans/2026-08-19-migracion-estados.md
@@ -435,3 +435,13 @@ sustituye ni el visto de la coordinadora ni una autorización relatada.
 - [x] Publicar el sha visado. Con él viajan `5759b13d` y `a7ac08d0`.
 - [x] Confirmar `origin/main`.
 - [x] Anotar el cierre en `goals/migracion-estados/goal.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** goals/migracion-estados/goal.md:74-133 con las 6 condiciones y publicacion 7da358a7; migracion, CSV e informe dry-run existen. El --apply no se ejecuto por diseno del propio plan
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

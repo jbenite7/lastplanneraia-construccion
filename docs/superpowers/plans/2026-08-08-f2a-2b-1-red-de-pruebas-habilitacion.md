@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-08
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-08-f2a-2b-1-red-de-pruebas-habilitacion.md
@@ -244,3 +244,13 @@ git commit -m "docs(design-system): los dos manifiestos declaran la red de habil
 ## Fuera de alcance
 
 Extraer las reglas, cambiar el umbral, dejar de montar Handsontable, hacer que Intermedia edite, y la evidencia móvil. Todo eso viene después, con esta red puesta.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** p4:23-26 MO-F2a-2b cerrada; public/js/modules/aia_ui/shell-drawer.js y shouldRenderCards() en programacion_semanal/hot.js
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

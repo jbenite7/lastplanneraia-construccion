@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [pdc]
 fuente: docs/superpowers/specs/2026-08-06-pdc-filtros-y-buscadores-design.md
@@ -174,3 +174,13 @@ resto del módulo, **sin hex nuevos**.
 
 Paginación, exportación a CSV, resaltado de la coincidencia dentro de la celda, persistencia
 de filtros, filtrado en servidor, y cualquier trabajo para mobile, tablet o tema `linen`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

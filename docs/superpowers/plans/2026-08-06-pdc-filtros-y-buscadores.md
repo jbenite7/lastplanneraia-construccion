@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-06
 areas: [pdc]
 fuente: docs/superpowers/plans/2026-08-06-pdc-filtros-y-buscadores.md
@@ -1597,3 +1597,13 @@ git commit -m "feat(pdc): skin de selectores, embudos y chips con tokens del des
 **Hallazgo posterior al spec, que le añade coste real:** ~20 llamadas `selectOption()` en 10 specs de Playwright apuntan a los `<select>` que se sustituyen. La Task 4 crea el ayudante `elegirEnSelector` y la Task 5 migra las llamadas, spec por spec. Y `<select>` son **31**, no 15: el spec contó por página, no por elemento.
 
 **Dependencia circular entre tareas:** la Task 6 importa `FiltroLista`, que crea la Task 7. Si se ejecutan en orden, haz la 7 antes que la 6, o crea el archivo con el esqueleto y vuelve (queda dicho en el Step 5 de la Task 6).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** los seis artefactos existen: components/{ListaBuscable,Selector,FiltroLista,BarraFiltros}.tsx y lib/{listaBuscable,filtroLista}.ts; migracion de los 31 select completa; skin en styles.css. Queda un hueco documental (CHANGELOG y carpeta de evidencia de la Task 10) que no afecta al producto
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-03
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-03-lint-wiki-memoria-design.md
@@ -132,3 +132,13 @@ las 42 páginas depende de la base, y el grafo tampoco.
 
 - La arquitectura por módulos: va en su propio spec, después de este.
 - Reescribir notas migradas que el lint no señaló.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** scripts/wiki-lint.mjs existe y es lo que corre npm run test:wiki; memoria/paginas.base existe; la familia wiki-*.mjs completa (esquema, frontmatter, registro, veracidad, vistas)
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

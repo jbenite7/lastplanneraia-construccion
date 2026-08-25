@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-29
 areas: [pdc]
 fuente: docs/superpowers/specs/2026-07-29-cierre-prelanzamiento-pdc-design.md
@@ -104,3 +104,13 @@ test da hoy es un parche que le pide al humano acordarse.
 - **El punto 3 puede destapar más trabajo del previsto.** Dieciséis rojos sin diagnosticar pueden ser
   dieciséis nimiedades o dos bugs reales. Si aparece un bug real de datos, sube a bloqueante del
   lanzamiento y hay que decirlo el mismo día, no al final de la ola.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** spec:19 declara cerrado con 88c37b8, que esta en origin/main (git merge-base --is-ancestor: SI); goals/pdc-preparar-b1/hallazgos-piloto.md existe como el hueco reservado, cerrado vacio por decision de Felipe
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

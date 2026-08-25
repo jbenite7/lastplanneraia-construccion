@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-10
 areas: [lps]
 fuente: docs/superpowers/plans/2026-08-10-frente-1b-cascada-lps.md
@@ -1111,3 +1111,13 @@ Programacion Semanal, no Intermedia."
 **La única excepción a «anota y sigue»:** un `200` donde se espera `403` (T1 Step 5, T7 Step 4). Eso no es una decisión de producto, es un agujero de permisos abierto, y se avisa **de inmediato** hacia arriba en vez de encolarse.
 
 **Lo que este plan no cubre:** los 16 hallazgos de la tanda 1C, que reciben su propio plan al cerrar esta —escribirlo por adelantado repetiría el error de la 1A, cuyo plan se quedó obsoleto a mitad porque el repo se movió mientras se ejecutaba—. Tampoco la fase 9 de `improve-app`, que corre en frío al cerrar el frente entero.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** public/js/design-system/save-status.js; tests/design-system/cascada-lps-a11y.test.mjs; syncEmptyState/mostrarFilasBloqueantes/aria-pressed en programacion_semanal/hot.js
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

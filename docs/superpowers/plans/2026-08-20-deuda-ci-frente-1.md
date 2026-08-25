@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-20-deuda-ci-frente-1.md
@@ -447,3 +447,13 @@ bash scripts/publicar.sh
 - **Cobertura del spec:** G1 → Tasks 1 y 3; G3 → Task 2; G5 → Task 4; diferidos y G6 → Task 5; verificación A (PR) → Task 6; cierre → Task 7. Frente 2 queda explícitamente fuera (su plan se escribe tras el cierre).
 - **Placeholders:** ninguno — SHAs, versión y checksum de actionlint, contenidos completos de dependabot.yml, goal.md y entradas de wiki están en el cuerpo.
 - **Consistencia:** el nombre del paso nuevo («Lint the workflow definitions») es idéntico en Task 4 y Task 6; la rama `claude/deuda-ci-frente-1` es la misma en Tasks 1, 6 y 7; la condición «sin rojos nuevos» está definida una sola vez (Global Constraints) y referida desde Tasks 6 y 7.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** ci.yml:71,88,131,134 actions pineadas por SHA; :31,128 timeout-minutes; :77-85 actionlint por checksum; .github/dependabot.yml; CHANGELOG.md:357-363
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

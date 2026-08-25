@@ -1007,3 +1007,13 @@ debe tomarse sabiéndolo.
 **Fuera de alcance, dicho explícitamente:** el frente de forma de `D-F1-6` (páginas de error dentro
 del shell, unificar los vocabularios de estado, y la regla de no cerrar sin haber quitado algo) va
 **después** del despliegue, con su propio spec y su propio plan.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** F-0, F-AB y F-C cerrados con SHA y corridas; F-E parcial: «PRUEBAS desplegado, PRODUCCION no». La condicion de hecho del plan exige produccion
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

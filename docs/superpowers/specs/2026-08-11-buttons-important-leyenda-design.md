@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-11-buttons-important-leyenda-design.md
@@ -145,3 +145,13 @@ bueno es el de la tabla de arriba: comentarios eliminados, pila de llaves para e
 `@media`/`@layer`, y sin truncar. Es la misma familia que
 `memoria/trampas/el-dom-dice-que-existe-no-que-se-ve.md`: **el instrumento tiene que responder a la
 pregunta que se está haciendo.**
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem; spec:120-125 con el censo 41-16 y 160-138
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

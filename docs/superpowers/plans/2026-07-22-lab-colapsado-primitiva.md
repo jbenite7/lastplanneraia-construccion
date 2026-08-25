@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-22
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-22-lab-colapsado-primitiva.md
@@ -297,3 +297,13 @@ git stash -u >/dev/null 2>&1; node scripts/design-system-contracts.mjs; git stas
 - [ ] **Step 3: Reporte al usuario**
 
 Qué se verificó (comandos + resultados), goldens regenerados y aprobados, y opciones de cierre de rama (merge/push a main como en las features anteriores). Rama actual del worktree.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** navigation.css:135-533 con las primitivas del colapsado promovidas sin scope; shell-sidebar.php:15 initialState collapsed
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

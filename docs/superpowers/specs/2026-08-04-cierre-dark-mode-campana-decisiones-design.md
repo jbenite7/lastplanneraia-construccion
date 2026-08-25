@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-04
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-04-cierre-dark-mode-campana-decisiones-design.md
@@ -201,3 +201,13 @@ cambio de UI sin un hallazgo medido detrás**, y cada cambio embarcado queda com
 - **F3-4 (anchos)** cambia geometría de tablas virtualizadas; se mide con datos reales antes y
   después, en solo lectura.
 - **Los goldens solo se recapturan una vez revisados** (F2-1); ninguna task de fase 3 arranca antes.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

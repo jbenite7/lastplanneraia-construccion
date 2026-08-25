@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-24
 areas: [bi, rbac]
 fuente: brainstorming con Felipe, 2026-08-24
@@ -81,3 +81,13 @@ servidor (D46), no la hoja.
 - El interruptor de replanificación de Curva S y los demás pendientes abiertos de la spec padre
   (sección 18), que siguen abiertos y no los toca esta decisión.
 - Cualquier cambio a las 8 hojas mismas: esta spec solo reparte, no rediseña contenido.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

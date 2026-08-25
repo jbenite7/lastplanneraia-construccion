@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-11-contadores-cero-design.md
@@ -189,3 +189,13 @@ cambio no la altera. El test falla por deriva **preexistente** —el selector de
 confirmado ejecutando el mismo test contra el árbol principal **sin este código**: falla igual y en
 las mismas dos zonas. Regenerar habría congelado una deriva ajena, y un número de semana que cambia
 según cuándo se corra, bajo una firma nueva.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem; seccion «Resultado medido» con 8-1 chips y 64-57 controles
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

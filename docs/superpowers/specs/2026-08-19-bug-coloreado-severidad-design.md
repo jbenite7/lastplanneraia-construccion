@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-19-bug-coloreado-severidad-design.md
@@ -63,3 +63,13 @@ en vez de uno más por revisar.
 Un diagnóstico escrito que responde cuál de las tres es, con evidencia: capturas a 1180×820 dark
 por sesión real (puerta de servicio, nunca `/login`), valores computados y, si es bug, la línea que
 lo causa y cómo reproducirlo. Cero cambios en producto.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano; diagnostico.md:22
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

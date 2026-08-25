@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-ds-f0-auditoria-total.md
@@ -52,3 +52,13 @@ Ordenar todo por severidad «Crítico → Sin problema». Marcar los huecos que 
   arreglo «de paso» rompe la premisa de DS-F1, que decide el contrato **con el inventario delante**.
 - **El inventario crece hasta ser inmanejable** → por eso va por lotes y en formato consultable por
   máquina; si un lote no cabe, se parte.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** docs/design-system/auditoria/ completo: inventario.md, escala-severidad.md, censo-modulos.{md,json}, transversal.md, modulos/ (11 fichas), vendors/
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-20
 areas: [bi, rbac, admin]
 fuente: brainstorming con Felipe, 2026-08-20
@@ -107,3 +107,13 @@ pull → composer → migración → smoke.
 
 Se creará `goals/<slug>/goal.md` al arrancar la implementación, enlazando este spec y
 `memoria/goals/estado.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

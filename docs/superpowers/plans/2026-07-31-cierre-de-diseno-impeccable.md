@@ -188,3 +188,13 @@ Expected: Reporte de barrido ejecutado y validado.
 git add .claude/settings.json docs/superpowers/plans/2026-07-31-cierre-de-diseno-impeccable.md
 git commit -m "chore(design-system): spec de cierre de diseño e integracion de hook de Impeccable"
 ```
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** Task 2 y 3 sin ejecutar: hot_actualizar.js y programacion_intermedia/hot.js siguen con los hex que el plan manda reemplazar por tokens
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -548,3 +548,13 @@ git status -sb | head -1
 ```
 
 Esperado: ni `ahead` ni `behind`.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** no hay acceso al servidor; commit 0a79d905 «espacio-cuenta-siteground NO cierra». Tareas 1-5 sin ejecutar
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-24
 areas: [rbac, bi]
 fuente: docs/superpowers/plans/2026-07-24-control-tower-shell-dark.md
@@ -253,3 +253,13 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ## Notas de ejecución
 - Tras Task 5, hacer review final de rama (whole-branch) y, con aprobación, push a origin/main (como en el rollout).
 - Si el dark de las 8 hojas (Task 4) resulta demasiado grande, fasear: entregar Resumen + hojas con charts primero, y documentar en el ledger las hojas pendientes (no marcar el goal completo hasta cerrarlas).
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** views/bi/_layout.php:18,20 shell+sidebar; foundation-shell.json:8-12 con las 8 rutas /bi/*; bi_filter_drawer.js y bi_chart_theme.js
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

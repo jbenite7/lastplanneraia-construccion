@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-estados-fuera-de-ventana.md
@@ -522,3 +522,13 @@ git commit -m "docs(memoria): la trampa del contenedor compartido durante una ve
 - [x] Publicar el sha exacto visado. `5759b13d` viaja en este cierre.
 - [x] Confirmar que `origin/main` coincide con el sha anotado.
 - [x] Anotar el cierre en `goals/estados-fuera-de-ventana/goal.md`.
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** tests/unit/EstadoProgramaGeneralTest.php; «Fuera de Ventana» en src/Legacy/estado_programa_general.php y src/Core/Lps/LpsService.php; publicado 5759b13d
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

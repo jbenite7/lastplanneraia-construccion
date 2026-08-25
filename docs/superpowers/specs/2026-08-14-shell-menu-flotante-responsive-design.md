@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-14
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-14-shell-menu-flotante-responsive-design.md
@@ -132,3 +132,13 @@ y el montaje condicional de Handsontable, que son las Tasks 4 y 5 del plan `f2a-
 | El menú flotante tapa contenido o atrapa el foco mal, y en móvil no hay forma de salir. | El cierre tiene tres vías —velo, `Escape` y elegir destino— y la prueba de teclado es parte de la condición de hecho, no un extra. |
 | Quitar el `padding-left` del `body` descoloca módulos que asumen ese offset. | El cambio es de una sola declaración en el adaptador y se verifica con los goldens de escritorio, que no deben moverse, más una pasada en 390 px por los módulos de la cascada. |
 | Dos implementaciones de menú flotante conviviendo (shell y laboratorio) divergen. | La del shell nace como canónica y la migración del laboratorio queda anotada con dueño, no como intención. |
+
+---
+
+## Estado verificado — cerrado
+
+Verificado contra el código el 2026-08-25. **`estado: cerrado` es una afirmación deliberada**, no el valor por defecto del backfill.
+
+**Evidencia:** idem plan hermano; shell-drawer.js implementa D1-D4
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].

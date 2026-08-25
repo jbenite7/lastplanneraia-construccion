@@ -92,3 +92,13 @@ supuesto. Si no se puede volver atrás, no se despliega.
   despliegue**, aunque lo redacte otro.
 - **Hay dos stacks Docker y dos bases que se llaman igual.** Al preparar y probar el respaldo, verificar
   contra cuál se está trabajando antes de cada comando destructivo.
+
+---
+
+## Estado verificado — sigue vigente
+
+Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
+
+**Qué falta:** goals/pdc-preparar-b1/estado-olas.md:68-76: lastplanneraia.com sigue en 1aa7c69 del 2026-07-16 con cero tablas pdc_*. Solo se desplego a prueba-lps
+
+Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
