@@ -41,12 +41,13 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_131 trabajos · 52 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_132 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| El estado real de los 127 planes y specs | [[docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design|spec]] · [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs|plan]] | — |
 | Estado consolidado del repositorio — la spec única | [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design|spec]] | — |
 | P1 · Desagüe y consolidación de ramas | [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|plan]] | — |
 | P2 · El CI en verde y los presupuestos | [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|plan]] | — |

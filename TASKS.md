@@ -60,6 +60,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **Frente: el estado real de los 127 planes y specs** — arrancado el 2026-08-25 por encargo
+  de Felipe, **en sesión propia**. Spec y plan escritos y publicados:
+  [[docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design|spec]] ·
+  [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs|plan]].
+  Recontado con precisión: son **127**, no 120 (58 specs + 69 planes). El reparto de señales está
+  medido: **33** cruzan con un `goals/<slug>/goal.md` cerrado, **2** con uno abierto y **92 no
+  tienen señal barata** — esos exigen ir al código uno por uno, y son la razón de que el frente
+  no cupiera como remate del anterior.
+  **La restricción que gobierna el plan:** una señal automática decide *a quién mirar*, nunca
+  *qué escribir*. Automatizar el sellado repetiría el defecto que se acaba de corregir en
+  [[el-tipo-de-una-fuente-lo-dedujo-un-script]], y con `cerrado` sería peor: es una afirmación
+  fuerte, no un cajón de sastre. La Tarea 0 valida la señal en 5 casos **antes** de confiarle 33.
+
 - [ ] **Los seis planes del reparto del 2026-08-24**, en orden de dependencia:
   [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|P1 · Desagüe]] (**CERRADO** el
   2026-08-24, con su `## Cierre` escrito) ·
@@ -233,14 +246,6 @@ estado por defecto mientras Felipe no reparta.
   contenido, y eso pide su propia pasada con verificación.
 
 ## Diferibles
-
-- [ ] **Verificar contra el código los ~120 planes y specs que siguen en `estado: vigente`.**
-  Medido el 2026-08-25: de 140 documentos en `docs/superpowers/`, solo **20** declaran su cierre.
-  En los otros 120 `vigente` es el **valor por defecto del backfill**, no una afirmación — por eso
-  no se tocaron: marcarlos `abierto` afirmaría algo sin verificar, y la regla del repo es que el
-  estado se lee del código, nunca de las casillas. Es un frente propio, no un remate: son 120
-  verificaciones independientes. Señal barata para empezar: cruzar el slug de cada plan con
-  `goals/<slug>/goal.md` y con `IMPLEMENTATION_PLAN_INVENTORY.md`.
 
 - [x] 2026-08-24 — **Frente C de SiteGround · ejecutado y DESCARTADO por su propia verificación.**
   Autorizado por Felipe. `fetch --depth=1` + `reflog expire` + `gc --prune=now` sobre `prueba-lps`,
