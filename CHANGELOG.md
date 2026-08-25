@@ -28,6 +28,16 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Seguridad: CSRF en el cajón contextual LPS (2026-08-25)
+
+#### Security
+- `LpsApiController` exige token CSRF en sus tres mutaciones (`addComment`, `registerCrisis`,
+  `closeCrisis`). Quedó fuera del cierre `88ba6e0d`/`ca642189` que corrigió el mismo defecto en
+  otros seis controladores. Las cuatro páginas anfitrionas del cajón contextual LPS
+  (`/programa-general`, `/programacion-intermedia`, `/programacion-semanal`,
+  `/dashboard/escalamientos`) ahora emiten un token compartido que `lps_drawer.js` adjunta.
+  Verificado en ejecución contra el contenedor real. Ver `docs/EXPERIMENTS.md`, fila `SOP-010`.
+
 ### Biblia de flujos — tandas T3, T4 y T5 (2026-08-25)
 
 #### Changed

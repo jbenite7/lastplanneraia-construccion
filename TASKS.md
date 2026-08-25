@@ -60,14 +60,6 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
-- [ ] **`LpsApiController` muta sin validar CSRF** — `addComment()`, `registerCrisis()` y
-  `closeCrisis()` autorizan solo con `rbac_guard_require_permission`; ninguna llama a
-  `legacy_require_csrf()`, que ya existe en el mismo archivo (`src/Legacy/rbac_guard.php:83-89`) y
-  que `public/js/modules/lps_drawer.js` tampoco envía. Quedó fuera del cierre `88ba6e0d`/`ca642189`
-  que corrigió los otros seis módulos con el mismo defecto (`SOP-002`). Hallazgo del cierre de T4
-  el 2026-08-25 — `docs/EXPERIMENTS.md`, fila «Escalamientos (T4, 2026-08-25)». El arreglo es el
-  mismo patrón ya cerrado: añadir el guard a las tres mutaciones y emitir/adjuntar el token desde
-  el JS.
 - [ ] **Terminar la biblia de flujos T3 (PDC v2)** — [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]].
   Presupuesto y Seguimiento se cerraron el 2026-08-25 (`PDC-006` a `PDC-015`, 11 de 70 rutas). Falta
   Maestro de insumos (13 rutas — empezar aquí, el código ya deja una pista citada en
@@ -469,6 +461,23 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-25 — **`LpsApiController` ya valida CSRF en sus tres mutaciones.** Encargo de
+  Felipe («arranca el hallazgo del CSRF»), directo tras el cierre de la biblia T4/T5. Mismo
+  patrón que el precedente ya cerrado (`88ba6e0d`/`ca642189`): `legacy_require_csrf('lps_drawer')`
+  en `addComment()`, `registerCrisis()`, `closeCrisis()`; token compartido emitido en las cuatro
+  páginas anfitrionas del cajón contextual LPS; `lps_drawer.js` lo adjunta.
+  **Trampa real destapada al verificar, no al codificar:** el `.env` enlazado por symlink (el
+  patrón que `CLAUDE.md` manda para todo worktree nuevo) se rompe en cuanto el contenedor apunta
+  al worktree en vez de a la raíz — el enlace resuelve en el host pero es ilegible desde dentro
+  del contenedor. Ya estaba documentada en
+  [[memoria/trampas/env-enlazado-se-rompe-dentro-del-contenedor]]; el remedio (copia temporal del
+  `.env`, no enlace, mientras dure la verificación) se aplicó tal como la trampa lo prescribe.
+  Verificado en ejecución: `tests/test_csrf_lps_api.php` 7/7 aserciones contra el contenedor real;
+  `phpstan analyse src admin/src` sin errores; 22/22 en `e2e/tests/biblia/`. Las 12 fallas del
+  nivel `datos-proyecto` del runner son de dominios ajenos (PDC, BI, human-decision) sobre datos
+  ya mutados por otras sesiones del día — no relacionadas con este cambio.
+  Ver [[docs/EXPERIMENTS.md]], fila `SOP-010`.
 
 - [x] 2026-08-25 — **El estado real de los 127 planes y specs.** Encargo de Felipe en sesión
   propia. Los 127 verificados contra el código: **105 `cerrado` · 19 `vigente` · 3 `derogada`**,
