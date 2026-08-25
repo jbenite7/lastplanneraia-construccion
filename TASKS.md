@@ -240,6 +240,16 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-25 — **`despliegue-pdc-v2-produccion`: falta la prueba de uso, NO el despliegue.**
+  Corregido hoy un dato que llevaba trece días circulando falso: «producción sin tocar, sigue en
+  `1aa7c69`». **El release completo salió el 2026-08-12** (`1aa7c694` → `939b7928`, 1.763 commits,
+  con el Plan de Compras dentro), y hubo más despliegues el 2026-08-20. De las siete condiciones de
+  hecho de esa spec, **cinco están cumplidas**; las dos que faltan son el **humo funcional
+  autenticado** (el del 12-ago se hizo con el sitio en mantenimiento, por rutas exentas: prueba que
+  la aplicación arranca, no que el módulo opere) y la **constancia escrita de que alguien de obra
+  llegó a la pantalla del plan**. Es media hora de comprobación, no un despliegue. Trampa escrita en
+  [[memoria/trampas/el-sha-de-partida-leido-como-estado-actual]].
+
 - [ ] 2026-08-25 — **`runtime-budgets-al-ci`: le falta media condición de hecho, y no es el cierre
   de dos minutos que parecía.** Medido al pasar: los nueve gates de `closeout-evidence.json` están
   en `passed`, y `runtime-budgets` **sí** tiene procedencia de corrida real de Actions (32787664690).

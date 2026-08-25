@@ -248,10 +248,22 @@ llamativo del corte anterior y caducó a los cuatro días.
 escribieron después del corte y **no están auditadas**. Auditarlas es trabajo propio, no un
 renglón de este delta.
 
-Las 2 parciales que quedan: `despliegue-pdc-v2-produccion` (producción sin tocar, CP-F-E) y
-`reparto-trabajo-pendiente` (línea E sin cierre). **`cierre-prelanzamiento-pdc` salió de esta lista
-el 2026-08-25**, tras medir sus seis condiciones de hecho contra el código: era el inventario el que
-la contradecía, no su frontmatter.
+Las 2 parciales que quedan: `despliegue-pdc-v2-produccion` y `reparto-trabajo-pendiente` (línea E
+sin cierre). **`cierre-prelanzamiento-pdc` salió de esta lista el 2026-08-25**, tras medir sus seis
+condiciones de hecho contra el código: era el inventario el que la contradecía, no su frontmatter.
+
+> **Corrección del 2026-08-25 sobre `despliegue-pdc-v2-produccion`, y conviene leerla entera.** Esta
+> línea decía «producción sin tocar», y **llevaba dos semanas siendo falsa**: el release completo se
+> desplegó el **2026-08-12** (`1aa7c694` → `939b7928`, 1.763 commits, con PDC v2 y 16 entradas
+> `Services\Pdc` en el classmap), y después hubo más despliegues el 2026-08-20. El origen del error es
+> mecánico y vale la pena reconocerlo: **`1aa7c69` es el sha de partida del release, y se leyó como el
+> estado actual**. De ahí se copió al informe de auditoría del 2026-08-20, a este inventario y al
+> encargo del 2026-08-25 — cuatro documentos repitiendo un dato que `memoria/referencias/produccion-deploy.md`
+> desmentía desde el mismo 12 de agosto. **Lo destapó el dueño del producto**, al leer una
+> recomendación construida encima. La spec sigue parcial, pero por otra razón: de sus siete
+> condiciones, cinco están cumplidas y las que faltan son **el humo funcional autenticado y la
+> constancia de que alguien de obra llegó a la pantalla del plan** — media hora de comprobación, no un
+> despliegue.
 
 **Las tres de móvil, design system y programa se derogaron el 2026-08-25** tras medirlas frente por
 frente contra el código —con instrucción explícita de buscar lo que refutara la derogación, porque
