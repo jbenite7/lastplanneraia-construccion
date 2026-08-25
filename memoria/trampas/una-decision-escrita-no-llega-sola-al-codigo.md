@@ -49,3 +49,9 @@ De ahí, dos hábitos que este caso paga:
 
 Es la misma familia que [[condicion-de-hecho-caduca-sin-aviso]]: algo escrito que sigue pareciendo
 válido porque nada lo confronta con el estado real.
+
+**Y tiene un reverso exacto, medido el 2026-08-24:** [[el-trabajo-hecho-no-vuelve-solo-al-documento]]
+— aquí la decisión no llegó al código; allí el trabajo se ejecutó y **el documento que lo encargaba
+se quedó como estaba**, de modo que planes posteriores lo reasignaban como pendiente. Los dos
+sentidos fallan por lo mismo (nada ata documento y código), pero se ven distinto: este produce un
+defecto en pantalla, el otro no produce ninguno y por eso sobrevive semanas.

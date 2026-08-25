@@ -42,6 +42,7 @@ trabajo ajeno puede romper un verde propio sin tocar tu diff, y quien hizo el tr
 - [[el-contador-no-mide-el-archivo]] — el recuento sube y baja sin que cambie lo contado.
 - [[mutar-el-supuesto-no-solo-las-entradas]] — una aserción que pasa las tres mutaciones y no mide.
 - [[una-decision-escrita-no-llega-sola-al-codigo]] — decidir no es implementar.
+- [[el-trabajo-hecho-no-vuelve-solo-al-documento]] — y su reverso: implementar no cierra el documento.
 - [[autoria-por-coincidencia-de-hora]] — la hora de actividad no prueba autoría.
 - [[path-with-space-esm-guard-noop]] — el repo vive en una ruta con espacio.
 
