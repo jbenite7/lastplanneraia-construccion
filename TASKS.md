@@ -401,8 +401,10 @@ estado por defecto mientras Felipe no reparta.
   (`computer-use`, con acceso autorizado por Felipe). Tres `colorGroups` en `.obsidian/graph.json`:
   wiki (`path:memoria`, rojo), fuentes (`path:docs OR path:goals`, ámbar), contratos de raíz
   (`file:AGENTS OR file:CLAUDE OR ...`, verde). Verificado pintando en la Vista gráfica real, no
-  solo escrito en el JSON. Cierra el único pendiente que quedaba de la Fase 0b. Detalle en el
-  `## Cierre` de [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]].
+  solo escrito en el JSON. Presentado a Felipe como decisión de panel —3 grupos amplios, grano fino
+  por `tipo`, o intermedio—: **ratificó los 3 grupos como definitivos**. Cierra el único pendiente
+  que quedaba de la Fase 0b. Detalle en el `## Cierre` de
+  [[docs/superpowers/specs/2026-08-18-wiki-v2-visual-design]].
 - [ ] **Proponer verificación de tests en contenedor como config por proyecto.** La vía Docker se
   quitó del gate global de `~/.claude` el 2026-08-19; este repo es 100% dockerizado y su
   `verify.quick` en `.claude/gate.yaml` evita PHP/Docker por costo, pero el resto de la suite sí

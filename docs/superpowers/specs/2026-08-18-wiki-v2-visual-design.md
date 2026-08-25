@@ -123,4 +123,10 @@ la wiki, no señal. Hallazgo de paso: el vault de `lps-aia` **sí** estaba regis
 tenerlo *activo*; Obsidian tenía abierto otro vault ("Gerencia") con una carpeta que replica
 `proyectos/lps-aia/`, que no es el mismo vault que declara `CLAUDE.md`.
 
+Los tres grupos son una simplificación de la letra de la spec: "wiki por tipo" pedía distinguir
+los 9 `tipo` de `memoria/` (moc, dashboard, goal-doc, etc.), no pintarla como un solo bloque.
+Presentado a Felipe como decisión de panel el 2026-08-24 —quedarse en 3 grupos amplios, expandir a
+grano fino por tipo, o un punto intermedio (solo MOC y dashboard separados)—: **ratificó los 3
+grupos como definitivos**, no como provisional a la espera de más granularidad.
+
 **Condición de hecho global:** cumplida en su totalidad. Ningún pendiente real queda de esta spec.
