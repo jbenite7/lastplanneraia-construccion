@@ -486,9 +486,10 @@ necesita autorización propia y explícita de Felipe, siempre, y publicar en `ma
   specs que se clasificaron `cerrado` llevaban en su `## Cierre` la palabra **DEROGADA** —
   `ui-audit-and-repair-plan`, `ui-audit-core-lps-ops`, `cierre-dark-mode`,
   `f2a-piloto-movil-programacion`, `reapertura-movil-y-tema-claro` y `programa-cierre-pendientes`.
-  El estado se dedujo de que **existiera** la sección, sin leer qué decía, y es la misma huella que
-  este frente había documentado horas antes en
-  [[memoria/trampas/el-tipo-de-una-fuente-lo-dedujo-un-script]]. La distinción no es cosmética:
+  **Corregida la causa el mismo día:** no fue que el estado se dedujera de la presencia de la
+  sección —**51 de las 57 `cerrado` no la tienen**, así que ese no era el criterio—, sino que el
+  frente clasificó verificando el código («¿está hecho?») y para las seis la respuesta es *sí, pero
+  por otra vía*. `cerrado` no puede expresar eso; `derogada` sí. La distinción no es cosmética:
   `cerrado` afirma que el trabajo se hizo, y en las seis **no se hizo** — cambió de vehículo a
   P3/P4, con cinco hallazgos trasladados a mano para que no se perdieran.
   **El hallazgo que cambió el frente:** la Tarea 0 validó la señal del goal en 5 casos y **falló

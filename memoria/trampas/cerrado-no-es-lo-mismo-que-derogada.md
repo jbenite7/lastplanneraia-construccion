@@ -15,8 +15,8 @@ resumen: "Deducir `estado: cerrado` de que exista una sección `## Cierre` clasi
 **Lo que parece.** Que el trabajo se hizo. `cerrado` es la palabra que usa este repo para «terminado
 con evidencia», y quien lea el índice sin abrir el documento no tiene motivo para dudarlo.
 
-**Lo que es.** El estado se dedujo de que **existiera** la sección `## Cierre`, sin leer qué dice
-esa sección. Y un cierre tiene al menos dos desenlaces distintos:
+**Lo que es.** Dos criterios de clasificación válidos que **no comparten vocabulario**, y en el
+solape se pierde información. Un desenlace tiene al menos dos formas distintas de ser final:
 
 | Desenlace | Qué afirma | Ejemplo |
 |---|---|---|
@@ -27,6 +27,20 @@ esa sección. Y un cierre tiene al menos dos desenlaces distintos:
 `ui-audit-core-lps-ops`, `cierre-dark-mode`, `f2a-piloto-movil-programacion`,
 `reapertura-movil-y-tema-claro`, `programa-cierre-pendientes`— salieron clasificadas `cerrado`. El
 recuento pasó de `105 · 19 · 3` a **`99 · 19 · 9`** al leer los cuerpos.
+
+> **Corrección de esta misma ficha, horas después de escribirla.** La primera versión afirmaba que
+> «el estado se dedujo de que existiera la sección `## Cierre`». **Es falso, y bastaba un conteo
+> para verlo: 51 de las 57 specs marcadas `cerrado` no tienen esa sección.** El criterio del frente
+> que clasificó era **verificar contra el código**, uno por uno, que es más caro y más fiable — no
+> un atajo sintáctico.
+>
+> **Lo que de verdad pasó es más fino, y por eso vale la ficha:** ese criterio pregunta «¿el trabajo
+> está hecho?» y para las seis la respuesta es **sí** —está hecho, pero **por otra vía**, en P3 y
+> P4—. `cerrado` no puede expresar esa diferencia; `derogada` sí. No fue un error de método: fue un
+> vocabulario que no tenía la palabra que hacía falta.
+>
+> Escribir la causa equivocada de un defecto real es el mismo defecto que la ficha describe, en
+> versión propia: **afirmé un mecanismo sin medirlo porque encajaba con un patrón que ya conocía.**
 
 **Cómo se sale.** Al clasificar, leer el cierre, no contarlo. Un `grep` que sirve:
 
