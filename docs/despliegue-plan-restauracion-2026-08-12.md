@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: plan
 estado: vigente
 fecha: 2026-08-11
 fuente: docs/despliegue-plan-restauracion-2026-08-12.md

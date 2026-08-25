@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: plan
 estado: vigente
 fecha: 2026-03-25
 fuente: docs/20260325_general_feature_flags.md

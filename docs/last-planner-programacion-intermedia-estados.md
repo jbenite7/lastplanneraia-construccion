@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: biblia
 estado: vigente
 fecha: 2026-03-09
 areas: [lps]

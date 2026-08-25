@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-01
 areas: [lps]
 fuente: docs/superpowers/specs/2026-08-01-ui-audit-core-lps-ops-design.md

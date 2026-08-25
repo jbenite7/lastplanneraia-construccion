@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: biblia
 estado: vigente
 fecha: 2026-05-30
 fuente: docs/ESTADOS-PG-PI-PS.md

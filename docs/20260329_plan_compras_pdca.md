@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: plan
 estado: vigente
 fecha: 2026-03-29
 fuente: docs/20260329_plan_compras_pdca.md

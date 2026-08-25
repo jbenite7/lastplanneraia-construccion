@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-08-19
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-08-19-apply-recalculo-estados.md

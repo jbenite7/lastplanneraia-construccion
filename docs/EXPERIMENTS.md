@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: reporte
 estado: vigente
 fecha: 2026-08-04
 fuente: docs/EXPERIMENTS.md

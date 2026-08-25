@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: biblia
 estado: vigente
 fecha: 2026-04-07
 fuente: docs/VISTAS-MODULOS.md

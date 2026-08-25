@@ -449,23 +449,55 @@ Arquitectura de **"isla moderna" dentro de lps-aia**, pensada para SiteGround ho
 
 - **La SPA (`pdc-app/`):** SPA **React + Vite + AG Grid Community** (MIT — no usar features Enterprise ni Handsontable, cuyo tier gratis es solo no-comercial). Vistas: importar presupuesto, maestro de insumos, Pareto, paquetes, plan final. Recibe contexto por `window.__PDC_BOOTSTRAP__` (projectId, proyectoNombre, usuario, rol, csrfToken) y consume los tokens `aia-*` de lps-aia. El build escribe directo a `public/pdc-app/` (nombre distinto de la ruta `/plan-compras` para no romper el ruteo de Apache).
 - **El glue PHP:** vista shell `views/plan-compras/app.view.php` tras `SessionMiddleware`; rutas y **endpoints JSON delgados** (`/plan-compras/api/...`, envelope `{ok,data|error}`) vía FastRoute con CSRF (form key `plan_compras_v2`) + RBAC (`lps.pdc.ver`); import de Excel con `phpoffice/phpspreadsheet`; tablas nuevas aisladas por `project_id` con migraciones en `database/migrations/` (ver `docs/global-tables-architecture.md`).
-- **Testing:** Vitest (lógica SPA) y `npm run build` como gate aquí; en lps-aia, scripts `tests/test_pdc_*.php` autoejecutables (no hay PHPUnit), PHPStan, y e2e Playwright en `tests/browser/`.
+- **Testing:** Vitest (lógica SPA) y `npm run build` como gate aquí; en lps-aia, scripts `tests/test_pdc_*.php` autoejecutables, PHPStan, y e2e Playwright en `tests/browser/`. **Corregido el 2026-08-25:** esta linea decia «no hay PHPUnit», y dejo de ser cierto el 2026-08-11 — hay `phpunit.xml` y clases en `tests/unit/`, y ambas suites corren por `scripts/run-php-tests.php`.
 - **Deploy:** rutina de lps-aia (`docs/siteground-deploy-routine.md`). Watch-items SiteGround: verificar `upload_max_filesize`/`post_max_size` ≥ 10M (límite del importador) y `memory_limit` de PhpSpreadsheet con presupuestos grandes — el parser usa `toArray()` sobre la hoja completa (read-only, medido OK a escala DAPORTO: parse 0.13s / confirmar 0.42s); migrar a lectura por chunks solo si un presupuesto real lo exige.
 
 ### Worktree dedicado en lps-aia (sesiones paralelas)
 
-El working tree principal de lps-aia (`/Volumes/Crucial X6/Developer/lps-aia`) lo comparten otras sesiones activas (indicadores/Power BI, design-system/sidebar) que lo dejan con cambios sin commitear y bloquean checkouts/merges. Por eso **el trabajo PDC en lps-aia se hace en un git worktree dedicado**, no en el principal:
+**Reescrita entera el 2026-08-25.** Lo que habia aqui mandaba a un disco que ya no existe y
+afirmaba lo contrario de lo que hace el `docker-compose.override.yml`. Se conserva el porque de la
+decision —el PDC se trabaja en un worktree aparte— y se corrige el como.
 
-- **Worktree PDC:** `/Volumes/Crucial X6/Developer/lps-aia-pdc`, rama base `pdc-dev` (desde `main`). Crear ahí las ramas de feature por fase (`git checkout -b pdc-a3-paquetes`, etc.). NO trabajar PDC en `/Volumes/Crucial X6/Developer/lps-aia` (es de las otras sesiones); tampoco tocar `../lps-aia/.claude/worktrees/lab-preview` (locked, ajeno).
-- **Docker:** el `docker-compose.override.yml` (versionado) monta `./` (relativo), así que `docker compose` **desde el worktree** monta el código del worktree. Levantar el stack del worktree con `COMPOSE_PROJECT_NAME` y puertos propios para no chocar con el principal (app `8081` es fijo en `docker-compose.yml`; db/adminer son `${DOCKER_DB_PORT:-3307}`/`${DOCKER_ADMINER_PORT:-8082}`).
-- **Integración:** consolidar en `origin/main` (decisión 2026-07-23; ya no la rama `desarrollo-pdc-v2`). Antes de mergear: `git fetch` y FF `main` a `origin/main` — las sesiones ajenas pushean seguido, así que main avanza en horas. Si el principal está bloqueado, mergear vía worktree temporal aislado.
+El working tree principal de lps-aia lo comparten varias sesiones a la vez, que lo dejan con
+cambios sin commitear y bloquean checkouts y merges. Por eso **el trabajo de PDC se hace en un git
+worktree dedicado**, no en el principal.
 
-Comandos de lps-aia para la parte PHP/e2e (se ejecutan en el **worktree** `/Volumes/Crucial X6/Developer/lps-aia-pdc`):
+- **Rutas.** El repositorio vive en `~/Developer/lps-aia`. La ruta anterior
+  (`/Volumes/Crucial X6/Developer/...`) **murio con la mudanza del 2026-08-18** y no debe usarse:
+  un `ln -s` a un destino inexistente no da error, asi que el enlace queda apuntando a la nada y el
+  sintoma que se ve es «Access denied for user ''», que no se parece a su causa.
+- **Docker: el contenedor NO monta tu worktree por defecto.** `docker-compose.override.yml:27`
+  hace el bind desde `${LPS_CODE_ROOT:-/Users/felipebenitez/Developer/lps-aia}` — **ruta absoluta
+  al checkout principal**. Para servir tu rama en `localhost:8081`:
+
+  ```bash
+  LPS_CODE_ROOT="$(pwd)" docker compose up -d app   # y devuelvelo a la raiz al terminar
+  ```
+
+  Esta viñeta afirmaba hasta el 2026-08-25 que el override monta `./` relativo y que por tanto
+  `docker compose` desde el worktree sirve el worktree. **Es falso, y es la trampa mas cara del
+  repositorio:** se mide en un arbol y se concluye sobre otro. El 2026-08-18 produjo tres verdes
+  desde un worktree mientras el contenedor servia el principal. Ver
+  [[memoria/trampas/contenedor-compartido-durante-verificacion]] y
+  [[memoria/trampas/un-verde-solo-vale-para-el-arbol-donde-se-midio]].
+- **`.env` no viaja al worktree** (esta en `.gitignore`). Enlazalo antes de usar Docker, o
+  `docker compose` resuelve `${DB_NAME}` y `${DB_PASS}` a cadena vacia:
+
+  ```bash
+  ln -s ~/Developer/lps-aia/.env .env
+  ```
+
+  Enlace, no copia: una copia se queda vieja en silencio en cuanto se edita el `.env` de la raiz.
+- **Integracion:** consolidar en `origin/main` (decision del 2026-07-23; ya no la rama
+  `desarrollo-pdc-v2`). El cierre de frente lo gobierna `AGENTS.md` §Publicacion y se ejecuta con
+  `scripts/publicar.sh`, que es el del repositorio y **no acepta las banderas del generico**.
+
+Comandos de lps-aia para la parte PHP y e2e, desde tu worktree:
 
 ```bash
-docker compose up -d --build db app adminer   # levantar stack (app: localhost:8081, adminer: 8082)
+docker compose up -d --build db app adminer          # stack (app: 8081, adminer: 8082)
 docker compose exec app composer install
-docker compose exec app php tests/test_global_table_safety.php   # correr un solo test PHP
+docker compose exec app php scripts/run-php-tests.php --nivel=puro   # ambas suites
 npx playwright test tests/browser/full-app-flow.spec.mjs --workers=1
 ```
 

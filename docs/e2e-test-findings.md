@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: reporte
 estado: vigente
 fecha: 2026-07-05
 areas: [qa]

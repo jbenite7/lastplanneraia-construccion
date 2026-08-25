@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: reporte
 estado: vigente
 fecha: 2026-03-09
 fuente: docs/MIGRATION_FINDINGS.md

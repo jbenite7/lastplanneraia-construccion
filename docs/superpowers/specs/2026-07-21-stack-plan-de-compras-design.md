@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-07-21
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-07-21-stack-plan-de-compras-design.md

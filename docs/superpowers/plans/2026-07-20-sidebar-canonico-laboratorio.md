@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: plan
-estado: vigente
+estado: cerrado
 fecha: 2026-07-20
 areas: [proceso]
 fuente: docs/superpowers/plans/2026-07-20-sidebar-canonico-laboratorio.md

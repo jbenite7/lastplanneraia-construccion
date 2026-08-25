@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: reporte
 estado: vigente
 fecha: 2026-06-02
 fuente: docs/analisis-productividad-feb-jun-2026.md

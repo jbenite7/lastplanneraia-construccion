@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-10
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-10-programa-cierre-pendientes-design.md

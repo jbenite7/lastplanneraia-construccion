@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: reporte
 estado: cerrado
 fecha: 2026-06-02
 areas: [proceso]

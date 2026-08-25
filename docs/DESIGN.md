@@ -1,6 +1,6 @@
 ---
 capa: fuente
-tipo: guia
+tipo: contrato
 estado: vigente
 fecha: 2026-07-17
 fuente: docs/DESIGN.md

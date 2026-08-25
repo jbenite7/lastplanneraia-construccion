@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-11
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-11-vocabulario-estados-cascada-design.md

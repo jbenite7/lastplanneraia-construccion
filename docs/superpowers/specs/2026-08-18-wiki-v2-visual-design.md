@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: cerrado
 fecha: 2026-08-18
 areas: [proceso]
 fuente: docs/superpowers/specs/2026-08-18-wiki-v2-visual-design.md
