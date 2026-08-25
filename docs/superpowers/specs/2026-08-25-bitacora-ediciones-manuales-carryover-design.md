@@ -5,6 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
+version: v0
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -78,6 +79,20 @@ guardar — editar dos campos en la misma pantalla deja dos filas.
 Índice por `(project_id, tabla, Semana, unique_id, campo)` para que la consulta que hace el
 arrastre sea directa.
 
+**Sin límite de tiempo.** No hay borrado ni ventana de retención — decisión del usuario en la
+segunda ronda de brainstorming (2026-08-25). Es una tabla angosta, con pocas filas por semana, y
+el arrastre solo mira la más reciente por actividad; guardarla entera no cuesta nada hoy. Si el
+volumen algún día lo justifica, se revisa aparte.
+
+La comparación campo por campo reutiliza el mismo criterio que ya usa
+`WeeklyRealProgressCarryoverService` para decidir si algo cambió: tolerancia de 0.001 para los
+campos numéricos (`Ejecutado`, `cantidad_ppto`), y texto recortado sin distinguir mayúsculas para
+`unidad`, `Responsable_AIA`, `Sub_Contratista`. Es una decisión técnica, no de producto: dos
+criterios distintos para "cambió" en el mismo dato serían una inconsistencia, no una elección.
+
+La tabla se agrega a `TableResolver::$validTables`, junto a las quince que ya existen — sigue el
+mismo patrón que toda tabla operativa del proyecto, sin necesidad de decidir nada nuevo ahí.
+
 ### 2. Quién escribe ahí
 
 Un servicio nuevo — `App\Services\CampoManualAuditoriaService` — que reemplaza el `UPDATE` manual
@@ -113,6 +128,13 @@ ni con el acumulado anterior ni con el calculado) deja de resolverse por sospech
 El caso con testigo (introducido el 2026-08-25) no cambia: sigue siendo la vía normal para
 actividades tocadas después de esa fecha. La bitácora resuelve específicamente el caso que el
 testigo no puede: filas que nunca pasaron por el arrastre nuevo.
+
+**Las escrituras del propio arrastre no quedan en la bitácora.** Se preguntó explícitamente en la
+segunda ronda de brainstorming (2026-08-25) si el servicio debía registrar también sus propias
+escrituras, marcadas como hechas por "sistema" — eso habría dado certeza total sobre quién escribió
+por última vez, sin depender del testigo. El usuario decidió que no, por ahora: la bitácora se
+queda acotada a detectar ediciones humanas, y el testigo sigue siendo el mecanismo para todo lo
+demás. Si más adelante se quiere esa certeza total, es una ampliación de alcance, no un ajuste.
 
 ### 4. Cómo se prueba
 
