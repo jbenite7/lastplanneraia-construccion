@@ -27,8 +27,18 @@ Productividad/Eficiencia/PAC y Cronograma de Avance).
 Aprobación visual explícita por parte del usuario de la matriz de 6 modos
 (Mobile/Tablet/Desktop × Dark/Linen) e integración mediante commit atómico.
 
-**Sigue vigente por decisión del usuario del 2026-08-10**, con una corrección: los tres modos
-claros ya no son de `linen` sino del **tema claro nuevo** que construye la fase F3 del goal
+> **RECORTADA POR FELIPE EL 2026-08-20 (D-7). Esta condición ya no pide seis modos, pide tres.**
+> `DECISIONES_PENDIENTES.md:385`: «La condición se recorta a los tres modos dark. Lo de `linen` vive
+> dentro de D-9, no bloqueando un dashboard que ya funciona». **La condición de hecho vigente es:
+> aprobación visual explícita de Mobile, Tablet y Desktop en dark.**
+>
+> *(Anotado el 2026-08-25. El frente llevaba **cinco días desbloqueado sin que ningún documento lo
+> dijera**: este `goal.md` conservaba la decisión del 2026-08-10, y [[goals/estado]] y
+> [[design-system]] afirmaban lo contrario de lo decidido — que Felipe había elegido esperar al
+> tema claro. Las dos páginas se corrigieron en el pase de veracidad del mismo día.)*
+
+**Lo que decía la decisión anterior, del 2026-08-10, y que la de arriba sustituye:** los tres modos
+claros ya no serían de `linen` sino del **tema claro nuevo** que construye la fase F3 de
 [[goals/reapertura-movil-y-tema-claro/goal|reapertura-movil-y-tema-claro]].
 
 Se le ofrecieron tres salidas —redefinir a tres tamaños en oscuro y aprobar hoy, reducir a solo
