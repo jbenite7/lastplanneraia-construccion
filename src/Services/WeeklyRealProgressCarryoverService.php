@@ -79,17 +79,48 @@ class WeeklyRealProgressCarryoverService
             // This prevents the auto- updateBatch on page entry from silently
             // reverting user edits (the reported bug).
 
-            // Ejecutado: compare against baseRatio (source week), not finalRatio
-            // (which includes overlay from PS). If target matches baseRatio, the
-            // carryover should still add PS overlay on top. Only preserve when
-            // the target diverges from the source week's value (manual edit).
+            // Ejecutado: se compara contra el testigo — el último valor que escribió
+            // este mismo servicio. Si `Ejecutado` sigue igual al testigo, nadie lo tocó
+            // desde entonces y se puede recalcular; si difiere, lo movió el residente
+            // y manda él.
+            //
+            // Corregido el 2026-08-25. Hasta hoy la comparación era contra `baseRatio`
+            // (el acumulado de la semana origen), y eso es justamente lo que no distingue:
+            // la celda destino ya trae sumado el avance de la semanal, así que SIEMPRE
+            // difiere del origen en cuanto hay algo reportado. Desde la segunda corrida el
+            // servicio confundía su propia escritura con una edición ajena y congelaba la
+            // fila — un avance reportado tarde no volvía a entrar nunca. Medido en
+            // producción y cubierto por `tests/unit/CarryoverAvanceSemanalTest.php`.
             $targetCurrentRatio = $this->lpsService->toFloat($targetRow['Ejecutado'] ?? null, null);
-            $preserveRatio = (
-                $targetCurrentRatio !== null
-                && $targetCurrentRatio > 0
-                && abs($targetCurrentRatio - $baseRatio) > 0.001
-            );
+            $testigo = $this->lpsService->toFloat($targetRow['Ejecutado_Carryover'] ?? null, null);
+
+            if ($testigo !== null) {
+                $preserveRatio = abs(($targetCurrentRatio ?? 0.0) - $testigo) > 0.001;
+            } else {
+                // Fila que nunca pasó por el arrastre nuevo (anterior a la migración).
+                // Sin testigo hay que deducir quién escribió, y solo hay dos huellas que
+                // delatan al propio arrastre: que el valor siga igual al de la semana
+                // origen (nunca se arrastró), o que coincida con lo que el arrastre
+                // escribiría ahora mismo (lo escribió él). En cualquiera de los dos casos
+                // se puede recalcular y, de paso, queda fijado el testigo.
+                //
+                // Si no coincide con ninguna, es ambiguo — puede ser una edición del
+                // residente o un arrastre viejo ya desfasado — y ahí manda el residente:
+                // se preserva y el testigo se queda en NULL.
+                $preserveRatio = (
+                    $targetCurrentRatio !== null
+                    && $targetCurrentRatio > 0
+                    && abs($targetCurrentRatio - $baseRatio) > 0.001
+                    && abs($targetCurrentRatio - $finalRatio) > 0.001
+                );
+            }
+
             $effectiveRatio = $preserveRatio ? $targetCurrentRatio : $finalRatio;
+
+            // El testigo solo se mueve cuando manda el arrastre. Si se preservó una
+            // edición, se deja como estaba: sobrescribirlo con el valor del residente
+            // haría que la corrida siguiente lo tomara por escritura propia y la pisara.
+            $testigoAEscribir = $preserveRatio ? $testigo : $effectiveRatio;
 
             // Unidad: normalize both sides for comparison
             $targetUnit = trim((string) ($targetRow['unidad'] ?? ''));
@@ -127,11 +158,13 @@ class WeeklyRealProgressCarryoverService
                 "UPDATE {$tProgConsolidado}
                  SET Ejecutado = ?,
                      Ejecutado_Siguiente_Semana = ?,
+                     Ejecutado_Carryover = ?,
                      Responsable_AIA = ?, Sub_Contratista = ?, unidad = ?, cantidad_ppto = ?
                  WHERE Semana = ? AND row_id = ?",
                 [
                     $effectiveRatio,
                     $effectiveRatio,
+                    $testigoAEscribir,
                     $effectiveResp,
                     $effectiveSub,
                     $effectiveUnit,
@@ -197,7 +230,7 @@ class WeeklyRealProgressCarryoverService
                     unique_id AS Consecutivo_en_Programa,
                     unique_id,
                     Actividad, programaAnteriorAsociar,
-                    Ejecutado, Ejecutado_Siguiente_Semana,
+                    Ejecutado, Ejecutado_Siguiente_Semana, Ejecutado_Carryover,
                     unidad, cantidad_ppto, Responsable_AIA, Sub_Contratista
              FROM {$t}
              WHERE Semana = ? AND Titulo = 0",

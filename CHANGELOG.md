@@ -28,6 +28,32 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Corregido: el avance de la semanal dejaba de sumarse en el Programa General (2026-08-25)
+
+Un avance reportado en Programación Semanal **después** de que el Programa General de la semana
+siguiente ya se hubiera abierto una vez no volvía a sumarse nunca. En obra es el caso corriente:
+la semana se crea el lunes y el avance de la anterior se cierra el martes.
+
+La causa estaba en `WeeklyRealProgressCarryoverService`: para respetar lo que el residente
+escribe a mano, comparaba la celda destino contra el acumulado de la semana origen. Pero esa
+celda ya trae sumado el avance de la semanal, así que **siempre** difiere del origen en cuanto
+hay algo reportado — desde la segunda corrida el servicio tomaba su propia escritura por una
+edición ajena y congelaba la fila. Entró con `dd7fc2d3` (2026-07-06), que corregía un defecto
+real —el arrastre borraba las ediciones del residente— pero midió mal quién había escrito el dato.
+
+Ahora la comparación es contra un testigo, `Ejecutado_Carryover`, que guarda el último valor
+escrito por el propio arrastre. Si `Ejecutado` sigue igual al testigo, nadie lo tocó y se
+recalcula; si difiere, lo movió el residente y manda él. Las filas heredadas sin testigo se
+destraban solas en la primera corrida, porque el servicio reconoce como propio el valor que él
+mismo escribiría en ese momento; las que no coinciden con ninguna huella se preservan, que ante
+la duda manda el residente.
+
+- Migración aditiva y reversible: `database/migrations/20260825_carryover_testigo.sql`.
+- Cobertura nueva donde no había ninguna: `tests/unit/CarryoverAvanceSemanalTest.php` (5 casos).
+- **Límite conocido:** una fila cuyo avance cambió en la semanal antes de que el código nuevo
+  llegara a correr una vez sigue congelada hasta que ambos valores vuelvan a coincidir. No borra
+  avance: lo reportado sigue completo en Programación Semanal.
+
 ### Seguridad: CSRF en el cajón contextual LPS (2026-08-25)
 
 #### Security
