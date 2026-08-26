@@ -40,5 +40,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     exclude: [...configDefaults.exclude, '**/.claude/**'],
+    // Registra el afterEach(cleanup) de @testing-library/react a mano — ver el comentario de
+    // cabecera de src/test-setup.ts para el porqué (test.globals:false hace que el auto-cleanup
+    // de la librería no encuentre un `afterEach` global y nunca se active solo).
+    setupFiles: ['./src/test-setup.ts'],
   },
 })

@@ -23,6 +23,35 @@ export interface MetricResult {
 
 export type GestionEstado = 'en_gestion' | 'liberada' | 'sin_gestionar' | 'no_aplica'
 
+/** Etiqueta de UI por estado (D87: los tres estados de gestión deben distinguirse por texto). */
+export const ETIQUETAS_ESTADO: Record<GestionEstado, string> = {
+  sin_gestionar: 'Sin gestionar',
+  en_gestion: 'En gestión',
+  liberada: 'Liberada',
+  no_aplica: 'No aplica',
+}
+
+/**
+ * Fila de GET /api/bi/control-tower/restricciones (Task 7 paso 3a). 13 campos camelCase, ver
+ * `task-7-paso3a-report.md` sección "Forma de cada fila". `semanaInicioActividadBloqueada` puede
+ * ser negativo (medido en dev) — no se acota aquí.
+ */
+export interface Restriccion {
+  id: number
+  restriccion: string
+  semana: number
+  actividadBloqueada: string | null
+  responsableAsignado: string | null
+  fechaCompromiso: string | null
+  estadoLiberacion: GestionEstado
+  asignadoPor: string | null
+  asignadoEn: string | null
+  diasVencida: number | null
+  semanaInicioActividadBloqueada: number | null
+  actividadesEncadenadas: number
+  tocaRutaCritica: boolean
+}
+
 interface CtBootstrap {
   csrfToken: string
 }
@@ -104,4 +133,37 @@ export async function postGestionRestriccion(
     throw new CtApiError(body.error.code, body.error.message, res.status, body.error)
   }
   return body
+}
+
+interface RestriccionesResponse {
+  ok: true
+  restricciones: Restriccion[]
+}
+
+type RestriccionesEnvelope = RestriccionesResponse | { ok: false; error: { code: string; message: string } }
+
+/**
+ * GET /api/bi/control-tower/restricciones — listado de restricciones con urgencia (Task 7 paso
+ * 3a). Sin CSRF: es un GET, no muta nada, y el backend documenta explícito que ningún GET lo
+ * valida (mismo precedente que `pdc-app/src/lib/api.ts`: `apiGet()` no llama a `getBootstrap()`).
+ * Lanza `CtApiError` ante cualquier falla — la promesa nunca resuelve en silencio.
+ */
+export async function getRestricciones(): Promise<Restriccion[]> {
+  const res = await fetch('/api/bi/control-tower/restricciones', {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      'X-AIA-Expect-Json': '1',
+    },
+  })
+
+  const body = (await res.json().catch(() => null)) as RestriccionesEnvelope | null
+
+  if (!body || typeof body.ok !== 'boolean') {
+    throw new CtApiError('BAD_RESPONSE', `Respuesta inválida del servidor (HTTP ${res.status}).`, res.status)
+  }
+  if (!body.ok) {
+    throw new CtApiError(body.error.code, body.error.message, res.status, body.error)
+  }
+  return body.restricciones
 }
