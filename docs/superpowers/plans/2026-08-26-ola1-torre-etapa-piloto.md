@@ -358,7 +358,8 @@ huérfanas · lista accionable · titular · semáforo · pareto**, con:
 
 | # | Tipo | Qué pasó | Costo |
 |---|---|---|---|
-| — | — | — | — |
+| 1 | Parada | Task 2: el catálogo real no trae `select` como campo propio, y `filters` son strings `'Columna=Valor'`, no pares estructurados — CT-6 describe la forma destino, no la forma actual. Ruling: `MetricExecutor` parsea `filters[]` partiendo cada string por el primer operador (`=`,`>=`,`<=`,`!=`,`>`,`<`) y usa `formula` como fuente de la expresión `select` cuando es SQL-válida; una métrica cuya `formula` no sea parseable se documenta al migrarla en Task 3 (que ya es incremental por diseño) en vez de bloquear el ejecutor. | Si la regla de parseo falla en un caso real, el costo es ajustar el parser en Task 3 al toparlo — no hay dato ni escritura de por medio |
+| 2 | Parada | Task 2: el test del rol A (`MetricExecutorTest.php`) usaba una `const` `private` de la clase de test, leída desde una clase anónima interna — PHP no concede ese acceso aunque estén anidadas léxicamente (confirmado con repro mínimo en `/tmp` del contenedor). El rol B verificó su implementación correcta contra las 3 aserciones antes de reportar BLOCKED, sin tocar el test. Ruling: se resuelve como corrección de test (rol A la aplica, no rompe separación de roles), no como defecto de `MetricExecutor`. | Ninguno — el bug era de alcance de PHP en el arnés de prueba, no de lógica de negocio ni de dato |
 
 **Línea base del criterio de muerte (CT-15):** **66,1%** — 33.824 de 51.155 actividades-semana
 (`programa_consolidado` con `Titulo = 0`) con las cinco restricciones duras (`D_y_E`, `Materiales`,
