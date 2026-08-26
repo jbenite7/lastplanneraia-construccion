@@ -340,17 +340,20 @@ if (is_array($restricciones)) {
         $check(($fila['semana'] ?? null) === (int) $base['Semana'], "caso 3: id={$id} semana");
         $check(($fila['estadoLiberacion'] ?? null) === $base['EstadoLiberacion'], "caso 3: id={$id} estadoLiberacion");
 
+        // `?? 'MISSING'` trata "clave ausente" y "clave presente con valor null" como lo mismo
+        // (semantica de isset()) -- bug real cuando el valor CORRECTO es null (sin gestion, sin
+        // fecha). array_key_exists() distingue las dos cosas; el valor se compara aparte.
         $respEsperado = $base['ResponsableAsignado'] === '' ? null : $base['ResponsableAsignado'];
-        $check(($fila['responsableAsignado'] ?? 'MISSING') === $respEsperado, "caso 3: id={$id} responsableAsignado", 'real: ' . var_export($fila['responsableAsignado'] ?? null, true) . ' esperado: ' . var_export($respEsperado, true));
+        $check(array_key_exists('responsableAsignado', $fila) && $fila['responsableAsignado'] === $respEsperado, "caso 3: id={$id} responsableAsignado", 'real: ' . var_export($fila['responsableAsignado'] ?? null, true) . ' esperado: ' . var_export($respEsperado, true));
 
         $fechaEsperada = $base['FechaCompromiso'] === '' ? null : $base['FechaCompromiso'];
-        $check(($fila['fechaCompromiso'] ?? 'MISSING') === $fechaEsperada, "caso 3: id={$id} fechaCompromiso");
+        $check(array_key_exists('fechaCompromiso', $fila) && $fila['fechaCompromiso'] === $fechaEsperada, "caso 3: id={$id} fechaCompromiso");
 
         $asigPorEsperado = $base['AsignadoPor'] === '' ? null : $base['AsignadoPor'];
-        $check(($fila['asignadoPor'] ?? 'MISSING') === $asigPorEsperado, "caso 3: id={$id} asignadoPor");
+        $check(array_key_exists('asignadoPor', $fila) && $fila['asignadoPor'] === $asigPorEsperado, "caso 3: id={$id} asignadoPor");
 
         $diasEsperado = diasVencidaEsperado($fechaEsperada);
-        $check(($fila['diasVencida'] ?? 'MISSING') === $diasEsperado, "caso 3: id={$id} diasVencida", 'real: ' . var_export($fila['diasVencida'] ?? null, true) . ' esperado: ' . var_export($diasEsperado, true));
+        $check(array_key_exists('diasVencida', $fila) && $fila['diasVencida'] === $diasEsperado, "caso 3: id={$id} diasVencida", 'real: ' . var_export($fila['diasVencida'] ?? null, true) . ' esperado: ' . var_export($diasEsperado, true));
 
         $orac = oraculo($db, $id, PROJECT_ID);
         $check(($fila['actividadesEncadenadas'] ?? null) === $orac['n'], "caso 3: id={$id} actividadesEncadenadas", 'real: ' . var_export($fila['actividadesEncadenadas'] ?? null, true) . ' esperado: ' . var_export($orac['n'], true));
@@ -359,7 +362,9 @@ if (is_array($restricciones)) {
         $check(is_bool($fila['tocaRutaCritica'] ?? null), "caso 3: id={$id} tocaRutaCritica es bool JSON (no 0/1)");
 
         if ($orac['n'] === 0) {
-            $check(($fila['actividadBloqueada'] ?? 'MISSING') === null, "caso 3: id={$id} actividadBloqueada null (sin encadenamiento)");
+            // Mismo bug de ?? 'MISSING' que arriba -- no se disparo con los datos de dev de hoy
+            // (ninguna fila de PROJECT_ID tiene 0 links), pero es el mismo defecto mecanico.
+            $check(array_key_exists('actividadBloqueada', $fila) && $fila['actividadBloqueada'] === null, "caso 3: id={$id} actividadBloqueada null (sin encadenamiento)");
         } else {
             $check(
                 in_array($fila['actividadBloqueada'] ?? null, $orac['actividadesCandidatas'], true),
@@ -383,33 +388,53 @@ $check(is_array($json4) && is_array($json4['error'] ?? null) && ($json4['error']
 
 // ---------------------------------------------------- Caso 5: diasVencida, los tres bordes -----
 
+/**
+ * Detalle legible para las aserciones de diasVencida del caso 5. `?? 'FILA_NO_ENCONTRADA'` sobre
+ * el propio valor es el MISMO bug de fondo que el fix de arriba (no distingue "fila no encontrada"
+ * de "fila encontrada con diasVencida=null", que es justo el caso correcto en 5b/5c/5d) -- aqui
+ * solo afecta al texto de diagnostico, no al veredicto PASS/FAIL (ese ya usa array_key_exists),
+ * pero un mensaje que dice "FILA_NO_ENCONTRada" sobre un PASS real es enganoso igual.
+ *
+ * @param ?array<string,mixed> $fila
+ */
+function describirDiasVencida(?array $fila): string
+{
+    if ($fila === null) {
+        return 'FILA_NO_ENCONTRADA';
+    }
+    if (!array_key_exists('diasVencida', $fila)) {
+        return 'CLAVE_AUSENTE';
+    }
+    return var_export($fila['diasVencida'], true);
+}
+
 try {
     // 5a: FechaCompromiso 5 dias atras -> diasVencida = 5
     $fechaPasada = (new DateTimeImmutable('-5 days'))->format('Y-m-d');
     $db->query('UPDATE pi_shared_constraints SET FechaCompromiso = ? WHERE project_id = ? AND Id = ?', [$fechaPasada, PROJECT_ID, $idFecha]);
     [, $bodyA] = getReq($url, $jarA);
     $filaA = buscarFila(json_decode($bodyA, true), $idFecha);
-    $check($filaA !== null && ($filaA['diasVencida'] ?? null) === 5, 'caso 5a: FechaCompromiso hace 5 dias -> diasVencida=5', 'real: ' . var_export($filaA['diasVencida'] ?? 'FILA_NO_ENCONTRADA', true));
+    $check($filaA !== null && array_key_exists('diasVencida', $filaA) && $filaA['diasVencida'] === 5, 'caso 5a: FechaCompromiso hace 5 dias -> diasVencida=5', 'real: ' . describirDiasVencida($filaA));
 
     // 5b: FechaCompromiso hoy -> diasVencida = null (vence hoy, no vencida todavia)
     $fechaHoy = (new DateTimeImmutable('today'))->format('Y-m-d');
     $db->query('UPDATE pi_shared_constraints SET FechaCompromiso = ? WHERE project_id = ? AND Id = ?', [$fechaHoy, PROJECT_ID, $idFecha]);
     [, $bodyB] = getReq($url, $jarA);
     $filaB = buscarFila(json_decode($bodyB, true), $idFecha);
-    $check($filaB !== null && ($filaB['diasVencida'] ?? 'MISSING') === null, 'caso 5b: FechaCompromiso hoy -> diasVencida=null', 'real: ' . var_export($filaB['diasVencida'] ?? 'FILA_NO_ENCONTRADA', true));
+    $check($filaB !== null && array_key_exists('diasVencida', $filaB) && $filaB['diasVencida'] === null, 'caso 5b: FechaCompromiso hoy -> diasVencida=null', 'real: ' . describirDiasVencida($filaB));
 
     // 5c: FechaCompromiso en 5 dias -> diasVencida = null
     $fechaFutura = (new DateTimeImmutable('+5 days'))->format('Y-m-d');
     $db->query('UPDATE pi_shared_constraints SET FechaCompromiso = ? WHERE project_id = ? AND Id = ?', [$fechaFutura, PROJECT_ID, $idFecha]);
     [, $bodyC] = getReq($url, $jarA);
     $filaC = buscarFila(json_decode($bodyC, true), $idFecha);
-    $check($filaC !== null && ($filaC['diasVencida'] ?? 'MISSING') === null, 'caso 5c: FechaCompromiso en 5 dias -> diasVencida=null', 'real: ' . var_export($filaC['diasVencida'] ?? 'FILA_NO_ENCONTRADA', true));
+    $check($filaC !== null && array_key_exists('diasVencida', $filaC) && $filaC['diasVencida'] === null, 'caso 5c: FechaCompromiso en 5 dias -> diasVencida=null', 'real: ' . describirDiasVencida($filaC));
 
     // 5d: FechaCompromiso NULL -> diasVencida = null
     $db->query('UPDATE pi_shared_constraints SET FechaCompromiso = NULL WHERE project_id = ? AND Id = ?', [PROJECT_ID, $idFecha]);
     [, $bodyD] = getReq($url, $jarA);
     $filaD = buscarFila(json_decode($bodyD, true), $idFecha);
-    $check($filaD !== null && ($filaD['diasVencida'] ?? 'MISSING') === null, 'caso 5d: FechaCompromiso NULL -> diasVencida=null', 'real: ' . var_export($filaD['diasVencida'] ?? 'FILA_NO_ENCONTRADA', true));
+    $check($filaD !== null && array_key_exists('diasVencida', $filaD) && $filaD['diasVencida'] === null, 'caso 5d: FechaCompromiso NULL -> diasVencida=null', 'real: ' . describirDiasVencida($filaD));
 } finally {
     // ------------------------------------------------------------------------- Cleanup -----
     $db->query(
