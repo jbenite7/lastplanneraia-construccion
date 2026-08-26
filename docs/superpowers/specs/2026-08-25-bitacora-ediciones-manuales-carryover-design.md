@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v0.7
+version: v0.8
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -59,6 +59,56 @@ Tres puntos de escritura confirmados por código, no por supuesto — se verific
 
 Explícitamente sin pantalla: la bitácora es solo para que `WeeklyRealProgressCarryoverService` la
 consulte. No hay vista de historial para el residente ni el director de obra en esta ronda.
+
+### Corrección mayor: la premisa de "tres controladores, un punto de escritura cada uno" era falsa
+
+Un mapeo exhaustivo del 2026-08-25 (agente de exploración, no supuesto) encontró **al menos nueve
+sitios de escritura reales** sobre los cinco campos, repartidos en los tres archivos. No todos son
+ediciones de una persona: varios son sincronización automática que copia valores de
+`programa_consolidado` sin que nadie los teclee. Contar esos como "edición manual" ensuciaría la
+bitácora con falsos positivos — el propósito de este trabajo es que el arrastre sepa con certeza si
+una persona tocó el dato, no si *cualquier proceso* lo tocó.
+
+Clasificación por sitio, y su decisión:
+
+| Sitio | Qué es | ¿Cuenta como edición manual? |
+|---|---|---|
+| `GeneralApiController::update()` — escritura directa | La persona teclea el valor | Sí |
+| `GeneralApiController::update()` — herencia (activada por la casilla "asociar a actividad anterior") | La persona dispara el reemplazo, pero el valor final viene de la actividad de la semana pasada, no de lo que tecleó | **Sí, decisión 2026-08-25** — se guarda el valor final que quedó en pantalla, no el tecleado antes del reemplazo. Es una sola acción de la persona con efecto en dos pasos, no dos ediciones separadas. |
+| `SemanalApiController::modificar()` | La persona teclea el valor (solo Responsable/Subcontratista; este método nunca toca Ejecutado, unidad ni cantidad_ppto) | Sí |
+| `ProgramacionIntermediaController::applySharedConstraints()` | La persona teclea el valor, en lote | Sí |
+| `SemanalApiController::autoprogramar()` / `sanear()` | Copia automática desde `programa_consolidado`, sin intervención humana — confirmado por código: el valor nunca sale de `$_POST` | No |
+| `SemanalApiController::nuevo()` / `duplicar()` | Crea una fila copiando valores de `programa_consolidado`; no edita una fila existente | No |
+| `GeneralApiController::deleteUpdate()` | "Eliminar Actualización": deshace la actualización de una semana **completa** (su `WHERE` no lleva actividad) | **No, decisión 2026-08-25.** No es una edición de un valor, es un deshacer masivo. Registrarlo dejaría cientos de filas marcadas como editadas a mano —282 actividades × 3 campos en Da Porto— y el arrastre las respetaría para siempre: congelaría la semana entera, que es el mismo defecto que este trabajo arregla, reintroducido por la puerta de atrás. Si algún día se quiere trazar esta acción, va como **un** evento en `general_auditoria_acciones`, no como cientos de ediciones de campo. |
+| `SemanalApiController::estadoEjecucion()` | Toca `Ejecutado_Siguiente_Semana`, una columna distinta de `Ejecutado` | Fuera de alcance — no es uno de los 5 campos |
+
+**Los dos casos de arriba viven en el mismo módulo: Actualizar Programa General**
+(`/programa-general-actualizar`). La herencia se dispara desde
+`public/js/modules/programa_actualizar/hot_actualizar.js`, y "Eliminar Actualización" desde
+`views/programa-general-actualizar/programaGeneralActualizar.view.php`. La pantalla de Programa
+General normal (`public/js/modules/programa_general/hot.js`) llama al mismo endpoint `update()`,
+pero **nunca** manda `editarActividadAsociar`, así que ahí la herencia no ocurre.
+
+**La herencia se dispara en toda edición de esa pantalla, no solo al cambiar la asociación.**
+`hot_actualizar.js:526` hace `formData.append('editarActividadAsociar', '1')` de forma
+incondicional, en cualquier edición de celda. Si el residente corrige una fecha de una actividad ya
+asociada, el reemplazo de los cinco campos ocurre igual, sin que él lo pida ni lo vea venir. No es
+un caso raro: es el comportamiento normal del módulo.
+
+**Restricción de diseño que se deriva de lo anterior, y que no se puede romper al implementar:** la
+bitácora se consulta **solo en el caso ambiguo**, nunca antes. El valor que deja la herencia suele
+ser exactamente el acumulado de la semana anterior, y el arrastre ya lo reconoce como "no editado"
+sin mirar la bitácora, así que recalcula y suma el avance con normalidad. Si alguien cambiara el
+orden y consultara la bitácora **siempre**, toda actividad recién asociada quedaría marcada como
+editada a mano y dejaría de recibir el avance de la semanal — el defecto original, reintroducido.
+
+**Pendiente de verificar:** `SemanalApiController::autoProgram()` delega a una clase externa,
+`ProgramChangeDetector`, no examinada en este mapeo — no se sabe todavía si también escribe alguno
+de los 5 campos.
+
+**Nota aparte, sin relación con este trabajo:** `SemanalApiController::eliminar()` filtra su
+`UPDATE` solo por `project_id + row_id`, sin `Semana` — asimetría respecto al resto de la clase que
+huele a error preexistente. No se toca aquí; queda para revisión aparte.
 
 ## Diseño
 
