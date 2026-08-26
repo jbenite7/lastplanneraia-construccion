@@ -54,6 +54,7 @@ class MetricDictionaryService
 
         $catalog['pg_activities_to_do'] = [
             'metric_key' => 'pg_activities_to_do',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Actividades en ventana Lookahead',
             'definition' => 'Actividades no terminadas dentro de la ventana Lookahead.',
@@ -75,6 +76,7 @@ class MetricDictionaryService
 
         $catalog['pg_activity_progress_contribution'] = [
             'metric_key' => 'pg_activity_progress_contribution',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Aporte de actividad al avance del programa',
             'definition' => 'Aporte ponderado de cada actividad al avance real, teórico y recuperable del corte.',
@@ -96,6 +98,7 @@ class MetricDictionaryService
 
         $catalog['pi_hard_restrictions_ready_rate'] = [
             'metric_key' => 'pi_hard_restrictions_ready_rate',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'intermedia',
             'metric_name' => 'Porcentaje de actividades listas en ventana',
             'definition' => 'Proporción de actividades Lookahead con restricciones duras cumplidas.',
@@ -117,6 +120,7 @@ class MetricDictionaryService
 
         $catalog['ps_pac_expected'] = [
             'metric_key' => 'ps_pac_expected',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'semanal',
             'metric_name' => 'PAC esperado (baseline)',
             'definition' => 'Estimación transparente basada en desempeño histórico, criticidad, restricciones, avance y CNC recientes.',
@@ -139,6 +143,22 @@ class MetricDictionaryService
 
         $catalog['ps_weekly_fulfillment'] = [
             'metric_key' => 'ps_weekly_fulfillment',
+            // Se queda en 'descriptiva' — NO en 'en_paridad' — pese a la correccion de filtro de
+            // abajo. Task 3 paso 3 (2026-08-26) corrio el trinquete tras corregir el filtro y
+            // encontro una discrepancia real que no es de catalogo: `MetricExecutor::execute()`
+            // no tiene forma de acotar a UNA `Semana`. `MetricScope` solo carga `project_id`(s) y
+            // un `startDate`/`endDate` opcionales que `MetricExecutor::buildWhereClause()` nunca
+            // lee — no hay ningun parametro de "semana" en toda la cadena. El "camino nuevo" agrega
+            // entonces TODAS las filas historicas del proyecto (678 filas para la obra 65, todas
+            // las semanas juntas) en vez de solo las de la semana pedida (24-80 filas por semana),
+            // dando el mismo valor constante sin importar que semana se compare — confirmado
+            // reproduciendo la agregacion a mano contra `bi_ps_compromisos`. Es un vacio de Task 2
+            // (`MetricExecutor`/`MetricScope`), no de este catalogo, y probablemente golpea a TODA
+            // metrica con grain semanal (la mayoria de las 18 que quedan para el Paso 5) — se deja
+            // documentado aqui para que el controlador lo decida antes de continuar el Paso 5, en
+            // vez de forzar una paridad que hoy es imposible de verificar. Ver el reporte de Task 3
+            // (rol B) para el detalle completo, valores exactos y comando de reproduccion.
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'semanal',
             'metric_name' => 'Productividad semanal',
             'definition' => 'Porcentaje de compromisos activos cumplidos durante la semana.',
@@ -148,18 +168,34 @@ class MetricDictionaryService
             'source_relations' => ['programacion_semanal'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Semana seleccionada; no se infiere con fecha del servidor.',
-            'filters' => ['Activa=Si', 'Es_TNP=0'],
+            // Correccion CT-16 (2026-08-26, Task 3 paso 3): el catalogo declaraba
+            // ['Activa=Si', 'Es_TNP=0'], pero la vista `bi_ps_compromisos` no tiene esas columnas
+            // ni esos valores. Verificado contra la base de dev: `Activa` es varchar(3) con valores
+            // reales '0'/'1'/'NA' (nunca 'Si'/'No'), y la vista expone `ps.Es_TNP AS is_TNP` — el
+            // nombre real de columna en la vista es `is_TNP`, no `Es_TNP` (que si existe en la
+            // tabla base `programacion_semanal`, de ahi la confusion). El valor de comparacion de
+            // `Activa` va entre comillas para forzar comparacion de string: sin comillas, MySQL
+            // compara varchar contra int convirtiendo la columna a numero, y 'NA' se convierte a 0
+            // (no-numerico), lo que excluiria incorrectamente las filas 'NA' del universo activo.
+            // Esta correccion es real y se conserva aunque la metrica no avance de estado: es lo
+            // que corresponde documentar segun el veredicto del controlador (CT-16), independiente
+            // de que el gap de abajo bloquee el trinquete de paridad.
+            'filters' => ["Activa!='0'", 'is_TNP=0'],
             'aggregation_policy' => 'Ratio de compromisos cumplidos sobre activos.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; reports registered PAC.',
             'version' => '1.0',
-            'known_limitations' => 'Depende de que los compromisos activos tengan PAC registrado.',
+            'known_limitations' => 'Depende de que los compromisos activos tengan PAC registrado. '
+                . 'Ademas, MetricExecutor no soporta acotar por Semana todavia (ver nota en '
+                . 'estado_ejecucion): "en_paridad" no es alcanzable para esta metrica hasta que se '
+                . 'resuelva ese vacio de alcance en Task 2.',
         ];
 
         $catalog['pg_radar_productividad'] = [
             'metric_key' => 'pg_radar_productividad',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Radar: Avance promedio',
             'definition' => 'Proxy de productividad: avance promedio de P_Completado con población válida independiente; el sobrecumplimiento conserva la fila y limita su aporte al eje a 100%.',
@@ -181,6 +217,7 @@ class MetricDictionaryService
 
         $catalog['pg_radar_eficiencia'] = [
             'metric_key' => 'pg_radar_eficiencia',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Radar: Eficiencia',
             'definition' => 'Eficiencia de ejecución por fila, sin sumar compromisos ni ejecutados de unidades incompatibles.',
@@ -202,6 +239,7 @@ class MetricDictionaryService
 
         $catalog['pg_radar_desempeno'] = [
             'metric_key' => 'pg_radar_desempeno',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Radar: Desempeño PAC',
             'definition' => 'Proporción de compromisos con PAC registrado como cumplido.',
@@ -223,6 +261,7 @@ class MetricDictionaryService
 
         $catalog['pg_finish_variance_days_p50'] = [
             'metric_key' => 'pg_finish_variance_days_p50',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Variación probable de fecha final P50',
             'definition' => 'Diferencia en días calendario entre la fecha final P50 simulada y la fecha final contractual del alcance filtrado.',
@@ -244,6 +283,7 @@ class MetricDictionaryService
 
         $catalog['pg_observed_activity_delay_days'] = [
             'metric_key' => 'pg_observed_activity_delay_days',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Retraso observado por actividad',
             'definition' => 'Días calendario transcurridos desde el fin planificado hasta el corte propio del proyecto para actividades vencidas e incompletas.',
@@ -265,6 +305,7 @@ class MetricDictionaryService
 
         $catalog['pg_cnp_activity_count'] = [
             'metric_key' => 'pg_cnp_activity_count',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Actividades con Causa de No Programación',
             'definition' => 'Actividades que quedaron fuera del compromiso semanal y tienen una CNP registrada.',
@@ -287,6 +328,7 @@ class MetricDictionaryService
 
         $catalog['pg_cnc_activity_count'] = [
             'metric_key' => 'pg_cnc_activity_count',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Actividades con Causa de No Cumplimiento',
             'definition' => 'Compromisos semanales activos o no aplicables que conservan una CNC registrada y explican una ejecución inferior a lo comprometido.',
@@ -309,6 +351,7 @@ class MetricDictionaryService
 
         $catalog['pi_restriction_pareto'] = [
             'metric_key' => 'pi_restriction_pareto',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'intermedia',
             'metric_name' => 'Pareto de restricciones no liberadas',
             'definition' => 'Distribución de restricciones duras no liberadas por tipo.',
@@ -330,6 +373,7 @@ class MetricDictionaryService
 
         $catalog['pdc_at_risk'] = [
             'metric_key' => 'pdc_at_risk',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'pdc',
             'metric_name' => 'Pasos de contratación vencidos',
             'definition' => 'Pasos de contratación pendientes cuya fecha programada ya pasó, por destino (paquete + lote).',
@@ -353,6 +397,7 @@ class MetricDictionaryService
 
         $catalog['cic_cal_integral'] = [
             'metric_key' => 'cic_cal_integral',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'cic',
             'metric_name' => 'Calificación integral de contratista',
             'definition' => 'Score ponderado de PAC, Calidad, GSA, SST y ADM.',
@@ -374,6 +419,7 @@ class MetricDictionaryService
 
         $catalog['cic_aprobacion_status'] = [
             'metric_key' => 'cic_aprobacion_status',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'cic',
             'metric_name' => 'Estado de aprobación del proveedor',
             'definition' => 'Clasificación por umbrales de la calificación integral.',
@@ -396,6 +442,7 @@ class MetricDictionaryService
 
         $catalog['cip_fulfillment_alert'] = [
             'metric_key' => 'cip_fulfillment_alert',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'cip',
             'metric_name' => 'Alerta de cumplimiento de responsable',
             'definition' => 'Alerta cuando PAC es inferior a 50% o hay críticos incumplidos.',
@@ -417,6 +464,7 @@ class MetricDictionaryService
 
         $catalog['curva_s_desviacion'] = [
             'metric_key' => 'curva_s_desviacion',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'curva-s',
             'metric_name' => 'Desviación de la Curva S',
             'definition' => 'Diferencia entre avance real y teórico ponderados por duración.',
@@ -438,6 +486,7 @@ class MetricDictionaryService
 
         $catalog['riesgo_score_100'] = [
             'metric_key' => 'riesgo_score_100',
+            'estado_ejecucion' => 'descriptiva',
             'report_key' => 'riesgos',
             'metric_name' => 'Risk score (0-100)',
             'definition' => 'Score de riesgo ponderado por probabilidad, impacto y drivers operativos.',
