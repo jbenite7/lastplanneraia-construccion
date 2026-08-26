@@ -174,7 +174,21 @@ class MetricDictionaryService
             //     combinacion deje de bloquear: o bien la semana 2 de la obra 73 cierra con datos
             //     reales, o el controlador decide explicitamente tratar "ambos null" como paridad.
             //     Ver el reporte de Task 3 (rol B) para los valores exactos de las 6 combinaciones.
-            'estado_ejecucion' => 'descriptiva',
+            //  5. 'descriptiva' -> 'en_paridad' -> 'ejecutable': rol A ajusto el arnes para que
+            //     "ambos caminos concuerdan en null" cuente como paridad (rama nueva en
+            //     tests/test_bi_paridad_metricas.php, distinta del caso asimetrico que sigue
+            //     fallando fuerte). Con eso, las 6 combinaciones (obra, semana) reales calzan: 5
+            //     numericas (1 exacta + 4 dentro de tolerancia 0.005) + 1 de "sin dato, ambos
+            //     caminos concuerdan". Primera metrica del trinquete en llegar a `ejecutable`.
+            //     `ControlTowerService::scorecardPS()` NO se borro -- sigue siendo la unica fuente
+            //     de otros 3 KPIs en vivo (`Compromisos activos`, `En riesgo`, `CNC esta semana`)
+            //     sin cobertura en el catalogo; borrarlo entero habria roto el reporte 'semanal'
+            //     real de `BiControlTowerApiController`. El paso 4 del brief ("borrar su SQL de
+            //     ControlTowerService") se cumple parcialmente por diseno: la metrica queda
+            //     `ejecutable` en el catalogo -- MetricExecutor es la fuente de verdad para PAC de
+            //     aqui en adelante -- pero el metodo viejo sigue existiendo porque todavia le sirve
+            //     a otras 3 metricas sin catalogar. Ver el reporte de Task 3 (rol B) para el detalle.
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'semanal',
             'metric_name' => 'Productividad semanal',
             'definition' => 'Porcentaje de compromisos activos cumplidos durante la semana.',

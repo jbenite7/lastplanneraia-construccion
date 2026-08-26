@@ -124,11 +124,30 @@ $parityToleranceByMetric = [
 
 /**
  * Metodo de ControlTowerService que debe haber desaparecido cuando la metrica pasa a `ejecutable`.
- * Vacio hoy: cero metricas son `ejecutable` todavia (Paso 4 no ha corrido).
  *
  * @var array<string, string>
  */
 $oldMethodByMetric = [];
+
+/**
+ * Motivo documentado para las metricas `ejecutable` cuyo metodo viejo NO se borra a proposito,
+ * porque `ControlTowerService` lo sigue usando para OTRAS metricas sin entrada en el catalogo
+ * todavia. Ruling del controlador (Task 3, cierre del paso 4, 2026-08-26): una metrica puede
+ * quedar `ejecutable` -- MetricExecutor es su fuente de verdad -- sin que su metodo viejo
+ * desaparezca, siempre que el motivo quede anotado aqui y verificable, no oculto. El trinquete de
+ * borrado salta la metrica con un PASS informativo en vez de exigir la ausencia del metodo.
+ *
+ * @var array<string, string>
+ */
+$oldMethodRetainedByMetric = [
+    'ps_weekly_fulfillment' => "ControlTowerService::scorecardPS() calcula 4 KPIs de una sola "
+        . 'pasada (Compromisos activos, PAC, En riesgo, CNC esta semana); solo PAC mapea a '
+        . 'ps_weekly_fulfillment. Los otros 3 no tienen entrada en el catalogo y scorecardPS() es '
+        . "su UNICA fuente para el reporte 'semanal' en vivo (BiControlTowerApiController.php:196, "
+        . "detras de 'Programacion Semanal'). Borrar el metodo entero habria roto esos 3 KPIs en "
+        . 'produccion. MetricExecutor es la fuente de verdad para PAC desde ahora; scorecardPS() '
+        . 'se conserva para los otros 3 hasta que tengan su propia metrica catalogada.',
+];
 
 $passed = 0;
 $failed = 0;
@@ -232,7 +251,25 @@ foreach ($enParidad as $definition) {
                 continue;
             }
 
+            if ($oldValue === null && $newValue === null) {
+                // Ruling del controlador (Bitacora del plan, entrada 5): los dos caminos
+                // coincidiendo en "sin dato" (p.ej. una semana que arranco ayer y no tiene ningun
+                // PAC registrado todavia) es acuerdo, no discrepancia. Se cuenta como paridad y se
+                // anota aparte -- mensaje distinto al de la comparacion numerica de abajo -- para
+                // no mezclar "concordamos en que no hay dato" con "los valores calzan".
+                paridadPass(sprintf(
+                    '%s [obra %d, semana %s]: sin datos, ambos caminos concuerdan (viejo=null, nuevo=null)',
+                    $metricKey,
+                    $projectId,
+                    $semana,
+                ));
+                continue;
+            }
+
             if ($oldValue === null || $newValue === null) {
+                // Caso asimetrico: un lado tiene valor y el otro no. Aqui SI hay riesgo real de
+                // discrepancia oculta (uno de los dos caminos esta viendo datos que el otro no ve),
+                // asi que sigue siendo fallo fuerte.
                 paridadFail(sprintf(
                     '%s [obra %d, semana %s]: no se puede comparar — viejo=%s, nuevo=%s',
                     $metricKey,
@@ -281,9 +318,15 @@ $reflection = new \ReflectionClass(ControlTowerService::class);
 foreach ($ejecutables as $definition) {
     $metricKey = (string) $definition['metric_key'];
     $oldMethod = $oldMethodByMetric[$metricKey] ?? null;
+    $retentionReason = $oldMethodRetainedByMetric[$metricKey] ?? null;
 
-    if ($oldMethod === null) {
-        paridadFail("{$metricKey}: esta ejecutable pero no tiene entrada en \$oldMethodByMetric — no se puede verificar que el SQL viejo se haya borrado");
+    if ($oldMethod === null && $retentionReason === null) {
+        paridadFail("{$metricKey}: esta ejecutable pero no tiene entrada en \$oldMethodByMetric ni en \$oldMethodRetainedByMetric — no se puede verificar que el SQL viejo se haya borrado (o que su conservacion este documentada)");
+        continue;
+    }
+
+    if ($retentionReason !== null) {
+        paridadPass("{$metricKey}: SQL viejo se conserva a proposito (no bloquea 'ejecutable') — {$retentionReason}");
         continue;
     }
 
