@@ -299,6 +299,7 @@ class GeneralApiController extends BaseController
             }
 
             // 5. Herencia Manual (Mapeo Manual LPS)
+            $herenciaAplicada = false;
             if (!empty($_POST['editarActividadAsociar']) && !empty($actividadAsociar) && $actividadAsociar !== '*No Asociada*') {
                 $semanaAnterior = $semana - 1;
                 $historico = $this->getPreviousWeekData($dbPrefix, $semanaAnterior);
@@ -306,6 +307,7 @@ class GeneralApiController extends BaseController
                 $dataHerencia = $historico[$keyBusqueda] ?? null;
 
                 if ($dataHerencia) {
+                    $herenciaAplicada = true;
                     $sqlApply = "UPDATE " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " SET
                                     Responsable_AIA = ?, Sub_Contratista = ?, Observaciones = ?, codigo_actividad = ?,
                                     medir_productividad = ?, cantidad_ppto = ?, unidad = ?,
@@ -349,20 +351,22 @@ class GeneralApiController extends BaseController
             $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
             error_log("[PGAudit] FINAL | usuario={$auditUser} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
 
-            // Firma de la edicion, si de verdad hubo una. `$huboHerencia` reusa exactamente la
-            // condicion que decidio aplicar la herencia mas arriba en este mismo metodo: cuando la
-            // herencia reemplazo el avance pero la asociacion no cambio, el residente venia a
-            // corregir otra cosa y ese numero no lo decidio el.
-            $huboHerencia = !empty($_POST['editarActividadAsociar'])
-                && !empty($actividadAsociar)
-                && $actividadAsociar !== '*No Asociada*';
+            // Firma de la edicion, si de verdad hubo una. `$herenciaAplicada` es cierto solo
+            // cuando el UPDATE de herencia se ejecuto de verdad (paso 5, arriba) — no cuando
+            // la casilla estaba marcada pero no se encontro la actividad anterior en el
+            // historico. Corregido: la version original reusaba la condicion externa
+            // (casilla marcada) en vez de la interna (herencia aplicada), asi que una edicion
+            // real quedaba sin firmar cuando la asociacion no tenia fuente en la semana
+            // anterior — el residente tecleaba un valor, ese valor sobrevivia porque el
+            // UPDATE de herencia no corria, pero se marcaba como "hubo herencia" y no se
+            // registraba. Hallado en la revision final del frente, 2026-08-26.
             $bitacoraService->registrarSiCambio(
                 $projectId,
                 (int) $semana,
                 (int) $id,
                 $avancePrevio,
                 $auditUser,
-                $huboHerencia,
+                $herenciaAplicada,
             );
 
             $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
