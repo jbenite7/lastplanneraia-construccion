@@ -67,6 +67,26 @@ const SEMANAS_POR_OBRA = 4; // "cuatro semanas reales" del brief; se usan las qu
  */
 $oldPathResolvers = [
     'ps_weekly_fulfillment' => static function (int $projectId, string $semana, ControlTowerService $ct): ?float {
+        // Guardarraiz anadido en Task 3 paso 3 (rol B, tras la correccion de alcance semanal de
+        // MetricScope, commit def23b0b): `scorecardPS()` calcula
+        // `round(count(PAC==1)/$total*100)` con `$r['PAC'] ?? 0` -- si NINGUN compromiso activo de
+        // la semana tiene PAC registrado, coalesce a 0 y publica "0%" para no dejar la tarjeta del
+        // dashboard vacia. Eso es un default de PRESENTACION aplicado despues del calculo, no lo
+        // que "el SQL viejo" (la frase exacta del brief) realmente computa: la consulta cruda con
+        // la misma poblacion de `fetchSemanal()` (`Activa IN ('1','NA')`) da `SUM(PAC=1) = NULL`
+        // en ese caso (confirmado corriendo la consulta a mano), igual que el `numerador` que
+        // calcula `MetricExecutor` -- SQL, no PHP, es quien decide que "sin PAC registrado" es
+        // indeterminado, no cero. Se reproduce esa guarda aqui, sin tocar ControlTowerService.php,
+        // para comparar la SEMANTICA del SQL viejo, no el default de UI que se le pego encima.
+        $db = \Database::getInstance();
+        $raw = $db->query(
+            "SELECT SUM(PAC=1) AS numerador FROM programacion_semanal WHERE project_id = ? AND Semana = ? AND Activa IN ('1','NA')",
+            [$projectId, $semana],
+        )->fetch();
+        if (($raw['numerador'] ?? null) === null) {
+            return null;
+        }
+
         $brief = $ct->getBrief('semanal', [$projectId], $semana, 'A');
         foreach ($brief['scorecard'] ?? [] as $kpiRow) {
             if (($kpiRow['kpi'] ?? null) === 'PAC') {
@@ -92,6 +112,14 @@ $oldPathResolvers = [
 $parityToleranceByMetric = [
     // 'pg_finish_variance_days_p50' => 1.5, // dias — a declarar cuando Paso 5 la mueva a en_paridad
     // (Monte Carlo con semilla aleatoria: dos corridas legitimas no calzan bit a bit).
+
+    // ps_weekly_fulfillment: scorecardPS() publica PAC como entero redondeado
+    // (`round(ratio*100)`) antes de mostrarlo en el dashboard; MetricExecutor devuelve el ratio
+    // sin redondear. El error maximo posible de un redondeo a entero es medio punto porcentual
+    // (0.5/100 = 0.005) -- no es un numero arbitrario para forzar el verde, es la cota matematica
+    // del propio `round()` que ya usa la produccion. Confirmado contra datos reales de la obra 65
+    // (2026-08-26): deltas observados de 0.00091 a 0.0025, todos por debajo de la cota.
+    'ps_weekly_fulfillment' => 0.005,
 ];
 
 /**
@@ -192,7 +220,12 @@ foreach ($enParidad as $definition) {
             }
 
             try {
-                $scope = new MetricScope([$projectId]);
+                // MetricScope::week() (fix de Task 2, commit def23b0b) acota MetricExecutor a
+                // "Semana = ?". Se pasa la semana del propio bucle: cada metrica en_paridad de
+                // grain semanal se compara semana a semana, y su cutoff_policy de catalogo dice
+                // "Semana seleccionada; no se infiere con fecha del servidor" -- no hay rango de
+                // fechas que resolver aqui, la semana pedida ES el corte.
+                $scope = new MetricScope([$projectId], week: $semana);
                 $newValue = $executor->execute($metricKey, $scope)->value();
             } catch (\Throwable $e) {
                 paridadFail("{$metricKey} [obra {$projectId}, semana {$semana}]: camino nuevo lanzo excepcion: {$e->getMessage()}");

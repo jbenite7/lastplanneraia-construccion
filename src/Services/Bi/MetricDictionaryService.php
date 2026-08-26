@@ -143,21 +143,37 @@ class MetricDictionaryService
 
         $catalog['ps_weekly_fulfillment'] = [
             'metric_key' => 'ps_weekly_fulfillment',
-            // Se queda en 'descriptiva' — NO en 'en_paridad' — pese a la correccion de filtro de
-            // abajo. Task 3 paso 3 (2026-08-26) corrio el trinquete tras corregir el filtro y
-            // encontro una discrepancia real que no es de catalogo: `MetricExecutor::execute()`
-            // no tiene forma de acotar a UNA `Semana`. `MetricScope` solo carga `project_id`(s) y
-            // un `startDate`/`endDate` opcionales que `MetricExecutor::buildWhereClause()` nunca
-            // lee — no hay ningun parametro de "semana" en toda la cadena. El "camino nuevo" agrega
-            // entonces TODAS las filas historicas del proyecto (678 filas para la obra 65, todas
-            // las semanas juntas) en vez de solo las de la semana pedida (24-80 filas por semana),
-            // dando el mismo valor constante sin importar que semana se compare — confirmado
-            // reproduciendo la agregacion a mano contra `bi_ps_compromisos`. Es un vacio de Task 2
-            // (`MetricExecutor`/`MetricScope`), no de este catalogo, y probablemente golpea a TODA
-            // metrica con grain semanal (la mayoria de las 18 que quedan para el Paso 5) — se deja
-            // documentado aqui para que el controlador lo decida antes de continuar el Paso 5, en
-            // vez de forzar una paridad que hoy es imposible de verificar. Ver el reporte de Task 3
-            // (rol B) para el detalle completo, valores exactos y comando de reproduccion.
+            // Historial de estado_ejecucion (Task 3, 2026-08-26):
+            //  1. 'descriptiva' -> 'en_paridad' (paso 3, corrigiendo el filtro de abajo).
+            //  2. 'en_paridad' -> 'descriptiva' otra vez: el trinquete corrio y encontro que
+            //     `MetricExecutor::execute()` no acotaba por `Semana` -- `MetricScope` solo cargaba
+            //     `project_id`(s) y un `startDate`/`endDate` que `buildWhereClause()` nunca leia. El
+            //     "camino nuevo" agregaba TODA la historia del proyecto (678 filas, obra 65) en vez
+            //     de la semana pedida (24-80 filas), dando el mismo valor sin importar la semana.
+            //     Vacio de Task 2 (`MetricExecutor`/`MetricScope`), fuera del catalogo — documentado
+            //     y NO forzado. Anotado como entrada 4 (Parada) en la Bitacora del piloto del plan.
+            //  3. 'descriptiva' -> 'en_paridad' de nuevo (commit def23b0b, aprobado por el
+            //     controlador): `MetricScope` gano un cuarto parametro `?string $week`, y
+            //     `MetricExecutor::buildWhereClause()` agrega `Semana = ?` cuando `$scope->week()`
+            //     no es null. El arnes de paridad ahora construye el scope con la semana de cada
+            //     iteracion (coincide con `cutoff_policy`: "Semana seleccionada; no se infiere con
+            //     fecha del servidor" — no hay rango que resolver, la semana pedida ES el corte).
+            //  4. 'en_paridad' -> 'descriptiva' una tercera vez: con el vacio de alcance ya resuelto,
+            //     el trinquete SI corrio de verdad y paridad calza en 5 de las 6 combinaciones
+            //     (obra, semana) reales -- 1 exacta + 4 dentro de una tolerancia de 0.005 declarada
+            //     y justificada (cota matematica del `round()` a entero que ya usa `scorecardPS()`
+            //     antes de mostrar el porcentaje). La sexta (obra 73, semana 2) no es un defecto de
+            //     codigo: esa semana arranco AYER (`semanas_activas`: Fecha_Inicio_Sem 2026-08-25,
+            //     Semanal_Confirmada=0, fechaCierreCompromisos=NULL — semana todavia abierta) y no
+            //     tiene ningun PAC registrado aun. Ambos caminos coinciden en que el valor es
+            //     indefinido (confirmado corriendo el SQL crudo: `SUM(PAC=1)` da NULL con la misma
+            //     poblacion que usa `fetchSemanal()`), pero el arnes de rol A trata "no se puede
+            //     comparar" como fallo SIEMPRE, incluso cuando los dos caminos concuerdan en null —
+            //     ese es un diseño deliberado del ratchet (preferir fallo ruidoso a un acuerdo por
+            //     casualidad), asi que no se toco. Pasa a 'ejecutable' solo cuando la sexta
+            //     combinacion deje de bloquear: o bien la semana 2 de la obra 73 cierra con datos
+            //     reales, o el controlador decide explicitamente tratar "ambos null" como paridad.
+            //     Ver el reporte de Task 3 (rol B) para los valores exactos de las 6 combinaciones.
             'estado_ejecucion' => 'descriptiva',
             'report_key' => 'semanal',
             'metric_name' => 'Productividad semanal',
@@ -187,10 +203,11 @@ class MetricDictionaryService
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; reports registered PAC.',
             'version' => '1.0',
-            'known_limitations' => 'Depende de que los compromisos activos tengan PAC registrado. '
-                . 'Ademas, MetricExecutor no soporta acotar por Semana todavia (ver nota en '
-                . 'estado_ejecucion): "en_paridad" no es alcanzable para esta metrica hasta que se '
-                . 'resuelva ese vacio de alcance en Task 2.',
+            'known_limitations' => 'Depende de que los compromisos activos tengan PAC registrado — '
+                . 'una semana abierta sin PAC registrado da un valor indefinido (null), no 0%. '
+                . 'Paridad calza en 5/6 combinaciones (obra, semana) reales con tolerancia 0.005 '
+                . '(ver nota en estado_ejecucion); la sexta esta bloqueada por falta de datos de '
+                . 'una semana aun abierta en la obra piloto, no por un defecto de codigo.',
         ];
 
         $catalog['pg_radar_productividad'] = [
