@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v0.9
+version: v0.95
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -162,23 +162,36 @@ que ese valor siempre está disponible.
 
 ### 2. Quién escribe ahí
 
-Un servicio nuevo — `App\Services\CampoManualAuditoriaService` — que reemplaza el `UPDATE` manual
-de estos cinco campos en los tres controladores listados arriba. Cada controlador le entrega:
-tabla, proyecto, semana, actividad, los campos que quiere cambiar con sus valores nuevos, y el
-usuario de la sesión.
+Un servicio nuevo, `App\Services\CampoManualAuditoriaService`, con dos llamadas que envuelven la
+lógica que cada controlador ya tiene — **no** una que la reemplace.
 
-El servicio, envuelto en una transacción (todo o nada):
+**Corregido en esta ronda, y es un cambio de fondo.** Las versiones anteriores decían que el
+servicio "reemplaza el `UPDATE` manual de estos cinco campos". Eso no funciona para
+`GeneralApiController::update()`, que en una misma petición ejecuta **dos** `UPDATE` seguidos: el
+que guarda lo que la persona tecleó, y el de herencia que lo reemplaza con los valores de la semana
+anterior. Un servicio que envolviera el primero registraría el valor tecleado, que es exactamente lo
+contrario de lo decidido (registrar el valor final que queda en pantalla). Envolver el segundo
+tampoco sirve: es condicional, y en las peticiones sin herencia no se ejecuta.
 
-1. Bloquea la fila y lee sus valores actuales dentro de la misma transacción (`SELECT ... FOR
-   UPDATE`), para que dos ediciones casi simultáneas de la misma actividad no se pisen sin que
-   ninguna de las dos vea el cambio de la otra.
-2. Compara campo por campo. Si el valor nuevo es igual al actual, no se registra nada — guardar
-   sin cambiar no es una edición.
-3. Por cada campo que sí cambió, inserta su fila en la bitácora, y solo entonces aplica el
-   `UPDATE` real.
+El patrón que sí funciona en los cuatro sitios es **capturar antes y después de la petición**:
 
-Lo demás que cada controlador escribe hoy — fechas, restricciones, estado — no pasa por este
-servicio; solo estos cinco campos.
+1. **Al entrar**, el controlador llama a `capturarEstadoPrevio()`, que bloquea la fila y lee los
+   cinco campos (`SELECT ... FOR UPDATE`) dentro de la transacción que ya abarca la petición. El
+   bloqueo evita que dos ediciones casi simultáneas de la misma actividad se pisen sin verse.
+2. **La lógica existente corre sin cambios** — uno, dos o los `UPDATE` que sean, con sus
+   condiciones actuales. No se toca.
+3. **Antes de cerrar**, el controlador llama a `registrarCambios()`, que relee los cinco campos,
+   los compara contra los capturados al entrar, y por cada uno que difiera inserta su fila en la
+   bitácora. Un campo que quedó igual no se registra: guardar sin cambiar no es una edición.
+
+Ventajas de este patrón sobre envolver cada sentencia: registra siempre el estado final real, sin
+importar cuántas escrituras intermedias hubo ni cuáles se ejecutaron; no obliga a reescribir el SQL
+que ya funciona en cada controlador; y el mismo par de llamadas sirve igual para los sitios de un
+solo `UPDATE` (`modificar()`, `applySharedConstraints()`) que para el de dos.
+
+Se instrumentan **solo los cuatro sitios clasificados como edición humana** en la tabla de arriba.
+Lo demás que cada controlador escribe — fechas, restricciones, estado — sigue igual y no pasa por
+este servicio.
 
 ### 3. Cómo lo consume el arrastre
 
