@@ -1,0 +1,16 @@
+/*
+ * Puente con el design system de lps-aia: cero copias, cero hex (N11, condición 1).
+ *
+ * A diferencia de pdc-app —que no importa nada aquí y confía en que el shell PHP ya haya
+ * enlazado /css/tokens.css antes de pdc.css—, ct-app importa el archivo real: así el bundle
+ * de la Torre trae sus tokens consigo aunque el shell que la sirva no los enlace por su cuenta.
+ * Ruta absoluta a propósito (no relativa): así resuelve igual sin importar dónde caiga este
+ * @import dentro del CSS final de Vite, igual que hace aia-design-system.css con sus propios
+ * @import de design-system/*.css.
+ *
+ * public/css/tokens.css es la hoja que ya usan pdc-app (vía <link> en views/plan-compras/app.view.php)
+ * y el resto de la app (vía DesignSystemHeadComponent::render()/renderLaboratory()): ahí viven los
+ * `--ds-color-*` primitivos y compuestos. Ningún valor se copia a este archivo — si el token cambia,
+ * cambia en un solo lugar.
+ */
+@import url('/css/tokens.css');

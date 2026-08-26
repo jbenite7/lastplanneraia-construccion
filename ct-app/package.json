@@ -1,0 +1,27 @@
+{
+  "name": "ct-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SPA de la Torre de Control (Ola 1, etapa piloto) de lps-aia",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && tsc -p tsconfig.node.json && vite build && rm -f ../public/ct-app/index.html",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
+}
