@@ -127,6 +127,10 @@ antes de aplicar y reversa escrita (`docs/global-tables-architecture.md` manda).
 **El tema claro nace aquí** (decisión 10): tokens anclados al manual AIA v1.0, aprobados por Felipe
 en pantalla sobre el piloto antes de que ninguna otra pantalla los herede.
 
+**El stack de la Torre es React + TypeScript** al estilo del PDC v2, por decisión N11 (CT-20.1),
+con sus dos condiciones: tokens CSS del design system y gates de validación como cualquier
+pantalla. El backend sigue en PHP.
+
 ### Ola 2 · Las 18 restantes, cada una una sola vez
 
 Cada pantalla terminada en la misma pasada: tabla migrada al sistema de diseño, tema claro (ya
@@ -1036,7 +1040,7 @@ sección se verificó contra `src/Services/Bi/MetricDictionaryService.php` líne
 duplica**: añade la capa que el catálogo no tiene, el **momento narrativo** — dónde vive cada cifra
 en la historia (titular · lienzo · desglose · correo) y en qué forma.
 
-### CT-20.1 · Las decisiones narrativas y de cierre de Felipe (N1–N10)
+### CT-20.1 · Las decisiones narrativas y de cierre de Felipe (N1–N11)
 
 | # | Decisión | Alcance |
 |---|---|---|
@@ -1050,6 +1054,7 @@ en la historia (titular · lienzo · desglose · correo) y en qué forma.
 
 | N8 | **Los cuatro «campos muertos» no eran cuatro: tres tienen maquinaria viva.** `Categoria_CP`/`CP` son el flujo de Trabajo No Programado de Semanal (`SemanalApiController.php:1362`) y `alerta_crisis` es el botón de crisis del cajón LPS (`lps_drawer.js:1221`). **Se quedan, y la Torre mide su adopción**: el vacío nombra la acción («ninguna crisis registrada», «TNP sin categorizar») y a 90 días se decide con dato si se promueven o se retiran. Solo `reprogramaciones_semanales` está muerto de verdad —sin escritor ni lector— y sale por retiro funcional en F0, con el borrado de columna agrupado en la próxima migración con gate | Cierra CT-18.4. La lección: «0% de llenado» mide no-uso, no orfandad — clasificar un campo exige leer quién lo escribe, no contar sus filas |
 | N9 | **El correo de víspera lo reciben director, residente, el gerente definido manualmente por obra, y los administradores** | Cierra CT-18.5 y amplía D79. Con el jefe leyendo, el contrapeso de captura (D32) deja de ser opcional en todo lo que ese correo nombre — la Parte II ya midió que la causa se maquilla cuando el jefe la va a ver (D86) |
+| N11 | **La Torre se construye en React + TypeScript, al estilo del PDC v2, con dos condiciones.** Propuesto por Felipe y fijado el 2026-08-26: (1) la app consume **los tokens CSS del design system** — son CSS puro y viajan a cualquier stack —, sin hex propios ni variantes locales; (2) sus hojas **entran a los gates de validación** como cualquier pantalla de la v0 (escritorio 1180×820, móvil 390×844, oscuro y claro). El backend no cambia: catálogo ejecutable, endpoint de escritura y RBAC siguen en PHP como manda la Parte II. El porqué: `bi-spa.js` (4.199 líneas de JS plano) es el riesgo transversal que CT-16 ya nombraba, y ocho hojas con escritura, filtros y linaje son estado que React+TS maneja mejor que un archivo que crece. La condición existe porque el PDC v2 quedó medido como **isla del design system** — sin ella, la v0 terminaría con dos islas y un continente | Arquitectura de implementación de toda la Ola 1. Descartado crecer `pdc-app/` hacia un front unificado: acopla dos módulos con ritmos distintos |
 | N10 | **CT-18.6 estaba resuelta dentro del propio documento** — D82 (no hay historial de compras fuera de la base) y D83 (el CSV de «Prueba» se conserva como borrador confirmado) la respondían desde el 2026-08-20. Se cierra de oficio | Quedó en la lista de abiertos por descuido del propio documento. Con esto, **CT-18 no tiene ningún abierto vivo**: el 2 lo cerró N6 y el 5 lo cierra N9 |
 
 Y una técnica anotada: las acciones recomendadas de 8.1 derivan su dueño del rol (el director de la
