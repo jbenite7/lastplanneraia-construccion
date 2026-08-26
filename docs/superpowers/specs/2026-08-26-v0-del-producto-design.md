@@ -5,16 +5,17 @@ estado: vigente
 fecha: 2026-08-26
 areas: [proceso, design-system, bi, pdc]
 fuente: docs/superpowers/specs/2026-08-26-v0-del-producto-design.md
-resumen: "La v0 del producto, spec v0.1: 26 pantallas, la Control Tower completa como Ola 1 con su diseño íntegro adentro, y las decisiones que un ejecutor ya no tiene que adivinar"
+resumen: "La v0 del producto, spec v0.5: 26 pantallas, la Control Tower completa con su diseño íntegro y el detalle elemento por elemento — cálculo, fuente y momento narrativo de cada cifra"
 ---
 
-# La v0 del producto — Design · **spec v0.1**
+# La v0 del producto — Design · **spec v0.5**
 
 - **Fecha:** 2026-08-26 · **spec v0.1**, segunda iteración del mismo día.
-- **La línea de versiones:** v0 (borrador con el qué y el orden) → **v0.1 (esta): las siete
-  decisiones que un ejecutor tenía que adivinar quedan resueltas, y el diseño completo de la
-  Control Tower viaja DENTRO como Parte II** → v1 será la de calidad de ejecución final, cuando
-  Felipe la bendiga tras su lectura.
+- **La línea de versiones:** v0 (borrador con el qué y el orden) → v0.1 (decisiones resueltas +
+  el diseño de la Torre íntegro como Parte II) → **v0.5 (esta): el detalle elemento por elemento —
+  cálculo verificado, fuente y momento narrativo de cada cifra, con las siete decisiones de
+  storytelling del grilleo del 2026-08-26 (tarde), en CT-20** → v1 será la de calidad de ejecución
+  final, cuando Felipe la bendiga tras su lectura.
 - **Qué entró en la v0.1:** dos contradicciones internas resueltas midiendo (el denominador y el
   piloto), seis decisiones nuevas de Felipe, y —por su instrucción expresa— **el diseño de la Torre
   deja de ser referencia externa**: las 837 líneas del replanteo del 2026-08-20 están íntegras en la
@@ -1026,3 +1027,66 @@ que estuvo a punto de reordenar todo el replanteo. Lo corrigió Felipe.
 
 **Regla que sale de ahí, y que aplica al ejecutor de métricas de 6:** ninguna métrica se declara sin
 declarar también su denominador. Un porcentaje sin su base no es una cifra, es una insinuación.
+
+## CT-20 · El detalle elemento por elemento — cálculo, fuente y momento narrativo
+
+**Añadido en la v0.5** (grilleo con Felipe, 2026-08-26 tarde, bajo el método `antes-del-almuerzo`).
+El catálogo ejecutable (CT-6) ya declara cálculo, fuente, grano y corte de cada métrica — esta
+sección se verificó contra `src/Services/Bi/MetricDictionaryService.php` línea por línea y **no lo
+duplica**: añade la capa que el catálogo no tiene, el **momento narrativo** — dónde vive cada cifra
+en la historia (titular · lienzo · desglose · correo) y en qué forma.
+
+### CT-20.1 · Las siete decisiones narrativas de Felipe
+
+| # | Decisión | Alcance |
+|---|---|---|
+| N1 | **El titular narrativo se produce por plantillas por regla** — un juego finito de frases con huecos, elegidas por condiciones medibles. Nunca IA generativa (texto no auditable en la hoja más vista), nunca redacción manual (la hoja abriría muda) | Todas las hojas. Cada plantilla es auditable con la misma trazabilidad que una cifra: condición que la disparó, cifras que la llenan |
+| N2 | **En el panorama de obras, el orden ES la señal.** Las obras se ordenan por severidad compuesta (huérfanas + desviación + tendencia) y solo la que cruza umbral lleva color. Sin semáforo por fila | 8.1. La primera fila responde «dónde meterse»; la pantalla queda en gris salvo la anomalía, como manda CT-12 |
+| N3 | **El pronóstico se dice con fecha probable + rango + brecha en palabras:** «Terminación probable: 15 de marzo — entre el 2 de marzo y el 4 de abril. 88 días después de la comprometida.» Nunca «P50» ni porcentajes de confianza en el titular | 8.2 y la fila de desviación de 8.1. Debajo, en la trazabilidad: con qué se calculó (240 simulaciones, mínimo 3 incrementos) |
+| N4 | **«Urgencia» en la lista de restricciones = cuándo golpea, luego cuánto arrastra.** Primero la restricción cuya actividad bloqueada inicia más pronto; a igual semana, la que más actividades encadena y si toca ruta crítica | 8.3. Literal a la decisión de la hoja: liberar hoy la que mata el compromiso de dentro de tres semanas |
+| N5 | **El riesgo de incumplimiento se muestra en tres niveles (alto/medio/bajo) con umbral declarado en la trazabilidad.** Nunca el porcentaje crudo por compromiso: aparenta precisión que el modelo de seis pesos no tiene | 8.4 y el correo del responsable. Los tres niveles se ven; solo «alto» dispara aviso |
+| N6 | **La Curva S convoca a replanificar a 30 días de brecha sostenidos dos cortes seguidos.** El «sostenido» evita replanificar por un mal corte; 30 días es material de comité, no ruido | 8.5. Cierra el abierto §CT-18.2. La convocatoria es una plantilla N1, no una alarma roja |
+| N7 | **Los cuatro componentes vacíos de proveedores: el vacío nombra la acción, sin campaña de captura.** El integral inhabilitado declara qué falta y quién lo carga; si en 90 días nadie capturó, la señal es que no importan y se decide retirarlos | 8.7. La captura no infla la v0; el criterio de muerte aplica también a componentes |
+
+Y una técnica anotada: las acciones recomendadas de 8.1 derivan su dueño del rol (el director de la
+obra señalada), según D20 y D89 — no se preguntó porque ya estaba decidido.
+
+### CT-20.2 · Las 19 métricas del catálogo — más la lista nueva de F2 — y su momento en la historia
+
+Verificado contra el código el 2026-08-26. La columna «momento» usa el vocabulario de CT-12:
+**titular** (la frase que abre la hoja) · **lienzo** (visible al abrir) · **desglose** (por clic) ·
+**correo** (llega por evento, CT-11.b).
+
+| metric_key | Hoja | Cálculo (del catálogo, resumido) | Fuente | Momento narrativo |
+|---|---|---|---|---|
+| `ps_weekly_fulfillment` | 8.4 | cumplidos / activos, sin TNP | `bi_ps_compromisos` | **Encabezado de una línea** que abre la reunión, como «17 de 20 compromisos» (D37) — ex post, nunca pantalla propia. Contrapeso N/D36 al lado: conteo + variación semanal |
+| `ps_pac_expected` → **riesgo de incumplimiento** | 8.4 | 6 pesos: 25% contratista + 20% responsable + 15% criticidad + 20% restricciones + 10% avance + 10% CNC; mínimo 3 observaciones | `ForecastService` sobre `bi_ps_compromisos` | **Protagonista del lienzo** en tres niveles (N5) y **correo** al responsable solo en alto. La señal de la diaria; cabe en el celular |
+| `pi_hard_restrictions_ready_rate` | 8.3 | listas / total en ventana 0–6 | `bi_pg_semana` | **Titular de adherencia** (la cifra dura del 69%, D59): «X% entró a la semana sin análisis». Es además el criterio de muerte (CT-15) |
+| `pi_restriction_pareto` | 8.3 | conteo por tipo no liberado | `bi_pi_restricciones` | **Lienzo, posición 5** — contexto, después de la lista accionable. Nunca titular: un pareto no dice a quién llamar |
+| *(nueva, F2)* lista de restricciones por liberar | 8.3 | orden N4 sobre las columnas de la migración CT-7.3 | `pi_shared_constraints` + nuevas | **Lienzo, posición 1–3**: alarma de huérfanas, lista, titular. La que se trabaja en vivo en la reunión; escribe (D33) |
+| `pg_finish_variance_days_p50` | 8.2 · 8.1 | Monte Carlo, 240 simulaciones, P10–P90 | `programa_consolidado` | **Titular de 8.2 en forma N3** (fecha + rango + brecha) · fila del panorama en 8.1 · **correo a gerencia** al cruzar umbral de desviación |
+| `pg_observed_activity_delay_days` | 8.2 | días desde fin planificado al corte, por actividad vencida | `programa_consolidado` | **Desglose** — su limitación conocida lo dice: días paralelos no equivalen a retraso del proyecto. Jamás al lienzo sin esa nota |
+| `pg_activity_progress_contribution` | 8.2 | aporte ponderado por duración | `ControlTowerService::programaProgressActivities` | **Desglose** del avance: responde «qué actividades explican el número» |
+| `pg_activities_to_do` | 8.2 · 8.3 | conteo en ventana 0–6 | `bi_pg_semana` | **Denominador de contexto** en el lienzo — nunca solo: siempre como base de otra cifra («de N actividades en ventana…») |
+| `pg_radar_productividad` (Avance promedio) | 8.2 | promedio de P_Completado válido, tope 1 | `programacion_semanal` | **Lienzo: radar** (D22, renombrado en F0). Cada eje con su «cómo se calcula» al clic |
+| `pg_radar_eficiencia` | 8.2 | promedio de ratios ejecutado/compromiso por fila | `programacion_semanal` | Radar, ídem — el valor bruto puede superar 100 y el display se limita: la nota viaja en la trazabilidad |
+| `pg_radar_desempeno` | 8.2 | PAC=1 / PAC válidos | `programacion_semanal` | Radar, ídem |
+| `pg_cnc_activity_count` | 8.4 | únicas con CNC, activas | `programacion_semanal` | **Lienzo de 8.4** (las causas viven aquí, D39), desglose a subcausa **por clic**. En 8.2 solo titular. Contrapeso D32 al lado: quién registró y cuántas sin causa |
+| `pg_cnp_activity_count` | 8.4 | únicas con CNP, no programadas | `programacion_semanal` | **Desglose** — explica el denominador del compromiso, no abre conversación propia |
+| `pdc_at_risk` | 8.6 | pasos con fecha vencida sin fecha real, corte = hoy del servidor | `pdc_plan_paso` | **Lienzo: la lista de vencidos** (gemela de la de restricciones) y **correo a compras** al entrar en ventana. Con las reglas de 8.6: «sin avance registrado» ≠ vencido, escala «planeado», contrapeso de pasos cerrados |
+| `cic_cal_integral` | 8.7 | promedio ponderado de 5 componentes | `bi_cic_contratistas` | **Inhabilitada en el lienzo** hasta tener los cinco (CT-6.2); los componentes con dato, por separado. N7: el vacío nombra la acción |
+| `cic_aprobacion_status` | 8.7 | umbrales 70/50 sobre el integral | `bi_cic_contratistas` | **Hereda la inhabilitación del integral** — clasificar un número que no se publica sería publicarlo por la puerta de atrás. Anotado en la v0.5: el catálogo aún no declara esta herencia |
+| `cip_fulfillment_alert` | 8.8 | PAC<50% o críticos incumplidos | `bi_cip_responsables` | **Correo al jefe directo, nunca proyectada** (D46/D47). Bloqueada por D61 (la vista devuelve una fila) hasta arreglarla en F0 |
+| `curva_s_desviacion` | 8.5 | real − teórico, ponderado por duración | `bi_curva_s_duracion` | **Lienzo de 8.5** con la banda de incertidumbre; **convoca a replanificar** según N6. Ritmo mensual: nunca correo semanal |
+| `riesgo_score_100` | 8.2 | 35p + 25i + 20u + 10c + 10d | `bi_riesgos` | **Lienzo: el riesgo combinado** (D26) con su ponderación explicada en una frase. Los drivers, al desglose |
+
+### CT-20.3 · Lo que el catálogo aún no declara, medido
+
+- **Las cuatro métricas nuevas de D58** (el semáforo por semanas 0–6 reconstruido de Power BI entre
+  ellas) **no existen en `MetricDictionaryService`** — nacen en F2 con la hoja de Intermedia, cada
+  una con su contrato completo antes de pintarse.
+- **`compras.duracion_real_paso`** (CT-6) tampoco: nace `descriptiva` con su umbral de 20 pasos.
+- **La herencia de inhabilitación** `cic_aprobacion_status` ← `cic_cal_integral` no está declarada:
+  se añade al catálogo como parte de la declaración de completitud (CT-6.2).
+- **`ps_pac_expected` sigue con su nombre viejo** en el catálogo (`integration_status:
+  planned_for_programacion_semanal`): el rebautizo a «riesgo de incumplimiento» (D38) es parte de F3.
