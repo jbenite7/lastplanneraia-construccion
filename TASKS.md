@@ -67,8 +67,15 @@ Lo que hay que saber para retomarlo:
   `medir_productividad`, y el arrastre no. Así que una actividad asociada con el botón arranca sin
   sus restricciones y otra asociada a mano sí las tiene, sin que nada lo advierta. Felipe lo señaló
   el 2026-08-25 ("si auto-asocia, debe heredar"); queda pendiente decidir si el botón debe heredar
-  el paquete completo. **No medido todavía:** cuántas actividades en producción quedaron sin
-  restricciones por esta vía.
+  el paquete completo.
+
+  **Medido en producción el 2026-08-25 (solo lectura): 3 casos de 1.277.** De las actividades
+  asociadas cuya actividad de origen sí tenía restricciones liberadas, solo tres quedaron en cero —
+  proyecto `68`, semanas 7 y 11 (Morteros, Redes hidrosanitarias, Redes Eléctricas), las tres con
+  1/7 restricciones en el origen. **Prioridad baja:** el camino que lo produce sigue abierto, pero
+  no está haciendo daño. Dos límites de esa medición: mira el estado actual, no si algo se perdió y
+  se volvió a llenar; y 4.653 actividades asociadas no encontraron origen en la semana anterior
+  (asociación más lejana, o el nombre cambió), así que de esas no dice nada.
 
 - **`tests/test_schedule_update_draft_import.php` deja un proyecto huérfano.** Crea
   `Base_de_Datos = 'it_schedule_draft'` y no lo borra al terminar, así que la corrida siguiente
