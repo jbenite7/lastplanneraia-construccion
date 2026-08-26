@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v0.99
+version: v1
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora del avance editado a mano en Programa General, para que el arrastre deje de adivinar en el caso ambiguo"
 ---
@@ -110,9 +110,9 @@ segundo tampoco sirve: es condicional y no siempre se ejecuta.
 
 El flujo:
 
-1. **Al entrar**, `capturarAvancePrevio()` bloquea la fila y lee `Ejecutado` (`SELECT ... FOR
-   UPDATE`) dentro de la transacción que ya abarca la petición. El bloqueo evita que dos ediciones
-   casi simultáneas de la misma actividad se pisen sin verse.
+1. **Al entrar**, `capturarAvancePrevio()` lee `Ejecutado` y `programaAnteriorAsociar`. En la
+   práctica se amplía el `SELECT Titulo` que `update()` ya hace para validar la fila, así que no
+   agrega una consulta nueva.
 2. **La lógica existente corre sin cambios** — uno o dos `UPDATE`, con sus condiciones actuales.
 3. **Antes de cerrar**, `registrarSiCambio()` relee `Ejecutado`, lo compara contra el capturado y,
    si difiere, inserta la fila en la bitácora. Si quedó igual, no se registra nada: guardar sin
@@ -121,6 +121,23 @@ El flujo:
 La comparación usa la misma tolerancia de 0.001 que ya usa `WeeklyRealProgressCarryoverService`
 para decidir si algo cambió. Dos criterios distintos para "cambió" sobre el mismo dato serían una
 inconsistencia, no una elección.
+
+**Sin transacción envolvente, decisión técnica del 2026-08-25 con su límite declarado.** Las
+versiones anteriores de este spec daban por hecho que `update()` corría dentro de una transacción y
+que la captura podía bloquear la fila (`SELECT ... FOR UPDATE`). Se verificó y es falso:
+`GeneralApiController::update()` no abre transacción en ningún punto. Envolverlo entero sería un
+cambio de riesgo real sobre el camino crítico de edición del programa —hace varias escrituras,
+llama a servicios y recalcula estados— a cambio de atomicidad en un caso poco frecuente. No se
+hace.
+
+Consecuencias que se aceptan a sabiendas:
+
+- Si dos personas editan la misma actividad casi al mismo tiempo, las dos capturan el mismo valor
+  previo y las dos firman. La bitácora seguirá diciendo lo que el arrastre necesita —"una persona
+  puso este número"—, pero un `valor_anterior` puede quedar desactualizado.
+- Si el `INSERT` de la bitácora falla, el avance queda guardado **sin** firma, que es justo la
+  situación que este trabajo quiere evitar. Por eso ese fallo **no puede pasar en silencio**: se
+  registra en el log de errores del servidor, para que se note y se pueda investigar.
 
 ### La herencia: solo se firma cuando la asociación cambió
 
@@ -192,7 +209,8 @@ TDD, prueba antes que código, igual que el arreglo del arrastre.
 **El servicio que escribe** (nivel `db`):
 - Editar el avance deja exactamente una fila en la bitácora, con el antes y el después correctos.
 - Guardar el mismo valor no deja ninguna fila.
-- Un fallo a mitad de la transacción no deja ni la bitácora ni el dato real a medias.
+- Si el registro en la bitácora falla, el fallo queda en el log de errores y no se traga en
+  silencio — una edición sin firma es justo lo que este trabajo quiere evitar.
 - Con herencia activa **y asociación cambiada** en la misma petición: se registra el valor heredado
   que quedó, no el tecleado.
 - Con herencia activa y **asociación sin cambios** —el residente vino a corregir otra cosa—: no se
