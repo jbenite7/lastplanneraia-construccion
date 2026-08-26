@@ -72,7 +72,7 @@
       "rutasQueNoRindenPantalla": [],
       "destinosLegado": 0,
       "designSystem": {
-        "moduleId": "projects",
+        "moduleId": "project-selector",
         "estado": "pilot"
       }
     },
@@ -509,7 +509,8 @@
       ],
       "destinosLegado": 0,
       "designSystem": {
-        "moduleId": "admin",
+        "sinFicha": true,
+        "porQue": "admin/ es una mini-aplicacion aparte con su propio front controller, router y CSS; no consume el sistema de diseno de src/. Darle ficha aqui declararia una cobertura que no existe.",
         "estado": "inventory-only"
       },
       "fuente": "admin/public/index.php"
