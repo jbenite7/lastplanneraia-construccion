@@ -93,7 +93,7 @@ final class CarryoverAvanceSemanalTest extends TestCase
 
     private function limpiar(): void
     {
-        foreach (['programa_consolidado', 'programacion_semanal', 'programa', 'semanas_activas'] as $tabla) {
+        foreach (['programa_consolidado', 'programacion_semanal', 'programa', 'semanas_activas', 'pg_avance_edicion_manual'] as $tabla) {
             $this->db->query("DELETE FROM {$tabla} WHERE project_id = ?", [self::PROJECT_ID]);
         }
         $this->db->query("DELETE FROM general_proyectos_procesos WHERE Id = ?", [self::PROJECT_ID]);
@@ -224,6 +224,36 @@ final class CarryoverAvanceSemanalTest extends TestCase
             $this->ejecutadoEnSemana(2),
             0.001,
             'el valor que el residente escribio a mano no se puede perder',
+        );
+    }
+
+    /**
+     * El caso que la bitacora existe para resolver: fila sin testigo, con un valor que no coincide
+     * ni con el acumulado anterior ni con el calculado. Hoy el servicio lo respeta por sospecha;
+     * con la firma en la bitacora lo respeta por evidencia.
+     */
+    public function testRespetaConCertezaUnValorQueLaBitacoraConfirma(): void
+    {
+        $this->arrastrar();
+        $this->db->query(
+            "UPDATE programa_consolidado SET Ejecutado = 0.55, Ejecutado_Carryover = NULL
+             WHERE project_id = ? AND Semana = 2 AND unique_id = ?",
+            [self::PROJECT_ID, self::UID],
+        );
+        $this->db->query(
+            "INSERT INTO pg_avance_edicion_manual
+                (project_id, Semana, unique_id, valor_anterior, valor_nuevo, usuario)
+             VALUES (?, 2, ?, 0.9, 0.55, 'test.A')",
+            [self::PROJECT_ID, self::UID],
+        );
+
+        $this->arrastrar();
+
+        $this->assertEqualsWithDelta(
+            0.55,
+            $this->ejecutadoEnSemana(2),
+            0.001,
+            'con la firma en la bitacora, el valor del residente se respeta',
         );
     }
 }
