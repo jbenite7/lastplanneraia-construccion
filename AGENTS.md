@@ -60,6 +60,28 @@ resumen: Contrato del repo para asistentes: runtime Docker, tablas globales con 
 
 ## Publicación
 
+### Cierre de plan: por Pull Request, con CI — política vigente desde el 2026-08-26
+
+**Decisión de Felipe (2026-08-26): al terminar un plan, el cierre entra a `main` por Pull Request,
+no por push directo.** El flujo:
+
+1. El trabajo del plan vive en su rama (`git checkout -b <slug-del-plan>` al arrancar).
+2. Al cerrar: verificación local en verde (los mismos comandos de siempre, RC leído en su propia
+   línea), commits atómicos, y `git push -u origin <rama>`.
+3. `gh pr create` contra `main`, con el cuerpo resumiendo qué se verificó y su salida.
+4. **CI en verde es el gate** — `.github/workflows/ci.yml` ya corre en `pull_request`. Un PR con CI
+   rojo no se mergea; se arregla o se cierra, nunca se fuerza.
+5. Merge del PR → el push a `main` dispara el CI de rama como confirmación posterior.
+
+Lo que esta política **no** cambia: el deploy a producción sigue exigiendo autorización explícita de
+Felipe, siempre — «CD» aquí es el pipeline de verificación, no un despliegue automático a la obra.
+Tampoco cambia la verificación local previa: el CI confirma, no sustituye.
+
+`scripts/publicar.sh` y el push directo a `main` quedan como **vía de excepción** (hotfix urgente con
+Felipe presente, o cambios de pura documentación de sesión), no como flujo normal. El procedimiento
+histórico de abajo se conserva porque sus porqués medidos (verificar tras integrar, `HEAD:main`, leer
+códigos de salida) siguen aplicando dentro de la rama del PR.
+
 ### El gate de cierre de frente es bloqueante
 
 **No se permite abrir un frente nuevo mientras el anterior no esté publicado en `main`.** Un frente
