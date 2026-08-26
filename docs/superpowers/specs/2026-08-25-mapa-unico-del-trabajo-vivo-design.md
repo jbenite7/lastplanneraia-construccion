@@ -77,6 +77,33 @@ No hay trabajo de producto aquí. Es escribir un cierre que ya se ganó.
 | 2.4 | **El último color inventado del sistema** | `public/css/tokens.css:762` mantiene un color propio fuera de los dos canales. Sigue teniendo objeto: `pg-state-restr-0` continúa vivo (`hot.js:1066`). **Pide su visto visual antes de fijarlo** | horas |
 | 2.5 | **Dos deudas de higiene, medidas** | El `CHANGELOG` está desordenado (`1.2.0` aparece después de `1.1.0`) y las dos reglas de coordinación que P6 mandaba escribir **nunca se escribieron** (cero coincidencias en `docs/coordinacion-sesiones.md`). La segunda importa: es la lección que evita repetir el defecto de arriba | horas |
 
+### Grupo 2-bis · Lo que entró después de escribir este mapa — actualizado 2026-08-26
+
+**Este documento envejeció en horas, que era su riesgo declarado. Se corrige aquí en vez de fingir
+que estaba completo.** Mientras se escribía, otra sesión cerró un frente sobre el arrastre del
+avance semanal y dejó cuatro pendientes medidos que este mapa no recogía.
+
+**Corrección al punto 2.1.** Decía «media hora» para comprobar que la obra usa el Plan de Compras.
+El envío del 2026-08-12 sigue siendo cierto, pero **producción va hoy 233 commits atrás de `main`**
+(`6fa3cff1`), 86 de ellos tocando código, con **dos migraciones pendientes**
+(`20260819_sembrar_linea_base_contractual.sql` y `20260825_carryover_testigo.sql`, la segunda
+aditiva y reversible). Entre lo que no ha llegado a la obra está el arreglo de CSRF de
+`LpsApiController`. La comprobación sigue costando media hora; **el despliegue que la precede, no** —
+y sigue esperando decisión explícita de Felipe.
+
+| Qué | Estado medido | Tamaño |
+|---|---|---|
+| **27 actividades con el acumulado corto en producción** | Medidas en solo lectura. **No se reparan solas** y la bitácora nueva solo cuenta desde que se despliegue. Detalle contraintuitivo ya medido: guardar el mismo valor no cuenta como edición, así que confirmar un número sin cambiarlo no deja rastro | revisión manual |
+| **Actualizar Programa General pisa el avance sin avisar** | Su JavaScript manda la bandera de herencia en **toda** edición, no solo al cambiar la asociación: corregir una fecha reemplaza avance, unidad, cantidad, responsable y subcontratista. `TASKS.md:56` | merece decisión propia |
+| **Auto-Asociar no hereda restricciones** | Medido: 3 casos de 1.277, todos en el proyecto 68. `TASKS.md:75` | baja |
+| **El arreglo del arrastre, verificado en pruebas** | Probado por Felipe el 2026-08-25 en `prueba-lps`. Lo que falta es la decisión de desplegar, no el arreglo | — |
+
+**Lo que esto enseña sobre el propio mapa:** la mitigación que se escribió abajo —cada línea con su
+`archivo:línea` para que comprobarla cueste un `grep`— es necesaria pero no suficiente. **Un mapa no
+se entera solo de lo que hacen otros frentes.** Mientras haya más de una sesión trabajando, la
+actualización tiene que ser un paso del cierre de cada frente, no una buena intención de este
+documento.
+
 ### Grupo 3 · Frentes grandes de verdad — semanas
 
 Son tres, y conviene no confundirlos con lo anterior.
