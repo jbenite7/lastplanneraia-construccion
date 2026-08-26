@@ -177,6 +177,12 @@ class GeneralApiController extends BaseController
                 throw new Exception("No se puede editar un capítulo directamente. Use las actividades hijas.");
             }
 
+            // Bitacora de ediciones manuales del avance: se captura el punto de partida antes de
+            // que corran los UPDATE de este metodo. Ver
+            // docs/superpowers/specs/2026-08-25-bitacora-ediciones-manuales-carryover-design.md
+            $bitacoraService = new \App\Services\PgAvanceEdicionManualService($this->db, $this->lpsService);
+            $avancePrevio = $bitacoraService->capturarAvancePrevio($projectId, (int) $semana, (int) $id);
+
             $rawInput = $_POST["Ejecutado"] ?? null;
             $ejecutadoVisible = $this->lpsService->toFloat($rawInput);
             $ejecutadoRatioInput = $this->lpsService->toFloat($_POST["EjecutadoRatio"] ?? null, null);
@@ -342,6 +348,22 @@ class GeneralApiController extends BaseController
             $auditStmt2 = $this->db->queryWithProject("SELECT Ejecutado, Ejecutado_Siguiente_Semana, Estado FROM " . TableResolver::resolveByPrefix($dbPrefix, 'programa_consolidado') . " WHERE project_id = ? AND unique_id = ? AND Semana = ? LIMIT 1", [$projectId, $id, $semana], $projectId);
             $auditAfter = $auditStmt2->fetch(PDO::FETCH_ASSOC);
             error_log("[PGAudit] FINAL | usuario={$auditUser} | semana={$semana} | id={$id} | Ejecutado_despues={$auditAfter['Ejecutado']} | EjecSigSem_despues={$auditAfter['Ejecutado_Siguiente_Semana']} | Estado_despues={$auditAfter['Estado']} | duracion_ms={$auditDuration}");
+
+            // Firma de la edicion, si de verdad hubo una. `$huboHerencia` reusa exactamente la
+            // condicion que decidio aplicar la herencia mas arriba en este mismo metodo: cuando la
+            // herencia reemplazo el avance pero la asociacion no cambio, el residente venia a
+            // corregir otra cosa y ese numero no lo decidio el.
+            $huboHerencia = !empty($_POST['editarActividadAsociar'])
+                && !empty($actividadAsociar)
+                && $actividadAsociar !== '*No Asociada*';
+            $bitacoraService->registrarSiCambio(
+                $projectId,
+                (int) $semana,
+                (int) $id,
+                $avancePrevio,
+                $auditUser,
+                $huboHerencia,
+            );
 
             $normalizationService = new ProgramaConsolidadoNormalizationService($this->db);
             $normalizationService->normalizeChapters($dbPrefix, $semana);
