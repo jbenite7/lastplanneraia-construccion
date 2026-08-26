@@ -98,7 +98,33 @@ class MetricDictionaryService
 
         $catalog['pi_hard_restrictions_ready_rate'] = [
             'metric_key' => 'pi_hard_restrictions_ready_rate',
-            'estado_ejecucion' => 'descriptiva',
+            // CT-16 (Task 3 paso 5, batch 1, 2026-08-26): investigado antes de mover de estado.
+            // (a) `execution_source: bi_pg_semana` es correcto y se conserva -- podria confundirse
+            //     con `scorecardPI()` (report_key 'intermedia' en vivo, "% Restricciones listas"),
+            //     pero esa es OTRA metrica: opera sobre `bi_pi_restricciones` a grano de
+            //     RESTRICCION (is_hard/is_ready por restriccion), mientras esta metrica -- formula,
+            //     filtros y known_limitations coherentes entre si -- opera a grano de ACTIVIDAD
+            //     (`hard_restrictions_ready` por actividad Lookahead), igual que
+            //     `activities_can_do_count` en `fetchOverview()`. No son intercambiables: se dejo
+            //     `bi_pg_semana` tal como esta.
+            // (b) El filtro `'Semanas_Inicio BETWEEN 0 AND 6'` no es parseable por
+            //     `MetricExecutor::parseFilter()` (solo reconoce =,>=,<=,!=,>,<, no BETWEEN).
+            //     Semanas_Inicio es `int` (verificado con SHOW COLUMNS), asi que se reemplaza por
+            //     dos filtros equivalentes: `Semanas_Inicio>=0` y `Semanas_Inicio<=6` -- mismo
+            //     universo, sin cambiar la definicion.
+            // (c) Verificado que `bi_pg_semana` (vista, `database/bi/001_bi_pg_semana.sql`) y
+            //     `ControlTowerService::programaGeneralDirectSelect()` calculan
+            //     `hard_restrictions_ready` con el MISMO CASE de 5 condiciones (D_y_E, Materiales,
+            //     MdeO, Equipos >=1.0, Predecesora >=0.5) -- no hay drift entre la vista y el
+            //     camino en vivo.
+            // Paridad: 6/6 combinaciones (obra, semana) reales, delta EXACTO 0 en las 6 -- la vista
+            // reproduce la tabla base al bit. 'ejecutable': no existe un metodo dedicado que
+            // publicara esta razon como KPI aislado (nunca se mostro como % en produccion, solo
+            // como dos conteos crudos dentro de `fetchOverview()`), asi que no hay "SQL viejo" que
+            // borrar en el sentido estricto del brief -- se documenta en
+            // `$oldMethodRetainedByMetric` del arnes por que `programaGeneralDirectSelect()` sigue
+            // existiendo (alimenta TODO el reporte 'programa-general', no solo esta metrica).
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'intermedia',
             'metric_name' => 'Porcentaje de actividades listas en ventana',
             'definition' => 'Proporción de actividades Lookahead con restricciones duras cumplidas.',
@@ -108,7 +134,7 @@ class MetricDictionaryService
             'source_relations' => ['programa_consolidado', 'semanas_activas'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Fin de la semana seleccionada en semanas_activas.',
-            'filters' => ['Titulo=0', 'Semanas_Inicio BETWEEN 0 AND 6', 'Ejecutado<1'],
+            'filters' => ['Titulo=0', 'Semanas_Inicio>=0', 'Semanas_Inicio<=6', 'Ejecutado<1'],
             'aggregation_policy' => 'Ratio de sumas, no promedio de porcentajes.',
             'supports_multi_project' => true,
             'supports_date_range' => true,

@@ -101,6 +101,46 @@ $oldPathResolvers = [
 
         return null;
     },
+    'pi_hard_restrictions_ready_rate' => static function (int $projectId, string $semana, ControlTowerService $ct): ?float {
+        // Task 3 paso 5, batch 1 (rol B, 2026-08-26). No existe un metodo dedicado en
+        // ControlTowerService que publique esta razon como KPI aislado -- `fetchOverview()` trae
+        // conteos crudos (`activities_can_do_count`, `hard_restriction_blocked_count`) pero sin el
+        // filtro `Ejecutado<1` que si declara el catalogo, asi que no son directamente el mismo
+        // universo. El camino viejo mas fiel es reproducir la MISMA expresion que ya usa
+        // `bi_pg_semana` (verificada identica letra por letra contra
+        // `ControlTowerService::programaGeneralDirectSelect()`) corriendola contra la tabla base
+        // `programa_consolidado`, con los filtros exactos del catalogo -- asi la comparacion prueba
+        // que la VISTA calza con la tabla, no que dos ejecuciones del mismo SQL calzan consigo
+        // mismas.
+        $db = \Database::getInstance();
+        $row = $db->query(
+            "SELECT
+                SUM(
+                    CASE
+                        WHEN CAST(COALESCE(D_y_E, '0') AS DECIMAL(10,2)) >= 1.0
+                         AND CAST(COALESCE(Materiales, '0') AS DECIMAL(10,2)) >= 1.0
+                         AND CAST(COALESCE(MdeO, '0') AS DECIMAL(10,2)) >= 1.0
+                         AND CAST(COALESCE(Equipos, '0') AS DECIMAL(10,2)) >= 1.0
+                         AND CAST(COALESCE(Predecesora, '0') AS DECIMAL(10,2)) >= 0.5
+                        THEN 1 ELSE 0
+                    END
+                ) AS numerador,
+                COUNT(*) AS denominador
+             FROM programa_consolidado
+             WHERE project_id = ? AND Semana = ?
+               AND COALESCE(Titulo, 0) = 0
+               AND Semanas_Inicio BETWEEN 0 AND 6
+               AND Ejecutado < 1",
+            [$projectId, $semana],
+        )->fetch();
+
+        $denominador = (int) ($row['denominador'] ?? 0);
+        if ($denominador === 0 || ($row['numerador'] ?? null) === null) {
+            return null;
+        }
+
+        return ((float) $row['numerador']) / $denominador;
+    },
 ];
 
 /**
@@ -147,6 +187,14 @@ $oldMethodRetainedByMetric = [
         . "detras de 'Programacion Semanal'). Borrar el metodo entero habria roto esos 3 KPIs en "
         . 'produccion. MetricExecutor es la fuente de verdad para PAC desde ahora; scorecardPS() '
         . 'se conserva para los otros 3 hasta que tengan su propia metrica catalogada.',
+    'pi_hard_restrictions_ready_rate' => 'No existe un metodo dedicado que publicara esta razon '
+        . "como KPI aislado -- nunca se mostro como % en produccion, solo como dos conteos crudos "
+        . "(activities_can_do_count, hard_restriction_blocked_count) dentro de fetchOverview(), sin "
+        . 'el filtro Ejecutado<1 que si exige el catalogo, asi que ni siquiera es el mismo universo. '
+        . 'ControlTowerService::programaGeneralDirectSelect() (la fuente real de hard_restrictions_'
+        . "ready) se conserva porque alimenta TODO el reporte 'programa-general' -- lista de "
+        . 'actividades, radares, conteos CNP/CNC -- no solo esta metrica. MetricExecutor es la '
+        . 'fuente de verdad para esta razon desde ahora; no hay SQL dedicado que borrar.',
 ];
 
 $passed = 0;
