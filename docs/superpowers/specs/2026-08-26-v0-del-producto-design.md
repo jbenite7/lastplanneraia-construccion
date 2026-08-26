@@ -55,8 +55,29 @@ pueden medir.
 Además, ocho módulos censados **no tienen ficha**: cronograma, integración, panel de administración,
 los tres submódulos de indicadores, el legado y el núcleo.
 
-**Qué se hace:** una sola lista canónica de 41 pantallas, con su ficha, y un gate que falle si
-aparece una pantalla en un inventario y no en el otro. Es la única tarea que precede a todo.
+**Corrección del 2026-08-26, medida al ir a planearla: esta tarea es mucho más pequeña de lo que
+este documento dijo hace veinte minutos.** El párrafo de arriba describe el síntoma —«los nombres no
+coinciden»— sin haber abierto los archivos. Abiertos:
+
+- **El censo YA enlaza a las fichas**, campo `designSystem.moduleId`. No hay mapeo que inventar: 15 de
+  21 módulos lo traen.
+- **Solo 2 enlaces están rotos**: `selector-de-proyectos` apunta a `projects` (la ficha se llama
+  `project-selector`) y `panel-admin` apunta a `admin`, que no existe.
+- **De los 6 módulos sin enlace, solo 3 tienen pantalla real** — los submódulos CNP, CNC y CIC, los
+  tres bajo `/programacion-semanal`. Los otros tres (integración, núcleo y runtime, legado) tienen
+  **cero superficies**: no rinden pantalla y no necesitan ficha.
+- **El gate de cobertura ya existe y pasa** (`tests/design-system/coverage-closure.test.mjs`, 3/3),
+  con su brecha congelada en `coverage-debt.json`: 3 pantallas sin manifiesto (`/`, `/dashboard`,
+  `/reportes/{tipo}`), 5 rutas declaradas que ya no responden y 1 manifiesto sin escenario.
+
+**Qué se hace, entonces:** arreglar los 2 enlaces rotos, resolver las 3 pantallas de submódulo y las
+3 de la deuda, y añadir **el gate que hoy no existe** — el que cruza censo contra fichas. El actual
+cruza rutas contra fichas, que es otro eje y deja pasar precisamente esta divergencia. Medio día, no
+un frente.
+
+**Por qué se deja escrito el error y no se borra:** es la tercera vez en esta jornada que se describe
+un pendiente desde el síntoma sin abrir el archivo, y las tres veces el trabajo real resultó menor.
+Borrarlo dejaría la spec limpia y sin la lección.
 
 ## Las olas
 
