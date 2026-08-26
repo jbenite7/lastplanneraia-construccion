@@ -5,7 +5,7 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v0.8
+version: v0.9
 fuente: sesión de brainstorming 2026-08-25
 resumen: "Bitácora de ediciones manuales para los cinco campos que el arrastre trata como editables a mano, para que deje de adivinar en el caso ambiguo"
 ---
@@ -48,14 +48,11 @@ Los cinco campos que `WeeklyRealProgressCarryoverService` ya trata como "editabl
 `Ejecutado`, `unidad`, `cantidad_ppto`, `Responsable_AIA`, `Sub_Contratista`. En las dos tablas
 donde se escriben: `programa_consolidado` y `programacion_semanal`.
 
-Tres puntos de escritura confirmados por código, no por supuesto — se verificó con `grep` sobre
-`src/Controllers/`, no se asumió que solo hubiera dos:
-
-- `GeneralApiController` — programa general
-- `SemanalApiController` — programación semanal, y también escribe en `programa_consolidado`
-- `ProgramacionIntermediaController` — escribe `Sub_Contratista` y `Responsable_AIA` en
-  `programa_consolidado` al guardar restricciones; es fácil de pasar por alto porque su pantalla
-  no es la que uno primero asocia con estos campos
+Los archivos involucrados son tres — `GeneralApiController`, `SemanalApiController` y
+`ProgramacionIntermediaController` —, pero **no** con un punto de escritura cada uno: el mapeo
+exhaustivo de la sección siguiente encontró al menos nueve, y solo cuatro de ellos son ediciones
+humanas. La clasificación completa, con la decisión para cada uno, está en «Corrección mayor» más
+abajo; es la referencia que manda a la hora de implementar.
 
 Explícitamente sin pantalla: la bitácora es solo para que `WeeklyRealProgressCarryoverService` la
 consulte. No hay vista de historial para el residente ni el director de obra en esta ronda.
@@ -102,9 +99,13 @@ sin mirar la bitácora, así que recalcula y suma el avance con normalidad. Si a
 orden y consultara la bitácora **siempre**, toda actividad recién asociada quedaría marcada como
 editada a mano y dejaría de recibir el avance de la semanal — el defecto original, reintroducido.
 
-**Pendiente de verificar:** `SemanalApiController::autoProgram()` delega a una clase externa,
-`ProgramChangeDetector`, no examinada en este mapeo — no se sabe todavía si también escribe alguno
-de los 5 campos.
+**`ProgramChangeDetector` queda fuera, verificado el 2026-08-25.** `SemanalApiController::autoProgram()`
+delega en esa clase, así que hubo que revisarla aparte. Sus dos sentencias `UPDATE` (líneas 521 y
+578) solo tocan `Activa`, `Categoria_CNP`, `CNP`, `Observaciones_CNP` y `Reprogramada_Por_Usuario`
+— ninguno de los cinco campos. Los cinco sí aparecen en sus `INSERT` (líneas 537 y 597), pero para
+crear filas nuevas en `programacion_semanal` copiando valores de `programa_consolidado`: es
+sincronización automática, del mismo tipo que `nuevo()`/`duplicar()`, y no cuenta como edición
+manual. **No requiere instrumentación.**
 
 **Nota aparte, sin relación con este trabajo:** `SemanalApiController::eliminar()` filtra su
 `UPDATE` solo por `project_id + row_id`, sin `Semana` — asimetría respecto al resto de la clase que
