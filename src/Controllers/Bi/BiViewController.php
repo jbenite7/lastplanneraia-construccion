@@ -194,6 +194,17 @@ class BiViewController extends BaseController
             $bootstrap,
             JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
         );
+        // json_encode() puede devolver false (p.ej. secuencia inválida de bytes); sin este
+        // respaldo, window.__CT_BOOTSTRAP__ = ; queda como sintaxis JS rota y el bundle
+        // entero no arranca. '{}' deja el bootstrap vacío en vez de tronar la página.
+        if ($bootstrapJson === false) {
+            $bootstrapJson = '{}';
+        }
+
+        // Shell sidebar (DS-027): mismo id que renderView() fija para las otras 7 hojas — sin
+        // esto, shell_sidebar.php no resalta la entrada de Control Tower y, en el caso borde de
+        // project_id=0 sin acceso, la entrada desaparece del todo (ver su comentario en línea ~85).
+        $shellActive = 'control-tower';
 
         // Mismo mecanismo de cache-busting que PlanComprasController::index(): filemtime() del
         // bundle construido, no un contador a mano.
