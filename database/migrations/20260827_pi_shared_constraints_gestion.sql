@@ -26,12 +26,21 @@
 -- `pi_shared_constraints` + `pi_shared_constraint_links` restaurado en
 -- `lastplanneraia_test_backup`, filas y CHECKSUM TABLE identicos entre origen y restauracion.
 --
--- Idempotente: cada ADD COLUMN esta condicionado a que la columna no exista ya
--- (information_schema.COLUMNS), mismo patron que
--- database/migrations/20260807_proyectos_lineabase_columns.sql. El backfill de
--- EstadoLiberacion es una UPDATE incondicional: recalcula el estado de TODAS las filas a
--- partir de ValorObjetivo, asi que re-correr esta migracion no cambia el resultado (a menos
--- que ValorObjetivo mismo haya cambiado, que esta migracion nunca toca).
+-- Idempotente: cada ADD COLUMN, Y el backfill de EstadoLiberacion, estan condicionados a la
+-- MISMA bandera (information_schema.COLUMNS: ¿existia ya EstadoLiberacion antes de correr este
+-- archivo?), mismo patron que database/migrations/20260807_proyectos_lineabase_columns.sql.
+--
+-- Corregido 2026-08-26 (Important 1, revision independiente de Task 4): esta cabecera decia que
+-- el backfill era una UPDATE incondicional "asi que re-correr esta migracion no cambia el
+-- resultado" — cierto solo en el estado sin la feature de hoy. En cuanto Task 5/7 permitan fijar
+-- EstadoLiberacion a mano, una UPDATE incondicional en una re-corrida RESETEARIA esa gestion
+-- manual a lo que ValorObjetivo implique. No hay runner de migraciones en este repo (se aplican
+-- a mano con `mysql < archivo`), asi que una re-corrida es una accion de operador plausible —
+-- reconstruir un ambiente, o aplicar este mismo archivo mas adelante contra una base que ya
+-- tiene estado real de usuarios. Por eso el backfill ahora comparte la guarda de
+-- @existe_estado: en una re-corrida (columna ya presente) es un no-op completo, igual que los 5
+-- ADD COLUMN de arriba. Si algun dia hace falta recalcular el backfill sobre una base ya
+-- migrada, eso es una migracion NUEVA y deliberada, nunca una re-corrida de esta.
 
 SET @db := DATABASE();
 
@@ -104,10 +113,19 @@ PREPARE stmt FROM @sql_asignadoen; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 -- (confirmada por Felipe, ver cabecera): ValorObjetivo no numerico -> no_aplica; '0' ->
 -- sin_gestionar; intermedio (0 < valor < 1) -> en_gestion; >=1.0 -> liberada. No toca
 -- ValorObjetivo: solo LEE esa columna para escribir EstadoLiberacion.
-UPDATE pi_shared_constraints
-SET EstadoLiberacion = CASE
-    WHEN ValorObjetivo NOT REGEXP '^[0-9]+(\\.[0-9]+)?$' THEN 'no_aplica'
-    WHEN CAST(ValorObjetivo AS DECIMAL(10,4)) = 0 THEN 'sin_gestionar'
-    WHEN CAST(ValorObjetivo AS DECIMAL(10,4)) >= 1.0 THEN 'liberada'
-    ELSE 'en_gestion'
-END;
+--
+-- Guardado por @existe_estado (misma bandera que el ADD COLUMN de EstadoLiberacion, arriba):
+-- si la columna ya existia antes de correr este archivo, el backfill es un no-op — no resetea
+-- gestion manual ya guardada en una re-corrida. El patron `[.]` (dentro de corchetes, dot
+-- literal) evita depender de escapar una barra invertida a traves de la capa extra de
+-- PREPARE/EXECUTE que esta guarda introduce.
+SET @sql_backfill := IF(@existe_estado = 0,
+    "UPDATE pi_shared_constraints
+        SET EstadoLiberacion = CASE
+            WHEN ValorObjetivo NOT REGEXP '^[0-9]+([.][0-9]+)?$' THEN 'no_aplica'
+            WHEN CAST(ValorObjetivo AS DECIMAL(10,4)) = 0 THEN 'sin_gestionar'
+            WHEN CAST(ValorObjetivo AS DECIMAL(10,4)) >= 1.0 THEN 'liberada'
+            ELSE 'en_gestion'
+        END",
+    'DO 0');
+PREPARE stmt FROM @sql_backfill; EXECUTE stmt; DEALLOCATE PREPARE stmt;
