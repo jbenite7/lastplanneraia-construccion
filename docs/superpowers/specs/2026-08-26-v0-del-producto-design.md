@@ -1036,7 +1036,7 @@ sección se verificó contra `src/Services/Bi/MetricDictionaryService.php` líne
 duplica**: añade la capa que el catálogo no tiene, el **momento narrativo** — dónde vive cada cifra
 en la historia (titular · lienzo · desglose · correo) y en qué forma.
 
-### CT-20.1 · Las siete decisiones narrativas de Felipe
+### CT-20.1 · Las decisiones narrativas y de cierre de Felipe (N1–N10)
 
 | # | Decisión | Alcance |
 |---|---|---|
@@ -1047,6 +1047,10 @@ en la historia (titular · lienzo · desglose · correo) y en qué forma.
 | N5 | **El riesgo de incumplimiento se muestra en tres niveles (alto/medio/bajo) con umbral declarado en la trazabilidad.** Nunca el porcentaje crudo por compromiso: aparenta precisión que el modelo de seis pesos no tiene | 8.4 y el correo del responsable. Los tres niveles se ven; solo «alto» dispara aviso |
 | N6 | **La Curva S convoca a replanificar a 30 días de brecha sostenidos dos cortes seguidos.** El «sostenido» evita replanificar por un mal corte; 30 días es material de comité, no ruido | 8.5. Cierra el abierto §CT-18.2. La convocatoria es una plantilla N1, no una alarma roja |
 | N7 | **Los cuatro componentes vacíos de proveedores: el vacío nombra la acción, sin campaña de captura.** El integral inhabilitado declara qué falta y quién lo carga; si en 90 días nadie capturó, la señal es que no importan y se decide retirarlos | 8.7. La captura no infla la v0; el criterio de muerte aplica también a componentes |
+
+| N8 | **Los cuatro «campos muertos» no eran cuatro: tres tienen maquinaria viva.** `Categoria_CP`/`CP` son el flujo de Trabajo No Programado de Semanal (`SemanalApiController.php:1362`) y `alerta_crisis` es el botón de crisis del cajón LPS (`lps_drawer.js:1221`). **Se quedan, y la Torre mide su adopción**: el vacío nombra la acción («ninguna crisis registrada», «TNP sin categorizar») y a 90 días se decide con dato si se promueven o se retiran. Solo `reprogramaciones_semanales` está muerto de verdad —sin escritor ni lector— y sale por retiro funcional en F0, con el borrado de columna agrupado en la próxima migración con gate | Cierra CT-18.4. La lección: «0% de llenado» mide no-uso, no orfandad — clasificar un campo exige leer quién lo escribe, no contar sus filas |
+| N9 | **El correo de víspera lo reciben director, residente, el gerente definido manualmente por obra, y los administradores** | Cierra CT-18.5 y amplía D79. Con el jefe leyendo, el contrapeso de captura (D32) deja de ser opcional en todo lo que ese correo nombre — la Parte II ya midió que la causa se maquilla cuando el jefe la va a ver (D86) |
+| N10 | **CT-18.6 estaba resuelta dentro del propio documento** — D82 (no hay historial de compras fuera de la base) y D83 (el CSV de «Prueba» se conserva como borrador confirmado) la respondían desde el 2026-08-20. Se cierra de oficio | Quedó en la lista de abiertos por descuido del propio documento. Con esto, **CT-18 no tiene ningún abierto vivo**: el 2 lo cerró N6 y el 5 lo cierra N9 |
 
 Y una técnica anotada: las acciones recomendadas de 8.1 derivan su dueño del rol (el director de la
 obra señalada), según D20 y D89 — no se preguntó porque ya estaba decidido.

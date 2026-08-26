@@ -309,6 +309,13 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-26 — **Cuatro tokens decididos el 2026-08-11 y nunca definidos** (`D-F1-3`): la
+  decisión fue «definirlos como tokens de verdad» y hoy `--aia-text-muted`, `--aia-warning-soft-bg`,
+  `--aia-warning-border` y `--aia-red-primary` siguen sin existir en ningún CSS — el JS pinta con
+  las reservas hex. Medido el 2026-08-26 al destaparse que la entrada se contradecía consigo misma
+  (cuerpo «resuelta», índice «sin aplicar»; ganó el índice). Trabajo de una línea por token, con el
+  valor de su reserva. Entra con la Ola 2 de la v0 o antes si estorba.
+
 - [ ] 2026-08-26 — **«Panel de inicio» no existe: `/dashboard` es un redirect ciego, no una
   decisión de producto tomada.** Verificado al planear la tarea cero de la v0:
   `DashboardController::index()` (`src/Controllers/Core/DashboardController.php:17`) nunca renderiza

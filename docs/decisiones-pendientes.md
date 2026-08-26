@@ -592,6 +592,17 @@ de preguntar. Copia esta forma:
   (consolidated-lab, consolidated-pilot, review) no tienen sustituto: era revisión
   humana declarada como comando, y esa ausencia queda visible, no disimulada.`
 
+#### D-F1-3 · Re-medida el 2026-08-26: la decisión sigue SIN aplicar
+
+El cuerpo de la entrada dice «resuelta 2026-08-11: definirlos como tokens de verdad» y la
+tabla-índice dice «Sin aplicar» — se contradicen, y **la que tiene razón es la tabla**. Medido:
+`--aia-text-muted`, `--aia-warning-soft-bg`, `--aia-warning-border` y `--aia-red-primary` no están
+definidos en ningún CSS (`grep` en `public/css` y `admin/public/css`: cero), y el JS sigue
+pintando con las reservas (`programacion_intermedia/hot.js:2449`,
+`programa_actualizar/hot_actualizar.js:1276,1384`). Solo `--aia-green` se definió (vía D-RES-1).
+**La decisión no se re-abre: lo pendiente es ejecutarla.** Anotada como tarea en `TASKS.md`, entra
+con la Ola 2 de la v0 o antes si estorba.
+
 ### D-F1b-4 · Los 6 errores que quedan de `phpstan-global` viven en el archivo más delicado del repo
 
 - **Quién pregunta:** sesión de ejecución del Frente 1b.
