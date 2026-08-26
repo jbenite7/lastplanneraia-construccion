@@ -248,6 +248,46 @@ function diasVencidaEsperado(?string $fechaCompromiso): ?int
     return (int) $hoy->diff($fecha)->days;
 }
 
+/**
+ * Caso 6 (fix ronda 1, Important 1): idéntico en técnica al Caso 6 de
+ * `tests/test_bi_constraint_write.php` — ver ese archivo para el porqué completo de correr esto
+ * en un subproceso PHP aislado con `$_SESSION` poblado a mano (nunca sesión HTTP, nunca cookie,
+ * nunca pasa por el candado de DevDoor: `Database::query()` puede llamar `@session_start()`
+ * internamente y no debe interferir con el `$_SESSION` de este proceso principal).
+ *
+ * Corre `RbacService::resolveCurrentRole()` (lo que `BiConstraintListController` usa ahora, tras
+ * el fix) Y `RbacService::resolveRoleForUser($usuario)` sin project scoping (el patrón viejo que
+ * `BiPreviewAccessPolicy::canOpen()` todavía usa) para el MISMO usuario real.
+ *
+ * @return array{0:string,1:string} [rol devuelto por resolveCurrentRole(), rol devuelto por
+ *                                    resolveRoleForUser() sin project scoping]
+ */
+function rolesEscopadosVsGlobales(string $usuario, string $proyecto): array
+{
+    $script = '<?php '
+        . 'require "/var/www/html/vendor/autoload.php"; '
+        . 'require "/var/www/html/src/Core/Database.php"; '
+        . '$_SESSION["usuario"] = $argv[1]; '
+        . '$_SESSION["proyecto"] = $argv[2]; '
+        . '$db = Database::getInstance(); '
+        . '$rbac = new \App\Security\RbacService($db); '
+        . '$scoped = $rbac->resolveCurrentRole(); '
+        . '$unscoped = $rbac->resolveRoleForUser($argv[1]); '
+        . 'echo json_encode(["scoped" => $scoped, "unscoped" => $unscoped]);';
+    $tmp = tempnam(sys_get_temp_dir(), 'rbac_scope_');
+    file_put_contents($tmp, $script);
+    $salida = trim((string) shell_exec(
+        'php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($usuario) . ' ' . escapeshellarg($proyecto) . ' 2>&1'
+    ));
+    @unlink($tmp);
+    $decoded = json_decode($salida, true);
+    if (!is_array($decoded) || !isset($decoded['scoped'], $decoded['unscoped'])) {
+        fwrite(STDERR, "ABORT: no se pudo resolver roles escopados/globales (salida: {$salida})\n");
+        exit(2);
+    }
+    return [(string) $decoded['scoped'], (string) $decoded['unscoped']];
+}
+
 $db = Database::getInstance();
 
 // ---------------------------------------------------------------- Fixtures (solo lectura) -----
@@ -275,8 +315,30 @@ if ($filaFecha === false) {
 }
 $idFecha = (int) $filaFecha['Id'];
 
+// Usuario real (no `test.*`) con rol denegado (no A/D/R) en PROJECT_ID y rol permitido (A/D/R,
+// el conjunto exacto de PERM_INTERNAL_BI_PREVIEW) en algún OTRO proyecto — la forma exacta que
+// el caso 6 necesita para probar que el segundo gate del controlador (fix ronda 1, Important 1)
+// resuelve el rol por el proyecto de sesión y no por "el más privilegiado en cualquier proyecto".
+// Descubierto en tiempo de ejecución, igual que el resto de fixtures de este archivo.
+$candidatoRbac = $db->query(
+    "SELECT u.usuario, pm.role AS rol_en_sesion
+     FROM project_members pm
+     JOIN general_usuarios u ON u.id = pm.user_id
+     WHERE pm.project_id = ?
+       AND pm.role NOT IN ('A', 'D', 'R')
+       AND EXISTS (
+           SELECT 1 FROM project_members pmOtro
+           WHERE pmOtro.user_id = pm.user_id
+             AND pmOtro.project_id != ?
+             AND pmOtro.role IN ('A', 'D', 'R')
+       )
+     ORDER BY u.usuario LIMIT 1",
+    [PROJECT_ID, PROJECT_ID],
+)->fetch(PDO::FETCH_ASSOC);
+
 echo "Fixtures: PROJECT_ID=" . PROJECT_ID . " (Da Porto), " . count($idsEsperados) . " restricciones | "
-    . "fila diasVencida: Id={$idFecha}\n";
+    . "fila diasVencida: Id={$idFecha}"
+    . " | candidatoRbac=" . ($candidatoRbac !== false ? $candidatoRbac['usuario'] . " (rol_en_sesion={$candidatoRbac['rol_en_sesion']})" : 'ninguno') . "\n";
 
 // ------------------------------------------------------------------------- Sesiones -----------
 
@@ -450,6 +512,37 @@ try {
             PROJECT_ID,
             $idFecha,
         ],
+    );
+}
+
+// --------------------------------------- Caso 6: RBAC scoped por proyecto, no el global -----
+// Fix ronda 1 (Important 1): `BiPreviewAccessPolicy::canOpen()` resuelve el rol vía
+// `RbacService::resolveRoleForUser()` SIN project scoping -- el rol MÁS PRIVILEGIADO que el
+// usuario tenga en CUALQUIER proyecto, no su rol en el proyecto de la sesión activa (el mismo
+// bug que Task 5 tuvo que cerrar en su propio Caso 6). `BiConstraintListController::listar()`
+// ahora agrega un SEGUNDO gate acotado con `RbacService::resolveCurrentRole()`. `test.V` no
+// sirve para probar esta propiedad (V en los 4 proyectos donde es miembro, mismo límite que
+// Task 5), así que se prueba al nivel donde SÍ es legítimo y suficiente -- ver el comentario de
+// `rolesEscopadosVsGlobales()` para el porqué de no usar una sesión HTTP.
+
+if ($candidatoRbac === false) {
+    echo 'AVISO caso 6: no se encontro en dev un usuario con rol denegado (no A/D/R) en PROJECT_ID='
+        . PROJECT_ID . " y rol permitido (A/D/R) en otro proyecto -- omitido, no hay dato real que lo pruebe hoy.\n";
+} else {
+    $usuarioRbac = (string) $candidatoRbac['usuario'];
+    $rolEsperado = (string) $candidatoRbac['rol_en_sesion'];
+
+    [$rolScoped, $rolUnscoped] = rolesEscopadosVsGlobales($usuarioRbac, PROYECTO);
+
+    $check(
+        $rolScoped === $rolEsperado,
+        "caso 6: resolveCurrentRole() de {$usuarioRbac} en " . PROYECTO . " -> {$rolEsperado} (scoped, no el mas privilegiado)",
+        'real: ' . var_export($rolScoped, true) . ' | unscoped (patron viejo, el que sigue usando canOpen()) hubiera dado: ' . var_export($rolUnscoped, true),
+    );
+    $check(
+        !\App\Security\RbacManager::hasCapability($rolScoped, \App\Security\RbacCatalog::PERM_INTERNAL_BI_PREVIEW),
+        "caso 6: hasCapability(rol scoped={$rolScoped}, PERM_INTERNAL_BI_PREVIEW) -> false",
+        'unscoped (patron viejo) hasCapability=' . var_export(\App\Security\RbacManager::hasCapability($rolUnscoped, \App\Security\RbacCatalog::PERM_INTERNAL_BI_PREVIEW), true),
     );
 }
 

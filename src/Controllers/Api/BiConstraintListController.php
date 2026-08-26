@@ -6,6 +6,9 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Security\BiPreviewAccessPolicy;
+use App\Security\RbacCatalog;
+use App\Security\RbacManager;
+use App\Security\RbacService;
 use PDO;
 
 /**
@@ -22,6 +25,15 @@ use PDO;
  * (el gate del constructor de `BiControlTowerApiController`): es la misma semántica que los otros
  * 8 GET del módulo BI ("esta página no existe para tu rol") — 404, no 403, porque no hay una
  * acción explícita del usuario que justifique diferir de esa convención.
+ *
+ * Fix ronda 1 (Important 1): `canOpen()` resuelve el rol vía `RbacService::resolveRoleForUser()`
+ * SIN project scoping — el rol MÁS PRIVILEGIADO que el usuario tenga en CUALQUIER proyecto, no su
+ * rol en el proyecto de la sesión activa. Es el mismo bug que Task 5 tuvo que corregir
+ * (`BiConstraintWriteController`, Critical 1 de su propia ronda 1). No se toca `canOpen()` — es
+ * compartido por los otros 8 GET del módulo BI y su resolución global responde una pregunta
+ * distinta ("¿puede este usuario abrir el módulo BI oculto?"), ruling del revisor. En su lugar,
+ * un SEGUNDO gate, acotado al proyecto de sesión, con el mismo patrón que ya usa
+ * `BiConstraintWriteController::resolveRole()`: `RbacService::resolveCurrentRole()`.
  */
 class BiConstraintListController extends BaseController
 {
@@ -30,6 +42,14 @@ class BiConstraintListController extends BaseController
         $this->requireAuth();
 
         if (!BiPreviewAccessPolicy::canOpen($_SESSION)) {
+            $this->fallar(404, 'NOT_FOUND', 'Esta página no existe.');
+        }
+
+        $role = (new RbacService($this->db))->resolveCurrentRole();
+        if (!RbacManager::hasCapability($role, RbacCatalog::PERM_INTERNAL_BI_PREVIEW)) {
+            // Mismo criterio que canOpen(), pero acotado al proyecto de la sesión activa: un
+            // usuario A/D/R en OTRO proyecto y V/C/... en este no puede ver las restricciones de
+            // este proyecto solo porque canOpen() lo dejó pasar con su rol más privilegiado global.
             $this->fallar(404, 'NOT_FOUND', 'Esta página no existe.');
         }
 
@@ -83,13 +103,21 @@ class BiConstraintListController extends BaseController
      * nunca duplica su fila base — el `GROUP BY` vive en esta agregación aparte, no en un producto
      * cartesiano con la lista principal.
      *
+     * Fix ronda 1 (Important 2): `COUNT(DISTINCT pcl.Id)`, no `COUNT(*)`. La clave del join
+     * (`ConsecutivoEnPrograma`+`Semana`+`project_id`) NO es única en `programa_consolidado` (62
+     * grupos duplicados medidos en dev, dato preexistente de la tabla, no de este endpoint) — un
+     * `COUNT(*)` infla `actividadesEncadenadas` si algún link llega a apuntar a uno de esos grupos.
+     * `pcl.Id` sí es única dentro de un `project_id` (PK compuesta `(project_id, Id)`, y la consulta
+     * ya filtra por un único `project_id`), así que cuenta filas de LINK reales, no productos del
+     * join.
+     *
      * @return array<int, array{n:int, semanaMin:?int, rutaCritica:bool}>
      */
     private function cargarAgregados(int $projectId): array
     {
         $filas = $this->db->query(
             'SELECT pcl.SharedConstraintId AS id,
-                    COUNT(*) AS n,
+                    COUNT(DISTINCT pcl.Id) AS n,
                     MIN(pc.Semanas_Inicio) AS semana_min,
                     MAX(pc.Ruta_Critica) AS ruta_critica
              FROM pi_shared_constraint_links pcl
