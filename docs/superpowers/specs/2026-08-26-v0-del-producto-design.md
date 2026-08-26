@@ -139,12 +139,18 @@ y en uso, así que esta ola es más corta de lo que parece.
 6. Cerrar cualquier frente incluye actualizar este documento. Un frente que no lo actualizó no está
    cerrado.
 
-## Lo único que falta de su visto
+## El enfoque, aprobado
 
-**El orden de ataque de la Ola 1 se escribió suponiendo el enfoque C** —la Torre completa primero,
-como piloto que mide—, que es el que recomendé. Los otros dos que se le presentaron: barrer por
-familias (compromete con 41 sin medir 1) y cimientos primero (meses sin que la obra note nada).
+**Felipe aprobó el enfoque C el 2026-08-26: una pantalla completa primero, y que ella mida.** La
+Torre se deja terminada de punta a punta —que escriba, en computador y celular, en oscuro y claro,
+con su usabilidad resuelta— y **lo que cueste se anota**: ese número dimensiona las otras cuarenta.
 
-Si prefiere otro, cambia el orden de las olas y la Ola 1 deja de ser piloto; **el resto del documento
-se sostiene igual**, porque el alcance, el eje por pantalla y la condición de hecho no dependen de esa
-elección.
+Los dos descartados, con su motivo, para que nadie los reabra sin saber por qué se cayeron:
+
+- **Barrer por familias.** Ordenado y con avance visible desde el primer día, pero compromete con 41
+  pantallas sin saber qué cuesta una. Es como nacen los planes que otro documento da por pendientes
+  meses después.
+- **Cimientos primero** (tema claro y celular como capacidad del sistema, antes de aplicarlos). Suena
+  eficiente y es el peor de los tres: unos cimientos sin una pared real encima suelen no encajar
+  cuando llega la primera, y son meses en que nadie en obra nota nada — que es cuando un proyecto
+  pierde el apoyo que lo sostiene.
