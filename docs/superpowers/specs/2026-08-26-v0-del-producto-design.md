@@ -5,17 +5,18 @@ estado: vigente
 fecha: 2026-08-26
 areas: [proceso, design-system, bi, pdc]
 fuente: docs/superpowers/specs/2026-08-26-v0-del-producto-design.md
-resumen: "La v0 del producto, spec v0.5: 26 pantallas, la Control Tower completa con su diseño íntegro y el detalle elemento por elemento — cálculo, fuente y momento narrativo de cada cifra"
+resumen: "La v0 del producto, spec v1 (aprobada por Felipe el 2026-08-26): 26 pantallas, la Control Tower completa con su diseño íntegro y el detalle elemento por elemento. De aquí salen los planes"
 ---
 
-# La v0 del producto — Design · **spec v0.5**
+# La v0 del producto — Design · **spec v1**
 
 - **Fecha:** 2026-08-26 · **spec v0.1**, segunda iteración del mismo día.
 - **La línea de versiones:** v0 (borrador con el qué y el orden) → v0.1 (decisiones resueltas +
   el diseño de la Torre íntegro como Parte II) → **v0.5 (esta): el detalle elemento por elemento —
   cálculo verificado, fuente y momento narrativo de cada cifra, con las siete decisiones de
-  storytelling del grilleo del 2026-08-26 (tarde), en CT-20** → v1 será la de calidad de ejecución
-  final, cuando Felipe la bendiga tras su lectura.
+  storytelling del grilleo del 2026-08-26 (tarde), en CT-20** → **v1: APROBADA por Felipe el
+  2026-08-26**, tras cerrar los últimos abiertos (N8–N11). Es el documento rector; sus cambios
+  futuros son enmiendas fechadas, no versiones nuevas.
 - **Qué entró en la v0.1:** dos contradicciones internas resueltas midiendo (el denominador y el
   piloto), seis decisiones nuevas de Felipe, y —por su instrucción expresa— **el diseño de la Torre
   deja de ser referencia externa**: las 837 líneas del replanteo del 2026-08-20 están íntegras en la
