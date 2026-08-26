@@ -8,14 +8,24 @@ declare(strict_types=1);
  *
  * Cada metrica del catalogo (`MetricDictionaryService`) declara un `estado_ejecucion`:
  * `descriptiva` (nace asi, no se toca aqui), `en_paridad` (los dos caminos deben calzar) o
- * `ejecutable` (el SQL viejo ya se borro de `ControlTowerService`). Este test:
+ * `ejecutable`. Ruling del controlador (Bitacora del plan, entrada 7): `ejecutable` significa que
+ * `MetricExecutor` es la unica fuente de la CIFRA catalogada, no necesariamente que el metodo viejo
+ * desaparecio -- un metodo puede quedar retenido en `$oldMethodRetainedByMetric` porque calcula
+ * OTRAS cifras sin entrada en el catalogo. Este test:
  *
- *  1. Para cada metrica `en_paridad`, corre el camino viejo (via `ControlTowerService::getBrief()`)
- *     y el camino nuevo (`MetricExecutor::execute()`) sobre semanas reales de al menos dos obras,
- *     y falla imprimiendo ambos valores, la obra y la semana ante cualquier discrepancia por
- *     encima de la tolerancia declarada para esa metrica.
+ *  1. Para cada metrica `en_paridad`, Y para cada metrica `ejecutable` con entrada en
+ *     `$oldMethodRetainedByMetric` (el metodo viejo sigue vivo y es comparable, a diferencia del
+ *     caso normal donde `ejecutable` implica que el SQL viejo ya no existe), corre el camino viejo
+ *     y el camino nuevo (`MetricExecutor::execute()`) sobre semanas reales de al menos dos obras, y
+ *     falla imprimiendo ambos valores, la obra y la semana ante cualquier discrepancia por encima
+ *     de la tolerancia declarada. Fix ronda 1 (2026-08-26): antes de este fix, las metricas
+ *     `ejecutable` NUNCA pasaban por este trinquete (solo por el de abajo, que solo verifica
+ *     borrado/retencion de metodo) -- si alguien cambiaba un filtro de una metrica ya `ejecutable`,
+ *     `--nivel=db` seguia verde sin detectarlo. Ahora, mientras el metodo viejo siga retenido y
+ *     comparable, la paridad se sigue vigilando en cada corrida, no solo en el momento de migrar.
  *  2. Para cada metrica `ejecutable`, verifica por reflexion que su metodo viejo en
- *     `ControlTowerService` ya no existe.
+ *     `ControlTowerService` ya no existe -- o, si esta en `$oldMethodRetainedByMetric`, que el
+ *     motivo de la retencion quede documentado (ver punto 1: eso NO la exime del trinquete 1).
  *
  * Diseñado para pasar EN VACIO: hoy las 19 metricas del catalogo nacen `descriptiva`
  * (MetricDictionaryService Paso 1), asi que ningun bucle de comparacion corre todavia — el test
@@ -78,28 +88,33 @@ $oldPathResolvers = [
         // calcula `MetricExecutor` -- SQL, no PHP, es quien decide que "sin PAC registrado" es
         // indeterminado, no cero. Se reproduce esa guarda aqui, sin tocar ControlTowerService.php,
         // para comparar la SEMANTICA del SQL viejo, no el default de UI que se le pego encima.
+        //
+        // Fix ronda 1 (2026-08-26), senalado por el revisor: antes se leia solo el NUMERADOR de
+        // esta consulta cruda para el guardarraiz de "sin dato", y el VALOR comparado salia de
+        // `scorecardPS()->getBrief()`, que publica `round(ratio*100)` -- eso obligaba a declarar
+        // una tolerancia de 0.005 (la cota del propio redondeo) para que la paridad calzara, un
+        // punto ciego proporcional evitable. La misma consulta cruda ya trae la poblacion correcta
+        // (identica a `fetchSemanal()`, `Activa IN ('1','NA')` == `Activa!='0'` del filtro
+        // corregido del catalogo); se lee tambien su DENOMINADOR y se calcula el ratio sin pasar
+        // por el redondeo de `scorecardPS()`. Con esto la paridad sale EXACTA (delta 0), igual que
+        // `pi_hard_restrictions_ready_rate` y `pg_radar_desempeno` -- ya no hace falta la
+        // tolerancia declarada en `$parityToleranceByMetric`. `getBrief()` ya no se llama aqui: la
+        // consulta cruda contra la MISMA poblacion es la comparacion mas fiel a "el SQL viejo", no
+        // a su presentacion redondeada -- mismo criterio que `pi_hard_restrictions_ready_rate`
+        // (que tampoco pasa por un metodo de ControlTowerService, por la misma razon: no hay un
+        // metodo dedicado que publique el ratio SIN redondear).
         $db = \Database::getInstance();
         $raw = $db->query(
-            "SELECT SUM(PAC=1) AS numerador FROM programacion_semanal WHERE project_id = ? AND Semana = ? AND Activa IN ('1','NA')",
+            "SELECT SUM(PAC=1) AS numerador, COUNT(*) AS denominador FROM programacion_semanal WHERE project_id = ? AND Semana = ? AND Activa IN ('1','NA')",
             [$projectId, $semana],
         )->fetch();
-        if (($raw['numerador'] ?? null) === null) {
+
+        $denominador = (int) ($raw['denominador'] ?? 0);
+        if ($denominador === 0 || ($raw['numerador'] ?? null) === null) {
             return null;
         }
 
-        $brief = $ct->getBrief('semanal', [$projectId], $semana, 'A');
-        foreach ($brief['scorecard'] ?? [] as $kpiRow) {
-            if (($kpiRow['kpi'] ?? null) === 'PAC') {
-                // scorecardPS() publica un entero ya redondeado (`round($pac/$total*100)`); se
-                // divide por 100 para comparar contra el ratio sin redondear de MetricExecutor.
-                // Ese redondeo previo es, el mismo, una fuente esperada de discrepancia que
-                // Paso 3 debe documentar al mover esta metrica a en_paridad, no ocultar subiendo
-                // la tolerancia sin anotar por que.
-                return ((float) $kpiRow['value']) / 100;
-            }
-        }
-
-        return null;
+        return ((float) $raw['numerador']) / $denominador;
     },
     'pi_hard_restrictions_ready_rate' => static function (int $projectId, string $semana, ControlTowerService $ct): ?float {
         // Task 3 paso 5, batch 1 (rol B, 2026-08-26). No existe un metodo dedicado en
@@ -172,13 +187,13 @@ $parityToleranceByMetric = [
     // 'pg_finish_variance_days_p50' => 1.5, // dias — a declarar cuando Paso 5 la mueva a en_paridad
     // (Monte Carlo con semilla aleatoria: dos corridas legitimas no calzan bit a bit).
 
-    // ps_weekly_fulfillment: scorecardPS() publica PAC como entero redondeado
-    // (`round(ratio*100)`) antes de mostrarlo en el dashboard; MetricExecutor devuelve el ratio
-    // sin redondear. El error maximo posible de un redondeo a entero es medio punto porcentual
-    // (0.5/100 = 0.005) -- no es un numero arbitrario para forzar el verde, es la cota matematica
-    // del propio `round()` que ya usa la produccion. Confirmado contra datos reales de la obra 65
-    // (2026-08-26): deltas observados de 0.00091 a 0.0025, todos por debajo de la cota.
-    'ps_weekly_fulfillment' => 0.005,
+    // ps_weekly_fulfillment tenia aqui una tolerancia de 0.005 (cota matematica del redondeo de
+    // scorecardPS()) porque el resolver comparaba contra el KPI YA REDONDEADO. Fix ronda 1
+    // (2026-08-26, senalado por el revisor): el resolver ahora lee numerador Y denominador de la
+    // misma consulta cruda sin pasar por el redondeo -- la paridad sale EXACTA (delta 0 en las 5
+    // combinaciones numericas verificadas), asi que la tolerancia ya no hace falta. Se retira en
+    // vez de dejarla inerte: una tolerancia declarada que nadie necesita es el mismo punto ciego
+    // que senalo el revisor, solo que ya no se activa.
 ];
 
 /**
@@ -263,6 +278,35 @@ function semanasRealesDe(\Database $db, int $projectId, int $limit): array
     return array_map('strval', $rows);
 }
 
+/**
+ * Fix ronda 1 (2026-08-26), senalado por el revisor: el arnes pasaba `week: $semana` a TODO
+ * `MetricScope` sin mirar el `cutoff_policy` declarado de la metrica. Hoy no rompe nada (las 3
+ * metricas activas del trinquete 1 son de grano semanal), pero `pdc_at_risk` declara
+ * explicitamente "el selector de semana no aplica a esta metrica" y su fuente (`pdc_plan_paso`) ni
+ * siquiera tiene columna `Semana` -- el dia que alguien la mueva a `en_paridad` sin arreglar esto,
+ * `MetricExecutor::buildWhereClause()` intentaria filtrar `Semana = ?` contra una tabla que no la
+ * tiene, y el fallo se reportaria apuntando a la metrica en vez de a esta suposicion del arnes.
+ *
+ * Heuristica de dos senales, verificada a mano contra las 19 metricas del catalogo (2026-08-26):
+ *  - El `grain` declarado debe mencionar "Semana" -- senal primaria y estructural (el grano es
+ *    parte del contrato de la metrica, no prosa libre como `cutoff_policy`).
+ *  - El `cutoff_policy` no debe decir explicitamente que el selector de semana no aplica --
+ *    senal de baja ambiguedad, exactamente el texto que usa `pdc_at_risk`.
+ * `pdc_at_risk` es la UNICA de las 19 que falla la primera senal (su grain es
+ * "project_id + paquete_id + subpaquete_id", sin "Semana") y ademas dispara la segunda -- doble
+ * confirmacion, no una sola heuristica fragil.
+ */
+function metricScopeUsaSemana(array $definition): bool
+{
+    $cutoffPolicy = (string) ($definition['cutoff_policy'] ?? '');
+    if (str_contains($cutoffPolicy, 'el selector de semana no aplica')) {
+        return false;
+    }
+
+    $grain = (string) ($definition['grain'] ?? '');
+    return str_contains($grain, 'Semana');
+}
+
 echo "=== Test de paridad metrica por metrica (Task 3, Ola 1 — Torre de Control) ===\n\n";
 
 $db = \Database::getInstance();
@@ -298,14 +342,27 @@ $descriptivas = count($definitions) - count($enParidad) - count($ejecutables);
 echo "\nCatalogo: " . count($definitions) . " metricas totales — "
     . "{$descriptivas} descriptiva, " . count($enParidad) . " en_paridad, " . count($ejecutables) . " ejecutable.\n\n";
 
-// --- Trinquete 1: metricas en_paridad corren los dos caminos y no pueden discrepar (salvo tolerancia declarada) ---
-foreach ($enParidad as $definition) {
+// Fix ronda 1 (2026-08-26): el trinquete 1 (paridad) tambien debe correr para las metricas
+// `ejecutable` cuyo metodo viejo quedo retenido en `$oldMethodRetainedByMetric` -- ese metodo
+// sigue vivo y comparable (a diferencia del caso normal, donde `ejecutable` implica que el SQL
+// viejo ya no existe y no hay nada que comparar). Antes de este fix, las 3 metricas `ejecutable`
+// de hoy (todas con metodo retenido) nunca pasaban por el trinquete 1 -- solo por el trinquete 2,
+// que solo verifica borrado/retencion de metodo, no valores. Si alguien cambiaba un filtro de
+// `pg_radar_desempeno` manana, `--nivel=db` seguia verde sin detectarlo.
+$ejecutablesConMetodoRetenido = array_values(array_filter(
+    $ejecutables,
+    static fn (array $d): bool => array_key_exists((string) $d['metric_key'], $oldMethodRetainedByMetric),
+));
+$metricasParaComparar = array_merge($enParidad, $ejecutablesConMetodoRetenido);
+
+// --- Trinquete 1: en_paridad + ejecutable-con-metodo-retenido corren los dos caminos y no pueden discrepar (salvo tolerancia declarada) ---
+foreach ($metricasParaComparar as $definition) {
     $metricKey = (string) $definition['metric_key'];
     $tolerance = (float) ($parityToleranceByMetric[$metricKey] ?? 0.0);
     $resolver = $oldPathResolvers[$metricKey] ?? null;
 
     if ($resolver === null) {
-        paridadFail("{$metricKey}: esta en_paridad pero no tiene resolver del camino viejo en \$oldPathResolvers — no se puede verificar paridad");
+        paridadFail("{$metricKey}: entra al trinquete de paridad (en_paridad, o ejecutable con metodo retenido) pero no tiene resolver del camino viejo en \$oldPathResolvers — no se puede verificar paridad");
         continue;
     }
 
@@ -320,11 +377,14 @@ foreach ($enParidad as $definition) {
 
             try {
                 // MetricScope::week() (fix de Task 2, commit def23b0b) acota MetricExecutor a
-                // "Semana = ?". Se pasa la semana del propio bucle: cada metrica en_paridad de
-                // grain semanal se compara semana a semana, y su cutoff_policy de catalogo dice
-                // "Semana seleccionada; no se infiere con fecha del servidor" -- no hay rango de
-                // fechas que resolver aqui, la semana pedida ES el corte.
-                $scope = new MetricScope([$projectId], week: $semana);
+                // "Semana = ?". Se pasa la semana del propio bucle SOLO si `metricScopeUsaSemana()`
+                // (fix ronda 1) confirma que la metrica es de corte "semana seleccionada" -- no
+                // todas lo son (`pdc_at_risk` explicitamente no). Las 3 metricas activas hoy
+                // (grain project_id+Semana, cutoff_policy "semana seleccionada") siguen recibiendo
+                // `week` exactamente como antes.
+                $scope = metricScopeUsaSemana($definition)
+                    ? new MetricScope([$projectId], week: $semana)
+                    : new MetricScope([$projectId]);
                 $newValue = $executor->execute($metricKey, $scope)->value();
             } catch (\Throwable $e) {
                 paridadFail("{$metricKey} [obra {$projectId}, semana {$semana}]: camino nuevo lanzo excepcion: {$e->getMessage()}");
@@ -389,8 +449,8 @@ foreach ($enParidad as $definition) {
     }
 }
 
-if ($enParidad === []) {
-    paridadPass('ninguna metrica esta en_paridad todavia — trinquete de paridad vacio por diseno (Paso 3 aun no corre)');
+if ($metricasParaComparar === []) {
+    paridadPass('ninguna metrica en_paridad ni ejecutable-con-metodo-retenido todavia — trinquete de paridad vacio por diseno');
 }
 
 // --- Trinquete 2: metricas ejecutable ya no deben tener su SQL viejo en ControlTowerService ---

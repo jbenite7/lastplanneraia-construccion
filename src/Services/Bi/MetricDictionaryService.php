@@ -243,11 +243,24 @@ class MetricDictionaryService
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; reports registered PAC.',
             'version' => '1.0',
+            // Fix ronda 1 (2026-08-26): last_updated estaba ausente -- LineageService.php:82
+            // publicaba el default '2026-07-10' para una metrica cuya formula y filtros cambiaron
+            // hoy (correccion CT-16 de filtros + reescritura del resolver de paridad a delta
+            // exacto). No sube `version`: el contrato semantico del ratio (SUM(PAC=1)/COUNT(*),
+            // compromisos activos cumplidos sobre activos) no cambio, solo la expresion SQL y como
+            // se verifica -- mismo criterio que se documenta junto a `estado_ejecucion` arriba.
+            'last_updated' => '2026-08-26 00:00:00',
             'known_limitations' => 'Depende de que los compromisos activos tengan PAC registrado — '
                 . 'una semana abierta sin PAC registrado da un valor indefinido (null), no 0%. '
-                . 'Paridad calza en 5/6 combinaciones (obra, semana) reales con tolerancia 0.005 '
-                . '(ver nota en estado_ejecucion); la sexta esta bloqueada por falta de datos de '
-                . 'una semana aun abierta en la obra piloto, no por un defecto de codigo.',
+                . 'Ejecutable con paridad EXACTA (delta 0) en 6/6 combinaciones (obra, semana) '
+                . 'reales (Fix ronda 1, 2026-08-26): 5 numericas exactas + 1 de "ambos caminos '
+                . 'concuerdan en sin dato" (obra 73, semana 2 -- semana recien abierta sin ningun '
+                . 'PAC registrado; el arnes de paridad cuenta el acuerdo en null como paridad, no '
+                . 'como discrepancia, por ruling del controlador). Ya no hace falta tolerancia '
+                . 'declarada: la version anterior de esta nota citaba 5/6 con tolerancia 0.005 '
+                . 'porque el resolver de paridad comparaba contra el KPI ya redondeado por '
+                . 'scorecardPS() -- corregido para leer el ratio sin redondear de la misma consulta '
+                . 'cruda, ver tests/test_bi_paridad_metricas.php.',
         ];
 
         $catalog['pg_radar_productividad'] = [
@@ -348,6 +361,12 @@ class MetricDictionaryService
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; requiere mínimo 3 PAC válidos.',
             'version' => '2.0',
+            // Fix ronda 1 (2026-08-26): last_updated estaba ausente -- LineageService.php:82
+            // publicaba el default '2026-07-10' para una metrica cuya formula y filtros se
+            // reescribieron hoy mismo (tanda 2). No sube `version`: el contrato semantico del eje
+            // 'desempeno' (SUM(PAC=1)/COUNT(*) sobre compromisos activos con PAC registrado) no
+            // cambio, es la primera vez que se declara en forma ejecutable.
+            'last_updated' => '2026-08-26 00:00:00',
             'known_limitations' => 'PAC nulo o diferente de 0/1 se excluye, no se interpreta como '
                 . 'incumplido. Paridad exacta (delta 0) en 6/6 combinaciones (obra, semana) reales '
                 . '(Task 3, tanda 2, 2026-08-26): 5 numericas + 1 de acuerdo en "sin dato". '
@@ -363,7 +382,22 @@ class MetricDictionaryService
                 . 'esa gramatica sin extender el ejecutor (verificado con datos reales: capar '
                 . 'P_Completado SI cambia el resultado -- 2 a 4 filas por semana en la obra 65 '
                 . 'superan 1.0, hasta P_Completado=14). Documentado como hallazgo estructural, no '
-                . 'forzado (CT-16).',
+                . 'forzado (CT-16). Fix ronda 1 (2026-08-26), senalado por el revisor: el endpoint en '
+                . 'vivo (programa-general-radar-detail, ControlTowerService.php:3311) publica su '
+                . "propio summary.formula como 'COUNT(PAC=1) / COUNT(PAC IN (0,1)) × 100.' -- NO se "
+                . 'toco ControlTowerService.php (regla de toda la task), asi que ese texto sigue vivo '
+                . 'y distinto, letra por letra, del `formula` de este catalogo. Aclaracion para que '
+                . 'las dos descripciones no se lean como contradictorias: son la MISMA cifra en dos '
+                . 'formas -- el denominador "PAC IN (0,1)" del endpoint es la misma calificacion que '
+                . 'expresan los filtros de este catalogo (Activa!=\'0\', Es_TNP=0, PAC>=0; PAC>=0 '
+                . 'excluye NULL e incluye 0/1, verificado equivalente a PAC IN (0,1) arriba), y el '
+                . '×100 del endpoint es solo su escala de PRESENTACION (0-100) frente a la escala '
+                . '0-1 que usa `MetricResult::value()` y el resto de metricas ejecutable de este '
+                . 'catalogo. El `formula` de este catalogo se mantiene como '
+                . "'SUM(PAC=1) / COUNT(*)' -- unica forma que "
+                . '`MetricExecutor::buildSelectExpression()` reconoce (regex ancorado, no admite '
+                . 'texto aclaratorio dentro del campo sin romper la ejecucion) -- la reconciliacion '
+                . 'vive aqui, no en el campo `formula`.',
         ];
 
         $catalog['pg_finish_variance_days_p50'] = [
