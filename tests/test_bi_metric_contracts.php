@@ -99,7 +99,16 @@ if (($pacDefinition['integration_status'] ?? null) !== 'planned_for_programacion
 
 foreach (['pg_radar_productividad', 'pg_radar_eficiencia', 'pg_radar_desempeno'] as $metricKey) {
     $radarDefinition = $dictionary->getDefinition($metricKey);
-    if (!in_array("Activa IN ('1','NA')", $radarDefinition['filters'] ?? [], true)) {
+    $radarFilters = $radarDefinition['filters'] ?? [];
+    // Task 3 tanda 2 (2026-08-26): `pg_radar_desempeno` reescribio el filtro a `Activa!='0'`
+    // porque `MetricExecutor::parseFilter()` no reconoce el operador `IN` -- verificado contra
+    // la tabla completa que `Activa` solo toma '0'/'1'/'NA', asi que `!='0'` es la MISMA
+    // poblacion que `IN ('1','NA')` (ver comentario junto a `estado_ejecucion` en el catalogo).
+    // `pg_radar_productividad`/`pg_radar_eficiencia` siguen sin migrar y conservan la forma
+    // original -- se acepta cualquiera de las dos formas equivalentes, no solo la literal vieja.
+    $declaresActiveCommitmentPopulation = in_array("Activa IN ('1','NA')", $radarFilters, true)
+        || in_array("Activa!='0'", $radarFilters, true);
+    if (!$declaresActiveCommitmentPopulation) {
         $failures[] = "{$metricKey}: metric contract must declare the active commitment population";
     }
     if (($radarDefinition['execution_source'] ?? null) !== 'programacion_semanal') {

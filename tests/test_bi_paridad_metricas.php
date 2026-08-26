@@ -141,6 +141,25 @@ $oldPathResolvers = [
 
         return ((float) $row['numerador']) / $denominador;
     },
+    'pg_radar_desempeno' => static function (int $projectId, string $semana, ControlTowerService $ct): ?float {
+        // Task 3 paso 5, tanda 2 (rol B, 2026-08-26). Camino viejo = metodo publico REAL de
+        // produccion (`getProgramaRadarDetail()`, invocado en vivo por
+        // BiControlTowerApiController.php:144), no una reconstruccion propia de SQL: se corre el
+        // eje 'desempeno' del radar y se leen `numerator`/`denominator` de
+        // `programaRadarAxis()` -- valores crudos SIN el redondeo a 1 decimal de `raw_value` ni
+        // el umbral "minimo 3 muestras" que solo gobierna si se MUESTRA el dato (ver
+        // known_limitations en el catalogo), no si el ratio es valido.
+        $detail = $ct->getProgramaRadarDetail([$projectId], $semana, [], 'desempeno');
+        $denominador = (int) ($detail['summary']['denominator'] ?? 0);
+        if ($denominador === 0) {
+            return null;
+        }
+
+        // 'numerator' viene redondeado a 4 decimales (programaRadarAxis()), pero para PAC (que
+        // solo toma 0 o 1) la suma siempre es un entero exacto -- ese redondeo no pierde precision
+        // aqui, a diferencia de 'productividad' (P_Completado es continuo).
+        return ((float) $detail['summary']['numerator']) / $denominador;
+    },
 ];
 
 /**
@@ -195,6 +214,19 @@ $oldMethodRetainedByMetric = [
         . "ready) se conserva porque alimenta TODO el reporte 'programa-general' -- lista de "
         . 'actividades, radares, conteos CNP/CNC -- no solo esta metrica. MetricExecutor es la '
         . 'fuente de verdad para esta razon desde ahora; no hay SQL dedicado que borrar.',
+    'pg_radar_desempeno' => "ControlTowerService::programaRadar() calcula los 3 ejes del radar "
+        . "('productividad', 'eficiencia', 'desempeno') en una sola pasada sobre la poblacion; solo "
+        . "'desempeno' mapea a pg_radar_desempeno. 'productividad' necesita capar cada fila a maximo "
+        . '1.0 antes de sumar (MIN(P_Completado,1)) y "eficiencia" necesita promediar un ratio POR '
+        . 'FILA (Ejecutado_Real/Compromiso) -- ninguna de las dos operaciones es expresable en la '
+        . 'gramatica de MetricExecutor (solo sabe SUM(columna_simple)/COUNT(*)), asi que quedan sin '
+        . 'entrada ejecutable todavia (hallazgo estructural, Task 3 tanda 2, documentado en '
+        . "known_limitations del catalogo). getProgramaRadarDetail()/programaRadar() son ademas la "
+        . "UNICA fuente del endpoint en vivo 'programa-general-radar-detail' "
+        . '(BiControlTowerApiController.php:144). Borrar el metodo habria roto esos 2 ejes en '
+        . 'produccion. MetricExecutor es la fuente de verdad para "desempeno" desde ahora; '
+        . 'programaRadar() se conserva para los otros 2 ejes hasta que tengan su propia metrica '
+        . 'catalogada y ejecutable.',
 ];
 
 $passed = 0;

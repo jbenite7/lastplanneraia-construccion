@@ -296,24 +296,74 @@ class MetricDictionaryService
 
         $catalog['pg_radar_desempeno'] = [
             'metric_key' => 'pg_radar_desempeno',
-            'estado_ejecucion' => 'descriptiva',
+            // Task 3 paso 5, tanda 2 (2026-08-26). CT-16, investigado antes de mover de estado:
+            // (a) `filters` originales (`Activa IN ('1','NA')`, `Es_TNP<>1`, `PAC IN (0,1)`) usan
+            //     IN/<> que `MetricExecutor::parseFilter()` no reconoce (solo =,>=,<=,!=,>,<).
+            //     Verificado contra la base COMPLETA (no solo las dos obras de prueba), igual que
+            //     el ruling anterior de `ps_weekly_fulfillment`:
+            //       - `Activa` solo toma '0'/'1'/'NA' en toda la tabla -> `Activa!='0'` es
+            //         equivalente a `IN ('1','NA')` sin necesitar soporte de IN.
+            //       - `Es_TNP` (tinyint(1) NOT NULL) es 0 en las 5721 filas de la tabla completa,
+            //         nunca 1 -> `Es_TNP<>1` es equivalente a `Es_TNP=0`.
+            //       - `PAC` (int NULL) solo toma NULL/0/1 en toda la tabla (3487 NULL, 1269 con 1,
+            //         965 con 0) -> `PAC>=0` excluye NULL (comparacion SQL contra NULL es
+            //         desconocida, la fila se descarta) e incluye 0 y 1 -> equivalente a
+            //         `PAC IN (0,1)` sin necesitar soporte de IN.
+            //     Filtros corregidos: `["Activa!='0'", 'Es_TNP=0', 'PAC>=0']`.
+            // (b) `formula` original (`COUNT(PAC=1) / COUNT(PAC IN (0,1)) × 100`) no calza con el
+            //     patron `SUM(expr) / COUNT(*)` que reconoce `buildSelectExpression()`. Con el
+            //     filtro `PAC>=0` ya restringiendo la poblacion a PAC IN (0,1), `COUNT(*)` del
+            //     ejecutor equivale a `COUNT(PAC IN (0,1))`, y `SUM(PAC=1)` equivale a
+            //     `COUNT(PAC=1)` (PAC solo toma 0 o 1 en esa poblacion) -> formula reescrita a
+            //     `SUM(PAC=1) / COUNT(*)`, en escala 0-1 (no x100), igual que las dos metricas ya
+            //     migradas (`ps_weekly_fulfillment`, `pi_hard_restrictions_ready_rate`).
+            // (c) Verificado contra `ControlTowerService::programaRadar()` (metodo real de
+            //     produccion, invocado via `getProgramaRadarDetail()` en el resolver del arnes, NO
+            //     una reconstruccion propia de SQL): eje 'desempeno' usa `radarPacValue()`
+            //     (`$pac === 0.0 || $pac === 1.0 ? $pac : null`) sumado y contado por fila elegible
+            //     -- exactamente `SUM(PAC=1)/COUNT(PAC IN (0,1))` sobre la poblacion
+            //     Activa!='0' AND Es_TNP=0. Paridad: 6/6 combinaciones (obra, semana) reales, delta
+            //     EXACTO 0 en las 5 con datos (PAC solo toma 0/1, sin redondeo de por medio) + 1 de
+            //     "sin dato, ambos caminos concuerdan" (obra 73, semana 2 -- misma semana recien
+            //     abierta sin PAC registrado que ya afecto a `ps_weekly_fulfillment`).
+            // 'ejecutable': `programaRadar()` calcula los 3 ejes del radar (productividad,
+            // eficiencia, desempeno) en una sola pasada sobre la poblacion -- no se puede borrar
+            // sin romper los otros 2 ejes, que quedan estructuralmente bloqueados para
+            // MetricExecutor (ver known_limitations) y no tienen todavia forma ejecutable. Motivo
+            // completo en `$oldMethodRetainedByMetric` del arnes.
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'programa-general',
             'metric_name' => 'Radar: Desempeño PAC',
             'definition' => 'Proporción de compromisos con PAC registrado como cumplido.',
-            'formula' => 'COUNT(PAC=1) / COUNT(PAC IN (0,1)) × 100',
+            'formula' => 'SUM(PAC=1) / COUNT(*)',
             'unit' => 'porcentaje',
             'execution_source' => 'programacion_semanal',
             'source_relations' => ['programacion_semanal'],
             'grain' => 'project_id + Semana + row_id',
             'cutoff_policy' => 'Semana seleccionada o semanas contenidas en el rango explícito.',
-            'filters' => ["Activa IN ('1','NA')", 'Es_TNP<>1', 'PAC IN (0,1)'],
+            'filters' => ["Activa!='0'", 'Es_TNP=0', 'PAC>=0'],
             'aggregation_policy' => 'Numerador PAC=1 y denominador global PAC válido; no promedia porcentajes de proyecto.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; requiere mínimo 3 PAC válidos.',
             'version' => '2.0',
-            'known_limitations' => 'PAC nulo o diferente de 0/1 se excluye, no se interpreta como incumplido.',
+            'known_limitations' => 'PAC nulo o diferente de 0/1 se excluye, no se interpreta como '
+                . 'incumplido. Paridad exacta (delta 0) en 6/6 combinaciones (obra, semana) reales '
+                . '(Task 3, tanda 2, 2026-08-26): 5 numericas + 1 de acuerdo en "sin dato". '
+                . 'MetricExecutor no aplica el "minimo 3 PAC validos" de forecast_policy -- ese es un '
+                . 'umbral de PRESENTACION de `programaRadarAxis()` (oculta el valor si la muestra es '
+                . 'chica), no una condicion del calculo del ratio en si; con menos de 3 observaciones '
+                . 'el ratio sigue siendo matematicamente valido, solo no se muestra en el radar '
+                . 'legado. Los ejes "productividad" y "eficiencia" del mismo radar NO se migraron en '
+                . 'esta tanda: "productividad" necesita capar cada fila a maximo 1.0 antes de sumar '
+                . '(`MIN(P_Completado,1)`), y "eficiencia" necesita promediar un ratio POR FILA '
+                . '(`Ejecutado_Real/Compromiso`), y `MetricExecutor` solo sabe construir '
+                . '`SUM(columna_simple)/COUNT(*)` -- ninguna de las dos operaciones es expresable en '
+                . 'esa gramatica sin extender el ejecutor (verificado con datos reales: capar '
+                . 'P_Completado SI cambia el resultado -- 2 a 4 filas por semana en la obra 65 '
+                . 'superan 1.0, hasta P_Completado=14). Documentado como hallazgo estructural, no '
+                . 'forzado (CT-16).',
         ];
 
         $catalog['pg_finish_variance_days_p50'] = [
