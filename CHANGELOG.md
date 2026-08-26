@@ -28,6 +28,23 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Añadido: bitácora de ediciones manuales del avance en Programa General (2026-08-26)
+
+Cada vez que alguien edita a mano el porcentaje ejecutado de una actividad en Programa General
+(`POST /api/general/update`), queda una fila en `pg_avance_edicion_manual` con quién lo hizo, cuándo,
+y el valor anterior y el nuevo.
+
+Es un registro consultable, no un corrector automático. Sirve para investigar casos donde no se
+sabe si un número lo escribió una persona o es un residuo de un defecto anterior — por ejemplo, el
+que corrigió el arreglo del arrastre semanal del 2026-08-25. Se evaluó que el propio arrastre
+consultara esta bitácora para decidir, y se descartó al implementar: en el único caso donde se
+aplicaría, el resultado ya estaba decidido de antemano por el criterio existente, así que la
+consulta no cambiaba nada. El detalle completo está en
+`docs/superpowers/specs/2026-08-25-bitacora-ediciones-manuales-carryover-design.md` (v2).
+
+No repara actividades ya afectadas por defectos anteriores, no cubre otras pantallas ni otros
+campos, y no tiene vista de historial todavía.
+
 ### Corregido: el avance de la semanal dejaba de sumarse en el Programa General (2026-08-25)
 
 Un avance reportado en Programación Semanal **después** de que el Programa General de la semana

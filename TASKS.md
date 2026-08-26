@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-25
+updated: 2026-08-26
 ---
 
 # Tareas
@@ -46,6 +46,10 @@ Lo que hay que saber para retomarlo:
   65.549 filas intactas). Respaldo previo en `~/backups/prueba-lps-predeploy-*`.
 - **Qué validar en pruebas**: reportar avance en Programación Semanal *después* de abrir el
   Programa General de la semana siguiente, y comprobar que el acumulado sí lo recoge.
+  **Probado y verificado por Felipe el 2026-08-25.** Sigue pendiente la decisión de desplegar a
+  producción — el tamaño del paquete arriba descrito no cambió.
+- **Tercera migración que se sumó al paquete pendiente**: `20260826_pg_avance_edicion_manual.sql`
+  (bitácora de ediciones manuales, ver más abajo). Aditiva y reversible (`DROP TABLE`).
 
 ## Otros pendientes anotados el 2026-08-25
 
@@ -59,6 +63,14 @@ Lo que hay que saber para retomarlo:
   producto por derecho propio: la bitácora permitirá **detectarlo** cuando ocurra, no lo evita.
   Merece decisión de producto propia — ¿la herencia debería dispararse solo cuando el usuario
   cambia la asociación, en vez de en cada guardado?
+
+**Cierre del frente de la bitácora, 2026-08-26.** Construida como registro consultable: tabla
+`pg_avance_edicion_manual` y `PgAvanceEdicionManualService`, conectados a `GeneralApiController::update()`.
+El arrastre semanal **no** la consulta — se implementó, un test candado encontró que la consulta no
+podía cambiar ninguna decisión (en el único caso donde se aplicaría, el resultado ya estaba
+decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo en la spec v2
+(`docs/superpowers/specs/2026-08-25-bitacora-ediciones-manuales-carryover-design.md`). Suites
+`puro` y `http` en verde, `phpstan` sin errores. Sin publicar en `main`.
 
 - **Asociar a mano y con "Auto-Asociar" no heredan lo mismo.** Los dos traen el avance de la
   actividad anterior —el botón lo hace vía el arrastre, que usa `programaAnteriorAsociar` como
