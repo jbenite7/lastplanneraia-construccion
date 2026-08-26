@@ -52,9 +52,10 @@ class PgAvanceEdicionManualService
     /**
      * Compara el estado final contra el capturado y firma si corresponde.
      *
-     * `$huboHerencia` lo informa el controlador: es la misma condicion que ya decide si aplica la
-     * herencia. Cuando la herencia corrio pero la asociacion no cambio, el reemplazo fue un
-     * efecto secundario —el residente venia a corregir otra cosa— y no se firma.
+     * `$herenciaAplicada` lo informa el controlador: cierto solo cuando el UPDATE de herencia
+     * se ejecuto de verdad, no cuando la casilla estaba marcada nada mas. Cuando la herencia
+     * corrio pero la asociacion no cambio, el reemplazo fue un efecto secundario —el residente
+     * venia a corregir otra cosa— y no se firma.
      *
      * @param array{Ejecutado: ?float, programaAnteriorAsociar: ?string} $previo
      */
@@ -64,7 +65,7 @@ class PgAvanceEdicionManualService
         int $uniqueId,
         array $previo,
         string $usuario,
-        bool $huboHerencia,
+        bool $herenciaAplicada,
     ): bool {
         $actual = $this->capturarAvancePrevio($projectId, $semana, $uniqueId);
 
@@ -78,7 +79,7 @@ class PgAvanceEdicionManualService
             return false;
         }
 
-        if ($huboHerencia) {
+        if ($herenciaAplicada) {
             $asociacionCambio = trim((string) ($previo['programaAnteriorAsociar'] ?? ''))
                 !== trim((string) ($actual['programaAnteriorAsociar'] ?? ''));
             if (!$asociacionCambio) {
