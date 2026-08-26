@@ -122,11 +122,46 @@ La comparación usa la misma tolerancia de 0.001 que ya usa `WeeklyRealProgressC
 para decidir si algo cambió. Dos criterios distintos para "cambió" sobre el mismo dato serían una
 inconsistencia, no una elección.
 
-**Sobre la herencia, decisión de Felipe del 2026-08-25:** cuenta como edición manual, y se registra
-el valor final que quedó, no el que la persona tecleó antes del reemplazo. Es una sola acción suya
-con efecto en dos pasos, no dos ediciones. Dato relevante para quien implemente:
+### La herencia: solo se firma cuando la asociación cambió
+
 `hot_actualizar.js:526` manda la bandera de herencia en **toda** edición de esa pantalla, no solo
-al cambiar la asociación — así que este caso es frecuente, no excepcional.
+al cambiar la asociación. Así que si el residente corrige una fecha de una actividad ya asociada,
+la herencia le reemplaza el avance igual, sin que él lo pidiera. Registrar eso como "edición
+manual" llenaría la bitácora de firmas falsas: quedaría constando que una persona decidió ese
+número cuando en realidad nunca lo tocó.
+
+**Decisión de Felipe, 2026-08-25:** el reemplazo por herencia se registra **solo si la asociación
+cambió en esa misma petición**. Si la asociación ya estaba puesta de antes, el reemplazo fue un
+efecto secundario y no se firma.
+
+Se evaluó la alternativa —cambiar la pantalla para que la herencia se dispare solo al asociar— y se
+descartó por ser un cambio al comportamiento de un módulo de uso diario, que merece su propia
+decisión y sus propias pruebas en obra, no ir de pasajero en un trabajo de auditoría. Queda anotado
+como frente aparte en `TASKS.md`.
+
+**Corregido el 2026-08-25.** Una versión anterior de este párrafo justificaba el descarte diciendo
+que `autoAssociate()` "no hereda" y que cambiar el disparo dejaría sin avance a las actividades
+asociadas en lote. Eso es falso, y el error fue mirar el botón sin seguir la cadena completa:
+`autoAssociate()` escribe `programaAnteriorAsociar`, y el arrastre usa ese campo como su **primera**
+vía de mapeo (`WeeklyRealProgressCarryoverService`, `resolveTargetSource()`), así que el avance
+llega igual —solo que cuando corre el arrastre, no en el instante de asociar—. Lo que sí difiere
+entre los dos caminos son las restricciones, `Estado_Restricciones`, `Observaciones`,
+`codigo_actividad` y `medir_productividad`: la herencia manual los copia y el arrastre no. Eso es
+una inconsistencia real del producto, anotada como frente aparte; no afecta a este spec, que solo
+mira `Ejecutado`.
+
+Para implementarlo, `capturarAvancePrevio()` guarda también `programaAnteriorAsociar`, y la regla al
+cerrar es:
+
+| Situación | ¿Se firma? |
+|---|---|
+| `Ejecutado` no cambió | No — guardar sin cambiar no es una edición |
+| Cambió, y no hubo herencia (edición directa) | Sí |
+| Cambió por herencia, y la asociación **también** cambió en esta petición | Sí — la persona decidió asociar, y ese es el valor que quiso traer |
+| Cambió por herencia, y la asociación ya estaba puesta de antes | **No** — efecto secundario, la persona no decidió ese número |
+
+El controlador le informa al servicio si la herencia llegó a aplicarse; esa condición ya existe en
+`GeneralApiController::update()` y no hay que inventarla.
 
 ### 3. Cómo lo consume el arrastre
 
@@ -158,7 +193,11 @@ TDD, prueba antes que código, igual que el arreglo del arrastre.
 - Editar el avance deja exactamente una fila en la bitácora, con el antes y el después correctos.
 - Guardar el mismo valor no deja ninguna fila.
 - Un fallo a mitad de la transacción no deja ni la bitácora ni el dato real a medias.
-- Con herencia activa, se registra el valor heredado que quedó, no el tecleado.
+- Con herencia activa **y asociación cambiada** en la misma petición: se registra el valor heredado
+  que quedó, no el tecleado.
+- Con herencia activa y **asociación sin cambios** —el residente vino a corregir otra cosa—: no se
+  registra nada, aunque el avance haya cambiado. Es la prueba que impide que el cuaderno se llene
+  de firmas de gente que nunca tocó el avance.
 
 **El arrastre con la bitácora puesta** (nivel `db`):
 - Los cinco casos de `CarryoverAvanceSemanalTest` siguen pasando sin cambios.
@@ -182,7 +221,10 @@ TDD, prueba antes que código, igual que el arreglo del arrastre.
 - No repara las 27 actividades ya congeladas.
 - Solo ediciones humanas: el arrastre no registra sus propias escrituras.
 - Sin límite de retención.
-- La herencia cuenta como edición manual, registrando el valor final.
+- La herencia cuenta como edición manual **solo si la asociación cambió en esa misma petición**,
+  registrando el valor final. Si la asociación ya estaba puesta, no se firma.
+- No se toca el comportamiento de la pantalla de Actualizar ni el de "Auto-Asociar": ese defecto
+  queda como frente aparte.
 - "Eliminar Actualización" no cuenta.
 
 ## Siguiente paso

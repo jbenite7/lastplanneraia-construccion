@@ -60,6 +60,16 @@ Lo que hay que saber para retomarlo:
   Merece decisión de producto propia — ¿la herencia debería dispararse solo cuando el usuario
   cambia la asociación, en vez de en cada guardado?
 
+- **Asociar a mano y con "Auto-Asociar" no heredan lo mismo.** Los dos traen el avance de la
+  actividad anterior —el botón lo hace vía el arrastre, que usa `programaAnteriorAsociar` como
+  primera vía de mapeo—, pero la herencia manual de `GeneralApiController::update()` copia además
+  las siete restricciones, `Estado_Restricciones`, `Observaciones`, `codigo_actividad` y
+  `medir_productividad`, y el arrastre no. Así que una actividad asociada con el botón arranca sin
+  sus restricciones y otra asociada a mano sí las tiene, sin que nada lo advierta. Felipe lo señaló
+  el 2026-08-25 ("si auto-asocia, debe heredar"); queda pendiente decidir si el botón debe heredar
+  el paquete completo. **No medido todavía:** cuántas actividades en producción quedaron sin
+  restricciones por esta vía.
+
 - **`tests/test_schedule_update_draft_import.php` deja un proyecto huérfano.** Crea
   `Base_de_Datos = 'it_schedule_draft'` y no lo borra al terminar, así que la corrida siguiente
   de la suite falla con «already exists» y la de después pasa. Alterna verde y rojo según quién
