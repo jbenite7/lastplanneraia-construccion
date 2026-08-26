@@ -49,6 +49,17 @@ Lo que hay que saber para retomarlo:
 
 ## Otros pendientes anotados el 2026-08-25
 
+- **Actualizar Programa General reemplaza el avance de quien solo vino a cambiar otra cosa.**
+  `public/js/modules/programa_actualizar/hot_actualizar.js:526` manda `editarActividadAsociar=1` en
+  **toda** edición de celda, no solo al cambiar la asociación. Si el residente corrige una fecha de
+  una actividad ya asociada, `GeneralApiController::update()` dispara la herencia y le sobrescribe
+  `Ejecutado`, `unidad`, `cantidad_ppto`, `Responsable_AIA` y `Sub_Contratista` con los de la
+  semana anterior, sin que lo pida ni lo vea venir. Descubierto al mapear escrituras para la
+  bitácora (spec `2026-08-25-bitacora-ediciones-manuales-carryover-design`), pero es un defecto de
+  producto por derecho propio: la bitácora permitirá **detectarlo** cuando ocurra, no lo evita.
+  Merece decisión de producto propia — ¿la herencia debería dispararse solo cuando el usuario
+  cambia la asociación, en vez de en cada guardado?
+
 - **`tests/test_schedule_update_draft_import.php` deja un proyecto huérfano.** Crea
   `Base_de_Datos = 'it_schedule_draft'` y no lo borra al terminar, así que la corrida siguiente
   de la suite falla con «already exists» y la de después pasa. Alterna verde y rojo según quién
