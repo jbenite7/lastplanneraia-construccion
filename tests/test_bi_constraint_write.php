@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-// @requiere: http
+// @requiere: datos-proyecto
 
 /**
  * Task 5 (rol A), paso 1: prueba HTTP completa del endpoint de escritura de la Torre —
@@ -58,6 +58,48 @@ declare(strict_types=1);
  * otro proyecto: si ese mismo Id también existiera en PROJECT_ID, la petición coincidiría con la
  * fila propia en vez de probar el aislamiento. Este archivo busca en tiempo de ejecución (solo
  * lectura) un Id que exista en FOREIGN_PROJECT_ID y NO exista en PROJECT_ID.
+ *
+ * --- Nivel re-etiquetado a 'datos-proyecto' (fix ronda 1, Important 2) ---
+ * La cabecera original decía `// @requiere: http`, lo que mete este archivo en la corrida de CI
+ * (`--nivel=http` incluye `http`). Pero las columnas de Task 4 (`ResponsableAsignado`,
+ * `EstadoLiberacion`, etc.) no existen en el fixture de CI
+ * (`database/fixtures/design-system-ci.Dockerfile`): el SELECT de fixtures de este archivo
+ * rompería con `Unknown column` ahí. Ruling del controlador: re-etiquetar a `datos-proyecto` —
+ * "un test que se salta siempre en CI está mal etiquetado", texto literal de
+ * `scripts/run-php-tests.php`. Cablear la migración de Task 4 en el fixture de CI es alcance
+ * mayor, no pedido por esta tarea.
+ *
+ * --- Caso 6 (fix ronda 1, Critical 1): RBAC scoped por proyecto, no el más privilegiado global ---
+ * La revisión encontró que `BiConstraintWriteController::resolveRole()` llamaba
+ * `RbacService::resolveRoleForUser($username)` SIN `$projectName`/`$dbName`. Sin esos argumentos,
+ * `resolveRoleFromProjectMembers()` ordena por `FIELD(pm.role,'A','D','R',...)` y devuelve el rol
+ * MÁS PRIVILEGIADO que el usuario tenga en CUALQUIER proyecto — no su rol en el proyecto de la
+ * sesión activa. Los casos 1-5 de arriba no detectan esto porque `test.A`/`test.V` tienen el MISMO
+ * rol en los 4 proyectos donde son miembros (confirmado por consulta a `project_members`) — el
+ * caso "denegado" nunca ejercita la propiedad real.
+ *
+ * No se puede probar esta propiedad por HTTP con la puerta de servicio: el usuario real que sí
+ * tiene la forma exacta del bug (`tomas.trujillo`, rol V en PROJECT_ID=73 — el mismo proyecto
+ * fixture de este archivo — y rol A en otros 13 proyectos, confirmado por consulta de solo
+ * lectura a `project_members`) NO está en `DEV_DOOR_USERS` (`test.A,test.R,test.V,test.C,test.D`
+ * únicamente) y no hay forma legítima de autenticarse como él: teclear una contraseña real está
+ * prohibido, y fabricar una sesión HTTP a su nombre sin pasar por el candado de `DevDoor`
+ * equivaldría a suplantar a un usuario real — exactamente lo que ese candado existe para impedir,
+ * aunque la mecánica (fijar `session_id()` a mano) se parezca a `csrfTokenForSession()` de más
+ * abajo. La diferencia: `csrfTokenForSession()` opera DENTRO de una sesión que la puerta de
+ * servicio ya abrió legítimamente para una cuenta de prueba; esto habría creado una sesión NUEVA
+ * para una identidad que la puerta nunca autorizó.
+ *
+ * El Caso 6 prueba entonces la propiedad al nivel donde SÍ es legítimo y suficiente: llama
+ * directamente `RbacService::resolveCurrentRole()` (el método que el controlador corregido ahora
+ * usa) con `$_SESSION` poblado exactamente como lo poblaría `DevDoorController` para ese usuario y
+ * proyecto — sin sesión HTTP, sin cookie, sin tocar el candado de DevDoor — y lo compara contra el
+ * patrón viejo (`resolveRoleForUser($usuario)` sin project scoping) para el mismo usuario real.
+ * Corre en un subproceso aislado (mismo motivo que `csrfTokenForSession()`: `Database::query()`
+ * puede llamar `@session_start()` internamente, y no debe interferir con `$_SESSION` de este
+ * proceso). Verificado manualmente antes de escribir el caso:
+ *   scoped (session Da Porto)   = V   -> hasCapability(canEditConstraints) = false  (correcto)
+ *   unscoped (sin projectName)  = A   -> hasCapability(canEditConstraints) = true   (el bug)
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -179,6 +221,46 @@ function csrfTokenForSession(string $sessionId): string
     return $token;
 }
 
+/**
+ * Caso 6 (fix ronda 1, Critical 1) — ver el comentario largo en la cabecera de este archivo para
+ * el porqué de esta técnica en vez de una sesión HTTP.
+ *
+ * Corre `RbacService::resolveCurrentRole()` (lo que el controlador corregido usa hoy) Y
+ * `RbacService::resolveRoleForUser($usuario)` sin project scoping (el patrón viejo, buggy) para
+ * el MISMO usuario real, con `$_SESSION` poblado a mano en un subproceso aislado — nunca una
+ * sesión HTTP, nunca una cookie, nunca pasa por el candado de DevDoor. Aislado en subproceso por
+ * el mismo motivo que `csrfTokenForSession()`: `Database::query()` puede llamar `@session_start()`
+ * internamente y no debe interferir con el `$_SESSION` de este proceso principal.
+ *
+ * @return array{0:string,1:string} [rol devuelto por resolveCurrentRole(), rol devuelto por
+ *                                    resolveRoleForUser() sin project scoping]
+ */
+function rolesEscopadosVsGlobales(string $usuario, string $proyecto): array
+{
+    $script = '<?php '
+        . 'require "/var/www/html/vendor/autoload.php"; '
+        . 'require "/var/www/html/src/Core/Database.php"; '
+        . '$_SESSION["usuario"] = $argv[1]; '
+        . '$_SESSION["proyecto"] = $argv[2]; '
+        . '$db = Database::getInstance(); '
+        . '$rbac = new \App\Security\RbacService($db); '
+        . '$scoped = $rbac->resolveCurrentRole(); '
+        . '$unscoped = $rbac->resolveRoleForUser($argv[1]); '
+        . 'echo json_encode(["scoped" => $scoped, "unscoped" => $unscoped]);';
+    $tmp = tempnam(sys_get_temp_dir(), 'rbac_scope_');
+    file_put_contents($tmp, $script);
+    $salida = trim((string) shell_exec(
+        'php ' . escapeshellarg($tmp) . ' ' . escapeshellarg($usuario) . ' ' . escapeshellarg($proyecto) . ' 2>&1'
+    ));
+    @unlink($tmp);
+    $decoded = json_decode($salida, true);
+    if (!is_array($decoded) || !isset($decoded['scoped'], $decoded['unscoped'])) {
+        fwrite(STDERR, "ABORT: no se pudo resolver roles escopados/globales (salida: {$salida})\n");
+        exit(2);
+    }
+    return [(string) $decoded['scoped'], (string) $decoded['unscoped']];
+}
+
 $db = Database::getInstance();
 
 // ---------------------------------------------------------------- Fixtures (solo lectura) -----
@@ -218,8 +300,30 @@ if ($filaAjena === false) {
 }
 $idAjeno = (int) $filaAjena['Id'];
 
+// Usuario real (no `test.*`) con rol denegado (V/C) en PROJECT_ID y rol permitido (A/D/R/DCV/
+// S/G/SG/OT) en algún OTRO proyecto — la forma exacta que el caso 6 necesita para probar que el
+// RBAC se resuelve por el proyecto de sesión y no por "el rol mas privilegiado en cualquier
+// proyecto". Descubierto en tiempo de ejecución, igual que idAjeno arriba, en vez de hardcodear
+// un usuario que podría dejar de existir o cambiar de rol en un refresh de dev.
+$candidatoRbac = $db->query(
+    "SELECT u.usuario, pm.role AS rol_en_sesion
+     FROM project_members pm
+     JOIN general_usuarios u ON u.id = pm.user_id
+     WHERE pm.project_id = ?
+       AND pm.role IN ('V', 'C')
+       AND EXISTS (
+           SELECT 1 FROM project_members pmOtro
+           WHERE pmOtro.user_id = pm.user_id
+             AND pmOtro.project_id != ?
+             AND pmOtro.role IN ('A', 'D', 'R', 'DCV', 'S', 'G', 'SG', 'OT')
+       )
+     ORDER BY u.usuario LIMIT 1",
+    [PROJECT_ID, PROJECT_ID],
+)->fetch(PDO::FETCH_ASSOC);
+
 echo "Fixtures: PROJECT_ID=" . PROJECT_ID . " (Da Porto) idEscritura={$idEscritura} idSinCsrf={$idSinCsrf}"
-    . " | FOREIGN_PROJECT_ID=" . FOREIGN_PROJECT_ID . " idAjeno={$idAjeno}\n";
+    . " | FOREIGN_PROJECT_ID=" . FOREIGN_PROJECT_ID . " idAjeno={$idAjeno}"
+    . " | candidatoRbac=" . ($candidatoRbac !== false ? $candidatoRbac['usuario'] . " (rol_en_sesion={$candidatoRbac['rol_en_sesion']})" : 'ninguno') . "\n";
 
 // ------------------------------------------------------------------------- Sesiones + CSRF -----
 
@@ -325,6 +429,33 @@ $check(
     'caso 5: AsignadoEn persistido y reciente (<5 min)',
     'real: ' . var_export($fresca['AsignadoEn'] ?? null, true),
 );
+
+// --------------------------------------- Caso 6: RBAC scoped por proyecto, no el global -----
+// Ver el comentario largo "Caso 6" en la cabecera de este archivo: prueba que
+// RbacService::resolveCurrentRole() (lo que el controlador corregido usa) resuelve el rol del
+// PROYECTO DE SESION y no el mas privilegiado que el usuario tenga en cualquier proyecto. No usa
+// HTTP/dev door -- ver la cabecera para el porque.
+
+if ($candidatoRbac === false) {
+    echo 'AVISO caso 6: no se encontro en dev un usuario con rol denegado en PROJECT_ID=' . PROJECT_ID
+        . " y rol permitido en otro proyecto -- omitido, no hay dato real que lo pruebe hoy.\n";
+} else {
+    $usuarioRbac = (string) $candidatoRbac['usuario'];
+    $rolEsperado = (string) $candidatoRbac['rol_en_sesion'];
+
+    [$rolScoped, $rolUnscoped] = rolesEscopadosVsGlobales($usuarioRbac, PROYECTO);
+
+    $check(
+        $rolScoped === $rolEsperado,
+        "caso 6: resolveCurrentRole() de {$usuarioRbac} en " . PROYECTO . " -> {$rolEsperado} (scoped, no el mas privilegiado)",
+        'real: ' . var_export($rolScoped, true) . ' | unscoped (patron viejo) hubiera dado: ' . var_export($rolUnscoped, true),
+    );
+    $check(
+        !\App\Security\RbacManager::hasCapability($rolScoped, 'canEditConstraints'),
+        "caso 6: hasCapability(rol scoped={$rolScoped}, canEditConstraints) -> false",
+        'unscoped (patron viejo, buggy) hasCapability=' . var_export(\App\Security\RbacManager::hasCapability($rolUnscoped, 'canEditConstraints'), true),
+    );
+}
 
 // ------------------------------------------------------------------------------- Cleanup -----
 // Deja las tres filas exactamente como estaban antes de correr esta prueba, pase o falle.

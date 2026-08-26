@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use App\Core\ErrorPage;
 use App\Security\CsrfTokenManager;
-use App\Security\RbacCatalog;
 use App\Security\RbacManager;
 use App\Security\RbacService;
 use PDO;
@@ -39,29 +37,23 @@ class BiConstraintWriteController extends BaseController
 
         $role = $this->resolveRole();
         if (!RbacManager::hasCapability($role, 'canEditConstraints')) {
-            ErrorPage::render(
-                403,
-                'Acceso denegado',
-                'Tu rol no tiene permiso para gestionar restricciones.'
-            );
-            exit;
+            $this->fallar(403, 'FORBIDDEN', 'Tu rol no tiene permiso para gestionar restricciones.');
         }
 
         $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
         if (!CsrfTokenManager::validate(is_string($token) ? $token : null, self::CSRF_FORM_KEY)) {
-            ErrorPage::render(
+            $this->fallar(
                 403,
-                'Token de seguridad inválido',
+                'CSRF_INVALID',
                 'El token de seguridad expiró o no es válido. Recarga la página e intenta de nuevo.'
             );
-            exit;
         }
 
         $constraintId = filter_var($id, FILTER_VALIDATE_INT);
         $projectId = (int) ($_SESSION['project_id'] ?? 0);
 
         if ($constraintId === false || $projectId <= 0) {
-            $this->notFound();
+            $this->fallar(404, 'NOT_FOUND', 'La restricción solicitada no existe.');
         }
 
         $existe = $this->db->query(
@@ -72,7 +64,7 @@ class BiConstraintWriteController extends BaseController
         if ($existe === false) {
             // El aislamiento entre proyectos nunca revela si el id existe en otro project_id:
             // misma respuesta que un id que no existe en absoluto.
-            $this->notFound();
+            $this->fallar(404, 'NOT_FOUND', 'La restricción solicitada no existe.');
         }
 
         $body = json_decode((string) file_get_contents('php://input'), true);
@@ -81,13 +73,7 @@ class BiConstraintWriteController extends BaseController
         );
 
         if ($errorValidacion !== null) {
-            http_response_code(422);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(
-                ['ok' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $errorValidacion]],
-                JSON_UNESCAPED_UNICODE
-            );
-            exit;
+            $this->fallar(422, 'VALIDATION_ERROR', $errorValidacion);
         }
 
         $usuario = (string) ($_SESSION['usuario'] ?? '');
@@ -115,38 +101,43 @@ class BiConstraintWriteController extends BaseController
         exit;
     }
 
-    private function notFound(): never
+    /**
+     * Envelope de error unificado: `{ok:false, error:{code, message}}` para los 4 sitios de
+     * error de este controlador (403 capacidad, 403 CSRF, 404 aislamiento, 422 validación).
+     * `ct-app/src/lib/api.ts` exige `body.ok` booleano o lanza `BAD_RESPONSE` genérico — el
+     * cuerpo de `ErrorPage::render()` (`{"error":{"codigo","mensaje"}}`, sin `ok`) rompía ese
+     * contrato para un rol denegado o un CSRF vencido.
+     */
+    private function fallar(int $status, string $code, string $message): never
     {
-        ErrorPage::render(
-            404,
-            'Esta página no existe',
-            'La dirección que abriste no corresponde a ninguna pantalla del producto.'
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(
+            ['ok' => false, 'error' => ['code' => $code, 'message' => $message]],
+            JSON_UNESCAPED_UNICODE
         );
         exit;
     }
 
     /**
-     * Mismo patrón que `BiPreviewAccessPolicy::resolveRole()` (privado allá, así que se
-     * replica aquí): usuario de sesión resuelto vía `RbacService::resolveRoleForUser()`
-     * cuando hay `$_SESSION['usuario']`, o `permiso` de sesión normalizado si no.
+     * Rol del usuario de sesión, acotado al proyecto activo (`$_SESSION['proyecto']` /
+     * `$_SESSION['db']`) — no el rol más privilegiado que el usuario tenga en cualquier
+     * proyecto. `RbacService::resolveCurrentRole()` es la convención real de escritura del
+     * repo para esto (`CicApiController.php`, `GeneralApiController.php`,
+     * `LpsWeekEditPolicy.php`, `CommitmentLockGuard.php`).
+     *
+     * Corregido en ronda 1 de revisión (Critical 1): la versión anterior llamaba
+     * `resolveRoleForUser($username)` SIN `$projectName`/`$dbName`, y
+     * `resolveRoleFromProjectMembers()` sin esos argumentos ordena por
+     * `FIELD(pm.role,'A','D','R',...)` y devuelve el rol MÁS PRIVILEGIADO del usuario en
+     * CUALQUIER proyecto — no su rol en el proyecto de la sesión activa. Confirmado con dato
+     * real de dev: `tomas.trujillo` es `V` en `project_id=73` (el proyecto fixture de este
+     * mismo test) y `A` en otros 13 proyectos; la versión vieja le habría dado paso a escribir
+     * sobre el proyecto 73, donde en realidad es Visualizador.
      */
     private function resolveRole(): string
     {
-        $username = trim((string) (
-            $_SESSION['usuario'] ?? ($_SESSION['admin_user']['usuario'] ?? '')
-        ));
-
-        if ($username !== '') {
-            try {
-                return (new RbacService())->resolveRoleForUser($username);
-            } catch (\Throwable) {
-                return RbacCatalog::DEFAULT_ROLE;
-            }
-        }
-
-        return (new RbacService())->normalizeRole(
-            (string) ($_SESSION['permiso'] ?? ($_SESSION['admin_user']['permiso'] ?? RbacCatalog::DEFAULT_ROLE))
-        );
+        return (new RbacService($this->db))->resolveCurrentRole();
     }
 
     /**
