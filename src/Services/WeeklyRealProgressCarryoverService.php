@@ -97,29 +97,22 @@ class WeeklyRealProgressCarryoverService
             if ($testigo !== null) {
                 $preserveRatio = abs(($targetCurrentRatio ?? 0.0) - $testigo) > 0.001;
             } else {
-                // Fila que nunca pasó por el arrastre nuevo (anterior a la migración del testigo).
-                // Primero se le pregunta a la bitácora: si hay firma de una persona y coincide con
-                // lo que hay hoy, es un hecho comprobado y se respeta con certeza.
-                $firmado = $this->bitacoraConfirmaEdicion(
-                    $projectId,
-                    $targetWeek,
-                    (int) ($targetRow['unique_id'] ?? $targetRow['Consecutivo_en_Programa'] ?? 0),
-                    $targetCurrentRatio,
+                // Fila que nunca pasó por el arrastre nuevo (anterior a la migración).
+                // Sin testigo hay que deducir quién escribió, y solo hay dos huellas que
+                // delatan al propio arrastre: que el valor siga igual al de la semana
+                // origen (nunca se arrastró), o que coincida con lo que el arrastre
+                // escribiría ahora mismo (lo escribió él). En cualquiera de los dos casos
+                // se puede recalcular y, de paso, queda fijado el testigo.
+                //
+                // Si no coincide con ninguna, es ambiguo — puede ser una edición del
+                // residente o un arrastre viejo ya desfasado — y ahí manda el residente:
+                // se preserva y el testigo se queda en NULL.
+                $preserveRatio = (
+                    $targetCurrentRatio !== null
+                    && $targetCurrentRatio > 0
+                    && abs($targetCurrentRatio - $baseRatio) > 0.001
+                    && abs($targetCurrentRatio - $finalRatio) > 0.001
                 );
-
-                if ($firmado) {
-                    $preserveRatio = true;
-                } else {
-                    // Sin firma no se puede distinguir una edición vieja de un residuo del defecto
-                    // de julio. Se mantiene el criterio anterior: solo se preserva cuando el valor
-                    // no coincide ni con el acumulado de origen ni con lo que se escribiría ahora.
-                    $preserveRatio = (
-                        $targetCurrentRatio !== null
-                        && $targetCurrentRatio > 0
-                        && abs($targetCurrentRatio - $baseRatio) > 0.001
-                        && abs($targetCurrentRatio - $finalRatio) > 0.001
-                    );
-                }
             }
 
             $effectiveRatio = $preserveRatio ? $targetCurrentRatio : $finalRatio;
@@ -515,33 +508,5 @@ class WeeklyRealProgressCarryoverService
         }
 
         return $this->roundRatio($value);
-    }
-
-    /**
-     * ¿Hay firma de una persona para este avance, y coincide con lo que hay hoy en la fila?
-     *
-     * Se consulta SOLO desde el caso ambiguo. Moverla fuera de ahí reintroduce el defecto que este
-     * servicio corrigió el 2026-08-25: el valor que deja la herencia suele ser igual al acumulado
-     * de la semana anterior, y el arrastre ya lo reconoce como propio sin necesidad de preguntar.
-     */
-    private function bitacoraConfirmaEdicion(?int $projectId, int $semana, int $uniqueId, ?float $valorActual): bool
-    {
-        if ($projectId === null || $uniqueId <= 0 || $valorActual === null) {
-            return false;
-        }
-
-        $firma = $this->db->queryWithProject(
-            "SELECT valor_nuevo FROM pg_avance_edicion_manual
-             WHERE project_id = ? AND Semana = ? AND unique_id = ?
-             ORDER BY fecha DESC, id DESC LIMIT 1",
-            [$projectId, $semana, $uniqueId],
-            $projectId,
-        )->fetchColumn();
-
-        if ($firma === false || $firma === null) {
-            return false;
-        }
-
-        return abs(((float) $firma) - $valorActual) <= 0.001;
     }
 }
