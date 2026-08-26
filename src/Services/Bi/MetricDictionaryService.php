@@ -458,6 +458,27 @@ class MetricDictionaryService
 
         $catalog['pi_restriction_pareto'] = [
             'metric_key' => 'pi_restriction_pareto',
+            // Task 3 cierre (2026-08-26), investigado por ruling del controlador (Bitacora entrada
+            // 6): esta metrica es, por su propia definicion, un DESGLOSE por tipo de restriccion
+            // (una distribucion de N filas -- una por restriction_type), no un escalar unico.
+            // Confirmado con datos reales (obra 65, semana 25): 5 filas
+            // (Predecesora=437, Materiales=354, Equipos=343, D_y_E=338, MdeO=324), no un numero.
+            // `MetricExecutor::execute()` esta arquitectonicamente atado a un escalar: hace UN
+            // `->fetch()` (no `fetchAll()`) y `MetricResult::value()` es `float|null`, nunca una
+            // lista. Ademas, ni `aggregation_policy` ('COUNT por tipo de restriccion.') ni
+            // `formula` ('COUNT(*) GROUP BY restriction_type WHERE is_ready=0 ORDER BY COUNT(*)
+            // DESC') calzan con el unico patron que reconoce `buildSelectExpression()`
+            // (`SUM(expr_simple)/COUNT(*)`) -- confirmado ejecutando `MetricExecutor::execute()`
+            // directo: `RuntimeException: ni 'aggregation_policy' ni 'formula' tienen una forma SQL
+            // reconocida`. Esta es una TERCERA categoria de vacio estructural, distinta de las 3 ya
+            // documentadas en la tanda anterior (conteo puro, razon por fila, valor capado): aqui
+            // ni siquiera el CONTRATO de salida (un solo numero) es el correcto -- el motor tendria
+            // que devolver una lista, no una expresion nueva. No es un fix acotado tipo
+            // `MetricScope::week()`; es cambiar la forma de `MetricResult` para un caso, o -- mas
+            // consistente con como ya se sirven paretos/listas en el resto del sistema -- que Task 7
+            // (la hoja de Intermedia) consuma esta distribucion directo de `bi_pi_restricciones`
+            // como lista, sin pasar por el ejecutor de escalares. No se forzo (CT-16); no se toco
+            // `MetricExecutor.php`. Se queda `descriptiva`.
             'estado_ejecucion' => 'descriptiva',
             'report_key' => 'intermedia',
             'metric_name' => 'Pareto de restricciones no liberadas',
@@ -475,7 +496,12 @@ class MetricDictionaryService
             'synthetic_defaults_allowed' => false,
             'forecast_policy' => 'No forecast; ranks open restrictions.',
             'version' => '1.0',
-            'known_limitations' => 'Depende de la clasificación de restricciones en programa consolidado.',
+            'known_limitations' => 'Depende de la clasificación de restricciones en programa '
+                . 'consolidado. Es una DISTRIBUCION por restriction_type (N filas), no un escalar -- '
+                . 'no encaja en el contrato de MetricExecutor::execute() (un solo valor float|null). '
+                . 'Verificado con datos reales (obra 65, semana 25): 5 filas, no un numero. Task 3, '
+                . 'cierre (2026-08-26): no se migra con el ejecutor actual; candidata a servirse '
+                . 'directo como lista en Task 7 (hoja de Intermedia), no via este motor de escalares.',
         ];
 
         $catalog['pdc_at_risk'] = [
