@@ -1,7 +1,7 @@
 ---
 capa: fuente
 tipo: spec
-estado: vigente
+estado: derogada
 fecha: 2026-08-20
 areas: [bi, rbac, datos, design-system]
 fuente: brainstorming con Felipe bajo el método `antes-del-almuerzo`, 2026-08-20
@@ -11,6 +11,14 @@ project: lps-aia
 ---
 
 # Replanteo de la Control Tower — Diseño
+
+> **DEROGADA el 2026-08-26 — absorbida íntegra, no descartada.** Por decisión expresa de Felipe
+> («el diseño de la Control Tower no queda como referencia: debe quedar escrito en la spec del
+> producto»), **el contenido completo de este documento vive ahora en la Parte II de
+> [[docs/superpowers/specs/2026-08-26-v0-del-producto-design]] (spec v0.1)** y las ediciones futuras
+> se hacen allá. Este archivo se conserva como historia del 2026-08-20 y no se edita más. Nada de su
+> contenido fue resumido ni recortado al moverse.
+
 
 > **Esta es una spec maestra.** El alcance decidido no cabe en un solo plan de implementación:
 > son seis frentes con dependencias entre sí. Aquí se detalla el contrato completo de cada frente
@@ -827,10 +835,8 @@ declarar también su denominador. Un porcentaje sin su base no es una cifra, es 
 
 ---
 
-## Estado verificado — sigue vigente
+## Estado — derogada por absorción, 2026-08-26
 
-Verificado contra el código el 2026-08-25. **`estado: vigente` aquí significa que el trabajo sigue abierto** — es una afirmación deliberada, no el valor por defecto del backfill.
-
-**Qué falta:** spec maestra de seis fases que solo detalla la fase 1 a nivel ejecutable (linea 17: «cada fase siguiente toma su propia spec»). La fase 1 cerro como reparto-lienzos-por-rol; las otras cinco no tienen spec derivada todavia
-
-Criterio y método: [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs]].
+El «Estado verificado — sigue vigente» del 2026-08-25 queda superado: el trabajo sigue abierto,
+pero **su documento rector es la spec v0.1 del producto**, donde este diseño vive íntegro como
+Parte II. Ver el banner de arriba.
