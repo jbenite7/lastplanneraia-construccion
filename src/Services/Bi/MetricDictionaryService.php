@@ -402,6 +402,22 @@ class MetricDictionaryService
 
         $catalog['pg_finish_variance_days_p50'] = [
             'metric_key' => 'pg_finish_variance_days_p50',
+            // Fix ronda 2 (2026-08-26), decision explicita para cuando alguien migre esta metrica
+            // (no se migra en este fix): su `grain` no menciona "Semana" a proposito, y NO debe
+            // recibir `MetricScope::week()` (igualdad `Semana = ?`) el dia que se ejecute con
+            // MetricExecutor. Verificado contra `ControlTowerService::programaDelayForecast()` y
+            // `fetchProgramaGeneralForecastTrend()` (linea ~1279): "semana" aqui selecciona el
+            // CORTE (cutoff) de cada proyecto hasta el cual se toma su historia completa de
+            // snapshots (`fetchProgramaGeneralTrend($projectIds, '', ...)` -- semana vacia a
+            // proposito, filtrado despues por `cutoff <= $cutoffs[$projectId]`) para alimentar el
+            // Monte Carlo de 240 corridas. Filtrar por `Semana = ?` restringiria la entrada del
+            // Monte Carlo a las filas de UNA sola semana en vez de "toda la historia hasta el
+            // corte de esa semana", rompiendo la simulacion por falta de muestra -- no es un error
+            // tecnico de columna faltante (como `pdc_at_risk`), es un error de semantica. La forma
+            // correcta de expresar este corte es un limite de RANGO (`cutoff <= X`), mas cercano al
+            // `startDate`/`endDate` que ya existe en `MetricScope` (hoy sin consumir en
+            // `buildWhereClause()`) que a `week()`. Ver el mismo razonamiento junto a
+            // `metricScopeUsaSemana()` en tests/test_bi_paridad_metricas.php.
             'estado_ejecucion' => 'descriptiva',
             'report_key' => 'programa-general',
             'metric_name' => 'Variación probable de fecha final P50',

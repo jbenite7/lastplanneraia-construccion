@@ -292,9 +292,36 @@ function semanasRealesDe(\Database $db, int $projectId, int $limit): array
  *    parte del contrato de la metrica, no prosa libre como `cutoff_policy`).
  *  - El `cutoff_policy` no debe decir explicitamente que el selector de semana no aplica --
  *    senal de baja ambiguedad, exactamente el texto que usa `pdc_at_risk`.
- * `pdc_at_risk` es la UNICA de las 19 que falla la primera senal (su grain es
- * "project_id + paquete_id + subpaquete_id", sin "Semana") y ademas dispara la segunda -- doble
- * confirmacion, no una sola heuristica fragil.
+ *
+ * Fix ronda 2 (2026-08-26), corrigiendo un residual senalado por la re-revision: la version
+ * anterior de este comentario afirmaba que `pdc_at_risk` era la UNICA de las 19 metricas sin
+ * "Semana" en su `grain`. Es falso -- `pg_finish_variance_days_p50` (Monte Carlo,
+ * `MetricDictionaryService.php`, catalogo) TAMBIEN tiene grain sin "Semana"
+ * ("portafolio filtrado al corte; detalle por project_id"), y su `cutoff_policy` ("Ultimo corte
+ * disponible por proyecto dentro de la semana o rango seleccionado") NO dispara la segunda senal
+ * (no dice "no aplica") -- asi que la heuristica le devuelve `false` por la MISMA senal 1 que a
+ * `pdc_at_risk`, pero SIN la doble confirmacion de la senal 2. Son dos metricas distintas que hoy
+ * devuelven `false`, no una.
+ *
+ * Verificado que el `false` para `pg_finish_variance_days_p50` es la decision CORRECTA, no un
+ * acierto de casualidad de la heuristica -- decision explicita, no dejada a la heuristica por
+ * omision (ver `ControlTowerService::programaDelayForecast()` y
+ * `fetchProgramaGeneralForecastTrend()`, linea ~1279): "semana" para esta metrica NO selecciona un
+ * conjunto de filas con `Semana = ?` como hacen las 3 metricas activas -- selecciona el CORTE
+ * (cutoff) de cada proyecto hasta el cual se toma su historia completa de snapshots
+ * (`fetchProgramaGeneralTrend($projectIds, '', ...)`, semana vacia a proposito, filtrado despues
+ * por `cutoff <= $cutoffs[$projectId]`) para alimentar la simulacion Monte Carlo (240 corridas,
+ * percentiles P10/P50/P90). Pasarle `week: $semana` (igualdad `Semana = ?`) el dia que esta
+ * metrica se intente migrar seria un error de semantica, no solo un error tecnico de columna
+ * faltante como `pdc_at_risk`: restringiria la entrada de la simulacion a las filas de UNA sola
+ * semana en vez de "toda la historia hasta el corte de esa semana", rompiendo el Monte Carlo por
+ * insuficiencia de muestra. La forma correcta de expresar este corte -- cuando le llegue el turno
+ * de migrar -- es un limite de RANGO (`cutoff <= X`), mas cercano al `startDate`/`endDate` que ya
+ * existe en `MetricScope` (hoy sin consumir en `buildWhereClause()`, ver entrada 4 de la Bitacora
+ * del plan) que a `week()` (igualdad puntual). Ver ademas el comentario junto a la entrada
+ * `pg_finish_variance_days_p50` en `MetricDictionaryService.php` para esta misma decision anotada
+ * junto al catalogo. No se migro la metrica en este fix -- solo se dejo la heuristica correcta y
+ * la decision escrita para cuando alguien la retome.
  */
 function metricScopeUsaSemana(array $definition): bool
 {
