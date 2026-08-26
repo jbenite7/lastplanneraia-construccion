@@ -1,10 +1,9 @@
 ---
 capa: fuente
 tipo: spec
-estado: propuesta
+estado: cerrado
 fecha: 2026-08-25
 areas: [lps, arquitectura]
-tags: [carryover, auditoria, brainstorming]
 version: v2
 fuente: sesión de brainstorming 2026-08-25 y 2026-08-26
 resumen: "Bitácora del avance editado a mano en Programa General, como registro consultable — no cambia decisiones del arrastre, eso se descartó al implementar"
