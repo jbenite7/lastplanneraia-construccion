@@ -391,6 +391,7 @@ class MetricDictionaryService
             'forecast_policy' => 'No forecast; classifies observed score.',
             'version' => '1.0',
             'known_limitations' => 'Umbrales revisables con datos reales.',
+            'completeness_inherits_from' => 'cic_cal_integral',
         ];
 
         $catalog['cip_fulfillment_alert'] = [

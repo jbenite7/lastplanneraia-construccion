@@ -360,7 +360,13 @@ huérfanas · lista accionable · titular · semáforo · pareto**, con:
 |---|---|---|---|
 | — | — | — | — |
 
-**Línea base del criterio de muerte (CT-15):** *(se mide en Task 1, paso 5)*
+**Línea base del criterio de muerte (CT-15):** **66,1%** — 33.824 de 51.155 actividades-semana
+(`programa_consolidado` con `Titulo = 0`) con las cinco restricciones duras (`D_y_E`, `Materiales`,
+`MdeO`, `Equipos`, `Predecesora`) en `0`/`NULL`. Medido el 2026-08-26 contra la base de dev, vía PDO
+directo replicando la lógica de `bi_pi_restricciones` (`database/bi/002_bi_pi_restricciones.sql`) sin
+pasar por la vista. Sube frente al 68,9% del 2026-08-20 (`docs/superpowers/specs/2026-08-20-replanteo-control-tower-design.md`)
+porque la base de dev creció de 45.600 a 51.155 filas en el intervalo; no es una corrección del dato
+anterior, es una foto más nueva. La línea que manda se re-mide el día que F2 publique.
 
 ## Condición de hecho de esta etapa
 
