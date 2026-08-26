@@ -209,6 +209,11 @@ final class MetricExecutor
         $conditions = ["project_id IN ({$placeholders})"];
         $params = $projectIds;
 
+        if ($scope->week() !== null) {
+            $conditions[] = 'Semana = ?';
+            $params[] = $scope->week();
+        }
+
         foreach ($filters as [$column, $operator, $value]) {
             $conditions[] = "{$column} {$operator} ?";
             $params[] = $value;

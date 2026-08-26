@@ -25,6 +25,7 @@ final class MetricScope
         array $projectIds,
         private readonly ?string $startDate = null,
         private readonly ?string $endDate = null,
+        private readonly ?string $week = null,
     ) {
         if ($projectIds === []) {
             throw new InvalidArgumentException('MetricScope requiere al menos un project_id.');
@@ -55,6 +56,16 @@ final class MetricScope
     public function endDate(): ?string
     {
         return $this->endDate;
+    }
+
+    /**
+     * Identificador de negocio de semana (ej. `'25'`), columna `Semana` en
+     * `bi_ps_compromisos`/`programacion_semanal`. No es una fecha de calendario --
+     * dominio distinto de `startDate`/`endDate`, por eso vive en campo separado.
+     */
+    public function week(): ?string
+    {
+        return $this->week;
     }
 
     /**
