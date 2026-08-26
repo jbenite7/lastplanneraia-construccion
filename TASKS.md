@@ -309,6 +309,19 @@ estado por defecto mientras Felipe no reparta.
 
 ## Diferibles
 
+- [ ] 2026-08-26 — **«Panel de inicio» no existe: `/dashboard` es un redirect ciego, no una
+  decisión de producto tomada.** Verificado al planear la tarea cero de la v0:
+  `DashboardController::index()` (`src/Controllers/Core/DashboardController.php:17`) nunca renderiza
+  vista, solo calcula con `ProjectLandingService::resolve()` a dónde mandar y hace
+  `header(Location)`. La línea F de `reparto-trabajo-pendiente` (2026-08-03) ya lo pedía como
+  decisión de producto propia —qué ve un residente al entrar, qué ve un visualizador, qué pasa sin
+  semana activa— y sigue sin resolverse tres semanas después. Se había dado por «HECHA» dos veces
+  hoy (mapa único y mi propia lectura del router) por ver que la ruta existía, sin abrir el
+  controlador. Corregido en
+  [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design]]. Entra en la Ola 3 de
+  [[docs/superpowers/specs/2026-08-26-v0-del-producto-design]] si Felipe decide construirlo; si no,
+  el redirect actual es aceptable y esta línea se descarta con ese motivo.
+
 - [ ] 2026-08-25 — **Existe una spec madre; el trabajo vivo se lee ahí y de ahí salen los planes.**
   [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design|El mapa único del trabajo
   vivo]] mide las siete specs vigentes contra el código y agrupa lo que queda en cuatro bloques:

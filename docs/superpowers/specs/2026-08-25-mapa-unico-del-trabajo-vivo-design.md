@@ -47,7 +47,7 @@ pendiente ya estaba hecho.** No es anécdota, es la mitad del resultado.
 
 | Dónde | Se creía pendiente | Estaba hecho | Medido en |
 |---|---|---|---|
-| `reparto-trabajo-pendiente` | 6 líneas «sin empezar» | **4 de 6** | goldens con estados (`tests/browser/programa-general.visual.mjs`), puerta de servicio de admin (`admin/public/index.php:73`), panel de inicio (`public/index.php:294`), chip de estado (`public/js/modules/programa_general/hot.js:1773`) |
+| `reparto-trabajo-pendiente` | 6 líneas «sin empezar» | **3 de 6, no 4** — corregido el 2026-08-26 | goldens con estados (`tests/browser/programa-general.visual.mjs`), puerta de servicio de admin (`admin/public/index.php:73`), chip de estado (`public/js/modules/programa_general/hot.js:1773`). **La línea F, «panel de inicio», NO estaba hecha** — se dio por buena viendo que la ruta existía (`public/index.php:294`), sin abrir el controlador. `DashboardController::index()` es un redirect ciego a `/programacion-semanal`, exactamente el estado que la línea F describía como pendiente de decisión de producto («qué ve un residente al entrar, qué ve un visualizador») en 2026-08-03. Corregido al planear la tarea cero — ver el `## Cierre` de `docs/superpowers/plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas.md` |
 | Usabilidad (línea E) | 26 hallazgos | **10 arreglados**, 10 no verificables | ver tabla del frente 3 |
 | `despliegue-pdc-v2-produccion` | «producción sin tocar» | **desplegado el 2026-08-12** | `memoria/referencias/produccion-deploy.md` |
 | `cierre-prelanzamiento-pdc` | contradictoria | **cerrada con evidencia** | seis condiciones medidas, `84291369` |

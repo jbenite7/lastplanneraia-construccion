@@ -333,3 +333,58 @@ Recordar que este script **no commitea**: el árbol debe estar limpio antes.
 - **No crea fichas para módulos sin pantalla** (integración, núcleo y runtime, legado): tienen cero
   superficies y una ficha vacía declararía cobertura inexistente.
 - **No toca `admin/`**: se declara exento con su motivo, no se le fabrica cobertura.
+
+---
+
+## Cierre — 2026-08-26
+
+**Las cinco tareas cerraron, y las tres primeras salieron como el plan las predijo.** Las últimas
+dos no: dos de las tres pantallas de la deuda tenían una causa distinta de la que este plan y la
+spec de la v0 les atribuían, y solo se vio al abrir el controlador.
+
+### La unidad de medida, corregida
+
+El plan pedía «medio día». Es una unidad de trabajo humano que no aplica aquí y no le sirve a nadie
+para dimensionar las otras 40 pantallas, que es para lo que la Ola 1 necesita un número real. La
+medida que sí sirve: **cuántas veces hubo que parar y volver a mirar el código porque lo escrito no
+coincidía con lo que había.**
+
+**Tres paradas, las tres en la Task 4** — las dos primeras tareas (el gate y los dos enlaces rotos)
+corrieron sin ninguna:
+
+1. `/reportes/{tipo}` calificaba como «pantalla» para el gate de cobertura, pero
+   `ReportController::generate` solo descarga Excel. Ninguna vista que migrar.
+2. `/dashboard`, que la spec de la v0 llamaba «panel de inicio» sin haber abierto el controlador,
+   resultó ser puro enrutamiento: `DashboardController::index()` nunca renderiza, solo redirige.
+3. El gate `coverage-closure` existente no distingue redirección/descarga de pantalla real, y **no
+   lee el censo** — la misma clase de desconexión entre inventarios que esta tarea entera existía
+   para resolver, encontrada de nuevo dentro de su propia solución.
+
+### Lo que quedó
+
+- **El gate nuevo** (`censo-fichas-coherencia.test.mjs`) nació rojo por 2 enlaces rotos y 3 módulos
+  sin enlazar; cierra en verde, 3/3.
+- **El censo y las fichas coinciden**: `selector-de-proyectos` → `project-selector`, `panel-admin`
+  exento con motivo, CNP/CNC/CIC enlazados a la ficha de semanal que ya los declaraba.
+- **La deuda de cobertura bajó de 3 pantallas a 2**, ambas con causa verificada en código:
+  `/dashboard` y `/reportes/{tipo}` no rinden pantalla, y el gate que las detecta no tiene forma de
+  saberlo. Corregir esa distinción queda fuera de esta tarea — anotado en `TASKS.md`.
+- **Ningún gate existente se rompió**: `npm run test:design-system:static` en `RC=0` antes y después
+  de cada cambio.
+
+### Corrección que le debo a la spec de la v0
+
+`docs/superpowers/specs/2026-08-26-v0-del-producto-design.md` describe el «panel de inicio» de la
+Ola 3 dando por hecho que `/dashboard` es una pantalla con contenido propio. **No lo es.** Queda
+anotado ahí también, para que la Ola 3 no herede el mismo supuesto sin verificar.
+
+### Verificación
+
+```
+node --test tests/design-system/censo-fichas-coherencia.test.mjs   # RC=0, 3/3
+node --test tests/design-system/coverage-closure.test.mjs          # RC=0, 3/3
+npm run test:design-system:static                                  # RC=0, 8/8 suites
+npm run test:wiki                                                  # RC=0, sin hallazgos, 170 páginas
+```
+
+Rama `tarea-cero-lista-canonica`, 5 commits sobre `74a44faa`. Sin merge todavía.
