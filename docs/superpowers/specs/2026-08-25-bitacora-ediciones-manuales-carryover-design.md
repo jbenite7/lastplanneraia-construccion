@@ -5,9 +5,9 @@ estado: propuesta
 fecha: 2026-08-25
 areas: [lps, arquitectura]
 tags: [carryover, auditoria, brainstorming]
-version: v1
-fuente: sesión de brainstorming 2026-08-25
-resumen: "Bitácora del avance editado a mano en Programa General, para que el arrastre deje de adivinar en el caso ambiguo"
+version: v2
+fuente: sesión de brainstorming 2026-08-25 y 2026-08-26
+resumen: "Bitácora del avance editado a mano en Programa General, como registro consultable — no cambia decisiones del arrastre, eso se descartó al implementar"
 ---
 
 # Bitácora del avance editado a mano en Programa General
@@ -15,6 +15,13 @@ resumen: "Bitácora del avance editado a mano en Programa General, para que el a
 > Reescrito entero en la cuarta ronda de brainstorming (2026-08-25) tras recortar el alcance. Las
 > versiones v0 a v0.95 cubrían cinco campos en dos tablas y tres controladores; ese alcance estaba
 > inflado y se redujo a lo que de verdad resuelve el problema medido. El historial está en git.
+>
+> **Corrección del 2026-08-26, durante la implementación.** Un test candado de la Task 5 encontró
+> que la sección 3 —el arrastre consultando la bitácora para decidir— era lógica sin efecto: en el
+> único caso donde se consultaría, el resultado ya estaba decidido de antemano y la consulta no
+> podía cambiarlo. Se revirtió el código correspondiente y se reescribió la sección 3 con el
+> hallazgo. Lo que este spec entrega desde esta versión es la bitácora como registro consultable,
+> no como corrector automático.
 
 ## El problema
 
@@ -180,27 +187,40 @@ cerrar es:
 El controlador le informa al servicio si la herencia llegó a aplicarse; esa condición ya existe en
 `GeneralApiController::update()` y no hay que inventarla.
 
-### 3. Cómo lo consume el arrastre
+### 3. El arrastre NO consulta la bitácora — descartado en implementación, 2026-08-26
 
-En `WeeklyRealProgressCarryoverService`, el caso ambiguo —fila sin testigo, valor que no coincide
-ni con el acumulado anterior ni con el calculado— deja de resolverse por sospecha:
+Esta sección decía que `WeeklyRealProgressCarryoverService` consultaría la bitácora en su caso
+ambiguo para dejar de "adivinar". Se implementó, un test candado la puso a prueba, y el candado
+encontró dos problemas — uno de orden, corregible, y uno de fondo, no corregible sin cambiar lo que
+este trabajo promete entregar.
 
-- Se consulta la bitácora por `(project_id, Semana de destino, unique_id)`, la más reciente.
-- Si existe y su `valor_nuevo` coincide con lo que hay hoy en la fila: hecho comprobado de edición
-  manual. Se respeta con certeza.
-- Si no existe: la bitácora nunca vio esa fila. Puede ser anterior al despliegue, o un residuo del
-  defecto de julio — no se puede distinguir. Se mantiene el criterio actual (comparar contra
-  acumulado anterior y calculado; ante la duda, respetar).
+**El problema de fondo:** en el caso verdaderamente ambiguo —sin testigo, y el valor no coincide ni
+con el acumulado de origen ni con el calculado—, el criterio ya existente siempre preserva el valor
+(`ante la duda, respetar`, decisión tomada el 2026-08-25 al corregir el defecto del testigo). Con
+firma en la bitácora, se preserva. Sin firma, también se preserva. **La consulta no puede cambiar
+el resultado**, porque el único resultado posible en esa rama ya era preservar antes de que la
+bitácora existiera. Consultarla ahí es lógica sin efecto — código que aparenta decidir algo que ya
+estaba decidido.
 
-El caso con testigo no cambia: sigue siendo la vía normal para actividades tocadas después del
-2026-08-25. La bitácora resuelve solo lo que el testigo no puede.
+Y el caso donde sí importaría —sin firma, tratar como sospechoso y recalcular en vez de preservar—
+es exactamente la alternativa que se evaluó y se descartó en el diseño original de este spec: haría
+que confirmar sin cambiar el número deje de servir, y pisaría ediciones humanas legítimas hechas
+antes de que la bitácora existiera, que es el defecto de julio otra vez.
 
-**Restricción que no se puede romper al implementar:** la bitácora se consulta **solo en el caso
-ambiguo**, nunca antes. El valor que deja la herencia suele ser exactamente el acumulado de la
-semana anterior, y el arrastre ya lo reconoce como "no editado" sin mirar la bitácora, así que
-recalcula y suma el avance con normalidad. Si alguien cambiara el orden y consultara la bitácora
-siempre, toda actividad recién asociada quedaría marcada como editada a mano y dejaría de recibir
-el avance de la semanal — el defecto original, reintroducido por otra vía.
+**Decisión de Felipe, 2026-08-26:** se termina la bitácora como registro consultable —la tabla y el
+servicio que la escribe, Tareas 1 a 3, ya construidas y revisadas—, sin que el arrastre la use para
+decidir nada. Su valor no es corregir automáticamente: es que la próxima vez que un avance no
+cuadre, alguien pueda consultar quién lo escribió y cuándo, en vez de reconstruirlo a mano como se
+hizo el 2026-08-25 para llegar hasta esta misma bitácora.
+
+El código que se había agregado a `WeeklyRealProgressCarryoverService` fue revertido con
+`git revert`; el archivo quedó idéntico al commit `c1e3365e`, el del arreglo del testigo. Verificado
+con `git diff c1e3365e -- src/Services/WeeklyRealProgressCarryoverService.php` vacío.
+
+**Si en el futuro se quiere que la bitácora sí cambie una decisión**, la única forma honesta es la
+alternativa ya descartada arriba, acotada a partir de la fecha de despliegue: sin firma **y**
+posterior al despliegue, tratar como sospechoso. Es diseño nuevo, con su propio grillado — no una
+continuación de este trabajo.
 
 ### 4. Cómo se prueba
 
@@ -217,13 +237,9 @@ TDD, prueba antes que código, igual que el arreglo del arrastre.
   registra nada, aunque el avance haya cambiado. Es la prueba que impide que el cuaderno se llene
   de firmas de gente que nunca tocó el avance.
 
-**El arrastre con la bitácora puesta** (nivel `db`):
-- Los cinco casos de `CarryoverAvanceSemanalTest` siguen pasando sin cambios.
-- Caso nuevo: fila sin testigo, valor que no coincide con nada, pero la bitácora confirma la
-  edición — se respeta con certeza.
-- Caso de no regresión, el más importante: actividad recién asociada cuyo valor heredado coincide
-  con el acumulado anterior — el arrastre debe recalcular y sumar el avance, **no** respetarla. Es
-  la prueba que impide que alguien mueva la consulta de la bitácora fuera del caso ambiguo.
+**El arrastre no cambia, y eso se comprueba.** `CarryoverAvanceSemanalTest.php` queda exactamente
+igual al del arreglo del testigo (`c1e3365e`) — sus cinco casos originales, sin ningún caso nuevo
+relacionado con la bitácora. Es la prueba de que la reversión del 2026-08-26 no dejó residuo.
 
 **El endpoint real** (nivel `http`):
 - Editar el avance desde `POST /api/general/update` deja su fila en la bitácora. No basta con
