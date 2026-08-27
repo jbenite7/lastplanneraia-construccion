@@ -5,15 +5,25 @@ import { construirAccionSugerida } from '../lib/accionSugerida'
 import { ordenarPorUrgencia } from '../lib/urgencia'
 import { PanelGestion } from './PanelGestion'
 
-// Lista de restricciones activas (ct-app, etapa piloto, Task 7 paso 3b). Trae los datos con
-// getRestricciones(), los ordena por urgencia real (N4, Task 7 paso 2 — no se reimplementa el
-// criterio aquí) y muestra los tres estados de D87 con texto distinguible. D33: el botón
-// "Gestionar" abre PanelGestion sobre la misma fila, sin navegar a otra pantalla; al guardar, la
-// fila se actualiza con el payload que confirmó el servidor — sin una segunda llamada a
-// getRestricciones(). D89 (Task 7 D89, sub-paso posterior): cada fila muestra su acción sugerida
+// Lista de restricciones activas (ct-app, etapa piloto, Task 7 paso 3b + Task 7 ensamblaje). Trae
+// los datos con getRestricciones(), los ordena por urgencia real (N4, Task 7 paso 2 — no se
+// reimplementa el criterio aquí) y muestra los tres estados de D87 con texto distinguible. D33: el
+// botón "Gestionar" abre PanelGestion sobre la misma fila, sin navegar a otra pantalla; al
+// guardar, la fila se actualiza con el payload que confirmó el servidor — sin una segunda llamada
+// a getRestricciones(). D89 (Task 7 D89, sub-paso posterior): cada fila muestra su acción sugerida
 // y contacto (construirAccionSugerida(), ver accionSugerida.ts) en un <p> propio dentro de la
 // fila — no en el mismo <span> que ya usan restriccion/estado, para no romper los
 // within(fila).getByText(...) de D87/D33 que ya fijó el paso anterior.
+//
+// Task 7 ensamblaje: prop opcional `restricciones?`. Cuando Intermedia.tsx la pasa (mismo array
+// que ya trajo con su único fetch compartido), esta lista usa ese array directo y NO llama a
+// getRestricciones() por su cuenta — evita el fetch duplicado que Intermedia.test.tsx verifica
+// contando llamadas al mock. Cuando se omite (uso standalone, como en ListaRestricciones.test.tsx,
+// que sigue sin tocarse), el comportamiento no cambia: self-fetch al montar. Las gestiones
+// guardadas se aplican como un overlay local por id (`ajustesGuardados`) sobre la base que
+// corresponda (la propia carga o la prop) — D33 sigue funcionando en modo ensamblado, aunque el
+// conteo que muestra AlarmaHuerfanas en Intermedia no se refresca hasta un remount/refetch
+// (concern documentado en Intermedia.tsx, no cubierto por tests).
 
 /**
  * Reordena restricciones completas según el orden que produce ordenarPorUrgencia() sobre la
@@ -28,32 +38,52 @@ function ordenarRestricciones(restricciones: Restriccion[]): Restriccion[] {
   return ordenarPorUrgencia(restricciones).map((u) => porId.get(u.id)!)
 }
 
-export function ListaRestricciones() {
-  const [restricciones, setRestricciones] = useState<Restriccion[] | null>(null)
+interface ListaRestriccionesProps {
+  restricciones?: Restriccion[]
+}
+
+type AjusteGuardado = Pick<Restriccion, 'responsableAsignado' | 'fechaCompromiso' | 'estadoLiberacion'>
+
+export function ListaRestricciones({ restricciones: restriccionesProp }: ListaRestriccionesProps = {}) {
+  const usaCargaPropia = restriccionesProp === undefined
+
+  const [restriccionesCargadas, setRestriccionesCargadas] = useState<Restriccion[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [gestionandoId, setGestionandoId] = useState<number | null>(null)
+  const [ajustesGuardados, setAjustesGuardados] = useState<Record<number, AjusteGuardado>>({})
 
   useEffect(() => {
+    if (!usaCargaPropia) return
     getRestricciones()
-      .then((data) => setRestricciones(ordenarRestricciones(data)))
+      .then((data) => setRestriccionesCargadas(data))
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'No se pudieron cargar las restricciones.')
       })
-  }, [])
+  }, [usaCargaPropia])
+
+  const base = usaCargaPropia ? restriccionesCargadas : (restriccionesProp ?? null)
+
+  const restricciones =
+    base === null
+      ? null
+      : ordenarRestricciones(
+          base.map((r) => {
+            const ajuste = ajustesGuardados[r.id]
+            return ajuste ? { ...r, ...ajuste } : r
+          }),
+        )
 
   function handleGuardada(payload: { responsable: string; fechaCompromiso: string; estado: GestionEstado }) {
-    setRestricciones((actuales) =>
-      (actuales ?? []).map((r) =>
-        r.id === gestionandoId
-          ? {
-              ...r,
-              responsableAsignado: payload.responsable,
-              fechaCompromiso: payload.fechaCompromiso,
-              estadoLiberacion: payload.estado,
-            }
-          : r,
-      ),
-    )
+    if (gestionandoId !== null) {
+      setAjustesGuardados((actuales) => ({
+        ...actuales,
+        [gestionandoId]: {
+          responsableAsignado: payload.responsable,
+          fechaCompromiso: payload.fechaCompromiso,
+          estadoLiberacion: payload.estado,
+        },
+      }))
+    }
     setGestionandoId(null)
   }
 
