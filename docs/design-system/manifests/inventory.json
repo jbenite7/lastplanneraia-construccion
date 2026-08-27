@@ -17,7 +17,8 @@
     "programacion-intermedia.json",
     "programacion-semanal.json",
     "project-selector.json",
-    "subcontratistas.json"
+    "subcontratistas.json",
+    "torre-piloto.json"
   ],
   "sharedHeadConsumers": [
     "views/programa-general/programa_general.view.php",
@@ -95,6 +96,12 @@
       "moduleId": "escalamientos",
       "status": "pilot",
       "manifest": "escalamientos.json"
+    },
+    {
+      "moduleId": "torre-piloto",
+      "status": "pilot",
+      "manifest": "torre-piloto.json",
+      "note": "Etapa piloto de Ola 1 (docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md, Task 8 paso 3): cierra el pendiente de CT_PILOTO activando la bandera y generando el escenario real contra /bi/intermedia. El estado 'empty' del unico escenario es el sandbox project_id=27 (Proyecto_Proceso 'Prueba') sin restricciones sembradas, mismo patron que plan-compras-v2."
     }
   ]
 }
