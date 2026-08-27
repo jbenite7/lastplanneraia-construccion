@@ -17,7 +17,6 @@
     "shell",
     "navigation",
     "card",
-    "chip",
     "state",
     "feedback",
     "icon",
@@ -58,5 +57,22 @@
   "evidence": [
     "tests/browser/__screenshots__/torre-piloto/"
   ],
-  "scenarios": []
+  "scenarios": [
+    {
+      "id": "torre-piloto-dark-1180x820",
+      "family": "page-structure",
+      "route": "/bi/intermedia",
+      "fixture": "ct-piloto-sandbox-27",
+      "theme": "dark",
+      "viewport": {
+        "width": 1180,
+        "height": 820
+      },
+      "density": "touch",
+      "state": "empty",
+      "role": "authenticated-project-member",
+      "golden": "tests/browser/__screenshots__/torre-piloto/torre-piloto-dark-1180x820.png",
+      "sha256": "5897ad84ce487e4363d2672554f907f805e028238cb47be4e479015711a162b3"
+    }
+  ]
 }
