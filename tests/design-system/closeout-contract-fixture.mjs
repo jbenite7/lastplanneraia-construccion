@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import {
-  cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -28,10 +28,16 @@ export function createCloseoutFixture() {
   symlinkSync(path.join(repositoryRoot, 'public'), path.join(fixtureRoot, 'public'), 'dir');
   symlinkSync(path.join(repositoryRoot, 'views'), path.join(fixtureRoot, 'views'), 'dir');
   symlinkSync(path.join(repositoryRoot, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
+  symlinkSync(path.join(repositoryRoot, 'ct-app'), path.join(fixtureRoot, 'ct-app'), 'dir');
   for (const file of referencedTestFiles()) {
     const source = path.join(repositoryRoot, file);
-    mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
-    cpSync(source, path.join(fixtureRoot, file));
+    const dest = path.join(fixtureRoot, file);
+    // Un archivo bajo un directorio ya symlinkeado (pdc-app, ct-app) resuelve al
+    // mismo inodo que su fuente -- copiarlo encima de si mismo revienta con
+    // ERR_FS_CP_EINVAL. El symlink ya lo deja visible, asi que no hace falta copia.
+    if (!existsSync(source) || existsSync(dest)) continue;
+    mkdirSync(path.dirname(dest), { recursive: true });
+    cpSync(source, dest);
   }
   symlinkSync(
     path.join(repositoryRoot, 'tests/browser/__screenshots__'),

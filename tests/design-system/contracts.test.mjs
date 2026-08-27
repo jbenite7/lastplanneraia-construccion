@@ -131,11 +131,17 @@ async function runFixture(mutate, { copyScreenshots = false } = {}) {
   symlinkSync(path.join(root, 'views'), path.join(fixtureRoot, 'views'), 'dir');
   symlinkSync(path.join(root, 'database'), path.join(fixtureRoot, 'database'), 'dir');
   symlinkSync(path.join(root, 'pdc-app'), path.join(fixtureRoot, 'pdc-app'), 'dir');
+  symlinkSync(path.join(root, 'ct-app'), path.join(fixtureRoot, 'ct-app'), 'dir');
   for (const file of referencedTestFiles()) {
     const source = path.join(root, file);
     if (!existsSync(source)) continue;
-    mkdirSync(path.dirname(path.join(fixtureRoot, file)), { recursive: true });
-    cpSync(source, path.join(fixtureRoot, file));
+    const dest = path.join(fixtureRoot, file);
+    // Un archivo bajo un directorio ya symlinkeado (pdc-app, ct-app) resuelve al
+    // mismo inodo que su fuente -- copiarlo encima de si mismo revienta con
+    // ERR_FS_CP_EINVAL. El symlink ya lo deja visible, asi que no hace falta copia.
+    if (existsSync(dest)) continue;
+    mkdirSync(path.dirname(dest), { recursive: true });
+    cpSync(source, dest);
   }
   if (copyScreenshots) {
     cpSync(
@@ -378,7 +384,7 @@ test('manifests declare the complete deterministic visual matrix', async () => {
   const inventory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/inventory.json'), 'utf8',
   ));
-  assert.deepEqual(inventory.manifests.sort(), ['auth.json', 'bi-runtime.json', 'control-cambios.json', 'escalamientos.json', 'foundation-shell.json', 'indicadores.json', 'laboratory.json', 'plan-compras-v2.json', 'profesionales.json', 'programa-general-actualizar.json', 'programa-general.json', 'programacion-intermedia.json', 'programacion-semanal.json', 'project-selector.json', 'subcontratistas.json']);
+  assert.deepEqual(inventory.manifests.sort(), ['auth.json', 'bi-runtime.json', 'control-cambios.json', 'escalamientos.json', 'foundation-shell.json', 'indicadores.json', 'laboratory.json', 'plan-compras-v2.json', 'profesionales.json', 'programa-general-actualizar.json', 'programa-general.json', 'programacion-intermedia.json', 'programacion-semanal.json', 'project-selector.json', 'subcontratistas.json', 'torre-piloto.json']);
 
   const laboratory = JSON.parse(readFileSync(
     path.join(root, 'docs/design-system/manifests/laboratory.json'), 'utf8',
