@@ -168,6 +168,37 @@ export async function getRestricciones(): Promise<Restriccion[]> {
   return body.restricciones
 }
 
+type MetricEnvelope = ({ ok: true } & MetricResult) | { ok: false; error: { code: string; message: string } }
+
+/**
+ * GET /api/bi/control-tower/metricas/{metricKey} — ejecuta una métrica `ejecutable` del catálogo
+ * (Task 7 paso 5). Envelope FLAT `{ok, value, basis, completeness, missing}`, mirror exacto de
+ * `MetricResult` — no anidado bajo una clave `metric`. Mismo criterio que `getRestricciones()`:
+ * GET, sin mutación, sin CSRF ni dependencia de `__CT_BOOTSTRAP__`. Lanza `CtApiError` ante
+ * cualquier falla del servidor (404 de métrica desconocida o de rol denegado incluidos) — la
+ * promesa nunca resuelve en silencio.
+ */
+export async function getMetric(metricKey: string): Promise<MetricResult> {
+  const res = await fetch(`/api/bi/control-tower/metricas/${encodeURIComponent(metricKey)}`, {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      'X-AIA-Expect-Json': '1',
+    },
+  })
+
+  const body = (await res.json().catch(() => null)) as MetricEnvelope | null
+
+  if (!body || typeof body.ok !== 'boolean') {
+    throw new CtApiError('BAD_RESPONSE', `Respuesta inválida del servidor (HTTP ${res.status}).`, res.status)
+  }
+  if (!body.ok) {
+    throw new CtApiError(body.error.code, body.error.message, res.status, body.error)
+  }
+  const { ok: _ok, ...result } = body
+  return result
+}
+
 /**
  * Espejo camelCase de `LineageService::getForMetric()` (PHP: src/Services/Bi/LineageService.php),
  * fijado por `Linaje.test.tsx` (rol A, Task 7 paso 4). `cutoffPolicy` viaja desde el paso 4

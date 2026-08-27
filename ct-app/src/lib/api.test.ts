@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CtApiError, getRestricciones, postGestionRestriccion } from './api'
+import { CtApiError, getMetric, getRestricciones, postGestionRestriccion } from './api'
 import type { GestionEstado, MetricResult, Restriccion } from './api'
 
 // CSRF: mismo patrón que pdc-app/src/lib/api.ts + bootstrap.ts — un blob inyectado en el global
@@ -255,5 +255,144 @@ describe('getRestricciones', () => {
     )
 
     await expect(getRestricciones()).rejects.toBeInstanceOf(CtApiError)
+  })
+})
+
+// Task 7 paso 5 (rol A, test writer): GET /api/bi/control-tower/metricas/{metricKey} — endpoint
+// genérico que ejecuta una métrica del catálogo vía MetricExecutor (backend: Task 2/3, cerrado y
+// revisado). D59 ("las dos lecturas del cero, separadas y rotuladas") necesita que la hoja de
+// Intermedia muestre la adherencia REAL (`pi_hard_restrictions_ready_rate`) en vez del fallback
+// hardcodeado `{value:null, completeness:'insuficiente'}` que usa Intermedia.tsx hoy — ver
+// Intermedia.test.tsx para la integración completa. `getMetric()` es la función NUEVA que cierra
+// ese cable; este describe es SOLO especificación (rol B la implementa en un paso separado).
+//
+// Envelope FLAT `{ok, value, basis, completeness, missing}` — mirror exacto de `MetricResult` (ya
+// definida arriba en este archivo), no anidado bajo una clave `metric`. Mismo criterio que
+// `getRestricciones()`: GET, sin mutación, sin CSRF — `tests/test_bi_metric_endpoint.php` (rol A,
+// backend) fija el mismo contrato del lado servidor.
+describe('getMetric', () => {
+  const METRIC_RESULT_EJEMPLO: MetricResult = {
+    value: 0.5833333333333334,
+    basis: { obras_incluidas: 1, obras_esperadas: 1, corte: '2026-08-26', filas_usadas: 12 },
+    completeness: 'completa',
+    missing: [],
+  }
+
+  it('hace GET a /api/bi/control-tower/metricas/{metricKey} con credenciales same-origin y X-AIA-Expect-Json, SIN CSRF ni bootstrap', async () => {
+    // Igual que getRestricciones(): un GET no muta nada, así que no necesita __CT_BOOTSTRAP__ — a
+    // propósito, NO se llama stubBootstrap() aquí.
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, ...METRIC_RESULT_EJEMPLO }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getMetric('pi_hard_restrictions_ready_rate')
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }]
+    expect(url).toBe('/api/bi/control-tower/metricas/pi_hard_restrictions_ready_rate')
+    expect(init.method).toBe('GET')
+    expect(init.credentials).toBe('same-origin')
+    expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect(init.headers['X-CSRF-Token']).toBeUndefined()
+    expect(init.body).toBeUndefined()
+  })
+
+  it('codifica el metricKey en la URL (encodeURIComponent), no lo interpola crudo', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, ...METRIC_RESULT_EJEMPLO }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getMetric('clave con espacio')
+
+    const [url] = fetchMock.mock.calls[0] as [string]
+    expect(url).toBe('/api/bi/control-tower/metricas/clave%20con%20espacio')
+  })
+
+  it('resuelve con el MetricResult tal como llega (value, basis, completeness, missing)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, ...METRIC_RESULT_EJEMPLO }),
+      }),
+    )
+
+    const resultado = await getMetric('pi_hard_restrictions_ready_rate')
+
+    expect(resultado).toEqual(METRIC_RESULT_EJEMPLO)
+  })
+
+  it('acepta value null con completeness insuficiente (métrica sin filas todavía) — nunca un valor inventado', async () => {
+    const esperado: MetricResult = {
+      value: null,
+      basis: { obras_incluidas: 0, obras_esperadas: 1, corte: '2026-08-26', filas_usadas: 0 },
+      completeness: 'insuficiente',
+      missing: ['sin_filas_que_cumplan_los_filtros'],
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, ...esperado }),
+      }),
+    )
+
+    await expect(getMetric('pi_hard_restrictions_ready_rate')).resolves.toEqual(esperado)
+  })
+
+  it('un 404 (metricKey desconocida en el catálogo, o rol sin PERM_INTERNAL_BI_PREVIEW) se propaga como CtApiError NOT_FOUND', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ ok: false, error: { code: 'NOT_FOUND', message: "Métrica desconocida: 'no_existe'." } }),
+      }),
+    )
+
+    const err = await getMetric('no_existe').catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(CtApiError)
+    expect((err as CtApiError).code).toBe('NOT_FOUND')
+    expect((err as CtApiError).status).toBe(404)
+  })
+
+  it('una respuesta sin `ok` booleano (HTML de error, JSON roto) lanza CtApiError BAD_RESPONSE en vez de romper con TypeError', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON')
+        },
+      }),
+    )
+
+    const err = await getMetric('pi_hard_restrictions_ready_rate').catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(CtApiError)
+    expect((err as CtApiError).code).toBe('BAD_RESPONSE')
+  })
+
+  it('la promesa rechaza en vez de resolver en silencio cuando el servidor niega el acceso', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ ok: false, error: { code: 'NOT_FOUND', message: 'Esta página no existe.' } }),
+      }),
+    )
+
+    await expect(getMetric('pi_hard_restrictions_ready_rate')).rejects.toBeInstanceOf(CtApiError)
   })
 })

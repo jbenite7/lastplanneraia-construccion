@@ -30,8 +30,15 @@
 // - huérfana: `estadoLiberacion === 'sin_gestionar' && responsableAsignado === null`.
 // - vencida: `diasVencida !== null && diasVencida > 0` (una huérfana nunca es vencida: sin fecha
 //   de compromiso asignada no hay "días de atraso" que contar — diasVencida debe venir null).
-// - `listasRate` (fallback documentado, ver Titular.test.tsx y el gap de MetricExecutor): mientras
-//   no exista el endpoint, Intermedia.tsx usa siempre `{ value: null, completeness: 'insuficiente' }`.
+// - `listasRate`: HASTA Task 7 paso 5, Intermedia.tsx usaba siempre el fallback fijo
+//   `{ value: null, completeness: 'insuficiente' }` porque ningún controller invocaba
+//   `MetricExecutor::execute()`. Ese gap ya se cerró (`GET /api/bi/control-tower/metricas/{metricKey}`,
+//   `tests/test_bi_metric_endpoint.php`) — ver el describe "Task 7 paso 5" más abajo, que reemplaza
+//   ese comportamiento: Intermedia ahora llama a `getMetric('pi_hard_restrictions_ready_rate')` y
+//   pasa el `MetricResult` REAL como `listasRate`. Los tests de arriba (huérfanas/vencidas) siguen
+//   sin depender de `listasRate` a propósito: `construirTitular()` la evalúa solo cuando
+//   huerfanasCount y vencidasCount son ambos 0 (ver titulares.ts, orden de prioridad) — por eso usan
+//   el default `getMetricMock` de `beforeEach()` sin declararlo cada vez.
 //
 // Mecanismo del filtro "Ver huérfanas" (ver AlarmaHuerfanas.test.tsx): Intermedia mantiene el
 // estado de "solo huérfanas" y le pasa a ListaRestricciones el array ya filtrado. Es un filtro de
@@ -43,11 +50,12 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Intermedia } from './Intermedia'
 import { construirTitular } from '../lib/titulares'
-import type { Restriccion } from '../lib/api'
+import type { MetricResult, Restriccion } from '../lib/api'
 
-const { getRestriccionesMock, postGestionRestriccionMock } = vi.hoisted(() => ({
+const { getRestriccionesMock, postGestionRestriccionMock, getMetricMock } = vi.hoisted(() => ({
   getRestriccionesMock: vi.fn(),
   postGestionRestriccionMock: vi.fn(),
+  getMetricMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async (importOriginal) => {
@@ -56,8 +64,23 @@ vi.mock('../lib/api', async (importOriginal) => {
     ...real,
     getRestricciones: getRestriccionesMock,
     postGestionRestriccion: postGestionRestriccionMock,
+    getMetric: getMetricMock,
   }
 })
+
+// Fixture por defecto de getMetric('pi_hard_restrictions_ready_rate') — Task 7 paso 5. Los tests
+// que no versan sobre listasRate (huérfanas/vencidas dominan la prioridad de construirTitular(),
+// ver titulares.ts) usan este default sin tener que declararlo cada vez; los que sí prueban la
+// integración real lo sobrescriben explícito.
+function metricResult(overrides: Partial<MetricResult> = {}): MetricResult {
+  return {
+    value: 0.5833333333333334,
+    basis: { obras_incluidas: 1, obras_esperadas: 1, corte: '2026-08-26', filas_usadas: 12 },
+    completeness: 'completa',
+    ...overrides,
+    missing: overrides.missing ?? [],
+  }
+}
 
 function restriccion(overrides: Partial<Restriccion>): Restriccion {
   return {
@@ -81,6 +104,8 @@ function restriccion(overrides: Partial<Restriccion>): Restriccion {
 beforeEach(() => {
   getRestriccionesMock.mockReset()
   postGestionRestriccionMock.mockReset()
+  getMetricMock.mockReset()
+  getMetricMock.mockResolvedValue(metricResult())
 })
 
 describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch', () => {
@@ -131,7 +156,7 @@ describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch
     expect(getRestriccionesMock).toHaveBeenCalledTimes(1)
   })
 
-  it('sin huérfanas ni vencidas, usa el fallback documentado de listasRate (adherencia_insuficiente)', async () => {
+  it('sin huérfanas ni vencidas, y con listasRate completeness=insuficiente (getMetric real), muestra adherencia_insuficiente', async () => {
     getRestriccionesMock.mockResolvedValue([
       restriccion({
         id: 10,
@@ -148,6 +173,12 @@ describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch
         diasVencida: null,
       }),
     ])
+    // A diferencia de antes de Task 7 paso 5, esto YA NO es el default implícito de Intermedia.tsx
+    // — es un resultado real posible de getMetric() (la métrica sin filas que cumplan sus filtros
+    // para el proyecto/semana de sesión), estubeado explícito aquí.
+    getMetricMock.mockResolvedValue(
+      metricResult({ value: null, completeness: 'insuficiente', missing: ['sin_filas_que_cumplan_los_filtros'] }),
+    )
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')
@@ -255,5 +286,118 @@ describe('Intermedia — fix ronda 1: gestionar una huérfana actualiza el conta
 
     // Un solo fetch inicial — el fix no agregó un refetch para refrescar el contador.
     expect(getRestriccionesMock).toHaveBeenCalledTimes(1)
+  })
+})
+
+// Task 7 paso 5 (rol A, test writer): D59 ("las dos lecturas del cero, separadas y rotuladas").
+// Ruling del controlador (progress.md, "antes de Task 7 paso 5"): la cifra "53,2% vs 57,5%" que
+// cita la spec para una "señal predictiva" es un hallazgo de investigación ESTÁTICO que la propia
+// spec ya desestima como "evidencia débil... no alcanza para sostenerlo en comité" — el piloto NO
+// fabrica esa señal. D59 se cumple mostrando SOLO la adherencia (`pi_hard_restrictions_ready_rate`)
+// como cifra dura, correctamente rotulada. El gap que bloqueaba eso: Intermedia.tsx usaba siempre
+// el fallback fijo `{value:null, completeness:'insuficiente'}` porque no existía un endpoint que
+// ejecutara la métrica — ahora existe (`GET /api/bi/control-tower/metricas/{metricKey}`,
+// `tests/test_bi_metric_endpoint.php`) y `getMetric()` (nueva, api.ts) lo consume.
+describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), nunca una predicción', () => {
+  it('llama a getMetric("pi_hard_restrictions_ready_rate") y pasa el resultado REAL como listasRate a construirTitular()', async () => {
+    getRestriccionesMock.mockResolvedValue([
+      restriccion({
+        id: 20,
+        estadoLiberacion: 'liberada',
+        responsableAsignado: 'Carlos Pérez',
+        fechaCompromiso: '2026-09-10',
+        diasVencida: null,
+      }),
+    ])
+    // completeness=completa, value=0.72 -> sinAnalisisPct = round((1-0.72)*100) = 28, <= 30 ->
+    // condición 'sano' (ver titulares.ts, UMBRAL_SIN_ANALISIS_PCT). Valor elegido deliberadamente
+    // distinto del default de metricResult() (0.5833...) para que este test falle si Intermedia
+    // ignora el MetricResult real y sigue usando cualquier valor fijo/hardcodeado.
+    getMetricMock.mockResolvedValue(metricResult({ value: 0.72, completeness: 'completa' }))
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+
+    expect(getMetricMock).toHaveBeenCalledTimes(1)
+    expect(getMetricMock).toHaveBeenCalledWith('pi_hard_restrictions_ready_rate')
+
+    const tituloEsperado = construirTitular({
+      huerfanasCount: 0,
+      vencidasCount: 0,
+      vencidasMaxDias: 0,
+      listasRate: { value: 0.72, completeness: 'completa' },
+    }).texto
+    expect(screen.getByText(tituloEsperado)).toBeInTheDocument()
+    // La cifra dura de D59: "28%" (sin análisis), no un porcentaje de "va a fallar".
+    expect(screen.getByText(/28%/)).toBeInTheDocument()
+  })
+
+  it('con value bajo (mucho sin análisis), la condición es adherencia_baja — sigue siendo la cifra dura, no una predicción', async () => {
+    getRestriccionesMock.mockResolvedValue([])
+    // sinAnalisisPct = round((1-0.5)*100) = 50 > 30 -> 'adherencia_baja'.
+    getMetricMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+
+    const tituloEsperado = construirTitular({
+      huerfanasCount: 0,
+      vencidasCount: 0,
+      vencidasMaxDias: 0,
+      listasRate: { value: 0.5, completeness: 'completa' },
+    }).texto
+    expect(screen.getByText(tituloEsperado)).toBeInTheDocument()
+    expect(screen.getByText(/50%/)).toBeInTheDocument()
+  })
+
+  it('si getMetric() rechaza, listasRate cae a {value:null, completeness:"insuficiente"} sin romper el resto de la hoja (huérfanas y lista siguen visibles)', async () => {
+    getRestriccionesMock.mockResolvedValue([
+      restriccion({ id: 1 }), // huérfana — para probar que el resto del lienzo sigue funcionando
+    ])
+    getMetricMock.mockRejectedValue(new Error('NOT_FOUND'))
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+
+    // El resto de la hoja no se cae por un fallo aislado de getMetric(): huérfanas y lista siguen.
+    expect(screen.getByTestId('alarma-huerfanas').textContent).toMatch(/1/)
+    expect(screen.getByTestId('fila-restriccion-1')).toBeInTheDocument()
+
+    // huerfanasCount=1 domina la prioridad de construirTitular() sobre listasRate — el punto de
+    // este caso no es el texto del titular (ver el primer describe para eso), sino que un getMetric()
+    // que rechaza no deja la hoja en blanco ni sin gestionar (sin error boundary roto).
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('sin huérfanas/vencidas y con getMetric() rechazada, el titular cae a adherencia_insuficiente (honesto, nunca un valor inventado)', async () => {
+    getRestriccionesMock.mockResolvedValue([])
+    getMetricMock.mockRejectedValue(new Error('NOT_FOUND'))
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+
+    const tituloEsperado = construirTitular({
+      huerfanasCount: 0,
+      vencidasCount: 0,
+      vencidasMaxDias: 0,
+      listasRate: { value: null, completeness: 'insuficiente' },
+    }).texto
+    expect(screen.getByText(tituloEsperado)).toBeInTheDocument()
+  })
+
+  it('D59: la hoja nunca muestra una señal predictiva ni un porcentaje de "esto va a fallar" — solo la adherencia, rotulada', async () => {
+    getRestriccionesMock.mockResolvedValue([])
+    getMetricMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+
+    // Ruling del controlador: la cifra "53,2% vs 57,5%" de la spec es evidencia YA DESESTIMADA, no
+    // una señal a mostrar. Ningún texto de la hoja debe sonar a predicción/estimación de fallo —
+    // guarda de regresión: si alguien agrega un componente de "señal predictiva" sin actualizar
+    // este test, esta aserción lo agarra.
+    expect(
+      screen.queryByText(/va a fallar|predicci[oó]n|riesgo estimado|probabilidad de (incumplir|fallar)|estimaci[oó]n de riesgo/i),
+    ).not.toBeInTheDocument()
   })
 })

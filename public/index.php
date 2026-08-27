@@ -355,6 +355,7 @@ $router->get('/api/bi/report/curva-s', [\App\Controllers\Api\BiControlTowerApiCo
 $router->get('/api/bi/lineage', [\App\Controllers\Api\BiControlTowerApiController::class, 'lineage']);
 $router->get('/api/bi/control-tower/restricciones', [\App\Controllers\Api\BiConstraintListController::class, 'listar']);
 $router->post('/api/bi/control-tower/restricciones/{id}/gestion', [\App\Controllers\Api\BiConstraintWriteController::class, 'gestion']);
+$router->get('/api/bi/control-tower/metricas/{metricKey}', [\App\Controllers\Api\BiMetricController::class, 'ejecutar']);
 
 // --- BI Control Tower Dashboard Views ---
 $router->get('/bi/control-tower', [\App\Controllers\Bi\BiViewController::class, 'controlTower']);

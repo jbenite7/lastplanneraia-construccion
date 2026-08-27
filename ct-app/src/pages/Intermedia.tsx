@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getRestricciones } from '../lib/api'
+import { getMetric, getRestricciones } from '../lib/api'
 import type { Restriccion } from '../lib/api'
-import type { ResumenLookaheadIntermedia } from '../lib/titulares'
+import type { ListasRateResumen, ResumenLookaheadIntermedia } from '../lib/titulares'
 import { AlarmaHuerfanas } from './AlarmaHuerfanas'
 import { Titular } from './Titular'
 import { ListaRestricciones } from './ListaRestricciones'
@@ -23,9 +23,11 @@ import type { AjusteGuardado } from './ListaRestricciones'
 // - huérfana: estadoLiberacion === 'sin_gestionar' && responsableAsignado === null.
 // - vencida: diasVencida !== null && diasVencida > 0 (una huérfana nunca es vencida: sin fecha de
 //   compromiso asignada no hay "días de atraso" que contar).
-// - listasRate: fallback fijo { value: null, completeness: 'insuficiente' } — no existe todavía un
-//   endpoint que ejecute MetricExecutor para pi_hard_restrictions_ready_rate (gap real,
-//   documentado en el reporte de Task 7; no se resuelve en este sub-paso).
+// - listasRate: Task 7 paso 5 (D59) — se trae con getMetric('pi_hard_restrictions_ready_rate') en
+//   un efecto propio, independiente del de getRestricciones(). Si getMetric() rechaza (red, 404,
+//   lo que sea), listasRate degrada SOLO su propio dato a { value: null, completeness:
+//   'insuficiente' } — la lectura honesta de "no hay dato", nunca un valor inventado — sin tumbar
+//   el resto del lienzo (huérfanas y lista siguen visibles, sin role="alert").
 //
 // El filtro "Ver huérfanas" (ver AlarmaHuerfanas.test.tsx) es de una sola dirección en este
 // sub-paso: Intermedia mantiene el estado de "solo huérfanas" y le pasa a ListaRestricciones el
@@ -48,10 +50,17 @@ function esVencida(r: Restriccion): boolean {
   return r.diasVencida !== null && r.diasVencida > 0
 }
 
+/** Clave del catálogo que D59 muestra como cifra dura — ver docblock arriba. */
+const METRIC_KEY_ADHERENCIA = 'pi_hard_restrictions_ready_rate'
+
+/** Lectura honesta de "no hay dato" — nunca un valor inventado. Ver docblock arriba. */
+const LISTAS_RATE_FALLBACK: ListasRateResumen = { value: null, completeness: 'insuficiente' }
+
 export function Intermedia() {
   const [restricciones, setRestricciones] = useState<Restriccion[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [soloHuerfanas, setSoloHuerfanas] = useState(false)
+  const [listasRate, setListasRate] = useState<ListasRateResumen>(LISTAS_RATE_FALLBACK)
 
   useEffect(() => {
     getRestricciones()
@@ -59,6 +68,12 @@ export function Intermedia() {
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'No se pudieron cargar las restricciones.')
       })
+  }, [])
+
+  useEffect(() => {
+    getMetric(METRIC_KEY_ADHERENCIA)
+      .then((resultado) => setListasRate({ value: resultado.value, completeness: resultado.completeness }))
+      .catch(() => setListasRate(LISTAS_RATE_FALLBACK))
   }, [])
 
   const huerfanas = useMemo(() => (restricciones ?? []).filter(esHuerfana), [restricciones])
@@ -80,9 +95,7 @@ export function Intermedia() {
     huerfanasCount: huerfanas.length,
     vencidasCount: vencidas.length,
     vencidasMaxDias: vencidas.reduce((max, r) => Math.max(max, r.diasVencida ?? 0), 0),
-    // Fallback documentado arriba: sin endpoint que ejecute pi_hard_restrictions_ready_rate
-    // todavía, se usa siempre esta afirmación honesta de "no hay dato", nunca un valor inventado.
-    listasRate: { value: null, completeness: 'insuficiente' },
+    listasRate,
   }
 
   const restriccionesVisibles = soloHuerfanas ? huerfanas : restricciones
