@@ -200,6 +200,59 @@ export async function getMetric(metricKey: string): Promise<MetricResult> {
 }
 
 /**
+ * Espejo de la fila de distribución que devuelve `GET /api/bi/control-tower/restricciones/pareto`
+ * (`BiRestrictionParetoController::pareto()`). `tipo` es el valor crudo de `restriction_type`
+ * ('D_y_E', 'Materiales', 'MdeO', 'Equipos', 'Predecesora') — no hay diccionario de traducción en
+ * el repo, así que el cliente tampoco lo inventa.
+ */
+export interface ParetoDistribucionFila {
+  tipo: string
+  conteo: number
+}
+
+/** Espejo de `{distribucion, basis}` — `distribucion` ya llega ordenada DESC por `conteo`. */
+export interface ParetoRestriccionesResult {
+  distribucion: ParetoDistribucionFila[]
+  basis: {
+    filas_usadas: number
+    corte: string
+  }
+}
+
+type ParetoEnvelope =
+  | ({ ok: true } & ParetoRestriccionesResult)
+  | { ok: false; error: { code: string; message: string } }
+
+/**
+ * GET /api/bi/control-tower/restricciones/pareto — distribución de restricciones duras no
+ * liberadas por tipo (Task 8, posición 5 del lienzo de Intermedia). Mismo criterio que
+ * `getRestricciones()`/`getMetric()`: GET, sin mutación, sin CSRF, sin `semana` explícito en la
+ * query (el backend la resuelve desde `$_SESSION['semana']`). Lanza `CtApiError` ante cualquier
+ * falla del servidor (422 SEMANA_INVALIDA, 404 por RBAC/BiPreviewAccessPolicy, JSON roto) — la
+ * promesa nunca resuelve en silencio con una distribución vacía inventada.
+ */
+export async function getParetoRestricciones(): Promise<ParetoRestriccionesResult> {
+  const res = await fetch('/api/bi/control-tower/restricciones/pareto', {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      'X-AIA-Expect-Json': '1',
+    },
+  })
+
+  const body = (await res.json().catch(() => null)) as ParetoEnvelope | null
+
+  if (!body || typeof body.ok !== 'boolean') {
+    throw new CtApiError('BAD_RESPONSE', `Respuesta inválida del servidor (HTTP ${res.status}).`, res.status)
+  }
+  if (!body.ok) {
+    throw new CtApiError(body.error.code, body.error.message, res.status, body.error)
+  }
+  const { ok: _ok, ...result } = body
+  return result
+}
+
+/**
  * Espejo camelCase de `LineageService::getForMetric()` (PHP: src/Services/Bi/LineageService.php),
  * fijado por `Linaje.test.tsx` (rol A, Task 7 paso 4). `cutoffPolicy` viaja desde el paso 4
  * ronda 1 — `getForMetric()` no lo copiaba al array de salida hasta ese fix.

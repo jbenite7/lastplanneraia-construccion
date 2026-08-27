@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CtApiError, getMetric, getRestricciones, postGestionRestriccion } from './api'
-import type { GestionEstado, MetricResult, Restriccion } from './api'
+import { CtApiError, getMetric, getParetoRestricciones, getRestricciones, postGestionRestriccion } from './api'
+import type { GestionEstado, MetricResult, ParetoRestriccionesResult, Restriccion } from './api'
 
 // CSRF: mismo patrón que pdc-app/src/lib/api.ts + bootstrap.ts — un blob inyectado en el global
 // (allá `__PDC_BOOTSTRAP__`, aquí `__CT_BOOTSTRAP__`) trae `csrfToken` y el cliente lo manda en
@@ -394,5 +394,140 @@ describe('getMetric', () => {
     )
 
     await expect(getMetric('pi_hard_restrictions_ready_rate')).rejects.toBeInstanceOf(CtApiError)
+  })
+})
+
+// Task 8 (hallazgo entrada 20 de la Bitácora, 2026-08-26) — rol A, test writer. Semaforo.tsx
+// (posición 4 del lienzo, CT-18.3) necesita el conteo del pareto para la posición 5, y ese
+// endpoint SÍ existe ya en el backend: `GET /api/bi/control-tower/restricciones/pareto`
+// (`src/Controllers/Api/BiRestrictionParetoController.php`, `BiRestrictionParetoController::pareto()`).
+// Forma real del envelope, leída del código fuente (no inventada):
+// `{ok:true, distribucion:[{tipo, conteo}], basis:{filas_usadas, corte}}` — `distribucion` ya
+// llega ordenada DESC por `conteo` (la query trae `ORDER BY conteo DESC`), así que el cliente no
+// reordena. `tipo` es el valor CRUDO de `restriction_type` ('D_y_E', 'Materiales', 'MdeO',
+// 'Equipos', 'Predecesora') — el propio controlador documenta que no existe diccionario de
+// traducción, y Pareto.tsx no debe inventar uno.
+//
+// El endpoint exige `semana` (query o sesión) y responde 422 `SEMANA_INVALIDA` si falta o no es un
+// entero positivo — pero es responsabilidad del SERVIDOR resolverla desde `$_SESSION['semana']`
+// (sembrada por `ProjectSelectorController::enterProject()`); igual que `getRestricciones()` y
+// `getMetric()`, el cliente no manda parámetros de semana explícitos, confía en la sesión. Mismo
+// criterio que el resto del archivo: GET, sin mutación, sin CSRF ni `__CT_BOOTSTRAP__` — a
+// propósito, NO se llama `stubBootstrap()` en este describe.
+describe('getParetoRestricciones', () => {
+  const PARETO_EJEMPLO: ParetoRestriccionesResult = {
+    distribucion: [
+      { tipo: 'Materiales', conteo: 12 },
+      { tipo: 'MdeO', conteo: 7 },
+      { tipo: 'D_y_E', conteo: 3 },
+    ],
+    basis: { filas_usadas: 22, corte: 'Semana 4, restricciones duras no liberadas' },
+  }
+
+  it('hace GET a /api/bi/control-tower/restricciones/pareto con credenciales same-origin y X-AIA-Expect-Json, SIN CSRF', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, ...PARETO_EJEMPLO }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getParetoRestricciones()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }]
+    expect(url).toBe('/api/bi/control-tower/restricciones/pareto')
+    expect(init.method).toBe('GET')
+    expect(init.credentials).toBe('same-origin')
+    expect(init.headers['X-AIA-Expect-Json']).toBe('1')
+    expect(init.headers['X-CSRF-Token']).toBeUndefined()
+    expect(init.body).toBeUndefined()
+  })
+
+  it('resuelve con {distribucion, basis} tal como llega, en el mismo orden (el backend ya ordena DESC por conteo)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, ...PARETO_EJEMPLO }),
+      }),
+    )
+
+    const resultado = await getParetoRestricciones()
+
+    expect(resultado).toEqual(PARETO_EJEMPLO)
+    expect(resultado.distribucion.map((fila: { tipo: string }) => fila.tipo)).toEqual(['Materiales', 'MdeO', 'D_y_E'])
+  })
+
+  it('acepta distribucion vacía (0 restricciones duras pendientes) con filas_usadas:0 — resultado válido, no un error', async () => {
+    const esperado: ParetoRestriccionesResult = {
+      distribucion: [],
+      basis: { filas_usadas: 0, corte: 'Semana 4, restricciones duras no liberadas' },
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, ...esperado }),
+      }),
+    )
+
+    await expect(getParetoRestricciones()).resolves.toEqual(esperado)
+  })
+
+  it('un 422 SEMANA_INVALIDA (sesión sin semana sembrada) se propaga como CtApiError, nunca una distribución vacía silenciosa', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          ok: false,
+          error: { code: 'SEMANA_INVALIDA', message: 'El parámetro "semana" debe ser un entero positivo.' },
+        }),
+      }),
+    )
+
+    const err = await getParetoRestricciones().catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(CtApiError)
+    expect((err as CtApiError).code).toBe('SEMANA_INVALIDA')
+    expect((err as CtApiError).status).toBe(422)
+  })
+
+  it('un 404 (BiPreviewAccessPolicy o RBAC deniegan) se propaga como CtApiError NOT_FOUND', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ ok: false, error: { code: 'NOT_FOUND', message: 'Esta página no existe.' } }),
+      }),
+    )
+
+    const err = await getParetoRestricciones().catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(CtApiError)
+    expect((err as CtApiError).code).toBe('NOT_FOUND')
+  })
+
+  it('una respuesta sin `ok` booleano (HTML de error, JSON roto) lanza CtApiError BAD_RESPONSE en vez de romper con TypeError', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON')
+        },
+      }),
+    )
+
+    const err = await getParetoRestricciones().catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(CtApiError)
+    expect((err as CtApiError).code).toBe('BAD_RESPONSE')
   })
 })
