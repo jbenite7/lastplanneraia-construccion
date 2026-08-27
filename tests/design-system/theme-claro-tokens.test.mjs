@@ -466,9 +466,13 @@ test('theme-claro.css no declara hex literales fuera de la excepción documentad
 test('ct-app/src no declara hex literales fuera de sus archivos de tokens', () => {
   let salida = '';
   try {
+    // Los *.test.ts(x) quedan fuera a propósito, mismo criterio que este archivo (que también
+    // declara hex literales de contrato): un test que VERIFICA matemáticamente el contraste de
+    // un token necesita el valor literal para calcularlo -- no es implementación de UI, es el
+    // mismo tipo de excepción que ya aplica aquí mismo.
     salida = execSync(
       "grep -rnE '#[0-9a-fA-F]{3,8}\\b' --include='*.css' --include='*.tsx' --include='*.ts' ct-app/src " +
-        "| grep -v 'ct-app/src/lib/tokens.css'",
+        "| grep -v 'ct-app/src/lib/tokens.css' | grep -vE '\\.test\\.tsx?:'",
       { cwd: raiz, encoding: 'utf8' },
     );
   } catch (err) {
