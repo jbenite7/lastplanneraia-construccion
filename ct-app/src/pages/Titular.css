@@ -1,0 +1,18 @@
+/* Titular narrativo de la hoja (Task 8 rol B): jerarquía alta, Montserrat, sin card envolvente --
+   es prosa que "encabeza el correo", con espaciado propio en vez de superficie. */
+
+.ct-titular {
+  margin: 0;
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-fs-headline);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ct-text-primary);
+  max-width: 62ch;
+}
+
+@media (max-width: 640px) {
+  .ct-titular {
+    font-size: var(--ct-fs-title);
+  }
+}

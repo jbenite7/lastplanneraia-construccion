@@ -48,6 +48,33 @@
         ],
         "createdAt": "2026-08-06T19:17:56.065Z",
         "reason": "Borde lateral de 4px: convencion establecida de las tarjetas KPI de la Control Tower; el usuario lo confirmo intencional el 2026-08-06"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "ct-app/src/pages/AlarmaHuerfanas.css"
+        ],
+        "createdAt": "2026-08-27T05:09:55.862Z",
+        "reason": "DESIGN.md sección Replanteo de estados 2026-08-20 (decisión de Felipe, L712-727): la gravedad vive completa en el filete severity-rail (border-left) -- unica excepcion sancionada a borde de color de un lado. Mismo patron ya usado en ListaRestricciones.css y Semaforo.css de este mismo lote (Task 8)."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "ct-app/src/pages/ListaRestricciones.css"
+        ],
+        "createdAt": "2026-08-27T05:25:39.368Z",
+        "reason": "DESIGN.md seccion Replanteo de estados 2026-08-20 (decision de Felipe, L712-727): la gravedad vive completa en el filete severity-rail (border-left) -- unica excepcion sancionada a borde de color de un lado. Mismo patron que AlarmaHuerfanas.css y Semaforo.css de este mismo lote (Task 8)."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "ct-app/src/pages/Semaforo.css"
+        ],
+        "createdAt": "2026-08-27T05:25:39.405Z",
+        "reason": "DESIGN.md seccion Replanteo de estados 2026-08-20 (decision de Felipe, L712-727): la gravedad vive completa en el filete severity-rail (border-left) -- unica excepcion sancionada a borde de color de un lado. Mismo patron que AlarmaHuerfanas.css y ListaRestricciones.css de este mismo lote (Task 8)."
       }
     ]
   }

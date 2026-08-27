@@ -48,6 +48,14 @@
       ]
     },
     {
+      "sheet": "/ct-app/assets/ct.css",
+      "via": "view-link",
+      "unlayeredRules": 99,
+      "sites": [
+        "views/bi/control-tower-piloto.php"
+      ]
+    },
+    {
       "sheet": "/pdc-app/assets/pdc.css",
       "via": "view-link",
       "unlayeredRules": 385,

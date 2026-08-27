@@ -129,6 +129,12 @@ test('CI is reproducible, least-privileged and has no deployment path', async ()
     // rellena. Sin esta, el CI las tiene vacias, la fecha contractual sale NULL y `baseline-drift`
     // sigue rojo aunque el calculo sea correcto. Va despues de la 120 por esa dependencia.
     '122-sembrar-linea-base.sql',
+    // 2026-08-27 (Task 9, Torre piloto): 3 migraciones ya en main que nunca se sembraron en el
+    // fixture de CI, ver el Dockerfile y design-system-ci-preflight.mjs para el detalle de cada
+    // una.
+    '123-shared-constraints-gestion.sql',
+    '124-avance-edicion-manual.sql',
+    '125-carryover-testigo.sql',
   ];
   assert.deepEqual(
     fixtureImage.split('\n')

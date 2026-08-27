@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "file": "src/Controllers/Api/BiConstraintListController.php",
+      "line": 125,
+      "owner": "torre-piloto",
+      "reason": "JOIN de agregacion de pi_shared_constraint_links (Task 7 paso 3a). Consecutivo_en_Programa no es unico por si solo (62 grupos duplicados en programa_consolidado, medido en dev), pero el JOIN ya lo acompana de Semana + project_id -- el gate detecta el patron textual sin importar la composicion. La clave real y unica de programa_consolidado es (project_id, Consecutivo); pi_shared_constraint_links no tiene columna que apunte a ella hoy -- agregarla es una migracion de datos, fuera del alcance de este piloto. Impacto real hoy: cero, ningun grupo duplicado tiene un link apuntandole todavia (medido, bitacora entrada 12 de docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md).",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "file": "src/Controllers/Api/BiConstraintListController.php",
+      "line": 160,
+      "owner": "torre-piloto",
+      "reason": "Mismo JOIN, misma razon que la linea 125 (cargarActividadBloqueada, subconsulta principal).",
+      "expiresAt": "2026-11-30"
+    },
+    {
+      "file": "src/Controllers/Api/BiConstraintListController.php",
+      "line": 167,
+      "owner": "torre-piloto",
+      "reason": "Mismo JOIN, misma razon que la linea 125 (subconsulta semmin de cargarActividadBloqueada).",
+      "expiresAt": "2026-11-30"
+    }
+  ]
+}

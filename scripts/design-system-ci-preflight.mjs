@@ -50,6 +50,13 @@ export const EXPECTED_INIT_COPIES = [
   // esta las rellena — y despues de la 121 porque ese slot ya estaba tomado: la rama pedia el 121
   // y se renumero al integrarla, no se eligio entre las dos.
   ['database/migrations/20260819_sembrar_linea_base_contractual.sql', '122-sembrar-linea-base.sql'],
+  // 2026-08-27 (Task 9, Torre piloto): las 3 migraciones que nunca se sembraron en CI y que la
+  // primera corrida real de este PR contra CI destapo -- una propia de esta etapa
+  // (pi_shared_constraints, Task 4) y dos ajenas (avance manual, carryover testigo) que
+  // rompian el gate para CUALQUIER PR contra main, no solo este.
+  ['database/migrations/20260827_pi_shared_constraints_gestion.sql', '123-shared-constraints-gestion.sql'],
+  ['database/migrations/20260826_pg_avance_edicion_manual.sql', '124-avance-edicion-manual.sql'],
+  ['database/migrations/20260825_carryover_testigo.sql', '125-carryover-testigo.sql'],
 ];
 
 function reject(detail) {

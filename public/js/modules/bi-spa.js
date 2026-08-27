@@ -353,6 +353,16 @@ function hasNoData(data) {
 }
 
 function switchView(viewId) {
+  // Task 7 paso 6: con CT_PILOTO activo, Intermedia ya no vive en esta SPA -- salta a la hoja
+  // React real con una navegación de página completa. `window.__CT_PILOTO_ENABLED__` la inyecta
+  // views/bi/_layout.php (BiViewController::renderView()) en las 8 hojas por igual; estrictamente
+  // condicional a viewId==='intermedia' Y bandera activa -- con la bandera apagada (hoy, y en
+  // producción) esta función queda idéntica a como estaba, para las 8 hojas.
+  if (viewId === 'intermedia' && window.__CT_PILOTO_ENABLED__ === true) {
+    window.location.href = '/bi/intermedia';
+    return;
+  }
+
   BI.currentView = viewId;
   if (viewId !== 'programa-general') {
     closeRadarDrilldown(false);

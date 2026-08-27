@@ -28,6 +28,25 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Añadido: tema claro y craft visual completo de la hoja piloto de Intermedia (2026-08-27)
+
+La hoja de Intermedia de la Torre de Control piloto (`ct-app/`, `/bi/intermedia` bajo
+`CT_PILOTO=1`) gana sus cinco piezas restantes de craft (alarma de huérfanas, titular, lista con
+panel de gestión, semáforo por semanas y pareto de restricciones) en dos temas — oscuro (sin
+cambios frente al aprobado el 2026-08-03) y claro, nuevo, anclado al manual de marca AIA — y dos
+tamaños, escritorio y móvil (390×844).
+
+La verificación visual real destapó dos defectos de contraste genuinos (texto casi ilegible sobre
+las filas con tinte de severidad en tema claro, 1.17:1–1.95:1 medido) y dos deudas de gate
+preexistentes del design system, ninguna atribuible a esta pantalla en particular: el bundle de
+`ct-app` nunca se había declarado en el inventario de entregas sin capa, y un `JOIN` de Task 7 usa
+una columna legacy no única — resuelto con una excepción documentada y con fecha de vencimiento, no
+con un ignore silencioso. Detalle completo, con cada medición y su porqué, en
+`docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md` (sección `## Cierre` y su Bitácora).
+
+El manifiesto del módulo y su cobertura golden quedan bloqueados por `CT_PILOTO`, apagado en el
+contenedor Docker compartido — pendiente en `TASKS.md`.
+
 ### Añadido: bitácora de ediciones manuales del avance en Programa General (2026-08-26)
 
 Cada vez que alguien edita a mano el porcentaje ejecutado de una actividad en Programa General

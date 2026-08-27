@@ -179,7 +179,8 @@
         },
         "theme": {
           "enum": [
-            "dark"
+            "dark",
+            "light"
           ]
         },
         "viewport": {

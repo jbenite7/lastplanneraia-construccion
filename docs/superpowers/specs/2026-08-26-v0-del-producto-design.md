@@ -192,6 +192,19 @@ de inicio quedó descartado (decisión 11).
 5. Cada una de las 26 pantallas cerrada lo está en escritorio y en celular a 390×844 (decisión 9),
    en tema oscuro y claro (decisión 10), con su tabla migrada. Sin pantallas «a medias».
 6. **Existe el número** — en paradas y decisiones consumidas — y las olas están dimensionadas con él.
+   **Cumplida para la Ola 1 (piloto), el 2026-08-27:** 32 entradas en la Bitácora de
+   `docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md` (sección `## Cierre` tiene el
+   desglose completo por tipo) — 16 paradas, 3 rulings de revisión completa (cada uno destapó un
+   hallazgo real: parseo de filtros, un bypass de RBAC, arquitectura de `theme-claro.css` sin
+   enlazar), 7 decisiones reales de Felipe consumidas, 5 hallazgos, 2 correcciones, 1 confirmación,
+   1 ganancia, 1 bloqueo de gate. **Un bloqueo raíz repetido en 4 entradas** (`CT_PILOTO` apagado en
+   el contenedor Docker compartido, sin vía de activarlo desde una sesión de ejecución) es la
+   primera entrada de la re-priorización de F3–F5: ninguna de las 7 hojas restantes puede
+   verificarse end-to-end contra el documento real mientras siga apagado — activarlo es el primer
+   paso antes de dimensionar el resto, no un detalle aparte. **Segundo punto que la entrada 32
+   agrega:** el primer PR de esta etapa en llegar a GitHub Actions destapó 3 migraciones ya en
+   `main` nunca sembradas en el fixture de CI — el fixture necesita revisarse cada vez que se
+   agrega una migración al repo, no solo cuando el PR que la trae toca el propio Dockerfile.
 7. Cerrar cualquier frente incluye actualizar este documento, forzado por el checklist del template
    de PR. Un frente que no lo actualizó no está cerrado.
 
@@ -841,6 +854,13 @@ Cada fase se publica antes de abrir la siguiente, según el gate de cierre de fr
 spec. F0 es barata y desbloquea: sin ella, tres hojas muestran cifras cuyo origen no se puede
 defender, que es exactamente lo que este replanteo viene a curar.
 
+**Añadido a F3–F5 (2026-08-27, ver CT-18.7):** antes de construir la narrativa de las demás hojas,
+un **censo completo de tokens de estilo y de color** — barrer toda la app (módulos, pestañas,
+secciones, modales, formularios, objetos granulares) por lo que aún no tiene un token definido. Es
+transversal a F3, F4 y F5 por igual (cualquier hoja que se toque en esas fases hereda el hueco si
+no se cierra antes), así que entra como el primer paso de la re-priorización de F3–F5 que Task 9
+dimensiona con el número del piloto, no como una fase séptima aparte.
+
 ### CT · El frente aparte: el retiro de las tablas del PDC v1 (D64)
 
 **Corregido el 2026-08-20 contra producción.** Esta sección afirmaba que la tabla `pdc` guardaba
@@ -1008,6 +1028,16 @@ Ninguno bloquea F0. El primero **quedó resuelto el 2026-08-20**; los demás sig
    víspera** además de director y residente. La spec asume que nadie más en la primera versión.
 6. **Si «Prueba» fue el borrador de Da Porto**, y si JMC y Milán tuvieron su plan de compras en Excel
    o Licify — porque entonces el historial de compras existe, pero fuera de la base.
+7. **Censo completo de tokens de estilo y de color, decisión de Felipe (2026-08-27), etapa
+   siguiente — ver también CT-13.** Task 8 del piloto define el tema claro solo para la hoja de
+   Intermedia (YAGNI del brief, ya derogado dentro de esa hoja por «todos los colores de una vez»,
+   entrada 18 de la Bitácora del piloto — pero acotado a lo que Intermedia consume). Felipe pide un
+   barrido **de toda la app**: todos los módulos, pestañas, secciones, modales, formularios y
+   objetos granulares, en busca de todo lo que necesite que se le defina un **token de estilo y de
+   color** — tipografía, espaciado, radio, sombra, z-index, duración de animación, tanto como
+   paleta. Es más grande que F3 (narrativa de las demás hojas): es una auditoría de cobertura del
+   design system completo, no de una hoja. Entra a la re-priorización de F3–F5 que Task 9 ya
+   dimensiona con el número del piloto — no es trabajo de Task 8, que sigue acotada a Intermedia.
 
 ## CT-19. Errores de medición cometidos en este diseño
 

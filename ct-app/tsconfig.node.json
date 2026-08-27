@@ -1,0 +1,20 @@
+{
+  // Programa aparte solo para el archivo de configuración de Vite, que corre en Node y por eso
+  // necesita sus tipos (`process.env.CT_API_PORT` en el proxy de desarrollo).
+  //
+  // Existe para que `@types/node` NO se cuele en el programa de `src/`. Con un solo tsconfig, los
+  // globales de Node quedan visibles para el código de navegador: `process.env.LO_QUE_SEA` compilaría
+  // sin protestar y reventaría en el navegador, y `setTimeout` devolvería `NodeJS.Timeout` en vez de
+  // `number`. El bundle no cambia —los tipos no viajan a Rollup—, pero el corrector deja de avisar.
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}

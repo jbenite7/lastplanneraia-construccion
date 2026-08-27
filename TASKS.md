@@ -129,6 +129,15 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **Activar `CT_PILOTO=1` para cerrar el manifiesto de la Torre piloto** —
+  [[docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto|Ola 1 · Torre, etapa piloto]] (Task 8
+  paso 3, bitácora entrada 31). El manifiesto (`docs/superpowers/plans/borradores/torre-piloto-manifest-borrador.json`)
+  está preparado con todo lo verificable sin servidor; solo faltan `scenarios[]` con golden+sha256
+  reales, que exigen Playwright contra `views/bi/control-tower-piloto.php` con la bandera activa.
+  Bloqueo de dos capas, confirmado con evidencia el 2026-08-27: (1) escritura directa en `.env`
+  denegada por permisos de Bash; (2) aunque se edite, `docker-compose.yml` no inyecta `CT_PILOTO` al
+  contenedor `app` compartido — hace falta recrearlo, acción que afecta a otras sesiones. Requiere
+  que Felipe (o quien tenga acceso) active la bandera y coordine el recreate del contenedor.
 - [ ] **Terminar la biblia de flujos T3 (PDC v2)** — [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]].
   Presupuesto y Seguimiento se cerraron el 2026-08-25 (`PDC-006` a `PDC-015`, 11 de 70 rutas). Falta
   Maestro de insumos (13 rutas — empezar aquí, el código ya deja una pista citada en

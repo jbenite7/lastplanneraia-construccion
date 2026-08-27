@@ -45,12 +45,12 @@ class BiViewController extends BaseController
     }
 
     /**
-     * Shared render: fetch data, inject into view, render with layout.
+     * Gate de acceso compartido por renderView() y renderCtPiloto(): el módulo está oculto
+     * mientras se desarrolla, solo lo abren los roles/flag que resuelve BiPreviewAccessPolicy,
+     * y hace falta sesión. 404 y no 403, para no confirmar que la pantalla existe.
      */
-    private function renderView(string $reportKey, string $viewFile): void
+    private function assertBiPreviewAccessible(): void
     {
-        // El módulo está oculto mientras se desarrolla: solo Admin lo abre por URL.
-        // 404 y no 403, para no confirmar que la pantalla existe.
         if (!\App\Security\BiPreviewAccessPolicy::canOpen($_SESSION)) {
             \App\Core\ErrorPage::render(
                 404,
@@ -61,6 +61,14 @@ class BiViewController extends BaseController
         }
 
         $this->requireAuth();
+    }
+
+    /**
+     * Shared render: fetch data, inject into view, render with layout.
+     */
+    private function renderView(string $reportKey, string $viewFile): void
+    {
+        $this->assertBiPreviewAccessible();
 
         $projectIdsRaw = $_GET['project_ids'] ?? $_GET['project_id'] ?? [];
         try {
@@ -109,6 +117,11 @@ class BiViewController extends BaseController
             'shellActive'      => $shellActive,
             'shellModuleLabel' => $shellModuleLabel,
             'shellWeeks'       => $shellWeeks,
+            // Task 7 paso 6: expone la bandera a bi-spa.js (window.__CT_PILOTO_ENABLED__ en
+            // _layout.php) para que switchView('intermedia') pueda navegar de verdad a
+            // /bi/intermedia en vez de solo alternar visibilidad. Compartido por las 8 hojas
+            // porque las 8 usan este mismo _layout.php — no solo la de Intermedia.
+            'ctPilotoEnabled'  => self::ctPilotoEnabled(),
         ];
 
         extract($viewData);
@@ -158,7 +171,78 @@ class BiViewController extends BaseController
 
     public function intermedia(): void
     {
+        if (self::ctPilotoEnabled()) {
+            $this->renderCtPiloto();
+            return;
+        }
+
         $this->renderView('intermedia', 'control-tower');
+    }
+
+    /**
+     * Shell piloto de la isla React de la Torre (Task 6). Sirve views/bi/control-tower-piloto.php
+     * en vez de views/bi/_layout.php + bi-spa.js — únicamente para la hoja Intermedia, y solo con
+     * CT_PILOTO=1 en .env. Pasa por el MISMO gate de acceso que renderView() (Admin/D/R según
+     * BiPreviewAccessPolicy + sesión activa): la bandera cambia qué se sirve, nunca quién entra.
+     *
+     * Bootstrap mínimo a propósito (YAGNI): solo el CSRF que necesita ct-app/src/lib/api.ts para
+     * su primer POST. Task 7 decide qué más agrega el bootstrap cuando construya la pantalla real.
+     */
+    private function renderCtPiloto(): void
+    {
+        $this->assertBiPreviewAccessible();
+
+        $bootstrap = [
+            'csrfToken' => \App\Security\CsrfTokenManager::generate('ct_piloto'),
+        ];
+        $bootstrapJson = json_encode(
+            $bootstrap,
+            JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
+        );
+        // json_encode() puede devolver false (p.ej. secuencia inválida de bytes); sin este
+        // respaldo, window.__CT_BOOTSTRAP__ = ; queda como sintaxis JS rota y el bundle
+        // entero no arranca. '{}' deja el bootstrap vacío en vez de tronar la página.
+        if ($bootstrapJson === false) {
+            $bootstrapJson = '{}';
+        }
+
+        // Shell sidebar (DS-027): mismo id que renderView() fija para las otras 7 hojas — sin
+        // esto, shell_sidebar.php no resalta la entrada de Control Tower y, en el caso borde de
+        // project_id=0 sin acceso, la entrada desaparece del todo (ver su comentario en línea ~85).
+        $shellActive = 'control-tower';
+
+        // Mismo mecanismo de cache-busting que PlanComprasController::index(): filemtime() del
+        // bundle construido, no un contador a mano.
+        $bundlePath = PROJECT_ROOT . '/public/ct-app/assets/ct.js';
+        $assetVersion = is_file($bundlePath) ? (int) filemtime($bundlePath) : 0;
+
+        // tokens.css evoluciona con lps-aia, no con el bundle: cache-busting propio.
+        $tokensPath = PROJECT_ROOT . '/public/css/tokens.css';
+        $tokensVersion = is_file($tokensPath) ? (int) filemtime($tokensPath) : 0;
+
+        require PROJECT_ROOT . '/views/bi/control-tower-piloto.php';
+    }
+
+    /**
+     * Lee CT_PILOTO de .env siguiendo el mismo patrón que DevDoor::flagEnabled()/env()
+     * (src/Core/DevDoor.php): $_ENV primero, getenv() como respaldo, comparación estricta
+     * contra '1'. Sin la bandera (no seteada o distinta de '1'), intermedia() no cambia de
+     * comportamiento — ninguna otra hoja del controlador la consulta.
+     */
+    private static function ctPilotoEnabled(): bool
+    {
+        return (string) (self::env('CT_PILOTO') ?? '') === '1';
+    }
+
+    private static function env(string $key): ?string
+    {
+        if (isset($_ENV[$key])) {
+            return (string) $_ENV[$key];
+        }
+
+        $value = getenv($key);
+
+        return $value === false ? null : $value;
     }
 
     public function semanal(): void

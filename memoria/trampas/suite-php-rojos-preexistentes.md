@@ -77,6 +77,32 @@ antes de atribuirte un fallo, revierte tus archivos a HEAD (`git checkout HEAD -
 `git stash` en este worktree: suele haber ediciones ajenas en curso) y re-mide por `rc`. Relacionado:
 [[branch-preexisting-red-gates]], [[pdc-e2e-sandbox]].
 
+## `test_unique_id_runtime_gate.php`, rojo desde Task 7 paso 3a
+
+**RESUELTO el 2026-08-27, Task 9:** fichado como excepción documentada y con vencimiento
+(`tests/unique-id-runtime-gate-exceptions.json`, expira 2026-11-30), mismo patrón que
+`docs/design-system/exceptions.json`. El script (`tests/test_unique_id_runtime_gate.php`) ahora
+lee ese archivo y no cuenta como fallo una línea excepcionada vigente; verificado en ambos
+sentidos (una excepción vencida vuelve a fallar el gate). `run-php-tests.php --nivel=puro` → RC=0.
+No se tocó el dato ni el JOIN real — la migración de fondo (agregar a
+`pi_shared_constraint_links` una columna que apunte a la PK real de `programa_consolidado`) sigue
+sin hacerse y sigue siendo deuda real, solo que ahora está fichada con fecha, no bloqueando el CI
+en silencio ni sin plazo.
+
+**Medido el 2026-08-27 sobre `d5178fb6` (rama `ola1-torre-piloto`), confirmado tres veces
+independientes** (esta sesión + dos revisiones opus separadas del semáforo y del pareto de
+restricciones): `test_unique_id_runtime_gate.php` falla señalando
+`src/Controllers/Api/BiConstraintListController.php:125,160,167` — tres `JOIN ON
+pcl.ConsecutivoEnPrograma = pc.Consecutivo_en_Programa`. El archivo es de Task 7 paso 3a (el
+endpoint de listado de restricciones, ya cerrado y revisado en esa tarea) y no lo toca ninguna de
+las tareas de Task 8. El gate exige que las claves usadas en `JOIN` sean genuinamente únicas;
+`Consecutivo_en_Programa` en `programa_consolidado` tiene 62 grupos duplicados medidos en dev
+(entrada 12 de la Bitácora del plan `2026-08-26-ola1-torre-etapa-piloto.md`) — impacto real hoy es
+cero (ningún grupo duplicado tiene un link apuntándole todavía), pero el gate no lo sabe y falla de
+todas formas. **Bloqueará el gate de cierre de Task 9** (`run-php-tests.php --nivel=puro`) si no se
+arregla o se ficha como excepción antes del PR — no es de esta página decidir cuál, solo dejar
+constancia de que no es un rojo nuevo de Task 8.
+
 ## La cifra se ha movido tres veces en 24 horas
 
 126 → 96 → 99 → **101**. El retiro del PDC v1 se llevó treinta; el frente de seguridad y el del

@@ -54,6 +54,20 @@ if (!$proyectoExiste) {
     exit(2);
 }
 
+// El fixture sintetico de CI (a diferencia del dump de dev/produccion que da nombre a UID) no
+// siempre trae esta fila especifica -- se salta solo (patron SKIP: + exit 0, el que
+// scripts/run-php-tests.php reconoce como salto real, no el ABORT/exit(2) del guardarraíl de
+// arriba, que el runner cuenta como fallo). Medido el 2026-08-27: design-system-ci.sql solo
+// siembra Da Porto en Semana 1.
+$filaExiste = $db->queryWithProject(
+    "SELECT COUNT(*) FROM programa_consolidado WHERE Semana = ? AND unique_id = ?",
+    [SEMANA, UID], PROJECT_ID,
+)->fetchColumn();
+if (!$filaExiste) {
+    echo "SKIP: no existe la fila unique_id=" . UID . ", Semana=" . SEMANA . " en este fixture\n";
+    exit(0);
+}
+
 $avanceOriginal = $db->queryWithProject(
     "SELECT Ejecutado FROM programa_consolidado WHERE Semana = ? AND unique_id = ?",
     [SEMANA, UID], PROJECT_ID,

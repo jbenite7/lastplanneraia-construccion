@@ -835,6 +835,18 @@ for (const manifest of manifests) {
     if (propios === 0) {
       failures.push(`${manifest.moduleId}: scenarios: sin escenarios propios y sin visualEvidence; `
         + 'todo modulo debe traer al menos un escenario o delegar su evidencia en una familia');
+    } else if (!(manifest.scenarios || []).some((scenario) => scenario.theme === 'dark')) {
+      // El enum de `theme` admite "light" desde 2026-08-27 (piloto de tema claro,
+      // hoja de Intermedia) precisamente para que un modulo pueda declarar
+      // escenarios claros ADEMAS de los oscuros -- nunca en su lugar. Sin esta
+      // comprobacion, un manifiesto podria declarar solo escenarios "light" y
+      // pasar el minimo de arriba (>=1 escenario) sin cobertura del tema
+      // operativo por defecto, que sigue siendo el piso no negociable del
+      // sistema (DS-009). "Light es aditivo, dark es obligatorio" en el codigo,
+      // no solo en la prosa de DESIGN.md.
+      failures.push(`${manifest.moduleId}: scenarios: ningun escenario declara theme "dark"; `
+        + 'todo modulo con escenarios propios debe cubrir el tema oscuro (piso no negociable, '
+        + 'DS-009) -- "light" es aditivo, nunca sustituto');
     }
     continue;
   }

@@ -73,6 +73,9 @@
     <script id="bi-data" type="application/json"><?= $initialData ?? '{}' ?></script>
     <script>
         window.__AIA_SHELL_SIDEBAR__ = true;
+        <?php /* Task 7 paso 6: bi-spa.js la lee en switchView('intermedia') para navegar a
+                /bi/intermedia (ct-app) en vez de solo alternar visibilidad. */ ?>
+        window.__CT_PILOTO_ENABLED__ = <?= ($ctPilotoEnabled ?? false) ? 'true' : 'false' ?>;
     </script>
     <?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/sidebar_navigation.js') ?>
     <script src="/js/modules/aia_ui/theme.js?v=<?= filemtime(__DIR__ . '/../../public/js/modules/aia_ui/theme.js') ?>"></script>

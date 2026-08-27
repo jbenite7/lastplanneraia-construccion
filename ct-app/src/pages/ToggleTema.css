@@ -1,0 +1,35 @@
+/* Toggle de tema (Task 8 rol B): control secundario -- superficie elevada + borde, nunca el verde
+   de acción primaria (esta pantalla no lo protagoniza). Piso táctil 44px sin excepción. */
+
+.ct-toggle-tema {
+  min-height: var(--ct-touch-min);
+  padding: 0 1rem;
+  border-radius: var(--ct-radius-control);
+  border: 1px solid var(--ct-border-control);
+  background: var(--ct-surface-raised);
+  color: var(--ct-text-primary);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.ct-toggle-tema:hover {
+  background: var(--ct-surface);
+  border-color: var(--ct-focus-ring);
+}
+
+.ct-toggle-tema:active {
+  transform: translateY(1px);
+}
+
+.ct-toggle-tema:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--ct-shadow-focus);
+}
+
+.ct-toggle-tema:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

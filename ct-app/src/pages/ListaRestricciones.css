@@ -1,0 +1,212 @@
+/*
+ * ListaRestricciones — craft visual (Task 8 rol B, "Sala de Control Serena").
+ * Fuente única de valores: ../lib/tokens.css (--ct-*). Nunca hex sueltos ni --ds-* directo.
+ *
+ * Vocabulario de estado (Replanteo de estados 2026-08-20, docs/design-system/README.md §2):
+ * el filete de gravedad en border-left es la ÚNICA excepción permitida a "nunca borde de color
+ * >1px" -- el propio sistema la reserva para severidad, no se generaliza a otro uso aquí.
+ *
+ * Breakpoint móvil elegido: 768px (documentado en el reporte de la tarea). Por debajo, la fila
+ * horizontal densa pasa a tarjeta apilada -- el piso táctil de 44px no tiene excepción en esta
+ * hoja (PRODUCT.md §Accesibilidad).
+ */
+
+.ct-lista-restricciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ct-lista-cargando,
+.ct-lista-error {
+  font-family: var(--ct-font-body);
+  color: var(--ct-text-secondary);
+  padding: 1rem;
+}
+
+.ct-lista-error {
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+  border-radius: var(--ct-radius-control);
+  font-weight: 700;
+}
+
+/* Estado vacío: "enseña la interfaz", nunca un "nada aquí" seco. */
+.ct-lista-vacio {
+  font-family: var(--ct-font-body);
+  color: var(--ct-text-secondary);
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 1px dashed var(--ct-border-control);
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-surface);
+}
+
+/* Fila: unidad clara -- texto, chip de estado, acción primaria, acción sugerida de apoyo. */
+.ct-fila {
+  display: grid;
+  grid-template-columns: 1.4fr auto auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--ct-surface);
+  border-radius: var(--ct-radius-card);
+  border-left: 1px solid transparent;
+  box-shadow: var(--ct-shadow-xs);
+}
+
+.ct-fila-texto {
+  font-family: var(--ct-font-body);
+  color: var(--ct-text-primary);
+  font-size: var(--ct-fs-body);
+  grid-column: 1;
+}
+
+.ct-fila-accion {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--ct-font-body);
+  color: var(--ct-text-secondary);
+  font-size: var(--ct-fs-label);
+}
+
+.ct-fila-accion strong {
+  color: var(--ct-text-primary);
+  font-weight: 700;
+}
+
+.ct-fila-boton {
+  font-family: var(--ct-font-body);
+  font-weight: 700;
+  color: var(--ct-action-text);
+  background: var(--ct-action-primary);
+  border: none;
+  border-radius: var(--ct-radius-control);
+  min-height: var(--ct-touch-min);
+  padding: 0 1.25rem;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.ct-fila-boton:hover {
+  background: var(--ct-action-primary-hover);
+}
+
+.ct-fila-boton:focus-visible {
+  outline: none;
+  box-shadow: var(--ct-shadow-focus);
+}
+
+/* Chip sólido de estado -- píldora, palabra íntegra, nunca fragmentada. */
+.ct-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.15rem 0.85rem;
+  border-radius: var(--ct-radius-pill);
+  font-family: var(--ct-font-body);
+  font-weight: 800;
+  font-size: var(--ct-fs-label);
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+.ct-chip--rojo {
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+}
+
+.ct-chip--ambar {
+  background: var(--ct-chip-ambar-bg);
+  color: var(--ct-chip-ambar-text);
+}
+
+.ct-chip--verde {
+  background: var(--ct-chip-verde-bg);
+  color: var(--ct-chip-verde-text);
+}
+
+.ct-chip--teal {
+  background: var(--ct-chip-teal-bg);
+  color: var(--ct-chip-teal-text);
+}
+
+/* Fila -- tinte de apoyo + filete de gravedad, por hue. El fondo de estas dos filas es
+   invariante por tema (--ct-row-rojo/ambar, "Replanteo de estados 2026-08-20"); por eso su
+   texto también se fija invariante (--ct-row-text-*) en vez de heredar --ct-text-primary/
+   -secondary -- ver el porqué en tokens.css. Sin este override, el toggle de tema claro deja
+   esas dos filas con ~1.2:1-1.9:1 de contraste (medido, no hipotético). */
+.ct-fila--rojo {
+  background: var(--ct-row-rojo);
+  border-left: 6px solid var(--ct-rail-urgente);
+}
+
+.ct-fila--ambar {
+  background: var(--ct-row-ambar);
+  border-left: 4px solid var(--ct-rail-atencion);
+}
+
+.ct-fila--rojo .ct-fila-texto,
+.ct-fila--ambar .ct-fila-texto {
+  color: var(--ct-row-text-primary);
+}
+
+.ct-fila--rojo .ct-fila-accion,
+.ct-fila--ambar .ct-fila-accion {
+  color: var(--ct-row-text-secondary);
+}
+
+.ct-fila--rojo .ct-fila-accion strong,
+.ct-fila--ambar .ct-fila-accion strong {
+  color: var(--ct-row-text-primary);
+}
+
+/* liberada: "Controlado sigue sin barra: la ausencia es la señal" -- ni tinte ni filete propios. */
+.ct-fila--verde {
+  background: var(--ct-surface);
+  border-left: 1px solid transparent;
+}
+
+/* no_aplica: neutro informativo -- superficie normal, sin tinte ni filete. */
+.ct-fila--teal {
+  background: var(--ct-surface);
+  border-left: 1px solid transparent;
+}
+
+@media (max-width: 768px) {
+  /* Tarjeta apilada: restricción arriba, chip + botón en una línea, acción sugerida abajo.
+     Orden real en el DOM es texto/chip/boton/accion -- se remapea con grid-column/row explícito
+     en vez de depender del orden de aparición, para que chip y botón queden en la misma fila. */
+  .ct-fila {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+  }
+
+  .ct-fila-texto {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    font-size: var(--ct-fs-title);
+    font-family: var(--ct-font-display);
+    font-weight: 600;
+  }
+
+  .ct-chip {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .ct-fila-boton {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 8rem;
+  }
+
+  .ct-fila-accion {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
