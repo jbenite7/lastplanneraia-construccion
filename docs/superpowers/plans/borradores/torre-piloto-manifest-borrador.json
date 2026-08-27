@@ -1,0 +1,62 @@
+{
+  "$schema": "../module-manifest.schema.json",
+  "schemaVersion": 2,
+  "designSystemVersion": "1.1.0",
+  "moduleId": "torre-piloto",
+  "routes": [
+    "/bi/intermedia"
+  ],
+  "sources": [
+    "views/bi/control-tower-piloto.php",
+    "ct-app/src/lib/tokens.css",
+    "public/css/design-system/theme-claro.css",
+    "public/ct-app/assets/ct.css",
+    "public/ct-app/assets/ct.js"
+  ],
+  "components": [
+    "shell",
+    "navigation",
+    "card",
+    "chip",
+    "state",
+    "feedback",
+    "icon",
+    "button"
+  ],
+  "vendors": [],
+  "layouts": [
+    "desktop",
+    "mobile"
+  ],
+  "states": [
+    "loading",
+    "normal",
+    "error"
+  ],
+  "roles": [
+    "authenticated-project-member"
+  ],
+  "persistence": {
+    "session": "authenticated project selection",
+    "localStorage": "ct-piloto-theme (toggle de tema dark/light de la hoja)"
+  },
+  "exceptions": [
+    {
+      "id": "torre-piloto-severity-rail",
+      "reason": "ListaRestricciones.css, Semaforo.css y AlarmaHuerfanas.css usan border-left de color (4-6px) para la gravedad de una restriccion o franja. Excepcion sancionada por DESIGN.md, seccion Replanteo de estados 2026-08-20 (L712-727): 'la gravedad vive completa en el filete (severity-rail)' -- mismo patron que bi-runtime y el resto del sistema post-replanteo, no una desviacion local del piloto.",
+      "scope": "ct-app/src/pages/ListaRestricciones.css, ct-app/src/pages/Semaforo.css, ct-app/src/pages/AlarmaHuerfanas.css",
+      "status": "permanent"
+    }
+  ],
+  "tests": [
+    "ct-app/src/pages/Intermedia.test.tsx",
+    "ct-app/src/pages/Semaforo.test.tsx",
+    "ct-app/src/pages/Pareto.test.tsx",
+    "ct-app/src/lib/theme.test.ts",
+    "tests/browser/ct-intermedia.spec.mjs"
+  ],
+  "evidence": [
+    "tests/browser/__screenshots__/torre-piloto/"
+  ],
+  "scenarios": []
+}
