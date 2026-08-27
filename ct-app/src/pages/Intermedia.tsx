@@ -5,6 +5,7 @@ import type { ResumenLookaheadIntermedia } from '../lib/titulares'
 import { AlarmaHuerfanas } from './AlarmaHuerfanas'
 import { Titular } from './Titular'
 import { ListaRestricciones } from './ListaRestricciones'
+import type { AjusteGuardado } from './ListaRestricciones'
 
 // Hoja de Intermedia (ct-app, etapa piloto, Task 7 ensamblaje, CT-8.3): ensambla alarma de
 // huérfanas (posición 1) + titular narrativo (posición 2) + lista de restricciones (posición 3,
@@ -30,10 +31,14 @@ import { ListaRestricciones } from './ListaRestricciones'
 // sub-paso: Intermedia mantiene el estado de "solo huérfanas" y le pasa a ListaRestricciones el
 // array ya filtrado; no hay botón para volver a "ver todas".
 //
-// Concern documentado, no cubierto por los tests a propósito: si el usuario gestiona una huérfana
-// desde el panel dentro de esta misma sesión, ListaRestricciones actualiza su copia local, pero el
-// conteo que muestra AlarmaHuerfanas (derivado de la copia que sostiene Intermedia) no se refresca
-// hasta un remount/refetch. Sincronizar ambas copias es un refactor más profundo, fuera de alcance.
+// Fix ronda 1 (hallazgo Important de la revisión): si el usuario gestiona una huérfana desde el
+// panel dentro de esta misma sesión, el contador de AlarmaHuerfanas y el titular quedaban
+// desactualizados (N nunca bajaba) porque Intermedia.restricciones nunca se enteraba del guardado
+// — y sin router en ct-app no había forma de refrescar sin recargar el navegador completo.
+// `handleGestionGuardada` recibe el payload que ListaRestricciones ya confirmó con el servidor
+// (vía la prop `onGestionGuardada` que se le pasa abajo) y lo aplica sobre la propia copia de
+// `restricciones` — el `useMemo` de huérfanas/vencidas recalcula solo, así que el contador, el
+// titular y el filtro "solo huérfanas" quedan consistentes con la fila en el mismo render.
 
 function esHuerfana(r: Restriccion): boolean {
   return r.estadoLiberacion === 'sin_gestionar' && r.responsableAsignado === null
@@ -59,6 +64,10 @@ export function Intermedia() {
   const huerfanas = useMemo(() => (restricciones ?? []).filter(esHuerfana), [restricciones])
   const vencidas = useMemo(() => (restricciones ?? []).filter(esVencida), [restricciones])
 
+  function handleGestionGuardada(id: number, ajuste: AjusteGuardado) {
+    setRestricciones((actuales) => (actuales ?? []).map((r) => (r.id === id ? { ...r, ...ajuste } : r)))
+  }
+
   if (error) {
     return <p role="alert">{error}</p>
   }
@@ -82,7 +91,7 @@ export function Intermedia() {
     <div>
       <AlarmaHuerfanas huerfanas={huerfanas} onVerHuerfanas={() => setSoloHuerfanas(true)} />
       <Titular resumen={resumen} />
-      <ListaRestricciones restricciones={restriccionesVisibles} />
+      <ListaRestricciones restricciones={restriccionesVisibles} onGestionGuardada={handleGestionGuardada} />
     </div>
   )
 }

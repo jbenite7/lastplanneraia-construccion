@@ -21,9 +21,19 @@ import { PanelGestion } from './PanelGestion'
 // contando llamadas al mock. Cuando se omite (uso standalone, como en ListaRestricciones.test.tsx,
 // que sigue sin tocarse), el comportamiento no cambia: self-fetch al montar. Las gestiones
 // guardadas se aplican como un overlay local por id (`ajustesGuardados`) sobre la base que
-// corresponda (la propia carga o la prop) — D33 sigue funcionando en modo ensamblado, aunque el
-// conteo que muestra AlarmaHuerfanas en Intermedia no se refresca hasta un remount/refetch
-// (concern documentado en Intermedia.tsx, no cubierto por tests).
+// corresponda (la propia carga o la prop) — D33 sigue funcionando en modo ensamblado.
+//
+// Task 7 ensamblaje, fix ronda 1 (hallazgo Important de la revisión): prop opcional
+// `onGestionGuardada?: (id, ajuste) => void`. Cuando el padre la pasa (Intermedia.tsx), el
+// guardado exitoso NO se queda en el overlay local — se notifica hacia arriba con el mismo
+// payload que el servidor ya confirmó, para que Intermedia actualice su propia copia de
+// `restricciones` y su `useMemo` de huérfanas/vencidas recalcule. Así el contador de
+// AlarmaHuerfanas y el titular bajan de inmediato, sin remount/refetch, y la fila gestionada sale
+// sola del filtro "solo huérfanas" (ya no cumple el criterio). Cuando `onGestionGuardada` no
+// llega (uso standalone), el comportamiento es el de antes: overlay local. No se escribe en el
+// overlay cuando se notifica hacia arriba — evitar el overlay permanente-sin-limpiar que la
+// revisión señaló como el riesgo inverso (sombrear para siempre el dato ya fresco que baja por
+// prop).
 
 /**
  * Reordena restricciones completas según el orden que produce ordenarPorUrgencia() sobre la
@@ -38,13 +48,17 @@ function ordenarRestricciones(restricciones: Restriccion[]): Restriccion[] {
   return ordenarPorUrgencia(restricciones).map((u) => porId.get(u.id)!)
 }
 
+export type AjusteGuardado = Pick<Restriccion, 'responsableAsignado' | 'fechaCompromiso' | 'estadoLiberacion'>
+
 interface ListaRestriccionesProps {
   restricciones?: Restriccion[]
+  onGestionGuardada?: (id: number, ajuste: AjusteGuardado) => void
 }
 
-type AjusteGuardado = Pick<Restriccion, 'responsableAsignado' | 'fechaCompromiso' | 'estadoLiberacion'>
-
-export function ListaRestricciones({ restricciones: restriccionesProp }: ListaRestriccionesProps = {}) {
+export function ListaRestricciones({
+  restricciones: restriccionesProp,
+  onGestionGuardada,
+}: ListaRestriccionesProps = {}) {
   const usaCargaPropia = restriccionesProp === undefined
 
   const [restriccionesCargadas, setRestriccionesCargadas] = useState<Restriccion[] | null>(null)
@@ -75,14 +89,19 @@ export function ListaRestricciones({ restricciones: restriccionesProp }: ListaRe
 
   function handleGuardada(payload: { responsable: string; fechaCompromiso: string; estado: GestionEstado }) {
     if (gestionandoId !== null) {
-      setAjustesGuardados((actuales) => ({
-        ...actuales,
-        [gestionandoId]: {
-          responsableAsignado: payload.responsable,
-          fechaCompromiso: payload.fechaCompromiso,
-          estadoLiberacion: payload.estado,
-        },
-      }))
+      const ajuste: AjusteGuardado = {
+        responsableAsignado: payload.responsable,
+        fechaCompromiso: payload.fechaCompromiso,
+        estadoLiberacion: payload.estado,
+      }
+      if (onGestionGuardada) {
+        // El padre sostiene los datos y va a bajar la prop `restricciones` ya actualizada con
+        // este mismo ajuste — no se guarda overlay local para no sombrearla luego con un valor
+        // que quedaría fijo para siempre.
+        onGestionGuardada(gestionandoId, ajuste)
+      } else {
+        setAjustesGuardados((actuales) => ({ ...actuales, [gestionandoId]: ajuste }))
+      }
     }
     setGestionandoId(null)
   }

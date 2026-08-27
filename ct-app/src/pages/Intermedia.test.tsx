@@ -205,3 +205,55 @@ describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch
     expect(await screen.findByRole('alert')).toBeInTheDocument()
   })
 })
+
+// Fix ronda 1 (hallazgo Important de la revisión de spec+calidad): gestionar una huérfana desde
+// dentro de Intermedia debe bajar el contador de AlarmaHuerfanas y actualizar el titular en el
+// mismo render, sin remount ni un segundo getRestricciones(). Antes de este fix, N nunca bajaba —
+// el useMemo de huérfanas de Intermedia nunca se enteraba de un guardado hecho por ListaRestricciones.
+describe('Intermedia — fix ronda 1: gestionar una huérfana actualiza el contador y el titular', () => {
+  it('tras guardar, la alarma baja de 2 a 1, el titular refleja huerfanasCount=1 y la fila sale del filtro "solo huérfanas"', async () => {
+    const user = userEvent.setup()
+    getRestriccionesMock.mockResolvedValue([
+      restriccion({ id: 1 }), // huérfana
+      restriccion({ id: 2 }), // huérfana
+    ])
+    postGestionRestriccionMock.mockResolvedValue({
+      ok: true,
+      restriccion: { id: 1, responsable: 'Pipe Ramos', fechaCompromiso: '2026-09-01', estado: 'en_gestion' },
+    })
+
+    render(<Intermedia />)
+    await screen.findByTestId('lista-restricciones')
+    expect(screen.getByTestId('alarma-huerfanas').textContent).toMatch(/2/)
+
+    // Entra al filtro "solo huérfanas" y gestiona la primera fila.
+    await user.click(within(screen.getByTestId('alarma-huerfanas')).getByRole('button', { name: /huérfanas/i }))
+    const fila = screen.getByTestId('fila-restriccion-1')
+    await user.click(within(fila).getByRole('button', { name: /gestionar/i }))
+    await user.type(screen.getByLabelText(/responsable/i), 'Pipe Ramos')
+    await user.type(screen.getByLabelText(/fecha.*compromiso/i), '2026-09-01')
+    await user.selectOptions(screen.getByLabelText(/estado/i), 'en_gestion')
+    await user.click(screen.getByRole('button', { name: /guardar/i }))
+
+    // El titular es la señal más fuerte de que Intermedia.restricciones se actualizó: solo cambia
+    // si huerfanasCount pasó de 2 a 1 en el resumen que Intermedia reconstruye.
+    const tituloEsperado = construirTitular({
+      huerfanasCount: 1,
+      vencidasCount: 0,
+      vencidasMaxDias: 0,
+      listasRate: { value: null, completeness: 'insuficiente' },
+    }).texto
+    expect(await screen.findByText(tituloEsperado)).toBeInTheDocument()
+
+    // El contador de la alarma también bajó.
+    expect(screen.getByTestId('alarma-huerfanas').textContent).toMatch(/1/)
+
+    // La fila ya gestionada dejó de cumplir el criterio de huérfana: sale sola del filtro "solo
+    // huérfanas" activo, sin necesidad de un botón "ver todas" ni de recargar.
+    expect(screen.queryByTestId('fila-restriccion-1')).not.toBeInTheDocument()
+    expect(screen.getByTestId('fila-restriccion-2')).toBeInTheDocument()
+
+    // Un solo fetch inicial — el fix no agregó un refetch para refrescar el contador.
+    expect(getRestriccionesMock).toHaveBeenCalledTimes(1)
+  })
+})
