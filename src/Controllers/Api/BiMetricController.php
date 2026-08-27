@@ -11,6 +11,7 @@ use App\Security\RbacManager;
 use App\Security\RbacService;
 use App\Services\Bi\MetricDictionaryService;
 use App\Services\Bi\MetricExecutor;
+use App\Services\Bi\MetricResult;
 use App\Services\Bi\MetricScope;
 use RuntimeException;
 
@@ -44,6 +45,17 @@ use RuntimeException;
  * otra `RuntimeException` de `execute()`) queda cubierta por el `try/catch` de abajo -> 422, por
  * el mismo motivo: nunca un 500 con traza cruda rompiendo el envelope `{ok:false,...}` que
  * `ct-app/src/lib/api.ts` exige.
+ *
+ * Fix ronda 1 (Important 2, revisión de spec+calidad): `estado_ejecucion !== 'ejecutable'` se
+ * verifica ANTES de llamar a `execute()` -> 422, explícito, no delegado al accidente de que
+ * `MetricExecutor::buildSelectExpression()` falle por no reconocer la forma SQL de una métrica
+ * `descriptiva`. D59 exige que lo predictivo (ej. `ps_pac_expected`, `descriptiva`) nunca se
+ * sirva como cifra dura por esta ruta — esa invariante no puede depender de un parser.
+ *
+ * Fix ronda 1 (Important 1): `missing` se normaliza a un array PLANO de strings antes de
+ * responder — ver `normalizarMissing()` — porque `MetricExecutor::buildMissing()` puede devolver
+ * un array mixto (lista + clave `obras_sin_datos`) que `json_encode()` serializaría como objeto,
+ * rompiendo el contrato `missing: string[]` de `ct-app/src/lib/api.ts`.
  */
 class BiMetricController extends BaseController
 {
@@ -63,8 +75,20 @@ class BiMetricController extends BaseController
         }
 
         $dictionary = new MetricDictionaryService();
-        if ($dictionary->getDefinition($metricKey) === []) {
+        $definition = $dictionary->getDefinition($metricKey);
+        if ($definition === []) {
             $this->fallar(404, 'NOT_FOUND', "Métrica desconocida en el catálogo: '{$metricKey}'.");
+        }
+
+        $estadoEjecucion = (string) ($definition['estado_ejecucion'] ?? '');
+        if ($estadoEjecucion !== 'ejecutable') {
+            // Fix ronda 1 (Important 2): ver docblock de la clase. Nunca depender de que
+            // MetricExecutor falle por accidente para bloquear una métrica descriptiva/predictiva.
+            $this->fallar(
+                422,
+                'METRIC_NOT_EXECUTABLE',
+                "La métrica '{$metricKey}' no es ejecutable (estado_ejecucion='{$estadoEjecucion}')."
+            );
         }
 
         $projectId = (int) ($_SESSION['project_id'] ?? 0);
@@ -77,21 +101,51 @@ class BiMetricController extends BaseController
         try {
             $result = $executor->execute($metricKey, $scope);
         } catch (RuntimeException $e) {
-            // Métrica declarada en el catálogo pero no `ejecutable` (ej. `descriptiva`, sin forma
-            // SQL reconocida por MetricExecutor::buildSelectExpression()) u otra falla del
-            // ejecutor: nunca un 500 crudo, mismo envelope de error que el resto del módulo.
+            // Cualquier otra falla del ejecutor no cubierta por el chequeo de estado_ejecucion de
+            // arriba (ej. una métrica marcada 'ejecutable' que igual no encaja en la forma SQL que
+            // reconoce MetricExecutor): nunca un 500 crudo, mismo envelope de error que el resto
+            // del módulo.
             $this->fallar(422, 'METRIC_NOT_EXECUTABLE', "La métrica '{$metricKey}' no se puede ejecutar: " . $e->getMessage());
         }
+
+        [$missing, $basis] = $this->normalizarMissing($result);
 
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'ok' => true,
             'value' => $result->value(),
-            'basis' => $result->basis(),
+            'basis' => $basis,
             'completeness' => $result->completeness(),
-            'missing' => $result->missing(),
+            'missing' => $missing,
         ], JSON_UNESCAPED_UNICODE);
         exit;
+    }
+
+    /**
+     * Fix ronda 1 (Important 1, revisión de spec+calidad): `MetricExecutor::buildMissing()` puede
+     * devolver un array MIXTO — elementos de lista (strings sueltos, ej.
+     * 'sin_filas_que_cumplan_los_filtros') junto con una clave string 'obras_sin_datos' (lista de
+     * project_id sin datos), en el caso real completeness='insuficiente'/'parcial' con scope de un
+     * solo proyecto. `json_encode()` de ese array mixto serializa como OBJETO en cuanto trae una
+     * clave string, no como array — rompe el contrato `missing: string[]` de
+     * `ct-app/src/lib/api.ts`, la primera exposición HTTP de `MetricResult`. Aquí se separa
+     * 'obras_sin_datos' hacia `basis` (información de cobertura, mismo lugar que
+     * obras_incluidas/obras_esperadas) y el resto se reindexa con `array_values()` para quedar
+     * plano.
+     *
+     * @return array{0:list<string>,1:array<string,mixed>}
+     */
+    private function normalizarMissing(MetricResult $result): array
+    {
+        $missing = $result->missing();
+        $basis = $result->basis();
+
+        if (array_key_exists('obras_sin_datos', $missing)) {
+            $basis['obras_sin_datos'] = $missing['obras_sin_datos'];
+            unset($missing['obras_sin_datos']);
+        }
+
+        return [array_values(array_map('strval', $missing)), $basis];
     }
 
     /**

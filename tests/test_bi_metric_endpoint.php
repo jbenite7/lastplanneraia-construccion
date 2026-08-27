@@ -106,6 +106,18 @@ const PROJECT_ID = 73; // project_id real de "Da Porto" (project_members, verifi
 const METRIC_KEY = 'pi_hard_restrictions_ready_rate'; // 'ejecutable' desde Task 3, único caso concreto pedido por el brief.
 const SEMANA_EXPLICITA = '1'; // semana real con datos en dev (12 filas), ver docblock.
 const METRIC_KEY_INEXISTENTE = 'no_existe_esta_metrica_xyz';
+// Fix ronda 1 (Important 1, revisión de spec+calidad): semana sin ninguna fila para el proyecto 73
+// -- filasUsadas=0 fuerza completeness='insuficiente' y basis.obras_incluidas=0 <
+// basis.obras_esperadas=1, que es exactamente la combinación donde
+// MetricExecutor::buildMissing() devuelve el array MIXTO (lista + clave 'obras_sin_datos') que
+// rompía el contrato `missing: string[]`. Verificado en vivo antes del fix: json_encode() daba
+// {"0":"sin_filas_que_cumplan_los_filtros","obras_sin_datos":[73]}, un objeto, no un array.
+const SEMANA_SIN_DATOS = '999';
+// Fix ronda 1 (Important 2): métrica real, declarada 'descriptiva' en el catálogo
+// (MetricDictionaryService.php), con aggregation_policy en prosa libre que MetricExecutor no
+// reconoce -- el caso concreto que D59 exige bloquear por estado declarado, no por accidente del
+// parser.
+const METRIC_KEY_DESCRIPTIVA = 'ps_pac_expected';
 
 /**
  * Login por la puerta de servicio (AGENTS.md). Nunca /login, nunca credenciales tecleadas.
@@ -372,6 +384,82 @@ if (is_array($json5)) {
 $check(
     stripos($body5, 'Fatal error') === false && stripos($body5, '<br') === false && stripos($body5, 'Stack trace') === false,
     'caso 5: sin señales de error PHP crudo en el cuerpo de la respuesta',
+);
+
+// ------------------------- Caso 6 (fix ronda 1, Important 1): missing en 'insuficiente' -----
+// Semana sin ninguna fila para el proyecto de sesion -> completeness='insuficiente' con
+// obras_incluidas=0 < obras_esperadas=1: la combinacion exacta donde
+// MetricExecutor::buildMissing() trae el array mixto (lista + clave 'obras_sin_datos') que
+// json_encode() serializaria como OBJETO si el controlador no lo normalizara antes de responder.
+
+$urlSinDatos = BASE . '/api/bi/control-tower/metricas/' . METRIC_KEY . '?semana=' . SEMANA_SIN_DATOS;
+[$code6, $body6] = getReq($urlSinDatos, $jarA);
+$json6 = json_decode($body6, true);
+
+$check($code6 === 200, 'caso 6: semana sin datos -> 200 (insuficiente no es un error)', "HTTP {$code6}, body: " . substr($body6, 0, 300));
+if (is_array($json6)) {
+    $check(($json6['ok'] ?? null) === true, 'caso 6: envelope {ok:true}');
+    $check(
+        array_key_exists('value', $json6) && $json6['value'] === null,
+        'caso 6: value == null (sin filas, nunca un valor inventado)',
+        // ?? trata null como "no seteado" (isset() da false con valores null) -- por eso se usa
+        // array_key_exists() explicito en vez de (...['value'] ?? 'MISSING') === null, que
+        // fallaria siempre que value SEA null (justo el caso que este check quiere confirmar).
+        'real: ' . (array_key_exists('value', $json6) ? var_export($json6['value'], true) : 'CLAVE_AUSENTE'),
+    );
+    $check(($json6['completeness'] ?? null) === 'insuficiente', 'caso 6: completeness == insuficiente', 'real: ' . var_export($json6['completeness'] ?? null, true));
+}
+$check(
+    str_contains($body6, '"missing":['),
+    "caso 6: missing viaja como array JSON plano ('[', no '{') -- json_encode() de un array con clave string 'obras_sin_datos' serializaria un objeto sin el fix",
+    'body: ' . substr($body6, 0, 400),
+);
+if (is_array($json6)) {
+    $check(
+        is_array($json6['missing'] ?? null) && array_is_list($json6['missing']),
+        'caso 6: missing decodifica a una lista PHP (array_is_list), no a un array asociativo',
+        'real: ' . var_export($json6['missing'] ?? null, true),
+    );
+    $check(
+        ($json6['missing'] ?? null) === ['sin_filas_que_cumplan_los_filtros'],
+        "caso 6: missing == ['sin_filas_que_cumplan_los_filtros'], sin la clave 'obras_sin_datos' colada adentro",
+        'real: ' . var_export($json6['missing'] ?? null, true),
+    );
+    $check(
+        ($json6['basis']['obras_sin_datos'] ?? null) === [PROJECT_ID],
+        'caso 6: basis.obras_sin_datos == [' . PROJECT_ID . '] -- el dato no se pierde, se mueve a basis',
+        'real: ' . var_export($json6['basis']['obras_sin_datos'] ?? null, true),
+    );
+}
+
+// --------------------- Caso 7 (fix ronda 1, Important 2): métrica 'descriptiva' -> 422 -----
+// ps_pac_expected existe en el catalogo pero esta declarada 'descriptiva' (no 'ejecutable'). El
+// endpoint debe bloquearla por ese estado declarado, no por que MetricExecutor falle al no
+// reconocer su aggregation_policy en prosa libre -- la invariante D59 no puede depender de un
+// accidente del parser.
+
+$urlDescriptiva = BASE . '/api/bi/control-tower/metricas/' . METRIC_KEY_DESCRIPTIVA;
+[$code7, $body7] = getReq($urlDescriptiva, $jarA);
+$json7 = json_decode($body7, true);
+
+$check($code7 === 422, "caso 7: metricKey 'descriptiva' (" . METRIC_KEY_DESCRIPTIVA . ') -> 422', "HTTP {$code7}, body: " . substr($body7, 0, 300));
+$check(is_array($json7), 'caso 7: el cuerpo es JSON valido (nunca un error PHP crudo)', 'body: ' . substr($body7, 0, 300));
+if (is_array($json7)) {
+    $check(($json7['ok'] ?? null) === false, 'caso 7: envelope {ok:false}');
+    $check(
+        ($json7['error']['code'] ?? null) === 'METRIC_NOT_EXECUTABLE',
+        'caso 7: error.code == METRIC_NOT_EXECUTABLE',
+        'real: ' . var_export($json7['error']['code'] ?? null, true),
+    );
+    $check(
+        is_array($json7['error'] ?? null) && !empty($json7['error']['message'] ?? ''),
+        'caso 7: error.message no vacio y legible',
+        'real: ' . var_export($json7['error']['message'] ?? null, true),
+    );
+}
+$check(
+    stripos($body7, 'Fatal error') === false && stripos($body7, '<br') === false && stripos($body7, 'Stack trace') === false,
+    'caso 7: sin señales de error PHP crudo en el cuerpo de la respuesta',
 );
 
 echo PHP_EOL . ($fallos === 0 ? "OK ({$total} aserciones)\n" : "FALLOS: {$fallos} de {$total}\n");
