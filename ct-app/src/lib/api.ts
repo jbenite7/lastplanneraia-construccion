@@ -167,3 +167,106 @@ export async function getRestricciones(): Promise<Restriccion[]> {
   }
   return body.restricciones
 }
+
+/**
+ * Espejo camelCase de `LineageService::getForMetric()` (PHP: src/Services/Bi/LineageService.php),
+ * fijado por `Linaje.test.tsx` (rol A, Task 7 paso 4). `cutoffPolicy` viaja desde el paso 4
+ * ronda 1 — `getForMetric()` no lo copiaba al array de salida hasta ese fix.
+ */
+export interface LineageInfo {
+  metricKey: string
+  metricName: string
+  definition: string
+  formula: string
+  sourceView: string
+  sourceTables: string
+  grain: string
+  cutoffPolicy: string
+  filters: string
+  version: string
+  lastUpdated: string
+  knownLimitations: string
+}
+
+/** Forma cruda snake_case que entrega `LineageService::getForMetric()` vía el envelope BI. */
+interface LineageInfoRaw {
+  metric_key: string
+  metric_name: string
+  definition: string
+  formula: string
+  source_view: string
+  source_tables: string
+  grain: string
+  cutoff_policy: string
+  filters: string
+  version: string
+  last_updated: string
+  known_limitations: string
+}
+
+/**
+ * `GET /api/bi/lineage` usa un envelope propio y distinto al `{ok:true/false}` del resto de este
+ * archivo — `{"respuesta":"BIEN","lineage":{...}}` (ver `BiControlTowerApiController::lineage()`,
+ * src/Controllers/Api/BiControlTowerApiController.php:296-312). Cuando el `metric_key` no está en
+ * el catálogo, `lineage` llega como `[]` (PHP vacío serializado): sigue siendo `respuesta:'BIEN'`,
+ * 200, sin error — no es una falla de servidor, así que ese caso no lanza.
+ */
+interface LineageEnvelope {
+  respuesta: string
+  lineage: LineageInfoRaw | unknown[]
+}
+
+function toLineageInfo(raw: LineageInfoRaw): LineageInfo {
+  return {
+    metricKey: raw.metric_key,
+    metricName: raw.metric_name,
+    definition: raw.definition,
+    formula: raw.formula,
+    sourceView: raw.source_view,
+    sourceTables: raw.source_tables,
+    grain: raw.grain,
+    cutoffPolicy: raw.cutoff_policy,
+    filters: raw.filters,
+    version: raw.version,
+    lastUpdated: raw.last_updated,
+    knownLimitations: raw.known_limitations,
+  }
+}
+
+/**
+ * GET /api/bi/lineage?metric_key=X — el contrato de linaje de una métrica (CT-6.3). Resuelve
+ * `null` (no rechaza) cuando el servidor responde BIEN con `lineage:[]`: "esta cifra no tiene
+ * lineage declarado en el catálogo" es un resultado válido, no una falla de red/servidor. Rechaza
+ * con `CtApiError` ante cualquier falla real (403, 500, respuesta sin `respuesta:'BIEN'`, red
+ * caída) — la promesa nunca resuelve en silencio ante un error del servidor.
+ */
+export async function getLineage(metricKey: string): Promise<LineageInfo | null> {
+  const res = await fetch(`/api/bi/lineage?metric_key=${encodeURIComponent(metricKey)}`, {
+    method: 'GET',
+    credentials: 'same-origin',
+    headers: {
+      'X-AIA-Expect-Json': '1',
+    },
+  })
+
+  const body = (await res.json().catch(() => null)) as (LineageEnvelope & Record<string, unknown>) | null
+
+  if (!res.ok || !body || body.respuesta !== 'BIEN') {
+    // El endpoint no comparte el envelope `{ok:false,error:{code,message}}` del resto de este
+    // archivo (ver docstring de LineageEnvelope): en 401/403 devuelve `{error: string}` o
+    // `{reason: string}` según cuál guardia lo detuvo. Se usa lo que venga, con un mensaje
+    // genérico como último recurso — nunca un catch mudo.
+    const mensaje =
+      (typeof body?.error === 'string' ? body.error : null) ??
+      (typeof body?.reason === 'string' ? body.reason : null) ??
+      `No se pudo cargar el linaje de la métrica (HTTP ${res.status}).`
+    throw new CtApiError('BAD_RESPONSE', mensaje, res.status, body)
+  }
+
+  if (Array.isArray(body.lineage)) {
+    // getForMetric() devuelve [] (PHP) cuando metric_key no está en el catálogo — ver docstring.
+    return null
+  }
+
+  return toLineageInfo(body.lineage)
+}

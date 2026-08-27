@@ -77,6 +77,7 @@ class LineageService
             'source_view' => $definition['execution_source'],
             'source_tables' => implode(', ', $definition['source_relations']),
             'grain' => $definition['grain'],
+            'cutoff_policy' => $definition['cutoff_policy'],
             'filters' => implode(', ', $definition['filters']),
             'version' => $definition['version'],
             'last_updated' => $definition['last_updated'] ?? '2026-07-10 00:00:00',
