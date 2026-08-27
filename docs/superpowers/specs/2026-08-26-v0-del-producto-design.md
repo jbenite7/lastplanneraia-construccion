@@ -192,6 +192,16 @@ de inicio quedó descartado (decisión 11).
 5. Cada una de las 26 pantallas cerrada lo está en escritorio y en celular a 390×844 (decisión 9),
    en tema oscuro y claro (decisión 10), con su tabla migrada. Sin pantallas «a medias».
 6. **Existe el número** — en paradas y decisiones consumidas — y las olas están dimensionadas con él.
+   **Cumplida para la Ola 1 (piloto), el 2026-08-27:** 31 entradas en la Bitácora de
+   `docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md` (sección `## Cierre` tiene el
+   desglose completo por tipo) — 16 paradas, 3 rulings de revisión completa (cada uno destapó un
+   hallazgo real: parseo de filtros, un bypass de RBAC, arquitectura de `theme-claro.css` sin
+   enlazar), 7 decisiones reales de Felipe consumidas, 4 hallazgos, 2 correcciones, 1 confirmación,
+   1 ganancia, 1 bloqueo de gate. **Un bloqueo raíz repetido en 4 entradas** (`CT_PILOTO` apagado en
+   el contenedor Docker compartido, sin vía de activarlo desde una sesión de ejecución) es la
+   primera entrada de la re-priorización de F3–F5: ninguna de las 7 hojas restantes puede
+   verificarse end-to-end contra el documento real mientras siga apagado — activarlo es el primer
+   paso antes de dimensionar el resto, no un detalle aparte.
 7. Cerrar cualquier frente incluye actualizar este documento, forzado por el checklist del template
    de PR. Un frente que no lo actualizó no está cerrado.
 

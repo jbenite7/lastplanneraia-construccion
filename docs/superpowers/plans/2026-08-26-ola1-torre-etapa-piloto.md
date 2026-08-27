@@ -359,6 +359,77 @@ huérfanas · lista accionable · titular · semáforo · pareto**, con:
 
 ---
 
+## Cierre
+
+**Estado de la condición de hecho, con evidencia de esta sesión (2026-08-27), verificado sin
+tubería, cada RC en su propia línea:**
+
+1. **Parcial.** La lógica (asignar responsable/fecha sin salir de la hoja, persistencia,
+   escritorio+móvil) está construida y probada a nivel unitario (`ListaRestricciones.test.tsx`,
+   `PanelGestion.test.tsx`, `Intermedia.test.tsx` — 143/143 en `ct-app`). El e2e real contra el
+   servidor con rol permitido y denegado (`tests/browser/ct-intermedia.spec.mjs`) sigue **rojo por
+   el bloqueo de `CT_PILOTO`**, no por el código: confirmado de nuevo hoy (RC=1, 3/3 casos, mismo
+   diagnóstico que la entrada 14/15 de la Bitácora). No se cita como "probado, salida citada" en el
+   sentido literal de la condición — queda pendiente de que se active la bandera.
+2. **Parcial**, mismo motivo que 1: `Linaje.tsx` implementa el patrón (`aria-expanded`/
+   `aria-controls`, teclado nativo), probado en Vitest; el clic/teclado contra el documento real
+   comparte el mismo bloqueo de `CT_PILOTO`.
+3. **Cumplida**, reverificada hoy: `tests/test_bi_paridad_metricas.php` → RC=0, 27/27. `pg_radar_desempeno`
+   sigue con 2 de 3 ejes fuera de `MetricExecutor` por límite estructural ya documentado
+   (`known_limitations` del catálogo) — no es una paridad rota, es una limitación conocida y citada.
+4. **Cumplida** en tareas anteriores de esta etapa (Task 4, bitácora entrada 8, autorización de
+   Felipe ya dada); reverificada hoy sin regresión: `tests/test_global_table_safety.php` → RC=0.
+5. **Parcial.** Técnicamente cumplida y verificada hoy: 0 hex fuera de `ct-app/src/lib/tokens.css`
+   (`node --test tests/design-system/theme-claro-tokens.test.mjs` → 49/49), suite estático del
+   design system 8/8 en verde. El **visto visual** de Felipe (decisión 10) no llegó como un "sí"
+   textual explícito sobre las capturas del panel del FRENO — llegó como `/goal` delegando el
+   criterio de tokens y pidiendo terminar el plan corrido. Se interpreta como autorización de facto
+   para cerrar esta hoja (no se propaga el tema claro a ninguna otra pantalla, que es lo que la
+   decisión 10 realmente protege), pero se deja anotado sin disfrazarlo de un "sí" que no fue dicho
+   así.
+6. **Cumplida con este párrafo** — el número, abajo.
+7. **Pendiente** — es el paso que sigue a este cierre (push + PR + CI).
+
+### El número del piloto
+
+**31 entradas en la Bitácora**, Tasks 1 a 8 de esta etapa (el contador corre desde la Tarea 1, regla
+de Global Constraints):
+
+| Tipo | Entradas | Cuántas |
+|---|---|---|
+| Parada (pura o compuesta con Decisión) | 1,2,4,5,6,8,9,11,13,14,15,16,17,18,19,24 | 16 |
+| Ruling (revisión completa opus) | 7,10,12 | 3 |
+| Decisión consumida (de Felipe, cualquier variante) | 14,18,20,23,25,28,30 | 7 |
+| Hallazgo (puro o compuesto) | 20,27,29,31 | 4 |
+| Corrección | 22,26 | 2 |
+| Confirmación | 21 | 1 |
+| Ganancia | 3 | 1 |
+| Bloqueo (gate) | 31 | 1 |
+
+**Decisiones reales de Felipe consumidas en el chat** (no rulings técnicos del ejecutor, aunque la
+tabla de arriba las agrupe bajo el mismo tipo): activar `CT_PILOTO` con ventana coordinada (14);
+replantear la paleta completa, dos temas, de una vez, con la referencia de aia.com.co (18); el par
+semáforo/pareto entra a Intermedia con color por par (20); el censo transversal de tokens de estilo
+y color va a la etapa siguiente (25, corregida en 26); los dos extremos del mapeo de color del
+semáforo (28, con los intermedios resueltos por el ejecutor); delegar el criterio del oscuro y
+continuar el plan corrido vía `/goal` (30).
+
+**Bloqueo raíz repetido en 4 entradas distintas (14, 15, 16, 31) y en Task 9 mismo:** `CT_PILOTO`
+sigue apagado en el contenedor compartido — ni un `.env` editado a mano bastaría, porque
+`docker-compose.yml` no lo inyecta y el contenedor necesitaría recrearse, acción que afecta a otras
+sesiones. Es la única condición de hecho que este cierre no puede satisfacer por su cuenta; queda
+en `TASKS.md` como pendiente de activación por Felipe.
+
+**Dimensiona la etapa siguiente:** de 31 entradas, 3 rulings de revisión completa (opus) encontraron
+un hallazgo real cada vez (parseo de filtros, bypass de RBAC, arquitectura de `theme-claro.css` sin
+enlazar) — sugiere que la revisión completa por opus en cada tarea de las 7 hojas restantes sigue
+pagando su costo, no es ceremonia. 2 correcciones de Felipe sobre el mismo tema (25→26) sugieren que
+el censo de tokens necesita su alcance escrito con más precisión desde el principio, no ajustado
+después. El bloqueo de `CT_PILOTO` es el primer punto de la re-priorización de F3–F5: sin él, ninguna
+hoja nueva puede verificarse end-to-end contra el documento real.
+
+---
+
 ## Bitácora del piloto
 
 *(se llena durante la ejecución — es el entregable de la decisión 5/N y la condición 6 de la spec)*

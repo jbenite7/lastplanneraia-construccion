@@ -9,3 +9,14 @@
 - [ ] La revisión manual de accesibilidad está documentada.
 - [ ] Goldens solo se actualizaron con aprobación visual explícita.
 - [ ] Los archivos protegidos de Programa General permanecen sin cambios.
+
+## Cierre de frente (`AGENTS.md` §Publicación)
+
+- [ ] **Verificación citada**: los comandos que prueban la condición de hecho y su salida real
+  (RC en su propia línea) están en la descripción de este PR, no solo "pasa".
+- [ ] **Spec actualizada**: si este frente tiene una spec en `docs/superpowers/specs/`, quedó
+  actualizada en este mismo PR (condición de hecho, decisiones consumidas, lo que cambió de
+  alcance). Un frente que no la actualizó no está cerrado.
+- [ ] **Bitácora al día**: si este frente tiene un plan con `## Bitácora del piloto` (o
+  equivalente) en `docs/superpowers/plans/`, sus paradas y decisiones están anotadas hasta el
+  último commit de este PR, no solo hasta donde empezó la sesión.
