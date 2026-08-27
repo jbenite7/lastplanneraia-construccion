@@ -12,6 +12,16 @@
  * tokens.css). Mismo patrón que el shell de Plan de Compras v2
  * (views/plan-compras/app.view.php) — el bundle NO se edita a mano, lo genera
  * `npm run build` desde `ct-app/` sobre public/ct-app/.
+ *
+ * Tema claro (Task 8, entrada 19c/27 de la Bitácora del plan): `theme-claro.css` se enlaza
+ * DESPUÉS de `aia-design-system.css` a propósito — ambos declaran `[data-aia-theme="X"]` con
+ * la MISMA especificidad dentro de la misma capa `theme`, así que gana el orden de aparición
+ * en el documento, no el atributo puesto en `<html>`. Enlazarlo antes (o dentro de
+ * aia-design-system.css) dejaría el tema claro muerto en silencio. El `data-aia-theme="dark"`
+ * fijo de abajo y `theme-bootstrap.js` siguen siendo el default del servidor (DS-009, no se
+ * toca) — el bundle de ct-app es quien decide en runtime si lo sobreescribe a "light" (ver
+ * `ct-app/src/lib/theme.ts`), acotado a esta hoja bajo la bandera del piloto, nunca un
+ * conmutador global (eso reabriría DS-030, decisión de Felipe si algún día se pide).
  */
 ?>
 <!DOCTYPE html>
@@ -24,6 +34,7 @@
 	<?= \App\View\Components\DesignSystemHeadComponent::renderScript('/js/modules/aia_ui/theme-bootstrap.js') ?>
 	<link rel="stylesheet" href="/css/tokens.css?v=<?php echo (int) $tokensVersion; ?>">
 	<?= \App\View\Components\DesignSystemHeadComponent::renderStylesheet('/css/aia-design-system.css') ?>
+	<link rel="stylesheet" href="/css/design-system/theme-claro.css?v=<?php echo (int) $tokensVersion; ?>">
 	<link rel="stylesheet" href="/ct-app/assets/ct.css?v=<?php echo (int) $assetVersion; ?>">
 </head>
 <body class="aia-shell aia-shell--sidebar">

@@ -6,6 +6,7 @@ import { AlarmaHuerfanas } from './AlarmaHuerfanas'
 import { Titular } from './Titular'
 import { ListaRestricciones } from './ListaRestricciones'
 import type { AjusteGuardado } from './ListaRestricciones'
+import { ToggleTema } from './ToggleTema'
 
 // Hoja de Intermedia (ct-app, etapa piloto, Task 7 ensamblaje, CT-8.3): ensambla alarma de
 // huérfanas (posición 1) + titular narrativo (posición 2) + lista de restricciones (posición 3,
@@ -102,6 +103,7 @@ export function Intermedia() {
 
   return (
     <div>
+      <ToggleTema />
       <AlarmaHuerfanas huerfanas={huerfanas} onVerHuerfanas={() => setSoloHuerfanas(true)} />
       <Titular resumen={resumen} />
       <ListaRestricciones restricciones={restriccionesVisibles} onGestionGuardada={handleGestionGuardada} />
