@@ -592,12 +592,6 @@ INSERT INTO `programa_consolidado`
 VALUES
   (73, 1001, 1, 1, 101, 1, '1.1', 'Pintura sintetica nivel uno', 0, '2026-07-06', '2026-07-19', 1, 0.25, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (73, 1002, 2, 1, 102, 2, '1.2', 'Red electrica sintetica', 0, '2026-07-13', '2026-08-02', 0, 0.10, 'Actividad Futura', 1, 0.60, '1', '0.5', '0.5', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
-  -- unique_id 1473, Semana 2: test_bitacora_avance_endpoint.php (2026-08-26, ajeno a esta
-  -- entrada del fixture) ejercita el endpoint real de edicion de avance y necesita una fila
-  -- editable de Da Porto en semana 2 -- sin ella, POST /api/general/update devuelve 400 porque
-  -- la fila no existe, no por ningun defecto del endpoint. Sintetica, mismo patron que el resto
-  -- de este INSERT (nunca datos reales de produccion).
-  (73, 1003, 3, 2, 1473, 3, '1.3', 'Campamentos sintetico', 0, '2026-07-20', '2026-08-02', 0, 0.90, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0.5', '1', '1', 'Proveedor CI Construccion', 'Profesional CI Construccion', 1, 'CI-003', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (68, 11001, 1, 5, 11058, 1, 'JMC.1', 'Actividad sintetica JMC', 0, '2026-07-27', '2026-08-09', 1, 0.20, 'En Curso', 0, 0.80, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-001', 1, 100, 'm2', '0%', '0%', '0%', '0%'),
   (68, 11002, 2, 5, 11059, 2, 'JMC.2', 'Actividad sintetica JMC dos', 0, '2026-07-27', '2026-08-16', 0, 0.00, 'Actividad Futura', 0, 0.50, '1', '1', '1', '1', '0', '0', '0', 'Proveedor CI JMC', 'Profesional CI JMC', 1, 'CI-002', 1, 200, 'ml', '0%', '0%', '0%', '0%'),
   -- Sin esta pareja de filas, ProgramChangeDetector::run() (disparado automaticamente por
