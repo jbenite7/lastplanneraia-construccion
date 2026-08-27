@@ -1,0 +1,65 @@
+/* Tema claro del design system (Task 8, plan 2026-08-26-ola1-torre-etapa-piloto.md,
+   entrada 18/23 de la Bitácora del piloto, ronda de revisión de la entrada 24).
+   Mismo patrón que entrypoints/theme-overrides.css usa para el oscuro: este
+   bloque solo re-vincula cada `--ds-active-*` hacia su token base `-light` (o,
+   para los seis slots de la reconciliación de la entrada 23, hacia el token
+   principal o `-dark` que corresponda). El color vive en public/css/tokens.css:
+   la única excepción documentada es `--ds-active-data-plan`, que se aparta del
+   inmobiliario principal del manual (#00a499) porque ese tono da <3:1 contra los
+   fondos claros reales de la app (ver más abajo).
+   Contrato: tests/design-system/theme-claro-tokens.test.mjs.
+
+   El oscuro no cambia: theme-overrides.css y los tokens `-dark` de tokens.css
+   no se tocan desde aquí. */
+
+@layer theme {
+  [data-aia-theme="light"],
+  .aia-theme-light {
+    color-scheme: light;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas-light);
+    --ds-active-bg-page: var(--ds-color-bg-page-light);
+    --ds-active-surface: var(--ds-color-surface-light);
+    --ds-active-surface-raised: var(--ds-color-surface-raised-light);
+    --ds-active-surface-glass: var(--ds-color-surface-glass-light);
+    --ds-active-text-primary: var(--ds-color-text-primary-light);
+    --ds-active-text-secondary: var(--ds-color-text-secondary-light);
+    --ds-active-border: var(--ds-color-border-separator-light);
+    --ds-active-border-control: var(--ds-color-border-control-light);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-light);
+    --ds-active-action-primary: var(--ds-color-action-primary-bg-light);
+    --ds-active-action-primary-hover: var(--ds-color-action-primary-hover-light);
+    --ds-active-action-text: var(--ds-color-action-primary-text-light);
+
+    /* Reconciliación (entrada 23): los acentos de dominio en claro usan el tono
+       PRINCIPAL del manual (mas oscuro que el on-dark), asi que el texto se
+       invierte a blanco — #141c18 (on-dark) da 3.46:1 sobre #b55211 y falla AA;
+       blanco da 5.02:1. Re-vinculan a los tokens de submarca YA existentes en
+       tokens.css (sin sufijo de tema — son universales), mismo principio var()
+       que el resto de este bloque. (Corregido: el guard resolvía estos tres con
+       una sola hoja y no veía tokens.css; se amplió a dos hojas en la misma
+       pasada que este archivo, así que var() ya resuelve). */
+    --ds-active-domain-construction: var(--ds-color-domain-construction);
+    --ds-active-domain-construction-text: var(--ds-color-text-inverse);
+    /* Excepción (entrada 24, revisión de contraste): el inmobiliario principal
+       del manual (#00a499, var(--ds-color-domain-real-estate)) da <3:1 contra
+       los fondos claros reales donde este token se pinta de verdad — 2.97:1
+       sobre --ds-color-bg-canvas-light (#fafafa, programacion-intermedia.css
+       barra sólida) y 2.82:1 sobre --ds-color-surface-raised-light (#f4f4f5,
+       bi-figure.css stroke de línea) — y falla WCAG 1.4.11 (non-text contrast,
+       mínimo 3:1). #00948a es el mismo matiz oscurecido ~10% hacia negro: 3.59:1
+       sobre canvas, 3.41:1 sobre surface-raised, 3.75:1 sobre surface (#ffffff).
+       Literal a propósito: no hay token base para este tono derivado. */
+    --ds-active-data-plan: #00948a;
+    --ds-active-data-executed: var(--ds-color-domain-corporate);
+
+    /* La nav/sidebar NO tiene modo claro propio (decision del controlador,
+       entrada 23): se ancla a sus valores oscuros fijos en ambos temas, mismo
+       patron que Linear/Stripe/Raycast. Por eso apunta a los -dark, nunca a
+       --ds-active-* (que cambiaria de valor dentro de este mismo bloque). */
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-color-text-primary-dark);
+    --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}

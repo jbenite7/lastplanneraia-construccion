@@ -163,6 +163,14 @@
     --ds-color-domain-architecture-on-dark: #877cd1;
     --ds-color-text-on-domain-dark: #141c18;
 
+    /* ACCION PRIMARIA en claro: corporativo solido, texto blanco (8.3-8.67:1
+       segun fondo, medido con el parser del guard). El hover reusa
+       --ds-color-domain-corporate-deep (ya declarado arriba): 12.18:1 contra
+       blanco, sin introducir un hex nuevo. */
+    --ds-color-action-primary-bg-light: #1a5633;
+    --ds-color-action-primary-text-light: #ffffff;
+    --ds-color-action-primary-hover-light: var(--ds-color-domain-corporate-deep);
+
     --ds-color-bg-canvas: #f7faf8;
     --ds-color-bg-page: #fbfdfc;
     --ds-color-bg-parchment: var(--aia-bg-parchment);
@@ -176,17 +184,38 @@
     --ds-color-surface-raised-dark: rgba(35, 48, 41, 0.86);
     --ds-color-surface-glass-dark: rgba(35, 48, 41, 0.66);
 
+    /* TEMA CLARO (Task 8, entrada 18 de la Bitacora del piloto). Anclado a la
+       paleta medida en aia.com.co (neutros zinc, casi acromaticos): estos son
+       tokens BASE con hex literal, consumidos por
+       public/css/design-system/theme-claro.css via var(), igual que los
+       *-dark de arriba lo hacen desde theme-overrides.css. El set semantico se
+       define completo de una vez (decision de Felipe), no solo lo que la hoja
+       de Intermedia consume hoy. Guard: tests/design-system/theme-claro-tokens.test.mjs. */
+    --ds-color-bg-canvas-light: #fafafa;
+    --ds-color-bg-page-light: #ffffff;
+    --ds-color-surface-light: #ffffff;
+    --ds-color-surface-raised-light: #f4f4f5;
+    --ds-color-surface-glass-light: rgba(255, 255, 255, 0.8);
+
     --ds-color-text-primary: #141c18;
     --ds-color-text-secondary: #52645a;
     --ds-color-text-tertiary: #72857a;
     --ds-color-text-inverse: #ffffff;
     --ds-color-text-primary-dark: #f7faf8;
     --ds-color-text-secondary-dark: #c7d4cc;
+    --ds-color-text-primary-light: #18181b;
+    --ds-color-text-secondary-light: #52525b;
+    /* Solo iconografia decorativa: 2.56:1 sobre blanco, falla AA de texto a
+       proposito (ver guard, seccion "nunca se usa como token de texto"). */
+    --ds-color-icon-muted-light: #a1a1aa;
 
     --ds-color-border-subtle: rgba(26, 86, 51, 0.12);
     --ds-color-border-default: rgba(26, 86, 51, 0.2);
     --ds-color-border-strong: rgba(26, 86, 51, 0.36);
     --ds-color-border-dark: rgba(221, 239, 230, 0.22);
+    /* SEPARATOR claro: filete decorativo, WCAG 1.4.11 no lo gobierna (mismo
+       principio que el par -dark de mas abajo). */
+    --ds-color-border-separator-light: rgba(24, 24, 27, 0.10);
 
     /* PAR DE BORDES SOBRE OSCURO — la distincion que hace WCAG 1.4.11 y que el
        sistema no declaraba:
@@ -203,9 +232,18 @@
        Si solo separa dos zonas, SEPARATOR. Nunca uses SEPARATOR para un control. */
     --ds-color-border-control-dark: rgba(221, 239, 230, 0.4);
     --ds-color-border-separator-dark: var(--ds-color-border-dark);
+    /* CONTROL claro: 4.63:1 sobre canvas y 4.83:1 sobre surface (medido con el
+       parser del guard), muy por encima del 3:1 minimo de WCAG 1.4.11. */
+    --ds-color-border-control-light: #71717a;
 
     --ds-color-focus-ring: rgba(46, 125, 87, 0.28);
-    --ds-color-focus-ring-light: #006d66;
+    /* Corregido (Task 8, tema claro, entrada 18): este token no tenia consumidor
+       (grep confirmado antes del cambio) y traia un valor huerfano de un intento
+       previo -#006d66, el mismo hex que --ds-color-state-info-text-light-. La
+       decision de Felipe para el foco de marca en claro es el corporativo
+       #1a5633, igual que --ds-color-action-primary-bg-light; se corrige aqui
+       porque nada lo consumia todavia y el cambio es aditivo en la practica. */
+    --ds-color-focus-ring-light: #1a5633;
     --ds-color-focus-ring-dark: #2caa9f;
 
     /* ACENTO LEGADO (azul). Unico consumidor: el anillo de foco de

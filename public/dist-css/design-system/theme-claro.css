@@ -1,0 +1,28 @@
+@layer theme {
+  [data-aia-theme="light"],
+  .aia-theme-light {
+    color-scheme: light;
+    --ds-active-bg-canvas: var(--ds-color-bg-canvas-light);
+    --ds-active-bg-page: var(--ds-color-bg-page-light);
+    --ds-active-surface: var(--ds-color-surface-light);
+    --ds-active-surface-raised: var(--ds-color-surface-raised-light);
+    --ds-active-surface-glass: var(--ds-color-surface-glass-light);
+    --ds-active-text-primary: var(--ds-color-text-primary-light);
+    --ds-active-text-secondary: var(--ds-color-text-secondary-light);
+    --ds-active-border: var(--ds-color-border-separator-light);
+    --ds-active-border-control: var(--ds-color-border-control-light);
+    --ds-active-focus-ring: var(--ds-color-focus-ring-light);
+    --ds-active-action-primary: var(--ds-color-action-primary-bg-light);
+    --ds-active-action-primary-hover: var(--ds-color-action-primary-hover-light);
+    --ds-active-action-text: var(--ds-color-action-primary-text-light);
+    --ds-active-domain-construction: var(--ds-color-domain-construction);
+    --ds-active-domain-construction-text: var(--ds-color-text-inverse);
+    --ds-active-data-plan: #00948a;
+    --ds-active-data-executed: var(--ds-color-domain-corporate);
+    --ds-active-nav-bg: var(--ds-nav-bg-dark);
+    --ds-active-nav-border: var(--ds-nav-border-color-dark);
+    --ds-active-nav-text: var(--ds-color-text-primary-dark);
+    --ds-active-nav-text-muted: var(--ds-color-text-secondary-dark);
+    --ds-active-nav-mark-filter: invert(1) brightness(1.15);
+  }
+}

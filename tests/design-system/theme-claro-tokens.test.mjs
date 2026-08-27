@@ -216,7 +216,7 @@ for (const [token, esperado] of Object.entries(SLOTS_LIGHT_EXACTOS)) {
   });
 }
 
-test('--ds-color-icon-muted-light nunca se usa como token de texto (2.46:1 sobre blanco, falla AA)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+test('--ds-color-icon-muted-light nunca se usa como token de texto (2.56:1 sobre blanco, falla AA)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
   // Documentación ejecutable: el propio valor NO alcanza 4.5:1 sobre blanco —
   // confirma por qué el token es SOLO iconografía decorativa, nunca texto.
   const r = ratioContraste('#a1a1aa', '#ffffff');
@@ -360,8 +360,108 @@ test('inmobiliario (#00a499) NO alcanza 4.5:1 sobre blanco y por tanto no se usa
 });
 
 // ---------------------------------------------------------------------------
+// Reconciliación (2026-08-27): seis slots del inventario real de --ds-active-*
+// (verificado exhaustivamente contra theme-overrides.css, 21 slots totales) que
+// este archivo no cubría cuando se escribió — el diccionario SLOTS_LIGHT_EXACTOS
+// de arriba fija 13 de 21. Los seis siguientes se resolvieron con Felipe en una
+// sesión posterior (entrada 23 de la Bitácora del plan) y siguen el mismo
+// principio de re-vinculación var() que theme-overrides.css usa para dark, no
+// valores hex sueltos.
+// ---------------------------------------------------------------------------
+
+test('domain-construction-light usa el tono PRINCIPAL del manual (no el on-dark)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  const valor = resolverToken('--ds-active-domain-construction', [temaClaroCss, tokensCss]);
+  assert.equal(valor, '#b55211', `domain-construction en claro debería resolver al principal #b55211 (var(--ds-color-domain-construction)) y vale: ${valor}`);
+});
+
+test('domain-construction-text-light es blanco: el texto oscuro de dark (#141c18) falla AA aquí', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  // Medido (entrada 23): #141c18 sobre #b55211 da 3.46:1 (falla 4.5); blanco da 5.02:1.
+  // En claro los acentos de dominio usan su tono PRINCIPAL (mas oscuro que el on-dark
+  // de dark), asi que el texto se invierte a blanco -- mismo patron que action-text.
+  const rFalla = ratioContraste('#141c18', '#b55211');
+  assert.ok(rFalla < 4.5, `el supuesto de la corrección no aplica: #141c18 da ${rFalla.toFixed(2)}:1 sobre #b55211`);
+  const valor = resolverToken('--ds-active-domain-construction-text', [temaClaroCss, tokensCss]);
+  assert.equal(valor, '#ffffff', `domain-construction-text en claro debería ser blanco y vale: ${valor}`);
+  const r = ratioContraste(valor, '#b55211');
+  assert.ok(r >= 4.5, `domain-construction-text sobre domain-construction da ${r.toFixed(2)}:1 — se esperaba >=4.5:1`);
+});
+
+test('data-executed-light usa el tono PRINCIPAL de marca (no el on-dark)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  const executed = resolverToken('--ds-active-data-executed', [temaClaroCss, tokensCss]);
+  assert.equal(executed, '#1a5633', `data-executed en claro debería resolver al corporativo principal #1a5633 y vale: ${executed}`);
+});
+
+test('data-plan-light usa #00948a (inmobiliario oscurecido), no el principal #00a499 del manual', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  // Revisión de contraste (entrada 24): #00a499 da <3:1 contra los fondos claros
+  // reales donde el token se pinta de verdad (barra sólida en
+  // programacion-intermedia.css, stroke de línea en bi-figure.css) y falla WCAG
+  // 1.4.11 (non-text contrast, mínimo 3:1). #00948a es el mismo matiz oscurecido
+  // ~10% hacia negro y sí alcanza 3:1 en los tres fondos reales.
+  const plan = resolverToken('--ds-active-data-plan', [temaClaroCss, tokensCss]);
+  assert.equal(plan, '#00948a', `data-plan en claro debería resolver a #00948a y vale: ${plan}`);
+
+  const canvas = resolverToken('--ds-color-bg-canvas-light', [temaClaroCss, tokensCss]);
+  const surface = resolverToken('--ds-color-surface-light', [temaClaroCss, tokensCss]);
+  const raised = resolverToken('--ds-color-surface-raised-light', [temaClaroCss, tokensCss]);
+
+  const rCanvas = ratioContraste(plan, canvas);
+  const rSurface = ratioContraste(plan, surface);
+  const rRaised = ratioContraste(plan, raised);
+
+  assert.ok(rCanvas >= 3, `data-plan sobre canvas (${canvas}) da ${rCanvas.toFixed(2)}:1 — se esperaba >=3:1`);
+  assert.ok(rSurface >= 3, `data-plan sobre surface (${surface}) da ${rSurface.toFixed(2)}:1 — se esperaba >=3:1`);
+  assert.ok(rRaised >= 3, `data-plan sobre surface-raised (${raised}) da ${rRaised.toFixed(2)}:1 — se esperaba >=3:1`);
+
+  // Anti-regresión del hallazgo: el principal del manual (#00a499) NO alcanza
+  // 3:1 contra estos mismos fondos — por eso se derivó #00948a.
+  const rCanvasOriginal = ratioContraste('#00a499', canvas);
+  assert.ok(rCanvasOriginal < 3, `#00a499 sobre canvas da ${rCanvasOriginal.toFixed(2)}:1 — se esperaba <3:1 (por eso se oscureció a #00948a)`);
+});
+
+test('la nav/sidebar se mantiene con sus valores OSCUROS en ambos temas (ancla de identidad)', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  // Decisión del controlador (entrada 23): la nav no tiene modo claro propio --
+  // mismo patrón que Linear/Stripe/Raycast (chrome oscuro incluso en apps claras).
+  // Por eso apunta a los tokens -dark FIJOS, nunca a --ds-active-* (que cambiaría
+  // de valor dentro del propio bloque light).
+  const NAV_FIJOS_A_DARK = {
+    '--ds-active-nav-bg': '--ds-nav-bg-dark',
+    '--ds-active-nav-border': '--ds-nav-border-color-dark',
+    '--ds-active-nav-text': '--ds-color-text-primary-dark',
+    '--ds-active-nav-text-muted': '--ds-color-text-secondary-dark',
+  };
+  for (const [activo, esperadoDark] of Object.entries(NAV_FIJOS_A_DARK)) {
+    const crudo = valorDeclarado(temaClaroCss, activo);
+    assert.ok(crudo, `${activo} no se declara en el bloque light de theme-claro.css`);
+    assert.match(
+      crudo,
+      new RegExp(`^var\\(${esperadoDark}\\)$`),
+      `${activo} debería apuntar a var(${esperadoDark}) (fijo, no al --ds-active-* que cambia con el tema) y vale: ${crudo}`,
+    );
+  }
+  const filtro = valorDeclarado(temaClaroCss, '--ds-active-nav-mark-filter');
+  assert.equal(filtro, 'invert(1) brightness(1.15)', `nav-mark-filter en claro debería ser idéntico al de dark y vale: ${filtro}`);
+});
+
+// ---------------------------------------------------------------------------
 // Cero hex fuera de tokens en ct-app (fuera de las hojas de tokens mismas).
 // ---------------------------------------------------------------------------
+
+test('theme-claro.css no declara hex literales fuera de la excepción documentada de data-plan', { skip: !temaClaroExiste && 'theme-claro.css no existe' }, () => {
+  // Cero hex fuera de tokens.css, salvo la única excepción documentada arriba
+  // (--ds-active-data-plan: #00948a, con su comentario de motivo y contraste).
+  // Se ignoran los comentarios /* ... */ (donde se citan hex con fines
+  // explicativos) y la línea de la declaración exceptuada en sí.
+  const sinComentarios = temaClaroCss.replace(/\/\*[\s\S]*?\*\//g, '');
+  const lineasConHex = sinComentarios
+    .split('\n')
+    .filter((linea) => /#[0-9a-fA-F]{3,8}\b/.test(linea))
+    .filter((linea) => !/--ds-active-data-plan\s*:\s*#00948a\s*;/.test(linea));
+  assert.equal(
+    lineasConHex.length,
+    0,
+    `theme-claro.css tiene hex literales no documentados fuera de tokens.css:\n${lineasConHex.join('\n')}`,
+  );
+});
 
 test('ct-app/src no declara hex literales fuera de sus archivos de tokens', () => {
   let salida = '';
