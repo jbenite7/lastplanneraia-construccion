@@ -57,3 +57,26 @@ COPY database/migrations/20260820_general_flags.sql /docker-entrypoint-initdb.d/
 # que es exactamente lo que paso al implementar, y lo que obligo a que el sembrado fuera migracion
 # en vez de script PHP. Es write-once: reejecutarla no pisa una linea base ya declarada.
 COPY database/migrations/20260819_sembrar_linea_base_contractual.sql /docker-entrypoint-initdb.d/122-sembrar-linea-base.sql
+
+# 2026-08-27: pi_shared_constraints llego con las 5 columnas de gestion de CT-7.3
+# (ResponsableAsignado, FechaCompromiso, EstadoLiberacion, AsignadoPor, AsignadoEn — Task 4 del
+# piloto, autorizado por Felipe, ver la cabecera de la propia migracion), pero el fixture de CI
+# nunca la sembro. Mismo patron que B-9 (120) y general_flags (121) de arriba: sin esta linea,
+# test_constraints_gestion_schema.php (Task 4) y cualquier prueba end-to-end del panel de
+# gestion de Intermedia (Task 7/8) fallan en CI con columnas inexistentes, aunque el codigo y la
+# base de dev esten correctos. Se aplica LA MIGRACION, idempotente (guardada por
+# information_schema.COLUMNS), no un ALTER a mano.
+COPY database/migrations/20260827_pi_shared_constraints_gestion.sql /docker-entrypoint-initdb.d/123-shared-constraints-gestion.sql
+
+# 2026-08-27: pg_avance_edicion_manual llego el 2026-08-26 (commit 8559ba68, feat(pg): tabla de
+# bitacora del avance editado a mano) -- ajena a la Torre piloto, pero mismo patron que 120/121/123
+# de arriba: el fixture de CI nunca la sembro. Sin esta linea, test_bitacora_avance_endpoint.php
+# falla en CUALQUIER PR contra main con "Table 'pg_avance_edicion_manual' doesn't exist", no solo
+# en el de la Torre piloto. CREATE TABLE IF NOT EXISTS, idempotente.
+COPY database/migrations/20260826_pg_avance_edicion_manual.sql /docker-entrypoint-initdb.d/124-avance-edicion-manual.sql
+
+# 2026-08-27: Ejecutado_Carryover llego el 2026-08-25 (commit 7a408162, fix del arrastre de
+# avance semanal) -- ajena a la Torre piloto, mismo patron otra vez: sin esta columna,
+# WeeklyRealProgressCarryoverService (y CarryoverAvanceSemanalTest.php, PHPUnit) fallan en
+# CUALQUIER PR contra main con "Unknown column 'Ejecutado_Carryover'". Aditiva, sin backfill.
+COPY database/migrations/20260825_carryover_testigo.sql /docker-entrypoint-initdb.d/125-carryover-testigo.sql
