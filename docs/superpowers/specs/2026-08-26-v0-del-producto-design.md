@@ -1008,6 +1008,16 @@ Ninguno bloquea F0. El primero **quedó resuelto el 2026-08-20**; los demás sig
    víspera** además de director y residente. La spec asume que nadie más en la primera versión.
 6. **Si «Prueba» fue el borrador de Da Porto**, y si JMC y Milán tuvieron su plan de compras en Excel
    o Licify — porque entonces el historial de compras existe, pero fuera de la base.
+7. **Censo completo de tokens, decisión de Felipe (2026-08-27), etapa siguiente.** Task 8 del piloto
+   define el tema claro solo para la hoja de Intermedia (YAGNI del brief, ya derogado dentro de esa
+   hoja por «todos los colores de una vez», entrada 18 de la Bitácora del piloto — pero acotado a lo
+   que Intermedia consume). Felipe pide un barrido **de toda la app**: todos los módulos, pestañas,
+   secciones, modales, formularios y objetos granulares, buscando todo lo que necesite un token
+   definido — no solo color, cualquier valor de diseño (tipografía, espaciado, radio, sombra,
+   z-index, duración de animación) que hoy viva sin declarar. Es más grande que F3 (narrativa de las
+   demás hojas): es una auditoría de cobertura del design system completo, no de una hoja. Entra a
+   la re-priorización de F3–F5 que Task 9 ya dimensiona con el número del piloto — no es trabajo de
+   Task 8, que sigue acotada a Intermedia.
 
 ## CT-19. Errores de medición cometidos en este diseño
 
