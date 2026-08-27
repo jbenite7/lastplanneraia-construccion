@@ -3,6 +3,21 @@
    agente monta en paralelo (aún no importados aquí) sin adivinar su forma final -- el gap entre
    secciones ya es el que usarán cuando lleguen. */
 
+/* Bug real encontrado el 2026-08-27 (Felipe, revisión visual del piloto): esta hoja no podía
+   hacer scroll en absoluto. Causa raíz: `aia-design-system.css` importa `handsontable-module.css`
+   (compartido por las 8 hojas viejas del BI), que fija `html, body { overflow: hidden }` a
+   propósito -- las tablas Handsontable manejan su propio scroll interno y ese archivo asume que
+   siempre hay una debajo. `ct-app` no usa Handsontable y su contenido excede el viewport, así que
+   hereda el bloqueo sin necesitarlo. Este bundle no usa `@layer` (Vite no lo envuelve), así que
+   una regla sin capa aquí le gana a la de esa capa sin falta `!important`. El sidebar sigue fijo
+   por su propio `position: fixed` (shell-sidebar.css), no por el overflow del body -- restaurar el
+   scroll del documento no lo mueve. */
+html,
+body {
+  height: auto;
+  overflow-y: auto;
+}
+
 .ct-intermedia-layout {
   display: flex;
   flex-direction: column;
