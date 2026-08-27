@@ -46,6 +46,14 @@
 // general. Corregir el vacío de `LineageService.php` es trabajo de otra tarea (backend), anotado
 // como concern en el reporte.
 //
+// **Corrección, ronda 1 (revisión de spec+calidad):** el gap de arriba SÍ se cerró — rol B
+// implementó `Linaje.tsx` en la misma tarea y de paso agregó `cutoff_policy` a
+// `LineageService::getForMetric()` (PHP) más el campo `cutoffPolicy` en `LineageInfo`
+// (`ct-app/src/lib/api.ts:176-189`) y su render en `Linaje.tsx:84` (`<p>Política de corte:
+// {estado.info.cutoffPolicy}</p>`). Este archivo no tenía ninguna aserción que protegiera ese
+// campo de una regresión — fixture y test "contrato completo" actualizados abajo para cubrirlo.
+// El párrafo de arriba se deja intacto como registro de la investigación original, no se borra.
+//
 // ---------------------------------------------------------------------------------------------
 // Contrato que este test fija para rol B (ct-app/src/lib/api.ts y ct-app/src/pages/Linaje.tsx)
 // ---------------------------------------------------------------------------------------------
@@ -58,6 +66,7 @@
 //     sourceView: string
 //     sourceTables: string
 //     grain: string
+//     cutoffPolicy: string
 //     filters: string
 //     version: string
 //     lastUpdated: string
@@ -117,6 +126,7 @@ interface LineageInfo {
   sourceView: string
   sourceTables: string
   grain: string
+  cutoffPolicy: string
   filters: string
   version: string
   lastUpdated: string
@@ -147,6 +157,7 @@ function lineageInfo(overrides: Partial<LineageInfo> = {}): LineageInfo {
     sourceView: 'bi_pg_semana',
     sourceTables: 'programa_consolidado, semanas_activas',
     grain: 'project_id + Semana',
+    cutoffPolicy: 'Fin de la semana seleccionada en semanas_activas.',
     filters: 'Titulo=0, Semanas_Inicio>=0, Semanas_Inicio<=6, Ejecutado<1',
     version: '1.0',
     lastUpdated: '2026-07-10 00:00:00',
@@ -300,6 +311,8 @@ describe('Linaje — el contrato general de la métrica (LineageInfo)', () => {
     expect(contrato.textContent).toMatch(/programa_consolidado/)
     // grano
     expect(contrato.textContent).toMatch(/project_id \+ semana/i)
+    // política de corte (CT-6.3, cerrado en ronda 1 — ver nota de corrección en la cabecera)
+    expect(contrato.textContent).toMatch(/fin de la semana seleccionada en semanas_activas/i)
     // versión del contrato
     expect(contrato.textContent).toMatch(/1\.0/)
     // limitaciones conocidas
