@@ -422,7 +422,11 @@ resultó **incorrecta**: un `.env` editado a mano sí bastó, sin recrear nada. 
 y que las 4 entradas anteriores no habían llegado a ver porque nunca corrieron con la bandera
 activa, era un `.htaccess` de la raíz sin `ct-app` en su lista de prefijos de assets — un olvido de
 una línea desde que Task 6 creó `ct-app/` como espejo de `pdc-app/`. Las condiciones de hecho 1 y 2
-quedan **cumplidas**, no parciales.
+quedan **cumplidas**, no parciales. Publicado en
+[PR #15](https://github.com/jbenite7/lastplanneraia-construccion/pull/15), mergeado a `main`
+(`6a198f973b44b855c127579587d87e4f1ab6370a`) con CI en verde sobre el commit exacto verificado
+(`design-system-static` 1m35s, `design-system-runtime` 10m41s, ambos `pass` sobre `0a0dd120`).
+`git rev-parse origin/main` confirma el mismo SHA tras el fetch posterior al merge.
 
 **Dimensiona la etapa siguiente:** de 32 entradas, 3 rulings de revisión completa (opus) encontraron
 un hallazgo real cada vez (parseo de filtros, bypass de RBAC, arquitectura de `theme-claro.css` sin
