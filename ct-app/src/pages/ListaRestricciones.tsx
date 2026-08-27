@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { ETIQUETAS_ESTADO, getRestricciones } from '../lib/api'
 import type { GestionEstado, Restriccion } from '../lib/api'
+import { construirAccionSugerida } from '../lib/accionSugerida'
 import { ordenarPorUrgencia } from '../lib/urgencia'
 import { PanelGestion } from './PanelGestion'
 
@@ -9,8 +10,10 @@ import { PanelGestion } from './PanelGestion'
 // criterio aquí) y muestra los tres estados de D87 con texto distinguible. D33: el botón
 // "Gestionar" abre PanelGestion sobre la misma fila, sin navegar a otra pantalla; al guardar, la
 // fila se actualiza con el payload que confirmó el servidor — sin una segunda llamada a
-// getRestricciones(). D89 (acción sugerida) queda diferido a un paso posterior, no se construye
-// aquí.
+// getRestricciones(). D89 (Task 7 D89, sub-paso posterior): cada fila muestra su acción sugerida
+// y contacto (construirAccionSugerida(), ver accionSugerida.ts) en un <p> propio dentro de la
+// fila — no en el mismo <span> que ya usan restriccion/estado, para no romper los
+// within(fila).getByText(...) de D87/D33 que ya fijó el paso anterior.
 
 /**
  * Reordena restricciones completas según el orden que produce ordenarPorUrgencia() sobre la
@@ -65,26 +68,33 @@ export function ListaRestricciones() {
       {restricciones !== null && restricciones.length === 0 && <p>No hay restricciones registradas.</p>}
 
       {restricciones !== null &&
-        restricciones.map((r) => (
+        restricciones.map((r) => {
+          const accion = construirAccionSugerida(r.restriccion)
+
           // PanelGestion va como hermano de la fila, no anidado: si estuviera dentro del mismo
           // <div>, el <select> de estado repite como <option> el mismo texto que ya muestra el
           // span de la fila (p. ej. "Sin gestionar"), y un within(fila).getByText(...) del test
           // encontraría dos coincidencias en vez de una. Ambos siguen dentro del contenedor
           // "lista-restricciones" — la lista sigue montada igual, D33 no cambia.
-          <Fragment key={r.id}>
-            <div data-testid={`fila-restriccion-${r.id}`}>
-              <span>{r.restriccion}</span>
-              <span>{ETIQUETAS_ESTADO[r.estadoLiberacion]}</span>
-              <button type="button" onClick={() => setGestionandoId(r.id)}>
-                Gestionar
-              </button>
-            </div>
+          return (
+            <Fragment key={r.id}>
+              <div data-testid={`fila-restriccion-${r.id}`}>
+                <span>{r.restriccion}</span>
+                <span>{ETIQUETAS_ESTADO[r.estadoLiberacion]}</span>
+                <button type="button" onClick={() => setGestionandoId(r.id)}>
+                  Gestionar
+                </button>
+                <p>
+                  {accion.texto} <strong>{accion.contacto}</strong>
+                </p>
+              </div>
 
-            {gestionandoId === r.id && (
-              <PanelGestion restriccion={r} onCancel={() => setGestionandoId(null)} onGuardada={handleGuardada} />
-            )}
-          </Fragment>
-        ))}
+              {gestionandoId === r.id && (
+                <PanelGestion restriccion={r} onCancel={() => setGestionandoId(null)} onGuardada={handleGuardada} />
+              )}
+            </Fragment>
+          )
+        })}
     </div>
   )
 }
