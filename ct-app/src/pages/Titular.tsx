@@ -1,3 +1,4 @@
+import './Titular.css'
 import { construirTitular } from '../lib/titulares'
 import type { ResumenLookaheadIntermedia } from '../lib/titulares'
 
@@ -14,5 +15,5 @@ interface TitularProps {
 
 export function Titular({ resumen }: TitularProps) {
   const { texto } = construirTitular(resumen)
-  return <p>{texto}</p>
+  return <p className="ct-titular">{texto}</p>
 }

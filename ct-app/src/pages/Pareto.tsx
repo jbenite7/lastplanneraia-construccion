@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import './Pareto.css'
 import { getParetoRestricciones } from '../lib/api'
 import type { ParetoRestriccionesResult } from '../lib/api'
 
@@ -33,24 +34,36 @@ export function Pareto() {
   }, [])
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return (
+      <p className="ct-pareto-error" role="alert">
+        {error}
+      </p>
+    )
   }
 
+  const conteoMaximo = resultado?.distribucion.reduce((max, fila) => Math.max(max, fila.conteo), 0) ?? 0
+
   return (
-    <section data-testid="pareto" aria-label="Distribución de restricciones duras por tipo">
-      {resultado === null && <p>Cargando…</p>}
+    <section className="ct-pareto" data-testid="pareto" aria-label="Distribución de restricciones duras por tipo">
+      {resultado === null && <p className="ct-pareto-mensaje">Cargando…</p>}
 
       {resultado !== null && resultado.distribucion.length === 0 && (
-        <p>No hay restricciones duras pendientes esta semana.</p>
+        <p className="ct-pareto-mensaje aia-empty">No hay restricciones duras pendientes esta semana.</p>
       )}
 
       {resultado !== null &&
-        resultado.distribucion.map((fila) => (
-          <div key={fila.tipo} data-testid={`pareto-fila-${fila.tipo}`}>
-            <span>{fila.tipo}</span>
-            <span>{fila.conteo}</span>
-          </div>
-        ))}
+        resultado.distribucion.map((fila) => {
+          const porcentaje = conteoMaximo > 0 ? Math.round((fila.conteo / conteoMaximo) * 100) : 0
+          return (
+            <div key={fila.tipo} className="ct-pareto-fila" data-testid={`pareto-fila-${fila.tipo}`}>
+              <p className="ct-pareto-tipo">{fila.tipo}</p>
+              <div className="ct-pareto-barra-pista">
+                <div className="ct-pareto-barra" style={{ inlineSize: `${porcentaje}%` }} />
+              </div>
+              <p className="ct-pareto-conteo">{fila.conteo}</p>
+            </div>
+          )
+        })}
     </section>
   )
 }

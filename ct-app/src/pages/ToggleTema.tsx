@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import './ToggleTema.css'
 import { aplicarTemaAlDocumento } from '../lib/theme'
 import type { Tema } from '../lib/theme'
 
@@ -22,7 +23,7 @@ export function ToggleTema() {
   }
 
   return (
-    <button type="button" onClick={handleClick}>
+    <button type="button" className="ct-toggle-tema" onClick={handleClick}>
       {tema === 'dark' ? 'Tema claro' : 'Tema oscuro'}
     </button>
   )

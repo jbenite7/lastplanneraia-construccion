@@ -1,0 +1,104 @@
+/* Control «¿de dónde sale esto?» (Task 8 rol A — craft visual). Botón secundario discreto
+   (metadata, no acción primaria) + panel colapsable en superficie elevada. El glifo ▾/▴ rota con
+   `aria-expanded` -- único momento de motion autorizado aquí, transform puro. */
+
+.ct-linaje {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ct-linaje-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--ct-radius-control);
+  background: transparent;
+  color: var(--ct-text-secondary);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  cursor: pointer;
+}
+
+.ct-linaje-boton:hover {
+  color: var(--ct-text-primary);
+}
+
+.ct-linaje-boton:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--ct-shadow-focus);
+}
+
+.ct-linaje-glifo {
+  display: inline-block;
+  transition: transform 150ms ease;
+}
+
+.ct-linaje-boton[aria-expanded='true'] .ct-linaje-glifo {
+  transform: rotate(180deg);
+}
+
+.ct-linaje-panel {
+  min-width: 18rem;
+  max-width: 32rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-surface-raised);
+  border: 1px solid var(--ct-border);
+  box-shadow: var(--ct-shadow-xs);
+}
+
+.ct-linaje-estado {
+  margin: 0;
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  color: var(--ct-text-secondary);
+}
+
+.ct-linaje-error {
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+}
+
+.ct-linaje-contrato,
+.ct-linaje-basis {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ct-linaje-contrato + .ct-linaje-basis {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ct-border);
+}
+
+.ct-linaje-titulo {
+  margin: 0 0 0.15rem;
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-fs-title);
+  font-weight: 600;
+  color: var(--ct-text-primary);
+}
+
+.ct-linaje-contrato p,
+.ct-linaje-basis p {
+  margin: 0;
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-body);
+  color: var(--ct-text-primary);
+}
+
+.ct-linaje-label {
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  font-weight: 600;
+  color: var(--ct-text-secondary);
+}

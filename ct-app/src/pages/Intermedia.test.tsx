@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 //
-// Tests de Intermedia (ct-app, etapa piloto, Task 7 ensamblaje) — ensambla el lienzo completo de
-// la hoja de Intermedia (CT-8.3): alarma de huérfanas (posición 1) + titular narrativo (posición
-// 2) + lista de restricciones (posición 3, ya construida en Task 7 paso 3b). El semáforo (4) y el
-// Pareto (5) NO entran en este sub-paso — quedan fuera de alcance a propósito.
+// Tests de Intermedia (ct-app, etapa piloto) — ensambla el lienzo completo de la hoja de
+// Intermedia (CT-8.3): alarma de huérfanas (posición 1) + titular narrativo (posición 2) + lista
+// de restricciones (posición 3, Task 7 paso 3b) + semáforo (4) + pareto (5, Task 8 — construidos
+// tras el hallazgo de la entrada 20 de la Bitácora del plan, montados en Intermedia.tsx al cerrar
+// el craft visual). Semaforo/Pareto traen su propio fetch (getMetric() / getParetoRestricciones())
+// independiente del de este archivo; se mockean con un default neutro para que los tests de
+// arriba (huérfanas/vencidas/listasRate) no dependan de su resultado — ningún test de este
+// archivo hace aserciones sobre el contenido del semáforo o el pareto, eso lo cubren
+// Semaforo.test.tsx y Pareto.test.tsx por separado.
 //
 // Decisión central de este sub-paso (documentada en el reporte del rol A): Intermedia.tsx trae
 // los datos UNA sola vez con `getRestricciones()` y deriva de ahí tanto el resumen que necesita
@@ -52,10 +57,27 @@ import { Intermedia } from './Intermedia'
 import { construirTitular } from '../lib/titulares'
 import type { MetricResult, Restriccion } from '../lib/api'
 
-const { getRestriccionesMock, postGestionRestriccionMock, getMetricMock } = vi.hoisted(() => ({
+// `getMetric` está COMPARTIDO entre Intermedia (1 llamada, adherencia D59) y Semaforo.tsx (4
+// llamadas, una por franja — Task 8, montado en el lienzo tras la entrada 20 de la Bitácora).
+// `getMetricMock` es el mock crudo que ve cada llamada real (para las aserciones de
+// `toHaveBeenCalledTimes`/`toHaveBeenCalledWith` sobre la clave de adherencia, que filtran por
+// argumento — nunca cuentan las 4 llamadas del semáforo). `getMetricAdherenciaMock` es lo que los
+// tests de este archivo configuran: SOLO afecta la respuesta para
+// 'pi_hard_restrictions_ready_rate'; cualquier otra clave (las 4 del semáforo) recibe un neutro
+// fijo en `beforeEach`, así que ningún test de Intermedia puede romper Semaforo por accidente ni
+// viceversa.
+const {
+  getRestriccionesMock,
+  postGestionRestriccionMock,
+  getMetricMock,
+  getMetricAdherenciaMock,
+  getParetoRestriccionesMock,
+} = vi.hoisted(() => ({
   getRestriccionesMock: vi.fn(),
   postGestionRestriccionMock: vi.fn(),
   getMetricMock: vi.fn(),
+  getMetricAdherenciaMock: vi.fn(),
+  getParetoRestriccionesMock: vi.fn(),
 }))
 
 vi.mock('../lib/api', async (importOriginal) => {
@@ -65,6 +87,7 @@ vi.mock('../lib/api', async (importOriginal) => {
     getRestricciones: getRestriccionesMock,
     postGestionRestriccion: postGestionRestriccionMock,
     getMetric: getMetricMock,
+    getParetoRestricciones: getParetoRestriccionesMock,
   }
 })
 
@@ -101,11 +124,29 @@ function restriccion(overrides: Partial<Restriccion>): Restriccion {
   }
 }
 
+const METRIC_KEY_ADHERENCIA = 'pi_hard_restrictions_ready_rate'
+
 beforeEach(() => {
   getRestriccionesMock.mockReset()
   postGestionRestriccionMock.mockReset()
   getMetricMock.mockReset()
-  getMetricMock.mockResolvedValue(metricResult())
+  getMetricAdherenciaMock.mockReset()
+  getMetricAdherenciaMock.mockResolvedValue(metricResult())
+  // getMetricMock es lo que Intermedia.tsx y Semaforo.tsx llaman de verdad. Para la clave de
+  // adherencia delega en getMetricAdherenciaMock (lo que los tests configuran); para cualquier
+  // otra clave (las 4 franjas del semáforo) siempre resuelve neutro — nunca depende de lo que un
+  // test de Intermedia haya configurado para adherencia, así que un `mockRejectedValue` de
+  // adherencia no puede tumbar las 4 franjas del semáforo con un role="alert" inesperado.
+  getMetricMock.mockImplementation((metricKey: string) =>
+    metricKey === METRIC_KEY_ADHERENCIA
+      ? getMetricAdherenciaMock(metricKey)
+      : Promise.resolve(metricResult({ value: 0.5, completeness: 'completa' })),
+  )
+  getParetoRestriccionesMock.mockReset()
+  // Default neutro: ningún test de este archivo hace aserciones sobre el pareto (eso lo cubre
+  // Pareto.test.tsx) — una distribución vacía evita que Pareto dispare su role="alert" de error
+  // de red, que rompería los asserts de "no hay ningún alert" de los describes de arriba.
+  getParetoRestriccionesMock.mockResolvedValue({ distribucion: [], basis: { filas_usadas: 0, corte: '' } })
 })
 
 describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch', () => {
@@ -176,7 +217,7 @@ describe('Intermedia — ensambla huérfanas + titular + lista con UN solo fetch
     // A diferencia de antes de Task 7 paso 5, esto YA NO es el default implícito de Intermedia.tsx
     // — es un resultado real posible de getMetric() (la métrica sin filas que cumplan sus filtros
     // para el proyecto/semana de sesión), estubeado explícito aquí.
-    getMetricMock.mockResolvedValue(
+    getMetricAdherenciaMock.mockResolvedValue(
       metricResult({ value: null, completeness: 'insuficiente', missing: ['sin_filas_que_cumplan_los_filtros'] }),
     )
 
@@ -313,13 +354,13 @@ describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), 
     // condición 'sano' (ver titulares.ts, UMBRAL_SIN_ANALISIS_PCT). Valor elegido deliberadamente
     // distinto del default de metricResult() (0.5833...) para que este test falle si Intermedia
     // ignora el MetricResult real y sigue usando cualquier valor fijo/hardcodeado.
-    getMetricMock.mockResolvedValue(metricResult({ value: 0.72, completeness: 'completa' }))
+    getMetricAdherenciaMock.mockResolvedValue(metricResult({ value: 0.72, completeness: 'completa' }))
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')
 
-    expect(getMetricMock).toHaveBeenCalledTimes(1)
-    expect(getMetricMock).toHaveBeenCalledWith('pi_hard_restrictions_ready_rate')
+    expect(getMetricAdherenciaMock).toHaveBeenCalledTimes(1)
+    expect(getMetricAdherenciaMock).toHaveBeenCalledWith('pi_hard_restrictions_ready_rate')
 
     const tituloEsperado = construirTitular({
       huerfanasCount: 0,
@@ -335,7 +376,7 @@ describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), 
   it('con value bajo (mucho sin análisis), la condición es adherencia_baja — sigue siendo la cifra dura, no una predicción', async () => {
     getRestriccionesMock.mockResolvedValue([])
     // sinAnalisisPct = round((1-0.5)*100) = 50 > 30 -> 'adherencia_baja'.
-    getMetricMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
+    getMetricAdherenciaMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')
@@ -354,7 +395,7 @@ describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), 
     getRestriccionesMock.mockResolvedValue([
       restriccion({ id: 1 }), // huérfana — para probar que el resto del lienzo sigue funcionando
     ])
-    getMetricMock.mockRejectedValue(new Error('NOT_FOUND'))
+    getMetricAdherenciaMock.mockRejectedValue(new Error('NOT_FOUND'))
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')
@@ -371,7 +412,7 @@ describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), 
 
   it('sin huérfanas/vencidas y con getMetric() rechazada, el titular cae a adherencia_insuficiente (honesto, nunca un valor inventado)', async () => {
     getRestriccionesMock.mockResolvedValue([])
-    getMetricMock.mockRejectedValue(new Error('NOT_FOUND'))
+    getMetricAdherenciaMock.mockRejectedValue(new Error('NOT_FOUND'))
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')
@@ -387,7 +428,7 @@ describe('Intermedia — Task 7 paso 5 (D59): adherencia real vía getMetric(), 
 
   it('D59: la hoja nunca muestra una señal predictiva ni un porcentaje de "esto va a fallar" — solo la adherencia, rotulada', async () => {
     getRestriccionesMock.mockResolvedValue([])
-    getMetricMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
+    getMetricAdherenciaMock.mockResolvedValue(metricResult({ value: 0.5, completeness: 'completa' }))
 
     render(<Intermedia />)
     await screen.findByTestId('lista-restricciones')

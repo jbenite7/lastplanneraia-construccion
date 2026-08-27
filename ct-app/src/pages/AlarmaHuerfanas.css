@@ -1,0 +1,76 @@
+/* Alarma de huérfanas (Task 8 rol B): banner, no card genérica. El filete de severidad
+   "atención" en el borde izquierdo es la única excepción de border-left permitida en este lote
+   (ya fijada por el design system para gravedad) -- aparece solo cuando count > 0; su ausencia en
+   el caso sano es la señal (mismo patrón que "Controlado sigue sin barra"). */
+
+.ct-alarma {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-radius: var(--ct-radius-panel);
+  background: var(--ct-surface-raised);
+  border: 1px solid var(--ct-border);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--ct-shadow-xs);
+}
+
+.ct-alarma--atencion {
+  border-left: 4px solid var(--ct-rail-atencion);
+}
+
+.ct-alarma-texto {
+  margin: 0;
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-body);
+  color: var(--ct-text-primary);
+}
+
+.ct-alarma-texto--neutro {
+  color: var(--ct-text-secondary);
+}
+
+.ct-alarma-boton {
+  min-height: var(--ct-touch-min);
+  padding: 0 1.25rem;
+  border: none;
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-action-primary);
+  color: var(--ct-action-text);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.ct-alarma-boton:hover {
+  background: var(--ct-action-primary-hover);
+}
+
+.ct-alarma-boton:active {
+  transform: translateY(1px);
+}
+
+.ct-alarma-boton:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--ct-shadow-focus);
+}
+
+.ct-alarma-boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .ct-alarma {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ct-alarma-boton {
+    width: 100%;
+  }
+}

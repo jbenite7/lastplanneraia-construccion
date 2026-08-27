@@ -1,9 +1,21 @@
 import { Fragment, useEffect, useState } from 'react'
+import './ListaRestricciones.css'
 import { ETIQUETAS_ESTADO, getRestricciones } from '../lib/api'
 import type { GestionEstado, Restriccion } from '../lib/api'
 import { construirAccionSugerida } from '../lib/accionSugerida'
 import { ordenarPorUrgencia } from '../lib/urgencia'
 import { PanelGestion } from './PanelGestion'
+
+// Craft visual (Task 8 rol B, "Sala de Control Serena"): vocabulario de estado del Replanteo de
+// estados 2026-08-20 (docs/design-system/README.md §2) -- cada estadoLiberacion resuelve a un hue
+// fijo (rojo/ambar/verde/teal), nunca al revés. El filete de gravedad (`border-left`) es la ÚNICA
+// excepción a "nunca borde de color >1px" que el propio sistema define para severidad.
+const HUE_POR_ESTADO: Record<GestionEstado, string> = {
+  sin_gestionar: 'rojo',
+  en_gestion: 'ambar',
+  liberada: 'verde',
+  no_aplica: 'teal',
+}
 
 // Lista de restricciones activas (ct-app, etapa piloto, Task 7 paso 3b + Task 7 ensamblaje). Trae
 // los datos con getRestricciones(), los ordena por urgencia real (N4, Task 7 paso 2 — no se
@@ -107,18 +119,25 @@ export function ListaRestricciones({
   }
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return (
+      <p role="alert" className="ct-lista-error">
+        {error}
+      </p>
+    )
   }
 
   return (
-    <div data-testid="lista-restricciones">
-      {restricciones === null && <p>Cargando restricciones…</p>}
+    <div data-testid="lista-restricciones" className="ct-lista-restricciones">
+      {restricciones === null && <p className="ct-lista-cargando">Cargando restricciones…</p>}
 
-      {restricciones !== null && restricciones.length === 0 && <p>No hay restricciones registradas.</p>}
+      {restricciones !== null && restricciones.length === 0 && (
+        <p className="ct-lista-vacio">No hay restricciones registradas.</p>
+      )}
 
       {restricciones !== null &&
         restricciones.map((r) => {
           const accion = construirAccionSugerida(r.restriccion)
+          const hue = HUE_POR_ESTADO[r.estadoLiberacion]
 
           // PanelGestion va como hermano de la fila, no anidado: si estuviera dentro del mismo
           // <div>, el <select> de estado repite como <option> el mismo texto que ya muestra el
@@ -127,13 +146,16 @@ export function ListaRestricciones({
           // "lista-restricciones" — la lista sigue montada igual, D33 no cambia.
           return (
             <Fragment key={r.id}>
-              <div data-testid={`fila-restriccion-${r.id}`}>
-                <span>{r.restriccion}</span>
-                <span>{ETIQUETAS_ESTADO[r.estadoLiberacion]}</span>
-                <button type="button" onClick={() => setGestionandoId(r.id)}>
+              <div
+                data-testid={`fila-restriccion-${r.id}`}
+                className={`ct-fila ct-fila--${hue}`}
+              >
+                <span className="ct-fila-texto">{r.restriccion}</span>
+                <span className={`ct-chip ct-chip--${hue}`}>{ETIQUETAS_ESTADO[r.estadoLiberacion]}</span>
+                <button type="button" className="ct-fila-boton" onClick={() => setGestionandoId(r.id)}>
                   Gestionar
                 </button>
-                <p>
+                <p className="ct-fila-accion">
                   {accion.texto} <strong>{accion.contacto}</strong>
                 </p>
               </div>

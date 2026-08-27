@@ -1,0 +1,133 @@
+/*
+ * PanelGestion — craft visual (Task 8 rol B, "Sala de Control Serena").
+ * Fuente única de valores: ../lib/tokens.css (--ct-*). Nunca hex sueltos ni --ds-* directo.
+ *
+ * Panel elevado (var(--ct-radius-panel), var(--ct-surface-raised), sombra) que se abre como
+ * hermano de la fila en ListaRestricciones -- ese anidamiento no se toca desde aquí.
+ *
+ * Breakpoint móvil: 768px, el mismo que ListaRestricciones.css -- por debajo, el panel ocupa la
+ * pantalla casi completa en vez de quedar como un recuadro angosto ilegible.
+ */
+
+.ct-panel-gestion {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+  background: var(--ct-surface-raised);
+  border-radius: var(--ct-radius-panel);
+  box-shadow:
+    0 8px 24px rgba(6, 12, 9, 0.35),
+    var(--ct-shadow-xs);
+}
+
+.ct-panel-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+  font-family: var(--ct-font-body);
+  font-weight: 700;
+  font-size: var(--ct-fs-label);
+}
+
+.ct-panel-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.ct-panel-label {
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  font-weight: 600;
+  color: var(--ct-text-secondary);
+}
+
+.ct-panel-input,
+.ct-panel-select {
+  min-height: var(--ct-touch-min);
+  padding: 0 0.85rem;
+  background: var(--ct-surface);
+  color: var(--ct-text-primary);
+  border: 1px solid var(--ct-border-control);
+  border-radius: var(--ct-radius-control);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-body);
+}
+
+.ct-panel-input:focus-visible,
+.ct-panel-select:focus-visible {
+  outline: none;
+  box-shadow: var(--ct-shadow-focus);
+  border-color: var(--ct-focus-ring);
+}
+
+.ct-panel-acciones {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.ct-panel-boton {
+  min-height: var(--ct-touch-min);
+  padding: 0 1.5rem;
+  border-radius: var(--ct-radius-control);
+  font-family: var(--ct-font-body);
+  font-weight: 700;
+  font-size: var(--ct-fs-body);
+  cursor: pointer;
+  border: none;
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.ct-panel-boton--primario {
+  background: var(--ct-action-primary);
+  color: var(--ct-action-text);
+}
+
+.ct-panel-boton--primario:hover:not(:disabled) {
+  background: var(--ct-action-primary-hover);
+}
+
+/* disabled mientras `enviando`: señal visual explícita, nunca un botón deshabilitado sin marca. */
+.ct-panel-boton--primario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ct-panel-boton--secundario {
+  background: transparent;
+  color: var(--ct-text-secondary);
+  border: 1px solid var(--ct-border-control);
+}
+
+.ct-panel-boton--secundario:hover {
+  color: var(--ct-text-primary);
+  border-color: var(--ct-focus-ring);
+}
+
+.ct-panel-boton:focus-visible {
+  outline: none;
+  box-shadow: var(--ct-shadow-focus);
+}
+
+@media (max-width: 768px) {
+  .ct-panel-gestion {
+    position: relative;
+    min-height: calc(100vh - 2rem);
+    border-radius: var(--ct-radius-card);
+  }
+
+  .ct-panel-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .ct-panel-boton {
+    width: 100%;
+  }
+}

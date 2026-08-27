@@ -1,0 +1,154 @@
+/* Semáforo de restricciones duras por franja (Task 8 rol A — craft visual, posición 4 del
+   lienzo, "Sala de Control Serena"). 4 franjas en fila en desktop, apiladas en móvil.
+
+   Mapeo severity/urgency -> hue (fijado por el brief, ya calculado por Semaforo.tsx en los
+   atributos `data-aia-severity`/`data-aia-urgency` -- este archivo SOLO lee esos atributos como
+   selector, nunca duplica la lógica de negocio):
+
+     high/now     -> rojo   (chip --ct-chip-rojo-*,   fila --ct-row-rojo,  filete 6px --ct-rail-urgente)
+     medium/soon  -> ámbar  (chip --ct-chip-ambar-*,  fila --ct-row-ambar, filete 4px --ct-rail-atencion)
+     low/none     -> verde  (chip --ct-chip-verde-*,  fila --ct-row-verde, sin filete -- la ausencia
+                              de filete en el estado sano ya es la señal, mismo patrón que
+                              AlarmaHuerfanas)
+     none/none    -> violeta (chip --ct-chip-violeta-*, superficie normal, sin filete)
+
+   El filete de gravedad es la única excepción a "sin border-left" del craft floor, ya autorizada
+   para severidad -- mismo criterio que .ct-alarma--atencion en AlarmaHuerfanas.css. */
+
+.ct-semaforo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ct-semaforo-franja {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 1rem 1.25rem;
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-surface);
+  border: 1px solid var(--ct-border);
+  box-shadow: var(--ct-shadow-xs);
+}
+
+.ct-semaforo-franja[data-aia-severity='high'] {
+  background: var(--ct-row-rojo);
+  border-left: 6px solid var(--ct-rail-urgente);
+}
+
+.ct-semaforo-franja[data-aia-severity='medium'] {
+  background: var(--ct-row-ambar);
+  border-left: 4px solid var(--ct-rail-atencion);
+}
+
+.ct-semaforo-franja[data-aia-severity='low'] {
+  background: var(--ct-row-verde);
+}
+
+/* Texto invariante sobre franja con tinte rojo/ámbar/verde -- mismo hallazgo y mismo porqué que
+   ListaRestricciones.css (ver tokens.css). A diferencia de esa hoja, aquí 'low' SÍ usa
+   --ct-row-verde como fondo (no --ct-surface), así que también le hace falta el override --
+   medido: 1.67:1 (etiqueta) y 1.37:1 (detalle) sin él, igual de mal que ámbar/rojo. */
+.ct-semaforo-franja[data-aia-severity='high'] .ct-semaforo-etiqueta,
+.ct-semaforo-franja[data-aia-severity='medium'] .ct-semaforo-etiqueta,
+.ct-semaforo-franja[data-aia-severity='low'] .ct-semaforo-etiqueta {
+  color: var(--ct-row-text-secondary);
+}
+
+.ct-semaforo-franja[data-aia-severity='high'] .ct-semaforo-detalle,
+.ct-semaforo-franja[data-aia-severity='medium'] .ct-semaforo-detalle,
+.ct-semaforo-franja[data-aia-severity='low'] .ct-semaforo-detalle {
+  color: var(--ct-row-text-primary);
+}
+
+.ct-semaforo-etiqueta {
+  margin: 0;
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-fs-label);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ct-text-secondary);
+  text-transform: uppercase;
+}
+
+.ct-semaforo-chip {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--ct-radius-pill);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  font-weight: 700;
+}
+
+.ct-semaforo-franja[data-aia-severity='high'] .ct-semaforo-chip {
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+}
+
+.ct-semaforo-franja[data-aia-severity='medium'] .ct-semaforo-chip {
+  background: var(--ct-chip-ambar-bg);
+  color: var(--ct-chip-ambar-text);
+}
+
+.ct-semaforo-franja[data-aia-severity='low'] .ct-semaforo-chip {
+  background: var(--ct-chip-verde-bg);
+  color: var(--ct-chip-verde-text);
+}
+
+.ct-semaforo-franja[data-aia-severity='none'] .ct-semaforo-chip {
+  background: var(--ct-chip-violeta-bg);
+  color: var(--ct-chip-violeta-text);
+}
+
+.ct-semaforo-detalle {
+  margin: 0;
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-body);
+  color: var(--ct-text-primary);
+}
+
+.ct-semaforo-listas {
+  color: var(--ct-chip-verde-bg);
+  font-weight: 600;
+}
+
+/* Solo la franja SIN tinte de severidad ('none', fondo de superficie normal -- sí depende de
+   tema) necesita este override: ahí el verde de "N listas" da 2.64:1 sobre blanco (falla AA), y
+   --ct-chip-verde-text (el texto oscuro del chip sólido, ya declarado en tokens.css) sube eso a
+   16:1+. El selector NO puede ser más amplio: medido -- aplicar esto también a 'low' (fondo
+   --ct-row-verde, invariante y oscuro) ROMPE su contraste ya correcto (4.90:1 -> 1.22:1), porque
+   ahí el texto oscuro cae sobre un fondo que sigue oscuro en cualquier tema. */
+[data-aia-theme='light'] .ct-semaforo-franja[data-aia-severity='none'] .ct-semaforo-listas {
+  color: var(--ct-chip-verde-text);
+}
+
+.ct-semaforo-cargando {
+  margin: 0;
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+  color: var(--ct-text-secondary);
+}
+
+.ct-semaforo-error {
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-chip-rojo-bg);
+  color: var(--ct-chip-rojo-text);
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-label);
+}
+
+@media (max-width: 768px) {
+  .ct-semaforo {
+    grid-template-columns: 1fr;
+  }
+
+  .ct-semaforo-franja {
+    min-height: 44px;
+  }
+}

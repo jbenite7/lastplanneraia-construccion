@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
+import './PanelGestion.css'
 import { CtApiError, ETIQUETAS_ESTADO, postGestionRestriccion } from '../lib/api'
 import type { GestionEstado, Restriccion } from '../lib/api'
 
@@ -69,32 +70,49 @@ export function PanelGestion({ restriccion, onCancel, onGuardada }: PanelGestion
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <p role="alert">{error}</p>}
+    <form onSubmit={handleSubmit} className="ct-panel-gestion">
+      {error && (
+        <p role="alert" className="ct-panel-error">
+          {error}
+        </p>
+      )}
 
-      <div>
-        <label htmlFor={idResponsable}>Responsable</label>
+      <div className="ct-panel-campo">
+        <label htmlFor={idResponsable} className="ct-panel-label">
+          Responsable
+        </label>
         <input
           id={idResponsable}
           type="text"
+          className="ct-panel-input"
           value={responsable}
           onChange={(event) => setResponsable(event.target.value)}
         />
       </div>
 
-      <div>
-        <label htmlFor={idFecha}>Fecha de compromiso</label>
+      <div className="ct-panel-campo">
+        <label htmlFor={idFecha} className="ct-panel-label">
+          Fecha de compromiso
+        </label>
         <input
           id={idFecha}
           type="date"
+          className="ct-panel-input"
           value={fechaCompromiso}
           onChange={(event) => setFechaCompromiso(event.target.value)}
         />
       </div>
 
-      <div>
-        <label htmlFor={idEstado}>Estado</label>
-        <select id={idEstado} value={estado} onChange={(event) => setEstado(event.target.value as GestionEstado)}>
+      <div className="ct-panel-campo">
+        <label htmlFor={idEstado} className="ct-panel-label">
+          Estado
+        </label>
+        <select
+          id={idEstado}
+          className="ct-panel-select"
+          value={estado}
+          onChange={(event) => setEstado(event.target.value as GestionEstado)}
+        >
           {ESTADOS_SELECCIONABLES.map((valor) => (
             <option key={valor} value={valor}>
               {ETIQUETAS_ESTADO[valor]}
@@ -103,12 +121,14 @@ export function PanelGestion({ restriccion, onCancel, onGuardada }: PanelGestion
         </select>
       </div>
 
-      <button type="submit" disabled={enviando}>
-        Guardar
-      </button>
-      <button type="button" onClick={onCancel}>
-        Cancelar
-      </button>
+      <div className="ct-panel-acciones">
+        <button type="submit" className="ct-panel-boton ct-panel-boton--primario" disabled={enviando}>
+          Guardar
+        </button>
+        <button type="button" className="ct-panel-boton ct-panel-boton--secundario" onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
     </form>
   )
 }

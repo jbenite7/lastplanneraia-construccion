@@ -65,6 +65,18 @@
   --ct-rail-urgente: #ff7a6e;
   --ct-rail-atencion: #ffd23f;
   --ct-rail-listo: #7ee2a8;
+
+  /* Texto SOBRE fila con tinte de severidad (rojo/ámbar) -- invariante como el propio fondo de
+     fila, no `--ct-text-primary`/`--ct-text-secondary` (esos sí cambian por tema). Hallazgo
+     medido en verificación visual del toggle de tema (2026-08-27, entrada de la Bitácora del
+     plan): el sistema real (public/css/tokens.css) fija fondo y chip invariantes para el
+     vocabulario de estado, pero nunca definió un texto invariante equivalente -- hasta ahora el
+     sistema corría en un solo tema y el texto oscuro coincidía por causalidad. Con el toggle
+     claro activo, `--ct-text-primary`/`-secondary` se vuelven oscuros y caen a ~1.2:1-1.9:1 de
+     contraste sobre estas filas, que siguen oscuras a propósito. Fix acotado a ct-app (piloto
+     aislado, DS-030): mismo valor que el texto del tema oscuro, fijo en los dos temas. */
+  --ct-row-text-primary: #f7faf8;
+  --ct-row-text-secondary: #c7d4cc;
 }
 
 /* Escala tipográfica REGULAR del design system (DESIGN.md §3) -- no la densa de tablas: esta

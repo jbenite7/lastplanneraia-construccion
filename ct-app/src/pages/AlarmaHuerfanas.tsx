@@ -1,3 +1,4 @@
+import './AlarmaHuerfanas.css'
 import type { Restriccion } from '../lib/api'
 
 // Alarma de huérfanas (ct-app, etapa piloto, Task 7 ensamblaje — posición 1 del lienzo de
@@ -28,18 +29,24 @@ export function AlarmaHuerfanas({ huerfanas, onVerHuerfanas }: AlarmaHuerfanasPr
   const count = huerfanas.length
 
   return (
-    <section data-testid="alarma-huerfanas" aria-label="Alarma de restricciones huérfanas">
+    <section
+      data-testid="alarma-huerfanas"
+      aria-label="Alarma de restricciones huérfanas"
+      className={count > 0 ? 'ct-alarma ct-alarma--atencion' : 'ct-alarma'}
+    >
       {count > 0 ? (
         <>
-          <p>
+          <p className="ct-alarma-texto">
             {count} {pluralRestricciones(count)} sin análisis ni responsable asignado.
           </p>
-          <button type="button" onClick={() => onVerHuerfanas()}>
+          <button type="button" className="ct-alarma-boton" onClick={() => onVerHuerfanas()}>
             Ver huérfanas
           </button>
         </>
       ) : (
-        <p>Todas las restricciones están gestionadas: sin pendientes huérfanas esta semana.</p>
+        <p className="ct-alarma-texto ct-alarma-texto--neutro">
+          Todas las restricciones están gestionadas: sin pendientes huérfanas esta semana.
+        </p>
       )}
     </section>
   )

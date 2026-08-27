@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
+import './Semaforo.css'
 import { getMetric } from '../lib/api'
 import type { MetricResult } from '../lib/api'
 
@@ -102,7 +103,7 @@ export function Semaforo() {
   }, [])
 
   return (
-    <section data-testid="semaforo" aria-label="Semáforo de restricciones duras por franja">
+    <section className="ct-semaforo" data-testid="semaforo" aria-label="Semáforo de restricciones duras por franja">
       {FRANJAS.map((franja) => {
         const fila = estados[franja.clave]
         const metric = fila?.metric ?? null
@@ -116,21 +117,25 @@ export function Semaforo() {
         return (
           <div
             key={franja.clave}
+            className="ct-semaforo-franja"
             data-testid={`franja-${franja.clave}`}
             data-aia-severity={estado.severity}
             data-aia-urgency={estado.urgency}
           >
-            <span>{franja.etiqueta}</span>
+            <p className="ct-semaforo-etiqueta">{franja.etiqueta}</p>
+            <span className="ct-semaforo-chip" aria-hidden="true">
+              {textoAccesibleDeEstado(estado)}
+            </span>
             <span style={estiloSoloLector}>{textoAccesibleDeEstado(estado)}</span>
             {fila?.error ? (
-              <p role="alert">{fila.error}</p>
+              <p className="ct-semaforo-error" role="alert">{fila.error}</p>
             ) : metric === null ? (
-              <p>Cargando…</p>
+              <p className="ct-semaforo-cargando">Cargando…</p>
             ) : listas === null ? (
-              <p>Sin datos suficientes.</p>
+              <p className="ct-semaforo-cargando">Sin datos suficientes.</p>
             ) : (
-              <p>
-                {listas} listas, {pendientes} pendientes
+              <p className="ct-semaforo-detalle">
+                <span className="ct-semaforo-listas">{listas} listas</span>, {pendientes} pendientes
               </p>
             )}
           </div>

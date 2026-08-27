@@ -1,0 +1,37 @@
+/* Contenedor raíz de la hoja de Intermedia (Task 8 rol B — craft visual, "Sala de Control
+   Serena"). Columna con gap generoso: reserva espacio para el semáforo y el Pareto que otro
+   agente monta en paralelo (aún no importados aquí) sin adivinar su forma final -- el gap entre
+   secciones ya es el que usarán cuando lleguen. */
+
+.ct-intermedia-layout {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  padding: clamp(1rem, 0.75rem + 1.5vw, 2rem);
+  background: var(--ct-bg-page);
+  min-height: 100vh;
+  font-family: var(--ct-font-body);
+  color: var(--ct-text-primary);
+  box-sizing: border-box;
+}
+
+/* El toggle de tema es un control secundario discreto: se ancla a la esquina, no encabeza la
+   hoja. En móvil se mantiene alineado a la derecha, sin invadir el ancho del contenido. */
+.ct-intermedia-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ct-intermedia-mensaje {
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-fs-body);
+  color: var(--ct-text-secondary);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .ct-intermedia-layout {
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+}

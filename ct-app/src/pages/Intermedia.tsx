@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import './Intermedia.css'
 import { getMetric, getRestricciones } from '../lib/api'
 import type { Restriccion } from '../lib/api'
 import type { ListasRateResumen, ResumenLookaheadIntermedia } from '../lib/titulares'
@@ -7,10 +8,16 @@ import { Titular } from './Titular'
 import { ListaRestricciones } from './ListaRestricciones'
 import type { AjusteGuardado } from './ListaRestricciones'
 import { ToggleTema } from './ToggleTema'
+import { Semaforo } from './Semaforo'
+import { Pareto } from './Pareto'
 
-// Hoja de Intermedia (ct-app, etapa piloto, Task 7 ensamblaje, CT-8.3): ensambla alarma de
-// huérfanas (posición 1) + titular narrativo (posición 2) + lista de restricciones (posición 3,
-// ya construida en Task 7 paso 3b). El semáforo (4) y el Pareto (5) NO entran en este sub-paso.
+// Hoja de Intermedia (ct-app, etapa piloto, CT-8.3): ensambla las cinco posiciones del lienzo —
+// alarma de huérfanas (1, Task 7 ensamblaje) + titular narrativo (2, ídem) + lista de
+// restricciones (3, Task 7 paso 3b) + semáforo (4) + pareto (5). Las posiciones 4 y 5 se
+// construyeron en Task 8 tras el hallazgo de la entrada 20 de la Bitácora del plan: el lienzo
+// quedó cerrado como completo en Task 7 con solo tres de sus cinco piezas. Semaforo/Pareto traen
+// su propio fetch independiente (no comparten el getRestricciones() de aquí abajo), así que no
+// alteran el contrato de agregación que sigue documentado en este mismo bloque.
 //
 // Decisión central de este sub-paso: Intermedia trae los datos UNA sola vez con
 // getRestricciones() y deriva de ahí tanto el resumen que necesita Titular (huerfanasCount,
@@ -85,11 +92,21 @@ export function Intermedia() {
   }
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return (
+      <div className="ct-intermedia-layout">
+        <p className="ct-intermedia-mensaje" role="alert">
+          {error}
+        </p>
+      </div>
+    )
   }
 
   if (restricciones === null) {
-    return <p>Cargando lookahead…</p>
+    return (
+      <div className="ct-intermedia-layout">
+        <p className="ct-intermedia-mensaje">Cargando lookahead…</p>
+      </div>
+    )
   }
 
   const resumen: ResumenLookaheadIntermedia = {
@@ -102,11 +119,15 @@ export function Intermedia() {
   const restriccionesVisibles = soloHuerfanas ? huerfanas : restricciones
 
   return (
-    <div>
-      <ToggleTema />
+    <div className="ct-intermedia-layout">
+      <div className="ct-intermedia-toolbar">
+        <ToggleTema />
+      </div>
       <AlarmaHuerfanas huerfanas={huerfanas} onVerHuerfanas={() => setSoloHuerfanas(true)} />
       <Titular resumen={resumen} />
       <ListaRestricciones restricciones={restriccionesVisibles} onGestionGuardada={handleGestionGuardada} />
+      <Semaforo />
+      <Pareto />
     </div>
   )
 }

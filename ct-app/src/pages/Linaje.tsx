@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import './Linaje.css'
 import { CtApiError, getLineage } from '../lib/api'
 import type { LineageInfo, MetricResult } from '../lib/api'
 
@@ -58,43 +59,82 @@ export function Linaje({ metricKey, basis }: LinajeProps) {
   }
 
   return (
-    <div>
-      <button type="button" aria-expanded={abierto} aria-controls={panelId} onClick={handleToggle}>
+    <div className="ct-linaje">
+      <button
+        type="button"
+        className="ct-linaje-boton"
+        aria-expanded={abierto}
+        aria-controls={panelId}
+        onClick={handleToggle}
+      >
         ¿De dónde sale esto?
+        <span className="ct-linaje-glifo" aria-hidden="true">
+          {abierto ? '▴' : '▾'}
+        </span>
       </button>
 
       {abierto && (
-        <div id={panelId}>
-          {estado?.tipo === 'cargando' && <p role="status">Cargando linaje…</p>}
+        <div id={panelId} className="ct-linaje-panel">
+          {estado?.tipo === 'cargando' && (
+            <p className="ct-linaje-estado" role="status">
+              Cargando linaje…
+            </p>
+          )}
 
-          {estado?.tipo === 'error' && <p role="alert">{estado.mensaje}</p>}
+          {estado?.tipo === 'error' && (
+            <p className="ct-linaje-error" role="alert">
+              {estado.mensaje}
+            </p>
+          )}
 
-          {estado?.tipo === 'vacio' && <p>Sin información de trazabilidad para esta métrica.</p>}
+          {estado?.tipo === 'vacio' && (
+            <p className="ct-linaje-estado">Sin información de trazabilidad para esta métrica.</p>
+          )}
 
           {estado?.tipo === 'listo' && (
             <>
-              <div data-testid="linaje-contrato">
-                <h3>{estado.info.metricName}</h3>
+              <div className="ct-linaje-contrato" data-testid="linaje-contrato">
+                <h3 className="ct-linaje-titulo">{estado.info.metricName}</h3>
                 <p>{estado.info.definition}</p>
-                <p>Fórmula: {estado.info.formula}</p>
                 <p>
-                  Fuente: {estado.info.sourceView} — Tablas: {estado.info.sourceTables}
+                  <span className="ct-linaje-label">Fórmula:</span> {estado.info.formula}
                 </p>
-                <p>Grano: {estado.info.grain}</p>
-                <p>Política de corte: {estado.info.cutoffPolicy}</p>
-                <p>Filtros: {estado.info.filters}</p>
-                <p>Versión: {estado.info.version}</p>
-                <p>Última actualización: {estado.info.lastUpdated}</p>
-                <p>Limitaciones conocidas: {estado.info.knownLimitations}</p>
+                <p>
+                  <span className="ct-linaje-label">Fuente:</span> {estado.info.sourceView} —{' '}
+                  <span className="ct-linaje-label">Tablas:</span> {estado.info.sourceTables}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Grano:</span> {estado.info.grain}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Política de corte:</span> {estado.info.cutoffPolicy}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Filtros:</span> {estado.info.filters}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Versión:</span> {estado.info.version}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Última actualización:</span> {estado.info.lastUpdated}
+                </p>
+                <p>
+                  <span className="ct-linaje-label">Limitaciones conocidas:</span> {estado.info.knownLimitations}
+                </p>
               </div>
 
               {basis && (
-                <div data-testid="linaje-basis">
+                <div className="ct-linaje-basis" data-testid="linaje-basis">
                   <p>
-                    Obras incluidas: {basis.obras_incluidas} de {basis.obras_esperadas} esperadas
+                    <span className="ct-linaje-label">Obras incluidas:</span> {basis.obras_incluidas} de{' '}
+                    {basis.obras_esperadas} esperadas
                   </p>
-                  <p>Corte de este cálculo: {basis.corte}</p>
-                  <p>Filas usadas: {basis.filas_usadas}</p>
+                  <p>
+                    <span className="ct-linaje-label">Corte de este cálculo:</span> {basis.corte}
+                  </p>
+                  <p>
+                    <span className="ct-linaje-label">Filas usadas:</span> {basis.filas_usadas}
+                  </p>
                 </div>
               )}
             </>
