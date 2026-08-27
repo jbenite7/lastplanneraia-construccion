@@ -388,7 +388,8 @@ tubería, cada RC en su propia línea:**
    decisión 10 realmente protege), pero se deja anotado sin disfrazarlo de un "sí" que no fue dicho
    así.
 6. **Cumplida con este párrafo** — el número, abajo.
-7. **Pendiente** — es el paso que sigue a este cierre (push + PR + CI).
+7. **Cumplida.** PR #12 mergeado a `main` (`2a324a00`) con CI en verde sobre el commit exacto
+   verificado. Ver el detalle en la condición de hecho 7, arriba.
 
 ### El número del piloto
 
@@ -497,3 +498,9 @@ anterior, es una foto más nueva. La línea que manda se re-mide el día que F2 
    (7 hojas + F3–F5 re-priorizadas) está dimensionada con él.
 7. El cierre entró a `main` por Pull Request con CI en verde, y la spec quedó actualizada en el
    mismo PR.
+   **Cumplida el 2026-08-27:** [PR #12](https://github.com/jbenite7/lastplanneraia-construccion/pull/12)
+   mergeado a `main` (`2a324a00ea088446d960ba48f841a5c6b86300cc`), con CI en verde sobre el commit
+   exacto verificado (`design-system-static` 1m57s, `design-system-runtime` 10m5s, ambos `pass`
+   sobre `7ab50c9f`). `git rev-parse origin/main` confirma el mismo SHA tras el fetch posterior al
+   merge. La spec (`2026-08-26-v0-del-producto-design.md`) quedó actualizada en el mismo PR
+   (condición 6, el número).
