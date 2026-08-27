@@ -117,6 +117,11 @@ class BiViewController extends BaseController
             'shellActive'      => $shellActive,
             'shellModuleLabel' => $shellModuleLabel,
             'shellWeeks'       => $shellWeeks,
+            // Task 7 paso 6: expone la bandera a bi-spa.js (window.__CT_PILOTO_ENABLED__ en
+            // _layout.php) para que switchView('intermedia') pueda navegar de verdad a
+            // /bi/intermedia en vez de solo alternar visibilidad. Compartido por las 8 hojas
+            // porque las 8 usan este mismo _layout.php — no solo la de Intermedia.
+            'ctPilotoEnabled'  => self::ctPilotoEnabled(),
         ];
 
         extract($viewData);

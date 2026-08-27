@@ -1,12 +1,11 @@
 import './lib/tokens.css'
+import { Intermedia } from './pages/Intermedia'
 
-// Andamiaje de la etapa piloto (Task 6): sin páginas todavía — las construye Task 7.
-// Este componente solo prueba que el bundle levanta y que los tokens del design system
-// llegan por `@import`, no que la pantalla esté terminada.
+// Task 7 paso 6: reemplaza el placeholder de Task 6 (andamiaje) por la hoja real.
+// `renderCtPiloto()` (BiViewController.php) sirve este bundle únicamente para la hoja
+// Intermedia, así que no hace falta router: una sola pantalla, montada directo.
 function App() {
-  // Sin className: 'ct-app-shell' no tiene ninguna regla en tokens.css ni en ningún otro CSS
-  // del bundle — sería una clase muerta. Task 7 le pone la suya cuando construya la pantalla real.
-  return <div>Torre de Control — andamiaje en construcción</div>
+  return <Intermedia />
 }
 
 export default App
