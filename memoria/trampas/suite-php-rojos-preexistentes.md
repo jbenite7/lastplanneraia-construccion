@@ -79,6 +79,16 @@ antes de atribuirte un fallo, revierte tus archivos a HEAD (`git checkout HEAD -
 
 ## `test_unique_id_runtime_gate.php`, rojo desde Task 7 paso 3a
 
+**RESUELTO el 2026-08-27, Task 9:** fichado como excepción documentada y con vencimiento
+(`tests/unique-id-runtime-gate-exceptions.json`, expira 2026-11-30), mismo patrón que
+`docs/design-system/exceptions.json`. El script (`tests/test_unique_id_runtime_gate.php`) ahora
+lee ese archivo y no cuenta como fallo una línea excepcionada vigente; verificado en ambos
+sentidos (una excepción vencida vuelve a fallar el gate). `run-php-tests.php --nivel=puro` → RC=0.
+No se tocó el dato ni el JOIN real — la migración de fondo (agregar a
+`pi_shared_constraint_links` una columna que apunte a la PK real de `programa_consolidado`) sigue
+sin hacerse y sigue siendo deuda real, solo que ahora está fichada con fecha, no bloqueando el CI
+en silencio ni sin plazo.
+
 **Medido el 2026-08-27 sobre `d5178fb6` (rama `ola1-torre-piloto`), confirmado tres veces
 independientes** (esta sesión + dos revisiones opus separadas del semáforo y del pareto de
 restricciones): `test_unique_id_runtime_gate.php` falla señalando
