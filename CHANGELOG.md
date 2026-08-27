@@ -28,6 +28,13 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Corregido: la hoja piloto de Intermedia no podía hacer scroll (2026-08-27)
+
+`ct-app` heredaba `html, body { overflow: hidden }` de `handsontable-module.css` (pensado para
+que las tablas de las 8 hojas viejas del BI manejen su propio scroll), sin necesitarlo — su
+contenido excede el viewport y no usa Handsontable. Fix acotado a `ct-app/src/pages/Intermedia.css`,
+sin tocar el CSS compartido ni las hojas viejas.
+
 ### Añadido: tema claro y craft visual completo de la hoja piloto de Intermedia (2026-08-27)
 
 La hoja de Intermedia de la Torre de Control piloto (`ct-app/`, `/bi/intermedia` bajo
