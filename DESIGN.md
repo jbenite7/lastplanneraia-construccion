@@ -740,6 +740,22 @@ con guard `tests/design-system/state-solid-contract.test.mjs`.
   (excepción declarada a la Regla de Palabra Íntegra: el label entero vive en
   tooltip, `aria-label` y drawer).
 
+**Corregido 2026-08-27 (Torre piloto, `ct-app/`):** el bullet de arriba decía que el
+texto sobre fila con tinte usa `--ds-active-text-primary` — cierto solo mientras el
+sistema corriera en un único tema. `--ds-state-row-<hue>` es **invariante** por
+diseño (no cambia con `data-aia-theme`), pero `--ds-active-text-primary` sí cambia;
+`ct-app` fue el primer consumidor en soportar ambos temas y el toggle destapó la
+combinación real: en claro, el texto se volvía oscuro sobre una fila que sigue
+oscura (medido: 1.17:1–1.95:1, contra el mínimo de 4.5:1). **El texto sobre fila con
+tinte debe ser invariante como el propio fondo**, no seguir al tema activo — mismo
+tratamiento que ya reciben el chip sólido y el filete. `ct-app/src/lib/tokens.css`
+declara el par local `--ct-row-text-primary`/`-secondary` (fijos a los valores de
+texto del tema oscuro en ambos temas) para sus consumidores (`ListaRestricciones.css`,
+`Semaforo.css`); un módulo `--ds-*` futuro que adopte el mismo patrón de fila
+invariante en ambos temas debería declarar el equivalente global
+(`--ds-active-row-text-primary`/`-secondary`) en vez de reintroducir la dependencia
+rota.
+
 ### Arquitectura de consumo (contrato)
 
 El entrypoint productivo está **segmentado**. Las superficies migradas consumen
