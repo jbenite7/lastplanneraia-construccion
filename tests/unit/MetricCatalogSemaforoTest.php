@@ -41,6 +41,19 @@ use PHPUnit\Framework\TestCase;
  * documentando el motivo, en vez de una migración parcial cosmética. No se extendió
  * `MetricExecutor` (fuera de alcance, declarado explícitamente en la entrada 6).
  *
+ * **Corrección posterior (rol B, tests/test_bi_semaforo_franjas.php):** el análisis de arriba
+ * sigue siendo correcto para el enfoque que investigaba — "cuenta cuántas actividades caen en la
+ * franja" es, en efecto, un conteo puro sin denominador, y su rango compuesto en el numerador
+ * jamás matchea `NUMERATOR_EXPRESSION_PATTERN`. Lo que cambió no fue el motor: fue qué mide la
+ * métrica. Las 4 franjas se redefinieron como **fracción de listas por franja** — numerador
+ * `hard_restrictions_ready=1` (comparación simple, el mismo patrón que ya usa
+ * `pi_hard_restrictions_ready_rate`), denominador todas las actividades de la franja. La franja
+ * misma no necesita vivir en el numerador: ya vive en `filters` (WHERE), que sí admite varias
+ * comparaciones simples encadenadas (`Semanas_Inicio>=1 AND Semanas_Inicio<=2` como dos filtros,
+ * no un numerador). Con ese cambio las 4 son `ejecutable`, `unit` pasa de `actividades` a
+ * `porcentaje`, y el límite real que persiste — el numerador nunca admite un rango compuesto — se
+ * documenta en `known_limitations` de cada franja, no como motivo para quedarse en `descriptiva`.
+ *
  * Grupo `puro`: solo lee el array del catálogo (`MetricDictionaryService::catalog()`), sin tocar
  * la base de datos.
  */
@@ -65,8 +78,9 @@ final class MetricCatalogSemaforoTest extends TestCase
      * misma definición de población. El límite de `Semanas_Inicio` usa comparaciones simples
      * (`>=`/`<=`/`=`), nunca `BETWEEN` — mismo criterio que la corrección CT-16 documentada junto a
      * `pi_hard_restrictions_ready_rate`: `MetricExecutor::parseFilter()` no reconoce `BETWEEN`, así
-     * que declarar el filtro ya en la forma parseable dejar la métrica lista para el día que el
-     * motor soporte conteo puro, sin tener que re-redactar el catálogo entonces.
+     * que declarar el filtro ya en la forma parseable es lo que hace ejecutable a la franja hoy —
+     * la franja vive en `filters` (WHERE), no en el numerador, que es fijo
+     * (`hard_restrictions_ready=1`).
      */
     private const FILTROS_ESPERADOS = [
         'pi_semaforo_semana_0' => ['Titulo=0', 'Ejecutado<1', 'Semanas_Inicio=0'],
@@ -91,9 +105,9 @@ final class MetricCatalogSemaforoTest extends TestCase
 
     /**
      * CT-6.2 exige el contrato completo antes de pintarse: fuente, filtro, grano — y, para una
-     * métrica `descriptiva` (sin `MetricExecutor` de por medio), `known_limitations` es donde vive
-     * la declaración de completitud en prosa, igual que en `pg_activities_to_do` y
-     * `pg_observed_activity_delay_days`.
+     * métrica `ejecutable` (vía `MetricExecutor`), `known_limitations` es donde vive el límite real
+     * que persiste (el numerador nunca admite un rango compuesto), igual que en
+     * `pi_hard_restrictions_ready_rate`.
      */
     public function testCadaFranjaDeclaraFuenteFiltroGranoYMotivoDeCompletitud(): void
     {
@@ -121,7 +135,7 @@ final class MetricCatalogSemaforoTest extends TestCase
                 "{$clave}: filtros de Semanas_Inicio deben ser comparaciones simples, no BETWEEN (CT-16)",
             );
 
-            self::assertSame('actividades', $def['unit'] ?? null, "{$clave}: unit debe ser 'actividades' (es un conteo, no un porcentaje)");
+            self::assertSame('porcentaje', $def['unit'] ?? null, "{$clave}: unit debe ser 'porcentaje' (fracción de listas por franja, no un conteo)");
             self::assertIsBool($def['supports_multi_project'] ?? null, "{$clave}: supports_multi_project debe estar declarado");
             self::assertIsBool($def['synthetic_defaults_allowed'] ?? null, "{$clave}: synthetic_defaults_allowed debe estar declarado");
 
@@ -131,11 +145,11 @@ final class MetricCatalogSemaforoTest extends TestCase
     }
 
     /**
-     * `estado_ejecucion` debe ser `descriptiva` en las 4, con el motivo (el vacío de conteo puro
-     * de `MetricExecutor`) documentado en el catálogo mismo -- igual que el resto de entradas
-     * `descriptiva` con causa (`pg_radar_productividad`, `pi_restriction_pareto`), no un silencio.
+     * `estado_ejecucion` debe ser `ejecutable` en las 4, con la fórmula de fracción declarada y el
+     * límite real que persiste (numerador nunca admite rango compuesto) documentado en
+     * `known_limitations` -- no como motivo para quedarse `descriptiva`, sino como nota de diseño.
      */
-    public function testLasCuatroSonDescriptivaConElVacioDeMetricExecutorDocumentado(): void
+    public function testLasCuatroSonEjecutablesConLaFraccionDeListasPorFranjaDocumentada(): void
     {
         $dictionary = new MetricDictionaryService();
 
@@ -143,16 +157,22 @@ final class MetricCatalogSemaforoTest extends TestCase
             $def = $dictionary->getDefinition($clave);
 
             self::assertSame(
-                'descriptiva',
+                'ejecutable',
                 $def['estado_ejecucion'] ?? null,
-                "{$clave}: debe ser 'descriptiva' -- MetricExecutor no soporta conteo puro sin denominador (entrada 6 de la Bitácora)",
+                "{$clave}: debe ser 'ejecutable' -- el numerador (hard_restrictions_ready=1) es una comparación simple; la franja vive en filters",
+            );
+
+            self::assertSame(
+                'SUM(hard_restrictions_ready=1) / COUNT(*)',
+                $def['formula'] ?? null,
+                "{$clave}: formula debe declarar la fracción de listas por franja",
             );
 
             $limitaciones = (string) ($def['known_limitations'] ?? '');
             self::assertStringContainsString(
-                'MetricExecutor',
+                'rango compuesto',
                 $limitaciones,
-                "{$clave}: known_limitations debe nombrar por qué MetricExecutor no puede ejecutar esta métrica hoy",
+                "{$clave}: known_limitations debe seguir nombrando el límite real -- el numerador nunca admite un rango compuesto",
             );
         }
     }

@@ -244,6 +244,32 @@ $oldMethodRetainedByMetric = [
         . 'catalogada y ejecutable.',
 ];
 
+/**
+ * Motivo documentado para las metricas `ejecutable` que NUNCA tuvieron un metodo SQL viejo que
+ * borrar -- nacieron declarativas, calculadas directamente en el catalogo desde el primer commit
+ * que las dio de alta. Distinto de `$oldMethodRetainedByMetric`: aquella documenta un metodo que
+ * SIGUE VIVO y es comparable (por eso entra al trinquete 1, de paridad numerica); esta documenta
+ * la AUSENCIA de un metodo viejo -- no hay nada que comparar, asi que estas metricas no entran al
+ * trinquete 1 (no hay resolver posible en `$oldPathResolvers`), solo al trinquete 2 de borrado,
+ * donde bastan con este motivo para no fallar por "sin entrada en ninguno de los dos arrays".
+ *
+ * @var array<string, string>
+ */
+$neverHadOldMethodByMetric = [
+    'pi_semaforo_semana_0' => 'sin metodo SQL viejo que retener -- la metrica nacio ejecutable, '
+        . 'declarada directamente en el catalogo, nunca tuvo un camino de calculo duplicado que '
+        . 'borrar.',
+    'pi_semaforo_semana_1_2' => 'sin metodo SQL viejo que retener -- la metrica nacio ejecutable, '
+        . 'declarada directamente en el catalogo, nunca tuvo un camino de calculo duplicado que '
+        . 'borrar.',
+    'pi_semaforo_semana_3_4' => 'sin metodo SQL viejo que retener -- la metrica nacio ejecutable, '
+        . 'declarada directamente en el catalogo, nunca tuvo un camino de calculo duplicado que '
+        . 'borrar.',
+    'pi_semaforo_semana_5_6' => 'sin metodo SQL viejo que retener -- la metrica nacio ejecutable, '
+        . 'declarada directamente en el catalogo, nunca tuvo un camino de calculo duplicado que '
+        . 'borrar.',
+];
+
 $passed = 0;
 $failed = 0;
 
@@ -480,15 +506,50 @@ if ($metricasParaComparar === []) {
     paridadPass('ninguna metrica en_paridad ni ejecutable-con-metodo-retenido todavia — trinquete de paridad vacio por diseno');
 }
 
+// --- Guardarraíl: ninguna metric_key puede vivir en mas de uno de los 3 arrays de retencion ---
+// Si el mismo metric_key aparece en $oldMethodByMetric (exige comprobar que el metodo viejo se
+// borro) Y en $neverHadOldMethodByMetric (se salta esa comprobacion), el orden del bucle de abajo
+// hace que $neverHadOldMethodByMetric gane y el trinquete quede desactivado en silencio para esa
+// metrica. Puramente aditivo: hoy ninguna clave esta duplicada, asi que este bloque no cambia
+// ningun resultado actual, solo blinda contra el error futuro.
+$retentionArraysByMetric = [
+    'oldMethodByMetric' => $oldMethodByMetric,
+    'oldMethodRetainedByMetric' => $oldMethodRetainedByMetric,
+    'neverHadOldMethodByMetric' => $neverHadOldMethodByMetric,
+];
+$retentionArrayNamesByKey = [];
+foreach ($retentionArraysByMetric as $arrayName => $arrayValues) {
+    foreach (array_keys($arrayValues) as $metricKey) {
+        $retentionArrayNamesByKey[$metricKey][] = $arrayName;
+    }
+}
+foreach ($retentionArrayNamesByKey as $metricKey => $arrayNames) {
+    if (count($arrayNames) > 1) {
+        paridadFail(sprintf(
+            '%s: aparece en mas de un arreglo de retencion (%s) — el trinquete de borrado se '
+                . 'desactivaria en silencio para esta metrica por el orden de comprobacion; cada '
+                . 'metric_key debe vivir en un unico arreglo',
+            $metricKey,
+            implode(', ', $arrayNames),
+        ));
+    }
+}
+
 // --- Trinquete 2: metricas ejecutable ya no deben tener su SQL viejo en ControlTowerService ---
 $reflection = new \ReflectionClass(ControlTowerService::class);
 foreach ($ejecutables as $definition) {
     $metricKey = (string) $definition['metric_key'];
     $oldMethod = $oldMethodByMetric[$metricKey] ?? null;
     $retentionReason = $oldMethodRetainedByMetric[$metricKey] ?? null;
+    $neverHadReason = $neverHadOldMethodByMetric[$metricKey] ?? null;
 
-    if ($oldMethod === null && $retentionReason === null) {
-        paridadFail("{$metricKey}: esta ejecutable pero no tiene entrada en \$oldMethodByMetric ni en \$oldMethodRetainedByMetric — no se puede verificar que el SQL viejo se haya borrado (o que su conservacion este documentada)");
+    if ($oldMethod === null && $retentionReason === null && $neverHadReason === null) {
+        paridadFail("{$metricKey}: esta ejecutable pero no tiene entrada en \$oldMethodByMetric, \$oldMethodRetainedByMetric ni \$neverHadOldMethodByMetric — no se puede verificar que el SQL viejo se haya borrado (o que su ausencia este documentada)");
+        continue;
+    }
+
+    if ($neverHadReason !== null) {
+        paridadPass("{$metricKey}: nunca tuvo SQL viejo que borrar — {$neverHadReason}");
         continue;
     }
 

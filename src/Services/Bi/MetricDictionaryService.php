@@ -564,134 +564,146 @@ class MetricDictionaryService
         // criterio de la correccion CT-16 ya aplicada a `pi_hard_restrictions_ready_rate`, porque
         // `MetricExecutor::parseFilter()` no reconoce BETWEEN.
         //
-        // Las 4 nacen 'descriptiva', no 'ejecutable' -- investigado, no asumido (ver
-        // tests/unit/MetricCatalogSemaforoTest.php y el reporte de Task 7 paso 3-bis en
-        // .superpowers/sdd/2026-08-26-ola1-torre-etapa-piloto/task-7-report.md).
-        // `MetricExecutor::execute()` (linea 100) SIEMPRE calcula un cociente
-        // numerador/denominador -- `buildSelectExpression()` (lineas 117-138) solo reconoce dos
-        // formas (`ratio:<columna>` o `SUM(expr)/COUNT(*)`), nunca un tercer modo de conteo puro
-        // sin denominador. Un "cuenta cuantas actividades caen en la franja" es, por definicion,
-        // un conteo puro -- mismo vacio ya documentado para `pg_activities_to_do` (entrada 6 de la
-        // Bitacora del plan). Ademas, para las 3 franjas de rango compuesto (1-2, 3-4, 5-6) el
-        // numerador necesitaria una condicion `Semanas_Inicio>=X AND Semanas_Inicio<=Y`, y
-        // `NUMERATOR_EXPRESSION_PATTERN` solo admite un identificador con UNA comparacion simple,
-        // nunca un rango. La franja 0 SI seria tecnicamente ejecutable en solitario (forzando
-        // `SUM(Semanas_Inicio=0)/COUNT(*)`, fraccion del lookahead total en vez de conteo), pero
-        // promoverla sola habria dejado 3 de 4 hermanas 'descriptiva' por una limitacion mecanica
-        // del motor, no por una diferencia real de definicion -- se declaran las 4 'descriptiva'
-        // por igual, con el motivo repetido en el `known_limitations` de cada una. No se extendio
-        // `MetricExecutor.php` (fuera de alcance, entrada 6 de la Bitacora del plan).
+        // Las 4 nacen 'ejecutable' -- correccion posterior al analisis original (ver
+        // tests/unit/MetricCatalogSemaforoTest.php, docblock actualizado, y
+        // tests/test_bi_semaforo_franjas.php). El analisis previo asumia que el numerador tenia
+        // que expresar la franja como rango compuesto (`Semanas_Inicio>=X AND Semanas_Inicio<=Y`),
+        // y ese rango en efecto NUNCA cabe en `NUMERATOR_EXPRESSION_PATTERN` (solo admite UNA
+        // comparacion simple). La correccion es que el numerador no tiene por que expresar la
+        // franja: la franja ya vive en `filters` (WHERE), que admite varias comparaciones simples
+        // encadenadas. El numerador queda fijo en `hard_restrictions_ready=1` (comparacion simple,
+        // igual patron que `pi_hard_restrictions_ready_rate`), y la fraccion resultante es "listas
+        // por franja / todas las de la franja" -- una metrica distinta a la que se penso primero
+        // (conteo de actividades en la ventana), pero ejecutable con el motor tal cual esta, sin
+        // tocar `MetricExecutor.php`.
         $catalog['pi_semaforo_semana_0'] = [
             'metric_key' => 'pi_semaforo_semana_0',
-            'estado_ejecucion' => 'descriptiva',
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'intermedia',
             'metric_name' => 'Semáforo semanas para iniciar: semana 0 (listas ya)',
-            'definition' => 'Actividades del lookahead cuyo inicio cae en la semana 0 -- listas para iniciar ya.',
-            'formula' => 'COUNT(*) WHERE Titulo=0 AND Ejecutado<1 AND Semanas_Inicio=0',
-            'unit' => 'actividades',
+            'definition' => 'Proporción de actividades del lookahead con inicio en la semana 0 que '
+                . 'ya tienen sus restricciones duras liberadas.',
+            'formula' => 'SUM(hard_restrictions_ready=1) / COUNT(*)',
+            'unit' => 'porcentaje',
             'execution_source' => 'bi_pg_semana',
             'source_relations' => ['programa_consolidado', 'semanas_activas'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Fin de la semana seleccionada en semanas_activas.',
             'filters' => ['Titulo=0', 'Ejecutado<1', 'Semanas_Inicio=0'],
-            'aggregation_policy' => 'COUNT de actividades cuyo Semanas_Inicio cae exactamente en 0.',
+            'aggregation_policy' => 'Fraccion sobre las actividades de la franja 0 (definida en '
+                . '`filters`): numerador = las que ademas tienen hard_restrictions_ready=1 (listas), '
+                . 'denominador = todas las de la franja.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
-            'forecast_policy' => 'No forecast; reporta la franja de urgencia observada al corte.',
+            'forecast_policy' => 'No forecast; reporta la fraccion de liberacion de restricciones '
+                . 'duras observada al corte dentro de la franja semana 0.',
             'version' => '1.0',
-            'known_limitations' => 'Conteo puro sin denominador -- MetricExecutor::execute() solo '
-                . 'sabe calcular un cociente numerador/denominador (ratio:<columna> o '
-                . 'SUM(expr)/COUNT(*)), nunca un conteo sin dividir. Esta franja en solitario SI '
-                . 'seria expresable como SUM(Semanas_Inicio=0)/COUNT(*) (fraccion del lookahead), '
-                . 'pero se declara descriptiva junto a sus 3 hermanas (1-2, 3-4, 5-6) para no dejar '
-                . 'una migracion parcial cosmetica -- ver comentario de cabecera del bloque.',
+            'known_limitations' => 'Se declara como fraccion de listas por franja, no como conteo '
+                . 'de actividades en la ventana -- el numerador es siempre hard_restrictions_ready=1 '
+                . '(comparacion simple, admitida por MetricExecutor::NUMERATOR_EXPRESSION_PATTERN) y '
+                . 'la franja (Semanas_Inicio=0) vive en `filters`, que si admite varias comparaciones '
+                . 'simples en el WHERE. El limite real que persiste es otro: el numerador NUNCA '
+                . 'admite un rango compuesto (`Semanas_Inicio>=X AND Semanas_Inicio<=Y`) -- por eso '
+                . 'la franja se resuelve en filters y no en el numerador.',
         ];
 
         $catalog['pi_semaforo_semana_1_2'] = [
             'metric_key' => 'pi_semaforo_semana_1_2',
-            'estado_ejecucion' => 'descriptiva',
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'intermedia',
             'metric_name' => 'Semáforo semanas para iniciar: semanas 1-2',
-            'definition' => 'Actividades del lookahead cuyo inicio cae entre la semana 1 y la 2.',
-            'formula' => 'COUNT(*) WHERE Titulo=0 AND Ejecutado<1 AND Semanas_Inicio>=1 AND Semanas_Inicio<=2',
-            'unit' => 'actividades',
+            'definition' => 'Proporción de actividades del lookahead con inicio entre la semana 1 '
+                . 'y la 2 que ya tienen sus restricciones duras liberadas.',
+            'formula' => 'SUM(hard_restrictions_ready=1) / COUNT(*)',
+            'unit' => 'porcentaje',
             'execution_source' => 'bi_pg_semana',
             'source_relations' => ['programa_consolidado', 'semanas_activas'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Fin de la semana seleccionada en semanas_activas.',
             'filters' => ['Titulo=0', 'Ejecutado<1', 'Semanas_Inicio>=1', 'Semanas_Inicio<=2'],
-            'aggregation_policy' => 'COUNT de actividades cuyo Semanas_Inicio cae en el rango 1-2.',
+            'aggregation_policy' => 'Fraccion sobre las actividades de la franja 1-2 (definida en '
+                . '`filters`): numerador = las que ademas tienen hard_restrictions_ready=1 (listas), '
+                . 'denominador = todas las de la franja.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
-            'forecast_policy' => 'No forecast; reporta la franja de urgencia observada al corte.',
+            'forecast_policy' => 'No forecast; reporta la fraccion de liberacion de restricciones '
+                . 'duras observada al corte dentro de la franja semanas 1-2.',
             'version' => '1.0',
-            'known_limitations' => 'Conteo puro sin denominador, y ademas numerador de rango '
-                . 'compuesto -- MetricExecutor::execute() solo sabe calcular un cociente '
-                . 'numerador/denominador, y su NUMERATOR_EXPRESSION_PATTERN solo admite UNA '
-                . 'comparacion simple, nunca "Semanas_Inicio>=1 AND Semanas_Inicio<=2". No hay '
-                . 'forma de expresar esta franja como SUM(expr)/COUNT(*) sin ampliar ese patron -- '
-                . 'extender MetricExecutor queda fuera de alcance de esta etapa (entrada 6 de la '
-                . 'Bitacora del plan).',
+            'known_limitations' => 'Se declara como fraccion de listas por franja, no como conteo '
+                . 'de actividades en la ventana -- el numerador es siempre hard_restrictions_ready=1 '
+                . '(comparacion simple, admitida por MetricExecutor::NUMERATOR_EXPRESSION_PATTERN) y '
+                . 'la franja (Semanas_Inicio>=1 AND Semanas_Inicio<=2) vive en `filters`, que si '
+                . 'admite varias comparaciones simples en el WHERE. El limite real que persiste es '
+                . 'otro: el numerador NUNCA admite un rango compuesto -- por eso la franja se '
+                . 'resuelve en filters y no en el numerador.',
         ];
 
         $catalog['pi_semaforo_semana_3_4'] = [
             'metric_key' => 'pi_semaforo_semana_3_4',
-            'estado_ejecucion' => 'descriptiva',
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'intermedia',
             'metric_name' => 'Semáforo semanas para iniciar: semanas 3-4',
-            'definition' => 'Actividades del lookahead cuyo inicio cae entre la semana 3 y la 4.',
-            'formula' => 'COUNT(*) WHERE Titulo=0 AND Ejecutado<1 AND Semanas_Inicio>=3 AND Semanas_Inicio<=4',
-            'unit' => 'actividades',
+            'definition' => 'Proporción de actividades del lookahead con inicio entre la semana 3 '
+                . 'y la 4 que ya tienen sus restricciones duras liberadas.',
+            'formula' => 'SUM(hard_restrictions_ready=1) / COUNT(*)',
+            'unit' => 'porcentaje',
             'execution_source' => 'bi_pg_semana',
             'source_relations' => ['programa_consolidado', 'semanas_activas'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Fin de la semana seleccionada en semanas_activas.',
             'filters' => ['Titulo=0', 'Ejecutado<1', 'Semanas_Inicio>=3', 'Semanas_Inicio<=4'],
-            'aggregation_policy' => 'COUNT de actividades cuyo Semanas_Inicio cae en el rango 3-4.',
+            'aggregation_policy' => 'Fraccion sobre las actividades de la franja 3-4 (definida en '
+                . '`filters`): numerador = las que ademas tienen hard_restrictions_ready=1 (listas), '
+                . 'denominador = todas las de la franja.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
-            'forecast_policy' => 'No forecast; reporta la franja de urgencia observada al corte.',
+            'forecast_policy' => 'No forecast; reporta la fraccion de liberacion de restricciones '
+                . 'duras observada al corte dentro de la franja semanas 3-4.',
             'version' => '1.0',
-            'known_limitations' => 'Conteo puro sin denominador, y ademas numerador de rango '
-                . 'compuesto -- MetricExecutor::execute() solo sabe calcular un cociente '
-                . 'numerador/denominador, y su NUMERATOR_EXPRESSION_PATTERN solo admite UNA '
-                . 'comparacion simple, nunca "Semanas_Inicio>=3 AND Semanas_Inicio<=4". No hay '
-                . 'forma de expresar esta franja como SUM(expr)/COUNT(*) sin ampliar ese patron -- '
-                . 'extender MetricExecutor queda fuera de alcance de esta etapa (entrada 6 de la '
-                . 'Bitacora del plan).',
+            'known_limitations' => 'Se declara como fraccion de listas por franja, no como conteo '
+                . 'de actividades en la ventana -- el numerador es siempre hard_restrictions_ready=1 '
+                . '(comparacion simple, admitida por MetricExecutor::NUMERATOR_EXPRESSION_PATTERN) y '
+                . 'la franja (Semanas_Inicio>=3 AND Semanas_Inicio<=4) vive en `filters`, que si '
+                . 'admite varias comparaciones simples en el WHERE. El limite real que persiste es '
+                . 'otro: el numerador NUNCA admite un rango compuesto -- por eso la franja se '
+                . 'resuelve en filters y no en el numerador.',
         ];
 
         $catalog['pi_semaforo_semana_5_6'] = [
             'metric_key' => 'pi_semaforo_semana_5_6',
-            'estado_ejecucion' => 'descriptiva',
+            'estado_ejecucion' => 'ejecutable',
             'report_key' => 'intermedia',
             'metric_name' => 'Semáforo semanas para iniciar: semanas 5-6',
-            'definition' => 'Actividades del lookahead cuyo inicio cae entre la semana 5 y la 6.',
-            'formula' => 'COUNT(*) WHERE Titulo=0 AND Ejecutado<1 AND Semanas_Inicio>=5 AND Semanas_Inicio<=6',
-            'unit' => 'actividades',
+            'definition' => 'Proporción de actividades del lookahead con inicio entre la semana 5 '
+                . 'y la 6 que ya tienen sus restricciones duras liberadas.',
+            'formula' => 'SUM(hard_restrictions_ready=1) / COUNT(*)',
+            'unit' => 'porcentaje',
             'execution_source' => 'bi_pg_semana',
             'source_relations' => ['programa_consolidado', 'semanas_activas'],
             'grain' => 'project_id + Semana',
             'cutoff_policy' => 'Fin de la semana seleccionada en semanas_activas.',
             'filters' => ['Titulo=0', 'Ejecutado<1', 'Semanas_Inicio>=5', 'Semanas_Inicio<=6'],
-            'aggregation_policy' => 'COUNT de actividades cuyo Semanas_Inicio cae en el rango 5-6.',
+            'aggregation_policy' => 'Fraccion sobre las actividades de la franja 5-6 (definida en '
+                . '`filters`): numerador = las que ademas tienen hard_restrictions_ready=1 (listas), '
+                . 'denominador = todas las de la franja.',
             'supports_multi_project' => true,
             'supports_date_range' => true,
             'synthetic_defaults_allowed' => false,
-            'forecast_policy' => 'No forecast; reporta la franja de urgencia observada al corte.',
+            'forecast_policy' => 'No forecast; reporta la fraccion de liberacion de restricciones '
+                . 'duras observada al corte dentro de la franja semanas 5-6.',
             'version' => '1.0',
-            'known_limitations' => 'Conteo puro sin denominador, y ademas numerador de rango '
-                . 'compuesto -- MetricExecutor::execute() solo sabe calcular un cociente '
-                . 'numerador/denominador, y su NUMERATOR_EXPRESSION_PATTERN solo admite UNA '
-                . 'comparacion simple, nunca "Semanas_Inicio>=5 AND Semanas_Inicio<=6". No hay '
-                . 'forma de expresar esta franja como SUM(expr)/COUNT(*) sin ampliar ese patron -- '
-                . 'extender MetricExecutor queda fuera de alcance de esta etapa (entrada 6 de la '
-                . 'Bitacora del plan). Los mayores a 6 (fuera de ventana) quedan fuera de las 4 '
-                . 'franjas por diseño: is_lookahead_window en bi_pg_semana acota Semanas_Inicio a '
-                . '0-6.',
+            'known_limitations' => 'Se declara como fraccion de listas por franja, no como conteo '
+                . 'de actividades en la ventana -- el numerador es siempre hard_restrictions_ready=1 '
+                . '(comparacion simple, admitida por MetricExecutor::NUMERATOR_EXPRESSION_PATTERN) y '
+                . 'la franja (Semanas_Inicio>=5 AND Semanas_Inicio<=6) vive en `filters`, que si '
+                . 'admite varias comparaciones simples en el WHERE. El limite real que persiste es '
+                . 'otro: el numerador NUNCA admite un rango compuesto -- por eso la franja se '
+                . 'resuelve en filters y no en el numerador. Los mayores a 6 (fuera de ventana) '
+                . 'quedan fuera de las 4 franjas por diseño: is_lookahead_window en bi_pg_semana '
+                . 'acota Semanas_Inicio a 0-6.',
         ];
 
         $catalog['pdc_at_risk'] = [
