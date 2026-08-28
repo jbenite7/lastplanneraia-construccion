@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Core;
 
 use App\Core\DevDoor;
+use App\Services\ProjectAccessService;
 use Database;
 
 /**
@@ -63,9 +64,17 @@ class DevDoorController
             exit();
         }
 
-        // Delega en la lógica real de entrada a proyecto: verifica membresía contra
-        // project_members, normaliza el rol y resuelve la semana de aterrizaje.
-        (new ProjectSelectorController())->enterProject($login, $proyecto);
+        // Comparte la validación y el contexto de proyecto con el selector legado
+        // y el API, pero conserva las redirecciones propias de la puerta de desarrollo.
+        $result = (new ProjectAccessService())->select($login, $proyecto);
+        if (!$result['success']) {
+            $_SESSION['error'] = $result['message'];
+            header('Location: /proyectos');
+            exit();
+        }
+
+        header('Location: ' . ($result['route'] ?? '/dashboard'));
+        exit();
     }
 
     private function userIsActive(string $login): bool

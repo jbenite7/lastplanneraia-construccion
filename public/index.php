@@ -156,6 +156,8 @@ $router->get('/control-cambios', [\App\Controllers\Integracion\ControlCambiosCon
 $router->get('/api/session', [\App\Controllers\Api\SessionApiController::class, 'show']);
 $router->post('/api/auth/login', [\App\Controllers\Api\AuthApiController::class, 'login']);
 $router->post('/api/auth/logout', [\App\Controllers\Api\AuthApiController::class, 'logout']);
+$router->get('/api/proyectos', [\App\Controllers\Api\ProjectApiController::class, 'index']);
+$router->post('/api/proyectos/seleccionar', [\App\Controllers\Api\ProjectApiController::class, 'select']);
 
 // Api/Plan de Compras v2 (isla React)
 $router->get('/plan-compras/api/contexto', [\App\Controllers\Api\PlanComprasApiController::class, 'contexto']);
