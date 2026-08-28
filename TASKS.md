@@ -10,7 +10,7 @@ resumen: "Fuente única de pendientes: las 22 fases de los cuatro programas, su 
 project: lps-aia
 type: tasks
 status: activo
-updated: 2026-08-27
+updated: 2026-08-28
 ---
 
 # Tareas
@@ -100,7 +100,33 @@ decidido de antemano), y se revirtió por decisión de Felipe. Detalle completo 
 
 ## Bloqueantes
 
-**Ninguno. El atasco de publicación se desatascó el 2026-08-24**: por orden de Felipe se
+**2026-08-28 — `theme.js` deshace el claro de entrada (D12) en 7 páginas reales; bloquea el
+arranque del plan de Programa General, no la fase cero actual.** Destapado ejecutando el goal
+[[goals/temas-y-forma-fase-cero/goal]] (Task 6): `public/js/modules/aia_ui/theme.js` es un
+script vestigial de la época de un solo tema (F0/Task 9) que fuerza `data-aia-theme="dark"`
+sin condición — nunca lee `localStorage`, nunca respeta el default. Además publica
+`window.AiaDesignSystem.getTheme()`, del cual depende un «gate del shell» sin explorar
+(comentario en `views/plan-compras/app.view.php:40`: «sin él, el gate del shell se queda
+esperando ese global»), así que no se puede retirar sin más — el arreglo correcto exige
+entender ese gate primero.
+
+Dos mecanismos distintos, verificados en el código real:
+- **Override** (`theme-bootstrap.js` corre primero, `theme.js` lo pisa después):
+  `views/plan-compras/app.view.php`, `views/bi/control-tower-piloto.php`.
+- **Ausencia** (`theme-bootstrap.js` nunca se carga, solo `theme.js`):
+  `views/auth/login.view.php`, `views/auth/password-reset.view.php`,
+  `views/auth/password-forgot.view.php`, `views/core/project_selector.view.php`,
+  `views/bi/_layout.php`.
+
+Resultado observable en las 7: siempre oscuro, pese a que D12 (spec
+[[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design]]) diga claro. **No
+bloquea el cierre de la fase cero** — ninguna de sus tareas restantes renderiza estas páginas.
+**Sí bloquea el plan de Programa General**, el primer módulo: sin resolver esto, D12 nunca se
+manifiesta en producción aunque los tests del design system pasen en verde. Detalle completo,
+con la investigación y el ruling, en el ledger del goal
+(`.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/progress.md`, sección Task 6).
+
+**El atasco de publicación anterior se desatascó el 2026-08-24**: por orden de Felipe se
 consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ramas y worktrees.
 `main` salió del rojo — el runner de tests PHP da 29/29 con **0 sospechosos**. El cierre, con lo que
 los merges destaparon, en
