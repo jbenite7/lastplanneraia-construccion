@@ -195,6 +195,32 @@ estado por defecto mientras Felipe no reparta.
 
 ## Ahora
 
+- [ ] **CI · regenerar el presupuesto de runtime a la generación 0.5.0 — decisión de Felipe del
+  2026-08-28, con su método ya fijado.** El gate `runtime-budgets` está en rojo en el PR #18 por
+  `cssGzipBytes`: **131.451 B medidos contra 128.266 + 2.048 de tolerancia** (+3.185 B, ~2,5 %). No
+  es una regresión: es el CSS nuevo de la fase cero de temas y forma (24 tokens de estado claro,
+  `gravity-flag.css`, tokens de forma/tabla/densidad, `--ds-color-surface-well-*`), todo ello
+  posterior a la baseline 0.4.0.
+
+  **El método NO es negociable y está escrito en el propio script** (`scripts/design-system-runtime-budget.mjs`,
+  comentario de la generación `0.4.0`): la baseline se mide **en el mismo entorno donde el gate la
+  verifica**, es decir en una corrida real de GitHub Actions, nunca en la máquina local. Ese fue
+  exactamente el defecto que obligó a saltar de 0.3.5 a 0.4.0 (`initializationMs` agrupa por
+  máquina antes que por código: 191-268 ms local contra 596-1.071 ms en Actions), y repetirlo sería
+  volver a caer en una trampa ya medida y ya corregida una vez.
+
+  Qué hace falta, en concreto: bajar el `design-system-runtime-budget.json` completo de una corrida
+  verde de Actions (el workflow de hoy sube el *recibo* del gate, con el resultado agregado, pero
+  **no** el measurement con las seis métricas — puede que haya que añadir ese artefacto al job
+  primero), escribir `docs/design-system/runtime-measurements/0.5.0-measurement.json` y su
+  `0.5.0-recovery-manifest.json`, declarar `'0.5.0'` en `BASELINE_GENERATIONS`, y apuntar
+  `test:runtime-budget:check` a la baseline nueva. Con la atribución escrita al lado, como se hizo
+  en [[docs/design-system/runtime-measurements/2026-08-24-atribucion-0.4.0]].
+
+  **No se hizo dentro de la fase cero a propósito**: fabricar la baseline con datos parciales o
+  medidos localmente es «actualizar el baseline a mano para forzar verde», que el goal de ese
+  frente prohíbe explícitamente.
+
 - [ ] **Terminar la biblia de flujos T3 (PDC v2)** — [[docs/superpowers/plans/2026-08-04-biblia-t3-pdc]].
   Presupuesto y Seguimiento se cerraron el 2026-08-25 (`PDC-006` a `PDC-015`, 11 de 70 rutas). Falta
   Maestro de insumos (13 rutas — empezar aquí, el código ya deja una pista citada en
