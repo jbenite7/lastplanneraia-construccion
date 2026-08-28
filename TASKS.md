@@ -156,6 +156,16 @@ generalizado sí quedaron hechos — D16 cierra con alcance dark-only hasta que 
 resuelva. Detalle: `.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/task-9-report.md` y
 sección Task 9 del ledger del mismo goal.
 
+**Decisión de Felipe (2026-08-28), sobre el costo de la matriz doble: mantenerla en
+`[light, dark]` desde ya, contra la recomendación de reducirla a `[dark]` mientras el claro no
+rinde.** El costo (el job `design-system-runtime` completo se dobla en cada corrida — solo los
+dos `.visual.mjs` leen `E2E_THEME`, el resto de gates no distingue tema) se paga desde ahora sin
+contrapartida hasta que este bloqueo se resuelva. Los 5 goldens dark con deriva de Tasks 1-8
+(3 laboratorio + 2 piloto) también fueron aprobados por Felipe tras revisar la galería — golden
+base (macOS) actualizado, `goldenPlatforms.linux` deliberadamente sin tocar (se actualiza desde
+una corrida real de Actions si el gate Linux repite la deriva, para no repetir la trampa de golden
+Linux desincronizado ya medida y cerrada el 2026-08-24). Commit `717d8a87`.
+
 **El atasco de publicación anterior se desatascó el 2026-08-24**: por orden de Felipe se
 consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ramas y worktrees.
 `main` salió del rojo — el runner de tests PHP da 29/29 con **0 sospechosos**. El cierre, con lo que
