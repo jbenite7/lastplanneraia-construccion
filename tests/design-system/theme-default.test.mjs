@@ -78,6 +78,13 @@ const EXPECTED_DARK_DECLARATIONS = {
   '--ds-active-state-solid-teal-text': 'var(--ds-state-solid-teal-text)',
   '--ds-active-state-solid-neutral': 'var(--ds-state-solid-neutral)',
   '--ds-active-state-solid-neutral-text': 'var(--ds-state-solid-neutral-text)',
+
+  // Bandera de gravedad por tema (spec temas D4/D7): en penumbra apunta a los
+  // valores vigentes, mismo patron que el vocabulario de estado de arriba.
+  '--ds-active-flag-urgent-bg': 'var(--ds-flag-urgent-bg)',
+  '--ds-active-flag-urgent-ink': 'var(--ds-flag-urgent-ink)',
+  '--ds-active-flag-attention-bg': 'var(--ds-flag-attention-bg)',
+  '--ds-active-flag-attention-ink': 'var(--ds-flag-attention-ink)',
   '--ds-active-shell-background': 'var(--ds-shell-background)',
 };
 

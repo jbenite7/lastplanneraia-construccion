@@ -39,6 +39,10 @@
     --ds-active-state-solid-teal-text: var(--ds-state-solid-teal-text-light);
     --ds-active-state-solid-neutral: var(--ds-state-solid-neutral-light);
     --ds-active-state-solid-neutral-text: var(--ds-state-solid-neutral-text-light);
+    --ds-active-flag-urgent-bg: var(--ds-flag-urgent-bg-light);
+    --ds-active-flag-urgent-ink: var(--ds-flag-urgent-ink-light);
+    --ds-active-flag-attention-bg: var(--ds-flag-attention-bg-light);
+    --ds-active-flag-attention-ink: var(--ds-flag-attention-ink-light);
     --ds-active-shell-background:
       linear-gradient(180deg, var(--ds-color-bg-page-light), var(--ds-color-bg-canvas-light));
     --ds-active-domain-construction: var(--ds-color-domain-construction);

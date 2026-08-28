@@ -57,6 +57,14 @@
     --ds-active-state-solid-neutral: var(--ds-state-solid-neutral-light);
     --ds-active-state-solid-neutral-text: var(--ds-state-solid-neutral-text-light);
 
+    /* Bandera de gravedad por tema (spec temas D4/D7): en claro apunta a los
+       valores -light (espejo de dark), mismo patrón que el vocabulario de
+       estado de arriba. */
+    --ds-active-flag-urgent-bg: var(--ds-flag-urgent-bg-light);
+    --ds-active-flag-urgent-ink: var(--ds-flag-urgent-ink-light);
+    --ds-active-flag-attention-bg: var(--ds-flag-attention-bg-light);
+    --ds-active-flag-attention-ink: var(--ds-flag-attention-ink-light);
+
     /* Lienzo neutro (D11): sin el radial verde — el contraste no depende de la
        zona de pantalla y el tinte verde de «controlado» no se diluye. */
     --ds-active-shell-background:

@@ -215,6 +215,15 @@
     --ds-state-solid-teal-light-text: #ffffff;
     --ds-state-solid-neutral-light: #52525b;
     --ds-state-solid-neutral-light-text: #ffffff;
+    --ds-flag-width: 26px;
+    --ds-flag-urgent-bg: var(--ds-state-solid-red);
+    --ds-flag-urgent-ink: var(--ds-state-solid-red-text);
+    --ds-flag-attention-bg: var(--ds-state-solid-amber);
+    --ds-flag-attention-ink: var(--ds-state-solid-amber-text);
+    --ds-flag-urgent-bg-light: var(--ds-state-solid-red-light);
+    --ds-flag-urgent-ink-light: var(--ds-state-solid-red-light-text);
+    --ds-flag-attention-bg-light: var(--ds-state-solid-amber-light);
+    --ds-flag-attention-ink-light: var(--ds-state-solid-amber-light-text);
     --ds-severity-rail-width-urgent: 6px;
     --ds-severity-rail-width-attention: 4px;
     --ds-severity-rail-width-ready: 3px;
