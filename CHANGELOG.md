@@ -40,6 +40,13 @@ documentados sin arreglar, y el lint no se integró a `check:frontend` ni a CI t
 completo, porqués y lista de archivos en [[TASKS]] (sección Diferibles). Rama `eslint-ct-pdc-app`,
 no bloqueante para el piloto Ola 1.
 
+### Corregido: la hoja piloto de Intermedia no podía hacer scroll (2026-08-27)
+
+`ct-app` heredaba `html, body { overflow: hidden }` de `handsontable-module.css` (pensado para
+que las tablas de las 8 hojas viejas del BI manejen su propio scroll), sin necesitarlo — su
+contenido excede el viewport y no usa Handsontable. Fix acotado a `ct-app/src/pages/Intermedia.css`,
+sin tocar el CSS compartido ni las hojas viejas.
+
 ### Añadido: tema claro y craft visual completo de la hoja piloto de Intermedia (2026-08-27)
 
 La hoja de Intermedia de la Torre de Control piloto (`ct-app/`, `/bi/intermedia` bajo
@@ -56,8 +63,12 @@ una columna legacy no única — resuelto con una excepción documentada y con f
 con un ignore silencioso. Detalle completo, con cada medición y su porqué, en
 `docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto.md` (sección `## Cierre` y su Bitácora).
 
-El manifiesto del módulo y su cobertura golden quedan bloqueados por `CT_PILOTO`, apagado en el
-contenedor Docker compartido — pendiente en `TASKS.md`.
+**Cerrado el 2026-08-27** (bitácora entrada 33): Felipe activó `CT_PILOTO=1`; no hizo falta recrear
+el contenedor compartido, contra lo que se creía. El bloqueo real era otro, sin relación con la
+bandera: el `.htaccess` de la raíz nunca agregó `ct-app` a su lista de prefijos de assets estáticos
+(un olvido de una línea desde que Task 6 creó el directorio). Corregido; el e2e real
+(`tests/browser/ct-intermedia.spec.mjs`) pasa 3/3 y el manifiesto (`docs/design-system/manifests/torre-piloto.json`)
+ya declara su escenario real con golden y sha256.
 
 ### Añadido: bitácora de ediciones manuales del avance en Programa General (2026-08-26)
 
