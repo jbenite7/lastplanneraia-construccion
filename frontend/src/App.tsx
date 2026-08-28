@@ -1,3 +1,5 @@
+import { Rutas } from './shell/rutas';
+
 export function App() {
-  return <h1>Last Planner AIA</h1>;
+  return <Rutas />;
 }
