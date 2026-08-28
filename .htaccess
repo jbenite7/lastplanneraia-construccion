@@ -5,6 +5,9 @@
     RewriteCond %{REQUEST_URI} ^/(css|js|img|vendor|storage|archivosBase|pdc-app|ct-app)/(.*)$ [NC]
     RewriteRule ^(.*)$ public/%{REQUEST_URI} [L]
 
+    # El bundle de la SPA se publica bajo /app, sin enviarlo al front controller.
+    RewriteRule ^app/assets/(.*)$ public/app/assets/$1 [L,NC]
+
     # 1. Si el archivo existe físicamente, sírvelo directamente (Legacy Support de Assets)
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]

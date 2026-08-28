@@ -52,7 +52,13 @@ if ($devDoorIsOpen) {
     $publicRoutes[] = '/dev/entrar';
 }
 
-if (!in_array($requestUri, $publicRoutes, true)) {
+// El shell React necesita poder arrancar sin sesión. Si llega una cookie, se
+// valida con las mismas reglas de las rutas privadas para no conservar como
+// confiable una sesión inactiva, vencida o huérfana; a diferencia de check(),
+// esta vía no redirige y deja que React muestre su estado anónimo.
+if (\App\Core\SpaRouter::sirveLaSpa($requestUri)) {
+    \App\Core\SessionMiddleware::validationFailureReason();
+} elseif (!in_array($requestUri, $publicRoutes, true)) {
     \App\Core\SessionMiddleware::check();
 }
 
@@ -377,6 +383,13 @@ $router->get('/bi/curva-s', [\App\Controllers\Bi\BiViewController::class, 'curva
 // --- FIN ZONA DE RUTAS ---
 
 // 6. Despachar
+// La SPA maneja su propio enrutado en el navegador: cada ruta migrada devuelve
+// el mismo HTML y React decide qué pantalla mostrar.
+if (\App\Core\SpaRouter::sirveLaSpa($requestUri)) {
+    require PROJECT_ROOT . '/public/app/index.html';
+    exit;
+}
+
 try {
     $router->dispatch();
 } catch (Exception $e) {
