@@ -30,7 +30,7 @@ export function Rutas() {
   }
 
   if (!sesion.project) {
-    return <SelectorProyecto alElegir={recargar} />;
+    return <SelectorProyecto alElegir={recargar} csrfToken={sesion.csrfToken} />;
   }
 
   return (
