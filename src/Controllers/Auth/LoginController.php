@@ -3,6 +3,7 @@
 namespace App\Controllers\Auth;
 
 use App\Core\MaintenanceMode;
+use App\Services\Auth\AuthenticationService;
 use App\Services\Auth\UserPasswordService;
 use Database;
 
@@ -10,12 +11,14 @@ class LoginController
 {
     private $db;
     private $passwords;
+    private $authentication;
 
     public function __construct()
     {
         // Obtener instancia de la base de datos (Singleton)
         $this->db = Database::getInstance();
         $this->passwords = new UserPasswordService($this->db);
+        $this->authentication = new AuthenticationService($this->db);
     }
 
     public function index()
@@ -59,7 +62,7 @@ class LoginController
                 return;
             }
 
-            $data = $this->verifyCredentials($usuario, $password);
+            $data = $this->authentication->verifyCredentials($usuario, $password);
 
             if ($data) {
                 if (isset($data['activo']) && (int) $data['activo'] !== 1) {
@@ -76,9 +79,7 @@ class LoginController
 
                 // 3. Verificar requisito de cambio de contraseña ANTES de crear sesión completa
                 if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
-                    $_SESSION['usuario_temp'] = $usuario;
-                    $_SESSION['nombreUsuario'] = $data['nombre'];
-                    $_SESSION['must_change_password'] = true;
+                    $this->authentication->beginPasswordChange($usuario, $data);
 
                     if (method_exists($this->db, 'logActivity')) {
                         $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
@@ -89,15 +90,7 @@ class LoginController
                 }
 
                 // 4. Crear Sesión Parcial (Solo identidad, sin proyecto)
-                $_SESSION['usuario'] = $usuario;
-                $_SESSION['nombreUsuario'] = $data['nombre'];
-
-                // Limpiar variables de proyecto anterior si existen
-                unset($_SESSION['proyecto']);
-                unset($_SESSION['db']);
-                unset($_SESSION['semana']);
-                unset($_SESSION['permiso']);
-                unset($_SESSION['pdcActivo']);
+                $this->authentication->beginAuthenticatedSession($usuario, $data);
 
                 // Log básico de ingreso
                 if (method_exists($this->db, 'logActivity')) {
@@ -231,29 +224,6 @@ class LoginController
         exit();
     }
 
-    private function verifyCredentials(string $usuario, string $password): ?array
-    {
-        $stmt = $this->db->queryWithProject("SELECT * FROM general_usuarios WHERE usuario = ? LIMIT 1", [$usuario]);
-        $data = $stmt->fetch();
-
-        if (!$data) {
-            return null;
-        }
-
-        if (password_verify($password, $data['password'])) {
-            return $data;
-        }
-
-        if (hash_equals($data['password'], hash('sha512', $password))) {
-            $newHash = password_hash($password, PASSWORD_DEFAULT);
-            $updateQ = "UPDATE general_usuarios SET password = ? WHERE usuario = ?";
-        $stmtUpd = $this->db->queryWithProject($updateQ, [$newHash, $usuario]);
-            return $data;
-        }
-
-        return null;
-    }
-
     private function userHasGlobalAdminRole(string $usuario): bool
     {
         $stmt = $this->db->queryWithProject(
@@ -283,7 +253,7 @@ class LoginController
             MaintenanceMode::renderPage();
         }
 
-        $data = $this->verifyCredentials($usuario, $password);
+        $data = $this->authentication->verifyCredentials($usuario, $password);
 
         if (!$data) {
             MaintenanceMode::renderPage();
@@ -306,9 +276,7 @@ class LoginController
         $_SESSION['maintenance_bypass'] = true;
 
         if (isset($data['force_password_change']) && $data['force_password_change'] == 1) {
-            $_SESSION['usuario_temp'] = $usuario;
-            $_SESSION['nombreUsuario'] = $data['nombre'];
-            $_SESSION['must_change_password'] = true;
+            $this->authentication->beginPasswordChange($usuario, $data);
 
             if (method_exists($this->db, 'logActivity')) {
                 $this->db->logActivity('Login', 'LOGIN_PENDIENTE_CLAVE', "Usuario $usuario requiere cambio de contraseña.");
@@ -318,14 +286,7 @@ class LoginController
             exit();
         }
 
-        $_SESSION['usuario'] = $usuario;
-        $_SESSION['nombreUsuario'] = $data['nombre'];
-
-        unset($_SESSION['proyecto']);
-        unset($_SESSION['db']);
-        unset($_SESSION['semana']);
-        unset($_SESSION['permiso']);
-        unset($_SESSION['pdcActivo']);
+        $this->authentication->beginAuthenticatedSession($usuario, $data);
 
         if (method_exists($this->db, 'logActivity')) {
             $this->db->logActivity('Login', 'MAINTENANCE_LOGIN', "Admin $usuario accedió por ruta oculta durante mantenimiento");
