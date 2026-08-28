@@ -22,45 +22,12 @@ class SessionMiddleware
      */
     public static function check()
     {
-        // Iniciar sesión si no está activa
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Validar que el usuario esté autenticado
-        if (!isset($_SESSION['usuario'])) {
-            self::finishUnauthorized('/login', 'missing_session');
-        }
-
-        try {
-            $db = \Database::getInstance();
-            $stmt = $db->prepare("SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1");
-            $stmt->execute([(string) $_SESSION['usuario']]);
-            $user = $stmt->fetch();
-
-            if ($user && isset($user['activo']) && (int) $user['activo'] !== 1) {
-                session_unset();
-                session_destroy();
-                self::finishUnauthorized('/login?inactive=1', 'inactive');
-            }
-        } catch (\Throwable $e) {
-            error_log('Error validando estado activo de la sesión: ' . $e->getMessage());
-        }
-
-        // Gestión de timeout de inactividad (3600 segundos = 1 hora)
-        $inactividad = self::idleTimeoutSeconds();
-        if (isset($_SESSION["timeout"])) {
-            $sessionTTL = time() - (int) $_SESSION["timeout"];
-            if ($sessionTTL >= $inactividad) {
-                session_unset();
-                session_destroy();
-                self::finishUnauthorized('/login?timeout=1', 'timeout');
-            }
-        }
-
-        // Actualizar timestamp de última actividad
-        if (self::shouldRefreshTimeout()) {
-            $_SESSION["timeout"] = time();
+        $reason = self::validationFailureReason();
+        if ($reason !== null) {
+            self::finishUnauthorized(
+                $reason === 'inactive' ? '/login?inactive=1' : ($reason === 'timeout' ? '/login?timeout=1' : '/login'),
+                $reason,
+            );
         }
 
         // Auto-establecer contexto de proyecto para tablas globales (USE_GLOBAL_TABLES=true)
@@ -74,6 +41,71 @@ class SessionMiddleware
                 error_log('SessionMiddleware: No se pudo establecer contexto de proyecto: ' . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * Comprueba la misma sesión que protegen las rutas privadas, pero sin
+     * responder ni redirigir. Las rutas públicas de bootstrap pueden así
+     * informar "no autenticado" sin duplicar las reglas de usuario activo y
+     * timeout.
+     *
+     * @return string|null El motivo de invalidez, o null cuando la sesión es válida.
+     */
+    public static function validationFailureReason(): ?string
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $usuario = $_SESSION['usuario'] ?? null;
+        if (!is_string($usuario) || $usuario === '') {
+            return 'missing_session';
+        }
+
+        try {
+            $db = \Database::getInstance();
+            $stmt = $db->prepare('SELECT activo FROM general_usuarios WHERE usuario = ? LIMIT 1');
+            $stmt->execute([$usuario]);
+            $user = $stmt->fetch();
+        } catch (\Throwable $e) {
+            error_log('Error validando estado activo de la sesión: ' . $e->getMessage());
+            self::invalidateSession();
+
+            return 'session_unverified';
+        }
+
+        if (!$user) {
+            self::invalidateSession();
+
+            return 'stale_session';
+        }
+
+        if ((int) ($user['activo'] ?? 0) !== 1) {
+            self::invalidateSession();
+
+            return 'inactive';
+        }
+
+        if (isset($_SESSION['timeout'])) {
+            $sessionTTL = time() - (int) $_SESSION['timeout'];
+            if ($sessionTTL >= self::idleTimeoutSeconds()) {
+                self::invalidateSession();
+
+                return 'timeout';
+            }
+        }
+
+        if (self::shouldRefreshTimeout()) {
+            $_SESSION['timeout'] = time();
+        }
+
+        return null;
+    }
+
+    private static function invalidateSession(): void
+    {
+        $_SESSION = [];
+        session_destroy();
     }
 
     private static function shouldRefreshTimeout(): bool
