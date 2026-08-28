@@ -10,10 +10,16 @@ const MANIFEST = JSON.parse(readFileSync(
 ));
 const ADMIN = { username: 'test.A', password: 'aia2026' };
 // D16 (spec temas 2026-08-28): el carril visual corre AMBOS temas. `E2E_THEME`
-// no elige el tema que se pinta —eso lo dice cada escenario, y `storeTheme` mas
-// abajo ya lo materializa de verdad con recarga— sino que subconjunto corre esta
-// invocacion, para que las dos patas de la matriz de CI midan la suya. Sin la
-// variable corren los dos, que es lo que quiere una corrida local.
+// no elige el tema que se pinta —eso lo dice cada escenario— sino que subconjunto
+// corre esta invocacion, para que las dos patas de la matriz de CI midan la suya.
+// Sin la variable corren los dos, que es lo que quiere una corrida local.
+// OJO: `storeTheme` mas abajo NO materializa el tema claro en esta pagina.
+// Programa General carga `theme.js` (via `linksComunesHead2.js`), que fija
+// `data-aia-theme="dark"` a pelo sin leer `localStorage` — escribir
+// `aia-theme: light` y recargar no lo mueve. Es uno de los dos bloqueos de
+// producto documentados en `visual-ci-contract.test.mjs` que impiden generar
+// goldens claros hoy; los escenarios `light` de este manifiesto no existen
+// todavia por eso, no por un olvido de esta suite.
 const VISUAL_SCENARIOS = MANIFEST.scenarios.filter(
   ({ theme }) => !process.env.E2E_THEME || theme === process.env.E2E_THEME,
 );

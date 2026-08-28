@@ -43,12 +43,16 @@ const viewportKey = ({ width, height }) => `${width}x${height}`;
 // Los dos bloqueos son de producto, no de este carril, y cada uno se comprobo
 // contra el codigo y contra una captura real:
 //
-//   · LABORATORIO (`/internal/design-system`). `laboratory-foundation.css` ata
-//     los tokens oscuros a `:root` a secas dentro de `@layer theme`;
-//     `theme-claro.css` ata los claros a `[data-aia-theme="light"]` en ESA MISMA
-//     capa. `:root` y un selector de atributo pesan igual (0,1,0), asi que
-//     desempata el orden de carga y gana la hoja del laboratorio: la pagina se
-//     queda oscura por mucho que el atributo diga "light". Medido: de 18
+//   · LABORATORIO (`/internal/design-system`). No es un empate de
+//     especificidad: `theme-claro.css` NO SE CARGA en esta pagina en
+//     absoluto (verificado en `DesignSystemHeadComponent::renderLaboratory()`
+//     y en los ~19 `@import` de `lab-entrypoint.css`, ninguno hacia
+//     `theme-claro.css`). `laboratory-foundation.css` es la UNICA fuente de
+//     `--ds-active-*` ahi, atada a `:root` dentro de `@layer theme` sin
+//     condicionar. Por eso el arreglo NO es solo condicionar ese bloque a
+//     `[data-aia-theme="dark"]` -- hecho asi solo, el laboratorio se queda
+//     sin tokens claros declarados (se rompe, no se aclara). Hace falta
+//     ADEMAS enlazar `theme-claro.css` en `lab-entrypoint.css`. Medido: de 18
 //     capturas claras, 9 salieron byte a byte identicas a su gemela oscura y las
 //     otras 9 solo diferian por deriva ajena al tema. (De paso: `theme-claro.css`
 //     tambien ofrece el gancho `.aia-theme-light`, pero `theme-bootstrap.js` solo

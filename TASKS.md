@@ -132,12 +132,16 @@ laboratorio de diseño (`/internal/design-system`) tampoco rinde en claro, por u
 a `theme.js` pero de la misma familia:
 
 - **`public/css/design-system/laboratory-foundation.css`** ata los tokens oscuros a `:root` a
-  secas dentro de `@layer theme`, misma especificidad (0,1,0) que el `[data-aia-theme="light"]`
-  de `theme-claro.css` — desempata el orden de carga y gana la hoja del laboratorio. De 18
-  capturas «claras» intentadas, **9 salieron byte a byte idénticas a su gemela oscura** (inspección
-  visual de `actions-light-1180x820.png`: fondo oscuro). Arreglo propuesto por el implementador:
-  condicionar ese bloque a `[data-aia-theme="dark"], .aia-theme-dark` en vez de `:root`, o cargar
-  antes que `theme-claro.css`.
+  secas dentro de `@layer theme`, sin condicionar. **Corregido 2026-08-28 (revisión de Task 9):
+  no es un empate de especificidad con `theme-claro.css` — esa hoja NO SE CARGA en el laboratorio
+  en absoluto.** Verificado en `DesignSystemHeadComponent::renderLaboratory()` (emite solo
+  `theme-bootstrap.js`, `tokens.css` y `lab-entrypoint.css`) y en los ~19 `@import` de
+  `lab-entrypoint.css`, ninguno hacia `theme-claro.css`. `laboratory-foundation.css` es la única
+  fuente de `--ds-active-*` en esa página. De 18 capturas «claras» intentadas, **9 salieron byte a
+  byte idénticas a su gemela oscura** (inspección visual de `actions-light-1180x820.png`: fondo
+  oscuro). **El arreglo no es solo condicionar el bloque a `[data-aia-theme="dark"]`** — hecho así
+  a solas, el laboratorio se queda sin ningún token declarado en claro (se rompe, no se aclara).
+  Hace falta además enlazar `theme-claro.css` en `lab-entrypoint.css`.
 - Cabo suelto relacionado: `theme-claro.css` ofrece el gancho `.aia-theme-light`, pero
   `theme-bootstrap.js` (Task 6) solo conmuta `aia-theme-dark` y nunca añade el gancho claro — ese
   camino tampoco entra hasta que se añada.
