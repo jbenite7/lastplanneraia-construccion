@@ -404,10 +404,16 @@
     --ds-sidebar-section-gap: var(--ds-space-6);
     --ds-table-row-h:              1.5rem;
     --ds-table-header-h:           1.5rem;
-    --ds-table-cell-font-size:     0.8125rem;
+    --ds-table-cell-font-size:     0.75rem;
     --ds-table-cell-line-h:        1.25;
-    --ds-table-header-font-size:   0.75rem;
+    --ds-table-header-font-size:   0.6875rem;
     --ds-table-font-size-floor:    0.6875rem;
+    --ds-table-chapter-font-size:  0.8125rem;
+    --ds-table-cell-pad-x-edge:    1rem;
+    --ds-table-row-h-read:         2rem;
+    --ds-table-row-h-touch:        1.75rem;
+    --ds-table-row-h-projector:    2.25rem;
+    --ds-table-cell-font-size-projector: 0.9375rem;
     --ds-table-cell-pad-x:   0.625rem;
     --ds-table-header-pad-x: 0.1875rem;
     --ds-table-cell-pad-x-selector: 0.25rem;
@@ -457,5 +463,10 @@
     --ds-density-active-gap: var(--ds-density-compact-gap);
     --ds-density-active-padding-block: var(--ds-density-compact-padding-block);
     --ds-density-active-padding-inline: var(--ds-density-compact-padding-inline);
+  }
+  [data-density="projector"] {
+    --ds-table-row-h: var(--ds-table-row-h-projector);
+    --ds-table-header-h: var(--ds-table-row-h-projector);
+    --ds-table-cell-font-size: var(--ds-table-cell-font-size-projector);
   }
 }

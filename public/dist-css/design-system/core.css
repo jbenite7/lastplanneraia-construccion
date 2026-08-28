@@ -325,6 +325,16 @@
       animation-iteration-count: 1 !important;
     }
   }
+  .aia-cell-numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .aia-cell-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
 }
 @layer utilities {
   .w-md-80 {

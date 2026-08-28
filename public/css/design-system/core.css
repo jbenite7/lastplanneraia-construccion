@@ -422,6 +422,21 @@
       animation-iteration-count: 1 !important;
     }
   }
+
+  /* F32: columnas de cifras — unidades bajo unidades. */
+  .aia-cell-numeric {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* F13: el texto libre de celda se poda a tres líneas; el completo vive en
+     tooltip, panel y exportación (patrón displayShort extendido). */
+  .aia-cell-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
 }
 
 /* F1 Task 4: absorbido desde public/css/styles.css (@layer utilities). Sin

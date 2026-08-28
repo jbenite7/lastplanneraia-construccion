@@ -782,13 +782,16 @@
        --ds-table-row-h queda EXACTAMENTE en el mínimo — sin margen — así que ningún
        control futuro dentro de una fila puede medir menos. Encabezado con el mismo piso
        de 24px como base, pero crece con `height: auto` si el texto necesita dos líneas
-       legibles — nunca trunca de forma ambigua. Texto de celda 13px (dato principal,
-       cuerpo); texto de cabecera 12px (secundario). Piso duro de fuente 11px, reservado
-       a elementos secundarios — el dato principal no baja de 13px. Contraste AA (4.5:1),
-       foco visible, orden de foco, teclado y `prefers-reduced-motion` no se relajan. */
+       legibles — nunca trunca de forma ambigua. Piso duro de fuente 11px, reservado
+       a elementos secundarios. Contraste AA (4.5:1), foco visible, orden de foco,
+       teclado y `prefers-reduced-motion` no se relajan.
+       Re-medido (spec forma 2026-08-28 F31/F33, decisión de Felipe: densidad primero —
+       dato 12px, cabecera 11px un peldaño abajo, jerarquía por tamaño en la dirección
+       correcta). El dato principal deja de anclar en 13px: baja a 12px, y la cabecera
+       a 11px, manteniendo un peldaño de diferencia entre ambos. */
     --ds-table-row-h:              1.5rem;    /* 24px — EN el suelo AA (SC 2.5.8), sin margen */
     --ds-table-header-h:           1.5rem;    /* 24px, base — crece con `height: auto` si envuelve */
-    --ds-table-cell-font-size:     0.8125rem; /* 13px, cuerpo/dato principal */
+    --ds-table-cell-font-size:     0.75rem;   /* F31: dato 12px (decisión de Felipe, densidad primero) */
     /* Interlineado de celda (2026-08-20, defecto reportado por Felipe: la fila se
        ve demasiado alta para la pantalla). Medido antes: el line-height heredado
        resolvia a 21px sobre una fuente de 13px — ratio 1,6, que es interlineado
@@ -799,8 +802,14 @@
        negocia. No baja de 1,25: por debajo, las tildes y los descendentes de una
        fuente de 13px se tocan entre lineas. */
     --ds-table-cell-line-h:        1.25;
-    --ds-table-header-font-size:   0.75rem;   /* 12px, cabecera/secundario */
+    --ds-table-header-font-size:   0.6875rem; /* F33: cabecera 11px, un peldaño bajo el dato */
     --ds-table-font-size-floor:    0.6875rem; /* 11px, piso duro — solo secundarios, nunca el dato principal */
+    --ds-table-chapter-font-size:  0.8125rem; /* F36: capítulo 13px negrilla + filete */
+    --ds-table-cell-pad-x-edge:    1rem;      /* F35: perímetro 16px contra el marco */
+    --ds-table-row-h-read:         2rem;      /* F34: listado cómodo 32px */
+    --ds-table-row-h-touch:        1.75rem;   /* F11: hoja táctil 28px (decisión de Felipe; su edición vive en el panel táctil — plan de PG) */
+    --ds-table-row-h-projector:    2.25rem;   /* F40: preset proyector, fila 36px */
+    --ds-table-cell-font-size-projector: 0.9375rem; /* F40: letra 15px en pared */
     --ds-table-cell-pad-x:   0.625rem; /* 10px, escala de /plan-compras */
     /* Task 8 (2026-08-05, C-16): la cabecera pagaba el mismo relleno horizontal que la
        celda (10px por lado = 20px por columna), pero su texto va centrado y las líneas
@@ -902,5 +911,14 @@
     --ds-density-active-gap: var(--ds-density-compact-gap);
     --ds-density-active-padding-block: var(--ds-density-compact-padding-block);
     --ds-density-active-padding-inline: var(--ds-density-compact-padding-inline);
+  }
+
+  /* F40: preset proyector — fila y cabecera de tabla crecen a 36px y la letra a 15px,
+     para lectura a distancia en pared. Solo re-encaja el Table contract; la escala de
+     densidad general (arriba) no tiene peldaño de proyector propio. */
+  [data-density="projector"] {
+    --ds-table-row-h: var(--ds-table-row-h-projector);
+    --ds-table-header-h: var(--ds-table-row-h-projector);
+    --ds-table-cell-font-size: var(--ds-table-cell-font-size-projector);
   }
 }
