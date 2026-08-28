@@ -7,12 +7,10 @@ function normalizarLineasVaciasEnChunks(): Plugin {
   return {
     name: 'normalizar-lineas-vacias-en-chunks',
     enforce: 'post',
-    generateBundle(_opciones, artefactos) {
-      for (const artefacto of Object.values(artefactos)) {
-        if (artefacto.type === 'chunk') {
-          artefacto.code = artefacto.code.replace(/^[\t ]+$/gm, '');
-        }
-      }
+    renderChunk(codigo) {
+      const codigoNormalizado = codigo.replace(/^[\t ]+$/gm, '');
+
+      return codigoNormalizado === codigo ? null : { code: codigoNormalizado, map: null };
     },
   };
 }
