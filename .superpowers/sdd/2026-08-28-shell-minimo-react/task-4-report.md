@@ -61,8 +61,7 @@ servido por PHP.
 
 ## Commit
 
-SHA: `99f8ec4f266f6d1f02fdc39850a31963a9b46b5f` (este commit se vuelve a consolidar para
-incluir la referencia final de forma autocontenida).
+SHA de implementación: `ce1db0de52b53ddfd3b3757d2cad113d811198ce`.
 
 ## Concerns
 
