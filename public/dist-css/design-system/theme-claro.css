@@ -15,6 +15,11 @@
     --ds-active-action-primary: var(--ds-color-action-primary-bg-light);
     --ds-active-action-primary-hover: var(--ds-color-action-primary-hover-light);
     --ds-active-action-text: var(--ds-color-action-primary-text-light);
+    --ds-shadow-xs: var(--ds-shadow-xs-light);
+    --ds-shadow-sm: var(--ds-shadow-sm-light);
+    --ds-shadow-md: var(--ds-shadow-md-light);
+    --ds-shadow-lg: var(--ds-shadow-lg-light);
+    --ds-shadow-xl: var(--ds-shadow-xl-light);
     --ds-active-state-tint-red: var(--ds-state-tint-red-light);
     --ds-active-state-tint-orange: var(--ds-state-tint-orange-light);
     --ds-active-state-tint-amber: var(--ds-state-tint-amber-light);

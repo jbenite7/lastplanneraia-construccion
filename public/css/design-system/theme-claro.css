@@ -30,6 +30,15 @@
     --ds-active-action-primary-hover: var(--ds-color-action-primary-hover-light);
     --ds-active-action-text: var(--ds-color-action-primary-text-light);
 
+    /* Sombras de tinta para papel (spec temas D10): las de penumbra manchan
+       sobre blanco — este bloque re-vincula --ds-shadow-* a la escala -light
+       declarada en tokens.css. El oscuro no se toca desde aquí. */
+    --ds-shadow-xs: var(--ds-shadow-xs-light);
+    --ds-shadow-sm: var(--ds-shadow-sm-light);
+    --ds-shadow-md: var(--ds-shadow-md-light);
+    --ds-shadow-lg: var(--ds-shadow-lg-light);
+    --ds-shadow-xl: var(--ds-shadow-xl-light);
+
     /* Vocabulario de estado por tema (spec temas D7): la capa activa que los
        módulos consumen. En claro apunta a los valores -light (espejo de dark). */
     --ds-active-state-tint-red: var(--ds-state-tint-red-light);

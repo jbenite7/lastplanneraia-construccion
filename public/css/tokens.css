@@ -599,15 +599,42 @@
     --ds-radius-search: var(--ds-radius-md);
     --ds-radius-progress: var(--ds-radius-pill);
 
+    /* Radio de DATO (spec forma F1/F2): chips de estado, celdas destacadas y
+       banderas — «el marco abraza, el dato es recto». Los controles y marcos
+       conservan su escala; SOLO el vocabulario de la tabla usa este. */
+    --ds-radius-data: 0.25rem;
+
     --ds-shadow-xs: 0 1px 2px rgba(20, 28, 24, 0.4);
     --ds-shadow-sm: 0 2px 6px rgba(20, 28, 24, 0.5);
     --ds-shadow-md: 0 8px 24px rgba(20, 28, 24, 0.6);
     --ds-shadow-lg: 0 16px 48px rgba(20, 28, 24, 0.7);
     --ds-shadow-xl: 0 24px 72px rgba(20, 28, 24, 0.8);
+
+    /* Sombras de tinta para papel (spec temas D10): las de penumbra manchan
+       sobre blanco. theme-claro re-vincula --ds-shadow-* a estas. */
+    --ds-shadow-xs-light: 0 1px 2px rgba(24, 24, 27, 0.06);
+    --ds-shadow-sm-light: 0 1px 3px rgba(24, 24, 27, 0.08);
+    --ds-shadow-md-light: 0 8px 24px rgba(24, 24, 27, 0.14);
+    --ds-shadow-lg-light: 0 16px 48px rgba(24, 24, 27, 0.2);
+    --ds-shadow-xl-light: 0 24px 72px rgba(24, 24, 27, 0.26);
+
+    /* Tres pisos de elevación (F7): la sombra dice qué ES la pieza.
+       reposo = pegado al papel · flotante = menús y avisos · techo = modal.
+       Los --ds-shadow-* quedan como materia prima; los módulos consumen ESTOS. */
+    --ds-elevation-rest: var(--ds-shadow-xs);
+    --ds-elevation-float: var(--ds-shadow-md);
+    --ds-elevation-top: var(--ds-shadow-lg);
+
+    /* Pozo del campo (F10): el fondo un paso hundido — dos canales dicen
+       «aquí se escribe» junto al borde de control medido. */
+    --ds-input-well-bg: var(--ds-active-surface-raised);
+
     --ds-focus-ring-width: 4px;
     --ds-outline-width: calc(var(--ds-focus-ring-width) / 2);
     --ds-outline-offset: calc(var(--ds-focus-ring-width) / 2);
-    --ds-shadow-focus: 0 0 0 var(--ds-focus-ring-width) var(--ds-active-focus-ring);
+    /* Foco DOBLE (F20): halo del color del fondo + anillo de marca. Visible
+       sobre los ocho tintes y los dos temas por construcción. */
+    --ds-shadow-focus: 0 0 0 2px var(--ds-active-bg-canvas), 0 0 0 4px var(--ds-active-focus-ring);
 
     --ds-blur-glass: 18px;
     --ds-motion-fast: 140ms ease;
