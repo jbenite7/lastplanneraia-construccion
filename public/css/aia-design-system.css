@@ -59,6 +59,7 @@
     --ds-active-bg-page: var(--ds-color-bg-page-dark);
     --ds-active-surface: var(--ds-color-surface-dark);
     --ds-active-surface-raised: var(--ds-color-surface-raised-dark);
+    --ds-active-surface-well: var(--ds-color-surface-well-dark);
     --ds-active-surface-glass: var(--ds-color-surface-glass-dark);
     --ds-active-text-primary: var(--ds-color-text-primary-dark);
     --ds-active-text-secondary: var(--ds-color-text-secondary-dark);

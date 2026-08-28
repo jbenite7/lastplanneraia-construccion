@@ -6,6 +6,7 @@
     --ds-active-bg-page: var(--ds-color-bg-page-light);
     --ds-active-surface: var(--ds-color-surface-light);
     --ds-active-surface-raised: var(--ds-color-surface-raised-light);
+    --ds-active-surface-well: var(--ds-color-surface-well-light);
     --ds-active-surface-glass: var(--ds-color-surface-glass-light);
     --ds-active-text-primary: var(--ds-color-text-primary-light);
     --ds-active-text-secondary: var(--ds-color-text-secondary-light);

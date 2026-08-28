@@ -183,6 +183,14 @@
     --ds-color-surface-dark: rgba(28, 36, 31, 0.92);
     --ds-color-surface-raised-dark: rgba(35, 48, 41, 0.86);
     --ds-color-surface-glass-dark: rgba(35, 48, 41, 0.66);
+    /* Pozo (F10): un paso HUNDIDO respecto a la superficie, no elevado. En
+       penumbra hundir es OSCURECER, asi que no sirve `surface-raised-dark`
+       (luminancia 0.0232 contra 0.0153 de la superficie: se lee elevado, justo
+       lo contrario de lo que pide F10). Medido sobre `bg-page-dark`: la
+       superficie compone a rgb(27,35,30) y este pozo a rgb(16,22,19). El texto
+       primario sube de 15.30:1 a 17.44:1 sobre el, asi que el arreglo tampoco
+       cuesta contraste. */
+    --ds-color-surface-well-dark: rgba(16, 22, 19, 0.92);
 
     /* TEMA CLARO (Task 8, entrada 18 de la Bitacora del piloto). Anclado a la
        paleta medida en aia.com.co (neutros zinc, casi acromaticos): estos son
@@ -196,6 +204,12 @@
     --ds-color-surface-light: #ffffff;
     --ds-color-surface-raised-light: #f4f4f5;
     --ds-color-surface-glass-light: rgba(255, 255, 255, 0.8);
+    /* Pozo claro: mismo valor que `surface-raised-light` a proposito. En claro
+       hundir es oscurecer, y ese token ya lo hacia (#f4f4f5 contra #ffffff), asi
+       que el tema claro no cambia ni un pixel con el arreglo del pozo oscuro.
+       Vive aparte porque el ROL es otro: si la superficie elevada se recalibra,
+       el pozo no tiene por que seguirla. */
+    --ds-color-surface-well-light: #f4f4f5;
 
     --ds-color-text-primary: #141c18;
     --ds-color-text-secondary: #52645a;
@@ -619,8 +633,12 @@
     --ds-elevation-top: var(--ds-shadow-lg);
 
     /* Pozo del campo (F10): el fondo un paso hundido — dos canales dicen
-       «aquí se escribe» junto al borde de control medido. */
-    --ds-input-well-bg: var(--ds-active-surface-raised);
+       «aquí se escribe» junto al borde de control medido.
+       Apuntaba a `--ds-active-surface-raised`, y eso cumplia F10 en claro e
+       invertia la señal en oscuro (ahi «raised» es mas CLARO que la superficie,
+       asi que el campo se leia elevado). Corregido el 2026-08-28 con un token
+       de rol propio, hundido por construccion en los dos temas. */
+    --ds-input-well-bg: var(--ds-active-surface-well);
 
     --ds-focus-ring-width: 4px;
     --ds-outline-width: calc(var(--ds-focus-ring-width) / 2);

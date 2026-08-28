@@ -106,11 +106,13 @@
     --ds-color-surface-dark: rgba(28, 36, 31, 0.92);
     --ds-color-surface-raised-dark: rgba(35, 48, 41, 0.86);
     --ds-color-surface-glass-dark: rgba(35, 48, 41, 0.66);
+    --ds-color-surface-well-dark: rgba(16, 22, 19, 0.92);
     --ds-color-bg-canvas-light: #fafafa;
     --ds-color-bg-page-light: #ffffff;
     --ds-color-surface-light: #ffffff;
     --ds-color-surface-raised-light: #f4f4f5;
     --ds-color-surface-glass-light: rgba(255, 255, 255, 0.8);
+    --ds-color-surface-well-light: #f4f4f5;
     --ds-color-text-primary: #141c18;
     --ds-color-text-secondary: #52645a;
     --ds-color-text-tertiary: #72857a;
@@ -279,7 +281,7 @@
     --ds-elevation-rest: var(--ds-shadow-xs);
     --ds-elevation-float: var(--ds-shadow-md);
     --ds-elevation-top: var(--ds-shadow-lg);
-    --ds-input-well-bg: var(--ds-active-surface-raised);
+    --ds-input-well-bg: var(--ds-active-surface-well);
     --ds-focus-ring-width: 4px;
     --ds-outline-width: calc(var(--ds-focus-ring-width) / 2);
     --ds-outline-offset: calc(var(--ds-focus-ring-width) / 2);
