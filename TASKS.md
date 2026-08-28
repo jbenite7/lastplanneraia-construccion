@@ -126,6 +126,32 @@ manifiesta en producción aunque los tests del design system pasen en verde. Det
 con la investigación y el ruling, en el ledger del goal
 (`.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/progress.md`, sección Task 6).
 
+**Ampliado 2026-08-28 (Task 9, mismo goal): el mismo origen bloquea además D16 (CI corre ambos
+temas completos).** Al intentar generar los goldens `light` del carril visual, se midió que el
+laboratorio de diseño (`/internal/design-system`) tampoco rinde en claro, por una causa distinta
+a `theme.js` pero de la misma familia:
+
+- **`public/css/design-system/laboratory-foundation.css`** ata los tokens oscuros a `:root` a
+  secas dentro de `@layer theme`, misma especificidad (0,1,0) que el `[data-aia-theme="light"]`
+  de `theme-claro.css` — desempata el orden de carga y gana la hoja del laboratorio. De 18
+  capturas «claras» intentadas, **9 salieron byte a byte idénticas a su gemela oscura** (inspección
+  visual de `actions-light-1180x820.png`: fondo oscuro). Arreglo propuesto por el implementador:
+  condicionar ese bloque a `[data-aia-theme="dark"], .aia-theme-dark` en vez de `:root`, o cargar
+  antes que `theme-claro.css`.
+- Cabo suelto relacionado: `theme-claro.css` ofrece el gancho `.aia-theme-light`, pero
+  `theme-bootstrap.js` (Task 6) solo conmuta `aia-theme-dark` y nunca añade el gancho claro — ese
+  camino tampoco entra hasta que se añada.
+- **Programa General queda confirmado como una de las 7 páginas de `theme.js`** (arriba): poner
+  `aia-theme: light` en `localStorage` y recargar no mueve el atributo — sigue saliendo
+  `data-aia-theme="dark"`, verificado con la suite Playwright.
+
+Ningún golden `light` se comiteó (el implementador los generó, confirmó que eran capturas oscuras
+disfrazadas, y los borró en vez de fabricar evidencia de cobertura falsa). La matriz de CI, el
+carril dark restaurado (17/20 escenarios que antes NUNCA llegaban a capturar) y el contrato
+generalizado sí quedaron hechos — D16 cierra con alcance dark-only hasta que este bloqueo se
+resuelva. Detalle: `.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/task-9-report.md` y
+sección Task 9 del ledger del mismo goal.
+
 **El atasco de publicación anterior se desatascó el 2026-08-24**: por orden de Felipe se
 consolidaron **trece** ramas en `main` (`6c736d91`) y se retiraron todas las ramas y worktrees.
 `main` salió del rojo — el runner de tests PHP da 29/29 con **0 sospechosos**. El cierre, con lo que
