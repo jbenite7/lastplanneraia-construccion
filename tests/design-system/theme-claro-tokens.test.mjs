@@ -489,3 +489,19 @@ test('ct-app/src no declara hex literales fuera de sus archivos de tokens', () =
     `ct-app/src tiene hex literales fuera de tokens.css:\n${salida}`,
   );
 });
+
+test('theme-claro re-vincula los tintes de estado a la paleta -light', () => {
+  const css = readFileSync('public/css/design-system/theme-claro.css', 'utf8');
+  for (const hue of ['red', 'orange', 'amber', 'violet', 'green', 'blue', 'teal', 'neutral']) {
+    assert.match(css, new RegExp(`--ds-active-state-tint-${hue}\\s*:\\s*var\\(--ds-state-tint-${hue}-light\\)`));
+    assert.match(css, new RegExp(`--ds-active-state-solid-${hue}\\s*:\\s*var\\(--ds-state-solid-${hue}-light\\)`));
+  }
+  assert.match(css, /--ds-active-shell-background\s*:\s*linear-gradient/,
+    'el shell claro es neutro: sin radial verde (D11)');
+});
+
+test('theme-overrides ancla los --ds-active-state-* oscuros a los valores vigentes', () => {
+  const css = readFileSync('public/css/design-system/entrypoints/theme-overrides.css', 'utf8');
+  assert.match(css, /--ds-active-state-tint-red\s*:\s*var\(--ds-state-tint-red\)/);
+  assert.match(css, /--ds-active-state-solid-red\s*:\s*var\(--ds-state-solid-red\)/);
+});

@@ -80,7 +80,7 @@
   }
   .aia-shell {
     min-height: 100vh;
-    background: var(--ds-shell-background);
+    background: var(--ds-active-shell-background);
     background-color: var(--ds-active-bg-canvas);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);

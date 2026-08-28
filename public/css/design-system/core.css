@@ -101,12 +101,12 @@
   .aia-shell {
     min-height: 100vh;
     /* El shorthand `background` resetea background-color a su initial
-       (transparent) porque --ds-shell-background solo trae capas de
+       (transparent) porque --ds-active-shell-background solo trae capas de
        background-image (gradientes), sin color. background-color debe
        declararse DESPUES del shorthand para sobrevivir: si fuera antes, el
        shorthand (que viene despues en la cascada) la resetearia de nuevo a
        transparent. Ver f1-shell-background-report.md. */
-    background: var(--ds-shell-background);
+    background: var(--ds-active-shell-background);
     background-color: var(--ds-active-bg-canvas);
     color: var(--ds-active-text-primary);
     font-family: var(--ds-font-body);

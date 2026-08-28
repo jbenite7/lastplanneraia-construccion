@@ -129,7 +129,8 @@ test('the shared core and production dark mapping resolve visual values through 
     read('public/css/aia-design-system.css'),
   ]);
   const governedTokens = [
-    '--ds-shell-background',
+    // Task 2: --ds-shell-background reemplazado por --ds-active-shell-background
+    // que se define en los bloques de tema, no en tokens.css
     '--ds-content-max-width',
     '--ds-page-padding',
     '--ds-card-padding',
