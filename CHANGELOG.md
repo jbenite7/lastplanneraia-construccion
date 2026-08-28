@@ -28,6 +28,15 @@ para el estado de los planes en curso.
 
 ## [Sin publicar]
 
+### Añadido: shell mínimo React (2026-08-28)
+
+- Nueva entrada `/app` con login, selector de proyecto, navegación lateral con restricciones por
+  rol y conmutador claro/oscuro persistente; las rutas de módulos todavía no migrados conservan sus
+  vistas PHP.
+- Endpoints JSON de sesión, autenticación y selección de proyecto reutilizan los servicios de
+  seguridad existentes, mantienen CSRF y entregan contratos validados por el cliente React.
+- El CI instala `frontend/` y bloquea cambios con errores de tipos o pruebas del shell.
+
 ### Añadido: fase cero de temas y forma (2026-08-28)
 
 Capa compartida de tokens que dos specs hermanas necesitan antes de que cualquier módulo de

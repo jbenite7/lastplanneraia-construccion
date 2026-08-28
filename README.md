@@ -227,6 +227,34 @@ docker compose up -d --build db app adminer
 
 </details>
 
+#### Frontend React del shell
+
+El shell nuevo vive en `frontend/`. Instala sus dependencias por separado de las herramientas Node
+de la raíz:
+
+```bash
+npm ci --prefix frontend
+```
+
+Para desarrollo con recarga automática:
+
+```bash
+npm --prefix frontend run dev
+```
+
+Vite sirve el shell en `http://localhost:5173/app/`. Como el cliente usa las APIs del mismo origen,
+el flujo integrado de sesión y autenticación se valida con el build PHP en
+`http://localhost:8081/app`; las vistas y módulos todavía no migrados continúan en sus URLs Docker
+habituales bajo `http://localhost:8081`.
+
+Desde la raíz del repositorio, los gates del frontend son:
+
+```bash
+npm run frontend:typecheck
+npm run frontend:test
+npm run frontend:build
+```
+
 **Credenciales de Prueba (Testing Out-Of-The-Box)**: Para validar interfaces o probar las
 ramificaciones del PAC y las Restricciones, debes emular la vida real de los roles. Ya existen
 múltiples perfiles `RBAC` inyectados en la base de datos de Docker listos para iniciar sesión y

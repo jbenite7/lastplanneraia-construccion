@@ -90,6 +90,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Instalar dependencias del frontend
+        run: npm ci --prefix frontend
+      - name: Comprobar tipos del frontend
+        run: npm run frontend:typecheck
+      - name: Correr las pruebas del frontend
+        run: npm run frontend:test
       # --build-arg COMPOSER_INSTALL_FLAGS="" para que la imagen traiga PHPUnit, que es
       # dependencia de desarrollo y sin ella el runner del paso siguiente aborta con 2 en
       # cuanto exista un test de nivel `puro` en tests/unit/. No se toca docker/php/Dockerfile

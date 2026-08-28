@@ -1,5 +1,8 @@
 {
   "scripts": {
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test": "npm --prefix frontend test",
+    "frontend:typecheck": "npm --prefix frontend run typecheck",
     "check:frontend": "biome check public/js public/css admin/public/css",
     "check:design-system:biome": "biome check public/css/design-system public/js/modules/aia_ui",
     "format:frontend": "biome format --write public/js public/css admin/public/css",

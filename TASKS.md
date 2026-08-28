@@ -29,6 +29,18 @@ Felipe, para no sostener dos fuentes únicas. Para el **estado de cada goal**, [
 > **Es el modo de fallo a vigilar aquí:** este archivo se escribe desde lo que una sesión ve, y una
 > sesión ve su worktree.
 
+## Migración React — shell mínimo
+
+- [x] **Shell mínimo React cerrado (2026-08-28):** `/app` cubre login, selección de proyecto,
+  navegación por rol y tema claro/oscuro; la frontera conserva en PHP los módulos que aún no han
+  migrado.
+- [ ] **Migrar recuperación de clave:** `password-forgot` y `password-reset` siguen en PHP por
+  decisión R12; requieren un frente propio que cubra correo, tokens y expiración.
+- [ ] **Resolver el menú contextual de Semanas:** definir su comportamiento y su lugar en la
+  navegación React antes de migrar los módulos de programación.
+- [ ] **Definir QA y goldens durante la convivencia:** decidir por cada módulo si su golden PHP se
+  archiva o se reemplaza al cruzar a React, y mantener cobertura extremo a extremo en ambos mundos.
+
 ## Pendiente de decisión: despliegue a producción
 
 **El arreglo del arrastre de avance semanal está en `main` (`c1e3365e`) y desplegado en
