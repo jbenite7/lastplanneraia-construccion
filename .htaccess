@@ -6,6 +6,8 @@
     RewriteRule ^(.*)$ public/%{REQUEST_URI} [L]
 
     # El bundle de la SPA se publica bajo /app, sin enviarlo al front controller.
+    # El directorio no se lista ni se despacha como PHP: responde 404 controlado.
+    RewriteRule ^app/assets/?$ - [R=404,L]
     RewriteRule ^app/assets/(.*)$ public/app/assets/$1 [L,NC]
 
     # 1. Si el archivo existe físicamente, sírvelo directamente (Legacy Support de Assets)

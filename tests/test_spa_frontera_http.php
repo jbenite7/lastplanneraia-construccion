@@ -72,6 +72,11 @@ try {
         comprobarFronteraSpa(!str_contains($respuestaAsset['cuerpo'], '<div id="root"></div>'), 'un asset no debe devolver el HTML del shell');
     }
 
+    $directorioAssets = pedirFronteraSpa("{$base}/app/assets");
+    comprobarFronteraSpa($directorioAssets['codigo'] === 404, '/app/assets debe responder 404 controlado, no redirigir a /login');
+    comprobarFronteraSpa(!str_contains($directorioAssets['cabeceras'], 'Location: /login'), '/app/assets no debe redirigir a /login');
+    comprobarFronteraSpa(!str_contains($directorioAssets['cuerpo'], '<div id="root"></div>'), '/app/assets no debe devolver el HTML del shell');
+
     $loginLegacy = pedirFronteraSpa("{$base}/login");
     comprobarFronteraSpa($loginLegacy['codigo'] === 200, "/login legado debe conservar su 200, llegó {$loginLegacy['codigo']}");
     comprobarFronteraSpa(str_contains($loginLegacy['cuerpo'], 'id="loginForm"'), '/login debe seguir devolviendo el formulario PHP legado');
