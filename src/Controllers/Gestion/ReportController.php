@@ -1381,26 +1381,27 @@ class ReportController extends BaseController
         // Conditional Formatting
         // Los 5 estados de control-cambios (En Estudio/Aprobado/Aprobado con
         // Restricciones/No Aprobado/Desistido) solo declaran `level` en
-        // docs/design-system/state-semantics.json — no tienen matiz asignado
-        // ahi. Sin decision, se conserva el ARGB previo tal cual.
+        // docs/design-system/state-semantics.json — no `hue` propio. Mismo
+        // principio que la bandera de gravedad (D4): sin matiz propio, manda
+        // el nivel. attention→amber, healthy→green, urgent→red, neutral→neutral.
         $formatoCondicionalEstudio = new Style(false, true);
-        $formatoCondicionalEstudio->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FFC5D9F1');
+        $formatoCondicionalEstudio->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB(self::STATE_FILLS['amber']);
         $formatoCondicionalEstudio->getFont()->setBold(true);
 
         $formatoCondicionalNoAprobado = new Style(false, true);
-        $formatoCondicionalNoAprobado->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FFDA9694');
+        $formatoCondicionalNoAprobado->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB(self::STATE_FILLS['red']);
         $formatoCondicionalNoAprobado->getFont()->setBold(true);
 
         $formatoCondicionalAprobadoRestricciones = new Style(false, true);
-        $formatoCondicionalAprobadoRestricciones->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FFFFFFBD');
+        $formatoCondicionalAprobadoRestricciones->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB(self::STATE_FILLS['amber']);
         $formatoCondicionalAprobadoRestricciones->getFont()->setBold(true);
 
         $formatoCondicionalAprobado = new Style(false, true);
-        $formatoCondicionalAprobado->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FFC0E399');
+        $formatoCondicionalAprobado->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB(self::STATE_FILLS['green']);
         $formatoCondicionalAprobado->getFont()->setBold(true);
 
         $formatoCondicionalDesistido = new Style(false, true);
-        $formatoCondicionalDesistido->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB('FF808080');
+        $formatoCondicionalDesistido->getFill()->setFillType(Fill::FILL_SOLID)->getEndColor()->setARGB(self::STATE_FILLS['neutral']);
         $formatoCondicionalDesistido->getFont()->setBold(true);
 
         $cellRange = 'A2:N' . $maximaFila;
