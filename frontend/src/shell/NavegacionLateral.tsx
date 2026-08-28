@@ -5,7 +5,6 @@ type EntradaNavegacion = {
   etiqueta: string;
   ruta?: string;
   accion?: true;
-  requiereVistaPreviaBi?: true;
 };
 
 type GrupoNavegacion = {
@@ -29,7 +28,6 @@ const grupos: readonly GrupoNavegacion[] = [
     id: 'informacion',
     etiqueta: 'Información',
     entradas: [
-      { id: 'control-tower', etiqueta: 'Control Tower - Informes', ruta: '/bi/control-tower', requiereVistaPreviaBi: true },
       { id: 'semanas-proyecto', etiqueta: 'Semanas del Proyecto', accion: true },
       { id: 'profesionales', etiqueta: 'Profesionales', ruta: '/profesionales' },
       { id: 'subcontratistas', etiqueta: 'Subcontratistas', ruta: '/subcontratistas' },
@@ -62,9 +60,7 @@ function esVisible(entrada: EntradaNavegacion, sesion: Sesion): boolean {
     return false;
   }
 
-  // Control Tower mantiene su gate propio mientras está en vista previa. Este
-  // permiso no representa capacidad de escritura de los módulos del shell.
-  return !entrada.requiereVistaPreviaBi || sesion.capabilities['internal.bi.preview'] === true;
+  return true;
 }
 
 export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
@@ -83,7 +79,11 @@ export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
 
       <nav className="aia-sidebar__nav" aria-label="Navegación del proyecto">
         {grupos.map((grupo) => {
-          const entradasVisibles = grupo.entradas.filter((entrada) => esVisible(entrada, sesion));
+          const controlTower = sesion.navigation.bi;
+          const entradas = grupo.id === 'informacion' && controlTower?.visible && controlTower.href
+            ? [{ id: 'control-tower', etiqueta: 'Control Tower - Informes', ruta: controlTower.href }, ...grupo.entradas]
+            : grupo.entradas;
+          const entradasVisibles = entradas.filter((entrada) => esVisible(entrada, sesion));
 
           return (
             <section className="aia-sidebar__group" aria-labelledby={`grupo-${grupo.id}`} key={grupo.id}>
@@ -97,6 +97,7 @@ export function NavegacionLateral({ sesion }: { sesion: Sesion }) {
                       </a>
                     ) : (
                       <button
+                        aria-disabled={entrada.accion}
                         aria-label={entrada.etiqueta}
                         className="aia-sidebar__link"
                         disabled={entrada.accion}

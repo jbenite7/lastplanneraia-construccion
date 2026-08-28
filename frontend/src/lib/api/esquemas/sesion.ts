@@ -11,6 +11,14 @@ export const EsquemaProyecto = z.object({
   name: z.string(),
 });
 
+const EsquemaNavegacionBi = z.object({
+  visible: z.boolean(),
+  href: z.string().startsWith('/').nullable(),
+}).refine(
+  ({ visible, href }) => visible ? href !== null : href === null,
+  { message: 'navigation.bi.href debe coincidir con su visibilidad' },
+);
+
 export const EsquemaSesion = z.object({
   authenticated: z.boolean(),
   user: EsquemaUsuario.nullable(),
@@ -18,6 +26,9 @@ export const EsquemaSesion = z.object({
   // Las capacidades crecen con el tiempo; se aceptan todas las booleanas que
   // lleguen en vez de fijar la lista aquí y romper cada vez que RbacManager suma una.
   capabilities: z.record(z.string(), z.boolean()),
+  navigation: z.object({
+    bi: EsquemaNavegacionBi.nullable(),
+  }),
   csrfToken: z.string().regex(/^[a-f0-9]{64}$/),
 });
 

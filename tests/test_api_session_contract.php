@@ -78,6 +78,10 @@ comprobar(array_key_exists('user', $sinSesion['json'] ?? []) && $sinSesion['json
 comprobar(array_key_exists('project', $sinSesion['json'] ?? []) && $sinSesion['json']['project'] === null, 'sin sesión project debe ser null');
 comprobar(($sinSesion['json']['capabilities'] ?? null) === [], 'sin sesión capabilities debe ser un objeto vacío');
 comprobar(
+    array_key_exists('bi', $sinSesion['json']['navigation'] ?? []) && $sinSesion['json']['navigation']['bi'] === null,
+    'sin sesión navigation.bi debe ser null',
+);
+comprobar(
     is_string($sinSesion['json']['csrfToken'] ?? null) && preg_match('/^[a-f0-9]{64}$/', $sinSesion['json']['csrfToken']) === 1,
     'sin sesión csrfToken debe ser un token hexadecimal de 64 caracteres',
 );
@@ -104,6 +108,20 @@ comprobar(($conSesion['json']['project']['id'] ?? null) === 42, 'project.id debe
 comprobar(($conSesion['json']['project']['name'] ?? null) === 'Proyecto contractual', 'project.name debe conservar el nombre del proyecto activo');
 comprobar(array_key_exists('canManageWeeks', $conSesion['json']['capabilities'] ?? []), 'capabilities debe traer canManageWeeks');
 comprobar(($conSesion['json']['capabilities']['canManageWeeks'] ?? null) === true, 'el rol A debe poder administrar semanas');
+comprobar(is_bool($conSesion['json']['navigation']['bi']['visible'] ?? null), 'navigation.bi.visible debe ser booleano');
+if (($conSesion['json']['navigation']['bi']['visible'] ?? false) === true) {
+    comprobar(
+        is_string($conSesion['json']['navigation']['bi']['href'] ?? null)
+        && str_starts_with($conSesion['json']['navigation']['bi']['href'], '/bi/'),
+        'navigation.bi visible debe entregar una ruta BI autorizada por servidor',
+    );
+} else {
+    comprobar(
+        array_key_exists('href', $conSesion['json']['navigation']['bi'] ?? [])
+        && $conSesion['json']['navigation']['bi']['href'] === null,
+        'navigation.bi oculta no debe exponer href',
+    );
+}
 comprobar(
     ($conSesion['json']['csrfToken'] ?? null) === ($segundaLectura['json']['csrfToken'] ?? null),
     'csrfToken debe mantenerse estable dentro de la misma sesión',

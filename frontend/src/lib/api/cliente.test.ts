@@ -62,6 +62,7 @@ test('rechaza un token CSRF que no tenga 64 caracteres hexadecimales', () => {
     user: null,
     project: null,
     capabilities: {},
+    navigation: { bi: null },
     csrfToken: 'invalido',
   });
 

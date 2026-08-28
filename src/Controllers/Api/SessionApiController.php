@@ -8,6 +8,7 @@ use App\Core\SessionMiddleware;
 use App\Security\CsrfTokenManager;
 use App\Security\RbacManager;
 use App\Security\RbacService;
+use App\View\Components\BiAccessComponent;
 
 /**
  * Estado mínimo de arranque del shell React.
@@ -43,6 +44,9 @@ class SessionApiController
             ],
             'project' => $this->activeProject(),
             'capabilities' => RbacManager::getCapabilities($rol),
+            'navigation' => [
+                'bi' => $this->biNavigation($rol),
+            ],
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
         ]);
     }
@@ -54,8 +58,26 @@ class SessionApiController
             'user' => null,
             'project' => null,
             'capabilities' => new \stdClass(),
+            'navigation' => [
+                'bi' => null,
+            ],
             'csrfToken' => CsrfTokenManager::generate(self::CSRF_FORM_KEY),
         ]);
+    }
+
+    /** @return array{visible:bool,href:string|null} */
+    private function biNavigation(string $rol): array
+    {
+        // La isla no reproduce gates de BI: el servidor resuelve tanto acceso
+        // como el destino contextual (módulo inicial, proyecto y semana).
+        if (!BiAccessComponent::canAccess()) {
+            return ['visible' => false, 'href' => null];
+        }
+
+        return [
+            'visible' => true,
+            'href' => BiAccessComponent::url(BiAccessComponent::defaultModuleForRole($rol)),
+        ];
     }
 
     /** @return array{id:int,name:string}|null */

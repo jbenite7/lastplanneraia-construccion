@@ -18,6 +18,7 @@ test('sin sesión muestra el login', async () => {
     user: null,
     project: null,
     capabilities: {},
+    navigation: { bi: null },
     csrfToken,
   });
 
@@ -32,6 +33,7 @@ test('con sesión pero sin proyecto muestra el selector', async () => {
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: null,
     capabilities: { canManageWeeks: true },
+    navigation: { bi: null },
     csrfToken,
   });
 
@@ -46,6 +48,7 @@ test('con sesión y proyecto muestra la aplicación', async () => {
     user: { username: 'test.A', displayName: 'Ana', role: 'A' },
     project: { id: 1, name: 'Da Porto' },
     capabilities: { canManageWeeks: true },
+    navigation: { bi: { visible: false, href: null } },
     csrfToken,
   });
 
