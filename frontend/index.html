@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Last Planner AIA</title>
     <script>
+      document.documentElement.setAttribute('data-aia-theme', 'light');
       try {
         var tema = localStorage.getItem('aia-theme');
-        document.documentElement.setAttribute('data-aia-theme', tema === 'dark' ? 'dark' : 'light');
-        if (tema === 'dark') document.documentElement.classList.add('aia-theme-dark');
+        if (tema === 'dark') {
+          document.documentElement.setAttribute('data-aia-theme', 'dark');
+          document.documentElement.classList.add('aia-theme-dark');
+        }
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/aia-design-system.css" />
+    <link rel="stylesheet" href="/css/design-system/theme-claro.css" />
   </head>
   <body>
     <div id="root"></div>

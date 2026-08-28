@@ -1,7 +1,10 @@
+/// <reference types="vite/client" />
+
 import { createElement } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import htmlIndice from '../../index.html?raw';
 import { ConmutadorTema } from './ConmutadorTema';
 import { aplicarTema, leerTemaGuardado } from './tema';
 
@@ -72,6 +75,23 @@ test('tolera almacenamiento bloqueado y conserva el cambio en el documento', () 
   } finally {
     vi.stubGlobal('localStorage', almacenamientoOriginal);
   }
+});
+
+test('el bootstrap de tema deja claro como fallback y carga el override claro después del sistema', () => {
+  const bootstrap = htmlIndice.match(/<script>\s*[\s\S]*?<\/script>/)?.[0] ?? '';
+  const indiceBootstrap = htmlIndice.indexOf(bootstrap);
+  const indiceTokens = htmlIndice.indexOf('/css/tokens.css');
+  const indiceSistema = htmlIndice.indexOf('/css/aia-design-system.css');
+  const indiceClaro = htmlIndice.indexOf('/css/design-system/theme-claro.css');
+
+  expect(bootstrap).toContain("document.documentElement.setAttribute('data-aia-theme', 'light');");
+  expect(bootstrap.indexOf("document.documentElement.setAttribute('data-aia-theme', 'light');")).toBeLessThan(
+    bootstrap.indexOf('try {'),
+  );
+  expect(bootstrap).toMatch(/if \(tema === 'dark'\)\s*\{[\s\S]*aia-theme-dark/);
+  expect(indiceBootstrap).toBeLessThan(indiceTokens);
+  expect(indiceTokens).toBeLessThan(indiceSistema);
+  expect(indiceSistema).toBeLessThan(indiceClaro);
 });
 
 test('el conmutador anuncia el estado y alterna a oscuro', async () => {
