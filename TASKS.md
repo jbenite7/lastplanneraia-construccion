@@ -373,20 +373,18 @@ estado por defecto mientras Felipe no reparta.
   el mismo turno a propósito**: reordenar 400 líneas de historia ajena a mano arriesga perder
   contenido, y eso pide su propia pasada con verificación.
 
-- [ ] **CLAUDE.md · el patrón «enlaza el `.env` de la raíz» se rompe en silencio cuando el
-  contenedor monta un worktree.** Medido el 2026-08-28 al intentar verificar visualmente la Task 10
-  del goal [[goals/temas-y-forma-fase-cero/goal]]: `.env` en un worktree es un symlink absoluto al
-  `.env` de la raíz (`~/Developer/lps-aia/.env`). Cuando se reapunta el contenedor compartido a ese
-  worktree con `LPS_CODE_ROOT="$(pwd)" docker compose up -d app` (el propio flujo que documenta
-  CLAUDE.md para "ver tu rama en el navegador"), el contenedor monta el worktree completo en
-  `/var/www/html` — y el destino del symlink (`/Users/felipebenitez/Developer/lps-aia/.env`) no
-  existe en el filesystem del contenedor en ese modo. `Dotenv::safeLoad()` no truena: `DEV_DOOR` y
-  `DEV_DOOR_USERS` quedan `(unset)`, la puerta de desarrollo se cierra sin explicación, y el síntoma
-  (`/dev/entrar` redirige a `/login`) no se parece en nada a la causa — mismo patrón que la trampa ya
-  documentada de `ln -s` a destino inexistente, pero disparado por un flujo distinto y no cubierto
-  por esa nota. Se rodeó usando la pila aislada de CI (`docker-compose.ci.yml`, puerto 18081), que no
-  depende de ese symlink. No se corrigió: toca `CLAUDE.md` y posiblemente el patrón de symlink mismo,
-  fuera del alcance de este frente.
+- [x] 2026-08-28 — **Corregido: la entrada de este mismo día sobre el `.env` roto dentro del
+  contenedor duplicaba una trampa ya fichada.** Al verificar visualmente la Task 10 del goal
+  [[goals/temas-y-forma-fase-cero/goal]] con `LPS_CODE_ROOT="$(pwd)" docker compose up -d app`, la
+  puerta de desarrollo se cerró sin explicación (`DEV_DOOR`/`DEV_DOOR_USERS` quedan `(unset)`
+  porque el symlink de `.env` apunta a una ruta del host que no existe dentro del contenedor cuando
+  este monta un worktree). Esto ya está fichado con su mecanismo completo y su remedio en
+  [[memoria/trampas/env-enlazado-se-rompe-dentro-del-contenedor]] (2026-08-21). **Dato nuevo que sí
+  vale la pena anotar:** el remedio prescrito ahí (copia temporal del `.env`, borrarla al terminar)
+  requiere tocar un archivo con secretos — en esta sesión ese comando específico fue denegado sin
+  autorización explícita, así que se usó la pila aislada de CI (`docker-compose.ci.yml`) como
+  alternativa, que no depende del symlink en absoluto. Vale como tercera vía cuando la copia
+  temporal no está autorizada.
 
 ## Diferibles
 
@@ -709,6 +707,32 @@ estado por defecto mientras Felipe no reparta.
 necesita autorización propia y explícita de Felipe, siempre, y publicar en `main` no la concede.
 
 ## Hechas (últimas 10)
+
+- [x] 2026-08-28 — **Fase cero de temas y forma, CERRADA — las 11 tareas del plan, PR abierto
+  contra `main`.** Ejecutada de corrido con `subagent-driven-development` sobre el goal
+  [[goals/temas-y-forma-fase-cero/goal]], las dos specs hermanas
+  [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|temas]] (D1-D24) y
+  [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|forma]] (F1-F40), y el
+  plan único [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma]]. Detalle completo,
+  rulings y hallazgos por tarea en el ledger
+  (`.superpowers/sdd/2026-08-28-fase-cero-temas-y-forma/progress.md`); resumen de producto en
+  [[CHANGELOG]]. Verificación de cierre: 600/600 tests de design-system, 8/8 suite estática, 29/29 +
+  58/58 PHP `puro`; `check:frontend` no pasa pero es deuda preexistente ya presente en el commit
+  base, no una regresión de este plan (verificado comparando biome sobre los mismos archivos:
+  504 errores antes, 500 después).
+
+  **Dos bloqueos de producto quedaron destapados y documentados, no resueltos aquí** (fuera del
+  alcance de una fase cero de tokens): `theme.js` fuerza oscuro en 7 páginas reales y
+  `laboratory-foundation.css` no rinde el tema claro en el laboratorio de diseño — ver §Bloqueantes
+  arriba. D16 (CI corre ambos temas) cierra con alcance dark-only por esa misma causa, con la
+  matriz `[light, dark]` corriendo de todos modos por decisión explícita de Felipe (costo de CI
+  doblado sin contrapartida hasta que se resuelva).
+
+  **Pendientes que este frente deja para la serie por módulo** (Programa General primero, luego
+  Programación Intermedia → Semanal → PDC/SPA → resto → admin → Torre de Control): la edición del
+  manual de marca AIA con la rampa de paleta propuesta (D20 — **pide visto de Felipe en su propia
+  sesión, línea roja explícita del goal**), y la recogida del botón «volver a oscuro» de la nav al
+  menú de usuario tras el primer mes de estreno (D13).
 
 - [x] 2026-08-25 — **La spec `cierre-prelanzamiento-pdc` se midió condición por condición: estaba
   bien marcada, y el que se contradecía era el inventario.** Encargo de verificar una contradicción

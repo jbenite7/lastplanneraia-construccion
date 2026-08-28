@@ -41,20 +41,27 @@ node scripts/wiki-registro.mjs --escribir   # la actualiza
 
 <!-- generado:inicio -->
 
-_132 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
+_141 trabajos · 53 con spec y plan emparejados · 20 archivados en `docs/archive/superpowers/`. Generado por `scripts/wiki-registro.mjs`._
 
 ### agosto de 2026
 
 | Trabajo | Documentos | Archivado |
 |---|---|---|
+| Fase cero de temas y forma | [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan]] | — |
+| Forma, bordes, radios y relieves — spec en construcción | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] | — |
+| Temas claro y oscuro end to end — spec en construcción | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] | — |
+| Ola 1 — La Torre escribe · Etapa piloto · Plan de implementación | [[docs/superpowers/plans/2026-08-26-ola1-torre-etapa-piloto|plan]] | — |
+| Tarea cero — una sola lista canónica de pantallas · Plan de implementación | [[docs/superpowers/plans/2026-08-26-tarea-cero-lista-canonica-de-pantallas|plan]] | — |
+| La v0 del producto — Design · **spec v1** | [[docs/superpowers/specs/2026-08-26-v0-del-producto-design|spec]] | — |
+| Bitácora del avance editado a mano | [[docs/superpowers/plans/2026-08-25-bitacora-avance-manual|plan]] | — |
+| Bitácora del avance editado a mano en Programa General | [[docs/superpowers/specs/2026-08-25-bitacora-ediciones-manuales-carryover-design|spec]] | — |
 | El estado real de los 127 planes y specs | [[docs/superpowers/specs/2026-08-25-estado-real-de-planes-y-specs-design|spec]] · [[docs/superpowers/plans/2026-08-25-estado-real-de-planes-y-specs|plan]] | — |
+| El mapa único del trabajo vivo — Design | [[docs/superpowers/specs/2026-08-25-mapa-unico-del-trabajo-vivo-design|spec]] | — |
 | Estado consolidado del repositorio — la spec única | [[docs/superpowers/specs/2026-08-24-estado-consolidado-del-repo-design|spec]] | — |
 | P1 · Desagüe y consolidación de ramas | [[docs/superpowers/plans/2026-08-24-p1-desague-y-consolidacion|plan]] | — |
 | P2 · El CI en verde y los presupuestos | [[docs/superpowers/plans/2026-08-24-p2-ci-en-verde-y-presupuestos|plan]] | — |
 | P3 · Programa Design System · DS-F1 → DS-F3 | [[docs/superpowers/plans/2026-08-24-p3-design-system-contrato-y-control|plan]] | — |
 | P4 · Móvil y tema claro · MO-F2b → MO-F3 | [[docs/superpowers/plans/2026-08-24-p4-movil-y-tema-claro|plan]] | — |
-| Temas claro y oscuro end to end — 24 decisiones (aprobada 2026-08-28; absorbe el programa móvil por D21 y sucede a P4 en ese alcance) | [[docs/superpowers/specs/2026-08-28-temas-claro-oscuro-end-to-end-design|spec]] · [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan fase cero]] | — |
-| Forma, bordes, radios y relieves — 40 decisiones (aprobada 2026-08-28; hermana de la de temas, serie por módulo tras la fase cero) | [[docs/superpowers/specs/2026-08-28-forma-bordes-radios-relieves-design|spec]] · [[docs/superpowers/plans/2026-08-28-fase-cero-temas-y-forma|plan fase cero]] | — |
 | P5 · Cierre hasta producción · CP-F-C → CP-F-E | [[docs/superpowers/plans/2026-08-24-p5-cierre-hasta-produccion|plan]] | — |
 | P6 · Higiene documental y de coordinación | [[docs/superpowers/plans/2026-08-24-p6-higiene-documental-y-coordinacion|plan]] | — |
 | Pendientes del frente de tablas | [[docs/superpowers/specs/2026-08-24-pendientes-frente-tablas-design|spec]] · [[docs/superpowers/plans/2026-08-24-pendientes-frente-tablas|plan]] | — |
