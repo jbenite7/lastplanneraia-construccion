@@ -11,8 +11,9 @@
     },
     "barra": {
       "transporta": "gravedad",
-      "posicion": "borde de la fila",
-      "porque": "solo aparece en el 21,3% que pide algo; la ausencia de barra es la senal de que no pide nada"
+      "posicion": "bandera de 26px al inicio de la fila, con glifo",
+      "porque": "solo aparece en el 21,3% que pide algo; la ausencia de barra es la senal de que no pide nada",
+      "desde": "spec 2026-08-28 D2-D8"
     }
   },
   "niveles": {

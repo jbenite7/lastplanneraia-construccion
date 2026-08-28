@@ -198,7 +198,6 @@
           "key": "prog-lista-para-confirmar",
           "level": "healthy",
           "hue": "green",
-          "rail": "ready",
           "displayShort": "Por confirmar"
         },
         {
@@ -224,8 +223,7 @@
           "label": "Cumplida Control",
           "key": "cal-cumplida-control",
           "level": "healthy",
-          "hue": "green",
-          "rail": "ready"
+          "hue": "green"
         },
         {
           "label": "Trabajo No Planificado",
@@ -346,8 +344,7 @@
           "key": "liberated-control",
           "level": "healthy",
           "hue": "green",
-          "rail": "ready",
-          "note": "rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo.",
+          "note": "rail ready (Felipe, 2026-08-20): marcador positivo escaso, filete verde 3px solo en lo activamente listo.; rail ready derogado por spec 2026-08-28 D5 (la bandera no tiene gradación: lo positivo vive en chip y tinte)",
           "displayShort": "Por comprometer"
         }
       ],
