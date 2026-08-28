@@ -10,7 +10,7 @@ resumen: Todos los cambios notables en este proyecto serán documentados en este
 project: lps-aia
 type: changelog
 status: activo
-updated: 2026-08-25
+updated: 2026-08-27
 ---
 
 # Registro de Cambios (Changelog)
@@ -27,6 +27,18 @@ archivo registra solo cambios de producto liberados o por liberar. Ver [[IMPLEME
 para el estado de los planes en curso.
 
 ## [Sin publicar]
+
+### Añadido: ESLint en ct-app/ y pdc-app/ (2026-08-27)
+
+Ninguna de las dos SPA (`ct-app/`, `pdc-app/`) tenía ESLint configurado; lo disparó una revisión de
+`react-reviewer` que marcó como HIGH que las reglas de hooks dependían solo de revisión manual.
+Instalados `eslint` + `eslint-plugin-react-hooks` + `eslint-plugin-jsx-a11y` en ambas, con
+`npm run lint`, parseando con `@babel/eslint-parser` en vez de `typescript-eslint` — este último
+rechaza correr contra TypeScript 7, el compilador nativo que ya usan las dos SPA, con un hard-stop
+sin ETA de soporte. `ct-app/` corre limpio; `pdc-app/` destapó 39 hallazgos reales que quedan
+documentados sin arreglar, y el lint no se integró a `check:frontend` ni a CI todavía. Detalle
+completo, porqués y lista de archivos en [[TASKS]] (sección Diferibles). Rama `eslint-ct-pdc-app`,
+no bloqueante para el piloto Ola 1.
 
 ### Corregido: la hoja piloto de Intermedia no podía hacer scroll (2026-08-27)
 

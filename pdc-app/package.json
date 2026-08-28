@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && tsc -p tsconfig.node.json && vite build && rm -f ../public/pdc-app/index.html",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint ."
   },
   "type": "module",
   "license": "ISC",
@@ -18,10 +19,19 @@
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/eslint-parser": "^8.0.1",
+    "@babel/plugin-syntax-jsx": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "26.1.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "eslint": "^10.9.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
     "vitest": "^4.1.10"
