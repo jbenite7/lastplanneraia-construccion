@@ -307,7 +307,7 @@
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/foundations-dark-1440x900.png",
-          "sha256": "4c27dee435706d3bca1fb74f5048fbf07644584b4def71fe9e2e9985ac17195e"
+          "sha256": "3ad9131d5c062e9d070a63e02145150c2f914e398ae37b6ac167e7b00118977e"
         }
       }
     },
@@ -507,7 +507,7 @@
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1180x820.png",
-          "sha256": "4d2c3f104265600484f06cdce3598a8231b11c228a985a3aae4d542c35cf5da0"
+          "sha256": "85c79ea7ed603e67214ad1051353cb7e655cc02bdd6a9a8b915ab96dcb9ecebf"
         }
       }
     },
@@ -529,7 +529,7 @@
       "goldenPlatforms": {
         "linux": {
           "golden": "tests/browser/__screenshots__/design-system-lab.visual.mjs/linux/vendor-adapters-dark-1440x900.png",
-          "sha256": "8f6397146ecccbef92588405933dd6918c0dfeb999183fec767e68a2657bfecd"
+          "sha256": "104315b46299c1e1114d4fafee4454a86835d6727789fa2d3401504fe61d3007"
         }
       }
     }
