@@ -6,11 +6,11 @@ declare(strict_types=1);
 
 /**
  * Task 5 (frente 1a): un solo criterio de "proyecto cerrado visible para la jefatura",
- * consumido por ProjectSelectorController y por BiProjectScope; ProjectSelectorController
- * normaliza roles con App\Security\RbacService::normalizeRole() (que traduce alias de texto
- * vía RbacCatalog::roleAliases()) en vez de un normalizador privado incompleto; index() y
- * enterProject() filtran/comprueban con el mismo rol ya normalizado; y la barra de avance
- * inventada (`rand(0, 100)`) se retiró del selector.
+ * consumido por BiProjectScope y ProjectAccessService. ProjectSelectorController delega en
+ * ese servicio, que normaliza roles con App\Security\RbacService::normalizeRole() (que
+ * traduce alias de texto vía RbacCatalog::roleAliases()) en vez de un normalizador privado
+ * incompleto; listar y seleccionar filtran/comprueban con el mismo rol ya normalizado; y la
+ * barra de avance inventada (`rand(0, 100)`) se retiró del selector.
  *
  * Nota sobre el brief original: pedía sustituir el privado por
  * Admin\Core\RoleManager::cleanCargo(), pero esa función es un limpiador de texto para
@@ -88,6 +88,7 @@ comprobar(
 );
 
 $selectorSrc = (string) file_get_contents(__DIR__ . '/../src/Controllers/Core/ProjectSelectorController.php');
+$accessServiceSrc = (string) file_get_contents(__DIR__ . '/../src/Services/ProjectAccessService.php');
 
 comprobar(
     'ProjectSelectorController ya no define el normalizador privado (normalizeRoleCode)',
@@ -96,16 +97,23 @@ comprobar(
 );
 
 comprobar(
-    'index() normaliza con $this->rbac->normalizeRole()',
-    (bool) preg_match('/\$this->rbac->normalizeRole\(/', $selectorSrc),
+    'ProjectSelectorController delega el listado y la selección a ProjectAccessService',
+    str_contains($selectorSrc, '$this->projectAccess->listForUser(')
+        && str_contains($selectorSrc, '$this->projectAccess->select('),
     true,
 );
 
-echo "\n=== La invariante: index() y enterProject() filtran/comprueban con el mismo rol ===\n";
+comprobar(
+    'ProjectAccessService normaliza con $this->rbac->normalizeRole()',
+    (bool) preg_match('/\$this->rbac->normalizeRole\(/', $accessServiceSrc),
+    true,
+);
+
+echo "\n=== La invariante: listar y seleccionar filtran/comprueban con el mismo rol ===\n";
 
 comprobar(
-    "ambos usan RbacCatalog::managementRoles() como único criterio para 'Acceso=0'",
-    substr_count($selectorSrc, 'RbacCatalog::managementRoles()') === 2,
+    "ProjectAccessService usa RbacCatalog::managementRoles() dos veces como único criterio para 'Acceso=0'",
+    substr_count($accessServiceSrc, 'RbacCatalog::managementRoles()') === 2,
     true,
 );
 
