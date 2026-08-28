@@ -424,6 +424,42 @@
     --ds-state-row-green: #20362a;
     --ds-state-row-neutral: #262b28;
 
+    /* PALETA CLARA DE ESTADO (specs 2026-08-28, D5/D6/D7 temas + F-tabla forma).
+       Tintes de fila: interpolación t=0,5 entre muy_claro y claro del manual —
+       primer punto medido donde los 28 pares se distinguen (dE-OK >= 0,035) con
+       texto #1a1a1a a 11,2:1. El azul va a t=0,7 (rampa --aia-blue-* rescatada,
+       rebautizada «En marcha») para despegar del violeta (dE 0,0364).
+       Chips: tono principal de cada familia con texto blanco; ámbar, teal y azul
+       usan un peldaño más oscuro que su principal porque el principal falla AA
+       con blanco (azul 4,06:1; medición en paleta-clara-estado.test.mjs).
+       El texto sobre tinte claro es el texto normal (#1a1a1a): NO nace una
+       familia de textos pastel claros (consecuencia 6 de la spec de temas). */
+    --ds-state-tint-red-light: #f6c3c3;
+    --ds-state-tint-orange-light: #f8c9a5;
+    --ds-state-tint-amber-light: #ffecb2;
+    --ds-state-tint-violet-light: #dad4f5;
+    --ds-state-tint-green-light: #c2e2d3;
+    --ds-state-tint-blue-light: #c1d5ec;
+    --ds-state-tint-teal-light: #c8efec;
+    --ds-state-tint-neutral-light: #e4e4e7;
+
+    --ds-state-solid-red-light: #c62828;
+    --ds-state-solid-red-light-text: #ffffff;
+    --ds-state-solid-orange-light: #b55211;
+    --ds-state-solid-orange-light-text: #ffffff;
+    --ds-state-solid-amber-light: #a16207;
+    --ds-state-solid-amber-light-text: #ffffff;
+    --ds-state-solid-violet-light: #6752bf;
+    --ds-state-solid-violet-light-text: #ffffff;
+    --ds-state-solid-green-light: #1a5633;
+    --ds-state-solid-green-light-text: #ffffff;
+    --ds-state-solid-blue-light: #2a5a8f;
+    --ds-state-solid-blue-light-text: #ffffff;
+    --ds-state-solid-teal-light: #007a71;
+    --ds-state-solid-teal-light-text: #ffffff;
+    --ds-state-solid-neutral-light: #52525b;
+    --ds-state-solid-neutral-light-text: #ffffff;
+
     /* Filete de gravedad. Es el eje ORDINAL del sistema, y existe porque el
        color no lo tiene: las ocho anclas de arriba se eligieron equiluminantes
        a proposito -su rango de L* OKLab es del 9 % y no es monotono-, asi que
