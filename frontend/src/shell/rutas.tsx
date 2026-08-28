@@ -26,7 +26,7 @@ export function Rutas() {
   }
 
   if (!sesion?.authenticated) {
-    return <PantallaLogin alEntrar={recargar} />;
+    return <PantallaLogin alEntrar={recargar} csrfToken={sesion?.csrfToken ?? ''} />;
   }
 
   if (!sesion.project) {
